@@ -298,7 +298,7 @@ st_insert(char const *s, StrTree *root)
   return n->string;
 }
 
-/** Tree find.  Basically the first part of insert. 
+/** Tree find.  Basically the first part of insert.
  * \param s string to find.
  * \param root pointer to root of string tree.
  * \return string if found, or NULL.
@@ -552,7 +552,7 @@ st_print_tree(StrNode *node, int tree_depth, int lead)
   tmp = leader[tree_depth * 2];
   leader[tree_depth * 2] = '\0';
   printf("%s%c-+ %c %d %s%s\n", leader, lead,
-         (node->info & ST_COLOR) ? 'r' : 'b', node->info / ST_USE_STEP,
+         (node->info & ST_COLOR) ? 'r' : 'b', (int) node->info / ST_USE_STEP,
          node->string, looped ? " -LOOPING" : "");
   leader[tree_depth * 2] = ' ' + '|' - tmp;
   leader[0] = ' ';

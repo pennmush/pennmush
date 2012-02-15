@@ -47,7 +47,8 @@ extern char e_toomanyregs[];    /* #-1 TOO MANY REGISTERS */
 bool parse_boolean(char const *str);
 dbref parse_dbref(char const *str);
 dbref qparse_dbref(char const *str);
-dbref parse_objid(char const *str);
+dbref real_parse_objid(char const *str, bool strict);
+#define parse_objid(str) real_parse_objid(str, 0)
 
 int parse_int(const char *, char **, int);
 unsigned int parse_uint(const char *, char **, int);

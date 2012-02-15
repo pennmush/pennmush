@@ -19,11 +19,11 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c		\
 	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
 	markup.c match.c move.c mycrypt.c mymalloc.c mysocket.c		\
-	myrlimit.c myssl.c notify.c parse.c pcre.c player.c		\
-	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
-	services.c set.c SFMT.c shs.c sig.c sort.c speech.c sql.c	\
-	ssl_master.c strtree.c strutil.c tables.c timer.c unparse.c	\
-	utils.c version.c wait.c warnings.c wild.c wiz.c
+	myrlimit.c myssl.c notify.c parse.c player.c plyrlist.c		\
+	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
+	set.c SFMT.c sig.c sort.c speech.c sql.c ssl_master.c		\
+	strtree.c strutil.c tables.c timer.c unparse.c utils.c		\
+	version.c wait.c warnings.c wild.c wiz.c
 
 # .o versions of above - these are used in the build
 O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
@@ -33,11 +33,11 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o		\
 	help.o htab.o intmap.o local.o lock.o log.o look.o malias.o	\
 	markup.o match.o move.o mycrypt.o mymalloc.o mysocket.o		\
-	myrlimit.o myssl.o notify.o parse.o pcre.o player.o		\
-	plyrlist.o info_master.o predicat.o privtab.o ptab.o rob.o	\
-	services.o set.o SFMT.o shs.o sig.o sort.o speech.o sql.o	\
-	ssl_master.o strtree.o strutil.o tables.o timer.o unparse.o	\
-	utils.o version.o wait.o warnings.o wild.o wiz.o
+	myrlimit.o myssl.o notify.o parse.o player.o plyrlist.o		\
+	info_master.o predicat.o privtab.o ptab.o rob.o services.o	\
+	set.o SFMT.o sig.o sort.o speech.o sql.o ssl_master.o		\
+	strtree.o strutil.o tables.o timer.o unparse.o utils.o		\
+	version.o wait.o warnings.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -54,16 +54,16 @@ netmud: $(O_FILES)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
-info_slave: info_slave.o strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
+info_slave: info_slave.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 	@echo "Making info_slave."
-	$(CC) $(CCFLAGS) -DSLAVE -o info_slave info_slave.o strdup.o	\
+	$(CC) $(CCFLAGS) -DSLAVE -o info_slave info_slave.o	\
 	sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for ssl_slave.
-ssl_slave: ssl_slave.o strdup.o sig.o wait.o myssl.o SFMT.o mysocket.c
+ssl_slave: ssl_slave.o sig.o wait.o myssl.o SFMT.o mysocket.c
 	@echo "Making ssl_slave."
-	$(CC) $(CCFLAGS) -DSLAVE -o ssl_slave ssl_slave.o strdup.o	\
+	$(CC) $(CCFLAGS) -DSLAVE -o ssl_slave ssl_slave.o  \
 	sig.o wait.o myssl.o SFMT.o mysocket.c $(LDFLAGS) $(LIBS)
 
 # It should always be out of date.
@@ -159,29 +159,32 @@ indent:
 	(set +e; for file in *.dst *.c  ../hdrs/*.h ; do echo $$file; \
 	@INDENT@ -npro -kr -ci2 -ss -psl -ip4 -i2 -cs -l80 -lc75 -nut \
 	-T accent_info -T acsflag -T aig_func -T ALIST -T ansi_data \
-	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BOOL -T boolexp \
-	-T boolexp_type -T branch_chain -T BUFFERQ -T bvm_opcode -T BYTE \
+	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BIO -T BOOL \
+	-T bool -T boolexp -T boolexp_type -T BUFFERQ -T bvm_opcode \
 	-T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t -T CNode \
 	-T COMLIST -T command_func -T COMMAND_INFO -T comp_func \
-	-T compile_data -T COMSORTSTRUC -T config_func -T conn_source \
-	-T conn_status -T CType -T dbref -T Debug_Info -T DESC \
-	-T dfa_match_data -T eptrblock -T Fail_Info -T FBLOCK -T fd_type \
-	-T FLAG -T FLAG_ALIAS -T FLAGSPACE -T folder_array -T FUN \
-	-T FUNALIAS -T function_func -T FUNTAB -T GLOBALTAB -T hash_func \
-	-T HASHENT -T HASHTAB -T heapframe -T help_file -T help_indx \
-	-T im_key -T imaxdiv_t -T intmap -T IVAL -T ListTypeInfo \
-	-T lock_list -T lock_type -T LOCKMSGINFO -T LONG -T ltype -T MAIL \
-	-T mail_flag -T makerecord -T match_data -T MATH -T MEM -T MQUE \
-	-T MSSP -T na_lookup -T new_markup_information -T NEW_PE_INFO \
-	-T NVAL -T object_flag_type -T OPTTAB -T patricia \
-	-T pcre_study_data -T pcre_uint16 -T pcre_uint32 -T PE_REG_VAL \
-	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T Port_t \
-	-T PRIV -T privbits -T PTAB -T ptab_entry -T qsort_func \
-	-T real_pcre -T recursion_info -T Region -T RegionHeader -T s_rec \
-	-T SHS_INFO -T slab -T SortType -T sq_func -T sqlplatform \
+	-T COMSORTSTRUC -T config_func -T conn_source -T conn_status \
+	-T CType -T dbref -T Debug_Info -T DESC -T DH -T EVP_MD \
+	-T Fail_Info -T FBLOCK -T fd_type -T FLAG -T FLAG_ALIAS \
+	-T FLAGSPACE -T folder_array -T FUN -T FUNALIAS -T function_func \
+	-T FUNTAB -T GLOBALTAB -T hash_func -T HASHENT -T HASHTAB \
+	-T help_file -T help_indx -T im_key -T imaxdiv_t -T int16_t \
+	-T int32_t -T int64_t -T int8_t -T intmap -T intmax_t -T IVAL \
+	-T ldiv_t -T ListTypeInfo -T lock_list -T lock_type \
+	-T LOCKMSGINFO -T ltype -T MAIL -T mail_flag -T makerecord \
+	-T MATH -T MEM -T MQUE -T MSSP -T MYSQL_FIELD -T MYSQL_RES \
+	-T na_lookup -T new_markup_information -T NEW_PE_INFO -T NVAL \
+	-T object_flag_type -T OPTTAB -T patricia -T PE_REG_VAL \
+	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T PGresult \
+	-T pid_t -T pint_t -T Port_t -T PRIV -T privbits -T PTAB \
+	-T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
+	-T RegionHeader -T s_rec -T sig_atomic_t -T sigset_t -T size_t \
+	-T slab -T socklen_t -T SortType -T sq_func -T sqlite3_stmt \
+	-T sqlplatform -T ssize_t -T SSL -T SSL_CTX -T SSL_METHOD \
 	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
-	-T tcheck -T tlist -T ucp_type_table -T UIVAL -T uschar \
-	-T UsedAttr -T USERFN_ENTRY -T w128_t -T WAIT_TYPE -T warn_type \
+	-T tcheck -T time_t -T tlist -T uint16_t -T uint32_t -T uint64_t \
+	-T uint8_t -T uintmax_t -T UIVAL -T UsedAttr -T USERFN_ENTRY \
+	-T w128_t -T WAIT_TYPE -T warn_type -T X509 -T X509_STORE_CTX \
 	$$file ; done)
 
 clean:
@@ -195,7 +198,7 @@ test_compress: comp_h.c
 	$(CC) $(CFLAGS) -o test_compress -DSTANDALONE comp_h.c
 
 portmsg: portmsg.c mysocket.c sig.o wait.o 
-	$(CC) $(CCFLAGS) -DINFOSLAVE -o portmsg portmsg.c mysocket.c sig.o \
+	$(CC) $(CCFLAGS) -DSLAVE -o portmsg portmsg.c mysocket.c sig.o \
 	wait.o $(LDFLAGS) $(LIBS)
 
 # Some dependencies that make depend doesn't handle well
@@ -334,6 +337,7 @@ bsd.o: ../hdrs/command.h
 bsd.o: ../hdrs/switches.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/mysocket.h
+bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
 bsd.o: ../hdrs/log.h
@@ -797,6 +801,7 @@ funcrypt.o: ../hdrs/attrib.h
 funcrypt.o: ../hdrs/ansi.h
 funcrypt.o: ../hdrs/strtree.h
 funcrypt.o: ../hdrs/match.h
+funcrypt.o: ../hdrs/sort.h
 function.o: ../hdrs/copyrite.h
 function.o: ../config.h
 function.o: ../hdrs/conf.h
@@ -1060,6 +1065,7 @@ game.o: ../hdrs/log.h
 game.o: ../hdrs/lock.h
 game.o: ../hdrs/function.h
 game.o: ../hdrs/help.h
+game.o: ../hdrs/wait.h
 game.o: ../hdrs/ansi.h
 game.o: ../hdrs/mymalloc.h
 help.o: ../config.h
@@ -1328,7 +1334,18 @@ mycrypt.o: ../hdrs/copyrite.h
 mycrypt.o: ../options.h
 mycrypt.o: ../hdrs/mushtype.h
 mycrypt.o: ../hdrs/htab.h
+mycrypt.o: ../hdrs/externs.h
+mycrypt.o: ../hdrs/compile.h
+mycrypt.o: ../hdrs/dbdefs.h
+mycrypt.o: ../hdrs/mushdb.h
+mycrypt.o: ../hdrs/flags.h
 mycrypt.o: ../confmagic.h
+mycrypt.o: ../hdrs/ptab.h
+mycrypt.o: ../hdrs/dbio.h
+mycrypt.o: ../hdrs/chunk.h
+mycrypt.o: ../hdrs/mypcre.h
+mycrypt.o: ../hdrs/log.h
+mycrypt.o: ../hdrs/bufferq.h
 mymalloc.o: ../config.h
 mymalloc.o: ../options.h
 mymalloc.o: ../hdrs/conf.h
@@ -1464,8 +1481,6 @@ parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/log.h
 parse.o: ../hdrs/bufferq.h
 parse.o: ../hdrs/mymalloc.h
-pcre.o: ../config.h
-pcre.o: ../hdrs/mypcre.h
 player.o: ../hdrs/copyrite.h
 player.o: ../config.h
 player.o: ../hdrs/conf.h
@@ -1575,6 +1590,7 @@ info_master.o: ../hdrs/mysocket.h
 info_master.o: ../hdrs/lookup.h
 info_master.o: ../hdrs/log.h
 info_master.o: ../hdrs/bufferq.h
+info_master.o: ../hdrs/wait.h
 ptab.o: ../config.h
 ptab.o: ../hdrs/copyrite.h
 ptab.o: ../hdrs/conf.h
@@ -1651,8 +1667,6 @@ SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
-shs.o: ../hdrs/copyrite.h
-shs.o: ../config.h
 sig.o: ../config.h
 sig.o: ../hdrs/conf.h
 sig.o: ../hdrs/copyrite.h
@@ -1768,6 +1782,7 @@ ssl_master.o: ../hdrs/bufferq.h
 ssl_master.o: ../hdrs/mysocket.h
 ssl_master.o: ../hdrs/ssl_slave.h
 ssl_master.o: ../hdrs/parse.h
+ssl_master.o: ../hdrs/wait.h
 strtree.o: ../hdrs/copyrite.h
 strtree.o: ../config.h
 strtree.o: ../hdrs/conf.h
@@ -1909,6 +1924,7 @@ version.o: ../hdrs/version.h
 version.o: ../hdrs/buildinf.h
 version.o: ../hdrs/svninfo.h
 wait.o: ../config.h
+wait.o: ../hdrs/wait.h
 warnings.o: ../config.h
 warnings.o: ../hdrs/copyrite.h
 warnings.o: ../hdrs/conf.h
@@ -1997,6 +2013,7 @@ info_slave.o: ../hdrs/ptab.h
 info_slave.o: ../hdrs/dbio.h
 info_slave.o: ../hdrs/chunk.h
 info_slave.o: ../hdrs/mypcre.h
+info_slave.o: ../hdrs/wait.h
 info_slave.o: ../hdrs/mysocket.h
 info_slave.o: ../hdrs/lookup.h
 ssl_slave.o: ../hdrs/copyrite.h

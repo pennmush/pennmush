@@ -307,7 +307,7 @@ ansi_isnull(const ansi_data a)
  * \return pointer to static buffer containing stripped string.
  */
 char *
-remove_markup(const char *orig, size_t * s_len)
+remove_markup(const char *orig, size_t *s_len)
 {
   char *buff, *bp;
   const char *q;
@@ -762,7 +762,7 @@ grow_mi(ansi_string *as, char type)
 static inline new_markup_information *
 MI_FOR(ansi_string *as, int idx)
 {
-  if (idx < 0)
+  if (idx < 0 || idx > as->misize)
     return NULL;
   else
     return &as->mi[idx];
@@ -1175,15 +1175,30 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
 int
 ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 {
-  int len = dst->len + src->len - count;
-  int oldlen = dst->len;
-  int dstleft = dst->len - (loc + count);
-  int srclen = src->len;
-  int srcend = loc + srclen;
+  int len, oldlen, srclen, srcend, dstleft;
   int idx, sidx, baseidx;
   int i, j;
   int truncated = 0;
   new_markup_information *basemi, *mis, *mi, *mie;
+
+  oldlen = dst->len;
+  srclen = src->len;
+
+  if (loc > oldlen) {
+    /* If the dst string isn't long enough, we don't replace, we just
+     * insert at the end of the existing string */
+    loc = dst->len;
+    count = 0;
+  }
+
+  if (loc + count > oldlen)
+    count = oldlen - loc;
+
+  srcend = loc + srclen;
+  len = oldlen + srclen;
+
+  dstleft = oldlen - (loc + count);
+  len -= count;
 
   if (len >= BUFFER_LEN) {
     if (loc >= BUFFER_LEN - 1) {
@@ -1198,6 +1213,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dstleft = len - srcend;
     }
   }
+
   /* Nothing to copy? */
   if (src->len < 1) {
     if (count > 0) {
@@ -1289,6 +1305,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     for (i = 0; i < srclen; i++) {
       src->markup[i] = NOMARKUP;
     }
+    src->flags |= AS_HAS_MARKUP;
   }
 
   /* Save the markup info pointers for loc and loc-1 */
@@ -1316,7 +1333,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
   }
 
-  // Move markup as necessary.
+  /* Move markup as necessary. */
   if (dstleft > 0) {
     memmove(dst->markup + srcend,
             dst->markup + (loc + count), dstleft * sizeof(int16_t));

@@ -180,11 +180,12 @@ unparse_objid(dbref thing)
 
 /** Given a string, parse out an object id or dbref.
  * \param str string to parse.
+ * \param strict Require a full objid (with :ctime) instead of a plain dbref?
  * \return dbref of object referenced by string, or NOTHING if not a valid
  * string or not an existing dbref.
  */
 dbref
-parse_objid(char const *str)
+real_parse_objid(char const *str, bool strict)
 {
   const char *p;
   if ((p = strchr(str, ':'))) {
@@ -202,8 +203,11 @@ parse_objid(char const *str)
       return (CreTime(it) == matchtime) ? it : NOTHING;
     } else
       return NOTHING;
-  } else
+  } else if (strict) {
+    return NOTHING;
+  } else {
     return parse_dbref(str);
+  }
 }
 
 
@@ -1264,6 +1268,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
@@ -1285,6 +1290,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   for (i = 0; i < namecount; i++) {
     entry = nametable + (entrysize * i);
     num = (entry[0] << 8) + entry[1];
+    buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
@@ -2676,6 +2682,12 @@ process_expression(char *buff, char **bp, char const **str,
       break;
       /* Escape character */
     case '\\':
+      if (eflags & PE_LITERAL) {
+        /* Show literal backslash in lit() */
+        safe_chr('\\', buff, bp);
+        (*str)++;
+        break;
+      }
       if (!(eflags & PE_EVALUATE))
         safe_chr('\\', buff, bp);
       (*str)++;

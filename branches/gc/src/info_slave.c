@@ -38,6 +38,7 @@
 #endif
 #include <ctype.h>
 #include <string.h>
+#include <time.h>
 #ifdef I_UNISTD
 #include <unistd.h>
 #endif
@@ -63,6 +64,7 @@ void fputerr(const char *);
 
 #ifdef HAVE_LIBEVENT
 
+
 /* Version using libevent's async dns routines. Much shorter because
  * we don't have our own event loop implementation. It also runs all
  * lookups asynchronously in one process instead of one blocking
@@ -80,6 +82,20 @@ void fputerr(const char *);
 
 #include <event.h>
 #include <event2/dns.h>
+
+static void write_to_file_cb(int severity, const char *msg)
+{
+    const char *s;
+    switch (severity) {
+        case _EVENT_LOG_DEBUG: s = "debug"; break;
+        case _EVENT_LOG_MSG:   s = "msg";   break;
+        case _EVENT_LOG_WARN:  s = "warn";  break;
+        case _EVENT_LOG_ERR:   s = "error"; break;
+        default:               s = "?";     break; /* never reached */
+    }
+    fprintf(stderr, "[%s] %s\n", s, msg);
+}
+
 
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
@@ -180,7 +196,7 @@ check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
 {
   if (getppid() == 1) {
     fputerr
-      ("info_slave: Parent mush process exited unexpectedly! Shutting down.");
+      ("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -193,6 +209,8 @@ main(void)
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
+
+  evdns_set_log_fn(write_to_file_cb);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */
   watch_parent =
@@ -209,7 +227,7 @@ main(void)
           event_base_get_method(main_loop));
   unlock_file(stderr);
   event_base_dispatch(main_loop);
-  fputerr("info_slave: shutting down.");
+  fputerr("shutting down.");
 
   return EXIT_SUCCESS;
 }
@@ -288,7 +306,7 @@ main(void)
     else if (ev == (int) netmush) {
       /* Parent process exited. Exit too. */
       fputerr
-        ("info_slave: Parent mush process exited unexpectedly! Shutting down.");
+        ("Parent mush process exited unexpectedly! Shutting down.");
       return EXIT_SUCCESS;
     } else if (ev < 0) {
       /* Error? */
@@ -350,7 +368,7 @@ main(void)
     } else
       strcpy(resp.hostname, resp.ipaddr);
 
-    len = send(1, &resp, sizeof resp, 0);
+    len = send(1, &resp, sizeof resp, 0);    
 
     /* Should never happen. */
     if (len != (int) sizeof resp) {
@@ -431,21 +449,21 @@ eventwait_init(void)
 #endif
 #ifdef HAVE_POLL
   if (1) {
-    fputerr("info_slave: trying poll event loop... ok. Using poll.");
+    fputerr("trying poll event loop... ok. Using poll.");
     method = METHOD_POLL;
     return 0;
   } else
 #endif
 #ifdef HAVE_SELECT
   if (1) {
-    fputerr("info_slave: trying select event loop... ok. Using select.");
+    fputerr("trying select event loop... ok. Using select.");
     FD_ZERO(&readers);
     method = METHOD_SELECT;
     return 0;
   } else
 #endif
   {
-    fputerr("info_slave: No working event loop method!");
+    fputerr("No working event loop method!");
     errno = ENOTSUP;
     return -1;
   }
@@ -700,12 +718,26 @@ eventwait(void)
 
 #endif
 
+const char *
+time_string(void)
+{
+  static char buffer[100];
+  time_t now;
+  struct tm *ltm;
+  
+  now = time(NULL);
+  ltm = localtime(&now);
+  strftime(buffer, 100, "%m/%d %T", ltm);
+
+  return buffer;
+}
+
 /* Wrappers for perror */
 void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "info_slave: %s: %s\n", err, strerror(errno));
+  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err, strerror(errno));
   unlock_file(stderr);
 }
 
@@ -714,7 +746,6 @@ void
 fputerr(const char *msg)
 {
   lock_file(stderr);
-  fputs(msg, stderr);
-  fputc('\n', stderr);
+  fprintf(stderr, "[%s] info_slave: %s\n", time_string(), msg);
   unlock_file(stderr);
 }

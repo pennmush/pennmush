@@ -5,12 +5,15 @@ various things that don't change often.
 Detailed information about how to use the scripts can usually be found
 in comments in them Here's a quick overview of what they're for:
 
+change2html.pl: Script that HTML-ifies changelog entries for release
+ announcements.
+
 clwrapper.sh: A wrapper around the cl compiler from Microsoft.
 
 columnize.scm: Script to format the tables of functions/commands/etc.
  in help files.
 
-cscope.pl: Wrapper script for invoking cscope, a handy source code
+cscope.sh: Wrapper script for invoking cscope, a handy source code
  browsing/searching tool.
 
 customize.pl: perl script used by 'make customize'
@@ -35,6 +38,9 @@ mkcmds.pl: Perl script used by the makefile to create hdrs/funs.h,
 
 mkvershlp.pl: perl script that turns the CHANGES.* files into
  game/txt/hlp/pennv*.hlp files.
+
+pwutil.pl: perl script used to manipulate player passwords in an
+ offline database. Run it with --help for more.
 
 splint.sh: Wrapper for the splint code analysis tool to control
  what warnings are printed out.

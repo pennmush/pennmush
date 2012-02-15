@@ -101,7 +101,7 @@ static int fail_commands(dbref player);
 void do_readcache(dbref player);
 int check_alias(const char *command, const char *list);
 static int list_check(dbref thing, dbref player, char type,
-                      char end, char *str, int just_match);
+                      char end, char *str, int just_match, int queue_flags);
 int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
@@ -514,7 +514,7 @@ mush_panicf(const char *msg, ...)
 
   va_start(args, msg);
 
-  my_vsnprintf(c, sizeof c, msg, args);
+  mush_vsnprintf(c, sizeof c, msg, args);
   va_end(args);
 
   mush_panic(c);
@@ -683,7 +683,7 @@ do_restart(void)
       }
     }
     if (STARTUPS && !IsGarbage(thing) && !(Halted(thing))) {
-      (void) queue_attribute_noparent(thing, "STARTUP", thing);
+      queue_attribute_base(thing, "STARTUP", thing, 1, NULL, QUEUE_PRIORITY);
       do_top(5);
     }
   }
@@ -772,11 +772,6 @@ init_game_postdb(const char *conf)
   /* Load further restrictions from config file */
   config_file_startup(conf, 1);
   validate_config();
-  /* Call Local Startup */
-  local_startup();
-  /* everything else ok. Restart all objects. */
-  do_restart();
-#ifdef HAS_OPENSSL
   /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init
@@ -788,7 +783,6 @@ init_game_postdb(const char *conf)
 #endif
   /* Load hash algorithms */
   OpenSSL_add_all_digests();
-#endif
 }
 
 extern int dbline;
@@ -980,9 +974,9 @@ do_readcache(dbref player)
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
-#define list_match(x)        list_check(x, executor, '$', ':', cptr, 0)
+#define list_match(x,q)        list_check(x, executor, '$', ':', cptr, 0, q)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, NULL, QUEUE_DEFAULT)
+#define cmd_match(x,q)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, NULL, q)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1029,6 +1023,7 @@ passwd_filter(const char *cmd)
   bp = buff = alloc_buf();
 
   cmdlen = strlen(cmd);
+  buff[0] = '\0';
 
   if ((matched = pcre_exec(pass_ptn, NULL, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */
@@ -1082,6 +1077,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   dbref errdb;
   dbref check_loc;
   COMMAND_INFO *cmd;
+  int queue_flags = QUEUE_DEFAULT;
+  int temp_debug_privs = 0;
 
   if (!errdblist)
     if (!(errdblist = GC_MALLOC_ATOMIC(errdbsize * sizeof(dbref))))
@@ -1116,9 +1113,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   /* Players, things, and exits should not have invalid locations. This check
    * must be done _after_ the destroyed-object check.
    */
-  check_loc =
-    IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
-                                           Location(executor));
+  check_loc = speech_loc(executor);
   if (!GoodObject(check_loc) || IsGarbage(check_loc)) {
     notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),
@@ -1141,6 +1136,14 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   while (isspace((unsigned char) *p) && (p >= command))
     p--;
   *++p = '\0';
+
+  if (*command == DEBUG_TOKEN) {
+    command++;
+    temp_debug_privs = ((queue_entry->queue_type & QUEUE_DEBUG_PRIVS) == 0);
+    queue_entry->queue_type |= QUEUE_DEBUG_PRIVS;
+  }
+  if (queue_entry->queue_type & QUEUE_DEBUG_PRIVS)
+    queue_flags |= QUEUE_DEBUG_PRIVS;
 
   /* ignore null commands that aren't from players */
   if ((!command || !*command) && !(queue_entry->queue_type & QUEUE_SOCKET))
@@ -1194,20 +1197,20 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
         }
       }
 
-      /* try matching user defined functions before chopping */
+      /* try matching user defined commands before chopping */
 
       /* try objects in the executor's location, the location itself,
        * and objects in the executor's inventory.
        */
       if (GoodObject(check_loc)) {
-        a += list_match(Contents(check_loc));
+        a += list_match(Contents(check_loc), queue_flags);
         if (check_loc != executor) {
-          a += cmd_match(check_loc);
+          a += cmd_match(check_loc, queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
       if (check_loc != executor)
-        a += list_match(Contents(executor));
+        a += list_match(Contents(executor), queue_flags);
 
       /* now do check on zones */
       if ((!a) && (Zone(check_loc) != NOTHING)) {
@@ -1230,9 +1233,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
               goto done;
             }
           } else
-            a += list_match(Contents(Zone(check_loc)));
+            a += list_match(Contents(Zone(check_loc)), queue_flags);
         } else {
-          a += cmd_match(Zone(check_loc));
+          a += cmd_match(Zone(check_loc), queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
@@ -1245,9 +1248,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* Player's personal zone is a zone master room, so we
            * also check commands on objects in that room
            */
-          a += list_match(Contents(Zone(executor)));
+          a += list_match(Contents(Zone(executor)), queue_flags);
         else {
-          a += cmd_match(Zone(executor));
+          a += cmd_match(Zone(executor), queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
@@ -1270,7 +1273,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* global user-defined commands checked if all else fails.
            * May match more than one command in the master room.
            */
-          a += list_match(Contents(MASTER_ROOM));
+          a += list_match(Contents(MASTER_ROOM), queue_flags);
       }
       /* end of master room check */
     }                           /* end of special checks */
@@ -1290,6 +1293,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
 done:
   errdblist = errdbtail = NULL;
   errdbsize = ERRDB_INITIAL_SIZE;
+  if (temp_debug_privs)
+    queue_entry->queue_type &= ~QUEUE_DEBUG_PRIVS;
 }
 
 
@@ -1322,7 +1327,8 @@ COMMAND(cmd_with)
   errdb = NOTHING;
   if (!SW_ISSET(sw, SWITCH_ROOM)) {
     /* Run commands on a single object */
-    if (!cmd_match(what)) {
+    /* Should this be passing on QUEUE_DEBUG_PRIVS? */
+    if (!cmd_match(what, QUEUE_DEFAULT)) {
       MAYBE_ADD_ERRDB(errdb);
       notify(executor, T("No matching command."));
     }
@@ -1334,7 +1340,8 @@ COMMAND(cmd_with)
       return;
     }
 
-    if (!list_match(Contents(what)))
+    /* Should this be passing on QUEUE_DEBUG_PRIVS? */
+    if (!list_match(Contents(what), QUEUE_DEFAULT))
       notify(executor, T("No matching command."));
   }
 }
@@ -1382,12 +1389,13 @@ check_alias(const char *command, const char *list)
  * \param end character that signals the end of the matchable portion (':')
  * \param str string to match against the attributes.
  * \param just_match if 1, don't execute the command on match.
+ * \param queue_flags QUEUE_* flags to pass to atr_comm_match
  * \retval 1 a match was made.
  * \retval 0 no match was made.
  */
 static int
 list_check(dbref thing, dbref player, char type, char end, char *str,
-           int just_match)
+           int just_match, int queue_flags)
 {
   int match = 0;
   dbref errdb = NOTHING;
@@ -1395,7 +1403,7 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
                        end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL,
-                       QUEUE_DEFAULT))
+                       queue_flags))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);

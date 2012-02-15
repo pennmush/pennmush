@@ -193,7 +193,7 @@ idle_event(void *data __attribute__ ((__unused__)))
 static bool
 purge_event(void *data __attribute__ ((__unused__)))
 {
-  if (!PURGE_INTERVAL)
+  if (PURGE_INTERVAL <= 0)
     return false;               /* in case purge_interval is set to 0 with @config */
   purge();
   options.purge_counter = mudtime + PURGE_INTERVAL;
@@ -204,7 +204,7 @@ purge_event(void *data __attribute__ ((__unused__)))
 static bool
 dbck_event(void *data __attribute__ ((__unused__)))
 {
-  if (!DBCK_INTERVAL)
+  if (DBCK_INTERVAL <= 0)
     return false;               /* in case dbck_interval is set to 0 with @config */
   dbck();
   options.dbck_counter = mudtime + DBCK_INTERVAL;
@@ -215,7 +215,7 @@ dbck_event(void *data __attribute__ ((__unused__)))
 static bool
 warning_event(void *data __attribute__ ((__unused__)))
 {
-  if (!options.warn_interval)
+  if (options.warn_interval <= 0)
     return false;               /* in case warn_interval is set to 0 with @config */
   options.warn_counter = options.warn_interval + mudtime;
   run_topology();
@@ -249,16 +249,18 @@ dbsave_warn_event(void *data)
 static void
 reg_dbsave_warnings(void)
 {
-  if (DUMP_INTERVAL > 300)
-    sq_register_in(DUMP_INTERVAL - 300, dbsave_warn_event, &dbsave_5min, NULL);
-  if (DUMP_INTERVAL > 60)
-    sq_register_in(DUMP_INTERVAL - 60, dbsave_warn_event, &dbsave_1min, NULL);
+  if (DUMP_INTERVAL > dbsave_5min.secs)
+    sq_register_in(DUMP_INTERVAL - dbsave_5min.secs, dbsave_warn_event,
+                   &dbsave_5min, NULL);
+  if (DUMP_INTERVAL > dbsave_1min.secs)
+    sq_register_in(DUMP_INTERVAL - dbsave_1min.secs, dbsave_warn_event,
+                   &dbsave_1min, NULL);
 }
 
 static bool
 dbsave_event(void *data __attribute__ ((__unused__)))
 {
-  if (!options.dump_interval)
+  if (options.dump_interval <= 0)
     return false;               /* in case dump_interval is set to 0 with @config */
 
   options.dump_counter = options.dump_interval + mudtime;
@@ -327,16 +329,24 @@ init_sys_events(void)
 {
   time(&mudtime);
   sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
-  if (DBCK_INTERVAL > 0)
+  if (DBCK_INTERVAL > 0) {
     sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
-  if (PURGE_INTERVAL > 0)
+    options.dbck_counter = mudtime + DBCK_INTERVAL;
+  }
+  if (PURGE_INTERVAL > 0) {
     sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
-  if (options.warn_interval > 0)
+    options.purge_counter = mudtime + PURGE_INTERVAL;
+  }
+  if (options.warn_interval > 0) {
     sq_register(mudtime + options.warn_interval, warning_event, NULL,
                 "DB`WCHECK");
+    options.warn_counter = mudtime + options.warn_interval;
+  }
   reg_dbsave_warnings();
-  if (DUMP_INTERVAL > 0)
+  if (DUMP_INTERVAL > 0) {
     sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+    options.dump_counter = mudtime + DUMP_INTERVAL;
+  }
   /* The chunk migration normally runs every 1 second. Slow it down a bit
      to see what affect it has on CPU time */
   sq_register_loop(5, migrate_event, NULL, NULL);

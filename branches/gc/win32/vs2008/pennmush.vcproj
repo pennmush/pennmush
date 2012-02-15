@@ -374,10 +374,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pcre.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\player.c"
 				>
 			</File>
@@ -411,10 +407,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\SFMT.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shs.c"
 				>
 			</File>
 			<File
@@ -673,10 +665,6 @@
 			</File>
 			<File
 				RelativePath="..\..\hdrs\pueblo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\hdrs\shs.h"
 				>
 			</File>
 			<File

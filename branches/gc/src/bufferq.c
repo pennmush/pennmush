@@ -190,8 +190,7 @@ reallocate_bufferq(BUFFERQ *bq, int lines)
  * \return next message text or NULL if no more.
  */
 char *
-iter_bufferq(BUFFERQ *bq, char **p, dbref *player, int *type,
-             time_t * timestamp)
+iter_bufferq(BUFFERQ *bq, char **p, dbref *player, int *type, time_t *timestamp)
 {
   static char tbuf1[BUFFER_LEN];
   int size;

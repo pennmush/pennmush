@@ -297,6 +297,7 @@ static PRIV flag_privs[] = {
   {"odark", '\0', F_ODARK, F_ODARK},
   {"disabled", '\0', F_DISABLED, F_DISABLED},
   {"log", '\0', F_LOG, F_LOG},
+  {"event", '\0', F_EVENT, F_EVENT},
   {NULL, '\0', 0, 0}
 };
 
@@ -1235,7 +1236,7 @@ flag_stats(dbref player)
     notify_format(player, T("Stats for flagspace %s:"), n->name);
     notify_format(player,
                   T("  %d entries in flag table. Flagsets are %d bytes long."),
-                  n->flagbits, FlagBytes(n));
+                  n->flagbits, (int) FlagBytes(n));
     notify_format(player,
                   T
                   ("  %d different cached flagsets. %d objects with no flags set."),
@@ -1672,12 +1673,13 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
       return 1;
   }
 
-  /* Checking for the ZONE flag. If you set this, the player had
+  /* Checking for the SHARED flag. If you set this, the player had
    * better be zone-locked!
    */
-  if (!negate && is_flag(flagp, "ZONE") &&
+  if (!negate && is_flag(flagp, "SHARED") &&
       (getlock(thing, Zone_Lock) == TRUE_BOOLEXP)) {
-    notify(player, T("You must @lock/zone before you can set a player ZONE"));
+    notify(player,
+           T("You must @lock/zone before you can set a player SHARED."));
     return 0;
   }
 
@@ -1892,8 +1894,11 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     /* log if necessary */
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, "%s FLAG CLEARED", f->name);
+    if (f->perms & F_EVENT)
+      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing),
+                  f->name, "FLAG", 0, "CLEARED");
     /* notify the area if something stops listening, but only if it
-       wasn't listening before */
+       was listening before */
     if (!IsPlayer(thing) && (hear || listener) &&
         !Hearer(thing) && !Listener(thing)) {
       tp = tbuf1;
@@ -1943,6 +1948,9 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     /* log if necessary */
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, "%s FLAG SET", f->name);
+    if (f->perms & F_EVENT)
+      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing),
+                  f->name, "FLAG", 1, "SET");
     if (is_flag(f, "TRUST") && GoodObject(Zone(thing)))
       notify(player, T("Warning: Setting trust flag on zoned object"));
     if (is_flag(f, "SHARED"))
@@ -2063,6 +2071,10 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   if (f->perms & F_LOG)
     do_log(LT_WIZ, player, thing, "%s POWER %s", f->name,
            negate ? T("CLEARED") : T("SET"));
+  if (f->perms & F_EVENT) {
+    queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing),
+                f->name, "POWER", !negate, (negate ? "CLEARED" : "SET"));
+  }
 }
 
 /** Check if an object has one or all of a list of flag characters.

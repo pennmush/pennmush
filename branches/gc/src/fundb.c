@@ -731,7 +731,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
     safe_strl("#-1", 3, buff, bp);
 
   /* Kill a trailing space at the end of the buffer */
-  if (*bp > buff && *(*bp - 1) == ' ')
+  if (buff && *bp > buff && *(*bp - 1) == ' ')
     *bp -= 1;
 
   return result;
@@ -863,129 +863,6 @@ FUNCTION(fun_next)
     }
   } else
     safe_str("#-1", buff, bp);
-}
-
-
-/* ARGSUSED */
-FUNCTION(fun_entrances)
-{
-  /* All args are optional.
-   * The first argument is the dbref to check (default = this room)
-   * The second argument to this function is a set of characters:
-   * (a)ll (default), (e)xits, (t)hings, (p)layers, (r)ooms
-   * The third and fourth args limit the range of dbrefs (default=0,db_top)
-   */
-  dbref where = Location(executor);
-  dbref low = 0;
-  dbref high = db_top - 1;
-  dbref counter;
-  dbref entrance;
-  int found;
-  int types = 0;
-  char *p;
-  int controlswhere = 0;
-
-  if (!command_check_byname(executor, "@entrances", pe_info)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
-
-  if (nargs > 0)
-    where = match_result(executor, args[0], NOTYPE, MAT_EVERYTHING);
-  if (!GoodObject(where)) {
-    safe_str(T("#-1 INVALID LOCATION"), buff, bp);
-    return;
-  }
-  if (nargs > 1) {
-    if (!args[1] || !*args[1]) {
-      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-      return;
-    }
-    p = args[1];
-    while (*p) {
-      switch (*p) {
-      case 'a':
-      case 'A':
-        types = NOTYPE;
-        break;
-      case 'e':
-      case 'E':
-        types |= TYPE_EXIT;
-        break;
-      case 't':
-      case 'T':
-        types |= TYPE_THING;
-        break;
-      case 'p':
-      case 'P':
-        types |= TYPE_PLAYER;
-        break;
-      case 'r':
-      case 'R':
-        types |= TYPE_ROOM;
-        break;
-      default:
-        safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-        return;
-      }
-      p++;
-    }
-  }
-  if (!types)
-    types = NOTYPE;
-
-  if (nargs > 2) {
-    if (is_strict_integer(args[2])) {
-      low = parse_integer(args[2]);
-    } else if (is_dbref(args[2])) {
-      low = parse_dbref(args[2]);
-    } else {
-      safe_str(T(e_ints), buff, bp);
-      return;
-    }
-  }
-  if (nargs > 3) {
-    if (is_strict_integer(args[3])) {
-      high = parse_integer(args[3]);
-    } else if (is_dbref(args[3])) {
-      high = parse_dbref(args[3]);
-    } else {
-      safe_str(T(e_ints), buff, bp);
-      return;
-    }
-  }
-  if (!GoodObject(low))
-    low = 0;
-  if (!GoodObject(high))
-    high = db_top - 1;
-
-  controlswhere = controls(executor, where);
-  if (!controlswhere && !Search_All(executor)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
-  /* Ok, do the real work */
-  found = 0;
-  for (counter = low; counter <= high; counter++) {
-    if (GoodObject(counter)) {
-      if (types & Typeof(counter)) {
-        if (Mobile(counter))
-          entrance = Home(counter);
-        else
-          entrance = Location(counter);
-        if (entrance == where) {
-          if (controlswhere || controls(executor, counter)) {
-            if (!found)
-              found = 1;
-            else
-              safe_chr(' ', buff, bp);
-            safe_dbref(counter, buff, bp);
-          }
-        }
-      }
-    }
-  }
-  return;
 }
 
 /* ARGSUSED */
@@ -2379,7 +2256,7 @@ FUNCTION(fun_isdbref)
 /* ARGSUSED */
 FUNCTION(fun_isobjid)
 {
-  safe_boolean(is_objid(args[0]), buff, bp);
+  safe_boolean(real_parse_objid(args[0], 1) != NOTHING, buff, bp);
 }
 
 /* ARGSUSED */

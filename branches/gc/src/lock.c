@@ -168,7 +168,7 @@ extern int unparsing_boolexp;
 static int
 lock_compare(const void *a, const void *b)
 {
-  const lock_list *la = *(lock_list * const *)a, *lb = *(lock_list * const *)b;
+  const lock_list *la = *(lock_list *const *) a, *lb = *(lock_list *const *) b;
   return strcmp(la->type, lb->type);
 }
 
@@ -186,8 +186,7 @@ list_locks(char *buff, char **bp, const char *name)
 
   locks = GC_MALLOC(htab_locks.entries * sizeof(lock_list));
 
-  for (lk = hash_firstentry(&htab_locks);
-       lk; lk = hash_nextentry(&htab_locks)) {
+  for (lk = hash_firstentry(&htab_locks); lk; lk = hash_nextentry(&htab_locks)) {
     /* Skip those that don't match */
     if (name && !string_prefix(lk->type, name))
       continue;

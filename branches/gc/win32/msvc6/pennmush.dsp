@@ -452,10 +452,6 @@ SOURCE=..\..\src\parse.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\pcre.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\player.c
 # End Source File
 # Begin Source File
@@ -489,10 +485,6 @@ SOURCE=..\..\src\set.c
 # Begin Source File
 
 SOURCE=..\..\src\SFMT.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\shs.c
 # End Source File
 # Begin Source File
 

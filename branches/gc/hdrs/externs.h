@@ -55,8 +55,8 @@ extern time_t mudtime;
 
 extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
-void boot_desc(DESC *d, const char *cause);     /* remove a player */
-int boot_player(dbref player, int idleonly, int slilent);
+void boot_desc(DESC *d, const char *cause, dbref executor);     /* remove a player */
+int boot_player(dbref player, int idleonly, int slilent, dbref booter);
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
 DESC *port_desc(int port);      /* find descriptors */
@@ -269,6 +269,8 @@ extern char ucbuff[];
 #define QUEUE_RETRY            0x0800   /**< Set by @retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
+#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For @startups */
+#define QUEUE_DEBUG_PRIVS      0x8000   /**< Show DEBUG info for queue if on an object %# can see debug from (queued via %-prefix) */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
@@ -292,7 +294,7 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
-                    PE_REGS *pe_regs, ATTR *a);
+                    PE_REGS *pe_regs, ATTR *a, bool force_debug);
 void insert_que(MQUE *queue_entry, MQUE *parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
@@ -304,19 +306,19 @@ void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
         new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
 
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                         int noparent, PE_REGS *pe_regs);
+                         int noparent, PE_REGS *pe_regs, int flags);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
-                           PE_REGS *pe_regs);
+                           PE_REGS *pe_regs, int flags);
 int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
 
 /** Queue the code in an attribute, including parent objects */
-#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL)
+#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL,0)
 /** Queue the code in an attribute, excluding parent objects */
-#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL)
+#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL,0)
 void dequeue_semaphores(dbref thing, char const *aname, int count,
                         int all, int drain);
 void shutdown_queues(void);
@@ -387,21 +389,19 @@ void do_desert(dbref player, const char *arg);
 void do_dismiss(dbref player, const char *arg);
 void clear_followers(dbref leader, int noisy);
 void clear_following(dbref follower, int noisy);
-
-/* From mycrypt.c */
-char *mush_crypt(const char *key);
+dbref find_var_dest(dbref player, dbref exit_obj);
 
 /* From player.c */
 extern const char *connect_fail_limit_exceeded;
 int mark_failed(const char *ipaddr);
 int count_failed(const char *ipaddr);
 int check_fails(const char *ipaddr);
-int password_check(dbref player, const char *password);
+bool password_check(dbref player, const char *password);
 dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
-dbref create_player(DESC *d, const char *name, const char *password,
-                    const char *host, const char *ip);
+dbref create_player(DESC *d, dbref executor, const char *name,
+                    const char *password, const char *host, const char *ip);
 dbref connect_player(DESC *d, const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);
 void check_last(dbref player, const char *host, const char *ip);
@@ -529,7 +529,7 @@ unsigned char *u_strncpy
 char *
 mush_strndup(const char *src, size_t len, const char *check)
   __attribute_malloc__;
-    int my_vsnprintf(char *, size_t, const char *, va_list);
+    int mush_vsnprintf(char *, size_t, const char *, va_list);
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)GC_STRDUP((const char *) x)
@@ -591,9 +591,17 @@ int safe_str(const char *s, char *buff, char **bp);
 int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
 int safe_strl(const char *s, size_t len, char *buff, char **bp);
+/* Append a base16 encoded block of bytes to a buffer */
+    int safe_hexstr(uint8_t *data, int len, char *buff, char **bp);
 /** Append a boolean to the end of a string */
 #define safe_boolean(x, buf, bufp) \
                 safe_chr((x) ? '1' : '0', (buf), (bufp))
+    static inline int
+     safe_time_t(time_t t, char *buff, char **bp)
+{
+  return safe_integer((intmax_t) t, buff, bp);
+}
+
 /* Append N copies of the character X to the end of a string */
 int safe_fill(char x, size_t n, char *buff, char **bp);
 /* Append an accented string */
@@ -685,8 +693,8 @@ replace_string2(const char *old[2], const char *newbits[2],
 #define UFUN_NAME_NOSPACE 0x40
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
-                           ufun_attrib *ufun, int flags);
-    bool call_ufun(ufun_attrib *ufun, char *ret, dbref caller,
+                           ufun_attrib * ufun, int flags);
+    bool call_ufun(ufun_attrib * ufun, char *ret, dbref caller,
                    dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool call_attrib(dbref thing, const char *attrname, char *ret,
                      dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
@@ -735,7 +743,7 @@ replace_string2(const char *old[2], const char *newbits[2],
                              PE_REGS *pe_regs);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
-    bool qcomp_regexp_match(const pcre * re, const char *s);
+bool qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 

@@ -1488,7 +1488,10 @@ config_file_startup(const char *conf, int restrictions)
       do_rawlog(LT_ERR, "ERROR: Cannot open configuration file %s.", cfile);
       return 0;
     }
-    do_rawlog(LT_ERR, "Reading %s", cfile);
+    /* Logfiles haven't yet been opened, so doing this causes an error on
+     * stdout, and for netmush.log to be opened before the error_log config
+     * option has been read/parsed */
+    /* do_rawlog(LT_ERR, "Reading %s", cfile);*/
     if (toplevel_cfile == NULL)
       toplevel_cfile = GC_STRDUP(cfile);
   } else {
@@ -1499,7 +1502,7 @@ config_file_startup(const char *conf, int restrictions)
                 (conf && *conf) ? conf : "Unknown");
       return 0;
     }
-    do_rawlog(LT_ERR, "Reading %s", conf);
+    /* do_rawlog(LT_ERR, "Reading %s", conf);*/
   }
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {

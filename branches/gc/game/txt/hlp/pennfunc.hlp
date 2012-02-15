@@ -88,7 +88,7 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
   which case non-zero numbers, non-negative db#'s, and strings are all
   considered "true" when passed to these functions.  Alternatively,
   your MUSH may be using TinyMUSH 2.2 booleans, in which case only
-  non-zero numbers are "true".
+  non-zero numbers are "true". Check @config tiny_booleans.
 
   and()         cand()        cor()         eq()          gt()
   gte()         lt()          lte()         nand()        neq()
@@ -176,6 +176,9 @@ See also: LISTS
   numbers, they will return an error or misbehave):
   dec()         div()         floordiv()    inc()         mod()
   remainder()
+
+  Math functions are affected by a number of @config options, including the
+  TinyMUSH compatability options null_eq_zero and tiny_math.
 
 See also: Vector Functions
 & Vector functions
@@ -1123,6 +1126,10 @@ See also: acos(), asin(), atan(), cos(), sin(), tan()
 
   Note especially the last example, which will trip you up if you use
   floating point numbers with dec() and expect it to work like sub().
+  
+  If the null_eq_zero @config option is on, using dec() on a string which
+  does not end in an integer will return <string>-1. When null_eq_zero is
+  turned off, it will return an error.
 
 See also: inc(), sub()
 & DECOMPOSE()
@@ -1178,7 +1185,8 @@ See also: encrypt(), encode64(), decode64()
     > say default(me/Test, No fruits!)
     You say "No fruits!"
  
-See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault()
+See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
+  strfirstof()
 & DELETE()
   delete(<string>, <first>, <len>)
  
@@ -1228,21 +1236,38 @@ See also: strreplace(), strinsert(), mid()
 & SHA1
 & CHECKSUM
 & HASH
+  digest(list)
   digest(<algorithm>, <string>)
 
   Returns a checksum (hash, digest, etc.) of <string> using the given
-  <algorithm>. If the mush is compiled with SSL support (See @config
-  compile), <algorithm> can be one of:
+  <algorithm>. The result is a unique large number represented in base
+  16.
 
-  dss1 md2 md4 md5 ripemd160 sha sha1 sha256 sha384 sha512 whirlpool
+  Typically at least the following algorithms are supported:
 
-  Not all checksum algorithms are supported on all games, depending on
-  the host's OpenSSL version and how it was configured.
+  md4 md5 ripemd160 sha sha1 sha224 sha256 sha384 sha512 whirlpool
 
-  Without SSL, only the sha algorithm is enabled. In both cases, sha
-  returns the same thing as the sha0() function.
+  Depending on the host's OpenSSL version and how it was configured,
+  there might be more (or less) available. digest(list) returns the
+  methods a particular server understands if the OpenSSL library
+  version being used is recent enough (1.0.0 and higher), or '#-1
+  LISTING NOT SUPPORTED' on older versions. For portable code, stick
+  with MD5 and the SHA family.
 
-See also: sha0()
+  digest(sha, whatever) is equivalent to sha0(whatever).
+
+  Example:
+   > think iter(digest(list), %i0(foo) => [digest(%i0, foo)], %b, %r)
+   ...
+   MD4(foo) => 0ac6700c491d70fb8650940b1ca1e4b2
+   MD5(foo) => acbd18db4cc2f85cedef654fccc4a4d8
+   MDC2(foo) => 5da2a8f36bf237c84fddf81b67bd0afc
+   RIPEMD160(foo) => 42cfa211018ea492fdee45ac637b7972a0ad6873
+   SHA(foo) => 752678a483e77799a3651face01d064f9ca86779
+   SHA1(foo) => 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
+   SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
+   ...
+  
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -1424,8 +1449,9 @@ See also: decrypt(), encode64()
         r        rooms
 
   You can also limit the range of the dbrefs searched by giving <begin> and 
-  <end>. If you don't control <object>, you must have the Search_All power,
-  and will only see objects you control.
+  <end>. If you 't control <object>, or have the Search or See_All powers,
+  all objects linked to <object> are returned. Otherwise, only objects you
+  can examine will be included.
   
 See also: lsearch(), @entrances
 & EQ()
@@ -2016,6 +2042,10 @@ See also: @nameformat, @nameaccent, name(), fullname(), accname()
 
   Note especially the last example, which will trip you up if you use
   floating point numbers with inc() and expect it to work like add().
+  
+  If the null_eq_zero @config option is on, using inc() on a string which
+  does not end in an integer will return <string>1. When null_eq_zero is
+  turned off, it will return an error.
 
 See also: dec(), add(), sub()
 & INDEX()
@@ -2069,12 +2099,41 @@ See also: replace(), ldelete(), strinsert()
   Returns 1 if it's daylight savings time in the MUSH time zone,
   otherwise 0.
 & ISDBREF()
+& ISOBJID()
   isdbref(<string>)
+  isobjid(<string>)
  
-  This function returns 1 if <string> is a valid object dbref (or
-  object id), and 0 if the string is not a valid object dbref/objid.
- 
-See also: DBREFS, isobjid()
+  isobjid() returns 1 if <string> is the object id of an existing object.
+  If <string> is not a full objid, or is the objid of a garbage object,
+  it returns 0.
+  
+  isdbref() functions the same, but will also return 1 if <string> is the
+  dbref of an existing (or garbage) object.
+  
+  Examples:
+    > @stats
+    100 objects = 20 rooms, 20 exits, 20 things, 20 players, 20 garbage.
+    The next object to be created will be #33.
+    
+    > think isdbref(#33)
+    1
+    > think isobjid(#33:1234567890)
+    0
+    
+    > think csecs(#1)
+    1324654503
+    > think isdbref(#1)
+    1
+    > think isobjid(#)
+    0
+    > think isdbref(#1:1324654503)
+    1
+    > think isobjid(#1:1324654503)
+    1
+    > think isobjid(#1:9876543210)
+    0
+
+See also: DBREFS, OBJECT IDS, num(), objid()
 & ISINT()
   isint(<string>)
 
@@ -2092,13 +2151,6 @@ See also: isnum()
   point.
 
 See also: isint()
-& ISOBJID()
-  isobjid(<string>)
-
-  This function returns 1 if the string is a valid object id, and 0 if
-  the string is not a valid object id.
-  
-See also: DBREFS, isdbref(), objid()
 & ISREGEXP()
   isregexp(<string>)
 
@@ -2830,7 +2882,7 @@ See also: pos(), member(), match()
   fulfill all restrictions. See 'help @search' for information about them.
 
   children() is exactly the same as lsearch([me|all], parent, <object>),
-  using "all" for See_All/Search_All players and "me" for others.
+  using "all" for See_All/Search players and "me" for others.
 
   nlsearch(...) and nchildren(...) return the count of results that
   would be returned by lsearch() or children() with the same args.
@@ -3783,7 +3835,7 @@ See also: @quota, @squota, @allquota
   r(<register>)
   
   The r() function is used to access "local registers", as set by the setq(),
-  setr() orletq() functions, and returns the contents of the specified
+  setr() or letq() functions, and returns the contents of the specified
   register. Available register names can be found with the listq() function.
  
   The '%q<register>' percent-substitution can also be used to access these
@@ -4336,7 +4388,29 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
     > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(n*)][listq()]
     LOC
 
-See also: setq(), letq(), r(), localize()
+See also: setq(), letq(), r(), localize(), registers()
+& REGISTERS()
+  registers([<pattern>[, <types>[, <osep>]]])
+  
+  The registers() function returns a list of the names of all existing
+  registers of the specified <types>. <types> is a space-separated list
+  containing zero or more of:
+  
+    qregisters - registers set with setq(), setr() and similar functions
+    args       - %0-%9 arguments
+    iter       - itext() context from iter() or @dolist
+    switch     - stext() context from switch() or @switch
+    regexp     - regexp capture names
+    
+  If <types> is empty, all types of registers are included. If <pattern> is
+  specified, only registers whose name matches <pattern> will be included.
+  The results are separated by <osep>, which defaults to a single space.
+  
+  The list returned may contain duplicates (for instance, if %0 and %q0 both
+  have a value, the list will include "0" twice), and is not sorted in any
+  particular order.
+  
+See also: listq(), setq(), setr(), letq(), r(), v(), stext(), itext()    
 & SETUNION()
   setunion(<list1>, <list2>[, <delimiter>[, <sort type>[, <osep>]]])
  
@@ -4362,8 +4436,11 @@ See also: setdiff(), setinter()
 & SHA0()
   sha0(<string>)
 
-  Returns the SHA cryptographic hash of the string. See RFC 3174 for
-  more information.
+  Returns the SHA-0 cryptographic hash of the string. See RFC 3174 for
+  more information. Deprecated; use digest() and higher strength algorithms
+  instead.
+
+See also: digest().
 & SHL()
   shl(<number>, <count>)
 
@@ -4498,6 +4575,7 @@ See also: anonymous attributes, sorting, sortby()
    owner   Sorts dbrefs by their owner dbrefs.
    loc     Sorts dbrefs by their location dbref.
    ctime   Sorts dbrefs by their creation time.
+   mtime   Sorts dbrefs by their modification time.
    lattr   Sorts attribute names.
 
   The special sort key attr:<aname> or attri:<aname> will sort dbrefs
@@ -4968,13 +5046,16 @@ See also: mean(), median()
     > say strallof(,  ,foo,@@(Nothing),%b,bar|baz,#-1,|)
     You say, "foo| |bar|baz|#-1"
   
-See also: allof(), firstof(), first(), strlen(), cat()
+See also: allof(), firstof(), first(), strlen(), cat(), default()
 & STRINSERT()
   strinsert(<string>, <position>, <insert>)
 
-  This function returns <string>, with <insert> added before the <position>
-  character in <string>. Note that the first character in <string> is
-  numbered 0, not 1.
+  This function returns <string>, with <insert> added before the
+  <position> character in <string>. Note that the first character in
+  <string> is numbered 0, not 1.
+
+  If <position> is less than 0, an error is returned. If <position> is
+  greater than the length of <string>, <insert> is appended to it.
 
   Examples:
   > think strinsert(barbaz, 0, foo)
@@ -5037,6 +5118,9 @@ See also: comp(), match(), setq(), r()
   Returns <string> with the <length> characters starting at <start>
   replaced by <text>. As with most other string functions, the first
   character is at position 0.
+
+  If <start> is less than 0, an error is returned, and if <start> is
+  greater than the length of <string>, <string> is returned.
 
   Example:
   > think strreplace(Fix teh typo, 4, 3, the)

@@ -1637,8 +1637,9 @@ scan_list(dbref player, char *command, int flag)
   char *ptr;
   int num;
   int matches = 0;
+  dbref loc = speech_loc(player);
 
-  if (!GoodObject(Location(player))) {
+  if (!GoodObject(loc)) {
     strcpy(tbuf, T("#-1 INVALID LOCATION"));
     return tbuf;
   }
@@ -1650,17 +1651,19 @@ scan_list(dbref player, char *command, int flag)
   ptr = atrname;
 
   if (flag & CHECK_HERE) {
-    if (ScanFind(player, Location(player), 1)) {
+    if (ScanFind(player, loc, 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
       ptr = atrname;
       matches++;
     }
+    if (player == loc)
+      flag &= ~CHECK_SELF;
   }
 
   if (flag & CHECK_NEIGHBORS) {
     flag &= ~CHECK_SELF;
-    DOLIST(thing, Contents(Location(player))) {
+    DOLIST(thing, Contents(loc)) {
       if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
@@ -1668,9 +1671,11 @@ scan_list(dbref player, char *command, int flag)
         matches++;
       }
     }
+    if (player == loc)
+      flag &= ~CHECK_INVENTORY;
   }
 
-  if (flag & CHECK_SELF) {
+  if ((flag & CHECK_SELF)) {
     if (ScanFind(player, player, 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
@@ -1692,7 +1697,7 @@ scan_list(dbref player, char *command, int flag)
 
   /* zone checks */
   if ((flag & CHECK_ZONE)) {
-    if (Zone(Location(player)) != NOTHING && !(matches && (flag & CHECK_BREAK))) {
+    if (Zone(loc) != NOTHING && !(matches && (flag & CHECK_BREAK))) {
       if (IsRoom(Zone(Location(player)))) {
         /* zone of player's location is a zone master room */
         if (Location(player) != Zone(player)) {
@@ -1707,7 +1712,7 @@ scan_list(dbref player, char *command, int flag)
         }
       } else {
         /* regular zone object */
-        if (ScanFind(player, Zone(Location(player)), 1)) {
+        if (ScanFind(player, Zone(loc), 1)) {
           *ptr = '\0';
           safe_str(atrname, tbuf, &tp);
           ptr = atrname;
@@ -1716,7 +1721,7 @@ scan_list(dbref player, char *command, int flag)
       }
     }
     if ((Zone(player) != NOTHING) && !(matches && (flag & CHECK_BREAK))
-        && (Zone(player) != Zone(Location(player)))) {
+        && (Zone(player) != Zone(loc))) {
       /* check the player's personal zone */
       if (IsRoom(Zone(player))) {
         if (Location(player) != Zone(player)) {
@@ -1740,8 +1745,8 @@ scan_list(dbref player, char *command, int flag)
 
   if ((flag & CHECK_GLOBAL)
       && !(matches && (flag & CHECK_BREAK))
-      && (Location(player) != MASTER_ROOM)
-      && (Zone(Location(player)) != MASTER_ROOM)
+      && (loc != MASTER_ROOM)
+      && (Zone(loc) != MASTER_ROOM)
       && (Zone(player) != MASTER_ROOM)) {
     /* try Master Room stuff */
     DOLIST(thing, Contents(MASTER_ROOM)) {

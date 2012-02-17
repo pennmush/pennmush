@@ -554,6 +554,8 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
   long match_flags = MAT_NEIGHBOR | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
 
+  if (!Mobile(player))
+    return;
   if (!IsRoom(loc) && !EnterOk(loc) && !controls(player, loc)) {
     notify(player, T("Permission denied."));
     return;
@@ -687,6 +689,8 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
   if ((loc = Location(player)) == NOTHING)
     return;
+  if (!Mobile(player))
+    return;
   switch (thing =
           match_result(player, name, TYPE_THING | TYPE_PLAYER,
                        MAT_POSSESSION | MAT_ENGLISH | MAT_TYPE)) {
@@ -768,6 +772,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
   int next;
 
   if ((player_loc = Location(player)) == NOTHING)
+    return;
+  if (!Mobile(player))
     return;
   thing =
     noisy_match_result(player, what, TYPE_THING | TYPE_PLAYER,
@@ -883,6 +889,8 @@ do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
   dbref loc;
   long match_flags = MAT_NEIGHBOR | MAT_ENGLISH | MAT_EXIT;
 
+  if (!Mobile(player))
+    return;
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
   if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))
@@ -932,6 +940,8 @@ do_leave(dbref player, NEW_PE_INFO *pe_info)
 {
   dbref loc;
   loc = Location(player);
+  if (!Mobile(player))
+    return;
   if (IsRoom(loc) || IsGarbage(loc) || IsGarbage(Location(loc))
       || NoLeave(loc)
       || !eval_lock_with(player, loc, Leave_Lock, pe_info)
@@ -1006,6 +1016,8 @@ void
 do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
 {
   dbref leader;
+  if (!Mobile(player))
+    return;
   if (arg && *arg) {
     /* Who do we want to follow? */
     leader = match_result(player, arg, NOTYPE, MAT_NEARBY);

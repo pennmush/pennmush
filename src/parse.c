@@ -1283,7 +1283,6 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
-notify_format(1, "Setting %d/%s to '%s'", i, pe_regs_intname(i), buff);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from

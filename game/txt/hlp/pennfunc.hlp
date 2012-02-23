@@ -5191,10 +5191,10 @@ See also: switch(), regmatch(), regedit()
   switchall() and caseall() return the corresponding <list> for all <expr>s
   which match.
 
-  switch() and switchall() use wildcard <expr>s, as described in 'help switch
-  wildcards'. case() and caseall() do a case-sensitive exact match, like
-  member() or comp(). In this case, $0-$9 will be set to the text that the
-  nth wildcard character met.
+  switch() and switchall() use wildcard and lt/gt <expr>s, as described in 
+  'help switch wildcards'. case() and caseall() do a case-sensitive exact 
+  match, like member() or comp(). In this case, $0-$9 will be set to the text
+  that the nth wildcard character met.
 
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
@@ -5233,14 +5233,15 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
   one of the <expr>essions starts with "<" or ">", a less than or greater
   than check is done instead of wildcard matching for that pair.
 
-  switch(X, >Y, A, B) returns A if X is greater than Y, and B if X is
-  less than or equal to Y.
+  switch(X, >Y, A, B) returns A if X is greater than Y, and B if it's not.
+  switch(X, >=Y, A, B) returns A if X is greater than or equal to Y, and B 
+  if it's not.
   
-  switch(X, <Y, A, B) returns A if X is less than Y, and B if X is
-  greater than or equal to Y.
+  switch(X, <Y, A, B) returns A if X is less than Y, and B if it's not.
+  switch(X, <=Y, A, B) returns A if X is less than or equal to Y, and B if
+  it's not.
 
-  If X and Y are numbers, the test is like using gt() or lt(). gte()
-  and lte() can be simulated by using Y'=Y-1 and Y'=Y+1.
+  If X and Y are numbers, the test is like using gt()/lt() or gte()/lte().
 
   If X and Y are non-numeric strings, the result of comp(X,Y) is used
   to determine which string is alphabetically before (less than) the

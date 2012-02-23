@@ -3711,6 +3711,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   const char *argv[10];
   int override_chatformat = 0;
   memset(argv, 0, sizeof(argv));
+  bool skip_buffer = 0;
 
   /* Make sure we can write to the channel before doing anything */
   if (Channel_Disabled(channel))
@@ -3762,15 +3763,21 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
       argv[3] = playername;
       argv[4] = title;
 
-      blockstr = mogrify(mogrifier, "MOGRIFY`BLOCK", player, 6, argv, "");
+      blockstr = mogrify(mogrifier, "MOGRIFY`BLOCK", player, 5, argv, "");
       if (blockstr && *blockstr) {
         notify(player, blockstr);
         return;
       }
       /* Do we override chatformats? */
       if (parse_boolean
-          (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 6, argv, ""))) {
+          (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 5, argv, ""))) {
         override_chatformat = 1;
+      }
+
+      /* Should we skip buffering this message? */
+      if (parse_boolean
+           (mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
+        skip_buffer = 1;
       }
 
       argv[1] = ChanName(channel);
@@ -3838,7 +3845,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
   *bp = '\0';
 
-  /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
     snprintf(message, BUFFER_LEN, "%s %s", playername, title);
@@ -3890,7 +3896,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
   }
 
-  if (ChanBufferQ(channel))
+  if (ChanBufferQ(channel) && !skip_buffer)
     add_to_bufferq(ChanBufferQ(channel), 0,
                    (flags & CB_NOSPOOF) ? player : NOTHING, buff);
 

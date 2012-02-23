@@ -316,22 +316,33 @@ See also: @clock
   Mogrifiers let you tweak every aspect of a channel's output, before it
   goes to individual players' @chatformats. 
 
-  Before it begins mogrifying, <object>'s MOGRIFY`BLOCK attribute is called,
-  with the same arguments as @chatformat. If MOGRIFY`BLOCK returns a
-  non-empty string, then the resultant string is sent back to the player,
-  and no message is broadcast on the channel.
+  Before it begins mogrifying, three mogrifiers that alter the way chats are
+  handled are run, using the same arguments as @chatformat (except that %5 is
+  not set). First, <object>'s MOGRIFY`BLOCK attribute is called. If 
+  MOGRIFY`BLOCK returns a non-empty string, then the resultant string is sent
+  back to the player, and no message is broadcast on the channel.
+  
+  Next, MOGRIFY`OVERRIDE is called. If it returns a true value, player's
+  individual @chatformats will not be called for the message.
+  
+  The MOGRIFY`NOBUFFER attribute is then called. If it returns a true value,
+  the message will not be included in the channel's recall buffer.
 
-  Several different mogrifiers can be used. See 'help mogrify2' for details.
-
+  Continued in 'help mogrify2'.
+& mogrify2
+  After that, mogrifiers which alter individual portions of the message are
+  called. See 'help mogrify3' for details.
+  
   After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has
   the same use as @chatformat, but on a channel-wide level. It receives all
   mogrified text (if any), so is generally intended only for reformatting the
-  whole channel text. It is also overriden by individual @chatformats.
+  whole channel text. It is also overriden by individual @chatformats (unless
+  MOGRIFY`OVERRIDE returned true).
 
-  See 'help mogrify2' for info on specific mogrifiers, and 'help mogrify3'
+  See 'help mogrify3' for info on specific mogrifiers, and 'help mogrify4'
   for some examples.
 See also: cmogrifier()
-& mogrify2
+& mogrify3
 
   There are mogrify attributes for each individual piece of the channel
   message. If any evaluate to a non-empty string, they replace that portion
@@ -341,8 +352,8 @@ See also: cmogrifier()
   %1 - Channel name (unmogrified).
   %2 - Chat type (", :, ;, |, @). See 'help @chatformat' for descriptions.
   %3 - Message.
-  %4 - Player chan title.
-  %5 - Player name.
+  %4 - Player chan title*
+  %5 - Player name*
 
   The mogrify attributes available are:
   MOGRIFY`CHANNAME: %0 = default channel display. (e.g: "<Public>").
@@ -351,8 +362,11 @@ See also: cmogrifier()
   MOGRIFY`SPEECHTEXT: %0 = "says"
   MOGRIFY`MESSAGE: %0 = <the content of the say, pose, semipose or emit>
 
-  See 'help mogrify3' for examples.
-& mogrify3
+  * These fields respect the "notitles" and "nonames" channel privs. If both
+  title and name would be empty, the name will default to "Someone".
+
+  See 'help mogrify4' for examples.
+& mogrify4
 For Talk Like a Pirate Day (Sep 19):
 
   > @create Pirate Filter
@@ -374,8 +388,8 @@ Output:
   We don't need no ninjas!
   (And the message is blocked, won't be sent out).
 
-  See 'help mogrify4' for another example.
-& mogrify4
+  See 'help mogrify5' for more examples.
+& mogrify5
 For keeping a channel PG and safe, and altering the channel name from
 <Public> to [Public], with a green "Public".
 
@@ -394,6 +408,22 @@ For keeping a channel PG and safe, and altering the channel name from
 
   Combine MOGRIFY`FORMAT with speak() and you can have plenty of fun:
   On-channel language systems and more!
+
+  See 'help mogrify6' for more examples.
+& mogrify6
+This example tweaks individual elements of the channel output, and then uses
+MOGRIFY`FORMAT to recolour the entire string.
+
+  > @chan/mogrifier Public=Mog
+  > &MOGRIFY`CHANNAME Mog=\[%1\]
+  > &MOGRIFY`PLATERNAME Mog=ucstr(%0)
+  > &MOGRIFY`FORMAT Mog=ansi(h,%5)
+  
+Stop anything by an admin from being altered by chatformats, and prevent
+anything said by Wiggles from being recorded in the channel's recall buffer.
+  > &MOGRIFY`OVERRIDE Mog=orlflags(%#, Wizard Royalty)
+  > &MOGRIFY`NOBUFFER Mog=switch(%#, pmatch(Wiggles), 1, 0)
+
 & @channel list
 & channel-list
 Here's the legend for reading the @channel/list output:

@@ -33,6 +33,11 @@ Minor changes:
    God. [SW]
  * regmatch() now returns an error for invalid regexps, whether you're
    storing subpattern matches or not. Reported by Sketch. [MG]
+ * Commands involving movement now check the enactor is a player/thing,
+   instead of just relying on the command's restriction. [MG]
+ * @switch, switch(), @[in]filter and attribute @locks (foo:bar) now do
+   lte/gte wildcard matches on <=foo and >=foo patterns. Inspired by 
+   Wiggles. [MG]
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

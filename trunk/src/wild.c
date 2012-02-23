@@ -651,20 +651,29 @@ bool
 local_wild_match_case(const char *restrict s, const char *restrict d, bool cs,
                       PE_REGS *pe_regs)
 {
+  int mod = 0;
   if (s && *s) {
     switch (*s) {
     case '>':
       s++;
+      if (*s == '=') {
+        s++;
+        mod = 1;
+      }
       if (is_number(s) && is_number(d))
-        return (parse_number(s) < parse_number(d));
+        return (parse_number(s) < (parse_number(d) + mod));
       else
-        return (strcoll(s, d) < 0);
+        return (strcoll(s, d) < (mod ? 1 : 0));
     case '<':
       s++;
+      if (*s == '=') {
+        s++;
+        mod = 1;
+      }
       if (is_number(s) && is_number(d))
-        return (parse_number(s) > parse_number(d));
+        return ((parse_number(s) + mod) > parse_number(d));
       else
-        return (strcoll(s, d) > 0);
+        return (strcoll(s, d) > (mod ? -1 : 0));
     default:
       if (pe_regs != NULL) {
         char data[BUFFER_LEN * 2];

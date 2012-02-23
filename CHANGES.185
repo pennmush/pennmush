@@ -42,6 +42,8 @@ Minor changes:
  * @switch, switch(), @[in]filter and attribute @locks (foo:bar) now do
    lte/gte wildcard matches on <=foo and >=foo patterns. Inspired by 
    Wiggles. [MG]
+ * New channel mogrifier, MOGRIFY`NOBUFFER, can be used to exclude certain
+   @chats from the channel's recall buffer. Suggested by Wiggles. [MG]
 
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

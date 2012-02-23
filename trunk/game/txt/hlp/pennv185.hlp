@@ -25,6 +25,10 @@ Fixes:
  * Loading a reboot db is more robust. Inspired by Padraic. [SW]
  * scan() couldn't be used by rooms. Reported by Padraic. [MG]
 
+Commands:
+ * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
+   Suggested by Minion. [MG]
+
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by
    Padraic. [SW]

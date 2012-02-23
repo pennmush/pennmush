@@ -29,6 +29,7 @@
 #include "ansi.h"
 #include "strtree.h"
 #include "SFMT.h"
+#include "svninfo.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -1043,8 +1044,33 @@ FUNCTION(fun_mudurl)
 /* ARGSUSED */
 FUNCTION(fun_version)
 {
+#ifdef SVNREVISION
+  int svnrev = 0;
+  int scan;
+#ifdef SVNDATE
+  char svndate[75];
+#endif                          /* SVNDATE */
+#endif                          /* SVNREVISION */
+
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
               VERSION, PATCHLEVEL, PATCHDATE);
+
+#ifdef SVNREVISION
+  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svnrev);
+  if (scan == 1) {
+    safe_format(buff, bp, " (r%d", svnrev);
+#ifdef SVNDATE
+    scan = sscanf(SVNDATE, "$" "Date: %s $", svndate);
+    if (scan == 1) {
+      safe_chr(' ', buff, bp);
+      safe_str(svndate, buff, bp);
+    }
+#endif                          /* SVNDATE */
+    safe_chr(')', buff, bp);
+  }
+#endif                          /* SVNREVISION */
+
+
 }
 
 /* ARGSUSED */

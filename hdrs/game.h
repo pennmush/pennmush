@@ -133,8 +133,10 @@ extern void do_cpattr
 #define EDIT_FIRST   1  /**< Only edit the first occurrence in each attribute. */
 #define EDIT_CHECK   2  /**< Don't actually edit the attr, just show what would happen if we did */
 #define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
+#define EDIT_CASE    8  /**< Perform regexp matching case-sensitively */
 
-extern void do_gedit(dbref player, char *it, char **argv, int flags);
+extern void do_edit(dbref player, char *it, char **argv, int flags);
+extern void do_edit_regexp(dbref player, char *it, char **argv, int flags, NEW_PE_INFO *pe_info);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);

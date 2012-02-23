@@ -5925,6 +5925,12 @@ See also: VECTOR FUNCTIONS
      > say numversion()
      You say "1008001004"
      
+     > say version()
+		 You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
+		           (r1374 2012-02-23)"
+		 > say numversion()
+		 You say, "1008005000"
+
 See also: @version
 & VISIBLE()
   visible(<object>, <victim>[/<attribute>])

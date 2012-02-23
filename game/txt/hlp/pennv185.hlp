@@ -44,6 +44,8 @@ Minor changes:
    Wiggles. [MG]
  * New channel mogrifier, MOGRIFY`NOBUFFER, can be used to exclude certain
    @chats from the channel's recall buffer. Suggested by Wiggles. [MG]
+ * version() now reports svn revision/date where available. Patch by
+   Padraic.
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

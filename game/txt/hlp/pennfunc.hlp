@@ -3897,7 +3897,7 @@ See also: rand()
     > say regeditall(this test is the best string, (.)est, capstr($1)rash)
     You say "this Trash is the Brash string"
 
-See also: edit(), regmatch(), regrab()
+See also: edit(), @edit, regmatch(), regrab()
 & REGMATCH()
 & REGMATCHI()
   (Help text from TinyMUSH 2.2.4, with permission)

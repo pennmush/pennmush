@@ -163,6 +163,12 @@ bool unfindable(dbref);
 #define DBF_LABELS              0x100000
 #define DBF_SPIFFY_AF_ANSI      0x200000
 #define DBF_HEAR_CONNECT        0x400000
+#define DBF_NEW_VERSIONS        0x800000
+
+/* Int of db version currently used by PennMUSH. Versions are:
+ *  1 - First version with new db flags. Cmds and attrs are stored in the db
+ */
+#define NDBF_VERSION 1
 
 /* Reboot DB flag macros - these should be defined whether or not the
  * corresponding system option is defined

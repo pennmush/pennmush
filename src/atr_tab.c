@@ -215,7 +215,7 @@ attr_read(PENNFILE *f)
   AL_CREATOR(a) = d;
 
   db_read_this_labeled_string(f, "data", &tmp);
-  if (!tmp || !*tmp || !AL_FLAGS(a) & (AF_ENUM | AF_RLIMIT)) {
+  if (!tmp || !*tmp || !(AL_FLAGS(a) & (AF_ENUM | AF_RLIMIT))) {
     a->data = NULL_CHUNK_REFERENCE;
   } else if (AL_FLAGS(a) & AF_ENUM) {
     /* Store string as it is */

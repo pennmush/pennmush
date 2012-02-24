@@ -24,6 +24,8 @@ Fixes:
    Reported by Xeero and Padraic. [MG]
  * Loading a reboot db is more robust. Inspired by Padraic. [SW]
  * scan() couldn't be used by rooms. Reported by Padraic. [MG]
+ * Possible crashbug in the queue triggered by events reported by
+   Rince@Wing Commander: New Horizon. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

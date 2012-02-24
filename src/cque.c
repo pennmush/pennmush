@@ -618,7 +618,6 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
                          int flags, int queue_type, PE_REGS *pe_regs,
                          char *fromattr)
 {
-
   NEW_PE_INFO *pe_info;
   MQUE *queue_entry;
 
@@ -628,7 +627,7 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
       (queue_type &
        (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS | QUEUE_NOLIST |
         QUEUE_PRIORITY));
-    queue_type |= ((IsPlayer(enactor)
+    queue_type |= (((GoodObject(enactor) && IsPlayer(enactor))
                     || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER :
                    QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {

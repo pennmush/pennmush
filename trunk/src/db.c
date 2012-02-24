@@ -725,7 +725,7 @@ db_write(PENNFILE *f, int flag)
 
   penn_fprintf(f, "+V%d\n", dbflag * 256 + 2);
 
-  db_write_labeled_int(f, "dbversion", globals.new_indb_version);
+  db_write_labeled_int(f, "dbversion", NDBF_VERSION);
 
   db_write_labeled_string(f, "savedtime", show_time(mudtime, 1));
 

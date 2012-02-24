@@ -66,6 +66,35 @@ PRIV attr_privs_set[] = {
   {NULL, '\0', 0, 0}
 };
 
+/** Attribute flags which may be present in the db */
+PRIV attr_privs_db[] = {
+  {"no_command", '$', AF_NOPROG, AF_NOPROG},
+  {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
+  {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
+  {"wizard", 'w', AF_WIZARD, AF_WIZARD},
+  {"visual", 'v', AF_VISUAL, AF_VISUAL},
+  {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
+  {"regexp", 'R', AF_REGEXP, AF_REGEXP},
+  {"case", 'C', AF_CASE, AF_CASE},
+  {"locked", '+', AF_LOCKED, AF_LOCKED},
+  {"safe", 'S', AF_SAFE, AF_SAFE},
+  {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
+  {"veiled", 'V', AF_VEILED, AF_VEILED},
+  {"debug", 'b', AF_DEBUG, AF_DEBUG},
+  {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
+  {"public", 'p', AF_PUBLIC, AF_PUBLIC},
+  {"nearby", 'n', AF_NEARBY, AF_NEARBY},
+  {"noname", 'N', AF_NONAME, AF_NONAME},
+  {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
+  {"amhear", 'M', AF_MHEAR, AF_MHEAR},
+  {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"enum", '\0', AF_ENUM, AF_ENUM},
+  {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
+  {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+  {NULL, '\0', 0, 0}
+};
+
+
 /** Attribute flags for viewing */
 PRIV attr_privs_view[] = {
   {"no_command", '$', AF_NOPROG, AF_NOPROG},
@@ -103,6 +132,9 @@ PRIV attr_privs_view[] = {
  */
 
 static ATTR *aname_find_exact(const char *name);
+static ATTR * attr_read(PENNFILE *f);
+static ATTR * attr_alias_read(PENNFILE *f, char *alias);
+
 void init_aname_table(void);
 
 /** Attribute table lookup by name or alias.
@@ -134,6 +166,204 @@ init_aname_table(void)
   for (ap = attr; ap->name; ap++)
     ptab_insert(&ptab_attrib, ap->name, ap);
   ptab_end_inserts(&ptab_attrib);
+}
+
+static ATTR *
+attr_read(PENNFILE *f)
+{
+  ATTR *a;
+  char *tmp;
+  dbref d = GOD;
+  privbits flags = 0;
+
+  a = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
+  if (!a) {
+    mush_panic("Not enough memory to add attribute in attr_read()!");
+    return NULL;
+  }
+  AL_NAME(a) = NULL;
+  a->data = NULL_CHUNK_REFERENCE;
+  AL_FLAGS(a) = 0;
+  AL_CREATOR(a) = GOD;
+  a->next = NULL;
+
+  db_read_this_labeled_string(f, "name", &tmp);
+
+  if (!good_atr_name(tmp)) {
+    do_rawlog(LT_ERR, "Invalid attribute name '%s' in db.", tmp);
+    (void) getstring_noalloc(f); /* flags */
+    (void) getstring_noalloc(f); /* creator */
+    (void) getstring_noalloc(f); /* data */
+    return NULL;
+  }
+
+  AL_NAME(a) = strdup(tmp);
+  db_read_this_labeled_string(f, "flags", &tmp);
+  if (tmp && *tmp && strcasecmp(tmp, "none")) {
+    flags = list_to_privs(attr_privs_db, tmp, 0);
+    if (!flags) {
+      do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
+      free((char *) AL_NAME(a));
+      (void) getstring_noalloc(f); /* creator */
+      (void) getstring_noalloc(f); /* data */
+      return NULL;
+    }
+  }
+  AL_FLAGS(a) = flags;
+
+  db_read_this_labeled_dbref(f, "creator", &d);
+  AL_CREATOR(a) = d;
+
+  db_read_this_labeled_string(f, "data", &tmp);
+  if (!tmp || !*tmp || !AL_FLAGS(a) & (AF_ENUM | AF_RLIMIT)) {
+    a->data = NULL_CHUNK_REFERENCE;
+  } else if (AL_FLAGS(a) & AF_ENUM) {
+    /* Store string as it is */
+    unsigned char *t = compress(tmp);
+    a->data = chunk_create(t, u_strlen(t), 0);
+    free(t);
+  } else if (AL_FLAGS(a) & AF_RLIMIT) {
+    /* Need to validate regexp */
+    unsigned char *t;
+    pcre *re;
+    const char *errptr;
+    int erroffset;
+
+    re = pcre_compile(tmp, PCRE_CASELESS, &errptr, &erroffset, tables);
+    if (!re) {
+      do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.", AL_NAME(a));
+      free((char *) AL_NAME(a));
+      return NULL;
+    }
+    free(re); /* don't need it, just needed to check it */
+
+    t = compress(tmp);
+    a->data = chunk_create(t, u_strlen(t), 0);
+    free(t);
+  }
+
+  return a;
+}
+
+static ATTR *
+attr_alias_read(PENNFILE *f, char *alias)
+{
+  char *tmp;
+  ATTR *a;
+
+  db_read_this_labeled_string(f, "name", &tmp);
+  a = aname_find_exact(tmp);
+  if (!a) {
+    /* Oops */
+    do_rawlog(LT_ERR, "Alias of non-existant attribute '%s' in db.", tmp);
+    (void) getstring_noalloc(f);
+    return NULL;
+  }
+  db_read_this_labeled_string(f, "alias", &tmp);
+  strcpy(alias, tmp);
+
+  return a;
+}
+
+
+void
+attr_read_all(PENNFILE *f)
+{
+  ATTR *a;
+  int c, found, count = 0;
+  char alias[BUFFER_LEN];
+
+  /* Clear existing attributes */
+  ptab_free(&ptab_attrib);
+
+  ptab_start_inserts(&ptab_attrib);
+
+  db_read_this_labeled_int(f, "attrcount", &count);
+  for (found = 0;;) {
+
+   c = penn_fgetc(f);
+    penn_ungetc(c, f);
+
+    if (c != ' ')
+      break;
+
+    found++;
+
+    if ((a = attr_read(f)))
+      ptab_insert(&ptab_attrib, a->name, a);
+  }
+
+  ptab_end_inserts(&ptab_attrib);
+
+  if (found != count)
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of attrs (%d) different than expected count (%d).",
+              found, count);
+
+  /* Assumes we'll always have at least one alias */
+  db_read_this_labeled_int(f, "attraliascount", &count);
+  for (found = 0;;) {
+    c = penn_fgetc(f);
+    penn_ungetc(c, f);
+
+    if (c != ' ')
+      break;
+
+    found++;
+
+    if ((a = attr_alias_read(f, alias))) {
+      upcasestr(alias);
+      if (!good_atr_name(alias)) {
+        do_rawlog(LT_ERR, "Bad attribute name on alias '%s' in db.", alias);
+      } else if (aname_find_exact(strupper(alias))) {
+        do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db: alias already in use.", AL_NAME(a), alias);
+      } else if (!alias_attribute(AL_NAME(a), alias)) {
+        do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db.", AL_NAME(a), alias);
+      }
+    }
+  }
+  if (found != count)
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of attr aliases (%d) different than expected count (%d).",
+              found, count);
+
+  return;
+}
+
+void
+attr_write_all(PENNFILE *f)
+{
+  int attrcount = 0, aliascount = 0;
+  ATTR *a;
+  const char *attrname;
+  char *data;
+
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+    if (!strcmp(attrname, AL_NAME(a)))
+      attrcount++;
+    else
+      aliascount++;
+  }
+
+  db_write_labeled_int(f, "attrcount", attrcount);
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+    if (strcmp(attrname, AL_NAME(a)))
+      continue; /* skip aliases */
+    db_write_labeled_string(f, " name", AL_NAME(a));
+    db_write_labeled_string(f, "  flags", privs_to_string(attr_privs_db, AL_FLAGS(a)));
+    db_write_labeled_dbref(f, "  creator", AL_CREATOR(a));
+    data = atr_value(a);
+    db_write_labeled_string(f, "  data", data);
+  }
+
+  db_write_labeled_int(f, "attraliascount", aliascount);
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+    if (!strcmp(attrname, AL_NAME(a)))
+      continue; /* skip non-aliases */
+    db_write_labeled_string(f, " name", AL_NAME(a));
+    db_write_labeled_string(f, "  alias", attrname);
+  }
+
 }
 
 /** Associate a new alias with an existing attribute.
@@ -690,13 +920,14 @@ list_attribs(void)
   const char *ptrs[BUFFER_LEN / 2];
   static char buff[BUFFER_LEN];
   char *bp;
+  const char *name;
   int nptrs = 0, i;
 
-  ap = (ATTR *) ptab_firstentry(&ptab_attrib);
-  ptrs[0] = "";
-  while (ap) {
+  for (ap = ptab_firstentry_new(&ptab_attrib, &name);
+       ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
+    if (strcmp(name, AL_NAME(ap)))
+      continue;
     ptrs[nptrs++] = AL_NAME(ap);
-    ap = (ATTR *) ptab_nextentry(&ptab_attrib);
   }
   bp = buff;
   safe_str(ptrs[0], buff, &bp);

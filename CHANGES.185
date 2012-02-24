@@ -17,6 +17,15 @@ chronological order (most recent first)
 
 Version 1.8.5 patchlevel 1                                 ??? ??, 2012
 
+Major changes:
+ * Attributes are now stored in the database. This means that @attribute
+   no longer needs to be in an @startup, as it will persist across reboots
+   and shutdowns. The attribute_alias option in .cnf files is now deprecated
+   as a result. [MG]
+ * The database now uses a new versioning scheme (alongside the old one, for
+   backwards compatability), using incrementing integers instead of bitwise
+   flags. Ideas by [GM] and Covenent. [MG]
+
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set at all.
    For non-ansi'd strings, non-named (numeric) captures were sometimes 
@@ -30,6 +39,7 @@ Fixes:
  * scan() couldn't be used by rooms. Reported by Padraic. [MG]
  * Possible crashbug in the queue triggered by events reported by
    Rince@Wing Commander: New Horizon. [MG]
+ * @list attribute would show duplicates for aliases. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

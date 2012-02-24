@@ -570,9 +570,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   The @attribute command displays and modifies the MUSH's standard attributes
   (see "@list/attribs" for a list of them).
   
-  *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
-  *** across shutdowns. Use these commands from God's @startup to ensure they
-  *** are run at each startup, or use restrict_attribute in restrict.cnf.
+  Since 1.8.5p1, changes to the attribute table are saved across reboots and
+  shutdowns, and don't need to be placed in an @startup.
 
   The first form of the command displays the full name of the attribute
   <attrib>, along with the its attribute flags, and the dbref of the object 

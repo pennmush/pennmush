@@ -82,7 +82,7 @@ void Win32MUSH_setup(void);
 #include "confmagic.h"
 
 /* declarations */
-GLOBALTAB globals = { 0, "", 0, 0, 0, 0, 0, 0, 0, 0 };
+GLOBALTAB globals = { 0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static int epoch = 0;
 static int reserved;                    /**< Reserved file descriptor */

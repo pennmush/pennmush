@@ -2321,3 +2321,4 @@ safe_atr_value(ATTR *atr)
 {
   return safe_uncompress(atr_get_compressed_data(atr));
 }
+

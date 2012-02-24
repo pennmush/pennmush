@@ -1141,6 +1141,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "attribute_alias")) {
     if (!restrictions)
       return 0;
+    do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';

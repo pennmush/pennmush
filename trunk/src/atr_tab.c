@@ -921,16 +921,17 @@ list_attribs(void)
   static char buff[BUFFER_LEN];
   char *bp;
   const char *name;
-  int nptrs = 0, i;
+  int nptrs = -1, i;
 
   for (ap = ptab_firstentry_new(&ptab_attrib, &name);
        ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
     if (strcmp(name, AL_NAME(ap)))
       continue;
-    ptrs[nptrs++] = AL_NAME(ap);
+    ptrs[++nptrs] = AL_NAME(ap);
   }
   bp = buff;
-  safe_str(ptrs[0], buff, &bp);
+  if (nptrs >= 0) 
+    safe_str(ptrs[0], buff, &bp);
   for (i = 1; i < nptrs; i++) {
     safe_chr(' ', buff, &bp);
     safe_str(ptrs[i], buff, &bp);

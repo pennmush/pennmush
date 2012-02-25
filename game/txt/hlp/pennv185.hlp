@@ -36,10 +36,17 @@ Fixes:
  * Possible crashbug in the queue triggered by events reported by
    Rince@Wing Commander: New Horizon. [MG]
  * @list attribute would show duplicates for aliases. [MG]
+ * insert(,foo,-1) no longer appends an extra delimiter. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
    Suggested by Minion. [MG]
+
+Functions:
+ * ldelete() and replace() now accept negative position arguments, to count
+   backwards from the end of the list, similar to insert(). Suggested by
+   Minion. [MG]
+ * replace() now takes an optional output separator. [MG]
 
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by

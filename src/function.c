@@ -496,7 +496,7 @@ FUNTAB flist[] = {
   {"REMOVE", fun_remove, 2, 3, FN_REG},
   {"RENDER", fun_render, 2, 2, FN_REG},
   {"REPEAT", fun_repeat, 2, 2, FN_REG},
-  {"REPLACE", fun_replace, 3, 4, FN_REG},
+  {"REPLACE", fun_ldelete, 3, 5, FN_REG},
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},

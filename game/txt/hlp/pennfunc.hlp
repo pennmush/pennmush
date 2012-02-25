@@ -2418,7 +2418,7 @@ See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 
 See also: capstr(), ucstr()
 & LDELETE()
-  Ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
+  ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
   
   This function deletes the element(s) of <list> at the given <position(s)>.
   Elements of <list> are separated by <delimiter>, which defaults to a space.
@@ -2426,6 +2426,14 @@ See also: capstr(), ucstr()
   numeric, and are always separated by a space, not by <delimiter>. Elements 
   of the returned list are separated by <osep>, which defaults to the 
   <delimiter>.
+  
+  If a <position> is negative, ldelete() counts backwards from the end of the
+  list; a position of -1 deletes the last element, -2 the element before last,
+  and so on.
+  
+  All position calculations are performed on the original list. That is,
+  ldelete(a b c, -1 -1) will return "a b", not "a", and ldelete(a b c, -1 -2) 
+  returns "a", not "b".
   
   Examples:
     > say ldelete(This is a long test string,4)
@@ -3992,15 +4000,23 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
 
 See also: space()
 & REPLACE()
-  replace(<list>, <position>, <new item>[, <delimiter>])
+  replace(<list>, <position>, <new item>[, <delimiter>[, <osep>]])
   
-  This replaces the item at <position> in <list> with <new item>. If no
-  <delimiter> is given, a space is assumed. Null items are counted
-  when determining position.
+  This replaces the item at <position> in <list> with <new item>. <delimiter>
+  defaults to a space, and <osep> defaults to <delimiter>. Null items are 
+  counted when determining position.
+  
+  If <position> is negative, it counts backwards from the end of the list. A
+  <position> of -1 will replace the last element, -2 the element before last,
+  and so on.
   
   Examples:
     > say replace(Turn north at the junction,2,south)
     You say, "Turn south at the junction"
+    
+    > say replace(Turn north at the junction,-1,crossroads)
+    You say, "Turn north at the crossroads"
+
     
     > say replace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"

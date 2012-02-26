@@ -65,6 +65,9 @@ Minor changes:
    @chats from the channel's recall buffer. Suggested by Wiggles. [MG]
  * version() now reports svn revision/date where available. Patch by
    Padraic.
+ * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL support
+   is not compiled into the MUSH. Instead, it just reports that no SQL db
+   is available, like @mapsql does. [MG]
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

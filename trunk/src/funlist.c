@@ -1371,55 +1371,70 @@ FUNCTION(fun_wordpos)
 /* ARGSUSED */
 FUNCTION(fun_extract)
 {
-  char sep = ' ';
-  int start = 1, len = 1;
-  char *s, *r;
+  int nwords;
+  char **ptrs;
+  char *wordlist;
+  char sep;
+  int start = 1, len = 1, first = 1;
 
-  s = args[0];
+  if (!delim_check(buff, bp, nargs, args, 4, &sep))
+    return;
+
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  wordlist = mush_malloc(BUFFER_LEN, "string");
+  if (!ptrs)
+    mush_panic("Unable to allocate memory in fun_extract");
+
+  /* Turn the first list into an array. */
+  strcpy(wordlist, args[0]);
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1) {
+    /* find_list_position does an is_integer check, but we
+     * duplicate it here so we can return e_ints */
     if (!is_integer(args[1])) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
-    start = parse_integer(args[1]);
-  }
-  if (nargs > 2) {
-    if (!is_integer(args[2])) {
+    if (nargs > 2 && !is_integer(args[2])) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
-    len = parse_integer(args[2]);
-  }
-  if ((nargs > 3) && (!delim_check(buff, bp, nargs, args, 4, &sep)))
-    return;
-
-  if ((start < 1) || (len < 1))
-    return;
-
-  /* Go to the start of the token we're interested in. */
-  start--;
-  s = trim_space_sep(s, sep);
-  while (start && s) {
-    s = next_token(s, sep);
-    start--;
   }
 
-  if (!s || !*s)                /* ran off the end of the string */
-    return;
+  if (nargs > 1)
+    start = find_list_position(args[1], nwords, 0) - 1;
 
-  /* Find the end of the string that we want. */
-  r = s;
-  len--;
-  while (len && s) {
-    s = next_token(s, sep);
-    len--;
+  if (nargs > 2) {
+    char *c = args[2];
+    while (*c && (*c == ' ' || *c == '\t' || *c == '\r' || *c == '\n')) {
+      c++;
+    }
+    len = find_list_position(args[2], nwords, 0);
+    if (*c == '-') {
+      len -= start;
+    }
   }
 
-  /* Chop off the end, and copy. No length checking needed. */
-  if (s && *s)
-    (void) split_token(&s, sep);
-  safe_str(r, buff, bp);
+  if (start < 0 || start >= nwords || len < 1) {
+    freearr(ptrs, nwords);
+    mush_free(ptrs, "ptrarray");
+    mush_free(wordlist, "string");
+    return;
+  }
+
+  for (; start < nwords && len; start++, len--) {
+    if (first)
+      first = 0;
+    else
+      safe_chr(sep, buff, bp);
+    safe_str(ptrs[start], buff, bp);
+  }
+
+  freearr(ptrs, nwords);
+  mush_free(ptrs, "ptrarray");
+  mush_free(wordlist, "string");
+
 }
 
 /* ARGSUSED */

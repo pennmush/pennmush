@@ -1373,6 +1373,10 @@ See also: match(), grab(), member()
   positions specified by <list of numbers>. The <list of words> are
   assumed to be space-separated, unless a <delim> is given. If <osep> is
   given, the matching words are separated by <osep>, otherwise by <delim>.
+  
+  If any of the <list of numbers> is negative, it counts backwards from the
+  end of the list of words, with -1 being the last word, -2 the word before
+  last, and so on.
  
   Examples:
     > say elements(Foo Ack Beep Moo Zot,2 4)
@@ -1380,6 +1384,9 @@ See also: match(), grab(), member()
 
     > say elements(Foof|Ack|Beep|Moo,3 1,|)
     You say "Beep|Foof"
+    
+    > say elements(The last word is foo, -1)
+    You say "foo"
 
 See also: extract(), index(), grab()
 & ELOCK()
@@ -1524,10 +1531,24 @@ See also: e(), power()
   extract(<list>,3) acts like elements(<list>,3).  If <first> is not
   specified, the default is the 1, so extract(<list>) acts like
   first(<list>).
+  
+  If <first> is negative, extract() will begin counting backwards from the
+  end of <list>, so -1 starts at the last element, -2 the element before
+  last, and so on.
+  
+  If <length> is negative, extract() will return up to and including the
+  <length>th element from the right, so -1 will extract up to the last
+  element, -2 up to the element before last, and so on.
 
   Example:
     > think extract(This is a test string,3,2)
     a test
+    
+    > think extract(Skip the first and last elements, 2, -2)
+    the first and last
+    
+    > think extract(Get just the last three elements,-3, 3)
+    last three elements
 
 See also: index(), elements(), grab()
 & FDIV()

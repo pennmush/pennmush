@@ -3708,9 +3708,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   const char *someone = "Someone";
   dbref mogrifier = NOTHING;
   const char *ctype = NULL;
-  const char *argv[10];
+  const char *argv[10] = { NULL };
   int override_chatformat = 0;
-  memset(argv, 0, sizeof(argv));
   bool skip_buffer = 0;
 
   /* Make sure we can write to the channel before doing anything */

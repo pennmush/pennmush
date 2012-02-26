@@ -43,9 +43,9 @@ Commands:
    Suggested by Minion. [MG]
 
 Functions:
- * ldelete() and replace() now accept negative position arguments, to count
-   backwards from the end of the list, similar to insert(). Suggested by
-   Minion. [MG]
+ * ldelete(), replace(), elements() and extract() now accept negative
+   position arguments, to count backwards from the end of the list, similar 
+   to insert(). Suggested by Minion. [MG]
  * replace() now takes an optional output separator. [MG]
 
 Minor changes:

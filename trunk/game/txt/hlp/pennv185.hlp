@@ -37,6 +37,8 @@ Fixes:
    Rince@Wing Commander: New Horizon. [MG]
  * @list attribute would show duplicates for aliases. [MG]
  * insert(,foo,-1) no longer appends an extra delimiter. [MG]
+ * @function/clone didn't work correctly, and could potentially cause a
+   crash. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

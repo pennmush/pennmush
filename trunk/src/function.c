@@ -694,6 +694,9 @@ fn_restrict_to_bit(const char *r)
   return 0;
 }
 
+static const char *fn_restrict_to_str(uint32_t b) __attribute__((unused));
+
+
 static const char *
 fn_restrict_to_str(uint32_t b)
 {
@@ -914,8 +917,9 @@ check_func(dbref player, FUN *fp)
 void
 do_function_clone(dbref player, const char *function, const char *clone)
 {
-  FUN *fp;
-  char *realclone = strupper(clone);
+  FUN *fp, *fpc;
+  char realclone[BUFFER_LEN];
+  strcpy(realclone, strupper(clone));
 
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
@@ -938,7 +942,9 @@ do_function_clone(dbref player, const char *function, const char *clone)
     return;
   }
 
-  function_add(realclone, fp->where.fun, fp->minargs, fp->maxargs, fp->flags);
+  fpc = function_add(mush_strdup(realclone, "function.name"),
+               fp->where.fun, fp->minargs, fp->maxargs, (fp->flags | FN_CLONE));
+  fpc->template = (fp->template ? fp->template : fp);
 
   notify(player, T("Function cloned."));
 }
@@ -985,6 +991,11 @@ alias_function(dbref player, const char *function, const char *alias)
       notify(player, T("You cannot alias @functions."));
     return 0;
   }
+  if (fp->flags & FN_CLONE) {
+    if (player != NOTHING)
+      notify(player, T("You cannot alias cloned functions."));
+    return 0;
+  }
 
   func_hash_insert(realalias, fp);
 
@@ -1001,22 +1012,24 @@ alias_function(dbref player, const char *function, const char *alias)
  * \param maxargs maximum arguments to function.
  * \param ftype function evaluation flags.
  */
-void
+FUN *
 function_add(const char *name, function_func fun, int minargs, int maxargs,
              int ftype)
 {
   FUN *fp;
 
   if (!name || name[0] == '\0')
-    return;
+    return NULL;
   fp = slab_malloc(function_slab, NULL);
   memset(fp, 0, sizeof(FUN));
   fp->name = name;
+  fp->template = NULL;
   fp->where.fun = fun;
   fp->minargs = minargs;
   fp->maxargs = maxargs;
   fp->flags = FN_BUILTIN | ftype;
   func_hash_insert(name, fp);
+  return fp;
 }
 
 /*-------------------------------------------------------------------------
@@ -1575,6 +1588,14 @@ do_function_delete(dbref player, char *name)
       /* Function alias */
       hashdelete(strupper(name), &htab_function);
       notify(player, T("Function alias deleted."));
+      return;
+    } else if (fp->flags & FN_CLONE) {
+      char safename[BUFFER_LEN];
+      strcpy(safename, fp->name);
+      mush_free((char *) fp->name, "function.name");
+      slab_free(function_slab, fp);
+      hashdelete(safename, &htab_function);
+      notify(player, T("Function clone deleted."));
       return;
     }
     if (!Wizard(player)) {

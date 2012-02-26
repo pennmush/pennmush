@@ -284,11 +284,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
-#if defined(HAVE_MYSQL) || defined(HAVE_POSTGRESQL) || defined(HAVE_SQLITE3)
   {"@SQL", NULL, cmd_sql, CMD_T_ANY, "WIZARD", "SQL_OK"},
-#else
-  {"@SQL", NULL, cmd_unimplemented, CMD_T_ANY, "WIZARD", "SQL_OK"},
-#endif
   {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
@@ -1491,10 +1487,12 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   strcpy(pe_info->cmd_evaled, cmd_evaled);
   strcpy(pe_info->cmd_raw, cmd_raw);
 
-  if (cmd->type & CMD_T_NOP) {
+  if ((cmd->type & CMD_T_NOP) && ap && *ap) {
     /* Done this way because another call to tprintf during
      * run_hook_override will blitz the string */
     strcpy(nop_arg, tprintf("%s %s", cmd->name, ap));
+  } else {
+    nop_arg[0] = '\0';
   }
 
   if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {

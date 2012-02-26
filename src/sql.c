@@ -507,7 +507,6 @@ finished:
   free_sql_query(qres);
 }
 
-
 COMMAND(cmd_sql)
 {
 #ifdef HAVE_MYSQL
@@ -524,6 +523,11 @@ COMMAND(cmd_sql)
   char *tbp;
   ansi_string *as;
   int i;
+
+  if (sql_platform() == SQL_PLATFORM_DISABLED) {
+    notify(executor, T("No SQL database connection."));
+    return;
+  }
 
   qres = sql_query(arg_left, &affected_rows);
 

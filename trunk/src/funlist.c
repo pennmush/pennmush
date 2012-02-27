@@ -1406,14 +1406,9 @@ FUNCTION(fun_extract)
     start = find_list_position(args[1], nwords, 0) - 1;
 
   if (nargs > 2) {
-    char *c = args[2];
-    while (*c && (*c == ' ' || *c == '\t' || *c == '\r' || *c == '\n')) {
-      c++;
-    }
-    len = find_list_position(args[2], nwords, 0);
-    if (*c == '-') {
-      len -= start;
-    }
+    len = parse_integer(args[2]);
+    if (len < 0)
+      len = find_list_position(args[2], nwords, 0) - start;
   }
 
   if (start < 0 || start >= nwords || len < 1) {

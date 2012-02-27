@@ -1628,6 +1628,7 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
   CHANUSER *u;
   int canhear;
   int override_checks = 0;
+  int cb_flags = CB_EMIT;
 
   if (!name || !*name) {
     notify(player, T("That is not a valid channel."));
@@ -1684,10 +1685,13 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     notify(player, T("What do you want to emit?"));
     return;
   }
-  if (!(flags & PEMIT_SILENT))
-    channel_send(chan, player, CB_EMIT, msg);
-  else
-    channel_send(chan, player, CB_EMIT | CB_QUIET, msg);
+  if (flags & PEMIT_SILENT)
+    cb_flags |= CB_QUIET;
+
+  if (!(flags & PEMIT_SPOOF))
+    cb_flags |= CB_NOSPOOF; /* Show NOSPOOF headers */
+
+  channel_send(chan, player, cb_flags, msg);
   if (!canhear)
     notify_format(player, T("Cemit to channel %s: %s"), ChanName(chan), msg);
   ChanNumMsgs(chan)++;
@@ -3411,16 +3415,15 @@ FUNCTION(fun_clock)
 /* ARGSUSED */
 FUNCTION(fun_cemit)
 {
-  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
-  int flags = PEMIT_SILENT;
-  flags |= (ns ? PEMIT_SPOOF : 0);
-  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  int flags = (*called_as == 'N' && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, flags ? "@nscemit" : "@cemit", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  if (nargs == 3 && parse_boolean(args[2]))
-    flags &= ~PEMIT_SILENT;
+  if (nargs < 3 || !parse_boolean(args[2]))
+    flags |= PEMIT_SILENT;
   orator = executor;
   do_cemit(executor, args[0], args[1], flags);
 }

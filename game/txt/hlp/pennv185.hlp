@@ -70,6 +70,8 @@ Minor changes:
  * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL support
    is not compiled into the MUSH. Instead, it just reports that no SQL db
    is available, like @mapsql does. [MG]
+ * Nospoof players now see the nospoof header on @cemits, making @nscemit
+   actually have some use. Report by rimnar@M*U*S*H. [MG]
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

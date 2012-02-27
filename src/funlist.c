@@ -1703,7 +1703,7 @@ FUNCTION(fun_insert)
   char **ptrs;
   char *wordlist;
   int first = 1;
-  char *s, sep;
+  char sep;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -1716,8 +1716,6 @@ FUNCTION(fun_insert)
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
   nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
-
-  s = trim_space_sep(args[1], ' ');
 
   /* Go through the second list, grabbing the numbers and finding the
    * corresponding elements.

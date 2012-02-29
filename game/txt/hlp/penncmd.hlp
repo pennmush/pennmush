@@ -4764,7 +4764,7 @@ See also: page, pose, @pemit
   
   Note: The WHO command available at the login screen is totally separate
   from the in-game WHO command, and is not affected by any changes to the 
-  in-game WHO.
+  in-game WHO. To alter that, use the WHO_FILE @config option.
 
 See also: @doing, @poll, SESSION
 & SESSION

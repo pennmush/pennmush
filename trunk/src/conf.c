@@ -116,6 +116,9 @@ PENNCONF conftable[] = {
   {"guest_file", cf_str, options.guest_file[0], sizeof options.guest_file[0], 0,
    "messages"}
   ,
+  {"who_file", cf_str, options.who_file[0], sizeof options.who_file[0], 0,
+   "messages"}
+  ,
 
   {"connect_html_file", cf_str, options.connect_file[1],
    sizeof options.connect_file[1], 0,
@@ -152,6 +155,10 @@ PENNCONF conftable[] = {
    sizeof options.guest_file[1], 0,
    "messages"}
   ,
+  {"who_html_file", cf_str, options.who_file[1], sizeof options.who_file[1], 0,
+   "messages"}
+  ,
+
 
   {"player_start", cf_dbref, &options.player_start, 100000, 0, "db"}
   ,

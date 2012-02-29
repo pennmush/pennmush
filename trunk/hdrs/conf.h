@@ -178,6 +178,7 @@ struct options_table {
   char down_file[2][256];       /**< Names of text and html server down files */
   char full_file[2][256];       /**< Names of text and html server full files */
   char guest_file[2][256];      /**< Names of text and html guest files */
+  char who_file[2][256];        /**< Names of text and html who files */
   int log_commands;     /**< Should we log all commands? */
   int log_forces;       /**< Should we log force commands? */
   int support_pueblo;   /**< Should the MUSH send Pueblo tags? */

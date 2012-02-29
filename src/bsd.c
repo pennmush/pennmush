@@ -344,10 +344,11 @@ struct fcache_entries {
   FBLOCK down_fcache[2];        /**< down.txt and down.html */
   FBLOCK full_fcache[2];        /**< full.txt and full.html */
   FBLOCK guest_fcache[2];       /**< guest.txt and guest.html */
+  FBLOCK who_fcache[2];         /**< textfiles to override connect screen WHO */
 };
 
 static struct fcache_entries fcache;
-static void fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
+static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
 static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const unsigned char *prefix);
 static int fcache_read(FBLOCK *cp, const char *filename);
@@ -1375,20 +1376,20 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
  * display that line before the text file, but only if we've
  * got a text file to display
  */
-static void
+static bool
 fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
 {
   int i;
 
   /* If we've got nothing nice to say, don't say anything */
   if (!fb[0].buff && !((d->conn_flags & CONN_HTML) && fb[1].buff))
-    return;
+    return 0;
 
   for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
     if (fb[i].thing != NOTHING) {
       if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix) == 1) {
         /* Attr successfully evaluated and displayed */
-        return;
+        return 1;
       }
     } else {
       /* Output static text from the cached file */
@@ -1400,9 +1401,11 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
         queue_newwrite(d, fb[1].buff, fb[1].len);
       else
         queue_write(d, fb[0].buff, fb[0].len);
-      return;
+      return 1;
     }
   }
+
+  return 0;
 }
 
 /** Read in a single cached text file
@@ -1558,6 +1561,7 @@ fcache_read_one(const char *filename)
       hash_add(&lookup, options.down_file[i], &fcache.down_fcache[i]);
       hash_add(&lookup, options.full_file[i], &fcache.full_fcache[i]);
       hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
+      hash_add(&lookup, options.who_file[i], &fcache.who_fcache[i]);
     }
   }
 
@@ -1576,7 +1580,7 @@ void
 fcache_load(dbref player)
 {
   int conn, motd, wiz, new, reg, quit, down, full;
-  int guest;
+  int guest, who;
   int i;
 
   for (i = 0; i < (SUPPORT_PUEBLO ? 2 : 1); i++) {
@@ -1589,13 +1593,14 @@ fcache_load(dbref player)
     down = fcache_read(&fcache.down_fcache[i], options.down_file[i]);
     full = fcache_read(&fcache.full_fcache[i], options.full_file[i]);
     guest = fcache_read(&fcache.guest_fcache[i], options.guest_file[i]);
+    who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
       notify_format(player,
                     T
-                    ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"),
+                    ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
-                    reg, down, full);
+                    reg, down, full, who);
     }
   }
 
@@ -2650,7 +2655,8 @@ do_command(DESC *d, char *command)
       }
       if (j) {
         send_prefix(d);
-        dump_users(d, command + j);
+        if (!fcache_dump(d, fcache.who_fcache, NULL))
+          dump_users(d, command + j);
         send_suffix(d);
       } else if (!check_connect(d, command)) {
         return CRES_SITELOCK;

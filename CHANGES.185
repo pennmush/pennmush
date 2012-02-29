@@ -76,6 +76,9 @@ Minor changes:
    is available, like @mapsql does. [MG]
  * Nospoof players now see the nospoof header on @cemits, making @nscemit
    actually have some use. Report by rimnar@M*U*S*H. [MG]
+ * The login screen WHO can now be overridden using the who_file config
+   option, which can be set as the path to a textfile or an obj/attr, like
+   connect_file et al. From suggestions by Paige, Trelane and Mercutio. [MG]
 
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

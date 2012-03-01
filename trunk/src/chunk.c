@@ -254,6 +254,128 @@
 #define PRIdS "t"
 #endif
 
+
+#if ATTR_STORAGE == 0 /* Malloc system */
+
+/* Data format is a 16 bit length field , followed by 16 bits reserved
+   for future use (And to ensure 4-byte alignment), followed by the
+   data. Derefs are not used. */
+
+static chunk_reference_t
+acm_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs __attribute__((__unused__)))
+{
+  uint8_t *chunk;
+
+  chunk = mush_malloc(len + 4, "chunk");
+  
+  memset(chunk, 0, 4);
+  memcpy(chunk, &len, 2);
+  memcpy(chunk + 4, data, len);
+
+  return chunk;
+}
+
+static void
+acm_chunk_delete(chunk_reference_t reference)
+{
+  if (reference)
+    mush_free(reference, "chunk");
+}
+
+static uint16_t
+acm_chunk_fetch(chunk_reference_t reference, unsigned char *buffer, uint16_t buffer_len)
+{
+  uint16_t len;
+
+  if (!reference)
+    return 0;
+
+  memcpy(&len, reference, 2);
+
+  if (buffer_len >= len) {
+    memcpy(buffer, reference + 4, len);
+  }
+
+  return len;
+}
+
+static uint16_t
+acm_chunk_len(chunk_reference_t reference)
+{
+  uint16_t len;
+  if (!reference)
+    return 0;
+  memcpy(&len, reference, 2);
+  return len;
+}
+
+static uint8_t
+acm_chunk_derefs(chunk_reference_t reference __attribute__((__unused__)))
+{
+  return 0;
+}
+
+static void 
+acm_chunk_migration(int count __attribute__((__unused__)),
+		chunk_reference_t **references __attribute__((__unused__)))
+{
+  return;
+}
+
+static int
+acm_chunk_num_swapped(void)
+{
+  return 0;
+}
+
+static void
+acm_chunk_init(void)
+{
+  return;
+}
+
+static void
+acm_chunk_stats(dbref player, enum chunk_stats_type which __attribute__((__unused__)))
+{
+  notify(player, T("Attribute storage stats are not supported for malloc scheme."));
+}
+
+static void
+acm_chunk_new_period(void)
+{
+  return;
+}
+
+#ifndef WIN32
+
+static int 
+acm_chunk_fork_file(void)
+{
+  return 1;
+}
+
+static void
+acm_chunk_fork_parent(void)
+{
+  return;
+}
+
+static void
+acm_chunk_fork_child(void)
+{
+  return;
+}
+
+static void
+acm_chunk_fork_done(void)
+{
+  return;
+}
+
+#endif /* !WIN32 */
+
+#elif ATTR_STORAGE == 1 /* Chunk system */
+
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
 #define CHUNK_DEBUG
@@ -2217,19 +2339,8 @@ migrate_region(uint16_t region)
   migrate_sort();
 }
 
-
-
-/*
- * Interface routines
- */
-/** Allocate a chunk of storage.
- * \param data the data to be stored.
- * \param len the length of the data to be stored.
- * \param derefs the deref count to set on the chunk.
- * \return the chunk reference for retrieving (or deleting) the data.
- */
-chunk_reference_t
-chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
+static chunk_reference_t
+acc_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
 {
   uint16_t full_len, region, offset;
 
@@ -2258,11 +2369,8 @@ chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
   return ChunkReference(region, offset);
 }
 
-/** Deallocate a chunk of storage.
- * \param reference the reference to the chunk to be freed.
- */
-void
-chunk_delete(chunk_reference_t reference)
+static void
+acc_chunk_delete(chunk_reference_t reference)
 {
   uint16_t region, offset;
   region = ChunkReferenceToRegion(reference);
@@ -2281,18 +2389,8 @@ chunk_delete(chunk_reference_t reference)
   stat_delete++;
 }
 
-/** Fetch a chunk of data.
- * If the chunk is too large to fit in the supplied buffer, then
- * the buffer will be left untouched.  The length of the data is
- * returned regardless; this can be used to resize the buffer
- * (or just as information for further processing of the data).
- * \param reference the reference to the chunk to be fetched.
- * \param buffer the buffer to put the data into.
- * \param buffer_len the length of the buffer.
- * \return the length of the data.
- */
-uint16_t
-chunk_fetch(chunk_reference_t reference,
+static uint16_t
+acc_chunk_fetch(chunk_reference_t reference,
             unsigned char *buffer, uint16_t buffer_len)
 {
   uint16_t region, offset, len;
@@ -2317,27 +2415,14 @@ chunk_fetch(chunk_reference_t reference,
   return len;
 }
 
-/** Get the length of a chunk.
- * This is equivalent to calling chunk_fetch(reference, NULL, 0).
- * It can be used to glean the proper size for a buffer to actually
- * retrieve the data, if you're being stingy.
- * \param reference the reference to the chunk to be queried.
- * \return the length of the data.
- */
-uint16_t
-chunk_len(chunk_reference_t reference)
+static uint16_t
+acc_chunk_len(chunk_reference_t reference)
 {
   return chunk_fetch(reference, NULL, 0);
 }
 
-/** Get the deref count of a chunk.
- * This can be used to preserve the deref count across database saves
- * or similar save and restore operations.
- * \param reference the reference to the chunk to be queried.
- * \return the deref count for data.
- */
-unsigned char
-chunk_derefs(chunk_reference_t reference)
+static uint8_t
+acc_chunk_derefs(chunk_reference_t reference)
 {
   uint16_t region, offset;
   region = ChunkReferenceToRegion(reference);
@@ -2350,14 +2435,8 @@ chunk_derefs(chunk_reference_t reference)
   return ChunkDerefs(region, offset);
 }
 
-/** Migrate allocated chunks around.
- *
- * \param count the number of chunks to move.
- * \param references an array of pointers to chunk references,
- * which will be updated in place if necessary.
- */
-void
-chunk_migration(int count, chunk_reference_t **references)
+static void
+acc_chunk_migration(int count, chunk_reference_t **references)
 {
   int k, l;
   unsigned total;
@@ -2415,15 +2494,8 @@ chunk_migration(int count, chunk_reference_t **references)
   debug_log("*** chunk_migration ends", count);
 }
 
-/** Get the number of paged regions.
- * Since the memory allocator cannot be reliably accessed from
- * multiple processes if any of the chunks have been swapped out
- * to disk, it's useful to check on the number of paged out regions
- * before doing any forking maneuvers.
- * \return the number of regions pages out.
- */
-int
-chunk_num_swapped(void)
+static int
+acc_chunk_num_swapped(void)
 {
   int count;
   uint16_t region;
@@ -2434,11 +2506,8 @@ chunk_num_swapped(void)
   return count;
 }
 
-/** Initialize chunk subsystem.
- * Nothing to see here... just call it before using the subsystem.
- */
-void
-chunk_init(void)
+static void
+acc_chunk_init(void)
 {
   /* In any case, this assert should be in main code, not here */
   ASSERT(BUFFER_LEN <= MAX_LONG_CHUNK_LEN);
@@ -2481,13 +2550,8 @@ chunk_init(void)
   do_rawlog(LT_TRACE, "CHUNK: chunk subsystem initialized");
 }
 
-/** Report statistics.
- * Display either the statistics summary or one of the histograms.
- * \param player the player to display it to, or NOTHING to log it.
- * \param which what type of information to display.
- */
-void
-chunk_stats(dbref player, enum chunk_stats_type which)
+static void
+acc_chunk_stats(dbref player, enum chunk_stats_type which)
 {
   switch (which) {
   case CSTATS_SUMMARY:
@@ -2514,13 +2578,8 @@ chunk_stats(dbref player, enum chunk_stats_type which)
   }
 }
 
-/** Start a new migration period.
- * This chops all the dereference counts in half.  Since this is called
- * from migration as needed, you probably shouldn't bother calling it
- * yourself.
- */
-void
-chunk_new_period(void)
+static void
+acc_chunk_new_period(void)
 {
   RegionHeader *rhp;
   Region *rp;
@@ -2571,12 +2630,8 @@ chunk_new_period(void)
 }
 
 #ifndef WIN32
-/** Clone the chunkswap file for forking dumps.
- * \retval 0 if unable to clone the swap file
- * \retval 1 if swap file clone succeeded
- */
-int
-chunk_fork_file(void)
+static int
+acc_chunk_fork_file(void)
 {
   unsigned int j;
   RegionHeader *rhp, *prev, *next;
@@ -2630,10 +2685,8 @@ chunk_fork_file(void)
   return 1;
 }
 
-/** Assert that we're the parent after fork.
- */
-void
-chunk_fork_parent(void)
+static void
+acc_chunk_fork_parent(void)
 {
   if (swap_fd_child < 0)
     return;
@@ -2642,10 +2695,8 @@ chunk_fork_parent(void)
   swap_fd_child = -1;
 }
 
-/** Assert that we're the child after fork.
- */
-void
-chunk_fork_child(void)
+static void
+acc_chunk_fork_child(void)
 {
   if (swap_fd_child < 0)
     return;
@@ -2660,10 +2711,8 @@ chunk_fork_child(void)
   swap_fd_child = -1;
 }
 
-/** Assert that we're done with the cloned chunkswap file.
- */
-void
-chunk_fork_done(void)
+static void
+acc_chunk_fork_done(void)
 {
   if (swap_fd_child < 0)
     close(swap_fd);
@@ -2674,3 +2723,172 @@ chunk_fork_done(void)
   swap_fd_child = -1;
 }
 #endif                          /* !WIN32 */
+
+#endif /* ATTR_STORAGE == 1, chunk system */
+
+#if ATTR_STORAGE == 0
+#define ACPREFIX(name) acm_ ## name
+#elif ATTR_STORAGE == 1
+#define ACPREFIX(name) acc_ ## name
+#endif
+
+/*
+ * Interface routines
+ */
+/** Allocate a chunk of storage.
+ * \param data the data to be stored.
+ * \param len the length of the data to be stored.
+ * \param derefs the deref count to set on the chunk.
+ * \return the chunk reference for retrieving (or deleting) the data.
+ */
+chunk_reference_t
+chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
+{
+  return ACPREFIX(chunk_create)(data, len, derefs);
+}
+
+/** Deallocate a chunk of storage.
+ * \param reference the reference to the chunk to be freed.
+ */
+void
+chunk_delete(chunk_reference_t reference)
+{
+  ACPREFIX(chunk_delete)(reference);
+}
+
+/** Fetch a chunk of data.
+ * If the chunk is too large to fit in the supplied buffer, then
+ * the buffer will be left untouched.  The length of the data is
+ * returned regardless; this can be used to resize the buffer
+ * (or just as information for further processing of the data).
+ * \param reference the reference to the chunk to be fetched.
+ * \param buffer the buffer to put the data into.
+ * \param buffer_len the length of the buffer.
+ * \return the length of the data.
+ */
+uint16_t
+chunk_fetch(chunk_reference_t reference,
+            unsigned char *buffer, uint16_t buffer_len)
+{
+  return ACPREFIX(chunk_fetch)(reference, buffer, buffer_len);
+}
+
+/** Get the length of a chunk.
+ * This is equivalent to calling chunk_fetch(reference, NULL, 0).
+ * It can be used to glean the proper size for a buffer to actually
+ * retrieve the data, if you're being stingy.
+ * \param reference the reference to the chunk to be queried.
+ * \return the length of the data.
+ */
+uint16_t
+chunk_len(chunk_reference_t reference)
+{
+  return ACPREFIX(chunk_len)(reference);
+}
+
+/** Get the deref count of a chunk.
+ * This can be used to preserve the deref count across database saves
+ * or similar save and restore operations.
+ * \param reference the reference to the chunk to be queried.
+ * \return the deref count for data.
+ */
+uint8_t
+chunk_derefs(chunk_reference_t reference)
+{
+  return ACPREFIX(chunk_derefs)(reference);
+}
+
+/** Migrate allocated chunks around.
+ *
+ * \param count the number of chunks to move.
+ * \param references an array of pointers to chunk references,
+ * which will be updated in place if necessary.
+ */
+void
+chunk_migration(int count, chunk_reference_t **references)
+{
+  ACPREFIX(chunk_migration)(count, references);
+}
+
+/** Get the number of paged regions.
+ * Since the memory allocator cannot be reliably accessed from
+ * multiple processes if any of the chunks have been swapped out
+ * to disk, it's useful to check on the number of paged out regions
+ * before doing any forking maneuvers.
+ * \return the number of regions pages out.
+ */
+int
+chunk_num_swapped(void)
+{
+  return ACPREFIX(chunk_num_swapped)();
+}
+
+/** Initialize chunk subsystem.
+ * Nothing to see here... just call it before using the subsystem.
+ */
+void
+chunk_init(void)
+{
+  ACPREFIX(chunk_init)();
+}
+
+/** Report statistics.
+ * Display either the statistics summary or one of the histograms.
+ * \param player the player to display it to, or NOTHING to log it.
+ * \param which what type of information to display.
+ */
+void
+chunk_stats(dbref player, enum chunk_stats_type which)
+{
+  ACPREFIX(chunk_stats)(player, which);
+}
+
+/** Start a new migration period.
+ * This chops all the dereference counts in half.  Since this is called
+ * from migration as needed, you probably shouldn't bother calling it
+ * yourself.
+ */
+void
+chunk_new_period(void)
+{
+  ACPREFIX(chunk_new_period)();
+}
+
+#ifndef WIN32
+/** Clone the chunkswap file for forking dumps.
+ * \retval 0 if unable to clone the swap file
+ * \retval 1 if swap file clone succeeded
+ */
+int
+chunk_fork_file(void)
+{
+  return ACPREFIX(chunk_fork_file)();
+}
+
+/** Assert that we're the parent after fork.
+ */
+void
+chunk_fork_parent(void)
+{
+  ACPREFIX(chunk_fork_parent)();
+}
+
+/** Assert that we're the child after fork.
+ */
+void
+chunk_fork_child(void)
+{
+  ACPREFIX(chunk_fork_child)();
+}
+
+/** Assert that we're done with the cloned chunkswap file.
+ */
+void
+chunk_fork_done(void)
+{
+  ACPREFIX(chunk_fork_done)();
+}
+
+#endif /* !WIN32 */
+
+

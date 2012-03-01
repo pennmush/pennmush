@@ -1977,4 +1977,10 @@ show_compile_options(dbref player)
   notify(player, T(" @config/save is disabled."));
 #endif
 
+#if ATTR_STORAGE == 0
+  notify(player, T("Attribute contents are managed by malloc."));
+#elif ATTR_STORAGE == 1
+  notify(player, T("Attribute contents are managed by the chunk system."));
+#endif
+
 }

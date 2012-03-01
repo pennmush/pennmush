@@ -8,8 +8,21 @@
 
 #undef LOG_CHUNK_STATS
 
+#if ATTR_STORAGE == 0
+
+typedef uint8_t* chunk_reference_t;
+#define NULL_CHUNK_REFERENCE 0
+
+#elif ATTR_STORAGE == 1
+
 typedef uint32_t chunk_reference_t;
 #define NULL_CHUNK_REFERENCE 0
+
+#else
+
+#error "Invalid ATTR_STORAGE setting."
+
+#endif
 
 chunk_reference_t chunk_create(unsigned char const *data, uint16_t len,
                                uint8_t derefs);
@@ -27,9 +40,11 @@ enum chunk_stats_type { CSTATS_SUMMARY, CSTATS_REGIONG, CSTATS_PAGINGG,
 void chunk_stats(dbref player, enum chunk_stats_type which);
 void chunk_new_period(void);
 
+#ifndef WIN32
 int chunk_fork_file(void);
 void chunk_fork_parent(void);
 void chunk_fork_child(void);
 void chunk_fork_done(void);
+#endif
 
 #endif                          /* _CHUNK_H_ */

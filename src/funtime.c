@@ -103,7 +103,8 @@ FUNCTION(fun_time)
   int utc = 0;
   time_t mytime;
   int32_t tzoffset;
-
+  bool notzset = 0;
+  
   mytime = mudtime;
 
   if (nargs == 1) {
@@ -111,11 +112,14 @@ FUNCTION(fun_time)
       utc = 1;
     } else if (args[0] && *args[0]) {
       utc = 1;
-      if (!parse_timezone_arg(args[0], mudtime, &tzoffset)) {
+      if (!parse_timezone_arg(args[0], mudtime, &tzoffset, &notzset)) {
         safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
         return;
       }
-      mytime += tzoffset;
+      if (notzset)
+	utc = 0;
+      else
+	mytime += tzoffset;
     }
   } else if (!strcmp("UTCTIME", called_as)) {
     utc = 1;
@@ -137,7 +141,7 @@ FUNCTION(fun_convsecs)
 
   time_t tt;
   struct tm *ttm;
-  bool utc = 0;
+  bool utc = 0, notzset = 0;
 
   if (!is_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
@@ -159,11 +163,14 @@ FUNCTION(fun_convsecs)
       utc = 1;
     if (strcasecmp("UTC", args[1]) != 0) {
       int32_t tzoffset;
-      if (!parse_timezone_arg(args[1], tt, &tzoffset)) {
+      if (!parse_timezone_arg(args[1], tt, &tzoffset, &notzset)) {
 	safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
 	return;
       }
-      tt += tzoffset;
+      if (notzset)
+	utc = 0;
+      else
+	tt += tzoffset;
     }
   }
 

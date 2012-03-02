@@ -1983,4 +1983,8 @@ show_compile_options(dbref player)
   notify(player, T("Attribute contents are managed by the chunk system."));
 #endif
 
+#ifdef TZINFO_PATH
+  notify(player, T("IANA symbolic timezones can be used."));
+#endif
+
 }

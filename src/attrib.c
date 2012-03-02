@@ -1907,7 +1907,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           return -1;
         }
         if (s && strcasecmp(s, tbuf1)) {
-          int opae_res = ok_player_alias(s, player, thing);
+          enum opa_error opae_res = ok_player_alias(s, player, thing);
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
@@ -1918,14 +1918,14 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
             break;
-          }
-          if (opae_res != OPAE_SUCCESS)
-            return -1;
+	  case OPAE_SUCCESS:
+	    break;
+	  }
         }
       } else {
         /* No old alias */
         if (s && *s) {
-          int opae_res = ok_player_alias(s, player, thing);
+          enum opa_error opae_res = ok_player_alias(s, player, thing);
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
@@ -1936,9 +1936,9 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
             break;
+	  case OPAE_SUCCESS:
+	    break;
           }
-          if (opae_res != OPAE_SUCCESS)
-            return -1;
         }
       }
     } else if (IsExit(thing) && s && *s) {

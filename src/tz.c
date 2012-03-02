@@ -401,26 +401,37 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
 
 /** Parse a softcode timezone request.
  *
- * If arg is a objid, look up that object's @TZ attribute and parse that. Otherwise, parse arg.
+ * If arg is a objid, look up that object's @TZ attribute and parse
+ * that. Otherwise, parse arg.
  *
- * If a timezone database is present, try to read the given zone from it. Integers are treated as 
- * 'Etc/GMT[+-]N' first.
+ * If an object doesn't have a @TZ set, offset is set to 0 and tznotset to 1, to be able to tell
+ * that case apart from a UTC timezone.
  *
- * If no tzinfo database, or reading the given zone from one fails, and the arg is an integer, treat it as the number of hours difference from GMT.
- * Otherwise fail.
+ * If a timezone database is present, try to read the given zone from
+ * it. Integers are treated as 'Etc/GMT[+-]N' first.
+ *
+ * If no tzinfo database, or reading the given zone from one fails,
+ * and the arg is an integer, treat it as the number of hours
+ * difference from GMT.  Otherwise fail.
  *
  * \param arg The string to parse for a dbref, number or symbolic tz name
  * \param when When to calculate the offset for.
- * \param offset Pointer to store the offset in.
+ * \param res Structure to store the parsed results in.
  * \return 1 for success, 0 for failure in parsing the time zone.
  */
 bool
-parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
+parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
 {
-  if (!offset)
+  if (!res)
     return 0;
+  
+  memset(res, 0, sizeof *res);
+  res->tz_when = when;
 
-  if (is_objid(arg)) {
+  if (strcasecmp(arg, "UTC") == 0) {
+    res->tz_utc = 1;
+    return 1;
+  } else if (is_objid(arg)) {
     ATTR *a;
     dbref thing = parse_objid(arg);
     
@@ -431,9 +442,7 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
     if (!a) {
       /* No timezone attribute isn't an error. Just use the server's
 	 zone. */
-      *offset = 0;
-      if (notzset)
-	*notzset = 1;
+      res->tz_attr_missing = 1;
       return 1;
     }
 
@@ -444,14 +453,16 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
 #ifdef USE_TZINFO
   {
     struct tzinfo *tz = NULL;
+    static char tz_path[BUFFER_LEN];
+
     if (is_valid_tzname(arg)) {
       tz = read_tzfile(arg);
+      snprintf(tz_path, sizeof tz_path, ":%s", arg);
     } else if (is_strict_integer(arg)) {
-      char tzname[100];
       int offset;
+      char tzname[100];
 
       offset = parse_integer(arg);
-
 
       /* GMT-8 is 8 hours ahead, GMT+8 is 8 hours behind, which makes
 	 no sense to me. */
@@ -459,11 +470,14 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
 
       snprintf(tzname, sizeof tzname, "Etc/GMT%+d", offset);
       tz = read_tzfile(tzname);
+      snprintf(tz_path, sizeof tz_path, ":%s", tzname);
     }
 
     if (tz) {
-      *offset = offset_for_tzinfo(tz, when);
+      res->tz_offset = offset_for_tzinfo(tz, when);
       free_tzinfo(tz);
+      res->tz_name = tz_path;
+      res->tz_has_file = 1;
       return 1;
     }
     /* Fall through to gross numeric offset on failure */
@@ -476,7 +490,7 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
     if (fabs(n) >= 24.0) 
       return 0;
 
-    *offset = floor(n * 3600.0);
+    res->tz_offset = floor(n * 3600.0);
     return 1;
   }
 

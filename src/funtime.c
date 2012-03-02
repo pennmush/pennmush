@@ -37,11 +37,13 @@ FUNCTION(fun_timefmt)
   struct tm *ttm;
   time_t tt;
   size_t len, n;
+  struct tz_result res;
+  bool need_tz_reset = 0, utc = 0;
 
   if (!args[0] || !*args[0])
     return;                     /* No field? Bad user. */
 
-  if (nargs == 2) {
+  if (nargs >= 2) {
     /* This is silly, but time_t is signed on several platforms,
      * so we can't assign an unsigned int to it safely
      */
@@ -61,7 +63,6 @@ FUNCTION(fun_timefmt)
   } else
     tt = mudtime;
 
-  ttm = localtime(&tt);
   len = arglens[0];
   for (n = 0; n < len; n++) {
     if (args[0][n] == '%')
@@ -74,10 +75,35 @@ FUNCTION(fun_timefmt)
       else if (!valid_timefmt_codes[(unsigned char) args[0][n]]) {
         safe_format(buff, bp, T("#-1 INVALID ESCAPE CODE '$%c'"),
                     args[0][n] ? args[0][n] : ' ');
-        return;
+	return;
       }
     }
   }
+
+  if (nargs == 3) {
+    if (!parse_timezone_arg(args[2], tt, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+
+    if (res.tz_utc)
+      utc = 1;
+    else if (res.tz_attr_missing)
+      utc = 0;
+    else if (res.tz_has_file) {
+      save_and_set_tz(res.tz_name);
+      need_tz_reset = 1;
+    } else {
+      utc = 1;
+      tt += res.tz_offset;
+    }
+  }
+
+  if (utc)
+    ttm = gmtime(&tt);
+  else
+    ttm = localtime(&tt);
+
   len = strftime(s, BUFFER_LEN, args[0], ttm);
   if (len == 0) {
     /* Problem. Either the output from strftime would be over
@@ -87,39 +113,38 @@ FUNCTION(fun_timefmt)
      * return an empty string.
      */
     safe_str(T("#-1 COULDN'T FORMAT TIME"), buff, bp);
-    return;
+  } else {
+    for (n = 0; n < len; n++)
+      if (s[n] == '%')
+	s[n] = '$';
+      else if (s[n] == 0x5)
+	s[n] = '%';
+    safe_strl(s, len, buff, bp);
   }
-  for (n = 0; n < len; n++)
-    if (s[n] == '%')
-      s[n] = '$';
-    else if (s[n] == 0x5)
-      s[n] = '%';
-  safe_str(s, buff, bp);
+
+  if (need_tz_reset)
+    restore_tz();
 }
 
 /* ARGSUSED */
 FUNCTION(fun_time)
 {
-  int utc = 0;
   time_t mytime;
-  int32_t tzoffset;
-  bool notzset = 0;
-  
+  int utc = 0;
+
   mytime = mudtime;
 
   if (nargs == 1) {
-    if (!strcasecmp("UTC", args[0])) {
+    struct tz_result res;
+    if (!parse_timezone_arg(args[0], mudtime, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+    if (res.tz_attr_missing)
+      utc = 0;
+    else {
       utc = 1;
-    } else if (args[0] && *args[0]) {
-      utc = 1;
-      if (!parse_timezone_arg(args[0], mudtime, &tzoffset, &notzset)) {
-        safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
-        return;
-      }
-      if (notzset)
-	utc = 0;
-      else
-	mytime += tzoffset;
+      mytime += res.tz_offset;
     }
   } else if (!strcmp("UTCTIME", called_as)) {
     utc = 1;
@@ -141,7 +166,7 @@ FUNCTION(fun_convsecs)
 
   time_t tt;
   struct tm *ttm;
-  bool utc = 0, notzset = 0;
+  bool utc = 0;
 
   if (!is_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
@@ -160,17 +185,17 @@ FUNCTION(fun_convsecs)
   if (strcmp(called_as, "CONVUTCSECS") == 0) {
     utc = 1;
   } else if (nargs == 2) {
+    struct tz_result res;
+
+    if (!parse_timezone_arg(args[1], tt, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+    if (res.tz_attr_missing)
+      utc = 0;
+    else {
       utc = 1;
-    if (strcasecmp("UTC", args[1]) != 0) {
-      int32_t tzoffset;
-      if (!parse_timezone_arg(args[1], tt, &tzoffset, &notzset)) {
-	safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
-	return;
-      }
-      if (notzset)
-	utc = 0;
-      else
-	tt += tzoffset;
+      tt += res.tz_offset;
     }
   }
 

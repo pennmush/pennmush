@@ -40,7 +40,7 @@ struct tzinfo *read_tzfile(const char *tz);
 void free_tzinfo(struct tzinfo *);
 int32_t offset_for_tzinfo(struct tzinfo *tz, time_t when);
 
-bool parse_timezone_arg(const char *tz, time_t when, int32_t *offset);
+bool parse_timezone_arg(const char *tz, time_t when, int32_t *offset, bool *notzset);
 
 void save_and_set_tz(const char *newzone);
 void restore_tz(void);

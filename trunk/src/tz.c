@@ -415,7 +415,7 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
  * \return 1 for success, 0 for failure in parsing the time zone.
  */
 bool
-parse_timezone_arg(const char *arg, time_t when, int32_t *offset)
+parse_timezone_arg(const char *arg, time_t when, int32_t *offset, bool *notzset)
 {
   if (!offset)
     return 0;
@@ -432,6 +432,8 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset)
       /* No timezone attribute isn't an error. Just use the server's
 	 zone. */
       *offset = 0;
+      if (notzset)
+	*notzset = 1;
       return 1;
     }
 

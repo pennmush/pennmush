@@ -912,6 +912,7 @@ setup_desc(int sock, conn_source source)
 }
 
 #ifdef INFO_SLAVE
+
 static void
 got_new_connection(int sock, conn_source source)
 {
@@ -933,6 +934,7 @@ got_new_connection(int sock, conn_source source)
   } else
     setup_desc(sock, source);
 }
+
 #endif
 
 static void

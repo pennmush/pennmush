@@ -1,4 +1,4 @@
-#!/usr/local/bin/csi -script
+#!/usr/bin/csi -script
 #| !# ; |#
 ;;; Formats words in columns for inclusion in help files. 
 
@@ -15,7 +15,7 @@
 ;;
 ;;
 ;; Compiled instead of interpeted:
-;; csc -o columize -O2 utils/columnize.scm
+;; csc -o columnize -O2 utils/columnize.scm
 ;;
 ;; This is similar to column(1) but that doesn't always work the way
 ;; we need. This does.
@@ -33,17 +33,20 @@
 (require-extension srfi-1 srfi-13 extras regex)
 
 (define-constant line-width 78)
+(define-constant screen-height 25)
 
 (define words
   (drop-while string-null?
 	      (sort
-	       (string-split-fields (regexp "[A-Za-z0-9_@()-]+")
+	       (string-split-fields (regexp "[A-Za-z0-9_@()/+-]+")
 				    (string-join (read-lines) " "))
 	       string-ci<?)))
 (define max-word-length (fold (lambda (w len) (fxmax (string-length w) len))
 			      0 words))
 (define column-width (fx+ max-word-length 3))
 (define ncolumns (quotient line-width column-width))
+
+(define line 1)
 
 (define (print-word word column)
   (cond 
@@ -57,6 +60,11 @@
    (else
     (display word)
     (newline)
+    (set! line (fx+ line 1))
+    (if (fx>= line screen-height)
+	(begin
+	  (newline)
+	  (set! line 0)))
     1)))
 
 (if (fx> (fold print-word 1 words) 1) (newline))

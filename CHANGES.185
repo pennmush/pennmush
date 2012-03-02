@@ -50,6 +50,8 @@ Minor changes:
  * Talek's chunk attribute storage system, which pages attribute
    contents to and from disk as needed, is now optional by popular
    request. Controlled via options.h [SW]
+ * New lock, @lock/dropin, controls who can drop objects into that
+   location. [SW]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

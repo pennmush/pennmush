@@ -85,6 +85,7 @@ lock_type Take_Lock = "Take";       /**< Name of take lock */
 lock_type Open_Lock = "Open";       /**< Name of open lock */
 lock_type Filter_Lock = "Filter";   /**< Name of filter lock */
 lock_type InFilter_Lock = "InFilter"; /**< Name of infilter lock */
+lock_type DropIn_Lock = "DropIn"; /**< Name of the DropIn lock */
 
  /** Table of lock names and permissions */
 lock_list lock_types[] = {
@@ -119,6 +120,7 @@ lock_list lock_types[] = {
   {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Filter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"InFilter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"DropIn", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 

@@ -271,7 +271,8 @@ See also: ipaddr(), hostname(), LASTSITE
   @lock/listen          Who can trigger my @ahear/^-pattern actions
   @lock/command         Who can trigger my $-pattern commands
   @lock/leave           Who can leave this object (or room, via exits/@tel)
-  @lock/drop            Who can drop this object or in this room
+  @lock/drop            Who can drop this object
+  @lock/dropin          Who can drop objects into this location.
   @lock/give            Who can give this object
   @lock/from            Who can give things to this object
   @lock/pay             Who can give pennies to/buy from this object
@@ -395,16 +396,25 @@ See also: @lock, locktypes, lockkeys
   
 See also: @lock, locktypes, lockkeys
 & @lock/drop
+& @lock/dropin
 & @lock/give
 & @lock/from
 & @lock/pay
 & @lock/receive
 & @lock/take
   @lock/drop
-    For rooms, controls who can drop objects in the room. For players and
-      things, controls who can drop the object. Has no meaning for exits.
+
+    For players and things, controls who can drop the object. Has no
+      meaning for exits. On rooms, has the same meaning as
+      @lock/dropin
+
     See also: drop, empty
   
+  @lock/dropin
+
+    When set on a player, thing or room, controls who can drop objects
+     into them. Has no meaning for exits.
+
   @lock/give
     For players and things, controls who may give the object away.
     Has no meaning for rooms or exits.

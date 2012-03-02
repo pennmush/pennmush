@@ -428,8 +428,12 @@ parse_timezone_arg(const char *arg, time_t when, int32_t *offset)
       return 0;
 
     a = atr_get(thing, "TZ");
-    if (!a)
-      return 0;
+    if (!a) {
+      /* No timezone attribute isn't an error. Just use the server's
+	 zone. */
+      *offset = 0;
+      return 1;
+    }
 
     arg = atr_value(a);
   }

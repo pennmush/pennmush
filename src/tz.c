@@ -45,7 +45,7 @@
 #elif defined(__FreeBSD__) || defined(__NetBSD__)
 #include <sys/endian.h>
 #elif defined(__OpenBSD__)
-#include <sys/endian.h> 
+#include <sys/endian.h>
 #define be32toh(i) betoh32(i)
 #define be64toh(i) betoh64(i)
 #else
@@ -56,8 +56,11 @@
 #include <arpa/inet.h>
 #endif
 
+#ifndef be32toh
 #define be32toh(i) ntohl(i)
+#endif
 
+#ifndef be64toh
 static inline int64_t
 be64toh(int64_t i)
 {
@@ -74,6 +77,7 @@ be64toh(int64_t i)
   return r.i64;
 #endif
 }
+#endif
 
 #endif
 
@@ -91,7 +95,7 @@ decode64(int64_t i)
 
 extern const unsigned char *tables;
 
-/** Validates a timezone name to see if it fits the right format. 
+/** Validates a timezone name to see if it fits the right format.
  * \param namem The name of the time zone.
  * \return true or false
  */
@@ -136,7 +140,7 @@ tzfile_exists(const char *name)
     return 0;
 
   snprintf(path, sizeof path, "%s/%s", TZINFO_PATH, name);
-  
+
   if (stat(path, &info) < 0)
     return 0;
 
@@ -169,7 +173,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     char magic[5] = { '\0' };
 
     if (read(fd, magic, 4) != 4) {
-      do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile, strerror(errno)); 
+      do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile, strerror(errno));
       goto error;
     }
 
@@ -185,7 +189,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno));
       goto error;
     }
-    
+
     /* There's a second copy of the data using 64 bit times, following
        the chunk with 32 bit times. */
     if (version[0] == '2')
@@ -205,7 +209,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     tz->leapcnt = decode32(counts[2]);
     tz->timecnt = decode32(counts[3]);
     tz->typecnt = decode32(counts[4]);
-    tz->charcnt = decode32(counts[5]); 
+    tz->charcnt = decode32(counts[5]);
   }
 
   /* Use 64-bit time_t version on such systems. */
@@ -216,14 +220,14 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     skip += tz->typecnt * 6;
     skip += tz->charcnt;
     skip += tz->leapcnt * (4 + time_size);
-    skip += isgmtcnt + isstdcnt;      
+    skip += isgmtcnt + isstdcnt;
 
     if (lseek(fd, skip, SEEK_SET) < 0) {
       do_rawlog(LT_ERR, "tz: Unable to seek to second section of %s: %s\n",
 	      tzfile, strerror(errno));
       goto error;
     }
-       
+
     free(tz);
     return do_read_tzfile(fd, tzfile, 8);
   }
@@ -242,7 +246,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     								\
     free(buf);							\
   } while (0)
-  
+
   if (time_size == 4) {
     READ_TRANSITIONS(int32_t, decode32);
   } else {
@@ -258,9 +262,9 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
     buf = malloc(size);
     READ_CHUNK(buf, size);
-    
+
     tz->offsets = calloc(tz->typecnt, sizeof(struct ttinfo));
-    
+
     for (n = 0, m = 0; n < tz->typecnt; n += 1, m += 6) {
       int32_t gmtoff;
 
@@ -271,7 +275,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       tz->offsets[n].tt_std = tz->offsets[n].tt_utc = 0;
     }
 
-    free(buf);   
+    free(buf);
   }
 
   tz->abbrevs = malloc(tz->charcnt);
@@ -317,7 +321,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       tz->offsets[n].tt_std = buf[n];
 
     free(buf);
-    
+
     buf = malloc(isgmtcnt);
     READ_CHUNK(buf, isgmtcnt);
 
@@ -330,7 +334,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
   return tz;
 
   error:
-  if (tz) 
+  if (tz)
     free_tzinfo(tz);
   return NULL;
 }
@@ -342,7 +346,7 @@ read_tzfile(const char *tzname)
   char tzfile[BUFFER_LEN];
   int fd;
   struct tzinfo *tz;
-  
+
   if (!is_valid_tzname(tzname))
     return NULL;
 
@@ -384,14 +388,14 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
   int n;
 
   if (tz->timecnt == 0 || when < tz->transitions[0]) {
-    for (n = 0; n < tz->typecnt; n += 1) 
+    for (n = 0; n < tz->typecnt; n += 1)
       if (!tz->offsets[n].tt_isdst)
 	return tz->offsets[n].tt_gmtoff;
-    
+
     return tz->offsets[0].tt_gmtoff;
   }
 
-  for (n = 1; n < tz->timecnt; n += 1) 
+  for (n = 1; n < tz->timecnt; n += 1)
     if (when < tz->transitions[n])
       return tz->offsets[tz->offset_indexes[n - 1]].tt_gmtoff;
 
@@ -424,7 +428,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
 {
   if (!res)
     return 0;
-  
+
   memset(res, 0, sizeof *res);
   res->tz_when = when;
 
@@ -434,7 +438,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
   } else if (is_objid(arg)) {
     ATTR *a;
     dbref thing = parse_objid(arg);
-    
+
     if (!RealGoodObject(thing))
       return 0;
 
@@ -487,7 +491,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
   if (is_strict_number(arg)) {
     double n = parse_number(arg);
 
-    if (fabs(n) >= 24.0) 
+    if (fabs(n) >= 24.0)
       return 0;
 
     res->tz_offset = floor(n * 3600.0);

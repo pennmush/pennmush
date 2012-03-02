@@ -82,20 +82,6 @@ void fputerr(const char *);
 #include <event.h>
 #include <event2/dns.h>
 
-static void write_to_file_cb(int severity, const char *msg)
-{
-    const char *s;
-    switch (severity) {
-        case _EVENT_LOG_DEBUG: s = "debug"; break;
-        case _EVENT_LOG_MSG:   s = "msg";   break;
-        case _EVENT_LOG_WARN:  s = "warn";  break;
-        case _EVENT_LOG_ERR:   s = "error"; break;
-        default:               s = "?";     break; /* never reached */
-    }
-    fprintf(stderr, "[%s] %s\n", s, msg);
-}
-
-
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
 
@@ -208,8 +194,6 @@ main(void)
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
-
-  evdns_set_log_fn(write_to_file_cb);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */
   watch_parent =

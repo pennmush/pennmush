@@ -14,13 +14,20 @@ be read in 'help patchlevels'.
 Version 1.8.5 patchlevel 1                                 ??? ??, 2012
 
 Major changes:
- * Attributes are now stored in the database. This means that @attribute
-   no longer needs to be in an @startup, as it will persist across reboots
-   and shutdowns. The attribute_alias option in .cnf files is now deprecated
-   as a result. [MG]
- * The database now uses a new versioning scheme (alongside the old one, for
-   backwards compatability), using incrementing integers instead of bitwise
-   flags. Ideas by [GM] and Covenent. [MG]
+ * Built-in attributes are now stored in the database. This means that
+   @attribute no longer needs to be in an @startup, as it will persist
+   across reboots and shutdowns. The attribute_alias option in .cnf
+   files is now deprecated as a result. [MG]
+ * The database now uses a new versioning scheme (alongside the old
+   one, for backwards compatability), using incrementing integers
+   instead of bitwise flags. Ideas by [GM] and Covenent. [MG]
+
+Minor changes:
+ * Talek's chunk attribute storage system, which pages attribute
+   contents to and from disk as needed, is now optional by popular
+   request. Controlled via options.h [SW]
+ * time() and convsecs() can use symbolic timezones (US/Pacific, EST,
+   etc.) if the host server has a time zone database installed. [SW]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set at all.

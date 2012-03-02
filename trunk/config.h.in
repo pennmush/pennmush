@@ -194,6 +194,8 @@ typedef bool _Bool;
 # define __bool_true_false_are_defined 1
 #endif
 
+#undef WORDS_BIGENDIAN
+
 /* Functions */
 #undef HAS_BINDTEXTDOMAIN
 
@@ -364,6 +366,9 @@ typedef bool _Bool;
 /* Files */
 
 #undef HAS_DEV_URANDOM
+
+/* Path to tzinfo database */
+#undef TZINFO_PATH
 
 /* Misc. */
 

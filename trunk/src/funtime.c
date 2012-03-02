@@ -22,7 +22,7 @@
 #include "dbdefs.h"
 #include "log.h"
 #include "match.h"
-#include "attrib.h"
+#include "tz.h"
 #include "confmagic.h"
 
 int do_convtime(const char *mystr, struct tm *ttm);
@@ -101,41 +101,21 @@ FUNCTION(fun_timefmt)
 FUNCTION(fun_time)
 {
   int utc = 0;
-  int mytime;
-  double tz = 0;
+  time_t mytime;
+  int32_t tzoffset;
 
   mytime = mudtime;
 
   if (nargs == 1) {
     if (!strcasecmp("UTC", args[0])) {
       utc = 1;
-    } else if (args[0] && *args[0] && is_strict_number(args[0])) {
+    } else if (args[0] && *args[0]) {
       utc = 1;
-      tz = strtod(args[0], NULL);
-      if (tz < -24.0 || tz > 24.0) {
+      if (!parse_timezone_arg(args[0], mudtime, &tzoffset)) {
         safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
         return;
       }
-      mytime += (int) (tz * 3600);
-    } else if (args[0] && *args[0]) {
-      dbref thing;
-      ATTR *a;
-      char *ptr;
-      utc = 1;
-      thing = match_thing(executor, args[0]);
-      if (!GoodObject(thing)) {
-        safe_str(T(e_notvis), buff, bp);
-        return;
-      }
-      /* Always make time(player) return a time,
-       * even if player's TZ is unset or wonky */
-      a = atr_get(thing, "TZ");
-      if (a && is_strict_number(ptr = atr_value(a))) {
-        tz = strtod(ptr, NULL);
-        if (tz >= -24.0 && tz <= 24.0) {
-          mytime += (int) (tz * 3600);
-        }
-      }
+      mytime += tzoffset;
     }
   } else if (!strcmp("UTCTIME", called_as)) {
     utc = 1;
@@ -157,11 +137,7 @@ FUNCTION(fun_convsecs)
 
   time_t tt;
   struct tm *ttm;
-  int utc = 0;
-
-  if (strcmp(called_as, "CONVUTCSECS") == 0 ||
-      (nargs == 2 && strcasecmp("UTC", args[1]) == 0))
-    utc = 1;
+  bool utc = 0;
 
   if (!is_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
@@ -175,6 +151,20 @@ FUNCTION(fun_convsecs)
   if (tt < 0) {
     safe_str(T(e_uint), buff, bp);
     return;
+  }
+
+  if (strcmp(called_as, "CONVUTCSECS") == 0) {
+    utc = 1;
+  } else if (nargs == 2) {
+      utc = 1;
+    if (strcasecmp("UTC", args[1]) != 0) {
+      int32_t tzoffset;
+      if (!parse_timezone_arg(args[1], tt, &tzoffset)) {
+	safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+	return;
+      }
+      tt += tzoffset;
+    }
   }
 
   if (utc)
@@ -450,7 +440,6 @@ FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
   struct tm ttm;
-  char *tz = NULL;
   int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
                (nargs > 1 && !strcmp(args[1], "utc")));
 
@@ -459,37 +448,15 @@ FUNCTION(fun_convtime)
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
-    if (doutc) {
-      tz = getenv("TZ");
-      /* A blank, overridden TZ forces UTC. */
-#ifndef WIN32
-      setenv("TZ", "", 1);
-#else
-      _putenv_s("TZ", "", 1);
-#endif
-      tzset();
-    }
+    if (doutc) 
+      save_and_set_tz("");
 #ifdef SUN_OS
     safe_integer(timelocal(&ttm), buff, bp);
 #else
     safe_integer(mktime(&ttm), buff, bp);
 #endif                          /* SUN_OS */
-    if (doutc) {
-      if (tz) {
-#ifndef WIN32
-        setenv("TZ", tz, 1);
-#else
-        _putenv_s("TZ", tz, 1);
-#endif
-      } else {
-#ifndef WIN32
-        unsetenv("TZ");
-#else
-        _putenv_s("TZ", 0, 1);
-#endif
-      }
-      tzset();
-    }
+    if (doutc) 
+      restore_tz();
   } else {
     safe_str("-1", buff, bp);
   }

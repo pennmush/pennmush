@@ -40,7 +40,17 @@ struct tzinfo *read_tzfile(const char *tz);
 void free_tzinfo(struct tzinfo *);
 int32_t offset_for_tzinfo(struct tzinfo *tz, time_t when);
 
-bool parse_timezone_arg(const char *tz, time_t when, int32_t *offset, bool *notzset);
+/** Structure used to store information about a timezone's offset. */
+struct tz_result {
+  time_t tz_when; /**< The UTC time being used as a base. */
+  int32_t tz_offset; /**< Offset from UTC for the base time. */
+  const char *tz_name; /**< Name of the timezone in a format suitable for use with tzset() IF tz_has_file is true. */
+  bool tz_has_file; /**< True if an underlying file in the zoneinfo database was found for this timezone. */
+  bool tz_attr_missing; /**< True if the time zone was requested from an object without a @TZ attribute. */
+  bool tz_utc; /**< True if UTC was requested. */
+};
+
+bool parse_timezone_arg(const char *tz, time_t when, struct tz_result *);
 
 void save_and_set_tz(const char *newzone);
 void restore_tz(void);

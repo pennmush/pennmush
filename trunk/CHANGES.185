@@ -30,8 +30,9 @@ Minor changes:
  * Talek's chunk attribute storage system, which pages attribute
    contents to and from disk as needed, is now optional by popular
    request. Controlled via options.h [SW]
- * time() and convsecs() can use symbolic timezones (US/Pacific, EST,
-   etc.) if the host server has a time zone database installed. [SW]
+ * time(), timefmt() and convsecs() can use symbolic timezones
+   (US/Pacific, EST, etc.) if the host server has a time zone database
+   installed. [SW]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set at all.

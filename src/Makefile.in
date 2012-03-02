@@ -19,11 +19,11 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c		\
 	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
 	markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c		\
-	mysocket.c myrlimit.c myssl.c notify.c parse.c			\
-	player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
-	rob.c services.c set.c SFMT.c sig.c sort.c speech.c		\
-	sql.c ssl_master.c strdup.c strtree.c strutil.c tables.c	\
-	timer.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
+	mysocket.c myrlimit.c myssl.c notify.c parse.c player.c		\
+	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
+	services.c set.c SFMT.c sig.c sort.c speech.c sql.c		\
+	ssl_master.c strdup.c strtree.c strutil.c tables.c timer.c	\
+	tz.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
 	wiz.c
 
 
@@ -39,7 +39,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	player.o plyrlist.o info_master.o predicat.o privtab.o ptab.o	\
 	rob.o services.o set.o SFMT.o sig.o sort.o speech.o		\
 	sql.o ssl_master.o strdup.o strtree.o strutil.o tables.o	\
-	timer.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
+	timer.o tz.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
 	wiz.o
 
 # This is a dummy target, in case you type 'make' in the source

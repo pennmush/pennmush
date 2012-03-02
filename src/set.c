@@ -91,6 +91,10 @@ do_name(dbref player, const char *name, char *newname_)
     case OPAE_INVALID:
     case OPAE_NULL:
       notify(player, T("You can't give a player that name or alias."));
+      if (newname)
+        mush_free(newname, "name.newname");
+      if (alias)
+        mush_free(alias, "name.newname");
       return;
     case OPAE_TOOMANY:
       notify(player, T("Too many aliases."));

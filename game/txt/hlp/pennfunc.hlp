@@ -5461,12 +5461,14 @@ See also: timefmt(), timestring(), convsecs(), convtime()
 & TIMEZONES
 & @TZ
 
-  The time() and convsecs() functions have an optional time zone
-  argument that's used for formatting the time. Without this time zone
-  specified, the one the game's server is running under is used..
+  The time(), timefmt() and convsecs() functions have an optional time
+  zone argument that's used for formatting the time. Without this time
+  zone specified, the one the game's server is running under is used..
 
   If the time zone argument is a dbref, the contents of that object's
   @TZ attribute is used as the zone. The attribute is not evaluated.
+  If the object doesn't have this attribute, the server's time zone
+  will be used.
 
   If it's the string 'UTC', that time zone is used instead of the
   local one.
@@ -5853,12 +5855,17 @@ See also: timestring(), timefmt()
     > think squish(etimefmt(Connected for $zxd $xzh $zxm $xzs, conn(me)))
     Connected for 5h 24m 45s
 & TIMEFMT()
-  timefmt(<format>[, <secs>])
+  timefmt(<format>[, <secs>, <timezone>])
 
-  This function returns the time and date, formatted according to <format>.
-  <secs> is the time/date to format, as the number of seconds since the epoch
-  (as returned by secs(), convtime(), etc). If no <secs> is given, the
-  current date/time of the MUSH host is used.
+  This function returns the time and date, formatted according to
+  <format>.  <secs> is the time/date to format, as the number of
+  seconds since the epoch (as returned by secs(), convtime(), etc). If
+  no <secs> is given, the current date/time of the MUSH host is
+  used. If no <timezones> is provided, the MUSH host's timezone is
+  used. Note: Using a fractional timezone offset from GMT will result
+  in timefmt() showing the time zone name (if displayed) as GMT. Using
+  a symbolic name on a server that supports them should show the name
+  correctly.
 
   A list of all codes is in 'help timefmt2'.
 
@@ -5866,7 +5873,7 @@ See also: timestring(), timefmt()
     > think timefmt($A\, the $dth day of $B.)
     Monday, the 17th day of July.
     
-See also: convsecs(), etimefmt()
+See also: convsecs(), etimefmt(), timezones
 & TIMEFMT2
   All escape codes start with a $. To get a literal $, use $$.
   Invalid codes will return #-1 INVALID ESCAPE CODE. Other text will be

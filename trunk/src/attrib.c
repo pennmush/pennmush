@@ -1911,13 +1911,13 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
-            break;
+            return -1;
           case OPAE_TOOMANY:
             notify_format(player, T("'%s' contains too many aliases."), s);
-            break;
+            return -1;
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
-            break;
+            return -1;
           case OPAE_SUCCESS:
             break;
 	  }
@@ -1929,13 +1929,13 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
-            break;
+            return -1;
           case OPAE_TOOMANY:
             notify_format(player, T("'%s' contains too many aliases."), s);
-            break;
+            return -1;
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
-            break;
+            return -1;
           case OPAE_SUCCESS:
             break;
           }

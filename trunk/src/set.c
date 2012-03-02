@@ -88,23 +88,21 @@ do_name(dbref player, const char *name, char *newname_)
   case TYPE_PLAYER:
     switch (ok_object_name
             (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
-    case 0:
-      notify(player, T("You can't give a player that name."));
+    case OPAE_INVALID:
+    case OPAE_NULL:
+      notify(player, T("You can't give a player that name or alias."));
       return;
     case OPAE_TOOMANY:
       notify(player, T("Too many aliases."));
       mush_free(newname, "name.newname");
       return;
-    case OPAE_INVALID:
-      notify_format(player, T("'%s' is not a valid alias."), alias);
-      mush_free(newname, "name.newname");
-      mush_free(alias, "name.newname");
-      return;
+    case OPAE_SUCCESS:
+      break;
     }
     break;
   case TYPE_EXIT:
-    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) <
-        1) {
+    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) !=
+        OPAE_SUCCESS) {
       notify(player, T("That is not a reasonable name."));
       if (newname)
         mush_free(newname, "name.newname");

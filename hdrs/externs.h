@@ -463,12 +463,19 @@ int nearby(dbref obj1, dbref obj2);
 int get_current_quota(dbref who);
 void change_quota(dbref who, int payment);
 int ok_name(const char *name, int is_exit);
-int ok_object_name(char *name, dbref player, dbref thing, int type,
-                   char **newname, char **newalias);
 int ok_command_name(const char *name);
 int ok_function_name(const char *name);
 int ok_player_name(const char *name, dbref player, dbref thing);
-int ok_player_alias(const char *alias, dbref player, dbref thing);
+/** Errors from ok_player_alias */
+enum opa_error {
+  OPAE_SUCCESS = 0, /**< Success */
+  OPAE_INVALID, /**< Invalid alias */
+  OPAE_TOOMANY, /**< Too many aliases already set */
+  OPAE_NULL  /**< Null alias */
+};
+enum opa_error  ok_player_alias(const char *alias, dbref player, dbref thing);
+enum opa_error ok_object_name(char *name, dbref player, dbref thing, int type,
+                   char **newname, char **newalias);
 int ok_password(const char *password);
 int ok_tag_attribute(dbref player, const char *params);
 dbref parse_match_possessor(dbref player, char **str, int exits);

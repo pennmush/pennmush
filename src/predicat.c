@@ -753,12 +753,11 @@ ok_player_name(const char *name, dbref player, dbref thing)
  * \param type type of object getting the name (necessary for new exits)
  * \param newname pointer to place the new name, once validated
  * \param newalias pointer to place the alias in, if any
- * \retval 1 name and any given aliases are valid
- * \retval 0 invalid name
- * \retval OPAE_INVALID invalid aliases
+ * \retval OPAE_SUCCESS name and any given aliases are valid
+ * \retval OPAE_INVALID invalid name or aliases
  * \retval OPAE_TOOMANY too many aliases for player
  */
-int
+enum opa_error
 ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
@@ -783,17 +782,17 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     if (*eon)
       *eon = '\0';
     if (!ok_player_name(bon, player, thing))
-      return 0;
+      return OPAE_INVALID;
     *newname = mush_strdup(bon, "name.newname");
-    return 1;
+    return OPAE_SUCCESS;
   }
 
   if (type & (TYPE_THING | TYPE_ROOM)) {
     /* No aliases in the name */
     if (!ok_name(nbuff, 0))
-      return 0;
+      return OPAE_INVALID;
     *newname = mush_strdup(nbuff, "name.newname");
-    return 1;
+    return OPAE_SUCCESS;
   }
 
   /* A player or exit name, with aliases allowed.
@@ -812,7 +811,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
   if (!
       (type ==
        TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
-    return 0;
+    return OPAE_INVALID;
 
   *newname = mush_strdup(bon, "name.newname");
 
@@ -862,7 +861,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     }
   }
 
-  return 1;
+  return OPAE_SUCCESS;
 }
 
 
@@ -875,7 +874,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
  * \param thing player who is being aliased.
  * \return One of the OPAE_* constants defined in hdrs/attrib.h
  */
-int
+enum opa_error
 ok_player_alias(const char *alias, dbref player, dbref thing)
 {
   char tbuf1[BUFFER_LEN], *s, *sp;

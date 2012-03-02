@@ -24,23 +24,21 @@ struct attr {
 
 
 /* Stuff that's actually in atr_tab.c */
-extern ATTR *aname_hash_lookup(const char *name);
-extern int alias_attribute(const char *atr, const char *alias);
-extern void do_attribute_limit
+ATTR *aname_hash_lookup(const char *name);
+int alias_attribute(const char *atr, const char *alias);
+void do_attribute_limit
   (dbref player, char *name, int type, char *pattern);
-extern void do_attribute_access
+void do_attribute_access
   (dbref player, char *name, char *perms, int retroactive);
-extern void do_attribute_delete(dbref player, char *name);
-extern void do_attribute_rename(dbref player, char *old, char *newname);
-extern void do_attribute_info(dbref player, char *name);
-extern void do_list_attribs(dbref player, int lc);
-extern char *list_attribs(void);
-extern void attr_init_postconfig(void);
-extern const char *check_attr_value
+void do_attribute_delete(dbref player, char *name);
+void do_attribute_rename(dbref player, char *old, char *newname);
+void do_attribute_info(dbref player, char *name);
+void do_list_attribs(dbref player, int lc);
+char *list_attribs(void);
+void attr_init_postconfig(void);
+const char *check_attr_value
   (dbref player, const char *name, const char *value);
-
-extern int cnf_attribute_access(char *attrname, char *opts);
-
+int cnf_attribute_access(char *attrname, char *opts);
 
 /* From attrib.c */
 
@@ -55,41 +53,41 @@ typedef enum {
   AE_NOTFOUND = -6 /** No such attribute */
 } atr_err;
 
-extern int good_atr_name(char const *s);
-extern ATTR *atr_match(char const *string);
-extern ATTR *atr_sub_branch(ATTR *branch);
-extern ATTR *atr_sub_branch_prev(ATTR *branch);
-extern void atr_new_add(dbref thing, char const *RESTRICT atr,
-                        char const *RESTRICT s, dbref player, uint32_t flags,
-                        uint8_t derefs, bool makeroots);
-extern atr_err atr_add(dbref thing, char const *RESTRICT atr,
-                       char const *RESTRICT s, dbref player, uint32_t flags);
-extern atr_err atr_clr(dbref thing, char const *atr, dbref player);
-extern atr_err wipe_atr(dbref thing, char const *atr, dbref player);
-extern ATTR *atr_get(dbref thing, char const *atr);
-extern ATTR *atr_get_noparent(dbref thing, char const *atr);
+int good_atr_name(char const *s);
+ATTR *atr_match(char const *string);
+ATTR *atr_sub_branch(ATTR *branch);
+ATTR *atr_sub_branch_prev(ATTR *branch);
+void atr_new_add(dbref thing, char const *RESTRICT atr,
+                 char const *RESTRICT s, dbref player, uint32_t flags,
+                 uint8_t derefs, bool makeroots);
+atr_err atr_add(dbref thing, char const *RESTRICT atr,
+                char const *RESTRICT s, dbref player, uint32_t flags);
+atr_err atr_clr(dbref thing, char const *atr, dbref player);
+atr_err wipe_atr(dbref thing, char const *atr, dbref player);
+ATTR *atr_get(dbref thing, char const *atr);
+ATTR *atr_get_noparent(dbref thing, char const *atr);
 typedef int (*aig_func) (dbref, dbref, dbref, const char *, ATTR *, void *);
-extern int atr_iter_get(dbref player, dbref thing, char const *name,
-                        int mortal, int regexp, aig_func func, void *args);
-extern int atr_iter_get_parent(dbref player, dbref thing, char const *name,
-                               int mortal, int regexp, aig_func func,
-                               void *args);
-extern int atr_pattern_count(dbref player, dbref thing, const char *name,
-                             int doparent, int mortal, int regexp);
-extern ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
-extern void atr_free_all(dbref thing);
-extern void atr_cpy(dbref dest, dbref source);
-extern char const *convert_atr(int oldatr);
-extern int atr_comm_match(dbref thing, dbref player, int type, int end,
-                          char const *str, int just_match, int check_locks,
-                          char *atrname, char **abp, int show_child,
-                          dbref *errobj, MQUE *from_queue, int queue_type);
-extern int one_comm_match(dbref thing, dbref player, const char *atr,
-                          const char *str, MQUE *from_queue, int queue_type);
-extern int do_set_atr(dbref thing, char const *RESTRICT atr,
-                      char const *RESTRICT s, dbref player, uint32_t flags);
-extern void do_atrlock(dbref player, char const *arg1, char const *arg2);
-extern void do_atrchown(dbref player, char const *arg1, char const *arg2);
+int atr_iter_get(dbref player, dbref thing, char const *name,
+                 int mortal, int regexp, aig_func func, void *args);
+int atr_iter_get_parent(dbref player, dbref thing, char const *name,
+                        int mortal, int regexp, aig_func func,
+                        void *args);
+int atr_pattern_count(dbref player, dbref thing, const char *name,
+                      int doparent, int mortal, int regexp);
+ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
+void atr_free_all(dbref thing);
+void atr_cpy(dbref dest, dbref source);
+char const *convert_atr(int oldatr);
+int atr_comm_match(dbref thing, dbref player, int type, int end,
+                   char const *str, int just_match, int check_locks,
+                   char *atrname, char **abp, int show_child,
+                   dbref *errobj, MQUE *from_queue, int queue_type);
+int one_comm_match(dbref thing, dbref player, const char *atr,
+                   const char *str, MQUE *from_queue, int queue_type);
+int do_set_atr(dbref thing, char const *RESTRICT atr,
+               char const *RESTRICT s, dbref player, uint32_t flags);
+void do_atrlock(dbref player, char const *arg1, char const *arg2);
+void do_atrchown(dbref player, char const *arg1, char const *arg2);
 int string_to_atrflag(dbref player, const char *p, privbits *bits);
 int string_to_atrflagsets(dbref player, const char *p, privbits *setbits,
                           privbits *clrbits);
@@ -143,27 +141,19 @@ safe_atr_value(ATTR *atr)
 #define AF_AHEAR        0x40000000U     /**< ^-listens can be triggered by anyone */
 #define AF_NODEBUG      0x80000000U     /**< Don't show debug when evaluated */
 
-#define AF_MAXVALUE     0x100000000U     /**< Largest attribute flag value. */
+/* !!! All 32 bits in the attribute flags field are in use. Don't add
+       more. */
 
-    extern ATTR attr[];               /**< external predefined attributes. */
+extern ATTR attr[];               /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)
 #define AL_STR(alist)           (atr_get_compressed_data((alist)))
+/** The raw length of the (possibly compressed) attribute text. */
 #define AL_STRLEN(alist)        ((alist)->data?chunk_len((alist)->data):0)
 #define AL_NEXT(alist)          ((alist)->next)
 #define AL_CREATOR(alist)       ((alist)->creator)
 #define AL_FLAGS(alist)         ((alist)->flags)
 #define AL_DEREFS(alist)        ((alist)->data?chunk_derefs((alist)->data):0)
-
-/** Errors from ok_player_alias */
-/** Success */
-#define OPAE_SUCCESS    1
-/** Invalid alias */
-#define OPAE_INVALID    -1
-/** Too many aliases already set */
-#define OPAE_TOOMANY    -2
-/** Null alias */
-#define OPAE_NULL       -3
 
 #endif                          /* __ATTRIB_H */

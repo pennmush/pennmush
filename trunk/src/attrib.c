@@ -1918,8 +1918,8 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
             break;
-	  case OPAE_SUCCESS:
-	    break;
+          case OPAE_SUCCESS:
+            break;
 	  }
         }
       } else {
@@ -1936,8 +1936,8 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
             break;
-	  case OPAE_SUCCESS:
-	    break;
+          case OPAE_SUCCESS:
+            break;
           }
         }
       }

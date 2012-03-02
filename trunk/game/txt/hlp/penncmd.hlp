@@ -4192,9 +4192,10 @@ See also: @trigger, @include
 
   Drops <object>, if you are presently carrying it. If the room the
   object is dropped in has a DROP-TO set, the object may automatically
-  be sent to another location. Some MUSHes may have @lock/drop
-  enabled, which allows you to set who is permitted to drop the
-  object.
+  be sent to another location. 
+
+  In order to drop an object, you must pass it's Drop lock and your
+  location's DropIn lock.
 
 See also: empty, get, STICKY, DROP-TO
 & enter

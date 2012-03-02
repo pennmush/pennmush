@@ -716,6 +716,9 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
       fail_lock(player, loc, Drop_Lock,
                 T("You can't seem to drop things here."), NOTHING);
       return;
+    } else if (!eval_lock_with(player, loc, DropIn_Lock, pe_info)) {
+      fail_lock(player, loc, DropIn_Lock,
+                T("You can't seem to drop things here."), NOTHING);
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));
       safe_tel(thing, HOME, 0, player, "drop");
@@ -796,6 +799,7 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
       if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
+	  eval_lock_with(player, thing_loc, DropIn_Lock, pe_info) &&
           (!IsRoom(thing_loc)
            || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;

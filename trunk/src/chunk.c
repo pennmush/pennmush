@@ -2418,7 +2418,7 @@ acc_chunk_fetch(chunk_reference_t reference,
 static uint16_t
 acc_chunk_len(chunk_reference_t reference)
 {
-  return chunk_fetch(reference, NULL, 0);
+  return acc_chunk_fetch(reference, NULL, 0);
 }
 
 static uint8_t

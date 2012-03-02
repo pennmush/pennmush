@@ -23,65 +23,71 @@ Major changes:
    instead of bitwise flags. Ideas by [GM] and Covenent. [MG]
 
 Minor changes:
+ * Logged messages now have events in the LOG tree. Suggested by
+   Padraic. [SW]
+ * Objects belonging to destroyed players now get chowned to a
+   configurable player (probate_judge in mush.cnf) instead of
+   God. [SW]
+ * Commands involving movement now check the enactor is a
+   player/thing, instead of just relying on the command's
+   restriction. [MG]
+ * @switch, switch(), @[in]filter and attribute @locks (foo:bar) now
+   do lte/gte wildcard matches on <=foo and >=foo patterns. Inspired
+   by Wiggles. [MG]
+ * New channel mogrifier, MOGRIFY`NOBUFFER, can be used to exclude
+   certain @chats from the channel's recall buffer. Suggested by
+   Wiggles. [MG]
+ * Nospoof players now see the nospoof header on @cemits, making
+   @nscemit actually have some use. Report by rimnar@M*U*S*H. [MG]
+ * The login screen WHO can now be overridden using the who_file
+   config option, which can be set as the path to a textfile or an
+   obj/attr, like connect_file et al. From suggestions by Paige,
+   Trelane and Mercutio. [MG]
  * Talek's chunk attribute storage system, which pages attribute
    contents to and from disk as needed, is now optional by popular
    request. Controlled via options.h [SW]
- * time() and convsecs() can use symbolic timezones (US/Pacific, EST,
-   etc.) if the host server has a time zone database installed. [SW]
 
 Fixes:
- * When regexp matching an ansi'd string, named captures weren't set at all.
-   For non-ansi'd strings, non-named (numeric) captures were sometimes 
-   overwritten with the values of named captures. Reported by Sketch. [MG]
- * The configure script incorrectly reported that ssl_slave was unavailable
-   when told to disable it via --disable-ssl_slave. Reported by Cheetah. [MG]
- * Sound from an AUDIBLE wagon object used to propagate into other wagon
-   objects in the same location with an @listen of *. It now does so again.
-   Reported by Xeero and Padraic. [MG]
+ * When regexp matching an ansi'd string, named captures weren't set
+   at all.  For non-ansi'd strings, non-named (numeric) captures were
+   sometimes overwritten with the values of named captures. Reported
+   by Sketch. [MG]
+ * The configure script incorrectly reported that ssl_slave was
+   unavailable when told to disable it via
+   --disable-ssl_slave. Reported by Cheetah. [MG]
+ * Sound from an AUDIBLE wagon object used to propagate into other
+   wagon objects in the same location with an @listen of *. It now
+   does so again.  Reported by Xeero and Padraic. [MG]
  * Loading a reboot db is more robust. Inspired by Padraic. [SW]
  * scan() couldn't be used by rooms. Reported by Padraic. [MG]
  * Possible crashbug in the queue triggered by events reported by
    Rince@Wing Commander: New Horizon. [MG]
  * @list attribute would show duplicates for aliases. [MG]
  * insert(,foo,-1) no longer appends an extra delimiter. [MG]
- * @function/clone didn't work correctly, and could potentially cause a
-   crash. [MG]
+ * @function/clone didn't work correctly, and could potentially cause
+   a crash. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
    Suggested by Minion. [MG]
+ * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL
+   support is not compiled into the MUSH. Instead, it just reports
+   that no SQL db is available, like @mapsql does. [MG]
 
 Functions:
- * ldelete(), replace(), elements() and extract() now accept negative
-   position arguments, to count backwards from the end of the list, similar 
-   to insert(). Suggested by Minion. [MG]
- * replace() now takes an optional output separator. [MG]
-
-Minor changes:
- * Logged messages now have events in the LOG tree. Suggested by
-   Padraic. [SW]
- * Objects belonging to destroyed players now get chowned to a
-   configurable player (probate_judge in mush.cnf) instead of
-   God. [SW]
- * regmatch() now returns an error for invalid regexps, whether you're
-   storing subpattern matches or not. Reported by Sketch. [MG]
- * Commands involving movement now check the enactor is a player/thing,
-   instead of just relying on the command's restriction. [MG]
- * @switch, switch(), @[in]filter and attribute @locks (foo:bar) now do
-   lte/gte wildcard matches on <=foo and >=foo patterns. Inspired by 
-   Wiggles. [MG]
- * New channel mogrifier, MOGRIFY`NOBUFFER, can be used to exclude certain
-   @chats from the channel's recall buffer. Suggested by Wiggles. [MG]
  * version() now reports svn revision/date where available. Patch by
    Padraic.
- * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL support
-   is not compiled into the MUSH. Instead, it just reports that no SQL db
-   is available, like @mapsql does. [MG]
- * Nospoof players now see the nospoof header on @cemits, making @nscemit
-   actually have some use. Report by rimnar@M*U*S*H. [MG]
- * The login screen WHO can now be overridden using the who_file config
-   option, which can be set as the path to a textfile or an obj/attr, like
-   connect_file et al. From suggestions by Paige, Trelane and Mercutio. [MG]
+ * ldelete(), replace(), elements() and extract() now accept negative
+   position arguments, to count backwards from the end of the list,
+   similar to insert(). Suggested by Minion. [MG]
+ * replace() now takes an optional output separator. [MG]
+ * regmatch() now returns an error for invalid regexps, whether you're
+   storing subpattern matches or not. Reported by Sketch. [MG]
+ * time(), timefmt() and convsecs() can use symbolic timezones
+   (US/Pacific, EST, etc.) if the host server has a time zone database
+   installed. [SW]
+ * playermem() and objmem() are smarter about calculating space being
+   used by atributes [SW]
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

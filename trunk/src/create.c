@@ -578,8 +578,6 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
 
   clone = new_object();
 
-  /* Need to figure out why this is here. */
-  memcpy(REFDB(clone), REFDB(thing), sizeof(struct object));
   Owner(clone) = Owner(player);
   Name(clone) = NULL;
   if (newname && *newname)
@@ -588,7 +586,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     set_name(clone, Name(thing));
   s_Pennies(clone, Pennies(thing));
   AttrCount(clone) = 0;
-  atr_cpy(clone, thing);
+  List(clone) = NULL;
   Locks(clone) = NULL;
   clone_locks(player, thing, clone);
   Zone(clone) = Zone(thing);
@@ -601,6 +599,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     Powers(clone) = new_flag_bitmask("POWER");  /* zap powers */
   } else {
     Powers(clone) = clone_flag_bitmask("POWER", Powers(thing));
+    Warnings(clone) = Warnings(thing);
     if (Wizard(clone) || Royalty(clone) || Warnings(clone) ||
         !null_flagmask("POWER", Powers(clone)))
       notify(player,
@@ -609,9 +608,16 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
   }
   /* We give the clone the same modification time that its
    * other clone has, but update the creation time */
+  ModTime(clone) = ModTime(thing);
   CreTime(clone) = mudtime;
+  Type(clone) = Type(thing);
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
+  if (IsRoom(thing))
+    Exits(clone) = NOTHING;
+  else
+    Home(clone) = Home(thing);
+  atr_cpy(clone, thing);
 
   queue_event(player, "OBJECT`CREATE", "%s,%s",
               unparse_objid(clone), unparse_objid(thing));
@@ -680,7 +686,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       else
         moveto(clone, Location(player), player, "cloned");
       current_state.things++;
-      local_data_clone(clone, thing);
+      local_data_clone(clone, thing, preserve);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
                   NULL, 0);
       return clone;
@@ -693,7 +699,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       Exits(clone) = NOTHING;
       notify_format(player, T("Cloned: Room #%d."), clone);
       current_state.rooms++;
-      local_data_clone(clone, thing);
+      local_data_clone(clone, thing, preserve);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
                   NULL, 0);
       return clone;
@@ -744,7 +750,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
                T
                ("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."));
       notify_format(player, T("Cloned: Exit #%d."), clone);
-      local_data_clone(clone, thing);
+      local_data_clone(clone, thing, preserve);
       return clone;
     }
   }

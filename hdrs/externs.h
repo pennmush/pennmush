@@ -834,7 +834,7 @@ bool qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *s);
     void local_connect(dbref player, int isnew, int num);
     void local_disconnect(dbref player, int num);
     void local_data_create(dbref object);
-    void local_data_clone(dbref clone, dbref source);
+    void local_data_clone(dbref clone, dbref source, int preserve);
     void local_data_free(dbref object);
     int local_can_interact_first(dbref from, dbref to, int type);
     int local_can_interact_last(dbref from, dbref to, int type);

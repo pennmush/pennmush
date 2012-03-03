@@ -72,6 +72,7 @@ Fixes:
  * insert(,foo,-1) no longer appends an extra delimiter. [MG]
  * @function/clone didn't work correctly, and could potentially cause
    a crash. [MG]
+ * @clone didn't respect Many_Attribs. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
@@ -94,6 +95,10 @@ Functions:
    installed. [SW]
  * playermem() and objmem() are smarter about calculating space being
    used by atributes [SW]
+   
+Hardcode:
+ * The local_data_clone() function now receives an additional argument,
+   which specifies whether @clone/preserve was used. [MG]
 
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

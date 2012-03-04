@@ -17,6 +17,13 @@ chronological order (most recent first)
 
 Version 1.8.5 patchlevel 1                                 ??? ??, 2012
 
+Hardcode:
+ * The local_data_clone() function now receives an additional argument,
+   which specifies whether @clone/preserve was used. You'll need to either
+   update the definition of local_data_clone in src/local.c from the one in 
+   src/local.dst or, if you've made no changes to src/local.c, just remove
+   src/local.c and it'll be rebuilt automatically. [MG]
+
 Major changes:
  * Built-in attributes are now stored in the database. This means that
    @attribute no longer needs to be in an @startup, as it will persist
@@ -96,10 +103,6 @@ Functions:
  * playermem() and objmem() are smarter about calculating space being
    used by atributes [SW]
    
-Hardcode:
- * The local_data_clone() function now receives an additional argument,
-   which specifies whether @clone/preserve was used. [MG]
-
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 
 Major changes:

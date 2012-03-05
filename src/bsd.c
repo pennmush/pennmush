@@ -1157,7 +1157,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       if (FD_ISSET(sock, &input_set))
         got_new_connection(sock, CS_IP_SOCKET);
       if (sslsock && FD_ISSET(sslsock, &input_set))
-        got_new_connection(sock, CS_OPENSSL_SOCKET);
+        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);

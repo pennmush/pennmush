@@ -348,9 +348,9 @@ struct fcache_entries {
 };
 
 static struct fcache_entries fcache;
-static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
+static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix, char *arg);
 static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                            const unsigned char *prefix);
+                            const unsigned char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d, const char *reason, dbref executor);
@@ -1331,7 +1331,7 @@ clearstrings(DESC *d)
  */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                 const unsigned char *prefix)
+                 const unsigned char *prefix, char *arg)
 {
   char descarg[SBUF_LEN], dbrefarg[SBUF_LEN], buff[BUFFER_LEN], *bp;
   PE_REGS *pe_regs;
@@ -1356,6 +1356,8 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
   pe_regs_setenv_nocopy(pe_regs, 0, descarg);
   pe_regs_setenv_nocopy(pe_regs, 1, dbrefarg);
+  if (arg && *arg)
+    pe_regs_setenv_nocopy(pe_regs, 2, arg);
   call_ufun(&ufun, buff, d->player, d->player, NULL, pe_regs);
   bp = strchr(buff, '\0');
   safe_chr('\n', buff, &bp);
@@ -1379,7 +1381,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
  * got a text file to display
  */
 static bool
-fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
+fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)
 {
   int i;
 
@@ -1389,7 +1391,7 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
 
   for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
     if (fb[i].thing != NOTHING) {
-      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix) == 1) {
+      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix, arg) == 1) {
         /* Attr successfully evaluated and displayed */
         return 1;
       }
@@ -1624,7 +1626,7 @@ static void
 logout_sock(DESC *d)
 {
   if (d->connected) {
-    fcache_dump(d, fcache.quit_fcache, NULL);
+    fcache_dump(d, fcache.quit_fcache, NULL, NULL);
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
@@ -1681,7 +1683,7 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     if (d->connected != CONN_DENIED) {
-      fcache_dump(d, fcache.quit_fcache, NULL);
+      fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d, reason, 0, executor);
       if (can_mail(d->player)) {
@@ -2063,7 +2065,7 @@ welcome_user(DESC *d, int telnet)
   else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
-  fcache_dump(d, fcache.connect_fcache, NULL);
+  fcache_dump(d, fcache.connect_fcache, NULL, NULL);
 }
 
 static void
@@ -2657,7 +2659,7 @@ do_command(DESC *d, char *command)
       }
       if (j) {
         send_prefix(d);
-        if (!fcache_dump(d, fcache.who_fcache, NULL))
+        if (!fcache_dump(d, fcache.who_fcache, NULL, command + j))
           dump_users(d, command + j);
         send_suffix(d);
       } else if (!check_connect(d, command)) {
@@ -2719,11 +2721,11 @@ dump_messages(DESC *d, dbref player, int isnew)
   if (!options.login_allow || !under_limit ||
       (Guest(player) && !options.guest_allow)) {
     if (!options.login_allow) {
-      fcache_dump(d, fcache.down_fcache, NULL);
+      fcache_dump(d, fcache.down_fcache, NULL, NULL);
       if (*cf_downmotd_msg)
         raw_notify(player, cf_downmotd_msg);
     } else if (MAX_LOGINS && !under_limit) {
-      fcache_dump(d, fcache.full_fcache, NULL);
+      fcache_dump(d, fcache.full_fcache, NULL, NULL);
       if (*cf_fullmotd_msg)
         raw_notify(player, cf_fullmotd_msg);
     }
@@ -2744,14 +2746,14 @@ dump_messages(DESC *d, dbref player, int isnew)
   }
   /* give permanent text messages */
   if (isnew)
-    fcache_dump(d, fcache.newuser_fcache, NULL);
+    fcache_dump(d, fcache.newuser_fcache, NULL, NULL);
   if (num == 1) {
-    fcache_dump(d, fcache.motd_fcache, NULL);
+    fcache_dump(d, fcache.motd_fcache, NULL, NULL);
     if (Hasprivs(player))
-      fcache_dump(d, fcache.wizmotd_fcache, NULL);
+      fcache_dump(d, fcache.wizmotd_fcache, NULL, NULL);
   }
   if (Guest(player))
-    fcache_dump(d, fcache.guest_fcache, NULL);
+    fcache_dump(d, fcache.guest_fcache, NULL, NULL);
 
   if (ModTime(player))
     notify_format(player, T("%ld failed connections since last login."),
@@ -2882,7 +2884,7 @@ check_connect(DESC *d, const char *msg)
 
   } else if (string_prefix("create", command)) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
@@ -2895,9 +2897,9 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.login_allow || !options.create_allow) {
       if (!options.login_allow)
-        fcache_dump(d, fcache.down_fcache, NULL);
+        fcache_dump(d, fcache.down_fcache, NULL, NULL);
       else
-        fcache_dump(d, fcache.register_fcache, NULL);
+        fcache_dump(d, fcache.register_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -2906,7 +2908,7 @@ check_connect(DESC *d, const char *msg)
                   "create: creation not allowed", user);
       return 0;
     } else if (MAX_LOGINS && !under_limit) {
-      fcache_dump(d, fcache.full_fcache, NULL);
+      fcache_dump(d, fcache.full_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -2939,7 +2941,7 @@ check_connect(DESC *d, const char *msg)
 
   } else if (string_prefix("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN,
@@ -2952,7 +2954,7 @@ check_connect(DESC *d, const char *msg)
       return 0;
     }
     if (!options.create_allow) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "Refused registration (creation disabled) for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);

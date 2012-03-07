@@ -228,7 +228,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       goto error;
     }
 
-    free(tz);
+    mush_free(tz, "tzinfo");
     return do_read_tzfile(fd, tzfile, 8);
   }
 

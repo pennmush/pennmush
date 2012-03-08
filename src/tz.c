@@ -395,12 +395,11 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
     return tz->offsets[0].tt_gmtoff;
   }
 
-  for (n = 1; n < tz->timecnt; n += 1)
-    if (when < tz->transitions[n])
-      return tz->offsets[tz->offset_indexes[n - 1]].tt_gmtoff;
+  for (n = 0; n < tz->timecnt - 1; n += 1)
+    if (when >= tz->transitions[n] && when < tz->transitions[n + 1])
+      return tz->offsets[tz->offset_indexes[n]].tt_gmtoff;
 
-
-  return 0;
+  return tz->offsets[tz->offset_indexes[n]].tt_gmtoff;
 }
 
 /** Parse a softcode timezone request.

@@ -43,7 +43,7 @@ FUNCTION(fun_timefmt)
   if (!args[0] || !*args[0])
     return;                     /* No field? Bad user. */
 
-  if (nargs >= 2) {
+  if (nargs >= 2 && args[1] && *args[1]) {
     /* This is silly, but time_t is signed on several platforms,
      * so we can't assign an unsigned int to it safely
      */
@@ -480,14 +480,14 @@ FUNCTION(fun_convtime)
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
-    if (doutc) 
+    if (doutc)
       save_and_set_tz("");
 #ifdef SUN_OS
     safe_integer(timelocal(&ttm), buff, bp);
 #else
     safe_integer(mktime(&ttm), buff, bp);
 #endif                          /* SUN_OS */
-    if (doutc) 
+    if (doutc)
       restore_tz();
   } else {
     safe_str("-1", buff, bp);

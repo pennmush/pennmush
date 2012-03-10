@@ -78,6 +78,12 @@ static void shutdown_a_queue(MQUE **head, MQUE **tail);
 static int do_entry(MQUE *entry, int include_recurses);
 static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
+/* Keep track of the last 15 minutes worth of queue activity per second */
+enum { QUEUE_LOAD_SECS = 900 };
+int16_t queue_load_record[QUEUE_LOAD_SECS] = { 0 };
+
+double average16(int16_t *arr, int count);
+
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
 /* From game.c, for report() */
@@ -907,6 +913,11 @@ void
 do_second(void)
 {
   MQUE *trail = NULL, *point, *next;
+
+  /* Advance the queue load average count */
+  memmove(&queue_load_record[1], &queue_load_record[0], sizeof(queue_load_record) - sizeof(int16_t));
+  queue_load_record[0] = 0;
+
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since
    * its effects on other objects happen only after one second
@@ -1015,7 +1026,6 @@ run_user_input(dbref player, int port, char *input)
   entry->caller = player;
   entry->port = port;
   entry->queue_type = QUEUE_SOCKET | QUEUE_NOLIST;
-
   do_entry(entry, 0);
   free_qentry(entry);
 }
@@ -1048,6 +1058,8 @@ do_entry(MQUE *entry, int include_recurses)
 
   if (!IsPlayer(executor) && Halted(executor))
     return 0;
+
+  queue_load_record[0] += 1;
 
   s = entry->action_list;
   if (!include_recurses) {
@@ -1991,6 +2003,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
                   T
                   ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
+    notify_format(player, T("Load average (1/5/15 minutes): %.2f %.2f %.2f"),
+		  average16(queue_load_record, 60), average16(queue_load_record, 300),
+		  average16(queue_load_record, 900));
   }
 }
 
@@ -2369,4 +2384,23 @@ shutdown_a_queue(MQUE **head, MQUE **tail)
     }
     free_qentry(entry);
   }
+}
+
+/** Averages an array of 16-bit integers. Consider making a SSE2 code
+ * path in the future for giggles.
+ *
+ * \param nums The numbers
+ * \param len The length of the array
+ * \return The average
+ */
+double
+average16(int16_t *nums, int len)
+{
+  int n;
+  int total = 0;
+
+  for (n = 0; n < len; n += 1)
+    total += nums[n];
+
+  return (double)total / (double)len;
 }

@@ -3110,6 +3110,9 @@ See also: @inprefix, AUDIBLE, @listen
   the number of entries made by objects that have been halted but haven't
   been removed from the queue yet.
       
+  It also shows a running load average of the number of queue entries
+  executed per second for the last 1, 5 and 15 minutes.
+
   @ps with no arguments will show you your own queue. Wizards may specify
   the /all switch, and see the full queue. They may also specify a player.
   @ps/summary just displays the queue totals for the whole queue.

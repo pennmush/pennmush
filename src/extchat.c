@@ -1626,7 +1626,6 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
 {
   CHAN *chan = NULL;
   CHANUSER *u;
-  int canhear;
   int override_checks = 0;
   int cb_flags = CB_EMIT;
 
@@ -1669,13 +1668,12 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     return;
   }
   u = onchannel(player, chan);
-  canhear = u ? !Chanuser_Gag(u) : 0;
   /* If the channel isn't open, you must hear it in order to speak */
   if (!override_checks && !Channel_Open(chan)) {
     if (!u) {
       notify(player, T("You must be on that channel to speak on it."));
       return;
-    } else if (!canhear) {
+    } else if (Chanuser_Gag(u)) {
       notify(player, T("You must stop gagging that channel to speak on it."));
       return;
     }
@@ -1692,8 +1690,6 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     cb_flags |= CB_NOSPOOF; /* Show NOSPOOF headers */
 
   channel_send(chan, player, cb_flags, msg);
-  if (!canhear)
-    notify_format(player, T("Cemit to channel %s: %s"), ChanName(chan), msg);
   ChanNumMsgs(chan)++;
   return;
 }

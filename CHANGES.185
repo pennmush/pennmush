@@ -84,6 +84,8 @@ Fixes:
  * @clone didn't respect Many_Attribs. [MG]
  * Making a connection to a ssl port on a game not using ssl_slave
    could hang the mush. Reported by Minion. [SW]
+ * @cemit and friends would notify you twice if you cemited to a channel
+   you weren't on. Reported by spork. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

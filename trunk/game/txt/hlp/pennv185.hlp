@@ -55,6 +55,8 @@ Minor changes:
    request. Controlled via options.h [SW]
  * New lock, @lock/dropin, controls who can drop objects into that
    location. [SW]
+ * @ps now shows a running average of the number of queue entries
+   executed per second. [SW]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set
@@ -76,6 +78,10 @@ Fixes:
  * @function/clone didn't work correctly, and could potentially cause
    a crash. [MG]
  * @clone didn't respect Many_Attribs. [MG]
+ * Making a connection to a ssl port on a game not using ssl_slave
+   could hang the mush. Reported by Minion. [SW]
+ * @cemit and friends would notify you twice if you cemited to a channel
+   you weren't on. Reported by spork. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

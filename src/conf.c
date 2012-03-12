@@ -1967,6 +1967,10 @@ show_compile_options(dbref player)
   notify(player, T(" SSE3 instructions are being used."));
 #endif
 
+#ifdef HAVE_SSSE3
+  notify(player, T(" SSSE3 instructions are being used."));
+#endif
+
 #ifdef HAVE_ALTIVEC
   notify(player, T(" Altivec instructions are being used."));
 #endif

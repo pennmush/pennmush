@@ -429,6 +429,11 @@ typedef bool _Bool;
 #define HAVE_SSE3
 #endif
 
+#undef HAVE_SSSE3
+#ifdef __SSSE3__
+#define HAVE_SSSE3
+#endif
+
 #undef HAVE_ALTIVEC
 
 /* TODO: Change in source */

@@ -27,6 +27,13 @@
 #include <stdint.h>
 #endif
 
+#ifdef HAVE_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HAVE_SSSE3
+#include <tmmintrin.h>
+#endif
+
 #include "conf.h"
 #include "command.h"
 #include "mushdb.h"
@@ -80,9 +87,9 @@ static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
 /* Keep track of the last 15 minutes worth of queue activity per second */
 enum { QUEUE_LOAD_SECS = 900 };
-int16_t queue_load_record[QUEUE_LOAD_SECS] = { 0 };
+int16_t queue_load_record[QUEUE_LOAD_SECS] __attribute__((__aligned__(16))) = { 0 };
 
-double average16(int16_t *arr, int count);
+double average16(const int16_t *arr, int count);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -915,7 +922,7 @@ do_second(void)
   MQUE *trail = NULL, *point, *next;
 
   /* Advance the queue load average count */
-  memmove(&queue_load_record[1], &queue_load_record[0], sizeof(queue_load_record) - sizeof(int16_t));
+  memmove(queue_load_record + 1, queue_load_record, sizeof(queue_load_record) - sizeof(int16_t));
   queue_load_record[0] = 0;
 
   /* move contents of low priority queue onto end of normal one
@@ -2386,16 +2393,94 @@ shutdown_a_queue(MQUE **head, MQUE **tail)
   }
 }
 
-/** Averages an array of 16-bit integers. Consider making a SSE2 code
- * path in the future for giggles.
+/** Averages an array of 16-bit integers. 
+ *
+ * When compiling with SSE2 support, uses a vectorized code path that
+ * takes 32 iterations to sum up the counts used to compute a 15
+ * minute queue load average, instead of 900 from the plain scalar
+ * version. Is it not nifty?
  *
  * \param nums The numbers
  * \param len The length of the array
  * \return The average
  */
 double
-average16(int16_t *nums, int len)
+average16(const int16_t *nums, int len)
 {
+#ifdef HAVE_SSE2
+  int chunks, n, total = 0;
+  __m128i totals1, totals2, totals3, totals4, zero;
+  int16_t totarr[8];
+
+  chunks = len / 32;
+
+  zero = _mm_set1_epi16(0);
+  totals1 = totals2 = totals3 = totals4 = zero;
+
+  /* 32-element chunks */
+  for (n = 0; n < chunks; n += 1) {
+    __m128i chunk1, chunk2, chunk3, chunk4;
+    chunk1 = _mm_load_si128((__m128i *) (nums + (n * 32)));
+    chunk2 = _mm_load_si128((__m128i *) (nums + (n * 32) + 8));
+    chunk3 = _mm_load_si128((__m128i *) (nums + (n * 32) + 16));
+    chunk4 = _mm_load_si128((__m128i *) (nums + (n * 32) + 24));
+    totals1 = _mm_add_epi16(totals1, chunk1);
+    totals2 = _mm_add_epi16(totals2, chunk2);
+    totals3 = _mm_add_epi16(totals3, chunk3);
+    totals4 = _mm_add_epi16(totals4, chunk4);
+  }
+
+  n = chunks * 32;
+
+  /* Possible trailing 16-element chunk */
+  if (len - n >= 16) {
+    __m128i chunk1, chunk2;
+    chunk1 = _mm_load_si128((__m128i *) (nums + n));
+    chunk2 = _mm_load_si128((__m128i *) (nums + n + 8));
+    totals1 = _mm_add_epi16(totals1, chunk1);
+    totals2 = _mm_add_epi16(totals2, chunk2);
+    n += 16;
+  }
+
+  /* Possible trailing 8-element chunk */
+  if (len - n >= 8) {
+    __m128i chunk = _mm_load_si128((__m128i *) (nums + n));
+    totals3 = _mm_add_epi16(totals3, chunk);
+    n += 8;
+  }
+
+  /* Sum up all the totals vectors */
+  totals1 = _mm_add_epi16(totals1, totals2);
+  totals3 = _mm_add_epi16(totals3, totals4);
+  totals1 = _mm_add_epi16(totals1, totals3);
+    
+#ifdef HAVE_SSSE3
+  totals1 = _mm_hadd_epi16(totals1, totals2);
+  _mm_store_si128((__m128i *) totarr, totals1);
+  total = totarr[0];
+  total += totarr[1];
+  total += totarr[2];
+  total += totarr[3];
+#else  
+  _mm_store_si128((__m128i *) totarr, totals1);
+  total = totarr[0];
+  total += totarr[1];
+  total += totarr[2];
+  total += totarr[3];
+  total += totarr[4];
+  total += totarr[5];
+  total += totarr[6];
+  total += totarr[7];
+#endif
+
+  /* Sum up the remaining trailing elements */
+  for (; n < len; n += 1)
+    total += nums[n];
+  
+  return (double)total / (double)len;
+
+#else /* Non-SSE2 version */
+
   int n;
   int total = 0;
 
@@ -2403,4 +2488,6 @@ average16(int16_t *nums, int len)
     total += nums[n];
 
   return (double)total / (double)len;
+
+#endif
 }

@@ -715,6 +715,7 @@ enable_info_slave
 enable_ssl_slave
 enable_sse2
 enable_sse3
+enable_ssse3
 enable_altivec
 '
       ac_precious_vars='build_alias
@@ -1355,6 +1356,8 @@ Optional Features:
                           SSE2)
   --enable-sse3           Use SSE3 instructions (Requires a CPU that supports
                           SSE3)
+  --enable-ssse3          Use SSSE3 instructions (Requires a CPU that supports
+                          SSSE3)
   --enable-altivec        Use PowerPC Altivec instructions (Requires a CPU
                           that supports Altivec)
 
@@ -9117,24 +9120,35 @@ if test "${enable_sse3+set}" = set; then :
   enableval=$enable_sse3;
 fi
 
+# Check whether --enable-ssse3 was given.
+if test "${enable_ssse3+set}" = set; then :
+  enableval=$enable_ssse3;
+fi
+
 # Check whether --enable-altivec was given.
 if test "${enable_altivec+set}" = set; then :
   enableval=$enable_altivec;
 fi
 
 
+if test "$enable_ssse3" = yes; then
+   $as_echo "#define HAVE_SSSE3 1" >>confdefs.h
+
+   CFLAGS="$CFLAGS -mssse3"
+   enable_sse3=yes
+fi
+
+if test "$enable_sse3" = yes; then
+   $as_echo "#define HAVE_SSE3 1" >>confdefs.h
+
+   CFLAGS="$CFLAGS -msse3"
+   enable_sse2=yes
+fi
+
 if test "$enable_sse2" = yes; then
    $as_echo "#define HAVE_SSE2 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -msse2"
-fi
-
-if test "$enable_sse3" = yes; then
-   $as_echo "#define HAVE_SSE2 1" >>confdefs.h
-
-   $as_echo "#define HAVE_SSE3 1" >>confdefs.h
-
-   CFLAGS="$CFLAGS -msse2 -msse3"
 fi
 
 if test "$enable_altivec" = yes; then

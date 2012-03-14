@@ -212,9 +212,6 @@ local_connected(struct conn *c)
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
   bufferevent_setcb(c->remote_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->remote_bev, EV_READ | EV_WRITE);
-  /* If these aren't set, just buffers till lots of data is ready */
-  bufferevent_setwatermark(c->remote_bev, EV_READ, 0, 1);
-  bufferevent_setwatermark(c->remote_bev, EV_WRITE, 0, 1);
 
   c->state = C_ESTABLISHED;
 

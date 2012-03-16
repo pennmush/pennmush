@@ -86,6 +86,7 @@ Fixes:
    could hang the mush. Reported by Minion. [SW]
  * @cemit and friends would notify you twice if you cemited to a channel
    you weren't on. Reported by spork. [MG]
+ * regrep() could try to read uninitialized memory. [SW]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

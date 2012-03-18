@@ -107,6 +107,10 @@ extern int h_errno;
 #include <sys/select.h>
 #endif
 
+#ifdef __APPLE__
+#include <sys/ucred.h>
+#endif
+
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
@@ -432,8 +436,9 @@ ssize_t
 send_with_creds(int s, void *buf, size_t len)
 {
   ssize_t slen;
-  /* Linux can get credentials on the receiving end via a getsockopt()
-     call. Use it instead of sendmsg() because it's a lot simpler. */
+  /* Linux and OS X can get credentials on the receiving end via a
+     getsockopt() call. Use it instead of sendmsg() because it's a lot
+     simpler. */
 #if 0
   /* Sample sendmsg() credential passing using linux structs. */
   {
@@ -485,14 +490,15 @@ send_with_creds(int s, void *buf, size_t len)
 ssize_t
 recv_with_creds(int s, void *buf, size_t len, pid_t *remote_pid, uid_t *remote_uid)
 {
-  /* Only implemented on linux so far because different OSes support
-     slightly different fields and ways of doing this. Argh.  We'll
-     prefer getsockopt() approaches over recvmsg() when supported. */
+  /* Only implemented on linux and OS X so far because different OSes
+     support slightly different fields and ways of doing this. Argh.
+     We'll prefer getsockopt() approaches over recvmsg() when
+     supported. */
 
   *remote_pid = -1;
   *remote_uid = -1;
 
-#ifdef linux
+#if defined(linux)
   {
     struct ucred creds;
     socklen_t credlen = sizeof creds;
@@ -502,6 +508,18 @@ recv_with_creds(int s, void *buf, size_t len, pid_t *remote_pid, uid_t *remote_u
     } else {
       *remote_pid = creds.pid;
       *remote_uid = creds.uid;
+    }
+  }
+#elif defined(__APPLE__)
+  {
+    struct xucred creds;
+    socklen_t credlen = sizeof creds;
+    if (getsockopt(s, 0, LOCAL_PEERCRED, &creds, &credlen) < 0) {
+      perror("getsockopt LOCAL_PEERCRED");
+    } else {
+      /* OS X doesn't pass the pid of the process on the other end of
+         the socket. */
+      *remote_uid = creds.cr_uid;
     }
   }
 #endif

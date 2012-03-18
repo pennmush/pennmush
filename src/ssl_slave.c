@@ -219,7 +219,12 @@ local_connected(struct conn *c)
   len = strlen(c->remote_host) + strlen(c->remote_ip) + 3;
   hostid = malloc(len + 1);
   sprintf(hostid, "%s^%s\r\n", c->remote_ip, c->remote_host);
-  bufferevent_write(c->local_bev, hostid, len);
+
+  if (send_with_creds(bufferevent_getfd(c->local_bev), hostid, len) < 0) {
+    penn_perror("send_with_creds");
+    delete_conn(c);
+  }
+
   free(hostid);
 }
 

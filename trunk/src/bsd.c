@@ -1346,12 +1346,12 @@ new_connection(int oldsock, int *result, conn_source source)
 	strcpy(hostbuf, "(Unknown)");
       }
     }
-
+  
     /* Use credential passing to tell if a local socket connection was
        made by ssl_slave or something else (Like a web-based client's
-       server side). At the moment, this is only implemented on
-       linux. For other OSes, all local connections look like SSL ones
-       since that's the usual case. */
+       server side). At the moment, this is only implemented on linux
+       and OS X. For other OSes, all local connections look like SSL
+       ones since that's the usual case. */
 #ifdef SSL_SLAVE
     if (remote_pid >= 0) {
       if (remote_pid == ssl_slave_pid) {
@@ -1360,12 +1360,24 @@ new_connection(int oldsock, int *result, conn_source source)
 	do_rawlog(LT_CONN, "[%d] Connection on local socket from pid %d run as uid %d.",
 		  newsock, remote_pid, remote_uid);
       }
-    }
+    } else if (remote_uid >= 0) {
+      /* A system like OS X that doesn't pass the remote pid as a
+         credential but does pass UID? If the remote and local UIDs
+         are the same, assume it's from the slave. */
+      if (remote_uid == getuid()) {
+        source = CS_LOCAL_SSL_SOCKET;
+      } else {
+	do_rawlog(LT_CONN, "[%d] Connection on local socket from process run as uid %d.",
+		  newsock, remote_uid);
+      }
+    } else {
+      /* Default, for OSes without implemented credential
+         passing. Just assume it's a connection from ssl_slave. */
+      source = CS_LOCAL_SSL_SOCKET;
+    }  
 #else
-    /* Default, for OSes without implemented credential passing */
     source = CS_LOCAL_SSL_SOCKET;
 #endif
-
   }
 
   if (Forbidden_Site(ipbuf) || Forbidden_Site(hostbuf)) {

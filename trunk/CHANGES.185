@@ -61,6 +61,8 @@ Minor changes:
    location. [SW]
  * @ps now shows a running average of the number of queue entries
    executed per second. [SW]
+ * Try to discriminate between ssl_slave and other sources of
+   connections to the local unix socket. [SW]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set
@@ -87,6 +89,7 @@ Fixes:
  * @cemit and friends would notify you twice if you cemited to a channel
    you weren't on. Reported by spork. [MG]
  * regrep() could try to read uninitialized memory. [SW]
+ * Fix a possible DOS from a local attacker. [SW]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

@@ -324,6 +324,7 @@ typedef enum conn_source {
   CS_IP_SOCKET,
   CS_OPENSSL_SOCKET,
   CS_LOCAL_SOCKET,
+  CS_LOCAL_SSL_SOCKET,
   CS_UNKNOWN
 } conn_source;
 

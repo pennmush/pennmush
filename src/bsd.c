@@ -422,6 +422,21 @@ void initialize_mt(void);
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
 
+static inline bool
+is_blocking_err(int code)
+{
+  if (code == EWOULDBLOCK)
+    return 1;
+  if (code == EINTR)
+    return 1;
+#ifdef EAGAIN
+  if (code == EAGAIN)
+    return 1;
+#endif
+  return 0;
+}
+
+
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -886,13 +901,28 @@ update_quotas(struct timeval last, struct timeval current)
 
 extern slab *text_block_slab;
 
+/* Is source one an IP connection? */
+static inline bool
+is_remote_source(conn_source source)
+{
+  return source == CS_IP_SOCKET || source == CS_OPENSSL_SOCKET;
+}
+
+static inline bool
+is_remote_desc(DESC *d)
+{
+  if (!d)
+    return 0;
+  return is_remote_source(d->source);
+}
+
 /** Is a descriptor using SSL? */
-static bool
+static inline bool
 is_ssl_desc(DESC *d)
 {
   if (!d)
     return 0;
-  return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SOCKET;
+  return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SSL_SOCKET;
 }
 
 static void
@@ -1219,8 +1249,10 @@ source_to_s(conn_source source)
     return "normal port";
   case CS_OPENSSL_SOCKET:
     return "OpenSSL port";
-  case CS_LOCAL_SOCKET:
+  case CS_LOCAL_SSL_SOCKET:
     return "OpenSSL proxy";
+  case CS_LOCAL_SOCKET:
+    return "unix port";
   case CS_UNKNOWN:
     return "unknown source";
   }
@@ -1234,8 +1266,8 @@ new_connection(int oldsock, int *result, conn_source source)
   union sockaddr_u addr;
   struct hostname_info *hi = NULL;
   socklen_t addr_len;
-  char tbuf1[BUFFER_LEN];
-  char tbuf2[BUFFER_LEN];
+  char ipbuf[BUFFER_LEN];
+  char hostbuf[BUFFER_LEN];
   char *bp;
 
   *result = 0;
@@ -1245,55 +1277,104 @@ new_connection(int oldsock, int *result, conn_source source)
     *result = newsock;
     return 0;
   }
-  if (source != CS_LOCAL_SOCKET) {
-    bp = tbuf2;
+  if (is_remote_source(source)) {
+    bp = ipbuf;
     hi = ip_convert(&addr.addr, addr_len);
-    safe_str(hi ? hi->hostname : "", tbuf2, &bp);
+    safe_str(hi ? hi->hostname : "", ipbuf, &bp);
     *bp = '\0';
-    bp = tbuf1;
+    bp = hostbuf;
     hi = hostname_convert(&addr.addr, addr_len);
-    safe_str(hi ? hi->hostname : "", tbuf1, &bp);
+    safe_str(hi ? hi->hostname : "", hostbuf, &bp);
     *bp = '\0';
   } else {                      /* source == CS_LOCAL_SOCKET */
     int len;
     char *split;
-
-    hi = ip_convert(&addr.addr, addr_len);
+    pid_t remote_pid = -1;
+    uid_t remote_uid = -1;
+    bool good_to_read = 1;
 
     /* As soon as the SSL slave opens a new connection to the mush, it
        writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-       not block.
+       not block unless somebody's being naughty. People obviously can
+       be. So we'll wait a short time for readable data, and use a
+       non-blocking socket read anyways. If the client doesn't send
+       the hostname string fast enough, oh well.
      */
-    len = read(newsock, tbuf2, sizeof tbuf2);
-    if (len < 3) {
-      /* This shouldn't happen! */
-      closesocket(newsock);
-      return 0;
+
+#ifdef HAVE_POLL
+    {
+      struct pollfd pfd;
+      pfd.fd = newsock;
+      pfd.events = POLLIN;
+      pfd.revents = 0;
+      poll(&pfd, 1, 100);
+      if (pfd.revents & POLLIN)
+	good_to_read = 1;
+      else
+	good_to_read = 0;
+    }
+#endif
+    
+    if (good_to_read)
+      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
+    else {
+      len = -1;
+      errno = EWOULDBLOCK;
     }
 
-    tbuf2[len] = '\0';
-
-    split = strchr(tbuf2, '^');
-    if (split) {
-      *split++ = '\0';
-      strcpy(tbuf1, split);
-      split = strchr(tbuf1, '\r');
-      if (split)
-        *split = '\0';
+    if (len < 5) {
+      if (len < 0 && is_blocking_err(errno)) {
+	strcpy(hostbuf, "(Unknown)");
+	strcpy(ipbuf, "(Unknown)");
+      } else {
+	/* Yup, somebody's being naughty. Be mean right back. */
+	closesocket(newsock);
+	return 0;
+      }
     } else {
-      /* Again, shouldn't happen! */
-      strcpy(tbuf1, "(Unknown)");
-      strcpy(tbuf2, "(Unknown)");
+      ipbuf[len] = '\0';   
+      split = strchr(ipbuf, '^');
+      if (split) {
+	*split++ = '\0';
+	strcpy(hostbuf, split);
+	split = strchr(hostbuf, '\r');
+	if (split)
+	  *split = '\0';
+      } else {
+	/* Again, shouldn't happen! */
+	strcpy(ipbuf, "(Unknown)");
+	strcpy(hostbuf, "(Unknown)");
+      }
     }
+
+    /* Use credential passing to tell if a local socket connection was
+       made by ssl_slave or something else (Like a web-based client's
+       server side). At the moment, this is only implemented on
+       linux. For other OSes, all local connections look like SSL ones
+       since that's the usual case. */
+#ifdef SSL_SLAVE
+    if (remote_pid >= 0) {
+      if (remote_pid == ssl_slave_pid) {
+	source = CS_LOCAL_SSL_SOCKET;
+      } else {
+	do_rawlog(LT_CONN, "[%d] Connection on local socket from pid %d run as uid %d.",
+		  newsock, remote_pid, remote_uid);
+      }
+    }
+#else
+    /* Default, for OSes without implemented credential passing */
+    source = CS_LOCAL_SSL_SOCKET;
+#endif
+
   }
-  if (Forbidden_Site(tbuf1) || Forbidden_Site(tbuf2)) {
-    if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
-        || !Deny_Silent_Site(tbuf2, AMBIGUOUS)) {
-      do_rawlog(LT_CONN, "[%d/%s/%s] %s (%s %s)", newsock, tbuf1, tbuf2,
-                "Refused connection", "remote port",
+
+  if (Forbidden_Site(ipbuf) || Forbidden_Site(hostbuf)) {
+    if (!Deny_Silent_Site(ipbuf, AMBIGUOUS)
+        || !Deny_Silent_Site(hostbuf, AMBIGUOUS)) {
+      do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)", newsock, hostbuf, ipbuf,
                 hi ? hi->port : "(unknown)");
     }
-    if (source != CS_LOCAL_SOCKET)
+    if (is_remote_source(source))
       shutdown(newsock, 2);
     closesocket(newsock);
 #ifndef WIN32
@@ -1301,11 +1382,11 @@ new_connection(int oldsock, int *result, conn_source source)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1,
-            tbuf2, source_to_s(source));
-  if (source != CS_LOCAL_SOCKET)
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
+            ipbuf, source_to_s(source));
+  if (is_remote_source(source))
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, tbuf1, tbuf2, source);
+  return initializesock(newsock, hostbuf, ipbuf, source);
 }
 
 static void
@@ -1918,11 +1999,7 @@ network_send_writev(DESC *d)
 
     cnt = writev(d->descriptor, lines, n);
     if (cnt < 0) {
-      if (errno == EWOULDBLOCK
-#ifdef EAGAIN
-          || errno == EAGAIN
-#endif
-          || errno == EINTR)
+      if (is_blocking_err(errno))
         return 1;
       else
         return 0;
@@ -1974,17 +2051,17 @@ network_send(DESC *d)
     int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
 
     if (cnt < 0) {
+      if (
 #ifdef WIN32
-      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+	  cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
 #else
-      if (errno == EWOULDBLOCK
-#ifdef EAGAIN
-          || errno == EAGAIN
+	  is_blocking_err(errno)
 #endif
-          || errno == EINTR)
-#endif
+	  )
         return 1;
-      return 0;
+
+      else
+	return 0;
     }
     written += cnt;
 
@@ -2458,11 +2535,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
        * the socket, but we shouldn't assume that read() will actually get it
        * and blindly act like a got of -1 is a disconnect-worthy error.
        */
-#ifdef EAGAIN
-      if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == EINTR))
-#else
-      if ((errno == EWOULDBLOCK) || (errno == EINTR))
-#endif
+      if (is_blocking_err(errno))
         return 1;
       else
         return 0;
@@ -3071,8 +3144,10 @@ close_sockets(void)
       d->ssl = NULL;
       d->ssl_state = 0;
     }
-    if (d->source != CS_LOCAL_SOCKET && shutdown(d->descriptor, 2) < 0)
-      penn_perror("shutdown");
+    if (is_remote_desc(d)) {
+      if (shutdown(d->descriptor, 2) < 0)
+	penn_perror("shutdown");
+    }
     closesocket(d->descriptor);
   }
 }
@@ -3724,7 +3799,7 @@ do_who_admin(dbref player, char *name)
               unparse_dbref(Location(d->player)),
               time_format_1(now - d->connected_at),
               time_format_2(now - d->last_time), d->cmds, d->descriptor,
-              is_ssl_desc(d) ? 'S' : ' ', d->addr);
+              is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'), d->addr);
       if (Dark(d->player)) {
         tbuf[71] = '\0';
         strcat(tbuf, " (Dark)");

@@ -391,7 +391,7 @@ make_unix_socket(const char *filename, int socktype)
   return s;
 }
 
-/** Connect to a unix-domain socket 
+/** Connect to a unix-domain socket
  * \param filename The name of the socket file.
  * \param socktyp the type of socket
  * \return a fd for the socket or -1 on error.
@@ -444,7 +444,7 @@ send_with_creds(int s, void *buf, size_t len)
   {
     struct msghdr msg;
     struct cmsghdr *cmsg;
-    struct ucred *creds;    
+    struct ucred *creds;
     uint8_t credbuf[CMSG_SPACE(sizeof *creds)] = { 0 };
     struct iovec iov;
     int sockopt = 1;
@@ -477,6 +477,16 @@ send_with_creds(int s, void *buf, size_t len)
 #endif
   return slen;
 }
+
+#ifdef __CYGWIN__
+/* There is probably a better way to actually fix (instead of ignore) the
+ * lack of MSG_DONTWAIT on cygwin, but since I doubt anyone is actually
+ * using the SSL_SLAVE code on cygwin, I'm not bothering. Can be looked into
+ * if this assumption is proved wrong. */
+#ifndef MSG_DONTWAIT
+#define MSG_DONTWAIT 0
+#endif
+#endif
 
 /* Read from a unix socket, getting unix credentials from the other end. Use for
  * authentication when acceping local connections from ssl_slave or the like.

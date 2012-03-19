@@ -944,7 +944,7 @@ do_function_clone(dbref player, const char *function, const char *clone)
 
   fpc = function_add(mush_strdup(realclone, "function.name"),
                fp->where.fun, fp->minargs, fp->maxargs, (fp->flags | FN_CLONE));
-  fpc->template = (fp->template ? fp->template : fp);
+  fpc->clone_template = (fp->clone_template ? fp->clone_template : fp);
 
   notify(player, T("Function cloned."));
 }
@@ -1023,7 +1023,7 @@ function_add(const char *name, function_func fun, int minargs, int maxargs,
   fp = slab_malloc(function_slab, NULL);
   memset(fp, 0, sizeof(FUN));
   fp->name = name;
-  fp->template = NULL;
+  fp->clone_template = NULL;
   fp->where.fun = fun;
   fp->minargs = minargs;
   fp->maxargs = maxargs;

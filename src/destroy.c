@@ -81,7 +81,7 @@ dbref first_free = NOTHING;   /**< Object at top of free list */
 static dbref what_to_destroy(dbref player, char *name, int confirm,
                              NEW_PE_INFO *pe_info);
 static void pre_destroy(dbref player, dbref thing);
-static void free_object(dbref thing);
+void free_object(dbref thing);
 static void empty_contents(dbref thing);
 static void clear_thing(dbref thing);
 static void clear_player(dbref thing);
@@ -596,7 +596,7 @@ undestroy(dbref player, dbref thing)
  * This is going to have to be very tightly coupled with the implementation;
  * if the database format changes, this will likely have to change too.
  */
-static void
+void
 free_object(dbref thing)
 {
   dbref i, loc;

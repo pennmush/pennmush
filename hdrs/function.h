@@ -85,7 +85,7 @@ struct fun {
    */
   int maxargs;
   uint32_t flags;   /**< Bitflags of function */
-  FUN *template;    /**< Pointer to function this was cloned from */
+  FUN *clone_template;    /**< Pointer to function this was cloned from */
 };
 
 

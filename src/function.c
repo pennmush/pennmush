@@ -504,7 +504,7 @@ FUNTAB flist[] = {
   {"RIGHT", fun_right, 2, 2, FN_REG},
   {"RJUST", fun_rjust, 2, 3, FN_REG},
   {"RLOC", fun_rloc, 2, 2, FN_REG | FN_STRIPANSI},
-  {"RNUM", fun_rnum, 2, 2, FN_REG | FN_STRIPANSI},
+  {"RNUM", fun_rnum, 2, 2, FN_REG | FN_STRIPANSI | FN_DEPRECATED},
   {"ROOM", fun_room, 1, 1, FN_REG | FN_STRIPANSI},
   {"ROOT", fun_root, 2, 2, FN_REG | FN_STRIPANSI},
   {"S", fun_s, 1, -1, FN_REG},

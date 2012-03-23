@@ -4117,6 +4117,10 @@ See also: loc(), where(), room(), rnum(), locate()
   
   You must be in <container>, or be able to examine it, to use this function.
 
+  This function has been deprecated and may be removed in a future
+  patchlevel. locate() should be used instead.
+  
+
 See also: locate(), num(), rloc(), room()
 & ROOM()
   room(<object>)

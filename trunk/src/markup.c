@@ -796,12 +796,12 @@ parse_ansi_string(const char *source)
   int idx = NOMARKUP;
   int pidx = NOMARKUP;
 
-  /* Allocate and zero it out. */
-  as = mush_calloc(1, sizeof(ansi_string), "ansi_string");
-
   if (!source) {
     return NULL;
   }
+
+  /* Allocate and zero it out. */
+  as = mush_calloc(1, sizeof(ansi_string), "ansi_string");
 
   /* Quick check for no markup */
   if (!has_markup(source)) {

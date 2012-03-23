@@ -1314,7 +1314,7 @@ new_connection(int oldsock, int *result, conn_source source)
 	good_to_read = 0;
     }
 #endif
-    
+
     if (good_to_read)
       len = recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
     else {
@@ -1332,7 +1332,7 @@ new_connection(int oldsock, int *result, conn_source source)
 	return 0;
       }
     } else {
-      ipbuf[len] = '\0';   
+      ipbuf[len] = '\0';
       split = strchr(ipbuf, '^');
       if (split) {
 	*split++ = '\0';
@@ -1346,7 +1346,7 @@ new_connection(int oldsock, int *result, conn_source source)
 	strcpy(hostbuf, "(Unknown)");
       }
     }
-  
+
     /* Use credential passing to tell if a local socket connection was
        made by ssl_slave or something else (Like a web-based client's
        server side). At the moment, this is only implemented on linux
@@ -1374,7 +1374,7 @@ new_connection(int oldsock, int *result, conn_source source)
       /* Default, for OSes without implemented credential
          passing. Just assume it's a connection from ssl_slave. */
       source = CS_LOCAL_SSL_SOCKET;
-    }  
+    }
 #else
     source = CS_LOCAL_SSL_SOCKET;
 #endif
@@ -4347,6 +4347,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
       as = parse_ansi_string(doing);
       safe_ansi_string(as, 0, DOING_LEN - 1, doing, &dp);
       *dp = '\0';
+      free_ansi_string(as);
     } else {
       /* Nice and easy */
       doing[DOING_LEN - 1] = '\0';

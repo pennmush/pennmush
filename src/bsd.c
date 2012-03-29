@@ -2695,6 +2695,12 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_HTML;
       if (!d->connected && !d->conn_timer)
         welcome_user(d, 1);
+    } else {
+      /* Resend the Pueblo start string, but not the 'clear screen'
+       * part. Only useful for someone whose client hasn't noticed
+       * they're in Pueblo mode and is showing raw HTML */
+      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND_SHORT,
+                     strlen(PUEBLO_SEND_SHORT));
     }
     return CRES_OK;
   }

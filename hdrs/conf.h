@@ -65,6 +65,7 @@
 
 /* These CAN be modified, but it's heavily NOT suggested */
 #define PUEBLO_SEND "</xch_mudtext><img xch_mode=purehtml><xch_page clear=text>\n"
+#define PUEBLO_SEND_SHORT "</xch_mudtext><img xch_mode=purehtml>\n"
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
 
 

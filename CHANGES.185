@@ -63,6 +63,9 @@ Minor changes:
    executed per second. [SW]
  * Try to discriminate between ssl_slave and other sources of
    connections to the local unix socket. [SW]
+ * Repeating the PUEBOCLIENT socket command now causes PennMUSH to
+   re-send the 'start parsing HTML' codes, for when Pueblo-enabled
+   clients hiccough and show raw HTML. [MG]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

@@ -2457,6 +2457,8 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   "variable" instead of a dbref. When someone attempts to pass through the
   exit, the DESTINATION attribute will be evaluated, and should return a
   dbref; the dbref will be used as the location for the person to go to.
+  The exit name or alias the moving player used is passed to the attribute
+  as %0.
   
   The exit must be able to @link itself to the dbref returned by the
   attribute. This means the exit must control the destination, the

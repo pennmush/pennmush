@@ -66,6 +66,9 @@ Minor changes:
  * Repeating the PUEBOCLIENT socket command now causes PennMUSH to
    re-send the 'start parsing HTML' codes, for when Pueblo-enabled
    clients hiccough and show raw HTML. [MG]
+ * The DESTINATION attribute for variable exits now has %c, %u, and
+   other %-subs available when moving, to allow different destinations
+   based on the exit alias used to move. Suggested by Javelin. [MG]
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

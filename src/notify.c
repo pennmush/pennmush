@@ -1324,7 +1324,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         DOLIST(exit, Exits(target)) {
           if (Audible(exit)) {
             if (VariableExit(exit))
-              loc = find_var_dest(speaker, exit);
+              loc = find_var_dest(speaker, exit, NULL);
             else if (HomeExit(exit))
               loc = Home(speaker);
             else

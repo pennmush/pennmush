@@ -355,21 +355,35 @@ can_move(dbref player, const char *direction)
   return ok;                    /* Written like this due to overeager compiler */
 }
 
+/** Find the correct location for a variable exit.
+ * \param player the object attempting to move through the exit
+ * \param exit_obj the exit
+ * \param exit_name the name/alias of the exit used by the player, or NULL
+ * \param pe_info the pe_info to evaluate the attributes with, or NULL
+ * \return location dbref, or NOTHING
+ */
 dbref
-find_var_dest(dbref player, dbref exit_obj, NEW_PE_INFO *pe_info)
+find_var_dest(dbref player, dbref exit_obj, char *exit_name, NEW_PE_INFO *pe_info)
 {
-  /* This is used to evaluate the u-function DESTINATION on an exit with
-   * a VARIABLE (ambiguous) link.
-   */
   char buff[BUFFER_LEN];
+  PE_REGS *pe_regs = NULL;
+  bool has_attr = 0;
+
+  if (exit_name && *exit_name) {
+    pe_regs = pe_regs_create(PE_REGS_ARG, "find_var_dest");
+    pe_regs_setenv_nocopy(pe_regs, 0, exit_name);
+  }
+
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  if (!call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, NULL) &&
-      !call_attrib(exit_obj, "EXITTO", buff, player, pe_info, NULL))
-    return NOTHING;
+  if (!(has_attr = call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
+     has_attr = call_attrib(exit_obj, "EXITTO", buff, player, pe_info, pe_regs);
 
-  if (!buff[0])
+  if (pe_regs)
+    pe_regs_free(pe_regs);
+
+  if (!has_attr || !buff[0])
     return NOTHING;
 
   return parse_objid(buff);
@@ -442,7 +456,7 @@ do_move(dbref player, const char *direction, enum move_type type,
           var_dest = Home(player);
           break;
         case AMBIGUOUS:
-          var_dest = find_var_dest(player, exit_m, pe_info);
+          var_dest = find_var_dest(player, exit_m, (char *) direction, pe_info);
           /* Only allowed if the owner of the exit could link to var_dest */
           if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest, pe_info)) {
             notify_format(player,

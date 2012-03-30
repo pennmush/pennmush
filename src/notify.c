@@ -1287,7 +1287,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             }
             notify_anything_sub(speaker, na_next,
                                 &Contents(target), skips,
-                                RELAY_FLAGS(flags), message,
+                                PROPAGATE_FLAGS(flags), message,
                                 (a) ? inprefix : NULL, loc, format);
           }
         }

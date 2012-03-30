@@ -356,7 +356,7 @@ can_move(dbref player, const char *direction)
 }
 
 dbref
-find_var_dest(dbref player, dbref exit_obj)
+find_var_dest(dbref player, dbref exit_obj, NEW_PE_INFO *pe_info)
 {
   /* This is used to evaluate the u-function DESTINATION on an exit with
    * a VARIABLE (ambiguous) link.
@@ -365,8 +365,8 @@ find_var_dest(dbref player, dbref exit_obj)
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  if (!call_attrib(exit_obj, "DESTINATION", buff, player, NULL, NULL) &&
-      !call_attrib(exit_obj, "EXITTO", buff, player, NULL, NULL))
+  if (!call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, NULL) &&
+      !call_attrib(exit_obj, "EXITTO", buff, player, pe_info, NULL))
     return NOTHING;
 
   if (!buff[0])
@@ -442,7 +442,7 @@ do_move(dbref player, const char *direction, enum move_type type,
           var_dest = Home(player);
           break;
         case AMBIGUOUS:
-          var_dest = find_var_dest(player, exit_m);
+          var_dest = find_var_dest(player, exit_m, pe_info);
           /* Only allowed if the owner of the exit could link to var_dest */
           if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest, pe_info)) {
             notify_format(player,

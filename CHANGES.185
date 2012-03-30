@@ -78,6 +78,8 @@ Fixes:
  * Sound from an AUDIBLE wagon object used to propagate into other
    wagon objects in the same location with an @listen of *. It now
    does so again.  Reported by Xeero and Padraic. [MG]
+ * Sound will now also propagate through two @listens, instead of just
+   one, as it used to. Reported by Mac@M*U*S*H. [MG]
  * Loading a reboot db is more robust. Inspired by Padraic. [SW]
  * scan() couldn't be used by rooms. Reported by Padraic. [MG]
  * Possible crashbug in the queue triggered by events reported by

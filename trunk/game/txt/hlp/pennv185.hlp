@@ -97,6 +97,7 @@ Fixes:
  * regrep() could try to read uninitialized memory. [SW]
  * Fix a possible DOS from a local attacker. [SW]
  * Fix a couple of possible memory leaks. [MG]
+ * ordinal(12) now returns twelfth, not twelveth. Patch by Minion.
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

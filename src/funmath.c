@@ -1552,13 +1552,13 @@ do_ordinalize(char **buff, char ***bp)
   char *p;
   size_t i, len;
   static const char *singles[] = { "one", "two", "three", "four",
-    "five", "six", "seven", "eight", "nine"
+    "five", "six", "seven", "eight", "nine", "twelve", NULL
   };
   static const char *singleths[] = { "first", "second", "third", "fourth",
-    "fifth", "sixth", "seventh", "eighth", "ninth"
+    "fifth", "sixth", "seventh", "eighth", "ninth", "twelfth", NULL
   };
   /* Examine the end of the string */
-  for (i = 0; i < 9; i++) {
+  for (i = 0; singles[i]; i++) {
     len = strlen(singles[i]);
     p = **bp - len;
     if ((p >= *buff) && !strncasecmp(p, singles[i], len)) {
@@ -1579,7 +1579,7 @@ do_ordinalize(char **buff, char ***bp)
 }
 
 
-/** adds zeros to the beginning of the string, untill its length is
+/** adds zeros to the beginning of the string, until its length is
  * a multiple of 3.
  */
 #define add_zeros(p) \

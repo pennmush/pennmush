@@ -247,7 +247,7 @@ load_chatdb_oldstyle(PENNFILE *fp)
     if (!ch)
       return 0;
     if (!load_channel(fp, ch)) {
-      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
+      do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -320,7 +320,7 @@ load_chatdb(PENNFILE *fp)
       return 0;
     }
     if (!load_labeled_channel(fp, ch, flags)) {
-      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
+      do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -1571,7 +1571,7 @@ do_chat(dbref player, CHAN *chan, const char *arg1)
                     T("Sorry, you're not allowed to speak on channel <%s>."),
                     ChanName(chan));
     else
-      notify(player, T("No such channel."));
+      notify(player, T("CHAT: No such channel."));
     return;
   }
   u = onchannel(player, chan);

@@ -40,7 +40,7 @@
 #endif
 #else
 #include <time.h>
-#endif
+#endif /* I_SYS_TIME */
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef I_SYS_SOCKET
@@ -119,7 +119,7 @@
 #ifdef SSL_SLAVE
 #include "ssl_slave.h"
 #endif
-#endif
+#endif /* !WIN32 */
 
 #include "strtree.h"
 #include "log.h"
@@ -968,7 +968,7 @@ got_new_connection(int sock, conn_source source)
 #endif
 
 static void
-shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
+shovechars(Port_t port, Port_t sslport)
 {
   /* this is the main game loop */
 
@@ -1309,9 +1309,9 @@ new_connection(int oldsock, int *result, conn_source source)
       pfd.revents = 0;
       poll(&pfd, 1, 100);
       if (pfd.revents & POLLIN)
-	good_to_read = 1;
+        good_to_read = 1;
       else
-	good_to_read = 0;
+        good_to_read = 0;
     }
 #endif
 
@@ -1324,26 +1324,26 @@ new_connection(int oldsock, int *result, conn_source source)
 
     if (len < 5) {
       if (len < 0 && is_blocking_err(errno)) {
-	strcpy(hostbuf, "(Unknown)");
-	strcpy(ipbuf, "(Unknown)");
+        strcpy(hostbuf, "(Unknown)");
+        strcpy(ipbuf, "(Unknown)");
       } else {
-	/* Yup, somebody's being naughty. Be mean right back. */
-	closesocket(newsock);
-	return 0;
+        /* Yup, somebody's being naughty. Be mean right back. */
+        closesocket(newsock);
+        return 0;
       }
     } else {
       ipbuf[len] = '\0';
       split = strchr(ipbuf, '^');
       if (split) {
-	*split++ = '\0';
-	strcpy(hostbuf, split);
-	split = strchr(hostbuf, '\r');
-	if (split)
-	  *split = '\0';
+        *split++ = '\0';
+        strcpy(hostbuf, split);
+        split = strchr(hostbuf, '\r');
+        if (split)
+          *split = '\0';
       } else {
-	/* Again, shouldn't happen! */
-	strcpy(ipbuf, "(Unknown)");
-	strcpy(hostbuf, "(Unknown)");
+        /* Again, shouldn't happen! */
+        strcpy(ipbuf, "(Unknown)");
+        strcpy(hostbuf, "(Unknown)");
       }
     }
 
@@ -1355,10 +1355,10 @@ new_connection(int oldsock, int *result, conn_source source)
 #ifdef SSL_SLAVE
     if (remote_pid >= 0) {
       if (remote_pid == ssl_slave_pid) {
-	source = CS_LOCAL_SSL_SOCKET;
+        source = CS_LOCAL_SSL_SOCKET;
       } else {
-	do_rawlog(LT_CONN, "[%d] Connection on local socket from pid %d run as uid %d.",
-		  newsock, remote_pid, remote_uid);
+        do_rawlog(LT_CONN, "[%d] Connection on local socket from pid %d run as uid %d.",
+                  newsock, remote_pid, remote_uid);
       }
     } else if (remote_uid >= 0) {
       /* A system like OS X that doesn't pass the remote pid as a
@@ -1367,8 +1367,8 @@ new_connection(int oldsock, int *result, conn_source source)
       if (remote_uid == getuid()) {
         source = CS_LOCAL_SSL_SOCKET;
       } else {
-	do_rawlog(LT_CONN, "[%d] Connection on local socket from process run as uid %d.",
-		  newsock, remote_uid);
+        do_rawlog(LT_CONN, "[%d] Connection on local socket from process run as uid %d.",
+                  newsock, remote_uid);
       }
     } else {
       /* Default, for OSes without implemented credential
@@ -1773,8 +1773,8 @@ static void
 shutdownsock(DESC *d, const char *reason, dbref executor)
 {
   if (d->connected) {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
-              d->descriptor, d->addr, d->ip, Name(d->player), d->player);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)",
+              d->descriptor, d->addr, d->ip, Name(d->player), d->player, reason);
     if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
@@ -1793,8 +1793,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
       }
     }
   } else {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected.",
-              d->descriptor, d->addr, d->ip);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected (%s).",
+              d->descriptor, d->addr, d->ip, reason);
   }
   /* (descriptor, ip, cause, recv/sent/cmds) */
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
@@ -2065,15 +2065,15 @@ network_send(DESC *d)
     if (cnt < 0) {
       if (
 #ifdef WIN32
-	  cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
+          cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
 #else
-	  is_blocking_err(errno)
+          is_blocking_err(errno)
 #endif
-	  )
+          )
         return 1;
 
       else
-	return 0;
+        return 0;
     }
     written += cnt;
 
@@ -3164,7 +3164,7 @@ close_sockets(void)
     }
     if (is_remote_desc(d)) {
       if (shutdown(d->descriptor, 2) < 0)
-	penn_perror("shutdown");
+        penn_perror("shutdown");
     }
     closesocket(d->descriptor);
   }

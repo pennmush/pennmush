@@ -1727,7 +1727,7 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
    * players.
    */
   if (Wizard(thing) && is_flag(flagp, "GAGGED"))
-    return 0;                   /* can't gag wizards/God */
+    return negate;              /* can't gag wizards/God, but can ungag */
   if (God(player))              /* God can do (almost) anything) */
     return 1;
   /* Make sure we don't accidentally permission-check toggles when

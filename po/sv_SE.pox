@@ -35,14 +35,6 @@ msgstr " Användbarhetsbegränsning av CPU stöds EJ."
 msgid " CPU usage limiting is supported."
 msgstr " Användbarhetsbegränsning av CPU stöds."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " DNS och ident uppslagningar hanteras av en slavprocess."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS och ident kontroller hanteras av MUSHprocessen."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Utökad convtime() stöds."
@@ -336,10 +328,6 @@ msgstr "#-1 STEG UTANFÖR GRÄNSER"
 #: src/funstr.c:353
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr "#-1 STRÄNGLÄNGDER MÅSTE VARA SAMMA"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 FÖR MÅNGA ITERATIONER"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -653,11 +641,6 @@ msgstr "%s skickade %d meddelanden."
 #, c-format
 msgid "%s should contain only dbrefs."
 msgstr "%s bör endast innehålla dbrefs."
-
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s storlekar:  NyAnvändare...%d  Uppkoppling...%d  Gäst...%d  Motd...%d  MagMotd...%d  Avsluta...%d  Registrera...%d  Nere...%d  Full...%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format
@@ -1152,10 +1135,6 @@ msgstr "CHAT: Tallås på <%s> satt."
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr "CHAT: Den kanalen saknar återspelningsbuffert."
 
-#: src/extchat.c:1106
-msgid "CHAT: The channel needs a more unique name."
-msgstr "CHAT: Kanalen behöver ett mer unikt namn."
-
 #: extchat.c:3016
 #, c-format
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
@@ -1197,11 +1176,6 @@ msgstr "Kan inte sätta hem till hem."
 #: look.c:748
 msgid "Carrying:"
 msgstr "Bär:"
-
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Cemit till kanal %s: %s"
 
 #: src/extchat.c:1387
 msgid "Chan Type"
@@ -1331,11 +1305,6 @@ msgstr "Ej tillgänglig."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "Göra vad med funktionen?"
-
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Doing satt. %d tecken förlorade."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -1837,11 +1806,6 @@ msgstr "Jag kan inte se det objektet."
 #: src/lock.c:362
 msgid "I don't see what you want to lock!"
 msgstr "Jag förstår inte vad du vill låsa!"
-
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Jag tror inte att #%d vill höra något från dig."
 
 #: src/fundb.c:1412
 #, c-format
@@ -2963,10 +2927,6 @@ msgstr "Det är inte ett giltigt objekt."
 msgid "That is too special to be destroyed."
 msgstr "Det är för speciellt för att bli förstört."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "Det namnet är för långt."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Det objektet kan inte dödas."
@@ -3022,10 +2982,6 @@ msgstr "Det är inte en inbyggd funktion."
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
 msgstr "Det är inte ett bra namn för ett attribut."
-
-#: src/extchat.c:1176
-msgid "The channel needs a more unique new name."
-msgstr "Kanalen behöver ett mer unikt nytt namn."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -3453,10 +3409,6 @@ msgstr "Vem vill du låsa?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Varför skulle du vilja bli varnad om skräp?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Varför skulle du vilja göra så?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "Varför vill du låsa skräp?"
@@ -3586,10 +3538,6 @@ msgstr "Du kan inte släppa det."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Du kan inte tvinga Gud!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Du kan inte ge en spelare det namnet."
 
 #: src/rob.c:207
 msgid "You can't give that away."
@@ -3880,10 +3828,6 @@ msgstr "Du får inte teleportera ut ur zonen från detta rum."
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Du får inte använda @halt obj=command på detta objekt."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Du måste använda @lock/zone innan du kan sätta en spelare ZONE"
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."

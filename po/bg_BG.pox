@@ -23,14 +23,6 @@ msgstr " Атрибутите са Huffman компресирани в паметта."
 msgid " Attributes are word compressed in memory."
 msgstr " Атрибутите са word компресирани в паметта."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " DNS и ident проверките се управляват от вторичен процес."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS и ident проверките се управляват от MUSH процес."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Поддържа се разширено convtime()."
@@ -363,10 +355,6 @@ msgstr "#-1 ИЗВЪН ОБХВАТ"
 #: funstr.c:1981
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr "#-1 ТВЪРДЕ МНОГО КОлОНИ ЗА ПОДРЕЖДАНЕ"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 ТВЪРДЕ МНОГО ПОВТОРЕНИЯ"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -784,11 +772,6 @@ msgstr "%s изпрати %d съобщения."
 msgid "%s should contain only dbrefs."
 msgstr "%s трябва да съдържа само dbrefs."
 
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s размери:  Нов Потребител...%d  Връзка...%d  Гост...%d  СнД...%d  МагСнД...%d  Изход...%d  Регистр...%d  Изкл...%d  Пълн...%d"
-
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
@@ -1130,11 +1113,6 @@ msgstr "ЧАТ: Ти напусна канал <%s>."
 msgid "CHAT: You remove %s from channel <%s>."
 msgstr "ЧАТ: Ти откачи %s от канал <%s>."
 
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Cemit на канал %s: %s"
-
 #: create.c:680
 #, c-format
 msgid "Cloned: Exit #%d."
@@ -1189,11 +1167,6 @@ msgstr "Описание: %s"
 #, c-format
 msgid "Destination: %s"
 msgstr "Направление: %s"
-
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Записвам. %d символа са загубени."
 
 #: src/bsd.c:4280
 #, c-format
@@ -1371,11 +1344,6 @@ msgstr "Не знам кой %s имаш предвид!"
 #, c-format
 msgid "I don't see %s here."
 msgstr "Не виждам %s тук."
-
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Мисля, че #%d не иска и да чуе за теб."
 
 #: src/fundb.c:1412
 #, c-format
@@ -1840,11 +1808,6 @@ msgstr "Права: %s"
 #, c-format
 msgid "Queue for : %s"
 msgstr "Ред на : %s"
-
-#: extchat.c:2192
-#, c-format
-msgid "Recall buffer: %dk, with %d lines stored."
-msgstr "Буфер на извадка: %dk, с %d записани линии."
 
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
@@ -2318,10 +2281,6 @@ msgstr "Не можеш да сложиш семафорен брояч с ключ ALL."
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Не можеш да използваш @halt obj=command върху този обект."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Трябва да @lock/zone преди да можеш да настроиш играча на ZONE"
 
 #: set.c:210
 msgid "You must carry the object to @chown it."

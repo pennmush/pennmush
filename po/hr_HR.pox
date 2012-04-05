@@ -11,21 +11,6 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit"
 
-#: markup.c:1155
-#, c-format
-msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
-msgstr "    %d (%s): (poèetak: %d kraj: %d) start_code: %s stop_code: %s"
-
-#: markup.c:1150
-#, c-format
-msgid "  Nmarkups: %d"
-msgstr "  Nmarkups: %d"
-
-#: markup.c:1149
-#, c-format
-msgid "  Text: %s"
-msgstr "  Tekst: %s"
-
 #: extmail.c:572
 msgid " (Conn)"
 msgstr " (Spoj)"
@@ -94,14 +79,6 @@ msgstr " Ogranièavanje kori¹tenja procesora je podr¾ano."
 #: conf.c:1713
 msgid " Changed help files will be automatically reindexed."
 msgstr " Promijenjeni help fileovi bit æe reindeksirani automatski."
-
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " DNS i ident potrage obavlja ropski proces."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS i ident potrage obavlja MUSHev proces."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
@@ -638,17 +615,9 @@ msgstr "#-1 PREDUGAÈKO"
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 PREVI©E ITERA"
-
 #: parse.c:110
 msgid "#-1 TOO MANY REGISTERS"
 msgstr "#-1 PREVI©E REGISTARA"
-
-#: funmisc.c:495 funmisc.c:612
-msgid "#-1 TOO MANY SWITCHES"
-msgstr "#-1 PREVI©E SWITCHEVA"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -772,11 +741,6 @@ msgstr "%s %s - iskljuèeno."
 #, c-format
 msgid "%s %s enabled."
 msgstr "%s %s - ukljuèeno."
-
-#: extmail.c:239
-#, c-format
-msgid "%s (owner: %s)"
-msgstr "%s (vlasnik: %s)"
 
 #: src/look.c:969
 #, c-format
@@ -1223,11 +1187,6 @@ msgstr "%s ima %d poslanih poruka."
 msgid "%s should contain only dbrefs."
 msgstr "%s treba sadr¾avati iskljuèivo dbrefove."
 
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s velièine:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
@@ -1297,21 +1256,6 @@ msgstr "%2$s igraèa koji se zove %1$s je po¹teðen od uni¹tenja."
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
 msgstr "Objekt %2$s igraèa koji se zove %1$s je stavljen na popis za uni¹tenje."
-
-#: look.c:1360
-#, c-format
-msgid "%s(#%d) [dropto]"
-msgstr "%s(#%d) [dropto]"
-
-#: look.c:1351
-#, c-format
-msgid "%s(#%d) [from: %s(#%d)]"
-msgstr "%s(#%d) [iz: %s(#%d)]"
-
-#: look.c:1369 look.c:1377
-#, c-format
-msgid "%s(#%d) [home]"
-msgstr "%s(#%d) [dom]"
 
 #: src/extmail.c:1168
 #, c-format
@@ -1941,10 +1885,6 @@ msgstr "CHAT: Brava za prièanje stavljena na kanal <%s>."
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr "CHAT: Taj kanal ne bilje¾i poruke."
 
-#: src/extchat.c:1106
-msgid "CHAT: The channel needs a more unique name."
-msgstr "CHAT: Ovom kanalu treba jedinstvenije ime."
-
 #: extchat.c:3016
 #, c-format
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
@@ -2029,11 +1969,6 @@ msgstr "Ne mo¾e¹ dom postaviti za dom."
 #: look.c:748
 msgid "Carrying:"
 msgstr "Nosi:"
-
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Cemit na kanal %s: %s"
 
 #: src/extchat.c:1387
 msgid "Chan Type"
@@ -2297,11 +2232,6 @@ msgstr "Onemoguæeno."
 msgid "Do what with the function?"
 msgstr "©to ¾eli¹ napraviti s funkcijom?"
 
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Doing postavljen. Broj izgubljenih znakova: %d."
-
 #: src/bsd.c:4319
 msgid "Doing set."
 msgstr "Doing postavljen."
@@ -2473,10 +2403,6 @@ msgstr "Flagovi: %s"
 #: extmail.c:462 extmail.c:465
 msgid "Folder:"
 msgstr "Folder:"
-
-#: speech.c:1122
-msgid "From "
-msgstr "Od "
 
 #: src/speech.c:1010
 msgid "From afar"
@@ -2950,11 +2876,6 @@ msgstr "Mislim da #%d ne ¾eli po¹tu igraèa '%s'."
 msgid "I don't think #%d wants to hear from %s."
 msgstr "Mislim da #%d ne ¾eli imati posla s igraèem '%s'."
 
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Mislim da #%d ne ¾eli imati posla s tobom."
-
 #: src/fundb.c:1412
 #, c-format
 msgid "I don't understand switch '%c'."
@@ -3017,14 +2938,6 @@ msgstr "Neak"
 #: wiz.c:807
 msgid "If you want to quit, use QUIT."
 msgstr "Ako ¾eli¹ prekinuti vezu, napi¹i QUIT."
-
-#: markup.c:1160
-msgid "Inspecting ansi string complete"
-msgstr "Provjera ansi teksta gotova"
-
-#: markup.c:1148
-msgid "Inspecting ansi string"
-msgstr "Provjeravam ansi tekst"
 
 #: flags.c:1534 flags.c:1697
 #, c-format
@@ -4333,11 +4246,6 @@ msgstr "Quote nepromijenjene."
 msgid "Read "
 msgstr "Proèitano "
 
-#: extchat.c:2192
-#, c-format
-msgid "Recall buffer: %dk, with %d lines stored."
-msgstr "Recall buffer: %dk, s %d pohranjenih linija."
-
 #: bsd.c:3324
 msgid "Recv"
 msgstr "Prim"
@@ -4734,10 +4642,6 @@ msgstr "To nije alias od %s %s."
 msgid "That isn't an on/off option."
 msgstr "To nije on/off opcija."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "To ime je predugaèko."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Taj objekt ne mo¾e biti ubijen."
@@ -4831,10 +4735,6 @@ msgstr "To ba¹ i nije dobro ime za atribut."
 #, c-format
 msgid "That's the %s's name, not an alias."
 msgstr "To je ime, a ne alias od %s."
-
-#: src/extchat.c:1176
-msgid "The channel needs a more unique new name."
-msgstr "Taj kanal treba jedinstvenije novo ime."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -5050,10 +4950,6 @@ msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 msgid "To channel %s: %s"
 msgstr "Na kanal %s: %s"
 
-#: game.c:1862
-msgid "Too many @dolists."
-msgstr "Previ¹e @dolista."
-
 #: set.c:88
 msgid "Too many aliases."
 msgstr "Previ¹e aliasa."
@@ -5081,10 +4977,6 @@ msgstr "Ne mo¾e¹ oemitirati tolikom broju ljudi."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Ne mo¾e¹ ¹aptati tolikom broju ljudi."
-
-#: predicat.c:1133
-msgid "Too many switches."
-msgstr "Previ¹e switcheva."
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
@@ -5556,10 +5448,6 @@ msgstr "Koga ¾eli¹ zakljuèati?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Za¹to ¾eli¹ primati upozorenja o otpadu?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Za¹to to uopæe hoæe¹ napraviti?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "Za¹to ¾eli¹ zakljuèati otpad?"
@@ -5744,10 +5632,6 @@ msgstr "Ne mo¾e¹ to isprazniti odavde."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Ne mo¾e¹ siliti Boga!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Ne mo¾e¹ igraèu dati to ime."
 
 #: rob.c:212
 msgid "You can't give an object to itself!"
@@ -6115,10 +5999,6 @@ msgstr "Iz ove sobe se ne mo¾e¹ teleportirati iz zone."
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Na ovom objektu ne mo¾e¹ koristiti @halt obj=naredba."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Mora¹ upotrijebiti @lock/zone prije nego ¹to mo¾e¹ staviti flag ZONE na igraèa."
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."

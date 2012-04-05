@@ -11,6 +11,25 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit"
 
+#: flags.c:1278
+#, c-format
+msgid "  %d different cached flagsets. %d objects with no flags set."
+msgstr "  %d razlièitih cacheanih skupova flagova. %d objekata bez postavljenih flagova."
+
+#: flags.c:1274
+#, c-format
+msgid "  %d entries in flag table. Flagsets are %d bytes long."
+msgstr "  %d predmeta u tablici flagova. Skupovi flagova su dugaèki %d byteova."
+
+#: flags.c:1297
+#, c-format
+msgid ""
+"  %d objects share the most common set of flags.\n"
+"  %d objects have unique flagsets."
+msgstr ""
+"  %d objekata dijeli najèe¹æi skup flagova.\n"
+"  %d objekata ima jedinstven skup flagova."
+
 #: extmail.c:572
 msgid " (Conn)"
 msgstr " (Spoj)"
@@ -47,6 +66,14 @@ msgstr " ARGUMENATA, A DOBILA JE "
 msgid " Altivec instructions are being used."
 msgstr " Koristi se Altivec."
 
+#: conf.c:1985
+msgid " Attribute contents are managed by malloc."
+msgstr " Za pohranu sadr¾aja atributa koristi se malloc."
+
+#: conf.c:1987
+msgid " Attribute contents are managed by the chunk system."
+msgstr " Za pohranu sadr¾aja atributa koristi se chunk-sustav."
+
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
 msgstr " Atributi su 8-bitne rijeèi komprimirane u memoriji."
@@ -80,6 +107,14 @@ msgstr " Ogranièavanje kori¹tenja procesora je podr¾ano."
 msgid " Changed help files will be automatically reindexed."
 msgstr " Promijenjeni help fileovi bit æe reindeksirani automatski."
 
+#: conf.c:1941
+msgid " DNS lookups are handled by a slave process."
+msgstr " DNS potrage obavlja ropski proces."
+
+#: conf.c:1943
+msgid " DNS lookups are handled by the MUSH process."
+msgstr " DNS potrage obavlja MUSHev proces."
+
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Pro¹ireni convtime() je podr¾an."
@@ -87,6 +122,10 @@ msgstr " Pro¹ireni convtime() je podr¾an."
 #: flags.c:917
 msgid " Flags: "
 msgstr " Flagovi: "
+
+#: conf.c:1991
+msgid " IANA symbolic timezones can be used."
+msgstr " Mogu se koristiti IANA oznake za vremenske zone."
 
 #: parse.c:1324
 msgid " OR "
@@ -99,6 +138,14 @@ msgstr " Koristi se SSE2."
 #: conf.c:1776
 msgid " SSE3 instructions are being used."
 msgstr " Koristi se SSE3."
+
+#: conf.c:1927
+msgid " SSL connections are handled by a slave process."
+msgstr " SSL veze obavlja ropski proces."
+
+#: conf.c:1971
+msgid " SSSE3 instructions are being used."
+msgstr " Koristi se SSSE3."
 
 #: conf.c:1607
 msgid " The MUSH was compiled with MySQL support."
@@ -279,6 +326,10 @@ msgstr "#-1 NE MOGU FORMATIRATI VRIJEME"
 msgid "#-1 DIVISION BY ZERO"
 msgstr "#-1 DIJELJENJE S NULOM"
 
+#: funmath.c:2155 funmath.c:2196 funmath.c:2281 funmath.c:2333
+msgid "#-1 DOMAIN ERROR"
+msgstr "#-1 POGRE©NA DOMENA"
+
 #: funstr.c:962 funstr.c:981
 msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
 msgstr "#-1 ARGUMENT ZA POPUNJAVANJE NE MO®E IMATI DU®INU NULA"
@@ -445,6 +496,10 @@ msgstr "#-1 NEISPRAVNI VREMENSKI STRING"
 #: src/funufun.c:293
 msgid "#-1 INVALID ZONE"
 msgstr "#-1 NEISPRAVNA ZONA"
+
+#: funcrypt.c:352
+msgid "#-1 LISTING NOT SUPPORTED"
+msgstr "#-1 METODA ISPISA NIJE PODR®ANA"
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
@@ -663,6 +718,10 @@ msgstr "#-1 ©IRINA PREMALA"
 msgid "#-2 AMBIGUOUS CHANNEL MATCH"
 msgstr "#-2 VI©ESTRUKO PODUDARANJE S KANALIMA"
 
+#: extchat.c:171
+msgid "#-2 AMBIGUOUS CHANNEL"
+msgstr "#-2 VI©EZNAÈNO IME KANALA"
+
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats pozvan s neispravnim called_as!"
@@ -676,6 +735,11 @@ msgstr "%29s: %ld minuta %ld sekundi, u %s."
 #, c-format
 msgid "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"
 msgstr "%3d ADRESA: %-20s  DBREF: %-6s FLAGOVI:%s"
+
+#: set.c:1010 set.c:1260
+#, c-format
+msgid "%d attributes edited, %d skipped."
+msgstr "%d atributa promijenjeno, %d preskoèeno."
 
 #: set.c:1145
 #, c-format
@@ -742,6 +806,11 @@ msgstr "%s %s - iskljuèeno."
 msgid "%s %s enabled."
 msgstr "%s %s - ukljuèeno."
 
+#: extmail.c:241
+#, c-format
+msgid "%s (#%d, owner: %s)"
+msgstr "%s (#%d, vlasnik: %s)"
+
 #: src/look.c:969
 #, c-format
 msgid "%s (this room) [broadcasting]."
@@ -802,6 +871,11 @@ msgstr "%s - Postavljeno: %s"
 msgid "%s - Triggered."
 msgstr "%s - Okinuto."
 
+#: set.c:941 set.c:1153
+#, c-format
+msgid "%s - Unchanged."
+msgstr "%s - Nepromijenjeno."
+
 #: atr_tab.c:440
 #, c-format
 msgid "%s -- Attribute %s set to: %s"
@@ -842,10 +916,25 @@ msgstr "%s [propu¹ta zvuk]."
 msgid "%s [commands]."
 msgstr "%s [naredbe]."
 
+#: wiz.c:1538
+#, c-format
+msgid "%s [dropto]"
+msgstr "%s [dropto]"
+
 #: wiz.c:1256
 #, c-format
 msgid "%s [from "
 msgstr "%s [iz "
+
+#: wiz.c:1533
+#, c-format
+msgid "%s [from: %s]"
+msgstr "%s [iz: %s]"
+
+#: wiz.c:1544
+#, c-format
+msgid "%s [home]"
+msgstr "%s [dom]"
 
 #: wiz.c:1236 wiz.c:1273
 #, c-format
@@ -1187,6 +1276,11 @@ msgstr "%s ima %d poslanih poruka."
 msgid "%s should contain only dbrefs."
 msgstr "%s treba sadr¾avati iskljuèivo dbrefove."
 
+#: bsd.c:1698
+#, c-format
+msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d  Who...%d"
+msgstr "%s velièine:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d  Who...%d"
+
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
@@ -1312,6 +1406,11 @@ msgstr "%sOtpad%s(#%d)"
 msgid "'%s' contains too many aliases."
 msgstr "'%s' sadr¾i previ¹e aliasa."
 
+#: bsd.c:3287
+#, c-format
+msgid "'%s' is not a port number."
+msgstr "'%s' nije broj porta."
+
 #: attrib.c:1556 attrib.c:1563 attrib.c:1581
 #, c-format
 msgid "'%s' is not a valid alias."
@@ -1378,6 +1477,11 @@ msgstr "----------  Pretraga zavr¹ena  ----------"
 #: src/cque.c:807
 msgid "------------  Queue Done  ------------"
 msgstr "-----------  Queue gotov  ------------"
+
+#: extmail.c:873
+#, c-format
+msgid "--------------------   MAIL: %-27s   ------------------"
+msgstr "--------------------   PO©TA: %-27s   ------------------"
 
 #: extmail.c:543
 #, c-format
@@ -1597,6 +1701,10 @@ msgstr "Atribut zakljuèan."
 msgid "Attribute owner changed."
 msgstr "Vlasnik atributa promijenjen."
 
+#: chunk.c:340
+msgid "Attribute storage stats are not supported for malloc scheme."
+msgstr "Podaci o pohrani atributa nisu podr¾ani za malloc postavku."
+
 #: src/attrib.c:1035
 msgid "Attribute unlocked."
 msgstr "Atribut otkljuèan."
@@ -1650,6 +1758,10 @@ msgstr "Lo¹ tip objekta."
 #: src/wiz.c:732
 msgid "Bad password."
 msgstr "Lo¹a ¹ifra."
+
+#: set.c:1142
+msgid "Bailing out."
+msgstr "Gre¹ka. Prekidam."
 
 #: log.c:358
 msgid "Begin log recall."
@@ -2177,6 +2289,16 @@ msgstr "Razdvojnik mora biti jedan znak."
 msgid "Denied connections are not logged"
 msgstr "Odbijena spajanja se ne bilje¾e u log"
 
+#: command.c:1481
+#, c-format
+msgid "Deprecated command %s being used on object #%d."
+msgstr "Zastarjela naredba %s koristi se na objektu #%d."
+
+#: parse.c:2579
+#, c-format
+msgid "Deprecated function %s being used on object #%d."
+msgstr "Zastarjela funkcija %s koristi se na objektu #%d."
+
 #: bsd.c:3324
 msgid "Des"
 msgstr "Des"
@@ -2216,6 +2338,11 @@ msgstr "Uni¹tavanje Boga bi bilo svetogrdno."
 msgid "Destroying that again is hardly necessary."
 msgstr "Ponovno uni¹tavanje toga je prilièno nepotrebno."
 
+#: bsd.c:4312
+#, c-format
+msgid "Did you mean to use &DOING %s ?"
+msgstr "Da li ti je namjera bila upotrijebiti &DOING %s ?"
+
 #: rob.c:367
 msgid "Did you want to give something *to* someone?"
 msgstr "®eli¹ li ne¹to dati *nekome*?"
@@ -2231,6 +2358,10 @@ msgstr "Onemoguæeno."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "©to ¾eli¹ napraviti s funkcijom?"
+
+#: bsd.c:4301
+msgid "Doing cleared."
+msgstr "Doing obrisan."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -2275,6 +2406,10 @@ msgstr "Dropto maknut."
 #: src/create.c:341
 msgid "Dropto set."
 msgstr "Dropto postavljen."
+
+#: game.c:217
+msgid "Dump complete."
+msgstr "Snimanje gotovo."
 
 #: game.c:213
 msgid "Dumping..."
@@ -2353,6 +2488,11 @@ msgstr "Oèekivao sam od 1 do 5 argumenata."
 msgid "Failed attempt to forward @mail to #%d"
 msgstr "Neuspjeli poku¹aj prosljeðivanja @maila do #%d"
 
+#: command.c:2048
+#, c-format
+msgid "Failure Msg: %s"
+msgstr "Neuspjeh   : %s"
+
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
@@ -2404,6 +2544,11 @@ msgstr "Flagovi: %s"
 msgid "Folder:"
 msgstr "Folder:"
 
+#: notify.c:489
+#, c-format
+msgid "From %s, "
+msgstr "Iz %s, "
+
 #: src/speech.c:1010
 msgid "From afar"
 msgstr "Izdaleka"
@@ -2422,6 +2567,17 @@ msgid ""
 msgstr ""
 "Po¹iljatelj: %-55s %s\n"
 "Datum: %-25s   %s %2d   Poruka: %d\n"
+"Stanje: %s"
+
+#: extmail.c:819
+#, c-format
+msgid ""
+"From: %-55s %s\n"
+"Date: %-25s   Folder: NA   Message: %d\n"
+"Status: %s"
+msgstr ""
+"Po¹iljatelj: %-55s %s\n"
+"Datum: %-25s   Folder: NA   Poruka: %d\n"
 "Stanje: %s"
 
 #: src/bsd.c:4281
@@ -2445,6 +2601,10 @@ msgstr "Funkcija dodana."
 #: function.c:1614
 msgid "Function alias deleted."
 msgstr "Alias za funkciju uklonjen."
+
+#: function.c:1598
+msgid "Function clone deleted."
+msgstr "Klon funkcije obrisan."
 
 #: function.c:1053
 msgid "Function cloned."
@@ -2517,6 +2677,10 @@ msgstr "IGRA: Objekt %s(%s) je izgubio %s zbog gubitka queuea."
 #: src/destroy.c:1322
 msgid "GAME: Performing database consistency check."
 msgstr "IGRA: Vr¹im provjeru konzistencije baze podataka."
+
+#: bsd.c:5798
+msgid "GAME: Reboot failed."
+msgstr "IGRA: Reboot neuspje¹an."
 
 #: src/bsd.c:5185
 msgid "GAME: Reboot finished."
@@ -2926,6 +3090,10 @@ msgstr "Ne znam na koga mislis."
 msgid "I'm not sure who you want to page with: %s"
 msgstr "Nisam siguran kome ¾eli¹ poslati: %s"
 
+#: destroy.c:214
+msgid "I'm sorry, Dave, I'm afraid I can't do that."
+msgstr "®ao mi je, Dave, bojim se da to ne mogu uèiniti."
+
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
@@ -3042,6 +3210,10 @@ msgstr "Neispravno stanje na atributskoj bravi.. Obavijesti boga."
 msgid "Invalid target."
 msgstr "Neispravna meta."
 
+#: funmisc.c:1288
+msgid "Invalid type."
+msgstr "Neispravan tip."
+
 #: src/speech.c:1475
 msgid "Invalid zone."
 msgstr "Neispravna zona."
@@ -3146,6 +3318,11 @@ msgstr "U SOBI slu¹aju:"
 #: src/look.c:1010
 msgid "Listening in your INVENTORY:"
 msgstr "Meðu tvojim NO©ENIM STVARIMA slu¹aju:"
+
+#: cque.c:2013
+#, c-format
+msgid "Load average (1/5/15 minutes): %.2f %.2f %.2f"
+msgstr "Prosjeèno optereæenje (1/5/15 minuta): %.2f %.2f %.2f"
 
 #: bsd.c:3855 bsd.c:3859
 msgid "Loc #"
@@ -3343,6 +3520,14 @@ msgstr "PO©TA: Ne shvaæam ¹to ¾eli¹ poslati."
 msgid "MAIL: I can't figure out who you want to mail to."
 msgstr "PO©TA: Ne mogu shvatiti kome ¾eli¹ poslati pismo."
 
+#: extmail.c:954
+msgid "MAIL: I can't figure out whose mail you want to retract."
+msgstr "PO©TA: Ne mogu shvatiti èiju po¹tu ¾eli¹ povuæi."
+
+#: extmail.c:921
+msgid "MAIL: I can't figure out whose mail you want to review."
+msgstr "PO©TA: Ne mogu shvatiti èiju po¹tu ¾eli¹ provjeriti."
+
 #: src/malias.c:398 src/malias.c:529 src/malias.c:555
 msgid "MAIL: I cannot find that alias!"
 msgstr "PO©TA: Ne mogu pronaæi taj alias!"
@@ -3350,6 +3535,10 @@ msgstr "PO©TA: Ne mogu pronaæi taj alias!"
 #: src/malias.c:378
 msgid "MAIL: I cannot find that player."
 msgstr "PO©TA: Ne mogu pronaæi tog igraèa."
+
+#: extmail.c:925 extmail.c:958
+msgid "MAIL: I couldn't find that player."
+msgstr "PO©TA: Nisam mogao naæi tog igraèa."
 
 #: src/extmail.c:250
 msgid "MAIL: Illegal folder name"
@@ -3405,6 +3594,16 @@ msgstr "PO©TA: Po¹tanski alias preimenovan."
 msgid "MAIL: Mailbox purged."
 msgstr "PO©TA: Po¹tanski sanduèiæ oèi¹æen."
 
+#: extmail.c:988
+#, c-format
+msgid "MAIL: Message %d has been read."
+msgstr "PO©TA: Poruka %d je proèitana."
+
+#: extmail.c:1004
+#, c-format
+msgid "MAIL: Message %d has been retracted."
+msgstr "PO©TA: Poruka %d je povuèena."
+
 #: src/extmail.c:2349 src/extmail.c:2366 src/extmail.c:2383
 msgid "MAIL: Message ages must be integers"
 msgstr "PO©TA: Starosti poruka moraju biti cijeli brojevi"
@@ -3443,6 +3642,10 @@ msgstr "PO©TA: Poruka #%d:%d od-oznaèena"
 #, c-format
 msgid "MAIL: Msg %d:%d filed in folder %d [%s]"
 msgstr "PO©TA: Poruka %d:%d premje¹tena u folder %d [%s]"
+
+#: extmail.c:840 extmail.c:1015
+msgid "MAIL: No matching messages."
+msgstr "PO©TA: Nema podudarajuæih poruka."
 
 #: src/malias.c:220 src/malias.c:671 src/malias.c:774
 #, c-format
@@ -3828,6 +4031,10 @@ msgstr "Nema podudarajuæe naredbe."
 #: help.c:540
 msgid "No matching help topics."
 msgstr "Nema takvih help tema."
+
+#: speech.c:309
+msgid "No matching objects."
+msgstr "Nema podudarajuæih objekata."
 
 #: src/extchat.c:1093
 msgid "No more room for channels."
@@ -4246,6 +4453,11 @@ msgstr "Quote nepromijenjene."
 msgid "Read "
 msgstr "Proèitano "
 
+#: extchat.c:2851
+#, c-format
+msgid "Recall buffer: %db (%d full lines), with %d lines stored."
+msgstr "Recall buffer: %db (%d punih linija), s %d pohranjenih linija."
+
 #: bsd.c:3324
 msgid "Recv"
 msgstr "Prim"
@@ -4448,6 +4660,10 @@ msgstr "Oprosti, ali nalazi¹ se u 'no dumping' zoni."
 msgid "Sorry, you are in an invalid location."
 msgstr "Na¾alost, nalazi¹ se na neispravnoj lokaciji."
 
+#: predicat.c:442
+msgid "Sorry, you aren't allowed to build."
+msgstr "Oprosti, ali nije ti dozvoljeno graditi."
+
 #: src/rob.c:102
 msgid "Sorry, you can only kill players and objects."
 msgstr "Na¾alost, mo¾e¹ ubijati samo igraèe i predmete."
@@ -4576,6 +4792,10 @@ msgstr "Dozvole za taj atribut ne mogu biti promijenjene."
 #: destroy.c:436
 msgid "That can't be undestroyed."
 msgstr "To ne mo¾e biti od-uni¹teno."
+
+#: command.c:2546
+msgid "That command has no hooks."
+msgstr "Ta naredba nema hookova."
 
 #: help.c:55
 msgid "That command is unavailable."
@@ -4735,6 +4955,10 @@ msgstr "To ba¹ i nije dobro ime za atribut."
 #, c-format
 msgid "That's the %s's name, not an alias."
 msgstr "To je ime, a ne alias od %s."
+
+#: extchat.c:1748 extchat.c:1830
+msgid "The channel needs a more unique name."
+msgstr "Kanal treba jedinstvenije ime."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -5041,6 +5265,10 @@ msgstr "Ne mogu dodati separator za @sitelock: %s"
 msgid "Unable to add sitelock entry: %s"
 msgstr "Ne mogu dodati predmet u popis zakljuèanih internet adresa: %s"
 
+#: bsd.c:4303
+msgid "Unable to clear doing."
+msgstr "Ne mogu obrisati doing."
+
 #: create.c:485
 msgid "Unable to create object with that dbref."
 msgstr "Ne mogu stvoriti objekt s tim dbrefom."
@@ -5089,6 +5317,10 @@ msgstr "Ne mogu postaviti '%s' jer stvaranje potrebnog nadatributa nije uspjelo.
 #: command.c:1694
 msgid "Unable to set alias."
 msgstr "Ne mogu postaviti alias."
+
+#: bsd.c:4309
+msgid "Unable to set doing."
+msgstr "Ne mogu postaviti doing."
 
 #: wiz.c:1483
 #, c-format
@@ -5283,6 +5515,11 @@ msgstr "Upozorenje: @chzoneanje objekta èiji je vlasnik administrator!"
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Upozorenje: TRUST flag stavljen na objekt koji je u zoni"
+
+#: command.c:874
+#, c-format
+msgid "Warning: Switch '%s' is defined but not used."
+msgstr "Upozorenje: Switch '%s' je definiran, ali se ne koristi."
 
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
@@ -5632,6 +5869,10 @@ msgstr "Ne mo¾e¹ to isprazniti odavde."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Ne mo¾e¹ siliti Boga!"
+
+#: set.c:93
+msgid "You can't give a player that name or alias."
+msgstr "Ne mo¾e¹ dati igraèu to ime ili alias."
 
 #: rob.c:212
 msgid "You can't give an object to itself!"
@@ -6000,6 +6241,10 @@ msgstr "Iz ove sobe se ne mo¾e¹ teleportirati iz zone."
 msgid "You may not use @halt obj=command on this object."
 msgstr "Na ovom objektu ne mo¾e¹ koristiti @halt obj=naredba."
 
+#: flags.c:1719
+msgid "You must @lock/zone before you can set a player SHARED."
+msgstr "Mora¹ upotrijebiti @lock/zone prije nego ¹to mo¾e¹ postaviti da igraè bude SHARED."
+
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."
 msgstr "Mora¹ biti spojen na taj kanal da bi mogao govoriti na njemu."
@@ -6171,6 +6416,16 @@ msgstr "%s primi tvoju privatnu poruku, ali ne mo¾e tebi slati privatne poruke."
 #, c-format
 msgid "You paid %d %s."
 msgstr "Plati¹ %d %s."
+
+#: bsd.c:3311
+#, c-format
+msgid "You pemit \"%s\" to %d connections."
+msgstr "Pemitira¹ \"%s\". Broj veza koje su primile tvoj pemit: %d."
+
+#: speech.c:575
+#, c-format
+msgid "You pemit \"%s\" to %d objects."
+msgstr "Pemitira¹ \"%s\". Broj objekata koji su primili tvoj pemit: %d."
 
 #: src/speech.c:616
 #, c-format
@@ -6501,6 +6756,11 @@ msgstr "kopirati"
 msgid "drops %s."
 msgstr "ispusti %s."
 
+#: warnings.c:222
+#, c-format
+msgid "exit has multiple (%d) return exits including global exits"
+msgstr "izlaz ima vi¹estruke (%d) povratne izlaze ukljuèujuæi globalne izlaze"
+
 #: src/warnings.c:186
 #, c-format
 msgid "exit has multiple (%d) return exits"
@@ -6517,6 +6777,10 @@ msgstr "izlazu nedostaje opis"
 #: src/warnings.c:148
 msgid "exit is unlinked; anyone can steal it"
 msgstr "izlaz nije linkan; svatko ga mo¾e ukrasti"
+
+#: warnings.c:216
+msgid "exit only has a global return exit"
+msgstr "izlaz ima samo globalni povratni izlaz"
 
 #: bsd.c:3443
 msgid "has DARK-connected."
@@ -6627,6 +6891,10 @@ msgstr "mo¾da otkljuèan izlaz kojem fali succ/osucc/odrop"
 #: src/warnings.c:227
 msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
 msgstr "mo¾da otkljuèan predmet kojem fali succ/osucc/drop/odrop"
+
+#: destroy.c:855
+msgid "probate_judge config option is set to an invalid object."
+msgstr "Konfiguracijska opcija probate_judge postavljena je na neispravan objekt."
 
 #: funstr.c:100
 msgid "pronoun:feminine,absolute possessive"

@@ -39,14 +39,6 @@ msgstr " A CPU használat korlátozás NEM támogatott."
 msgid " CPU usage limiting is supported."
 msgstr " A CPU használat korlátozás támogatott."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " A DNS és ident azonosítások slave processz segítségével történnek."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS és ident azonosítás kezelése a MUSH processz által történik."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " A kibõvített convtime() támogatott."
@@ -376,10 +368,6 @@ msgstr "#-1 A SZTRINGHOSSZAK MEG KELL EGYEZZENEK"
 #: funstr.c:1034
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr "#-1 EZ NEM UNICODE"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 TÚL SOK ITER"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -718,11 +706,6 @@ msgstr "%s érzékeli: %s%s%s"
 #, c-format
 msgid "%s sent %d messages."
 msgstr "%s %d üzenetet küldött."
-
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s méretek: Újonc...%d Kapcsolat...%d Vendég...%d Motd...%d Wizmotd...%d Kilépés...%d Regisztrálás...%d Lent...%d Tele...%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format
@@ -1205,10 +1188,6 @@ msgstr "CSATI: A <%s> csatorna beszéd-zárja beállítva."
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr "CSATI: Ez a csatona nem rendelkezik visszahívási bufferrel."
 
-#: src/extchat.c:1106
-msgid "CHAT: The channel needs a more unique name."
-msgstr "CSATI: A csatorna egyedibb nevet igényel."
-
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CSATI: Inkább a hülye vigyort töröld az arcodról."
@@ -1249,11 +1228,6 @@ msgstr "Az objektum már oda van kötve."
 #: look.c:748
 msgid "Carrying:"
 msgstr "Nála van:"
-
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Cemit a <%s> csatornára: \"%s\""
 
 #: src/extchat.c:1387
 msgid "Chan Type"
@@ -1404,11 +1378,6 @@ msgstr "Hatástalanítva."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "Mit akarsz csinálni a funkcióval?"
-
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Tevékenység beállítva. %d betû törölve."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -1858,11 +1827,6 @@ msgstr "Nem látom ezt az objektumot."
 #: src/lock.c:362
 msgid "I don't see what you want to lock!"
 msgstr "Nem látom mit akarsz zárni!"
-
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Nem hiszem, hogy #%d szívesen hall feloled."
 
 #: src/fundb.c:1412
 #, c-format
@@ -2797,11 +2761,6 @@ msgstr "A kvóta nem változott."
 msgid "Read "
 msgstr "Olvasott "
 
-#: extchat.c:2192
-#, c-format
-msgid "Recall buffer: %dk, with %d lines stored."
-msgstr "Visszahívási buffer: %dk, %d sor tárolva."
-
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
 msgstr "Sikeres regisztráció. A jelszavadat e-mailben kapod meg."
@@ -3016,10 +2975,6 @@ msgstr "Ez nem egy érvényes objektum."
 msgid "That is too special to be destroyed."
 msgstr "Ez az objektum túl speciális a megsemmisítéshez."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "A név túl hosszú."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Ez az objektum nem megölhetõ."
@@ -3091,10 +3046,6 @@ msgstr "Ez nem port szám."
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
 msgstr "Nem egy túl jó név ez egy attribútumnak."
-
-#: src/extchat.c:1176
-msgid "The channel needs a more unique new name."
-msgstr "A csatorna egyedi nevet igényel."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -3572,10 +3523,6 @@ msgstr "Kinek a zárját szeretnéd beállítani?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Miért szeretnéd, hogy a szemét figyelmeztetéseit megkapd?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Miért tennéd ezt?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "Miért akarsz szemetet zárni?"
@@ -3709,10 +3656,6 @@ msgstr "Ezt nem dobhatod el."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Isten nem irányítható!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Nem adhatsz egy karakternek ilyen nevet."
 
 #: src/rob.c:207
 msgid "You can't give that away."
@@ -4037,10 +3980,6 @@ msgstr "Nem teleportálhatsz zónán kívülre ebbõl a szobából."
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Nem használhatod a @halt objektum=parancs parancsot ezen a tárgyon."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "A @lock/zone parancsot kell használnod, mielõtt a játékost ZONE-ra állítod"
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."

@@ -27,14 +27,6 @@ msgstr " Atributele nu sunt compresate in memorie."
 msgid " Attributes are word compressed in memory."
 msgstr " Atributele sunt compresate in memorie prin metoda \"word \"."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " Cautarile DNS si ident sunt realizate de procese slave."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " Cautarile DNS si ident sunt realizate de procese MUSH."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Convtime() extins este suportat."
@@ -291,10 +283,6 @@ msgstr "#-1 PAS IN AFARA LIMITEI"
 #: src/funstr.c:353
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr "#-1 LUNGIMILE SIRURILOR TREBUIE SA FIE EGALE"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 PREA MULTE REPETARI"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -570,11 +558,6 @@ msgstr "\"%s simte: %s%s%s\""
 #, c-format
 msgid "%s sent %d messages."
 msgstr "%s a trimis %d mesaje."
-
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "Marimi %s:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format

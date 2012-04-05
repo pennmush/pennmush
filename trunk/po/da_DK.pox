@@ -27,14 +27,6 @@ msgstr " Attributter er ikke komprimerede i hukommelsen."
 msgid " Attributes are word compressed in memory."
 msgstr " Attributter er komprimerede efter word-metoden i hukommelsen."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " DNS og ident opslag håndteres af en slaveproces."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS og ident opslag håndteres af MUSH-processen."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Udvidet convtime() understøttes."
@@ -291,10 +283,6 @@ msgstr "#-1 TRIN UDENFOR LOVLIGT OMRÅDE"
 #: src/funstr.c:353
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr "#-1 STRENGENES LÆNGDER SKAL VÆRE ENS"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 FOR MANGE ITER"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -1597,10 +1585,6 @@ msgstr "Det er ikke et rum!"
 msgid "That is too special to be destroyed."
 msgstr "Det er for specielt til at blive destrueret."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "Funktion tilføjet."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Attributter kan ikke slettes."
@@ -1882,10 +1866,6 @@ msgstr "Hvorfor vil du dog det?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Hvorfor vil du dog det?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Hvorfor vil du dog det?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "Hvorfor vil du dog det?"
@@ -1992,10 +1972,6 @@ msgstr "Det kan du ikke samle op!"
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Du kan ikke @trigger Gud!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Det kan du ikke samle op!"
 
 #: src/rob.c:207
 msgid "You can't give that away."

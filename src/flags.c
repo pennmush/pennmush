@@ -1269,15 +1269,14 @@ flag_stats(dbref player)
        n = hash_nextentry(&htab_flagspaces)) {
     int maxref = 0, i, uniques = 0, maxlen = 0;
 
-    notify_format(player, T("Stats for flagspace %s:"), n->name);
+    notify_format(player, "Stats for flagspace %s:", n->name);
     notify_format(player,
-                  T("  %d entries in flag table. Flagsets are %d bytes long."),
+                  "  %d entries in flag table. Flagsets are %d bytes long.",
                   n->flagbits, (int) FlagBytes(n));
     notify_format(player,
-                  T
-                  ("  %d different cached flagsets. %d objects with no flags set."),
+                  "  %d different cached flagsets. %d objects with no flags set.",
                   n->cache->entries, n->cache->zero_refcount);
-    notify(player, T(" Stats for flagset slab:"));
+    notify(player, " Stats for flagset slab:");
     slab_describe(player, n->cache->flagset_slab);
     for (i = 0; i < n->cache->size; i += 1) {
       struct flagbucket *b;
@@ -1293,12 +1292,10 @@ flag_stats(dbref player)
         maxlen = len;
     }
     notify_format(player,
-                  T
-                  ("  %d objects share the most common set of flags.\n  %d objects have unique flagsets."),
+                  "  %d objects share the most common set of flags.\n  %d objects have unique flagsets.",
                   maxref, uniques);
     notify_format(player,
-                  T
-                  ("  Cache hashtable has %d buckets. Longest collision chain is %d elements."),
+                  "  Cache hashtable has %d buckets. Longest collision chain is %d elements.",
                   n->cache->size, maxlen);
   }
 }

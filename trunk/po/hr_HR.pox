@@ -127,6 +127,10 @@ msgstr " Flagovi: "
 msgid " IANA symbolic timezones can be used."
 msgstr " Mogu se koristiti IANA oznake za vremenske zone."
 
+#: funmisc.c:1475
+msgid " Note: Function invocation limit reached. Benchmark timings may not be reliable."
+msgstr " Napomena: Dostignut je maksimalni broj poziva funkcija. Benchmark timinzi bi mogli biti nepouzdani."
+
 #: parse.c:1324
 msgid " OR "
 msgstr " ILI "
@@ -1481,7 +1485,7 @@ msgstr "-----------  Queue gotov  ------------"
 #: extmail.c:873
 #, c-format
 msgid "--------------------   MAIL: %-27s   ------------------"
-msgstr "--------------------   PO©TA: %-27s   ------------------"
+msgstr "-------------------   PO©TA: %-27s   ------------------"
 
 #: extmail.c:543
 #, c-format
@@ -2613,6 +2617,10 @@ msgstr "Funkcija klonirana."
 #: src/function.c:802
 msgid "Function deleted."
 msgstr "Funkcija obrisana."
+
+#: funmisc.c:1466
+msgid "Function invocation limit reached. Benchmark timings may not be reliable."
+msgstr "Dostignut je maksimalni broj poziva funkcija. Benchmark timinzi bi mogli biti nepouzdani."
 
 #: src/function.c:741
 msgid "Function updated."
@@ -4101,6 +4109,10 @@ msgstr "Ta opcija ne postoji."
 msgid "No such player."
 msgstr "Taj igraè ne postoji."
 
+#: cque.c:1439
+msgid "No such semaphore entry to notify."
+msgstr "Nema takvog semaforskog predmeta, pa mu nije moguæe poslati signal."
+
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
@@ -4717,6 +4729,11 @@ msgstr "Polazi¹te: %d"
 #, c-format
 msgid "Source: %s"
 msgstr "Polazi¹te: %s"
+
+#: flags.c:1272
+#, c-format
+msgid "Stats for flagspace %s:"
+msgstr "Podaci o flagovskom prostoru %s:"
 
 #: extchat.c:2084
 msgid "Status"
@@ -6009,6 +6026,10 @@ msgstr "Ne mo¾e¹ promijeniti rok isteka stalnog semafora."
 #: function.c:1087
 msgid "You cannot alias @functions."
 msgstr "Ne mo¾e¹ raditi aliase za @funkcije."
+
+#: function.c:996
+msgid "You cannot alias cloned functions."
+msgstr "Ne mo¾e¹ raditi aliase za klonirane funkcije."
 
 #: function.c:869
 msgid "You cannot change that built-in function."

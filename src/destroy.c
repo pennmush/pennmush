@@ -852,7 +852,7 @@ clear_player(dbref thing)
 
   probate = options.probate_judge;
   if (!(GoodObject(probate) && IsPlayer(probate))) {
-    do_rawlog(LT_ERR, T("probate_judge config option is set to an invalid object."));
+    do_rawlog(LT_ERR, "probate_judge config option is set to an invalid object.");
     probate = GOD;
   }
 

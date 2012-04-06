@@ -67,6 +67,7 @@ Minor changes:
    destinations based on the exit alias used to move. It also has access
    to %c, %u, and other %-subs available when moving, Suggested by 
    Javelin and [GM]. [MG]
+ * Translation updates and messages fixes by Stoko.
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

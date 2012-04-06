@@ -168,7 +168,7 @@ onchannel(dbref who, CHAN *ch)
       notify(player, T("CHAT: I don't know which channel you mean.")); \
       list_partial_matches(player, name, PMATCH_ALL); \
       if (buff) \
-        safe_str(T("#-2 AMBIGUOUS CHANNEL"), buff, bp); \
+        safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp); \
       return; \
     case CMATCH_EXACT: \
     case CMATCH_PARTIAL: \
@@ -2271,7 +2271,7 @@ FUNCTION(fun_cflags)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_See(c, executor)) {
@@ -2318,7 +2318,7 @@ FUNCTION(fun_cinfo)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_See(c, executor)) {
@@ -2385,7 +2385,7 @@ FUNCTION(fun_cbufferadd)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_Modify(c, executor)) {
@@ -2424,7 +2424,7 @@ FUNCTION(fun_ctitle)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     thing = match_thing(executor, args[1]);
@@ -2478,7 +2478,7 @@ FUNCTION(fun_cstatus)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     thing = match_thing(executor, args[1]);
@@ -2522,7 +2522,7 @@ FUNCTION(fun_cowner)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     break;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     break;
   default:
     safe_dbref(ChanCreator(c), buff, bp);
@@ -2544,7 +2544,7 @@ FUNCTION(fun_cmogrifier)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     break;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     break;
   default:
     safe_dbref(ChanMogrifier(c), buff, bp);
@@ -3359,7 +3359,7 @@ FUNCTION(fun_clock)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-2 AMBIGUOUS CHANNEL MATCH"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     break;

@@ -162,10 +162,6 @@ msgstr "#-1 @FUNCTIE ("
 msgid "#-1 ALLOCATION ERROR"
 msgstr "#-1 ALLOCATIE FOUT"
 
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 MEERDERE KANALEN MOGELIJK"
-
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
 msgstr "#-1 ARG1 NIET GEVONDEN"
@@ -658,10 +654,6 @@ msgstr "#-1 VECTOREN MOETEN DRIE-DIMENSIONAAL ZIJN"
 #: src/funstr.c:1097
 msgid "#-1 WIDTH TOO SMALL"
 msgstr "#-1 BREEDTE TE KLEIN"
-
-#: extchat.c:3144
-msgid "#-2 AMBIGUOUS CHANNEL MATCH"
-msgstr "#-2 GEEN UNIEKE KANAAL MATCH"
 
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"

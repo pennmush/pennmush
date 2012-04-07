@@ -140,10 +140,6 @@ msgstr " do "
 msgid "#-1 ALLOCATION ERROR"
 msgstr "#-1 B£¡D ALOKACJI"
 
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 DWUZNACZNA NAZWA KANA£U"
-
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
 msgstr "#-1 ARG1 NIE ZNALEZIONY"

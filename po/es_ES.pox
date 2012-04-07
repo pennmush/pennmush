@@ -60,10 +60,6 @@ msgstr " manda un privado"
 msgid " reset."
 msgstr " Restablecido."
 
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 NOMBRE DE CANAL AMBIGUO"
-
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
 msgstr "#-1 NO SE ENCONTRO ARG1"

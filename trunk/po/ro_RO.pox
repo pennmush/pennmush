@@ -48,10 +48,6 @@ msgstr " este proprietatea lui "
 msgid " pages"
 msgstr " trimite page"
 
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 NUME DE CANAL AMBIGUU"
-
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
 msgstr "#-1 ARG1 NU ESTE GASIT"

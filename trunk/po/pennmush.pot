@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-04 19:24-0500\n"
+"POT-Creation-Date: 2012-04-07 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -166,7 +166,7 @@ msgstr ""
 msgid "%s -- Attribute %s set to: %s"
 msgstr ""
 
-#: atr_tab.c:717 flags.c:2465 flags.c:2475 flags.c:2635 flags.c:2646
+#: atr_tab.c:717 flags.c:2462 flags.c:2472 flags.c:2632 flags.c:2643
 msgid "I don't understand those permissions."
 msgstr ""
 
@@ -357,8 +357,8 @@ msgstr ""
 #: cque.c:2046 cque.c:2158 cque.c:2216 cque.c:2334 create.c:99 create.c:124
 #: create.c:248 create.c:314 create.c:323 create.c:327 create.c:379
 #: create.c:383 create.c:401 create.c:661 destroy.c:242 destroy.c:929
-#: extchat.c:1802 extchat.c:1819 extchat.c:1852 extchat.c:4055 flags.c:1911
-#: flags.c:1917 flags.c:2076 function.c:925 function.c:1160 function.c:1387
+#: extchat.c:1802 extchat.c:1819 extchat.c:1852 extchat.c:4055 flags.c:1908
+#: flags.c:1914 flags.c:2073 function.c:925 function.c:1160 function.c:1387
 #: function.c:1532 function.c:1578 function.c:1633 funmisc.c:1266 game.c:967
 #: game.c:1571 lock.c:738 lock.c:802 lock.c:990 look.c:1536 malias.c:764
 #: malias.c:869 match.c:472 move.c:574 move.c:919 move.c:937 predicat.c:1325
@@ -1914,10 +1914,6 @@ msgstr ""
 msgid "You get your %d %s deposit back for %s."
 msgstr ""
 
-#: destroy.c:855
-msgid "probate_judge config option is set to an invalid object."
-msgstr ""
-
 #: destroy.c:934
 msgid "That is not a valid dbref."
 msgstr ""
@@ -1990,8 +1986,9 @@ msgstr ""
 msgid "CHAT: I don't know which channel you mean."
 msgstr ""
 
-#: extchat.c:171
-msgid "#-2 AMBIGUOUS CHANNEL"
+#: extchat.c:171 extchat.c:2274 extchat.c:2321 extchat.c:2388 extchat.c:2427
+#: extchat.c:2481 extchat.c:2525 extchat.c:2547 extchat.c:3362
+msgid "#-2 AMBIGUOUS CHANNEL NAME"
 msgstr ""
 
 #: extchat.c:1045
@@ -2364,7 +2361,7 @@ msgstr ""
 msgid "Title set for %schannel <%s>."
 msgstr ""
 
-#: extchat.c:2175 flags.c:2414 malias.c:278
+#: extchat.c:2175 flags.c:2411 malias.c:278
 msgid "Name"
 msgstr ""
 
@@ -2403,11 +2400,6 @@ msgstr ""
 #: extchat.c:2266 extchat.c:2313 extchat.c:2363 extchat.c:2419 extchat.c:2473
 #: extchat.c:2517 extchat.c:2539
 msgid "#-1 NO CHANNEL GIVEN"
-msgstr ""
-
-#: extchat.c:2274 extchat.c:2321 extchat.c:2388 extchat.c:2427 extchat.c:2481
-#: extchat.c:2525 extchat.c:2547
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr ""
 
 #: extchat.c:2299 extchat.c:2444
@@ -2622,10 +2614,6 @@ msgstr ""
 
 #: extchat.c:3274
 msgid "Channels: *NONE*"
-msgstr ""
-
-#: extchat.c:3362
-msgid "#-2 AMBIGUOUS CHANNEL MATCH"
 msgstr ""
 
 #: extchat.c:3384
@@ -3215,357 +3203,325 @@ msgstr ""
 msgid "You sent your message to the '%s' alias"
 msgstr ""
 
-#: flags.c:1272
-#, c-format
-msgid "Stats for flagspace %s:"
-msgstr ""
-
-#: flags.c:1274
-#, c-format
-msgid "  %d entries in flag table. Flagsets are %d bytes long."
-msgstr ""
-
-#: flags.c:1278
-#, c-format
-msgid "  %d different cached flagsets. %d objects with no flags set."
-msgstr ""
-
-#: flags.c:1280
-msgid " Stats for flagset slab:"
-msgstr ""
-
-#: flags.c:1297
-#, c-format
-msgid ""
-"  %d objects share the most common set of flags.\n"
-"  %d objects have unique flagsets."
-msgstr ""
-
-#: flags.c:1301
-#, c-format
-msgid ""
-"  Cache hashtable has %d buckets. Longest collision chain is %d elements."
-msgstr ""
-
-#: flags.c:1688
+#: flags.c:1685
 msgid "You can't make admin into guests."
 msgstr ""
 
-#: flags.c:1719
+#: flags.c:1716
 msgid "You must @lock/zone before you can set a player SHARED."
 msgstr ""
 
-#: flags.c:1808
+#: flags.c:1805
 msgid "Type: "
 msgstr ""
 
-#: flags.c:1810
+#: flags.c:1807
 msgid " Flags: "
 msgstr ""
 
-#: flags.c:1901 flags.c:2065
+#: flags.c:1898 flags.c:2062
 #, c-format
 msgid "Internal error: Unable to find flagspace '%s'!"
 msgstr ""
 
-#: flags.c:1906
+#: flags.c:1903
 #, c-format
 msgid "%s - I don't recognize that flag."
 msgstr ""
 
-#: flags.c:1942
+#: flags.c:1939
 #, c-format
 msgid "%s is no longer listening."
 msgstr ""
 
-#: flags.c:1953
+#: flags.c:1950
 #, c-format
 msgid "Exit %s is no longer broadcasting."
 msgstr ""
 
-#: flags.c:1961
+#: flags.c:1958
 msgid "Audible exits in this room have been deactivated."
 msgstr ""
 
-#: flags.c:1967
+#: flags.c:1964
 msgid "This room is no longer broadcasting."
 msgstr ""
 
-#: flags.c:1968
+#: flags.c:1965
 msgid "Your contents can no longer be heard from outside."
 msgstr ""
 
-#: flags.c:1978 flags.c:2034
+#: flags.c:1975 flags.c:2031
 msgid " (already)"
 msgstr ""
 
-#: flags.c:1979
+#: flags.c:1976
 msgid " reset."
 msgstr ""
 
-#: flags.c:1992
+#: flags.c:1989
 msgid "Warning: Setting trust flag on zoned object"
 msgstr ""
 
-#: flags.c:1999
+#: flags.c:1996
 #, c-format
 msgid "%s is now listening."
 msgstr ""
 
-#: flags.c:2011
+#: flags.c:2008
 #, c-format
 msgid "Exit %s is now broadcasting."
 msgstr ""
 
-#: flags.c:2019
+#: flags.c:2016
 msgid "Audible exits in this room have been activated."
 msgstr ""
 
-#: flags.c:2023
+#: flags.c:2020
 msgid "This room is now broadcasting."
 msgstr ""
 
-#: flags.c:2024
+#: flags.c:2021
 msgid "Your contents can now be heard from outside."
 msgstr ""
 
-#: flags.c:2035
+#: flags.c:2032
 msgid " set."
 msgstr ""
 
-#: flags.c:2071
+#: flags.c:2068
 #, c-format
 msgid "%s - I don't recognize that power."
 msgstr ""
 
-#: flags.c:2091
+#: flags.c:2088
 #, c-format
 msgid "%s - %s removed."
 msgstr ""
 
-#: flags.c:2093
+#: flags.c:2090
 #, c-format
 msgid "%s - %s (already) removed."
 msgstr ""
 
-#: flags.c:2098
+#: flags.c:2095
 #, c-format
 msgid "%s - %s (already) granted."
 msgstr ""
 
-#: flags.c:2101
+#: flags.c:2098
 #, c-format
 msgid "%s - %s granted."
 msgstr ""
 
-#: flags.c:2110
+#: flags.c:2107
 msgid "CLEARED"
 msgstr ""
 
-#: flags.c:2110
+#: flags.c:2107
 msgid "SET"
 msgstr ""
 
-#: flags.c:2411 flags.c:2452 flags.c:2515
+#: flags.c:2408 flags.c:2449 flags.c:2512
 #, c-format
 msgid "No such %s."
 msgstr ""
 
-#: flags.c:2415
+#: flags.c:2412
 msgid "Character"
 msgstr ""
 
-#: flags.c:2416
+#: flags.c:2413
 msgid "Aliases"
 msgstr ""
 
-#: flags.c:2417
+#: flags.c:2414
 msgid "Type(s)"
 msgstr ""
 
-#: flags.c:2419
+#: flags.c:2416
 msgid "Perms"
 msgstr ""
 
-#: flags.c:2421
+#: flags.c:2418
 msgid "ResetPrms"
 msgstr ""
 
-#: flags.c:2447 flags.c:2510 flags.c:2576
+#: flags.c:2444 flags.c:2507 flags.c:2573
 msgid "You don't have enough magic for that."
 msgstr ""
 
-#: flags.c:2456
+#: flags.c:2453
 #, c-format
 msgid "How do you want to restrict that %s?"
 msgstr ""
 
-#: flags.c:2484
+#: flags.c:2481
 #, c-format
 msgid "Permissions on %s %s set."
 msgstr ""
 
-#: flags.c:2519
+#: flags.c:2516
 #, c-format
 msgid "What type do you want to make that %s?"
 msgstr ""
 
-#: flags.c:2528 flags.c:2616
+#: flags.c:2525 flags.c:2613
 msgid "I don't understand the list of types."
 msgstr ""
 
-#: flags.c:2538
+#: flags.c:2535
 #, c-format
 msgid ""
 "Objects of other types already have this %s set. Search for them and remove "
 "it first."
 msgstr ""
 
-#: flags.c:2545
+#: flags.c:2542
 #, c-format
 msgid "Type of %s %s set."
 msgstr ""
 
-#: flags.c:2580
+#: flags.c:2577
 #, c-format
 msgid "You must provide a name for the %s."
 msgstr ""
 
-#: flags.c:2585
+#: flags.c:2582
 #, c-format
 msgid "%s names must be longer than one character."
 msgstr ""
 
-#: flags.c:2590
+#: flags.c:2587
 #, c-format
 msgid "%s names may not contain spaces."
 msgstr ""
 
-#: flags.c:2595
+#: flags.c:2592
 #, c-format
 msgid "That's not a valid %s name."
 msgstr ""
 
-#: flags.c:2601
+#: flags.c:2598
 msgid "You must provide more information."
 msgstr ""
 
-#: flags.c:2606 flags.c:2808
+#: flags.c:2603 flags.c:2805
 #, c-format
 msgid "%s characters must be single characters."
 msgstr ""
 
-#: flags.c:2623 flags.c:2814
+#: flags.c:2620 flags.c:2811
 #, c-format
 msgid "Letter conflicts with the %s %s."
 msgstr ""
 
-#: flags.c:2659
+#: flags.c:2656
 #, c-format
 msgid "Unknown failure adding %s."
 msgstr ""
 
-#: flags.c:2678 flags.c:2795 flags.c:2847 flags.c:2886 flags.c:2951
+#: flags.c:2675 flags.c:2792 flags.c:2844 flags.c:2883 flags.c:2948
 msgid "You don't look like God."
 msgstr ""
 
-#: flags.c:2682
+#: flags.c:2679
 msgid "You must provide a name for the alias."
 msgstr ""
 
-#: flags.c:2690
+#: flags.c:2687
 #, c-format
 msgid "%s aliases must be longer than one character."
 msgstr ""
 
-#: flags.c:2695
+#: flags.c:2692
 #, c-format
 msgid "%s aliases may not contain spaces."
 msgstr ""
 
-#: flags.c:2701
+#: flags.c:2698
 #, c-format
 msgid "Internal error: Unknown flag space '%s'!"
 msgstr ""
 
-#: flags.c:2707
+#: flags.c:2704
 #, c-format
 msgid "That alias already matches the %s %s."
 msgstr ""
 
-#: flags.c:2713 flags.c:2801 flags.c:2853 flags.c:2896 flags.c:2957
+#: flags.c:2710 flags.c:2798 flags.c:2850 flags.c:2893 flags.c:2954
 #, c-format
 msgid "I don't know that %s."
 msgstr ""
 
-#: flags.c:2717
+#: flags.c:2714
 #, c-format
 msgid "That %s is disabled."
 msgstr ""
 
-#: flags.c:2721
+#: flags.c:2718
 #, c-format
 msgid "That isn't an alias of the %s %s."
 msgstr ""
 
-#: flags.c:2728
+#: flags.c:2725
 #, c-format
 msgid "That's the %s's name, not an alias."
 msgstr ""
 
-#: flags.c:2734
+#: flags.c:2731
 msgid "Unknown failure deleting alias."
 msgstr ""
 
-#: flags.c:2742
+#: flags.c:2739
 msgid "Unknown failure adding alias."
 msgstr ""
 
-#: flags.c:2820
+#: flags.c:2817
 #, c-format
 msgid "Letter for %s %s set to '%c'."
 msgstr ""
 
-#: flags.c:2824
+#: flags.c:2821
 #, c-format
 msgid "Letter for %s %s cleared."
 msgstr ""
 
-#: flags.c:2857
+#: flags.c:2854
 #, c-format
 msgid "That %s is already disabled."
 msgstr ""
 
-#: flags.c:2862
+#: flags.c:2859
 #, c-format
 msgid "%s %s disabled."
 msgstr ""
 
-#: flags.c:2891
+#: flags.c:2888
 #, c-format
 msgid "Internal error: Unknown flagspace '%s'!"
 msgstr ""
 
-#: flags.c:2900
+#: flags.c:2897
 msgid "There are probably easier ways to crash your MUSH."
 msgstr ""
 
-#: flags.c:2930
+#: flags.c:2927
 #, c-format
 msgid "%s %s deleted."
 msgstr ""
 
-#: flags.c:2961
+#: flags.c:2958
 #, c-format
 msgid "That %s is not disabled."
 msgstr ""
 
-#: flags.c:2966
+#: flags.c:2963
 #, c-format
 msgid "%s %s enabled."
 msgstr ""
 
-#: flags.c:3039
+#: flags.c:3036
 msgid " (disabled)"
 msgstr ""
 
@@ -5320,11 +5276,6 @@ msgstr ""
 
 #: mycrypt.c:76
 msgid "#-1 UNSUPPORTED DIGEST TYPE"
-msgstr ""
-
-#: mycrypt.c:79
-#, c-format
-msgid "safe_hash_byname: Unknown password hash function: %s"
 msgstr ""
 
 #: mymalloc.c:557 rob.c:88 wiz.c:643

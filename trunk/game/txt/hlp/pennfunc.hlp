@@ -2782,6 +2782,9 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
   
   This is equivilent to filter(#lambda/testlock(<key>, %%0), <dbrefs>) but
   much more efficient, as the lock <key> is only parsed/compiled once.
+  
+  <delim> defaults to a space, and is the delimiter of <dbrefs> and the list
+  returned by lockfilter().
 
   Example:
     Get all male players with a name starting with 'W'.

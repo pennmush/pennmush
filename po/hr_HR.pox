@@ -695,6 +695,11 @@ msgstr "#-1 VEKTORI MORAJU BITI TRODIMENZIONALNI"
 msgid "#-1 WIDTH TOO SMALL"
 msgstr "#-1 ©IRINA PREMALA"
 
+#: extchat.c:171 extchat.c:2274 extchat.c:2321 extchat.c:2388 extchat.c:2427
+#: extchat.c:2481 extchat.c:2525 extchat.c:2547 extchat.c:3362
+msgid "#-2 AMBIGUOUS CHANNEL NAME"
+msgstr "#-2 VI©EZNAÈNO IME KANALA"
+
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats pozvan s neispravnim called_as!"
@@ -1397,7 +1402,7 @@ msgstr "'%s' nije ispravno ime izlaza."
 #: boolexp.c:1016
 #, c-format
 msgid "'%s' is not a valid flag lock name."
-msgstr "'%s' nije ispravan kljuè za flagovsku bravu."
+msgstr "'%s' nije ispravna vrsta kljuèa za flagovsku bravu."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"

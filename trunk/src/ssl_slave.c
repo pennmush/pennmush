@@ -321,6 +321,26 @@ event_cb(struct bufferevent *bev, short e, void *data)
     } else {
       ssl_connected(c);
     }
+  } else if (e & BEV_EVENT_TIMEOUT) {
+    if (c->state == C_SSL_CONNECTING) {
+      /* Handshake timed out. */
+#if SSL_DEBUG_LEVEL > 0
+      errprintf(stdout, "ssl_slave: SSL handshake timeout.\n");
+#endif
+      bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
+      bufferevent_free(c->remote_bev);
+      c->remote_bev = NULL;
+      c->state = C_SHUTTINGDOWN;
+      if (c->local_bev) {
+        bufferevent_disable(c->local_bev, EV_READ);
+        bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
+      }
+      delete_conn(c);
+    } else {
+      /* Bug in some versions of libevent cause this to trigger when
+	 it shouldn't. Ignore. */
+      return;
+    }
   } else if (e & error_conditions) {
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
@@ -409,7 +429,7 @@ new_conn_cb(evutil_socket_t s, short flags
 
   bufferevent_setcb(c->remote_bev, NULL, NULL, event_cb, c);
   bufferevent_set_timeouts(c->remote_bev, &handshake_timeout,
-                           &handshake_timeout);
+			   &handshake_timeout);
   bufferevent_enable(c->remote_bev, EV_WRITE);
 }
 

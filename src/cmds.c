@@ -13,6 +13,13 @@
 
 #include <string.h>
 
+#ifdef I_SYS_TYPES
+#include <sys/types.h>
+#endif
+#ifdef I_SYS_SOCKET
+#include <sys/socket.h>
+#endif
+
 #include "conf.h"
 #include "externs.h"
 #include "dbdefs.h"
@@ -30,6 +37,9 @@
 #include "command.h"
 #include "flags.h"
 #include "log.h"
+#include "mysocket.h"
+#include "lookup.h"
+#include "ssl_slave.h"
 #include "confmagic.h"
 
 /* External Stuff */
@@ -1179,6 +1189,31 @@ COMMAND(cmd_sitelock)
     do_sitelock(executor, arg_left, args_right[1], args_right[2], SITELOCK_ADD,
                 psw);
 }
+
+COMMAND(cmd_slave)
+{
+  if (SW_ISSET(sw, SWITCH_RESTART)) {
+#ifdef INFO_SLAVE
+    if (strcasecmp(arg_left, "info") == 0) {
+      kill_info_slave();
+      notify(executor, T("Restarting info_slave daemon."));
+      return;
+    }
+#endif
+#ifdef SSL_SLAVE
+    if (strcasecmp(arg_left, "ssl") == 0) {
+      kill_ssl_slave();
+      make_ssl_slave();
+      notify(executor, T("Restarting ssl_slave daemon."));
+      return;
+    }
+#endif
+    notify(executor, T("No such service."));
+  } else {
+    notify(executor, T("I'm sorry, Dave. I'm afraid I can't do that."));
+  }
+}
+
 
 COMMAND(cmd_stats)
 {

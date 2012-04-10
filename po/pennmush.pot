@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-07 02:00-0500\n"
+"POT-Creation-Date: 2012-04-10 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -222,7 +222,7 @@ msgstr ""
 msgid "Enum"
 msgstr ""
 
-#: atr_tab.c:892 cmds.c:448 cmds.c:680 game.c:2513
+#: atr_tab.c:892 cmds.c:458 cmds.c:690 game.c:2513
 msgid "Flags"
 msgstr ""
 
@@ -320,7 +320,7 @@ msgstr ""
 msgid "No such attribute to reset."
 msgstr ""
 
-#: attrib.c:2050 command.c:1984
+#: attrib.c:2050 command.c:1985
 msgid "Alias set."
 msgstr ""
 
@@ -351,9 +351,9 @@ msgid "You need to give an object/attribute pair."
 msgstr ""
 
 #: attrib.c:2127 attrib.c:2200 bsd.c:3273 bsd.c:3333 bsd.c:4653 bsd.c:5178
-#: bsd.c:5212 bsd.c:5224 bsd.c:5229 cmds.c:75 cmds.c:80 cmds.c:85 cmds.c:90
-#: cmds.c:95 command.c:1786 command.c:1813 command.c:1905 command.c:1987
-#: command.c:2163 command.c:2548 cque.c:1421 cque.c:1535 cque.c:1585
+#: bsd.c:5212 bsd.c:5224 bsd.c:5229 cmds.c:85 cmds.c:90 cmds.c:95 cmds.c:100
+#: cmds.c:105 command.c:1787 command.c:1814 command.c:1906 command.c:1988
+#: command.c:2164 command.c:2549 cque.c:1421 cque.c:1535 cque.c:1585
 #: cque.c:2046 cque.c:2158 cque.c:2216 cque.c:2334 create.c:99 create.c:124
 #: create.c:248 create.c:314 create.c:323 create.c:327 create.c:379
 #: create.c:383 create.c:401 create.c:661 destroy.c:242 destroy.c:929
@@ -805,7 +805,7 @@ msgstr ""
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:4608 bsd.c:4617 bsd.c:5129 bsd.c:5138 cmds.c:515 funstr.c:2280
+#: bsd.c:4608 bsd.c:4617 bsd.c:5129 bsd.c:5138 cmds.c:525 funstr.c:2280
 #: wiz.c:1624
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
@@ -906,256 +906,282 @@ msgstr ""
 msgid "Attribute storage stats are not supported for malloc scheme."
 msgstr ""
 
-#: cmds.c:208 cmds.c:220
+#: cmds.c:218 cmds.c:230
 msgid "You can't remake the world in your image."
 msgstr ""
 
-#: cmds.c:212
+#: cmds.c:222
 msgid "What did you want to set?"
 msgstr ""
 
-#: cmds.c:226
+#: cmds.c:236
 msgid "Couldn't set that option."
 msgstr ""
 
-#: cmds.c:230
+#: cmds.c:240
 msgid "Option set and saved."
 msgstr ""
 
-#: cmds.c:232
+#: cmds.c:242
 msgid "Option set but not saved (Saves disabled.)"
 msgstr ""
 
-#: cmds.c:235
+#: cmds.c:245
 msgid "Option set."
 msgstr ""
 
-#: cmds.c:605
+#: cmds.c:615
 msgid "You must give a switch for @hook."
 msgstr ""
 
-#: cmds.c:611
+#: cmds.c:621
 msgid "You can only use /inplace and /inline with /override."
 msgstr ""
 
-#: cmds.c:620
+#: cmds.c:630
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr ""
 
-#: cmds.c:678 game.c:2517
+#: cmds.c:688 game.c:2517
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:682 cmds.c:1012 game.c:2515
+#: cmds.c:692 cmds.c:1022 game.c:2515
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:790 extmail.c:1878
+#: cmds.c:800 extmail.c:1878
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:854
+#: cmds.c:864
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:857
+#: cmds.c:867
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:861
+#: cmds.c:871
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:1249
+#: cmds.c:1199
+msgid "Restarting info_slave daemon."
+msgstr ""
+
+#: cmds.c:1200
+#, c-format
+msgid "%s(#%d) restarted info_slave."
+msgstr ""
+
+#: cmds.c:1208
+msgid "Restarting ssl_slave daemon."
+msgstr ""
+
+#: cmds.c:1209
+#, c-format
+msgid "%s(#%d) restarted ssl_slave."
+msgstr ""
+
+#: cmds.c:1213
+msgid "No such service."
+msgstr ""
+
+#: cmds.c:1215
+msgid "I'm sorry, Dave. I'm afraid I can't do that."
+msgstr ""
+
+#: cmds.c:1286
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1454
+#: cmds.c:1491
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1459
+#: cmds.c:1496
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1579
+#: cmds.c:1616
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
 
-#: command.c:874
+#: command.c:875
 #, c-format
 msgid "Warning: Switch '%s' is defined but not used."
 msgstr ""
 
-#: command.c:1322
+#: command.c:1323
 #, c-format
 msgid "%s doesn't know switch %s."
 msgstr ""
 
-#: command.c:1481
+#: command.c:1482
 #, c-format
 msgid "Deprecated command %s being used on object #%d."
 msgstr ""
 
-#: command.c:1767
+#: command.c:1768
 msgid "This command has not been implemented."
 msgstr ""
 
-#: command.c:1794 command.c:1825
+#: command.c:1795 command.c:1826
 msgid "Bad command name."
 msgstr ""
 
-#: command.c:1800
+#: command.c:1801
 #, c-format
 msgid "Command %s added."
 msgstr ""
 
-#: command.c:1803
+#: command.c:1804
 #, c-format
 msgid "Command %s already exists."
 msgstr ""
 
-#: command.c:1822 command.c:1911 command.c:2002 command.c:2396 command.c:2501
+#: command.c:1823 command.c:1912 command.c:2003 command.c:2397 command.c:2502
 msgid "No such command."
 msgstr ""
 
-#: command.c:1830
+#: command.c:1831
 msgid "Command cloned."
 msgstr ""
 
-#: command.c:1919
+#: command.c:1920
 msgid "You can't delete built-in commands. @command/disable instead."
 msgstr ""
 
-#: command.c:1935
+#: command.c:1936
 #, c-format
 msgid "Removed %s and aliases from command table."
 msgstr ""
 
-#: command.c:1938 command.c:1943
+#: command.c:1939 command.c:1944
 #, c-format
 msgid "Removed %s from command table."
 msgstr ""
 
-#: command.c:1959
+#: command.c:1960
 msgid "You must specify a command."
 msgstr ""
 
-#: command.c:1972
+#: command.c:1973
 msgid ""
 "WARNING: /NOEVAL no longer creates a Noparse command.\n"
 "         Use /NOPARSE if that's what you meant."
 msgstr ""
 
-#: command.c:1979
+#: command.c:1980
 msgid "I can't alias a command to that!"
 msgstr ""
 
-#: command.c:1981
+#: command.c:1982
 msgid "Unable to set alias."
 msgstr ""
 
-#: command.c:2013
+#: command.c:2014
 msgid "How do you want to restrict the command?"
 msgstr ""
 
-#: command.c:2018
+#: command.c:2019
 msgid "Restrict attempt failed."
 msgstr ""
 
-#: command.c:2022
+#: command.c:2023
 msgid "@command is ALWAYS enabled."
 msgstr ""
 
-#: command.c:2028
+#: command.c:2029
 #, c-format
 msgid "Name       : %s (%s)"
 msgstr ""
 
-#: command.c:2043
+#: command.c:2044
 #, c-format
 msgid "Flags      : %s"
 msgstr ""
 
-#: command.c:2045
+#: command.c:2046
 #, c-format
 msgid "Lock       : %s"
 msgstr ""
 
-#: command.c:2048
+#: command.c:2049
 #, c-format
 msgid "Failure Msg: %s"
 msgstr ""
 
-#: command.c:2055
+#: command.c:2056
 #, c-format
 msgid "Switches   : %s"
 msgstr ""
 
-#: command.c:2057
+#: command.c:2058
 msgid "Switches   :"
 msgstr ""
 
-#: command.c:2070
+#: command.c:2071
 #, c-format
 msgid "Leftside   : %s"
 msgstr ""
 
-#: command.c:2082
+#: command.c:2083
 #, c-format
 msgid "Rightside  : %s"
 msgstr ""
 
-#: command.c:2085
+#: command.c:2086
 #, c-format
 msgid "Arguments  : %s"
 msgstr ""
 
-#: command.c:2101
+#: command.c:2102
 #, c-format
 msgid "Commands: %s"
 msgstr ""
 
-#: command.c:2400
+#: command.c:2401
 msgid "Hooks not allowed with that command."
 msgstr ""
 
-#: command.c:2413
+#: command.c:2414
 msgid "Unknown hook type"
 msgstr ""
 
-#: command.c:2418
+#: command.c:2419
 #, c-format
 msgid "Hook removed from %s."
 msgstr ""
 
-#: command.c:2427
+#: command.c:2428
 msgid "You must give an object."
 msgstr ""
 
-#: command.c:2429
+#: command.c:2430
 msgid "You must give both an object and attribute."
 msgstr ""
 
-#: command.c:2434
+#: command.c:2435
 msgid "Invalid hook object."
 msgstr ""
 
-#: command.c:2446
+#: command.c:2447
 #, c-format
 msgid "Hook set for %s"
 msgstr ""
 
-#: command.c:2481
+#: command.c:2482
 msgid "There are no hooks currently set."
 msgstr ""
 
-#: command.c:2486
+#: command.c:2487
 msgid "The following commands have hooks: "
 msgstr ""
 
-#: command.c:2546
+#: command.c:2547
 msgid "That command has no hooks."
 msgstr ""
 
@@ -1668,7 +1694,7 @@ msgstr ""
 msgid "Linked exit #%d to %s"
 msgstr ""
 
-#: create.c:366 fundb.c:1845 wiz.c:429
+#: create.c:366 fundb.c:1837 wiz.c:429
 msgid "No match."
 msgstr ""
 
@@ -3537,7 +3563,7 @@ msgstr ""
 msgid "#-1 LISTING NOT SUPPORTED"
 msgstr ""
 
-#: function.c:101 fundb.c:1362
+#: function.c:101
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr ""
 
@@ -3726,11 +3752,11 @@ msgstr ""
 msgid "#-1 NO OBJECTS CONTROLLED"
 msgstr ""
 
-#: fundb.c:900 fundb.c:1422
+#: fundb.c:900 fundb.c:1414
 msgid "#-1 ARG1 NOT FOUND"
 msgstr ""
 
-#: fundb.c:908 fundb.c:1424
+#: fundb.c:908 fundb.c:1416
 msgid "#-1 ARG2 NOT FOUND"
 msgstr ""
 
@@ -3754,40 +3780,40 @@ msgstr ""
 msgid "#-1 NO SUCH LOCK"
 msgstr ""
 
-#: fundb.c:1356 fundb.c:1398
+#: fundb.c:1356 fundb.c:1390
 msgid "#-1 INVALID BOOLEXP"
 msgstr ""
 
-#: fundb.c:1848
+#: fundb.c:1840
 msgid "I'm not sure who you mean."
 msgstr ""
 
-#: fundb.c:1986
+#: fundb.c:1978
 #, c-format
 msgid "I don't understand switch '%c'."
 msgstr ""
 
-#: fundb.c:2098
+#: fundb.c:2090
 msgid "#-1 INVALID SOURCE ROOM"
 msgstr ""
 
-#: fundb.c:2210
+#: fundb.c:2202
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
 msgstr ""
 
-#: fundb.c:2279
+#: fundb.c:2271
 msgid "#-1 NO SUCH ATTRIBUTE"
 msgstr ""
 
-#: fundb.c:2283 predicat.c:1502
+#: fundb.c:2275 predicat.c:1502
 msgid "#-1 INVALID GREP PATTERN"
 msgstr ""
 
-#: fundb.c:2362 fundb.c:2366
+#: fundb.c:2354 fundb.c:2358
 msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
 msgstr ""
 
-#: fundb.c:2395 fundb.c:2417
+#: fundb.c:2387 fundb.c:2409
 msgid "#-1 INVALID OBJECT"
 msgstr ""
 

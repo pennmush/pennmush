@@ -3081,6 +3081,10 @@ msgstr "Nisam siguran kome ¾eli¹ poslati: %s"
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr "®ao mi je, Dave, bojim se da to ne mogu uèiniti."
 
+#: cmds.c:1215
+msgid "I'm sorry, Dave. I'm afraid I can't do that."
+msgstr "®ao mi je, Dave. Bojim se da to ne mogu uèiniti."
+
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
@@ -4092,6 +4096,10 @@ msgstr "Taj igraè ne postoji."
 msgid "No such semaphore entry to notify."
 msgstr "Nema takvog semaforskog predmeta, pa mu nije moguæe poslati signal."
 
+#: cmds.c:1213
+msgid "No such service."
+msgstr "Nema takve usluge."
+
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
@@ -4480,6 +4488,14 @@ msgstr "%s preimenovan u %s u tablici atributa."
 #: flags.c:2035
 msgid "ResetPrms"
 msgstr "UkloniDoz"
+
+#: cmds.c:1199
+msgid "Restarting info_slave daemon."
+msgstr "Restartam info_slave daemon."
+
+#: cmds.c:1208
+msgid "Restarting ssl_slave daemon."
+msgstr "Restartam ssl_slave daemon."
 
 #: cque.c:1637
 #, c-format

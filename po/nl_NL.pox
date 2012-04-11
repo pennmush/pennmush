@@ -1334,6 +1334,16 @@ msgstr "%s's %s is opgegeven voor vernietiging."
 msgid "%s(#%d) has mail but is not a player."
 msgstr "%s(#%d) heeft post maar is geen speler."
 
+#: cmds.c:1200
+#, c-format
+msgid "%s(#%d) restarted info_slave."
+msgstr "%s(#%d) heeft info_slave herstart."
+
+#: cmds.c:1209
+#, c-format
+msgid "%s(#%d) restarted ssl_slave."
+msgstr "%s(#%d) heeft ssl_slave herstart."
+
 #: lock.c:541
 #, c-format
 msgid "%s(%s) - %s (already) unlocked."
@@ -3081,6 +3091,10 @@ msgstr "Ik weet niet zeker wie je wilt oproepen met: %s"
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr "Ja dat mag dus niet."
 
+#: cmds.c:1215
+msgid "I'm sorry, Dave. I'm afraid I can't do that."
+msgstr "Ja dat mag dus niet."
+
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
@@ -4092,6 +4106,10 @@ msgstr "Speler bestaat niet."
 msgid "No such semaphore entry to notify."
 msgstr "Er bestaat niet zo'n semafoor om te notificeren."
 
+#: cmds.c:1213
+msgid "No such service."
+msgstr "Die service bestaat niet."
+
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
@@ -4480,6 +4498,14 @@ msgstr "%s in %s veranderd in attributen tabel."
 #: flags.c:2035
 msgid "ResetPrms"
 msgstr "ResetPrms"
+
+#: cmds.c:1199
+msgid "Restarting info_slave daemon."
+msgstr "Het info_slave proces wordt herstart."
+
+#: cmds.c:1208
+msgid "Restarting ssl_slave daemon."
+msgstr "Het ssl_slave proces wordt herstart."
 
 #: cque.c:1637
 #, c-format

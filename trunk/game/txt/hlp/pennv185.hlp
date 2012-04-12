@@ -68,6 +68,7 @@ Minor changes:
    to %c, %u, and other %-subs available when moving, Suggested by 
    Javelin and [GM]. [MG]
  * Translation updates and messages fixes by Stoko.
+ * Help fix by Todd@M*U*S*H.
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set
@@ -106,6 +107,8 @@ Commands:
  * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL
    support is not compiled into the MUSH. Instead, it just reports
    that no SQL db is available, like @mapsql does. [MG]
+ * @slave, for restarting the info_slave and ssl_slave daemons from
+   within the game. [SW]
 
 Functions:
  * version() now reports svn revision/date where available. Patch by

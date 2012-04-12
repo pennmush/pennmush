@@ -2736,8 +2736,7 @@ See also: @name, name(), VERBS
   connected, she will be informed that the password was changed and who by,
   but not what it was changed to.
   
-  Note that, unlike @password, @newpassword evaluates its arguments, so
-  any special characters need to be escaped.
+  The <player> argument is evaluated, but the <password> argument is not.
 
 See also: @password, checkpass()
 & @notify
@@ -2872,6 +2871,7 @@ See also: PARENTS, parent(), lparent(), ANCESTORS
   @password <old password>=<new password>
 
   This changes your password. Please note that passwords ARE case-sensitive.
+  The arguments are not evaluated.
   
 See also: @newpassword, checkpass()
 & @pageformat

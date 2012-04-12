@@ -72,6 +72,7 @@ Minor changes:
    to %c, %u, and other %-subs available when moving, Suggested by 
    Javelin and [GM]. [MG]
  * Translation updates and messages fixes by Stoko.
+ * Help fix by Todd@M*U*S*H.
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

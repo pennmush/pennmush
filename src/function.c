@@ -570,7 +570,7 @@ FUNTAB flist[] = {
   {"TRIM", fun_trim, 1, 3, FN_REG},
   {"TRIMPENN", fun_trim, 1, 3, FN_REG},
   {"TRIMTINY", fun_trim, 1, 3, FN_REG},
-  {"TRUNC", fun_trunc, 1, 1, FN_REG},
+  {"TRUNC", fun_trunc, 1, 1, FN_REG | FN_STRIPANSI},
   {"TYPE", fun_type, 1, 1, FN_REG | FN_STRIPANSI},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},

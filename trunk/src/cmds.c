@@ -1197,7 +1197,7 @@ COMMAND(cmd_slave)
     if (strcasecmp(arg_left, "info") == 0) {
       kill_info_slave();
       notify(executor, T("Restarting info_slave daemon."));
-      do_rawlog(LT_WIZ, T("%s(#%d) restarted info_slave."), Name(executor), executor);
+      do_rawlog(LT_WIZ, "%s(#%d) restarted info_slave.", Name(executor), executor);
       return;
     }
 #endif
@@ -1206,13 +1206,13 @@ COMMAND(cmd_slave)
       kill_ssl_slave();
       make_ssl_slave();
       notify(executor, T("Restarting ssl_slave daemon."));
-      do_rawlog(LT_WIZ, T("%s(#%d) restarted ssl_slave."), Name(executor), executor);
+      do_rawlog(LT_WIZ, "%s(#%d) restarted ssl_slave.", Name(executor), executor);
       return;
     }
 #endif
     notify(executor, T("No such service."));
   } else {
-    notify(executor, T("I'm sorry, Dave. I'm afraid I can't do that."));
+    notify(executor, T("I'm sorry, Dave, I'm afraid I can't do that."));
   }
 }
 

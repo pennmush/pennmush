@@ -1334,16 +1334,6 @@ msgstr "%s's %s is opgegeven voor vernietiging."
 msgid "%s(#%d) has mail but is not a player."
 msgstr "%s(#%d) heeft post maar is geen speler."
 
-#: cmds.c:1200
-#, c-format
-msgid "%s(#%d) restarted info_slave."
-msgstr "%s(#%d) heeft info_slave herstart."
-
-#: cmds.c:1209
-#, c-format
-msgid "%s(#%d) restarted ssl_slave."
-msgstr "%s(#%d) heeft ssl_slave herstart."
-
 #: lock.c:541
 #, c-format
 msgid "%s(%s) - %s (already) unlocked."
@@ -3089,10 +3079,6 @@ msgstr "Ik weet niet zeker wie je wilt oproepen met: %s"
 
 #: destroy.c:214
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
-msgstr "Ja dat mag dus niet."
-
-#: cmds.c:1215
-msgid "I'm sorry, Dave. I'm afraid I can't do that."
 msgstr "Ja dat mag dus niet."
 
 #: src/speech.c:611 src/speech.c:1371

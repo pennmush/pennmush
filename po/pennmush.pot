@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-10 02:00-0500\n"
+"POT-Creation-Date: 2012-04-16 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -970,26 +970,16 @@ msgstr ""
 msgid "Restarting info_slave daemon."
 msgstr ""
 
-#: cmds.c:1200
-#, c-format
-msgid "%s(#%d) restarted info_slave."
-msgstr ""
-
 #: cmds.c:1208
 msgid "Restarting ssl_slave daemon."
-msgstr ""
-
-#: cmds.c:1209
-#, c-format
-msgid "%s(#%d) restarted ssl_slave."
 msgstr ""
 
 #: cmds.c:1213
 msgid "No such service."
 msgstr ""
 
-#: cmds.c:1215
-msgid "I'm sorry, Dave. I'm afraid I can't do that."
+#: cmds.c:1215 destroy.c:214
+msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr ""
 
 #: cmds.c:1286
@@ -1782,10 +1772,6 @@ msgstr ""
 #: create.c:752
 #, c-format
 msgid "Cloned: Exit #%d."
-msgstr ""
-
-#: destroy.c:214
-msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr ""
 
 #: destroy.c:223

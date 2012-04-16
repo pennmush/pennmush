@@ -3081,10 +3081,6 @@ msgstr "Nisam siguran kome ¾eli¹ poslati: %s"
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr "®ao mi je, Dave, bojim se da to ne mogu uèiniti."
 
-#: cmds.c:1215
-msgid "I'm sorry, Dave. I'm afraid I can't do that."
-msgstr "®ao mi je, Dave. Bojim se da to ne mogu uèiniti."
-
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."

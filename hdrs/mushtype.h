@@ -85,7 +85,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_QSTOP   0x200   /**< Q-reg get()s don't travel past this. */
 #define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch */
 #define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
-#define PE_REGS_ARGPASS 0x1000  /**< This pe_reg has been ibreak()'d out */
+#define PE_REGS_ARGPASS 0x1000  /**< When used with NEWATTR, don't block args (%0-%9) */
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)

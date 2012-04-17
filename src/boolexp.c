@@ -1997,7 +1997,7 @@ check_attrib_lock(dbref player, dbref target,
   if (!atrname || !*atrname || !str || !*str)
     return 0;
   if (!fetch_ufun_attrib
-      (atrname, target, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR))
+      (atrname, target, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_SHARE_STACK))
     return 0;                   /* fail if there's no matching attribute */
 
   call_ufun(&ufun, buff, player, player, pe_info, NULL);

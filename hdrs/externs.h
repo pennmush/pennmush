@@ -711,6 +711,8 @@ replace_string2(const char *old[2], const char *newbits[2],
 /* When calling ufun with UFUN_NAME, don't add a space after the name. Only to be used by call_ufun! */
 #define UFUN_NAME_NOSPACE 0x40
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
+/* Don't localize %0-%9. For use in evaluation locks */
+#define UFUN_SHARE_STACK 0x80
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
     bool call_ufun(ufun_attrib * ufun, char *ret, dbref caller,

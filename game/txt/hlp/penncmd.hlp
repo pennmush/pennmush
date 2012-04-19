@@ -2617,6 +2617,8 @@ See also: @log
     /oemit    -- Works like @oemit, with <recipients> as a list of objects
                  not to emit to. See 'help @oemit' for more info.
     /nospoof  -- don't show nospoof info, as per @nspemit/@nsremit/@nsoemit
+    /silent   -- don't show a confirmation message
+    /noisy    -- show a confirmation message
 
   See 'help @message2' for examples.
 See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()

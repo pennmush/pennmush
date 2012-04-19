@@ -852,7 +852,7 @@ COMMAND(cmd_message)
 {
   char *message;
   char *attrib;
-  unsigned int flags = PEMIT_LIST;
+  unsigned int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_LIST;
   int numargs, i;
   char *args[10];
   enum emit_type type;

@@ -5060,16 +5060,23 @@ See also: terminfo()
   This function is similar to map(), except you can pass up to 10 elements 
   of the list at a time, in %0 to %9. <step> must be between 1 and 10, with 
   a step of 1 equivalent to map(). If the elements of the list can't be 
-  split up evenly, the last evaluation pads the missing values with empty 
-  values. <delim> defaults to a space, and <osep> defaults to <delim>.
+  split up evenly, the last evaluation will run with some of the registers
+  unset; the %+ substitution or the registers() function can be used to see 
+  which/how many are set.
 
   Example:
     > &foo me=%0 - %1 - %2
     > think step(foo, 1 2 3 4 5, 3,, %r)
     1 - 2 - 3
     4 - 5 -
+    
+  Using registers() to avoid extra delimiters:
+    > &foo me=iter(registers(,args),v(%i0),,%b-%b)
+    > think step(foo, 1 2 3 4 5, 3,, %r)
+    1 - 2 - 3
+    4 - 5
 
-See also: map(), iter(), fold(), anonymous attributes
+See also: map(), iter(), fold(), anonymous attributes, registers()
 & STDDEV()
   stddev(<number1>[, ... , <numberN>])
 

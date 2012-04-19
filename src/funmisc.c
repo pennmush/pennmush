@@ -105,7 +105,7 @@ FUNCTION(fun_message)
 {
   int i;
   char *argv[10];
-  int flags = PEMIT_LIST;
+  int flags = PEMIT_LIST | PEMIT_SILENT;
   enum emit_type type = EMIT_PEMIT;
 
   for (i = 0; (i + 3) < nargs && i < 10; i++) {

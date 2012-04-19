@@ -135,6 +135,8 @@ Functions:
  * playermem() and objmem() are smarter about calculating space being
    used by atributes [SW]
  * rnum() has been deprecated in favor of locate(). [SW]
+ * step() no longer pads the final call with empty arguments, allowing you
+   to use %+ or registers() to differentiate empty and missing args. [MG]
    
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

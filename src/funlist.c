@@ -2136,7 +2136,7 @@ FUNCTION(fun_step)
   int n;
   int step;
   char *osep, osepd[2] = { '\0', '\0' };
-  PE_REGS *pe_regs;
+  PE_REGS *pe_regs = NULL;
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2177,18 +2177,18 @@ FUNCTION(fun_step)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Step through the list. */
-  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
   for (i = 0; i < nptrs;) {
+    pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
     for (n = 0; n < step; n++) {
       if (i < nptrs) {
         pe_regs_setenv_nocopy(pe_regs, n, ptrs[i++]);
-      } else {
-        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       goto exitsequence;
     }
+    pe_regs_free(pe_regs);
+    pe_regs = NULL;
     if (i > step) {
       /* At least second loop */
       safe_str(osep, buff, bp);
@@ -2196,7 +2196,8 @@ FUNCTION(fun_step)
     safe_str(rbuff, buff, bp);
   }
 exitsequence:
-  pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }

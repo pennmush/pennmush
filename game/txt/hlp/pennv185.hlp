@@ -27,6 +27,10 @@ Hardcode:
    functions now take an extra arg, for properly tracking both the executor
    and the speaker when spoofing (@pemit/spoof, etc). [MG]
 
+Deprecation:
+ * @emit/room and @doing/header have been deprecated. Use @lemit and @poll,
+   respectively, instead. [MG]
+
 Major changes:
  * Built-in attributes are now stored in the database. This means that
    @attribute no longer needs to be in an @startup, as it will persist
@@ -119,6 +123,7 @@ Fixes:
  * When spoofing (@pemit/spoof, etc), any errors for failed locks or bad
    object names incorrectly went to the object being spoofed, not the object
    doing the spoofing. [MG]
+ * @lemit incorrectly ignored an = and anything after it in its arg. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

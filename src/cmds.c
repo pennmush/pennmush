@@ -345,9 +345,13 @@ COMMAND(cmd_disable)
 
 COMMAND(cmd_doing)
 {
-  if (SW_ISSET(sw, SWITCH_HEADER))
+  if (SW_ISSET(sw, SWITCH_HEADER)) {
+    notify_format(Owner(executor),
+                  T("Deprecated command %s being used on object #%d. Use %s instead."),
+                  "@DOING/HEADER", executor, "@POLL");
+
     do_poll(executor, arg_left, 0);
-  else
+  } else
     do_doing(executor, arg_left);
 }
 
@@ -406,11 +410,15 @@ COMMAND(cmd_emit)
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   int speaker = SPOOF(executor, enactor, sw);
 
-  if (SW_ISSET(sw, SWITCH_ROOM))
+  if (SW_ISSET(sw, SWITCH_ROOM)) {
+    notify_format(Owner(executor),
+                  T("Deprecated command %s being used on object #%d. Use %s instead."),
+                  "@EMIT/ROOM", executor, "@LEMIT");
+
     do_lemit(executor, speaker, arg_left,
              (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags,
              queue_entry->pe_info);
-  else
+  } else
     do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
 }
 

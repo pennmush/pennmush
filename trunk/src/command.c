@@ -187,7 +187,7 @@ COMLIST commands[] = {
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
   {"@LEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+   CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},

@@ -221,7 +221,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
 {
 
   char buff[BUFFER_LEN], *bp;
-  dbref preserve_orator = orator;
   int attribs_used = 0;
   NEW_PE_INFO *pe_info = NULL;
   ufun_attrib ufun;
@@ -231,7 +230,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   }
 
   loc = (loc == NOTHING) ? Location(player) : loc;
-  orator = player;
   /* only give messages if the location is good */
   if (GoodObject(loc)) {
 
@@ -254,12 +252,12 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
         if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
-          notify_except2(loc, player, thing, buff, flags);
+          notify_except2(player, loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
         safe_format(buff, &bp, "%s %s", Name(player), odef);
         *bp = '\0';
-        notify_except2(loc, player, thing, buff, flags);
+        notify_except2(player, loc, player, thing, buff, flags);
       }
     }
   }
@@ -270,7 +268,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   if (awhat && *awhat)
     attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs, 0)
       || attribs_used;
-  orator = preserve_orator;
+
   return attribs_used;
 }
 

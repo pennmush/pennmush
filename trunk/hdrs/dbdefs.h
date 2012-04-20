@@ -322,9 +322,9 @@ typedef struct mail MAIL;
 
 extern const char *EOD;
 
+#define SPOOF_NOSWITCH(executor, enactor) \
+  ((Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor)
 #define SPOOF(executor, enactor, sw) \
-  if (SW_ISSET(sw, SWITCH_SPOOF) && (controls(executor, enactor) || Can_Nspemit(executor))) {\
-    executor = enactor; orator = enactor; \
-  }
+  (SW_ISSET(sw, SWITCH_SPOOF) && (Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor);
 
 #endif                          /* __DBDEFS_H */

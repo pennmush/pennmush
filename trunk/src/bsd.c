@@ -4017,7 +4017,6 @@ announce_connect(DESC *d, int isnew, int num)
     notify(player, T("You are nowhere!"));
     return;
   }
-  orator = player;
 
   if (*cf_motd_msg) {
     raw_notify(player, cf_motd_msg);
@@ -4030,12 +4029,12 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   if (ANNOUNCE_CONNECTS)
-    notify_except(player, player, tbuf1, 0);
+    notify_except(player, player, player, tbuf1, 0);
 
   /* added to allow player's inventory to hear a player connect */
   if (ANNOUNCE_CONNECTS)
     if (!Dark(player))
-      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(player, loc, player, tbuf1, NA_INTER_PRESENCE);
 
   queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
               unparse_objid(player), num, d->descriptor);
@@ -4097,8 +4096,6 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   loc = Location(player);
   if (!GoodObject(loc))
     return;
-
-  orator = player;
 
   for (num = 0, d = descriptor_list; d; d = d->next)
     if (d->connected && (d->player == player))
@@ -4210,9 +4207,9 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
-      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(player, loc, player, tbuf1, NA_INTER_PRESENCE);
     /* notify contents */
-    notify_except(player, player, tbuf1, 0);
+    notify_except(player, player, player, tbuf1, 0);
     /* notify channels */
     chat_player_announce(player, message, num == 1);
   }

@@ -177,22 +177,22 @@ void notify_list(dbref speaker, dbref thing, const char *atr,
 
 /* No longer passes an ns_func, all things will use the same nospoof function. Where a NULL ns_func was used before, now just
  * pass NA_SPOOF in the flags */
-void notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
+void notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata, dbref *skips,
                      int flags, const char *message, const char *prefix,
                      dbref loc, struct format_msg *format);
-void notify_except2(dbref first, dbref exc1, dbref exc2, const char *msg,
+void notify_except2(dbref executor, dbref first, dbref exc1, dbref exc2, const char *msg,
                     int flags);
 /**< Notify all objects in a single location, with one exception */
-#define notify_except(loc, exc, msg, flags) notify_except2(loc, exc, NOTHING, msg, flags)
+#define notify_except(executor, loc, exc, msg, flags) notify_except2(executor, loc, exc, NOTHING, msg, flags)
 
 dbref na_one(dbref current, void *data);
 dbref na_next(dbref current, void *data);
 dbref na_loc(dbref current, void *data);
 dbref na_channel(dbref current, void *data);
 
-#define notify_flags(p,m,f) notify_anything(orator, na_one, &(p), NULL, \
+#define notify_flags(p,m,f) notify_anything(orator, orator, na_one, &(p), NULL, \
                                             f, m, NULL, AMBIGUOUS, NULL)
-#define raw_notify(p,m) notify_anything(GOD, na_one, &(p), NULL, \
+#define raw_notify(p,m) notify_anything(GOD, GOD, na_one, &(p), NULL, \
                                         NA_NOLISTEN | NA_SPOOF, m, NULL, \
                                         AMBIGUOUS, NULL)
 
@@ -206,7 +206,7 @@ dbref na_channel(dbref current, void *data);
 #define notify_prompt_must_puppet(p,m) notify_flags(p, m, NA_MUST_PUPPET | \
                                                     NA_PROMPT | NA_SPOOF)
 /**< Notify player with message, as if from somethign specific */
-#define notify_by(s,p,m) notify_anything(s, na_one, &(p), NULL,  NA_SPOOF, \
+#define notify_by(s,p,m) notify_anything(s, s, na_one, &(p), NULL,  NA_SPOOF, \
                                          m, NULL, AMBIGUOUS, NULL)
 /**< Notfy player with message, but only puppet propagation */
 #define notify_noecho(p,m) notify_flags(p, m, NA_NORELAY | NA_PUPPET_OK | \
@@ -214,12 +214,12 @@ dbref na_channel(dbref current, void *data);
 /**< Notify player with message if they're not set QUIET */
 #define quiet_notify(p,m)     if (!IsQuiet(p)) notify(p,m)
 /**< Notify player but don't send \n */
-#define notify_noenter_by(s,p,m) notify_anything(s, na_one, &(p), NULL, \
+#define notify_noenter_by(s,p,m) notify_anything(s, s, na_one, &(p), NULL, \
                                                  NA_NOENTER | NA_SPOOF, m, \
                                                  NULL, AMBIGUOUS, NULL)
 #define notify_noenter(p,m) notify_noenter_by(GOD, p, m)
 /**< Notify player but don't send <BR> if they're using Pueblo */
-#define notify_nopenter_by(s,p,m) notify_anything(s, na_one, &(p), NULL, \
+#define notify_nopenter_by(s,p,m) notify_anything(s, s, na_one, &(p), NULL, \
                                                   NA_NOPENTER | NA_SPOOF, \
                                                   m, NULL, AMBIGUOUS, NULL)
 #define notify_nopenter(p,m) notify_nopenter_by(GOD, p, m)
@@ -515,7 +515,7 @@ int vmessageformat(dbref player, const char *attribute, dbref executor,
                    int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute, dbref executor,
                   int flags, int nargs, char *argv[]);
-void do_message(dbref executor, char *list, char *attrname, char *message,
+void do_message(dbref executor, dbref speaker, char *list, char *attrname, char *message,
                 enum emit_type type, int flags, int numargs, char *argv[],
                 NEW_PE_INFO *pe_info);
 

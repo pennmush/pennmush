@@ -160,20 +160,20 @@ void do_page(dbref executor, const char *arg1, const char *arg2,
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
 #define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
-extern void do_emit(dbref player, const char *message, int flags,
+extern void do_emit(dbref executor, dbref speaker, const char *message, int flags,
                     NEW_PE_INFO *pe_info);
-extern void do_pemit(dbref player, char *target, const char *message, int flags,
+extern void do_pemit(dbref executor, dbref speaker, char *target, const char *message, int flags,
                      struct format_msg *format, NEW_PE_INFO *pe_info);
-#define do_pemit_list(player,target,message,flags,pe_info) \
-        do_pemit(player,target,message,flags|PEMIT_LIST,NULL,pe_info)
-extern void do_remit(dbref player, char *rooms, const char *message,
+#define do_pemit_list(executor,speaker,target,message,flags,pe_info) \
+        do_pemit(executor,speaker,target,message,flags|PEMIT_LIST,NULL,pe_info)
+extern void do_remit(dbref executor, dbref speaker, char *rooms, const char *message,
                      int flags, struct format_msg *format,
                      NEW_PE_INFO *pe_info);
-extern void do_lemit(dbref player, const char *message, int flags,
+extern void do_lemit(dbref executor, dbref speaker, const char *message, int flags,
                      NEW_PE_INFO *pe_info);
 extern void do_zemit(dbref player, const char *target, const char *message,
                      int flags);
-extern void do_oemit_list(dbref player, char *list, const char *message,
+extern void do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
                           int flags, struct format_msg *format,
                           NEW_PE_INFO *pe_info);
 extern void do_teach(dbref player, const char *tbuf1, int list,

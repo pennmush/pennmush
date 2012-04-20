@@ -404,15 +404,14 @@ COMMAND(cmd_emit)
 {
   int spflags = (!strcmp(cmd->name, "@NSEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
-
-  SPOOF(executor, enactor, sw);
+  int speaker = SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
-    do_lemit(executor, arg_left,
+    do_lemit(executor, speaker, arg_left,
              (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags,
              queue_entry->pe_info);
   else
-    do_emit(executor, arg_left, spflags, queue_entry->pe_info);
+    do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_enable)
@@ -645,11 +644,12 @@ COMMAND(cmd_kick)
 COMMAND(cmd_lemit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  int speaker = SPOOF(executor, enactor, sw);
+
   if (!strcmp(cmd->name, "@NSLEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_lemit(executor, arg_left, flags, queue_entry->pe_info);
+  do_lemit(executor, speaker, arg_left, flags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_link)
@@ -856,6 +856,7 @@ COMMAND(cmd_message)
   int numargs, i;
   char *args[10];
   enum emit_type type;
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
 
@@ -867,6 +868,7 @@ COMMAND(cmd_message)
     notify(executor, T("Use what attribute for the @message?"));
     return;
   }
+
   if (!*arg_left) {
     notify(executor, T("@message who?"));
     return;
@@ -889,9 +891,7 @@ COMMAND(cmd_message)
     args[i] = args_right[i + 3];
   }
 
-  SPOOF(executor, enactor, sw);
-
-  do_message(executor, arg_left, attrib, message, type, flags, i, args,
+  do_message(executor, speaker, arg_left, attrib, message, type, flags, i, args,
              queue_entry->pe_info);
 }
 
@@ -935,8 +935,9 @@ COMMAND(cmd_oemit)
 {
   int spflags = (!strcmp(cmd->name, "@NSOEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
-  SPOOF(executor, enactor, sw);
-  do_oemit_list(executor, arg_left, arg_right, spflags, NULL,
+  dbref speaker = SPOOF(executor, enactor, sw);
+
+  do_oemit_list(executor, speaker, arg_left, arg_right, spflags, NULL,
                 queue_entry->pe_info);
 }
 
@@ -970,6 +971,7 @@ COMMAND(cmd_pcreate)
 COMMAND(cmd_pemit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_PORT)) {
     if (SW_ISSET(sw, SWITCH_LIST))
@@ -981,10 +983,9 @@ COMMAND(cmd_pemit)
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_CONTENTS)) {
-    do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+    do_remit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
     return;
   }
   if (SW_ISSET(sw, SWITCH_LIST)) {
@@ -992,18 +993,18 @@ COMMAND(cmd_pemit)
     if (!SW_ISSET(sw, SWITCH_NOISY))
       flags |= PEMIT_SILENT;
   }
-  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_prompt)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT | PEMIT_LIST;
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_poll)
@@ -1077,14 +1078,14 @@ COMMAND(cmd_readcache)
 COMMAND(cmd_remit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
   if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_remit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_rejectmotd)

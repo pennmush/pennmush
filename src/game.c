@@ -124,7 +124,7 @@ void do_timestring(char *buff, char **bp, const char *format,
 
 extern void create_minimal_db(void);    /* From db.c */
 
-dbref orator = NOTHING;  /**< Last dbref to issue a speech command */
+dbref orator = NOTHING;  /**< Last dbref to issue a speech command. DEPRECATED. DO NOT USE. */
 
 #ifdef COMP_STATS
 extern void compress_stats(long *entries,

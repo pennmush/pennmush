@@ -3240,7 +3240,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
         *dmp = '\0';
         format.args[5] = defmsg;
 
-        notify_anything(player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
+        notify_anything(player, player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
                         AMBIGUOUS, &format);
 
       }
@@ -3420,7 +3420,6 @@ FUNCTION(fun_cemit)
   }
   if (nargs < 3 || !parse_boolean(args[2]))
     flags |= PEMIT_SILENT;
-  orator = executor;
   do_cemit(executor, args[0], args[1], flags);
 }
 
@@ -3543,8 +3542,6 @@ COMMAND(cmd_cemit)
   int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
   if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
-
-  SPOOF(executor, enactor, sw);
 
   do_cemit(executor, arg_left, arg_right, flags);
 }
@@ -3889,7 +3886,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
-      notify_anything(player, na_one, &current, NULL, na_flags, buff, NULL,
+      notify_anything(player, player, na_one, &current, NULL, na_flags, buff, NULL,
                       AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
   }

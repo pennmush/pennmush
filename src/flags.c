@@ -1891,7 +1891,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   char *tp;
   FLAGSPACE *n;
   int current;
-  dbref safe_orator = orator;
 
   n = hashfind("FLAG", &htab_flagspaces);
   if (!n) {
@@ -1922,8 +1921,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   else
     Flags(thing) = set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
 
-  orator = thing;
-
   if (negate) {
     /* log if necessary */
     if (f->perms & F_LOG)
@@ -1939,8 +1936,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
-      notify_except(thing, NOTHING, tbuf1, 0);
+        notify_except(thing, Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
+      notify_except(thing, thing, NOTHING, tbuf1, 0);
     }
     if (is_flag(f, "AUDIBLE")) {
       switch (Typeof(thing)) {
@@ -1950,17 +1947,17 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
           safe_format(tbuf1, &tp, T("Exit %s is no longer broadcasting."),
                       Name(thing));
           *tp = '\0';
-          notify_except(Source(thing), NOTHING, tbuf1, 0);
+          notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
         break;
       case TYPE_ROOM:
-        notify_except(thing, NOTHING,
+        notify_except(thing, thing, NOTHING,
                       T("Audible exits in this room have been deactivated."),
                       0);
         break;
       case TYPE_THING:
       case TYPE_PLAYER:
-        notify_except(thing, thing,
+        notify_except(thing, thing, thing,
                       T("This room is no longer broadcasting."), 0);
         notify(thing, T("Your contents can no longer be heard from outside."));
         break;
@@ -1996,8 +1993,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
-      notify_except(thing, NOTHING, tbuf1, 0);
+        notify_except(thing, Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
+      notify_except(thing, thing, NOTHING, tbuf1, 0);
     }
     /* notify for audible exits */
     if (is_flag(f, "AUDIBLE")) {
@@ -2008,16 +2005,16 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
           safe_format(tbuf1, &tp, T("Exit %s is now broadcasting."),
                       Name(thing));
           *tp = '\0';
-          notify_except(Source(thing), NOTHING, tbuf1, 0);
+          notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
         break;
       case TYPE_ROOM:
-        notify_except(thing, NOTHING,
+        notify_except(thing, thing, NOTHING,
                       T("Audible exits in this room have been activated."), 0);
         break;
       case TYPE_PLAYER:
       case TYPE_THING:
-        notify_except(thing, thing, T("This room is now broadcasting."), 0);
+        notify_except(thing, thing, thing, T("This room is now broadcasting."), 0);
         notify(thing, T("Your contents can now be heard from outside."));
         break;
       }
@@ -2034,8 +2031,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       notify(player, tbuf1);
     }
   }
-
-  orator = safe_orator;
 }
 
 

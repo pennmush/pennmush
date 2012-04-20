@@ -23,6 +23,13 @@ Hardcode:
    update the definition of local_data_clone in src/local.c from the one in 
    src/local.dst or, if you've made no changes to src/local.c, just remove
    src/local.c and it'll be rebuilt automatically. [MG]
+ * The orator variable (defined in game.c), for tracking the last object
+   which made sound, has been deprecated, and may soon be removed; don't use
+   it. Just pass the correct dbrefs to the notify*() functions if something 
+   talks. [MG]
+ * Several of the notify_*() family of functions, and the do_*emit()
+   functions now take an extra arg, for properly tracking both the executor
+   and the speaker when spoofing (@pemit/spoof, etc). [MG]
 
 Major changes:
  * Built-in attributes are now stored in the database. This means that
@@ -110,6 +117,12 @@ Fixes:
  * trunc() now ignores ANSI. Reported by Sketch. [MG]
  * Evaluation @locks didn't receive %0-%9 args, even when they should.
    Reported by Zen@M*U*S*H. [MG]
+ * @message/spoof now tracks both the object using @message and the object
+   being spoofed, allowing for more accurate priv checks when evaluating
+   the format messages. Reported by Mercutio. [MG]
+ * When spoofing (@pemit/spoof, etc), any errors for failed locks or bad
+   object names incorrectly went to the object being spoofed, not the object
+   doing the spoofing. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().

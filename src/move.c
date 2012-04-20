@@ -413,7 +413,7 @@ do_move(dbref player, const char *direction, enum move_type type,
       char msg[BUFFER_LEN];
       sprintf(msg, T("%s goes home."), Name(player));
       /* tell everybody else */
-      notify_except(loc, player, msg, NA_INTER_SEE);
+      notify_except(player, loc, player, msg, NA_INTER_SEE);
     }
     /* give the player the messages */
     notify(player, T("There's no place like home..."));

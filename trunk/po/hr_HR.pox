@@ -2272,6 +2272,11 @@ msgstr "Razdvojnik mora biti jedan znak."
 msgid "Denied connections are not logged"
 msgstr "Odbijena spajanja se ne bilje¾e u log"
 
+#: cmds.c:350 cmds.c:415
+#, c-format
+msgid "Deprecated command %s being used on object #%d. Use %s instead."
+msgstr "Zastarjela naredba %s je upotrijebljena na objekt #%d. Umjesto nje, upotrebljavaj %s."
+
 #: command.c:1481
 #, c-format
 msgid "Deprecated command %s being used on object #%d."

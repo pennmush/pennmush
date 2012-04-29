@@ -151,6 +151,8 @@ Functions:
  * rnum() has been deprecated in favor of locate(). [SW]
  * step() no longer pads the final call with empty arguments, allowing you
    to use %+ or registers() to differentiate empty and missing args. [MG]
+ * e() and exp() are now the same function internally, with e(), exp() and
+   exp(1) all being equivilent. Suggested by Ari. [MG]
    
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

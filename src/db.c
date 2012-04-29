@@ -1234,7 +1234,7 @@ get_list(PENNFILE *f, dbref i)
        * if it is or not. We'll fix this up at the end of the load
        */
       tb2 = getstring_noalloc(f);
-      if (strchr(tb2, TAG_START) || strchr(tb2, ESC_CHAR)) {
+      if (has_markup(tb2)) {
         as = parse_ansi_string(tb2);
         tb2 = tbuf2;
         safe_ansi_string(as, 0, as->len, tbuf2, &tb2);
@@ -1319,7 +1319,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
     db_read_this_labeled_string(f, "value", &tmp);
     strcpy(value, tmp);
     if (!(globals.indb_flags & DBF_SPIFFY_AF_ANSI)) {
-      if (strchr(value, ESC_CHAR) || strchr(value, TAG_START)) {
+      if (has_markup(value)) {
         char *vp = value;
         as = parse_ansi_string(value);
         safe_ansi_string(as, 0, as->len, value, &vp);

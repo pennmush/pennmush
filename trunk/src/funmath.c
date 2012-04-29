@@ -979,12 +979,6 @@ FUNCTION(fun_pi)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_e)
-{
-  safe_number(2.71828182845904523536, buff, bp);
-}
-
-/* ARGSUSED */
 FUNCTION(fun_sin)
 {
   NVAL angle;
@@ -1078,8 +1072,13 @@ FUNCTION(fun_atan2)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_exp)
+FUNCTION(fun_e)
 {
+  if (nargs == 0) {
+    safe_number(2.71828182845904523536, buff, bp);
+    return;
+  }
+
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;

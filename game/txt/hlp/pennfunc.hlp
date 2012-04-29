@@ -1312,10 +1312,16 @@ See also: modulo(), fdiv()
 
 See also: @poll, @doing, poll()
 & E()
-  e()
+& EXP()
+  e([<number>])
  
-  Returns the value of "e"  (2.71828182845904523536, rounded to the
-  game's float_precision setting).
+  With no argument, returns the value of "e"  (2.71828182845904523536, 
+  rounded to the game's float_precision setting).
+  
+  If a <number> is given, it returns e to the power of <number>.
+  
+  exp() is an alias for e().
+See also: power(), log()
 & EDEFAULT()
   edefault([<obj>/]<attr>, <default case>)
  
@@ -1518,12 +1524,6 @@ See also: get(), u(), xget(), edefault()
   regardless of whether or not you have objects in it.
 
 See also: lexits(), next()
-& EXP()
-  exp(<number>)
- 
-  Returns e to the power of <number>.
-  
-See also: e(), power()
 & EXTRACT()
   extract(<list>[, <first>[, <length>[, <delimiter>]]])
 

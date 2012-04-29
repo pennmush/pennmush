@@ -141,6 +141,7 @@ FUNALIAS faliases[] = {
   {"IDLE", "IDLESECS"},
   {"HOST", "HOSTNAME"},
   {"FLIP", "REVERSE"},
+  {"E", "EXP"},
   {NULL, NULL}
 };
 
@@ -633,8 +634,7 @@ FUNTAB flist[] = {
   {"CEIL", fun_ceil, 1, 1, FN_REG | FN_STRIPANSI},
   {"COS", fun_cos, 1, 2, FN_REG | FN_STRIPANSI},
   {"CTU", fun_ctu, 3, 3, FN_REG | FN_STRIPANSI},
-  {"E", fun_e, 0, 0, FN_REG},
-  {"EXP", fun_exp, 1, 1, FN_REG | FN_STRIPANSI},
+  {"E", fun_e, 0, 1, FN_REG | FN_STRIPANSI},
   {"FDIV", fun_fdiv, 2, 2, FN_REG | FN_STRIPANSI},
   {"FMOD", fun_fmod, 2, 2, FN_REG | FN_STRIPANSI},
   {"FLOOR", fun_floor, 1, 1, FN_REG | FN_STRIPANSI},

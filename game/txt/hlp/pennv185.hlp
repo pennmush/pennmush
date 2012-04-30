@@ -79,7 +79,7 @@ Minor changes:
    to %c, %u, and other %-subs available when moving, Suggested by 
    Javelin and [GM]. [MG]
  * Translation updates and messages fixes by Stoko.
- * Help fixes by Todd@M*U*S*H, Steve Varley and others. [MG]
+ * Help fixes by Todd@M*U*S*H, Steve Varley, Wiggles and others. [MG]
  * @message now takes a /silent and /noisy switch, the same as @pemit, with
    the default controlled by the silent_pemit @config option. message()
    is now silent, like pemit(). Suggested by Padraic. [MG]

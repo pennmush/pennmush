@@ -691,15 +691,16 @@ See also: BITWISE FUNCTIONS
 & BEFORE()
   before(<string1>, <string2>)
  
-  Returns the portion of <string1> that occurs before <string2>.  If
-  <string2> isn't in <string1>, <string1> is returned.  This is
-  case-sensitive.
+  Returns the portion of <string1> that occurs before <string2>. If <string2>
+  isn't in <string1>, <string1> is returned. This is case-sensitive.
  
   Examples:
      > say before(foo bar baz,bar)
      You say, "foo"
      > say before(foo bar baz,r)
      You say, "foo ba"
+     > say before(foo bar baz,a)
+     You say, "foo b"
 
 See also: after(), first()
 & BENCHMARK()
@@ -1714,6 +1715,9 @@ See also: fdiv(), div(), mod()
   element of list is passed as %1, to the user-defined function. The
   process for the no-base-case fold() is then used.
   
+  Note that it's not possible to pass a <delimiter> to fold without also
+  giving a <base case>; see the examples for a way around this.
+  
   See 'help fold2' for examples.
 & FOLD2
  
@@ -1727,6 +1731,15 @@ See also: fdiv(), div(), mod()
     > &ADD_NUMS test=add(%0,%1)
     > say fold(test/add_nums,1 2 3 4 5)
     You say, "15"
+    
+  If your list uses a delimiter, you need to give a <base case>. This can
+  be a problem for dynamically generated lists. One solution is to use
+  a register and pop the first element off the list. For example:
+   > &GEN_LIST test=lnum(1,rand(5,10),|)
+   > &ADD_NUMS test=add(%0,%1)
+   > say letq(fl, u(gen_list), 
+              fold(test/add_nums, rest(%q<fl>,|), first(%q<fl>,|), |))
+   You say, "36"
 
 See also: anonymous attributes
 & FOLLOWERS()

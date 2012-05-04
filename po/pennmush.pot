@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-21 02:00-0500\n"
+"POT-Creation-Date: 2012-04-29 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3865,64 +3865,64 @@ msgstr ""
 msgid "#-1 VECTORS MUST BE THREE-DIMENSIONAL"
 msgstr ""
 
-#: funmath.c:893 funmath.c:2150 funmath.c:2191 funmath.c:2241 funmath.c:2276
-#: funmath.c:2328
+#: funmath.c:893 funmath.c:2149 funmath.c:2190 funmath.c:2240 funmath.c:2275
+#: funmath.c:2327
 msgid "#-1 DIVISION BY ZERO"
 msgstr ""
 
-#: funmath.c:1103
+#: funmath.c:1102
 msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
 msgstr ""
 
-#: funmath.c:1127 funmath.c:1162
+#: funmath.c:1126 funmath.c:1161
 msgid "#-1 INFINITY"
 msgstr ""
 
-#: funmath.c:1184
+#: funmath.c:1183
 msgid "#-1 BASE OUT OF RANGE"
 msgstr ""
 
-#: funmath.c:1205 funmath.c:1238
+#: funmath.c:1204 funmath.c:1237
 msgid "#-1 IMAGINARY NUMBER"
 msgstr ""
 
-#: funmath.c:1229
+#: funmath.c:1228
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr ""
 
-#: funmath.c:1813
+#: funmath.c:1812
 msgid "#-1 UNKNOWN OPERATION"
 msgstr ""
 
-#: funmath.c:1891
+#: funmath.c:1890
 msgid "#-1 FROM BASE OUT OF RANGE"
 msgstr ""
 
-#: funmath.c:1900
+#: funmath.c:1899
 msgid "#-1 TO BASE OUT OF RANGE"
 msgstr ""
 
-#: funmath.c:1924
+#: funmath.c:1923
 msgid "#-1 MALFORMED NUMBER"
 msgstr ""
 
-#: funmath.c:2155 funmath.c:2196 funmath.c:2281 funmath.c:2333
+#: funmath.c:2154 funmath.c:2195 funmath.c:2280 funmath.c:2332
 msgid "#-1 DOMAIN ERROR"
 msgstr ""
 
-#: funmath.c:2519 funmath.c:2557
+#: funmath.c:2518 funmath.c:2556
 msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
 msgstr ""
 
-#: funmath.c:2670
+#: funmath.c:2669
 msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
 msgstr ""
 
-#: funmath.c:2685 funmath.c:2714
+#: funmath.c:2684 funmath.c:2713
 msgid "#-1 OVERFLOW ERROR"
 msgstr ""
 
-#: funmath.c:2697
+#: funmath.c:2696
 msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
 msgstr ""
 

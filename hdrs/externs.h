@@ -57,6 +57,7 @@ extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
 void boot_desc(DESC *d, const char *cause, dbref executor);     /* remove a player */
 int boot_player(dbref player, int idleonly, int slilent, dbref booter);
+const char *sockset(dbref player, char *name, char *val);
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
 DESC *port_desc(int port);      /* find descriptors */

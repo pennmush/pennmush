@@ -3536,15 +3536,20 @@ Continued in 'help @sitelock3'
   If <value> is empty, the socket option will be cleared.
 
   Options:
-    output_prefix: String: Same as OUTPUT_PREFIX
-    output_suffix: String: Same as OUTPUT_SUFFIX
+    outputprefix: String: Same as OUTPUTPREFIX
+    outputsuffix: String: Same as OUTPUTSUFFIX
     pueblo: String: Sets Pueblo-related options. If value has md5=...", then
-            it will set the pueblo checksum.
+            it will set the pueblo checksum. If empty, Pueblo mode is turned
+            off.
     telnet: Boolean yes/no: If yes, your socket does telnet negotiation.
-    width:  Integer: Set your width()
-    height: Integer: Set your height()
+    width:  Integer: Set your width(), same as SCREENWIDTH
+    height: Integer: Set your height(), same as SCREENHEIGHT
     terminaltype: String: Your terminal type, used by terminfo()
 
+  Note that changing 'telnet' or 'pueblo' may stop your client from parsing
+  or displaying output correctly; only use if you know what you're doing!
+  
+See also: SOCKET COMMANDS, terminfo(), Pueblo
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
   

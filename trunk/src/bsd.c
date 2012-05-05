@@ -3283,9 +3283,9 @@ sockset(dbref player, char *name, char *val) {
   if (!strcasecmp(name, PREFIX_COMMAND)) {
     set_userstring(&d->output_prefix, val);
     if (val && *val) {
-      return T("OUTPUT_PREFIX Set.");
+      return T("OUTPUTPREFIX set.");
     } else {
-      return T("OUTPUT_PREFIX Cleared.");
+      return T("OUTPUTPREFIX cleared.");
     }
     return retval;
   }
@@ -3293,9 +3293,9 @@ sockset(dbref player, char *name, char *val) {
   if (!strcasecmp(name, SUFFIX_COMMAND)) {
     set_userstring(&d->output_suffix, val);
     if (val && *val) {
-      return T("OUTPUT_SUFFIX Set.");
+      return T("OUTPUTSUFFIX set.");
     } else {
-      return T("OUTPUT_SUFFIX Cleared.");
+      return T("OUTPUTSUFFIX cleared.");
     }
     return retval;
   }
@@ -3354,7 +3354,12 @@ sockset(dbref player, char *name, char *val) {
   }
 
   if (!strcasecmp(name, "TERMINALTYPE")) {
-    set_userstring(&d->output_suffix, val);
+    if (d->ttype)
+      mush_free(d->ttype, "terminal description");
+    if (val && *val)
+      d->ttype = mush_strdup(val, "terminal description");
+    else
+      d->ttype = mush_strdup("unknown", "terminal description");
     return T("Terminal Type set.");
   }
 

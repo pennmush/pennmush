@@ -3523,8 +3523,27 @@ Continued in 'help @sitelock3'
 
   Two different daemons are used:
 
-  info: Resolves IP addresses into host names whenever a new connection is established.
+  info: Resolves IP addresses into host names whenever a new connection
+        is established.
    ssl: Handles encrypted SSL connections across @shutdown/reboots. 
+
+& @SOCKSET
+  @sockset <option>=<value>
+
+  @sockset is a command to set socket-specific options usually only set
+  either at connect time or modifiable via SOCKET commands.
+
+  If <value> is empty, the socket option will be cleared.
+
+  Options:
+    output_prefix: String: Same as OUTPUT_PREFIX
+    output_suffix: String: Same as OUTPUT_SUFFIX
+    pueblo: String: Sets Pueblo-related options. If value has md5=...", then
+            it will set the pueblo checksum.
+    telnet: Boolean yes/no: If yes, your socket does telnet negotiation.
+    width:  Integer: Set your width()
+    height: Integer: Set your height()
+    terminaltype: String: Your terminal type, used by terminfo()
 
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]

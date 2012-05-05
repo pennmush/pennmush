@@ -2566,10 +2566,13 @@ set_userstring(unsigned char **userstring, const char *command)
     mush_free(*userstring, "userstring");
     *userstring = NULL;
   }
-  while (*command && isspace((unsigned char) *command))
-    command++;
-  if (*command)
-    *userstring = (unsigned char *) mush_strdup(command, "userstring");
+  /* command may be NULL */
+  if (command && command[0]) {
+    while (*command && isspace((unsigned char) *command))
+      command++;
+    if (*command)
+      *userstring = (unsigned char *) mush_strdup(command, "userstring");
+  }
 }
 
 static void
@@ -3236,6 +3239,127 @@ void
 boot_desc(DESC *d, const char *cause, dbref executor)
 {
   shutdownsock(d, cause, executor);
+}
+
+/** For sockset: Parse an english bool ('yes', 'no', etc). Assume no,
+ *  whitelist yes.
+ * \param str The string to check
+ * \retval 1 yes
+ * \retval 0 no
+ */
+static int
+isyes(char *str) {
+  if (!str) return 0;
+  if (!strcasecmp(str, "yes")) return 1;
+  if (!strcasecmp(str, "y")) return 1;
+  if (!strcasecmp(str, "true")) return 1;
+  if (!strcasecmp(str, "1")) return 1;
+  if (!strcasecmp(str, "on")) return 1;
+  return 0;
+}
+
+/** Set a sock option.
+ * \param player the dbref of the player running @sockset
+ * \param name the option name
+ * \param val the option value
+ * \return string Set message (error or success)
+ */
+const char *
+sockset(dbref player, char *name, char *val) {
+  DESC *d;
+  static char retval[BUFFER_LEN];
+
+  int ival;
+
+  d = least_idle_desc(player, 1);
+
+  if (!d) {
+    return T("You are not connected?");
+  }
+  if (!name || !name[0]) {
+    return T("Set what option?");
+  }
+
+  if (!strcasecmp(name, PREFIX_COMMAND)) {
+    set_userstring(&d->output_prefix, val);
+    if (val && *val) {
+      return T("OUTPUT_PREFIX Set.");
+    } else {
+      return T("OUTPUT_PREFIX Cleared.");
+    }
+    return retval;
+  }
+
+  if (!strcasecmp(name, SUFFIX_COMMAND)) {
+    set_userstring(&d->output_suffix, val);
+    if (val && *val) {
+      return T("OUTPUT_SUFFIX Set.");
+    } else {
+      return T("OUTPUT_SUFFIX Cleared.");
+    }
+    return retval;
+  }
+
+  if (!strcasecmp(name, "PUEBLO")) {
+    if (val && *val) {
+      parse_puebloclient(d, val);
+      if (d->conn_flags & CONN_HTML) {
+        queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
+                       strlen(PUEBLO_SEND));
+        process_output(d);
+        do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
+                  d->descriptor, d->addr, d->ip);
+        d->conn_flags |= CONN_HTML;
+        return T("Pueblo flag set.");
+      }
+    } else {
+      d->conn_flags &= ~CONN_HTML;
+      return T("Pueblo flag cleared.");
+    }
+  }
+
+  if (!strcasecmp(name, "TELNET")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_TELNET;
+      return T("Telnet flag set.");
+    } else {
+      d->conn_flags &= ~CONN_TELNET;
+      return T("Telnet flag cleared.");
+    }
+  }
+
+  if (!strcasecmp(name, "WIDTH")) {
+    if (!is_strict_integer(val)) {
+      return T("Width expects a positive integer.");
+    }
+    ival = parse_integer(val);
+    if (ival < 1) {
+      return T("Width expects a positive integer.");
+    }
+    d->width = ival;
+    return T("Width set.");
+  }
+
+  if (!strcasecmp(name, "HEIGHT")) {
+    if (!is_strict_integer(val)) {
+      return T("Height expects a positive integer.");
+    }
+    ival = parse_integer(val);
+    if (ival < 1) {
+      return T("Height expects a positive integer.");
+    }
+    d->height = ival;
+    return T("Height set.");
+  }
+
+  if (!strcasecmp(name, "TERMINALTYPE")) {
+    set_userstring(&d->output_suffix, val);
+    return T("Terminal Type set.");
+  }
+
+  snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."), name);
+  return retval;
 }
 
 /** Given a player dbref, return the player's first connected descriptor.

@@ -133,6 +133,7 @@ Commands:
    that no SQL db is available, like @mapsql does. [MG]
  * @slave, for restarting the info_slave and ssl_slave daemons from
    within the game. [SW]
+ * @sockset <option>=<value>, for setting options on your descriptor.
 
 Functions:
  * version() now reports svn revision/date where available. Patch by

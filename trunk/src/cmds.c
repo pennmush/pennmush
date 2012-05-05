@@ -107,6 +107,13 @@ COMMAND(cmd_attribute)
     do_attribute_info(executor, arg_left);
 }
 
+COMMAND(cmd_sockset)
+{
+  char *retval;
+  retval = sockset(executor, arg_left, arg_right);
+  notify(executor, retval);
+}
+
 COMMAND(cmd_atrchown)
 {
   do_atrchown(executor, arg_left, arg_right);

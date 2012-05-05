@@ -3303,15 +3303,15 @@ sockset(dbref player, char *name, char *val) {
   if (!strcasecmp(name, "PUEBLO")) {
     if (val && *val) {
       parse_puebloclient(d, val);
-      if (d->conn_flags & CONN_HTML) {
+      if (!(d->conn_flags & CONN_HTML)) {
         queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
                        strlen(PUEBLO_SEND));
         process_output(d);
         do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
                   d->descriptor, d->addr, d->ip);
         d->conn_flags |= CONN_HTML;
-        return T("Pueblo flag set.");
       }
+      return T("Pueblo flag set.");
     } else {
       d->conn_flags &= ~CONN_HTML;
       return T("Pueblo flag cleared.");

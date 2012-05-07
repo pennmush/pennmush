@@ -81,6 +81,7 @@
 #include <ieeefp.h>
 #endif
 #include <locale.h>
+#include <langinfo.h>
 #include <setjmp.h>
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -220,8 +221,12 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define TN_NAWS 31              /**< Negotiate About Window Size */
 #define TN_TTYPE 24             /**< Ask for termial type information */
 #define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
+#define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
 #define MSSP_VAR 1              /**< MSSP option name */
 #define MSSP_VAL 2              /**< MSSP option value */
+#define TN_SB_CHARSET_REQUEST 1
+#define TN_SB_CHARSET_ACCEPTED 2
+#define TN_SB_CHARSET_REJECTED 3
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -2193,13 +2198,13 @@ setup_telnet(DESC *d)
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
-    /* IAC DO NAWS IAC DO TERMINAL-TYPE IAC WILL MSSP  */
-    unsigned char extra_options[9] =
-      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46";
+    /* IAC-DO-NAWS IAC-DO-TTYPE IAC-WILL-MSSP IAC-WILL-CHARSET */
+    unsigned char extra_options[12] =
+      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46" "\xFF\xFB\x2A";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
-    queue_newwrite(d, extra_options, 9);
+    queue_newwrite(d, extra_options, 12);
     process_output(d);
   }
 }
@@ -2407,6 +2412,43 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       *bp = '\0';
       queue_newwrite(d, (unsigned char *) reply, strlen(reply));
       process_output(d);
+    } else if (**q == TN_CHARSET) {
+      /* Send a list of supported charsets for the client to pick.
+       * Currently, we only offer the single charset the MUSH is
+       * currently running in, or "ISO-8859-1" (latin1) if it's running
+       * in "C", "UTF-8" or an unknown charset. */
+      /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
+      unsigned char reply_prefix[4] = "\xFF\xFA\x2A\x01";
+      unsigned char reply_suffix[2] = "\xFF\xF0";
+      /* Offer a selection of possible delimiters, to avoid it appearing
+       * in a charset name */
+      char *delim_list = ";+=/!", *delim_curr;
+      unsigned char delim[2] = {'\0', '\0'};
+      char *curr_locale = NULL;
+
+      queue_newwrite(d, reply_prefix, 4);
+      curr_locale = nl_langinfo(CODESET);
+      if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
+          strncasecmp(curr_locale, "UTF-", 4)) {
+        for (delim_curr = delim_list; *delim_curr; delim_curr++) {
+          if (strchr(curr_locale, *delim_curr) == NULL)
+            break;
+        }
+        if (*delim_curr) {
+          delim[0] = *delim_curr;
+        } else {
+          delim[0] = ';'; /* fall back on ; */
+        }
+      } else {
+        /* Fall back on latin-1 */
+        delim[0] = ';';
+        curr_locale = "ISO-8859-1";
+      }
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
+
+      queue_newwrite(d, reply_suffix, 2);
+
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];

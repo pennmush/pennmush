@@ -2422,7 +2422,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       unsigned char reply_suffix[2] = "\xFF\xF0";
       /* Offer a selection of possible delimiters, to avoid it appearing
        * in a charset name */
-      char *delim_list = ";+=/!", *delim_curr;
+      char *delim_list = "; +=/!", *delim_curr;
       unsigned char delim[2] = {'\0', '\0'};
       char *curr_locale = NULL;
 

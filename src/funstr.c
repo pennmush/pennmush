@@ -159,13 +159,12 @@ FUNCTION(fun_art)
 {
   /* checks a word and returns the appropriate article, "a" or "an" */
   char c;
-  char *p = skip_leading_ansi(args[0]);
 
-  if (!p) {
+  if (!*args[0]) {
     safe_chr('a', buff, bp);
     return;
   }
-  c = DOWNCASE(*p);
+  c = DOWNCASE(*args[0]);
   if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
     safe_str("an", buff, bp);
   else

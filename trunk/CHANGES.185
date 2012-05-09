@@ -91,7 +91,6 @@ Minor changes:
    only one charset available, but now the client can know exactly what it's
    receiving. Suggested by Sketch. [MG] Make sure your MUSH is running in the
    right charset; see http://tinyurl.com/penn-charset for more information.
-   
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

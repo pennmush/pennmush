@@ -1294,8 +1294,8 @@ new_connection(int oldsock, int *result, conn_source source)
   } else {                      /* source == CS_LOCAL_SOCKET */
     int len;
     char *split;
-    pid_t remote_pid = -1;
-    uid_t remote_uid = -1;
+    int remote_pid = -1;
+    int remote_uid = -1;
     bool good_to_read = 1;
 
     /* As soon as the SSL slave opens a new connection to the mush, it
@@ -1369,7 +1369,7 @@ new_connection(int oldsock, int *result, conn_source source)
       /* A system like OS X that doesn't pass the remote pid as a
          credential but does pass UID? If the remote and local UIDs
          are the same, assume it's from the slave. */
-      if (remote_uid == getuid()) {
+      if (remote_uid == (int) getuid()) {
         source = CS_LOCAL_SSL_SOCKET;
       } else {
         do_rawlog(LT_CONN, "[%d] Connection on local socket from process run as uid %d.",

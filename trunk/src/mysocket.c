@@ -498,7 +498,7 @@ send_with_creds(int s, void *buf, size_t len)
  * \return the number of bytes read, or -1 on read failure
  */
 ssize_t
-recv_with_creds(int s, void *buf, size_t len, pid_t *remote_pid, uid_t *remote_uid)
+recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
 {
   /* Only implemented on linux and OS X so far because different OSes
      support slightly different fields and ways of doing this. Argh.

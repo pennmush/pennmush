@@ -1,0 +1,11 @@
+%a %b %d %H:%M:%S %Y
+%a %b %d %H:%M:%S
+%b %d %H:%M:%S %Y
+%b %d %H:%M:%S
+%B %d %H:%M:%S
+%B %d %H:%M:%S %Y
+%b %d %Y
+%b %d
+%B %d %Y
+%B %d
+%Y-%m-%d %H:%M:%S

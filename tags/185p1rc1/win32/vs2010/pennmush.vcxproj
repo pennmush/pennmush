@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0913C0F1-F2F1-4B24-B660-029552A337CB}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\game\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\obj\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\game\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\obj\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Message>Copying necessary files...</Message>
+      <Command>IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c
+copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h
+copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h
+copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h
+copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h
+wscript.exe $(ProjectDir)\..\mkcmds.js
+echo If any *local.c files failed to build, run build again.
+</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..;..\..\hdrs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>user32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <StackReserveSize>8388608</StackReserveSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying config files if they don%27t exist...</Message>
+      <Command>IF NOT EXIST $(ProjectDir)\..\..\game\mush.cnf copy $(ProjectDir)\..\..\game\mushcnf.dst $(ProjectDir)\..\..\game\mush.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\alias.cnf copy $(ProjectDir)\..\..\game\aliascnf.dst $(ProjectDir)\..\..\game\alias.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\names.cnf copy $(ProjectDir)\..\..\game\namescnf.dst $(ProjectDir)\..\..\game\names.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\restrict.cnf copy $(ProjectDir)\..\..\game\restrictcnf.dst $(ProjectDir)\..\..\game\restrict.cnf
+echo Don%27t forget to customize mush.cnf!
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Message>Copying necessary files...</Message>
+      <Command>IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c
+IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c
+copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h
+copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h
+copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h
+copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h
+wscript.exe $(ProjectDir)\..\mkcmds.js
+echo If any *local.c files failed to build, run build again.
+</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..;..\..\hdrs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>user32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <StackReserveSize>8388608</StackReserveSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Copying config files if they don%27t exist...</Message>
+      <Command>IF NOT EXIST $(ProjectDir)\..\..\game\mush.cnf copy $(ProjectDir)\..\..\game\mushcnf.dst $(ProjectDir)\..\..\game\mush.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\alias.cnf copy $(ProjectDir)\..\..\game\aliascnf.dst $(ProjectDir)\..\..\game\alias.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\names.cnf copy $(ProjectDir)\..\..\game\namescnf.dst $(ProjectDir)\..\..\game\names.cnf
+IF NOT EXIST $(ProjectDir)\..\..\game\restrict.cnf copy $(ProjectDir)\..\..\game\restrictcnf.dst $(ProjectDir)\..\..\game\restrict.cnf
+echo Don%27t forget to customize mush.cnf!
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\access.c" />
+    <ClCompile Include="..\..\src\atr_tab.c" />
+    <ClCompile Include="..\..\src\attrib.c" />
+    <ClCompile Include="..\..\src\boolexp.c" />
+    <ClCompile Include="..\..\src\bsd.c" />
+    <ClCompile Include="..\..\src\bufferq.c" />
+    <ClCompile Include="..\..\src\chunk.c" />
+    <ClCompile Include="..\..\src\cmdlocal.c" />
+    <ClCompile Include="..\..\src\cmds.c" />
+    <ClCompile Include="..\..\src\command.c" />
+    <ClCompile Include="..\..\src\compress.c" />
+    <ClCompile Include="..\..\src\conf.c" />
+    <ClCompile Include="..\..\src\cque.c" />
+    <ClCompile Include="..\..\src\create.c" />
+    <ClCompile Include="..\..\src\db.c" />
+    <ClCompile Include="..\..\src\destroy.c" />
+    <ClCompile Include="..\..\src\extchat.c" />
+    <ClCompile Include="..\..\src\extmail.c" />
+    <ClCompile Include="..\..\src\filecopy.c" />
+    <ClCompile Include="..\..\src\flaglocal.c" />
+    <ClCompile Include="..\..\src\flags.c" />
+    <ClCompile Include="..\..\src\funcrypt.c" />
+    <ClCompile Include="..\..\src\function.c" />
+    <ClCompile Include="..\..\src\fundb.c" />
+    <ClCompile Include="..\..\src\funlist.c" />
+    <ClCompile Include="..\..\src\funlocal.c" />
+    <ClCompile Include="..\..\src\funmath.c" />
+    <ClCompile Include="..\..\src\funmisc.c" />
+    <ClCompile Include="..\..\src\funstr.c" />
+    <ClCompile Include="..\..\src\funtime.c" />
+    <ClCompile Include="..\..\src\funufun.c" />
+    <ClCompile Include="..\..\src\game.c" />
+    <ClCompile Include="..\..\src\help.c" />
+    <ClCompile Include="..\..\src\htab.c" />
+    <ClCompile Include="..\..\src\intmap.c" />
+    <ClCompile Include="..\..\src\local.c" />
+    <ClCompile Include="..\..\src\lock.c" />
+    <ClCompile Include="..\..\src\log.c" />
+    <ClCompile Include="..\..\src\look.c" />
+    <ClCompile Include="..\..\src\malias.c" />
+    <ClCompile Include="..\..\src\markup.c" />
+    <ClCompile Include="..\..\src\match.c" />
+    <ClCompile Include="..\..\src\memcheck.c" />
+    <ClCompile Include="..\..\src\move.c" />
+    <ClCompile Include="..\..\src\mycrypt.c" />
+    <ClCompile Include="..\..\src\mymalloc.c" />
+    <ClCompile Include="..\..\src\myrlimit.c" />
+    <ClCompile Include="..\..\src\mysocket.c" />
+    <ClCompile Include="..\..\src\myssl.c" />
+    <ClCompile Include="..\..\src\notify.c" />
+    <ClCompile Include="..\..\src\parse.c" />
+    <ClCompile Include="..\..\src\player.c" />
+    <ClCompile Include="..\..\src\plyrlist.c" />
+    <ClCompile Include="..\..\src\predicat.c" />
+    <ClCompile Include="..\..\src\privtab.c" />
+    <ClCompile Include="..\..\src\ptab.c" />
+    <ClCompile Include="..\..\src\rob.c" />
+    <ClCompile Include="..\..\src\services.c" />
+    <ClCompile Include="..\..\src\set.c" />
+    <ClCompile Include="..\..\src\SFMT.c" />
+    <ClCompile Include="..\..\src\sig.c" />
+    <ClCompile Include="..\..\src\sort.c" />
+    <ClCompile Include="..\..\src\speech.c" />
+    <ClCompile Include="..\..\src\sql.c" />
+    <ClCompile Include="..\..\src\strdup.c" />
+    <ClCompile Include="..\..\src\strtree.c" />
+    <ClCompile Include="..\..\src\strutil.c" />
+    <ClCompile Include="..\..\src\tables.c" />
+    <ClCompile Include="..\..\src\timer.c" />
+    <ClCompile Include="..\..\src\unparse.c" />
+    <ClCompile Include="..\..\src\utils.c" />
+    <ClCompile Include="..\..\src\version.c" />
+    <ClCompile Include="..\..\src\wait.c" />
+    <ClCompile Include="..\..\src\warnings.c" />
+    <ClCompile Include="..\..\src\wild.c" />
+    <ClCompile Include="..\..\src\wiz.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\hdrs\access.h" />
+    <ClInclude Include="..\..\hdrs\ansi.h" />
+    <ClInclude Include="..\..\hdrs\atr_tab.h" />
+    <ClInclude Include="..\..\hdrs\attrib.h" />
+    <ClInclude Include="..\..\hdrs\boolexp.h" />
+    <ClInclude Include="..\..\hdrs\bufferq.h" />
+    <ClInclude Include="..\..\hdrs\case.h" />
+    <ClInclude Include="..\..\hdrs\chunk.h" />
+    <ClInclude Include="..\..\hdrs\cmds.h" />
+    <ClInclude Include="..\..\hdrs\command.h" />
+    <ClInclude Include="..\..\hdrs\compile.h" />
+    <ClInclude Include="..\..\hdrs\conf.h" />
+    <ClInclude Include="..\..\config.h" />
+    <ClInclude Include="..\..\confmagic.h" />
+    <ClInclude Include="..\..\hdrs\copyrite.h" />
+    <ClInclude Include="..\..\hdrs\dbdefs.h" />
+    <ClInclude Include="..\..\hdrs\dbio.h" />
+    <ClInclude Include="..\..\hdrs\extchat.h" />
+    <ClInclude Include="..\..\hdrs\externs.h" />
+    <ClInclude Include="..\..\hdrs\extmail.h" />
+    <ClInclude Include="..\..\hdrs\flags.h" />
+    <ClInclude Include="..\..\hdrs\function.h" />
+    <ClInclude Include="..\..\hdrs\funs.h" />
+    <ClInclude Include="..\..\hdrs\game.h" />
+    <ClInclude Include="..\..\hdrs\getpgsiz.h" />
+    <ClInclude Include="..\..\hdrs\help.h" />
+    <ClInclude Include="..\..\hdrs\htab.h" />
+    <ClInclude Include="..\..\hdrs\intmap.h" />
+    <ClInclude Include="..\..\hdrs\intrface.h" />
+    <ClInclude Include="..\..\hdrs\lock.h" />
+    <ClInclude Include="..\..\hdrs\log.h" />
+    <ClInclude Include="..\..\hdrs\lookup.h" />
+    <ClInclude Include="..\..\hdrs\malias.h" />
+    <ClInclude Include="..\..\hdrs\match.h" />
+    <ClInclude Include="..\..\hdrs\mushdb.h" />
+    <ClInclude Include="..\..\hdrs\mushtype.h" />
+    <ClInclude Include="..\..\hdrs\mymalloc.h" />
+    <ClInclude Include="..\..\hdrs\mypcre.h" />
+    <ClInclude Include="..\..\hdrs\mysocket.h" />
+    <ClInclude Include="..\..\hdrs\myssl.h" />
+    <ClInclude Include="..\..\hdrs\oldflags.h" />
+    <ClInclude Include="..\..\options.h" />
+    <ClInclude Include="..\..\hdrs\parse.h" />
+    <ClInclude Include="..\..\hdrs\patches.h" />
+    <ClInclude Include="..\..\hdrs\privtab.h" />
+    <ClInclude Include="..\..\hdrs\ptab.h" />
+    <ClInclude Include="..\..\hdrs\pueblo.h" />
+    <ClInclude Include="..\..\hdrs\sort.h" />
+    <ClInclude Include="..\..\hdrs\strtree.h" />
+    <ClInclude Include="..\..\hdrs\switches.h" />
+    <ClInclude Include="..\..\hdrs\version.h" />
+    <ClInclude Include="..\..\hdrs\wait.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

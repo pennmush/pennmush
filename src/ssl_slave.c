@@ -205,8 +205,7 @@ local_connected(struct conn *c)
   int len;
 
 #if SSL_DEBUG_LEVEL > 0
-  errputs(stdout,
-          "Local connection attempt completed. Setting up pipe.");
+  errputs(stdout, "Local connection attempt completed. Setting up pipe.");
 #endif
   bufferevent_setcb(c->local_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
@@ -280,7 +279,7 @@ ssl_connected(struct conn *c)
   errputs(stdout,
           "SSL connection attempt completed. Resolving remote host name.");
   errprintf(stdout, "ssl_slave: ssl error code: %ld\n",
-	    bufferevent_get_openssl_error(c->remote_bev));	  
+            bufferevent_get_openssl_error(c->remote_bev));
 #endif
 
   bufferevent_set_timeouts(c->remote_bev, NULL, NULL);
@@ -338,7 +337,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
       delete_conn(c);
     } else {
       /* Bug in some versions of libevent cause this to trigger when
-	 it shouldn't. Ignore. */
+         it shouldn't. Ignore. */
       return;
     }
   } else if (e & error_conditions) {
@@ -356,7 +355,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
       if (c->remote_bev) {
         bufferevent_disable(c->remote_bev, EV_READ);
         bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
-	SSL_shutdown(bufferevent_openssl_get_ssl(c->remote_bev));
+        SSL_shutdown(bufferevent_openssl_get_ssl(c->remote_bev));
       }
       delete_conn(c);
     } else {
@@ -429,7 +428,7 @@ new_conn_cb(evutil_socket_t s, short flags
 
   bufferevent_setcb(c->remote_bev, NULL, NULL, event_cb, c);
   bufferevent_set_timeouts(c->remote_bev, &handshake_timeout,
-			   &handshake_timeout);
+                           &handshake_timeout);
   bufferevent_enable(c->remote_bev, EV_WRITE);
 }
 
@@ -440,8 +439,7 @@ check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
              void *arg __attribute__ ((__unused__)))
 {
   if (getppid() != parent_pid) {
-    errputs(stderr,
-            "Parent mush process exited unexpectedly! Shutting down.");
+    errputs(stderr, "Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -544,7 +542,7 @@ time_string(void)
   static char buffer[100];
   time_t now;
   struct tm *ltm;
-  
+
   now = time(NULL);
   ltm = localtime(&now);
   strftime(buffer, 100, "%m/%d %T", ltm);
@@ -557,7 +555,8 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] ssl_slave: %s: %s\n", time_string(), err, strerror(errno));
+  fprintf(stderr, "[%s] ssl_slave: %s: %s\n", time_string(), err,
+          strerror(errno));
   unlock_file(stderr);
 }
 

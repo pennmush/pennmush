@@ -1687,7 +1687,7 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     cb_flags |= CB_QUIET;
 
   if (!(flags & PEMIT_SPOOF))
-    cb_flags |= CB_NOSPOOF; /* Show NOSPOOF headers */
+    cb_flags |= CB_NOSPOOF;     /* Show NOSPOOF headers */
 
   channel_send(chan, player, cb_flags, msg);
   ChanNumMsgs(chan)++;
@@ -3240,8 +3240,8 @@ chat_player_announce(dbref player, char *msg, int ungag)
         *dmp = '\0';
         format.args[5] = defmsg;
 
-        notify_anything(player, player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
-                        AMBIGUOUS, &format);
+        notify_anything(player, player, na_one, &viewer, NULL, na_flags, defmsg,
+                        NULL, AMBIGUOUS, &format);
 
       }
     }
@@ -3771,7 +3771,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
       /* Should we skip buffering this message? */
       if (parse_boolean
-           (mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
+          (mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
         skip_buffer = 1;
       }
 
@@ -3886,8 +3886,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
-      notify_anything(player, player, na_one, &current, NULL, na_flags, buff, NULL,
-                      AMBIGUOUS, (override_chatformat ? NULL : &format));
+      notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
+                      NULL, AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
   }
 

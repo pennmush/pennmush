@@ -136,7 +136,8 @@ extern void do_cpattr
 #define EDIT_CASE    8  /**< Perform regexp matching case-sensitively */
 
 extern void do_edit(dbref player, char *it, char **argv, int flags);
-extern void do_edit_regexp(dbref player, char *it, char **argv, int flags, NEW_PE_INFO *pe_info);
+extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
+                           NEW_PE_INFO *pe_info);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
@@ -160,22 +161,23 @@ void do_page(dbref executor, const char *arg1, const char *arg2,
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
 #define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
-extern void do_emit(dbref executor, dbref speaker, const char *message, int flags,
-                    NEW_PE_INFO *pe_info);
-extern void do_pemit(dbref executor, dbref speaker, char *target, const char *message, int flags,
-                     struct format_msg *format, NEW_PE_INFO *pe_info);
+extern void do_emit(dbref executor, dbref speaker, const char *message,
+                    int flags, NEW_PE_INFO *pe_info);
+extern void do_pemit(dbref executor, dbref speaker, char *target,
+                     const char *message, int flags, struct format_msg *format,
+                     NEW_PE_INFO *pe_info);
 #define do_pemit_list(executor,speaker,target,message,flags,pe_info) \
         do_pemit(executor,speaker,target,message,flags|PEMIT_LIST,NULL,pe_info)
-extern void do_remit(dbref executor, dbref speaker, char *rooms, const char *message,
-                     int flags, struct format_msg *format,
+extern void do_remit(dbref executor, dbref speaker, char *rooms,
+                     const char *message, int flags, struct format_msg *format,
                      NEW_PE_INFO *pe_info);
-extern void do_lemit(dbref executor, dbref speaker, const char *message, int flags,
-                     NEW_PE_INFO *pe_info);
+extern void do_lemit(dbref executor, dbref speaker, const char *message,
+                     int flags, NEW_PE_INFO *pe_info);
 extern void do_zemit(dbref player, const char *target, const char *message,
                      int flags);
-extern void do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
-                          int flags, struct format_msg *format,
-                          NEW_PE_INFO *pe_info);
+extern void do_oemit_list(dbref executor, dbref speaker, char *list,
+                          const char *message, int flags,
+                          struct format_msg *format, NEW_PE_INFO *pe_info);
 extern void do_teach(dbref player, const char *tbuf1, int list,
                      MQUE *parent_queue);
 

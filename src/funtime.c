@@ -75,7 +75,7 @@ FUNCTION(fun_timefmt)
       else if (!valid_timefmt_codes[(unsigned char) args[0][n]]) {
         safe_format(buff, bp, T("#-1 INVALID ESCAPE CODE '$%c'"),
                     args[0][n] ? args[0][n] : ' ');
-	return;
+        return;
       }
     }
   }
@@ -116,9 +116,9 @@ FUNCTION(fun_timefmt)
   } else {
     for (n = 0; n < len; n++)
       if (s[n] == '%')
-	s[n] = '$';
+        s[n] = '$';
       else if (s[n] == 0x5)
-	s[n] = '%';
+        s[n] = '%';
     safe_strl(s, len, buff, bp);
   }
 

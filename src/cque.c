@@ -87,7 +87,8 @@ static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
 /* Keep track of the last 15 minutes worth of queue activity per second */
 enum { QUEUE_LOAD_SECS = 900 };
-int16_t queue_load_record[QUEUE_LOAD_SECS] __attribute__((__aligned__(16))) = { 0 };
+int16_t queue_load_record[QUEUE_LOAD_SECS] __attribute__ ((__aligned__(16))) = {
+0};
 
 double average16(const int16_t *arr, int count);
 
@@ -922,7 +923,8 @@ do_second(void)
   MQUE *trail = NULL, *point, *next;
 
   /* Advance the queue load average count */
-  memmove(queue_load_record + 1, queue_load_record, sizeof(queue_load_record) - sizeof(int16_t));
+  memmove(queue_load_record + 1, queue_load_record,
+          sizeof(queue_load_record) - sizeof(int16_t));
   queue_load_record[0] = 0;
 
   /* move contents of low priority queue onto end of normal one
@@ -2011,8 +2013,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
                   ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
     notify_format(player, T("Load average (1/5/15 minutes): %.2f %.2f %.2f"),
-		  average16(queue_load_record, 60), average16(queue_load_record, 300),
-		  average16(queue_load_record, 900));
+                  average16(queue_load_record, 60), average16(queue_load_record,
+                                                              300),
+                  average16(queue_load_record, 900));
   }
 }
 
@@ -2453,7 +2456,7 @@ average16(const int16_t *nums, int len)
   totals1 = _mm_add_epi16(totals1, totals2);
   totals3 = _mm_add_epi16(totals3, totals4);
   totals1 = _mm_add_epi16(totals1, totals3);
-    
+
 #ifdef HAVE_SSSE3
   totals1 = _mm_hadd_epi16(totals1, totals2);
   _mm_store_si128((__m128i *) totarr, totals1);
@@ -2461,7 +2464,7 @@ average16(const int16_t *nums, int len)
   total += totarr[1];
   total += totarr[2];
   total += totarr[3];
-#else  
+#else
   _mm_store_si128((__m128i *) totarr, totals1);
   total = totarr[0];
   total += totarr[1];
@@ -2476,10 +2479,10 @@ average16(const int16_t *nums, int len)
   /* Sum up the remaining trailing elements */
   for (; n < len; n += 1)
     total += nums[n];
-  
-  return (double)total / (double)len;
 
-#else /* Non-SSE2 version */
+  return (double) total / (double) len;
+
+#else                           /* Non-SSE2 version */
 
   int n;
   int total = 0;
@@ -2487,7 +2490,7 @@ average16(const int16_t *nums, int len)
   for (n = 0; n < len; n += 1)
     total += nums[n];
 
-  return (double)total / (double)len;
+  return (double) total / (double) len;
 
 #endif
 }

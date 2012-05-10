@@ -55,4 +55,4 @@ bool parse_timezone_arg(const char *tz, time_t when, struct tz_result *);
 void save_and_set_tz(const char *newzone);
 void restore_tz(void);
 
-#endif /* TZ_H */
+#endif                          /* TZ_H */

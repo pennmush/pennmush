@@ -76,8 +76,7 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
       safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
     else
       do_rawlog(LT_ERR,
-                "safe_hash_byname: Unknown password hash function: %s",
-                algo);
+                "safe_hash_byname: Unknown password hash function: %s", algo);
     return 1;
   }
 

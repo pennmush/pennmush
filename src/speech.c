@@ -29,8 +29,8 @@
 #include "sort.h"
 #include "confmagic.h"
 
-static void do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
-                         int flags, struct format_msg *format,
+static void do_one_remit(dbref executor, dbref speaker, const char *target,
+                         const char *msg, int flags, struct format_msg *format,
                          NEW_PE_INFO *pe_info);
 dbref na_zemit(dbref current, void *data);
 
@@ -149,8 +149,8 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
   safe_format(lesson, &lp, T("%s types --> %s%s%s"), spname(player),
               ANSI_HILITE, tbuf1, ANSI_END);
   *lp = '\0';
-  notify_anything(player, player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE,
-                  lesson, NULL, loc, NULL);
+  notify_anything(player, player, na_loc, &loc, NULL,
+                  NA_INTER_HEAR | NA_PROPAGATE, lesson, NULL, loc, NULL);
   new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
                        parent_queue, PE_INFO_SHARE, flags, NULL);
 }
@@ -213,8 +213,8 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \param pe_info the pe_info to use for evaluating speech locks
  */
 void
-do_oemit_list(dbref executor, dbref speaker, char *list, const char *message, int flags,
-              struct format_msg *format, NEW_PE_INFO *pe_info)
+do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
+              int flags, struct format_msg *format, NEW_PE_INFO *pe_info)
 {
   char *temp, *p;
   const char *s;
@@ -304,8 +304,8 @@ do_oemit_list(dbref executor, dbref speaker, char *list, const char *message, in
     if (oneloc) {
       /* A specific location was given, but there were no matching objects to
        * omit, so just remit */
-      notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, message, NULL,
-                      room, format);
+      notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, message,
+                      NULL, room, format);
     } else {
       notify(executor, T("No matching objects."));
     }
@@ -319,8 +319,8 @@ do_oemit_list(dbref executor, dbref speaker, char *list, const char *message, in
   for (i = 0; i < matched; i++) {
     if (i != 0 && locs[i] == locs[i - 1])
       continue;
-    notify_anything(executor, speaker, na_loc, &locs[i], pass, na_flags, message, NULL,
-                    locs[i], format);
+    notify_anything(executor, speaker, na_loc, &locs[i], pass, na_flags,
+                    message, NULL, locs[i], format);
   }
 
 }
@@ -533,8 +533,8 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
  * \param pe_info the pe_info for lock checks, etc
  */
 void
-do_pemit(dbref executor, dbref speaker, char *target, const char *message, int flags,
-         struct format_msg *format, NEW_PE_INFO *pe_info)
+do_pemit(dbref executor, dbref speaker, char *target, const char *message,
+         int flags, struct format_msg *format, NEW_PE_INFO *pe_info)
 {
   dbref who, last = NOTHING;
   int na_flags = NA_MUST_PUPPET;
@@ -567,8 +567,8 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message, int f
       continue;
     count++;
     last = who;
-    notify_anything(executor, speaker, na_one, &who, NULL, na_flags, message, NULL,
-                    AMBIGUOUS, format);
+    notify_anything(executor, speaker, na_one, &who, NULL, na_flags, message,
+                    NULL, AMBIGUOUS, format);
   } while (!one && l && *l && (p = next_in_list(&l)));
 
 
@@ -577,7 +577,8 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message, int f
       notify_format(executor, T("You pemit \"%s\" to %d objects."), message,
                     count);
     else if (last != executor)
-      notify_format(executor, T("You pemit \"%s\" to %s."), message, Name(last));
+      notify_format(executor, T("You pemit \"%s\" to %s."), message,
+                    Name(last));
   }
 
 }
@@ -621,8 +622,8 @@ do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info)
               (mod ? tbuf2 : tbuf1));
   *mp = '\0';
 
-  notify_anything(player, player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE,
-                  message, NULL, loc, NULL);
+  notify_anything(player, player, na_loc, &loc, NULL,
+                  NA_INTER_HEAR | NA_PROPAGATE, message, NULL, loc, NULL);
 }
 
 /** The *wall commands.
@@ -765,8 +766,8 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   if (ret) {
     /* We have a returned value. Notify the player. */
     if (*messbuff)
-      notify_anything(player, enactor, na_one, &player, NULL, flags, messbuff, NULL,
-                      AMBIGUOUS, NULL);
+      notify_anything(player, enactor, na_one, &player, NULL, flags, messbuff,
+                      NULL, AMBIGUOUS, NULL);
     return 1;
   } else {
     return 0;
@@ -1173,7 +1174,8 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
  * \param pe_info pe_info for lock checks, speechmod, etc
  */
 void
-do_emit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_INFO *pe_info)
+do_emit(dbref executor, dbref speaker, const char *message, int flags,
+        NEW_PE_INFO *pe_info)
 {
   dbref loc;
   int na_flags = NA_INTER_HEAR | NA_PROPAGATE;
@@ -1185,7 +1187,8 @@ do_emit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_IN
     return;
 
   if (!Loud(speaker) && !eval_lock_with(speaker, loc, Speech_Lock, pe_info)) {
-    fail_lock(executor, loc, Speech_Lock, T("You may not speak here!"), NOTHING);
+    fail_lock(executor, loc, Speech_Lock, T("You may not speak here!"),
+              NOTHING);
     return;
   }
 
@@ -1202,8 +1205,8 @@ do_emit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_IN
   /* notify everybody */
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(executor, speaker, na_loc, &loc, NULL, na_flags, message, NULL, loc,
-                  NULL);
+  notify_anything(executor, speaker, na_loc, &loc, NULL, na_flags, message,
+                  NULL, loc, NULL);
 }
 
 /** Remit a message to a single room.
@@ -1215,8 +1218,8 @@ do_emit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_IN
  * \param pe_info pe_info for locks/permission checks
  */
 static void
-do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg, int flags,
-             struct format_msg *format, NEW_PE_INFO *pe_info)
+do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
+             int flags, struct format_msg *format, NEW_PE_INFO *pe_info)
 {
   dbref room;
   int na_flags = NA_INTER_HEAR | NA_PROPAGATE;
@@ -1240,8 +1243,8 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
       }
       if (flags & PEMIT_SPOOF)
         na_flags |= NA_SPOOF;
-      notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, msg, NULL, room,
-                      format);
+      notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, msg,
+                      NULL, room, format);
     }
   }
 }
@@ -1259,8 +1262,8 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
  * \param pe_info pe_info for locks/permission checks
  */
 void
-do_remit(dbref executor, dbref speaker, char *rooms, const char *message, int flags,
-         struct format_msg *format, NEW_PE_INFO *pe_info)
+do_remit(dbref executor, dbref speaker, char *rooms, const char *message,
+         int flags, struct format_msg *format, NEW_PE_INFO *pe_info)
 {
   if (flags & PEMIT_LIST) {
     /* @remit/list */
@@ -1281,7 +1284,8 @@ do_remit(dbref executor, dbref speaker, char *rooms, const char *message, int fl
  * \param pe_info pe_info for locks/permission checks
  */
 void
-do_lemit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_INFO *pe_info)
+do_lemit(dbref executor, dbref speaker, const char *message, int flags,
+         NEW_PE_INFO *pe_info)
 {
   /* give a message to the "absolute" location of an object */
   dbref room;
@@ -1306,8 +1310,8 @@ do_lemit(dbref executor, dbref speaker, const char *message, int flags, NEW_PE_I
       notify_format(executor, T("You lemit: \"%s\""), message);
     if (flags & PEMIT_SPOOF)
       na_flags |= NA_SPOOF;
-    notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, message, NULL, room,
-                    NULL);
+    notify_anything(executor, speaker, na_loc, &room, NULL, na_flags, message,
+                    NULL, room, NULL);
   }
 }
 
@@ -1377,8 +1381,8 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
   pass[3] = speech_loc(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(player, player, na_zemit, &pass, NULL, na_flags, message, NULL,
-                  NOTHING, NULL);
+  notify_anything(player, player, na_zemit, &pass, NULL, na_flags, message,
+                  NULL, NOTHING, NULL);
 
 
   if (!(flags & PEMIT_SILENT) && pass[3] != NOTHING) {

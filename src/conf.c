@@ -439,7 +439,8 @@ PENNCONF conftable[] = {
   {"destroy_possessions", cf_bool, &options.destroy_possessions, 2, 0,
    "cmds"}
   ,
-  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"},
+  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"}
+  ,
 
   {"null_eq_zero", cf_bool, &options.null_eq_zero, 2, 0, "tiny"}
   ,
@@ -1495,7 +1496,7 @@ config_file_startup(const char *conf, int restrictions)
     /* Logfiles haven't yet been opened, so doing this causes an error on
      * stdout, and for netmush.log to be opened before the error_log config
      * option has been read/parsed */
-    /* do_rawlog(LT_ERR, "Reading %s", cfile);*/
+    /* do_rawlog(LT_ERR, "Reading %s", cfile); */
     if (toplevel_cfile == NULL)
       toplevel_cfile = mush_strdup(cfile, "config.file");
   } else {
@@ -1506,7 +1507,7 @@ config_file_startup(const char *conf, int restrictions)
                 (conf && *conf) ? conf : "Unknown");
       return 0;
     }
-    /* do_rawlog(LT_ERR, "Reading %s", conf);*/
+    /* do_rawlog(LT_ERR, "Reading %s", conf); */
   }
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {

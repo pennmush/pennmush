@@ -694,7 +694,7 @@ fn_restrict_to_bit(const char *r)
   return 0;
 }
 
-static const char *fn_restrict_to_str(uint32_t b) __attribute__((unused));
+static const char *fn_restrict_to_str(uint32_t b) __attribute__ ((unused));
 
 
 static const char *
@@ -943,7 +943,8 @@ do_function_clone(dbref player, const char *function, const char *clone)
   }
 
   fpc = function_add(mush_strdup(realclone, "function.name"),
-               fp->where.fun, fp->minargs, fp->maxargs, (fp->flags | FN_CLONE));
+                     fp->where.fun, fp->minargs, fp->maxargs,
+                     (fp->flags | FN_CLONE));
   fpc->clone_template = (fp->clone_template ? fp->clone_template : fp);
 
   notify(player, T("Function cloned."));

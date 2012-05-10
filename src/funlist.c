@@ -221,6 +221,7 @@ find_list_position(char *numstr, int total, bool insert)
   else
     return i;
 }
+
 /* ARGSUSED */
 FUNCTION(fun_munge)
 {

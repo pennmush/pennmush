@@ -213,14 +213,15 @@ struct notify_message_group {
 
 static void init_notify_message_group(struct notify_message_group
                                       *real_message);
-static void notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
-                                dbref *skips, int flags,
+static void notify_anything_sub(dbref executor, dbref speaker, na_lookup func,
+                                void *fdata, dbref *skips, int flags,
                                 struct notify_message_group *message,
                                 const char *prefix, dbref loc,
                                 struct format_msg *format);
 
-static void notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
-                            int flags, struct notify_message_group *message,
+static void notify_internal(dbref target, dbref executor, dbref speaker,
+                            dbref *skips, int flags,
+                            struct notify_message_group *message,
                             struct notify_message *prefix, dbref loc,
                             struct format_msg *format);
 static unsigned char *make_nospoof(dbref speaker, int paranoid);
@@ -805,7 +806,8 @@ notify_makestring_nocache(unsigned char *message, int output_type)
  * \param flags NA_* flags
  */
 void
-notify_except2(dbref executor, dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
+notify_except2(dbref executor, dbref loc, dbref exc1, dbref exc2,
+               const char *msg, int flags)
 {
   dbref skips[3];
 
@@ -816,8 +818,9 @@ notify_except2(dbref executor, dbref loc, dbref exc1, dbref exc2, const char *ms
   skips[1] = exc2;
   skips[2] = NOTHING;
 
-  notify_anything(executor, executor, na_loc, &loc, (exc1 == NOTHING) ? NULL : skips,
-                  flags | NA_PROPAGATE, msg, NULL, loc, NULL);
+  notify_anything(executor, executor, na_loc, &loc,
+                  (exc1 == NOTHING) ? NULL : skips, flags | NA_PROPAGATE, msg,
+                  NULL, loc, NULL);
 
 }
 
@@ -836,9 +839,9 @@ notify_except2(dbref executor, dbref loc, dbref exc1, dbref exc2, const char *ms
  * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
  */
 void
-notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata, dbref *skips,
-                int flags, const char *message, const char *prefix, dbref loc,
-                struct format_msg *format)
+notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
+                dbref *skips, int flags, const char *message,
+                const char *prefix, dbref loc, struct format_msg *format)
 {
   struct notify_message_group real_message;
   int i;
@@ -861,8 +864,8 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata, dbre
   if (loc == AMBIGUOUS)
     loc = speech_loc(speaker);
 
-  notify_anything_sub(executor, speaker, func, fdata, skips, flags, &real_message, prefix,
-                      loc, format);
+  notify_anything_sub(executor, speaker, func, fdata, skips, flags,
+                      &real_message, prefix, loc, format);
 
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
@@ -892,9 +895,10 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata, dbre
  * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
  */
 static void
-notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata, dbref *skips,
-                    int flags, struct notify_message_group *message,
-                    const char *prefix, dbref loc, struct format_msg *format)
+notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
+                    dbref *skips, int flags,
+                    struct notify_message_group *message, const char *prefix,
+                    dbref loc, struct format_msg *format)
 {
   dbref target = NOTHING;
   struct notify_message *real_prefix = NULL;
@@ -934,8 +938,8 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata, 
       if (skips[i] != NOTHING)
         continue;
     }
-    notify_internal(target, executor, speaker, skips, flags, message, real_prefix, loc,
-                    format);
+    notify_internal(target, executor, speaker, skips, flags, message,
+                    real_prefix, loc, format);
   }
 
   if (real_prefix != NULL) {
@@ -976,8 +980,8 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata, 
  * \param format an obj/attr/args to format the message with
  */
 static void
-notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips, int flags,
-                struct notify_message_group *message,
+notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
+                int flags, struct notify_message_group *message,
                 struct notify_message *prefix, dbref loc,
                 struct format_msg *format)
 {
@@ -1340,9 +1344,9 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips, int f
               continue;
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
-            notify_anything_sub(executor, speaker, na_next, &Contents(loc), skips,
-                                PROPAGATE_FLAGS(flags), message, propprefix, loc,
-                                format);
+            notify_anything_sub(executor, speaker, na_next, &Contents(loc),
+                                skips, PROPAGATE_FLAGS(flags), message,
+                                propprefix, loc, format);
           }
         }
       } else if (target == loc && !filter_found(target, speaker, fullmsg, 0)) {

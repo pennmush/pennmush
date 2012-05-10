@@ -111,10 +111,13 @@ is_valid_tzname(const char *name)
     int erroffset;
     const char *errptr;
 
-    re = pcre_compile("^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$", 0, &errptr, &erroffset, tables);
+    re =
+      pcre_compile("^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$", 0, &errptr, &erroffset,
+                   tables);
 
     if (!re) {
-      do_rawlog(LT_ERR, "tz: Unable to compile timezone name validation RE: %s", errptr);
+      do_rawlog(LT_ERR, "tz: Unable to compile timezone name validation RE: %s",
+                errptr);
       return 0;
     }
   }
@@ -173,12 +176,14 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     char magic[5] = { '\0' };
 
     if (read(fd, magic, 4) != 4) {
-      do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile, strerror(errno));
+      do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile,
+                strerror(errno));
       goto error;
     }
 
     if (memcmp(magic, TZMAGIC, 4) != 0) {
-      do_rawlog(LT_ERR, "tz: %s is not a valid tzfile. Wrong magic number.\n", tzfile);
+      do_rawlog(LT_ERR, "tz: %s is not a valid tzfile. Wrong magic number.\n",
+                tzfile);
       goto error;
     }
   }
@@ -186,7 +191,8 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
   {
     char version[16];
     if (read(fd, version, 16) != 16) {
-      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno));
+      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile,
+                strerror(errno));
       goto error;
     }
 
@@ -214,7 +220,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   /* Use 64-bit time_t version on such systems. */
   if (has_64bit_times && sizeof(time_t) == 8 && time_size == 4) {
-    off_t skip = 44; /* Header and sizes */
+    off_t skip = 44;            /* Header and sizes */
 
     skip += tz->timecnt * 5;
     skip += tz->typecnt * 6;
@@ -224,14 +230,13 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
     if (lseek(fd, skip, SEEK_SET) < 0) {
       do_rawlog(LT_ERR, "tz: Unable to seek to second section of %s: %s\n",
-	      tzfile, strerror(errno));
+                tzfile, strerror(errno));
       goto error;
     }
 
     mush_free(tz, "tzinfo");
     return do_read_tzfile(fd, tzfile, 8);
   }
-
 #define READ_TRANSITIONS(type, decode)			\
   do {							\
     type *buf;						\
@@ -333,7 +338,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   return tz;
 
-  error:
+error:
   if (tz)
     free_tzinfo(tz);
   return NULL;
@@ -390,7 +395,7 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
   if (tz->timecnt == 0 || when < tz->transitions[0]) {
     for (n = 0; n < tz->typecnt; n += 1)
       if (!tz->offsets[n].tt_isdst)
-	return tz->offsets[n].tt_gmtoff;
+        return tz->offsets[n].tt_gmtoff;
 
     return tz->offsets[0].tt_gmtoff;
   }
@@ -444,14 +449,13 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
     a = atr_get(thing, "TZ");
     if (!a) {
       /* No timezone attribute isn't an error. Just use the server's
-	 zone. */
+         zone. */
       res->tz_attr_missing = 1;
       return 1;
     }
 
     arg = atr_value(a);
   }
-
 
 #ifdef USE_TZINFO
   {
@@ -468,7 +472,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
       offset = parse_integer(arg);
 
       /* GMT-8 is 8 hours ahead, GMT+8 is 8 hours behind, which makes
-	 no sense to me. */
+         no sense to me. */
       offset = -offset;
 
       snprintf(tzname, sizeof tzname, "Etc/GMT%+d", offset);

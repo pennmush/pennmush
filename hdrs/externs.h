@@ -178,11 +178,11 @@ void notify_list(dbref speaker, dbref thing, const char *atr,
 
 /* No longer passes an ns_func, all things will use the same nospoof function. Where a NULL ns_func was used before, now just
  * pass NA_SPOOF in the flags */
-void notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata, dbref *skips,
-                     int flags, const char *message, const char *prefix,
-                     dbref loc, struct format_msg *format);
-void notify_except2(dbref executor, dbref first, dbref exc1, dbref exc2, const char *msg,
-                    int flags);
+void notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
+                     dbref *skips, int flags, const char *message,
+                     const char *prefix, dbref loc, struct format_msg *format);
+void notify_except2(dbref executor, dbref first, dbref exc1, dbref exc2,
+                    const char *msg, int flags);
 /**< Notify all objects in a single location, with one exception */
 #define notify_except(executor, loc, exc, msg, flags) notify_except2(executor, loc, exc, NOTHING, msg, flags)
 
@@ -399,7 +399,8 @@ void do_desert(dbref player, const char *arg);
 void do_dismiss(dbref player, const char *arg);
 void clear_followers(dbref leader, int noisy);
 void clear_following(dbref follower, int noisy);
-dbref find_var_dest(dbref player, dbref exit_obj, char *exit_name, NEW_PE_INFO *pe_info);
+dbref find_var_dest(dbref player, dbref exit_obj, char *exit_name,
+                    NEW_PE_INFO *pe_info);
 
 /* From player.c */
 extern const char *connect_fail_limit_exceeded;
@@ -474,9 +475,9 @@ enum opa_error {
   OPAE_TOOMANY, /**< Too many aliases already set */
   OPAE_NULL  /**< Null alias */
 };
-enum opa_error  ok_player_alias(const char *alias, dbref player, dbref thing);
+enum opa_error ok_player_alias(const char *alias, dbref player, dbref thing);
 enum opa_error ok_object_name(char *name, dbref player, dbref thing, int type,
-                   char **newname, char **newalias);
+                              char **newname, char **newalias);
 int ok_password(const char *password);
 int ok_tag_attribute(dbref player, const char *params);
 dbref parse_match_possessor(dbref player, char **str, int exits);
@@ -516,9 +517,9 @@ int vmessageformat(dbref player, const char *attribute, dbref executor,
                    int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute, dbref executor,
                   int flags, int nargs, char *argv[]);
-void do_message(dbref executor, dbref speaker, char *list, char *attrname, char *message,
-                enum emit_type type, int flags, int numargs, char *argv[],
-                NEW_PE_INFO *pe_info);
+void do_message(dbref executor, dbref speaker, char *list, char *attrname,
+                char *message, enum emit_type type, int flags, int numargs,
+                char *argv[], NEW_PE_INFO *pe_info);
 
 const char *spname(dbref thing);
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
@@ -775,8 +776,9 @@ replace_string2(const char *old[2], const char *newbits[2],
                              bool cs, char **, size_t, char *restrict, ssize_t,
                              PE_REGS *pe_regs);
     bool quick_regexp_match(const char *restrict s,
-                            const char *restrict d, bool cs, const char **report_err);
-bool qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *s);
+                            const char *restrict d, bool cs,
+                            const char **report_err);
+    bool qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 

@@ -40,7 +40,7 @@
 #endif
 #else
 #include <time.h>
-#endif /* I_SYS_TIME */
+#endif                          /* I_SYS_TIME */
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef I_SYS_SOCKET
@@ -120,7 +120,7 @@
 #ifdef SSL_SLAVE
 #include "ssl_slave.h"
 #endif
-#endif /* !WIN32 */
+#endif                          /* !WIN32 */
 
 #include "strtree.h"
 #include "log.h"
@@ -353,7 +353,8 @@ struct fcache_entries {
 };
 
 static struct fcache_entries fcache;
-static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix, char *arg);
+static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix,
+                        char *arg);
 static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const unsigned char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
@@ -1321,7 +1322,8 @@ new_connection(int oldsock, int *result, conn_source source)
 #endif
 
     if (good_to_read)
-      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
+      len =
+        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
     else {
       len = -1;
       errno = EWOULDBLOCK;
@@ -1362,7 +1364,8 @@ new_connection(int oldsock, int *result, conn_source source)
       if (remote_pid == ssl_slave_pid) {
         source = CS_LOCAL_SSL_SOCKET;
       } else {
-        do_rawlog(LT_CONN, "[%d] Connection on local socket from pid %d run as uid %d.",
+        do_rawlog(LT_CONN,
+                  "[%d] Connection on local socket from pid %d run as uid %d.",
                   newsock, remote_pid, remote_uid);
       }
     } else if (remote_uid >= 0) {
@@ -1372,7 +1375,8 @@ new_connection(int oldsock, int *result, conn_source source)
       if (remote_uid == (int) getuid()) {
         source = CS_LOCAL_SSL_SOCKET;
       } else {
-        do_rawlog(LT_CONN, "[%d] Connection on local socket from process run as uid %d.",
+        do_rawlog(LT_CONN,
+                  "[%d] Connection on local socket from process run as uid %d.",
                   newsock, remote_uid);
       }
     } else {
@@ -1388,8 +1392,8 @@ new_connection(int oldsock, int *result, conn_source source)
   if (Forbidden_Site(ipbuf) || Forbidden_Site(hostbuf)) {
     if (!Deny_Silent_Site(ipbuf, AMBIGUOUS)
         || !Deny_Silent_Site(hostbuf, AMBIGUOUS)) {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)", newsock, hostbuf, ipbuf,
-                hi ? hi->port : "(unknown)");
+      do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
+                newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
     if (is_remote_source(source))
       shutdown(newsock, 2);
@@ -1489,7 +1493,8 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)
 
   for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
     if (fb[i].thing != NOTHING) {
-      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix, arg) == 1) {
+      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix, arg)
+          == 1) {
         /* Attr successfully evaluated and displayed */
         return 1;
       }
@@ -1779,7 +1784,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
 {
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)",
-              d->descriptor, d->addr, d->ip, Name(d->player), d->player, reason);
+              d->descriptor, d->addr, d->ip, Name(d->player), d->player,
+              reason);
     if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
@@ -2070,11 +2076,11 @@ network_send(DESC *d)
     if (cnt < 0) {
       if (
 #ifdef WIN32
-          cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
+           cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
 #else
-          is_blocking_err(errno)
+           is_blocking_err(errno)
 #endif
-          )
+        )
         return 1;
 
       else
@@ -2423,7 +2429,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       /* Offer a selection of possible delimiters, to avoid it appearing
        * in a charset name */
       char *delim_list = "; +=/!", *delim_curr;
-      unsigned char delim[2] = {'\0', '\0'};
+      unsigned char delim[2] = { '\0', '\0' };
       char *curr_locale = NULL;
 
       queue_newwrite(d, reply_prefix, 4);
@@ -2437,7 +2443,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
         if (*delim_curr) {
           delim[0] = *delim_curr;
         } else {
-          delim[0] = ';'; /* fall back on ; */
+          delim[0] = ';';       /* fall back on ; */
         }
       } else {
         /* Fall back on latin-1 */
@@ -3290,13 +3296,20 @@ boot_desc(DESC *d, const char *cause, dbref executor)
  * \retval 0 no
  */
 static int
-isyes(char *str) {
-  if (!str) return 0;
-  if (!strcasecmp(str, "yes")) return 1;
-  if (!strcasecmp(str, "y")) return 1;
-  if (!strcasecmp(str, "true")) return 1;
-  if (!strcasecmp(str, "1")) return 1;
-  if (!strcasecmp(str, "on")) return 1;
+isyes(char *str)
+{
+  if (!str)
+    return 0;
+  if (!strcasecmp(str, "yes"))
+    return 1;
+  if (!strcasecmp(str, "y"))
+    return 1;
+  if (!strcasecmp(str, "true"))
+    return 1;
+  if (!strcasecmp(str, "1"))
+    return 1;
+  if (!strcasecmp(str, "on"))
+    return 1;
   return 0;
 }
 
@@ -3307,7 +3320,8 @@ isyes(char *str) {
  * \return string Set message (error or success)
  */
 const char *
-sockset(dbref player, char *name, char *val) {
+sockset(dbref player, char *name, char *val)
+{
   DESC *d;
   static char retval[BUFFER_LEN];
 
@@ -3349,7 +3363,8 @@ sockset(dbref player, char *name, char *val) {
         queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
                        strlen(PUEBLO_SEND));
         process_output(d);
-        do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
+        do_rawlog(LT_CONN,
+                  "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
                   d->descriptor, d->addr, d->ip);
         d->conn_flags |= CONN_HTML;
       }
@@ -3405,7 +3420,8 @@ sockset(dbref player, char *name, char *val) {
     return T("Terminal Type set.");
   }
 
-  snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."), name);
+  snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
+           name);
   return retval;
 }
 
@@ -5795,7 +5811,8 @@ load_reboot_db(void)
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = (GoodObject(d->player) && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
+      d->connected = (GoodObject(d->player)
+                      && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))

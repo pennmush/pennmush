@@ -1307,8 +1307,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
                         num, buff, BUFFER_LEN);
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
-    */
+     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     */
     pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
 
   }
@@ -1364,8 +1364,8 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     *bp = '\0';
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
-    */
+     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     */
     pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
   }
 }

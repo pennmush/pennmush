@@ -86,6 +86,7 @@ static bool
 
 
 
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -567,7 +568,8 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
  * \retval 0 d doesn't match s.
  */
 bool
-quick_regexp_match(const char *restrict s, const char *restrict d, bool cs, const char **report_err)
+quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
+                   const char **report_err)
 {
   pcre *re;
   pcre_extra *extra;
@@ -616,7 +618,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs, cons
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
+qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *subj)
 {
   int len;
   int offsets[99];

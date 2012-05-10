@@ -255,19 +255,20 @@
 #endif
 
 
-#if ATTR_STORAGE == 0 /* Malloc system */
+#if ATTR_STORAGE == 0           /* Malloc system */
 
 /* Data format is a 16 bit length field , followed by 16 bits reserved
    for future use (And to ensure 4-byte alignment), followed by the
    data. Derefs are not used. */
 
 static chunk_reference_t
-acm_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs __attribute__((__unused__)))
+acm_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs
+                 __attribute__ ((__unused__)))
 {
   uint8_t *chunk;
 
   chunk = mush_malloc(len + 4, "chunk");
-  
+
   memset(chunk, 0, 4);
   memcpy(chunk, &len, 2);
   memcpy(chunk + 4, data, len);
@@ -283,7 +284,8 @@ acm_chunk_delete(chunk_reference_t reference)
 }
 
 static uint16_t
-acm_chunk_fetch(chunk_reference_t reference, unsigned char *buffer, uint16_t buffer_len)
+acm_chunk_fetch(chunk_reference_t reference, unsigned char *buffer,
+                uint16_t buffer_len)
 {
   uint16_t len;
 
@@ -310,14 +312,14 @@ acm_chunk_len(chunk_reference_t reference)
 }
 
 static uint8_t
-acm_chunk_derefs(chunk_reference_t reference __attribute__((__unused__)))
+acm_chunk_derefs(chunk_reference_t reference __attribute__ ((__unused__)))
 {
   return 0;
 }
 
-static void 
-acm_chunk_migration(int count __attribute__((__unused__)),
-		chunk_reference_t **references __attribute__((__unused__)))
+static void
+acm_chunk_migration(int count __attribute__ ((__unused__)),
+                    chunk_reference_t **references __attribute__ ((__unused__)))
 {
   return;
 }
@@ -335,9 +337,11 @@ acm_chunk_init(void)
 }
 
 static void
-acm_chunk_stats(dbref player, enum chunk_stats_type which __attribute__((__unused__)))
+acm_chunk_stats(dbref player, enum chunk_stats_type which
+                __attribute__ ((__unused__)))
 {
-  notify(player, T("Attribute storage stats are not supported for malloc scheme."));
+  notify(player,
+         T("Attribute storage stats are not supported for malloc scheme."));
 }
 
 static void
@@ -348,7 +352,7 @@ acm_chunk_new_period(void)
 
 #ifndef WIN32
 
-static int 
+static int
 acm_chunk_fork_file(void)
 {
   return 1;
@@ -372,9 +376,9 @@ acm_chunk_fork_done(void)
   return;
 }
 
-#endif /* !WIN32 */
+#endif                          /* !WIN32 */
 
-#elif ATTR_STORAGE == 1 /* Chunk system */
+#elif ATTR_STORAGE == 1         /* Chunk system */
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
@@ -942,8 +946,8 @@ debug_dump_region(uint16_t region, FILE * fp)
   rhp = rp->in_memory;
 
   fprintf(fp, "region: id:%04x period:%-8x deref:%-8x (%-2x per chunk)\n",
-          region, (unsigned int) rp->period_last_touched, (unsigned int) rp->total_derefs,
-          RegionDerefs(region));
+          region, (unsigned int) rp->period_last_touched,
+          (unsigned int) rp->total_derefs, RegionDerefs(region));
   fprintf(fp, "        #used:%-4x #free:%-4x fbytes:%-4x hole:%-4x ",
           rp->used_count, rp->free_count, rp->free_bytes,
           rp->largest_free_chunk);
@@ -2233,7 +2237,8 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
     struct log_stream *trace;
     do_rawlog(LT_TRACE, "Invalid region after migrate_slide!");
     do_rawlog(LT_TRACE, "Was moving %04x%04x to %04x%04x (became %08x)...",
-              region, o_oth, region, o_off, (unsigned int) m_references[which][0]);
+              region, o_oth, region, o_off,
+              (unsigned int) m_references[which][0]);
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x", o_len, len);
     trace = lookup_log(LT_TRACE);
     debug_dump_region(region, trace->fp);
@@ -2391,7 +2396,7 @@ acc_chunk_delete(chunk_reference_t reference)
 
 static uint16_t
 acc_chunk_fetch(chunk_reference_t reference,
-            unsigned char *buffer, uint16_t buffer_len)
+                unsigned char *buffer, uint16_t buffer_len)
 {
   uint16_t region, offset, len;
   region = ChunkReferenceToRegion(reference);
@@ -2724,7 +2729,7 @@ acc_chunk_fork_done(void)
 }
 #endif                          /* !WIN32 */
 
-#endif /* ATTR_STORAGE == 1, chunk system */
+#endif                          /* ATTR_STORAGE == 1, chunk system */
 
 #if ATTR_STORAGE == 0
 #define ACPREFIX(name) acm_ ## name
@@ -2744,7 +2749,7 @@ acc_chunk_fork_done(void)
 chunk_reference_t
 chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
 {
-  return ACPREFIX(chunk_create)(data, len, derefs);
+  return ACPREFIX(chunk_create) (data, len, derefs);
 }
 
 /** Deallocate a chunk of storage.
@@ -2753,7 +2758,7 @@ chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
 void
 chunk_delete(chunk_reference_t reference)
 {
-  ACPREFIX(chunk_delete)(reference);
+  ACPREFIX(chunk_delete) (reference);
 }
 
 /** Fetch a chunk of data.
@@ -2770,7 +2775,7 @@ uint16_t
 chunk_fetch(chunk_reference_t reference,
             unsigned char *buffer, uint16_t buffer_len)
 {
-  return ACPREFIX(chunk_fetch)(reference, buffer, buffer_len);
+  return ACPREFIX(chunk_fetch) (reference, buffer, buffer_len);
 }
 
 /** Get the length of a chunk.
@@ -2783,7 +2788,7 @@ chunk_fetch(chunk_reference_t reference,
 uint16_t
 chunk_len(chunk_reference_t reference)
 {
-  return ACPREFIX(chunk_len)(reference);
+  return ACPREFIX(chunk_len) (reference);
 }
 
 /** Get the deref count of a chunk.
@@ -2795,7 +2800,7 @@ chunk_len(chunk_reference_t reference)
 uint8_t
 chunk_derefs(chunk_reference_t reference)
 {
-  return ACPREFIX(chunk_derefs)(reference);
+  return ACPREFIX(chunk_derefs) (reference);
 }
 
 /** Migrate allocated chunks around.
@@ -2807,7 +2812,7 @@ chunk_derefs(chunk_reference_t reference)
 void
 chunk_migration(int count, chunk_reference_t **references)
 {
-  ACPREFIX(chunk_migration)(count, references);
+  ACPREFIX(chunk_migration) (count, references);
 }
 
 /** Get the number of paged regions.
@@ -2820,7 +2825,7 @@ chunk_migration(int count, chunk_reference_t **references)
 int
 chunk_num_swapped(void)
 {
-  return ACPREFIX(chunk_num_swapped)();
+  return ACPREFIX(chunk_num_swapped) ();
 }
 
 /** Initialize chunk subsystem.
@@ -2829,7 +2834,7 @@ chunk_num_swapped(void)
 void
 chunk_init(void)
 {
-  ACPREFIX(chunk_init)();
+  ACPREFIX(chunk_init) ();
 }
 
 /** Report statistics.
@@ -2840,7 +2845,7 @@ chunk_init(void)
 void
 chunk_stats(dbref player, enum chunk_stats_type which)
 {
-  ACPREFIX(chunk_stats)(player, which);
+  ACPREFIX(chunk_stats) (player, which);
 }
 
 /** Start a new migration period.
@@ -2851,7 +2856,7 @@ chunk_stats(dbref player, enum chunk_stats_type which)
 void
 chunk_new_period(void)
 {
-  ACPREFIX(chunk_new_period)();
+  ACPREFIX(chunk_new_period) ();
 }
 
 #ifndef WIN32
@@ -2862,7 +2867,7 @@ chunk_new_period(void)
 int
 chunk_fork_file(void)
 {
-  return ACPREFIX(chunk_fork_file)();
+  return ACPREFIX(chunk_fork_file) ();
 }
 
 /** Assert that we're the parent after fork.
@@ -2870,7 +2875,7 @@ chunk_fork_file(void)
 void
 chunk_fork_parent(void)
 {
-  ACPREFIX(chunk_fork_parent)();
+  ACPREFIX(chunk_fork_parent) ();
 }
 
 /** Assert that we're the child after fork.
@@ -2878,7 +2883,7 @@ chunk_fork_parent(void)
 void
 chunk_fork_child(void)
 {
-  ACPREFIX(chunk_fork_child)();
+  ACPREFIX(chunk_fork_child) ();
 }
 
 /** Assert that we're done with the cloned chunkswap file.
@@ -2886,9 +2891,7 @@ chunk_fork_child(void)
 void
 chunk_fork_done(void)
 {
-  ACPREFIX(chunk_fork_done)();
+  ACPREFIX(chunk_fork_done) ();
 }
 
-#endif /* !WIN32 */
-
-
+#endif                          /* !WIN32 */

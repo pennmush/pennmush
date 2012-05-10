@@ -26,8 +26,7 @@ struct attr {
 /* Stuff that's actually in atr_tab.c */
 ATTR *aname_hash_lookup(const char *name);
 int alias_attribute(const char *atr, const char *alias);
-void do_attribute_limit
-  (dbref player, char *name, int type, char *pattern);
+void do_attribute_limit(dbref player, char *name, int type, char *pattern);
 void do_attribute_access
   (dbref player, char *name, char *perms, int retroactive);
 void do_attribute_delete(dbref player, char *name);
@@ -36,8 +35,7 @@ void do_attribute_info(dbref player, char *name);
 void do_list_attribs(dbref player, int lc);
 char *list_attribs(void);
 void attr_init_postconfig(void);
-const char *check_attr_value
-  (dbref player, const char *name, const char *value);
+const char *check_attr_value(dbref player, const char *name, const char *value);
 int cnf_attribute_access(char *attrname, char *opts);
 
 /* From attrib.c */
@@ -70,8 +68,7 @@ typedef int (*aig_func) (dbref, dbref, dbref, const char *, ATTR *, void *);
 int atr_iter_get(dbref player, dbref thing, char const *name,
                  int mortal, int regexp, aig_func func, void *args);
 int atr_iter_get_parent(dbref player, dbref thing, char const *name,
-                        int mortal, int regexp, aig_func func,
-                        void *args);
+                        int mortal, int regexp, aig_func func, void *args);
 int atr_pattern_count(dbref player, dbref thing, const char *name,
                       int doparent, int mortal, int regexp);
 ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
@@ -144,7 +141,7 @@ safe_atr_value(ATTR *atr)
 /* !!! All 32 bits in the attribute flags field are in use. Don't add
        more. */
 
-extern ATTR attr[];               /**< external predefined attributes. */
+    extern ATTR attr[];           /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)

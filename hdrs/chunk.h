@@ -10,7 +10,7 @@
 
 #if ATTR_STORAGE == 0
 
-typedef uint8_t* chunk_reference_t;
+typedef uint8_t *chunk_reference_t;
 #define NULL_CHUNK_REFERENCE 0
 
 #elif ATTR_STORAGE == 1

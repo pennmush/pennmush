@@ -132,8 +132,8 @@ PRIV attr_privs_view[] = {
  */
 
 static ATTR *aname_find_exact(const char *name);
-static ATTR * attr_read(PENNFILE *f);
-static ATTR * attr_alias_read(PENNFILE *f, char *alias);
+static ATTR *attr_read(PENNFILE *f);
+static ATTR *attr_alias_read(PENNFILE *f, char *alias);
 
 void init_aname_table(void);
 
@@ -191,9 +191,9 @@ attr_read(PENNFILE *f)
 
   if (!good_atr_name(tmp)) {
     do_rawlog(LT_ERR, "Invalid attribute name '%s' in db.", tmp);
-    (void) getstring_noalloc(f); /* flags */
-    (void) getstring_noalloc(f); /* creator */
-    (void) getstring_noalloc(f); /* data */
+    (void) getstring_noalloc(f);        /* flags */
+    (void) getstring_noalloc(f);        /* creator */
+    (void) getstring_noalloc(f);        /* data */
     return NULL;
   }
 
@@ -204,8 +204,8 @@ attr_read(PENNFILE *f)
     if (!flags) {
       do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
       free((char *) AL_NAME(a));
-      (void) getstring_noalloc(f); /* creator */
-      (void) getstring_noalloc(f); /* data */
+      (void) getstring_noalloc(f);      /* creator */
+      (void) getstring_noalloc(f);      /* data */
       return NULL;
     }
   }
@@ -231,11 +231,12 @@ attr_read(PENNFILE *f)
 
     re = pcre_compile(tmp, PCRE_CASELESS, &errptr, &erroffset, tables);
     if (!re) {
-      do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.", AL_NAME(a));
+      do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.",
+                AL_NAME(a));
       free((char *) AL_NAME(a));
       return NULL;
     }
-    free(re); /* don't need it, just needed to check it */
+    free(re);                   /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, u_strlen(t), 0);
@@ -281,7 +282,7 @@ attr_read_all(PENNFILE *f)
   db_read_this_labeled_int(f, "attrcount", &count);
   for (found = 0;;) {
 
-   c = penn_fgetc(f);
+    c = penn_fgetc(f);
     penn_ungetc(c, f);
 
     if (c != ' ')
@@ -316,9 +317,12 @@ attr_read_all(PENNFILE *f)
       if (!good_atr_name(alias)) {
         do_rawlog(LT_ERR, "Bad attribute name on alias '%s' in db.", alias);
       } else if (aname_find_exact(strupper(alias))) {
-        do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db: alias already in use.", AL_NAME(a), alias);
+        do_rawlog(LT_ERR,
+                  "Unable to alias attribute '%s' to '%s' in db: alias already in use.",
+                  AL_NAME(a), alias);
       } else if (!alias_attribute(AL_NAME(a), alias)) {
-        do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db.", AL_NAME(a), alias);
+        do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db.",
+                  AL_NAME(a), alias);
       }
     }
   }
@@ -338,7 +342,8 @@ attr_write_all(PENNFILE *f)
   const char *attrname;
   char *data;
 
-  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a;
+       a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
     if (!strcmp(attrname, AL_NAME(a)))
       attrcount++;
     else
@@ -346,20 +351,23 @@ attr_write_all(PENNFILE *f)
   }
 
   db_write_labeled_int(f, "attrcount", attrcount);
-  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a;
+       a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
     if (strcmp(attrname, AL_NAME(a)))
-      continue; /* skip aliases */
+      continue;                 /* skip aliases */
     db_write_labeled_string(f, " name", AL_NAME(a));
-    db_write_labeled_string(f, "  flags", privs_to_string(attr_privs_db, AL_FLAGS(a)));
+    db_write_labeled_string(f, "  flags",
+                            privs_to_string(attr_privs_db, AL_FLAGS(a)));
     db_write_labeled_dbref(f, "  creator", AL_CREATOR(a));
     data = atr_value(a);
     db_write_labeled_string(f, "  data", data);
   }
 
   db_write_labeled_int(f, "attraliascount", aliascount);
-  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a; a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
+  for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a;
+       a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
     if (!strcmp(attrname, AL_NAME(a)))
-      continue; /* skip non-aliases */
+      continue;                 /* skip non-aliases */
     db_write_labeled_string(f, " name", AL_NAME(a));
     db_write_labeled_string(f, "  alias", attrname);
   }
@@ -930,7 +938,7 @@ list_attribs(void)
     ptrs[++nptrs] = AL_NAME(ap);
   }
   bp = buff;
-  if (nptrs >= 0) 
+  if (nptrs >= 0)
     safe_str(ptrs[0], buff, &bp);
   for (i = 1; i < nptrs; i++) {
     safe_chr(' ', buff, &bp);

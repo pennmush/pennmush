@@ -5524,11 +5524,6 @@ msgstr "Upozorenje: @chzoneanje objekta èiji je vlasnik administrator!"
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Upozorenje: TRUST flag stavljen na objekt koji je u zoni"
 
-#: command.c:874
-#, c-format
-msgid "Warning: Switch '%s' is defined but not used."
-msgstr "Upozorenje: Switch '%s' je definiran, ali se ne koristi."
-
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
 msgstr "Upozorenje: Meta ima flag SAFE, ali svejedno æe biti uni¹tena."

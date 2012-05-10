@@ -5519,11 +5519,6 @@ msgstr "Waarschuwing: @chzone van een object van een admin!"
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Waarschuwing: Je zet de trust vlag in op een gezoned voorwerp!"
 
-#: command.c:874
-#, c-format
-msgid "Warning: Switch '%s' is defined but not used."
-msgstr "Waarschuwing: Schakeloptie '%s' is gedefinieerd maar wordt nergens gebruikt."
-
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
 msgstr "Waarschuwing: Doel is SAFE, maar zal toch binnenkort worden vernietigd."

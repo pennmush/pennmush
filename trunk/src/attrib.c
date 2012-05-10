@@ -1920,7 +1920,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
             return -1;
           case OPAE_SUCCESS:
             break;
-	  }
+          }
         }
       } else {
         /* No old alias */
@@ -2320,4 +2320,3 @@ safe_atr_value(ATTR *atr)
 {
   return safe_uncompress(atr_get_compressed_data(atr));
 }
-

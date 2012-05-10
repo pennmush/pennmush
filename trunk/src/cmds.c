@@ -109,7 +109,7 @@ COMMAND(cmd_attribute)
 
 COMMAND(cmd_sockset)
 {
-  char *retval;
+  const char *retval;
   retval = sockset(executor, arg_left, arg_right);
   notify(executor, retval);
 }
@@ -354,7 +354,8 @@ COMMAND(cmd_doing)
 {
   if (SW_ISSET(sw, SWITCH_HEADER)) {
     notify_format(Owner(executor),
-                  T("Deprecated command %s being used on object #%d. Use %s instead."),
+                  T
+                  ("Deprecated command %s being used on object #%d. Use %s instead."),
                   "@DOING/HEADER", executor, "@POLL");
 
     do_poll(executor, arg_left, 0);
@@ -419,7 +420,8 @@ COMMAND(cmd_emit)
 
   if (SW_ISSET(sw, SWITCH_ROOM)) {
     notify_format(Owner(executor),
-                  T("Deprecated command %s being used on object #%d. Use %s instead."),
+                  T
+                  ("Deprecated command %s being used on object #%d. Use %s instead."),
                   "@EMIT/ROOM", executor, "@LEMIT");
 
     do_lemit(executor, speaker, arg_left,
@@ -1000,7 +1002,8 @@ COMMAND(cmd_pemit)
 
 
   if (SW_ISSET(sw, SWITCH_CONTENTS)) {
-    do_remit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+    do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
+             queue_entry->pe_info);
     return;
   }
   if (SW_ISSET(sw, SWITCH_LIST)) {
@@ -1008,7 +1011,8 @@ COMMAND(cmd_pemit)
     if (!SW_ISSET(sw, SWITCH_NOISY))
       flags |= PEMIT_SILENT;
   }
-  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_prompt)
@@ -1019,7 +1023,8 @@ COMMAND(cmd_prompt)
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_poll)
@@ -1100,7 +1105,8 @@ COMMAND(cmd_remit)
   if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  do_remit(executor, speaker, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_rejectmotd)
@@ -1213,7 +1219,8 @@ COMMAND(cmd_slave)
     if (strcasecmp(arg_left, "info") == 0) {
       kill_info_slave();
       notify(executor, T("Restarting info_slave daemon."));
-      do_rawlog(LT_WIZ, "%s(#%d) restarted info_slave.", Name(executor), executor);
+      do_rawlog(LT_WIZ, "%s(#%d) restarted info_slave.", Name(executor),
+                executor);
       return;
     }
 #endif
@@ -1222,7 +1229,8 @@ COMMAND(cmd_slave)
       kill_ssl_slave();
       make_ssl_slave();
       notify(executor, T("Restarting ssl_slave daemon."));
-      do_rawlog(LT_WIZ, "%s(#%d) restarted ssl_slave.", Name(executor), executor);
+      do_rawlog(LT_WIZ, "%s(#%d) restarted ssl_slave.", Name(executor),
+                executor);
       return;
     }
 #endif

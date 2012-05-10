@@ -180,8 +180,7 @@ check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
              void *arg __attribute__ ((__unused__)))
 {
   if (getppid() == 1) {
-    fputerr
-      ("Parent mush process exited unexpectedly! Shutting down.");
+    fputerr("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -286,8 +285,7 @@ main(void)
       len = recv(0, &req, sizeof req, 0);
     else if (ev == (int) netmush) {
       /* Parent process exited. Exit too. */
-      fputerr
-        ("Parent mush process exited unexpectedly! Shutting down.");
+      fputerr("Parent mush process exited unexpectedly! Shutting down.");
       return EXIT_SUCCESS;
     } else if (ev < 0) {
       /* Error? */
@@ -349,7 +347,7 @@ main(void)
     } else
       strcpy(resp.hostname, resp.ipaddr);
 
-    len = send(1, &resp, sizeof resp, 0);    
+    len = send(1, &resp, sizeof resp, 0);
 
     /* Should never happen. */
     if (len != (int) sizeof resp) {
@@ -702,7 +700,7 @@ time_string(void)
   static char buffer[100];
   time_t now;
   struct tm *ltm;
-  
+
   now = time(NULL);
   ltm = localtime(&now);
   strftime(buffer, 100, "%m/%d %T", ltm);
@@ -715,7 +713,8 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err, strerror(errno));
+  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err,
+          strerror(errno));
   unlock_file(stderr);
 }
 

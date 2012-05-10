@@ -363,7 +363,8 @@ can_move(dbref player, const char *direction)
  * \return location dbref, or NOTHING
  */
 dbref
-find_var_dest(dbref player, dbref exit_obj, char *exit_name, NEW_PE_INFO *pe_info)
+find_var_dest(dbref player, dbref exit_obj, char *exit_name,
+              NEW_PE_INFO *pe_info)
 {
   char buff[BUFFER_LEN];
   PE_REGS *pe_regs = NULL;
@@ -377,8 +378,10 @@ find_var_dest(dbref player, dbref exit_obj, char *exit_name, NEW_PE_INFO *pe_inf
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  if (!(has_attr = call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
-     has_attr = call_attrib(exit_obj, "EXITTO", buff, player, pe_info, pe_regs);
+  if (!
+      (has_attr =
+       call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
+    has_attr = call_attrib(exit_obj, "EXITTO", buff, player, pe_info, pe_regs);
 
   if (pe_regs)
     pe_regs_free(pe_regs);
@@ -813,7 +816,7 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
       if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
-	  eval_lock_with(player, thing_loc, DropIn_Lock, pe_info) &&
+          eval_lock_with(player, thing_loc, DropIn_Lock, pe_info) &&
           (!IsRoom(thing_loc)
            || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;

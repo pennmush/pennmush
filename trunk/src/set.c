@@ -48,9 +48,9 @@ void do_attrib_flags(dbref player, const char *obj, const char *atrname,
 static int af_helper(dbref player, dbref thing, dbref parent,
                      char const *pattern, ATTR *atr, void *args);
 static int edit_helper(dbref player, dbref thing, dbref parent,
-                        char const *pattern, ATTR *atr, void *args);
+                       char const *pattern, ATTR *atr, void *args);
 static int regedit_helper(dbref player, dbref thing, dbref parent,
-                        char const *pattern, ATTR *atr, void *args);
+                          char const *pattern, ATTR *atr, void *args);
 static int wipe_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
@@ -796,9 +796,9 @@ struct edit_args {
 
 static int
 edit_helper(dbref player, dbref thing,
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern
-             __attribute__ ((__unused__)), ATTR *a, void *args)
+            dbref parent __attribute__ ((__unused__)),
+            char const *pattern
+            __attribute__ ((__unused__)), ATTR *a, void *args)
 {
   int ansi_long_flag = 0;
   const char *r;
@@ -1011,7 +1011,7 @@ do_edit(dbref player, char *it, char **argv, int flags)
                   args.skipped);
 }
 
-extern const unsigned char *tables; /* for do_edit_regexp */
+extern const unsigned char *tables;     /* for do_edit_regexp */
 
 
 /** Argument struct for edit_helper */
@@ -1028,9 +1028,9 @@ struct regedit_args {
 
 static int
 regedit_helper(dbref player, dbref thing,
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern
-             __attribute__ ((__unused__)), ATTR *a, void *args)
+               dbref parent __attribute__ ((__unused__)),
+               char const *pattern
+               __attribute__ ((__unused__)), ATTR *a, void *args)
 {
   char *s;
   char tbuf1[BUFFER_LEN], tbuf_ansi[BUFFER_LEN];
@@ -1073,17 +1073,20 @@ regedit_helper(dbref player, dbref thing,
   /* Do all the searches and replaces we can */
   do {
     subpatterns =
-      pcre_exec(gargs->re, gargs->extra, haystack->text, haystack->len, search, 0, offsets, 99);
+      pcre_exec(gargs->re, gargs->extra, haystack->text, haystack->len, search,
+                0, offsets, 99);
     if (subpatterns >= 0) {
       edited = 1;
       /* We have a match */
       /* Process the replacement */
       r = gargs->to;
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context_ansi(pe_regs, gargs->re, offsets, subpatterns, haystack);
+      pe_regs_set_rx_context_ansi(pe_regs, gargs->re, offsets, subpatterns,
+                                  haystack);
       tbp = tbuf;
       if (process_expression(tbuf, &tbp, &r, player, player, player,
-                             PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, gargs->pe_info)) {
+                             PE_DEFAULT | PE_DOLLAR, PT_DEFAULT,
+                             gargs->pe_info)) {
         gargs->call_limit_hit = 1;
         break;
       }
@@ -1102,14 +1105,14 @@ regedit_helper(dbref player, dbref thing,
             safe_str(ANSI_END, tbuf1, &tbufp);
             *tbufp = '\0';
             hilite = parse_ansi_string(tbuf1);
-            if (ansi_string_replace(display_str, offsets[0], offsets[1] - offsets[0],
-                                hilite)) {
+            if (ansi_string_replace
+                (display_str, offsets[0], offsets[1] - offsets[0], hilite)) {
               ansi_long_flag = 1;
             }
             free_ansi_string(hilite);
           } else {
-            if (ansi_string_replace(display_str, offsets[0], offsets[1] - offsets[0],
-                                repl)) {
+            if (ansi_string_replace
+                (display_str, offsets[0], offsets[1] - offsets[0], repl)) {
               ansi_long_flag = 1;
             }
           }
@@ -1130,7 +1133,8 @@ regedit_helper(dbref player, dbref thing,
         break;
       }
     }
-  } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST) && !gargs->call_limit_hit);
+  } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST)
+           && !gargs->call_limit_hit);
 
   if (gargs->call_limit_hit) {
     /* Bail out */
@@ -1158,7 +1162,9 @@ regedit_helper(dbref player, dbref thing,
     *tbufp = '\0';
     tbufp = tbuf1;
     tbufap = tbuf_ansi;
-    if (!ansi_long_flag && !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi, &tbufap)) {
+    if (!ansi_long_flag
+        && !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi,
+                             &tbufap)) {
       *tbufap = '\0';
       tbufp = tbuf_ansi;
     }
@@ -1194,7 +1200,8 @@ regedit_helper(dbref player, dbref thing,
  */
 
 void
-do_edit_regexp(dbref player, char *it, char **argv, int flags, NEW_PE_INFO *pe_info)
+do_edit_regexp(dbref player, char *it, char **argv, int flags,
+               NEW_PE_INFO *pe_info)
 {
   dbref thing;
   char tbuf1[BUFFER_LEN];

@@ -15,7 +15,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 1                                 ??? ??, 2012
+Version 1.8.5 patchlevel 1                                 May 15, 2012
 
 Hardcode:
  * The local_data_clone() function now receives an additional argument,

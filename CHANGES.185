@@ -132,6 +132,8 @@ Fixes:
    object names incorrectly went to the object being spoofed, not the object
    doing the spoofing. [MG]
  * @lemit incorrectly ignored an = and anything after it in its arg. [MG]
+ * wrap(%0,strlen(%0)) would incorrectly wrap the string onto two lines. 
+   Reported by Padraic. [MG]
 
 Commands:
  * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
@@ -162,6 +164,8 @@ Functions:
    to use %+ or registers() to differentiate empty and missing args. [MG]
  * e() and exp() are now the same function internally, with e(), exp() and
    exp(1) all being equivilent. Suggested by Ari. [MG]
+ * When wrap() hyphenates a word, the hyphen will now share the ANSI of the
+   first character of the newline. [MG]
    
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

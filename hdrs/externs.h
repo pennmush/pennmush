@@ -805,6 +805,9 @@ replace_string2(const char *old[2], const char *newbits[2],
 
     int delim_check(char *buff, char **bp, int nfargs, char **fargs,
                     int sep_arg, char *sep);
+    bool int_check(char *buff, char **bp, int nfargs, char *fargs[],
+              int check_arg, int *result, int def);
+
     int get_gender(dbref player);
     const char *do_get_attrib(dbref executor, dbref thing, const char *aname);
 

@@ -79,8 +79,8 @@ restore_env(const char *funcname __attribute__ ((__unused__)),
  * if it could be used as a delimiter. A delimiter must be a single
  * character. If the argument isn't present or is null, we return
  * the default delimiter, a space.
- * \param buff unused.
- * \param bp unused.
+ * \param buff buffer to write error message to.
+ * \param bp pointer into buff at which to write error.
  * \param nfargs number of arguments to the function.
  * \param fargs array of function arguments.
  * \param sep_arg index of the argument to check for a delimiter.
@@ -107,6 +107,38 @@ delim_check(char *buff, char **bp, int nfargs, char *fargs[], int sep_arg,
 
   return 1;
 }
+
+/** Check if a function argument is an integer.
+ * If the arg is not given, assign a default value.
+ * \param buff buffer to write error message to.
+ * \param bp pointer into buff at which to write error.
+ * \param nfargs number of arguments to the function.
+ * \param fargs array of function arguments.
+ * \param check_arg index of the argument to check for a delimiter.
+ * \param result pointer to separator character, used to return separator.
+ * \param def default to use if arg is not given
+ * \retval 0 illegal separator argument.
+ * \retval 1 successfully returned a separator (maybe the default one).
+ */
+bool
+int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
+          int *result, int def)
+{
+
+  if (nfargs >= check_arg) {
+    if (!*fargs[check_arg - 1] && !NULL_EQ_ZERO)
+      *result = def;
+    else if (!is_integer(fargs[check_arg - 1])) {
+      safe_str(T(e_int), buff, bp);
+      return 0;
+    } else
+      *result = parse_integer(fargs[check_arg - 1]);
+  } else
+    *result = def;
+
+  return 1;
+}
+
 
 /* --------------------------------------------------------------------------
  * The actual function handlers

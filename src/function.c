@@ -128,7 +128,7 @@ int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
   if (nfargs >= check_arg) {
     if (!*fargs[check_arg - 1] && !NULL_EQ_ZERO)
       *result = def;
-    else if (!is_integer(fargs[check_arg - 1])) {
+    else if (!is_strict_integer(fargs[check_arg - 1])) {
       safe_str(T(e_int), buff, bp);
       return 0;
     } else

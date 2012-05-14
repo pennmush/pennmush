@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-10 02:00-0500\n"
+"POT-Creation-Date: 2012-05-12 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -358,8 +358,8 @@ msgstr ""
 #: create.c:249 create.c:315 create.c:324 create.c:328 create.c:380
 #: create.c:384 create.c:402 create.c:662 destroy.c:242 destroy.c:929
 #: extchat.c:1802 extchat.c:1819 extchat.c:1852 extchat.c:4052 flags.c:1907
-#: flags.c:1913 flags.c:2071 function.c:925 function.c:1161 function.c:1388
-#: function.c:1533 function.c:1579 function.c:1634 funmisc.c:1255 game.c:967
+#: flags.c:1913 flags.c:2071 function.c:957 function.c:1193 function.c:1420
+#: function.c:1565 function.c:1611 function.c:1666 funmisc.c:1255 game.c:967
 #: game.c:1571 lock.c:738 lock.c:802 lock.c:990 look.c:1536 malias.c:764
 #: malias.c:869 match.c:472 move.c:577 move.c:922 move.c:940 predicat.c:1323
 #: rob.c:464 set.c:223 set.c:1307 set.c:1393 set.c:1430 set.c:1447 set.c:1532
@@ -870,7 +870,7 @@ msgstr ""
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:4792 bsd.c:4801 bsd.c:5313 bsd.c:5322 cmds.c:541 funstr.c:2279
+#: bsd.c:4792 bsd.c:4801 bsd.c:5313 bsd.c:5322 cmds.c:541 funstr.c:2263
 #: wiz.c:1625
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
@@ -1356,11 +1356,11 @@ msgstr ""
 msgid "That option cannot be altered."
 msgstr ""
 
-#: conf.c:1894 function.c:1654
+#: conf.c:1894 function.c:1686
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1896 function.c:1651
+#: conf.c:1896 function.c:1683
 msgid "Enabled."
 msgstr ""
 
@@ -2663,7 +2663,7 @@ msgstr ""
 msgid "I can't tell which channel you mean."
 msgstr ""
 
-#: extchat.c:3009 funcrypt.c:357 function.c:754
+#: extchat.c:3009 funcrypt.c:357 function.c:786
 msgid "#-1 INVALID ARGUMENT"
 msgstr ""
 
@@ -3618,166 +3618,166 @@ msgstr ""
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr ""
 
-#: function.c:725
+#: function.c:757
 #, c-format
 msgid "Functions: %s"
 msgstr ""
 
-#: function.c:930 function.c:971
+#: function.c:962 function.c:1003
 msgid "There's already a function with that name."
 msgstr ""
 
-#: function.c:935 function.c:977 function.c:1398
+#: function.c:967 function.c:1009 function.c:1430
 msgid "Invalid function name."
 msgstr ""
 
-#: function.c:941 function.c:1545
+#: function.c:973 function.c:1577
 msgid "That's not a builtin function."
 msgstr ""
 
-#: function.c:950
+#: function.c:982
 msgid "Function cloned."
 msgstr ""
 
-#: function.c:985 function.c:1174 function.c:1584 function.c:1640
-#: function.c:1673
+#: function.c:1017 function.c:1206 function.c:1616 function.c:1672
+#: function.c:1705
 msgid "No such function."
 msgstr ""
 
-#: function.c:992
+#: function.c:1024
 msgid "You cannot alias @functions."
 msgstr ""
 
-#: function.c:997
+#: function.c:1029
 msgid "You cannot alias cloned functions."
 msgstr ""
 
-#: function.c:1004
+#: function.c:1036
 msgid "Alias added."
 msgstr ""
 
-#: function.c:1165
+#: function.c:1197
 msgid "Restrict what function?"
 msgstr ""
 
-#: function.c:1169
+#: function.c:1201
 msgid "Do what with the function?"
 msgstr ""
 
-#: function.c:1180
+#: function.c:1212
 msgid "Builtin function"
 msgstr ""
 
-#: function.c:1185
+#: function.c:1217
 msgid "Restrictions unchanged."
 msgstr ""
 
-#: function.c:1187
+#: function.c:1219
 msgid "Restrictions modified."
 msgstr ""
 
-#: function.c:1334
+#: function.c:1366
 msgid "No global user-defined functions exist."
 msgstr ""
 
-#: function.c:1345
+#: function.c:1377
 msgid "Function Name                   Dbref #    Attrib"
 msgstr ""
 
-#: function.c:1363
+#: function.c:1395
 msgid "User functions:"
 msgstr ""
 
-#: function.c:1392
+#: function.c:1424
 msgid "You must specify an object and an attribute."
 msgstr ""
 
-#: function.c:1409
+#: function.c:1441
 msgid "No permission to control object."
 msgstr ""
 
-#: function.c:1413
+#: function.c:1445
 msgid "No permission to examine object."
 msgstr ""
 
-#: function.c:1427
+#: function.c:1459
 msgid "Expected between 1 and 5 arguments."
 msgstr ""
 
-#: function.c:1463
+#: function.c:1495
 msgid "Function added."
 msgstr ""
 
-#: function.c:1468
+#: function.c:1500
 msgid "You cannot change that built-in function."
 msgstr ""
 
-#: function.c:1501
+#: function.c:1533
 msgid "Function updated."
 msgstr ""
 
-#: function.c:1538
+#: function.c:1570
 msgid "Restore what?"
 msgstr ""
 
-#: function.c:1550
+#: function.c:1582
 msgid "That function isn't deleted!"
 msgstr ""
 
-#: function.c:1555
+#: function.c:1587
 msgid "Restored."
 msgstr ""
 
-#: function.c:1591
+#: function.c:1623
 msgid "Function alias deleted."
 msgstr ""
 
-#: function.c:1599
+#: function.c:1631
 msgid "Function clone deleted."
 msgstr ""
 
-#: function.c:1603 function.c:1612
+#: function.c:1635 function.c:1644
 msgid "You can't delete that @function."
 msgstr ""
 
-#: function.c:1607 function.c:1617
+#: function.c:1639 function.c:1649
 msgid "Function deleted."
 msgstr ""
 
-#: function.c:1645
+#: function.c:1677
 msgid "You can't disable aliases."
-msgstr ""
-
-#: function.c:1707
-#, c-format
-msgid "Name      : %s() (%s%s)"
-msgstr ""
-
-#: function.c:1721
-#, c-format
-msgid "Flags     : %s"
-msgstr ""
-
-#: function.c:1725
-#, c-format
-msgid "Location  : #%d/%s\n"
-msgstr ""
-
-#: function.c:1733
-msgid "(Commas okay in last argument)"
 msgstr ""
 
 #: function.c:1739
 #, c-format
+msgid "Name      : %s() (%s%s)"
+msgstr ""
+
+#: function.c:1753
+#, c-format
+msgid "Flags     : %s"
+msgstr ""
+
+#: function.c:1757
+#, c-format
+msgid "Location  : #%d/%s\n"
+msgstr ""
+
+#: function.c:1765
+msgid "(Commas okay in last argument)"
+msgstr ""
+
+#: function.c:1771
+#, c-format
 msgid "Arguments : %d %s"
 msgstr ""
 
-#: function.c:1741
+#: function.c:1773
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr ""
 
-#: function.c:1744
+#: function.c:1776
 #, c-format
 msgid "Arguments : %d to %d %s"
 msgstr ""
@@ -4123,35 +4123,35 @@ msgstr ""
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr ""
 
-#: funstr.c:1580
+#: funstr.c:1564
 msgid "#-1 WIDTH TOO SMALL"
 msgstr ""
 
-#: funstr.c:1894 funstr.c:1921
+#: funstr.c:1878 funstr.c:1905
 msgid "#-1 INVALID ALIGN STRING"
 msgstr ""
 
-#: funstr.c:1938
+#: funstr.c:1922
 msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
 msgstr ""
 
-#: funstr.c:1942 funstr.c:1948
+#: funstr.c:1926 funstr.c:1932
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
 msgstr ""
 
-#: funstr.c:1953
+#: funstr.c:1937
 msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1957
+#: funstr.c:1941
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1963 funstr.c:1998
+#: funstr.c:1947 funstr.c:1982
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
 msgstr ""
 
-#: funstr.c:1968 funstr.c:2003
+#: funstr.c:1952 funstr.c:1987
 msgid "#-1 FILLER MUST BE ONE CHARACTER"
 msgstr ""
 

@@ -1488,6 +1488,11 @@ msgstr "Koju poruku im ¾eli¹ poslati s @message?"
 msgid "@message who?"
 msgstr "Kome ¾eli¹ poslati @message?"
 
+#: bsd.c:3366
+#, c-format
+msgid "@sockset option '%s' is not a valid option."
+msgstr "@sockset opcija '%s' nije ispravna opcija."
+
 #: warnings.c:311
 msgid "@warnings cleared."
 msgstr "@warninzi obrisani."
@@ -2798,6 +2803,14 @@ msgstr "Gosti ne mogu modificirati kanale."
 #: cque.c:830 cque.c:934 cque.c:937
 msgid "Halted"
 msgstr "Zaustavljeno"
+
+#: bsd.c:3346 bsd.c:3350
+msgid "Height expects a positive integer."
+msgstr "Visina mora biti pozitivan cijeli broj."
+
+#: bsd.c:3353
+msgid "Height set."
+msgstr "Visina postavljena."
 
 #: help.c:122 help.c:126
 msgid "Help files reindexed."
@@ -4151,6 +4164,22 @@ msgstr "Prazni aliasi nisu ispravni."
 msgid "Number out of range."
 msgstr "Broj izvan raspona."
 
+#: bsd.c:3288
+msgid "OUTPUTPREFIX cleared."
+msgstr "OUTPUTPREFIX obrisan."
+
+#: bsd.c:3286
+msgid "OUTPUTPREFIX set."
+msgstr "OUTPUTPREFIX postavljen."
+
+#: bsd.c:3298
+msgid "OUTPUTSUFFIX cleared."
+msgstr "OUTPUTSUFFIX obrisan."
+
+#: bsd.c:3296
+msgid "OUTPUTSUFFIX set."
+msgstr "OUTPUTSUFFIX postavljen."
+
 #: src/cque.c:795
 msgid "Object Queue:"
 msgstr "Queue objekata:"
@@ -4418,6 +4447,14 @@ msgstr "Moæi: %s"
 msgid "Programs don't kill people; people kill people!"
 msgstr "Programi ne ubijaju ljude; ljudi ubijaju ljude!"
 
+#: bsd.c:3317
+msgid "Pueblo flag cleared."
+msgstr "Pueblo flag obrisan."
+
+#: bsd.c:3314
+msgid "Pueblo flag set."
+msgstr "Pueblo flag postavljen."
+
 #: src/destroy.c:924
 msgid "Purge complete."
 msgstr "Èi¹æenje gotovo."
@@ -4602,6 +4639,10 @@ msgstr "Posl"
 msgid "Separator must be one character."
 msgstr "Separator mora biti jedan znak."
 
+#: bsd.c:3280
+msgid "Set what option?"
+msgstr "Koju opciju ¾eli¹ postaviti?"
+
 #: attrib.c:942
 msgid "Set"
 msgstr "Postavljeno"
@@ -4755,6 +4796,18 @@ msgstr "Teleportirano."
 #: src/wiz.c:503
 msgid "Teleports are not allowed in this room."
 msgstr "Teleportiranje nije dozvoljeno u ovoj sobi."
+
+#: bsd.c:3328
+msgid "Telnet flag cleared."
+msgstr "Telnet flag obrisan."
+
+#: bsd.c:3325
+msgid "Telnet flag set."
+msgstr "Telnet flag postavljen."
+
+#: bsd.c:3363
+msgid "Terminal Type set."
+msgstr "Tip terminala postavljen."
 
 #: flags.c:2218
 #, c-format
@@ -5692,6 +5745,14 @@ msgstr "Za¹to ¾eli¹ primati upozorenja o otpadu?"
 msgid "Why would you want to lock garbage?"
 msgstr "Za¹to ¾eli¹ zakljuèati otpad?"
 
+#: bsd.c:3334 bsd.c:3338
+msgid "Width expects a positive integer."
+msgstr "©irina mora biti pozitivan cijeli broj."
+
+#: bsd.c:3341
+msgid "Width set."
+msgstr "©irina postavljena."
+
 #: src/bsd.c:4279
 #, c-format
 msgid "Wiz MOTD: %s"
@@ -5740,6 +5801,10 @@ msgstr "Slijedi¹ korisnika: %s"
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
 msgstr "Nije ti dozvoljeno da bude¹ vlastiti predak!"
+
+#: bsd.c:3277
+msgid "You are not connected?"
+msgstr "Nema¹ vezu s MUSHem?"
 
 #: extchat.c:1430
 msgid "You are not on any channels."

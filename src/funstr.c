@@ -2248,7 +2248,7 @@ FUNCTION(fun_render)
       continue;
     if (string_prefix("ansi", word)) {
       if (Can_Nspemit(executor)) {
-        flags |= MSG_ANSI;
+        flags |= MSG_XTERM256;
       } else {
         safe_str(T(e_perm), buff, bp);
         return;

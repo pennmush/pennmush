@@ -110,7 +110,7 @@ COMMAND(cmd_attribute)
 COMMAND(cmd_sockset)
 {
   const char *retval;
-  retval = sockset(executor, arg_left, arg_right);
+  retval = (char *) sockset(executor, arg_left, arg_right);
   notify(executor, retval);
 }
 

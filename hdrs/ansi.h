@@ -93,19 +93,28 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
+/* Maximum length of a color name. */
+#define COLOR_NAME_LEN 20
 /** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;     /**< highlight/flash/invert/underline which are explicitly on */
-  uint8_t offbits;  /**< highlight/flash/invert/underline which are explicitly off */
-  char fore;        /**< Foreground color */
-  char back;        /**< Background color */
+  uint8_t  bits;
+  uint8_t  offbits;
+  char fg[COLOR_NAME_LEN];
+  char bg[COLOR_NAME_LEN];
 } ansi_data;
 
-#define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
+#define NULL_ANSI {0, 0, "", ""}
+#define HAS_ANSI(adata) (adata.bits || adata.offbits || (adata.fg[0]) || (adata.bg[0]))
 int read_raw_ansi_data(ansi_data *store, const char *codes);
-int write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp);
+int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp);
 
-void define_ansi_data(ansi_data *store, const char *str);
+#define ANSI_FORMAT_NONE         0
+#define ANSI_FORMAT_HILITE       1
+#define ANSI_FORMAT_16COLOR      2
+#define ANSI_FORMAT_XTERM256     3
+#define ANSI_FORMAT_HTML         4
+
+int define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);
 int write_ansi_close(char *buff, char **bp);
 

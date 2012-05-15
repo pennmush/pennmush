@@ -565,10 +565,26 @@ See also: orflags(), flags(), lflags()
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
-  ansi(<codes>, <string>)
+  ansi(<colors>, <string>)
  
-  This allows you to highlight a string using ANSI terminal effects.
-  Valid <codes> are:
+  This allows you to mark up a string using ANSI terminal effects, 16-color
+  codes, and color names and hex values.
+
+  <colors> can be:
+  * Old-style color codes (check "help ansi2")
+  * +colorname
+  * #hexcode
+  * /<background> or !<background> - where <background> is either a
+    +colorname or #hexcode
+
+  For example, "ansi(+orange/#00ff00,Test)" would color "Test" in orange,
+  on a blue background. In the event that your client does not support
+  those colors, PennMUSH will downgrade the color to the closest fit
+  that your client can understand.
+ 
+See also: ANSI, COLOR, @sockset, colorstyle, colors()
+& ANSI2
+  Old-style valid color codes are:
  
         f - flash                       F - not flash
         h - hilite                      H - not hilite
@@ -589,8 +605,7 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan.
   Default foreground and background use the client's default color for
   fore and back.
- 
-See also: ANSI, COLOR 
+
 & APOSS()
 & %a
   aposs(<object>)
@@ -883,6 +898,13 @@ See also: Connection Functions
   but yourself.
 
 See also: Connection Functions
+& COLORS()
+  colors()
+
+  colors() returns a space-separated list of colors that PennMUSH knows
+  the name of. You can use these colors in ansi(+<colorname>,text)
+
+See also: ansi(), colorstyle
 & COMP()
   comp(<value1>, <value2>[, <type>])
 

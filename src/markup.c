@@ -25,6 +25,7 @@
 #include "log.h"
 #include "game.h"
 #include "confmagic.h"
+#include "rgb.h"
 
 #define ANSI_BEGIN   "\x1B["
 #define ANSI_FINISH  "m"
@@ -61,7 +62,7 @@ static int escape_marked_str(char **str, char *buff, char **bp);
 
 const char *is_allowed_tag(const char *s, unsigned int len);
 
-static const ansi_data ansi_null = { 0, 0, 0, 0 };
+static ansi_data ansi_null = NULL_ANSI;
 
 /* ARGSUSED */
 FUNCTION(fun_stripansi)
@@ -105,10 +106,12 @@ FUNCTION(fun_ansi)
     return;
 
   /* Populate the colors struct */
-  define_ansi_data(&colors, args[0]);
+  if (define_ansi_data(&colors, args[0])) {
+    safe_format(buff, bp, T("#-1 INVALID ANSI DEFINITION: %s"), args[0]);
+  }
 
   /* If there are no colors designated at all, then just return args[1]. */
-  if (!(colors.bits || colors.offbits || colors.fore || colors.back)) {
+  if (!HAS_ANSI(colors)) {
     safe_strl(args[1], arglens[1], buff, bp);
     return;
   }
@@ -132,6 +135,17 @@ FUNCTION(fun_ansi)
       *bp = buff + BUFFER_LEN - 6;
       safe_str(ANSI_ENDALL, buff, bp);
     }
+  }
+}
+
+FUNCTION(fun_colors)
+{
+  int i;
+  for (i = 0; allColors[i].name; i++) {
+    if (i > 0) {
+      safe_chr(' ', buff, bp);
+    }
+    safe_str(allColors[i].name, buff, bp);
   }
 }
 
@@ -282,10 +296,10 @@ ansi_strcmp(const char *astr, const char *bstr)
  * \return int - 1 is identical, 0 is different
  */
 int
-ansi_equal(const ansi_data a, const ansi_data b)
+ansi_equal(const ansi_data *a, const ansi_data *b)
 {
-  return ((a.bits == b.bits) && (a.offbits == b.offbits) &&
-          (a.fore == b.fore) && (a.back == b.back));
+  return ((a->bits == b->bits) && (a->offbits == b->offbits) &&
+          (!strcasecmp(a->fg, b->fg)) && (!strcasecmp(a->bg, b->bg)));
 }
 
 /** Return true if ansi_data contains no ansi values.
@@ -295,7 +309,7 @@ ansi_equal(const ansi_data a, const ansi_data b)
 int
 ansi_isnull(const ansi_data a)
 {
-  return ((a.bits == 0) && (a.offbits == 0) && (a.fore == 0) && (a.back == 0));
+  return !HAS_ANSI(a);
 }
 
 /** Strip all ANSI and HTML markup from a string. As a side effect,
@@ -421,34 +435,44 @@ write_ansi_letters(const ansi_data *cur, char *buff, char **bp)
   int retval = 0;
   char *save;
   save = *bp;
-  if (cur->fore == 'n') {
-    retval += safe_chr(cur->fore, buff, bp);
+  if (cur->fg[0] == 'n') {
+    retval += safe_chr('n', buff, bp);
   } else {
-#define CBIT_SET(x,y) (x->bits & y)
-    if (CBIT_SET(cur, CBIT_FLASH))
+#define CBIT_ON(x,y) (x->bits & y)
+    if (CBIT_ON(cur, CBIT_FLASH))
       retval += safe_chr('f', buff, bp);
-    if (CBIT_SET(cur, CBIT_HILITE))
+    if (CBIT_ON(cur, CBIT_HILITE))
       retval += safe_chr('h', buff, bp);
-    if (CBIT_SET(cur, CBIT_INVERT))
+    if (CBIT_ON(cur, CBIT_INVERT))
       retval += safe_chr('i', buff, bp);
-    if (CBIT_SET(cur, CBIT_UNDERSCORE))
+    if (CBIT_ON(cur, CBIT_UNDERSCORE))
       retval += safe_chr('u', buff, bp);
-#undef CBIT_SET
-#define CBIT_SET(x,y) (x->offbits & y)
-    if (CBIT_SET(cur, CBIT_FLASH))
+#undef CBIT_ON
+#define CBIT_OFF(x,y) (x->offbits & y)
+    if (CBIT_OFF(cur, CBIT_FLASH))
       retval += safe_chr('F', buff, bp);
-    if (CBIT_SET(cur, CBIT_HILITE))
+    if (CBIT_OFF(cur, CBIT_HILITE))
       retval += safe_chr('H', buff, bp);
-    if (CBIT_SET(cur, CBIT_INVERT))
+    if (CBIT_OFF(cur, CBIT_INVERT))
       retval += safe_chr('I', buff, bp);
-    if (CBIT_SET(cur, CBIT_UNDERSCORE))
+    if (CBIT_OFF(cur, CBIT_UNDERSCORE))
       retval += safe_chr('U', buff, bp);
-#undef CBIT_SET
+#undef CBIT_OFF
 
-    if (cur->fore)
-      retval += safe_chr(cur->fore, buff, bp);
-    if (cur->back)
-      retval += safe_chr(cur->back, buff, bp);
+    if (cur->bg[0] && cur->bg[0] != '+' && cur->bg[0] != '#') {
+      retval += safe_chr(cur->bg[0], buff, bp);
+    }
+    if (cur->fg[0]) {
+      if (cur->fg[0] == '+' || cur->fg[0] == '#') {
+        retval += safe_str(cur->fg, buff, bp);
+      } else {
+        retval += safe_chr(cur->fg[0], buff, bp);
+      }
+    }
+    if (cur->bg[0] == '+' || cur->bg[0] == '#') {
+      retval += safe_chr('!', buff, bp);
+      retval += safe_str(cur->bg, buff, bp);
+    }
   }
 
   if (retval)
@@ -456,68 +480,172 @@ write_ansi_letters(const ansi_data *cur, char *buff, char **bp)
   return retval;
 }
 
-
 void
 nest_ansi_data(ansi_data *old, ansi_data *cur)
 {
-  if (cur->fore != 'n') {
+  if (cur->fg[0] != 'n') {
     cur->bits |= old->bits;
     cur->bits &= ~cur->offbits;
-    if (!cur->fore)
-      cur->fore = old->fore;
-    if (!cur->back)
-      cur->back = old->back;
+    if (!cur->fg[0]) {
+      memcpy(cur->fg, old->fg, COLOR_NAME_LEN);
+    }
+    if (!cur->bg[0]) {
+      memcpy(cur->bg, old->bg, COLOR_NAME_LEN);
+    }
   } else {
     cur->bits = 0;
     cur->offbits = 0;
-    cur->back = 0;
+    cur->bg[0] = '\0';
   }
 }
 
-/* We need EDGE_UP to return 1 if x has bit set and y doesn't. */
-#define EDGE_UP(x,y,z) (((x).bits & (z)) != ((y)->bits & (z)))
 int
-write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp)
-{
-  int f = 0;
-  ansi_data past = *old;
-  ansi_data pres = *cur;
-  /* This shouldn't happen */
-  if (pres.fore == 'n') {
-    if (past.bits || (past.fore != 'n') || past.back) {
-      return safe_str(ANSI_RAW_NORMAL, buff, bp);
+color_to_hex(char *name, int hilite) {
+  int i = 0;
+  char *p, *q;
+  char n;
+
+  /* This should've been checked before it ever got here. */
+  if (!name || !name[0]) {
+    return 0;
+  }
+
+  if (name[0] == '#') {
+    return strtol(name + 1, NULL, 16);
+  }
+  if (name[0] == '+') {
+    name++;
+    /* Downcase and remove all spaces. */
+    for (p = q = name; *q; q++) {
+      if (isspace((unsigned char) *q)) continue;
+      *(p++) = tolower((unsigned char) *q);
+    }
+    *(p) = '\0';
+    for (i = 0; allColors[i].name; i++) {
+      if (!strcmp(name,allColors[i].name)) {
+        return allColors[i].hex;
+      }
+    }
+    /* It's an invalid color. Return hot pink since we shouldn't have gotten here? */
+    return 0xff69b4;
+  }
+  /* We only get here if it's old-style ansi. */
+  if (name[1]) {
+    /* Invalid character code! */
+    return 0xff69b4;
+  }
+  n = tolower((unsigned char) name[0]);
+  if (hilite) {
+    for (i = 8; i < 16; i++) {
+      if (colormap_16[i].desc == n) {
+        return colormap_16[i].hex;
+      }
+    }
+  } else {
+    for (i = 0; i < 8; i++) {
+      if (colormap_16[i].desc == n) {
+        return colormap_16[i].hex;
+      }
     }
   }
-  if (pres.fore == 'd')
-    pres.fore = 0;
-  if (pres.back == 'D')
-    pres.back = 0;
 
-  /* Do we *unset* anything in cur? */
-  if ((past.bits & ~(pres.bits)) ||
-      (past.fore && !pres.fore) || (past.back && !pres.back)) {
-    safe_str(ANSI_RAW_NORMAL, buff, bp);
-    past = ansi_null;
+  /* It's an invalid color. Return hot pink since we shouldn't have gotten here? */
+  return 0xff69b4;
+}
+
+/* Color differences is the square of the individual color differences. */
+#define color_diff(a,b) (((a)-(b))*((a)-(b)))
+
+#define hex_difference(a,b) \
+  (color_diff(a&0xFF,b&0xFF) + color_diff((a>>8)&0xFF,(b>>8)&0xFF) + \
+  color_diff((a>>16)&0xFF,(b>>16)&0xFF))
+
+#define ANSI_FG 0
+#define ANSI_BG 1
+int
+ansi_map_16(char *name, int bg) {
+  int hex;
+  int diff, cdiff;
+  int best = 0;
+  int i;
+  int max;
+  /* Shortcut: If it's a single character color code, it's using the 16 color map. */
+  if (name[0] && !name[1]) {
+    return ansi_codes[(unsigned char) name[0]];
   }
+  /* Otherwise it's a name. Map it to hex. */
+  hex = color_to_hex(name, 0);
 
-  if (past.fore == pres.fore && past.back == pres.back &&
-      past.bits == pres.bits)
-    return 0;
+  diff = 0x0FFFFFFF;
+  /* Now find the closest 16 color match. */
+  best = 0;
 
-  if (!(pres.fore || pres.back || pres.bits)) {
-    if (past.fore != 'n')
-      return safe_str(ANSI_RAW_NORMAL, buff, bp);
-    return 0;
+  /* TODO: Figure out a way to use hilite to improve color map? Then can
+   * use max=16 for foreground (but not background) */
+  max = 8;
+  for (i = 0; i < max; i++) {
+    cdiff = hex_difference(colormap_16[i].hex, hex);
+    if (cdiff < diff) {
+      best = i;
+      diff = cdiff;
+    }
   }
+  /* */
+  if (bg) {
+    return colormap_16[best].id + 40;
+  } else {
+    return colormap_16[best].id + 30;
+  }
+}
 
-  safe_str(ANSI_BEGIN, buff, bp);
+int
+ansi_map_256(int hex) {
+  int diff, cdiff;
+  int best = 0;
+  int i;
+
+  diff = 0x0FFFFFFF;
+  /* Now find the closest 16 color match. */
+  best = 0;
+
+  /* TODO: Figure out a way to use hilite to improve color map? Then can
+   * use max=16 for foreground (but not background) */
+  for (i = 0; xterm_colormap[i].id >= 0; i++) {
+    cdiff = hex_difference(xterm_colormap[i].hex, hex);
+    if (cdiff < diff) {
+      best = i;
+      diff = cdiff;
+    }
+  }
+  return xterm_colormap[best].id;
+}
+
+typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp);
+#define ANSI_WRITER(name) \
+  int name(ansi_data *old __attribute__ ((__unused__)), \
+           ansi_data *cur __attribute__ ((__unused__)), \
+           int ansi_format __attribute__ ((__unused__)), \
+           char *buff __attribute__ ((__unused__)), \
+           char **bp __attribute__ ((__unused__)))
+
+/* We need EDGE_UP to return 1 if x has bit set and y doesn't. */
+#define EDGE_UP(x,y,z) (((x)->bits & (z)) != ((y)->bits & (z)))
+
+ANSI_WRITER(ansi_reset) {
+  return safe_str(ANSI_RAW_NORMAL, buff, bp);
+}
+
+ANSI_WRITER(ansi_16color) {
+  int ret = 0;
+  int f = 0;
+  ret += safe_str(ANSI_BEGIN, buff, bp);
 
 #define maybe_append_code(code) \
   do { \
-    if (EDGE_UP(past, cur, CBIT_ ## code)) {	\
+    if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
       if (f++)				  \
-	safe_chr(';', buff, bp);	  \
-      safe_integer(COL_ ## code, buff, bp); \
+	ret += safe_chr(';', buff, bp);	  \
+      ret += safe_integer(COL_ ## code, buff, bp); \
     } \
   } while (0)
 
@@ -528,26 +656,201 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp)
 
 #undef maybe_append_code
 
-  if (pres.fore && pres.fore != past.fore) {
+  if (cur->fg[0] && strcmp(cur->fg, old->fg)) {
     if (f++)
-      safe_chr(';', buff, bp);
-    safe_integer(ansi_codes[(unsigned char) pres.fore], buff, bp);
+      ret += safe_chr(';', buff, bp);
+    ret += safe_integer(ansi_map_16(cur->fg, ANSI_FG), buff, bp);
   }
-  if (pres.back && pres.back != past.back) {
+  if (cur->bg[0] && strcmp(cur->bg, old->bg)) {
     if (f)
-      safe_chr(';', buff, bp);
-    safe_integer(ansi_codes[(unsigned char) pres.back], buff, bp);
+      ret += safe_chr(';', buff, bp);
+    ret += safe_integer(ansi_map_16(cur->bg, ANSI_BG), buff, bp);
   }
 
-  return safe_str(ANSI_FINISH, buff, bp);
+  return ret + safe_str(ANSI_FINISH, buff, bp);
 }
 
-#undef EDGE_UP
+ANSI_WRITER(ansi_hilite) {
+  int ret = 0;
+  if (!EDGE_UP(old, cur, CBIT_HILITE)) {
+    return 0;
+  }
+  ret += safe_str(ANSI_BEGIN, buff, bp);
+  ret += safe_integer(COL_HILITE, buff, bp); \
+  return ret + safe_str(ANSI_FINISH, buff, bp);
+}
 
-void
+#define is_new_ansi(x) (strchr(x,'+') || strchr(x,'#') || strchr(x,'/'))
+
+ANSI_WRITER(ansi_xterm256) {
+  int hilite = EDGE_UP(old, cur, CBIT_HILITE);
+  int hex;
+  int ret = 0;
+  int f = 0;
+
+  /* If it's old-style ansi, then use ansi_16color */
+  if (!(is_new_ansi(cur->fg) || is_new_ansi(cur->bg))) {
+    return ansi_16color(old, cur, ansi_format, buff, bp);
+  }
+
+#define maybe_append_code(code) \
+  do { \
+    if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
+      if (f++) {			  \
+	ret += safe_chr(';', buff, bp);	  \
+      } else { \
+        ret += safe_str(ANSI_BEGIN, buff, bp); \
+      } \
+      ret += safe_integer(COL_ ## code, buff, bp); \
+    } \
+  } while (0)
+
+  maybe_append_code(HILITE);
+  maybe_append_code(INVERT);
+  maybe_append_code(FLASH);
+  maybe_append_code(UNDERSCORE);
+
+#undef maybe_append_code
+
+  /* 256 color should be separate from the bits set. */
+  if (f) {
+    ret += safe_str(ANSI_FINISH, buff, bp);
+  }
+
+  if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
+    hex = color_to_hex(cur->fg, hilite);
+    ret += safe_format(buff, bp, "%s38;5;%d%s",
+                       ANSI_BEGIN, ansi_map_256(hex), ANSI_FINISH);
+  }
+
+  if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
+    hex = color_to_hex(cur->bg, hilite);
+    ret += safe_format(buff, bp, "%s48;5;%d%s",
+                       ANSI_BEGIN, ansi_map_256(hex), ANSI_FINISH);
+  }
+  return ret;
+}
+
+struct ansi_writer {
+  /* Write ansi_normal or otherwise reset. */
+  int format_type;
+  writer_func reset;
+  writer_func change;
+};
+
+struct ansi_writer ansi_writers[] = {
+  {ANSI_FORMAT_16COLOR, ansi_reset, ansi_16color},
+  {ANSI_FORMAT_HILITE, ansi_reset, ansi_hilite},
+  {ANSI_FORMAT_XTERM256, ansi_reset, ansi_xterm256},
+  /* For now, HTML uses 16 color, since most Pueblo clients don't support it. */
+  {ANSI_FORMAT_HTML, ansi_reset, ansi_16color},
+  {-1, NULL, NULL}
+};
+
+int
+write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp)
+{
+  struct ansi_writer *aw = &ansi_writers[0];
+  int ret = 0;
+  int i;
+
+  if (ansi_format == ANSI_FORMAT_NONE) {
+    return 0;
+  }
+
+  for (i = 0; ansi_writers[i].format_type >= 0; i++) {
+    if (ansi_writers[i].format_type == ansi_format) {
+      aw = &ansi_writers[i];
+      break;
+    }
+  }
+
+  if (!cur) {
+    return aw->reset(old, cur, ansi_format, buff, bp);
+  }
+
+  /* This shouldn't happen */
+  if (!strcmp(cur->fg, "n")) {
+    if (old->bits || (strcmp(old->fg,"n")) || old->bg[0]) {
+      return aw->reset(old, cur, ansi_format, buff, bp);
+    }
+  }
+  if (cur->fg[0] == 'd') {
+    cur->fg[0] = '\0';
+  }
+  if (cur->bg[0] == 'D') {
+    cur->bg[0] = '\0';
+  }
+
+  /* Do we *unset* anything in cur? */
+  if ((old->bits & ~(cur->bits))
+      || (old->bg[0] && !cur->bg[0])
+      || (old->fg[0] && !cur->fg[0])) {
+    ret += aw->reset(old, cur, ansi_format, buff, bp);
+    old = &ansi_null;
+  }
+
+  if (ansi_equal(old, cur)) {
+    return ret;
+  }
+
+  if (!(cur->fg[0] || cur->bg[0] || cur->bits)) {
+    if (old->fg[0]) {
+      return ret += aw->reset(old, cur, ansi_format, buff, bp);
+    }
+    return ret;
+  }
+
+  return ret += aw->change(old, cur, ansi_format, buff, bp);
+}
+
+int
+valid_color_hex(char *name) {
+  /* Must be 6 characters and must all be hexadecimal. */
+  if (!name || strlen(name) != 6) {
+    return 0;
+  }
+  while (*name) {
+    if (!((*name >= '0' && *name <= '9') ||
+          (*name >= 'a' && *name <= 'f') ||
+          (*name >= 'A' && *name <= 'F'))) {
+      return 0;
+    }
+    name++;
+  }
+  return 1;
+}
+
+int
+valid_color_name(char *name) {
+  int i;
+  char *p, *q;
+  for (p = q = name; *q; q++) {
+    if (isspace((unsigned char) *q)) continue;
+    *(p++) = tolower((unsigned char) *q);
+  }
+  *(p) = '\0';
+  for (i = 0; allColors[i].name; i++) {
+    if (!strcmp(name,allColors[i].name)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/** Populate an ansi_data struct.
+ * \param store pointer to an ansi_data struct to populate.
+ * \param str   String to populate it using.
+ * \retval 0 success
+ * \retval 1 failure.
+ */
+int
 define_ansi_data(ansi_data *store, const char *str)
 {
-  *store = ansi_null;
+  const char *name;
+  char *ptr;
+  char buff[BUFFER_LEN];
+  memset(store, 0, sizeof(ansi_data));
 
   for (; str && *str && (*str != TAG_END); str++) {
     switch (*str) {
@@ -555,8 +858,8 @@ define_ansi_data(ansi_data *store, const char *str)
       /* This is explicitly normal, it'll never be colored */
       store->bits = 0;
       store->offbits = ~0;
-      store->fore = 'n';
-      store->back = 0;
+      store->fg[0] = '\0';
+      store->bg[0] = '\0';
       break;
     case 'f':                  /* flash */
       store->bits |= CBIT_FLASH;
@@ -595,7 +898,8 @@ define_ansi_data(ansi_data *store, const char *str)
     case 'x':                  /* black fg */
     case 'y':                  /* yellow fg */
     case 'd':                  /* default fg */
-      store->fore = *str;
+      store->fg[0] = *str;
+      store->fg[1] = '\0';
       break;
     case 'B':                  /* blue bg */
     case 'C':                  /* cyan bg */
@@ -605,12 +909,61 @@ define_ansi_data(ansi_data *store, const char *str)
     case 'W':                  /* white bg */
     case 'X':                  /* black bg */
     case 'Y':                  /* yellow bg */
-    case 'D':                  /* default fg */
-      store->back = *str;
+    case 'D':                  /* default bg */
+      store->bg[0] = *str;
+      store->bg[1] = '\0';
       break;
+    case '#':
+    case '+':
+    case '!':
+    case '/':
+      goto new_ansi;
     }
   }
   store->bits &= ~(store->offbits);
+  return 0;
+
+new_ansi:
+  ptr = store->fg;
+  /* *str is either +, # or / */
+  while (str && *str && *str != TAG_END) {
+    switch (*str) {
+    case '+':
+      /* Color names. */
+      name = str+1;
+      while (*str && *str != '/' && *str != '!' && *str != TAG_END) {
+        str++;
+      }
+      strncpy(buff, name, str-name);
+      buff[str-name] = '\0';
+      if (!valid_color_name(buff)) {
+        return 1;
+      }
+      snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+      break;
+    case '#':
+      /* Hex colors. */
+      name = str+1;
+      while (*str && *str != '/' && *str != '!' && *str != TAG_END) {
+        str++;
+      }
+      strncpy(buff, name, str-name);
+      buff[str-name] = '\0';
+      if (!valid_color_hex(buff)) {
+        return 1;
+      }
+      snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+      break;
+    case '/':
+    case '!':
+      ptr = store->bg;
+      str++;
+      break;
+    default:
+      return 1;
+    }
+  }
+  return 0;
 }
 
 int
@@ -621,8 +974,8 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
     return 0;
   store->bits = 0;
   store->offbits = 0;
-  store->fore = 0;
-  store->back = 0;
+  store->fg[0] = 0;
+  store->bg[0] = 0;
 
   /* 'codes' can point at either the ESC_CHAR,
    * the '[', or the following byte. */
@@ -654,14 +1007,17 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
       case COL_NORMAL:
         store->bits = 0;
         store->offbits = ~0;
-        store->fore = 'n';
-        store->back = 0;
+        store->fg[0] = 'n';
+        store->fg[1] = 0;
+        store->bg[0] = 0;
         break;
       }
     } else if (curnum < 40) {
-      store->fore = ansi_chars[curnum];
+      store->fg[0] = ansi_chars[curnum];
+      store->fg[1] = 0;
     } else if (curnum < 50) {
-      store->back = ansi_chars[curnum];
+      store->bg[0] = ansi_chars[curnum];
+      store->bg[1] = 0;
     }
     /* Skip current and find the next ansi number */
     while (*codes && isdigit((unsigned char) *codes))
@@ -1827,10 +2183,12 @@ real_decompose_str(char *orig, char *buff, char **bp)
         read_raw_ansi_data(&tmpansi, str);
         ansistack[ansitop].bits |= tmpansi.bits;
         ansistack[ansitop].bits &= ~(tmpansi.offbits);  /* ANSI_RAW_NORMAL */
-        if (tmpansi.fore)
-          ansistack[ansitop].fore = tmpansi.fore;
-        if (tmpansi.back)
-          ansistack[ansitop].back = tmpansi.back;
+        if (tmpansi.fg[0]) {
+          strncpy(ansistack[ansitop].fg, tmpansi.fg, COLOR_NAME_LEN);
+        }
+        if (tmpansi.bg[0]) {
+          strncpy(ansistack[ansitop].bg, tmpansi.bg, COLOR_NAME_LEN);
+        }
 
         str = tmp;
         if (*tmp)
@@ -1844,7 +2202,7 @@ real_decompose_str(char *orig, char *buff, char **bp)
     if (ansitop > 0 || ansiheight > 0) {
       /* Close existing tags as necessary to cleanly open the next. */
       /*  oldansi = ansistack[ansiheight]; */
-      if (!ansi_equal(oldansi, tmpansi)) {
+      if (!ansi_equal(&oldansi, &tmpansi)) {
         while (ansiheight > 0) {
           if (howmanyopen > 0) {
             howmanyopen--;
@@ -1853,7 +2211,7 @@ real_decompose_str(char *orig, char *buff, char **bp)
           ansiheight--;
         }
       }
-      if (!ansi_isnull(tmpansi) && !ansi_equal(oldansi, tmpansi)) {
+      if (!ansi_isnull(tmpansi) && !ansi_equal(&oldansi, &tmpansi)) {
         retval += safe_str("[ansi(", buff, bp);
         retval += write_ansi_letters(&tmpansi, buff, bp);
         retval += safe_chr(',', buff, bp);

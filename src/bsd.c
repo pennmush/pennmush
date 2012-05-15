@@ -3420,6 +3420,30 @@ sockset(dbref player, char *name, char *val)
     return T("Terminal Type set.");
   }
 
+  if (!strcasecmp(name, "COLORSTYLE")) {
+    if (!strcasecmp(val,"auto")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      return T("Colorstyle set to 'auto'");
+    } else if (!strcasecmp(val,"plain")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_PLAIN;
+      return T("Colorstyle set to 'plain'");
+    } else if (!strcasecmp(val,"hilite")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_ANSI;
+      return T("Colorstyle set to 'hilite'");
+    } else if (!strcasecmp(val,"16color")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_ANSICOLOR;
+      return T("Colorstyle set to '16color'");
+    } else if (!strcasecmp(val,"xterm256")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_XTERM256;
+      return T("Colorstyle set to 'xterm256'");
+    }
+    return T("Unknown color style. Valid color styles: 'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+  }
+
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
            name);
   return retval;

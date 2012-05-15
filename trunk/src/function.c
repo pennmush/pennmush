@@ -233,6 +233,7 @@ FUNTAB flist[] = {
   {"CLOCK", fun_clock, 1, 2, FN_REG | FN_STRIPANSI},
   {"CMOGRIFIER", fun_cmogrifier, 1, 1, FN_REG | FN_STRIPANSI},
   {"CMSGS", fun_cinfo, 1, 1, FN_REG | FN_STRIPANSI},
+  {"COLORS", fun_colors, 0, 0, FN_REG },
   {"COWNER", fun_cowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"CRECALL", fun_crecall, 1, 5, FN_REG | FN_STRIPANSI},
   {"CSTATUS", fun_cstatus, 2, 2, FN_REG | FN_STRIPANSI},

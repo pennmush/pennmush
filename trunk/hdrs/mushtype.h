@@ -311,6 +311,13 @@ struct text_queue {
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 
+/** Bits reserved for the color style */
+#define CONN_COLORSTYLE 0xF00
+#define CONN_PLAIN      0x100
+#define CONN_ANSI       0x200
+#define CONN_ANSICOLOR  0x300
+#define CONN_XTERM256   0x400
+
 /** Maximum \@doing length */
 #define DOING_LEN 40
 

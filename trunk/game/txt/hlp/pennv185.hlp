@@ -1,4 +1,4 @@
-& 1.8.5p1
+& 1.8.5p2
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,28 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.5 patchlevel 2                                 ??? ??, 2012
+
+Hardcode:
+ * render_string has been modified to work with multiple output formatters,
+   so it can display the appropriate color syntax for the client. [GM]
+
+Major changes:
+ * 256 Color support. Using 24 bit internally for representation and
+   downscaling to the client's possible output values. Use
+   @sockset colorstyle=xterm256 to see 256 color support, with
+   ansi(+colorname/+colorname,...) or ansi(#hexcode/#hexcode) for
+   extended color support. [GM] [MG]
+
+Functions:
+ * colors() returns a list of all known color names known by PennMUSH. [GM]
+
+Minor changes:
+ * The meaning of the COLOR flag has been restored. ANSI flag once again means
+   only highlight is supported, while COLOR means all ANSI 8 colors (8*2
+   including highlight), flash, invert, etc are supported. [GM]
+
+& 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 
 Hardcode:

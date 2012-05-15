@@ -91,6 +91,7 @@ Minor changes:
    only one charset available, but now the client can know exactly what it's
    receiving. Suggested by Sketch. [MG] Make sure your MUSH is running in the
    right charset; see http://tinyurl.com/penn-charset for more information.
+ * Additional test suite tests for setunion/setdiff/setinter() by Sketch.
 
 Fixes:
  * When regexp matching an ansi'd string, named captures weren't set

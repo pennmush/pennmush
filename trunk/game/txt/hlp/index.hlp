@@ -762,15 +762,15 @@ For more, see Entries-37
  xattr()                   xattrp()                  xcon()                   
  xexits()                  xget()                    xmwho()                  
  xmwhoid()                 xor()                     xplayers()               
- xthings()                 xvcon()                   xvexits()                
- xvplayers()               xvthings()                xwho()                   
- xwhoid()                  z_tel                     zemit()                  
- zfun()                    zmo                       zmp                      
- zmr                       zmt                       zmwho()                  
- zone                      zone master objects       zone master rooms        
- zone masters              zone objects              zone()                   
- zones                     zones2                    zwho()                   
- }                                                                            
+ xterm256                  xthings()                 xvcon()                  
+ xvexits()                 xvplayers()               xvthings()               
+ xwho()                    xwhoid()                  z_tel                    
+ zemit()                   zfun()                    zmo                      
+ zmp                       zmr                       zmt                      
+ zmwho()                   zone                      zone master objects      
+ zone master rooms         zone masters              zone objects             
+ zone()                    zones                     zones2                   
+ zwho()                    }                                                  
 
 & &Entries
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

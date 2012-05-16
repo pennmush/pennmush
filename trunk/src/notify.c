@@ -139,7 +139,7 @@ void freeqs(DESC *d);
 int process_output(DESC *d);
 
 static int str_type(const char *str);
-static int notify_type(DESC *d);
+int notify_type(DESC *d);
 static int output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
                              const unsigned char **ptr, char *buff, char **bp);
 
@@ -324,7 +324,7 @@ str_type(const char *str)
  * \param d descriptor to check
  * \return bitwise MSG_* flags giving the type of message to send
  */
-static int
+int
 notify_type(DESC *d)
 {
   int type = MSG_PLAYER;
@@ -352,17 +352,17 @@ notify_type(DESC *d)
     type |= MSG_TELNET;
   }
 
-  if (IS(d->player, TYPE_PLAYER, "ANSI")) {
+  if (IS(d->player, TYPE_PLAYER, "XTERM256"))
+    type |= MSG_XTERM256;
+  if (IS(d->player, TYPE_PLAYER, "ANSI"))
     type |= MSG_ANSI2;
-  }
-  if (IS(d->player, TYPE_PLAYER, "COLOR")) {
+  if (IS(d->player, TYPE_PLAYER, "COLOR"))
     type |= MSG_ANSI16;
-  }
 
   /* Colorstyle overrides */
   colorstyle = d->conn_flags & CONN_COLORSTYLE;
   if (colorstyle) {
-    // If a colorstyle is set, then override type.
+    /* If a colorstyle is set, then override type */
     type &= ~(MSG_PLAYER_COLORS);
     switch (colorstyle) {
     case CONN_ANSI:

@@ -5428,13 +5428,15 @@ See also: @teleport
   telnet           present if the client understands the telnet protocol.
   ssl              present if the client is using an SSL/TLS connection.
   prompt_newlines  see 'help prompt_newlines'
+  
+  One of the color styles shown in 'help colorstyle' will also be included.
 
   Other fields may be added in the future, if, for example, MXP
   support is ever added.
 
   Players can use terminfo() on their own connections. Using it on
   other players is restricted to see_all objects.
-See also: pueblo(), width(), height(), ssl()
+See also: pueblo(), width(), height(), ssl(), @sockset
 & TESTLOCK()
   testlock(<key>, <victim>)
 

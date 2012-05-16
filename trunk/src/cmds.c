@@ -57,6 +57,7 @@ extern int config_set(const char *opt, char *val, int source, int restrictions);
 
 void do_list_allocations(dbref player);
 
+extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
 extern int rhs_present;
 
@@ -109,9 +110,41 @@ COMMAND(cmd_attribute)
 
 COMMAND(cmd_sockset)
 {
-  const char *retval;
-  retval = (char *) sockset(executor, arg_left, arg_right);
-  notify(executor, retval);
+  DESC *d;
+  int i;
+
+  if (!arg_left || !*arg_left) {
+    d = least_idle_desc(executor, 1);
+    if (!d) {
+      notify(executor, T("You are not connected?"));
+      return;
+    }
+  } else {
+    d = lookup_desc(executor, arg_left);
+    if (!d) {
+      notify(executor, T("Invalid descriptor."));
+      return;
+    }
+  }
+
+  if (!rhs_present) {
+    if (d->player == executor || See_All(executor))
+      notify(executor, sockset_show(d));
+    else
+      notify(executor, T("Permission denied."));
+    return;
+  }
+
+  if (d->player != executor && !Wizard(executor)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
+  for (i = 1; args_right[i] && i < MAX_ARG; i += 2)
+    notify(executor, sockset(d, args_right[i], args_right[i+1]));
+
+  if (i == 1)
+    notify(executor, T("Set what option?"));
 }
 
 COMMAND(cmd_atrchown)

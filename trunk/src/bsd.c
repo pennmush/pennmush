@@ -259,6 +259,9 @@ static const char *asterisk_line =
 /** Where we save the descriptor info across reboots. */
 #define REBOOTFILE              "reboot.db"
 
+static void sockset_wrapper(DESC *d, char *cmd);
+
+extern int notify_type(DESC *d); /* from notify.c */
 #if 0
 /* For translation */
 static void dummy_msgs(void);
@@ -389,7 +392,7 @@ static void parse_connect(const char *msg, char *command, char *user,
                           char *pass);
 static void close_sockets(void);
 dbref find_player_by_desc(int port);
-static DESC *lookup_desc(dbref executor, const char *name);
+DESC *lookup_desc(dbref executor, const char *name);
 void NORETURN bailout(int sig);
 void WIN32_CDECL signal_shutdown(int sig);
 void WIN32_CDECL signal_dump(int sig);
@@ -2785,6 +2788,8 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_PROMPT_NEWLINES;
     else
       d->conn_flags &= ~CONN_PROMPT_NEWLINES;
+  } else if (!strncmp(command, "SOCKSET", 7)) {
+    sockset_wrapper(d, command + 7);
   } else {
     if (d->connected) {
       send_prefix(d);
@@ -3313,25 +3318,92 @@ isyes(char *str)
   return 0;
 }
 
+static void
+sockset_wrapper(DESC *d, char *cmd)
+{
+  const char *res;
+  char *p;
+
+  while (cmd && *cmd && isspace((unsigned char) *cmd))
+    cmd++;
+
+  if (!*cmd) {
+    /* query all */
+    res = sockset_show(d);
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+    return;
+  }
+
+  if ((p = strchr(cmd, '='))) {
+    /* set an option */
+    *(p++) = '\0';
+    res = sockset(d, cmd, p);
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+    return;
+  } else {
+    res = T("You must give an option and a value.");
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+  }
+
+}
+
+const char *
+sockset_show(DESC *d)
+{
+  static char buff[BUFFER_LEN];
+  char *bp = buff;
+  char colorstyle[SBUF_LEN];
+  int ntype;
+
+  safe_chr('\n', buff, &bp);
+
+  if (d->output_prefix && *(d->output_prefix))
+    safe_format(buff, &bp, "%-15s:  %s\n", PREFIX_COMMAND, d->output_prefix);
+
+  if (d->output_suffix && *(d->output_suffix)) {
+    safe_format(buff, &bp, "%-15s:  %s\n", SUFFIX_COMMAND, d->output_suffix);
+  }
+
+  safe_format(buff, &bp, "%-15s:  %s\n", "Pueblo", (d->conn_flags & CONN_HTML ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %s\n", "Telnet", (TELNET_ABLE(d) ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %d\n", "Width", d->width);
+  safe_format(buff, &bp, "%-15s:  %d\n", "Height", d->height);
+  safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
+
+  ntype = notify_type(d);
+  if (ntype & MSG_XTERM256)
+    strcpy(colorstyle, "xterm256");
+  else if (ntype & MSG_ANSI16)
+    strcpy(colorstyle, "16color");
+  else if (ntype & MSG_ANSI2)
+    strcpy(colorstyle, "hilite");
+  else
+    strcpy(colorstyle, "plain");
+
+  if (d->conn_flags & CONN_COLORSTYLE)
+    safe_format(buff, &bp, "%-15s:  %s", "Color Style", colorstyle);
+  else
+    safe_format(buff, &bp, "%-15s:  auto (%s)", "Color Style", colorstyle);
+
+  *bp = '\0';
+  return buff;
+}
+
 /** Set a sock option.
- * \param player the dbref of the player running @sockset
+ * \param d the descriptor to set the option on
  * \param name the option name
  * \param val the option value
  * \return string Set message (error or success)
  */
 const char *
-sockset(dbref player, char *name, char *val)
+sockset(DESC *d, char *name, char *val)
 {
-  DESC *d;
   static char retval[BUFFER_LEN];
-
   int ival;
 
-  d = least_idle_desc(player, 1);
-
-  if (!d) {
-    return T("You are not connected?");
-  }
   if (!name || !name[0]) {
     return T("Set what option?");
   }
@@ -3424,19 +3496,19 @@ sockset(dbref player, char *name, char *val)
     if (!strcasecmp(val,"auto")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return T("Colorstyle set to 'auto'");
-    } else if (!strcasecmp(val,"plain")) {
+    } else if (string_prefix("plain", val) || string_prefix("none", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       return T("Colorstyle set to 'plain'");
-    } else if (!strcasecmp(val,"hilite")) {
+    } else if (string_prefix("hilite", val) || string_prefix("highlight", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
       return T("Colorstyle set to 'hilite'");
-    } else if (!strcasecmp(val,"16color")) {
+    } else if (string_prefix("16color", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
       return T("Colorstyle set to '16color'");
-    } else if (!strcasecmp(val,"xterm256")) {
+    } else if (string_prefix("xterm256", val) || !strcmp(val, "256")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
       return T("Colorstyle set to 'xterm256'");
@@ -4890,7 +4962,7 @@ FUNCTION(fun_hidden)
  * \param name the name or descriptor to look up.
  * \retval a pointer to the proper DESC, or NULL
  */
-static DESC *
+DESC *
 lookup_desc(dbref executor, const char *name)
 {
   DESC *d;
@@ -5257,6 +5329,7 @@ FUNCTION(fun_height)
 FUNCTION(fun_terminfo)
 {
   DESC *match;
+  int type;
   if (!*args[0])
     safe_str(T("#-1 FUNCTION REQUIRES ONE ARGUMENT"), buff, bp);
   else if ((match = lookup_desc(executor, args[0]))) {
@@ -5270,6 +5343,15 @@ FUNCTION(fun_terminfo)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
+      type = notify_type(match);
+      if (type & MSG_XTERM256)
+        safe_str(" xterm256", buff, bp);
+      else if (type & MSG_ANSI16)
+        safe_str(" 16color", buff, bp);
+      else if (type & MSG_ANSI2)
+        safe_str(" hilite", buff, bp);
+      else
+        safe_str(" plain", buff, bp);
     } else
       safe_str(T(e_perm), buff, bp);
   } else

@@ -24,17 +24,22 @@ Hardcode:
 Major changes:
  * 256 Color support. Using 24 bit internally for representation and
    downscaling to the client's possible output values. Use
-   @sockset colorstyle=xterm256 to see 256 color support, with
+   SOCKSET colorstyle=xterm256 to see 256 color support, with
    ansi(+colorname/+colorname,...) or ansi(#hexcode/#hexcode) for
-   extended color support. [GM] [MG]
+   extended color support, or @set me=xterm256. [GM] [MG]
+ * New SOCKSET socket command for changing socket options. Replaces the
+   @sockset command added in p1 for mortals, and can be used at the
+   login screen. Suggested by Sketch. [MG]
+ * @sockset is now @sockset <desc>[=<opt>,<value>[,...]], to query current
+   options or set options for any descriptor. [MG]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH. [GM]
 
 Minor changes:
- * The meaning of the COLOR flag has been restored. ANSI flag once again means
-   only highlight is supported, while COLOR means all ANSI 8 colors (8*2
-   including highlight), flash, invert, etc are supported. [GM]
+ * The meaning of the COLOR flag has been restored. ANSI flag once again 
+   means only highlight is supported, while COLOR means all ANSI 8 colors
+   (8*2 including highlight), flash, invert, etc are supported. [GM]
 
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 

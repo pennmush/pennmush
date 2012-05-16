@@ -985,6 +985,8 @@ flag_add_additional(FLAGSPACE *n)
       f->perms |= F_LOG;
     if ((f = match_flag("ROYALTY")))
       f->perms |= F_LOG;
+    f = add_flag("XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY);
+    flag_add(flags, "COLOR256", f); /* MUX alias */
 
   } else if (n->tab == &ptab_power) {
     if (!(globals.indb_flags & DBF_POWERS_LOGGED)) {

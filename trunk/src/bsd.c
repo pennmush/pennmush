@@ -81,7 +81,9 @@
 #include <ieeefp.h>
 #endif
 #include <locale.h>
+#ifndef _MSC_VER
 #include <langinfo.h>
+#endif
 #include <setjmp.h>
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -2429,6 +2431,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
       unsigned char reply_prefix[4] = "\xFF\xFA\x2A\x01";
       unsigned char reply_suffix[2] = "\xFF\xF0";
+#ifndef _MSC_VER
       /* Offer a selection of possible delimiters, to avoid it appearing
        * in a charset name */
       char *delim_list = "; +=/!", *delim_curr;
@@ -2451,13 +2454,22 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       } else {
         /* Fall back on latin-1 */
         delim[0] = ';';
-        curr_locale = "ISO-8859-1";
+        curr_locale = "ISO-8859-1;x-penn-def";
       }
       queue_newwrite(d, (unsigned char *) delim, 1);
       queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
 
       queue_newwrite(d, reply_suffix, 2);
-
+#else  /* _MSC_VER */
+      /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+       * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+       * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+       * but it's unlikely to contain a valid charset name, so probably
+       * wouldn't help anyway.) */
+      queue_newwrite(d, reply_prefix, 4);
+      queue_newwrite(d, ";ISO-8859-1;x-win-def", 21);
+      queue_newwrite(d, reply_suffix, 2);
+#endif /* _MSC_VER */
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];

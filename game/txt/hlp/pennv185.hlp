@@ -36,6 +36,8 @@ Minor changes:
  * The meaning of the COLOR flag has been restored. ANSI flag once again 
    means only highlight is supported, while COLOR means all ANSI 8 colors
    (8*2 including highlight), flash, invert, etc are supported. [GM]
+ * Charset negotiation didn't work on MSVC, and now forces iso-8859-1 when
+   compiled that way instead. Reported by Daniel Powell. [MG]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

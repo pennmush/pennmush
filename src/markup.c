@@ -684,7 +684,7 @@ ANSI_WRITER(ansi_hilite) {
 
 ANSI_WRITER(ansi_xterm256) {
   int hilite = EDGE_UP(old, cur, CBIT_HILITE);
-  int hex;
+  int xcode;
   int ret = 0;
   int f = 0;
 
@@ -718,15 +718,21 @@ ANSI_WRITER(ansi_xterm256) {
   }
 
   if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
-    hex = color_to_hex(cur->fg, hilite);
+    if (!strncasecmp(cur->fg, "+xterm", 6))
+      xcode = atoi(cur->fg+6);
+    else
+      xcode = ansi_map_256(color_to_hex(cur->fg, hilite));
     ret += safe_format(buff, bp, "%s38;5;%d%s",
-                       ANSI_BEGIN, ansi_map_256(hex), ANSI_FINISH);
+                       ANSI_BEGIN, xcode, ANSI_FINISH);
   }
 
   if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
-    hex = color_to_hex(cur->bg, hilite);
+    if (!strncasecmp(cur->bg, "+xterm", 6))
+      xcode = atoi(cur->bg+6);
+    else
+      xcode = ansi_map_256(color_to_hex(cur->bg, hilite));
     ret += safe_format(buff, bp, "%s48;5;%d%s",
-                       ANSI_BEGIN, ansi_map_256(hex), ANSI_FINISH);
+                       ANSI_BEGIN, xcode, ANSI_FINISH);
   }
   return ret;
 }

@@ -1391,21 +1391,16 @@ See also: @destroy, GOING, @startup
 
 See also: @open, @link, EXITS, @create, DBREF, dig()
 & @doing
-  &doing me=<doing>
-  @doing <message>
-  @doing/header <message>
+  @doing <object>[=<message>]
 
-  The first syntax sets your DOING attribute to <doing>. The evaluated result
-  is shown next to your name in the WHO/DOING commands, and is returned by
-  the doing() function.
+  With a <message> argument, this command sets <object>'s DOING attribute to
+  <message>. The DOING attribute is only meaningful for players; the
+  evaluated result is shown on the output of the normal MUSH WHO command, and
+  on the login screen WHO.
   
-  @doing exists for backwards compatability, and sets your DOING attribute so 
-  that, when evaluated, it will return <message>. It is equivalent to:
-    @set me=DOING:[decompose(<message>)]
-  The @doing command is deprecated, and using it should be avoided.
+  With no <message> the attribute is cleared.
   
-  @doing/header is an alias for @poll, and can only be used by Wizards or
-  those with the Poll @power.
+  To change the message shown above player @doings in WHO, use @poll.
 
 See also: @poll, WHO, doing()
 & @dolist
@@ -3541,10 +3536,12 @@ Continued in 'help @sitelock3'
   
   @sockset is a similar in-game command, but can specify which descriptor to
   change options for, and can set multiple options at once. Only Wizards can
-  change the options for other players' descriptors.
+  change the options for other players' descriptors. <descriptor> defaults to
+  your least-idle descriptor, when used by a player; for non-players, it has
+  no default.
 
   Options:
-    colorstyle:   see help colorstyle
+    colorstyle:   See help colorstyle
     outputprefix: Same as OUTPUTPREFIX
     outputsuffix: Same as OUTPUTSUFFIX
     pueblo:       Sets Pueblo-related options. If value has md5=...", then it

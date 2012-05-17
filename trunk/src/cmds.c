@@ -383,19 +383,6 @@ COMMAND(cmd_disable)
   do_enable(executor, arg_left, 0);
 }
 
-COMMAND(cmd_doing)
-{
-  if (SW_ISSET(sw, SWITCH_HEADER)) {
-    notify_format(Owner(executor),
-                  T
-                  ("Deprecated command %s being used on object #%d. Use %s instead."),
-                  "@DOING/HEADER", executor, "@POLL");
-
-    do_poll(executor, arg_left, 0);
-  } else
-    do_doing(executor, arg_left);
-}
-
 COMMAND(cmd_dolist)
 {
   unsigned int flags = 0;

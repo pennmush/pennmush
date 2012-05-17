@@ -154,7 +154,7 @@ void sql_shutdown(void);
 /* Any text sent to a player will be (MSG_PLAYER | modifiers below) */
 #define MSG_PUEBLO       0x02  /**< HTML entities, Pueblo tags as HTML */
 #define MSG_TELNET       0x04  /**< Output to telnet-aware connection. Escape char 255 */
-#define MSG_STRIPACCENTS 0x09  /**< Strip/downgrade accents */
+#define MSG_STRIPACCENTS 0x08  /**< Strip/downgrade accents */
 
 #define MSG_MARKUP       0x10  /**< Leave markup in internal format, rather than stripping/converting */
 #define MSG_ANSI2        0x20  /**< Ansi-highlight only */

@@ -44,6 +44,8 @@ Minor changes:
    Israphel. [MG]
  * The ICLOC attribute, which was set on newly created players but never used
    in any way, is no longer set. Suggested by Paige. [MG]
+ * @destroy'ing, @undestroy'ing, and the actual destruction of players is
+   now logged. Suggested by Padraic. [MG]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

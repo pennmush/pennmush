@@ -285,9 +285,9 @@ COMMAND(cmd_config)
         } else
           notify(executor, T("Option set."));
         if (source == 1)
-          do_log(LT_WIZ, executor, NOTHING, T("Config option '%s' set to '%s'."), arg_left, arg_right);
+          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s'.", arg_left, arg_right);
         else
-          do_log(LT_WIZ, executor, NOTHING, T("Config option '%s' set to '%s' and saved."), arg_left, arg_right);
+          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s' and saved.", arg_left, arg_right);
       }
     }
   } else

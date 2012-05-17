@@ -69,7 +69,6 @@ void WIN32_CDECL flag_broadcast(const char *flag1,
 
 dbref short_page(const char *match);
 dbref visible_short_page(dbref player, const char *match);
-void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
 void process_command(dbref executor, char *command, MQUE *queue_entry);

@@ -4577,34 +4577,6 @@ do_motd(dbref player, enum motd_type key, const char *message)
   }
 }
 
-/** Set a DOING message.
- * \verbatim
- * This implements @doing.
- * \endverbatim
- * \param player the enactor.
- * \param message the message to set.
- */
-void
-do_doing(dbref player, const char *message)
-{
-  if (!message || !*message) {
-    /* Clear */
-    if (atr_clr(player, "DOING", player) == AE_OKAY)
-      notify(player, T("Doing cleared."));
-    else
-      notify(player, T("Unable to clear doing."));
-  } else {
-    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) ==
-        AE_OKAY)
-      notify(player, T("Doing set."));
-    else
-      notify(player, T("Unable to set doing."));
-    if (!strncasecmp(message, "me", 2)
-        && (strlen(message) < 3 || message[2] == '='))
-      notify_format(player, T("Did you mean to use &DOING %s ?"), message);
-  }
-}
-
 /** Return a player's \@doing.
  * \param player the dbref of the player whose \@doing we want
  * \param caller

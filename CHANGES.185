@@ -32,6 +32,8 @@ Major changes:
    login screen. Suggested by Sketch. [MG]
  * @sockset is now @sockset <desc>[=<opt>,<value>[,...]], to query current
    options or set options for any descriptor. [MG]
+ * The old @doing command has now been removed, and replaced with the normal
+   standard-attribute command (@doing <object>[=<message>]). [MG]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH. [GM]

@@ -46,6 +46,8 @@ Minor changes:
    compiled that way instead. Reported by Daniel Powell. [MG]
  * @config/set and @config/save now log to the wizard_log. Suggested by
    Israphel. [MG]
+ * The ICLOC attribute, which was set on newly created players but never used
+   in any way, is no longer set. Suggested by Paige. [MG]
 
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 

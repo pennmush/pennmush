@@ -401,6 +401,11 @@ msgstr "#-1 NEISPRAVAN ALIGN STRING"
 msgid "#-1 INVALID ANGLE TYPE"
 msgstr "#-1 NEISPRAVAN TIP KUTA"
 
+#: markup.c:110
+#, c-format
+msgid "#-1 INVALID ANSI DEFINITION: %s"
+msgstr "#-1 NEISPRAVNA ANSI DEFINICIJA: %s"
+
 #: function.c:836
 msgid "#-1 INVALID ARGUMENT"
 msgstr "#-1 NEISPRAVAN ARGUMENT"
@@ -2129,6 +2134,26 @@ msgstr "Klonirano: Soba #%d."
 msgid "Cmds"
 msgstr "Kmnd"
 
+#: bsd.c:3510
+msgid "Colorstyle set to '16color'"
+msgstr "Stil boje postavljen na '16color'"
+
+#: bsd.c:3498
+msgid "Colorstyle set to 'auto'"
+msgstr "Stil boje postavljen na 'auto'"
+
+#: bsd.c:3506
+msgid "Colorstyle set to 'hilite'"
+msgstr "Stil boje postavljen na 'hilite'"
+
+#: bsd.c:3502
+msgid "Colorstyle set to 'plain'"
+msgstr "Stil boje postavljen na 'plain'"
+
+#: bsd.c:3514
+msgid "Colorstyle set to 'xterm256'"
+msgstr "Stil boje postavljen na 'xterm256'"
+
 #: command.c:1318
 #, c-format
 msgid "Command %s added."
@@ -3155,6 +3180,10 @@ msgstr "Neispravan count indeks."
 #, c-format
 msgid "Invalid dbref #%d in %s."
 msgstr "Neispravan dbref #%d na lokaciji %s."
+
+#: cmds.c:125
+msgid "Invalid descriptor."
+msgstr "Neispravan deskriptor."
 
 #: function.c:1046 function.c:1087 function.c:1437
 msgid "Invalid function name."
@@ -5403,6 +5432,10 @@ msgstr "Ne mogu obrisati atribut %s"
 msgid "Unknown access option: %s"
 msgstr "Nepoznata pristupna opcija: %s"
 
+#: bsd.c:3516
+msgid "Unknown color style. Valid color styles: 'auto', 'plain', 'hilite', '16color', 'xterm256'."
+msgstr "Nepoznat stil boje. Ispravni stilovi boje: 'auto', 'plain', 'hilite', '16color', 'xterm256'."
+
 #: flags.c:2081
 #, c-format
 msgid "Unknown failure adding %s."
@@ -6344,6 +6377,10 @@ msgstr "Mora¹ navesti switch za @hook."
 #: command.c:2073
 msgid "You must give an object."
 msgstr "Mora¹ dati objekt."
+
+#: bsd.c:3346
+msgid "You must give an option and a value."
+msgstr "Mora¹ navesti opciju i vrijednost."
 
 #: command.c:1357
 msgid "You must give both an object and attribute."

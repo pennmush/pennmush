@@ -280,9 +280,14 @@ COMMAND(cmd_config)
           notify(executor, T("Option set and saved."));
 #else
           notify(executor, T("Option set but not saved (Saves disabled.)"));
+          source = 1;
 #endif
         } else
           notify(executor, T("Option set."));
+        if (source == 1)
+          do_log(LT_WIZ, executor, NOTHING, T("Config option '%s' set to '%s'."), arg_left, arg_right);
+        else
+          do_log(LT_WIZ, executor, NOTHING, T("Config option '%s' set to '%s' and saved."), arg_left, arg_right);
       }
     }
   } else

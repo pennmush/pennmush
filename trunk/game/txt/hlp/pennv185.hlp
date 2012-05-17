@@ -40,6 +40,8 @@ Minor changes:
    (8*2 including highlight), flash, invert, etc are supported. [GM]
  * Charset negotiation didn't work on MSVC, and now forces iso-8859-1 when
    compiled that way instead. Reported by Daniel Powell. [MG]
+ * @config/set and @config/save now log to the wizard_log. Suggested by
+   Israphel. [MG]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

@@ -2356,11 +2356,6 @@ msgstr "Uni¹tavanje Boga bi bilo svetogrdno."
 msgid "Destroying that again is hardly necessary."
 msgstr "Ponovno uni¹tavanje toga je prilièno nepotrebno."
 
-#: bsd.c:4312
-#, c-format
-msgid "Did you mean to use &DOING %s ?"
-msgstr "Da li ti je namjera bila upotrijebiti &DOING %s ?"
-
 #: rob.c:367
 msgid "Did you want to give something *to* someone?"
 msgstr "®eli¹ li ne¹to dati *nekome*?"
@@ -2376,14 +2371,6 @@ msgstr "Onemoguæeno."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "©to ¾eli¹ napraviti s funkcijom?"
-
-#: bsd.c:4301
-msgid "Doing cleared."
-msgstr "Doing obrisan."
-
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Doing postavljen."
 
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
@@ -5355,10 +5342,6 @@ msgstr "Ne mogu dodati separator za @sitelock: %s"
 msgid "Unable to add sitelock entry: %s"
 msgstr "Ne mogu dodati predmet u popis zakljuèanih internet adresa: %s"
 
-#: bsd.c:4303
-msgid "Unable to clear doing."
-msgstr "Ne mogu obrisati doing."
-
 #: create.c:485
 msgid "Unable to create object with that dbref."
 msgstr "Ne mogu stvoriti objekt s tim dbrefom."
@@ -5407,10 +5390,6 @@ msgstr "Ne mogu postaviti '%s' jer stvaranje potrebnog nadatributa nije uspjelo.
 #: command.c:1694
 msgid "Unable to set alias."
 msgstr "Ne mogu postaviti alias."
-
-#: bsd.c:4309
-msgid "Unable to set doing."
-msgstr "Ne mogu postaviti doing."
 
 #: wiz.c:1483
 #, c-format

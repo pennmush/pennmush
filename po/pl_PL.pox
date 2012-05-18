@@ -1882,10 +1882,6 @@ msgstr "Wy³±czony."
 msgid "Do what with the function?"
 msgstr "Zrobiæ co z funkcj±?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Zajêcie ustawiono."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "Nie masz nic do powiedzenia?"

@@ -2321,11 +2321,6 @@ msgstr "God vernietigen zou heiligschennis zijn."
 msgid "Destroying that again is hardly necessary."
 msgstr "Dat opnieuw vernietigen is nauwelijks nodig."
 
-#: bsd.c:4312
-#, c-format
-msgid "Did you mean to use &DOING %s ?"
-msgstr "Bedoelde je misschien &DOING %s ?"
-
 #: rob.c:367
 msgid "Did you want to give something *to* someone?"
 msgstr "Wou je soms iets *aan* iemand geven?"
@@ -2341,14 +2336,6 @@ msgstr "Uitgeschakeld."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "Doe wat met de functie?"
-
-#: bsd.c:4301
-msgid "Doing cleared."
-msgstr "Doing gewist."
-
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Doing ingesteld."
 
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
@@ -5268,10 +5255,6 @@ msgstr "Kon geen @sitelock separator toevoegen: %s"
 msgid "Unable to add sitelock entry: %s"
 msgstr "Kon geen sitelock toevoegen: %s"
 
-#: bsd.c:4303
-msgid "Unable to clear doing."
-msgstr "Kan doing niet wissen."
-
 #: create.c:485
 msgid "Unable to create object with that dbref."
 msgstr "Kon geen object met dat dbref maken."
@@ -5320,10 +5303,6 @@ msgstr "Kon '%s' niet zetten vanwege een probleem met het zetten van een benodig
 #: command.c:1694
 msgid "Unable to set alias."
 msgstr "Kon alias niet zetten."
-
-#: bsd.c:4309
-msgid "Unable to set doing."
-msgstr "Kan doing niet instellen."
 
 #: wiz.c:1483
 #, c-format

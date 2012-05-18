@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-17 02:00-0500\n"
+"POT-Creation-Date: 2012-05-18 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -222,7 +222,7 @@ msgstr ""
 msgid "Enum"
 msgstr ""
 
-#: atr_tab.c:900 cmds.c:507 cmds.c:740 game.c:2513
+#: atr_tab.c:900 cmds.c:499 cmds.c:732 game.c:2513
 msgid "Flags"
 msgstr ""
 
@@ -320,7 +320,7 @@ msgstr ""
 msgid "No such attribute to reset."
 msgstr ""
 
-#: attrib.c:2050 command.c:1987
+#: attrib.c:2050 command.c:1984
 msgid "Alias set."
 msgstr ""
 
@@ -350,14 +350,14 @@ msgstr ""
 msgid "You need to give an object/attribute pair."
 msgstr ""
 
-#: attrib.c:2126 attrib.c:2199 bsd.c:3568 bsd.c:3628 bsd.c:4945 bsd.c:5480
-#: bsd.c:5514 bsd.c:5526 bsd.c:5531 cmds.c:86 cmds.c:91 cmds.c:96 cmds.c:101
-#: cmds.c:106 cmds.c:134 cmds.c:139 command.c:1789 command.c:1816
-#: command.c:1908 command.c:1990 command.c:2166 command.c:2551 cque.c:1423
+#: attrib.c:2126 attrib.c:2199 bsd.c:3568 bsd.c:3628 bsd.c:4917 bsd.c:5452
+#: bsd.c:5486 bsd.c:5498 bsd.c:5503 cmds.c:86 cmds.c:91 cmds.c:96 cmds.c:101
+#: cmds.c:106 cmds.c:134 cmds.c:139 command.c:1786 command.c:1813
+#: command.c:1905 command.c:1987 command.c:2163 command.c:2548 cque.c:1423
 #: cque.c:1537 cque.c:1587 cque.c:2049 cque.c:2161 cque.c:2219 cque.c:2337
 #: create.c:99 create.c:125 create.c:249 create.c:315 create.c:324
 #: create.c:328 create.c:380 create.c:384 create.c:402 create.c:662
-#: destroy.c:242 destroy.c:929 extchat.c:1802 extchat.c:1819 extchat.c:1852
+#: destroy.c:242 destroy.c:934 extchat.c:1802 extchat.c:1819 extchat.c:1852
 #: extchat.c:4052 flags.c:1909 flags.c:1915 flags.c:2073 function.c:958
 #: function.c:1194 function.c:1421 function.c:1566 function.c:1612
 #: function.c:1667 funmisc.c:1255 game.c:967 game.c:1571 lock.c:738 lock.c:802
@@ -853,144 +853,123 @@ msgstr ""
 msgid "Full MOTD: %s"
 msgstr ""
 
-#: bsd.c:4593
-msgid "Doing cleared."
-msgstr ""
-
-#: bsd.c:4595
-msgid "Unable to clear doing."
-msgstr ""
-
-#: bsd.c:4599
-msgid "Doing set."
-msgstr ""
-
-#: bsd.c:4601
-msgid "Unable to set doing."
-msgstr ""
-
-#: bsd.c:4604
-#, c-format
-msgid "Did you mean to use &DOING %s ?"
-msgstr ""
-
-#: bsd.c:4683
+#: bsd.c:4655
 #, c-format
 msgid "The current poll is: %s"
 msgstr ""
 
-#: bsd.c:4688
+#: bsd.c:4660
 msgid "Who do you think you are, Gallup?"
 msgstr ""
 
-#: bsd.c:4694
+#: bsd.c:4666
 msgid "Poll reset."
 msgstr ""
 
-#: bsd.c:4709
+#: bsd.c:4681
 #, c-format
 msgid "Poll set to '%s'. %d characters lost."
 msgstr ""
 
-#: bsd.c:4712
+#: bsd.c:4684
 #, c-format
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:4900 bsd.c:4909 bsd.c:5431 bsd.c:5440 cmds.c:574 funstr.c:2263
+#: bsd.c:4872 bsd.c:4881 bsd.c:5403 bsd.c:5412 cmds.c:566 funstr.c:2263
 #: wiz.c:1625
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
 
-#: bsd.c:4952 bsd.c:5524
+#: bsd.c:4924 bsd.c:5496
 msgid "Couldn't find that descriptor."
 msgstr ""
 
-#: bsd.c:4960
+#: bsd.c:4932
 msgid "Couldn't find that player."
 msgstr ""
 
-#: bsd.c:5181 funufun.c:355
+#: bsd.c:5153 funufun.c:355
 msgid "#-1 INVALID ZONE"
 msgstr ""
 
-#: bsd.c:5296 bsd.c:5312 bsd.c:5370
+#: bsd.c:5268 bsd.c:5284 bsd.c:5342
 msgid "#-1 NOT CONNECTED"
 msgstr ""
 
-#: bsd.c:5319 bsd.c:5332 bsd.c:5346
+#: bsd.c:5291 bsd.c:5304 bsd.c:5318
 msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
 msgstr ""
 
-#: bsd.c:5535
+#: bsd.c:5507
 msgid "Noone is connected to that descriptor."
 msgstr ""
 
-#: bsd.c:5542
+#: bsd.c:5514
 msgid "Connection hidden."
 msgstr ""
 
-#: bsd.c:5544
+#: bsd.c:5516
 msgid "Connection unhidden."
 msgstr ""
 
-#: bsd.c:5558 wiz.c:937
+#: bsd.c:5530 wiz.c:937
 msgid "That player is not online."
 msgstr ""
 
-#: bsd.c:5578
+#: bsd.c:5550
 msgid "You no longer appear on the WHO list."
 msgstr ""
 
-#: bsd.c:5580
+#: bsd.c:5552
 #, c-format
 msgid "%s no longer appears on the WHO list."
 msgstr ""
 
-#: bsd.c:5584
+#: bsd.c:5556
 msgid "You now appear on the WHO list."
 msgstr ""
 
-#: bsd.c:5586
+#: bsd.c:5558
 #, c-format
 msgid "%s now appears on the WHO list."
 msgstr ""
 
-#: bsd.c:5631
+#: bsd.c:5603
 msgid ""
 "\n"
 "*** Inactivity timeout ***\n"
 msgstr ""
 
-#: bsd.c:5642
+#: bsd.c:5614
 msgid ""
 "\n"
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 
-#: bsd.c:5810 bsd.c:5817
+#: bsd.c:5782 bsd.c:5789
 msgid "GAME: Error writing reboot database!"
 msgstr ""
 
-#: bsd.c:6049
+#: bsd.c:6021
 msgid "GAME: Reboot finished."
 msgstr ""
 
-#: bsd.c:6071
+#: bsd.c:6043
 #, c-format
 msgid "Unable to reboot using executable '%s': %s"
 msgstr ""
 
-#: bsd.c:6080
+#: bsd.c:6052
 msgid "GAME: Reboot w/o disconnect from game account, please wait."
 msgstr ""
 
-#: bsd.c:6085
+#: bsd.c:6057
 #, c-format
 msgid "GAME: Reboot w/o disconnect by %s, please wait."
 msgstr ""
 
-#: bsd.c:6101
+#: bsd.c:6073
 msgid "GAME: Reboot failed."
 msgstr ""
 
@@ -1026,252 +1005,252 @@ msgstr ""
 msgid "Option set but not saved (Saves disabled.)"
 msgstr ""
 
-#: cmds.c:285
+#: cmds.c:286
 msgid "Option set."
 msgstr ""
 
-#: cmds.c:391 cmds.c:457
+#: cmds.c:449
 #, c-format
 msgid "Deprecated command %s being used on object #%d. Use %s instead."
 msgstr ""
 
-#: cmds.c:664
+#: cmds.c:656
 msgid "You must give a switch for @hook."
 msgstr ""
 
-#: cmds.c:670
+#: cmds.c:662
 msgid "You can only use /inplace and /inline with /override."
 msgstr ""
 
-#: cmds.c:679
+#: cmds.c:671
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr ""
 
-#: cmds.c:738 game.c:2517
+#: cmds.c:730 game.c:2517
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:742 cmds.c:1076 game.c:2515
+#: cmds.c:734 cmds.c:1068 game.c:2515
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:850 extmail.c:1878
+#: cmds.c:842 extmail.c:1878
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:915
+#: cmds.c:907
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:918
+#: cmds.c:910
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:923
+#: cmds.c:915
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:1254
+#: cmds.c:1246
 msgid "Restarting info_slave daemon."
 msgstr ""
 
-#: cmds.c:1264
+#: cmds.c:1256
 msgid "Restarting ssl_slave daemon."
 msgstr ""
 
-#: cmds.c:1270
+#: cmds.c:1262
 msgid "No such service."
 msgstr ""
 
-#: cmds.c:1272 destroy.c:214
+#: cmds.c:1264 destroy.c:214
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr ""
 
-#: cmds.c:1343
+#: cmds.c:1335
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1548
+#: cmds.c:1540
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1553
+#: cmds.c:1545
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1673
+#: cmds.c:1665
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
 
-#: command.c:1325
+#: command.c:1322
 #, c-format
 msgid "%s doesn't know switch %s."
 msgstr ""
 
-#: command.c:1484
+#: command.c:1481
 #, c-format
 msgid "Deprecated command %s being used on object #%d."
 msgstr ""
 
-#: command.c:1770
+#: command.c:1767
 msgid "This command has not been implemented."
 msgstr ""
 
-#: command.c:1797 command.c:1828
+#: command.c:1794 command.c:1825
 msgid "Bad command name."
 msgstr ""
 
-#: command.c:1803
+#: command.c:1800
 #, c-format
 msgid "Command %s added."
 msgstr ""
 
-#: command.c:1806
+#: command.c:1803
 #, c-format
 msgid "Command %s already exists."
 msgstr ""
 
-#: command.c:1825 command.c:1914 command.c:2005 command.c:2399 command.c:2504
+#: command.c:1822 command.c:1911 command.c:2002 command.c:2396 command.c:2501
 msgid "No such command."
 msgstr ""
 
-#: command.c:1833
+#: command.c:1830
 msgid "Command cloned."
 msgstr ""
 
-#: command.c:1922
+#: command.c:1919
 msgid "You can't delete built-in commands. @command/disable instead."
 msgstr ""
 
-#: command.c:1938
+#: command.c:1935
 #, c-format
 msgid "Removed %s and aliases from command table."
 msgstr ""
 
-#: command.c:1941 command.c:1946
+#: command.c:1938 command.c:1943
 #, c-format
 msgid "Removed %s from command table."
 msgstr ""
 
-#: command.c:1962
+#: command.c:1959
 msgid "You must specify a command."
 msgstr ""
 
-#: command.c:1975
+#: command.c:1972
 msgid ""
 "WARNING: /NOEVAL no longer creates a Noparse command.\n"
 "         Use /NOPARSE if that's what you meant."
 msgstr ""
 
-#: command.c:1982
+#: command.c:1979
 msgid "I can't alias a command to that!"
 msgstr ""
 
-#: command.c:1984
+#: command.c:1981
 msgid "Unable to set alias."
 msgstr ""
 
-#: command.c:2016
+#: command.c:2013
 msgid "How do you want to restrict the command?"
 msgstr ""
 
-#: command.c:2021
+#: command.c:2018
 msgid "Restrict attempt failed."
 msgstr ""
 
-#: command.c:2025
+#: command.c:2022
 msgid "@command is ALWAYS enabled."
 msgstr ""
 
-#: command.c:2031
+#: command.c:2028
 #, c-format
 msgid "Name       : %s (%s)"
 msgstr ""
 
-#: command.c:2046
+#: command.c:2043
 #, c-format
 msgid "Flags      : %s"
 msgstr ""
 
-#: command.c:2048
+#: command.c:2045
 #, c-format
 msgid "Lock       : %s"
 msgstr ""
 
-#: command.c:2051
+#: command.c:2048
 #, c-format
 msgid "Failure Msg: %s"
 msgstr ""
 
-#: command.c:2058
+#: command.c:2055
 #, c-format
 msgid "Switches   : %s"
 msgstr ""
 
-#: command.c:2060
+#: command.c:2057
 msgid "Switches   :"
 msgstr ""
 
-#: command.c:2073
+#: command.c:2070
 #, c-format
 msgid "Leftside   : %s"
 msgstr ""
 
-#: command.c:2085
+#: command.c:2082
 #, c-format
 msgid "Rightside  : %s"
 msgstr ""
 
-#: command.c:2088
+#: command.c:2085
 #, c-format
 msgid "Arguments  : %s"
 msgstr ""
 
-#: command.c:2104
+#: command.c:2101
 #, c-format
 msgid "Commands: %s"
 msgstr ""
 
-#: command.c:2403
+#: command.c:2400
 msgid "Hooks not allowed with that command."
 msgstr ""
 
-#: command.c:2416
+#: command.c:2413
 msgid "Unknown hook type"
 msgstr ""
 
-#: command.c:2421
+#: command.c:2418
 #, c-format
 msgid "Hook removed from %s."
 msgstr ""
 
-#: command.c:2430
+#: command.c:2427
 msgid "You must give an object."
 msgstr ""
 
-#: command.c:2432
+#: command.c:2429
 msgid "You must give both an object and attribute."
 msgstr ""
 
-#: command.c:2437
+#: command.c:2434
 msgid "Invalid hook object."
 msgstr ""
 
-#: command.c:2449
+#: command.c:2446
 #, c-format
 msgid "Hook set for %s"
 msgstr ""
 
-#: command.c:2484
+#: command.c:2481
 msgid "There are no hooks currently set."
 msgstr ""
 
-#: command.c:2489
+#: command.c:2486
 msgid "The following commands have hooks: "
 msgstr ""
 
-#: command.c:2549
+#: command.c:2546
 msgid "That command has no hooks."
 msgstr ""
 
@@ -1949,137 +1928,137 @@ msgstr ""
 msgid "%s has scheduled your room %s to be destroyed."
 msgstr ""
 
-#: destroy.c:372
+#: destroy.c:373
 #, c-format
 msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
 msgstr ""
 
-#: destroy.c:375
+#: destroy.c:376
 #, c-format
 msgid "%s and all their objects are scheduled to be destroyed."
 msgstr ""
 
-#: destroy.c:376 destroy.c:388 destroy.c:402
+#: destroy.c:377 destroy.c:389 destroy.c:403
 #, c-format
 msgid "%s is scheduled to be destroyed."
 msgstr ""
 
-#: destroy.c:381 destroy.c:398
+#: destroy.c:382 destroy.c:399
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
 msgstr ""
 
-#: destroy.c:385 destroy.c:395 destroy.c:493
+#: destroy.c:386 destroy.c:396 destroy.c:496
 #, c-format
 msgid "%s has scheduled your %s for destruction."
 msgstr ""
 
-#: destroy.c:433
+#: destroy.c:434
 msgid "Alas, your efforts of mercy are in vain."
 msgstr ""
 
-#: destroy.c:438
+#: destroy.c:439
 #, c-format
 msgid "Your %s has been spared from destruction."
 msgstr ""
 
-#: destroy.c:442
+#: destroy.c:443
 #, c-format
 msgid "%s's %s has been spared from destruction."
 msgstr ""
 
-#: destroy.c:446
+#: destroy.c:449
 msgid "That can't be undestroyed."
-msgstr ""
-
-#: destroy.c:535
-#, c-format
-msgid "%s has been spared from destruction."
 msgstr ""
 
 #: destroy.c:538
 #, c-format
-msgid "You have been spared from destruction by %s."
+msgid "%s has been spared from destruction."
 msgstr ""
 
 #: destroy.c:541
+#, c-format
+msgid "You have been spared from destruction by %s."
+msgstr ""
+
+#: destroy.c:544
 msgid "You have been spared from destruction."
 msgstr ""
 
-#: destroy.c:567
+#: destroy.c:570
 #, c-format
 msgid "The room %s has been spared from destruction."
 msgstr ""
 
-#: destroy.c:571
+#: destroy.c:574
 #, c-format
 msgid "The room %s has been spared from destruction by %s."
 msgstr ""
 
-#: destroy.c:778
+#: destroy.c:781
 msgid ""
 "The floor disappears under your feet, you fall through NOTHINGness and then:"
 msgstr ""
 
-#: destroy.c:834
+#: destroy.c:837
 #, c-format
 msgid "You get your %d %s deposit back for %s."
 msgstr ""
 
-#: destroy.c:934
+#: destroy.c:939
 msgid "That is not a valid dbref."
 msgstr ""
 
-#: destroy.c:939
+#: destroy.c:944
 msgid "Unable to create object with that dbref."
 msgstr ""
 
-#: destroy.c:1059
+#: destroy.c:1064
 msgid "Purge complete."
 msgstr ""
 
-#: destroy.c:1061
+#: destroy.c:1066
 msgid "Sorry, you are a mortal."
 msgstr ""
 
-#: destroy.c:1245
+#: destroy.c:1250
 #, c-format
 msgid "You own a disconnected room, %s"
 msgstr ""
 
-#: destroy.c:1271
+#: destroy.c:1276
 #, c-format
 msgid "You own an object in a circular zone chain: %s"
 msgstr ""
 
-#: destroy.c:1290
+#: destroy.c:1295
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr ""
 
-#: destroy.c:1368
+#: destroy.c:1373
 #, c-format
 msgid "You own an object %s that was 'orphaned'."
 msgstr ""
 
-#: destroy.c:1397 destroy.c:1404
+#: destroy.c:1402 destroy.c:1409
 #, c-format
 msgid "It was moved to %s."
 msgstr ""
 
-#: destroy.c:1410
+#: destroy.c:1415
 msgid "It was destroyed."
 msgstr ""
 
-#: destroy.c:1506
+#: destroy.c:1511
 msgid "Silly mortal, chicks are for kids!"
 msgstr ""
 
-#: destroy.c:1509
+#: destroy.c:1514
 msgid "GAME: Performing database consistency check."
 msgstr ""
 
-#: destroy.c:1512
+#: destroy.c:1517
 msgid "GAME: Database consistency check complete."
 msgstr ""
 
@@ -5559,29 +5538,29 @@ msgstr ""
 msgid "To access this character, connect to %s and type:\n"
 msgstr ""
 
-#: player.c:666
+#: player.c:664
 msgid "The old password that you entered was incorrect."
 msgstr ""
 
-#: player.c:668
+#: player.c:666
 msgid "Bad new password."
 msgstr ""
 
-#: player.c:671
+#: player.c:669
 msgid "You have changed your password."
 msgstr ""
 
-#: player.c:702
+#: player.c:700
 #, c-format
 msgid "Last connect was from %s on %s."
 msgstr ""
 
-#: player.c:710
+#: player.c:708
 #, c-format
 msgid "Last FAILED connect was from %s."
 msgstr ""
 
-#: player.c:737
+#: player.c:735
 #, c-format
 msgid "%s on %s"
 msgstr ""

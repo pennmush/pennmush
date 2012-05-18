@@ -56,6 +56,8 @@
 #include <arpa/inet.h>
 #endif
 
+#endif
+
 #ifndef be32toh
 #define be32toh(i) ntohl(i)
 #endif
@@ -77,8 +79,6 @@ be64toh(int64_t i)
   return r.i64;
 #endif
 }
-#endif
-
 #endif
 
 static inline int32_t

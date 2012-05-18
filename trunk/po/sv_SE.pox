@@ -1302,10 +1302,6 @@ msgstr "Ej tillgänglig."
 msgid "Do what with the function?"
 msgstr "Göra vad med funktionen?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Doing satt."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "Har du inget att säga?"

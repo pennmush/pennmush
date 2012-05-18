@@ -2144,10 +2144,6 @@ msgstr "Utilgjengelig."
 msgid "Do what with the function?"
 msgstr "Gjøre hva med funksjonen?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Gjøremål satt."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "Har du ikke noe å si?"

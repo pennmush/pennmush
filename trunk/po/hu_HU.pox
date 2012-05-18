@@ -1375,10 +1375,6 @@ msgstr "Hatástalanítva."
 msgid "Do what with the function?"
 msgstr "Mit akarsz csinálni a funkcióval?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Tevékenység beállítva."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "Nincs valami mondanivalód?"

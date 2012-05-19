@@ -908,8 +908,11 @@ define_ansi_data(ansi_data *store, const char *str)
       /* This is explicitly normal, it'll never be colored */
       store->bits = 0;
       store->offbits = ~0;
-      store->fg[0] = '\0';
-      store->bg[0] = '\0';
+      store->fg[0] = 'd';
+      store->bg[0] = 'D';
+      store->fg[1] = '\0';
+      store->bg[1] = '\0';
+
       break;
     case 'f':                  /* flash */
       store->bits |= CBIT_FLASH;

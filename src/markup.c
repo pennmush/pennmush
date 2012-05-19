@@ -62,6 +62,13 @@ static int escape_marked_str(char **str, char *buff, char **bp);
 
 const char *is_allowed_tag(const char *s, unsigned int len);
 
+int valid_color_hex(char *name);
+int valid_color_name(char *name);
+int color_to_hex(char *name, int hilite);
+int ansi_map_16(char *name, int bg);
+int ansi_map_256(int hex);
+
+
 static ansi_data ansi_null = NULL_ANSI;
 
 /* ARGSUSED */
@@ -141,11 +148,40 @@ FUNCTION(fun_ansi)
 FUNCTION(fun_colors)
 {
   int i;
+  int shown = 0;
+
+  if (nargs == 2) {
+    char color[COLOR_NAME_LEN];
+    if (!valid_color_name(args[0]) && !valid_color_hex(args[0]+1)) {
+      safe_str(T("#-1 INVALID COLOR"), buff, bp);
+      return;
+    }
+    if (*args[0] == '#')
+      strcpy(color, args[0]);
+    else
+      snprintf(color, COLOR_NAME_LEN, "+%s", args[0]);
+
+    if (!*args[1] || string_prefix("hex", args[1]))
+      safe_format(buff, bp, "#%6x", color_to_hex(color, 0));
+    else if (string_prefix("16color", args[1]))
+      safe_chr(colormap_16[ansi_map_16(color, 0) - 30].desc, buff, bp);
+    else if (string_prefix("256color", args[1]) || string_prefix("xterm256", args[1]))
+      safe_integer(ansi_map_256(color_to_hex(color, 0)), buff, bp);
+    else
+      safe_str("#-1", buff, bp);
+    return;
+  }
+
   for (i = 0; allColors[i].name; i++) {
-    if (i > 0) {
+    if (!strncmp(allColors[i].name, "xterm", 5))
+        continue;
+    if (args[0] && *args[0] && !quick_wild(args[0], allColors[i].name))
+      continue;
+    if (shown > 0) {
       safe_chr(' ', buff, bp);
     }
     safe_str(allColors[i].name, buff, bp);
+    shown++;
   }
 }
 
@@ -562,6 +598,7 @@ color_to_hex(char *name, int hilite) {
 
 #define ANSI_FG 0
 #define ANSI_BG 1
+
 int
 ansi_map_16(char *name, int bg) {
   int hex;
@@ -575,7 +612,6 @@ ansi_map_16(char *name, int bg) {
   }
   /* Otherwise it's a name. Map it to hex. */
   hex = color_to_hex(name, 0);
-
   diff = 0x0FFFFFFF;
   /* Now find the closest 16 color match. */
   best = 0;

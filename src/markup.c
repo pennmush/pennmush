@@ -674,13 +674,14 @@ ANSI_WRITER(ansi_reset) {
 ANSI_WRITER(ansi_16color) {
   int ret = 0;
   int f = 0;
-  ret += safe_str(ANSI_BEGIN, buff, bp);
 
 #define maybe_append_code(code) \
   do { \
     if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
       if (f++)				  \
-	ret += safe_chr(';', buff, bp);	  \
+        ret += safe_chr(';', buff, bp);	  \
+      else \
+        ret += safe_str(ANSI_BEGIN, buff, bp); \
       ret += safe_integer(COL_ ## code, buff, bp); \
     } \
   } while (0)
@@ -695,15 +696,22 @@ ANSI_WRITER(ansi_16color) {
   if (cur->fg[0] && strcmp(cur->fg, old->fg)) {
     if (f++)
       ret += safe_chr(';', buff, bp);
+    else
+      ret += safe_str(ANSI_BEGIN, buff, bp);
     ret += safe_integer(ansi_map_16(cur->fg, ANSI_FG), buff, bp);
   }
   if (cur->bg[0] && strcmp(cur->bg, old->bg)) {
-    if (f)
+    if (f++)
       ret += safe_chr(';', buff, bp);
+    else
+      ret += safe_str(ANSI_BEGIN, buff, bp);
     ret += safe_integer(ansi_map_16(cur->bg, ANSI_BG), buff, bp);
   }
 
-  return ret + safe_str(ANSI_FINISH, buff, bp);
+  if (f)
+    return ret + safe_str(ANSI_FINISH, buff, bp);
+  else
+    return ret;
 }
 
 ANSI_WRITER(ansi_hilite) {
@@ -733,7 +741,7 @@ ANSI_WRITER(ansi_xterm256) {
   do { \
     if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
       if (f++) {			  \
-	ret += safe_chr(';', buff, bp);	  \
+        ret += safe_chr(';', buff, bp);	  \
       } else { \
         ret += safe_str(ANSI_BEGIN, buff, bp); \
       } \

@@ -364,11 +364,16 @@ void do_scan(dbref player, char *command, int flag);
 
 
 /* From look.c */
-/** Enumeration of types of looks that can be performed */
-enum look_type { LOOK_NORMAL, LOOK_TRANS, LOOK_AUTO, LOOK_CLOUDYTRANS,
-  LOOK_CLOUDY
-};
-void look_room(dbref player, dbref loc, enum look_type style,
+#define LOOK_NORMAL       0   /* You typed "look" */
+#define LOOK_AUTO         1   /* Moving into a room */
+#define LOOK_CLOUDY       2   /* Looking through an exit set CLOUDY */
+#define LOOK_TRANS        4   /* Looking through an exit set TRANSPARENT */
+#define LOOK_OUTSIDE      8   /* Using look/outside */
+#define LOOK_NOCONTENTS  16   /* Using look/opaque */
+#define LOOK_CLOUDYTRANS (LOOK_CLOUDY | LOOK_TRANS)
+
+
+void look_room(dbref player, dbref loc, int key,
                NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);

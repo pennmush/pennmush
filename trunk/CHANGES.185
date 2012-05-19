@@ -40,7 +40,8 @@ Commands:
    by Wiggles. [MG]
 
 Functions:
- * colors() returns a list of all known color names known by PennMUSH. [GM]
+ * colors() returns a list of all known color names known by PennMUSH, and
+   info about a particular color. [GM]
 
 Minor changes:
  * The meaning of the COLOR flag has been restored. ANSI flag once again 

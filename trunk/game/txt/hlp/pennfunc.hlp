@@ -900,11 +900,47 @@ See also: Connection Functions
 See also: Connection Functions
 & COLORS()
   colors()
+  colors(<wildcard>)
+  colors(<color>, <format>)
 
-  colors() returns a space-separated list of colors that PennMUSH knows
-  the name of. You can use these colors in ansi(+<colorname>,text)
-
+  With no arguments, colors() returns a space-separated list of colors that
+  PennMUSH knows the name of. You can use these colors in 
+  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not included
+  in the list, but can also be used in ansi().
+  
+  With one argument, returns a space-separated list of colors that match the
+  wildcard pattern <wildcard>.
+  
+  With two arguments, colors() returns information about a particular color.
+  <color> must be the name of a color or a hex code. <format> must be one of
+  "hex" (to return a hexcode in the format #rrggbb), "xterm256" (to return
+  the number of the xterm color closest to the given <color>), or "16color"
+  (to return the letter of the closest ANSI color code). It can be used for
+  working out how certain colors will downgrade to people using clients which
+  aren't fully color-capable.
+  
+  See 'help colors2' for examples.
 See also: ansi(), colorstyle
+& colors2
+
+  Examples:
+    > think colors(*yellow*)
+    greenyellow yellowgreen lightgoldenrodyellow lightyellow yellow
+    lightyellow1 lightyellow2 lightyellow3 lightyellow4 yellow1 yellow2
+    yellow3 yellow4
+    
+    > think colors(yellow, hex)
+    #ffff00
+    
+    > think colors(yellow, xterm256)
+    184
+    
+    > think colors(yellow, 16color)
+    y
+    
+    > think colors(#fffe03, 16)
+    y
+
 & COMP()
   comp(<value1>, <value2>[, <type>])
 

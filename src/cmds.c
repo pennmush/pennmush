@@ -1575,8 +1575,12 @@ COMMAND(cmd_kill)
 
 COMMAND(cmd_look)
 {
-  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)),
-             queue_entry->pe_info);
+  int key = LOOK_NORMAL;
+  if (SW_ISSET(sw, SWITCH_OUTSIDE))
+    key |= LOOK_OUTSIDE;
+  if (SW_ISSET(sw, SWITCH_OPAQUE))
+    key |= LOOK_NOCONTENTS;
+  do_look_at(executor, arg_left, key, queue_entry->pe_info);
 }
 
 COMMAND(cmd_leave)

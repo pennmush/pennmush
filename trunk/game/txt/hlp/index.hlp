@@ -383,92 +383,92 @@ For more, see Entries-19
  clock()                   clone()                   cloudy                   
  cmds()                    cmogrifier()              cmsgs()                  
  code                      color                     colors()                 
- colorstyle                commands                  communication functions  
- comp()                    comsys                    con()                    
- cond()                    condall()                 config()                 
- conn()                    connected                 connection functions     
- contact                   control                   controls()               
- convsecs()                convtime()                convutcsecs()            
- convutctime()             copyright                 copyrite                 
- cor()                     cos()                     costs                    
- cowner()                  create()                  crecall()                
- credits                   csecs()                   cstatus()                
- ctime()                   ctitle()                  ctu()                    
- cusers()                  cv                        cwho()                   
+ colors2                   colorstyle                commands                 
+ communication functions   comp()                    comsys                   
+ con()                     cond()                    condall()                
+ config()                  conn()                    connected                
+ connection functions      contact                   control                  
+ controls()                convsecs()                convtime()               
+ convutcsecs()             convutctime()             copyright                
+ copyrite                  cor()                     cos()                    
+ costs                     cowner()                  create()                 
+ crecall()                 credits                   csecs()                  
+ cstatus()                 ctime()                   ctitle()                 
+ ctu()                     cusers()                  cv                       
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- dark                      database                  dbref #                  
- dbref functions           dbref number              dbref2                   
- dbrefs                    debit power               debug                    
- debug2                    debugforwardlist          dec()                    
- decode64()                decompose()               decrypt()                
- default()                 delete()                  descriptor               
- desert                    destroy_ok                die()                    
- dig()                     digest()                  dismiss                  
- dist2d()                  dist3d()                  div()                    
- doing                     doing()                   download                 
- drop                      drop-tos                  droptos                  
- dynhelp()                 e()                       edefault()               
- edit()                    element()                 elements()               
- elist()                   elock()                   emit()                   
- empty                     enactor                   encode64()               
- encrypt()                 endtag()                  enter                    
+ cwho()                    dark                      database                 
+ dbref #                   dbref functions           dbref number             
+ dbref2                    dbrefs                    debit power              
+ debug                     debug2                    debugforwardlist         
+ dec()                     decode64()                decompose()              
+ decrypt()                 default()                 delete()                 
+ descriptor                desert                    destroy_ok               
+ die()                     dig()                     digest()                 
+ dismiss                   dist2d()                  dist3d()                 
+ div()                     doing                     doing()                  
+ download                  drop                      drop-tos                 
+ droptos                   dynhelp()                 e()                      
+ edefault()                edit()                    element()                
+ elements()                elist()                   elock()                  
+ emit()                    empty                     enactor                  
+ encode64()                encrypt()                 endtag()                 
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- enter_ok                  entrances()               eq()                     
- escape()                  etimefmt()                etimefmt2                
- etimefmt3                 eval()                    evaluation order         
- evaluation2               event                     event db                 
- event dump                event examples            event examples2          
- event list                event log                 event object             
- event player              event signal              event socket             
- event sql                 events                    examine                  
- executor                  exit()                    exits                    
- exp()                     extract()                 failure                  
- failure2                  fdiv()                    filter()                 
- filterbool()              findable()                first()                  
- firstof()                 fixed                     flag list                
- flag permissions          flags                     flags list               
- flags()                   flags2                    flip()                   
- floating                  floor()                   floordiv()               
+ enter                     enter_ok                  entrances()              
+ eq()                      escape()                  etimefmt()               
+ etimefmt2                 etimefmt3                 eval()                   
+ evaluation order          evaluation2               event                    
+ event db                  event dump                event examples           
+ event examples2           event list                event log                
+ event object              event player              event signal             
+ event socket              event sql                 events                   
+ examine                   executor                  exit()                   
+ exits                     exp()                     extract()                
+ failure                   failure2                  fdiv()                   
+ filter()                  filterbool()              findable()               
+ first()                   firstof()                 fixed                    
+ flag list                 flag permissions          flags                    
+ flags list                flags()                   flags2                   
+ flip()                    floating                  floor()                  
 
 For more, see Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- fmod()                    fn()                      fn2                      
- fold()                    fold2                     folderstats()            
- follow                    followers()               following()              
- foreach()                 foreach2                  forwardlist              
- fraction()                fullalias()               fullname()               
- function list             functions                 functions power          
- functions()               functions2                gagged                   
- garbage                   gender                    get                      
- get()                     get_eval()                getpids()                
- getting started           give                      global commands          
- globals                   go                        going                    
- going_twice               goto                      grab()                   
- graball()                 grep()                    grepi()                  
- gs channels               gs chat                   gs chat2                 
- gs mail                   gs mail2                  gs moving                
- gs moving2                gs talking                gs talking2              
+ floordiv()                fmod()                    fn()                     
+ fn2                       fold()                    fold2                    
+ folderstats()             follow                    followers()              
+ following()               foreach()                 foreach2                 
+ forwardlist               fraction()                fullalias()              
+ fullname()                function list             functions                
+ functions power           functions()               functions2               
+ gagged                    garbage                   gender                   
+ get                       get()                     get_eval()               
+ getpids()                 getting started           give                     
+ global commands           globals                   go                       
+ going                     going_twice               goto                     
+ grab()                    graball()                 grep()                   
+ grepi()                   gs channels               gs chat                  
+ gs chat2                  gs mail                   gs mail2                 
+ gs moving                 gs moving2                gs talking               
 
 For more, see Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- gt()                      gte()                     guest power              
- halt                      halt power                hasattr()                
- hasattrp()                hasattrpval()             hasattrval()             
- hasflag()                 hash                      haspower()               
- hastype()                 haven                     hear_connect             
- heavy                     height()                  help                     
+ gs talking2               gt()                      gte()                    
+ guest power               halt                      halt power               
+ hasattr()                 hasattrp()                hasattrpval()            
+ hasattrval()              hasflag()                 hash                     
+ haspower()                hastype()                 haven                    
+ hear_connect              heavy                     height()                 
  here                      hidden()                  hide power               
  home                      home()                    homes                    
  hook power                host()                    hostname()               

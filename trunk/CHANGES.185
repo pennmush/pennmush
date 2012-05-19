@@ -35,6 +35,10 @@ Major changes:
  * The old @doing command has now been removed, and replaced with the normal
    standard-attribute command (@doing <object>[=<message>]). [MG]
 
+Commands:
+ * look now takes an /opaque switch, which hides contents listings. Suggested
+   by Wiggles. [MG]
+
 Functions:
  * colors() returns a list of all known color names known by PennMUSH. [GM]
 
@@ -54,6 +58,8 @@ Minor changes:
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem
    reported by Zen@M*U*SH. [MG]
+ * Setting an exit Transparent didn't cause its destination's desc to get
+   shown as it should have. [MG]
 
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 

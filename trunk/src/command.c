@@ -352,7 +352,7 @@ COMLIST commands[] = {
   {"INVENTORY", NULL, cmd_inventory, CMD_T_ANY, 0, 0},
 
   {"KILL", NULL, cmd_kill, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"LOOK", "OUTSIDE", cmd_look, CMD_T_ANY, 0, 0},
+  {"LOOK", "OUTSIDE OPAQUE", cmd_look, CMD_T_ANY, 0, 0},
   {"LEAVE", NULL, cmd_leave, CMD_T_PLAYER | CMD_T_THING, 0, 0},
 
   {"PAGE", "LIST NOEVAL PORT OVERRIDE", cmd_page,

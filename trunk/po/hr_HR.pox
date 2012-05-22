@@ -414,6 +414,10 @@ msgstr "#-1 NEISPRAVAN ARGUMENT"
 msgid "#-1 INVALID BOOLEXP"
 msgstr "#-1 NEISPRAVAN BOOLEOVSKI IZRAZ"
 
+#: markup.c:156
+msgid "#-1 INVALID COLOR"
+msgstr "#-1 NEISPRAVNA BOJA"
+
 #: funstr.c:418
 msgid "#-1 INVALID DBREF"
 msgstr "#-1 NEISPRAVAN DBREF"

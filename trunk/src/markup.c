@@ -177,10 +177,8 @@ FUNCTION(fun_colors)
     return;
   }
 
-  /* Return list of available color names */
-  for (i = 0; allColors[i].name; i++) {
-    if (!strncmp(allColors[i].name, "xterm", 5))
-        continue;
+  /* Return list of available color names, skipping over the 256 'xtermN' colors */
+  for (i = 256; allColors[i].name; i++) {
     if (args[0] && *args[0] && !quick_wild(args[0], allColors[i].name))
       continue;
     if (shown > 0) {
@@ -663,14 +661,14 @@ ansi_map_256(int hex) {
 
   /* TODO: Figure out a way to use hilite to improve color map? Then can
    * use max=16 for foreground (but not background) */
-  for (i = 0; xterm_colormap[i].id >= 0; i++) {
-    cdiff = hex_difference(xterm_colormap[i].hex, hex);
+  for (i = 0; i < 256; i++) {
+    cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {
       best = i;
       diff = cdiff;
     }
   }
-  return xterm_colormap[best].id;
+  return best;
 }
 
 typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp);

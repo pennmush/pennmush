@@ -1011,7 +1011,12 @@ new_ansi:
       if (!valid_color_name(buff)) {
         return 1;
       }
-      snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+      if (strlen(buff) > 6) {
+        /* Use hex code to save on buffer space */
+        snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(buff, 0));
+      } else {
+        snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+      }
       break;
     case '#':
       /* Hex colors. */

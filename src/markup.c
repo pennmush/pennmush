@@ -145,21 +145,26 @@ FUNCTION(fun_ansi)
   }
 }
 
+/* ARGSUSED */
 FUNCTION(fun_colors)
 {
   int i;
   int shown = 0;
 
   if (nargs == 2) {
+    /* Return color info for a specific color */
     char color[COLOR_NAME_LEN];
-    if (!valid_color_name(args[0]) && !valid_color_hex(args[0]+1)) {
+    char *p = args[0];
+    while (*p && (*p == '+' || *p == '!' || *p == '/'))
+      p++;
+    if (!*p || (!valid_color_name(p) && valid_color_hex(p+1))) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
       return;
     }
-    if (*args[0] == '#')
-      strcpy(color, args[0]);
+    if (*p == '#')
+      strcpy(color, p);
     else
-      snprintf(color, COLOR_NAME_LEN, "+%s", args[0]);
+      snprintf(color, COLOR_NAME_LEN, "+%s", p);
 
     if (!*args[1] || string_prefix("hex", args[1]))
       safe_format(buff, bp, "#%6x", color_to_hex(color, 0));
@@ -172,6 +177,7 @@ FUNCTION(fun_colors)
     return;
   }
 
+  /* Return list of available color names */
   for (i = 0; allColors[i].name; i++) {
     if (!strncmp(allColors[i].name, "xterm", 5))
         continue;
@@ -465,6 +471,12 @@ write_ansi_close(char *buff, char **bp)
   return retval;
 }
 
+/** Write the color codes, which would be used by ansi() to recreate
+ * the given ansi_data, into a buffer.
+ * \param cur the ansi data to write
+ * \param buff buffer to write to
+ * \param bp position in buffer to write at
+ */
 static int
 write_ansi_letters(const ansi_data *cur, char *buff, char **bp)
 {
@@ -535,6 +547,7 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
   }
 }
 
+/** Return the hex code for a given ANSI color */
 int
 color_to_hex(char *name, int hilite) {
   int i = 0;
@@ -599,6 +612,8 @@ color_to_hex(char *name, int hilite) {
 #define ANSI_FG 0
 #define ANSI_BG 1
 
+/** Map a color (old-style ANSI code, color name or hex value) taken
+ * by ansi() to the 16-color ANSI palette */
 int
 ansi_map_16(char *name, int bg) {
   int hex;
@@ -634,6 +649,8 @@ ansi_map_16(char *name, int bg) {
   }
 }
 
+/** Map a color (old-style ANSI code, color name or hex value) taken
+ * by ansi() to the 256-color XTERM palette */
 int
 ansi_map_256(int hex) {
   int diff, cdiff;
@@ -819,7 +836,7 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
     return aw->reset(old, cur, ansi_format, buff, bp);
   }
 
-  /* This shouldn't happen */
+  /* This shouldn't happen (Are you sure? MG) */
   if (!strcmp(cur->fg, "n")) {
     if (old->bits || (strcmp(old->fg,"n")) || old->bg[0]) {
       return aw->reset(old, cur, ansi_format, buff, bp);
@@ -854,6 +871,9 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
   return ret += aw->change(old, cur, ansi_format, buff, bp);
 }
 
+/** Validate a hexidecimal color code. name does NOT include the
+ * leading '#'
+ */
 int
 valid_color_hex(char *name) {
   /* Must be 6 characters and must all be hexadecimal. */
@@ -871,6 +891,9 @@ valid_color_hex(char *name) {
   return 1;
 }
 
+/** Validate a color name for ansi(). name does NOT include
+ * the leading '+'
+ */
 int
 valid_color_name(char *name) {
   int i;
@@ -1104,6 +1127,7 @@ skip_leading_ansi(const char *p)
 
 }
 
+/** Does a string contain markup? */
 int
 has_markup(const char *test)
 {
@@ -1113,6 +1137,7 @@ has_markup(const char *test)
           || strchr(test, TAG_END));
 }
 
+/** Extract the HTML tag name from a Pueblo markup block */
 static char *
 parse_tagname(const char *ptr)
 {

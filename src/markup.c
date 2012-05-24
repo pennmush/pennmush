@@ -167,7 +167,7 @@ FUNCTION(fun_colors)
       snprintf(color, COLOR_NAME_LEN, "+%s", p);
 
     if (!*args[1] || string_prefix("hex", args[1]))
-      safe_format(buff, bp, "#%6x", color_to_hex(color, 0));
+      safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
     else if (string_prefix("16color", args[1]))
       safe_chr(colormap_16[ansi_map_16(color, 0) - 30].desc, buff, bp);
     else if (string_prefix("256color", args[1]) || string_prefix("xterm256", args[1]))

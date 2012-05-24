@@ -565,22 +565,24 @@ See also: orflags(), flags(), lflags()
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
-  ansi(<colors>, <string>)
+  ansi(<ansi-codes>, <string>)
+  ansi([<fg-color>][/<bg-color>], <string>)
  
   This allows you to mark up a string using ANSI terminal effects, 16-color
   codes, and color names and hex values.
-
-  <colors> can be:
-  * Old-style color codes (check "help ansi2")
-  * +colorname
-  * #hexcode
-  * /<background> or !<background> - where <background> is either a
-    +colorname or #hexcode
+  
+  The old-style <ansi-codes> are listed in "help ansi2".
+  
+  <fg-color> and <bg-color> can be either a "+<colorname>" (for a list of
+  valid names, see "help colors()") or a hexcode (#000000, #ff0055, etc).
 
   For example, "ansi(+orange/#00ff00,Test)" would color "Test" in orange,
   on a blue background. In the event that your client does not support
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.
+  
+  When using the newer color names/hexcodes, you can also use ! instead of
+  / to separate the foreground and background colors.
  
 See also: ANSI, COLOR, @sockset, colorstyle, colors()
 & ANSI2

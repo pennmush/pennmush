@@ -6337,14 +6337,22 @@ See also: VECTOR FUNCTIONS
    function    Test for a valid function name for @function
    flag        Test for a valid flag/power name for @flag/add and @power/add
    qreg        Test for a valid name for a q-register.
+   colorname   Test for a valid color name for ansi()/colors()
+   ansicodes   Test for a valid color code sequence for ansi(<string>, ...)
 
   Note that, for "playername", valid() returns 0 if the name is valid but
   currently in use by a player other than the caller.
+  
+  For "ansicodes", when not using new-style color names or hex codes, valid()
+  always returns 1, and invalid codes are simply ignored, the same as when
+  used in the ansi() function.
 
   > think valid(name,Foobar)
   1 
   > think valid(attrname,Foo bar)
   0
+
+See also: colors(), ansi()
 & VCROSS()
   vcross(<vector1>, <vector2>[, <delimiter>])
 

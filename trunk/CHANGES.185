@@ -42,6 +42,8 @@ Commands:
 Functions:
  * colors() returns a list of all known color names known by PennMUSH, and
    info about a particular color. [GM]
+ * valid() has two new categories, for validating color names and color code
+   sequences for ansi(). [MG]
 
 Minor changes:
  * The meaning of the COLOR flag has been restored. ANSI flag once again 

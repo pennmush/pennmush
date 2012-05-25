@@ -1013,7 +1013,7 @@ new_ansi:
       }
       if (strlen(buff) > 6) {
         /* Use hex code to save on buffer space */
-        snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(buff, 0));
+        snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(tprintf("+%s", buff), 0));
       } else {
         snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
       }

@@ -259,7 +259,6 @@ static unsigned char *notify_makestring_real(struct notify_message *message,
 static unsigned char *notify_makestring_nocache(unsigned char *message,
                                                 int output_type);
 
-//#define notify_makestring(msg,ot) render_string((msg)->strs[0].message, ot)
 #define notify_makestring(msg,ot) notify_makestring_real(msg,ot)
 
 /** Check which kinds of markup or special characters a string may contain.

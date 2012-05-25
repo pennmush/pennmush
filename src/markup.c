@@ -62,13 +62,6 @@ static int escape_marked_str(char **str, char *buff, char **bp);
 
 const char *is_allowed_tag(const char *s, unsigned int len);
 
-int valid_color_hex(char *name);
-int valid_color_name(char *name);
-int color_to_hex(char *name, int hilite);
-int ansi_map_16(char *name, int bg);
-int ansi_map_256(int hex);
-
-
 static ansi_data ansi_null = NULL_ANSI;
 
 /* ARGSUSED */

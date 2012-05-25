@@ -230,4 +230,11 @@ parse_ansi_string(const char *src)
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
+int valid_color_hex(char *name);
+int valid_color_name(char *name);
+int color_to_hex(char *name, int hilite);
+int ansi_map_16(char *name, int bg);
+int ansi_map_256(int hex);
+
+
 #endif                          /* __ANSI_H */

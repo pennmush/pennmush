@@ -1004,7 +1004,7 @@ new_ansi:
       if (!valid_color_name(buff)) {
         return 1;
       }
-      if (strlen(buff) > 6) {
+      if (strlen(buff) > 6 && strncasecmp(buff, "xterm", 5)) {
         /* Use hex code to save on buffer space */
         snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(tprintf("+%s", buff), 0));
       } else {

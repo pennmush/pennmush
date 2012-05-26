@@ -150,7 +150,7 @@ FUNCTION(fun_colors)
     char *p = args[0];
     while (*p && (*p == '+' || *p == '!' || *p == '/'))
       p++;
-    if (!*p || (!valid_color_name(p) && valid_color_hex(p+1))) {
+    if (!*p || (!valid_color_name(p) && !valid_color_hex(p+1))) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
       return;
     }

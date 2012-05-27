@@ -576,7 +576,7 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   <fg-color> and <bg-color> can be either a "+<colorname>" (for a list of
   valid names, see "help colors()") or a hexcode (#000000, #ff0055, etc).
 
-  For example, "ansi(+orange/#00ff00,Test)" would color "Test" in orange,
+  For example, "ansi(+orange/#0000ff,Test)" would color "Test" in orange,
   on a blue background. In the event that your client does not support
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.

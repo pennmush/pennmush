@@ -652,8 +652,6 @@ ansi_map_256(int hex) {
   /* Now find the closest 16 color match. */
   best = 0;
 
-  /* TODO: Figure out a way to use hilite to improve color map? Then can
-   * use max=16 for foreground (but not background) */
   for (i = 0; i < 256; i++) {
     cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {

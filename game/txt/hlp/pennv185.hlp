@@ -53,6 +53,7 @@ Minor changes:
    in any way, is no longer set. Suggested by Paige. [MG]
  * @destroy'ing, @undestroy'ing, and the actual destruction of players is
    now logged. Suggested by Padraic. [MG]
+ * Translation fixes by Stoko.
    
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem

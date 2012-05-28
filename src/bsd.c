@@ -3507,25 +3507,25 @@ sockset(DESC *d, char *name, char *val)
   if (!strcasecmp(name, "COLORSTYLE")) {
     if (!strcasecmp(val,"auto")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
-      return T("Colorstyle set to 'auto'");
+      return tprintf(T("Colorstyle set to '%s'"), "auto");
     } else if (string_prefix("plain", val) || string_prefix("none", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
-      return T("Colorstyle set to 'plain'");
+      return tprintf(T("Colorstyle set to '%s'"), "plain");
     } else if (string_prefix("hilite", val) || string_prefix("highlight", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
-      return T("Colorstyle set to 'hilite'");
+      return tprintf(T("Colorstyle set to '%s'"), "hilite");
     } else if (string_prefix("16color", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
-      return T("Colorstyle set to '16color'");
+      return tprintf(T("Colorstyle set to '%s'"), "16color");
     } else if (string_prefix("xterm256", val) || !strcmp(val, "256")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
-      return T("Colorstyle set to 'xterm256'");
+      return tprintf(T("Colorstyle set to '%s'"), "xterm256");
     }
-    return T("Unknown color style. Valid color styles: 'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+    return tprintf(T("Unknown color style. Valid color styles: %s"), "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
   }
 
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),

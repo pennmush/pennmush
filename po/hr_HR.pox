@@ -2138,26 +2138,6 @@ msgstr "Klonirano: Soba #%d."
 msgid "Cmds"
 msgstr "Kmnd"
 
-#: bsd.c:3510
-msgid "Colorstyle set to '16color'"
-msgstr "Stil boje postavljen na '16color'"
-
-#: bsd.c:3498
-msgid "Colorstyle set to 'auto'"
-msgstr "Stil boje postavljen na 'auto'"
-
-#: bsd.c:3506
-msgid "Colorstyle set to 'hilite'"
-msgstr "Stil boje postavljen na 'hilite'"
-
-#: bsd.c:3502
-msgid "Colorstyle set to 'plain'"
-msgstr "Stil boje postavljen na 'plain'"
-
-#: bsd.c:3514
-msgid "Colorstyle set to 'xterm256'"
-msgstr "Stil boje postavljen na 'xterm256'"
-
 #: command.c:1318
 #, c-format
 msgid "Command %s added."
@@ -5414,10 +5394,6 @@ msgstr "Ne mogu obrisati atribut %s"
 #, c-format
 msgid "Unknown access option: %s"
 msgstr "Nepoznata pristupna opcija: %s"
-
-#: bsd.c:3516
-msgid "Unknown color style. Valid color styles: 'auto', 'plain', 'hilite', '16color', 'xterm256'."
-msgstr "Nepoznat stil boje. Ispravni stilovi boje: 'auto', 'plain', 'hilite', '16color', 'xterm256'."
 
 #: flags.c:2081
 #, c-format

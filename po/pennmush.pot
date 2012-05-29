@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 02:00-0500\n"
+"POT-Creation-Date: 2012-05-29 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -360,7 +360,7 @@ msgstr ""
 #: destroy.c:242 destroy.c:934 extchat.c:1802 extchat.c:1819 extchat.c:1852
 #: extchat.c:4052 flags.c:1909 flags.c:1915 flags.c:2073 function.c:958
 #: function.c:1194 function.c:1421 function.c:1566 function.c:1612
-#: function.c:1667 funmisc.c:1255 game.c:967 game.c:1571 lock.c:738 lock.c:802
+#: function.c:1667 funmisc.c:1260 game.c:967 game.c:1571 lock.c:738 lock.c:802
 #: lock.c:990 look.c:1530 malias.c:764 malias.c:869 match.c:472 move.c:577
 #: move.c:922 move.c:940 predicat.c:1323 rob.c:464 set.c:223 set.c:1307
 #: set.c:1393 set.c:1430 set.c:1447 set.c:1532 set.c:1537 speech.c:1374
@@ -583,30 +583,14 @@ msgstr ""
 msgid "Terminal Type set."
 msgstr ""
 
-#: bsd.c:3510
-msgid "Colorstyle set to 'auto'"
-msgstr ""
-
-#: bsd.c:3514
-msgid "Colorstyle set to 'plain'"
-msgstr ""
-
-#: bsd.c:3518
-msgid "Colorstyle set to 'hilite'"
-msgstr ""
-
-#: bsd.c:3522
-msgid "Colorstyle set to '16color'"
-msgstr ""
-
-#: bsd.c:3526
-msgid "Colorstyle set to 'xterm256'"
+#: bsd.c:3510 bsd.c:3514 bsd.c:3518 bsd.c:3522 bsd.c:3526
+#, c-format
+msgid "Colorstyle set to '%s'"
 msgstr ""
 
 #: bsd.c:3528
-msgid ""
-"Unknown color style. Valid color styles: 'auto', 'plain', 'hilite', "
-"'16color', 'xterm256'."
+#, c-format
+msgid "Unknown color style. Valid color styles: %s"
 msgstr ""
 
 #: bsd.c:3531
@@ -3886,7 +3870,7 @@ msgstr ""
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
 msgstr ""
 
-#: funlist.c:1024 funmisc.c:726
+#: funlist.c:1024 funmisc.c:731
 msgid "#-1 NUMBER OUT OF RANGE"
 msgstr ""
 
@@ -4000,38 +3984,38 @@ msgstr ""
 msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:267
+#: funmisc.c:272
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:303
+#: funmisc.c:308
 msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:1154
+#: funmisc.c:1159
 msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
 msgstr ""
 
-#: funmisc.c:1173
+#: funmisc.c:1178
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:1277
+#: funmisc.c:1282
 msgid "Invalid type."
 msgstr ""
 
-#: funmisc.c:1455
+#: funmisc.c:1460
 msgid ""
 "Function invocation limit reached. Benchmark timings may not be reliable."
 msgstr ""
 
-#: funmisc.c:1456 funmisc.c:1459
+#: funmisc.c:1461 funmisc.c:1464
 #, c-format
 msgid "Average: %.2f   Min: %u   Max: %u"
 msgstr ""
 
-#: funmisc.c:1464
+#: funmisc.c:1469
 msgid ""
 " Note: Function invocation limit reached. Benchmark timings may not be "
 "reliable."
@@ -5092,12 +5076,12 @@ msgstr ""
 msgid "MAIL: %s removed from alias %s"
 msgstr ""
 
-#: markup.c:117
+#: markup.c:110
 #, c-format
 msgid "#-1 INVALID ANSI DEFINITION: %s"
 msgstr ""
 
-#: markup.c:156
+#: markup.c:154
 msgid "#-1 INVALID COLOR"
 msgstr ""
 
@@ -5382,12 +5366,12 @@ msgstr ""
 msgid "Sorry."
 msgstr ""
 
-#: notify.c:547
+#: notify.c:546
 #, c-format
 msgid "From %s, "
 msgstr ""
 
-#: notify.c:649
+#: notify.c:648
 #, c-format
 msgid "[%s(#%d)'s %s(#%d)] "
 msgstr ""

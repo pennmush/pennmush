@@ -1555,6 +1555,9 @@ FUNCTION(fun_wrap)
   if (!int_check(buff, bp, nargs, args, 3, &width1st, width))
     return;
 
+  if (width1st == 0)
+    width1st = width;
+
   if (nargs > 3)
     linesep = args[3];
   else

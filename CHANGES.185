@@ -64,6 +64,10 @@ Fixes:
    reported by Zen@M*U*SH. [MG]
  * Setting an exit Transparent didn't cause its destination's desc to get
    shown as it should have. [MG]
+ * It became impossible in p1 to give a delimiter to wrap() without also
+   specifying a first line width. wrap(%0,%1,,%2) will now use the
+   normal <width> arg for first line width, the same as wrap(%0,%1) does.
+   Reported by Kitai. [MG]
 
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 

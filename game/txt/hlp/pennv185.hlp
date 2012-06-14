@@ -54,12 +54,18 @@ Minor changes:
  * @destroy'ing, @undestroy'ing, and the actual destruction of players is
    now logged. Suggested by Padraic. [MG]
  * Translation fixes by Stoko.
+ * round(4.5,0) behaved differently on Penn than it did on MUX, and
+   inconsistantly with rounding to more places on Penn. [SW]
    
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem
    reported by Zen@M*U*SH. [MG]
  * Setting an exit Transparent didn't cause its destination's desc to get
    shown as it should have. [MG]
+ * It became impossible in p1 to give a delimiter to wrap() without also
+   specifying a first line width. wrap(%0,%1,,%2) will now use the
+   normal <width> arg for first line width, the same as wrap(%0,%1) does.
+   Reported by Kitai. [MG]
  * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
    by ChaosMageX@M*U*S*H. [DC]
 

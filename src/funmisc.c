@@ -933,7 +933,7 @@ FUNCTION(fun_reswitch)
       /* Matching error. Ignore this one, move on. */
       continue;
     }
-    add_check("pcre");
+    ADD_CHECK("pcre");
     extra = default_match_limit();
     search = 0;
     subpatterns =
@@ -958,7 +958,8 @@ FUNCTION(fun_reswitch)
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
     }
-    mush_free(re, "pcre");
+    pcre_free(re);
+    DEL_CHECK("pcre");
     if ((first && found) || per) {
       goto exit_sequence;
     }

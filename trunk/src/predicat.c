@@ -1528,7 +1528,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       }
       return 0;
     }
-    add_check("pcre");
+    ADD_CHECK("pcre");
     rgd.study = pcre_study(rgd.re, 0, &errptr);
     if (errptr != NULL) {
       if (buff) {
@@ -1537,7 +1537,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       } else {
         notify_format(player, T("Invalid regexp: %s"), errptr);
       }
-      mush_free(rgd.re, "pcre");
+      pcre_free(rgd.re);
+      DEL_CHECK("pcre");
       return 0;
     }
     if (rgd.study) {
@@ -1554,7 +1555,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
     if (free_study)
       mush_free(rgd.study, "pcre.extra");
-    mush_free(rgd.re, "pcre");
+    pcre_free(rgd.re);
+    DEL_CHECK("pcre");
 
     return rgd.count;
   } else {

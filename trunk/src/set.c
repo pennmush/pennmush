@@ -1240,10 +1240,11 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
-  add_check("pcre");
+  ADD_CHECK("pcre");
   study = pcre_study(re, 0, &errptr);
   if (errptr != NULL) {
-    mush_free(re, "pcre");
+    pcre_free(re);
+    DEL_CHECK("pcre");
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
@@ -1267,7 +1268,8 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
                   args.skipped);
 
-  mush_free(re, "pcre");
+  pcre_free(re);
+  DEL_CHECK("pcre");
   mush_free(study, "pcre.extra");
 
 }

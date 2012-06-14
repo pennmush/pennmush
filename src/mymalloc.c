@@ -127,6 +127,12 @@ void
 mush_free_where(void *restrict ptr, const char *restrict check,
                 const char *restrict filename, int line)
 {
+#ifdef DEBUG
+  if (strstr(check, "pcre")) {
+    do_rawlog(LT_TRACE, "pcre allocation at %s:%d should be freed with pcre_free",
+              filename, line);
+  }
+#endif
   del_check(check, filename, line);
   free(ptr);
   return;

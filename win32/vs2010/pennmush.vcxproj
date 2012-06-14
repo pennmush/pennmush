@@ -195,6 +195,7 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\strutil.c" />
     <ClCompile Include="..\..\src\tables.c" />
     <ClCompile Include="..\..\src\timer.c" />
+    <ClCompile Include="..\..\src\tz.c" />
     <ClCompile Include="..\..\src\unparse.c" />
     <ClCompile Include="..\..\src\utils.c" />
     <ClCompile Include="..\..\src\version.c" />
@@ -254,6 +255,7 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\sort.h" />
     <ClInclude Include="..\..\hdrs\strtree.h" />
     <ClInclude Include="..\..\hdrs\switches.h" />
+    <ClInclude Include="..\..\hdrs\tz.h" />
     <ClInclude Include="..\..\hdrs\version.h" />
     <ClInclude Include="..\..\hdrs\wait.h" />
   </ItemGroup>

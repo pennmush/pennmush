@@ -1248,7 +1248,7 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
-  add_check("pcre.extra");
+  ADD_CHECK("pcre.extra");
 
   extra = study;
   set_match_limit(extra);
@@ -1270,7 +1270,8 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
 
   pcre_free(re);
   DEL_CHECK("pcre");
-  mush_free(study, "pcre.extra");
+  pcre_free(study);
+  DEL_CHECK("pcre.extra");
 
 }
 

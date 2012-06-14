@@ -1542,7 +1542,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       return 0;
     }
     if (rgd.study) {
-      add_check("pcre.extra");
+      ADD_CHECK("pcre.extra");
       free_study = true;
       set_match_limit(rgd.study);
     } else {
@@ -1553,8 +1553,10 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     rgd.count = 0;
 
     atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
-    if (free_study)
-      mush_free(rgd.study, "pcre.extra");
+    if (free_study) {
+      pcre_free(rgd.study);
+      DEL_CHECK("pcre.extra");
+    }
     pcre_free(rgd.re);
     DEL_CHECK("pcre");
 

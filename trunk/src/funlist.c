@@ -2581,7 +2581,7 @@ FUNCTION(fun_regreplace)
       }
       if (study != NULL)
         /* study */
-        add_check("pcre.extra");
+        ADD_CHECK("pcre.extra");
     }
 
     if (study) {
@@ -2601,8 +2601,10 @@ FUNCTION(fun_regreplace)
       safe_str(prebuf, postbuf, &postp);
       pcre_free(re);
       DEL_CHECK("pcre");
-      if (study)
-        mush_free(study, "pcre.extra");
+      if (study) {
+        pcre_free(study);
+        DEL_CHECK("pcre.extra");
+      }
       continue;
     }
 
@@ -2625,8 +2627,10 @@ FUNCTION(fun_regreplace)
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
         pcre_free(re);
         DEL_CHECK("pcre");
-        if (study)
-          mush_free(study, "pcre.extra");
+        if (study) {
+          pcre_free(study);
+          DEL_CHECK("pcre.extra");
+        }
         goto exit_sequence;
       }
       if ((*bp == (buff + BUFFER_LEN - 1))
@@ -2649,8 +2653,10 @@ FUNCTION(fun_regreplace)
 
     pcre_free(re);
     DEL_CHECK("pcre");
-    if (study != NULL)
-      mush_free(study, "pcre.extra");
+    if (study != NULL) {
+      pcre_free(study);
+      DEL_CHECK("pcre.extra");
+    }
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2693,7 +2699,7 @@ FUNCTION(fun_regreplace)
         }
         if (study != NULL)
           /* study */
-          add_check("pcre.extra");
+          ADD_CHECK("pcre.extra");
       }
       if (study) {
         extra = study;
@@ -2717,8 +2723,10 @@ FUNCTION(fun_regreplace)
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
             pcre_free(re);
             DEL_CHECK("pcre");
-            if (study)
-              mush_free(study, "pcre.extra");
+            if (study) {
+              pcre_free(study);
+              DEL_CHECK("pcre.extra");
+            }
             goto exit_sequence;
           }
           *tbp = '\0';
@@ -2748,8 +2756,10 @@ FUNCTION(fun_regreplace)
       } while (subpatterns >= 0 && all);
       pcre_free(re);
       DEL_CHECK("pcre");
-      if (study != NULL)
-        mush_free(study, "pcre.extra");
+      if (study != NULL) {
+        pcre_free(study);
+        DEL_CHECK("pcre.extra");
+      }
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
@@ -2948,7 +2958,7 @@ FUNCTION(fun_regrab)
     return;
   }
   if (study) {
-    add_check("pcre.extra");
+    ADD_CHECK("pcre.extra");
     extra = study;
     set_match_limit(extra);
   } else
@@ -2972,8 +2982,10 @@ FUNCTION(fun_regrab)
 
   pcre_free(re);
   DEL_CHECK("pcre");
-  if (study)
-    mush_free(study, "pcre.extra");
+  if (study) {
+    pcre_free(study);
+    DEL_CHECK("pcre.extra");
+  }
 }
 
 FUNCTION(fun_isregexp)

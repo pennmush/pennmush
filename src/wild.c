@@ -479,7 +479,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
      */
     return 0;
   }
-  add_check("pcre");
+  ADD_CHECK("pcre");
 
   /* The ansi string */
   if (has_markup(val)) {
@@ -500,7 +500,8 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
       < 0) {
     if (as)
       free_ansi_string(as);
-    mush_free(re, "pcre");
+    pcre_free(re);
+    DEL_CHECK("pcre");
     return 0;
   }
 
@@ -553,7 +554,8 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
 
   if (as)
     free_ansi_string(as);
-  mush_free(re, "pcre");
+  pcre_free(re);
+  DEL_CHECK("pcre");
   return 1;
 }
 
@@ -598,7 +600,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
     }
     return 0;
   }
-  add_check("pcre");
+  ADD_CHECK("pcre");
   sptr = remove_markup(d, &slen);
   extra = default_match_limit();
   /*
@@ -607,7 +609,8 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
    */
   r = pcre_exec(re, extra, sptr, slen - 1, 0, 0, offsets, 99);
 
-  mush_free(re, "pcre");
+  pcre_free(re);
+  DEL_CHECK("pcre");
 
   return r >= 0;
 }

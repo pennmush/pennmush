@@ -124,9 +124,9 @@ sitelock_free(struct access *ap)
   if (ap->comment)
     mush_free(ap->comment, "sitelock.rule.comment");
   if (ap->re)
-    free(ap->re);
+    pcre_free(ap->re);
   if (ap->study)
-    free(ap->study);
+    pcre_free(ap->study);
   mush_free(ap, "sitelock.rule");
 }
 

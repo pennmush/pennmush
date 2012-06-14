@@ -520,6 +520,10 @@ SOURCE=..\..\src\timer.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\tz.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\unparse.c
 # End Source File
 # Begin Source File

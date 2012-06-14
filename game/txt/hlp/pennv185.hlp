@@ -60,6 +60,8 @@ Fixes:
    reported by Zen@M*U*SH. [MG]
  * Setting an exit Transparent didn't cause its destination's desc to get
    shown as it should have. [MG]
+ * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
+   by ChaosMageX@M*U*S*H. [DC]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

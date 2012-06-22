@@ -103,6 +103,16 @@ ssl_slave:
 versions: CHANGES*
 	-@rm -rf CHANGES*~ CHANGES*bak
 	@utils/mkvershlp.pl game/txt/hlp CHANGES*
+	@if [ ! -f hdrs/svninfo.h ]; then \
+	  echo '#define SVNREVISION "$$Rev$$"' > hdrs/svninfo.h; \
+	  echo '#define SVNDATE "$$Date$$"' >> hdrs/svninfo.h; \
+	else \
+	  echo `egrep "#define SVNREVISION \".+?\"" hdrs/svninfo.h` > hdrs/svninfo2.h; \
+	  echo `egrep "#define SVNDATE \".+?\"" hdrs/svninfo.h` >> hdrs/svninfo2.h; \
+	  mv -f hdrs/svninfo2.h hdrs/svninfo.h; \
+	fi
+	@echo "/* Built at `date +%Y%m%d%H%M%S` */" >> hdrs/svninfo.h
+
 
 safety:
 	$(CP) src/*.c /var/pennmush-bak/src

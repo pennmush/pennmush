@@ -5898,7 +5898,29 @@ Continued in HELP TIMEZONES13
   US/Pacific                         US/Pacific-New
   US/Samoa                           UTC
   W-SU                               WET
-  Zulu                               
+  Zulu  
+& ETIME()
+  etime(<seconds>[, <width>])
+
+  This function formats a number of seconds using the same rules as
+  the 'On for' and 'Idle' columens in WHO's output. The optional
+  <width> argument controls the maximum size of the returned string.
+
+  The elapsed time is split into years, weeks, days, hours, minutes
+  and seconds fields. As many non-zero fields as can fit into <width>
+  characters are used, in that order. If all fields are 0, seconds are
+  displayed.
+
+  Examples:
+  > think etime(59)
+    59s
+  > think etime(60)
+    1m
+  > think etime(61)
+    1m  1s
+  >
+
+See also: etimefmt()
 & ETIMEFMT()
   etimefmt(<format>, <secs>)
 
@@ -5917,7 +5939,7 @@ Continued in HELP TIMEZONES13
     > think etimefmt($2mm $2ss, 500) - [timestring(500)]
      8m 20s -  8m 20s
 
-See also: timestring(), timefmt()
+See also: timestring(), timefmt(), etime()
 & ETIMEFMT2
   etimefmt()'s escape codes are similar to timefmt()'s.
   The time is broken up into days, hours, minutes, and seconds, and

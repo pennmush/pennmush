@@ -164,6 +164,15 @@ tzfile_exists(const char *name)
     } 									\
   } while (0)
 
+#define READ_CHUNKF(buf, size)						\
+  do {									\
+    if (read(fd, (buf), (size)) != (size)) {				\
+      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno)); \
+      free((buf));							\
+      goto error;							\
+    } 									\
+  } while (0)
+
 static struct tzinfo *
 do_read_tzfile(int fd, const char *tzfile, int time_size)
 {
@@ -234,7 +243,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       goto error;
     }
 
-    mush_free(tz, "tzinfo");
+    mush_free(tz, "timezone");
     return do_read_tzfile(fd, tzfile, 8);
   }
 #define READ_TRANSITIONS(type, decode)			\
@@ -243,7 +252,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     							\
     size = tz->timecnt * time_size;			\
     buf = malloc(size);						\
-    READ_CHUNK(buf, size);					\
+    READ_CHUNKF(buf, size);					\
     								\
     tz->transitions = calloc(tz->timecnt, sizeof(time_t));	\
     for (n = 0; n < tz->timecnt; n += 1)			\
@@ -266,7 +275,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int m, size = tz->typecnt * 6;
 
     buf = malloc(size);
-    READ_CHUNK(buf, size);
+    READ_CHUNKF(buf, size);
 
     tz->offsets = calloc(tz->typecnt, sizeof(struct ttinfo));
 
@@ -292,7 +301,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int m, size = tz->leapcnt * (4 + time_size); \
     						 \
     buf = malloc(size);				 \
-    READ_CHUNK(buf, size);			 \
+    READ_CHUNKF(buf, size);			 \
     									\
     tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));	\
     									\
@@ -320,7 +329,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int n;
 
     buf = malloc(isstdcnt);
-    READ_CHUNK(buf, isstdcnt);
+    READ_CHUNKF(buf, isstdcnt);
 
     for (n = 0; n < isstdcnt; n += 1)
       tz->offsets[n].tt_std = buf[n];
@@ -328,7 +337,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     free(buf);
 
     buf = malloc(isgmtcnt);
-    READ_CHUNK(buf, isgmtcnt);
+    READ_CHUNKF(buf, isgmtcnt);
 
     for (n = 0; n < isgmtcnt; n += 1)
       tz->offsets[n].tt_utc = buf[n];

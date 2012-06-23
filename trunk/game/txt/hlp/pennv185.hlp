@@ -68,6 +68,7 @@ Fixes:
    Reported by Kitai. [MG]
  * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
    by ChaosMageX@M*U*S*H. [DC]            
+ * Fix some potential memory leaks in timezone file reading code. [SW]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

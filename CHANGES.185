@@ -44,6 +44,7 @@ Functions:
    info about a particular color. [GM]
  * valid() has two new categories, for validating color names and color code
    sequences for ansi(). [MG]
+ * etime() formats elapsed times using the same rules as in WHO. [SW]
 
 Minor changes:
  * The meaning of the COLOR flag has been restored. ANSI flag once again 

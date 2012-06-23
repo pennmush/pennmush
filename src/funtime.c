@@ -207,6 +207,43 @@ FUNCTION(fun_convsecs)
   safe_str(show_tm(ttm), buff, bp);
 }
 
+char * etime_fmt(char *, time_t, int);
+FUNCTION(fun_etime)
+{
+  int secs;
+  int len;
+  char tbuf[BUFFER_LEN];
+
+  if (!is_integer(args[0])) {
+    safe_str(T(e_int), buff, bp);
+    return;
+  }
+
+  secs = parse_integer(args[0]);
+  if (errno == ERANGE || secs < 0) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+
+  if (nargs == 2) {
+    if (!is_integer(args[1])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    
+    len = parse_integer(args[1]);
+    if (len > BUFFER_LEN - 1 || len < 0) {
+      safe_str(T(e_range), buff, bp);
+      return;
+    }
+  } else
+    len = BUFFER_LEN - 1;
+
+  safe_str(etime_fmt(tbuf, secs, len), buff, bp);
+}
+
+  
+
 /* ARGSUSED */
 FUNCTION(fun_etimefmt)
 {

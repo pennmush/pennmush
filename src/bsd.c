@@ -4217,31 +4217,75 @@ enum {
   SECS_MINUTE = 60,
   SECS_HOUR = 3600,
   SECS_DAY = 86400,
+  SECS_WEEK = 604800,
   SECS_YEAR = 31536000
 };
 
 static char *
 squish_time(char *buf, int len)
 {
-  int slen;
   char *c;
+  int slen;
 
-  /* Eat up all leading 0 entries */
-  while (buf[0] == '0') {
+  /* Eat any leading whitespace */
+  while (*buf == ' ')
+    buf += 1;
+
+  /* Eat up all leading 0 entries.
+   *  0y 5d -> 5d
+   */
+  while (*buf == '0') {
     c = strchr(buf, ' ');
-    if (c)
-      buf = c + 1;
-    else
+    if (c) {
+      while (*c == ' ')
+	c += 1;
+      buf = c;
+    } else
       break;   
   }
 
+  /* Eat any intermediate 0 entries unless it's the only one.
+   * 1d 0h 40m -> 1d 40m
+   * 1d 0h -> 1d
+   * 0s -> 0s
+   */
+  c = buf;
+  do {
+    char *saved;
+
+    saved = c = strchr(c, ' ');
+    if (!c)
+      break;
+
+    while (*c == ' ')
+      c += 1;
+
+    if (*c == '0') {
+      char *n = strchr(c, ' ');
+      if (n) {
+	int nlen = strlen(n) + 1;
+	memmove(saved, n, nlen);  
+	c = saved;
+      } else {
+	*saved = '\0';
+	break;
+      }
+    }
+  } while (1);
+ 
+  /* If the string is too long, drop trailing entries and resulting
+     whitespace until it fits. */
   for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
       c = strrchr(buf, ' ');
-      if (c)
-	*c = '\0';
-      else
+      if (c) {
+	while (c > buf && *c == ' ') {
+	  *c = '\0';
+	  c -= 1;
+	}
+      } else
 	break;
   }
+
   return buf;
 }
 
@@ -4254,13 +4298,11 @@ squish_time(char *buf, int len)
  * \param len the length of the field to fill.
  * \return pointer to .start of formatted time, somewhere in buf.
  */
-static char *
-onfor_time_fmt_r(char *buf, time_t at, int len)
+char *
+etime_fmt(char *buf, int secs, int len)
 {
-  int years = 0, days = 0, hours = 0, mins = 0, secs;
-  div_t r;
-  
-  secs = difftime(mudtime, at);  
+  int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
+  div_t r;  
 
   if (secs >= SECS_YEAR) {
     r = div(secs, SECS_YEAR);
@@ -4268,6 +4310,12 @@ onfor_time_fmt_r(char *buf, time_t at, int len)
     secs = r.rem;
   }
 
+  if (secs >= SECS_WEEK) {
+    r = div(secs, SECS_WEEK);
+    weeks = r.quot;
+    secs = r.rem;
+  }
+  
   if (secs >= SECS_DAY) {
     r = div(secs, SECS_DAY);
     days = r.quot;
@@ -4286,8 +4334,8 @@ onfor_time_fmt_r(char *buf, time_t at, int len)
     secs = r.rem;
   }
 
-  sprintf(buf, "%dy %dd %dh %dm %ds",
-	  years, days, hours, mins, secs);
+  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
+	  years, weeks, days, hours, mins, secs);
 
   return squish_time(buf, len);
 }
@@ -4302,7 +4350,8 @@ static char *
 onfor_time_fmt(time_t at, int len)
 {
   static char buf[64];
-  return onfor_time_fmt_r(buf, at, len); 
+  int secs = difftime(mudtime, at);
+  return etime_fmt(buf, secs, len); 
 }
 
 /** Format idle time for WHO/DOING 
@@ -4315,7 +4364,8 @@ static char *
 idle_time_fmt(time_t last, int len)
 {
   static char buf[64];
-  return onfor_time_fmt_r(buf, last, len);
+  int secs = difftime(mudtime, last);
+  return etime_fmt(buf, secs, len);
 }
   
 /* connection messages

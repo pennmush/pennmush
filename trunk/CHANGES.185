@@ -60,7 +60,9 @@ Minor changes:
  * Translation fixes by Stoko.
  * round(4.5,0) behaved differently on Penn than it did on MUX, and
    inconsistantly with rounding to more places on Penn. [SW]
-   
+ * The 'On for' and 'Idle' time fields in WHO are smarter and won't overflow
+   their space. Suggested by Ari and Paige. [SW]   
+
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem
    reported by Zen@M*U*SH. [MG]

@@ -412,8 +412,8 @@ extern bool ssl_slave_halted;
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
-static const char *time_format_1(time_t dt);
-static const char *time_format_2(time_t dt);
+static char *onfor_time_fmt(time_t at, int len);
+static char *idle_time_fmt(time_t last, int len);
 static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
                                 dbref executor);
@@ -3973,13 +3973,11 @@ dump_users(DESC *call_by, char *match)
 {
   DESC *d;
   int count = 0;
-  time_t now;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
 
   while (*match && *match == ' ')
     match++;
-  now = mudtime;
 
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
     queue_newwrite(call_by, (const unsigned char *) "<PRE>", 5);
@@ -4000,8 +3998,8 @@ dump_users(DESC *call_by, char *match)
       continue;
 
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
-            time_format_1(now - d->connected_at),
-            time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
+            onfor_time_fmt(d->connected_at, 10),
+            idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' ')
             , get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf1);
   }
@@ -4027,7 +4025,6 @@ do_who_mortal(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   int privs = Priv_Who(player);
   PUEBLOBUFF;
 
@@ -4054,8 +4051,8 @@ do_who_mortal(dbref player, char *name)
     if (Hidden(d) && !privs)
       continue;
     notify_format(player, "%-16s %10s   %4s%c %s", Name(d->player),
-                  time_format_1(now - d->connected_at),
-                  time_format_2(now - d->last_time),
+                  onfor_time_fmt(d->connected_at, 10),
+                  idle_time_fmt(d->last_time, 4),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
                   , get_doing(d->player, player, player, NULL, 0));
   }
@@ -4086,7 +4083,6 @@ do_who_admin(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   char tbuf[BUFFER_LEN];
   PUEBLOBUFF;
 
@@ -4110,8 +4106,8 @@ do_who_admin(dbref player, char *name)
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
               unparse_dbref(Location(d->player)),
-              time_format_1(now - d->connected_at),
-              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+              onfor_time_fmt(d->connected_at, 9),
+              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'), d->addr);
       if (Dark(d->player)) {
         tbuf[71] = '\0';
@@ -4124,8 +4120,8 @@ do_who_admin(dbref player, char *name)
       }
     } else {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
-              "#-1", time_format_1(now - d->connected_at),
-              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+              "#-1", onfor_time_fmt(d->connected_at, 9),
+              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
@@ -4159,7 +4155,6 @@ do_who_session(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4183,15 +4178,15 @@ do_who_session(dbref player, char *name)
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     Name(d->player), unparse_dbref(Location(d->player)),
-                    time_format_1(now - d->connected_at),
-                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+                    onfor_time_fmt(d->connected_at, 9),
+                    idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
                     is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     } else {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     T("Connecting..."), "#-1",
-                    time_format_1(now - d->connected_at),
-                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+                    onfor_time_fmt(d->connected_at, 9),
+                    idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
                     is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     }
@@ -4218,44 +4213,111 @@ do_who_session(dbref player, char *name)
 
 }
 
-static const char *
-time_format_1(time_t dt)
+enum {
+  SECS_MINUTE = 60,
+  SECS_HOUR = 3600,
+  SECS_DAY = 86400,
+  SECS_YEAR = 31536000
+};
+
+static char *
+squish_time(char *buf, int len)
 {
-  register struct tm *delta;
-  static char buf[64];
-  if (dt < 0)
-    dt = 0;
-  delta = gmtime(&dt);
-  if (delta->tm_yday > 0) {
-    sprintf(buf, "%dd %02d:%02d",
-            delta->tm_yday, delta->tm_hour, delta->tm_min);
-  } else {
-    sprintf(buf, "%02d:%02d", delta->tm_hour, delta->tm_min);
+  int slen;
+  char *c;
+
+  /* Eat up all leading 0 entries */
+  while (buf[0] == '0') {
+    c = strchr(buf, ' ');
+    if (c)
+      buf = c + 1;
+    else
+      break;   
+  }
+
+  for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
+      c = strrchr(buf, ' ');
+      if (c)
+	*c = '\0';
+      else
+	break;
   }
   return buf;
 }
 
-static const char *
-time_format_2(time_t dt)
+/** Format the time the player has been on for for WHO/DOING/ETC,
+ * fitting as much as possible into a given length, dropping least
+ * significant numbers as needed.
+ *
+ * \param buf buffer to use to fill.
+ * \param at the time connected at.
+ * \param len the length of the field to fill.
+ * \return pointer to .start of formatted time, somewhere in buf.
+ */
+static char *
+onfor_time_fmt_r(char *buf, time_t at, int len)
 {
-  register struct tm *delta;
-  static char buf[64];
-  if (dt < 0)
-    dt = 0;
+  int years = 0, days = 0, hours = 0, mins = 0, secs;
+  div_t r;
+  
+  secs = difftime(mudtime, at);  
 
-  delta = gmtime(&dt);
-  if (delta->tm_yday > 0) {
-    sprintf(buf, "%dd", delta->tm_yday);
-  } else if (delta->tm_hour > 0) {
-    sprintf(buf, "%dh", delta->tm_hour);
-  } else if (delta->tm_min > 0) {
-    sprintf(buf, "%dm", delta->tm_min);
-  } else {
-    sprintf(buf, "%ds", delta->tm_sec);
+  if (secs >= SECS_YEAR) {
+    r = div(secs, SECS_YEAR);
+    years = r.quot;
+    secs = r.rem;
   }
-  return buf;
+
+  if (secs >= SECS_DAY) {
+    r = div(secs, SECS_DAY);
+    days = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= SECS_HOUR) {
+    r = div(secs, SECS_HOUR);
+    hours = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= SECS_MINUTE) {
+    r = div(secs, SECS_MINUTE);
+    mins = r.quot;
+    secs = r.rem;
+  }
+
+  sprintf(buf, "%dy %dd %dh %dm %ds",
+	  years, days, hours, mins, secs);
+
+  return squish_time(buf, len);
 }
 
+/** Format the time the player has been on for for WHO/DOING/ETC.
+ *
+ * \param at the time connected at.
+ * \param len the length of the field to fill.
+ * \return a static buffer to a string with the formatted elapsed time.
+ */
+static char *
+onfor_time_fmt(time_t at, int len)
+{
+  static char buf[64];
+  return onfor_time_fmt_r(buf, at, len); 
+}
+
+/** Format idle time for WHO/DOING 
+ *
+ * \param last the time the player was last active.
+ * \parm len the length of the field to fill.
+ * \return a static buffer to a string with the formatted elapsed time.
+ */
+static char *
+idle_time_fmt(time_t last, int len)
+{
+  static char buf[64];
+  return onfor_time_fmt_r(buf, last, len);
+}
+  
 /* connection messages
  * isnew: newly created or not?
  * num: how many times connected?

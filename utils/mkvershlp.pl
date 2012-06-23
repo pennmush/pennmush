@@ -73,7 +73,7 @@ EOP
 # Now spew the patchlevels list. Special case for 1.50
 $patchlevels{'1.5.0'} = $patchlevels{'1.50'};
 delete($patchlevels{'1.50'});
-my @versions = reverse sort map {version->parse($_)} keys %patchlevels;
+my @versions = sort {$b cmp $a} map {version->parse($_)} keys %patchlevels;
 print OUT <<EOP;
 & patchlevels
 For information on a specific patchlevel of one of the versions listed,

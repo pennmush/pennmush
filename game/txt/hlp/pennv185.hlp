@@ -40,6 +40,7 @@ Functions:
    info about a particular color. [GM]
  * valid() has two new categories, for validating color names and color code
    sequences for ansi(). [MG]
+ * etime() formats elapsed times using the same rules as in WHO. [SW]
 
 Minor changes:
  * The meaning of the COLOR flag has been restored. ANSI flag once again 
@@ -56,7 +57,10 @@ Minor changes:
  * Translation fixes by Stoko.
  * round(4.5,0) behaved differently on Penn than it did on MUX, and
    inconsistantly with rounding to more places on Penn. [SW]
-   
+ * The 'On for' and 'Idle' time fields in WHO are smarter and won't overflow
+   their space. Suggested by Ari and Paige. [SW]   
+ * Add a few new test cases. Requested by Sketch. [MG]
+
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem
    reported by Zen@M*U*SH. [MG]

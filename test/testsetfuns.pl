@@ -129,3 +129,14 @@ test('setdiff.14', $mortal, 'think setdiff( b a ,b)', '^a$');
 test('setdiff.15', $mortal, 'think setdiff( b a , b)', '^a$');
 test('setdiff.16', $mortal, 'think setdiff(c a b a,a b c c)', '^$');
 test('setdiff.17', $mortal, 'think setdiff( c a b a,a b c c)', '^$');
+
+test('setunion.nums.1', $god, 'think setunion(0 1 2, 0.0 1.0 2.0)', '^0 1 2$');
+test('setunion.nums.2', $god, 'think setunion(0.0 1.0 2.0, 0 1 2)', '^0\.0 1\.0 2\.0$');
+test('setunion.nums.3', $god, 'think setunion(0 1 2, 0.0 1.0 2,,i)', '^0 0\.0 1 1\.0 2$');
+test('setunion.nums.4', $god, 'think setunion(0 1 2, 0.0 1.0 2,,n)', '^0 1 2$');
+test('setunion.nums.5', $god, 'think setunion(0 1 2, 0.0 1.0 2,,f)', '^0 1 2$');
+test('setunion.nums.6', $god, 'think setunion(0 1 2, 0.0 1.0 2.3,,n)', '^0 1 2$');
+test('setunion.nums.7', $god, 'think setunion(0 1 2, 0.0 1.0 2.3,,f)', '^0 1 2 2.3$');
+test('setunion.nums.8', $god, 'think setunion(5 [ansi(h,5.0)], [ansi(h,5)] 5.0)', '^5 5.0$');
+test('setunion.nums.9', $god, 'think setunion(5 [ansi(h,5.0)], [ansi(h,5)] 5.0,,f)', '^5$');
+

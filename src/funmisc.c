@@ -30,6 +30,7 @@
 #include "ansi.h"
 #include "strtree.h"
 #include "SFMT.h"
+#include "svninfo.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -79,7 +80,6 @@ FUNCTION(fun_pemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_SILENT;
-  dbref saved_orator = orator;
 
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
@@ -91,28 +91,25 @@ FUNCTION(fun_pemit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
   if (is_integer_list(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
-    do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
-  orator = saved_orator;
+    do_pemit(executor, executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 FUNCTION(fun_message)
 {
   int i;
   char *argv[10];
-  int flags = PEMIT_LIST;
+  int flags = PEMIT_LIST | PEMIT_SILENT;
   enum emit_type type = EMIT_PEMIT;
+  dbref speaker = executor;
 
   for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
   }
-
-  orator = executor;
 
   if (nargs == 14) {
     char *word, *list;
@@ -127,8 +124,7 @@ FUNCTION(fun_message)
         if (Can_Nspemit(executor))
           flags |= PEMIT_SPOOF;
       } else if (string_prefix("spoof", word)) {
-        if (Can_Nspemit(executor) || controls(executor, enactor))
-          orator = enactor;
+        speaker = SPOOF_NOSWITCH(executor, enactor);
       } else if (string_prefix("remit", word))
         type = EMIT_REMIT;
       else if (string_prefix("oemit", word))
@@ -136,7 +132,7 @@ FUNCTION(fun_message)
     } while (list);
   }
 
-  do_message(executor, args[0], args[2], args[1], type, flags, i, argv,
+  do_message(executor, speaker, args[0], args[2], args[1], type, flags, i, argv,
              pe_info);
 
 }
@@ -157,8 +153,7 @@ FUNCTION(fun_oemit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
-  do_oemit_list(executor, args[0], args[1], flags, NULL, pe_info);
+  do_oemit_list(executor, executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -177,8 +172,7 @@ FUNCTION(fun_emit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
-  do_emit(executor, args[0], flags, pe_info);
+  do_emit(executor, executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -200,8 +194,7 @@ FUNCTION(fun_remit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
-  do_remit(executor, args[0], args[1], flags, NULL, pe_info);
+  do_remit(executor, executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -220,8 +213,7 @@ FUNCTION(fun_lemit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
-  do_lemit(executor, args[0], flags, pe_info);
+  do_lemit(executor, executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -240,7 +232,6 @@ FUNCTION(fun_zemit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
   do_zemit(executor, args[0], args[1], flags);
 }
 
@@ -260,10 +251,9 @@ FUNCTION(fun_prompt)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
+  do_pemit(executor, executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -1036,8 +1026,33 @@ FUNCTION(fun_mudurl)
 /* ARGSUSED */
 FUNCTION(fun_version)
 {
+#ifdef SVNREVISION
+  int svnrev = 0;
+  int scan;
+#ifdef SVNDATE
+  char svndate[75];
+#endif                          /* SVNDATE */
+#endif                          /* SVNREVISION */
+
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
               VERSION, PATCHLEVEL, PATCHDATE);
+
+#ifdef SVNREVISION
+  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svnrev);
+  if (scan == 1) {
+    safe_format(buff, bp, " (r%d", svnrev);
+#ifdef SVNDATE
+    scan = sscanf(SVNDATE, "$" "Date: %s $", svndate);
+    if (scan == 1) {
+      safe_chr(' ', buff, bp);
+      safe_str(svndate, buff, bp);
+    }
+#endif                          /* SVNDATE */
+    safe_chr(')', buff, bp);
+  }
+#endif                          /* SVNREVISION */
+
+
 }
 
 /* ARGSUSED */

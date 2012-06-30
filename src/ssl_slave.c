@@ -205,16 +205,12 @@ local_connected(struct conn *c)
   int len;
 
 #if SSL_DEBUG_LEVEL > 0
-  errputs(stdout,
-          "Local connection attempt completed. Setting up pipe.");
+  errputs(stdout, "Local connection attempt completed. Setting up pipe.");
 #endif
   bufferevent_setcb(c->local_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
   bufferevent_setcb(c->remote_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->remote_bev, EV_READ | EV_WRITE);
-  /* If these aren't set, just buffers till lots of data is ready */
-  bufferevent_setwatermark(c->remote_bev, EV_READ, 0, 1);
-  bufferevent_setwatermark(c->remote_bev, EV_WRITE, 0, 1);
 
   c->state = C_ESTABLISHED;
 
@@ -222,7 +218,12 @@ local_connected(struct conn *c)
   len = strlen(c->remote_host) + strlen(c->remote_ip) + 3;
   hostid = malloc(len + 1);
   sprintf(hostid, "%s^%s\r\n", c->remote_ip, c->remote_host);
-  bufferevent_write(c->local_bev, hostid, len);
+
+  if (send_with_creds(bufferevent_getfd(c->local_bev), hostid, len) < 0) {
+    penn_perror("send_with_creds");
+    delete_conn(c);
+  }
+
   free(hostid);
 }
 
@@ -278,7 +279,7 @@ ssl_connected(struct conn *c)
   errputs(stdout,
           "SSL connection attempt completed. Resolving remote host name.");
   errprintf(stdout, "ssl_slave: ssl error code: %ld\n",
-	    bufferevent_get_openssl_error(c->remote_bev));	  
+            bufferevent_get_openssl_error(c->remote_bev));
 #endif
 
   bufferevent_set_timeouts(c->remote_bev, NULL, NULL);
@@ -319,6 +320,26 @@ event_cb(struct bufferevent *bev, short e, void *data)
     } else {
       ssl_connected(c);
     }
+  } else if (e & BEV_EVENT_TIMEOUT) {
+    if (c->state == C_SSL_CONNECTING) {
+      /* Handshake timed out. */
+#if SSL_DEBUG_LEVEL > 0
+      errprintf(stdout, "ssl_slave: SSL handshake timeout.\n");
+#endif
+      bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
+      bufferevent_free(c->remote_bev);
+      c->remote_bev = NULL;
+      c->state = C_SHUTTINGDOWN;
+      if (c->local_bev) {
+        bufferevent_disable(c->local_bev, EV_READ);
+        bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
+      }
+      delete_conn(c);
+    } else {
+      /* Bug in some versions of libevent cause this to trigger when
+         it shouldn't. Ignore. */
+      return;
+    }
   } else if (e & error_conditions) {
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
@@ -334,7 +355,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
       if (c->remote_bev) {
         bufferevent_disable(c->remote_bev, EV_READ);
         bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
-	SSL_shutdown(bufferevent_openssl_get_ssl(c->remote_bev));
+        SSL_shutdown(bufferevent_openssl_get_ssl(c->remote_bev));
       }
       delete_conn(c);
     } else {
@@ -418,8 +439,7 @@ check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
              void *arg __attribute__ ((__unused__)))
 {
   if (getppid() != parent_pid) {
-    errputs(stderr,
-            "Parent mush process exited unexpectedly! Shutting down.");
+    errputs(stderr, "Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -522,7 +542,7 @@ time_string(void)
   static char buffer[100];
   time_t now;
   struct tm *ltm;
-  
+
   now = time(NULL);
   ltm = localtime(&now);
   strftime(buffer, 100, "%m/%d %T", ltm);
@@ -535,7 +555,8 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] ssl_slave: %s: %s\n", time_string(), err, strerror(errno));
+  fprintf(stderr, "[%s] ssl_slave: %s: %s\n", time_string(), err,
+          strerror(errno));
   unlock_file(stderr);
 }
 

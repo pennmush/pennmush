@@ -356,21 +356,38 @@ can_move(dbref player, const char *direction)
   return ok;                    /* Written like this due to overeager compiler */
 }
 
+/** Find the correct location for a variable exit.
+ * \param player the object attempting to move through the exit
+ * \param exit_obj the exit
+ * \param exit_name the name/alias of the exit used by the player, or NULL
+ * \param pe_info the pe_info to evaluate the attributes with, or NULL
+ * \return location dbref, or NOTHING
+ */
 dbref
-find_var_dest(dbref player, dbref exit_obj)
+find_var_dest(dbref player, dbref exit_obj, char *exit_name,
+              NEW_PE_INFO *pe_info)
 {
-  /* This is used to evaluate the u-function DESTINATION on an exit with
-   * a VARIABLE (ambiguous) link.
-   */
   char buff[BUFFER_LEN];
+  PE_REGS *pe_regs = NULL;
+  bool has_attr = 0;
+
+  if (exit_name && *exit_name) {
+    pe_regs = pe_regs_create(PE_REGS_ARG, "find_var_dest");
+    pe_regs_setenv_nocopy(pe_regs, 0, exit_name);
+  }
+
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  if (!call_attrib(exit_obj, "DESTINATION", buff, player, NULL, NULL) &&
-      !call_attrib(exit_obj, "EXITTO", buff, player, NULL, NULL))
-    return NOTHING;
+  if (!
+      (has_attr =
+       call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
+    has_attr = call_attrib(exit_obj, "EXITTO", buff, player, pe_info, pe_regs);
 
-  if (!buff[0])
+  if (pe_regs)
+    pe_regs_free(pe_regs);
+
+  if (!has_attr || !buff[0])
     return NOTHING;
   return parse_objid(buff);
 }
@@ -399,7 +416,7 @@ do_move(dbref player, const char *direction, enum move_type type,
       char msg[BUFFER_LEN];
       sprintf(msg, T("%s goes home."), Name(player));
       /* tell everybody else */
-      notify_except(loc, player, msg, NA_INTER_SEE);
+      notify_except(player, loc, player, msg, NA_INTER_SEE);
     }
     /* give the player the messages */
     notify(player, T("There's no place like home..."));
@@ -442,7 +459,7 @@ do_move(dbref player, const char *direction, enum move_type type,
           var_dest = Home(player);
           break;
         case AMBIGUOUS:
-          var_dest = find_var_dest(player, exit_m);
+          var_dest = find_var_dest(player, exit_m, (char *) direction, pe_info);
           /* Only allowed if the owner of the exit could link to var_dest */
           if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest, pe_info)) {
             notify_format(player,
@@ -554,6 +571,8 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
   long match_flags = MAT_NEIGHBOR | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
 
+  if (!Mobile(player))
+    return;
   if (!IsRoom(loc) && !EnterOk(loc) && !controls(player, loc)) {
     notify(player, T("Permission denied."));
     return;
@@ -687,6 +706,8 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
   if ((loc = Location(player)) == NOTHING)
     return;
+  if (!Mobile(player))
+    return;
   switch (thing =
           match_result(player, name, TYPE_THING | TYPE_PLAYER,
                        MAT_POSSESSION | MAT_ENGLISH | MAT_TYPE)) {
@@ -712,6 +733,9 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
       fail_lock(player, loc, Drop_Lock,
                 T("You can't seem to drop things here."), NOTHING);
       return;
+    } else if (!eval_lock_with(player, loc, DropIn_Lock, pe_info)) {
+      fail_lock(player, loc, DropIn_Lock,
+                T("You can't seem to drop things here."), NOTHING);
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));
       safe_tel(thing, HOME, 0, player, "drop");
@@ -769,6 +793,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
 
   if ((player_loc = Location(player)) == NOTHING)
     return;
+  if (!Mobile(player))
+    return;
   thing =
     noisy_match_result(player, what, TYPE_THING | TYPE_PLAYER,
                        MAT_NEAR_THINGS | MAT_ENGLISH | MAT_TYPE);
@@ -790,6 +816,7 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
       if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
+          eval_lock_with(player, thing_loc, DropIn_Lock, pe_info) &&
           (!IsRoom(thing_loc)
            || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
@@ -883,6 +910,8 @@ do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
   dbref loc;
   long match_flags = MAT_NEIGHBOR | MAT_ENGLISH | MAT_EXIT;
 
+  if (!Mobile(player))
+    return;
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
   if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))
@@ -932,6 +961,8 @@ do_leave(dbref player, NEW_PE_INFO *pe_info)
 {
   dbref loc;
   loc = Location(player);
+  if (!Mobile(player))
+    return;
   if (IsRoom(loc) || IsGarbage(loc) || IsGarbage(Location(loc))
       || NoLeave(loc)
       || !eval_lock_with(player, loc, Leave_Lock, pe_info)
@@ -1006,6 +1037,8 @@ void
 do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
 {
   dbref leader;
+  if (!Mobile(player))
+    return;
   if (arg && *arg) {
     /* Who do we want to follow? */
     leader = match_result(player, arg, NOTYPE, MAT_NEARBY);

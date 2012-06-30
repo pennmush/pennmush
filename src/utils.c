@@ -253,6 +253,7 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
   int made_pe_info = 0;
   PE_REGS *pe_regs;
   PE_REGS *pe_regs_old;
+  int pe_reg_flags = 0;
 
   /* Make sure we have a ufun first */
   if (!ufun)
@@ -266,12 +267,15 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
 
   pe_regs_old = pe_info->regvals;
 
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_NEWATTR,
-                               "call_ufun");
-  } else {
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_NEWATTR, "call_ufun");
+  if (ufun->ufun_flags & UFUN_LOCALIZE)
+    pe_reg_flags |= PE_REGS_Q;
+  else {
+    pe_reg_flags |= PE_REGS_NEWATTR;
+    if (ufun->ufun_flags & UFUN_SHARE_STACK)
+      pe_reg_flags |= PE_REGS_ARGPASS;
   }
+
+  pe_regs = pe_regs_localize(pe_info, pe_reg_flags, "call_ufun");
 
   rp = pe_info->attrname;
   if (*ufun->attrname == '\0') {

@@ -52,13 +52,13 @@ HASHTAB htab_logfiles;  /**< Hash table of logfile names and descriptors */
 #define NLOGS 7
 
 struct log_stream logs[NLOGS] = {
-  {LT_ERR, "error", ERRLOG, NULL, NULL},
-  {LT_CMD, "command", CMDLOG, NULL, NULL},
-  {LT_WIZ, "wizard", WIZLOG, NULL, NULL},
-  {LT_CONN, "connection", CONNLOG, NULL, NULL},
-  {LT_TRACE, "trace", TRACELOG, NULL, NULL},
-  {LT_CHECK, "checkpoint", CHECKLOG, NULL, NULL},
-  {LT_HUH, "huh", CMDLOG, NULL, NULL},
+  {LT_ERR, "error", ERRLOG, NULL, NULL, "LOG`ERR"},
+  {LT_CMD, "command", CMDLOG, NULL, NULL, "LOG`CMD"},
+  {LT_WIZ, "wizard", WIZLOG, NULL, NULL, "LOG`WIZ"},
+  {LT_CONN, "connection", CONNLOG, NULL, NULL, "LOG`CONN"},
+  {LT_TRACE, "trace", TRACELOG, NULL, NULL, "LOG`TRACE"},
+  {LT_CHECK, "checkpoint", CHECKLOG, NULL, NULL, "LOG`CHECK"},
+  {LT_HUH, "huh", CMDLOG, NULL, NULL, "LOG`HUH"},
 };
 
 struct log_stream *
@@ -238,6 +238,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   fflush(log->fp);
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
+  queue_event(-1, log->event, "%s", tbuf1);
 }
 
 /** Log a message, with useful information.

@@ -81,7 +81,7 @@ dbref first_free = NOTHING;   /**< Object at top of free list */
 static dbref what_to_destroy(dbref player, char *name, int confirm,
                              NEW_PE_INFO *pe_info);
 static void pre_destroy(dbref player, dbref thing);
-static void free_object(dbref thing);
+void free_object(dbref thing);
 static void empty_contents(dbref thing);
 static void clear_thing(dbref thing);
 static void clear_player(dbref thing);
@@ -347,7 +347,7 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     /* wait until dbck */
-    notify_except(thing, NOTHING,
+    notify_except(thing, thing, NOTHING,
                   T("The room shakes and begins to crumble."), NA_SPOOF);
     if (Owns(player, thing))
       notify_format(player,
@@ -596,7 +596,7 @@ undestroy(dbref player, dbref thing)
  * This is going to have to be very tightly coupled with the implementation;
  * if the database format changes, this will likely have to change too.
  */
-static void
+void
 free_object(dbref thing)
 {
   dbref i, loc;
@@ -771,10 +771,9 @@ static void
 empty_contents(dbref thing)
 {
   /* Destroy any exits they may be carrying, send everything else home. */
-  dbref first;
-  dbref rest;
-  dbref target;
-  notify_except(thing, NOTHING,
+  dbref first, rest, target;
+
+  notify_except(thing, thing, NOTHING,
                 T
                 ("The floor disappears under your feet, you fall through NOTHINGness and then:"),
                 NA_SPOOF);
@@ -843,14 +842,22 @@ clear_player(dbref thing)
   dbref i;
   ATTR *atemp;
   char alias[BUFFER_LEN + 1];
+  dbref probate;
 
   /* Clear out mail. */
   do_mail_clear(thing, NULL);
   do_mail_purge(thing);
   malias_cleanup(thing);
 
+  probate = options.probate_judge;
+  if (!(GoodObject(probate) && IsPlayer(probate))) {
+    do_rawlog(LT_ERR,
+              "probate_judge config option is set to an invalid object.");
+    probate = GOD;
+  }
+
   /* Chown any chat channels they own to God */
-  chan_chownall(thing, GOD);
+  chan_chownall(thing, probate);
 
   /* Clear out names from the player list */
   delete_player(thing, NULL);
@@ -861,11 +868,12 @@ clear_player(dbref thing)
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 
+
   /* Deal with objects owned by the player. */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == thing && i != thing) {
       if (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1) {
-        chown_object(GOD, i, GOD, 0);
+        chown_object(GOD, i, probate, 0);
       } else {
         free_object(i);
       }

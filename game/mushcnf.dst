@@ -492,6 +492,13 @@ register_create_file txt/register.txt
 guest_file txt/guest.txt
 full_file txt/full.txt
 
+# Text file shown when someone uses WHO/DOING/SESSION at the login
+# screen. If empty, the default WHO output is shown. If an obj/attr
+# is given, you can use a softcoded WHO at the login screen. %2 will
+# be the arg given (for 'WHO foo').
+# OPTIONAL
+# who_file
+
 # The equivalent files in html, shown to Pueblo clients.
 connect_html_file txt/connect.html
 motd_html_file txt/motd.html
@@ -502,6 +509,8 @@ down_html_file txt/down.html
 register_create_html_file txt/register.html
 guest_html_file txt/guest.html
 full_html_file txt/full.html
+# OPTIONAL
+# who_html_file
 
 # The big text files. New ones can be added by setting up
 # a new subdirectory of game/txt as described in game/txt/README,
@@ -650,10 +659,16 @@ really_safe yes
 # Highly recomended.
 zone_control_zmp_only yes
 
-# When a player is nuked, his SAFE objects are @chowned to God.
-# If this is set to "yes", his non-safe objects are destroyed
-# If this is set to "no", they are chowned to God
+# When a player is nuked, his SAFE objects are @chowned to a player
+# dbref controlled by the probate_judge option.  If this is set to
+# "yes", his non-safe objects are destroyed If this is set to "no",
+# they are chowned to probate_judge
 destroy_possessions yes
+
+# This is the dbref of the player that objects and channels belonging
+# to a nuked player are chowned to. If this is an invalid or
+# non-player dbref, GOD is used. See destroy_posessions.
+probate_judge 1
 
 # Can we @link to an object?
 link_to_object yes

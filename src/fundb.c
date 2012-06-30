@@ -1352,16 +1352,8 @@ FUNCTION(fun_lockfilter)
     return;
   }
 
-  if (nargs > 2) {
-    if (strlen(args[2]) > 2) {
-      safe_str(T("#-1 SEPARATOR MUST BE ONE CHARACTER"), buff, bp);
-      return;
-    }
-    delim = args[2][0];
-    if (!delim) {
-      delim = ' ';
-    }
-  }
+  if (!delim_check(buff, bp, nargs, args, 3, &delim))
+    return;
 
   s = trim_space_sep(args[1], delim);
   while ((r = split_token(&s, delim)) != NULL) {

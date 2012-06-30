@@ -9,6 +9,8 @@
 
 #include "config.h"
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -103,6 +105,10 @@ extern int h_errno;
 
 #ifdef I_SYS_SELECT
 #include <sys/select.h>
+#endif
+
+#ifdef __APPLE__
+#include <sys/ucred.h>
 #endif
 
 #include "conf.h"
@@ -345,11 +351,12 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
 }
 
 #ifndef WIN32
-  /** Create a unix-domain socket .
-   * \param filename The name of the socket file.
-   * \param socktype The type of socket.
-   * \return a fd for the socket, or -1 on error.
-   */
+
+/** Create a unix-domain socket .
+ * \param filename The name of the socket file.
+ * \param socktype The type of socket.
+ * \return a fd for the socket, or -1 on error.
+ */
 int
 make_unix_socket(const char *filename, int socktype)
 {
@@ -384,7 +391,7 @@ make_unix_socket(const char *filename, int socktype)
   return s;
 }
 
-/** Connect to a unix-domain socket 
+/** Connect to a unix-domain socket
  * \param filename The name of the socket file.
  * \param socktyp the type of socket
  * \return a fd for the socket or -1 on error.
@@ -404,16 +411,132 @@ connect_unix_socket(const char *filename, int socktype)
     return -1;
   }
 
-  if (connect_nonb(s, (const struct sockaddr *) &addr, sizeof addr, 1) == 0)
+  if (connect_nonb(s, (const struct sockaddr *) &addr, sizeof addr, 1) == 0) {
     return s;
-  else {
+  } else {
+    int savederrno = errno;
     close(s);
+    errno = savederrno;
     return -1;
   }
 }
-
-
 #endif
+
+/* Send data to a unix socket, including sending credentials (uid,
+ * pid, etc.) if they must be explicently sent. Used by ssl_slave.
+ * You can't lie about credentials unless you're root, so we don't
+ * even take them as parameters.
+ *
+ * \param s the socket descriptor
+ * \param buf the buffer to write
+ * \param len size of the buffer
+ * \return number of bytes written or -1 on failure.
+ */
+ssize_t
+send_with_creds(int s, void *buf, size_t len)
+{
+  ssize_t slen;
+  /* Linux and OS X can get credentials on the receiving end via a
+     getsockopt() call. Use it instead of sendmsg() because it's a lot
+     simpler. */
+#if 0
+  /* Sample sendmsg() credential passing using linux structs. */
+  {
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    struct ucred *creds;
+    uint8_t credbuf[CMSG_SPACE(sizeof *creds)] = { 0 };
+    struct iovec iov;
+    int sockopt = 1;
+
+    memset(&msg, 0, sizeof msg);
+
+    iov.iov_base = buf;
+    iov.iov_len = len;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    msg.msg_control = credbuf;
+    msg.msg_controllen = sizeof credbuf;
+    cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_CREDENTIALS;
+    cmsg->cmsg_len = CMSG_LEN(sizeof *creds);
+    creds = (struct ucred *) CMSG_DATA(cmsg);
+    creds->pid = getpid();
+    creds->uid = geteuid();
+    creds->gid = getegid();
+
+    if (setsockopt(s, SOL_SOCKET, SO_PASSCRED, &sockopt, sizeof sockopt) < 0)
+      perror("setsockopt SO_PASSCRED");
+
+    slen = sendmsg(s, &msg, 0);
+  }
+#else
+  slen = send(s, buf, len, 0);
+#endif
+  return slen;
+}
+
+#ifdef __CYGWIN__
+/* There is probably a better way to actually fix (instead of ignore) the
+ * lack of MSG_DONTWAIT on cygwin, but since I doubt anyone is actually
+ * using the SSL_SLAVE code on cygwin, I'm not bothering. Can be looked into
+ * if this assumption is proved wrong. */
+#ifndef MSG_DONTWAIT
+#define MSG_DONTWAIT 0
+#endif
+#endif
+
+/* Read from a unix socket, getting unix credentials from the other end. Use for
+ * authentication when acceping local connections from ssl_slave or the like.
+ * \param s the socket descriptor
+ * \param buf The buffer to read into
+ * \param len the length of the buffer
+ * \param remote_pid Non-null pointer that returns the remote side's pid or -1 if unable to read credentials.
+ * \param remote_uid Non-null pointer that returns the remote side's uid or -1 if unable to read credentials.
+ * \return the number of bytes read, or -1 on read failure
+ */
+ssize_t
+recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
+{
+  /* Only implemented on linux and OS X so far because different OSes
+     support slightly different fields and ways of doing this. Argh.
+     We'll prefer getsockopt() approaches over recvmsg() when
+     supported. */
+
+  *remote_pid = -1;
+  *remote_uid = -1;
+
+#if defined(linux)
+  {
+    struct ucred creds;
+    socklen_t credlen = sizeof creds;
+
+    if (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &creds, &credlen) < 0) {
+      perror("getsockopt SO_PEERCRED");
+    } else {
+      *remote_pid = creds.pid;
+      *remote_uid = creds.uid;
+    }
+  }
+#elif defined(__APPLE__)
+  {
+    struct xucred creds;
+    socklen_t credlen = sizeof creds;
+    if (getsockopt(s, 0, LOCAL_PEERCRED, &creds, &credlen) < 0) {
+      perror("getsockopt LOCAL_PEERCRED");
+    } else {
+      /* OS X doesn't pass the pid of the process on the other end of
+         the socket. */
+      *remote_uid = creds.cr_uid;
+    }
+  }
+#endif
+
+  return recv(s, buf, len, MSG_DONTWAIT);
+}
+
 
 /** Make a socket do nonblocking i/o.
  * \param s file descriptor of socket.

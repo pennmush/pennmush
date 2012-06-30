@@ -168,7 +168,7 @@ onchannel(dbref who, CHAN *ch)
       notify(player, T("CHAT: I don't know which channel you mean.")); \
       list_partial_matches(player, name, PMATCH_ALL); \
       if (buff) \
-        safe_str(T("#-2 AMBIGUOUS CHANNEL"), buff, bp); \
+        safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp); \
       return; \
     case CMATCH_EXACT: \
     case CMATCH_PARTIAL: \
@@ -247,7 +247,7 @@ load_chatdb_oldstyle(PENNFILE *fp)
     if (!ch)
       return 0;
     if (!load_channel(fp, ch)) {
-      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
+      do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -320,7 +320,7 @@ load_chatdb(PENNFILE *fp)
       return 0;
     }
     if (!load_labeled_channel(fp, ch, flags)) {
-      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
+      do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -1566,7 +1566,7 @@ do_chat(dbref player, CHAN *chan, const char *arg1)
                     T("Sorry, you're not allowed to speak on channel <%s>."),
                     ChanName(chan));
     else
-      notify(player, T("No such channel."));
+      notify(player, T("CHAT: No such channel."));
     return;
   }
   u = onchannel(player, chan);
@@ -1621,8 +1621,8 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
 {
   CHAN *chan = NULL;
   CHANUSER *u;
-  int canhear;
   int override_checks = 0;
+  int cb_flags = CB_EMIT;
 
   if (!name || !*name) {
     notify(player, T("That is not a valid channel."));
@@ -1663,13 +1663,12 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     return;
   }
   u = onchannel(player, chan);
-  canhear = u ? !Chanuser_Gag(u) : 0;
   /* If the channel isn't open, you must hear it in order to speak */
   if (!override_checks && !Channel_Open(chan)) {
     if (!u) {
       notify(player, T("You must be on that channel to speak on it."));
       return;
-    } else if (!canhear) {
+    } else if (Chanuser_Gag(u)) {
       notify(player, T("You must stop gagging that channel to speak on it."));
       return;
     }
@@ -1679,12 +1678,13 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     notify(player, T("What do you want to emit?"));
     return;
   }
-  if (!(flags & PEMIT_SILENT))
-    channel_send(chan, player, CB_EMIT, msg);
-  else
-    channel_send(chan, player, CB_EMIT | CB_QUIET, msg);
-  if (!canhear)
-    notify_format(player, T("Cemit to channel %s: %s"), ChanName(chan), msg);
+  if (flags & PEMIT_SILENT)
+    cb_flags |= CB_QUIET;
+
+  if (!(flags & PEMIT_SPOOF))
+    cb_flags |= CB_NOSPOOF;     /* Show NOSPOOF headers */
+
+  channel_send(chan, player, cb_flags, msg);
   ChanNumMsgs(chan)++;
   return;
 }
@@ -2256,7 +2256,7 @@ FUNCTION(fun_cflags)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_See(c, executor)) {
@@ -2303,7 +2303,7 @@ FUNCTION(fun_cinfo)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_See(c, executor)) {
@@ -2370,7 +2370,7 @@ FUNCTION(fun_cbufferadd)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     if (!Chan_Can_Modify(c, executor)) {
@@ -2409,7 +2409,7 @@ FUNCTION(fun_ctitle)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     thing = match_thing(executor, args[1]);
@@ -2463,7 +2463,7 @@ FUNCTION(fun_cstatus)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     thing = match_thing(executor, args[1]);
@@ -2507,7 +2507,7 @@ FUNCTION(fun_cowner)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     break;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     break;
   default:
     safe_dbref(ChanCreator(c), buff, bp);
@@ -2529,7 +2529,7 @@ FUNCTION(fun_cmogrifier)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     break;
   case CMATCH_AMBIG:
-    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     break;
   default:
     safe_dbref(ChanMogrifier(c), buff, bp);
@@ -3225,8 +3225,8 @@ chat_player_announce(dbref player, char *msg, int ungag)
         *dmp = '\0';
         format.args[5] = defmsg;
 
-        notify_anything(player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
-                        AMBIGUOUS, &format);
+        notify_anything(player, player, na_one, &viewer, NULL, na_flags, defmsg,
+                        NULL, AMBIGUOUS, &format);
 
       }
     }
@@ -3343,7 +3343,7 @@ FUNCTION(fun_clock)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str(T("#-2 AMBIGUOUS CHANNEL MATCH"), buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);
     return;
   default:
     break;
@@ -3395,17 +3395,15 @@ FUNCTION(fun_clock)
 /* ARGSUSED */
 FUNCTION(fun_cemit)
 {
-  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
-  int flags = PEMIT_SILENT;
-  flags |= (ns ? PEMIT_SPOOF : 0);
-  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  int flags = (*called_as == 'N' && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, flags ? "@nscemit" : "@cemit", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  if (nargs == 3 && parse_boolean(args[2]))
-    flags &= ~PEMIT_SILENT;
-  orator = executor;
+  if (nargs < 3 || !parse_boolean(args[2]))
+    flags |= PEMIT_SILENT;
   do_cemit(executor, args[0], args[1], flags);
 }
 
@@ -3528,8 +3526,6 @@ COMMAND(cmd_cemit)
   int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
   if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
-
-  SPOOF(executor, enactor, sw);
 
   do_cemit(executor, arg_left, arg_right, flags);
 }
@@ -3691,9 +3687,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   const char *someone = "Someone";
   dbref mogrifier = NOTHING;
   const char *ctype = NULL;
-  const char *argv[10];
+  const char *argv[10] = { NULL };
   int override_chatformat = 0;
-  memset(argv, 0, sizeof(argv));
+  bool skip_buffer = 0;
 
   /* Make sure we can write to the channel before doing anything */
   if (Channel_Disabled(channel))
@@ -3745,15 +3741,21 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
       argv[3] = playername;
       argv[4] = title;
 
-      blockstr = mogrify(mogrifier, "MOGRIFY`BLOCK", player, 6, argv, "");
+      blockstr = mogrify(mogrifier, "MOGRIFY`BLOCK", player, 5, argv, "");
       if (blockstr && *blockstr) {
         notify(player, blockstr);
         return;
       }
       /* Do we override chatformats? */
       if (parse_boolean
-          (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 6, argv, ""))) {
+          (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 5, argv, ""))) {
         override_chatformat = 1;
+      }
+
+      /* Should we skip buffering this message? */
+      if (parse_boolean
+          (mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
+        skip_buffer = 1;
       }
 
       argv[1] = ChanName(channel);
@@ -3821,7 +3823,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
   *bp = '\0';
 
-  /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
     snprintf(message, BUFFER_LEN, "%s %s", playername, title);
@@ -3867,12 +3868,12 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
-      notify_anything(player, na_one, &current, NULL, na_flags, buff, NULL,
-                      AMBIGUOUS, (override_chatformat ? NULL : &format));
+      notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
+                      NULL, AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
   }
 
-  if (ChanBufferQ(channel))
+  if (ChanBufferQ(channel) && !skip_buffer)
     add_to_bufferq(ChanBufferQ(channel), 0,
                    (flags & CB_NOSPOOF) ? player : NOTHING, buff);
 

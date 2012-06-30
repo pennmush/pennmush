@@ -46,6 +46,8 @@
 #define FN_STRIPANSI  0x10000
 /* Function is obsolete and code that uses it should be re-written */
 #define FN_DEPRECATED 0x20000
+/* Function is a clone of a built-in, via @function/clone */
+#define FN_CLONE      0x40000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;
@@ -83,6 +85,7 @@ struct fun {
    */
   int maxargs;
   uint32_t flags;   /**< Bitflags of function */
+  FUN *clone_template;    /**< Pointer to function this was cloned from */
 };
 
 
@@ -124,7 +127,7 @@ void function_init_postconfig(void);
   extern void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglen[], dbref executor, dbref caller, dbref enactor, \
                    char const *called_as, NEW_PE_INFO *pe_info, int eflags)
-extern void function_add(const char *name, function_func fun, int minargs,
+extern FUN *function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 
 int cnf_add_function(char *name, char *opts);

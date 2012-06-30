@@ -77,8 +77,8 @@ restore_env(const char *funcname __attribute__ ((__unused__)),
  * if it could be used as a delimiter. A delimiter must be a single
  * character. If the argument isn't present or is null, we return
  * the default delimiter, a space.
- * \param buff unused.
- * \param bp unused.
+ * \param buff buffer to write error message to.
+ * \param bp pointer into buff at which to write error.
  * \param nfargs number of arguments to the function.
  * \param fargs array of function arguments.
  * \param sep_arg index of the argument to check for a delimiter.
@@ -105,6 +105,38 @@ delim_check(char *buff, char **bp, int nfargs, char *fargs[], int sep_arg,
 
   return 1;
 }
+
+/** Check if a function argument is an integer.
+ * If the arg is not given, assign a default value.
+ * \param buff buffer to write error message to.
+ * \param bp pointer into buff at which to write error.
+ * \param nfargs number of arguments to the function.
+ * \param fargs array of function arguments.
+ * \param check_arg index of the argument to check for a delimiter.
+ * \param result pointer to separator character, used to return separator.
+ * \param def default to use if arg is not given
+ * \retval 0 illegal separator argument.
+ * \retval 1 successfully returned a separator (maybe the default one).
+ */
+bool
+int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
+          int *result, int def)
+{
+
+  if (nfargs >= check_arg) {
+    if (!*fargs[check_arg - 1] && !NULL_EQ_ZERO)
+      *result = def;
+    else if (!is_strict_integer(fargs[check_arg - 1])) {
+      safe_str(T(e_int), buff, bp);
+      return 0;
+    } else
+      *result = parse_integer(fargs[check_arg - 1]);
+  } else
+    *result = def;
+
+  return 1;
+}
+
 
 /* --------------------------------------------------------------------------
  * The actual function handlers
@@ -139,6 +171,7 @@ FUNALIAS faliases[] = {
   {"IDLE", "IDLESECS"},
   {"HOST", "HOSTNAME"},
   {"FLIP", "REVERSE"},
+  {"E", "EXP"},
   {NULL, NULL}
 };
 
@@ -494,7 +527,7 @@ FUNTAB flist[] = {
   {"REMOVE", fun_remove, 2, 3, FN_REG},
   {"RENDER", fun_render, 2, 2, FN_REG},
   {"REPEAT", fun_repeat, 2, 2, FN_REG},
-  {"REPLACE", fun_replace, 3, 4, FN_REG},
+  {"REPLACE", fun_ldelete, 3, 5, FN_REG},
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},
@@ -502,7 +535,7 @@ FUNTAB flist[] = {
   {"RIGHT", fun_right, 2, 2, FN_REG},
   {"RJUST", fun_rjust, 2, 3, FN_REG},
   {"RLOC", fun_rloc, 2, 2, FN_REG | FN_STRIPANSI},
-  {"RNUM", fun_rnum, 2, 2, FN_REG | FN_STRIPANSI},
+  {"RNUM", fun_rnum, 2, 2, FN_REG | FN_STRIPANSI | FN_DEPRECATED},
   {"ROOM", fun_room, 1, 1, FN_REG | FN_STRIPANSI},
   {"ROOT", fun_root, 2, 2, FN_REG | FN_STRIPANSI},
   {"S", fun_s, 1, -1, FN_REG},
@@ -562,13 +595,13 @@ FUNTAB flist[] = {
   {"TEXTENTRIES", fun_textentries, 2, 3, FN_REG | FN_STRIPANSI},
   {"TEXTFILE", fun_textfile, 2, 2, FN_REG | FN_STRIPANSI},
   {"TIME", fun_time, 0, 1, FN_REG | FN_STRIPANSI},
-  {"TIMEFMT", fun_timefmt, 1, 2, FN_REG},
+  {"TIMEFMT", fun_timefmt, 1, 3, FN_REG},
   {"TIMESTRING", fun_timestring, 1, 2, FN_REG | FN_STRIPANSI},
   {"TR", fun_tr, 3, 3, FN_REG},
   {"TRIM", fun_trim, 1, 3, FN_REG},
   {"TRIMPENN", fun_trim, 1, 3, FN_REG},
   {"TRIMTINY", fun_trim, 1, 3, FN_REG},
-  {"TRUNC", fun_trunc, 1, 1, FN_REG},
+  {"TRUNC", fun_trunc, 1, 1, FN_REG | FN_STRIPANSI},
   {"TYPE", fun_type, 1, 1, FN_REG | FN_STRIPANSI},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
@@ -631,8 +664,7 @@ FUNTAB flist[] = {
   {"CEIL", fun_ceil, 1, 1, FN_REG | FN_STRIPANSI},
   {"COS", fun_cos, 1, 2, FN_REG | FN_STRIPANSI},
   {"CTU", fun_ctu, 3, 3, FN_REG | FN_STRIPANSI},
-  {"E", fun_e, 0, 0, FN_REG},
-  {"EXP", fun_exp, 1, 1, FN_REG | FN_STRIPANSI},
+  {"E", fun_e, 0, 1, FN_REG | FN_STRIPANSI},
   {"FDIV", fun_fdiv, 2, 2, FN_REG | FN_STRIPANSI},
   {"FMOD", fun_fmod, 2, 2, FN_REG | FN_STRIPANSI},
   {"FLOOR", fun_floor, 1, 1, FN_REG | FN_STRIPANSI},
@@ -691,6 +723,9 @@ fn_restrict_to_bit(const char *r)
   }
   return 0;
 }
+
+static const char *fn_restrict_to_str(uint32_t b) __attribute__ ((unused));
+
 
 static const char *
 fn_restrict_to_str(uint32_t b)
@@ -910,8 +945,9 @@ check_func(dbref player, FUN *fp)
 void
 do_function_clone(dbref player, const char *function, const char *clone)
 {
-  FUN *fp;
-  char *realclone = strupper(clone);
+  FUN *fp, *fpc;
+  char realclone[BUFFER_LEN];
+  strcpy(realclone, strupper(clone));
 
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
@@ -934,7 +970,10 @@ do_function_clone(dbref player, const char *function, const char *clone)
     return;
   }
 
-  function_add(realclone, fp->where.fun, fp->minargs, fp->maxargs, fp->flags);
+  fpc = function_add(GC_STRDUP(realclone),
+                     fp->where.fun, fp->minargs, fp->maxargs,
+                     (fp->flags | FN_CLONE));
+  fpc->clone_template = (fp->clone_template ? fp->clone_template : fp);
 
   notify(player, T("Function cloned."));
 }
@@ -981,6 +1020,11 @@ alias_function(dbref player, const char *function, const char *alias)
       notify(player, T("You cannot alias @functions."));
     return 0;
   }
+  if (fp->flags & FN_CLONE) {
+    if (player != NOTHING)
+      notify(player, T("You cannot alias cloned functions."));
+    return 0;
+  }
 
   func_hash_insert(realalias, fp);
 
@@ -997,22 +1041,24 @@ alias_function(dbref player, const char *function, const char *alias)
  * \param maxargs maximum arguments to function.
  * \param ftype function evaluation flags.
  */
-void
+FUN *
 function_add(const char *name, function_func fun, int minargs, int maxargs,
              int ftype)
 {
   FUN *fp;
 
   if (!name || name[0] == '\0')
-    return;
+    return NULL;
   fp = slab_malloc(function_slab, NULL);
   memset(fp, 0, sizeof(FUN));
   fp->name = name;
+  fp->clone_template = NULL;
   fp->where.fun = fun;
   fp->minargs = minargs;
   fp->maxargs = maxargs;
   fp->flags = FN_BUILTIN | ftype;
   func_hash_insert(name, fp);
+  return fp;
 }
 
 /*-------------------------------------------------------------------------
@@ -1058,12 +1104,12 @@ strip_braces(const char *str)
 static int
 apply_restrictions(uint32_t result, const char *xres)
 {
-  char *restriction, *rsave, *res;
+  char *restriction, *res;
 
   if (!xres || !*xres)
     return result;
 
-  rsave = restriction = res = GC_STRDUP(xres);
+  restriction = res = GC_STRDUP(xres);
 
   while ((restriction = split_token(&res, ' '))) {
     uint32_t flag = 0;
@@ -1557,6 +1603,13 @@ do_function_delete(dbref player, char *name)
       /* Function alias */
       hashdelete(strupper(name), &htab_function);
       notify(player, T("Function alias deleted."));
+      return;
+    } else if (fp->flags & FN_CLONE) {
+      char safename[BUFFER_LEN];
+      strcpy(safename, fp->name);
+      slab_free(function_slab, fp);
+      hashdelete(safename, &htab_function);
+      notify(player, T("Function clone deleted."));
       return;
     }
     if (!Wizard(player)) {

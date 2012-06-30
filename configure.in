@@ -160,6 +160,8 @@ fi
 ### Types
 # Again, no need to check for standard C89 types.
 
+AC_C_BIGENDIAN
+
 AC_TYPE_SSIZE_T
 AC_TYPE_PID_T
 TYPE_SOCKLEN_T
@@ -382,6 +384,40 @@ AC_CHECK_DECLS(SIGCLD, [AC_DEFINE(HAVE_SIGCLD)],,[AC_INCLUDES_DEFAULT
 ### Files
 AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAS_DEV_URANDOM)])
 
+AC_ARG_WITH([tzinfo], 
+            [AS_HELP_STRING([--with-tzinfo=/path/to/zoneinfo], [Specify path to time zone data directory. (Defaults to /usr/share/zoneinfo)])],
+            [
+if test "x$withval" != "xno"; then
+ if test "x$withval" = "xyes"; then
+   tzinfopath=/usr/share/zoneinfo
+ else
+   tzinfopath="$withval"
+ fi
+ AC_MSG_CHECKING([if $tzinfopath exists])
+ if test -d "$tzinfopath"; then
+   AC_DEFINE_UNQUOTED([TZINFO_PATH], ["$tzinfopath"], [Path to tzinfo database])
+   AC_MSG_RESULT([yes])
+ else
+   AC_MSG_RESULT([no])
+ fi
+else
+ AC_MSG_NOTICE([not using timezone database])
+fi
+],
+[
+# To-to: Find out where else various OSes put the db and check to see if they exist.
+tzinfopath=/usr/share/zoneinfo
+AC_MSG_CHECKING([if $tzinfopath exists])
+if test -d "$tzinfopath"; then
+  AC_DEFINE_UNQUOTED([TZINFO_PATH], ["$tzinfopath"], [Path to tzinfo database])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+]
+)
+            
+
 ### Misc features
 AC_ARG_ENABLE(ipv6,  AS_HELP_STRING([--disable-ipv6],
       [Don't use IPv6 networking]), enable_ipv6=$enableval, enable_ipv6=yes)
@@ -408,30 +444,40 @@ fi
 AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--disable-ssl_slave],
 			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]),
 			 enable_ssl_slave=$enableval, enable_ssl_slave=yes)
-if test "$enable_ssl_slave" = yes -a "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes; then
-   AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)						       
-   AC_DEFINE(SSL_SLAVE)
-else
-   AC_MSG_WARN([ssl_slave requested but OpenSSL and/or libevent2 weren't found.])
-   enable_ssl_slave=no
+if test "$enable_ssl_slave" = yes; then
+   if test "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes; then
+      AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)						       
+      AC_DEFINE(SSL_SLAVE)
+   else
+      AC_MSG_WARN([ssl_slave requested but OpenSSL and/or libevent2 weren't found.])
+      enable_ssl_slave=no
+   fi
 fi
 
 AC_ARG_ENABLE(sse2, AS_HELP_STRING([--enable-sse2],
   [Use SSE2 instructions (Requires a CPU that supports SSE2)]))
 AC_ARG_ENABLE(sse3, AS_HELP_STRING([--enable-sse3],
   [Use SSE3 instructions (Requires a CPU that supports SSE3)]))
+AC_ARG_ENABLE(ssse3, AS_HELP_STRING([--enable-ssse3],
+  [Use SSSE3 instructions (Requires a CPU that supports SSSE3)]))
 AC_ARG_ENABLE(altivec, AS_HELP_STRING([--enable-altivec],
   [Use PowerPC Altivec instructions (Requires a CPU that supports Altivec)]))
+
+if test "$enable_ssse3" = yes; then
+   AC_DEFINE(HAVE_SSSE3)
+   CFLAGS="$CFLAGS -mssse3"
+   enable_sse3=yes
+fi
+
+if test "$enable_sse3" = yes; then
+   AC_DEFINE(HAVE_SSE3)
+   CFLAGS="$CFLAGS -msse3"
+   enable_sse2=yes
+fi
 
 if test "$enable_sse2" = yes; then
    AC_DEFINE(HAVE_SSE2)
    CFLAGS="$CFLAGS -msse2"
-fi
-
-if test "$enable_sse3" = yes; then
-   AC_DEFINE(HAVE_SSE2)
-   AC_DEFINE(HAVE_SSE3)
-   CFLAGS="$CFLAGS -msse2 -msse3"
 fi
 
 if test "$enable_altivec" = yes; then

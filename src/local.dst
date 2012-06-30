@@ -185,7 +185,8 @@ local_data_create(dbref object __attribute__ ((__unused__)))
 
 void
 local_data_clone(dbref clone __attribute__ ((__unused__)),
-                 dbref source __attribute__ ((__unused__)))
+                 dbref source __attribute__ ((__unused__)),
+                 int preserve __attribute__ ((__unused__)))
 {
 }
 

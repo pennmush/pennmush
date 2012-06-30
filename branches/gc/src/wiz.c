@@ -111,6 +111,7 @@ static void
 
 
 
+
 sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
                 uint32_t cant);
 
@@ -1994,15 +1995,7 @@ mem_usage(dbref thing)
   k += strlen(Name(thing)) + 1; /* The name */
   for (m = List(thing); m; m = AL_NEXT(m)) {
     k += sizeof(ATTR);
-    if (AL_STR(m) && *AL_STR(m))
-      k += u_strlen(AL_STR(m)) + 1;
-    /* NOTE! In the above, we're getting the size of the
-     * compressed attrib, not the uncompressed one (as Kalkin did)
-     * because (1) it's more efficient, (2) it's more accurate
-     * since that's how the object is in memory. This relies on
-     * compressed attribs being terminated with \0's, which they
-     * are in compress.c. If that changes, this breaks.
-     */
+    k += AL_STRLEN(m);
   }
   for (l = Locks(thing); l; l = l->next) {
     k += sizeof(lock_list);

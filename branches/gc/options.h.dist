@@ -57,6 +57,19 @@
  */
 #define COMPRESSION_TYPE 1
 
+/* How are attributes stored?
+ * Your options are:
+ * 0 - Use the standard malloc/free system, with each attribute
+ *     allocated seperately. Fairly fast, takes the most memory.
+ * 1 - Use Talek's chunk manager, which lets you put an upper limit on
+ *     how much memory is used by attribute contents, with excess
+ *     getting paged out to disk. Tradeoff is higher CPU usage. Useful
+ *     for hosting environments with memory restrictions.
+ * More options might be coming, or this might end up being moved into
+ * configure.
+ */
+#define ATTR_STORAGE 1
+
 /*------------------------- MUSH Features ----------------------*/
 
 /* Many MUSHes want to change the +channels to =channels. That's

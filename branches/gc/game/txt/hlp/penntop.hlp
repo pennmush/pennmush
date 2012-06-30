@@ -880,7 +880,7 @@ See also: verbs, @lock, @failure, @efail, @lfail
   use zwho()                                    Zone     ZONE_LOCK`FAILURE
   leave your current location                   Leave    @lfail
   "take" from an object                         Take     TAKE_LOCK`FAILURE
-  "drop" a thing, or drop something in a room   Drop     DROP_LOCK_FAILURE
+  "drop" a thing, or drop something in a room   Drop     DROP_LOCK`FAILURE
    enter an object                              Enter    @efail
   "follow" an object                            Follow   FOLLOW_LOCK`FAILURE
   "give" an object away                         Give     GIVE_LOCK`FAILURE
@@ -2312,6 +2312,8 @@ This is the AHELP index.
    userfn     Function can only be called from within an @function.
    nosidefx   Don't allow side-effects for this function. See also the
               function_side_effects @config option.
+   deprecated This function should no longer be used. Warns the executor's
+              owner whenever someone uses the function.
 
   Commands only:
    noplayer   Cannot be used by players.
@@ -2342,4 +2344,3 @@ This is the AHELP index.
     > @command/restrict @emit=!flag^suspect&!flag^gagged
 
 See also: @command, @function, @attribute, @lock
-

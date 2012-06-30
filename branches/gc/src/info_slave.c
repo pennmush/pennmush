@@ -83,20 +83,6 @@ void fputerr(const char *);
 #include <event.h>
 #include <event2/dns.h>
 
-static void write_to_file_cb(int severity, const char *msg)
-{
-    const char *s;
-    switch (severity) {
-        case _EVENT_LOG_DEBUG: s = "debug"; break;
-        case _EVENT_LOG_MSG:   s = "msg";   break;
-        case _EVENT_LOG_WARN:  s = "warn";  break;
-        case _EVENT_LOG_ERR:   s = "error"; break;
-        default:               s = "?";     break; /* never reached */
-    }
-    fprintf(stderr, "[%s] %s\n", s, msg);
-}
-
-
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
 
@@ -195,8 +181,7 @@ check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
              void *arg __attribute__ ((__unused__)))
 {
   if (getppid() == 1) {
-    fputerr
-      ("Parent mush process exited unexpectedly! Shutting down.");
+    fputerr("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -209,8 +194,6 @@ main(void)
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
-
-  evdns_set_log_fn(write_to_file_cb);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */
   watch_parent =
@@ -305,8 +288,7 @@ main(void)
       len = recv(0, &req, sizeof req, 0);
     else if (ev == (int) netmush) {
       /* Parent process exited. Exit too. */
-      fputerr
-        ("Parent mush process exited unexpectedly! Shutting down.");
+      fputerr("Parent mush process exited unexpectedly! Shutting down.");
       return EXIT_SUCCESS;
     } else if (ev < 0) {
       /* Error? */
@@ -368,7 +350,7 @@ main(void)
     } else
       strcpy(resp.hostname, resp.ipaddr);
 
-    len = send(1, &resp, sizeof resp, 0);    
+    len = send(1, &resp, sizeof resp, 0);
 
     /* Should never happen. */
     if (len != (int) sizeof resp) {
@@ -724,7 +706,7 @@ time_string(void)
   static char buffer[100];
   time_t now;
   struct tm *ltm;
-  
+
   now = time(NULL);
   ltm = localtime(&now);
   strftime(buffer, 100, "%m/%d %T", ltm);
@@ -737,7 +719,8 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err, strerror(errno));
+  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err,
+          strerror(errno));
   unlock_file(stderr);
 }
 

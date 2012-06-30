@@ -797,12 +797,12 @@ parse_ansi_string(const char *source)
   int idx = NOMARKUP;
   int pidx = NOMARKUP;
 
-  /* Zero it out. */
-  memset(as, 0, sizeof(ansi_string));
-
   if (!source) {
     return NULL;
   }
+
+  /* Allocate and zero it out. */
+  as = GC_MALLOC(sizeof(ansi_string));
 
   /* Quick check for no markup */
   if (!has_markup(source)) {

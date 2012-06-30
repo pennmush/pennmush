@@ -143,7 +143,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
-  {"@EDIT", "FIRST CHECK QUIET", cmd_edit,
+  {"@EDIT", "FIRST CHECK QUIET REGEXP NOCASE ALL", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@ELOCK", NULL, cmd_elock,
@@ -186,7 +186,7 @@ COMLIST commands[] = {
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
   {"@LEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+   CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
@@ -210,7 +210,7 @@ COMLIST commands[] = {
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAPSQL", "NOTIFY COLNAMES", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT", cmd_message,
+  {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT SILENT NOISY", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@MOTD", "CONNECT LIST WIZARD DOWN FULL", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -282,12 +282,11 @@ COMLIST commands[] = {
    cmd_select,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"@SOCKSET", NULL, cmd_sockset, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
+   0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
-#if defined(HAVE_MYSQL) || defined(HAVE_POSTGRESQL) || defined(HAVE_SQLITE3)
+  {"@SLAVE", "RESTART", cmd_slave, CMD_T_ANY, "WIZARD", 0},
   {"@SQL", NULL, cmd_sql, CMD_T_ANY, "WIZARD", "SQL_OK"},
-#else
-  {"@SQL", NULL, cmd_unimplemented, CMD_T_ANY, "WIZARD", "SQL_OK"},
-#endif
   {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
@@ -874,7 +873,7 @@ command_init_postconfig(void)
   /* Warn about unused switch names */
   for (s = switch_list; s->name; s++) {
     if (!s->used)
-      do_rawlog(LT_CMD, T("Warning: Switch '%s' is defined but not used."),
+      do_rawlog(LT_CMD, "Warning: Switch '%s' is defined but not used.",
                 s->name);
   }
 
@@ -1475,10 +1474,12 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   strcpy(pe_info->cmd_evaled, cmd_evaled);
   strcpy(pe_info->cmd_raw, cmd_raw);
 
-  if (cmd->type & CMD_T_NOP) {
+  if ((cmd->type & CMD_T_NOP) && ap && *ap) {
     /* Done this way because another call to tprintf during
      * run_hook_override will blitz the string */
     strcpy(nop_arg, tprintf("%s %s", cmd->name, ap));
+  } else {
+    nop_arg[0] = '\0';
   }
 
   if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
@@ -2474,8 +2475,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.override.
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.
+             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

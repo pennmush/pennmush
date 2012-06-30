@@ -86,6 +86,7 @@ static bool
 
 
 
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -564,7 +565,8 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
  * \retval 0 d doesn't match s.
  */
 bool
-quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
+quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
+                   const char **report_err)
 {
   pcre *re;
   pcre_extra *extra;
@@ -588,6 +590,9 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
      * errptr that we can ignore, since we're doing
      * command-matching.
      */
+    if (report_err != NULL) {
+      *report_err = errptr;
+    }
     return 0;
   }
   sptr = remove_markup(d, &slen);
@@ -607,7 +612,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
+qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *subj)
 {
   int len;
   int offsets[99];
@@ -619,8 +624,8 @@ qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
   if (study) {
     extra = study;
     set_match_limit(extra);
-  } else 
-    extra = default_match_limit();    
+  } else
+    extra = default_match_limit();
 
   len = strlen(subj);
 
@@ -642,20 +647,29 @@ bool
 local_wild_match_case(const char *restrict s, const char *restrict d, bool cs,
                       PE_REGS *pe_regs)
 {
+  int mod = 0;
   if (s && *s) {
     switch (*s) {
     case '>':
       s++;
+      if (*s == '=') {
+        s++;
+        mod = 1;
+      }
       if (is_number(s) && is_number(d))
-        return (parse_number(s) < parse_number(d));
+        return (parse_number(s) < (parse_number(d) + mod));
       else
-        return (strcoll(s, d) < 0);
+        return (strcoll(s, d) < (mod ? 1 : 0));
     case '<':
       s++;
+      if (*s == '=') {
+        s++;
+        mod = 1;
+      }
       if (is_number(s) && is_number(d))
-        return (parse_number(s) > parse_number(d));
+        return ((parse_number(s) + mod) > parse_number(d));
       else
-        return (strcoll(s, d) > 0);
+        return (strcoll(s, d) > (mod ? -1 : 0));
     default:
       if (pe_regs != NULL) {
         char data[BUFFER_LEN * 2];

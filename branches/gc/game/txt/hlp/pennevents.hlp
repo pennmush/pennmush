@@ -81,6 +81,7 @@
 
   dump: dump`5min, dump`1min, dump`complete, dump`error
   db: db`dbck, db`purge, db`warnings
+  log: log`err, log`cmd, log`conn, log`trace, log`check, log`huh
   object: object`create, object`destroy, object`move, object`rename,
           object`kill, object`flag
   sql: sql`connect, sql`connectfail, sql`disconnect
@@ -116,6 +117,25 @@
   These run in addition to any messages that may be sent. If you want to
   replace the messages, config (via @config or the .cnf file) the dump
   messages to be empty.
+& EVENT LOG
+  Events in the log tree get triggered whenever the game logs any information
+  to a log file (Either because of @log, or something else happening.) They
+  all get passed a single argument, the message being logged.
+
+  log`err
+     Errors and the general catch-all.
+  log`cmd
+     Logged commands.
+  log`wiz
+     Logged wizard activity.
+  log`conn
+     Connection notifications.
+  log`trace
+     Memory tracking notifications.
+  log`check
+     Save-releated log messages.
+  log`huh
+     Commands that generate huh messages.
 & EVENT OBJECT
   object`create  (new objid, cloned-from)
       Triggered on the creation of any object except player.

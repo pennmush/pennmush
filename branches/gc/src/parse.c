@@ -1293,7 +1293,10 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    /* we don't need to do this, as it's done in the 'numbered captures'
+     * for loop above.
+     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     */
     pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
 
   }
@@ -1347,7 +1350,11 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                              num, 1, buff, &bp);
     *bp = '\0';
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    /* we don't need to do this, as it's done in the 'numbered captures'
+     * for loop above.
+     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     */
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
   }
 }
 

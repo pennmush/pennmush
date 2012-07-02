@@ -4272,7 +4272,7 @@ squish_time(char *buf, int len)
       }
     }
   } while (1);
- 
+
   /* If the string is too long, drop trailing entries and resulting
      whitespace until it fits. */
   for (slen = strlen(buf); slen > len; slen = strlen(buf)) {

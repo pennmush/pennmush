@@ -6,7 +6,7 @@
       * [Upgrading Upgrading PennMUSH]
     * [InstallingWindows Installing on Windows]
     * [InstallingSql Installing with SQL Support]
-  * [Using Git]
+  * [UsingGit Using Git]
   * [PennSVN Migrating to SVN]
   * Setting up the MUSH
     * [SetupOptions mush.cnf options]

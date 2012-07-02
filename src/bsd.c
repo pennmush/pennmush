@@ -4241,7 +4241,7 @@ squish_time(char *buf, int len)
 	c += 1;
       buf = c;
     } else
-      break;   
+      break;
   }
 
   /* Eat any intermediate 0 entries unless it's the only one.

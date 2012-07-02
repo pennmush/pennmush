@@ -1,0 +1,10 @@
+#summary How to use git to checkout (and commit) to pennmush.
+
+= For everyone =
+git clone git://github.com/zetafunction/pennmush.git
+
+= For contributors =
+cd pennmush
+git svn init --prefix=origin/ -T trunk https://pennmush.googlecode.com/svn
+git config svn-remote.svn.fetch trunk:refs/remotes/origin/master
+git svn fetch

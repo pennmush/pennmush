@@ -4264,7 +4264,7 @@ squish_time(char *buf, int len)
       char *n = strchr(c, ' ');
       if (n) {
 	int nlen = strlen(n) + 1;
-	memmove(saved, n, nlen);  
+	memmove(saved, n, nlen);
 	c = saved;
       } else {
 	*saved = '\0';

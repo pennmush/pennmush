@@ -1,15 +1,35 @@
 #summary How to use git to checkout (and commit) to pennmush.
 
-= For everyone =
+= For Everyone =
 {{{
 git clone git://github.com/zetafunction/pennmush.git
 }}}
 
-= For contributors =
+= For Committers =
 In pennmush:
 
 {{{
 git svn init --prefix=origin/ -T trunk https://pennmush.googlecode.com/svn
 git config svn-remote.svn.fetch trunk:refs/remotes/origin/master
 git svn fetch
+}}}
+
+= Actually Committing =
+
+Before committing, make sure to squash all your local changes into one commit with `git rebase -i HEAD~n`, where n is the number of local changes. If you don't do that, `git svn` will happily create one svn revision per local change.
+
+Once that's done, run `git svn dcommit`. For now, I've been working in branches, squashing, and then cherry picking the patch into my local master branch before committing upstream. There's probably a better way to do this.
+
+= Notes =
+The git repository was populated with:
+{{{
+git svn clone -s https://pennmush.googlecode.com/svn pennmush-mirror
+git remote add origin git@github.com:zetafunction/pennmush.git
+git push origin master
+}}}
+
+A cronjob runs every 5 minutes pushing new SVN revisions to the git mirror:
+{{{
+git svn rebase
+git push origin master
 }}}

@@ -16,9 +16,21 @@ git svn fetch
 
 = Actually Committing =
 
-Before committing, make sure to squash all your local changes into one commit with `git rebase -i HEAD~n`, where n is the number of local changes. If you don't do that, `git svn` will happily create one svn revision per local change.
+Before committing, you'll want to pull your changes into your local master branch somehow. How you do that varies based on your workflow.
 
-Once that's done, run `git svn dcommit`. For now, I've been working in branches, squashing, and then cherry picking the patch into my local master branch before committing upstream. There's probably a better way to do this.
+Also, if you have several local changes, make sure to squash them into one local commit first with:
+{{{
+git rebase -i HEAD~n
+}}}
+where `n` is the number of commits to squash together.
+
+Once that's done:
+{{{
+git svn rebase
+git svn dcommit
+}}}
+
+Eventually there will be a helper script for this...
 
 = Notes =
 The git repository was populated with:

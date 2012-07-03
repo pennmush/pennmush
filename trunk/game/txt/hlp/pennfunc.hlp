@@ -2322,7 +2322,7 @@ See also: words()
 
   See 'help iter2' for examples.
 See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
-& ITER2   
+& ITER2
   Examples:
     > say iter(This is a test string., strlen(%i0))
     You say, "4 2 1 4 7"
@@ -2995,7 +2995,7 @@ See also: pos(), member(), match()
     
   Continued in 'help lsearch2'.
 & LSEARCH2
-& SEARCH2 
+& SEARCH2
    
   If <class> is one of the eval classes (EVAL, EEXITS, EROOMS, ETHINGS
   or EPLAYERS), note that any brackets, percent signs, or other
@@ -3275,7 +3275,7 @@ See also: max(), lmath(), bound(), alphamin()
   argument must be a delimiter.
 
   See 'help mix2' for examples.
-& MIX2  
+& MIX2
   Examples of mix():
  
   > &add_nums me=add(%0, %1)
@@ -6550,7 +6550,7 @@ See also: VECTOR FUNCTIONS
   (the LOC() function will return its drop-to).
   
 See also: room(), loc(), rnum(), locate(), home(), @whereis
-& WIPE() 
+& WIPE()
   wipe(<object>[/<attribute pattern>])
 
   This function is equivalent to @wipe, and attempts to wipe all the

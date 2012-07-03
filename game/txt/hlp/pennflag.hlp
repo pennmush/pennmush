@@ -682,7 +682,7 @@ See also: OPAQUE, CLOUDY, @exitformat
   will automatically be @hidden.
   
 See also: loc(), @whereis, @hide
-& UNINSPECTED 
+& UNINSPECTED
   Flag: UNINSPECTED (rooms)
 
   This flag has no hardcoded purpose, but may be used by MUSH staff to
@@ -719,7 +719,7 @@ See also: UNINSPECTED
     Test says, "Hello"
     
 See also: PUPPET, DEBUG
-& VISUAL 
+& VISUAL
   Flag:  VISUAL  (all types)
 
   When this flag is set on an object, it allows any other player who passes

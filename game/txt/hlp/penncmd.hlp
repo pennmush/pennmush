@@ -710,7 +710,7 @@ See also: QUIT, LOGOUT
 
 See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
 & @charges
-& @runout 
+& @runout
   @charges <object>[=<integer>]
   @runout <object>[=<action list>]
 
@@ -1593,7 +1593,7 @@ See also: edit(), regedit(), ATTRIBUTES,
 
 See also: @lock, locktypes, enter, ENTER_OK
 & @emit
-& \  
+& \
   @emit[/<switch>] <message>
   \<message>
 
@@ -3940,7 +3940,7 @@ See also: version(), numversion()
   the stack (i.e. %0, %1, %2, etc. up through %9).
   
   Continued in 'help @verb2'.
-& @verb2  
+& @verb2
   In order to use this command, at least one of the following criterion
   must apply:
     1. The object which did the @verb is a wizard.
@@ -4256,7 +4256,7 @@ See also: KEEPALIVE, @idle
   You say, "Third"
 
 See also: @trigger, @include
-& drop 
+& drop
   drop <object>
 
   Drops <object>, if you are presently carrying it. If the room the
@@ -4597,7 +4597,7 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT,
   to provide standard information on the rules, theme, and customized
   commands of the particular MUSH. It is highly recommended that you
   read it regularly.
-& page 
+& page
   page[/<switch>] [<player-list>=]<message>
 
   This command sends a message to a player or list of players. If the
@@ -4716,7 +4716,7 @@ See also: LOOPING, @ps, QUEUE, MONEY
   there's no prepended text.
 
   One possible use: @adesc me=think %N just looked at you.
-& QUIT    
+& QUIT
   QUIT
 
   Log out and leave the game. Must be in all capitals.  
@@ -4771,7 +4771,7 @@ See also: huh_command, unimplemented_command
   implemented.", but you can @hook it to perform other actions.
   
 See also: huh_command, warn_on_missing, @command, @hook
-& whisper 
+& whisper
   whisper <player>=<message>
   whisper/silent <player>=<message>
   whisper/noisy <player>=<message>

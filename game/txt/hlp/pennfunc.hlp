@@ -581,9 +581,6 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.
   
-  When using the newer color names/hexcodes, you can also use ! instead of
-  / to separate the foreground and background colors.
- 
 See also: ANSI, COLOR, @sockset, colorstyle, colors()
 & ANSI2
   Old-style valid color codes are:

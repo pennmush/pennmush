@@ -171,8 +171,12 @@ COMMAND(cmd_break)
   if (parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+      if (SW_ISSET(sw, SWITCH_QUEUED))
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+      else
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }
@@ -182,8 +186,12 @@ COMMAND(cmd_assert)
   if (!parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+      if (SW_ISSET(sw, SWITCH_QUEUED))
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+      else
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }

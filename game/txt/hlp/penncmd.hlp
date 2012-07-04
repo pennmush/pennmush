@@ -675,18 +675,29 @@ See also: @idle, @haven
 See also: QUIT, LOGOUT
 & @break
 & @assert
-  @break  <boolean>[=<action list>]
-  @assert <boolean>[=<action list>]
+  @break[/queued]  <boolean>[=<action list>]
+  @assert[/queued] <boolean>[=<action list>]
 
-  @break stops the execution of further commands in the current action
-  list if <boolean> is a true value. It doesn't affect new queue entries
-  made by previous commands in the action list. Very useful to people who
-  don't like @switch. If <action list> is given, it is executed instead of
-  the rest of the commands in the current action list.
+  @break stops the execution of further commands in the current action list
+  if <boolean> is a true value. It doesn't affect new queue entries made by 
+  previous commands in the action list. It can be useful for doing error 
+  checking without having to nest @switches and suffer from delayed execution
+  because of queueing.
+  
+  If <action list> is given, it is executed instead of the rest of the 
+  commands in the current action list. By default, <action list> is run
+  immediately, replacing the rest of the action list @break was called in. If
+  the /queued switch is given, <action list> will instead be queued to be run
+  later. @break also accepts an /inline switch, for Rhost compatability; this
+  switch does nothing on PennMUSH.
 
   @assert does the inverse: it stops execution if <boolean> evaluates to
   false.
 
+  See 'help @break2' for examples.
+See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
+& @break2
+& @assert2
   Examples:
   > @va obj=$testme *: @pemit %#=You try a test ;
                        @break lt(%0,10)=@pemit %#=But you're too low! ;
@@ -707,8 +718,6 @@ See also: QUIT, LOGOUT
    think Second), and then the queued 'think Third' is run, displaying
    Third. If you figured that out, you have a very good understanding
    of the PennMUSH queue. :)
-
-See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
 & @charges
 & @runout
   @charges <object>[=<integer>]

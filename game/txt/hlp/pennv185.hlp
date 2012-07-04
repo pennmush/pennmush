@@ -34,6 +34,9 @@ Major changes:
 Commands:
  * look now takes an /opaque switch, which hides contents listings. Suggested
    by Wiggles. [MG]
+ * @break and @assert now take a /queued switch, which causes the new <action
+   list> to be queued instead of run immediately, and an /inline switch which
+   gives default behaviour. For Rhost compatability. [MG]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH, and
@@ -73,6 +76,7 @@ Fixes:
  * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
    by ChaosMageX@M*U*S*H. [DC]            
  * Fix some potential memory leaks in timezone file reading code. [SW]
+ * Off-by-one error in the helpfile index code. [MG]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

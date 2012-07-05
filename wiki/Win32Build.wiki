@@ -19,14 +19,18 @@ make install_x install_y  # Fix the names, needed to get around the fact that te
 
 Download PCRE
 {{{
-./configure
+# It doesn't matter where you choose to install it, as long as you specify the same pah for pennmush ./configure
+./configure --prefix=/usr
 make
 make install
 }}}
 
-There might be some conflicts in `/usr/local/share/man/man3/pcre*`. Do just `make uninstall`, blow away the pcre man pages, then `make install` again.
-
 In PennMUSH:
 {{{
-LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr/local
+CPPFLAGS="-I/usr/include" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr
+# This currently breaks due to a missing langinfo.h
+make
+make install
 }}}
+
+Yes, the pcre configure check is so badly broken it's not funny.

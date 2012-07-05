@@ -1,0 +1,30 @@
+#summary How to build PennMUSH on Windows using the mingw toolchain.
+
+*This page is a work in progress. None of this is guaranteed to work yet.*
+
+= Introduction =
+
+In the future, Visual Studio support will be deprecated and mingw will be the only supported toolchain to build PennMUSH. You have been warned.
+
+= Details =
+
+Install mingw. Install developer toolkit, MSYS base system, gcc, and g++.
+
+Download OpenSSL
+{{{
+./config
+make Makefile openssl.pc libssl.pc libcrypto.pc build_libs build_apps build_tools
+make install_x install_y  # Fix the names, needed to get around the fact that tests don't build
+}}}
+
+Download PCRE
+{{{
+./configure
+make
+make install
+}}}
+
+In PennMUSH:
+{{{
+LIBS="-lws2_32 -lgdi32" ./configure
+}}}

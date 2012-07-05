@@ -14,7 +14,7 @@ Download OpenSSL
 {{{
 ./config
 make Makefile openssl.pc libssl.pc libcrypto.pc build_libs build_apps build_tools
-make install_x install_y  # Fix the names, needed to get around the fact that tests don't build
+make install_docs install_sw  # Fix the names, needed to get around the fact that tests don't build
 }}}
 
 Download PCRE
@@ -27,7 +27,7 @@ make install
 
 In PennMUSH:
 {{{
-CPPFLAGS="-I/usr/include" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr --disable-info_slave
+CPPFLAGS="-I/usr/include" LDFLAGS="-L/usr/lib" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr --disable-info_slave
 # This currently breaks due to a missing langinfo.h
 make
 make install

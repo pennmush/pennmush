@@ -90,7 +90,7 @@ struct flagcache {
 
 static struct flagcache *new_flagcache(FLAGSPACE *, int);
 static void free_flagcache(struct flagcache *);
-static object_flag_type flagcache_find_ns(FLAGSPACE *, object_flag_type);
+static object_flag_type flagcache_find_ns(FLAGSPACE *, const object_flag_type);
 
 slab *flagbucket_slab = NULL;
 

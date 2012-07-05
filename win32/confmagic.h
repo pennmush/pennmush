@@ -12,7 +12,10 @@
 #ifndef _confmagic_h_
 #define _confmagic_h_
 
+/* Random hacks for Visual Studio. */
 #define inline __inline
+#define _WINSOCKAPI_  /* Don't ever include winsock.h */
+#define PCRE_STATIC
 
 /*
  * (which isn't exportable from the U.S.), then don't encrypt
@@ -46,7 +49,7 @@ int sane_snprintf_s(char *, size_t, const char *, ...);
 #endif
 #endif
 
-#if !defined(HAVE_VSNPRINTF)
+#if !defined(HAS_VSNPRINTF)
 #if defined(HAVE__VSNPRINTF_S)
 #define vsnprintf(str, size, fmt, args)  _vsnprintf_s((str), (size), \
 						      _TRUNCATE,     \

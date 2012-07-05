@@ -28,6 +28,7 @@
  *
  */
 #include "config.h"
+#include "confmagic.h"
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>

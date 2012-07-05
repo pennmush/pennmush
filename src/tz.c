@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "config.h"
+#include "confmagic.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -533,7 +534,7 @@ save_and_set_tz(const char *newzone)
     saved_tz = NULL;
 
 #ifdef WIN32
-  _putenv_s("TZ", newzone, 1);
+  _putenv_s("TZ", newzone);
 #else
   setenv("TZ", newzone, 1);
 #endif
@@ -547,7 +548,7 @@ restore_tz(void)
 {
   if (saved_tz) {
 #ifdef WIN32
-    _putenv_s("TZ", saved_tz, 1);
+    _putenv_s("TZ", saved_tz);
 #else
     setenv("TZ", saved_tz, 1);
 #endif
@@ -555,7 +556,7 @@ restore_tz(void)
     saved_tz = NULL;
   } else {
 #ifdef WIN32
-    _putenv_s("TZ", 0, 1);
+    _putenv_s("TZ", "");
 #else
     unsetenv("TZ");
 #endif

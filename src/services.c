@@ -7,6 +7,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 

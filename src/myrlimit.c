@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -19,9 +20,8 @@
 #ifdef WIN32
 #define FD_SETSIZE 256
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <io.h>
-#define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
 #ifdef I_UNISTD
 #include <unistd.h>

@@ -27,7 +27,7 @@ make install
 
 In PennMUSH:
 {{{
-CPPFLAGS="-I/usr/include" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr
+CPPFLAGS="-I/usr/include" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr --disable-info_slave
 # This currently breaks due to a missing langinfo.h
 make
 make install

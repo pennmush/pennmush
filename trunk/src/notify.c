@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,7 +19,7 @@
 #endif
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <io.h>
 #else                           /* !WIN32 */
 #ifdef I_SYS_FILE

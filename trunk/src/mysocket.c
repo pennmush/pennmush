@@ -8,6 +8,7 @@
 #include "copyrite.h"
 
 #include "config.h"
+#include "confmagic.h"
 
 #define _GNU_SOURCE
 
@@ -18,7 +19,8 @@
 
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 #ifdef I_SYS_TYPES

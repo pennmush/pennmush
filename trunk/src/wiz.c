@@ -8,6 +8,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #ifdef I_UNISTD
 #include <unistd.h>

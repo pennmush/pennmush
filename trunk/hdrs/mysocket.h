@@ -24,19 +24,10 @@
 #ifndef FD_SETSIZE
 #define FD_SETSIZE 256
 #endif
-#include <winsock.h>
-#include <io.h>
-#undef EINTR                    /* Clashes with errno.h */
-#define EINTR WSAEINTR
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define EINPROGRESS WSAEINPROGRESS
-#define ETIMEDOUT WSAETIMEDOUT
-#define EAFNOSUPPORT WSAEAFNOSUPPORT
-#define ENOSPC          28
-#define MAXHOSTNAMELEN 32
-#pragma comment( lib, "wsock32.lib")
-#pragma comment( lib, "winmm.lib")
-#pragma comment( lib, "advapi32.lib")
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "advapi32.lib")
 #endif
 
 /* This number taken from Stevens. It's the size of the largest possible

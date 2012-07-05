@@ -1118,7 +1118,7 @@ See also: acos(), asin(), atan(), ctu(), sin(), tan()
   The optional third argument can be used to specify a garbage object
   to use for the new player.
 
-See also: @pcreate, create()
+See also: @pcreate, create(), dig(), open()
 & CREATE()
    create(<object>[, <cost>[, <dbref>]])
 
@@ -1129,7 +1129,7 @@ See also: @pcreate, create()
    Wizards may also specify a <dbref>; if this refers to a garbage object,
    the new object is created with this dbref.
    
-See also: @create, pcreate()
+See also: @create, pcreate(), dig(), open()
 & CTIME()
 & CSECS()
   ctime(<object>[, <utc>])
@@ -1289,7 +1289,7 @@ See also: strreplace(), strinsert(), mid()
   Wizards can supply an optional fourth argument to specify a garbage
   object to use for the new room.
 
-  This is a side-effect function and may not be enabled on some MUSHes.
+See also: @dig, open(), @open, create(), pcreate()
 & DIGEST()
 & MD5
 & SHA1
@@ -3683,6 +3683,8 @@ See also: subj(), poss(), aposs()
   mistaken for the old object.
 
   The substitution %: returns the object id of the enactor.
+
+See also: num(), csecs(), ctime(), ENACTOR
 & OBJMEM()
   objmem(<object>)
 
@@ -3710,7 +3712,7 @@ See also: playermem()
   If a <destination> is given, it will attempt to link the exit to 
   <destination> after opening it.
  
-See also: @open, @link
+See also: @open, @link, dig(), link(), create(), pcreate()
 & OR()
 & COR()
   or(<boolean1>, <boolean2>[, ... , <booleanN>])

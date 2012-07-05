@@ -24,7 +24,9 @@ make
 make install
 }}}
 
+There might be some conflicts in `/usr/local/share/man/man3/pcre*`. Do just `make uninstall`, blow away the pcre man pages, then `make install` again.
+
 In PennMUSH:
 {{{
-LIBS="-lws2_32 -lgdi32" ./configure
+LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr/local
 }}}

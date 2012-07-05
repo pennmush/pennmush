@@ -8,13 +8,13 @@ In the future, Visual Studio support will be deprecated and mingw will be the on
 
 = Details =
 
-Install mingw. Install developer toolkit, MSYS base system, gcc, and g++.
+Install mingw. Install the compilers for C, C++, and the MingW developer toolkit.
 
 Download OpenSSL
 {{{
 ./config
 make Makefile openssl.pc libssl.pc libcrypto.pc build_libs build_apps build_tools
-make install_docs install_sw  # Fix the names, needed to get around the fact that tests don't build
+make install_docs install_sw  # make install doesn't work because some tests don't build in mingw.
 }}}
 
 Download PCRE

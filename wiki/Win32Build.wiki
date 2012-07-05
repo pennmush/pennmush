@@ -1,36 +1,49 @@
-#summary How to build PennMUSH on Windows using the mingw toolchain.
-
-*This page is a work in progress. None of this is guaranteed to work yet.*
+#summary How to build PennMUSH on Windows.
 
 = Introduction =
 
-In the future, Visual Studio support will be deprecated and mingw will be the only supported toolchain to build PennMUSH. You have been warned.
+Requireents:
+  * ActivePerl
+  * CMake
+  * Git for Windows
+  * Visual Studio 2010 (express edition works)
+  * Windows 2000 or newer.
 
 = Details =
 
-Install mingw. Install the compilers for C, C++, and the MingW developer toolkit.
-
-Download OpenSSL
+== Build OpenSSL ==
+Grab the sources from http://openssl.org, unpack it, and `cd` into the directory. Full directions are available in `INSTALL.W32`, but you'll want to do something like this:
 {{{
-./config
-make Makefile openssl.pc libssl.pc libcrypto.pc build_libs build_apps build_tools
-make install_docs install_sw  # make install doesn't work because some tests don't build in mingw.
+perl Configure VC-WIN32 no-asm
+ms\do_ms
+nmake -f ms\ntdll.mak
 }}}
 
-Download PCRE
+== Build PCRE ==
+Grab the sources, unpack it, and `cd` into the directory.
 {{{
-# It doesn't matter where you choose to install it, as long as you specify the same pah for pennmush ./configure
-./configure --prefix=/usr
-make
-make install
+cmake .
+}}}
+Open `ALL_BUILD.vcproj`, and build the appropriate configuration (you probably want Release).
+
+== Buil PennMUSH ==
+Open the VS2010 project in `win32\vs2010`, and add the following paths to your include path:
+{{{
+path-to-openssl\inc32
+path-to-pcre
 }}}
 
-In PennMUSH:
+Add the following to your library search path:
 {{{
-CPPFLAGS="-I/usr/include" LDFLAGS="-L/usr/lib" LIBS="-lws2_32 -lgdi32" ./configure --with-pcre=/usr --disable-info_slave
-# This currently breaks due to a missing langinfo.h
-make
-make install
+path-to-openssl\out32dll
+path-to-pcre\Release
 }}}
 
-Yes, the pcre configure check is so badly broken it's not funny.
+And finally add the following to additional libraries:
+{{{
+pcre.lib
+ssleay32.lib
+libeay32.lib
+}}}
+
+To run the game, you'll need to copy `ssleay32.dll` and `libeay32.dll` from `path-to-openssl\out32dll` to your game directory.

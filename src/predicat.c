@@ -1129,10 +1129,6 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
-    if (!any) {
-      /* Add the new switch context to the parent queue... */
-      any = 1;
-    }
     if (queue_type != QUEUE_DEFAULT) {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);

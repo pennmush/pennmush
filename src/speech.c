@@ -486,8 +486,6 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
   format.checkprivs = 1;
   format.thing = AMBIGUOUS;
 
-  p = attrname;
-
   if ((p = strchr(attrname, '/')) != NULL) {
     *p++ = '\0';
     if (*attrname && strcmp(attrname, "#-2")) {

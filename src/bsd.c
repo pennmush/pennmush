@@ -473,7 +473,7 @@ main(int argc, char **argv)
 #ifdef HAVE_GETUID
   if (getuid() == 0) {
     fputs("Please run the server as another user.\n", stderr);
-    fputs("PennMUSH will not run as root as a security measure.\n", stderr);
+    fputs("PennMUSH will not run as root as a security measure. Exiting.\n", stderr);
     return EXIT_FAILURE;
   }
   /* Add suid-root checks here. */
@@ -483,8 +483,12 @@ main(int argc, char **argv)
     fprintf(stderr, "The  %s binary is set suid and owned by root.\n", argv[0]);
 #ifdef HAVE_SETEUID
     fprintf(stderr, "Changing effective user to %d.\n", (int) getuid());
-    seteuid(getuid());
-    in_suid_root_mode = 1;
+    if (seteuid(getuid()) < 0) {
+      fprintf(stderr, "ERROR: seteuid() failed: %s\n", strerror(errno));
+      fputs("PennMUSH will not run as root as a security measure. Exiting.\n", stderr);
+      return EXIT_FAILURE;
+    } else
+      in_suid_root_mode = 1;
 #endif
   }
 #endif                          /* HAVE_GETEUID */

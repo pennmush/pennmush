@@ -1575,7 +1575,7 @@ FUNCTION(fun_entrances)
    * (a)ll (default), (e)xits, (t)hings, (p)layers, (r)ooms
    * The third and fourth args limit the range of dbrefs (default=0,db_top)
    */
-  dbref where = Location(executor);
+  dbref where;
   struct search_spec spec;
   int nresults, n;
   dbref *results = NULL;

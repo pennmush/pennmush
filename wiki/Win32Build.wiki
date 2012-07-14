@@ -46,4 +46,4 @@ ssleay32.lib
 libeay32.lib
 }}}
 
-At some point, the compile will complain with the error that `'next_timeout' uses undefined struct 'timeval'` in `dt1s1.h`. This is because OpenSSL tries to #include the winsock.h header, which is incompatible with winsock2.h (which PennMUSH uses).
+At some point, the compile will complain with the error that `'next_timeout' uses undefined struct 'timeval'` in `dt1s1.h`. This is because OpenSSL tries to `#include` the `winsock.h` header, which is incompatible with `winsock2.h` (which PennMUSH uses). To fix that, just change the include in OpenSSL from `#include <winsock.h>` to `#include <winsock2.h>`.

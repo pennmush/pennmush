@@ -20,6 +20,7 @@ Version 1.8.5 patchlevel 2                                 ??? ??, 2012
 Hardcode:
  * render_string has been modified to work with multiple output formatters,
    so it can display the appropriate color syntax for the client. [GM]
+ * Tweak the networking code to try to reduce output latency and queue size. [SW]
 
 Major changes:
  * 256 Color support. Using 24 bit internally for representation and

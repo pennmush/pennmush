@@ -1754,6 +1754,23 @@ queue_newwrite(DESC *d, const unsigned char *b, int n)
 {
   int space;
 
+  if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
+    /* If there's no data already buffered to write out, try writing
+       directly to the socket. Add whatever's left to the buffer to
+       queue for later. */
+    int written;
+
+    if ((written = send(d->descriptor, b, n, 0)) > 0) {
+      /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
+      if (written == n)
+	return written;
+      n -= written;
+      b += written;
+    }    
+  }  
+
+  /* do_rawlog(LT_TRACE, "Queuing %d bytes.", n); */
+
   space = MAX_OUTPUT - d->output_size - n;
   if (space < SPILLOVER_THRESHOLD) {
     process_output(d);

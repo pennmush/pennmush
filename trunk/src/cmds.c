@@ -1054,7 +1054,7 @@ COMMAND(cmd_prompt)
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT | PEMIT_LIST;
   dbref speaker = SPOOF(executor, enactor, sw);
 
-  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
+  if (!strcmp(cmd->name, "@NSPROMPT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
   do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,

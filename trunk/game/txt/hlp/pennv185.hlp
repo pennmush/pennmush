@@ -16,6 +16,7 @@ Version 1.8.5 patchlevel 2                                 ??? ??, 2012
 Hardcode:
  * render_string has been modified to work with multiple output formatters,
    so it can display the appropriate color syntax for the client. [GM]
+ * Tweak the networking code to try to reduce output latency and queue size. [SW]
 
 Major changes:
  * 256 Color support. Using 24 bit internally for representation and
@@ -37,6 +38,8 @@ Commands:
  * @break and @assert now take a /queued switch, which causes the new <action
    list> to be queued instead of run immediately, and an /inline switch which
    gives default behaviour. For Rhost compatability. [MG]
+ * Two completely separate, but equally stupid, bugs made @nsprompt show
+   nospoof info just like @prompt. [MG]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH, and

@@ -545,9 +545,9 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
     return;
 
   if (flags & PEMIT_SPOOF)
-    na_flags = NA_SPOOF;
+    na_flags |= NA_SPOOF;
   if (flags & PEMIT_PROMPT)
-    na_flags = NA_PROMPT;
+    na_flags |= NA_PROMPT;
 
   if (flags & PEMIT_LIST) {
     l = trim_space_sep(target, ' ');

@@ -42,6 +42,8 @@ Commands:
  * @break and @assert now take a /queued switch, which causes the new <action
    list> to be queued instead of run immediately, and an /inline switch which
    gives default behaviour. For Rhost compatability. [MG]
+ * Two completely separate, but equally stupid, bugs made @nsprompt show
+   nospoof info just like @prompt. [MG]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH, and

@@ -936,10 +936,11 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
                 const char *prefix, dbref loc, struct format_msg *format)
 {
   struct notify_message_group real_message;
+  struct notify_message_group *real_message_pointer = NULL;
   int i;
 
   /* If we have no message, or noone to notify, do nothing */
-  if (!message || !*message || !func)
+  if (!func || ((!message || !*message) && !(flags & NA_PROMPT)))
     return;
 
   /* Don't recurse too much */
@@ -947,18 +948,23 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   /* Do it */
-  init_notify_message_group(&real_message);
-  real_message.messages.strs[0].message = (unsigned char *) message;
-  real_message.messages.strs[0].made = 1;
-  real_message.messages.strs[0].len = strlen(message);
-  real_message.messages.type = str_type(message);
+  if (message && *message) {
+    init_notify_message_group(&real_message);
+    real_message.messages.strs[0].message = (unsigned char *) message;
+    real_message.messages.strs[0].made = 1;
+    real_message.messages.strs[0].len = strlen(message);
+    real_message.messages.type = str_type(message);
+    real_message_pointer = &real_message;
+  }
 
   if (loc == AMBIGUOUS)
     loc = speech_loc(speaker);
 
   notify_anything_sub(executor, speaker, func, fdata, skips, flags,
-                      &real_message, prefix, loc, format);
+                      real_message_pointer, prefix, loc, format);
 
+  if (!message || !*message)
+    return;
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (i && real_message.messages.strs[i].made)
@@ -996,7 +1002,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
   struct notify_message *real_prefix = NULL;
 
   /* Make sure we have a message and someone to tell */
-  if (!message || !func)
+  if (!func || (!message && !(flags & NA_PROMPT)))
     return;
 
   /* Don't recurse too much */
@@ -1004,7 +1010,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   na_depth++;
-  if (prefix && *prefix) {
+  if (prefix && *prefix && message) {
     int i;
 
     real_prefix = mush_malloc(sizeof(struct notify_message), "notify_message");
@@ -1108,6 +1114,27 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if ((flags & NA_INTER_LOCK) && !Pass_Interact_Lock(speaker, target, NULL))
       return;
   }
+
+  if (message == NULL) {
+    if (!(flags & NA_PROMPT) || !IsPlayer(target))
+      return;
+    for (d = descriptor_list; d; d = d->next) {
+      if (!d->connected || d->player != target || !(d->conn_flags & CONN_TELNET))
+        continue;
+      queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
+
+      if ((d->conn_flags & CONN_PROMPT_NEWLINES)) {
+        /* send lineending */
+        if ((output_type & MSG_PUEBLO)) {
+          queue_newwrite(d, (unsigned char *) "\n", 1);
+        } else {
+          queue_newwrite(d, (unsigned char *) "\r\n", 2);
+        }
+      }
+    }                         /* for loop */
+    return;
+  }
+
 
   /* At this point, the message can definitely be heard by the object, so we need to figure out
    * the correct message it should hear, possibly formatted through a ufun */
@@ -1766,8 +1793,8 @@ queue_newwrite(DESC *d, const unsigned char *b, int n)
 	return written;
       n -= written;
       b += written;
-    }    
-  }  
+    }
+  }
 
   /* do_rawlog(LT_TRACE, "Queuing %d bytes.", n); */
 

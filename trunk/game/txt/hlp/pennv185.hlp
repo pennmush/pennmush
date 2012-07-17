@@ -66,6 +66,7 @@ Minor changes:
  * The 'On for' and 'Idle' time fields in WHO are smarter and won't overflow
    their space. Suggested by Ari and Paige. [SW]   
  * Add a few new test cases. Requested by Sketch. [MG]
+ * It's now possible to clear/reset a prompt with @prompt <player>. [MG]
 
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem

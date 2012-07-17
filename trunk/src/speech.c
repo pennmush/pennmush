@@ -541,7 +541,7 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
   int one = 1;
   int count = 0;
 
-  if (!target || !*target || !message || !*message)
+  if (!target || !*target || ((!message || !*message) && !(flags & PEMIT_PROMPT)))
     return;
 
   if (flags & PEMIT_SPOOF)

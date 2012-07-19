@@ -85,6 +85,7 @@ Fixes:
    by ChaosMageX@M*U*S*H. [DC]            
  * Fix some potential memory leaks in timezone file reading code. [SW]
  * Off-by-one error in the helpfile index code. [MG]
+ * Improve docmentation of ip_addr config option. [SW]
 
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 

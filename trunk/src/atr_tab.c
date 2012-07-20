@@ -236,7 +236,7 @@ attr_read(PENNFILE *f)
       free((char *) AL_NAME(a));
       return NULL;
     }
-    pcre_free(re);                   /* don't need it, just needed to check it */
+    pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, u_strlen(t), 0);

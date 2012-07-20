@@ -287,7 +287,7 @@ FUNTAB flist[] = {
   {"EMIT", fun_emit, 1, -1, FN_REG},
   {"ENCODE64", fun_encode64, 1, -1, FN_REG},
   {"ENCRYPT", fun_encrypt, 2, 3, FN_REG},
-  {"ENTRANCES", fun_entrances, 0, 4, FN_REG | FN_STRIPANSI},  
+  {"ENTRANCES", fun_entrances, 0, 4, FN_REG | FN_STRIPANSI},
   {"ETIME", fun_etime, 1, 2, FN_REG},
   {"ETIMEFMT", fun_etimefmt, 2, 2, FN_REG},
   {"EQ", fun_eq, 2, INT_MAX, FN_REG | FN_STRIPANSI},

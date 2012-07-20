@@ -161,8 +161,8 @@ void sql_shutdown(void);
 #define MSG_XTERM256     0x80  /**< XTERM 256 Color */
 #define MSG_FONTTAGS     0x100 /**< <font color="..." bgcolor=".."></font> */
 
-#define MSG_PLAYER_COLORS (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256) /* All possible player-renderings of color */
-#define MSG_ANY_ANSI (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256) /* Any form of ANSI tag */
+#define MSG_PLAYER_COLORS (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)       /* All possible player-renderings of color */
+#define MSG_ANY_ANSI (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)    /* Any form of ANSI tag */
 
 #define MSG_ALL_PLAYER (MSG_PLAYER | MSG_PLAYER_COLORS | MSG_PUEBLO \
                         | MSG_TELNET | MSG_STRIPACCENTS)
@@ -364,17 +364,16 @@ void do_scan(dbref player, char *command, int flag);
 
 
 /* From look.c */
-#define LOOK_NORMAL       0   /* You typed "look" */
-#define LOOK_AUTO         1   /* Moving into a room */
-#define LOOK_CLOUDY       2   /* Looking through an exit set CLOUDY */
-#define LOOK_TRANS        4   /* Looking through an exit set TRANSPARENT */
-#define LOOK_OUTSIDE      8   /* Using look/outside */
-#define LOOK_NOCONTENTS  16   /* Using look/opaque */
+#define LOOK_NORMAL       0     /* You typed "look" */
+#define LOOK_AUTO         1     /* Moving into a room */
+#define LOOK_CLOUDY       2     /* Looking through an exit set CLOUDY */
+#define LOOK_TRANS        4     /* Looking through an exit set TRANSPARENT */
+#define LOOK_OUTSIDE      8     /* Using look/outside */
+#define LOOK_NOCONTENTS  16     /* Using look/opaque */
 #define LOOK_CLOUDYTRANS (LOOK_CLOUDY | LOOK_TRANS)
 
 
-void look_room(dbref player, dbref loc, int key,
-               NEW_PE_INFO *pe_info);
+void look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
@@ -790,7 +789,7 @@ replace_string2(const char *old[2], const char *newbits[2],
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs,
                             const char **report_err);
-    bool qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *s);
+    bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 
@@ -818,7 +817,7 @@ replace_string2(const char *old[2], const char *newbits[2],
     int delim_check(char *buff, char **bp, int nfargs, char **fargs,
                     int sep_arg, char *sep);
     bool int_check(char *buff, char **bp, int nfargs, char *fargs[],
-              int check_arg, int *result, int def);
+                   int check_arg, int *result, int def);
 
     int get_gender(dbref player);
     const char *do_get_attrib(dbref executor, dbref thing, const char *aname);

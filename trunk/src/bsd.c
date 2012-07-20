@@ -260,7 +260,7 @@ static const char *asterisk_line =
 
 static void sockset_wrapper(DESC *d, char *cmd);
 
-extern int notify_type(DESC *d); /* from notify.c */
+extern int notify_type(DESC *d);        /* from notify.c */
 #if 0
 /* For translation */
 static void dummy_msgs(void);
@@ -473,7 +473,8 @@ main(int argc, char **argv)
 #ifdef HAVE_GETUID
   if (getuid() == 0) {
     fputs("Please run the server as another user.\n", stderr);
-    fputs("PennMUSH will not run as root as a security measure. Exiting.\n", stderr);
+    fputs("PennMUSH will not run as root as a security measure. Exiting.\n",
+          stderr);
     return EXIT_FAILURE;
   }
   /* Add suid-root checks here. */
@@ -485,7 +486,8 @@ main(int argc, char **argv)
     fprintf(stderr, "Changing effective user to %d.\n", (int) getuid());
     if (seteuid(getuid()) < 0) {
       fprintf(stderr, "ERROR: seteuid() failed: %s\n", strerror(errno));
-      fputs("PennMUSH will not run as root as a security measure. Exiting.\n", stderr);
+      fputs("PennMUSH will not run as root as a security measure. Exiting.\n",
+            stderr);
       return EXIT_FAILURE;
     } else
       in_suid_root_mode = 1;
@@ -2461,7 +2463,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
 
       queue_newwrite(d, reply_suffix, 2);
-#else  /* _MSC_VER */
+#else                           /* _MSC_VER */
       /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
        * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
        * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
@@ -2470,7 +2472,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       queue_newwrite(d, reply_prefix, 4);
       queue_newwrite(d, ";ISO-8859-1;x-win-def", 21);
       queue_newwrite(d, reply_suffix, 2);
-#endif /* _MSC_VER */
+#endif                          /* _MSC_VER */
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];
@@ -3380,8 +3382,10 @@ sockset_show(DESC *d)
     safe_format(buff, &bp, "%-15s:  %s\n", SUFFIX_COMMAND, d->output_suffix);
   }
 
-  safe_format(buff, &bp, "%-15s:  %s\n", "Pueblo", (d->conn_flags & CONN_HTML ? "Yes" : "No"));
-  safe_format(buff, &bp, "%-15s:  %s\n", "Telnet", (TELNET_ABLE(d) ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %s\n", "Pueblo",
+              (d->conn_flags & CONN_HTML ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %s\n", "Telnet",
+              (TELNET_ABLE(d) ? "Yes" : "No"));
   safe_format(buff, &bp, "%-15s:  %d\n", "Width", d->width);
   safe_format(buff, &bp, "%-15s:  %d\n", "Height", d->height);
   safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
@@ -3506,7 +3510,7 @@ sockset(DESC *d, char *name, char *val)
   }
 
   if (!strcasecmp(name, "COLORSTYLE")) {
-    if (!strcasecmp(val,"auto")) {
+    if (!strcasecmp(val, "auto")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
     } else if (string_prefix("plain", val) || string_prefix("none", val)) {
@@ -3526,7 +3530,8 @@ sockset(DESC *d, char *name, char *val)
       d->conn_flags |= CONN_XTERM256;
       return tprintf(T("Colorstyle set to '%s'"), "xterm256");
     }
-    return tprintf(T("Unknown color style. Valid color styles: %s"), "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+    return tprintf(T("Unknown color style. Valid color styles: %s"),
+                   "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
   }
 
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
@@ -4239,7 +4244,7 @@ squish_time(char *buf, int len)
     c = strchr(buf, ' ');
     if (c) {
       while (*c == ' ')
-	c += 1;
+        c += 1;
       buf = c;
     } else
       break;
@@ -4264,12 +4269,12 @@ squish_time(char *buf, int len)
     if (*c == '0') {
       char *n = strchr(c, ' ');
       if (n) {
-	int nlen = strlen(n) + 1;
-	memmove(saved, n, nlen);
-	c = saved;
+        int nlen = strlen(n) + 1;
+        memmove(saved, n, nlen);
+        c = saved;
       } else {
-	*saved = '\0';
-	break;
+        *saved = '\0';
+        break;
       }
     }
   } while (1);
@@ -4277,14 +4282,14 @@ squish_time(char *buf, int len)
   /* If the string is too long, drop trailing entries and resulting
      whitespace until it fits. */
   for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
-      c = strrchr(buf, ' ');
-      if (c) {
-	while (c > buf && *c == ' ') {
-	  *c = '\0';
-	  c -= 1;
-	}
-      } else
-	break;
+    c = strrchr(buf, ' ');
+    if (c) {
+      while (c > buf && *c == ' ') {
+        *c = '\0';
+        c -= 1;
+      }
+    } else
+      break;
   }
 
   return buf;
@@ -4303,7 +4308,7 @@ char *
 etime_fmt(char *buf, int secs, int len)
 {
   int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
-  div_t r;  
+  div_t r;
 
   if (secs >= SECS_YEAR) {
     r = div(secs, SECS_YEAR);
@@ -4316,7 +4321,7 @@ etime_fmt(char *buf, int secs, int len)
     weeks = r.quot;
     secs = r.rem;
   }
-  
+
   if (secs >= SECS_DAY) {
     r = div(secs, SECS_DAY);
     days = r.quot;
@@ -4336,7 +4341,7 @@ etime_fmt(char *buf, int secs, int len)
   }
 
   sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
-	  years, weeks, days, hours, mins, secs);
+          years, weeks, days, hours, mins, secs);
 
   return squish_time(buf, len);
 }
@@ -4352,7 +4357,7 @@ onfor_time_fmt(time_t at, int len)
 {
   static char buf[64];
   int secs = difftime(mudtime, at);
-  return etime_fmt(buf, secs, len); 
+  return etime_fmt(buf, secs, len);
 }
 
 /** Format idle time for WHO/DOING 
@@ -4368,7 +4373,7 @@ idle_time_fmt(time_t last, int len)
   int secs = difftime(mudtime, last);
   return etime_fmt(buf, secs, len);
 }
-  
+
 /* connection messages
  * isnew: newly created or not?
  * num: how many times connected?

@@ -1589,7 +1589,7 @@ FUNCTION(fun_wrap)
       if (!ansi_string_insert(as, pstr - as->text + linewidth - 1, hyphen))
         pend++;
       safe_ansi_string(as, pstr - as->text, linewidth, buff, bp);
-      pstr += linewidth;    /* move to start of next line */
+      pstr += linewidth;        /* move to start of next line */
     } else {
       /* normal line */
       safe_ansi_string(as, pstr - as->text, ansilen, buff, bp);

@@ -97,8 +97,8 @@ void init_ansi_codes(void);
 #define COLOR_NAME_LEN 20
 /** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t  bits;
-  uint8_t  offbits;
+  uint8_t bits;
+  uint8_t offbits;
   char fg[COLOR_NAME_LEN];
   char bg[COLOR_NAME_LEN];
 } ansi_data;
@@ -106,7 +106,8 @@ typedef struct _ansi_data {
 #define NULL_ANSI {0, 0, "", ""}
 #define HAS_ANSI(adata) (adata.bits || adata.offbits || (adata.fg[0]) || (adata.bg[0]))
 int read_raw_ansi_data(ansi_data *store, const char *codes);
-int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp);
+int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
+                        char *buff, char **bp);
 
 #define ANSI_FORMAT_NONE         0
 #define ANSI_FORMAT_HILITE       1
@@ -211,7 +212,7 @@ parse_ansi_string(const char *src)
                                  int stringnumber, int nonempty, char *buffer,
                                  char **bp);
 
-    int ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
+    int ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
                                        int *ovector, int stringcount,
                                        const char *stringname, int nonempty,
                                        char *buffer, char **bp);
@@ -230,11 +231,11 @@ parse_ansi_string(const char *src)
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
-int valid_color_hex(char *name);
-int valid_color_name(char *name);
-int color_to_hex(char *name, int hilite);
-int ansi_map_16(char *name, int bg);
-int ansi_map_256(int hex);
+    int valid_color_hex(char *name);
+    int valid_color_name(char *name);
+    int color_to_hex(char *name, int hilite);
+    int ansi_map_16(char *name, int bg);
+    int ansi_map_256(int hex);
 
 
 #endif                          /* __ANSI_H */

@@ -207,7 +207,7 @@ FUNCTION(fun_convsecs)
   safe_str(show_tm(ttm), buff, bp);
 }
 
-char * etime_fmt(char *, time_t, int);
+char *etime_fmt(char *, time_t, int);
 FUNCTION(fun_etime)
 {
   int secs;
@@ -230,7 +230,7 @@ FUNCTION(fun_etime)
       safe_str(T(e_int), buff, bp);
       return;
     }
-    
+
     len = parse_integer(args[1]);
     if (len > BUFFER_LEN - 1 || len < 0) {
       safe_str(T(e_range), buff, bp);
@@ -242,7 +242,7 @@ FUNCTION(fun_etime)
   safe_str(etime_fmt(tbuf, secs, len), buff, bp);
 }
 
-  
+
 
 /* ARGSUSED */
 FUNCTION(fun_etimefmt)

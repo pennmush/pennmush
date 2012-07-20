@@ -979,12 +979,6 @@ FUNCTION(fun_pi)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_e)
-{
-  safe_number(2.71828182845904523536, buff, bp);
-}
-
-/* ARGSUSED */
 FUNCTION(fun_sin)
 {
   NVAL angle;
@@ -1078,8 +1072,13 @@ FUNCTION(fun_atan2)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_exp)
+FUNCTION(fun_e)
 {
+  if (nargs == 0) {
+    safe_number(2.71828182845904523536, buff, bp);
+    return;
+  }
+
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;
@@ -1552,13 +1551,13 @@ do_ordinalize(char **buff, char ***bp)
   char *p;
   size_t i, len;
   static const char *singles[] = { "one", "two", "three", "four",
-    "five", "six", "seven", "eight", "nine"
+    "five", "six", "seven", "eight", "nine", "twelve", NULL
   };
   static const char *singleths[] = { "first", "second", "third", "fourth",
-    "fifth", "sixth", "seventh", "eighth", "ninth"
+    "fifth", "sixth", "seventh", "eighth", "ninth", "twelfth", NULL
   };
   /* Examine the end of the string */
-  for (i = 0; i < 9; i++) {
+  for (i = 0; singles[i]; i++) {
     len = strlen(singles[i]);
     p = **bp - len;
     if ((p >= *buff) && !strncasecmp(p, singles[i], len)) {
@@ -1579,7 +1578,7 @@ do_ordinalize(char **buff, char ***bp)
 }
 
 
-/** adds zeros to the beginning of the string, untill its length is
+/** adds zeros to the beginning of the string, until its length is
  * a multiple of 3.
  */
 #define add_zeros(p) \

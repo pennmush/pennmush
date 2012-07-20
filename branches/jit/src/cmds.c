@@ -13,6 +13,13 @@
 
 #include <string.h>
 
+#ifdef I_SYS_TYPES
+#include <sys/types.h>
+#endif
+#ifdef I_SYS_SOCKET
+#include <sys/socket.h>
+#endif
+
 #include "conf.h"
 #include "externs.h"
 #include "dbdefs.h"
@@ -30,6 +37,9 @@
 #include "command.h"
 #include "flags.h"
 #include "log.h"
+#include "mysocket.h"
+#include "lookup.h"
+#include "ssl_slave.h"
 #include "confmagic.h"
 
 /* External Stuff */
@@ -95,6 +105,13 @@ COMMAND(cmd_attribute)
       notify(executor, T("Permission denied."));
   } else
     do_attribute_info(executor, arg_left);
+}
+
+COMMAND(cmd_sockset)
+{
+  const char *retval;
+  retval = sockset(executor, arg_left, arg_right);
+  notify(executor, retval);
 }
 
 COMMAND(cmd_atrchown)
@@ -335,9 +352,14 @@ COMMAND(cmd_disable)
 
 COMMAND(cmd_doing)
 {
-  if (SW_ISSET(sw, SWITCH_HEADER))
+  if (SW_ISSET(sw, SWITCH_HEADER)) {
+    notify_format(Owner(executor),
+                  T
+                  ("Deprecated command %s being used on object #%d. Use %s instead."),
+                  "@DOING/HEADER", executor, "@POLL");
+
     do_poll(executor, arg_left, 0);
-  else
+  } else
     do_doing(executor, arg_left);
 }
 
@@ -365,14 +387,24 @@ COMMAND(cmd_edit)
 {
   int type = EDIT_DEFAULT;
 
-  if (SW_ISSET(sw, SWITCH_FIRST))
+  if (SW_ISSET(sw, SWITCH_REGEXP)) {
+    if (!(SW_ISSET(sw, SWITCH_ALL)))
+      type |= EDIT_FIRST;
+    if (!(SW_ISSET(sw, SWITCH_NOCASE)))
+      type |= EDIT_CASE;
+  } else if (SW_ISSET(sw, SWITCH_FIRST)) {
     type |= EDIT_FIRST;
+  }
+
   if (SW_ISSET(sw, SWITCH_CHECK))
     type |= EDIT_CHECK;
   if (SW_ISSET(sw, SWITCH_QUIET))
     type |= EDIT_QUIET;
 
-  do_gedit(executor, arg_left, args_right, type);
+  if (SW_ISSET(sw, SWITCH_REGEXP))
+    do_edit_regexp(executor, arg_left, args_right, type, queue_entry->pe_info);
+  else
+    do_edit(executor, arg_left, args_right, type);
 }
 
 COMMAND(cmd_elock)
@@ -384,15 +416,19 @@ COMMAND(cmd_emit)
 {
   int spflags = (!strcmp(cmd->name, "@NSEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+  int speaker = SPOOF(executor, enactor, sw);
 
-  SPOOF(executor, enactor, sw);
+  if (SW_ISSET(sw, SWITCH_ROOM)) {
+    notify_format(Owner(executor),
+                  T
+                  ("Deprecated command %s being used on object #%d. Use %s instead."),
+                  "@EMIT/ROOM", executor, "@LEMIT");
 
-  if (SW_ISSET(sw, SWITCH_ROOM))
-    do_lemit(executor, arg_left,
+    do_lemit(executor, speaker, arg_left,
              (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags,
              queue_entry->pe_info);
-  else
-    do_emit(executor, arg_left, spflags, queue_entry->pe_info);
+  } else
+    do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_enable)
@@ -625,11 +661,12 @@ COMMAND(cmd_kick)
 COMMAND(cmd_lemit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  int speaker = SPOOF(executor, enactor, sw);
+
   if (!strcmp(cmd->name, "@NSLEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_lemit(executor, arg_left, flags, queue_entry->pe_info);
+  do_lemit(executor, speaker, arg_left, flags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_link)
@@ -832,10 +869,11 @@ COMMAND(cmd_message)
 {
   char *message;
   char *attrib;
-  unsigned int flags = PEMIT_LIST;
+  unsigned int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_LIST;
   int numargs, i;
   char *args[10];
   enum emit_type type;
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
 
@@ -847,6 +885,7 @@ COMMAND(cmd_message)
     notify(executor, T("Use what attribute for the @message?"));
     return;
   }
+
   if (!*arg_left) {
     notify(executor, T("@message who?"));
     return;
@@ -869,9 +908,7 @@ COMMAND(cmd_message)
     args[i] = args_right[i + 3];
   }
 
-  SPOOF(executor, enactor, sw);
-
-  do_message(executor, arg_left, attrib, message, type, flags, i, args,
+  do_message(executor, speaker, arg_left, attrib, message, type, flags, i, args,
              queue_entry->pe_info);
 }
 
@@ -915,8 +952,9 @@ COMMAND(cmd_oemit)
 {
   int spflags = (!strcmp(cmd->name, "@NSOEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
-  SPOOF(executor, enactor, sw);
-  do_oemit_list(executor, arg_left, arg_right, spflags, NULL,
+  dbref speaker = SPOOF(executor, enactor, sw);
+
+  do_oemit_list(executor, speaker, arg_left, arg_right, spflags, NULL,
                 queue_entry->pe_info);
 }
 
@@ -950,6 +988,7 @@ COMMAND(cmd_pcreate)
 COMMAND(cmd_pemit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_PORT)) {
     if (SW_ISSET(sw, SWITCH_LIST))
@@ -961,10 +1000,10 @@ COMMAND(cmd_pemit)
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_CONTENTS)) {
-    do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+    do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
+             queue_entry->pe_info);
     return;
   }
   if (SW_ISSET(sw, SWITCH_LIST)) {
@@ -972,18 +1011,20 @@ COMMAND(cmd_pemit)
     if (!SW_ISSET(sw, SWITCH_NOISY))
       flags |= PEMIT_SILENT;
   }
-  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_prompt)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT | PEMIT_LIST;
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_poll)
@@ -1057,14 +1098,15 @@ COMMAND(cmd_readcache)
 COMMAND(cmd_remit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
+  dbref speaker = SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
   if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(executor, enactor, sw);
-  do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
+  do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_rejectmotd)
@@ -1169,6 +1211,35 @@ COMMAND(cmd_sitelock)
     do_sitelock(executor, arg_left, args_right[1], args_right[2], SITELOCK_ADD,
                 psw);
 }
+
+COMMAND(cmd_slave)
+{
+  if (SW_ISSET(sw, SWITCH_RESTART)) {
+#ifdef INFO_SLAVE
+    if (strcasecmp(arg_left, "info") == 0) {
+      kill_info_slave();
+      notify(executor, T("Restarting info_slave daemon."));
+      do_rawlog(LT_WIZ, "%s(#%d) restarted info_slave.", Name(executor),
+                executor);
+      return;
+    }
+#endif
+#ifdef SSL_SLAVE
+    if (strcasecmp(arg_left, "ssl") == 0) {
+      kill_ssl_slave();
+      make_ssl_slave();
+      notify(executor, T("Restarting ssl_slave daemon."));
+      do_rawlog(LT_WIZ, "%s(#%d) restarted ssl_slave.", Name(executor),
+                executor);
+      return;
+    }
+#endif
+    notify(executor, T("No such service."));
+  } else {
+    notify(executor, T("I'm sorry, Dave, I'm afraid I can't do that."));
+  }
+}
+
 
 COMMAND(cmd_stats)
 {

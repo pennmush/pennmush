@@ -40,7 +40,7 @@
 #endif
 #else
 #include <time.h>
-#endif
+#endif                          /* I_SYS_TIME */
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef I_SYS_SOCKET
@@ -81,6 +81,7 @@
 #include <ieeefp.h>
 #endif
 #include <locale.h>
+#include <langinfo.h>
 #include <setjmp.h>
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -122,7 +123,7 @@
 #ifdef SSL_SLAVE
 #include "ssl_slave.h"
 #endif
-#endif
+#endif                          /* !WIN32 */
 
 #include "strtree.h"
 #include "log.h"
@@ -223,8 +224,12 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define TN_NAWS 31              /**< Negotiate About Window Size */
 #define TN_TTYPE 24             /**< Ask for termial type information */
 #define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
+#define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
 #define MSSP_VAR 1              /**< MSSP option name */
 #define MSSP_VAL 2              /**< MSSP option value */
+#define TN_SB_CHARSET_REQUEST 1
+#define TN_SB_CHARSET_ACCEPTED 2
+#define TN_SB_CHARSET_REJECTED 3
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -347,12 +352,14 @@ struct fcache_entries {
   FBLOCK down_fcache[2];        /**< down.txt and down.html */
   FBLOCK full_fcache[2];        /**< full.txt and full.html */
   FBLOCK guest_fcache[2];       /**< guest.txt and guest.html */
+  FBLOCK who_fcache[2];         /**< textfiles to override connect screen WHO */
 };
 
 static struct fcache_entries fcache;
-static void fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
+static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix,
+                        char *arg);
 static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                            const unsigned char *prefix);
+                            const unsigned char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d, const char *reason, dbref executor);
@@ -423,6 +430,21 @@ void initialize_mt(void);
 
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
+
+static inline bool
+is_blocking_err(int code)
+{
+  if (code == EWOULDBLOCK)
+    return 1;
+  if (code == EINTR)
+    return 1;
+#ifdef EAGAIN
+  if (code == EAGAIN)
+    return 1;
+#endif
+  return 0;
+}
+
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -892,13 +914,28 @@ update_quotas(struct timeval last, struct timeval current)
 
 extern slab *text_block_slab;
 
+/* Is source one an IP connection? */
+static inline bool
+is_remote_source(conn_source source)
+{
+  return source == CS_IP_SOCKET || source == CS_OPENSSL_SOCKET;
+}
+
+static inline bool
+is_remote_desc(DESC *d)
+{
+  if (!d)
+    return 0;
+  return is_remote_source(d->source);
+}
+
 /** Is a descriptor using SSL? */
-static bool
+static inline bool
 is_ssl_desc(DESC *d)
 {
   if (!d)
     return 0;
-  return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SOCKET;
+  return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SSL_SOCKET;
 }
 
 static void
@@ -918,6 +955,7 @@ setup_desc(int sock, conn_source source)
 }
 
 #ifdef INFO_SLAVE
+
 static void
 got_new_connection(int sock, conn_source source)
 {
@@ -939,10 +977,11 @@ got_new_connection(int sock, conn_source source)
   } else
     setup_desc(sock, source);
 }
+
 #endif
 
 static void
-shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
+shovechars(Port_t port, Port_t sslport)
 {
   /* this is the main game loop */
 
@@ -1161,7 +1200,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       if (FD_ISSET(sock, &input_set))
         got_new_connection(sock, CS_IP_SOCKET);
       if (sslsock && FD_ISSET(sslsock, &input_set))
-        got_new_connection(sock, CS_OPENSSL_SOCKET);
+        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
@@ -1223,8 +1262,10 @@ source_to_s(conn_source source)
     return "normal port";
   case CS_OPENSSL_SOCKET:
     return "OpenSSL port";
-  case CS_LOCAL_SOCKET:
+  case CS_LOCAL_SSL_SOCKET:
     return "OpenSSL proxy";
+  case CS_LOCAL_SOCKET:
+    return "unix port";
   case CS_UNKNOWN:
     return "unknown source";
   }
@@ -1238,8 +1279,8 @@ new_connection(int oldsock, int *result, conn_source source)
   union sockaddr_u addr;
   struct hostname_info *hi = NULL;
   socklen_t addr_len;
-  char tbuf1[BUFFER_LEN];
-  char tbuf2[BUFFER_LEN];
+  char ipbuf[BUFFER_LEN];
+  char hostbuf[BUFFER_LEN];
   char *bp;
 
   *result = 0;
@@ -1249,55 +1290,119 @@ new_connection(int oldsock, int *result, conn_source source)
     *result = newsock;
     return 0;
   }
-  if (source != CS_LOCAL_SOCKET) {
-    bp = tbuf2;
+  if (is_remote_source(source)) {
+    bp = ipbuf;
     hi = ip_convert(&addr.addr, addr_len);
-    safe_str(hi ? hi->hostname : "", tbuf2, &bp);
+    safe_str(hi ? hi->hostname : "", ipbuf, &bp);
     *bp = '\0';
-    bp = tbuf1;
+    bp = hostbuf;
     hi = hostname_convert(&addr.addr, addr_len);
-    safe_str(hi ? hi->hostname : "", tbuf1, &bp);
+    safe_str(hi ? hi->hostname : "", hostbuf, &bp);
     *bp = '\0';
   } else {                      /* source == CS_LOCAL_SOCKET */
     int len;
     char *split;
-
-    hi = ip_convert(&addr.addr, addr_len);
+    int remote_pid = -1;
+    int remote_uid = -1;
+    bool good_to_read = 1;
 
     /* As soon as the SSL slave opens a new connection to the mush, it
        writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-       not block.
+       not block unless somebody's being naughty. People obviously can
+       be. So we'll wait a short time for readable data, and use a
+       non-blocking socket read anyways. If the client doesn't send
+       the hostname string fast enough, oh well.
      */
-    len = read(newsock, tbuf2, sizeof tbuf2);
-    if (len < 3) {
-      /* This shouldn't happen! */
-      closesocket(newsock);
-      return 0;
+
+#ifdef HAVE_POLL
+    {
+      struct pollfd pfd;
+      pfd.fd = newsock;
+      pfd.events = POLLIN;
+      pfd.revents = 0;
+      poll(&pfd, 1, 100);
+      if (pfd.revents & POLLIN)
+        good_to_read = 1;
+      else
+        good_to_read = 0;
+    }
+#endif
+
+    if (good_to_read)
+      len =
+        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
+    else {
+      len = -1;
+      errno = EWOULDBLOCK;
     }
 
-    tbuf2[len] = '\0';
-
-    split = strchr(tbuf2, '^');
-    if (split) {
-      *split++ = '\0';
-      strcpy(tbuf1, split);
-      split = strchr(tbuf1, '\r');
-      if (split)
-        *split = '\0';
+    if (len < 5) {
+      if (len < 0 && is_blocking_err(errno)) {
+        strcpy(hostbuf, "(Unknown)");
+        strcpy(ipbuf, "(Unknown)");
+      } else {
+        /* Yup, somebody's being naughty. Be mean right back. */
+        closesocket(newsock);
+        return 0;
+      }
     } else {
-      /* Again, shouldn't happen! */
-      strcpy(tbuf1, "(Unknown)");
-      strcpy(tbuf2, "(Unknown)");
+      ipbuf[len] = '\0';
+      split = strchr(ipbuf, '^');
+      if (split) {
+        *split++ = '\0';
+        strcpy(hostbuf, split);
+        split = strchr(hostbuf, '\r');
+        if (split)
+          *split = '\0';
+      } else {
+        /* Again, shouldn't happen! */
+        strcpy(ipbuf, "(Unknown)");
+        strcpy(hostbuf, "(Unknown)");
+      }
     }
+
+    /* Use credential passing to tell if a local socket connection was
+       made by ssl_slave or something else (Like a web-based client's
+       server side). At the moment, this is only implemented on linux
+       and OS X. For other OSes, all local connections look like SSL
+       ones since that's the usual case. */
+#ifdef SSL_SLAVE
+    if (remote_pid >= 0) {
+      if (remote_pid == ssl_slave_pid) {
+        source = CS_LOCAL_SSL_SOCKET;
+      } else {
+        do_rawlog(LT_CONN,
+                  "[%d] Connection on local socket from pid %d run as uid %d.",
+                  newsock, remote_pid, remote_uid);
+      }
+    } else if (remote_uid >= 0) {
+      /* A system like OS X that doesn't pass the remote pid as a
+         credential but does pass UID? If the remote and local UIDs
+         are the same, assume it's from the slave. */
+      if (remote_uid == (int) getuid()) {
+        source = CS_LOCAL_SSL_SOCKET;
+      } else {
+        do_rawlog(LT_CONN,
+                  "[%d] Connection on local socket from process run as uid %d.",
+                  newsock, remote_uid);
+      }
+    } else {
+      /* Default, for OSes without implemented credential
+         passing. Just assume it's a connection from ssl_slave. */
+      source = CS_LOCAL_SSL_SOCKET;
+    }
+#else
+    source = CS_LOCAL_SSL_SOCKET;
+#endif
   }
-  if (Forbidden_Site(tbuf1) || Forbidden_Site(tbuf2)) {
-    if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
-        || !Deny_Silent_Site(tbuf2, AMBIGUOUS)) {
-      do_rawlog(LT_CONN, "[%d/%s/%s] %s (%s %s)", newsock, tbuf1, tbuf2,
-                "Refused connection", "remote port",
-                hi ? hi->port : "(unknown)");
+
+  if (Forbidden_Site(ipbuf) || Forbidden_Site(hostbuf)) {
+    if (!Deny_Silent_Site(ipbuf, AMBIGUOUS)
+        || !Deny_Silent_Site(hostbuf, AMBIGUOUS)) {
+      do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
+                newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
-    if (source != CS_LOCAL_SOCKET)
+    if (is_remote_source(source))
       shutdown(newsock, 2);
     closesocket(newsock);
 #ifndef WIN32
@@ -1305,11 +1410,11 @@ new_connection(int oldsock, int *result, conn_source source)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1,
-            tbuf2, source_to_s(source));
-  if (source != CS_LOCAL_SOCKET)
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
+            ipbuf, source_to_s(source));
+  if (is_remote_source(source))
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, tbuf1, tbuf2, source);
+  return initializesock(newsock, hostbuf, ipbuf, source);
 }
 
 static void
@@ -1335,7 +1440,7 @@ clearstrings(DESC *d)
  */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                 const unsigned char *prefix)
+                 const unsigned char *prefix, char *arg)
 {
   char descarg[SBUF_LEN], dbrefarg[SBUF_LEN], buff[BUFFER_LEN], *bp;
   PE_REGS *pe_regs;
@@ -1360,6 +1465,8 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
   pe_regs_setenv_nocopy(pe_regs, 0, descarg);
   pe_regs_setenv_nocopy(pe_regs, 1, dbrefarg);
+  if (arg && *arg)
+    pe_regs_setenv_nocopy(pe_regs, 2, arg);
   call_ufun(&ufun, buff, d->player, d->player, NULL, pe_regs);
   bp = strchr(buff, '\0');
   safe_chr('\n', buff, &bp);
@@ -1382,20 +1489,21 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
  * display that line before the text file, but only if we've
  * got a text file to display
  */
-static void
-fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
+static bool
+fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)
 {
   int i;
 
   /* If we've got nothing nice to say, don't say anything */
   if (!fb[0].buff && !((d->conn_flags & CONN_HTML) && fb[1].buff))
-    return;
+    return 0;
 
   for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
     if (fb[i].thing != NOTHING) {
-      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix) == 1) {
+      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix, arg)
+          == 1) {
         /* Attr successfully evaluated and displayed */
-        return;
+        return 1;
       }
     } else {
       /* Output static text from the cached file */
@@ -1407,9 +1515,11 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
         queue_newwrite(d, fb[1].buff, fb[1].len);
       else
         queue_write(d, fb[0].buff, fb[0].len);
-      return;
+      return 1;
     }
   }
+
+  return 0;
 }
 
 /** Read in a single cached text file
@@ -1565,6 +1675,7 @@ fcache_read_one(const char *filename)
       hash_add(&lookup, options.down_file[i], &fcache.down_fcache[i]);
       hash_add(&lookup, options.full_file[i], &fcache.full_fcache[i]);
       hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
+      hash_add(&lookup, options.who_file[i], &fcache.who_fcache[i]);
     }
   }
 
@@ -1583,7 +1694,7 @@ void
 fcache_load(dbref player)
 {
   int conn, motd, wiz, new, reg, quit, down, full;
-  int guest;
+  int guest, who;
   int i;
 
   for (i = 0; i < (SUPPORT_PUEBLO ? 2 : 1); i++) {
@@ -1596,13 +1707,14 @@ fcache_load(dbref player)
     down = fcache_read(&fcache.down_fcache[i], options.down_file[i]);
     full = fcache_read(&fcache.full_fcache[i], options.full_file[i]);
     guest = fcache_read(&fcache.guest_fcache[i], options.guest_file[i]);
+    who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
       notify_format(player,
                     T
-                    ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"),
+                    ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
-                    reg, down, full);
+                    reg, down, full, who);
     }
   }
 
@@ -1624,7 +1736,7 @@ static void
 logout_sock(DESC *d)
 {
   if (d->connected) {
-    fcache_dump(d, fcache.quit_fcache, NULL);
+    fcache_dump(d, fcache.quit_fcache, NULL, NULL);
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
@@ -1678,10 +1790,11 @@ static void
 shutdownsock(DESC *d, const char *reason, dbref executor)
 {
   if (d->connected) {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
-              d->descriptor, d->addr, d->ip, Name(d->player), d->player);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)",
+              d->descriptor, d->addr, d->ip, Name(d->player), d->player,
+              reason);
     if (d->connected != CONN_DENIED) {
-      fcache_dump(d, fcache.quit_fcache, NULL);
+      fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d, reason, 0, executor);
       if (can_mail(d->player)) {
@@ -1698,8 +1811,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
       }
     }
   } else {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected.",
-              d->descriptor, d->addr, d->ip);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected (%s).",
+              d->descriptor, d->addr, d->ip, reason);
   }
   /* (descriptor, ip, cause, recv/sent/cmds) */
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
@@ -1916,11 +2029,7 @@ network_send_writev(DESC *d)
 
     cnt = writev(d->descriptor, lines, n);
     if (cnt < 0) {
-      if (errno == EWOULDBLOCK
-#ifdef EAGAIN
-          || errno == EAGAIN
-#endif
-          || errno == EINTR)
+      if (is_blocking_err(errno))
         return 1;
       else
         return 0;
@@ -1972,17 +2081,17 @@ network_send(DESC *d)
     int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
 
     if (cnt < 0) {
+      if (
 #ifdef WIN32
-      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+           cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
 #else
-      if (errno == EWOULDBLOCK
-#ifdef EAGAIN
-          || errno == EAGAIN
+           is_blocking_err(errno)
 #endif
-          || errno == EINTR)
-#endif
+        )
         return 1;
-      return 0;
+
+      else
+        return 0;
     }
     written += cnt;
 
@@ -2063,7 +2172,7 @@ welcome_user(DESC *d, int telnet)
   else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
-  fcache_dump(d, fcache.connect_fcache, NULL);
+  fcache_dump(d, fcache.connect_fcache, NULL, NULL);
 }
 
 static void
@@ -2102,13 +2211,13 @@ setup_telnet(DESC *d)
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
-    /* IAC DO NAWS IAC DO TERMINAL-TYPE IAC WILL MSSP  */
-    unsigned char extra_options[9] =
-      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46";
+    /* IAC-DO-NAWS IAC-DO-TTYPE IAC-WILL-MSSP IAC-WILL-CHARSET */
+    unsigned char extra_options[12] =
+      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46" "\xFF\xFB\x2A";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
-    queue_newwrite(d, extra_options, 9);
+    queue_newwrite(d, extra_options, 12);
     process_output(d);
   }
 }
@@ -2316,6 +2425,43 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       *bp = '\0';
       queue_newwrite(d, (unsigned char *) reply, strlen(reply));
       process_output(d);
+    } else if (**q == TN_CHARSET) {
+      /* Send a list of supported charsets for the client to pick.
+       * Currently, we only offer the single charset the MUSH is
+       * currently running in, or "ISO-8859-1" (latin1) if it's running
+       * in "C", "UTF-8" or an unknown charset. */
+      /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
+      unsigned char reply_prefix[4] = "\xFF\xFA\x2A\x01";
+      unsigned char reply_suffix[2] = "\xFF\xF0";
+      /* Offer a selection of possible delimiters, to avoid it appearing
+       * in a charset name */
+      char *delim_list = "; +=/!", *delim_curr;
+      unsigned char delim[2] = { '\0', '\0' };
+      char *curr_locale = NULL;
+
+      queue_newwrite(d, reply_prefix, 4);
+      curr_locale = nl_langinfo(CODESET);
+      if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
+          strncasecmp(curr_locale, "UTF-", 4)) {
+        for (delim_curr = delim_list; *delim_curr; delim_curr++) {
+          if (strchr(curr_locale, *delim_curr) == NULL)
+            break;
+        }
+        if (*delim_curr) {
+          delim[0] = *delim_curr;
+        } else {
+          delim[0] = ';';       /* fall back on ; */
+        }
+      } else {
+        /* Fall back on latin-1 */
+        delim[0] = ';';
+        curr_locale = "ISO-8859-1";
+      }
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
+
+      queue_newwrite(d, reply_suffix, 2);
+
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];
@@ -2456,11 +2602,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
        * the socket, but we shouldn't assume that read() will actually get it
        * and blindly act like a got of -1 is a disconnect-worthy error.
        */
-#ifdef EAGAIN
-      if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == EINTR))
-#else
-      if ((errno == EWOULDBLOCK) || (errno == EINTR))
-#endif
+      if (is_blocking_err(errno))
         return 1;
       else
         return 0;
@@ -2479,10 +2621,13 @@ set_userstring(unsigned char **userstring, const char *command)
     mush_free(*userstring, "userstring");
     *userstring = NULL;
   }
-  while (*command && isspace((unsigned char) *command))
-    command++;
-  if (*command)
-    *userstring = (unsigned char *) mush_strdup(command, "userstring");
+  /* command may be NULL */
+  if (command && command[0]) {
+    while (*command && isspace((unsigned char) *command))
+      command++;
+    if (*command)
+      *userstring = (unsigned char *) mush_strdup(command, "userstring");
+  }
 }
 
 static void
@@ -2608,6 +2753,12 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_HTML;
       if (!d->connected && !d->conn_timer)
         welcome_user(d, 1);
+    } else {
+      /* Resend the Pueblo start string, but not the 'clear screen'
+       * part. Only useful for someone whose client hasn't noticed
+       * they're in Pueblo mode and is showing raw HTML */
+      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND_SHORT,
+                     strlen(PUEBLO_SEND_SHORT));
     }
     return CRES_OK;
   }
@@ -2657,7 +2808,8 @@ do_command(DESC *d, char *command)
       }
       if (j) {
         send_prefix(d);
-        dump_users(d, command + j);
+        if (!fcache_dump(d, fcache.who_fcache, NULL, command + j))
+          dump_users(d, command + j);
         send_suffix(d);
       } else if (!check_connect(d, command)) {
         return CRES_SITELOCK;
@@ -2718,11 +2870,11 @@ dump_messages(DESC *d, dbref player, int isnew)
   if (!options.login_allow || !under_limit ||
       (Guest(player) && !options.guest_allow)) {
     if (!options.login_allow) {
-      fcache_dump(d, fcache.down_fcache, NULL);
+      fcache_dump(d, fcache.down_fcache, NULL, NULL);
       if (*cf_downmotd_msg)
         raw_notify(player, cf_downmotd_msg);
     } else if (MAX_LOGINS && !under_limit) {
-      fcache_dump(d, fcache.full_fcache, NULL);
+      fcache_dump(d, fcache.full_fcache, NULL, NULL);
       if (*cf_fullmotd_msg)
         raw_notify(player, cf_fullmotd_msg);
     }
@@ -2743,14 +2895,14 @@ dump_messages(DESC *d, dbref player, int isnew)
   }
   /* give permanent text messages */
   if (isnew)
-    fcache_dump(d, fcache.newuser_fcache, NULL);
+    fcache_dump(d, fcache.newuser_fcache, NULL, NULL);
   if (num == 1) {
-    fcache_dump(d, fcache.motd_fcache, NULL);
+    fcache_dump(d, fcache.motd_fcache, NULL, NULL);
     if (Hasprivs(player))
-      fcache_dump(d, fcache.wizmotd_fcache, NULL);
+      fcache_dump(d, fcache.wizmotd_fcache, NULL, NULL);
   }
   if (Guest(player))
-    fcache_dump(d, fcache.guest_fcache, NULL);
+    fcache_dump(d, fcache.guest_fcache, NULL, NULL);
 
   if (ModTime(player))
     notify_format(player, T("%ld failed connections since last login."),
@@ -2881,7 +3033,7 @@ check_connect(DESC *d, const char *msg)
 
   } else if (string_prefix("create", command)) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
@@ -2894,9 +3046,9 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.login_allow || !options.create_allow) {
       if (!options.login_allow)
-        fcache_dump(d, fcache.down_fcache, NULL);
+        fcache_dump(d, fcache.down_fcache, NULL, NULL);
       else
-        fcache_dump(d, fcache.register_fcache, NULL);
+        fcache_dump(d, fcache.register_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -2905,7 +3057,7 @@ check_connect(DESC *d, const char *msg)
                   "create: creation not allowed", user);
       return 0;
     } else if (MAX_LOGINS && !under_limit) {
-      fcache_dump(d, fcache.full_fcache, NULL);
+      fcache_dump(d, fcache.full_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -2938,7 +3090,7 @@ check_connect(DESC *d, const char *msg)
 
   } else if (string_prefix("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN,
@@ -2951,7 +3103,7 @@ check_connect(DESC *d, const char *msg)
       return 0;
     }
     if (!options.create_allow) {
-      fcache_dump(d, fcache.register_fcache, NULL);
+      fcache_dump(d, fcache.register_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "Refused registration (creation disabled) for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -3068,8 +3220,10 @@ close_sockets(void)
       d->ssl = NULL;
       d->ssl_state = 0;
     }
-    if (d->source != CS_LOCAL_SOCKET && shutdown(d->descriptor, 2) < 0)
-      penn_perror("shutdown");
+    if (is_remote_desc(d)) {
+      if (shutdown(d->descriptor, 2) < 0)
+        penn_perror("shutdown");
+    }
     closesocket(d->descriptor);
   }
 }
@@ -3140,6 +3294,142 @@ void
 boot_desc(DESC *d, const char *cause, dbref executor)
 {
   shutdownsock(d, cause, executor);
+}
+
+/** For sockset: Parse an english bool ('yes', 'no', etc). Assume no,
+ *  whitelist yes.
+ * \param str The string to check
+ * \retval 1 yes
+ * \retval 0 no
+ */
+static int
+isyes(char *str)
+{
+  if (!str)
+    return 0;
+  if (!strcasecmp(str, "yes"))
+    return 1;
+  if (!strcasecmp(str, "y"))
+    return 1;
+  if (!strcasecmp(str, "true"))
+    return 1;
+  if (!strcasecmp(str, "1"))
+    return 1;
+  if (!strcasecmp(str, "on"))
+    return 1;
+  return 0;
+}
+
+/** Set a sock option.
+ * \param player the dbref of the player running @sockset
+ * \param name the option name
+ * \param val the option value
+ * \return string Set message (error or success)
+ */
+const char *
+sockset(dbref player, char *name, char *val)
+{
+  DESC *d;
+  static char retval[BUFFER_LEN];
+
+  int ival;
+
+  d = least_idle_desc(player, 1);
+
+  if (!d) {
+    return T("You are not connected?");
+  }
+  if (!name || !name[0]) {
+    return T("Set what option?");
+  }
+
+  if (!strcasecmp(name, PREFIX_COMMAND)) {
+    set_userstring(&d->output_prefix, val);
+    if (val && *val) {
+      return T("OUTPUTPREFIX set.");
+    } else {
+      return T("OUTPUTPREFIX cleared.");
+    }
+    return retval;
+  }
+
+  if (!strcasecmp(name, SUFFIX_COMMAND)) {
+    set_userstring(&d->output_suffix, val);
+    if (val && *val) {
+      return T("OUTPUTSUFFIX set.");
+    } else {
+      return T("OUTPUTSUFFIX cleared.");
+    }
+    return retval;
+  }
+
+  if (!strcasecmp(name, "PUEBLO")) {
+    if (val && *val) {
+      parse_puebloclient(d, val);
+      if (!(d->conn_flags & CONN_HTML)) {
+        queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
+                       strlen(PUEBLO_SEND));
+        process_output(d);
+        do_rawlog(LT_CONN,
+                  "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
+                  d->descriptor, d->addr, d->ip);
+        d->conn_flags |= CONN_HTML;
+      }
+      return T("Pueblo flag set.");
+    } else {
+      d->conn_flags &= ~CONN_HTML;
+      return T("Pueblo flag cleared.");
+    }
+  }
+
+  if (!strcasecmp(name, "TELNET")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_TELNET;
+      return T("Telnet flag set.");
+    } else {
+      d->conn_flags &= ~CONN_TELNET;
+      return T("Telnet flag cleared.");
+    }
+  }
+
+  if (!strcasecmp(name, "WIDTH")) {
+    if (!is_strict_integer(val)) {
+      return T("Width expects a positive integer.");
+    }
+    ival = parse_integer(val);
+    if (ival < 1) {
+      return T("Width expects a positive integer.");
+    }
+    d->width = ival;
+    return T("Width set.");
+  }
+
+  if (!strcasecmp(name, "HEIGHT")) {
+    if (!is_strict_integer(val)) {
+      return T("Height expects a positive integer.");
+    }
+    ival = parse_integer(val);
+    if (ival < 1) {
+      return T("Height expects a positive integer.");
+    }
+    d->height = ival;
+    return T("Height set.");
+  }
+
+  if (!strcasecmp(name, "TERMINALTYPE")) {
+    if (d->ttype)
+      mush_free(d->ttype, "terminal description");
+    if (val && *val)
+      d->ttype = mush_strdup(val, "terminal description");
+    else
+      d->ttype = mush_strdup("unknown", "terminal description");
+    return T("Terminal Type set.");
+  }
+
+  snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
+           name);
+  return retval;
 }
 
 /** Given a player dbref, return the player's first connected descriptor.
@@ -3721,7 +4011,7 @@ do_who_admin(dbref player, char *name)
               unparse_dbref(Location(d->player)),
               time_format_1(now - d->connected_at),
               time_format_2(now - d->last_time), d->cmds, d->descriptor,
-              is_ssl_desc(d) ? 'S' : ' ', d->addr);
+              is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'), d->addr);
       if (Dark(d->player)) {
         tbuf[71] = '\0';
         strcat(tbuf, " (Dark)");
@@ -3921,7 +4211,6 @@ announce_connect(DESC *d, int isnew, int num)
     notify(player, T("You are nowhere!"));
     return;
   }
-  orator = player;
 
   if (*cf_motd_msg) {
     raw_notify(player, cf_motd_msg);
@@ -3934,12 +4223,12 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   if (ANNOUNCE_CONNECTS)
-    notify_except(player, player, tbuf1, 0);
+    notify_except(player, player, player, tbuf1, 0);
 
   /* added to allow player's inventory to hear a player connect */
   if (ANNOUNCE_CONNECTS)
     if (!Dark(player))
-      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(player, loc, player, tbuf1, NA_INTER_PRESENCE);
 
   queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
               unparse_objid(player), num, d->descriptor);
@@ -4001,8 +4290,6 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   loc = Location(player);
   if (!GoodObject(loc))
     return;
-
-  orator = player;
 
   for (num = 0, d = descriptor_list; d; d = d->next)
     if (d->connected && (d->player == player))
@@ -4114,9 +4401,9 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
-      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(player, loc, player, tbuf1, NA_INTER_PRESENCE);
     /* notify contents */
-    notify_except(player, player, tbuf1, 0);
+    notify_except(player, player, player, tbuf1, 0);
     /* notify channels */
     chat_player_announce(player, message, num == 1);
   }
@@ -4257,6 +4544,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
       as = parse_ansi_string(doing);
       safe_ansi_string(as, 0, DOING_LEN - 1, doing, &dp);
       *dp = '\0';
+      free_ansi_string(as);
     } else {
       /* Nice and easy */
       doing[DOING_LEN - 1] = '\0';
@@ -5530,7 +5818,8 @@ load_reboot_db(void)
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = GoodObject(d->player) ? CONN_PLAYER : CONN_SCREEN;
+      d->connected = (GoodObject(d->player)
+                      && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))
@@ -5619,7 +5908,7 @@ load_reboot_db(void)
 
 #ifdef SSL_SLAVE
     ssl_slave_pid = val;
-    if (ssl_slave_pid == -1 && SSLPORT) {
+    if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR,
                 "ssl_slave does not appear to be running on reboot. Restarting the slave.");

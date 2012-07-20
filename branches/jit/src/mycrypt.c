@@ -23,7 +23,7 @@
 
 /** Encrypt a password and return ciphertext, using SHA0. Icky old
  *  style password format, used for migrating to new style.
- * 
+ *
  * \param key plaintext to encrypt.
  * \return encrypted password.
  */
@@ -76,8 +76,7 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
       safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
     else
       do_rawlog(LT_ERR,
-                T("safe_hash_byname: Unknown password hash function: %s"),
-                algo);
+                "safe_hash_byname: Unknown password hash function: %s", algo);
     return 1;
   }
 
@@ -92,7 +91,7 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
  * string. Supports user-supplied algorithms. Password format:
  *
  * V:ALGO:HASH:TIMESTAMP
- * 
+ *
  * V is the version number (Currently 1), ALGO is the digest algorithm
  * used (Default is SHA1), HASH is the hashed password. TIMESTAMP is
  * when it was set. If fields are added, the version gets bumped.

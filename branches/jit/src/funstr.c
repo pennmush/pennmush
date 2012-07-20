@@ -159,13 +159,12 @@ FUNCTION(fun_art)
 {
   /* checks a word and returns the appropriate article, "a" or "an" */
   char c;
-  char *p = skip_leading_ansi(args[0]);
 
-  if (!p) {
+  if (!*args[0]) {
     safe_chr('a', buff, bp);
     return;
   }
-  c = DOWNCASE(*p);
+  c = DOWNCASE(*args[0]);
   if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
     safe_str("an", buff, bp);
   else
@@ -1519,43 +1518,27 @@ wraplen(char *str, size_t maxlen)
 
   /* Check to make sure the text wasn't hard-wrapped at the end of
    * this line anyway */
-  if ((str[i] == '\n'))
+  if ((str[i] == '\n') || (str[i] == '\r') || (str[i] == '\0'))
     return i;
 
   return last;
 }
-
-/** The integer in string a will be stored in v,
- * if a is not an integer then d (efault) is stored in v.
- */
-#define initint(a, v, d) \
-  do \
-   if (arglens[a] == 0) { \
-      v = d; \
-   } else { \
-     if (!is_integer(args[a])) { \
-        safe_str(T(e_int), buff, bp); \
-        return; \
-     } \
-     v = parse_integer(args[a]); \
-   } \
- while (0)
 
 FUNCTION(fun_wrap)
 {
 /*  args[0]  =  text to be wrapped (required)
  *  args[1]  =  line width (width) (required)
  *  args[2]  =  width of first line (width1st)
- *  args[3]  =  output delimiter (btwn lines)
+ *  args[3]  =  output delimiter (linesep) (btwn lines)
  */
 
   char *pstr;                   /* start of string */
   ansi_string *as;
+  ansi_string *hyphen = NULL;
   const char *pend;             /* end of string */
-  size_t linewidth, width1st, width;
+  int linewidth, width1st, width;
   int linenr = 0;
   const char *linesep;
-  size_t ansiwidth;
   int ansilen;
 
   if (!args[0] || !*args[0])
@@ -1566,12 +1549,12 @@ FUNCTION(fun_wrap)
     return;
   }
 
+  if (!int_check(buff, bp, nargs, args, 2, &width, 72))
+    return;
 
-  initint(1, width, 72);
-  width1st = width;
+  if (!int_check(buff, bp, nargs, args, 3, &width1st, width))
+    return;
 
-  if (nargs > 2)
-    initint(2, width1st, width);
   if (nargs > 3)
     linesep = args[3];
   else
@@ -1594,16 +1577,16 @@ FUNCTION(fun_wrap)
     if ((linenr > 1) && linesep && *linesep)
       safe_str(linesep, buff, bp);
 
-    ansiwidth = strlen(pstr);
-    if (ansiwidth > linewidth)
-      ansiwidth = linewidth;
     ansilen = wraplen(pstr, linewidth);
 
     if (ansilen < 0) {
       /* word doesn't fit on one line, so cut it */
-      safe_ansi_string(as, pstr - as->text, ansiwidth - 1, buff, bp);
-      safe_chr('-', buff, bp);
-      pstr += ansiwidth - 1;    /* move to start of next line */
+      if (hyphen == NULL)
+        hyphen = parse_ansi_string("-");
+      if (!ansi_string_insert(as, pstr - as->text + linewidth - 1, hyphen))
+        pend++;
+      safe_ansi_string(as, pstr - as->text, linewidth, buff, bp);
+      pstr += linewidth;    /* move to start of next line */
     } else {
       /* normal line */
       safe_ansi_string(as, pstr - as->text, ansilen, buff, bp);
@@ -1613,9 +1596,9 @@ FUNCTION(fun_wrap)
     }
   }
   free_ansi_string(as);
+  if (hyphen)
+    free_ansi_string(hyphen);
 }
-
-#undef initint
 
 // Alignment types.
 #define AL_LEFT 1    /**< Align left */

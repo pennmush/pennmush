@@ -31,10 +31,9 @@
 
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
-static void do_itemfuns(char *buff, char **bp, char *str, char *num,
-                        char *word, char *sep, enum itemfun_op flag);
 static void freearr_member(char *p);
 extern const unsigned char *tables;
+static int find_list_position(char *numstr, int total, bool insert);
 
 /** Convert list to array.
  * Chops up a list of words into an array of words. The list is
@@ -184,6 +183,45 @@ freearr(char *r[], int size)
   }
 }
 
+/* For a list with X items, return the appropriate index for the Yth element.
+ * Y may be negative, in which case we count from the end of the list.
+ * When inserting, we add 1 to the result for negative indicies.
+ * Lists are 1-indexed, not 0-indexed.
+ * last+1th is totally a valid way of putting it. Shut up, it's late.
+ * \param numstr the index to find, as a string
+ * \param total the total number of elements in the list
+ * \param insert Are we inserting into the list at this position?
+ */
+static int
+find_list_position(char *numstr, int total, bool insert)
+{
+  int i;
+  bool negative = false;
+
+  if (!is_integer(numstr))
+    return -1;
+
+  i = parse_integer(numstr);
+
+  if (i < 0) {
+    i = (total + 1) - (i * -1);
+    negative = true;
+  }
+
+  if (i < 1 || i > total) {
+    if (total == 0 && insert && negative && i == 0) {
+      /* Special case: inserting at -1 into an empty list
+       * will create a one-element list */
+      return 1;
+    } else {
+      return -1;
+    }
+  } else if (insert && negative)
+    return i + 1;
+  else
+    return i;
+}
+
 /* ARGSUSED */
 FUNCTION(fun_munge)
 {
@@ -331,13 +369,13 @@ FUNCTION(fun_elements)
    * corresponding elements.
    */
   r = split_token(&s, ' ');
-  cur = atoi(r) - 1;
+  cur = find_list_position(r, nwords, 0) - 1;
   if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
     safe_str(ptrs[cur], buff, bp);
   }
   while (s) {
     r = split_token(&s, ' ');
-    cur = atoi(r) - 1;
+    cur = find_list_position(r, nwords, 0) - 1;
     if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
       safe_str(osep, buff, bp);
       safe_str(ptrs[cur], buff, bp);
@@ -1334,55 +1372,65 @@ FUNCTION(fun_wordpos)
 /* ARGSUSED */
 FUNCTION(fun_extract)
 {
-  char sep = ' ';
-  int start = 1, len = 1;
-  char *s, *r;
+  int nwords;
+  char **ptrs;
+  char *wordlist;
+  char sep;
+  int start = 1, len = 1, first = 1;
 
-  s = args[0];
+  if (!delim_check(buff, bp, nargs, args, 4, &sep))
+    return;
+
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  wordlist = mush_malloc(BUFFER_LEN, "string");
+  if (!ptrs)
+    mush_panic("Unable to allocate memory in fun_extract");
+
+  /* Turn the first list into an array. */
+  strcpy(wordlist, args[0]);
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1) {
+    /* find_list_position does an is_integer check, but we
+     * duplicate it here so we can return e_ints */
     if (!is_integer(args[1])) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
-    start = parse_integer(args[1]);
-  }
-  if (nargs > 2) {
-    if (!is_integer(args[2])) {
+    if (nargs > 2 && !is_integer(args[2])) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
+  }
+
+  if (nargs > 1)
+    start = find_list_position(args[1], nwords, 0) - 1;
+
+  if (nargs > 2) {
     len = parse_integer(args[2]);
-  }
-  if ((nargs > 3) && (!delim_check(buff, bp, nargs, args, 4, &sep)))
-    return;
-
-  if ((start < 1) || (len < 1))
-    return;
-
-  /* Go to the start of the token we're interested in. */
-  start--;
-  s = trim_space_sep(s, sep);
-  while (start && s) {
-    s = next_token(s, sep);
-    start--;
+    if (len < 0)
+      len = find_list_position(args[2], nwords, 0) - start;
   }
 
-  if (!s || !*s)                /* ran off the end of the string */
+  if (start < 0 || start >= nwords || len < 1) {
+    freearr(ptrs, nwords);
+    mush_free(ptrs, "ptrarray");
+    mush_free(wordlist, "string");
     return;
-
-  /* Find the end of the string that we want. */
-  r = s;
-  len--;
-  while (len && s) {
-    s = next_token(s, sep);
-    len--;
   }
 
-  /* Chop off the end, and copy. No length checking needed. */
-  if (s && *s)
-    (void) split_token(&s, sep);
-  safe_str(r, buff, bp);
+  for (; start < nwords && len; start++, len--) {
+    if (first)
+      first = 0;
+    else
+      safe_chr(sep, buff, bp);
+    safe_str(ptrs[start], buff, bp);
+  }
+
+  freearr(ptrs, nwords);
+  mush_free(ptrs, "ptrarray");
+  mush_free(wordlist, "string");
+
 }
 
 /* ARGSUSED */
@@ -1571,144 +1619,14 @@ FUNCTION(fun_index)
   safe_str(s, buff, bp);
 }
 
-/** Functions that operate on items - delete, replace, insert.
- * \param buff return buffer.
- * \param bp pointer to insertion point in buff.
- * \param str original string.
- * \param num string containing the element number to operate on.
- * \param word string to insert/delete/replace.
- * \param sep separator string.
- * \param flag operation to perform: IF_DELETE, IF_REPLACE, IF_INSERT
- */
-static void
-do_itemfuns(char *buff, char **bp, char *str, char *num, char *word,
-            char *sep, enum itemfun_op flag)
-{
-  char c;
-  int el, count, len = -1;
-  char *sptr, *eptr;
-
-  if (!is_integer(num)) {
-    safe_str(T(e_int), buff, bp);
-    return;
-  }
-  el = parse_integer(num);
-
-  /* figure out the separator character */
-  if (sep && *sep)
-    c = *sep;
-  else
-    c = ' ';
-
-  /* we can't remove anything before the first position */
-  if ((el < 1 && flag != IF_INSERT) || el == 0) {
-    safe_str(str, buff, bp);
-    return;
-  }
-  if (el < 0) {
-    sptr = str + strlen(str);
-    eptr = sptr;
-  } else {
-    sptr = str;
-    eptr = strchr(sptr, c);
-  }
-  count = 1;
-
-  /* go to the correct item in the string */
-  if (el < 0) {                 /* if using insert() with a negative insertion param */
-    /* count keeps track of the number of words from the right
-     * of the string.  When count equals the correct position, then
-     * sptr will point to the count'th word from the right, or
-     * a null string if the  word being added will be at the end of
-     * the string.
-     * eptr is just a helper.  */
-    for (len = strlen(str); len >= 0 && count < abs(el); len--, eptr--) {
-      if (*eptr == c)
-        count++;
-      if (count == abs(el)) {
-        sptr = eptr + 1;
-        break;
-      }
-    }
-  } else {
-    /* Loop invariant: if sptr and eptr are not NULL, eptr points to
-     * the count'th instance of c in str, and sptr is the beginning of
-     * the count'th item. */
-    while (eptr && (count < el)) {
-      sptr = eptr + 1;
-      eptr = strchr(sptr, c);
-      count++;
-    }
-  }
-
-  if ((!eptr || len < 0) && (count < abs(el))) {
-    /* we've run off the end of the string without finding anything */
-    safe_str(str, buff, bp);
-    return;
-  }
-  /* now find the end of that element */
-  if ((el < 0 && *eptr) || (el > 0 && sptr != str))
-    sptr[-1] = '\0';
-
-  switch (flag) {
-  case IF_DELETE:
-    /* deletion */
-    if (!eptr) {                /* last element in the string */
-      if (el != 1)
-        safe_str(str, buff, bp);
-    } else if (sptr == str) {   /* first element in the string */
-      eptr++;                   /* chop leading separator */
-      safe_str(eptr, buff, bp);
-    } else {
-      safe_str(str, buff, bp);
-      safe_str(eptr, buff, bp);
-    }
-    break;
-  case IF_REPLACE:
-    /* replacing */
-    if (!eptr) {                /* last element in string */
-      if (el != 1) {
-        safe_str(str, buff, bp);
-        safe_chr(c, buff, bp);
-      }
-      safe_str(word, buff, bp);
-    } else if (sptr == str) {   /* first element in string */
-      safe_str(word, buff, bp);
-      safe_str(eptr, buff, bp);
-    } else {
-      safe_str(str, buff, bp);
-      safe_chr(c, buff, bp);
-      safe_str(word, buff, bp);
-      safe_str(eptr, buff, bp);
-    }
-    break;
-  case IF_INSERT:
-    /* insertion */
-    if (sptr == str) {          /* first element in string */
-      safe_str(word, buff, bp);
-      safe_chr(c, buff, bp);
-      safe_str(str, buff, bp);
-    } else {
-      safe_str(str, buff, bp);
-      safe_chr(c, buff, bp);
-      safe_str(word, buff, bp);
-      if (sptr && *sptr) {      /* Don't add an osep to the end of the list */
-        safe_chr(c, buff, bp);
-        safe_str(sptr, buff, bp);
-      }
-    }
-    break;
-  }
-}
-
-
 /* ARGSUSED */
 FUNCTION(fun_ldelete)
 {
-  /* delete a word at given positions of a list */
+  /* delete or replace a word at given positions of a list */
+  /* This code powers LDELETE() and REPLACE() */
 
   /* Given a list and a list of numbers, delete the corresponding
-   * elements of the list. elements(ack bar eep foof yay,2 4) = bar foof
+   * elements of the list. ldelete(ack bar eep foof yay,2 4) = ack eep yay
    * A separator for the first list is allowed.
    * This code modified slightly from 'elements'
    */
@@ -1718,12 +1636,19 @@ FUNCTION(fun_ldelete)
   int first = 0;
   char *s, *r, sep;
   char *osep, osepd[2] = { '\0', '\0' };
+  int delimarg = 3;
+  char *replace = NULL;
 
-  if (!delim_check(buff, bp, nargs, args, 3, &sep))
+  if (!strcmp(called_as, "REPLACE")) {
+    delimarg = 4;
+    replace = args[2];
+  }
+
+  if (!delim_check(buff, bp, nargs, args, delimarg, &sep))
     return;
 
-  if (nargs == 4)
-    osep = args[3];
+  if (nargs == (delimarg + 1))
+    osep = args[delimarg];
   else {
     osepd[0] = sep;
     osep = osepd;
@@ -1732,7 +1657,7 @@ FUNCTION(fun_ldelete)
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   wordlist = mush_malloc(BUFFER_LEN, "string");
   if (!ptrs || !wordlist)
-    mush_panic("Unable to allocate memory in fun_elements");
+    mush_panic("Unable to allocate memory in fun_ldelete");
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
@@ -1745,10 +1670,15 @@ FUNCTION(fun_ldelete)
    */
   do {
     r = split_token(&s, ' ');
-    cur = atoi(r) - 1;
+    cur = find_list_position(r, nwords, 0) - 1;
     if ((cur >= 0) && (cur < nwords)) {
-      freearr_member(ptrs[cur]);
-      ptrs[cur] = NULL;
+      if (replace) {
+        free(ptrs[cur]);
+        ptrs[cur] = strdup(replace);
+      } else {
+        freearr_member(ptrs[cur]);
+        ptrs[cur] = NULL;
+      }
     }
   } while (s);
   for (cur = 0; cur < nwords; cur++) {
@@ -1767,19 +1697,61 @@ FUNCTION(fun_ldelete)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_replace)
-{
-  /* replace a word at position X of a list */
-
-  do_itemfuns(buff, bp, args[0], args[1], args[2], args[3], IF_REPLACE);
-}
-
-/* ARGSUSED */
 FUNCTION(fun_insert)
 {
   /* insert a word at position X of a list */
+  int nwords, pos, i;
+  char **ptrs;
+  char *wordlist;
+  int first = 1;
+  char sep;
 
-  do_itemfuns(buff, bp, args[0], args[1], args[2], args[3], IF_INSERT);
+  if (!delim_check(buff, bp, nargs, args, 4, &sep))
+    return;
+
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  wordlist = mush_malloc(BUFFER_LEN, "string");
+  if (!ptrs || !wordlist)
+    mush_panic("Unable to allocate memory in fun_insert");
+
+  /* Turn the first list into an array. */
+  strcpy(wordlist, args[0]);
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
+
+  /* Go through the second list, grabbing the numbers and finding the
+   * corresponding elements.
+   */
+  pos = find_list_position(args[1], nwords, 1) - 1;
+  if (pos < 0 || pos > (nwords + 1)) {
+    /* Nowhere to insert */
+    safe_strl(args[0], arglens[0], buff, bp);
+  } else {
+    for (i = 0; i < nwords; i++) {
+      if (i == pos) {
+        if (first)
+          first = 0;
+        else
+          safe_chr(sep, buff, bp);
+        safe_strl(args[2], arglens[2], buff, bp);
+      }
+      if (first)
+        first = 0;
+      else
+        safe_chr(sep, buff, bp);
+      safe_str(ptrs[i], buff, bp);
+    }
+    if (i == pos) {
+      /* When pos was given as -1, we might be inserting after the list */
+      if (!first)
+        safe_chr(sep, buff, bp);
+      safe_strl(args[2], arglens[2], buff, bp);
+    }
+  }
+
+  freearr(ptrs, nwords);
+  mush_free(ptrs, "ptrarray");
+  mush_free(wordlist, "string");
+
 }
 
 /* ARGSUSED */
@@ -2165,7 +2137,7 @@ FUNCTION(fun_step)
   int n;
   int step;
   char *osep, osepd[2] = { '\0', '\0' };
-  PE_REGS *pe_regs;
+  PE_REGS *pe_regs = NULL;
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2206,18 +2178,18 @@ FUNCTION(fun_step)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Step through the list. */
-  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
   for (i = 0; i < nptrs;) {
+    pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
     for (n = 0; n < step; n++) {
       if (i < nptrs) {
         pe_regs_setenv_nocopy(pe_regs, n, ptrs[i++]);
-      } else {
-        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       goto exitsequence;
     }
+    pe_regs_free(pe_regs);
+    pe_regs = NULL;
     if (i > step) {
       /* At least second loop */
       safe_str(osep, buff, bp);
@@ -2225,7 +2197,8 @@ FUNCTION(fun_step)
     safe_str(rbuff, buff, bp);
   }
 exitsequence:
-  pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }
@@ -2801,7 +2774,7 @@ FUNCTION(fun_regmatch)
   char *qregs[NUMQ], *holder[NUMQ];
   pcre *re;
   pcre_extra *extra;
-  const char *errptr;
+  const char *errptr = NULL;
   int erroffset;
   int offsets[99];
   int subpatterns;
@@ -2820,7 +2793,13 @@ FUNCTION(fun_regmatch)
   as = parse_ansi_string(args[0]);
   txt = as->text;
   if (nargs == 2) {             /* Don't care about saving sub expressions */
-    safe_boolean(quick_regexp_match(needle, txt, flags ? 0 : 1), buff, bp);
+    bool match = quick_regexp_match(needle, txt, flags ? 0 : 1, &errptr);
+    if (errptr == NULL) {
+      safe_boolean(match, buff, bp);
+    } else {
+      safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
+      safe_str(errptr, buff, bp);
+    }
     free_ansi_string(as);
     return;
   }

@@ -5,7 +5,7 @@ templates.
 The format is one template per line, using the same codes as
 TIMEFMT(), except with %-signs instead of $-signs. Plain text is
 matched exactly. The MUSH does not need to be rebooted after editing
-getdaily.template.
+getdate.template.
 
 DO NOT use '%c', '%x' or '%X', as they might crash the mush on a linux
 box, and possibly others.

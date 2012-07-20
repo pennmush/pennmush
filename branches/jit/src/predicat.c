@@ -221,7 +221,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
 {
 
   char buff[BUFFER_LEN], *bp;
-  dbref preserve_orator = orator;
   int attribs_used = 0;
   NEW_PE_INFO *pe_info = NULL;
   ufun_attrib ufun;
@@ -231,7 +230,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   }
 
   loc = (loc == NOTHING) ? Location(player) : loc;
-  orator = player;
   /* only give messages if the location is good */
   if (GoodObject(loc)) {
 
@@ -254,12 +252,12 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
         if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
-          notify_except2(loc, player, thing, buff, flags);
+          notify_except2(player, loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
         safe_format(buff, &bp, "%s %s", Name(player), odef);
         *bp = '\0';
-        notify_except2(loc, player, thing, buff, flags);
+        notify_except2(player, loc, player, thing, buff, flags);
       }
     }
   }
@@ -270,7 +268,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   if (awhat && *awhat)
     attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs, 0)
       || attribs_used;
-  orator = preserve_orator;
+
   return attribs_used;
 }
 
@@ -753,12 +751,11 @@ ok_player_name(const char *name, dbref player, dbref thing)
  * \param type type of object getting the name (necessary for new exits)
  * \param newname pointer to place the new name, once validated
  * \param newalias pointer to place the alias in, if any
- * \retval 1 name and any given aliases are valid
- * \retval 0 invalid name
- * \retval OPAE_INVALID invalid aliases
+ * \retval OPAE_SUCCESS name and any given aliases are valid
+ * \retval OPAE_INVALID invalid name or aliases
  * \retval OPAE_TOOMANY too many aliases for player
  */
-int
+enum opa_error
 ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
@@ -783,17 +780,17 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     if (*eon)
       *eon = '\0';
     if (!ok_player_name(bon, player, thing))
-      return 0;
+      return OPAE_INVALID;
     *newname = mush_strdup(bon, "name.newname");
-    return 1;
+    return OPAE_SUCCESS;
   }
 
   if (type & (TYPE_THING | TYPE_ROOM)) {
     /* No aliases in the name */
     if (!ok_name(nbuff, 0))
-      return 0;
+      return OPAE_INVALID;
     *newname = mush_strdup(nbuff, "name.newname");
-    return 1;
+    return OPAE_SUCCESS;
   }
 
   /* A player or exit name, with aliases allowed.
@@ -812,7 +809,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
   if (!
       (type ==
        TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
-    return 0;
+    return OPAE_INVALID;
 
   *newname = mush_strdup(bon, "name.newname");
 
@@ -862,7 +859,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     }
   }
 
-  return 1;
+  return OPAE_SUCCESS;
 }
 
 
@@ -875,7 +872,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
  * \param thing player who is being aliased.
  * \return One of the OPAE_* constants defined in hdrs/attrib.h
  */
-int
+enum opa_error
 ok_player_alias(const char *alias, dbref player, dbref thing)
 {
   char tbuf1[BUFFER_LEN], *s, *sp;

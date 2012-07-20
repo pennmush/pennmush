@@ -570,9 +570,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   The @attribute command displays and modifies the MUSH's standard attributes
   (see "@list/attribs" for a list of them).
   
-  *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
-  *** across shutdowns. Use these commands from God's @startup to ensure they
-  *** are run at each startup, or use restrict_attribute in restrict.cnf.
+  Since 1.8.5p1, changes to the attribute table are saved across reboots and
+  shutdowns, and don't need to be placed in an @startup.
 
   The first form of the command displays the full name of the attribute
   <attrib>, along with the its attribute flags, and the dbref of the object 
@@ -1525,8 +1524,8 @@ See also: enter, leave, goto, ENTER_OK
 & @edit
 & @gedit
   @edit[/first][/check][/quiet] <object>/<attributes>=<search>, <replace> 
-  @edit[/check][/quiet] <object>/<attributes> = $,<string to append>
-  @edit[/check][/quiet] <object>/<attributes> = ^,<string to prepend>
+  @edit[/check][/quiet] <object>/<attributes>=$, <string to append>
+  @edit[/check][/quiet] <object>/<attributes>=^, <string to prepend>
 
   This command allows you to edit the contents of attributes, without having
   to retype the entire attribute.
@@ -1537,8 +1536,8 @@ See also: enter, leave, goto, ENTER_OK
   
   If <search> is "$", then <replace> will be added to the end of the
   attributes. When <search> is "^", <replace> will be added to the beginning
-  of the attributes. (It is not possible to replace a single $ or ^ using
-  the @edit command.)
+  of the attributes. (If you need to replace a single $ or ^, consider using
+  @edit/regexp (see help @edit2) or the edit() function.)
   
   If the /first switch is given, only the first occurrence of <search> in
   each attribute is replaced. If the /check switch is given, the attributes
@@ -1552,6 +1551,36 @@ See also: enter, leave, goto, ENTER_OK
   <search> and <replace> are not evaluated, so you don't need to escape
   special characters. If either contains commas, however, you may need to
   wrap the string in {curly braces}.
+  
+  Continued in 'help @edit2'.
+& @edit2
+  @edit/regexp[/all][/nocase][/check][/quiet] 
+                     <object>/<attributes>=<regexp>,<replace>
+
+
+  When the /regexp switch is given, @edit performs a regular expression
+  replacement, similar to the regedit() function. Normally, only the first
+  match per attribute will be replaced; if the /all switch is given, all
+  possible matches in each attribute are replaced (as per regeditall()).
+  
+  Regexp matches are case-sensitive by default, but the /nocase switch can
+  be given to make them case-insensitive (as per regediti()/regeditalli()).
+  
+  The /check and /quiet switches work the same as for non-regexp @edits.
+  
+  Note that, unlike normal @edits, the <replace> for an @edit/regexp WILL
+  be evaluated, once for each replacement made, with the $0 token being
+  replaced with the overall matching text, $1 with the first subexpression,
+  and so on. Named subexpressions are also possible via $<name>.
+  
+  Example:
+  > &foo me=Block of text/Wed Feb 22 22:54:02 2012/#10010
+  > @edit/regexp me/foo=^(.+)/([^/]+)/(#[0-9]+(?::[0-9]+)?)$,
+                    ucstr($1) -- [convtime($2)] -- [name($3)]
+  FOO - Set: BLOCK OF TEXT -- 1329951242 -- Minion
+  
+  Replace a literal '^' with 'v'
+  > @edit/regexp me/bar=\^, v
   
 See also: edit(), regedit(), ATTRIBUTES,
 & @elock
@@ -1948,14 +1977,15 @@ See also: FLAGS, @set, @power, flag permissions
   <switch> can be one of:
   /disable, to disable a function.
   /enable, to re-enable it.
-  /delete, to remove a user-defined function or allow a built-in function
-           to be overriden by a user-defined one.
+  /delete, to remove a user-defined or cloned function, or allow a built-in
+           function to be overriden by a user-defined one.
   /restrict, to change the restriction flags on an existing function.
   
   @function/alias creates an alias for the built-in function <function name>
   so that it can also be called as <alias>. @function/clone creates a new
   copy of <function name> named <clone>, which works the same initially but
-  can be restricted separately. You cannot alias or clone @functions.
+  can be restricted separately. You cannot alias or clone @functions, or
+  alias cloned functions.
 
   Otherwise, this command defines a global function with the name
   <function name>, which evaluates to <attribute> on <object>.
@@ -2031,7 +2061,7 @@ See also: FLAGS, @set, @power, flag permissions
   and that needs two arguments, like the built-in version. It will be
   restricted to non-guest players.
 
-See also: RESTRICT, FUNCTIONS, @startup, fn()
+See also: RESTRICT, FUNCTIONS, @startup, fn(), valid()
 & @grep
   @grep[/<switches>] <object>[/<attrs>]=<pattern>
   
@@ -2427,6 +2457,8 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   "variable" instead of a dbref. When someone attempts to pass through the
   exit, the DESTINATION attribute will be evaluated, and should return a
   dbref; the dbref will be used as the location for the person to go to.
+  The exit name or alias the moving player used is passed to the attribute
+  as %0.
   
   The exit must be able to @link itself to the dbref returned by the
   attribute. This means the exit must control the destination, the
@@ -2585,6 +2617,8 @@ See also: @log
     /oemit    -- Works like @oemit, with <recipients> as a list of objects
                  not to emit to. See 'help @oemit' for more info.
     /nospoof  -- don't show nospoof info, as per @nspemit/@nsremit/@nsoemit
+    /silent   -- don't show a confirmation message
+    /noisy    -- show a confirmation message
 
   See 'help @message2' for examples.
 See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
@@ -2704,8 +2738,7 @@ See also: @name, name(), VERBS
   connected, she will be informed that the password was changed and who by,
   but not what it was changed to.
   
-  Note that, unlike @password, @newpassword evaluates its arguments, so
-  any special characters need to be escaped.
+  The <player> argument is evaluated, but the <password> argument is not.
 
 See also: @password, checkpass()
 & @notify
@@ -2840,6 +2873,7 @@ See also: PARENTS, parent(), lparent(), ANCESTORS
   @password <old password>=<new password>
 
   This changes your password. Please note that passwords ARE case-sensitive.
+  The arguments are not evaluated.
   
 See also: @newpassword, checkpass()
 & @pageformat
@@ -3080,6 +3114,9 @@ See also: @inprefix, AUDIBLE, @listen
   the number of entries made by objects that have been halted but haven't
   been removed from the queue yet.
       
+  It also shows a running load average of the number of queue entries
+  executed per second for the last 1, 5 and 15 minutes.
+
   @ps with no arguments will show you your own queue. Wizards may specify
   the /all switch, and see the full queue. They may also specify a player.
   @ps/summary just displays the queue totals for the whole queue.
@@ -3476,7 +3513,43 @@ Continued in 'help @sitelock3'
   given, <string> is treated as a player name, and entries whose
   host-patterns match the player's LASTIP or LASTSITE addresses exactly will
   be deleted.
+& @SLAVE
+  @slave/restart [info|ssl]
 
+  @slave is a wizard-only command used to control the various
+  subprocesses used by the mush to do various things. The only switch
+  it currently takes is /restart, which will shut down and relaunch
+  the slave daemon process in question.
+
+  Two different daemons are used:
+
+  info: Resolves IP addresses into host names whenever a new connection
+        is established.
+   ssl: Handles encrypted SSL connections across @shutdown/reboots. 
+
+& @SOCKSET
+  @sockset <option>=<value>
+
+  @sockset is a command to set socket-specific options usually only set
+  either at connect time or modifiable via SOCKET commands.
+
+  If <value> is empty, the socket option will be cleared.
+
+  Options:
+    outputprefix: String: Same as OUTPUTPREFIX
+    outputsuffix: String: Same as OUTPUTSUFFIX
+    pueblo: String: Sets Pueblo-related options. If value has md5=...", then
+            it will set the pueblo checksum. If empty, Pueblo mode is turned
+            off.
+    telnet: Boolean yes/no: If yes, your socket does telnet negotiation.
+    width:  Integer: Set your width(), same as SCREENWIDTH
+    height: Integer: Set your height(), same as SCREENHEIGHT
+    terminaltype: String: Your terminal type, used by terminfo()
+
+  Note that changing 'telnet' or 'pueblo' may stop your client from parsing
+  or displaying output correctly; only use if you know what you're doing!
+  
+See also: SOCKET COMMANDS, terminfo(), Pueblo
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
   
@@ -3528,14 +3601,13 @@ See also: sql(), sqlescape(), mapsql(), @sql
 & @sql
   @sql <query>
 
-  This command issues an SQL query if the MUSH supports SQL and
-  can connect to an SQL server. You must be WIZARD or have the
-  Sql_Ok power to use @sql.
+  This command issues an SQL query if the MUSH supports SQL and can connect 
+  to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
 
-  Generally, the sql() function is more useful for coding, as it
-  delimits its return values, but @sql is handy for INSERT-type
-  queries and quick checks. If you pass arbitrary data to @sql,
-  be sure you call sqlescape() on it (see the example in help sql()).
+  Generally, the sql() function is more useful for coding, as it delimits its
+  return values, but @sql is handy for INSERT-type queries and quick checks. 
+  If you pass arbitrary data to @sql, be sure you call sqlescape() on it; 
+  see the example in help sql().
 
   Example:
     > @sql SHOW TABLES
@@ -4163,9 +4235,10 @@ See also: @trigger, @include
 
   Drops <object>, if you are presently carrying it. If the room the
   object is dropped in has a DROP-TO set, the object may automatically
-  be sent to another location. Some MUSHes may have @lock/drop
-  enabled, which allows you to set who is permitted to drop the
-  object.
+  be sent to another location. 
+
+  In order to drop an object, you must pass it's Drop lock and your
+  location's DropIn lock.
 
 See also: empty, get, STICKY, DROP-TO
 & enter
@@ -4664,15 +4737,14 @@ See also: huh_command, unimplemented_command
 & UNIMPLEMENTED_COMMAND
 
   This internal command is run when someone attempts to use an unimplemented
-  command. Currently, this occurs either when @SQL is used but SQL support is
-  not enabled, or when a command has been added with @command/add but has not
-  been properly @hooked to run softcode. UNIMPLEMENTED_COMMAND cannot be run
-  directly.
+  command. Currently, this only occurs when a command has been added with 
+  @command/add but has not been properly @hooked to run softcode. 
+  UNIMPLEMENTED_COMMAND cannot be run directly.
   
   By default, the command just shows the message "This command has not been
   implemented.", but you can @hook it to perform other actions.
   
-See also: huh_command, warn_on_missing, @command, @hook, @sql
+See also: huh_command, warn_on_missing, @command, @hook
 & whisper 
   whisper <player>=<message>
   whisper/silent <player>=<message>
@@ -4736,7 +4808,7 @@ See also: page, pose, @pemit
   
   Note: The WHO command available at the login screen is totally separate
   from the in-game WHO command, and is not affected by any changes to the 
-  in-game WHO.
+  in-game WHO. To alter that, use the WHO_FILE @config option.
 
 See also: @doing, @poll, SESSION
 & SESSION

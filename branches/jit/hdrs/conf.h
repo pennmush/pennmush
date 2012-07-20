@@ -65,6 +65,7 @@
 
 /* These CAN be modified, but it's heavily NOT suggested */
 #define PUEBLO_SEND "</xch_mudtext><img xch_mode=purehtml><xch_page clear=text>\n"
+#define PUEBLO_SEND_SHORT "</xch_mudtext><img xch_mode=purehtml>\n"
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
 
 
@@ -178,6 +179,7 @@ struct options_table {
   char down_file[2][256];       /**< Names of text and html server down files */
   char full_file[2][256];       /**< Names of text and html server full files */
   char guest_file[2][256];      /**< Names of text and html guest files */
+  char who_file[2][256];        /**< Names of text and html who files */
   int log_commands;     /**< Should we log all commands? */
   int log_forces;       /**< Should we log force commands? */
   int support_pueblo;   /**< Should the MUSH send Pueblo tags? */
@@ -203,6 +205,7 @@ struct options_table {
   int possessive_get_d; /**< Can possessive get be used on disconnected players? */
   int really_safe;      /**< Does the SAFE flag protect objects from nuke */
   int destroy_possessions;      /**< Are the possessions of a nuked player nuked? */
+  dbref probate_judge;    /**< Who owns the possessions if they're not? */
   int null_eq_zero;     /**< Is null string treated as 0 in math functions? */
   int tiny_booleans;    /**< Do strings and db#'s evaluate as false, like TinyMUSH? */
   int tiny_trim_fun;    /**< Does the trim function take arguments in TinyMUSH order? */
@@ -490,6 +493,7 @@ struct globals_table {
   int paranoid_dump;          /**< if paranoid, scan before dumping */
   int paranoid_checkpt;       /**< write out an okay message every x objs */
   long indb_flags;            /**< flags set in the input database */
+  int new_indb_version;       /**< new (as of 1.8.5) version of the input db */
   int on_second;              /**< is it time for per-second processes? */
 };
 

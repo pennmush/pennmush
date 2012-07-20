@@ -691,15 +691,16 @@ See also: BITWISE FUNCTIONS
 & BEFORE()
   before(<string1>, <string2>)
  
-  Returns the portion of <string1> that occurs before <string2>.  If
-  <string2> isn't in <string1>, <string1> is returned.  This is
-  case-sensitive.
+  Returns the portion of <string1> that occurs before <string2>. If <string2>
+  isn't in <string1>, <string1> is returned. This is case-sensitive.
  
   Examples:
      > say before(foo bar baz,bar)
      You say, "foo"
      > say before(foo bar baz,r)
      You say, "foo ba"
+     > say before(foo bar baz,a)
+     You say, "foo b"
 
 See also: after(), first()
 & BENCHMARK()
@@ -992,8 +993,9 @@ See also: visible(), CONTROL
   UTC, but returns local time, convsecs(0) is not going to be "Thu Jan
   1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
  
-  convutcsecs() and convsecs() with a second argument of 'utc' return
-  the time based on UTC time instead of the server's local time.
+  convutcsecs(), and convsecs() with a second argument of 'utc' return
+  the time based on UTC time instead of the server's local time. See
+  HELP TIMEZONES for more information on the zone argument.
   
   Examples:
     > say secs()
@@ -1311,10 +1313,16 @@ See also: modulo(), fdiv()
 
 See also: @poll, @doing, poll()
 & E()
-  e()
+& EXP()
+  e([<number>])
  
-  Returns the value of "e"  (2.71828182845904523536, rounded to the
-  game's float_precision setting).
+  With no argument, returns the value of "e"  (2.71828182845904523536, 
+  rounded to the game's float_precision setting).
+  
+  If a <number> is given, it returns e to the power of <number>.
+  
+  exp() is an alias for e().
+See also: power(), log()
 & EDEFAULT()
   edefault([<obj>/]<attr>, <default case>)
  
@@ -1373,6 +1381,10 @@ See also: match(), grab(), member()
   positions specified by <list of numbers>. The <list of words> are
   assumed to be space-separated, unless a <delim> is given. If <osep> is
   given, the matching words are separated by <osep>, otherwise by <delim>.
+  
+  If any of the <list of numbers> is negative, it counts backwards from the
+  end of the list of words, with -1 being the last word, -2 the word before
+  last, and so on.
  
   Examples:
     > say elements(Foo Ack Beep Moo Zot,2 4)
@@ -1380,6 +1392,9 @@ See also: match(), grab(), member()
 
     > say elements(Foof|Ack|Beep|Moo,3 1,|)
     You say "Beep|Foof"
+    
+    > say elements(The last word is foo, -1)
+    You say "foo"
 
 See also: extract(), index(), grab()
 & ELOCK()
@@ -1510,12 +1525,6 @@ See also: get(), u(), xget(), edefault()
   regardless of whether or not you have objects in it.
 
 See also: lexits(), next()
-& EXP()
-  exp(<number>)
- 
-  Returns e to the power of <number>.
-  
-See also: e(), power()
 & EXTRACT()
   extract(<list>[, <first>[, <length>[, <delimiter>]]])
 
@@ -1524,10 +1533,24 @@ See also: e(), power()
   extract(<list>,3) acts like elements(<list>,3).  If <first> is not
   specified, the default is the 1, so extract(<list>) acts like
   first(<list>).
+  
+  If <first> is negative, extract() will begin counting backwards from the
+  end of <list>, so -1 starts at the last element, -2 the element before
+  last, and so on.
+  
+  If <length> is negative, extract() will return up to and including the
+  <length>th element from the right, so -1 will extract up to the last
+  element, -2 up to the element before last, and so on.
 
   Example:
     > think extract(This is a test string,3,2)
     a test
+    
+    > think extract(Skip the first and last elements, 2, -2)
+    the first and last
+    
+    > think extract(Get just the last three elements,-3, 3)
+    last three elements
 
 See also: index(), elements(), grab()
 & FDIV()
@@ -1692,6 +1715,9 @@ See also: fdiv(), div(), mod()
   element of list is passed as %1, to the user-defined function. The
   process for the no-base-case fold() is then used.
   
+  Note that it's not possible to pass a <delimiter> to fold without also
+  giving a <base case>; see the examples for a way around this.
+  
   See 'help fold2' for examples.
 & FOLD2
  
@@ -1705,6 +1731,15 @@ See also: fdiv(), div(), mod()
     > &ADD_NUMS test=add(%0,%1)
     > say fold(test/add_nums,1 2 3 4 5)
     You say, "15"
+    
+  If your list uses a delimiter, you need to give a <base case>. This can
+  be a problem for dynamically generated lists. One solution is to use
+  a register and pop the first element off the list. For example:
+   > &GEN_LIST test=lnum(1,rand(5,10),|)
+   > &ADD_NUMS test=add(%0,%1)
+   > say letq(fl, u(gen_list), 
+              fold(test/add_nums, rest(%q<fl>,|), first(%q<fl>,|), |))
+   You say, "36"
 
 See also: anonymous attributes
 & FOLLOWERS()
@@ -2418,7 +2453,7 @@ See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 
 See also: capstr(), ucstr()
 & LDELETE()
-  Ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
+  ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
   
   This function deletes the element(s) of <list> at the given <position(s)>.
   Elements of <list> are separated by <delimiter>, which defaults to a space.
@@ -2426,6 +2461,14 @@ See also: capstr(), ucstr()
   numeric, and are always separated by a space, not by <delimiter>. Elements 
   of the returned list are separated by <osep>, which defaults to the 
   <delimiter>.
+  
+  If a <position> is negative, ldelete() counts backwards from the end of the
+  list; a position of -1 deletes the last element, -2 the element before last,
+  and so on.
+  
+  All position calculations are performed on the original list. That is,
+  ldelete(a b c, -1 -1) will return "a b", not "a", and ldelete(a b c, -1 -2) 
+  returns "a", not "b".
   
   Examples:
     > say ldelete(This is a long test string,4)
@@ -2752,6 +2795,9 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
   
   This is equivilent to filter(#lambda/testlock(<key>, %%0), <dbrefs>) but
   much more efficient, as the lock <key> is only parsed/compiled once.
+  
+  <delim> defaults to a space, and is the delimiter of <dbrefs> and the list
+  returned by lockfilter().
 
   Example:
     Get all male players with a name starting with 'W'.
@@ -3897,7 +3943,7 @@ See also: rand()
     > say regeditall(this test is the best string, (.)est, capstr($1)rash)
     You say "this Trash is the Brash string"
 
-See also: edit(), regmatch(), regrab()
+See also: edit(), @edit, regmatch(), regrab()
 & REGMATCH()
 & REGMATCHI()
   (Help text from TinyMUSH 2.2.4, with permission)
@@ -3917,19 +3963,26 @@ See also: edit(), regmatch(), regrab()
   have the complete matched text, the second the first substring, and so on.
   This is to maintain compatibility with old code; it's recommended for new 
   uses that the X:Y syntax be used.
+  
+  If <regexp> is not a valid regular expression, an error in the form
+  "#-1 REGEXP ERROR: <description>" will be returned.
 
-  For example, in 
-  regmatch(cookies=30, (.+)=(\[0-9\]*) )
+  See 'help regmatch2' for an example.
+
+See also: regrab(), regedit(), valid(), reswitch(), regexp syntax
+& REGMATCH2
+
+  For example, in
+    > think regmatch(cookies=30, (.+)=(\[0-9\]*) )
   (note use of escaping for MUSH parser), then the 0th substring matched is
   'cookies=30', the 1st substring is 'cookies', and the 2nd substring is
   '30'. If <register list> is '0:0 1:3 2:5', then %q0 will become 
   "cookies=30", %q3 will become "cookies", and %q5 will become "30".
   If <register list> was '0:0 2:5', then the "cookies" substring would
-  simply be discarded.
+  simply be discarded. '1:food 2:amount' would store "cookies" in %q<food>
+  and "30" in %q<amount>.
  
   See 'help regexp syntax' for an explanation of regular expressions.
-
-See also: regrab(), regedit()
 & REMIT()
 & NSREMIT()
   remit(<object list>, <message>)
@@ -3985,15 +4038,23 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
 
 See also: space()
 & REPLACE()
-  replace(<list>, <position>, <new item>[, <delimiter>])
+  replace(<list>, <position>, <new item>[, <delimiter>[, <osep>]])
   
-  This replaces the item at <position> in <list> with <new item>. If no
-  <delimiter> is given, a space is assumed. Null items are counted
-  when determining position.
+  This replaces the item at <position> in <list> with <new item>. <delimiter>
+  defaults to a space, and <osep> defaults to <delimiter>. Null items are 
+  counted when determining position.
+  
+  If <position> is negative, it counts backwards from the end of the list. A
+  <position> of -1 will replace the last element, -2 the element before last,
+  and so on.
   
   Examples:
     > say replace(Turn north at the junction,2,south)
     You say, "Turn south at the junction"
+    
+    > say replace(Turn north at the junction,-1,crossroads)
+    You say, "Turn north at the crossroads"
+
     
     > say replace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
@@ -4071,6 +4132,10 @@ See also: loc(), where(), room(), rnum(), locate()
   matches, or you lack permission, #-1 is returned.
   
   You must be in <container>, or be able to examine it, to use this function.
+
+  This function has been deprecated and may be removed in a future
+  patchlevel. locate() should be used instead.
+  
 
 See also: locate(), num(), rloc(), room()
 & ROOM()
@@ -5008,16 +5073,23 @@ See also: terminfo()
   This function is similar to map(), except you can pass up to 10 elements 
   of the list at a time, in %0 to %9. <step> must be between 1 and 10, with 
   a step of 1 equivalent to map(). If the elements of the list can't be 
-  split up evenly, the last evaluation pads the missing values with empty 
-  values. <delim> defaults to a space, and <osep> defaults to <delim>.
+  split up evenly, the last evaluation will run with some of the registers
+  unset; the %+ substitution or the registers() function can be used to see 
+  which/how many are set.
 
   Example:
     > &foo me=%0 - %1 - %2
     > think step(foo, 1 2 3 4 5, 3,, %r)
     1 - 2 - 3
     4 - 5 -
+    
+  Using registers() to avoid extra delimiters:
+    > &foo me=iter(registers(,args),v(%i0),,%b-%b)
+    > think step(foo, 1 2 3 4 5, 3,, %r)
+    1 - 2 - 3
+    4 - 5
 
-See also: map(), iter(), fold(), anonymous attributes
+See also: map(), iter(), fold(), anonymous attributes, registers()
 & STDDEV()
   stddev(<number1>[, ... , <numberN>])
 
@@ -5184,10 +5256,10 @@ See also: switch(), regmatch(), regedit()
   switchall() and caseall() return the corresponding <list> for all <expr>s
   which match.
 
-  switch() and switchall() use wildcard <expr>s, as described in 'help switch
-  wildcards'. case() and caseall() do a case-sensitive exact match, like
-  member() or comp(). In this case, $0-$9 will be set to the text that the
-  nth wildcard character met.
+  switch() and switchall() use wildcard and lt/gt <expr>s, as described in 
+  'help switch wildcards'. case() and caseall() do a case-sensitive exact 
+  match, like member() or comp(). In this case, $0-$9 will be set to the text
+  that the nth wildcard character met.
 
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
@@ -5226,14 +5298,15 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
   one of the <expr>essions starts with "<" or ">", a less than or greater
   than check is done instead of wildcard matching for that pair.
 
-  switch(X, >Y, A, B) returns A if X is greater than Y, and B if X is
-  less than or equal to Y.
+  switch(X, >Y, A, B) returns A if X is greater than Y, and B if it's not.
+  switch(X, >=Y, A, B) returns A if X is greater than or equal to Y, and B 
+  if it's not.
   
-  switch(X, <Y, A, B) returns A if X is less than Y, and B if X is
-  greater than or equal to Y.
+  switch(X, <Y, A, B) returns A if X is less than Y, and B if it's not.
+  switch(X, <=Y, A, B) returns A if X is less than or equal to Y, and B if
+  it's not.
 
-  If X and Y are numbers, the test is like using gt() or lt(). gte()
-  and lte() can be simulated by using Y'=Y-1 and Y'=Y+1.
+  If X and Y are numbers, the test is like using gt()/lt() or gte()/lte().
 
   If X and Y are non-numeric strings, the result of comp(X,Y) is used
   to determine which string is alphabetically before (less than) the
@@ -5381,11 +5454,10 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
     "
 & TIME()
 & UTCTIME()
-& @TZ
   time([utc])
   utctime()
   time(<timezone>)
-  time(<object>)
+  time(<dbref>)
 
   time() gives you the current time on the MUSH.  WARNING!  This is
   the time on the machine that the MUSH is running on, and not where
@@ -5394,15 +5466,377 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
   utctime() and time(utc) give the same time in UTC (aka GMT), not the
   server's local timezone.
 
-  If a timezone (-24 to +24) is given, it adds that many hours to UTC
-  to return the correct timezone. Timezones may contain decimals (-1.5).
+  To control what time zone is used, specify it instead of 'utc'. See
+  HELP TIMEZONES for details.
 
-  If <object> is given, and is a valid object containing a TZ attribute, 
-  the resulting time is modified according to the timezone in the attribute.
-  If the TZ attribute does not contain a number between -24 and +24 
-  inclusive, the time returned is UTC. The TZ attribute is not evaluated.
+Continued in HELP TIME2
+& TIME2
+  Examples (Assuming the server is the USA's Pacific timezone):
+
+  > think utctime()
+   Fri Mar 02 03:19:54 2012
+  > think time(utc)
+   Fri Mar 02 03:19:54 2012
+  > think time()
+   Thu Mar 01 19:19:54 2012
+  > think time(-8)
+   Thu Mar 01 19:20:25 2012
+  > think time(US/Pacific)
+   Thu Mar 01 19:20:25 2012
 
 See also: timefmt(), timestring(), convsecs(), convtime()
+& TIMEZONES
+& @TZ
+
+  The time(), timefmt() and convsecs() functions have an optional time
+  zone argument that's used for formatting the time. Without this time
+  zone specified, the one the game's server is running under is used..
+
+  If the time zone argument is a dbref, the contents of that object's
+  @TZ attribute is used as the zone. The attribute is not evaluated.
+  If the object doesn't have this attribute, the server's time zone
+  will be used.
+
+  If it's the string 'UTC', that time zone is used instead of the
+  local one.
+
+  If it's a number between -24 and +24, it adds that many hours from
+  UTC/GMT. Fractional times are supported, e.g., -1.5 hours.
+
+  If the mush supports it (See @config compile), symbolic time zone
+  names can also be used.
+
+ See HELP TIMEZONES2 for a list of known time zones and HELP TIME2
+ for some examples.
+& TIMEZONES2
+  This is a list of IANA time zones names as of version 2011n of their
+  database. See http://www.iana.org/time-zones for more information
+  and sources.
+
+  Africa/Abidjan                     Africa/Accra
+  Africa/Addis_Ababa                 Africa/Algiers
+  Africa/Asmara                      Africa/Asmera
+  Africa/Bamako                      Africa/Bangui
+  Africa/Banjul                      Africa/Bissau
+  Africa/Blantyre                    Africa/Brazzaville
+  Africa/Bujumbura                   Africa/Cairo
+  Africa/Casablanca                  Africa/Ceuta
+  Africa/Conakry                     Africa/Dakar
+  Africa/Dar_es_Salaam               Africa/Djibouti
+  Africa/Douala                      Africa/El_Aaiun
+  Africa/Freetown                    Africa/Gaborone
+  Africa/Harare                      Africa/Johannesburg
+  Africa/Juba                        Africa/Kampala
+  Africa/Khartoum                    Africa/Kigali
+  Africa/Kinshasa                    Africa/Lagos
+  Africa/Libreville                  Africa/Lome
+  Africa/Luanda                      Africa/Lubumbashi
+  Africa/Lusaka                      Africa/Malabo
+  Africa/Maputo                      Africa/Maseru
+  Africa/Mbabane                     Africa/Mogadishu
+  Africa/Monrovia                    Africa/Nairobi
+  Africa/Ndjamena                    Africa/Niamey
+  Africa/Nouakchott                  Africa/Ouagadougou
+
+Continued in HELP TIMEZONES3
+& TIMEZONES3
+  Africa/Porto-Novo                  Africa/Sao_Tome
+  Africa/Timbuktu                    Africa/Tripoli
+  Africa/Tunis                       Africa/Windhoek
+  America/Adak                       America/Anchorage
+  America/Anguilla                   America/Antigua
+  America/Araguaina                  America/Argentina/Buenos_Aires
+  America/Argentina/Catamarca        America/Argentina/ComodRivadavia
+  America/Argentina/Cordoba          America/Argentina/Jujuy
+  America/Argentina/La_Rioja         America/Argentina/Mendoza
+  America/Argentina/Rio_Gallegos     America/Argentina/Salta
+  America/Argentina/San_Juan         America/Argentina/San_Luis
+  America/Argentina/Tucuman          America/Argentina/Ushuaia
+  America/Aruba                      America/Asuncion
+  America/Atikokan                   America/Atka
+  America/Bahia                      America/Bahia_Banderas
+  America/Barbados                   America/Belem
+  America/Belize                     America/Blanc-Sablon
+  America/Boa_Vista                  America/Bogota
+  America/Boise                      America/Buenos_Aires
+  America/Cambridge_Bay              America/Campo_Grande
+  America/Cancun                     America/Caracas
+  America/Catamarca                  America/Cayenne
+  America/Cayman                     America/Chicago
+  America/Chihuahua                  America/Coral_Harbour
+  America/Cordoba                    America/Costa_Rica
+
+Continued in HELP TIMEZONES4
+& TIMEZONES4
+  America/Cuiaba                     America/Curacao
+  America/Danmarkshavn               America/Dawson
+  America/Dawson_Creek               America/Denver
+  America/Detroit                    America/Dominica
+  America/Edmonton                   America/Eirunepe
+  America/El_Salvador                America/Ensenada
+  America/Fort_Wayne                 America/Fortaleza
+  America/Glace_Bay                  America/Godthab
+  America/Goose_Bay                  America/Grand_Turk
+  America/Grenada                    America/Guadeloupe
+  America/Guatemala                  America/Guayaquil
+  America/Guyana                     America/Halifax
+  America/Havana                     America/Hermosillo
+  America/Indiana/Indianapolis       America/Indiana/Knox
+  America/Indiana/Marengo            America/Indiana/Petersburg
+  America/Indiana/Tell_City          America/Indiana/Vevay
+  America/Indiana/Vincennes          America/Indiana/Winamac
+  America/Indianapolis               America/Inuvik
+  America/Iqaluit                    America/Jamaica
+  America/Jujuy                      America/Juneau
+  America/Kentucky/Louisville        America/Kentucky/Monticello
+  America/Knox_IN                    America/Kralendijk
+  America/La_Paz                     America/Lima
+  America/Los_Angeles                America/Louisville
+  America/Lower_Princes              America/Maceio
+
+Continued in HELP TIMEZONES5
+& TIMEZONES5
+  America/Managua                    America/Manaus
+  America/Marigot                    America/Martinique
+  America/Matamoros                  America/Mazatlan
+  America/Mendoza                    America/Menominee
+  America/Merida                     America/Metlakatla
+  America/Mexico_City                America/Miquelon
+  America/Moncton                    America/Monterrey
+  America/Montevideo                 America/Montreal
+  America/Montserrat                 America/Nassau
+  America/New_York                   America/Nipigon
+  America/Nome                       America/Noronha
+  America/North_Dakota/Beulah        America/North_Dakota/Center
+  America/North_Dakota/New_Salem     America/Ojinaga
+  America/Panama                     America/Pangnirtung
+  America/Paramaribo                 America/Phoenix
+  America/Port-au-Prince             America/Port_of_Spain
+  America/Porto_Acre                 America/Porto_Velho
+  America/Puerto_Rico                America/Rainy_River
+  America/Rankin_Inlet               America/Recife
+  America/Regina                     America/Resolute
+  America/Rio_Branco                 America/Rosario
+  America/Santa_Isabel               America/Santarem
+  America/Santiago                   America/Santo_Domingo
+  America/Sao_Paulo                  America/Scoresbysund
+  America/Shiprock                   America/Sitka
+
+Continued in HELP TIMEZONES6
+& TIMEZONES6
+  America/St_Barthelemy              America/St_Johns
+  America/St_Kitts                   America/St_Lucia
+  America/St_Thomas                  America/St_Vincent
+  America/Swift_Current              America/Tegucigalpa
+  America/Thule                      America/Thunder_Bay
+  America/Tijuana                    America/Toronto
+  America/Tortola                    America/Vancouver
+  America/Virgin                     America/Whitehorse
+  America/Winnipeg                   America/Yakutat
+  America/Yellowknife                Antarctica/Casey
+  Antarctica/Davis                   Antarctica/DumontDUrville
+  Antarctica/Macquarie               Antarctica/Mawson
+  Antarctica/McMurdo                 Antarctica/Palmer
+  Antarctica/Rothera                 Antarctica/South_Pole
+  Antarctica/Syowa                   Antarctica/Vostok
+  Arctic/Longyearbyen                Asia/Aden
+  Asia/Almaty                        Asia/Amman
+  Asia/Anadyr                        Asia/Aqtau
+  Asia/Aqtobe                        Asia/Ashgabat
+  Asia/Ashkhabad                     Asia/Baghdad
+  Asia/Bahrain                       Asia/Baku
+  Asia/Bangkok                       Asia/Beirut
+  Asia/Bishkek                       Asia/Brunei
+  Asia/Calcutta                      Asia/Choibalsan
+  Asia/Chongqing                     Asia/Chungking
+
+Continued in HELP TIMEZONES7
+& TIMEZONES7
+  Asia/Colombo                       Asia/Dacca
+  Asia/Damascus                      Asia/Dhaka
+  Asia/Dili                          Asia/Dubai
+  Asia/Dushanbe                      Asia/Gaza
+  Asia/Harbin                        Asia/Hebron
+  Asia/Ho_Chi_Minh                   Asia/Hong_Kong
+  Asia/Hovd                          Asia/Irkutsk
+  Asia/Istanbul                      Asia/Jakarta
+  Asia/Jayapura                      Asia/Jerusalem
+  Asia/Kabul                         Asia/Kamchatka
+  Asia/Karachi                       Asia/Kashgar
+  Asia/Kathmandu                     Asia/Katmandu
+  Asia/Kolkata                       Asia/Krasnoyarsk
+  Asia/Kuala_Lumpur                  Asia/Kuching
+  Asia/Kuwait                        Asia/Macao
+  Asia/Macau                         Asia/Magadan
+  Asia/Makassar                      Asia/Manila
+  Asia/Muscat                        Asia/Nicosia
+  Asia/Novokuznetsk                  Asia/Novosibirsk
+  Asia/Omsk                          Asia/Oral
+  Asia/Phnom_Penh                    Asia/Pontianak
+  Asia/Pyongyang                     Asia/Qatar
+  Asia/Qyzylorda                     Asia/Rangoon
+  Asia/Riyadh                        Asia/Riyadh87
+  Asia/Riyadh88                      Asia/Riyadh89
+
+Continued in HELP TIMEZONES8
+& TIMEZONES8
+  Asia/Saigon                        Asia/Sakhalin
+  Asia/Samarkand                     Asia/Seoul
+  Asia/Shanghai                      Asia/Singapore
+  Asia/Taipei                        Asia/Tashkent
+  Asia/Tbilisi                       Asia/Tehran
+  Asia/Tel_Aviv                      Asia/Thimbu
+  Asia/Thimphu                       Asia/Tokyo
+  Asia/Ujung_Pandang                 Asia/Ulaanbaatar
+  Asia/Ulan_Bator                    Asia/Urumqi
+  Asia/Vientiane                     Asia/Vladivostok
+  Asia/Yakutsk                       Asia/Yekaterinburg
+  Asia/Yerevan                       Atlantic/Azores
+  Atlantic/Bermuda                   Atlantic/Canary
+  Atlantic/Cape_Verde                Atlantic/Faeroe
+  Atlantic/Faroe                     Atlantic/Jan_Mayen
+  Atlantic/Madeira                   Atlantic/Reykjavik
+  Atlantic/South_Georgia             Atlantic/St_Helena
+  Atlantic/Stanley                   Australia/ACT
+  Australia/Adelaide                 Australia/Brisbane
+  Australia/Broken_Hill              Australia/Canberra
+  Australia/Currie                   Australia/Darwin
+  Australia/Eucla                    Australia/Hobart
+  Australia/LHI                      Australia/Lindeman
+  Australia/Lord_Howe                Australia/Melbourne
+  Australia/North                    Australia/NSW
+
+Continued in HELP TIMEZONES9
+& TIMEZONES9
+  Australia/Perth                    Australia/Queensland
+  Australia/South                    Australia/Sydney
+  Australia/Tasmania                 Australia/Victoria
+  Australia/West                     Australia/Yancowinna
+  Brazil/Acre                        Brazil/DeNoronha
+  Brazil/East                        Brazil/West
+  Canada/Atlantic                    Canada/Central
+  Canada/East-Saskatchewan           Canada/Eastern
+  Canada/Mountain                    Canada/Newfoundland
+  Canada/Pacific                     Canada/Saskatchewan
+  Canada/Yukon                       CET
+  Chile/Continental                  Chile/EasterIsland
+  CST6CDT                            Cuba
+  EET                                Egypt
+  Eire                               EST
+  EST5EDT                            Etc/GMT
+  Etc/GMT+0                          Etc/GMT+1
+  Etc/GMT+10                         Etc/GMT+11
+  Etc/GMT+12                         Etc/GMT+2
+  Etc/GMT+3                          Etc/GMT+4
+  Etc/GMT+5                          Etc/GMT+6
+  Etc/GMT+7                          Etc/GMT+8
+  Etc/GMT+9                          Etc/GMT-0
+  Etc/GMT-1                          Etc/GMT-10
+  Etc/GMT-11                         Etc/GMT-12
+
+Continued in HELP TIMEZONES10
+& TIMEZONES10
+  Etc/GMT-13                         Etc/GMT-14
+  Etc/GMT-2                          Etc/GMT-3
+  Etc/GMT-4                          Etc/GMT-5
+  Etc/GMT-6                          Etc/GMT-7
+  Etc/GMT-8                          Etc/GMT-9
+  Etc/GMT0                           Etc/Greenwich
+  Etc/UCT                            Etc/Universal
+  Etc/UTC                            Etc/Zulu
+  Europe/Amsterdam                   Europe/Andorra
+  Europe/Athens                      Europe/Belfast
+  Europe/Belgrade                    Europe/Berlin
+  Europe/Bratislava                  Europe/Brussels
+  Europe/Bucharest                   Europe/Budapest
+  Europe/Chisinau                    Europe/Copenhagen
+  Europe/Dublin                      Europe/Gibraltar
+  Europe/Guernsey                    Europe/Helsinki
+  Europe/Isle_of_Man                 Europe/Istanbul
+  Europe/Jersey                      Europe/Kaliningrad
+  Europe/Kiev                        Europe/Lisbon
+  Europe/Ljubljana                   Europe/London
+  Europe/Luxembourg                  Europe/Madrid
+  Europe/Malta                       Europe/Mariehamn
+  Europe/Minsk                       Europe/Monaco
+  Europe/Moscow                      Europe/Nicosia
+  Europe/Oslo                        Europe/Paris
+
+Continued in HELP TIMEZONES11
+& TIMEZONES11
+  Europe/Podgorica                   Europe/Prague
+  Europe/Riga                        Europe/Rome
+  Europe/Samara                      Europe/San_Marino
+  Europe/Sarajevo                    Europe/Simferopol
+  Europe/Skopje                      Europe/Sofia
+  Europe/Stockholm                   Europe/Tallinn
+  Europe/Tirane                      Europe/Tiraspol
+  Europe/Uzhgorod                    Europe/Vaduz
+  Europe/Vatican                     Europe/Vienna
+  Europe/Vilnius                     Europe/Volgograd
+  Europe/Warsaw                      Europe/Zagreb
+  Europe/Zaporozhye                  Europe/Zurich
+  Factory                            GB
+  GB-Eire                            GMT
+  GMT+0                              GMT-0
+  GMT0                               Greenwich
+  Hongkong                           HST
+  Iceland                            Indian/Antananarivo
+  Indian/Chagos                      Indian/Christmas
+  Indian/Cocos                       Indian/Comoro
+  Indian/Kerguelen                   Indian/Mahe
+  Indian/Maldives                    Indian/Mauritius
+  Indian/Mayotte                     Indian/Reunion
+  Iran                               Israel
+  Jamaica                            Japan
+
+Continued in HELP TIMEZONES12
+& TIMEZONES12
+  Kwajalein                          Libya
+  MET                                Mexico/BajaNorte
+  Mexico/BajaSur                     Mexico/General
+  Mideast/Riyadh87                   Mideast/Riyadh88
+  Mideast/Riyadh89                   MST
+  MST7MDT                            Navajo
+  NZ                                 NZ-CHAT
+  Pacific/Apia                       Pacific/Auckland
+  Pacific/Chatham                    Pacific/Chuuk
+  Pacific/Easter                     Pacific/Efate
+  Pacific/Enderbury                  Pacific/Fakaofo
+  Pacific/Fiji                       Pacific/Funafuti
+  Pacific/Galapagos                  Pacific/Gambier
+  Pacific/Guadalcanal                Pacific/Guam
+  Pacific/Honolulu                   Pacific/Johnston
+  Pacific/Kiritimati                 Pacific/Kosrae
+  Pacific/Kwajalein                  Pacific/Majuro
+  Pacific/Marquesas                  Pacific/Midway
+  Pacific/Nauru                      Pacific/Niue
+  Pacific/Norfolk                    Pacific/Noumea
+  Pacific/Pago_Pago                  Pacific/Palau
+  Pacific/Pitcairn                   Pacific/Pohnpei
+  Pacific/Ponape                     Pacific/Port_Moresby
+  Pacific/Rarotonga                  Pacific/Saipan
+  Pacific/Samoa                      Pacific/Tahiti
+
+Continued in HELP TIMEZONES13
+& TIMEZONES13
+  Pacific/Tarawa                     Pacific/Tongatapu
+  Pacific/Truk                       Pacific/Wake
+  Pacific/Wallis                     Pacific/Yap
+  Poland                             Portugal
+  PRC                                PST8PDT
+  ROC                                ROK
+  Singapore                          Turkey
+  UCT                                Universal
+  US/Alaska                          US/Aleutian
+  US/Arizona                         US/Central
+  US/East-Indiana                    US/Eastern
+  US/Hawaii                          US/Indiana-Starke
+  US/Michigan                        US/Mountain
+  US/Pacific                         US/Pacific-New
+  US/Samoa                           UTC
+  W-SU                               WET
+  Zulu                               
 & ETIMEFMT()
   etimefmt(<format>, <secs>)
 
@@ -5448,12 +5882,17 @@ See also: timestring(), timefmt()
     > think squish(etimefmt(Connected for $zxd $xzh $zxm $xzs, conn(me)))
     Connected for 5h 24m 45s
 & TIMEFMT()
-  timefmt(<format>[, <secs>])
+  timefmt(<format>[, <secs>, <timezone>])
 
-  This function returns the time and date, formatted according to <format>.
-  <secs> is the time/date to format, as the number of seconds since the epoch
-  (as returned by secs(), convtime(), etc). If no <secs> is given, the
-  current date/time of the MUSH host is used.
+  This function returns the time and date, formatted according to
+  <format>.  <secs> is the time/date to format, as the number of
+  seconds since the epoch (as returned by secs(), convtime(), etc). If
+  no <secs> is given, the current date/time of the MUSH host is
+  used. If no <timezones> is provided, the MUSH host's timezone is
+  used. Note: Using a fractional timezone offset from GMT will result
+  in timefmt() showing the time zone name (if displayed) as GMT. Using
+  a symbolic name on a server that supports them should show the name
+  correctly.
 
   A list of all codes is in 'help timefmt2'.
 
@@ -5461,7 +5900,7 @@ See also: timestring(), timefmt()
     > think timefmt($A\, the $dth day of $B.)
     Monday, the 17th day of July.
     
-See also: convsecs(), etimefmt()
+See also: convsecs(), etimefmt(), timezones
 & TIMEFMT2
   All escape codes start with a $. To get a literal $, use $$.
   Invalid codes will return #-1 INVALID ESCAPE CODE. Other text will be
@@ -5917,6 +6356,12 @@ See also: VECTOR FUNCTIONS
      > say numversion()
      You say "1008001004"
      
+     > say version()
+		 You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
+		           (r1374 2012-02-23)"
+		 > say numversion()
+		 You say, "1008005000"
+
 See also: @version
 & VISIBLE()
   visible(<object>, <victim>[/<attribute>])

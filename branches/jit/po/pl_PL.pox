@@ -71,14 +71,6 @@ msgstr " Limit u¿ycia CPU jest wspierany."
 msgid " Changed help files will be automatically reindexed."
 msgstr " Zmienione pliki pomocy bêd± automatycznie reindeksowane."
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " Sprawdzanie DNS i identyfikacja utrzymane na procesie potomnym."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " DNS i identyfikacja s± obs³ugiwane przez proces MUSH'a."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Rozszerzone convtime() jest wspierane."
@@ -147,10 +139,6 @@ msgstr " do "
 #: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
 msgid "#-1 ALLOCATION ERROR"
 msgstr "#-1 B£¡D ALOKACJI"
-
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 DWUZNACZNA NAZWA KANA£U"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
@@ -555,10 +543,6 @@ msgstr "#-1 DO BAZY POZA ZASIÊGIEM"
 #: funstr.c:1981
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr "#-1 ZBYT WIELE KOLUMN DO WYRÓWNANIA"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 ZBYT WIELE ITERACJI"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -1039,11 +1023,6 @@ msgstr "%s wys³a³ %d wiadomo¶ci."
 msgid "%s should contain only dbrefs."
 msgstr "%s powinien zawieraæ tylko dbref'y."
 
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s rozmiary:  NowyU¿ytkownik...%d  Po³±czenie...%d Go¶æ...%d  Motd...%d  Wizmotd...%d  Wyj¶cie...%d  Rejestracja...%d  Wy³±czenie..%d  Pe³ny...%d"
-
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
@@ -1103,21 +1082,6 @@ msgstr "%s %s zosta³ oszczêdzony od zniszczenia."
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
 msgstr "%s %s jest przeznaczone do zniszczenia."
-
-#: look.c:1360
-#, c-format
-msgid "%s(#%d) [dropto]"
-msgstr "%s(#%d) [zrzut]"
-
-#: look.c:1351
-#, c-format
-msgid "%s(#%d) [from: %s(#%d)]"
-msgstr "%s(#%d) [z: %s(#%d)]"
-
-#: look.c:1369 look.c:1377
-#, c-format
-msgid "%s(#%d) [home]"
-msgstr "%s(#%d) [dom]"
 
 #: src/extmail.c:1168
 #, c-format
@@ -1659,10 +1623,6 @@ msgstr "CZAT: Blokada rozmów na <%s> ustawiona."
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr "CZAT: Ten kana³ nie ma bufora przywo³ania."
 
-#: src/extchat.c:1106
-msgid "CHAT: The channel needs a more unique name."
-msgstr "CZAT: Kana³ potrzebuje bardziej unikalnej nazwy."
-
 #: extchat.c:3016
 #, c-format
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
@@ -1720,11 +1680,6 @@ msgstr "Nie mo¿na ustawiæ domu w domu."
 #: look.c:748
 msgid "Carrying:"
 msgstr "Niesie:"
-
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Odgrywasz na kanale %s: %s"
 
 #: src/extchat.c:1387
 msgid "Chan Type"
@@ -1926,11 +1881,6 @@ msgstr "Wy³±czony."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "Zrobiæ co z funkcj±?"
-
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Zajêcie ustawione. %d znaków stracono."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -3679,11 +3629,6 @@ msgstr "Limit nie zmieniony."
 msgid "Read "
 msgstr "Przeczytana "
 
-#: extchat.c:2192
-#, c-format
-msgid "Recall buffer: %dk, with %d lines stored."
-msgstr "Bufor przywo³ania: %dk z przechowywanymi %d liniami."
-
 #: bsd.c:3324
 msgid "Recv"
 msgstr "Otrz"
@@ -3979,10 +3924,6 @@ msgstr "To jest zbyt specjalne aby by³o zniszczone."
 msgid "That isn't an alias of the %s %s."
 msgstr "To nie jest alias %s %s."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "Nazwa jest zbyt d³uga."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Ten obiekt nie mo¿e byæ zabity."
@@ -4063,10 +4004,6 @@ msgstr "To nie jest najlepsza nazwa dla atrybutu."
 #, c-format
 msgid "That's the %s's name, not an alias."
 msgstr "To jest imiê %s nie alias."
-
-#: src/extchat.c:1176
-msgid "The channel needs a more unique new name."
-msgstr "Kana³ potrzebuje bardziej unikalnej nazwy."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -4687,10 +4624,6 @@ msgstr "Kogo chcesz zamkn±æ?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Dlaczego chcesz byæ ostrzegany o ¶mieciach?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Dlaczego chcesz to zrobiæ?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "Dlaczego chcesz zablokowaæ ¶mieci?"
@@ -4857,10 +4790,6 @@ msgstr "Nie mo¿esz opró¿niæ tego st±d."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Nie mo¿esz zmuszaæ jedynego!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Nie mo¿esz nadaæ tego imienia graczowi."
 
 #: rob.c:212
 msgid "You can't give an object to itself!"
@@ -5212,10 +5141,6 @@ msgstr "Nie mo¿esz teleportowaæ siê poza strefê z tego pokoju."
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Nie mo¿esz u¿yæ @halp obj=komenda na tym obiekcie."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Musisz wykonaæ @lock/zone zanim ustawisz graczowi STREFÊ"
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."

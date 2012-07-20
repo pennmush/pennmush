@@ -92,6 +92,7 @@ int get_list(PENNFILE *f, dbref i);
 void db_free(void);
 static void init_objdata_htab(int size, void (*free_data) (void *));
 static void db_write_flags(PENNFILE *f);
+static void db_write_attrs(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
 
 StrTree object_names;       /**< String tree of object names */
@@ -720,12 +721,17 @@ db_write(PENNFILE *f, int flag)
   dbflag += DBF_LABELS;
   dbflag += DBF_SPIFFY_AF_ANSI;
   dbflag += DBF_HEAR_CONNECT;
+  dbflag += DBF_NEW_VERSIONS;
 
   penn_fprintf(f, "+V%d\n", dbflag * 256 + 2);
+
+  db_write_labeled_int(f, "dbversion", NDBF_VERSION);
 
   db_write_labeled_string(f, "savedtime", show_time(mudtime, 1));
 
   db_write_flags(f);
+
+  db_write_attrs(f);
 
   penn_fprintf(f, "~%d\n", db_top);
 
@@ -753,6 +759,12 @@ db_write_flags(PENNFILE *f)
   flag_write_all(f, "POWER");
 }
 
+static void
+db_write_attrs(PENNFILE *f)
+{
+  penn_fprintf(f, "+ATTRIBUTES LIST\n");
+  attr_write_all(f);
+}
 
 /** Write out an object, in paranoid fashion.
  * This function writes a single object out to a file in paranoid
@@ -1222,7 +1234,7 @@ get_list(PENNFILE *f, dbref i)
        * if it is or not. We'll fix this up at the end of the load
        */
       tb2 = getstring_noalloc(f);
-      if (strchr(tb2, TAG_START) || strchr(tb2, ESC_CHAR)) {
+      if (has_markup(tb2)) {
         as = parse_ansi_string(tb2);
         tb2 = tbuf2;
         safe_ansi_string(as, 0, as->len, tbuf2, &tb2);
@@ -1307,7 +1319,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
     db_read_this_labeled_string(f, "value", &tmp);
     strcpy(value, tmp);
     if (!(globals.indb_flags & DBF_SPIFFY_AF_ANSI)) {
-      if (strchr(value, ESC_CHAR) || strchr(value, TAG_START)) {
+      if (has_markup(value)) {
         char *vp = value;
         as = parse_ansi_string(value);
         safe_ansi_string(as, 0, as->len, value, &vp);
@@ -1585,6 +1597,11 @@ db_read(PENNFILE *f)
   if (!(globals.indb_flags & DBF_LABELS))
     return db_read_oldstyle(f);
 
+  if ((globals.indb_flags & DBF_NEW_VERSIONS)) {
+    db_read_this_labeled_int(f, "dbversion", &i);
+    globals.new_indb_version = i;
+  }
+
   db_read_this_labeled_string(f, "savedtime", &tmp);
   strcpy(db_timestamp, tmp);
 
@@ -1600,6 +1617,9 @@ db_read(PENNFILE *f)
       } else if (c == 'P') {
         (void) getstring_noalloc(f);
         flag_read_all(f, "POWER");
+      } else if (c == 'A') {
+        (void) getstring_noalloc(f);
+        attr_read_all(f);
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");
         return -1;

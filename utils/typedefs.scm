@@ -1,4 +1,4 @@
-#!/usr/local/bin/csi -script
+#!/usr/bin/csi -script
 #| !# ; |#
 
 ; Print out a list of all typedefs in the src in a format suitable for

@@ -153,31 +153,31 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
  */
 #define MSGTYPE_ORIGINAL MSG_INTERNAL
                                                                                                 /*   Colors   Pueblo?   Telnet?   Accents? */
-#define MSGTYPE_PASCII           (MSG_PLAYER)                                                   /*      1        0         0          1    */
+#define MSGTYPE_PASCII           (MSG_PLAYER)   /*      1        0         0          1    */
 
-#define MSGTYPE_ANSI2            (MSG_PLAYER | MSG_ANSI2)                                       /*      2        0         0          1    */
-#define MSGTYPE_ANSI16           (MSG_PLAYER | MSG_ANSI16)                                      /*     16        0         0          1    */
-#define MSGTYPE_XTERM256         (MSG_PLAYER | MSG_XTERM256)                                    /*    256        0         0          1    */
-#define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)                                      /*      1        1         ?          1    */
-#define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)                          /*      2        1         ?          1    */
-#define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16)                         /*     16        1         ?          1    */
-#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)                       /*    256        1         ?          1    */
+#define MSGTYPE_ANSI2            (MSG_PLAYER | MSG_ANSI2)       /*      2        0         0          1    */
+#define MSGTYPE_ANSI16           (MSG_PLAYER | MSG_ANSI16)      /*     16        0         0          1    */
+#define MSGTYPE_XTERM256         (MSG_PLAYER | MSG_XTERM256)    /*    256        0         0          1    */
+#define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)      /*      1        1         ?          1    */
+#define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)  /*      2        1         ?          1    */
+#define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16) /*     16        1         ?          1    */
+#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)       /*    256        1         ?          1    */
 
-#define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)                                      /*      1        0         1          1    */
-#define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)                          /*      2        0         1          1    */
-#define MSGTYPE_TANSI16          (MSG_PLAYER | MSG_TELNET | MSG_ANSI16)                         /*     16        0         1          1    */
-#define MSGTYPE_TXTERM256        (MSG_PLAYER | MSG_TELNET | MSG_XTERM256)                       /*    256        0         1          1    */
+#define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)      /*      1        0         1          1    */
+#define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)  /*      2        0         1          1    */
+#define MSGTYPE_TANSI16          (MSG_PLAYER | MSG_TELNET | MSG_ANSI16) /*     16        0         1          1    */
+#define MSGTYPE_TXTERM256        (MSG_PLAYER | MSG_TELNET | MSG_XTERM256)       /*    256        0         1          1    */
 
-#define MSGTYPE_NPASCII          (MSG_PLAYER | MSG_STRIPACCENTS)                                /*      1        0         0          0    */
-#define MSGTYPE_NANSI2           (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI2)                    /*      2        0         0          0    */
-#define MSGTYPE_NANSI16          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI16)                   /*     16        0         0          0    */
-#define MSGTYPE_NXTERM256        (MSG_PLAYER | MSG_STRIPACCENTS | MSG_XTERM256)                 /*    256        0         0          0    */
-#define MSGTYPE_NPUEBLO          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO)                   /*      1        1         ?          0    */
+#define MSGTYPE_NPASCII          (MSG_PLAYER | MSG_STRIPACCENTS)        /*      1        0         0          0    */
+#define MSGTYPE_NANSI2           (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI2)    /*      2        0         0          0    */
+#define MSGTYPE_NANSI16          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI16)   /*     16        0         0          0    */
+#define MSGTYPE_NXTERM256        (MSG_PLAYER | MSG_STRIPACCENTS | MSG_XTERM256) /*    256        0         0          0    */
+#define MSGTYPE_NPUEBLO          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO)   /*      1        1         ?          0    */
 #define MSGTYPE_NPUEBLOANSI2     (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_ANSI2)       /*      2        1         ?          0    */
 #define MSGTYPE_NPUEBLOANSI16    (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_ANSI16)      /*     16        1         ?          0    */
 #define MSGTYPE_NPUEBLOXTERM256  (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_XTERM256)    /*    256        1         ?          0    */
 
-#define MSGTYPE_TNPASCII         (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS)                   /*      1        0         1          0    */
+#define MSGTYPE_TNPASCII         (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS)   /*      1        0         1          0    */
 #define MSGTYPE_TNANSI2          (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_ANSI2)       /*      2        0         1          0    */
 #define MSGTYPE_TNANSI16         (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_ANSI16)      /*     16        0         1          0    */
 #define MSGTYPE_TNXTERM256       (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_XTERM256)    /*    256        0         1          0    */
@@ -210,7 +210,7 @@ enum na_type {
   NA_TNANSI2,
   NA_TNANSI16,
   NA_TNXTERM256,
-  NA_COUNT /* Total number of NA_* flags */
+  NA_COUNT                      /* Total number of NA_* flags */
 };
 
 static enum na_type msg_to_na(int output_type);
@@ -256,7 +256,7 @@ static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
                             char *tbuf1);
 
 static unsigned char *notify_makestring_real(struct notify_message *message,
-                                        int output_type);
+                                             int output_type);
 static unsigned char *notify_makestring_nocache(unsigned char *message,
                                                 int output_type);
 
@@ -438,7 +438,8 @@ output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
       retval = write_raw_ansi_data(&cur, NULL, ansi_format, buff, bp);
       *(ansi_ptr) = newaptr;
     } else {
-      retval = write_raw_ansi_data(&cur, &(states[newaptr]), ansi_format, buff, bp);
+      retval =
+        write_raw_ansi_data(&cur, &(states[newaptr]), ansi_format, buff, bp);
       *(ansi_ptr) = newaptr;
     }
   }
@@ -699,7 +700,8 @@ render_string(unsigned char *message, int output_type)
         /* ANSI colors */
         if ((output_type & MSG_ANY_ANSI)) {
           /* Translate internal markup to ANSI tags */
-          ansifix += output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
+          ansifix +=
+            output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
         } else if (output_type & MSG_MARKUP) {
           /* Preserve internal markup */
           while (*p && *p != TAG_END) {
@@ -749,7 +751,8 @@ render_string(unsigned char *message, int output_type)
     case ESC_CHAR:
       /* After the ansi changes, I really hope we don't encounter this. */
       if ((output_type & MSG_ANY_ANSI)) {
-        ansifix += output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
+        ansifix +=
+          output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
       } else {
         /* Skip over tag */
         while (*p && *p != 'm')
@@ -1119,7 +1122,8 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if (!(flags & NA_PROMPT) || !IsPlayer(target))
       return;
     for (d = descriptor_list; d; d = d->next) {
-      if (!d->connected || d->player != target || !(d->conn_flags & CONN_TELNET))
+      if (!d->connected || d->player != target
+          || !(d->conn_flags & CONN_TELNET))
         continue;
       queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
 
@@ -1131,7 +1135,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
           queue_newwrite(d, (unsigned char *) "\r\n", 2);
         }
       }
-    }                         /* for loop */
+    }                           /* for loop */
     return;
   }
 
@@ -1790,7 +1794,7 @@ queue_newwrite(DESC *d, const unsigned char *b, int n)
     if ((written = send(d->descriptor, b, n, 0)) > 0) {
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
       if (written == n)
-	return written;
+        return written;
       n -= written;
       b += written;
     }

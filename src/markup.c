@@ -150,7 +150,7 @@ FUNCTION(fun_colors)
     char *p = args[0];
     while (*p && (*p == '+' || *p == '/'))
       p++;
-    if (!*p || (!valid_color_name(p) && !valid_color_hex(p+1))) {
+    if (!*p || (!valid_color_name(p) && !valid_color_hex(p + 1))) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
       return;
     }
@@ -163,7 +163,8 @@ FUNCTION(fun_colors)
       safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
     else if (string_prefix("16color", args[1]))
       safe_chr(colormap_16[ansi_map_16(color, 0) - 30].desc, buff, bp);
-    else if (string_prefix("256color", args[1]) || string_prefix("xterm256", args[1]))
+    else if (string_prefix("256color", args[1])
+             || string_prefix("xterm256", args[1]))
       safe_integer(ansi_map_256(color_to_hex(color, 0)), buff, bp);
     else
       safe_str("#-1", buff, bp);
@@ -540,7 +541,8 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
 
 /** Return the hex code for a given ANSI color */
 int
-color_to_hex(char *name, int hilite) {
+color_to_hex(char *name, int hilite)
+{
   int i = 0;
   char *p, *q;
   char n;
@@ -557,12 +559,13 @@ color_to_hex(char *name, int hilite) {
     name++;
     /* Downcase and remove all spaces. */
     for (p = q = name; *q; q++) {
-      if (isspace((unsigned char) *q)) continue;
+      if (isspace((unsigned char) *q))
+        continue;
       *(p++) = tolower((unsigned char) *q);
     }
     *(p) = '\0';
     for (i = 0; allColors[i].name; i++) {
-      if (!strcmp(name,allColors[i].name)) {
+      if (!strcmp(name, allColors[i].name)) {
         return allColors[i].hex;
       }
     }
@@ -606,7 +609,8 @@ color_to_hex(char *name, int hilite) {
 /** Map a color (old-style ANSI code, color name or hex value) taken
  * by ansi() to the 16-color ANSI palette */
 int
-ansi_map_16(char *name, int bg) {
+ansi_map_16(char *name, int bg)
+{
   int hex;
   int diff, cdiff;
   int best = 0;
@@ -643,7 +647,8 @@ ansi_map_16(char *name, int bg) {
 /** Map a color (old-style ANSI code, color name or hex value) taken
  * by ansi() to the 256-color XTERM palette */
 int
-ansi_map_256(int hex) {
+ansi_map_256(int hex)
+{
   int diff, cdiff;
   int best = 0;
   int i;
@@ -662,7 +667,8 @@ ansi_map_256(int hex) {
   return best;
 }
 
-typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp);
+typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format,
+                            char *buff, char **bp);
 #define ANSI_WRITER(name) \
   int name(ansi_data *old __attribute__ ((__unused__)), \
            ansi_data *cur __attribute__ ((__unused__)), \
@@ -673,11 +679,13 @@ typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format, cha
 /* We need EDGE_UP to return 1 if x has bit set and y doesn't. */
 #define EDGE_UP(x,y,z) (((x)->bits & (z)) != ((y)->bits & (z)))
 
-ANSI_WRITER(ansi_reset) {
+ANSI_WRITER(ansi_reset)
+{
   return safe_str(ANSI_RAW_NORMAL, buff, bp);
 }
 
-ANSI_WRITER(ansi_16color) {
+ANSI_WRITER(ansi_16color)
+{
   int ret = 0;
   int f = 0;
 
@@ -720,19 +728,21 @@ ANSI_WRITER(ansi_16color) {
     return ret;
 }
 
-ANSI_WRITER(ansi_hilite) {
+ANSI_WRITER(ansi_hilite)
+{
   int ret = 0;
   if (!EDGE_UP(old, cur, CBIT_HILITE)) {
     return 0;
   }
   ret += safe_str(ANSI_BEGIN, buff, bp);
-  ret += safe_integer(COL_HILITE, buff, bp); \
+  ret += safe_integer(COL_HILITE, buff, bp);
   return ret + safe_str(ANSI_FINISH, buff, bp);
 }
 
 #define is_new_ansi(x) (strchr(x,'+') || strchr(x,'#') || strchr(x,'/'))
 
-ANSI_WRITER(ansi_xterm256) {
+ANSI_WRITER(ansi_xterm256)
+{
   int hilite = EDGE_UP(old, cur, CBIT_HILITE);
   int xcode;
   int ret = 0;
@@ -742,7 +752,6 @@ ANSI_WRITER(ansi_xterm256) {
   if (!(is_new_ansi(cur->fg) || is_new_ansi(cur->bg))) {
     return ansi_16color(old, cur, ansi_format, buff, bp);
   }
-
 #define maybe_append_code(code) \
   do { \
     if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
@@ -769,20 +778,18 @@ ANSI_WRITER(ansi_xterm256) {
 
   if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
     if (!strncasecmp(cur->fg, "+xterm", 6))
-      xcode = atoi(cur->fg+6);
+      xcode = atoi(cur->fg + 6);
     else
       xcode = ansi_map_256(color_to_hex(cur->fg, hilite));
-    ret += safe_format(buff, bp, "%s38;5;%d%s",
-                       ANSI_BEGIN, xcode, ANSI_FINISH);
+    ret += safe_format(buff, bp, "%s38;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
   }
 
   if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
     if (!strncasecmp(cur->bg, "+xterm", 6))
-      xcode = atoi(cur->bg+6);
+      xcode = atoi(cur->bg + 6);
     else
       xcode = ansi_map_256(color_to_hex(cur->bg, hilite));
-    ret += safe_format(buff, bp, "%s48;5;%d%s",
-                       ANSI_BEGIN, xcode, ANSI_FINISH);
+    ret += safe_format(buff, bp, "%s48;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
   }
   return ret;
 }
@@ -804,7 +811,8 @@ struct ansi_writer ansi_writers[] = {
 };
 
 int
-write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff, char **bp)
+write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
+                    char **bp)
 {
   struct ansi_writer *aw = &ansi_writers[0];
   int ret = 0;
@@ -827,7 +835,7 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
 
   /* This shouldn't happen (Are you sure? MG) */
   if (!strcmp(cur->fg, "n")) {
-    if (old->bits || (strcmp(old->fg,"n")) || old->bg[0]) {
+    if (old->bits || (strcmp(old->fg, "n")) || old->bg[0]) {
       return aw->reset(old, cur, ansi_format, buff, bp);
     }
   }
@@ -864,15 +872,15 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
  * leading '#'
  */
 int
-valid_color_hex(char *name) {
+valid_color_hex(char *name)
+{
   /* Must be 6 characters and must all be hexadecimal. */
   if (!name || strlen(name) != 6) {
     return 0;
   }
   while (*name) {
     if (!((*name >= '0' && *name <= '9') ||
-          (*name >= 'a' && *name <= 'f') ||
-          (*name >= 'A' && *name <= 'F'))) {
+          (*name >= 'a' && *name <= 'f') || (*name >= 'A' && *name <= 'F'))) {
       return 0;
     }
     name++;
@@ -884,16 +892,18 @@ valid_color_hex(char *name) {
  * the leading '+'
  */
 int
-valid_color_name(char *name) {
+valid_color_name(char *name)
+{
   int i;
   char *p, *q;
   for (p = q = name; *q; q++) {
-    if (isspace((unsigned char) *q)) continue;
+    if (isspace((unsigned char) *q))
+      continue;
     *(p++) = tolower((unsigned char) *q);
   }
   *(p) = '\0';
   for (i = 0; allColors[i].name; i++) {
-    if (!strcmp(name,allColors[i].name)) {
+    if (!strcmp(name, allColors[i].name)) {
       return 1;
     }
   }
@@ -992,30 +1002,31 @@ new_ansi:
     switch (*str) {
     case '+':
       /* Color names. */
-      name = str+1;
+      name = str + 1;
       while (*str && *str != '/' && *str != TAG_END) {
         str++;
       }
-      strncpy(buff, name, str-name);
-      buff[str-name] = '\0';
+      strncpy(buff, name, str - name);
+      buff[str - name] = '\0';
       if (!valid_color_name(buff)) {
         return 1;
       }
       if (strlen(buff) > 6 && strncasecmp(buff, "xterm", 5)) {
         /* Use hex code to save on buffer space */
-        snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(tprintf("+%s", buff), 0));
+        snprintf(ptr, COLOR_NAME_LEN, "#%06x",
+                 color_to_hex(tprintf("+%s", buff), 0));
       } else {
         snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
       }
       break;
     case '#':
       /* Hex colors. */
-      name = str+1;
+      name = str + 1;
       while (*str && *str != '/' && *str != TAG_END) {
         str++;
       }
-      strncpy(buff, name, str-name);
-      buff[str-name] = '\0';
+      strncpy(buff, name, str - name);
+      buff[str - name] = '\0';
       if (!valid_color_hex(buff)) {
         return 1;
       }
@@ -2340,7 +2351,7 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector,
  * \return size of subpattern, or -1 if unknown pattern
  */
 int
-ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
+ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
                                int *ovector, int stringcount,
                                const char *stringname, int ne,
                                char *buff, char **bp)

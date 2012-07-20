@@ -168,17 +168,18 @@ indent:
 	-T LOCKMSGINFO -T ltype -T MAIL -T mail_flag -T makerecord \
 	-T MATH -T MEM -T MQUE -T MSSP -T MYSQL_FIELD -T MYSQL_RES \
 	-T na_lookup -T new_markup_information -T NEW_PE_INFO -T NVAL \
-	-T object_flag_type -T OPTTAB -T patricia -T PE_REG_VAL \
-	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T PGresult \
-	-T pid_t -T pint_t -T Port_t -T PRIV -T privbits -T PTAB \
-	-T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
+	-T object_flag_type -T OPTTAB -T patricia -T pcre -T pcre_extra \
+	-T PE_REG_VAL -T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE \
+	-T PGresult -T pid_t -T pint_t -T Port_t -T PRIV -T privbits \
+	-T PTAB -T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
 	-T RegionHeader -T s_rec -T sig_atomic_t -T sigset_t -T size_t \
 	-T slab -T socklen_t -T SortType -T sq_func -T sqlite3_stmt \
 	-T sqlplatform -T ssize_t -T SSL -T SSL_CTX -T SSL_METHOD \
 	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
 	-T tcheck -T time_t -T tlist -T uint16_t -T uint32_t -T uint64_t \
 	-T uint8_t -T uintmax_t -T UIVAL -T UsedAttr -T USERFN_ENTRY \
-	-T w128_t -T WAIT_TYPE -T warn_type -T X509 -T X509_STORE_CTX \
+	-T w128_t -T WAIT_TYPE -T warn_type -T writer_func -T X509 \
+	-T X509_STORE_CTX \
 	$$file ; done)
 
 clean:

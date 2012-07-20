@@ -466,7 +466,6 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
 
     arg = atr_value(a);
   }
-
 #ifdef USE_TZINFO
   {
     struct tzinfo *tz = NULL;

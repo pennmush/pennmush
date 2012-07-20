@@ -142,7 +142,7 @@ COMMAND(cmd_sockset)
   }
 
   for (i = 1; args_right[i] && i < MAX_ARG; i += 2)
-    notify(executor, sockset(d, args_right[i], args_right[i+1]));
+    notify(executor, sockset(d, args_right[i], args_right[i + 1]));
 
   if (i == 1)
     notify(executor, T("Set what option?"));
@@ -294,9 +294,12 @@ COMMAND(cmd_config)
         } else
           notify(executor, T("Option set."));
         if (source == 1)
-          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s'.", arg_left, arg_right);
+          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s'.",
+                 arg_left, arg_right);
         else
-          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s' and saved.", arg_left, arg_right);
+          do_log(LT_WIZ, executor, NOTHING,
+                 "Config option '%s' set to '%s' and saved.", arg_left,
+                 arg_right);
       }
     }
   } else

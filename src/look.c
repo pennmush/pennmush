@@ -39,7 +39,8 @@ static void examine_atrs(dbref player, dbref thing, const char *mstr, int all,
                          int mortal, int parent);
 static void mortal_examine_atrs(dbref player, dbref thing, const char *mstr,
                                 int all, int parent);
-static void look_simple(dbref player, dbref thing, int key, NEW_PE_INFO *pe_info);
+static void look_simple(dbref player, dbref thing, int key,
+                        NEW_PE_INFO *pe_info);
 static void look_description(dbref player, dbref thing, const char *def,
                              const char *descname, const char *descformatname,
                              NEW_PE_INFO *pe_info);
@@ -472,7 +473,9 @@ look_simple(dbref player, dbref thing, int key, NEW_PE_INFO *pe_info)
       key |= LOOK_TRANS;
     if (Cloudy(thing))
       key |= LOOK_CLOUDY;
-    if ((key & LOOK_CLOUDYTRANS) && (!(key & LOOK_NOCONTENTS) || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDY)) {
+    if ((key & LOOK_CLOUDYTRANS)
+        && (!(key & LOOK_NOCONTENTS)
+            || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDY)) {
       if (Location(thing) == HOME)
         look_room(player, Home(player), key, pe_info);
       else if (GoodObject(thing) && GoodObject(Destination(thing)))
@@ -494,7 +497,7 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   PUEBLOBUFF;
   ATTR *a;
   bool made_pe_info = 0;
-  bool look_through_exit = !!(key & LOOK_CLOUDYTRANS) != 0;
+  bool look_through_exit = ! !(key & LOOK_CLOUDYTRANS) != 0;
 
   if (loc == NOTHING)
     return;
@@ -534,7 +537,8 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
       } else
         look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
     }
-  } else if ((!look_through_exit && (!(key & LOOK_AUTO) || !Terse(player))) || (key & LOOK_TRANS)) {
+  } else if ((!look_through_exit && (!(key & LOOK_AUTO) || !Terse(player)))
+             || (key & LOOK_TRANS)) {
     look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
     did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   }
@@ -555,7 +559,8 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   }
 
   /* tell him the contents */
-  if (!(key & LOOK_NOCONTENTS) && (!look_through_exit || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDYTRANS))
+  if (!(key & LOOK_NOCONTENTS)
+      && (!look_through_exit || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDYTRANS))
     look_contents(player, loc, T("Contents:"), pe_info);
   if (!look_through_exit) {
     look_exits(player, loc, T("Obvious exits:"), pe_info);
@@ -635,7 +640,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
   if (!GoodObject(Location(player)))
     return;
 
-  if (outside) {                    /* look outside */
+  if (outside) {                /* look outside */
     /* can't see through opaque objects */
     if (IsRoom(Location(player)) || Opaque(Location(player))) {
       notify(player, T("You can't see through that."));
@@ -662,12 +667,12 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
       return;
     }
     nearthis = (loc == Location(thing));
-  } else if (!*name) {                      /* regular look */
+  } else if (!*name) {          /* regular look */
     if (*name == '\0') {
       look_room(player, Location(player), key, pe_info);
       return;
     }
-  } else {     /* look at a thing in location */
+  } else {                      /* look at a thing in location */
     if ((thing = match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
       dbref box;
       const char *boxname;

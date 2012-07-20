@@ -27,6 +27,7 @@
 #include "conf.h"
 #include "externs.h"
 #include "mushdb.h"
+#include "mypcre.h"
 #include "match.h"
 #include "attrib.h"
 #include "ansi.h"
@@ -36,6 +37,7 @@
 #include "dbdefs.h"
 #include "lock.h"
 #include "log.h"
+#include "parse.h"
 #include "game.h"
 #include "confmagic.h"
 
@@ -45,8 +47,10 @@ void do_attrib_flags(dbref player, const char *obj, const char *atrname,
                      const char *flag);
 static int af_helper(dbref player, dbref thing, dbref parent,
                      char const *pattern, ATTR *atr, void *args);
-static int gedit_helper(dbref player, dbref thing, dbref parent,
-                        char const *pattern, ATTR *atr, void *args);
+static int edit_helper(dbref player, dbref thing, dbref parent,
+                       char const *pattern, ATTR *atr, void *args);
+static int regedit_helper(dbref player, dbref thing, dbref parent,
+                          char const *pattern, ATTR *atr, void *args);
 static int wipe_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
@@ -84,23 +88,25 @@ do_name(dbref player, const char *name, char *newname_)
   case TYPE_PLAYER:
     switch (ok_object_name
             (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
-    case 0:
-      notify(player, T("You can't give a player that name."));
+    case OPAE_INVALID:
+    case OPAE_NULL:
+      notify(player, T("You can't give a player that name or alias."));
+      if (newname)
+        mush_free(newname, "name.newname");
+      if (alias)
+        mush_free(alias, "name.newname");
       return;
     case OPAE_TOOMANY:
       notify(player, T("Too many aliases."));
       mush_free(newname, "name.newname");
       return;
-    case OPAE_INVALID:
-      notify_format(player, T("'%s' is not a valid alias."), alias);
-      mush_free(newname, "name.newname");
-      mush_free(alias, "name.newname");
-      return;
+    case OPAE_SUCCESS:
+      break;
     }
     break;
   case TYPE_EXIT:
-    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) <
-        1) {
+    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) !=
+        OPAE_SUCCESS) {
       notify(player, T("That is not a reasonable name."));
       if (newname)
         mush_free(newname, "name.newname");
@@ -779,8 +785,8 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
   return;
 }
 
-/** Argument struct for gedit_helper */
-struct gedit_args {
+/** Argument struct for edit_helper */
+struct edit_args {
   int flags; /**< The type of edit */
   char *from; /**< What is going to be replaced? */
   char *to; /**< What it gets replaced with. */
@@ -789,10 +795,10 @@ struct gedit_args {
 };
 
 static int
-gedit_helper(dbref player, dbref thing,
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern
-             __attribute__ ((__unused__)), ATTR *a, void *args)
+edit_helper(dbref player, dbref thing,
+            dbref parent __attribute__ ((__unused__)),
+            char const *pattern
+            __attribute__ ((__unused__)), ATTR *a, void *args)
 {
   int ansi_long_flag = 0;
   const char *r;
@@ -800,7 +806,7 @@ gedit_helper(dbref player, dbref thing,
   char tbuf1[BUFFER_LEN], tbuf_ansi[BUFFER_LEN];
   char *tbufp, *tbufap;
   size_t rlen, vlen;
-  struct gedit_args *gargs;
+  struct edit_args *gargs;
   int edited = 0;
 
   gargs = args;
@@ -963,13 +969,12 @@ gedit_helper(dbref player, dbref thing,
  * \param flags type of \@edit to do
  */
 void
-do_gedit(dbref player, char *it, char **argv, int flags)
+do_edit(dbref player, char *it, char **argv, int flags)
 {
   dbref thing;
   char tbuf1[BUFFER_LEN];
   char *q;
-  struct gedit_args args;
-
+  struct edit_args args;
 
   if (!(it && *it)) {
     notify(player, T("I need to know what you want to edit."));
@@ -992,17 +997,279 @@ do_gedit(dbref player, char *it, char **argv, int flags)
     notify(player, T("Nothing to do."));
     return;
   }
+
   args.from = argv[1];
   args.to = argv[2];
   args.flags = flags;
   args.skipped = 0;
   args.edited = 0;
 
-  if (!atr_iter_get(player, thing, q, 0, 0, gedit_helper, &args))
+  if (!atr_iter_get(player, thing, q, 0, 0, edit_helper, &args))
     notify(player, T("No matching attributes."));
   else if (flags & EDIT_QUIET)
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
                   args.skipped);
+}
+
+extern const unsigned char *tables;     /* for do_edit_regexp */
+
+
+/** Argument struct for edit_helper */
+struct regedit_args {
+  int flags; /**< The type of edit */
+  pcre *re; /**< Regexp to match string against */
+  pcre_extra *extra;
+  char *to; /**< Replacement string. */
+  int edited; /**< Number of attributes edited */
+  int skipped; /**< Number of attributes skipped */
+  bool call_limit_hit; /**< Have we hit the call limit? */
+  NEW_PE_INFO *pe_info; /**< the pe_info to eval replacements with */
+};
+
+static int
+regedit_helper(dbref player, dbref thing,
+               dbref parent __attribute__ ((__unused__)),
+               char const *pattern
+               __attribute__ ((__unused__)), ATTR *a, void *args)
+{
+  char *s;
+  char tbuf1[BUFFER_LEN], tbuf_ansi[BUFFER_LEN];
+  char *tbufp, *tbufap;
+  struct regedit_args *gargs;
+  int edited = 0;
+  char tbuf[BUFFER_LEN], *tbp;
+  ansi_string *haystack, *display_str;
+  ansi_string *hilite, *repl;
+  const char *r;
+  PE_REGS *pe_regs;
+  int search;
+  int subpatterns;
+  int offsets[99];
+  int ansi_long_flag = 0;
+
+  gargs = args;
+
+  if (gargs->call_limit_hit) {
+    gargs->skipped++;
+    return 0;
+  }
+
+  if (!a) {                     /* Shouldn't ever happen, but better safe than sorry */
+    notify(player, T("No such attribute, try set instead."));
+    return 0;
+  }
+  if (!Can_Write_Attr(player, thing, a)) {
+    notify(player, T("You need to control an attribute to edit it."));
+    gargs->skipped++;
+    return 0;
+  }
+  s = (char *) atr_value(a);    /* warning: pointer to static buffer */
+
+  haystack = parse_ansi_string(s);
+  display_str = parse_ansi_string(s);
+  pe_regs = pe_regs_localize(gargs->pe_info, PE_REGS_REGEXP, "do_edit_regexp");
+
+  search = 0;
+  /* Do all the searches and replaces we can */
+  do {
+    subpatterns =
+      pcre_exec(gargs->re, gargs->extra, haystack->text, haystack->len, search,
+                0, offsets, 99);
+    if (subpatterns >= 0) {
+      edited = 1;
+      /* We have a match */
+      /* Process the replacement */
+      r = gargs->to;
+      pe_regs_clear(pe_regs);
+      pe_regs_set_rx_context_ansi(pe_regs, gargs->re, offsets, subpatterns,
+                                  haystack);
+      tbp = tbuf;
+      if (process_expression(tbuf, &tbp, &r, player, player, player,
+                             PE_DEFAULT | PE_DOLLAR, PT_DEFAULT,
+                             gargs->pe_info)) {
+        gargs->call_limit_hit = 1;
+        break;
+      }
+      *tbp = '\0';
+      if (offsets[0] >= search) {
+        repl = parse_ansi_string(tbuf);
+
+        /* Do the replacement */
+        ansi_string_replace(haystack, offsets[0], offsets[1] - offsets[0],
+                            repl);
+        if (!ansi_long_flag) {
+          if (repl->len) {
+            tbufp = tbuf1;
+            safe_str(ANSI_HILITE, tbuf1, &tbufp);
+            safe_ansi_string(repl, 0, repl->len, tbuf1, &tbufp);
+            safe_str(ANSI_END, tbuf1, &tbufp);
+            *tbufp = '\0';
+            hilite = parse_ansi_string(tbuf1);
+            if (ansi_string_replace
+                (display_str, offsets[0], offsets[1] - offsets[0], hilite)) {
+              ansi_long_flag = 1;
+            }
+            free_ansi_string(hilite);
+          } else {
+            if (ansi_string_replace
+                (display_str, offsets[0], offsets[1] - offsets[0], repl)) {
+              ansi_long_flag = 1;
+            }
+          }
+        }
+
+        /* Advance search */
+        if (search == offsets[1]) {
+          search = offsets[0] + repl->len;
+          search++;
+        } else {
+          search = offsets[0] + repl->len;
+        }
+
+        free_ansi_string(repl);
+        if (search >= haystack->len)
+          break;
+      } else {
+        break;
+      }
+    }
+  } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST)
+           && !gargs->call_limit_hit);
+
+  if (gargs->call_limit_hit) {
+    /* Bail out */
+    gargs->skipped++;
+    free_ansi_string(haystack);
+    free_ansi_string(display_str);
+    pe_regs_restore(gargs->pe_info, pe_regs);
+    pe_regs_free(pe_regs);
+    notify(player, T("Bailing out."));
+    return 0;
+  }
+
+  if (edited)
+    gargs->edited++;
+  else
+    gargs->skipped++;
+
+  if (!edited) {
+    if (!(gargs->flags & EDIT_QUIET)) {
+      notify_format(player, T("%s - Unchanged."), AL_NAME(a));
+    }
+  } else {
+    tbufp = tbuf1;
+    safe_ansi_string(haystack, 0, haystack->len, tbuf1, &tbufp);
+    *tbufp = '\0';
+    tbufp = tbuf1;
+    tbufap = tbuf_ansi;
+    if (!ansi_long_flag
+        && !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi,
+                             &tbufap)) {
+      *tbufap = '\0';
+      tbufp = tbuf_ansi;
+    }
+    if (!(gargs->flags & EDIT_CHECK)) {
+      if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
+          !(gargs->flags & EDIT_QUIET) && !AreQuiet(player, thing)) {
+        notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbufp);
+      }
+    } else if (!(gargs->flags & EDIT_QUIET)) {
+      /* We don't do it - we just pemit it. */
+      notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbufp);
+    }
+  }
+
+  free_ansi_string(haystack);
+  free_ansi_string(display_str);
+  pe_regs_restore(gargs->pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
+  return 1;
+}
+
+/** Edit an attribute using a regexp pattern.
+ * \verbatim
+ * This implements @edit/regexp obj/attribute = {search}, {replace}
+ * This code is hacked from do_edit and fun_regreplace. Probably badly.
+ * When it explodes in a ball of flame, blame Mike.
+ * \endverbatim
+ * \param player the enactor.
+ * \param it the object/attribute pair.
+ * \param argv array containing the search and replace strings.
+ * \param flags type of \@edit to do
+ */
+
+void
+do_edit_regexp(dbref player, char *it, char **argv, int flags,
+               NEW_PE_INFO *pe_info)
+{
+  dbref thing;
+  char tbuf1[BUFFER_LEN];
+  char *q;
+  struct regedit_args args;
+  pcre *re = NULL;
+  pcre_extra *extra, *study = NULL;
+  const char *errptr;
+  int erroffset;
+
+  if (!(it && *it)) {
+    notify(player, T("I need to know what you want to edit."));
+    return;
+  }
+  strcpy(tbuf1, it);
+  q = strchr(tbuf1, '/');
+  if (!(q && *q)) {
+    notify(player, T("I need to know what you want to edit."));
+    return;
+  }
+  *q++ = '\0';
+  thing =
+    noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
+
+  if (thing == NOTHING)
+    return;
+
+  if (!argv[1] || !*argv[1]) {
+    notify(player, T("Nothing to do."));
+    return;
+  }
+
+  if ((re = pcre_compile(remove_markup(argv[1], NULL),
+                         (flags & EDIT_CASE ? 0 : PCRE_CASELESS),
+                         &errptr, &erroffset, tables)) == NULL) {
+    notify_format(player, T("Invalid regexp: %s"), errptr);
+    return;
+  }
+  add_check("pcre");
+  study = pcre_study(re, 0, &errptr);
+  if (errptr != NULL) {
+    mush_free(re, "pcre");
+    notify_format(player, T("Invalid regexp: %s"), errptr);
+    return;
+  }
+  add_check("pcre.extra");
+
+  extra = study;
+  set_match_limit(extra);
+
+  args.re = re;
+  args.extra = extra;
+  args.to = argv[2];
+  args.flags = flags;
+  args.skipped = 0;
+  args.edited = 0;
+  args.pe_info = pe_info;
+  args.call_limit_hit = 0;
+
+  if (!atr_iter_get(player, thing, q, 0, 0, regedit_helper, &args))
+    notify(player, T("No matching attributes."));
+  else if (flags & EDIT_QUIET)
+    notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
+                  args.skipped);
+
+  mush_free(re, "pcre");
+  mush_free(study, "pcre.extra");
+
 }
 
 /** Trigger an attribute.

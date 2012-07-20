@@ -1151,7 +1151,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
       ptr = *indirect;
       if ((mortal ? Is_Visible_Attr(thing, ptr)
            : Can_Read_Attr(player, thing, ptr))
-          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
               atr_wild(name, AL_NAME(ptr))))
         result += func(player, thing, NOTHING, name, ptr, args);
       if (ptr == *indirect)
@@ -1220,7 +1220,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
                     atr_wild(name, AL_NAME(ptr))))
               result += 1;
           }
@@ -1290,7 +1290,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
                     atr_wild(name, AL_NAME(ptr))))
               result += func(player, thing, parent, name, ptr, args);
           }
@@ -1907,38 +1907,38 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           return -1;
         }
         if (s && strcasecmp(s, tbuf1)) {
-          int opae_res = ok_player_alias(s, player, thing);
+          enum opa_error opae_res = ok_player_alias(s, player, thing);
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
-            break;
+            return -1;
           case OPAE_TOOMANY:
             notify_format(player, T("'%s' contains too many aliases."), s);
-            break;
+            return -1;
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
+            return -1;
+          case OPAE_SUCCESS:
             break;
           }
-          if (opae_res != OPAE_SUCCESS)
-            return -1;
         }
       } else {
         /* No old alias */
         if (s && *s) {
-          int opae_res = ok_player_alias(s, player, thing);
+          enum opa_error opae_res = ok_player_alias(s, player, thing);
           switch (opae_res) {
           case OPAE_INVALID:
             notify_format(player, T("'%s' is not a valid alias."), s);
-            break;
+            return -1;
           case OPAE_TOOMANY:
             notify_format(player, T("'%s' contains too many aliases."), s);
-            break;
+            return -1;
           case OPAE_NULL:
             notify_format(player, T("Null aliases are not valid."));
+            return -1;
+          case OPAE_SUCCESS:
             break;
           }
-          if (opae_res != OPAE_SUCCESS)
-            return -1;
         }
       }
     } else if (IsExit(thing) && s && *s) {
@@ -2059,17 +2059,16 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     }
     if (GoodObject(announceloc)) {
       char *bp = tbuf1;
-      orator = thing;
       if (!s && !was_listener && !Hearer(thing)) {
         safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."),
                     Name(thing));
         *bp = '\0';
-        notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
+        notify_except(thing, announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       } else if (s && !was_hearer && !was_listener) {
         safe_format(tbuf1, &bp, T("%s grows ears and can now hear."),
                     Name(thing));
         *bp = '\0';
-        notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
+        notify_except(thing, announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       }
     }
   }

@@ -116,6 +116,9 @@ PENNCONF conftable[] = {
   {"guest_file", cf_str, options.guest_file[0], sizeof options.guest_file[0], 0,
    "messages"}
   ,
+  {"who_file", cf_str, options.who_file[0], sizeof options.who_file[0], 0,
+   "messages"}
+  ,
 
   {"connect_html_file", cf_str, options.connect_file[1],
    sizeof options.connect_file[1], 0,
@@ -152,6 +155,10 @@ PENNCONF conftable[] = {
    sizeof options.guest_file[1], 0,
    "messages"}
   ,
+  {"who_html_file", cf_str, options.who_file[1], sizeof options.who_file[1], 0,
+   "messages"}
+  ,
+
 
   {"player_start", cf_dbref, &options.player_start, 100000, 0, "db"}
   ,
@@ -431,6 +438,8 @@ PENNCONF conftable[] = {
   ,
   {"destroy_possessions", cf_bool, &options.destroy_possessions, 2, 0,
    "cmds"}
+  ,
+  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"}
   ,
 
   {"null_eq_zero", cf_bool, &options.null_eq_zero, 2, 0, "tiny"}
@@ -1140,6 +1149,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "attribute_alias")) {
     if (!restrictions)
       return 0;
+    do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
@@ -1367,6 +1377,7 @@ conf_default_set(void)
   options.possessive_get_d = 1;
   options.really_safe = 1;
   options.destroy_possessions = 1;
+  options.probate_judge = 1;
   options.null_eq_zero = 0;
   options.tiny_booleans = 0;
   options.tiny_math = 0;
@@ -1485,7 +1496,7 @@ config_file_startup(const char *conf, int restrictions)
     /* Logfiles haven't yet been opened, so doing this causes an error on
      * stdout, and for netmush.log to be opened before the error_log config
      * option has been read/parsed */
-    /* do_rawlog(LT_ERR, "Reading %s", cfile);*/
+    /* do_rawlog(LT_ERR, "Reading %s", cfile); */
     if (toplevel_cfile == NULL)
       toplevel_cfile = mush_strdup(cfile, "config.file");
   } else {
@@ -1496,7 +1507,7 @@ config_file_startup(const char *conf, int restrictions)
                 (conf && *conf) ? conf : "Unknown");
       return 0;
     }
-    /* do_rawlog(LT_ERR, "Reading %s", conf);*/
+    /* do_rawlog(LT_ERR, "Reading %s", conf); */
   }
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {
@@ -1957,6 +1968,10 @@ show_compile_options(dbref player)
   notify(player, T(" SSE3 instructions are being used."));
 #endif
 
+#ifdef HAVE_SSSE3
+  notify(player, T(" SSSE3 instructions are being used."));
+#endif
+
 #ifdef HAVE_ALTIVEC
   notify(player, T(" Altivec instructions are being used."));
 #endif
@@ -1965,6 +1980,16 @@ show_compile_options(dbref player)
   notify(player, T(" @config/save is enabled."));
 #else
   notify(player, T(" @config/save is disabled."));
+#endif
+
+#if ATTR_STORAGE == 0
+  notify(player, T(" Attribute contents are managed by malloc."));
+#elif ATTR_STORAGE == 1
+  notify(player, T(" Attribute contents are managed by the chunk system."));
+#endif
+
+#ifdef TZINFO_PATH
+  notify(player, T(" IANA symbolic timezones can be used."));
 #endif
 
 }

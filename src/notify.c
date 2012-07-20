@@ -213,14 +213,15 @@ struct notify_message_group {
 
 static void init_notify_message_group(struct notify_message_group
                                       *real_message);
-static void notify_anything_sub(dbref speaker, na_lookup func, void *fdata,
-                                dbref *skips, int flags,
+static void notify_anything_sub(dbref executor, dbref speaker, na_lookup func,
+                                void *fdata, dbref *skips, int flags,
                                 struct notify_message_group *message,
                                 const char *prefix, dbref loc,
                                 struct format_msg *format);
 
-static void notify_internal(dbref target, dbref speaker, dbref *skips,
-                            int flags, struct notify_message_group *message,
+static void notify_internal(dbref target, dbref executor, dbref speaker,
+                            dbref *skips, int flags,
+                            struct notify_message_group *message,
                             struct notify_message *prefix, dbref loc,
                             struct format_msg *format);
 static unsigned char *make_nospoof(dbref speaker, int paranoid);
@@ -797,6 +798,7 @@ notify_makestring_nocache(unsigned char *message, int output_type)
 /* notify_except() is #define'd to notify_except2() */
 
 /** Notify all objects in a location, except 2, and propagate the sound.
+ * \param executor The object causing the speech
  * \param loc where to emit the sound
  * \param exc1 first object to not notify
  * \param exc2 second object to not notify, or NOTHING
@@ -804,7 +806,8 @@ notify_makestring_nocache(unsigned char *message, int output_type)
  * \param flags NA_* flags
  */
 void
-notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
+notify_except2(dbref executor, dbref loc, dbref exc1, dbref exc2,
+               const char *msg, int flags)
 {
   dbref skips[3];
 
@@ -815,15 +818,17 @@ notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
   skips[1] = exc2;
   skips[2] = NOTHING;
 
-  notify_anything(orator, na_loc, &loc, (exc1 == NOTHING) ? NULL : skips,
-                  flags | NA_PROPAGATE, msg, NULL, loc, NULL);
+  notify_anything(executor, executor, na_loc, &loc,
+                  (exc1 == NOTHING) ? NULL : skips, flags | NA_PROPAGATE, msg,
+                  NULL, loc, NULL);
 
 }
 
 /** Public function to notify one or more objects with a message.
  * This function is a wrapper around notify_anything_sub, which prepares a char*
  * message into a notify_message_group struct.
- * \param speaker the object which created the message
+ * \param executor The object causing the speech, for error/confirmation messages
+ * \param speaker The object making the sound. Usually the same as executor, different for @*emit/spoof
  * \param func lookup function to figure out who to tell
  * \param fdata data to pass to func
  * \param skips pointer to an array of dbrefs not to notify, or NULL
@@ -834,9 +839,9 @@ notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
  * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
  */
 void
-notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
-                int flags, const char *message, const char *prefix, dbref loc,
-                struct format_msg *format)
+notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
+                dbref *skips, int flags, const char *message,
+                const char *prefix, dbref loc, struct format_msg *format)
 {
   struct notify_message_group real_message;
   int i;
@@ -859,8 +864,8 @@ notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
   if (loc == AMBIGUOUS)
     loc = speech_loc(speaker);
 
-  notify_anything_sub(speaker, func, fdata, skips, flags, &real_message, prefix,
-                      loc, format);
+  notify_anything_sub(executor, speaker, func, fdata, skips, flags,
+                      &real_message, prefix, loc, format);
 
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
@@ -878,7 +883,8 @@ notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
 /** Notify one or more objects with a message.
  * Calls an na_lookup func to figure out which objects to notify and, if the
  * object isn't in 'skips', calls notify_internal to send the message.
- * \param speaker the object which created the message
+ * \param executor The object causing the speech, for error/confirmation messages
+ * \param speaker The object making the sound. Usually the same as executor, different for @*emit/spoof
  * \param func lookup function to figure out who to tell
  * \param fdata data to pass to func
  * \param skips pointer to an array of dbrefs not to notify, or NULL
@@ -889,9 +895,10 @@ notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
  * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
  */
 static void
-notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
-                    int flags, struct notify_message_group *message,
-                    const char *prefix, dbref loc, struct format_msg *format)
+notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
+                    dbref *skips, int flags,
+                    struct notify_message_group *message, const char *prefix,
+                    dbref loc, struct format_msg *format)
 {
   dbref target = NOTHING;
   struct notify_message *real_prefix = NULL;
@@ -931,8 +938,8 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
       if (skips[i] != NOTHING)
         continue;
     }
-    notify_internal(target, speaker, skips, flags, message, real_prefix, loc,
-                    format);
+    notify_internal(target, executor, speaker, skips, flags, message,
+                    real_prefix, loc, format);
   }
 
   if (real_prefix != NULL) {
@@ -951,6 +958,7 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
 
 #define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
 #define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
+#define PROPAGATE_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | (na_flags & (NA_RELAY_ONCE | NA_NORELAY) ? NA_NORELAY : NA_RELAY_ONCE)) & ~NA_PROMPT)
 
 
 /** Notify a single object with a message. May recurse by calling itself or
@@ -962,7 +970,8 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
  * If format->obj is ambiguous (#-2), get the attr from the target, otherwise
  * use the obj given. Transformed strings are not cached.
  * \param target object to notify
- * \param speaker object creating the sound
+ * \param executor The object causing the speech, for error/confirmation messages
+ * \param speaker The object making the sound. Usually the same as executor, different for @*emit/spoof
  * \param skips array of dbrefs not to notify when propagating sound, or NULL
  * \param flags NA_* flags for how to generate the sound
  * \param message the message, with nospoof and paranoid prefixes
@@ -971,8 +980,8 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
  * \param format an obj/attr/args to format the message with
  */
 static void
-notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
-                struct notify_message_group *message,
+notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
+                int flags, struct notify_message_group *message,
                 struct notify_message *prefix, dbref loc,
                 struct format_msg *format)
 {
@@ -1029,7 +1038,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
     *bp = '\0';
 
     if (fetch_ufun_attrib
-        (buff, speaker, &ufun,
+        (buff, executor, &ufun,
          (UFUN_OBJECT | UFUN_REQUIRE_ATTR |
           (format->checkprivs ? 0 : UFUN_IGNORE_PERMS)))) {
       PE_REGS *pe_regs = NULL;
@@ -1171,7 +1180,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
     *pp = '\0';
 
     /* Show "Puppet> " prompt */
-    notify_anything(speaker, na_one, &Owner(target), NULL,
+    notify_anything(executor, speaker, na_one, &Owner(target), NULL,
                     PUPPET_FLAGS(flags) | NA_SPOOF | NA_NOENTER, puppref, NULL,
                     loc, NULL);
 
@@ -1186,11 +1195,11 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
      * time/memory. Otherwise, use the specific, formatted message the
      * puppet saw */
     if (cache) {
-      notify_internal(Owner(target), speaker, NULL,
+      notify_internal(Owner(target), executor, speaker, NULL,
                       PUPPET_FLAGS(flags) | nospoof_flags, message, prefix, loc,
                       NULL);
     } else {
-      notify_anything(speaker, na_one, &Owner(target), NULL,
+      notify_anything(executor, speaker, na_one, &Owner(target), NULL,
                       PUPPET_FLAGS(flags) | nospoof_flags, buff,
                       (prefix ? (char *) prefix->strs[0].message : NULL), loc,
                       NULL);
@@ -1223,7 +1232,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       fullmsg = (char *) msgstr;
     }
 
-    if (heard) {
+    if (heard && !(flags & NA_NORELAY)) {
       /* Check @listen */
       a = atr_get_noparent(target, "LISTEN");
       if (a) {
@@ -1284,9 +1293,9 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
               }
               pe_regs_free(pe_regs);
             }
-            notify_anything_sub(speaker, na_next,
+            notify_anything_sub(executor, speaker, na_next,
                                 &Contents(target), skips,
-                                RELAY_FLAGS(flags), message,
+                                PROPAGATE_FLAGS(flags), message,
                                 (a) ? inprefix : NULL, loc, format);
           }
         }
@@ -1323,7 +1332,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         DOLIST(exit, Exits(target)) {
           if (Audible(exit)) {
             if (VariableExit(exit))
-              loc = find_var_dest(speaker, exit);
+              loc = find_var_dest(speaker, exit, NULL, NULL);
             else if (HomeExit(exit))
               loc = Home(speaker);
             else
@@ -1335,9 +1344,9 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
               continue;
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
-            notify_anything_sub(speaker, na_next, &Contents(loc), skips,
-                                RELAY_FLAGS(flags), message, propprefix, loc,
-                                format);
+            notify_anything_sub(executor, speaker, na_next, &Contents(loc),
+                                skips, PROPAGATE_FLAGS(flags), message,
+                                propprefix, loc, format);
           }
         }
       } else if (target == loc && !filter_found(target, speaker, fullmsg, 0)) {
@@ -1347,8 +1356,8 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         pass[1] = NOTHING;
         loc = Location(target);
         make_prefix_str(target, speaker, fullmsg, propprefix);
-        notify_anything_sub(speaker, na_next, &Contents(loc), pass,
-                            RELAY_FLAGS(flags), message, propprefix, loc,
+        notify_anything_sub(executor, speaker, na_next, &Contents(loc), pass,
+                            PROPAGATE_FLAGS(flags), message, propprefix, loc,
                             format);
       }
     }
@@ -1425,10 +1434,10 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
       fwd = parse_objid(curr);
       if (RealGoodObject(fwd) && (thing != fwd) && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
-          notify_anything(speaker, na_loc, &fwd, NULL, flags, msg,
+          notify_anything(speaker, speaker, na_loc, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);
         } else {
-          notify_anything(speaker, na_one, &fwd, NULL, flags, msg,
+          notify_anything(speaker, speaker, na_one, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);
 
         }

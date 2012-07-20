@@ -19,11 +19,11 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c		\
 	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
 	markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c		\
-	mysocket.c myrlimit.c myssl.c notify.c parse.c			\
-	player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
-	rob.c services.c set.c SFMT.c sig.c sort.c speech.c		\
-	sql.c ssl_master.c strdup.c strtree.c strutil.c tables.c	\
-	timer.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
+	mysocket.c myrlimit.c myssl.c notify.c parse.c player.c		\
+	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
+	services.c set.c SFMT.c sig.c sort.c speech.c sql.c		\
+	ssl_master.c strdup.c strtree.c strutil.c tables.c timer.c	\
+	tz.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
 	wiz.c
 
 
@@ -39,7 +39,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	player.o plyrlist.o info_master.o predicat.o privtab.o ptab.o	\
 	rob.o services.o set.o SFMT.o sig.o sort.o speech.o		\
 	sql.o ssl_master.o strdup.o strtree.o strutil.o tables.o	\
-	timer.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
+	timer.o tz.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
 	wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
@@ -445,6 +445,9 @@ cmds.o: ../hdrs/command.h
 cmds.o: ../hdrs/switches.h
 cmds.o: ../hdrs/log.h
 cmds.o: ../hdrs/bufferq.h
+cmds.o: ../hdrs/mysocket.h
+cmds.o: ../hdrs/lookup.h
+cmds.o: ../hdrs/ssl_slave.h
 command.o: ../hdrs/copyrite.h
 command.o: ../config.h
 command.o: ../hdrs/conf.h
@@ -956,6 +959,7 @@ funmisc.o: ../hdrs/attrib.h
 funmisc.o: ../hdrs/ansi.h
 funmisc.o: ../hdrs/strtree.h
 funmisc.o: ../hdrs/SFMT.h
+funmisc.o: ../hdrs/svninfo.h
 funstr.o: ../hdrs/copyrite.h
 funstr.o: ../config.h
 funstr.o: ../hdrs/conf.h
@@ -1002,7 +1006,7 @@ funtime.o: ../hdrs/parse.h
 funtime.o: ../hdrs/log.h
 funtime.o: ../hdrs/bufferq.h
 funtime.o: ../hdrs/match.h
-funtime.o: ../hdrs/attrib.h
+funtime.o: ../hdrs/tz.h
 funufun.o: ../hdrs/copyrite.h
 funufun.o: ../config.h
 funufun.o: ../hdrs/conf.h
@@ -1675,11 +1679,13 @@ set.o: ../hdrs/mymalloc.h
 set.o: ../hdrs/lock.h
 set.o: ../hdrs/log.h
 set.o: ../hdrs/bufferq.h
+set.o: ../hdrs/parse.h
 set.o: ../hdrs/game.h
 SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
+SFMT.o: ../hdrs/SFMT-sse2.h
 sig.o: ../config.h
 sig.o: ../hdrs/conf.h
 sig.o: ../hdrs/copyrite.h
@@ -1870,6 +1876,27 @@ timer.o: ../hdrs/game.h
 timer.o: ../hdrs/help.h
 timer.o: ../hdrs/parse.h
 timer.o: ../hdrs/attrib.h
+tz.o: ../config.h
+tz.o: ../hdrs/conf.h
+tz.o: ../hdrs/copyrite.h
+tz.o: ../options.h
+tz.o: ../hdrs/mushtype.h
+tz.o: ../hdrs/htab.h
+tz.o: ../hdrs/externs.h
+tz.o: ../hdrs/compile.h
+tz.o: ../hdrs/dbdefs.h
+tz.o: ../hdrs/mushdb.h
+tz.o: ../hdrs/flags.h
+tz.o: ../confmagic.h
+tz.o: ../hdrs/ptab.h
+tz.o: ../hdrs/dbio.h
+tz.o: ../hdrs/chunk.h
+tz.o: ../hdrs/mypcre.h
+tz.o: ../hdrs/parse.h
+tz.o: ../hdrs/attrib.h
+tz.o: ../hdrs/tz.h
+tz.o: ../hdrs/log.h
+tz.o: ../hdrs/bufferq.h
 unparse.o: ../hdrs/copyrite.h
 unparse.o: ../config.h
 unparse.o: ../hdrs/conf.h

@@ -39,14 +39,6 @@ msgstr " La limitation du temps de calcul du processeur n'est PAS implémentée."
 msgid " CPU usage limiting is supported."
 msgstr " Limitation de l'usage de CPU supportée"
 
-#: src/conf.c:980
-msgid " DNS and ident lookups are handled by a slave process."
-msgstr " Les résolutions DNS et d'ident sont gérées par un processus fils."
-
-#: src/conf.c:982
-msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " Les résolutions DNS et d'ident sont gérées par le processus du MUSH."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " La fonction convtime() étendue est implémentée."
@@ -79,10 +71,6 @@ msgstr " remis à zéro."
 #: flags.c:831
 msgid " set."
 msgstr " configuré."
-
-#: extchat.c:1503
-msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 NOM DE CANAL AMBIGU"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
@@ -360,10 +348,6 @@ msgstr "#-1 LES LONGUEURS DES CHAINES DOIVENT ETRE EGALES"
 #: funstr.c:1034
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr "#-1 CE N'EST PAS DE L'UNICODE"
-
-#: src/funlist.c:1815
-msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 TROP D'ITERS"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -707,11 +691,6 @@ msgstr "%s perçoit: %s%s%s"
 #, c-format
 msgid "%s sent %d messages."
 msgstr "%s a envoyé %d messages."
-
-#: src/bsd.c:2100
-#, c-format
-msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s tailles:  NewUser...%d  Connect..%d  Guest..%d Motd....%d  WizMotd....%d  Quit...%d  Register.%d  Closed....%d  Full..%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format
@@ -1131,10 +1110,6 @@ msgstr "CHAT: Speaklock de <%s> supprimé."
 msgid "CHAT: Speaklock on <%s> set."
 msgstr "CHAT: Speaklock sur <%s> Ok."
 
-#: src/extchat.c:1106
-msgid "CHAT: The channel needs a more unique name."
-msgstr "CHAT: Le canal doit avoir un nom plus 'unique'."
-
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: hmm pas possible :)"
@@ -1175,11 +1150,6 @@ msgstr "Impossible de regler votre foyer comme étant votre foyer."
 #: look.c:748
 msgid "Carrying:"
 msgstr "Objets portés:"
-
-#: src/extchat.c:1047
-#, c-format
-msgid "Cemit to channel %s: %s"
-msgstr "Cemit sur le canal %s: %s"
 
 #: src/extchat.c:1387
 msgid "Chan Type"
@@ -1313,11 +1283,6 @@ msgstr "Désactivé."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "Faire quoi avec cette fonction?"
-
-#: src/bsd.c:4316
-#, c-format
-msgid "Doing set. %d characters lost."
-msgstr "Titre du jour Ok. %d caractères perdus."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -1755,11 +1720,6 @@ msgstr "Je ne vois pas cet objet."
 #: src/lock.c:362
 msgid "I don't see what you want to lock!"
 msgstr "Je ne vois pas ce que vous voulez verrouiller!"
-
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Je ne pense pas que #%d veut avoir de vos nouvelles."
 
 #: src/fundb.c:1412
 #, c-format
@@ -2884,10 +2844,6 @@ msgstr "Cet objet n'est pas valide."
 msgid "That is too special to be destroyed."
 msgstr "Ceci est trop special pour être détruit."
 
-#: src/extchat.c:1181
-msgid "That name is too long."
-msgstr "Ce nom est trop long."
-
 #: src/rob.c:109
 msgid "That object cannot be killed."
 msgstr "Cet objet ne peut pas être tué."
@@ -2959,10 +2915,6 @@ msgstr "Ceci n'est pas un numéro de port."
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
 msgstr "Trouver un meilleur nom pour un attribut."
-
-#: src/extchat.c:1176
-msgid "The channel needs a more unique new name."
-msgstr "Le canal a besoin d'un nom plus unique."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
@@ -3432,10 +3384,6 @@ msgstr "Qui voulez-vous verrouiller?"
 msgid "Why would you want to be warned about garbage?"
 msgstr "Pourquoi voudriez-vous être alerté à propos des détritus?"
 
-#: src/bsd.c:4297
-msgid "Why would you want to do that?"
-msgstr "Pourquoi voudriez-vous faire cela?"
-
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
 msgstr "... Franchement, ca sert à quoi de protéger les détritus?"
@@ -3573,10 +3521,6 @@ msgstr "Vous ne pouvez pas lâcher ça."
 #: src/wiz.c:584
 msgid "You can't force God!"
 msgstr "Vous ne pouvez pas forcer Dieu!"
-
-#: src/set.c:139
-msgid "You can't give a player that name."
-msgstr "Vous ne pouvez pas donner ce nom à un joueur."
 
 #: src/rob.c:207
 msgid "You can't give that away."
@@ -3888,10 +3832,6 @@ msgstr "Vous ne pouvez pas vous téléporter hors de la zone à partir de cette piè
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
 msgstr "Vous ne pouvez pas utiliser @halt obj=commande sur cet objet."
-
-#: src/flags.c:595
-msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Vous devez @lock/zone avant de ZONEr un joueur"
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."

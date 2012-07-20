@@ -744,7 +744,7 @@ grow_mi(ansi_string *as, char type)
   if (as->micount >= as->misize) {
     if (as->mi == NULL) {
       as->misize = 30;
-      as->mi = mush_malloc(as->misize * sizeof(new_markup_information),
+      as->mi = mush_calloc(as->misize, sizeof(new_markup_information),
                            "ansi_string.mi");
     } else {
       as->misize *= 2;
@@ -784,7 +784,7 @@ static char *colend = "/";
 ansi_string *
 parse_ansi_string(const char *source)
 {
-  ansi_string *as = mush_malloc(sizeof(ansi_string), "ansi_string");
+  ansi_string *as;
   int c;
   char *s;
   char *tag, type;
@@ -796,12 +796,12 @@ parse_ansi_string(const char *source)
   int idx = NOMARKUP;
   int pidx = NOMARKUP;
 
-  /* Zero it out. */
-  memset(as, 0, sizeof(ansi_string));
-
   if (!source) {
     return NULL;
   }
+
+  /* Allocate and zero it out. */
+  as = mush_calloc(1, sizeof(ansi_string), "ansi_string");
 
   /* Quick check for no markup */
   if (!has_markup(source)) {
@@ -816,7 +816,7 @@ parse_ansi_string(const char *source)
 
   /* The string has markup. Nuts. */
   as->flags |= AS_HAS_MARKUP;
-  as->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN, "ansi_string.markup");
+  as->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
 
   c = 0;
   for (s = as->source; *s;) {
@@ -1234,7 +1234,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dst->flags |= AS_HAS_STANDALONE;
       /* Special case: src has only standalone tags. */
       if (!dst->markup) {
-        dst->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+        dst->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t),
                                   "ansi_string.markup");
         for (i = 0; i < dst->len; i++) {
           dst->markup[i] = NOMARKUP;
@@ -1306,7 +1306,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 
   /* In case of copying from marked up string to non-marked-up. */
   if (!dst->markup) {
-    dst->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+    dst->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t),
                               "ansi_string.markup");
     for (i = 0; i < len; i++) {
       dst->markup[i] = NOMARKUP;
@@ -1314,7 +1314,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     dst->flags |= AS_HAS_MARKUP;
   }
   if (!src->markup) {
-    src->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+    src->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t),
                               "ansi_string.markup");
     for (i = 0; i < srclen; i++) {
       src->markup[i] = NOMARKUP;

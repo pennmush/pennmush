@@ -202,6 +202,8 @@ typedef bool _Bool;
 # define __bool_true_false_are_defined 1
 #endif
 
+#undef WORDS_BIGENDIAN
+
 /* Functions */
 #undef HAS_BINDTEXTDOMAIN
 
@@ -373,6 +375,9 @@ typedef bool _Bool;
 
 #undef HAS_DEV_URANDOM
 
+/* Path to tzinfo database */
+#undef TZINFO_PATH
+
 /* Misc. */
 
 #undef HAVE_SOCKADDR_IN6
@@ -430,6 +435,11 @@ typedef bool _Bool;
 #undef HAVE_SSE3
 #ifdef __SSE3__
 #define HAVE_SSE3
+#endif
+
+#undef HAVE_SSSE3
+#ifdef __SSSE3__
+#define HAVE_SSSE3
 #endif
 
 #undef HAVE_ALTIVEC

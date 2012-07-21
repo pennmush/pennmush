@@ -864,8 +864,9 @@ See also: @chzone, ZONES
   from the cloned object, but Wizards may use the /preserve flag to prevent
   this.
   
-  The clone will normally be created with the first available dbref, but
-  Wizards may specify the <dbref> of a garbage object to use that instead.
+  The clone will normally be created with the first available dbref,
+  but Wizards and objects with the pick_dbref power may specify the
+  <dbref> of a garbage object to use that instead.
 
   To clone a room and all its exits, use code like:
     > @teleport setq(0,%L)[clone(here)]
@@ -1191,9 +1192,9 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
   Some MUSHes choose to limit the number of objects you can create by
   setting a quota.
   
-  Wizards can also specify the <dbref> of a garbage object to use when
-  creating the object. Otherwise, the object is given the next
-  available dbref.
+  Wizards and objects with the pick_dbref power can also specify the
+  <dbref> of a garbage object to use when creating the
+  object. Otherwise, the object is given the next available dbref.
  
 See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
 & @dbck
@@ -1364,7 +1365,8 @@ See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
   
 See also: @destroy, GOING, @startup
 & @dig
-  @dig[/teleport] <room name>[=<exit to>[, <exit from>[, <dbref>]]]
+  @dig[/teleport] <room name>[=<exit to>, <exit from>, <room dbref>,
+                               <to dbref>, <from dbref>]
   
   This command creates a new room named <room name>. Creating a room costs
   some pennies (see '@config room_cost' for exactly how many). If the
@@ -1378,8 +1380,9 @@ See also: @destroy, GOING, @startup
   '@config exit_cost'. The exit names may contain multiple aliases, separated 
   with semicolons, as per 'help @name'.
 
-  Wizards can also specify the <dbref> of a garbage object to use when
-  creating the room. Otherwise, the room is given the next available dbref.
+  Wizards and objects with the pick_dbref power can also specify the
+  dbrefs of garbage objects to use when creating the room and the to
+  and from exits.
   
   See 'help @dig2' for examples.
 & @dig2
@@ -2842,7 +2845,8 @@ See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
     object called 'foo'.
     > @oemit %L/"2nd foo"=bar
 & @open
-  @open <exit name>[=<destination>[, <return exit name>[, <source room>]]]
+  @open <exit name>[=<destination>,<return exit name>,<source room>,<dbref>,
+                     <return dbref>]
 
   This command opens an exit, named <exit name>, in your current location,
   or in <source room> if one is given. Exits can only be opened from rooms.
@@ -2855,6 +2859,9 @@ See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
   
   Both <exit name> and <return exit name> can include any number of aliases
   for the exits, separated by semicolons. See 'help @name' for details.
+
+  Wizards and objects with the pick_dbref power can specify garbage
+  dbrefs to use for the exit and return exit.
 
   To open an exit in a room, you must control the room, have the 
   Open_Anywhere @power, or the room must be set OPEN_OK and you must pass

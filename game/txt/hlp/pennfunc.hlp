@@ -858,13 +858,14 @@ See also: @password, @newpassword
 & CLONE()
   clone(<object>[, <new name>[, <dbref>]])
  
-  This function clones <object>, as per @clone, and returns the dbref number
-  of the clone, or #-1 if the object could not be cloned.
+  This function clones <object>, as per @clone, and returns the dbref
+  number of the clone, or #-1 if the object could not be cloned.
 
-  The clone will have the same name as the original object unless you give
-  a <new name> for it. Normally, the clone will be created with the first
-  available dbref, but wizards may give the <dbref> of a garbage object to
-  use instead.
+  The clone will have the same name as the original object unless you
+  give a <new name> for it. Normally, the clone will be created with
+  the first available dbref, but wizards and objects with the
+  pick_dbref power may give the <dbref> of a garbage object to use
+  instead.
 
 See also: @clone, create(), dig(), open()
 & CMDS()
@@ -1280,14 +1281,15 @@ See also: strreplace(), strinsert(), mid()
     > think die(3, 6, 1)
     5 2 1  
 & DIG()
-  dig(<name>[, <exit to>[, <exit from>[, <dbref>]]])
+  dig(<name>[, <exit to>[, <exit from>[, <room dbref>, <to dbref>, <from dbref>]]])
  
   This function digs a room called <name>, and optionally opens and
   links <exit to> and <exit from>, like the normal @dig command. It
   returns the dbref number of the new room.
   
-  Wizards can supply an optional fourth argument to specify a garbage
-  object to use for the new room.
+  Wizards and objects with the pick_dbref power can supply optional
+  fourth through sixth arguments to specify garbage objects to use for
+  the new room and exits.
 
 See also: @dig, open(), @open, create(), pcreate()
 & DIGEST()
@@ -3703,7 +3705,7 @@ See also: playermem()
   nsoemit() works like @nsoemit.
 
 & OPEN()
-  open(<exit name>[, <destination>[, <source>]])
+  open(<exit name>[, <destination>[, <source>[, <dbref>]]])
   
   This function attempts to open an exit named <exit name>. The exit will be
   opened in the room <source>, if given, or the caller's current location if
@@ -3711,7 +3713,12 @@ See also: playermem()
   
   If a <destination> is given, it will attempt to link the exit to 
   <destination> after opening it.
+
+  Wizards and objects with the pick_dbref power can specify a garbage dbref
+  to use for the new exit.
  
+  It returns the dbref of the newly created exit, or #-1 on error.
+  
 See also: @open, @link, dig(), link(), create(), pcreate()
 & OR()
 & COR()

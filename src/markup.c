@@ -148,7 +148,7 @@ FUNCTION(fun_colors)
     /* Return color info for a specific color */
     char color[COLOR_NAME_LEN];
     char *p = args[0];
-    while (*p && (*p == '+' || *p == '/'))
+    while (*p && (*p == '+' || *p == '/' || *p == '!'))
       p++;
     if (!*p || (!valid_color_name(p) && !valid_color_hex(p + 1))) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
@@ -510,7 +510,7 @@ write_ansi_letters(const ansi_data *cur, char *buff, char **bp)
       }
     }
     if (cur->bg[0] == '+' || cur->bg[0] == '#') {
-      retval += safe_chr('/', buff, bp);
+      retval += safe_chr('!', buff, bp);
       retval += safe_str(cur->bg, buff, bp);
     }
   }
@@ -1003,7 +1003,7 @@ new_ansi:
     case '+':
       /* Color names. */
       name = str + 1;
-      while (*str && *str != '/' && *str != TAG_END) {
+      while (*str && *str != '/' && *str != TAG_END && *str != '!') {
         str++;
       }
       strncpy(buff, name, str - name);
@@ -1022,7 +1022,7 @@ new_ansi:
     case '#':
       /* Hex colors. */
       name = str + 1;
-      while (*str && *str != '/' && *str != TAG_END) {
+      while (*str && *str != '/' && *str != TAG_END && *str != '!') {
         str++;
       }
       strncpy(buff, name, str - name);
@@ -1033,6 +1033,7 @@ new_ansi:
       snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
       break;
     case '/':
+    case '!':
       ptr = store->bg;
       str++;
       break;

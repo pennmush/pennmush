@@ -930,7 +930,7 @@ make_first_free_wrapper(dbref player, char *newdbref)
   if (!newdbref || !*newdbref)
     return 1;
 
-  if (!Wizard(player)) {
+  if (!(Wizard(player) || has_power_by_name(player, "Pick_Dbref", NOTYPE))) {
     notify(player, T("Permission denied."));
     return 0;
   }

@@ -2091,6 +2091,13 @@ FUNCTION(fun_open)
       return;
     }
   }
+  if (nargs == 4) {
+    if (!make_first_free_wrapper(executor, args[3])) {
+      safe_strl("#-1", 3, buff, bp);
+      return;
+    }
+  }
+
   safe_dbref(do_real_open
              (executor, args[0], (nargs > 1 ? args[1] : NULL), source, pe_info),
              buff, bp);

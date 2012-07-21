@@ -612,37 +612,37 @@ For more, see Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  patchlevels               pcreate()                 pemit()                  
  pemit_all power           pfun()                    pfun2                    
- pfun3                     pi()                      pickrand()               
- pidinfo()                 player()                  player_create power      
- playermem()               players                   pmatch()                 
- poll power                poll()                    port                     
- ports()                   pos()                     pose                     
- pose2                     poss()                    power()                  
- powers list               powers list2              powers()                 
- powers2                   prompt()                  prompt_newlines          
- pueblo                    pueblo features           pueblo()                 
- pueblo_send power         puppet                    puppets                  
- puppets2                  queue                     queue power              
- quiet                     quit                      quota()                  
- quotas power              r()                       r-function               
- rand()                    randword()                read                     
+ pfun3                     pi()                      pick_dbref power         
+ pickrand()                pidinfo()                 player()                 
+ player_create power       playermem()               players                  
+ pmatch()                  poll power                poll()                   
+ port                      ports()                   pos()                    
+ pose                      pose2                     poss()                   
+ power()                   powers list               powers list2             
+ powers()                  powers2                   prompt()                 
+ prompt_newlines           pueblo                    pueblo features          
+ pueblo()                  pueblo_send power         puppet                   
+ puppets                   puppets2                  queue                    
+ queue power               quiet                     quit                     
+ quota()                   quotas power              r()                      
+ r-function                rand()                    randword()               
 
 For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- recv()                    regedit()                 regeditall()             
- regeditalli()             regediti()                regexp                   
- regexp classes            regexp classes2           regexp examples          
- regexp syntax             regexp syntax2            regexp syntax3           
- regexp syntax4            regexp syntax5            regexp syntax6           
- regexp syntax7            regexp syntax8            regexps                  
- regexps2                  registers                 registers()              
- registers2                reglattr()                reglattrp()              
- regmatch()                regmatch2                 regmatchi()              
- regnattr()                regnattrp()               regrab()                 
- regraball()               regraballi()              regrabi()                
- regrep()                  regrepi()                                          
+ read                      recv()                    regedit()                
+ regeditall()              regeditalli()             regediti()               
+ regexp                    regexp classes            regexp classes2          
+ regexp examples           regexp syntax             regexp syntax2           
+ regexp syntax3            regexp syntax4            regexp syntax5           
+ regexp syntax6            regexp syntax7            regexp syntax8           
+ regexps                   regexps2                  registers                
+ registers()               registers2                reglattr()               
+ reglattrp()               regmatch()                regmatch2                
+ regmatchi()               regnattr()                regnattrp()              
+ regrab()                  regraball()               regraballi()             
+ regrabi()                 regrep()                  regrepi()                
  regular expression functions                        regxattr()               
  regxattrp()               remainder()               remit()                  
  remove()                  render()                  repeat()                 

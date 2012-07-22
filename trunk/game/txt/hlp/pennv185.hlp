@@ -40,6 +40,8 @@ Commands:
    gives default behaviour. For Rhost compatability. [MG]
  * Two completely separate, but equally stupid, bugs made @nsprompt show
    nospoof info just like @prompt. [MG]
+ * @open, open(), @dig, dig() accept specific garbage dbrefs to use
+   for the exits they make. [SW]
 
 Functions:
  * colors() returns a list of all known color names known by PennMUSH, and
@@ -67,6 +69,8 @@ Minor changes:
    their space. Suggested by Ari and Paige. [SW]   
  * Add a few new test cases. Requested by Sketch. [MG]
  * It's now possible to clear/reset a prompt with @prompt <player>. [MG]
+ * New Pick_Dbref @power for specifying specific garbage dbrefs to use in
+   @create and friends. [SW]
 
 Fixes:
  * Reordered some checks in tz.c to compile on more distributions. Problem
@@ -81,6 +85,9 @@ Fixes:
    by ChaosMageX@M*U*S*H. [DC]            
  * Fix some potential memory leaks in timezone file reading code. [SW]
  * Off-by-one error in the helpfile index code. [MG]
+ * Improve docmentation of ip_addr config option. [SW]
+ * Fix an edge case in ansi_string_replace that could cause an overflow.
+   Reported by Ton Kyrion@M*U*S*H. [DC]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

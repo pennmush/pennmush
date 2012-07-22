@@ -1654,6 +1654,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     len = BUFFER_LEN - 1;
     truncated = 1;
     if (srcend >= BUFFER_LEN) {
+      srcend = BUFFER_LEN - 1;
       srclen = len - loc;
       dstleft = 0;
     } else {

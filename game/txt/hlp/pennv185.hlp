@@ -88,6 +88,7 @@ Fixes:
  * Improve docmentation of ip_addr config option. [SW]
  * Fix an edge case in ansi_string_replace that could cause an overflow.
    Reported by Ton Kyrion@M*U*S*H. [DC]
+ * Fix a memory leak in LOGOUT. [SW]
 
 & 1.8.5p1
 Version 1.8.5 patchlevel 1                                 May 15, 2012

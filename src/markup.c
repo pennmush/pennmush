@@ -99,15 +99,18 @@ FUNCTION(fun_ansi)
 {
   ansi_data colors;
   char *save = *bp;
+  char *codes;
   char *p;
   int i;
 
   if (!*args[1])
     return;
 
+  codes = remove_markup(args[0], NULL);
+
   /* Populate the colors struct */
-  if (define_ansi_data(&colors, args[0])) {
-    safe_format(buff, bp, T("#-1 INVALID ANSI DEFINITION: %s"), args[0]);
+  if (define_ansi_data(&colors, codes)) {
+    safe_format(buff, bp, T("#-1 INVALID ANSI DEFINITION: %s"), codes);
   }
 
   /* If there are no colors designated at all, then just return args[1]. */
@@ -657,7 +660,7 @@ ansi_map_256(int hex)
   /* Now find the closest 16 color match. */
   best = 0;
 
-  for (i = 0; i < 256; i++) {
+  for (i = 16; i < 256; i++) {
     cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {
       best = i;
@@ -872,10 +875,10 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format, char *buff,
  * leading '#'
  */
 int
-valid_color_hex(char *name)
+valid_hex_code(char *name)
 {
-  /* Must be 6 characters and must all be hexadecimal. */
-  if (!name || strlen(name) != 6) {
+  /* Must be len characters and must all be hexadecimal. */
+  if (!name || !*name) {
     return 0;
   }
   while (*name) {
@@ -910,6 +913,39 @@ valid_color_name(char *name)
   return 0;
 }
 
+/** Validate a list of 'R G B' values (0-255 each). If valid, store the
+ * values in 'res' in hex RRGGBB format. 'name' is destructively modified.
+ */
+int
+valid_color_rgb(char *name, char res[])
+{
+  int values[3], i;
+  char *color, *p;
+
+  p = name;
+  for (i = 0; i < 3; i++) {
+    color = p;
+    while (*p && *p != ' ')
+      p++;
+    if (*p)
+      *(p++) = '\0';
+    else if (i != 2) {
+      return 0;
+    }
+    if (!is_strict_integer(color)) {
+      return 0;
+    }
+    values[i] = parse_integer(color);
+    if (values[i] < 0 || values[i] > 255) {
+      return 0;
+    }
+  }
+
+  if (res != NULL)
+    snprintf(res, COLOR_NAME_LEN, "%02x%02x%02x", values[0], values[1], values[2]);
+  return 1;
+}
+
 /** Populate an ansi_data struct.
  * \param store pointer to an ansi_data struct to populate.
  * \param str   String to populate it using.
@@ -923,6 +959,7 @@ define_ansi_data(ansi_data *store, const char *str)
   char *ptr;
   char buff[BUFFER_LEN];
   memset(store, 0, sizeof(ansi_data));
+  memset(buff, 0, BUFFER_LEN);
 
   for (; str && *str && (*str != TAG_END); str++) {
     switch (*str) {
@@ -989,6 +1026,18 @@ define_ansi_data(ansi_data *store, const char *str)
     case '#':
     case '+':
     case '/':
+    case '<':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '!':
       goto new_ansi;
     }
   }
@@ -1032,10 +1081,102 @@ new_ansi:
       }
       snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
       break;
+    case '<':
+      name = str + 1;
+      while (*str && *str != '>' && *str != TAG_END) {
+        str++;
+      }
+      if (*name == '#') {
+        name++;
+        if (!*name)
+          return 1;
+        strncpy(buff, name, str - name);
+        if (!valid_color_hex(buff)) {
+          return 1;
+        }
+        snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+      } else {
+        char rgbs[BUFFER_LEN];
+        strncpy(rgbs, name, str - name);
+        if (valid_color_rgb(rgbs, buff)) {
+          snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+        } else {
+          return 1;
+        }
+      }
+      if (*str == '>')
+        str++;
+      break;
+    case '0':
+      if (*(str + 1) && (*(str + 1) == 'X' || *(str + 1) == 'x')) {
+        str += 2; /* skip over '0x' */
+        if (!*str) {
+          return 1;
+        }
+        name = str;
+        while (*str && *str != '/' && *str != '!' && *str != TAG_END)
+          str++;
+        strncpy(buff, name, str - name);
+        if (!valid_hex_code(buff)) {
+          return 1;
+        }
+        switch (strlen(buff)) {
+        case 1:
+        case 2:
+          {
+            unsigned int xterm;
+            sscanf(buff, "%x", &xterm);
+            snprintf(ptr, COLOR_NAME_LEN, "+xterm%u", xterm);
+          }
+          break;
+        case 3:
+          {
+            unsigned int r, g, b;
+            sscanf(buff, "%01x%01x%01x", &r, &g, &b);
+            snprintf(ptr, COLOR_NAME_LEN, "#%01x0%01x0%01x0", r, g, b);
+          }
+          break;
+        case 6:
+          {
+            unsigned int r, g, b;
+            sscanf(buff, "%02x%02x%02x", &r, &g, &b);
+            snprintf(ptr, COLOR_NAME_LEN, "#%02x%02x%02x", r, g, b);
+          }
+          break;
+        default:
+          return 1;
+        }
+        break;
+      } else {
+        /* fall through */
+      }
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      name = str;
+      while (*str && *str != '/' && *str != '!' && *str != TAG_END)
+        str++;
+      strncpy(buff, name, str - name);
+      if (!is_strict_integer(buff))
+        return 1;
+      else {
+        int xterm = parse_integer(buff);
+        if (xterm < 0 || xterm > 255)
+          return 1;
+        snprintf(ptr, COLOR_NAME_LEN, "+xterm%d", xterm);
+        break;
+      }
     case '/':
     case '!':
       ptr = store->bg;
       str++;
+      memset(buff, 0, BUFFER_LEN);
       break;
     default:
       return 1;

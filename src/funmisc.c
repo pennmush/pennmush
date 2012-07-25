@@ -71,10 +71,10 @@ FUNCTION(fun_valid)
   else if (!strcasecmp(args[0], "qreg"))
     safe_boolean(ValidQregName(args[1]), buff, bp);
   else if (!strcasecmp(args[0], "colorname"))
-    safe_boolean(valid_color_name(args[0]), buff, bp);
+    safe_boolean(valid_color_name(args[1]), buff, bp);
   else if (!strcasecmp(args[0], "ansicodes")) {
     ansi_data colors;
-    safe_boolean(!define_ansi_data(&colors, args[0]), buff, bp);
+    safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }

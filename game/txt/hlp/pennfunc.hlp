@@ -573,14 +573,23 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   
   The old-style <ansi-codes> are listed in "help ansi2".
   
-  <fg-color> and <bg-color> can be either a "+<colorname>" (for a list of
-  valid names, see "help colors()") or a hexcode (#000000, #ff0055, etc).
+  <fg-color> and <bg-color> can be one of:
+    * +<colorname> (for a list of valid names, see "help colors()")
+    * a hexcode, optionally in angle brackets (#000000, <#ff0055>, etc)
+    * a list of red, green and blue values from 0-255, in angle brackets
+      (<0 0 0>, <255 0 85>, etc)
+    * a number from 0-255; this is the same as using "+xterm<number>",
+      for Rhost compatability.
 
   For example, "ansi(+orange/#0000ff,Test)" would color "Test" in orange,
   on a blue background. In the event that your client does not support
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.
   
+  If you want to mix basic ANSI codes with extended colors, the basic ANSI
+  codes must come first.
+  
+  See 'help ansi3' for more examples.
 See also: ANSI, COLOR, @sockset, colorstyle, colors()
 & ANSI2
   Old-style valid color codes are:
@@ -604,6 +613,17 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan.
   Default foreground and background use the client's default color for
   fore and back.
+
+& ANSI3
+
+  Bright yellow text on a blue background:
+  > think ansi(yB, foo)
+  
+  Orange text on an ANSI-green background:
+  > think ansi(G+orange, bar)
+  
+  Underlined pink text on a purple background
+  > think ansi(u+lightsalmon/#a020f0, ugly)
 
 & APOSS()
 & %a

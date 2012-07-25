@@ -1097,6 +1097,7 @@ new_ansi:
         snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
       } else {
         char rgbs[BUFFER_LEN];
+        memset(rgbs, 0, BUFFER_LEN);
         strncpy(rgbs, name, str - name);
         if (valid_color_rgb(rgbs, buff)) {
           snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);

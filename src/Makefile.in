@@ -137,6 +137,9 @@ htmltab.c: htmltab.gperf
 lmathtab.c: lmathtab.gperf
 	gperf --output-file lmathtab.c lmathtab.gperf
 
+rgbtab.c: rgbtab.gperf
+	gperf --output-file rgbtab.c rgbtab.gperf
+
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h
 
@@ -1273,6 +1276,7 @@ markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/game.h
 markup.o: ../hdrs/rgb.h
 markup.o: htmltab.c
+markup.o: rgbtab.c
 match.o: ../hdrs/copyrite.h
 match.o: ../config.h
 match.o: ../hdrs/conf.h

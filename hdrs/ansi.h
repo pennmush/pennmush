@@ -234,9 +234,9 @@ parse_ansi_string(const char *src)
     int valid_hex_code(char *name);
     #define valid_color_hex(name) (strlen(name) == 6 && valid_hex_code(name))
     int valid_color_name(char *name);
-    int color_to_hex(char *name, int hilite);
+    uint32_t color_to_hex(char *name, int hilite);
     int ansi_map_16(char *name, int bg);
-    int ansi_map_256(int hex);
+    int ansi_map_256(uint32_t hex);
 
 
 #endif                          /* __ANSI_H */

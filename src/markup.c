@@ -64,6 +64,8 @@ const char *is_allowed_tag(const char *s, unsigned int len);
 
 static ansi_data ansi_null = NULL_ANSI;
 
+#include "rgbtab.c"
+
 /* ARGSUSED */
 FUNCTION(fun_stripansi)
 {
@@ -543,7 +545,7 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
 }
 
 /** Return the hex code for a given ANSI color */
-int
+uint32_t
 color_to_hex(char *name, int hilite)
 {
   int i = 0;
@@ -559,19 +561,23 @@ color_to_hex(char *name, int hilite)
     return strtol(name + 1, NULL, 16);
   }
   if (name[0] == '+') {
+    struct color_lookup *c;
+    int len = 0;
+
     name++;
     /* Downcase and remove all spaces. */
     for (p = q = name; *q; q++) {
       if (isspace((unsigned char) *q))
         continue;
       *(p++) = tolower((unsigned char) *q);
+      len += 1;
     }
     *(p) = '\0';
-    for (i = 0; allColors[i].name; i++) {
-      if (!strcmp(name, allColors[i].name)) {
-        return allColors[i].hex;
-      }
-    }
+    
+    c = colorname_lookup(name, len);
+    if (c)
+      return c->rgb;
+
     /* It's an invalid color. Return hot pink since we shouldn't have gotten here? */
     return 0xff69b4;
   }
@@ -650,9 +656,9 @@ ansi_map_16(char *name, int bg)
 /** Map a color (old-style ANSI code, color name or hex value) taken
  * by ansi() to the 256-color XTERM palette */
 int
-ansi_map_256(int hex)
+ansi_map_256(uint32_t hex)
 {
-  int diff, cdiff;
+  uint32_t diff, cdiff;
   int best = 0;
   int i;
 
@@ -897,20 +903,17 @@ valid_hex_code(char *name)
 int
 valid_color_name(char *name)
 {
-  int i;
+  int len = 0;
   char *p, *q;
   for (p = q = name; *q; q++) {
     if (isspace((unsigned char) *q))
       continue;
     *(p++) = tolower((unsigned char) *q);
+    len += 1;
   }
   *(p) = '\0';
-  for (i = 0; allColors[i].name; i++) {
-    if (!strcmp(name, allColors[i].name)) {
-      return 1;
-    }
-  }
-  return 0;
+
+  return colorname_lookup(name, len) != NULL;
 }
 
 /** Validate a list of 'R G B' values (0-255 each). If valid, store the

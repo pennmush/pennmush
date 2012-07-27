@@ -1,0 +1,360 @@
+& 1.8.5p2
+& changes
+This is a list of changes in this patchlevel which are probably of
+interest to players. More information about new commands and functions
+can probably be gotten via 'help <name of whatever>'. 'help credits'
+lists the [initials] of developers and porters that are used in the list 
+of changes.
+
+Information about changes in prior releases can be found under
+help topics named for each release (e.g. 'help 1.7.2p30').
+A list of the patchlevels associated with each release can
+be read in 'help patchlevels'.
+
+Version 1.8.5 patchlevel 2                                 Aug 01, 2012
+
+Hardcode:
+ * render_string has been modified to work with multiple output formatters,
+   so it can display the appropriate color syntax for the client. [GM]
+ * Tweak the networking code to try to reduce output latency and queue size. [SW]
+
+Major changes:
+ * 256 Color support. Using 24 bit internally for representation and
+   downscaling to the client's possible output values. Use
+   SOCKSET colorstyle=xterm256 to see 256 color support, with
+   ansi(+colorname/+colorname,...) or ansi(#hexcode/#hexcode) for
+   extended color support, or @set me=xterm256. [GM] [MG]
+ * New SOCKSET socket command for changing socket options. Replaces the
+   @sockset command added in p1 for mortals, and can be used at the
+   login screen. Suggested by Sketch. [MG]
+ * @sockset is now @sockset <desc>[=<opt>,<value>[,...]], to query current
+   options or set options for any descriptor. [MG]
+ * The old @doing command has now been removed, and replaced with the normal
+   standard-attribute command (@doing <object>[=<message>]). [MG]
+
+Commands:
+ * look now takes an /opaque switch, which hides contents listings. Suggested
+   by Wiggles. [MG]
+ * @break and @assert now take a /queued switch, which causes the new <action
+   list> to be queued instead of run immediately, and an /inline switch which
+   gives default behaviour. For Rhost compatability. [MG]
+ * Two completely separate, but equally stupid, bugs made @nsprompt show
+   nospoof info just like @prompt. [MG]
+ * @open, open(), @dig, dig() accept specific garbage dbrefs to use
+   for the exits they make. [SW]
+
+Functions:
+ * colors() returns a list of all known color names known by PennMUSH, and
+   info about a particular color. [GM]
+ * valid() has two new categories, for validating color names and color code
+   sequences for ansi(). [MG]
+ * etime() formats elapsed times using the same rules as in WHO. [SW]
+
+Minor changes:
+ * The meaning of the COLOR flag has been restored. ANSI flag once again 
+   means only highlight is supported, while COLOR means all ANSI 8 colors
+   (8*2 including highlight), flash, invert, etc are supported. [GM]
+ * Charset negotiation didn't work on MSVC, and now forces iso-8859-1 when
+   compiled that way instead. Reported by Daniel Powell. [MG]
+ * @config/set and @config/save now log to the wizard_log. Suggested by
+   Israphel. [MG]
+ * The ICLOC attribute, which was set on newly created players but never used
+   in any way, is no longer set. Suggested by Paige. [MG]
+ * @destroy'ing, @undestroy'ing, and the actual destruction of players is
+   now logged. Suggested by Padraic. [MG]
+ * Translation fixes by Stoko.
+ * round(4.5,0) behaved differently on Penn than it did on MUX, and
+   inconsistantly with rounding to more places on Penn. [SW]
+ * The 'On for' and 'Idle' time fields in WHO are smarter and won't overflow
+   their space. Suggested by Ari and Paige. [SW]   
+ * Add a few new test cases. Requested by Sketch. [MG]
+ * It's now possible to clear/reset a prompt with @prompt <player>. [MG]
+ * New Pick_Dbref @power for specifying specific garbage dbrefs to use in
+   @create and friends. [SW]
+
+Fixes:
+ * Reordered some checks in tz.c to compile on more distributions. Problem
+   reported by Zen@M*U*SH. [MG]
+ * Setting an exit Transparent didn't cause its destination's desc to get
+   shown as it should have. [MG]
+ * It became impossible in p1 to give a delimiter to wrap() without also
+   specifying a first line width. wrap(%0,%1,,%2) will now use the
+   normal <width> arg for first line width, the same as wrap(%0,%1) does.
+   Reported by Kitai. [MG]
+ * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
+   by ChaosMageX@M*U*S*H. [DC]            
+ * Fix some potential memory leaks in timezone file reading code. [SW]
+ * Off-by-one error in the helpfile index code. [MG]
+ * Improve docmentation of ip_addr config option. [SW]
+ * Fix an edge case in ansi_string_replace that could cause an overflow.
+   Reported by Ton Kyrion@M*U*S*H. [DC]
+ * Fix a memory leak in LOGOUT. [SW]
+
+& 1.8.5p1
+Version 1.8.5 patchlevel 1                                 May 15, 2012
+
+Hardcode:
+ * The local_data_clone() function now receives an additional argument,
+   which specifies whether @clone/preserve was used. You'll need to either
+   update the definition of local_data_clone in src/local.c from the one in 
+   src/local.dst or, if you've made no changes to src/local.c, just remove
+   src/local.c and it'll be rebuilt automatically. [MG]
+ * The orator variable (defined in game.c), for tracking the last object
+   which made sound, has been deprecated, and may soon be removed; don't use
+   it. Just pass the correct dbrefs to the notify*() functions if something 
+   talks. [MG]
+ * Several of the notify_*() family of functions, and the do_*emit()
+   functions now take an extra arg, for properly tracking both the executor
+   and the speaker when spoofing (@pemit/spoof, etc). [MG]
+
+Deprecation:
+ * @emit/room and @doing/header have been deprecated. Use @lemit and @poll,
+   respectively, instead. [MG]
+
+Major changes:
+ * Built-in attributes are now stored in the database. This means that
+   @attribute no longer needs to be in an @startup, as it will persist
+   across reboots and shutdowns. The attribute_alias option in .cnf
+   files is now deprecated as a result. [MG]
+ * The database now uses a new versioning scheme (alongside the old
+   one, for backwards compatability), using incrementing integers
+   instead of bitwise flags. Ideas by [GM] and Covenent. [MG]
+
+Minor changes:
+ * Logged messages now have events in the LOG tree. Suggested by
+   Padraic. [SW]
+ * Objects belonging to destroyed players now get chowned to a
+   configurable player (probate_judge in mush.cnf) instead of
+   God. [SW]
+ * Commands involving movement now check the enactor is a
+   player/thing, instead of just relying on the command's
+   restriction. [MG]
+ * @switch, switch(), @[in]filter and attribute @locks (foo:bar) now
+   do lte/gte wildcard matches on <=foo and >=foo patterns. Inspired
+   by Wiggles. [MG]
+ * New channel mogrifier, MOGRIFY`NOBUFFER, can be used to exclude
+   certain @chats from the channel's recall buffer. Suggested by
+   Wiggles. [MG]
+ * Nospoof players now see the nospoof header on @cemits, making
+   @nscemit actually have some use. Report by rimnar@M*U*S*H. [MG]
+ * The login screen WHO can now be overridden using the who_file
+   config option, which can be set as the path to a textfile or an
+   obj/attr, like connect_file et al. From suggestions by Paige,
+   Trelane and Mercutio. [MG]
+ * Talek's chunk attribute storage system, which pages attribute
+   contents to and from disk as needed, is now optional by popular
+   request. Controlled via options.h [SW]
+ * New lock, @lock/dropin, controls who can drop objects into that
+   location. [SW]
+ * @ps now shows a running average of the number of queue entries
+   executed per second. [SW]
+ * Try to discriminate between ssl_slave and other sources of
+   connections to the local unix socket. [SW]
+ * Repeating the PUEBOCLIENT socket command now causes PennMUSH to
+   re-send the 'start parsing HTML' codes, for when Pueblo-enabled
+   clients hiccough and show raw HTML. [MG]
+ * The DESTINATION attribute for variable exits now receives the exit
+   name/alias typed by the player as %0 when moving, to allow different
+   destinations based on the exit alias used to move. It also has access
+   to %c, %u, and other %-subs available when moving, Suggested by 
+   Javelin and [GM]. [MG]
+ * Translation updates and messages fixes by Stoko.
+ * Help fixes by Todd@M*U*S*H, Steve Varley, Wiggles and others. [MG]
+ * @message now takes a /silent and /noisy switch, the same as @pemit, with
+   the default controlled by the silent_pemit @config option. message()
+   is now silent, like pemit(). Suggested by Padraic. [MG]
+ * The MUSH can now negotiate its character set with clients. There's still
+   only one charset available, but now the client can know exactly what it's
+   receiving. Suggested by Sketch. [MG] Make sure your MUSH is running in the
+   right charset; see http://tinyurl.com/penn-charset for more information.
+ * Additional test suite tests for setunion/setdiff/setinter() by Sketch.
+
+Fixes:
+ * When regexp matching an ansi'd string, named captures weren't set
+   at all.  For non-ansi'd strings, non-named (numeric) captures were
+   sometimes overwritten with the values of named captures. Reported
+   by Sketch. [MG]
+ * The configure script incorrectly reported that ssl_slave was
+   unavailable when told to disable it via
+   --disable-ssl_slave. Reported by Cheetah. [MG]
+ * Sound from an AUDIBLE wagon object used to propagate into other
+   wagon objects in the same location with an @listen of *. It now
+   does so again.  Reported by Xeero and Padraic. [MG]
+ * Sound will now also propagate through two @listens, instead of just
+   one, as it used to. Reported by Mac@M*U*S*H. [MG]
+ * Loading a reboot db is more robust. Inspired by Padraic. [SW]
+ * scan() couldn't be used by rooms. Reported by Padraic. [MG]
+ * Possible crashbug in the queue triggered by events reported by
+   Rince@Wing Commander: New Horizon. [MG]
+ * @list attribute would show duplicates for aliases. [MG]
+ * insert(,foo,-1) no longer appends an extra delimiter. [MG]
+ * @function/clone didn't work correctly, and could potentially cause
+   a crash. [MG]
+ * @clone didn't respect Many_Attribs. [MG]
+ * Making a connection to a ssl port on a game not using ssl_slave
+   could hang the mush. Reported by Minion. [SW]
+ * @cemit and friends would notify you twice if you cemited to a channel
+   you weren't on. Reported by spork. [MG]
+ * regrep() could try to read uninitialized memory. [SW]
+ * Fix a possible DOS from a local attacker. [SW]
+ * Fix a couple of possible memory leaks. [MG]
+ * ordinal(12) now returns twelfth, not twelveth. Patch by Minion.
+ * trunc() now ignores ANSI. Reported by Sketch. [MG]
+ * Evaluation @locks didn't receive %0-%9 args, even when they should.
+   Reported by Zen@M*U*S*H. [MG]
+ * @message/spoof now tracks both the object using @message and the object
+   being spoofed, allowing for more accurate priv checks when evaluating
+   the format messages. Reported by Mercutio. [MG]
+ * When spoofing (@pemit/spoof, etc), any errors for failed locks or bad
+   object names incorrectly went to the object being spoofed, not the object
+   doing the spoofing. [MG]
+ * @lemit incorrectly ignored an = and anything after it in its arg. [MG]
+ * wrap(%0,strlen(%0)) would incorrectly wrap the string onto two lines. 
+   Reported by Padraic. [MG]
+
+Commands:
+ * @edit/regexp[/all][/nocase], command version of regedit[all][i]().
+   Suggested by Minion. [MG]
+ * The @sql command no longer uses UNIMPLEMENTED_COMMAND when SQL
+   support is not compiled into the MUSH. Instead, it just reports
+   that no SQL db is available, like @mapsql does. [MG]
+ * @slave, for restarting the info_slave and ssl_slave daemons from
+   within the game. [SW]
+ * @sockset <option>=<value>, for setting options on your descriptor.
+
+Functions:
+ * version() now reports svn revision/date where available. Patch by
+   Padraic.
+ * ldelete(), replace(), elements() and extract() now accept negative
+   position arguments, to count backwards from the end of the list,
+   similar to insert(). Suggested by Minion. [MG]
+ * replace() now takes an optional output separator. [MG]
+ * regmatch() now returns an error for invalid regexps, whether you're
+   storing subpattern matches or not. Reported by Sketch. [MG]
+ * time(), timefmt() and convsecs() can use symbolic timezones
+   (US/Pacific, EST, etc.) if the host server has a time zone database
+   installed. [SW]
+ * playermem() and objmem() are smarter about calculating space being
+   used by atributes [SW]
+ * rnum() has been deprecated in favor of locate(). [SW]
+ * step() no longer pads the final call with empty arguments, allowing you
+   to use %+ or registers() to differentiate empty and missing args. [MG]
+ * e() and exp() are now the same function internally, with e(), exp() and
+   exp(1) all being equivilent. Suggested by Ari. [MG]
+ * When wrap() hyphenates a word, the hyphen will now share the ANSI of the
+   first character of the newline. [MG]
+   
+& 1.8.5p0
+Version 1.8.5 patchlevel 0                                 Feb 12, 2012
+
+Major changes:
+ * The PCRE library is now required to build Penn, instead of falling
+   back to an old, buggy version formerly bundled with the MUSH. [SW]
+   Daniko assisted greatly with Windows changes and documentation.
+ * The OpenSSL library is now required to build Penn. Again, Daniko has
+   provided instructions for installing on Windows. [SW]
+ * A new command prefix, "}", enables debug for a single execution of the
+   command  - }think foo, }+who, etc. See 'help }' for more info. Suggested
+   by Wiggles and [GM]. [MG]
+
+Minor changes:
+ * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
+   "event" restriction is set or cleared. Suggested by [SW]. [MG]
+ * Expanded help on lock types and @powers. [MG]
+ * @startups are now processed in db order (#0, #1, etc) on reboot instead
+   of giving priority to player objects. [MG]
+ * @startups (and local_startup() in local.c) are now triggered slightly
+   later, ensuring that the db is fully loaded, and that the connected player
+   list is loaded on @shutdown/reboot. Suggested by Padraic. [MG]
+ * Switch names that are defined but not used by any commands are
+   warned about on startup, and several unused ones have been removed
+   from the master list. [SW]
+ * Tweak utils/mkcmds.pl for the above change and to remove references
+   to generating the obsolete patches.h. [SW]
+ * Tweak the parameters of the skip list used to store memcheck counts
+   to save some memory. [SW]
+ * Bring the scheme scripts in utils up to date with current versions
+   of chicken scheme (The implementation of the language they're
+   written for.) [SW]
+ * The test harness code strips trailing whitespace before attempting to match
+   against expected results, making it easier to use bounded regexps. [SW]
+ * @destination (for variable exits) is now a standard attribute, and has
+   a helpfile. [MG]
+ * Sound is now propagated through audible variable exits, and exits @linked
+   to 'home'. Suggested by Mercutio. [SW]
+ * The internal QUEUE attribute is no longer used to track the number
+   of action lists an object has queued; the objdata system is used
+   instead.  [SW]
+ * isobjid() now requires a full object id (with :ctime), and will return 0
+   for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
+   matches both dbrefs and objids. Suggested by Covenent. [MG]
+ * @entrances and entrances() now use the same internal routines as @search,
+   and have similar (and saner) privs. From a suggestion by Sketch. [MG]
+ * Connection messages that are evaluated from an attribute instead of
+   read from a file get the dbref of the connected player as %1, as
+   long as they're ones shown post-connection (motd_file, etc.) [SW]
+ * Passwords are, thanks to OpenSSL digest routines, now stored in a
+   less error prone, more secure, flexible and extendable
+   format. Existing player passwords will be upgraded automatically on
+   login. [SW]
+ * New script in utils/ for manipulating player passwords in an offline
+   database. Useful if you forget God's password. [SW]
+ * The my_vsnprintf function in the hardcode has been renamed to
+   mush_vsnprintf to avoid a conflict with MySQL. Reported by Balerion @ 
+   Blood of Dragons. [MG]
+ * The enactor (%#) for the PLAYER`DISCONNECT event is now more useful,
+   instead of always being set to the dbref of the player disconnecting (%0).
+   Suggested by Padraic. [MG]
+ * The SOCKET`LOGINFAIL event now gets passed the name that was entered as
+   %5 when no matching player is found. Suggested by Daniel Powell. [MG]
+
+Commands:
+ * Added @mail/review for reading mail you've sent, and @mail/retract for
+   deleting unread mail that you sent. Idea from MUX. Patch by Minion.
+ * @hook/list now shows error messages if you don't have permission to use
+   it, or if a command has no hooks, instead of failing silently. Suggested
+   by Padraic. [MG]
+ * Wizards can now @pcreate players with restricted names, as well as being
+   able to rename existing players to forbidden names. Suggested by Nymeria @
+   Blood of Dragons. [MG]
+
+Functions:
+ * Functions that take a sort type argument now accept 'mtime' for
+   sorting based on object's modification time. Patch by Minion.
+ * New registers() function, like listq() but returns all kinds of registers
+   (q-registers, %0-%9 args, iter/switch context, regexp captures). Also
+   takes an output separator arg. Suggested by Wiggles. [MG]
+ * digest(list) returns all message digest algorithms the server supports. [SW]
+ * sha0() has been deprecated in favor of digest(). [SW]
+
+Fixes:
+ * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]
+ * listq() incorrectly returned all registers (including %0-%9, %i0, etc),
+   not just %q-registers. Reported by Wiggles. [MG]
+ * The mud_url code didn't always work correctly in Firefox because http
+   headers weren't sent. [MG]
+ * %0 and %1 arguments weren't properly passed through verb attributes after
+   a change in p8. Reported by Padraic. [MG]
+ * Fix really stupid copy-and-paste error in magic sorts on strings with
+   ANSI, which broke setinter() and friends. Reported by Minion. [MG]
+ * Help fixes by Wiggles, Mouvar and others. [MG]
+ * Memory leak in ldelete() fixed. [MG]
+ * Fix a crashbug reported by Minion. [MG]
+ * Sorting functions now ignore ANSI when sorting a string as a number
+   or dbref. From report by Mouvar. [MG]
+ * strreplace() was broken for overly long length arguments. Reported
+   by Ashen-Shugar.  [SW]
+ * Compile errors on Windows with OpenSSL. Reported by Daniko.
+ * @uptime could report negative times for the first dump, purge, etc after
+   a game was started. Reported by Cooee. [MG]
+ * override/inplace hooks from .cnf files didn't work correctly. [MG]
+ * The portmsg announcer daemon was broken. Reported by Minion. [SW]
+ * A change in p8 broke the sending of the Pueblo hello string in some cases.
+   Reported by Mercutio. [MG]
+ * Fix crash bug in @sitelock/remove [SW]
+ * ssl_slave would drop connections if it couldn't resolve a valid hostname
+   for the connecting IP address. [SW]
+ * Non-matching regexp captures ($0, $<foo>, etc) sometimes had the value
+   of the previous matching capture. From a report by Sketch. [MG]
+
+

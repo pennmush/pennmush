@@ -1051,6 +1051,11 @@ new_ansi:
   ptr = store->fg;
   /* *str is either +, # or / */
   while (str && *str && *str != TAG_END) {
+    /* Eat leading whitespace to allow things like +red / +white */
+    if (isspace((unsigned char) *str)) {
+      str += 1;
+      continue;
+    }
     switch (*str) {
     case '+':
       /* Color names. */

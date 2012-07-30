@@ -93,8 +93,8 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
-/* Maximum length of a color name. */
-#define COLOR_NAME_LEN 20
+/* Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
+#define COLOR_NAME_LEN 22
 /** ANSI color data */
 typedef struct _ansi_data {
   uint8_t bits;
@@ -223,20 +223,19 @@ parse_ansi_string(const char *src)
 #define wrap_tag(x,y) tprintf("%c%c%s%c%s%c%c/%s%c", \
     TAG_START,MARKUP_HTML,x,TAG_END, \
     y, TAG_START,MARKUP_HTML,x,TAG_END)
-    int safe_tag(char const *a_tag, char *buf, char **bp);
-    int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
-    int safe_tag_wrap(char const *a_tag, char const *params,
-                      char const *data, char *buf, char **bp, dbref player);
+
+int safe_tag(char const *a_tag, char *buf, char **bp);
+int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
+int safe_tag_wrap(char const *a_tag, char const *params,
+		  char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
-    int valid_hex_code(char *name);
-    #define valid_color_hex(name) (strlen(name) == 6 && valid_hex_code(name))
-    int valid_color_name(char *name);
-    uint32_t color_to_hex(char *name, int hilite);
-    int ansi_map_16(char *name, int bg);
-    int ansi_map_256(uint32_t hex);
+int valid_color_name(const char *name);
+uint32_t color_to_hex(char *name, int hilite);
+int ansi_map_16(char *name, int bg);
+int ansi_map_256(uint32_t hex);
 
 
 #endif                          /* __ANSI_H */

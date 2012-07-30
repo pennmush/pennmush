@@ -585,6 +585,8 @@ mush_strndup(const char *src, size_t len, const char *check)
     int strncasecoll(const char *s1, const char *s2, size_t t);
 #endif
 
+size_t remove_trailing_whitespace(char *, size_t);
+
 /** Append a character to the end of a BUFFER_LEN long string.
  * You shouldn't use arguments with side effects with this macro.
  */

@@ -156,8 +156,9 @@ FUNCTION(fun_colors)
 	continue;
       if (shown)
 	safe_chr(' ', buff, bp);
+      else
+	shown = 1;
       safe_str(allColors[i].name, buff, bp);
-      shown = 1;
     }
   } else if (nargs == 2) {
     /* Return color info for a specific color */
@@ -173,15 +174,32 @@ FUNCTION(fun_colors)
       return;
     }
 
-    if (!*args[1] || string_prefix("hex", args[1]))
+    if (!*args[1] || strcmp("hex", args[1]) == 0)
       safe_format(buff, bp, "#%06x", color_to_hex(ad.fg, 0));
-    else if (string_prefix("16color", args[1]))
+    else if (strcmp("16color", args[1]) == 0)
       safe_chr(colormap_16[ansi_map_16(ad.fg, 0) - 30].desc, buff, bp);
-    else if (string_prefix("256color", args[1])
-             || string_prefix("xterm256", args[1]))
+    else if (strcmp("256color", args[1]) == 0
+             || strcmp("xterm256", args[1]) == 0)
       safe_integer(ansi_map_256(color_to_hex(ad.fg, 0)), buff, bp);
-    else
-      safe_str("#-1", buff, bp);
+    else if (strcmp("name", args[1]) == 0) {
+      int i;
+      uint32_t color;
+      bool shown = 0;
+      
+      color = color_to_hex(ad.fg, 0);
+      for (i = 256; allColors[i].name; i += 1) {
+	if (allColors[i].hex == color) {
+	  if (shown)
+	    safe_chr(' ', buff, bp);
+	  else
+	    shown = 1;
+	  safe_str(allColors[i].name, buff, bp);
+	}
+      }
+      if (!shown) 
+	safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
+    } else
+      safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
     return;
   }
 }

@@ -291,6 +291,10 @@ msgstr "#-1 STUPCI NE MOGU BITI TOLIKO VELIKI"
 msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
 msgstr "#-1 KANAL NEMA BUFFER"
 
+#: markup.c:173
+msgid "#-1 COLORS() EXPECTS ONE COLOR"
+msgstr "#-1 COLORS() OÈEKUJE JEDNU BOJU"
+
 #: funmath.c:2490 funmath.c:2526
 msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
 msgstr "#-1 ZA USPOREDBU SU POTREBNA BAREM 2 BROJA"
@@ -522,6 +526,10 @@ msgstr "#-1 NEMA KAZALA ZA FILE"
 #: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
 msgid "#-1 NO MATCH"
 msgstr "#-1 NEMA PODUDARANJA"
+
+#: markup.c:200
+msgid "#-1 NO MATCHING COLOR NAME"
+msgstr "#-1 NEMA PODUDARAJUÆEG IMENA BOJE"
 
 #: src/fundb.c:767
 msgid "#-1 NO OBJECTS CONTROLLED"

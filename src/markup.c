@@ -1147,8 +1147,9 @@ new_ansi:
       if (!valid_color_name(buff))
         return 1;
 
-      /* Use hex code to save on buffer space */
-      if (len > 6)
+      if (strncasecmp("xterm", buff, 5) == 0) /* xterm color ids are stored directly. */
+	snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+       else if (len > 6) /* Use hex code to save on buffer space */
         snprintf(ptr, COLOR_NAME_LEN, "#%06x",
 		 color_to_hex(tprintf("+%s", buff), 0));
       else
@@ -1209,8 +1210,7 @@ new_ansi:
             unsigned int xterm;
             if (sscanf(buff, "%x", &xterm) != 1)
 	      return 1;
-            snprintf(ptr, COLOR_NAME_LEN, "#%06x", 
-		     color_to_hex(tprintf("+xterm%u", xterm), 0));
+            snprintf(ptr, COLOR_NAME_LEN, "+xterm%u", xterm);
           }
           break;
         case 3:
@@ -1254,8 +1254,7 @@ new_ansi:
         int xterm = parse_integer(buff);
         if (xterm < 0 || xterm > 255)
           return 1;
-	snprintf(ptr, COLOR_NAME_LEN, "#%06x", 
-		 color_to_hex(tprintf("+xterm%d", xterm), 0));
+	snprintf(ptr, COLOR_NAME_LEN, "+xterm%d", xterm); 
         break;
       } else
 	return 1;

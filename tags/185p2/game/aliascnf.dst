@@ -1,0 +1,97 @@
+# Command aliases that you'd like reserved.
+# Normally, commands are autoaliased to their unique prefixes,
+# so n -> news
+# However, you might prefer to have n not treated as a command alias
+# because you think of it as short for 'north' and want to use a 
+# master room exit to catch it. In that case, you'd uncomment
+# lines like this:
+#reserve_alias e
+#reserve_alias w
+#reserve_alias s
+#reserve_alias n
+#reserve_alias nw
+#reserve_alias ne
+#reserve_alias sw
+#reserve_alias se
+#reserve_alias u
+#reserve_alias d
+
+# We add a dummy here to make updating easier
+reserve_alias dummy_exit_alias
+
+# You can also add new commands, with
+# command_add <command> [<options>], where <options> is a space-separated
+# list of 0 or more of "noparse", "eqsplit", "lsargs" and "rsargs".
+# Equiv of @command/add[/<options>] <command>. See 'help @command'.
+# OPTIONAL
+# add_command @foo eqsplit rsargs
+
+# And hook commands, with
+# hook_command <cmd> <hook> [<obj>[/<attr>]]
+# as per @hook/<hook> <cmd>=[<obj>[/<attr>]]. See 'help @hook'.
+# inplace override hooks have use inplace/override as the hook.
+# OPTIONAL
+# hook_command say override #123/cmd.say
+# hook_command say override/inplace #123/cmd.say
+
+# You can also add new functions, with
+# add_function <function> <obj>/<attr> [<minargs> [<maxargs>]]
+# as per @function <function>=<obj>, <attr>[, <minargs>[, <maxargs>]]
+# If <function> is the name of a built-in function, it will be disabled
+# and replaced with the user function (like @function/delete).
+# OPTIONAL
+# add_function foo #123/fun.foo 1 5
+
+# You can also alias commands to other names.
+# command_alias EXISTING_COMMAND ALIAS
+# For example, a french-language game do the following:
+# command_alias think pensent
+# Some standard aliases:
+command_alias @edit @gedit
+# Alias read to look?
+#command_alias look read 
+
+command_alias look l
+command_alias inventory i
+command_alias @switch @sw
+command_alias page p
+command_alias whisper w
+command_alias goto move
+command_alias @atrlock @attrlock
+command_alias @atrchown @attrchown
+command_alias get take
+
+# As well as commands, functions can be aliased. Same syntax,
+# just function_alias instead of command_alias. 
+# Some standard aliases:
+function_alias lsearch search
+function_alias soundslike soundlike
+function_alias lstats stats
+function_alias trunc val
+function_alias nattr attrcnt
+function_alias nattrp attrpcnt
+function_alias iter parse
+function_alias modulo mod
+function_alias modulo modulus
+function_alias randword pickrand
+function_alias lthings lobjects
+function_alias lvthings lvobjects
+function_alias nthings nobjects
+function_alias nvthings nvobjects
+function_alias xthings xobjects
+function_alias xvthings xvobjects
+function_alias atrlock attrlock
+
+# For rhost compatibility
+function_alias textfile dynhelp
+
+# And so can attributes!
+attribute_alias describe desc
+attribute_alias idescribe idesc
+attribute_alias success succ
+attribute_alias osuccess osucc
+attribute_alias asuccess asucc
+attribute_alias failure fail
+attribute_alias ofailure ofail
+attribute_alias afailure afail
+

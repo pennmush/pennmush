@@ -1,0 +1,22 @@
+Regression tests for Penn functions and commands.
+
+Usage:
+        perl runtest.pl testFOO.pl ...
+
+or     
+        ./alltests.sh
+
+The test*.pl files are frameworks for tests, not actual perl scripts.
+
+Their format:
+
+ login mortal
+ expect N failures!
+ run tests:
+ perl code
+
+All the lines above the 'run tests:' one are optional. 
+
+Look at existing files for how to write tests. Some hints: $god is
+always available as a test connection. If 'login mortal' was given,
+$mortal is too.

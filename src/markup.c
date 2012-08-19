@@ -1012,7 +1012,7 @@ valid_angle_triple(const char *s, int len, char *rgbs)
       return 0;
     safe_hexchar(color, rgbs, &rgbsp);
   }
-  rgbs[7] = '\0';
+  rgbs[6] = '\0';
 
   return 1;
 }

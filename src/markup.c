@@ -103,8 +103,6 @@ FUNCTION(fun_ansi)
   ansi_data colors;
   char *save = *bp;
   char *codes;
-  char *p;
-  int i;
 
   if (!*args[1])
     return;
@@ -131,16 +129,20 @@ FUNCTION(fun_ansi)
   /* If the contents overrun the buffer, we
    * place an ANSI_ENDALL tag at the end */
   if (safe_strl(args[1], arglens[1], buff, bp) || write_ansi_close(buff, bp)) {
-    p = buff + BUFFER_LEN - 7;  /* <c/a> */
-    for (i = 10; i > 0 && *p != TAG_START; i--, p--) ;
-    if (i > 0) {
-      /* There's an extant tag, let's just replace that. */
-      *bp = p;
-      safe_str(ANSI_ENDALL, buff, bp);
-    } else {
-      *bp = buff + BUFFER_LEN - 7;
-      safe_str(ANSI_ENDALL, buff, bp);
+    char *p = *bp - 1;  
+    size_t ealen = strlen(ANSI_ENDALL); /* <c/a> */
+
+    while (p - buff > (ptrdiff_t) (BUFFER_LEN - 1 - ealen)) {
+      if (*p == TAG_END) {
+	/* There's an extant tag that would be overwritten by the closing tag. Scan to the start of it. */
+	while (*p != TAG_START)
+	  p -= 1;
+      } else
+	p -= 1;
     }
+
+    *bp = p;
+    safe_strl(ANSI_ENDALL, ealen, buff, bp);
   }
 }
 
@@ -2199,7 +2201,7 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
   int end;
   int retval = 0;
   int lastidx;
-  char *buffend = buff + BUFFER_LEN;
+  char *buffend = buff + BUFFER_LEN - 1;
 
   if (!as)
     return 0;

@@ -56,3 +56,6 @@ You're probably trying to make a debug build. In Project Properties > Configurat
 
 *EWOULDBLOCK isn't defined!*
 It's really hard for one person to maintain the Win32 build, much less make sure it builds under all versions of Visual Studio. The only officially supported compiler is Visual Studio 2010. So use Visual Studio 2010.
+
+*I can't connect!*
+This seems to occur when Penn only listens over IPv6. You can force it to use IPv4 by setting the ip_addr line in mush.cnf to `ip_addr 0.0.0.0`. Unfortunately I can't reproduce this problem locally...

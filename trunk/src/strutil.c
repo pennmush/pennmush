@@ -838,7 +838,6 @@ safe_strl(const char *s, size_t len, char *buff, char **bp)
 int
 safe_fill(char x, size_t n, char *buff, char **bp)
 {
-  size_t blen;
   int ret = 0;
 
   if (n == 0)

@@ -130,15 +130,15 @@ FUNCTION(fun_ansi)
 
   /* If the contents overrun the buffer, we
    * place an ANSI_ENDALL tag at the end */
-  if (safe_str(args[1], buff, bp) || write_ansi_close(buff, bp)) {
-    p = buff + BUFFER_LEN - 6;  /* <c/a> */
+  if (safe_strl(args[1], arglens[1], buff, bp) || write_ansi_close(buff, bp)) {
+    p = buff + BUFFER_LEN - 7;  /* <c/a> */
     for (i = 10; i > 0 && *p != TAG_START; i--, p--) ;
     if (i > 0) {
       /* There's an extant tag, let's just replace that. */
       *bp = p;
       safe_str(ANSI_ENDALL, buff, bp);
     } else {
-      *bp = buff + BUFFER_LEN - 6;
+      *bp = buff + BUFFER_LEN - 7;
       safe_str(ANSI_ENDALL, buff, bp);
     }
   }
@@ -456,7 +456,7 @@ init_ansi_codes(void)
  * \param cur the ansi_data to write
  * \param buff buffer to write to
  * \param bp pointer to buff to write at
- * \retval number of chars written
+ * \retval 0 on success, >0 if the end of the buffer was hit before outputting everything.
  */
 int
 write_ansi_data(ansi_data *cur, char *buff, char **bp)
@@ -472,6 +472,7 @@ write_ansi_data(ansi_data *cur, char *buff, char **bp)
 /** Write a closing internal markup tag for color.
  * \param buff buffer to write to
  * \param bp pointer to buff to write at
+ * \return 0 on success, >0 if the end of the buffer was hit.
  */
 int
 write_ansi_close(char *buff, char **bp)
@@ -489,6 +490,7 @@ write_ansi_close(char *buff, char **bp)
  * \param cur the ansi data to write
  * \param buff buffer to write to
  * \param bp position in buffer to write at
+ * \return 0 on success, >0 if the end of the buffer was hit.
  */
 static int
 write_ansi_letters(const ansi_data *cur, char *buff, char **bp)

@@ -234,9 +234,9 @@ See also: STRINGS
   These functions return times or format times.
 
   convsecs()    convutcsecs() convtime()    convutctime() ctime()
-  etimefmt()    isdaylight()  mtime()       restarttime() secs()
-  starttime()   stringsecs()  time()        timefmt()     timestring()
-  utctime()     uptime()
+  etime()       etimefmt()    isdaylight()  mtime()       restarttime()
+  secs()        starttime()   stringsecs()  time()        timefmt()     
+  timestring()  utctime()     uptime()
 
 & Utility functions
   These functions don't quite fit into any other category.
@@ -3969,15 +3969,18 @@ See also: andlpowers(), orlpowers(), @power, POWERS LIST
   
 See also: @quota, @squota, @allquota
 & R()
+& %q
 & R-FUNCTION
   r(<register>)
   
   The r() function is used to access "local registers", as set by the setq(),
   setr() or letq() functions, and returns the contents of the specified
   register. Available register names can be found with the listq() function.
- 
-  The '%q<register>' percent-substitution can also be used to access these
-  local registers.
+
+  Registers whose name is a single character can be accessed with the
+  substitution '%q<register>'. Longer register names must be enclosed in
+  literal angle brackets. For example, r(0) and %q0 are equivilent, as far
+  r(foo) and %q<foo>.
   
 See also: setq(), letq(), listq(), unsetq()
 & RAND()
@@ -5952,7 +5955,7 @@ Continued in HELP TIMEZONES13
     1m  1s
   >
 
-See also: etimefmt()
+See also: etimefmt(), timestring()
 & ETIMEFMT()
   etimefmt(<format>, <secs>)
 
@@ -6050,7 +6053,7 @@ See also: convsecs(), etimefmt(), timezones
   > say timestring(301,2)
   You say, "00d 00h 05m 01s"
 
-See also: stringsecs(), convsecs()
+See also: stringsecs(), convsecs(), etime(), etimefmt()
 & STRINGSECS()
   stringsecs(<timestring>)
 

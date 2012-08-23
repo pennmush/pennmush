@@ -102,7 +102,7 @@ static int fail_commands(dbref player);
 void do_readcache(dbref player);
 int check_alias(const char *command, const char *list);
 static int list_check(dbref thing, dbref player, char type,
-                      char end, char *str, int just_match, int queue_flags);
+                      char end, char *str, int just_match, MQUE *queue_entry, int queue_flags);
 int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
@@ -974,9 +974,9 @@ do_readcache(dbref player)
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
-#define list_match(x,q)        list_check(x, executor, '$', ':', cptr, 0, q)
+#define list_match(x,q,qflags)        list_check(x, executor, '$', ':', cptr, 0, q, qflags)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x,q)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, NULL, q)
+#define cmd_match(x,q,qflags)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, q, qflags)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1202,14 +1202,14 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
        * and objects in the executor's inventory.
        */
       if (GoodObject(check_loc)) {
-        a += list_match(Contents(check_loc), queue_flags);
+        a += list_match(Contents(check_loc), queue_entry, queue_flags);
         if (check_loc != executor) {
-          a += cmd_match(check_loc, queue_flags);
+          a += cmd_match(check_loc, queue_entry, queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
       if (check_loc != executor)
-        a += list_match(Contents(executor), queue_flags);
+        a += list_match(Contents(executor), queue_entry, queue_flags);
 
       /* now do check on zones */
       if ((!a) && (Zone(check_loc) != NOTHING)) {
@@ -1232,9 +1232,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
               goto done;
             }
           } else
-            a += list_match(Contents(Zone(check_loc)), queue_flags);
+            a += list_match(Contents(Zone(check_loc)), queue_entry, queue_flags);
         } else {
-          a += cmd_match(Zone(check_loc), queue_flags);
+          a += cmd_match(Zone(check_loc), queue_entry, queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
@@ -1247,9 +1247,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* Player's personal zone is a zone master room, so we
            * also check commands on objects in that room
            */
-          a += list_match(Contents(Zone(executor)), queue_flags);
+          a += list_match(Contents(Zone(executor)), queue_entry, queue_flags);
         else {
-          a += cmd_match(Zone(executor), queue_flags);
+          a += cmd_match(Zone(executor), queue_entry, queue_flags);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
@@ -1272,7 +1272,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* global user-defined commands checked if all else fails.
            * May match more than one command in the master room.
            */
-          a += list_match(Contents(MASTER_ROOM), queue_flags);
+          a += list_match(Contents(MASTER_ROOM), queue_entry, queue_flags);
       }
       /* end of master room check */
     }                           /* end of special checks */
@@ -1298,7 +1298,6 @@ done:
   if (temp_debug_privs)
     queue_entry->queue_type &= ~QUEUE_DEBUG_PRIVS;
 }
-
 
 COMMAND(cmd_with)
 {
@@ -1330,7 +1329,7 @@ COMMAND(cmd_with)
   if (!SW_ISSET(sw, SWITCH_ROOM)) {
     /* Run commands on a single object */
     /* Should this be passing on QUEUE_DEBUG_PRIVS? */
-    if (!cmd_match(what, QUEUE_DEFAULT)) {
+    if (!cmd_match(what, NULL, QUEUE_DEFAULT)) {
       MAYBE_ADD_ERRDB(errdb);
       notify(executor, T("No matching command."));
     }
@@ -1343,7 +1342,7 @@ COMMAND(cmd_with)
     }
 
     /* Should this be passing on QUEUE_DEBUG_PRIVS? */
-    if (!list_match(Contents(what), QUEUE_DEFAULT))
+    if (!list_match(Contents(what), NULL, QUEUE_DEFAULT))
       notify(executor, T("No matching command."));
   }
 }
@@ -1397,14 +1396,14 @@ check_alias(const char *command, const char *list)
  */
 static int
 list_check(dbref thing, dbref player, char type, char end, char *str,
-           int just_match, int queue_flags)
+           int just_match, MQUE *queue_entry, int queue_flags)
 {
   int match = 0;
   dbref errdb = NOTHING;
 
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL,
+                       end, str, just_match, 1, NULL, NULL, 0, &errdb, queue_entry,
                        queue_flags))
       match = 1;
     else {

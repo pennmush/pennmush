@@ -1083,6 +1083,7 @@ do_entry(MQUE *entry, int include_recurses)
     process_expression(entry->pe_info->cmd_raw, &r, &s, executor, entry->caller,
                        entry->enactor, PE_NOTHING, pt_flag, entry->pe_info);
     *r = '\0';
+    notify_format(1, "cmd_raw is: '%s'", entry->pe_info->cmd_raw);
     if (*s == ';')
       s++;
     /* process_command() destructively modifies the cmd, so we need to copy it */
@@ -2396,7 +2397,7 @@ shutdown_a_queue(MQUE **head, MQUE **tail)
   }
 }
 
-/** Averages an array of 16-bit integers. 
+/** Averages an array of 16-bit integers.
  *
  * When compiling with SSE2 support, uses a vectorized code path that
  * takes 32 iterations to sum up the counts used to compute a 15

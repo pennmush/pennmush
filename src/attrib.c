@@ -1533,7 +1533,14 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   prev = &used_list;
 
   pe_info = make_pe_info("pe_info-atr_comm_match");
-  strcpy(pe_info->cmd_raw, str);
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw)
+    strcpy(pe_info->cmd_raw, from_queue->pe_info->cmd_raw);
+  else
+    strcpy(pe_info->cmd_raw, str);
+
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled)
+    strcpy(pe_info->cmd_evaled, from_queue->pe_info->cmd_evaled);
+  else
   strcpy(pe_info->cmd_evaled, str);
 
   skipcount = 0;

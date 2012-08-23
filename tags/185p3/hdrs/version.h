@@ -1,0 +1,4 @@
+#define VERSION "1.8.5"
+#define PATCHLEVEL "3"
+#define PATCHDATE "[08/23/2012]"
+#define NUMVERSION 1008005003

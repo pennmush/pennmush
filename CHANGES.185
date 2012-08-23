@@ -5,17 +5,18 @@ chronological order (most recent first)
 
 [SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
  responsible for most unattributed changes.
-[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
 [GM] is Greg Millam, a PennMUSH developer (aka Walker)
 [MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
-[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
 [3] refers to code by (or inspired by) TinyMUSH 3.0
 [MUX] refers to code by (or inspired by) TinyMUX 2.x
 [Rhost] refers to code by (or inspired by) RhostMUSH
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 3                                 ??? ??, 2012
+Version 1.8.5 patchlevel 3                                 Aug 23, 2012
+
+Fixes:
+ * Fix a crash bug in new color code. Discovered by ChaosMageX. Intrevis, [SW].
 
 Functions:
  * name() with no arguments is now an error. It should always have been, but

@@ -1083,7 +1083,6 @@ do_entry(MQUE *entry, int include_recurses)
     process_expression(entry->pe_info->cmd_raw, &r, &s, executor, entry->caller,
                        entry->enactor, PE_NOTHING, pt_flag, entry->pe_info);
     *r = '\0';
-    notify_format(1, "cmd_raw is: '%s'", entry->pe_info->cmd_raw);
     if (*s == ';')
       s++;
     /* process_command() destructively modifies the cmd, so we need to copy it */

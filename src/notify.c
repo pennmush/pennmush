@@ -354,10 +354,10 @@ notify_type(DESC *d)
 
   if (IS(d->player, TYPE_PLAYER, "XTERM256"))
     type |= MSG_XTERM256;
-  else if (IS(d->player, TYPE_PLAYER, "ANSI"))
-    type |= MSG_ANSI2;
   else if (IS(d->player, TYPE_PLAYER, "COLOR"))
     type |= MSG_ANSI16;
+  else if (IS(d->player, TYPE_PLAYER, "ANSI"))
+    type |= MSG_ANSI2;
 
   /* Colorstyle overrides */
   colorstyle = d->conn_flags & CONN_COLORSTYLE;

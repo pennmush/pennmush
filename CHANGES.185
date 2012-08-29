@@ -18,11 +18,14 @@ Version 1.8.5 patchlevel 4                                 ??? ??, 201?
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the
    unevaluated input. Reported by Ingwaz. [MG]
+ * repeat() could write partial ANSI tags, causing buffer overflows. From a
+   report by Ashen-Shugar. [MG]
 
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012
 
 Fixes:
- * Fix a crash bug in new color code. Discovered by ChaosMageX. Intrevis, [SW].
+ * Fix a crash bug in new color code. Discovered by ChaosMageX, fixed by
+   Intrevis and [SW].
 
 Functions:
  * name() with no arguments is now an error. It should always have been, but

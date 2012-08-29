@@ -834,13 +834,30 @@ FUNCTION(fun_repeat)
   ap = args[0] + arglens[0];
   while (times) {
     if (times & 1) {
-      if (safe_strl(args[0], arglens[0], buff, bp) != 0)
+      if (safe_strl(args[0], arglens[0], buff, bp)) {
+        char *ts, *te;
+        ts = strrchr(buff, TAG_START);
+        te = strrchr(buff, TAG_END);
+        if (ts && te && ts > te) {
+          *ts = '\0';
+          bp = &ts;
+        }
         break;
+      }
     }
-    safe_str(args[0], args[0], &ap);
-    *ap = '\0';
+    if (safe_str(args[0], args[0], &ap)) {
+      char *ts, *te;
+      *ap = '\0';
+      ts = strrchr(args[0], TAG_START);
+      te = strrchr(args[0], TAG_END);
+      times = 1;
+      if (ts && te && ts > te)
+        *ts = '\0';
+    } else {
+      *ap = '\0';
+      times = times >> 1;
+    }
     arglens[0] = strlen(args[0]);
-    times = times >> 1;
   }
 }
 

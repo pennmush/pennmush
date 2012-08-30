@@ -97,10 +97,10 @@ void init_ansi_codes(void);
 #define COLOR_NAME_LEN 22
 /** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;
-  uint8_t offbits;
-  char fg[COLOR_NAME_LEN];
-  char bg[COLOR_NAME_LEN];
+  uint8_t bits;    /**< Bitwise CBIT_* flags which are explicitly on (underline, flash, etc) */
+  uint8_t offbits; /**< Bitwise CBIT_* flags which are explicitly off (underline, flash, etc) */
+  char fg[COLOR_NAME_LEN]; /**< FG color. May be a single character old-style ANSI code or a modern color (+name, #hex, etc) */
+  char bg[COLOR_NAME_LEN]; /**< BG color. May be a single character old-style ANSI code or a modern color (+name, #hex, etc) */
 } ansi_data;
 
 #define NULL_ANSI {0, 0, "", ""}
@@ -109,11 +109,12 @@ int read_raw_ansi_data(ansi_data *store, const char *codes);
 int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
                         char *buff, char **bp);
 
-#define ANSI_FORMAT_NONE         0
-#define ANSI_FORMAT_HILITE       1
-#define ANSI_FORMAT_16COLOR      2
-#define ANSI_FORMAT_XTERM256     3
-#define ANSI_FORMAT_HTML         4
+/** Different ways of handling ANSI colors */
+#define ANSI_FORMAT_NONE         0  /**< Strip all colors */
+#define ANSI_FORMAT_HILITE       1  /**< Only show ANSI highlight, no colors/underline/etc */
+#define ANSI_FORMAT_16COLOR      2  /**< Show the full basic ANSI palette, including highlight, underline, etc */
+#define ANSI_FORMAT_XTERM256     3  /**< Use the 256 color XTERM palette */
+#define ANSI_FORMAT_HTML         4  /**< Show colors as HTML tags. Not currently used. */
 
 int define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);

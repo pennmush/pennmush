@@ -62,7 +62,7 @@ bool SW_BY_NAME(switch_mask, const char *);
 #define CMD_T_RS_SPACE   0x00000200     /*CMD_T_ARG_SPACE<<4 */
 #define CMD_T_RS_NOPARSE 0x00000400     /*CMD_T_NOPARSE<<4 */
 #define CMD_T_DEPRECATED 0x00000800
-#define CMD_T_NOP        0x00001000  /**< A no-op command that exists for @hooks */
+#define CMD_T_NOP        0x00001000  /**< A no-op command that exists for \@hooks */
 
 /** COMMAND prototype.
  * \verbatim

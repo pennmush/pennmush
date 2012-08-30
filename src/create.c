@@ -216,7 +216,7 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
   if (links[4]) {
     if (!make_first_free_wrapper(player, links[4]))
       return;
-  }    
+  }
 
   forward = do_real_open(player, direction, links[1], source, pe_info);
   if (links[2] && *links[2] && GoodObject(forward)
@@ -645,7 +645,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
  * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
- * \param pe_info The pe_info to use for lock and @command priv checks
+ * \param pe_info The pe_info to use for lock and \@command priv checks
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref

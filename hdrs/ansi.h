@@ -23,8 +23,11 @@
 #ifndef __ANSI_H
 #define __ANSI_H
 
+/* Doxygen does not like this */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* If we want to debug ansi stuff. */
 /* #define ANSI_DEBUG /**/
+#ENDIF
 
 #include "mushtype.h"
 #include "mypcre.h"
@@ -93,7 +96,7 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
-/* Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
+/** Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
 #define COLOR_NAME_LEN 22
 /** ANSI color data */
 typedef struct _ansi_data {
@@ -109,7 +112,7 @@ int read_raw_ansi_data(ansi_data *store, const char *codes);
 int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
                         char *buff, char **bp);
 
-/** Different ways of handling ANSI colors */
+/* Different ways of handling ANSI colors */
 #define ANSI_FORMAT_NONE         0  /**< Strip all colors */
 #define ANSI_FORMAT_HILITE       1  /**< Only show ANSI highlight, no colors/underline/etc */
 #define ANSI_FORMAT_16COLOR      2  /**< Show the full basic ANSI palette, including highlight, underline, etc */

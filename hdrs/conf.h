@@ -37,8 +37,8 @@
 #define SAY_TOKEN '"'    /**< One-char alias for SAY command */
 #define POSE_TOKEN ':'   /**< One-char alias for POSE command */
 #define SEMI_POSE_TOKEN ';'   /**< One-char alias for SEMIPOSE command */
-#define EMIT_TOKEN '\\'   /**< One-char alias for @EMIT command */
-#define CHAT_TOKEN '+'   /**< One-char alias for @CHAT command */
+#define EMIT_TOKEN '\\'   /**< One-char alias for \@EMIT command */
+#define CHAT_TOKEN '+'   /**< One-char alias for \@CHAT command */
 #define NOEVAL_TOKEN ']'   /**< Prefix that prevents cmd evaluation */
 #define DEBUG_TOKEN '}'   /**< Prefix that enables debug for the queue entry */
 

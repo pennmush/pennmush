@@ -43,24 +43,27 @@
 #define DEBUG_TOKEN '}'   /**< Prefix that enables debug for the queue entry */
 
 #define ALIAS_DELIMITER ';'  /**< Delimiter in player/exit aliases */
-/* No longer used, but kept for hackers */
+
+/** No longer used, but kept for hackers */
 #define EXIT_DELIMITER ALIAS_DELIMITER
 
-#define QUIT_COMMAND "QUIT"
-#define WHO_COMMAND "WHO"
-#define LOGOUT_COMMAND "LOGOUT"
-#define INFO_COMMAND "INFO"
-#define INFO_VERSION "1.1"
-#define DOING_COMMAND "DOING"
-#define SESSION_COMMAND "SESSION"
-#define IDLE_COMMAND "IDLE"
-#define MSSPREQUEST_COMMAND "MSSP-REQUEST"
+/* Socket commands */
+#define QUIT_COMMAND "QUIT" /**< The QUIT command */
+#define WHO_COMMAND "WHO"   /**< The socket WHO command. Separate from the in-game WHO */
+#define LOGOUT_COMMAND "LOGOUT" /**< The LOGOUT command.
+#define INFO_COMMAND "INFO" /**< The INFO command */
+#define INFO_VERSION "1.1"  /**< The version of the INFO command output */
+#define DOING_COMMAND "DOING" /**< The socket DOING command */
+#define SESSION_COMMAND "SESSION" /**< The SESSION command */
+#define IDLE_COMMAND "IDLE" /**< The IDLE command */
+#define MSSPREQUEST_COMMAND "MSSP-REQUEST" /**< The MSSP-REQUEST command */
 
-#define GET_COMMAND "GET"
-#define POST_COMMAND "POST"
+#define GET_COMMAND "GET" /**< The GET command, for recognising browsers */
+#define POST_COMMAND "POST" /**< The POST command, for recognising browsers */
 
-#define PREFIX_COMMAND "OUTPUTPREFIX"
-#define SUFFIX_COMMAND "OUTPUTSUFFIX"
+#define PREFIX_COMMAND "OUTPUTPREFIX" /**< The OUTPUTPREFIX command */
+#define SUFFIX_COMMAND "OUTPUTSUFFIX" /**< The OUTPUTSUFFIX command */
+/** The PUEBLOCLIENT command, sent by a client to signifiy its support of Pueblo */
 #define PUEBLO_COMMAND "PUEBLOCLIENT "
 
 /* These CAN be modified, but it's heavily NOT suggested */

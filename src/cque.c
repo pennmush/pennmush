@@ -769,6 +769,7 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param enactor the enactor.
  * \param noparent if true, parents of executor are not checked for atrname.
  * \param pe_regs the pe_regs args for the queue entry
+ * \param flags QUEUE_* flags
  * \retval 0 failure.
  * \retval 1 success.
  */
@@ -785,6 +786,12 @@ queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
   return 1;
 }
 
+/** Wrapper to get an attribute for queueing, possibly checking parents
+ * \param executor object the attr is on
+ * \param attrname attribute to get
+ * \param noparent skip parents?
+ * \return the attr to queue
+ */
 ATTR *
 queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 {
@@ -792,6 +799,16 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
           atr_get(executor, strupper(atrname)));
 }
 
+/** Queue an attribute.
+ * This function queues an action list from an attribute, skipping the
+ * $-command or ^-listen prefix if present.
+ * \param executor object queueing the action list
+ * \param a attribute with the action list to queue
+ * \param enactor enactor causing the queueing
+ * \param pe_regs a pe_regs struct to use for the new queue entry
+ * \param flags QUEUE_* flags to use for the queue entry
+ * \return 1
+ */
 int
 queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
                        int flags)

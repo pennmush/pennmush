@@ -182,6 +182,7 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
 /** Is this descriptor connected to a telnet-compatible terminal? */
 #define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
+/** Is it possible this descriptor may be telnet-compatible? */
 #define MAYBE_TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
 
@@ -223,9 +224,9 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
 #define MSSP_VAR 1              /**< MSSP option name */
 #define MSSP_VAL 2              /**< MSSP option value */
-#define TN_SB_CHARSET_REQUEST 1
-#define TN_SB_CHARSET_ACCEPTED 2
-#define TN_SB_CHARSET_REJECTED 3
+#define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
+#define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
+#define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -2134,7 +2135,7 @@ process_output(DESC *d)
 /** A wrapper around test_telnet(), which is called via the
  * squeue system in timers.c
  * \param data a descriptor, cast as a void pointer
- * \param return false
+ * \return false
  */
 bool
 test_telnet_wrapper(void *data)
@@ -2149,7 +2150,7 @@ test_telnet_wrapper(void *data)
 /** A wrapper around welcome_user(), which is called via the
  * squeue system in timers.c
  * \param data a descriptor, cast as a void pointer
- * \param return false
+ * \return false
  */
 bool
 welcome_user_wrapper(void *data)
@@ -4300,9 +4301,9 @@ squish_time(char *buf, int len)
  * significant numbers as needed.
  *
  * \param buf buffer to use to fill.
- * \param at the time connected at.
+ * \param secs the number of seconds to format
  * \param len the length of the field to fill.
- * \return pointer to .start of formatted time, somewhere in buf.
+ * \return pointer to start of formatted time, somewhere in buf.
  */
 char *
 etime_fmt(char *buf, int secs, int len)
@@ -4360,7 +4361,7 @@ onfor_time_fmt(time_t at, int len)
   return etime_fmt(buf, secs, len);
 }
 
-/** Format idle time for WHO/DOING 
+/** Format idle time for WHO/DOING
  *
  * \param last the time the player was last active.
  * \parm len the length of the field to fill.

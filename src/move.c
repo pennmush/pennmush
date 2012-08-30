@@ -397,6 +397,7 @@ find_var_dest(dbref player, dbref exit_obj, char *exit_name,
  * \param player the enactor.
  * \param direction name of direction to move.
  * \param type type of motion to check (global, zone, neither).
+ * \param pe_info pe_info used for lock checks
  */
 void
 do_move(dbref player, const char *direction, enum move_type type,
@@ -1006,6 +1007,7 @@ remote_exit(dbref player, const char *direction)
  * matched, treat it as local so player will get an error message.
  * \param player the mover.
  * \param command direction to move.
+ * \param pe_info pe_info used for lock checks
  */
 void
 move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info)
@@ -1032,6 +1034,7 @@ move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info)
  * \endverbatim
  * \param player the enactor.
  * \param arg name of object to follow.
+ * \param pe_info pe_info used for lock checks
  */
 void
 do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)

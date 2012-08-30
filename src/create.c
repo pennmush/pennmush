@@ -82,6 +82,7 @@ check_var_link(const char *dest_name)
  * \param direction the name of the exit.
  * \param linkto the room to link to, as a string.
  * \param pseudo a phony location for player if a back exit is needed. This is bpass by do_open() as the source room of the back exit.
+ * \param pe_info the pe_info to use for any lock checks
  * \return dbref of the new exit, or NOTHING.
  */
 dbref
@@ -192,6 +193,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
  * \param direction name of the exit forward.
  * \param links 1-based array, possibly containing name of destination, name of exit back,
  * and room to open initial exit from.
+ * \param pe_info the pe_info to use for any lock checks
  */
 void
 do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
@@ -290,6 +292,7 @@ do_unlink(dbref player, const char *name)
  * \param name the name of the object to link.
  * \param room_name the name of the link destination.
  * \param preserve if 1, preserve ownership and zone data on exit relink.
+ * \param pe_info the pe_info to use for any lock checks
  */
 void
 do_link(dbref player, const char *name, const char *room_name, int preserve,

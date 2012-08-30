@@ -97,10 +97,9 @@ decode64(int64_t i)
 extern const unsigned char *tables;
 
 /** Validates a timezone name to see if it fits the right format.
- * \param namem The name of the time zone.
+ * \param name The name of the time zone.
  * \return true or false
  */
-
 bool
 is_valid_tzname(const char *name)
 {
@@ -393,7 +392,7 @@ free_tzinfo(struct tzinfo *tz)
 }
 
 /** Given a time zone struct and a time, return the offset in seconds from GMT at that time.
- * \paream tz the time zone description struct
+ * \param tz the time zone description struct
  * \param when the time to calculate the offset for.
  * \return the offset in seconds.
  */

@@ -788,7 +788,7 @@ queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
 
 /** Wrapper to get an attribute for queueing, possibly checking parents
  * \param executor object the attr is on
- * \param attrname attribute to get
+ * \param atrname attribute to get
  * \param noparent skip parents?
  * \return the attr to queue
  */

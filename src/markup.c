@@ -147,6 +147,13 @@ FUNCTION(fun_ansi)
   }
 }
 
+enum color_styles {
+  COL_HEX = 1,
+  COL_16 = 2,
+  COL_256 = 3,
+  COL_NAME = 4
+};
+
 /* ARGSUSED */
 FUNCTION(fun_colors)
 {
@@ -166,44 +173,73 @@ FUNCTION(fun_colors)
   } else if (nargs == 2) {
     /* Return color info for a specific color */
     ansi_data ad;
+    char *color;
+    int i;
+    enum color_styles cs;
 
     if (define_ansi_data(&ad, args[0])) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
       return;
     }
 
-    if (ad.bg[0]) {
-      safe_str(T("#-1 COLORS() EXPECTS ONE COLOR"), buff, bp);
+    if (!ad.fg[0] && !ad.bg[0]) {
+      safe_str(T("#-1 COLORS() REQUIRES AT LEAST ONE COLOR"), buff, bp);
       return;
     }
 
     if (!*args[1] || strcmp("hex", args[1]) == 0)
-      safe_format(buff, bp, "#%06x", color_to_hex(ad.fg, 0));
+      cs = COL_HEX;
     else if (strcmp("16color", args[1]) == 0)
-      safe_chr(colormap_16[ansi_map_16(ad.fg, 0) - 30].desc, buff, bp);
+      cs = COL_16;
     else if (strcmp("256color", args[1]) == 0
              || strcmp("xterm256", args[1]) == 0)
-      safe_integer(ansi_map_256(color_to_hex(ad.fg, 0)), buff, bp);
-    else if (strcmp("name", args[1]) == 0) {
-      int i;
-      uint32_t color;
-      bool shown = 0;
-
-      color = color_to_hex(ad.fg, 0);
-      for (i = 256; allColors[i].name; i += 1) {
-        if (allColors[i].hex == color) {
-          if (shown)
-            safe_chr(' ', buff, bp);
-          else
-            shown = 1;
-          safe_str(allColors[i].name, buff, bp);
-        }
-      }
-      if (!shown)
-        safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
-    } else
+      cs = COL_256;
+    else if (strcmp("name", args[1]) == 0)
+      cs = COL_NAME;
+    else {
       safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
-    return;
+      return;
+    }
+
+    for (i = 0; i < 2; i++) {
+      color = (i ? ad.bg : ad.fg);
+      if (!*color)
+        continue;
+      if (i && cs != COL_16)
+        safe_chr('/', buff, bp);
+
+      switch (cs) {
+      case COL_HEX:
+        safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
+        break;
+      case COL_16:
+        safe_chr(colormap_16[ansi_map_16(color, 0) - 30].desc - (i ? 32 : 0), buff, bp);
+        break;
+      case COL_256:
+        safe_integer(ansi_map_256(color_to_hex(color, 0)), buff, bp);
+        break;
+      case COL_NAME:
+        {
+          int j;
+          uint32_t hex;
+          bool shown = 0;
+
+          hex = color_to_hex(color, 0);
+          for (j = 256; allColors[j].name; j++) {
+            if (allColors[j].hex == hex) {
+              if (shown)
+                safe_chr(' ', buff, bp);
+              else
+                shown = 1;
+              safe_str(allColors[j].name, buff, bp);
+            }
+          }
+          if (!shown)
+            safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
+        }
+        break;
+      }
+    }
   }
 }
 

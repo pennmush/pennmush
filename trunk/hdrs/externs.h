@@ -268,17 +268,17 @@ extern char ucbuff[];
 #define QUEUE_OBJECT           0x0002   /**< command queued because of a non-player in-game */
 #define QUEUE_SOCKET           0x0004   /**< command executed directly from a player's client */
 #define QUEUE_INPLACE          0x0008   /**< inplace queue entry */
-#define QUEUE_NO_BREAKS        0x0010   /**< Don't propagate @breaks from this inplace queue */
+#define QUEUE_NO_BREAKS        0x0010   /**< Don't propagate \@breaks from this inplace queue */
 #define QUEUE_PRESERVE_QREG    0x0020   /**< Preserve/restore q-registers before/after running this inplace queue */
 #define QUEUE_CLEAR_QREG       0x0040   /**< Clear q-registers before running this inplace queue */
 #define QUEUE_PROPAGATE_QREG   0x0080   /**< At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
 #define QUEUE_RESTORE_ENV      0x0100   /**< At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
 #define QUEUE_NOLIST           0x0200   /**< Don't separate commands at semicolons, and don't parse rhs in &attr setting */
-#define QUEUE_BREAK            0x0400   /**< set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY            0x0800   /**< Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_BREAK            0x0400   /**< set by \@break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x0800   /**< Set by \@retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
-#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For @startups */
+#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For \@startups */
 #define QUEUE_DEBUG_PRIVS      0x8000   /**< Show DEBUG info for queue if on an object %# can see debug from (queued via %-prefix) */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)

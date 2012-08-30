@@ -95,7 +95,7 @@ okay_pemit(dbref player, dbref target, int dofails, int def,
   return 1;
 }
 
-/** This is the place where speech, poses, and @emits by thing should be
+/** This is the place where speech, poses, and \@emits by thing should be
  *  heard. For things and players, it's the loc; for rooms, it's the room
  *  itself; for exits, it's the source.
  */

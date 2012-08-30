@@ -418,6 +418,8 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
 
 /** Parse a softcode timezone request.
  *
+ * \verbatim
+ *
  * If arg is a objid, look up that object's @TZ attribute and parse
  * that. Otherwise, parse arg.
  *
@@ -430,6 +432,8 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
  * If no tzinfo database, or reading the given zone from one fails,
  * and the arg is an integer, treat it as the number of hours
  * difference from GMT.  Otherwise fail.
+ *
+ * \endverbatim
  *
  * \param arg The string to parse for a dbref, number or symbolic tz name
  * \param when When to calculate the offset for.

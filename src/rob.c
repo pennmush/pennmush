@@ -155,6 +155,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
  * \param item the item to buy
  * \param from who to buy it from
  * \param price the price to pay for it, or -1 for any price
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
@@ -358,6 +359,7 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
  * \param recipient name of object to receive.
  * \param amnt name of object to be transferred, or amount of pennies.
  * \param silent if 1, hush the usual messages.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_give(dbref player, char *recipient, char *amnt, int silent,

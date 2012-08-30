@@ -563,6 +563,7 @@ do_firstexit(dbref player, const char **what)
 /** The get command.
  * \param player the enactor.
  * \param what name of object to get.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
@@ -698,6 +699,7 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
 /** Drop an object.
  * \param player the enactor.
  * \param name name of object to drop.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
@@ -781,6 +783,7 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
  * player did it manually.
  * \param player the enactor.
  * \param what the name of the object to empty.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
@@ -903,6 +906,7 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
 /** The enter command.
  * \param player the enactor.
  * \param what name of object to enter.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
@@ -956,6 +960,7 @@ do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
 
 /** The leave command.
  * \param player the enactor.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_leave(dbref player, NEW_PE_INFO *pe_info)

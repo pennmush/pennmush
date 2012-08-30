@@ -78,6 +78,7 @@ static void delete_node(StrNode *node, const char *name);
 
 /** Initialize a string tree.
  * \param root pointer to root of string tree.
+ * \param name The name of the tree, for tracking memory usage
  */
 void
 st_init(StrTree *root, const char *name)

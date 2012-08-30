@@ -1270,6 +1270,7 @@ nearby(dbref obj1, dbref obj2)
  * \param enactor the object causing this command to run.
  * \param arg1 the object to read verb attributes from.
  * \param argv the array of remaining arguments to the verb command.
+ * \param queue_entry The queue entry \@verb is running in
  */
 void
 do_verb(dbref executor, dbref enactor, char *arg1, char **argv,

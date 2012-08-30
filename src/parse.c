@@ -727,6 +727,8 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
 /** Create a PE_REGS context.
  *
  * \param pr_flags PR_* flags, bitwise or'd.
+ * \param name A name to identify the pe_regs, for debugging
+ * \return a newly created, allocated pe_regs
  */
 PE_REGS *
 pe_regs_create_real(int pr_flags, const char *name)

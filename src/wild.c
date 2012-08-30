@@ -568,6 +568,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
  * \param s regexp to match against.
  * \param d string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive.
+ * \param report_err pointer to a char array to store any regexp errors in
  * \retval 1 d matches s.
  * \retval 0 d doesn't match s.
  */
@@ -619,6 +620,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
 
 /** Regexp match of a pre-compiled regexp, with no memory.
  * \param re the regular expression
+ * \param study
  * \param subj the string to match against.
  * \return true or false
  */

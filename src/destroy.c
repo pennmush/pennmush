@@ -321,6 +321,7 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
  * \param player the enactor.
  * \param name name of object to destroy.
  * \param confirm if 1, called with /override (or nuke).
+ * \param pe_info the pe_info to use for any lock checks
  */
 void
 do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)

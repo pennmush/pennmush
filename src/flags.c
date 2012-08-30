@@ -1475,7 +1475,7 @@ clear_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit)
  * This function tests a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and testing it.
- * \param bitmask a flagset.
+ * \param flags a flagset.
  * \param bitpos the bit to test.
  * \retval 1 bit is set.
  * \retval 0 bit is not set.

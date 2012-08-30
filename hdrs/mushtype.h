@@ -72,7 +72,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_REGEXP 0x02     /**< Regexps. */
 #define PE_REGS_CAPTURE PE_REGS_REGEXP  /**< Alias for REGEXP */
 #define PE_REGS_SWITCH 0x04     /**< switch(), %$0. */
-#define PE_REGS_ITER   0x08     /**< iter() and @dol, %i0/etc */
+#define PE_REGS_ITER   0x08     /**< iter() and \@dolist, %i0/etc */
 #define PE_REGS_ARG    0x10     /**< %0-%9 */
 #define PE_REGS_SYS    0x20     /**< %c, %z, %= */
 

@@ -148,8 +148,8 @@ void sql_shutdown(void);
 /* notify.c */
 
 /** Bitwise options for render_string() */
-#define MSG_INTERNAL     0x00  /**< Original string containing internal markup, \n lineendings */
-#define MSG_PLAYER       0x01  /**< Being sent to a player. Uses \r\n lineendings, not \n */
+#define MSG_INTERNAL     0x00  /**< Original string containing internal markup, \\n lineendings */
+#define MSG_PLAYER       0x01  /**< Being sent to a player. Uses \\r\\n lineendings, not \\n */
 /* Any text sent to a player will be (MSG_PLAYER | modifiers below) */
 #define MSG_PUEBLO       0x02  /**< HTML entities, Pueblo tags as HTML */
 #define MSG_TELNET       0x04  /**< Output to telnet-aware connection. Escape char 255 */
@@ -159,7 +159,12 @@ void sql_shutdown(void);
 #define MSG_ANSI2        0x20  /**< Ansi-highlight only */
 #define MSG_ANSI16       0x40  /**< 16 bit Color */
 #define MSG_XTERM256     0x80  /**< XTERM 256 Color */
-#define MSG_FONTTAGS     0x100 /**< <font color="..." bgcolor=".."></font> */
+/**
+ * \verbatim
+ * <font color="..." bgcolor=".."></font> (currently unusued)
+ * \endverbatim
+ */
+#define MSG_FONTTAGS     0x100
 
 #define MSG_PLAYER_COLORS (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)       /* All possible player-renderings of color */
 #define MSG_ANY_ANSI (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)    /* Any form of ANSI tag */

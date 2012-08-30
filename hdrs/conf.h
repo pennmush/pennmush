@@ -50,7 +50,7 @@
 /* Socket commands */
 #define QUIT_COMMAND "QUIT" /**< The QUIT command */
 #define WHO_COMMAND "WHO"   /**< The socket WHO command. Separate from the in-game WHO */
-#define LOGOUT_COMMAND "LOGOUT" /**< The LOGOUT command.
+#define LOGOUT_COMMAND "LOGOUT" /**< The LOGOUT command. */
 #define INFO_COMMAND "INFO" /**< The INFO command */
 #define INFO_VERSION "1.1"  /**< The version of the INFO command output */
 #define DOING_COMMAND "DOING" /**< The socket DOING command */

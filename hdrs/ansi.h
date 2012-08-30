@@ -27,7 +27,7 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* If we want to debug ansi stuff. */
 /* #define ANSI_DEBUG /**/
-#ENDIF
+#endif
 
 #include "mushtype.h"
 #include "mypcre.h"

@@ -329,7 +329,7 @@ connect_player(DESC *d, const char *name, const char *password,
 
 /** Attempt to create a new player object.
  * \param d DESC the creation attempt is being made on (if from connect screen)
- * \dbref executor dbref of the object attempting to create a player (if \@pcreate)
+ * \param executor dbref of the object attempting to create a player (if \@pcreate)
  * \param name name of player to create.
  * \param password initial password of created player.
  * \param host host from which creation is attempted.

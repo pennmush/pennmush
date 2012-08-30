@@ -461,6 +461,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
 /** Send an \@message to a list of dbrefs, using an attribute to format it
  * if present.
  * \param executor the executor.
+ * \param speaker The object speaking, for spoofed messages
  * \param list the list of players to pemit to, destructively modified.
  * \param attrname the attribute to use to format the message.
  * \param message the default message.

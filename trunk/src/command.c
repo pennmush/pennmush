@@ -1461,7 +1461,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
  * \param lsa Array of leftside args, if CMD_T_LS_ARGS
  * \param rs The rightside arg, if the command has a single rhs arg
  * \param rsa Array of rhs args, if CMD_T_RS_ARGS
- * param queue_entry The queue entry the command is being run in
+ * \param queue_entry The queue entry the command is being run in
  */
 int
 run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
@@ -2140,8 +2140,13 @@ list_commands(int type)
 }
 
 
-/* Check command permissions. Return 1 if player can use command,
+/** Check command permissions. Return 1 if player can use command,
  * 0 otherwise, and maybe be noisy about it.
+ * \param player the player trying to use the command
+ * \param cmd the command to check
+ * \param noisy should we report failure to the player?
+ * \param pe_info the pe_info to use for evaluating the command's lock
+ * \return 1 if player can use command, 0 if not
  */
 int
 command_check_with(dbref player, COMMAND_INFO *cmd, int noisy,
@@ -2170,6 +2175,7 @@ command_check_with(dbref player, COMMAND_INFO *cmd, int noisy,
  * If the command is disallowed, the player is informed.
  * \param player player whose privileges are checked.
  * \param name name of command.
+ * \param pe_info pe_info to use for evaluating cmd lock
  * \retval 0 player may not use command.
  * \retval 1 player may use command.
  */
@@ -2188,6 +2194,7 @@ command_check_byname(dbref player, const char *name, NEW_PE_INFO *pe_info)
  * If the command is disallowed, the player is informed.
  * \param player player whose privileges are checked.
  * \param name name of command.
+ * \param pe_info pe_info to use for evaluating cmd lock
  * \retval 0 player may not use command.
  * \retval 1 player may use command.
  */
@@ -2201,6 +2208,10 @@ command_check_byname_quiet(dbref player, const char *name, NEW_PE_INFO *pe_info)
   return command_check_with(player, cmd, 0, pe_info);
 }
 
+/** Is a particular hook set, and valid?
+ * \param hook the hook to check
+ * \return 1 if valid, 0 if not
+ */
 static int
 has_hook(struct hook_data *hook)
 {
@@ -2208,7 +2219,6 @@ has_hook(struct hook_data *hook)
     return 0;
   return 1;
 }
-
 
 /** Run a command hook.
  * This function runs a hook before or after a command execution.
@@ -2454,6 +2464,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
  * \endverbatim
  * \param player the enactor.
  * \param command command to list hooks on.
+ * \param verbose Report failures?
  */
 void
 do_hook_list(dbref player, char *command, bool verbose)

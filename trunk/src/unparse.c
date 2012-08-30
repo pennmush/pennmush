@@ -80,7 +80,7 @@ unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
  * a nameformat or nameaccent if present.
  * \param player the looker.
  * \param loc dbref of the object being looked at.
- * \param obey_myopic if 0, always show Name(#xxxFLAGS); if 1, don't
+ * \param obey_myopic if 0, always show Name(\#xxxFLAGS); if 1, don't
  * do so if player is MYOPIC or doesn't own loc.
  * \param use_nameformat if 1, apply a NAMEFORMAT attribute if available.
  * \param use_nameaccent if 1, apply a NAMEACCENT attribute if available.

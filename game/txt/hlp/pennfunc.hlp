@@ -565,15 +565,16 @@ See also: orflags(), flags(), lflags()
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
-  ansi(<ansi-codes>, <string>)
-  ansi([<fg-color>][/<bg-color>], <string>)
+  ansi(<codes>[ ... <codesN>], <string>)
  
   This allows you to mark up a string using ANSI terminal effects, 16-color
-  codes, and color names and hex values.
+  codes, and 256 XTERM colors (specified as color names or hex values).
   
   The old-style <ansi-codes> are listed in "help ansi2".
-  
-  <fg-color> and <bg-color> can be one of:
+  Each block of space-separated <codes> can be one or more old-style ANSI 
+  codes, as listed in "help ansi2", or a foreground and/or background color.
+  Background colors are prefixed with a "/". Each color can be one of:
+
     * +<colorname> (for a list of valid names, see "help colors()")
     * a hexcode, optionally in angle brackets (#000000, <#ff0055>, etc)
     * a list of red, green and blue values from 0-255, in angle brackets
@@ -586,8 +587,10 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.
   
-  If you want to mix basic ANSI codes with extended colors, the basic ANSI
-  codes must come first.
+  Codes are parsed from left to right so, with later codes overriding earlier
+  ones. So, for example:
+    ansi(y /+green B <#ffffff>, test)
+  would show white text on an ANSI-blue background.
   
   See 'help ansi3' for more examples.
 See also: ANSI, COLOR, @sockset, colorstyle, colors()
@@ -613,7 +616,6 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan.
   Default foreground and background use the client's default color for
   fore and back.
-
 & ANSI3
 
   Bright yellow text on a blue background:
@@ -624,7 +626,9 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   
   Underlined pink text on a purple background
   > think ansi(u+lightsalmon/#a020f0, ugly)
-
+  
+  ANSI-blue text on a bisque background
+  > think ansi(+yellow/+bisque b, the 'b' overrides the earlier '+yellow')
 & APOSS()
 & %a
   aposs(<object>)

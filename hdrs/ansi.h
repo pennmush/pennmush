@@ -102,8 +102,8 @@ void init_ansi_codes(void);
 typedef struct _ansi_data {
   uint8_t bits;    /**< Bitwise CBIT_* flags which are explicitly on (underline, flash, etc) */
   uint8_t offbits; /**< Bitwise CBIT_* flags which are explicitly off (underline, flash, etc) */
-  char fg[COLOR_NAME_LEN]; /**< FG color. May be a single character old-style ANSI code or a modern color (+name, #hex, etc) */
-  char bg[COLOR_NAME_LEN]; /**< BG color. May be a single character old-style ANSI code or a modern color (+name, #hex, etc) */
+  char fg[COLOR_NAME_LEN]; /**< FG color. May be a single character old-style ANSI code or a modern color (+name, \#hex, etc) */
+  char bg[COLOR_NAME_LEN]; /**< BG color. May be a single character old-style ANSI code or a modern color (+name, \#hex, etc) */
 } ansi_data;
 
 #define NULL_ANSI {0, 0, "", ""}
@@ -161,8 +161,11 @@ typedef struct _new_markup_information {
 #define AS_OPTIMIZED    0x01  /**< If the markup has been optimized. */
 #define AS_HAS_MARKUP   0x02  /**< If the string has markup or not */
 #define AS_HAS_TAGS     0x04  /**< If the string has non-color tags. */
-#define AS_HAS_STANDALONE 0x08  /**< If the string has standalone tags.
-                                 ** (<IMG>, etc) */
+/** \verbatim
+ * If the string has standalone tags (<IMG>, etc)
+ * \endverbatim
+ */
+#define AS_HAS_STANDALONE 0x08
 
 /** A string, with ansi attributes broken out from the text */
 typedef struct _ansi_string {

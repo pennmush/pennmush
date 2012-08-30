@@ -204,7 +204,7 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \verbatim
  * This implements @oemit and @oemit/list.
  * \endverbatim
- * \param executor The object @oemit'ing
+ * \param executor The object \@oemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param list the list of dbrefs to oemit from the emit.
  * \param message the message to emit.
@@ -523,7 +523,7 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
 }
 
 /** Send a message to an object.
- * \param executor The object @pemit'ing
+ * \param executor The object \@pemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param target the name(s) of the object(s) to pemit to.
  * \param message the message to pemit.
@@ -1167,7 +1167,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
  * \verbatim
  * This implements @emit.
  * \endverbatim
- * \param executor The object @emit'ing
+ * \param executor The object \@emit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param message the message to emit.
  * \param flags bitmask of notification flags.
@@ -1253,7 +1253,7 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
  * \verbatim
  * This implements @remit.
  * \endverbatim
- * \param executor The object @remit'ing
+ * \param executor The object \@remit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param rooms string containing dbref(s) of rooms to remit it.
  * \param message message to emit.
@@ -1277,7 +1277,7 @@ do_remit(dbref executor, dbref speaker, char *rooms, const char *message,
 }
 
 /** Emit a message to the absolute location of enactor.
- * \param executor The object @lemit'ing
+ * \param executor The object \@lemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param message message to emit.
  * \param flags bitmask of notification flags.

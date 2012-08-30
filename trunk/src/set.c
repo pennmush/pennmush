@@ -1197,6 +1197,7 @@ regedit_helper(dbref player, dbref thing,
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
  * \param flags type of \@edit to do
+ * \param pe_info the pe_info to use evaluating replacements
  */
 
 void
@@ -1381,6 +1382,7 @@ do_include(dbref executor, dbref enactor, char *object, char **argv,
  * It's here for lack of a better place.
  * \param player the enactor.
  * \param what name of the object to use.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
@@ -1409,6 +1411,7 @@ do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
  * \param player the enactor.
  * \param name the name of the child object.
  * \param parent_name the name of the new parent object.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)

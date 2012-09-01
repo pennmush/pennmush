@@ -403,11 +403,26 @@ COMMAND(cmd_disable)
 COMMAND(cmd_dolist)
 {
   unsigned int flags = 0;
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE;
+  else if (SW_ISSET(sw, SWITCH_INLINE))
+    queue_type = QUEUE_INPLACE;
+  if (queue_type != QUEUE_DEFAULT) {
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
   if (SW_ISSET(sw, SWITCH_NOTIFY))
     flags |= DOL_NOTIFY;
   if (SW_ISSET(sw, SWITCH_DELIMIT))
     flags |= DOL_DELIM;
-  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry);
+  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry, queue_type);
 }
 
 COMMAND(cmd_dump)

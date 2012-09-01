@@ -108,7 +108,7 @@ int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref executor, dbref enactor, char *action,
-                    const char *arg, int num, MQUE *parent_queue);
+                    const char *arg, int num, MQUE *queue_entry, int queue_type);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
@@ -1577,6 +1577,15 @@ do_writelog(dbref player, char *str, int ltype)
   notify(player, T("Logged."));
 }
 
+#define queue_dolist(al,pe_regs) \
+  if (queue_type != QUEUE_DEFAULT) { \
+    new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
+                         PE_INFO_SHARE, queue_type, pe_regs); \
+  } else { \
+    new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
+                         PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs); \
+  }
+
 /** Bind occurences of '##' in "action" to "arg", then run "action".
  * \param executor the executor.
  * \param enactor object that caused command to run.
@@ -1584,10 +1593,11 @@ do_writelog(dbref player, char *str, int ltype)
  * \param arg value for ## token.
  * \param num value for #@ token.
  * \param parent_queue the queue entry this is being run from
+ * \param queue_type QUEUE_* values
  */
 void
 bind_and_queue(dbref executor, dbref enactor, char *action,
-               const char *arg, int num, MQUE *parent_queue)
+               const char *arg, int num, MQUE *queue_entry, int queue_type)
 {
   char *command;
   const char *replace[2];
@@ -1605,8 +1615,7 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
   pe_regs_set(pe_regs, PE_REGS_ITER, "t0", arg);
   pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
-  new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
-                       PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+  queue_dolist(command, pe_regs);
   /* And then pop it off the parent pe_info again */
   pe_regs_free(pe_regs);
 
@@ -1902,6 +1911,7 @@ do_scan(dbref player, char *command, int flag)
 #define DOL_NOTIFY 2   /**< Add a notify after a dolist */
 #define DOL_DELIM 4    /**< Specify a delimiter to a dolist */
 
+
 /** Execute a command for each element of a list.
  * \verbatim
  * This function implements @dolist.
@@ -1915,7 +1925,7 @@ do_scan(dbref player, char *command, int flag)
  */
 void
 do_dolist(dbref executor, char *list, char *command, dbref enactor,
-          unsigned int flags, MQUE *queue_entry)
+          unsigned int flags, MQUE *queue_entry, int queue_type)
 {
   char *curr, *objstring;
   char outbuf[BUFFER_LEN];
@@ -1924,16 +1934,18 @@ do_dolist(dbref executor, char *list, char *command, dbref enactor,
   char delim = ' ';
   if (!command || !*command) {
     notify(executor, T("What do you want to do with the list?"));
-    if (flags & DOL_NOTIFY)
-      parse_que(executor, enactor, "@notify me", NULL);
+    if (flags & DOL_NOTIFY) {
+      queue_dolist("@notify me", NULL);
+    }
     return;
   }
 
   if (flags & DOL_DELIM) {
     if (list[1] != ' ') {
       notify(executor, T("Separator must be one character."));
-      if (flags & DOL_NOTIFY)
-        parse_que(executor, enactor, "@notify me", NULL);
+      if (flags & DOL_NOTIFY) {
+        queue_dolist("@notify me", NULL);
+      }
       return;
     }
     delim = list[0];
@@ -1946,15 +1958,16 @@ do_dolist(dbref executor, char *list, char *command, dbref enactor,
   objstring = trim_space_sep(list, delim);
   if (objstring && !*objstring) {
     /* Blank list */
-    if (flags & DOL_NOTIFY)
-      parse_que(executor, enactor, "@notify me", NULL);
+    if (flags & DOL_NOTIFY) {
+      queue_dolist("@notify me", NULL);
+    }
     return;
   }
 
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    bind_and_queue(executor, enactor, command, curr, place, queue_entry);
+    bind_and_queue(executor, enactor, command, curr, place, queue_entry, queue_type);
   }
 
   *bp = '\0';
@@ -1964,7 +1977,7 @@ do_dolist(dbref executor, char *list, char *command, dbref enactor,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(executor, enactor, "@notify me", NULL);
+    queue_dolist("@notify me", NULL);
   }
 }
 

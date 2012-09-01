@@ -13,6 +13,10 @@ be read in 'help patchlevels'.
 
 Version 1.8.5 patchlevel 4                                 ??? ??, 201?
 
+Commands:
+ * @dolist now accepts /inline and related switches, like @switch does.
+   Suggested by Reaver. [MG]
+
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later
    groups overriding earlier ones. Allows you to specify basic ANSI codes

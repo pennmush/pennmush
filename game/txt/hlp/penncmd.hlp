@@ -1416,7 +1416,7 @@ See also: @open, @link, EXITS, @create, DBREF, dig()
 
 See also: @poll, WHO, doing()
 & @dolist
-  @dolist[/notify][/delimit <delim>] <list>=<action list>
+  @dolist[/<switches>][/notify][/delimit <delim>] <list>=<action list>
   
   @dolist queues the <action list> for execution once for each element in 
   <list>. <list> is space-separated, unless the /delimit switch is given, 
@@ -1435,9 +1435,29 @@ See also: @poll, WHO, doing()
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
 
-  See 'help @dolist2' for examples.  
-See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+  Continued in 'help @dolist2'.
 & @dolist2
+
+  If the /inline switch is given, @dolist will run the new action lists
+  instantly, instead of queueing them to be run later.
+
+  When using @dolist/inline, an @break in an <action list> will stop the
+  calling action list (and any further <action list>s) from running. Each 
+  <action list> will also be able to see/alter the q-registers for the 
+  calling action list. The following switches can be used with /inline 
+  to alter this behaviour:
+   /nobreak:  @breaks in <action list> do not effect to the calling action 
+              list
+   /localize: q-registers are saved before each <action> is run, and restored
+              after it completes
+   /clearreg: q-registers are all reset before each <action> is run. Most
+              useful when used in combination with /localize.
+              
+  @dolist/inplace is an alias for @dolist/inline/nobreak/localize.
+
+  See 'help @dolist3' for examples.  
+See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+& @dolist3
 
   Examples:
     > @dolist a b c=say %i0 is number [inum(0)]

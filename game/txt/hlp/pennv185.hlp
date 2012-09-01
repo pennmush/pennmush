@@ -17,6 +17,8 @@ Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later
    groups overriding earlier ones. Allows you to specify basic ANSI codes
    after XTERM color codes. Suggested by spork, [Rhost]. [MG]
+ * The QUIET flag now suppresses deprecated command/function messages.
+   Suggested by Paige. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

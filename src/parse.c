@@ -2576,7 +2576,7 @@ process_expression(char *buff, char **bp, char const **str,
 
 
         /* Warn about deprecated functions */
-        if (fp->flags & FN_DEPRECATED)
+        if ((fp->flags & FN_DEPRECATED) && !IsQuiet(executor))
           notify_format(Owner(executor),
                         T("Deprecated function %s being used on object #%d."),
                         fp->name, executor);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-01 02:00-0500\n"
+"POT-Creation-Date: 2012-09-02 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -222,7 +222,7 @@ msgstr ""
 msgid "Enum"
 msgstr ""
 
-#: atr_tab.c:900 cmds.c:511 cmds.c:744 game.c:2513
+#: atr_tab.c:900 cmds.c:526 cmds.c:759 game.c:2526
 msgid "Flags"
 msgstr ""
 
@@ -860,7 +860,7 @@ msgstr ""
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:4991 bsd.c:5000 bsd.c:5522 bsd.c:5531 cmds.c:578 funstr.c:2283
+#: bsd.c:4991 bsd.c:5000 bsd.c:5522 bsd.c:5531 cmds.c:593 funstr.c:2283
 #: wiz.c:1628
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
@@ -993,76 +993,76 @@ msgstr ""
 msgid "Option set."
 msgstr ""
 
-#: cmds.c:461
+#: cmds.c:476
 #, c-format
 msgid "Deprecated command %s being used on object #%d. Use %s instead."
 msgstr ""
 
-#: cmds.c:668
+#: cmds.c:683
 msgid "You must give a switch for @hook."
 msgstr ""
 
-#: cmds.c:674
+#: cmds.c:689
 msgid "You can only use /inplace and /inline with /override."
 msgstr ""
 
-#: cmds.c:683
+#: cmds.c:698
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr ""
 
-#: cmds.c:742 game.c:2517
+#: cmds.c:757 game.c:2530
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:746 cmds.c:1080 game.c:2515
+#: cmds.c:761 cmds.c:1095 game.c:2528
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:854 extmail.c:1877
+#: cmds.c:869 extmail.c:1877
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:919
+#: cmds.c:934
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:922
+#: cmds.c:937
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:927
+#: cmds.c:942
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:1258
+#: cmds.c:1273
 msgid "Restarting info_slave daemon."
 msgstr ""
 
-#: cmds.c:1268
+#: cmds.c:1283
 msgid "Restarting ssl_slave daemon."
 msgstr ""
 
-#: cmds.c:1274
+#: cmds.c:1289
 msgid "No such service."
 msgstr ""
 
-#: cmds.c:1276 destroy.c:214
+#: cmds.c:1291 destroy.c:214
 msgid "I'm sorry, Dave, I'm afraid I can't do that."
 msgstr ""
 
-#: cmds.c:1347
+#: cmds.c:1362
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1552
+#: cmds.c:1567
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1557
+#: cmds.c:1572
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1681
+#: cmds.c:1696
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
@@ -4262,121 +4262,121 @@ msgstr ""
 msgid "Logged."
 msgstr ""
 
-#: game.c:1643 wiz.c:1598
+#: game.c:1652 wiz.c:1598
 msgid "#-1 INVALID LOCATION"
 msgstr ""
 
-#: game.c:1647
+#: game.c:1656
 msgid "#-1 NO COMMAND"
 msgstr ""
 
-#: game.c:1786
+#: game.c:1795
 msgid "Sorry, you are in an invalid location."
 msgstr ""
 
-#: game.c:1790
+#: game.c:1799
 msgid "What command do you want to scan for?"
 msgstr ""
 
-#: game.c:1794
+#: game.c:1803
 msgid "Matches on contents of this room:"
 msgstr ""
 
-#: game.c:1809
+#: game.c:1818
 #, c-format
 msgid "Matched here: %s  [%d:%s]"
 msgstr ""
 
-#: game.c:1815
+#: game.c:1824
 msgid "Matches on carried objects:"
 msgstr ""
 
-#: game.c:1829
+#: game.c:1838
 #, c-format
 msgid "Matched self: %s  [%d:%s]"
 msgstr ""
 
-#: game.c:1840
+#: game.c:1849
 msgid "Matches on zone master room of location:"
 msgstr ""
 
-#: game.c:1855
+#: game.c:1864
 #, c-format
 msgid "Matched zone of location: %s  [%d:%s]"
 msgstr ""
 
-#: game.c:1867
+#: game.c:1876
 msgid "Matches on personal zone master room:"
 msgstr ""
 
-#: game.c:1879
+#: game.c:1888
 #, c-format
 msgid "Matched personal zone: %s  [%d:%s]"
 msgstr ""
 
-#: game.c:1890
+#: game.c:1899
 msgid "Matches on objects in the Master Room:"
 msgstr ""
 
-#: game.c:1926
+#: game.c:1936
 msgid "What do you want to do with the list?"
 msgstr ""
 
-#: game.c:1934
+#: game.c:1945
 msgid "Separator must be one character."
 msgstr ""
 
-#: game.c:2109
+#: game.c:2122
 msgid "Error -- cannot execute uptime."
 msgstr ""
 
-#: game.c:2251
+#: game.c:2264
 msgid "Up since"
 msgstr ""
 
-#: game.c:2255
+#: game.c:2268
 msgid "Last reboot"
 msgstr ""
 
-#: game.c:2257
+#: game.c:2270
 msgid "Total reboots"
 msgstr ""
 
-#: game.c:2261
+#: game.c:2274
 msgid "Time now"
 msgstr ""
 
-#: game.c:2266
+#: game.c:2279
 msgid "Time of last database save"
 msgstr ""
 
-#: game.c:2274 game.c:2281 game.c:2288 game.c:2296
+#: game.c:2287 game.c:2294 game.c:2301 game.c:2309
 #, c-format
 msgid "%29s: %ld minutes %ld seconds, at %s."
 msgstr ""
 
-#: game.c:2275
+#: game.c:2288
 msgid "Time until next database save"
 msgstr ""
 
-#: game.c:2282
+#: game.c:2295
 msgid "Time until next dbck check"
 msgstr ""
 
-#: game.c:2289
+#: game.c:2302
 msgid "Time until next purge"
 msgstr ""
 
-#: game.c:2297
+#: game.c:2310
 msgid "Time until next @warnings"
 msgstr ""
 
-#: game.c:2313
+#: game.c:2326
 #, c-format
 msgid "PennMUSH Uptime: %ld days %ld hours %ld minutes %ld seconds"
 msgstr ""
 
-#: game.c:2492 game.c:2521
+#: game.c:2505 game.c:2534
 msgid "I don't understand what you want to @list."
 msgstr ""
 

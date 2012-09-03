@@ -1732,7 +1732,7 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (string_prefix("player", r)) {
+    } else if (string_prefix("player", r) || string_prefix("executor", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1768,39 +1768,65 @@ FUNCTION(fun_pidinfo)
   } while (s);
 }
 
+#define LPIDS_WAIT 1
+#define LPIDS_SEMAPHORE 2
+#define LPIDS_INDEPENDENT 4
+#define LPIDS_TYPES (LPIDS_WAIT | LPIDS_SEMAPHORE)
 FUNCTION(fun_lpids)
 {
   /* Can be called as LPIDS or GETPIDS */
   MQUE *tmp;
-  int qmask = 3;
-  dbref thing = -1;
-  dbref player = -1;
+  int qmask = 0;
+  dbref thing = NOTHING;
+  dbref player = NOTHING;
   char *attr = NULL;
   bool first = true;
+  const char *list;
+  char *elem;
+
   if (string_prefix(called_as, "LPIDS")) {
     /* lpids(player[,type]) */
     if (args[0] && *args[0]) {
-      player = match_thing(executor, args[0]);
-      if (!GoodObject(player)) {
-        safe_str(T(e_notvis), buff, bp);
-        return;
-      }
-      if (!(LookQueue(executor) || (Owner(player) == executor))) {
-        safe_str(T(e_perm), buff, bp);
-        return;
+      if (!strcasecmp(args[0], "all")) {
+        if (LookQueue(executor))
+          player = NOTHING;
+        else
+          player = executor;
+      } else {
+        player = match_thing(executor, args[0]);
+        if (!GoodObject(player)) {
+          safe_str(T(e_notvis), buff, bp);
+          return;
+        }
+        if (!LookQueue(executor) && !(Owns(executor, player) || controls(executor, player))) {
+          safe_str(T(e_perm), buff, bp);
+          return;
+        }
       }
     } else if (!LookQueue(executor)) {
       player = executor;
     }
-    if ((nargs == 2) && args[1] && *args[1]) {
-      if (*args[1] == 'W' || *args[1] == 'w')
-        qmask = 1;
-      else if (*args[1] == 'S' || *args[1] == 's')
-        qmask = 2;
+    if (nargs > 1 && args[1] && *args[1]) {
+      list = args[1];
+      while (list && *list) {
+        elem = next_in_list(&list);
+        if (string_prefix("wait", elem))
+          qmask |= LPIDS_WAIT;
+        else if (string_prefix("semaphore", elem))
+          qmask |= LPIDS_SEMAPHORE;
+        else if (string_prefix("independent", elem))
+          qmask |= LPIDS_INDEPENDENT;
+        else {
+          safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+          return;
+        }
+      }
     }
+    if (!(qmask & LPIDS_TYPES))
+      qmask |= LPIDS_TYPES;
   } else {
     /* getpids(obj[/attrib]) */
-    qmask = 2;                  /* semaphores only */
+    qmask = LPIDS_SEMAPHORE;
     attr = strchr(args[0], '/');
     if (attr)
       *attr++ = '\0';
@@ -1814,22 +1840,22 @@ FUNCTION(fun_lpids)
       return;
     }
   }
-
-  if (qmask & 1) {
+  if (qmask & LPIDS_WAIT) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && (!Owns(tmp->executor, player)))
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) : !Owns(tmp->executor, player))) {
         continue;
+      }
       if (!first)
         safe_chr(' ', buff, bp);
       safe_integer(tmp->pid, buff, bp);
       first = false;
     }
   }
-  if (qmask & 2) {
+  if (qmask & LPIDS_SEMAPHORE) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && (!Owns(tmp->executor, player)))
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) : !Owns(tmp->executor, player)))
         continue;
       if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;

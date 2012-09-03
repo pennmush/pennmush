@@ -315,7 +315,7 @@ See also: @destroy, @undestroy
   softcode, etc. Players set HALT can still enter commands directly from
   their clients.
 
-See also: @halt, @restart
+See also: @halt, @restart, HALT POWER
 & HAVEN
   Flag:  HAVEN  (players, rooms)
 
@@ -884,7 +884,7 @@ See also: @function
   or pid, and to use @halt/all and @restart/all. Wizards have the power
   implicitly.
 
-See also: @halt, @restart, @wait, QUEUE POWER, SEE_QUEUE POWER
+See also: @halt, @restart, @wait, QUEUE POWER, SEE_QUEUE POWER, HALT
 & HIDE POWER
 
   The Hide power allows players to use the @hide command, as well as the
@@ -1018,9 +1018,10 @@ See also: SEE_ALL POWER, @search, @stats, objmem(), playermem(), lsearch()
 & SEE_QUEUE POWER
 
   The See_Queue power allows an object to use @ps, lpids() and related 
-  functions on any object/queue.
+  functions on any object/queue. Wizards and Royalty have this power
+  implicitly.
   
-See also: @ps, lpids(), getpids(), pidinfo()
+See also: @ps, lpids(), getpids(), pidinfo(), HALT POWER
 & SQL_OK POWER
 
   This power lets an object use @sql, sql() and related commands and

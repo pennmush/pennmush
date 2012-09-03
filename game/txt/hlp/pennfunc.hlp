@@ -3838,7 +3838,7 @@ See also: @prompt, @nsprompt, PROMPT_NEWLINES
   list that may contain the following elements:
   
     queue       the queue ("wait" or "semaphore") for the process
-    player      the queueing player
+    executor    the queueing object
     time        remaining time for timed queued entries (or -1)
     object      the semaphore object for semaphores (or #-1)
     attribute   the semaphore attribute for semaphores (or #-1)
@@ -3886,12 +3886,21 @@ See also: num(), namelist(), locate()
 
 See also: @poll, doing(), @doing 
 & LPIDS()
-  lpids(<object>[, <queue type>])
+  lpids([<object>[, <queue types>]])
 
-  Returns a space-separated list of queue process ids enqueued by <object>,
-  typically a player. If <queue type> is "w", only wait queue
-  entries are returned; if <queue type> is "s", only semaphore queue
-  entries are returned; if <queue type> is absent, both are returned.
+  This function returns a list of queue process ids (pids). Only commands 
+  queued by objects with the same owner as <object> are listed. If you have
+  the see_queue @power, you can specify "all" for <object> to get pids for 
+  everyone's queue entries. <object> defaults to the caller, or "all" for
+  priviledged callers.
+  
+  <queue types> should be a list of one or more of the following words, to
+  filter the pids returned:
+    wait        --  Only return wait queues
+    semaphore   --  Only return semaphore queues
+    independent --  Only return commands queued by <object> specifically,
+                    instead of all objects with the same owner as <object>.
+  If not specified, it defaults to "wait semaphore".
 
 See also: @ps, getpids(), pidinfo()
 & LPORTS()

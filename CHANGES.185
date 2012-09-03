@@ -25,6 +25,7 @@ Minor changes:
    after XTERM color codes. Suggested by spork, [Rhost]. [MG]
  * The QUIET flag now suppresses deprecated command/function messages.
    Suggested by Paige. [MG]
+ * Compiler warning fixed by ChaosMageX.
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

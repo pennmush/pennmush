@@ -17,6 +17,13 @@ Commands:
  * @dolist now accepts /inline and related switches, like @switch does.
    Suggested by Reaver. [MG]
 
+Functions:
+ * lpids()' second argument has been altered slightly, to allow you to list
+   the pids for one specific object only. Suggested by spork. [MG]
+ * The "player" field in pidinfo() has been renamed for "executor", for
+   clarity. "player" still works for backwards compatability. From a request
+   by tsen. [MG]
+ 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later
    groups overriding earlier ones. Allows you to specify basic ANSI codes

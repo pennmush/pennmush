@@ -15,6 +15,85 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 2                                 Aug 18, 2012
+
+Hardcode:
+ * render_string has been modified to work with multiple output formatters,
+   so it can display the appropriate color syntax for the client. [GM]
+ * Tweak the networking code to try to reduce output latency and queue size. [SW]
+
+Major changes:
+ * 256 Color support. Using 24 bit internally for representation and
+   downscaling to the client's possible output values. Use
+   SOCKSET colorstyle=xterm256 to see 256 color support, with
+   ansi(+colorname/+colorname,...) or ansi(#hexcode/#hexcode) for
+   extended color support, or @set me=xterm256. [GM] [MG]
+ * New SOCKSET socket command for changing socket options. Replaces the
+   @sockset command added in p1 for mortals, and can be used at the
+   login screen. Suggested by Sketch. [MG]
+ * @sockset is now @sockset <desc>[=<opt>,<value>[,...]], to query current
+   options or set options for any descriptor. [MG]
+ * The old @doing command has now been removed, and replaced with the normal
+   standard-attribute command (@doing <object>[=<message>]). [MG]
+
+Commands:
+ * look now takes an /opaque switch, which hides contents listings. Suggested
+   by Wiggles. [MG]
+ * @break and @assert now take a /queued switch, which causes the new <action
+   list> to be queued instead of run immediately, and an /inline switch which
+   gives default behaviour. For Rhost compatability. [MG]
+ * Two completely separate, but equally stupid, bugs made @nsprompt show
+   nospoof info just like @prompt. [MG]
+ * @open, open(), @dig, dig() accept specific garbage dbrefs to use
+   for the exits they make. [SW]
+
+Functions:
+ * colors() returns a list of all known color names known by PennMUSH, and
+   info about a particular color. [GM]
+ * valid() has two new categories, for validating color names and color code
+   sequences for ansi(). [MG]
+ * etime() formats elapsed times using the same rules as in WHO. [SW]
+
+Minor changes:
+ * The meaning of the COLOR flag has been restored. ANSI flag once again 
+   means only highlight is supported, while COLOR means all ANSI 8 colors
+   (8*2 including highlight), flash, invert, etc are supported. [GM]
+ * Charset negotiation didn't work on MSVC, and now forces iso-8859-1 when
+   compiled that way instead. Reported by Daniel Powell. [MG]
+ * @config/set and @config/save now log to the wizard_log. Suggested by
+   Israphel. [MG]
+ * The ICLOC attribute, which was set on newly created players but never used
+   in any way, is no longer set. Suggested by Paige. [MG]
+ * @destroy'ing, @undestroy'ing, and the actual destruction of players is
+   now logged. Suggested by Padraic. [MG]
+ * Translation fixes by Stoko.
+ * round(4.5,0) behaved differently on Penn than it did on MUX, and
+   inconsistantly with rounding to more places on Penn. [SW]
+ * The 'On for' and 'Idle' time fields in WHO are smarter and won't overflow
+   their space. Suggested by Ari and Paige. [SW]   
+ * Add a few new test cases. Requested by Sketch. [MG]
+ * It's now possible to clear/reset a prompt with @prompt <player>. [MG]
+ * New Pick_Dbref @power for specifying specific garbage dbrefs to use in
+   @create and friends. [SW]
+
+Fixes:
+ * Reordered some checks in tz.c to compile on more distributions. Problem
+   reported by Zen@M*U*SH. [MG]
+ * Setting an exit Transparent didn't cause its destination's desc to get
+   shown as it should have. [MG]
+ * It became impossible in p1 to give a delimiter to wrap() without also
+   specifying a first line width. wrap(%0,%1,,%2) will now use the
+   normal <width> arg for first line width, the same as wrap(%0,%1) does.
+   Reported by Kitai. [MG]
+ * Free PCRE-allocated memory with pcre_free() instead of free(). Reported
+   by ChaosMageX@M*U*S*H. [DC]            
+ * Fix some potential memory leaks in timezone file reading code. [SW]
+ * Off-by-one error in the helpfile index code. [MG]
+ * Improve docmentation of ip_addr config option. [SW]
+ * Fix an edge case in ansi_string_replace that could cause an overflow.
+   Reported by Ton Kyrion@M*U*S*H. [DC]
+ * Fix a memory leak in LOGOUT. [SW]
+
 Version 1.8.5 patchlevel 1                                 May 15, 2012
 
 Hardcode:

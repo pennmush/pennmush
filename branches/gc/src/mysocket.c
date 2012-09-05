@@ -8,6 +8,7 @@
 #include "copyrite.h"
 
 #include "config.h"
+#include "confmagic.h"
 
 #define _GNU_SOURCE
 
@@ -18,7 +19,8 @@
 
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 #ifdef I_SYS_TYPES
@@ -478,7 +480,7 @@ send_with_creds(int s, void *buf, size_t len)
   return slen;
 }
 
-#ifdef __CYGWIN__
+#if defined(__CYGWIN__) || defined(WIN32)
 /* There is probably a better way to actually fix (instead of ignore) the
  * lack of MSG_DONTWAIT on cygwin, but since I doubt anyone is actually
  * using the SSL_SLAVE code on cygwin, I'm not bothering. Can be looked into

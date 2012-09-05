@@ -1552,6 +1552,9 @@ FUNCTION(fun_wrap)
   if (!int_check(buff, bp, nargs, args, 3, &width1st, width))
     return;
 
+  if (width1st == 0)
+    width1st = width;
+
   if (nargs > 3)
     linesep = args[3];
   else
@@ -1583,7 +1586,7 @@ FUNCTION(fun_wrap)
       if (!ansi_string_insert(as, pstr - as->text + linewidth - 1, hyphen))
         pend++;
       safe_ansi_string(as, pstr - as->text, linewidth, buff, bp);
-      pstr += linewidth;    /* move to start of next line */
+      pstr += linewidth;        /* move to start of next line */
     } else {
       /* normal line */
       safe_ansi_string(as, pstr - as->text, ansilen, buff, bp);
@@ -2245,7 +2248,7 @@ FUNCTION(fun_render)
       continue;
     if (string_prefix("ansi", word)) {
       if (Can_Nspemit(executor)) {
-        flags |= MSG_ANSI;
+        flags |= MSG_XTERM256;
       } else {
         safe_str(T(e_perm), buff, bp);
         return;

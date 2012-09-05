@@ -31,7 +31,6 @@ COMMAND_PROTO(cmd_destroy);
 COMMAND_PROTO(cmd_dig);
 COMMAND_PROTO(cmd_disable);
 COMMAND_PROTO(cmd_dismiss);
-COMMAND_PROTO(cmd_doing);
 COMMAND_PROTO(cmd_dolist);
 COMMAND_PROTO(cmd_drop);
 COMMAND_PROTO(cmd_dump);

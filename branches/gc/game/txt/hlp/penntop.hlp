@@ -524,7 +524,7 @@ See also: ATTRIB-OWNERSHIP, @set, examine, @atrchown, @atrlock,
   Many MUSHes choose to disable the kill command.
 
 See also: kill, slay, @death
-& BOOLEAN VALUES 
+& BOOLEAN VALUES
 
   A boolean variable, for those of you not familiar with programming,
   is a variable that is either true or false. Normally, a value of 1
@@ -540,7 +540,7 @@ See also: kill, slay, @death
   "tiny_booleans" config option (@config tiny will show this).
 
   Continued in 'help boolean2'.
-& BOOLEAN2 
+& BOOLEAN2
   If tiny_booleans is...
   no                       FALSE: null string, 0, any negative db
                            TRUE:  everything else
@@ -590,9 +590,11 @@ See also: BOOLEAN FUNCTIONS, not(), t()
   SYSTEM          CLIENT      WEB SITE
   -----------------------------------------------------------------------
   UNIX            Tinyfugue   http://tinyfugue.sourceforge.net
+                  Potato      http://www.potatomushclient.com
   WINDOWS         MUSHClient  http://www.mushclient.com
                   SimpleMU    http://simplemu.onlineroleplay.com
                   MuckClient  http://www.xcalibur.co.uk/MuckClient/
+                  Potato      http://www.potatomushclient.com
   MAC OS X        Savitar     http://www.heynow.com/Savitar/
                   Atlantis    http://www.riverdark.net/atlantis/
                   Unix clients will also run on OS X.
@@ -991,13 +993,13 @@ See also: enter, leave, @prefix, @filter, AUDIBLE, @listen
   These attributes show the last times you connected and disconnected
   from the MUSH.
 & LASTSITE
-& LASTIP 
+& LASTIP
   LASTSITE and LASTIP
 
   The LASTSITE attribute gives the name of the site you last connected
   from.  The LASTIP attribute gives the IP address you last connected
   from.  Mortals cannot set them.
-& LINKING  
+& LINKING
 
   You can link to a room if you control it, or if it is set LINK_OK or
   ABODE. Being able to link means you can set the homes of objects or
@@ -2208,7 +2210,7 @@ See also: ZONES, MASTER ROOM, EVALUATION
        object in question is owned by the shared player.
        
   See also: SHARED, @lock
-& ZONES  
+& ZONES
 & ZONE OBJECTS
 & ZONE MASTER OBJECTS
 & ZMO
@@ -2344,3 +2346,14 @@ This is the AHELP index.
     > @command/restrict @emit=!flag^suspect&!flag^gagged
 
 See also: @command, @function, @attribute, @lock
+& DESCRIPTOR
+& PORT
+
+  A descriptor (also called a port or socket descriptor) is a unique (though
+  reusable) number assigned to each connection to the MUSH. The descriptor
+  for each connection is shown on the Wizard WHO in the 'Des' column.
+  
+  Several commands and functions take a descriptor as an argument, or return
+  the descriptor(s) associated with a player's connection.
+  
+See also: WHO, ports(), lports(), player(), @boot, CONNECTION FUNCTIONS

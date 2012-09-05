@@ -87,6 +87,8 @@ static bool
 
 
 
+
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -612,7 +614,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *subj)
+qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
 {
   int len;
   int offsets[99];

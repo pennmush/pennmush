@@ -186,6 +186,7 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
 {
   dbref forward;
   dbref source = NOTHING;
+
   if (links[3]) {
     source =
       match_result(player, links[3], TYPE_ROOM,
@@ -195,6 +196,15 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
       return;
     }
   }
+
+  if (links[5]) {
+    if (!make_first_free_wrapper(player, links[5]))
+      return;
+  }
+  if (links[4]) {
+    if (!make_first_free_wrapper(player, links[4]))
+      return;
+  }    
 
   forward = do_real_open(player, direction, links[1], source, pe_info);
   if (links[2] && *links[2] && GoodObject(forward)
@@ -422,11 +432,6 @@ do_dig(dbref player, const char *name, char **argv, int tport,
   dbref room;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
-  char *newdbref = NULL;
-
-  if (argv[3] && *argv[3]) {
-    newdbref = argv[3];
-  }
 
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
@@ -434,9 +439,13 @@ do_dig(dbref player, const char *name, char **argv, int tport,
   } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a room!"));
   } else if (can_pay_fees(player, ROOM_COST)) {
-    if (!make_first_free_wrapper(player, newdbref)) {
+    /* Push requested return exit, to exit and room dbrefs on the free list stack */
+    if (argv[5] && *argv[5] && !make_first_free_wrapper(player, argv[5]))
       return NOTHING;
-    }
+    if (argv[4] && *argv[4] && !make_first_free_wrapper(player, argv[4]))
+      return NOTHING;
+    if (argv[3] && *argv[3] && !make_first_free_wrapper(player, argv[3]))
+      return NOTHING;
 
     room = new_object();
 

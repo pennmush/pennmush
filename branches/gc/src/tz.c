@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "config.h"
+#include "confmagic.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -57,6 +58,8 @@
 #include <arpa/inet.h>
 #endif
 
+#endif
+
 #ifndef be32toh
 #define be32toh(i) ntohl(i)
 #endif
@@ -78,8 +81,6 @@ be64toh(int64_t i)
   return r.i64;
 #endif
 }
-#endif
-
 #endif
 
 static inline int32_t
@@ -165,6 +166,15 @@ tzfile_exists(const char *name)
     } 									\
   } while (0)
 
+#define READ_CHUNKF(buf, size)						\
+  do {									\
+    if (read(fd, (buf), (size)) != (size)) {				\
+      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno)); \
+      free((buf));							\
+      goto error;							\
+    } 									\
+  } while (0)
+
 static struct tzinfo *
 do_read_tzfile(int fd, const char *tzfile, int time_size)
 {
@@ -242,7 +252,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     							\
     size = tz->timecnt * time_size;			\
     buf = GC_MALLOC_ATOMIC(size);						\
-    READ_CHUNK(buf, size);					\
+    READ_CHUNKF(buf, size);					\
     								\
     tz->transitions = GC_MALLOC_ATOMIC(tz->timecnt * sizeof(time_t));	\
     for (n = 0; n < tz->timecnt; n += 1)			\
@@ -264,7 +274,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int m, size = tz->typecnt * 6;
 
     buf = GC_MALLOC_ATOMIC(size);
-    READ_CHUNK(buf, size);
+    READ_CHUNKF(buf, size);
 
     tz->offsets = GC_MALLOC_ATOMIC(tz->typecnt * sizeof(struct ttinfo));
 
@@ -289,7 +299,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int m, size = tz->leapcnt * (4 + time_size); \
     						 \
     buf = GC_MALLOC_ATOMIC(size);				 \
-    READ_CHUNK(buf, size);			 \
+    READ_CHUNKF(buf, size);			 \
     									\
     tz->leapsecs = GC_MALLOC(tz->leapcnt * sizeof(struct ttleapsecs));	\
     									\
@@ -316,14 +326,14 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     int n;
 
     buf = GC_MALLOC_ATOMIC(isstdcnt);
-    READ_CHUNK(buf, isstdcnt);
+    READ_CHUNKF(buf, isstdcnt);
 
     for (n = 0; n < isstdcnt; n += 1)
       tz->offsets[n].tt_std = buf[n];
 
 
     buf = GC_MALLOC_ATOMIC(isgmtcnt);
-    READ_CHUNK(buf, isgmtcnt);
+    READ_CHUNKF(buf, isgmtcnt);
 
     for (n = 0; n < isgmtcnt; n += 1)
       tz->offsets[n].tt_utc = buf[n];
@@ -436,7 +446,6 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
 
     arg = atr_value(a);
   }
-
 #ifdef USE_TZINFO
   {
     struct tzinfo *tz = NULL;
@@ -503,7 +512,7 @@ save_and_set_tz(const char *newzone)
     saved_tz = NULL;
 
 #ifdef WIN32
-  _putenv_s("TZ", newzone, 1);
+  _putenv_s("TZ", newzone);
 #else
   setenv("TZ", newzone, 1);
 #endif
@@ -517,14 +526,14 @@ restore_tz(void)
 {
   if (saved_tz) {
 #ifdef WIN32
-    _putenv_s("TZ", saved_tz, 1);
+    _putenv_s("TZ", saved_tz);
 #else
     setenv("TZ", saved_tz, 1);
 #endif
     saved_tz = NULL;
   } else {
 #ifdef WIN32
-    _putenv_s("TZ", 0, 1);
+    _putenv_s("TZ", "");
 #else
     unsetenv("TZ");
 #endif

@@ -365,6 +365,7 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
     break;
   case TYPE_PLAYER:
     /* wait until dbck */
+    do_log(LT_WIZ, player, thing, "Player scheduled for destruction.");
     notify_format(player,
                   (DESTROY_POSSESSIONS ?
                    (REALLY_SAFE ?
@@ -442,6 +443,8 @@ do_undestroy(dbref player, char *name)
                     T("%s's %s has been spared from destruction."),
                     Name(Owner(thing)), object_header(player, thing));
     }
+    if (IsPlayer(thing))
+      do_log(LT_WIZ, player, thing, "Player spared from destruction.");
   } else {
     notify(player, T("That can't be undestroyed."));
   }
@@ -859,6 +862,8 @@ clear_player(dbref thing)
   /* Chown any chat channels they own to God */
   chan_chownall(thing, probate);
 
+  do_log(LT_WIZ, thing, NOTHING, "Player destroyed.");
+
   /* Clear out names from the player list */
   delete_player(thing, NULL);
   if ((atemp = atr_get_noparent(thing, "ALIAS")) != NULL) {
@@ -925,7 +930,7 @@ make_first_free_wrapper(dbref player, char *newdbref)
   if (!newdbref || !*newdbref)
     return 1;
 
-  if (!Wizard(player)) {
+  if (!(Wizard(player) || has_power_by_name(player, "Pick_Dbref", NOTYPE))) {
     notify(player, T("Permission denied."));
     return 0;
   }

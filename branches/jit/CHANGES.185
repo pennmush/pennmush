@@ -5,22 +5,31 @@ chronological order (most recent first)
 
 [SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
  responsible for most unattributed changes.
-[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
 [GM] is Greg Millam, a PennMUSH developer (aka Walker)
 [MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
-[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
 [3] refers to code by (or inspired by) TinyMUSH 3.0
 [MUX] refers to code by (or inspired by) TinyMUX 2.x
 [Rhost] refers to code by (or inspired by) RhostMUSH
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 3                                 Aug 23, 2012
+
+Fixes:
+ * Fix a crash bug in new color code. Discovered by ChaosMageX. Intrevis, [SW].
+
+Functions:
+ * name() with no arguments is now an error. It should always have been, but
+   previously returned nothing for backwards compatability. If you still have
+   code that relies on that behaviour, you are extremely lazy and should be
+   ashamed of yourself. [MG]
+
 Version 1.8.5 patchlevel 2                                 Aug 18, 2012
 
 Hardcode:
  * render_string has been modified to work with multiple output formatters,
    so it can display the appropriate color syntax for the client. [GM]
- * Tweak the networking code to try to reduce output latency and queue size. [SW]
+ * Tweak the networking code to try to reduce output latency/queue size. [SW]
 
 Major changes:
  * 256 Color support. Using 24 bit internally for representation and

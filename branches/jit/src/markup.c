@@ -103,8 +103,6 @@ FUNCTION(fun_ansi)
   ansi_data colors;
   char *save = *bp;
   char *codes;
-  char *p;
-  int i;
 
   if (!*args[1])
     return;
@@ -130,17 +128,21 @@ FUNCTION(fun_ansi)
 
   /* If the contents overrun the buffer, we
    * place an ANSI_ENDALL tag at the end */
-  if (safe_str(args[1], buff, bp) || write_ansi_close(buff, bp)) {
-    p = buff + BUFFER_LEN - 6;  /* <c/a> */
-    for (i = 10; i > 0 && *p != TAG_START; i--, p--) ;
-    if (i > 0) {
-      /* There's an extant tag, let's just replace that. */
-      *bp = p;
-      safe_str(ANSI_ENDALL, buff, bp);
-    } else {
-      *bp = buff + BUFFER_LEN - 6;
-      safe_str(ANSI_ENDALL, buff, bp);
+  if (safe_strl(args[1], arglens[1], buff, bp) || write_ansi_close(buff, bp)) {
+    char *p = *bp - 1;
+    size_t ealen = strlen(ANSI_ENDALL); /* <c/a> */
+
+    while (p - buff > (ptrdiff_t) (BUFFER_LEN - 1 - ealen)) {
+      if (*p == TAG_END) {
+        /* There's an extant tag that would be overwritten by the closing tag. Scan to the start of it. */
+        while (*p != TAG_START)
+          p -= 1;
+      } else
+        p -= 1;
     }
+
+    *bp = p;
+    safe_strl(ANSI_ENDALL, ealen, buff, bp);
   }
 }
 
@@ -153,11 +155,11 @@ FUNCTION(fun_colors)
     /* Return list of available color names, skipping over the 256 'xtermN' colors */
     for (i = 256; allColors[i].name; i++) {
       if (args[0] && *args[0] && !quick_wild(args[0], allColors[i].name))
-	continue;
+        continue;
       if (shown)
-	safe_chr(' ', buff, bp);
+        safe_chr(' ', buff, bp);
       else
-	shown = 1;
+        shown = 1;
       safe_str(allColors[i].name, buff, bp);
     }
   } else if (nargs == 2) {
@@ -185,19 +187,19 @@ FUNCTION(fun_colors)
       int i;
       uint32_t color;
       bool shown = 0;
-      
+
       color = color_to_hex(ad.fg, 0);
       for (i = 256; allColors[i].name; i += 1) {
-	if (allColors[i].hex == color) {
-	  if (shown)
-	    safe_chr(' ', buff, bp);
-	  else
-	    shown = 1;
-	  safe_str(allColors[i].name, buff, bp);
-	}
+        if (allColors[i].hex == color) {
+          if (shown)
+            safe_chr(' ', buff, bp);
+          else
+            shown = 1;
+          safe_str(allColors[i].name, buff, bp);
+        }
       }
-      if (!shown) 
-	safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
+      if (!shown)
+        safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
     } else
       safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
     return;
@@ -456,7 +458,7 @@ init_ansi_codes(void)
  * \param cur the ansi_data to write
  * \param buff buffer to write to
  * \param bp pointer to buff to write at
- * \retval number of chars written
+ * \retval 0 on success, >0 if the end of the buffer was hit before outputting everything.
  */
 int
 write_ansi_data(ansi_data *cur, char *buff, char **bp)
@@ -472,6 +474,7 @@ write_ansi_data(ansi_data *cur, char *buff, char **bp)
 /** Write a closing internal markup tag for color.
  * \param buff buffer to write to
  * \param bp pointer to buff to write at
+ * \return 0 on success, >0 if the end of the buffer was hit.
  */
 int
 write_ansi_close(char *buff, char **bp)
@@ -489,6 +492,7 @@ write_ansi_close(char *buff, char **bp)
  * \param cur the ansi data to write
  * \param buff buffer to write to
  * \param bp position in buffer to write at
+ * \return 0 on success, >0 if the end of the buffer was hit.
  */
 static int
 write_ansi_letters(const ansi_data *cur, char *buff, char **bp)
@@ -591,7 +595,7 @@ color_to_hex(char *name, int hilite)
       len += 1;
     }
     *p = '\0';
-    
+
     c = colorname_lookup(name, len);
     if (c)
       return c->rgb;
@@ -718,9 +722,9 @@ ANSI_WRITER(ansi_16color)
 
 #define maybe_append_code(code) \
   do { \
-    if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
-      if (f++)				  \
-        ret += safe_chr(';', buff, bp);	  \
+    if (EDGE_UP(old, cur, CBIT_ ## code)) {        \
+      if (f++)                                  \
+        ret += safe_chr(';', buff, bp);          \
       else \
         ret += safe_str(ANSI_BEGIN, buff, bp); \
       ret += safe_integer(COL_ ## code, buff, bp); \
@@ -781,9 +785,9 @@ ANSI_WRITER(ansi_xterm256)
   }
 #define maybe_append_code(code) \
   do { \
-    if (EDGE_UP(old, cur, CBIT_ ## code)) {	\
-      if (f++) {			  \
-        ret += safe_chr(';', buff, bp);	  \
+    if (EDGE_UP(old, cur, CBIT_ ## code)) {        \
+      if (f++) {                          \
+        ret += safe_chr(';', buff, bp);          \
       } else { \
         ret += safe_str(ANSI_BEGIN, buff, bp); \
       } \
@@ -931,7 +935,7 @@ valid_hex_digits(const char *digits, int len)
     int erroff;
 
     re = pcre_compile("^[[:xdigit:]]+$",
-		      0, &errptr, &erroff, tables);
+                      0, &errptr, &erroff, tables);
     if (!re) {
       do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
       return 0;
@@ -940,7 +944,7 @@ valid_hex_digits(const char *digits, int len)
 
   if (!digits)
     return 0;
-  
+
   return pcre_exec(re, NULL, digits, len, 0, 0, ovec, 9) > 0;
 }
 
@@ -956,7 +960,7 @@ valid_angle_hex(const char *s, int len)
     int erroff;
 
     re = pcre_compile("^<\\s*#[[:xdigit:]]{6}\\s*>\\s*$",
-		      0, &errptr, &erroff, tables);
+                      0, &errptr, &erroff, tables);
     if (!re) {
       do_rawlog(LT_ERR, "valid_angle_hex: Unable to compile re: %s", errptr);
       return 0;
@@ -965,7 +969,7 @@ valid_angle_hex(const char *s, int len)
 
   if (!s)
     return 0;
-  
+
   return pcre_exec(re, NULL, s, len, 0, 0, ovec, 9) > 0;
 }
 
@@ -988,7 +992,7 @@ valid_angle_triple(const char *s, int len, char *rgbs)
     int erroff;
 
     re = pcre_compile("^<\\s*(\\d{1,3})\\s+((?1))\\s+((?1))\\s*>\\s*$",
-		      0, &errptr, &erroff, tables);
+                      0, &errptr, &erroff, tables);
     if (!re) {
       do_rawlog(LT_ERR, "valid_angle_triple: Unable to compile re: %s", errptr);
       return 0;
@@ -997,7 +1001,7 @@ valid_angle_triple(const char *s, int len, char *rgbs)
 
   if (!s)
     return 0;
-  
+
   matches = pcre_exec(re, NULL, s, len, 0, 0, ovec, 15);
   if (matches != 4)
     return 0;
@@ -1005,7 +1009,7 @@ valid_angle_triple(const char *s, int len, char *rgbs)
   for (n = 1; n < 4; n += 1) {
     int color;
     char colorstr[8];
-    
+
     pcre_copy_substring(s, ovec, matches, n, colorstr, 8);
     color = parse_integer(colorstr);
     if (color > 255)
@@ -1148,12 +1152,12 @@ new_ansi:
         return 1;
 
       if (strncasecmp("xterm", buff, 5) == 0) /* xterm color ids are stored directly. */
-	snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+        snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
        else if (len > 6) /* Use hex code to save on buffer space */
         snprintf(ptr, COLOR_NAME_LEN, "#%06x",
-		 color_to_hex(tprintf("+%s", buff), 0));
+                 color_to_hex(tprintf("+%s", buff), 0));
       else
-	snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+        snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
 
       break;
     case '#':
@@ -1166,50 +1170,50 @@ new_ansi:
       buff[len] = '\0';
       len = remove_trailing_whitespace(buff, len);
       if (len != 6) /* Only accept 24-bit colors */
-	return 1;
+        return 1;
       if (!valid_hex_digits(buff, len))
-	return 1;
+        return 1;
       snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
       break;
     case '<':
       /* <#RRGGBB> or <R G B> */
-      {	
-	char rgbs[7];
-	
-	name = str;
-	str = find_end_of_color(str);
-	len = str - name;
-	if (valid_angle_hex(name, len)) {
-	  /* < #RRGGBB > */
-	  char *st = strchr(name, '#');
-	  memcpy(buff, st + 1, 6);
-	  buff[6] = '\0';
-	  snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
-	} else if (valid_angle_triple(name, len, rgbs)) {
-	  /* < R G B > */
-	  snprintf(ptr, COLOR_NAME_LEN, "#%s", rgbs);
+      {
+        char rgbs[7];
+
+        name = str;
+        str = find_end_of_color(str);
+        len = str - name;
+        if (valid_angle_hex(name, len)) {
+          /* < #RRGGBB > */
+          char *st = strchr(name, '#');
+          memcpy(buff, st + 1, 6);
+          buff[6] = '\0';
+          snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+        } else if (valid_angle_triple(name, len, rgbs)) {
+          /* < R G B > */
+          snprintf(ptr, COLOR_NAME_LEN, "#%s", rgbs);
         } else
           return 1;
       }
       break;
     case '0':
       if (*(str + 1) && (*(str + 1) == 'X' || *(str + 1) == 'x')) {
-	/* 0xRRGGBB, 0xRGB and 0xN where N is a base 16 xterm color id */
+        /* 0xRRGGBB, 0xRGB and 0xN where N is a base 16 xterm color id */
         name = str + 2;
-	str = find_end_of_color(str);
-	len = str - name;
-	memcpy(buff, name, len);
-	buff[len] = '\0';
-	len = remove_trailing_whitespace(buff, len);
-	if (!valid_hex_digits(buff, len))
-	  return 1;
+        str = find_end_of_color(str);
+        len = str - name;
+        memcpy(buff, name, len);
+        buff[len] = '\0';
+        len = remove_trailing_whitespace(buff, len);
+        if (!valid_hex_digits(buff, len))
+          return 1;
         switch (len) {
         case 1:
         case 2:
           {
             unsigned int xterm;
             if (sscanf(buff, "%x", &xterm) != 1)
-	      return 1;
+              return 1;
             snprintf(ptr, COLOR_NAME_LEN, "+xterm%u", xterm);
           }
           break;
@@ -1217,7 +1221,7 @@ new_ansi:
           {
             unsigned int r, g, b;
             if (sscanf(buff, "%1x%1x%1x", &r, &g, &b) != 3)
-	      return 1;
+              return 1;
             snprintf(ptr, COLOR_NAME_LEN, "#%02x%02x%02x", r, g, b);
           }
           break;
@@ -1225,15 +1229,15 @@ new_ansi:
           {
             unsigned int r, g, b;
             if (sscanf(buff, "%2x%2x%2x", &r, &g, &b) != 3)
-	      return 1;
+              return 1;
             snprintf(ptr, COLOR_NAME_LEN, "#%02x%02x%02x", r, g, b);
           }
           break;
         default:
           return 1;
         }
-	break;
-      } 
+        break;
+      }
       /* Fall through on other numbers starting with 0 */
     case '1':
     case '2':
@@ -1254,10 +1258,10 @@ new_ansi:
         int xterm = parse_integer(buff);
         if (xterm < 0 || xterm > 255)
           return 1;
-	snprintf(ptr, COLOR_NAME_LEN, "+xterm%d", xterm); 
+        snprintf(ptr, COLOR_NAME_LEN, "+xterm%d", xterm);
         break;
       } else
-	return 1;
+        return 1;
     case '/':
     case '!':
       ptr = store->bg;
@@ -2197,7 +2201,7 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
   int end;
   int retval = 0;
   int lastidx;
-  char *buffend = buff + BUFFER_LEN;
+  char *buffend = buff + BUFFER_LEN - 1;
 
   if (!as)
     return 0;

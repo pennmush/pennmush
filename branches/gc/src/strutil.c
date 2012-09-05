@@ -789,7 +789,6 @@ safe_strl(const char *s, size_t len, char *buff, char **bp)
 int
 safe_fill(char x, size_t n, char *buff, char **bp)
 {
-  size_t blen;
   int ret = 0;
 
   if (n == 0)
@@ -797,13 +796,9 @@ safe_fill(char x, size_t n, char *buff, char **bp)
   else if (n == 1)
     return safe_chr(x, buff, bp);
 
-  if (n > BUFFER_LEN - 1)
-    n = BUFFER_LEN - 1;
-
-  blen = BUFFER_LEN - (*bp - buff) - 1;
-
-  if (blen < n) {
-    n = blen;
+  if (*bp + n + 1 > buff + BUFFER_LEN) {
+    n = buff + BUFFER_LEN - *bp;
+    if (n > 0) --n;
     ret = 1;
   }
   memset(*bp, x, n);

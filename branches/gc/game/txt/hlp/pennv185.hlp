@@ -1,4 +1,4 @@
-& 1.8.5p2
+& 1.8.5p3
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,12 +11,24 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.5 patchlevel 3                                 Aug 23, 2012
+
+Fixes:
+ * Fix a crash bug in new color code. Discovered by ChaosMageX. Intrevis, [SW].
+
+Functions:
+ * name() with no arguments is now an error. It should always have been, but
+   previously returned nothing for backwards compatability. If you still have
+   code that relies on that behaviour, you are extremely lazy and should be
+   ashamed of yourself. [MG]
+
+& 1.8.5p2
 Version 1.8.5 patchlevel 2                                 Aug 18, 2012
 
 Hardcode:
  * render_string has been modified to work with multiple output formatters,
    so it can display the appropriate color syntax for the client. [GM]
- * Tweak the networking code to try to reduce output latency and queue size. [SW]
+ * Tweak the networking code to try to reduce output latency/queue size. [SW]
 
 Major changes:
  * 256 Color support. Using 24 bit internally for representation and

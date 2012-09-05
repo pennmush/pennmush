@@ -1741,9 +1741,6 @@ FUNCTION(fun_name)
 {
   dbref it;
 
-  /* Special case for backward compatibility */
-  if (nargs == 0)
-    return;
   if (nargs == 2) {
     if (!command_check_byname(executor, "@name", pe_info)
         || fun->flags & FN_NOSIDEFX) {

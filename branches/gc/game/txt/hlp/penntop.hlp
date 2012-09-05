@@ -1807,6 +1807,9 @@ See also: REGISTERS
 
 See also: string functions
 & %
+& %b
+& %t
+& %%
 & SUBSTITUTIONS
   The % symbol is used in MUSH commands to indicate a substitution -- some
   other character(s) or words are substituted for whatever follows the % 
@@ -1829,6 +1832,9 @@ See also: string functions
   Continued in 'help substitutions2'.
 & SUBSTITUTIONS2
 & %2
+& %v
+& %w
+& %x
   If the ENACTOR's gender is set, you can use these substitutions to get the
   right pronoun for him/her:
      %s = subjective pronoun: he, she, it, they. Same as subj(%#)
@@ -1846,6 +1852,12 @@ See also: string functions
   Continued in 'help substitutions3'.
 & SUBSTITUTIONS3
 & %3
+& %L
+& %c
+& %u
+& %?
+& %=
+& %+
   Other substitutions:
     %0-%9   = the contents of the REGISTERS 0-9, respectively
     %@ = the caller's dbref number. Initially same as %#, changes when 

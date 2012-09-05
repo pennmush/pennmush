@@ -988,18 +988,17 @@ command_argparse(dbref executor, dbref enactor, dbref caller,
          (split | args), pe_info)) {
       done = 1;
     }
-    *t = '\0';
+    /* If t is pointing at or past the last element, this is the last arg. */
+    if ((t - to) >= BUFFER_LEN - 1) {
+      t = to + BUFFER_LEN - 1;
+      done = 1;
+    }
+    *(t++) = '\0';
     if (args) {
       argv[i] = aold;
       if (*f)
         f++;
       i++;
-      /* Because we test on f, not t. This was causing a bug wherein
-       * trying to build a commandraw with multiple rsargs, including
-       * one massive one, was causing a crash.
-       */
-      if ((t - to) < (BUFFER_LEN - 1))
-        t++;
       if (i == MAX_ARG)
         done = 1;
     }

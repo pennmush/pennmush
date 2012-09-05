@@ -33,6 +33,7 @@ Minor changes:
  * The QUIET flag now suppresses deprecated command/function messages.
    Suggested by Paige. [MG]
  * Compiler warning fixed by ChaosMageX.
+ * Help fixes. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

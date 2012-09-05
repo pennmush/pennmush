@@ -1,14 +1,26 @@
-How to compile PennMUSH 1.8.x under Windows (MSVC++/MS VS.NET)
-----------------------------------------------
+How to compile PennMUSH 1.8.x under Windows using Visual Studio
+---------------------------------------------------------------
 by Nick Gammon <nick@gammon.com.au> and Javelin and Luuk de Waard
 Updated by Ervin Hearn <ehearn@pennmush.org>
 
-Last update: Friday, 3 July 2009
+Last update: Monday, 20 August 2012
+
+For information on how to build the dependencies (OpenSSL and PCRE), please
+refer to http://code.google.com/p/pennmush/wiki/Win32Build
 
 1. From the top-level pennmush directory,
-   Copy the following files        to:
 
-   For MSVC++ 6:
+   For Visual Studio 2005 and later:
+   No copying required!
+
+   Visual Studio has been configured to copy the .dst files automatically if they
+   do not exist, and the header files each time the project is compiled. This can
+   be disabled or changed by going to Project -> pennmush Properties ->
+   Configuration Properties -> Build Events -> Pre-Build Event and Post-Build
+   Event.
+
+   For MSVC++ 6 (not supported):
+   Copy the following files        to:
    win32/config.h                  config.h
    win32/confmagic.h               confmagic.h
    win32/options.h                 options.h
@@ -23,15 +35,6 @@ Last update: Friday, 3 July 2009
    game/aliascnf.dst               game/alias.cnf
    game/namescnf.dst               game/names.cnf
    game/restrictcnf.dst            game/restrict.cnf
-
-   For MS VS.NET 2005 and later:
-   No copying required!
-
-   VS.NET has been configured to copy the .dst files automatically if they
-   do not exist, and the header files each time the project is compiled. This
-   can be disabled or changed by going to Project -> pennmush Properties ->
-   Configuration Properties -> Build Events -> Pre-Build Event and Post-Build
-   Event.
 
    If you've already got src/*local.c files that you've modified,
    you'll just have to make sure that there are no new functions

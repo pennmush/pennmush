@@ -18,6 +18,7 @@ Continued in 'help pueblo2'.
     * Unordered list for contents and transparent exits
     * Contents and exits lists have links (Click an exit to walk through it)
     * Object lists (like the ones found in 'examine'/'inventory') have links
+    * Conversion of accented characters into &entity; codes
 
   While Pueblo brings a number of new features and markups to MUSHes, in many
   ways it's not well suited. Because it's based on HTML, multiple spaces are

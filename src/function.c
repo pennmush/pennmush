@@ -126,8 +126,11 @@ int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
 {
 
   if (nfargs >= check_arg) {
-    if (!*fargs[check_arg - 1] && !NULL_EQ_ZERO)
-      *result = def;
+    if (!*fargs[check_arg - 1])
+      if (NULL_EQ_ZERO)
+        *result = 0;
+      else
+        *result = def;
     else if (!is_strict_integer(fargs[check_arg - 1])) {
       safe_str(T(e_int), buff, bp);
       return 0;
@@ -233,6 +236,7 @@ FUNTAB flist[] = {
   {"CLOCK", fun_clock, 1, 2, FN_REG | FN_STRIPANSI},
   {"CMOGRIFIER", fun_cmogrifier, 1, 1, FN_REG | FN_STRIPANSI},
   {"CMSGS", fun_cinfo, 1, 1, FN_REG | FN_STRIPANSI},
+  {"COLORS", fun_colors, 0, 2, FN_REG | FN_STRIPANSI},
   {"COWNER", fun_cowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"CRECALL", fun_crecall, 1, 5, FN_REG | FN_STRIPANSI},
   {"CSTATUS", fun_cstatus, 2, 2, FN_REG | FN_STRIPANSI},
@@ -268,7 +272,7 @@ FUNTAB flist[] = {
   {"DEFAULT", fun_default, 2, INT_MAX, FN_NOPARSE},
   {"DELETE", fun_delete, 3, 3, FN_REG},
   {"DIE", fun_die, 2, 3, FN_REG | FN_STRIPANSI},
-  {"DIG", fun_dig, 1, 4, FN_REG},
+  {"DIG", fun_dig, 1, 6, FN_REG},
   {"DIGEST", fun_digest, 1, -2, FN_REG},
   {"DIST2D", fun_dist2d, 4, 4, FN_REG | FN_STRIPANSI},
   {"DIST3D", fun_dist3d, 6, 6, FN_REG | FN_STRIPANSI},
@@ -284,6 +288,7 @@ FUNTAB flist[] = {
   {"ENCODE64", fun_encode64, 1, -1, FN_REG},
   {"ENCRYPT", fun_encrypt, 2, 3, FN_REG},
   {"ENTRANCES", fun_entrances, 0, 4, FN_REG | FN_STRIPANSI},
+  {"ETIME", fun_etime, 1, 2, FN_REG},
   {"ETIMEFMT", fun_etimefmt, 2, 2, FN_REG},
   {"EQ", fun_eq, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"EVAL", fun_eval, 2, 2, FN_REG},
@@ -474,7 +479,7 @@ FUNTAB flist[] = {
   {"OBJID", fun_objid, 1, 1, FN_REG | FN_STRIPANSI},
   {"OBJMEM", fun_objmem, 1, 1, FN_REG | FN_STRIPANSI},
   {"OEMIT", fun_oemit, 2, -2, FN_REG},
-  {"OPEN", fun_open, 1, 3, FN_REG},
+  {"OPEN", fun_open, 1, 4, FN_REG},
   {"OR", fun_or, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"ORD", fun_ord, 1, 1, FN_REG | FN_STRIPANSI},
   {"ORDINAL", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},

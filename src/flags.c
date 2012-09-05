@@ -90,7 +90,7 @@ struct flagcache {
 
 static struct flagcache *new_flagcache(FLAGSPACE *, int);
 static void free_flagcache(struct flagcache *);
-static object_flag_type flagcache_find_ns(FLAGSPACE *, object_flag_type);
+static object_flag_type flagcache_find_ns(FLAGSPACE *, const object_flag_type);
 
 slab *flagbucket_slab = NULL;
 
@@ -985,6 +985,8 @@ flag_add_additional(FLAGSPACE *n)
       f->perms |= F_LOG;
     if ((f = match_flag("ROYALTY")))
       f->perms |= F_LOG;
+    f = add_flag("XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY);
+    flag_add(flags, "COLOR256", f);     /* MUX alias */
 
   } else if (n->tab == &ptab_power) {
     if (!(globals.indb_flags & DBF_POWERS_LOGGED)) {
@@ -1010,6 +1012,7 @@ flag_add_additional(FLAGSPACE *n)
     add_power("Many_Attribs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("hook", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Can_dark", '\0', TYPE_PLAYER, F_WIZARD | F_LOG, F_ANY);
+    add_power("Pick_Dbrefs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     /* Aliases for other servers */
     if ((f = match_power("tport_anything")) && !match_power("tel_anything"))
       flag_add(flags, "tel_anything", f);

@@ -13,6 +13,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -22,13 +23,9 @@
 #ifdef WIN32
 #define FD_SETSIZE 256
 #include <windows.h>
-#include <winsock.h>
-#include <io.h>
+#include <winsock2.h>
+#include <errno.h>
 #include <process.h>
-#define EINTR WSAEINTR
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define MAXHOSTNAMELEN 32
-#pragma warning( disable : 4761)        /* disable warning re conversion */
 #else                           /* !WIN32 */
 #ifdef I_SYS_FILE
 #include <sys/file.h>
@@ -81,7 +78,9 @@
 #include <ieeefp.h>
 #endif
 #include <locale.h>
+#ifndef _MSC_VER
 #include <langinfo.h>
+#endif
 #include <setjmp.h>
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -262,6 +261,9 @@ static const char *asterisk_line =
 /** Where we save the descriptor info across reboots. */
 #define REBOOTFILE              "reboot.db"
 
+static void sockset_wrapper(DESC *d, char *cmd);
+
+extern int notify_type(DESC *d);        /* from notify.c */
 #if 0
 /* For translation */
 static void dummy_msgs(void);
@@ -392,7 +394,7 @@ static void parse_connect(const char *msg, char *command, char *user,
                           char *pass);
 static void close_sockets(void);
 dbref find_player_by_desc(int port);
-static DESC *lookup_desc(dbref executor, const char *name);
+DESC *lookup_desc(dbref executor, const char *name);
 void NORETURN bailout(int sig);
 void WIN32_CDECL signal_shutdown(int sig);
 void WIN32_CDECL signal_dump(int sig);
@@ -410,8 +412,8 @@ extern bool ssl_slave_halted;
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
-static const char *time_format_1(time_t dt);
-static const char *time_format_2(time_t dt);
+static char *onfor_time_fmt(time_t at, int len);
+static char *idle_time_fmt(time_t last, int len);
 static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
                                 dbref executor);
@@ -474,7 +476,8 @@ main(int argc, char **argv)
 #ifdef HAVE_GETUID
   if (getuid() == 0) {
     fputs("Please run the server as another user.\n", stderr);
-    fputs("PennMUSH will not run as root as a security measure.\n", stderr);
+    fputs("PennMUSH will not run as root as a security measure. Exiting.\n",
+          stderr);
     return EXIT_FAILURE;
   }
   /* Add suid-root checks here. */
@@ -484,8 +487,13 @@ main(int argc, char **argv)
     fprintf(stderr, "The  %s binary is set suid and owned by root.\n", argv[0]);
 #ifdef HAVE_SETEUID
     fprintf(stderr, "Changing effective user to %d.\n", (int) getuid());
-    seteuid(getuid());
-    in_suid_root_mode = 1;
+    if (seteuid(getuid()) < 0) {
+      fprintf(stderr, "ERROR: seteuid() failed: %s\n", strerror(errno));
+      fputs("PennMUSH will not run as root as a security measure. Exiting.\n",
+            stderr);
+      return EXIT_FAILURE;
+    } else
+      in_suid_root_mode = 1;
 #endif
   }
 #endif                          /* HAVE_GETEUID */
@@ -2433,6 +2441,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
       unsigned char reply_prefix[4] = "\xFF\xFA\x2A\x01";
       unsigned char reply_suffix[2] = "\xFF\xF0";
+#ifndef _MSC_VER
       /* Offer a selection of possible delimiters, to avoid it appearing
        * in a charset name */
       char *delim_list = "; +=/!", *delim_curr;
@@ -2455,13 +2464,22 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       } else {
         /* Fall back on latin-1 */
         delim[0] = ';';
-        curr_locale = "ISO-8859-1";
+        curr_locale = "ISO-8859-1;x-penn-def";
       }
       queue_newwrite(d, (unsigned char *) delim, 1);
       queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
 
       queue_newwrite(d, reply_suffix, 2);
-
+#else                           /* _MSC_VER */
+      /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+       * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+       * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+       * but it's unlikely to contain a valid charset name, so probably
+       * wouldn't help anyway.) */
+      queue_newwrite(d, reply_prefix, 4);
+      queue_newwrite(d, ";ISO-8859-1;x-win-def", 21);
+      queue_newwrite(d, reply_suffix, 2);
+#endif                          /* _MSC_VER */
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];
@@ -2667,7 +2685,7 @@ process_commands(void)
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
-          break;
+	  /* Fall through to free input buffer */
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
@@ -2792,6 +2810,8 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_PROMPT_NEWLINES;
     else
       d->conn_flags &= ~CONN_PROMPT_NEWLINES;
+  } else if (!strncmp(command, "SOCKSET", 7)) {
+    sockset_wrapper(d, command + 7);
   } else {
     if (d->connected) {
       send_prefix(d);
@@ -3320,25 +3340,94 @@ isyes(char *str)
   return 0;
 }
 
+static void
+sockset_wrapper(DESC *d, char *cmd)
+{
+  const char *res;
+  char *p;
+
+  while (cmd && *cmd && isspace((unsigned char) *cmd))
+    cmd++;
+
+  if (!*cmd) {
+    /* query all */
+    res = sockset_show(d);
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+    return;
+  }
+
+  if ((p = strchr(cmd, '='))) {
+    /* set an option */
+    *(p++) = '\0';
+    res = sockset(d, cmd, p);
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+    return;
+  } else {
+    res = T("You must give an option and a value.");
+    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_eol(d);
+  }
+
+}
+
+const char *
+sockset_show(DESC *d)
+{
+  static char buff[BUFFER_LEN];
+  char *bp = buff;
+  char colorstyle[SBUF_LEN];
+  int ntype;
+
+  safe_chr('\n', buff, &bp);
+
+  if (d->output_prefix && *(d->output_prefix))
+    safe_format(buff, &bp, "%-15s:  %s\n", PREFIX_COMMAND, d->output_prefix);
+
+  if (d->output_suffix && *(d->output_suffix)) {
+    safe_format(buff, &bp, "%-15s:  %s\n", SUFFIX_COMMAND, d->output_suffix);
+  }
+
+  safe_format(buff, &bp, "%-15s:  %s\n", "Pueblo",
+              (d->conn_flags & CONN_HTML ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %s\n", "Telnet",
+              (TELNET_ABLE(d) ? "Yes" : "No"));
+  safe_format(buff, &bp, "%-15s:  %d\n", "Width", d->width);
+  safe_format(buff, &bp, "%-15s:  %d\n", "Height", d->height);
+  safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
+
+  ntype = notify_type(d);
+  if (ntype & MSG_XTERM256)
+    strcpy(colorstyle, "xterm256");
+  else if (ntype & MSG_ANSI16)
+    strcpy(colorstyle, "16color");
+  else if (ntype & MSG_ANSI2)
+    strcpy(colorstyle, "hilite");
+  else
+    strcpy(colorstyle, "plain");
+
+  if (d->conn_flags & CONN_COLORSTYLE)
+    safe_format(buff, &bp, "%-15s:  %s", "Color Style", colorstyle);
+  else
+    safe_format(buff, &bp, "%-15s:  auto (%s)", "Color Style", colorstyle);
+
+  *bp = '\0';
+  return buff;
+}
+
 /** Set a sock option.
- * \param player the dbref of the player running @sockset
+ * \param d the descriptor to set the option on
  * \param name the option name
  * \param val the option value
  * \return string Set message (error or success)
  */
 const char *
-sockset(dbref player, char *name, char *val)
+sockset(DESC *d, char *name, char *val)
 {
-  DESC *d;
   static char retval[BUFFER_LEN];
-
   int ival;
 
-  d = least_idle_desc(player, 1);
-
-  if (!d) {
-    return T("You are not connected?");
-  }
   if (!name || !name[0]) {
     return T("Set what option?");
   }
@@ -3425,6 +3514,31 @@ sockset(dbref player, char *name, char *val)
     else
       d->ttype = mush_strdup("unknown", "terminal description");
     return T("Terminal Type set.");
+  }
+
+  if (!strcasecmp(name, "COLORSTYLE")) {
+    if (!strcasecmp(val, "auto")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      return tprintf(T("Colorstyle set to '%s'"), "auto");
+    } else if (string_prefix("plain", val) || string_prefix("none", val)) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_PLAIN;
+      return tprintf(T("Colorstyle set to '%s'"), "plain");
+    } else if (string_prefix("hilite", val) || string_prefix("highlight", val)) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_ANSI;
+      return tprintf(T("Colorstyle set to '%s'"), "hilite");
+    } else if (string_prefix("16color", val)) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_ANSICOLOR;
+      return tprintf(T("Colorstyle set to '%s'"), "16color");
+    } else if (string_prefix("xterm256", val) || !strcmp(val, "256")) {
+      d->conn_flags &= ~CONN_COLORSTYLE;
+      d->conn_flags |= CONN_XTERM256;
+      return tprintf(T("Colorstyle set to '%s'"), "xterm256");
+    }
+    return tprintf(T("Unknown color style. Valid color styles: %s"),
+                   "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
   }
 
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
@@ -3872,13 +3986,11 @@ dump_users(DESC *call_by, char *match)
 {
   DESC *d;
   int count = 0;
-  time_t now;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
 
   while (*match && *match == ' ')
     match++;
-  now = mudtime;
 
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
     queue_newwrite(call_by, (const unsigned char *) "<PRE>", 5);
@@ -3899,8 +4011,8 @@ dump_users(DESC *call_by, char *match)
       continue;
 
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
-            time_format_1(now - d->connected_at),
-            time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
+            onfor_time_fmt(d->connected_at, 10),
+            idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' ')
             , get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf1);
   }
@@ -3926,7 +4038,6 @@ do_who_mortal(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   int privs = Priv_Who(player);
   PUEBLOBUFF;
 
@@ -3953,8 +4064,8 @@ do_who_mortal(dbref player, char *name)
     if (Hidden(d) && !privs)
       continue;
     notify_format(player, "%-16s %10s   %4s%c %s", Name(d->player),
-                  time_format_1(now - d->connected_at),
-                  time_format_2(now - d->last_time),
+                  onfor_time_fmt(d->connected_at, 10),
+                  idle_time_fmt(d->last_time, 4),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
                   , get_doing(d->player, player, player, NULL, 0));
   }
@@ -3985,7 +4096,6 @@ do_who_admin(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   char tbuf[BUFFER_LEN];
   PUEBLOBUFF;
 
@@ -4009,8 +4119,8 @@ do_who_admin(dbref player, char *name)
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
               unparse_dbref(Location(d->player)),
-              time_format_1(now - d->connected_at),
-              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+              onfor_time_fmt(d->connected_at, 9),
+              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'), d->addr);
       if (Dark(d->player)) {
         tbuf[71] = '\0';
@@ -4023,8 +4133,8 @@ do_who_admin(dbref player, char *name)
       }
     } else {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
-              "#-1", time_format_1(now - d->connected_at),
-              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+              "#-1", onfor_time_fmt(d->connected_at, 9),
+              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
@@ -4058,7 +4168,6 @@ do_who_session(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
-  time_t now = mudtime;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4082,15 +4191,15 @@ do_who_session(dbref player, char *name)
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     Name(d->player), unparse_dbref(Location(d->player)),
-                    time_format_1(now - d->connected_at),
-                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+                    onfor_time_fmt(d->connected_at, 9),
+                    idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
                     is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     } else {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     T("Connecting..."), "#-1",
-                    time_format_1(now - d->connected_at),
-                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+                    onfor_time_fmt(d->connected_at, 9),
+                    idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
                     is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     }
@@ -4117,42 +4226,159 @@ do_who_session(dbref player, char *name)
 
 }
 
-static const char *
-time_format_1(time_t dt)
+enum {
+  SECS_MINUTE = 60,
+  SECS_HOUR = 3600,
+  SECS_DAY = 86400,
+  SECS_WEEK = 604800,
+  SECS_YEAR = 31536000
+};
+
+static char *
+squish_time(char *buf, int len)
 {
-  register struct tm *delta;
-  static char buf[64];
-  if (dt < 0)
-    dt = 0;
-  delta = gmtime(&dt);
-  if (delta->tm_yday > 0) {
-    sprintf(buf, "%dd %02d:%02d",
-            delta->tm_yday, delta->tm_hour, delta->tm_min);
-  } else {
-    sprintf(buf, "%02d:%02d", delta->tm_hour, delta->tm_min);
+  char *c;
+  int slen;
+
+  /* Eat any leading whitespace */
+  while (*buf == ' ')
+    buf += 1;
+
+  /* Eat up all leading 0 entries.
+   *  0y 5d -> 5d
+   */
+  while (*buf == '0') {
+    c = strchr(buf, ' ');
+    if (c) {
+      while (*c == ' ')
+        c += 1;
+      buf = c;
+    } else
+      break;
   }
+
+  /* Eat any intermediate 0 entries unless it's the only one.
+   * 1d 0h 40m -> 1d 40m
+   * 1d 0h -> 1d
+   * 0s -> 0s
+   */
+  c = buf;
+  do {
+    char *saved;
+
+    saved = c = strchr(c, ' ');
+    if (!c)
+      break;
+
+    while (*c == ' ')
+      c += 1;
+
+    if (*c == '0') {
+      char *n = strchr(c, ' ');
+      if (n) {
+        int nlen = strlen(n) + 1;
+        memmove(saved, n, nlen);
+        c = saved;
+      } else {
+        *saved = '\0';
+        break;
+      }
+    }
+  } while (1);
+
+  /* If the string is too long, drop trailing entries and resulting
+     whitespace until it fits. */
+  for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
+    c = strrchr(buf, ' ');
+    if (c) {
+      while (c > buf && *c == ' ') {
+        *c = '\0';
+        c -= 1;
+      }
+    } else
+      break;
+  }
+
   return buf;
 }
 
-static const char *
-time_format_2(time_t dt)
+/** Format the time the player has been on for for WHO/DOING/ETC,
+ * fitting as much as possible into a given length, dropping least
+ * significant numbers as needed.
+ *
+ * \param buf buffer to use to fill.
+ * \param at the time connected at.
+ * \param len the length of the field to fill.
+ * \return pointer to .start of formatted time, somewhere in buf.
+ */
+char *
+etime_fmt(char *buf, int secs, int len)
 {
-  register struct tm *delta;
-  static char buf[64];
-  if (dt < 0)
-    dt = 0;
+  int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
+  div_t r;
 
-  delta = gmtime(&dt);
-  if (delta->tm_yday > 0) {
-    sprintf(buf, "%dd", delta->tm_yday);
-  } else if (delta->tm_hour > 0) {
-    sprintf(buf, "%dh", delta->tm_hour);
-  } else if (delta->tm_min > 0) {
-    sprintf(buf, "%dm", delta->tm_min);
-  } else {
-    sprintf(buf, "%ds", delta->tm_sec);
+  if (secs >= SECS_YEAR) {
+    r = div(secs, SECS_YEAR);
+    years = r.quot;
+    secs = r.rem;
   }
-  return buf;
+
+  if (secs >= SECS_WEEK) {
+    r = div(secs, SECS_WEEK);
+    weeks = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= SECS_DAY) {
+    r = div(secs, SECS_DAY);
+    days = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= SECS_HOUR) {
+    r = div(secs, SECS_HOUR);
+    hours = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= SECS_MINUTE) {
+    r = div(secs, SECS_MINUTE);
+    mins = r.quot;
+    secs = r.rem;
+  }
+
+  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
+          years, weeks, days, hours, mins, secs);
+
+  return squish_time(buf, len);
+}
+
+/** Format the time the player has been on for for WHO/DOING/ETC.
+ *
+ * \param at the time connected at.
+ * \param len the length of the field to fill.
+ * \return a static buffer to a string with the formatted elapsed time.
+ */
+static char *
+onfor_time_fmt(time_t at, int len)
+{
+  static char buf[64];
+  int secs = difftime(mudtime, at);
+  return etime_fmt(buf, secs, len);
+}
+
+/** Format idle time for WHO/DOING 
+ *
+ * \param last the time the player was last active.
+ * \parm len the length of the field to fill.
+ * \return a static buffer to a string with the formatted elapsed time.
+ */
+static char *
+idle_time_fmt(time_t last, int len)
+{
+  static char buf[64];
+  int secs = difftime(mudtime, last);
+  return etime_fmt(buf, secs, len);
 }
 
 /* connection messages
@@ -4473,34 +4699,6 @@ do_motd(dbref player, enum motd_type key, const char *message)
       notify_format(player, T("Down MOTD: %s"), cf_downmotd_msg);
       notify_format(player, T("Full MOTD: %s"), cf_fullmotd_msg);
     }
-  }
-}
-
-/** Set a DOING message.
- * \verbatim
- * This implements @doing.
- * \endverbatim
- * \param player the enactor.
- * \param message the message to set.
- */
-void
-do_doing(dbref player, const char *message)
-{
-  if (!message || !*message) {
-    /* Clear */
-    if (atr_clr(player, "DOING", player) == AE_OKAY)
-      notify(player, T("Doing cleared."));
-    else
-      notify(player, T("Unable to clear doing."));
-  } else {
-    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) ==
-        AE_OKAY)
-      notify(player, T("Doing set."));
-    else
-      notify(player, T("Unable to set doing."));
-    if (!strncasecmp(message, "me", 2)
-        && (strlen(message) < 3 || message[2] == '='))
-      notify_format(player, T("Did you mean to use &DOING %s ?"), message);
   }
 }
 
@@ -4873,7 +5071,7 @@ FUNCTION(fun_hidden)
  * \param name the name or descriptor to look up.
  * \retval a pointer to the proper DESC, or NULL
  */
-static DESC *
+DESC *
 lookup_desc(dbref executor, const char *name)
 {
   DESC *d;
@@ -5240,6 +5438,7 @@ FUNCTION(fun_height)
 FUNCTION(fun_terminfo)
 {
   DESC *match;
+  int type;
   if (!*args[0])
     safe_str(T("#-1 FUNCTION REQUIRES ONE ARGUMENT"), buff, bp);
   else if ((match = lookup_desc(executor, args[0]))) {
@@ -5253,6 +5452,15 @@ FUNCTION(fun_terminfo)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
+      type = notify_type(match);
+      if (type & MSG_XTERM256)
+        safe_str(" xterm256", buff, bp);
+      else if (type & MSG_ANSI16)
+        safe_str(" 16color", buff, bp);
+      else if (type & MSG_ANSI2)
+        safe_str(" hilite", buff, bp);
+      else
+        safe_str(" plain", buff, bp);
     } else
       safe_str(T(e_perm), buff, bp);
   } else

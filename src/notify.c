@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,7 +19,7 @@
 #endif
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <io.h>
 #else                           /* !WIN32 */
 #ifdef I_SYS_FILE
@@ -139,8 +140,8 @@ void freeqs(DESC *d);
 int process_output(DESC *d);
 
 static int str_type(const char *str);
-static int notify_type(DESC *d);
-static int output_ansichange(ansi_data *states, int *ansi_ptr,
+int notify_type(DESC *d);
+static int output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
                              const unsigned char **ptr, char *buff, char **bp);
 
 static int na_depth = 0; /**< Counter to prevent too much notify_anything recursion */
@@ -151,45 +152,71 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
  * Telnet char is always escaped for Pueblo clients.
  */
 #define MSGTYPE_ORIGINAL MSG_INTERNAL
+                                                                                                /*   Colors   Pueblo?   Telnet?   Accents? */
+#define MSGTYPE_PASCII           (MSG_PLAYER)   /*      1        0         0          1    */
 
-#define MSGTYPE_PASCII MSG_PLAYER
+#define MSGTYPE_ANSI2            (MSG_PLAYER | MSG_ANSI2)       /*      2        0         0          1    */
+#define MSGTYPE_ANSI16           (MSG_PLAYER | MSG_ANSI16)      /*     16        0         0          1    */
+#define MSGTYPE_XTERM256         (MSG_PLAYER | MSG_XTERM256)    /*    256        0         0          1    */
+#define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)      /*      1        1         ?          1    */
+#define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)  /*      2        1         ?          1    */
+#define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16) /*     16        1         ?          1    */
+#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)       /*    256        1         ?          1    */
 
-#define MSGTYPE_ANSI (MSG_PLAYER | MSG_ANSI)
-#define MSGTYPE_PUEBLO (MSG_PLAYER | MSG_PUEBLO)
-#define MSGTYPE_PUEBLOANSI (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI)
+#define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)      /*      1        0         1          1    */
+#define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)  /*      2        0         1          1    */
+#define MSGTYPE_TANSI16          (MSG_PLAYER | MSG_TELNET | MSG_ANSI16) /*     16        0         1          1    */
+#define MSGTYPE_TXTERM256        (MSG_PLAYER | MSG_TELNET | MSG_XTERM256)       /*    256        0         1          1    */
 
-#define MSGTYPE_TPASCII (MSG_PLAYER | MSG_TELNET)
-#define MSGTYPE_TANSI (MSG_PLAYER | MSG_ANSI | MSG_TELNET)
+#define MSGTYPE_NPASCII          (MSG_PLAYER | MSG_STRIPACCENTS)        /*      1        0         0          0    */
+#define MSGTYPE_NANSI2           (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI2)    /*      2        0         0          0    */
+#define MSGTYPE_NANSI16          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_ANSI16)   /*     16        0         0          0    */
+#define MSGTYPE_NXTERM256        (MSG_PLAYER | MSG_STRIPACCENTS | MSG_XTERM256) /*    256        0         0          0    */
+#define MSGTYPE_NPUEBLO          (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO)   /*      1        1         ?          0    */
+#define MSGTYPE_NPUEBLOANSI2     (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_ANSI2)       /*      2        1         ?          0    */
+#define MSGTYPE_NPUEBLOANSI16    (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_ANSI16)      /*     16        1         ?          0    */
+#define MSGTYPE_NPUEBLOXTERM256  (MSG_PLAYER | MSG_STRIPACCENTS | MSG_PUEBLO | MSG_XTERM256)    /*    256        1         ?          0    */
 
-#define MSGTYPE_NPASCII (MSG_PLAYER | MSG_STRIPACCENTS)
-#define MSGTYPE_NANSI (MSG_PLAYER | MSG_ANSI | MSG_STRIPACCENTS)
-#define MSGTYPE_NPUEBLO (MSG_PLAYER | MSG_PUEBLO | MSG_STRIPACCENTS)
-#define MSGTYPE_NPUEBLOANSI (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI | MSG_STRIPACCENTS)
+#define MSGTYPE_TNPASCII         (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS)   /*      1        0         1          0    */
+#define MSGTYPE_TNANSI2          (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_ANSI2)       /*      2        0         1          0    */
+#define MSGTYPE_TNANSI16         (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_ANSI16)      /*     16        0         1          0    */
+#define MSGTYPE_TNXTERM256       (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_XTERM256)    /*    256        0         1          0    */
 
-#define MSGTYPE_TNPASCII (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS)
-#define MSGTYPE_TNANSI (MSG_PLAYER | MSG_ANSI | MSG_TELNET | MSG_STRIPACCENTS)
-
-/** Corresponding NA_* defines for each MSGTYPE_* with incrementing values */
+/* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
+ * See table of supported protocols for meanings */
 enum na_type {
-  NA_ORIGINAL = 0,    /**< String used internally. No chars stripped, internal markup */
-  NA_PASCII,          /**< CRLF lineendings, accents, no ansi */
-  NA_ANSI,            /**< CRLF lineendings, accents, ansi */
-  NA_PUEBLO,          /**< Pueblo, no ansi */
-  NA_PUEBLOANSI,      /**< Pueblo, with ansi */
-  NA_TPASCII,         /**< CRLF lineendings, accents, no ansi, Telnet-aware */
-  NA_TANSI,           /**< CRLF lineendings, accents, ansi, Telnet-aware */
-  NA_NPASCII,         /**< CRLF lineendings, no accents, no ansi */
-  NA_NANSI,           /**< CRLF lineendings, no accents, ansi */
-  NA_NPUEBLO,         /**< Pueblo, no accents, no ansi */
-  NA_NPUEBLOANSI,     /**< Pueblo, no accents, ansi */
-  NA_TNPASCII,        /**< CRLF lineendings, no accents, no ansi, telnet-aware */
-  NA_TNANSI           /**< CRLF lineendings, noaccents, ansi, telnet-aware */
+  NA_ORIGINAL = 0,
+  NA_PASCII,
+  NA_ANSI2,
+  NA_ANSI16,
+  NA_XTERM256,
+  NA_PUEBLO,
+  NA_PUEBLOANSI2,
+  NA_PUEBLOANSI16,
+  NA_PUEBLOXTERM256,
+  NA_TPASCII,
+  NA_TANSI2,
+  NA_TANSI16,
+  NA_TXTERM256,
+  NA_NPASCII,
+  NA_NANSI2,
+  NA_NANSI16,
+  NA_NXTERM256,
+  NA_NPUEBLO,
+  NA_NPUEBLOANSI2,
+  NA_NPUEBLOANSI16,
+  NA_NPUEBLOXTERM256,
+  NA_TNPASCII,
+  NA_TNANSI2,
+  NA_TNANSI16,
+  NA_TNXTERM256,
+  NA_COUNT                      /* Total number of NA_* flags */
 };
 
 static enum na_type msg_to_na(int output_type);
 
 /** Number of possible message text renderings */
-#define MESSAGE_TYPES 13
+#define MESSAGE_TYPES (NA_COUNT)
 
 /** A place to store a single rendering of a message. */
 struct notify_strings {
@@ -228,10 +255,12 @@ static unsigned char *make_nospoof(dbref speaker, int paranoid);
 static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
                             char *tbuf1);
 
-static unsigned char *notify_makestring(struct notify_message *message,
-                                        int output_type);
+static unsigned char *notify_makestring_real(struct notify_message *message,
+                                             int output_type);
 static unsigned char *notify_makestring_nocache(unsigned char *message,
                                                 int output_type);
+
+#define notify_makestring(msg,ot) notify_makestring_real(msg,ot)
 
 /** Check which kinds of markup or special characters a string may contain.
  * This is used to avoid generating message types we don't need. For
@@ -249,12 +278,13 @@ str_type(const char *str)
   int type = MSG_ALL_PLAYER;
 #ifdef CHECK_FOR_HTML
   char *p;
-  type = (MSG_ALL_PLAYER & ~(MSG_PUEBLO | MSG_STRIPACCENTS));
+
+  type &= ~(MSG_PUEBLO | MSG_STRIPACCENTS);
 #endif                          /* CHECK_FOR_HTML */
 
   if (strstr(str, MARKUP_START "c") == NULL) {
     /* No ANSI */
-    type &= ~MSG_ANSI;
+    type &= ~(MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256);
   }
 #ifdef CHECK_FOR_HTML
 
@@ -294,16 +324,17 @@ str_type(const char *str)
  * \param d descriptor to check
  * \return bitwise MSG_* flags giving the type of message to send
  */
-static int
+int
 notify_type(DESC *d)
 {
   int type = MSG_PLAYER;
+  int colorstyle;
 
   if (!d->connected) {
     /* These are the settings used at, e.g., the connect screen,
      * when there's no connected player yet.
      */
-    type |= MSG_ANSI;
+    type |= MSG_ANSI16;
     if (d->conn_flags & CONN_HTML)
       type |= MSG_PUEBLO;
     else if (d->conn_flags & CONN_TELNET)
@@ -321,8 +352,29 @@ notify_type(DESC *d)
     type |= MSG_TELNET;
   }
 
-  if (ShowAnsi(d->player)) {
-    type |= MSG_ANSI;
+  if (IS(d->player, TYPE_PLAYER, "XTERM256"))
+    type |= MSG_XTERM256;
+  if (IS(d->player, TYPE_PLAYER, "ANSI"))
+    type |= MSG_ANSI2;
+  if (IS(d->player, TYPE_PLAYER, "COLOR"))
+    type |= MSG_ANSI16;
+
+  /* Colorstyle overrides */
+  colorstyle = d->conn_flags & CONN_COLORSTYLE;
+  if (colorstyle) {
+    /* If a colorstyle is set, then override type */
+    type &= ~(MSG_PLAYER_COLORS);
+    switch (colorstyle) {
+    case CONN_ANSI:
+      type |= MSG_ANSI2;
+      break;
+    case CONN_ANSICOLOR:
+      type |= MSG_ANSI16;
+      break;
+    case CONN_XTERM256:
+      type |= MSG_XTERM256;
+      break;
+    }
   }
 
   return type;
@@ -338,7 +390,7 @@ notify_type(DESC *d)
  * \return 0 if data was written successfully, 1 on failure
  */
 static int
-output_ansichange(ansi_data *states, int *ansi_ptr,
+output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
                   const unsigned char **ptr, char *buff, char **bp)
 {
   const unsigned char *p = *ptr;
@@ -382,8 +434,14 @@ output_ansichange(ansi_data *states, int *ansi_ptr,
   }
   /* Do we print anything? */
   if (*p && *ptr != p) {
-    retval = write_raw_ansi_data(&cur, &(states[newaptr]), buff, bp);
-    *(ansi_ptr) = newaptr;
+    if (newaptr == 0) {
+      retval = write_raw_ansi_data(&cur, NULL, ansi_format, buff, bp);
+      *(ansi_ptr) = newaptr;
+    } else {
+      retval =
+        write_raw_ansi_data(&cur, &(states[newaptr]), ansi_format, buff, bp);
+      *(ansi_ptr) = newaptr;
+    }
   }
   *ptr = p;
   return retval;
@@ -504,37 +562,66 @@ make_prefix_str(dbref thing, dbref enactor, const char *msg, char *tbuf1)
 static enum na_type
 msg_to_na(int output_type)
 {
+
+  if (output_type & MSG_PUEBLO)
+    output_type &= ~MSG_TELNET;
+
+  if (output_type & MSG_XTERM256)
+    output_type &= ~(MSG_ANSI2 | MSG_ANSI16);
+  else if (output_type & MSG_ANSI16)
+    output_type &= ~MSG_ANSI2;
+
   switch (output_type) {
   case MSGTYPE_ORIGINAL:
     return NA_ORIGINAL;
   case MSGTYPE_PASCII:
     return NA_PASCII;
-  case MSGTYPE_ANSI:
-    return NA_ANSI;
+  case MSGTYPE_ANSI2:
+    return NA_ANSI2;
+  case MSGTYPE_ANSI16:
+    return NA_ANSI16;
+  case MSGTYPE_XTERM256:
+    return NA_XTERM256;
   case MSGTYPE_PUEBLO:
-  case (MSGTYPE_PUEBLO | MSG_TELNET):
     return NA_PUEBLO;
-  case MSGTYPE_PUEBLOANSI:
-  case (MSGTYPE_PUEBLOANSI | MSG_TELNET):
-    return NA_PUEBLOANSI;
+  case MSGTYPE_PUEBLOANSI2:
+    return NA_PUEBLOANSI2;
+  case MSGTYPE_PUEBLOANSI16:
+    return NA_PUEBLOANSI16;
+  case MSGTYPE_PUEBLOXTERM256:
+    return NA_PUEBLOXTERM256;
   case MSGTYPE_TPASCII:
     return NA_TPASCII;
-  case MSGTYPE_TANSI:
-    return NA_TANSI;
+  case MSGTYPE_TANSI2:
+    return NA_TANSI2;
+  case MSGTYPE_TANSI16:
+    return NA_TANSI16;
+  case MSGTYPE_TXTERM256:
+    return NA_TXTERM256;
   case MSGTYPE_NPASCII:
     return NA_NPASCII;
-  case MSGTYPE_NANSI:
-    return NA_NANSI;
+  case MSGTYPE_NANSI2:
+    return NA_NANSI2;
+  case MSGTYPE_NANSI16:
+    return NA_NANSI16;
+  case MSGTYPE_NXTERM256:
+    return NA_NXTERM256;
   case MSGTYPE_NPUEBLO:
-  case (MSGTYPE_NPUEBLO | MSG_TELNET):
     return NA_NPUEBLO;
-  case MSGTYPE_NPUEBLOANSI:
-  case (MSGTYPE_NPUEBLOANSI | MSG_TELNET):
-    return NA_NPUEBLOANSI;
+  case MSGTYPE_NPUEBLOANSI2:
+    return NA_NPUEBLOANSI2;
+  case MSGTYPE_NPUEBLOANSI16:
+    return NA_NPUEBLOANSI16;
+  case MSGTYPE_NPUEBLOXTERM256:
+    return NA_NPUEBLOXTERM256;
   case MSGTYPE_TNPASCII:
     return NA_TNPASCII;
-  case MSGTYPE_TNANSI:
-    return NA_TNANSI;
+  case MSGTYPE_TNANSI2:
+    return NA_TNANSI2;
+  case MSGTYPE_TNANSI16:
+    return NA_TNANSI16;
+  case MSGTYPE_TNXTERM256:
+    return NA_TNXTERM256;
   }
 
   /* we should never get here. */
@@ -582,32 +669,39 @@ render_string(unsigned char *message, int output_type)
   static char *bp;
   const unsigned char *p;
 
+  int ansi_format = ANSI_FORMAT_NONE;
+
   static ansi_data states[BUFFER_LEN];
   int ansi_ptr, ansifix;
   ansi_ptr = 0;
   ansifix = 0;
-
-  /* Everything is explicitly off by default */
-  states[0].bits = 0;
-  states[0].offbits = 0;
-  states[0].fore = 0;
-  states[0].back = 0;
-
-  bp = buff;
 
   if (output_type == MSG_INTERNAL) {
     strcpy(buff, (char *) message);
     return (unsigned char *) buff;
   }
 
+  /* Everything is explicitly off by default */
+  memset(&states[0], 0, sizeof(ansi_data));
+
+  if (output_type & MSG_XTERM256)
+    ansi_format = ANSI_FORMAT_XTERM256;
+  else if (output_type & MSG_ANSI16)
+    ansi_format = ANSI_FORMAT_16COLOR;
+  else if (output_type & MSG_ANSI2)
+    ansi_format = ANSI_FORMAT_HILITE;
+
+  bp = buff;
+
   for (p = message; *p; p++) {
     switch (*p) {
     case TAG_START:
       if (*(p + 1) == MARKUP_COLOR) {
         /* ANSI colors */
-        if ((output_type & MSG_ANSI)) {
+        if ((output_type & MSG_ANY_ANSI)) {
           /* Translate internal markup to ANSI tags */
-          ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+          ansifix +=
+            output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
         } else if (output_type & MSG_MARKUP) {
           /* Preserve internal markup */
           while (*p && *p != TAG_END) {
@@ -656,8 +750,9 @@ render_string(unsigned char *message, int output_type)
       break;                    /* Skip over TAG_ENDs */
     case ESC_CHAR:
       /* After the ansi changes, I really hope we don't encounter this. */
-      if ((output_type & MSG_ANSI)) {
-        ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+      if ((output_type & MSG_ANY_ANSI)) {
+        ansifix +=
+          output_ansichange(states, &ansi_ptr, ansi_format, &p, buff, &bp);
       } else {
         /* Skip over tag */
         while (*p && *p != 'm')
@@ -752,7 +847,7 @@ render_string(unsigned char *message, int output_type)
  * \return pointer to the cached, rendered string
  */
 static unsigned char *
-notify_makestring(struct notify_message *message, int output_type)
+notify_makestring_real(struct notify_message *message, int output_type)
 {
   enum na_type msgtype;
   unsigned char *newstr;
@@ -844,10 +939,11 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
                 const char *prefix, dbref loc, struct format_msg *format)
 {
   struct notify_message_group real_message;
+  struct notify_message_group *real_message_pointer = NULL;
   int i;
 
   /* If we have no message, or noone to notify, do nothing */
-  if (!message || !*message || !func)
+  if (!func || ((!message || !*message) && !(flags & NA_PROMPT)))
     return;
 
   /* Don't recurse too much */
@@ -855,18 +951,23 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   /* Do it */
-  init_notify_message_group(&real_message);
-  real_message.messages.strs[0].message = (unsigned char *) message;
-  real_message.messages.strs[0].made = 1;
-  real_message.messages.strs[0].len = strlen(message);
-  real_message.messages.type = str_type(message);
+  if (message && *message) {
+    init_notify_message_group(&real_message);
+    real_message.messages.strs[0].message = (unsigned char *) message;
+    real_message.messages.strs[0].made = 1;
+    real_message.messages.strs[0].len = strlen(message);
+    real_message.messages.type = str_type(message);
+    real_message_pointer = &real_message;
+  }
 
   if (loc == AMBIGUOUS)
     loc = speech_loc(speaker);
 
   notify_anything_sub(executor, speaker, func, fdata, skips, flags,
-                      &real_message, prefix, loc, format);
+                      real_message_pointer, prefix, loc, format);
 
+  if (!message || !*message)
+    return;
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (i && real_message.messages.strs[i].made)
@@ -904,7 +1005,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
   struct notify_message *real_prefix = NULL;
 
   /* Make sure we have a message and someone to tell */
-  if (!message || !func)
+  if (!func || (!message && !(flags & NA_PROMPT)))
     return;
 
   /* Don't recurse too much */
@@ -912,7 +1013,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   na_depth++;
-  if (prefix && *prefix) {
+  if (prefix && *prefix && message) {
     int i;
 
     real_prefix = mush_malloc(sizeof(struct notify_message), "notify_message");
@@ -1016,6 +1117,28 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if ((flags & NA_INTER_LOCK) && !Pass_Interact_Lock(speaker, target, NULL))
       return;
   }
+
+  if (message == NULL) {
+    if (!(flags & NA_PROMPT) || !IsPlayer(target))
+      return;
+    for (d = descriptor_list; d; d = d->next) {
+      if (!d->connected || d->player != target
+          || !(d->conn_flags & CONN_TELNET))
+        continue;
+      queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
+
+      if ((d->conn_flags & CONN_PROMPT_NEWLINES)) {
+        /* send lineending */
+        if ((output_type & MSG_PUEBLO)) {
+          queue_newwrite(d, (unsigned char *) "\n", 1);
+        } else {
+          queue_newwrite(d, (unsigned char *) "\r\n", 2);
+        }
+      }
+    }                           /* for loop */
+    return;
+  }
+
 
   /* At this point, the message can definitely be heard by the object, so we need to figure out
    * the correct message it should hear, possibly formatted through a ufun */
@@ -1661,6 +1784,23 @@ int
 queue_newwrite(DESC *d, const unsigned char *b, int n)
 {
   int space;
+
+  if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
+    /* If there's no data already buffered to write out, try writing
+       directly to the socket. Add whatever's left to the buffer to
+       queue for later. */
+    int written;
+
+    if ((written = send(d->descriptor, b, n, 0)) > 0) {
+      /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
+      if (written == n)
+        return written;
+      n -= written;
+      b += written;
+    }
+  }
+
+  /* do_rawlog(LT_TRACE, "Queuing %d bytes.", n); */
 
   space = MAX_OUTPUT - d->output_size - n;
   if (space < SPILLOVER_THRESHOLD) {

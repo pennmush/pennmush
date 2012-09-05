@@ -291,6 +291,10 @@ msgstr "#-1 STUPCI NE MOGU BITI TOLIKO VELIKI"
 msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
 msgstr "#-1 KANAL NEMA BUFFER"
 
+#: markup.c:173
+msgid "#-1 COLORS() EXPECTS ONE COLOR"
+msgstr "#-1 COLORS() OÈEKUJE JEDNU BOJU"
+
 #: funmath.c:2490 funmath.c:2526
 msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
 msgstr "#-1 ZA USPOREDBU SU POTREBNA BAREM 2 BROJA"
@@ -401,6 +405,11 @@ msgstr "#-1 NEISPRAVAN ALIGN STRING"
 msgid "#-1 INVALID ANGLE TYPE"
 msgstr "#-1 NEISPRAVAN TIP KUTA"
 
+#: markup.c:110
+#, c-format
+msgid "#-1 INVALID ANSI DEFINITION: %s"
+msgstr "#-1 NEISPRAVNA ANSI DEFINICIJA: %s"
+
 #: function.c:836
 msgid "#-1 INVALID ARGUMENT"
 msgstr "#-1 NEISPRAVAN ARGUMENT"
@@ -408,6 +417,10 @@ msgstr "#-1 NEISPRAVAN ARGUMENT"
 #: fundb.c:1410
 msgid "#-1 INVALID BOOLEXP"
 msgstr "#-1 NEISPRAVAN BOOLEOVSKI IZRAZ"
+
+#: markup.c:156
+msgid "#-1 INVALID COLOR"
+msgstr "#-1 NEISPRAVNA BOJA"
 
 #: funstr.c:418
 msgid "#-1 INVALID DBREF"
@@ -513,6 +526,10 @@ msgstr "#-1 NEMA KAZALA ZA FILE"
 #: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
 msgid "#-1 NO MATCH"
 msgstr "#-1 NEMA PODUDARANJA"
+
+#: markup.c:200
+msgid "#-1 NO MATCHING COLOR NAME"
+msgstr "#-1 NEMA PODUDARAJUÆEG IMENA BOJE"
 
 #: src/fundb.c:767
 msgid "#-1 NO OBJECTS CONTROLLED"
@@ -2129,6 +2146,11 @@ msgstr "Klonirano: Soba #%d."
 msgid "Cmds"
 msgstr "Kmnd"
 
+#: bsd.c:3510 bsd.c:3514 bsd.c:3518 bsd.c:3522 bsd.c:3526
+#, c-format
+msgid "Colorstyle set to '%s'"
+msgstr "Stil boje postavljen na '%s'"
+
 #: command.c:1318
 #, c-format
 msgid "Command %s added."
@@ -2331,11 +2353,6 @@ msgstr "Uni¹tavanje Boga bi bilo svetogrdno."
 msgid "Destroying that again is hardly necessary."
 msgstr "Ponovno uni¹tavanje toga je prilièno nepotrebno."
 
-#: bsd.c:4312
-#, c-format
-msgid "Did you mean to use &DOING %s ?"
-msgstr "Da li ti je namjera bila upotrijebiti &DOING %s ?"
-
 #: rob.c:367
 msgid "Did you want to give something *to* someone?"
 msgstr "®eli¹ li ne¹to dati *nekome*?"
@@ -2351,14 +2368,6 @@ msgstr "Onemoguæeno."
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "©to ¾eli¹ napraviti s funkcijom?"
-
-#: bsd.c:4301
-msgid "Doing cleared."
-msgstr "Doing obrisan."
-
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Doing postavljen."
 
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
@@ -3155,6 +3164,10 @@ msgstr "Neispravan count indeks."
 #, c-format
 msgid "Invalid dbref #%d in %s."
 msgstr "Neispravan dbref #%d na lokaciji %s."
+
+#: cmds.c:125
+msgid "Invalid descriptor."
+msgstr "Neispravan deskriptor."
 
 #: function.c:1046 function.c:1087 function.c:1437
 msgid "Invalid function name."
@@ -5326,10 +5339,6 @@ msgstr "Ne mogu dodati separator za @sitelock: %s"
 msgid "Unable to add sitelock entry: %s"
 msgstr "Ne mogu dodati predmet u popis zakljuèanih internet adresa: %s"
 
-#: bsd.c:4303
-msgid "Unable to clear doing."
-msgstr "Ne mogu obrisati doing."
-
 #: create.c:485
 msgid "Unable to create object with that dbref."
 msgstr "Ne mogu stvoriti objekt s tim dbrefom."
@@ -5379,10 +5388,6 @@ msgstr "Ne mogu postaviti '%s' jer stvaranje potrebnog nadatributa nije uspjelo.
 msgid "Unable to set alias."
 msgstr "Ne mogu postaviti alias."
 
-#: bsd.c:4309
-msgid "Unable to set doing."
-msgstr "Ne mogu postaviti doing."
-
 #: wiz.c:1483
 #, c-format
 msgid "Unable to sitelock %s: No known ip/host to ban."
@@ -5402,6 +5407,11 @@ msgstr "Ne mogu obrisati atribut %s"
 #, c-format
 msgid "Unknown access option: %s"
 msgstr "Nepoznata pristupna opcija: %s"
+
+#: bsd.c:3528
+#, c-format
+msgid "Unknown color style. Valid color styles: %s"
+msgstr "Nepoznat stil boje. Ispravni stilovi boje: %s"
 
 #: flags.c:2081
 #, c-format
@@ -6344,6 +6354,10 @@ msgstr "Mora¹ navesti switch za @hook."
 #: command.c:2073
 msgid "You must give an object."
 msgstr "Mora¹ dati objekt."
+
+#: bsd.c:3346
+msgid "You must give an option and a value."
+msgstr "Mora¹ navesti opciju i vrijednost."
 
 #: command.c:1357
 msgid "You must give both an object and attribute."

@@ -3,6 +3,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdlib.h>
 #include <stdio.h>

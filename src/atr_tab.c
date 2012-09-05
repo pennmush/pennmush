@@ -236,7 +236,7 @@ attr_read(PENNFILE *f)
       free((char *) AL_NAME(a));
       return NULL;
     }
-    free(re);                   /* don't need it, just needed to check it */
+    pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, u_strlen(t), 0);
@@ -502,7 +502,7 @@ check_attr_value(dbref player, const char *name, const char *value)
 
     subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
                             0, 0, NULL, 0);
-    free(re);
+    pcre_free(re);
 
     if (subpatterns >= 0) {
       return value;
@@ -601,7 +601,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
         return;
       }
       /* We only care if it's valid, we're not using it. */
-      free(re);
+      pcre_free(re);
 
       /* Copy it to buff to be placed into ap->data. */
       snprintf(buff, BUFFER_LEN, "%s", pattern);

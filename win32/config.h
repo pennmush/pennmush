@@ -175,15 +175,15 @@ typedef void Free_t;
 
 #undef HAS_FPSETROUND
 
-#undef HAS_GAI_STRERROR
+#define HAS_GAI_STRERROR
 
-#undef HAS_GETADDRINFO
+#define HAS_GETADDRINFO
 
 #undef HAS_GETDATE
 
 #undef HAS_GETHOSTBYNAME2
 
-#undef HAS_GETNAMEINFO
+#define HAS_GETNAMEINFO
 
 #undef HAS_GETPAGESIZE
 
@@ -193,7 +193,7 @@ typedef void Free_t;
 
 #undef HAS_GETTEXT
 
-#undef HAS_INET_PTON
+#define HAS_INET_PTON
 
 #undef HAS_ITIMER
 
@@ -243,7 +243,7 @@ typedef void Free_t;
 
 #define HAVE__VSNPRINTF_S
 
-#define HAS_STRDUP
+#define HAVE_STRDUP
 
 #define HAVE_STRCOLL
 
@@ -253,7 +253,7 @@ typedef void Free_t;
 
 #undef HAS_TEXTDOMAIN
 
-#undef HAS_VSNPRINTF
+#define HAS_VSNPRINTF
 
 #undef HAS_WAITPID
 

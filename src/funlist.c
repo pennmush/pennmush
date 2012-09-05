@@ -2565,7 +2565,7 @@ FUNCTION(fun_regreplace)
       safe_str(errptr, buff, bp);
       goto exit_sequence;
     }
-    add_check("pcre");          /* re */
+    ADD_CHECK("pcre");          /* re */
     if (searchlen)
       searchlen--;
 
@@ -2573,14 +2573,15 @@ FUNCTION(fun_regreplace)
     if (all) {
       study = pcre_study(re, 0, &errptr);
       if (errptr != NULL) {
-        mush_free(re, "pcre");
+        pcre_free(re);
+        DEL_CHECK("pcre");
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
         goto exit_sequence;
       }
       if (study != NULL)
         /* study */
-        add_check("pcre.extra");
+        ADD_CHECK("pcre.extra");
     }
 
     if (study) {
@@ -2598,9 +2599,12 @@ FUNCTION(fun_regreplace)
     /* Match wasn't found... we're done */
     if (subpatterns < 0) {
       safe_str(prebuf, postbuf, &postp);
-      mush_free(re, "pcre");
-      if (study)
-        mush_free(study, "pcre.extra");
+      pcre_free(re);
+      DEL_CHECK("pcre");
+      if (study) {
+        pcre_free(study);
+        DEL_CHECK("pcre.extra");
+      }
       continue;
     }
 
@@ -2621,9 +2625,12 @@ FUNCTION(fun_regreplace)
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-        mush_free(re, "pcre");
-        if (study)
-          mush_free(study, "pcre.extra");
+        pcre_free(re);
+        DEL_CHECK("pcre");
+        if (study) {
+          pcre_free(study);
+          DEL_CHECK("pcre.extra");
+        }
         goto exit_sequence;
       }
       if ((*bp == (buff + BUFFER_LEN - 1))
@@ -2644,9 +2651,12 @@ FUNCTION(fun_regreplace)
     safe_str(start, postbuf, &postp);
     *postp = '\0';
 
-    mush_free(re, "pcre");
-    if (study != NULL)
-      mush_free(study, "pcre.extra");
+    pcre_free(re);
+    DEL_CHECK("pcre");
+    if (study != NULL) {
+      pcre_free(study);
+      DEL_CHECK("pcre.extra");
+    }
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2673,7 +2683,7 @@ FUNCTION(fun_regreplace)
         safe_str(errptr, buff, bp);
         goto exit_sequence;
       }
-      add_check("pcre");        /* re */
+      ADD_CHECK("pcre");        /* re */
       if (searchlen)
         searchlen--;
 
@@ -2681,14 +2691,15 @@ FUNCTION(fun_regreplace)
       if (all) {
         study = pcre_study(re, 0, &errptr);
         if (errptr != NULL) {
-          mush_free(re, "pcre");
+          pcre_free(re);
+          DEL_CHECK("pcre");
           safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
           safe_str(errptr, buff, bp);
           goto exit_sequence;
         }
         if (study != NULL)
           /* study */
-          add_check("pcre.extra");
+          ADD_CHECK("pcre.extra");
       }
       if (study) {
         extra = study;
@@ -2710,9 +2721,12 @@ FUNCTION(fun_regreplace)
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-            mush_free(re, "pcre");
-            if (study)
-              mush_free(study, "pcre.extra");
+            pcre_free(re);
+            DEL_CHECK("pcre");
+            if (study) {
+              pcre_free(study);
+              DEL_CHECK("pcre.extra");
+            }
             goto exit_sequence;
           }
           *tbp = '\0';
@@ -2740,9 +2754,12 @@ FUNCTION(fun_regreplace)
           }
         }
       } while (subpatterns >= 0 && all);
-      mush_free(re, "pcre");
-      if (study != NULL)
-        mush_free(study, "pcre.extra");
+      pcre_free(re);
+      DEL_CHECK("pcre");
+      if (study != NULL) {
+        pcre_free(study);
+        DEL_CHECK("pcre.extra");
+      }
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
@@ -2811,7 +2828,7 @@ FUNCTION(fun_regmatch)
     free_ansi_string(as);
     return;
   }
-  add_check("pcre");
+  ADD_CHECK("pcre");
   extra = default_match_limit();
 
   subpatterns = pcre_exec(re, extra, txt, arglens[0], 0, 0, offsets, 99);
@@ -2885,7 +2902,8 @@ FUNCTION(fun_regmatch)
   for (i = 0; i < nqregs; i++) {
     mush_free(holder[i], "regmatch");
   }
-  mush_free(re, "pcre");
+  pcre_free(re);
+  DEL_CHECK("pcre");
   free_ansi_string(as);
 }
 
@@ -2929,17 +2947,18 @@ FUNCTION(fun_regrab)
     safe_str(errptr, buff, bp);
     return;
   }
-  add_check("pcre");
+  ADD_CHECK("pcre");
 
   study = pcre_study(re, 0, &errptr);
   if (errptr != NULL) {
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);
-    mush_free(re, "pcre");
+    pcre_free(re);
+    DEL_CHECK("pcre");
     return;
   }
   if (study) {
-    add_check("pcre.extra");
+    ADD_CHECK("pcre.extra");
     extra = study;
     set_match_limit(extra);
   } else
@@ -2961,9 +2980,12 @@ FUNCTION(fun_regrab)
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 
-  mush_free(re, "pcre");
-  if (study)
-    mush_free(study, "pcre.extra");
+  pcre_free(re);
+  DEL_CHECK("pcre");
+  if (study) {
+    pcre_free(study);
+    DEL_CHECK("pcre.extra");
+  }
 }
 
 FUNCTION(fun_isregexp)
@@ -2974,7 +2996,7 @@ FUNCTION(fun_isregexp)
   int erroffset;
 
   if (! !(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
-    mush_free(re, "pcre");
+    pcre_free(re);
     safe_chr('1', buff, bp);
     return;
   }

@@ -486,8 +486,6 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
   format.checkprivs = 1;
   format.thing = AMBIGUOUS;
 
-  p = attrname;
-
   if ((p = strchr(attrname, '/')) != NULL) {
     *p++ = '\0';
     if (*attrname && strcmp(attrname, "#-2")) {
@@ -543,13 +541,14 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
   int one = 1;
   int count = 0;
 
-  if (!target || !*target || !message || !*message)
+  if (!target || !*target
+      || ((!message || !*message) && !(flags & PEMIT_PROMPT)))
     return;
 
   if (flags & PEMIT_SPOOF)
-    na_flags = NA_SPOOF;
+    na_flags |= NA_SPOOF;
   if (flags & PEMIT_PROMPT)
-    na_flags = NA_PROMPT;
+    na_flags |= NA_PROMPT;
 
   if (flags & PEMIT_LIST) {
     l = trim_space_sep(target, ' ');

@@ -211,7 +211,7 @@ typedef bool _Bool;
 
 #undef HAVE_LOG2
 
-#undef HAVE_ROUND
+#undef HAVE_LRINT
 
 #undef HAS_CRYPT
 

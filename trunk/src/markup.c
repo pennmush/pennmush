@@ -249,10 +249,7 @@ FUNCTION(fun_colors)
 /* ARGSUSED */
 FUNCTION(fun_html)
 {
-  if (!Wizard(executor))
-    safe_str(T(e_perm), buff, bp);
-  else
-    safe_tag(args[0], buff, bp);
+  safe_tag(args[0], buff, bp);
 }
 
 /* ARGSUSED */

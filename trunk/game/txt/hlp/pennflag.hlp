@@ -31,7 +31,7 @@
 
 See also: examine, flags(), hasflag(), orflags(), andflags(), orlflags(),
   andlflags(), types of objects, type(), hastype(), @flag, FLAG LIST,
-  @set, set()
+  @set, set(), attribute flags
 & FLAG LIST
 & FLAGS LIST
 Flag  Title            Flag  Title            Flag  Title           

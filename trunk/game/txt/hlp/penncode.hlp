@@ -1,8 +1,7 @@
 & code
 & contact
 PennMUSH is developed by a team of developers whose names are listed
-in 'help changes'.  Suggestions, comments, and bug reports are
-welcome.
+in 'help changes'. Suggestions, comments, and bug reports are welcome.
 
 The main PennMUSH web page is at http://www.pennmush.org
 
@@ -17,12 +16,11 @@ The latest version of this MUSH code is available from
 http://code.google.com/p/pennmush/downloads/list. It will be called
 something like pennmush-1.8.3p9.tar.bz2, depending on the version number.
 
-Also on that site is the MUSH manual, in /Manuals. It should be called
-mushman.2.008.tar.Z or something similar; you should attempt to get at
-least version 2.007.  Also on that site is Javelin's Guide for
-PennMUSH Gods, in /pub/PennMUSH/Guide. A better way to read it is on
-the Web at http://javelin.pennmush.org/~alansz/guide.html
-
+The MUSH manual is available from http://download.pennmush.org, in the 
+/Manuals directory. It should be called mushman.2.008.tar.Z or something 
+similar; you should attempt to get at least version 2.007. Also on that site
+is Javelin's Guide for PennMUSH Gods, in /Guide, available as plain text or
+HTML.
 & i18n
 & internationalization
 & locale
@@ -45,7 +43,6 @@ Most of these features get enabled by setting an appropriate environment
 variable in the PennMUSH restart script.
 
 Unicode is not currently supported.
-
 & copyright
 & copyrite
 & license

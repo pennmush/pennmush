@@ -8,6 +8,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <limits.h>

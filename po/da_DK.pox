@@ -753,10 +753,6 @@ msgstr "hvisker til"
 msgid "Do what with the function?"
 msgstr "Hvilken funktion vil du begrænse adgangen til ?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Option slået til."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "Har du ikke noget at sige?"

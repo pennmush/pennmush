@@ -1222,7 +1222,6 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   }
   study = pcre_study(re, 0, &errptr);
   if (errptr != NULL) {
-    pcre_free(re);
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
@@ -1245,7 +1244,6 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
                   args.skipped);
 
-  pcre_free(re);
   pcre_free_study(study);
 
 }

@@ -812,7 +812,7 @@ safe_fill(char x, size_t n, char *buff, char **bp)
   return ret;
 }
 
-static int
+int
 safe_hexchar(unsigned char c, char *buff, char **bp)
 {
   const char *digits = "0123456789abcdef";
@@ -1588,4 +1588,24 @@ set_match_limit(struct pcre_extra *ex)
     return;
   ex->flags |= PCRE_EXTRA_MATCH_LIMIT;
   ex->match_limit = PENN_MATCH_LIMIT;
+}
+
+/** Destructively gets rid of trailing whitespace in a string.
+ * \param buff the string to transform.
+ * \param len the length of the string.
+ * \return the new length of the string
+ */
+size_t
+remove_trailing_whitespace(char *buff, size_t len)
+{
+  unsigned char *c;
+
+  for (c = (unsigned char *)buff + len - 1; c >= (unsigned char *)buff; c -= 1) {
+    if (isspace(*c)) {
+      len -= 1;
+      *c = '\0';
+    } else
+      break;
+  }
+  return len;
 }

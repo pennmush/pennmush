@@ -57,7 +57,9 @@ extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
 void boot_desc(DESC *d, const char *cause, dbref executor);     /* remove a player */
 int boot_player(dbref player, int idleonly, int slilent, dbref booter);
-const char *sockset(dbref player, char *name, char *val);
+const char *sockset(DESC *d, char *name, char *val);
+const char *sockset_show(DESC *d);
+
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
 DESC *port_desc(int port);      /* find descriptors */
@@ -67,7 +69,6 @@ void WIN32_CDECL flag_broadcast(const char *flag1,
 
 dbref short_page(const char *match);
 dbref visible_short_page(dbref player, const char *match);
-void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
 void process_command(dbref executor, char *command, MQUE *queue_entry);
@@ -147,17 +148,23 @@ void sql_shutdown(void);
 /* notify.c */
 
 /** Bitwise options for render_string() */
-#define MSG_INTERNAL        0  /**< Original string containing internal markup, \n lineendings */
-#define MSG_PLAYER          1  /**< Being sent to a player. Uses \r\n lineendings, not \n */
+#define MSG_INTERNAL     0x00  /**< Original string containing internal markup, \n lineendings */
+#define MSG_PLAYER       0x01  /**< Being sent to a player. Uses \r\n lineendings, not \n */
 /* Any text sent to a player will be (MSG_PLAYER | modifiers below) */
-#define MSG_ANSI            2  /**< Colors as raw ANSI tags */
-#define MSG_PUEBLO          4  /**< HTML entities, Pueblo tags as HTML */
-#define MSG_TELNET          8  /**< Output to telnet-aware connection. Escape char 255 */
-#define MSG_STRIPACCENTS   16  /**< Strip/downgrade accents */
+#define MSG_PUEBLO       0x02  /**< HTML entities, Pueblo tags as HTML */
+#define MSG_TELNET       0x04  /**< Output to telnet-aware connection. Escape char 255 */
+#define MSG_STRIPACCENTS 0x08  /**< Strip/downgrade accents */
 
-#define MSG_MARKUP         32  /**< Leave markup in internal format, rather than stripping/converting */
+#define MSG_MARKUP       0x10  /**< Leave markup in internal format, rather than stripping/converting */
+#define MSG_ANSI2        0x20  /**< Ansi-highlight only */
+#define MSG_ANSI16       0x40  /**< 16 bit Color */
+#define MSG_XTERM256     0x80  /**< XTERM 256 Color */
+#define MSG_FONTTAGS     0x100 /**< <font color="..." bgcolor=".."></font> */
 
-#define MSG_ALL_PLAYER (MSG_PLAYER | MSG_ANSI | MSG_PUEBLO \
+#define MSG_PLAYER_COLORS (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)       /* All possible player-renderings of color */
+#define MSG_ANY_ANSI (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)    /* Any form of ANSI tag */
+
+#define MSG_ALL_PLAYER (MSG_PLAYER | MSG_PLAYER_COLORS | MSG_PUEBLO \
                         | MSG_TELNET | MSG_STRIPACCENTS)
 
 /** A notify_anything lookup function type definition */
@@ -357,12 +364,16 @@ void do_scan(dbref player, char *command, int flag);
 
 
 /* From look.c */
-/** Enumeration of types of looks that can be performed */
-enum look_type { LOOK_NORMAL, LOOK_TRANS, LOOK_AUTO, LOOK_CLOUDYTRANS,
-  LOOK_CLOUDY
-};
-void look_room(dbref player, dbref loc, enum look_type style,
-               NEW_PE_INFO *pe_info);
+#define LOOK_NORMAL       0     /* You typed "look" */
+#define LOOK_AUTO         1     /* Moving into a room */
+#define LOOK_CLOUDY       2     /* Looking through an exit set CLOUDY */
+#define LOOK_TRANS        4     /* Looking through an exit set TRANSPARENT */
+#define LOOK_OUTSIDE      8     /* Using look/outside */
+#define LOOK_NOCONTENTS  16     /* Using look/opaque */
+#define LOOK_CLOUDYTRANS (LOOK_CLOUDY | LOOK_TRANS)
+
+
+void look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
@@ -563,6 +574,8 @@ int strcasecoll(const char *s1, const char *s2);
 int strncasecoll(const char *s1, const char *s2, size_t t);
 #endif
 
+size_t remove_trailing_whitespace(char *, size_t);
+
 /** Append a character to the end of a BUFFER_LEN long string.
  * You shouldn't use arguments with side effects with this macro.
  */
@@ -756,7 +769,7 @@ replace_string2(const char *old[2], const char *newbits[2],
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs,
                             const char **report_err);
-    bool qcomp_regexp_match(const pcre * re, pcre_extra * study, const char *s);
+    bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 
@@ -784,7 +797,7 @@ replace_string2(const char *old[2], const char *newbits[2],
     int delim_check(char *buff, char **bp, int nfargs, char **fargs,
                     int sep_arg, char *sep);
     bool int_check(char *buff, char **bp, int nfargs, char *fargs[],
-              int check_arg, int *result, int def);
+                   int check_arg, int *result, int def);
 
     int get_gender(dbref player);
     const char *do_get_attrib(dbref executor, dbref thing, const char *aname);

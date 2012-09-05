@@ -40,7 +40,8 @@ static void examine_atrs(dbref player, dbref thing, const char *mstr, int all,
                          int mortal, int parent);
 static void mortal_examine_atrs(dbref player, dbref thing, const char *mstr,
                                 int all, int parent);
-static void look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info);
+static void look_simple(dbref player, dbref thing, int key,
+                        NEW_PE_INFO *pe_info);
 static void look_description(dbref player, dbref thing, const char *def,
                              const char *descname, const char *descformatname,
                              NEW_PE_INFO *pe_info);
@@ -442,9 +443,8 @@ mortal_examine_atrs(dbref player, dbref thing, const char *mstr, int all,
 }
 
 static void
-look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info)
+look_simple(dbref player, dbref thing, int key, NEW_PE_INFO *pe_info)
 {
-  enum look_type flag = LOOK_NORMAL;
   PUEBLOBUFF;
 
   PUSE;
@@ -454,38 +454,36 @@ look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info)
   look_description(player, thing, T("You see nothing special."), "DESCRIBE",
                    "DESCFORMAT", pe_info);
   did_it(player, thing, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
-  if (IsExit(thing) && Transparented(thing)) {
+  if (IsExit(thing)) {
+    if (Transparented(thing))
+      key |= LOOK_TRANS;
     if (Cloudy(thing))
-      flag = LOOK_CLOUDYTRANS;
-    else
-      flag = LOOK_TRANS;
-  } else if (Cloudy(thing))
-    flag = LOOK_CLOUDY;
-  if (flag) {
-    if (Location(thing) == HOME)
-      look_room(player, Home(player), flag, pe_info);
-    else if (GoodObject(thing) && GoodObject(Destination(thing)))
-      look_room(player, Destination(thing), flag, pe_info);
+      key |= LOOK_CLOUDY;
+    if ((key & LOOK_CLOUDYTRANS)
+        && (!(key & LOOK_NOCONTENTS)
+            || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDY)) {
+      if (Location(thing) == HOME)
+        look_room(player, Home(player), key, pe_info);
+      else if (GoodObject(thing) && GoodObject(Destination(thing)))
+        look_room(player, Destination(thing), key, pe_info);
+    }
   }
 }
 
 /** Look at a room.
- * The style parameter tells you what kind of look it is:
- * LOOK_NORMAL (caused by "look"), LOOK_TRANS (look through a transparent
- * exit), LOOK_AUTO (automatic look, by moving),
- * LOOK_CLOUDY (look through a cloudy exit - contents only), LOOK_CLOUDYTRANS
- * (look through a cloudy transparent exit - desc only).
  * \param player the looker.
  * \param loc room being looked at.
- * \param style how the room is being looked at.
+ * \param key how the room is being looked at.
+ * \param pe_info the pe_info to eval attributes/locks with
  */
 void
-look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
+look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
 {
 
   PUEBLOBUFF;
   ATTR *a;
   bool made_pe_info = 0;
+  bool look_through_exit = ! !(key & LOOK_CLOUDYTRANS) != 0;
 
   if (loc == NOTHING)
     return;
@@ -497,10 +495,10 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
     strcpy(pe_info->cmd_evaled, "LOOK");
   }
   /* don't give the unparse if looking through Transparent exit */
-  if (style == LOOK_NORMAL || style == LOOK_AUTO) {
+  if (!look_through_exit) {
     PUSE;
     tag("XCH_PAGE CLEAR=\"LINKS PLUGINS\"");
-    if (SUPPORT_PUEBLO && style == LOOK_AUTO) {
+    if (SUPPORT_PUEBLO && (key & LOOK_AUTO)) {
       a = atr_get(loc, "VRML_URL");
       if (a) {
         tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
@@ -514,7 +512,7 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
     notify_by(loc, player, pbuff);
   }
   if (!IsRoom(loc)) {
-    if (style != LOOK_AUTO || !Terse(player)) {
+    if (!(key & LOOK_AUTO) || !Terse(player)) {
       if (atr_get(loc, "IDESCRIBE")) {
         look_description(player, loc, NULL, "IDESCRIBE", "IDESCFORMAT",
                          pe_info);
@@ -525,33 +523,32 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
       } else
         look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
     }
-  } else if (style == LOOK_NORMAL || style == LOOK_AUTO) {
-    if (style == LOOK_NORMAL || !Terse(player)) {
-      look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
-      did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
-    }
-  } else if (style != LOOK_CLOUDY) {
+  } else if ((!look_through_exit && (!(key & LOOK_AUTO) || !Terse(player)))
+             || (key & LOOK_TRANS)) {
+    look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
     did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   }
 
   /* tell him the appropriate messages if he has the key */
-  if (IsRoom(loc) && (style == LOOK_NORMAL || style == LOOK_AUTO)) {
-    if (style == LOOK_AUTO && Terse(player)) {
+  if (IsRoom(loc) && !look_through_exit) {
+    if (key & LOOK_AUTO && Terse(player)) {
       if (could_doit(player, loc, pe_info))
         did_it(player, loc, NULL, NULL, "OSUCCESS", NULL, "ASUCCESS", NOTHING);
       else
         did_it(player, loc, NULL, NULL, "OFAILURE", NULL, "AFAILURE", NOTHING);
-    } else if (could_doit(player, loc, pe_info))
+    } else if (could_doit(player, loc, pe_info)) {
       did_it(player, loc, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
              NOTHING);
-    else
+    } else {
       fail_lock(player, loc, Basic_Lock, NULL, NOTHING);
+    }
   }
 
   /* tell him the contents */
-  if (style != LOOK_CLOUDYTRANS)
+  if (!(key & LOOK_NOCONTENTS)
+      && (!look_through_exit || (key & LOOK_CLOUDYTRANS) != LOOK_CLOUDYTRANS))
     look_contents(player, loc, T("Contents:"), pe_info);
-  if (style == LOOK_NORMAL || style == LOOK_AUTO) {
+  if (!look_through_exit) {
     look_exits(player, loc, T("Obvious exits:"), pe_info);
   }
   if (made_pe_info)
@@ -614,7 +611,7 @@ do_look_around(dbref player)
 /** Look at something.
  * \param player the looker.
  * \param name name of object to look at.
- * \param key 0 for normal look, 1 for look/outside.
+ * \param key Bitwise LOOK_* flags
  * \param pe_info the pe_info for the *FORMAT attrs, lock checks, etc
  */
 void
@@ -623,11 +620,13 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
   dbref thing;
   dbref loc;
   int nearthis = 0;
+  bool outside = (key & LOOK_OUTSIDE);
+  key &= ~LOOK_OUTSIDE;
 
   if (!GoodObject(Location(player)))
     return;
 
-  if (key) {                    /* look outside */
+  if (outside) {                /* look outside */
     /* can't see through opaque objects */
     if (IsRoom(Location(player)) || Opaque(Location(player))) {
       notify(player, T("You can't see through that."));
@@ -654,12 +653,12 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
       return;
     }
     nearthis = (loc == Location(thing));
-  } else {                      /* regular look */
+  } else if (!*name) {          /* regular look */
     if (*name == '\0') {
-      look_room(player, Location(player), LOOK_NORMAL, pe_info);
+      look_room(player, Location(player), key, pe_info);
       return;
     }
-    /* look at a thing in location */
+  } else {                      /* look at a thing in location */
     if ((thing = match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
       dbref box;
       const char *boxname;
@@ -699,7 +698,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
           notify(player, T("I don't see that here."));
           return;
         }
-        look_simple(player, thing, pe_info);
+        look_simple(player, thing, key, pe_info);
         return;
       }
       thing =
@@ -733,7 +732,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
    * while inside an object.
    */
   if (Location(player) == thing) {
-    look_room(player, thing, LOOK_NORMAL, pe_info);
+    look_room(player, thing, key, pe_info);
     return;
   } else if (!nearthis && !Long_Fingers(player) && !See_All(player)) {
     ATTR *desc;
@@ -747,16 +746,16 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
 
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-    look_room(player, thing, LOOK_NORMAL, pe_info);
+    look_room(player, thing, key, pe_info);
     break;
   case TYPE_THING:
   case TYPE_PLAYER:
-    look_simple(player, thing, pe_info);
-    if (!(Opaque(thing)))
+    look_simple(player, thing, key, pe_info);
+    if (!(Opaque(thing)) && !(key & LOOK_NOCONTENTS))
       look_contents(player, thing, T("Carrying:"), pe_info);
     break;
   default:
-    look_simple(player, thing, pe_info);
+    look_simple(player, thing, key, pe_info);
     break;
   }
 }

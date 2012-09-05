@@ -47,7 +47,7 @@
         The opposites of these (read messages, etc.) are indicated with a
         '-' in the status field in that position.
         
-& mail-sending 
+& mail-sending
   @mail[/switch] <player-list> = [<subject>]/<msg>
         This sends the message <msg> to all players in <player-list>.
 

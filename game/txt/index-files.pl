@@ -64,7 +64,7 @@ sub withnumchecking;
 my @sorted = ($#entries > 0) ? (sort withnumchecking @entries) : @entries;
 my @asorted = ($#entries > 0) ? (sort withnumchecking @aentries) : @aentries;
 
-my $maxlines = 14;
+my $maxlines = 15;
 my $maxlen = 25;
 my $separator ="-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
 my $three_items = " %-25.25s %-25.25s %-25.25s\n"; # Format for three entries
@@ -86,6 +86,13 @@ foreach $index (\@sorted, \@asorted) {
        shift @$index;
        next;
      }
+   if ($i > $maxlines)  {
+     $titlecount++;
+     print "\nFor more, see $title-$titlecount\n", $separator;
+     $header = 1;
+     $i = 0;
+   }
+
     if ($header) {
       print "& $title-$titlecount\n", $separator;
       $header = 0;
@@ -113,12 +120,7 @@ foreach $index (\@sorted, \@asorted) {
         printf $three_items, $entry1, $entry2, $entry3;
       }
     }
-   if ($i++ > $maxlines)  {
-     $titlecount++;
-     print "\nFor more, see $title-$titlecount\n", $separator;
-     $header = 1;
-     $i = 0;
-   }
+    $i++;
  }
 }
 print $separator;

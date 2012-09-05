@@ -24,8 +24,11 @@ mud_url
 port 4201
 
 # Should we listen only on a specific IP address? If your host has
-# multiple IP addresses, put the ip address to listen on here
-# Example: ip_addr 128.32.243.78
+# multiple IP addresses, put the ip address to listen on here.
+# Example:
+# ip_addr 128.32.243.78
+# If you want to force only IPv4 addresses but  don't want to limit to
+# just one, use '0.0.0.0'. Similiarly, to force IPv6, use '::'.
 # Otherwise, just leave it blank.
 ip_addr
 
@@ -885,6 +888,7 @@ channel_flags player
 # mssp contact/you@yourgame.com
 # mssp hiring coders/1
 mssp ansi/1
+mssp XTERM 256 COLORS/1
 
 ###
 ### Reserved command names, and command and function aliases are in

@@ -446,6 +446,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\tz.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\unparse.c"
 				>
 			</File>
@@ -677,6 +681,10 @@
 			</File>
 			<File
 				RelativePath="..\..\hdrs\switches.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\hdrs\tz.h"
 				>
 			</File>
 			<File

@@ -12,6 +12,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -21,11 +22,8 @@
 #ifdef WIN32
 #define FD_SETSIZE 256
 #include <windows.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <io.h>
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define MAXHOSTNAMELEN 32
-#define LC_MESSAGES 6
 void shutdown_checkpoint(void);
 #else                           /* !WIN32 */
 #ifdef I_SYS_FILE

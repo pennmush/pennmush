@@ -8,6 +8,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -97,6 +98,8 @@ static void init_search_spec(struct search_spec *spec);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
+
+
 
 
 
@@ -1562,7 +1565,7 @@ FUNCTION(fun_entrances)
    * (a)ll (default), (e)xits, (t)hings, (p)layers, (r)ooms
    * The third and fourth args limit the range of dbrefs (default=0,db_top)
    */
-  dbref where = Location(executor);
+  dbref where;
   struct search_spec spec;
   int nresults, n;
   dbref *results = NULL;

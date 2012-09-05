@@ -1,4 +1,4 @@
-# Makefile for PennMUSH
+
 
 ###############################################################################
 #         You shouldn't have to change anything in this file.                 #
@@ -76,15 +76,6 @@ buildinf:
 	@echo "#define BUILDDATE \"`date`\"" >> ../hdrs/buildinf.h
 	@echo "#define COMPILER \"$(CC)\"" >> ../hdrs/buildinf.h
 	@echo "#define CCFLAGS \"$(CFLAGS)\"" >> ../hdrs/buildinf.h
-	@if [ ! -f ../hdrs/svninfo.h ]; then \
-	  echo '#define SVNREVISION "$$Rev$$"' > ../hdrs/svninfo.h; \
-	  echo '#define SVNDATE "$$Date$$"' >> ../hdrs/svninfo.h; \
-	else \
-	  echo `egrep "#define SVNREVISION \".+?\"" ../hdrs/svninfo.h` > ../hdrs/svninfo2.h; \
-	  echo `egrep "#define SVNDATE \".+?\"" ../hdrs/svninfo.h` >> ../hdrs/svninfo2.h; \
-	  mv -f ../hdrs/svninfo2.h ../hdrs/svninfo.h; \
-	fi
-	@echo "/* Built at `date +%Y%m%d%H%M%S` */" >> ../hdrs/svninfo.h
 
 # If funlocal.c doesn't exist, we want to build it from
 # funlocal.dst. 
@@ -146,6 +137,9 @@ htmltab.c: htmltab.gperf
 lmathtab.c: lmathtab.gperf
 	gperf --output-file lmathtab.c lmathtab.gperf
 
+rgbtab.c: rgbtab.gperf
+	gperf --output-file rgbtab.c rgbtab.gperf
+
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h
 
@@ -153,7 +147,7 @@ ctags:
 	@CTAGS@ *.c ../hdrs/*.h
 
 depend: $(C_FILES) info_slave.c ssl_slave.c
-	makedepend -fMakefile.in -w10 -- $(CFLAGS) -- $(C_FILES) info_slave.c ssl_slave.c
+	makedepend -fMakefile.in -w10 -- $(CFLAGS) -- $(C_FILES) info_slave.c ssl_slave.c 2>/dev/null
 	@PERL@ ../utils/fixdepend.pl Makefile.in
 
 # Requires GNU indent 1.2 or better! 
@@ -177,17 +171,18 @@ indent:
 	-T LOCKMSGINFO -T ltype -T MAIL -T mail_flag -T makerecord \
 	-T MATH -T MEM -T MQUE -T MSSP -T MYSQL_FIELD -T MYSQL_RES \
 	-T na_lookup -T new_markup_information -T NEW_PE_INFO -T NVAL \
-	-T object_flag_type -T OPTTAB -T patricia -T PE_REG_VAL \
-	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T PGresult \
-	-T pid_t -T pint_t -T Port_t -T PRIV -T privbits -T PTAB \
-	-T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
+	-T object_flag_type -T OPTTAB -T patricia -T pcre -T pcre_extra \
+	-T PE_REG_VAL -T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE \
+	-T PGresult -T pid_t -T pint_t -T Port_t -T PRIV -T privbits \
+	-T PTAB -T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
 	-T RegionHeader -T s_rec -T sig_atomic_t -T sigset_t -T size_t \
 	-T slab -T socklen_t -T SortType -T sq_func -T sqlite3_stmt \
 	-T sqlplatform -T ssize_t -T SSL -T SSL_CTX -T SSL_METHOD \
 	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
 	-T tcheck -T time_t -T tlist -T uint16_t -T uint32_t -T uint64_t \
 	-T uint8_t -T uintmax_t -T UIVAL -T UsedAttr -T USERFN_ENTRY \
-	-T w128_t -T WAIT_TYPE -T warn_type -T X509 -T X509_STORE_CTX \
+	-T w128_t -T WAIT_TYPE -T warn_type -T writer_func -T X509 \
+	-T X509_STORE_CTX \
 	$$file ; done)
 
 clean:
@@ -313,6 +308,7 @@ boolexp.o: ../hdrs/mymalloc.h
 boolexp.o: bflags.c
 bsd.o: ../hdrs/copyrite.h
 bsd.o: ../config.h
+bsd.o: ../confmagic.h
 bsd.o: ../hdrs/conf.h
 bsd.o: ../options.h
 bsd.o: ../hdrs/mushtype.h
@@ -322,7 +318,6 @@ bsd.o: ../hdrs/compile.h
 bsd.o: ../hdrs/dbdefs.h
 bsd.o: ../hdrs/mushdb.h
 bsd.o: ../hdrs/flags.h
-bsd.o: ../confmagic.h
 bsd.o: ../hdrs/ptab.h
 bsd.o: ../hdrs/dbio.h
 bsd.o: ../hdrs/chunk.h
@@ -416,6 +411,7 @@ cmdlocal.o: ../hdrs/switches.h
 cmdlocal.o: ../hdrs/cmds.h
 cmds.o: ../hdrs/copyrite.h
 cmds.o: ../config.h
+cmds.o: ../confmagic.h
 cmds.o: ../hdrs/conf.h
 cmds.o: ../options.h
 cmds.o: ../hdrs/mushtype.h
@@ -425,7 +421,6 @@ cmds.o: ../hdrs/compile.h
 cmds.o: ../hdrs/dbdefs.h
 cmds.o: ../hdrs/mushdb.h
 cmds.o: ../hdrs/flags.h
-cmds.o: ../confmagic.h
 cmds.o: ../hdrs/ptab.h
 cmds.o: ../hdrs/dbio.h
 cmds.o: ../hdrs/chunk.h
@@ -712,13 +707,13 @@ extmail.o: ../hdrs/command.h
 extmail.o: ../hdrs/switches.h
 filecopy.o: ../hdrs/copyrite.h
 filecopy.o: ../config.h
+filecopy.o: ../confmagic.h
 filecopy.o: ../hdrs/conf.h
 filecopy.o: ../options.h
 filecopy.o: ../hdrs/mushtype.h
 filecopy.o: ../hdrs/htab.h
 filecopy.o: ../hdrs/mushdb.h
 filecopy.o: ../hdrs/flags.h
-filecopy.o: ../confmagic.h
 filecopy.o: ../hdrs/ptab.h
 filecopy.o: ../hdrs/dbio.h
 filecopy.o: ../hdrs/match.h
@@ -1032,6 +1027,7 @@ funufun.o: ../hdrs/boolexp.h
 funufun.o: ../hdrs/function.h
 game.o: ../hdrs/copyrite.h
 game.o: ../config.h
+game.o: ../confmagic.h
 game.o: ../hdrs/conf.h
 game.o: ../options.h
 game.o: ../hdrs/mushtype.h
@@ -1041,7 +1037,6 @@ game.o: ../hdrs/compile.h
 game.o: ../hdrs/dbdefs.h
 game.o: ../hdrs/mushdb.h
 game.o: ../hdrs/flags.h
-game.o: ../confmagic.h
 game.o: ../hdrs/ptab.h
 game.o: ../hdrs/dbio.h
 game.o: ../hdrs/chunk.h
@@ -1279,7 +1274,9 @@ markup.o: ../hdrs/mymalloc.h
 markup.o: ../hdrs/log.h
 markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/game.h
+markup.o: ../hdrs/rgb.h
 markup.o: htmltab.c
+markup.o: rgbtab.c
 match.o: ../hdrs/copyrite.h
 match.o: ../config.h
 match.o: ../hdrs/conf.h
@@ -1348,6 +1345,7 @@ move.o: ../hdrs/switches.h
 move.o: ../hdrs/cmds.h
 move.o: ../hdrs/game.h
 mycrypt.o: ../config.h
+mycrypt.o: ../confmagic.h
 mycrypt.o: ../hdrs/conf.h
 mycrypt.o: ../hdrs/copyrite.h
 mycrypt.o: ../options.h
@@ -1358,7 +1356,6 @@ mycrypt.o: ../hdrs/compile.h
 mycrypt.o: ../hdrs/dbdefs.h
 mycrypt.o: ../hdrs/mushdb.h
 mycrypt.o: ../hdrs/flags.h
-mycrypt.o: ../confmagic.h
 mycrypt.o: ../hdrs/ptab.h
 mycrypt.o: ../hdrs/dbio.h
 mycrypt.o: ../hdrs/chunk.h
@@ -1366,6 +1363,7 @@ mycrypt.o: ../hdrs/mypcre.h
 mycrypt.o: ../hdrs/log.h
 mycrypt.o: ../hdrs/bufferq.h
 mymalloc.o: ../config.h
+mymalloc.o: ../confmagic.h
 mymalloc.o: ../options.h
 mymalloc.o: ../hdrs/conf.h
 mymalloc.o: ../hdrs/copyrite.h
@@ -1374,7 +1372,6 @@ mymalloc.o: ../hdrs/htab.h
 mymalloc.o: ../hdrs/dbdefs.h
 mymalloc.o: ../hdrs/mushdb.h
 mymalloc.o: ../hdrs/flags.h
-mymalloc.o: ../confmagic.h
 mymalloc.o: ../hdrs/ptab.h
 mymalloc.o: ../hdrs/dbio.h
 mymalloc.o: ../hdrs/chunk.h
@@ -1387,6 +1384,7 @@ mymalloc.o: ../hdrs/getpgsiz.h
 mymalloc.o: ../hdrs/mymalloc.h
 mysocket.o: ../hdrs/copyrite.h
 mysocket.o: ../config.h
+mysocket.o: ../confmagic.h
 mysocket.o: ../hdrs/conf.h
 mysocket.o: ../options.h
 mysocket.o: ../hdrs/mushtype.h
@@ -1396,7 +1394,6 @@ mysocket.o: ../hdrs/compile.h
 mysocket.o: ../hdrs/dbdefs.h
 mysocket.o: ../hdrs/mushdb.h
 mysocket.o: ../hdrs/flags.h
-mysocket.o: ../confmagic.h
 mysocket.o: ../hdrs/ptab.h
 mysocket.o: ../hdrs/dbio.h
 mysocket.o: ../hdrs/chunk.h
@@ -1405,6 +1402,7 @@ mysocket.o: ../hdrs/mymalloc.h
 mysocket.o: ../hdrs/mysocket.h
 myrlimit.o: ../hdrs/copyrite.h
 myrlimit.o: ../config.h
+myrlimit.o: ../confmagic.h
 myrlimit.o: ../hdrs/conf.h
 myrlimit.o: ../options.h
 myrlimit.o: ../hdrs/mushtype.h
@@ -1415,19 +1413,18 @@ myrlimit.o: ../hdrs/compile.h
 myrlimit.o: ../hdrs/dbdefs.h
 myrlimit.o: ../hdrs/mushdb.h
 myrlimit.o: ../hdrs/flags.h
-myrlimit.o: ../confmagic.h
 myrlimit.o: ../hdrs/ptab.h
 myrlimit.o: ../hdrs/dbio.h
 myrlimit.o: ../hdrs/chunk.h
 myrlimit.o: ../hdrs/mypcre.h
 myssl.o: ../hdrs/copyrite.h
 myssl.o: ../config.h
+myssl.o: ../confmagic.h
 myssl.o: ../hdrs/conf.h
 myssl.o: ../options.h
 myssl.o: ../hdrs/mushtype.h
 myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mysocket.h
-myssl.o: ../confmagic.h
 myssl.o: ../hdrs/externs.h
 myssl.o: ../hdrs/compile.h
 myssl.o: ../hdrs/dbdefs.h
@@ -1442,13 +1439,13 @@ myssl.o: ../hdrs/parse.h
 myssl.o: ../hdrs/SFMT.h
 notify.o: ../hdrs/copyrite.h
 notify.o: ../config.h
+notify.o: ../confmagic.h
 notify.o: ../hdrs/conf.h
 notify.o: ../options.h
 notify.o: ../hdrs/mushtype.h
 notify.o: ../hdrs/htab.h
 notify.o: ../hdrs/mushdb.h
 notify.o: ../hdrs/flags.h
-notify.o: ../confmagic.h
 notify.o: ../hdrs/ptab.h
 notify.o: ../hdrs/dbio.h
 notify.o: ../hdrs/externs.h
@@ -1652,6 +1649,7 @@ rob.o: ../hdrs/game.h
 rob.o: ../hdrs/case.h
 services.o: ../hdrs/copyrite.h
 services.o: ../config.h
+services.o: ../confmagic.h
 set.o: ../hdrs/copyrite.h
 set.o: ../config.h
 set.o: ../hdrs/conf.h
@@ -1685,7 +1683,6 @@ SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
-SFMT.o: ../hdrs/SFMT-sse2.h
 sig.o: ../config.h
 sig.o: ../hdrs/conf.h
 sig.o: ../hdrs/copyrite.h
@@ -1851,6 +1848,7 @@ strutil.o: ../hdrs/log.h
 strutil.o: ../hdrs/bufferq.h
 timer.o: ../hdrs/copyrite.h
 timer.o: ../config.h
+timer.o: ../confmagic.h
 timer.o: ../hdrs/conf.h
 timer.o: ../options.h
 timer.o: ../hdrs/mushtype.h
@@ -1860,7 +1858,6 @@ timer.o: ../hdrs/compile.h
 timer.o: ../hdrs/dbdefs.h
 timer.o: ../hdrs/mushdb.h
 timer.o: ../hdrs/flags.h
-timer.o: ../confmagic.h
 timer.o: ../hdrs/ptab.h
 timer.o: ../hdrs/dbio.h
 timer.o: ../hdrs/chunk.h
@@ -1877,6 +1874,7 @@ timer.o: ../hdrs/help.h
 timer.o: ../hdrs/parse.h
 timer.o: ../hdrs/attrib.h
 tz.o: ../config.h
+tz.o: ../confmagic.h
 tz.o: ../hdrs/conf.h
 tz.o: ../hdrs/copyrite.h
 tz.o: ../options.h
@@ -1887,7 +1885,6 @@ tz.o: ../hdrs/compile.h
 tz.o: ../hdrs/dbdefs.h
 tz.o: ../hdrs/mushdb.h
 tz.o: ../hdrs/flags.h
-tz.o: ../confmagic.h
 tz.o: ../hdrs/ptab.h
 tz.o: ../hdrs/dbio.h
 tz.o: ../hdrs/chunk.h
@@ -1922,6 +1919,7 @@ unparse.o: ../hdrs/pueblo.h
 unparse.o: ../hdrs/parse.h
 utils.o: ../hdrs/copyrite.h
 utils.o: ../config.h
+utils.o: ../confmagic.h
 utils.o: ../hdrs/conf.h
 utils.o: ../options.h
 utils.o: ../hdrs/mushtype.h
@@ -1932,7 +1930,6 @@ utils.o: ../hdrs/compile.h
 utils.o: ../hdrs/dbdefs.h
 utils.o: ../hdrs/mushdb.h
 utils.o: ../hdrs/flags.h
-utils.o: ../confmagic.h
 utils.o: ../hdrs/ptab.h
 utils.o: ../hdrs/dbio.h
 utils.o: ../hdrs/chunk.h
@@ -2011,6 +2008,7 @@ wild.o: ../hdrs/mymalloc.h
 wild.o: ../hdrs/parse.h
 wiz.o: ../hdrs/copyrite.h
 wiz.o: ../config.h
+wiz.o: ../confmagic.h
 wiz.o: ../hdrs/conf.h
 wiz.o: ../options.h
 wiz.o: ../hdrs/mushtype.h
@@ -2020,7 +2018,6 @@ wiz.o: ../hdrs/compile.h
 wiz.o: ../hdrs/dbdefs.h
 wiz.o: ../hdrs/mushdb.h
 wiz.o: ../hdrs/flags.h
-wiz.o: ../confmagic.h
 wiz.o: ../hdrs/ptab.h
 wiz.o: ../hdrs/dbio.h
 wiz.o: ../hdrs/chunk.h

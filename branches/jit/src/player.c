@@ -601,8 +601,6 @@ make_player(const char *name, const char *password, const char *host,
   (void) atr_add(player, "LASTFAILED", " ", GOD, 0);
   sprintf(temp, "%d", START_QUOTA);
   (void) atr_add(player, "RQUOTA", temp, GOD, 0);
-  (void) atr_add(player, "ICLOC", EMPTY_ATTRS ? "" : " ", GOD,
-                 AF_MDARK | AF_PRIVATE | AF_WIZARD | AF_NOCOPY);
   (void) atr_add(player, "MAILCURF", "0", GOD,
                  AF_LOCKED | AF_NOPROG | AF_WIZARD);
   add_folder_name(player, 0, "inbox");

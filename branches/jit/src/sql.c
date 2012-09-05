@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 #ifdef WIN32
-#include <winsock.h>
+#include <winsock2.h>
 #define sleep Sleep
 #endif
 

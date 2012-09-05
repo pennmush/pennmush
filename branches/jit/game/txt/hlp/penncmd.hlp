@@ -675,18 +675,29 @@ See also: @idle, @haven
 See also: QUIT, LOGOUT
 & @break
 & @assert
-  @break  <boolean>[=<action list>]
-  @assert <boolean>[=<action list>]
+  @break[/queued]  <boolean>[=<action list>]
+  @assert[/queued] <boolean>[=<action list>]
 
-  @break stops the execution of further commands in the current action
-  list if <boolean> is a true value. It doesn't affect new queue entries
-  made by previous commands in the action list. Very useful to people who
-  don't like @switch. If <action list> is given, it is executed instead of
-  the rest of the commands in the current action list.
+  @break stops the execution of further commands in the current action list
+  if <boolean> is a true value. It doesn't affect new queue entries made by 
+  previous commands in the action list. It can be useful for doing error 
+  checking without having to nest @switches and suffer from delayed execution
+  because of queueing.
+  
+  If <action list> is given, it is executed instead of the rest of the 
+  commands in the current action list. By default, <action list> is run
+  immediately, replacing the rest of the action list @break was called in. If
+  the /queued switch is given, <action list> will instead be queued to be run
+  later. @break also accepts an /inline switch, for Rhost compatability; this
+  switch does nothing on PennMUSH.
 
   @assert does the inverse: it stops execution if <boolean> evaluates to
   false.
 
+  See 'help @break2' for examples.
+See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
+& @break2
+& @assert2
   Examples:
   > @va obj=$testme *: @pemit %#=You try a test ;
                        @break lt(%0,10)=@pemit %#=But you're too low! ;
@@ -707,10 +718,8 @@ See also: QUIT, LOGOUT
    think Second), and then the queued 'think Third' is run, displaying
    Third. If you figured that out, you have a very good understanding
    of the PennMUSH queue. :)
-
-See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
 & @charges
-& @runout 
+& @runout
   @charges <object>[=<integer>]
   @runout <object>[=<action list>]
 
@@ -855,8 +864,9 @@ See also: @chzone, ZONES
   from the cloned object, but Wizards may use the /preserve flag to prevent
   this.
   
-  The clone will normally be created with the first available dbref, but
-  Wizards may specify the <dbref> of a garbage object to use that instead.
+  The clone will normally be created with the first available dbref,
+  but Wizards and objects with the pick_dbref power may specify the
+  <dbref> of a garbage object to use that instead.
 
   To clone a room and all its exits, use code like:
     > @teleport setq(0,%L)[clone(here)]
@@ -1182,9 +1192,9 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
   Some MUSHes choose to limit the number of objects you can create by
   setting a quota.
   
-  Wizards can also specify the <dbref> of a garbage object to use when
-  creating the object. Otherwise, the object is given the next
-  available dbref.
+  Wizards and objects with the pick_dbref power can also specify the
+  <dbref> of a garbage object to use when creating the
+  object. Otherwise, the object is given the next available dbref.
  
 See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
 & @dbck
@@ -1355,7 +1365,8 @@ See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
   
 See also: @destroy, GOING, @startup
 & @dig
-  @dig[/teleport] <room name>[=<exit to>[, <exit from>[, <dbref>]]]
+  @dig[/teleport] <room name>[=<exit to>, <exit from>, <room dbref>,
+                               <to dbref>, <from dbref>]
   
   This command creates a new room named <room name>. Creating a room costs
   some pennies (see '@config room_cost' for exactly how many). If the
@@ -1369,8 +1380,9 @@ See also: @destroy, GOING, @startup
   '@config exit_cost'. The exit names may contain multiple aliases, separated 
   with semicolons, as per 'help @name'.
 
-  Wizards can also specify the <dbref> of a garbage object to use when
-  creating the room. Otherwise, the room is given the next available dbref.
+  Wizards and objects with the pick_dbref power can also specify the
+  dbrefs of garbage objects to use when creating the room and the to
+  and from exits.
   
   See 'help @dig2' for examples.
 & @dig2
@@ -1391,21 +1403,16 @@ See also: @destroy, GOING, @startup
 
 See also: @open, @link, EXITS, @create, DBREF, dig()
 & @doing
-  &doing me=<doing>
-  @doing <message>
-  @doing/header <message>
+  @doing <object>[=<message>]
 
-  The first syntax sets your DOING attribute to <doing>. The evaluated result
-  is shown next to your name in the WHO/DOING commands, and is returned by
-  the doing() function.
+  With a <message> argument, this command sets <object>'s DOING attribute to
+  <message>. The DOING attribute is only meaningful for players; the
+  evaluated result is shown on the output of the normal MUSH WHO command, and
+  on the login screen WHO.
   
-  @doing exists for backwards compatability, and sets your DOING attribute so 
-  that, when evaluated, it will return <message>. It is equivalent to:
-    @set me=DOING:[decompose(<message>)]
-  The @doing command is deprecated, and using it should be avoided.
+  With no <message> the attribute is cleared.
   
-  @doing/header is an alias for @poll, and can only be used by Wizards or
-  those with the Poll @power.
+  To change the message shown above player @doings in WHO, use @poll.
 
 See also: @poll, WHO, doing()
 & @dolist
@@ -1598,7 +1605,7 @@ See also: edit(), regedit(), ATTRIBUTES,
 
 See also: @lock, locktypes, enter, ENTER_OK
 & @emit
-& \  
+& \
   @emit[/<switch>] <message>
   \<message>
 
@@ -2838,7 +2845,8 @@ See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
     object called 'foo'.
     > @oemit %L/"2nd foo"=bar
 & @open
-  @open <exit name>[=<destination>[, <return exit name>[, <source room>]]]
+  @open <exit name>[=<destination>,<return exit name>,<source room>,<dbref>,
+                     <return dbref>]
 
   This command opens an exit, named <exit name>, in your current location,
   or in <source room> if one is given. Exits can only be opened from rooms.
@@ -2851,6 +2859,9 @@ See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
   
   Both <exit name> and <return exit name> can include any number of aliases
   for the exits, separated by semicolons. See 'help @name' for details.
+
+  Wizards and objects with the pick_dbref power can specify garbage
+  dbrefs to use for the exit and return exit.
 
   To open an exit in a room, you must control the room, have the 
   Open_Anywhere @power, or the room must be set OPEN_OK and you must pass
@@ -2950,11 +2961,13 @@ See also: give, @receive, ACTION LISTS, VERBS
   
 See also: pcreate()  
 & @prompt
-  @prompt[/<switch>] <dbref list>=<message>
+  @prompt[/<switch>] <dbref list>[=<message>]
 
   A variation of @pemit/list that adds a telnet GOAHEAD control code to the 
   end of messages sent to players. Players with clients that handle GOAHEAD 
   may get the message as a prompt in their client's input area.
+  
+  If <message> is omitted, an empty prompt is sent.
 
   @prompt supports the following @pemit switches: /silent, /noisy,
   /spoof, /noeval
@@ -3528,28 +3541,60 @@ Continued in 'help @sitelock3'
    ssl: Handles encrypted SSL connections across @shutdown/reboots. 
 
 & @SOCKSET
-  @sockset <option>=<value>
+& SOCKSET
+  SOCKSET [<option>=<value>]
+  @sockset [<descriptor>][=<option>, <value>[, ..., <optionN>, <valueN>]]
 
-  @sockset is a command to set socket-specific options usually only set
-  either at connect time or modifiable via SOCKET commands.
-
-  If <value> is empty, the socket option will be cleared.
+  SOCKSET is a socket commands which sets or queries socket-specific options.
+  These options are usually set automatically, or negotiated by the MUSH and
+  your client, but this command lets you override those settings.
+  
+  With no args, SOCKSET shows the current value of the socket options. With
+  an <option>=<value> pair, it attempts to set the given option.
+  
+  @sockset is a similar in-game command, but can specify which descriptor to
+  change options for, and can set multiple options at once. Only Wizards can
+  change the options for other players' descriptors. <descriptor> defaults to
+  your least-idle descriptor, when used by a player; for non-players, it has
+  no default.
 
   Options:
-    outputprefix: String: Same as OUTPUTPREFIX
-    outputsuffix: String: Same as OUTPUTSUFFIX
-    pueblo: String: Sets Pueblo-related options. If value has md5=...", then
-            it will set the pueblo checksum. If empty, Pueblo mode is turned
-            off.
-    telnet: Boolean yes/no: If yes, your socket does telnet negotiation.
-    width:  Integer: Set your width(), same as SCREENWIDTH
-    height: Integer: Set your height(), same as SCREENHEIGHT
-    terminaltype: String: Your terminal type, used by terminfo()
+    colorstyle:   See help colorstyle
+    outputprefix: Same as OUTPUTPREFIX
+    outputsuffix: Same as OUTPUTSUFFIX
+    pueblo:       Sets Pueblo-related options. If value has md5=...", then it
+                  will set the pueblo checksum. If empty, Pueblo mode is 
+                  turned off.
+    telnet:       Yes or no, to enable/disable telnet negotiation
+    width:        Set your width(), same as SCREENWIDTH
+    height:       Set your height(), same as SCREENHEIGHT
+    terminaltype: Your terminal type, used by terminfo()
 
   Note that changing 'telnet' or 'pueblo' may stop your client from parsing
   or displaying output correctly; only use if you know what you're doing!
   
-See also: SOCKET COMMANDS, terminfo(), Pueblo
+See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle
+& COLORSTYLE
+  SOCKSET colorstyle=<value>
+
+  You can override the color format you receive from PennMUSH. Normally,
+  PennMUSH tries to guess what your client is capable of through telnet
+  negotiation and your player flags. @sockset lets you inform PennMUSH
+  that your client can support more colors than expected.
+
+  Colorstyle options are:
+
+    plain: Plain text. No markup whatsoever.
+    hilite: You only receive hilite text. No colors, just ansi-hilite.
+    16color: You receive hilite text and the ANSI 16 colors.
+    xterm256: You receive xterm-style 256 colors for text and background.
+    auto: go back to what PennMUSH determined was your client's capabilities.
+
+  In the event that your client receives a color that it is unable to
+  display, PennMUSH will attempt to find a close match that can fit your
+  client's capabilities.
+
+See also: ANSI, COLOR, XTERM256
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
   
@@ -3626,13 +3671,12 @@ See also: sql(), sqlescape(), mapsql(), @mapsql
 
   Sets the list of actions on <object> that will happen whenever the MUSH
   is restarted. This lets you start up objects that need to be running 
-  continuously. It is also useful for setting up @functions, @hooks and
-  standard @attributes, which are not saved across restarts.
+  continuously. It is also useful for setting up @functions and @hooks, 
+  which are not saved across restarts.
   
   @startup is also triggered when an object is @restarted or @undestroyed.
   
-See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
-  @attribute
+See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook
 & @stats
   @stats [<player>]
   @stats/tables
@@ -3914,7 +3958,7 @@ See also: version(), numversion()
   the stack (i.e. %0, %1, %2, etc. up through %9).
   
   Continued in 'help @verb2'.
-& @verb2  
+& @verb2
   In order to use this command, at least one of the following criterion
   must apply:
     1. The object which did the @verb is a wizard.
@@ -4230,7 +4274,7 @@ See also: KEEPALIVE, @idle
   You say, "Third"
 
 See also: @trigger, @include
-& drop 
+& drop
   drop <object>
 
   Drops <object>, if you are presently carrying it. If the room the
@@ -4571,7 +4615,7 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT,
   to provide standard information on the rules, theme, and customized
   commands of the particular MUSH. It is highly recommended that you
   read it regularly.
-& page 
+& page
   page[/<switch>] [<player-list>=]<message>
 
   This command sends a message to a player or list of players. If the
@@ -4690,7 +4734,7 @@ See also: LOOPING, @ps, QUEUE, MONEY
   there's no prepended text.
 
   One possible use: @adesc me=think %N just looked at you.
-& QUIT    
+& QUIT
   QUIT
 
   Log out and leave the game. Must be in all capitals.  
@@ -4745,7 +4789,7 @@ See also: huh_command, unimplemented_command
   implemented.", but you can @hook it to perform other actions.
   
 See also: huh_command, warn_on_missing, @command, @hook
-& whisper 
+& whisper
   whisper <player>=<message>
   whisper/silent <player>=<message>
   whisper/noisy <player>=<message>
@@ -4838,7 +4882,7 @@ See also: WHO
   
   IDLE    INFO    LOGOUT  OUTPUTPREFIX    OUTPUTSUFFIX
   PROMPT_NEWLINES QUIT    SCREENWIDTH     SCREENHEIGHT
-  MSSP-REQUEST
+  SOCKSET MSSP-REQUEST
 
   In addition, the following commands can only be used at the login
   screen:

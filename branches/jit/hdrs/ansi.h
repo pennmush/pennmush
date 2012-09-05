@@ -93,19 +93,29 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
+/* Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
+#define COLOR_NAME_LEN 22
 /** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;     /**< highlight/flash/invert/underline which are explicitly on */
-  uint8_t offbits;  /**< highlight/flash/invert/underline which are explicitly off */
-  char fore;        /**< Foreground color */
-  char back;        /**< Background color */
+  uint8_t bits;
+  uint8_t offbits;
+  char fg[COLOR_NAME_LEN];
+  char bg[COLOR_NAME_LEN];
 } ansi_data;
 
-#define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
+#define NULL_ANSI {0, 0, "", ""}
+#define HAS_ANSI(adata) (adata.bits || adata.offbits || (adata.fg[0]) || (adata.bg[0]))
 int read_raw_ansi_data(ansi_data *store, const char *codes);
-int write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp);
+int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
+                        char *buff, char **bp);
 
-void define_ansi_data(ansi_data *store, const char *str);
+#define ANSI_FORMAT_NONE         0
+#define ANSI_FORMAT_HILITE       1
+#define ANSI_FORMAT_16COLOR      2
+#define ANSI_FORMAT_XTERM256     3
+#define ANSI_FORMAT_HTML         4
+
+int define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);
 int write_ansi_close(char *buff, char **bp);
 
@@ -202,7 +212,7 @@ parse_ansi_string(const char *src)
                                  int stringnumber, int nonempty, char *buffer,
                                  char **bp);
 
-    int ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
+    int ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
                                        int *ovector, int stringcount,
                                        const char *stringname, int nonempty,
                                        char *buffer, char **bp);
@@ -213,12 +223,19 @@ parse_ansi_string(const char *src)
 #define wrap_tag(x,y) tprintf("%c%c%s%c%s%c%c/%s%c", \
     TAG_START,MARKUP_HTML,x,TAG_END, \
     y, TAG_START,MARKUP_HTML,x,TAG_END)
-    int safe_tag(char const *a_tag, char *buf, char **bp);
-    int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
-    int safe_tag_wrap(char const *a_tag, char const *params,
-                      char const *data, char *buf, char **bp, dbref player);
+
+int safe_tag(char const *a_tag, char *buf, char **bp);
+int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
+int safe_tag_wrap(char const *a_tag, char const *params,
+		  char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
+
+int valid_color_name(const char *name);
+uint32_t color_to_hex(char *name, int hilite);
+int ansi_map_16(char *name, int bg);
+int ansi_map_256(uint32_t hex);
+
 
 #endif                          /* __ANSI_H */

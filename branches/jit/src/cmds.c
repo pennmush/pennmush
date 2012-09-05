@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 #include "config.h"
+#include "confmagic.h"
 
 #include <string.h>
 
@@ -57,6 +58,7 @@ extern int config_set(const char *opt, char *val, int source, int restrictions);
 
 void do_list_allocations(dbref player);
 
+extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
 extern int rhs_present;
 
@@ -109,9 +111,41 @@ COMMAND(cmd_attribute)
 
 COMMAND(cmd_sockset)
 {
-  const char *retval;
-  retval = sockset(executor, arg_left, arg_right);
-  notify(executor, retval);
+  DESC *d;
+  int i;
+
+  if (!arg_left || !*arg_left) {
+    d = least_idle_desc(executor, 1);
+    if (!d) {
+      notify(executor, T("You are not connected?"));
+      return;
+    }
+  } else {
+    d = lookup_desc(executor, arg_left);
+    if (!d) {
+      notify(executor, T("Invalid descriptor."));
+      return;
+    }
+  }
+
+  if (!rhs_present) {
+    if (d->player == executor || See_All(executor))
+      notify(executor, sockset_show(d));
+    else
+      notify(executor, T("Permission denied."));
+    return;
+  }
+
+  if (d->player != executor && !Wizard(executor)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
+  for (i = 1; args_right[i] && i < MAX_ARG; i += 2)
+    notify(executor, sockset(d, args_right[i], args_right[i + 1]));
+
+  if (i == 1)
+    notify(executor, T("Set what option?"));
 }
 
 COMMAND(cmd_atrchown)
@@ -138,8 +172,12 @@ COMMAND(cmd_break)
   if (parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+      if (SW_ISSET(sw, SWITCH_QUEUED))
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+      else
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }
@@ -149,8 +187,12 @@ COMMAND(cmd_assert)
   if (!parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+      if (SW_ISSET(sw, SWITCH_QUEUED))
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+      else
+        new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
+                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }
@@ -247,9 +289,17 @@ COMMAND(cmd_config)
           notify(executor, T("Option set and saved."));
 #else
           notify(executor, T("Option set but not saved (Saves disabled.)"));
+          source = 1;
 #endif
         } else
           notify(executor, T("Option set."));
+        if (source == 1)
+          do_log(LT_WIZ, executor, NOTHING, "Config option '%s' set to '%s'.",
+                 arg_left, arg_right);
+        else
+          do_log(LT_WIZ, executor, NOTHING,
+                 "Config option '%s' set to '%s' and saved.", arg_left,
+                 arg_right);
       }
     }
   } else
@@ -348,19 +398,6 @@ COMMAND(cmd_dig)
 COMMAND(cmd_disable)
 {
   do_enable(executor, arg_left, 0);
-}
-
-COMMAND(cmd_doing)
-{
-  if (SW_ISSET(sw, SWITCH_HEADER)) {
-    notify_format(Owner(executor),
-                  T
-                  ("Deprecated command %s being used on object #%d. Use %s instead."),
-                  "@DOING/HEADER", executor, "@POLL");
-
-    do_poll(executor, arg_left, 0);
-  } else
-    do_doing(executor, arg_left);
 }
 
 COMMAND(cmd_dolist)
@@ -1020,7 +1057,7 @@ COMMAND(cmd_prompt)
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT | PEMIT_LIST;
   dbref speaker = SPOOF(executor, enactor, sw);
 
-  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
+  if (!strcmp(cmd->name, "@NSPROMPT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
   do_pemit(executor, speaker, arg_left, arg_right, flags, NULL,
@@ -1550,8 +1587,12 @@ COMMAND(cmd_kill)
 
 COMMAND(cmd_look)
 {
-  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)),
-             queue_entry->pe_info);
+  int key = LOOK_NORMAL;
+  if (SW_ISSET(sw, SWITCH_OUTSIDE))
+    key |= LOOK_OUTSIDE;
+  if (SW_ISSET(sw, SWITCH_OPAQUE))
+    key |= LOOK_NOCONTENTS;
+  do_look_at(executor, arg_left, key, queue_entry->pe_info);
 }
 
 COMMAND(cmd_leave)

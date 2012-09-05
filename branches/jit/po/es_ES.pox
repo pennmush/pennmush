@@ -1171,10 +1171,6 @@ msgstr "Desactivado."
 msgid "Do what with the function?"
 msgstr "¿Hacer qué con esa función?"
 
-#: src/bsd.c:4319
-msgid "Doing set."
-msgstr "Doing establecido."
-
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
 msgstr "¿No tienes nada que decir?"

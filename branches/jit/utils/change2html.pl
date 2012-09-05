@@ -14,7 +14,7 @@
 use warnings;
 use strict;
 use Getopt::Std;
-use Sort::Versions;
+use version 0.77;
 use CGI ':html';
 use subs qw/parse_version reset_list print_line/;
 
@@ -24,7 +24,17 @@ $opt_r = undef;
 
 die "Usage: $0 [-r VERSION] [-f] FILE ...\n" unless getopts("fr:");
 
-my $display = defined $opt_r ? 0 : 1;
+my $display = 0;
+
+if (defined $opt_r) {
+    if ($opt_r =~ /^(\d+\.\d+\.\d+)p(\d+)$/) {
+	$opt_r = version->parse("v$1.$2");
+    } else {
+	die "Invalid version string '$opt_r'\n";
+    }
+} else {
+    $display = 1;
+}
 
 my $skipping_noise = 1;
 my $in_list = 0;
@@ -50,7 +60,7 @@ while (<>) {
 	
 	reset_list;
 
-	if (versioncmp($this_vers, $opt_r) == 0) {
+	if ($this_vers == $opt_r) {
 	    $display = 1;
 	} elsif (defined $opt_r) {
 	    last if $display;
@@ -83,15 +93,17 @@ while (<>) {
     }
 }
 
+reset_list;
+
 print end_html(), "\n" if $opt_f;
 
 sub parse_version {
     my $vers = shift;
 
     if ($vers =~ m/^Version (\d+\.\d+\.\d+) patchlevel (\d+)/) {
-	return "$1p$2";
+	return version->parse("v$1.$2");
     } else {
-	return "Unknown";
+	return v0.0.0;
     }
 }
 

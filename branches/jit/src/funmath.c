@@ -946,9 +946,9 @@ FUNCTION(fun_round)
   if (places > (unsigned int) FLOAT_PRECISION)
     places = FLOAT_PRECISION;
 
-#ifdef HAVE_ROUND
+#ifdef HAVE_LRINT
   if (places == 0)
-    safe_number(round(n), buff, bp);
+    safe_integer(lrint(n), buff, bp);
   else
 #endif
   {

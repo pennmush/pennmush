@@ -124,12 +124,12 @@ sitelock_free(struct access *ap)
   if (ap->comment)
     mush_free(ap->comment, "sitelock.rule.comment");
   if (ap->re)
-    free(ap->re);
+    pcre_free(ap->re);
   if (ap->study) {
 #ifdef PCRE_CONFIG_JIT
     pcre_free_study(ap->study);
 #else
-    free(ap->study);
+    pcre_free(ap->study);
 #endif
   }
   

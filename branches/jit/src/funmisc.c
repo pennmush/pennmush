@@ -70,7 +70,12 @@ FUNCTION(fun_valid)
     safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "qreg"))
     safe_boolean(ValidQregName(args[1]), buff, bp);
-  else
+  else if (!strcasecmp(args[0], "colorname"))
+    safe_boolean(valid_color_name(args[1]), buff, bp);
+  else if (!strcasecmp(args[0], "ansicodes")) {
+    ansi_data colors;
+    safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
+  } else
     safe_str("#-1", buff, bp);
 }
 
@@ -928,7 +933,7 @@ FUNCTION(fun_reswitch)
       /* Matching error. Ignore this one, move on. */
       continue;
     }
-    add_check("pcre");
+    ADD_CHECK("pcre");
     extra = default_match_limit();
     search = 0;
     subpatterns =
@@ -953,7 +958,8 @@ FUNCTION(fun_reswitch)
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
     }
-    mush_free(re, "pcre");
+    pcre_free(re);
+    DEL_CHECK("pcre");
     if ((first && found) || per) {
       goto exit_sequence;
     }

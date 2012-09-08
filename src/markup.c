@@ -1057,9 +1057,11 @@ valid_angle_triple(const char *s, int len, char *rgbs)
 
 /* Look for a / or end of string */
 static const char *
-find_end_of_color(const char *s)
+find_end_of_color(const char *s, bool angle)
 {
-  while (*s && *s != '/' && *s != TAG_END && *s != '!' && !isspace((unsigned char) *s))
+  while (*s && *s != '/' && *s != TAG_END && *s != '!' && (angle ? *s != '>' : !isspace((unsigned char) *s)))
+    s += 1;
+  if (angle && *s && *s == '>')
     s += 1;
   return s;
 }
@@ -1092,7 +1094,7 @@ define_ansi_data(ansi_data *store, const char *str)
       case '+':
         /* Color names. */
         name = str + 1;
-        str = find_end_of_color(str);
+        str = find_end_of_color(str, 0);
         len = str - name;
         /* len will always be less than BUFFER_LEN */
         memcpy(buff, name, len);
@@ -1114,7 +1116,7 @@ define_ansi_data(ansi_data *store, const char *str)
         /* Hex colors. */
         str += 1;
         name = str;
-        str = find_end_of_color(str);
+        str = find_end_of_color(str, 0);
         len = str - name;
         memcpy(buff, name, len);
         buff[len] = '\0';
@@ -1131,7 +1133,7 @@ define_ansi_data(ansi_data *store, const char *str)
           char rgbs[7];
 
           name = str;
-          str = find_end_of_color(str);
+          str = find_end_of_color(str, 1);
           len = str - name;
           if (valid_angle_hex(name, len)) {
             /* < #RRGGBB > */
@@ -1150,7 +1152,7 @@ define_ansi_data(ansi_data *store, const char *str)
         if (*(str + 1) && (*(str + 1) == 'X' || *(str + 1) == 'x')) {
           /* 0xRRGGBB, 0xRGB and 0xN where N is a base 16 xterm color id */
           name = str + 2;
-          str = find_end_of_color(str);
+          str = find_end_of_color(str, 0);
           len = str - name;
           memcpy(buff, name, len);
           buff[len] = '\0';
@@ -1199,7 +1201,7 @@ define_ansi_data(ansi_data *store, const char *str)
       case '8':
       case '9':
         name = str;
-        str = find_end_of_color(str);
+        str = find_end_of_color(str, 0);
         len = str - name;
         memcpy(buff, name, len);
         buff[len] = '\0';

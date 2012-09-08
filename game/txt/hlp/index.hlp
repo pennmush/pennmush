@@ -631,8 +631,8 @@ For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- prompt_newlines           pueblo                    pueblo features          
- pueblo()                  pueblo_send power         puppet                   
+ prompt_newlines           pueblo                    pueblo()                 
+ pueblo_send power         pueblo2                   puppet                   
  puppets                   puppets2                  queue                    
  queue power               quiet                     quit                     
  quota()                   quotas power              r()                      
@@ -760,30 +760,31 @@ For more, see Entries-37
  verbs                     verbs2                    version()                
  v-function                visible()                 visual                   
  vmag()                    vmax()                    vmin()                   
- vmul()                    vrml                      vsub()                   
- vunit()                   walkthrough               warn_on_missing          
- warnings                  warnings list             warnings list2           
- where()                   whisper                   who                      
- who2                      width()                   wildcards                
- wildgrep()                wildgrepi()               wipe()                   
- with                      wizard                    wordpos()                
- words()                   wrap()                    xattr()                  
- xattrp()                  xcon()                    xexits()                 
- xget()                    xmwho()                   xmwhoid()                
- xor()                     xplayers()                xterm256                 
- xthings()                 xvcon()                   xvexits()                
- xvplayers()               xvthings()                xwho()                   
+ vmul()                    vrml                      vrml_url                 
+ vsub()                    vunit()                   walkthrough              
+ warn_on_missing           warnings                  warnings list            
+ warnings list2            where()                   whisper                  
+ who                       who2                      width()                  
+ wildcards                 wildgrep()                wildgrepi()              
+ wipe()                    with                      wizard                   
+ wordpos()                 words()                   wrap()                   
+ xattr()                   xattrp()                  xcon()                   
+ xexits()                  xget()                    xmwho()                  
+ xmwhoid()                 xor()                     xplayers()               
+ xterm256                  xthings()                 xvcon()                  
+ xvexits()                 xvplayers()               xvthings()               
 
 For more, see Entries-38
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-38
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- xwhoid()                  z_tel                     zemit()                  
- zfun()                    zmo                       zmp                      
- zmr                       zmt                       zmwho()                  
- zone                      zone master objects       zone master rooms        
- zone masters              zone objects              zone()                   
- zones                     zones2                    zwho()                   
+ xwho()                    xwhoid()                  z_tel                    
+ zemit()                   zfun()                    zmo                      
+ zmp                       zmr                       zmt                      
+ zmwho()                   zone                      zone master objects      
+ zone master rooms         zone masters              zone objects             
+ zone()                    zones                     zones2                   
+ zwho()                                                                       
 
 & &Entries
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

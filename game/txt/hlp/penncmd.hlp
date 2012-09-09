@@ -415,16 +415,6 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   For other types of object, @alias has no special meaning.
 
 See also: @name, alias(), fullalias()
-& @allquota
-  @allquota[/quiet] [<limit>]
-
-  This is a God-only command which is only available if the use_quota @config
-  option is true. If /quiet is not given, it displays a list of all players,
-  showing how many objects they own and how many more they can create. If a
-  <limit> is given, every players quota is altered either to <limit> or to
-  the number of objects they currently own, whichever is higher.
-  
-See also: @quota, @squota
 & @move
 & @omove
 & @oxmove
@@ -3181,14 +3171,37 @@ See also: @wait, @halt, @notify, @drain, SEMAPHORES
 
 See also: @dbck
 & @quota
-  @quota [/<switch>] [<victim>]
+& @squota
+& @allquota
+  @quota [<player>]
+  @squota <player>=[+|-]<amount>
+  @allquota[/quiet] [<limit>]
 
-  This command is only available if the quota system is enabled.
-  It reports the victim's owned objects and the maximum number of objects 
-  s/he may own. You must be a Wizard to see another player's quota.
-
-  The /set and /all switches are equivalent to @squota and @allquota,
+  These commands are only meaningful if the Quota system is enabled (check
+  the use_quota @config option).
+  
+  @quota shows the current quota for <player>, or for the executor if no
+  <player> is given. You must control <player>, or have either the See_All
+  or Quotas @power.
+  
+  @squota is a Wizard-only command which adjusts the quota of <player>. If
+  <amount> is prefixed by + or -, their current quota will be incremented or
+  decremented by <amount>, respectively. Otherwise, their total quota is set
+  to <amount>.
+  
+  @allquota can only be used by God. With no <limit> argument, it reports the
+  quotas of all players. If a <limit> is given, the quotas of all players is
+  reset to <limit>. The /quiet switch stops @allquota reporting the current
+  quotas before changing them.
+  
+  Players always have enough quota for the objects they currently own; if you
+  attempt to set their quota to a lower number (with @squota or @allquota),
+  it will be set to the number of objects they own instead.
+  
+  @quota/set and @quota/all are equivilent to @squota and @allquota,
   respectively.
+
+See also: QUOTAS, Quotas Power, No_Quota Power
 & @readcache
   @readcache
   
@@ -3678,14 +3691,6 @@ See also: sql(), sqlescape(), mapsql(), @sql
     > @sql SHOW TABLES
 
 See also: sql(), sqlescape(), mapsql(), @mapsql
-& @squota
-  @squota <victim> [= [+|-] <amount>]
-
-  This is a wizard level command that is only available if the quota
-  system is enabled.  It reports the victim's owned objects, and sets
-  the maximum number of objects s/he may own to <amount>. If no limit is
-  specified, this shows current quota, and reminds you to set one.
-  Using + or - you can add <amount> to the limit, or subtract it.
 & @startup
   @startup <object>[=<action list>]
 

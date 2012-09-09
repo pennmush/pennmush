@@ -635,25 +635,25 @@ For more, see Entries-31
  pueblo_send power         pueblo2                   puppet                   
  puppets                   puppets2                  queue                    
  queue power               quiet                     quit                     
- quota()                   quotas power              r()                      
- rand()                    randword()                read                     
- recv()                    regedit()                 regeditall()             
- regeditalli()             regediti()                regexp                   
- regexp classes            regexp classes2           regexp examples          
- regexp syntax             regexp syntax2            regexp syntax3           
- regexp syntax4            regexp syntax5            regexp syntax6           
- regexp syntax7            regexp syntax8            regexps                  
- regexps2                  registers                 registers()              
- registers2                reglattr()                reglattrp()              
- regmatch()                regmatch2                 regmatchi()              
- regnattr()                regnattrp()               regrab()                 
+ quota()                   quotas                    quotas power             
+ r()                       rand()                    randword()               
+ read                      recv()                    regedit()                
+ regeditall()              regeditalli()             regediti()               
+ regexp                    regexp classes            regexp classes2          
+ regexp examples           regexp syntax             regexp syntax2           
+ regexp syntax3            regexp syntax4            regexp syntax5           
+ regexp syntax6            regexp syntax7            regexp syntax8           
+ regexps                   regexps2                  registers                
+ registers()               registers2                reglattr()               
+ reglattrp()               regmatch()                regmatch2                
+ regmatchi()               regnattr()                regnattrp()              
 
 For more, see Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- regraball()               regraballi()              regrabi()                
- regrep()                  regrepi()                                          
+ regrab()                  regraball()               regraballi()             
+ regrabi()                 regrep()                  regrepi()                
  regular expression functions                        regxattr()               
  regxattrp()               remainder()               remit()                  
  remove()                  render()                  repeat()                 

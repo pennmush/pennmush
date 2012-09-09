@@ -189,7 +189,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
 
   /* determine the victim */
   if (!arg1 || !*arg1 || !strcmp(arg1, "me"))
-    who = player;
+    who = Owner(player);
   else {
     who = lookup_player(arg1);
     if (who == NOTHING) {
@@ -203,7 +203,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     notify(player, T("Only wizards may change a quota."));
     return;
   }
-  if (!Do_Quotas(player) && !See_All(player) && (player != who)) {
+  if (!Do_Quotas(player) && !See_All(player) && !controls(player, who)) {
     notify(player, T("You can't look at someone else's quota."));
     return;
   }

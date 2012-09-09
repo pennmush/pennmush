@@ -1071,7 +1071,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     tosend = tbuf;
     if (!IsPlayer(executor) && Nospoof(good[i])) {
       if (nsbuf == NULL) {
-        nsbuf = mush_malloc(BUFFER_LEN, "page buffer");
+        nsbuf = mush_malloc(BUFFER_LEN, "page_buff");
         snprintf(nsbuf, BUFFER_LEN, "[#%d] %s", executor, tbuf);
       }
       tosend = nsbuf;

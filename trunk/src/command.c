@@ -298,7 +298,7 @@ COMLIST commands[] = {
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@TELEPORT", "SILENT INSIDE", cmd_teleport,
+  {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@TRIGGER", NULL, cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},

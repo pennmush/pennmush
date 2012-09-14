@@ -1479,8 +1479,8 @@ See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
-  This command discards commands waiting on a semaphore without
-  executing them.
+  This command discards commands waiting on a semaphore without executing 
+  them. (For non-semaphore queues, use @halt or @halt/pid.)
 
   If the /any switch is given, then all semaphores associated with
   <object> are @drained.  Otherwise, only the specified semaphore
@@ -1494,7 +1494,7 @@ See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-See also: SEMAPHORES, @wait, @notify
+See also: SEMAPHORES, @wait, @notify, @halt
 & @dump
   @dump
   @dump[/paranoid|/debug] [<check interval>]

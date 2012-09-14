@@ -57,16 +57,17 @@ See also: MUSHCODE
     defined via the @function command.
 
 & Attribute functions
-  The primary purpose of these functions is to access or alter information
-  stored in attributes on objects.
+  These functions can access or alter information stored in attributes on
+  objects.
 
   aposs()        attrib_set()   default()      edefault()     eval()
   flags()        get()          grep()         grepi()        hasattr()
-  hasattrp()     hasattrval()   lattr()        lflags()       nattr()
-  obj()          pfun()         poss()         reglattr()     regrep()       
-  regrepi()      regxattr()     set()          subj()         udefault()     
-  ufun()         ulambda()      uldefault()    ulocal()       v()            
-  wildgrep()     wildgrepi()    xattr()        xget()         zfun()
+  hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
+  nattr()        obj()          pfun()         poss()         reglattr()
+  regrep()       regrepi()      regxattr()     set()          subj()
+  udefault()     ufun()         ulambda()      uldefault()    ulocal()
+  v()            wildgrep()     wildgrepi()    xattr()        xget()
+  zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions

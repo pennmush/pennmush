@@ -709,7 +709,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
   const unsigned char *scan, *good;
   dbref lookup;
 
-  if (!ok_name(name, 0) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
+  if (!ok_name(name, 0) || strlen(name) > (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
   good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");

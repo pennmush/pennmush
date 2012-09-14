@@ -429,9 +429,8 @@ float_precision 6
 log_wipe_passwd zap!
 
 # The maximum length of player names. Lowering this won't change
-# current player names. This number should be one greater than the
-# actual maximum length you want.
-player_name_len 16
+# current player names.
+player_name_len 15
 
 # The maximum number of aliases a player may have simultaneously.
 # Setting this to 0 disables aliases. To allow an unlimited number

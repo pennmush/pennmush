@@ -192,9 +192,12 @@ extern dbref do_pcreate
 extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);
+#define TEL_DEFAULT 0
+#define TEL_SILENT  1
+#define TEL_INSIDE  2
+#define TEL_LIST    4
 extern void do_teleport
-  (dbref player, const char *arg1, const char *arg2, int silent, int inside,
-   NEW_PE_INFO *pe_info);
+  (dbref player, const char *arg1, const char *arg2, int flags, NEW_PE_INFO *pe_info);
 extern void do_force(dbref player, dbref caller, const char *what,
                      char *command, int queue_type, MQUE *queue_entry);
 extern void do_stats(dbref player, const char *name);

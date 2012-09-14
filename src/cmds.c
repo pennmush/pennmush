@@ -1358,11 +1358,22 @@ COMMAND(cmd_squota)
 
 COMMAND(cmd_teleport)
 {
-  if (rhs_present && !*arg_right)
-    notify(executor, T("You can't teleport to nothing!"));
-  else
-    do_teleport(executor, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)),
-                (SW_ISSET(sw, SWITCH_INSIDE)), queue_entry->pe_info);
+  int flags = TEL_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_SILENT))
+    flags |= TEL_SILENT;
+  if (SW_ISSET(sw, SWITCH_INSIDE))
+    flags |= TEL_INSIDE;
+  if (SW_ISSET(sw, SWITCH_LIST))
+    flags |= TEL_LIST;
+
+  if (rhs_present) {
+    if (!*arg_right)
+      notify(executor, T("You can't teleport to nothing!"));
+    else
+      do_teleport(executor, arg_left, arg_right, flags, queue_entry->pe_info);
+  } else {
+    do_teleport(executor, NULL, arg_left, flags, queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_include)

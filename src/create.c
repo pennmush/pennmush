@@ -495,7 +495,7 @@ do_dig(dbref player, const char *name, char **argv, int tport,
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
       sprintf(roomstr, "#%d", room);
-      do_teleport(player, "me", roomstr, 0, 0, pe_info);        /* if flag, move the player */
+      do_teleport(player, "me", roomstr, TEL_DEFAULT, pe_info);        /* if flag, move the player */
     }
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;

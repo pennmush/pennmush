@@ -97,26 +97,9 @@ static int raw_search(dbref player, struct search_spec *spec,
 static void init_search_spec(struct search_spec *spec);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
-static void
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
-                uint32_t cant);
+static void sitelock_player(dbref player, const char *name, dbref who,
+                            uint32_t can, uint32_t cant);
+static void do_teleport_one(dbref player, const char *what, dbref destination, int flags, NEW_PE_INFO *pe_info);
 
 
 #ifdef INFO_SLAVE
@@ -369,39 +352,73 @@ tport_control_ok(dbref player, dbref victim, dbref loc)
   return 0;
 }
 
-/** Teleport something somewhere.
- * \verbatim
- * This implements @tel.
- * \endverbatim
+/** Main interface for \@teleport and tel().
  * \param player the enactor.
- * \param arg1 the object to teleport (or location if no object given)
- * \param arg2 the location to teleport to.
- * \param silent if 1, don't trigger teleport messagse.
- * \param inside if 1, always \@tel to inventory, even of a player
+ * \param what the object to teleport
+ * \param where the location to teleport to.
+ * \param flags Bitwise TEL_* flags
  * \param pe_info the pe_info for lock checks, etc
  */
 void
-do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
-            int inside, NEW_PE_INFO *pe_info)
+do_teleport(dbref player, const char *what, const char *where, int flags,
+            NEW_PE_INFO *pe_info)
 {
-  dbref victim;
   dbref destination;
-  dbref loc;
-  const char *to;
-  dbref absroom;                /* "absolute room", for NO_TEL check */
+  const char *list;
+  char *onename;
 
-  /* get victim, destination */
-  if (*arg2 == '\0') {
-    victim = player;
-    to = arg1;
+
+  if (!strcasecmp(where, "home")) {
+    destination = HOME;
   } else {
-    if ((victim =
-         noisy_match_result(player, arg1, NOTYPE,
-                            MAT_OBJECTS | MAT_ENGLISH)) == NOTHING) {
+    destination = match_result(player, where, NOTYPE, MAT_EVERYTHING);
+    switch (destination) {
+      case NOTHING:
+      notify(player, T("No match."));
+      return;
+    case AMBIGUOUS:
+      notify(player, T("I don't know which destination you mean!"));
       return;
     }
-    to = arg2;
   }
+
+  if ((flags & TEL_LIST) && what && *what) {
+    list = what;
+    while (list && *list) {
+      onename = next_in_list(&list);
+      do_teleport_one(player, onename, destination, flags, pe_info);
+    }
+  } else {
+    do_teleport_one(player, what, destination, flags, pe_info);
+  }
+}
+
+/** Teleport something somewhere.
+ * \verbatim
+ * This function actually teleports one object to its new destination.
+ * \endverbatim
+ * \param player the enactor.
+ * \param what the object to teleport
+ * \param where the location to teleport to.
+ * \param flags Bitwise TEL_* flags
+ * \param pe_info the pe_info for lock checks, etc
+ */
+static void
+do_teleport_one(dbref player, const char *what, dbref destination, int flags, NEW_PE_INFO *pe_info)
+{
+  dbref victim;
+  dbref absroom;
+  dbref loc;
+  bool silent = (flags & TEL_SILENT);
+  bool inside = (flags & TEL_INSIDE);
+
+  if (!what || !*what)
+    victim = player;
+  else
+    victim = noisy_match_result(player, what, NOTYPE, MAT_OBJECTS | MAT_ENGLISH);
+
+  if (!GoodObject(victim))
+    return;
 
   if (IsRoom(victim)) {
     notify(player, T("You can't teleport rooms."));
@@ -411,12 +428,11 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
     notify(player, T("Garbage belongs in the garbage dump."));
     return;
   }
-  /* get destination */
 
-  if (!strcasecmp(to, "home")) {
-    /* If the object is @tel'ing itself home, treat it the way we'd
-     * treat a 'home' command
-     */
+  if (!RealGoodObject(destination) && destination != HOME)
+    return;
+
+  if (destination == HOME) {
     if (player == victim) {
       if (command_check_byname(victim, "HOME", NULL))
         safe_tel(victim, HOME, silent, player, "teleport");
@@ -424,206 +440,188 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
     } else {
       destination = Home(victim);
     }
-  } else {
-    destination = match_result(player, to, NOTYPE, MAT_EVERYTHING);
   }
 
-  switch (destination) {
-  case NOTHING:
-    notify(player, T("No match."));
-    break;
-  case AMBIGUOUS:
-    notify(player, T("I don't know which destination you mean!"));
-    break;
-  case HOME:
-    destination = Home(victim);
-    /* FALL THROUGH */
-  default:
-    /* check victim, destination types, teleport if ok */
-    if (!GoodObject(destination) || IsGarbage(destination)) {
-      notify(player, T("Bad destination."));
+  if (recursive_member(destination, victim, 0)
+      || (victim == destination)) {
+    notify(player, T("Bad destination."));
+    return;
+  }
+  if (!Tel_Anywhere(player) && IsPlayer(victim) && IsPlayer(destination)) {
+    notify(player, T("Bad destination."));
+    return;
+  }
+  if (IsExit(victim)) {
+    /* Teleporting an exit means moving its source */
+    if (!IsRoom(destination)) {
+      notify(player, T("Exits can only be teleported to other rooms."));
       return;
     }
-    if (recursive_member(destination, victim, 0)
-        || (victim == destination)) {
-      notify(player, T("Bad destination."));
+    if (Going(destination)) {
+      notify(player,
+             T("You can't move an exit to someplace that's crumbling."));
       return;
     }
-    if (!Tel_Anywhere(player) && IsPlayer(victim) && IsPlayer(destination)) {
-      notify(player, T("Bad destination."));
-      return;
-    }
-    if (IsExit(victim)) {
-      /* Teleporting an exit means moving its source */
-      if (!IsRoom(destination)) {
-        notify(player, T("Exits can only be teleported to other rooms."));
-        return;
-      }
-      if (Going(destination)) {
-        notify(player,
-               T("You can't move an exit to someplace that's crumbling."));
-        return;
-      }
-      if (!GoodObject(Home(victim)))
-        loc = find_entrance(victim);
-      else
-        loc = Home(victim);
-      /* Unlike normal teleport, you must control the destination
-       * or have the open_anywhere power
-       */
-      if (!tport_control_ok(player, victim, loc) ||
-          !can_open_from(player, destination, pe_info)) {
-        notify(player, T("Permission denied."));
-        return;
-      }
-      /* Remove it from its old room */
-      Exits(loc) = remove_first(Exits(loc), victim);
-      /* Put it into its new room */
-      Source(victim) = destination;
-      PUSH(victim, Exits(destination));
-      if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
-        notify(player, T("Teleported."));
-      return;
-    }
-    loc = Location(victim);
-
-    /* if royal or wiz and destination is player, tel to location unless
-     * using @tel/inside
+    if (!GoodObject(Home(victim)))
+      loc = find_entrance(victim);
+    else
+      loc = Home(victim);
+    /* Unlike normal teleport, you must control the destination
+     * or have the open_anywhere power
      */
-    if (IsPlayer(destination) && Tel_Anywhere(player) && IsPlayer(victim)
-        && !inside) {
-      if (!silent && loc != Location(destination))
-        did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                    player, NOTHING, NA_INTER_HEAR);
-      safe_tel(victim, Location(destination), silent, player, "teleport");
-      if (!silent && loc != Location(destination))
-        did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                    Location(destination), player, loc, NA_INTER_HEAR);
+    if (!tport_control_ok(player, victim, loc) ||
+        !can_open_from(player, destination, pe_info)) {
+      notify(player, T("Permission denied."));
       return;
     }
-    /* check needed for NOTHING. Especially important for unlinked exits */
-    if ((absroom = Location(victim)) == NOTHING) {
-      notify(victim, T("You're in the Void. This is not a good thing."));
-      /* At this point, they're in a bad location, so let's check
-       * if home is valid before sending them there. */
-      if (!GoodObject(Home(victim)))
+    /* Remove it from its old room */
+    Exits(loc) = remove_first(Exits(loc), victim);
+    /* Put it into its new room */
+    Source(victim) = destination;
+    PUSH(victim, Exits(destination));
+    if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
+      notify(player, T("Teleported."));
+    return;
+  }
+  loc = Location(victim);
+
+  /* if royal or wiz and destination is player, tel to location unless
+   * using @tel/inside
+   */
+  if (IsPlayer(destination) && Tel_Anywhere(player) && IsPlayer(victim)
+      && !inside) {
+    if (!silent && loc != Location(destination))
+      did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
+                  player, NOTHING, NA_INTER_HEAR);
+    safe_tel(victim, Location(destination), silent, player, "teleport");
+    if (!silent && loc != Location(destination))
+      did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
+                  Location(destination), player, loc, NA_INTER_HEAR);
+    return;
+  }
+  /* check needed for NOTHING. Especially important for unlinked exits */
+  if ((absroom = Location(victim)) == NOTHING) {
+    notify(victim, T("You're in the Void. This is not a good thing."));
+    /* At this point, they're in a bad location, so let's check
+     * if home is valid before sending them there. */
+    if (!GoodObject(Home(victim)))
+      Home(victim) = PLAYER_START;
+    do_move(victim, "home", MOVE_NORMAL, pe_info);
+    return;
+  } else {
+    /* valid location, perform other checks */
+
+    /* if player is inside himself, send him home */
+    if (absroom == victim) {
+      notify(player, T("What are you doing inside of yourself?"));
+      if (Home(victim) == absroom)
         Home(victim) = PLAYER_START;
       do_move(victim, "home", MOVE_NORMAL, pe_info);
       return;
-    } else {
-      /* valid location, perform other checks */
+    }
+    /* find the "absolute" room */
+    absroom = absolute_room(victim);
 
-      /* if player is inside himself, send him home */
-      if (absroom == victim) {
-        notify(player, T("What are you doing inside of yourself?"));
-        if (Home(victim) == absroom)
-          Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL, pe_info);
-        return;
-      }
-      /* find the "absolute" room */
-      absroom = absolute_room(victim);
+    if (absroom == NOTHING) {
+      notify(victim, T("You're in the void - sending you home."));
+      if (Home(victim) == Location(victim))
+        Home(victim) = PLAYER_START;
+      do_move(victim, "home", MOVE_NORMAL, pe_info);
+      return;
+    }
+    /* if there are a lot of containers, send him home */
+    if (absroom == AMBIGUOUS) {
+      notify(victim, T("You're in too many containers."));
+      if (Home(victim) == Location(victim))
+        Home(victim) = PLAYER_START;
+      do_move(victim, "home", MOVE_NORMAL, pe_info);
+      return;
+    }
+    /* note that we check the NO_TEL status of the victim rather
+     * than the player that issued the command. This prevents someone
+     * in a NO_TEL room from having one of his objects @tel him out.
+     * The control check, however, is detemined by command-giving
+     * player. */
 
-      if (absroom == NOTHING) {
-        notify(victim, T("You're in the void - sending you home."));
-        if (Home(victim) == Location(victim))
-          Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL, pe_info);
-        return;
-      }
-      /* if there are a lot of containers, send him home */
-      if (absroom == AMBIGUOUS) {
-        notify(victim, T("You're in too many containers."));
-        if (Home(victim) == Location(victim))
-          Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL, pe_info);
-        return;
-      }
-      /* note that we check the NO_TEL status of the victim rather
-       * than the player that issued the command. This prevents someone
-       * in a NO_TEL room from having one of his objects @tel him out.
-       * The control check, however, is detemined by command-giving
-       * player. */
-
-      /* now check to see if the absolute room is set NO_TEL */
-      if (NoTel(absroom) && !controls(player, absroom)
-          && !Tel_Anywhere(player)) {
-        notify(player, T("Teleports are not allowed in this room."));
-        return;
-      }
-
-      /* Check leave lock on room, if necessary */
-      if (!controls(player, absroom) && !Tel_Anywhere(player) &&
-          !eval_lock_with(player, absroom, Leave_Lock, pe_info)) {
-        fail_lock(player, absroom, Leave_Lock,
-                  T("Teleports are not allowed in this room."), NOTHING);
-        return;
-      }
-
-      /* Now check the Z_TEL status of the victim's room.
-       * Just like NO_TEL above, except that if the room (or its
-       * Zone Master Room, if any) is Z_TEL,
-       * the destination must also be a room in the same zone
-       */
-      if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
-          && !controls(player, absroom) && !Tel_Anywhere(player)
-          && (Zone(absroom) != Zone(destination))) {
-        notify(player,
-               T("You may not teleport out of the zone from this room."));
-        return;
-      }
+    /* now check to see if the absolute room is set NO_TEL */
+    if (NoTel(absroom) && !controls(player, absroom)
+        && !Tel_Anywhere(player)) {
+      notify(player, T("Teleports are not allowed in this room."));
+      return;
     }
 
-    if (!IsExit(destination)) {
-      if (tport_control_ok(player, victim, Location(victim)) &&
-          tport_dest_ok(player, victim, destination, pe_info)
-          && (Tel_Anything(player) ||
-              (Tel_Anywhere(player) && (player == victim)) ||
-              (destination == Owner(victim)) ||
-              (!Fixed(Owner(victim)) && !Fixed(player)))) {
-        if (!silent && loc != destination)
-          did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                      player, NOTHING, NA_INTER_HEAR);
-        safe_tel(victim, destination, silent, player, "teleport");
-        if (!silent && loc != destination)
-          did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                      destination, player, loc, NA_INTER_HEAR);
-        if ((victim != player) && !(Puppet(victim) &&
-                                    (Owner(victim) == Owner(player)))) {
-          if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
-            notify(player, T("Teleported."));
-        }
-        return;
-      }
-      /* we can't do it */
-      fail_lock(player, destination, Enter_Lock, T("Permission denied."),
-                Location(player));
+    /* Check leave lock on room, if necessary */
+    if (!controls(player, absroom) && !Tel_Anywhere(player) &&
+        !eval_lock_with(player, absroom, Leave_Lock, pe_info)) {
+      fail_lock(player, absroom, Leave_Lock,
+                T("Teleports are not allowed in this room."), NOTHING);
       return;
-    } else {
-      /* attempted teleport to an exit */
-      if (!tport_control_ok(player, victim, Location(victim))) {
-        notify(player, T("Permission denied."));
-        if (victim != player)
-          notify_format(victim,
-                        T("%s tries to impose his will on you and fails."),
-                        Name(player));
-        return;
-      }
-      if (Fixed(Owner(victim)) || Fixed(player)) {
-        notify(player, T("Permission denied."));
-        return;
-      }
-      if (!Tel_Anywhere(player) && !controls(player, destination) &&
-          !nearby(player, destination) && !nearby(victim, destination)) {
-        notify(player, T("Permission denied."));
-        return;
-      } else {
-        char absdest[SBUF_LEN];
-        strcpy(absdest, tprintf("#%d", destination));
-        do_move(victim, absdest, MOVE_TELEPORT, pe_info);
-      }
+    }
+
+    /* Now check the Z_TEL status of the victim's room.
+     * Just like NO_TEL above, except that if the room (or its
+     * Zone Master Room, if any) is Z_TEL,
+     * the destination must also be a room in the same zone
+     */
+    if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
+        && !controls(player, absroom) && !Tel_Anywhere(player)
+        && (Zone(absroom) != Zone(destination))) {
+      notify(player,
+             T("You may not teleport out of the zone from this room."));
+      return;
     }
   }
+
+  if (!IsExit(destination)) {
+    if (tport_control_ok(player, victim, Location(victim)) &&
+        tport_dest_ok(player, victim, destination, pe_info)
+        && (Tel_Anything(player) ||
+            (Tel_Anywhere(player) && (player == victim)) ||
+            (destination == Owner(victim)) ||
+            (!Fixed(Owner(victim)) && !Fixed(player)))) {
+      if (!silent && loc != destination)
+        did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
+                    player, NOTHING, NA_INTER_HEAR);
+      safe_tel(victim, destination, silent, player, "teleport");
+      if (!silent && loc != destination)
+        did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
+                    destination, player, loc, NA_INTER_HEAR);
+      if ((victim != player) && !(Puppet(victim) &&
+                                  (Owner(victim) == Owner(player)))) {
+        if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
+          notify(player, T("Teleported."));
+      }
+      return;
+    }
+    /* we can't do it */
+    fail_lock(player, destination, Enter_Lock, T("Permission denied."),
+              Location(player));
+    return;
+  } else {
+    /* attempted teleport to an exit */
+    if (!tport_control_ok(player, victim, Location(victim))) {
+      notify(player, T("Permission denied."));
+      if (victim != player)
+        notify_format(victim,
+                      T("%s tries to impose his will on you and fails."),
+                      Name(player));
+      return;
+    }
+    if (Fixed(Owner(victim)) || Fixed(player)) {
+      notify(player, T("Permission denied."));
+      return;
+    }
+    if (!Tel_Anywhere(player) && !controls(player, destination) &&
+        !nearby(player, destination) && !nearby(victim, destination)) {
+      notify(player, T("Permission denied."));
+      return;
+    } else {
+      char absdest[SBUF_LEN];
+      strcpy(absdest, tprintf("#%d", destination));
+      do_move(victim, absdest, MOVE_TELEPORT, pe_info);
+    }
+  }
+
 }
 
 /** Force an object to run a command.

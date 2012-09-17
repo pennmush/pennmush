@@ -20,6 +20,9 @@ Major changes:
    name, instead of the maximum length+1, because doing it that way was
    rather silly. You may wish to lower yours by 1 now to compensate.
    Suggested by Mercutio. [MG]
+ * Having unescaped commas in the final arg of a function call is now
+   deprecated, and will eventually become illegal. Any existing code which
+   does this will spam you with a warning until you change it. [MG]
 
 Commands:
  * @dolist now accepts /inline and related switches, like @switch does.

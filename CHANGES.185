@@ -36,6 +36,8 @@ Functions:
  * The "player" field in pidinfo() has been renamed for "executor", for
    clarity. "player" still works for backwards compatability. From a request
    by tsen. [MG]
+ * stringsecs() can now handle the additional time periods that etime() can 
+   return (years, weeks). [MG]
  
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

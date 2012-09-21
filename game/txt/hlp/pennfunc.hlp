@@ -5967,7 +5967,7 @@ Continued in HELP TIMEZONES13
     1m  1s
   >
 
-See also: etimefmt(), timestring()
+See also: etimefmt(), timestring(), stringsecs()
 & ETIMEFMT()
   etimefmt(<format>, <secs>)
 
@@ -6070,13 +6070,16 @@ See also: stringsecs(), convsecs(), etime(), etimefmt()
   stringsecs(<timestring>)
 
   The stringsecs() function takes a string of the form produced by 
-  timestring() and converts it back into seconds.
+  timestring() or etime() and converts it back into seconds.
 
   Example:
     > say stringsecs(5m 1s)
     You say, "301"
+    
+    > say stringsecs(3y 2m 7d 5h 23m)
+    You say, "95232300"
 
-See also: timestring(), etimefmt(), convtime()
+See also: timestring(), etimefmt(), convtime(), etime()
 & TR()
   tr(<string>, <find>, <replace>)
 

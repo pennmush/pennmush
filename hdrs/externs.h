@@ -353,7 +353,7 @@ dbref do_clone(dbref player, char *name, char *newname, int preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */
-int etime_to_secs(char *str1, int *secs);
+int etime_to_secs(char *input, int *secs);
 
 /* From game.c */
 void report(void);

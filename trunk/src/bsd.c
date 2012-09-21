@@ -180,6 +180,8 @@ static char poll_msg[DOING_LEN] = { '\0' };
 char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
 char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
+char *etime_fmt(char *, time_t, int);
+
 /** Is this descriptor connected to a telnet-compatible terminal? */
 #define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
 /** Is it possible this descriptor may be telnet-compatible? */
@@ -4218,133 +4220,6 @@ do_who_session(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
-}
-
-enum {
-  SECS_MINUTE = 60,
-  SECS_HOUR = 3600,
-  SECS_DAY = 86400,
-  SECS_WEEK = 604800,
-  SECS_YEAR = 31536000
-};
-
-static char *
-squish_time(char *buf, int len)
-{
-  char *c;
-  int slen;
-
-  /* Eat any leading whitespace */
-  while (*buf == ' ')
-    buf += 1;
-
-  /* Eat up all leading 0 entries.
-   *  0y 5d -> 5d
-   */
-  while (*buf == '0') {
-    c = strchr(buf, ' ');
-    if (c) {
-      while (*c == ' ')
-        c += 1;
-      buf = c;
-    } else
-      break;
-  }
-
-  /* Eat any intermediate 0 entries unless it's the only one.
-   * 1d 0h 40m -> 1d 40m
-   * 1d 0h -> 1d
-   * 0s -> 0s
-   */
-  c = buf;
-  do {
-    char *saved;
-
-    saved = c = strchr(c, ' ');
-    if (!c)
-      break;
-
-    while (*c == ' ')
-      c += 1;
-
-    if (*c == '0') {
-      char *n = strchr(c, ' ');
-      if (n) {
-        int nlen = strlen(n) + 1;
-        memmove(saved, n, nlen);
-        c = saved;
-      } else {
-        *saved = '\0';
-        break;
-      }
-    }
-  } while (1);
-
-  /* If the string is too long, drop trailing entries and resulting
-     whitespace until it fits. */
-  for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
-    c = strrchr(buf, ' ');
-    if (c) {
-      while (c > buf && *c == ' ') {
-        *c = '\0';
-        c -= 1;
-      }
-    } else
-      break;
-  }
-
-  return buf;
-}
-
-/** Format the time the player has been on for for WHO/DOING/ETC,
- * fitting as much as possible into a given length, dropping least
- * significant numbers as needed.
- *
- * \param buf buffer to use to fill.
- * \param secs the number of seconds to format
- * \param len the length of the field to fill.
- * \return pointer to start of formatted time, somewhere in buf.
- */
-char *
-etime_fmt(char *buf, int secs, int len)
-{
-  int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
-  div_t r;
-
-  if (secs >= SECS_YEAR) {
-    r = div(secs, SECS_YEAR);
-    years = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_WEEK) {
-    r = div(secs, SECS_WEEK);
-    weeks = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_DAY) {
-    r = div(secs, SECS_DAY);
-    days = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_HOUR) {
-    r = div(secs, SECS_HOUR);
-    hours = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_MINUTE) {
-    r = div(secs, SECS_MINUTE);
-    mins = r.quot;
-    secs = r.rem;
-  }
-
-  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
-          years, weeks, days, hours, mins, secs);
-
-  return squish_time(buf, len);
 }
 
 /** Format the time the player has been on for for WHO/DOING/ETC.

@@ -2998,7 +2998,7 @@ See also: @pemit, @nsprompt, prompt(), nsprompt(), PROMPT_NEWLINES
   can be used to disable the newline and is recommended for users with
   these clients.
 
-See also: @prompt, prompt(), terminfo()
+See also: @prompt, prompt(), terminfo(), @sockset
 & @pemit
   @pemit[/<switches>] <object>=<message>
   @pemit/list[/<switches>] <object list>=<message>
@@ -3592,21 +3592,23 @@ Continued in 'help @sitelock3'
   no default.
 
   Options:
-    colorstyle:   See help colorstyle
-    outputprefix: Same as OUTPUTPREFIX
-    outputsuffix: Same as OUTPUTSUFFIX
-    pueblo:       Sets Pueblo-related options. If value has md5=...", then it
-                  will set the pueblo checksum. If empty, Pueblo mode is 
-                  turned off.
-    telnet:       Yes or no, to enable/disable telnet negotiation
-    width:        Set your width(), same as SCREENWIDTH
-    height:       Set your height(), same as SCREENHEIGHT
-    terminaltype: Your terminal type, used by terminfo()
+    colorstyle:      See 'help colorstyle'
+    outputprefix:    Same as OUTPUTPREFIX
+    outputsuffix:    Same as OUTPUTSUFFIX
+    pueblo:          Sets Pueblo-related options. If value has md5=...", then
+                     it will set the pueblo checksum. If empty, Pueblo mode
+                     is turned off.
+    telnet:          Yes or no, to enable/disable telnet negotiation
+    width:           Set your width(), same as SCREENWIDTH
+    height:          Set your height(), same as SCREENHEIGHT
+    terminaltype:    Your terminal type, used by terminfo()
+    prompt_newlines: Set whether a newline is shown after prompts from
+                     @prompt, same as PROMPT_NEWLINES
 
   Note that changing 'telnet' or 'pueblo' may stop your client from parsing
   or displaying output correctly; only use if you know what you're doing!
   
-See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle
+See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle, @prompt
 & COLORSTYLE
   SOCKSET colorstyle=<value>
 

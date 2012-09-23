@@ -29,6 +29,7 @@ Commands:
    Suggested by Reaver. [MG]
  * @teleport/list teleports a list of objects to a single destination.
    Suggested by Nyssa, [MUX]. [MG]
+ * @sockset and SOCKSET can now show/set PROMPT_NEWLINES. [MG]
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list

@@ -3404,9 +3404,12 @@ sockset_show(DESC *d)
     strcpy(colorstyle, "plain");
 
   if (d->conn_flags & CONN_COLORSTYLE)
-    safe_format(buff, &bp, "%-15s:  %s", "Color Style", colorstyle);
+    safe_format(buff, &bp, "%-15s:  %s\n", "Color Style", colorstyle);
   else
-    safe_format(buff, &bp, "%-15s:  auto (%s)", "Color Style", colorstyle);
+    safe_format(buff, &bp, "%-15s:  auto (%s)\n", "Color Style", colorstyle);
+
+  safe_format(buff, &bp, "%-15s:  %s", "Prompt Newlines",
+              (d->conn_flags & CONN_PROMPT_NEWLINES ? "Yes" : "No"));
 
   *bp = '\0';
   return buff;
@@ -3535,6 +3538,17 @@ sockset(DESC *d, char *name, char *val)
     }
     return tprintf(T("Unknown color style. Valid color styles: %s"),
                    "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+  }
+
+  if (!strcasecmp(name, "PROMPT_NEWLINES")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_PROMPT_NEWLINES;
+      return T("A newline will be sent after a prompt.");
+    } else {
+      d->conn_flags &= ~CONN_PROMPT_NEWLINES;
+      return T("No newline will be sent after a prompt.");
+    }
   }
 
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),

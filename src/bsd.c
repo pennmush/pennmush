@@ -433,6 +433,7 @@ void initialize_mt(void);
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
 
+#ifndef WIN32
 static inline bool
 is_blocking_err(int code)
 {
@@ -446,6 +447,13 @@ is_blocking_err(int code)
 #endif
   return 0;
 }
+#else /* !WIN32 */
+static inline bool
+is_blocking_err(int code __attribute__(__unused__))
+{
+  return (WSAGetLastError() == WSAEWOULDBLOCK);
+}
+#endif /* !WIN32 */
 
 
 #ifndef BOOLEXP_DEBUGGING
@@ -1337,7 +1345,9 @@ new_connection(int oldsock, int *result, conn_source source)
         recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
     else {
       len = -1;
+#ifdef EWOULDBLOCK
       errno = EWOULDBLOCK;
+#endif
     }
 
     if (len < 5) {

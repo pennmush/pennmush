@@ -5,15 +5,26 @@ the list of colors in hdrs/rgb.txt is updated. */
 %define hash-function-name colorname_hash
 %define lookup-function-name colorname_lookup
 %enum
-
+%readonly-tables
 %struct-type
 %define initializer-suffix ,0
 
 
-struct color_lookup {
-       const char *name;
-       uint32_t rgb;
-};
+/*
+
+I looked into using these options to generate a global array of
+color pairs to replace the one in hdrs/rgb.h, but gperf reorders the
+list and puts lots of null entries in as needed when building its
+static hash tables. Makes things that need to scan through the entire
+list (Like colors(*foo*)) a pain, and having all the xterm colors in
+one block is handy for the mapping code, so those would have to be
+duplicated anyways. Not worth the bother.
+
+* %global-table
+* %define word-array-name allColors
+*/
+
+struct RGB_COLORMAP;
 %%
 xterm0, 0x000000
 xterm1, 0x800000

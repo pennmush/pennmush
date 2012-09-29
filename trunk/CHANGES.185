@@ -34,7 +34,7 @@ Commands:
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list
    the pids for one specific object only. Suggested by spork. [MG]
- * The "player" field in pidinfo() has been renamed for "executor", for
+ * The "player" field in pidinfo() has been renamed to "executor", for
    clarity. "player" still works for backwards compatability. From a request
    by tsen. [MG]
  * stringsecs() can now handle the additional time periods that etime() can 

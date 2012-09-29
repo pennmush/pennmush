@@ -2552,7 +2552,10 @@ process_expression(char *buff, char **bp, char const **str,
             } else {
               lca_func_name = malloc(BUFFER_LEN);
             }
-            temp_tflags = PT_PAREN | PT_NOT_COMMA;
+            if (fp->flags & FN_LITERAL)
+              temp_tflags = PT_PAREN;
+            else
+              temp_tflags = PT_PAREN | PT_NOT_COMMA;
             strcpy(lca_func_name, fp->name);
             // temp_tflags = PT_PAREN;
 /* End of r1628's deprecation */

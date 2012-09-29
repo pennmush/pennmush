@@ -24,8 +24,10 @@
 #include "mymalloc.h"
 #include "log.h"
 #include "game.h"
-#include "confmagic.h"
+#include "intmap.h"
 #include "rgb.h"
+#include "confmagic.h"
+
 
 #define ANSI_BEGIN   "\x1B["
 #define ANSI_FINISH  "m"
@@ -65,6 +67,44 @@ const char *is_allowed_tag(const char *s, unsigned int len);
 
 static ansi_data ansi_null = NULL_ANSI;
 
+struct rgb_namelist {
+  const char *name;
+  struct rgb_namelist *next;
+};
+slab *namelist_slab = NULL;
+intmap *rgb_to_name = NULL;
+
+/* Populate the RGB color to name mapping */
+static void
+build_rgb_map(void)
+{
+  int n;
+  struct rgb_namelist *node, *lst;
+
+  if (rgb_to_name)
+    return;
+  
+  rgb_to_name = im_new();
+  namelist_slab = slab_create("rgb namelist", sizeof *node);
+
+  for (n = 256; allColors[n].name; n += 1) {
+    lst = im_find(rgb_to_name, allColors[n].hex);
+    node = slab_malloc(namelist_slab, lst);
+    node->name = allColors[n].name;
+    node->next = NULL;
+    if (!lst)
+      im_insert(rgb_to_name, allColors[n].hex, node);
+    else {
+      struct rgb_namelist *car;
+      
+      for (car = lst; car->next; car = car->next) ;
+
+      car->next = node;
+    }
+  }
+}
+
+/* Name to RGB color mapping */
 #include "rgbtab.c"
 
 /* ARGSUSED */
@@ -220,20 +260,22 @@ FUNCTION(fun_colors)
         break;
       case COL_NAME:
         {
-          int j;
           uint32_t hex;
+	  struct rgb_namelist *names;
           bool shown = 0;
 
+	  if (!rgb_to_name)
+	    build_rgb_map();
+
           hex = color_to_hex(color, 0);
-          for (j = 256; allColors[j].name; j++) {
-            if (allColors[j].hex == hex) {
-              if (shown)
-                safe_chr(' ', buff, bp);
-              else
-                shown = 1;
-              safe_str(allColors[j].name, buff, bp);
-            }
-          }
+
+	  for (names = im_find(rgb_to_name, hex); names; names = names->next) {
+	    if (shown)
+	      safe_chr(' ', buff, bp);
+	    safe_str(names->name, buff, bp);
+	    shown = 1;
+	  } 
+
           if (!shown)
             safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
         }

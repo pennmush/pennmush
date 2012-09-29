@@ -2549,7 +2549,7 @@ extern StrTree object_names;
 extern PTAB ptab_command;
 extern PTAB ptab_attrib;
 extern PTAB ptab_flag;
-extern intmap *queue_map, *descs_by_fd;
+extern intmap *queue_map, *descs_by_fd, *rgb_to_name;
 #ifdef HAVE_INOTIFY
 extern intmap *watchtable;
 #endif
@@ -2588,6 +2588,8 @@ do_list_memstats(dbref player)
 #ifdef HAVE_INOTIFY
   im_stats(player, watchtable, "Inotify");
 #endif
+  if (rgb_to_name)
+    im_stats(player, rgb_to_name, "Colors");
 
 #if (COMPRESSION_TYPE >= 3) && defined(COMP_STATS)
   if (Wizard(player)) {

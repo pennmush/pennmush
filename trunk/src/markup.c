@@ -74,6 +74,9 @@ struct rgb_namelist {
 slab *namelist_slab = NULL;
 intmap *rgb_to_name = NULL;
 
+/* Name to RGB color mapping */
+#include "rgbtab.c"
+
 /* Populate the RGB color to name mapping */
 static void
 build_rgb_map(void)
@@ -103,9 +106,6 @@ build_rgb_map(void)
     }
   }
 }
-
-/* Name to RGB color mapping */
-#include "rgbtab.c"
 
 /* ARGSUSED */
 FUNCTION(fun_stripansi)
@@ -659,7 +659,7 @@ color_to_hex(char *name, int hilite)
     return strtol(name + 1, NULL, 16);
   }
   if (name[0] == '+') {
-    struct color_lookup *c;
+    const struct RGB_COLORMAP *c;
     int len = 0;
 
     name++;
@@ -674,7 +674,7 @@ color_to_hex(char *name, int hilite)
 
     c = colorname_lookup(name, len);
     if (c)
-      return c->rgb;
+      return c->hex;
 
     /* It's an invalid color. Return hot pink since we shouldn't have gotten here? */
     return ERROR_COLOR;

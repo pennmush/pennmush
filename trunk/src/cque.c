@@ -2264,7 +2264,7 @@ do_haltpid(dbref player, const char *arg1)
   }
 
   /* Instead of trying to track what queue this entry currently
-     belongs too, flag it as halted and just not execute it when its
+     belongs to, flag it as halted and just not execute it when its
      turn comes up (Or show it in @ps, etc.).  Exception is for
      semaphores, which otherwise might wait forever. */
   q->executor = NOTHING;

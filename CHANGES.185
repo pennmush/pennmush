@@ -53,6 +53,8 @@ Minor changes:
    script in utils/. [SW]
  * Converting from named colors to the nearest xterm or ansi equivalent is
    much more efficient. [SW]
+ * Converting from extended colors to ansi colors is smarter. Based on
+   work by Padraic. [SW]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

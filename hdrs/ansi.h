@@ -240,9 +240,9 @@ int safe_tag_wrap(char const *a_tag, char const *params,
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
 int valid_color_name(const char *name);
-uint32_t color_to_hex(char *name, int hilite);
-int ansi_map_16(char *name, int bg, bool *hilite);
-int ansi_map_256(uint32_t hex);
+uint32_t color_to_hex(const char *name, bool hilite);
+int ansi_map_16(const char *name, bool bg, bool *hilite);
+int ansi_map_256(const char *name, bool hilite);
 
 
 #endif                          /* __ANSI_H */

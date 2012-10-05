@@ -92,7 +92,7 @@ build_rgb_map(void)
   rgb_to_name = im_new();
   namelist_slab = slab_create("rgb namelist", sizeof *node);
 
-  for (n = 256; allColors[n].name; n += 1) {
+  for (n = 0; allColors[n].name; n += 1) {
     lst = im_find(rgb_to_name, allColors[n].hex);
     node = slab_malloc(namelist_slab, lst);
     node->name = allColors[n].name;
@@ -268,6 +268,7 @@ FUNCTION(fun_colors)
     }
 
     for (i = 0; i < 2; i++) {
+      bool hilite = 0;
       color = (i ? ad.bg : ad.fg);
       if (!*color)
         continue;
@@ -278,8 +279,10 @@ FUNCTION(fun_colors)
       case COL_HEX:
         safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
         break;
-      case COL_16:
-        safe_chr(colormap_16[ansi_map_16(color, 0) - 30].desc - (i ? 32 : 0), buff, bp);
+      case COL_16:	
+        safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc - (i ? 32 : 0), buff, bp);
+	if (hilite)
+	  safe_chr('h', buff, bp);
         break;
       case COL_256:
         safe_integer(ansi_map_256(color_to_hex(color, 0)), buff, bp);
@@ -739,14 +742,16 @@ color_to_hex(char *name, int hilite)
 /** Map a color (old-style ANSI code, color name or hex value) to the
     16-color ANSI palette */
 int
-ansi_map_16(char *name, int bg)
+ansi_map_16(char *name, int bg, bool *hilite)
 {
   int hex;
   int diff, cdiff;
   int best = 0;
   int i;
   int max;
-  struct rgb_namelist *color;
+  struct rgb_namelist *color;  
+
+  *hilite = 0;
 
   /* Shortcut: If it's a single character color code, it's using the 16 color map. */
   if (name[0] && !name[1]) {
@@ -758,10 +763,12 @@ ansi_map_16(char *name, int bg)
   /* Predefined color names have their downgrades cached */
   color = im_find(rgb_to_name, hex);
   if (color) {
+    if (color->as_ansi & 0x0100)
+      *hilite = 1;
     int offset = 30;
     if (bg)
       offset = 40;
-    return color->as_ansi + offset;
+    return (color->as_ansi & 0xFF) + offset;
   }
 
   diff = 0x0FFFFFFF;
@@ -835,6 +842,7 @@ ANSI_WRITER(ansi_16color)
 {
   int ret = 0;
   int f = 0;
+  bool hilite = 0;
 
 #define maybe_append_code(code) \
   do { \
@@ -859,14 +867,18 @@ ANSI_WRITER(ansi_16color)
       ret += safe_chr(';', buff, bp);
     else
       ret += safe_str(ANSI_BEGIN, buff, bp);
-    ret += safe_integer(ansi_map_16(cur->fg, ANSI_FG), buff, bp);
+    ret += safe_integer(ansi_map_16(cur->fg, ANSI_FG, &hilite), buff, bp);
+    if (hilite) {
+      ret += safe_chr(';', buff, bp);
+      ret += safe_integer(COL_HILITE, buff, bp);
+    }
   }
   if (cur->bg[0] && strcmp(cur->bg, old->bg)) {
     if (f++)
       ret += safe_chr(';', buff, bp);
     else
       ret += safe_str(ANSI_BEGIN, buff, bp);
-    ret += safe_integer(ansi_map_16(cur->bg, ANSI_BG), buff, bp);
+    ret += safe_integer(ansi_map_16(cur->bg, ANSI_BG, &hilite), buff, bp);
   }
 
   if (f)

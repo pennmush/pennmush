@@ -1160,7 +1160,7 @@ FUNCTION(fun_decompose)
    * the included string, such that
    * s(decompose(str)) == str, down to the last space, tab,
    * and newline. */
-  safe_str(decompose_str(args[0]), buff, bp);
+  safe_decompose_str(args[0], buff, bp);
 }
 
 /* ARGSUSED */

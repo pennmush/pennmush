@@ -382,6 +382,7 @@ void look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
+int safe_decompose_str(char *what, char *buf, char **bp);
 
 /* From memcheck.c */
 void add_check(const char *ref);

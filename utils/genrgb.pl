@@ -294,30 +294,56 @@ package Graphics::ColorNames::XTerm {
 	    "xterm255" => 0xeeeeee,
 	};
     }
+    # spork's color map
+    our @map_16 = qw/
+  0: x    1: r    2: g    3: y    4: b    5: m    6: c    7: w    8: xh
+  9: rh  10: gh  11: yh  12: bh  13: mh  14: ch  15: wh  16: x   17: b 
+ 18: b   19: b   20: hb  21: hb  22: g   23: c   24: b   25: hb  26: hb
+ 27: hb  28: hg  29: g   30: c   31: hb  32: hb  33: hb  34: hg  35: hg
+ 36: hc  37: hc  38: hb  39: hb  40: hg  41: hg  42: hg  43: hc  44: hc
+ 45: hc  46: hg  47: hg  48: hg  49: hc  50: hc  51: hc  52: r   53: m 
+ 54: m   55: bh  56: hb  57: hb  58: g   59: g   60: c   61: hb  62: hb
+ 63: hb  64: g   65: g   66: g   67: c   68: c   69: hb  70: hg  71: g 
+ 72: g   73: c   74: hc  75: hc  76: hg  77: hg  78: hg  79: hc  80: hc
+ 81: hc  82: hg  83: hg  84: hg  85: hg  86: hc  87: hc  88: r   89: r 
+ 90: m   91: m   92: hm  93: hm  94: g   95: r   96: m   97: m   98: hm
+ 99: hm 100: g  101: g  102: g  103: c  104: hb 105: hb 106: g  107: g 
+108: g  109: c  110: hc 111: hc 112: hg 113: hg 114: hg 115: hg 116: hc
+117: hc 118: hg 119: hg 120: hg 121: hg 122: hw 123: hw 124: r  125: m 
+126: m  127: hm 128: hm 129: hm 130: hr 131: hr 132: hr 133: hm 134: hm
+135: hm 136: y  137: y  138: hm 139: hm 140: hm 141: hm 142: y  143: y 
+144: y  145: hm 146: hm 147: hm 148: hy 149: hy 150: hy 151: hw 152: hw
+153: hw 154: hy 155: hy 156: hy 157: hy 158: hw 159: hw 160: r  161: hr
+162: hm 163: hm 164: hm 165: hm 166: hr 167: hr 168: hr 169: hm 170: hm
+171: hm 172: y  173: y  174: y  175: hm 176: hm 177: hm 178: y  179: y 
+180: hy 181: hm 182: hm 183: hm 184: y  185: y  186: hy 187: hw 188: hw
+189: hw 190: hy 191: hy 192: hy 193: hw 194: hw 195: hw 196: hr 197: hr
+198: hr 199: hm 200: hm 201: hm 202: hr 203: hr 204: hr 205: hm 206: hm
+207: hm 208: hr 209: hr 210: hm 211: hm 212: hm 213: hm 214: hy 215: hy
+216: hw 217: hw 218: hw 219: hw 220: hy 221: hy 222: hy 223: hw 224: hw
+225: hw 226: hy 227: hy 228: hy 229: hy 230: hw 231: hw 232: x  233: x 
+234: xh 235: xh 236: xh 237: xh 238: xh 239: xh 240: xh 241: w  242: w 
+243: w  244: w  245: w  246: w  247: w  248: hw 249: hw 250: hw 251: hw
+252: hw 253: hw 254: hw 255: hw
+    /;	
+    my %ansicodes = (
+	x => 0,
+	r => 1,
+	g => 2,
+	y => 3,
+	b => 4,
+	m => 5,
+	c => 6,
+	w => 7
+	);
+    @map_16 = map {
+                   my $hilite = s/h//;
+                   my $color = $ansicodes{$_};
+                   $color |= 0x0100 if $hilite;
+                   $color
+                  } grep(/^[xrgybmcwh]+$/, @map_16);
 };
 mark_as_loaded "Graphics::ColorNames::XTerm";
-
-our @colormap_16 =(
-    # normal colors 
-    [0, 'x', 0, 0x000000],
-    [1, 'r', 0, 0xcd0000],
-    [2, 'g', 0, 0x00cd00],
-    [3, 'y', 0, 0xcdcd00],
-    [4, 'b', 0, 0x0000ee],
-    [5, 'm', 0, 0xcd00cd],
-    [6, 'c', 0, 0x00cdcd],
-    [7, 'w', 0, 0xe5e5e5],
-
-    # Hilite colors 
-    [0, 'x', 1, 0x7f7f7f],
-    [1, 'r', 1, 0xff0000],
-    [2, 'g', 1, 0x00ff00],
-    [3, 'y', 1, 0xffff00],
-    [4, 'b', 1, 0x5c5cff],
-    [5, 'm', 1, 0xff00ff],
-    [6, 'c', 1, 0x00ffff],
-    [7, 'w', 1, 0xffffff]
-    );
 
 open RGBH, ">", "hdrs/rgb.h";
 open GPERF, ">", "src/rgbtab.gperf";
@@ -397,19 +423,6 @@ sub hex_difference {
 	+ color_diff(($a >> 16) & 0xFF, ($b >> 16) & 0xFF);
 }
 
-sub map_to_ansi {
-    my $rgb = hex shift;
-    my $diff = 0x0FFFFFFF;
-    my $best = 0;
-    for (my $i = 0; $i < 8; $i += 1) {
-	my $cdiff = hex_difference $colormap_16[$i]->[3], $rgb;
-	if ($cdiff < $diff) {
-	    $best = $i;
-	    $diff = $cdiff;
-	}
-    }
-    return $colormap_16[$best]->[0];
-}
 
 our @xterm = sort byxterm keys %xcolors;
 our @xterm2 = @xterm;
@@ -429,10 +442,15 @@ sub map_to_256 {
     return xtnum $best;
 }
 
+sub map_to_ansi {
+    my $xnum = shift;
+    return $Graphics::ColorNames::XTerm::map_16[$xnum];
+}
+
 foreach my $xterm (@xterm) {
     my $rgb = $xcolors{$xterm};
     my $xnum = xtnum $xterm;
-    my $ansi = map_to_ansi $rgb;
+    my $ansi = map_to_ansi $xnum;
     say RGBH "  {\"$xterm\", 0x$rgb, $xnum, $ansi},";
     say GPERF "$xterm, 0x$rgb, $xnum, $ansi";
 }
@@ -444,7 +462,7 @@ while (my ($name, $rgb) = each %colors) {
     next if exists $seen{$name};
     $seen{$name} = 1;
     my $xnum = map_to_256 $rgb;
-    my $ansi = map_to_ansi $rgb;
+    my $ansi = map_to_ansi $xnum;
     say RGBH "  {\"$name\", 0x$rgb, $xnum, $ansi},";
     say GPERF "$name, 0x$rgb, $xnum, $ansi";
 }

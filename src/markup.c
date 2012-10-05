@@ -92,7 +92,7 @@ build_rgb_map(void)
   rgb_to_name = im_new();
   namelist_slab = slab_create("rgb namelist", sizeof *node);
 
-  for (n = 0; allColors[n].name; n += 1) {
+  for (n = 256; allColors[n].name; n += 1) {
     lst = im_find(rgb_to_name, allColors[n].hex);
     node = slab_malloc(namelist_slab, lst);
     node->name = allColors[n].name;
@@ -285,7 +285,7 @@ FUNCTION(fun_colors)
 	  safe_chr('h', buff, bp);
         break;
       case COL_256:
-        safe_integer(ansi_map_256(color_to_hex(color, 0)), buff, bp);
+        safe_integer(ansi_map_256(color, 0), buff, bp);
         break;
       case COL_NAME:
         {
@@ -670,11 +670,12 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
 
 /** Return the hex code for a given ANSI color */
 uint32_t
-color_to_hex(char *name, int hilite)
+color_to_hex(const char *name, bool hilite)
 {
   int i = 0;
-  char *p, *q;
+  const char *q;
   char n;
+  char buf[BUFFER_LEN] = { '\0' }, *p;
 
   /* This should've been checked before it ever got here. */
   if (!name || !name[0]) {
@@ -690,7 +691,8 @@ color_to_hex(char *name, int hilite)
 
     name++;
     /* Downcase and remove all spaces. */
-    for (p = q = name; *q; q++) {
+    p = buf;
+    for (q = name; *q; q++) {
       if (isspace((unsigned char) *q))
         continue;
       *(p++) = tolower((unsigned char) *q);
@@ -698,7 +700,7 @@ color_to_hex(char *name, int hilite)
     }
     *p = '\0';
 
-    c = colorname_lookup(name, len);
+    c = colorname_lookup(buf, len);
     if (c)
       return c->hex;
 
@@ -706,11 +708,11 @@ color_to_hex(char *name, int hilite)
     return ERROR_COLOR;
   }
   /* We only get here if it's old-style ansi. */
-  if (name[1]) {
+  if (buf[1]) {
     /* Invalid character code! */
     return ERROR_COLOR;
   }
-  n = tolower((unsigned char) name[0]);
+  n = tolower((unsigned char) buf[0]);
   if (hilite) {
     for (i = 8; i < 16; i++) {
       if (colormap_16[i].desc == n) {
@@ -742,10 +744,9 @@ color_to_hex(char *name, int hilite)
 /** Map a color (old-style ANSI code, color name or hex value) to the
     16-color ANSI palette */
 int
-ansi_map_16(char *name, int bg, bool *hilite)
+ansi_map_16(const char *name, bool bg, bool *hilite)
 {
-  int hex;
-  int diff, cdiff;
+  uint32_t hex, diff, cdiff;
   int best = 0;
   int i;
   int max;
@@ -757,7 +758,26 @@ ansi_map_16(char *name, int bg, bool *hilite)
   if (name[0] && !name[1]) {
     return ansi_codes[(unsigned char) name[0]];
   }
-  /* Otherwise it's a name. Map it to hex. */
+
+  /* Is it an xterm color number? */
+  if (strncasecmp(name, "+xterm", 5) == 0) {
+    unsigned int xnum;
+    int offset = 30;
+    struct RGB_COLORMAP *xcolor;
+
+    xnum = strtoul(name + 6, NULL, 10);
+    if (xnum > 255)
+      xnum = 255;
+
+    xcolor = &allColors[xnum];
+    if (xcolor->as_ansi & 0x0100)
+      *hilite = 1;
+    if (bg)
+      offset = 40;
+    return (xcolor->as_ansi & 0xFF) + offset;
+  }
+    
+  /* Otherwise it's a name or RGB sequence. Map it to hex. */
   hex = color_to_hex(name, 0);
 
   /* Predefined color names have their downgrades cached */
@@ -795,14 +815,24 @@ ansi_map_16(char *name, int bg, bool *hilite)
 
 /** Map a RGB hex color to the 256-color XTERM palette */
 int
-ansi_map_256(uint32_t hex)
+ansi_map_256(const char *name, bool hilite)
 {
-  uint32_t diff, cdiff;
+  uint32_t hex, diff, cdiff;
   int best = 0;
   int i;
   struct rgb_namelist *color;
 
+  /* Is it an xterm color number? */
+  if (strncasecmp(name, "+xterm", 5) == 0) {
+    unsigned int xnum;
+    xnum = strtoul(name + 6, NULL, 10);
+    if (xnum > 255)
+      xnum = 255;
+    return xnum;
+  }
+
   /* Predefined color names have their downgrades cached */
+  hex = color_to_hex(name, hilite);
   color = im_find(rgb_to_name, hex);
   if (color)
     return color->as_xterm;
@@ -939,7 +969,7 @@ ANSI_WRITER(ansi_xterm256)
     if (!strncasecmp(cur->fg, "+xterm", 6))
       xcode = atoi(cur->fg + 6);
     else
-      xcode = ansi_map_256(color_to_hex(cur->fg, hilite));
+      xcode = ansi_map_256(cur->fg, hilite);
     ret += safe_format(buff, bp, "%s38;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
   }
 
@@ -947,7 +977,7 @@ ANSI_WRITER(ansi_xterm256)
     if (!strncasecmp(cur->bg, "+xterm", 6))
       xcode = atoi(cur->bg + 6);
     else
-      xcode = ansi_map_256(color_to_hex(cur->bg, hilite));
+      xcode = ansi_map_256(cur->bg, hilite);
     ret += safe_format(buff, bp, "%s48;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
   }
   return ret;

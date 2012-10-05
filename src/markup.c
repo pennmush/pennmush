@@ -69,6 +69,8 @@ static ansi_data ansi_null = NULL_ANSI;
 
 struct rgb_namelist {
   const char *name;
+  int as_xterm;
+  int as_ansi;
   struct rgb_namelist *next;
 };
 slab *namelist_slab = NULL;
@@ -78,7 +80,7 @@ intmap *rgb_to_name = NULL;
 #include "rgbtab.c"
 
 /* Populate the RGB color to name mapping */
-static void
+void
 build_rgb_map(void)
 {
   int n;
@@ -94,15 +96,39 @@ build_rgb_map(void)
     lst = im_find(rgb_to_name, allColors[n].hex);
     node = slab_malloc(namelist_slab, lst);
     node->name = allColors[n].name;
+    node->as_xterm = allColors[n].as_xterm;
+    node->as_ansi = allColors[n].as_ansi;
     node->next = NULL;
     if (!lst)
       im_insert(rgb_to_name, allColors[n].hex, node);
     else {
-      struct rgb_namelist *car;
-      
-      for (car = lst; car->next; car = car->next) ;
+      struct rgb_namelist *curr;           
 
-      car->next = node;
+      /* Find where to insert current color name into sorted list of
+	 names for this RGB tuple. */
+      if (strcmp(node->name, lst->name) < 0) {
+	/* Insert at head of list */
+	const char *tname;
+	int trgb;
+	node->next = lst->next;
+	lst->next = node;
+	tname = lst->name;
+	lst->name = node->name;
+	node->name = tname;
+	trgb = lst->as_xterm;
+	lst->as_xterm = node->as_xterm;
+	node->as_xterm = trgb;
+	trgb = lst->as_ansi;
+	lst->as_ansi = node->as_ansi;
+	node->as_ansi = trgb;
+      } else {
+	for (curr = lst; curr->next; curr = curr->next) {
+	  if (strcmp(node->name, curr->name) < 0)
+	    break;
+	}	
+	node->next = curr->next;
+	curr->next = node;
+      }
     }
   }
 }
@@ -263,9 +289,6 @@ FUNCTION(fun_colors)
           uint32_t hex;
 	  struct rgb_namelist *names;
           bool shown = 0;
-
-	  if (!rgb_to_name)
-	    build_rgb_map();
 
           hex = color_to_hex(color, 0);
 
@@ -713,8 +736,8 @@ color_to_hex(char *name, int hilite)
 #define ANSI_FG 0
 #define ANSI_BG 1
 
-/** Map a color (old-style ANSI code, color name or hex value) taken
- * by ansi() to the 16-color ANSI palette */
+/** Map a color (old-style ANSI code, color name or hex value) to the
+    16-color ANSI palette */
 int
 ansi_map_16(char *name, int bg)
 {
@@ -723,12 +746,24 @@ ansi_map_16(char *name, int bg)
   int best = 0;
   int i;
   int max;
+  struct rgb_namelist *color;
+
   /* Shortcut: If it's a single character color code, it's using the 16 color map. */
   if (name[0] && !name[1]) {
     return ansi_codes[(unsigned char) name[0]];
   }
   /* Otherwise it's a name. Map it to hex. */
   hex = color_to_hex(name, 0);
+
+  /* Predefined color names have their downgrades cached */
+  color = im_find(rgb_to_name, hex);
+  if (color) {
+    int offset = 30;
+    if (bg)
+      offset = 40;
+    return color->as_ansi + offset;
+  }
+
   diff = 0x0FFFFFFF;
   /* Now find the closest 16 color match. */
   best = 0;
@@ -751,17 +786,22 @@ ansi_map_16(char *name, int bg)
   }
 }
 
-/** Map a color (old-style ANSI code, color name or hex value) taken
- * by ansi() to the 256-color XTERM palette */
+/** Map a RGB hex color to the 256-color XTERM palette */
 int
 ansi_map_256(uint32_t hex)
 {
   uint32_t diff, cdiff;
   int best = 0;
   int i;
+  struct rgb_namelist *color;
+
+  /* Predefined color names have their downgrades cached */
+  color = im_find(rgb_to_name, hex);
+  if (color)
+    return color->as_xterm;
 
   diff = 0x0FFFFFFF;
-  /* Now find the closest 16 color match. */
+  /* Now find the closest 256 color match. */
   best = 0;
 
   for (i = 16; i < 256; i++) {
@@ -2432,7 +2472,7 @@ escape_marked_str(char **str, char *buff, char **bp)
  * Even handles ANSI and Pueblo, which is why it's so ugly.
  */
 int
-real_decompose_str(char *orig, char *buff, char **bp)
+safe_decompose_str(char *orig, char *buff, char **bp)
 {
   int i;
   char *str = orig;

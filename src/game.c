@@ -693,6 +693,7 @@ do_restart(void)
 void init_names(void);
 extern struct db_stat_info current_state;
 void init_queue(void);
+void build_rgb_map(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
@@ -772,6 +773,10 @@ init_game_postdb(const char *conf)
   /* Load further restrictions from config file */
   config_file_startup(conf, 1);
   validate_config();
+
+  /* Build color/RGB mappings */
+  build_rgb_map();
+
   /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init

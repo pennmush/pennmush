@@ -928,13 +928,13 @@ See also: Connection Functions
   colors(<wildcard>)
   colors(<color>, <format>)
 
-  With no arguments, colors() returns a space-separated list of colors
-  that PennMUSH knows the name of. You can use these colors in
-  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not
-  included in the list, but can also be used in ansi().
+  With no arguments, colors() returns an unsorted, space-separated
+  list of colors that PennMUSH knows the name of. You can use these
+  colors in ansi(+<colorname>,text). The colors "xterm0" to "xterm255"
+  are not included in the list, but can also be used in ansi().
   
-  With one argument, returns a space-separated list of colors that
-  match the wildcard pattern <wildcard>.
+  With one argument, returns an unsorted, space-separated list of
+  colors that match the wildcard pattern <wildcard>.
   
   With two arguments, colors() returns information about a particular
   color. <color> must be the name of a color or a hex code, in any of
@@ -944,8 +944,9 @@ See also: Connection Functions
    xterm256: return the number of the xterm color closest to the given
               <color>.
    16color:  return the letter of the closest ANSI color code.   
-   name:     return the name of the colors exactly matching the given
-              <color>.
+   name:     return the names of the colors exactly matching the given
+              <color>, or '#-1 NO MATCHING COLOR NAME' if there is no
+              exact match with a named color.
 
   It can be used for working out how certain colors will downgrade to
   people using clients which aren't fully color-capable.

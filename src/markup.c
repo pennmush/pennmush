@@ -88,7 +88,7 @@ build_rgb_map(void)
 
   if (rgb_to_name)
     return;
-  
+
   rgb_to_name = im_new();
   namelist_slab = slab_create("rgb namelist", sizeof *node);
 
@@ -102,7 +102,7 @@ build_rgb_map(void)
     if (!lst)
       im_insert(rgb_to_name, allColors[n].hex, node);
     else {
-      struct rgb_namelist *curr;           
+      struct rgb_namelist *curr;
 
       /* Find where to insert current color name into sorted list of
 	 names for this RGB tuple. */
@@ -125,7 +125,7 @@ build_rgb_map(void)
 	for (curr = lst; curr->next; curr = curr->next) {
 	  if (strcmp(node->name, curr->name) < 0)
 	    break;
-	}	
+	}
 	node->next = curr->next;
 	curr->next = node;
       }
@@ -279,7 +279,7 @@ FUNCTION(fun_colors)
       case COL_HEX:
         safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
         break;
-      case COL_16:	
+      case COL_16:
         safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc - (i ? 32 : 0), buff, bp);
 	if (hilite)
 	  safe_chr('h', buff, bp);
@@ -300,7 +300,7 @@ FUNCTION(fun_colors)
 	      safe_chr(' ', buff, bp);
 	    safe_str(names->name, buff, bp);
 	    shown = 1;
-	  } 
+	  }
 
           if (!shown)
             safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
@@ -750,7 +750,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   int best = 0;
   int i;
   int max;
-  struct rgb_namelist *color;  
+  struct rgb_namelist *color;
 
   *hilite = 0;
 
@@ -762,7 +762,6 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   /* Is it an xterm color number? */
   if (strncasecmp(name, "+xterm", 5) == 0) {
     unsigned int xnum;
-    int offset = 30;
     struct RGB_COLORMAP *xcolor;
 
     xnum = strtoul(name + 6, NULL, 10);
@@ -772,11 +771,9 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
     xcolor = &allColors[xnum];
     if (xcolor->as_ansi & 0x0100)
       *hilite = 1;
-    if (bg)
-      offset = 40;
-    return (xcolor->as_ansi & 0xFF) + offset;
+    return (xcolor->as_ansi & 0xFF) + (bg ? 40 : 30);
   }
-    
+
   /* Otherwise it's a name or RGB sequence. Map it to hex. */
   hex = color_to_hex(name, 0);
 
@@ -785,10 +782,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   if (color) {
     if (color->as_ansi & 0x0100)
       *hilite = 1;
-    int offset = 30;
-    if (bg)
-      offset = 40;
-    return (color->as_ansi & 0xFF) + offset;
+    return (color->as_ansi & 0xFF) + (bg ? 40 : 30);
   }
 
   diff = 0x0FFFFFFF;

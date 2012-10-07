@@ -1475,7 +1475,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   if (!cmd)
     return 0;
 
-  if ((cmd->type & CMD_T_DEPRECATED) && !IsQuiet(executor)) {
+  if (cmd->type & CMD_T_DEPRECATED) {
     notify_format(Owner(executor),
                   T("Deprecated command %s being used on object #%d."),
                   cmd->name, executor);

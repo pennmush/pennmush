@@ -67,21 +67,26 @@ bool SW_BY_NAME(switch_mask, const char *);
 /** COMMAND prototype.
  * \verbatim
    Passed arguments:
-   executor : Object issuing command.
+   cmd : The COMMAND_INFO struct for the command being run
+   executor : Object running the command.
+   enactor : Object which caused the command to run
+   caller : Same as enactor
    sw : switch_mask, check with the SW_ macros.
    raw : *FULL* unparsed, untouched command.
    switches : Any unhandled switches, or NULL if none.
    args_raw : Full argument, untouched. null-string if none.
    arg_left : Left-side arguments, unparsed if CMD_T_NOPARSE.
    args_left : Parsed arguments, if CMD_T_ARGS is defined.
-   args_right : Parsed right-side arguments, if CMD_T_RSARGS is defined.
+   arg_right : The single arg after the =, if CMD_T_EQSPLIT is given but CMD_T_RSARGS isn't
+   args_right : Array of args after =, if CMD_T_EQSPLIT | CMD_T_RSARGS is defined.
+   queue_entry : The queue entry the command is being run in
 
    Note that if you don't specify EQSPLIT, left is still the data you want. If you define EQSPLIT,
-   there are also right_XX values.
+   there are also arg*_right values.
 
    Special case:
    If the NOEVAL switch is given, AND EQSPLIT is defined, the right-side will not be parsed.
-   If NOEVAL is givean the EQSPLIT isn't defined, the left-side won't be parsed.
+   If /NOEVAL is given and EQSPLIT isn't defined, the left-side won't be parsed.
  * \endverbatim
  */
 
@@ -172,17 +177,6 @@ struct switch_value {
   const char *name;     /**< Name of the switch */
   int value;            /**< Number of the switch */
   bool used;             /**< True if a command uses this switch */
-};
-
-typedef struct com_sort_struc COMSORTSTRUC;
-
-/** Sorted linked list of commands.
- * This structure is used to build a sorted linked list of pointers
- * to command data.
- */
-struct com_sort_struc {
-  struct com_sort_struc *next;  /**< Pointer to next in list */
-  COMMAND_INFO *cmd;            /**< Command data */
 };
 
 /** Permissions for commands.

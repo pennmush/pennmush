@@ -1635,7 +1635,7 @@ make_pe_info(char *name)
   return pe_info;
 }
 
-/** Create an new pe_info based on an existing pe_info. Depending on flags, we
+/** Create a new pe_info based on an existing pe_info. Depending on flags, we
  ** may simply increase the refcount of the existing pe_info and return
  ** that, or we may create a new pe_info, possibly copying some information
  ** from the existing pe_info into the new one

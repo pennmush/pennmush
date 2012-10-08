@@ -175,7 +175,7 @@ void sql_shutdown(void);
 /** A notify_anything lookup function type definition */
 typedef dbref (*na_lookup) (dbref, void *);
 
-/**< Used by notify_anything() for formatting a message through a ufun for each listener */
+/** Used by notify_anything() for formatting a message through a ufun for each listener */
 struct format_msg {
   dbref thing;    /**< Object to ufun an attr from. Use AMBIGUOUS for the target */
   char *attr;     /**< Attribute to ufun */

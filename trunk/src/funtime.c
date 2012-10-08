@@ -208,10 +208,11 @@ FUNCTION(fun_convsecs)
   safe_str(show_tm(ttm), buff, bp);
 }
 
+/** Descriptions of various time periods. */
 struct timeperiods {
-  char lc;
-  char uc;
-  int seconds;
+  char lc; /**< The lower-case letter representing the time ('h' for hours, etc) */
+  char uc; /**< The upper-case letter representing the time ('H' for hours, etc) */
+  int seconds; /**< Number of seconds in the time period (3600 for hours, etc) */
 };
 
 struct timeperiods TIMEPERIODS[] = {

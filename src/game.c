@@ -1597,7 +1597,7 @@ do_writelog(dbref player, char *str, int ltype)
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
  * \param num value for #@ token.
- * \param parent_queue the queue entry this is being run from
+ * \param queue_entry the queue entry this is being run from
  * \param queue_type QUEUE_* values
  */
 void
@@ -1927,6 +1927,7 @@ do_scan(dbref player, char *command, int flag)
  * \param enactor the enactor
  * \param flags command switch flags.
  * \param queue_entry the queue entry \@dolist is being run in
+ * \param queue_type QUEUE_* values
  */
 void
 do_dolist(dbref executor, char *list, char *command, dbref enactor,

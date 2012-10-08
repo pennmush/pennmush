@@ -356,11 +356,12 @@ print RGBH <<'EOC';
  * Used by markup.c for ansi() color.
  */
 
+/** Holds info on a named color */
 struct RGB_COLORMAP {
-  char *name;
-  uint32_t hex;
-  int as_xterm;
-  int as_ansi; /* +30 for FG color +40 for BG color */
+  char *name; /**< Color name */
+  uint32_t hex; /**< Hex value of color */
+  int as_xterm; /**< XTERM color code (0-255) */
+  int as_ansi; /**< Color (0-7), +256 for highlight. Add 30 for FG color or 40 for BG color */
 };
 
 struct RGB_COLORMAP allColors[] = {
@@ -472,11 +473,12 @@ print RGBH <<'EOC';
   {NULL, 0, 0, 0}
 };
 
+/** Info on a color from the 16-color ANSI palette */
 struct COLORMAP_16 {
-  int id;
-  char desc;
-  uint8_t hilite;
-  uint32_t hex;
+  int id; /**< Code for this color (0-7)
+  char desc; /**< Lowercase char representing color */
+  uint8_t hilite; /**< Is this char highlighted? */
+  uint32_t hex; /**< Hex code for this color */
 };
 
 /* Taken from the xterm color chart on wikipedia */

@@ -623,6 +623,7 @@ make_blocking(int s)
 
 /** Enable TCP keepalive on the given socket if we can.
  * \param s socket.
+ * \param keepidle how often to send keepalive
  */
 /* ARGSUSED */
 void

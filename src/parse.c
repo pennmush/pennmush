@@ -50,7 +50,7 @@ extern int cpu_limit_warning_sent;
 /** Structure for storing DEBUG output in a linked list */
 struct debug_info {
   char *string;         /**< A DEBUG string */
-  dbref executor;
+  dbref executor;       /**< Object executing code */
   Debug_Info *prev;     /**< Previous node in the linked list */
   Debug_Info *next;     /**< Next node in the linked list */
 };

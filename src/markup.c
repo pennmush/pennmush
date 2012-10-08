@@ -67,10 +67,11 @@ const char *is_allowed_tag(const char *s, unsigned int len);
 
 static ansi_data ansi_null = NULL_ANSI;
 
+/** Linked list of colornames with appropriate color maps */
 struct rgb_namelist {
-  const char *name;
-  int as_xterm;
-  int as_ansi;
+  const char *name; /**< Name of color */
+  int as_xterm; /**< xterm color code (0-255) */
+  int as_ansi; /**< ANSI color code. Basic 8 ansi colors are 0-7, highlight are (256 | (0-7)) */
   struct rgb_namelist *next;
 };
 slab *namelist_slab = NULL;
@@ -977,11 +978,12 @@ ANSI_WRITER(ansi_xterm256)
   return ret;
 }
 
+/** Holds data on which functions to use for writing ANSI color data in various formats */
 struct ansi_writer {
   /* Write ansi_normal or otherwise reset. */
-  int format_type;
-  writer_func reset;
-  writer_func change;
+  int format_type; /**< An ANSI_FORMAT_* int, specifying the type of ansi data to write */
+  writer_func reset; /**< Function to end the ANSI color block */
+  writer_func change; /**< Function to write the codes when there's a change of color */
 };
 
 struct ansi_writer ansi_writers[] = {

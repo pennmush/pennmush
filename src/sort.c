@@ -956,7 +956,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
 /**
  * Given an array of s_rec items, free them if they are not NULL.
  * \param sp the array of sort_records, returned by slist_build
- * \param n Number of items in <keys> and <strs>
+ * \param n Number of items in \<keys\> and \<strs\>
  * \param lti List Type Info describing how it's sorted and built.
  */
 void

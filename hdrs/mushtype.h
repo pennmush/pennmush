@@ -342,12 +342,13 @@ typedef enum conn_status {
 } conn_status;
 
 typedef bool (*sq_func) (void *);
+/** System queue event */
 struct squeue {
-  sq_func fun;
-  void *data;
-  time_t when;
-  char *event;
-  struct squeue *next;
+  sq_func fun; /** Function to run */
+  void *data; /** Data to pass to function, or NULL */
+  time_t when; /** When to run the function */
+  char *event; /** Softcode Event name to trigger, or NULL if none */
+  struct squeue *next; /** Pointer to next squeue event in linked list */
 };
 
 

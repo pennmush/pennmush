@@ -691,9 +691,10 @@ FUNTAB flist[] = {
   {NULL, NULL, 0, 0, 0}
 };
 
+/** Map of function restriction bits to textual names */
 struct function_restrictions {
-  const char *name;
-  uint32_t bit;
+  const char *name; /**< Name of restriction */
+  uint32_t bit; /**< FN_* flag for restriction */
 };
 
 struct function_restrictions func_restrictions[] = {

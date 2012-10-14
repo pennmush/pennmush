@@ -224,9 +224,7 @@ static FLAG_ALIAS flag_alias_tab[] = {
   {"ZONE", "SHARED"},
   {"COLOUR", "COLOR"},
   {"JURYOK", "JURY_OK"},
-#ifdef VACATION_FLAG
   {"VACATION", "ON-VACATION"},
-#endif
   {"DEST_OK", "DESTROY_OK"},
   {"NOLEAVE", "NO_LEAVE"},
   {"TEL_OK", "JUMP_OK"},

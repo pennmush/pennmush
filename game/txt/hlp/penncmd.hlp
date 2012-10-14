@@ -3171,11 +3171,7 @@ See also: @wait, @halt, @notify, @drain, SEMAPHORES
 
 See also: @dbck
 & @quota
-& @squota
-& @allquota
   @quota [<player>]
-  @squota <player>=[+|-]<amount>
-  @allquota[/quiet] [<limit>]
 
   These commands are only meaningful if the Quota system is enabled (check
   the use_quota @config option).
@@ -3183,7 +3179,14 @@ See also: @dbck
   @quota shows the current quota for <player>, or for the executor if no
   <player> is given. You must control <player>, or have either the See_All
   or Quotas @power.
-  
+
+  Continued in 'help @quota2'.
+& @quota2  
+& @squota
+& @allquota
+  @squota <player>=[+|-]<amount>
+  @allquota[/quiet] [<limit>]
+
   @squota is a Wizard-only command which adjusts the quota of <player>. If
   <amount> is prefixed by + or -, their current quota will be incremented or
   decremented by <amount>, respectively. Otherwise, their total quota is set
@@ -3450,6 +3453,23 @@ See also: lsearch(), @find
   
   The fourth form sets (or unsets) an attribute flag on the specified
   attribute. See 'help attribute flags'.
+  
+See also: ATTRIB_SET, attrib_set(), set()
+& ATTRIB_SET
+& @_
+  &<attr> <object>[=<value>]
+  @_<attr> <object>[=<value>]
+  ATTRIB_SET/<attr> <object>=<value>
+  
+  The &<attr> and @_<attr> commands can be used to set or clear an attribute
+  from an object. When entered directly from a client, they do not evaluate
+  the <value>.
+  
+  ATTRIB_SET is the internal command which powers &attr and @_attr setting;
+  it cannot be used directly, but can be restricted or @hook'd to change the
+  behaviour of &attr/@_attr-setting.
+
+See also: @set, attrib_set()
 & @sex
   @sex <player>=<gender>  
 

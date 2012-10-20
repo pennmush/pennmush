@@ -2368,7 +2368,8 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     > say iter(This is a test string., u(STRLEN_FN, %i0))
     You say, "4 2 1 4 7"
 
-  This example could be replaced by the use of map() like so:
+  Since this example just evaluates another attribute for each element of the
+  list, it can be done more efficiently using map():
     > say map(strlen_fun, This is a test string.)
 
     > say iter(lnum(3), %i0, ,%r)
@@ -2892,11 +2893,11 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
 
   Example:
     Get all male players with a name starting with 'W'.
-    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(##))
+    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(%i0))
     Walker WalkerBot Wilco
 
     List all wizroys online:
-    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(##))
+    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(%i0))
     Sketch Viila Tanaku Raevnos Zebranky Cheetah Walker
 
     List all players with an IC age > 20.
@@ -3294,16 +3295,15 @@ See also: left(), right(), delete()
   
 See also: max(), lmath(), bound(), alphamin()
 & MIX()
+  mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list30>, <delim>])
  
-  mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list10>, <delim>])
- 
-  This function is similar to MAP(), except that it takes the elements
-  of up to ten lists, one by one, and passes them to the user-defined
-  function as %0, %1, up to %9, respectively, for elements of <list1> to
-  <list10>. If the lists are of different sizes, the shorter ones are padded
-  with empty elements. <delim> is used to separate elements; if it is not
-  specified, it defaults to a space. If using more than 2 lists, the last 
-  argument must be a delimiter.
+  This function is similar to MAP(), except that it takes the elements of up
+  to 30 lists, one by one, and passes them to the user-defined function as 
+  %0, %1, up to %9, respectively, for elements of <list1> to <list30>. Use 
+  v() to access elements 10 or higher. If the lists are of different sizes, 
+  the shorter ones are padded with empty elements. <delim> is used to 
+  separate elements; if it is not specified, it defaults to a space. If using
+  more than 2 lists, the last argument must be a delimiter.
 
   See 'help mix2' for examples.
 & MIX2
@@ -4854,7 +4854,7 @@ See also: repeat()
   If <say string> is specified, it is used instead of "says," /
   "says".
 
-  Continued in 'help Speak2'.
+  Continued in 'help speak2'.
 & SPEAK2
  
   Examples:
@@ -4880,7 +4880,7 @@ See also: repeat()
     > @emit [speak(&Mr. President,:has been misunderestimated.)]
     Mr. President has been misunderestimated.
  
-  Continued in 'help Speak3'.
+  Continued in 'help speak3'.
 & SPEAK3
  
   If <transform> is specified (an object/attribute pair or attribute,
@@ -4901,8 +4901,7 @@ See also: repeat()
   otherwise, fragments are numbered starting with 0. (A fragment is a
   chunk of speech text within the overall original input string.)
  
-  Continued in 'help Speak4'.
- 
+  Continued in 'help speak4'.
 & SPEAK4
   
   Examples:
@@ -4927,8 +4926,7 @@ See also: repeat()
   > @emit speak(me, :tests. "Hi." And... <<Bye.>> The end., ,va, , <<, >>)
   Wizard tests. "Hi." And... "Fragment 1 is: Bye." The end.
  
-  Continued in 'help Speak5'.
- 
+  Continued in 'help speak5'.
 & SPEAK5
  
   If the result of transforming a given speech fragment is a null
@@ -4951,8 +4949,7 @@ See also: repeat()
   OR
   Wizard tests. He mutters something.
  
-  Continued in 'help Speak6'.
- 
+  Continued in 'help speak6'.
 & SPEAK6
  
   Elegantly handling an empty string when the type of speech is a
@@ -4975,8 +4972,7 @@ See also: repeat()
   OR
   Wizard mutters something.
  
-  Continued in 'help Speak7'.
- 
+  Continued in 'help speak7'.
 & SPEAK7
   
   Here's another example, where words between + signs are reversed,
@@ -5036,7 +5032,8 @@ See also: merge()
   interpolating user-provided values into the query, be careful to escape
   them with sqlescape().
 
-  Each row of the result is passed to <attribute>, with columns as %1-%9.
+  Each row of the result is passed to <attribute>, with the first nine 
+  columns available as %1-%9, and twenty more available via v(10) - v(29).
   %0 is set to the row number, which will start with 1.
 
   If <dofieldnames> evaluates to a true boolean, then the first call will be
@@ -5178,12 +5175,12 @@ See also: terminfo()
 & STEP()
   step([<obj>/]<attr>, <list>, <step>[, <delim>[, <osep>]])
 
-  This function is similar to map(), except you can pass up to 10 elements 
-  of the list at a time, in %0 to %9. <step> must be between 1 and 10, with 
-  a step of 1 equivalent to map(). If the elements of the list can't be 
-  split up evenly, the last evaluation will run with some of the registers
-  unset; the %+ substitution or the registers() function can be used to see 
-  which/how many are set.
+  This function is similar to map(), except you can pass up to 30 elements 
+  of the list at a time, in %0-%9 and v(10)-v(29). <step> must be between 1 
+  and 30, with a step of 1 equivalent to map(). If the elements of the list 
+  can't be split up evenly, the last evaluation will run with some of the 
+  registers unset; the %+ substitution or the registers() function can be 
+  used to see which/how many are set.
 
   Example:
     > &foo me=%0 - %1 - %2
@@ -6171,11 +6168,11 @@ See also: ceil(), floor(), bound(), round(), left()
   
 See also: hastype(), TYPES OF OBJECTS
 & PFUN()
-  pfun(<attribute>[, <arg0>[, ... , <arg9>]])
+  pfun(<attribute>[, <arg0>[, ... , <arg29>]])
   
   This function evaluates <attribute> from the caller's @parent, passing up 
-  to ten <arg>s as %0-%9. When the caller doesn't have an <attribute>
-  attribute set, this is the same as
+  to 30 <arg>s as %0-%9 and v(10)-v(29). When the caller doesn't have an 
+  <attribute> attribute set, this is the same as
   
     ufun(me/<attribute>[, <args>])
     
@@ -6195,7 +6192,6 @@ See also: hastype(), TYPES OF OBJECTS
   
   Continued in 'help pfun2'.
 & PFUN2
-
   This function does not have the security problems of using 
   
     ufun(parent(me)/<attribute>)
@@ -6212,7 +6208,6 @@ See also: hastype(), TYPES OF OBJECTS
   
 See also: ufun(), get(), parent(), zfun(), PARENTS
 & PFUN3
-
   Example:
   
     > &root Parent=ParentRoot
@@ -6232,18 +6227,17 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
     ParentRoot / ParentRoot`foo / ChildRoot`bar
     
   Good for inherited @chatformats which use CHATFORMAT`<channel> leaf attrs
-  to store channel-specific formats and the like. Note that no_inherit flags
-  are still checked, as with normal attribute inheritance.
+  to store channel-specific formats and the like.
 & U()
 & UFUN()
 & ULAMBDA()
-  ufun([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
-  ulambda([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
+  ufun([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
+  ulambda([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
  
   ufun() evaluates <attribute> on <object> (or on the caller, if no <object>
-  is given), and returns the result. Up to 10 <arg>s can be passed, available
-  to the attribute as %0, %1, ..., %9. This can be used to create "user
-  defined functions".
+  is given), and returns the result. Up to 30 <arg>s can be passed, available
+  to the attribute as %0, %1, up to %9, and v(10) to v(29). This can be used 
+  to create "user defined functions".
   
   u() is an alias for ufun(), for TinyMUSH compatability.
   
@@ -6292,17 +6286,17 @@ See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(),
 See also: lcstr(), capstr()
 & UDEFAULT()
 & ULDEFAULT()
-  udefault([<object>/]<attribute>, <default case>[, <arg0>[, ... , <arg9>]])
-  uldefault([<object>/]<attribute>, <default case>[, <arg0>[, ... <arg9>]])
+  udefault([<object>/]<attribute>, <default case>[, <arg0>[, ... , <arg29>]])
+  uldefault([<object>/]<attribute>, <default case>[, <arg0>[, ... <arg29>]])
 
   If the given <attribute> on <object> (or the caller, if no <object> is
   given) can be read, the attribute is evaluated, and the result returned.
-  Up to ten <arg>s can be passed to the attribute, as per ufun().
+  Up to thirty <arg>s can be passed to the attribute, as per ufun().
   
   If the attribute cannot be read, <default case> is evaluated and returned
   instead. The <default case> is not evaluated if the attribute exists.
   
-  uldefault() saves the global registers %q0-%q9 and %qa-%qz before
+  uldefault() saves the global q-registers (%q0-%q9, %qa-%qz, etc) before
   evaluation, and restores them afterwards, as per ulocal().
  
   Examples:
@@ -6315,12 +6309,12 @@ See also: lcstr(), capstr()
  
 See also: get(), eval(), ufun(), default(), edefault(), ulocal(), localize()
 & ULOCAL()
-  ulocal([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
+  ulocal([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
  
   The ulocal() function is similar to ufun(); it evaluates <attribute> on
-  <object> (or the caller, if no <object> is given), passing up to ten
-  <arg>s. However, before evaluating the attribute, ulocal() stores the
-  36 global registers (%q0-%q9, %qa-%qz), in the same way as the localize()
+  <object> (or the caller, if no <object> is given), passing up to thirty
+  <arg>s. However, before evaluating the attribute, ulocal() stores all the
+  global q-registers (%q0-%q9, %qa-%qz), in the same way as the localize()
   function, and restores them after the attribute is evaluated. It's useful
   when you need to evaluate an attribute on an untrusted object which might
   alter the values of the registers.
@@ -6368,19 +6362,25 @@ See also: setunion(), sort()
 & V()
 & V-FUNCTION
   v(<variable>)
+  v(<integer>)
   v(<attribute>)
 
   The first form of this function returns the value of the <variable> %-sub.
-  In most cases, using the %-sub is preferable. Not all %-subs can be
-  accessed this way; only the following <variable>s are valid:
+  In most cases, using the %-sub is preferable. Not all %-subs are accessible
+  this way; only the following <variable>s are valid:
+
     0-9, #, @, !, n, l, and c.
+
   Unlike %-subs, the v() function is not case-sensitive: v(n) and v(N) are
   both equivilent to %n (whereas %N is equivilent to [capstr(%n)]).
   
-  The second form of this function is equivilent to xget(me, <attribute>),
-  but is usually slightly more efficient.
+  v() can also return the value of stack registers. v(0) is equivilent to %0,
+  but v() can return up to 30 registers (v(0) through v(29)).
+  
+  The final form of this function is equivilent to get(me/<attribute>), but 
+  is usually slightly more efficient.
 
-See also: SUBSTITUTIONS, get(), r(), ATTRIBUTES
+See also: STACK, REGISTERS, SUBSTITUTIONS, get(), r(), ATTRIBUTES
 & VADD()
   vadd(<vector1>, <vector2>[, <delimiter>])
 
@@ -6791,12 +6791,12 @@ See also: lwho(), nwho(), zone(), zfun(), zemit()
 
 See also: @zemit, zone(), zfun(), zwho(), ZONES
 & ZFUN()
-  zfun(<attribute>[, <arg0>[, <arg1>[, ... , <arg9>]]])
+  zfun(<attribute>[, <arg0>[, <arg1>[, ... , <arg29>]]])
  
   This function evaluates an attribute on the caller's Zone object. It is
   essentially identical to
   
-  ufun(zone(me)/<attribute>[, <arg0>[, ... , <arg9>]])
+  ufun(zone(me)/<attribute>[, <arg0>[, ... , <arg29>]])
 
 See also: ufun(), get(), zone(), zemit(), zwho(), ZONES
 & ZONE()

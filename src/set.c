@@ -70,8 +70,7 @@ void
 do_name(dbref player, const char *name, char *newname_)
 {
   dbref thing;
-  char *myenv[10];
-  int i;
+  char oldname[BUFFER_LEN];
   char *newname = NULL;
   char *alias = NULL;
   PE_REGS *pe_regs;
@@ -130,12 +129,7 @@ do_name(dbref player, const char *name, char *newname_)
   }
 
   /* Actually change it */
-  myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
-  myenv[1] = (char *) mush_malloc(BUFFER_LEN, "string");
-  mush_strncpy(myenv[0], Name(thing), BUFFER_LEN);
-  strcpy(myenv[1], newname);
-  for (i = 2; i < 10; i++)
-    myenv[i] = NULL;
+  mush_strncpy(oldname, Name(thing), BUFFER_LEN);
 
   if (IsPlayer(thing)) {
     do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
@@ -158,20 +152,17 @@ do_name(dbref player, const char *name, char *newname_)
   }
 
   queue_event(player, "OBJECT`RENAME", "%s,%s,%s",
-              unparse_objid(thing), myenv[1], myenv[0]);
+              unparse_objid(thing), newname, oldname);
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
   pe_regs = pe_regs_create(PE_REGS_ARG, "do_name");
-  pe_regs_setenv_nocopy(pe_regs, 0, myenv[0]);
-  pe_regs_setenv_nocopy(pe_regs, 1, myenv[1]);
+  pe_regs_setenv_nocopy(pe_regs, 0, oldname);
+  pe_regs_setenv_nocopy(pe_regs, 1, newname);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
               pe_regs, NA_INTER_PRESENCE);
   pe_regs_free(pe_regs);
   mush_free(newname, "name.newname");
-  mush_free(myenv[0], "string");
-  mush_free(myenv[1], "string");
-
 }
 
 /** Change an object's owner.

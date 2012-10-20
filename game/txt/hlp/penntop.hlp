@@ -1615,11 +1615,12 @@ Continued in 'help regexp classes2'
   See 'help regexp syntax' for a more detailed explanation.
 
 & REGISTERS
-  A register is essentially a little reserved piece of computer memory
-  that can hold some variable information that you want to pass on to
-  another command.  There are ten registers on the MUSH available via
-  %-substitution (%0 - %9) and many setq registers available via
-  %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names). 
+  A register is essentially a little reserved piece of computer memory that 
+  can hold some variable information that you want to pass on to another 
+  command.  There are thirty registers on the MUSH available via the %0-%9
+  %-substitutions and v(0) - v(29). There are also many setq registers 
+  available via %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names),
+  or the r() function.
 
   The basic registers are filled with information that matches the 
   wildcard pattern of the command trigger. (Before you say "Huh?", here's
@@ -1644,8 +1645,6 @@ Continued in 'help regexp classes2'
   &SOMECODE me=@emit %0 is in register 0 and %1 is in register 1.
   @trigger me/somecode=whee,foo bar
   > whee is in register 0 and foo bar is in register 1.
-
-  The registers can also be accessed using the V-function (v(0) to v(9)).
 
   Please see 'help setq()' for more information about the setq registers.
 
@@ -1745,22 +1744,22 @@ See also: @wait, @drain, @notify
   insure that the object gets @notify'd once when it starts up.
   Continued in 'help semaphores5'.
 & SEMAPHORES5
- Normally, semaphores use the SEMAPHORE attribute. However, other
- attributes can be used, as long as they follow a few simple rules: If
- the attribute is already set, it has to have the same owner (God) and
- flags as the SEMAPHORE attribute would (typically no_inherit,
- no_clone, and locked - see 'help @set' and '@atrlock'), and have a
- numeric or empty value. If it's not set, it can't be one of the built
- in attributes (See @list attribs) unless, naturally, it is SEMAPHORE.
+  Normally, semaphores use the SEMAPHORE attribute. However, other attributes
+  can be used, as long as they follow a few simple rules: If  the attribute 
+  is already set, it has to have the same owner (God) and flags as the 
+  SEMAPHORE attribute would (typically no_inherit, no_clone, and locked - see
+  'help @set' and '@atrlock'), and have a numeric or empty value. If it's not
+  set, it can't be one of the built in attributes (See @list attribs) unless,
+  naturally, it is SEMAPHORE.
 
- See the help on @wait, @notify and @drain for details, but, briefly,
- you can use named semaphores with <object>/<attribute> where you
- would normally just use <object> in those commands. This means you
- can't have a un-timed semaphore on an attribute with a numeric name.
+  See the help on @wait, @notify and @drain for details, but, briefly, you 
+  can use named semaphores with <object>/<attribute> where you would normally
+  just use <object> in those commands. This means you can't have an untimed 
+  semaphore on an attribute with a numeric name.
 
   Continued in 'help semaphores6'.
 & SEMAPHORES6
- An example:
+  An example:
  
   > @wait me/semtest=think blah
   > ex me/semtest 
@@ -1774,16 +1773,16 @@ See also: @wait, @drain, @notify
   Notified.
   blah
 
- This allows you to use one object to control many different things --
- for example, fights in a turn-based combat sytem.
+  This allows you to use one object to control many different things --
+  for example, fights in a turn-based combat sytem.
 & SETTING-ATTRIBUTES
-  
+& SETTING ATTRIBUTES  
   Standard attributes are set using @<attrib> <obj>=<value>
   Nonstandard attributes are set using &<attrib> <obj>=<value>
   Attributes may also be set using @set <obj>=<attrib>:<value> or the
   attrib_set() or set() functions.
   
-  Attributes are cleared using @<attrib> <obj> or &<attrib> <obj> or
+  Attributes are cleared using @<attrib> <obj> or &<attrib> <obj>, or
   with @wipe or wipe().
   
   Note that if the empty_attrs configuration option is set 
@@ -1792,36 +1791,43 @@ See also: @wait, @drain, @notify
     @va me       <--- wipes out my VA attribute
     @va me=      <--- sets my VA attribute to be empty
   
-  Empty attributes retain their flags and atrlock status. Wiped
-  attributes are gone forever.
+  Empty attributes retain their flags and atrlock status. Wiped attributes
+  are gone forever.
   
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set, @wipe, attrib_set(),
-  set(), wipe()
+  set(), wipe(), ATTRIBUTE FLAGS
 & SPOOFING
-  Spoofing is the act of making other characters think that a person
-  said or did something that they did not.  This is very easy to
-  accomplish, and has some good effects, which is why it is allowed.
-  However, abusing it is very twinkish and will most likely get you in
-  hot water with your wizards. Note that if you are being spoofed and
-  want to know who is doing it, you can set yourself NOSPOOF and you
-  will be notified who is making the @emits.
+  Spoofing is the act of making other characters think that a person said or
+  did something that they did not.  This is very easy to accomplish, and has 
+  some good effects, which is why it is allowed. However, abusing it is very 
+  twinkish and will most likely get you in hot water with your wizards. Note 
+  that if you are being spoofed and want to know who is doing it, you can set
+  yourself NOSPOOF and you will be notified who is making the @emits.
+  
+  Most @*emit commands have a wizard-only @ns*emit version, which does not
+  show nospoof information. These are useful for writing global commands.
+  
+  Some @*emit commands also take a /spoof switch, which causes nospoof 
+  information to show that sound originated from the enactor (%#) instead of
+  the executor (%!). This switch allows staff to write global $-commands for
+  speech which show more helpful nospoof tags.
 
-See also: @emit, @pemit, @remit, @oemit, NOSPOOF
+See also: @emit, @pemit, @remit, @oemit, NOSPOOF, PARANOID
 & STACK
   For those unfamiliar with the term stack, it refers to a programming data 
   structure that follows a LIFO (Last-In-First-Out) principle. The stack in 
-  MUSH holds the ten REGISTERS, which can be accessed via the V-function 
-  (v(0) through v(9)) or via %-substitution (%0 through %9).
+  MUSH holds the REGISTERS. The first ten registers can be accessed via the
+  %0-%9 %-substitutions, while all registers can be accessed via the v()
+  function (v(0), v(1), etc, up to v(29)).
   
 See also: REGISTERS
 & STRINGS
-  A string is simply a bunch of characters. A word is a string that
-  begins and ends with the space character. A sentence is a string
-  made up of smaller substrings that are words. Please note that a
-  "word" or "sentence" in this technical sense does not have to make
-  sense in English (or in any other language, for that matter). As far
-  as mush functions and commands are concerned, this is a perfectly
-  good sentence:
+  A string is simply a bunch of characters. A word is a string that begins 
+  and ends with the space character. A sentence is a string made up of
+  smaller substrings that are words. Please note that a "word" or "sentence"
+  in this technical sense does not have to make sense in English (or in any 
+  other language, for that matter). As far as mush functions and commands are
+  concerned, this is a perfectly good sentence:
 
         Foozle 09blert bar baz foo.
 
@@ -2058,16 +2064,16 @@ See also: @destroy, @stats
 & USER-DEFINED2
   Any number of *'s and ?'s may be in the command name. A * matches any 
   number of characters, and a ? matches any single character. When the 
-  actions are executed, the values on the stack in %0-%9 are the portions
-  of what the user types that match the first ten *'s or ?'s.  You can also 
-  match a regular expression rather than wildcards. See 'help regexps' 
-  for details.
+  actions are executed, the values on the stack in %0-%9 and v(10)-v(29) are
+  the portions of what the user types that match the first 30 *'s or ?'s. 
+  You can also match a regular expression rather than wildcards - see 
+  'help regexps' for details.
 
   For example, to make a 'wave' command, you could do the following:
     &DO_WAVE me=$wave *: pose waves to %0.
   You could then type:
-        > wave Guest
-        Rhyanna waves to Guest.
+    > wave Guest
+    Rhyanna waves to Guest.
 
   If a command would match, but the enactor can't pass the lock, the object 
   may define generic failure behavior by setting the COMMAND_LOCK`FAILURE, 

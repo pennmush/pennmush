@@ -1168,12 +1168,12 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       int i;
 
       cache = 0;
-      if (format->numargs || (format->targetarg >= 0 && format->targetarg < 10)) {
+      if (format->numargs || (format->targetarg >= 0 && format->targetarg < MAX_STACK_ARGS)) {
         pe_regs = pe_regs_create(PE_REGS_ARG, "notify_internal");
-        for (i = 0; i < format->numargs && i < 10; i++) {
+        for (i = 0; i < format->numargs && i < MAX_STACK_ARGS; i++) {
           pe_regs_setenv_nocopy(pe_regs, i, format->args[i]);
         }
-        if (format->targetarg >= 0 && format->targetarg < 10)
+        if (format->targetarg >= 0 && format->targetarg < MAX_STACK_ARGS)
           pe_regs_setenv(pe_regs, format->targetarg, unparse_dbref(target));
       }
 
@@ -1361,17 +1361,17 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       if (a) {
         char match_space[BUFFER_LEN * 2];
         ssize_t match_space_len = BUFFER_LEN * 2;
-        char *lenv[10];
+        char *lenv[MAX_STACK_ARGS];
         char *atrval;
 
         atrval = safe_atr_value(a);
 
         if (AF_Regexp(a)
             ? regexp_match_case_r(atrval, fullmsg,
-                                  AF_Case(a), lenv, 10,
+                                  AF_Case(a), lenv, MAX_STACK_ARGS,
                                   match_space, match_space_len, NULL)
             : wild_match_case_r(atrval, fullmsg,
-                                AF_Case(a), lenv, 10,
+                                AF_Case(a), lenv, MAX_STACK_ARGS,
                                 match_space, match_space_len, NULL)) {
           if (!listen_lock_checked)
             listen_lock_passed = eval_lock(speaker, target, Listen_Lock);
@@ -1380,7 +1380,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
             PE_REGS *pe_regs;
 
             pe_regs = pe_regs_create(PE_REGS_ARG, "notify");
-            for (i = 0; i < 10; i++) {
+            for (i = 0; i < MAX_STACK_ARGS; i++) {
               if (lenv[i]) {
                 pe_regs_setenv_nocopy(pe_regs, i, lenv[i]);
               }

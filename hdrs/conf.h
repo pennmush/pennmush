@@ -28,6 +28,8 @@
 
 #define COMMAND_NAME_LIMIT 64  /**< Loose limit on command/function name length */
 
+#define MAX_STACK_ARGS 30 /**< Number of possible args that can be passed, available as %0-%9 and v(N) */
+
 /* magic cookies */
 #define LOOKUP_TOKEN '*'  /**< Token that denotes player name in object matching */
 #define NUMBER_TOKEN '#'  /**< Dbref token */

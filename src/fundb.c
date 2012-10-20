@@ -482,7 +482,13 @@ FUNCTION(fun_v)
       return;
     }
   }
-  safe_str(do_get_attrib(executor, executor, args[0]), buff, bp);
+  if (is_strict_integer(args[0])) {
+    s = PE_Get_Env(pe_info, parse_integer(args[0]));
+    if (s)
+      safe_str(s, buff, bp);
+  } else {
+    safe_str(do_get_attrib(executor, executor, args[0]), buff, bp);
+  }
 }
 
 /* ARGSUSED */

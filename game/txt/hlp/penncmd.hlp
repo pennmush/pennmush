@@ -2727,7 +2727,7 @@ See also: @listmotd
     Alias set.
     Name set.
     > @name me=Obi Wan;
-    Alias removed;
+    Alias removed.
     Name set.
   
 See also: @alias, @oname, name(), fullname()

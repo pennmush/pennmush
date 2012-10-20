@@ -37,7 +37,8 @@ Functions:
    by tsen. [MG]
  * stringsecs() can now handle the additional time periods that etime() can 
    return (years, weeks). [MG]
- * colors(..., name) is much more efficient. [SW] 
+ * colors(..., name) is much more efficient. [SW]
+ * alias(object,) clears object's @alias. Suggested by spork. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

@@ -1723,8 +1723,10 @@ FUNCTION(fun_alias)
     }
     if (!FUNCTION_SIDE_EFFECTS)
       safe_str(T(e_disabled), buff, bp);
-    else
+    else if (arglens[1])
       do_set_atr(it, "ALIAS", args[1], executor, 0);
+    else
+      do_set_atr(it, "ALIAS", NULL, executor, 0);
     return;
   } else {
     safe_str(shortalias(it), buff, bp);

@@ -483,9 +483,14 @@ FUNCTION(fun_v)
     }
   }
   if (is_strict_integer(args[0])) {
-    s = PE_Get_Env(pe_info, parse_integer(args[0]));
-    if (s)
-      safe_str(s, buff, bp);
+    c = parse_integer(args[0]);
+    if (c < 0 || c >= MAX_STACK_ARGS) {
+      safe_str(T(e_range), buff, bp);
+    } else {
+      s = PE_Get_Env(pe_info, c);
+      if (s)
+        safe_str(s, buff, bp);
+    }
   } else {
     safe_str(do_get_attrib(executor, executor, args[0]), buff, bp);
   }

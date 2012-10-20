@@ -44,8 +44,6 @@
 #define EQUAL(cs,a,b) ((cs) ? (a == b) : (FIXCASE(a) == FIXCASE(b)))
 /** Check for inequality of characters, maybe case-sensitive */
 #define NOTEQUAL(cs,a,b) ((cs) ? (a != b) : (FIXCASE(a) != FIXCASE(b)))
-/** Maximum number of wildcarded arguments */
-#define NUMARGS (10)
 
 bool help_wild(const char *restrict tstr, const char *restrict dstr);
 

@@ -154,8 +154,8 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   int pe_flags = PE_DEFAULT | extra_flags;
   PE_REGS *pe_regs;
 
-  if (nargs > 10)
-    nargs = 10;                 /* maximum ten args */
+  if (nargs > MAX_STACK_ARGS)
+    nargs = MAX_STACK_ARGS;                 /* maximum no of args */
 
   /* save our stack */
   if (!pe_info) {

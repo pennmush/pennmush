@@ -1492,7 +1492,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   uint32_t flag_mask;
   ATTR *ptr;
   int parent_depth;
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   PE_REGS *pe_regs;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
@@ -1621,7 +1621,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
       match_found = 0;
       if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                                 match_space, match_space_len, NULL)) {
           match_found = 1;
           match++;
@@ -1631,7 +1631,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match_found = 1;
           match++;
           if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                               match_space, match_space_len, NULL);
         }
       }
@@ -1668,7 +1668,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (!just_match) {
           pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
-          for (i = 0; i < 10; i++) {
+          for (i = 0; i < MAX_STACK_ARGS; i++) {
             if (args[i]) {
               pe_regs_setenv_nocopy(pe_regs, i, args[i]);
             }
@@ -1748,7 +1748,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   PE_REGS *pe_regs;
   int i;
   char match_space[BUFFER_LEN * 2];
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   ssize_t match_space_len = BUFFER_LEN * 2;
 
   /* check for lots of easy ways out */
@@ -1783,10 +1783,10 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     strcpy(tbuf2, tbuf1);
 
   if (AF_Regexp(ptr) ?
-      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                           match_space, match_space_len, NULL) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        10, match_space, match_space_len, NULL)) {
+                        MAX_STACK_ARGS, match_space, match_space_len, NULL)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     int success = 1;
     NEW_PE_INFO *pe_info;
@@ -1813,7 +1813,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     }
     if (success) {
       pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
-      for (i = 0; i < 10; i++) {
+      for (i = 0; i < MAX_STACK_ARGS; i++) {
         if (args[i]) {
           pe_regs_setenv_nocopy(pe_regs, i, args[i]);
         }

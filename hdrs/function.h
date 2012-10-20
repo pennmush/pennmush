@@ -131,5 +131,7 @@ extern FUN *function_add(const char *name, function_func fun, int minargs,
 
 int cnf_add_function(char *name, char *opts);
 
+/** Default max number of arguments for a new @function */
+#define DEF_FUNCTION_ARGS 10
 
 #endif

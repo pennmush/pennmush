@@ -147,11 +147,11 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
       if (*thingname)
         nargs = parse_uinteger(thingname);
 
-      /* Limit between 1 and 10 arguments (%0-%9) */
+      /* Limit between 1 and MAX_STACK_ARGS arguments (%0-%9) */
       if (nargs == 0)
         nargs = 1;
-      if (nargs > 10)
-        nargs = 10;
+      if (nargs > MAX_STACK_ARGS)
+        nargs = MAX_STACK_ARGS;
 
       safe_str(attrname, ufun->contents, &ucb);
       safe_chr('(', ufun->contents, &ucb);

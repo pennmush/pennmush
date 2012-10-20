@@ -713,11 +713,11 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
   va_list ap;
   char *s;
   int i;
-  char *argv[10];
+  char *argv[MAX_STACK_ARGS];
 
   va_start(ap, numargs);
 
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (i < numargs) {
       /* Pop another char * off the stack. */
       s = va_arg(ap, char *);
@@ -758,7 +758,7 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
 
   *messbuff = '\0';
   pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");
-  for (i = 0; i < numargs && i < 10; i++) {
+  for (i = 0; i < numargs && i < MAX_STACK_ARGS; i++) {
     pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
   }
   ret = call_attrib(player, attribute, messbuff, enactor, NULL, pe_regs);

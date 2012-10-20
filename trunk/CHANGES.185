@@ -23,6 +23,10 @@ Major changes:
  * Having unescaped commas in the final arg of a function call is now
    deprecated, and will eventually become illegal. Any existing code which
    does this will spam you with a warning until you change it. [MG]
+ * The stack (%0-%9) can now hold up to 30 arguments, with the additional 20
+   available through v(10) to v(29). $-commands, @functions and many built-in
+   commands and functions (such as ufun(), @mapsql, etc) now make use of
+   these args. [MG] [MUX] [Rhost]
 
 Commands:
  * @dolist now accepts /inline and related switches, like @switch does.
@@ -41,6 +45,8 @@ Functions:
    return (years, weeks). [MG]
  * colors(..., name) is much more efficient. [SW]
  * alias(object,) clears object's @alias. Suggested by spork. [MG]
+ * v(<integer>) is no longer the same as get(me/<integer>). Instead, it
+   always the <integer>th stack entry. [MG] [Rhost] [MUX]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

@@ -211,7 +211,7 @@ COMMAND(cmd_retry)
   if (rhs_present) {
     /* Now, to evaluate all of rsargs. Blah. */
     pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_retry");
-    for (a = 0; a < 10; a++) {
+    for (a = 0; a < MAX_STACK_ARGS; a++) {
       sp = args_right[a + 1];
       if (sp) {
         bp = buff;
@@ -923,11 +923,11 @@ COMMAND(cmd_message)
   char *attrib;
   unsigned int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_LIST;
   int numargs, i;
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   enum emit_type type;
   dbref speaker = SPOOF(executor, enactor, sw);
 
-  for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
+  for (numargs = 1; args_right[numargs] && numargs < (MAX_STACK_ARGS + 3); numargs++) ;
 
   switch (numargs) {
   case 1:

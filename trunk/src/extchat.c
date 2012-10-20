@@ -3704,7 +3704,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   const char *someone = "Someone";
   dbref mogrifier = NOTHING;
   const char *ctype = NULL;
-  const char *argv[10] = { NULL };
+  const char *argv[10] = { NULL }; /* Doesn't need to be MAX_STACK_ARGS */
   int override_chatformat = 0;
   bool skip_buffer = 0;
 

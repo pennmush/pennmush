@@ -390,7 +390,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   PE_REGS *pe_regs;
   char *aval;
   int argcount = 0;
-  char *wenv[10];
+  char *wenv[MAX_STACK_ARGS];
   int i, len;
   MQUE *tmp;
   int pid;
@@ -440,7 +440,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   }
 
   /* We have an event to call. Yay! */
-  for (i = 0; i < 10; i++)
+  for (i = 0; i < MAX_STACK_ARGS; i++)
     wenv[i] = NULL;
 
   /* Prep myfmt: Replace all commas with delim chars. */
@@ -454,9 +454,9 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     argcount++;
   }
 
-  /* Maximum number of args available is 10: %0-%9 */
-  if (argcount > 10)
-    argcount = 10;
+  /* Maximum number of args available (%0-%9 stack) */
+  if (argcount > MAX_STACK_ARGS)
+    argcount = MAX_STACK_ARGS;
 
   if (argcount > 0) {
     /* Build the arguments. */
@@ -499,7 +499,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     tmp->pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "queue_event");
   }
   pe_regs = tmp->pe_info->regvals;
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (wenv[i]) {
       pe_regs_setenv(pe_regs, i, wenv[i]);
     }
@@ -735,7 +735,7 @@ queue_include_attribute(dbref thing, const char *atrname,
   if (args != NULL) {
     queue_type |= QUEUE_RESTORE_ENV;
     pe_regs = pe_regs_create(PE_REGS_ARG, "queue_include_attribute");
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_STACK_ARGS; i++) {
       if (args[i] && *args[i]) {
         pe_regs_setenv_nocopy(pe_regs, i, args[i]);
       }
@@ -1950,7 +1950,7 @@ show_queue_env(dbref player, MQUE *q)
   /* %0 - %9 */
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
-    for (i = 0; i < 10; i += 1) {
+    for (i = 0; i < MAX_STACK_ARGS; i += 1) {
       const char *arg = pi_regs_get_env(q->pe_info, i);
       if (arg)
         notify_format(player, " %%%d : %s", i, arg);

@@ -1323,7 +1323,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* We're okay.  Send out messages. */
 
   pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_verb");
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (argv[i + 7]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 7]);
     }

@@ -872,7 +872,6 @@ See also: @command, @hook, $-commands, huh_command
   See 'help @lock' and 'help locktypes' for more information on lock types.
 
 See also: verbs, @lock, @failure, @efail, @lfail
-
 & failure2
   The following failures are defined in PennMUSH:
   
@@ -1600,8 +1599,6 @@ Continued in 'help regexp classes2'
  graph, print, punct, and xdigit.
 
 & REGEXP EXAMPLES
-  Topic: REGEXP EXAMPLES
- 
   The regexp pattern '.' is equivalent to the wildcard '?'; it matches
   one and only one of an arbitrary character.
  
@@ -1613,7 +1610,6 @@ Continued in 'help regexp classes2'
   To match a string of letters only, use:  [A-Za-z]+ or \w+
  
   See 'help regexp syntax' for a more detailed explanation.
-
 & REGISTERS
   A register is essentially a little reserved piece of computer memory that 
   can hold some variable information that you want to pass on to another 

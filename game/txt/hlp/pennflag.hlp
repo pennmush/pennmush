@@ -761,11 +761,11 @@ See also: ZONES, ZONE MASTERS, @chzone, ZONE MASTER ROOMS, NO_TEL, JUMP_OK
 & ZONE
   Flag:  SHARED   (players) 
 
-  The SHARED flag is used to designate a player as a Zone Master. Objects 
-  owned by a Zone Master are controlled by anyone who passes the player's
+  The SHARED flag is used to designate a player as a Shared Player. Objects 
+  owned by a Shared Player are controlled by anyone who passes the player's
   zone @lock.
 
-See also: ZONE MASTERS, @lock
+See also: SHARED PLAYERS, @lock
 & LISTEN_PARENT
   Flag:  LISTEN_PARENT (players, things, rooms)
   

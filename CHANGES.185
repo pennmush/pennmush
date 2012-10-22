@@ -60,6 +60,10 @@ Minor changes:
    much more efficient. [SW]
  * Converting from extended colors to ansi colors is smarter. Based on
    work by Padraic. [SW]
+ * Email registration no longer pretends to work with really!old!addresses.
+   [SW].
+ * Better error reporting in logs and event hooks on failed email
+   registration. Suggested by Padriac. [SW]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

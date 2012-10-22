@@ -399,11 +399,11 @@ email_register_player(DESC *d, const char *name, const char *email,
                       const char *host, const char *ip)
 {
   char *p;
-  char passwd[BUFFER_LEN];
+  char passwd[20];
   static char elems[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   int i, len;
-  int resend = 0;
+  bool resend = 0;
   dbref player = NOTHING;
   FILE *fp;
 
@@ -432,14 +432,13 @@ email_register_player(DESC *d, const char *name, const char *email,
     }
   }
   if (!resend) {
-    /* Make sure that the email address is valid. A valid address must
-     * contain either an @ or a !
-     * Also, to prevent someone from using the MUSH to mailbomb another site,
-     * let's make sure that the site to which the user wants the email
-     * sent is also allowed to use the register command.
-     * If there's an @, we check whatever's after the last @
-     * (since @foo.bar:user@host is a valid email)
-     * If not, we check whatever comes before the first !
+    /* Make sure that the email address is kind of valid. A valid
+     * address must contain a @. Let the mailer sort it out beyond
+     * that.  Also, to prevent someone from using the MUSH to mailbomb
+     * another site, let's make sure that the site to which the user
+     * wants the email sent is also allowed to use the register
+     * command.  If there's an @, we check whatever's after the last @
+     * (since @foo.bar:user@host is a valid email).
      */
     if ((p = strrchr(email, '@'))) {
       p++;
@@ -453,22 +452,6 @@ email_register_player(DESC *d, const char *name, const char *email,
                       "register: bad site in email", name);
         }
         return NOTHING;
-      }
-    } else if ((p = strchr(email, '!'))) {
-      *p = '\0';
-      if (!Site_Can_Register(email)) {
-        if (!Deny_Silent_Site(email, AMBIGUOUS)) {
-          *p = '!';
-          do_log(LT_CONN, 0, 0,
-                 "Failed registration (bad site in email: %s) from %s",
-                 email, host);
-          queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                      d->descriptor, ip, mark_failed(ip),
-                      "register: bad site in email", name);
-        }
-        return NOTHING;
-      } else {
-        *p = '!';
       }
     } else {
       if (!Deny_Silent_Site(host, AMBIGUOUS)) {
@@ -513,9 +496,9 @@ email_register_player(DESC *d, const char *name, const char *email,
     do_log(LT_CONN, 0, 0,
            "Failed registration of %s by %s: unable to open sendmail",
            name, email);
-    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s,%d",
                 d->descriptor, ip, count_failed(ip),
-                "register: Unable to open sendmail!", name);
+                "register: Unable to open sendmail!", name, 1);
     reserve_fd();
     return NOTHING;
   }
@@ -533,13 +516,25 @@ email_register_player(DESC *d, const char *name, const char *email,
           MUDNAME);
   fprintf(fp, "\tconnect \"%s\" %s\n", name, passwd);
   fprintf(fp, "\n");
-  pclose(fp);
+  i = pclose(fp);
   reserve_fd();
-  /* Ok, all's well, make a player */
-  if (resend) {
+  
+  if (i != 0) {
+    /* Mailer exited with an error code. Log it. */
+    do_rawlog(LT_CONN, "When attempting to email a password to a newly registered player,\n"
+	      "\tthe mailer exited with error code %d.\n"
+	      "\t(Check /usr/include/sysexits.h if present for the meaning.)",
+	      i);
+    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s,%d",
+                d->descriptor, ip, count_failed(ip),
+                "register: Unable to send email", name, i);
+    return NOTHING;
+  } else if (resend) {
+    /* Reset the password */
     (void) atr_add(player, pword_attr, password_hash(passwd, NULL), GOD, 0);
     return player;
   } else {
+    /* Ok, all's well, make a player */
     player = make_player(name, passwd, host, ip);
     queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
                 unparse_objid(player), name, "register", d->descriptor);

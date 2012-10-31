@@ -2013,21 +2013,23 @@ See also: FLAGS, @set, @power, flag permissions
   controls (if safer_ufun is enabled) or can examine (if not).
   <function name> must be 30 characters or less.
 
-  A function defined using @function works just like any of the normal
-  MUSH functions, from the user's perspective. The functions are
-  executed by the object, with its powers.
+  A function defined using @function works just like any of the normal MUSH 
+  functions, from the user's perspective. The functions are executed by the
+  object, with its powers.
  
-  Functions defined via @function should follow the format used by
-  UFUN() - %0 is the first argument passed, %1 is the second argument
-  passed, and so forth. Optional third and fourth arguments to
-  @function can be used to set a parser-enforced number of arguments
-  for the function.  If the maximum arguments is negative, any
-  additional comments are treated as part of the text of the last
-  argument. An optional fifth argument will set restriction flags.
+  Functions defined via @function should follow the format used by UFUN() -
+  %0 is the first argument passed, %1 is the second argument passed, and so
+  forth. Optional third and fourth arguments to @function can be used to set 
+  a parser-enforced number of arguments for the function.  If the maximum 
+  arguments is negative, any additional comments are treated as part of the 
+  text of the last argument. Note that this behaviour is deprecated, and will
+  be removed in the near future.
+  
+  An optional fifth argument will set restriction flags.
 
-  The /preserve switch, for MUX compability, does the same thing as
-  the 'localize' restriction - treats the attribute that's evaluated
-  as if it were called with ulocal() instead of u().
+  The /preserve switch, for MUX compability, does the same thing as the 
+  'localize' restriction - treats the attribute that's evaluated as if it 
+  were called with ulocal() instead of u().
   
   Example:
   
@@ -2109,7 +2111,7 @@ See also: RESTRICT, FUNCTIONS, @startup, fn(), valid()
 See also: grep(), wildgrep(), regrep(), WILDCARDS
 & @halt
 & @allhalt
-  @halt <object>[=<action list>] 
+  @halt[/noeval] <object>[=<action list>] 
   @halt/pid <pid>
   @halt/all
   @allhalt

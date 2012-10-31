@@ -931,7 +931,7 @@ See also: @sitelock
   nearby. Wizards and Royalty have the power implicitly.
 & MANY_ATTRIBS POWER
 
-  The Many_Attribs power allows a player to have up to a million attributes,
+  The Many_Attribs power allows an object to have up to a million attributes,
   rather than the usual limit set in the max_attrs_per_object @config option.
   Useful for database objects.
 & NO_PAY POWER
@@ -944,8 +944,8 @@ See also: @sitelock
   indefinitely.
   
   Wizards used to have this power implicitly, but no longer do, for the
-  reasons given above. (Wizards can still give infinite numbers of pennies
-  to others, however.)
+  reasons given above. (Wizards can still give infinite numbers of pennies,
+  to others or themselves, however.)
   
   God is implicitly no_pay and, if you have the power and are not set
   MISTRUST, your objects are implicitly no_pay.

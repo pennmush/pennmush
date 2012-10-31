@@ -32,6 +32,8 @@ Commands:
  * @teleport/list teleports a list of objects to a single destination.
    Suggested by Nyssa, [MUX]. [MG]
  * @sockset and SOCKSET can now show/set PROMPT_NEWLINES. [MG]
+ * @halt now takes a /noeval switch, and will always strip curly braces when
+   run /noeval. [MG]
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list
@@ -58,12 +60,17 @@ Minor changes:
    much more efficient. [SW]
  * Converting from extended colors to ansi colors is smarter. Based on
    work by Padraic. [SW]
+ * Email registration no longer pretends to work with really!old!addresses.
+   [SW].
+ * Better error reporting in logs and event hooks on failed email
+   registration. Suggested by Padriac. [SW]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the
    unevaluated input. Reported by Ingwaz. [MG]
  * repeat() could write partial ANSI tags, causing buffer overflows. From a
    report by Ashen-Shugar. [MG]
+ * dbcks didn't reset corrupt exit's source room. Patch by Padriac.
 
 & 1.8.5p3
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012

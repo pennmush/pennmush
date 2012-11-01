@@ -231,18 +231,18 @@ parse_ansi_string(const char *src)
     TAG_START,MARKUP_HTML,x,TAG_END, \
     y, TAG_START,MARKUP_HTML,x,TAG_END)
 
-int safe_tag(char const *a_tag, char *buf, char **bp);
-int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
-int safe_tag_wrap(char const *a_tag, char const *params,
-		  char const *data, char *buf, char **bp, dbref player);
+    int safe_tag(char const *a_tag, char *buf, char **bp);
+    int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
+    int safe_tag_wrap(char const *a_tag, char const *params,
+                      char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
-int valid_color_name(const char *name);
-uint32_t color_to_hex(const char *name, bool hilite);
-int ansi_map_16(const char *name, bool bg, bool *hilite);
-int ansi_map_256(const char *name, bool hilite);
+    int valid_color_name(const char *name);
+    uint32_t color_to_hex(const char *name, bool hilite);
+    int ansi_map_16(const char *name, bool bg, bool *hilite);
+    int ansi_map_256(const char *name, bool hilite);
 
 
 #endif                          /* __ANSI_H */

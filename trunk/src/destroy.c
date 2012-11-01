@@ -1482,12 +1482,12 @@ check_locations(void)
           do_rawlog(LT_ERR,
                     "Incorrect source on exit %s. Reset to #%d.",
                     unparse_object(GOD, thing), loc);
-          /* Make sure it's only in the first room we found it in */ 
-          if(RealGoodObject(Source(thing)))
-	    remove_first(Exits(Source(thing)), thing);
+          /* Make sure it's only in the first room we found it in */
+          if (RealGoodObject(Source(thing)))
+            remove_first(Exits(Source(thing)), thing);
           /* And make sure it knows it */
           Source(thing) = loc;
-  
+
         }
       }
     }

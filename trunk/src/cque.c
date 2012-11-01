@@ -1798,7 +1798,8 @@ FUNCTION(fun_lpids)
           safe_str(T(e_notvis), buff, bp);
           return;
         }
-        if (!LookQueue(executor) && !(Owns(executor, player) || controls(executor, player))) {
+        if (!LookQueue(executor)
+            && !(Owns(executor, player) || controls(executor, player))) {
           safe_str(T(e_perm), buff, bp);
           return;
         }
@@ -1843,7 +1844,8 @@ FUNCTION(fun_lpids)
   if (qmask & LPIDS_WAIT) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) : !Owns(tmp->executor, player))) {
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
+              !Owns(tmp->executor, player))) {
         continue;
       }
       if (!first)
@@ -1855,7 +1857,8 @@ FUNCTION(fun_lpids)
   if (qmask & LPIDS_SEMAPHORE) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) : !Owns(tmp->executor, player)))
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
+              !Owns(tmp->executor, player)))
         continue;
       if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;

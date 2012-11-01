@@ -106,29 +106,29 @@ build_rgb_map(void)
       struct rgb_namelist *curr;
 
       /* Find where to insert current color name into sorted list of
-	 names for this RGB tuple. */
+         names for this RGB tuple. */
       if (strcmp(node->name, lst->name) < 0) {
-	/* Insert at head of list */
-	const char *tname;
-	int trgb;
-	node->next = lst->next;
-	lst->next = node;
-	tname = lst->name;
-	lst->name = node->name;
-	node->name = tname;
-	trgb = lst->as_xterm;
-	lst->as_xterm = node->as_xterm;
-	node->as_xterm = trgb;
-	trgb = lst->as_ansi;
-	lst->as_ansi = node->as_ansi;
-	node->as_ansi = trgb;
+        /* Insert at head of list */
+        const char *tname;
+        int trgb;
+        node->next = lst->next;
+        lst->next = node;
+        tname = lst->name;
+        lst->name = node->name;
+        node->name = tname;
+        trgb = lst->as_xterm;
+        lst->as_xterm = node->as_xterm;
+        node->as_xterm = trgb;
+        trgb = lst->as_ansi;
+        lst->as_ansi = node->as_ansi;
+        node->as_ansi = trgb;
       } else {
-	for (curr = lst; curr->next; curr = curr->next) {
-	  if (strcmp(node->name, curr->name) < 0)
-	    break;
-	}
-	node->next = curr->next;
-	curr->next = node;
+        for (curr = lst; curr->next; curr = curr->next) {
+          if (strcmp(node->name, curr->name) < 0)
+            break;
+        }
+        node->next = curr->next;
+        curr->next = node;
       }
     }
   }
@@ -281,9 +281,10 @@ FUNCTION(fun_colors)
         safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
         break;
       case COL_16:
-        safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc - (i ? 32 : 0), buff, bp);
-	if (hilite)
-	  safe_chr('h', buff, bp);
+        safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc -
+                 (i ? 32 : 0), buff, bp);
+        if (hilite)
+          safe_chr('h', buff, bp);
         break;
       case COL_256:
         safe_integer(ansi_map_256(color, 0), buff, bp);
@@ -291,17 +292,17 @@ FUNCTION(fun_colors)
       case COL_NAME:
         {
           uint32_t hex;
-	  struct rgb_namelist *names;
+          struct rgb_namelist *names;
           bool shown = 0;
 
           hex = color_to_hex(color, 0);
 
-	  for (names = im_find(rgb_to_name, hex); names; names = names->next) {
-	    if (shown)
-	      safe_chr(' ', buff, bp);
-	    safe_str(names->name, buff, bp);
-	    shown = 1;
-	  }
+          for (names = im_find(rgb_to_name, hex); names; names = names->next) {
+            if (shown)
+              safe_chr(' ', buff, bp);
+            safe_str(names->name, buff, bp);
+            shown = 1;
+          }
 
           if (!shown)
             safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
@@ -667,7 +668,7 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
   }
 }
 
-#define ERROR_COLOR 0xff69b4 /* Hot Pink. */
+#define ERROR_COLOR 0xff69b4    /* Hot Pink. */
 
 /** Return the hex code for a given ANSI color */
 uint32_t
@@ -1088,8 +1089,7 @@ valid_hex_digits(const char *digits, int len)
     const char *errptr;
     int erroff;
 
-    re = pcre_compile("^[[:xdigit:]]+$",
-                      0, &errptr, &erroff, tables);
+    re = pcre_compile("^[[:xdigit:]]+$", 0, &errptr, &erroff, tables);
     if (!re) {
       do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
       return 0;
@@ -1179,7 +1179,8 @@ valid_angle_triple(const char *s, int len, char *rgbs)
 static const char *
 find_end_of_color(const char *s, bool angle)
 {
-  while (*s && *s != '/' && *s != TAG_END && *s != '!' && (angle ? *s != '>' : !isspace((unsigned char) *s)))
+  while (*s && *s != '/' && *s != TAG_END && *s != '!'
+         && (angle ? *s != '>' : !isspace((unsigned char) *s)))
     s += 1;
   if (angle && *s && *s == '>')
     s += 1;
@@ -1204,10 +1205,10 @@ define_ansi_data(ansi_data *store, const char *str)
   memset(store, 0, sizeof(ansi_data));
 
   while (str && *str && *str != TAG_END) {
-      while (isspace((unsigned char) *str)) {
-        str++;
-        new_ansi = false;
-      }
+    while (isspace((unsigned char) *str)) {
+      str++;
+      new_ansi = false;
+    }
     if (new_ansi) {
       /* *str is either +, #, <, 0-9 or / */
       switch (*str) {
@@ -1225,7 +1226,7 @@ define_ansi_data(ansi_data *store, const char *str)
 
         if (strncasecmp("xterm", buff, 5) == 0) /* xterm color ids are stored directly. */
           snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
-         else if (len > 6) /* Use hex code to save on buffer space */
+        else if (len > 6)       /* Use hex code to save on buffer space */
           snprintf(ptr, COLOR_NAME_LEN, "#%06x",
                    color_to_hex(tprintf("+%s", buff), 0));
         else
@@ -1241,7 +1242,7 @@ define_ansi_data(ansi_data *store, const char *str)
         memcpy(buff, name, len);
         buff[len] = '\0';
         len = remove_trailing_whitespace(buff, len);
-        if (len != 6) /* Only accept 24-bit colors */
+        if (len != 6)           /* Only accept 24-bit colors */
           return 1;
         if (!valid_hex_digits(buff, len))
           return 1;
@@ -1345,7 +1346,7 @@ define_ansi_data(ansi_data *store, const char *str)
     } else {
       /* old style ANSI codes */
       switch (*str) {
-      case 'n':                  /* normal */
+      case 'n':                /* normal */
         /* This is explicitly normal, it'll never be colored */
         store->bits = 0;
         store->offbits = ~0;
@@ -1353,59 +1354,59 @@ define_ansi_data(ansi_data *store, const char *str)
         store->fg[1] = '\0';
         store->bg[0] = '\0';
         break;
-      case 'f':                  /* flash */
+      case 'f':                /* flash */
         store->bits |= CBIT_FLASH;
         store->offbits &= ~CBIT_FLASH;
         break;
-      case 'h':                  /* hilite */
+      case 'h':                /* hilite */
         store->bits |= CBIT_HILITE;
         store->offbits &= ~CBIT_HILITE;
         break;
-      case 'i':                  /* inverse */
+      case 'i':                /* inverse */
         store->bits |= CBIT_INVERT;
         store->offbits &= ~CBIT_INVERT;
         break;
-      case 'u':                  /* underscore */
+      case 'u':                /* underscore */
         store->bits |= CBIT_UNDERSCORE;
         store->offbits &= ~CBIT_UNDERSCORE;
         break;
-      case 'F':                  /* flash */
+      case 'F':                /* flash */
         store->offbits |= CBIT_FLASH;
         store->bits &= ~CBIT_FLASH;
         break;
-      case 'H':                  /* hilite */
+      case 'H':                /* hilite */
         store->offbits |= CBIT_HILITE;
         store->bits &= ~CBIT_HILITE;
         break;
-      case 'I':                  /* inverse */
+      case 'I':                /* inverse */
         store->offbits |= CBIT_INVERT;
         store->bits &= ~CBIT_INVERT;
         break;
-      case 'U':                  /* underscore */
+      case 'U':                /* underscore */
         store->offbits |= CBIT_UNDERSCORE;
         store->bits &= ~CBIT_UNDERSCORE;
         break;
-      case 'b':                  /* blue fg */
-      case 'c':                  /* cyan fg */
-      case 'g':                  /* green fg */
-      case 'm':                  /* magenta fg */
-      case 'r':                  /* red fg */
-      case 'w':                  /* white fg */
-      case 'x':                  /* black fg */
-      case 'y':                  /* yellow fg */
-      case 'd':                  /* default fg */
+      case 'b':                /* blue fg */
+      case 'c':                /* cyan fg */
+      case 'g':                /* green fg */
+      case 'm':                /* magenta fg */
+      case 'r':                /* red fg */
+      case 'w':                /* white fg */
+      case 'x':                /* black fg */
+      case 'y':                /* yellow fg */
+      case 'd':                /* default fg */
         store->fg[0] = *str;
         store->fg[1] = '\0';
         break;
-      case 'B':                  /* blue bg */
-      case 'C':                  /* cyan bg */
-      case 'G':                  /* green bg */
-      case 'M':                  /* magenta bg */
-      case 'R':                  /* red bg */
-      case 'W':                  /* white bg */
-      case 'X':                  /* black bg */
-      case 'Y':                  /* yellow bg */
-      case 'D':                  /* default bg */
+      case 'B':                /* blue bg */
+      case 'C':                /* cyan bg */
+      case 'G':                /* green bg */
+      case 'M':                /* magenta bg */
+      case 'R':                /* red bg */
+      case 'W':                /* white bg */
+      case 'X':                /* black bg */
+      case 'Y':                /* yellow bg */
+      case 'D':                /* default bg */
         store->bg[0] = *str;
         store->bg[1] = '\0';
         break;

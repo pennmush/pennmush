@@ -1541,7 +1541,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled)
     strcpy(pe_info->cmd_evaled, from_queue->pe_info->cmd_evaled);
   else
-  strcpy(pe_info->cmd_evaled, str);
+    strcpy(pe_info->cmd_evaled, str);
 
   skipcount = 0;
   do {
@@ -1621,8 +1621,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
       match_found = 0;
       if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
-                                match_space, match_space_len, NULL)) {
+        if (regexp_match_case_r
+            (tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS, match_space,
+             match_space_len, NULL)) {
           match_found = 1;
           match++;
         }
@@ -1631,8 +1632,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match_found = 1;
           match++;
           if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
-                              match_space, match_space_len, NULL);
+            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
+                              MAX_STACK_ARGS, match_space, match_space_len,
+                              NULL);
         }
       }
       if (match_found) {

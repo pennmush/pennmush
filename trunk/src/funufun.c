@@ -155,7 +155,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   PE_REGS *pe_regs;
 
   if (nargs > MAX_STACK_ARGS)
-    nargs = MAX_STACK_ARGS;                 /* maximum no of args */
+    nargs = MAX_STACK_ARGS;     /* maximum no of args */
 
   /* save our stack */
   if (!pe_info) {

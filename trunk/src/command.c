@@ -135,7 +135,8 @@ COMLIST commands[] = {
   {"@DIG", "TELEPORT", cmd_dig,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@DISABLE", NULL, cmd_disable, CMD_T_ANY, "WIZARD", 0},
-  {"@DOLIST", "NOTIFY DELIMIT INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_dolist,
+  {"@DOLIST", "NOTIFY DELIMIT INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
@@ -2515,8 +2516,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.
-             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override.
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

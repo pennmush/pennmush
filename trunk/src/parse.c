@@ -1949,9 +1949,13 @@ process_expression(char *buff, char **bp, char const **str,
  * added 17 Sep 2012. Remove when this behaviour is removed. */
       else if (tflags & PT_NOT_COMMA) {
         if (pe_info && *pe_info->attrname)
-          notify_format(Owner(executor), "Unescaped comma in final arg of %s by #%d in %s. This behaviour is deprecated.", lca_func_name, executor, pe_info->attrname);
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s by #%d in %s. This behaviour is deprecated.",
+                        lca_func_name, executor, pe_info->attrname);
         else
-          notify_format(Owner(executor), "Unescaped comma in final arg of %s by #%d. This behaviour is deprecated.", lca_func_name, executor);
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s by #%d. This behaviour is deprecated.",
+                        lca_func_name, executor);
       }
 /* End of r1628's deprecation */
       break;

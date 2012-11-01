@@ -8,7 +8,7 @@ struct RGB_COLORMAP {
   char *name;
   uint32_t hex;
   int as_xterm;
-  int as_ansi; /* +30 for FG color +40 for BG color */
+  int as_ansi;                  /* +30 for FG color +40 for BG color */
 };
 
 struct RGB_COLORMAP allColors[] = {

@@ -99,7 +99,8 @@ static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void sitelock_player(dbref player, const char *name, dbref who,
                             uint32_t can, uint32_t cant);
-static void do_teleport_one(dbref player, const char *what, dbref destination, int flags, NEW_PE_INFO *pe_info);
+static void do_teleport_one(dbref player, const char *what, dbref destination,
+                            int flags, NEW_PE_INFO *pe_info);
 
 
 #ifdef INFO_SLAVE
@@ -373,7 +374,7 @@ do_teleport(dbref player, const char *what, const char *where, int flags,
   } else {
     destination = match_result(player, where, NOTYPE, MAT_EVERYTHING);
     switch (destination) {
-      case NOTHING:
+    case NOTHING:
       notify(player, T("No match."));
       return;
     case AMBIGUOUS:
@@ -404,7 +405,8 @@ do_teleport(dbref player, const char *what, const char *where, int flags,
  * \param pe_info the pe_info for lock checks, etc
  */
 static void
-do_teleport_one(dbref player, const char *what, dbref destination, int flags, NEW_PE_INFO *pe_info)
+do_teleport_one(dbref player, const char *what, dbref destination, int flags,
+                NEW_PE_INFO *pe_info)
 {
   dbref victim;
   dbref absroom;
@@ -415,7 +417,8 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags, NE
   if (!what || !*what)
     victim = player;
   else
-    victim = noisy_match_result(player, what, NOTYPE, MAT_OBJECTS | MAT_ENGLISH);
+    victim =
+      noisy_match_result(player, what, NOTYPE, MAT_OBJECTS | MAT_ENGLISH);
 
   if (!GoodObject(victim))
     return;
@@ -566,8 +569,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags, NE
     if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
         && !controls(player, absroom) && !Tel_Anywhere(player)
         && (Zone(absroom) != Zone(destination))) {
-      notify(player,
-             T("You may not teleport out of the zone from this room."));
+      notify(player, T("You may not teleport out of the zone from this room."));
       return;
     }
   }

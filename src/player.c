@@ -518,13 +518,14 @@ email_register_player(DESC *d, const char *name, const char *email,
   fprintf(fp, "\n");
   i = pclose(fp);
   reserve_fd();
-  
+
   if (i != 0) {
     /* Mailer exited with an error code. Log it. */
-    do_rawlog(LT_CONN, "When attempting to email a password to a newly registered player,\n"
-	      "\tthe mailer exited with error code %d.\n"
-	      "\t(Check /usr/include/sysexits.h if present for the meaning.)",
-	      i);
+    do_rawlog(LT_CONN,
+              "When attempting to email a password to a newly registered player,\n"
+              "\tthe mailer exited with error code %d.\n"
+              "\t(Check /usr/include/sysexits.h if present for the meaning.)",
+              i);
     queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s,%d",
                 d->descriptor, ip, count_failed(ip),
                 "register: Unable to send email", name, i);

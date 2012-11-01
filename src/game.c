@@ -102,13 +102,15 @@ static int fail_commands(dbref player);
 void do_readcache(dbref player);
 int check_alias(const char *command, const char *list);
 static int list_check(dbref thing, dbref player, char type,
-                      char end, char *str, int just_match, MQUE *queue_entry, int queue_flags);
+                      char end, char *str, int just_match, MQUE *queue_entry,
+                      int queue_flags);
 int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref executor, dbref enactor, char *action,
-                    const char *arg, int num, MQUE *queue_entry, int queue_type);
+                    const char *arg, int num, MQUE *queue_entry,
+                    int queue_type);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
@@ -1237,7 +1239,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
               goto done;
             }
           } else
-            a += list_match(Contents(Zone(check_loc)), queue_entry, queue_flags);
+            a +=
+              list_match(Contents(Zone(check_loc)), queue_entry, queue_flags);
         } else {
           a += cmd_match(Zone(check_loc), queue_entry, queue_flags);
           MAYBE_ADD_ERRDB(errdb);
@@ -1408,8 +1411,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
 
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, 0, &errdb, queue_entry,
-                       queue_flags))
+                       end, str, just_match, 1, NULL, NULL, 0, &errdb,
+                       queue_entry, queue_flags))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1973,7 +1976,8 @@ do_dolist(dbref executor, char *list, char *command, dbref enactor,
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    bind_and_queue(executor, enactor, command, curr, place, queue_entry, queue_type);
+    bind_and_queue(executor, enactor, command, curr, place, queue_entry,
+                   queue_type);
   }
 
   *bp = '\0';

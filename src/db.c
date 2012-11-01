@@ -1436,7 +1436,7 @@ db_read_oldstyle(PENNFILE *f)
       }
 
       if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-        char buff[BUFFER_LEN];      /* The name plus a NUL */
+        char buff[BUFFER_LEN];  /* The name plus a NUL */
         mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
@@ -1775,7 +1775,7 @@ db_read(PENNFILE *f)
           }
         }
         if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-          char buff[BUFFER_LEN];    /* The name plus a NUL */
+          char buff[BUFFER_LEN];        /* The name plus a NUL */
           mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
           set_name(i, buff);
           do_rawlog(LT_CHECK,

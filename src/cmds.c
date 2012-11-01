@@ -422,7 +422,8 @@ COMMAND(cmd_dolist)
     flags |= DOL_NOTIFY;
   if (SW_ISSET(sw, SWITCH_DELIMIT))
     flags |= DOL_DELIM;
-  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry, queue_type);
+  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry,
+            queue_type);
 }
 
 COMMAND(cmd_dump)
@@ -927,7 +928,8 @@ COMMAND(cmd_message)
   enum emit_type type;
   dbref speaker = SPOOF(executor, enactor, sw);
 
-  for (numargs = 1; args_right[numargs] && numargs < (MAX_STACK_ARGS + 3); numargs++) ;
+  for (numargs = 1; args_right[numargs] && numargs < (MAX_STACK_ARGS + 3);
+       numargs++) ;
 
   switch (numargs) {
   case 1:

@@ -17,7 +17,7 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 4                                 ??? ??, 2012
+Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 
   do_teleport() now takes a bitwise or of TEL_* flags (defined in externs.h)
   instead of separate 'silent' and 'inside' args. [MG]

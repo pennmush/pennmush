@@ -13,7 +13,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 4                                 ??? ??, 201?
+Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 
 Major changes:
  * The player_name_len @config option is now the maximum length of a player

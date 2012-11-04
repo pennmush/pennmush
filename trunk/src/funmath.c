@@ -1973,6 +1973,11 @@ MATH_FUNC(math_and)
 {
   int n;
 
+  if (nptr == 0) {
+    safe_chr('0', buff, bp);
+    return;
+  }
+
   for (n = 0; n < nptr; n++) {
     if (!parse_boolean(ptr[n])) {
       safe_chr('0', buff, bp);
@@ -2424,6 +2429,7 @@ MATH_FUNC(math_or)
 {
   int n;
 /* Or */
+
   for (n = 0; n < nptr; n++) {
     if (parse_boolean(ptr[n])) {
       safe_chr('1', buff, bp);

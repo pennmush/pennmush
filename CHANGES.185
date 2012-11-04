@@ -73,6 +73,7 @@ Fixes:
  * repeat() could write partial ANSI tags, causing buffer overflows. From a
    report by Ashen-Shugar. [MG]
  * dbcks didn't reset corrupt exit's source room. Patch by Padriac.
+ * lmath(and,) returned 1 instead of 0. Reported by Padriac. [SW].
 
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012
 

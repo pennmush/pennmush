@@ -3420,12 +3420,13 @@ See also: lmath(), div(), fdiv()
   delimiter as %1.  Then, this resulting list is matched with elements
   in <list 2>, and the rearranged <list2> is returned.
   
-  This is useful for doing things like sorting a list, and then returning
-  the corresponding elements in the other list. If a resulting element
-  from the user-defined function doesn't match an element in the
-  original <list1>, a corresponding element from <list2> does not
-  appear in the final result.
-  
+  This is useful for doing things like sorting a list, and then
+  returning the corresponding elements in the other list. If a
+  resulting element from the user-defined function doesn't match an
+  element in the original <list1>, a corresponding element from
+  <list2> does not appear in the final result. The elements are
+  matched using an exact, case-sensitive comparision.
+   
   <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
 
   See 'help munge2' for examples.
@@ -3445,13 +3446,13 @@ See also: lmath(), div(), fdiv()
   See 'help munge3' for another example.
 & MUNGE3
   Another common task that munge() is well suited for is sorting a
-  list of dbrefs of players by order of connection. This example
-  reuses the &sort attribute from the previous one, but unlike the
+  list of dbrefs of players by order of connection. This example uses
+  #apply to avoid the need for the sort attribute, and also unlike the
   other example, it builds the list to sort on out of the list to
   return.
   
     > &faction_members me=#3 #12 #234
-    > say munge(sort, iter(v(faction_members),conn(##)), v(faction_members))
+    > say munge(#apply/sort, map(#apply/conn, v(faction_members)), v(faction_members))
     You say, "#12 #234 #3"
 
 See also: anonymous attributes

@@ -1236,24 +1236,6 @@ See also: inc(), sub()
     This is \[a%b[ansi(y,test)]\] %b%b
 
 See also: @decompile2, escape(), secure(), ]
-& DECODE64()
-  decode64(<string>)
-
-  Converts the base 64-encoded <string> back to its original form.
-
-  Requires SSL support; see @config compile.
-
-See also: encode64(), encrypt(), decrypt()
-& DECRYPT()
-  decrypt(<string>, <password>[, <encoded>])
-
-  Decrypts a string encrypted with the encrypt() function, if given
-  the string and the same password.
-
-  If the optional <encoded> argument is true, it indicates that the
-  input string is encoded in base 64.
-
-See also: encrypt(), encode64(), decode64()
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)
  
@@ -1361,6 +1343,7 @@ See also: @dig, open(), @open, create(), pcreate()
    SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
    ...
   
+See also: encode64(), encrypt()
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -1521,25 +1504,32 @@ See also: @lock, locktypes, testlock(), lockfilter(), @lset
   
 See also: pemit(), remit(), lemit(), oemit(), zemit()
 & ENCODE64()
+& DECODE64()
+& base64
   encode64(<string>)
+  decode64(<string>)
+  
+  encode64() returns <string> encoded using base-64 format.
+  
+  decode64() converts a base-64 encoded <string> back to its original form.
 
-  Returns <string> encoded using base-64 format.
-
-  Requires SSL support; see @config compile.
-
-See also: decode64(), encrypt(), decrypt()
+See also: encrypt(), digest()
 & ENCRYPT()
+& DECRYPT()
   encrypt(<string>, <password>[, <encode>]) 
+  decrypt(<string>, <password>[, <encoded>])
 
-  Returns an encrypted string produced by a simple password-based
-  encrypted algorithm. Good passwords are long passwords.  This is not
+  encrypt() returns an encrypted string produced by a simple password-based 
+  encrypted algorithm. Good passwords are long passwords. This is not 
   high-security encryption.
 
-  If the optional <encode> argument is true, the resulting string is
-  further encoded in base 64 so that it only contains alphanumeric
-  characters.
+  If the optional <encode> argument is true, the resulting string is further
+  encoded in base-64 so that it only contains alphanumeric characters.
+  
+  decode() decrypts a string encrypted with encrypt(). The <encoded> 
+  argument indicates that the encrypted string was base-64 encoded.
 
-See also: decrypt(), encode64()
+See also: encode64(), digest()
 & ENTRANCES()
   entrances([<object>[, <type>[, <begin>[, <end>]]]])
 

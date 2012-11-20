@@ -283,7 +283,7 @@ FUNCTION(fun_colors)
       case COL_16:
         safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc -
                  (i ? 32 : 0), buff, bp);
-        if (hilite)
+        if (hilite || (ad.bits & CBIT_HILITE))
           safe_chr('h', buff, bp);
         break;
       case COL_256:
@@ -771,7 +771,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
       xnum = 255;
 
     xcolor = &allColors[xnum];
-    if (xcolor->as_ansi & 0x0100)
+    if (!bg && xcolor->as_ansi & 0x0100)
       *hilite = 1;
     return (xcolor->as_ansi & 0xFF) + (bg ? 40 : 30);
   }
@@ -782,7 +782,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   /* Predefined color names have their downgrades cached */
   color = im_find(rgb_to_name, hex);
   if (color) {
-    if (color->as_ansi & 0x0100)
+    if (!bg && color->as_ansi & 0x0100)
       *hilite = 1;
     return (color->as_ansi & 0xFF) + (bg ? 40 : 30);
   }
@@ -894,7 +894,7 @@ ANSI_WRITER(ansi_16color)
     else
       ret += safe_str(ANSI_BEGIN, buff, bp);
     ret += safe_integer(ansi_map_16(cur->fg, ANSI_FG, &hilite), buff, bp);
-    if (hilite) {
+    if (hilite && !EDGE_UP(old, cur, CBIT_HILITE)) {
       ret += safe_chr(';', buff, bp);
       ret += safe_integer(COL_HILITE, buff, bp);
     }
@@ -928,10 +928,10 @@ ANSI_WRITER(ansi_hilite)
 
 ANSI_WRITER(ansi_xterm256)
 {
-  int hilite = EDGE_UP(old, cur, CBIT_HILITE);
-  int xcode;
+  bool hilite = EDGE_UP(old, cur, CBIT_HILITE);
   int ret = 0;
   int f = 0;
+  int bg = -1, fg = -1;
 
   /* If it's old-style ansi, then use ansi_16color */
   if (!(is_new_ansi(cur->fg) || is_new_ansi(cur->bg))) {
@@ -956,25 +956,50 @@ ANSI_WRITER(ansi_xterm256)
 
 #undef maybe_append_code
 
+  if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
+    if (is_new_ansi(cur->fg)) {
+      if (!strncasecmp(cur->fg, "+xterm", 6))
+        fg = atoi(cur->fg + 6);
+      else
+        fg = ansi_map_256(cur->fg, hilite);
+    } else {
+      if (f)
+        ret += safe_chr(';', buff, bp);
+      else {
+        f++;
+        ret += safe_str(ANSI_BEGIN, buff, bp);
+      }
+      ret += safe_integer(ansi_codes[(unsigned char) cur->fg[0]], buff, bp);
+    }
+  }
+
+  if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
+    if (is_new_ansi(cur->bg)) {
+      if (!strncasecmp(cur->bg, "+xterm", 6))
+        bg = atoi(cur->bg + 6);
+      else
+        bg = ansi_map_256(cur->bg, hilite);
+    } else {
+      if (f)
+        ret += safe_chr(';', buff, bp);
+      else {
+        f++;
+        ret += safe_str(ANSI_BEGIN, buff, bp);
+      }
+      ret += safe_integer(ansi_codes[(unsigned char) cur->bg[0]], buff, bp);
+    }
+  }
+
   /* 256 color should be separate from the bits set. */
   if (f) {
     ret += safe_str(ANSI_FINISH, buff, bp);
   }
 
-  if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
-    if (!strncasecmp(cur->fg, "+xterm", 6))
-      xcode = atoi(cur->fg + 6);
-    else
-      xcode = ansi_map_256(cur->fg, hilite);
-    ret += safe_format(buff, bp, "%s38;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
-  }
+  if (fg > -1)
+    ret += safe_format(buff, bp, "%s38;5;%d%s", ANSI_BEGIN, fg, ANSI_FINISH);
 
-  if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
-    if (!strncasecmp(cur->bg, "+xterm", 6))
-      xcode = atoi(cur->bg + 6);
-    else
-      xcode = ansi_map_256(cur->bg, hilite);
-    ret += safe_format(buff, bp, "%s48;5;%d%s", ANSI_BEGIN, xcode, ANSI_FINISH);
+  if (bg > -1) {
+    ret += safe_format(buff, bp, "%s48;5;%d%s", ANSI_BEGIN, bg, ANSI_FINISH);
   }
   return ret;
 }

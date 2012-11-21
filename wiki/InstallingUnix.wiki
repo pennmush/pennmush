@@ -9,10 +9,8 @@ To install PennMUSH, you'll need:
   * A C compiler
   * Perl
   * The minimum development packages required to compile programs (Linux distributions that don't come with gcc in the base install often need a package named glibc-dev)
-
-Although they aren't required, the following components are also recommended:
-  * The PCRE Regular Expression library. (Penn comes with an older version, but a global library will be more likely to be up to date.)
-  * OpenSSL is strongly suggested; most OSes these days come with it out of the box, but some might require a development package as well (openssl-dev or some such name)
+  * The PCRE library and dev files (libpcre, libpcre-dev)
+  * OpenSSL, and dev files (openssl, openssl-dev)
 
 When installing using [http://www.cygwin.com Cygwin] on Windows, you'll need the following packages (and their dependancies), as well as the default packages included in Cygwin:
   * binutils
@@ -25,6 +23,9 @@ When installing using [http://www.cygwin.com Cygwin] on Windows, you'll need the
   * bash
   * gnupg
   * patch
+  * pcre
+  * libpcre0
+  * libpcre-devel
   * gettext-devel (if running a translated copy)
 ==Overview==
 

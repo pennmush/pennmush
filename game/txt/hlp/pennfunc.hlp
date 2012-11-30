@@ -5161,8 +5161,8 @@ See also: restarttime(), starttime()
   ssl(<player|descriptor>)
 
   This function returns 1 if the player is using an SSL connection, and 0 
-  otherwise. If SSL is disabled, it always returns 0. You must be See_All to
-  use this function on another player.
+  otherwise. If SSL connections are disabled, it always returns 0. You must 
+  be See_All to use this function on another player.
 
 See also: terminfo()
 & STEP()
@@ -5510,8 +5510,11 @@ See also: @teleport
   Other fields may be added in the future, if, for example, MXP
   support is ever added.
 
-  Players can use terminfo() on their own connections. Using it on
-  other players is restricted to see_all objects.
+  You must have see_all, or use terminfo() on yourself, to see all
+  information or use a <descriptor>. Mortals using terminfo() on another
+  player will always receive "unknown" for the client name, and will not
+  get telnet/ssl/prompt_newlines in the output list.
+
 See also: pueblo(), width(), height(), ssl(), @sockset
 & TESTLOCK()
   testlock(<key>, <victim>)

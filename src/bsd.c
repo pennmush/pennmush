@@ -5321,33 +5321,37 @@ FUNCTION(fun_height)
 FUNCTION(fun_terminfo)
 {
   DESC *match;
-  int type;
   if (!*args[0])
     safe_str(T("#-1 FUNCTION REQUIRES ONE ARGUMENT"), buff, bp);
-  else if ((match = lookup_desc(executor, args[0]))) {
-    if (match->player == executor || See_All(executor)) {
+  else if (!(match = lookup_desc(executor, args[0])))
+    safe_str(T("#-1 NOT CONNECTED"), buff, bp);
+  else {
+    bool has_privs = (match->player == executor) || See_All(executor);
+    int type;
+    if (has_privs)
       safe_str(match->ttype, buff, bp);
-      if (match->conn_flags & CONN_HTML)
-        safe_str(" pueblo", buff, bp);
+    else
+      safe_str("unknown", buff, bp);
+    if (match->conn_flags & CONN_HTML)
+      safe_str(" pueblo", buff, bp);
+    if (has_privs) {
       if (match->conn_flags & CONN_TELNET)
         safe_str(" telnet", buff, bp);
       if (match->conn_flags & CONN_PROMPT_NEWLINES)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
-      type = notify_type(match);
-      if (type & MSG_XTERM256)
-        safe_str(" xterm256", buff, bp);
-      else if (type & MSG_ANSI16)
-        safe_str(" 16color", buff, bp);
-      else if (type & MSG_ANSI2)
-        safe_str(" hilite", buff, bp);
-      else
-        safe_str(" plain", buff, bp);
-    } else
-      safe_str(T(e_perm), buff, bp);
-  } else
-    safe_str(T("#-1 NOT CONNECTED"), buff, bp);
+    }
+    type = notify_type(match);
+    if (type & MSG_XTERM256)
+      safe_str(" xterm256", buff, bp);
+    else if (type & MSG_ANSI16)
+      safe_str(" 16color", buff, bp);
+    else if (type & MSG_ANSI2)
+      safe_str(" hilite", buff, bp);
+    else
+      safe_str(" plain", buff, bp);
+  }
 }
 
 /* ARGSUSED */

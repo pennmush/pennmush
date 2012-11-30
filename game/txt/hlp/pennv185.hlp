@@ -47,6 +47,8 @@ Functions:
  * alias(object,) clears object's @alias. Suggested by spork. [MG]
  * v(<integer>) is no longer the same as get(me/<integer>). Instead, it
    always the <integer>th stack entry. [MG] [Rhost] [MUX]
+ * It's now documented that replace() can alter multiple words at once. 
+   Reported by Jules. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

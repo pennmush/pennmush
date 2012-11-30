@@ -2127,7 +2127,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     notify(player, T("Unknown owner."));
     return -1;
   }
-  // An odd number of search classes is invalid.
+  /* An odd number of search classes is invalid. */
   if (nargs % 2) {
     notify(player, T("Invalid search class+restriction format."));
     return -1;

@@ -278,7 +278,7 @@ FUNCTION(fun_colors)
 
       switch (cs) {
       case COL_HEX:
-        safe_format(buff, bp, "#%06x", color_to_hex(color, 0));
+        safe_format(buff, bp, "#%06x", color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
       case COL_16:
         safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc -
@@ -710,11 +710,11 @@ color_to_hex(const char *name, bool hilite)
     return ERROR_COLOR;
   }
   /* We only get here if it's old-style ansi. */
-  if (buf[1]) {
+  if (name[1]) {
     /* Invalid character code! */
     return ERROR_COLOR;
   }
-  n = tolower((unsigned char) buf[0]);
+  n = tolower((unsigned char) name[0]);
   if (hilite) {
     for (i = 8; i < 16; i++) {
       if (colormap_16[i].desc == n) {

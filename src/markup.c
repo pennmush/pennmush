@@ -241,8 +241,10 @@ FUNCTION(fun_colors)
     /* Return color info for a specific color */
     ansi_data ad;
     char *color;
+    char *curr, *list;
     int i;
-    enum color_styles cs;
+    enum color_styles cs = COL_HEX;
+    bool ansi_styles = 0;
 
     if (define_ansi_data(&ad, args[0])) {
       safe_str(T("#-1 INVALID COLOR"), buff, bp);
@@ -254,25 +256,32 @@ FUNCTION(fun_colors)
       return;
     }
 
-    if (!*args[1] || strcmp("hex", args[1]) == 0)
-      cs = COL_HEX;
-    else if (strcmp("16color", args[1]) == 0)
-      cs = COL_16;
-    else if (strcmp("256color", args[1]) == 0
-             || strcmp("xterm256", args[1]) == 0)
-      cs = COL_256;
-    else if (strcmp("name", args[1]) == 0)
-      cs = COL_NAME;
-    else {
-      safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
-      return;
+    list = trim_space_sep(args[1], ' ');
+    while ((curr = split_token(&list, ' ')) != NULL) {
+      if (!*curr)
+        continue;
+      if (!strcmp("hex", curr))
+        cs = COL_HEX;
+      else if (!strcmp("16color", curr))
+        cs = COL_16;
+      else if (!strcmp("256color", curr)
+               || !strcmp("xterm256", curr))
+        cs = COL_256;
+      else if (!strcmp("name", curr))
+        cs = COL_NAME;
+      else if (!strcmp("styles", curr))
+        ansi_styles = 1;
+      else {
+        safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+        return;
+      }
     }
 
-    if (cs == COL_HEX || cs == COL_16) {
-      /* These are the only formats which produce
-       * valid output for ansi(). COL_256 just returns
-       * ints, and COL_NAME returns a list of names, both
-       * of which are broken by prepending these letters */
+    if (ansi_styles) {
+      if (!ad.fg[0] && (ad.bits & CBIT_HILITE)) {
+        /* If there's a FG color, this will be added later */
+        safe_chr('h', buff, bp);
+      }
       if (ad.bits & CBIT_UNDERSCORE)
         safe_chr('u', buff, bp);
       if (ad.bits & CBIT_FLASH)

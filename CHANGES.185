@@ -53,6 +53,8 @@ Functions:
    Reported by Jules. [MG]
  * Some terminfo() information can now be retrieved by mortals on other 
    players' connections. Suggested by spork. [MG]
+ * Added a new option to colors() to include ansi underline, invert and 
+   flash from the input in the output. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

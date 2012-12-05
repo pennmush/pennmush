@@ -268,6 +268,19 @@ FUNCTION(fun_colors)
       return;
     }
 
+    if (cs == COL_HEX || cs == COL_16) {
+      /* These are the only formats which produce
+       * valid output for ansi(). COL_256 just returns
+       * ints, and COL_NAME returns a list of names, both
+       * of which are broken by prepending these letters */
+      if (ad.bits & CBIT_UNDERSCORE)
+        safe_chr('u', buff, bp);
+      if (ad.bits & CBIT_FLASH)
+        safe_chr('f', buff, bp);
+      if (ad.bits & CBIT_INVERT)
+        safe_chr('i', buff, bp);
+    }
+
     for (i = 0; i < 2; i++) {
       bool hilite = 0;
       color = (i ? ad.bg : ad.fg);
@@ -281,9 +294,9 @@ FUNCTION(fun_colors)
         safe_format(buff, bp, "#%06x", color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
       case COL_16:
-        safe_chr(colormap_16[ansi_map_16(color, 0, &hilite) - 30].desc -
+        safe_chr(colormap_16[ansi_map_16(color, i, &hilite) - (i ? 40 : 30)].desc -
                  (i ? 32 : 0), buff, bp);
-        if (hilite || (ad.bits & CBIT_HILITE))
+        if (!i && (hilite || (ad.bits & CBIT_HILITE)))
           safe_chr('h', buff, bp);
         break;
       case COL_256:

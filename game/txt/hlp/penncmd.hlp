@@ -1706,9 +1706,9 @@ See also: @zenter, ZONES, @zemit, zwho(), VERBS
     /players     show only players who have their homes in <object>
     /rooms       show only rooms which have a drop-to of <object>
     
-  If you 't control <object>, or have the Search or See_All powers, all 
-  objects linked to <object> are listed. Otherwise, only objects which you 
-  can examine will be shown.
+  If you control <object>, or have the Search or See_All powers, all objects
+  linked to <object> are listed. Otherwise, only objects which you can 
+  examine will be shown.
     
 See also: @link, @search, entrances()
 & @exitformat

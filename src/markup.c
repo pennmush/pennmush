@@ -910,6 +910,8 @@ ANSI_WRITER(ansi_16color)
     if (hilite && !EDGE_UP(old, cur, CBIT_HILITE)) {
       ret += safe_chr(';', buff, bp);
       ret += safe_integer(COL_HILITE, buff, bp);
+      cur->bits |= CBIT_HILITE;
+      cur->offbits &= ~CBIT_HILITE;
     }
   }
   if (cur->bg[0] && strcmp(cur->bg, old->bg)) {

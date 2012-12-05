@@ -926,30 +926,33 @@ See also: Connection Functions
 & COLORS()
   colors()
   colors(<wildcard>)
-  colors(<color>, <format>)
+  colors(<colors>, <format>)
 
-  With no arguments, colors() returns an unsorted, space-separated
-  list of colors that PennMUSH knows the name of. You can use these
-  colors in ansi(+<colorname>,text). The colors "xterm0" to "xterm255"
-  are not included in the list, but can also be used in ansi().
+  With no arguments, colors() returns an unsorted, space-separated list of
+  colors that PennMUSH knows the name of. You can use these colors in 
+  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not 
+  included in the list, but can also be used in ansi().
   
-  With one argument, returns an unsorted, space-separated list of
-  colors that match the wildcard pattern <wildcard>.
+  With one argument, returns an unsorted, space-separated list of colors 
+  that match the wildcard pattern <wildcard>.
   
-  With two arguments, colors() returns information about a particular
-  color. <color> must be the name of a color or a hex code, in any of
-  the forms accepted by ansi(). <format> must be one of:
+  With two arguments, colors() returns information about specific colors.
+  <colors> can be any string accepted by the ansi() function's first 
+  argument. <format> must be one of:
   
    hex:      return a hexcode in the format #rrggbb.
    xterm256: return the number of the xterm color closest to the given
               <color>.
-   16color:  return the letter of the closest ANSI color code.   
-   name:     return the names of the colors exactly matching the given
-              <color>, or '#-1 NO MATCHING COLOR NAME' if there is no
+   16color:  return the letters of the closest ANSI color code.   
+   name:     return a list of names of all the colors exactly matching the
+             given colors, or '#-1 NO MATCHING COLOR NAME' if there is no
               exact match with a named color.
 
   It can be used for working out how certain colors will downgrade to
   people using clients which aren't fully color-capable.
+  
+  If <format> is "hex" or "16color", the value returned will be valid input
+  for ansi(), including any specified flash/underline/invert/hilight flags.
   
   See 'help colors2' for examples.
 See also: ansi(), colorstyle
@@ -968,10 +971,16 @@ See also: ansi(), colorstyle
     226
     
     > think colors(+yellow, 16color)
-    y
+    yh
+    
+    > think colors(/+yellow, 16color)
+    Y
     
     > think colors(#ffff00, name)
     yellow yellow1
+    
+    > think colors(iuB+red, hex)
+    ui#ff0000/#0000ee
 
 & COMP()
   comp(<value1>, <value2>[, <type>])
@@ -1545,10 +1554,10 @@ See also: encode64(), digest()
         r        rooms
 
   You can also limit the range of the dbrefs searched by giving <begin> and 
-  <end>. If you 't control <object>, or have the Search or See_All powers,
-  all objects linked to <object> are returned. Otherwise, only objects you
-  can examine will be included.
-  
+  <end>. If you control <object>, or have the Search or See_All powers, all 
+  objects linked to <object> are returned. Otherwise, only objects you can 
+  examine will be included.
+ 
 See also: lsearch(), @entrances
 & EQ()
   eq(<number>, <number>[, ... , <numberN>])

@@ -81,7 +81,10 @@ Fixes:
  * Mixing old-style ansi colors and xterm colors was broken. [MG]
  * Players who couldn't see xterm colors would sometimes get a highlighted
    foreground color by mistake. [MG]
- * colors(<old-style-ansi>, hex) was broken. Reported by Kimiko. [MG]
+ * colors(<old-style-ansi>, hex) and colors(*, 16color) were broken. 
+   Reported by Kimiko. [MG]
+ * ANSI highlight would sometimes bleed when xterm colors were downgraded to
+   the basic 16-color ANSI palette. Reported by Kimiko. [MG]
 
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012
 

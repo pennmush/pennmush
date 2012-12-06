@@ -1536,7 +1536,13 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
     return;
   }
 
-  notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
+  if (IsExit(thing) && GoodObject(Source(thing))) {
+    notify_format(player, "%s@@ %s (#%d), in %s (#%d)", prefix,
+                  shortname(thing), thing, Name(Source(thing)),
+                  Source(thing));
+  } else {
+    notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
+  }
   switch (Typeof(thing)) {
   case TYPE_THING:
     notify_format(player, "%s@create %s", prefix, Name(thing));

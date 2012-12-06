@@ -1982,6 +1982,13 @@ FUNCTION(fun_locate)
     case 'X':
       ambig_ok = 1;             /* okay to pick last match */
       break;
+    case 's':
+      if (!controls(executor, looker)) {
+        safe_str("#-1", buff, bp);
+        return;
+      }
+      match_flags |= MAT_CONTROL;
+      break;
     case ' ':
       break;                    /* skip over spaces */
     default:
@@ -1992,7 +1999,7 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
-  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
+  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT | MAT_CONTROL)))
     match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
 
   if ((match_flags &

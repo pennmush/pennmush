@@ -55,6 +55,8 @@ Functions:
    players' connections. Suggested by spork. [MG]
  * Added a new option to colors() to include ansi underline, invert and 
    flash from the input in the output. [MG]
+ * locate() takes a new flag, 's', which will only return objects
+   controlled by the looker. Suggested by spork. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

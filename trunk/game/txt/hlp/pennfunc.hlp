@@ -2823,6 +2823,8 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     * - All of the above (try a complete match). Default when no match
         parameters are given.
     x - Only match objects with the exact name <name>, no partial matches
+    s - Only match objects which <looker> controls. You must control <looker>
+        or have the See_All power.
 
   Just string all the parameters together. Spaces are ignored, so you can
   use spaces between paramaters for clarity if you wish.

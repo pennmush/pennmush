@@ -1338,20 +1338,58 @@ See also: PUPPET, @force, DBREF
 & QUEUE
   QUEUE
 
-  The queue is the waiting line for commands to be executed by the
-  MUSH.  Each time you enter a command, it goes into the queue and
-  stays there until its turn comes up, at which time the MUSH
-  processes the command and you see the results. The MUSH can execute
-  several commands every second, so normally you see results right
-  away.
+  The queue is the waiting line for action lists to be executed by the MUSH.
+  Each time you enter an action list, it goes into the queue and stays there
+  until its turn comes up, at which time the MUSH processes the commands and
+  you see the results. The MUSH can execute several commands every second,
+  so normally you see results right away.
 
-  However, if there are too many commands in the queue, there may be a
-  delay, called lag. The more common cause of lag, however, is network
-  delays between you and the MUSH. Commands that were queued by
-  another command (Like @switch, @force, @wait, etc.) also have a
-  small delay before they run.
+  However, if there are too many action lists in the queue, there may be a
+  slight delay, called lag. The more common cause of lag, however, is network
+  delays between you and the MUSH. Action lists that were queued by another
+  command (like @switch, @force, @wait, etc.) also have a small delay before
+  they run.
+  
+Continued in 'help queue2'.
+& QUEUE2
+  There are actually several different queues in PennMUSH. Commands which
+  are queued as a direct result of something done by a player go onto the
+  Player queue (also called the Priority queue). Commands which are queued
+  by other types of objects go on the lower priority Object Queue. This
+  gives actions caused directly by a player a higher priority, to make the
+  MUSH seem more responsive. Commands on the Object queue get moved to the
+  Player queue after a 1 second delay.
+  
+  There is also a Wait queue, where commands queued via the @wait command
+  go, and a Semaphore queue, where semaphore @waits go. These commands are
+  moved to the Player or Object queue at the appropriate time, either when
+  the @wait time elapses, or when the semaphore is @notified.
+  
+  You can see which commands are currently queued with the @ps command, and
+  with the getpids(), lpids() and pidinfo() functions. Queued commands can
+  be cancelled with @halt and/or @drain.
 
-See also: @ps, LOOPING
+Continued in 'help queue3'.
+& QUEUE3
+  There are several @config options which affect queueing. The option 
+  'player_queue_limit' controls how many action lists can be queued by one
+  object at any given time. Wizards and objects with the Queue @power can
+  queue more commands (equal to the player_queue_limit plus the current
+  number of objects in the database, including garbage).
+  
+  Normally each object has its own queue count, but if the 'owner_queues'
+  option is enabled, objects share a queue count with their owner.
+  
+  'queue_chunk' and 'active_queue_chunk' control how quickly commands are
+  executed from the queue.
+  
+  It costs a certain number of pennies to queue an action list; the exact
+  amount is set in the 'queue_cost' @config option. These pennies are 
+  returned after the action list is run. Sometimes, you'll lose a penny
+  when queueing a command; the chance of this happening is controlled by
+  the 'queue_loss' option.
+  
+See also: @ps, LOOPING, ACTION LISTS
 & QUOTAS
   The Quota system controls how many objects a player may own. It is only
   used of the 'use_quota' @config option is set to Yes.

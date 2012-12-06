@@ -72,6 +72,8 @@ Minor changes:
    [SW].
  * Better error reporting in logs and event hooks on failed email
    registration. Suggested by Padriac. [SW]
+ * @decompile <exit> now reports the exit's source room. Suggested by
+   telandra2. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

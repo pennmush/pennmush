@@ -76,6 +76,8 @@ Minor changes:
    registration. Suggested by Padriac. [SW]
  * @decompile <exit> now reports the exit's source room. Suggested by
    telandra2. [MG]
+ * You now only need to control an object to change its zone, or to use it
+   as a zone. Previously, ownership was required. Suggested by Cheetah. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

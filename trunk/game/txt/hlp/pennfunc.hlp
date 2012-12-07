@@ -6817,7 +6817,7 @@ See also: ufun(), get(), zone(), zemit(), zwho(), ZONES
   examine the object; if you can't, zone() returns #-1.
   
   If a <new zone> is given, zone() attempts to change the zone of <object>
-  to <new zone> first.
+  to <new zone> first - see help @chzone for details.
   
 See also: @chzone, zfun(), zwho(), zemit() ZONES
 & UPTIME()

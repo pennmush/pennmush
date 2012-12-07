@@ -358,7 +358,6 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
   }
 }
 
-
 /** Change an object's zone.
  * \verbatim
  * This implements @chzone.
@@ -397,23 +396,20 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
     return 0;
   }
 
-  /* we do use ownership instead of control as a criterion because
-   * we only want the owner to be able to rezone the object. Also,
-   * this allows players to @chzone themselves to an object they own.
-   */
-  if (!(God(player) || (!God(thing) && Wizard(player)) || Owns(player, thing))) {
+
+  if (!controls(player, thing)) {
     if (noisy)
       notify(player, T("You don't have the power to shift reality."));
     return 0;
   }
   /* a player may change an object's zone to:
    * 1.  NOTHING
-   * 2.  an object he owns
+   * 2.  an object he controls
    * 3.  an object with a chzone-lock that the player passes.
    * Note that an object with no chzone-lock isn't valid
    */
   has_lock = (getlock(zone, Chzone_Lock) != TRUE_BOOLEXP);
-  if (!(Wizard(player) || (zone == NOTHING) || Owns(player, zone) ||
+  if (!(Wizard(player) || (zone == NOTHING) || controls(player, zone) ||
         (has_lock && eval_lock_with(player, zone, Chzone_Lock, pe_info)))) {
     if (noisy) {
       if (has_lock) {

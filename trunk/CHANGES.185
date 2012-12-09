@@ -36,6 +36,8 @@ Commands:
  * @sockset and SOCKSET can now show/set PROMPT_NEWLINES. [MG]
  * @halt now takes a /noeval switch, and will always strip curly braces when
    run /noeval. [MG]
+ * Added @mail/cstats, which shows the mail stats you see on connection.
+   Patch by spork.
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list

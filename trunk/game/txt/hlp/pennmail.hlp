@@ -46,7 +46,10 @@
                 + = Tagged message
         The opposites of these (read messages, etc.) are indicated with a
         '-' in the status field in that position.
-        
+
+  @mail/cstats
+        Shows how many messages you have, in the same format as the 
+        automatic mail check when you connect.
 & mail-sending
   @mail[/switch] <player-list> = [<subject>]/<msg>
         This sends the message <msg> to all players in <player-list>.

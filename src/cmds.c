@@ -831,6 +831,8 @@ COMMAND(cmd_mail)
     do_mail_stats(executor, arg_left, MSTATS_READ);
   else if (SW_ISSET(sw, SWITCH_FSTATS))
     do_mail_stats(executor, arg_left, MSTATS_SIZE);
+  else if (SW_ISSET(sw, SWITCH_CSTATS))
+    check_all_mail(executor);
   else if (SW_ISSET(sw, SWITCH_DEBUG))
     do_mail_debug(executor, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_NUKE))

@@ -77,7 +77,7 @@ const char *CommandLock = "CommandLock";
 COMLIST commands[] = {
 
   {"@COMMAND",
-   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
+   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE RSNOPARSE",
    cmd_command,
    CMD_T_PLAYER | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
@@ -640,6 +640,8 @@ cnf_add_command(char *name, char *opts)
         flags |= CMD_T_LS_ARGS;
       } else if (string_prefix("eqsplit", one)) {
         flags |= CMD_T_EQSPLIT;
+      } else if (string_prefix("rsnoparse", one)) {
+        flags |= CMD_T_RS_NOPARSE;
       } else {
         return 0;               /* unknown option */
       }
@@ -1793,9 +1795,11 @@ do_command_add(dbref player, char *name, int flags)
     if (!ok_command_name(name)) {
       notify(player, T("Bad command name."));
     } else {
+      char *switches = NULL;
+      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) != (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
+        switches = "NOEVAL";
       command_add(mush_strdup(name, "command_add"),
-                  flags, NULL,
-                  0, (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"),
+                  flags, NULL, 0, switches,
                   cmd_unimplemented);
       notify_format(player, T("Command %s added."), name);
     }
@@ -1966,6 +1970,7 @@ COMMAND(cmd_command)
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_EQSPLIT) ? CMD_T_EQSPLIT : 0;
+    flags |= SW_ISSET(sw, SWITCH_RSNOPARSE) ? CMD_T_RS_NOPARSE : 0;
     if (SW_ISSET(sw, SWITCH_NOEVAL))
       notify(executor,
              T

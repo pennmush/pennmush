@@ -38,6 +38,9 @@ Commands:
    run /noeval. [MG]
  * Added @mail/cstats, which shows the mail stats you see on connection.
    Patch by spork.
+ * Added a new switch for @command/add, /rsnoparse, which stops the rightside
+   arguments (after the '=') from being evaluated. Also clarified the help
+   to show that /noparse only affects leftside args. Suggested by spork. [MG]
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list

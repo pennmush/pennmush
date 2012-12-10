@@ -93,6 +93,8 @@ Fixes:
    Reported by Kimiko. [MG]
  * ANSI highlight would sometimes bleed when xterm colors were downgraded to
    the basic 16-color ANSI palette. Reported by Kimiko. [MG]
+ * @entrances didn't correctly report the source of an exit. Reported by
+   spork. [MG]
 
 & 1.8.5p3
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012

@@ -21,7 +21,7 @@ reserve_alias dummy_exit_alias
 
 # You can also add new commands, with
 # command_add <command> [<options>], where <options> is a space-separated
-# list of 0 or more of "noparse", "eqsplit", "lsargs" and "rsargs".
+# list of 0 or more of "noparse", "eqsplit", "lsargs", "rsargs" and "rsnoparse".
 # Equiv of @command/add[/<options>] <command>. See 'help @command'.
 # OPTIONAL
 # add_command @foo eqsplit rsargs

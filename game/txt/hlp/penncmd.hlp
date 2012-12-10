@@ -898,19 +898,21 @@ See also: @create, clone(), create(), @cpattr
   You can use these additional switches, along with @command/add, to control
   how the new command parses its arguments:
 
-  /noparse   : The command does not evaluate arguments passed to it.
+  /noparse   : The command does not evaluate the leftside arg(s).
   /eqsplit   : The parser parses leftside and rightside around =
   /lsargs    : Comma-separated arguments on the left side are parsed.
   /rsargs    : When used with /eqsplit, the right-side arguments are
                comma-separated and are parsed individually
+  /rsnoparse : The command does not evaluate the rightside arg(s).
 
-  Any command added without the /noparse switch is provided with a
-  /noeval switch itself, so if you @command/add foo, then foo's arguments
-  are parsed by default, but you can call foo/noeval. Note: the $-command
-  needs to make allowances for the /noeval switch in it's matching.
+  Any command added without both the /noparse and /rsnoparse switchs is 
+  provided with a /noeval switch itself, so if you @command/add foo, then
+  foo's arguments are parsed by default, but you can call foo/noeval. 
+  Note: the $-command needs to make allowances for the /noeval switch in 
+  its matching.
 
-  Commands added with @command/add, like other standard commands,
-  are never case-sensitive. Commands can also be added in the alias.cnf file.
+  Commands added with @command/add, like other standard commands, are
+  never case-sensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -936,8 +938,8 @@ See also: @hook, RESTRICT, EVALUATION ORDER
 & @comment
   @comment <object>[=<comment>]
 
-  This is a wizard-only command which sets a COMMENT attribute on
-  <object>. The comment can only be seen by other wizards and royalty.
+  This is a wizard-only command which sets a COMMENT attribute on <object>.
+  The attribute can only be seen by those with the See_All power.
   
 See also: @@, @@()
 & @config

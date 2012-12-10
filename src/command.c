@@ -1917,7 +1917,7 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented || !strcmp(command->name, "@SQL")) {
+    if (command->func != cmd_unimplemented || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
       notify(player,
              T
              ("You can't delete built-in commands. @command/disable instead."));

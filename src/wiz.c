@@ -1502,6 +1502,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
   int rooms, things, exits, players;
   int nresults, n;
   dbref *results = NULL;
+  char exit_source[BUFFER_LEN];
 
   rooms = things = exits = players = 0;
 
@@ -1533,9 +1534,10 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
   for (n = 0; n < nresults; n++) {
     switch (Typeof(results[n])) {
     case TYPE_EXIT:
+      strcpy(exit_source, object_header(player, Source(results[n])));
       notify_format(player,
                     T("%s [from: %s]"), object_header(player, results[n]),
-                    object_header(player, Source(results[n])));
+                    exit_source);
       exits++;
       break;
     case TYPE_ROOM:

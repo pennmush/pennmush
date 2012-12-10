@@ -98,6 +98,7 @@ Fixes:
    the basic 16-color ANSI palette. Reported by Kimiko. [MG]
  * @entrances didn't correctly report the source of an exit. Reported by
    spork. [MG]
+ * Fix a crashbug in @command/delete. [MG]
 
 & 1.8.5p3
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012

@@ -39,6 +39,8 @@ Commands:
  * Added a new switch for @command/add, /rsnoparse, which stops the rightside
    arguments (after the '=') from being evaluated. Also clarified the help
    to show that /noparse only affects leftside args. Suggested by spork. [MG]
+ * WHO, DOING and SESSION now take wildcard patterns for names, as well as
+   a prefix. [MG]
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list

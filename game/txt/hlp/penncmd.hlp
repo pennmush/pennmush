@@ -4867,8 +4867,8 @@ See also: huh_command, warn_on_missing, @command, @hook
 See also: page, pose, @pemit
 & WHO
 & DOING
-  WHO [<prefix>]
-  DOING [<prefix>]
+  WHO [<pattern>]
+  DOING [<pattern>]
   
   For mortals, the WHO command displays a list of players currently
   connected to the MUSH, the amount of time they've been connected,
@@ -4883,8 +4883,9 @@ See also: page, pose, @pemit
   Admin can use the DOING command to see the same output mortals see with
   WHO, with the exception that dark/hidden players are included.
   
-  If a <prefix> is given for either command, only connected players whose
-  names start with <prefix> are shown.
+  If a <pattern> is given for either command, only connected players whose
+  names start with <pattern> are shown. If <pattern> is a wildcard, only
+  players whose names or aliases match the pattern are shown.
   
   Continued in 'help who2'.
 & WHO2
@@ -4908,11 +4909,13 @@ See also: page, pose, @pemit
 
 See also: @doing, @poll, SESSION
 & SESSION
-  SESSION [<prefix>]
+  SESSION [<pattern>]
 
   The SESSION command is the same as the admin WHO, but instead of showing
   the hostname, it shows the number of bytes sent to, received from, and
-  pending for each connection.
+  pending for each connection. <pattern> limits the output, only showing
+  players whose name begins with <pattern>, or whose names or aliases
+  match <pattern> if it's a wildcard pattern.
 
 See also: WHO
 & with

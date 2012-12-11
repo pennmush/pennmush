@@ -433,6 +433,8 @@ void initialize_mt(void);
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
 
+static bool who_check_name(DESC *d, char *name, bool wild);
+
 static inline bool
 is_blocking_err(int code)
 {
@@ -4042,6 +4044,57 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }
 
+/** Filters descriptors based on the name for 'WHO name'.
+ * \verbatim
+ * Check to see if we should display a line in WHO, DOING or SESSION
+ * for the given descriptor. Checks are, in order:
+ *  * If 'name' is empty, we show it.
+ *  * If d is not a connected player, we don't.
+ *  * If wild is false, show only if "name" is a prefix of the player's name
+ *  * If wild is true, show if the player's name, or one of his aliases,
+ *    matches the wildcard pattern "name".
+ * \endverbatim
+ * \param d descriptor to check
+ * \param name name to match against
+ * \param wild is name a wildcard pattern?
+ * \retval 1 name matches, or no name filtering
+ * \retval 0 name does not match
+ */
+static bool
+who_check_name(DESC *d, char *name, bool wild)
+{
+  ATTR *a;
+  char *aval, *all_aliases, *one_alias;
+
+  if (!name || !*name)
+    return 1;
+
+  if (!d->connected || !GoodObject(d->player))
+    return 0;
+
+  if (!wild)
+    return string_prefix(Name(d->player), name);
+
+  if (quick_wild(name, Name(d->player)))
+    return 1;
+
+  a = atr_get(d->player, "ALIAS");
+  if (!a)
+    return 0;
+
+  aval = safe_atr_value(a);
+  all_aliases = trim_space_sep(aval, ';');
+  while ((one_alias = split_token(&all_aliases, ';')) != NULL) {
+    if (quick_wild(name, one_alias)) {
+      free(aval);
+      return 1;
+    }
+  }
+  free(aval);
+  return 0;
+}
+
+
 /** The DOING command */
 void
 do_who_mortal(dbref player, char *name)
@@ -4050,6 +4103,7 @@ do_who_mortal(dbref player, char *name)
   int count = 0;
   int privs = Priv_Who(player);
   PUEBLOBUFF;
+  bool wild = 0;
 
   if (poll_msg[0] == '\0')
     strcpy(poll_msg, "Doing");
@@ -4061,6 +4115,8 @@ do_who_mortal(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
 
   notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
                 T("Idle"), poll_msg);
@@ -4069,7 +4125,7 @@ do_who_mortal(dbref player, char *name)
       continue;
     if (COUNT_ALL || (!Hidden(d) || privs))
       count++;
-    if (name && !string_prefix(Name(d->player), name))
+    if (!who_check_name(d, name, wild))
       continue;
     if (Hidden(d) && !privs)
       continue;
@@ -4107,6 +4163,7 @@ do_who_admin(dbref player, char *name)
   DESC *d;
   int count = 0;
   char tbuf[BUFFER_LEN];
+  bool wild = 0;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4116,15 +4173,16 @@ do_who_admin(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
+
   notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
                 T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"),
                 T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
-    if ((name && *name)
-        && (!d->connected || !GoodObject(d->player)
-            || !string_prefix(Name(d->player), name)))
+    if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
@@ -4178,6 +4236,7 @@ do_who_session(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
+  bool wild = 0;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4187,6 +4246,9 @@ do_who_session(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
+
   notify_format(player, "%-16s %6s %9s %5s %5s %4s %7s %7s %7s",
                 T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"),
                 T("Des"), T("Sent"), T("Recv"), T("Pend"));
@@ -4194,9 +4256,7 @@ do_who_session(dbref player, char *name)
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
-    if ((name && *name)
-        && (!d->connected || !GoodObject(d->player)
-            || !string_prefix(Name(d->player), name)))
+    if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",

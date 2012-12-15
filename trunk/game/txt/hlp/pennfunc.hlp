@@ -2779,7 +2779,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE()
   locate(<looker>, <name>, <parameters>)
  
-  This function attemps to find an object called <name>, relative to the
+  This function attempts to find an object called <name>, relative to the
   object <looker>. It's similar to the num() function, but you can be more
   specific about which type of object to find, and where to look for it. 
   When attempting to match objects near to <looker> (anything but absolute,
@@ -3162,12 +3162,12 @@ See also: mwho(), nwho(), xwho()
   This function works much like ITER(). The given <attribute> is evaluated 
   once for each element of <list>, and the results of the evaluations are
   returned. For each evaluation, the current list element is passed to the
-  attribute as %0, and it's position in the list as %1. Elements of <list>
+  attribute as %0, and its position in the list as %1. Elements of <list>
   are separated by <delim>, or a space if none is given, and the results are
   returned separated by <osep>, if given, or the delimiter otherwise.
   
-  This is roughly equivilent to:
-  iter(<list>, ufun(<object>/<attribute>, %i0, inum(0)), <delim>, <osep>)
+  This is roughly equivilent to, though slightly more efficient than:
+  iter(<list>, ulambda(<object>/<attribute>, %i0, inum(0)), <delim>, <osep>)
   
   Examples:
     > &times_two me=mul(%0,2)
@@ -3213,7 +3213,6 @@ See also: anonymous attributes, iter(), @dolist
     You say, ""
   
 See also: grab(), strmatch(), member(), WILDCARDS
-
 & MAX()
   max(<number>[, ... , <numberN>])
 

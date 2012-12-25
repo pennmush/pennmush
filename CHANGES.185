@@ -103,6 +103,12 @@ Fixes:
  * @entrances didn't correctly report the source of an exit. Reported by
    spork. [MG]
  * Fix a crashbug in @command/delete. [MG]
+ 
+Hardcode:
+ * The Builder() macro, which is unused in Penn but exists for backwards
+   compatability, used command_check_byname(), which spammed people who
+   could not build with "Permission denied." errors. It is now spam-free.
+   By spork.
 
 Version 1.8.5 patchlevel 3                                 Aug 23, 2012
 

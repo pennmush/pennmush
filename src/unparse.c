@@ -120,7 +120,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */
       bp = buf;
-      if (ANSI_NAMES && ShowAnsi(player))
+      if (ANSI_NAMES)
         safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
                     ANSI_END, loc, unparse_flags(loc, player));
       else
@@ -129,7 +129,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       *bp = '\0';
     } else {
       /* show only the name */
-      if (ANSI_NAMES && ShowAnsi(player)) {
+      if (ANSI_NAMES) {
         bp = buf;
         safe_format(buf, &bp, "%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
         *bp = '\0';

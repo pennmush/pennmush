@@ -85,6 +85,8 @@ Minor changes:
    telandra2. [MG]
  * You now only need to control an object to change its zone, or to use it
    as a zone. Previously, ownership was required. Suggested by Cheetah. [MG]
+ * The hardcode now always ANSIs a string (such as an object name or help 
+   topic), even if the enactor isn't set ANSI. Fixes puppets, etc. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

@@ -329,44 +329,24 @@ examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
     parent = NOTHING;
   strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
   if (AF_Veiled(atr)) {
-    if (ShowAnsi(player)) {
-      if (GoodObject(parent))
-        notify_format(player,
-                      T("%s#%d/%s [#%d%s]%s is veiled"), ANSI_HILITE, parent,
-                      AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
-      else
-        notify_format(player,
-                      T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
-    } else {
-      if (GoodObject(parent))
-        notify_format(player,
-                      T("#%d/%s [#%d%s] is veiled"), parent, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf);
-      else
-        notify_format(player,
-                      T("%s [#%d%s] is veiled"), AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf);
-    }
+    if (GoodObject(parent))
+      notify_format(player,
+                    T("%s#%d/%s [#%d%s]%s is veiled"), ANSI_HILITE, parent,
+                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
+    else
+      notify_format(player,
+                    T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
+                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
   } else {
     r = safe_atr_value(atr);
-    if (ShowAnsi(player)) {
-      if (GoodObject(parent))
-        notify_format(player,
-                      "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
-                      AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-      else
-        notify_format(player,
-                      "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-    } else {
-      if (GoodObject(parent))
-        notify_format(player, "#%d/%s [#%d%s]: %s", parent, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, r);
-      else
-        notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, r);
-    }
+    if (GoodObject(parent))
+      notify_format(player,
+                    "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
+                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
+    else
+      notify_format(player,
+                    "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
+                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
     free(r);
   }
   return 1;
@@ -389,23 +369,14 @@ examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     parent = NOTHING;
   strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
   r = safe_atr_value(atr);
-  if (ShowAnsi(player)) {
-    if (GoodObject(parent))
-      notify_format(player,
-                    "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
-                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-    else
-      notify_format(player,
-                    "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-  } else {
-    if (GoodObject(parent))
-      notify_format(player, "#%d/%s [#%d%s]: %s", parent, AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, r);
-    else
-      notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, r);
-  }
+  if (GoodObject(parent))
+    notify_format(player,
+                  "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
+                  AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
+  else
+    notify_format(player,
+                  "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
+                  Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
   free(r);
   return 1;
 }

@@ -240,7 +240,7 @@ help_reindex(dbref player)
     do_rawlog(LT_WIZ, "Help files reindexed.");
 }
 
-/** Rebuild a single help file index. Used in inotify reindexing. 
+/** Rebuild a single help file index. Used in inotify reindexing.
  * \param filename the name of the help file to reindex.
  * \return true if a help file was reindexed, false otherwise.
  */
@@ -316,12 +316,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
   }
   strcpy(the_topic, strupper(entry->topic + (*entry->topic == '&')));
   /* ANSI topics */
-  if (ShowAnsi(player)) {
-    char ansi_topic[LINE_SIZE + 10];
-    sprintf(ansi_topic, "%s%s%s", ANSI_HILITE, the_topic, ANSI_END);
-    notify(player, ansi_topic);
-  } else
-    notify(player, the_topic);
+  notify_format(player, "%s%s%s", ANSI_HILITE, the_topic, ANSI_END);
 
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));

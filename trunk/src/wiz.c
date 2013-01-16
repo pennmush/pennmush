@@ -1383,7 +1383,7 @@ do_search(dbref player, const char *arg1, char **arg3)
       notify(player, T("\nGARBAGE:"));
       for (n = 0; n < ngarbage; n++) {
         tbp = tbuf;
-        if (ANSI_NAMES && ShowAnsi(player))
+        if (ANSI_NAMES)
           notify_format(player, T("%sGarbage%s(#%d)"), ANSI_HILITE, ANSI_END,
                         garbage[n]);
         else

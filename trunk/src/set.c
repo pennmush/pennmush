@@ -930,14 +930,14 @@ edit_helper(dbref player, dbref thing,
   } else if (!(gargs->flags & EDIT_CHECK)) {
     if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
         !(gargs->flags & EDIT_QUIET) && !AreQuiet(player, thing)) {
-      if (!ansi_long_flag && ShowAnsi(player))
+      if (!ansi_long_flag)
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
       else
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
     }
   } else if (!(gargs->flags & EDIT_QUIET)) {
     /* We don't do it - we just pemit it. */
-    if (!ansi_long_flag && ShowAnsi(player))
+    if (!ansi_long_flag)
       notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
     else
       notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);

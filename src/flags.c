@@ -534,22 +534,21 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   slab *flagpairs;
   int i, numbytes;
 
+  do_rawlog(LT_TRACE, T("Resizing object flag arrays."));
+
   numbytes = FlagBytes(n);
 
   oldcache = n->cache;
   n->cache = new_flagcache(n, (double) oldcache->size * 1.1);
 
   flagpairs = slab_create("flagpairs", sizeof *migrate);
-  migrate = slab_malloc(flagpairs, NULL);
-  migrate->orig = oldcache->zero;
-  migrate->grown = n->cache->zero;
-  migrate->next = NULL;
+  migrate = NULL;
 
   /* Grow all current flagsets, and store the old/new locations */
-  for (i = 0; i < n->cache->size; i += 1) {
+  for (i = 0; i < oldcache->size; i += 1) {
     struct flagbucket *b;
 
-    for (b = n->cache->buckets[i]; b; b = b->next) {
+    for (b = oldcache->buckets[i]; b; b = b->next) {
       object_flag_type grown;
       struct flagpair *newpair;
 
@@ -567,15 +566,28 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   /* Now adjust pointers in the db from old to new. This has poor
      big-O performance, but isn't done very often, so we can live with it. */
   for (it = 0; it < db_top; it += 1) {
-    for (m = migrate; m; m = m->next) {
-      if (n->tab == &ptab_flag) {
-        if (Flags(it) == m->orig) {
-          Flags(it) = m->grown;
-          break;
-        } else if (Powers(it) == m->orig) {
-          Powers(it) = m->grown;
-          break;
-        }
+    if (n->tab == &ptab_flag && Flags(it) == oldcache->zero) {
+      /* No flags on object */
+      Flags(it) = n->cache->zero;
+      n->cache->zero_refcount += 1;
+    } else if (n->tab == &ptab_power && Powers(it) == oldcache->zero) {
+      /* No powers on object */
+      Powers(it) = n->cache->zero;
+      n->cache->zero_refcount += 1;
+    } else {
+      /* Has flags or powers. Update to new ones */
+      for (m = migrate; m; m = m->next) {
+	if (n->tab == &ptab_flag) {
+	  if (Flags(it) == m->orig) {
+	    Flags(it) = m->grown;
+	    break;
+	  } 
+	} else {
+	  if (Powers(it) == m->orig) {
+	    Powers(it) = m->grown;
+	    break;
+	  }
+	}
       }
     }
   }
@@ -3137,4 +3149,39 @@ good_flag_name(char const *s)
   if (*(s + len - 1) == '`')
     return 0;
   return len <= ATTRIBUTE_NAME_LIMIT;
+}
+
+/** Debug information about the internals of a flag namespace */
+void
+do_flag_debug(const char *ns, dbref player)
+{
+  FLAGSPACE *n;
+  int i;
+
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  Flagspace_Lookup(n, ns);
+
+  notify_format(player, "Flagspace name: %s\nFlag count: %d", n->name, n->flagbits);
+
+  for (i = 0; i < n->flagbits; i += 1) {
+    FLAG *f = n->flags[i];
+    
+    notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name, f->bitpos);
+  }
+
+  notify_format(player, "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
+		n->cache->entries, n->cache->size, n->cache->zero_refcount);
+
+#if 0
+  for (i = 0; i < n->cache->size; i += 1) {
+    struct flagbucket *b = n->cache->buckets[i];
+    for (; b; b = b->next) {
+      notify_format(player, "Flagset: %s. Refcount: %d", bits_to_string(ns, b->key, ,), b->refcount);		   
+    }
+  } 
+#endif
 }

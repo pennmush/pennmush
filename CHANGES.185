@@ -13,7 +13,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 4                                 Nov 09, 2012
+Version 1.8.5 patchlevel 4                                 Jan ??, 2013
 
 Major changes:
  * The player_name_len @config option is now the maximum length of a player
@@ -105,6 +105,7 @@ Fixes:
  * @entrances didn't correctly report the source of an exit. Reported by
    spork. [MG]
  * Fix a crashbug in @command/delete. [MG]
+ * Fix database corruption on @flag/add [SW]
  
 Hardcode:
  * The Builder() macro, which is unused in Penn but exists for backwards

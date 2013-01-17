@@ -541,6 +541,8 @@ COMMAND(cmd_flag)
     do_flag_letter("FLAG", executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_TYPE))
     do_flag_type("FLAG", executor, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_DEBUG))
+    do_flag_debug("FLAG", executor);
   else
     do_flag_info("FLAG", executor, arg_left);
 }

@@ -138,6 +138,7 @@ void do_flag_add(const char *ns, dbref player, const char *name,
                  char *args_right[]);
 void do_flag_letter(const char *ns, dbref player, const char *name,
                     const char *letter);
+void do_flag_debug(const char *ns, dbref player);
 const char *power_to_string(int pwr);
 void decompile_flags_generic(dbref player, dbref thing, const char *name,
                              const char *ns, const char *command,

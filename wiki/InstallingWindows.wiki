@@ -5,9 +5,8 @@
 = Introduction =
 
 Requirements:
-  * ActivePerl
-  * CMake
-  * Git for Windows
+  * [http://www.activestate.com/activeperl ActivePerl]
+  * [http://www.cmake.org/ CMake]
   * Visual Studio 2010 (the express edition works)
   * Windows 2000 or newer.
 

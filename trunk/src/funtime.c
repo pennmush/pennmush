@@ -81,7 +81,7 @@ FUNCTION(fun_timefmt)
     }
   }
 
-  if (nargs == 3) {
+  if (nargs == 3 && *args[2]) {
     if (!parse_timezone_arg(args[2], tt, &res)) {
       safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
       return;

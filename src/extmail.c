@@ -1443,6 +1443,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
                   T("MAIL: %s is not accepting mail from you right now."),
                   Name(target));
       *cp = '\0';
+      cp = sbuf;
     } else {
       cp = NULL;
     }

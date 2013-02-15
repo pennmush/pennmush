@@ -2088,88 +2088,93 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   return 1;
 }
 
+enum atrlock_status {
+  ATRLOCK_CHECK = 0,
+  ATRLOCK_LOCK,
+  ATRLOCK_UNLOCK
+};
+
 /** Lock or unlock an attribute.
  * Attribute locks are largely obsolete and should be deprecated,
  * but this is the code that does them.
  * \param player the enactor.
- * \param xarg1 the object/attribute, as a string.
- * \param arg2 the desired lock status ('on' or 'off').
+ * \param src the object/attribute, as a string.
+ * \param action the desired lock status ('on' or 'off').
  */
 void
-do_atrlock(dbref player, const char *xarg1, const char *arg2)
+do_atrlock(dbref player, const char *src, const char *action)
 {
   dbref thing;
-  char *p, *arg1;
+  char *target, *attr;
   ATTR *ptr;
-  int status;
-  if (!arg2 || !*arg2)
-    status = 0;
-  else {
-    if (!strcasecmp(arg2, "on")) {
-      status = 1;
-    } else if (!strcasecmp(arg2, "off")) {
-      status = 2;
-    } else
-      status = 0;
+  enum atrlock_status status = ATRLOCK_CHECK;
+
+  if (action && *action) {
+    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") || !strcasecmp(action, "1"))
+      status = ATRLOCK_LOCK;
+    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no") || !strcasecmp(action, "0"))
+      status = ATRLOCK_UNLOCK;
+    else {
+      notify(player, T("Invalid argument."));
+      return;
+    }
   }
 
-  if (!xarg1 || !*xarg1) {
+  if (!src || !*src) {
     notify(player, T("You need to give an object/attribute pair."));
     return;
   }
 
-  arg1 = mush_strdup(xarg1, "atrlock.string");
+  target = mush_strdup(src, "atrlock.string");
 
-  if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
+  if (!(attr = strchr(target, '/')) || !(*(attr + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
-    mush_free(arg1, "atrlock.string");
+    mush_free(target, "atrlock.string");
     return;
   }
-  *p++ = '\0';
-  if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
+
+  *attr++ = '\0';
+  if ((thing = noisy_match_result(player, target, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
-    mush_free(arg1, "atrlock.string");
+    mush_free(target, "atrlock.string");
     return;
   }
   if (!controls(player, thing)) {
     notify(player, T("Permission denied."));
-    mush_free(arg1, "atrlock.string");
+    mush_free(target, "atrlock.string");
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(p));
-  if (ptr && Can_Read_Attr(player, thing, ptr)) {
-    if (!status) {
-      notify_format(player, T("That attribute is %slocked."),
-                    AF_Locked(ptr) ? "" : "un");
-      mush_free(arg1, "atrlock.string");
-      return;
-    } else if (!Can_Write_Attr(player, thing, ptr)) {
-      notify(player,
-             T("You need to be able to set the attribute to change its lock."));
-      mush_free(arg1, "atrlock.string");
-      return;
-    } else {
-      if (status == 1) {
-        AL_FLAGS(ptr) |= AF_LOCKED;
-        AL_CREATOR(ptr) = Owner(player);
-        notify(player, T("Attribute locked."));
-        mush_free(arg1, "atrlock.string");
-        return;
-      } else if (status == 2) {
-        AL_FLAGS(ptr) &= ~AF_LOCKED;
-        notify(player, T("Attribute unlocked."));
-        mush_free(arg1, "atrlock.string");
-        return;
-      } else {
-        notify(player, T("Invalid status on atrlock.. Notify god."));
-        mush_free(arg1, "atrlock.string");
-        return;
-      }
-    }
-  } else
+  ptr = atr_get_noparent(thing, strupper(attr));
+  mush_free(target, "atrlock.string");
+  if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));
-  mush_free(arg1, "atrlock.string");
+    return;
+  }
+
+  if (status == ATRLOCK_CHECK) {
+    if (AF_Locked(ptr))
+      notify(player, T("That attribute is locked."));
+    else
+      notify(player, T("That attribute is unlocked."));
+    return;
+  } else if (!Can_Write_Attr(player, thing, ptr)) {
+    notify(player,
+           T("You need to be able to set the attribute to change its lock."));
+    return;
+  } else {
+    if (status == ATRLOCK_LOCK) {
+      AL_FLAGS(ptr) |= AF_LOCKED;
+      AL_CREATOR(ptr) = Owner(player);
+      notify(player, T("Attribute locked."));
+    } else if (status == ATRLOCK_UNLOCK) {
+      AL_FLAGS(ptr) &= ~AF_LOCKED;
+      notify(player, T("Attribute unlocked."));
+    } else {
+      notify(player, T("Invalid status."));
+      return;
+    }
+  }
 }
 
 /** Change ownership of an attribute.

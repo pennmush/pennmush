@@ -104,6 +104,8 @@ Fixes:
    spork. [MG]
  * Fix a crashbug in @command/delete. [MG]
  * Fix database corruption on @flag/add [SW]
+ * Attempting to @mail someone without permission failed silently. Reported 
+   by Kimiko. [MG]
  
 Hardcode:
  * The Builder() macro, which is unused in Penn but exists for backwards

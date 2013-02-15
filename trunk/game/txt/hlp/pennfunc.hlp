@@ -679,6 +679,15 @@ See also: acos(), asin(), cos(), ctu(), sin(), tan()
   When given a second argument of "on" (or "off"), attempts to lock
   (or unlock) the specified attribute, as per @atrlock.
   
+  A locked attribute is one which has the "locked" attribute flag, so this
+  function is roughly equivilent to:
+
+    hasattr(<object>/<attrib>, locked)
+    set(<object>/<attribute>, [!]locked)
+  
+  except that the attribute's owner is also changed when you lock it via
+  atrlock().
+  
 See also: @atrlock, @atrchown, hasflag()
 & ATTRIB_SET()
   attrib_set(<object>/<attrib>[, <value>])

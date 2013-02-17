@@ -108,6 +108,8 @@ Fixes:
  * Fix database corruption on @flag/add [SW]
  * Attempting to @mail someone without permission failed silently. Reported 
    by Kimiko. [MG]
+ * Players connecting dark with 'cd' were hidden even if they shouldn't have
+   been. Patch by thomaswdyoung.
  
 Hardcode:
  * The Builder() macro, which is unused in Penn but exists for backwards

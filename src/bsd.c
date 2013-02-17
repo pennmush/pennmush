@@ -4353,7 +4353,6 @@ announce_connect(DESC *d, int isnew, int num)
   /* Redundant, but better for translators */
   if (Dark(player)) {
     message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-    d->hide = 1;
   } else if (Hidden(d)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");

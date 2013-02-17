@@ -803,7 +803,8 @@ See also: MONITOR, LISTENING
   no_quota *            Has an unlimited quota
   open_anywhere         Can @open an exit from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
-  pick_dbref            Can recycle specific garage dbrefs when creating objects.
+  pick_dbref            Can recycle specific garbage dbrefs when creating
+                        objects.
   player_create         Can use @pcreate command.
   poll                  Can use @poll command.
   pueblo_send           Can use xch_cmd and send pueblo tags

@@ -62,6 +62,9 @@ Functions:
    flash from the input in the output. [MG]
  * locate() takes a new flag, 's', which will only return objects
    controlled by the looker. Suggested by spork. [MG]
+ * @@() now takes a huge number of arguments, instead of ignoring commas in
+   the final arg, to stop it giving the 'unescaped comma' warning. Requested
+   by everyone. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later

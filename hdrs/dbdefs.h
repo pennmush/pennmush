@@ -184,6 +184,7 @@ extern dbref first_free;        /* pointer to free list */
 #define AF_Public(a) ((a)->flags & AF_PUBLIC)
 #define AF_Mhear(a) ((a)->flags & AF_MHEAR)
 #define AF_Ahear(a) ((a)->flags & AF_AHEAR)
+#define AF_Quiet(a) ((a)->flags & AF_QUIET)
 
 /* Non-mortal checks */
 #define God(x)  ((x) == GOD)

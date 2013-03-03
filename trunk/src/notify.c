@@ -343,7 +343,7 @@ notify_type(DESC *d)
   }
 
   /* At this point, we have a connected player on the descriptor */
-  if (IS(d->player, TYPE_PLAYER, "NOACCENTS"))
+  if (IS(d->player, TYPE_PLAYER, "NOACCENTS") || (d->conn_flags & CONN_STRIPACCENTS))
     type |= MSG_STRIPACCENTS;
 
   if (d->conn_flags & CONN_HTML) {

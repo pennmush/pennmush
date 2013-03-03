@@ -5541,6 +5541,7 @@ See also: @teleport
   telnet           present if the client understands the telnet protocol.
   ssl              present if the client is using an SSL/TLS connection.
   prompt_newlines  see 'help prompt_newlines'
+  stripaccents     client is receiving 7-bit ascii, no accented characters
   
   One of the color styles shown in 'help colorstyle' will also be included.
 

@@ -2345,6 +2345,51 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       *bp = '\0';
       mush_free(d->ttype, "terminal description");
       d->ttype = mush_strdup(tbuf, "terminal description");
+    } else if (**q == TN_CHARSET) {
+      /* Possible subnegotiations are
+       * CHARSET ACCEPTED <charset> IAC SE
+       * CHARSET REJECTED IAC SE
+       */
+      char tbuf[BUFFER_LEN], *bp = tbuf;
+      char type;
+      if (*q >= qend)
+        return -1;
+      (*q)++;
+      /* See whether it's ACCEPTED or REJECTED */
+      if (*q >= qend)
+        return -1;
+      type = **q;
+      (*q)++;
+
+      /* Read up to IAC SE */
+      while (1) {
+        if (*q >= qend)
+          return -1;
+        if (**q == IAC) {
+          if (*q + 1 >= qend)
+            return -1;
+          if (*(*q + 1) == IAC) {
+            safe_chr((char) IAC, tbuf, &bp);
+            (*q)++;
+          } else
+            break;
+        } else
+          safe_chr(**q, tbuf, &bp);
+        (*q)++;
+      }
+      while (*q < qend && **q != SE)
+        (*q)++;
+      *bp = '\0';
+      if (type == TN_SB_CHARSET_ACCEPTED) {
+        if (!strcasecmp(tbuf, "US-ASCII") || !strcasecmp(tbuf, "ASCII")) {
+          /* ascii requested; strip accents for the connection */
+          d->conn_flags |= CONN_STRIPACCENTS;
+        }
+      }
+      /* Since they've rejected all our offered charsets, we can either
+       * keep doing what we're doing, or start stripping accents (send
+       * plain ascii). For now, we'll just carry on as we were.
+       */
     } else {
       while (*q < qend && **q != SE)
         (*q)++;
@@ -2462,10 +2507,16 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       } else {
         /* Fall back on latin-1 */
         delim[0] = ';';
-        curr_locale = "ISO-8859-1;x-penn-def";
+        curr_locale = "ISO-8859-1";
       }
       queue_newwrite(d, (unsigned char *) delim, 1);
       queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "US-ASCII", 8);
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "ASCII", 5);
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "x-penn-def", 10);
 
       queue_newwrite(d, reply_suffix, 2);
 #else                           /* _MSC_VER */
@@ -2475,7 +2526,8 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
        * but it's unlikely to contain a valid charset name, so probably
        * wouldn't help anyway.) */
       queue_newwrite(d, reply_prefix, 4);
-      queue_newwrite(d, ";ISO-8859-1;x-win-def", 21);
+      queue_newwrite(d, (unsigned char *) ";ISO-8859-1", 11);
+      queue_newwrite(d, (unsigned char *) ";US-ASCII;ASCII;x-win-def", 25);
       queue_newwrite(d, reply_suffix, 2);
 #endif                          /* _MSC_VER */
     } else {
@@ -3396,6 +3448,10 @@ sockset_show(DESC *d)
   safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
 
   ntype = notify_type(d);
+
+  safe_format(buff, &bp, "%-15s:  %s\n", "Stripaccents",
+              (ntype & MSG_STRIPACCENTS ? "Yes" : "No"));
+
   if (ntype & MSG_XTERM256)
     strcpy(colorstyle, "xterm256");
   else if (ntype & MSG_ANSI16)
@@ -3517,7 +3573,7 @@ sockset(DESC *d, char *name, char *val)
     return T("Terminal Type set.");
   }
 
-  if (!strcasecmp(name, "COLORSTYLE")) {
+  if (!strcasecmp(name, "COLORSTYLE") || !strcasecmp(name, "COLOURSTYLE")) {
     if (!strcasecmp(val, "auto")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
@@ -3550,6 +3606,17 @@ sockset(DESC *d, char *name, char *val)
     } else {
       d->conn_flags &= ~CONN_PROMPT_NEWLINES;
       return T("No newline will be sent after a prompt.");
+    }
+  }
+
+  if (!strcasecmp(name, "STRIPACCENTS") || !strcasecmp(name, "NOACCENTS")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_STRIPACCENTS;
+      return T("Accents will be stripped.");
+    } else {
+      d->conn_flags &= ~CONN_STRIPACCENTS;
+      return T("Accents will not be stripped.");
     }
   }
 
@@ -5402,6 +5469,9 @@ FUNCTION(fun_terminfo)
         safe_str(" ssl", buff, bp);
     }
     type = notify_type(match);
+    if (type & MSG_STRIPACCENTS)
+      safe_str(" stripaccents", buff, bp);
+
     if (type & MSG_XTERM256)
       safe_str(" xterm256", buff, bp);
     else if (type & MSG_ANSI16)

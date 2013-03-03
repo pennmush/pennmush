@@ -3629,6 +3629,9 @@ Continued in 'help @sitelock3'
     terminaltype:    Your terminal type, used by terminfo()
     prompt_newlines: Set whether a newline is shown after prompts from
                      @prompt, same as PROMPT_NEWLINES
+    stripaccents:    Strip accents for this connection. Like the NOACCENTS
+                     flag, but connection-specific. Set by default on 
+                     connections which negotiate charset as [US-]ASCII
 
   Note that changing 'telnet' or 'pueblo' may stop your client from parsing
   or displaying output correctly; only use if you know what you're doing!
@@ -3636,6 +3639,7 @@ Continued in 'help @sitelock3'
 See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle, @prompt
 & COLORSTYLE
   SOCKSET colorstyle=<value>
+  @SOCKSET [me|<descriptor>]=colorstyle,<value>
 
   You can override the color format you receive from PennMUSH. Normally,
   PennMUSH tries to guess what your client is capable of through telnet
@@ -3654,7 +3658,7 @@ See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle, @prompt
   display, PennMUSH will attempt to find a close match that can fit your
   client's capabilities.
 
-See also: ANSI, COLOR, XTERM256
+See also: ANSI, COLOR, XTERM256, @sockset
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
   

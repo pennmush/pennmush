@@ -308,6 +308,11 @@ struct text_queue {
 #define CONN_PROMPT_NEWLINES 0x20
 /* Client hasn't sent any data yet */
 #define CONN_AWAITING_FIRST_DATA 0x40
+/* Strip accents. In lieu of proper charset negotiation, this is set
+ * on connections which have negotiated ASCII instead of the charset
+ * the MUSH is running in
+ */
+#define CONN_STRIPACCENTS 0x80
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 

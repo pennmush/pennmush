@@ -43,6 +43,8 @@ Commands:
    to show that /noparse only affects leftside args. Suggested by spork. [MG]
  * WHO, DOING and SESSION now take wildcard patterns for names, as well as
    a prefix. [MG]
+ * New option for @sockset/SOCKSET, 'stripaccents', to strip accents for a
+   single connection as per the NOACCENTS flag. [MG]
 
 Functions:
  * lpids()' second argument has been altered slightly, to allow you to list
@@ -67,6 +69,8 @@ Functions:
  * @@() now takes a huge number of arguments, instead of ignoring commas in
    the final arg, to stop it giving the 'unescaped comma' warning. Requested
    by everyone. [MG]
+ * terminfo() now tells you whether a connection is having accents stripped,
+   either via NOACCENTS or @sockset. [MG]
 
 Minor changes:
  * ansi() now accepts a space-separated list of color codes, with later
@@ -90,6 +94,9 @@ Minor changes:
    as a zone. Previously, ownership was required. Suggested by Cheetah. [MG]
  * The hardcode now always ANSIs a string (such as an object name or help 
    topic), even if the enactor isn't set ANSI. Fixes puppets, etc. [MG]
+ * When clients negotiate charset via telnet, US-ASCII and ASCII are now
+   presented as options. If the client picks one of them, that connection
+   will have accents stripped (as per the NOACCENTS flag). [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

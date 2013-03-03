@@ -97,6 +97,9 @@ Minor changes:
  * When clients negotiate charset via telnet, US-ASCII and ASCII are now
    presented as options. If the client picks one of them, that connection
    will have accents stripped (as per the NOACCENTS flag). [MG]
+ * New attribute flag, quiet, suppresses the usual confirmation message
+   when an attribute's value or flags are changed. Suggested by Trinsec,
+   bribed by qa'toq. [MG]
 
 Fixes:
  * %c contained the evaluated input (the same as %u), instead of the

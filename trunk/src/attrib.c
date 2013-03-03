@@ -2081,10 +2081,14 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       }
     }
   }
-  if ((flags & 0x01) && !AreQuiet(player, thing))
-    notify_format(player,
-                  "%s/%s - %s.", Name(thing), name,
-                  s ? T("Set") : T("Cleared"));
+  if ((flags & 0x01) && !AreQuiet(player, thing)) {
+    old = atr_get(thing, name);
+    if (!old || !AF_Quiet(old)) {
+      notify_format(player,
+                    "%s/%s - %s.", Name(thing), name,
+                    s ? T("Set") : T("Cleared"));
+    }
+  }
   return 1;
 }
 

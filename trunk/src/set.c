@@ -521,13 +521,13 @@ af_helper(dbref player, dbref thing,
   /* Clear flags first, then set flags */
   if (af->clrf) {
     AL_FLAGS(atr) &= ~af->clrf;
-    if (!AreQuiet(player, thing))
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
       notify_format(player, T("%s/%s - %s reset."), Name(thing), AL_NAME(atr),
                     af->clrflags);
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
-    if (!AreQuiet(player, thing))
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
       notify_format(player, T("%s/%s - %s set."), Name(thing), AL_NAME(atr),
                     af->setflags);
   }

@@ -121,6 +121,7 @@ Fixes:
    by Kimiko. [MG]
  * Players connecting dark with 'cd' were hidden even if they shouldn't have
    been. Patch by thomaswdyoung.
+ * Fixed a bug in colors(*,16color) with no ansi. [MG]
  
 Hardcode:
  * The Builder() macro, which is unused in Penn but exists for backwards

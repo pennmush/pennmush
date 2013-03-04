@@ -292,6 +292,7 @@ FUNCTION(fun_colors)
 
     for (i = 0; i < 2; i++) {
       bool hilite = 0;
+      int j;
       color = (i ? ad.bg : ad.fg);
       if (!*color)
         continue;
@@ -303,8 +304,11 @@ FUNCTION(fun_colors)
         safe_format(buff, bp, "#%06x", color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
       case COL_16:
-        safe_chr(colormap_16[ansi_map_16(color, i, &hilite) - (i ? 40 : 30)].desc -
-                 (i ? 32 : 0), buff, bp);
+        j = ansi_map_16(color, i, &hilite);
+        if (j)
+          safe_chr(colormap_16[j - (i ? 40 : 30)].desc - (i ? 32 : 0), buff, bp);
+        else
+          safe_chr(i ? 'D' : 'd', buff, bp);
         if (!i && (hilite || (ad.bits & CBIT_HILITE)))
           safe_chr('h', buff, bp);
         break;

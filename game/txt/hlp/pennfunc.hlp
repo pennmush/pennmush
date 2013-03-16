@@ -1546,7 +1546,7 @@ See also: encrypt(), digest()
   If the optional <encode> argument is true, the resulting string is further
   encoded in base-64 so that it only contains alphanumeric characters.
   
-  decode() decrypts a string encrypted with encrypt(). The <encoded> 
+  decrypt() decrypts a string encrypted with encrypt(). The <encoded> 
   argument indicates that the encrypted string was base-64 encoded.
 
 See also: encode64(), digest()

@@ -1415,21 +1415,26 @@ See also: @poll, WHO, doing()
   <list>. <list> is space-separated, unless the /delimit switch is given, 
   in which case it is a <delim>-separated list.
   
-  If the string "##" appears anywhere in <action list>, it will be replaced
-  with the current element of <list>. The string "#@" is replaced with the
-  position of the current element in the list. Note that these replacements
-  occur before evaluation, so are unsafe on user input, and cannot be used
-  in nested in nested @dolists. It is HIGHLY recommended that you use itext()
-  and inum() instead, which serve the same purpose but are evaluated normally
-  and can be used with nested @dolists. The %iL substitution safely refers to
-  the outermost @dolist, much the same as ##.
- 
-  If the /notify switch is given, the command "@notify me" is queued after 
-  all copies of <action list> have been queued. This is useful for object
-  synchronization with semaphores.
+  The %i0 substitution, or the function itext(0), can be used in the 
+  <action list> to get the current element of the <list>, and the inum(0)
+  function returns the position of the current element. ilev() returns the
+  nesting depth of @dolists. The %iL substitution returns the itext() for the
+  outermost @dolist, and is equivilent to itext(ilev()).
+  
+  For backwards compatability, the string "##" is also replaced with the
+  current element of the list, and "#@" the current position. However, these
+  replacements occur BEFORE evaluation, which means that they always return
+  the values for the outermost @dolist, and are thus unsuitable for nesting.
+  It also makes them unsafe for use on user-input or strings which may 
+  contain special characters; using the %i* sub or itext() instead is very
+  strongly recommended.
 
   Continued in 'help @dolist2'.
 & @dolist2
+
+  If the /notify switch is given, the command "@notify me" is queued after 
+  all copies of <action list> have been queued. This is useful for object
+  synchronization with semaphores.
 
   If the /inline switch is given, @dolist will run the new action lists
   instantly, instead of queueing them to be run later.

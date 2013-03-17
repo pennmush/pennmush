@@ -1,0 +1,152 @@
+#
+# Commands to restrict
+# Syntax: restrict_command <command> <restriction> [" <error message>]
+#         restrict_function <function> <restriction>
+# For commands, <restriction> can be an @lock-style lock, or any combination of
+# the phrases below. For functions, use any combination of the phrases. 
+# <restriction> is a space separated list that may include:
+#	nobody		Totally disable the command
+#	nogagged	Gagged players can't use it
+#	nofixed		Fixed players can't use it
+#	noguest		Guests can't use it
+#	noplayer	Player objects can't use it (things, rooms, exits may. Command only)
+#	admin		Must be roy or wiz to use it
+#	wizard		Must be wiz to use it
+#	god		Must be god to use it
+#	logname		When func/cmd is used, log its name and user
+#	logargs		When func/cmd is used, log its name, args, and user
+#       <flag>		Any flag that must be present to use it (Command only)
+#       <power>		Any power that must be present to use it (Command only)
+#	!<restriction>	Remove a restriction (Command only).
+#       nosidefx        The side-effect version of a function won't work (Function only).
+#
+# If <error message> is given to a restrict_command, it is sent to the player
+# instead of a more generic, typically useless error message.
+#
+# Command restrictions typically also apply to side-effect functions that
+# emulate the command.
+# See 'help restrict' for more informtation.
+
+# You can also create and/or restrict standard attributes, using:
+# restrict_attribute <attribute> <restriction>
+# where <restriction> is "none" for a standard attribute with no restrictions,
+# or a space-separated list of attribute flags, as per 
+# @attribute/access <attribute>=<restriction>. See 'help @attribute' and
+# 'help attribute flags' for more information.
+# For example:
+# OPTIONAL
+# restrict_attribute stats wizard mortal_dark no_command no_inherit
+
+# Don't let guests mess with the database
+# (This replaces the HARSH_GUEST compile-time define)
+# The "ATTRIB_SET" command controls the setting of attributes with
+#  @attr obj=value or &attr obj=value
+restrict_command @set noguest
+restrict_command ATTRIB_SET noguest
+restrict_command @chown noguest
+restrict_command @chzone noguest
+restrict_command @cpattr noguest
+restrict_command @mvattr noguest
+restrict_command @edit noguest
+restrict_command @gedit noguest
+restrict_command @parent noguest
+restrict_command @wipe noguest
+restrict_command @unlink noguest
+restrict_command @link noguest
+restrict_command @lock noguest
+restrict_command @unlock noguest
+restrict_command @create noguest
+restrict_command @dig noguest
+restrict_command @open noguest
+
+# @power is traditionally logged
+restrict_command @power logargs
+
+# Prevent players going home while set FIXED
+restrict_command home nofixed " You can't do that IC!
+
+# Some additional protection against spam attacks by guests
+#restrict_command @dolist noguest
+#restrict_function repeat noguest
+#restrict_function iter noguest
+#restrict_function map noguest
+#restrict_function fold noguest
+
+# Don't allow kill (slay still works)
+#restrict_command kill nobody
+
+# Uncomment to allow only admin or @powered builders to build
+#restrict_command @open admin builder " You need the builder power to do that.
+#restrict_command @dig admin builder " You need the builder power to do that.
+
+# Uncomment to disallow them to create objects
+#restrict_command @create admin builder " You need the builder power to do that.
+
+# Used to be player_locate
+#restrict_command @whereis nobody
+
+# Used to be hate_dest
+restrict_command @destroy noplayer " Use @recycle instead
+
+# Used to be cemit_power
+#restrict_command @cemit admin cemit " You can't @cemit without cemit @power
+
+# Turn off ansi().
+#restrict_function ansi nobody
+
+# And some of the more dangerous side-effect functions.
+#restrict_function set nobody
+#restrict_function attrib_set nobody
+#restrict_function wipe nobody
+#restrict_function create nobody
+#restrict_function clone nobody
+#restrict_function tel nobody
+
+# If you turn this on, players who try to use functions in place
+# of commands (e.g. $foo: [pemit(%#,blah)] will get error messages.
+# Disabled by default for backward compatibility.
+restrict_command warn_on_missing nobody
+
+# We add a dummy here to make updating easier
+restrict_function lstats noguest
+
+# Remove the hardcode chat system by uncommenting these
+#restrict_command @cemit nobody
+#restrict_command @nscemit nobody
+#restrict_command @channel nobody
+#restrict_command @chat nobody
+#restrict_command @clock nobody
+#restrict_function cowner nobody
+#restrict_function ctitle nobody
+#restrict_function cwho nobody
+#restrict_function channels nobody
+#restrict_function cflags nobody
+#restrict_function cbuffer nobody
+#restrict_function cbufferadd nobody
+#restrict_function cdesc nobody
+#restrict_function cemit nobody
+#restrict_function clflags nobody
+#restrict_function clock nobody
+#restrict_function cmsgs nobody
+#restrict_function cowner nobody
+#restrict_function crecall nobody
+#restrict_function cstatus nobody
+#restrict_function cusers nobody
+#restrict_function cmogrifier nobody
+
+
+# Remove the hardcode mail system by uncommenting these
+#restrict_command @mail nobody
+#restrict_command @malias nobody
+#restrict_function mail nobody
+#restrict_function maildstats nobody
+#restrict_function mailfrom nobody
+#restrict_function mailfstats nobody
+#restrict_function mailstats nobody
+#restrict_function mailstatus nobody
+#restrict_function mailsubject nobody
+#restrict_function mailtime nobody
+#restrict_function malias nobody
+#restrict_function folderstats nobody
+#restrict_function maillist nobody
+#restrict_function mailsend nobody

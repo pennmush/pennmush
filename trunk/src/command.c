@@ -1086,8 +1086,11 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
   static char exit_command[BUFFER_LEN], *ec;
+  static char *empty = "";
   char *lsa[MAX_ARG] = { NULL };
   char *rsa[MAX_ARG] = { NULL };
+  char *lsp = empty;
+  char *rsp = empty;
   char *ap, *swp;
   const char *attrib, *replacer;
   COMMAND_INFO *cmd;
@@ -1382,7 +1385,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
   }
 
-
   /* Finish setting up commandraw, for hooks and %u */
   p = command2;
   if (attrib) {
@@ -1403,6 +1405,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       }
     }
   } else {
+    lsp = ls;
     safe_str(ls, commandraw, &c2);
   }
   if (cmd->type & CMD_T_EQSPLIT) {
@@ -1421,6 +1424,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
           }
         }
       } else {
+        rsp = rs;
         safe_str(rs, commandraw, &c2);
       }
     }
@@ -1437,7 +1441,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     /* If we have a hook/ignore that returns false, we don't do the command */
     if (run_command
         (cmd, player, queue_entry->enactor, commandraw, sw, switch_err, string,
-         swp, ap, ls, lsa, rs, rsa, queue_entry)) {
+         swp, ap, lsp, lsa, rsp, rsa, queue_entry)) {
       retval = NULL;
     } else {
       retval = commandraw;

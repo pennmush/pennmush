@@ -16,6 +16,8 @@ Version 1.8.5 patchlevel 5                                 ??? ??, 2013
 Fixes:
  * Commands which take multiple right-hand-side arguments could only have
    8191-length arguments, instead of the usual 8192. Reported by Jules. [MG]
+ * It was possible to return non-printable characters from an SQL database,
+   which could cause undefined weirdness. Reported by spork. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

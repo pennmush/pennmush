@@ -370,7 +370,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   ATTR *a;
   PE_REGS *pe_regs;
   int argcount = 0;
-  char *wenv[10];
+  char *wenv[MAX_STACK_ARGS];
   int i, len;
   MQUE *tmp;
   int pid;
@@ -420,7 +420,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   }
 
   /* We have an event to call. Yay! */
-  for (i = 0; i < 10; i++)
+  for (i = 0; i < MAX_STACK_ARGS; i++)
     wenv[i] = NULL;
 
   /* Prep myfmt: Replace all commas with delim chars. */
@@ -434,9 +434,9 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     argcount++;
   }
 
-  /* Maximum number of args available is 10: %0-%9 */
-  if (argcount > 10)
-    argcount = 10;
+  /* Maximum number of args available (%0-%9 stack) */
+  if (argcount > MAX_STACK_ARGS)
+    argcount = MAX_STACK_ARGS;
 
   if (argcount > 0) {
     /* Build the arguments. */
@@ -476,7 +476,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     tmp->pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "queue_event");
   }
   pe_regs = tmp->pe_info->regvals;
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (wenv[i]) {
       pe_regs_setenv(pe_regs, i, wenv[i]);
     }
@@ -711,7 +711,7 @@ queue_include_attribute(dbref thing, const char *atrname,
   if (args != NULL) {
     queue_type |= QUEUE_RESTORE_ENV;
     pe_regs = pe_regs_create(PE_REGS_ARG, "queue_include_attribute");
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_STACK_ARGS; i++) {
       if (args[i] && *args[i]) {
         pe_regs_setenv_nocopy(pe_regs, i, args[i]);
       }
@@ -733,7 +733,6 @@ queue_include_attribute(dbref thing, const char *atrname,
 
   if (pe_regs)
     pe_regs_free(pe_regs);
-  free(start);
   return 1;
 }
 
@@ -745,6 +744,7 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param enactor the enactor.
  * \param noparent if true, parents of executor are not checked for atrname.
  * \param pe_regs the pe_regs args for the queue entry
+ * \param flags QUEUE_* flags
  * \retval 0 failure.
  * \retval 1 success.
  */
@@ -761,6 +761,12 @@ queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
   return 1;
 }
 
+/** Wrapper to get an attribute for queueing, possibly checking parents
+ * \param executor object the attr is on
+ * \param atrname attribute to get
+ * \param noparent skip parents?
+ * \return the attr to queue
+ */
 ATTR *
 queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 {
@@ -768,6 +774,16 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
           atr_get(executor, strupper(atrname)));
 }
 
+/** Queue an attribute.
+ * This function queues an action list from an attribute, skipping the
+ * $-command or ^-listen prefix if present.
+ * \param executor object queueing the action list
+ * \param a attribute with the action list to queue
+ * \param enactor enactor causing the queueing
+ * \param pe_regs a pe_regs struct to use for the new queue entry
+ * \param flags QUEUE_* flags to use for the queue entry
+ * \return 1
+ */
 int
 queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
                        int flags)
@@ -1689,7 +1705,7 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (string_prefix("player", r)) {
+    } else if (string_prefix("player", r) || string_prefix("executor", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1725,39 +1741,66 @@ FUNCTION(fun_pidinfo)
   } while (s);
 }
 
+#define LPIDS_WAIT 1
+#define LPIDS_SEMAPHORE 2
+#define LPIDS_INDEPENDENT 4
+#define LPIDS_TYPES (LPIDS_WAIT | LPIDS_SEMAPHORE)
 FUNCTION(fun_lpids)
 {
   /* Can be called as LPIDS or GETPIDS */
   MQUE *tmp;
-  int qmask = 3;
-  dbref thing = -1;
-  dbref player = -1;
+  int qmask = 0;
+  dbref thing = NOTHING;
+  dbref player = NOTHING;
   char *attr = NULL;
   bool first = true;
+  const char *list;
+  char *elem;
+
   if (string_prefix(called_as, "LPIDS")) {
     /* lpids(player[,type]) */
     if (args[0] && *args[0]) {
-      player = match_thing(executor, args[0]);
-      if (!GoodObject(player)) {
-        safe_str(T(e_notvis), buff, bp);
-        return;
-      }
-      if (!(LookQueue(executor) || (Owner(player) == executor))) {
-        safe_str(T(e_perm), buff, bp);
-        return;
+      if (!strcasecmp(args[0], "all")) {
+        if (LookQueue(executor))
+          player = NOTHING;
+        else
+          player = executor;
+      } else {
+        player = match_thing(executor, args[0]);
+        if (!GoodObject(player)) {
+          safe_str(T(e_notvis), buff, bp);
+          return;
+        }
+        if (!LookQueue(executor)
+            && !(Owns(executor, player) || controls(executor, player))) {
+          safe_str(T(e_perm), buff, bp);
+          return;
+        }
       }
     } else if (!LookQueue(executor)) {
       player = executor;
     }
-    if ((nargs == 2) && args[1] && *args[1]) {
-      if (*args[1] == 'W' || *args[1] == 'w')
-        qmask = 1;
-      else if (*args[1] == 'S' || *args[1] == 's')
-        qmask = 2;
+    if (nargs > 1 && args[1] && *args[1]) {
+      list = args[1];
+      while (list && *list) {
+        elem = next_in_list(&list);
+        if (string_prefix("wait", elem))
+          qmask |= LPIDS_WAIT;
+        else if (string_prefix("semaphore", elem))
+          qmask |= LPIDS_SEMAPHORE;
+        else if (string_prefix("independent", elem))
+          qmask |= LPIDS_INDEPENDENT;
+        else {
+          safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+          return;
+        }
+      }
     }
+    if (!(qmask & LPIDS_TYPES))
+      qmask |= LPIDS_TYPES;
   } else {
     /* getpids(obj[/attrib]) */
-    qmask = 2;                  /* semaphores only */
+    qmask = LPIDS_SEMAPHORE;
     attr = strchr(args[0], '/');
     if (attr)
       *attr++ = '\0';
@@ -1771,22 +1814,24 @@ FUNCTION(fun_lpids)
       return;
     }
   }
-
-  if (qmask & 1) {
+  if (qmask & LPIDS_WAIT) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && (!Owns(tmp->executor, player)))
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
+              !Owns(tmp->executor, player))) {
         continue;
+      }
       if (!first)
         safe_chr(' ', buff, bp);
       safe_integer(tmp->pid, buff, bp);
       first = false;
     }
   }
-  if (qmask & 2) {
+  if (qmask & LPIDS_SEMAPHORE) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor)
-          && (!Owns(tmp->executor, player)))
+          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
+              !Owns(tmp->executor, player)))
         continue;
       if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;
@@ -1881,7 +1926,7 @@ show_queue_env(dbref player, MQUE *q)
   /* %0 - %9 */
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
-    for (i = 0; i < 10; i += 1) {
+    for (i = 0; i < MAX_STACK_ARGS; i += 1) {
       const char *arg = pi_regs_get_env(q->pe_info, i);
       if (arg)
         notify_format(player, " %%%d : %s", i, arg);
@@ -2195,7 +2240,7 @@ do_haltpid(dbref player, const char *arg1)
   }
 
   /* Instead of trying to track what queue this entry currently
-     belongs too, flag it as halted and just not execute it when its
+     belongs to, flag it as halted and just not execute it when its
      turn comes up (Or show it in @ps, etc.).  Exception is for
      semaphores, which otherwise might wait forever. */
   q->executor = NOTHING;
@@ -2370,7 +2415,7 @@ shutdown_a_queue(MQUE **head, MQUE **tail)
   }
 }
 
-/** Averages an array of 16-bit integers. 
+/** Averages an array of 16-bit integers.
  *
  * When compiling with SSE2 support, uses a vectorized code path that
  * takes 32 iterations to sum up the counts used to compute a 15

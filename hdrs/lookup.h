@@ -2,6 +2,7 @@
  * \file lookup.h
  * \brief Prototypes and data structures for talking with info_slave
  *
+ * \verbatim
  * Must be #included after mysocket.h and ident.h to get appropriate
  * types and constants.
  *
@@ -10,6 +11,8 @@
  * something like 8K (Less than that on OS X in practice). We're well under
  * that. Using datagrams instead of streams vastly simplies the communication
  * code. We should have done it years ago.
+ * \endverbatim
+ *
  */
 
 #ifndef LOOKUP_H

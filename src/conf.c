@@ -357,7 +357,7 @@ PENNCONF conftable[] = {
   {"call_limit", cf_int, &options.call_lim, 1000000, 0,
    "limits"}
   ,
-  {"player_name_len", cf_int, &options.player_name_len, BUFFER_LEN, 0,
+  {"player_name_len", cf_int, &options.player_name_len, BUFFER_LEN - 1, 0,
    "limits"}
   ,
   {"queue_entry_cpu_time", cf_int, &options.queue_entry_cpu_time, 100000, 0,
@@ -1436,7 +1436,7 @@ conf_default_set(void)
   options.dbck_interval = 599;
   options.max_attrcount = 2048;
   options.float_precision = 6;
-  options.player_name_len = 16;
+  options.player_name_len = 15;
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
   options.call_lim = 10000;

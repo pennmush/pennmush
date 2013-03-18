@@ -798,7 +798,8 @@ safe_fill(char x, size_t n, char *buff, char **bp)
 
   if (*bp + n + 1 > buff + BUFFER_LEN) {
     n = buff + BUFFER_LEN - *bp;
-    if (n > 0) --n;
+    if (n > 0)
+      --n;
     ret = 1;
   }
   memset(*bp, x, n);
@@ -1595,7 +1596,8 @@ remove_trailing_whitespace(char *buff, size_t len)
 {
   unsigned char *c;
 
-  for (c = (unsigned char *)buff + len - 1; c >= (unsigned char *)buff; c -= 1) {
+  for (c = (unsigned char *) buff + len - 1; c >= (unsigned char *) buff;
+       c -= 1) {
     if (isspace(*c)) {
       len -= 1;
       *c = '\0';

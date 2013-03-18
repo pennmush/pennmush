@@ -1277,9 +1277,10 @@ markup.o: ../hdrs/mymalloc.h
 markup.o: ../hdrs/log.h
 markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/game.h
+markup.o: ../hdrs/intmap.h
 markup.o: ../hdrs/rgb.h
-markup.o: htmltab.c
 markup.o: rgbtab.c
+markup.o: htmltab.c
 match.o: ../hdrs/copyrite.h
 match.o: ../config.h
 match.o: ../hdrs/conf.h

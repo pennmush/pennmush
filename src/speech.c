@@ -96,7 +96,7 @@ okay_pemit(dbref player, dbref target, int dofails, int def,
   return 1;
 }
 
-/** This is the place where speech, poses, and @emits by thing should be
+/** This is the place where speech, poses, and \@emits by thing should be
  *  heard. For things and players, it's the loc; for rooms, it's the room
  *  itself; for exits, it's the source.
  */
@@ -205,7 +205,7 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \verbatim
  * This implements @oemit and @oemit/list.
  * \endverbatim
- * \param executor The object @oemit'ing
+ * \param executor The object \@oemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param list the list of dbrefs to oemit from the emit.
  * \param message the message to emit.
@@ -460,6 +460,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
 /** Send an \@message to a list of dbrefs, using an attribute to format it
  * if present.
  * \param executor the executor.
+ * \param speaker The object speaking, for spoofed messages
  * \param list the list of players to pemit to, destructively modified.
  * \param attrname the attribute to use to format the message.
  * \param message the default message.
@@ -520,7 +521,7 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
 }
 
 /** Send a message to an object.
- * \param executor The object @pemit'ing
+ * \param executor The object \@pemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param target the name(s) of the object(s) to pemit to.
  * \param message the message to pemit.
@@ -710,11 +711,11 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
   va_list ap;
   char *s;
   int i;
-  char *argv[10];
+  char *argv[MAX_STACK_ARGS];
 
   va_start(ap, numargs);
 
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (i < numargs) {
       /* Pop another char * off the stack. */
       s = va_arg(ap, char *);
@@ -755,7 +756,7 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
 
   *messbuff = '\0';
   pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");
-  for (i = 0; i < numargs && i < 10; i++) {
+  for (i = 0; i < numargs && i < MAX_STACK_ARGS; i++) {
     pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
   }
   ret = call_attrib(player, attribute, messbuff, enactor, NULL, pe_regs);
@@ -1135,7 +1136,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
  * \verbatim
  * This implements @emit.
  * \endverbatim
- * \param executor The object @emit'ing
+ * \param executor The object \@emit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param message the message to emit.
  * \param flags bitmask of notification flags.
@@ -1221,7 +1222,7 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
  * \verbatim
  * This implements @remit.
  * \endverbatim
- * \param executor The object @remit'ing
+ * \param executor The object \@remit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param rooms string containing dbref(s) of rooms to remit it.
  * \param message message to emit.
@@ -1245,7 +1246,7 @@ do_remit(dbref executor, dbref speaker, char *rooms, const char *message,
 }
 
 /** Emit a message to the absolute location of enactor.
- * \param executor The object @lemit'ing
+ * \param executor The object \@lemit'ing
  * \param speaker The object making the sound (executor, unless /spoof'ing)
  * \param message message to emit.
  * \param flags bitmask of notification flags.

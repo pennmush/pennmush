@@ -71,7 +71,8 @@ extern void do_dump(dbref player, char *num, enum dump_type flag);
 enum shutdown_type { SHUT_NORMAL, SHUT_PANIC, SHUT_PARANOID };
 extern void do_shutdown(dbref player, enum shutdown_type panic_flag);
 extern void do_dolist(dbref executor, char *list, char *command,
-                      dbref enactor, unsigned int flags, MQUE *queue_entry);
+                      dbref enactor, unsigned int flags, MQUE *queue_entry,
+                      int queue_type);
 
 
 /* From look.c */
@@ -192,8 +193,12 @@ extern dbref do_pcreate
 extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);
+#define TEL_DEFAULT 0
+#define TEL_SILENT  1
+#define TEL_INSIDE  2
+#define TEL_LIST    4
 extern void do_teleport
-  (dbref player, const char *arg1, const char *arg2, int silent, int inside,
+  (dbref player, const char *arg1, const char *arg2, int flags,
    NEW_PE_INFO *pe_info);
 extern void do_force(dbref player, dbref caller, const char *what,
                      char *command, int queue_type, MQUE *queue_entry);

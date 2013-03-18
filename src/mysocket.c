@@ -395,7 +395,7 @@ make_unix_socket(const char *filename, int socktype)
 
 /** Connect to a unix-domain socket
  * \param filename The name of the socket file.
- * \param socktyp the type of socket
+ * \param socktype the type of socket
  * \return a fd for the socket or -1 on error.
  */
 int
@@ -623,6 +623,7 @@ make_blocking(int s)
 
 /** Enable TCP keepalive on the given socket if we can.
  * \param s socket.
+ * \param keepidle how often to send keepalive
  */
 /* ARGSUSED */
 void

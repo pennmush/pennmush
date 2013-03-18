@@ -98,10 +98,9 @@ decode64(int64_t i)
 extern const unsigned char *tables;
 
 /** Validates a timezone name to see if it fits the right format.
- * \param namem The name of the time zone.
+ * \param name The name of the time zone.
  * \return true or false
  */
-
 bool
 is_valid_tzname(const char *name)
 {
@@ -170,7 +169,6 @@ tzfile_exists(const char *name)
   do {									\
     if (read(fd, (buf), (size)) != (size)) {				\
       do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno)); \
-      free((buf));							\
       goto error;							\
     } 									\
   } while (0)
@@ -373,7 +371,7 @@ read_tzfile(const char *tzname)
 }
 
 /** Given a time zone struct and a time, return the offset in seconds from GMT at that time.
- * \paream tz the time zone description struct
+ * \param tz the time zone description struct
  * \param when the time to calculate the offset for.
  * \return the offset in seconds.
  */
@@ -399,6 +397,8 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
 
 /** Parse a softcode timezone request.
  *
+ * \verbatim
+ *
  * If arg is a objid, look up that object's @TZ attribute and parse
  * that. Otherwise, parse arg.
  *
@@ -411,6 +411,8 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
  * If no tzinfo database, or reading the given zone from one fails,
  * and the arg is an integer, treat it as the number of hours
  * difference from GMT.  Otherwise fail.
+ *
+ * \endverbatim
  *
  * \param arg The string to parse for a dbref, number or symbolic tz name
  * \param when When to calculate the offset for.

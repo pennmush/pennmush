@@ -1435,7 +1435,7 @@ db_read_oldstyle(PENNFILE *f)
       }
 
       if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-        char buff[BUFFER_LEN + 1];      /* The name plus a NUL */
+        char buff[BUFFER_LEN];  /* The name plus a NUL */
         mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
@@ -1771,17 +1771,15 @@ db_read(PENNFILE *f)
           }
         }
         if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-          char buff[BUFFER_LEN + 1];    /* The name plus a NUL */
-          strncpy(buff, o->name, PLAYER_NAME_LIMIT);
-          buff[PLAYER_NAME_LIMIT] = '\0';
+          char buff[BUFFER_LEN];        /* The name plus a NUL */
+          mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
           set_name(i, buff);
           do_rawlog(LT_CHECK,
                     " * Name of #%d is longer than the maximum, truncating.\n",
                     i);
         } else if (!IsPlayer(i) && (strlen(o->name) > OBJECT_NAME_LIMIT)) {
           char buff[OBJECT_NAME_LIMIT + 1];     /* The name plus a NUL */
-          strncpy(buff, o->name, OBJECT_NAME_LIMIT);
-          buff[OBJECT_NAME_LIMIT] = '\0';
+          mush_strncpy(buff, o->name, OBJECT_NAME_LIMIT);
           set_name(i, buff);
           do_rawlog(LT_CHECK,
                     " * Name of #%d is longer than the maximum, truncating.\n",

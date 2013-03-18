@@ -341,8 +341,8 @@ COMMAND(cmd_mapsql)
   int numfields;
   int numrows;
   PE_REGS *pe_regs = NULL;
-  char *names[10];
-  char *cells[10];
+  char *names[MAX_STACK_ARGS];
+  char *cells[MAX_STACK_ARGS];
   char tbuf[BUFFER_LEN];
   char strrownum[20];
   char *s;
@@ -378,7 +378,7 @@ COMMAND(cmd_mapsql)
     return;
   }
 
-  for (a = 0; a < 10; a++) {
+  for (a = 0; a < MAX_STACK_ARGS; a++) {
     cells[a] = NULL;
     names[a] = NULL;
   }
@@ -447,7 +447,7 @@ COMMAND(cmd_mapsql)
 #endif
 
     if (numfields > 0) {
-      for (i = 0; i < numfields && i < 9; i++) {
+      for (i = 0; i < numfields && i < (MAX_STACK_ARGS - 1); i++) {
         switch (sql_platform()) {
 #ifdef HAVE_MYSQL
         case SQL_PLATFORM_MYSQL:
@@ -477,7 +477,7 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        for (i = 0; i < (numfields + 1) && i < 10; i++) {
+        for (i = 0; i < (numfields + 1) && i < MAX_STACK_ARGS; i++) {
           pe_regs_setenv(pe_regs, i, names[i]);
         }
         queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
@@ -487,7 +487,7 @@ COMMAND(cmd_mapsql)
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
       pe_regs_clear(pe_regs);
-      for (i = 0; i < (numfields + 1) && i < 10; i++) {
+      for (i = 0; i < (numfields + 1) && i < MAX_STACK_ARGS; i++) {
         pe_regs_setenv(pe_regs, i, cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);

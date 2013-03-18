@@ -53,7 +53,9 @@
   prefixmatch       When set with @<attrib>, this attribute will be matched
                     down to its unique prefixes. This flag is primarily used
                     internally, but also useful in @attribute/access.
-                    
+  quiet (Q)         When altering the attribute's value or flags, don't show
+                    the usual confirmation message
+
   These attribute flags are only used internally. They cannot be set, but
   seen on 'examine' and flags()/lflags(), tested for with hasflag(), etc:
   branch (`)        This attribute is a branch. See: help ATTRIBUTE TREES
@@ -153,7 +155,9 @@ copy of all branches leading to that leaf. This means that when you do:
 
 In this case, a new BRANCH attribute will be created on the child,
 so '-[get(child/BRANCH)]-' will return '--'. This may not be what
-you actually want.
+you actually want. In these cases, the pfun() function can be useful:
+
+  &BRANCH child=pfun(BRANCH)
 
 If a branch on the parent is set no_inherit, it will not be inherited,
 regardless of any other flags that may be present. If a branch is

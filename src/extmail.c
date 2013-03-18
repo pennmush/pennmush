@@ -777,7 +777,7 @@ FUNCTION(fun_maillist)
   }
 }
 
-/** Review mail messages.  
+/** Review mail messages.
  * This displays the contents of a set of mail messages sent by one player to another
  * \param player the enactor.
  * \param target the player to review.
@@ -849,7 +849,6 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
  * player's messages in a concise format. (Hacked from do_mail_list.)
  * \param player the enactor.
  * \param target the player to review.
- * \param msglist list of messages to list.
  */
 void
 do_mail_reviewlist(dbref player, dbref target)
@@ -1445,6 +1444,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
                   T("MAIL: %s is not accepting mail from you right now."),
                   Name(target));
       *cp = '\0';
+      cp = sbuf;
     } else {
       cp = NULL;
     }

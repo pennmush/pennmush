@@ -70,8 +70,7 @@ void
 do_name(dbref player, const char *name, char *newname_)
 {
   dbref thing;
-  char *myenv[10];
-  int i;
+  char oldname[BUFFER_LEN];
   char *newname = NULL;
   char *alias = NULL;
   PE_REGS *pe_regs;
@@ -120,13 +119,8 @@ do_name(dbref player, const char *name, char *newname_)
     return;
   }
 
-    /* everything ok, change the name */
-    myenv[0] = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    myenv[1] = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    mush_strncpy(myenv[0], Name(thing), BUFFER_LEN); 
-    strcpy(myenv[1], newname);
-    for (i = 2; i < 10; i++)
-      myenv[i] = NULL;
+  /* Actually change it */
+  mush_strncpy(oldname, Name(thing), BUFFER_LEN);
 
   if (IsPlayer(thing)) {
     do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
@@ -148,17 +142,16 @@ do_name(dbref player, const char *name, char *newname_)
   }
 
   queue_event(player, "OBJECT`RENAME", "%s,%s,%s",
-              unparse_objid(thing), myenv[1], myenv[0]);
+              unparse_objid(thing), newname, oldname);
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
   pe_regs = pe_regs_create(PE_REGS_ARG, "do_name");
-  pe_regs_setenv_nocopy(pe_regs, 0, myenv[0]);
-  pe_regs_setenv_nocopy(pe_regs, 1, myenv[1]);
+  pe_regs_setenv_nocopy(pe_regs, 0, oldname);
+  pe_regs_setenv_nocopy(pe_regs, 1, newname);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
               pe_regs, NA_INTER_PRESENCE);
   pe_regs_free(pe_regs);
-
 }
 
 /** Change an object's owner.
@@ -354,7 +347,6 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
   }
 }
 
-
 /** Change an object's zone.
  * \verbatim
  * This implements @chzone.
@@ -393,23 +385,20 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
     return 0;
   }
 
-  /* we do use ownership instead of control as a criterion because
-   * we only want the owner to be able to rezone the object. Also,
-   * this allows players to @chzone themselves to an object they own.
-   */
-  if (!(God(player) || (!God(thing) && Wizard(player)) || Owns(player, thing))) {
+
+  if (!controls(player, thing)) {
     if (noisy)
       notify(player, T("You don't have the power to shift reality."));
     return 0;
   }
   /* a player may change an object's zone to:
    * 1.  NOTHING
-   * 2.  an object he owns
+   * 2.  an object he controls
    * 3.  an object with a chzone-lock that the player passes.
    * Note that an object with no chzone-lock isn't valid
    */
   has_lock = (getlock(zone, Chzone_Lock) != TRUE_BOOLEXP);
-  if (!(Wizard(player) || (zone == NOTHING) || Owns(player, zone) ||
+  if (!(Wizard(player) || (zone == NOTHING) || controls(player, zone) ||
         (has_lock && eval_lock_with(player, zone, Chzone_Lock, pe_info)))) {
     if (noisy) {
       if (has_lock) {
@@ -521,13 +510,13 @@ af_helper(dbref player, dbref thing,
   /* Clear flags first, then set flags */
   if (af->clrf) {
     AL_FLAGS(atr) &= ~af->clrf;
-    if (!AreQuiet(player, thing))
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
       notify_format(player, T("%s/%s - %s reset."), Name(thing), AL_NAME(atr),
                     af->clrflags);
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
-    if (!AreQuiet(player, thing))
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
       notify_format(player, T("%s/%s - %s set."), Name(thing), AL_NAME(atr),
                     af->setflags);
   }
@@ -923,14 +912,14 @@ edit_helper(dbref player, dbref thing,
   } else if (!(gargs->flags & EDIT_CHECK)) {
     if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
         !(gargs->flags & EDIT_QUIET) && !AreQuiet(player, thing)) {
-      if (!ansi_long_flag && ShowAnsi(player))
+      if (!ansi_long_flag)
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
       else
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
     }
   } else if (!(gargs->flags & EDIT_QUIET)) {
     /* We don't do it - we just pemit it. */
-    if (!ansi_long_flag && ShowAnsi(player))
+    if (!ansi_long_flag)
       notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
     else
       notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
@@ -1177,6 +1166,7 @@ regedit_helper(dbref player, dbref thing,
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
  * \param flags type of \@edit to do
+ * \param pe_info the pe_info to use evaluating replacements
  */
 
 void
@@ -1354,6 +1344,7 @@ do_include(dbref executor, dbref enactor, char *object, char **argv,
  * It's here for lack of a better place.
  * \param player the enactor.
  * \param what name of the object to use.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
@@ -1382,6 +1373,7 @@ do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
  * \param player the enactor.
  * \param name the name of the child object.
  * \param parent_name the name of the new parent object.
+ * \param pe_info the pe_info to use for lock checks
  */
 void
 do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)

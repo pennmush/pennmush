@@ -31,7 +31,7 @@
 
 See also: examine, flags(), hasflag(), orflags(), andflags(), orlflags(),
   andlflags(), types of objects, type(), hastype(), @flag, FLAG LIST,
-  @set, set()
+  @set, set(), attribute flags
 & FLAG LIST
 & FLAGS LIST
 Flag  Title            Flag  Title            Flag  Title           
@@ -315,7 +315,7 @@ See also: @destroy, @undestroy
   softcode, etc. Players set HALT can still enter commands directly from
   their clients.
 
-See also: @halt, @restart
+See also: @halt, @restart, HALT POWER
 & HAVEN
   Flag:  HAVEN  (players, rooms)
 
@@ -469,8 +469,12 @@ See also: control, TRUST
   This flag causes all accented characters to be converted to non-accented
   alternatives before being sent to a connection. See HELP STRIPACCENTS() 
   for caveats.
+  
+  To strip accents for a specific connection, instead of all connections,
+  you can use 
+    @sockset <descriptor>=stripaccents,yes
 
-See also: i18n, accent(), stripaccents()
+See also: i18n, accent(), stripaccents(), @sockset
 & NO_COMMAND
   Flag:  NO_COMMAND  (all types)
   
@@ -761,11 +765,11 @@ See also: ZONES, ZONE MASTERS, @chzone, ZONE MASTER ROOMS, NO_TEL, JUMP_OK
 & ZONE
   Flag:  SHARED   (players) 
 
-  The SHARED flag is used to designate a player as a Zone Master. Objects 
-  owned by a Zone Master are controlled by anyone who passes the player's
+  The SHARED flag is used to designate a player as a Shared Player. Objects 
+  owned by a Shared Player are controlled by anyone who passes the player's
   zone @lock.
 
-See also: ZONE MASTERS, @lock
+See also: SHARED PLAYERS, @lock
 & LISTEN_PARENT
   Flag:  LISTEN_PARENT (players, things, rooms)
   
@@ -803,7 +807,8 @@ See also: MONITOR, LISTENING
   no_quota *            Has an unlimited quota
   open_anywhere         Can @open an exit from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
-  pick_dbref            Can recycle specific garage dbrefs when creating objects.
+  pick_dbref            Can recycle specific garbage dbrefs when creating
+                        objects.
   player_create         Can use @pcreate command.
   poll                  Can use @poll command.
   pueblo_send           Can use xch_cmd and send pueblo tags
@@ -884,7 +889,7 @@ See also: @function
   or pid, and to use @halt/all and @restart/all. Wizards have the power
   implicitly.
 
-See also: @halt, @restart, @wait, QUEUE POWER, SEE_QUEUE POWER
+See also: @halt, @restart, @wait, QUEUE POWER, SEE_QUEUE POWER, HALT
 & HIDE POWER
 
   The Hide power allows players to use the @hide command, as well as the
@@ -931,7 +936,7 @@ See also: @sitelock
   nearby. Wizards and Royalty have the power implicitly.
 & MANY_ATTRIBS POWER
 
-  The Many_Attribs power allows a player to have up to a million attributes,
+  The Many_Attribs power allows an object to have up to a million attributes,
   rather than the usual limit set in the max_attrs_per_object @config option.
   Useful for database objects.
 & NO_PAY POWER
@@ -944,8 +949,8 @@ See also: @sitelock
   indefinitely.
   
   Wizards used to have this power implicitly, but no longer do, for the
-  reasons given above. (Wizards can still give infinite numbers of pennies
-  to others, however.)
+  reasons given above. (Wizards can still give infinite numbers of pennies,
+  to others or themselves, however.)
   
   God is implicitly no_pay and, if you have the power and are not set
   MISTRUST, your objects are implicitly no_pay.
@@ -1018,9 +1023,10 @@ See also: SEE_ALL POWER, @search, @stats, objmem(), playermem(), lsearch()
 & SEE_QUEUE POWER
 
   The See_Queue power allows an object to use @ps, lpids() and related 
-  functions on any object/queue.
+  functions on any object/queue. Wizards and Royalty have this power
+  implicitly.
   
-See also: @ps, lpids(), getpids(), pidinfo()
+See also: @ps, lpids(), getpids(), pidinfo(), HALT POWER
 & SQL_OK POWER
 
   This power lets an object use @sql, sql() and related commands and

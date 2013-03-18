@@ -148,8 +148,8 @@ void sql_shutdown(void);
 /* notify.c */
 
 /** Bitwise options for render_string() */
-#define MSG_INTERNAL     0x00  /**< Original string containing internal markup, \n lineendings */
-#define MSG_PLAYER       0x01  /**< Being sent to a player. Uses \r\n lineendings, not \n */
+#define MSG_INTERNAL     0x00  /**< Original string containing internal markup, \\n lineendings */
+#define MSG_PLAYER       0x01  /**< Being sent to a player. Uses \\r\\n lineendings, not \\n */
 /* Any text sent to a player will be (MSG_PLAYER | modifiers below) */
 #define MSG_PUEBLO       0x02  /**< HTML entities, Pueblo tags as HTML */
 #define MSG_TELNET       0x04  /**< Output to telnet-aware connection. Escape char 255 */
@@ -159,7 +159,12 @@ void sql_shutdown(void);
 #define MSG_ANSI2        0x20  /**< Ansi-highlight only */
 #define MSG_ANSI16       0x40  /**< 16 bit Color */
 #define MSG_XTERM256     0x80  /**< XTERM 256 Color */
-#define MSG_FONTTAGS     0x100 /**< <font color="..." bgcolor=".."></font> */
+/**
+ * \verbatim
+ * <font color="..." bgcolor=".."></font> (currently unusued)
+ * \endverbatim
+ */
+#define MSG_FONTTAGS     0x100
 
 #define MSG_PLAYER_COLORS (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)       /* All possible player-renderings of color */
 #define MSG_ANY_ANSI (MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256)    /* Any form of ANSI tag */
@@ -170,7 +175,7 @@ void sql_shutdown(void);
 /** A notify_anything lookup function type definition */
 typedef dbref (*na_lookup) (dbref, void *);
 
-/**< Used by notify_anything() for formatting a message through a ufun for each listener */
+/** Used by notify_anything() for formatting a message through a ufun for each listener */
 struct format_msg {
   dbref thing;    /**< Object to ufun an attr from. Use AMBIGUOUS for the target */
   char *attr;     /**< Attribute to ufun */
@@ -268,17 +273,17 @@ extern char ucbuff[];
 #define QUEUE_OBJECT           0x0002   /**< command queued because of a non-player in-game */
 #define QUEUE_SOCKET           0x0004   /**< command executed directly from a player's client */
 #define QUEUE_INPLACE          0x0008   /**< inplace queue entry */
-#define QUEUE_NO_BREAKS        0x0010   /**< Don't propagate @breaks from this inplace queue */
+#define QUEUE_NO_BREAKS        0x0010   /**< Don't propagate \@breaks from this inplace queue */
 #define QUEUE_PRESERVE_QREG    0x0020   /**< Preserve/restore q-registers before/after running this inplace queue */
 #define QUEUE_CLEAR_QREG       0x0040   /**< Clear q-registers before running this inplace queue */
 #define QUEUE_PROPAGATE_QREG   0x0080   /**< At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
 #define QUEUE_RESTORE_ENV      0x0100   /**< At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
 #define QUEUE_NOLIST           0x0200   /**< Don't separate commands at semicolons, and don't parse rhs in &attr setting */
-#define QUEUE_BREAK            0x0400   /**< set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY            0x0800   /**< Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_BREAK            0x0400   /**< set by \@break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x0800   /**< Set by \@retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
-#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For @startups */
+#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For \@startups */
 #define QUEUE_DEBUG_PRIVS      0x8000   /**< Show DEBUG info for queue if on an object %# can see debug from (queued via %-prefix) */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
@@ -348,7 +353,7 @@ dbref do_clone(dbref player, char *name, char *newname, int preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */
-int etime_to_secs(char *str1, int *secs);
+int etime_to_secs(char *input, int *secs);
 
 /* From game.c */
 void report(void);
@@ -377,6 +382,7 @@ void look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
+int safe_decompose_str(char *what, char *buf, char **bp);
 
 /* From memcheck.c */
 void add_check(const char *ref);
@@ -585,7 +591,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     int strncasecoll(const char *s1, const char *s2, size_t t);
 #endif
 
-size_t remove_trailing_whitespace(char *, size_t);
+    size_t remove_trailing_whitespace(char *, size_t);
 
 /** Append a character to the end of a BUFFER_LEN long string.
  * You shouldn't use arguments with side effects with this macro.

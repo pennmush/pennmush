@@ -2127,7 +2127,7 @@ FUNCTION(fun_inum)
 /* ARGSUSED */
 FUNCTION(fun_step)
 {
-  /* Like map, but passes up to 10 elements from the list at a time in %0-%9
+  /* Like map, but passes up to MAX_STACK_ARGS elements from the list at a time in %0-%9
    * If the attribute is not found, null is returned, NOT an error.
    * This function takes delimiters.
    */
@@ -2150,7 +2150,7 @@ FUNCTION(fun_step)
 
   step = parse_integer(args[2]);
 
-  if (step < 1 || step > 10) {
+  if (step < 1 || step > MAX_STACK_ARGS) {
     safe_str(T("#-1 STEP OUT OF RANGE"), buff, bp);
     return;
   }
@@ -2278,13 +2278,13 @@ FUNCTION(fun_mix)
 
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
-  char *lp[10];
+  char *lp[MAX_STACK_ARGS];
   char sep;
   PE_REGS *pe_regs;
   int funccount;
   int n, lists;
-  char **ptrs[10] = { NULL };
-  int nptrs[10], i, maxi;
+  char **ptrs[MAX_STACK_ARGS] = { NULL };
+  int nptrs[MAX_STACK_ARGS], i, maxi;
 
   if (nargs > 3) {              /* Last arg must be the delimiter */
     n = nargs;

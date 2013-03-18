@@ -44,8 +44,6 @@
 #define EQUAL(cs,a,b) ((cs) ? (a == b) : (FIXCASE(a) == FIXCASE(b)))
 /** Check for inequality of characters, maybe case-sensitive */
 #define NOTEQUAL(cs,a,b) ((cs) ? (a != b) : (FIXCASE(a) != FIXCASE(b)))
-/** Maximum number of wildcarded arguments */
-#define NUMARGS (10)
 
 bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
@@ -83,6 +81,7 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 }
 
 static bool
+
 
 
 
@@ -568,6 +567,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
  * \param s regexp to match against.
  * \param d string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive.
+ * \param report_err pointer to a char array to store any regexp errors in
  * \retval 1 d matches s.
  * \retval 0 d doesn't match s.
  */
@@ -619,6 +619,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
 
 /** Regexp match of a pre-compiled regexp, with no memory.
  * \param re the regular expression
+ * \param study
  * \param subj the string to match against.
  * \return true or false
  */

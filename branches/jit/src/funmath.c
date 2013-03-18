@@ -1973,6 +1973,11 @@ MATH_FUNC(math_and)
 {
   int n;
 
+  if (nptr == 0) {
+    safe_chr('0', buff, bp);
+    return;
+  }
+
   for (n = 0; n < nptr; n++) {
     if (!parse_boolean(ptr[n])) {
       safe_chr('0', buff, bp);
@@ -2424,6 +2429,7 @@ MATH_FUNC(math_or)
 {
   int n;
 /* Or */
+
   for (n = 0; n < nptr; n++) {
     if (parse_boolean(ptr[n])) {
       safe_chr('1', buff, bp);
@@ -2502,11 +2508,11 @@ MATH_FUNC(math_gte)
 
 MATH_FUNC(math_eq)
 {
-  // Yes, I'm evil. :D
+  /* Yes, I'm evil. :D  */
   lmathcomp(ptr, nptr, buff, bp, 1, -1);
 }
 
-// This is used for lt, gt, lte, gte, eq
+/** This is used for lt, gt, lte, gte, eq */
 static void
 lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
 {
@@ -2530,7 +2536,7 @@ lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
       return;
     }
     next = parse_number(ptr[n]);
-    // Is eqok?
+    /* Is eqok? */
     if (EQ(next, prev)) {
       if (eqokay)
         continue;

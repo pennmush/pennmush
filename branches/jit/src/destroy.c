@@ -321,6 +321,7 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
  * \param player the enactor.
  * \param name name of object to destroy.
  * \param confirm if 1, called with /override (or nuke).
+ * \param pe_info the pe_info to use for any lock checks
  */
 void
 do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
@@ -1480,6 +1481,12 @@ check_locations(void)
           do_rawlog(LT_ERR,
                     "Incorrect source on exit %s. Reset to #%d.",
                     unparse_object(GOD, thing), loc);
+          /* Make sure it's only in the first room we found it in */
+          if (RealGoodObject(Source(thing)))
+            remove_first(Exits(Source(thing)), thing);
+          /* And make sure it knows it */
+          Source(thing) = loc;
+
         }
       }
     }

@@ -23,8 +23,11 @@
 #ifndef __ANSI_H
 #define __ANSI_H
 
+/* Doxygen does not like this */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* If we want to debug ansi stuff. */
 /* #define ANSI_DEBUG /**/
+#endif
 
 #include "mushtype.h"
 #include "mypcre.h"
@@ -93,14 +96,14 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
-/* Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
+/** Maximum length of a color name (lightgoldenrodyellow) + '+' prefix and trailing nul  */
 #define COLOR_NAME_LEN 22
 /** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;
-  uint8_t offbits;
-  char fg[COLOR_NAME_LEN];
-  char bg[COLOR_NAME_LEN];
+  uint8_t bits;    /**< Bitwise CBIT_* flags which are explicitly on (underline, flash, etc) */
+  uint8_t offbits; /**< Bitwise CBIT_* flags which are explicitly off (underline, flash, etc) */
+  char fg[COLOR_NAME_LEN]; /**< FG color. May be a single character old-style ANSI code or a modern color (+name, \#hex, etc) */
+  char bg[COLOR_NAME_LEN]; /**< BG color. May be a single character old-style ANSI code or a modern color (+name, \#hex, etc) */
 } ansi_data;
 
 #define NULL_ANSI {0, 0, "", ""}
@@ -109,11 +112,12 @@ int read_raw_ansi_data(ansi_data *store, const char *codes);
 int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
                         char *buff, char **bp);
 
-#define ANSI_FORMAT_NONE         0
-#define ANSI_FORMAT_HILITE       1
-#define ANSI_FORMAT_16COLOR      2
-#define ANSI_FORMAT_XTERM256     3
-#define ANSI_FORMAT_HTML         4
+/* Different ways of handling ANSI colors */
+#define ANSI_FORMAT_NONE         0  /**< Strip all colors */
+#define ANSI_FORMAT_HILITE       1  /**< Only show ANSI highlight, no colors/underline/etc */
+#define ANSI_FORMAT_16COLOR      2  /**< Show the full basic ANSI palette, including highlight, underline, etc */
+#define ANSI_FORMAT_XTERM256     3  /**< Use the 256 color XTERM palette */
+#define ANSI_FORMAT_HTML         4  /**< Show colors as HTML tags. Not currently used. */
 
 int define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);
@@ -157,8 +161,11 @@ typedef struct _new_markup_information {
 #define AS_OPTIMIZED    0x01  /**< If the markup has been optimized. */
 #define AS_HAS_MARKUP   0x02  /**< If the string has markup or not */
 #define AS_HAS_TAGS     0x04  /**< If the string has non-color tags. */
-#define AS_HAS_STANDALONE 0x08  /**< If the string has standalone tags.
-                                 ** (<IMG>, etc) */
+/** \verbatim
+ * If the string has standalone tags (<IMG>, etc)
+ * \endverbatim
+ */
+#define AS_HAS_STANDALONE 0x08
 
 /** A string, with ansi attributes broken out from the text */
 typedef struct _ansi_string {
@@ -224,18 +231,18 @@ parse_ansi_string(const char *src)
     TAG_START,MARKUP_HTML,x,TAG_END, \
     y, TAG_START,MARKUP_HTML,x,TAG_END)
 
-int safe_tag(char const *a_tag, char *buf, char **bp);
-int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
-int safe_tag_wrap(char const *a_tag, char const *params,
-		  char const *data, char *buf, char **bp, dbref player);
+    int safe_tag(char const *a_tag, char *buf, char **bp);
+    int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
+    int safe_tag_wrap(char const *a_tag, char const *params,
+                      char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
 
-int valid_color_name(const char *name);
-uint32_t color_to_hex(char *name, int hilite);
-int ansi_map_16(char *name, int bg);
-int ansi_map_256(uint32_t hex);
+    int valid_color_name(const char *name);
+    uint32_t color_to_hex(const char *name, bool hilite);
+    int ansi_map_16(const char *name, bool bg, bool *hilite);
+    int ansi_map_256(const char *name, bool hilite);
 
 
 #endif                          /* __ANSI_H */

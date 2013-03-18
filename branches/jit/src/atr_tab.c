@@ -62,6 +62,7 @@ PRIV attr_privs_set[] = {
   {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {"branch", '`', 0, 0},
   {NULL, '\0', 0, 0}
 };
@@ -91,6 +92,7 @@ PRIV attr_privs_db[] = {
   {"enum", '\0', AF_ENUM, AF_ENUM},
   {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
   {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {NULL, '\0', 0, 0}
 };
 
@@ -122,6 +124,7 @@ PRIV attr_privs_view[] = {
   {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {"branch", '`', AF_ROOT, AF_ROOT},
   {NULL, '\0', 0, 0}
 };

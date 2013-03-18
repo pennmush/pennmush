@@ -22,7 +22,10 @@ fixdepend.pl: perl script used by 'make distdepend'
 
 fixdiff.scm:  scheme script to convert a diff with Windows-style path
  separators to Unix-style ones.
-  
+ 
+genrgb.pl: Creates hdrs/rgb.h and src/rgbtab.gperf with color name
+  to RGB tuple maps.
+ 
 gentables.c:  Compiles into a program used to make src/tables.c
 
 grep-cl.pl: Perl script to search for strings in changelogs.

@@ -17,16 +17,16 @@
 typedef chunk_reference_t boolexp;
 
 /* tokens for locks */
-#define NOT_TOKEN '!'
-#define AND_TOKEN '&'
-#define OR_TOKEN '|'
-#define AT_TOKEN '@'
-#define IN_TOKEN '+'
-#define IS_TOKEN '='
-#define OWNER_TOKEN '$'
-#define ATR_TOKEN ':'
-#define EVAL_TOKEN '/'
-#define FLAG_TOKEN '^'
+#define NOT_TOKEN '!'    /**< Invert meaning of lock key */
+#define AND_TOKEN '&'    /**< Require both keys */
+#define OR_TOKEN '|'     /**< Require either key */
+#define AT_TOKEN '@'     /**< Check a lock on another object */
+#define IN_TOKEN '+'     /**< Must be carrying object */
+#define IS_TOKEN '='     /**< Match a specific object */
+#define OWNER_TOKEN '$'  /**< Anything owned by this object */
+#define ATR_TOKEN ':'    /**< Compare attr value */
+#define EVAL_TOKEN '/'   /**< Evaluation lock */
+#define FLAG_TOKEN '^'   /**< Flag, power, chan, etc, locks */
 
 enum { TRUE_BOOLEXP = NULL_CHUNK_REFERENCE };
 

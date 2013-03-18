@@ -1,0 +1,23 @@
+This is the most current changes file for PennMUSH Hardcode.
+
+If you are maintaining an add-on for PennMUSH, this details any changes
+to extant functions that are likely to be used by the embracers and
+extenders out there.
+
+Changes are in reverse chronological order. You can probably find the reason
+for most of these changes in the equivalent CHANGES file, but only those
+that have altered hardcode will appear here.
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.5 patchlevel 4                                 Nov 09, 2012
+
+  do_teleport() now takes a bitwise or of TEL_* flags (defined in externs.h)
+  instead of separate 'silent' and 'inside' args. [MG]

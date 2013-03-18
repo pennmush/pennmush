@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "flags.h"
 
-#define Builder(x)       (command_check_byname(x, "@dig", NULL))
+#define Builder(x)       (command_check_byname_quiet(x, "@dig", NULL))
 #define Guest(x)         has_power_by_name(x,"GUEST",NOTYPE)
 #define Tel_Anywhere(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYWHERE",NOTYPE))
 #define Tel_Anything(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYTHING",NOTYPE))

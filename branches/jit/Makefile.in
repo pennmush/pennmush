@@ -3,7 +3,7 @@
 # - System configuration - #
 
 VERSION=1.8.5
-PATCHLEVEL=3
+PATCHLEVEL=4
 
 #
 # This section of the file should be automatically configured by the

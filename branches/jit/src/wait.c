@@ -20,6 +20,9 @@
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
+#ifdef I_SYS_STAT
+#include <sys/stat.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -151,6 +154,21 @@ lock_fp(FILE * f, bool what)
 #if defined(HAVE_FCNTL) && !defined(WIN32)
   struct flock lock;
   int ret;
+  struct stat s;
+  int fd;
+
+  if (!f)
+    return -1;
+
+  fd = fileno(f);
+
+  if (fstat(fd, &s) < 0)
+    return -1;
+
+  /* Only try to lock regular files; this might not be the case when
+     logging to stdout during startup. */
+  if (!S_ISREG(fd)) 
+    return -1; 
 
   memset(&lock, 0, sizeof lock);
   lock.l_whence = SEEK_SET;
@@ -162,7 +180,7 @@ lock_fp(FILE * f, bool what)
   else
     lock.l_type = F_UNLCK;
 
-  ret = fcntl(fileno(f), F_SETLKW, &lock);
+  ret = fcntl(fd, F_SETLKW, &lock);
   if (ret < 0)
     perror("fcntl");
 

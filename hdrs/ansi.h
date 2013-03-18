@@ -242,7 +242,7 @@ parse_ansi_string(const char *src)
     int valid_color_name(const char *name);
     uint32_t color_to_hex(const char *name, bool hilite);
     int ansi_map_16(const char *name, bool bg, bool *hilite);
-    int ansi_map_256(const char *name, bool hilite);
+    int ansi_map_256(const char *name, bool hilite, bool all);
 
 
 #endif                          /* __ANSI_H */

@@ -313,7 +313,7 @@ FUNCTION(fun_colors)
           safe_chr('h', buff, bp);
         break;
       case COL_256:
-        safe_integer(ansi_map_256(color, 0), buff, bp);
+        safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0), buff, bp);
         break;
       case COL_NAME:
         {
@@ -837,7 +837,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
 
 /** Map a RGB hex color to the 256-color XTERM palette */
 int
-ansi_map_256(const char *name, bool hilite)
+ansi_map_256(const char *name, bool hilite, bool all)
 {
   uint32_t hex, diff, cdiff;
   int best = 0;
@@ -863,7 +863,7 @@ ansi_map_256(const char *name, bool hilite)
   /* Now find the closest 256 color match. */
   best = 0;
 
-  for (i = 16; i < 256; i++) {
+  for (i = (all ? 0 : 16); i < 256; i++) {
     cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {
       best = i;
@@ -989,7 +989,7 @@ ANSI_WRITER(ansi_xterm256)
       if (!strncasecmp(cur->fg, "+xterm", 6))
         fg = atoi(cur->fg + 6);
       else
-        fg = ansi_map_256(cur->fg, hilite);
+        fg = ansi_map_256(cur->fg, hilite, 0);
     } else {
       if (f)
         ret += safe_chr(';', buff, bp);
@@ -1006,7 +1006,7 @@ ANSI_WRITER(ansi_xterm256)
       if (!strncasecmp(cur->bg, "+xterm", 6))
         bg = atoi(cur->bg + 6);
       else
-        bg = ansi_map_256(cur->bg, hilite);
+        bg = ansi_map_256(cur->bg, hilite, 0);
     } else {
       if (f)
         ret += safe_chr(';', buff, bp);

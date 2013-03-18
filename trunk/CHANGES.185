@@ -22,6 +22,8 @@ Fixes:
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you
    replace an un-ansi'd string into an ansi'd one. [MG]
+ * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
+   when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
 
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 

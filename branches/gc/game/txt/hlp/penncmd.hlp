@@ -415,16 +415,6 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   For other types of object, @alias has no special meaning.
 
 See also: @name, alias(), fullalias()
-& @allquota
-  @allquota[/quiet] [<limit>]
-
-  This is a God-only command which is only available if the use_quota @config
-  option is true. If /quiet is not given, it displays a list of all players,
-  showing how many objects they own and how many more they can create. If a
-  <limit> is given, every players quota is altered either to <limit> or to
-  the number of objects they currently own, whichever is higher.
-  
-See also: @quota, @squota
 & @move
 & @omove
 & @oxmove
@@ -515,6 +505,7 @@ See also: give, @cost, buy, MONEY, ACTION LISTS, VERBS
   
 See also: @teleport, ACTION LISTS, VERBS
 & @atrchown
+& @attrchown
   @atrchown <object>/<attribute>=<new owner>
   
   This command changes the ownership of the attribute <attribute> on <object>
@@ -525,18 +516,23 @@ See also: @teleport, ACTION LISTS, VERBS
 
 See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @atrlock
+& @attrlock
   @atrlock <object>/<attribute>
   @atrlock <object>/<attribute=[on|off]
   
   The first form of this command tells you whether or not the given attribute
-  is locked.
+  is locked (whether it has the "locked" attribute flag set).
   
   The second form attempts to lock (for 'on') or unlock (for 'off') the given
   attribute. You automatically gain ownership of the attribute (as per 
-  @atrchown) when you lock it. Locked attributes cannot be altered by anyone
-  but Wizards and the attribute's owner (though the owner may be unable to
-  alter the attribute for other reasons, such as not controlling <object>).
+  @atrchown) when you lock it. Locked attributes cannot be altered by anyone 
+  but Wizards and the attribute's owner (though the owner may be unable to 
+  alter the attribute for other reasons, such as not controlling <object>). 
   You must be able to set an attribute in order to lock it.
+  
+  If you wish to lock an attribute without gaining ownership, you can set it
+  "locked" with @set <obj>/<attr>=locked - be aware that you'll be unable to
+  make any changes to the attribute after this, including unlocking it!
 
 See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @asuccess
@@ -797,49 +793,44 @@ See also: @chown
   @chzone[/preserve] <object>=<zone> 
   @chzone <object>=none
 
-  The first form of this command changes the zone of <object> to
-  <zone>.  This puts the object on that zone and may (if the
-  zone_control_zmp_only @config option is off) allow anyone who passes
-  the Zone @lock of <zone> to control <object>. Any kind of object can
-  be @chzoned, and any kind of object can be used as a zone.
+  The first form of this command changes the zone of <object> to <zone>.
+  This puts the object on that zone and may (if the zone_control_zmp_only 
+  @config option is off) allow anyone who passes the Zone @lock of <zone> 
+  to control <object>. Any kind of object can be @chzoned, and any kind of
+  object can be used as a zone.
 
-  The second form of this command removes <object> from its current
-  zone, leaving it unzoned. Anyone can reset the zone of an object he
-  owns.
+  The second form of this command removes <object> from its current zone,
+  leaving it unzoned.
 
   If a player is @chzoned, any objects he creates from that point on will
   automatically be on the same zone. Objects the player already owns are
-  not affected. Players can only @chzone themselves to a zone if they own
-  it, though wizards can @chzone players to any zone.
+  not affected.
   
+  You must control <object>, and either control <zone> or pass its 
+  @lock/chzone. 
+
   Continued in 'help @chzone2'.  
 & @chzone2
-  To see the Zone of an object, you can use either 'brief' or
-  'examine' to examine it. The Zone is listed on the same line as the
-  Owner of the object.
+  To see the Zone of an object, you can use either 'brief' or 'examine' to
+  examine it. The Zone is listed on the same line as the Owner of the object.
 
-  Players can @chzone objects they own if they own the zone object or
-  if they pass its @lock/chzone.  Wizards can @chzone objects to any
-  zone.
-  
-  If <zone> does not have a Zone @lock when something is @chzoned to
-  it, the lock is automatically set to =<zone> (see 'help @lock' for
-  more info).
+  If <zone> does not have a Zone @lock when something is @chzoned to it, the
+  lock is automatically set to =<zone> (see 'help @lock' for more info).
 
-  Whenever an object besides a player is @chzoned to a zone object,
-  the WIZARD, ROYALTY, and TRUST flags will be reset, as will all
-  @power's (for security purposes). For similar reasons, it is
-  strongly recommended that you do not @chzone admin- or wizard-owned
-  objects to any zone that less privileged players have access
-  to. Wizards can use the /preserve switch to prevent this reset.
+  Whenever an object besides a player is @chzoned to a zone object, the 
+  WIZARD, ROYALTY, and TRUST flags will be reset, as will all @power's 
+  (for security purposes). For similar reasons, it is strongly recommended 
+  that you do not @chzone admin- or wizard-owned objects to any zone that 
+  less privileged players have access to. Wizards can use the /preserve 
+  switch to prevent this reset.
 
 See also: ZONES, @chzoneall, zone()
 & @chzoneall
   @chzoneall[/preserve] <player>=<zone object>
 
-  Changes the zone of all objects owned by <player> to <zone object>.
-  If <zone object> is "none", the zone is reset to NOTHING. Only
-  wizards may use this command.
+  Changes the zone of all objects owned by <player> to <zone object>. If 
+  <zone object> is "none", the zone is reset to NOTHING. Only wizards may 
+  use this command.
   
 See also: @chzone, ZONES
 & @clone
@@ -913,19 +904,21 @@ See also: @create, clone(), create(), @cpattr
   You can use these additional switches, along with @command/add, to control
   how the new command parses its arguments:
 
-  /noparse   : The command does not evaluate arguments passed to it.
+  /noparse   : The command does not evaluate the leftside arg(s).
   /eqsplit   : The parser parses leftside and rightside around =
   /lsargs    : Comma-separated arguments on the left side are parsed.
   /rsargs    : When used with /eqsplit, the right-side arguments are
                comma-separated and are parsed individually
+  /rsnoparse : The command does not evaluate the rightside arg(s).
 
-  Any command added without the /noparse switch is provided with a
-  /noeval switch itself, so if you @command/add foo, then foo's arguments
-  are parsed by default, but you can call foo/noeval. Note: the $-command
-  needs to make allowances for the /noeval switch in it's matching.
+  Any command added without both the /noparse and /rsnoparse switchs is 
+  provided with a /noeval switch itself, so if you @command/add foo, then
+  foo's arguments are parsed by default, but you can call foo/noeval. 
+  Note: the $-command needs to make allowances for the /noeval switch in 
+  its matching.
 
-  Commands added with @command/add, like other standard commands,
-  are never case-sensitive. Commands can also be added in the alias.cnf file.
+  Commands added with @command/add, like other standard commands, are
+  never case-sensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -951,8 +944,8 @@ See also: @hook, RESTRICT, EVALUATION ORDER
 & @comment
   @comment <object>[=<comment>]
 
-  This is a wizard-only command which sets a COMMENT attribute on
-  <object>. The comment can only be seen by other wizards and royalty.
+  This is a wizard-only command which sets a COMMENT attribute on <object>.
+  The attribute can only be seen by those with the See_All power.
   
 See also: @@, @@()
 & @config
@@ -1416,28 +1409,53 @@ See also: @open, @link, EXITS, @create, DBREF, dig()
 
 See also: @poll, WHO, doing()
 & @dolist
-  @dolist[/notify][/delimit <delim>] <list>=<action list>
+  @dolist[/<switches>][/notify][/delimit <delim>] <list>=<action list>
   
   @dolist queues the <action list> for execution once for each element in 
   <list>. <list> is space-separated, unless the /delimit switch is given, 
   in which case it is a <delim>-separated list.
   
-  If the string "##" appears anywhere in <action list>, it will be replaced
-  with the current element of <list>. The string "#@" is replaced with the
-  position of the current element in the list. Note that these replacements
-  occur before evaluation, so are unsafe on user input, and cannot be used
-  in nested in nested @dolists. It is HIGHLY recommended that you use itext()
-  and inum() instead, which serve the same purpose but are evaluated normally
-  and can be used with nested @dolists. The %iL substitution safely refers to
-  the outermost @dolist, much the same as ##.
- 
+  The %i0 substitution, or the function itext(0), can be used in the 
+  <action list> to get the current element of the <list>, and the inum(0)
+  function returns the position of the current element. ilev() returns the
+  nesting depth of @dolists. The %iL substitution returns the itext() for the
+  outermost @dolist, and is equivilent to itext(ilev()).
+  
+  For backwards compatability, the string "##" is also replaced with the
+  current element of the list, and "#@" the current position. However, these
+  replacements occur BEFORE evaluation, which means that they always return
+  the values for the outermost @dolist, and are thus unsuitable for nesting.
+  It also makes them unsafe for use on user-input or strings which may 
+  contain special characters; using the %i* sub or itext() instead is very
+  strongly recommended.
+
+  Continued in 'help @dolist2'.
+& @dolist2
+
   If the /notify switch is given, the command "@notify me" is queued after 
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
 
-  See 'help @dolist2' for examples.  
+  If the /inline switch is given, @dolist will run the new action lists
+  instantly, instead of queueing them to be run later.
+
+  When using @dolist/inline, an @break in an <action list> will stop the
+  calling action list (and any further <action list>s) from running. Each 
+  <action list> will also be able to see/alter the q-registers for the 
+  calling action list. The following switches can be used with /inline 
+  to alter this behaviour:
+   /nobreak:  @breaks in <action list> do not effect to the calling action 
+              list
+   /localize: q-registers are saved before each <action> is run, and restored
+              after it completes
+   /clearreg: q-registers are all reset before each <action> is run. Most
+              useful when used in combination with /localize.
+              
+  @dolist/inplace is an alias for @dolist/inline/nobreak/localize.
+
+  See 'help @dolist3' for examples.  
 See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
-& @dolist2
+& @dolist3
 
   Examples:
     > @dolist a b c=say %i0 is number [inum(0)]
@@ -1469,8 +1487,8 @@ See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
-  This command discards commands waiting on a semaphore without
-  executing them.
+  This command discards commands waiting on a semaphore without executing 
+  them. (For non-semaphore queues, use @halt or @halt/pid.)
 
   If the /any switch is given, then all semaphores associated with
   <object> are @drained.  Otherwise, only the specified semaphore
@@ -1484,7 +1502,7 @@ See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-See also: SEMAPHORES, @wait, @notify
+See also: SEMAPHORES, @wait, @notify, @halt
 & @dump
   @dump
   @dump[/paranoid|/debug] [<check interval>]
@@ -1696,9 +1714,9 @@ See also: @zenter, ZONES, @zemit, zwho(), VERBS
     /players     show only players who have their homes in <object>
     /rooms       show only rooms which have a drop-to of <object>
     
-  If you 't control <object>, or have the Search or See_All powers, all 
-  objects linked to <object> are listed. Otherwise, only objects which you 
-  can examine will be shown.
+  If you control <object>, or have the Search or See_All powers, all objects
+  linked to <object> are listed. Otherwise, only objects which you can 
+  examine will be shown.
     
 See also: @link, @search, entrances()
 & @exitformat
@@ -2003,21 +2021,23 @@ See also: FLAGS, @set, @power, flag permissions
   controls (if safer_ufun is enabled) or can examine (if not).
   <function name> must be 30 characters or less.
 
-  A function defined using @function works just like any of the normal
-  MUSH functions, from the user's perspective. The functions are
-  executed by the object, with its powers.
+  A function defined using @function works just like any of the normal MUSH 
+  functions, from the user's perspective. The functions are executed by the
+  object, with its powers.
  
-  Functions defined via @function should follow the format used by
-  UFUN() - %0 is the first argument passed, %1 is the second argument
-  passed, and so forth. Optional third and fourth arguments to
-  @function can be used to set a parser-enforced number of arguments
-  for the function.  If the maximum arguments is negative, any
-  additional comments are treated as part of the text of the last
-  argument. An optional fifth argument will set restriction flags.
+  Functions defined via @function should follow the format used by UFUN() -
+  %0 is the first argument passed, %1 is the second argument passed, and so
+  forth. Optional third and fourth arguments to @function can be used to set 
+  a parser-enforced number of arguments for the function.  If the maximum 
+  arguments is negative, any additional comments are treated as part of the 
+  text of the last argument. Note that this behaviour is deprecated, and will
+  be removed in the near future.
+  
+  An optional fifth argument will set restriction flags.
 
-  The /preserve switch, for MUX compability, does the same thing as
-  the 'localize' restriction - treats the attribute that's evaluated
-  as if it were called with ulocal() instead of u().
+  The /preserve switch, for MUX compability, does the same thing as the 
+  'localize' restriction - treats the attribute that's evaluated as if it 
+  were called with ulocal() instead of u().
   
   Example:
   
@@ -2099,7 +2119,7 @@ See also: RESTRICT, FUNCTIONS, @startup, fn(), valid()
 See also: grep(), wildgrep(), regrep(), WILDCARDS
 & @halt
 & @allhalt
-  @halt <object>[=<action list>] 
+  @halt[/noeval] <object>[=<action list>] 
   @halt/pid <pid>
   @halt/all
   @allhalt
@@ -2598,16 +2618,16 @@ See also: @logwipe
 See also: @log
 & @message
   @message[/<switches>] <recipients>=<message>,[<obj>/]<attr>
-                                  [,<arg0>[, ... , <arg9>]]]
+                                  [,<arg0>[, ... , <arg29>]]]
 
   @message is designed for the use of *format messages, such as
   @pageformat or @chatformat. It is intended for use with @hooking page, 
   @chat, or say/pose/emit, or for coding language systems.
 
   For each of the given <recipients>, <obj>/<attr> is evaluated (with up to
-  ten arguments, as if it was ufun()'d), and the object is shown the result
-  via @pemit. If the attribute does not exist, they are shown <message>
-  instead.
+  30 arguments, as if it was ufun()'d), and the object is shown the result
+  via @pemit. If the attribute does not exist, or you do not have permission
+  to evaluate it, they are shown <message> instead.
   
   If <obj> is not given, or is given as "#-2", the attribute will be checked
   on the recipient.
@@ -2618,7 +2638,7 @@ See also: @log
   Switches:
     /noeval   -- none of @message's arguments will be evaluated
     /spoof    -- the message will appear to be from the enactor, not the
-                 recipient. Requires the Can_Spoof @power.
+                 executor. Requires the Can_Spoof @power.
     /remit    -- Works like @remit, treating <recipients> as a list of rooms
                  to send <message> to
     /oemit    -- Works like @oemit, with <recipients> as a list of objects
@@ -2717,7 +2737,7 @@ See also: @listmotd
     Alias set.
     Name set.
     > @name me=Obi Wan;
-    Alias removed;
+    Alias removed.
     Name set.
   
 See also: @alias, @oname, name(), fullname()
@@ -2988,7 +3008,7 @@ See also: @pemit, @nsprompt, prompt(), nsprompt(), PROMPT_NEWLINES
   can be used to disable the newline and is recommended for users with
   these clients.
 
-See also: @prompt, prompt(), terminfo()
+See also: @prompt, prompt(), terminfo(), @sockset
 & @pemit
   @pemit[/<switches>] <object>=<message>
   @pemit/list[/<switches>] <object list>=<message>
@@ -3161,14 +3181,40 @@ See also: @wait, @halt, @notify, @drain, SEMAPHORES
 
 See also: @dbck
 & @quota
-  @quota [/<switch>] [<victim>]
+  @quota [<player>]
 
-  This command is only available if the quota system is enabled.
-  It reports the victim's owned objects and the maximum number of objects 
-  s/he may own. You must be a Wizard to see another player's quota.
+  These commands are only meaningful if the Quota system is enabled (check
+  the use_quota @config option).
+  
+  @quota shows the current quota for <player>, or for the executor if no
+  <player> is given. You must control <player>, or have either the See_All
+  or Quotas @power.
 
-  The /set and /all switches are equivalent to @squota and @allquota,
+  Continued in 'help @quota2'.
+& @quota2  
+& @squota
+& @allquota
+  @squota <player>=[+|-]<amount>
+  @allquota[/quiet] [<limit>]
+
+  @squota is a Wizard-only command which adjusts the quota of <player>. If
+  <amount> is prefixed by + or -, their current quota will be incremented or
+  decremented by <amount>, respectively. Otherwise, their total quota is set
+  to <amount>.
+  
+  @allquota can only be used by God. With no <limit> argument, it reports the
+  quotas of all players. If a <limit> is given, the quotas of all players is
+  reset to <limit>. The /quiet switch stops @allquota reporting the current
+  quotas before changing them.
+  
+  Players always have enough quota for the objects they currently own; if you
+  attempt to set their quota to a lower number (with @squota or @allquota),
+  it will be set to the number of objects they own instead.
+  
+  @quota/set and @quota/all are equivilent to @squota and @allquota,
   respectively.
+
+See also: QUOTAS, Quotas Power, No_Quota Power
 & @readcache
   @readcache
   
@@ -3417,6 +3463,23 @@ See also: lsearch(), @find
   
   The fourth form sets (or unsets) an attribute flag on the specified
   attribute. See 'help attribute flags'.
+  
+See also: ATTRIB_SET, attrib_set(), set()
+& ATTRIB_SET
+& @_
+  &<attr> <object>[=<value>]
+  @_<attr> <object>[=<value>]
+  ATTRIB_SET/<attr> <object>=<value>
+  
+  The &<attr> and @_<attr> commands can be used to set or clear an attribute
+  from an object. When entered directly from a client, they do not evaluate
+  the <value>.
+  
+  ATTRIB_SET is the internal command which powers &attr and @_attr setting;
+  it cannot be used directly, but can be restricted or @hook'd to change the
+  behaviour of &attr/@_attr-setting.
+
+See also: @set, attrib_set()
 & @sex
   @sex <player>=<gender>  
 
@@ -3545,7 +3608,7 @@ Continued in 'help @sitelock3'
   SOCKSET [<option>=<value>]
   @sockset [<descriptor>][=<option>, <value>[, ..., <optionN>, <valueN>]]
 
-  SOCKSET is a socket commands which sets or queries socket-specific options.
+  SOCKSET is a socket command which sets or queries socket-specific options.
   These options are usually set automatically, or negotiated by the MUSH and
   your client, but this command lets you override those settings.
   
@@ -3559,23 +3622,29 @@ Continued in 'help @sitelock3'
   no default.
 
   Options:
-    colorstyle:   See help colorstyle
-    outputprefix: Same as OUTPUTPREFIX
-    outputsuffix: Same as OUTPUTSUFFIX
-    pueblo:       Sets Pueblo-related options. If value has md5=...", then it
-                  will set the pueblo checksum. If empty, Pueblo mode is 
-                  turned off.
-    telnet:       Yes or no, to enable/disable telnet negotiation
-    width:        Set your width(), same as SCREENWIDTH
-    height:       Set your height(), same as SCREENHEIGHT
-    terminaltype: Your terminal type, used by terminfo()
+    colorstyle:      See 'help colorstyle'
+    outputprefix:    Same as OUTPUTPREFIX
+    outputsuffix:    Same as OUTPUTSUFFIX
+    pueblo:          Sets Pueblo-related options. If value has md5=...", then
+                     it will set the pueblo checksum. If empty, Pueblo mode
+                     is turned off.
+    telnet:          Yes or no, to enable/disable telnet negotiation
+    width:           Set your width(), same as SCREENWIDTH
+    height:          Set your height(), same as SCREENHEIGHT
+    terminaltype:    Your terminal type, used by terminfo()
+    prompt_newlines: Set whether a newline is shown after prompts from
+                     @prompt, same as PROMPT_NEWLINES
+    stripaccents:    Strip accents for this connection. Like the NOACCENTS
+                     flag, but connection-specific. Set by default on 
+                     connections which negotiate charset as [US-]ASCII
 
   Note that changing 'telnet' or 'pueblo' may stop your client from parsing
   or displaying output correctly; only use if you know what you're doing!
   
-See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle
+See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle, @prompt
 & COLORSTYLE
   SOCKSET colorstyle=<value>
+  @SOCKSET [me|<descriptor>]=colorstyle,<value>
 
   You can override the color format you receive from PennMUSH. Normally,
   PennMUSH tries to guess what your client is capable of through telnet
@@ -3594,7 +3663,7 @@ See also: SOCKET COMMANDS, terminfo(), Pueblo, colorstyle
   display, PennMUSH will attempt to find a close match that can fit your
   client's capabilities.
 
-See also: ANSI, COLOR, XTERM256
+See also: ANSI, COLOR, XTERM256, @sockset
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
   
@@ -3658,14 +3727,6 @@ See also: sql(), sqlescape(), mapsql(), @sql
     > @sql SHOW TABLES
 
 See also: sql(), sqlescape(), mapsql(), @mapsql
-& @squota
-  @squota <victim> [= [+|-] <amount>]
-
-  This is a wizard level command that is only available if the quota
-  system is enabled.  It reports the victim's owned objects, and sets
-  the maximum number of objects s/he may own to <amount>. If no limit is
-  specified, this shows current quota, and reminds you to set one.
-  Using + or - you can add <amount> to the limit, or subtract it.
 & @startup
   @startup <object>[=<action list>]
 
@@ -3801,15 +3862,21 @@ See also: switch wildcards, switch(), @break, stext(), slev()
     thing one
     thing after
 & @teleport
-  @teleport[/silent][/inside] [<object>=]<destination>
+  @teleport[/<switches>] [<object>=]<destination>
+  @teleport/list[/<switches>] <object-list>=<destination>
 
   Teleports <object> to <destination>. <object> can be a player, thing or
-  exit; if you do not supply an object, it is assumed to be yourself. The
-  destination must be either JUMP_OK or controlled by you, and you must
-  either control <object> or <object>'s current location. Also, the
-  destination, if a room, cannot be teleport-locked against <object>. Mortals
-  cannot teleport HEAVY objects. If the destination is a room with a drop-to,
-  <object> may go to the drop-to room instead.
+  exit, and defaults to yourself. (Exits must be specified by dbref, things
+  or players can be specified by name.) The destination must be either 
+  JUMP_OK or controlled by you, and you must either control <object> or 
+  <object>'s current location. Also, the destination, if a room, cannot be 
+  teleport-locked against <object>. Mortals cannot teleport HEAVY objects. 
+  If the destination is a room with a drop-to, <object> may go to the drop-to
+  room instead.
+  
+  If the /list switch is given, each object specified in <object-list> will
+  be teleported to <destination> instead. Names containing spaces should be
+  enclosed in "double quotes".
   
   Admin and those with the tport_anything power can teleport an object even
   if they don't control it. Those with tport_anywhere can teleport objects 
@@ -4815,8 +4882,8 @@ See also: huh_command, warn_on_missing, @command, @hook
 See also: page, pose, @pemit
 & WHO
 & DOING
-  WHO [<prefix>]
-  DOING [<prefix>]
+  WHO [<pattern>]
+  DOING [<pattern>]
   
   For mortals, the WHO command displays a list of players currently
   connected to the MUSH, the amount of time they've been connected,
@@ -4831,8 +4898,9 @@ See also: page, pose, @pemit
   Admin can use the DOING command to see the same output mortals see with
   WHO, with the exception that dark/hidden players are included.
   
-  If a <prefix> is given for either command, only connected players whose
-  names start with <prefix> are shown.
+  If a <pattern> is given for either command, only connected players whose
+  names start with <pattern> are shown. If <pattern> is a wildcard, only
+  players whose names or aliases match the pattern are shown.
   
   Continued in 'help who2'.
 & WHO2
@@ -4856,11 +4924,13 @@ See also: page, pose, @pemit
 
 See also: @doing, @poll, SESSION
 & SESSION
-  SESSION [<prefix>]
+  SESSION [<pattern>]
 
   The SESSION command is the same as the admin WHO, but instead of showing
   the hostname, it shows the number of bytes sent to, received from, and
-  pending for each connection.
+  pending for each connection. <pattern> limits the output, only showing
+  players whose name begins with <pattern>, or whose names or aliases
+  match <pattern> if it's a wildcard pattern.
 
 See also: WHO
 & with

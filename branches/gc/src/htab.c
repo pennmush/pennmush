@@ -313,6 +313,7 @@ next_prime_after(unsigned int val)
 /** Initialize a hashtable.
  * \param htab pointer to hash table to initialize.
  * \param size size of hashtable.
+ * \param free_data void pointer to a function to call whenever a hash entry is deleted, or NULL
  */
 void
 hash_init(HASHTAB *htab, int size)

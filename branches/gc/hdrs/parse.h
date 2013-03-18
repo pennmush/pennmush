@@ -264,6 +264,10 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 #define PT_EQUALS       0x00000020      /* '=' */
 #define PT_SPACE        0x00000040      /* ' ' */
 #define PT_GT           0x00000080      /* '>' */
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+#define PT_NOT_COMMA    0x00000100
+/* End of r1628's deprecation */
 
 /* These represent '\0', '}', ']', ')', ',', ';', '=', and ' ', respectively.
  * If the character corresponding to a set flag is encountered, then

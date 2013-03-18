@@ -477,7 +477,18 @@ FUNCTION(fun_v)
       return;
     }
   }
-  safe_str(do_get_attrib(executor, executor, args[0]), buff, bp);
+  if (is_strict_integer(args[0])) {
+    c = parse_integer(args[0]);
+    if (c < 0 || c >= MAX_STACK_ARGS) {
+      safe_str(T(e_range), buff, bp);
+    } else {
+      s = PE_Get_Env(pe_info, c);
+      if (s)
+        safe_str(s, buff, bp);
+    }
+  } else {
+    safe_str(do_get_attrib(executor, executor, args[0]), buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -1718,8 +1729,10 @@ FUNCTION(fun_alias)
     }
     if (!FUNCTION_SIDE_EFFECTS)
       safe_str(T(e_disabled), buff, bp);
-    else
+    else if (arglens[1])
       do_set_atr(it, "ALIAS", args[1], executor, 0);
+    else
+      do_set_atr(it, "ALIAS", NULL, executor, 0);
     return;
   } else {
     safe_str(shortalias(it), buff, bp);
@@ -1964,6 +1977,13 @@ FUNCTION(fun_locate)
     case 'X':
       ambig_ok = 1;             /* okay to pick last match */
       break;
+    case 's':
+      if (!controls(executor, looker)) {
+        safe_str("#-1", buff, bp);
+        return;
+      }
+      match_flags |= MAT_CONTROL;
+      break;
     case ' ':
       break;                    /* skip over spaces */
     default:
@@ -1974,7 +1994,7 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
-  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
+  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT | MAT_CONTROL)))
     match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
 
   if ((match_flags &
@@ -2224,8 +2244,7 @@ FUNCTION(fun_attrib_set)
 /* ARGSUSED */
 FUNCTION(fun_tel)
 {
-  int silent = 0;
-  int inside = 0;
+  int flags = TEL_DEFAULT;
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -2235,11 +2254,12 @@ FUNCTION(fun_tel)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  if (nargs > 2)
-    silent = parse_boolean(args[2]);
-  if (nargs > 3)
-    inside = parse_boolean(args[3]);
-  do_teleport(executor, args[0], args[1], silent, inside, pe_info);
+  if (nargs > 2 && parse_boolean(args[2]))
+    flags |= TEL_SILENT;
+  if (nargs > 3 && parse_boolean(args[3]))
+    flags |= TEL_INSIDE;
+
+  do_teleport(executor, args[0], args[1], flags, pe_info);
 }
 
 

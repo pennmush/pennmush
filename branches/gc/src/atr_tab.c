@@ -62,6 +62,7 @@ PRIV attr_privs_set[] = {
   {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {"branch", '`', 0, 0},
   {NULL, '\0', 0, 0}
 };
@@ -91,6 +92,7 @@ PRIV attr_privs_db[] = {
   {"enum", '\0', AF_ENUM, AF_ENUM},
   {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
   {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {NULL, '\0', 0, 0}
 };
 
@@ -122,6 +124,7 @@ PRIV attr_privs_view[] = {
   {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {"branch", '`', AF_ROOT, AF_ROOT},
   {NULL, '\0', 0, 0}
 };
@@ -203,7 +206,6 @@ attr_read(PENNFILE *f)
     flags = list_to_privs(attr_privs_db, tmp, 0);
     if (!flags) {
       do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
-      free((char *) AL_NAME(a));
       (void) getstring_noalloc(f);      /* creator */
       (void) getstring_noalloc(f);      /* data */
       return NULL;
@@ -221,7 +223,6 @@ attr_read(PENNFILE *f)
     /* Store string as it is */
     unsigned char *t = compress(tmp);
     a->data = chunk_create(t, u_strlen(t), 0);
-    free(t);
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
     unsigned char *t;
@@ -233,14 +234,12 @@ attr_read(PENNFILE *f)
     if (!re) {
       do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.",
                 AL_NAME(a));
-      free((char *) AL_NAME(a));
       return NULL;
     }
     pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, u_strlen(t), 0);
-    free(t);
   }
 
   return a;
@@ -685,7 +684,6 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
   } else {
     unsigned char *t = compress(buff);
     ap->data = chunk_create(t, u_strlen(t), 0);
-    free(t);
     ap->flags |= type;
     notify_format(player,
                   T("%s -- Attribute %s set to: %s"), name,

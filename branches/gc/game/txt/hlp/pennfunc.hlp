@@ -57,16 +57,17 @@ See also: MUSHCODE
     defined via the @function command.
 
 & Attribute functions
-  The primary purpose of these functions is to access or alter information
-  stored in attributes on objects.
+  These functions can access or alter information stored in attributes on
+  objects.
 
   aposs()        attrib_set()   default()      edefault()     eval()
   flags()        get()          grep()         grepi()        hasattr()
-  hasattrp()     hasattrval()   lattr()        lflags()       nattr()
-  obj()          pfun()         poss()         reglattr()     regrep()       
-  regrepi()      regxattr()     set()          subj()         udefault()     
-  ufun()         ulambda()      uldefault()    ulocal()       v()            
-  wildgrep()     wildgrepi()    xattr()        xget()         zfun()
+  hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
+  nattr()        obj()          pfun()         poss()         reglattr()
+  regrep()       regrepi()      regxattr()     set()          subj()
+  udefault()     ufun()         ulambda()      uldefault()    ulocal()
+  v()            wildgrep()     wildgrepi()    xattr()        xget()
+  zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -565,15 +566,16 @@ See also: orflags(), flags(), lflags()
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
-  ansi(<ansi-codes>, <string>)
-  ansi([<fg-color>][/<bg-color>], <string>)
+  ansi(<codes>[ ... <codesN>], <string>)
  
   This allows you to mark up a string using ANSI terminal effects, 16-color
-  codes, and color names and hex values.
+  codes, and 256 XTERM colors (specified as color names or hex values).
   
   The old-style <ansi-codes> are listed in "help ansi2".
-  
-  <fg-color> and <bg-color> can be one of:
+  Each block of space-separated <codes> can be one or more old-style ANSI 
+  codes, as listed in "help ansi2", or a foreground and/or background color.
+  Background colors are prefixed with a "/". Each color can be one of:
+
     * +<colorname> (for a list of valid names, see "help colors()")
     * a hexcode, optionally in angle brackets (#000000, <#ff0055>, etc)
     * a list of red, green and blue values from 0-255, in angle brackets
@@ -586,8 +588,10 @@ See also: powers(), orlpowers(), POWERS LIST, @power
   those colors, PennMUSH will downgrade the color to the closest fit
   that your client can understand.
   
-  If you want to mix basic ANSI codes with extended colors, the basic ANSI
-  codes must come first.
+  Codes are parsed from left to right so, with later codes overriding earlier
+  ones. So, for example:
+    ansi(y /+green B <#ffffff>, test)
+  would show white text on an ANSI-blue background.
   
   See 'help ansi3' for more examples.
 See also: ANSI, COLOR, @sockset, colorstyle, colors()
@@ -613,7 +617,6 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan.
   Default foreground and background use the client's default color for
   fore and back.
-
 & ANSI3
 
   Bright yellow text on a blue background:
@@ -624,7 +627,9 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   
   Underlined pink text on a purple background
   > think ansi(u+lightsalmon/#a020f0, ugly)
-
+  
+  ANSI-blue text on a bisque background
+  > think ansi(+yellow/+bisque b, the 'b' overrides the earlier '+yellow')
 & APOSS()
 & %a
   aposs(<object>)
@@ -673,6 +678,15 @@ See also: acos(), asin(), cos(), ctu(), sin(), tan()
 
   When given a second argument of "on" (or "off"), attempts to lock
   (or unlock) the specified attribute, as per @atrlock.
+  
+  A locked attribute is one which has the "locked" attribute flag, so this
+  function is roughly equivilent to:
+
+    hasattr(<object>/<attrib>, locked)
+    set(<object>/<attribute>, [!]locked)
+  
+  except that the attribute's owner is also changed when you lock it via
+  atrlock().
   
 See also: @atrlock, @atrchown, hasflag()
 & ATTRIB_SET()
@@ -921,29 +935,35 @@ See also: Connection Functions
 & COLORS()
   colors()
   colors(<wildcard>)
-  colors(<color>, <format>)
+  colors(<colors>, <format>)
 
-  With no arguments, colors() returns a space-separated list of colors
-  that PennMUSH knows the name of. You can use these colors in
-  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not
+  With no arguments, colors() returns an unsorted, space-separated list of
+  colors that PennMUSH knows the name of. You can use these colors in 
+  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not 
   included in the list, but can also be used in ansi().
   
-  With one argument, returns a space-separated list of colors that
-  match the wildcard pattern <wildcard>.
+  With one argument, returns an unsorted, space-separated list of colors 
+  that match the wildcard pattern <wildcard>.
   
-  With two arguments, colors() returns information about a particular
-  color. <color> must be the name of a color or a hex code, in any of
-  the forms accepted by ansi(). <format> must be one of:
+  With two arguments, colors() returns information about specific colors.
+  <colors> can be any string accepted by the ansi() function's first 
+  argument. <format> must be one of:
   
    hex:      return a hexcode in the format #rrggbb.
    xterm256: return the number of the xterm color closest to the given
               <color>.
-   16color:  return the letter of the closest ANSI color code.   
-   name:     return the name of the colors exactly matching the given
-              <color>.
+   16color:  return the letter of the closest ANSI color code (possibly 
+              including 'h' for highlight fg colors).
+   name:     return a list of names of all the colors exactly matching the
+             given colors, or '#-1 NO MATCHING COLOR NAME' if there is no
+              exact match with a named color.
 
   It can be used for working out how certain colors will downgrade to
   people using clients which aren't fully color-capable.
+
+  <format> can also include the word "styles", in which case all ANSI
+  styling options (f, u, i and h) present in <colors> are included in
+  the output.
   
   See 'help colors2' for examples.
 See also: ansi(), colorstyle
@@ -962,10 +982,16 @@ See also: ansi(), colorstyle
     226
     
     > think colors(+yellow, 16color)
-    y
+    yh
+    
+    > think colors(/+yellow, 16color)
+    Y
     
     > think colors(#ffff00, name)
     yellow yellow1
+    
+    > think colors(iuB+red, hex styles)
+    ui#ff0000/#0000ee
 
 & COMP()
   comp(<value1>, <value2>[, <type>])
@@ -1036,8 +1062,8 @@ See also: firstof(), allof()
   Boolean configuration options will return values of "Yes" or "No".
 
   Example:
-  > think config(money_singular)
-  Penny
+    > think config(money_singular)
+    Penny
 
 & CONN()
   conn(<player|descriptor>)
@@ -1230,24 +1256,6 @@ See also: inc(), sub()
     This is \[a%b[ansi(y,test)]\] %b%b
 
 See also: @decompile2, escape(), secure(), ]
-& DECODE64()
-  decode64(<string>)
-
-  Converts the base 64-encoded <string> back to its original form.
-
-  Requires SSL support; see @config compile.
-
-See also: encode64(), encrypt(), decrypt()
-& DECRYPT()
-  decrypt(<string>, <password>[, <encoded>])
-
-  Decrypts a string encrypted with the encrypt() function, if given
-  the string and the same password.
-
-  If the optional <encoded> argument is true, it indicates that the
-  input string is encoded in base 64.
-
-See also: encrypt(), encode64(), decode64()
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)
  
@@ -1355,6 +1363,7 @@ See also: @dig, open(), @open, create(), pcreate()
    SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
    ...
   
+See also: encode64(), encrypt()
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -1494,7 +1503,7 @@ See also: extract(), index(), grab()
   control <object>, it must be @set VISUAL, or the <locktype> lock must be
   @lset VISUAL.
 
-  Example:
+  Examples:
     > @lock/drop Dancing Slippers=#0
     > think elock(Dancing Slippers/drop, Princess)
     0
@@ -1515,25 +1524,32 @@ See also: @lock, locktypes, testlock(), lockfilter(), @lset
   
 See also: pemit(), remit(), lemit(), oemit(), zemit()
 & ENCODE64()
+& DECODE64()
+& base64
   encode64(<string>)
+  decode64(<string>)
+  
+  encode64() returns <string> encoded using base-64 format.
+  
+  decode64() converts a base-64 encoded <string> back to its original form.
 
-  Returns <string> encoded using base-64 format.
-
-  Requires SSL support; see @config compile.
-
-See also: decode64(), encrypt(), decrypt()
+See also: encrypt(), digest()
 & ENCRYPT()
+& DECRYPT()
   encrypt(<string>, <password>[, <encode>]) 
+  decrypt(<string>, <password>[, <encoded>])
 
-  Returns an encrypted string produced by a simple password-based
-  encrypted algorithm. Good passwords are long passwords.  This is not
+  encrypt() returns an encrypted string produced by a simple password-based 
+  encrypted algorithm. Good passwords are long passwords. This is not 
   high-security encryption.
 
-  If the optional <encode> argument is true, the resulting string is
-  further encoded in base 64 so that it only contains alphanumeric
-  characters.
+  If the optional <encode> argument is true, the resulting string is further
+  encoded in base-64 so that it only contains alphanumeric characters.
+  
+  decrypt() decrypts a string encrypted with encrypt(). The <encoded> 
+  argument indicates that the encrypted string was base-64 encoded.
 
-See also: decrypt(), encode64()
+See also: encode64(), digest()
 & ENTRANCES()
   entrances([<object>[, <type>[, <begin>[, <end>]]]])
 
@@ -1549,10 +1565,10 @@ See also: decrypt(), encode64()
         r        rooms
 
   You can also limit the range of the dbrefs searched by giving <begin> and 
-  <end>. If you 't control <object>, or have the Search or See_All powers,
-  all objects linked to <object> are returned. Otherwise, only objects you
-  can examine will be included.
-  
+  <end>. If you control <object>, or have the Search or See_All powers, all 
+  objects linked to <object> are returned. Otherwise, only objects you can 
+  examine will be included.
+ 
 See also: lsearch(), @entrances
 & EQ()
   eq(<number>, <number>[, ... , <numberN>])
@@ -1627,7 +1643,7 @@ See also: lexits(), next()
   <length>th element from the right, so -1 will extract up to the last
   element, -2 up to the element before last, and so on.
 
-  Example:
+  Examples:
     > think extract(This is a test string,3,2)
     a test
     
@@ -1710,7 +1726,7 @@ See also: before(), rest(), last(), firstof(), strfirstof()
 See also: allof(), BOOLEAN VALUES, strfirstof(), filter()
 & FLAGS()
   flags()
-  flags(<object>[/<attribute>])
+  flags([<object>[/<attribute>]])
 
   With no arguments, flags() returns a string consisting of the flag letters
   for each flag on the MUSH. Note that some flags have no letter, and
@@ -1723,14 +1739,14 @@ See also: allof(), BOOLEAN VALUES, strfirstof(), filter()
   With an <object>/<attribute>, the flag letters for each flag set on the
   given <attribute> are returned.
   
-  Example:
+  Examples:
     > @create Test
     > @set Test=no_command puppet
     > think flags(Test)
     Tnp
   
     > think flags(me/describe)
-    $v
+    $vp
 
 See also: lflags(), list()
 & LFLAGS()
@@ -1743,7 +1759,7 @@ See also: lflags(), list()
   Given no arguments, this function returns a space-separated list of
   all flag names known to the server, as per @list/flags.
   
-  Example:
+  Examples:
     > @create Test
     > @set Test=no_command puppet
     > think flags(Test)
@@ -2362,7 +2378,8 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     > say iter(This is a test string., u(STRLEN_FN, %i0))
     You say, "4 2 1 4 7"
 
-  This example could be replaced by the use of map() like so:
+  Since this example just evaluates another attribute for each element of the
+  list, it can be done more efficiently using map():
     > say map(strlen_fun, This is a test string.)
 
     > say iter(lnum(3), %i0, ,%r)
@@ -2386,7 +2403,7 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!))
     You say, "Test 1! Test 2! "
     
-    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$)))
+    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), %$0)))
     You say, "1a 2a 3a 1b 2b 3b 1c "
     
 See also: iter(), itext(), inum(), ilev()
@@ -2590,10 +2607,11 @@ See also: @lemit, remit()
 
   It returns the result of <expr>.
 
-  Example:
-
+  Examples:
     > think setr(A, 1):[letq(A, 2, %qA)]:%qA
     1:2:1
+    > think setr(A, 1)[setr(B,1)]:[letq(A, 2, %qA[setr(B,2)])]:%qA%qB
+    11:22:12
 
 See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 & LEXITS()
@@ -2601,11 +2619,11 @@ See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 
   Returns a list of the dbrefs of exits in a room.
 
-  You can get the complete exit list of any room you may examine,
-  regardless of whether or not exits are dark.  You can get the
-  partial exit list (obeying DARK/LIGHT/etc.) of your current location
-  or the enactor (%#).  You CANNOT get the exit list of anything else,
-  regardless of whether or not you have objects in it.
+  You can get the complete exit list of any room you may examine, regardless 
+  of whether or not exits are dark. You can get the partial exit list 
+  (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#).  
+  You CANNOT get the exit list of anything else, regardless of whether or not
+  you have objects in it.
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
@@ -2617,7 +2635,6 @@ See also: lcon(), exit(), next(), lvexits()
   used. <fill> can be more than one character in length.
   
   Examples:
-  
     > say ljust(foo,6)
     You say, "foo   "
   
@@ -2756,7 +2773,7 @@ See also: locate(), rloc(), home(), where(), rnum(), room(), @link,
   the registers afterwards. It has the same effect as ulocal(), but doesn't
   require setting the code into an attribute. 
 
-  Example:
+  Examples:
     > say setr(0, Outside)-[setr(0, Inside)]-%q0
     You say, "Outside-Inside-Inside"
   
@@ -2771,7 +2788,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE()
   locate(<looker>, <name>, <parameters>)
  
-  This function attemps to find an object called <name>, relative to the
+  This function attempts to find an object called <name>, relative to the
   object <looker>. It's similar to the num() function, but you can be more
   specific about which type of object to find, and where to look for it. 
   When attempting to match objects near to <looker> (anything but absolute,
@@ -2815,6 +2832,8 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     * - All of the above (try a complete match). Default when no match
         parameters are given.
     x - Only match objects with the exact name <name>, no partial matches
+    s - Only match objects which <looker> controls. You must control <looker>
+        or have the See_All power.
 
   Just string all the parameters together. Spaces are ignored, so you can
   use spaces between paramaters for clarity if you wish.
@@ -2825,7 +2844,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
   Examples:
   Find the dbref of the player whose name matches %0, or %#'s dbref if %0 is
   "me".
-  > think locate(%#, %0, PFym)
+    > think locate(%#, %0, PFym)
   'PF' matches objects of type 'player' and nothing else, 'm' checks for the
   string "me", and 'y' matches the names of players.
   
@@ -2833,7 +2852,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
   Find the dbref of an object near %# called %0, including %# himself and his
   location. Prefer players or things, but accept rooms or exits if no players
   or things are found.
-  > think locate(%#, %0, PThmlni)
+    > think locate(%#, %0, PThmlni)
   This prefers 'P'layers or 'T'hings, and compares %0 against the strings
   "here" and "me", and the names of %#'s location, his neighbours, and his
   inventory.
@@ -2884,13 +2903,13 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
   <delim> defaults to a space, and is the delimiter of <dbrefs> and the list
   returned by lockfilter().
 
-  Example:
+  Examples:
     Get all male players with a name starting with 'W'.
-    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(##))
+    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(%i0))
     Walker WalkerBot Wilco
 
     List all wizroys online:
-    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(##))
+    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(%i0))
     Sketch Viila Tanaku Raevnos Zebranky Cheetah Walker
 
     List all players with an IC age > 20.
@@ -3037,7 +3056,7 @@ See also: pos(), member(), match()
   returned from highest dbref to lowest.  search() is an alias for
   lsearch().
 
-  Examples in 'help lsearch3'.
+  See 'help lsearch3' for examples.
 
 See also: @search, @find, lparent(), stats()
 & LSEARCH3
@@ -3152,12 +3171,12 @@ See also: mwho(), nwho(), xwho()
   This function works much like ITER(). The given <attribute> is evaluated 
   once for each element of <list>, and the results of the evaluations are
   returned. For each evaluation, the current list element is passed to the
-  attribute as %0, and it's position in the list as %1. Elements of <list>
+  attribute as %0, and its position in the list as %1. Elements of <list>
   are separated by <delim>, or a space if none is given, and the results are
   returned separated by <osep>, if given, or the delimiter otherwise.
   
-  This is roughly equivilent to:
-  iter(<list>, ufun(<object>/<attribute>, %i0, inum(0)), <delim>, <osep>)
+  This is roughly equivilent to, though slightly more efficient than:
+  iter(<list>, ulambda(<object>/<attribute>, %i0, inum(0)), <delim>, <osep>)
   
   Examples:
     > &times_two me=mul(%0,2)
@@ -3203,7 +3222,6 @@ See also: anonymous attributes, iter(), @dolist
     You say, ""
   
 See also: grab(), strmatch(), member(), WILDCARDS
-
 & MAX()
   max(<number>[, ... , <numberN>])
 
@@ -3288,32 +3306,31 @@ See also: left(), right(), delete()
   
 See also: max(), lmath(), bound(), alphamin()
 & MIX()
+  mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list30>, <delim>])
  
-  mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list10>, <delim>])
- 
-  This function is similar to MAP(), except that it takes the elements
-  of up to ten lists, one by one, and passes them to the user-defined
-  function as %0, %1, up to %9, respectively, for elements of <list1> to
-  <list10>. If the lists are of different sizes, the shorter ones are padded
-  with empty elements. <delim> is used to separate elements; if it is not
-  specified, it defaults to a space. If using more than 2 lists, the last 
-  argument must be a delimiter.
+  This function is similar to MAP(), except that it takes the elements of up
+  to 30 lists, one by one, and passes them to the user-defined function as 
+  %0, %1, up to %9, respectively, for elements of <list1> to <list30>. Use 
+  v() to access elements 10 or higher. If the lists are of different sizes, 
+  the shorter ones are padded with empty elements. <delim> is used to 
+  separate elements; if it is not specified, it defaults to a space. If using
+  more than 2 lists, the last argument must be a delimiter.
 
   See 'help mix2' for examples.
 & MIX2
   Examples of mix():
  
-  > &add_nums me=add(%0, %1)
-  > say mix(add_nums,1 2 3 4 5, 2 4 6 8 10)
-  You say, "3 6 9 12 15"
+    > &add_nums me=add(%0, %1)
+    > say mix(add_nums,1 2 3 4 5, 2 4 6 8 10)
+    You say, "3 6 9 12 15"
   
-  > &lengths me=strlen(%0) and [strlen(%1)].
-  > say mix(lengths, some random, words)
-  You say, "4 and 5. 6 and 0."
+    > &lengths me=strlen(%0) and [strlen(%1)].
+    > say mix(lengths, some random, words)
+    You say, "4 and 5. 6 and 0."
   
-  > &add_nums me=lmath(add, %0 %1 %2)
-  > say mix(add_nums, 1:2:3, 4:5:6, 7:8:9, :)
-  You say, "12:15:18"
+    > &add_nums me=lmath(add, %0 %1 %2)
+    > say mix(add_nums, 1:2:3, 4:5:6, 7:8:9, :)
+    You say, "12:15:18"
 
 See also: anonymous attributes, map(), step()
 & MOD()
@@ -3364,9 +3381,9 @@ See also: div(), fdiv(), lmath()
     > say money(2)
     You say, "Pennies"
 
-    > &counter me=$count *: @emit %0 [money(%0)]
+    > &counter CvC=$count *: @say %0 [money(%0)]. Ah.. ah.. ah.
     > count 2
-    2 Pennies
+    Count von Count says, "2 Pennies. Ah.. ah.. ah."
 
 See also: score
 & MTIME()
@@ -3414,12 +3431,13 @@ See also: lmath(), div(), fdiv()
   delimiter as %1.  Then, this resulting list is matched with elements
   in <list 2>, and the rearranged <list2> is returned.
   
-  This is useful for doing things like sorting a list, and then returning
-  the corresponding elements in the other list. If a resulting element
-  from the user-defined function doesn't match an element in the
-  original <list1>, a corresponding element from <list2> does not
-  appear in the final result.
-  
+  This is useful for doing things like sorting a list, and then
+  returning the corresponding elements in the other list. If a
+  resulting element from the user-defined function doesn't match an
+  element in the original <list1>, a corresponding element from
+  <list2> does not appear in the final result. The elements are
+  matched using an exact, case-sensitive comparision.
+   
   <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
 
   See 'help munge2' for examples.
@@ -3439,13 +3457,13 @@ See also: lmath(), div(), fdiv()
   See 'help munge3' for another example.
 & MUNGE3
   Another common task that munge() is well suited for is sorting a
-  list of dbrefs of players by order of connection. This example
-  reuses the &sort attribute from the previous one, but unlike the
+  list of dbrefs of players by order of connection. This example uses
+  #apply to avoid the need for the sort attribute, and also unlike the
   other example, it builds the list to sort on out of the list to
   return.
   
     > &faction_members me=#3 #12 #234
-    > say munge(sort, iter(v(faction_members),conn(##)), v(faction_members))
+    > say munge(#apply/sort, map(#apply/conn, v(faction_members)), v(faction_members))
     You say, "#12 #234 #3"
 
 See also: anonymous attributes
@@ -3475,7 +3493,7 @@ See also: lwho(), nwho()
   With two arguments, alias() attempts to change the alias for <object> to
   <new alias>, as per @alias.
   
-  Example:
+  Examples:
     > ex *Noltar/ALIAS
     ALIAS [#7$v]: $;No;Nol;Noli;Nolt
     > say alias(*Noltar)
@@ -3523,9 +3541,9 @@ See also: namegrab(), name(), locate()
 
   namegraball() returns all dbrefs whose names would be matched by <name>.
 
-  Example: #0 = Room Zero, #1 = One, #2 = Master Room
+  Examples: #0 = Room Zero, #1 = One, #2 = Master Room
     > say namegrab(#0 #1 #2,room)
-  You say, "#0"
+    You say, "#0"
     > say namegrab(#0 #1 #2,master room)
     You say, "#2"
     > say namegraball(#0 #1 #2,room)
@@ -3764,7 +3782,7 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof()
   If any of the flags given are invalid, both functions return 
   "#-1 INVALID FLAG".
   
-  Example: Check to see if %# is set Wizard, Dark, or not set Ansi.
+  Examples: Check to see if %# is set Wizard, Dark, or not set Ansi.
     > say orflags(%#, WD!A)
     > say orlflags(%#, wizard dark !ansi)
   
@@ -3834,7 +3852,7 @@ See also: @prompt, @nsprompt, PROMPT_NEWLINES
   list that may contain the following elements:
   
     queue       the queue ("wait" or "semaphore") for the process
-    player      the queueing player
+    executor    the queueing object
     time        remaining time for timed queued entries (or -1)
     object      the semaphore object for semaphores (or #-1)
     attribute   the semaphore attribute for semaphores (or #-1)
@@ -3882,12 +3900,21 @@ See also: num(), namelist(), locate()
 
 See also: @poll, doing(), @doing 
 & LPIDS()
-  lpids(<object>[, <queue type>])
+  lpids([<object>[, <queue types>]])
 
-  Returns a space-separated list of queue process ids enqueued by <object>,
-  typically a player. If <queue type> is "w", only wait queue
-  entries are returned; if <queue type> is "s", only semaphore queue
-  entries are returned; if <queue type> is absent, both are returned.
+  This function returns a list of queue process ids (pids). Only commands 
+  queued by objects with the same owner as <object> are listed. If you have
+  the see_queue @power, you can specify "all" for <object> to get pids for 
+  everyone's queue entries. <object> defaults to the caller, or "all" for
+  priviledged callers.
+  
+  <queue types> should be a list of one or more of the following words, to
+  filter the pids returned:
+    wait        --  Only return wait queues
+    semaphore   --  Only return semaphore queues
+    independent --  Only return commands queued by <object> specifically,
+                    instead of all objects with the same owner as <object>.
+  If not specified, it defaults to "wait semaphore".
 
 See also: @ps, getpids(), pidinfo()
 & LPORTS()
@@ -3958,11 +3985,14 @@ See also: andlpowers(), orlpowers(), @power, POWERS LIST
 & QUOTA()
   quota(<player>)  
   
-  Returns the player's quota, the maximum number of objects they can
-  create, if quotas are in effect. Returns 99999 for players with
-  unlimited quotas, so it's safe to use in numerical comparisons.
+  Returns the player's quota, the maximum number of objects they can create
+  if quotas are in effect. Returns 99999 for players with the No_Quota 
+  @power, so it's safe to use in numerical comparisons.
   
-See also: @quota, @squota, @allquota
+  You must control <player> or have the See_All or Quotas @powers to use
+  this function. 
+  
+See also: @quota, @squota, @allquota, QUOTAS, Quotas Power, No_Quota Power
 & R()
 & %q
 & R-FUNCTION
@@ -4128,11 +4158,11 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
 
 See also: space()
 & REPLACE()
-  replace(<list>, <position>, <new item>[, <delimiter>[, <osep>]])
+  replace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
   
-  This replaces the item at <position> in <list> with <new item>. <delimiter>
-  defaults to a space, and <osep> defaults to <delimiter>. Null items are 
-  counted when determining position.
+  This replaces the item(s) at the given <position(s)> in <list> with
+  <new item>. <delimiter> defaults to a space, and <osep> defaults to 
+  <delimiter>. Null items are counted when determining position.
   
   If <position> is negative, it counts backwards from the end of the list. A
   <position> of -1 will replace the last element, -2 the element before last,
@@ -4144,10 +4174,12 @@ See also: space()
     
     > say replace(Turn north at the junction,-1,crossroads)
     You say, "Turn north at the crossroads"
-
     
     > say replace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
+    
+    > say replace(this starts and ends the same, 1 -1, foo)
+    You say, "foo starts and ends the foo"
   
 See also: ldelete(), setdiff(), splice()
 & REST()
@@ -4184,7 +4216,6 @@ See also: left(), mid()
   in length, and defaults to a space.
  
   Examples:
-  
     > say -[rjust(foo,6)]-
     You say, "-   foo-"
   
@@ -4247,10 +4278,10 @@ See also: loc(), rloc(), rnum(), where()
   the 3rd the cube root, and so on.
 
   Examples:
-  > think root(27, 3)
-  3
-  > think power(3, 3)
-  27
+    > think root(27, 3)
+    3
+    > think power(3, 3)
+    27
 
 See also: sqrt(), power()
 & ROUND()
@@ -4262,10 +4293,10 @@ See also: sqrt(), power()
   fewer than <places> digits after the decimal point.
 
   Examples:
-  > think round(3.14159, 2)
-  3.14
-  > think round(3.5, 3, 1)
-  3.500
+    > think round(3.14159, 2)
+    3.14
+    > think round(3.5, 3, 1)
+    3.500
  
 See also: ceil(), floor(), bound(), trunc()
 & FN()
@@ -4364,8 +4395,8 @@ See also: @scan, @sweep, MASTER ROOM, EVALUATION ORDER, $-COMMANDS
   normal characters.
   
   Example:
-  > say scramble(abcdef)
-  You say, "cfaedb"
+    > say scramble(abcdef)
+    You say, "cfaedb"
 
 See also: shuffle()
 & SECS()
@@ -4429,7 +4460,7 @@ See also: setinter(), setunion()
  
   Example:
     > say setinter(foo baz gleep bar, bar moof gleep)
-   You say, "bar gleep"
+    You say, "bar gleep"
 
 See also: setdiff(), setunion()
 & SETQ()
@@ -4788,7 +4819,7 @@ See also: soundslike()
   soundex code (see 'help soundex()' for information), which means, in
   general, if they sound alike. 
   
-  Example:
+  Examples:
     > think soundslike(robin,robbyn)
     1
     > think soundslike(robin,roebuck)
@@ -4803,7 +4834,7 @@ See also: soundex()
   
   Example:
     > say a[space(5)]b
-    Amberyl says, "a b"
+    Amberyl says, "a     b"
 
 See also: repeat()
 & SPEAK()
@@ -4836,33 +4867,41 @@ See also: repeat()
   If <say string> is specified, it is used instead of "says," /
   "says".
 
-  Continued in 'help Speak2'.
+  Continued in 'help speak2'.
 & SPEAK2
  
   Examples:
- 
     > say [name(me)]
     You say, "Wizard"
+
     > @emit [speak(me, :tests.)]
     Wizard tests.
+
     > @emit [speak(me, : 's testing.)]
     Wizard's testing.
+
     > @emit [speak(me, ;'s testing.)]
     Wizard's testing.
+
     > @emit [speak(me, |Test.)]
     Test.
+
     > @emit [speak(me, "Test.)]
     Wizard says, "Test."
+
     > @emit [speak(me, Test.)]
     Wizard says, "Test."
+
     > @emit [speak(me, Test., yells:)]
     Wizard yells: "Test."
+
     > @emit [speak(&Fido the Wonder Dog,:woofs!)]
     Fido the Wonder Dog woofs!
+
     > @emit [speak(&Mr. President,:has been misunderestimated.)]
     Mr. President has been misunderestimated.
- 
-  Continued in 'help Speak3'.
+
+  Continued in 'help speak3'.
 & SPEAK3
  
   If <transform> is specified (an object/attribute pair or attribute,
@@ -4883,34 +4922,40 @@ See also: repeat()
   otherwise, fragments are numbered starting with 0. (A fragment is a
   chunk of speech text within the overall original input string.)
  
-  Continued in 'help Speak4'.
- 
+  Continued in 'help speak4'.
 & SPEAK4
   
   Examples:
+    > @va me = "Fragment %2 is: %0"
+
+    > @emit speak(me, test, ,va)
+    Wizard says, "Fragment 0 is: test"
+
+    > @emit speak(me, "test, ,va)
+    Wizard says, "Fragment 0 is: test"
+
+    > @emit speak(me, "test, yells:, va)
+    Wizard yells: "Fragment 0 is: test"
+
+    > @emit speak(me, :tests. "Hi.", ,va)
+    Wizard tests. "Fragment 1 is: Hi."
+
+    > @emit speak(me, : 's testing. "Hi.", ,va)
+    Wizard's testing. "Fragment 1 is: Hi."
+
+    > @emit speak(me, ;'s testing. "Hi.", ,va)
+    Wizard's testing. "Fragment 1 is: Hi."
+
+    > @emit speak(me, |This is a test. "Hi.", ,va)
+    This is a test. "Fragment 1 is: Hi."
+
+    > @emit speak(me, :tests. "Hi." And... "Bye." The end., ,va)
+    Wizard tests. "Fragment 1 is: Hi." And... "Fragment 2 is: Bye." The end.
+
+    > @emit speak(me, :tests. "Hi." And... <<Bye.>> The end., ,va, , <<, >>)
+    Wizard tests. "Hi." And... "Fragment 1 is: Bye." The end.
  
-  > @va me = "Fragment %2 is: %0"
-  > @emit speak(me, test, ,va)
-  Wizard says, "Fragment 0 is: test"
-  > @emit speak(me, "test, ,va)
-  Wizard says, "Fragment 0 is: test"
-  > @emit speak(me, "test, yells:, va)
-  Wizard yells: "Fragment 0 is: test"
-  > @emit speak(me, :tests. "Hi.", ,va)
-  Wizard tests. "Fragment 1 is: Hi."
-  > @emit speak(me, : 's testing. "Hi.", ,va)
-  Wizard's testing. "Fragment 1 is: Hi."
-  > @emit speak(me, ;'s testing. "Hi.", ,va)
-  Wizard's testing. "Fragment 1 is: Hi."
-  > @emit speak(me, |This is a test. "Hi.", ,va)
-  This is a test. "Fragment 1 is: Hi."
-  > @emit speak(me, :tests. "Hi." And... "Bye." The end., ,va)
-  Wizard tests. "Fragment 1 is: Hi." And... "Fragment 2 is: Bye." The end.
-  > @emit speak(me, :tests. "Hi." And... <<Bye.>> The end., ,va, , <<, >>)
-  Wizard tests. "Hi." And... "Fragment 1 is: Bye." The end.
- 
-  Continued in 'help Speak5'.
- 
+  Continued in 'help speak5'.
 & SPEAK5
  
   If the result of transforming a given speech fragment is a null
@@ -4926,15 +4971,14 @@ See also: repeat()
   Consider this example, where the speech string may be randomly
   removed:
  
-  > &MUTTER_FN me = [ifelse(rand(2),"%0",)]
-  > &NONE_FN me = [capstr(subj(%0))] mutters something.
-  > @emit speak(me, :tests. "Hello there.", mutters:, MUTTER_FN, NONE_FN)
-  Wizard tests. "Hello there."
-  OR
-  Wizard tests. He mutters something.
+    > &MUTTER_FN me = [ifelse(rand(2),"%0",)]
+    > &NONE_FN me = [capstr(subj(%0))] mutters something.
+    > @emit speak(me, :tests. "Hello there.", mutters:, MUTTER_FN, NONE_FN)
+    Wizard tests. "Hello there."
+      OR
+    Wizard tests. He mutters something.
  
-  Continued in 'help Speak6'.
- 
+  Continued in 'help speak6'.
 & SPEAK6
  
   Elegantly handling an empty string when the type of speech is a
@@ -4950,15 +4994,14 @@ See also: repeat()
   rather than 1 -- if the speech fragment number is 0, we know we
   haven't given any output yet.
  
-  > &MUTTER_FN me=if(rand(2),"%0")
-  > &NONE_FN me=switch(%1,0,name(%0),capstr(subj(%0)))] mutters something.
-  > @emit speak(me, Hello there., mutters:, MUTTER_FN, NONE_FN)
-  Wizard mutters: "Hello there."
-  OR
-  Wizard mutters something.
+    > &MUTTER_FN me=if(rand(2),"%0")
+    > &NONE_FN me=switch(%1,0,name(%0),capstr(subj(%0)))] mutters something.
+    > @emit speak(me, Hello there., mutters:, MUTTER_FN, NONE_FN)
+    Wizard mutters: "Hello there."
+      OR
+    Wizard mutters something.
  
-  Continued in 'help Speak7'.
- 
+  Continued in 'help speak7'.
 & SPEAK7
   
   Here's another example, where words between + signs are reversed,
@@ -4966,11 +5009,12 @@ See also: repeat()
   technique useful in something where you want to allow users to mix
   ordinary speech with transformed speech).
  
-  > &REV_FN me = [switch(%2,0,backwards,[capstr(subj(%1))] says backwards)],
+    > &REV_FN me=switch(%2,0,backwards,capstr(subj(%1)) says backwards),
                  "[revwords(%0)]"
-  > @emit speak(me,:tests. "Normal speech." +Mixed up speech+ Success!, ,
-                REV_FN, ,+)
-  Wizard tests. "Normal speech." He says backwards, "speech up Mixed" Success!
+    > @emit speak(me,:tests. "Normal speech." +Mixed up speech+ Success!,,
+                  REV_FN,,+)
+    Wizard tests. "Normal speech." He says backwards, "speech up Mixed"
+      Success!
   
 & SPELLNUM()
   spellnum(<number>)
@@ -5018,7 +5062,8 @@ See also: merge()
   interpolating user-provided values into the query, be careful to escape
   them with sqlescape().
 
-  Each row of the result is passed to <attribute>, with columns as %1-%9.
+  Each row of the result is passed to <attribute>, with the first nine 
+  columns available as %1-%9, and twenty more available via v(10) - v(29).
   %0 is set to the row number, which will start with 1.
 
   If <dofieldnames> evaluates to a true boolean, then the first call will be
@@ -5153,19 +5198,19 @@ See also: restarttime(), starttime()
   ssl(<player|descriptor>)
 
   This function returns 1 if the player is using an SSL connection, and 0 
-  otherwise. If SSL is disabled, it always returns 0. You must be See_All to
-  use this function on another player.
+  otherwise. If SSL connections are disabled, it always returns 0. You must 
+  be See_All to use this function on another player.
 
 See also: terminfo()
 & STEP()
   step([<obj>/]<attr>, <list>, <step>[, <delim>[, <osep>]])
 
-  This function is similar to map(), except you can pass up to 10 elements 
-  of the list at a time, in %0 to %9. <step> must be between 1 and 10, with 
-  a step of 1 equivalent to map(). If the elements of the list can't be 
-  split up evenly, the last evaluation will run with some of the registers
-  unset; the %+ substitution or the registers() function can be used to see 
-  which/how many are set.
+  This function is similar to map(), except you can pass up to 30 elements 
+  of the list at a time, in %0-%9 and v(10)-v(29). <step> must be between 1 
+  and 30, with a step of 1 equivalent to map(). If the elements of the list 
+  can't be split up evenly, the last evaluation will run with some of the 
+  registers unset; the %+ substitution or the registers() function can be 
+  used to see which/how many are set.
 
   Example:
     > &foo me=%0 - %1 - %2
@@ -5220,10 +5265,10 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
   greater than the length of <string>, <insert> is appended to it.
 
   Examples:
-  > think strinsert(barbaz, 0, foo)
-  foobarbaz
-  > think strinsert(Myname, 2, %b)
-  My name
+    > think strinsert(barbaz, 0, foo)
+    foobarbaz
+    > think strinsert(Myname, 2, %b)
+    My name
 
 See also: delete(), insert(), strreplace()
 & STRIPACCENTS()
@@ -5285,8 +5330,8 @@ See also: comp(), match(), setq(), r()
   greater than the length of <string>, <string> is returned.
 
   Example:
-  > think strreplace(Fix teh typo, 4, 3, the)
-  Fix the typo
+    > think strreplace(Fix teh typo, 4, 3, the)
+    Fix the typo
 
 See also: delete(), strinsert(), ldelete(), replace()
 & SUB()
@@ -5427,7 +5472,7 @@ See also: WILDCARDS
   stext(L) returns the <string> for the outermost switch, and is equivilent
   to stext(slev()). %$<n> is equivilent to stext(<n>), for <n>s of 0-9 or L.
   
-  Example:
+  Examples:
     > &cmd.whois me=$whois *: @pemit %#=switch(pmatch(%0),#-*,
                                     I don't know '%0', '%0' is %$0)
     > @switch foo=f*, say switch(bar, b*,%$1 %$0!)
@@ -5496,14 +5541,18 @@ See also: @teleport
   telnet           present if the client understands the telnet protocol.
   ssl              present if the client is using an SSL/TLS connection.
   prompt_newlines  see 'help prompt_newlines'
+  stripaccents     client is receiving 7-bit ascii, no accented characters
   
   One of the color styles shown in 'help colorstyle' will also be included.
 
   Other fields may be added in the future, if, for example, MXP
   support is ever added.
 
-  Players can use terminfo() on their own connections. Using it on
-  other players is restricted to see_all objects.
+  You must have see_all, or use terminfo() on yourself, to see all
+  information or use a <descriptor>. Mortals using terminfo() on another
+  player will always receive "unknown" for the client name, and will not
+  get telnet/ssl/prompt_newlines in the output list.
+
 See also: pueblo(), width(), height(), ssl(), @sockset
 & TESTLOCK()
   testlock(<key>, <victim>)
@@ -5565,16 +5614,16 @@ Continued in HELP TIME2
 & TIME2
   Examples (Assuming the server is the USA's Pacific timezone):
 
-  > think utctime()
-   Fri Mar 02 03:19:54 2012
-  > think time(utc)
-   Fri Mar 02 03:19:54 2012
-  > think time()
-   Thu Mar 01 19:19:54 2012
-  > think time(-8)
-   Thu Mar 01 19:20:25 2012
-  > think time(US/Pacific)
-   Thu Mar 01 19:20:25 2012
+    > think utctime()
+    Fri Mar 02 03:19:54 2012
+    > think time(utc)
+    Fri Mar 02 03:19:54 2012
+    > think time()
+    Thu Mar 01 19:19:54 2012
+    > think time(-8)
+    Thu Mar 01 19:20:25 2012
+    > think time(US/Pacific)
+    Thu Mar 01 19:20:25 2012
 
 See also: timefmt(), timestring(), convsecs(), convtime()
 & TIMEZONES
@@ -5582,7 +5631,7 @@ See also: timefmt(), timestring(), convsecs(), convtime()
 
   The time(), timefmt() and convsecs() functions have an optional time
   zone argument that's used for formatting the time. Without this time
-  zone specified, the one the game's server is running under is used..
+  zone specified, the one the game's server is running under is used.
 
   If the time zone argument is a dbref, the contents of that object's
   @TZ attribute is used as the zone. The attribute is not evaluated.
@@ -5598,8 +5647,8 @@ See also: timefmt(), timestring(), convsecs(), convtime()
   If the mush supports it (See @config compile), symbolic time zone
   names can also be used.
 
- See HELP TIMEZONES2 for a list of known time zones and HELP TIME2
- for some examples.
+  See HELP TIMEZONES2 for a list of known time zones and HELP TIME2
+  for some examples.
 & TIMEZONES2
   This is a list of IANA time zones names as of version 2011n of their
   database. See http://www.iana.org/time-zones for more information
@@ -5942,15 +5991,14 @@ Continued in HELP TIMEZONES13
   displayed.
 
   Examples:
-  > think etime(59)
+    > think etime(59)
     59s
-  > think etime(60)
+    > think etime(60)
     1m
-  > think etime(61)
+    > think etime(61)
     1m  1s
-  >
 
-See also: etimefmt(), timestring()
+See also: etimefmt(), timestring(), stringsecs()
 & ETIMEFMT()
   etimefmt(<format>, <secs>)
 
@@ -5967,7 +6015,7 @@ See also: etimefmt(), timestring()
     > say etimefmt(I have been connected for $2H:$2M., conn(%#))
     You say, "I have been connected for 01:32."
     > think etimefmt($2mm $2ss, 500) - [timestring(500)]
-     8m 20s -  8m 20s
+    8m 20s -  8m 20s
 
 See also: timestring(), timefmt(), etime()
 & ETIMEFMT2
@@ -5998,17 +6046,17 @@ See also: timestring(), timefmt(), etime()
 & TIMEFMT()
   timefmt(<format>[, <secs>, <timezone>])
 
-  This function returns the time and date, formatted according to
-  <format>.  <secs> is the time/date to format, as the number of
-  seconds since the epoch (as returned by secs(), convtime(), etc). If
-  no <secs> is given, the current date/time of the MUSH host is
-  used. If no <timezones> is provided, the MUSH host's timezone is
-  used. Note: Using a fractional timezone offset from GMT will result
-  in timefmt() showing the time zone name (if displayed) as GMT. Using
-  a symbolic name on a server that supports them should show the name
-  correctly.
+  This function returns the time and date, formatted according to <format>.
+  <secs> is the time/date to format, as the number of seconds since the 
+  epoch (as returned by secs(), convtime(), etc). If no <secs> is given, 
+  the current date/time of the MUSH host is used. If no <timezone> is 
+  provided, the MUSH host's timezone is used; see 'help timezones' for 
+  valid formats for <timezone>. Note: Using a fractional timezone offset 
+  from GMT may result in timefmt() showing the time zone name (if displayed)
+  as GMT. Using a symbolic name on a server that supports them should show 
+  the name correctly.
 
-  A list of all codes is in 'help timefmt2'.
+  A list of all codes for <format> is in 'help timefmt2'.
 
   Example:
     > think timefmt($A\, the $dth day of $B.)
@@ -6041,25 +6089,28 @@ See also: convsecs(), etimefmt(), timezones
   flag> is 2, all numbers will be 2 digits long.
 
   Examples:
-  > say timestring(301)
-  You say, " 5m  1s"
-  > say timestring(301,1)
-  You say, "0d  0h  5m  1s"
-  > say timestring(301,2)
-  You say, "00d 00h 05m 01s"
+    > say timestring(301)
+    You say, " 5m  1s"
+    > say timestring(301,1)
+    You say, "0d  0h  5m  1s"
+    > say timestring(301,2)
+    You say, "00d 00h 05m 01s"
 
 See also: stringsecs(), convsecs(), etime(), etimefmt()
 & STRINGSECS()
   stringsecs(<timestring>)
 
   The stringsecs() function takes a string of the form produced by 
-  timestring() and converts it back into seconds.
+  timestring() or etime() and converts it back into seconds.
 
-  Example:
+  Examples:
     > say stringsecs(5m 1s)
     You say, "301"
+    
+    > say stringsecs(3y 2m 7d 5h 23m)
+    You say, "95232300"
 
-See also: timestring(), etimefmt(), convtime()
+See also: timestring(), etimefmt(), convtime(), etime()
 & TR()
   tr(<string>, <find>, <replace>)
 
@@ -6074,10 +6125,10 @@ See also: timestring(), etimefmt(), convtime()
   are the first or last characters in the arguments.
 
    Examples:
-      > say tr(hello,abcdefghijklmnopqrstuvwxyz,nopqrstuvwxyzabcdefghijklm)
-       You say, "uryyb"
-      > say tr(uryyb, a-z, n-za-m)
-       You say, "hello"
+     > say tr(hello,abcdefghijklmnopqrstuvwxyz,nopqrstuvwxyzabcdefghijklm)
+     You say, "uryyb"
+     > say tr(uryyb, a-z, n-za-m)
+     You say, "hello"
 
 See also: merge(), splice()
 & TRIM()
@@ -6105,15 +6156,15 @@ See also: merge(), splice()
   you want to specify a particular argument sequence no matter how the option
   is set.
  
-   Examples:
-      > say trim(%b%bfoo bar baz%b%b%beek%b%b)
-      You say, "foo bar baz   eek"
-      > say trim(***BLAM***,*)
-      You say, "BLAM"
-      > say trim(-----> WOW <---,-,r)
-      You say, "-----> WOW <"
-      > say trim(=~=~=~= Trim Test =~=~=~=,= ~)
-      You say "Trim Test"
+  Examples:
+    > say trim(%b%bfoo bar baz%b%b%beek%b%b)
+    You say, "foo bar baz   eek"
+    > say trim(***BLAM***,*)
+    You say, "BLAM"
+    > say trim(-----> WOW <---,-,r)
+    You say, "-----> WOW <"
+    > say trim(=~=~=~= Trim Test =~=~=~=,= ~)
+    You say "Trim Test"
 
 See also: squish(), edit()
 & TRUNC()
@@ -6124,7 +6175,7 @@ See also: squish(), edit()
   be used to return the leading numeric prefix of a string. If <string>
   does not start with a number, 0 is returned.
   
-  Example:
+  Examples:
     > say trunc(3.141593)
     You say, "3"
     > say trunc(101Dalmations)
@@ -6139,7 +6190,7 @@ See also: ceil(), floor(), bound(), round(), left()
   This function returns the type of an object - one of PLAYER, THING, EXIT,
   ROOM or GARBAGE - or #-1 if the object can't be found.
   
-  Example:
+  Examples:
     > @create Test
     > think type(Test)
     THING
@@ -6150,11 +6201,11 @@ See also: ceil(), floor(), bound(), round(), left()
   
 See also: hastype(), TYPES OF OBJECTS
 & PFUN()
-  pfun(<attribute>[, <arg0>[, ... , <arg9>]])
+  pfun(<attribute>[, <arg0>[, ... , <arg29>]])
   
   This function evaluates <attribute> from the caller's @parent, passing up 
-  to ten <arg>s as %0-%9. When the caller doesn't have an <attribute>
-  attribute set, this is the same as
+  to 30 <arg>s as %0-%9 and v(10)-v(29). When the caller doesn't have an 
+  <attribute> attribute set, this is the same as
   
     ufun(me/<attribute>[, <args>])
     
@@ -6174,7 +6225,6 @@ See also: hastype(), TYPES OF OBJECTS
   
   Continued in 'help pfun2'.
 & PFUN2
-
   This function does not have the security problems of using 
   
     ufun(parent(me)/<attribute>)
@@ -6191,7 +6241,6 @@ See also: hastype(), TYPES OF OBJECTS
   
 See also: ufun(), get(), parent(), zfun(), PARENTS
 & PFUN3
-
   Example:
   
     > &root Parent=ParentRoot
@@ -6211,18 +6260,17 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
     ParentRoot / ParentRoot`foo / ChildRoot`bar
     
   Good for inherited @chatformats which use CHATFORMAT`<channel> leaf attrs
-  to store channel-specific formats and the like. Note that no_inherit flags
-  are still checked, as with normal attribute inheritance.
+  to store channel-specific formats and the like.
 & U()
 & UFUN()
 & ULAMBDA()
-  ufun([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
-  ulambda([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
+  ufun([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
+  ulambda([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
  
   ufun() evaluates <attribute> on <object> (or on the caller, if no <object>
-  is given), and returns the result. Up to 10 <arg>s can be passed, available
-  to the attribute as %0, %1, ..., %9. This can be used to create "user
-  defined functions".
+  is given), and returns the result. Up to 30 <arg>s can be passed, available
+  to the attribute as %0, %1, up to %9, and v(10) to v(29). This can be used 
+  to create "user defined functions".
   
   u() is an alias for ufun(), for TinyMUSH compatability.
   
@@ -6265,23 +6313,23 @@ See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(),
   Returns <string> with all letters converted to uppercase.
   
   Example:
-    say ucstr(Foo BAR baz)
+    > say ucstr(Foo BAR baz)
     You say, "FOO BAR BAZ"
 
 See also: lcstr(), capstr()
 & UDEFAULT()
 & ULDEFAULT()
-  udefault([<object>/]<attribute>, <default case>[, <arg0>[, ... , <arg9>]])
-  uldefault([<object>/]<attribute>, <default case>[, <arg0>[, ... <arg9>]])
+  udefault([<object>/]<attribute>, <default case>[, <arg0>[, ... , <arg29>]])
+  uldefault([<object>/]<attribute>, <default case>[, <arg0>[, ... <arg29>]])
 
   If the given <attribute> on <object> (or the caller, if no <object> is
   given) can be read, the attribute is evaluated, and the result returned.
-  Up to ten <arg>s can be passed to the attribute, as per ufun().
+  Up to thirty <arg>s can be passed to the attribute, as per ufun().
   
   If the attribute cannot be read, <default case> is evaluated and returned
   instead. The <default case> is not evaluated if the attribute exists.
   
-  uldefault() saves the global registers %q0-%q9 and %qa-%qz before
+  uldefault() saves the global q-registers (%q0-%q9, %qa-%qz, etc) before
   evaluation, and restores them afterwards, as per ulocal().
  
   Examples:
@@ -6294,12 +6342,12 @@ See also: lcstr(), capstr()
  
 See also: get(), eval(), ufun(), default(), edefault(), ulocal(), localize()
 & ULOCAL()
-  ulocal([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
+  ulocal([<object>/]<attribute>[, <arg0>[, ... , <arg29>]])
  
   The ulocal() function is similar to ufun(); it evaluates <attribute> on
-  <object> (or the caller, if no <object> is given), passing up to ten
-  <arg>s. However, before evaluating the attribute, ulocal() stores the
-  36 global registers (%q0-%q9, %qa-%qz), in the same way as the localize()
+  <object> (or the caller, if no <object> is given), passing up to thirty
+  <arg>s. However, before evaluating the attribute, ulocal() stores all the
+  global q-registers (%q0-%q9, %qa-%qz), in the same way as the localize()
   function, and restores them after the attribute is evaluated. It's useful
   when you need to evaluate an attribute on an untrusted object which might
   alter the values of the registers.
@@ -6336,30 +6384,38 @@ See also: ufun(), setq(), letq(), r(), localize()
   by <osep>, which defaults to <delim>.
 
   Examples:
-  > think unique(a b b c b)
+    > think unique(a b b c b)
     a b c b
-  > think unique(1 2 2.0 3, f)
+    > think unique(1 2 2.0 3, f)
     1 2 3
-  > think unique(1|2|3|3, n, |, _)
+    > think unique(1|2|3|3, n, |, _)
     1_2_3
 
 See also: setunion(), sort()
 & V()
 & V-FUNCTION
   v(<variable>)
+  v(<integer>)
   v(<attribute>)
 
   The first form of this function returns the value of the <variable> %-sub.
-  In most cases, using the %-sub is preferable. Not all %-subs can be
-  accessed this way; only the following <variable>s are valid:
+  In most cases, using the %-sub is preferable. Not all %-subs are accessible
+  this way; only the following <variable>s are valid:
+
     0-9, #, @, !, n, l, and c.
+
   Unlike %-subs, the v() function is not case-sensitive: v(n) and v(N) are
   both equivilent to %n (whereas %N is equivilent to [capstr(%n)]).
   
-  The second form of this function is equivilent to xget(me, <attribute>),
-  but is usually slightly more efficient.
+  v() can also return the value of stack registers. v(0) is equivilent to %0,
+  but v() can return up to 30 registers (v(0) through v(29)). Calling v()
+  with an integer arg that is not between 0 and 29 (inclusive) will return
+  an out-of-range error.
+  
+  The final form of this function is equivilent to get(me/<attribute>), but 
+  is usually slightly more efficient.
 
-See also: SUBSTITUTIONS, get(), r(), ATTRIBUTES
+See also: STACK, REGISTERS, SUBSTITUTIONS, get(), r(), ATTRIBUTES
 & VADD()
   vadd(<vector1>, <vector2>[, <delimiter>])
 
@@ -6473,16 +6529,16 @@ See also: VECTOR FUNCTIONS
   softcode comparison.
  
   Example:
-     > say version()
-     You say "PennMUSH version 1.8.1 patchlevel 4 [12/06/2005]"
-     > say numversion()
-     You say "1008001004"
+    > say version()
+    You say "PennMUSH version 1.8.1 patchlevel 4 [12/06/2005]"
+    > say numversion()
+    You say "1008001004"
      
-     > say version()
-		 You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
-		           (r1374 2012-02-23)"
-		 > say numversion()
-		 You say, "1008005000"
+    > say version()
+		You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
+		          (r1374 2012-02-23)"
+		> say numversion()
+		You say, "1008005000"
 
 See also: @version
 & VISIBLE()
@@ -6612,7 +6668,7 @@ See also: member(), pos()
   
   When the <delimiter> is a space, empty elements are not counted.
   
-  Example:
+  Examples:
     > think words(1 2%b%b3, %b)
     3
     
@@ -6770,12 +6826,12 @@ See also: lwho(), nwho(), zone(), zfun(), zemit()
 
 See also: @zemit, zone(), zfun(), zwho(), ZONES
 & ZFUN()
-  zfun(<attribute>[, <arg0>[, <arg1>[, ... , <arg9>]]])
+  zfun(<attribute>[, <arg0>[, <arg1>[, ... , <arg29>]]])
  
   This function evaluates an attribute on the caller's Zone object. It is
   essentially identical to
   
-  ufun(zone(me)/<attribute>[, <arg0>[, ... , <arg9>]])
+  ufun(zone(me)/<attribute>[, <arg0>[, ... , <arg29>]])
 
 See also: ufun(), get(), zone(), zemit(), zwho(), ZONES
 & ZONE()
@@ -6785,7 +6841,7 @@ See also: ufun(), get(), zone(), zemit(), zwho(), ZONES
   examine the object; if you can't, zone() returns #-1.
   
   If a <new zone> is given, zone() attempts to change the zone of <object>
-  to <new zone> first.
+  to <new zone> first - see help @chzone for details.
   
 See also: @chzone, zfun(), zwho(), zemit() ZONES
 & UPTIME()

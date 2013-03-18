@@ -60,7 +60,7 @@ II.a. MySQL
 
   If you installed Mysql from a binary package (e.g. rpm or apt), you
   should be sure that your system also has the development package
-  (usuallyl mysql-dev or mysql-devel).
+  (usuallyl mysql-dev, mysql-devel or libmysqlclient-dev).
 
   If you think you have mysql libraries and header files but configure
   isn't finding them, they may be in an unusual location on your

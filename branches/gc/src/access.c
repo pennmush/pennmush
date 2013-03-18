@@ -195,7 +195,7 @@ read_access_file(void)
   char *p;
   uint32_t can, cant;
   int retval;
-  dbref who;
+  dbref who = AMBIGUOUS;
   char *comment;
   const char *errptr = NULL;
 

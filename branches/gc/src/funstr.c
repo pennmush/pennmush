@@ -834,13 +834,30 @@ FUNCTION(fun_repeat)
   ap = args[0] + arglens[0];
   while (times) {
     if (times & 1) {
-      if (safe_strl(args[0], arglens[0], buff, bp) != 0)
+      if (safe_strl(args[0], arglens[0], buff, bp)) {
+        char *ts, *te;
+        ts = strrchr(buff, TAG_START);
+        te = strrchr(buff, TAG_END);
+        if (ts && te && ts > te) {
+          *ts = '\0';
+          bp = &ts;
+        }
         break;
+      }
     }
-    safe_str(args[0], args[0], &ap);
-    *ap = '\0';
+    if (safe_str(args[0], args[0], &ap)) {
+      char *ts, *te;
+      *ap = '\0';
+      ts = strrchr(args[0], TAG_START);
+      te = strrchr(args[0], TAG_END);
+      times = 1;
+      if (ts && te && ts > te)
+        *ts = '\0';
+    } else {
+      *ap = '\0';
+      times = times >> 1;
+    }
     arglens[0] = strlen(args[0]);
-    times = times >> 1;
   }
 }
 
@@ -1140,7 +1157,7 @@ FUNCTION(fun_decompose)
    * the included string, such that
    * s(decompose(str)) == str, down to the last space, tab,
    * and newline. */
-  safe_str(decompose_str(args[0]), buff, bp);
+  safe_decompose_str(args[0], buff, bp);
 }
 
 /* ARGSUSED */
@@ -1600,7 +1617,7 @@ FUNCTION(fun_wrap)
     free_ansi_string(hyphen);
 }
 
-// Alignment types.
+/* Alignment types. */
 #define AL_LEFT 1    /**< Align left */
 #define AL_RIGHT 2   /**< Align right */
 #define AL_CENTER 3  /**< Align center */
@@ -1704,7 +1721,7 @@ align_one_line(char *buff, char **bp, int ncols,
         lastspace = ptr;
       }
     }
-    // Fixes align(3,123 1 1 1 1)
+    /* Fixes align(3,123 1 1 1 1) */
     if (isspace((int) *ptr)) {
       lastspace = ptr;
     }
@@ -1746,12 +1763,14 @@ align_one_line(char *buff, char **bp, int ncols,
     switch (calign[i] & AL_TYPE) {
     case AL_FULL:
     case AL_WPFULL:
-      // This is stupid: If it's full justify and not a hard break, then
-      // we stretch spaces. If it is a hard break, then we fall through
-      // to left-align.
+      /* This is stupid: If it's full justify and not a hard break, then
+       * we stretch spaces. If it is a hard break, then we fall through
+       * to left-align.
+       */
       iswpfull = (calign[i] & AL_TYPE) == AL_WPFULL;
-      // For a word processor full justify, # of spaces needed needs to be
-      // less than half of the lenth.
+      /* For a word processor full justify, # of spaces needed needs to be
+       * less than half of the lenth.
+       */
       spacesneeded = cols[i] - len;
       numspaces = 0;
       for (j = 0; segment[j]; j++) {
@@ -1763,9 +1782,9 @@ align_one_line(char *buff, char **bp, int ncols,
           (!iswpfull || (cols[i] / spacesneeded) >= 2) && numspaces > 0) {
         spacecount = 0;
         for (j = 0; segment[j]; j++) {
-          // Copy the char over.
+          /* Copy the char over. */
           safe_chr(segment[j], line, &lp);
-          // If it's a space, expand it.
+          /* If it's a space, expand it. */
           if (isspace((int) segment[j])) {
             k = (spacesneeded / numspaces);
             if (spacecount < (spacesneeded % numspaces)) {
@@ -1779,7 +1798,7 @@ align_one_line(char *buff, char **bp, int ncols,
         }
         break;
       }
-    default:                   // Left-align
+    default:                   /* Left-align */
       safe_str(segment, line, &lp);
       /* Don't fill if we're set NOFILL */
       if (!(calign[i] & AL_NOFILL)) {

@@ -267,7 +267,7 @@ acm_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs
 {
   uint8_t *chunk;
 
-  chunk = mush_malloc(len + 4, "chunk");
+  chunk = GC_MALLOC_ATOMIC(len + 4);
 
   memset(chunk, 0, 4);
   memcpy(chunk, &len, 2);
@@ -280,7 +280,7 @@ static void
 acm_chunk_delete(chunk_reference_t reference)
 {
   if (reference)
-    mush_free(reference, "chunk");
+    GC_FREE(reference);
 }
 
 static uint16_t

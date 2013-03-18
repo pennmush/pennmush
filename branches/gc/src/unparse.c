@@ -81,7 +81,7 @@ unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
  * a nameformat or nameaccent if present.
  * \param player the looker.
  * \param loc dbref of the object being looked at.
- * \param obey_myopic if 0, always show Name(#xxxFLAGS); if 1, don't
+ * \param obey_myopic if 0, always show Name(\#xxxFLAGS); if 1, don't
  * do so if player is MYOPIC or doesn't own loc.
  * \param use_nameformat if 1, apply a NAMEFORMAT attribute if available.
  * \param use_nameaccent if 1, apply a NAMEACCENT attribute if available.
@@ -120,7 +120,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
          JumpOk(loc) || ChownOk(loc) || DestOk(loc)) &&
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */
-      if (ANSI_NAMES && ShowAnsi(player))
+      if (ANSI_NAMES)
         buf = tprintf("%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
 		      ANSI_END, loc, unparse_flags(loc, player));
       else
@@ -128,7 +128,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
 		      unparse_flags(loc, player));
     } else {
       /* show only the name */
-      if (ANSI_NAMES && ShowAnsi(player)) {
+      if (ANSI_NAMES) {
         buf = tprintf("%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
       } else
         buf = tbuf1;

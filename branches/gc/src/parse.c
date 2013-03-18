@@ -50,7 +50,7 @@ extern int cpu_limit_warning_sent;
 /** Structure for storing DEBUG output in a linked list */
 struct debug_info {
   char *string;         /**< A DEBUG string */
-  dbref executor;
+  dbref executor;       /**< Object executing code */
   Debug_Info *prev;     /**< Previous node in the linked list */
   Debug_Info *next;     /**< Next node in the linked list */
 };
@@ -727,6 +727,8 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
 /** Create a PE_REGS context.
  *
  * \param pr_flags PR_* flags, bitwise or'd.
+ * \param name A name to identify the pe_regs, for debugging
+ * \return a newly created, allocated pe_regs
  */
 PE_REGS *
 pe_regs_create_real(int pr_flags, const char *name)
@@ -1615,7 +1617,7 @@ make_pe_info(char *name)
   return pe_info;
 }
 
-/** Create an new pe_info based on an existing pe_info. Depending on flags, we
+/** Create a new pe_info based on an existing pe_info. Depending on flags, we
  ** may simply increase the refcount of the existing pe_info and return
  ** that, or we may create a new pe_info, possibly copying some information
  ** from the existing pe_info into the new one
@@ -1773,6 +1775,10 @@ process_expression(char *buff, char **bp, char const **str,
   PE_REGS *pe_regs;
   const char *stmp;
   int itmp;
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+  static char *lca_func_name = NULL;
+/* End of r1628's deprecation */
 
   if (!buff || !bp || !str || !*str)
     return 0;
@@ -1920,6 +1926,19 @@ process_expression(char *buff, char **bp, char const **str,
     case ',':
       if (tflags & PT_COMMA)
         goto exit_sequence;
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+      else if (tflags & PT_NOT_COMMA) {
+        if (pe_info && *pe_info->attrname)
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s by #%d in %s. This behaviour is deprecated.",
+                        lca_func_name, executor, pe_info->attrname);
+        else
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s by #%d. This behaviour is deprecated.",
+                        lca_func_name, executor);
+      }
+/* End of r1628's deprecation */
       break;
     case ';':
       if (tflags & PT_SEMI)
@@ -2507,8 +2526,23 @@ process_expression(char *buff, char **bp, char const **str,
         onearg = GC_MALLOC_ATOMIC(BUFFER_LEN);
         do {
           char *argp;
-          if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs))
-            temp_tflags = PT_PAREN;
+          char *lca_safe_func_name = NULL;
+          if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs)) {
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+            if (lca_func_name != NULL) {
+              lca_safe_func_name = GC_STRDUP(lca_func_name);
+            } else {
+              lca_func_name = GC_MALLOC_ATOMIC(BUFFER_LEN);
+            }
+            if (fp->flags & FN_LITERAL)
+              temp_tflags = PT_PAREN;
+            else
+              temp_tflags = PT_PAREN | PT_NOT_COMMA;
+            strcpy(lca_func_name, fp->name);
+            // temp_tflags = PT_PAREN;
+/* End of r1628's deprecation */
+          }
           if (nfargs >= args_alloced) {
             char **nargs;
             int *narglens;
@@ -2529,6 +2563,13 @@ process_expression(char *buff, char **bp, char const **str,
                                  temp_eflags, temp_tflags, pe_info)) {
             retval = 1;
             nfargs++;
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+            if (lca_safe_func_name) {
+              strcpy(lca_func_name, lca_safe_func_name);
+              lca_safe_func_name = NULL;
+            }
+/* End of r1628's deprecation */
             goto free_func_args;
           }
           *argp = '\0';
@@ -2538,6 +2579,13 @@ process_expression(char *buff, char **bp, char const **str,
             strcpy(fargs[nfargs], onearg);
           }
           arglens[nfargs] = strlen(fargs[nfargs]);
+/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+ * added 17 Sep 2012. Remove when this behaviour is removed. */
+          if (lca_safe_func_name) {
+            strcpy(lca_func_name, lca_safe_func_name);
+            lca_safe_func_name = NULL;
+          }
+/* End of r1628's deprecation */
           (*str)++;
           nfargs++;
         } while ((*str)[-1] == ',');

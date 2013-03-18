@@ -703,6 +703,7 @@ absolute_room(dbref it)
  * \param from object of interaction.
  * \param to subject of interaction, attempting to interact with from.
  * \param type type of interaction.
+ * \param pe_info a pe_info to use for lock checks
  * \retval 1 to can interact with from in this way.
  * \retval 0 to can not interact with from in this way.
  */

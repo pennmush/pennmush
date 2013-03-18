@@ -1485,7 +1485,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   uint32_t flag_mask;
   ATTR *ptr;
   int parent_depth;
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   PE_REGS *pe_regs;
   char *tbuf1;
   char tbuf2[BUFFER_LEN];
@@ -1526,8 +1526,15 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   prev = &used_list;
 
   pe_info = make_pe_info("pe_info-atr_comm_match");
-  strcpy(pe_info->cmd_raw, str);
-  strcpy(pe_info->cmd_evaled, str);
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw)
+    strcpy(pe_info->cmd_raw, from_queue->pe_info->cmd_raw);
+  else
+    strcpy(pe_info->cmd_raw, str);
+
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled)
+    strcpy(pe_info->cmd_evaled, from_queue->pe_info->cmd_evaled);
+  else
+    strcpy(pe_info->cmd_evaled, str);
 
   skipcount = 0;
   do {
@@ -1606,8 +1613,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
       match_found = 0;
       if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                                match_space, match_space_len, NULL)) {
+        if (regexp_match_case_r
+            (tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS, match_space,
+             match_space_len, NULL)) {
           match_found = 1;
           match++;
         }
@@ -1616,8 +1624,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match_found = 1;
           match++;
           if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                              match_space, match_space_len, NULL);
+            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
+                              MAX_STACK_ARGS, match_space, match_space_len,
+                              NULL);
         }
       }
       if (match_found) {
@@ -1653,7 +1662,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (!just_match) {
           pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
-          for (i = 0; i < 10; i++) {
+          for (i = 0; i < MAX_STACK_ARGS; i++) {
             if (args[i]) {
               pe_regs_setenv_nocopy(pe_regs, i, args[i]);
             }
@@ -1732,7 +1741,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   PE_REGS *pe_regs;
   int i;
   char match_space[BUFFER_LEN * 2];
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   ssize_t match_space_len = BUFFER_LEN * 2;
 
   /* check for lots of easy ways out */
@@ -1766,10 +1775,10 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     strcpy(tbuf2, tbuf1);
 
   if (AF_Regexp(ptr) ?
-      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                           match_space, match_space_len, NULL) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        10, match_space, match_space_len, NULL)) {
+                        MAX_STACK_ARGS, match_space, match_space_len, NULL)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     int success = 1;
     NEW_PE_INFO *pe_info;
@@ -1796,7 +1805,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     }
     if (success) {
       pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
-      for (i = 0; i < 10; i++) {
+      for (i = 0; i < MAX_STACK_ARGS; i++) {
         if (args[i]) {
           pe_regs_setenv_nocopy(pe_regs, i, args[i]);
         }
@@ -2059,51 +2068,63 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       }
     }
   }
-  if ((flags & 0x01) && !AreQuiet(player, thing))
-    notify_format(player,
-                  "%s/%s - %s.", Name(thing), name,
-                  s ? T("Set") : T("Cleared"));
+  if ((flags & 0x01) && !AreQuiet(player, thing)) {
+    old = atr_get(thing, name);
+    if (!old || !AF_Quiet(old)) {
+      notify_format(player,
+                    "%s/%s - %s.", Name(thing), name,
+                    s ? T("Set") : T("Cleared"));
+    }
+  }
   return 1;
 }
+
+enum atrlock_status {
+  ATRLOCK_CHECK = 0,
+  ATRLOCK_LOCK,
+  ATRLOCK_UNLOCK
+};
 
 /** Lock or unlock an attribute.
  * Attribute locks are largely obsolete and should be deprecated,
  * but this is the code that does them.
  * \param player the enactor.
- * \param xarg1 the object/attribute, as a string.
- * \param arg2 the desired lock status ('on' or 'off').
+ * \param src the object/attribute, as a string.
+ * \param action the desired lock status ('on' or 'off').
  */
 void
-do_atrlock(dbref player, const char *xarg1, const char *arg2)
+do_atrlock(dbref player, const char *src, const char *action)
 {
   dbref thing;
-  char *p, *arg1;
+  char *target, *attr;
   ATTR *ptr;
-  int status;
-  if (!arg2 || !*arg2)
-    status = 0;
-  else {
-    if (!strcasecmp(arg2, "on")) {
-      status = 1;
-    } else if (!strcasecmp(arg2, "off")) {
-      status = 2;
-    } else
-      status = 0;
+  enum atrlock_status status = ATRLOCK_CHECK;
+
+  if (action && *action) {
+    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") || !strcasecmp(action, "1"))
+      status = ATRLOCK_LOCK;
+    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no") || !strcasecmp(action, "0"))
+      status = ATRLOCK_UNLOCK;
+    else {
+      notify(player, T("Invalid argument."));
+      return;
+    }
   }
 
-  if (!xarg1 || !*xarg1) {
+  if (!src || !*src) {
     notify(player, T("You need to give an object/attribute pair."));
     return;
   }
 
-  arg1 = GC_STRDUP(xarg1);
+  target = GC_STRDUP(src);
 
-  if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
+  if (!(attr = strchr(target, '/')) || !(*(attr + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
     return;
   }
-  *p++ = '\0';
-  if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
+
+  *attr++ = '\0';
+  if ((thing = noisy_match_result(player, target, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
     return;
   }
@@ -2112,33 +2133,35 @@ do_atrlock(dbref player, const char *xarg1, const char *arg2)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(p));
-  if (ptr && Can_Read_Attr(player, thing, ptr)) {
-    if (!status) {
-      notify_format(player, T("That attribute is %slocked."),
-                    AF_Locked(ptr) ? "" : "un");
-      return;
-    } else if (!Can_Write_Attr(player, thing, ptr)) {
-      notify(player,
-             T("You need to be able to set the attribute to change its lock."));
-      return;
-    } else {
-      if (status == 1) {
-        AL_FLAGS(ptr) |= AF_LOCKED;
-        AL_CREATOR(ptr) = Owner(player);
-        notify(player, T("Attribute locked."));
-        return;
-      } else if (status == 2) {
-        AL_FLAGS(ptr) &= ~AF_LOCKED;
-        notify(player, T("Attribute unlocked."));
-        return;
-      } else {
-        notify(player, T("Invalid status on atrlock.. Notify god."));
-        return;
-      }
-    }
-  } else
+  ptr = atr_get_noparent(thing, strupper(attr));
+  if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));
+    return;
+  }
+
+  if (status == ATRLOCK_CHECK) {
+    if (AF_Locked(ptr))
+      notify(player, T("That attribute is locked."));
+    else
+      notify(player, T("That attribute is unlocked."));
+    return;
+  } else if (!Can_Write_Attr(player, thing, ptr)) {
+    notify(player,
+           T("You need to be able to set the attribute to change its lock."));
+    return;
+  } else {
+    if (status == ATRLOCK_LOCK) {
+      AL_FLAGS(ptr) |= AF_LOCKED;
+      AL_CREATOR(ptr) = Owner(player);
+      notify(player, T("Attribute locked."));
+    } else if (status == ATRLOCK_UNLOCK) {
+      AL_FLAGS(ptr) &= ~AF_LOCKED;
+      notify(player, T("Attribute unlocked."));
+    } else {
+      notify(player, T("Invalid status."));
+      return;
+    }
+  }
 }
 
 /** Change ownership of an attribute.

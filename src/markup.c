@@ -2079,7 +2079,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   if (loc > oldlen) {
     /* If the dst string isn't long enough, we don't replace, we just
      * insert at the end of the existing string */
-    loc = dst->len;
+    loc = oldlen;
     count = 0;
   }
 
@@ -2275,7 +2275,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   } else {
     for (i = loc; i < srcend; i++) {
       if ((i - loc) > (count - 1))
-        dst->markup[i] = dst->markup[loc + count - 1];
+        dst->markup[i] = (count || (loc > 0 && loc < oldlen)) ? dst->markup[loc + count - 1] : NOMARKUP;
     }
   }
   return truncated;

@@ -2165,9 +2165,6 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     } else {
       return 0;
     }
-  }
-  /* If we don't have anything to copy, then return. */
-  if (srclen < 1) {
     return 1;
   }
 
@@ -2194,14 +2191,6 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dst->markup[i] = NOMARKUP;
     }
     dst->flags |= AS_HAS_MARKUP;
-  }
-  if (!src->markup) {
-    src->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t),
-                              "ansi_string.markup");
-    for (i = 0; i < srclen; i++) {
-      src->markup[i] = NOMARKUP;
-    }
-    src->flags |= AS_HAS_MARKUP;
   }
 
   /* Save the markup info pointers for loc and loc-1 */
@@ -2260,21 +2249,21 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 
   /* Copy the markup info of src over. */
   idx = dst->micount;
-  for (sidx = 0; sidx < src->micount; sidx++) {
-    mi = grow_mi(dst, src->mi[sidx].type);
-    mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
-    mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
-    mi->standalone = src->mi[sidx].standalone;
-    mi->start = src->mi[sidx].start + loc;
-    if (src->mi[sidx].parentIdx >= 0) {
-      mi->parentIdx = src->mi[sidx].parentIdx + idx;
-    } else {
-      mi->parentIdx = baseidx;
-    }
-  }
-
-  /* Copy src's markup over, updating to new idx. */
   if (src->markup) {
+    for (sidx = 0; sidx < src->micount; sidx++) {
+      mi = grow_mi(dst, src->mi[sidx].type);
+      mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
+      mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
+      mi->standalone = src->mi[sidx].standalone;
+      mi->start = src->mi[sidx].start + loc;
+      if (src->mi[sidx].parentIdx >= 0) {
+        mi->parentIdx = src->mi[sidx].parentIdx + idx;
+      } else {
+        mi->parentIdx = baseidx;
+      }
+    }
+
+    /* Copy src's markup over, updating to new idx. */
     memcpy(dst->markup + loc, src->markup, srclen * sizeof(uint16_t));
     for (i = loc, j = 0; i < srcend; i++, j++) {
       if (src->markup[j] >= 0) {
@@ -2285,7 +2274,8 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
   } else {
     for (i = loc; i < srcend; i++) {
-      dst->markup[i] = baseidx;
+      if ((i - loc) > (count - 1))
+        dst->markup[i] = dst->markup[loc + count - 1];
     }
   }
   return truncated;

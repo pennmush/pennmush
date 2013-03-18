@@ -29,7 +29,7 @@
 #define MAT_ME               0x000010  /**< Match the string "me" to the looker */
 #define MAT_HERE             0x000020  /**< Match the string "here" to the looker's location */
 #define MAT_ABSOLUTE         0x000040  /**< Match any object by dbref */
-#define MAT_PLAYER           0x000080  /**< Match *<playername> */
+#define MAT_PLAYER           0x000080  /**< Match playernames with leading "*" */
 #define MAT_NEIGHBOR         0x000100  /**< Match objects in the looker's location */
 #define MAT_POSSESSION       0x000200  /**< Match object in the looker's inventory */
 #define MAT_CONTENTS         0x000400  /**< Only match objects which are in the looker's contents */
@@ -63,6 +63,7 @@
 dbref
  match_result(dbref who, const char *xname, int type, long flags);
 dbref
+
 
 
 

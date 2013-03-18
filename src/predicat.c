@@ -709,7 +709,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
   const unsigned char *scan, *good;
   dbref lookup;
 
-  if (!ok_name(name, 0) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
+  if (!ok_name(name, 0) || strlen(name) > (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
   good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");
@@ -1270,6 +1270,7 @@ nearby(dbref obj1, dbref obj2)
  * \param enactor the object causing this command to run.
  * \param arg1 the object to read verb attributes from.
  * \param argv the array of remaining arguments to the verb command.
+ * \param queue_entry The queue entry \@verb is running in
  */
 void
 do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
@@ -1322,7 +1323,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* We're okay.  Send out messages. */
 
   pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_verb");
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     if (argv[i + 7]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 7]);
     }

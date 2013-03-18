@@ -65,10 +65,10 @@ struct lock_msg_info {
 #define LF_PRIVATE      0x002U  /**< This lock doesn't get inherited */
 #define LF_WIZARD       0x004U  /**< Only wizards can set/unset this lock */
 #define LF_LOCKED       0x008U  /**< Only the lock's owner can set/unset it */
-#define LF_NOCLONE      0x010U  /**< This lock isn't copied in @clone */
+#define LF_NOCLONE      0x010U  /**< This lock isn't copied in \@clone */
 #define LF_OX           0x020U  /**< This lock's success messages includes OX*. */
-#define LF_NOSUCCACTION 0x040U  /**< This lock doesn't have an @a-action for success. */
-#define LF_NOFAILACTION 0x080U  /**< This lock doesn't have an @a-action for failure */
+#define LF_NOSUCCACTION 0x040U  /**< This lock doesn't have an \@a-action for success. */
+#define LF_NOFAILACTION 0x080U  /**< This lock doesn't have an \@a-action for failure */
 #define LF_OWNER        0x100U  /**< Lock can only be set/unset by object's owner */
 #define LF_DEFAULT      0x200U  /**< Use default flags when setting lock */
 #define LF_JIT_FAIL       0x400U /**< Attempted and failed to JIT compile lock. */

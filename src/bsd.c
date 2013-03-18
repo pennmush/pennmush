@@ -183,8 +183,11 @@ static char poll_msg[DOING_LEN] = { '\0' };
 char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
 char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
+char *etime_fmt(char *, time_t, int);
+
 /** Is this descriptor connected to a telnet-compatible terminal? */
 #define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
+/** Is it possible this descriptor may be telnet-compatible? */
 #define MAYBE_TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
 
@@ -226,9 +229,9 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
 #define MSSP_VAR 1              /**< MSSP option name */
 #define MSSP_VAL 2              /**< MSSP option value */
-#define TN_SB_CHARSET_REQUEST 1
-#define TN_SB_CHARSET_ACCEPTED 2
-#define TN_SB_CHARSET_REJECTED 3
+#define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
+#define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
+#define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -432,6 +435,8 @@ void initialize_mt(void);
 
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
+
+static bool who_check_name(DESC *d, char *name, bool wild);
 
 static inline bool
 is_blocking_err(int code)
@@ -2141,7 +2146,7 @@ process_output(DESC *d)
 /** A wrapper around test_telnet(), which is called via the
  * squeue system in timers.c
  * \param data a descriptor, cast as a void pointer
- * \param return false
+ * \return false
  */
 bool
 test_telnet_wrapper(void *data)
@@ -2156,7 +2161,7 @@ test_telnet_wrapper(void *data)
 /** A wrapper around welcome_user(), which is called via the
  * squeue system in timers.c
  * \param data a descriptor, cast as a void pointer
- * \param return false
+ * \return false
  */
 bool
 welcome_user_wrapper(void *data)
@@ -2347,6 +2352,51 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       *bp = '\0';
       mush_free(d->ttype, "terminal description");
       d->ttype = mush_strdup(tbuf, "terminal description");
+    } else if (**q == TN_CHARSET) {
+      /* Possible subnegotiations are
+       * CHARSET ACCEPTED <charset> IAC SE
+       * CHARSET REJECTED IAC SE
+       */
+      char tbuf[BUFFER_LEN], *bp = tbuf;
+      char type;
+      if (*q >= qend)
+        return -1;
+      (*q)++;
+      /* See whether it's ACCEPTED or REJECTED */
+      if (*q >= qend)
+        return -1;
+      type = **q;
+      (*q)++;
+
+      /* Read up to IAC SE */
+      while (1) {
+        if (*q >= qend)
+          return -1;
+        if (**q == IAC) {
+          if (*q + 1 >= qend)
+            return -1;
+          if (*(*q + 1) == IAC) {
+            safe_chr((char) IAC, tbuf, &bp);
+            (*q)++;
+          } else
+            break;
+        } else
+          safe_chr(**q, tbuf, &bp);
+        (*q)++;
+      }
+      while (*q < qend && **q != SE)
+        (*q)++;
+      *bp = '\0';
+      if (type == TN_SB_CHARSET_ACCEPTED) {
+        if (!strcasecmp(tbuf, "US-ASCII") || !strcasecmp(tbuf, "ASCII")) {
+          /* ascii requested; strip accents for the connection */
+          d->conn_flags |= CONN_STRIPACCENTS;
+        }
+      }
+      /* Since they've rejected all our offered charsets, we can either
+       * keep doing what we're doing, or start stripping accents (send
+       * plain ascii). For now, we'll just carry on as we were.
+       */
     } else {
       while (*q < qend && **q != SE)
         (*q)++;
@@ -2464,10 +2514,16 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       } else {
         /* Fall back on latin-1 */
         delim[0] = ';';
-        curr_locale = "ISO-8859-1;x-penn-def";
+        curr_locale = "ISO-8859-1";
       }
       queue_newwrite(d, (unsigned char *) delim, 1);
       queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "US-ASCII", 8);
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "ASCII", 5);
+      queue_newwrite(d, (unsigned char *) delim, 1);
+      queue_newwrite(d, (unsigned char *) "x-penn-def", 10);
 
       queue_newwrite(d, reply_suffix, 2);
 #else                           /* _MSC_VER */
@@ -2477,7 +2533,8 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
        * but it's unlikely to contain a valid charset name, so probably
        * wouldn't help anyway.) */
       queue_newwrite(d, reply_prefix, 4);
-      queue_newwrite(d, ";ISO-8859-1;x-win-def", 21);
+      queue_newwrite(d, (unsigned char *) ";ISO-8859-1", 11);
+      queue_newwrite(d, (unsigned char *) ";US-ASCII;ASCII;x-win-def", 25);
       queue_newwrite(d, reply_suffix, 2);
 #endif                          /* _MSC_VER */
     } else {
@@ -2685,7 +2742,7 @@ process_commands(void)
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
-	  /* Fall through to free input buffer */
+          /* Fall through to free input buffer */
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
@@ -3398,6 +3455,10 @@ sockset_show(DESC *d)
   safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
 
   ntype = notify_type(d);
+
+  safe_format(buff, &bp, "%-15s:  %s\n", "Stripaccents",
+              (ntype & MSG_STRIPACCENTS ? "Yes" : "No"));
+
   if (ntype & MSG_XTERM256)
     strcpy(colorstyle, "xterm256");
   else if (ntype & MSG_ANSI16)
@@ -3408,9 +3469,12 @@ sockset_show(DESC *d)
     strcpy(colorstyle, "plain");
 
   if (d->conn_flags & CONN_COLORSTYLE)
-    safe_format(buff, &bp, "%-15s:  %s", "Color Style", colorstyle);
+    safe_format(buff, &bp, "%-15s:  %s\n", "Color Style", colorstyle);
   else
-    safe_format(buff, &bp, "%-15s:  auto (%s)", "Color Style", colorstyle);
+    safe_format(buff, &bp, "%-15s:  auto (%s)\n", "Color Style", colorstyle);
+
+  safe_format(buff, &bp, "%-15s:  %s", "Prompt Newlines",
+              (d->conn_flags & CONN_PROMPT_NEWLINES ? "Yes" : "No"));
 
   *bp = '\0';
   return buff;
@@ -3516,7 +3580,7 @@ sockset(DESC *d, char *name, char *val)
     return T("Terminal Type set.");
   }
 
-  if (!strcasecmp(name, "COLORSTYLE")) {
+  if (!strcasecmp(name, "COLORSTYLE") || !strcasecmp(name, "COLOURSTYLE")) {
     if (!strcasecmp(val, "auto")) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
@@ -3539,6 +3603,28 @@ sockset(DESC *d, char *name, char *val)
     }
     return tprintf(T("Unknown color style. Valid color styles: %s"),
                    "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+  }
+
+  if (!strcasecmp(name, "PROMPT_NEWLINES")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_PROMPT_NEWLINES;
+      return T("A newline will be sent after a prompt.");
+    } else {
+      d->conn_flags &= ~CONN_PROMPT_NEWLINES;
+      return T("No newline will be sent after a prompt.");
+    }
+  }
+
+  if (!strcasecmp(name, "STRIPACCENTS") || !strcasecmp(name, "NOACCENTS")) {
+    ival = isyes(val);
+    if (ival) {
+      d->conn_flags |= CONN_STRIPACCENTS;
+      return T("Accents will be stripped.");
+    } else {
+      d->conn_flags &= ~CONN_STRIPACCENTS;
+      return T("Accents will not be stripped.");
+    }
   }
 
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
@@ -4032,6 +4118,57 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }
 
+/** Filters descriptors based on the name for 'WHO name'.
+ * \verbatim
+ * Check to see if we should display a line in WHO, DOING or SESSION
+ * for the given descriptor. Checks are, in order:
+ *  * If 'name' is empty, we show it.
+ *  * If d is not a connected player, we don't.
+ *  * If wild is false, show only if "name" is a prefix of the player's name
+ *  * If wild is true, show if the player's name, or one of his aliases,
+ *    matches the wildcard pattern "name".
+ * \endverbatim
+ * \param d descriptor to check
+ * \param name name to match against
+ * \param wild is name a wildcard pattern?
+ * \retval 1 name matches, or no name filtering
+ * \retval 0 name does not match
+ */
+static bool
+who_check_name(DESC *d, char *name, bool wild)
+{
+  ATTR *a;
+  char *aval, *all_aliases, *one_alias;
+
+  if (!name || !*name)
+    return 1;
+
+  if (!d->connected || !GoodObject(d->player))
+    return 0;
+
+  if (!wild)
+    return string_prefix(Name(d->player), name);
+
+  if (quick_wild(name, Name(d->player)))
+    return 1;
+
+  a = atr_get(d->player, "ALIAS");
+  if (!a)
+    return 0;
+
+  aval = safe_atr_value(a);
+  all_aliases = trim_space_sep(aval, ';');
+  while ((one_alias = split_token(&all_aliases, ';')) != NULL) {
+    if (quick_wild(name, one_alias)) {
+      free(aval);
+      return 1;
+    }
+  }
+  free(aval);
+  return 0;
+}
+
+
 /** The DOING command */
 void
 do_who_mortal(dbref player, char *name)
@@ -4040,6 +4177,7 @@ do_who_mortal(dbref player, char *name)
   int count = 0;
   int privs = Priv_Who(player);
   PUEBLOBUFF;
+  bool wild = 0;
 
   if (poll_msg[0] == '\0')
     strcpy(poll_msg, "Doing");
@@ -4051,6 +4189,8 @@ do_who_mortal(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
 
   notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
                 T("Idle"), poll_msg);
@@ -4059,7 +4199,7 @@ do_who_mortal(dbref player, char *name)
       continue;
     if (COUNT_ALL || (!Hidden(d) || privs))
       count++;
-    if (name && !string_prefix(Name(d->player), name))
+    if (!who_check_name(d, name, wild))
       continue;
     if (Hidden(d) && !privs)
       continue;
@@ -4097,6 +4237,7 @@ do_who_admin(dbref player, char *name)
   DESC *d;
   int count = 0;
   char tbuf[BUFFER_LEN];
+  bool wild = 0;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4106,15 +4247,16 @@ do_who_admin(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
+
   notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
                 T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"),
                 T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
-    if ((name && *name)
-        && (!d->connected || !GoodObject(d->player)
-            || !string_prefix(Name(d->player), name)))
+    if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
@@ -4168,6 +4310,7 @@ do_who_session(dbref player, char *name)
 {
   DESC *d;
   int count = 0;
+  bool wild = 0;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4177,6 +4320,9 @@ do_who_session(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
+  if (name && *name && wildcard_count(name, 0) == -1)
+    wild = 1;
+
   notify_format(player, "%-16s %6s %9s %5s %5s %4s %7s %7s %7s",
                 T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"),
                 T("Des"), T("Sent"), T("Recv"), T("Pend"));
@@ -4184,9 +4330,7 @@ do_who_session(dbref player, char *name)
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
-    if ((name && *name)
-        && (!d->connected || !GoodObject(d->player)
-            || !string_prefix(Name(d->player), name)))
+    if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
@@ -4226,133 +4370,6 @@ do_who_session(dbref player, char *name)
 
 }
 
-enum {
-  SECS_MINUTE = 60,
-  SECS_HOUR = 3600,
-  SECS_DAY = 86400,
-  SECS_WEEK = 604800,
-  SECS_YEAR = 31536000
-};
-
-static char *
-squish_time(char *buf, int len)
-{
-  char *c;
-  int slen;
-
-  /* Eat any leading whitespace */
-  while (*buf == ' ')
-    buf += 1;
-
-  /* Eat up all leading 0 entries.
-   *  0y 5d -> 5d
-   */
-  while (*buf == '0') {
-    c = strchr(buf, ' ');
-    if (c) {
-      while (*c == ' ')
-        c += 1;
-      buf = c;
-    } else
-      break;
-  }
-
-  /* Eat any intermediate 0 entries unless it's the only one.
-   * 1d 0h 40m -> 1d 40m
-   * 1d 0h -> 1d
-   * 0s -> 0s
-   */
-  c = buf;
-  do {
-    char *saved;
-
-    saved = c = strchr(c, ' ');
-    if (!c)
-      break;
-
-    while (*c == ' ')
-      c += 1;
-
-    if (*c == '0') {
-      char *n = strchr(c, ' ');
-      if (n) {
-        int nlen = strlen(n) + 1;
-        memmove(saved, n, nlen);
-        c = saved;
-      } else {
-        *saved = '\0';
-        break;
-      }
-    }
-  } while (1);
-
-  /* If the string is too long, drop trailing entries and resulting
-     whitespace until it fits. */
-  for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
-    c = strrchr(buf, ' ');
-    if (c) {
-      while (c > buf && *c == ' ') {
-        *c = '\0';
-        c -= 1;
-      }
-    } else
-      break;
-  }
-
-  return buf;
-}
-
-/** Format the time the player has been on for for WHO/DOING/ETC,
- * fitting as much as possible into a given length, dropping least
- * significant numbers as needed.
- *
- * \param buf buffer to use to fill.
- * \param at the time connected at.
- * \param len the length of the field to fill.
- * \return pointer to .start of formatted time, somewhere in buf.
- */
-char *
-etime_fmt(char *buf, int secs, int len)
-{
-  int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
-  div_t r;
-
-  if (secs >= SECS_YEAR) {
-    r = div(secs, SECS_YEAR);
-    years = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_WEEK) {
-    r = div(secs, SECS_WEEK);
-    weeks = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_DAY) {
-    r = div(secs, SECS_DAY);
-    days = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_HOUR) {
-    r = div(secs, SECS_HOUR);
-    hours = r.quot;
-    secs = r.rem;
-  }
-
-  if (secs >= SECS_MINUTE) {
-    r = div(secs, SECS_MINUTE);
-    mins = r.quot;
-    secs = r.rem;
-  }
-
-  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
-          years, weeks, days, hours, mins, secs);
-
-  return squish_time(buf, len);
-}
-
 /** Format the time the player has been on for for WHO/DOING/ETC.
  *
  * \param at the time connected at.
@@ -4367,7 +4384,7 @@ onfor_time_fmt(time_t at, int len)
   return etime_fmt(buf, secs, len);
 }
 
-/** Format idle time for WHO/DOING 
+/** Format idle time for WHO/DOING
  *
  * \param last the time the player was last active.
  * \parm len the length of the field to fill.
@@ -4410,7 +4427,6 @@ announce_connect(DESC *d, int isnew, int num)
   /* Redundant, but better for translators */
   if (Dark(player)) {
     message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-    d->hide = 1;
   } else if (Hidden(d)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");
@@ -5438,33 +5454,40 @@ FUNCTION(fun_height)
 FUNCTION(fun_terminfo)
 {
   DESC *match;
-  int type;
   if (!*args[0])
     safe_str(T("#-1 FUNCTION REQUIRES ONE ARGUMENT"), buff, bp);
-  else if ((match = lookup_desc(executor, args[0]))) {
-    if (match->player == executor || See_All(executor)) {
+  else if (!(match = lookup_desc(executor, args[0])))
+    safe_str(T("#-1 NOT CONNECTED"), buff, bp);
+  else {
+    bool has_privs = (match->player == executor) || See_All(executor);
+    int type;
+    if (has_privs)
       safe_str(match->ttype, buff, bp);
-      if (match->conn_flags & CONN_HTML)
-        safe_str(" pueblo", buff, bp);
+    else
+      safe_str("unknown", buff, bp);
+    if (match->conn_flags & CONN_HTML)
+      safe_str(" pueblo", buff, bp);
+    if (has_privs) {
       if (match->conn_flags & CONN_TELNET)
         safe_str(" telnet", buff, bp);
       if (match->conn_flags & CONN_PROMPT_NEWLINES)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
-      type = notify_type(match);
-      if (type & MSG_XTERM256)
-        safe_str(" xterm256", buff, bp);
-      else if (type & MSG_ANSI16)
-        safe_str(" 16color", buff, bp);
-      else if (type & MSG_ANSI2)
-        safe_str(" hilite", buff, bp);
-      else
-        safe_str(" plain", buff, bp);
-    } else
-      safe_str(T(e_perm), buff, bp);
-  } else
-    safe_str(T("#-1 NOT CONNECTED"), buff, bp);
+    }
+    type = notify_type(match);
+    if (type & MSG_STRIPACCENTS)
+      safe_str(" stripaccents", buff, bp);
+
+    if (type & MSG_XTERM256)
+      safe_str(" xterm256", buff, bp);
+    else if (type & MSG_ANSI16)
+      safe_str(" 16color", buff, bp);
+    else if (type & MSG_ANSI2)
+      safe_str(" hilite", buff, bp);
+    else
+      safe_str(" plain", buff, bp);
+  }
 }
 
 /* ARGSUSED */

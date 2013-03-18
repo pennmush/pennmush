@@ -211,7 +211,7 @@ COMMAND(cmd_retry)
   if (rhs_present) {
     /* Now, to evaluate all of rsargs. Blah. */
     pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_retry");
-    for (a = 0; a < 10; a++) {
+    for (a = 0; a < MAX_STACK_ARGS; a++) {
       sp = args_right[a + 1];
       if (sp) {
         bp = buff;
@@ -403,11 +403,27 @@ COMMAND(cmd_disable)
 COMMAND(cmd_dolist)
 {
   unsigned int flags = 0;
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE;
+  else if (SW_ISSET(sw, SWITCH_INLINE))
+    queue_type = QUEUE_INPLACE;
+  if (queue_type != QUEUE_DEFAULT) {
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
   if (SW_ISSET(sw, SWITCH_NOTIFY))
     flags |= DOL_NOTIFY;
   if (SW_ISSET(sw, SWITCH_DELIMIT))
     flags |= DOL_DELIM;
-  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry);
+  do_dolist(executor, arg_left, arg_right, enactor, flags, queue_entry,
+            queue_type);
 }
 
 COMMAND(cmd_dump)
@@ -525,6 +541,8 @@ COMMAND(cmd_flag)
     do_flag_letter("FLAG", executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_TYPE))
     do_flag_type("FLAG", executor, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_DEBUG))
+    do_flag_debug("FLAG", executor);
   else
     do_flag_info("FLAG", executor, arg_left);
 }
@@ -815,6 +833,8 @@ COMMAND(cmd_mail)
     do_mail_stats(executor, arg_left, MSTATS_READ);
   else if (SW_ISSET(sw, SWITCH_FSTATS))
     do_mail_stats(executor, arg_left, MSTATS_SIZE);
+  else if (SW_ISSET(sw, SWITCH_CSTATS))
+    check_all_mail(executor);
   else if (SW_ISSET(sw, SWITCH_DEBUG))
     do_mail_debug(executor, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_NUKE))
@@ -908,11 +928,12 @@ COMMAND(cmd_message)
   char *attrib;
   unsigned int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_LIST;
   int numargs, i;
-  char *args[10];
+  char *args[MAX_STACK_ARGS];
   enum emit_type type;
   dbref speaker = SPOOF(executor, enactor, sw);
 
-  for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
+  for (numargs = 1; args_right[numargs] && numargs < (MAX_STACK_ARGS + 3);
+       numargs++) ;
 
   switch (numargs) {
   case 1:
@@ -1343,11 +1364,22 @@ COMMAND(cmd_squota)
 
 COMMAND(cmd_teleport)
 {
-  if (rhs_present && !*arg_right)
-    notify(executor, T("You can't teleport to nothing!"));
-  else
-    do_teleport(executor, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)),
-                (SW_ISSET(sw, SWITCH_INSIDE)), queue_entry->pe_info);
+  int flags = TEL_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_SILENT))
+    flags |= TEL_SILENT;
+  if (SW_ISSET(sw, SWITCH_INSIDE))
+    flags |= TEL_INSIDE;
+  if (SW_ISSET(sw, SWITCH_LIST))
+    flags |= TEL_LIST;
+
+  if (rhs_present) {
+    if (!*arg_right)
+      notify(executor, T("You can't teleport to nothing!"));
+    else
+      do_teleport(executor, arg_left, arg_right, flags, queue_entry->pe_info);
+  } else {
+    do_teleport(executor, NULL, arg_left, flags, queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_include)

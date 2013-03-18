@@ -77,7 +77,7 @@ const char *CommandLock = "CommandLock";
 COMLIST commands[] = {
 
   {"@COMMAND",
-   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
+   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE RSNOPARSE",
    cmd_command,
    CMD_T_PLAYER | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
@@ -135,7 +135,8 @@ COMLIST commands[] = {
   {"@DIG", "TELEPORT", cmd_dig,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@DISABLE", NULL, cmd_disable, CMD_T_ANY, "WIZARD", 0},
-  {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
+  {"@DOLIST", "NOTIFY DELIMIT INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
@@ -159,7 +160,7 @@ COMLIST commands[] = {
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
-  {"@FLAG", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE",
+  {"@FLAG", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG",
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
@@ -172,7 +173,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
-  {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@HALT", "ALL NOEVAL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
   {"@HOOK",
    "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
@@ -202,7 +203,7 @@ COMLIST commands[] = {
   {"@LSET", NULL, cmd_lset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAIL",
-   "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT REVIEW RETRACT",
+   "NOEVAL NOSIG STATS CSTATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT REVIEW RETRACT",
    cmd_mail, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@MALIAS",
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
@@ -298,7 +299,7 @@ COMLIST commands[] = {
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@TELEPORT", "SILENT INSIDE", cmd_teleport,
+  {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@TRIGGER", NULL, cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
@@ -639,6 +640,8 @@ cnf_add_command(char *name, char *opts)
         flags |= CMD_T_LS_ARGS;
       } else if (string_prefix("eqsplit", one)) {
         flags |= CMD_T_EQSPLIT;
+      } else if (string_prefix("rsnoparse", one)) {
+        flags |= CMD_T_RS_NOPARSE;
       } else {
         return 0;               /* unknown option */
       }
@@ -1461,7 +1464,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
  * \param lsa Array of leftside args, if CMD_T_LS_ARGS
  * \param rs The rightside arg, if the command has a single rhs arg
  * \param rsa Array of rhs args, if CMD_T_RS_ARGS
- * param queue_entry The queue entry the command is being run in
+ * \param queue_entry The queue entry the command is being run in
  */
 int
 run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
@@ -1792,9 +1795,11 @@ do_command_add(dbref player, char *name, int flags)
     if (!ok_command_name(name)) {
       notify(player, T("Bad command name."));
     } else {
+      char *switches = NULL;
+      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) != (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
+        switches = "NOEVAL";
       command_add(mush_strdup(name, "command_add"),
-                  flags, NULL,
-                  0, (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"),
+                  flags, NULL, 0, switches,
                   cmd_unimplemented);
       notify_format(player, T("Command %s added."), name);
     }
@@ -1912,7 +1917,7 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented || !strcmp(command->name, "@SQL")) {
+    if (command->func != cmd_unimplemented || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
       notify(player,
              T
              ("You can't delete built-in commands. @command/disable instead."));
@@ -1965,6 +1970,7 @@ COMMAND(cmd_command)
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_EQSPLIT) ? CMD_T_EQSPLIT : 0;
+    flags |= SW_ISSET(sw, SWITCH_RSNOPARSE) ? CMD_T_RS_NOPARSE : 0;
     if (SW_ISSET(sw, SWITCH_NOEVAL))
       notify(executor,
              T
@@ -2140,8 +2146,13 @@ list_commands(int type)
 }
 
 
-/* Check command permissions. Return 1 if player can use command,
+/** Check command permissions. Return 1 if player can use command,
  * 0 otherwise, and maybe be noisy about it.
+ * \param player the player trying to use the command
+ * \param cmd the command to check
+ * \param noisy should we report failure to the player?
+ * \param pe_info the pe_info to use for evaluating the command's lock
+ * \return 1 if player can use command, 0 if not
  */
 int
 command_check_with(dbref player, COMMAND_INFO *cmd, int noisy,
@@ -2170,6 +2181,7 @@ command_check_with(dbref player, COMMAND_INFO *cmd, int noisy,
  * If the command is disallowed, the player is informed.
  * \param player player whose privileges are checked.
  * \param name name of command.
+ * \param pe_info pe_info to use for evaluating cmd lock
  * \retval 0 player may not use command.
  * \retval 1 player may use command.
  */
@@ -2188,6 +2200,7 @@ command_check_byname(dbref player, const char *name, NEW_PE_INFO *pe_info)
  * If the command is disallowed, the player is informed.
  * \param player player whose privileges are checked.
  * \param name name of command.
+ * \param pe_info pe_info to use for evaluating cmd lock
  * \retval 0 player may not use command.
  * \retval 1 player may use command.
  */
@@ -2201,6 +2214,10 @@ command_check_byname_quiet(dbref player, const char *name, NEW_PE_INFO *pe_info)
   return command_check_with(player, cmd, 0, pe_info);
 }
 
+/** Is a particular hook set, and valid?
+ * \param hook the hook to check
+ * \return 1 if valid, 0 if not
+ */
 static int
 has_hook(struct hook_data *hook)
 {
@@ -2208,7 +2225,6 @@ has_hook(struct hook_data *hook)
     return 0;
   return 1;
 }
-
 
 /** Run a command hook.
  * This function runs a hook before or after a command execution.
@@ -2454,6 +2470,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
  * \endverbatim
  * \param player the enactor.
  * \param command command to list hooks on.
+ * \param verbose Report failures?
  */
 void
 do_hook_list(dbref player, char *command, bool verbose)
@@ -2504,8 +2521,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.
-             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override.
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

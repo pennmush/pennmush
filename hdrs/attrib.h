@@ -83,7 +83,7 @@ int one_comm_match(dbref thing, dbref player, const char *atr,
                    const char *str, MQUE *from_queue, int queue_type);
 int do_set_atr(dbref thing, char const *RESTRICT atr,
                char const *RESTRICT s, dbref player, uint32_t flags);
-void do_atrlock(dbref player, char const *arg1, char const *arg2);
+void do_atrlock(dbref player, char const *src, char const *action);
 void do_atrchown(dbref player, char const *arg1, char const *arg2);
 int string_to_atrflag(dbref player, const char *p, privbits *bits);
 int string_to_atrflagsets(dbref player, const char *p, privbits *setbits,
@@ -104,7 +104,12 @@ safe_atr_value(ATTR *atr)
   __attribute_malloc__;
 
 /* possible attribute flags */
-#define AF_ODARK        0x1U    /**< OBSOLETE! Leave here but don't use */
+/* 2013-03-03 MG: Several attrflags are marked "OBSOLETE! Leave here
+ * but don't use". I am fairly certainly they've been like that so
+ * long it's now irrelevant, so am re-using them. If stuff explodes,
+ * you know who to go to for your refund.
+ */
+#define AF_QUIET        0x1U    /**< Don't show a confirmation when setting. */
 #define AF_INTERNAL     0x2U    /**< no one can see it or set it */
 #define AF_WIZARD       0x4U    /**< Only wizards can change it */
 #define AF_NUKED        0x8U    /**< OBSOLETE! Leave here but don't use */
@@ -139,9 +144,13 @@ safe_atr_value(ATTR *atr)
 #define AF_NODEBUG      0x80000000U     /**< Don't show debug when evaluated */
 
 /* !!! All 32 bits in the attribute flags field are in use. Don't add
-       more. */
+ * more. */
 
-    extern ATTR attr[];           /**< external predefined attributes. */
+/* Obsolete attr flag definitons, only kept for oooold db updates */
+#define AF_ODARK        0x1U
+
+
+extern ATTR attr[];           /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)

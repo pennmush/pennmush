@@ -44,34 +44,6 @@ slab *function_slab; /**< slab for 'struct fun' allocations */
 /* -------------------------------------------------------------------------*
  * Utilities.
  */
-/** Save a copy of the environment (%0-%9)
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to store %0-%9 in.
- * \param orig pointer to array to get %0-%9 values from
- */
-void
-save_env(const char *funcname __attribute__ ((__unused__)),
-         char *preserve[], char *orig[])
-{
-  int i;
-  for (i = 0; i < 10; i++)
-    preserve[i] = orig[i];
-}
-
-/** Restore the environment (%0-%9)
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to restore %0-%9 from.
- * \param orig pointer to array to restore env to
- */
-void
-restore_env(const char *funcname __attribute__ ((__unused__)),
-            char *preserve[], char *orig[])
-{
-  int i;
-  for (i = 0; i < 10; i++)
-    orig[i] = preserve[i];
-}
-
 
 
 /** Check for a delimiter in an argument of a function call.
@@ -185,7 +157,7 @@ FUNALIAS faliases[] = {
  * add_function().
  */
 FUNTAB flist[] = {
-  {"@@", fun_null, 1, -1, FN_NOPARSE},
+  {"@@", fun_null, 1, INT_MAX, FN_NOPARSE},
   {"ABS", fun_abs, 1, 1, FN_REG | FN_STRIPANSI},
   {"ACCENT", fun_accent, 2, 2, FN_REG},
   {"ACCNAME", fun_accname, 1, 1, FN_REG},
@@ -424,7 +396,7 @@ FUNTAB flist[] = {
   {"MESSAGE", fun_message, 3, 14, FN_REG},
   {"MID", fun_mid, 3, 3, FN_REG},
   {"MIN", fun_min, 1, INT_MAX, FN_REG | FN_STRIPANSI},
-  {"MIX", fun_mix, 3, 12, FN_REG},
+  {"MIX", fun_mix, 3, (MAX_STACK_ARGS + 3), FN_REG},
   {"MODULO", fun_modulo, 2, 2, FN_REG | FN_STRIPANSI},
   {"MONEY", fun_money, 1, 1, FN_REG | FN_STRIPANSI},
   {"MSECS", fun_msecs, 1, 1, FN_REG | FN_STRIPANSI},
@@ -612,11 +584,12 @@ FUNTAB flist[] = {
   {"TYPE", fun_type, 1, 1, FN_REG | FN_STRIPANSI},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
-  {"UFUN", fun_ufun, 1, 11, FN_REG},
-  {"PFUN", fun_pfun, 1, 11, FN_REG},
-  {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
-  {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
-  {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
+  {"UFUN", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},
+  {"PFUN", fun_pfun, 1, (MAX_STACK_ARGS + 1), FN_REG},
+  {"ULAMBDA", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},
+  {"ULDEFAULT", fun_udefault, 1, (MAX_STACK_ARGS + 2),
+   FN_NOPARSE | FN_LOCALIZE},
+  {"ULOCAL", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
   {"UNSETQ", fun_unsetq, 0, 1, FN_REG},
   {"UPTIME", fun_uptime, 0, 1, FN_STRIPANSI},
@@ -650,7 +623,7 @@ FUNTAB flist[] = {
   {"XWHO", fun_xwho, 2, 3, FN_REG | FN_STRIPANSI},
   {"XWHOID", fun_xwho, 2, 3, FN_REG | FN_STRIPANSI},
   {"ZEMIT", fun_zemit, 2, -2, FN_REG},
-  {"ZFUN", fun_zfun, 1, 11, FN_REG},
+  {"ZFUN", fun_zfun, 1, (MAX_STACK_ARGS + 1), FN_REG},
   {"ZONE", fun_zone, 1, 2, FN_REG | FN_STRIPANSI},
   {"ZMWHO", fun_zwho, 1, 1, FN_REG | FN_STRIPANSI},
   {"ZWHO", fun_zwho, 1, 2, FN_REG | FN_STRIPANSI},
@@ -684,16 +657,17 @@ FUNTAB flist[] = {
   {"SQRT", fun_sqrt, 1, 1, FN_REG | FN_STRIPANSI},
   {"STDDEV", fun_stddev, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"TAN", fun_tan, 1, 2, FN_REG | FN_STRIPANSI},
-  {"HTML", fun_html, 1, 1, FN_REG},
+  {"HTML", fun_html, 1, 1, FN_REG | FN_WIZARD},
   {"TAG", fun_tag, 1, INT_MAX, FN_REG},
   {"ENDTAG", fun_endtag, 1, 1, FN_REG},
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},
   {NULL, NULL, 0, 0, 0}
 };
 
+/** Map of function restriction bits to textual names */
 struct function_restrictions {
-  const char *name;
-  uint32_t bit;
+  const char *name; /**< Name of restriction */
+  uint32_t bit; /**< FN_* flag for restriction */
 };
 
 struct function_restrictions func_restrictions[] = {
@@ -1289,7 +1263,7 @@ cnf_add_function(char *name, char *opts)
       return 0;
     minargs[0] = parse_integer(one);
     minargs[1] = 1;
-    if (minargs[0] < 0 || minargs[0] > 10)
+    if (minargs[0] < 0 || minargs[0] > MAX_STACK_ARGS)
       minargs[0] = 0;
     if (list) {
       /* max args */
@@ -1298,10 +1272,10 @@ cnf_add_function(char *name, char *opts)
         return 0;
       maxargs[0] = parse_integer(one);
       maxargs[1] = 1;
-      if (maxargs[0] < -10)
-        maxargs[0] = -10;
-      else if (maxargs[0] > 10)
-        maxargs[0] = 10;
+      if (maxargs[0] < -MAX_STACK_ARGS)
+        maxargs[0] = -MAX_STACK_ARGS;
+      else if (maxargs[0] > MAX_STACK_ARGS)
+        maxargs[0] = MAX_STACK_ARGS;
     }
   }
 
@@ -1324,7 +1298,7 @@ cnf_add_function(char *name, char *opts)
     fp->name = mush_strdup(name, "func_hash.name");
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
     fp->minargs = 0;
-    fp->maxargs = 10;
+    fp->maxargs = MAX_STACK_ARGS;
     hashadd(name, fp, &htab_user_function);
   }
 
@@ -1471,19 +1445,19 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)
         fp->minargs = 0;
-      else if (fp->minargs > 10)
-        fp->minargs = 10;
+      else if (fp->minargs > MAX_STACK_ARGS)
+        fp->minargs = MAX_STACK_ARGS;
     } else
       fp->minargs = 0;
 
     if (argv[4] && *argv[4]) {
       fp->maxargs = parse_integer(argv[4]);
-      if (fp->maxargs < -10)
-        fp->maxargs = -10;
-      else if (fp->maxargs > 10)
-        fp->maxargs = 10;
+      if (fp->maxargs < 0)
+        fp->maxargs *= -1;
+      if (fp->maxargs > MAX_STACK_ARGS)
+        fp->maxargs = MAX_STACK_ARGS;
     } else
-      fp->maxargs = 10;
+      fp->maxargs = DEF_FUNCTION_ARGS;
     if (argv[5] && *argv[5])
       fp->flags = apply_restrictions(0, argv[5]);
     else
@@ -1513,19 +1487,19 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)
         fp->minargs = 0;
-      else if (fp->minargs > 10)
-        fp->minargs = 10;
+      else if (fp->minargs > MAX_STACK_ARGS)
+        fp->minargs = MAX_STACK_ARGS;
     } else
       fp->minargs = 0;
 
     if (argv[4] && *argv[4]) {
       fp->maxargs = parse_integer(argv[4]);
-      if (fp->maxargs < -10)
-        fp->maxargs = -10;
-      else if (fp->maxargs > 10)
-        fp->maxargs = 10;
+      if (fp->maxargs < 0)
+        fp->maxargs *= -1;
+      if (fp->maxargs > MAX_STACK_ARGS)
+        fp->maxargs = MAX_STACK_ARGS;
     } else
-      fp->maxargs = 10;
+      fp->maxargs = DEF_FUNCTION_ARGS;
 
     /* Set new flags */
     if (argv[5] && *argv[5])

@@ -72,7 +72,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_REGEXP 0x02     /**< Regexps. */
 #define PE_REGS_CAPTURE PE_REGS_REGEXP  /**< Alias for REGEXP */
 #define PE_REGS_SWITCH 0x04     /**< switch(), %$0. */
-#define PE_REGS_ITER   0x08     /**< iter() and @dol, %i0/etc */
+#define PE_REGS_ITER   0x08     /**< iter() and \@dolist, %i0/etc */
 #define PE_REGS_ARG    0x10     /**< %0-%9 */
 #define PE_REGS_SYS    0x20     /**< %c, %z, %= */
 
@@ -308,6 +308,11 @@ struct text_queue {
 #define CONN_PROMPT_NEWLINES 0x20
 /* Client hasn't sent any data yet */
 #define CONN_AWAITING_FIRST_DATA 0x40
+/* Strip accents. In lieu of proper charset negotiation, this is set
+ * on connections which have negotiated ASCII instead of the charset
+ * the MUSH is running in
+ */
+#define CONN_STRIPACCENTS 0x80
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 
@@ -342,12 +347,13 @@ typedef enum conn_status {
 } conn_status;
 
 typedef bool (*sq_func) (void *);
+/** System queue event */
 struct squeue {
-  sq_func fun;
-  void *data;
-  time_t when;
-  char *event;
-  struct squeue *next;
+  sq_func fun; /** Function to run */
+  void *data; /** Data to pass to function, or NULL */
+  time_t when; /** When to run the function */
+  char *event; /** Softcode Event name to trigger, or NULL if none */
+  struct squeue *next; /** Pointer to next squeue event in linked list */
 };
 
 

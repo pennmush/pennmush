@@ -61,7 +61,6 @@ void decompile_locks(dbref player, dbref thing, const char *name, int skipdef,
 static char *parent_chain(dbref player, dbref thing);
 
 extern PRIV attr_privs_view[];
-extern int real_decompose_str(char *str, char *buff, char **bp);
 
 /* Show the 'Obvious Exits' list for a room. Used in 'look' and 'examine'.
  * \param player The player looking
@@ -330,44 +329,24 @@ examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
     parent = NOTHING;
   strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
   if (AF_Veiled(atr)) {
-    if (ShowAnsi(player)) {
-      if (GoodObject(parent))
-        notify_format(player,
-                      T("%s#%d/%s [#%d%s]%s is veiled"), ANSI_HILITE, parent,
-                      AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
-      else
-        notify_format(player,
-                      T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
-    } else {
-      if (GoodObject(parent))
-        notify_format(player,
-                      T("#%d/%s [#%d%s] is veiled"), parent, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf);
-      else
-        notify_format(player,
-                      T("%s [#%d%s] is veiled"), AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf);
-    }
+    if (GoodObject(parent))
+      notify_format(player,
+                    T("%s#%d/%s [#%d%s]%s is veiled"), ANSI_HILITE, parent,
+                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
+    else
+      notify_format(player,
+                    T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
+                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
   } else {
     r = safe_atr_value(atr);
-    if (ShowAnsi(player)) {
-      if (GoodObject(parent))
-        notify_format(player,
-                      "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
-                      AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-      else
-        notify_format(player,
-                      "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-    } else {
-      if (GoodObject(parent))
-        notify_format(player, "#%d/%s [#%d%s]: %s", parent, AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, r);
-      else
-        notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
-                      Owner(AL_CREATOR(atr)), fbuf, r);
-    }
+    if (GoodObject(parent))
+      notify_format(player,
+                    "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
+                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
+    else
+      notify_format(player,
+                    "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
+                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
     free(r);
   }
   return 1;
@@ -390,23 +369,14 @@ examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     parent = NOTHING;
   strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
   r = safe_atr_value(atr);
-  if (ShowAnsi(player)) {
-    if (GoodObject(parent))
-      notify_format(player,
-                    "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
-                    AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-    else
-      notify_format(player,
-                    "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-  } else {
-    if (GoodObject(parent))
-      notify_format(player, "#%d/%s [#%d%s]: %s", parent, AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, r);
-    else
-      notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
-                    Owner(AL_CREATOR(atr)), fbuf, r);
-  }
+  if (GoodObject(parent))
+    notify_format(player,
+                  "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
+                  AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
+  else
+    notify_format(player,
+                  "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
+                  Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
   free(r);
   return 1;
 }
@@ -1307,7 +1277,7 @@ decompose_str(char *what)
   static char value[BUFFER_LEN];
   char *vp = value;
 
-  real_decompose_str(what, value, &vp);
+  safe_decompose_str(what, value, &vp);
   *vp = '\0';
 
   return value;
@@ -1344,7 +1314,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     safe_chr('=', msg, &bp);
     safe_str(AL_NAME(atr), msg, &bp);
     safe_chr(':', msg, &bp);
-    safe_str(decompose_str(avalue), msg, &bp);
+    safe_decompose_str(avalue, msg, &bp);
   } else {
     /* Always use &attr, even for standard attributes, to avoid
      * clashing with @-commands, which take priority in the
@@ -1537,7 +1507,13 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
     return;
   }
 
-  notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
+  if (IsExit(thing) && GoodObject(Source(thing))) {
+    notify_format(player, "%s@@ %s (#%d), in %s (#%d)", prefix,
+                  shortname(thing), thing, Name(Source(thing)),
+                  Source(thing));
+  } else {
+    notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
+  }
   switch (Typeof(thing)) {
   case TYPE_THING:
     notify_format(player, "%s@create %s", prefix, Name(thing));

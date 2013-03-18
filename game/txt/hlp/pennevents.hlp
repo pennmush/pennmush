@@ -237,9 +237,11 @@ No arguments are passed to these events.
       Otherwise it will be set to #-1 'name' is the name the connection
       attempted to connect with, and is only set with 'playerobjid' is #-1.
 
-  socket`createfail (descriptor, ip, count, reason, name)
+  socket`createfail (descriptor, ip, count, reason, name[, error])
       Triggered when a player create attempt fails. <count> is the # of
-      fails caused by this ip.
+      fails caused by this ip. If the failure is from an attempt to 
+      register a player via email, the error code of the mailer program
+      is provided.
 
     A sitelock rule with deny_silent will not trigger socket`createfail or
     socket`createfail.

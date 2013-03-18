@@ -28,6 +28,7 @@
 int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,
                    unsigned long secs);
+char *etime_fmt(char *buf, int secs, int len);
 
 extern char valid_timefmt_codes[256];
 
@@ -80,7 +81,7 @@ FUNCTION(fun_timefmt)
     }
   }
 
-  if (nargs == 3) {
+  if (nargs == 3 && *args[2]) {
     if (!parse_timezone_arg(args[2], tt, &res)) {
       safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
       return;
@@ -207,7 +208,151 @@ FUNCTION(fun_convsecs)
   safe_str(show_tm(ttm), buff, bp);
 }
 
-char *etime_fmt(char *, time_t, int);
+/** Descriptions of various time periods. */
+struct timeperiods {
+  char lc; /**< The lower-case letter representing the time ('h' for hours, etc) */
+  char uc; /**< The upper-case letter representing the time ('H' for hours, etc) */
+  int seconds; /**< Number of seconds in the time period (3600 for hours, etc) */
+};
+
+struct timeperiods TIMEPERIODS[] = {
+  {'s', 'S', 1},
+  {'m', 'M', 60},
+  {'h', 'H', 3600},
+  {'d', 'D', 86400},
+  {'w', 'W', 604800},
+  {'y', 'Y', 31536000},
+  {'\0', '\0', 0}
+};
+
+enum {
+  SECS_SECOND = 0,
+  SECS_MINUTE,
+  SECS_HOUR,
+  SECS_DAY,
+  SECS_WEEK,
+  SECS_YEAR
+};
+
+static char *
+squish_time(char *buf, int len)
+{
+  char *c;
+  int slen;
+
+  /* Eat any leading whitespace */
+  while (*buf == ' ')
+    buf += 1;
+
+  /* Eat up all leading 0 entries.
+   *  0y 5d -> 5d
+   */
+  while (*buf == '0') {
+    c = strchr(buf, ' ');
+    if (c) {
+      while (*c == ' ')
+        c += 1;
+      buf = c;
+    } else
+      break;
+  }
+
+  /* Eat any intermediate 0 entries unless it's the only one.
+   * 1d 0h 40m -> 1d 40m
+   * 1d 0h -> 1d
+   * 0s -> 0s
+   */
+  c = buf;
+  do {
+    char *saved;
+
+    saved = c = strchr(c, ' ');
+    if (!c)
+      break;
+
+    while (*c == ' ')
+      c += 1;
+
+    if (*c == '0') {
+      char *n = strchr(c, ' ');
+      if (n) {
+        int nlen = strlen(n) + 1;
+        memmove(saved, n, nlen);
+        c = saved;
+      } else {
+        *saved = '\0';
+        break;
+      }
+    }
+  } while (1);
+
+  /* If the string is too long, drop trailing entries and resulting
+     whitespace until it fits. */
+  for (slen = strlen(buf); slen > len; slen = strlen(buf)) {
+    c = strrchr(buf, ' ');
+    if (c) {
+      while (c > buf && *c == ' ') {
+        *c = '\0';
+        c -= 1;
+      }
+    } else
+      break;
+  }
+
+  return buf;
+}
+
+/** Format the time the player has been on for for WHO/DOING/ETC,
+ * fitting as much as possible into a given length, dropping least
+ * significant numbers as needed.
+ *
+ * \param buf buffer to use to fill.
+ * \param secs the number of seconds to format
+ * \param len the length of the field to fill.
+ * \return pointer to start of formatted time, somewhere in buf.
+ */
+char *
+etime_fmt(char *buf, int secs, int len)
+{
+  int years = 0, weeks = 0, days = 0, hours = 0, mins = 0;
+  div_t r;
+
+  if (secs >= TIMEPERIODS[SECS_YEAR].seconds) {
+    r = div(secs, TIMEPERIODS[SECS_YEAR].seconds);
+    years = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= TIMEPERIODS[SECS_WEEK].seconds) {
+    r = div(secs, TIMEPERIODS[SECS_WEEK].seconds);
+    weeks = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= TIMEPERIODS[SECS_DAY].seconds) {
+    r = div(secs, TIMEPERIODS[SECS_DAY].seconds);
+    days = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= TIMEPERIODS[SECS_HOUR].seconds) {
+    r = div(secs, TIMEPERIODS[SECS_HOUR].seconds);
+    hours = r.quot;
+    secs = r.rem;
+  }
+
+  if (secs >= TIMEPERIODS[SECS_MINUTE].seconds) {
+    r = div(secs, TIMEPERIODS[SECS_MINUTE].seconds);
+    mins = r.quot;
+    secs = r.rem;
+  }
+
+  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
+          years, weeks, days, hours, mins, secs);
+
+  return squish_time(buf, len);
+}
+
 FUNCTION(fun_etime)
 {
   int secs;
@@ -271,59 +416,58 @@ FUNCTION(fun_stringsecs)
 }
 
 /** Convert an elapsed time string (3d 2h 1m 10s) to seconds.
- * \param str1 a time string.
+ * \param input a time string.
  * \param secs pointer to an int to fill with number of seconds.
  * \retval 1 success.
  * \retval 0 failure.
  */
 int
-etime_to_secs(char *str1, int *secs)
+etime_to_secs(char *input, int *secs)
 {
   /* parse the result from timestring() back into a number of seconds */
-  char str2[BUFFER_LEN];
-  int i;
+  char *p, *errptr;
+  int any = 0;
+  long num;
 
   *secs = 0;
-  while (str1 && *str1) {
-    while (*str1 == ' ')
-      str1++;
-    i = 0;
-    while (isdigit((unsigned char) *str1)) {
-      str2[i] = *str1;
-      str1++;
-      i++;
-    }
-    if (i == 0) {
-      return 0;                 /* No numbers given */
-    }
-    str2[i] = '\0';
-    if (!*str1) {
-      *secs += parse_integer(str2);     /* no more chars, just add seconds and stop */
-      break;
-    }
-    switch (*str1) {
-    case 'd':
-    case 'D':
-      *secs += (parse_integer(str2) * 86400);   /* days */
-      break;
-    case 'h':
-    case 'H':
-      *secs += (parse_integer(str2) * 3600);    /* hours */
-      break;
-    case 'm':
-    case 'M':
-      *secs += (parse_integer(str2) * 60);      /* minutes */
-      break;
-    case 's':
-    case 'S':
-    case ' ':
-      *secs += parse_integer(str2);     /* seconds */
-      break;
-    default:
+  if (!input || !*input)
+    return 0;
+
+  for (p = input; *p; p++) {
+    while (*p && isspace((unsigned char) *p))
+      p++;
+    if (!*p)
+      return any;
+
+    num = strtol(p, &errptr, 10);
+    if (errptr == p) {
+      /* error */
       return 0;
+    } else if (!*errptr) {
+      /* Just a number of seconds */
+      *secs += (int) num;
+      return 1;
+    } else if (isspace((unsigned char) *errptr)) {
+      /* Number of seconds, followed by a space */
+      p = errptr;
+      *secs += (int) num;
+      continue;
+    } else {
+      int i;
+      p = errptr;
+      for (i = 0; TIMEPERIODS[i].seconds; i++) {
+        if (*p == TIMEPERIODS[i].lc || *p == TIMEPERIODS[i].uc) {
+          *secs += ((int) num * TIMEPERIODS[i].seconds);
+          break;
+        }
+      }
+      if (!TIMEPERIODS[i].seconds) {
+        /* Unknown time period */
+        return 0;
+      }
     }
-    str1++;                     /* move past the time char */
   }
+
   return 1;
 }
 

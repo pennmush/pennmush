@@ -33,13 +33,14 @@ struct sort_record {
   } memo;
 };
 
+/** Different ways to sort a list in softcode */
 struct _list_type_info_ {
-  SortType name;
-  char *attrname;
-  int sort_order;
-  makerecord make_record;
-  qsort_func sorter;
-  uint32_t flags;
+  SortType name; /**< A *_LIST sort flag */
+  char *attrname; /**< Attrname to sort by, for attr:* sorts */
+  int sort_order; /**< Is sort ASCENDING or DESCENDING */
+  makerecord make_record; /**< gen_* function that builds sort info */
+  qsort_func sorter; /**< Function that actually compares/sorts the records */
+  uint32_t flags; /**< Bitwise IS_* flags defined in sort.c */
 };
 
 ListTypeInfo *get_list_type_info(SortType type);

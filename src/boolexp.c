@@ -133,7 +133,7 @@ typedef enum boolexp_type {
   BOOLEXP_OWNER, /**< $A */
   BOOLEXP_EVAL, /**< A/B */
   BOOLEXP_FLAG, /**< A^B */
-  BOOLEXP_BOOL /**< #true, #false */
+  BOOLEXP_BOOL /**< \#true, \#false */
 } boolexp_type;
 
 /** An attribute lock specification for the parse tree.
@@ -183,12 +183,12 @@ struct boolexp_node {
 typedef enum bvm_opcode {
   OP_JMPT, /**< Jump to ARG if R is true */
   OP_JMPF, /**< Jump to ARG if R is false */
-  OP_TCONST, /**< Tests plain #ARG */
+  OP_TCONST, /**< Tests plain \#ARG */
   OP_TATR, /**< Tests S:ARG */
-  OP_TIND, /**< Tests @#ARG/S */
-  OP_TCARRY, /**< Tests +#ARG */
-  OP_TIS, /**< Tests =#ARG */
-  OP_TOWNER, /**< Tests $#ARG */
+  OP_TIND, /**< Tests \@\#ARG/S */
+  OP_TCARRY, /**< Tests +\#ARG */
+  OP_TIS, /**< Tests =\#ARG */
+  OP_TOWNER, /**< Tests $\#ARG */
   OP_TEVAL, /**< Tests S/ARG */
   OP_TFLAG, /**< Tests FLAG^ARG */
   OP_TTYPE, /**< Tests TYPE^ARG */

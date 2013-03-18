@@ -13,6 +13,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 5                                 ??? ??, 2013
+
+Minor changes:
+ * strreplace() now works harder to keep existing ANSI intact, when you
+   replace an un-ansi'd string into an ansi'd one. [MG]
+
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 
 Major changes:

@@ -24,6 +24,11 @@ Minor changes:
    replace an un-ansi'd string into an ansi'd one. [MG]
  * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
    when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
+   
+Functions:
+ * delete(), replace() and insert() have been renamed to strdelete(), 
+   lreplace() and linsert(), respectively, for clarity and conformity. The
+   original names remain as aliases. [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

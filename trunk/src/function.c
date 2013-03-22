@@ -149,6 +149,9 @@ FUNALIAS faliases[] = {
   {"HOST", "HOSTNAME"},
   {"FLIP", "REVERSE"},
   {"E", "EXP"},
+  {"STRDELETE", "DELETE"},
+  {"LREPLACE", "REPLACE"},
+  {"LINSERT", "INSERT"},
   {NULL, NULL}
 };
 
@@ -242,7 +245,7 @@ FUNTAB flist[] = {
   {"DECOMPOSE", fun_decompose, 1, -1, FN_REG},
   {"DECRYPT", fun_decrypt, 2, 3, FN_REG},
   {"DEFAULT", fun_default, 2, INT_MAX, FN_NOPARSE},
-  {"DELETE", fun_delete, 3, 3, FN_REG},
+  {"STRDELETE", fun_delete, 3, 3, FN_REG},
   {"DIE", fun_die, 2, 3, FN_REG | FN_STRIPANSI},
   {"DIG", fun_dig, 1, 6, FN_REG},
   {"DIGEST", fun_digest, 1, -2, FN_REG},
@@ -313,7 +316,7 @@ FUNTAB flist[] = {
   {"INAME", fun_iname, 1, 1, FN_REG | FN_STRIPANSI},
   {"INC", fun_inc, 1, 1, FN_REG | FN_STRIPANSI},
   {"INDEX", fun_index, 4, 4, FN_REG},
-  {"INSERT", fun_insert, 3, 4, FN_REG},
+  {"LINSERT", fun_insert, 3, 4, FN_REG},
   {"INUM", fun_inum, 1, 1, FN_REG | FN_STRIPANSI},
   {"IPADDR", fun_ipaddr, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISDAYLIGHT", fun_isdaylight, 0, 0, FN_REG},
@@ -506,7 +509,7 @@ FUNTAB flist[] = {
   {"REMOVE", fun_remove, 2, 3, FN_REG},
   {"RENDER", fun_render, 2, 2, FN_REG},
   {"REPEAT", fun_repeat, 2, 2, FN_REG},
-  {"REPLACE", fun_ldelete, 3, 5, FN_REG},
+  {"LREPLACE", fun_ldelete, 3, 5, FN_REG},
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},

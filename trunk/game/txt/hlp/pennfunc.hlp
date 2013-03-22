@@ -152,10 +152,10 @@ See also: Dbref functions
 
   element()     elements()    extract()     filter()      filterbool()
   first()       fold()        grab()        graball()     index()
-  insert()      itemize()     items()       iter()        last()
-  ldelete()     lockfilter()  map()         match()       matchall()    
-  member()      mix()         munge()       namegrab()    namegraball() 
-  randword()    remove()      replace()     rest()        revwords()    
+  itemize()     items()       iter()        last()        ldelete()     
+  linsert()     lreplace()    lockfilter()  map()         match()       
+  matchall()    member()      mix()         munge()       namegrab()    
+  namegraball() randword()    remove()      rest()        revwords()    
   setdiff()     setinter()    setunion()    shuffle()     sort()        
   sortby()      sortkey()     splice()      step()        table()       
   unique()      wordpos()     words()
@@ -217,15 +217,15 @@ See also: string functions, regexp
   capstr()         case()           caseall()        cat()
   center()         chr()            comp()           cond()
   condall()        decode64()       decompose()      decrypt()        
-  delete()         digest()         edit()           encode64()       
-  encrypt()        escape()         flip()           foreach()        
-  if()             ifelse()         lcstr()          left()           
-  lit()            ljust()          lpos()           merge()          
-  mid()            ord()            ordinal()        pos()            
-  regedit()        regmatch()       repeat()         right()          
-  rjust()          scramble()       secure()         sha0()           
-  space()          spellnum()       squish()         strallof()       
-  strcat()         strfirstof()     strinsert()      stripaccents()   
+  digest()         edit()           encode64()       encrypt()        
+  escape()         flip()           foreach()        if()             
+  ifelse()         lcstr()          left()           lit()            
+  ljust()          lpos()           merge()          mid()            
+  ord()            ordinal()        pos()            regedit()        
+  regmatch()       repeat()         right()          rjust()          
+  scramble()       secure()         sha0()           space()          
+  spellnum()       squish()         strallof()       strcat()         
+  strdelete()      strfirstof()     strinsert()      stripaccents()   
   stripansi()      strlen()         strmatch()       strreplace()     
   switch()         tr()             trim()           ucstr()          
   wrap()
@@ -1281,8 +1281,9 @@ See also: @decompile2, escape(), secure(), ]
  
 See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   strfirstof()
+& STRDELETE()
 & DELETE()
-  delete(<string>, <first>, <len>)
+  strdelete(<string>, <first>, <len>)
  
   Return a modified <string>, with <len> characters starting after the
   character at position <first> deleted. In other words, it copies
@@ -1291,13 +1292,15 @@ See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   leftwards from <first>.  Characters are numbered starting at 0.
 
   Examples:
-    > say delete(abcdefgh, 3, 2)
+    > say strdelete(abcdefgh, 3, 2)
     You say, "abcfgh"
 
-    > say delete(abcdefgh, 3, -2)
+    > say strdelete(abcdefgh, 3, -2)
     You say, "abefgh"
 
-See also: strreplace(), strinsert(), mid()
+  delete() is an alias for strdelete(), for backwards compatability.
+
+See also: strreplace(), strinsert(), mid(), ldelete()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
@@ -2203,7 +2206,8 @@ See also: dec(), add(), sub()
 
 See also: extract(), elements(), grab()
 & INSERT()
-  insert(<list>, <position>, <new item>[, <delim>])
+& LINSERT()
+  linsert(<list>, <position>, <new item>[, <delim>])
 
   If <position> is a positive integer, this inserts <new item> BEFORE
   the item at <position> from the left in <list>. That means that
@@ -2221,14 +2225,16 @@ See also: extract(), elements(), grab()
   when determining position, as in 'items()'.
 
   Examples:
-    > say insert(This is a string,4,test)
+    > say linsert(This is a string,4,test)
     You say, "This is a test string"
-    > say insert(one|three|four,2,two,|)
+    > say linsert(one|three|four,2,two,|)
     You say, "one|two|three|four"
-    > say insert(meep bleep gleep,-3,GOOP)
+    > say linsert(meep bleep gleep,-3,GOOP)
     You say, "meep GOOP bleep gleep"
 
-See also: replace(), ldelete(), strinsert()
+  insert() is an alias for linsert(), for backwards compatability.
+
+See also: lreplace(), ldelete(), strinsert()
 & ISDAYLIGHT()
   isdaylight()
 
@@ -2580,7 +2586,7 @@ See also: capstr(), ucstr()
     > say ldelete(foo bar baz boing,3,,%b~%b)
     You say, "foo ~ bar ~ boing"
 
-See also: delete(), remove(), insert()
+See also: strdelete(), remove(), linsert()
 & LEFT()
   left(<string>, <length>)
 
@@ -2997,7 +3003,7 @@ See also: lvthings(), lcon()
   This function returns a list of the positions where <character>
   appears in <string>, with the first character of the string being
   0. Note that this differs from the pos() function, but is consistent
-  with other string functions like mid() and delete().
+  with other string functions like mid() and strdelete().
 
   If <character> is a null argument, space is used.  If <character> is
   not found anywhere in <string>, an empty list is returned.
@@ -3297,7 +3303,7 @@ See also: @message, oemit(), remit(), speak()
     > say mid(testing, 2, -2)
     You say, "es"
 
-See also: left(), right(), delete() 
+See also: left(), right(), strdelete() 
 & MIN()
   min(<number>[, ... , <numberN>])
 
@@ -4124,7 +4130,7 @@ See also: @remit, pemit(), lemit()
   Elements of <list> and <words> are both separated by <delimiter>, which
   defaults to a space.
   
-See also: insert(), ldelete(), setdiff()
+See also: linsert(), ldelete(), setdiff()
 & RENDER()
   render(<string>, <formats>)
   
@@ -4157,8 +4163,9 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
     You say, "TestTestTestTestTest"
 
 See also: space()
+& LREPLACE()
 & REPLACE()
-  replace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
+  lreplace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
   
   This replaces the item(s) at the given <position(s)> in <list> with
   <new item>. <delimiter> defaults to a space, and <osep> defaults to 
@@ -4169,19 +4176,21 @@ See also: space()
   and so on.
   
   Examples:
-    > say replace(Turn north at the junction,2,south)
+    > say lreplace(Turn north at the junction,2,south)
     You say, "Turn south at the junction"
     
-    > say replace(Turn north at the junction,-1,crossroads)
+    > say lreplace(Turn north at the junction,-1,crossroads)
     You say, "Turn north at the crossroads"
     
-    > say replace(blue|red|green|yellow,3,white,|)
+    > say lreplace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
     
-    > say replace(this starts and ends the same, 1 -1, foo)
+    > say lreplace(this starts and ends the same, 1 -1, foo)
     You say, "foo starts and ends the foo"
   
-See also: ldelete(), setdiff(), splice()
+  replace() is an alias for lreplace(), for backwards compatability.
+  
+See also: ldelete(), linsert(), setdiff(), splice(), strreplace()
 & REST()
   rest(<list>[, <delimiter>])
 
@@ -5270,7 +5279,7 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
     > think strinsert(Myname, 2, %b)
     My name
 
-See also: delete(), insert(), strreplace()
+See also: strdelete(), linsert(), strreplace()
 & STRIPACCENTS()
   stripaccents(<string>)
 
@@ -5339,7 +5348,7 @@ See also: comp(), match(), setq(), r()
     > think strreplace(Fix teh typo, 4, 3, the)
     Fix the typo
 
-See also: delete(), strinsert(), ldelete(), replace()
+See also: strdelete(), strinsert(), ldelete(), lreplace()
 & SUB()
   sub(<number1>, <number>[, ... , <number>])
 

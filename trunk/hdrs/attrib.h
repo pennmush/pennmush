@@ -38,6 +38,7 @@ void attr_init_postconfig(void);
 const char *check_attr_value(dbref player, const char *name, const char *value);
 int cnf_attribute_access(char *attrname, char *opts);
 
+void add_new_attr(char *name, uint32_t flags);
 /* From attrib.c */
 
 /** atr_add(), atr_clr() error codes */

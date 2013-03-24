@@ -1311,7 +1311,12 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   avlen = strlen(avalue);
   /* If avalue includes a %r, a %t, begins or ends with a %b, or has markup,
    * then use @set on the decompose_str'd value instead of &atrname */
-  if (strchr(avalue, '\n') || strchr(avalue, '\t') ||
+  if (!strcmp(AL_NAME(atr), "MONIKER")) {
+    /* Special case: The MONIKER attribute is set with the @moniker command,
+     * not set as a normal attribute */
+     safe_format(msg, &bp, "@MONIKER %s=", dh->name);
+     safe_decompose_str(avalue, msg, &bp);
+   } else if (strchr(avalue, '\n') || strchr(avalue, '\t') ||
       strchr(avalue, TAG_START) || *avalue == ' ' || avalue[avlen - 1] == ' ') {
     safe_str("@set ", msg, &bp);
     safe_str(dh->name, msg, &bp);

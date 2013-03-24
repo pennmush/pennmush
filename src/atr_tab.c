@@ -782,6 +782,31 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
                 privs_to_string(attr_privs_view, flags));
 }
 
+/** Add a new attribute. Called from db.c to add new attributes
+ * to older databases which have their own attr table.
+ * \param name name of attr to add
+ * \param flags attribute flags (AF_*)
+ */
+void
+add_new_attr(char *name, uint32_t flags)
+{
+  ATTR *ap;
+  ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
+  if (ap || !good_atr_name(name))
+    return;
+
+  ap = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
+  if (!ap) {
+    do_log(LT_ERR, 0, 0, "add_new_attr: unable to malloc ATTR");
+    return;
+  }
+  AL_NAME(ap) = strdup(name);
+  ap->data = NULL_CHUNK_REFERENCE;
+  AL_FLAGS(ap) = flags;
+  AL_CREATOR(ap) = 0;
+  ptab_insert_one(&ptab_attrib, name, ap);
+
+}
 
 /** Delete an attribute from the attribute table.
  * \verbatim

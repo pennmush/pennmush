@@ -236,10 +236,10 @@ get_sender(MAIL *mp, int full)
   else if (!was_sender(mp->from, mp))
     safe_str(T("!Purged!"), tbuf1, &bp);
   else if (IsPlayer(mp->from) || !full)
-    safe_str(Name(mp->from), tbuf1, &bp);
+    safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
   else
-    safe_format(tbuf1, &bp, T("%s (#%d, owner: %s)"), Name(mp->from),
-                mp->from, Name(Owner(mp->from)));
+    safe_format(tbuf1, &bp, T("%s (#%d, owner: %s)"), AName(mp->from, AN_SYS, NULL),
+                mp->from, AName(Owner(mp->from), AN_SYS, NULL));
   *bp = '\0';
   return tbuf1;
 }
@@ -867,6 +867,8 @@ do_mail_reviewlist(dbref player, dbref target)
   i = 0;
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
+  /* MG: I haven't ANSI'd this because I'm lazy, and it requires more than just
+   * replacing Name() with AName() */
   notify_format(player,
                 T
                 ("--------------------   MAIL: %-27s   ------------------"),
@@ -1393,12 +1395,12 @@ send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (good)
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), Name(target));
+                    T("MAIL: You sent your message to %s."), AName(target, AN_SYS, NULL));
     else
       notify_format(player,
                     T
                     ("MAIL: Your message was not sent to %s due to a mail forwarding problem."),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
   }
 }
 
@@ -1441,7 +1443,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
       cp = sbuf;
       safe_format(sbuf, &cp,
                   T("MAIL: %s is not accepting mail from you right now."),
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
       *cp = '\0';
       cp = sbuf;
     } else {
@@ -1454,7 +1456,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if ((rc + uc + cc) >= MAIL_LIMIT) {
     if (!silent)
       notify_format(player, T("MAIL: %s's mailbox is full. Can't send."),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
     return 0;
   }
 
@@ -1538,24 +1540,24 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (can_mail_to(target, player)) {
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), Name(target));
+                    T("MAIL: You sent your message to %s."), AName(target, AN_SYS, NULL));
     } else {
       notify_format(player,
                     T
                     ("MAIL: You sent your message to %s, but they can't mail you!"),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
     }
   }
   notify_format(target,
                 T("MAIL: You have a new message (%d) from %s."),
-                rc + uc + cc + 1, Name(player));
+                rc + uc + cc + 1, AName(player, AN_SYS, NULL));
 
   /* Check @mailfilter */
   filter_mail(player, target, subject, message, rc + uc + cc + 1, flags);
 
   if (AMAIL_ATTR && (atr_get_noparent(target, "AMAIL"))
       && (player != target) && Hasprivs(target))
-    did_it(player, target, NULL, NULL, NULL, NULL, "AMAIL", NOTHING);
+    did_it(player, target, NULL, NULL, NULL, NULL, "AMAIL", NOTHING, 0);
 
   return 1;
 }
@@ -1616,7 +1618,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     }
     do_mail_clear(target, "ALL");
     do_mail_purge(target);
-    notify_format(player, T("Mail cleared for %s(#%d)."), Name(target), target);
+    notify_format(player, T("Mail cleared for %s(#%d)."), AName(target, AN_SYS, NULL), target);
     return;
   } else if (string_prefix("sanity", action)) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = mp->next) {
@@ -1777,8 +1779,8 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
       if (mp->to == target)
         tr++;
     }
-    notify_format(player, T("%s sent %d messages."), Name(target), fr);
-    notify_format(player, T("%s has %d messages."), Name(target), tr);
+    notify_format(player, T("%s sent %d messages."), AName(target, AN_SYS, NULL), fr);
+    notify_format(player, T("%s has %d messages."), AName(target, AN_SYS, NULL), tr);
     return;
   }
   /* more detailed message count */
@@ -1807,7 +1809,7 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
     }
   }
 
-  notify_format(player, T("Mail statistics for %s:"), Name(target));
+  notify_format(player, T("Mail statistics for %s:"), AName(target, AN_SYS, NULL));
 
   if (full == MSTATS_READ) {
     notify_format(player, T("%d messages sent, %d unread, %d cleared."),

@@ -11,11 +11,11 @@
  *
  * Aliases are used by @mail'ing to !<alias name>
  * Aliases have a name, a description, a list of members (dbrefs), an owner
- * a size (how many members), and two kinds of flags. 
- * nflags control who can use/see an alias name, and mflags 
+ * a size (how many members), and two kinds of flags.
+ * nflags control who can use/see an alias name, and mflags
  * control who can see the alias members. The choices
  * are everyone, alias members, owner, admin
- * 
+ *
  * Interface:
  * @malias[/list]
  * @malias/members !name
@@ -213,7 +213,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
     if (!(GoodObject(target)) || (!IsPlayer(target))) {
       notify_format(player, T("MAIL: No such player '%s'."), head);
     } else {
-      buff = unparse_object(player, target);
+      buff = unparse_object(player, target, AN_SYS);
       notify_format(player, T("MAIL: %s added to alias %s"), buff, alias);
       alist[i] = target;
       i++;
@@ -321,9 +321,9 @@ do_malias_members(dbref player, char *alias)
   bp = buff;
   safe_format(buff, &bp, T("MAIL: Alias %c%s: "), MALIAS_TOKEN, m->name);
   for (i = 0; i < m->size; i++) {
-    safe_str(Name(m->members[i]), buff, &bp);
-    safe_chr(' ', buff, &bp);
-    /* Attention if player names may contain spaces!! */
+    if (i)
+      safe_strl(", ", 2, buff, &bp);
+    safe_str(AName(m->members[i], AN_SYS, NULL), buff, &bp);
   }
   *bp = '\0';
   notify(player, buff);
@@ -591,7 +591,7 @@ do_malias_set(dbref player, char *alias, char *tolist)
     if (!(GoodObject(target)) || (!IsPlayer(target))) {
       notify_format(player, T("MAIL: No such player '%s'."), head);
     } else {
-      buff = unparse_object(player, target);
+      buff = unparse_object(player, target, AN_SYS);
       notify_format(player, T("MAIL: %s added to alias %s"), buff, alias);
       alist[i] = target;
       i++;
@@ -806,7 +806,7 @@ do_malias_add(dbref player, char *alias, char *tolist)
                       T("MAIL: player '%s' exists already in alias %s."),
                       head, alias);
       } else {
-        buff = unparse_object(player, target);
+        buff = unparse_object(player, target, AN_SYS);
         notify_format(player, T("MAIL: %s added to alias %s"), buff, alias);
         alist[i] = target;
         i++;
@@ -909,7 +909,7 @@ do_malias_remove(dbref player, char *alias, char *tolist)
         notify_format(player, T("MAIL: player '%s' is not in alias %s."),
                       head, alias);
       } else {
-        buff = unparse_object(player, target);
+        buff = unparse_object(player, target, AN_SYS);
         m->members[i - 1] = m->members[--m->size];
         notify_format(player, T("MAIL: %s removed from alias %s"), buff, alias);
       }

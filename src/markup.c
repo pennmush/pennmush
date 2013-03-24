@@ -2390,6 +2390,47 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   return 0;
 }
 
+/** Sanitize an @moniker string, by removing any Pueblo,
+ * flashing ANSI or underline ANSI.
+ * \param input the string to sanitize.
+ * \param buff buffer to write sanitized output to
+ * \param bp position in buffer to write to
+ */
+void
+sanitize_moniker(char *input, char *buff, char **bp)
+{
+  char orig[BUFFER_LEN];
+  char *p, *colstr;
+
+  /* So we can destructively modify it safely */
+  strcpy(orig, input);
+
+  for (p = orig; *p; p++) {
+    if (*p == TAG_START) {
+      p++;
+      if (!*p)
+        break;
+      if (*p == MARKUP_COLOR) {
+        ansi_data ad;
+        *p++ = '\0';
+        colstr = p;
+        while (*p && *p != TAG_END)
+          p++;
+        *p = '\0';
+        define_ansi_data(&ad, colstr);
+        ad.bits &= ~(CBIT_FLASH | CBIT_UNDERSCORE);
+        if (HAS_ANSI(ad))
+          write_ansi_data(&ad, buff, bp);
+      } else {
+        /* HTML */
+        while (*p && *p != TAG_END)
+          p++;
+      }
+    } else
+      safe_chr(*p, buff, bp);
+  }
+}
+
 /** Safely append an ansi_string into a buffer as a real string,
  * \param as pointer to ansi_string to append.
  * \param start position in as to start copying from.
@@ -2806,6 +2847,7 @@ ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
  * \param a_tag the html tag to add.
  * \param buf the buffer to append to.
  * \param bp pointer to address in buf to insert.
+ * \param type type of markup, one of MARKUP_HTML or MARKUP_COLOR
  * \retval 0, successfully added.
  * \retval 1, tag wouldn't fit in buffer.
  */
@@ -2839,6 +2881,7 @@ safe_tag(char const *a_tag, char *buff, char **bp)
  * \param a_tag the html tag to add.
  * \param buf the buffer to append to.
  * \param bp pointer to address in buf to insert.
+ * \param type type of markup, one of MARKUP_HTML or MARKUP_COLOR
  * \retval 0, successfully added.
  * \retval 1, tag wouldn't fit in buffer.
  */

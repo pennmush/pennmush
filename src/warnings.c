@@ -113,7 +113,7 @@ complain(dbref player, dbref i, const char *name, const char *desc, ...)
   va_end(args);
 
   notify_format(player, T("Warning '%s' for %s:"),
-                name, unparse_object(player, i));
+                name, unparse_object(player, i, AN_SYS));
   notify(player, buff);
 }
 

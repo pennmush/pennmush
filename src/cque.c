@@ -283,18 +283,18 @@ pay_queue(dbref player, const char *command)
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),
-                  Name(player), player);
+                  AName(player, AN_SYS, NULL), player);
     return 0;
   }
   if (!NoPay(player) && (estcost != QUEUE_COST) && Track_Money(Owner(player))) {
     notify_format(Owner(player),
                   T("GAME: Object %s(%s) lost a %s to queue loss."),
-                  Name(player), unparse_dbref(player), MONEY);
+                  AName(player, AN_SYS, NULL), unparse_dbref(player), MONEY);
   }
   if (queue_limit(QUEUE_PER_OWNER ? Owner(player) : player)) {
     notify_format(Owner(player),
                   T("Runaway object: %s(%s). Commands halted."),
-                  Name(player), unparse_dbref(player));
+                  AName(player, AN_SYS, NULL), unparse_dbref(player));
     do_log(LT_TRACE, player, player, "Runaway object %s executing: %s",
            unparse_dbref(player), command);
     /* Refund the queue costs */
@@ -1901,23 +1901,23 @@ show_queue_single(dbref player, MQUE *q, int q_type)
     notify_format(player, "(Pid: %u) [%ld]%s: %s",
                   (unsigned int) q->pid, (long) difftime(q->wait_until,
                                                          mudtime),
-                  unparse_object(player, q->executor), q->action_list);
+                  unparse_object(player, q->executor, AN_UNPARSE), q->action_list);
     break;
   case 2:                      /* semaphore queue */
     if (q->wait_until != 0) {
       notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
                     (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
                     (long) difftime(q->wait_until, mudtime),
-                    unparse_object(player, q->executor), q->action_list);
+                    unparse_object(player, q->executor, AN_UNPARSE), q->action_list);
     } else {
       notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
                     (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
-                    unparse_object(player, q->executor), q->action_list);
+                    unparse_object(player, q->executor, AN_UNPARSE), q->action_list);
     }
     break;
   default:                     /* player or object queue */
     notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
-                  unparse_object(player, q->executor), q->action_list);
+                  unparse_object(player, q->executor, AN_UNPARSE), q->action_list);
   }
 }
 
@@ -2037,7 +2037,7 @@ do_queue(dbref player, const char *what, enum queue_type flag)
       if (all)
         notify(player, T("Queue for : all"));
       else
-        notify_format(player, T("Queue for : %s"), Name(victim));
+        notify_format(player, T("Queue for : %s"), AName(victim, AN_SYS, NULL));
     }
     victim = Owner(victim);
     if (!quick)
@@ -2125,7 +2125,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   else
     player = victim;
   if (!Quiet(Owner(player)))
-    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player),
+    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), AName(player, AN_SYS, NULL),
                   player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor)
@@ -2220,17 +2220,17 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
         notify(player, T("All of your objects have been halted."));
       } else {
         notify_format(player,
-                      T("All objects for %s have been halted."), Name(victim));
+                      T("All objects for %s have been halted."), AName(victim, AN_SYS, NULL));
         notify_format(victim,
                       T("All of your objects have been halted by %s."),
-                      Name(player));
+                      AName(player, AN_SYS, NULL));
       }
     } else {
       if (Owner(victim) != player) {
         notify_format(player, "%s: %s's %s(%s)", T("Halted"),
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+                      AName(Owner(victim), AN_SYS, NULL), AName(victim, AN_SYS, NULL), unparse_dbref(victim));
         notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"),
-                      Name(victim), unparse_dbref(victim), Name(player));
+                      AName(victim, AN_SYS, NULL), unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
       if (arg2 && *arg2 == '\0')
         set_flag_internal(victim, "HALT");
@@ -2311,7 +2311,7 @@ do_allhalt(dbref player)
     if (IsPlayer(victim)) {
       notify_format(victim,
                     T("Your objects have been globally halted by %s"),
-                    Name(player));
+                    AName(player, AN_SYS, NULL));
       do_halt(victim, "", victim);
     }
   }
@@ -2342,7 +2342,7 @@ do_allrestart(dbref player)
       notify_format(thing,
                     T
                     ("Your objects are being globally restarted by %s"),
-                    Name(player));
+                    AName(player, AN_SYS, NULL));
     }
   }
 }
@@ -2387,23 +2387,23 @@ do_restart_com(dbref player, const char *arg1)
       if (IsPlayer(victim)) {
         notify_format(player,
                       T("All objects for %s are being restarted."),
-                      Name(victim));
+                      AName(victim, AN_SYS, NULL));
         notify_format(victim,
                       T
                       ("All of your objects are being restarted by %s."),
-                      Name(player));
+                      AName(player, AN_SYS, NULL));
       } else {
         notify_format(player,
                       T("Restarting: %s's %s(%s)"),
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+                      AName(Owner(victim), AN_SYS, NULL), AName(victim, AN_SYS, NULL), unparse_dbref(victim));
         notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
-                      Name(victim), unparse_dbref(victim), Name(player));
+                      AName(victim, AN_SYS, NULL), unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
     } else {
       if (victim == player)
         notify(player, T("All of your objects are being restarted."));
       else
-        notify_format(player, T("Restarting: %s(%s)"), Name(victim),
+        notify_format(player, T("Restarting: %s(%s)"), AName(victim, AN_SYS, NULL),
                       unparse_dbref(victim));
     }
     do_halt(player, "", victim);

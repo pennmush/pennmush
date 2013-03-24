@@ -37,9 +37,9 @@
  * \return static formatted object name string.
  */
 const char *
-unparse_object(dbref player, dbref loc)
+unparse_object(dbref player, dbref loc, int an_flag)
 {
-  return real_unparse(player, loc, 0, 0, 0, NULL);
+  return real_unparse(player, loc, 0, 0, 0, an_flag, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership rules.
@@ -51,9 +51,9 @@ unparse_object(dbref player, dbref loc)
  * \return static formatted object name string.
  */
 const char *
-unparse_object_myopic(dbref player, dbref loc)
+unparse_object_myopic(dbref player, dbref loc, int an_flag)
 {
-  return real_unparse(player, loc, 1, 0, 1, NULL);
+  return real_unparse(player, loc, 1, 0, 1, an_flag, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership and NAMEFORMAT.
@@ -71,7 +71,7 @@ unparse_object_myopic(dbref player, dbref loc)
 const char *
 unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
 {
-  return real_unparse(player, loc, 1, 1, 1, pe_info);
+  return real_unparse(player, loc, 1, 1, 1, AN_LOOK, pe_info);
 }
 
 /** Format an object's name in several ways.
@@ -84,17 +84,19 @@ unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
  * do so if player is MYOPIC or doesn't own loc.
  * \param use_nameformat if 1, apply a NAMEFORMAT attribute if available.
  * \param use_nameaccent if 1, apply a NAMEACCENT attribute if available.
+ * \param an_flags AN_* flag to determine whether to use monikerd/ansid name
  * \param pe_info pe_info used for evaluating NAMEFORMAT
  * \return address of a static buffer containing the formatted name.
  */
 const char *
 real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
-             int use_nameaccent, NEW_PE_INFO *pe_info)
+             int use_nameaccent, int an_flags, NEW_PE_INFO *pe_info)
 {
   static char buf[BUFFER_LEN], *bp;
   static char tbuf1[BUFFER_LEN];
   static PUEBLOBUFF;
   char *p;
+  bool monikered = 0;
 
   if (!(GoodObject(loc) || (loc == NOTHING) || (loc == AMBIGUOUS) ||
         (loc == HOME)))
@@ -108,9 +110,9 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
     return T("*HOME*");
   default:
     if (use_nameaccent)
-      strcpy(tbuf1, accented_name(loc));
+      strcpy(tbuf1, AaName(loc, an_flags, &monikered));
     else
-      strcpy(tbuf1, Name(loc));
+      strcpy(tbuf1, AName(loc, an_flags, &monikered));
     if (IsExit(loc) && obey_myopic) {
       if ((p = strchr(tbuf1, ';')))
         *p = '\0';
@@ -120,7 +122,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */
       bp = buf;
-      if (ANSI_NAMES)
+      if (ANSI_NAMES && !monikered)
         safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
                     ANSI_END, loc, unparse_flags(loc, player));
       else
@@ -129,7 +131,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       *bp = '\0';
     } else {
       /* show only the name */
-      if (ANSI_NAMES) {
+      if (ANSI_NAMES && !monikered) {
         bp = buf;
         safe_format(buf, &bp, "%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
         *bp = '\0';

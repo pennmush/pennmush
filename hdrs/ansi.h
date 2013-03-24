@@ -189,6 +189,7 @@ typedef struct _ansi_string {
 
 int ansi_strcmp(const char *astr, const char *bstr);
 char *remove_markup(const char *orig, size_t *stripped_len);
+void sanitize_moniker(char *input, char *buff, char **bp);
 char *skip_leading_ansi(const char *p);
 
 int has_markup(const char *test);

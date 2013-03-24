@@ -62,6 +62,7 @@
   money_plural=<string>: What are many pennies called?
   player_name_spaces=<boolean>: Can player names have spaces in them?
   ansi_names=<boolean>: Are names in look hilighted?
+  monikers=<number>: Where should @monikers be displayed? See 'help monikers'
   float_precision=<numbers>: How many digits after the decimal point in
    floating point numbers are kept when formatting the result of a
    floating point function?

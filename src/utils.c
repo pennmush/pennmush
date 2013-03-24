@@ -240,12 +240,14 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  * \param pe_info The pe_info passed to the FUNCTION
  * \param user_regs Other arguments that may want to be added. This nests BELOW
  *                the pe_regs created by call_ufun. (It is checked first)
+ * \param data a void pointer to extra data. Currently only used to pass the
+ *             name to use, when UFUN_NAME is given.
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
-          NEW_PE_INFO *pe_info, PE_REGS *user_regs)
+call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
+          NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
 {
   char rbuff[BUFFER_LEN];
   char *rp, *np = NULL;
@@ -304,7 +306,10 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
   }
 
   if (ufun->ufun_flags & UFUN_NAME) {
-    safe_str(Name(enactor), ret, &rp);
+    char *name = (char *) data;
+    if (!name || !*name)
+      name = (char *) Name(enactor);
+    safe_str(name, ret, &rp);
     if (!(ufun->ufun_flags & UFUN_NAME_NOSPACE))
       safe_chr(' ', ret, &rp);
     np = rp;
@@ -667,6 +672,65 @@ shortname(dbref it)
   }
   return n;
 }
+
+#define set_mp(x) if (had_moniker) *had_moniker = x
+
+/** Return the ANSI'd name for an object, using its @moniker.
+ * Note that this will ALWAYS return the name with ANSI, regardless
+ * of how the "monikers" @config option is set. Use the AName() or
+ * AaName() macros if the config option must be respected.
+ * \param thing object to return the name for
+ * \param accents return accented name?
+ * \param had_moniker if non-null, set to 1 when the name is monikered,
+ *           and 0 if it is returned without ANSI. Allows the caller to
+ *           apply default ANSI for un-monikered names.
+ * \retval pointer to STATIC buffer containing the monikered name
+ */
+char *
+ansi_name(dbref thing, bool accents, bool *had_moniker)
+{
+  static char name[BUFFER_LEN], *format, *np;
+  ATTR *a;
+  ansi_string *as, *aname;
+
+  if (!RealGoodObject(thing)) {
+    set_mp(0);
+    return "Garbage";
+  }
+
+  if (accents)
+    strcpy(name, accented_name(thing));
+  else if (IsExit(thing))
+    strcpy(name, shortname(thing));
+  else
+    strcpy(name, Name(thing));
+
+  a = atr_get(thing, "MONIKER");
+  if (!a) {
+    set_mp(0);
+    return name;
+  }
+
+  format = safe_atr_value(a);
+  if (!has_markup(format)) {
+    free(format);
+    set_mp(0);
+    return name;
+  }
+  as = parse_ansi_string(format);
+  aname = parse_ansi_string(name);
+  ansi_string_replace(as, 0, BUFFER_LEN, aname);
+  np = name;
+  safe_ansi_string(as, 0, as->len, name, &np);
+  *np = '\0';
+  free_ansi_string(as);
+  free_ansi_string(aname);
+  free(format);
+
+  set_mp(1);
+  return name;
+}
+#undef set_mp
 
 /** Return the absolute room (outermost container) of an object.
  * Return  NOTHING if it's in an invalid object or in an invalid

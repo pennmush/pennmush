@@ -461,17 +461,17 @@ char *WIN32_CDECL tprintf(const char *fmt, ...)
 int could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 int did_it(dbref player, dbref thing, const char *what,
            const char *def, const char *owhat, const char *odef,
-           const char *awhat, dbref loc);
+           const char *awhat, dbref loc, int an_flags);
 int did_it_with(dbref player, dbref thing, const char *what,
                 const char *def, const char *owhat, const char *odef,
                 const char *awhat, dbref loc, dbref env0, dbref env1,
-                int flags);
+                int flags, int an_flags);
 int did_it_interact(dbref player, dbref thing, const char *what,
                     const char *def, const char *owhat,
-                    const char *odef, const char *awhat, dbref loc, int flags);
+                    const char *odef, const char *awhat, dbref loc, int flags, int an_flags);
 int real_did_it(dbref player, dbref thing, const char *what,
                 const char *def, const char *owhat, const char *odef,
-                const char *awhat, dbref loc, PE_REGS *pe_regs, int flags);
+                const char *awhat, dbref loc, PE_REGS *pe_regs, int flags, int an_flags);
 int can_see(dbref player, dbref thing, int can_see_loc);
 int controls(dbref who, dbref what);
 int can_pay_fees(dbref who, int pennies);
@@ -685,12 +685,12 @@ replace_string2(const char *old[2], const char *newbits[2],
 /* From unparse.c */
     const char *real_unparse
       (dbref player, dbref loc, int obey_myopic, int use_nameformat,
-       int use_nameaccent, NEW_PE_INFO *pe_info);
+       int use_nameaccent, int an_flag, NEW_PE_INFO *pe_info);
     extern const char *unparse_objid(dbref thing);
-    extern const char *unparse_object(dbref player, dbref loc);
+    extern const char *unparse_object(dbref player, dbref loc, int an_flag);
 /** For back compatibility, an alias for unparse_object */
-#define object_header(p,l) unparse_object(p,l)
-    const char *unparse_object_myopic(dbref player, dbref loc);
+#define object_header(p,l) unparse_object(p,l,AN_UNPARSE)
+    const char *unparse_object_myopic(dbref player, dbref loc, int an_flag);
     const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
     int nameformat(dbref player, dbref loc, char *tbuf1, char *defname,
                    bool localize, NEW_PE_INFO *pe_info);
@@ -736,8 +736,9 @@ replace_string2(const char *old[2], const char *newbits[2],
 #define UFUN_SHARE_STACK 0x80
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
-    bool call_ufun(ufun_attrib * ufun, char *ret, dbref caller,
-                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
+    bool call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller,
+                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs, void *data);
+#define call_ufun(ufun,ret,caller,enactor,pe_info,pe_regs) call_ufun_int(ufun,ret,caller,enactor,pe_info,pe_regs,NULL)
     bool call_attrib(dbref thing, const char *attrname, char *ret,
                      dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool member(dbref thing, dbref list);
@@ -762,7 +763,7 @@ replace_string2(const char *old[2], const char *newbits[2],
     dbref absolute_room(dbref it);
     int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
 
-
+char *ansi_name(dbref thing, bool accents, bool *had_moniker);
 /* From warnings.c */
     void run_topology(void);
     void do_warnings(dbref player, const char *name, const char *warns);

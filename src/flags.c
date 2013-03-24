@@ -581,7 +581,7 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
 	  if (Flags(it) == m->orig) {
 	    Flags(it) = m->grown;
 	    break;
-	  } 
+	  }
 	} else {
 	  if (Powers(it) == m->orig) {
 	    Powers(it) = m->grown;
@@ -997,6 +997,8 @@ flag_add_additional(FLAGSPACE *n)
       f->perms |= F_LOG;
     f = add_flag("XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY);
     flag_add(flags, "COLOR256", f);     /* MUX alias */
+
+    add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
 
   } else if (n->tab == &ptab_power) {
     if (!(globals.indb_flags & DBF_POWERS_LOGGED)) {
@@ -1946,7 +1948,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) && (hear || listener) &&
         !Hearer(thing) && !Listener(thing)) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
+      safe_format(tbuf1, &tp, T("%s is no longer listening."), AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -1959,7 +1961,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         if (Audible(Source(thing))) {
           tp = tbuf1;
           safe_format(tbuf1, &tp, T("Exit %s is no longer broadcasting."),
-                      Name(thing));
+                      AName(thing, AN_SAY, NULL));
           *tp = '\0';
           notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
@@ -1979,7 +1981,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     }
     if (is_flag(f, "QUIET") || (!AreQuiet(player, thing))) {
       tp = tbuf1;
-      safe_str(Name(thing), tbuf1, &tp);
+      safe_str(AName(thing, AN_SYS, NULL), tbuf1, &tp);
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (!current)
@@ -2004,7 +2006,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) &&
         (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
+      safe_format(tbuf1, &tp, T("%s is now listening."), AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -2018,7 +2020,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         if (Audible(Source(thing))) {
           tp = tbuf1;
           safe_format(tbuf1, &tp, T("Exit %s is now broadcasting."),
-                      Name(thing));
+                      AName(thing, AN_SAY, NULL));
           *tp = '\0';
           notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
@@ -2037,7 +2039,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     }
     if (is_flag(f, "QUIET") || (!AreQuiet(player, thing))) {
       tp = tbuf1;
-      safe_str(Name(thing), tbuf1, &tp);
+      safe_str(AName(thing, AN_SYS, NULL), tbuf1, &tp);
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (current)
@@ -2096,17 +2098,17 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     tp = tbuf1;
     if (negate) {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s removed."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s removed."), AName(thing, AN_SYS, NULL), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing),
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), AName(thing, AN_SYS, NULL),
                     f->name);
       }
     } else {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing),
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), AName(thing, AN_SYS, NULL),
                     f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s granted."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s granted."), AName(thing, AN_SYS, NULL), f->name);
       }
     }
     *tp = '\0';
@@ -3169,7 +3171,7 @@ do_flag_debug(const char *ns, dbref player)
 
   for (i = 0; i < n->flagbits; i += 1) {
     FLAG *f = n->flags[i];
-    
+
     notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name, f->bitpos);
   }
 
@@ -3180,8 +3182,8 @@ do_flag_debug(const char *ns, dbref player)
   for (i = 0; i < n->cache->size; i += 1) {
     struct flagbucket *b = n->cache->buckets[i];
     for (; b; b = b->next) {
-      notify_format(player, "Flagset: %s. Refcount: %d", bits_to_string(ns, b->key, ,), b->refcount);		   
+      notify_format(player, "Flagset: %s. Refcount: %d", bits_to_string(ns, b->key, ,), b->refcount);
     }
-  } 
+  }
 #endif
 }

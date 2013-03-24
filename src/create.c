@@ -265,7 +265,7 @@ do_unlink(dbref player, const char *name)
         old_loc = Location(exit_l);
         Location(exit_l) = NOTHING;
         notify_format(player, T("Unlinked exit #%d (Used to lead to %s)."),
-                      exit_l, unparse_object(player, old_loc));
+                      exit_l, unparse_object(player, old_loc, AN_UNPARSE));
         break;
       case TYPE_ROOM:
         Location(exit_l) = NOTHING;
@@ -370,7 +370,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
 
       /* notify the player */
       notify_format(player, T("Linked exit #%d to %s"), thing,
-                    unparse_object(player, room));
+                    unparse_object(player, room, AN_UNPARSE));
       break;
     case TYPE_PLAYER:
     case TYPE_THING:
@@ -701,7 +701,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       current_state.things++;
       local_data_clone(clone, thing, preserve);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  NULL, 0);
+                  NULL, 0, 0);
       return clone;
     }
     return NOTHING;
@@ -714,7 +714,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       current_state.rooms++;
       local_data_clone(clone, thing, preserve);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  NULL, 0);
+                  NULL, 0, 0);
       return clone;
     }
     return NOTHING;

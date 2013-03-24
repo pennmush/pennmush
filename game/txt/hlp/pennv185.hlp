@@ -13,6 +13,15 @@ be read in 'help patchlevels'.
 
 Version 1.8.5 patchlevel 5                                 ??? ??, 2013
 
+Commands:
+ * Added @moniker, to allow colored names. See 'help monikers' for more.
+   Requested by Mikoto Misaka. Idea from [MUX]. [MG]
+
+Hardcode:
+ * A number of changes have been made to accomodate monikers. Notably, a lot
+   of calls to the Name() macro now use the AName() macro. See the 
+   HACKING.185 file for more info. [MG]
+
 Fixes:
  * Commands which take multiple right-hand-side arguments could only have
    8191-length arguments, instead of the usual 8192. Reported by Jules. [MG]

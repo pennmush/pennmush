@@ -136,11 +136,12 @@ See also: DBREF, Information functions
   findable()     flags()        fullalias()    fullname()     getpids()      
   hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
   iname()        lflags()       lock()         lockflags()    lockowner()    
-  locks()        lpids()        lstats()       money()        msecs()      
-  mtime()        mudname()      mudurl()       name()         nattr()        
-  nearby()       objid()        objmem()       orflags()      orlflags()     
-  orlpowers()    pidinfo()      playermem()    poll()         powers()       
-  quota()        restarts()     type()         version()      visible()
+  locks()        lpids()        lstats()       money()        moniker()
+  msecs()        mtime()        mudname()      mudurl()       name()         
+  nattr()        nearby()       objid()        objmem()       orflags()      
+  orlflags()     orlpowers()    pidinfo()      playermem()    poll()         
+  powers()       quota()        restarts()     type()         version()      
+  visible()
 
 See also: Dbref functions
 & List functions
@@ -3517,7 +3518,16 @@ See also: fullname()
   With two arguments, name() attempts to rename <object> to <new name>, as
   per @name.
 
-See also: fullname(), accname(), iname(), alias()
+See also: fullname(), accname(), iname(), alias(), moniker()
+& MONIKER()
+& CNAME()
+  moniker(<object>)
+  
+  Returns <object>'s name, with the color template from its @moniker applied.
+  moniker() always returns the colored name, even if monikers are disabled
+  via @config.
+  
+See also: MONIKERS, @moniker, name(), MONIKER
 & NAMELIST()
   namelist(<player-list>[, [<object>/]<attribute>])
 

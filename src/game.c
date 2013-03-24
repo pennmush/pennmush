@@ -285,7 +285,7 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), AName(player, AN_SYS, NULL));
   do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
          Name(player), unparse_dbref(player));
 
@@ -1813,7 +1813,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player,
-                      "%s  [%d:%s]", unparse_object(player, thing),
+                      "%s  [%d:%s]", unparse_object(player, thing, AN_UNPARSE),
                       num, atrname);
         ptr = atrname;
       }
@@ -1824,7 +1824,7 @@ do_scan(dbref player, char *command, int flag)
     if (ScanFind(player, Location(player), 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched here: %s  [%d:%s]"),
-                    unparse_object(player, Location(player)), num, atrname);
+                    unparse_object(player, Location(player), AN_UNPARSE), num, atrname);
     }
   }
   ptr = atrname;
@@ -1834,7 +1834,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
-                      unparse_object(player, thing), num, atrname);
+                      unparse_object(player, thing, AN_UNPARSE), num, atrname);
         ptr = atrname;
       }
     }
@@ -1844,7 +1844,7 @@ do_scan(dbref player, char *command, int flag)
     if (ScanFind(player, player, 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched self: %s  [%d:%s]"),
-                    unparse_object(player, player), num, atrname);
+                    unparse_object(player, player, AN_UNPARSE), num, atrname);
     }
   }
   ptr = atrname;
@@ -1859,7 +1859,7 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num, atrname);
               ptr = atrname;
             }
           }
@@ -1871,7 +1871,7 @@ do_scan(dbref player, char *command, int flag)
           notify_format(player,
                         T("Matched zone of location: %s  [%d:%s]"),
                         unparse_object(player,
-                                       Zone(Location(player))), num, atrname);
+                                       Zone(Location(player)), AN_UNPARSE), num, atrname);
         }
       }
     }
@@ -1886,7 +1886,7 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num, atrname);
               ptr = atrname;
             }
           }
@@ -1894,7 +1894,7 @@ do_scan(dbref player, char *command, int flag)
       } else if (ScanFind(player, Zone(player), 0)) {
         *ptr = '\0';
         notify_format(player, T("Matched personal zone: %s  [%d:%s]"),
-                      unparse_object(player, Zone(player)), num, atrname);
+                      unparse_object(player, Zone(player), AN_UNPARSE), num, atrname);
       }
     }
   }
@@ -1909,7 +1909,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
-                      unparse_object(player, thing), num, atrname);
+                      unparse_object(player, thing, AN_UNPARSE), num, atrname);
         ptr = atrname;
       }
     }

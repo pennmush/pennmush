@@ -128,10 +128,10 @@ charge_action(dbref thing)
  */
 int
 did_it(dbref player, dbref thing, const char *what, const char *def,
-       const char *owhat, const char *odef, const char *awhat, dbref loc)
+       const char *owhat, const char *odef, const char *awhat, dbref loc, int an_flags)
 {
   return real_did_it(player, thing, what, def, owhat, odef, awhat, loc, NULL,
-                     NA_INTER_HEAR);
+                     NA_INTER_HEAR, an_flags);
 }
 
 /** A wrapper for real_did_it that can set %0 and %1 to dbrefs.
@@ -152,7 +152,7 @@ did_it(dbref player, dbref thing, const char *what, const char *def,
 int
 did_it_with(dbref player, dbref thing, const char *what, const char *def,
             const char *owhat, const char *odef, const char *awhat,
-            dbref loc, dbref env0, dbref env1, int flags)
+            dbref loc, dbref env0, dbref env1, int flags, int an_flags)
 {
   PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "did_it_with");
   int retval;
@@ -164,7 +164,7 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
     pe_regs_setenv(pe_regs, 1, unparse_dbref(env1));
   }
   retval = real_did_it(player, thing, what, def, owhat, odef, awhat, loc,
-                       pe_regs, flags);
+                       pe_regs, flags, an_flags);
 
   pe_regs_free(pe_regs);
   return retval;
@@ -187,11 +187,11 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
 int
 did_it_interact(dbref player, dbref thing, const char *what, const char *def,
                 const char *owhat, const char *odef, const char *awhat,
-                dbref loc, int flags)
+                dbref loc, int flags, int an_flags)
 {
   /* Bunch o' nulls */
   return real_did_it(player, thing, what, def, owhat, odef, awhat, loc, NULL,
-                     flags);
+                     flags, an_flags);
 }
 
 /** Take an action on an object and trigger attributes.
@@ -217,7 +217,7 @@ did_it_interact(dbref player, dbref thing, const char *what, const char *def,
 int
 real_did_it(dbref player, dbref thing, const char *what, const char *def,
             const char *owhat, const char *odef, const char *awhat, dbref loc,
-            PE_REGS *pe_regs, int flags)
+            PE_REGS *pe_regs, int flags, int an_flags)
 {
 
   char buff[BUFFER_LEN], *bp;
@@ -251,11 +251,11 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
+        if (!call_ufun_int(&ufun, buff, thing, player, pe_info, pe_regs, (void *) AName(player, an_flags, NULL)) && buff[0])
           notify_except2(player, loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
-        safe_format(buff, &bp, "%s %s", Name(player), odef);
+        safe_format(buff, &bp, "%s %s", AName(player, an_flags, NULL), odef);
         *bp = '\0';
         notify_except2(player, loc, player, thing, buff, flags);
       }
@@ -497,7 +497,7 @@ payfor(dbref who, int cost)
   if ((tmp = Pennies(owner)) >= cost) {
     if (Track_Money(owner)) {
       notify_format(owner, T("GAME: %s(%s) spent %d %s."),
-                    Name(who), unparse_dbref(who), cost,
+                    AName(who, AN_SYS, NULL), unparse_dbref(who), cost,
                     (cost == 1) ? MONEY : MONIES);
     }
     s_Pennies(owner, tmp - cost);
@@ -505,7 +505,7 @@ payfor(dbref who, int cost)
   } else {
     if (Track_Money(owner)) {
       notify_format(owner, T("GAME: %s(%s) tried to spend %d %s."),
-                    Name(who), unparse_dbref(who), cost,
+                    AName(who, AN_SYS, NULL), unparse_dbref(who), cost,
                     (cost == 1) ? MONEY : MONIES);
     }
     return 0;
@@ -1201,11 +1201,11 @@ page_return(dbref player, dbref target, const char *type,
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
-                      Name(target), buff);
+                      AName(target, AN_SYS, NULL), buff);
         if (!Haven(target))
           notify_format(target,
                         T("[%d:%02d] %s message sent to %s."), ptr->tm_hour,
-                        ptr->tm_min, type, Name(player));
+                        ptr->tm_min, type, AName(player, AN_SYS, NULL));
       }
     } else if (def && *def)
       notify(player, def);
@@ -1332,7 +1332,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
 
   real_did_it(actor, victim,
               upcasestr(argv[2]), argv[3], upcasestr(argv[4]), argv[5],
-              NULL, Location(actor), pe_regs, NA_INTER_HEAR);
+              NULL, Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
 
   /* Now we copy our args into the stack, and do the command. */
 
@@ -1617,7 +1617,7 @@ do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
     if (grep_util(player, thing, pattern, lookfor, buff, &bp, flags)) {
       *bp = '\0';
       notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
-                    Name(thing), thing, buff);
+                    AName(thing, AN_LOOK, NULL), thing, buff);
     } else
       notify(player, T("No matches."));
   }

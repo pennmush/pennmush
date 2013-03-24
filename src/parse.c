@@ -2254,6 +2254,13 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(e_notvis), buff, bp);
           }
           break;
+        case 'k':
+        case 'K':              /* enactor moniker (ansi'd name) */
+          if (GoodObject(enactor))
+            safe_str(ansi_name(enactor, 0, NULL), buff, bp);
+          else
+            safe_str(T(e_notvis), buff, bp);
+          break;
         case 'O':
         case 'o':              /* enactor objective pronoun */
           if (GoodObject(enactor)) {

@@ -328,4 +328,30 @@ extern const char *EOD;
 #define SPOOF(executor, enactor, sw) \
   (SW_ISSET(sw, SWITCH_SPOOF) && (Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor);
 
+/* Different times when a moniker (ansi'd name) may be shown.
+ * The MONIKER @config option is a bitwise or of these values.
+ */
+#define AN_CHAT      1 /* In the channel system */
+#define AN_SAY       2 /* Local speech; say, pose, semipose */
+#define AN_MOVE      4 /* Exit osucc/odrop, room oenter/oleave, etc */
+#define AN_LOOK      8 /* Contents lists, "look"ing at an object, etc */
+#define AN_UNPARSE  16 /* Other places unparse_name() is used */
+#define AN_WHO      32 /* WHO, DOING, SESSION, etc */
+#define AN_SYS      64 /* Other places the MUSH notify()s you with a name */
+
+#define AN_PLAYER  128 /* Only show monikers for players */
+#define AN_THING   256 /* Only show monikers for things */
+#define AN_ROOM    512 /* Only show monikers for rooms */
+#define AN_EXIT   1024 /* only show monikers for exits */
+#define AN_TYPES (AN_PLAYER | AN_THING | AN_ROOM | AN_EXIT)
+
+#define moniker_type(x) ((IsPlayer(x) && (options.monikers & AN_PLAYER)) || \
+  (IsThing(x) && (options.monikers & AN_THING)) || \
+  (IsRoom(x) && (options.monikers & AN_ROOM)) || \
+  (IsExit(x) && (options.monikers & AN_EXIT)) || \
+  has_flag_by_name(x, "MONIKER", NOTYPE))
+
+#define AName(x,level,p) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, 0, p) : Name(x))
+#define AaName(x,level,p) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, 1, p) : accented_name(x))
+
 #endif                          /* __DBDEFS_H */

@@ -17,6 +17,22 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 5                                 ??? ??, 2013
+
+Monikers:
+ * Many calls of Name() and accented_name() have been replaced with AName() 
+   and AaName(), respectively. Syntax is:
+     AName(dbref, AN_FLAG, pointer);
+   where dbref is the object whose name should be returned, AN_FLAG is one
+   of the AN_* flags defined in dbdefs.h, specifying what kind of the message
+   the name is used in, and pointer is an optional bool pointer, set to 1 if
+   the name returned is monikered. (Note: it is NOT always set to 0 when the 
+   name is not monikered. Initialize yourself before calling.)
+ * call_ufun() has been renamed call_ufun_int(), and has an extra arg,
+   void* data. Only used with UFUN_NAME. call_ufun() is an #define to
+   call_ufun_int(), passing data as NULL, for backwards compatability.
+ * The *did_it*() functions now take an extra arg
+
 Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 
   do_teleport() now takes a bitwise or of TEL_* flags (defined in externs.h)

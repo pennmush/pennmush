@@ -57,7 +57,6 @@ static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
 extern int rhs_present;         /* from command.c */
 
-
 /** Rename something.
  * \verbatim
  * This implements @name.
@@ -160,7 +159,7 @@ do_name(dbref player, const char *name, char *newname_)
   pe_regs_setenv_nocopy(pe_regs, 0, oldname);
   pe_regs_setenv_nocopy(pe_regs, 1, newname);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
-              pe_regs, NA_INTER_PRESENCE);
+              pe_regs, NA_INTER_PRESENCE, AN_SYS);
   pe_regs_free(pe_regs);
   mush_free(newname, "name.newname");
 }
@@ -514,7 +513,7 @@ af_helper(dbref player, dbref thing,
         ((af->clrf & AF_SAFE) &&
          Can_Write_Attr_Ignore_Safe(player, thing, AL_ATTR(atr))))) {
     notify_format(player, T("You cannot change that flag on %s/%s"),
-                  Name(thing), AL_NAME(atr));
+                  AName(thing, AN_SYS, NULL), AL_NAME(atr));
     return 0;
   }
 
@@ -522,13 +521,13 @@ af_helper(dbref player, dbref thing,
   if (af->clrf) {
     AL_FLAGS(atr) &= ~af->clrf;
     if (!AreQuiet(player, thing) && !AF_Quiet(atr))
-      notify_format(player, T("%s/%s - %s reset."), Name(thing), AL_NAME(atr),
+      notify_format(player, T("%s/%s - %s reset."), AName(thing, AN_SYS, NULL), AL_NAME(atr),
                     af->clrflags);
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
     if (!AreQuiet(player, thing) && !AF_Quiet(atr))
-      notify_format(player, T("%s/%s - %s set."), Name(thing), AL_NAME(atr),
+      notify_format(player, T("%s/%s - %s set."), AName(thing, AN_SYS, NULL), AL_NAME(atr),
                     af->setflags);
   }
 
@@ -542,7 +541,7 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
     return;
   if (!Can_Write_Attr(player, target, AL_ATTR(atr))) {
     notify_format(player,
-                  T("You cannot set attrib flags on %s/%s"), Name(target),
+                  T("You cannot set attrib flags on %s/%s"), AName(target, AN_SYS, NULL),
                   AL_NAME(atr));
     return;
   }
@@ -1313,7 +1312,7 @@ do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
 
   if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs, 0)) {
     if (!AreQuiet(player, thing))
-      notify_format(player, T("%s - Triggered."), Name(thing));
+      notify_format(player, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {
     notify(player, T("No such attribute."));
   }
@@ -1386,7 +1385,7 @@ do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
       return;
     } else {
       did_it(player, thing, "USE", T("Used."), "OUSE", NULL,
-             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING);
+             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING, AN_SYS);
     }
   }
 }

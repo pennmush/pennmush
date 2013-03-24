@@ -152,6 +152,7 @@ FUNALIAS faliases[] = {
   {"STRDELETE", "DELETE"},
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
+  {"MONIKER", "CNAME"}, /* Rhost alias */
   {NULL, NULL}
 };
 
@@ -411,6 +412,7 @@ FUNTAB flist[] = {
   {"MWHO", fun_lwho, 0, 0, FN_REG | FN_STRIPANSI},
   {"MWHOID", fun_lwho, 0, 0, FN_REG | FN_STRIPANSI},
   {"NAME", fun_name, 1, 2, FN_REG | FN_STRIPANSI},
+  {"MONIKER", fun_moniker, 1, 1, FN_REG | FN_STRIPANSI},
   {"NAMELIST", fun_namelist, 1, 2, FN_REG},
   {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG},
   {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG},

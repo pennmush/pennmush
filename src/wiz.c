@@ -495,11 +495,11 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       && !inside) {
     if (!silent && loc != Location(destination))
       did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                  player, NOTHING, NA_INTER_HEAR);
+                  player, NOTHING, NA_INTER_HEAR, AN_MOVE);
     safe_tel(victim, Location(destination), silent, player, "teleport");
     if (!silent && loc != Location(destination))
       did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                  Location(destination), player, loc, NA_INTER_HEAR);
+                  Location(destination), player, loc, NA_INTER_HEAR, AN_MOVE);
     return;
   }
   /* check needed for NOTHING. Especially important for unlinked exits */
@@ -583,11 +583,11 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
             (!Fixed(Owner(victim)) && !Fixed(player)))) {
       if (!silent && loc != destination)
         did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                    player, NOTHING, NA_INTER_HEAR);
+                    player, NOTHING, NA_INTER_HEAR, AN_MOVE);
       safe_tel(victim, destination, silent, player, "teleport");
       if (!silent && loc != destination)
         did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                    destination, player, loc, NA_INTER_HEAR);
+                    destination, player, loc, NA_INTER_HEAR, AN_MOVE);
       if ((victim != player) && !(Puppet(victim) &&
                                   (Owner(victim) == Owner(player)))) {
         if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
@@ -606,7 +606,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       if (victim != player)
         notify_format(victim,
                       T("%s tries to impose his will on you and fails."),
-                      Name(player));
+                      AName(player, AN_SYS, NULL));
       return;
     }
     if (Fixed(Owner(victim)) || Fixed(player)) {
@@ -837,9 +837,9 @@ do_newpassword(dbref executor, dbref enactor,
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
-    notify_format(executor, T("Password for %s changed."), Name(victim));
+    notify_format(executor, T("Password for %s changed."), AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
-                  Name(executor));
+                  AName(executor, AN_SYS, NULL));
     do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
   }
 }
@@ -915,7 +915,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
       if (player == victim)
         notify(player, T("You boot a duplicate self."));
       else
-        notify_format(player, T("You booted %s off!"), Name(victim));
+        notify_format(player, T("You booted %s off!"), AName(victim, AN_SYS, NULL));
     } else {
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
@@ -929,7 +929,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
   if (count) {
     if (flag != BOOT_SELF) {
       do_log(LT_WIZ, player, victim, "*** BOOT ***");
-      notify_format(player, T("You booted %s off!"), Name(victim));
+      notify_format(player, T("You booted %s off!"), AName(victim, AN_SYS, NULL));
     }
   } else {
     if (flag == BOOT_SELF)
@@ -1743,10 +1743,10 @@ sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
   if (attrcount) {
     write_access_file();
     notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount,
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
   } else {
     notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."),
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
   }
 
 }
@@ -1799,7 +1799,7 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       if (whod != AMBIGUOUS) {
         notify_format(player,
                       T("Site %s access options for %s(%s) set to %s"),
-                      site, Name(whod), unparse_dbref(whod), opts);
+                      site, AName(whod, AN_SYS, NULL), unparse_dbref(whod), opts);
         do_log(LT_WIZ, player, NOTHING,
                "*** SITELOCK *** %s for %s(%s) --> %s", site,
                Name(whod), unparse_dbref(whod), opts);

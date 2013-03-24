@@ -106,14 +106,14 @@ moveit(dbref what, dbref where, int nomovemsgs,
   if (!WIZ_NOAENTER || !(Wizard(what) && DarkLegal(what)))
     if ((where != NOTHING) && (old != where)) {
       did_it_with(what, what, NULL, NULL, "OXMOVE", NULL,
-                  NULL, old, where, old, NA_INTER_HEAR);
+                  NULL, old, where, old, NA_INTER_HEAR, AN_MOVE);
       if (Hearer(what)) {
         if (GoodObject(where) && oldSeeswhat) {
           did_it_with(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
-                      "ALEAVE", old, where, NOTHING, NA_INTER_PRESENCE);
+                      "ALEAVE", old, where, NOTHING, NA_INTER_PRESENCE, AN_MOVE);
         } else {
           did_it_interact(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
-                          "ALEAVE", old, NA_INTER_PRESENCE);
+                          "ALEAVE", old, NA_INTER_PRESENCE, AN_MOVE);
         }
         /* If the player is leaving a zone, do zone messages */
         /* The tricky bit here is that we only care about the zone of
@@ -122,44 +122,44 @@ moveit(dbref what, dbref where, int nomovemsgs,
             (!GoodObject(absloc) || !GoodObject(Zone(absloc)) ||
              (Zone(absloc) != Zone(absold))))
           did_it_interact(what, Zone(absold), "ZLEAVE", NULL, "OZLEAVE", NULL,
-                          "AZLEAVE", old, NA_INTER_SEE);
+                          "AZLEAVE", old, NA_INTER_SEE, AN_MOVE);
         if (GoodObject(old) && !IsRoom(old))
           did_it_interact(what, old, NULL, NULL, "OXLEAVE", NULL, NULL, where,
-                          NA_INTER_SEE);
+                          NA_INTER_SEE, AN_MOVE);
         if (!IsRoom(where))
           did_it_interact(what, where, NULL, NULL, "OXENTER", NULL, NULL, old,
-                          NA_INTER_SEE);
+                          NA_INTER_SEE, AN_MOVE);
         /* If the player is entering a new zone, do zone messages */
         if (GoodObject(absloc) && GoodObject(Zone(absloc)) &&
             (!GoodObject(absold) || !GoodObject(Zone(absold)) ||
              (Zone(absloc) != Zone(absold))))
           did_it_interact(what, Zone(absloc), "ZENTER", NULL, "OZENTER", NULL,
-                          "AZENTER", where, NA_INTER_SEE);
+                          "AZENTER", where, NA_INTER_SEE, AN_MOVE);
         if (GoodObject(old) && whereSeeswhat) {
           did_it_with(what, where, "ENTER", NULL, "OENTER", T("has arrived."),
-                      "AENTER", where, old, NOTHING, NA_INTER_PRESENCE);
+                      "AENTER", where, old, NOTHING, NA_INTER_PRESENCE, AN_MOVE);
         } else {
           did_it_interact(what, where, "ENTER", NULL, "OENTER",
                           T("has arrived."), "AENTER", where,
-                          NA_INTER_PRESENCE);
+                          NA_INTER_PRESENCE, AN_MOVE);
         }
       } else {
         /* non-listeners only trigger the actions not the messages */
-        did_it(what, old, NULL, NULL, NULL, NULL, "ALEAVE", old);
+        did_it(what, old, NULL, NULL, NULL, NULL, "ALEAVE", old, AN_MOVE);
         if (GoodObject(absold) && GoodObject(Zone(absold)) &&
             (!GoodObject(absloc) || !GoodObject(Zone(absloc)) ||
              (Zone(absloc) != Zone(absold))))
-          did_it(what, Zone(absold), NULL, NULL, NULL, NULL, "AZLEAVE", old);
+          did_it(what, Zone(absold), NULL, NULL, NULL, NULL, "AZLEAVE", old, AN_MOVE);
         if (GoodObject(absloc) && GoodObject(Zone(absloc)) &&
             (!GoodObject(absold) || !GoodObject(Zone(absold)) ||
              (Zone(absloc) != Zone(absold))))
-          did_it(what, Zone(absloc), NULL, NULL, NULL, NULL, "AZENTER", where);
-        did_it(what, where, NULL, NULL, NULL, NULL, "AENTER", where);
+          did_it(what, Zone(absloc), NULL, NULL, NULL, NULL, "AZENTER", where, AN_MOVE);
+        did_it(what, where, NULL, NULL, NULL, NULL, "AENTER", where, AN_MOVE);
       }
     }
   if (!nomovemsgs)
     did_it_with(what, what, "MOVE", NULL, "OMOVE", NULL,
-                "AMOVE", where, where, old, NA_INTER_SEE);
+                "AMOVE", where, where, old, NA_INTER_SEE, AN_MOVE);
   queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
               unparse_objid(what),
               unparse_objid(where),
@@ -415,7 +415,7 @@ do_move(dbref player, const char *direction, enum move_type type,
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
       char msg[BUFFER_LEN];
-      sprintf(msg, T("%s goes home."), Name(player));
+      sprintf(msg, T("%s goes home."), AName(player, AN_MOVE, NULL));
       /* tell everybody else */
       notify_except(player, loc, player, msg, NA_INTER_SEE);
     }
@@ -486,8 +486,8 @@ do_move(dbref player, const char *direction, enum move_type type,
           return;
         }
         did_it(player, exit_m, "SUCCESS", NULL, "OSUCCESS", NULL,
-               "ASUCCESS", NOTHING);
-        did_it(player, exit_m, "DROP", NULL, "ODROP", NULL, "ADROP", var_dest);
+               "ASUCCESS", NOTHING, AN_MOVE);
+        did_it(player, exit_m, "DROP", NULL, "ODROP", NULL, "ADROP", var_dest, AN_MOVE);
         switch (Typeof(var_dest)) {
 
         case TYPE_ROOM:
@@ -554,8 +554,8 @@ do_firstexit(dbref player, const char **what)
     Exits(loc) = remove_first(Exits(loc), thing);
     Source(thing) = loc;
     PUSH(thing, Exits(loc));
-    notify_format(player, T("%s is now the first exit in %s."), Name(thing),
-                  unparse_object(player, loc));
+    notify_format(player, T("%s is now the first exit in %s."), AName(thing, AN_SYS, NULL),
+                  unparse_object(player, loc, AN_SYS));
   }
 }
 
@@ -618,21 +618,21 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
            (EnterOk(Location(thing)) &&
             eval_lock_with(player, Location(thing), Take_Lock, pe_info)))) {
         notify_format(Location(thing),
-                      T("%s was taken from you."), Name(thing));
-        notify_format(thing, T("%s took you."), Name(player));
+                      T("%s was taken from you."), AName(thing, AN_MOVE, NULL));
+        notify_format(thing, T("%s took you."), AName(player, AN_MOVE, NULL));
         tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You take %s from %s."), Name(thing),
-                    Name(Location(thing)));
+        safe_format(tbuf1, &tp, T("You take %s from %s."), AName(thing, AN_MOVE, NULL),
+                    AName(Location(thing), AN_MOVE, NULL));
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("takes %s from %s."), Name(thing),
-                    Name(Location(thing)));
+        safe_format(tbuf2, &tp, T("takes %s from %s."), AName(thing, AN_MOVE, NULL),
+                    AName(Location(thing), AN_MOVE, NULL));
         *tp = '\0';
         moveto(thing, player, player, "get");
         did_it(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
-               NOTHING);
+               NOTHING, AN_MOVE);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
-                    "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR);
+                    "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR, AN_MOVE);
       } else
         fail_lock(player, thing, Basic_Lock,
                   T("You can't take that from there."), NOTHING);
@@ -669,17 +669,17 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
         }
         if (could_doit(player, thing, pe_info)) {
           moveto(thing, player, player, "get");
-          notify_format(thing, T("%s took you."), Name(player));
+          notify_format(thing, T("%s took you."), AName(player, AN_MOVE, NULL));
           tp = tbuf1;
-          safe_format(tbuf1, &tp, T("You take %s."), Name(thing));
+          safe_format(tbuf1, &tp, T("You take %s."), AName(thing, AN_MOVE, NULL));
           *tp = '\0';
           tp = tbuf2;
-          safe_format(tbuf2, &tp, T("takes %s."), Name(thing));
+          safe_format(tbuf2, &tp, T("takes %s."), AName(thing, AN_MOVE, NULL));
           *tp = '\0';
           did_it(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2,
-                 "ASUCCESS", NOTHING);
+                 "ASUCCESS", NOTHING, AN_MOVE);
           did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
-                      "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR);
+                      "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR, AN_MOVE);
         } else
           fail_lock(player, thing, Basic_Lock, T("You can't pick that up."),
                     NOTHING);
@@ -745,21 +745,21 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
     } else if ((Location(loc) != NOTHING) && IsRoom(loc) && !Sticky(loc)
                && eval_lock_with(thing, loc, Dropto_Lock, pe_info)) {
       /* location has immediate dropto */
-      notify_format(thing, T("%s drops you."), Name(player));
+      notify_format(thing, T("%s drops you."), AName(player, AN_MOVE, NULL));
       moveto(thing, Location(loc), player, "drop");
     } else {
-      notify_format(thing, T("%s drops you."), Name(player));
+      notify_format(thing, T("%s drops you."), AName(player, AN_MOVE, NULL));
       moveto(thing, loc, player, "drop");
     }
     break;
   }
   tp = tbuf1;
-  safe_format(tbuf1, &tp, T("You drop %s."), Name(thing));
+  safe_format(tbuf1, &tp, T("You drop %s."), AName(thing, AN_MOVE, NULL));
   *tp = '\0';
   tp = tbuf2;
-  safe_format(tbuf2, &tp, T("drops %s."), Name(thing));
+  safe_format(tbuf2, &tp, T("drops %s."), AName(thing, AN_MOVE, NULL));
   *tp = '\0';
-  did_it(player, thing, "DROP", tbuf1, "ODROP", tbuf2, "ADROP", NOTHING);
+  did_it(player, thing, "DROP", tbuf1, "ODROP", tbuf2, "ADROP", NOTHING, AN_MOVE);
 }
 
 /** The empty command.
@@ -853,21 +853,21 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
       count++;
       /* Get messages */
       if (thing != player) {
-        notify_format(thing, T("%s was taken from you."), Name(item));
-        notify_format(item, T("%s took you."), Name(player));
+        notify_format(thing, T("%s was taken from you."), AName(item, AN_MOVE, NULL));
+        notify_format(item, T("%s took you."), AName(player, AN_MOVE, NULL));
         tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You take %s from %s."), Name(item),
-                    Name(thing));
+        safe_format(tbuf1, &tp, T("You take %s from %s."), AName(item, AN_MOVE, NULL),
+                    AName(thing, AN_MOVE, NULL));
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("takes %s from %s."), Name(item),
-                    Name(thing));
+        safe_format(tbuf2, &tp, T("takes %s from %s."), AName(item, AN_MOVE, NULL),
+                    AName(thing, AN_MOVE, NULL));
         *tp = '\0';
         moveto(item, player, player, "empty");
         did_it(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
-               NOTHING);
+               NOTHING, AN_MOVE);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
-                    "ARECEIVE", NOTHING, item, NOTHING, NA_INTER_HEAR);
+                    "ARECEIVE", NOTHING, item, NOTHING, NA_INTER_HEAR, AN_MOVE);
       }
       /* Drop messages */
       if (thing_loc != player) {
@@ -877,27 +877,27 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
                    && !Sticky(thing_loc)
                    && eval_lock_with(item, thing_loc, Dropto_Lock, pe_info)) {
           /* location has immediate dropto */
-          notify_format(item, T("%s drops you."), Name(player));
+          notify_format(item, T("%s drops you."), AName(player, AN_MOVE, NULL));
           moveto(item, Location(thing_loc), player, "empty");
         } else {
-          notify_format(item, T("%s drops you."), Name(player));
+          notify_format(item, T("%s drops you."), AName(player, AN_MOVE, NULL));
           moveto(item, thing_loc, player, "empty");
         }
         tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You drop %s."), Name(item));
+        safe_format(tbuf1, &tp, T("You drop %s."), AName(item, AN_MOVE, NULL));
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("drops %s."), Name(item));
+        safe_format(tbuf2, &tp, T("drops %s."), AName(item, AN_MOVE, NULL));
         *tp = '\0';
-        did_it(player, item, "DROP", tbuf1, "ODROP", tbuf2, "ADROP", NOTHING);
+        did_it(player, item, "DROP", tbuf1, "ODROP", tbuf2, "ADROP", NOTHING, AN_MOVE);
       }
     }
   }
   if (count == 1)
-    notify_format(player, T("You remove 1 object from %s."), Name(thing));
+    notify_format(player, T("You remove 1 object from %s."), AName(thing, AN_MOVE, NULL));
   else
     notify_format(player, T("You remove %d objects from %s."),
-                  count, Name(thing));
+                  count, AName(thing, AN_MOVE, NULL));
 
   return;
 }
@@ -1072,7 +1072,7 @@ do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
     }
     /* Are we already following them? */
     if (is_following(player, leader)) {
-      notify_format(player, T("You're already following %s."), Name(leader));
+      notify_format(player, T("You're already following %s."), AName(leader, AN_SYS, NULL));
       return;
     }
     /* Ok, are we allowed to follow them? */
@@ -1115,7 +1115,7 @@ do_unfollow(dbref player, const char *arg)
     }
     /* Are we following them? */
     if (!is_following(player, leader)) {
-      notify_format(player, T("You're not following %s."), Name(leader));
+      notify_format(player, T("You're not following %s."), AName(leader, AN_SYS, NULL));
       return;
     }
     /* Ok, looks good */
@@ -1149,7 +1149,7 @@ do_dismiss(dbref player, const char *arg)
     }
     /* Are we leading them? */
     if (!is_following(follower, player)) {
-      notify_format(player, T("%s isn't following you."), Name(follower));
+      notify_format(player, T("%s isn't following you."), AName(follower, AN_SYS, NULL));
       return;
     }
     /* Ok, looks good */
@@ -1184,7 +1184,7 @@ do_desert(dbref player, const char *arg)
     if (!is_following(who, player)
         && !is_following(player, who)) {
       notify_format(player,
-                    T("%s isn't following you, nor vice versa."), Name(who));
+                    T("%s isn't following you, nor vice versa."), AName(who, AN_SYS, NULL));
       return;
     }
     /* Ok, looks good */
@@ -1245,10 +1245,10 @@ add_follow(dbref leader, dbref follower, int noisy)
   add_follower(leader, follower);
   add_following(follower, leader);
   if (noisy) {
-    strcpy(msg, tprintf(T("You begin following %s."), Name(leader)));
-    notify_format(leader, T("%s begins following you."), Name(follower));
+    strcpy(msg, tprintf(T("You begin following %s."), AName(leader, AN_SYS, NULL)));
+    notify_format(leader, T("%s begins following you."), AName(follower, AN_SYS, NULL));
     did_it(follower, leader, "FOLLOW", msg, "OFOLLOW", NULL,
-           "AFOLLOW", NOTHING);
+           "AFOLLOW", NOTHING, AN_SYS);
   }
 }
 
@@ -1292,10 +1292,10 @@ del_follow(dbref leader, dbref follower, int noisy)
   del_follower(leader, follower);
   del_following(follower, leader);
   if (noisy) {
-    strcpy(msg, tprintf(T("You stop following %s."), Name(leader)));
-    notify_format(leader, T("%s stops following you."), Name(follower));
+    strcpy(msg, tprintf(T("You stop following %s."), AName(leader, AN_SYS, NULL)));
+    notify_format(leader, T("%s stops following you."), AName(follower, AN_SYS, NULL));
     did_it(follower, leader, "UNFOLLOW", msg, "OUNFOLLOW",
-           NULL, "AUNFOLLOW", NOTHING);
+           NULL, "AUNFOLLOW", NOTHING, AN_SYS);
   }
 }
 
@@ -1406,7 +1406,7 @@ clear_followers(dbref leader, int noisy)
     if (GoodObject(flwr)) {
       del_following(flwr, leader);
       if (noisy)
-        notify_format(flwr, T("You stop following %s."), Name(leader));
+        notify_format(flwr, T("You stop following %s."), AName(leader, AN_SYS, NULL));
     }
   }
   (void) atr_clr(leader, "FOLLOWERS", GOD);
@@ -1434,7 +1434,7 @@ clear_following(dbref follower, int noisy)
     if (GoodObject(ldr)) {
       del_follower(ldr, follower);
       if (noisy)
-        notify_format(ldr, T("%s stops following you."), Name(follower));
+        notify_format(ldr, T("%s stops following you."), AName(follower, AN_SYS, NULL));
     }
   }
   (void) atr_clr(follower, "FOLLOWING", GOD);
@@ -1471,7 +1471,7 @@ follower_command(dbref leader, dbref loc, const char *com, dbref toward)
               || (Dark(Location(follower)) && !Light(leader)))
             || See_All(follower))) {
       /* This is a follower who was in the room with the leader. Follow. */
-      notify_format(follower, T("You follow %s."), Name(leader));
+      notify_format(follower, T("You follow %s."), AName(leader, AN_SYS, NULL));
       parse_que(follower, leader, combuf, NULL);
     }
   }

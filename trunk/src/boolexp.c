@@ -643,7 +643,7 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
     return safe_dbref(thing, buff, bp);
   case UB_ALL:
   default:
-    return safe_str(unparse_object(player, thing), buff, bp);
+    return safe_str(unparse_object(player, thing, AN_UNPARSE), buff, bp);
   }
 }
 
@@ -2247,7 +2247,7 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
       else if (!(Can_Read_Lock(i, arg, s) && getlock(arg, s) != TRUE_BOOLEXP))
         complain(player, i, "lock-checks",
                  T("%s lock has indirect lock to %s/%s that it can't read"),
-                 name, unparse_object(player, arg), s);
+                 name, unparse_object(player, arg, AN_UNPARSE), s);
       break;
     default:
       break;

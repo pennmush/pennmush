@@ -55,7 +55,7 @@ x - Cloudy/Terse
 
     Chan_usefirstmatch     Hear_connect           Heavy             
     Loud                   No_log                 Paranoid          
-    Track_money            XTERM256
+    Track_money            XTERM256               MONIKER
 -----------------------------------------------------------------------
 Some flags may not be enabled on some MUSHes. @flag/list will show
 which are available.
@@ -416,6 +416,17 @@ See also: @link, TRUST, @parent, PARENTS, OPEN_OK
   exits in the room with @open (or move exits to the room with @teleport).
   
 See also: @open, LINK_OK
+& MONIKER
+  Flag:  MONIKER  (all types)
+
+  The names of objects with this flag set will be displayed in color using
+  the object's @moniker, even if monikers are not usually enabled for that
+  type of object (via the 'monikers' @config option). See 'help monikers'
+  for more details on monikers.
+  
+  This flag can only be set by Wizards or Royalty.
+  
+See also: MONIKERS, @moniker, moniker()
 & MONITOR
   Flag:  MONITOR  (players, things, rooms)
  

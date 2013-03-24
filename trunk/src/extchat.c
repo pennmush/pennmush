@@ -1267,7 +1267,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     /* Is victim already on the channel? */
     if (onchannel(victim, chan)) {
       notify_format(player,
-                    T("%s is already on channel <%s>."), Name(victim),
+                    T("%s is already on channel <%s>."), AName(victim, AN_SYS, NULL),
                     ChanName(chan));
       return;
     }
@@ -1285,10 +1285,10 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     }
     if (insert_user_by_dbref(victim, chan)) {
       notify_format(victim,
-                    T("CHAT: %s joins you to channel <%s>."), Name(player),
+                    T("CHAT: %s joins you to channel <%s>."), AName(player, AN_SYS, NULL),
                     ChanName(chan));
       notify_format(player,
-                    T("CHAT: You join %s to channel <%s>."), Name(victim),
+                    T("CHAT: You join %s to channel <%s>."), AName(victim, AN_SYS, NULL),
                     ChanName(chan));
       onchannel(victim, chan);
       ChanNumUsers(chan)++;
@@ -1299,7 +1299,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       }
     } else {
       notify_format(player,
-                    T("%s is already on channel <%s>."), Name(victim),
+                    T("%s is already on channel <%s>."), AName(victim, AN_SYS, NULL),
                     ChanName(chan));
     }
     return;
@@ -1322,12 +1322,12 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       }
       notify_format(victim,
                     T("CHAT: %s removes you from channel <%s>."),
-                    Name(player), ChanName(chan));
+                    AName(player, AN_SYS, NULL), ChanName(chan));
       notify_format(player,
                     T("CHAT: You remove %s from channel <%s>."),
-                    Name(victim), ChanName(chan));
+                    AName(victim, AN_SYS, NULL), ChanName(chan));
     } else {
-      notify_format(player, T("%s is not on channel <%s>."), Name(victim),
+      notify_format(player, T("%s is not on channel <%s>."), AName(victim, AN_SYS, NULL),
                     ChanName(chan));
     }
     return;
@@ -1395,7 +1395,7 @@ channel_join_self(dbref player, const char *name)
   } else {
     /* Should never happen */
     notify_format(player,
-                  T("%s is already on channel <%s>."), Name(player),
+                  T("%s is already on channel <%s>."), AName(player, AN_SYS, NULL),
                   ChanName(chan));
   }
 }
@@ -1435,7 +1435,7 @@ channel_leave_self(dbref player, const char *name)
     notify_format(player, T("CHAT: You leave channel <%s>."), ChanName(chan));
   } else {
     /* Should never happen */
-    notify_format(player, T("%s is not on channel <%s>."), Name(player),
+    notify_format(player, T("%s is not on channel <%s>."), AName(player, AN_SYS, NULL),
                   ChanName(chan));
   }
 }
@@ -2570,7 +2570,7 @@ channel_wipe(dbref player, CHAN *chan)
     victim = CUdbref(u);
     if (remove_user(u, chan))
       notify_format(victim, T("CHAT: %s has removed all users from <%s>."),
-                    Name(player), ChanName(chan));
+                    AName(player, AN_SYS, NULL), ChanName(chan));
   }
   ChanNumUsers(chan) = 0;
   return;
@@ -2635,7 +2635,7 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
   } else if (ChanMogrifier(c) != NOTHING) {
     notify_format(player,
                   T("CHAT: Channel <%s> no longer mogrified by %s."),
-                  ChanName(c), Name(ChanMogrifier(c)));
+                  ChanName(c), AName(ChanMogrifier(c), AN_SYS, NULL));
     ChanMogrifier(c) = NOTHING;
     return;
   } else {
@@ -2652,7 +2652,7 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
   ChanMogrifier(c) = it;
   notify_format(player,
                 T("CHAT: Channel <%s> now mogrified by %s."), ChanName(c),
-                Name(it));
+                AName(it, AN_SYS, NULL));
   return;
 }
 
@@ -2688,7 +2688,7 @@ do_chan_chown(dbref player, const char *name, const char *newowner)
   chan_chown(c, victim);
   notify_format(player,
                 T("CHAT: Channel <%s> now owned by %s."), ChanName(c),
-                Name(ChanCreator(c)));
+                AName(ChanCreator(c), AN_SYS, NULL));
   return;
 }
 
@@ -2838,10 +2838,10 @@ do_chan_what(dbref player, const char *partname)
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanTitle(c));
-      notify_format(player, T("Owner: %s"), Name(ChanCreator(c)));
+      notify_format(player, T("Owner: %s"), AName(ChanCreator(c), AN_SYS, NULL));
       if (ChanMogrifier(c) != NOTHING) {
         notify_format(player, T("Mogrifier: %s (#%d)"),
-                      Name(ChanMogrifier(c)), ChanMogrifier(c));
+                      AName(ChanMogrifier(c), AN_SYS, NULL), ChanMogrifier(c));
       }
       notify_format(player, T("Flags: %s"),
                     privs_to_string(priv_table, ChanType(c)));
@@ -2955,7 +2955,7 @@ do_channel_who(dbref player, CHAN *chan)
         (!Chanuser_Hide(u) || Priv_Who(player))) {
       i++;
       safe_itemizer(i, !(u->next), ",", T("and"), " ", tbuf1, &bp);
-      safe_str(Name(who), tbuf1, &bp);
+      safe_str(AName(who, AN_CHAT, NULL), tbuf1, &bp);
       if (IsThing(who))
         safe_format(tbuf1, &bp, "(#%d)", who);
       if (Chanuser_Hide(u) && Chanuser_Gag(u))
@@ -3177,7 +3177,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
   }
 
   seen = im_new();
-  accname = mush_strdup(accented_name(player), "chat_announce.name");
+  accname = mush_strdup(AaName(player, AN_CHAT, NULL), "chat_announce.name");
 
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
@@ -3726,7 +3726,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   if (Channel_NoNames(channel)) {
     playername[0] = '\0';
   } else {
-    snprintf(playername, BUFFER_LEN, "%s", accented_name(player));
+    snprintf(playername, BUFFER_LEN, "%s", AaName(player, AN_CHAT, NULL));
   }
   if (!title[0] && !playername[0]) {
     snprintf(playername, BUFFER_LEN, "%s", someone);

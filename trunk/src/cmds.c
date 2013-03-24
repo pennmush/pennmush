@@ -41,6 +41,7 @@
 #include "mysocket.h"
 #include "lookup.h"
 #include "ssl_slave.h"
+#include "ansi.h"
 #include "confmagic.h"
 
 /* External Stuff */
@@ -968,6 +969,37 @@ COMMAND(cmd_message)
 
   do_message(executor, speaker, arg_left, attrib, message, type, flags, i, args,
              queue_entry->pe_info);
+}
+
+COMMAND(cmd_moniker)
+{
+  dbref target;
+  char moniker[BUFFER_LEN], *mp;
+
+  target = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
+  if (target == NOTHING)
+    return;
+
+  if (!controls(executor, target)) {
+    notify(executor, "Permission denied.");
+    return ;
+  }
+
+  if (!arg_right || !*arg_right) {
+    atr_clr(target, "MONIKER", GOD);
+    notify(executor, "Moniker cleared.");
+  } else {
+    mp = moniker;
+    sanitize_moniker(arg_right, moniker, &mp);
+    *mp = '\0';
+    if (!has_markup(moniker)) {
+      notify(executor, "You need to specify a moniker with some ANSI.");
+    } else {
+      atr_add(target, "MONIKER", moniker, executor, 0);
+      notify(executor, "Moniker set.");
+    }
+  }
+
 }
 
 COMMAND(cmd_motd)

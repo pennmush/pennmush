@@ -727,10 +727,10 @@ do_unlock(dbref player, const char *name, lock_type type)
       if (getlock(thing, real_type) == TRUE_BOOLEXP) {
         if (!AreQuiet(player, thing))
           notify_format(player, T("%s(%s) - %s (already) unlocked."),
-                        Name(thing), unparse_dbref(thing), real_type);
+                        AName(thing, AN_SYS, NULL), unparse_dbref(thing), real_type);
       } else if (delete_lock(player, thing, real_type)) {
         if (!AreQuiet(player, thing))
-          notify_format(player, T("%s(%s) - %s unlocked."), Name(thing),
+          notify_format(player, T("%s(%s) - %s unlocked."), AName(thing, AN_SYS, NULL),
                         unparse_dbref(thing), real_type);
         if (!IsPlayer(thing))
           ModTime(thing) = mudtime;
@@ -794,7 +794,7 @@ do_lock(dbref player, const char *name, const char *keyname, lock_type type)
       /* everything ok, do it */
       if (add_lock(player, thing, real_type, key, LF_DEFAULT)) {
         if (!AreQuiet(player, thing))
-          notify_format(player, T("%s(%s) - %s locked."), Name(thing),
+          notify_format(player, T("%s(%s) - %s locked."), AName(thing, AN_SYS, NULL),
                         unparse_dbref(thing), real_type);
         if (!IsPlayer(thing))
           ModTime(thing) = mudtime;
@@ -924,7 +924,7 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   upcasestr(atr);
   upcasestr(oatr);
   upcasestr(aatr);
-  return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc);
+  return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc, AN_SYS);
 }
 
 
@@ -997,7 +997,7 @@ do_lset(dbref player, char *what, char *flags)
     L_FLAGS(l) |= flag;
 
   if (!Quiet(player) && !(Quiet(thing) && (Owner(thing) == player)))
-    notify_format(player, "%s/%s - %s.", Name(thing), L_TYPE(l),
+    notify_format(player, "%s/%s - %s.", AName(thing, AN_SYS, NULL), L_TYPE(l),
                   unset ? T("lock flags unset") : T("lock flags set"));
   if (!IsPlayer(thing))
     ModTime(thing) = mudtime;
@@ -1020,7 +1020,7 @@ check_zone_lock(dbref player, dbref zone, int noisy)
       notify_format(player,
                     T
                     ("Unlocked zone %s - automatically zone-locking to itself"),
-                    unparse_object(player, zone));
+                    unparse_object(player, zone, AN_UNPARSE));
     }
   } else if (!noisy) {
     return;
@@ -1030,13 +1030,13 @@ check_zone_lock(dbref player, dbref zone, int noisy)
         eval_lock(MASTER_ROOM, zone, Zone_Lock)) {
       notify_format(player,
                     T("Zone %s really should have a more secure zone-lock."),
-                    unparse_object(player, zone));
+                    unparse_object(player, zone, AN_UNPARSE));
     } else {
       /* Probably inexact zone lock */
       notify_format(player,
                     T
                     ("Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"),
-                    unparse_object(player, zone));
+                    unparse_object(player, zone, AN_UNPARSE));
     }
   }
 }

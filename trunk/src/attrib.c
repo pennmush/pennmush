@@ -1985,12 +1985,12 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       if ((!strcmp(name, "FORWARDLIST") || !strcmp(name, "DEBUGFORWARDLIST"))
           && !Can_Forward(thing, fwd)) {
         notify_format(player, T("I don't think #%d wants to hear from %s."),
-                      fwd, Name(thing));
+                      fwd, AName(thing, AN_SYS, NULL));
         return -1;
       }
       if (!strcmp(name, "MAILFORWARDLIST") && !Can_MailForward(thing, fwd)) {
         notify_format(player, T("I don't think #%d wants %s's mail."), fwd,
-                      Name(thing));
+                      AName(thing, AN_SYS, NULL));
         return -1;
       }
     }
@@ -2070,12 +2070,12 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       char *bp = tbuf1;
       if (!s && !was_listener && !Hearer(thing)) {
         safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."),
-                    Name(thing));
+                    AName(thing, AN_SAY, NULL));
         *bp = '\0';
         notify_except(thing, announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       } else if (s && !was_hearer && !was_listener) {
         safe_format(tbuf1, &bp, T("%s grows ears and can now hear."),
-                    Name(thing));
+                    AName(thing, AN_SAY, NULL));
         *bp = '\0';
         notify_except(thing, announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       }
@@ -2085,7 +2085,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     old = atr_get(thing, name);
     if (!old || !AF_Quiet(old)) {
       notify_format(player,
-                    "%s/%s - %s.", Name(thing), name,
+                    "%s/%s - %s.", AName(thing, AN_SYS, NULL), name,
                     s ? T("Set") : T("Cleared"));
     }
   }

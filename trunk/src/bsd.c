@@ -3692,7 +3692,7 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
     if (total == 1) {
       notify_format(player, T("You pemit \"%s\" to %s."), message,
                     (last
-                     && last->connected ? Name(last->player) :
+                     && last->connected ? AName(last->player, AN_SYS, NULL) :
                      T("a connecting player")));
     } else {
       notify_format(player, T("You pemit \"%s\" to %d connections."), message,
@@ -3759,13 +3759,13 @@ do_page_port(dbref executor, const char *pc, const char *message)
     safe_format(tbuf, &tbp, T("From afar, %s%s%s"), Name(executor), gap,
                 message + 1);
     notify_format(executor, T("Long distance to %s: %s%s%s"),
-                  target != NOTHING ? Name(target) :
-                  T("a connecting player"), Name(executor), gap, message + 1);
+                  target != NOTHING ? AName(target, AN_SAY, NULL) :
+                  T("a connecting player"), AName(executor, AN_SAY, NULL), gap, message + 1);
     break;
   case 3:
     safe_format(tbuf, &tbp, T("%s pages: %s"), Name(executor), message);
     notify_format(executor, T("You paged %s with '%s'"),
-                  target != NOTHING ? Name(target) :
+                  target != NOTHING ? AName(target, AN_SAY, NULL) :
                   T("a connecting player"), message);
     break;
   }
@@ -4169,8 +4169,11 @@ do_who_mortal(dbref player, char *name)
   DESC *d;
   int count = 0;
   int privs = Priv_Who(player);
-  PUEBLOBUFF;
   bool wild = 0;
+  char nbuff[BUFFER_LEN];
+  char *np;
+  int nlen;
+  PUEBLOBUFF;
 
   if (poll_msg[0] == '\0')
     strcpy(poll_msg, "Doing");
@@ -4196,7 +4199,13 @@ do_who_mortal(dbref player, char *name)
       continue;
     if (Hidden(d) && !privs)
       continue;
-    notify_format(player, "%-16s %10s   %4s%c %s", Name(d->player),
+    np = nbuff;
+    safe_str(AName(d->player, AN_WHO, NULL), nbuff, &np);
+    nlen = strlen(Name(d->player));
+    if (nlen < 16)
+      safe_fill(' ', 16 - nlen, nbuff, &np);
+    *np = '\0';
+    notify_format(player, "%s %10s   %4s%c %s", nbuff,
                   onfor_time_fmt(d->connected_at, 10),
                   idle_time_fmt(d->last_time, 4),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
@@ -4230,7 +4239,10 @@ do_who_admin(dbref player, char *name)
   DESC *d;
   int count = 0;
   char tbuf[BUFFER_LEN];
+  char addr[28];
   bool wild = 0;
+  char *tp;
+  int nlen;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4252,20 +4264,28 @@ do_who_admin(dbref player, char *name)
     if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
-      sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
-              unparse_dbref(Location(d->player)),
-              onfor_time_fmt(d->connected_at, 9),
-              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-              is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'), d->addr);
+      tp = tbuf;
+      safe_str(AName(d->player, AN_WHO, NULL), tbuf, &tp);
+      nlen = strlen(Name(d->player));
+      if (nlen < 16)
+        safe_fill(' ', 16 - nlen, tbuf, &tp);
+      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%c ",
+                 unparse_dbref(Location(d->player)),
+                 onfor_time_fmt(d->connected_at, 9),
+                 idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+                 is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'));
+      strncpy(addr, d->addr, 28);
       if (Dark(d->player)) {
-        tbuf[71] = '\0';
-        strcat(tbuf, " (Dark)");
+        addr[20] = '\0';
+        strcat(addr, " (Dark)");
       } else if (Hidden(d)) {
-        tbuf[71] = '\0';
-        strcat(tbuf, " (Hide)");
+        addr[20] = '\0';
+        strcat(addr, " (Hide)");
       } else {
-        tbuf[78] = '\0';
+        addr[27] = '\0';
       }
+      safe_str(addr, tbuf, &tp);
+      *tp = '\0';
     } else {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
               "#-1", onfor_time_fmt(d->connected_at, 9),
@@ -4304,6 +4324,9 @@ do_who_session(dbref player, char *name)
   DESC *d;
   int count = 0;
   bool wild = 0;
+  char nbuff[BUFFER_LEN];
+  char *np;
+  int nlen;
   PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -4326,8 +4349,15 @@ do_who_session(dbref player, char *name)
     if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
-      notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
-                    Name(d->player), unparse_dbref(Location(d->player)),
+      np = nbuff;
+      safe_str(AName(d->player, AN_WHO, NULL), nbuff, &np);
+      nlen = strlen(Name(d->player));
+      if (nlen < 16)
+        safe_fill(' ', 16 - nlen, nbuff, &np);
+      *np = '\0';
+
+      notify_format(player, "%s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
+                    nbuff, unparse_dbref(Location(d->player)),
                     onfor_time_fmt(d->connected_at, 9),
                     idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
                     is_ssl_desc(d) ? 'S' : ' ',
@@ -4411,10 +4441,10 @@ announce_connect(DESC *d, int isnew, int num)
 
   if (isnew) {
     /* A brand new player created. */
-    snprintf(tbuf1, BUFFER_LEN, T("%s created."), Name(player));
+    snprintf(tbuf1, BUFFER_LEN, T("%s created."), AName(player, AN_SYS, NULL));
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
     if (Suspect(player))
-      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."), Name(player));
+      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."), AName(player, AN_SYS, NULL));
   }
 
   /* Redundant, but better for translators */
@@ -4426,7 +4456,7 @@ announce_connect(DESC *d, int isnew, int num)
   } else {
     message = (num > 1) ? T("has reconnected.") : T("has connected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", Name(player), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_SYS, NULL), message);
 
   /* send out messages */
   if (Suspect(player))
@@ -4632,7 +4662,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     message = (num > 1) ? T("has partially disconnected.") :
       T("has disconnected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", Name(player), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_SYS, NULL), message);
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
@@ -5691,12 +5721,12 @@ hide_player(dbref player, int hide, char *victim)
       notify(player, T("You no longer appear on the WHO list."));
     else
       notify_format(player, T("%s no longer appears on the WHO list."),
-                    Name(thing));
+                    AName(thing, AN_SYS, NULL));
   } else {
     if (player == thing)
       notify(player, T("You now appear on the WHO list."));
     else
-      notify_format(player, T("%s now appears on the WHO list."), Name(thing));
+      notify_format(player, T("%s now appears on the WHO list."), AName(thing, AN_SYS, NULL));
   }
 }
 

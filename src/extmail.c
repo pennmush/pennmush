@@ -137,7 +137,7 @@ static int sign(int x);
 static char *get_message(MAIL *mp);
 static unsigned char *get_compressed_message(MAIL *mp);
 static char *get_subject(MAIL *mp);
-static char *get_sender(MAIL *mp, int full);
+static char *get_sender(MAIL *mp, int full, int len, bool *pisplayer);
 static int was_sender(dbref player, MAIL *mp);
 
 MAIL *maildb;            /**< The head of the mail list */
@@ -225,22 +225,44 @@ get_subject(MAIL *mp)
   return sbuf;
 }
 
-/* Return the name of the mail sender. */
+/** Return the name of the mail sender, possibly limited to len visible characters.
+ * \param mp The mail message
+ * \param full Include dbref and owner?
+ * \param len if > 0, limit name to len to visible chars
+ * \param pisplayer if non-null, pointer to a bool var, which will be set to 1 if sender is a player
+ * \return pointer to STATIC buffer containing name to display
+ */
 static char *
-get_sender(MAIL *mp, int full)
+get_sender(MAIL *mp, int full, int len, bool *pisplayer)
 {
   static char tbuf1[BUFFER_LEN], *bp;
+  bool isplayer = 0;
   bp = tbuf1;
   if (!GoodObject(mp->from))
     safe_str(T("!Purged!"), tbuf1, &bp);
   else if (!was_sender(mp->from, mp))
     safe_str(T("!Purged!"), tbuf1, &bp);
-  else if (IsPlayer(mp->from) || !full)
+  else if (IsPlayer(mp->from) || !full) {
     safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
-  else
-    safe_format(tbuf1, &bp, T("%s (#%d, owner: %s)"), AName(mp->from, AN_SYS, NULL),
-                mp->from, AName(Owner(mp->from), AN_SYS, NULL));
+    isplayer = IsPlayer(mp->from);
+  } else {
+    safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
+    safe_format(tbuf1, &bp, T(" (#%d, owner: %s)"), mp->from, AName(Owner(mp->from), AN_SYS, NULL));
+  }
   *bp = '\0';
+  if (len > 0) {
+    if (has_markup(tbuf1)) {
+      ansi_string *as = parse_ansi_string(tbuf1);
+      bp = tbuf1;
+      safe_ansi_string(as, 0, len, tbuf1, &bp);
+      *bp = '\0';
+    } else {
+      tbuf1[len] = '\0';
+    }
+  }
+  if (pisplayer) {
+    *pisplayer = isplayer;
+  }
   return tbuf1;
 }
 
@@ -614,6 +636,7 @@ do_mail_read(dbref player, char *msglist)
   mail_flag folder;
   folder_array i;
   int j = 0;
+  bool isplayer;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -636,11 +659,12 @@ do_mail_read(dbref player, char *msglist)
         } else
           mush_strncpy(folderheader, T("Folder:"), BUFFER_LEN);
         notify(player, DASH_LINE);
-        mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        safe_fill_to(' ', 55, tbuf1);
         notify_format(player,
                       T
-                      ("From: %-55s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
-                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
+                      ("From: %-s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
+                      tbuf1, (isplayer
                               && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
@@ -677,11 +701,12 @@ void
 do_mail_list(dbref player, const char *msglist)
 {
   char subj[30];
-  char sender[30];
+  char sender[BUFFER_LEN];
   MAIL *mp;
   struct mail_selector ms;
   mail_flag folder;
   folder_array i;
+  bool isplayer;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -708,10 +733,11 @@ do_mail_list(dbref player, const char *msglist)
                           i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
                           TAG_END));
         strcpy(subj, chopstr(get_subject(mp), 28));
-        strcpy(sender, chopstr(get_sender(mp, 0), 12));
+        strcpy(sender, get_sender(mp, 0, 12, &isplayer));
+        safe_fill_to(' ', 12, sender);
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",
                       status_chars(mp), (int) Folder(mp), i[Folder(mp)],
-                      ((*sender != '!') && (Connected(mp->from) &&
+                      (isplayer && (Connected(mp->from) &&
                                             (!hidden(mp->from)
                                              || Priv_Who(player)))
                        ? '*' : ' '), sender, 30, subj,
@@ -787,6 +813,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
   char tbuf1[BUFFER_LEN];
   struct mail_selector ma, ms;
   int i, j;
+  bool isplayer;
 
   /* Initialize listing mail selector for all messages from player */
   ma.low = 0;
@@ -813,11 +840,12 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
         /* Read it */
         j++;
         notify(player, DASH_LINE);
-        mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        safe_fill_to(' ', 55, tbuf1);
         notify_format(player,
                       T
-                      ("From: %-55s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
-                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
+                      ("From: %s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
+                      tbuf1, (isplayer
                               && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
@@ -851,10 +879,13 @@ void
 do_mail_reviewlist(dbref player, dbref target)
 {
   char subj[30];
-  char sender[30];
+  char sender[BUFFER_LEN];
   MAIL *mp;
+  char nbuff[BUFFER_LEN], *np;
+  int nlen;
   struct mail_selector ms;
   int i;
+  bool isplayer;
 
   /* Initialize mail selector */
   ms.low = 0;
@@ -869,10 +900,16 @@ do_mail_reviewlist(dbref player, dbref target)
     notify_noenter(player, open_tag("SAMP"));
   /* MG: I haven't ANSI'd this because I'm lazy, and it requires more than just
    * replacing Name() with AName() */
+  np = nbuff;
+  safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
+  nlen  = strlen(Name(target));
+  if (nlen < 27)
+    safe_fill(' ', 27 - nlen, nbuff, &np);
+  *np = '\0';
   notify_format(player,
                 T
-                ("--------------------   MAIL: %-27s   ------------------"),
-                Name(target));
+                ("--------------------   MAIL: %s   ------------------"),
+                nbuff);
   for (mp = find_exact_starting_point(target); mp && (mp->to == target);
        mp = mp->next) {
     if (mail_match(player, mp, ms, i)) {
@@ -885,10 +922,12 @@ do_mail_reviewlist(dbref player, dbref target)
                         TAG_START, MARKUP_HTML, Name(target),
                         i, i, Name(target), TAG_END));
       strcpy(subj, chopstr(get_subject(mp), 28));
-      strcpy(sender, chopstr(get_sender(mp, 0), 12));
+      strcpy(sender, get_sender(mp, 0, 12, &isplayer));
+      safe_fill_to(' ', 12, sender);
+      np = nbuff;
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
-                    ((*sender != '!') && (Connected(mp->from) &&
+                    (isplayer && (Connected(mp->from) &&
                                           (!hidden(mp->from)
                                            || Priv_Who(player)))
                      ? '*' : ' '), sender, 30, subj,

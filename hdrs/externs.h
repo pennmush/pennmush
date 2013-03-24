@@ -644,6 +644,7 @@ mush_strndup(const char *src, size_t len, const char *check)
 
 /* Append N copies of the character X to the end of a string */
 int safe_fill(char x, size_t n, char *buff, char **bp);
+int safe_fill_to(char x, size_t n, char *buff);
 /* Append an accented string */
 int safe_accent(const char *restrict base,
                 const char *restrict tmplate, size_t len, char *buff,

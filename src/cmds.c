@@ -995,7 +995,7 @@ COMMAND(cmd_moniker)
     if (!has_markup(moniker)) {
       notify(executor, "You need to specify a moniker with some ANSI.");
     } else {
-      atr_add(target, "MONIKER", moniker, executor, 0);
+      atr_add(target, "MONIKER", moniker, GOD, 0);
       notify(executor, "Moniker set.");
     }
   }

@@ -1621,7 +1621,7 @@ db_read(PENNFILE *f)
         (void) getstring_noalloc(f);
         attr_read_all(f);
         if (globals.new_indb_version < 2) {
-          add_new_attr("MONIKER", AF_WIZARD | AF_NOPROG | AF_VISUAL);
+          add_new_attr("MONIKER", AF_WIZARD | AF_NOPROG | AF_VISUAL | AF_LOCKED);
         }
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");

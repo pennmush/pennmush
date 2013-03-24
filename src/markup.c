@@ -2401,6 +2401,7 @@ sanitize_moniker(char *input, char *buff, char **bp)
 {
   char orig[BUFFER_LEN];
   char *p, *colstr;
+  bool in_markup = false;
 
   /* So we can destructively modify it safely */
   strcpy(orig, input);
@@ -2417,10 +2418,20 @@ sanitize_moniker(char *input, char *buff, char **bp)
         while (*p && *p != TAG_END)
           p++;
         *p = '\0';
-        define_ansi_data(&ad, colstr);
-        ad.bits &= ~(CBIT_FLASH | CBIT_UNDERSCORE);
-        if (HAS_ANSI(ad))
-          write_ansi_data(&ad, buff, bp);
+        if (*colstr == '/') {
+          if (in_markup) {
+            write_ansi_close(buff, bp);
+            in_markup = 0;
+          }
+        } else {
+          define_ansi_data(&ad, colstr);
+          ad.bits &= ~(CBIT_FLASH | CBIT_UNDERSCORE);
+          if (HAS_ANSI(ad)) {
+            write_ansi_data(&ad, buff, bp);
+            in_markup = 1;
+          } else
+            in_markup = 0;
+        }
       } else {
         /* HTML */
         while (*p && *p != TAG_END)

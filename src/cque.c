@@ -2227,10 +2227,14 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
       }
     } else {
       if (Owner(victim) != player) {
+        char owner[BUFFER_LEN];
+        char obj[BUFFER_LEN];
+        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
+        strcpy(obj, AName(victim, AN_SYS, NULL));
         notify_format(player, "%s: %s's %s(%s)", T("Halted"),
-                      AName(Owner(victim), AN_SYS, NULL), AName(victim, AN_SYS, NULL), unparse_dbref(victim));
+                      owner, obj, unparse_dbref(victim));
         notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"),
-                      AName(victim, AN_SYS, NULL), unparse_dbref(victim), AName(player, AN_SYS, NULL));
+                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
       if (arg2 && *arg2 == '\0')
         set_flag_internal(victim, "HALT");
@@ -2393,11 +2397,15 @@ do_restart_com(dbref player, const char *arg1)
                       ("All of your objects are being restarted by %s."),
                       AName(player, AN_SYS, NULL));
       } else {
+        char owner[BUFFER_LEN];
+        char obj[BUFFER_LEN];
+        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
+        strcpy(obj, AName(victim, AN_SYS, NULL));
         notify_format(player,
                       T("Restarting: %s's %s(%s)"),
-                      AName(Owner(victim), AN_SYS, NULL), AName(victim, AN_SYS, NULL), unparse_dbref(victim));
+                      owner, obj, unparse_dbref(victim));
         notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
-                      AName(victim, AN_SYS, NULL), unparse_dbref(victim), AName(player, AN_SYS, NULL));
+                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
     } else {
       if (victim == player)

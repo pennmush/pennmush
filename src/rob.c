@@ -451,7 +451,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
                     "AGIVE", NOTHING, thing, who, NA_INTER_SEE, AN_MOVE);
 
         /* Notify the object that it's been given */
-        notify_format(thing, T("%s gave you to %s."), AName(player, AN_MOVE, NULL), AName(who, AN_MOVE, NULL));
+        strcpy(tbuf1, AName(player, AN_MOVE, NULL));
+        notify_format(thing, T("%s gave you to %s."), tbuf1, AName(who, AN_MOVE, NULL));
 
         /* Recipient gets success message on thing and receive on self */
         did_it(who, thing, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",

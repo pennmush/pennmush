@@ -1121,6 +1121,7 @@ do_sweep(dbref player, const char *arg1)
   int here_flag = 0;
   int inven_flag = 0;
   int exit_flag = 0;
+  char nhere[BUFFER_LEN];
 
   if (here == NOTHING)
     return;
@@ -1139,6 +1140,9 @@ do_sweep(dbref player, const char *arg1)
       return;
     }
   }
+
+  strcpy(nhere, AName(here, AN_LOOK, NULL));
+
   if (!inven_flag && !exit_flag) {
     notify(player, T("Listening in ROOM:"));
 
@@ -1146,24 +1150,24 @@ do_sweep(dbref player, const char *arg1)
       /* only worry about puppet and players who's owner's are connected */
       if (Connected(here) || (Puppet(here) && Connected(Owner(here)))) {
         if (IsPlayer(here)) {
-          notify_format(player, T("%s is listening."), AName(here, AN_LOOK, NULL));
+          notify_format(player, T("%s is listening."), nhere);
         } else {
           notify_format(player, T("%s [owner: %s] is listening."),
-                        AName(here, AN_LOOK, NULL), AName(Owner(here), AN_LOOK, NULL));
+                        nhere, AName(Owner(here), AN_LOOK, NULL));
         }
       }
     } else {
       if (Hearer(here) || Listener(here)) {
         if (Connected(here))
           notify_format(player, T("%s (this room) [speech]. (connected)"),
-                        AName(here, AN_LOOK, NULL));
+                        nhere);
         else
-          notify_format(player, T("%s (this room) [speech]."), AName(here, AN_LOOK, NULL));
+          notify_format(player, T("%s (this room) [speech]."), nhere);
       }
       if (Commer(here))
-        notify_format(player, T("%s (this room) [commands]."), AName(here, AN_LOOK, NULL));
+        notify_format(player, T("%s (this room) [commands]."), nhere);
       if (Audible(here))
-        notify_format(player, T("%s (this room) [broadcasting]."), AName(here, AN_LOOK, NULL));
+        notify_format(player, T("%s (this room) [broadcasting]."), nhere);
     }
 
     for (here = Contents(here); here != NOTHING; here = Next(here)) {
@@ -1173,8 +1177,9 @@ do_sweep(dbref player, const char *arg1)
           if (IsPlayer(here)) {
             notify_format(player, T("%s is listening."), AName(here, AN_LOOK, NULL));
           } else {
+            strcpy(nhere, AName(here, AN_LOOK, NULL));
             notify_format(player, T("%s [owner: %s] is listening."),
-                          AName(here, AN_LOOK, NULL), AName(Owner(here), AN_LOOK, NULL));
+                          nhere, AName(Owner(here), AN_LOOK, NULL));
           }
         }
       } else {
@@ -1210,8 +1215,9 @@ do_sweep(dbref player, const char *arg1)
           if (IsPlayer(here)) {
             notify_format(player, T("%s is listening."), AName(here, AN_LOOK, NULL));
           } else {
+            strcpy(nhere, AName(here, AN_LOOK, NULL));
             notify_format(player, T("%s [owner: %s] is listening."),
-                          AName(here, AN_LOOK, NULL), AName(Owner(here), AN_LOOK, NULL));
+                          nhere, AName(Owner(here), AN_LOOK, NULL));
           }
         }
       } else {

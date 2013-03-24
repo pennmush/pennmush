@@ -1423,6 +1423,7 @@ new_connection(int oldsock, int *result, conn_source source)
   return initializesock(newsock, hostbuf, ipbuf, source);
 }
 
+/** Free the OUTPUTPREFIX and OUTPUTSUFFIX for a descriptor. */
 static void
 clearstrings(DESC *d)
 {
@@ -1443,6 +1444,7 @@ clearstrings(DESC *d)
  * \param attr attribute to show
  * \param html Is it an HTML fcache?
  * \param prefix text to print before attr contents, or NULL
+ * \return 1 if something was written, 0 if not
  */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
@@ -1494,6 +1496,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 /** Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
+ * \return 1 if something was written, 0 if not
  */
 static bool
 fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)

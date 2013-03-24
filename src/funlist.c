@@ -1639,7 +1639,7 @@ FUNCTION(fun_ldelete)
   int delimarg = 3;
   char *replace = NULL;
 
-  if (!strcmp(called_as, "REPLACE")) {
+  if (!strcmp(called_as, "LREPLACE")) {
     delimarg = 4;
     replace = args[2];
   }

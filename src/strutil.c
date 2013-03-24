@@ -857,6 +857,40 @@ safe_fill(char x, size_t n, char *buff, char **bp)
   return ret;
 }
 
+/** Pad a string, which may contain ANSI, so it contains at least n
+ * visible (non-markup) chars.
+ * \param x character to pad with
+ * \param n desired size of buffer
+ * \param buff BUFFER_LEN char array to pad
+ * \retval 0 success
+ * \param 1 failure (filled to end of buffer but more was requested).
+ */
+int
+safe_fill_to(char x, size_t n, char *buff) {
+  char tmp[BUFFER_LEN];
+  char *p = tmp;
+  size_t curr;
+  int ret = 0;
+
+  curr = ansi_strlen(buff);
+
+  if (n >= BUFFER_LEN)
+    n = BUFFER_LEN - 1;
+
+  if (curr >= n)
+    return 0;
+
+  if (safe_str(buff, tmp, &p)) {
+    *p = '\0';
+    return 1;
+  }
+
+  ret = safe_fill(x, n - curr, tmp, &p);
+  *p = '\0';
+  strcpy(buff, tmp);
+  return ret;
+}
+
 int
 safe_hexchar(unsigned char c, char *buff, char **bp)
 {

@@ -4444,10 +4444,10 @@ announce_connect(DESC *d, int isnew, int num)
 
   if (isnew) {
     /* A brand new player created. */
-    snprintf(tbuf1, BUFFER_LEN, T("%s created."), AName(player, AN_SYS, NULL));
+    snprintf(tbuf1, BUFFER_LEN, T("%s created."), AName(player, AN_ANNOUNCE, NULL));
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
     if (Suspect(player))
-      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."), AName(player, AN_SYS, NULL));
+      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."), AName(player, AN_ANNOUNCE, NULL));
   }
 
   /* Redundant, but better for translators */
@@ -4459,7 +4459,7 @@ announce_connect(DESC *d, int isnew, int num)
   } else {
     message = (num > 1) ? T("has reconnected.") : T("has connected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_SYS, NULL), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL), message);
 
   /* send out messages */
   if (Suspect(player))
@@ -4665,7 +4665,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     message = (num > 1) ? T("has partially disconnected.") :
       T("has disconnected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_SYS, NULL), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL), message);
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
@@ -6229,7 +6229,7 @@ do_reboot(dbref player, int flag)
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect by %s, please wait."),
-                   Name(Owner(player)));
+                   AName(Owner(player), AN_ANNOUNCE, NULL));
     do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by %s(#%d).",
               Name(player), player);
   }

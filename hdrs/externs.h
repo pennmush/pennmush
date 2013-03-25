@@ -538,7 +538,8 @@ void do_message(dbref executor, dbref speaker, char *list, char *attrname,
                 char *message, enum emit_type type, int flags, int numargs,
                 char *argv[], NEW_PE_INFO *pe_info);
 
-const char *spname(dbref thing);
+const char *spname_int(dbref thing, bool ansi);
+#define spname(thing) spname_int(thing, 1)
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
 
 /* From strutil.c */

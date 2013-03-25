@@ -32,6 +32,9 @@ Monikers:
    void* data. Only used with UFUN_NAME. call_ufun() is an #define to
    call_ufun_int(), passing data as NULL, for backwards compatability.
  * The *did_it*() functions now take an extra arg
+ * spname() has been renamed spname_int(), and has an extra bool arg to 
+   determine whether ansi and accents should be included. spname() is now an
+   #define to spname_int, with ansi/accents on.
 
 Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 

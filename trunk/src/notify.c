@@ -650,7 +650,7 @@ make_nospoof(dbref speaker, int paranoid)
       safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
                   Owner(speaker), Name(speaker), speaker);
   } else
-    safe_format(dest, &bp, "[%s:] ", spname(speaker));
+    safe_format(dest, &bp, "[%s:] ", spname_int(speaker, 0));
   *bp = '\0';
   return (unsigned char *) dest;
 }

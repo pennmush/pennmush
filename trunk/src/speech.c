@@ -35,7 +35,7 @@ static void do_one_remit(dbref executor, dbref speaker, const char *target,
 dbref na_zemit(dbref current, void *data);
 
 const char *
-spname(dbref thing)
+spname_int(dbref thing, bool ansi)
 {
   /* if FULL_INVIS is defined, dark wizards and dark objects will be
    * Someone and Something, respectively.
@@ -46,8 +46,12 @@ spname(dbref thing)
       return "Someone";
     else
       return "Something";
-  } else {
+  } else if (ansi) {
+    /* This uses accents */
     return AaName(thing, AN_SAY, NULL);
+  } else {
+    /* This does not */
+    return Name(thing);
   }
 }
 

@@ -285,7 +285,7 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), AName(player, AN_SYS, NULL));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), AName(player, AN_ANNOUNCE, NULL));
   do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
          Name(player), unparse_dbref(player));
 

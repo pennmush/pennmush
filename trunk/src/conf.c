@@ -266,7 +266,7 @@ PENNCONF conftable[] = {
   ,
   {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
   ,
-  {"monikers", cf_int, &options.monikers, 10000, 0, "cosmetic"}
+  {"monikers", cf_int, &options.monikers, INT_MAX, 0, "cosmetic"}
   ,
   {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
    "cosmetic"}

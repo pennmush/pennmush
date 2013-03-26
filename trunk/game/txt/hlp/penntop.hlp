@@ -1618,6 +1618,11 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
    (?P=NAME) refers back to it. The above pattern might be written:
   
    (?P<word>sens|respons)e and (?P=word)ibility
+   
+  In a $-command, the value of the named pattern can be accessed via the
+  substitution %<NAME> (literal <>'s). Softcode functions which work with
+  regexps allow you to access the named subpatterns via $<NAME> (again, the
+  <> are literal).
 
   (Cont'd in help regexp syntax7)
 & regexp syntax7
@@ -1899,8 +1904,12 @@ See also: @emit, @pemit, @remit, @oemit, NOSPOOF, PARANOID
   For those unfamiliar with the term stack, it refers to a programming data 
   structure that follows a LIFO (Last-In-First-Out) principle. The stack in 
   MUSH holds the REGISTERS. The first ten registers can be accessed via the
-  %0-%9 %-substitutions, while all registers can be accessed via the v()
-  function (v(0), v(1), etc, up to v(29)).
+  %0-%9 %-substitutions, while all 30 registers can be accessed via the v()
+  function (v(0), v(1), etc, up to v(29)) or %<0>, %<1>, etc, up to %<29>;
+  the <>'s are literal.
+  
+  When using regexp $-commands with named subpatterns, the named arguments
+  can be accessed via %<name> (the <>'s are literal).
   
 See also: REGISTERS
 & STRINGS
@@ -1969,6 +1978,7 @@ See also: string functions
 & %+
   Other substitutions:
     %0-%9   = the contents of the REGISTERS 0-9, respectively
+    %<reg>  = the register named "reg", either 0-29 or a named register
     %@ = the caller's dbref number. Initially same as %#, changes when 
          something like a U-FUNCTION is called.
     %! = the dbref number of the object the command is on (the EXECUTOR)
@@ -1979,6 +1989,7 @@ See also: string functions
     %= = The dbref/attribute currently being evaluated
     %+ = The number of arguments passed to the current ufun.
     %qN = the equivalent of r(N), a register set by a setq() function.
+    %q<N> = the equivilent of r(N) for a named register
     %iN = equivilent of itext(N), the list element for iter()/@dolist.
     %$N = equivilent of stext(N), the <string> in switch()/@switch.
  
@@ -2125,7 +2136,7 @@ See also: @destroy, @stats
   User-defined commands can be created by setting $-commands on players,
   things, and rooms. Exits cannot have $-commands. To set a $-command:
 
-    &<attribute> <object>=$<command name>:<action list>
+    &<attribute> <object>=$<command pattern>:<action list>
   
   Whenever someone in the same room as the object types the command name, 
   the action list is carried out by the object, as long as:
@@ -2137,20 +2148,23 @@ See also: @destroy, @stats
   Such attributes can also be @triggered as if the $<command name>: did not 
   exist.
 
-  It is recommended that <command name> not begin with "@", as many built-in
-  commands start with "@". Conventionally, global commands are often named 
-  with the "+" prefix, and local $-commands often have a "+" or "." prefix.
+  It is recommended that <command pattern> not begin with "@", as many of
+  PennMUSH's built-in commands start with "@". Conventionally, global 
+  $-commands are often named with the "+" prefix, and local $-commands
+  commonly have a "+" or "." prefix.
   
   Continued in 'help user-defined2'.
 & $-COMMANDS2
 & MACROS2
 & USER-DEFINED2
-  Any number of *'s and ?'s may be in the command name. A * matches any 
-  number of characters, and a ? matches any single character. When the 
-  actions are executed, the values on the stack in %0-%9 and v(10)-v(29) are
-  the portions of what the user types that match the first 30 *'s or ?'s. 
-  You can also match a regular expression rather than wildcards - see 
-  'help regexps' for details.
+  Any number of wildcards, * and ?, may be in present in <command pattern>.
+  A * matches any number of characters (including none), and ? matches 
+  exactly one character. When the action list is executed, the values on the
+  stack in %0-%9 and v(10)-v(29) are the portions of what the user types that
+  match the first 30 *'s or ?'s. You can also match a regular expression 
+  rather than wildcards by setting the REGEXP attribute flag on <attribute>;
+  see 'help regexps' for details. When using named regexp captures, the named
+  arguments can be accessed via %<name> (the '<' and '>' are literal).
 
   For example, to make a 'wave' command, you could do the following:
     &DO_WAVE me=$wave *: pose waves to %0.

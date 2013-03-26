@@ -669,7 +669,7 @@ FUNCTION(fun_mapsql)
   int funccount = 0;
   int do_fieldnames = 0;
   int i, j;
-  char buffs[9][BUFFER_LEN];
+  char buffs[MAX_STACK_ARGS][BUFFER_LEN];
   char *tbp;
   char *cell = NULL;
   PE_REGS *pe_regs = NULL;
@@ -732,7 +732,7 @@ FUNCTION(fun_mapsql)
     if (sql_platform() == SQL_PLATFORM_MYSQL)
       fields = mysql_fetch_fields(qres);
 #endif
-    for (i = 0; i < numfields && i < 9; i++) {
+    for (i = 0; i < numfields && i < MAX_STACK_ARGS; i++) {
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:
@@ -783,7 +783,7 @@ FUNCTION(fun_mapsql)
     }
     pe_regs_clear(pe_regs);
     pe_regs_setenv(pe_regs, 0, unparse_integer(rownum + 1));
-    for (i = 0; (i < numfields) && (i < 9); i++) {
+    for (i = 0; (i < numfields) && (i < MAX_STACK_ARGS); i++) {
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:

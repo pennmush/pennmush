@@ -2412,9 +2412,9 @@ raw_search(dbref player, struct search_spec *spec,
         strcpy(lbuff, atr_value(a));
         ret = AF_Regexp(a)
           ? regexp_match_case_r(lbuff, spec->listenstring,
-                                AF_Case(a), NULL, 0, NULL, 0, NULL)
+                                AF_Case(a), NULL, 0, NULL, 0, NULL, 0)
           : wild_match_case_r(lbuff, spec->listenstring,
-                              AF_Case(a), NULL, 0, NULL, 0, NULL);
+                              AF_Case(a), NULL, 0, NULL, 0, NULL, 0);
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0,

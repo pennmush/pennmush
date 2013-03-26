@@ -2621,7 +2621,7 @@ FUNCTION(fun_regreplace)
       obp = args[i + 1];
 
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
+      pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, prebuf);
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
@@ -2717,7 +2717,7 @@ FUNCTION(fun_regreplace)
           /* Process the replacement */
           r = args[i + 1];
           pe_regs_clear(pe_regs);
-          pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
+          pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns, orig);
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {

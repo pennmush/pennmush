@@ -1731,7 +1731,7 @@ Continued in 'help regexp classes2'
   Please see 'help setq()' for more information about the setq registers.
 
 See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq(), v(), r(),
-          registers(), listq()
+          registers(), listq(), letq(), unsetq(), strmatch()
 & RQUOTA
   RQUOTA
 

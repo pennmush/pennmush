@@ -47,6 +47,8 @@ Functions:
    lreplace() and linsert(), respectively, for clarity and conformity. The
    original names remain as aliases. [MG]
  * moniker(<object>) returns an objects monikered name. [MUX] [MG]
+ * mapsql() only stored 10 columns, instead of the advertised 30. Reported
+   by Mercutio. [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

@@ -1279,15 +1279,16 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
   if (re_subpatterns < 0)
     return;
 
+  if (!pe_reg_flags)
+    pe_reg_flags = PE_REGS_REGEXP;
+
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
     buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
-    if (pe_reg_flags && pe_reg_flags != PE_REGS_REGEXP)
-      pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
+    pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1311,9 +1312,9 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
                         num, buff, BUFFER_LEN);
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
-     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
      */
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
+    pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
 
   }
 }
@@ -1335,6 +1336,9 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
     return;
   if (re_subpatterns < 0)
     return;
+
+  if (!pe_reg_flags)
+    pe_reg_flags = PE_REGS_REGEXP;
 
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
@@ -1516,10 +1520,9 @@ pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
 
 /* Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
 const char *
-pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
+pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name)
 {
   PE_REGS *pe_regs;
-  const char *name = pe_regs_intname(num);
   const char *ret;
 
   pe_regs = pe_info->regvals;
@@ -1553,9 +1556,11 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
     if (pe_regs->flags & PE_REGS_ARG) {
       for (val = pe_regs->vals; val; val = val->next) {
         if (val->type & PE_REGS_ARG) {
-          sscanf(val->name, "%d", &num);
-          if (num >= max) {
-            max = num + 1;      /* %0 is 1 arg */
+          if (sscanf(val->name, "%d", &num) == 1) {
+            /* only check numeric args, ignore named ones */
+            if (num >= max) {
+              max = num + 1;      /* %0 is 1 arg */
+            }
           }
         }
       }
@@ -2313,6 +2318,28 @@ process_expression(char *buff, char **bp, char const **str,
             if (qval) {
               safe_str(qval, buff, bp);
             }
+          }
+          break;
+        case '<':
+          nextc = **str;
+          if (!nextc)
+            goto exit_sequence;
+          else {
+            char subspace[BUFFER_LEN];
+            char *nbp = subspace;
+            if (process_expression(subspace, &nbp, str,
+                                   executor, caller, enactor,
+                                   eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+              retval = 1;
+              break;
+            }
+            *nbp = '\0';
+            qval = pi_regs_get_env(pe_info, subspace);
+            if (qval) {
+              safe_str(qval, buff, bp);
+            }
+            if (**str == '>')
+              (*str)++;
           }
           break;
         case 'R':

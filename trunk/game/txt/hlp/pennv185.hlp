@@ -17,6 +17,10 @@ Commands:
  * Added @moniker, to allow colored names. See 'help monikers' for more.
    Requested by Mikoto Misaka. Idea from [MUX]. [MG]
 
+Major changes:
+ * Regexp $-commands can now used name captures. They can be accessed via
+   %<name> (literal '<>'). Suggested by Mercutio. [MG]
+
 Hardcode:
  * A number of changes have been made to accomodate monikers. Notably, a lot
    of calls to the Name() macro now use the AName() macro. See the 
@@ -36,12 +40,13 @@ Minor changes:
    replace an un-ansi'd string into an ansi'd one. [MG]
  * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
    when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
- * Regexp $-commands can now used name captures. Suggested by Mercutio. [MG]
+ * New substitution, %k, returns the enactor's monikered name. [MUX] [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 
    lreplace() and linsert(), respectively, for clarity and conformity. The
    original names remain as aliases. [MG]
+ * moniker(<object>) returns an objects monikered name. [MUX] [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

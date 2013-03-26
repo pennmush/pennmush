@@ -1954,7 +1954,7 @@ show_queue_env(dbref player, MQUE *q)
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
     for (i = 0; i < MAX_STACK_ARGS; i += 1) {
-      const char *arg = pi_regs_get_env(q->pe_info, i);
+      const char *arg = PE_Get_Env(q->pe_info, i);
       if (arg)
         notify_format(player, " %%%d : %s", i, arg);
     }

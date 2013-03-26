@@ -1067,7 +1067,7 @@ regedit_helper(dbref player, dbref thing,
       /* Process the replacement */
       r = gargs->to;
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context_ansi(pe_regs, gargs->re, offsets, subpatterns,
+      pe_regs_set_rx_context_ansi(pe_regs, 0, gargs->re, offsets, subpatterns,
                                   haystack);
       tbp = tbuf;
       if (process_expression(tbuf, &tbp, &r, player, player, player,

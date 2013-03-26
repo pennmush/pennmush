@@ -547,7 +547,7 @@ FUNCTION(fun_strmatch)
 
   if (nargs > 2) {
     matches = wild_match_case_r(args[1], args[0], 0, ret,
-                                NUMQ, match_space, match_space_len, NULL);
+                                NUMQ, match_space, match_space_len, NULL, 0);
     safe_boolean(matches, buff, bp);
 
     if (matches) {
@@ -563,7 +563,7 @@ FUNCTION(fun_strmatch)
       }
     }
   } else {
-    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0, NULL);
+    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0, NULL, 0);
     safe_boolean(matches, buff, bp);
   }
 }

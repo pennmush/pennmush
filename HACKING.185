@@ -36,6 +36,16 @@ Monikers:
    determine whether ansi and accents should be included. spname() is now an
    #define to spname_int, with ansi/accents on.
 
+Wildcards:
+ * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
+   and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
+   flag to determine how matching subpatterns are stored in pe_regs. This
+   allows the functions to be used directly from atr_comm_match (which 
+   matches for $-commands). The extra arg is immediately after the 
+   PE_REGS *pe_regs arg - for [wild|regexp]_match_case_r(), it's the final
+   arg, for pe_regs_set_rx_context[_ansi]() it's the second arg. In all
+   existing cases, simply pass it as 0 for the old behaviour.
+
 Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 
   do_teleport() now takes a bitwise or of TEL_* flags (defined in externs.h)

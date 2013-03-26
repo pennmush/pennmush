@@ -169,11 +169,11 @@ void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 /* PE_REGS_REGEXP */
 struct real_pcre;
 struct _ansi_string;
-void pe_regs_set_rx_context(PE_REGS *regs,
+void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
                             struct real_pcre *re_code,
                             int *re_offsets,
                             int re_subpatterns, const char *re_from);
-void pe_regs_set_rx_context_ansi(PE_REGS *regs,
+void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
                                  struct real_pcre *re_code,
                                  int *re_offsets,
                                  int re_subpatterns,

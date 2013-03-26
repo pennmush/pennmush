@@ -1263,7 +1263,7 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 
 /* REGEXPS */
 void
-pe_regs_set_rx_context(PE_REGS *pe_regs,
+pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
                        struct real_pcre *re_code,
                        int *re_offsets, int re_subpatterns, const char *re_from)
 {
@@ -1286,6 +1286,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    if (pe_reg_flags && pe_reg_flags != PE_REGS_REGEXP)
+      pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1317,7 +1319,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
 }
 
 void
-pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
                             struct real_pcre *re_code,
                             int *re_offsets,
                             int re_subpatterns, struct _ansi_string *re_from)
@@ -1342,6 +1344,8 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
                              i, 1, buff, &bp);
     *bp = '\0';
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    if (pe_reg_flags && pe_reg_flags != PE_REGS_REGEXP)
+      pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */

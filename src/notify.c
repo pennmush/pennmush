@@ -1370,10 +1370,10 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
         if (AF_Regexp(a)
             ? regexp_match_case_r(atrval, fullmsg,
                                   AF_Case(a), lenv, MAX_STACK_ARGS,
-                                  match_space, match_space_len, NULL)
+                                  match_space, match_space_len, NULL, 0)
             : wild_match_case_r(atrval, fullmsg,
                                 AF_Case(a), lenv, MAX_STACK_ARGS,
-                                match_space, match_space_len, NULL)) {
+                                match_space, match_space_len, NULL, 0)) {
           if (!listen_lock_checked)
             listen_lock_passed = eval_lock(speaker, target, Listen_Lock);
           if (listen_lock_passed) {

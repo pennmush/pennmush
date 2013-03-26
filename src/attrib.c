@@ -1493,7 +1493,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   ATTR *ptr;
   int parent_depth;
   char *args[MAX_STACK_ARGS];
-  PE_REGS *pe_regs;
+  PE_REGS *pe_regs = NULL;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *s;
@@ -1501,7 +1501,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   UsedAttr *used_list, **prev;
   ATTR *skip[ATTRIBUTE_NAME_LIMIT / 2];
   int skipcount;
-  int i;
   int lock_checked = !check_locks;
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
@@ -1544,6 +1543,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     strcpy(pe_info->cmd_evaled, str);
 
   skipcount = 0;
+
+  if (!just_match)
+    pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
+
   do {
     next = parent_depth ?
       next_parent(thing, current, &parent_count, NULL) : NOTHING;
@@ -1623,7 +1626,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
       if (AF_Regexp(ptr)) {
         if (regexp_match_case_r
             (tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS, match_space,
-             match_space_len, NULL)) {
+             match_space_len, pe_regs, PE_REGS_ARG)) {
           match_found = 1;
           match++;
         }
@@ -1634,7 +1637,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           if (!just_match)
             wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
                               MAX_STACK_ARGS, match_space, match_space_len,
-                              NULL);
+                              pe_regs, PE_REGS_ARG);
         }
       }
       if (match_found) {
@@ -1669,12 +1672,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
-          pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
-          for (i = 0; i < MAX_STACK_ARGS; i++) {
-            if (args[i]) {
-              pe_regs_setenv_nocopy(pe_regs, i, args[i]);
-            }
-          }
           if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
             int pe_flags = PE_INFO_DEFAULT;
             if (!(queue_type & QUEUE_CLEAR_QREG)) {
@@ -1712,6 +1709,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                             can_debug(player, thing) : 0));
           }
           pe_regs_free(pe_regs);
+          pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
         }
       }
     }
@@ -1722,6 +1720,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     mush_free(used_list, "used_attr");
     used_list = temp;
   }
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free_pe_info(pe_info);
   return match;
 }
@@ -1748,10 +1748,10 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   char tbuf2[BUFFER_LEN];
   char *s;
   PE_REGS *pe_regs;
-  int i;
   char match_space[BUFFER_LEN * 2];
   char *args[MAX_STACK_ARGS];
   ssize_t match_space_len = BUFFER_LEN * 2;
+  int success = 0;
 
   /* check for lots of easy ways out */
   if (!GoodObject(thing) || Halted(thing) || NoCommand(thing))
@@ -1784,13 +1784,13 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   } else
     strcpy(tbuf2, tbuf1);
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
   if (AF_Regexp(ptr) ?
       regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
-                          match_space, match_space_len, NULL) :
+                          match_space, match_space_len, pe_regs, PE_REGS_ARG) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        MAX_STACK_ARGS, match_space, match_space_len, NULL)) {
+                        MAX_STACK_ARGS, match_space, match_space_len, pe_regs, PE_REGS_ARG)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
-    int success = 1;
     NEW_PE_INFO *pe_info;
 
     if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
@@ -1803,9 +1803,9 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     }
     strcpy(pe_info->cmd_raw, str);
     strcpy(pe_info->cmd_evaled, str);
-    if (!eval_lock_clear(player, thing, Command_Lock, pe_info)
-        || !eval_lock_clear(player, thing, Use_Lock, pe_info))
-      success = 0;
+    if (eval_lock_clear(player, thing, Command_Lock, pe_info)
+        && eval_lock_clear(player, thing, Use_Lock, pe_info))
+      success = 1;
     if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       /* Restore */
       strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
@@ -1814,12 +1814,6 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       free_pe_info(pe_info);
     }
     if (success) {
-      pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
-      for (i = 0; i < MAX_STACK_ARGS; i++) {
-        if (args[i]) {
-          pe_regs_setenv_nocopy(pe_regs, i, args[i]);
-        }
-      }
       if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
         /* inplace queue */
         int pe_flags = PE_INFO_DEFAULT;
@@ -1857,11 +1851,10 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                        (queue_type & QUEUE_DEBUG_PRIVS ?
                         can_debug(player, thing) : 0));
       }
-      pe_regs_free(pe_regs);
     }
-    return success;
   }
-  return 0;
+  pe_regs_free(pe_regs);
+  return success;
 }
 
 /*======================================================================*/

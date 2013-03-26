@@ -948,9 +948,9 @@ FUNCTION(fun_reswitch)
       /* set regexp context here */
       pe_regs_clear(pe_regs);
       if (mas) {
-        pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, mas);
+        pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns, mas);
       } else {
-        pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, mstr);
+        pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, mstr);
       }
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,

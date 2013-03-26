@@ -790,13 +790,13 @@ char *ansi_name(dbref thing, bool accents, bool *had_moniker);
     bool wild_match_case_r(const char *restrict s,
                            const char *restrict d, bool cs,
                            char **ary, int max, char *ata, int len,
-                           PE_REGS *pe_regs);
+                           PE_REGS *pe_regs, int pe_reg_flags);
     bool quick_wild(const char *restrict tsr, const char *restrict dstr);
     bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 
     bool regexp_match_case_r(const char *restrict s, const char *restrict d,
                              bool cs, char **, size_t, char *restrict, ssize_t,
-                             PE_REGS *pe_regs);
+                             PE_REGS *pe_regs, int pe_reg_flags);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs,
                             const char **report_err);

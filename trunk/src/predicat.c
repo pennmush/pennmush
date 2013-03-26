@@ -1109,7 +1109,7 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     /* check for a match */
     pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
     if (regexp ? regexp_match_case_r(buff, expression, 0,
-                                     NULL, 0, NULL, 0, pe_regs)
+                                     NULL, 0, NULL, 0, pe_regs, 0)
         : local_wild_match(buff, expression, pe_regs)) {
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
       if (!any) {

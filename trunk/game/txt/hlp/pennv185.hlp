@@ -21,6 +21,9 @@ Hardcode:
  * A number of changes have been made to accomodate monikers. Notably, a lot
    of calls to the Name() macro now use the AName() macro. See the 
    HACKING.185 file for more info. [MG]
+ * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
+   and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
+   flag to determine how matching subpatterns are stored in pe_regs. [MG]
 
 Fixes:
  * Commands which take multiple right-hand-side arguments could only have
@@ -33,6 +36,7 @@ Minor changes:
    replace an un-ansi'd string into an ansi'd one. [MG]
  * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
    when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
+ * Regexp $-commands can now used name captures. Suggested by Mercutio. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

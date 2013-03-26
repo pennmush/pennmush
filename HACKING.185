@@ -44,7 +44,12 @@ Wildcards:
    matches for $-commands). The extra arg is immediately after the 
    PE_REGS *pe_regs arg - for [wild|regexp]_match_case_r(), it's the final
    arg, for pe_regs_set_rx_context[_ansi]() it's the second arg. In all
-   existing cases, simply pass it as 0 for the old behaviour.
+   existing cases, pass it as PE_REGS_REGEXP for the old behaviour.
+   
+Pe_Regs:
+ * pi_regs_get_env()'s second arg is now char*, instead of int, to allow for
+   named arguments. Only use the function directly for named arguments - for
+   integer args (%0-%9) use the PE_Get_Env(pe_regs, int) macro
 
 Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 

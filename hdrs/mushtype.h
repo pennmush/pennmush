@@ -217,9 +217,9 @@ int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 const char *pe_regs_intname(int num);
 void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
-const char *pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
+const char *pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name);
 int pi_regs_get_envc(NEW_PE_INFO *pe_info);
-#define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
+#define PE_Get_Env(pi,n) pi_regs_get_env(pi, pe_regs_intname(n))
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
 /** NEW_PE_INFO holds data about string evaluation via process_expression().  */

@@ -302,7 +302,7 @@ See also: @-ATTRIBUTES, VERBS, $-COMMANDS
             
   Example 2:
     > &TEST me=$test:@emit {Testing; testing; one, two.} ; 
-        @dolist 1 2 3={think Test ##, success.}
+        @dolist 1 2 3={think Test %i0, success.}
     > test
     Testing; testing; one, two.
     Test 1, success.
@@ -514,7 +514,6 @@ Standard Attributes: (see @list/attribs for the complete list)
 See also: ATTRIB-OWNERSHIP, @set, examine, @atrchown, @atrlock,
   hasattr(), get(), v(), NON-STANDARD ATTRIBUTES, SETTING-ATTRIBUTES,
   ATTRIBUTE TREES
-
 & BEING KILLED
  
   Getting killed is no big deal. If you are killed, you return to your
@@ -600,6 +599,7 @@ See also: BOOLEAN FUNCTIONS, not(), t()
                   Potato      http://www.potatomushclient.com
   MAC OS X        Savitar     http://www.heynow.com/Savitar/
                   Atlantis    http://www.riverdark.net/atlantis/
+                  Potato      http://www.potatomushclient.com
                   Unix clients will also run on OS X.
 & CONTROL
   Controlling an object basically means that you have the power to
@@ -729,22 +729,22 @@ See also: objid(), @lock-objid, DBREFS
 & DROP-TOS
 & DROPTOS
 
-  When you use the @link command on a room, it sets another room or
-  object as the DROP-TO location. By default, any non-STICKY object
-  that someone drops in the room will automatically be transported to
-  the drop-to location, rather than staying in the room. Any STICKY
-  object dropped in the room will go to its home.
+  When you use the @link command on a room, it sets another room or object 
+  as the DROP-TO location. By default, any non-STICKY object that someone 
+  drops in the room will automatically be transported to the drop-to 
+  location, rather than staying in the room. Any STICKY object dropped in 
+  the room will go to its home.
 
-  If the room is set STICKY, objects will stay in the room until the
-  last player leaves or disconnects, at which point they will be
-  transported as described above.
+  If the room is set STICKY, objects will stay in the room until the last 
+  player leaves or disconnects, at which point they will be transported as
+  described above.
 
   Drop-tos work on things and players alike.
 
-  If the room has a @lock/dropto set on it, only objects that pass the
-  lock will be transported (either immediately or when the last player
-  leaves if the room is STICKY). This can be used to prevent the
-  dropto from acting on, say, objects containing connected players.
+  If the room has a @lock/dropto set on it, only objects that pass the lock
+  will be transported (either immediately or when the last player leaves if
+  the room is STICKY). This can be used to prevent the dropto from acting on,
+  say, objects containing connected players.
 
 See also: @link, STICKY, LINK_OK, @lock
 & %#
@@ -1070,8 +1070,7 @@ See also: LINK_OK, ABODE, @link
   attribute.
 
 See also: @listen, @ahear, @amhear, @aahear, MONITOR, LISTEN_PARENT,
-  USER-DEFINED COMMANDS
-
+  USER-DEFINED COMMANDS, INTERIORS
 & LISTS
   The word "list" is used in the help files to refer to a string that
   is a series of smaller strings separated by one or more spaces. A
@@ -1108,13 +1107,13 @@ See also: STRINGS, List Functions
 See also: @ps, HALT, COSTS, @trigger, @retry, SUBSTITUTIONS3
 & MASTER ROOM
   
-  The Master Room enables global commands and exits. Exits in the
-  Master Room may be used from any location on the MUSH. All objects
-  left in the Master Room are checked for user-defined
-  $commands. Those $commands are considered global, meaning that they
-  can be used anywhere on the MUSH.  Normally, only wizards will have
-  access to the Master Room; if you have a global command that you
-  would like to see enabled for the MUSH, speak to a wizard.
+  The Master Room enables global commands and exits. Exits in the Master 
+  Room may be used from any location on the MUSH. All objects left in the 
+  Master Room are checked for user-defined $-commands. Those $-commands are
+  considered global, meaning that they can be used anywhere on the MUSH.
+  Normally, only wizards will have access to the Master Room; if you have a 
+  global command that you would like to see enabled for the MUSH, speak to a
+  wizard.
   
 See also: EVALUATION, GLOBAL COMMANDS
 & ME
@@ -1127,15 +1126,14 @@ See also: EVALUATION, GLOBAL COMMANDS
 
 See also: NEWBIE, @lock, @describe, @sex, MATCHING
 & MONEY
-  The MUSH has a built-in money system, which gives a starting amount
-  of money to new players and hands out a daily allowance thereafter.
-  MUSH money (the default name is "pennies", but this may be different
-  depending on the particular MUSH) is spent on some MUSH commands
-  that are computationally expensive or alter the database. In
-  addition, every time you "queue" a command, it costs you a certain
-  amount of money -- this prevents looping from getting out of
-  control, since when all your money is spent, you can't queue any
-  more commands.
+  The MUSH has a built-in money system, which gives a starting amount of 
+  money to new players and hands out a daily allowance thereafter. MUSH money
+  (the default name is "pennies", but this may be different depending on the 
+  particular MUSH) is spent on some MUSH commands that are computationally 
+  expensive or alter the database. In addition, every time you "queue" a 
+  command, it costs you a certain amount of money -- this prevents looping 
+  from getting out of control, since when all your money is spent, you can't 
+  queue any more commands.
 
   The money system can also be used on player-created objects by setting 
   @cost/@payment/@opayment/@apayment attributes and using the "give" command
@@ -1194,29 +1192,27 @@ See also: @moniker, moniker(), MONIKER
 & MUSHCODE
 & SOFTCODE
 
-  MUSHcode is the programming language available within the MUSH
-  itself with which you can create user-defined commands and macros.
-  It is sometimes called "softcode" to distinguish it from "hardcode",
-  which is the language that the source code for the MUSH server is
-  written in. (Incidentally, hardcode is written in the C programming
-  language.)
+  MUSHcode is the programming language available within the MUSH itself with
+  which you can create user-defined commands and macros. It is sometimes 
+  called "softcode" to distinguish it from "hardcode", which is the language 
+  that the source code for the MUSH server is written in. (Incidentally, 
+  hardcode is written in the C programming language.)
   
-  At its most basic, writing MUSHcode is just stringing together a
-  series of commands that you would otherwise just type in one at a
-  time.  You can store MUSHcode in attributes on any type of object
-  you own or control (including yourself!).  The series of commands
-  can be triggered by using a user-defined command or by using
-  @trigger.
+  At its most basic, writing MUSHcode is just stringing together a series of
+  commands that you would otherwise just type in one at a time. You can store 
+  MUSHcode in attributes on any type of object you own or control (including 
+  yourself!).  The series of commands can be triggered by using a 
+  user-defined command or by using @trigger.
   
   Continued in 'help mushcode2'.
 & MUSHCODE2
 
-  If you would like to learn more about mushcoding and how to create
-  macros for yourself, the following help files may be useful.
-  However, the best way to learn is by obtaining a copy of Amberyl's
-  MUSH manual and following the examples described there.  The manual
-  is available by anonymous FTP from: ftp.pennmush.org in the
-  directory /pub/PennMUSH/Manuals
+  If you would like to learn more about MUSHcoding and how to create 
+  $-commands for yourself, the following help files may be useful. You may
+  also find it useful to download a copy of Amberyl's MUSH manual and 
+  follow the examples described there. However, the manual is quite old now,
+  and some parts may no longer be relevant or entirely accurate. The manual 
+  is available for download at http://download.pennmush.org/Manuals/
 
   Related Help Topics (in no particular order)
   -------------------
@@ -1227,22 +1223,22 @@ See also: @moniker, moniker(), MONIKER
   ACTION LISTS
 
 & NON-STANDARD ATTRIBUTES
-  While there are many standard attributes in MUSH, objects can also
-  have an unlimited number of attributes, with any name you wish to
-  use. In the past, you were limited to attributes named VA-VZ, WA-WZ,
-  XA-XZ; these are still available as standard attributes. However, it
-  is strongly recommended that you use non-standard attributes and
-  meaningful names in order to make maintaining your MUSHCode easier.
+  While there are many standard attributes in MUSH, objects can also have an 
+  enormous number of attributes, with any name you wish to use. In the past, 
+  you were limited to attributes named VA-VZ, WA-WZ, XA-XZ; these are still 
+  available as standard attributes. However, it is strongly recommended that 
+  you use non-standard attributes and meaningful names in order to make 
+  maintaining your MUSHCode easier.
 
   To set a non-standard attribute, you can use these formats:
       &<attribute name> <obj> = <value>  OR
       @_<attribute_name> <obj> = <value> OR
       @set <obj> = <attribute_name>:<value>
 
-  You can get the value of attributes using the functions v(), get(),
-  and xget(). You can evaluate attributes using u(), eval(), and
-  get_eval().  All attributes can be used in attribute locks and can
-  be 'owned' independent of object ownership.
+  You can get the value of attributes using the functions v(), get(), and 
+  xget(). You can evaluate attributes using u(), eval(), and get_eval(). All 
+  attributes can be used in attribute locks and can be 'owned' independent 
+  of object ownership.
   
 See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   ATTRIBUTE FLAGS
@@ -1250,116 +1246,108 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
 & PARENTS
 & OBJECT PARENTS
   
-  Objects may have "parent" objects, from which they can inherit
-  attributes.  Once an object is given a parent, it may use the
-  attributes on the parent just as if the attributes were on the
-  object itself, including checking for $commands. Use the @parent
-  command to change the parent of an object.
+  Objects may have "parent" objects, from which they can inherit attributes.
+  Once an object is given a parent, it may use the attributes on the parent 
+  just as if the attributes were on the object itself, including checking 
+  for $-commands. Use the @parent command to change the parent of an object.
 
-  Objects may have multiple levels of parents - thus, if #100 is the
-  parent of #101, which is the parent of #102, object #102 checks
-  itself, #101, and #100 for attributes. Attributes are checked on the
-  object itself first, followed by its parent, followed by that
-  parent's parent, and so forth. There is a (configurable) maximum
-  length of the parent chain for an object; the default is 10.
+  Objects may have multiple levels of parents - thus, if #100 is the parent 
+  of #101, which is the parent of #102, object #102 checks itself, #101, and
+  #100 for attributes. Attributes are checked on the object itself first, 
+  followed by its parent, followed by that parent's parent, and so on. There 
+  is a (configurable) maximum length of the parent chain for an object; the 
+  default is 10.
 
-  After the parent chain is exhausted, the type-specific ancestor is
-  also checked in similar fashion.  See 'help ANCESTORS' for more
-  about ancestors.
+  After the parent chain is exhausted, the type-specific ancestor is also 
+  checked in similar fashion. See 'help ANCESTORS' for more about ancestors.
 
   Continued in 'help parents2'.
 & PARENTS2
  
   Note that the only properties inherited are attributes and locks. In
-  particular, flags and exits are NOT inherited from the parent
-  object. Also, commands which walk the attribute list (such as
-  "examine", the LATTR() function, the HASATTR() function, @set, and
-  @edit) only affect attributes that are on the object itself.
+  particular, flags and exits are NOT inherited from the parent object.
+  Also, commands which walk the attribute list (such as "examine", the 
+  LATTR() function, the HASATTR() function, @set, and @edit) only affect 
+  attributes that are on the object itself, although there are variants
+  which also check parents (examine/parent, lattrp(), hasattrp(), etc).
  
-  There are some limitations to the use of @parent. The most important
-  is that ^-pattern checking is not done on the parent of an object,
-  unless the object is set LISTEN_PARENT. For the purposes of
-  automated game checks, the following attributes are not inherited:
-  CHARGES, EALIAS, LALIAS, LAST, LASTSITE, LISTEN, QUEUE, RQUOTA,
-  SEMAPHORE, and STARTUP.
+  There are some limitations to the use of @parent. The most important is 
+  that ^-pattern checking is not done on the parent of an object, unless the
+  object is set LISTEN_PARENT. For the purposes of automated game checks, 
+  the following attributes are not inherited:
+    CHARGES, EALIAS, LALIAS, LAST, LASTSITE, LISTEN, QUEUE, RQUOTA, 
+    SEMAPHORE, and STARTUP.
     
-  The attributes inherited from the parent are treated just like its
-  own attributes by the child. Thus, when a $-command or @trigger is
-  executed, "me", for example, refers to the child, not the parent,
-  and the $-command's associated actions are performed by the child.
-
   Continued in 'help parents3'.
 & PARENTS3
-  Attributes with $-commands _are_ inherited from the parent and
-  previous generations. Conflicts are resolved not by the $-command
-  name, but by the attribute name. If two attributes are in
-  "conflict", the child's attribute is used.
+  If a child and its parent both have the same attribute set, the attribute
+  on the child will always be used first. However, a child can use the pfun()
+  function to get the value of an attribute from its parent, even when it has
+  an attribute with the same name.
 
   For example:
 
-  > &TEST #10=$test:@emit I'm the parent
-  > &TEST #11=$check:@emit I'm the child
-  > @parent #11=#10
+  > &TEST Bar=$test:@emit I'm the parent ([name(me)])
+  > &TEST Foo=$check:@emit I'm the child ([name(me)])
+  > @parent Foo=Bar
   > test
-  (nothing happens)
+  Huh?  (Type "help" for help.)
   > check
-  I'm the child
+  I'm the child (Foo)
 
   Continued in 'help parents4'.
 & PARENTS4
-  If a parent has the same $-command name in a different attribute,
-  however, BOTH the parent and child commands will execute:
+  If a parent has the same $-command name in a different attribute, however, 
+  BOTH the parent and child commands will execute:
 
 (continued from previous example)
-  > &CHECK #10=$check:@emit No, I'm the parent!
+  > &CHECK Bar=$check:@emit No, I'm the parent! ([name(me)])
 
   > check
-  I'm the child
-  No, I'm the parent!
+  I'm the child (Foo)
+  No, I'm the parent! (Foo)
  
-  @parent is most useful when several objects use common attributes.
-  It is slightly faster to have $commands on the child object which in
-  turn @trigger or otherwise retrieve attributes inherited from the
-  parent object, rather than having the $commands checked on the
-  parent object.
+  The attributes inherited from the parent are treated just like its own 
+  attributes by the child. Thus, when a $-command or @trigger is executed, 
+  "me", for example, refers to the child, not the parent, and the $-command's
+  associated actions are performed by the child.
+
+  @parent is most useful when several objects use common attributes. 
 
   Continued in 'help parents5'.
 & PARENTS5
  
-  Parent-object $-command checking is at its most efficient when there
-  are few or no attributes on the child. Also, each additional level
-  of parents further reduces efficiency.  Finally, note that ancestors
-  are *not* checked for $-commands.
- 
-  If you are "mass-marketing" your objects, you can create blank
-  copies, and @parent those copies to a template object. You can then
-  customize necessary attributes on the copy. When a buyer @chowns his
-  copy, the parent does not change, so unless you're putting data into
-  the parent that you want to make impossible to read, it's safe to
-  allow the purchasers of your object to @chown their copy.
+  While ancestors are checked for attributes at the end of the parent chain,
+  they are NOT checked for $-commands or ^-listens.
+  
+  If you are "mass-marketing" your objects, you can create blank copies, and
+  @parent those copies to a template object. You can then customize necessary
+  attributes on the copy. When a buyer @chowns his copy, the parent does not 
+  change, so unless you're putting data into the parent that you want to make
+  impossible to read, it's safe to allow the purchasers of your object to 
+  @chown their copy.
 
-  Locks can also be inherited, but are flagged no-inherit by default.
-  Use @lset to change that on a per-lock basis.
+  Locks can also be inherited, but are flagged no-inherit by default. Use 
+  @lset to change that on a per-lock basis.
 
 See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & PUPPETS
-  A thing is turned into a puppet by setting the PUPPET flag on it.  A
-  puppet object is an extension of its owner and relays everything it
-  sees and hears to its owner, except if it is in the same room as the
-  owner (a puppet with the VERBOSE flag will relay even if it's in the
-  same room). Things relayed by the puppet will be prefixed by the
-  name of the puppet.
+  A thing is turned into a puppet by setting the PUPPET flag on it. A puppet 
+  object is an extension of its owner and relays everything it sees and hears
+  to its owner, except if it is in the same room as the owner (a puppet with
+  the VERBOSE flag will relay even if it's in the same room). Things relayed
+  by the puppet will be prefixed by the name of the puppet.
 
-  Puppets are useful for keeping track of what is going on in two
-  rooms at once, as extensions of a player (such as a pet, for
-  example), or for testing code.
+  Puppets are useful for keeping track of what is going on in two rooms at 
+  once, as extensions of a player (such as a pet, for example), or for 
+  testing code.
 
-  You can control your puppets using the @force command. It is
-  important to remember the DBREF numbers of your puppets so you can
-  control them even if they are not in the same room with you. You can
-  also have your puppets follow you by using the 'follow' command.
+  You can control your puppets using the @force command. It is important to 
+  remember the DBREF numbers of your puppets so you can control them even if 
+  they are not in the same room with you. You can also have your puppets 
+  follow you by using the 'follow' command.
 
-(example in help puppets2)
+  See 'help puppets2' for examples.
 & PUPPETS2
   An example of a puppet:
 
@@ -1369,18 +1357,20 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
   Dropped.
   > @set punch=puppet
   Punch is now listening.
-  Flag set.
+  Punch - PUPPET set.
   > @force punch=go north
   Punch has left.
   Punch> The Finishing Place
   Punch> 
   Punch> Obvious exits:
   Punch> Door <S>  
-  #18 :waves hello
+  > @force #18=:waves hello
   Punch> Punch waves hello
+  > #18 say Hello.
+  Punch> You say, "Hello."
   
-  To have an object relay things it hears to players other than it's
-  owner, use @forwardlist.
+  To have an object relay things it hears to players other than its owner,
+  use @forwardlist.
 
 See also: PUPPET, @force, DBREF
 & QUEUE
@@ -1719,19 +1709,19 @@ Continued in 'help regexp classes2'
 
   Continued in 'help registers2'.
 & REGISTERS2
-  As you can see from the above example, the command trigger had two
-  wildcards separated by a "+" sign. When the user types in the
-  command with some words taking the place of the wildcards, the first
-  register (register 0) is filled with whatever part of the command
-  replaces the first wildcard (in this case, "whee") and the second
-  register is filled with whatever replaces the second ("blert foo").
+  As you can see from the above example, the command trigger had two 
+  wildcards separated by a "+" sign. When the user types in the command with
+  some words taking the place of the wildcards, the first register (register
+  0) is filled with whatever part of the command replaces the first wildcard 
+  (in this case, "whee") and the second register is filled with whatever 
+  replaces the second ("blert foo").
 
-  They can also be filled with information that is passed by an
-  @trigger command:
+  They can also be filled with information that is passed by an @trigger 
+  command:
 
-  &SOMECODE me=@emit %0 is in register 0 and %1 is in register 1.
-  @trigger me/somecode=whee,foo bar
-  > whee is in register 0 and foo bar is in register 1.
+  > &SOMECODE me=@emit %0 is in register 0 and %1 is in register 1.
+  > @trigger me/somecode=whee,foo bar
+  whee is in register 0 and foo bar is in register 1.
 
   Please see 'help setq()' for more information about the setq registers.
 
@@ -1804,31 +1794,31 @@ See also: @quota, @squota
   [ 30 seconds passes. ]
   Wizard waits 30 seconds.
  
-See also: @wait, @drain, @notify
   Continued in 'help semaphores4'.
 & SEMAPHORES4
-  Semaphores can be used to enforce mutual exclusion - to prevent
-  the same object from being used simultaneously by two players.
-  The basic strategy is to ensure that the object always has a
-  SEMAPHORE of -1, to enclose commands in an @wait, and to
-  conclude the set of commands with an @notify me:
+  Semaphores can be used to enforce mutual exclusion - to prevent the same 
+  object from being used simultaneously by two players. The basic strategy 
+  is to ensure that the object always has a SEMAPHORE of -1, to enclose 
+  commands in an @wait, and to conclude the set of commands with an 
+  @notify me:
 
-  > &doit obj = $doit: @wait me={&doer me = %N; @tr me/report}
-  > &report obj = "[v(doer)] did it!; @notify me
-  > @startup obj = @drain me; @notify me
+  > &doit obj=$doit: @wait me={&doer me = %n; @trigger me/report}
+  > &report obj=say [v(doer)] did it!; @notify me
+  > @startup obj=@drain me; @notify me
   > @notify obj
   > ex obj/SEMAPHORE
   SEMAPHORE [#1ic+]: -1
   > doit
-  obj says "Talek did it!
+  obj says, "Talek did it!
   > ex obj/SEMAPHORE
   SEMAPHORE [#1ic+]: -1
 
-  If a second player types doit as well, the second player's command
-  is put on the semaphore queue and not run until the @notify me at
-  the end of the REPORT attribute. Note the STARTUP attribute -
-  because semaphores are cleared when the MUSH starts up, you must
-  insure that the object gets @notify'd once when it starts up.
+  If a second player types doit as well, the second player's command is put 
+  on the semaphore queue and not run until the @notify me at the end of the 
+  REPORT attribute. Note the STARTUP attribute - because semaphores are 
+  cleared when the MUSH starts up, you must insure that the object gets 
+  @notify'd once when it starts up.
+  
   Continued in 'help semaphores5'.
 & SEMAPHORES5
   Normally, semaphores use the SEMAPHORE attribute. However, other attributes
@@ -1844,7 +1834,9 @@ See also: @wait, @drain, @notify
   just use <object> in those commands. This means you can't have an untimed 
   semaphore on an attribute with a numeric name.
 
-  Continued in 'help semaphores6'.
+  See 'help semaphores6' for an example.
+
+See also: @wait, @drain, @notify
 & SEMAPHORES6
   An example:
  
@@ -1999,41 +1991,40 @@ See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 & %4
   Example: 
 
-  @sex me=male
-  @drop box=%N just dropped %p box.
-  drop box
-  > Cyclonus just dropped his box.
+  > @sex me=male
+  > @drop box=%n just dropped %p box.
+  > drop box
+  Cyclonus just dropped his box.
  
- Let's say that Cyclonus's dbref number is #10 and the box's dbref
- number is #11. The dbref # of the room Cyclonus is standing in is
- #13.  When Cyclonus dropped the box above, these were the values of
- the following %-variables:
+  Let's say that Cyclonus's dbref number is #10 and the box's dbref number 
+  is #11. The dbref of the room Cyclonus is standing in is #13. When Cyclonus
+  dropped the box above, these were the values of the following %-subs:
     
-  %N = Cyclonus
+  %n = Cyclonus
   %# = #10
   %@ = #10
   %! = #11
   %L = #13
 
 & SUCCESS
-  A "success" normally occurs when you attempt to do something that is
-  restricted by an @lock and you pass the @lock. (Note that if no lock
-  is set, you automatically pass it.) For example, the "basic" lock
-  restricts who can pick up a player/thing or who can go through an
-  exit. Whenever you successfully do either of these things, you will
-  set off the basic success messages on the object whose lock you have
-  just successfully passed.
+  A "success" normally occurs when you attempt to do something that is 
+  restricted by an @lock and you pass the @lock. (Note that if no lock is 
+  set, you automatically pass it.) For example, the "basic" lock restricts 
+  who can pick up a player/thing or who can go through an exit. Whenever 
+  you successfully do either of these things, you will set off the basic 
+  success messages on the object whose lock you have just successfully 
+  passed.
 
-  Many other actions can also be locked - see @lock and locktypes for
-  more information. Many of these actions have standard attributes
-  that you can set messages in for when someone succeeds.
+  Many other actions can also be locked - see @lock and locktypes for more
+  information. Many of these actions have standard attributes that you can
+  set messages in for when someone succeeds.
 
 See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
 & SWITCHES
 
-  Commands can have "switches" which modify the behavior of the
-  command. Switches are attached after the end of a command.
-  For example, most people are familiar with the command
+  Commands can have "switches" which modify the behavior of the command. 
+  Switches are attached after the end of a command. For example, most people
+  are familiar with the command
 
     @lock me==me
 
@@ -2167,7 +2158,7 @@ See also: @destroy, @stats
   arguments can be accessed via %<name> (the '<' and '>' are literal).
 
   For example, to make a 'wave' command, you could do the following:
-    &DO_WAVE me=$wave *: pose waves to %0.
+    > &DO_WAVE me=$wave *: pose waves to %0.
   You could then type:
     > wave Guest
     Rhyanna waves to Guest.
@@ -2179,7 +2170,7 @@ See also: @destroy, @stats
   if no command successfully matched, and take the place of the usual 
   "Huh?" message.
 
-  *BE SURE TO @LOCK/USE ME==ME IF YOU SET MACROS ON YOURSELF!*
+  *BE SURE TO @LOCK/USE ME==ME IF YOU SET $-COMMANDS ON YOURSELF!*
 
 See also: GLOBAL COMMANDS, EVALUATION ORDER, STACK, SUBSTITUTIONS, @lock
 & VERBS
@@ -2225,16 +2216,17 @@ See also: GLOBAL COMMANDS, EVALUATION ORDER, STACK, SUBSTITUTIONS, @lock
 See also: @verb, attribute flags
 & WARNINGS
 
-  If the building warning system has been enabled in the source code,
-  players may receive regular warnings about potential building
-  problems on objects that they own, and will be able to check
-  individual objects for warnings.
+  If the MUSH is configured to do so, players may receive regular warnings 
+  about potential building problems on objects that they own. The interval is
+  set in the 'warn_interval' @config option; if set to 0, automatic warnings
+  are disabled. You can also check warnings, either for a specific object or 
+  all objects you own, with @wcheck. 
 
   For more information, see the following help topics:
-    @warnings        @wcheck         NO_WARN         warnings list
+    @warnings        @wcheck         NO_WARN         WARNINGS LIST
     
 & WARNINGS LIST
-  The building warning system, supports the following types of warnings:
+  The building warning system supports the following types of warnings:
 
   exit-unlinked         Warn on unlinked exits
   exit-oneway           Warn on exits with no return exit
@@ -2261,134 +2253,133 @@ See also: @verb, attribute flags
   You can exclude warnings from a larger list by using !<warning>
   after the larger list. For example: @warnings me=all !exit-oneway
 & WILDCARDS
-  PennMUSH has two standard wildcards in user-defined commands: an
-  asterisk (*) matches any string, including an empty string, and a
-  question mark (?) matches a single character.  For example, let's
-  say that you want a command called
-  "supercalifragalisticexpealidocious" (don't ask me why), but you
-  don't want to force people to type the whole thing to trigger the
-  command. You could use a wildcard in the command trigger to match
-  substrings of it:
-
-  > &TOO_LONG_CMD object=$supercali*:@emit whee
-  > super
-  (nothing happens)
-  > supercali
-  whee
-  > supercalifra
-  whee
-  > supercalifragalisticexpealidocious
-  whee
-  > supercalifoobert
-  whee
-
-  A backslash (\) can be used to escape * and ? if you want to match 
-  a literal asterisk or question mark.
+  PennMUSH has two standard wildcards, which can be used in $-commands, as
+  well as a number of softcode functions: an asterisk (*) matches zero or
+  more of any characters, and a question mark (?) matches exactly one 
+  character. The most common use of wildcards is to allow people to pass
+  arguments to $-commands. For example, let's say you want to have a 'wave'
+  command which allows you to wave to a specific person:
   
-  The ** wildcard is also available for matching attribute names. See HELP
+    > &cmd.wave me=$wave *: pose waves.
+  
+  The "*" wildcard will match anything, allowing you to type "wave foo",
+  "wave bar", etc. You can use the %0-%9 substitutions to get the values
+  which matched the first ten wildcards in the command:
+  
+    > &cmd.wave me=$wave *: pose waves to %0.
+    > wave to Muse
+    Mike waves to Muse.
+    
+  A backslash (\) can be used to escape * and ? if you want to match a 
+  literal asterisk or question mark.
+  
+  The "**" wildcard is also available for matching attribute names. See HELP
   ATTRIBUTE TREES2 for more information.
   
-See also: USER-DEFINED COMMANDS, REGEXP
-& ZONE MASTER ROOMS
-& ZMR
+  It's also possible to use regular expressions, rather than wildcards, for
+  matching strings. Regexps allow a lot more control over what is matched,
+  but are therefore somewhat more complex. See 'help regexp' for details.
   
-  Zone master rooms are a subset of zones. If a room is used as a zone
-  master, it is a zone master room (ZMR). ZMRs are like local "master"
-  rooms. Exits in the ZMR are global to that zone, and $-commands on
-  objects in the ZMR are global to that zone ($-commands on the ZMR
-  itself, like $-commands on the master room, are ignored). If a ZMR
-  is a player's personal zone, objects in the ZMR are checked for
-  commands that the player can use anywhere (but exits are not checked
-  unless the player is in a zoned room).
+See also: USER-DEFINED COMMANDS, REGEXP, STACK, REGISTERS
+& ZONE MASTER ROOMS
+& ZMRs
+  
+  Zone Master Rooms are a subset of zones. If a room is used as a zone, it is
+  called a Zone Master Room (ZMR). ZMRs are like local "master" rooms; exits in 
+  the ZMR are global to that zone, and $-commands on objects in the ZMR are 
+  global to that zone ($-commands on the ZMR itself, like $-commands on the 
+  master room, are ignored). If a ZMR is a player's personal zone, objects 
+  in the ZMR are checked for commands that the player can use anywhere (but 
+  exits are not checked unless the player is in a zoned room).
 
-  Zone master rooms are best used for very large zones which have a
-  lot of global exits, or for zones with restricted commands that can
-  go on a separate use-locked object from general ones.
+  Zone Master Rooms are useful either if you need global exits for the zone,
+  or if the zone has a lot of $-commands which need to be restricted to 
+  different groups, as they can go on separate use-locked objects.
 
 See also: ZONES, MASTER ROOM, EVALUATION
 & ZONE MASTERS
-& ZMP
+& ZMPs
 & SHARED PLAYERS
   SHARED PLAYERS
  
-  Shared players are player objects which are used to mediate shared
-  control of objects. A shared player is an object of type PLAYER
-  which has the SHARED flag set. They are created like ordinary
-  players, and can connect, build, etc.  The only difference is that
-  objects owned by a shared player are controlled by anything that
-  passes the @lock/zone of the shared player.
+  Shared players are player objects which are used to mediate shared control
+  of objects. A shared player is an object of type PLAYER which has the 
+  SHARED flag set. They are created like ordinary players, and can connect, 
+  build, etc. The only difference is that objects owned by a shared player 
+  are controlled by anything that passes the @lock/zone of the shared player.
   
-  Anyone who passes the @lock/zone of the shared player can @chown
-  objects to it. This, however, does not refund the original creator's
-  money or quota, as does normal.
+  Anyone who passes the @lock/zone of the shared player can @chown objects to
+  it. This, however, does not refund the original creator's money or quota,
+  as does normal.
 
-  Shared players used to be known as Zone Masters.  The term was
-  changed to emphasize the fact that they are not related to zone
-  master objects, which are used to affect search order for
-  user-defined commands.
+  Shared players used to be known as Zone Masters.  The term was changed to 
+  emphasize the fact that they are not related to Zone Master Objects, which
+  are used to allow area-specific $-commands.
 
   Continued in HELP SHARED PLAYERS2
 & SHARED PLAYERS2
   Some suggested uses of shared players:
   
-    1. If you are working on a building project with several people,
-       it may be useful to create a shared player and @lock/zone it to
-       all of you.  That way, all of the players working on the
-       project will be able to modify the building, as long as the
-       shared player owns all the objects being built.
+  1. If you are working on a building project with several people, it may be 
+     useful to create a shared player and @lock/zone it to all of you. That 
+     way, all of the players working on the project will be able to modify 
+     the building, as long as the shared player owns all the objects being 
+     built.
     
-    2. If local wizards are desired, a shared player may be created
-       and zone locked to the local wizards. Players building within
-       that zone should be @chowning to the shared player, or logged
-       in as it while creating objects. The local wizard will then be
-       able to control anything within that domain as long as the
-       object in question is owned by the shared player.
+  2. If local wizards are desired, a shared player may be created and zone 
+     locked to the local wizards. Players building within that zone should be
+     @chowning to the shared player, or logged in as it while creating 
+     objects. The local wizard will then be able to control anything within 
+     that domain as long as the object in question is owned by the shared 
+     player.
        
-  See also: SHARED, @lock
+  See also: SHARED, @lock, ZMO
 & ZONES
 & ZONE OBJECTS
 & ZONE MASTER OBJECTS
-& ZMO
-& ZMT
-  Zones are areas of the MUSH that can have the same user-defined
-  commands without having to @parent every object in the zone or make
-  the commands mush-wide globals.
+& ZONE MASTER THINGS
+& ZMOs
+& ZMTs
+  Zones are areas of the MUSH that can have the same user-defined commands 
+  without having to @parent every object in the zone or make the commands 
+  MUSH-wide globals.
 
-  The default zone is NOTHING. Any building done by a player defaults
-  to belonging to the same zone that the player belongs to.  Every
-  zone is defined by a Zone Master Object (ZMO). The ZMO is an
-  ordinary MUSH object owned by some player. A wizard may change the
-  zone of an object or player to a ZMO.
+  The default zone is NOTHING. Any building done by a player defaults to 
+  belonging to the same zone that the player belongs to. Every zone is 
+  defined by a Zone Master Object (ZMO). The ZMO is an ordinary MUSH object
+  owned by some player. A wizard may change the zone of an object or player 
+  to a ZMO.
   
-  If the ZMO is a room, it is called a "zone master room." Most of the
-  statements about ZMOs also apply to zone master rooms; for details,
-  see the help topic ZONE MASTER ROOMS.
+  If the ZMO is a room, it is called a "Zone Master Room." Most of the 
+  statements about ZMOs also apply to zone master rooms; for details, see 
+  'help Zone Master Rooms'.
   
-  See 'help ZONES2' for more.
+  See 'help zones2' for more.
 & ZONES2
-  $-commands on a ZMO are treated as global within that zone.  The
-  game attempts to match $-commands for the ZMO of the player's
-  location, as well as $-commands for the player's own zone.
+  $-commands on a ZMO are treated as global within that zone. The game 
+  attempts to match $-commands for the ZMO of the player's location, as well
+  as $-commands for the player's own zone.
 
-  If you want restricted global commands defined over only a small
-  area, you can define that area to be part of a zone, and place the
-  desired $-commands upon the ZMO. If you want players to be able to
-  use special commands for a culture they belong to, the $-commands
-  should go on the ZMO, and the players @chzoned to it so they can use
-  the commands anywhere.
+  If you want restricted global commands defined over only a small area, 
+  you can define that area to be part of a zone, and place the desired 
+  $-commands upon the ZMO. If you want players to be able to use special 
+  commands for a culture they belong to, the $-commands should go on the ZMO,
+  and the players @chzoned to it so they can use the commands anywhere.
 
 See also: @chzone, SHARED PLAYERS
 & MATCHING
-  Matching is the process the MUSH uses to determine which object you
-  mean when you try to do something with an object. Different commands
-  do matching in different ways, but most will allow you to specify an
-  object as:
+  Matching is the process the MUSH uses to determine which object you mean 
+  when you try to do something with an object. Different commands do matching
+  in different ways, but most will allow you to specify an object as:
     * its dbref (#7) or objid (#7:123456789)
     * the string "me" (yourself)
     * the string "here" (the room you're in)
     * a '*' followed by a playername (*javelin)
     * its full name (Box of chocolates)
     * part of any word in its name, if nothing else shares that part (Box)
+
+  Using the object's name only works if the object is near you.
+
   You can usually qualify an object with an adjective (English matching)
   to help the MUSH determine which object you mean Adjectives include:
     * my <obj> - an object you're carrying
@@ -2459,17 +2450,17 @@ This is the AHELP index.
 
   Continued in 'help restrict3'.
 & RESTRICT3
-  In cases where there are a function and command that do the same
-  thing (like pemit() and @pemit), the command's restrictions are also
-  checked when the function is called, so to use pemit() you must also be
-  able to use @pemit. However, a function's restrictions are not checked
-  when a command is called, to allow disabling side-effect functions.
+  In cases where there are a function and command that do the same thing 
+  (like pemit() and @pemit), the command's restrictions are also checked 
+  when the function is called, so to use pemit() you must also be able to 
+  use @pemit. However, a function's restrictions are not checked when a 
+  command is called, to allow disabling side-effect functions.
 
-  Some functions (like name()) have non-side-effect and side-effect
-  versions depending on how many arguments they're called with. The
-  side-effect version can be disabled while keeping the safe
-  non-side-effect form with the 'nosidefx' restriction. This can also
-  be used to disable pure side-effect functions.
+  Some functions (like name()) have non-side-effect and side-effect versions
+  depending on how many arguments they're called with. The side-effect 
+  version can be disabled while keeping the safe non-side-effect form with 
+  the 'nosidefx' restriction. This can also be used to disable pure 
+  side-effect functions.
  
   Examples:
   Only allow admin to use ansi():

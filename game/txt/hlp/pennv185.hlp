@@ -41,6 +41,7 @@ Minor changes:
  * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
    when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
  * New substitution, %k, returns the enactor's monikered name. [MUX] [MG]
+ * Help fixes and tweaks. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

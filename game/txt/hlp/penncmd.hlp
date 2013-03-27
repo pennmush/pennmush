@@ -1100,7 +1100,7 @@ See also: look, @exitformat, @nameformat, @conformat, @descformat,
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
 
-See also: accent(), @nameformat, accname(), stripaccents()
+See also: accent(), @nameformat, accname(), stripaccents(), iname()
 & @nameformat
   @nameformat <object>[=<format>]
 
@@ -1120,7 +1120,7 @@ See also: accent(), @nameformat, accname(), stripaccents()
     > @nameformat here = %1 [if(zone(%0),<[name(zone(%0))]>)]
 
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
-    @invformat, @idescformat
+    @invformat, @idescformat, iname()
 & @cost
   @cost <object>[=<amount>]
   
@@ -2209,11 +2209,11 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   @hook/ignore: The attribute is evaluated before the built-in command is run.
                 If it returns a false value, the command is skipped
                 (the input is still matched against softcoded commands)
-  @hook/override: The object/attribute is matched for a $command,
+  @hook/override: The object/attribute is matched for a $-command,
                 and if it matches, it is run instead of the built-in command,
                 but with the precedence of the built-in command (thus
                 overriding not only the built-in command but any local
-                $commands that might match). If the match fails, normal
+                $-commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
   @hook/override/inline: Same as @hook/override, but the resulting matches
@@ -4050,7 +4050,7 @@ See also: version(), numversion()
   must apply:
     1. The object which did the @verb is a wizard.
     2. The object which did the @verb controls both <actor> and <victim>
-    3. The thing which triggered the @verb (such as through a $command on
+    3. The thing which triggered the @verb (such as through a $-command on
        the object which did the @verb) must be <actor>, AND the object
        which did the @verb must be either privileged or control <victim>
        or <victim> must be VISUAL.

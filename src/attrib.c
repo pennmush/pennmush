@@ -208,8 +208,9 @@ atr_sub_branch_prev(ATTR *branch)
  * after all...  Let's try it out anyways and see what happens. Don't
  * expect this to be permanent, though.
  *
- * \param atr the start of the list to search from \param name the
- * attribute name to look for \return the matching attribute, or NULL
+ * \param atr the start of the list to search from
+ * \param name the attribute name to look for
+ * \return the matching attribute, or NULL
  */
 static ATTR *
 find_atr_in_list(ATTR *atr, char const *name)
@@ -1254,7 +1255,7 @@ int
 atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
                     int regexp, aig_func func, void *args)
 {
-  ATTR *ptr, **indirect;
+  ATTR *ptr, *lastbranch, **indirect;
   int result;
   size_t len;
   dbref parent = NOTHING;
@@ -1282,21 +1283,44 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
     st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
          parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
-      indirect = &List(parent);
-      while (*indirect) {
+      ptr = NULL;
+      lastbranch = List(parent);
+      for (indirect = &List(parent); *indirect; indirect = &AL_NEXT(ptr)) {
         ptr = *indirect;
+        if (!strchr(AL_NAME(ptr), '`'))
+          lastbranch = ptr;
         if (!st_find(AL_NAME(ptr), &seen)) {
           st_insert(AL_NAME(ptr), &seen);
-          if ((parent == thing) || !AF_Private(ptr)) {
-            if ((mortal ? Is_Visible_Attr(parent, ptr)
-                 : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
-                    atr_wild(name, AL_NAME(ptr))))
-              result += func(player, thing, parent, name, ptr, args);
+          if (parent != thing) {
+            if (AF_Private(ptr))
+              continue;
+            if (strchr(AL_NAME(ptr), '`')) {
+              /* We need to check all the branches of the tree for no_inherit */
+              char name[BUFFER_LEN];
+              char *p;
+              ATTR *branch;
+              bool skip = 0;
+
+              strcpy(name, AL_NAME(ptr));
+              for (p = strchr(name, '`'); p; p = strchr(p + 1, '`')) {
+                *p = '\0';
+                branch = find_atr_in_list(lastbranch, name);
+                *p = '`';
+                if (branch && AF_Private(branch)) {
+                  skip = 1;
+                  break;
+                }
+              }
+              if (skip)
+                continue;
+            }
           }
+          if ((mortal ? Is_Visible_Attr(parent, ptr)
+               : Can_Read_Attr(player, parent, ptr))
+              && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
+                  atr_wild(name, AL_NAME(ptr))))
+            result += func(player, thing, parent, name, ptr, args);
         }
-        if (ptr == *indirect)
-          indirect = &AL_NEXT(ptr);
       }
     }
     st_flush(&seen);

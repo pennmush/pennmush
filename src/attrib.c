@@ -65,6 +65,8 @@ static ATTR *find_atr_in_list(ATTR *atr, char const *name);
 static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent,
                                  int cmd);
 static bool can_debug(dbref player, dbref victim);
+static int atr_count_helper(dbref player, dbref thing, dbref parent,
+                        char const *pattern, ATTR *atr, void *args);
 
 /*======================================================================*/
 
@@ -1107,7 +1109,6 @@ atr_get_noparent(dbref thing, char const *atr)
   return NULL;
 }
 
-
 /** Apply a function to a set of attributes.
  * This function applies another function to a set of attributes on an
  * object specified by a (wildcarded) pattern to match against the
@@ -1163,6 +1164,18 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   return result;
 }
 
+/** Helper function fr atr_pattern_count, passed to atr_iter_get() */
+static int
+atr_count_helper(dbref player __attribute__ ((__unused__)),
+             dbref thing __attribute__ ((__unused__)),
+             dbref parent __attribute__ ((__unused__)),
+             char const *pattern __attribute__ ((__unused__)),
+             ATTR *atr __attribute__ ((__unused__)), void *args __attribute__ ((__unused__)))
+{
+  return 1;
+}
+
+
 /** Count the number of attributes an object has that match a pattern,
  * \verbatim
  * If <doparent> is true, then count parent attributes as well,
@@ -1180,60 +1193,13 @@ int
 atr_pattern_count(dbref player, dbref thing, const char *name,
                   int doparent, int mortal, int regexp)
 {
-  ATTR *ptr, **indirect;
-  int result;
-  size_t len;
-  dbref parent = NOTHING;
+  if (doparent)
+    return atr_iter_get_parent(player, thing, name, mortal,
+                               regexp, atr_count_helper, NULL);
+  else
+    return atr_iter_get(player, thing, name, mortal, regexp,
+                        atr_count_helper, NULL);
 
-  result = 0;
-  if (!name || !*name) {
-    if (regexp) {
-      regexp = 0;
-      name = "**";
-    } else {
-      name = "*";
-    }
-  }
-  len = strlen(name);
-
-  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
-  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
-    parent = thing;
-    if (doparent)
-      ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
-    else
-      ptr = atr_get_noparent(thing, strupper(name));
-    if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
-                : Can_Read_Attr(player, parent, ptr)))
-      result += 1;
-  } else {
-    StrTree seen;
-    int parent_depth;
-    st_init(&seen, "AttrsSeenTree");
-    for (parent_depth = MAX_PARENTS + 1, parent = thing;
-         (parent_depth-- && parent != NOTHING) &&
-         (doparent || (parent == thing)); parent = Parent(parent)) {
-      indirect = &List(parent);
-      while (*indirect) {
-        ptr = *indirect;
-        if (!st_find(AL_NAME(ptr), &seen)) {
-          st_insert(AL_NAME(ptr), &seen);
-          if ((parent == thing) || !AF_Private(ptr)) {
-            if ((mortal ? Is_Visible_Attr(parent, ptr)
-                 : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
-                    atr_wild(name, AL_NAME(ptr))))
-              result += 1;
-          }
-        }
-        if (ptr == *indirect)
-          indirect = &AL_NEXT(ptr);
-      }
-    }
-    st_flush(&seen);
-  }
-
-  return result;
 }
 
 /** Apply a function to a set of attributes, including inherited ones.

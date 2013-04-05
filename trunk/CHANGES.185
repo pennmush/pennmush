@@ -38,6 +38,7 @@ Fixes:
    which could cause undefined weirdness. Reported by spork. [MG]
  * Many things which listed attributes from a parent, like lattrp() or
    examine/parent, didn't respect no_inherit fully. [MG]
+ * Minor crashbug in @boot fixed. Reported by thomaswdyoung. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

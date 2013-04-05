@@ -385,7 +385,7 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(unsigned char **userstring, const char *command);
 static void process_commands(void);
-enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
+enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED };
 static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);
@@ -2748,6 +2748,8 @@ process_commands(void)
 #endif                          /* DEBUG */
           free_text_block(t);
           break;
+        case CRES_BOOTED:
+          break;
         }
       }
     }
@@ -2867,9 +2869,18 @@ do_command(DESC *d, char *command)
     sockset_wrapper(d, command + 7);
   } else {
     if (d->connected) {
+      int fd = d->descriptor;
+      DESC *tmp;
       send_prefix(d);
       run_user_input(d->player, d->descriptor, command);
-      send_suffix(d);
+      /* Check to make sure the descriptor hasn't been closed while
+       * running the command, via @force/inline someobj=@boot %# */
+      tmp = im_find(descs_by_fd, fd);
+      if (tmp) {
+        send_suffix(d);
+      } else {
+        return CRES_BOOTED;
+      }
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {

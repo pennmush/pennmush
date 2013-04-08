@@ -35,6 +35,7 @@
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
+bool decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
@@ -78,8 +79,8 @@ encode_base64(const char *input, int len, char *buff, char **bp)
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
 
-static bool
-decode_base64(char *encoded, int len, char *buff, char **bp)
+bool
+decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
 {
   BIO *bio, *b64, *bmem;
   char *sbp;
@@ -132,7 +133,7 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
             }
           }
           n = end;
-        } else if (!isprint((unsigned char) decoded[n]))
+        } else if (printonly && !isprint((unsigned char) decoded[n]))
           decoded[n] = '?';
       }
       safe_strl(decoded, dlen, buff, bp);
@@ -160,7 +161,7 @@ FUNCTION(fun_encode64)
 /* Decode a string from base64 */
 FUNCTION(fun_decode64)
 {
-  decode_base64(args[0], arglens[0], buff, bp);
+  decode_base64(args[0], arglens[0], 1, buff, bp);
 }
 
 /* Copy over only alphanumeric chars */
@@ -261,7 +262,7 @@ FUNCTION(fun_decrypt)
 
   if (nargs == 3 && parse_boolean(args[2])) {
     tp = tbuff;
-    if (!decode_base64(args[0], arglens[0], tbuff, &tp)) {
+    if (!decode_base64(args[0], arglens[0], 1, tbuff, &tp)) {
       safe_strl(tbuff, tp - tbuff, buff, bp);
       return;
     }

@@ -47,6 +47,8 @@ Minor changes:
    when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
  * New substitution, %k, returns the enactor's monikered name. [MUX] [MG]
  * Help fixes and tweaks. [MG]
+ * PennMUSH can now read MUX-style passwords, to make moving dbs from MUX
+   to Penn less painful. Requested by Muse. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

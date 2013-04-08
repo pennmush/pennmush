@@ -56,6 +56,7 @@ extern char *crypt(const char *, const char *);
 char *mush_crypt_sha0(const char *key);
 char *password_hash(const char *key, const char *algo);
 bool password_comp(const char *saved, const char *pass);
+bool check_mux_password(const char *saved, const char *password);
 
 dbref email_register_player
   (DESC *d, const char *name, const char *email, const char *host,
@@ -201,14 +202,16 @@ password_check(dbref player, const char *password)
       if (strcmp(crypt(password, "XX"), saved) != 0) {
         /* Nope */
 #endif                          /* HAS_CRYPT */
-        /* crypt() didn't work. Try plaintext, being sure to not
-         * allow unencrypted entry of encrypted password */
-        if ((strcmp(saved, password) != 0)
-            || (strlen(password) < 4)
-            || ((password[0] == 'X') && (password[1] == 'X'))) {
-          /* Nothing worked. You lose. */
-          free(saved);
-          return 0;
+        /* See if it's a MUX password */
+        if (!check_mux_password(saved, password)) {
+          /* As long as it's not obviously encrypted, check for a
+           * plaintext password. */
+          if (strlen(password) < 4 || *password == '$' ||
+              (password[0] == 'X' && password[1] == 'X') ||
+              strcmp(saved, password)) {
+            free(saved);
+            return 0;
+          }
         }
 #ifdef HAS_CRYPT
       }

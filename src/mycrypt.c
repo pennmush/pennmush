@@ -22,6 +22,9 @@
 
 #define PASSWORD_HASH "sha1"
 
+bool decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp);
+bool check_mux_password(const char *saved, const char *password);
+
 /** Encrypt a password and return ciphertext, using SHA0. Icky old
  *  style password format, used for migrating to new style.
  *
@@ -87,6 +90,68 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
 
   return safe_hexstr(hash, rlen, buff, bp);
 }
+
+
+bool
+check_mux_password(const char *saved, const char *password)
+{
+  EVP_MD_CTX ctx;
+  const EVP_MD *md;
+  uint8_t hash[EVP_MAX_MD_SIZE];
+  unsigned int rlen = EVP_MAX_MD_SIZE;
+  char decoded[BUFFER_LEN];
+  char *dp;
+  char *start, *end;
+
+  start = (char *) saved;
+
+  /* MUX passwords start with a '$' */
+  if (*start != '$')
+    return 0;
+
+  start++;
+  /* The next '$' marks the end of the encryption algo */
+  end = strchr(start, '$');
+  if (end == NULL)
+    return 0;
+
+  *end++ = '\0';
+
+  md = EVP_get_digestbyname(start);
+  if (!md)
+    return 0;
+
+  start = end;
+  /* Up until the next '$' is the salt. After that is the password */
+  end = strchr(start, '$');
+  if (end == NULL)
+    return 0;
+
+  *end++ = '\0';
+
+  /* 'start' now holds the salt, 'end' the password.
+   * Both are base64-encoded. */
+
+  /* decode the salt */
+  dp = decoded;
+  decode_base64(start, strlen(start), 0, decoded, &dp);
+  *dp = '\0';
+  /* Double-hash the password */
+  EVP_DigestInit(&ctx, md);
+  EVP_DigestUpdate(&ctx, start, strlen(start));
+  EVP_DigestUpdate(&ctx, password, strlen(password));
+  EVP_DigestFinal(&ctx, hash, &rlen);
+
+  /* Decode the stored password */
+  dp = decoded;
+  decode_base64(end, strlen(end), 0, decoded, &dp);
+  *dp = '\0';
+
+  /* Compare stored to hashed */
+  return (memcmp(decoded, hash, rlen) == 0);
+
+}
+
 
 /** Encrypt a password and return the formatted password
  * string. Supports user-supplied algorithms. Password format:
@@ -183,3 +248,6 @@ password_comp(const char *saved, const char *pass)
   return c == 0;
 
 }
+
+
+

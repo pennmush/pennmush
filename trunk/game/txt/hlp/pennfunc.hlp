@@ -4319,7 +4319,7 @@ See also: sqrt(), power()
  
 See also: ceil(), floor(), bound(), trunc()
 & FN()
-  fn(<function name>[, <arg0>[, ... , <argN>]])
+  fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
   fn() executes the built-in/hardcoded function <function name>, even if the
   function has been deleted or overridden with @function. It is primarily 
@@ -4333,9 +4333,8 @@ See also: ceil(), floor(), bound(), trunc()
     > think pemit(me,test)
     -->test   (in highlighted letters)
 
-  To restrict the use of fn() to @functions only (to prevent players
-  from skirting softcoded replacements), use @function/restrict
-  fn=userfn.
+  To restrict the use of fn() to @functions only (to prevent players from 
+  skirting softcoded replacements), use @function/restrict fn=userfn.
 
   To prevent deleted functions from being used with fn(), @function/disable
   them prior to deleting.
@@ -4343,18 +4342,20 @@ See also: ceil(), floor(), bound(), trunc()
   Continued in 'help fn2'.
 & FN2
 
-  The built-in function is run as the object calling fn(), which means that
-  permissions may be checked for the wrong object. objeval() can be useful
-  in getting around this problem. 
+  If <obj> is specified, the built-in function will be executed as <obj>,
+  rather than as the object which called fn(). This is useful when using
+  fn() to replace a side-effect function, to ensure priviledge checks, etc,
+  are done correctly. You must control <obj>, or (if function side effects 
+  are disabled) must be see_all.
   
+  When an <obj> is given, debug information is automatically suppressed when
+  evaluating the built-in function.
+
   Example:
-    > &BRIGHT_PEMIT #10=objeval(%@,pemit(%0,-->[ansi(h,%1)]))
-    @@ Make sure the caller doesn't see debug information for the objeval()'d
-    @@ code, even if he's set DEBUG.
-    > @set #10/BRIGHT_PEMIT=no_debug
+    > &BRIGHT_PEMIT #10=fn(%@/pemit, %0, -->[ansi(h,%1)]))
     > @function/delete PEMIT
     > @function PEMIT=#10, BRIGHT_PEMIT
-    > @lock/pemit *Mike=!=*Padraic
+    > @lock/page *Mike=!=*Padraic
     
     (As Padraic)
     > think pemit(me,test)

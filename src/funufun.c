@@ -40,9 +40,13 @@ FUNCTION(fun_fn)
    * for that function.
    */
   char tbuf[BUFFER_LEN];
+  char newfun[BUFFER_LEN];
   char *tp = tbuf;
   char const *p;
   int i;
+  dbref as = executor;
+  char *ap;
+
   if (!args[0] || !*args[0])
     return;                     /* No function name */
   /* Evaluate first argument */
@@ -51,24 +55,40 @@ FUNCTION(fun_fn)
                          enactor, PE_DEFAULT, PT_DEFAULT, pe_info))
     return;
   *tp = '\0';
+  if ((ap = strchr(tbuf, '/'))) {
+    *ap++ = '\0';
+    as = match_thing(executor, tbuf);
+    if (as == NOTHING) {
+      safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!(!FUNCTION_SIDE_EFFECTS && See_All(executor)) && !controls(executor, as)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    eflags |= PE_NODEBUG;
+  } else
+    ap = tbuf;
   /* Make sure a builtin function with the name actually exists */
-  if (!builtin_func_hash_lookup(tbuf)) {
+  if (!builtin_func_hash_lookup(ap)) {
     safe_str(T("#-1 FUNCTION ("), buff, bp);
-    safe_str(tbuf, buff, bp);
+    safe_str(ap, buff, bp);
     safe_str(T(") NOT FOUND"), buff, bp);
     return;
   }
 
-  safe_chr('(', tbuf, &tp);
+  tp = newfun;
+  safe_str(ap, newfun, &tp);
+  safe_chr('(', newfun, &tp);
   for (i = 1; i < nargs; i++) {
     if (i > 1)
-      safe_chr(',', tbuf, &tp);
-    safe_strl(args[i], arglens[i], tbuf, &tp);
+      safe_chr(',', newfun, &tp);
+    safe_strl(args[i], arglens[i], newfun, &tp);
   }
-  safe_chr(')', tbuf, &tp);
+  safe_chr(')', newfun, &tp);
   *tp = '\0';
-  p = tbuf;
-  process_expression(buff, bp, &p, executor, caller, enactor,
+  p = newfun;
+  process_expression(buff, bp, &p, as, caller, enactor,
                      eflags | PE_BUILTINONLY, PT_DEFAULT, pe_info);
 }
 

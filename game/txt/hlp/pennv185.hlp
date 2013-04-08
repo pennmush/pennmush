@@ -53,6 +53,8 @@ Functions:
  * moniker(<object>) returns an objects monikered name. [MUX] [MG]
  * mapsql() only stored 10 columns, instead of the advertised 30. Reported
    by Mercutio. [MG]
+ * fn() now takes an <obj>/ prefix to its first arg, to evaluate the built-in
+   function as <obj>. Useful when overriding side-effect functions. [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

@@ -49,6 +49,10 @@ Minor changes:
  * Help fixes and tweaks. [MG]
  * PennMUSH can now read MUX-style passwords, to make moving dbs from MUX
    to Penn less painful. Requested by Muse. [MG]
+ * Commands are no longer queued for HALTed non-players. (Since they'd be
+   dropped from the queue anyway, rather than being run, it saves us jumping
+   through a series of hoops for no good reason.) From a report by Muse and
+   Ashen-Shugar. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

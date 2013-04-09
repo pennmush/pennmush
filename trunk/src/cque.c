@@ -636,6 +636,12 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   MQUE *queue_entry;
 
   if (!(queue_type & QUEUE_INPLACE)) {
+
+    /* Check the object isn't halted */
+    if (!IsPlayer(executor) && Halted(executor)) {
+      return;
+    }
+
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
     queue_type =
       (queue_type &

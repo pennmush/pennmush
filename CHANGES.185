@@ -21,7 +21,7 @@ Commands:
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via
-   %<name> (literal '<>'). Suggested by Mercutio. [MG]
+   %<name> (literal '<>'), or r(<name>, args). Suggested by Mercutio. [MG]
 
 Hardcode:
  * A number of changes have been made to accomodate monikers. Notably, a lot
@@ -63,6 +63,8 @@ Functions:
    by Mercutio. [MG]
  * fn() now takes an <obj>/ prefix to its first arg, to evaluate the built-in
    function as <obj>. Useful when overriding side-effect functions. [MG]
+ * r() now takes two arguments, allowing it to return the stack (%0-%9),
+   itext() and stext() values, as well as q-registers(). [MG]
 
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 

@@ -479,7 +479,7 @@ FUNTAB flist[] = {
   {"PROMPT", fun_prompt, 2, -2, FN_REG},
   {"PUEBLO", fun_pueblo, 1, 1, FN_REG | FN_STRIPANSI},
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
-  {"R", fun_r, 1, 1, FN_REG | FN_STRIPANSI},
+  {"R", fun_r, 1, 2, FN_REG | FN_STRIPANSI},
   {"RAND", fun_rand, 0, 2, FN_REG | FN_STRIPANSI},
   {"RANDWORD", fun_randword, 1, 2, FN_REG},
   {"RECV", fun_recv, 1, 1, FN_REG | FN_STRIPANSI},

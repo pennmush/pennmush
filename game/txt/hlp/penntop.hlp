@@ -1695,9 +1695,9 @@ Continued in 'help regexp classes2'
   A register is essentially a little reserved piece of computer memory that 
   can hold some variable information that you want to pass on to another 
   command.  There are thirty registers on the MUSH available via the %0-%9
-  %-substitutions and v(0) - v(29). There are also many setq registers 
-  available via %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names),
-  or the r() function.
+  %-substitutions and v(0)-v(9) and r(0,args) to r(29,args). There are also
+  many setq registers available via %q- substitution (%q0 - %q9, %qA - %qZ 
+  and arbitrary names), or the r() function.
 
   The basic registers are filled with information that matches the 
   wildcard pattern of the command trigger. (Before you say "Huh?", here's
@@ -1896,14 +1896,15 @@ See also: @emit, @pemit, @remit, @oemit, NOSPOOF, PARANOID
   For those unfamiliar with the term stack, it refers to a programming data 
   structure that follows a LIFO (Last-In-First-Out) principle. The stack in 
   MUSH holds the REGISTERS. The first ten registers can be accessed via the
-  %0-%9 %-substitutions, while all 30 registers can be accessed via the v()
-  function (v(0), v(1), etc, up to v(29)) or %<0>, %<1>, etc, up to %<29>;
-  the <>'s are literal.
+  %0-%9 %-substitutions and v(0)-v(29), while all 30 registers can be 
+  accessed via the r() function (r(0, args) up to v(29,args)) or %<0> up to
+  %<29>; the <>'s are literal.
   
   When using regexp $-commands with named subpatterns, the named arguments
-  can be accessed via %<name> (the <>'s are literal).
+  can be accessed via r(<name>, args) or %<name> (the <>'s are literal in
+  the %-sub).
   
-See also: REGISTERS
+See also: REGISTERS, r(), v()
 & STRINGS
   A string is simply a bunch of characters. A word is a string that begins 
   and ends with the space character. A sentence is a string made up of

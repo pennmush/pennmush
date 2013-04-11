@@ -639,11 +639,67 @@ FUNCTION(fun_unsetq)
 /* ARGSUSED */
 FUNCTION(fun_r)
 {
-  /* returns a local register */
-  if (ValidQregName(args[0])) {
-    safe_str(PE_Getq(pe_info, args[0]), buff, bp);
-  } else {
-    safe_str(T(e_badregname), buff, bp);
+  int type = PE_REGS_Q;
+  const char *s;
+
+  if (nargs >= 2 && args[1] && *args[1]) {
+    if (string_prefix("qregisters", args[1]))
+      type = PE_REGS_Q;
+    else if (string_prefix("regexp", args[1]))
+      type = PE_REGS_REGEXP;
+    else if (strlen(args[1]) > 1 && string_prefix("switch", args[1]))
+      type = PE_REGS_SWITCH;
+    else if (string_prefix("iter", args[1]))
+      type = PE_REGS_ITER;
+    else if (string_prefix("args", args[1])
+             || (strlen(args[1]) > 1 && string_prefix("stack", args[1])))
+      type = PE_REGS_ARG;
+    else {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  switch (type) {
+    case PE_REGS_Q:
+      if (ValidQregName(args[0]))
+        safe_str(PE_Getq(pe_info, args[0]), buff, bp);
+      else
+        safe_str(T(e_badregname), buff, bp);
+      break;
+    case PE_REGS_ARG:
+      s = pi_regs_get_env(pe_info, args[0]);
+      if (s)
+        safe_str(s, buff, bp);
+      break;
+    case PE_REGS_ITER:
+    case PE_REGS_SWITCH:
+      {
+        int level = 0, total = 0;
+
+        if (type == PE_REGS_ITER)
+          total = PE_Get_Ilev(pe_info);
+        else
+          total = PE_Get_Slev(pe_info);
+
+        if ((*args[0] == 'l' || *args[0] == 'L') && !args[0][1])
+          level = total;
+        else if (!is_strict_number(args[0])) {
+          safe_str(T(e_badregname), buff, bp);
+          return;
+        } else {
+          level = parse_integer(args[0]);
+        }
+        if (level < 0 || level > total) {
+          safe_str(T(e_argrange), buff, bp);
+        } else {
+          if (type == PE_REGS_ITER)
+            safe_str(PE_Get_Itext(pe_info, level), buff, bp);
+          else
+            safe_str(PE_Get_Stext(pe_info, level), buff, bp);
+        }
+        break;
+      }
   }
 }
 

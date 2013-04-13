@@ -121,8 +121,8 @@ See also: CHAT, @chat, @cemit
 & @NSCEMIT
 & CEMIT()
 & NSCEMIT()
-  @cemit[/nosiy|/silent][/noeval] <channel>=<message>
-  @nscemit[/nosiy|/silent][/noeval] <channel>=<message>
+  @cemit[/noisy|/silent][/noeval] <channel>=<message>
+  @nscemit[/noisy|/silent][/noeval] <channel>=<message>
   cemit(<channel>, <message>[, <noisy>])
   nscemit(<channel>, <message>[, <noisy>])
 

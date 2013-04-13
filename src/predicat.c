@@ -1389,42 +1389,51 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 {
   struct grep_data *gd = args;
   char *s;
-  char b1[BUFFER_LEN], b2[BUFFER_LEN];
-  char *tp = b1;
+  char buff[BUFFER_LEN];
+  char *bp = buff;
   int matched = 0;
   int cs;
+  ansi_string *aval = NULL, *repl = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
-  s = (char *) atr_value(attr); /* warning: static */
+  s = atr_value(attr);
+
   if (gd->flags & GREP_WILD) {
-    if ((matched = quick_wild_new(gd->findstr, s, cs))) {
+    if ((matched = quick_wild_new(gd->findstr, aval->text, cs))) {
       /* Since, in order for a wildcard match to succeed, the _entire
          attribute_ value had to match the pattern, not just a substring,
          highlighting is totally pointless */
-      strcpy(b1, s);
+      strcpy(buff, s);
     }
   } else {
+    aval = parse_ansi_string(s);
+    s = aval->text;
+    repl = parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
     while (s && *s) {
       if (!
           (cs ? strncmp(s, gd->findstr, gd->findlen) :
            strncasecmp(s, gd->findstr, gd->findlen))) {
         matched = 1;
-        strncpy(b2, s, gd->findlen);
-        b2[gd->findlen] = '\0';
+        ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         s += gd->findlen;
-        safe_format(b1, &tp, "%s%s%s", ANSI_HILITE, b2, ANSI_END);
       } else {
-        safe_chr(*s, b1, &tp);
         s++;
       }
     }
-    *tp = '\0';
+    free_ansi_string(repl);
+    repl = NULL;
+  }
+
+  if (aval) {
+    safe_ansi_string(aval, 0, aval->len, buff, &bp);
+    *bp = '\0';
+    free_ansi_string(aval);
   }
 
   if (!matched)
     return 0;
 
-  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, b1);
+  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, buff);
   gd->count++;
   return 1;
 }
@@ -1492,6 +1501,8 @@ int
 grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
           char **bp, int flags)
 {
+  char cleanfind[BUFFER_LEN];
+
   if (!findstr || !*findstr) {
     if (buff)
       safe_str(T("#-1 INVALID GREP PATTERN"), buff, bp);
@@ -1502,6 +1513,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
 
   if (!attrs || !*attrs)
     attrs = "**";
+
+  strcpy(cleanfind, remove_markup(findstr, NULL));
 
   if (flags & GREP_REGEXP) {
     /* regexp grep */
@@ -1514,7 +1527,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     if (flags & GREP_NOCASE)
       reflags |= PCRE_CASELESS;
 
-    if ((rgd.re = pcre_compile(findstr, reflags,
+    if ((rgd.re = pcre_compile(cleanfind, reflags,
                                &errptr, &erroffset, tables)) == NULL) {
       /* Matching error. */
       if (buff) {
@@ -1561,8 +1574,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
   } else {
     /* Wildcard or plain substring grep */
     struct grep_data gd;
-    gd.findstr = findstr;
-    gd.findlen = strlen(findstr);
+    gd.findstr = cleanfind;
+    gd.findlen = strlen(cleanfind);
     gd.buff = buff;
     gd.bp = bp;
     gd.count = 0;

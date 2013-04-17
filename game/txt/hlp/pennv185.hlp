@@ -38,6 +38,8 @@ Fixes:
    examine/parent, didn't respect no_inherit fully. [MG]
  * Minor crashbug in @boot fixed. Reported by thomaswdyoung. [MG]
  * @grep now ignores ansi when looking for a value. Suggested by Mouvar. [MG]
+ * colors() now complains when the color is 'n', 'd' or 'D', since they
+   have no actual color value. Reported by spork. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

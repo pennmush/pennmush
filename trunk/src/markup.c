@@ -251,7 +251,8 @@ FUNCTION(fun_colors)
       return;
     }
 
-    if (!ad.fg[0] && !ad.bg[0]) {
+    if ((!ad.fg[0] || (!ad.fg[1] && (ad.fg[0] == 'n'|| ad.fg[0] == 'd'))) &&
+        (!ad.bg[0] || (!ad.bg[1] && (ad.bg[0] == 'n'|| ad.bg[0] == 'D')))) {
       safe_str(T("#-1 COLORS() REQUIRES AT LEAST ONE COLOR"), buff, bp);
       return;
     }

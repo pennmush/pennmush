@@ -148,7 +148,7 @@ COMLIST commands[] = {
   {"@ELOCK", NULL, cmd_elock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-  {"@EMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
+  {"@EMIT", "NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
    0},
   {"@ENABLE", NULL, cmd_enable, CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
 

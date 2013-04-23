@@ -1610,9 +1610,8 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
    (?P<word>sens|respons)e and (?P=word)ibility
    
   In a $-command, the value of the named pattern can be accessed via the
-  substitution %<NAME> (literal <>'s). Softcode functions which work with
-  regexps allow you to access the named subpatterns via $<NAME> (again, the
-  <> are literal).
+  r(<name>, args). Softcode functions which work with regexps allow you to
+  access the named subpatterns via $<NAME> (the <> are literal here).
 
   (Cont'd in help regexp syntax7)
 & regexp syntax7
@@ -1897,12 +1896,10 @@ See also: @emit, @pemit, @remit, @oemit, NOSPOOF, PARANOID
   structure that follows a LIFO (Last-In-First-Out) principle. The stack in 
   MUSH holds the REGISTERS. The first ten registers can be accessed via the
   %0-%9 %-substitutions and v(0)-v(29), while all 30 registers can be 
-  accessed via the r() function (r(0, args) up to v(29,args)) or %<0> up to
-  %<29>; the <>'s are literal.
+  accessed via the r() function (r(0, args) up to v(29,args)).
   
   When using regexp $-commands with named subpatterns, the named arguments
-  can be accessed via r(<name>, args) or %<name> (the <>'s are literal in
-  the %-sub).
+  can be accessed via r(<name>, args).
   
 See also: REGISTERS, r(), v()
 & STRINGS
@@ -1971,7 +1968,6 @@ See also: string functions
 & %+
   Other substitutions:
     %0-%9   = the contents of the REGISTERS 0-9, respectively
-    %<reg>  = the register named "reg", either 0-29 or a named register
     %@ = the caller's dbref number. Initially same as %#, changes when 
          something like a U-FUNCTION is called.
     %! = the dbref number of the object the command is on (the EXECUTOR)
@@ -2156,7 +2152,7 @@ See also: @destroy, @stats
   match the first 30 *'s or ?'s. You can also match a regular expression 
   rather than wildcards by setting the REGEXP attribute flag on <attribute>;
   see 'help regexps' for details. When using named regexp captures, the named
-  arguments can be accessed via %<name> (the '<' and '>' are literal).
+  arguments can be accessed via r(<name>, args).
 
   For example, to make a 'wave' command, you could do the following:
     > &DO_WAVE me=$wave *: pose waves to %0.

@@ -1397,9 +1397,11 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
   s = atr_value(attr);
+  if (!s)
+    s = (char *) "";
 
   if (gd->flags & GREP_WILD) {
-    if ((matched = quick_wild_new(gd->findstr, aval->text, cs))) {
+    if ((matched = quick_wild_new(gd->findstr, s, cs))) {
       /* Since, in order for a wildcard match to succeed, the _entire
          attribute_ value had to match the pattern, not just a substring,
          highlighting is totally pointless */

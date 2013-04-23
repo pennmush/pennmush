@@ -16,6 +16,8 @@ Version 1.8.5 patchlevel 5                                 ??? ??, 2013
 Commands:
  * Added @moniker, to allow colored names. See 'help monikers' for more.
    Requested by Mikoto Misaka. Idea from [MUX]. [MG]
+ * After a year of deprecation, @emit/room has been removed as an alias for
+   @lemit. [MG]
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via

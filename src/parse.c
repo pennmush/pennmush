@@ -2320,28 +2320,6 @@ process_expression(char *buff, char **bp, char const **str,
             }
           }
           break;
-        case '<':
-          nextc = **str;
-          if (!nextc)
-            goto exit_sequence;
-          else {
-            char subspace[BUFFER_LEN];
-            char *nbp = subspace;
-            if (process_expression(subspace, &nbp, str,
-                                   executor, caller, enactor,
-                                   eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
-              retval = 1;
-              break;
-            }
-            *nbp = '\0';
-            qval = pi_regs_get_env(pe_info, subspace);
-            if (qval) {
-              safe_str(qval, buff, bp);
-            }
-            if (**str == '>')
-              (*str)++;
-          }
-          break;
         case 'R':
         case 'r':              /* newline */
           safe_chr('\n', buff, bp);

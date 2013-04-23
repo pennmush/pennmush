@@ -21,7 +21,7 @@ Commands:
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via
-   %<name> (literal '<>'), or r(<name>, args). Suggested by Mercutio. [MG]
+   r(<name>, args). Suggested by Mercutio. [MG]
 
 Hardcode:
  * A number of changes have been made to accomodate monikers. Notably, a lot

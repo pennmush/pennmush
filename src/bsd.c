@@ -4079,8 +4079,10 @@ dump_users(DESC *call_by, char *match)
 {
   DESC *d;
   int count = 0;
-  char tbuf1[BUFFER_LEN];
-  char tbuf2[BUFFER_LEN];
+  char tbuf[BUFFER_LEN];
+  char nbuff[BUFFER_LEN];
+  char *np;
+  int nlen;
 
   while (*match && *match == ' ')
     match++;
@@ -4091,9 +4093,9 @@ dump_users(DESC *call_by, char *match)
 
   if (poll_msg[0] == '\0')
     strcpy(poll_msg, "Doing");
-  snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s",
+  snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s",
            T("Player Name"), T("On For"), T("Idle"), poll_msg);
-  queue_string_eol(call_by, tbuf2);
+  queue_string_eol(call_by, tbuf);
 
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected || !GoodObject(d->player))
@@ -4103,24 +4105,30 @@ dump_users(DESC *call_by, char *match)
     if (Hidden(d) || (match && !(string_prefix(Name(d->player), match))))
       continue;
 
-    sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
+    np = nbuff;
+    safe_str(AName(d->player, AN_WHO, NULL), nbuff, &np);
+    nlen = strlen(Name(d->player));
+    if (nlen < 16)
+      safe_fill(' ', 16 - nlen, nbuff, &np);
+    *np = '\0';
+    sprintf(tbuf, "%s %10s   %4s%c %s", nbuff,
             onfor_time_fmt(d->connected_at, 10),
             idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' ')
             , get_doing(d->player, NOTHING, NOTHING, NULL, 0));
-    queue_string_eol(call_by, tbuf1);
+    queue_string_eol(call_by, tbuf);
   }
   switch (count) {
   case 0:
-    mush_strncpy(tbuf1, T("There are no players connected."), BUFFER_LEN);
+    mush_strncpy(tbuf, T("There are no players connected."), BUFFER_LEN);
     break;
   case 1:
-    mush_strncpy(tbuf1, T("There is 1 player connected."), BUFFER_LEN);
+    mush_strncpy(tbuf, T("There is 1 player connected."), BUFFER_LEN);
     break;
   default:
-    snprintf(tbuf1, BUFFER_LEN, T("There are %d players connected."), count);
+    snprintf(tbuf, BUFFER_LEN, T("There are %d players connected."), count);
     break;
   }
-  queue_string_eol(call_by, tbuf1);
+  queue_string_eol(call_by, tbuf);
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML))
     queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }

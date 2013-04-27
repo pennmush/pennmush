@@ -58,6 +58,8 @@ Minor changes:
    dropped from the queue anyway, rather than being run, it saves us jumping
    through a series of hoops for no good reason.) From a report by Muse and
    Ashen-Shugar. [MG]
+ * The connect-screen WHO now shows moniker'd (ansi'd) names, if so 
+   configured. Requested by Trinsec. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

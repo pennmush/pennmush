@@ -106,6 +106,8 @@ extern PTAB ptab_command;       /* Uses flag bitmasks */
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
  * table in the db that counts, not this one.
+ * DO NOT ADD NEW FLAGS HERE. Any new flags added should be done via
+ * flag_add_additional() further down in this file.
  */
 /* Name     Letter   Type(s)   Flag   Perms   Negate_Perm */
 static FLAG flag_table[] = {

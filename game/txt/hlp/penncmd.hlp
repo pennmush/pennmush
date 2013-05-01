@@ -3928,12 +3928,27 @@ See also: switch wildcards, switch(), @break, stext(), slev()
 
 See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
 & @trigger
-  @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
+  @trigger[/spoof] <object>/<attribute>[=<arg0>, <arg1>, ..., <arg29>]
 
-  @trigger can be used to set off commands stored in an attribute on 
-  an object. It can also pass values to that attribute on the stack 
-  as %0 - %9.
+  @trigger queues an action list stored in an attribute. It can also pass 
+  values to that attribute on the stack, as %0 to %9 and r(0,args) to 
+  r(29,args).
+  
+  You must control <object>, or it must be Link_OK and you must have the
+  same owner, to trigger an attribute on it.
+  
+  The triggered attribute is queued - the new action list is not run
+  instantly. The action list is executed by <object>, not by the object
+  using @trigger.
+  
+  By default, the object using @trigger will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor. This is useful for global 
+  commands with @a* verb attributes.
 
+  See 'help @trigger2' for examples.
+See also: @include, ufun(), VERBS
+& @trigger2
   Examples:
     > &GREET me=POSE waves hi.
     > @trigger me/GREET
@@ -3944,16 +3959,17 @@ See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
     Cyclonus waves to Gears.
     You say, "Hi there, Arcee."
 
-  Continued in 'help @trigger2'.
-& @trigger2
-  @trigger is very useful for splitting up large commands and for making
-  them neater, but it does cause a time delay in execution, because the 
-  commands are put into the queue a second later. For very commonly-used
-  globals that you want to execute quickly, you should probably avoid using 
-  @trigger. However, in most cases, the time saved by cramming everything 
-  into one attribute is outweighed by the time spent debugging.
+    > &cmd.foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger %q0/AFOO
+    > &AFOO Bar=:is foo'd by %n!
+    > FOO BAR
+    Bar is foo'd by Globals!
 
-See also: @include, ufun()
+    > &cmd.foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger/spoof %q0/AFOO
+    > FOO BAR
+    Bar is foo'd by Cyclonus!
+
 & @ulock
 & @uunlock
   @ulock <object>[=<key>]
@@ -4033,16 +4049,15 @@ See also: version(), numversion()
   This command provides a way to do user-defined verbs with associated
   @attr/@oattr/@aattr groups. Invoking it does the following:
   
-  <actor> sees the contents of <victim>'s <what> attribute, or
-    <whatd> if <victim> doesn't have a <what>.
-  Everyone in the same room as <actor> sees the contents of
-    <victim>'s <owhat> attribute, with <actor>'s name prepended,
-    or <owhatd>, also with <actor>'s name prepended, if <victim>
-    doesn't have an <owhat>.
+  <actor> sees the contents of <victim>'s <what> attribute, or <whatd> if 
+    <victim> doesn't have a <what>.
+  Everyone in the same room as <actor> sees the contents of <victim>'s 
+    <owhat> attribute, with <actor>'s name prepended, or <owhatd>, also with
+    <actor>'s name prepended, if <victim> doesn't have an <owhat>.
   <victim> executes the contents of his <awhat> attribute.
   
-  By supplying up to ten <args>, you may pass those values on
-  the stack (i.e. %0, %1, %2, etc. up through %9).
+  By supplying up to 29 <args>, you may pass those values on the stack (i.e.
+  %0, %1, %2, etc. up through %9, and r(0,args) to r(29,args)).
   
   Continued in 'help @verb2'.
 & @verb2

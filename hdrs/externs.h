@@ -319,8 +319,8 @@ void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 #define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs) \
         new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
 
-int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                         int noparent, PE_REGS *pe_regs, int flags);
+int queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
+                         int noparent, PE_REGS *pe_regs, int flags, dbref priv);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
                            PE_REGS *pe_regs, int flags);
@@ -329,10 +329,11 @@ int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
 
+#define queue_attribute_base(ex,at,en,nop,pereg,flag) queue_attribute_base_priv(ex,at,en,nop,pereg,flag,NOTHING)
 /** Queue the code in an attribute, including parent objects */
-#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL,0)
+#define queue_attribute(a,b,c) queue_attribute_base_priv(a,b,c,0,NULL,0,NOTHING)
 /** Queue the code in an attribute, excluding parent objects */
-#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL,0)
+#define queue_attribute_noparent(a,b,c) queue_attribute_base_priv(a,b,c,1,NULL,0,NOTHING)
 void dequeue_semaphores(dbref thing, char const *aname, int count,
                         int all, int drain);
 void shutdown_queues(void);

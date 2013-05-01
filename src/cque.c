@@ -776,17 +776,20 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param noparent if true, parents of executor are not checked for atrname.
  * \param pe_regs the pe_regs args for the queue entry
  * \param flags QUEUE_* flags
+ * \param priv object to use for priv checks, or NOTHING to do none
  * \retval 0 failure.
  * \retval 1 success.
  */
 int
-queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent, PE_REGS *pe_regs, int flags)
+queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
+                     int noparent, PE_REGS *pe_regs, int flags, dbref priv)
 {
   ATTR *a;
 
   a = queue_attribute_getatr(executor, atrname, noparent);
   if (!a)
+    return 0;
+  if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
   queue_attribute_useatr(executor, a, enactor, pe_regs, flags);
   return 1;

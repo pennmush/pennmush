@@ -1266,39 +1266,50 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
  * \verbatim
  * This implements @trigger obj/attribute = list-of-arguments.
  * \endverbatim
- * \param player the enactor.
+ * \param executor the executor running the command
+ * \param enactor the enactor.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
  * \param queue_entry parent queue entry
+ * \param spoof Use the enactor, instead of the executor, as the enactor of the triggered attr?
  */
 void
-do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
+do_trigger(dbref executor, dbref enactor, char *object, char **argv, MQUE *queue_entry, bool spoof)
 {
   dbref thing;
-  char *s;
-  char tbuf1[BUFFER_LEN];
+  char *attr;
   PE_REGS *pe_regs;
   int i;
+  dbref triggerer = executor; /* triggerer is totally a word. Shut up. */
+  bool control;
 
-  strcpy(tbuf1, object);
-  for (s = tbuf1; *s && (*s != '/'); s++) ;
-  if (!*s) {
-    notify(player, T("I need to know what attribute to trigger."));
+  if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
+    notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
-  *s++ = '\0';
+  *attr++ = '\0';
 
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, object, NOTYPE, MAT_EVERYTHING);
 
   if (thing == NOTHING)
     return;
 
-  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
-    notify(player, T("Permission denied."));
+  control = controls(executor, thing);
+  if (!control && !(Owns(executor, thing) && LinkOk(thing))) {
+    notify(executor, T("Permission denied."));
     return;
   }
-  if (God(thing) && !God(player)) {
-    notify(player, T("You can't trigger God!"));
+
+  if (spoof) {
+    if (!control) {
+      notify(executor, T("Permission denied."));
+      return;
+    }
+    triggerer = enactor;
+  }
+
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't trigger God!"));
     return;
   }
 
@@ -1310,11 +1321,11 @@ do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs, 0)) {
-    if (!AreQuiet(player, thing))
-      notify_format(player, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
+  if (queue_attribute_base_priv(thing, upcasestr(attr), triggerer, 0, pe_regs, 0, executor)) {
+    if (!AreQuiet(executor, thing))
+      notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {
-    notify(player, T("No such attribute."));
+    notify(executor, T("No such attribute."));
   }
   pe_regs_free(pe_regs);
 }

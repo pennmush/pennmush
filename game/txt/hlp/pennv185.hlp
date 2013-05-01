@@ -21,6 +21,7 @@ Commands:
  * @chan/list now takes /on and /off switches, to filter the channels shown,
    and a /quiet switch to give a less verbose output. From a suggestion by
    Fraibert. [MG]
+ * @trigger now takes a /spoof switch, which preserves the enactor. [MG]
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via

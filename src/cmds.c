@@ -1421,7 +1421,7 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, arg_left, args_right, queue_entry);
+  do_trigger(executor, enactor, arg_left, args_right, queue_entry, SW_ISSET(sw, SWITCH_SPOOF));
 }
 
 COMMAND(cmd_ulock)

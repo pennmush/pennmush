@@ -302,7 +302,7 @@ COMLIST commands[] = {
 
   {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@TRIGGER", NULL, cmd_trigger,
+  {"@TRIGGER", "SPOOF", cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@ULOCK", NULL, cmd_ulock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,

@@ -2157,9 +2157,10 @@ do_chan_title(dbref player, const char *name, const char *title)
  * \endverbatim
  * \param player the enactor.
  * \param partname a partial channel name to match.
+ * \param type CHANLIST_* flags to limit output
  */
 void
-do_channel_list(dbref player, const char *partname)
+do_channel_list(dbref player, const char *partname, int types)
 {
   CHAN *c;
   CHANUSER *u;
@@ -2167,63 +2168,89 @@ do_channel_list(dbref player, const char *partname)
   char cleanname[CHAN_NAME_LEN];
   char dispname[BUFFER_LEN];
   char *dp;
+  char *shortoutput = NULL, *sp;
   int numblanks;
 
-  if (SUPPORT_PUEBLO)
-    notify_noenter(player, open_tag("SAMP"));
-  notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s",
-                T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
-                T("Buf"));
+  if (!(types & CHANLIST_QUIET)) {
+    if (SUPPORT_PUEBLO)
+      notify_noenter(player, open_tag("SAMP"));
+    notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s",
+                  T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
+                  T("Buf"));
+  } else {
+    shortoutput = mush_malloc(BUFFER_LEN, "chan_list");
+    sp = shortoutput;
+  }
+
   for (c = channels; c; c = c->next) {
     strcpy(cleanname, remove_markup(ChanName(c), NULL));
-    if (Chan_Can_See(c, player) && string_prefix(cleanname, partname)) {
-      u = onchannel(player, c);
-      if (SUPPORT_PUEBLO)
-        snprintf(numusers, BUFFER_LEN,
-                 "%c%cA XCH_CMD=\"@channel/who %s\" XCH_HINT=\"See who's on this channel now\"%c%5d%c%c/A%c",
-                 TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
-                 TAG_START, MARKUP_HTML, TAG_END);
-      else
-        sprintf(numusers, "%5d", ChanNumUsers(c));
-      /* Display length is strlen(cleanname), but actual length is
-       * strlen(ChanName(c)). There are two different cases:
-       * 1. actual length <= 30. No problems.
-       * 2. actual length > 30, we must reduce the number of
-       * blanks we add by the (actual length-30) because our
-       * %-30s is going to overflow as well.
-       */
-      dp = dispname;
-      safe_str(ChanName(c), dispname, &dp);
-      numblanks = 30 - strlen(cleanname);
-      if (numblanks > 0)
-        safe_fill(' ', numblanks, dispname, &dp);
-      *dp = '\0';
-      notify_format(player,
-                    "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
-                    dispname, numusers, ChanNumMsgs(c),
-                    Channel_Disabled(c) ? 'D' : '-',
-                    Channel_Player(c) ? 'P' : '-',
-                    Channel_Object(c) ? 'T' : '-',
-                    Channel_Admin(c) ? 'A' : (Channel_Wizard(c) ? 'W' : '-'),
-                    Channel_Quiet(c) ? 'Q' : '-',
-                    Channel_CanHide(c) ? 'H' : '-', Channel_Open(c) ? 'o' : '-',
-                    /* Locks */
-                    ChanJoinLock(c) != TRUE_BOOLEXP ? 'j' : '-',
-                    ChanSpeakLock(c) != TRUE_BOOLEXP ? 's' : '-',
-                    ChanModLock(c) != TRUE_BOOLEXP ? 'm' : '-',
-                    ChanSeeLock(c) != TRUE_BOOLEXP ? 'v' : '-',
-                    ChanHideLock(c) != TRUE_BOOLEXP ? 'h' : '-',
-                    /* Does the player own it? */
-                    ChanCreator(c) == player ? '*' : '-',
-                    /* User status */
-                    u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
-                    (u && Chanuser_Quiet(u)) ? 'Q' : ' ',
-                    (u && Chanuser_Hide(u)) ? 'H' : ' ',
-                    (u && Chanuser_Combine(u)) ? 'C' : ' ',
-                    bufferq_blocks(ChanBufferQ(c)));
+    if (!Chan_Can_See(c, player) || !string_prefix(cleanname, partname))
+      continue;
+    u = onchannel(player, c);
+    if ((types & CHANLIST_ALL) != CHANLIST_ALL) {
+      if ((types & CHANLIST_ON) && !u)
+        continue;
+      else if ((types & CHANLIST_OFF) && u)
+        continue;
     }
+    if (types & CHANLIST_QUIET) {
+      if (sp != shortoutput)
+        safe_str(", ", shortoutput, &sp);
+      numblanks++;
+      safe_str(ChanName(c), shortoutput, &sp);
+      continue;
+    }
+    if (SUPPORT_PUEBLO)
+      snprintf(numusers, BUFFER_LEN,
+               "%c%cA XCH_CMD=\"@channel/who %s\" XCH_HINT=\"See who's on this channel now\"%c%5d%c%c/A%c",
+               TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
+               TAG_START, MARKUP_HTML, TAG_END);
+    else
+      sprintf(numusers, "%5d", ChanNumUsers(c));
+    /* Display length is strlen(cleanname), but actual length is
+     * strlen(ChanName(c)). There are two different cases:
+     * 1. actual length <= 30. No problems.
+     * 2. actual length > 30, we must reduce the number of
+     * blanks we add by the (actual length-30) because our
+     * %-30s is going to overflow as well.
+     */
+    dp = dispname;
+    safe_str(ChanName(c), dispname, &dp);
+    numblanks = 30 - strlen(cleanname);
+    if (numblanks > 0)
+      safe_fill(' ', numblanks, dispname, &dp);
+    *dp = '\0';
+    notify_format(player,
+                  "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
+                  dispname, numusers, ChanNumMsgs(c),
+                  Channel_Disabled(c) ? 'D' : '-',
+                  Channel_Player(c) ? 'P' : '-',
+                  Channel_Object(c) ? 'T' : '-',
+                  Channel_Admin(c) ? 'A' : (Channel_Wizard(c) ? 'W' : '-'),
+                  Channel_Quiet(c) ? 'Q' : '-',
+                  Channel_CanHide(c) ? 'H' : '-', Channel_Open(c) ? 'o' : '-',
+                  /* Locks */
+                  ChanJoinLock(c) != TRUE_BOOLEXP ? 'j' : '-',
+                  ChanSpeakLock(c) != TRUE_BOOLEXP ? 's' : '-',
+                  ChanModLock(c) != TRUE_BOOLEXP ? 'm' : '-',
+                  ChanSeeLock(c) != TRUE_BOOLEXP ? 'v' : '-',
+                  ChanHideLock(c) != TRUE_BOOLEXP ? 'h' : '-',
+                  /* Does the player own it? */
+                  ChanCreator(c) == player ? '*' : '-',
+                  /* User status */
+                  u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
+                  (u && Chanuser_Quiet(u)) ? 'Q' : ' ',
+                  (u && Chanuser_Hide(u)) ? 'H' : ' ',
+                  (u && Chanuser_Combine(u)) ? 'C' : ' ',
+                  bufferq_blocks(ChanBufferQ(c)));
   }
-  if (SUPPORT_PUEBLO)
+  if (types & CHANLIST_QUIET) {
+    if (sp == shortoutput)
+      safe_str(T("(None)"), shortoutput, &sp);
+    *sp = '\0';
+    notify_format(player,T("CHAT: Channel list: %s"), shortoutput);
+    mush_free(shortoutput, "chan_list");
+  } else if (SUPPORT_PUEBLO)
     notify_noenter(player, close_tag("SAMP"));
 }
 
@@ -3548,9 +3575,18 @@ COMMAND(cmd_cemit)
 
 COMMAND(cmd_channel)
 {
-  if (SW_ISSET(sw, SWITCH_LIST))
-    do_channel_list(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_ADD))
+  if (SW_ISSET(sw, SWITCH_LIST)) {
+    int type = CHANLIST_DEFAULT;
+    if (SW_ISSET(sw, SWITCH_ON))
+      type |= CHANLIST_ON;
+    if (SW_ISSET(sw, SWITCH_OFF))
+      type |= CHANLIST_OFF;
+    if (SW_ISSET(sw, SWITCH_QUIET))
+      type |= CHANLIST_QUIET;
+    if (!(type & CHANLIST_ALL))
+      type |= CHANLIST_ALL;
+    do_channel_list(executor, arg_left, type);
+  } else if (SW_ISSET(sw, SWITCH_ADD))
     do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_ADD);
   else if (SW_ISSET(sw, SWITCH_DELETE))
     do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_DEL);

@@ -167,7 +167,7 @@ See also: CHAT, @chat, @cemit
 & @channel/join
 & @channel/off
 & @channel/leave
-  @channel/list [<prefix>]
+  @channel/list[/on|/off][/quiet] [<prefix>]
   @channel/what [<prefix>]
   @channel/who <channel>
   @channel/on <channel>[=<player>]
@@ -176,7 +176,10 @@ See also: CHAT, @chat, @cemit
   @channel/list shows a list of all the channels you can see, along with some
   basic information such as whether you are on the channel, how it's locked,
   etc. 'help @channel list' explains the output in detail. If a <prefix> is
-  given, only channels whose names begin with <prefix> are shown.
+  given, only channels whose names begin with <prefix> are shown. If the /on
+  switch is given, only channels you've joined are shown. If /off is given,
+  channels you are on will not be shown. The /quiet switch shows just a list
+  of channel names, without any extra information.
 
   @channel/what shows the name, description, owner, priv flags, mogrifier and 
   buffer size for all channels, or all channels whose names begin with

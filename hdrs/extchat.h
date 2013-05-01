@@ -247,7 +247,7 @@ void do_chan_admin(dbref player, char *name, const char *perms,
                    enum chan_admin_op flag);
 enum cmatch_type find_channel(const char *p, CHAN **chan, dbref player);
 enum cmatch_type find_channel_partial(const char *p, CHAN **chan, dbref player);
-void do_channel_list(dbref player, const char *partname);
+void do_channel_list(dbref player, const char *partname, int type);
 int do_chat_by_name
   (dbref player, const char *name, const char *msg, int source);
 void do_chan_decompile(dbref player, const char *name, int brief);
@@ -264,6 +264,11 @@ enum chan_match_type {
   PMATCH_ON    /**< Match channels user is on */
 };
 
+#define CHANLIST_DEFAULT 0
+#define CHANLIST_ON    0x1
+#define CHANLIST_OFF   0x2
+#define CHANLIST_QUIET 0x4
+#define CHANLIST_ALL (CHANLIST_ON | CHANLIST_OFF)
 
 /* Chat db flags */
 #define CDB_SPIFFY 0x01         /* Has mogrifier and buffer */

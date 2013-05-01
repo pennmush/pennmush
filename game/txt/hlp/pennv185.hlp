@@ -18,6 +18,9 @@ Commands:
    Requested by Mikoto Misaka. Idea from [MUX]. [MG]
  * After a year of deprecation, @emit/room has been removed as an alias for
    @lemit. [MG]
+ * @chan/list now takes /on and /off switches, to filter the channels shown,
+   and a /quiet switch to give a less verbose output. From a suggestion by
+   Fraibert. [MG]
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via

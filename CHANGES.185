@@ -64,6 +64,9 @@ Minor changes:
    Ashen-Shugar. [MG]
  * The connect-screen WHO now shows moniker'd (ansi'd) names, if so 
    configured. Requested by Trinsec. [MG]
+ * @mapsql and mapsql()'s attributes now receives named arguments. That is,
+   '@mapsql me/foo=SELECT name FROM table' receives the value of the 'name'
+   field as both %1 and [r(name,args)]. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

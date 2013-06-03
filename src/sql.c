@@ -154,6 +154,14 @@ sql_sanitize(char *res) {
   }
   *bp = '\0';
 
+  if (has_markup(buff)) {
+    ansi_string *as = parse_ansi_string(buff);
+    bp = buff;
+    safe_ansi_string(as, 0, as->len, buff, &bp);
+    free_ansi_string(as);
+    *bp = '\0';
+  }
+
   return buff;
 }
 
@@ -359,6 +367,7 @@ COMMAND(cmd_mapsql)
   int rownum;
   int numfields;
   int numrows;
+  int useable_fields = 0;
   PE_REGS *pe_regs = NULL;
   char *names[MAX_STACK_ARGS];
   char *cells[MAX_STACK_ARGS];
@@ -443,6 +452,12 @@ COMMAND(cmd_mapsql)
     goto finished;
   }
 
+  if (numfields > 0) {
+    if (numfields > (MAX_STACK_ARGS - 1))
+      useable_fields = MAX_STACK_ARGS - 1;
+    else
+      useable_fields = numfields;
+  }
   pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_mapsql");
   for (rownum = 0; rownum < numrows; rownum++) {
 #ifdef HAVE_MYSQL
@@ -466,24 +481,24 @@ COMMAND(cmd_mapsql)
 #endif
 
     if (numfields > 0) {
-      for (i = 0; i < numfields && i < (MAX_STACK_ARGS - 1); i++) {
+      for (i = 0; i < useable_fields; i++) {
         switch (sql_platform()) {
 #ifdef HAVE_MYSQL
         case SQL_PLATFORM_MYSQL:
-          cells[i + 1] = row_p[i];
-          names[i + 1] = fields[i].name;
+          cells[i + 1] = mush_strdup(sql_sanitize(row_p[i]), "sql_row");
+          names[i + 1] = mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_POSTGRESQL
         case SQL_PLATFORM_POSTGRESQL:
-          cells[i + 1] = PQgetvalue(qres, rownum, i);
-          names[i + 1] = PQfname(qres, i);
+          cells[i + 1] = mush_strdup(sql_sanitize(PQgetvalue(qres, rownum, i)), "sql_row");
+          names[i + 1] = mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
-          cells[i + 1] = (char *) sqlite3_column_text(qres, i);
-          names[i + 1] = (char *) sqlite3_column_name(qres, i);
+          cells[i + 1] = mush_strdup(sql_sanitize((char *) sqlite3_column_text(qres, i)), "sql_row");
+          names[i + 1] = mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
           break;
 #endif
         default:
@@ -496,8 +511,8 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        for (i = 0; i < (numfields + 1) && i < MAX_STACK_ARGS; i++) {
-          pe_regs_setenv(pe_regs, i, sql_sanitize(names[i]));
+        for (i = 0; i < useable_fields + 1; i++) {
+          pe_regs_setenv(pe_regs, i, names[i]);
         }
         queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
       }
@@ -506,11 +521,17 @@ COMMAND(cmd_mapsql)
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
       pe_regs_clear(pe_regs);
-      for (i = 0; i < (numfields + 1) && i < MAX_STACK_ARGS; i++) {
-        pe_regs_setenv(pe_regs, i, sql_sanitize(cells[i]));
+      for (i = 0; i < useable_fields + 1; i++) {
+        pe_regs_setenv(pe_regs, i, cells[i]);
+        if (i && !is_strict_integer(names[i]))
+          pe_regs_set(pe_regs, PE_REGS_ARG, names[i], cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
       queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
+      for (i = 0; i < useable_fields; i++) {
+        mush_free(cells[i + 1], "sql_row");
+        mush_free(names[i + 1], "sql_fieldname");
+      }
     } else {
       /* What to do if there are no fields? This should be an error?. */
       /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
@@ -668,12 +689,11 @@ FUNCTION(fun_mapsql)
   char rbuff[BUFFER_LEN];
   int funccount = 0;
   int do_fieldnames = 0;
-  int i, j;
-  char buffs[MAX_STACK_ARGS][BUFFER_LEN];
-  char *tbp;
+  int i;
+  int useable_fields = 0;
+  char **fieldnames = NULL;
   char *cell = NULL;
   PE_REGS *pe_regs = NULL;
-  ansi_string *as;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
 #endif
@@ -725,36 +745,43 @@ FUNCTION(fun_mapsql)
     goto finished;
   }
 
+  if (numfields < MAX_STACK_ARGS)
+    useable_fields = numfields;
+  else
+    useable_fields = MAX_STACK_ARGS;
+
+  fieldnames = mush_calloc(sizeof(char *), useable_fields, "sql_fieldnames");
+
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_mapsql");
-  if (do_fieldnames) {
-    pe_regs_setenv(pe_regs, 0, unparse_integer(0));
 #ifdef HAVE_MYSQL
-    if (sql_platform() == SQL_PLATFORM_MYSQL)
-      fields = mysql_fetch_fields(qres);
+  if (sql_platform() == SQL_PLATFORM_MYSQL)
+    fields = mysql_fetch_fields(qres);
 #endif
-    for (i = 0; i < numfields && i < MAX_STACK_ARGS; i++) {
-      switch (sql_platform()) {
+  for (i = 0; i < useable_fields; i++) {
+    switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:
-        pe_regs_setenv(pe_regs, i + 1, sql_sanitize(fields[i].name));
+        fieldnames[i] = mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
         break;
 #endif
 #ifdef HAVE_POSTGRESQL
-      case SQL_PLATFORM_POSTGRESQL:
-        pe_regs_setenv(pe_regs, i + 1, sql_sanitize(PQfname(qres, i)));
-        break;
+    case SQL_PLATFORM_POSTGRESQL:
+      fieldnames[i] = mush_strdup(sql_sanitize(PQfname(qres, i), "sql_fieldname");
+      break;
 #endif
 #ifdef HAVE_SQLITE3
-      case SQL_PLATFORM_SQLITE3:
-        pe_regs_setenv(pe_regs, i + 1, sql_sanitize((char *) sqlite3_column_name(qres, i)));
-        break;
+    case SQL_PLATFORM_SQLITE3:
+      fieldnames[i] = mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
+      break;
 #endif
-      default:
-        break;
-      }
+    default:
+      break;
     }
-    for (j = 0; j < (i + 1); j++) {
-    }
+  }
+  if (do_fieldnames) {
+    pe_regs_setenv(pe_regs, 0, "0");
+    for (i = 0; i < useable_fields; i++)
+      pe_regs_setenv_nocopy(pe_regs, i + 1, fieldnames[i]);
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
     safe_str(rbuff, buff, bp);
@@ -783,7 +810,7 @@ FUNCTION(fun_mapsql)
     }
     pe_regs_clear(pe_regs);
     pe_regs_setenv(pe_regs, 0, unparse_integer(rownum + 1));
-    for (i = 0; (i < numfields) && (i < MAX_STACK_ARGS); i++) {
+    for (i = 0; i < useable_fields; i++) {
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:
@@ -805,18 +832,12 @@ FUNCTION(fun_mapsql)
       }
       if (cell && *cell) {
         cell = sql_sanitize(cell);
-        if (strchr(cell, TAG_START) || strchr(cell, ESC_CHAR)) {
-          /* Either old or new style ANSI string. */
-          tbp = buffs[i];
-          as = parse_ansi_string(cell);
-          safe_ansi_string(as, 0, as->len, buffs[i], &tbp);
-          *tbp = '\0';
-          free_ansi_string(as);
-          cell = buffs[i];
-        }
       }
-      if (cell)
+      if (cell && *cell) {
         pe_regs_setenv(pe_regs, i + 1, cell);
+        if (*fieldnames[i] && !is_strict_integer(fieldnames[i]))
+          pe_regs_set(pe_regs, PE_REGS_ARG, fieldnames[i], cell);
+      }
     }
     /* Now call the ufun. */
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
@@ -829,6 +850,11 @@ FUNCTION(fun_mapsql)
 finished:
   if (pe_regs)
     pe_regs_free(pe_regs);
+  if (fieldnames) {
+    for (i = 0; i < useable_fields; i++)
+      mush_free(fieldnames[i], "sql_fieldname");
+    mush_free(fieldnames, "sql_fieldnames");
+  }
   free_sql_query(qres);
 }
 

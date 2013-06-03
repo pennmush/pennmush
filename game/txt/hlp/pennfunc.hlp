@@ -5098,10 +5098,13 @@ See also: merge()
 
   Each row of the result is passed to <attribute>, with the first nine 
   columns available as %1-%9, and twenty more available via v(10) - v(29).
-  %0 is set to the row number, which will start with 1.
+  %0 is set to the row number, which will start with 1. The fields will also
+  be available as named arguments, with r(<field name>, args) returning the
+  appropriate value.
 
   If <dofieldnames> evaluates to a true boolean, then the first call will be
-  with row number 0 and %1-%9 will be set to the field names.
+  with row number (%0) set to 0, and %1-%9 and v(10) - v(29) will be set to 
+  the field names.
 
   See 'help sql examples' for examples.
 
@@ -5148,10 +5151,14 @@ See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
     quote           text
 
     > &each_bb me=(%0) - %1 (%2)
-    > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+    > &query me=SELECT `name`, count(*) AS `total` FROM `bbs` GROUP BY 
+           `name` ORDER BY `name`
     > think mapsql(each_bb, v(query), %r)
     (1) - Announcements (5)
     (2) - Advertisements (20)
+
+  The same thing can be done using named arguments:
+    > &each_bb me=(%0) - [r(name, args)] ([r(total, args)])
 
   Using sql() to update fields:
     > &update me=UPDATE `foo` SET `time` = '[sqlescape(%0)]' WHERE 

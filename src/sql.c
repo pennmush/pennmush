@@ -766,7 +766,7 @@ FUNCTION(fun_mapsql)
 #endif
 #ifdef HAVE_POSTGRESQL
     case SQL_PLATFORM_POSTGRESQL:
-      fieldnames[i] = mush_strdup(sql_sanitize(PQfname(qres, i), "sql_fieldname");
+      fieldnames[i] = mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
       break;
 #endif
 #ifdef HAVE_SQLITE3

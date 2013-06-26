@@ -1259,10 +1259,12 @@ define_ansi_data(ansi_data *store, const char *str)
   memset(store, 0, sizeof(ansi_data));
 
   while (str && *str && *str != TAG_END) {
-    while (isspace((unsigned char) *str)) {
+    while (*str && isspace((unsigned char) *str)) {
       str++;
       new_ansi = false;
     }
+    if (!*str)
+      break;
     if (new_ansi) {
       /* *str is either +, #, <, 0-9 or / */
       switch (*str) {

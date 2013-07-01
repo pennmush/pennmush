@@ -82,6 +82,8 @@ Functions:
    function as <obj>. Useful when overriding side-effect functions. [MG]
  * r() now takes two arguments, allowing it to return the stack (%0-%9),
    itext() and stext() values, as well as q-registers(). [MG]
+ * Mortals can now use playermem() and objmem() on their own objects.
+   Suggested by Paige. [MG]
 
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 

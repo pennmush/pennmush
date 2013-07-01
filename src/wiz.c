@@ -2029,10 +2029,7 @@ mem_usage(dbref thing)
 FUNCTION(fun_objmem)
 {
   dbref thing;
-  if (!Search_All(executor)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
+
   if (!strcasecmp(args[0], "me"))
     thing = executor;
   else if (!strcasecmp(args[0], "here"))
@@ -2060,10 +2057,6 @@ FUNCTION(fun_playermem)
   dbref thing;
   dbref j;
 
-  if (!Search_All(executor)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
   if (!strcasecmp(args[0], "me") && IsPlayer(executor))
     thing = executor;
   else if (*args[0] && *args[0] == '*')

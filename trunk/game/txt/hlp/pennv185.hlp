@@ -46,7 +46,7 @@ Fixes:
  * @grep now ignores ansi when looking for a value. Suggested by Mouvar. [MG]
  * colors() now complains when the color is 'n', 'd' or 'D', since they
    have no actual color value. Reported by spork. [MG]
- * Buffer overflow bug in ansi() fixed. Reported by spork. [MG]
+ * Buffer overflow bug in ansi() fixed. Reported by tsen. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you
@@ -68,6 +68,11 @@ Minor changes:
    field as both %1 and [r(name,args)]. [MG]
  * Wizards can now give players names with spaces, even when the 
    player_name_spaces option is off. Suggested by Paige. [MG]
+ * Removed the last traces of the 'events' help-style command. Noone ever
+   uses it, and we removed the helpfiles for it ages ago when the Event 
+   System was added, anyway. [MG]
+ * Updated the README for adding help-style commands, with clearer examples.
+   Requested by AnnePearn. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

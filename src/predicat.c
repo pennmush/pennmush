@@ -712,7 +712,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
   if (!ok_name(name, 0) || strlen(name) > (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
-  good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");
+  good = (unsigned char *) (PLAYER_NAME_SPACES || Wizard(player) ? " `$_-.,'" : "`$_-.,'");
 
   /* Make sure that the name contains legal characters only */
   for (scan = (unsigned char *) name; scan && *scan; scan++) {

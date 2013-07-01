@@ -66,6 +66,8 @@ Minor changes:
  * @mapsql and mapsql()'s attributes now receives named arguments. That is,
    '@mapsql me/foo=SELECT name FROM table' receives the value of the 'name'
    field as both %1 and [r(name,args)]. [MG]
+ * Wizards can now give players names with spaces, even when the 
+   player_name_spaces option is off. Suggested by Paige. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

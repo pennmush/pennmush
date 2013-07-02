@@ -34,6 +34,9 @@ Hardcode:
  * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
    and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
    flag to determine how matching subpatterns are stored in pe_regs. [MG]
+ * add_flag_generic() now returns an enum, and takes an additional final
+   pointer arg, where the new flag will be stored. add_flag() and add_power()
+   pass this pointer as NULL. [MG]
 
 Fixes:
  * Commands which take multiple right-hand-side arguments could only have

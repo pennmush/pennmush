@@ -113,11 +113,19 @@ void flag_read_all(PENNFILE *, const char *);
 int type_from_old_flags(long old_flags);
 object_flag_type flags_from_old_flags(const char *ns, long old_flags,
                                       long old_toggles, int type);
-FLAG *add_flag_generic(const char *ns, const char *name,
+enum flag_res {
+  FLAG_OK = 0, /* No error */
+  FLAG_EXISTS, /* Flag already existed */
+  FLAG_NAME, /* Invalid flag name */
+  FLAG_LETTER, /* Invalid/in-use flag letter */
+  FLAG_TYPE, /* Invalid type */
+  FLAG_PERMS /* Invalid [reset] perms */
+};
+enum flag_res add_flag_generic(const char *ns, const char *name,
                        const char letter, int type, int perms,
-                       int negate_perms);
-#define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x)
-#define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x)
+                       int negate_perms, FLAG **fp);
+#define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x,NULL)
+#define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x,NULL)
 int alias_flag_generic(const char *ns, const char *name, const char *alias);
 #define alias_flag(n,a) alias_flag_generic("FLAG",n,a);
 #define alias_power(n,a) alias_flag_generic("POWER",n,a);

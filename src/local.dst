@@ -116,8 +116,9 @@ local_dbck(void)
 {
 }
 
-/* This is called exactly once a second
- * After the MUSH has done all it's stuff
+/* This is called exactly once a second after the MUSH has done all 
+ * it's stuff. NOTE: This function MUST be enabled in local_startup();
+ * read the comments there for instructions.
  */
 bool
 local_timer(void *data __attribute__ ((__unused__)))

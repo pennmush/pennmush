@@ -445,7 +445,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
    */
 
   /* Can't have more than 255 references to the same flag */
-  if (FLAG_REF(f->perms) == 0xFFU)
+  if (!f || FLAG_REF(f->perms) == 0xFFU)
     return;
 
   if (f->bitpos < 0)
@@ -985,7 +985,7 @@ flag_add_additional(FLAGSPACE *n)
       f->type = NOTYPE;
       f->letter = '\0';
     }
-    f = add_flag("CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT, F_INHERIT);
+    add_flag_generic("FLAG", "CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT, F_INHERIT, &f);
     flags = hashfind("FLAG", &htab_flagspaces);
     if (!match_flag("CHAN_FIRSTMATCH"))
       flag_add(flags, "CHAN_FIRSTMATCH", f);
@@ -997,7 +997,7 @@ flag_add_additional(FLAGSPACE *n)
       f->perms |= F_LOG;
     if ((f = match_flag("ROYALTY")))
       f->perms |= F_LOG;
-    f = add_flag("XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY);
+    add_flag_generic("FLAG", "XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY, &f);
     flag_add(flags, "COLOR256", f);     /* MUX alias */
 
     add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
@@ -1009,8 +1009,8 @@ flag_add_additional(FLAGSPACE *n)
         n->flags[i]->perms |= F_LOG;
     }
     flags = hashfind("POWER", &htab_flagspaces);
-    f = add_power("Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
-    if (!match_power("Use_SQL"))
+    add_flag_generic("POWER", "Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY, &f);
+    if (f && !match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
     if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
       /* The "Can_nspemit" power was renamed "Can_spoof"... */
@@ -2349,19 +2349,35 @@ sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
  * \param type mask of object types to which the flag applies.
  * \param perms mask of permissions to see/set the flag.
  * \param negate_perms mask of permissions to clear the flag.
+ * \param fp pointer to store the new flag in
+ * \return FLAG_* value from flag_res enum
  */
-FLAG *
+enum flag_res
 add_flag_generic(const char *ns, const char *name, const char letter, int type,
-                 int perms, int negate_perms)
+                 int perms, int negate_perms, FLAG **fp)
 {
   FLAG *f;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
+
+  if (fp)
+    *fp = NULL;
+
   /* Don't double-add */
   if ((f = match_flag_ns(n, strupper(name)))) {
-    if (strcasecmp(f->name, name) == 0)
-      return f;
+    if (strcasecmp(f->name, name) == 0) {
+      if (fp)
+        *fp = f;
+      return FLAG_EXISTS;
+    }
   }
+
+  if (!name || strlen(name) < 2 || !good_flag_name(strupper(name)))
+    return FLAG_NAME;
+
+  if (letter && (f = letter_to_flagptr(n, letter, type)))
+    return FLAG_LETTER;
+
   f = new_flag();
   f->name = mush_strdup(strupper(name), "flag.name");
   f->letter = letter;
@@ -2370,7 +2386,9 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
   f->negate_perms = negate_perms;
   f->bitpos = -1;
   flag_add(n, f->name, f);
-  return f;
+  if (fp)
+    *fp = f;
+  return FLAG_OK;
 }
 
 
@@ -2583,11 +2601,15 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   int negate_perms = F_ANY;
   FLAG *f;
   FLAGSPACE *n;
+  enum flag_res newflag;
 
   if (!God(player)) {
     notify(player, T("You don't have enough magic for that."));
     return;
   }
+
+  /* Some of these checks are done in add_flag_generic(), but are dupliated
+   * here to allow more specific error messages */
   if (!name || !*name) {
     notify_format(player, T("You must provide a name for the %s."),
                   strlower(ns));
@@ -2630,8 +2652,8 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
       }
     }
     /* Is this letter already in use for this type? */
-    if (*args_right[1]) {
-      if ((f = letter_to_flagptr(n, *args_right[1], type))) {
+    if (letter) {
+      if ((f = letter_to_flagptr(n, letter, type))) {
         notify_format(player, T("Letter conflicts with the %s %s."), f->name,
                       strlower(ns));
         return;
@@ -2663,12 +2685,25 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
       negate_perms = perms;
   }
   /* Ok, let's do it. */
-  add_flag_generic(ns, name, letter, type, perms, negate_perms);
-  /* Did it work? */
-  if (match_flag_ns(n, name))
-    do_flag_info(ns, player, name);
-  else
-    notify_format(player, T("Unknown failure adding %s."), strlower(ns));
+  newflag = add_flag_generic(ns, name, letter, type, perms, negate_perms, &f);
+  switch (newflag) {
+    case FLAG_OK:
+    case FLAG_EXISTS:
+      do_flag_info(ns, player, name);
+      break;
+    case FLAG_NAME:
+      notify_format(player, T("That's not a valid %s name."), strlower(ns));
+      break;
+    case FLAG_LETTER:
+      notify_format(player, T("Invalid %s letter."), strlower(ns));
+      break;
+    case FLAG_PERMS:
+    case FLAG_TYPE:
+    default:
+      notify_format(player, T("Unknown failure adding %s."), strlower(ns));
+      break;
+  }
+
 }
 
 /** Alias a flag.
@@ -3152,6 +3187,7 @@ good_flag_name(char const *s)
       return 0;
   if (*(s + len - 1) == '`')
     return 0;
+
   return len <= ATTRIBUTE_NAME_LIMIT;
 }
 

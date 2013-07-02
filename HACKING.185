@@ -50,6 +50,13 @@ Pe_Regs:
  * pi_regs_get_env()'s second arg is now char*, instead of int, to allow for
    named arguments. Only use the function directly for named arguments - for
    integer args (%0-%9) use the PE_Get_Env(pe_regs, int) macro
+   
+Other:
+ * add_flag_generic() now returns an enum, flag_res, so it can give more
+   specific failure information. The flag created (if any) is now stored
+   in a user-specific pointer, which is passed as the final arg to the
+   function. add_flag() and add_power() pass NULL for this arg so, if you
+   need to know which flag was created, call add_flag_generic() directly.
 
 Version 1.8.5 patchlevel 4                                 Nov 09, 2012
 

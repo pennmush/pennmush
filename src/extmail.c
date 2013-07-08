@@ -139,6 +139,8 @@ static unsigned char *get_compressed_message(MAIL *mp);
 static char *get_subject(MAIL *mp);
 static char *get_sender(MAIL *mp, int full, int len, bool *pisplayer);
 static int was_sender(dbref player, MAIL *mp);
+void do_mail_reviewread(dbref player, dbref target, const char *msglist);
+void do_mail_reviewlist(dbref player, dbref target);
 
 MAIL *maildb;            /**< The head of the mail list */
 MAIL *tail_ptr;          /**< The end of the mail list */

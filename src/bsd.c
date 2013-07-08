@@ -181,6 +181,9 @@ char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
 char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
 char *etime_fmt(char *, time_t, int);
+const char *source_to_s(conn_source source);
+bool fcache_read_one(const char *filename);
+
 
 /** Is this descriptor connected to a telnet-compatible terminal? */
 #define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))

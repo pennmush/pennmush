@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "strtree.h"
+#include "mushtype.h"
 #include "confmagic.h"
 
 extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */

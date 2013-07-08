@@ -38,6 +38,7 @@
 #include "dbdefs.h"
 #include "privtab.h"
 #include "mymalloc.h"
+#include "game.h"
 #include "confmagic.h"
 
 int forbidden_name(const char *name);

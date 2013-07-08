@@ -64,6 +64,10 @@ static int escape_marked_str(char **str, char *buff, char **bp);
 static bool valid_hex_digits(const char *, int);
 
 const char *is_allowed_tag(const char *s, unsigned int len);
+void build_rgb_map(void);
+int ansi_equal(const ansi_data *a, const ansi_data *b);
+int ansi_isnull(const ansi_data a);
+int safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp);
 
 static ansi_data ansi_null = NULL_ANSI;
 
@@ -877,6 +881,11 @@ ansi_map_256(const char *name, bool hilite, bool all)
 typedef int (*writer_func) (ansi_data *old, ansi_data *cur, int ansi_format,
                             char *buff, char **bp);
 #define ANSI_WRITER(name) \
+  int name(ansi_data *old __attribute__ ((__unused__)), \
+           ansi_data *cur __attribute__ ((__unused__)), \
+           int ansi_format __attribute__ ((__unused__)), \
+           char *buff __attribute__ ((__unused__)), \
+           char **bp __attribute__ ((__unused__))); \
   int name(ansi_data *old __attribute__ ((__unused__)), \
            ansi_data *cur __attribute__ ((__unused__)), \
            int ansi_format __attribute__ ((__unused__)), \

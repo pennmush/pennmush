@@ -84,6 +84,8 @@ static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(MQUE **head, MQUE **tail);
 static int do_entry(MQUE *entry, int include_recurses);
 static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
+void init_queue(void);
+int execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs);
 
 /* Keep track of the last 15 minutes worth of queue activity per second */
 enum { QUEUE_LOAD_SECS = 900 };

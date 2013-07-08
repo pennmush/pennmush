@@ -46,6 +46,7 @@ time_t mudtime;                 /**< game time, in seconds */
 
 static void show_compile_options(dbref player);
 static char *config_to_string(dbref player, PENNCONF *cp, int lc);
+int add_mssp(char *name, char *value);
 
 OPTTAB options;         /**< The table of configuration options */
 HASHTAB local_options;  /**< Hash table for local config options */

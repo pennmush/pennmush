@@ -60,6 +60,7 @@
 #include "confmagic.h"
 
 void fputerr(const char *);
+const char *time_string(void);
 
 #ifdef HAVE_LIBEVENT
 
@@ -69,7 +70,7 @@ void fputerr(const char *);
  * lookups asynchronously in one process instead of one blocking
  * lookup per process.  If we ever use libevent for the main netmush
  * loop, this can be moved into it with no need for an info_slave at
- * all! 
+ * all!
  *
  * On BSD systems with kqueue(2), you can (And we do) register to
  * watch for a process to exit, making checking to see if the parent
@@ -403,8 +404,8 @@ static int pollfd_len = 0;
 #endif
 
 
-/** Initialize event loop 
- * \return 0 on success, -1 on failure 
+/** Initialize event loop
+ * \return 0 on success, -1 on failure
  */
 int
 eventwait_init(void)
@@ -492,7 +493,7 @@ eventwait_watch_fd_read(int fd)
   }
 }
 
-/** Monitor parent process for exiting. 
+/** Monitor parent process for exiting.
  * \return 0 on success, -1 on error.
  */
 int

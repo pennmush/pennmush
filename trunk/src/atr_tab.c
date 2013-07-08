@@ -138,6 +138,8 @@ static ATTR *aname_find_exact(const char *name);
 static ATTR *attr_read(PENNFILE *f);
 static ATTR *attr_alias_read(PENNFILE *f, char *alias);
 
+const char *display_attr_limit(ATTR *ap);
+
 void init_aname_table(void);
 
 /** Attribute table lookup by name or alias.

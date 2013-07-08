@@ -138,6 +138,7 @@ int queue_string_eol(DESC *d, const char *s);
 int queue_eol(DESC *d);
 void freeqs(DESC *d);
 int process_output(DESC *d);
+void init_text_queue(struct text_queue *q);
 
 static int str_type(const char *str);
 int notify_type(DESC *d);

@@ -692,7 +692,7 @@ safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
           return n;
       }
     }
-    if ((n = safe_chr(*p, buff, bp)) != 0)
+    if ((n = safe_chr((char) *p, buff, bp)) != 0)
       return n;
   }
 
@@ -1025,7 +1025,7 @@ test_atr(char *s, char c)
     } else if (!escaped && *s == '\\')
       escaped = 1;
     else {
-      safe_chr(UPCASE(*s), tbuf1, &tbp);
+      safe_chr((char) UPCASE(*s), tbuf1, &tbp);
       escaped = 0;
     }
   }
@@ -1346,7 +1346,7 @@ parse_boolexp_A(void)
              (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
                            *parsebuf == ')'))) {
         if (escaped || *parsebuf != '\\') {
-          safe_chr(UPCASE(*parsebuf), tbuf1, &p);
+          safe_chr((char) UPCASE(*parsebuf), tbuf1, &p);
           escaped = 0;
         } else
           escaped = 1;

@@ -27,6 +27,7 @@
 #include "mymalloc.h"
 #include "log.h"
 #include "mypcre.h"
+#include "externs.h"
 #include "confmagic.h"
 
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);

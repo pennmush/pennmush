@@ -45,6 +45,8 @@ extern HASHTAB htab_function;
 
 extern const unsigned char *tables;
 
+void clear_allq(NEW_PE_INFO *pe_info);
+
 /* ARGSUSED */
 FUNCTION(fun_valid)
 {

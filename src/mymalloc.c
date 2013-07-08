@@ -50,6 +50,8 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
+void do_list_allocations(dbref player);
+
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
  * to enable memory leak tracing with MEM_CHECK.

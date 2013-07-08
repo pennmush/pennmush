@@ -78,6 +78,8 @@ static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
                                  enum chan_match_type type);
+void do_chan_set_mogrifier(dbref player, const char *name, const char *newobj);
+char *mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs, const char *argv[], const char *orig);
 
 const char *chan_speak_lock = "ChanSpeakLock";  /**< Name of speak lock */
 const char *chan_join_lock = "ChanJoinLock";    /**< Name of join lock */

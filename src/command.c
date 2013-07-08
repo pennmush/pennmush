@@ -68,6 +68,7 @@ int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
 
 int run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                       MQUE *from_queue);
+void do_command_clone(dbref player, char *original, char *clone);
 
 const char *CommandLock = "CommandLock";
 

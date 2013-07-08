@@ -1262,15 +1262,15 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
               continue;
             if (strchr(AL_NAME(ptr), '`')) {
               /* We need to check all the branches of the tree for no_inherit */
-              char name[BUFFER_LEN];
+              char bname[BUFFER_LEN];
               char *p;
               ATTR *branch;
               bool skip = 0;
 
-              strcpy(name, AL_NAME(ptr));
-              for (p = strchr(name, '`'); p; p = strchr(p + 1, '`')) {
+              strcpy(bname, AL_NAME(ptr));
+              for (p = strchr(bname, '`'); p; p = strchr(p + 1, '`')) {
                 *p = '\0';
-                branch = find_atr_in_list(lastbranch, name);
+                branch = find_atr_in_list(lastbranch, bname);
                 *p = '`';
                 if (branch && AF_Private(branch)) {
                   skip = 1;

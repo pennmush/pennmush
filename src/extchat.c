@@ -7,6 +7,7 @@
  */
 #include "copyrite.h"
 #include "config.h"
+#include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -3246,10 +3247,13 @@ chat_player_announce(dbref player, char *msg, int ungag)
           CUtype(up) &= ~CU_GAG;
       }
 
-      bp -= 3;
-      *bp = '\0';
-      bp2--;
-      *bp2 = '\0';
+      if (bp != buff) {
+        assert(bp2 != buff2);
+        bp -= 3;
+        *bp = '\0';
+        bp2--;
+        *bp2 = '\0';
+      }
 
       if (shared && !im_exists(seen, viewer)) {
         char defmsg[BUFFER_LEN], *dmp;

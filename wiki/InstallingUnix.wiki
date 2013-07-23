@@ -79,3 +79,10 @@ If you get an error that GAMEDIR doesn't seem to be a valid directory, edit the 
 {{{
  GAMEDIR=/home/usr/pennmush-1.8.3p13/game
 }}}
+
+==Miscellaneous==
+For the truly brave, you can compile Penn with clang+asan to catch memory errors. To do so
+  # Install clang 3.1 or higher. Packages for Debian/Ubuntu can be found at http://llvm.org/apt/.
+  # `$ CC=clang CFLAGS=-fsanitize=address ./configure`
+  # `$ make && make install`
+and then run Penn as you normally do.

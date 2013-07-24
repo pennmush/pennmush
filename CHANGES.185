@@ -52,6 +52,7 @@ Fixes:
  * colors() now complains when the color is 'n', 'd' or 'D', since they
    have no actual color value. Reported by spork. [MG]
  * Buffer overflow bug in ansi() fixed. Reported by tsen. [MG]
+ * Flag corruption issue due to incorrect flagset refcounts fixed. [DC]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

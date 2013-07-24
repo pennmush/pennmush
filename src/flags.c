@@ -555,7 +555,6 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
       struct flagpair *newpair;
 
       grown = extend_bitmask(n, b->key, numbytes - 1);
-      flagcache_find_ns(n, grown);
 
       newpair = slab_malloc(flagpairs, NULL);
       newpair->orig = b->key;
@@ -591,6 +590,8 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
 	  }
 	}
       }
+      /* Update the refcount for this flagset. */
+      flagcache_find_ns(n, m->grown);
     }
   }
   slab_destroy(flagpairs);

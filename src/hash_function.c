@@ -456,10 +456,10 @@ murmur3_x86_32(const char *key, int len)
 static const int spooky_numVars = 12;
 
 /* size of the internal state */
-static const int spooky_blockSize = spooky_numVars*8;
+static const int spooky_blockSize = 96 /*spooky_numVars*8*/;
 
 /* size of buffer of unhashed data, in bytes */
-static const int spooky_bufSize = 2*spooky_blockSize;
+static const int spooky_bufSize = 192 /*2*spooky_blockSize*/;
 
 /*
  * sc_const: a constant which:

@@ -44,13 +44,13 @@ struct flagcache;
  * a set of flags, powers, or whatever.
  */
 struct flagspace {
-  const char *name;             /**< The name of this flagspace */
-  PTAB *tab;                    /**< Prefix table storing flags by name/alias */
-  FLAG **flags;                 /**< Variable-length array of pointers to canonical flags, indexed by bit */
-  int flagbits;                 /**< Current length of the flags array */
-  FLAG *flag_table;             /**< Pointer to flag table */
-  FLAG_ALIAS *flag_alias_table; /**< Pointer to flag alias table */
-  struct flagcache *cache;      /**< Cache of all set flag bitsets */
+  const char *name;                   /**< The name of this flagspace */
+  PTAB *tab;                          /**< Prefix table storing flags by name/alias */
+  FLAG **flags;                       /**< Variable-length array of pointers to canonical flags, indexed by bit */
+  int flagbits;                       /**< Current length of the flags array */
+  const FLAG *flag_table;             /**< Pointer to flag table */
+  const FLAG_ALIAS *flag_alias_table; /**< Pointer to flag alias table */
+  struct flagcache *cache;            /**< Cache of all set flag bitsets */
 };
 
 /* From flags.c */

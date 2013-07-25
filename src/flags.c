@@ -39,6 +39,7 @@
 #include "parse.h"
 #include "match.h"
 #include "ptab.h"
+#include "hash_function.h"
 #include "htab.h"
 #include "privtab.h"
 #include "game.h"
@@ -93,6 +94,7 @@ struct flagcache {
 
 static struct flagcache *new_flagcache(FLAGSPACE *, int);
 static void free_flagcache(struct flagcache *);
+static void flagcache_rebucket(FLAGSPACE *, int);
 static object_flag_type flagcache_find_ns(FLAGSPACE *, const object_flag_type);
 
 slab *flagbucket_slab = NULL;
@@ -544,7 +546,7 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   numbytes = FlagBytes(n);
 
   oldcache = n->cache;
-  n->cache = new_flagcache(n, (double) oldcache->size * 1.1);
+  n->cache = new_flagcache(n, oldcache->size);
 
   flagpairs = slab_create("flagpairs", sizeof *migrate);
   migrate = NULL;
@@ -887,6 +889,8 @@ flag_write_all(PENNFILE *out, const char *ns)
 void
 init_flagspaces(void)
 {
+  /* Initial flagcache sizes are estimates based on examining the output of
+   * @stats/flags in several games. */
   FLAGSPACE *flags;
 
   hashinit(&htab_flagspaces, 4);
@@ -898,7 +902,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = flag_table;
   flags->flag_alias_table = flag_alias_tab;
-  flags->cache = new_flagcache(flags, (sizeof flag_table / sizeof(FLAG)) * 4);
+  flags->cache = new_flagcache(flags, 257);
   hashadd("FLAG", (void *) flags, &htab_flagspaces);
   flags = mush_malloc(sizeof(FLAGSPACE), "flagspace");
   flags->name = strdup("POWER");
@@ -908,7 +912,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = power_table;
   flags->flag_alias_table = power_alias_tab;
-  flags->cache = new_flagcache(flags, (sizeof power_table / sizeof(FLAG)) * 2);
+  flags->cache = new_flagcache(flags, 31);
   hashadd("POWER", (void *) flags, &htab_flagspaces);
 }
 
@@ -1151,7 +1155,6 @@ new_flagcache(FLAGSPACE *n, int initial_size)
 
   cache = mush_malloc(sizeof *cache, "flagset.cache");
 
-  initial_size = next_prime_after(initial_size);
   cache->size = initial_size;
   cache->entries = 0;
   cache->zero_refcount = 0;
@@ -1160,7 +1163,7 @@ new_flagcache(FLAGSPACE *n, int initial_size)
   cache->zero = slab_malloc(cache->flagset_slab, NULL);
   memset(cache->zero, 0, FlagBytes(n));
   cache->buckets =
-    mush_calloc(initial_size, sizeof(struct flagbucket *),
+    mush_calloc(cache->size, sizeof(struct flagbucket *),
                 "flagset.cache.bucketarray");
   return cache;
 }
@@ -1182,15 +1185,35 @@ free_flagcache(struct flagcache *cache)
   mush_free(cache, "flagset.cache");
 }
 
-static uint32_t
+static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  uint32_t h = 0, i, len;
+  return hsieh_hash(f, FlagBytes(n));
+}
 
-  for (i = 0, len = FlagBytes(n); i < len; i += 1)
-    h = (h << 5) + h + f[i];
+static void
+flagcache_rebucket(FLAGSPACE *n, int new_size)
+{
+  struct flagbucket** new_buckets;
+  int i;
 
-  return h;
+  new_buckets = mush_calloc(new_size, sizeof(struct flagbucket *),
+                            "flagset.cache.bucketarray");
+
+  for (i = 0; i < n->cache->size; ++i) {
+    struct flagbucket *bucket, *next;
+    int new_index;
+    for (bucket = n->cache->buckets[i]; bucket; bucket = next) {
+      next = bucket->next;
+      new_index = fc_hash(n, bucket->key) % new_size;
+      bucket->next = new_buckets[new_index];
+      new_buckets[new_index] = bucket;
+    }
+  }
+
+  mush_free(n->cache->buckets, "flagset.cache.bucketarray");
+  n->cache->size = new_size;
+  n->cache->buckets = new_buckets;
 }
 
 static inline bool
@@ -1232,6 +1255,11 @@ flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
   b->next = n->cache->buckets[h];
   n->cache->entries += 1;
   n->cache->buckets[h] = b;
+
+  /* Resize at a load factor of two. */
+  if ((n->cache->entries / 2) > n->cache->size)
+    flagcache_rebucket(n, next_prime_after(n->cache->size * 2));
+
   return f;
 }
 

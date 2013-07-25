@@ -204,7 +204,7 @@ static void city_weak_hash_len_32_with_seeds_helper(
 /* Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty. */
 static void city_weak_hash_len_32_with_seeds(
     const char *s, uint64_t a, uint64_t b, uint64_t *h1, uint64_t *h2) {
-  return city_weak_hash_len_32_with_seeds_helper(
+  city_weak_hash_len_32_with_seeds_helper(
       city_fetch_64(s),
       city_fetch_64(s + 8),
       city_fetch_64(s + 16),

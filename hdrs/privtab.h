@@ -31,12 +31,12 @@ struct priv_info {
 #define PrivSetBits(x)  ((x)->bits_to_set) /**< Bitflags required to set priv */
 #define PrivShowBits(x) ((x)->bits_to_show) /**< Bitflags required to see priv */
 
-privbits string_to_privs(PRIV *table, const char *str, privbits origprivs);
-privbits list_to_privs(PRIV *table, const char *str, privbits origprivs);
-int string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
+privbits string_to_privs(const PRIV *table, const char *str, privbits origprivs);
+privbits list_to_privs(const PRIV *table, const char *str, privbits origprivs);
+int string_to_privsets(const PRIV *table, const char *str, privbits *setprivs,
                        privbits *clrprivs);
-privbits letter_to_privs(PRIV *table, const char *str, privbits origprivs);
-extern const char *privs_to_string(PRIV *table, privbits privs);
-extern const char *privs_to_letters(PRIV *table, privbits privs);
+privbits letter_to_privs(const PRIV *table, const char *str, privbits origprivs);
+extern const char *privs_to_string(const PRIV *table, privbits privs);
+extern const char *privs_to_letters(const PRIV *table, privbits privs);
 
 #endif                          /* __PRIVTAB_H */

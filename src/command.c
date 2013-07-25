@@ -1593,7 +1593,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   struct command_perms_t *c;
   char *message, *restriction, *rsave;
   int clear;
-  FLAG *f;
+  const FLAG *f;
   char lockstr[BUFFER_LEN];
   char *tp;
   int make_boolexp = 0;

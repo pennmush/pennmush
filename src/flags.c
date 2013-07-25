@@ -53,22 +53,24 @@
 #include "confmagic.h"
 
 
-static bool can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate);
-static FLAG *letter_to_flagptr(FLAGSPACE *n, char c, int type);
+static bool can_set_flag(dbref player, dbref thing, const FLAG *flagp,
+                         int negate);
+static const FLAG *letter_to_flagptr(const FLAGSPACE *n, char c, int type);
 static void flag_add(FLAGSPACE *n, const char *name, FLAG *f);
-static bool has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f);
+static bool has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f);
 
 static FLAG *flag_read(PENNFILE *in);
 static FLAG *flag_read_oldstyle(PENNFILE *in);
 static void flag_read_all_oldstyle(PENNFILE *in, const char *ns);
 static void flag_write(PENNFILE *out, FLAG *f, const char *name);
-static FLAG *flag_hash_lookup(FLAGSPACE *n, const char *name, int type);
-static FLAG *clone_flag(FLAG *f);
+static const FLAG *flag_hash_lookup(const FLAGSPACE *n, const char *name,
+                                    int type);
+static FLAG *clone_flag(const FLAG *f);
 static FLAG *new_flag(void);
 static void flag_add_additional(FLAGSPACE *n);
-static char *list_aliases(FLAGSPACE *n, FLAG *given);
+static char *list_aliases(const FLAGSPACE *n, const FLAG *given);
 static void realloc_object_flag_bitmasks(FLAGSPACE *n);
-static FLAG *match_flag_ns(FLAGSPACE *n, const char *name);
+static FLAG *match_flag_ns(const FLAGSPACE *n, const char *name);
 
 /* Flag bitset cache data structures. All objects with the same flags
    set share the same storage space. */
@@ -80,6 +82,7 @@ struct flagbucket {
 };
 
 struct flagcache {
+  /* Number of buckets. */
   int size;
   int zero_refcount;
   int entries;
@@ -110,7 +113,7 @@ extern PTAB ptab_command;       /* Uses flag bitmasks */
  * flag_add_additional() further down in this file.
  */
 /* Name     Letter   Type(s)   Flag   Perms   Negate_Perm */
-static FLAG flag_table[] = {
+static const FLAG flag_table[] = {
   {"CHOWN_OK", 'C', NOTYPE, CHOWN_OK, F_ANY, F_ANY},
   {"DARK", 'D', NOTYPE, DARK, F_ANY, F_ANY},
   {"GOING", 'G', NOTYPE, GOING, F_INTERNAL, F_INTERNAL},
@@ -180,7 +183,7 @@ static FLAG flag_table[] = {
 /** The old table to kludge multi-type toggles. Now used only
  * for conversion.
  */
-static FLAG hack_table[] = {
+static const FLAG hack_table[] = {
   {"MONITOR", 'M', TYPE_PLAYER, PLAYER_MONITOR, F_ROYAL, F_ROYAL},
   {"MONITOR", 'M', TYPE_THING, THING_LISTEN, F_ANY, F_ANY},
   {"MONITOR", 'M', TYPE_ROOM, ROOM_LISTEN, F_ANY, F_ANY},
@@ -195,7 +198,7 @@ static FLAG hack_table[] = {
 /** A table of types, as if they were flags. Some functions that
  * expect flags also accept, for historical reasons, types.
  */
-static FLAG type_table[] = {
+static const FLAG type_table[] = {
   {"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER, F_INTERNAL, F_INTERNAL},
   {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM, F_INTERNAL, F_INTERNAL},
   {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT, F_INTERNAL, F_INTERNAL},
@@ -204,7 +207,7 @@ static FLAG type_table[] = {
 };
 
 /** A table of types, as privileges. */
-static PRIV type_privs[] = {
+static const PRIV type_privs[] = {
   {"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER},
   {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM},
   {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT},
@@ -216,7 +219,7 @@ static PRIV type_privs[] = {
  * of old databases. Once a database is converted, the alias list in the
  * database is what counts.
  */
-static FLAG_ALIAS flag_alias_tab[] = {
+static const FLAG_ALIAS flag_alias_tab[] = {
   {"INHERIT", "TRUST"},
   {"TRACE", "DEBUG"},
   {"NOWARN", "NO_WARN"},
@@ -242,7 +245,7 @@ static FLAG_ALIAS flag_alias_tab[] = {
  * it's the power table in the db that counts, not this one.
  */
 /*   Name      Flag   */
-static FLAG power_table[] = {
+static const FLAG power_table[] = {
   {"Announce", '\0', NOTYPE, CAN_WALL, F_WIZARD | F_LOG, F_WIZARD},
   {"Boot", '\0', NOTYPE, CAN_BOOT, F_WIZARD | F_LOG, F_WIZARD},
   {"Builder", '\0', NOTYPE, CAN_BUILD, F_WIZARD | F_LOG, F_WIZARD},
@@ -277,7 +280,7 @@ static FLAG power_table[] = {
 };
 
 /** A table of aliases for powers. */
-static FLAG_ALIAS power_alias_tab[] = {
+static const FLAG_ALIAS power_alias_tab[] = {
   {"@cemit", "Cemit"},
   {"@wall", "Announce"},
   {"wall", "Announce"},
@@ -286,7 +289,7 @@ static FLAG_ALIAS power_alias_tab[] = {
 };
 
 /** The table of flag privilege bits. */
-static PRIV flag_privs[] = {
+static const PRIV flag_privs[] = {
   {"trusted", '\0', F_INHERIT, F_INHERIT},
   {"owned", '\0', F_OWNED, F_OWNED},
   {"royalty", '\0', F_ROYAL, F_ROYAL},
@@ -314,7 +317,7 @@ static PRIV flag_privs[] = {
 FLAG *
 match_flag(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("FLAG", &htab_flagspaces), name);
+  return match_flag_ns(hashfind("FLAG", &htab_flagspaces), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -325,7 +328,7 @@ match_flag(const char *name)
 FLAG *
 match_power(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("POWER", &htab_flagspaces), name);
+  return match_flag_ns(hashfind("POWER", &htab_flagspaces), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -334,7 +337,7 @@ match_power(const char *name)
  * \return poiner to flag structure, or NULL.
  */
 static FLAG *
-match_flag_ns(FLAGSPACE *n, const char *name)
+match_flag_ns(const FLAGSPACE *n, const char *name)
 {
   return (FLAG *) ptab_find(n->tab, name);
 }
@@ -349,10 +352,10 @@ match_flag_ns(FLAGSPACE *n, const char *name)
  * \param type mask of desired flag object types.
  * \return pointer to flag structure, or NULL.
  */
-static FLAG *
-flag_hash_lookup(FLAGSPACE *n, const char *name, int type)
+static const FLAG *
+flag_hash_lookup(const FLAGSPACE *n, const char *name, int type)
 {
-  FLAG *f;
+  const FLAG *f;
 
   f = match_flag_ns(n, name);
   if (f && !(f->perms & F_DISABLED)) {
@@ -418,7 +421,7 @@ clear_all_flags(FLAGSPACE *n)
 }
 
 static FLAG *
-clone_flag(FLAG *f)
+clone_flag(const FLAG *f)
 {
   FLAG *clone = new_flag();
   clone->name = mush_strdup(f->name, "flag.name");
@@ -622,7 +625,7 @@ flag_read_oldstyle(PENNFILE *in)
 }
 
 static FLAG *
-flag_alias_read_oldstyle(PENNFILE *in, char *alias, FLAGSPACE *n)
+flag_alias_read_oldstyle(PENNFILE *in, char *alias, const FLAGSPACE *n)
 {
   FLAG *f;
   char *c;
@@ -918,8 +921,9 @@ init_flagspaces(void)
 void
 init_flag_table(const char *ns)
 {
-  FLAG *f, *cf;
-  FLAG_ALIAS *a;
+  const FLAG *f;
+  FLAG *cf;
+  const FLAG_ALIAS *a;
   FLAGSPACE *n;
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -937,8 +941,8 @@ init_flag_table(const char *ns)
   ptab_end_inserts(n->tab);
   /* now add in the aliases */
   for (a = n->flag_alias_table; a->alias; a++) {
-    if ((f = match_flag_ns(n, a->realname)))
-      flag_add(n, a->alias, f);
+    if ((cf = match_flag_ns(n, a->realname)))
+      flag_add(n, a->alias, cf);
     else
       do_rawlog(LT_ERR,
                 "FLAG INIT: flag alias %s matches no known flag.", a->alias);
@@ -1085,7 +1089,7 @@ type_from_old_flags(long old_flags)
 object_flag_type
 flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 {
-  FLAG *f, *newf;
+  const FLAG *f, *newf;
   FLAGSPACE *n;
   object_flag_type bitmask;
 
@@ -1117,10 +1121,10 @@ flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 #define is_flag(f,n)    (!strcmp(f->name,n))
 
 /* Given a single character, return the matching flag definition */
-static FLAG *
-letter_to_flagptr(FLAGSPACE *n, char c, int type)
+static const FLAG *
+letter_to_flagptr(const FLAGSPACE *n, char c, int type)
 {
-  FLAG *f;
+  const FLAG *f;
   int i;
   for (i = 0; i < n->flagbits; i++)
     if ((f = n->flags[i])) {
@@ -1653,8 +1657,8 @@ bool
 has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
                           int type)
 {
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   n = hashfind(ns, &htab_flagspaces);
   f = flag_hash_lookup(n, flag, type);
   if (!f)
@@ -1663,7 +1667,7 @@ has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
 }
 
 static bool
-has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
+has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f)
 {
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
@@ -1672,7 +1676,7 @@ has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
 }
 
 static bool
-can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_flag_generic(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   int myperms;
   if (!flagp || !GoodObject(player) || !GoodObject(thing))
@@ -1695,7 +1699,7 @@ can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
 }
 
 static bool
-can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_power(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
     return 0;
@@ -1709,7 +1713,7 @@ can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
 
 
 static bool
-can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_flag(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
     return 0;
@@ -1866,7 +1870,7 @@ decompile_flags_generic(dbref player, dbref thing, const char *name,
 void
 twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
 {
-  FLAG *f;
+  const FLAG *f;
   FLAGSPACE *n;
 
   if (IsGarbage(thing))
@@ -1904,7 +1908,7 @@ void
 set_flag(dbref player, dbref thing, const char *flag, int negate,
          int hear, int listener)
 {
-  FLAG *f;
+  const FLAG *f;
   char tbuf1[BUFFER_LEN];
   char *tp;
   FLAGSPACE *n;
@@ -2068,7 +2072,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
 void
 set_power(dbref player, dbref thing, const char *flag, int negate)
 {
-  FLAG *f;
+  const FLAG *f;
   FLAGSPACE *n;
   char tbuf1[BUFFER_LEN], *tp;
   int current;
@@ -2145,10 +2149,10 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
                int type)
 {
   char *s;
-  FLAG *fp;
+  const FLAG *fp;
   int negate = 0, temp = 0;
   int ret = type;
-  FLAGSPACE *n;
+  const FLAGSPACE *n;
 
   if (!GoodObject(it))
     return 0;
@@ -2240,10 +2244,10 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
                     int type)
 {
   char *s, *copy, *sp;
-  FLAG *fp;
+  const FLAG *fp;
   int negate = 0, temp = 0;
   int ret = type;
-  FLAGSPACE *n;
+  const FLAGSPACE *n;
 
   if (!GoodObject(it))
     return 0;
@@ -2328,8 +2332,8 @@ bool
 sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
 {
   /* Does thing have the flag named name && can privs see it? */
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   n = hashfind(ns, &htab_flagspaces);
   if ((f = flag_hash_lookup(n, name, Typeof(thing))) == NULL)
     return 0;
@@ -2376,7 +2380,7 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
   if (!name || strlen(name) < 2 || !good_flag_name(strupper(name)))
     return FLAG_NAME;
 
-  if (letter && (f = letter_to_flagptr(n, letter, type)))
+  if (letter && letter_to_flagptr(n, letter, type))
     return FLAG_LETTER;
 
   f = new_flag();
@@ -2426,10 +2430,10 @@ do_list_flags(const char *ns, dbref player, const char *arg, int lc,
 void
 do_flag_info(const char *ns, dbref player, const char *name)
 {
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   /* Find the flagspace */
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = (const FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
     return;
   }
@@ -2479,7 +2483,7 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
-  if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
+  if (!flag_hash_lookup(n, name, NOTYPE)) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }
@@ -2542,7 +2546,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
-  if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
+  if (!flag_hash_lookup(n, name, NOTYPE)) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }
@@ -2654,7 +2658,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
     }
     /* Is this letter already in use for this type? */
     if (letter) {
-      if ((f = letter_to_flagptr(n, letter, type))) {
+      if (letter_to_flagptr(n, letter, type)) {
         notify_format(player, T("Letter conflicts with the %s %s."), f->name,
                       strlower(ns));
         return;
@@ -2850,7 +2854,7 @@ do_flag_letter(const char *ns, dbref player, const char *name,
     return;
   }
   if (letter && *letter) {
-    FLAG *other;
+    const FLAG *other;
 
     if (strlen(letter) > 1) {
       notify_format(player, T("%s characters must be single characters."),
@@ -3016,9 +3020,9 @@ do_flag_enable(const char *ns, dbref player, const char *name)
 
 
 static char *
-list_aliases(FLAGSPACE *n, FLAG *given)
+list_aliases(const FLAGSPACE *n, const FLAG *given)
 {
-  FLAG *f;
+  const FLAG *f;
   static char buf[BUFFER_LEN];
   char *bp;
   const char *flagname;

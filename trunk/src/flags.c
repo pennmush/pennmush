@@ -56,7 +56,7 @@
 
 static bool can_set_flag(dbref player, dbref thing, const FLAG *flagp,
                          int negate);
-static const FLAG *letter_to_flagptr(const FLAGSPACE *n, char c, int type);
+static FLAG *letter_to_flagptr(const FLAGSPACE *n, char c, int type);
 static void flag_add(FLAGSPACE *n, const char *name, FLAG *f);
 static bool has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f);
 
@@ -64,8 +64,7 @@ static FLAG *flag_read(PENNFILE *in);
 static FLAG *flag_read_oldstyle(PENNFILE *in);
 static void flag_read_all_oldstyle(PENNFILE *in, const char *ns);
 static void flag_write(PENNFILE *out, FLAG *f, const char *name);
-static const FLAG *flag_hash_lookup(const FLAGSPACE *n, const char *name,
-                                    int type);
+static FLAG *flag_hash_lookup(const FLAGSPACE *n, const char *name, int type);
 static FLAG *clone_flag(const FLAG *f);
 static FLAG *new_flag(void);
 static void flag_add_additional(FLAGSPACE *n);
@@ -200,7 +199,7 @@ static const FLAG hack_table[] = {
 /** A table of types, as if they were flags. Some functions that
  * expect flags also accept, for historical reasons, types.
  */
-static const FLAG type_table[] = {
+static FLAG type_table[] = {
   {"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER, F_INTERNAL, F_INTERNAL},
   {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM, F_INTERNAL, F_INTERNAL},
   {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT, F_INTERNAL, F_INTERNAL},
@@ -357,7 +356,7 @@ match_flag_ns(const FLAGSPACE *n, const char *name)
 static FLAG *
 flag_hash_lookup(const FLAGSPACE *n, const char *name, int type)
 {
-  const FLAG *f;
+  FLAG *f;
 
   f = match_flag_ns(n, name);
   if (f && !(f->perms & F_DISABLED)) {
@@ -1125,10 +1124,10 @@ flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 #define is_flag(f,n)    (!strcmp(f->name,n))
 
 /* Given a single character, return the matching flag definition */
-static const FLAG *
+static FLAG *
 letter_to_flagptr(const FLAGSPACE *n, char c, int type)
 {
-  const FLAG *f;
+  FLAG *f;
   int i;
   for (i = 0; i < n->flagbits; i++)
     if ((f = n->flags[i])) {
@@ -1188,7 +1187,7 @@ free_flagcache(struct flagcache *cache)
 static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  return city_hash(f, FlagBytes(n));
+  return city_hash((const char *)f, FlagBytes(n));
 }
 
 static void
@@ -2511,7 +2510,7 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
-  if (!flag_hash_lookup(n, name, NOTYPE)) {
+  if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }
@@ -2574,7 +2573,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
-  if (!flag_hash_lookup(n, name, NOTYPE)) {
+  if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }

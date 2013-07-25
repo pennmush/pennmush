@@ -39,6 +39,8 @@ Hardcode:
  * add_flag_generic() now returns an enum, and takes an additional final
    pointer arg, where the new flag will be stored. add_flag() and add_power()
    pass this pointer as NULL. [MG]
+ * Improve heuristics used for resizing the flagcache hash table. [DC]
+ * Update hashing functions used by various hash table implementations. [DC]
 
 Fixes:
  * Commands which take multiple right-hand-side arguments could only have

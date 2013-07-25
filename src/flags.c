@@ -354,7 +354,7 @@ match_flag_ns(const FLAGSPACE *n, const char *name)
  * \param type mask of desired flag object types.
  * \return pointer to flag structure, or NULL.
  */
-static const FLAG *
+static FLAG *
 flag_hash_lookup(const FLAGSPACE *n, const char *name, int type)
 {
   const FLAG *f;
@@ -1188,7 +1188,7 @@ free_flagcache(struct flagcache *cache)
 static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  return hsieh_hash(f, FlagBytes(n));
+  return city_hash(f, FlagBytes(n));
 }
 
 static void

@@ -13,10 +13,12 @@
 #include <stdint.h>
 #endif  /* HAVE_STDINT_H_ */
 
-/* TODO: Use better hash functions such as CityHash or MurmurHash. */
+/* Note that CityHash doesn't have an implementation that returns a 32-bit hash.
+ * This is just CityHash64 using only the lowest 32 bits. */
+uint32_t city_hash(const char *buf, int len);
+/* TODO: Conditionally compile x86 or x64 version depending on platform. */
+uint32_t murmur3_x86_32(const char *key, int len);
+uint32_t spooky_hash32(const char *message, int len);
 uint32_t jenkins_hash(const char *k, int len);
-uint32_t hsieh_hash(const char *data, int len);
-uint32_t fnv_hash(const char *str, int len);
-uint32_t penn_hash(const char *key, int len);
 
 #endif  /* __HASH_FUNCTION_H_ */

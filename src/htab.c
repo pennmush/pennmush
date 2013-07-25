@@ -60,14 +60,14 @@
 typedef uint32_t (*hash_func) (const char *, int);
 
 hash_func hash_functions[] = {
-  hsieh_hash,
-  fnv_hash,
+  city_hash,
+  murmur3_x86_32,
+  spooky_hash32,
   jenkins_hash,
-  penn_hash,
-  hsieh_hash,
-  fnv_hash,
-  penn_hash,
-  jenkins_hash
+  city_hash,
+  murmur3_x86_32,
+  jenkins_hash,
+  spooky_hash32,
 };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };

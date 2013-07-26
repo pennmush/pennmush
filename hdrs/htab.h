@@ -41,7 +41,6 @@ void hash_init(HASHTAB *htab, int size, void (*)(void *));
 HASHENT *hash_find(HASHTAB *htab, const char *key);
 #define hash_value(entry) (entry) ? (entry)->data : NULL
 #define hash_key(entry) (entry) ? (entry)->key : NULL
-bool hash_resize(HASHTAB *htab, int size);
 bool hash_add(HASHTAB *htab, const char *key, void *hashdata);
 void hash_delete(HASHTAB *htab, HASHENT *entry);
 void hash_flush(HASHTAB *htab, int size);

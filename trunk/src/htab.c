@@ -213,7 +213,7 @@ static int resize_calls = 0, first_offset = -1;
  * \param hashindex Index of first hash function to use
  */
 static bool
-real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
+hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
 {
   HASHENT *oldarr;
   int oldsize, oldoffset, i;
@@ -229,7 +229,7 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   if (hashfunc_offset == first_offset) {
     int newersize = next_prime_after(floor(newsize * 1.15));
     first_offset = -1;
-    return real_hash_resize(htab, newersize, hashfunc_offset);
+    return hash_resize(htab, newersize, hashfunc_offset);
   }
 
   resize_calls += 1;
@@ -254,30 +254,13 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
         if (first_offset == -1)
           first_offset = hashfunc_offset;
         return
-          real_hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
+          hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
       }
     }
   }
 
   mush_free(oldarr, "hash.buckets");
   return true;
-}
-
-/** Resize a hash table.
- * \param htab pointer to hashtable.
- * \param size new size.
- */
-bool
-hash_resize(HASHTAB *htab, int size)
-{
-  if (htab) {
-    htab->last_index = -1;
-    first_offset = -1;
-    resize_calls = 0;
-    return real_hash_resize(htab, next_prime_after(size),
-                            htab->hashfunc_offset);
-  } else
-    return false;
 }
 
 /** Add an entry to a hash table.
@@ -300,15 +283,15 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
   keylen = strlen(keycopy);
 
   if (htab->entries == htab->hashsize)
-    real_hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
-                     htab->hashfunc_offset);
+    hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
+                htab->hashfunc_offset);
 
   htab->entries += 1;
   if (!hash_insert(htab, keycopy, keylen, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
-    real_hash_resize(htab, htab->hashsize,
-                     (htab->hashfunc_offset + 1) % NHASH_MOD);
+    hash_resize(htab, htab->hashsize,
+                (htab->hashfunc_offset + 1) % NHASH_MOD);
   }
   return true;
 }

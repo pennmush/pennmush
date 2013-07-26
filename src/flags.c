@@ -1187,7 +1187,8 @@ free_flagcache(struct flagcache *cache)
 static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  return city_hash((const char *)f, FlagBytes(n));
+  static const uint64_t seed = 0xb12003afbb20eae3LLU;
+  return city_hash((const char *)f, FlagBytes(n), seed);
 }
 
 static void

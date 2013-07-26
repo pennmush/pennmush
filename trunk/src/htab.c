@@ -431,7 +431,7 @@ void
 hash_stats_header(dbref player)
 {
   notify_format(player,
-                "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory");
+                "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
 }
 
 /** Display stats on a hashtable.
@@ -444,6 +444,7 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
 {
   int n, entries = 0;
   size_t bytes;
+  double key_length = 0.0;
   unsigned int compares[3] = { 0, 0, 0 };
 
   if (!htab || !hname)
@@ -455,13 +456,13 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
   for (n = 0; n < htab->hashsize; n++)
     if (htab->buckets[n].key) {
       int i;
-      int len = strlen(htab->buckets[n].key);
-      bytes += len + 1;
+      bytes += htab->buckets[n].keylen + 1;
+      key_length += htab->buckets[n].keylen;
       entries += 1;
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
-        if ((hash(htab->buckets[n].key, len, hash_seed) % htab->hashsize) == (uint32_t) n) {
+        if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) % htab->hashsize) == (uint32_t) n) {
           compares[i] += 1;
           break;
         }
@@ -469,9 +470,9 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
     }
 
   notify_format(player,
-                "%-11s %7d %7d %7u %7u %7u %7u",
+                "%-11s %7d %7d %7u %7u %7u %7u %7.1f",
                 hname, htab->hashsize, htab->entries, compares[0], compares[1],
-                compares[2], (unsigned int) bytes);
+                compares[2], (unsigned int) bytes, entries > 0 ? key_length / entries : 0.0);
   if (entries != htab->entries)
     notify_format(player, "Mismatch in size: %d expected, %d found!",
                   htab->entries, entries);

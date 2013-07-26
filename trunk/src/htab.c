@@ -57,17 +57,19 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
-typedef uint32_t (*hash_func) (const char *, int);
+typedef uint32_t (*hash_func) (const char *, int, uint64_t);
+
+static const uint64_t hash_seed = 0x28187bcc53900639LLU;
 
 hash_func hash_functions[] = {
   city_hash,
-  murmur3_x86_32,
-  spooky_hash32,
+  murmur3_hash,
+  spooky_hash,
   jenkins_hash,
   city_hash,
-  murmur3_x86_32,
+  murmur3_hash,
   jenkins_hash,
-  spooky_hash32,
+  spooky_hash,
 };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
@@ -138,7 +140,7 @@ hash_find(HASHTAB *htab, const char *key)
     hash_func hash;
     int hval, hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
     hash = hash_functions[hashindex];
-    hval = hash(key, len) % htab->hashsize;
+    hval = hash(key, len, hash_seed) % htab->hashsize;
 
     if (htab->buckets[hval].key && len == htab->buckets[hval].keylen &&
         memcmp(htab->buckets[hval].key, key, len) == 0)
@@ -171,7 +173,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
       int hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
 
       hash = hash_functions[hashindex];
-      hval = hash(bump.key, bump.keylen) % htab->hashsize;
+      hval = hash(bump.key, bump.keylen, hash_seed) % htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
@@ -181,7 +183,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     /* None. Use a random func and bump the existing element */
     n = htab->hashfunc_offset + get_random32(0, NHASH_TRIES - 1);
     n %= NHASH_MOD;
-    hval = (hash_functions[n]) (bump.key, bump.keylen) % htab->hashsize;
+    hval = (hash_functions[n]) (bump.key, bump.keylen, hash_seed) % htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -476,7 +478,7 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
-        if ((hash(htab->buckets[n].key, len) % htab->hashsize) == (uint32_t) n) {
+        if ((hash(htab->buckets[n].key, len, hash_seed) % htab->hashsize) == (uint32_t) n) {
           compares[i] += 1;
           break;
         }

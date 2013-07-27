@@ -1232,14 +1232,12 @@ flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
   if (flagbucket_slab == NULL)
     flagbucket_slab = slab_create("flagcache entries", sizeof *b);
 
-  h = fc_hash(n, f);
-
-  if (h == 0) {
+  if (fc_eq(n, n->cache->zero, f)) {
     n->cache->zero_refcount += 1;
     return n->cache->zero;
   }
 
-  h %= n->cache->size;
+  h = fc_hash(n, f) % n->cache->size;
 
   for (b = n->cache->buckets[h]; b; b = b->next) {
     if (fc_eq(n, f, b->key)) {
@@ -1277,14 +1275,12 @@ flagcache_delete(FLAGSPACE *n, const object_flag_type f)
   uint32_t h;
   struct flagbucket *b, *p;
 
-  h = fc_hash(n, f);
-
-  if (h == 0) {
+  if (fc_eq(n, n->cache->zero, f)) {
     n->cache->zero_refcount -= 1;
     return;
   }
 
-  h %= n->cache->size;
+  h = fc_hash(n, f) % n->cache->size;
 
   for (b = n->cache->buckets[h], p = NULL; b; p = b, b = b->next) {
     if (fc_eq(n, f, b->key)) {

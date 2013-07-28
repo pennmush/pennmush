@@ -240,6 +240,7 @@ See also: STRINGS
   secs()        starttime()   stringsecs()  time()        timefmt()     
   timestring()  utctime()     uptime()
 
+See also: TIMEZONES
 & Utility functions
   These functions don't quite fit into any other category.
 
@@ -1096,7 +1097,7 @@ See also: CONNECTION FUNCTIONS
 See also: visible(), CONTROL
 & CONVSECS()
 & CONVUTCSECS()
-  convsecs(<seconds>[, <zone>])
+  convsecs(<seconds>[, <timezone>])
   convutcsecs(<seconds>) 
 
   This function converts seconds to a time string, based on how many
@@ -1104,10 +1105,12 @@ See also: visible(), CONTROL
   UTC, but returns local time, convsecs(0) is not going to be "Thu Jan
   1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
  
-  convutcsecs(), and convsecs() with a second argument of 'utc' return
-  the time based on UTC time instead of the server's local time. See
-  HELP TIMEZONES for more information on the zone argument.
+  If a <timezone> argument is given, the return value is based on that
+  timezone instead of the MUSH server's local time. See 'help timezones' for
+  more information on valid timezones.
   
+  convutcsecs(<seconds>) is an alias for convsecs(<seconds>, utc).
+
   Examples:
     > say secs()
     You say, "709395750"
@@ -5645,20 +5648,18 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
     "
 & TIME()
 & UTCTIME()
-  time([utc])
-  utctime()
+  time()
   time(<timezone>)
   time(<dbref>)
 
-  time() gives you the current time on the MUSH.  WARNING!  This is
-  the time on the machine that the MUSH is running on, and not where
-  you are.
+  time() gives you the current time on the MUSH. By default this is the time
+  on the server the MUSH is running on, and not the time of the caller.
 
-  utctime() and time(utc) give the same time in UTC (aka GMT), not the
-  server's local timezone.
+  With an argument, time() returns the time in the specified timezone, or in
+  the timezone set in the specified object's TZ attribute; for more 
+  information, see 'help timezones'.
 
-  To control what time zone is used, specify it instead of 'utc'. See
-  HELP TIMEZONES for details.
+  utctime() is an alias for time(utc).
 
 Continued in HELP TIME2
 & TIME2
@@ -5675,7 +5676,7 @@ Continued in HELP TIME2
     > think time(US/Pacific)
     Thu Mar 01 19:20:25 2012
 
-See also: timefmt(), timestring(), convsecs(), convtime()
+See also: timefmt(), timestring(), convsecs(), convtime(), TIMEZONES
 & TIMEZONES
 & @TZ
 
@@ -6094,7 +6095,7 @@ See also: timestring(), timefmt(), etime()
     > think squish(etimefmt(Connected for $zxd $xzh $zxm $xzs, conn(me)))
     Connected for 5h 24m 45s
 & TIMEFMT()
-  timefmt(<format>[, <secs>, <timezone>])
+  timefmt(<format>[, <secs>[, <timezone>]])
 
   This function returns the time and date, formatted according to <format>.
   <secs> is the time/date to format, as the number of seconds since the 

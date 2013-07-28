@@ -114,6 +114,18 @@ static uint32_t CITY_UNALIGNED_LOAD32(const char *p) {
 #define city_bswap_32(x) OSSwapInt32(x)
 #define city_bswap_64(x) OSSwapInt64(x)
 
+#elif defined (__FreeBSD__)
+
+#include <sys/endian.h>
+#define city_bswap_32(x) bswap32(x)
+#define city_bswap_64(x) bswap64(x)
+
+#elif defined (__OpenBSD__)
+
+#include <sys/types.h>
+#define city_bswap_32(x) swap32(x)
+#define city_bswap_64(x) swap64(x)
+
 #elif defined(__NetBSD__)
 
 #include <sys/types.h>

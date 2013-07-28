@@ -582,17 +582,17 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
     } else {
       /* Has flags or powers. Update to new ones */
       for (m = migrate; m; m = m->next) {
-	if (n->tab == &ptab_flag) {
-	  if (Flags(it) == m->orig) {
-	    Flags(it) = m->grown;
-	    break;
-	  }
-	} else {
-	  if (Powers(it) == m->orig) {
-	    Powers(it) = m->grown;
-	    break;
-	  }
-	}
+        if (n->tab == &ptab_flag) {
+          if (Flags(it) == m->orig) {
+            Flags(it) = m->grown;
+            break;
+          }
+        } else {
+          if (Powers(it) == m->orig) {
+            Powers(it) = m->grown;
+            break;
+          }
+        }
       }
       /* Update the refcount for this flagset. */
       flagcache_find_ns(n, m->grown);
@@ -3243,7 +3243,7 @@ do_flag_debug(const char *ns, dbref player)
   }
 
   notify_format(player, "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
-		n->cache->entries, n->cache->size, n->cache->zero_refcount);
+                n->cache->entries, n->cache->size, n->cache->zero_refcount);
 
 #if 0
   for (i = 0; i < n->cache->size; i += 1) {

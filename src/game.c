@@ -2585,15 +2585,15 @@ do_list_memstats(dbref player)
     {&htab_locks, "@locks"},
     {&local_options, "ConfigOpts"},
   };
-
-  int i;
+  unsigned int i;
 
   notify(player, "Hash Tables:");
   notify(player,
       "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
   for (i = 0; i < sizeof(hash_tables) / sizeof(hash_tables[0]); ++i) {
     const HASHTAB* htab = hash_tables[i].table;
-    struct hashstats stats = {};
+    struct hashstats stats;
+
     hash_stats(htab, &stats);
     notify_format(player, "%-11s %7d %7d %7d %7d %7d %7d %7.1f",
                   hash_tables[i].name, htab->hashsize, htab->entries,

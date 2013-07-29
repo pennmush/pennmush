@@ -451,6 +451,10 @@ hash_stats(const HASHTAB *htab, struct hashstats *stats)
 {
   int n;
 
+  if (!htab || !stats)
+    return;
+
+  memset(stats, 0, sizeof *stats);
   stats->bytes = sizeof(*htab);
   stats->bytes += sizeof(struct hash_bucket) * htab->hashsize;
 

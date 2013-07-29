@@ -49,13 +49,9 @@
 #include <stdint.h>
 #endif
 #include <openssl/bn.h>
-#include "conf.h"
-#include "externs.h"
 #include "hash_function.h"
-#include "log.h"
 #include "htab.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 struct hash_bucket {
   const char *key;
@@ -133,7 +129,7 @@ hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
  * \return pointer to hash table entry for given key.
  */
 struct hash_bucket *
-hash_find(HASHTAB *htab, const char *key)
+hash_find(const HASHTAB *htab, const char *key)
 {
   int len, n;
 
@@ -157,7 +153,7 @@ hash_find(HASHTAB *htab, const char *key)
 }
 
 void *
-hash_value(HASHTAB *htab, const char *key)
+hash_value(const HASHTAB *htab, const char *key)
 {
   struct hash_bucket *entry = hash_find(htab, key);
   return entry ? entry->data : NULL;
@@ -442,56 +438,36 @@ hash_nextentry_key(HASHTAB *htab)
   return NULL;
 }
 
-/** Display a header for a stats listing.
- * \param player player to notify with header.
- */
-void
-hash_stats_header(dbref player)
-{
-  notify_format(player,
-                "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
-}
-
 /** Display stats on a hashtable.
- * \param player player to notify with stats.
  * \param htab pointer to the hash table.
- * \param hname name of the hash table.
+ * \param stats pointer to hashstats to output to.
  */
 void
-hash_stats(dbref player, HASHTAB *htab, const char *hname)
+hash_stats(const HASHTAB *htab, struct hashstats *stats)
 {
-  int n, entries = 0;
-  size_t bytes;
-  double key_length = 0.0;
-  unsigned int compares[3] = { 0, 0, 0 };
+  int n;
 
-  if (!htab || !hname)
-    return;
+  stats->bytes = sizeof(*htab);
+  stats->bytes += sizeof(struct hash_bucket) * htab->hashsize;
 
-  bytes = sizeof *htab;
-  bytes += sizeof(struct hash_bucket) * htab->hashsize;
-
-  for (n = 0; n < htab->hashsize; n++)
+  for (n = 0; n < htab->hashsize; n++) {
     if (htab->buckets[n].key) {
       int i;
-      bytes += htab->buckets[n].keylen + 1;
-      key_length += htab->buckets[n].keylen;
-      entries += 1;
+      stats->bytes += htab->buckets[n].keylen + 1;
+      stats->key_length += htab->buckets[n].keylen;
+      stats->entries += 1;
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
         if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) % htab->hashsize) == (uint32_t) n) {
-          compares[i] += 1;
+          stats->lookups[i] += 1;
           break;
         }
       }
     }
+  }
 
-  notify_format(player,
-                "%-11s %7d %7d %7u %7u %7u %7u %7.1f",
-                hname, htab->hashsize, htab->entries, compares[0], compares[1],
-                compares[2], (unsigned int) bytes, entries > 0 ? key_length / entries : 0.0);
-  if (entries != htab->entries)
-    notify_format(player, "Mismatch in size: %d expected, %d found!",
-                  htab->entries, entries);
+  if (stats->entries > 0) {
+    stats->key_length /= stats->entries;
+  }
 }

@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "ansi.h"
 #include "mushdb.h"
 #include "dbdefs.h"

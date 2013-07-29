@@ -22,6 +22,7 @@
 #endif
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "sort.h"
 #include "parse.h"
 #include "confmagic.h"

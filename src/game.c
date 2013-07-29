@@ -43,6 +43,7 @@ void Win32MUSH_setup(void);
 
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "mushdb.h"
 #include "game.h"
 #include "attrib.h"
@@ -2570,17 +2571,40 @@ extern intmap *watchtable;
 void
 do_list_memstats(dbref player)
 {
+  static const struct {
+    HASHTAB* table;
+    const char* name;
+  } hash_tables[] = {
+    {&htab_function, "Functions"},
+    {&htab_user_function, "@Functions"},
+    {&htab_player_list, "Players"},
+    {&htab_reserved_aliases, "Aliases"},
+    {&help_files, "HelpFiles"},
+    {&htab_objdata, "ObjData"},
+    {&htab_objdata_keys, "ObjDataKeys"},
+    {&htab_locks, "@locks"},
+    {&local_options, "ConfigOpts"},
+  };
+
+  int i;
+
   notify(player, "Hash Tables:");
-  hash_stats_header(player);
-  hash_stats(player, &htab_function, "Functions");
-  hash_stats(player, &htab_user_function, "@Functions");
-  hash_stats(player, &htab_player_list, "Players");
-  hash_stats(player, &htab_reserved_aliases, "Aliases");
-  hash_stats(player, &help_files, "HelpFiles");
-  hash_stats(player, &htab_objdata, "ObjData");
-  hash_stats(player, &htab_objdata_keys, "ObjDataKeys");
-  hash_stats(player, &htab_locks, "@locks");
-  hash_stats(player, &local_options, "ConfigOpts");
+  notify(player,
+      "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
+  for (i = 0; i < sizeof(hash_tables) / sizeof(hash_tables[0]); ++i) {
+    const HASHTAB* htab = hash_tables[i].table;
+    struct hashstats stats = {};
+    hash_stats(htab, &stats);
+    notify_format(player, "%-11s %7d %7d %7d %7d %7d %7d %7.1f",
+                  hash_tables[i].name, htab->hashsize, htab->entries,
+                  stats.lookups[0], stats.lookups[1], stats.lookups[2],
+                  stats.bytes, stats.key_length);
+    if (stats.entries != htab->entries) {
+      notify_format(player, "Mismatch in size: %d expected, %d found!",
+                    htab->entries, stats.entries);
+    }
+  }
+
   notify(player, "Prefix Trees:");
   ptab_stats_header(player);
   ptab_stats(player, &ptab_attrib, "AttrPerms");

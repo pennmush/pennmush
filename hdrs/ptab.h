@@ -7,6 +7,9 @@
 #ifndef PTAB_H
 #define PTAB_H
 
+#include <stddef.h>
+#include "mushtype.h"
+
 struct ptab_entry;
 /** Prefix table.
  * This structure represents a prefix table. In a prefix table,

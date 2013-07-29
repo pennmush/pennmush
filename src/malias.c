@@ -33,7 +33,6 @@
  * \endverbatim
  */
 
-#define MA_INC 3        /**< How many maliases we malloc at a time */
 #include "config.h"
 #include "copyrite.h"
 
@@ -52,21 +51,22 @@
 #include <string.h>
 
 #include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "match.h"
-#include "parse.h"
-#include "malias.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "flags.h"
-#include "pueblo.h"
-#include "log.h"
-#include "dbio.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "flags.h"
+#include "log.h"
+#include "malias.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
+#include "pueblo.h"
 
-
+#define MA_INC 3        /**< How many maliases we malloc at a time */
 
 int ma_size = 0;   /**< Number of maliases */
 int ma_top = 0;    /**< Top of alias array */

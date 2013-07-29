@@ -6,27 +6,28 @@
  *
  */
 
+#include "config.h"
 #include "copyrite.h"
 
-#include "config.h"
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "dbdefs.h"
-#include "flags.h"
 
-#include "match.h"
-#include "parse.h"
+#include "attrib.h"
 #include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
 #include "game.h"
-#include "mushdb.h"
-#include "privtab.h"
 #include "lock.h"
 #include "log.h"
-#include "attrib.h"
-#include "function.h"
-#include "confmagic.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */

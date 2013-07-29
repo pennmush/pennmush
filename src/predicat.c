@@ -6,8 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -26,20 +26,21 @@
 #endif
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
-#include "lock.h"
-#include "flags.h"
-#include "match.h"
 #include "ansi.h"
-#include "parse.h"
-#include "dbdefs.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "game.h"
+#include "attrib.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
+#include "lock.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
 
 int forbidden_name(const char *name);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,

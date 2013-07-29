@@ -24,22 +24,23 @@
 #endif
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "mypcre.h"
-#include "match.h"
-#include "attrib.h"
 #include "ansi.h"
+#include "attrib.h"
 #include "command.h"
-#include "mymalloc.h"
-#include "flags.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
 #include "lock.h"
 #include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
 #include "parse.h"
-#include "game.h"
-#include "confmagic.h"
 
 static int chown_ok(dbref player, dbref thing, dbref newowner,
                     NEW_PE_INFO *pe_info);

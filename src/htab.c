@@ -53,6 +53,10 @@
 #include "htab.h"
 #include "mymalloc.h"
 
+/* Temporary prototypes to make the compiler happy. */
+char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
+uint32_t get_random32(uint32_t low, uint32_t high);
+
 struct hash_bucket {
   const char *key;
   void *data;

@@ -57,6 +57,12 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
+struct hash_bucket {
+  const char *key;
+  void *data;
+  int keylen;
+};
+
 typedef uint32_t (*hash_func) (const char *, int, uint64_t);
 
 static const uint64_t hash_seed = 0x28187bcc53900639LLU;
@@ -126,7 +132,7 @@ hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
  * \param key key to look up in the table.
  * \return pointer to hash table entry for given key.
  */
-HASHENT *
+struct hash_bucket *
 hash_find(HASHTAB *htab, const char *key)
 {
   int len, n;
@@ -148,6 +154,13 @@ hash_find(HASHTAB *htab, const char *key)
   }
 
   return NULL;
+}
+
+void *
+hash_value(HASHTAB *htab, const char *key)
+{
+  struct hash_bucket *entry = hash_find(htab, key);
+  return entry ? entry->data : NULL;
 }
 
 enum { BUMP_LIMIT = 10 };
@@ -215,7 +228,7 @@ static int resize_calls = 0, first_offset = -1;
 static bool
 hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
 {
-  HASHENT *oldarr;
+  struct hash_bucket *oldarr;
   int oldsize, oldoffset, i;
 
   /* Massive overkill here */
@@ -296,21 +309,28 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
   return true;
 }
 
-/** Delete an entry in a hash table.
- * \param htab pointer to hash table.
- * \param entry pointer to hash entry to delete (and free).
- */
-void
-hash_delete(HASHTAB *htab, HASHENT *entry)
+static void
+hash_delete_bucket(HASHTAB *htab, struct hash_bucket* entry)
 {
-  if (!entry)
-    return;
-
   if (htab->free_data)
     htab->free_data(entry->data);
   mush_free((void *) entry->key, "hash.key");
   memset(entry, 0, sizeof *entry);
   htab->entries -= 1;
+}
+
+/** Delete an entry in a hash table.
+ * \param htab pointer to hash table.
+ * \param key key to delete from the table.
+ */
+void
+hash_delete(HASHTAB *htab, const char *key)
+{
+  struct hash_bucket *entry = hash_find(htab, key);
+  if (!entry)
+    return;
+
+  hash_delete_bucket(htab, entry);
 }
 
 /** Flush a hash table, freeing all entries.
@@ -326,9 +346,7 @@ hash_flush(HASHTAB *htab, int size)
   if (htab->entries) {
     for (i = 0; i < htab->hashsize; i++) {
       if (htab->buckets[i].key) {
-        mush_free((void *) htab->buckets[i].key, "hash.key");
-        if (htab->free_data)
-          htab->free_data(htab->buckets[i].data);
+        hash_delete_bucket(htab, &htab->buckets[i]);
       }
     }
   }

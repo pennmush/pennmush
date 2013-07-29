@@ -5,33 +5,35 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
+#include "SFMT.h"
+#include "ansi.h"
+#include "attrib.h"
 #include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
 #include "externs.h"
-#include "mymalloc.h"
-#include "version.h"
-#include "htab.h"
 #include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
 #include "lock.h"
 #include "match.h"
+#include "memcheck.h"
 #include "mushdb.h"
-#include "dbdefs.h"
+#include "mymalloc.h"
 #include "parse.h"
-#include "function.h"
-#include "command.h"
-#include "game.h"
-#include "attrib.h"
-#include "ansi.h"
 #include "strtree.h"
-#include "SFMT.h"
 #include "svninfo.h"
-#include "confmagic.h"
+#include "version.h"
 
 #ifdef WIN32
 #include <windows.h>

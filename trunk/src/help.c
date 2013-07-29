@@ -14,19 +14,20 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "conf.h"
-#include "externs.h"
-#include "command.h"
-#include "htab.h"
-#include "help.h"
-#include "log.h"
 #include "ansi.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "help.h"
+#include "htab.h"
+#include "log.h"
+#include "memcheck.h"
+#include "mymalloc.h"
 #include "parse.h"
 #include "pueblo.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "mymalloc.h"
-#include "confmagic.h"
 
 HASHTAB help_files;  /**< Help filenames hash table */
 

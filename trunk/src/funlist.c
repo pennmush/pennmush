@@ -5,29 +5,31 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+
 #define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
 #include "ansi.h"
-#include "parse.h"
+#include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
 #include "function.h"
+#include "lock.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "mypcre.h"
-#include "match.h"
-#include "command.h"
-#include "attrib.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "mushdb.h"
-#include "lock.h"
+#include "parse.h"
 #include "sort.h"
-#include "confmagic.h"
 
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };

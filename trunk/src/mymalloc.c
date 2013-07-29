@@ -27,8 +27,10 @@
  *     overhead.
  *
  */
+
 #include "config.h"
-#include "confmagic.h"
+#include "mymalloc.h"
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>
@@ -41,14 +43,15 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include "options.h"
+
 #include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
-#include "log.h"
 #include "externs.h"
 #include "getpgsiz.h"
-#include "mymalloc.h"
-#include "confmagic.h"
+#include "log.h"
+#include "memcheck.h"
+#include "options.h"
 
 void do_list_allocations(dbref player);
 

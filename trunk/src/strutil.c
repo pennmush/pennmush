@@ -7,6 +7,7 @@
  */
 
 #include "config.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -17,18 +18,19 @@
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
-#include "copyrite.h"
-#include "conf.h"
-#include "case.h"
-#include "pueblo.h"
-#include "parse.h"
-#include "externs.h"
+
 #include "ansi.h"
-#include "mymalloc.h"
-#include "log.h"
-#include "mypcre.h"
-#include "externs.h"
+#include "case.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "externs.h"
+#include "externs.h"
+#include "log.h"
+#include "memcheck.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "pueblo.h"
 
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 

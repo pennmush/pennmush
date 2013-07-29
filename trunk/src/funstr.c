@@ -1529,7 +1529,7 @@ wraplen(char *str, size_t maxlen)
       return i;
     else if ((str[i] == '\n') || (str[i] == '\r'))
       return i;
-    else if ((str[i] == ' '))
+    else if (str[i] == ' ')
       last = i;
   }
 

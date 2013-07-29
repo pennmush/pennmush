@@ -11,6 +11,7 @@
 #include <string.h>
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "mushdb.h"
 #include "attrib.h"
 #include "match.h"

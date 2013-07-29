@@ -30,6 +30,7 @@
 #include "externs.h"
 #include "ansi.h"
 #include "pueblo.h"
+#include "mymalloc.h"
 #include "mushdb.h"
 #include "parse.h"
 #include "command.h"

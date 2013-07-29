@@ -29,6 +29,7 @@
 
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "parse.h"
 #include "attrib.h"
 #include "tz.h"

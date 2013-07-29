@@ -42,6 +42,7 @@
 #endif
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "strtree.h"
 #include "confmagic.h"
 

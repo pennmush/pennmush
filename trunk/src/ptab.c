@@ -12,6 +12,7 @@
 #include <math.h>
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "ptab.h"
 #include "confmagic.h"
 

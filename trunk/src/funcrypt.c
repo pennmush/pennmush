@@ -14,6 +14,7 @@
 #include "conf.h"
 #include "case.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "version.h"
 #include "extchat.h"
 #include "htab.h"

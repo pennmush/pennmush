@@ -24,19 +24,20 @@
  */
 
 #include "config.h"
+#include "copyrite.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "copyrite.h"
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
 #include "ansi.h"
-#include "mymalloc.h"
-#include "parse.h"
-#include "mypcre.h"
+#include "case.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "externs.h"
+#include "memcheck.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
 
 /** Force a char to be lowercase */
 #define FIXCASE(a) (DOWNCASE(a))

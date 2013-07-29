@@ -385,14 +385,6 @@ void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
 int safe_decompose_str(char *what, char *buf, char **bp);
 
-/* From memcheck.c */
-void add_check(const char *ref);
-#define ADD_CHECK(x) add_check(x)
-#define DEL_CHECK(x) del_check(x, __FILE__, __LINE__)
-void del_check(const char *ref, const char *filename, int line);
-void list_mem_check(dbref player);
-void log_mem_check(void);
-
 /* From move.c */
 void enter_room(dbref player, dbref loc, int nomovemsgs,
                 dbref enactor, const char *cause);

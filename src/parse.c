@@ -7,9 +7,9 @@
  *
  */
 
+#include "config.h"
 #include "copyrite.h"
 
-#include "config.h"
 #include <math.h>
 #include <limits.h>
 #include <string.h>
@@ -21,23 +21,24 @@
 #endif
 #include <stdio.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "dbdefs.h"
-#include "function.h"
-#include "case.h"
-#include "match.h"
-#include "mushdb.h"
-#include "parse.h"
 #include "attrib.h"
-#include "mypcre.h"
-#include "flags.h"
-#include "log.h"
-#include "mymalloc.h"
-#include "strtree.h"
-#include "mushtype.h"
+#include "case.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mushtype.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "strtree.h"
 
 extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */
 int global_fun_invocations;

@@ -7,8 +7,9 @@
 #ifndef _ATTRIB_H
 #define _ATTRIB_H
 
-#include "mushtype.h"
 #include "chunk.h"
+#include "dbio.h"
+#include "mushtype.h"
 
 /** An attribute on an object.
  * This structure represents an attribute set on an object.

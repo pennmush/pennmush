@@ -1,10 +1,10 @@
-/* Must be included after mushtype.h to get dbref typedef */
 #ifndef _CHUNK_H_
 #define _CHUNK_H_
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "mushtype.h"
 
 #undef LOG_CHUNK_STATS
 

@@ -7,6 +7,14 @@
 #ifndef __ACCESS_H
 #define __ACCESS_H
 
+#include "config.h"
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif  /* HAVE_STDINT_H_ */
+
+#include "mushtype.h"
+#include "mypcre.h"
+
 /** Access information for a host-pattern.
  * This structure holds access information for a given host-pattern.
  * It's organized into a linked list of access rules.

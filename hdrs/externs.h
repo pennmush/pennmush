@@ -748,17 +748,6 @@ replace_string2(const char *old[2], const char *newbits[2],
     bool recursive_member(dbref disallow, dbref from, int count);
     dbref remove_first(dbref first, dbref what);
     dbref reverse(dbref list);
-    void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;
-    void *mush_calloc(size_t count, size_t size,
-                      const char *check) __attribute_malloc__;
-#define mush_realloc(ptr, size, tag) \
-  mush_realloc_where((ptr), (size), (tag), __FILE__, __LINE__)
-    void *mush_realloc_where(void *restrict ptr, size_t newsize,
-                             const char *restrict check,
-                             const char *restrict filename, int line);
-#define mush_free(ptr,tag) mush_free_where((ptr), (tag), __FILE__, __LINE__)
-    void mush_free_where(void *restrict ptr, const char *restrict check,
-                         const char *restrict filename, int line);
     uint32_t get_random32(uint32_t low, uint32_t high);
     char *fullalias(dbref it);
     char *shortalias(dbref it);

@@ -58,6 +58,7 @@ static sqlite3 *sqlite3_connp = NULL;
 
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "dbdefs.h"
 #include "log.h"
 #include "parse.h"

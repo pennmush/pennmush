@@ -10,6 +10,7 @@
 #include <math.h>
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "parse.h"
 #include "ansi.h"
 #include "command.h"

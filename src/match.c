@@ -59,6 +59,7 @@
 #include "conf.h"
 #include "mushdb.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "case.h"
 #include "match.h"
 #include "parse.h"

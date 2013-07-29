@@ -32,6 +32,7 @@
 
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "dbdefs.h"
 #include "lock.h"
 #include "extmail.h"

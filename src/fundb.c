@@ -12,6 +12,7 @@
 #include <string.h>
 #include "conf.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "dbdefs.h"
 #include "flags.h"
 

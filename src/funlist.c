@@ -1390,7 +1390,6 @@ FUNCTION(fun_extract)
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
-  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1) {
     /* find_list_position does an is_integer check, but we
@@ -1404,6 +1403,8 @@ FUNCTION(fun_extract)
       return;
     }
   }
+
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1)
     start = find_list_position(args[1], nwords, 0) - 1;
@@ -1455,6 +1456,7 @@ FUNCTION(fun_remove)
   int list_counter, rem_counter, list_total, rem_total;
   int skip[MAX_SORTSIZE];
   int first = 1;
+
 
   /* zap word from string */
 

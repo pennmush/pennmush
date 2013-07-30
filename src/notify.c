@@ -1055,7 +1055,6 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
 }
 
 #define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
-#define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
 #define PROPAGATE_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | (na_flags & (NA_RELAY_ONCE | NA_NORELAY) ? NA_NORELAY : NA_RELAY_ONCE)) & ~NA_PROMPT)
 
 

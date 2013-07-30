@@ -1661,9 +1661,6 @@ MI_FOR(ansi_string *as, int idx)
     return &as->mi[idx];
 }
 
-#define DOFREE_START   0x01
-#define DOFREE_END     0x02
-
 static char *colend = "/";
 
 /** Convert a string into an ansi_string.

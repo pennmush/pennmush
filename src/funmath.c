@@ -6,9 +6,9 @@
  *
  */
 
+#include "config.h"
 #include "copyrite.h"
 
-#include "config.h"
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
@@ -20,12 +20,14 @@
 #ifdef HAVE_SSE3
 #include <pmmintrin.h>
 #endif
+
 #include "conf.h"
+#include "confmagic.h"
 #include "externs.h"
 #include "mymalloc.h"
-#include "sort.h"
 #include "parse.h"
-#include "confmagic.h"
+#include "sort.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */

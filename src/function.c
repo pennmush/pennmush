@@ -5,30 +5,32 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+#include "function.h"
+
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "dbdefs.h"
-#include "mushdb.h"
-#include "function.h"
-#include "match.h"
-#include "htab.h"
-#include "parse.h"
-#include "lock.h"
-#include "flags.h"
-#include "game.h"
-#include "mymalloc.h"
-#include "sort.h"
-#include "funs.h"
-#include "confmagic.h"
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "funs.h"
+#include "game.h"
+#include "htab.h"
+#include "lock.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "sort.h"
+#include "strutil.h"
 
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);

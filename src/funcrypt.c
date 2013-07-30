@@ -5,34 +5,35 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
-#include <time.h>
-#include <string.h>
-#include <ctype.h>
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "version.h"
-#include "extchat.h"
-#include "htab.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "parse.h"
-#include "function.h"
-#include "command.h"
-#include "game.h"
-#include "attrib.h"
-#include "ansi.h"
-#include "match.h"
-#include "sort.h"
-#include <openssl/sha.h>
-#include <openssl/evp.h>
-#include <openssl/bio.h>
-#include "confmagic.h"
+#include "copyrite.h"
 
+#include <ctype.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <string.h>
+#include <time.h>
+
+#include "ansi.h"
+#include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
+#include "match.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "sort.h"
+#include "strutil.h"
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);

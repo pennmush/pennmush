@@ -2,21 +2,22 @@
  * \file sort.c
  * \brief Sorting and comparision functions
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+#include "sort.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "ansi.h"
+#include "command.h"
 #include "conf.h"
+#include "confmagic.h"
 #include "externs.h"
 #include "mymalloc.h"
 #include "parse.h"
-#include "ansi.h"
-#include "command.h"
-#include "sort.h"
-#include "confmagic.h"
-
+#include "strutil.h"
 
 #define EPSILON 0.000000001  /**< limit of precision for float equality */
 

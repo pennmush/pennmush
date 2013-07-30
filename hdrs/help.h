@@ -7,6 +7,9 @@
 #ifndef __HELP_H
 #define __HELP_H
 
+#include <stddef.h>
+#include "mushtype.h"
+
 #define  LINE_SIZE              90
 #define  TOPIC_NAME_LEN         30
 

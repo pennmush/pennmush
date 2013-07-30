@@ -5,29 +5,32 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
 #include <locale.h>
 #include <stddef.h>
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "case.h"
-#include "match.h"
-#include "parse.h"
-#include "pueblo.h"
 #include "attrib.h"
-#include "flags.h"
+#include "case.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
-#include "mushdb.h"
+#include "externs.h"
+#include "flags.h"
 #include "htab.h"
 #include "lock.h"
+#include "markup.h"
+#include "match.h"
+#include "mushdb.h"
+#include "parse.h"
+#include "pueblo.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 
 #ifdef WIN32

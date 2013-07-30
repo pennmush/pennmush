@@ -5,8 +5,10 @@
  *
  *
  */
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "extchat.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -16,28 +18,29 @@
 #include <sys/types.h>
 #endif
 #include <stdarg.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "mushdb.h"
-#include "match.h"
-#include "flags.h"
-#include "extchat.h"
+
 #include "ansi.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "pueblo.h"
-#include "parse.h"
+#include "attrib.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "intmap.h"
 #include "lock.h"
 #include "log.h"
-#include "game.h"
-#include "dbdefs.h"
-#include "function.h"
-#include "command.h"
-#include "dbio.h"
-#include "intmap.h"
-#include "confmagic.h"
-
+#include "markup.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 static CHAN *new_channel(void);
 static CHANLIST *new_chanlist(const void *hint);

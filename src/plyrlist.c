@@ -7,24 +7,23 @@
  */
 
 #include "config.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "copyrite.h"
-
-#include "conf.h"
-#include "externs.h"
 #include "attrib.h"
-#include "mushdb.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
 #include "htab.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "parse.h"
-#include "confmagic.h"
-
+#include "strutil.h"
 
 /** Hash table of player names */
 HASHTAB htab_player_list;

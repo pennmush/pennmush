@@ -8,6 +8,7 @@
 #define _FUNCTIONS_H_
 
 #include "copyrite.h"
+#include "mushtype.h"
 
 #define FN_REG 0x0
 /* Function arguments aren't parsed */

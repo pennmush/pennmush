@@ -11,9 +11,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
-#include "confmagic.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -92,24 +91,35 @@
 #include <poll.h>
 #endif
 
-#include "conf.h"
-
-#include "externs.h"
-#include "chunk.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "lock.h"
-#include "help.h"
-#include "match.h"
-#include "ansi.h"
-#include "pueblo.h"
-#include "parse.h"
 #include "access.h"
+#include "ansi.h"
+#include "attrib.h"
+#include "chunk.h"
 #include "command.h"
-#include "version.h"
-#include "mysocket.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "game.h"
+#include "help.h"
 #include "htab.h"
+#include "intmap.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "mysocket.h"
+#include "myssl.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strtree.h"
+#include "strutil.h"
+#include "version.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -120,18 +130,6 @@
 #include "ssl_slave.h"
 #endif
 #endif                          /* !WIN32 */
-
-#include "strtree.h"
-#include "log.h"
-#include "mypcre.h"
-#include "myssl.h"
-#include "mymalloc.h"
-#include "extmail.h"
-#include "attrib.h"
-#include "game.h"
-#include "dbio.h"
-#include "intmap.h"
-#include "confmagic.h"
 
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1

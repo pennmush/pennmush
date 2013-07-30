@@ -85,29 +85,30 @@
  * \endverbatim
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <string.h>
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "attrib.h"
 #include "case.h"
 #include "conf.h"
-#include "dbdefs.h"
-#include "mushdb.h"
-#include "match.h"
-#include "externs.h"
-#include "lock.h"
-#include "parse.h"
-#include "attrib.h"
-#include "flags.h"
-#include "log.h"
-#include "extchat.h"
-#include "strtree.h"
-#include "mymalloc.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strtree.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */

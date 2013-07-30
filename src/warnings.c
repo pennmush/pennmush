@@ -7,22 +7,22 @@
  */
 
 #include "config.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
-#include "copyrite.h"
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "lock.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "match.h"
 #include "attrib.h"
+#include "conf.h"
 #include "confmagic.h"
-
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "match.h"
+#include "mushdb.h"
+#include "strutil.h"
 
 /* We might check for both locked and unlocked warnings if we can't
  * figure out a lock.

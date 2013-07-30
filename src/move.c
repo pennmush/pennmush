@@ -13,20 +13,21 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
 #include "attrib.h"
-#include "match.h"
-#include "flags.h"
-#include "lock.h"
-#include "dbdefs.h"
-#include "parse.h"
-#include "log.h"
-#include "command.h"
 #include "cmds.h"
-#include "game.h"
+#include "command.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "parse.h"
+#include "strutil.h"
 
 void moveit(dbref what, dbref where, int nomovemsgs,
             dbref enactor, const char *cause);

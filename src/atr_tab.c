@@ -7,22 +7,23 @@
  */
 
 #include "config.h"
+#include "atr_tab.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "atr_tab.h"
-#include "ptab.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "dbdefs.h"
-#include "log.h"
-#include "parse.h"
-#include "confmagic.h"
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
+#include "ptab.h"
+#include "strutil.h"
 
 extern const unsigned char *tables;
 

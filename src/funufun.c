@@ -6,23 +6,24 @@
  *
  */
 
+#include "config.h"
 #include "copyrite.h"
 
 #include <string.h>
 
-#include "config.h"
-#include "conf.h"
-#include "externs.h"
-#include "match.h"
-#include "parse.h"
-#include "mymalloc.h"
 #include "attrib.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "lock.h"
-#include "function.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "lock.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 /* ARGSUSED */
 FUNCTION(fun_s)

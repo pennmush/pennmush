@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "copyrite.h"
+#include "parse.h"
 
 #include <math.h>
 #include <limits.h>
@@ -37,8 +38,8 @@
 #include "mushtype.h"
 #include "mymalloc.h"
 #include "mypcre.h"
-#include "parse.h"
 #include "strtree.h"
+#include "strutil.h"
 
 extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */
 int global_fun_invocations;

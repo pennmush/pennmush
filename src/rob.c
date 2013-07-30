@@ -14,19 +14,20 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
 #include "attrib.h"
-#include "match.h"
-#include "parse.h"
-#include "flags.h"
-#include "log.h"
-#include "lock.h"
-#include "dbdefs.h"
-#include "game.h"
-#include "confmagic.h"
 #include "case.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "parse.h"
+#include "strutil.h"
 
 static void do_give_to(dbref player, char *arg, int silent,
                        NEW_PE_INFO *pe_info);

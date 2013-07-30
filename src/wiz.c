@@ -6,9 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
-#include "confmagic.h"
+#include "copyrite.h"
 
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -33,26 +32,26 @@
 #include <windows.h>
 #include "process.h"
 #endif
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
-#include "match.h"
+
 #include "access.h"
-#include "parse.h"
-#include "mymalloc.h"
+#include "ansi.h"
+#include "attrib.h"
+#include "boolexp.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
+#include "game.h"
 #include "lock.h"
 #include "log.h"
-#include "game.h"
-#include "command.h"
-#include "dbdefs.h"
-#include "extmail.h"
-#include "boolexp.h"
-#include "ansi.h"
-
-
-#include "confmagic.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 dbref find_entrance(dbref door);
 struct db_stat_info *get_stats(dbref owner);

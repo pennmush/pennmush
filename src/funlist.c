@@ -30,6 +30,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "sort.h"
+#include "strutil.h"
 
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };

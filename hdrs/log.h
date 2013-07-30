@@ -7,8 +7,9 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "bufferq.h"
 #include <stdio.h>
+#include "bufferq.h"
+#include "mushtype.h"
 
 /* log types */
 enum log_type {

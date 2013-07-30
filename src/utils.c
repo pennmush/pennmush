@@ -6,9 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
-#include "confmagic.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -37,20 +36,21 @@
 #include <stdint.h>
 #endif
 
-#include "conf.h"
-#include "match.h"
-#include "externs.h"
+#include "SFMT.h"
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
-#include "log.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "attrib.h"
 #include "parse.h"
-#include "lock.h"
-#include "SFMT.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 dbref find_entrance(dbref door);
 void initialize_mt(void);

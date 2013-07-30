@@ -28,6 +28,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "privtab.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */

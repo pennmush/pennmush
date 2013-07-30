@@ -16,9 +16,10 @@
 #include <openssl/evp.h>
 #include <pcre.h>
 #include "conf.h"
+#include "confmagic.h"
 #include "externs.h"
 #include "log.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 #define PASSWORD_HASH "sha1"
 

@@ -8,7 +8,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <stdio.h>
@@ -66,7 +65,6 @@
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "extchat.h"
 #include "externs.h"

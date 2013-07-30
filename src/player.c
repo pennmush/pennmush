@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+
 #include <stdio.h>
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -30,7 +30,6 @@
 #include "access.h"
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "extmail.h"

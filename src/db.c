@@ -6,9 +6,10 @@
  *
  */
 
-#include "config.h"
-#include "copyrite.h"
 #define _GNU_SOURCE
+
+#include "copyrite.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -23,10 +24,10 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "dbio.h"
 #include "extchat.h"

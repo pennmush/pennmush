@@ -26,8 +26,8 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
+
 #ifdef I_UNISTD
 #include <unistd.h>
 #endif
@@ -59,7 +59,6 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "function.h"

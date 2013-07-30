@@ -51,17 +51,16 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "match.h"
 
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "attrib.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

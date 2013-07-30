@@ -9,15 +9,15 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "attrib.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

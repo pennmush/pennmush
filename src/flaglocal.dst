@@ -22,12 +22,12 @@
 /* Here are some includes you're likely to need or want.
  */
 #include "copyrite.h"
-#include "config.h"
+
 #include <string.h>
+
 #include "conf.h"
 #include "externs.h"
 #include "flags.h"
-#include "confmagic.h"
 
 void
 local_flags(FLAGSPACE *flags __attribute__ ((__unused__)))

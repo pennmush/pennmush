@@ -5,7 +5,7 @@
  *
  *
  */
-#include "config.h"
+
 #include "copyrite.h"
 #include "ptab.h"
 
@@ -14,7 +14,6 @@
 #include <math.h>
 
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "memcheck.h"
 #include "mymalloc.h"

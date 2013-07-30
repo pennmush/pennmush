@@ -8,12 +8,10 @@
  *
  */
 
-#include "config.h"
-#include "options.h"
 #include <time.h>
+#include "log.h"
 /* It's rather dumb mushtype.h has to be included */
 #include "mushtype.h"
-#include "log.h"
 
 #if defined(COMPRESSION_TYPE) && (COMPRESSION_TYPE == 0)
 /* No compression */

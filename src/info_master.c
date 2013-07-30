@@ -4,7 +4,6 @@
  * \brief mush-end functions for talking to info_slave
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #ifdef I_SYS_TYPES

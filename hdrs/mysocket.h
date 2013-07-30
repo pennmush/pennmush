@@ -17,8 +17,12 @@
 #define __MYSOCKET_H
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
+
+#include <stddef.h>
+
+#ifdef I_SYS_SOCKET
+#include <sys/socket.h>
+#endif  /* I_SYS_SOCKET */
 
 #ifdef WIN32
 #ifndef FD_SETSIZE

@@ -41,16 +41,17 @@
  * inserts are important, small for cases where we want to save save.
  */
 
-#include "config.h"
 #include "copyrite.h"
+#include "htab.h"
+
 #include <string.h>
 #include <math.h>
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
 #include <openssl/bn.h>
+
 #include "hash_function.h"
-#include "htab.h"
 #include "mymalloc.h"
 
 /* Temporary prototypes to make the compiler happy. */

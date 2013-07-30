@@ -4,10 +4,7 @@
  * Original author: Nick Gammon 
  */
 
-
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #ifdef WIN32
 
@@ -18,12 +15,10 @@
 #include <direct.h>
 
 #include "conf.h"
-#include "mushdb.h"
-
-#include "match.h"
 #include "externs.h"
+#include "match.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 #ifdef WIN32SERVICES
 

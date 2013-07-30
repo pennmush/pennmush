@@ -211,8 +211,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "conf.h"
 
 #define _XOPEN_SOURCE 600
 #include <limits.h>
@@ -226,7 +224,9 @@
 #include <wtypes.h>
 #include <io.h>
 #else
+#ifndef __USE_UNIX98
 #define __USE_UNIX98
+#endif  /* __USE_UNIX98 */
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -235,14 +235,14 @@
 #endif
 
 
-#include "externs.h"
 #include "chunk.h"
 #include "command.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "intrface.h"
 #include "log.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */

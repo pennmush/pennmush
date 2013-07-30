@@ -6,15 +6,14 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "attrib.h"
 
 #include <string.h>
 #include <ctype.h>
+
 #include "chunk.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

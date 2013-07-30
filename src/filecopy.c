@@ -2,8 +2,6 @@
 /* Author of Win32-specific bits: Nick Gammon */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,12 +17,11 @@
 #endif
 
 #include "conf.h"
-#include "mushdb.h"
-#include "match.h"
 #include "externs.h"
-#include "mymalloc.h"
 #include "log.h"
-#include "confmagic.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
 
 extern char confname[BUFFER_LEN];       /* From bsd.c */
 

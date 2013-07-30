@@ -52,7 +52,6 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "access.h"
 #include <stdio.h>
@@ -75,7 +74,6 @@
 #include <unistd.h>
 #endif
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

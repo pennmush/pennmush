@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <string.h>
@@ -18,7 +17,6 @@
 #include <time.h>
 #include <errno.h>
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "log.h"

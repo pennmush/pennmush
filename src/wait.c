@@ -4,7 +4,8 @@
  * \brief Process and process-group control functions.
  */
 
-#include "config.h"
+#include "wait.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -26,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "wait.h"
 
 int lock_file(FILE *);
 int unlock_file(FILE *);

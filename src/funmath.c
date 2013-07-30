@@ -23,6 +23,7 @@
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"

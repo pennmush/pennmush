@@ -86,7 +86,7 @@
 #include <signal.h>
 
 #include "conf.h"
-#include "externs.h"
+// #include "externs.h"
 #include "mysocket.h"
 #include "wait.h"
 

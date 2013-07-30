@@ -15,6 +15,7 @@
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "strutil.h"
 

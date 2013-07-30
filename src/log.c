@@ -34,6 +34,7 @@
 #include "externs.h"
 #include "flags.h"
 #include "htab.h"
+#include "notify.h"
 #include "strutil.h"
 
 struct log_stream;

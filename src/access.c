@@ -82,6 +82,7 @@
 #include "mushdb.h"
 #include "mymalloc.h"
 #include "mypcre.h"
+#include "notify.h"
 #include "parse.h"
 #include "strutil.h"
 

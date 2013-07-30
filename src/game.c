@@ -6,10 +6,6 @@
  */
 
 #include "copyrite.h"
-/* TODO: Temporary to make externs.h happy. Yay for dependencies. */
-#include "conf.h"
-/* TODO: Temporary hack until notify_* functions are moved. */
-#include "externs.h"
 #include "game.h"
 
 #include <ctype.h>
@@ -67,6 +63,7 @@ void Win32MUSH_setup(void);
 #include "mypcre.h"
 #include "parse.h"
 #include "ptab.h"
+#include "sig.h"
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"

@@ -9,7 +9,7 @@
 #include <signal.h>
 
 #include "conf.h"
-#include "externs.h"
+#include "sig.h"
 
 #ifndef HAVE_SIGPROCMASK
 static Sigfunc saved_handlers[NSIG];

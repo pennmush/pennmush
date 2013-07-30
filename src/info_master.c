@@ -33,13 +33,12 @@
 
 #include "access.h"
 #include "conf.h"
-#include "externs.h"
 #include "log.h"
 #include "lookup.h"
 #include "mysocket.h"
+#include "sig.h"
 #include "strutil.h"
 #include "wait.h"
-
 
 #ifdef INFO_SLAVE
 

@@ -36,6 +36,7 @@
 #include "mushtype.h"
 #include "mymalloc.h"
 #include "mypcre.h"
+#include "notify.h"
 #include "strtree.h"
 #include "strutil.h"
 

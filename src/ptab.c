@@ -14,9 +14,9 @@
 #include <math.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "memcheck.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "strutil.h"
 
 static int ptab_find_exact_nun(PTAB *tab, const char *key);

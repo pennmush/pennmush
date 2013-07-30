@@ -66,6 +66,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "strutil.h"
 

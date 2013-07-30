@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
@@ -25,6 +26,7 @@
 #include "log.h"
 #include "memcheck.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"

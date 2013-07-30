@@ -60,6 +60,7 @@
 #include "memcheck.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "privtab.h"
 #include "pueblo.h"

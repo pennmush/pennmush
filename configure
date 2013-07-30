@@ -4423,7 +4423,7 @@ fi
 if test "${DEFAULT_CFLAGS}" = yes; then
  if test -n "${GDB}"; then
   if test "${ac_cv_c_compiler_gnu}" = yes; then
-CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
+CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment -Wno-char-subscripts"
    else
 CFLAGS="-g $CFLAGS -W"
   fi

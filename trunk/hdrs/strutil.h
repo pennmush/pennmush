@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <time.h>
+#include "compile.h"
 #include "mushtype.h"
 
 #ifdef HAVE_STDINT_H

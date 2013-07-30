@@ -8,6 +8,7 @@
 #define _ATTRIB_H
 
 #include "chunk.h"
+#include "compile.h"
 #include "dbio.h"
 #include "mushtype.h"
 

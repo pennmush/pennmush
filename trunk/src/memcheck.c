@@ -50,7 +50,7 @@
  * of 1.33 links per node and around 17.5 nodes checked in a typical
  * search.
  */
-#include "config.h"
+
 #include "copyrite.h"
 #include "memcheck.h"
 
@@ -60,7 +60,6 @@
 #include <stdio.h>
 
 #include "SFMT.h"
-#include "confmagic.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "log.h"

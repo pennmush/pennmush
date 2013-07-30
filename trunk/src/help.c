@@ -5,8 +5,8 @@
  *
  *
  */
-#include "config.h"
 #include "help.h"
+
 /* This might have to be uncommented on some linux distros... */
 /* #define _XOPEN_SOURCE 600 */
 #include <stdlib.h>
@@ -18,7 +18,6 @@
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

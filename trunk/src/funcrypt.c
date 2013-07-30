@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <ctype.h>
@@ -21,7 +20,6 @@
 #include "case.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "extchat.h"
 #include "externs.h"

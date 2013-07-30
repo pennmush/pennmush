@@ -51,30 +51,26 @@
  *
  */
 
-#include "config.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "copyrite.h"
-#include "conf.h"
-#include "mushdb.h"
-#include "match.h"
-#include "externs.h"
-#include "log.h"
-#include "game.h"
-#include "extmail.h"
-#include "malias.h"
 #include "attrib.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
+#include "game.h"
 #include "lock.h"
-#include "confmagic.h"
+#include "log.h"
+#include "malias.h"
+#include "match.h"
+#include "mushdb.h"
 #include "parse.h"
-
-
 
 dbref first_free = NOTHING;   /**< Object at top of free list */
 

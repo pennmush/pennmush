@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "markup.h"
 
@@ -19,7 +18,6 @@
 #include "ansi.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "game.h"
 #include "intmap.h"

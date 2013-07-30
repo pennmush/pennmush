@@ -8,7 +8,6 @@
 
 #define _GNU_SOURCE  /* For strchrnul, if applicable. */
 
-#include "config.h"
 #include "copyrite.h"
 #include "strutil.h"
 
@@ -25,7 +24,6 @@
 #include "ansi.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "log.h"
 #include "markup.h"
 #include "memcheck.h"

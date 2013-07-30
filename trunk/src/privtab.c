@@ -8,15 +8,15 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "privtab.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "mushtype.h"
 #include "strutil.h"

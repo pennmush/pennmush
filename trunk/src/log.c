@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "log.h"
 
@@ -31,7 +30,6 @@
 
 #include "bufferq.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

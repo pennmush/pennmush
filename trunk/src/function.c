@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "function.h"
 
@@ -17,7 +16,6 @@
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

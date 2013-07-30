@@ -5,12 +5,11 @@
  *
  *
  */
-#include "copyrite.h"
-
-#include "config.h"
-#include "confmagic.h"
 
 #define _GNU_SOURCE
+
+#include "copyrite.h"
+#include "mysocket.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,10 +24,6 @@
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
-#endif
-
-#ifdef I_SYS_SOCKET
-#include <sys/socket.h>
 #endif
 
 #ifdef I_NETINET_IN
@@ -116,8 +111,6 @@ extern int h_errno;
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
-#include "mysocket.h"
-#include "confmagic.h"
 
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);

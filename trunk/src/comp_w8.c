@@ -118,16 +118,16 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
 #include "conf.h"
+#include "dbio.h"
 #include "externs.h"
 #include "mushdb.h"
 #include "mymalloc.h"
-#include "dbio.h"
-#include "confmagic.h"
 
 #define MAXTABLE 32768          /**< Maximum words in the table */
 #define MAXWORDS 100            /**< Maximum length of a word */

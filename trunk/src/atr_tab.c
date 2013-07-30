@@ -6,16 +6,15 @@
  *
  */
 
-#include "config.h"
 #include "atr_tab.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "log.h"

@@ -85,7 +85,6 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <ctype.h>
@@ -96,7 +95,6 @@
 #include "attrib.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "extchat.h"
 #include "externs.h"

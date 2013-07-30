@@ -15,13 +15,10 @@
 
 #include "copyrite.h"
 
-#include "config.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
 #include "mushtype.h"
-
-#include "confmagic.h"
 
 /* These are some common error messages. */
 extern char e_int[];            /* #-1 ARGUMENT MUST BE INTEGER */

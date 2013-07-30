@@ -7,7 +7,6 @@
 #ifndef __HASH_FUNCTION_H
 #define __HASH_FUNCTION_H
 
-#include "config.h"
 #include "copyrite.h"
 #ifdef HAVE_STDINT_H
 #include <stdint.h>

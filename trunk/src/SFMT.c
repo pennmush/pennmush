@@ -13,8 +13,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "config.h"             /* Added by Shawn for Penn */
-
 #include "SFMT.h"
 #include "SFMT-params.h"
 

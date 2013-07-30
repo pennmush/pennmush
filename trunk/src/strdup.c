@@ -6,15 +6,14 @@
  *
  */
 
-#include "config.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "conf.h"
-#include "copyrite.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 #ifndef HAVE_STRDUP
 char *strdup(const char *s);

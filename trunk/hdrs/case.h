@@ -6,8 +6,8 @@
 
 #ifndef CASE_H
 #define CASE_H
+
 #include <ctype.h>
-#include "config.h"
 
 #ifdef HAVE_SAFE_TOUPPER
 #define DOWNCASE(x)     tolower((unsigned char)x) /**< Returns 'x' lowercased */

@@ -4,10 +4,15 @@
  * \brief String trees.
  */
 
-
-
 #ifndef _STRTREE_H_
 #define _STRTREE_H_
+
+#include <stddef.h>
+#include "mushtype.h"
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 /* Here we have the tree node structure.  Pretty basic
  * parentless binary tree.  info holds the red/black

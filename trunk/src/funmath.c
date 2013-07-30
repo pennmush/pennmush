@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <math.h>
@@ -22,7 +21,6 @@
 #endif
 
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "mymalloc.h"
 #include "parse.h"

@@ -9,12 +9,11 @@
  * BUILDDATE is correct
  * \endverbatim
  */
-#include "config.h"
+
 #include "copyrite.h"
 #include "version.h"
 
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "strutil.h"
 #include "svninfo.h"

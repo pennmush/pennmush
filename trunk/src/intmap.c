@@ -40,12 +40,11 @@
  * \endverbatim
  */
 
-#include "config.h"
-
-
 /* Uncomment this to turn off various consistency checks. Not
    recommended yet. */
 /* #define NDEBUG */
+
+#include "intmap.h"
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -57,8 +56,6 @@
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
-#include "intmap.h"
-#include "confmagic.h"
 
 /** Structure that represents a node in a patricia tree. */
 typedef struct patricia {

@@ -6,9 +6,10 @@
  *
  */
 
-#include "config.h"
-#include "copyrite.h"
 #define _GNU_SOURCE
+
+#include "copyrite.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -17,7 +18,6 @@
 #include "attrib.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "extchat.h"
 #include "externs.h"

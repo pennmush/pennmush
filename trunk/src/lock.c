@@ -27,7 +27,6 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "lock.h"
 
@@ -37,7 +36,6 @@
 #include "attrib.h"
 #include "boolexp.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

@@ -3,7 +3,6 @@
  * \brief Macros for getting information about objects
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #ifndef __DB_H

@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
-#include "config.h"
-#include "confmagic.h"
 #include "tz.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -30,7 +29,6 @@
 
 #include "attrib.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "log.h"
 #include "mymalloc.h"

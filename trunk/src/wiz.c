@@ -6,7 +6,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #ifdef I_UNISTD
@@ -39,7 +38,6 @@
 #include "boolexp.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "extmail.h"

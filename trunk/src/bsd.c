@@ -11,7 +11,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 
 #include <stdio.h>
@@ -97,7 +96,6 @@
 #include "chunk.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "dbio.h"
 #include "externs.h"

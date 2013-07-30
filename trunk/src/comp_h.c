@@ -15,16 +15,17 @@
 
 /* Compression routines */
 #include "copyrite.h"
-#include "config.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
 #include "conf.h"
+#include "dbio.h"
 #include "externs.h"
 #include "mushdb.h"
 #include "mymalloc.h"
-#include "dbio.h"
-#include "confmagic.h"
+
 #ifdef WIN32
 #pragma warning( disable : 4244)        /* NJG: disable warning re conversion */
 #endif

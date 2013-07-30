@@ -16,9 +16,8 @@
 #else
 #include <time.h>
 #endif
-#include "options.h"
-#include "mushtype.h"
 #include "htab.h"
+#include "mushtype.h"
 
 #define PLAYER_NAME_LIMIT (options.player_name_len) /**< limit on player name length */
 

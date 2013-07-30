@@ -735,6 +735,13 @@ wait_for_connect(int s, int secs)
  * implementations- they don't handle unix-domain sockets or named
  * services, because we don't need them for what we're doing.  */
 
+#ifdef AF_INET
+#define IPv4
+#endif
+#ifdef AF_INET6
+#define IPv6
+#endif
+
 #ifndef HAS_INET_PTON
 /* This is from the BIND 4.9.4 release, modified to compile by itself */
 

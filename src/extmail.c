@@ -93,6 +93,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"

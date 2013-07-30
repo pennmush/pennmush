@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "notify.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -659,7 +660,7 @@ make_nospoof(dbref speaker, int paranoid)
  * \param output_type bitwise MSG_* flags for how to render the message
  * \return pointer to static string
  */
-char *
+const char *
 render_string(const char *message, int output_type)
 {
   static char buff[BUFFER_LEN];
@@ -848,7 +849,7 @@ static const char *
 notify_makestring_real(struct notify_message *message, int output_type)
 {
   enum na_type msgtype;
-  char *newstr;
+  const char *newstr;
 
   if (output_type & MSG_PLAYER)
     output_type = (output_type & (message->type | MSG_PLAYER));
@@ -1737,7 +1738,7 @@ int
 queue_write(DESC *d, const char *b, int n)
 {
   char buff[BUFFER_LEN];
-  char *s;
+  const char *s;
   int output_type;
   PUEBLOBUFF;
   size_t len;
@@ -1852,7 +1853,7 @@ queue_string_eol(DESC *d, const char *s)
 int
 queue_string(DESC *d, const char *s)
 {
-  char *rendered;
+  const char *rendered;
   int output_type;
   int ret;
 

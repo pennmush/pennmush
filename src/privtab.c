@@ -17,7 +17,6 @@
 #include <string.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "mushtype.h"
 #include "strutil.h"
 

@@ -21,6 +21,7 @@
 #include "externs.h"
 #include "log.h"
 #include "match.h"
+#include "notify.h"
 #include "parse.h"
 #include "strutil.h"
 #include "tz.h"

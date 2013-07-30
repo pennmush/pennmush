@@ -20,6 +20,7 @@
 #include "lock.h"
 #include "match.h"
 #include "mushdb.h"
+#include "notify.h"
 #include "strutil.h"
 
 /* We might check for both locked and unlocked warnings if we can't

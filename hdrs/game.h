@@ -11,6 +11,7 @@
 
 #include "dbio.h"
 #include "mushtype.h"
+#include "notify.h"
 
 /* @scan flags */
 #define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */

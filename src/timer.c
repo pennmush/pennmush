@@ -44,6 +44,7 @@
 #include "memcheck.h"
 #include "mymalloc.h"
 #include "parse.h"
+#include "sig.h"
 #include "strutil.h"
 
 static sig_atomic_t hup_triggered = 0;

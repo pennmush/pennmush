@@ -14,7 +14,7 @@
 #include "version.h"
 
 #include "conf.h"
-#include "externs.h"
+#include "notify.h"
 #include "strutil.h"
 #include "svninfo.h"
 

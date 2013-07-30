@@ -104,6 +104,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "strtree.h"
 #include "strutil.h"

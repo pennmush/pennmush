@@ -211,6 +211,7 @@
  */
 
 #include "copyrite.h"
+#include "chunk.h"
 
 #define _XOPEN_SOURCE 600
 #include <limits.h>
@@ -235,7 +236,6 @@
 #endif
 
 
-#include "chunk.h"
 #include "command.h"
 #include "conf.h"
 #include "dbdefs.h"
@@ -243,6 +243,7 @@
 #include "intrface.h"
 #include "log.h"
 #include "mymalloc.h"
+#include "notify.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */

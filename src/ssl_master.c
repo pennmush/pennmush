@@ -25,10 +25,10 @@
 #include <string.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "log.h"
 #include "mysocket.h"
 #include "parse.h"
+#include "sig.h"
 #include "ssl_slave.h"
 #include "wait.h"
 

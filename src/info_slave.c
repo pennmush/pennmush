@@ -52,7 +52,6 @@
 #include <signal.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "log.h"
 #include "lookup.h"
 #include "mysocket.h"

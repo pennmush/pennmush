@@ -22,6 +22,7 @@
 #include "flags.h"
 #include "lock.h"
 #include "mushdb.h"
+#include "notify.h"
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"

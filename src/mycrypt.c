@@ -15,8 +15,8 @@
 #include <pcre.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "log.h"
+#include "notify.h"
 #include "strutil.h"
 
 #define PASSWORD_HASH "sha1"

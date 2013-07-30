@@ -54,8 +54,8 @@
 #include <assert.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "log.h"
 
 /** Structure that represents a node in a patricia tree. */

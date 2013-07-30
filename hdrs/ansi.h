@@ -29,6 +29,7 @@
 /* #define ANSI_DEBUG /**/
 #endif
 
+#include "compile.h"
 #include "mushtype.h"
 #include "mypcre.h"
 #include "strtree.h"

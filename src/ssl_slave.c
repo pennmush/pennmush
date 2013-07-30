@@ -30,10 +30,11 @@
 
 #include "SFMT.h"
 #include "conf.h"
-#include "externs.h"
+#include "log.h"
 #include "mysocket.h"
 #include "myssl.h"
 #include "ssl_slave.h"
+#include "wait.h"
 
 void errprintf(FILE *, const char *, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));

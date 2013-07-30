@@ -27,18 +27,21 @@
 #endif
 #include <fcntl.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
 #include "access.h"
-#include "mymalloc.h"
-#include "log.h"
+#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
-#include "lock.h"
-#include "parse.h"
 #include "game.h"
+#include "lock.h"
+#include "log.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 #ifdef HAS_CRYPT
 #ifdef I_CRYPT
@@ -47,10 +50,6 @@
 extern char *crypt(const char *, const char *);
 #endif
 #endif
-
-#include "extmail.h"
-#include "confmagic.h"
-
 
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);

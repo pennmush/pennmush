@@ -8,9 +8,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
-#include "confmagic.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -63,31 +62,30 @@
 #include <floatingpoint.h>
 #endif
 
-#include "conf.h"
-#include "mushdb.h"
-#include "externs.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "lock.h"
-#include "help.h"
-#include "match.h"
-#include "ansi.h"
-#include "pueblo.h"
-#include "parse.h"
 #include "access.h"
-#include "version.h"
-#include "mysocket.h"
-#include "strtree.h"
-#include "log.h"
-#include "mymalloc.h"
-
-#include "extchat.h"
-extern CHAN *channels;
-#include "extmail.h"
+#include "ansi.h"
 #include "attrib.h"
-#include "game.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "game.h"
+#include "help.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mysocket.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strtree.h"
+#include "strutil.h"
 
+extern CHAN *channels;
 
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode

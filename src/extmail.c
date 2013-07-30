@@ -60,6 +60,7 @@
 
 #include "config.h"
 #include "copyrite.h"
+#include "extmail.h"
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -78,26 +79,25 @@
 #include <stdint.h>
 #endif
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "match.h"
-#include "extmail.h"
-#include "function.h"
-#include "malias.h"
-#include "attrib.h"
-#include "parse.h"
-#include "mymalloc.h"
 #include "ansi.h"
-#include "pueblo.h"
-#include "flags.h"
-#include "log.h"
-#include "lock.h"
+#include "attrib.h"
 #include "command.h"
-#include "dbio.h"
+#include "conf.h"
 #include "confmagic.h"
-
+#include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "lock.h"
+#include "log.h"
+#include "malias.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 extern int do_convtime(const char *str, struct tm *ttm);        /* funtime.c */
 

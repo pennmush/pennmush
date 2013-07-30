@@ -5,28 +5,30 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+#include "attrib.h"
+
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
-#include "externs.h"
 #include "chunk.h"
-#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
-#include "match.h"
-#include "parse.h"
-#include "htab.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "strtree.h"
+#include "externs.h"
 #include "flags.h"
-#include "mushdb.h"
+#include "htab.h"
 #include "lock.h"
 #include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strtree.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */

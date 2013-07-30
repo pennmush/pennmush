@@ -18,6 +18,7 @@
 #define __MATCH_H
 
 #include "copyrite.h"
+#include "mushtype.h"
 
 /* match constants */
   /* match modifiers */

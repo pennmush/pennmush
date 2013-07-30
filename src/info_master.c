@@ -4,8 +4,8 @@
  * \brief mush-end functions for talking to info_slave
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
@@ -32,12 +32,13 @@
 #include <errno.h>
 #include <string.h>
 
+#include "access.h"
 #include "conf.h"
 #include "externs.h"
-#include "access.h"
-#include "mysocket.h"
-#include "lookup.h"
 #include "log.h"
+#include "lookup.h"
+#include "mysocket.h"
+#include "strutil.h"
 #include "wait.h"
 
 

@@ -10,6 +10,9 @@
 #ifndef BUFFERQ_H
 #define BUFFERQ_H
 
+#include <time.h>
+#include "mushtype.h"
+
 typedef struct bufferq BUFFERQ;
 
 /** A bufferq. */

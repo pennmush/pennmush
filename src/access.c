@@ -54,6 +54,7 @@
 
 #include "config.h"
 #include "copyrite.h"
+#include "access.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,17 +75,17 @@
 #include <unistd.h>
 #endif
 #include "conf.h"
-#include "externs.h"
-#include "mypcre.h"
-#include "access.h"
-#include "mymalloc.h"
-#include "match.h"
-#include "parse.h"
-#include "log.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "flags.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "strutil.h"
 
 /** An access flag. */
 typedef struct a_acsflag acsflag;

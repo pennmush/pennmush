@@ -7,6 +7,8 @@
  */
 
 #include "config.h"
+#include "copyrite.h"
+#include "markup.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -14,20 +16,19 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>
-#include "copyrite.h"
-#include "conf.h"
-#include "case.h"
-#include "pueblo.h"
-#include "parse.h"
-#include "externs.h"
 #include "ansi.h"
-#include "mymalloc.h"
-#include "log.h"
+#include "case.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "externs.h"
 #include "game.h"
 #include "intmap.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "pueblo.h"
 #include "rgb.h"
-#include "confmagic.h"
-
+#include "strutil.h"
 
 #define ANSI_BEGIN   "\x1B["
 #define ANSI_FINISH  "m"

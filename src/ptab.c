@@ -18,6 +18,7 @@
 #include "externs.h"
 #include "memcheck.h"
 #include "mymalloc.h"
+#include "strutil.h"
 
 static int ptab_find_exact_nun(PTAB *tab, const char *key);
 static int WIN32_CDECL ptab_cmp(const void *, const void *);

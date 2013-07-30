@@ -6,8 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 
 #include <string.h>
 #ifdef HAVE_INTTYPES_H
@@ -15,17 +15,18 @@
 #endif
 #include <stdio.h>
 
+#include "ansi.h"
+#include "attrib.h"
 #include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
+#include "confmagic.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
 #include "lock.h"
-#include "attrib.h"
-#include "ansi.h"
-#include "pueblo.h"
+#include "mushdb.h"
 #include "parse.h"
-#include "confmagic.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 
 /** Format an object's name (and dbref and flags).

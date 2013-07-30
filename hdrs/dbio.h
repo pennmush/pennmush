@@ -15,6 +15,7 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "mushtype.h"
 
 extern jmp_buf db_err;
 

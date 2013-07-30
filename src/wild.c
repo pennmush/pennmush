@@ -38,6 +38,7 @@
 #include "mymalloc.h"
 #include "mypcre.h"
 #include "parse.h"
+#include "strutil.h"
 
 /** Force a char to be lowercase */
 #define FIXCASE(a) (DOWNCASE(a))

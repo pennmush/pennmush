@@ -6,6 +6,7 @@
  *
  */
 #include "config.h"
+#include "help.h"
 /* This might have to be uncommented on some linux distros... */
 /* #define _XOPEN_SOURCE 600 */
 #include <stdlib.h>
@@ -21,13 +22,13 @@
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"
-#include "help.h"
 #include "htab.h"
 #include "log.h"
 #include "memcheck.h"
 #include "mymalloc.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "strutil.h"
 
 HASHTAB help_files;  /**< Help filenames hash table */
 

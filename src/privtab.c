@@ -8,17 +8,18 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "privtab.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "conf.h"
-#include "mushtype.h"
-#include "privtab.h"
-#include "externs.h"
 #include "confmagic.h"
+#include "externs.h"
+#include "mushtype.h"
+#include "strutil.h"
 
 
 /** Convert a string to a set of privilege bits, masked by an original set.

@@ -5,9 +5,10 @@
  *
  *
  */
-#include "copyrite.h"
 
 #include "config.h"
+#include "copyrite.h"
+
 #include <string.h>
 #include <ctype.h>
 #if  (defined(__GNUC__) || defined(__LCC__)) && !defined(__USE_XOPEN_EXTENDED)
@@ -17,13 +18,14 @@
 #include <time.h>
 #include <errno.h>
 #include "conf.h"
-#include "externs.h"
-#include "parse.h"
+#include "confmagic.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "log.h"
 #include "match.h"
+#include "parse.h"
+#include "strutil.h"
 #include "tz.h"
-#include "confmagic.h"
 
 int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,

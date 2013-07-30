@@ -6,24 +6,26 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "mushdb.h"
+
 #include "attrib.h"
-#include "match.h"
-#include "extchat.h"
-#include "log.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "lock.h"
-#include "parse.h"
-#include "game.h"
 #include "command.h"
+#include "conf.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 static dbref parse_linkable_room(dbref player, const char *room_name,
                                  NEW_PE_INFO *pe_info);

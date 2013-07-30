@@ -6,8 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -41,6 +41,7 @@
 #include "mymalloc.h"
 #include "mypcre.h"
 #include "parse.h"
+#include "strutil.h"
 
 static int chown_ok(dbref player, dbref thing, dbref newowner,
                     NEW_PE_INFO *pe_info);

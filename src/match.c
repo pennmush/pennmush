@@ -51,22 +51,24 @@
  * \endverbatim
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "match.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#include "conf.h"
-#include "mushdb.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "case.h"
-#include "match.h"
-#include "parse.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "confmagic.h"
 #include "attrib.h"
+#include "case.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);

@@ -28,11 +28,8 @@
  *
  */
 
-#include "config.h"
 #include "mymalloc.h"
-
 #include <stdlib.h>
-#include <stddef.h>
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
@@ -47,14 +44,11 @@
 #include "conf.h"
 #include "confmagic.h"
 #include "dbdefs.h"
-#include "externs.h"
 #include "getpgsiz.h"
 #include "log.h"
 #include "memcheck.h"
 #include "options.h"
 #include "strutil.h"
-
-void do_list_allocations(dbref player);
 
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
@@ -487,120 +481,45 @@ slab_destroy(slab *sl)
   free(sl);
 }
 
-/** Describe a slab for \@list allocations
- * \param player who to display to
+/** Retrieve interesting stats about a slab.
  * \param sl the slab
  */
 void
-slab_describe(dbref player, slab *sl)
+slab_describe(const slab *sl, struct slab_stats *stats)
 {
-  struct slab_page *page;
-  int n = 0;
-  size_t allocated = 0, freed = 0;
-  int min_fill = INT_MAX, max_fill = 0;
-  int full = 0, under100 = 0, under75 = 0, under50 = 0, under25 = 0;
+  const struct slab_page *page;
 
   if (!sl)
     return;
 
+  memset(stats, 0, sizeof(*stats));
+  stats->name = sl->name;
+  stats->item_size = sl->item_size;
+  stats->items_per_page = sl->items_per_page;
+  stats->fill_strategy = sl->fill_strategy;
+  stats->min_fill = INT_MAX;
+  stats->max_fill = 0;
+
   for (page = sl->slabs; page; page = page->next) {
     double p;
-    n++;
-    allocated += page->nalloced;
-    freed += page->nfree;
-    if (page->nalloced > max_fill)
-      max_fill = page->nalloced;
-    if (page->nalloced < min_fill)
-      min_fill = page->nalloced;
+    stats->page_count++;
+    stats->allocated += page->nalloced;
+    stats->freed += page->nfree;
+    if (page->nalloced > stats->max_fill)
+      stats->max_fill = page->nalloced;
+    if (page->nalloced < stats->min_fill)
+      stats->min_fill = page->nalloced;
     p = (double) page->nalloced / (double) sl->items_per_page;
     if (p == 1.0)
-      full += 1;
+      stats->full += 1;
     else if (p > 0.75)
-      under100 += 1;
+      stats->under100 += 1;
     else if (p > 0.50)
-      under75 += 1;
+      stats->under75 += 1;
     else if (p > 0.25)
-      under50 += 1;
+      stats->under50 += 1;
     else
-      under25 += 1;
-  }
-
-  notify_format(player, "Allocator for %s:", sl->name);
-  notify_format(player,
-                "   object size (bytes): %-6d       objects per page: %-6d",
-                sl->item_size, sl->items_per_page);
-  notify_format(player,
-                "       allocated pages: %-6d      objects added via: %s", n,
-                sl->fill_strategy ? "first fit" : "best fit");
-  notify_format(player,
-                "     allocated objects: %-6ld           free objects: %-6ld",
-                (unsigned long) allocated, (unsigned long) freed);
-  if (allocated > 0) {
-    notify_format(player,
-                  " fewest allocs in page: %-6d    most allocs in page: %-6d",
-                  min_fill, max_fill);
-    notify_format(player,
-                  "    allocation average:%6.2f%%        pages 100%% full: %-6d",
-                  (((double) allocated / ((double) allocated + (double) freed))
-                   * 100.0), full);
-    notify_format(player,
-                  "       pages >75%% full: %-6d        pages >50%% full: %-6d",
-                  under100, under75);
-    notify_format(player,
-                  "       pages >25%% full: %-6d        pages <25%% full: %d",
-                  under50, under25);
-  }
-}
-
-
-extern slab *attrib_slab, *lock_slab, *boolexp_slab, *bvm_asmnode_slab,
-  *bvm_strnode_slab, *flag_slab, *player_dbref_slab,
-  *chanuser_slab, *chanlist_slab, *mail_slab,
-  *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab,
-  *pe_reg_slab, *pe_reg_val_slab, *flagbucket_slab, *namelist_slab;
-
-#if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
-extern slab *huffman_slab;
-#endif
-
-/** List information about slab allocators and memcheck data. Admin only. */
-void
-do_list_allocations(dbref player)
-{
-  if (!Hasprivs(player)) {
-    notify(player, T("Sorry."));
-    return;
-  }
-  slab_describe(player, attrib_slab);
-#ifdef DEBUG
-  /* These should always be 0. No need to display them most of the
-     time. */
-  slab_describe(player, boolexp_slab);
-  slab_describe(player, bvm_asmnode_slab);
-  slab_describe(player, bvm_strnode_slab);
-#endif
-  slab_describe(player, chanlist_slab);
-  slab_describe(player, chanuser_slab);
-  slab_describe(player, flag_slab);
-  slab_describe(player, function_slab);
-#if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
-  slab_describe(player, huffman_slab);
-#endif
-  slab_describe(player, lock_slab);
-  slab_describe(player, mail_slab);
-  slab_describe(player, memcheck_slab);
-  slab_describe(player, text_block_slab);
-  slab_describe(player, player_dbref_slab);
-  slab_describe(player, intmap_slab);
-  slab_describe(player, pe_reg_slab);
-  slab_describe(player, pe_reg_val_slab);
-  slab_describe(player, flagbucket_slab);
-  if (namelist_slab)
-    slab_describe(player, namelist_slab);
-
-  if (options.mem_check) {
-    notify(player, "malloc allocations:");
-    list_mem_check(player);
+      stats->under25 += 1;
   }
 }
 

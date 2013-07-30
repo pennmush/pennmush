@@ -54,4 +54,6 @@ void notify_activity(dbref player, int num_lines, int dump);
 const char *last_activity(void);
 int last_activity_type(void);
 
+void penn_perror(const char *);
+
 #endif                          /* LOG_H */

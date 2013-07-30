@@ -46,16 +46,10 @@ char *strinitial(const char *s);
 char *upcasestr(char *s);
 char *skip_space(const char *s);
 char *seek_char(const char *s, char c);
-size_t u_strlen(const unsigned char *s);
-unsigned char *u_strncpy(
-    unsigned char *restrict target, const unsigned char *restrict source,
-    size_t len);
 char *mush_strndup(
     const char *src, size_t len, const char *check) __attribute_malloc__;
 int mush_vsnprintf(char *, size_t, const char *, va_list);
 
-/** Unsigned char strdup. Why is this a macro when the others functions? */
-#define u_strdup(x) (unsigned char *)strdup((const char *) x)
 #ifndef HAVE_STRDUP
 char *strdup(const char *s) __attribute_malloc__;
 #endif
@@ -103,6 +97,7 @@ int safe_str(const char *s, char *buff, char **bp);
 int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
 int safe_strl(const char *s, size_t len, char *buff, char **bp);
+int safe_hexchar(char c, char *buff, char **bp);
 /* Append a base16 encoded block of bytes to a buffer */
 int safe_hexstr(uint8_t *data, int len, char *buff, char **bp);
 /** Append a boolean to the end of a string */

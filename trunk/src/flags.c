@@ -3205,11 +3205,11 @@ extern char atr_name_table[UCHAR_MAX + 1];
 int
 good_flag_name(char const *s)
 {
-  const unsigned char *a;
+  const char *a;
   int len = 0;
   if (!s || !*s)
     return 0;
-  for (a = (const unsigned char *) s; *a; a++, len++)
+  for (a = s; *a; a++, len++)
     if (!atr_name_table[*a])
       return 0;
   if (*(s + len - 1) == '`')

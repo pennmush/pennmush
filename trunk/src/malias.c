@@ -153,7 +153,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
   good = "`$_-.'";
   /* Make sure that the name contains legal characters only */
   for (scan = alias + 1; scan && *scan; scan++) {
-    if (isalnum((unsigned char) *scan))
+    if (isalnum(*scan))
       continue;
     if (!strchr(good, *scan)) {
       notify(player, T("MAIL: Invalid character in mail alias."));
@@ -280,7 +280,7 @@ do_malias_list(dbref player)
       }
       notify_format(player,
                     "%c%-12.12s %-35.35s %s %-15.15s", MALIAS_TOKEN, m->name,
-                    uncompress((unsigned char *) (m->desc)), get_shortprivs(m),
+                    uncompress(m->desc), get_shortprivs(m),
                     Name(m->owner));
     }
   }
@@ -646,7 +646,7 @@ do_malias_all(dbref player)
     m = &malias[i];
     notify_format(player, "#%-4d %c%-10.10s %-40.40s %-11.11s (%3d)",
                   i, MALIAS_TOKEN, m->name,
-                  uncompress((unsigned char *) m->desc),
+                  uncompress(m->desc),
                   Name(m->owner), m->size);
   }
 

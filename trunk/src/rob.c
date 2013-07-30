@@ -596,7 +596,7 @@ do_give_to(dbref player, char *arg, int silent, NEW_PE_INFO *pe_info)
     notify(player, T("Did you want to give something *to* someone?"));
     return;
   }
-  while ((s > arg) && isspace((unsigned char) *(s - 1))) {
+  while ((s > arg) && isspace(*(s - 1))) {
     s--;
   }
   if (s == arg) {
@@ -606,7 +606,7 @@ do_give_to(dbref player, char *arg, int silent, NEW_PE_INFO *pe_info)
   *s++ = '\0';
   s = (char *) string_match(s, "TO ");
   s += 3;
-  while (*s && isspace((unsigned char) *s))
+  while (*s && isspace(*s))
     s++;
   if (!*s) {
     notify(player, T("Give to whom?"));

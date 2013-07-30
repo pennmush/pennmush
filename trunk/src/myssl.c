@@ -538,7 +538,7 @@ ssl_read(SSL *ssl, int state, int net_read_ready, int net_write_ready,
  */
 int
 ssl_write(SSL *ssl, int state, int net_read_ready, int net_write_ready,
-          unsigned char *buf, int bufsize, int *offset)
+          const char *buf, int bufsize, int *offset)
 {
   int r;
   if ((net_write_ready && bufsize) || (net_read_ready && !(state & MYSSL_WBOR))) {

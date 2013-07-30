@@ -133,7 +133,7 @@ static char *status_chars(MAIL *mp);
 static char *status_string(MAIL *mp);
 static int sign(int x);
 static char *get_message(MAIL *mp);
-static unsigned char *get_compressed_message(MAIL *mp);
+static char *get_compressed_message(MAIL *mp);
 static char *get_subject(MAIL *mp);
 static char *get_sender(MAIL *mp, int full, int len, bool *pisplayer);
 static int was_sender(dbref player, MAIL *mp);
@@ -178,7 +178,7 @@ static char *
 get_message(MAIL *mp)
 {
   static char text[BUFFER_LEN * 2];
-  unsigned char tbuf[BUFFER_LEN * 2];
+  char tbuf[BUFFER_LEN * 2];
 
   if (!mp)
     return NULL;
@@ -189,15 +189,15 @@ get_message(MAIL *mp)
 }
 
 /* Return the compressed text of a @mail in a static buffer */
-static unsigned char *
+static char *
 get_compressed_message(MAIL *mp)
 {
-  static unsigned char text[BUFFER_LEN * 2];
+  static char text[BUFFER_LEN * 2];
 
   if (!mp)
     return NULL;
 
-  chunk_fetch(mp->msgid, (unsigned char *) text, sizeof text);
+  chunk_fetch(mp->msgid, text, sizeof text);
   return text;
 }
 
@@ -216,7 +216,7 @@ get_subject(MAIL *mp)
         *p = '\0';
         break;
       }
-      if (!isprint((unsigned char) *p)) {
+      if (!isprint(*p)) {
         *p = ' ';
       }
     }
@@ -326,7 +326,7 @@ do_mail_change_folder(dbref player, char *fld, char *newname)
       return;
     }
     for (p = newname; p && *p; p++) {
-      if (!isalnum((unsigned char) *p)) {
+      if (!isalnum(*p)) {
         notify(player, T("MAIL: Illegal folder name"));
         return;
       }
@@ -1195,10 +1195,10 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
               notify(player, T("MAIL: You can't reply to nonexistant mail."));
             } else {
               char tbuf1[BUFFER_LEN];
-              unsigned char tbuf2[BUFFER_LEN];
+              char tbuf2[BUFFER_LEN];
               mush_strncpy(tbuf1, uncompress(mp->subject), BUFFER_LEN);
-              u_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
-              send_mail(player, temp->from, tbuf1, (char *) tbuf2,
+              mush_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
+              send_mail(player, temp->from, tbuf1, tbuf2,
                         M_FORWARD | M_REPLY, 1, 0);
               num_recpts++;
             }
@@ -1211,10 +1211,10 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
               notify_format(player, T("No such unique player: %s."), current);
             } else {
               char tbuf1[BUFFER_LEN];
-              unsigned char tbuf2[BUFFER_LEN];
+              char tbuf2[BUFFER_LEN];
               mush_strncpy(tbuf1, uncompress(mp->subject), BUFFER_LEN);
-              u_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
-              send_mail(player, target, tbuf1, (char *) tbuf2, M_FORWARD, 1, 0);
+              mush_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
+              send_mail(player, target, tbuf1, tbuf2, M_FORWARD, 1, 0);
               num_recpts++;
             }
           }
@@ -1523,16 +1523,16 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     newp->subject = compress(chopstr(tprintf("Re: %s", sbuf), SUBJECT_LEN));
   else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL)
     /* Don't bother to uncompress a->value */
-    newp->subject = u_strdup(AL_STR(a));
+    newp->subject = strdup(AL_STR(a));
   else
     newp->subject = compress(sbuf);
   if (flags & M_FORWARD) {
     /* Forwarding passes the message already compressed */
     size_t len = strlen(message) + 1;
-    newp->msgid = chunk_create((unsigned char *) message, len, 1);
+    newp->msgid = chunk_create(message, len, 1);
   } else {
     uint16_t len;
-    unsigned char *text;
+    char *text;
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
 
     safe_str(message, newmsg, &nm);
@@ -1541,7 +1541,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
       safe_str(buff, newmsg, &nm);
     *nm = '\0';
     text = compress(newmsg);
-    len = u_strlen(text) + 1;
+    len = strlen(text) + 1;
     newp->msgid = chunk_create(text, len, 1);
     free(text);
   }
@@ -1922,7 +1922,7 @@ do_mail(dbref player, char *arg1, char *arg2)
   } else {
     /* Must be reading or listing mail - no arg2 */
     if (((p = strchr(arg1, ':')) && (*(p + 1) == '\0'))
-        || !(isdigit((unsigned char) *arg1) && !strchr(arg1, '-')))
+        || !(isdigit(*arg1) && !strchr(arg1, '-')))
       do_mail_list(player, arg1);
     else
       do_mail_read(player, arg1);
@@ -2440,8 +2440,8 @@ int
 load_mail(PENNFILE *fp)
 {
   char nbuf1[8];
-  unsigned char *tbuf = NULL;
-  unsigned char *text;
+  char *tbuf = NULL;
+  char *text;
   size_t len;
   int mail_top = 0;
   int mail_flags = 0;
@@ -2495,7 +2495,7 @@ load_mail(PENNFILE *fp)
     tbuf = compress(getstring_noalloc(fp));
   }
   text = compress(getstring_noalloc(fp));
-  len = u_strlen(text) + 1;
+  len = strlen(text) + 1;
   mp->msgid = chunk_create(text, len, 1);
   free(text);
   if (mail_flags & MDBF_SUBJECT)
@@ -2529,7 +2529,7 @@ load_mail(PENNFILE *fp)
     else
       tbuf = NULL;
     text = compress(getstring_noalloc(fp));
-    len = u_strlen(text) + 1;
+    len = strlen(text) + 1;
     mp->msgid = chunk_create(text, len, 1);
     free(text);
     if (tbuf)
@@ -2610,7 +2610,7 @@ get_folder_number(dbref player, char *name)
     return -1;
   res += 2 + strlen(name);
   p = res;
-  while (isdigit((unsigned char) *p))
+  while (isdigit(*p))
     p++;
   *p = '\0';
   return atoi(res);
@@ -2634,7 +2634,7 @@ get_folder_name(dbref player, int fld)
     return str;
   }
   strcpy(str, atr_value(a));
-  old = (char *) string_match(str, pat);
+  old = (char *)string_match(str, pat);
   if (old) {
     r = old + strlen(pat);
     while (*r != ':')
@@ -2663,10 +2663,10 @@ add_folder_name(dbref player, int fld, const char *name)
    * number:name:number to it, replacing any such string with a matching
    * number.
    */
-  new = (char *) mush_malloc(BUFFER_LEN, "string");
-  pat = (char *) mush_malloc(BUFFER_LEN, "string");
-  str = (char *) mush_malloc(BUFFER_LEN, "string");
-  tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
+  new = mush_malloc(BUFFER_LEN, "string");
+  pat = mush_malloc(BUFFER_LEN, "string");
+  str = mush_malloc(BUFFER_LEN, "string");
+  tbuf = mush_malloc(BUFFER_LEN, "string");
   if (!new || !pat || !str || !tbuf)
     mush_panic("Failed to allocate strings in add_folder_name");
 
@@ -2680,17 +2680,17 @@ add_folder_name(dbref player, int fld, const char *name)
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
   if (a) {
     strcpy(str, atr_value(a));
-    old = (char *) string_match(str, pat);
+    old = (char *)string_match(str, pat);
   }
   if (old && *old) {
     mush_strncpy(tbuf, str, BUFFER_LEN);
     r = old;
-    while (!isspace((unsigned char) *r))
+    while (!isspace(*r))
       r++;
     *r = '\0';
     res = replace_string(old, new, tbuf);       /* mallocs mem! */
   } else {
-    r = res = (char *) mush_malloc(BUFFER_LEN + 1, "replace_string.buff");
+    r = res = mush_malloc(BUFFER_LEN + 1, "replace_string.buff");
     if (a)
       safe_str(str, res, &r);
     safe_str(new, res, &r);
@@ -2750,7 +2750,7 @@ parse_folder(dbref player, char *folder_string)
    * for now. Later, this will be where named folders are handled */
   if (!folder_string || !*folder_string)
     return -1;
-  if (isdigit((unsigned char) *folder_string)) {
+  if (isdigit(*folder_string)) {
     fnum = atoi(folder_string);
     if ((fnum < 0) || (fnum > MAX_FOLDERS))
       return -1;
@@ -2816,12 +2816,12 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Don't mess with msglist itself */
   strncpy(tbuf1, msglist, BUFFER_LEN - 1);
   p = tbuf1;
-  while (p && *p && isspace((unsigned char) *p))
+  while (p && *p && isspace(*p))
     p++;
   if (!p || !*p)
     return 1;                   /* all messages in current folder */
 
-  if (isdigit((unsigned char) *p) || *p == '-') {
+  if (isdigit(*p) || *p == '-') {
     if (!parse_message_spec(player, p, &ms->low, &ms->high, &folder)) {
       notify(player, T("MAIL: Invalid message specification"));
       return 0;

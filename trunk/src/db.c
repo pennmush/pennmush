@@ -266,7 +266,7 @@ putstring(PENNFILE *f, const char *s)
       penn_fputc('\\', f);
       /* FALL THROUGH */
     default:
-      penn_fputc((unsigned char) *s, f);
+      penn_fputc(*s, f);
     }
     s++;
   }
@@ -812,7 +812,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* smash unprintable characters in the name, replace with ! */
     strcpy(name, AL_NAME(list));
     for (p = name; *p; p++) {
-      if (!isprint((unsigned char) *p) || isspace((unsigned char) *p)) {
+      if (!isprint(*p) || isspace(*p)) {
         *p = '!';
         fixmemdb = err = 1;
       }
@@ -855,7 +855,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     strcpy(tbuf1, atr_value(list));
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!isprint((unsigned char) *p) && !isspace((unsigned char) *p) &&
+      if (!isprint(*p) && !isspace(*p) &&
           *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
           && *p != BEEP_CHAR) {
         *p = '!';

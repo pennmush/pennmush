@@ -17,7 +17,7 @@ void *mush_realloc_where(void *restrict ptr, size_t newsize,
                          const char *restrict check,
                          const char *restrict filename, int line);
 #define mush_free(ptr,tag) mush_free_where((ptr), (tag), __FILE__, __LINE__)
-void mush_free_where(void *restrict ptr, const char *restrict check,
+void mush_free_where(const void *restrict ptr, const char *restrict check,
                      const char *restrict filename, int line);
 
 typedef struct slab slab;

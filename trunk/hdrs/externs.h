@@ -159,7 +159,7 @@ struct format_msg {
   int numargs;    /**< Number of arguments in args to pass to the ufun */
   char *args[10];   /**< Array of arguments to pass to ufun */
 };
-unsigned char *render_string(unsigned char *message, int output_type);
+char *render_string(const char *message, int output_type);
 void notify_list(dbref speaker, dbref thing, const char *atr,
                  const char *msg, int flags);
 
@@ -225,17 +225,15 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
  */
 /* #define COMP_STATS /* */
 #if (COMPRESSION_TYPE != 0)
-unsigned char *
-text_compress(char const *s)
-  __attribute_malloc__;
+char *text_compress(char const *s) __attribute_malloc__;
 #define compress(str) text_compress(str)
-    char *text_uncompress(unsigned char const *s);
+char *text_uncompress(char const *s);
 #define uncompress(str) text_uncompress(str)
-    char *safe_uncompress(unsigned char const *s) __attribute_malloc__;
+char *safe_uncompress(char const *s) __attribute_malloc__;
 #else
 extern char ucbuff[];
 #define init_compress(f) 0
-#define compress(s) ((unsigned char *)strdup(s))
+#define compress(s) (strdup(s))
 #define uncompress(s) (strcpy(ucbuff, (char *) s))
 #define safe_uncompress(s) (strdup((char *) s))
 #endif

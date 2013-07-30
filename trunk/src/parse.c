@@ -126,7 +126,7 @@ parse_dbref(char const *str)
 
   if (!str || (*str != NUMBER_TOKEN) || !*(str + 1))
     return NOTHING;
-  for (p = str + 1; isdigit((unsigned char) *p); p++) {
+  for (p = str + 1; isdigit(*p); p++) {
   }
   if (*p)
     return NOTHING;
@@ -285,7 +285,7 @@ is_dbref(char const *str)
   if (*(str + 1) == '-') {
     str++;
   }
-  for (str++; isdigit((unsigned char) *str); str++) {
+  for (str++; isdigit(*str); str++) {
   }
   return !*str;
 }
@@ -337,7 +337,7 @@ is_integer(char const *str)
     return 1;
   if (!str)
     return 0;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -368,11 +368,11 @@ is_uinteger(char const *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uint(str, &end, 10);
@@ -394,11 +394,11 @@ is_strict_uinteger(const char *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return 0;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uint(str, &end, 10);
@@ -445,7 +445,7 @@ is_good_number(NVAL val)
   if (*p == '-')
     p++;
   /* Must start with a digit. */
-  if (!*p || !isdigit((unsigned char) *p))
+  if (!*p || !isdigit(*p))
     return 0;
   return 1;
 }
@@ -512,7 +512,7 @@ is_number(char const *str)
   /* If we're emulating Tiny, anything is a number */
   if (TINY_MATH)
     return 1;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -2015,7 +2015,7 @@ process_expression(char *buff, char **bp, char const **str,
 
         (*str)++;
         /* Check the first character after the $ for a number */
-        if (isdigit((unsigned char) **str)) {
+        if (isdigit(**str)) {
           subspace[0] = **str;
           subspace[1] = '\0';
           (*str)++;
@@ -2204,7 +2204,7 @@ process_expression(char *buff, char **bp, char const **str,
               safe_str(PE_Get_Itext(pe_info, itmp), buff, bp);
               break;
             }
-            if (!isdigit((unsigned char) nextc)) {
+            if (!isdigit(nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             }
@@ -2227,7 +2227,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (itmp >= 0) {
             if (nextc == 'l' || nextc == 'L') {
               inum_this = itmp;
-            } else if (!isdigit((unsigned char) nextc)) {
+            } else if (!isdigit(nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             } else {
@@ -2360,7 +2360,7 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(savec, buff, bp);
         }
 
-        if (isupper((unsigned char) savec))
+        if (isupper(savec))
           *savepos = UPCASE(*savepos);
       }
       break;

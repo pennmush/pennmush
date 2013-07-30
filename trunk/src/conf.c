@@ -1001,7 +1001,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   if (!strcasecmp(opt, "restrict_command")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       command = command_find(val);
@@ -1032,7 +1032,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_function")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!restrict_function(val, p)) {
@@ -1056,7 +1056,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_attribute")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_attribute_access(val, p)) {
@@ -1079,7 +1079,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "command_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_command(val, p)) {
@@ -1100,7 +1100,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "hook_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       do_rawlog(LT_ERR, "CONFIG: Trying to hook command %s with options %s",
@@ -1118,7 +1118,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_command(val, p)) {
@@ -1136,7 +1136,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_function")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_function(val, p)) {
@@ -1153,7 +1153,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (!restrictions)
       return 0;
     do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_attribute(val, p)) {
@@ -1174,7 +1174,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "function_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_function(NOTHING, val, p)) {
@@ -1207,7 +1207,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     comm = val;
-    for (file = val; *file && !isspace((unsigned char) *file); file++) ;
+    for (file = val; *file && !isspace(*file); file++) ;
     if (*file) {
       *file++ = '\0';
       add_help_file(comm, file, admin);
@@ -1516,7 +1516,7 @@ config_file_startup(const char *conf, int restrictions)
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {
 
-    while (*p && isspace((unsigned char) *p))
+    while (*p && isspace(*p))
       p++;
 
     if (*p == '\0' || *p == '#')
@@ -1531,23 +1531,23 @@ config_file_startup(const char *conf, int restrictions)
 
     for (p = tbuf1; *p && (*p != '\n') && (*p != '\r'); p++) ;
     *p = '\0';                  /* strip the end of line char(s) */
-    for (p = tbuf1; *p && isspace((unsigned char) *p); p++)     /* strip spaces */
+    for (p = tbuf1; *p && isspace(*p); p++)     /* strip spaces */
       ;
-    for (q = p; *q && !isspace((unsigned char) *q); q++)        /* move over command */
+    for (q = p; *q && !isspace(*q); q++)        /* move over command */
       ;
     if (*q)
       *q++ = '\0';              /* split off command */
-    for (; *q && isspace((unsigned char) *q); q++)      /* skip spaces */
+    for (; *q && isspace(*q); q++)      /* skip spaces */
       ;
     /* We define a comment as a # followed by something other than a
      * digit, so as no to be confused with dbrefs.
      * followed by a number, treat it as a dbref instead of a
      * comment. */
-    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s + 1))); s++) ;
+    for (s = q; *s && ((*s != '#') || isdigit(*(s + 1))); s++) ;
 
     if (*s)                     /* if found nuke it */
       *s = '\0';
-    for (s = s - 1; (s >= q) && isspace((unsigned char) *s); s--)       /* smash trailing stuff */
+    for (s = s - 1; (s >= q) && isspace(*s); s--)       /* smash trailing stuff */
       *s = '\0';
 
     if (strlen(p) != 0) {       /* skip blank lines */

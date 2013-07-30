@@ -350,6 +350,7 @@ bsd.o: ../hdrs/strutil.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
+bsd.o: ../hdrs/ssl_slave.h
 bufferq.o: ../config.h
 bufferq.o: ../confmagic.h
 bufferq.o: ../options.h
@@ -2136,3 +2137,13 @@ ssl_slave.o: ../config.h
 ssl_slave.o: ../confmagic.h
 ssl_slave.o: ../options.h
 ssl_slave.o: ../hdrs/copyrite.h
+ssl_slave.o: ../hdrs/SFMT.h
+ssl_slave.o: ../hdrs/conf.h
+ssl_slave.o: ../hdrs/htab.h
+ssl_slave.o: ../hdrs/mushtype.h
+ssl_slave.o: ../hdrs/log.h
+ssl_slave.o: ../hdrs/bufferq.h
+ssl_slave.o: ../hdrs/mysocket.h
+ssl_slave.o: ../hdrs/myssl.h
+ssl_slave.o: ../hdrs/ssl_slave.h
+ssl_slave.o: ../hdrs/wait.h

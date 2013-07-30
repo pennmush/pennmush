@@ -196,7 +196,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* Set up session cache if we can */
   /*
      strncpy((char *) context, MUDNAME, 128);
-     SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
+     SSL_CTX_set_session_id_context(ctx, context, strlen(context));
    */
 
   return ctx;

@@ -272,11 +272,11 @@ text_compress(char const *s)
   *b = 0;                       /* trailing null */
 
 #ifdef COMP_STATS
-  total_comp += u_strlen(buf);  /* calculate size of compressed   text */
+  total_comp += strlen(buf);  /* calculate size of compressed   text */
   total_uncomp += strlen(s);    /* calculate size of uncompressed text */
 #endif
 
-  return u_strdup(buf);
+  return strdup(buf);
 }                               /* end of compress; */
 
 

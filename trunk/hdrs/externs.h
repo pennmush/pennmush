@@ -69,13 +69,6 @@ char *scan_list(dbref player, char *command, int flag);
 void init_timer(void);
 #endif                          /* WIN32 */
 
-/* From log.c */
-void penn_perror(const char *);
-
-/* From wait.c */
-int lock_file(FILE *);
-int unlock_file(FILE *);
-
 /* From bsd.c */
 extern FILE *connlog_fp;
 extern FILE *checklog_fp;

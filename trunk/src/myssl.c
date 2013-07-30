@@ -74,8 +74,8 @@ void shutdown_checkpoint(void);
 
 #include "SFMT.h"
 #include "conf.h"
-#include "externs.h"
 #include "parse.h"
+#include "wait.h"
 
 #define MYSSL_RB        0x1     /**< Read blocked (on read) */
 #define MYSSL_WB        0x2     /**< Write blocked (on write) */

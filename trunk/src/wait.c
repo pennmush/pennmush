@@ -28,9 +28,7 @@
 #include <string.h>
 #include <errno.h>
 
-int lock_file(FILE *);
-int unlock_file(FILE *);
-void penn_perror(const char *);
+#include "log.h"
 
 /** Portable wait
  * \param child pid of specific child proccess to wait for. Only meaningful if HAVE_WAITPID is defined.

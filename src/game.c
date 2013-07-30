@@ -115,15 +115,12 @@ void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref executor, dbref enactor, char *action,
                     const char *arg, int num, MQUE *queue_entry,
                     int queue_type);
-void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
 #ifdef HAS_GETRUSAGE
 void rusage_stats(void);
 #endif
 
-void do_list_memstats(dbref player);
-void do_list_allocations(dbref player);
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
 void do_timestring(char *buff, char **bp, const char *format,
@@ -2502,52 +2499,6 @@ db_open_write(const char *fname)
   return pf;
 }
 
-
-/** List various goodies.
- * \verbatim
- * This function implements @list.
- * \endverbatim
- * \param player the enactor.
- * \param arg what to list.
- * \param lc if 1, list in lowercase.
- * \param which 1 for builins, 2 for local, 3 for all
- */
-void
-do_list(dbref player, char *arg, int lc, int which)
-{
-  if (!arg || !*arg)
-    notify(player, T("I don't understand what you want to @list."));
-  else if (string_prefix("commands", arg))
-    do_list_commands(player, lc, which);
-  else if (string_prefix("functions", arg)) {
-    switch (which) {
-    case 1:
-      do_list_functions(player, lc, "builtin");
-      break;
-    case 2:
-      do_list_functions(player, lc, "local");
-      break;
-    case 3:
-    default:
-      do_list_functions(player, lc, "all");
-      break;
-    }
-  } else if (string_prefix("motd", arg))
-    do_motd(player, MOTD_LIST, "");
-  else if (string_prefix("attribs", arg))
-    do_list_attribs(player, lc);
-  else if (string_prefix("flags", arg))
-    do_list_flags("FLAG", player, "", lc, T("Flags"));
-  else if (string_prefix("powers", arg))
-    do_list_flags("POWER", player, "", lc, T("Powers"));
-  else if (string_prefix("locks", arg))
-    do_list_locks(player, NULL, lc, T("Locks"));
-  else if (string_prefix("allocations", arg))
-    do_list_allocations(player);
-  else
-    notify(player, T("I don't understand what you want to @list."));
-}
-
 extern HASHTAB htab_function;
 extern HASHTAB htab_user_function;
 extern HASHTAB htab_player_list;
@@ -2575,8 +2526,8 @@ void
 do_list_memstats(dbref player)
 {
   static const struct {
-    HASHTAB* table;
-    const char* name;
+    const HASHTAB *const table;
+    const char *name;
   } hash_tables[] = {
     {&htab_function, "Functions"},
     {&htab_user_function, "@Functions"},

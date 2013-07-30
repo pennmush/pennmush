@@ -7,6 +7,11 @@
 
 #include "mushtype.h"
 #include "options.h"
+/*
+#include "config.h"
+#include <stddef.h>
+#include "compile.h"
+*/
 
 void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;
 void *mush_calloc(size_t count, size_t size,
@@ -48,7 +53,23 @@ enum slab_options {
 };
 
 void slab_set_opt(slab *sl, enum slab_options opt, int val);
-/* TODO: Remove dependency on dbref. */
-void slab_describe(dbref player, slab *sl);
+
+struct slab_stats {
+  const char* name;
+  int item_size;
+  int items_per_page;
+  int fill_strategy;
+  int page_count;
+  int allocated;
+  int freed;
+  int min_fill;
+  int  max_fill;
+  int full;
+  int under100;
+  int under75;
+  int under50;
+  int under25;
+};
+void slab_describe(const slab *sl, struct slab_stats* stats);
 
 #endif                          /* _MYMALLOC_H */

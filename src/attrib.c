@@ -48,9 +48,6 @@ static char missing_name[ATTRIBUTE_NAME_LIMIT + 1];
 
 /*======================================================================*/
 
-/** How many attributes go in a "page" of attribute memory? */
-#define ATTRS_PER_PAGE (200)
-
 slab *attrib_slab = NULL;
 
 static int real_atr_clr(dbref thinking, char const *atr, dbref player,

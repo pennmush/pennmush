@@ -7,6 +7,7 @@
 #ifndef WAIT_H
 #define WAIT_H
 
+#include <stdio.h>
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
@@ -36,5 +37,8 @@ int new_process_session(void);
 
 /* Priorities */
 int lower_priority_by(pid_t, int);
+
+int lock_file(FILE *);
+int unlock_file(FILE *);
 
 #endif                          /* WAIT_H */

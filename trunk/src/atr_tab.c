@@ -19,6 +19,7 @@
 #include "externs.h"
 #include "log.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "privtab.h"
 #include "ptab.h"

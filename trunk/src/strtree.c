@@ -42,8 +42,8 @@
 #endif
 
 #include "conf.h"
-#include "externs.h"
 #include "mymalloc.h"
+#include "notify.h"
 
 /* Various constants.  Their import is either bleedingly obvious
  * or explained below. */

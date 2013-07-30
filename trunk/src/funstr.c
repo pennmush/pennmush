@@ -25,6 +25,7 @@
 #include "markup.h"
 #include "match.h"
 #include "mushdb.h"
+#include "notify.h"
 #include "parse.h"
 #include "pueblo.h"
 #include "sort.h"

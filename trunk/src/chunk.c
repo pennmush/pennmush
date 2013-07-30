@@ -554,12 +554,10 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 #define CHUNK_TAG1_SHORT  0x00
 #define CHUNK_TAG1_MEDIUM 0x40
 #define CHUNK_TAG1_LONG   0x40
-#define CHUNK_TAG1_OFFSET 0
 
 #define CHUNK_TAG2_MASK   0x20
 #define CHUNK_TAG2_MEDIUM 0x00
 #define CHUNK_TAG2_LONG   0x20
-#define CHUNK_TAG2_OFFSET 0
 
 #define CHUNK_SHORT_LEN_MASK 0x3F
 #define CHUNK_SHORT_LEN_OFFSET 0
@@ -577,9 +575,6 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 #define CHUNK_DEREF_OFFSET 1
 
 #define CHUNK_DEREF_MAX 0xFF
-
-#define CHUNK_AGED_MASK   0x10
-#define CHUNK_AGED_OFFSET 0
 
 #define CHUNK_SHORT_DATA_OFFSET 2
 #define CHUNK_MEDIUM_DATA_OFFSET 3

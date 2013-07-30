@@ -72,9 +72,6 @@ struct intmap {
   patricia *root; /**< pointer to root of tree */
 };
 
-#define MAX_BIT 31
-/* #define MAX_BIT 63 */
-
 slab *intmap_slab = NULL; /**< Allocator for patricia nodes */
 
 /** Return the number of elements in an integer map, or -1 on error

@@ -34,6 +34,7 @@
 #include <errno.h>
 
 #include "conf.h"
+#include "log.h"
 
 #ifdef HAS_GETRLIMIT
 void init_rlimit(void);

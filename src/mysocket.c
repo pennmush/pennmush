@@ -109,8 +109,12 @@ extern int h_errno;
 #endif
 
 #include "conf.h"
-#include "externs.h"
+#include "log.h"
 #include "mymalloc.h"
+#include "wait.h"
+
+/* TODO: Hack until we move mush_panic() somewhere more reasonable. */
+void mush_panic(const char *);
 
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);

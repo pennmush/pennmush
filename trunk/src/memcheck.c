@@ -63,7 +63,6 @@
 #include "confmagic.h"
 #include "conf.h"
 #include "dbdefs.h"
-#include "externs.h"
 #include "log.h"
 #include "mymalloc.h"
 #include "strutil.h"
@@ -308,18 +307,21 @@ del_check(const char *ref, const char *filename, int line)
 }
 
 /** List allocations in use.
- * \param player the enactor.
+ * \param callback Invoked for each chunk with a non-zero refcount.
+ * \param data Optional data that will be passed to the callback.
  */
 void
-list_mem_check(dbref player)
+list_mem_check(
+    void (*callback)(void *data, const char* const name, int ref_count),
+    void *data)
 {
-  MEM *chk;
+  const MEM *chk;
 
   if (!options.mem_check)
     return;
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
     if (chk->ref_count != 0)
-      notify_format(player, "%s : %d", chk->ref_name, chk->ref_count);
+      callback(data, chk->ref_name, chk->ref_count);
   }
 }
 

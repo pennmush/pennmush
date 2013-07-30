@@ -446,6 +446,8 @@ cmds.o: ../hdrs/lookup.h
 cmds.o: ../hdrs/mysocket.h
 cmds.o: ../hdrs/malias.h
 cmds.o: ../hdrs/match.h
+cmds.o: ../hdrs/memcheck.h
+cmds.o: ../hdrs/mymalloc.h
 cmds.o: ../hdrs/parse.h
 cmds.o: ../hdrs/ssl_slave.h
 cmds.o: ../hdrs/strutil.h
@@ -1355,9 +1357,6 @@ memcheck.o: ../hdrs/flags.h
 memcheck.o: ../hdrs/ptab.h
 memcheck.o: ../hdrs/dbio.h
 memcheck.o: ../hdrs/chunk.h
-memcheck.o: ../hdrs/externs.h
-memcheck.o: ../hdrs/compile.h
-memcheck.o: ../hdrs/mypcre.h
 memcheck.o: ../hdrs/log.h
 memcheck.o: ../hdrs/bufferq.h
 memcheck.o: ../hdrs/mymalloc.h
@@ -1409,9 +1408,9 @@ mycrypt.o: ../hdrs/mypcre.h
 mycrypt.o: ../hdrs/log.h
 mycrypt.o: ../hdrs/bufferq.h
 mycrypt.o: ../hdrs/strutil.h
-mymalloc.o: ../config.h
 mymalloc.o: ../hdrs/mymalloc.h
 mymalloc.o: ../hdrs/mushtype.h
+mymalloc.o: ../config.h
 mymalloc.o: ../hdrs/copyrite.h
 mymalloc.o: ../options.h
 mymalloc.o: ../hdrs/conf.h
@@ -1423,9 +1422,6 @@ mymalloc.o: ../hdrs/flags.h
 mymalloc.o: ../hdrs/ptab.h
 mymalloc.o: ../hdrs/dbio.h
 mymalloc.o: ../hdrs/chunk.h
-mymalloc.o: ../hdrs/externs.h
-mymalloc.o: ../hdrs/compile.h
-mymalloc.o: ../hdrs/mypcre.h
 mymalloc.o: ../hdrs/getpgsiz.h
 mymalloc.o: ../hdrs/log.h
 mymalloc.o: ../hdrs/bufferq.h

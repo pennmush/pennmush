@@ -6,6 +6,7 @@
 
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
+#include "config.h"
 #include "copyrite.h"
 #include <openssl/ssl.h>
 #ifdef HAVE_STDINT_H

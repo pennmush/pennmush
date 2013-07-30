@@ -89,7 +89,7 @@ extern BOOL GetErrorMessage(const DWORD dwError, LPTSTR lpszError, const UINT
 #endif
 
 
-#ifndef HAS_GETHOSTBYNAME2
+#if !defined(HAS_GETHOSTBYNAME2) && !defined(__CYGWIN__)
 #define gethostbyname2(host, type) gethostbyname((host))
 #endif
 

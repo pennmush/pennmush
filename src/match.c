@@ -277,7 +277,7 @@ match_player(dbref who, const char *name, int partial)
     name++;
   }
 
-  while (isspace((unsigned char) *name)) {
+  while (isspace(*name)) {
     name++;
   }
 
@@ -545,7 +545,7 @@ parse_english(char **name, long *flags)
   }
 
   /* Handle count adjectives */
-  if (!isdigit((unsigned char) **name)) {
+  if (!isdigit(**name)) {
     /* Quick exit */
     return 0;
   }

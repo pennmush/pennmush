@@ -686,8 +686,8 @@ parse_force(char *command)
   char *s;
 
   s = command + 1;
-  while (*s && !isspace((unsigned char) *s)) {
-    if (!isdigit((unsigned char) *s))
+  while (*s && !isspace(*s)) {
+    if (!isdigit(*s))
       return 0;                 /* #1a is no good */
     s++;
   }
@@ -1217,7 +1217,7 @@ do_search(dbref player, const char *arg1, char **arg3)
 
   /* First argument is a player, so we could have a quoted name */
   if (*arg1 == '\"') {
-    for (; *arg1 && ((*arg1 == '\"') || isspace((unsigned char) *arg1));
+    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1));
          arg1++) ;
     strcpy(tbuf, arg1);
     while (*arg2 && (*arg2 != '\"')) {
@@ -1225,18 +1225,18 @@ do_search(dbref player, const char *arg1, char **arg3)
         arg2++;
       if (*arg2 == '\"') {
         *arg2++ = '\0';
-        while (*arg2 && isspace((unsigned char) *arg2))
+        while (*arg2 && isspace(*arg2))
           arg2++;
         break;
       }
     }
   } else {
     strcpy(tbuf, arg1);
-    while (*arg2 && !isspace((unsigned char) *arg2))
+    while (*arg2 && !isspace(*arg2))
       arg2++;
     if (*arg2)
       *arg2++ = '\0';
-    while (*arg2 && isspace((unsigned char) *arg2))
+    while (*arg2 && isspace(*arg2))
       arg2++;
   }
 
@@ -2130,9 +2130,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     restriction = args[n + 1];
     /* A special old-timey kludge */
     if (class && !*class && restriction && *restriction) {
-      if (isdigit((unsigned char) *restriction)
+      if (isdigit(*restriction)
           || ((*restriction == '#') && *(restriction + 1)
-              && isdigit((unsigned char) *(restriction + 1)))) {
+              && isdigit(*(restriction + 1)))) {
         size_t offset = 0;
         if (*restriction == '#')
           offset = 1;
@@ -2142,16 +2142,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     if (!class || !*class || !restriction)
       continue;
-    if (isdigit((unsigned char) *class) || ((*class == '#') && *(class + 1)
-                                            && isdigit((unsigned char)
-                                                       *(class + 1)))) {
+    if (isdigit(*class) ||
+        ((*class == '#') && *(class + 1) && isdigit(*(class + 1)))) {
       size_t offset = 0;
       if (*class == '#')
         offset = 1;
       spec->low = parse_integer(class + offset);
-      if (isdigit((unsigned char) *restriction)
+      if (isdigit(*restriction)
           || ((*restriction == '#') && *(restriction + 1)
-              && isdigit((unsigned char) *(restriction + 1)))) {
+              && isdigit(*(restriction + 1)))) {
         offset = 0;
         if (*restriction == '#')
           offset = 1;

@@ -232,7 +232,7 @@ static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
 bool welcome_user_wrapper(void *data);
-static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
+static int handle_telnet(DESC *d, char **q, char *qend);
 
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
@@ -337,9 +337,9 @@ static void clearstrings(DESC *d);
 
 /** A block of cached text. */
 typedef struct fblock {
-  unsigned char *buff;    /**< Pointer to the block as a string */
-  size_t len;             /**< Length of buff */
-  dbref thing;               /**< If NOTHING, display buff as raw text. Otherwise, buff is an attrname on thing to eval and display */
+  char *buff;   /**< Pointer to the block as a string */
+  size_t len;   /**< Length of buff */
+  dbref thing;  /**< If NOTHING, display buff as raw text. Otherwise, buff is an attrname on thing to eval and display */
 } FBLOCK;
 
 /** The complete collection of cached text files. */
@@ -357,10 +357,9 @@ struct fcache_entries {
 };
 
 static struct fcache_entries fcache;
-static bool fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix,
-                        char *arg);
+static bool fcache_dump(DESC *d, FBLOCK fp[2], const char *prefix, char *arg);
 static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                            const unsigned char *prefix, char *arg);
+                            const char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d, const char *reason, dbref executor);
@@ -369,20 +368,20 @@ int process_output(DESC *d);
 /* Notify.c */
 void free_text_block(struct text_block *t);
 void init_text_queue(struct text_queue *);
-void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
-int queue_write(DESC *d, const unsigned char *b, int n);
+void add_to_queue(struct text_queue *q, const char *b, int n);
+int queue_write(DESC *d, const char *b, int n);
 int queue_eol(DESC *d);
-int queue_newwrite(DESC *d, const unsigned char *b, int n);
+int queue_newwrite(DESC *d, const char *b, int n);
 int queue_string(DESC *d, const char *s);
 int queue_string_eol(DESC *d, const char *s);
 void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
 static void dump_info(DESC *call_by);
-static void save_command(DESC *d, const unsigned char *command);
+static void save_command(DESC *d, const char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
-static void set_userstring(unsigned char **userstring, const char *command);
+static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
 enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED };
 static enum comm_res do_command(DESC *d, char *command);
@@ -1447,7 +1446,7 @@ clearstrings(DESC *d)
  */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
-                 const unsigned char *prefix, char *arg)
+                 const char *prefix, char *arg)
 {
   char descarg[SBUF_LEN], dbrefarg[SBUF_LEN], buff[BUFFER_LEN], *bp;
   PE_REGS *pe_regs;
@@ -1480,13 +1479,13 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   *bp = '\0';
   pe_regs_free(pe_regs);
   if (prefix) {
-    queue_newwrite(d, prefix, u_strlen(prefix));
+    queue_newwrite(d, prefix, strlen(prefix));
     queue_eol(d);
   }
   if (html)
-    queue_newwrite(d, (unsigned char *) buff, strlen(buff));
+    queue_newwrite(d, buff, strlen(buff));
   else
-    queue_write(d, (unsigned char *) buff, strlen(buff));
+    queue_write(d, buff, strlen(buff));
 
   return 1;
 }
@@ -1498,7 +1497,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
  * \return 1 if something was written, 0 if not
  */
 static bool
-fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)
+fcache_dump(DESC *d, FBLOCK fb[2], const char *prefix, char *arg)
 {
   int i;
 
@@ -1516,7 +1515,7 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix, char *arg)
     } else {
       /* Output static text from the cached file */
       if (prefix) {
-        queue_newwrite(d, prefix, u_strlen(prefix));
+        queue_newwrite(d, prefix, strlen(prefix));
         queue_eol(d);
       }
       if (i)
@@ -1566,7 +1565,7 @@ fcache_read(FBLOCK *fb, const char *filename)
         len = strlen(attr);
         fb->thing = thing;
         fb->len = len;
-        memcpy(fb->buff, (unsigned char *) upcasestr(attr), len);
+        memcpy(fb->buff, upcasestr(attr), len);
         *((char *) fb->buff + len) = '\0';
         return fb->len;
       }
@@ -2178,15 +2177,14 @@ welcome_user(DESC *d, int telnet)
   if (telnet == 1)
     test_telnet(d);
   else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
-    queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
-                   strlen(PUEBLO_HELLO));
+    queue_newwrite(d, PUEBLO_HELLO, strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL, NULL);
 }
 
 static void
-save_command(DESC *d, const unsigned char *command)
+save_command(DESC *d, const char *command)
 {
-  add_to_queue(&d->input, command, u_strlen(command) + 1);
+  add_to_queue(&d->input, command, strlen(command) + 1);
 }
 
 /** Send a telnet command to a descriptor to test for telnet support.
@@ -2199,12 +2197,11 @@ test_telnet(DESC *d)
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
     /*  IAC DO LINEMODE */
-    unsigned char query[3] = "\xFF\xFD\x22";
+    char query[3] = "\xFF\xFD\x22";
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
-      queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
-                     strlen(PUEBLO_HELLO));
+      queue_newwrite(d, PUEBLO_HELLO, strlen(PUEBLO_HELLO));
     process_output(d);
   }
 }
@@ -2220,7 +2217,7 @@ setup_telnet(DESC *d)
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
     /* IAC-DO-NAWS IAC-DO-TTYPE IAC-WILL-MSSP IAC-WILL-CHARSET */
-    unsigned char extra_options[12] =
+    char extra_options[12] =
       "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46" "\xFF\xFB\x2A";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
@@ -2239,7 +2236,7 @@ setup_telnet(DESC *d)
  * \retval 1 Telnet code successfully handled
  */
 static int
-handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
+handle_telnet(DESC *d, char **q, char *qend)
 {
   /* *(*q - q) == IAC at this point. */
   switch (**q) {
@@ -2259,7 +2256,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       /* Learn what size window the client is using. */
       union {
         short s;
-        unsigned char bytes[2];
+        char bytes[2];
       } raw;
       if (*q >= qend)
         return -1;
@@ -2410,9 +2407,9 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
     if (*q >= qend)
       return -1;
     else {
-      static unsigned char ayt_reply[] =
+      static const char ayt_reply[] =
         "\r\n*** AYT received, I'm here ***\r\n";
-      queue_newwrite(d, ayt_reply, u_strlen(ayt_reply));
+      queue_newwrite(d, ayt_reply, strlen(ayt_reply));
       process_output(d);
     }
     break;
@@ -2425,19 +2422,19 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
     if (**q == TN_LINEMODE) {
       /* Set up our preferred linemode options. */
       /* IAC SB LINEMODE MODE (EDIT|SOFT_TAB) IAC SE */
-      unsigned char reply[7] = "\xFF\xFA\x22\x01\x09\xFF\xF0";
+      static const char reply[7] = "\xFF\xFA\x22\x01\x09\xFF\xF0";
       queue_newwrite(d, reply, 7);
 #ifdef DEBUG_TELNET
       fprintf(stderr, "Setting linemode options.\n");
 #endif
     } else if (**q == TN_TTYPE) {
       /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SE */
-      unsigned char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
+      char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
       queue_newwrite(d, reply, 6);
     } else if (**q == TN_SGA || **q == TN_NAWS) {
       /* This is good to be at. */
     } else {                    /* Refuse options we don't handle */
-      unsigned char reply[3];
+      char reply[3];
       reply[0] = IAC;
       reply[1] = DONT;
       reply[2] = **q;
@@ -2453,7 +2450,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
     if (**q == TN_LINEMODE) {
     } else if (**q == TN_SGA) {
       /* IAC WILL SGA IAC DO SGA */
-      unsigned char reply[6] = "\xFF\xFB\x03\xFF\xFD\x03";
+      static const char reply[6] = "\xFF\xFB\x03\xFF\xFD\x03";
       queue_newwrite(d, reply, 6);
       process_output(d);
       /* Yeah, we still will send GA, which they should treat as a NOP,
@@ -2476,7 +2473,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       safe_chr((char) IAC, reply, &bp);
       safe_chr((char) SE, reply, &bp);
       *bp = '\0';
-      queue_newwrite(d, (unsigned char *) reply, strlen(reply));
+      queue_newwrite(d, reply, strlen(reply));
       process_output(d);
     } else if (**q == TN_CHARSET) {
       /* Send a list of supported charsets for the client to pick.
@@ -2484,13 +2481,13 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
        * currently running in, or "ISO-8859-1" (latin1) if it's running
        * in "C", "UTF-8" or an unknown charset. */
       /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
-      unsigned char reply_prefix[4] = "\xFF\xFA\x2A\x01";
-      unsigned char reply_suffix[2] = "\xFF\xF0";
+      static const char reply_prefix[4] = "\xFF\xFA\x2A\x01";
+      static const char reply_suffix[2] = "\xFF\xF0";
 #ifndef _MSC_VER
       /* Offer a selection of possible delimiters, to avoid it appearing
        * in a charset name */
-      char *delim_list = "; +=/!", *delim_curr;
-      unsigned char delim[2] = { '\0', '\0' };
+      static const char *delim_list = "; +=/!", *delim_curr;
+      char delim[2] = { '\0', '\0' };
       char *curr_locale = NULL;
 
       queue_newwrite(d, reply_prefix, 4);
@@ -2511,14 +2508,14 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
         delim[0] = ';';
         curr_locale = "ISO-8859-1";
       }
-      queue_newwrite(d, (unsigned char *) delim, 1);
-      queue_newwrite(d, (unsigned char *) curr_locale, strlen(curr_locale));
-      queue_newwrite(d, (unsigned char *) delim, 1);
-      queue_newwrite(d, (unsigned char *) "US-ASCII", 8);
-      queue_newwrite(d, (unsigned char *) delim, 1);
-      queue_newwrite(d, (unsigned char *) "ASCII", 5);
-      queue_newwrite(d, (unsigned char *) delim, 1);
-      queue_newwrite(d, (unsigned char *) "x-penn-def", 10);
+      queue_newwrite(d, delim, 1);
+      queue_newwrite(d, curr_locale, strlen(curr_locale));
+      queue_newwrite(d, delim, 1);
+      queue_newwrite(d, "US-ASCII", 8);
+      queue_newwrite(d, delim, 1);
+      queue_newwrite(d, "ASCII", 5);
+      queue_newwrite(d, delim, 1);
+      queue_newwrite(d, "x-penn-def", 10);
 
       queue_newwrite(d, reply_suffix, 2);
 #else                           /* _MSC_VER */
@@ -2528,13 +2525,13 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
        * but it's unlikely to contain a valid charset name, so probably
        * wouldn't help anyway.) */
       queue_newwrite(d, reply_prefix, 4);
-      queue_newwrite(d, (unsigned char *) ";ISO-8859-1", 11);
-      queue_newwrite(d, (unsigned char *) ";US-ASCII;ASCII;x-win-def", 25);
+      queue_newwrite(d, ";ISO-8859-1", 11);
+      queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
       queue_newwrite(d, reply_suffix, 2);
 #endif                          /* _MSC_VER */
     } else {
       /* Stuff we won't do */
-      unsigned char reply[3];
+      char reply[3];
       reply[0] = IAC;
       reply[1] = WONT;
       reply[2] = (char) **q;
@@ -2562,7 +2559,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
 static void
 process_input_helper(DESC *d, char *tbuf1, int got)
 {
-  unsigned char *p, *pend, *q, *qend;
+  char *p, *pend, *q, *qend;
 
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
@@ -2573,7 +2570,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   p = d->raw_input_at;
   d->input_chars += got;
   pend = d->raw_input + MAX_COMMAND_LEN - 1;
-  for (q = (unsigned char *) tbuf1, qend = (unsigned char *) tbuf1 + got;
+  for (q = tbuf1, qend = tbuf1 + got;
        q < qend; q++) {
     if (*q == '\r') {
       /* A broken client (read: WinXP telnet) might send only CR, and not CRLF
@@ -2593,7 +2590,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     } else if (*q == '\b') {
       if (p > d->raw_input)
         p--;
-    } else if ((unsigned char) *q == IAC) {     /* Telnet option foo */
+    } else if (*q == IAC) {     /* Telnet option foo */
       if (q >= qend)
         break;
       q++;
@@ -2685,7 +2682,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
 }
 
 static void
-set_userstring(unsigned char **userstring, const char *command)
+set_userstring(char **userstring, const char *command)
 {
   if (*userstring) {
     mush_free(*userstring, "userstring");
@@ -2693,10 +2690,10 @@ set_userstring(unsigned char **userstring, const char *command)
   }
   /* command may be NULL */
   if (command && command[0]) {
-    while (*command && isspace((unsigned char) *command))
+    while (*command && isspace(*command))
       command++;
     if (*command)
-      *userstring = (unsigned char *) mush_strdup(command, "userstring");
+      *userstring = mush_strdup(command, "userstring");
   }
 }
 
@@ -2759,14 +2756,14 @@ process_commands(void)
 /** Send a descriptor's output prefix */
 #define send_prefix(d) \
   if (d->output_prefix) { \
-    queue_newwrite(d, d->output_prefix, u_strlen(d->output_prefix)); \
+    queue_newwrite(d, d->output_prefix, strlen(d->output_prefix)); \
     queue_eol(d); \
   }
 
 /** Send a descriptor's output suffix */
 #define send_suffix(d) \
   if (d->output_suffix) { \
-    queue_newwrite(d, d->output_suffix, u_strlen(d->output_suffix)); \
+    queue_newwrite(d, d->output_suffix, strlen(d->output_suffix)); \
     queue_eol(d); \
   }
 
@@ -2785,7 +2782,7 @@ do_command(DESC *d, char *command)
     if ((int) strlen(command) > j) {
       if (*(command + j) == ' ')
         j++;
-      queue_write(d, (unsigned char *) command + j, strlen(command) - j);
+      queue_write(d, command + j, strlen(command) - j);
       queue_eol(d);
     }
     return CRES_OK;
@@ -2810,15 +2807,14 @@ do_command(DESC *d, char *command)
              "<meta http-equiv=\"refresh\" content=\"0;%s\">"
              "Please click <a href=\"%s\">%s</a> to go to the website for %s."
              "</BODY></HEAD></HTML>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-    queue_write(d, (unsigned char *) buf, strlen(buf));
+    queue_write(d, buf, strlen(buf));
     queue_eol(d);
     return CRES_HTTP;
   } else if (SUPPORT_PUEBLO
              && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
     if (!(d->conn_flags & CONN_HTML)) {
-      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
-                     strlen(PUEBLO_SEND));
+      queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
       process_output(d);
       do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
                 d->descriptor, d->addr, d->ip);
@@ -2829,8 +2825,7 @@ do_command(DESC *d, char *command)
       /* Resend the Pueblo start string, but not the 'clear screen'
        * part. Only useful for someone whose client hasn't noticed
        * they're in Pueblo mode and is showing raw HTML */
-      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND_SHORT,
-                     strlen(PUEBLO_SEND_SHORT));
+      queue_newwrite(d, PUEBLO_SEND_SHORT, strlen(PUEBLO_SEND_SHORT));
     }
     return CRES_OK;
   }
@@ -3224,18 +3219,18 @@ check_connect(DESC *d, const char *msg)
 static void
 parse_connect(const char *msg1, char *command, char *user, char *pass)
 {
-  unsigned char *p;
-  unsigned const char *msg = (unsigned const char *) msg1;
+  char *p;
+  const char *msg = msg1;
 
   while (*msg && isspace(*msg))
     msg++;
-  p = (unsigned char *) command;
+  p = command;
   while (*msg && isprint(*msg) && !isspace(*msg))
     *p++ = *msg++;
   *p = '\0';
   while (*msg && isspace(*msg))
     msg++;
-  p = (unsigned char *) user;
+  p = user;
 
   if (*msg == '\"') {
     for (; *msg && ((*msg == '\"') || isspace(*msg)); msg++) ;
@@ -3260,7 +3255,7 @@ parse_connect(const char *msg1, char *command, char *user, char *pass)
   *p = '\0';
   while (*msg && isspace(*msg))
     msg++;
-  p = (unsigned char *) pass;
+  p = pass;
   while (*msg && isprint(*msg) && !isspace(*msg))
     *p++ = *msg++;
   *p = '\0';
@@ -3295,10 +3290,9 @@ close_sockets(void)
     } else {
       int offset;
       offset = 0;
-      ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) shutmsg,
-                shutlen, &offset);
+      ssl_write(d->ssl, d->ssl_state, 0, 1, shutmsg, shutlen, &offset);
       offset = 0;
-      ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) "\r\n", 2, &offset);
+      ssl_write(d->ssl, d->ssl_state, 0, 1, "\r\n", 2, &offset);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -3409,13 +3403,13 @@ sockset_wrapper(DESC *d, char *cmd)
   const char *res;
   char *p;
 
-  while (cmd && *cmd && isspace((unsigned char) *cmd))
+  while (cmd && *cmd && isspace(*cmd))
     cmd++;
 
   if (!*cmd) {
     /* query all */
     res = sockset_show(d);
-    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_newwrite(d, res, strlen(res));
     queue_eol(d);
     return;
   }
@@ -3424,12 +3418,12 @@ sockset_wrapper(DESC *d, char *cmd)
     /* set an option */
     *(p++) = '\0';
     res = sockset(d, cmd, p);
-    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_newwrite(d, res, strlen(res));
     queue_eol(d);
     return;
   } else {
     res = T("You must give an option and a value.");
-    queue_newwrite(d, (unsigned char *) res, strlen(res));
+    queue_newwrite(d, res, strlen(res));
     queue_eol(d);
   }
 
@@ -3526,8 +3520,7 @@ sockset(DESC *d, char *name, char *val)
     if (val && *val) {
       parse_puebloclient(d, val);
       if (!(d->conn_flags & CONN_HTML)) {
-        queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
-                       strlen(PUEBLO_SEND));
+        queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
         process_output(d);
         do_rawlog(LT_CONN,
                   "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
@@ -4087,7 +4080,7 @@ dump_users(DESC *call_by, char *match)
     match++;
 
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
-    queue_newwrite(call_by, (const unsigned char *) "<PRE>", 5);
+    queue_newwrite(call_by, "<PRE>", 5);
   }
 
   if (poll_msg[0] == '\0')
@@ -4129,7 +4122,7 @@ dump_users(DESC *call_by, char *match)
   }
   queue_string_eol(call_by, tbuf);
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML))
-    queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
+    queue_newwrite(call_by, "</PRE>", 6);
 }
 
 /** Filters descriptors based on the name for 'WHO name'.
@@ -5780,7 +5773,7 @@ inactivity_check(void)
        a telnet-aware client, send a NOP */
     if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60
         && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
-      const uint8_t nopmsg[2] = { IAC, NOP };
+      const char nopmsg[2] = { IAC, NOP };
       queue_newwrite(d, nopmsg, 2);
       process_output(d);
     }

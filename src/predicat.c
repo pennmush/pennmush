@@ -654,18 +654,18 @@ forbidden_name(const char *name)
 int
 ok_name(const char *n, int is_exit)
 {
-  const unsigned char *p, *name = (const unsigned char *) n;
+  const char *p, *name = n;
 
   if (!name || !*name)
     return 0;
 
   /* No leading spaces */
-  if (isspace((unsigned char) *name))
+  if (isspace(*name))
     return 0;
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint((unsigned char) *p))
+    if (!isprint(*p))
       return 0;
     if (ONLY_ASCII_NAMES && *p > 127)
       return 0;
@@ -675,11 +675,11 @@ ok_name(const char *n, int is_exit)
 
   /* No trailing spaces */
   p--;
-  if (isspace((unsigned char) *p))
+  if (isspace(*p))
     return 0;
 
   /* Not too long */
-  if (u_strlen(name) >= OBJECT_NAME_LIMIT)
+  if (strlen(name) >= OBJECT_NAME_LIMIT)
     return 0;
 
   /* No magic cookies */
@@ -687,9 +687,9 @@ ok_name(const char *n, int is_exit)
           && *name
           && *name != LOOKUP_TOKEN
           && *name != NUMBER_TOKEN
-          && *name != NOT_TOKEN && (is_exit || strcasecmp((char *) name, "me"))
-          && strcasecmp((char *) name, "home")
-          && strcasecmp((char *) name, "here"));
+          && *name != NOT_TOKEN && (is_exit || strcasecmp(name, "me"))
+          && strcasecmp(name, "home")
+          && strcasecmp(name, "here"));
 }
 
 /** Is a name a valid player name when applied by player to thing?
@@ -707,19 +707,19 @@ ok_name(const char *n, int is_exit)
 int
 ok_player_name(const char *name, dbref player, dbref thing)
 {
-  const unsigned char *scan, *good;
+  const char *scan, *good;
   dbref lookup;
 
   if (!ok_name(name, 0) || strlen(name) > (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
-  good = (unsigned char *) (PLAYER_NAME_SPACES || Wizard(player) ? " `$_-.,'" : "`$_-.,'");
+  good = (PLAYER_NAME_SPACES || Wizard(player) ? " `$_-.,'" : "`$_-.,'");
 
   /* Make sure that the name contains legal characters only */
-  for (scan = (unsigned char *) name; scan && *scan; scan++) {
-    if (isalnum((unsigned char) *scan))
+  for (scan = name; scan && *scan; scan++) {
+    if (isalnum(*scan))
       continue;
-    if (!strchr((char *) good, *scan))
+    if (!strchr(good, *scan))
       return 0;
   }
 
@@ -913,14 +913,14 @@ ok_player_alias(const char *alias, dbref player, dbref thing)
 int
 ok_password(const char *password)
 {
-  const unsigned char *scan;
+  const char *scan;
   if (password == NULL)
     return 0;
 
   if (*password == '\0')
     return 0;
 
-  for (scan = (const unsigned char *) password; *scan; scan++) {
+  for (scan = password; *scan; scan++) {
     if (!(isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
@@ -940,10 +940,10 @@ ok_password(const char *password)
 int
 ok_command_name(const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   int cnt = 0;
   /* First char: uppercase alphanum or legal punctuation */
-  switch ((unsigned char) *name) {
+  switch (*name) {
   case SAY_TOKEN:
   case POSE_TOKEN:
   case SEMI_POSE_TOKEN:
@@ -955,14 +955,13 @@ ok_command_name(const char *name)
   case '[':
     return 0;
   default:
-    if (!isupper((unsigned char) *name) && !isdigit((unsigned char) *name)
-        && !ispunct((unsigned char) *name))
+    if (!isupper(*name) && !isdigit(*name) && !ispunct(*name))
       return 0;
   }
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
    */
-  for (p = (unsigned char *) name; p && *p; p++) {
+  for (p = name; p && *p; p++) {
     if (isspace(*p))
       return 0;
     if (isupper(*p))
@@ -987,10 +986,10 @@ ok_command_name(const char *name)
 int
 ok_function_name(const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   int cnt = 0;
   /* First char: uppercase alpha or legal punctuation */
-  switch ((unsigned char) *name) {
+  switch (*name) {
   case SAY_TOKEN:
   case POSE_TOKEN:
   case SEMI_POSE_TOKEN:
@@ -1003,7 +1002,7 @@ ok_function_name(const char *name)
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
    */
-  for (p = (unsigned char *) name; p && *p; p++) {
+  for (p = name; p && *p; p++) {
     if (isspace(*p) || !isprint(*p))
       return 0;
     if (isupper(*p))
@@ -1030,11 +1029,11 @@ ok_function_name(const char *name)
 int
 ok_tag_attribute(dbref player, const char *params)
 {
-  const unsigned char *p, *q;
+  const char *p, *q;
 
   if (!GoodObject(player) || Can_Pueblo_Send(player))
     return 1;
-  p = (const unsigned char *) params;
+  p = params;
   while (*p) {
     while (*p && isspace(*p))
       p++;
@@ -1045,8 +1044,8 @@ ok_tag_attribute(dbref player, const char *params)
       size_t n = q - p;
       /* Invalid params for non-priv'd. Turn to a hashtable if we ever
          get more? */
-      if (strncasecmp((char *) p, "SEND", n) == 0
-          || strncasecmp((char *) p, "XCH_CMD", n) == 0)
+      if (strncasecmp(p, "SEND", n) == 0
+          || strncasecmp(p, "XCH_CMD", n) == 0)
         return 0;
       while (*q && isspace(*q))
         q++;
@@ -1174,7 +1173,7 @@ parse_match_possessor(dbref player, char **str, int exits)
   /* skip over the 's' and whitespace */
   do {
     obj++;
-  } while (isspace((unsigned char) *obj));
+  } while (isspace(*obj));
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */

@@ -768,8 +768,8 @@ wait_for_connect(int s, int secs)
  * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
  */
 
-static const char *inet_ntop4(const unsigned char *src, char *dst, size_t size);
-static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size);
+static const char *inet_ntop4(const char *src, char *dst, size_t size);
+static const char *inet_ntop6(const char *src, char *dst, size_t size);
 
 /* char *
  * inet_ntop(af, src, dst, size)
@@ -801,12 +801,11 @@ inet_ntop(int af, const void *src, char *dst, size_t size)
  *      `dst' (as a const)
  * notes:
  *      (1) uses no statics
- *      (2) takes a unsigned char* not an in_addr as input
  * author:
  *      Paul Vixie, 1996.
  */
 static const char *
-inet_ntop4(const unsigned char *src, char *dst, size_t size)
+inet_ntop4(const char *src, char *dst, size_t size)
 {
   static const char fmt[] = "%u.%u.%u.%u";
   char tmp[sizeof "255.255.255.255"];
@@ -827,7 +826,7 @@ inet_ntop4(const unsigned char *src, char *dst, size_t size)
  *      Paul Vixie, 1996.
  */
 static const char *
-inet_ntop6(const unsigned char *src, char *dst, size_t size)
+inet_ntop6(const char *src, char *dst, size_t size)
 {
   /*
    * Note that int32_t and int16_t need only be "at least" large enough
@@ -940,8 +939,8 @@ inet_ntop6(const unsigned char *src, char *dst, size_t size)
  * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
  */
 
-static int inet_pton4(const char *src, unsigned char *dst);
-static int inet_pton6(const char *src, unsigned char *dst);
+static int inet_pton4(const char *src, char *dst);
+static int inet_pton6(const char *src, char *dst);
 
 /* int
  * inet_pton(af, src, dst)
@@ -980,11 +979,11 @@ inet_pton(int af, const char *src, void *dst)
  *      Paul Vixie, 1996.
  */
 static int
-inet_pton4(const char *src, unsigned char *dst)
+inet_pton4(const char *src, char *dst)
 {
   static const char digits[] = "0123456789";
   int saw_digit, octets, ch;
-  unsigned char tmp[INADDRSZ], *tp;
+  char tmp[INADDRSZ], *tp;
 
   saw_digit = 0;
   octets = 0;
@@ -1032,11 +1031,11 @@ inet_pton4(const char *src, unsigned char *dst)
  *      Paul Vixie, 1996.
  */
 static int
-inet_pton6(const char *src, unsigned char *dst)
+inet_pton6(const char *src, char *dst)
 {
   static const char xdigits_l[] = "0123456789abcdef",
     xdigits_u[] = "0123456789ABCDEF";
-  unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
+  char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
   const char *xdigits, *curtok;
   int ch, saw_xdigit;
   unsigned int val;
@@ -1074,8 +1073,8 @@ inet_pton6(const char *src, unsigned char *dst)
       }
       if (tp + INT16SZ > endp)
         return (0);
-      *tp++ = (unsigned char) (val >> 8) & 0xff;
-      *tp++ = (unsigned char) val & 0xff;
+      *tp++ = (val >> 8) & 0xff;
+      *tp++ = val & 0xff;
       saw_xdigit = 0;
       val = 0;
       continue;
@@ -1090,8 +1089,8 @@ inet_pton6(const char *src, unsigned char *dst)
   if (saw_xdigit) {
     if (tp + INT16SZ > endp)
       return (0);
-    *tp++ = (unsigned char) (val >> 8) & 0xff;
-    *tp++ = (unsigned char) val & 0xff;
+    *tp++ = (val >> 8) & 0xff;
+    *tp++ = val & 0xff;
   }
   if (colonp != NULL) {
     /*
@@ -1273,7 +1272,7 @@ getaddrinfo(const char *hostname, const char *servname,
   for (sptr = &search[0]; sptr < &search[nsearch]; sptr++) {
 #ifdef  IPv4
     /* 4check for an IPv4 dotted-decimal string */
-    if (isdigit((unsigned char) sptr->host[0])) {
+    if (isdigit(sptr->host[0])) {
       struct in_addr inaddr;
 
       if (inet_pton(AF_INET, sptr->host, &inaddr) == 1) {
@@ -1291,7 +1290,7 @@ getaddrinfo(const char *hostname, const char *servname,
 
 #ifdef  HAVE_SOCKADDR_IN6
     /* 4check for an IPv6 hex string */
-    if ((isxdigit((unsigned char) sptr->host[0]) || sptr->host[0] == ':') &&
+    if ((isxdigit(sptr->host[0]) || sptr->host[0] == ':') &&
         (strchr(sptr->host, ':') != NULL)) {
       struct in6_addr in6addr;
 
@@ -1639,7 +1638,7 @@ ga_serv(struct addrinfo *aihead, const struct addrinfo *hintsp,
   int port, rc, nfound;
 
   nfound = 0;
-  if (isdigit((unsigned char) serv[0])) {       /* check for port number string first */
+  if (isdigit(serv[0])) {       /* check for port number string first */
     port = (int) htons((unsigned short) atoi(serv));
     if (hintsp->ai_socktype) {
       /* 4caller specifies socket type */

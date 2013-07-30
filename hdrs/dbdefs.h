@@ -307,15 +307,15 @@ typedef uint32_t mail_flag;
  * stored in a doubly-linked list sorted by message recipient.
  */
 struct mail {
-  struct mail *next;            /**< Pointer to next message */
-  struct mail *prev;            /**< Pointer to previous message */
-  dbref to;                     /**< Recipient dbref */
-  dbref from;                   /**< Sender's dbref */
-  time_t from_ctime;            /**< Sender's creation time */
-  chunk_reference_t msgid;      /**< Message text, compressed */
-  time_t time;                  /**< Message date/time */
-  unsigned char *subject;       /**< Message subject, compressed */
-  mail_flag read;               /**< Bitflags of message status */
+  struct mail *next;        /**< Pointer to next message */
+  struct mail *prev;        /**< Pointer to previous message */
+  dbref to;                 /**< Recipient dbref */
+  dbref from;               /**< Sender's dbref */
+  time_t from_ctime;        /**< Sender's creation time */
+  chunk_reference_t msgid;  /**< Message text, compressed */
+  time_t time;              /**< Message date/time */
+  char *subject;            /**< Message subject, compressed */
+  mail_flag read;           /**< Bitflags of message status */
 };
 
 typedef struct mail MAIL;

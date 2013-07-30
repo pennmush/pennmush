@@ -159,7 +159,7 @@ static long total_entries = 0;
 
 /* Work pointer for compression */
 
-static unsigned char *b;
+static char *b;
 
 static void output_previous_word(void);
 int init_compress(PENNFILE *f);
@@ -241,13 +241,13 @@ output_previous_word(void)
  * \param s string to be compressed.
  * \return newly allocated compressed string.
  */
-unsigned char *
+char *
 text_compress(char const *s)
 {
-  const unsigned char *p;
-  static unsigned char buf[BUFFER_LEN];
+  const char *p;
+  static char buf[BUFFER_LEN];
 
-  p = (unsigned char *) s;
+  p = s;
   b = buf;
 
   wordpos = 0;
@@ -294,10 +294,10 @@ text_compress(char const *s)
  * \return a pointer to a static buffer containing the uncompressed string.
  */
 char *
-text_uncompress(unsigned char const *s)
+text_uncompress(char const *s)
 {
 
-  const unsigned char *p;
+  const char *p;
   char c;
   int i;
   static char buf[BUFFER_LEN];
@@ -305,8 +305,8 @@ text_uncompress(unsigned char const *s)
   buf[0] = '\0';
   if (!s || !*s)
     return buf;
-  p = (unsigned char *) s;
-  b = (unsigned char *) buf;
+  p = s;
+  b = buf;
 
   while (*p) {
     c = *p;
@@ -355,9 +355,9 @@ text_uncompress(unsigned char const *s)
  * \return pointer to newly allocated string containing uncompressed text.
  */
 char *
-safe_uncompress(unsigned char const *s)
+safe_uncompress(char const *s)
 {
-  return (char *) strdup((char *) uncompress(s));
+  return strdup(uncompress(s));
 }
 
 

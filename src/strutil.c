@@ -223,9 +223,9 @@ string_match(const char *src, const char *sub)
       if (string_prefix(src, sub))
         return src;
       /* else scan to beginning of next word */
-      while (*src && isalnum((unsigned char) *src))
+      while (*src && isalnum(*src))
         src++;
-      while (*src && !isalnum((unsigned char) *src))
+      while (*src && !isalnum(*src))
         src++;
     }
   }
@@ -321,7 +321,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
 {
   /* base and tmplate must be the same length */
   size_t n;
-  unsigned char c;
+  char c;
 
   for (n = 0; n < len; n++) {
     switch (base[n]) {
@@ -906,7 +906,7 @@ safe_fill_to(char x, size_t n, char *buff) {
 }
 
 int
-safe_hexchar(unsigned char c, char *buff, char **bp)
+safe_hexchar(char c, char *buff, char **bp)
 {
   const char *digits = "0123456789abcdef";
   if (safe_chr(digits[c >> 4], buff, bp))
@@ -942,7 +942,7 @@ char *
 skip_space(const char *s)
 {
   char *c = (char *) s;
-  while (c && *c && isspace((unsigned char) *c))
+  while (c && *c && isspace(*c))
     c++;
   return c;
 }
@@ -966,30 +966,6 @@ seek_char(const char *s, char c)
     p++;
   return p;
 #endif  /* HAVE_STRCHRNUL */
-}
-
-/** Unsigned char version of strlen.
- * \param s string.
- * \return length of s.
- */
-size_t
-u_strlen(const unsigned char *s)
-{
-  return strlen((const char *) s);
-}
-
-/** Unsigned char version of mush_strncpy(). Destination string
- * is nul-terminated.
- * \param target destination for copy.
- * \param source string to copy.
- * \param len maximum number of bytes to copy.
- * \return pointer to copy.
- */
-unsigned char *
-u_strncpy(unsigned char *target, const unsigned char *source, size_t len)
-{
-  return (unsigned char *) mush_strncpy((char *) target, (const char *) source,
-                                        len);
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -1701,10 +1677,9 @@ set_match_limit(struct pcre_extra *ex)
 size_t
 remove_trailing_whitespace(char *buff, size_t len)
 {
-  unsigned char *c;
+  char *c;
 
-  for (c = (unsigned char *) buff + len - 1; c >= (unsigned char *) buff;
-       c -= 1) {
+  for (c = buff + len - 1; c >= buff; c -= 1) {
     if (isspace(*c)) {
       len -= 1;
       *c = '\0';

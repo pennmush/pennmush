@@ -125,7 +125,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
             return false;
           }
           for (; n < end; n++) {
-            if (!valid_ansi_codes[(unsigned char) decoded[n]]) {
+            if (!valid_ansi_codes[decoded[n]]) {
               BIO_free_all(bio);
               *bp = sbp;
               safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
@@ -133,7 +133,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
             }
           }
           n = end;
-        } else if (printonly && !isprint((unsigned char) decoded[n]))
+        } else if (printonly && !isprint(decoded[n]))
           decoded[n] = '?';
       }
       safe_strl(decoded, dlen, buff, bp);

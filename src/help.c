@@ -111,7 +111,7 @@ COMMAND(cmd_helpcmd)
       int type = 0;
       pp = pattern;
       for (sp = save; *sp; sp++) {
-        if (isspace((unsigned char) *sp)) {
+        if (isspace(*sp)) {
           if (type) {
             type = 0;
             *pp = '*';
@@ -482,7 +482,7 @@ help_build_index(help_file *h, int restricted)
         fclose(rfp);
         return;
       }
-      if (isspace((unsigned char) line[0]))
+      if (isspace(line[0]))
         continue;
       if (line[0] != '&') {
         do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",

@@ -309,7 +309,7 @@ safe_get_bytecode(boolexp b)
 
   len = chunk_len(b);
   bytecode = mush_malloc(len, "boolexp.bytecode");
-  chunk_fetch(b, bytecode, len);
+  chunk_fetch(b, (char *)bytecode, len);
   return bytecode;
 }
 
@@ -324,7 +324,7 @@ get_bytecode(boolexp b, uint16_t *storelen)
   static uint8_t bytecode[BUFFER_LEN * 2];
   uint16_t len;
 
-  len = chunk_fetch(b, bytecode, sizeof bytecode);
+  len = chunk_fetch(b, (char *)bytecode, sizeof bytecode);
   if (storelen)
     *storelen = len;
   return bytecode;
@@ -350,7 +350,7 @@ dup_bool(boolexp b)
 
   bytecode = get_bytecode(b, &len);
 
-  r = chunk_create(bytecode, len, 1);
+  r = chunk_create((char *)bytecode, len, 1);
 
   return r;
 }
@@ -654,9 +654,9 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
  * \return 0 on success, true on buffer overflow.
  */
 static int
-safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
+safe_bstr(uint8_t *s, bvm_opcode op, char *buff, char **bp)
 {
-  const unsigned char *p, *name = (const unsigned char *) s;
+  const uint8_t *p, *name = s;
   int n;
   int preserve;
 
@@ -713,7 +713,7 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
 {
   static char boolexp_buf[BUFFER_LEN];
   char *buftop = boolexp_buf;
-  unsigned char *bytecode = NULL;
+  uint8_t *bytecode = NULL;
 
   unparsing_boolexp = 1;
 
@@ -722,8 +722,8 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
   else {
     bvm_opcode op;
     int arg;
-    unsigned char *pc;
-    unsigned char *s = NULL;
+    uint8_t *pc;
+    uint8_t *s = NULL;
 
     bytecode = pc = get_bytecode(b, NULL);
 
@@ -758,7 +758,7 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
       case OP_PAREN:
         if (arg == 0) {
           int pstack = 1, parg;
-          unsigned char *tpc = pc;
+          uint8_t *tpc = pc;
           while (1) {
             if ((bvm_opcode) *tpc == OP_PAREN) {
               memcpy(&parg, tpc + 1, sizeof parg);
@@ -975,7 +975,7 @@ free_boolexp_node(struct boolexp_node *b)
 static void
 skip_whitespace(void)
 {
-  while (*parsebuf && isspace((unsigned char) *parsebuf))
+  while (*parsebuf && isspace(*parsebuf))
     parsebuf++;
 }
 
@@ -1125,7 +1125,7 @@ parse_boolexp_R(void)
 
   /* strip trailing whitespace */
   *p = '\0';
-  while (p != tbuf1 && isspace((unsigned char) *(--p)))
+  while (p != tbuf1 && isspace(*(--p)))
     *p = '\0';
 
   /* do the match */
@@ -1211,7 +1211,7 @@ parse_boolexp_L(void)
 
     /* strip trailing whitespace */
     *p = '\0';
-    while (p != tbuf1 && isspace((unsigned char) *(--p)))
+    while (p != tbuf1 && isspace(*(--p)))
       *p = '\0';
 
     /* check for an attribute */
@@ -1354,7 +1354,7 @@ parse_boolexp_A(void)
       /* strip trailing whitespace */
 
       *p = '\0';
-      while (p != tbuf1 && isspace((unsigned char) *(--p)))
+      while (p != tbuf1 && isspace(*(--p)))
         *p = '\0';
       if (!good_atr_name(tbuf1)) {
         free_boolexp_node(b2);
@@ -1854,7 +1854,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   boolexp b;
   struct bvm_asmnode *i;
   struct bvm_strnode *s;
-  unsigned char *pc, *bytecode;
+  char *pc, *bytecode;
   uint16_t len, blen;
 
   if (!a)
@@ -1916,7 +1916,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     pc += s->len;
   }
 
-  b = chunk_create(bytecode, len, derefs);
+  b = chunk_create((char *)bytecode, len, derefs);
   mush_free(bytecode, "boolexp.bytecode");
   return b;
 }
@@ -2203,7 +2203,7 @@ warning_lock_type(const boolexp l)
 void
 check_lock(dbref player, dbref i, const char *name, boolexp be)
 {
-  unsigned char *pc, *bytecode;
+  uint8_t *pc, *bytecode;
   bvm_opcode op;
   int arg;
   char *s = NULL;
@@ -2258,12 +2258,12 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
 boolexp
 cleanup_boolexp(boolexp b)
 {
-  unsigned char *pc, *bytecode;
+  uint8_t *pc, *bytecode;
   uint16_t bytecode_len = 0;
   bvm_opcode op;
   int arg;
   bool revised = 0;
-  unsigned char false_op[INSN_LEN] = { OP_LOADR, 0 };
+  char false_op[INSN_LEN] = { OP_LOADR, 0 };
 
   if (b == TRUE_BOOLEXP)
     return b;
@@ -2292,7 +2292,7 @@ cleanup_boolexp(boolexp b)
   }
 done:
   if (revised) {
-    boolexp copy = chunk_create(bytecode, bytecode_len, chunk_derefs(b));
+    boolexp copy = chunk_create((char *)bytecode, bytecode_len, chunk_derefs(b));
     chunk_delete(b);
     return copy;
   } else

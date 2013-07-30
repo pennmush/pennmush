@@ -147,7 +147,7 @@ sql_sanitize(char *res) {
   char *bp = buff, *rp = res;
 
   for (; *rp; rp++) {
-    if (isprint((unsigned char) *rp) || *rp == '\n' || *rp == '\t' ||
+    if (isprint(*rp) || *rp == '\n' || *rp == '\t' ||
          *rp == ESC_CHAR || *rp == TAG_START || *rp == TAG_END ||
          *rp == BEEP_CHAR) {
       *bp++ = *rp;

@@ -73,7 +73,7 @@ FUNCTION(fun_timefmt)
       n++;
       if (args[0][n] == '$')
         args[0][n] = '%';
-      else if (!valid_timefmt_codes[(unsigned char) args[0][n]]) {
+      else if (!valid_timefmt_codes[args[0][n]]) {
         safe_format(buff, bp, T("#-1 INVALID ESCAPE CODE '$%c'"),
                     args[0][n] ? args[0][n] : ' ');
         return;
@@ -434,7 +434,7 @@ etime_to_secs(char *input, int *secs)
     return 0;
 
   for (p = input; *p; p++) {
-    while (*p && isspace((unsigned char) *p))
+    while (*p && isspace(*p))
       p++;
     if (!*p)
       return any;
@@ -447,7 +447,7 @@ etime_to_secs(char *input, int *secs)
       /* Just a number of seconds */
       *secs += (int) num;
       return 1;
-    } else if (isspace((unsigned char) *errptr)) {
+    } else if (isspace(*errptr)) {
       /* Number of seconds, followed by a space */
       p = errptr;
       *secs += (int) num;
@@ -615,7 +615,7 @@ do_convtime(const char *mystr, struct tm *ttm)
 
   /* get the day of month */
   p = q;
-  while (isspace((unsigned char) *p))   /* skip leading space */
+  while (isspace(*p))   /* skip leading space */
     p++;
   if (!(q = strchr(p, ' ')))
     return 0;

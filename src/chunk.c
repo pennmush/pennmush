@@ -262,7 +262,7 @@
    data. Derefs are not used. */
 
 static chunk_reference_t
-acm_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs
+acm_chunk_create(char const *data, uint16_t len, uint8_t derefs
                  __attribute__ ((__unused__)))
 {
   uint8_t *chunk;
@@ -284,7 +284,7 @@ acm_chunk_delete(chunk_reference_t reference)
 }
 
 static uint16_t
-acm_chunk_fetch(chunk_reference_t reference, unsigned char *buffer,
+acm_chunk_fetch(chunk_reference_t reference, char *buffer,
                 uint16_t buffer_len)
 {
   uint16_t len;
@@ -598,33 +598,33 @@ LenToFullLen(int len)
                  : CHUNK_MEDIUM_DATA_OFFSET : CHUNK_SHORT_DATA_OFFSET));
 }
 
-static inline unsigned char *ChunkPointer(uint16_t, uint16_t);
+static inline char *ChunkPointer(uint16_t, uint16_t);
 
 /*
  * Functions for probing and manipulating chunk headers
  */
 static inline uint16_t
-CPLenShort(const unsigned char *cptr)
+CPLenShort(const char *cptr)
 {
   return cptr[CHUNK_SHORT_LEN_OFFSET] & CHUNK_SHORT_LEN_MASK;
 }
 
 static inline uint16_t
-CPLenMedium(const unsigned char *cptr)
+CPLenMedium(const char *cptr)
 {
   return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8)
     + (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
 }
 
 static inline uint16_t
-CPLenLong(const unsigned char *cptr)
+CPLenLong(const char *cptr)
 {
   return ((cptr[CHUNK_LONG_LEN_MSB_OFFSET] & CHUNK_LONG_LEN_MSB_MASK) << 8) +
     (cptr[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK);
 }
 
 static uint16_t
-CPLen(const unsigned char *cptr)
+CPLen(const char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
     if (*cptr & CHUNK_TAG2_MASK)
@@ -642,7 +642,7 @@ ChunkLen(uint16_t region, uint16_t offset)
 }
 
 static inline uint16_t
-CPFullLen(const unsigned char *cptr)
+CPFullLen(const char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
     if (*cptr & CHUNK_TAG2_MASK)
@@ -698,8 +698,8 @@ SetChunkDerefs(uint16_t region, uint16_t offset, uint8_t derefs)
   ChunkPointer(region, offset)[CHUNK_DEREF_OFFSET] = derefs;
 }
 
-static unsigned char *
-CPDataPtr(unsigned char *cptr)
+static char *
+CPDataPtr(char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
     if (*cptr & CHUNK_TAG2_MASK)
@@ -710,7 +710,7 @@ CPDataPtr(unsigned char *cptr)
     return cptr + CHUNK_SHORT_DATA_OFFSET;
 }
 
-static inline unsigned char *
+static inline char *
 ChunkDataPtr(uint16_t region, uint16_t offset)
 {
   return CPDataPtr(ChunkPointer(region, offset));
@@ -841,10 +841,10 @@ static void find_oddballs(uint16_t region);
  * Lookup functions
  */
 
-static inline unsigned char *
+static inline char *
 ChunkPointer(uint16_t region, uint16_t offset)
 {
-  return ((unsigned char *) (regions[region].in_memory)) + offset;
+  return ((char *)(regions[region].in_memory)) + offset;
 }
 
 static uint8_t
@@ -965,7 +965,7 @@ debug_dump_region(uint16_t region, FILE * fp)
         fprintf(fp, "next:%04x\n", ChunkNextFree(region, offset));
       } else {
         fprintf(fp, "doff:%04" PRIdS "x len:%04x ",
-                ChunkDataPtr(region, offset) - (unsigned char *) rhp,
+                ChunkDataPtr(region, offset) - (char *)rhp,
                 ChunkLen(region, offset));
         count = ChunkDerefs(region, offset);
         if (count == 0xFF) {
@@ -1182,9 +1182,9 @@ region_is_valid(uint16_t region)
  */
 static void
 write_used_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
-                 unsigned char const *data, uint16_t data_len, uint8_t derefs)
+                 char const *data, uint16_t data_len, uint8_t derefs)
 {
-  unsigned char *cptr = ChunkPointer(region, offset);
+  char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
     /* chunk is short */
     cptr[0] = full_len - CHUNK_SHORT_DATA_OFFSET +
@@ -1219,7 +1219,7 @@ static void
 write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
                  uint16_t next)
 {
-  unsigned char *cptr = ChunkPointer(region, offset);
+  char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
     /* chunk is short */
     cptr[0] = full_len - CHUNK_SHORT_DATA_OFFSET +
@@ -1252,7 +1252,7 @@ write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
 static void
 write_next_free(uint16_t region, uint16_t offset, uint16_t next)
 {
-  unsigned char *cptr = ChunkPointer(region, offset);
+  char *cptr = ChunkPointer(region, offset);
   if (ChunkIsShort(region, offset)) {
     /* chunk is short */
     cptr[CHUNK_SHORT_DATA_OFFSET] = next >> 8;
@@ -2340,7 +2340,7 @@ migrate_region(uint16_t region)
 }
 
 static chunk_reference_t
-acc_chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
+acc_chunk_create(char const *data, uint16_t len, uint8_t derefs)
 {
   uint16_t full_len, region, offset;
 
@@ -2391,7 +2391,7 @@ acc_chunk_delete(chunk_reference_t reference)
 
 static uint16_t
 acc_chunk_fetch(chunk_reference_t reference,
-                unsigned char *buffer, uint16_t buffer_len)
+                char *buffer, uint16_t buffer_len)
 {
   uint16_t region, offset, len;
   region = ChunkReferenceToRegion(reference);
@@ -2742,7 +2742,7 @@ acc_chunk_fork_done(void)
  * \return the chunk reference for retrieving (or deleting) the data.
  */
 chunk_reference_t
-chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
+chunk_create(char const *data, uint16_t len, uint8_t derefs)
 {
   return ACPREFIX(chunk_create) (data, len, derefs);
 }
@@ -2768,7 +2768,7 @@ chunk_delete(chunk_reference_t reference)
  */
 uint16_t
 chunk_fetch(chunk_reference_t reference,
-            unsigned char *buffer, uint16_t buffer_len)
+            char *buffer, uint16_t buffer_len)
 {
   return ACPREFIX(chunk_fetch) (reference, buffer, buffer_len);
 }

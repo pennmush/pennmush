@@ -47,9 +47,9 @@ typedef unsigned long CType;
 
 /** A node in the huffman compression tree. */
 typedef struct cnode {
-  struct cnode *left;           /**< Left child node. */
-  struct cnode *right;          /**< Right child node. */
-  unsigned char c;              /**< character at this node. */
+  struct cnode *left;   /**< Left child node. */
+  struct cnode *right;  /**< Right child node. */
+  char c;               /**< character at this node. */
 } CNode;
 
 static CNode *ctop;
@@ -79,24 +79,24 @@ int init_compress(PENNFILE *f);
  * \param s string to be compressed.
  * \return newly allocated compressed string.
  */
-unsigned char *
+char *
 text_compress(const char *s)
 {
   CType stage;
   int bits = 0;
-  const unsigned char *p;
-  unsigned char *b, *buf;
+  const char *p;
+  char *b, *buf;
   int needed_length;
 
   /* Part 1 - how long will the compressed string be? */
-  for (p = (const unsigned char *) s; p && *p; p++)
+  for (p = s; p && *p; p++)
     bits += ltable[*p];
   bits += CHAR_BITS * 2 - 1;    /* add space for the ending \0 */
   needed_length = bits / CHAR_BITS;
 
   /* Part 2 - Actually get around to compressing the data... */
-  p = (const unsigned char *) s;
-  b = buf = (unsigned char *) malloc(needed_length);
+  p = s;
+  b = buf = malloc(needed_length);
   stage = 0;
   bits = 0;
 
@@ -166,11 +166,11 @@ do { \
  * \return a pointer to a static buffer containing the uncompressed string.
  */
 char *
-text_uncompress(const unsigned char *s)
+text_uncompress(const char *s)
 {
 
   static char buf[BUFFER_LEN];
-  const unsigned char *p;
+  const char *p;
   char *b;
   CNode *node;
 
@@ -210,9 +210,9 @@ text_uncompress(const unsigned char *s)
  * \return pointer to newly allocated string containing uncompressed text.
  */
 char *
-safe_uncompress(unsigned char const *s)
+safe_uncompress(char const *s)
 {
-  return (char *) strdup((char *) uncompress(s));
+  return strdup(uncompress(s));
 }
 
 
@@ -327,7 +327,7 @@ int
 init_compress(PENNFILE *f)
 {
   int total;
-  unsigned char c;
+  char c;
   struct {
     long freq;
     CNode *node;
@@ -372,7 +372,7 @@ init_compress(PENNFILE *f)
 #ifdef STANDALONE
   for (indx = 0; indx < TABLE_SIZE; indx++) {
     printf(isprint(indx) ? "Frequency for '%c': %d\n"
-           : "Frequency for %d: %d\n", (unsigned char) indx, table[indx].freq);
+           : "Frequency for %d: %d\n", indx, table[indx].freq);
   }
 #endif
 
@@ -555,10 +555,10 @@ main(argc, argv)
     char *argv[];
 {
   FILE *input;
-  unsigned char buffer[BUFFER_LEN];
-  unsigned char otherbuf[BUFFER_LEN];
-  unsigned char newbuffer[BUFFER_LEN];
-  unsigned char *p1, *p2;
+  char buffer[BUFFER_LEN];
+  char otherbuf[BUFFER_LEN];
+  char newbuffer[BUFFER_LEN];
+  char *p1, *p2;
   int count;
 
   if ((input = fopen(argv[1], "rb")) == NULL) {

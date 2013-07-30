@@ -552,7 +552,7 @@ static int ansi_codes[255];
 #define BUILD_ANSI(letter,ESCcode) \
 do { \
   ansi_chars[ESCcode] = letter; \
-  ansi_codes[(unsigned char) letter] = ESCcode; \
+  ansi_codes[letter] = ESCcode; \
 } while (0)
 
 /** Set up the table of ansi codes */
@@ -725,9 +725,9 @@ color_to_hex(const char *name, bool hilite)
     /* Downcase and remove all spaces. */
     p = buf;
     for (q = name; *q; q++) {
-      if (isspace((unsigned char) *q))
+      if (isspace(*q))
         continue;
-      *(p++) = tolower((unsigned char) *q);
+      *(p++) = tolower(*q);
       len += 1;
     }
     *p = '\0';
@@ -744,7 +744,7 @@ color_to_hex(const char *name, bool hilite)
     /* Invalid character code! */
     return ERROR_COLOR;
   }
-  n = tolower((unsigned char) name[0]);
+  n = tolower(name[0]);
   if (hilite) {
     for (i = 8; i < 16; i++) {
       if (colormap_16[i].desc == n) {
@@ -788,7 +788,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
 
   /* Shortcut: If it's a single character color code, it's using the 16 color map. */
   if (name[0] && !name[1]) {
-    return ansi_codes[(unsigned char) name[0]];
+    return ansi_codes[name[0]];
   }
 
   /* Is it an xterm color number? */
@@ -1006,7 +1006,7 @@ ANSI_WRITER(ansi_xterm256)
         f++;
         ret += safe_str(ANSI_BEGIN, buff, bp);
       }
-      ret += safe_integer(ansi_codes[(unsigned char) cur->fg[0]], buff, bp);
+      ret += safe_integer(ansi_codes[cur->fg[0]], buff, bp);
     }
   }
 
@@ -1023,7 +1023,7 @@ ANSI_WRITER(ansi_xterm256)
         f++;
         ret += safe_str(ANSI_BEGIN, buff, bp);
       }
-      ret += safe_integer(ansi_codes[(unsigned char) cur->bg[0]], buff, bp);
+      ret += safe_integer(ansi_codes[cur->bg[0]], buff, bp);
     }
   }
 
@@ -1128,9 +1128,9 @@ valid_color_name(const char *name)
   char buff[BUFFER_LEN];
 
   for (p = buff, q = name; *q; q++) {
-    if (isspace((unsigned char) *q))
+    if (isspace(*q))
       continue;
-    *(p++) = tolower((unsigned char) *q);
+    *(p++) = tolower(*q);
     len += 1;
   }
   *p = '\0';
@@ -1189,8 +1189,6 @@ valid_angle_hex(const char *s, int len)
   return pcre_exec(re, NULL, s, len, 0, 0, ovec, 9) > 0;
 }
 
-int safe_hexchar(unsigned int, char *, char **);
-
 /* Return true if s of the format <R G B>, and store the color in
    RRGGBB format in rgbs, which must be of at least size 7. If it
    returns false, rgbs contents is undefined. */
@@ -1242,7 +1240,7 @@ static const char *
 find_end_of_color(const char *s, bool angle)
 {
   while (*s && *s != '/' && *s != TAG_END && *s != '!'
-         && (angle ? *s != '>' : !isspace((unsigned char) *s)))
+         && (angle ? *s != '>' : !isspace(*s)))
     s += 1;
   if (angle && *s && *s == '>')
     s += 1;
@@ -1267,7 +1265,7 @@ define_ansi_data(ansi_data *store, const char *str)
   memset(store, 0, sizeof(ansi_data));
 
   while (str && *str && *str != TAG_END) {
-    while (*str && isspace((unsigned char) *str)) {
+    while (*str && isspace(*str)) {
       str++;
       new_ansi = false;
     }
@@ -1515,7 +1513,7 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
    * the '[', or the following byte. */
 
   /* Skip to the first ansi number */
-  while (*codes && !isdigit((unsigned char) *codes) && *codes != 'm')
+  while (*codes && !isdigit(*codes) && *codes != 'm')
     codes++;
 
   while (*codes && (*codes != 'm')) {
@@ -1554,9 +1552,9 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
       store->bg[1] = 0;
     }
     /* Skip current and find the next ansi number */
-    while (*codes && isdigit((unsigned char) *codes))
+    while (*codes && isdigit(*codes))
       codes++;
-    while (*codes && !isdigit((unsigned char) *codes) && (*codes != 'm'))
+    while (*codes && !isdigit(*codes) && (*codes != 'm'))
       codes++;
   }
   return 1;
@@ -1605,7 +1603,7 @@ parse_tagname(const char *ptr)
   char *tag = tagname;
   if (!ptr || !*ptr)
     return NULL;
-  while (*ptr && !isspace((unsigned char) *ptr) && *ptr != TAG_END) {
+  while (*ptr && !isspace(*ptr) && *ptr != TAG_END) {
     *(tag++) = *(ptr++);
   }
   *tag = '\0';
@@ -2532,7 +2530,7 @@ extern char escaped_chars[UCHAR_MAX + 1];
 static int
 escape_marked_str(char **str, char *buff, char **bp)
 {
-  unsigned char *in;
+  char *in;
   int retval = 0;
   int dospace = 1;
   int spaces = 0;
@@ -2540,7 +2538,7 @@ escape_marked_str(char **str, char *buff, char **bp)
 
   if (!str || !*str || !**str)
     return 0;
-  in = (unsigned char *) *str;
+  in = *str;
   for (; *in && *in != ESC_CHAR && *in != TAG_START; in++) {
     if (*in == ' ') {
       spaces++;

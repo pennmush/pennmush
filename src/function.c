@@ -1069,7 +1069,7 @@ strip_braces(const char *str)
   buff = mush_malloc(BUFFER_LEN, "strip_braces.buff");
   bufc = buff;
 
-  while (isspace((unsigned char) *str)) /* eat spaces at the beginning */
+  while (isspace(*str)) /* eat spaces at the beginning */
     str++;
 
   switch (*str) {

@@ -236,7 +236,7 @@ read_access_file(void)
         *p = '\0';
       /* Find beginning of line; ignore blank lines */
       p = buf;
-      if (*p && isspace((unsigned char) *p))
+      if (*p && isspace(*p))
         p++;
       if (*p && *p != '#') {
         can = cant = 0;
@@ -249,11 +249,11 @@ read_access_file(void)
         } else {
           if ((comment = strchr(p, '#'))) {
             *comment++ = '\0';
-            while (*comment && isspace((unsigned char) *comment))
+            while (*comment && isspace(*comment))
               comment++;
           }
           /* Move past the host name */
-          while (*p && !isspace((unsigned char) *p))
+          while (*p && !isspace(*p))
             p++;
           if (*p)
             *p++ = '\0';

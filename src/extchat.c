@@ -1466,7 +1466,7 @@ parse_chat(dbref player, char *command)
 
   s = command;
   arg1 = s;
-  while (*s && !isspace((unsigned char) *s))
+  while (*s && !isspace(*s))
     s++;
 
   if (!*s)
@@ -1475,7 +1475,7 @@ parse_chat(dbref player, char *command)
   ch = *s;
   arg2 = s;
   *arg2++ = '\0';
-  while (*arg2 && isspace((unsigned char) *arg2))
+  while (*arg2 && isspace(*arg2))
     arg2++;
 
   /* arg1 is channel name, arg2 is text. */
@@ -1893,18 +1893,18 @@ ok_channel_name(const char *n, CHAN *unique)
   mush_strncpy(name, remove_markup(n, NULL), BUFFER_LEN);
 
   /* No leading spaces */
-  if (isspace((unsigned char) *name))
+  if (isspace(*name))
     return NAME_INVALID;
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint((unsigned char) *p) || *p == '|')
+    if (!isprint(*p) || *p == '|')
       return NAME_INVALID;
   }
 
   /* No trailing spaces */
   p--;
-  if (isspace((unsigned char) *p))
+  if (isspace(*p))
     return NAME_INVALID;
 
   if (strlen(name) > CHAN_NAME_LEN - 1)
@@ -2136,7 +2136,7 @@ do_chan_title(dbref player, const char *name, const char *title)
   scan = title;
   WALK_ANSI_STRING(scan) {
     /* Stomp newlines and other weird whitespace */
-    if ((isspace((unsigned char) *scan) && (*scan != ' '))
+    if ((isspace(*scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
       return;

@@ -280,10 +280,10 @@ typedef ATTR ALIST;
 /** A text block
  */
 struct text_block {
-  int nchars;                   /**< Number of characters in the block */
-  struct text_block *nxt;       /**< Pointer to next block in queue */
-  unsigned char *start;         /**< Start of text */
-  unsigned char *buf;           /**< Current position in text */
+  int nchars;              /**< Number of characters in the block */
+  struct text_block *nxt;  /**< Pointer to next block in queue */
+  char *start;             /**< Start of text */
+  char *buf;               /**< Current position in text */
 };
 /** A queue of text blocks.
  */
@@ -370,15 +370,15 @@ struct descriptor_data {
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */
-  unsigned char *output_prefix; /**< Text to show before output */
-  unsigned char *output_suffix; /**< Text to show after output */
+  char *output_prefix;  /**< Text to show before output */
+  char *output_suffix;  /**< Text to show after output */
   int output_size;              /**< Size of output left to send */
   struct text_queue output;     /**< Output text queue */
   struct text_queue input;      /**< Input text queue */
-  unsigned char *raw_input;     /**< Pointer to start of next raw input */
-  unsigned char *raw_input_at;  /**< Pointer to position in raw input */
-  time_t connected_at;    /**< Time of connection */
-  time_t last_time;       /**< Time of last activity */
+  char *raw_input;      /**< Pointer to start of next raw input */
+  char *raw_input_at;   /**< Pointer to position in raw input */
+  time_t connected_at;  /**< Time of connection */
+  time_t last_time;     /**< Time of last activity */
   int quota;            /**< Quota of commands allowed */
   int cmds;             /**< Number of commands sent */
   int hide;             /**< Hide status */

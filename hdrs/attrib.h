@@ -100,7 +100,7 @@ void attr_write_all(PENNFILE *f);
 int can_read_attr_internal(dbref player, dbref obj, ATTR *attr);
 int can_write_attr_internal(dbref player, dbref obj, ATTR *attr, int safe);
 bool can_edit_attr(dbref player, dbref thing, const char *attrname);
-unsigned const char *atr_get_compressed_data(ATTR *atr);
+const char *atr_get_compressed_data(ATTR *atr);
 char *atr_value(ATTR *atr);
 char *
 safe_atr_value(ATTR *atr)

@@ -124,7 +124,7 @@ mush_realloc_where(void *restrict ptr, size_t newsize,
  * \param line line it called from
  */
 void
-mush_free_where(void *restrict ptr, const char *restrict check,
+mush_free_where(const void *restrict ptr, const char *restrict check,
                 const char *restrict filename, int line)
 {
 #ifdef DEBUG
@@ -135,7 +135,7 @@ mush_free_where(void *restrict ptr, const char *restrict check,
   }
 #endif
   del_check(check, filename, line);
-  free(ptr);
+  free((void *)ptr);
   return;
 }
 

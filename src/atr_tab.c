@@ -224,12 +224,12 @@ attr_read(PENNFILE *f)
     a->data = NULL_CHUNK_REFERENCE;
   } else if (AL_FLAGS(a) & AF_ENUM) {
     /* Store string as it is */
-    unsigned char *t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(tmp);
+    a->data = chunk_create(t, strlen(t), 0);
     free(t);
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
-    unsigned char *t;
+    char *t;
     pcre *re;
     const char *errptr;
     int erroffset;
@@ -244,7 +244,7 @@ attr_read(PENNFILE *f)
     pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    a->data = chunk_create(t, strlen(t), 0);
     free(t);
   }
 
@@ -688,8 +688,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
                     T("%s -- Attribute limit or enum already unset."), name);
     }
   } else {
-    unsigned char *t = compress(buff);
-    ap->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(buff);
+    ap->data = chunk_create(t, strlen(t), 0);
     free(t);
     ap->flags |= type;
     notify_format(player,

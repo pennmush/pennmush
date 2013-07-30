@@ -20,13 +20,13 @@
  * This structure represents a mail alias (or mailing list).
  */
 struct mail_alias {
-  char *name;           /**< Name of the alias */
-  unsigned char *desc;  /**< Description */
-  int size;             /**< Size of the members array */
-  dbref *members;       /**< Pointer to an array of dbrefs of list members */
-  int nflags;           /**< Permissions for who can use/see alias name */
-  int mflags;           /**< Permissions for who can list alias members */
-  dbref owner;          /**< Who owns (controls) this alias */
+  char *name;      /**< Name of the alias */
+  char *desc;      /**< Description */
+  int size;        /**< Size of the members array */
+  dbref *members;  /**< Pointer to an array of dbrefs of list members */
+  int nflags;      /**< Permissions for who can use/see alias name */
+  int mflags;      /**< Permissions for who can list alias members */
+  dbref owner;     /**< Who owns (controls) this alias */
 };
 
 

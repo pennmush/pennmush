@@ -119,7 +119,7 @@ is_ival(char const *str)
     return 1;
   if (!str)
     return 0;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -149,11 +149,11 @@ is_uival(char const *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uival_full(str, &end, 10);
@@ -305,7 +305,7 @@ FUNCTION(fun_inc)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("1", buff, bp);
@@ -313,7 +313,7 @@ FUNCTION(fun_inc)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -321,7 +321,7 @@ FUNCTION(fun_inc)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -352,7 +352,7 @@ FUNCTION(fun_dec)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("-1", buff, bp);
@@ -360,7 +360,7 @@ FUNCTION(fun_dec)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -368,7 +368,7 @@ FUNCTION(fun_dec)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -1644,7 +1644,7 @@ FUNCTION(fun_spellnum)
       dot = 1;                  /* allow only 1 dot in a number */
       *pnumber = '\0';          /* devide the string */
       pnum2 = pnumber + 1;
-    } else if (!isdigit((unsigned char) *pnumber)) {
+    } else if (!isdigit(*pnumber)) {
       safe_str(T(e_num), buff, bp);
       return;
     }
@@ -1916,9 +1916,9 @@ FUNCTION(fun_baseconv)
     }
     while (*ptr) {
       n *= from;
-      if (frombase[(unsigned char) *ptr] >= 0 &&
-          frombase[(unsigned char) *ptr] < (int) from) {
-        n += frombase[(unsigned char) *ptr];
+      if (frombase[*ptr] >= 0 &&
+          frombase[*ptr] < (int) from) {
+        n += frombase[*ptr];
         ptr++;
       } else {
         safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
@@ -1933,7 +1933,7 @@ FUNCTION(fun_baseconv)
 
   /* Handle the 0-case. (And quickly handle < to_base case, too!) */
   if (n < to) {
-    safe_chr(tobase[(unsigned char) n], buff, bp);
+    safe_chr(tobase[n], buff, bp);
     return;
   }
 
@@ -1943,7 +1943,7 @@ FUNCTION(fun_baseconv)
   while (n > 0) {
     m = n % to;
     n = n / to;
-    safe_chr(tobase[(unsigned char) m], numbuff, &nbp);
+    safe_chr(tobase[m], numbuff, &nbp);
   }
 
   /* Reverse back onto buff. */

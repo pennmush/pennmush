@@ -1133,12 +1133,12 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   orator = executor;
 
   /* eat leading whitespace */
-  while (*command && isspace((unsigned char) *command))
+  while (*command && isspace(*command))
     command++;
 
   /* eat trailing whitespace */
   p = command + strlen(command) - 1;
-  while (isspace((unsigned char) *p) && (p >= command))
+  while (isspace(*p) && (p >= command))
     p--;
   *++p = '\0';
 
@@ -1373,14 +1373,14 @@ check_alias(const char *command, const char *list)
     for (p = command; (*p && DOWNCASE(*p) == DOWNCASE(*list)
                        && *list != ALIAS_DELIMITER); p++, list++) ;
     if (*p == '\0') {
-      while (isspace((unsigned char) *list))
+      while (isspace(*list))
         list++;
       if (*list == '\0' || *list == ALIAS_DELIMITER)
         return 1;               /* word matched */
     }
     /* didn't match. check next word in list */
     while (*list && *list++ != ALIAS_DELIMITER) ;
-    while (isspace((unsigned char) *list))
+    while (isspace(*list))
       list++;
   }
   /* reached the end of the list without matching anything */
@@ -2109,7 +2109,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
 #ifndef WIN32
 #ifdef HAVE_UPTIME
   FILE *fp;
-  char c;
+  int c;
   int i;
   char tbuf1[BUFFER_LEN];
 #endif
@@ -2134,7 +2134,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   }
   /* print system uptime */
   for (i = 0; (c = getc(fp)) != '\n' && c != EOF; i++)
-    tbuf1[i] = c;
+    tbuf1[i] = (char)c;
   tbuf1[i] = '\0';
   pclose(fp);
 

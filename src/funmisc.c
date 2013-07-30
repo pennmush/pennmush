@@ -1176,11 +1176,11 @@ soundex(char *str)
   p++;
   /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
   while (*str) {
-    if (!isalpha((unsigned char) *str) || (unsigned char) *str > 127) {
+    if (!isalpha(*str) || *str > 127) {
       str++;
       continue;
     }
-    *p = soundex_val[(unsigned char) *str++];
+    *p = soundex_val[*str++];
     if (*p != *(p - 1))
       p++;
   }
@@ -1215,7 +1215,7 @@ FUNCTION(fun_soundex)
    * 5. Truncate to 4 characters or pad with 0's.
    * It's actually a bit messier than that to make it faster.
    */
-  if (!args[0] || !*args[0] || !isalpha((unsigned char) *args[0])
+  if (!args[0] || !*args[0] || !isalpha(*args[0])
       || strchr(args[0], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"), buff,
              bp);
@@ -1233,8 +1233,8 @@ FUNCTION(fun_soundlike)
    * I deem the modularity to be more important. So there.
    */
   char tbuf1[5];
-  if (!*args[0] || !*args[1] || !isalpha((unsigned char) *args[0])
-      || !isalpha((unsigned char) *args[1]) || strchr(args[0], ' ')
+  if (!*args[0] || !*args[1] || !isalpha(*args[0])
+      || !isalpha(*args[1]) || strchr(args[0], ' ')
       || strchr(args[1], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"),
              buff, bp);

@@ -89,7 +89,7 @@ extern char atr_name_table[UCHAR_MAX + 1];
 int
 good_atr_name(char const *s)
 {
-  const unsigned char *a;
+  const char *a;
   int len = 0;
   if (!s || !*s)
     return 0;
@@ -97,7 +97,7 @@ good_atr_name(char const *s)
     return 0;
   if (strstr(s, "``"))
     return 0;
-  for (a = (const unsigned char *) s; *a; a++, len++)
+  for (a = s; *a; a++, len++)
     if (!atr_name_table[*a])
       return 0;
   if (*(s + len - 1) == '`')
@@ -661,11 +661,11 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       AL_FLAGS(root) |= AF_ROOT;
       AL_CREATOR(root) = player;
       if (!EMPTY_ATTRS) {
-        unsigned char *t = compress(" ");
+        char *t = compress(" ");
         if (!t) {
           mush_panic("Unable to allocate memory in atr_new_add()!");
         }
-        root->data = chunk_create(t, u_strlen(t), 0);
+        root->data = chunk_create(t, strlen(t), 0);
         free(t);
       }
     } else {
@@ -686,11 +686,11 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   if (!s || !*s) {
     /* nothing */
   } else {
-    unsigned char *t = compress(s);
+    char *t = compress(s);
     if (!t)
       return;
 
-    ptr->data = chunk_create(t, u_strlen(t), derefs);
+    ptr->data = chunk_create(t, strlen(t), derefs);
     free(t);
 
     if (*s == '$')
@@ -764,10 +764,10 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         AL_FLAGS(root) |= AF_ROOT;
         AL_CREATOR(root) = Owner(player);
         if (!EMPTY_ATTRS) {
-          unsigned char *t = compress(" ");
+          char *t = compress(" ");
           if (!t)
             mush_panic("Unable to allocate memory in atr_add()!");
-          root->data = chunk_create(t, u_strlen(t), 0);
+          root->data = chunk_create(t, strlen(t), 0);
           free(t);
         }
       } else
@@ -798,12 +798,12 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   if (!s || !*s) {
     ptr->data = NULL_CHUNK_REFERENCE;
   } else {
-    unsigned char *t = compress(s);
+    char *t = compress(s);
     if (!t) {
       ptr->data = NULL_CHUNK_REFERENCE;
       return AE_ERROR;
     }
-    ptr->data = chunk_create(t, u_strlen(t), 0);
+    ptr->data = chunk_create(t, strlen(t), 0);
     free(t);
 
     if (*s == '$')
@@ -2281,11 +2281,11 @@ atr_free_one(ATTR *a)
  * \param atr the attribute struct from which to get the data reference.
  * \return a pointer to the compressed data, in a static buffer.
  */
-unsigned char const *
+char const *
 atr_get_compressed_data(ATTR *atr)
 {
-  static unsigned char buffer[BUFFER_LEN * 2];
-  static unsigned char const empty_string[] = { 0 };
+  static char buffer[BUFFER_LEN * 2];
+  static char const empty_string[] = { 0 };
   size_t len;
   if (!atr->data)
     return empty_string;

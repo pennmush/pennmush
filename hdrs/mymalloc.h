@@ -5,6 +5,7 @@
 #ifndef _MYMALLOC_H
 #define _MYMALLOC_H
 
+#include "compile.h"
 #include "mushtype.h"
 
 void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;

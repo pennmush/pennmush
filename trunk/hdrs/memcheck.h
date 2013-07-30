@@ -4,6 +4,8 @@
 #ifndef __MEMCHECK_H
 #define __MEMCHECK_H
 
+#include "mushtype.h"
+
 void add_check(const char *ref);
 #define ADD_CHECK(x) add_check(x)
 #define DEL_CHECK(x) del_check(x, __FILE__, __LINE__)

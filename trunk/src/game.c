@@ -6,9 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
-#include "confmagic.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -41,40 +40,44 @@ void Win32MUSH_setup(void);
 #endif
 #include <errno.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "mushdb.h"
-#include "game.h"
+#include "access.h"
+#include "ansi.h"
 #include "attrib.h"
-#include "match.h"
 #include "case.h"
-#include "extmail.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "dbio.h"
 #include "extchat.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "getpgsiz.h"
+#include "help.h"
+#include "htab.h"
+#include "intmap.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "ptab.h"
+#include "strtree.h"
+#include "strutil.h"
+#include "version.h"
+
 #ifdef HAS_OPENSSL
 #include "myssl.h"
 #endif
-#include "getpgsiz.h"
-#include "parse.h"
-#include "access.h"
-#include "version.h"
-#include "strtree.h"
-#include "command.h"
-#include "htab.h"
-#include "ptab.h"
-#include "intmap.h"
-#include "log.h"
-#include "lock.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "function.h"
-#include "help.h"
-#include "dbio.h"
-#include "mypcre.h"
+
 #ifndef WIN32
 #include "wait.h"
 #endif
-#include "ansi.h"
 
 #ifdef hpux
 #include <sys/syscall.h>

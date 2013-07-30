@@ -6,8 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <ctype.h>
@@ -43,6 +43,7 @@
 #include "parse.h"
 #include "privtab.h"
 #include "strtree.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */

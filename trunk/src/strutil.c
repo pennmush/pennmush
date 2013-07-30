@@ -6,15 +6,18 @@
  *
  */
 
+#define _GNU_SOURCE  /* For strchrnul, if applicable. */
+
 #include "config.h"
 #include "copyrite.h"
+#include "strutil.h"
 
-#include <stdio.h>
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
@@ -23,15 +26,19 @@
 #include "case.h"
 #include "conf.h"
 #include "confmagic.h"
-#include "externs.h"
-#include "externs.h"
 #include "log.h"
+#include "markup.h"
 #include "memcheck.h"
 #include "mymalloc.h"
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
 
+/* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
+   this up eventually... */
+void mush_panic(const char*);
+
+/* TODO: Move this prototype elsewhere since this function is shared. */
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
 /* Duplicate the first len characters of s */
@@ -830,6 +837,12 @@ safe_strl(const char *s, size_t len, char *buff, char **bp)
   return len - clen;
 }
 
+int
+safe_time_t(time_t t, char *buff, char **bp)
+{
+  return safe_integer((intmax_t) t, buff, bp);
+}
+
 /** Safely fill a string with a given character a given number of times.
  * \param x character to fill with.
  * \param n number of copies of character to fill in.
@@ -936,7 +949,6 @@ skip_space(const char *s)
   return c;
 }
 
-#ifndef HAVE_STRCHRNUL
 /** Return a pointer to next char in s which matches c, or to the terminating
  * nul at the end of s.
  * \param s string to search.
@@ -946,14 +958,17 @@ skip_space(const char *s)
 char *
 seek_char(const char *s, char c)
 {
+#ifdef HAVE_STRCHRNUL
+  return strchrnul(s, c);
+#else
   char *p = (char *) s;
   if (!p)
     return NULL;
   while (*p && (*p != c))
     p++;
   return p;
+#endif  /* HAVE_STRCHRNUL */
 }
-#endif
 
 /** Unsigned char version of strlen.
  * \param s string.
@@ -1700,3 +1715,15 @@ remove_trailing_whitespace(char *buff, size_t len)
   }
   return len;
 }
+
+int
+safe_chr(char c, char *buff, char **bp)
+{
+  if ((*bp - buff) >= (BUFFER_LEN - 1))
+    return 1;
+  else {
+    *(*bp)++ = c;
+    return 0;
+  }
+}
+

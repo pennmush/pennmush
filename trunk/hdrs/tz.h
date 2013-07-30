@@ -6,6 +6,13 @@
 #ifndef TZ_H
 #define TZ_H
 
+#include "config.h"
+#include <time.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif  /* HAVE_STDINT_H */
+
 struct ttinfo {
   int32_t tt_gmtoff;
   int tt_isdst;

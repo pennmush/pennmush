@@ -32,6 +32,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strtree.h"
+#include "strutil.h"
 #include "svninfo.h"
 #include "version.h"
 

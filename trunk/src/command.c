@@ -9,8 +9,9 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "command.h"
 
 #include <string.h>
 #include <assert.h>
@@ -19,7 +20,6 @@
 #include "access.h"
 #include "attrib.h"
 #include "cmds.h"
-#include "command.h"
 #include "conf.h"
 #include "confmagic.h"
 #include "dbdefs.h"
@@ -38,6 +38,7 @@
 #include "ptab.h"
 #include "sort.h"
 #include "strtree.h"
+#include "strutil.h"
 #include "version.h"
 
 PTAB ptab_command;      /**< Prefix table for command names. */

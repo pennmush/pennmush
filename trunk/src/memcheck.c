@@ -51,20 +51,22 @@
  * search.
  */
 #include "config.h"
-#include "conf.h"
 #include "copyrite.h"
+#include "memcheck.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
-#include "externs.h"
-#include "dbdefs.h"
-#include "mymalloc.h"
-#include "log.h"
 #include "SFMT.h"
 #include "confmagic.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "strutil.h"
 
 void memcheck_dump_struct(const char *filename);
 

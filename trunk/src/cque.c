@@ -6,8 +6,8 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -34,26 +34,26 @@
 #include <tmmintrin.h>
 #endif
 
-#include "conf.h"
-#include "command.h"
-#include "mushdb.h"
-#include "match.h"
-#include "externs.h"
-#include "parse.h"
-#include "strtree.h"
-#include "mymalloc.h"
-#include "game.h"
+#include "ansi.h"
 #include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
 #include "function.h"
-#include "case.h"
-#include "dbdefs.h"
-#include "log.h"
+#include "game.h"
 #include "intmap.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
 #include "ptab.h"
-#include "ansi.h"
-#include "confmagic.h"
-
+#include "strtree.h"
+#include "strutil.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;

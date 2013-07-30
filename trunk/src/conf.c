@@ -8,8 +8,9 @@
  *
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "conf.h"
 
 #include <stdio.h>
 #ifdef I_SYS_TIME
@@ -26,22 +27,22 @@
 #include <errno.h>
 #include <float.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "pueblo.h"
-#include "mymalloc.h"
-#include "mushdb.h"
-#include "parse.h"
-#include "command.h"
-#include "flags.h"
-#include "log.h"
-#include "dbdefs.h"
-#include "game.h"
 #include "attrib.h"
-#include "help.h"
-#include "function.h"
+#include "command.h"
 #include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "help.h"
+#include "log.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 time_t mudtime;                 /**< game time, in seconds */
 

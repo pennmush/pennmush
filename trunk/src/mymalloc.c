@@ -52,6 +52,7 @@
 #include "log.h"
 #include "memcheck.h"
 #include "options.h"
+#include "strutil.h"
 
 void do_list_allocations(dbref player);
 

@@ -27,29 +27,29 @@
  * \endverbatim
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+#include "lock.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "boolexp.h"
-#include "mushdb.h"
 #include "attrib.h"
-#include "dbdefs.h"
-#include "lock.h"
-#include "match.h"
-#include "log.h"
-#include "flags.h"
-#include "mymalloc.h"
-#include "strtree.h"
-#include "privtab.h"
-#include "parse.h"
-#include "htab.h"
+#include "boolexp.h"
+#include "conf.h"
 #include "confmagic.h"
-
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "htab.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
+#include "strtree.h"
+#include "strutil.h"
 
 /* If any lock_type ever contains the character '|', reading in locks
  * from the db will break.

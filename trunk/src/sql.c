@@ -26,8 +26,8 @@
  * \endverbatim
  */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 #ifdef I_UNISTD
 #include <unistd.h>
 #endif
@@ -56,18 +56,19 @@ static PGconn *postgres_connp = NULL;
 static sqlite3 *sqlite3_connp = NULL;
 #endif
 
-#include "conf.h"
-#include "externs.h"
-#include "mymalloc.h"
-#include "dbdefs.h"
-#include "log.h"
-#include "parse.h"
-#include "command.h"
-#include "function.h"
-#include "mushdb.h"
-#include "confmagic.h"
 #include "ansi.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "function.h"
+#include "log.h"
 #include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 /* Supported platforms */
 typedef enum { SQL_PLATFORM_DISABLED = -1,

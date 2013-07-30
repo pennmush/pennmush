@@ -6,6 +6,11 @@
 
 #ifndef _EXTMAIL_H
 #define _EXTMAIL_H
+
+#include "dbdefs.h"
+#include "dbio.h"
+#include "mushtype.h"
+
 /* Some of this isn't implemented yet, but heralds the future! */
 #define M_MSGREAD       0x0001U
 #define M_UNREAD        0x0FFEU

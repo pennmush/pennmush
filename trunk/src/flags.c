@@ -19,6 +19,7 @@
  */
 
 #include "config.h"
+#include "flags.h"
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -31,28 +32,27 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "command.h"
 #include "attrib.h"
-#include "mushdb.h"
-#include "parse.h"
-#include "match.h"
-#include "ptab.h"
+#include "command.h"
+#include "conf.h"
+#include "confmagic.h"
+#include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "game.h"
 #include "hash_function.h"
 #include "htab.h"
-#include "privtab.h"
-#include "game.h"
-#include "flags.h"
-#include "dbdefs.h"
 #include "lock.h"
 #include "log.h"
-#include "dbio.h"
-#include "sort.h"
+#include "match.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "oldflags.h"
-#include "confmagic.h"
-
+#include "parse.h"
+#include "privtab.h"
+#include "ptab.h"
+#include "sort.h"
+#include "strutil.h"
 
 static bool can_set_flag(dbref player, dbref thing, const FLAG *flagp,
                          int negate);

@@ -19,6 +19,7 @@
 #define LOOKUP_H
 
 #include "copyrite.h"
+#include "mysocket.h"
 
 /** Datagram sent to info_slave from the mush */
 struct request_dgram {

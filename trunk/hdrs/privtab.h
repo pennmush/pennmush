@@ -8,9 +8,11 @@
 #ifndef __PRIVTAB_H
 #define __PRIVTAB_H
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
+
 #include "confmagic.h"
+#include "mushtype.h"
 
 typedef struct priv_info PRIV;
 

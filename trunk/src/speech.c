@@ -7,28 +7,29 @@
  */
 /* speech.c */
 
-#include "copyrite.h"
 #include "config.h"
+#include "copyrite.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "conf.h"
-#include "externs.h"
-#include "mymalloc.h"
 #include "ansi.h"
-#include "mushdb.h"
+#include "attrib.h"
+#include "conf.h"
+#include "confmagic.h"
 #include "dbdefs.h"
-#include "lock.h"
+#include "externs.h"
 #include "flags.h"
+#include "game.h"
+#include "lock.h"
 #include "log.h"
 #include "match.h"
-#include "attrib.h"
-#include "parse.h"
-#include "game.h"
+#include "mushdb.h"
+#include "mymalloc.h"
 #include "mypcre.h"
+#include "parse.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 static void do_one_remit(dbref executor, dbref speaker, const char *target,
                          const char *msg, int flags, struct format_msg *format,

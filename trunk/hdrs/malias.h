@@ -7,6 +7,8 @@
 #ifndef _MALIAS_H
 #define _MALIAS_H
 
+#include "dbio.h"
+#include "mushtype.h"
 
 #define MALIAS_TOKEN    '+'     /**< Initial char for alias names */
 

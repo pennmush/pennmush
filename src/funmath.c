@@ -1798,7 +1798,7 @@ FUNCTION(fun_lmath)
   int nptr;
   char sep;
   char **ptr;
-  MATH *op;
+  const MATH *op;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep)) {
     return;

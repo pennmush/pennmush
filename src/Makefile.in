@@ -129,16 +129,16 @@ local.c: local.dst
 
 # The following source files are auto-generated with gperf.
 bflags.c: bflags.gperf
-	gperf --output-file bflags.c bflags.gperf
+	gperf -C --output-file bflags.c bflags.gperf
 
 htmltab.c: htmltab.gperf
-	gperf --output-file htmltab.c htmltab.gperf
+	gperf -C --output-file htmltab.c htmltab.gperf
 
 lmathtab.c: lmathtab.gperf
-	gperf --output-file lmathtab.c lmathtab.gperf
+	gperf -C --output-file lmathtab.c lmathtab.gperf
 
 rgbtab.c: rgbtab.gperf
-	gperf --output-file rgbtab.c rgbtab.gperf
+	gperf -C --output-file rgbtab.c rgbtab.gperf
 
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h

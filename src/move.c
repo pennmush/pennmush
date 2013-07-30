@@ -7,7 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -17,7 +16,6 @@
 #include "cmds.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

@@ -7,7 +7,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "parse.h"
 
@@ -26,7 +25,6 @@
 #include "attrib.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

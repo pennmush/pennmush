@@ -11,8 +11,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
+#include "myssl.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -68,19 +67,15 @@ void shutdown_checkpoint(void);
 #endif
 #include <stdio.h>
 
-#include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/dh.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#include "conf.h"
-#include "mysocket.h"
-#include "externs.h"
-#include "myssl.h"
-#include "parse.h"
 #include "SFMT.h"
-#include "confmagic.h"
+#include "conf.h"
+#include "externs.h"
+#include "parse.h"
 
 #define MYSSL_RB        0x1     /**< Read blocked (on read) */
 #define MYSSL_WB        0x2     /**< Write blocked (on write) */

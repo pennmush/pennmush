@@ -9,6 +9,7 @@
 #ifndef __GAME_H
 #define __GAME_H
 
+#include "dbio.h"
 #include "mushtype.h"
 
 /* @scan flags */

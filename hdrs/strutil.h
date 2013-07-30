@@ -7,7 +7,6 @@
 #ifndef __STRUTIL_H
 #define __STRUTIL_H
 
-#include "config.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <time.h>

@@ -9,7 +9,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "command.h"
 
@@ -21,7 +20,6 @@
 #include "attrib.h"
 #include "cmds.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "extmail.h"

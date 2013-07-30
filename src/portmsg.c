@@ -50,7 +50,6 @@
  */
 /*#define SINGLE_IP_ADDR "your.address.goes.here" */
 
-#include "config.h"
 #include <stdio.h>
 #ifdef I_UNISTD
 #include <unistd.h>

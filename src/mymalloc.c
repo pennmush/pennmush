@@ -29,6 +29,7 @@
  */
 
 #include "mymalloc.h"
+
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
@@ -42,12 +43,10 @@
 #endif
 
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "getpgsiz.h"
 #include "log.h"
 #include "memcheck.h"
-#include "options.h"
 #include "strutil.h"
 
 /** A malloc wrapper that tracks type of allocation.

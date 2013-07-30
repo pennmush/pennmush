@@ -31,8 +31,8 @@
  */
 
 #include "copyrite.h"
+#include "strtree.h"
 
-#include "config.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,11 +40,10 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+
 #include "conf.h"
 #include "externs.h"
 #include "mymalloc.h"
-#include "strtree.h"
-#include "confmagic.h"
 
 /* Various constants.  Their import is either bleedingly obvious
  * or explained below. */

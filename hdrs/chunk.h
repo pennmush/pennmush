@@ -5,7 +5,6 @@
 #include <stdint.h>
 #endif
 #include "mushtype.h"
-#include "options.h"
 
 #undef LOG_CHUNK_STATS
 

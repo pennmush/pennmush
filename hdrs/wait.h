@@ -2,11 +2,6 @@
  * \file wait.h
  *
  * \brief Process and process group control functions.
- *
- * \verbatim
- * Must be #included after config.h, <sys/types.h> and <unistd.h>
- * \endverbatim
- *
  */
 
 #ifndef WAIT_H

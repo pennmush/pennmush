@@ -12,8 +12,8 @@
  * info_slave takes one argument, the descriptor of the local socket.
  *
  */
+
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef WIN32
 #error "info_slave is not currently supported on Windows"
@@ -53,11 +53,9 @@
 
 #include "conf.h"
 #include "externs.h"
-#include "wait.h"
-#include "mysocket.h"
 #include "lookup.h"
-
-#include "confmagic.h"
+#include "mysocket.h"
+#include "wait.h"
 
 void fputerr(const char *);
 const char *time_string(void);

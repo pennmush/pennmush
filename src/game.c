@@ -3,11 +3,14 @@
  *
  * \brief The main game driver.
  *
- *
  */
 
-#include "config.h"
 #include "copyrite.h"
+/* TODO: Temporary to make externs.h happy. Yay for dependencies. */
+#include "conf.h"
+/* TODO: Temporary hack until notify_* functions are moved. */
+#include "externs.h"
+#include "game.h"
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -46,15 +49,12 @@ void Win32MUSH_setup(void);
 #include "case.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "dbdefs.h"
-#include "dbio.h"
 #include "extchat.h"
 #include "externs.h"
 #include "extmail.h"
 #include "flags.h"
 #include "function.h"
-#include "game.h"
 #include "getpgsiz.h"
 #include "help.h"
 #include "htab.h"
@@ -83,8 +83,6 @@ void Win32MUSH_setup(void);
 #include <sys/syscall.h>
 #define getrusage(x,p)   syscall(SYS_GETRUSAGE,x,p)
 #endif                          /* fix to HP-UX getrusage() braindamage */
-
-#include "confmagic.h"
 
 /* declarations */
 GLOBALTAB globals = { 0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0 };

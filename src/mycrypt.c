@@ -7,16 +7,14 @@
  * Also see player.c.
  */
 
-#include "config.h"
-#include "confmagic.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <pcre.h>
+
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "log.h"
 #include "strutil.h"

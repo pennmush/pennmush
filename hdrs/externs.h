@@ -24,8 +24,6 @@
 #define N_(str) str
 #endif
 #include "compile.h"
-#include "config.h"
-#include "confmagic.h"
 #include "copyrite.h"
 #include "dbdefs.h"
 #include "mushtype.h"

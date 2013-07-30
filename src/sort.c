@@ -3,17 +3,16 @@
  * \brief Sorting and comparision functions
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "sort.h"
 
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "mymalloc.h"
 #include "parse.h"

@@ -8,7 +8,6 @@
  *
  */
 
-#include "config.h"
 #include "copyrite.h"
 #include "conf.h"
 
@@ -30,7 +29,6 @@
 #include "ansi.h"
 #include "attrib.h"
 #include "command.h"
-#include "confmagic.h"
 #include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"

@@ -7,7 +7,6 @@
 #ifndef __ACCESS_H
 #define __ACCESS_H
 
-#include "config.h"
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif  /* HAVE_STDINT_H_ */

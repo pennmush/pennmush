@@ -23,8 +23,8 @@
  * popiel@wolfskeep.com to work out agreeable terms.
  */
 
-#include "config.h"
 #include "copyrite.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
@@ -32,7 +32,6 @@
 #include "ansi.h"
 #include "case.h"
 #include "conf.h"
-#include "confmagic.h"
 #include "externs.h"
 #include "memcheck.h"
 #include "mymalloc.h"

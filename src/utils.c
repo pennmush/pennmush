@@ -385,7 +385,7 @@ find_entrance(dbref door)
 {
   dbref room;
   dbref thing;
-  for (room = 0; room < db_top; room++)
+  for (room = 0; room < db_top; room++) {
     if (IsRoom(room)) {
       thing = Exits(room);
       while (thing != NOTHING) {
@@ -394,6 +394,7 @@ find_entrance(dbref door)
         thing = Next(thing);
       }
     }
+  }
   return NOTHING;
 }
 

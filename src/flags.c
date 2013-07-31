@@ -2680,7 +2680,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
     }
     /* Is this letter already in use for this type? */
     if (letter) {
-      if (letter_to_flagptr(n, letter, type)) {
+      if ((f = letter_to_flagptr(n, letter, type))) {
         notify_format(player, T("Letter conflicts with the %s %s."), f->name,
                       strlower(ns));
         return;

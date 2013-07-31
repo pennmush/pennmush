@@ -295,9 +295,9 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
-  unsigned char hash[SHA_DIGEST_LENGTH];
+  uint8_t hash[SHA_DIGEST_LENGTH];
 
-  SHA((unsigned char *) args[0], arglens[0], hash);
+  SHA((uint8_t *)args[0], arglens[0], hash);
 
   safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
 }

@@ -577,7 +577,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
 
   p = flag;
   /* Skip leading spaces */
-  while (*p && isspace((unsigned char) *p))
+  while (*p && isspace(*p))
     p++;
 
   af.setf = af.clrf = 0;

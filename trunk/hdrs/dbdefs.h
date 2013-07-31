@@ -321,7 +321,7 @@ struct mail {
 typedef struct mail MAIL;
 
 
-extern const char *EOD;
+extern const char EOD[];
 
 #define SPOOF_NOSWITCH(executor, enactor) \
   ((Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor)

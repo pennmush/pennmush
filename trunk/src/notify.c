@@ -117,7 +117,7 @@ extern CHAN *channels;
         for(d = descriptor_list;(d);d=(d)->next) \
           if((d)->connected)
 
-static const char *flushed_message = "\r\n<Output Flushed>\x1B[0m\r\n";
+static const char flushed_message[] = "\r\n<Output Flushed>\x1B[0m\r\n";
 
 extern DESC *descriptor_list;
 #ifdef WIN32

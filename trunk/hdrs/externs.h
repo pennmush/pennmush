@@ -409,7 +409,7 @@ int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
       char attrname[ATTRIBUTE_NAME_LIMIT + 1];
                                            /**< Name of attribute */
       int pe_flags;                        /**< Flags to use when evaluating attr (for debug, no_debug) */
-      char *errmess;                       /**< Error message, if attr couldn't be retrieved */
+      const char *errmess;                 /**< Error message, if attr couldn't be retrieved */
       int ufun_flags;                      /**< UFUN_* flags, for how to parse/eval the attr */
     } ufun_attrib;
 
@@ -494,21 +494,21 @@ char *ansi_name(dbref thing, bool accents, bool *had_moniker);
 
 /** Types of lists */
 
-    extern char ALPHANUM_LIST[];
-    extern char INSENS_ALPHANUM_LIST[];
-    extern char DBREF_LIST[];
-    extern char NUMERIC_LIST[];
-    extern char FLOAT_LIST[];
-    extern char DBREF_NAME_LIST[];
-    extern char DBREF_NAMEI_LIST[];
-    extern char DBREF_IDLE_LIST[];
-    extern char DBREF_CONN_LIST[];
-    extern char DBREF_CTIME_LIST[];
-    extern char DBREF_OWNER_LIST[];
-    extern char DBREF_LOCATION_LIST[];
-    extern char DBREF_ATTR_LIST[];
-    extern char DBREF_ATTRI_LIST[];
-    extern char *UNKNOWN_LIST;
+    extern const char ALPHANUM_LIST[];
+    extern const char INSENS_ALPHANUM_LIST[];
+    extern const char DBREF_LIST[];
+    extern const char NUMERIC_LIST[];
+    extern const char FLOAT_LIST[];
+    extern const char DBREF_NAME_LIST[];
+    extern const char DBREF_NAMEI_LIST[];
+    extern const char DBREF_IDLE_LIST[];
+    extern const char DBREF_CONN_LIST[];
+    extern const char DBREF_CTIME_LIST[];
+    extern const char DBREF_OWNER_LIST[];
+    extern const char DBREF_LOCATION_LIST[];
+    extern const char DBREF_ATTR_LIST[];
+    extern const char DBREF_ATTRI_LIST[];
+    extern const char *const UNKNOWN_LIST;
 
 /* From function.c and other fun*.c */
     char *strip_braces(char const *line);

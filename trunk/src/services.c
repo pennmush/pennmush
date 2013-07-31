@@ -393,8 +393,8 @@ worker_thread(VOID * notused)
   int argc = 3;
   char fullfilename[MAX_PATH];
   char directory[MAX_PATH];
-  char configname[] = "mush.cnf";
-  char errorlogname[] = "log\\game.log";
+  static const char configname[] = "mush.cnf";
+  static const char errorlogname[] = "log\\game.log";
   char *argv[3] = { fullfilename, configname, errorlogname };
   char *p;
 

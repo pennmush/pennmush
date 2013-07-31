@@ -143,7 +143,7 @@ CheckDatabase(const char *path, FILETIME * modified, long *filesize)
   HANDLE filscan;
   WIN32_FIND_DATA fildata;
   SYSTEMTIME st;
-  static char *months[] =
+  static const char *const months[] =
     { ">!<", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
     "Oct", "Nov", "Dec"
   };

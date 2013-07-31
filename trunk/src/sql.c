@@ -684,7 +684,7 @@ FUNCTION(fun_mapsql)
 {
   void *qres;
   ufun_attrib ufun;
-  char *osep = (char *) " ";
+  const char *osep = " ";
   int affected_rows;
   int rownum;
   int numfields, numrows;
@@ -863,8 +863,8 @@ finished:
 FUNCTION(fun_sql)
 {
   void *qres;
-  char *rowsep = (char *) " ";
-  char *fieldsep = (char *) " ";
+  const char *rowsep = " ";
+  const char *fieldsep = " ";
   char tbuf[BUFFER_LEN], *tbp;
   char *cell = NULL;
   int affected_rows;

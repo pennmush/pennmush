@@ -1261,7 +1261,7 @@ FUNCTION(fun_null)
 FUNCTION(fun_list)
 {
   int which = 3;
-  char *fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = { "builtin", "local", "all" };
   if (nargs == 2) {
     if (!strcasecmp(args[1], "local"))
       which = 2;

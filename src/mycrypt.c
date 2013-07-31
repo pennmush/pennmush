@@ -213,7 +213,7 @@ password_comp(const char *saved, const char *pass)
   int c;
 
   if (!passwd_re) {
-    static const char *re = "^\\d+:(\\w+):([0-9a-zA-Z]+):\\d+";
+    static const char re[] = "^\\d+:(\\w+):([0-9a-zA-Z]+):\\d+";
     const char *errptr;
     int erroffset = 0;
     passwd_re = pcre_compile(re, 0, &errptr, &erroffset, tables);

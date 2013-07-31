@@ -71,7 +71,7 @@ dbref errobj;             /**< Dbref of object on which an error has occurred */
 int dbline = 0;           /**< Line of the database file being read */
 
 /** String that markes the end of dumps */
-const char *EOD = "***END OF DUMP***\n";
+const char EOD[] = "***END OF DUMP***\n";
 
 #ifndef DB_INITIAL_SIZE
 #define DB_INITIAL_SIZE 5000   /**< Initial size for db array */

@@ -908,7 +908,7 @@ safe_fill_to(char x, size_t n, char *buff) {
 int
 safe_hexchar(char c, char *buff, char **bp)
 {
-  const char *digits = "0123456789abcdef";
+  static const char digits[] = "0123456789abcdef";
   if (safe_chr(digits[c >> 4], buff, bp))
     return 1;
   if (safe_chr(digits[c & 0x0F], buff, bp))
@@ -1005,7 +1005,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 }
 
 /** Standard replacer tokens for text and position */
-const char *standard_tokens[2] = { "##", "#@" };
+const char *const standard_tokens[2] = { "##", "#@" };
 
 /* Replace two tokens in a string at once. All-around better than calling
  * replace_string() twice
@@ -1019,7 +1019,7 @@ const char *standard_tokens[2] = { "##", "#@" };
  * \return allocated string with replacements performed.
  */
 char *
-replace_string2(const char *old[2], const char *newbits[2],
+replace_string2(const char *const old[2], const char *const newbits[2],
                 const char *restrict string)
 {
   char *result, *rp;
@@ -1315,7 +1315,7 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
   char *current;
   int size = 0, neg = 0;
   imaxdiv_t r;
-  const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+  static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
   /* Sanity checks */
   if (!bp || !buff || !*bp)

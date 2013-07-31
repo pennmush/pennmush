@@ -17,7 +17,7 @@
 #include <stdint.h>
 #endif  /* HAVE_STDINT_H */
 
-extern const char *standard_tokens[2];      /* ## and #@ */
+extern const char *const standard_tokens[2];      /* ## and #@ */
 
 #ifndef HAVE_STRCASECMP
 #ifdef HAVE__STRICMP
@@ -120,7 +120,7 @@ char *replace_string(
     const char *restrict string) __attribute_malloc__;
 
 char *replace_string2(
-    const char *old[2], const char *newbits[2],
+    const char *const old[2], const char *const newbits[2],
     const char *restrict string) __attribute_malloc__;
 
 char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);

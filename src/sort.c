@@ -419,8 +419,8 @@ GENRECORD(gen_db_loc)
 GENRECORD(gen_db_attr)
 {
   /* Eek, I hate dealing with memory issues. */
-
-  static char *defstr = (char *) "";
+  /* TODO: This is all sorts of wrong. Fix it. */
+  static char *defstr = (char *)"";
   const char *ptr;
 
   rec->memo.str.s = defstr;
@@ -608,24 +608,24 @@ f_comp(const void *s1, const void *s2)
 #define IS_STRING 0x2U
 #define IS_CASE_INSENS 0x4U
 
-char ALPHANUM_LIST[] = "A";
-char INSENS_ALPHANUM_LIST[] = "I";
-char DBREF_LIST[] = "D";
-char NUMERIC_LIST[] = "N";
-char FLOAT_LIST[] = "F";
-char MAGIC_LIST[] = "M";
-char DBREF_NAME_LIST[] = "NAME";
-char DBREF_NAMEI_LIST[] = "NAMEI";
-char DBREF_IDLE_LIST[] = "IDLE";
-char DBREF_CONN_LIST[] = "CONN";
-char DBREF_CTIME_LIST[] = "CTIME";
-char DBREF_MTIME_LIST[] = "MTIME";
-char DBREF_OWNER_LIST[] = "OWNER";
-char DBREF_LOCATION_LIST[] = "LOC";
-char DBREF_ATTR_LIST[] = "ATTR";
-char DBREF_ATTRI_LIST[] = "ATTRI";
-char ATTRNAME_LIST[] = "LATTR";
-char *UNKNOWN_LIST = NULL;
+const char ALPHANUM_LIST[] = "A";
+const char INSENS_ALPHANUM_LIST[] = "I";
+const char DBREF_LIST[] = "D";
+const char NUMERIC_LIST[] = "N";
+const char FLOAT_LIST[] = "F";
+const char MAGIC_LIST[] = "M";
+const char DBREF_NAME_LIST[] = "NAME";
+const char DBREF_NAMEI_LIST[] = "NAMEI";
+const char DBREF_IDLE_LIST[] = "IDLE";
+const char DBREF_CONN_LIST[] = "CONN";
+const char DBREF_CTIME_LIST[] = "CTIME";
+const char DBREF_MTIME_LIST[] = "MTIME";
+const char DBREF_OWNER_LIST[] = "OWNER";
+const char DBREF_LOCATION_LIST[] = "LOC";
+const char DBREF_ATTR_LIST[] = "ATTR";
+const char DBREF_ATTRI_LIST[] = "ATTRI";
+const char ATTRNAME_LIST[] = "LATTR";
+const char *const UNKNOWN_LIST = NULL;
 
 ListTypeInfo ltypelist[] = {
   /* List type name,            recordmaker,    comparer, dbrefs? */

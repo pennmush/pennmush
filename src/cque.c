@@ -1694,8 +1694,8 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
 FUNCTION(fun_pidinfo)
 {
   char *r, *s;
-  char *osep, osepd[2] = { ' ', '\0' };
-  char *fields, field[80] = "queue player time object attribute command";
+  const char *osep = " ";
+  char *fields, field[] = "queue player time object attribute command";
   uint32_t pid;
   MQUE *q;
   bool first = true;
@@ -1726,9 +1726,6 @@ FUNCTION(fun_pidinfo)
 
   if (nargs == 3)
     osep = args[2];
-  else {
-    osep = osepd;
-  }
 
   s = trim_space_sep(fields, ' ');
   do {

@@ -39,10 +39,10 @@ char *
 mush_crypt_sha0(const char *key)
 {
   static char crypt_buff[70];
-  unsigned char hash[SHA_DIGEST_LENGTH];
+  uint8_t hash[SHA_DIGEST_LENGTH];
   unsigned int a, b;
 
-  SHA((unsigned char *) key, strlen(key), hash);
+  SHA((uint8_t *) key, strlen(key), hash);
 
   memcpy(&a, hash, sizeof a);
   memcpy(&b, hash + sizeof a, sizeof b);
@@ -55,6 +55,10 @@ mush_crypt_sha0(const char *key)
     b = ((rb & 0xFF00FF00L) >> 8) | ((rb & 0x00FF00FFL) << 8);
   }
 
+  /* TODO: SHA-0 is already considered insecure, but due to the lack of
+   * delimiters, this matches far more than it should. For example, suppose
+   * a= 23 and b=456. Anything which hashed to a=1, b=23456 or a=12, b=3456
+   * would also erroneously match! */
   sprintf(crypt_buff, "XX%u%u", a, b);
 
   return crypt_buff;

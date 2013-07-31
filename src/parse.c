@@ -1925,7 +1925,7 @@ process_expression(char *buff, char **bp, char const **str,
       int len, len2;
       /* Inlined strcspn() equivalent, to save on overhead and portability */
       pos = *str;
-      while (!active_table[*(unsigned char const *) *str])
+      while (!active_table[**str])
         (*str)++;
       /* Inlined safe_str(), since the source string
        * may not be null terminated */

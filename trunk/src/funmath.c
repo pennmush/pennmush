@@ -1822,7 +1822,7 @@ FUNCTION(fun_lmath)
 
 /* Walker probably needs to convert from_base_XX arrays to a form
    suitable for putting in utils/gentables.c. Copy & paste is not it. ;)  */
-signed char from_base_64[256] = {
+static const signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, 62, -1, 63,
@@ -1841,10 +1841,10 @@ signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_64[] =
+static const signed char to_base_64[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-signed char from_base_36[256] = {
+static const signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1863,7 +1863,7 @@ signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+static const signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 
 FUNCTION(fun_baseconv)
@@ -1877,8 +1877,8 @@ FUNCTION(fun_baseconv)
 
 
   /* Base 36 by default. */
-  signed char *frombase = from_base_36;
-  signed char *tobase = to_base_36;
+  const signed char *frombase = from_base_36;
+  const signed char *tobase = to_base_36;
 
   if (!(is_integer(args[1]) && is_integer(args[2]))) {
     safe_str(T(e_ints), buff, bp);

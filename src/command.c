@@ -70,7 +70,7 @@ int run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                       MQUE *from_queue);
 void do_command_clone(dbref player, char *original, char *clone);
 
-const char *CommandLock = "CommandLock";
+static const char CommandLock[] = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
@@ -749,7 +749,7 @@ switchmask(const char *switches)
 void
 reserve_alias(const char *a)
 {
-  static char placeholder[2] = "x";
+  static const char placeholder[] = "x";
   hashadd(strupper(a), (void *) placeholder, &htab_reserved_aliases);
 }
 
@@ -1088,6 +1088,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
   static char exit_command[BUFFER_LEN], *ec;
+  /* TODO: Fix this as some commands actually modify lsp/rsp so we can't just
+   * make empty const, but if the value of empty were to ever change, things
+   * would probably break... */
   static char *empty = "";
   char *lsa[MAX_ARG] = { NULL };
   char *rsa[MAX_ARG] = { NULL };

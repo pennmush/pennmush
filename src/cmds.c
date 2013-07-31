@@ -880,7 +880,7 @@ COMMAND(cmd_list)
 {
   int lc;
   int which = 3;
-  char *fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = { "builtin", "local", "all" };
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
   if (SW_ISSET(sw, SWITCH_ALL))
     which = 3;

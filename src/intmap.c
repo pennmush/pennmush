@@ -405,7 +405,8 @@ static void
 pat_list_links(patricia *node, FILE * fp)
 {
   int i;
-  const char *edge_styles[] = { "style=dashed,arrowhead=open",
+  static const char *const edge_styles[] = {
+    "style=dashed,arrowhead=open",
     "style=solid,arrowhead=normal"
   };
 

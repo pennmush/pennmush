@@ -21,21 +21,21 @@
 #include "mushtype.h"
 
 /* These are some common error messages. */
-extern char e_int[];            /* #-1 ARGUMENT MUST BE INTEGER */
-extern char e_ints[];           /* #-1 ARGUMENTS MUST BE INTEGERS */
-extern char e_uint[];           /* #-1 ARGUMENT MUST BE POSITIVE INTEGER */
-extern char e_uints[];          /* #-1 ARGUMENTS MUST BE POSITIVE INTEGERS */
-extern char e_num[];            /* #-1 ARGUMENT MUST BE NUMBER */
-extern char e_nums[];           /* #-1 ARGUMENTS MUST BE NUMBERS */
-extern char e_perm[];           /* #-1 PERMISSION DENIED */
-extern char e_atrperm[];        /* #-1 NO PERMISSION TO GET ATTRIBUTE */
-extern char e_match[];          /* #-1 NO MATCH */
-extern char e_notvis[];         /* #-1 NO SUCH OBJECT VISIBLE */
-extern char e_disabled[];       /* #-1 FUNCTION DISABLED */
-extern char e_range[];          /* #-1 OUT OF RANGE */
-extern char e_argrange[];       /* #-1 ARGUMENT OUT OF RANGE */
-extern char e_badregname[];     /* #-1 REGISTER NAME INVALID */
-extern char e_toomanyregs[];    /* #-1 TOO MANY REGISTERS */
+extern const char e_int[];            /* #-1 ARGUMENT MUST BE INTEGER */
+extern const char e_ints[];           /* #-1 ARGUMENTS MUST BE INTEGERS */
+extern const char e_uint[];           /* #-1 ARGUMENT MUST BE POSITIVE INTEGER */
+extern const char e_uints[];          /* #-1 ARGUMENTS MUST BE POSITIVE INTEGERS */
+extern const char e_num[];            /* #-1 ARGUMENT MUST BE NUMBER */
+extern const char e_nums[];           /* #-1 ARGUMENTS MUST BE NUMBERS */
+extern const char e_perm[];           /* #-1 PERMISSION DENIED */
+extern const char e_atrperm[];        /* #-1 NO PERMISSION TO GET ATTRIBUTE */
+extern const char e_match[];          /* #-1 NO MATCH */
+extern const char e_notvis[];         /* #-1 NO SUCH OBJECT VISIBLE */
+extern const char e_disabled[];       /* #-1 FUNCTION DISABLED */
+extern const char e_range[];          /* #-1 OUT OF RANGE */
+extern const char e_argrange[];       /* #-1 ARGUMENT OUT OF RANGE */
+extern const char e_badregname[];     /* #-1 REGISTER NAME INVALID */
+extern const char e_toomanyregs[];    /* #-1 TOO MANY REGISTERS */
 
 /* The following routines all take strings as arguments, and return
  * data of the appropriate types.

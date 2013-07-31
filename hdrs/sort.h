@@ -15,7 +15,7 @@
 struct _ufun_attrib;
 
 /* Sort and comparision functions */
-typedef char *SortType;
+typedef const char *SortType;
 typedef struct sort_record s_rec;
 typedef int (*qsort_func) (const void *, const void *);
 typedef void (*makerecord) (s_rec *, dbref player, char *sortflags);
@@ -30,7 +30,7 @@ struct sort_record {
   dbref db;      /**< dbref (default 0, bad is -1) */
   union {
     struct {
-      char *s;     /**< string comparisons */
+      char *s;        /**< string comparisons */
       bool freestr;   /**< free str on completion */
     } str;
     int num;       /**< integer comparisons */

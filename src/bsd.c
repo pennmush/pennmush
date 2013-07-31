@@ -249,15 +249,15 @@ static int handle_telnet(DESC *d, char **q, char *qend);
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1))
 
-static const char *create_fail =
+static const char create_fail[] =
   "Either there is already a player with that name, or that name is illegal.";
-static const char *password_fail = "The password is invalid (or missing).";
-static const char *register_fail =
+static const char password_fail[] = "The password is invalid (or missing).";
+static const char register_fail[] =
   "Unable to register that player with that email address.";
-static const char *register_success =
+static const char register_success[] =
   "Registration successful! You will receive your password by email.";
-static const char *shutdown_message = "Going down - Bye";
-static const char *asterisk_line =
+static const char shutdown_message[] = "Going down - Bye";
+static const char asterisk_line[] =
   "**********************************************************************";
 /** Where we save the descriptor info across reboots. */
 #define REBOOTFILE              "reboot.db"
@@ -291,7 +291,7 @@ intmap *descs_by_fd = NULL; /**< Map of ports to DESC* objects */
 static int sock;
 static int sslsock = 0;
 SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
-static const char *ssl_shutdown_message __attribute__ ((__unused__)) =
+static const char ssl_shutdown_message[] __attribute__ ((__unused__)) =
   "GAME: SSL connections must be dropped, sorry.";
 #ifdef LOCAL_SOCKET
 static int localsock = 0;
@@ -2199,7 +2199,7 @@ test_telnet(DESC *d)
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
     /*  IAC DO LINEMODE */
-    char query[3] = "\xFF\xFD\x22";
+    static const char query[3] = "\xFF\xFD\x22";
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -2219,7 +2219,7 @@ setup_telnet(DESC *d)
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
     /* IAC-DO-NAWS IAC-DO-TTYPE IAC-WILL-MSSP IAC-WILL-CHARSET */
-    char extra_options[12] =
+    static const char extra_options[12] =
       "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46" "\xFF\xFB\x2A";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
@@ -2431,7 +2431,7 @@ handle_telnet(DESC *d, char **q, char *qend)
 #endif
     } else if (**q == TN_TTYPE) {
       /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SE */
-      char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
+      static const char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
       queue_newwrite(d, reply, 6);
     } else if (**q == TN_SGA || **q == TN_NAWS) {
       /* This is good to be at. */
@@ -5775,7 +5775,7 @@ inactivity_check(void)
        a telnet-aware client, send a NOP */
     if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60
         && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
-      const char nopmsg[2] = { IAC, NOP };
+      static const char nopmsg[2] = { IAC, NOP };
       queue_newwrite(d, nopmsg, 2);
       process_output(d);
     }

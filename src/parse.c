@@ -62,23 +62,23 @@ FUNCTION_PROTO(fun_gfun);
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 /* Common error messages */
-char e_int[] = "#-1 ARGUMENT MUST BE INTEGER";
-char e_ints[] = "#-1 ARGUMENTS MUST BE INTEGERS";
-char e_uint[] = "#-1 ARGUMENT MUST BE POSITIVE INTEGER";
-char e_uints[] = "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS";
-char e_num[] = "#-1 ARGUMENT MUST BE NUMBER";
-char e_nums[] = "#-1 ARGUMENTS MUST BE NUMBERS";
-char e_invoke[] = "#-1 FUNCTION INVOCATION LIMIT EXCEEDED";
-char e_call[] = "#-1 CALL LIMIT EXCEEDED";
-char e_perm[] = "#-1 PERMISSION DENIED";
-char e_atrperm[] = "#-1 NO PERMISSION TO GET ATTRIBUTE";
-char e_match[] = "#-1 NO MATCH";
-char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
-char e_disabled[] = "#-1 FUNCTION DISABLED";
-char e_range[] = "#-1 OUT OF RANGE";
-char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
-char e_badregname[] = "#-1 REGISTER NAME INVALID";
-char e_toomanyregs[] = "#-1 TOO MANY REGISTERS";
+const char e_int[] = "#-1 ARGUMENT MUST BE INTEGER";
+const char e_ints[] = "#-1 ARGUMENTS MUST BE INTEGERS";
+const char e_uint[] = "#-1 ARGUMENT MUST BE POSITIVE INTEGER";
+const char e_uints[] = "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS";
+const char e_num[] = "#-1 ARGUMENT MUST BE NUMBER";
+const char e_nums[] = "#-1 ARGUMENTS MUST BE NUMBERS";
+const char e_invoke[] = "#-1 FUNCTION INVOCATION LIMIT EXCEEDED";
+const char e_call[] = "#-1 CALL LIMIT EXCEEDED";
+const char e_perm[] = "#-1 PERMISSION DENIED";
+const char e_atrperm[] = "#-1 NO PERMISSION TO GET ATTRIBUTE";
+const char e_match[] = "#-1 NO MATCH";
+const char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
+const char e_disabled[] = "#-1 FUNCTION DISABLED";
+const char e_range[] = "#-1 OUT OF RANGE";
+const char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
+const char e_badregname[] = "#-1 REGISTER NAME INVALID";
+const char e_toomanyregs[] = "#-1 TOO MANY REGISTERS";
 
 #endif
 
@@ -891,7 +891,7 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
    * it doesn't recurse up the chain, etc. */
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  static const char *noval = "";
+  static const char noval[] = "";
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);

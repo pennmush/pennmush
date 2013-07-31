@@ -83,11 +83,11 @@ static void list_partial_matches(dbref player, const char *name,
 void do_chan_set_mogrifier(dbref player, const char *name, const char *newobj);
 char *mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs, const char *argv[], const char *orig);
 
-const char *chan_speak_lock = "ChanSpeakLock";  /**< Name of speak lock */
-const char *chan_join_lock = "ChanJoinLock";    /**< Name of join lock */
-const char *chan_mod_lock = "ChanModLock";      /**< Name of modify lock */
-const char *chan_see_lock = "ChanSeeLock";      /**< Name of see lock */
-const char *chan_hide_lock = "ChanHideLock";    /**< Name of hide lock */
+static const char chan_speak_lock[] = "ChanSpeakLock";  /**< Name of speak lock */
+static const char chan_join_lock[] = "ChanJoinLock";    /**< Name of join lock */
+static const char chan_mod_lock[] = "ChanModLock";      /**< Name of modify lock */
+static const char chan_see_lock[] = "ChanSeeLock";      /**< Name of see lock */
+static const char chan_hide_lock[] = "ChanHideLock";    /**< Name of hide lock */
 
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
@@ -3744,7 +3744,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   char *bp;
   const char *blockstr = "";
   int na_flags = NA_INTER_LOCK;
-  const char *someone = "Someone";
+  static const char someone[] = "Someone";
   dbref mogrifier = NOTHING;
   const char *ctype = NULL;
   const char *argv[10] = { NULL };      /* Doesn't need to be MAX_STACK_ARGS */

@@ -112,7 +112,7 @@ int alias_function(dbref player, const char *function, const char *alias);
 void do_function_restrict(dbref player, const char *name,
                           const char *restriction, int builtin);
 void do_function_restore(dbref player, const char *name);
-void do_list_functions(dbref player, int lc, char *type);
+void do_list_functions(dbref player, int lc, const char *type);
 char *list_functions(const char *);
 void do_function(dbref player, char *name, char **argv, int preserve);
 void do_function_toggle(dbref player, char *name, int toggle);

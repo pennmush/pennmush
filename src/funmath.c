@@ -1486,17 +1486,17 @@ FUNCTION(fun_xor)
 static void
 do_spellnum(char *num, unsigned int len, char **buff, char ***bp)
 {
-  static const char *bigones[] =
+  static const char *const bigones[] =
     { "", "thousand", "million", "billion", "trillion" };
-  static const char *singles[] = { "", "one", "two", "three", "four",
+  static const char *const singles[] = { "", "one", "two", "three", "four",
     "five", "six", "seven", "eight", "nine"
   };
-  static const char *special[] =
+  static const char *const special[] =
     { "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
     "sixteen",
     "seventeen", "eighteen", "nineteen"
   };
-  static const char *tens[] = { "", " ", "twenty", "thirty", "forty",
+  static const char *const tens[] = { "", " ", "twenty", "thirty", "forty",
     "fifty", "sixty", "seventy", "eighty", "ninety"
   };
   unsigned int x0, x1, x2;

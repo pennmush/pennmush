@@ -734,7 +734,7 @@ fn_restrict_to_str(uint32_t b)
  * \param type "local", "builtin", "all" or NULL, to limit which functions are shown
  */
 void
-do_list_functions(dbref player, int lc, char *type)
+do_list_functions(dbref player, int lc, const char *type)
 {
   /* lists all built-in functions. */
   char *b = list_functions(type);

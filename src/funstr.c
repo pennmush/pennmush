@@ -898,9 +898,21 @@ FUNCTION(fun_ljust)
     spaces = BUFFER_LEN - 1;
 
   if (len >= spaces) {
-    safe_strl(args[0], arglens[0], buff, bp);
+    /* Check to see if we should truncate */
+    if (nargs > 3 && parse_boolean(args[3])) {
+      if (has_markup(args[0])) {
+        as = parse_ansi_string(args[0]);
+        safe_ansi_string(as, 0, spaces, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_strl(args[0], spaces, buff, bp);
+      }
+    } else {
+      safe_strl(args[0], arglens[0], buff, bp);
+    }
     return;
   }
+
   spaces -= len;
 
   if (!args[2] || !*args[2]) {
@@ -949,9 +961,21 @@ FUNCTION(fun_rjust)
     spaces = BUFFER_LEN - 1;
 
   if (len >= spaces) {
-    safe_strl(args[0], arglens[0], buff, bp);
+	/* Check to see if we should truncate */
+	if (nargs > 3 && parse_boolean(args[3])) {
+      if (has_markup(args[0])) {
+        as = parse_ansi_string(args[0]);
+        safe_ansi_string(as, as->len - spaces, as->len, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_strl(args[0], spaces, buff, bp);
+      }
+    } else {
+      safe_strl(args[0], arglens[0], buff, bp);
+    }
     return;
   }
+
   spaces -= len;
 
   if (!args[2] || !*args[2]) {

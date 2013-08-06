@@ -2637,12 +2637,15 @@ See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
-  ljust(<string>, <length>[, <fill>])
+  ljust(<string>, <length>[, <fill>[, <truncate?>]])
   
-  This function pads a string with trailing characters ("left-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. If <fill> is not specified, a space is
-  used. <fill> can be more than one character in length.
+  This function returns <string>, padded with the string <fill> until it's
+  <length> characters long. <fill> can be more than one character in length,
+  and defaults to a single space.
+  
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the first <length> characters of
+  <string> are returned.
   
   Examples:
     > say ljust(foo,6)
@@ -2655,6 +2658,9 @@ See also: lcon(), exit(), next(), lvexits()
     
     > say ljust(foo,12,=+)
     You say, "foo=+=+=+=+="
+    
+    > say ljust(This is too long, 9)
+    You say, "This is t"
 
 See also: align(), center(), rjust(), left()
 & LINK()
@@ -4244,13 +4250,16 @@ See also: flip()
 
 See also: left(), mid()
 & RJUST()
-  rjust(<string>, <length>[, <fill>])
+  rjust(<string>, <length>[, <fill>[, <truncate?>]])
+
+  This function returns <string>, padded on the left with the string <fill>
+  until it's <length> characters long. <fill> can be more than one character
+  in length, and defaults to a single space.
   
-  This function pads a string with leading characters  ("right-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. <fill> can be more than one character
-  in length, and defaults to a space.
- 
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the last <length> characters of
+  <string> are returned.
+  
   Examples:
     > say -[rjust(foo,6)]-
     You say, "-   foo-"
@@ -4263,7 +4272,10 @@ See also: left(), mid()
     > say rjust(foo,12,=-)
     You say, "=-=-=-=-=foo"
 
-See also: align(), center(), ljust()
+    > say ljust(This is too long, 9)
+    You say, " too long"
+
+See also: align(), center(), ljust(), right()
 & RLOC()
   rloc(<object>, <levels>) 
   

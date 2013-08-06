@@ -93,6 +93,9 @@ Functions:
    itext() and stext() values, as well as q-registers(). [MG]
  * Mortals can now use playermem() and objmem() on their own objects.
    Suggested by Paige. [MG]
+ * ljust() and rjust() now take an optional <trunc?> arg which, if true,
+   causes strings already longer than <len> to be truncated. Suggested by
+   many people over the years, most recently Eratl and Quasar. [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

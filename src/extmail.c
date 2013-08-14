@@ -1456,6 +1456,32 @@ can_mail_to(dbref player, dbref target)
   return 1;
 }
 
+static int mail_limit(dbref target);
+
+static int
+mail_limit(dbref target)
+{
+  ATTR *a;
+  int quota;
+
+  a = atr_get(target, "MAILQUOTA");
+  if (!a)
+    return MAIL_LIMIT;
+
+  if (!is_integer(atr_value(a)))
+    return MAIL_LIMIT;
+
+  quota = parse_integer(atr_value(a));
+
+  if (quota <= 0)
+    return MAIL_LIMIT;
+  else if (quota > 50000)
+    return 50000; /* Hard limit */
+  else
+    return quota;
+
+}
+
 static int
 real_send_mail(dbref player, dbref target, char *subject, char *message,
                mail_flag flags, int silent, int nosig)
@@ -1493,7 +1519,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     return 0;
   }
   count_mail(target, 0, &rc, &uc, &cc);
-  if ((rc + uc + cc) >= MAIL_LIMIT) {
+  if ((rc + uc + cc) >= mail_limit(target)) {
     if (!silent)
       notify_format(player, T("MAIL: %s's mailbox is full. Can't send."),
                     AName(target, AN_SYS, NULL));
@@ -2998,10 +3024,10 @@ check_all_mail(dbref player)
                     ("MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."),
                     subtotal, folder, get_folder_name(player, folder), uc, cc);
       total += subtotal;
-      if (folder == 0 && (subtotal + 5) > MAIL_LIMIT)
+      if (folder == 0 && (subtotal + 5) > mail_limit(player))
         notify_format(player,
                       T("MAIL: Warning! Limit on inbox messages is %d!"),
-                      MAIL_LIMIT);
+                      mail_limit(player));
     }
   }
 
@@ -3033,9 +3059,9 @@ check_mail(dbref player, int folder, int silent)
                   total, folder, get_folder_name(player, folder), uc, cc);
   else if (!silent)
     notify(player, T("\nMAIL: You have no mail.\n"));
-  if ((folder == 0) && (total + 5 > MAIL_LIMIT))
+  if ((folder == 0) && (total + 5 > mail_limit(player)))
     notify_format(player, T("MAIL: Warning! Limit on inbox messages is %d!"),
-                  MAIL_LIMIT);
+                  mail_limit(player));
   return;
 }
 

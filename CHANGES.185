@@ -81,6 +81,8 @@ Minor changes:
    System was added, anyway. [MG]
  * Updated the README for adding help-style commands, with clearer examples.
    Requested by AnnePearn. [MG]
+ * Per-player mail limits can be set with @mailquota, to override the
+   mail_limit @config option selectively. Suggested by Ricochet. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

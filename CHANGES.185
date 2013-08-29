@@ -72,8 +72,8 @@ Minor changes:
  * The connect-screen WHO now shows moniker'd (ansi'd) names, if so 
    configured. Requested by Trinsec. [MG]
  * @mapsql and mapsql()'s attributes now receives named arguments. That is,
-   '@mapsql me/foo=SELECT name FROM table' receives the value of the 'name'
-   field as both %1 and [r(name,args)]. [MG]
+   '@mapsql me/foo=SELECT bar FROM table' receives the value of the 'bar'
+   field as both %1 and [r(bar,args)]. [MG]
  * Wizards can now give players names with spaces, even when the 
    player_name_spaces option is off. Suggested by Paige. [MG]
  * Removed the last traces of the 'events' help-style command. Noone ever
@@ -83,6 +83,13 @@ Minor changes:
    Requested by AnnePearn. [MG]
  * Per-player mail limits can be set with @mailquota, to override the
    mail_limit @config option selectively. Suggested by Ricochet. [MG]
+ * Attempting to create a character (at the login screen or via @pcreate)
+   is now specific about whether the name is already in use or invalid,
+   rather than leaving you guessing. [MG]
+ * Likewise, when failing to connect, the login screen tells you whether
+   there is no such player, or whether the password is wrong. [MG]
+ * beep() now returns out of range, instead of permission denied, when given
+   an arg which is not between 1 and 5. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

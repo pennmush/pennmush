@@ -252,6 +252,7 @@ connect_player(DESC *d, const char *name, const char *password,
   if ((player = lookup_player(name)) == NOTHING) {
     /* Invalid player names are failures, too. */
     count = mark_failed(ip);
+    strcpy(errbuf, T("There is no player with that name."));
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d,%s",
                 d->descriptor, ip, count, "invalid player", -1, name);
     return NOTHING;
@@ -264,6 +265,7 @@ connect_player(DESC *d, const char *name, const char *password,
            Name(player), host, ip);
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d", d->descriptor,
                 ip, count_failed(ip), "player is going", player);
+    strcpy(errbuf, T("You cannot connect to that player at this time."));
     return NOTHING;
   }
   /* Check sitelock patterns */
@@ -302,6 +304,7 @@ connect_player(DESC *d, const char *name, const char *password,
       count = mark_failed(ip);
       queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
                   d->descriptor, ip, count, "invalid password", player);
+      strcpy(errbuf, T("That is not the correct password."));
       return NOTHING;
     }
 
@@ -335,7 +338,8 @@ connect_player(DESC *d, const char *name, const char *password,
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
  * \param ip ip address from which creation is attempted.
- * \return dbref of created player, NOTHING if bad name, AMBIGUOUS if bad
+ * \return dbref of created player, NOTHING if invalid name, AMBIGUOUS if taken
+ *  name, or HOME for a bad password
  *  password.
  */
 dbref
@@ -348,7 +352,7 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, ip, mark_failed(ip), "create: bad name", name);
     }
-    return NOTHING;
+    return (lookup_player(name) == NOTHING ? NOTHING : AMBIGUOUS);
   }
   if (!ok_password(password)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad password) from %s", host);

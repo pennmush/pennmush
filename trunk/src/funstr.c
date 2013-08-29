@@ -1395,7 +1395,7 @@ FUNCTION(fun_beep)
     k = 1;
 
   if ((k <= 0) || (k > 5)) {
-    safe_str(T(e_perm), buff, bp);
+    safe_str(T(e_range), buff, bp);
     return;
   }
   safe_fill(BEEP_CHAR, k, buff, bp);

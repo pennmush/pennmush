@@ -136,15 +136,18 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
 
   player =
     create_player(NULL, creator, player_name, player_password, "None", "None");
-  if (player == NOTHING) {
-    notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
-    return NOTHING;
+  switch (player) {
+    case NOTHING:
+      notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
+      return NOTHING;
+    case AMBIGUOUS:
+      notify_format(creator, T("Failure creating '%s' (name in use)"), player_name);
+      return NOTHING;
+    case HOME:
+      notify_format(creator, T("Failure creating '%s' (bad password)"), player_name);
+      return NOTHING;
   }
-  if (player == AMBIGUOUS) {
-    notify_format(creator, T("Failure creating '%s' (bad password)"),
-                  player_name);
-    return NOTHING;
-  }
+
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
   do_log(LT_WIZ, creator, player, "Player creation");

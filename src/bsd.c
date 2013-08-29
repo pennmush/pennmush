@@ -249,8 +249,8 @@ static int handle_telnet(DESC *d, char **q, char *qend);
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1))
 
-static const char create_fail[] =
-  "Either there is already a player with that name, or that name is illegal.";
+static const char create_fail_preexisting[] = "There is already a player with that name.";
+static const char create_fail_bad[] = "That name is not allowed.";
 static const char password_fail[] = "The password is invalid (or missing).";
 static const char register_fail[] =
   "Unable to register that player with that email address.";
@@ -272,10 +272,8 @@ static void
 dummy_msgs()
 {
   char *temp;
-  temp = T("Either that player does not exist, or has a different password.");
-  temp =
-    T
-    ("Either there is already a player with that name, or that name is illegal.");
+  temp = T("There is already a player with that name.");
+  temp = T("That name is not allowed.");
   temp = T("The password is invalid (or missing).");
   temp = T("Unable to register that player with that email address.");
   temp = T("Registration successful! You will receive your password by email.");
@@ -3147,25 +3145,30 @@ check_connect(DESC *d, const char *msg)
       return 0;
     }
     player = create_player(d, NOTHING, user, password, d->addr, d->ip);
-    if (player == NOTHING) {
-      queue_string_eol(d, T(create_fail));
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Failed create for '%s' (bad name).",
-                d->descriptor, d->addr, d->ip, user);
-    } else if (player == AMBIGUOUS) {
-      queue_string_eol(d, T(password_fail));
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Failed create for '%s' (bad password).",
-                d->descriptor, d->addr, d->ip, user);
-    } else {
-      queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
-                  unparse_objid(player), Name(player), "create", d->descriptor);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player);
-      if ((dump_messages(d, player, 1)) == 0) {
-        d->connected = CONN_DENIED;
-        return 0;
-      }
+    switch (player) {
+      case NOTHING:
+      case AMBIGUOUS:
+        queue_string_eol(d, T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
+        do_rawlog(LT_CONN,
+                  "[%d/%s/%s] Failed create for '%s' (bad name).",
+                  d->descriptor, d->addr, d->ip, user);
+        break;
+      case HOME:
+        queue_string_eol(d, T(password_fail));
+        do_rawlog(LT_CONN,
+                  "[%d/%s/%s] Failed create for '%s' (bad password).",
+                  d->descriptor, d->addr, d->ip, user);
+        break;
+      default:
+        queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
+                    unparse_objid(player), Name(player), "create", d->descriptor);
+        do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
+                  d->descriptor, d->addr, d->ip, Name(player), player);
+        if ((dump_messages(d, player, 1)) == 0) {
+          d->connected = CONN_DENIED;
+          return 0;
+        }
+        break;
     }                           /* successful player creation */
 
   } else if (string_prefix("register", command)) {

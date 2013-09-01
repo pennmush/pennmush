@@ -2426,8 +2426,10 @@ raw_search(dbref player, struct search_spec *spec,
       per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
       mush_free(ebuf1, "replace_string.buff");
-      if (per)
+      if (per) {
+        notify_format(player, T("CPU usage exceeded during #%d."), n);
         goto exit_sequence;
+      }
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;

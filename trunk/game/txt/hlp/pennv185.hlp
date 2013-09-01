@@ -88,6 +88,9 @@ Minor changes:
    there is no such player, or whether the password is wrong. [MG]
  * beep() now returns out of range, instead of permission denied, when given
    an arg which is not between 1 and 5. [MG]
+ * When an evaluation @search hits the CPU limit, it will now tell you which
+   object it failed on, to make it easier for you to continue with a partial 
+   search. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

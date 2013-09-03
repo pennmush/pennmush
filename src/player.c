@@ -361,7 +361,7 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
                   d->descriptor, ip, mark_failed(ip),
                   "create: bad password", name);
     }
-    return AMBIGUOUS;
+    return HOME;
   }
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */

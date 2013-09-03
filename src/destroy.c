@@ -845,7 +845,7 @@ clear_player(dbref thing)
   dbref probate;
 
   /* Clear out mail. */
-  do_mail_clear(thing, NULL);
+  do_mail_clear(thing, "all");
   do_mail_purge(thing);
   malias_cleanup(thing);
 

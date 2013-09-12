@@ -614,7 +614,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
     @attribute/limit score=^\\d+$    <-- @score can only contain digits.
                                          (Remember, Penn parser eats a \)
 
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown,
+See also: ATTRIBUTES, attribute flags, @set, @atrchown,
   @atrlock, @list
 & @ause
 & @use

@@ -860,7 +860,7 @@ cf_flag(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
     if (from_cmd == 0)
       do_rawlog(LT_ERR, "CONFIG: option %s value truncated", opt);
   }
-  sprintf((char *) loc, "%s %s", (char *) loc, val);
+  strcpy(loc, tprintf("%s %s", (char *) loc, val));
   return 1;
 }
 

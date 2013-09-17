@@ -24,6 +24,8 @@ Commands:
    and a /quiet switch to give a less verbose output. From a suggestion by
    Fraibert. [MG]
  * @trigger now takes a /spoof switch, which preserves the enactor. [MG]
+ * New @hook/extend, which allows adding new functionality to built-in
+   commands via softcode, while preserving the original command. [MG] [Rhost]
 
 Major changes:
  * Regexp $-commands can now used name captures. They can be accessed via

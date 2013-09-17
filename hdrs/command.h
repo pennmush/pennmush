@@ -145,10 +145,11 @@ struct command_info {
   /** Hooks on this command.
    */
   struct {
-    struct hook_data before;    /**< Hook to evaluate before command */
-    struct hook_data after;     /**< Hook to evaluate after command */
-    struct hook_data ignore;    /**< Hook to evaluate to decide if we should ignore hardcoded command */
-    struct hook_data override;  /**< Hook to override command with $command */
+    struct hook_data *before;    /**< Hook to evaluate before command */
+    struct hook_data *after;     /**< Hook to evaluate after command */
+    struct hook_data *ignore;    /**< Hook to evaluate to decide if we should ignore hardcoded command */
+    struct hook_data *override;  /**< Hook to override command with $command */
+    struct hook_data *extend;    /**< Hook to extend a command with new softcoded switches */
   } hooks;
 };
 
@@ -190,6 +191,11 @@ struct command_perms_t {
 
 #define SWITCH_NONE 0
 #include "switches.h"
+
+enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE, HOOK_EXTEND };
+extern void do_hook(dbref player, char *command, char *obj, char *attrname,
+                    enum hook_type flag, int inplace);
+extern void do_hook_list(dbref player, char *command, bool verbose);
 
 switch_mask switchmask(const char *switches);
 COMMAND_INFO *command_find(const char *name);

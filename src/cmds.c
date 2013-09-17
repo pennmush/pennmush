@@ -667,6 +667,8 @@ COMMAND(cmd_hook)
     flags = HOOK_IGNORE;
   else if (SW_ISSET(sw, SWITCH_OVERRIDE))
     flags = HOOK_OVERRIDE;
+  else if (SW_ISSET(sw, SWITCH_EXTEND) || SW_ISSET(sw, SWITCH_IGSWITCH))
+    flags = HOOK_EXTEND;
   else if (SW_ISSET(sw, SWITCH_LIST)) {
     do_hook_list(executor, arg_left, 1);
     return;
@@ -675,9 +677,9 @@ COMMAND(cmd_hook)
     return;
   }
   if (queue_type != QUEUE_DEFAULT) {
-    if (flags != HOOK_OVERRIDE) {
+    if (flags != HOOK_OVERRIDE && flags != HOOK_EXTEND) {
       notify(executor,
-             T("You can only use /inplace and /inline with /override."));
+             T("You can only use /inplace and /inline with /override or /extend."));
       return;
     }
   }

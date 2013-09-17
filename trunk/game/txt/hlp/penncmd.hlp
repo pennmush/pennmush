@@ -2200,7 +2200,7 @@ See also: hidden(), WHO, lwho(), lports(), ports()
 
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
 & @hook
-  @hook/<switch> <command>[=<object>, <attribute>]
+  @hook/<switch> <command>[=<object>[, <attribute>]]
   @hook/list [<command>]
 
   @hook makes the command parser evaluate given attributes at certain points
@@ -2220,6 +2220,11 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
+  @hook/extend: If an invalid switch is given to the command, attempt to run
+                a matching $-command in <object>[/<attribute>] instead of
+                giving an error. Allows extending built-in commands in
+                softcode without having to rewrite the core functionality.
+  @hook/extend/inline: As above, but the $-command won't be queued.
 
   In all cases, %# is the dbref of the object doing the command, and all
   hooks share the same set of q-registers. With /before and /after, 
@@ -2234,16 +2239,17 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   see existing hooks with @command or @hook/list.
 
   See 'help @hook2' for more information about @hook/override/inline,
-  and 'help @hook3' for examples.
+  'help @hook3' for information on @hook/extend, and 
+  'help @hook4' for examples.
 & @hook2
 
-  @hook/override/inline allows you to write softcoded commands which act
-  exactly like built-in commands - because they're run immediately, instead
-  of being queued, output from the command appears in the right order
-  relative to other commands in the action list. By default, commands hooked
-  with /inline have access to the q-registers of the calling action list, and
-  @breaks in the hooked command propagate to the calling action list,
-  allowing you to write your own control structures.
+  @hook/override/inline and @hook/extend/inline allow you to write softcoded 
+  commands which act exactly like built-in commands - because they're run 
+  immediately, instead of being queued, output from the command appears in 
+  the right order relative to other commands in the action list. By default, 
+  commands hooked with /inline have access to the q-registers of the calling 
+  action list, and @breaks in the hooked command propagate to the calling 
+  action list, allowing you to write your own control structures.
   
   For example, this adds a new command, @qbreak, which works like @break but
   stops command execution when %q0 contains a true value:
@@ -2262,8 +2268,24 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 
   @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
   
-  See 'help @hook4' for some examples of using @hook/inline.
+  See 'help @hook5' for some examples of using @hook/override/inline.
 & @hook3
+
+  @hook/extend can be used to add new features to a built-in command, via 
+  additional switches, without forcing you to also rewrite the existing
+  functionality like @hook/override would. For example:
+  
+  > &who`active #123=$who/active*: @nspemit %#=ufun(fun_who, lwho(%#),
+       switch(%0, ?*, stringsecs(%0)))
+  > &who`staff #123=$who/staff: @nspemit %#=ufun(fun_who, setunion(lwho(%#),
+       lsearch(all, elock, type^player&(flag^wizard|flag^royalty)))
+  > @hook/extend WHO=#123
+  
+  This leaves the built-in WHO command working as normal, but adds two new
+  switches for filtering the output in different ways.
+  
+  @hook/igswitch is an alias for @hook/extend, for Rhost compatability.
+& @hook4
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2282,8 +2304,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook4' for /inplace examples.
-& @hook4
+  See 'help @hook5' for /inplace examples.
+& @hook5
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance

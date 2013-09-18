@@ -56,6 +56,7 @@
 #include "lookup.h"
 #include "mysocket.h"
 #include "wait.h"
+#include "sig.h"
 
 void fputerr(const char *);
 const char *time_string(void);

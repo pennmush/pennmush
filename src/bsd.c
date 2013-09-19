@@ -3063,6 +3063,7 @@ check_connect(DESC *d, const char *msg)
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
         d->connected = CONN_DENIED;
+        d->hide = 0;
         return 0;
       }
     }
@@ -3105,6 +3106,7 @@ check_connect(DESC *d, const char *msg)
         d->hide = 1;
       if ((dump_messages(d, player, 0)) == 0) {
         d->connected = CONN_DENIED;
+        d->hide = 0;
         return 0;
       }
     }

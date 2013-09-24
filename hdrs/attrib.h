@@ -106,6 +106,9 @@ char *
 safe_atr_value(ATTR *atr)
   __attribute_malloc__;
 
+
+void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
+
 /* possible attribute flags */
 /* 2013-03-03 MG: Several attrflags are marked "OBSOLETE! Leave here
  * but don't use". I am fairly certainly they've been like that so

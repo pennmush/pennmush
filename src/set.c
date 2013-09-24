@@ -527,9 +527,13 @@ af_helper(dbref player, dbref thing,
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
-    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr)) {
       notify_format(player, T("%s/%s - %s set."), AName(thing, AN_SYS, NULL), AL_NAME(atr),
                     af->setflags);
+      if (af->setf & AF_REGEXP) {
+        unanchored_regexp_attr_check(thing, atr, player);
+      }
+    }
   }
 
   return 1;

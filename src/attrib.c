@@ -66,6 +66,7 @@ static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent,
 static bool can_debug(dbref player, dbref victim);
 static int atr_count_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
+static void set_cmd_flags(ATTR *a);
 
 /*======================================================================*/
 
@@ -693,12 +694,76 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
 
     ptr->data = chunk_create(t, strlen(t), derefs);
     free(t);
-
-    if (*s == '$')
-      AL_FLAGS(ptr) |= AF_COMMAND;
-    if (*s == '^')
-      AL_FLAGS(ptr) |= AF_LISTEN;
+    set_cmd_flags(ptr);
   }
+}
+
+static void
+set_cmd_flags(ATTR *a)
+{
+  char *p = atr_value(a);
+  int flag = AF_COMMAND;
+
+  switch (*p) {
+  case '^':
+    flag = AF_LISTEN;
+    /* FALL THROUGH */
+  case '$':
+    for (; *p; p++) {
+      if (*p == '\\') {
+        p++;
+      } else if (*p == ':') {
+        AL_FLAGS(a) |= flag;
+        break;
+      }
+    }
+    break;
+  }
+}
+
+void
+unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player)
+{
+  char *p;
+  bool esc = 0, last_anchor_escaped = 0;
+
+  /* We could check for AF_Listen, but an unanchored regexp
+   * in a listen pattern is more likely to be intentional */
+  if (!atr || !AF_Command(atr) || AF_Noprog(atr) || !GoodObject(player))
+    return;
+
+  p = atr_value(atr);
+  if (!p || !*p || *p != '$')
+    return;
+
+  p++;
+  if (*p != '^')
+    goto warn;
+
+  for (p++; *p; p++) {
+    if (esc) {
+      esc = 0;
+      if (*p == '$')
+        last_anchor_escaped = 1;
+      continue;
+    }
+    if (*p == '\\') {
+      esc = 1;
+      continue;
+    } else {
+      last_anchor_escaped = 0;
+    }
+    if (*p == ':') {
+      if (last_anchor_escaped || *(p - 1) != '$')
+        goto warn;
+      return;
+    }
+  }
+  return;
+
+warn:
+  notify_format(player, T("Warning: Unanchored regexp command in #%d/%s."), thing, AL_NAME(atr));
+  return;
 }
 
 /** Add an attribute to an object, safely.
@@ -806,11 +871,10 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     }
     ptr->data = chunk_create(t, strlen(t), 0);
     free(t);
-
-    if (*s == '$')
-      AL_FLAGS(ptr) |= AF_COMMAND;
-    if (*s == '^')
-      AL_FLAGS(ptr) |= AF_LISTEN;
+    set_cmd_flags(ptr);
+    if (AF_Command(ptr) && AF_Regexp(ptr)) {
+      unanchored_regexp_attr_check(thing, ptr, player);
+    }
   }
 
   return AE_OKAY;

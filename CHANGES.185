@@ -98,6 +98,11 @@ Minor changes:
  * When an evaluation @search hits the CPU limit, it will now tell you which
    object it failed on, to make it easier for you to continue with a partial 
    search. [MG]
+ * Players are now warned when setting an unanchored regexp $-command, as
+   this is often an oversight which is problematic to track down later. [MG]
+ * More effort now goes into checking whether an attribute contains a valid
+   $-command when it's set, to avoid doing so unnecessarily during command
+   matching; the latter happens a lot more often. [MG]
    
 Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 

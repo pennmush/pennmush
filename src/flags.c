@@ -991,7 +991,8 @@ flag_add_additional(FLAGSPACE *n)
       f->type = NOTYPE;
       f->letter = '\0';
     }
-    add_flag_generic("FLAG", "CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT, F_INHERIT, &f);
+    add_flag_generic("FLAG", "CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT,
+                     F_INHERIT, &f);
     flags = hashfind("FLAG", &htab_flagspaces);
     if (!match_flag("CHAN_FIRSTMATCH"))
       flag_add(flags, "CHAN_FIRSTMATCH", f);
@@ -1015,7 +1016,8 @@ flag_add_additional(FLAGSPACE *n)
         n->flags[i]->perms |= F_LOG;
     }
     flags = hashfind("POWER", &htab_flagspaces);
-    add_flag_generic("POWER", "Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY, &f);
+    add_flag_generic("POWER", "Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY,
+                     &f);
     if (f && !match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
     if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
@@ -1186,13 +1188,13 @@ static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
   static const uint64_t seed = 0xb12003afbb20eae3LLU;
-  return city_hash((const char *)f, FlagBytes(n), seed);
+  return city_hash((const char *) f, FlagBytes(n), seed);
 }
 
 static void
 flagcache_rebucket(FLAGSPACE *n, int new_size)
 {
-  struct flagbucket** new_buckets;
+  struct flagbucket **new_buckets;
   int i;
 
   new_buckets = mush_calloc(new_size, sizeof(struct flagbucket *),
@@ -1977,7 +1979,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) && (hear || listener) &&
         !Hearer(thing) && !Listener(thing)) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is no longer listening."), AName(thing, AN_SAY, NULL));
+      safe_format(tbuf1, &tp, T("%s is no longer listening."),
+                  AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -2035,7 +2038,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) &&
         (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is now listening."), AName(thing, AN_SAY, NULL));
+      safe_format(tbuf1, &tp, T("%s is now listening."),
+                  AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -2127,17 +2131,19 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     tp = tbuf1;
     if (negate) {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s removed."), AName(thing, AN_SYS, NULL), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s removed."),
+                    AName(thing, AN_SYS, NULL), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), AName(thing, AN_SYS, NULL),
-                    f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."),
+                    AName(thing, AN_SYS, NULL), f->name);
       }
     } else {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), AName(thing, AN_SYS, NULL),
-                    f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."),
+                    AName(thing, AN_SYS, NULL), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s granted."), AName(thing, AN_SYS, NULL), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s granted."),
+                    AName(thing, AN_SYS, NULL), f->name);
       }
     }
     *tp = '\0';
@@ -2714,21 +2720,21 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   /* Ok, let's do it. */
   newflag = add_flag_generic(ns, name, letter, type, perms, negate_perms, &f);
   switch (newflag) {
-    case FLAG_OK:
-    case FLAG_EXISTS:
-      do_flag_info(ns, player, name);
-      break;
-    case FLAG_NAME:
-      notify_format(player, T("That's not a valid %s name."), strlower(ns));
-      break;
-    case FLAG_LETTER:
-      notify_format(player, T("Invalid %s letter."), strlower(ns));
-      break;
-    case FLAG_PERMS:
-    case FLAG_TYPE:
-    default:
-      notify_format(player, T("Unknown failure adding %s."), strlower(ns));
-      break;
+  case FLAG_OK:
+  case FLAG_EXISTS:
+    do_flag_info(ns, player, name);
+    break;
+  case FLAG_NAME:
+    notify_format(player, T("That's not a valid %s name."), strlower(ns));
+    break;
+  case FLAG_LETTER:
+    notify_format(player, T("Invalid %s letter."), strlower(ns));
+    break;
+  case FLAG_PERMS:
+  case FLAG_TYPE:
+  default:
+    notify_format(player, T("Unknown failure adding %s."), strlower(ns));
+    break;
   }
 
 }
@@ -3232,22 +3238,26 @@ do_flag_debug(const char *ns, dbref player)
 
   Flagspace_Lookup(n, ns);
 
-  notify_format(player, "Flagspace name: %s\nFlag count: %d", n->name, n->flagbits);
+  notify_format(player, "Flagspace name: %s\nFlag count: %d", n->name,
+                n->flagbits);
 
   for (i = 0; i < n->flagbits; i += 1) {
     FLAG *f = n->flags[i];
 
-    notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name, f->bitpos);
+    notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name,
+                  f->bitpos);
   }
 
-  notify_format(player, "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
+  notify_format(player,
+                "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
                 n->cache->entries, n->cache->size, n->cache->zero_refcount);
 
 #if 0
   for (i = 0; i < n->cache->size; i += 1) {
     struct flagbucket *b = n->cache->buckets[i];
     for (; b; b = b->next) {
-      notify_format(player, "Flagset: %s. Refcount: %d", bits_to_string(ns, b->key, ,), b->refcount);
+      notify_format(player, "Flagset: %s. Refcount: %d",
+                    bits_to_string(ns, b->key,,), b->refcount);
     }
   }
 #endif

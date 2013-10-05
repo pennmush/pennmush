@@ -119,7 +119,8 @@ do_kill(dbref player, const char *what, int cost, int slay)
     if (!overridekill) {
       do_halt(victim, "", victim);
     }
-    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING, AN_SYS);
+    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING,
+           AN_SYS);
 
     /* notify victim */
     notify_format(victim, T("%s killed you!"), AName(player, AN_SYS, NULL));
@@ -147,7 +148,8 @@ do_kill(dbref player, const char *what, int cost, int slay)
   } else {
     /* notify player and victim only */
     notify(player, T("Your murder attempt failed."));
-    notify_format(victim, T("%s tried to kill you!"), AName(player, AN_SYS, NULL));
+    notify_format(victim, T("%s tried to kill you!"),
+                  AName(player, AN_SYS, NULL));
   }
 }
 
@@ -332,8 +334,8 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
   if (failvendor != NOTHING) {
     /* Found someone selling, but they wouldn't take our money */
     fail_lock(player, failvendor, Pay_Lock,
-              tprintf(T("%s doesn't want your money."), AName(failvendor, AN_SYS, NULL)),
-              NOTHING);
+              tprintf(T("%s doesn't want your money."),
+                      AName(failvendor, AN_SYS, NULL)), NOTHING);
   } else if (price >= 0) {
     /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
@@ -347,7 +349,8 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
     if (!from) {
       notify(player, T("I can't find that item here."));
     } else {
-      notify_format(player, T("%s isn't selling that item."), AName(vendor, AN_SYS, NULL));
+      notify_format(player, T("%s isn't selling that item."),
+                    AName(vendor, AN_SYS, NULL));
     }
   } else {
     /* We found someone selling, but didn't have the pennies to buy it */
@@ -436,7 +439,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       }
 
       if (!eval_lock_with(thing, who, Receive_Lock, pe_info)) {
-        notify_format(player, T("%s doesn't want that."), AName(who, AN_SYS, NULL));
+        notify_format(player, T("%s doesn't want that."),
+                      AName(who, AN_SYS, NULL));
         return;
       }
 
@@ -445,22 +449,23 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
 
         /* Notify the giver with their GIVE message */
         bp = tbuf1;
-        safe_format(tbuf1, &bp, T("You gave %s to %s."), AName(thing, AN_MOVE, NULL),
-                    AName(who, AN_MOVE, NULL));
+        safe_format(tbuf1, &bp, T("You gave %s to %s."),
+                    AName(thing, AN_MOVE, NULL), AName(who, AN_MOVE, NULL));
         *bp = '\0';
         did_it_with(player, player, "GIVE", tbuf1, "OGIVE", NULL,
                     "AGIVE", NOTHING, thing, who, NA_INTER_SEE, AN_MOVE);
 
         /* Notify the object that it's been given */
         strcpy(tbuf1, AName(player, AN_MOVE, NULL));
-        notify_format(thing, T("%s gave you to %s."), tbuf1, AName(who, AN_MOVE, NULL));
+        notify_format(thing, T("%s gave you to %s."), tbuf1,
+                      AName(who, AN_MOVE, NULL));
 
         /* Recipient gets success message on thing and receive on self */
         did_it(who, thing, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
                NOTHING, AN_SYS);
         bp = tbuf1;
-        safe_format(tbuf1, &bp, T("%s gave you %s."), AName(player, AN_MOVE, NULL),
-                    AName(thing, AN_MOVE, NULL));
+        safe_format(tbuf1, &bp, T("%s gave you %s."),
+                    AName(player, AN_MOVE, NULL), AName(thing, AN_MOVE, NULL));
         *bp = '\0';
         did_it_with(who, who, "RECEIVE", tbuf1, "ORECEIVE", NULL,
                     "ARECEIVE", NOTHING, thing, player, NA_INTER_SEE, AN_SYS);
@@ -495,7 +500,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       fetch_ufun_attrib("COST", who, &ufun,
                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS);
     if (!has_cost && !IsPlayer(who)) {
-      notify_format(player, T("%s refuses your money."), AName(who, AN_SYS, NULL));
+      notify_format(player, T("%s refuses your money."),
+                    AName(who, AN_SYS, NULL));
       giveto(player, amount);
       return;
     } else if (has_cost && (amount > 0 || !IsPlayer(who))) {
@@ -516,7 +522,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
         return;
       }
       if (cost < 0) {
-        notify_format(player, T("%s refuses your money."), AName(who, AN_SYS, NULL));
+        notify_format(player, T("%s refuses your money."),
+                      AName(who, AN_SYS, NULL));
         giveto(player, amount);
         pe_regs_free(pe_regs);
         return;
@@ -524,7 +531,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       if (!eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
-                  tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)), NOTHING);
+                  tprintf(T("%s refuses your money."),
+                          AName(who, AN_SYS, NULL)), NOTHING);
         pe_regs_free(pe_regs);
         return;
       }
@@ -546,24 +554,29 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       if (!Wizard(player) && !eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
-                  tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)), NOTHING);
+                  tprintf(T("%s refuses your money."),
+                          AName(who, AN_SYS, NULL)), NOTHING);
         return;
       }
       if (amount > 0) {
         notify_format(player,
                       T("You give %d %s to %s."), amount,
-                      ((amount == 1) ? MONEY : MONIES), AName(who, AN_MOVE, NULL));
+                      ((amount == 1) ? MONEY : MONIES), AName(who, AN_MOVE,
+                                                              NULL));
       } else {
         notify_format(player, T("You took %d %s from %s!"), abs(amount),
-                      ((abs(amount) == 1) ? MONEY : MONIES), AName(who, AN_MOVE, NULL));
+                      ((abs(amount) == 1) ? MONEY : MONIES), AName(who, AN_MOVE,
+                                                                   NULL));
       }
       if (IsPlayer(who) && !silent) {
         if (amount > 0) {
-          notify_format(who, T("%s gives you %d %s."), AName(player, AN_MOVE, NULL),
-                        amount, ((amount == 1) ? MONEY : MONIES));
+          notify_format(who, T("%s gives you %d %s."),
+                        AName(player, AN_MOVE, NULL), amount,
+                        ((amount == 1) ? MONEY : MONIES));
         } else {
-          notify_format(who, T("%s took %d %s from you!"), AName(player, AN_MOVE, NULL),
-                        abs(amount), ((abs(amount) == 1) ? MONEY : MONIES));
+          notify_format(who, T("%s took %d %s from you!"),
+                        AName(player, AN_MOVE, NULL), abs(amount),
+                        ((abs(amount) == 1) ? MONEY : MONIES));
         }
       }
       giveto(who, amount);

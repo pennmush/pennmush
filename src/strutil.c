@@ -6,7 +6,7 @@
  *
  */
 
-#define _GNU_SOURCE  /* For strchrnul, if applicable. */
+#define _GNU_SOURCE             /* For strchrnul, if applicable. */
 
 #include "copyrite.h"
 #include "strutil.h"
@@ -34,7 +34,7 @@
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
-void mush_panic(const char*);
+void mush_panic(const char *);
 
 /* TODO: Move this prototype elsewhere since this function is shared. */
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
@@ -880,7 +880,8 @@ safe_fill(char x, size_t n, char *buff, char **bp)
  * \param 1 failure (filled to end of buffer but more was requested).
  */
 int
-safe_fill_to(char x, size_t n, char *buff) {
+safe_fill_to(char x, size_t n, char *buff)
+{
   char tmp[BUFFER_LEN];
   char *p = tmp;
   size_t curr;
@@ -965,7 +966,7 @@ seek_char(const char *s, char c)
   while (*p && (*p != c))
     p++;
   return p;
-#endif  /* HAVE_STRCHRNUL */
+#endif                          /* HAVE_STRCHRNUL */
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -1699,4 +1700,3 @@ safe_chr(char c, char *buff, char **bp)
     return 0;
   }
 }
-

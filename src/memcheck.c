@@ -310,9 +310,8 @@ del_check(const char *ref, const char *filename, int line)
  * \param data Optional data that will be passed to the callback.
  */
 void
-list_mem_check(
-    void (*callback)(void *data, const char* const name, int ref_count),
-    void *data)
+list_mem_check(void (*callback)
+               (void *data, const char *const name, int ref_count), void *data)
 {
   const MEM *chk;
 

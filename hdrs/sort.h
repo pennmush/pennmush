@@ -78,7 +78,7 @@ void do_gensort(dbref player, char *keys[], char *strs[], int n,
 typedef int (*comp_func) (const void *, const void *, dbref, dbref,
                           struct _ufun_attrib *, NEW_PE_INFO *);
 void sane_qsort(void **array, int left, int right, comp_func compare,
-                dbref executor, dbref enactor, struct _ufun_attrib * ufun,
+                dbref executor, dbref enactor, struct _ufun_attrib *ufun,
                 NEW_PE_INFO *pe_info);
 
 
@@ -90,7 +90,7 @@ int str_comp(const void *s1, const void *s2);
 int stri_comp(const void *s1, const void *s2);
 int dbref_comp(const void *s1, const void *s2);
 int attr_comp(const void *s1, const void *s2);
-int u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, struct _ufun_attrib * ufun, NEW_PE_INFO *pe_info);    /* For sortby() */
+int u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, struct _ufun_attrib *ufun, NEW_PE_INFO *pe_info);     /* For sortby() */
 
 int compare_attr_names(const char *attr1, const char *attr2);
 

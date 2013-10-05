@@ -1788,7 +1788,7 @@ FUNCTION(fun_moniker)
   it = match_thing(executor, args[0]);
   if (GoodObject(it)) {
     safe_str(ansi_name(it, 0, NULL), buff, bp);
-    /*safe_str(ansi_name(it, accents, NULL), buff, bp);*/
+    /*safe_str(ansi_name(it, accents, NULL), buff, bp); */
   } else
     safe_str(T(e_notvis), buff, bp);
 }

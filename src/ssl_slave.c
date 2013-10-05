@@ -134,8 +134,11 @@ delete_conn(struct conn *c)
     }
   }
 }
-struct evdns_request *evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
-                  int flags, evdns_callback_type callback, void *data);
+
+struct evdns_request *evdns_getnameinfo(struct evdns_base *base,
+                                        const struct sockaddr *addr, int flags,
+                                        evdns_callback_type callback,
+                                        void *data);
 
 /** Address to hostname lookup wrapper */
 struct evdns_request *
@@ -200,6 +203,7 @@ pipe_cb(struct bufferevent *from_bev, void *data)
       errputs(stderr, "write failed!");
   }
 }
+
 void local_connected(struct conn *c);
 
 /** Called after the local connection to the mush has established */
@@ -231,8 +235,10 @@ local_connected(struct conn *c)
 
   free(hostid);
 }
+
 void address_resolved(int result, char type, int count, int ttl
-                 __attribute__ ((__unused__)), void *addresses, void *data);
+                      __attribute__ ((__unused__)), void *addresses,
+                      void *data);
 /** Called after the remote hostname has been resolved. */
 void
 address_resolved(int result, char type, int count, int ttl
@@ -273,6 +279,7 @@ address_resolved(int result, char type, int count, int ttl
   bufferevent_setcb(c->local_bev, NULL, NULL, event_cb, data);
   bufferevent_enable(c->local_bev, EV_WRITE);
 }
+
 void ssl_connected(struct conn *c);
 /** Called after the SSL connection and initial handshaking is complete. */
 void
@@ -541,7 +548,8 @@ main(int argc, char **argv)
 
   return EXIT_SUCCESS;
 }
-const char * time_string(void);
+
+const char *time_string(void);
 
 const char *
 time_string(void)

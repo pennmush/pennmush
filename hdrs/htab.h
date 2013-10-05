@@ -25,13 +25,13 @@ struct hashtable {
 
 /** Used to return information from hash_stats(). */
 struct hashstats {
-  int entries;        /* Number of entries in the hash table. This value is
-                         independently calculated when hash_stats() walks the
-                         table. */
-  int lookups[3];     /* Lookup distance. */
-  double key_length;  /* Average length of the keys. */
-  int bytes;          /* Estimate of bytes used. Overhead from the allocator is
-                         not included. */
+  int entries;                  /* Number of entries in the hash table. This value is
+                                   independently calculated when hash_stats() walks the
+                                   table. */
+  int lookups[3];               /* Lookup distance. */
+  double key_length;            /* Average length of the keys. */
+  int bytes;                    /* Estimate of bytes used. Overhead from the allocator is
+                                   not included. */
 };
 
 /* TODO: Get rid of these macros. The arguments are in random-ish order, and
@@ -55,4 +55,4 @@ const char *hash_nextentry_key(HASHTAB *htab);
 void hash_stats(const HASHTAB *htab, struct hashstats *stats);
 unsigned int next_prime_after(unsigned int);
 
-#endif  /* __HTAB_H_ */
+#endif                          /* __HTAB_H_ */

@@ -97,11 +97,13 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
  */
 /* #define COMP_STATS /* */
 #if (COMPRESSION_TYPE != 0)
-char *text_compress(char const *s) __attribute_malloc__;
+char *
+text_compress(char const *s)
+  __attribute_malloc__;
 #define compress(str) text_compress(str)
-char *text_uncompress(char const *s);
+    char *text_uncompress(char const *s);
 #define uncompress(str) text_uncompress(str)
-char *safe_uncompress(char const *s) __attribute_malloc__;
+    char *safe_uncompress(char const *s) __attribute_malloc__;
 #else
 extern char ucbuff[];
 #define init_compress(f) 0
@@ -164,8 +166,9 @@ void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 #define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs) \
         new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
 
-int queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
-                         int noparent, PE_REGS *pe_regs, int flags, dbref priv);
+int queue_attribute_base_priv(dbref executor, const char *atrname,
+                              dbref enactor, int noparent, PE_REGS *pe_regs,
+                              int flags, dbref priv);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
                            PE_REGS *pe_regs, int flags);
@@ -301,10 +304,11 @@ int did_it_with(dbref player, dbref thing, const char *what,
                 int flags, int an_flags);
 int did_it_interact(dbref player, dbref thing, const char *what,
                     const char *def, const char *owhat,
-                    const char *odef, const char *awhat, dbref loc, int flags, int an_flags);
-int real_did_it(dbref player, dbref thing, const char *what,
-                const char *def, const char *owhat, const char *odef,
-                const char *awhat, dbref loc, PE_REGS *pe_regs, int flags, int an_flags);
+                    const char *odef, const char *awhat, dbref loc, int flags,
+                    int an_flags);
+int real_did_it(dbref player, dbref thing, const char *what, const char *def,
+                const char *owhat, const char *odef, const char *awhat,
+                dbref loc, PE_REGS *pe_regs, int flags, int an_flags);
 int can_see(dbref player, dbref thing, int can_see_loc);
 int controls(dbref who, dbref what);
 int can_pay_fees(dbref who, int pennies);
@@ -376,45 +380,45 @@ const char *spname_int(dbref thing, bool ansi);
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
 
 /** This structure associates html entities and base ascii representations */
-    typedef struct {
-      const char *base;     /**< Base ascii representation */
-      const char *entity;   /**< HTML entity */
-    } accent_info;
+typedef struct {
+  const char *base;         /**< Base ascii representation */
+  const char *entity;       /**< HTML entity */
+} accent_info;
 
-    extern accent_info accent_table[];
+extern accent_info accent_table[];
 
 /* From unparse.c */
-    const char *real_unparse
-      (dbref player, dbref loc, int obey_myopic, int use_nameformat,
-       int use_nameaccent, int an_flag, NEW_PE_INFO *pe_info);
-    extern const char *unparse_objid(dbref thing);
-    extern const char *unparse_object(dbref player, dbref loc, int an_flag);
+const char *real_unparse
+  (dbref player, dbref loc, int obey_myopic, int use_nameformat,
+   int use_nameaccent, int an_flag, NEW_PE_INFO *pe_info);
+extern const char *unparse_objid(dbref thing);
+extern const char *unparse_object(dbref player, dbref loc, int an_flag);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l,AN_UNPARSE)
-    const char *unparse_object_myopic(dbref player, dbref loc, int an_flag);
-    const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
-    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname,
-                   bool localize, NEW_PE_INFO *pe_info);
-    const char *accented_name(dbref thing);
+const char *unparse_object_myopic(dbref player, dbref loc, int an_flag);
+const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
+int nameformat(dbref player, dbref loc, char *tbuf1, char *defname,
+               bool localize, NEW_PE_INFO *pe_info);
+const char *accented_name(dbref thing);
 
 /* From utils.c */
-    void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
+void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
 
 /** Information about an attribute to ufun.
  * Prepared via fetch_ufun_attrib, used in call_ufun
  */
-    typedef struct _ufun_attrib {
-      dbref thing;                         /**< Object with attribute */
-      char contents[BUFFER_LEN];           /**< Attribute value */
-      char attrname[ATTRIBUTE_NAME_LIMIT + 1];
+typedef struct _ufun_attrib {
+  dbref thing;                             /**< Object with attribute */
+  char contents[BUFFER_LEN];               /**< Attribute value */
+  char attrname[ATTRIBUTE_NAME_LIMIT + 1];
                                            /**< Name of attribute */
-      int pe_flags;                        /**< Flags to use when evaluating attr (for debug, no_debug) */
-      const char *errmess;                 /**< Error message, if attr couldn't be retrieved */
-      int ufun_flags;                      /**< UFUN_* flags, for how to parse/eval the attr */
-    } ufun_attrib;
+  int pe_flags;                            /**< Flags to use when evaluating attr (for debug, no_debug) */
+  const char *errmess;                     /**< Error message, if attr couldn't be retrieved */
+  int ufun_flags;                          /**< UFUN_* flags, for how to parse/eval the attr */
+} ufun_attrib;
 
-    dbref next_parent(dbref thing, dbref current, int *parent_count,
-                      int *use_ancestor);
+dbref next_parent(dbref thing, dbref current, int *parent_count,
+                  int *use_ancestor);
 
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0
@@ -435,129 +439,129 @@ int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
 /* Don't localize %0-%9. For use in evaluation locks */
 #define UFUN_SHARE_STACK 0x80
-    bool fetch_ufun_attrib(const char *attrstring, dbref executor,
-                           ufun_attrib * ufun, int flags);
-    bool call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller,
-                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs, void *data);
+bool fetch_ufun_attrib(const char *attrstring, dbref executor,
+                       ufun_attrib * ufun, int flags);
+bool call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller,
+                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs,
+                   void *data);
 #define call_ufun(ufun,ret,caller,enactor,pe_info,pe_regs) call_ufun_int(ufun,ret,caller,enactor,pe_info,pe_regs,NULL)
-    bool call_attrib(dbref thing, const char *attrname, char *ret,
-                     dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
-    bool member(dbref thing, dbref list);
-    bool recursive_member(dbref disallow, dbref from, int count);
-    dbref remove_first(dbref first, dbref what);
-    dbref reverse(dbref list);
-    uint32_t get_random32(uint32_t low, uint32_t high);
-    char *fullalias(dbref it);
-    char *shortalias(dbref it);
-    char *shortname(dbref it);
-    dbref absolute_room(dbref it);
-    int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
+bool call_attrib(dbref thing, const char *attrname, char *ret,
+                 dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
+bool member(dbref thing, dbref list);
+bool recursive_member(dbref disallow, dbref from, int count);
+dbref remove_first(dbref first, dbref what);
+dbref reverse(dbref list);
+uint32_t get_random32(uint32_t low, uint32_t high);
+char *fullalias(dbref it);
+char *shortalias(dbref it);
+char *shortname(dbref it);
+dbref absolute_room(dbref it);
+int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
 
 char *ansi_name(dbref thing, bool accents, bool *had_moniker);
 /* From warnings.c */
-    void run_topology(void);
-    void do_warnings(dbref player, const char *name, const char *warns);
-    void do_wcheck(dbref player, const char *name);
-    void do_wcheck_me(dbref player);
-    void do_wcheck_all(dbref player);
-    void set_initial_warnings(dbref player);
-    const char *unparse_warnings(warn_type warnings);
-    warn_type parse_warnings(dbref player, const char *warnings);
+void run_topology(void);
+void do_warnings(dbref player, const char *name, const char *warns);
+void do_wcheck(dbref player, const char *name);
+void do_wcheck_me(dbref player);
+void do_wcheck_all(dbref player);
+void set_initial_warnings(dbref player);
+const char *unparse_warnings(warn_type warnings);
+warn_type parse_warnings(dbref player, const char *warnings);
 
 /* From wild.c */
-    bool wild_match_test(const char *restrict s, const char *restrict d,
-                         bool cs, int *matches, int nmatches);
-    bool local_wild_match_case(const char *restrict s,
-                               const char *restrict d, bool cs,
-                               PE_REGS *pe_regs);
-    int wildcard_count(char *s, bool unescape);
+bool wild_match_test(const char *restrict s, const char *restrict d,
+                     bool cs, int *matches, int nmatches);
+bool local_wild_match_case(const char *restrict s,
+                           const char *restrict d, bool cs, PE_REGS *pe_regs);
+int wildcard_count(char *s, bool unescape);
     /** Return 1 if s contains unescaped wildcards, 0 if not */
 #define wildcard(s) (wildcard_count(s, 0) == -1)
-    bool quick_wild_new(const char *restrict tstr,
-                        const char *restrict dstr, bool cs);
-    bool wild_match_case_r(const char *restrict s,
-                           const char *restrict d, bool cs,
-                           char **ary, int max, char *ata, int len,
-                           PE_REGS *pe_regs, int pe_reg_flags);
-    bool quick_wild(const char *restrict tsr, const char *restrict dstr);
-    bool atr_wild(const char *restrict tstr, const char *restrict dstr);
+bool quick_wild_new(const char *restrict tstr,
+                    const char *restrict dstr, bool cs);
+bool wild_match_case_r(const char *restrict s,
+                       const char *restrict d, bool cs,
+                       char **ary, int max, char *ata, int len,
+                       PE_REGS *pe_regs, int pe_reg_flags);
+bool quick_wild(const char *restrict tsr, const char *restrict dstr);
+bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 
-    bool regexp_match_case_r(const char *restrict s, const char *restrict d,
-                             bool cs, char **, size_t, char *restrict, ssize_t,
-                             PE_REGS *pe_regs, int pe_reg_flags);
-    bool quick_regexp_match(const char *restrict s,
-                            const char *restrict d, bool cs,
-                            const char **report_err);
-    bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s);
+bool regexp_match_case_r(const char *restrict s, const char *restrict d,
+                         bool cs, char **, size_t, char *restrict, ssize_t,
+                         PE_REGS *pe_regs, int pe_reg_flags);
+bool quick_regexp_match(const char *restrict s,
+                        const char *restrict d, bool cs,
+                        const char **report_err);
+bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 
 /** Types of lists */
 
-    extern const char ALPHANUM_LIST[];
-    extern const char INSENS_ALPHANUM_LIST[];
-    extern const char DBREF_LIST[];
-    extern const char NUMERIC_LIST[];
-    extern const char FLOAT_LIST[];
-    extern const char DBREF_NAME_LIST[];
-    extern const char DBREF_NAMEI_LIST[];
-    extern const char DBREF_IDLE_LIST[];
-    extern const char DBREF_CONN_LIST[];
-    extern const char DBREF_CTIME_LIST[];
-    extern const char DBREF_OWNER_LIST[];
-    extern const char DBREF_LOCATION_LIST[];
-    extern const char DBREF_ATTR_LIST[];
-    extern const char DBREF_ATTRI_LIST[];
-    extern const char *const UNKNOWN_LIST;
+extern const char ALPHANUM_LIST[];
+extern const char INSENS_ALPHANUM_LIST[];
+extern const char DBREF_LIST[];
+extern const char NUMERIC_LIST[];
+extern const char FLOAT_LIST[];
+extern const char DBREF_NAME_LIST[];
+extern const char DBREF_NAMEI_LIST[];
+extern const char DBREF_IDLE_LIST[];
+extern const char DBREF_CONN_LIST[];
+extern const char DBREF_CTIME_LIST[];
+extern const char DBREF_OWNER_LIST[];
+extern const char DBREF_LOCATION_LIST[];
+extern const char DBREF_ATTR_LIST[];
+extern const char DBREF_ATTRI_LIST[];
+extern const char *const UNKNOWN_LIST;
 
 /* From function.c and other fun*.c */
-    char *strip_braces(char const *line);
+char *strip_braces(char const *line);
 
-    int delim_check(char *buff, char **bp, int nfargs, char **fargs,
-                    int sep_arg, char *sep);
-    bool int_check(char *buff, char **bp, int nfargs, char *fargs[],
-                   int check_arg, int *result, int def);
+int delim_check(char *buff, char **bp, int nfargs, char **fargs,
+                int sep_arg, char *sep);
+bool int_check(char *buff, char **bp, int nfargs, char *fargs[],
+               int check_arg, int *result, int def);
 
-    int get_gender(dbref player);
-    const char *do_get_attrib(dbref executor, dbref thing, const char *aname);
+int get_gender(dbref player);
+const char *do_get_attrib(dbref executor, dbref thing, const char *aname);
 
 /* From destroy.c */
-    void do_undestroy(dbref player, char *name);
-    dbref free_get(void);
-    int make_first_free(dbref object);
-    int make_first_free_wrapper(dbref player, char *newdbref);
-    void fix_free_list(void);
-    void purge(void);
-    void do_purge(dbref player);
+void do_undestroy(dbref player, char *name);
+dbref free_get(void);
+int make_first_free(dbref object);
+int make_first_free_wrapper(dbref player, char *newdbref);
+void fix_free_list(void);
+void purge(void);
+void do_purge(dbref player);
 
-    void dbck(void);
-    int undestroy(dbref player, dbref thing);
+void dbck(void);
+int undestroy(dbref player, dbref thing);
 
 /* From db.c */
 
-    const char *set_name(dbref obj, const char *newname);
-    dbref new_object(void);
+const char *set_name(dbref obj, const char *newname);
+dbref new_object(void);
 
 /* From filecopy.c */
-    int rename_file(const char *origname, const char *newname);
+int rename_file(const char *origname, const char *newname);
 
  /* local.c */
-    void local_startup(void);
-    void local_configs(void);
-    void local_locks(void);
-    void local_dump_database(void);
-    void local_dbck(void);
-    void local_shutdown(void);
-    bool local_timer(void *data);
-    void local_connect(dbref player, int isnew, int num);
-    void local_disconnect(dbref player, int num);
-    void local_data_create(dbref object);
-    void local_data_clone(dbref clone, dbref source, int preserve);
-    void local_data_free(dbref object);
-    int local_can_interact_first(dbref from, dbref to, int type);
-    int local_can_interact_last(dbref from, dbref to, int type);
+void local_startup(void);
+void local_configs(void);
+void local_locks(void);
+void local_dump_database(void);
+void local_dbck(void);
+void local_shutdown(void);
+bool local_timer(void *data);
+void local_connect(dbref player, int isnew, int num);
+void local_disconnect(dbref player, int num);
+void local_data_create(dbref object);
+void local_data_clone(dbref clone, dbref source, int preserve);
+void local_data_free(dbref object);
+int local_can_interact_first(dbref from, dbref to, int type);
+int local_can_interact_last(dbref from, dbref to, int type);
 
     /* flaglocal.c */
-    void local_flags(FLAGSPACE *flags);
+void local_flags(FLAGSPACE *flags);
 
 #endif                          /* __EXTERNS_H */

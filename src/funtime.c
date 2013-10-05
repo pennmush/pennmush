@@ -616,7 +616,7 @@ do_convtime(const char *mystr, struct tm *ttm)
 
   /* get the day of month */
   p = q;
-  while (isspace(*p))   /* skip leading space */
+  while (isspace(*p))           /* skip leading space */
     p++;
   if (!(q = strchr(p, ' ')))
     return 0;

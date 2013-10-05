@@ -726,11 +726,13 @@ do_unlock(dbref player, const char *name, lock_type type)
       if (getlock(thing, real_type) == TRUE_BOOLEXP) {
         if (!AreQuiet(player, thing))
           notify_format(player, T("%s(%s) - %s (already) unlocked."),
-                        AName(thing, AN_SYS, NULL), unparse_dbref(thing), real_type);
+                        AName(thing, AN_SYS, NULL), unparse_dbref(thing),
+                        real_type);
       } else if (delete_lock(player, thing, real_type)) {
         if (!AreQuiet(player, thing))
-          notify_format(player, T("%s(%s) - %s unlocked."), AName(thing, AN_SYS, NULL),
-                        unparse_dbref(thing), real_type);
+          notify_format(player, T("%s(%s) - %s unlocked."),
+                        AName(thing, AN_SYS, NULL), unparse_dbref(thing),
+                        real_type);
         if (!IsPlayer(thing))
           ModTime(thing) = mudtime;
       } else
@@ -793,8 +795,9 @@ do_lock(dbref player, const char *name, const char *keyname, lock_type type)
       /* everything ok, do it */
       if (add_lock(player, thing, real_type, key, LF_DEFAULT)) {
         if (!AreQuiet(player, thing))
-          notify_format(player, T("%s(%s) - %s locked."), AName(thing, AN_SYS, NULL),
-                        unparse_dbref(thing), real_type);
+          notify_format(player, T("%s(%s) - %s locked."),
+                        AName(thing, AN_SYS, NULL), unparse_dbref(thing),
+                        real_type);
         if (!IsPlayer(thing))
           ModTime(thing) = mudtime;
       } else {

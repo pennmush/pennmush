@@ -1917,8 +1917,7 @@ FUNCTION(fun_baseconv)
     }
     while (*ptr) {
       n *= from;
-      if (frombase[*ptr] >= 0 &&
-          frombase[*ptr] < (int) from) {
+      if (frombase[*ptr] >= 0 && frombase[*ptr] < (int) from) {
         n += frombase[*ptr];
         ptr++;
       } else {

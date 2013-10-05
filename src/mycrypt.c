@@ -21,11 +21,12 @@
 
 #define PASSWORD_HASH "sha1"
 
-bool decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp);
+bool decode_base64(char *encoded, int len, bool printonly, char *buff,
+                   char **bp);
 bool check_mux_password(const char *saved, const char *password);
 char *mush_crypt_sha0(const char *key);
-int safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
-                 char **bp, bool inplace_err);
+int safe_hash_byname(const char *algo, const char *plaintext, int len,
+                     char *buff, char **bp, bool inplace_err);
 char *password_hash(const char *key, const char *algo);
 bool password_comp(const char *saved, const char *pass);
 
@@ -256,6 +257,3 @@ password_comp(const char *saved, const char *pass)
   return c == 0;
 
 }
-
-
-

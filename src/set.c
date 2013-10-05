@@ -522,14 +522,14 @@ af_helper(dbref player, dbref thing,
   if (af->clrf) {
     AL_FLAGS(atr) &= ~af->clrf;
     if (!AreQuiet(player, thing) && !AF_Quiet(atr))
-      notify_format(player, T("%s/%s - %s reset."), AName(thing, AN_SYS, NULL), AL_NAME(atr),
-                    af->clrflags);
+      notify_format(player, T("%s/%s - %s reset."), AName(thing, AN_SYS, NULL),
+                    AL_NAME(atr), af->clrflags);
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
     if (!AreQuiet(player, thing) && !AF_Quiet(atr)) {
-      notify_format(player, T("%s/%s - %s set."), AName(thing, AN_SYS, NULL), AL_NAME(atr),
-                    af->setflags);
+      notify_format(player, T("%s/%s - %s set."), AName(thing, AN_SYS, NULL),
+                    AL_NAME(atr), af->setflags);
       if (af->setf & AF_REGEXP) {
         unanchored_regexp_attr_check(thing, atr, player);
       }
@@ -546,7 +546,9 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
     return;
   if (!Can_Write_Attr(player, target, AL_ATTR(atr))) {
     notify_format(player,
-                  T("You cannot set attrib flags on %s/%s"), AName(target, AN_SYS, NULL),
+                  T("You cannot set attrib flags on %s/%s"), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL),
                   AL_NAME(atr));
     return;
   }
@@ -1279,13 +1281,14 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
  * \param spoof Use the enactor, instead of the executor, as the enactor of the triggered attr?
  */
 void
-do_trigger(dbref executor, dbref enactor, char *object, char **argv, MQUE *queue_entry, bool spoof)
+do_trigger(dbref executor, dbref enactor, char *object, char **argv,
+           MQUE *queue_entry, bool spoof)
 {
   dbref thing;
   char *attr;
   PE_REGS *pe_regs;
   int i;
-  dbref triggerer = executor; /* triggerer is totally a word. Shut up. */
+  dbref triggerer = executor;   /* triggerer is totally a word. Shut up. */
   bool control;
 
   if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
@@ -1326,7 +1329,8 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv, MQUE *queue
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base_priv(thing, upcasestr(attr), triggerer, 0, pe_regs, 0, executor)) {
+  if (queue_attribute_base_priv
+      (thing, upcasestr(attr), triggerer, 0, pe_regs, 0, executor)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {

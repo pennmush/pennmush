@@ -26,7 +26,7 @@ extern dbref orator;
 #endif
 
 char *WIN32_CDECL tprintf(const char *fmt, ...)
-    __attribute__ ((__format__(__printf__, 1, 2)));
+  __attribute__ ((__format__(__printf__, 1, 2)));
 
 /* The #defs for our notify_anything hacks.. Errr. Functions */
 #define NA_NORELAY      0x0001  /**< Don't relay sound */
@@ -143,6 +143,6 @@ dbref na_channel(dbref current, void *data);
 #define notify_nopenter(p,m) notify_nopenter_by(GOD, p, m)
 /* Notify with a printf-style format */
 void notify_format(dbref player, const char *fmt, ...)
-    __attribute__ ((__format__(__printf__, 2, 3)));
+  __attribute__ ((__format__(__printf__, 2, 3)));
 
-#endif  /* __NOTIFY_H */
+#endif                          /* __NOTIFY_H */

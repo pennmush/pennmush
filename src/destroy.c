@@ -354,10 +354,13 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
       notify_format(player,
                     T
                     ("The wrecking ball is on its way for %s's %s and its exits."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player, thing, AN_SYS));
+                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
+                                                                      thing,
+                                                                      AN_SYS));
       notify_format(Owner(thing),
                     T("%s has scheduled your room %s to be destroyed."),
-                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing), thing, AN_SYS));
+                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
+                                                                thing, AN_SYS));
     }
     break;
   case TYPE_PLAYER:
@@ -377,11 +380,15 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   case TYPE_THING:
     if (!Owns(player, thing)) {
       notify_format(player, T("%s's %s is scheduled to be destroyed."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player, thing, AN_SYS));
+                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
+                                                                      thing,
+                                                                      AN_SYS));
       if (!DestOk(thing))
         notify_format(Owner(thing),
                       T("%s has scheduled your %s for destruction."),
-                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing), thing, AN_SYS));
+                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
+                                                                  thing,
+                                                                  AN_SYS));
     } else {
       notify_format(player, T("%s is scheduled to be destroyed."),
                     unparse_object(player, thing, AN_SYS));
@@ -391,10 +398,12 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
     if (!Owns(player, thing)) {
       notify_format(Owner(thing),
                     T("%s has scheduled your %s for destruction."),
-                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing), thing, AN_SYS));
-      notify_format(player,
-                    T("%s's %s is scheduled to be destroyed."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player, thing, AN_SYS));
+                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
+                                                                thing, AN_SYS));
+      notify_format(player, T("%s's %s is scheduled to be destroyed."),
+                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
+                                                                      thing,
+                                                                      AN_SYS));
     } else
       notify_format(player,
                     T("%s is scheduled to be destroyed."),
@@ -438,7 +447,9 @@ do_undestroy(dbref player, char *name)
     if (player != Owner(thing)) {
       notify_format(player,
                     T("%s's %s has been spared from destruction."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player, thing, AN_SYS));
+                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
+                                                                      thing,
+                                                                      AN_SYS));
     }
     if (IsPlayer(thing))
       do_log(LT_WIZ, player, thing, "Player spared from destruction.");
@@ -491,7 +502,9 @@ pre_destroy(dbref player, dbref thing)
       if (!Owns(player, thing)) {
         notify_format(Owner(thing),
                       T("%s has scheduled your %s for destruction."),
-                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing), thing, AN_SYS));
+                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
+                                                                  thing,
+                                                                  AN_SYS));
       }
     }
     break;
@@ -569,8 +582,8 @@ undestroy(dbref player, dbref thing)
       if (Owner(Source(thing)) != player) {
         notify_format(Owner(Source(thing)),
                       T("The room %s has been spared from destruction by %s."),
-                      unparse_object(Owner(Source(thing)), Source(thing), AN_SYS),
-                      AName(player, AN_SYS, NULL));
+                      unparse_object(Owner(Source(thing)), Source(thing),
+                                     AN_SYS), AName(player, AN_SYS, NULL));
       }
     }
     break;
@@ -1398,14 +1411,16 @@ check_contents(void)
         mark_contents(Contents(thing));
         notify_format(Owner(thing), T("It was moved to %s."),
                       unparse_object(Owner(thing), Location(thing), AN_SYS));
-        do_rawlog(LT_ERR, "Moved to %s.", unparse_object(GOD, Location(thing), 0));
+        do_rawlog(LT_ERR, "Moved to %s.",
+                  unparse_object(GOD, Location(thing), 0));
         break;
       case TYPE_EXIT:
         if (GoodObject(Source(thing)) && IsRoom(Source(thing))) {
           PUSH(thing, Exits(Source(thing)));
           notify_format(Owner(thing), T("It was moved to %s."),
                         unparse_object(Owner(thing), Source(thing), AN_SYS));
-          do_rawlog(LT_ERR, "Moved to %s.", unparse_object(GOD, Source(thing), 0));
+          do_rawlog(LT_ERR, "Moved to %s.",
+                    unparse_object(GOD, Source(thing), 0));
         } else {
           /* Just destroy the exit. */
           Source(thing) = NOTHING;

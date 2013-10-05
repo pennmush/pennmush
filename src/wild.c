@@ -82,6 +82,7 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 }
 
 static bool
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -505,9 +506,11 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   /* If we have pe_regs, populate it. */
   if (pe_regs) {
     if (as) {
-      pe_regs_set_rx_context_ansi(pe_regs, pe_reg_flags, re, offsets, subpatterns, as);
+      pe_regs_set_rx_context_ansi(pe_regs, pe_reg_flags, re, offsets,
+                                  subpatterns, as);
     } else {
-      pe_regs_set_rx_context(pe_regs, pe_reg_flags, re, offsets, subpatterns, val);
+      pe_regs_set_rx_context(pe_regs, pe_reg_flags, re, offsets, subpatterns,
+                             val);
     }
   }
 

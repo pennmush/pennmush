@@ -62,7 +62,8 @@ FUNCTION(fun_fn)
       safe_str(T(e_notvis), buff, bp);
       return;
     }
-    if (!(!FUNCTION_SIDE_EFFECTS && See_All(executor)) && !controls(executor, as)) {
+    if (!(!FUNCTION_SIDE_EFFECTS && See_All(executor))
+        && !controls(executor, as)) {
       safe_str(T(e_perm), buff, bp);
       return;
     }

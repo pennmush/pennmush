@@ -152,7 +152,7 @@ FUNALIAS faliases[] = {
   {"STRDELETE", "DELETE"},
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
-  {"MONIKER", "CNAME"}, /* Rhost alias */
+  {"MONIKER", "CNAME"},         /* Rhost alias */
   {NULL, NULL}
 };
 
@@ -1069,7 +1069,7 @@ strip_braces(const char *str)
   buff = mush_malloc(BUFFER_LEN, "strip_braces.buff");
   bufc = buff;
 
-  while (isspace(*str)) /* eat spaces at the beginning */
+  while (isspace(*str))         /* eat spaces at the beginning */
     str++;
 
   switch (*str) {

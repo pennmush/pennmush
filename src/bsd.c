@@ -249,7 +249,8 @@ static int handle_telnet(DESC *d, char **q, char *qend);
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1))
 
-static const char create_fail_preexisting[] = "There is already a player with that name.";
+static const char create_fail_preexisting[] =
+  "There is already a player with that name.";
 static const char create_fail_bad[] = "That name is not allowed.";
 static const char password_fail[] = "The password is invalid (or missing).";
 static const char register_fail[] =
@@ -383,7 +384,8 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
-enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED };
+enum comm_res { CRES_OK =
+    0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED };
 static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);
@@ -2407,8 +2409,7 @@ handle_telnet(DESC *d, char **q, char *qend)
     if (*q >= qend)
       return -1;
     else {
-      static const char ayt_reply[] =
-        "\r\n*** AYT received, I'm here ***\r\n";
+      static const char ayt_reply[] = "\r\n*** AYT received, I'm here ***\r\n";
       queue_newwrite(d, ayt_reply, strlen(ayt_reply));
       process_output(d);
     }
@@ -2570,8 +2571,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   p = d->raw_input_at;
   d->input_chars += got;
   pend = d->raw_input + MAX_COMMAND_LEN - 1;
-  for (q = tbuf1, qend = tbuf1 + got;
-       q < qend; q++) {
+  for (q = tbuf1, qend = tbuf1 + got; q < qend; q++) {
     if (*q == '\r') {
       /* A broken client (read: WinXP telnet) might send only CR, and not CRLF
        * so it's nice of us to try to handle this.
@@ -3148,29 +3148,31 @@ check_connect(DESC *d, const char *msg)
     }
     player = create_player(d, NOTHING, user, password, d->addr, d->ip);
     switch (player) {
-      case NOTHING:
-      case AMBIGUOUS:
-        queue_string_eol(d, T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
-        do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Failed create for '%s' (bad name).",
-                  d->descriptor, d->addr, d->ip, user);
-        break;
-      case HOME:
-        queue_string_eol(d, T(password_fail));
-        do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Failed create for '%s' (bad password).",
-                  d->descriptor, d->addr, d->ip, user);
-        break;
-      default:
-        queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
-                    unparse_objid(player), Name(player), "create", d->descriptor);
-        do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
-                  d->descriptor, d->addr, d->ip, Name(player), player);
-        if ((dump_messages(d, player, 1)) == 0) {
-          d->connected = CONN_DENIED;
-          return 0;
-        }
-        break;
+    case NOTHING:
+    case AMBIGUOUS:
+      queue_string_eol(d,
+                       T((player ==
+                          NOTHING ? create_fail_bad :
+                          create_fail_preexisting)));
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
+                d->descriptor, d->addr, d->ip, user);
+      break;
+    case HOME:
+      queue_string_eol(d, T(password_fail));
+      do_rawlog(LT_CONN,
+                "[%d/%s/%s] Failed create for '%s' (bad password).",
+                d->descriptor, d->addr, d->ip, user);
+      break;
+    default:
+      queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
+                  unparse_objid(player), Name(player), "create", d->descriptor);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
+                d->descriptor, d->addr, d->ip, Name(player), player);
+      if ((dump_messages(d, player, 1)) == 0) {
+        d->connected = CONN_DENIED;
+        return 0;
+      }
+      break;
     }                           /* successful player creation */
 
   } else if (string_prefix("register", command)) {
@@ -3773,7 +3775,8 @@ do_page_port(dbref executor, const char *pc, const char *message)
                 message + 1);
     notify_format(executor, T("Long distance to %s: %s%s%s"),
                   target != NOTHING ? AName(target, AN_SAY, NULL) :
-                  T("a connecting player"), AName(executor, AN_SAY, NULL), gap, message + 1);
+                  T("a connecting player"), AName(executor, AN_SAY, NULL), gap,
+                  message + 1);
     break;
   case 3:
     safe_format(tbuf, &tbp, T("%s pages: %s"), Name(executor), message);
@@ -4291,10 +4294,10 @@ do_who_admin(dbref player, char *name)
       if (nlen < 16)
         safe_fill(' ', 16 - nlen, tbuf, &tp);
       safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%c ",
-                 unparse_dbref(Location(d->player)),
-                 onfor_time_fmt(d->connected_at, 9),
-                 idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                 is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'));
+                  unparse_dbref(Location(d->player)),
+                  onfor_time_fmt(d->connected_at, 9),
+                  idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+                  is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'));
       strncpy(addr, d->addr, 28);
       if (Dark(d->player)) {
         addr[20] = '\0';
@@ -4462,10 +4465,12 @@ announce_connect(DESC *d, int isnew, int num)
 
   if (isnew) {
     /* A brand new player created. */
-    snprintf(tbuf1, BUFFER_LEN, T("%s created."), AName(player, AN_ANNOUNCE, NULL));
+    snprintf(tbuf1, BUFFER_LEN, T("%s created."),
+             AName(player, AN_ANNOUNCE, NULL));
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
     if (Suspect(player))
-      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."), AName(player, AN_ANNOUNCE, NULL));
+      flag_broadcast("WIZARD", 0, T("GAME: Suspect %s created."),
+                     AName(player, AN_ANNOUNCE, NULL));
   }
 
   /* Redundant, but better for translators */
@@ -4477,7 +4482,8 @@ announce_connect(DESC *d, int isnew, int num)
   } else {
     message = (num > 1) ? T("has reconnected.") : T("has connected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL),
+           message);
 
   /* send out messages */
   if (Suspect(player))
@@ -4683,7 +4689,8 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     message = (num > 1) ? T("has partially disconnected.") :
       T("has disconnected.");
   }
-  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL), message);
+  snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL),
+           message);
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
@@ -5747,7 +5754,8 @@ hide_player(dbref player, int hide, char *victim)
     if (player == thing)
       notify(player, T("You now appear on the WHO list."));
     else
-      notify_format(player, T("%s now appears on the WHO list."), AName(thing, AN_SYS, NULL));
+      notify_format(player, T("%s now appears on the WHO list."),
+                    AName(thing, AN_SYS, NULL));
   }
 }
 

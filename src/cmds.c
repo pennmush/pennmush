@@ -679,7 +679,8 @@ COMMAND(cmd_hook)
   if (queue_type != QUEUE_DEFAULT) {
     if (flags != HOOK_OVERRIDE && flags != HOOK_EXTEND) {
       notify(executor,
-             T("You can only use /inplace and /inline with /override or /extend."));
+             T
+             ("You can only use /inplace and /inline with /override or /extend."));
       return;
     }
   }
@@ -746,10 +747,9 @@ extern slab *player_dbref_slab;
 extern slab *text_block_slab;
 
 static void
-list_mem_check_callback(
-    void *data, const char *const name, int ref_count)
+list_mem_check_callback(void *data, const char *const name, int ref_count)
 {
-  notify_format(*(dbref*)data, "%s : %d", name, ref_count);
+  notify_format(*(dbref *) data, "%s : %d", name, ref_count);
 }
 
 static void
@@ -783,8 +783,8 @@ do_list_allocations(dbref player)
     pe_reg_slab,
     pe_reg_val_slab,
     flagbucket_slab,
-    namelist_slab,  /* This used to be in a separate if check, so it may be
-                       NULL. Be careful if making this static. */
+    namelist_slab,              /* This used to be in a separate if check, so it may be
+                                   NULL. Be careful if making this static. */
   };
   size_t i;
 
@@ -1124,7 +1124,7 @@ COMMAND(cmd_moniker)
 
   if (!controls(executor, target)) {
     notify(executor, "Permission denied.");
-    return ;
+    return;
   }
 
   if (!arg_right || !*arg_right) {
@@ -1573,7 +1573,8 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, enactor, arg_left, args_right, queue_entry, SW_ISSET(sw, SWITCH_SPOOF));
+  do_trigger(executor, enactor, arg_left, args_right, queue_entry,
+             SW_ISSET(sw, SWITCH_SPOOF));
 }
 
 COMMAND(cmd_ulock)

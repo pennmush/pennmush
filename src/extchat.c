@@ -81,7 +81,8 @@ static void channel_send(CHAN *channel, dbref player, int flags,
 static void list_partial_matches(dbref player, const char *name,
                                  enum chan_match_type type);
 void do_chan_set_mogrifier(dbref player, const char *name, const char *newobj);
-char *mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs, const char *argv[], const char *orig);
+char *mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs,
+              const char *argv[], const char *orig);
 
 static const char chan_speak_lock[] = "ChanSpeakLock";  /**< Name of speak lock */
 static const char chan_join_lock[] = "ChanJoinLock";    /**< Name of join lock */
@@ -1271,7 +1272,8 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     /* Is victim already on the channel? */
     if (onchannel(victim, chan)) {
       notify_format(player,
-                    T("%s is already on channel <%s>."), AName(victim, AN_SYS, NULL),
+                    T("%s is already on channel <%s>."), AName(victim, AN_SYS,
+                                                               NULL),
                     ChanName(chan));
       return;
     }
@@ -1289,11 +1291,12 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     }
     if (insert_user_by_dbref(victim, chan)) {
       notify_format(victim,
-                    T("CHAT: %s joins you to channel <%s>."), AName(player, AN_SYS, NULL),
+                    T("CHAT: %s joins you to channel <%s>."), AName(player,
+                                                                    AN_SYS,
+                                                                    NULL),
                     ChanName(chan));
-      notify_format(player,
-                    T("CHAT: You join %s to channel <%s>."), AName(victim, AN_SYS, NULL),
-                    ChanName(chan));
+      notify_format(player, T("CHAT: You join %s to channel <%s>."),
+                    AName(victim, AN_SYS, NULL), ChanName(chan));
       onchannel(victim, chan);
       ChanNumUsers(chan)++;
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
@@ -1303,7 +1306,8 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       }
     } else {
       notify_format(player,
-                    T("%s is already on channel <%s>."), AName(victim, AN_SYS, NULL),
+                    T("%s is already on channel <%s>."), AName(victim, AN_SYS,
+                                                               NULL),
                     ChanName(chan));
     }
     return;
@@ -1331,8 +1335,8 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
                     T("CHAT: You remove %s from channel <%s>."),
                     AName(victim, AN_SYS, NULL), ChanName(chan));
     } else {
-      notify_format(player, T("%s is not on channel <%s>."), AName(victim, AN_SYS, NULL),
-                    ChanName(chan));
+      notify_format(player, T("%s is not on channel <%s>."),
+                    AName(victim, AN_SYS, NULL), ChanName(chan));
     }
     return;
   } else {
@@ -1399,7 +1403,8 @@ channel_join_self(dbref player, const char *name)
   } else {
     /* Should never happen */
     notify_format(player,
-                  T("%s is already on channel <%s>."), AName(player, AN_SYS, NULL),
+                  T("%s is already on channel <%s>."), AName(player, AN_SYS,
+                                                             NULL),
                   ChanName(chan));
   }
 }
@@ -1439,8 +1444,8 @@ channel_leave_self(dbref player, const char *name)
     notify_format(player, T("CHAT: You leave channel <%s>."), ChanName(chan));
   } else {
     /* Should never happen */
-    notify_format(player, T("%s is not on channel <%s>."), AName(player, AN_SYS, NULL),
-                  ChanName(chan));
+    notify_format(player, T("%s is not on channel <%s>."),
+                  AName(player, AN_SYS, NULL), ChanName(chan));
   }
 }
 
@@ -2252,7 +2257,7 @@ do_channel_list(dbref player, const char *partname, int types)
     if (sp == shortoutput)
       safe_str(T("(None)"), shortoutput, &sp);
     *sp = '\0';
-    notify_format(player,T("CHAT: Channel list: %s"), shortoutput);
+    notify_format(player, T("CHAT: Channel list: %s"), shortoutput);
     mush_free(shortoutput, "chan_list");
   } else if (SUPPORT_PUEBLO)
     notify_noenter(player, close_tag("SAMP"));
@@ -2869,7 +2874,8 @@ do_chan_what(dbref player, const char *partname)
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanTitle(c));
-      notify_format(player, T("Owner: %s"), AName(ChanCreator(c), AN_SYS, NULL));
+      notify_format(player, T("Owner: %s"),
+                    AName(ChanCreator(c), AN_SYS, NULL));
       if (ChanMogrifier(c) != NOTHING) {
         notify_format(player, T("Mogrifier: %s (#%d)"),
                       AName(ChanMogrifier(c), AN_SYS, NULL), ChanMogrifier(c));

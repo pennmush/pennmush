@@ -310,7 +310,7 @@ safe_get_bytecode(boolexp b)
 
   len = chunk_len(b);
   bytecode = mush_malloc(len, "boolexp.bytecode");
-  chunk_fetch(b, (char *)bytecode, len);
+  chunk_fetch(b, (char *) bytecode, len);
   return bytecode;
 }
 
@@ -325,7 +325,7 @@ get_bytecode(boolexp b, uint16_t *storelen)
   static uint8_t bytecode[BUFFER_LEN * 2];
   uint16_t len;
 
-  len = chunk_fetch(b, (char *)bytecode, sizeof bytecode);
+  len = chunk_fetch(b, (char *) bytecode, sizeof bytecode);
   if (storelen)
     *storelen = len;
   return bytecode;
@@ -351,7 +351,7 @@ dup_bool(boolexp b)
 
   bytecode = get_bytecode(b, &len);
 
-  r = chunk_create((char *)bytecode, len, 1);
+  r = chunk_create((char *) bytecode, len, 1);
 
   return r;
 }
@@ -1917,7 +1917,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     pc += s->len;
   }
 
-  b = chunk_create((char *)bytecode, len, derefs);
+  b = chunk_create((char *) bytecode, len, derefs);
   mush_free(bytecode, "boolexp.bytecode");
   return b;
 }
@@ -2293,7 +2293,8 @@ cleanup_boolexp(boolexp b)
   }
 done:
   if (revised) {
-    boolexp copy = chunk_create((char *)bytecode, bytecode_len, chunk_derefs(b));
+    boolexp copy =
+      chunk_create((char *) bytecode, bytecode_len, chunk_derefs(b));
     chunk_delete(b);
     return copy;
   } else

@@ -24,8 +24,7 @@ typedef uint32_t chunk_reference_t;
 
 #endif
 
-chunk_reference_t chunk_create(char const *data, uint16_t len,
-                               uint8_t derefs);
+chunk_reference_t chunk_create(char const *data, uint16_t len, uint8_t derefs);
 void chunk_delete(chunk_reference_t reference);
 uint16_t chunk_fetch(chunk_reference_t reference,
                      char *buffer, uint16_t buffer_len);

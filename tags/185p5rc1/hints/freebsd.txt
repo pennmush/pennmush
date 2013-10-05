@@ -1,0 +1,8 @@
+Penn will compile and run out of the box on FreeBSD, with the caveats
+below:
+
+* If you're using an IPv6-enabled install and 'sysctl
+  net.inet6.ip6.v6only' prints out 1, you'll have to get a sysadmin to
+  change it to 0 or run configure with --disable-ipv6 to allow IPv4
+  connections.
+

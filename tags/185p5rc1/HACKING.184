@@ -1,0 +1,157 @@
+This is the most current changes file for PennMUSH Hardcode.
+
+If you are maintaining an add-on for PennMUSH, this details any changes
+to extant functions that are likely to be used by the embracers and
+extenders out there.
+
+Changes are in reverse chronological order. You can probably find the reason
+for most of these changes in the equivalent CHANGES file, but only those
+that have altered hardcode will appear here.
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
+ responsible for most unattributed changes.
+[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.4 patchlevel 8                                 Nov 11, 2011
+
+  command_check_byname() and command_check_byname_quiet() now both take
+  an additional NEW_PE_INFO *pe_info arg, used for evaluating the
+  command boolexp lock. command_check() is now an #define'd wrapper for
+  a new command_check_with() function, which also takes a pe_info. [MG]
+  
+Version 1.8.4 patchlevel 7                                 Sep 25, 2011
+
+  The bitsets that store set flags and powers on objects are now
+  shared. All objects with the same flags or powers set share the same
+  bitset (Called a flagset in documentation). As a result, nobody
+  should be setting or clearing bits in those fields directly. Use the
+  API in flags.h instead, with things like set_flag_internal().
+
+  Function defintions -- FUNCTION(fun_foo) {...} -- now receive an extra
+  argument, eflags. Useful for functions which do further evaluation
+  of their arguments after being called (particularly NOPARSE functions),
+  the variable contains the appropriate PE_* flags to be used when calling
+  process_expression. For example, the S() function previously used:
+  
+    process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
+                       PT_DEFAULT, pe_info);
+                       
+  and now uses
+  
+    process_expression(buff, bp, &p, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
+  
+  Ensures that PE_USERFN and PE_[NO]DEBUG are properly passed down. When
+  evaluating another attribute, you should continue to use PE_UDEFAULT
+  instead of eflags (or use a function like call_ufun to evaluate it).
+
+
+
+Version 1.8.4 patchlevel 5                                 Jun 19,  2011
+  ansi_string has been heavily rewritten. as->text and as->len still
+  work for accessing, everything else about ansi_string has been heavily
+  modified.
+
+  ptab_firstentry_new and ptab_nextentry_new now take a pointer to a 
+  char * to store a read-only copy of the current entry's key in, instead
+  of a user-supplied buffer that may or may not be big enough.
+
+  notify.c has been rewritten, and notify_anything()'s args have changed.
+  To get the same behaviour, change:
+    notify_anything(speaker, func, data, nospoof_func, flags, message);
+  to
+    notify_anything(speaker, func, data, NULL, flags, message, NULL, 
+                    AMBIGUOUS, NULL);
+  If nospoof_func is NULL, make sure you include NA_SPOOF in the new flags.
+  Many other functions in notify.c have also changed - check the comments
+  on the functions for more info on the new arguments.
+
+Version 1.8.4 patchlevel 4                                 May 05,  2011
+
+  PE_REGS now contains switch, @switch, iter, @dol and env (%0-%9).
+  The old way of passing arguments will no longer work. Instead, read
+  the HACKING.PE_REGS file for information on PE_REGS. This is paving
+  the way for a more flexible arg/environment structure: Possible more
+  than 10 %-args (Named %-args? Who knows?)
+
+  Regexps are now stored in the PE_REGS structure. re_context is gone
+  from NEW_PE_INFO. Instead, use pe_regs_*.
+
+  Q-registers are now stored in a PE_REGS structure, which will eventually
+  also consume all other forms of registers. To set a Q register, use
+  the macro PE_Setq(pe_info, name, val). To fetch a Q register, use
+  the macro PE_Getq(pe_info, name, val). To check if a (char *) is a
+  valid register name, use ValidQregName((char *)).
+
+  With the PE_REGS change, all Q-registers now have both their names and
+  their values kept in a string tree, reducing overhead caused by
+  duplicates. This also means that you should _NOT_ modify any values
+  returned by PE_Getq().
+
+  With PE_REGS containing q-registers across queue entries, the memory used
+  by a single entry in a player, object, @wait or semaphore queue is reduced
+  by about BUFFER_LEN*NUMQ bytes, assuming no Q-registers used. By default,
+  this amounts to 294KB!
+
+  wild_match_case_r, regexp_match_case_r and local_wild_match all accept
+  a new parameter after the last: a PE_REGS. For old behavior, simply add
+  a NULL parameter at the end.
+
+  global_eval_context has been removed, as have the BQUE and PE_Info
+  sutrcts. All the information they contained has been merged into two new
+  structs, MQUE and NEW_PE_INFO. The environment (%0-%9) and q-regs (%q*)
+  are now part of NEW_PE_INFO. Commands are passed the MQUE (queue entry)
+  they're being evaluated as part of as 'queue_entry', and can access
+  queue_entry->pe_info if they need to evaluate anything/change environment
+  variables, etc.
+  
+  In COMMAND() definitions, the variable 'player' (object running the
+  command) has been renamed 'executor' and 'cause' (object which caused the
+  command to be run) has been renamed 'enactor', for clarity and consistancy
+  with softcode. You will need to update your commands in cmdlocal.c
+
+Version 1.8.4 patchlevel 3                                 Mar 18,  2011
+
+ queue_event(<enactor or SYSEVENT>, <attribute name>, "argfmt", ...)
+     lets you queue events on the event handler, if set.
+
+ Using a bunch of gencomp() calls, such as for setunion, is now deprecated,
+     you should use get_list_type_info, slist_build, slist_qsort, slist_free
+     and free_list_type_info. Look at fun_setmanip and do_gensort for how
+     to do it.
+
+ list2arr_ansi() now calls list2arr() when there is no markup.
+
+ list2arr_ansi and list2arr now take a third argument, 'nullok'. If nullok
+     is 0, then it will ignore null items. For old behaviour, pass 1.
+
+ All timed events have been moved to a new system queue:
+     timed callbacks are of the type "bool (*sq_func)(void *data);".
+     To set up a callback, use:
+       sq_register_in(<wait time>, <sq_func>, <data>, <event name>)
+     To repeat it infinitely:
+       sq_register_loop(<wait time>, <sq_func>, <data>, <event name>)
+     sq_func() is called with <data> as its argument.
+     If <event name> is non-NULL and sq_func returns a boolean true, then
+     the queue will trigger the event <event name> with no arguments when it
+     is completed calling sq_func.
+ 
+ Because of the change to system queue for timed events, local_timer in local.c
+     has been changed. If you haven't changed local.c, just copy local.dst over
+     it. If you have, and you want local_timer to run every second, then
+     add sq_register_loop(1, local_timer, NULL, NULL); to local_startup(),
+     and change local_timer's signature to:
+         bool local_timer(void *data __attribute__((__unused__)))
+     and return false.
+
+
+ In the DESC struct, descriptors which have not connected to a player now have
+ d->player set to NOTHING (-1) instead of 0.

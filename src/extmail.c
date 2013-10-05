@@ -248,7 +248,8 @@ get_sender(MAIL *mp, int full, int len, bool *pisplayer)
     isplayer = IsPlayer(mp->from);
   } else {
     safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
-    safe_format(tbuf1, &bp, T(" (#%d, owner: %s)"), mp->from, AName(Owner(mp->from), AN_SYS, NULL));
+    safe_format(tbuf1, &bp, T(" (#%d, owner: %s)"), mp->from,
+                AName(Owner(mp->from), AN_SYS, NULL));
   }
   *bp = '\0';
   if (len > 0) {
@@ -665,8 +666,7 @@ do_mail_read(dbref player, char *msglist)
         notify_format(player,
                       T
                       ("From: %-s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
-                      tbuf1, (isplayer
-                              && Connected(mp->from)
+                      tbuf1, (isplayer && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
                       "      ", show_time(mp->time, 0), folderheader,
@@ -738,9 +738,9 @@ do_mail_list(dbref player, const char *msglist)
         safe_fill_to(' ', 12, sender);
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",
                       status_chars(mp), (int) Folder(mp), i[Folder(mp)],
-                      (isplayer && (Connected(mp->from) &&
-                                            (!hidden(mp->from)
-                                             || Priv_Who(player)))
+                      (isplayer && (Connected(mp->from) && (!hidden(mp->from)
+                                                            ||
+                                                            Priv_Who(player)))
                        ? '*' : ' '), sender, 30, subj,
                       mail_list_time(show_time(mp->time, 0), 1));
         if (SUPPORT_PUEBLO)
@@ -846,8 +846,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
         notify_format(player,
                       T
                       ("From: %s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
-                      tbuf1, (isplayer
-                              && Connected(mp->from)
+                      tbuf1, (isplayer && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
                       "      ", show_time(mp->time, 0), i, status_string(mp));
@@ -903,7 +902,7 @@ do_mail_reviewlist(dbref player, dbref target)
    * replacing Name() with AName() */
   np = nbuff;
   safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
-  nlen  = strlen(Name(target));
+  nlen = strlen(Name(target));
   if (nlen < 27)
     safe_fill(' ', 27 - nlen, nbuff, &np);
   *np = '\0';
@@ -928,9 +927,8 @@ do_mail_reviewlist(dbref player, dbref target)
       np = nbuff;
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
-                    (isplayer && (Connected(mp->from) &&
-                                          (!hidden(mp->from)
-                                           || Priv_Who(player)))
+                    (isplayer && (Connected(mp->from) && (!hidden(mp->from)
+                                                          || Priv_Who(player)))
                      ? '*' : ' '), sender, 30, subj,
                     mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_PUEBLO)
@@ -1435,7 +1433,9 @@ send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (good)
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), AName(target, AN_SYS, NULL));
+                    T("MAIL: You sent your message to %s."), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL));
     else
       notify_format(player,
                     T
@@ -1476,7 +1476,7 @@ mail_limit(dbref target)
   if (quota <= 0)
     return MAIL_LIMIT;
   else if (quota > 50000)
-    return 50000; /* Hard limit */
+    return 50000;               /* Hard limit */
   else
     return quota;
 
@@ -1606,7 +1606,9 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (can_mail_to(target, player)) {
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), AName(target, AN_SYS, NULL));
+                    T("MAIL: You sent your message to %s."), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL));
     } else {
       notify_format(player,
                     T
@@ -1684,7 +1686,8 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     }
     do_mail_clear(target, "ALL");
     do_mail_purge(target);
-    notify_format(player, T("Mail cleared for %s(#%d)."), AName(target, AN_SYS, NULL), target);
+    notify_format(player, T("Mail cleared for %s(#%d)."),
+                  AName(target, AN_SYS, NULL), target);
     return;
   } else if (string_prefix("sanity", action)) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = mp->next) {
@@ -1845,8 +1848,10 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
       if (mp->to == target)
         tr++;
     }
-    notify_format(player, T("%s sent %d messages."), AName(target, AN_SYS, NULL), fr);
-    notify_format(player, T("%s has %d messages."), AName(target, AN_SYS, NULL), tr);
+    notify_format(player, T("%s sent %d messages."),
+                  AName(target, AN_SYS, NULL), fr);
+    notify_format(player, T("%s has %d messages."), AName(target, AN_SYS, NULL),
+                  tr);
     return;
   }
   /* more detailed message count */
@@ -1875,7 +1880,8 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
     }
   }
 
-  notify_format(player, T("Mail statistics for %s:"), AName(target, AN_SYS, NULL));
+  notify_format(player, T("Mail statistics for %s:"),
+                AName(target, AN_SYS, NULL));
 
   if (full == MSTATS_READ) {
     notify_format(player, T("%d messages sent, %d unread, %d cleared."),
@@ -2661,7 +2667,7 @@ get_folder_name(dbref player, int fld)
     return str;
   }
   strcpy(str, atr_value(a));
-  old = (char *)string_match(str, pat);
+  old = (char *) string_match(str, pat);
   if (old) {
     r = old + strlen(pat);
     while (*r != ':')
@@ -2707,7 +2713,7 @@ add_folder_name(dbref player, int fld, const char *name)
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
   if (a) {
     strcpy(str, atr_value(a));
-    old = (char *)string_match(str, pat);
+    old = (char *) string_match(str, pat);
   }
   if (old && *old) {
     mush_strncpy(tbuf, str, BUFFER_LEN);

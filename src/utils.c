@@ -245,7 +245,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  */
 bool
 call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
-          NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
+              NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
 {
   char rbuff[BUFFER_LEN];
   char *rp, *np = NULL;
@@ -729,6 +729,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker)
   set_mp(1);
   return name;
 }
+
 #undef set_mp
 
 /** Return the absolute room (outermost container) of an object.

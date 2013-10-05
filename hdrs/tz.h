@@ -10,7 +10,7 @@
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif  /* HAVE_STDINT_H */
+#endif                          /* HAVE_STDINT_H */
 
 struct ttinfo {
   int32_t tt_gmtoff;

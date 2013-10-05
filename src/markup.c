@@ -66,7 +66,8 @@ const char *is_allowed_tag(const char *s, unsigned int len);
 void build_rgb_map(void);
 int ansi_equal(const ansi_data *a, const ansi_data *b);
 int ansi_isnull(const ansi_data a);
-int safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp);
+int safe_markup_codes(new_markup_information *mi, int end, char *buff,
+                      char **bp);
 
 static ansi_data ansi_null = NULL_ANSI;
 
@@ -254,8 +255,8 @@ FUNCTION(fun_colors)
       return;
     }
 
-    if ((!ad.fg[0] || (!ad.fg[1] && (ad.fg[0] == 'n'|| ad.fg[0] == 'd'))) &&
-        (!ad.bg[0] || (!ad.bg[1] && (ad.bg[0] == 'n'|| ad.bg[0] == 'D')))) {
+    if ((!ad.fg[0] || (!ad.fg[1] && (ad.fg[0] == 'n' || ad.fg[0] == 'd'))) &&
+        (!ad.bg[0] || (!ad.bg[1] && (ad.bg[0] == 'n' || ad.bg[0] == 'D')))) {
       safe_str(T("#-1 COLORS() REQUIRES AT LEAST ONE COLOR"), buff, bp);
       return;
     }
@@ -305,19 +306,22 @@ FUNCTION(fun_colors)
 
       switch (cs) {
       case COL_HEX:
-        safe_format(buff, bp, "#%06x", color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
+        safe_format(buff, bp, "#%06x",
+                    color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
       case COL_16:
         j = ansi_map_16(color, i, &hilite);
         if (j)
-          safe_chr(colormap_16[j - (i ? 40 : 30)].desc - (i ? 32 : 0), buff, bp);
+          safe_chr(colormap_16[j - (i ? 40 : 30)].desc - (i ? 32 : 0), buff,
+                   bp);
         else
           safe_chr(i ? 'D' : 'd', buff, bp);
         if (!i && (hilite || (ad.bits & CBIT_HILITE)))
           safe_chr('h', buff, bp);
         break;
       case COL_256:
-        safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0), buff, bp);
+        safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0),
+                     buff, bp);
         break;
       case COL_NAME:
         {
@@ -2281,7 +2285,11 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   } else {
     for (i = loc; i < srcend; i++) {
       if ((i - loc) > (count - 1))
-        dst->markup[i] = (count || (loc > 0 && loc < oldlen)) ? dst->markup[loc + count - 1] : NOMARKUP;
+        dst->markup[i] = (count
+                          || (loc > 0
+                              && loc <
+                              oldlen)) ? dst->markup[loc + count -
+                                                     1] : NOMARKUP;
     }
   }
   return truncated;

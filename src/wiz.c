@@ -137,15 +137,17 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   player =
     create_player(NULL, creator, player_name, player_password, "None", "None");
   switch (player) {
-    case NOTHING:
-      notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
-      return NOTHING;
-    case AMBIGUOUS:
-      notify_format(creator, T("Failure creating '%s' (name in use)"), player_name);
-      return NOTHING;
-    case HOME:
-      notify_format(creator, T("Failure creating '%s' (bad password)"), player_name);
-      return NOTHING;
+  case NOTHING:
+    notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
+    return NOTHING;
+  case AMBIGUOUS:
+    notify_format(creator, T("Failure creating '%s' (name in use)"),
+                  player_name);
+    return NOTHING;
+  case HOME:
+    notify_format(creator, T("Failure creating '%s' (bad password)"),
+                  player_name);
+    return NOTHING;
   }
 
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
@@ -837,7 +839,8 @@ do_newpassword(dbref executor, dbref enactor,
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
-    notify_format(executor, T("Password for %s changed."), AName(victim, AN_SYS, NULL));
+    notify_format(executor, T("Password for %s changed."),
+                  AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
                   AName(executor, AN_SYS, NULL));
     do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
@@ -915,7 +918,8 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
       if (player == victim)
         notify(player, T("You boot a duplicate self."));
       else
-        notify_format(player, T("You booted %s off!"), AName(victim, AN_SYS, NULL));
+        notify_format(player, T("You booted %s off!"),
+                      AName(victim, AN_SYS, NULL));
     } else {
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
@@ -929,7 +933,8 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
   if (count) {
     if (flag != BOOT_SELF) {
       do_log(LT_WIZ, player, victim, "*** BOOT ***");
-      notify_format(player, T("You booted %s off!"), AName(victim, AN_SYS, NULL));
+      notify_format(player, T("You booted %s off!"),
+                    AName(victim, AN_SYS, NULL));
     }
   } else {
     if (flag == BOOT_SELF)
@@ -1220,8 +1225,7 @@ do_search(dbref player, const char *arg1, char **arg3)
 
   /* First argument is a player, so we could have a quoted name */
   if (*arg1 == '\"') {
-    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1));
-         arg1++) ;
+    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1)); arg1++) ;
     strcpy(tbuf, arg1);
     while (*arg2 && (*arg2 != '\"')) {
       while (*arg2 && (*arg2 != '\"'))
@@ -1799,10 +1803,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       if (whod != AMBIGUOUS) {
         notify_format(player,
                       T("Site %s access options for %s(%s) set to %s"),
-                      site, AName(whod, AN_SYS, NULL), unparse_dbref(whod), opts);
-        do_log(LT_WIZ, player, NOTHING,
-               "*** SITELOCK *** %s for %s(%s) --> %s", site,
-               Name(whod), unparse_dbref(whod), opts);
+                      site, AName(whod, AN_SYS, NULL), unparse_dbref(whod),
+                      opts);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s for %s(%s) --> %s",
+               site, Name(whod), unparse_dbref(whod), opts);
       } else {
         notify_format(player, T("Site %s access options set to %s"), site,
                       opts);

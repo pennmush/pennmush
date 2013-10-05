@@ -227,7 +227,7 @@
 #else
 #ifndef __USE_UNIX98
 #define __USE_UNIX98
-#endif  /* __USE_UNIX98 */
+#endif                          /* __USE_UNIX98 */
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -285,8 +285,7 @@ acm_chunk_delete(chunk_reference_t reference)
 }
 
 static uint16_t
-acm_chunk_fetch(chunk_reference_t reference, char *buffer,
-                uint16_t buffer_len)
+acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
 {
   uint16_t len;
 
@@ -845,7 +844,7 @@ static void find_oddballs(uint16_t region);
 static inline char *
 ChunkPointer(uint16_t region, uint16_t offset)
 {
-  return ((char *)(regions[region].in_memory)) + offset;
+  return ((char *) (regions[region].in_memory)) + offset;
 }
 
 static uint8_t
@@ -966,7 +965,7 @@ debug_dump_region(uint16_t region, FILE * fp)
         fprintf(fp, "next:%04x\n", ChunkNextFree(region, offset));
       } else {
         fprintf(fp, "doff:%04" PRIdS "x len:%04x ",
-                ChunkDataPtr(region, offset) - (char *)rhp,
+                ChunkDataPtr(region, offset) - (char *) rhp,
                 ChunkLen(region, offset));
         count = ChunkDerefs(region, offset);
         if (count == 0xFF) {
@@ -2391,8 +2390,7 @@ acc_chunk_delete(chunk_reference_t reference)
 }
 
 static uint16_t
-acc_chunk_fetch(chunk_reference_t reference,
-                char *buffer, uint16_t buffer_len)
+acc_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
 {
   uint16_t region, offset, len;
   region = ChunkReferenceToRegion(reference);
@@ -2768,8 +2766,7 @@ chunk_delete(chunk_reference_t reference)
  * \return the length of the data.
  */
 uint16_t
-chunk_fetch(chunk_reference_t reference,
-            char *buffer, uint16_t buffer_len)
+chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
 {
   return ACPREFIX(chunk_fetch) (reference, buffer, buffer_len);
 }

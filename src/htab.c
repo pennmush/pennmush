@@ -55,29 +55,31 @@
 #include "mymalloc.h"
 
 /* Temporary prototypes to make the compiler happy. */
-char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
-uint32_t get_random32(uint32_t low, uint32_t high);
+char *
+mush_strdup(const char *s, const char *check)
+  __attribute_malloc__;
+    uint32_t get_random32(uint32_t low, uint32_t high);
 
-struct hash_bucket {
-  const char *key;
-  void *data;
-  int keylen;
-};
+    struct hash_bucket {
+      const char *key;
+      void *data;
+      int keylen;
+    };
 
-typedef uint32_t (*hash_func) (const char *, int, uint64_t);
+    typedef uint32_t (*hash_func) (const char *, int, uint64_t);
 
-static const uint64_t hash_seed = 0x28187bcc53900639LLU;
+    static const uint64_t hash_seed = 0x28187bcc53900639LLU;
 
-hash_func hash_functions[] = {
-  city_hash,
-  murmur3_hash,
-  spooky_hash,
-  jenkins_hash,
-  city_hash,
-  murmur3_hash,
-  jenkins_hash,
-  spooky_hash,
-};
+    hash_func hash_functions[] = {
+      city_hash,
+      murmur3_hash,
+      spooky_hash,
+      jenkins_hash,
+      city_hash,
+      murmur3_hash,
+      jenkins_hash,
+      spooky_hash,
+    };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
 
@@ -197,7 +199,8 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     /* None. Use a random func and bump the existing element */
     n = htab->hashfunc_offset + get_random32(0, NHASH_TRIES - 1);
     n %= NHASH_MOD;
-    hval = (hash_functions[n]) (bump.key, bump.keylen, hash_seed) % htab->hashsize;
+    hval =
+      (hash_functions[n]) (bump.key, bump.keylen, hash_seed) % htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -267,8 +270,7 @@ hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
         htab->hashfunc_offset = oldoffset;
         if (first_offset == -1)
           first_offset = hashfunc_offset;
-        return
-          hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
+        return hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
       }
     }
   }
@@ -304,14 +306,13 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
   if (!hash_insert(htab, keycopy, keylen, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
-    hash_resize(htab, htab->hashsize,
-                (htab->hashfunc_offset + 1) % NHASH_MOD);
+    hash_resize(htab, htab->hashsize, (htab->hashfunc_offset + 1) % NHASH_MOD);
   }
   return true;
 }
 
 static void
-hash_delete_bucket(HASHTAB *htab, struct hash_bucket* entry)
+hash_delete_bucket(HASHTAB *htab, struct hash_bucket *entry)
 {
   if (htab->free_data)
     htab->free_data(entry->data);
@@ -468,7 +469,8 @@ hash_stats(const HASHTAB *htab, struct hashstats *stats)
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
-        if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) % htab->hashsize) == (uint32_t) n) {
+        if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) %
+             htab->hashsize) == (uint32_t) n) {
           stats->lookups[i] += 1;
           break;
         }

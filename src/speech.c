@@ -395,7 +395,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
       if (GoodObject(who))
-        notify_format(player, T("%s can't hear you."), AName(who, AN_SYS, NULL));
+        notify_format(player, T("%s can't hear you."),
+                      AName(who, AN_SYS, NULL));
     } else {
       /* A good whisper */
       good[gcount++] = who;
@@ -432,7 +433,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
 
   if (key == 1) {
     notify_format(player, (gcount > 1) ? T("%s sense: %s%s%s") :
-                  T("%s senses: %s%s%s"), tbuf + 4, AName(player, AN_SAY, NULL), gap, arg2);
+                  T("%s senses: %s%s%s"), tbuf + 4, AName(player, AN_SAY, NULL),
+                  gap, arg2);
     p = tprintf("You sense: %s%s%s", AName(player, AN_SAY, NULL), gap, arg2);
   } else {
     notify_format(player, T("You whisper, \"%s\"%s."), arg2, tbuf);
@@ -693,9 +695,11 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
 
   /* broadcast the message */
   if (pose)
-    flag_broadcast(mask, 0, "%s %s%s%s", prefix, AName(player, AN_SAY, NULL), gap, message);
+    flag_broadcast(mask, 0, "%s %s%s%s", prefix, AName(player, AN_SAY, NULL),
+                   gap, message);
   else if (emit)
-    flag_broadcast(mask, 0, "%s [%s]: %s", prefix, AName(player, AN_SAY, NULL), message);
+    flag_broadcast(mask, 0, "%s [%s]: %s", prefix, AName(player, AN_SAY, NULL),
+                   message);
   else
     flag_broadcast(mask, 0,
                    "%s %s %s, \"%s\"", prefix, AName(player, AN_SAY, NULL),
@@ -908,14 +912,16 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
         page_return(executor, target, "Away", "AWAY",
-                    tprintf(T("%s is not connected."), AName(target, AN_SYS, NULL)));
+                    tprintf(T("%s is not connected."),
+                            AName(target, AN_SYS, NULL)));
         if (fails_lock)
           fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (is_haven) {
         page_return(executor, target, "Haven", "HAVEN",
-                    tprintf(T("%s is not accepting any pages."), AName(target, AN_SYS, NULL)));
+                    tprintf(T("%s is not accepting any pages."),
+                            AName(target, AN_SYS, NULL)));
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (fails_lock) {

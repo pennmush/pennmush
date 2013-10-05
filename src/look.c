@@ -439,7 +439,8 @@ look_simple(dbref player, dbref thing, int key, NEW_PE_INFO *pe_info)
   notify_by(thing, player, pbuff);
   look_description(player, thing, T("You see nothing special."), "DESCRIBE",
                    "DESCFORMAT", pe_info);
-  did_it(player, thing, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING, AN_SYS);
+  did_it(player, thing, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING,
+         AN_SYS);
   if (IsExit(thing)) {
     if (Transparented(thing))
       key |= LOOK_TRANS;
@@ -512,16 +513,19 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   } else if ((!look_through_exit && (!(key & LOOK_AUTO) || !Terse(player)))
              || (key & LOOK_TRANS)) {
     look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
-    did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING, AN_SYS);
+    did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING,
+           AN_SYS);
   }
 
   /* tell him the appropriate messages if he has the key */
   if (IsRoom(loc) && !look_through_exit) {
     if (key & LOOK_AUTO && Terse(player)) {
       if (could_doit(player, loc, pe_info))
-        did_it(player, loc, NULL, NULL, "OSUCCESS", NULL, "ASUCCESS", NOTHING, AN_SYS);
+        did_it(player, loc, NULL, NULL, "OSUCCESS", NULL, "ASUCCESS", NOTHING,
+               AN_SYS);
       else
-        did_it(player, loc, NULL, NULL, "OFAILURE", NULL, "AFAILURE", NOTHING, AN_SYS);
+        did_it(player, loc, NULL, NULL, "OFAILURE", NULL, "AFAILURE", NOTHING,
+               AN_SYS);
     } else if (could_doit(player, loc, pe_info)) {
       did_it(player, loc, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
              NOTHING, AN_SYS);
@@ -1177,7 +1181,8 @@ do_sweep(dbref player, const char *arg1)
         /* only worry about puppet and players who's owner's are connected */
         if (Connected(here) || (Puppet(here) && Connected(Owner(here)))) {
           if (IsPlayer(here)) {
-            notify_format(player, T("%s is listening."), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s is listening."),
+                          AName(here, AN_LOOK, NULL));
           } else {
             strcpy(nhere, AName(here, AN_LOOK, NULL));
             notify_format(player, T("%s [owner: %s] is listening."),
@@ -1187,12 +1192,15 @@ do_sweep(dbref player, const char *arg1)
       } else {
         if (Hearer(here) || Listener(here)) {
           if (Connected(here))
-            notify_format(player, T("%s [speech]. (connected)"), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s [speech]. (connected)"),
+                          AName(here, AN_LOOK, NULL));
           else
-            notify_format(player, T("%s [speech]."), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s [speech]."),
+                          AName(here, AN_LOOK, NULL));
         }
         if (Commer(here))
-          notify_format(player, T("%s [commands]."), AName(here, AN_LOOK, NULL));
+          notify_format(player, T("%s [commands]."),
+                        AName(here, AN_LOOK, NULL));
       }
     }
   }
@@ -1202,7 +1210,8 @@ do_sweep(dbref player, const char *arg1)
       /* listening exits only work if the room is AUDIBLE */
       for (here = Exits(Location(player)); here != NOTHING; here = Next(here)) {
         if (Audible(here)) {
-          notify_format(player, T("%s [broadcasting]."), AName(here, AN_LOOK, NULL));
+          notify_format(player, T("%s [broadcasting]."),
+                        AName(here, AN_LOOK, NULL));
         }
       }
     }
@@ -1215,7 +1224,8 @@ do_sweep(dbref player, const char *arg1)
         /* only worry about puppet and players who's owner's are connected */
         if (Connected(here) || (Puppet(here) && Connected(Owner(here)))) {
           if (IsPlayer(here)) {
-            notify_format(player, T("%s is listening."), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s is listening."),
+                          AName(here, AN_LOOK, NULL));
           } else {
             strcpy(nhere, AName(here, AN_LOOK, NULL));
             notify_format(player, T("%s [owner: %s] is listening."),
@@ -1225,12 +1235,15 @@ do_sweep(dbref player, const char *arg1)
       } else {
         if (Hearer(here) || Listener(here)) {
           if (Connected(here))
-            notify_format(player, T("%s [speech]. (connected)"), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s [speech]. (connected)"),
+                          AName(here, AN_LOOK, NULL));
           else
-            notify_format(player, T("%s [speech]."), AName(here, AN_LOOK, NULL));
+            notify_format(player, T("%s [speech]."),
+                          AName(here, AN_LOOK, NULL));
         }
         if (Commer(here))
-          notify_format(player, T("%s [commands]."), AName(here, AN_LOOK, NULL));
+          notify_format(player, T("%s [commands]."),
+                        AName(here, AN_LOOK, NULL));
       }
     }
   }
@@ -1257,14 +1270,16 @@ do_whereis(dbref player, const char *name)
   }
   if (!Can_Locate(player, thing)) {
     notify(player, T("That player wishes to have some privacy."));
-    notify_format(thing, T("%s tried to locate you and failed."), AName(player, AN_SYS, NULL));
+    notify_format(thing, T("%s tried to locate you and failed."),
+                  AName(player, AN_SYS, NULL));
     return;
   }
   notify_format(player,
                 T("%s is at: %s."), AName(thing, AN_SYS, NULL),
                 unparse_object(player, Location(thing), AN_LOOK));
   if (!See_All(player))
-    notify_format(thing, T("%s has just located your position."), AName(player, AN_SYS, NULL));
+    notify_format(thing, T("%s has just located your position."),
+                  AName(player, AN_SYS, NULL));
   return;
 
 }
@@ -1316,10 +1331,11 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   if (!strcmp(AL_NAME(atr), "MONIKER")) {
     /* Special case: The MONIKER attribute is set with the @moniker command,
      * not set as a normal attribute */
-     safe_format(msg, &bp, "@MONIKER %s=", dh->name);
-     safe_decompose_str(avalue, msg, &bp);
-   } else if (strchr(avalue, '\n') || strchr(avalue, '\t') ||
-      strchr(avalue, TAG_START) || *avalue == ' ' || avalue[avlen - 1] == ' ') {
+    safe_format(msg, &bp, "@MONIKER %s=", dh->name);
+    safe_decompose_str(avalue, msg, &bp);
+  } else if (strchr(avalue, '\n') || strchr(avalue, '\t') ||
+             strchr(avalue, TAG_START) || *avalue == ' '
+             || avalue[avlen - 1] == ' ') {
     safe_str("@set ", msg, &bp);
     safe_str(dh->name, msg, &bp);
     safe_chr('=', msg, &bp);
@@ -1520,8 +1536,7 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
 
   if (IsExit(thing) && GoodObject(Source(thing))) {
     notify_format(player, "%s@@ %s (#%d), in %s (#%d)", prefix,
-                  shortname(thing), thing, Name(Source(thing)),
-                  Source(thing));
+                  shortname(thing), thing, Name(Source(thing)), Source(thing));
   } else {
     notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
   }

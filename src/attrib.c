@@ -65,7 +65,7 @@ static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent,
                                  int cmd);
 static bool can_debug(dbref player, dbref victim);
 static int atr_count_helper(dbref player, dbref thing, dbref parent,
-                        char const *pattern, ATTR *atr, void *args);
+                            char const *pattern, ATTR *atr, void *args);
 static void set_cmd_flags(ATTR *a);
 
 /*======================================================================*/
@@ -762,7 +762,8 @@ unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player)
   return;
 
 warn:
-  notify_format(player, T("Warning: Unanchored regexp command in #%d/%s."), thing, AL_NAME(atr));
+  notify_format(player, T("Warning: Unanchored regexp command in #%d/%s."),
+                thing, AL_NAME(atr));
   return;
 }
 
@@ -1230,10 +1231,11 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
 /** Helper function fr atr_pattern_count, passed to atr_iter_get() */
 static int
 atr_count_helper(dbref player __attribute__ ((__unused__)),
-             dbref thing __attribute__ ((__unused__)),
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern __attribute__ ((__unused__)),
-             ATTR *atr __attribute__ ((__unused__)), void *args __attribute__ ((__unused__)))
+                 dbref thing __attribute__ ((__unused__)),
+                 dbref parent __attribute__ ((__unused__)),
+                 char const *pattern __attribute__ ((__unused__)),
+                 ATTR *atr __attribute__ ((__unused__)), void *args
+                 __attribute__ ((__unused__)))
 {
   return 1;
 }
@@ -1842,7 +1844,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                           match_space, match_space_len, pe_regs, PE_REGS_ARG) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        MAX_STACK_ARGS, match_space, match_space_len, pe_regs, PE_REGS_ARG)) {
+                        MAX_STACK_ARGS, match_space, match_space_len, pe_regs,
+                        PE_REGS_ARG)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     NEW_PE_INFO *pe_info;
 
@@ -2160,9 +2163,11 @@ do_atrlock(dbref player, const char *src, const char *action)
   enum atrlock_status status = ATRLOCK_CHECK;
 
   if (action && *action) {
-    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") || !strcasecmp(action, "1"))
+    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes")
+        || !strcasecmp(action, "1"))
       status = ATRLOCK_LOCK;
-    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no") || !strcasecmp(action, "0"))
+    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no")
+             || !strcasecmp(action, "0"))
       status = ATRLOCK_UNLOCK;
     else {
       notify(player, T("Invalid argument."));

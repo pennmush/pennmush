@@ -107,7 +107,7 @@ safe_atr_value(ATTR *atr)
   __attribute_malloc__;
 
 
-void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
+    void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
 
 /* possible attribute flags */
 /* 2013-03-03 MG: Several attrflags are marked "OBSOLETE! Leave here
@@ -156,7 +156,7 @@ void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
 #define AF_ODARK        0x1U
 
 
-extern ATTR attr[];           /**< external predefined attributes. */
+    extern ATTR attr[];       /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)

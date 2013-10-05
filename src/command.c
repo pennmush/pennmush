@@ -67,7 +67,7 @@ int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
              NEW_PE_INFO *pe_info);
 
 int run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
-                  MQUE *from_queue);
+                 MQUE *from_queue);
 void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
@@ -174,7 +174,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
-  {"@HALT", "ALL NOEVAL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
+  {"@HALT", "ALL NOEVAL PID", cmd_halt,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
   {"@HOOK",
    "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
@@ -1804,11 +1805,11 @@ do_command_add(dbref player, char *name, int flags)
       notify(player, T("Bad command name."));
     } else {
       char *switches = NULL;
-      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) != (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
+      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) !=
+          (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
         switches = "NOEVAL";
       command_add(mush_strdup(name, "command_add"),
-                  flags, NULL, 0, switches,
-                  cmd_unimplemented);
+                  flags, NULL, 0, switches, cmd_unimplemented);
       notify_format(player, T("Command %s added."), name);
     }
   } else {
@@ -1953,7 +1954,8 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
+    if (command->func != cmd_unimplemented
+        || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
       notify(player,
              T
              ("You can't delete built-in commands. @command/disable instead."));
@@ -2313,7 +2315,7 @@ run_hook(dbref executor, dbref enactor, struct hook_data *hook,
  */
 int
 run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
-                  MQUE *from_queue)
+             MQUE *from_queue)
 {
   int queue_type = QUEUE_DEFAULT;
 
@@ -2327,8 +2329,7 @@ run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
 
   if (hook->attrname) {
     return one_comm_match(hook->obj, executor,
-                          hook->attrname, commandraw,
-                          from_queue, queue_type);
+                          hook->attrname, commandraw, from_queue, queue_type);
   } else {
     return atr_comm_match(hook->obj, executor, '$', ':',
                           commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
@@ -2493,7 +2494,8 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
       *h = NULL;
     }
   } else if (!obj || !*obj
-             || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND) && (!attrname || !*attrname))) {
+             || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND)
+                 && (!attrname || !*attrname))) {
     if (flag == HOOK_OVERRIDE || flag == HOOK_EXTEND) {
       notify(player, T("You must give an object."));
     } else {
@@ -2580,8 +2582,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.override->
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.
+             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {
@@ -2597,8 +2599,7 @@ do_hook_list(dbref player, char *command, bool verbose)
       *op = '\0';
 
       if (cmd->hooks.extend && (cmd->hooks.extend->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.extend->
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.extend->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", extend_inplace, &ep);
         else {

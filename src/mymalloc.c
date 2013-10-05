@@ -135,7 +135,7 @@ mush_free_where(const void *restrict ptr, const char *restrict check,
   }
 #endif
   del_check(check, filename, line);
-  free((void *)ptr);
+  free((void *) ptr);
   return;
 }
 

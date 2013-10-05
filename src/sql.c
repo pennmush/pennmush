@@ -143,14 +143,15 @@ sql_platform(void)
 }
 
 static char *
-sql_sanitize(char *res) {
+sql_sanitize(char *res)
+{
   static char buff[BUFFER_LEN];
   char *bp = buff, *rp = res;
 
   for (; *rp; rp++) {
     if (isprint(*rp) || *rp == '\n' || *rp == '\t' ||
-         *rp == ESC_CHAR || *rp == TAG_START || *rp == TAG_END ||
-         *rp == BEEP_CHAR) {
+        *rp == ESC_CHAR || *rp == TAG_START || *rp == TAG_END ||
+        *rp == BEEP_CHAR) {
       *bp++ = *rp;
     }
   }
@@ -488,19 +489,26 @@ COMMAND(cmd_mapsql)
 #ifdef HAVE_MYSQL
         case SQL_PLATFORM_MYSQL:
           cells[i + 1] = mush_strdup(sql_sanitize(row_p[i]), "sql_row");
-          names[i + 1] = mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
+          names[i + 1] =
+            mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_POSTGRESQL
         case SQL_PLATFORM_POSTGRESQL:
-          cells[i + 1] = mush_strdup(sql_sanitize(PQgetvalue(qres, rownum, i)), "sql_row");
-          names[i + 1] = mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
+          cells[i + 1] =
+            mush_strdup(sql_sanitize(PQgetvalue(qres, rownum, i)), "sql_row");
+          names[i + 1] =
+            mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
-          cells[i + 1] = mush_strdup(sql_sanitize((char *) sqlite3_column_text(qres, i)), "sql_row");
-          names[i + 1] = mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
+          cells[i + 1] =
+            mush_strdup(sql_sanitize((char *) sqlite3_column_text(qres, i)),
+                        "sql_row");
+          names[i + 1] =
+            mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)),
+                        "sql_fieldname");
           break;
 #endif
         default:
@@ -762,18 +770,22 @@ FUNCTION(fun_mapsql)
   for (i = 0; i < useable_fields; i++) {
     switch (sql_platform()) {
 #ifdef HAVE_MYSQL
-      case SQL_PLATFORM_MYSQL:
-        fieldnames[i] = mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
-        break;
+    case SQL_PLATFORM_MYSQL:
+      fieldnames[i] =
+        mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
+      break;
 #endif
 #ifdef HAVE_POSTGRESQL
     case SQL_PLATFORM_POSTGRESQL:
-      fieldnames[i] = mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
+      fieldnames[i] =
+        mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
       break;
 #endif
 #ifdef HAVE_SQLITE3
     case SQL_PLATFORM_SQLITE3:
-      fieldnames[i] = mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
+      fieldnames[i] =
+        mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)),
+                    "sql_fieldname");
       break;
 #endif
     default:

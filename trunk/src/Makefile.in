@@ -2111,6 +2111,7 @@ info_slave.o: ../hdrs/bufferq.h
 info_slave.o: ../hdrs/lookup.h
 info_slave.o: ../hdrs/mysocket.h
 info_slave.o: ../hdrs/wait.h
+info_slave.o: ../hdrs/sig.h
 ssl_slave.o: ../config.h
 ssl_slave.o: ../confmagic.h
 ssl_slave.o: ../options.h

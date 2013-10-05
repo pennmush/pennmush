@@ -129,7 +129,8 @@ charge_action(dbref thing)
  */
 int
 did_it(dbref player, dbref thing, const char *what, const char *def,
-       const char *owhat, const char *odef, const char *awhat, dbref loc, int an_flags)
+       const char *owhat, const char *odef, const char *awhat, dbref loc,
+       int an_flags)
 {
   return real_did_it(player, thing, what, def, owhat, odef, awhat, loc, NULL,
                      NA_INTER_HEAR, an_flags);
@@ -252,7 +253,9 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
-        if (!call_ufun_int(&ufun, buff, thing, player, pe_info, pe_regs, (void *) AName(player, an_flags, NULL)) && buff[0])
+        if (!call_ufun_int
+            (&ufun, buff, thing, player, pe_info, pe_regs,
+             (void *) AName(player, an_flags, NULL)) && buff[0])
           notify_except2(player, loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
@@ -1044,8 +1047,7 @@ ok_tag_attribute(dbref player, const char *params)
       size_t n = q - p;
       /* Invalid params for non-priv'd. Turn to a hashtable if we ever
          get more? */
-      if (strncasecmp(p, "SEND", n) == 0
-          || strncasecmp(p, "XCH_CMD", n) == 0)
+      if (strncasecmp(p, "SEND", n) == 0 || strncasecmp(p, "XCH_CMD", n) == 0)
         return 0;
       while (*q && isspace(*q))
         q++;
@@ -1408,7 +1410,8 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   } else {
     aval = parse_ansi_string(s);
     s = aval->text;
-    repl = parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
+    repl =
+      parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
     while (s && *s) {
       if (!
           (cs ? strncmp(s, gd->findstr, gd->findlen) :

@@ -1559,7 +1559,7 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
           if (sscanf(val->name, "%d", &num) == 1) {
             /* only check numeric args, ignore named ones */
             if (num >= max) {
-              max = num + 1;      /* %0 is 1 arg */
+              max = num + 1;    /* %0 is 1 arg */
             }
           }
         }

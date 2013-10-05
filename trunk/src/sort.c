@@ -420,7 +420,7 @@ GENRECORD(gen_db_attr)
 {
   /* Eek, I hate dealing with memory issues. */
   /* TODO: This is all sorts of wrong. Fix it. */
-  static char *defstr = (char *)"";
+  static char *defstr = (char *) "";
   const char *ptr;
 
   rec->memo.str.s = defstr;

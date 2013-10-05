@@ -281,8 +281,7 @@ do_malias_list(dbref player)
       }
       notify_format(player,
                     "%c%-12.12s %-35.35s %s %-15.15s", MALIAS_TOKEN, m->name,
-                    uncompress(m->desc), get_shortprivs(m),
-                    Name(m->owner));
+                    uncompress(m->desc), get_shortprivs(m), Name(m->owner));
     }
   }
 
@@ -647,8 +646,7 @@ do_malias_all(dbref player)
     m = &malias[i];
     notify_format(player, "#%-4d %c%-10.10s %-40.40s %-11.11s (%3d)",
                   i, MALIAS_TOKEN, m->name,
-                  uncompress(m->desc),
-                  Name(m->owner), m->size);
+                  uncompress(m->desc), Name(m->owner), m->size);
   }
 
   notify(player, T("***** End of Mail Aliases *****"));

@@ -35,7 +35,8 @@
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
-bool decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp);
+bool decode_base64(char *encoded, int len, bool printonly, char *buff,
+                   char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
@@ -297,7 +298,7 @@ FUNCTION(fun_sha0)
 {
   uint8_t hash[SHA_DIGEST_LENGTH];
 
-  SHA((uint8_t *)args[0], arglens[0], hash);
+  SHA((uint8_t *) args[0], arglens[0], hash);
 
   safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
 }

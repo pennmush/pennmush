@@ -22,7 +22,7 @@
 
 #ifdef I_SYS_SOCKET
 #include <sys/socket.h>
-#endif  /* I_SYS_SOCKET */
+#endif                          /* I_SYS_SOCKET */
 
 #ifdef WIN32
 #ifndef FD_SETSIZE

@@ -255,8 +255,7 @@ static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
 
 static const char *notify_makestring_real(struct notify_message *message,
                                           int output_type);
-static char *notify_makestring_nocache(const char *message,
-                                       int output_type);
+static char *notify_makestring_nocache(const char *message, int output_type);
 
 #define notify_makestring(msg,ot) notify_makestring_real(msg,ot)
 
@@ -341,7 +340,8 @@ notify_type(DESC *d)
   }
 
   /* At this point, we have a connected player on the descriptor */
-  if (IS(d->player, TYPE_PLAYER, "NOACCENTS") || (d->conn_flags & CONN_STRIPACCENTS))
+  if (IS(d->player, TYPE_PLAYER, "NOACCENTS")
+      || (d->conn_flags & CONN_STRIPACCENTS))
     type |= MSG_STRIPACCENTS;
 
   if (d->conn_flags & CONN_HTML) {
@@ -1247,8 +1247,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
             } else {
               if (formatmsg)
                 mush_free(formatmsg, "notify_str");
-              msgstr = formatmsg =
-                notify_makestring_nocache(buff, output_type);
+              msgstr = formatmsg = notify_makestring_nocache(buff, output_type);
             }
             msglen = strlen(msgstr);
           }
@@ -1337,8 +1336,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if (cache)
       msgstr = notify_makestring(&message->messages, MSG_INTERNAL);
     else
-      msgstr = formatmsg =
-        notify_makestring_nocache(buff, MSG_INTERNAL);
+      msgstr = formatmsg = notify_makestring_nocache(buff, MSG_INTERNAL);
 
     if (prefix) {
       /* Add the prefix to the beginning */

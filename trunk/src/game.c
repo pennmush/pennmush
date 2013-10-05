@@ -281,9 +281,10 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), AName(player, AN_ANNOUNCE, NULL));
-  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
-         Name(player), unparse_dbref(player));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"),
+                 AName(player, AN_ANNOUNCE, NULL));
+  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n", Name(player),
+         unparse_dbref(player));
 
   if (flag == SHUT_PANIC) {
     mush_panic("@shutdown/panic");
@@ -1820,7 +1821,8 @@ do_scan(dbref player, char *command, int flag)
     if (ScanFind(player, Location(player), 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched here: %s  [%d:%s]"),
-                    unparse_object(player, Location(player), AN_UNPARSE), num, atrname);
+                    unparse_object(player, Location(player), AN_UNPARSE), num,
+                    atrname);
     }
   }
   ptr = atrname;
@@ -1855,7 +1857,8 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing, AN_UNPARSE), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num,
+                            atrname);
               ptr = atrname;
             }
           }
@@ -1867,7 +1870,8 @@ do_scan(dbref player, char *command, int flag)
           notify_format(player,
                         T("Matched zone of location: %s  [%d:%s]"),
                         unparse_object(player,
-                                       Zone(Location(player)), AN_UNPARSE), num, atrname);
+                                       Zone(Location(player)), AN_UNPARSE), num,
+                        atrname);
         }
       }
     }
@@ -1882,7 +1886,8 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing, AN_UNPARSE), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num,
+                            atrname);
               ptr = atrname;
             }
           }
@@ -1890,7 +1895,8 @@ do_scan(dbref player, char *command, int flag)
       } else if (ScanFind(player, Zone(player), 0)) {
         *ptr = '\0';
         notify_format(player, T("Matched personal zone: %s  [%d:%s]"),
-                      unparse_object(player, Zone(player), AN_UNPARSE), num, atrname);
+                      unparse_object(player, Zone(player), AN_UNPARSE), num,
+                      atrname);
       }
     }
   }
@@ -2131,7 +2137,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   }
   /* print system uptime */
   for (i = 0; (c = getc(fp)) != '\n' && c != EOF; i++)
-    tbuf1[i] = (char)c;
+    tbuf1[i] = (char) c;
   tbuf1[i] = '\0';
   pclose(fp);
 
@@ -2524,23 +2530,23 @@ do_list_memstats(dbref player)
     const HASHTAB *const table;
     const char *name;
   } hash_tables[] = {
-    {&htab_function, "Functions"},
-    {&htab_user_function, "@Functions"},
-    {&htab_player_list, "Players"},
-    {&htab_reserved_aliases, "Aliases"},
-    {&help_files, "HelpFiles"},
-    {&htab_objdata, "ObjData"},
-    {&htab_objdata_keys, "ObjDataKeys"},
-    {&htab_locks, "@locks"},
-    {&local_options, "ConfigOpts"},
-  };
+    {
+    &htab_function, "Functions"}, {
+    &htab_user_function, "@Functions"}, {
+    &htab_player_list, "Players"}, {
+    &htab_reserved_aliases, "Aliases"}, {
+    &help_files, "HelpFiles"}, {
+    &htab_objdata, "ObjData"}, {
+    &htab_objdata_keys, "ObjDataKeys"}, {
+    &htab_locks, "@locks"}, {
+  &local_options, "ConfigOpts"},};
   unsigned int i;
 
   notify(player, "Hash Tables:");
   notify(player,
-      "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
+         "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
   for (i = 0; i < sizeof(hash_tables) / sizeof(hash_tables[0]); ++i) {
-    const HASHTAB* htab = hash_tables[i].table;
+    const HASHTAB *htab = hash_tables[i].table;
     struct hashstats stats;
 
     hash_stats(htab, &stats);

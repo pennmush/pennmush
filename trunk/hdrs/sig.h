@@ -27,4 +27,4 @@ void unblock_a_signal(int signo);
 /* Block all signals en masse. */
 void block_signals(void);
 
-#endif  /* __SIG_H */
+#endif                          /* __SIG_H */

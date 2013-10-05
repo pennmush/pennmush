@@ -9,7 +9,7 @@
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif  /* HAVE_STDINT_H_ */
+#endif                          /* HAVE_STDINT_H_ */
 
 #include "mushtype.h"
 #include "mypcre.h"

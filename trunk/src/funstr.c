@@ -44,7 +44,8 @@ static int align_one_line(char *buff, char **bp, int ncols,
                           ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                           int linenum, char *fieldsep, int fslen, char *linesep,
                           int lslen, char filler);
-static int comp_gencomp(dbref executor, char *left, char *right, const char *type);
+static int comp_gencomp(dbref executor, char *left, char *right,
+                        const char *type);
 void init_pronouns(void);
 
 /** Return an indicator of a player's gender.
@@ -961,8 +962,8 @@ FUNCTION(fun_rjust)
     spaces = BUFFER_LEN - 1;
 
   if (len >= spaces) {
-	/* Check to see if we should truncate */
-	if (nargs > 3 && parse_boolean(args[3])) {
+    /* Check to see if we should truncate */
+    if (nargs > 3 && parse_boolean(args[3])) {
       if (has_markup(args[0])) {
         as = parse_ansi_string(args[0]);
         safe_ansi_string(as, as->len - spaces, as->len, buff, bp);
@@ -1771,8 +1772,7 @@ align_one_line(char *buff, char **bp, int ncols,
 
       ptr = lastspace;
       skipspace = 1;
-      for (tptr = ptr;
-           *tptr && tptr >= ptrs[i] && isspace(*tptr); tptr--) ;
+      for (tptr = ptr; *tptr && tptr >= ptrs[i] && isspace(*tptr); tptr--) ;
       len = (tptr - ptrs[i]) + 1;
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
@@ -1859,9 +1859,7 @@ align_one_line(char *buff, char **bp, int ncols,
     if (i < (ncols - 1) && fslen)
       safe_str(fieldsep, line, &lp);
     if (skipspace)
-      for (;
-           *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]);
-           ptrs[i]++) ;
+      for (; *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]); ptrs[i]++) ;
   }
 
   if (cols_done == ncols)

@@ -115,6 +115,10 @@ FUNCTION(fun_message)
   enum emit_type type = EMIT_PEMIT;
   dbref speaker = executor;
 
+  /* Instead of having the '10', '14', etc, hardcoded, this
+   * should be using MAX_STACK_ARGS. However, it's potentially
+   * slightly incompatible to change it, now. */
+
   for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
   }

@@ -512,7 +512,7 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
   format.numargs = numargs;
   format.targetarg = -1;
 
-  for (i = 0; i < numargs; i++) {
+  for (i = 0; i < numargs && i < MAX_STACK_ARGS; i++) {
     format.args[i] = argv[i];
     if (!strcmp(argv[i], "##"))
       format.targetarg = i;

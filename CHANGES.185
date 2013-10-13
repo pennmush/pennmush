@@ -60,6 +60,7 @@ Fixes:
  * When a player was nuked, any @mail they had filed into another folder
    would be retained, and visible to a new player created later with the
    same dbref. Reported by Valkyrie. [MG]
+ * Crashbug in @message. Reported by Yuriko. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

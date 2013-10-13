@@ -8,6 +8,7 @@
 #define __NOTIFY_H
 
 #include "mushtype.h"
+#include "conf.h"
 
 #ifdef I_LIBINTL
 #include <libintl.h>
@@ -87,7 +88,7 @@ struct format_msg {
   int checkprivs; /**< Check that the speaker has permission to get the attr? */
   int targetarg;  /**< The arg to set to the target's dbref, or -1 to not */
   int numargs;    /**< Number of arguments in args to pass to the ufun */
-  char *args[10];   /**< Array of arguments to pass to ufun */
+  char *args[MAX_STACK_ARGS];   /**< Array of arguments to pass to ufun */
 };
 const char *render_string(const char *message, int output_type);
 void notify_list(dbref speaker, dbref thing, const char *atr,

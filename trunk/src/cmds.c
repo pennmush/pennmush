@@ -727,9 +727,7 @@ COMMAND(cmd_listmotd)
 }
 
 extern slab *attrib_slab;
-extern slab *boolexp_slab;
 extern slab *bvm_asmnode_slab;
-extern slab *bvm_strnode_slab;
 extern slab *chanlist_slab;
 extern slab *chanuser_slab;
 extern slab *flag_slab;
@@ -761,11 +759,9 @@ do_list_allocations(dbref player)
   const slab *const slabs[] = {
     attrib_slab,
 #ifdef DEBUG
-    /* These should always be 0. No need to display them most of the
+    /* This should always be 0. No need to display it most of the
        time. */
-    boolexp_slab,
     bvm_asmnode_slab,
-    bvm_strnode_slab,
 #endif
     chanlist_slab,
     chanuser_slab,

@@ -211,8 +211,8 @@ find_list_position(char *numstr, int total, bool insert)
   }
 
   if (i < 1 || i > total) {
-    if (total == 0 && insert && negative && i == 0) {
-      /* Special case: inserting at -1 into an empty list
+    if (total == 0 && insert && ((i == 0 && negative) || i == 1)) {
+      /* Special case: inserting into an empty list
        * will create a one-element list */
       return 1;
     } else {

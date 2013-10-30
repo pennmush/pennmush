@@ -59,6 +59,8 @@ Fixes:
    would be retained, and visible to a new player created later with the
    same dbref. Reported by Valkyrie. [MG]
  * Crashbug in @message. Reported by Yuriko. [MG]
+ * linsert(,1,foo) now returns "foo", like it always used to, instead of
+   returning an empty list. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

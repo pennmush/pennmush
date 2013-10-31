@@ -5940,7 +5940,7 @@ close_ssl_connections(void)
     return;
 
   /* Close clients */
-  DESC_ITER_CONN(d) {
+  DESC_ITER(d) {
     if (d->ssl) {
       queue_string_eol(d, T(ssl_shutdown_message));
       process_output(d);

@@ -3325,7 +3325,8 @@ FUNCTION(fun_channels)
   CHAN *c;
   CHANLIST *cl;
   CHANUSER *u;
-  int can_ex, priv_who;
+  bool can_ex, priv_who;
+  int first = 1;
 
   /* There are these possibilities:
    *  no args - just a list of all channels
@@ -3340,7 +3341,6 @@ FUNCTION(fun_channels)
     /* Given an argument, return list of channels it's on */
     it = match_result(executor, args[0], NOTYPE, MAT_EVERYTHING);
     if (GoodObject(it)) {
-      int first = 1;
       if (!delim_check(buff, bp, nargs, args, 2, &sep))
         return;
       can_ex = Can_Examine(executor, it);
@@ -3353,8 +3353,9 @@ FUNCTION(fun_channels)
         {
           if (!first)
             safe_chr(sep, buff, bp);
+          else
+            first = 0;
           safe_str(ChanName(cl->chan), buff, bp);
-          first = 0;
         }
       }
       return;
@@ -3373,8 +3374,10 @@ FUNCTION(fun_channels)
   /* No arguments (except maybe delimiter) - return list of all channels */
   for (c = channels; c; c = c->next) {
     if (Chan_Can_See(c, executor)) {
-      if (c != channels)
+      if (!first)
         safe_chr(sep, buff, bp);
+      else
+        first = 0;
       safe_str(ChanName(c), buff, bp);
     }
   }

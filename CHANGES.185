@@ -65,6 +65,8 @@ Fixes:
    returning an empty list. [MG]
  * SSL connections which had not yet logged into a player weren't always
    fully cleaned up. Patch by Fraibert.
+ * channels() could include an extra delimiter in some cases. Reported by 
+   Mouvar. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

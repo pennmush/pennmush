@@ -65,6 +65,7 @@ Fixes:
    fully cleaned up. Patch by Fraibert.
  * channels() could include an extra delimiter in some cases. Reported by 
    Mouvar. [MG]
+ * Translations weren't working in the chat system. Reported by Riorgan. [MG]
 
 Minor changes:
  * strreplace() now works harder to keep existing ANSI intact, when you

@@ -35,6 +35,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "privtab.h"
 #include "pueblo.h"
@@ -3796,7 +3797,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     ctype = "\"";
   }
 
-  snprintf(speechtext, BUFFER_LEN, "says");
+  snprintf(speechtext, BUFFER_LEN, T("says"));
+  notify_format(1, "in T() it's %s, in the buffer it's %s", T("says"), speechtext);
 
   snprintf(message, BUFFER_LEN, "%s", origmessage);
 
@@ -3886,7 +3888,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
       safe_str(message, buff, &bp);
       break;
     case CB_SPEECH:
-      safe_format(buff, &bp, " %s, \"%s\"", T(speechtext), message);
+      safe_format(buff, &bp, " %s, \"%s\"", speechtext, message);
       break;
     }
   }

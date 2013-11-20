@@ -2493,9 +2493,8 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
       mush_free(*h, "hook");
       *h = NULL;
     }
-  } else if (!obj || !*obj
-             || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND)
-                 && (!attrname || !*attrname))) {
+  } else if (!obj || !*obj || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND)
+                               && (!attrname || !*attrname))) {
     if (flag == HOOK_OVERRIDE || flag == HOOK_EXTEND) {
       notify(player, T("You must give an object."));
     } else {
@@ -2582,8 +2581,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.
-             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override->
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {

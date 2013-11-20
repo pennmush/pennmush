@@ -1099,6 +1099,8 @@ game.o: ../hdrs/game.h
 game.o: ../hdrs/dbio.h
 game.o: ../hdrs/mushtype.h
 game.o: ../hdrs/notify.h
+game.o: ../hdrs/conf.h
+game.o: ../hdrs/htab.h
 game.o: ../hdrs/access.h
 game.o: ../hdrs/mypcre.h
 game.o: ../hdrs/ansi.h
@@ -1110,8 +1112,6 @@ game.o: ../hdrs/case.h
 game.o: ../hdrs/command.h
 game.o: ../hdrs/boolexp.h
 game.o: ../hdrs/switches.h
-game.o: ../hdrs/conf.h
-game.o: ../hdrs/htab.h
 game.o: ../hdrs/dbdefs.h
 game.o: ../hdrs/mushdb.h
 game.o: ../hdrs/flags.h
@@ -1498,6 +1498,8 @@ notify.o: ../options.h
 notify.o: ../hdrs/copyrite.h
 notify.o: ../hdrs/notify.h
 notify.o: ../hdrs/mushtype.h
+notify.o: ../hdrs/conf.h
+notify.o: ../hdrs/htab.h
 notify.o: ../hdrs/access.h
 notify.o: ../hdrs/mypcre.h
 notify.o: ../hdrs/ansi.h
@@ -1506,8 +1508,6 @@ notify.o: ../hdrs/strtree.h
 notify.o: ../hdrs/attrib.h
 notify.o: ../hdrs/chunk.h
 notify.o: ../hdrs/dbio.h
-notify.o: ../hdrs/conf.h
-notify.o: ../hdrs/htab.h
 notify.o: ../hdrs/dbdefs.h
 notify.o: ../hdrs/mushdb.h
 notify.o: ../hdrs/flags.h

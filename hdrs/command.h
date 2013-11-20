@@ -193,7 +193,8 @@ struct command_perms_t {
 #include "switches.h"
 
 enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE,
-    HOOK_EXTEND };
+  HOOK_EXTEND
+};
 extern void do_hook(dbref player, char *command, char *obj, char *attrname,
                     enum hook_type flag, int inplace);
 extern void do_hook_list(dbref player, char *command, bool verbose);

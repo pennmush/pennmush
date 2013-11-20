@@ -385,7 +385,8 @@ static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
 enum comm_res { CRES_OK =
-    0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED };
+    0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED
+};
 static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);

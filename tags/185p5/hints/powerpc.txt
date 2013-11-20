@@ -1,0 +1,15 @@
+PowerPC architecture specific stuff:
+
+On OS X, the configure script tries to use gcc's -mdynamic-no-pic
+option:
+
+`-mdynamic-no-pic'
+     On Darwin and Mac OS X systems, compile code so that it is not
+     relocatable, but that its external references are relocatable.
+     The resulting code is suitable for applications, but not shared
+     libraries.
+
+
+If you're using a G4 or G4, add --enable-altivec to your configure
+options to get a vectorized version of the pseudo random number
+generator.

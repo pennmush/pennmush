@@ -1,0 +1,72 @@
+How to compile PennMUSH 1.8.x under Windows (Cygwin 1.5.19-4)
+--------------------------------------------------------------
+by Alan Schwartz <javelin@pennmush.org>
+
+Last update: Saturday, 18 September 2010
+
+A note on install locations:
+The entire process goes much more smoothly if you install
+all of the required packages in directories that do not have
+spaces anywhere in the path name. So Program Files is not
+the best location. C:\cygwin is the usual default.
+
+1. Download and run the Cygwin setup.exe from http://www.cygwin.com
+
+2. During package selection, select the following packages in
+   addition to the Base and other default selections:
+
+   From Devel:
+	binutils
+	gcc
+	gcc-core
+	make
+   From Libs:
+	openssl
+	openssl-devel
+   From Perl:
+	perl
+   From Shells:
+	bash
+   From Utils:
+	gnupg 		if you want to to verify signatures on penn dists
+	patch
+
+   Accept all dependencies needed to install these packages.
+	
+3. Start a cygwin bash shell and use that for all the following steps.
+
+4. `cd' to the desired install location with the .tar.gz file
+   and unpack the downloaded <version> with:
+
+    tar xzf pennmush-<version>.tar.gz
+
+   Again, life is easier if your install location has no spaces
+   in directory names. If your username has no spaces, unpacking
+   in /home/yourname works fine.
+
+5. cd pennmush then type:
+
+    ./configure --disable-info_slave --disable-ipv6
+    
+    info_slave does not currently work on Windows, and many people have
+    found that leaving ipv6 enabled results in noone being able to connect.
+    You may also want --disable-sql if you're not planning to use SQL.
+    See ./configure --help for all available options.
+
+6. Now type:
+
+    make update
+    
+   and choose the desired options.
+
+7. Do a `make install' This will build the necessary files and
+   install the necessary symbolic links. 
+
+8. Read game/README and follow those instructions. 
+   You may also need to edit game/restart and explicitly
+   set the GAMEDIR variable to your installation path, though this is
+   not normally necessary. An example is:
+    
+    /home/noltar/pennmush/game
+
+

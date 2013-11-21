@@ -221,7 +221,7 @@ enum clock_type { CLOCK_JOIN, CLOCK_SPEAK, CLOCK_SEE, CLOCK_HIDE, CLOCK_MOD };
 extern int num_channels;
 CHANUSER *onchannel(dbref who, CHAN *c);
 void init_chatdb(void);
-int load_chatdb(PENNFILE *fp);
+int load_chatdb(PENNFILE *fp, int restarting);
 int save_chatdb(PENNFILE *fp);
 void do_cemit(dbref player, const char *name, const char *msg, int flags);
 void do_chan_user_flags

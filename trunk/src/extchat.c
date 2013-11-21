@@ -3798,8 +3798,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
 
   snprintf(speechtext, BUFFER_LEN, T("says"));
-  notify_format(1, "in T() it's %s, in the buffer it's %s", T("says"),
-                speechtext);
 
   snprintf(message, BUFFER_LEN, "%s", origmessage);
 

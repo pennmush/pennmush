@@ -930,7 +930,7 @@ init_game_dbs(void)
 
     if (panicdb) {
       do_rawlog(LT_ERR, "LOADING: Trying to get chat from %s", infile);
-      if (load_chatdb(f) <= 0) {
+      if (load_chatdb(f, restarting) <= 0) {
         do_rawlog(LT_ERR, "FAILED: Reverting to normal chatdb");
         penn_fclose(f);
         panicdb = 0;
@@ -942,7 +942,7 @@ init_game_dbs(void)
       if (f) {
         do_rawlog(LT_ERR, "LOADING: %s", options.chatdb);
         dbline = 0;
-        if (load_chatdb(f)) {
+        if (load_chatdb(f, restarting)) {
           do_rawlog(LT_ERR, "LOADING: %s (done)", options.chatdb);
         } else {
           do_rawlog(LT_ERR, "ERROR LOADING %s", options.chatdb);

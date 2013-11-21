@@ -13,6 +13,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 6                                 ??? ??, 201?
+
+Minor changes:
+ * @channel/gag no longer persists across a full @shutdown. Suggested by
+   Trinsec. [MG]
+
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 
 Commands:

@@ -50,8 +50,8 @@ static void free_user(CHANUSER *u);
 static int load_chatdb_oldstyle(PENNFILE *fp);
 static int load_channel(PENNFILE *fp, CHAN *ch);
 static int load_chanusers(PENNFILE *fp, CHAN *ch);
-static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags);
-static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch);
+static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting);
+static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting);
 static void insert_channel(CHAN **ch);
 static void remove_channel(CHAN *ch);
 static void insert_obj_chan(dbref who, CHAN **ch);
@@ -274,11 +274,12 @@ extern char db_timestamp[];
 
 /** Load the chat database from a file.
  * \param fp pointer to file to read from.
+ * \param restarting Is this an \@shutdown/reboot?
  * \retval 1 success
  * \retval 0 failure
  */
 int
-load_chatdb(PENNFILE *fp)
+load_chatdb(PENNFILE *fp, int restarting)
 {
   int i, flags;
   CHAN *ch;
@@ -325,7 +326,7 @@ load_chatdb(PENNFILE *fp)
       do_rawlog(LT_ERR, "CHAT: Unable to allocate memory for channel %d!", i);
       return 0;
     }
-    if (!load_labeled_channel(fp, ch, flags)) {
+    if (!load_labeled_channel(fp, ch, flags, restarting)) {
       do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
@@ -455,7 +456,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
  * successful, 0 otherwise.
  */
 static int
-load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
+load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
 {
   char *tmp;
   int i;
@@ -499,7 +500,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
   ChanMaxUsers(ch) = ChanNumUsers(ch);
   ChanUsers(ch) = NULL;
   if (ChanNumUsers(ch) > 0)
-    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch);
+    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch, restarting);
   return 1;
 }
 
@@ -539,7 +540,7 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
 
 /* Load the *channel's user list. Return number of users on success, or 0 */
 static int
-load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
+load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
 {
   int i, num = 0, n;
   char *tmp;
@@ -551,7 +552,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {
       user = new_user(player, ChanUsers(ch));
       db_read_this_labeled_int(fp, "flags", &n);
-      CUtype(user) = n;
+      CUtype(user) = (restarting ? n : n & ~CU_GAG);
       db_read_this_labeled_string(fp, "title", &tmp);
       if (tmp && *tmp)
         CUtitle(user) = mush_strdup(tmp, "chan_user.title");

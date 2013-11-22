@@ -75,8 +75,6 @@ static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
 void chat_player_announce(dbref player, char *msg, int ungag);
-enum ok_name { NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE };
-static enum ok_name ok_channel_name(const char *n, CHAN *unique);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -1885,7 +1883,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
   }
 }
 
-static enum ok_name
+enum ok_chan_name
 ok_channel_name(const char *n, CHAN *unique)
 {
   /* is name valid for a channel? */

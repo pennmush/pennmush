@@ -5976,7 +5976,7 @@ dump_reboot_db(void)
 #endif
 
 #ifdef SSL_SLAVE
-  flags |= RDBF_SSL_SLAVE;
+  flags |= RDBF_SSL_SLAVE | RDBF_SLAVE_FD;
 #endif
 
   if (setjmp(db_err)) {
@@ -6038,6 +6038,7 @@ dump_reboot_db(void)
     putref(f, globals.reboot_count);
 #ifdef SSL_SLAVE
     putref(f, ssl_slave_pid);
+    putref(f, ssl_slave_ctl_fd);
 #endif
     penn_fclose(f);
   }
@@ -6192,6 +6193,12 @@ load_reboot_db(void)
 
 #ifdef SSL_SLAVE
     ssl_slave_pid = val;
+
+    if (flags  & RDBF_SLAVE_FD) 
+      ssl_slave_ctl_fd = getref(f);
+    else 
+      ssl_slave_ctl_fd = -1;
+
     if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR,
@@ -6200,6 +6207,7 @@ load_reboot_db(void)
         do_rawlog(LT_ERR, "Unable to start ssl_slave");
     } else
       ssl_slave_state = SSL_SLAVE_RUNNING;
+
 #endif
 
     penn_fclose(f);

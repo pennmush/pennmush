@@ -476,6 +476,10 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
   }
   /* At this point, we're giving an amount. */
   amount = parse_integer(amnt);
+  if (Pennies(who) >= Max_Pennies(who) && amount > 0) {
+    notify_format(player, T("%s is rich enough already."), AName(who, AN_SYS, NULL));
+    return;
+  }
   if (Pennies(who) + amount > Max_Pennies(who))
     amount = Max_Pennies(who) - Pennies(who);
   if (amount < 0 && !Can_Debit(player)) {
@@ -486,8 +490,13 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
                   T("You must specify a positive number of %s."), MONIES);
     return;
   }
-  if (Can_Debit(player) && (amount < 0) && (Pennies(who) + amount < 0))
+  if (Can_Debit(player) && (amount < 0) && (Pennies(who) + amount < 0)) {
     amount = -Pennies(who);
+    if (amount == 0) {
+      notify_format(player, T("%s have nothing left for you to take!"), AName(who, AN_SYS, NULL));
+      return;
+    }
+  }
   /* try to do the give */
   if (!Moneybags(player) && !payfor(player, amount)) {
     notify_format(player, T("You don't have that many %s to give!"), MONIES);

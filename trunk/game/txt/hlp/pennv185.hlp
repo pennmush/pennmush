@@ -16,6 +16,9 @@ Version 1.8.5 patchlevel 6                                 ??? ??, 201?
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by
    Trinsec. [MG]
+ * 'give' now gives more informative error messages when you try and give
+   pennies to someone who has the maximum, or take pennies from someone who
+   is broke. [MG]
 
 & 1.8.5p5
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013

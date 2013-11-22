@@ -195,7 +195,7 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
-  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"}
+  {"socket_file", cf_str, &options.socket_file,  sizeof options.socket_file, 0, "net"}
   ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,

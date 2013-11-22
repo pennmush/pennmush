@@ -538,7 +538,9 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   slab *flagpairs;
   int i, numbytes;
 
+#ifdef DEBUG
   do_rawlog(LT_TRACE, T("Resizing object flag arrays."));
+#endif
 
   numbytes = FlagBytes(n);
 

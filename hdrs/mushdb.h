@@ -181,5 +181,6 @@ bool unfindable(dbref);
 #define RDBF_SSL_SLAVE          0x10
 #define RDBF_SOCKET_SRC         0x20
 #define RDBF_NO_DOING           0x40
+#define RDBF_SLAVE_FD            0x80
 
 #endif                          /* __DB_H */

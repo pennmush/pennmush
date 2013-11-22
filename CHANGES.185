@@ -13,12 +13,13 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 6                                 ??? ??, 201?
+Version 1.8.5 patchlevel 6                                 ??? ??, 20??
 
 Hardcode:
  * Removed an old debugging variable to reduce memory usage. Suggested by
    spork. [MG]
-   
+ * ssl_slave gets passed its settings via a pipe, not on the command line. [SW]   
+
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
  * valid() now takes an optional <target> argument for some categories,

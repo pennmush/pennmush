@@ -239,9 +239,9 @@ struct new_pe_info {
   char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
 
   char attrname[BUFFER_LEN];    /**< The attr currently being evaluated */
-
+#ifdef DEBUG
   char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
-
+#endif
   int refcount;                 /**< Number of times this pe_info is being used. > 1 when shared by sub-queues. free() when at 0 */
 };
 

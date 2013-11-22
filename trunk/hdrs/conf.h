@@ -118,6 +118,8 @@ typedef struct confparm {
 } PENNCONF;
 
 
+#define FILE_PATH_LEN 256
+
 /** Runtime configuration options.
  * This large structure stores all of the runtime configuration options
  * that are typically set in mush.cnf.
@@ -127,11 +129,11 @@ struct options_table {
   char mud_url[256];   /**< The name of the mush */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
-  char socket_file[256];  /**< The socket filename to use for SSL slave */
-  char input_db[256];   /**< Name of the input database file */
-  char output_db[256];  /**< Name of the output database file */
-  char crash_db[256];   /**< Name of the panic database file */
-  char mail_db[256];    /**< Name of the mail database file */
+  char socket_file[FILE_PATH_LEN];  /**< The socket filename to use for SSL slave */
+  char input_db[FILE_PATH_LEN];   /**< Name of the input database file */
+  char output_db[FILE_PATH_LEN];  /**< Name of the output database file */
+  char crash_db[FILE_PATH_LEN];   /**< Name of the panic database file */
+  char mail_db[FILE_PATH_LEN];    /**< Name of the mail database file */
   dbref player_start;   /**< The room in which new players are created */
   dbref master_room;    /**< The master room for global commands/exits */
   dbref ancestor_room;  /**< The ultimate parent room */
@@ -168,22 +170,22 @@ struct options_table {
   char compressprog[256];       /**< Program to compress database dumps */
   char uncompressprog[256];     /**< Program to uncompress database dumps */
   char compresssuff[256];       /**< Suffix for compressed dump files */
-  char chatdb[256];             /**< Name of the chat database file */
+  char chatdb[FILE_PATH_LEN];             /**< Name of the chat database file */
   int max_player_chans;         /**< Number of channels a player can create */
   int max_channels;             /**< Total maximum allowed channels */
   int chan_title_len;           /**< Maximum length of a player's channel title */
   int chan_cost;                /**< Cost to create a channel */
   int noisy_cemit;              /**< Is \@cemit noisy by default? */
-  char connect_file[2][256];    /**< Names of text and html connection files */
-  char motd_file[2][256];       /**< Names of text and html motd files */
-  char wizmotd_file[2][256];    /**< Names of text and html wizmotd files */
-  char newuser_file[2][256];    /**< Names of text and html new user files */
-  char register_file[2][256];   /**< Names of text and html registration files */
-  char quit_file[2][256];       /**< Names of text and html disconnection files */
-  char down_file[2][256];       /**< Names of text and html server down files */
-  char full_file[2][256];       /**< Names of text and html server full files */
-  char guest_file[2][256];      /**< Names of text and html guest files */
-  char who_file[2][256];        /**< Names of text and html who files */
+  char connect_file[2][FILE_PATH_LEN];    /**< Names of text and html connection files */
+  char motd_file[2][FILE_PATH_LEN];       /**< Names of text and html motd files */
+  char wizmotd_file[2][FILE_PATH_LEN];    /**< Names of text and html wizmotd files */
+  char newuser_file[2][FILE_PATH_LEN];    /**< Names of text and html new user files */
+  char register_file[2][FILE_PATH_LEN];   /**< Names of text and html registration files */
+  char quit_file[2][FILE_PATH_LEN];       /**< Names of text and html disconnection files */
+  char down_file[2][FILE_PATH_LEN];       /**< Names of text and html server down files */
+  char full_file[2][FILE_PATH_LEN];       /**< Names of text and html server full files */
+  char guest_file[2][FILE_PATH_LEN];      /**< Names of text and html guest files */
+  char who_file[2][FILE_PATH_LEN];        /**< Names of text and html who files */
   int log_commands;     /**< Should we log all commands? */
   int log_forces;       /**< Should we log force commands? */
   int support_pueblo;   /**< Should the MUSH send Pueblo tags? */
@@ -247,8 +249,8 @@ struct options_table {
   char rwall_prefix[256];       /**< Prefix for rwall announcements */
   char wall_prefix[256];        /**< Prefix for wall announcements */
   int announce_connects;        /**< Should dis/connects be announced? */
-  char access_file[256];        /**< Name of file of access control rules */
-  char names_file[256]; /**< Name of file of forbidden player names */
+  char access_file[FILE_PATH_LEN];        /**< Name of file of access control rules */
+  char names_file[FILE_PATH_LEN]; /**< Name of file of forbidden player names */
   int object_cost;      /**< Cost to create an object */
   int exit_cost;        /**< Cost to create an exit */
   int link_cost;        /**< Cost to link an exit */
@@ -273,24 +275,24 @@ struct options_table {
   int player_name_len;  /**< Maximum length of player names */
   int queue_entry_cpu_time;     /**< Maximum cpu time allowed per queue entry */
   int ascii_names;      /**< Are object names restricted to ascii characters? */
-  char chunk_swap_file[256];    /**< Name of the attribute swap file */
+  char chunk_swap_file[FILE_PATH_LEN];    /**< Name of the attribute swap file */
   int chunk_swap_initial; /**< Disc space to reserve for the swap file, in kibibytes */
   int chunk_cache_memory;       /**< Memory to use for the attribute cache */
   int chunk_migrate_amount;     /**< Number of attrs to migrate each second */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
-  char ssl_private_key_file[256];       /**< File to load the server's cert from */
-  char ssl_ca_file[256];        /**< File to load the CA certs from */
+  char ssl_private_key_file[FILE_PATH_LEN];       /**< File to load the server's cert from */
+  char ssl_ca_file[FILE_PATH_LEN];        /**< File to load the CA certs from */
   int ssl_require_client_cert;  /**< Are clients required to present certs? */
   int mem_check;        /**< Turn on the memory allocation checker? */
   int use_quota;        /**< Are quotas enabled? */
   int empty_attrs;      /**< Are empty attributes preserved? */
   int function_side_effects; /**< Turn on side effect functions? */
-  char error_log[256]; /**< File to log connections */
-  char connect_log[256]; /**< File to log connections */
-  char wizard_log[256]; /**< File to log wizard commands */
-  char command_log[256]; /**< File to log suspect commands */
-  char trace_log[256]; /**< File to log trace data */
-  char checkpt_log[256]; /**< File to log checkpoint data */
+  char error_log[FILE_PATH_LEN]; /**< File to log connections */
+  char connect_log[FILE_PATH_LEN]; /**< File to log connections */
+  char wizard_log[FILE_PATH_LEN]; /**< File to log wizard commands */
+  char command_log[FILE_PATH_LEN]; /**< File to log suspect commands */
+  char trace_log[FILE_PATH_LEN]; /**< File to log trace data */
+  char checkpt_log[FILE_PATH_LEN]; /**< File to log checkpoint data */
   char sql_platform[256]; /**< Type of SQL server, or "disabled" */
   char sql_host[256]; /**< Hostname of sql server */
   char sql_username[256]; /**< Username for sql */

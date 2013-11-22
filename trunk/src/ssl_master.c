@@ -48,6 +48,8 @@ enum {
 static int startup_attempts = 0;
 static time_t startup_window;
 
+int ssl_slave_ctl_fd = -1;
+
 /** Create a new SSL slave.
  * \param port The port to listen on for SSL connections.
  * \return 0 on success, -1 on failure
@@ -55,6 +57,8 @@ static time_t startup_window;
 int
 make_ssl_slave(void)
 {
+  int fds[2];
+
   if (ssl_slave_state != SSL_SLAVE_DOWN) {
     do_rawlog(LT_ERR,
               "Attempt to start ssl slave when a copy is already running.");
@@ -86,9 +90,18 @@ make_ssl_slave(void)
     }
   }
 
+  if (pipe(fds) < 0) {
+    do_rawlog(LT_ERR, "Unable to create pipe to speak to ssl_slave: %s", strerror(errno));
+    return -1;
+  }
+
+  if (fds[0] >= maxd)
+    maxd = fds[0] + 1;
+  if (fds[1] >= maxd)
+    maxd = fds[1] + 1;
+
   if ((ssl_slave_pid = fork()) == 0) {
     /* Set up and exec ssl_slave */
-    char *args[9];
     int n, errfd = -1, connfd = -1;
     struct log_stream *lg;
 
@@ -109,33 +122,40 @@ make_ssl_slave(void)
     if (lg)
       connfd = fileno(lg->fp);
 
-    n = open("/dev/null", O_RDONLY);
-    if (n >= 0)
-      dup2(n, 0);               /* stdin */
+    dup2(fds[0], 0);               /* stdin */
     dup2(connfd, 1);            /* stdout */
     dup2(errfd, 2);             /* stderr */
 
     for (n = 3; n < maxd; n++)
       close(n);
 
-    /* Set up arguments to the slave */
-    args[0] = "ssl_slave";
-    args[1] = options.socket_file;
-    args[2] = SSL_IP_ADDR;
-    args[3] = strdup(unparse_integer(options.ssl_port));
-    args[4] = options.ssl_private_key_file;
-    args[5] = options.ssl_ca_file;
-    args[6] = options.ssl_require_client_cert ? "1" : "0";
-    args[7] = strdup(unparse_integer(options.keepalive_timeout));
-    args[8] = NULL;
-
-    execv("./ssl_slave", args);
+    execl("./ssl_slave",  "ssl_slave",  "for",  MUDNAME,  NULL);
     penn_perror("execing ssl slave");
     return EXIT_FAILURE;
   } else if (ssl_slave_pid < 0) {
     do_rawlog(LT_ERR, "Failure to fork ssl_slave: %s", strerror(errno));
     return -1;
   } else {
+    struct ssl_slave_config cf;
+
+    ssl_slave_ctl_fd = fds[1];    
+    close(fds[0]);
+
+    /* Set up arguments to the slave */
+    memset(&cf, 0, sizeof cf);
+    strcpy(cf.socket_file, options.socket_file);
+    strcpy(cf.ssl_ip_addr, SSL_IP_ADDR);
+    cf.ssl_port = options.ssl_port;
+    strcpy(cf.private_key_file, options.ssl_private_key_file);
+    strcpy(cf.ca_file, options.ssl_ca_file);
+    cf.require_client_cert = options.ssl_require_client_cert;
+    cf.keepalive_timeout = options.keepalive_timeout;
+
+    if (write(ssl_slave_ctl_fd, &cf, sizeof cf) < 0) {
+      do_rawlog(LT_ERR, "Unable to send ssl_slave config options: %s", strerror(errno));
+      return -1;
+    }
+
     ssl_slave_state = SSL_SLAVE_RUNNING;
     do_rawlog(LT_ERR, "Spawning ssl_slave, communicating over %s, pid %d.",
               options.socket_file, ssl_slave_pid);

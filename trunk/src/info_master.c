@@ -192,7 +192,7 @@ make_info_slave(void)
 
     close(socks[1]);
 
-    execl("./info_slave", "info_slave", (char *) NULL);
+    execl("./info_slave", "info_slave", "for",MUDNAME,(char *) NULL);
     penn_perror("execing info slave");
     exit(1);
   }

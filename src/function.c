@@ -600,7 +600,7 @@ FUNTAB flist[] = {
   {"UPTIME", fun_uptime, 0, 1, FN_STRIPANSI},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"V", fun_v, 1, 1, FN_REG | FN_STRIPANSI},
-  {"VALID", fun_valid, 2, 2, FN_REG},
+  {"VALID", fun_valid, 2, 3, FN_REG},
   {"VERSION", fun_version, 0, 0, FN_REG},
   {"VISIBLE", fun_visible, 2, 2, FN_REG | FN_STRIPANSI},
   {"WHERE", fun_where, 1, 1, FN_REG | FN_STRIPANSI},

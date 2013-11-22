@@ -254,6 +254,9 @@ void do_chan_decompile(dbref player, const char *name, int brief);
 void do_chan_chown(dbref player, const char *name, const char *newowner);
 const char *channel_description(dbref player);
 
+enum ok_chan_name { NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE };
+
+enum ok_chan_name ok_channel_name(const char *n, CHAN *unique);
 
 int eval_chan_lock(CHAN *c, dbref p, enum clock_type type);
 

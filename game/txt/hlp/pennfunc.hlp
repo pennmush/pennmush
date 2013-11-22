@@ -6492,7 +6492,7 @@ See also: STACK, REGISTERS, SUBSTITUTIONS, get(), r(), ATTRIBUTES
   
 See also: VECTOR FUNCTIONS
 & VALID()
-  valid(<category>, <string>)
+  valid(<category>, <string>[, <target>])
 
   The valid() function checks to see if <string> is a valid member of
   <category>, and returns 1 if it is, 0 if not, and #-1 if an invalid
@@ -6501,29 +6501,43 @@ See also: VECTOR FUNCTIONS
   The categories are:
    name        Test for a valid object name.
    attrname    Test for a valid attribute name.
-   playername  Test for a valid player name that can be set with
-                @name or @alias.
+   playername  Test if <target> could @name himself to <string>. <target>
+                defaults to the caller.
    password    Test for a valid password.
-   command     Test for a valid command name for @command/add
-   function    Test for a valid function name for @function
+   command     Test for a valid command name for @command/add.
+   function    Test for a valid function name for @function.
    flag        Test for a valid flag/power name for @flag/add and @power/add
    qreg        Test for a valid name for a q-register.
-   colorname   Test for a valid color name for ansi()/colors()
-   ansicodes   Test for a valid color code sequence for ansi(<string>, ...)
+   colorname   Test for a valid color name for ansi()/colors().
+   ansicodes   Test for a valid color code sequence for ansi(<string>, ...).
+   channel     Test for a valid channel name. If <target> is given, check to
+                see if channel <target> could be renamed to <string>.
 
   Note that, for "playername", valid() returns 0 if the name is valid but
-  currently in use by a player other than the caller.
+  currently in use by a player other than <target>.
   
   For "ansicodes", when not using new-style color names or hex codes, valid()
   always returns 1, and invalid codes are simply ignored, the same as when
   used in the ansi() function.
 
+  See 'help valid2' for examples.
+See also: colors(), ansi()
+& valid2
+
   > think valid(name,Foobar)
   1 
   > think valid(attrname,Foo bar)
   0
+  
+  A player can change his own name to a variation of his current name,
+  but other players cannot:
+  > think pmatch(Foobar)/%#
+  #3/#4
+  > think valid(playername, FOOBAR)
+  0
+  > think valid(playername, FOOBAR, #3)
+  1
 
-See also: colors(), ansi()
 & VCROSS()
   vcross(<vector1>, <vector2>[, <delimiter>])
 

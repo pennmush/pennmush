@@ -16,6 +16,11 @@ Version 1.8.5 patchlevel 6                                 ??? ??, 201?
 Hardcode:
  * Removed an old debugging variable to reduce memory usage. Suggested by
    spork. [MG]
+   
+Functions:
+ * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
+ * valid() now takes an optional <target> argument for some categories,
+   to see if <string> is a valid name for <target>. [MG]
 
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by

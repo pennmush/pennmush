@@ -15,6 +15,10 @@ chronological order (most recent first)
 
 Version 1.8.5 patchlevel 6                                 ??? ??, 201?
 
+Hardcode:
+ * Removed an old debugging variable to reduce memory usage. Suggested by
+   spork. [MG]
+
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by
    Trinsec. [MG]

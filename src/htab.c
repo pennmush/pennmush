@@ -68,7 +68,7 @@ mush_strdup(const char *s, const char *check)
 
     typedef uint32_t (*hash_func) (const char *, int, uint64_t);
 
-    static const uint64_t hash_seed = 0x28187bcc53900639LLU;
+    static const uint64_t hash_seed = 0x28187bcc53900639ULL;
 
     hash_func hash_functions[] = {
       city_hash,

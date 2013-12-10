@@ -16,7 +16,7 @@ struct hash_bucket;
 struct hashtable {
   int hashsize;                 /**< Size of buckets array */
   int entries;                  /**< Number of entries stored */
-  int hashfunc_offset;          /**< Which pair of hash functions to use */
+  int hashseed_offset;          /**< Which hash seed to use */
   struct hash_bucket *buckets;  /**< Buckets */
   int last_index;              /**< State for hashfirst & hashnext. */
   void (*free_data) (void *);   /**< Function to call on data when deleting

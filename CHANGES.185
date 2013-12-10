@@ -18,7 +18,7 @@ Version 1.8.5 patchlevel 6                                 ??? ??, 20??
 Hardcode:
  * Removed an old debugging variable to reduce memory usage. Suggested by
    spork. [MG]
- * ssl_slave gets passed its settings via a pipe, not on the command line. [SW]   
+ * ssl_slave gets passed its settings via a pipe, not on the command line. [SW]
 
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
@@ -31,6 +31,7 @@ Minor changes:
  * 'give' now gives more informative error messages when you try and give
    pennies to someone who has the maximum, or take pennies from someone who
    is broke. [MG]
+ * Windows compile fixes by ChaosMageX.
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

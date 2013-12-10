@@ -64,6 +64,8 @@ echo If any *local.c files failed to build, run build again.
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>CompileAsC</CompileAs>
+      <ForcedIncludeFiles>config.h;confmagic.h;options.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>user32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,6 +107,8 @@ echo If any *local.c files failed to build, run build again.
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <CompileAs>CompileAsC</CompileAs>
+      <ForcedIncludeFiles>config.h;confmagic.h;options.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalOptions>/J %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>user32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -158,6 +162,7 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\funtime.c" />
     <ClCompile Include="..\..\src\funufun.c" />
     <ClCompile Include="..\..\src\game.c" />
+    <ClCompile Include="..\..\src\hash_function.c" />
     <ClCompile Include="..\..\src\help.c" />
     <ClCompile Include="..\..\src\htab.c" />
     <ClCompile Include="..\..\src\intmap.c" />
@@ -230,6 +235,7 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\funs.h" />
     <ClInclude Include="..\..\hdrs\game.h" />
     <ClInclude Include="..\..\hdrs\getpgsiz.h" />
+    <ClInclude Include="..\..\hdrs\hash_function.h" />
     <ClInclude Include="..\..\hdrs\help.h" />
     <ClInclude Include="..\..\hdrs\htab.h" />
     <ClInclude Include="..\..\hdrs\intmap.h" />
@@ -238,13 +244,16 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\log.h" />
     <ClInclude Include="..\..\hdrs\lookup.h" />
     <ClInclude Include="..\..\hdrs\malias.h" />
+    <ClInclude Include="..\..\hdrs\markup.h" />
     <ClInclude Include="..\..\hdrs\match.h" />
+    <ClInclude Include="..\..\hdrs\memcheck.h" />
     <ClInclude Include="..\..\hdrs\mushdb.h" />
     <ClInclude Include="..\..\hdrs\mushtype.h" />
     <ClInclude Include="..\..\hdrs\mymalloc.h" />
     <ClInclude Include="..\..\hdrs\mypcre.h" />
     <ClInclude Include="..\..\hdrs\mysocket.h" />
     <ClInclude Include="..\..\hdrs\myssl.h" />
+    <ClInclude Include="..\..\hdrs\notify.h" />
     <ClInclude Include="..\..\hdrs\oldflags.h" />
     <ClInclude Include="..\..\options.h" />
     <ClInclude Include="..\..\hdrs\parse.h" />
@@ -252,8 +261,10 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\privtab.h" />
     <ClInclude Include="..\..\hdrs\ptab.h" />
     <ClInclude Include="..\..\hdrs\pueblo.h" />
+    <ClInclude Include="..\..\hdrs\sig.h" />
     <ClInclude Include="..\..\hdrs\sort.h" />
     <ClInclude Include="..\..\hdrs\strtree.h" />
+    <ClInclude Include="..\..\hdrs\strutil.h" />
     <ClInclude Include="..\..\hdrs\switches.h" />
     <ClInclude Include="..\..\hdrs\tz.h" />
     <ClInclude Include="..\..\hdrs\version.h" />

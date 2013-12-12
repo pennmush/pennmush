@@ -693,6 +693,7 @@ void init_names(void);
 extern struct db_stat_info current_state;
 void init_queue(void);
 void build_rgb_map(void);
+void init_telnet_opts(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
@@ -740,6 +741,9 @@ init_game_config(const char *conf)
 
   /* Initialize the attribute chunk storage */
   chunk_init();
+
+  /* Set up telnet stuff */
+  init_telnet_opts();
 
 #ifdef HAVE_GETPID
   mypid = getpid();

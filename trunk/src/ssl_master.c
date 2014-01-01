@@ -145,6 +145,7 @@ make_ssl_slave(void)
     memset(&cf, 0, sizeof cf);
     strcpy(cf.socket_file, options.socket_file);
     strcpy(cf.ssl_ip_addr, SSL_IP_ADDR);
+    cf.normal_port = options.port;
     cf.ssl_port = options.ssl_port;
     strcpy(cf.private_key_file, options.ssl_private_key_file);
     strcpy(cf.ca_file, options.ssl_ca_file);
@@ -177,6 +178,7 @@ kill_ssl_slave(void)
     kill(ssl_slave_pid, SIGTERM);
     mush_wait(ssl_slave_pid, &my_stat, 0);
     unblock_a_signal(SIGCHLD);
+    close(ssl_slave_ctl_fd);
     ssl_slave_pid = -1;
     ssl_slave_state = SSL_SLAVE_DOWN;
   }

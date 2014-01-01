@@ -100,6 +100,8 @@ static DH *get_dh1024(void);
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
 
+extern sfmt_t rand_state;
+
 /** Initialize the SSL context.
  * \return pointer to SSL context object.
  */
@@ -130,8 +132,9 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
     uint32_t gibberish[4];
     int n;
 
+    /* sfmt_fill_array32 requires a much larger array. */
     for (n = 0; n < 4; n++)
-      gibberish[n] = gen_rand32();
+      gibberish[n] = sfmt_genrand_uint32(&rand_state);
 
     RAND_seed(gibberish, sizeof gibberish);
 

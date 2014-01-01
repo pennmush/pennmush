@@ -511,6 +511,8 @@ reverse(dbref list)
   return newlist;
 }
 
+sfmt_t rand_state;
+
 /** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
  * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
 void
@@ -532,7 +534,7 @@ initialize_mt(void)
               "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
       fprintf(stderr, "Seeded RNG from /dev/urandom\n");
-      init_by_array(buf, r / sizeof(uint32_t));
+      sfmt_init_by_array(&rand_state, buf, r / sizeof(uint32_t));
       return;
     }
   } else
@@ -542,9 +544,9 @@ initialize_mt(void)
 #endif
   /* Default seeder. Pick a seed that's fairly random */
 #ifdef WIN32
-  init_gen_rand(GetCurrentProcessId() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
 #else
-  init_gen_rand(getpid() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, getpid() | (time(NULL) << 16));
 #endif
 }
 
@@ -588,7 +590,7 @@ get_random32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = gen_rand32();
+    n = sfmt_genrand_uint32(&rand_state);
   } while (n >= n_limit);
 
   return low + (n % x);

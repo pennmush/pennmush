@@ -731,6 +731,8 @@ FUNCTION(fun_r)
  *      ESCAPE, SQUISH, ENCRYPT, DECRYPT, LIT
  */
 
+extern sfmt_t rand_state;
+
 /* ARGSUSED */
 FUNCTION(fun_rand)
 {
@@ -739,7 +741,7 @@ FUNCTION(fun_rand)
 
   if (nargs == 0) {
     /* Floating pont number in the range [0,1) */
-    safe_number(genrand_real2(), buff, bp);
+    safe_number(sfmt_genrand_real2(&rand_state), buff, bp);
     return;
   }
 

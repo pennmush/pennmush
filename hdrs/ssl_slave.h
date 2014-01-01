@@ -18,7 +18,9 @@ void kill_ssl_slave(void);
 struct ssl_slave_config {
   char socket_file[FILE_PATH_LEN];
   char ssl_ip_addr[64];
+  int normal_port;
   int ssl_port;
+  int websock_port;
   char private_key_file[FILE_PATH_LEN];
   char ca_file[FILE_PATH_LEN];
   int require_client_cert;

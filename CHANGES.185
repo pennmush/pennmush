@@ -21,7 +21,7 @@ Hardcode:
  * ssl_slave gets passed its settings via a pipe, not on the command line. [SW]
  * Rewritten the telnet handler, to make it more manageable/modifiable,
    instead of it being a huge bunch of nested switch()es. [MG]
-* Update the SFMT random number generator to 1.4.1. [SW]
+ * Update the SFMT random number generator to 1.4.1. [SW]
 
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
@@ -34,7 +34,10 @@ Minor changes:
  * 'give' now gives more informative error messages when you try and give
    pennies to someone who has the maximum, or take pennies from someone who
    is broke. [MG]
+
+Fixes:
  * Windows compile fixes by ChaosMageX.
+ * Fix a crash when expanding the flagset size. Reported by spork. [DC]
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

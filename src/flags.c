@@ -571,6 +571,9 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   /* Now adjust pointers in the db from old to new. This has poor
      big-O performance, but isn't done very often, so we can live with it. */
   for (it = 0; it < db_top; it += 1) {
+    /* Garbage objects have a null flagset */
+    if (IsGarbage(it))
+      continue;
     if (n->tab == &ptab_flag && Flags(it) == oldcache->zero) {
       /* No flags on object */
       Flags(it) = n->cache->zero;

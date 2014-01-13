@@ -36,6 +36,8 @@ Minor changes:
 Fixes:
  * Windows compile fixes by ChaosMageX.
  * Fix a crash when expanding the flagset size. Reported by spork. [DC]
+ * @attribute/access incorrectly cleared an @attribute/limit on the same
+   attr. Reported by Ton Kyrion. [MG]
 
 & 1.8.5p5
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013

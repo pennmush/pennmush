@@ -421,6 +421,9 @@ See also: @lock, locktypes, lockkeys
   
   @lock/from
     Controls who may give items to this object.
+    
+  @lock/pay
+    Controls who can 'buy' an item from this vendor.
   
   @lock/receive
     Controls what may be given to this object.
@@ -428,7 +431,7 @@ See also: @lock, locktypes, lockkeys
   @lock/take
     Controls who can take this object.
   
-See also: give, @lock/basic, @lock/enter
+See also: give, buy, @lock/basic, @lock/enter
 & @lock/filter
 & @lock/infilter
   @lock/filter

@@ -3882,11 +3882,12 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     switch (flags & CB_TYPE) {
     case CB_POSE:
       safe_chr(' ', buff, &bp);
+      /* FALL THROUGH */
     case CB_SEMIPOSE:
       safe_str(message, buff, &bp);
       break;
     case CB_SPEECH:
-      safe_format(buff, &bp, " %s, \"%s\"", speechtext, message);
+      safe_format(buff, &bp, T(" %s, \"%s\""), speechtext, message);
       break;
     }
   }

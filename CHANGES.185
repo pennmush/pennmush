@@ -40,6 +40,7 @@ Fixes:
  * Fix a crash when expanding the flagset size. Reported by spork. [DC]
  * @attribute/access incorrectly cleared an @attribute/limit on the same
    attr. Reported by Ton Kyrion. [MG]
+ * Help/translation fixes by spork, Riorgan and others. [MG]
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

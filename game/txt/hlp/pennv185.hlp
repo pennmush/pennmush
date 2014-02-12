@@ -32,6 +32,8 @@ Minor changes:
  * 'give' now gives more informative error messages when you try and give
    pennies to someone who has the maximum, or take pennies from someone who
    is broke. [MG]
+ * The message shown when you need to run 'make update' is now slightly 
+   clearer about what to do and why. By Eratl.
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

@@ -3223,7 +3223,10 @@ See also: anonymous attributes, iter(), @dolist
   To get the matching elements, instead of the indexes of where they appear
   in the list, use grab()/graball(). To see if a single string matches a
   wildcard pattern, use strmatch().
-  
+
+  See 'help match2' for examples.
+See also: grab(), strmatch(), member(), reglmatch(), WILDCARDS
+& MATCH2
   Examples:
     > say match(I am testing a test, test*)
     You say, "3"
@@ -3236,8 +3239,40 @@ See also: anonymous attributes, iter(), @dolist
   
     >say matchall(foo bar baz boing, sprocket)
     You say, ""
+& REGLMATCH()
+& REGLMATCHI()
+& REGLMATCHALL()
+& REGLMATCHALLI()
+  reglmatch(<list>, <regexp>[, <delimiter>])
+  reglmatchi(<list>, <regexp>[, <delimiter>])
+  reglmatchall(<list>, <regexp>[, <delimiter>[, <output separator>]])
+  reglmatchalli(<list>, <regexp>[, <delimiter>[, <output separator>]])
+
+  These functions are the regexp versions of match() and matchall().
+  reglmatch() returns the position of the first element in <list> which
+  matches the regular expression <regexp>. reglmatchi() does the same thing,
+  but case-insensitively.
   
-See also: grab(), strmatch(), member(), WILDCARDS
+  reglmatchall() returns the positions of all elements in <list> which match
+  <regexp>. reglmatchalli() is case-insensitive.
+  
+  In all cases, the elements of <list> are separated by <delimiter>, which
+  defaults to a space. The elements outputted by reglmatchall() are separated
+  by <output separator>, if one is given, or by <delimiter> if not.
+  
+  See 'help reglmatch2' for examples.
+See also: regmatch(), regrab(), match(), REGEXP SYNTAX
+& REGLMATCH2
+  Examples:
+  
+  > say reglmatch(I am testing a test, test)
+  You say, "3"
+  
+  > say reglmatch(I am testing a test, test$)
+  You say, "5"
+  
+  > say reglmatchall(I am testing a test, test, , |)
+  You say, "3|5"
 & MAX()
   max(<number>[, ... , <numberN>])
 
@@ -4109,9 +4144,11 @@ See also: edit(), @edit, regmatch(), regrab()
   regmatch(<string>, <regexp>[, <register list>])
   regmatchi(<string>, <regexp>[, <register list>])
  
-  This function matches the regular expression <regexp> against the entirety
-  of <string>, returning 1 if it matches and 0 if it does not.  regmatchi() 
-  does the same thing, but case-insensitively.
+  regmatch() checks to see if the entirety of <string> matches the regular
+  expression <regexp>, and returns 1 if so and 0 if not. regmatchi() does the
+  same thing, but case-insensitively. They are the regexp-equivilent of 
+  strmatch(); if you're looking for a regexp version of match(), see 'help
+  reglmatch()'.
  
   If <register list> is specified, there is a side-effect: any parenthesized 
   substrings within the regular expression will be set into the specified 
@@ -4128,7 +4165,7 @@ See also: edit(), @edit, regmatch(), regrab()
 
   See 'help regmatch2' for an example.
 
-See also: regrab(), regedit(), valid(), reswitch(), regexp syntax
+See also: regrab(), regedit(), valid(), reswitch(), strmatch(), regexp syntax
 & REGMATCH2
 
   For example, in

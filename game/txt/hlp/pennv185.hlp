@@ -16,7 +16,8 @@ Version 1.8.5 patchlevel 6                                 ??? ??, 20??
 Hardcode:
  * Removed an old debugging variable to reduce memory usage. Suggested by
    spork. [MG]
- * ssl_slave gets passed its settings via a pipe, not on the command line. [SW]
+ * ssl_slave now gets passed its settings via a pipe, instead of on the 
+   command line. [SW]
  * Rewritten the telnet handler, to make it more manageable/modifiable,
    instead of it being a huge bunch of nested switch()es. [MG]
  * Update the SFMT random number generator to 1.4.1. [SW]
@@ -25,6 +26,7 @@ Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
  * valid() now takes an optional <target> argument for some categories,
    to see if <string> is a valid name for <target>. [MG]
+ * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
 
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by

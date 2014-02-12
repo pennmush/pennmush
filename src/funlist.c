@@ -2913,7 +2913,8 @@ FUNCTION(fun_regmatch)
 }
 
 /* Like grab, but with a regexp pattern. This same function handles
- *  regrab(), regraball(), and the case-insenstive versions. */
+ * regrab(), regraball(), and the case-insenstive versions,
+ * as well as reglmatch() and reglmatchall(). */
 FUNCTION(fun_regrab)
 {
   char *r, *s, *b, sep;
@@ -2923,10 +2924,11 @@ FUNCTION(fun_regrab)
   const char *errptr;
   int erroffset;
   int offsets[99];
-  int flags = 0, all = 0;
+  int flags = 0;
   char *osep, osepd[2] = { '\0', '\0' };
   char **ptrs;
   int nptrs, i;
+  bool all = 0, pos = 0;
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
@@ -2943,8 +2945,11 @@ FUNCTION(fun_regrab)
   if (strrchr(called_as, 'I'))
     flags = PCRE_CASELESS;
 
-  if (string_prefix(called_as, "REGRABALL"))
+  if (strstr(called_as, "ALL"))
     all = 1;
+
+  if (strstr(called_as, "MATCH"))
+    pos = 1;
 
   if ((re = pcre_compile(args[1], flags, &errptr, &erroffset, tables)) == NULL) {
     /* Matching error. */
@@ -2977,7 +2982,10 @@ FUNCTION(fun_regrab)
     if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)
         safe_str(osep, buff, bp);
-      safe_str(ptrs[i], buff, bp);
+      if (pos)
+        safe_integer(i + 1, buff, bp);
+      else
+        safe_str(ptrs[i], buff, bp);
       if (!all)
         break;
     }

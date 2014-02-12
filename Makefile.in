@@ -50,8 +50,7 @@ config.h: configure
 	@exit 1
 
 options.h: options.h.dist
-	@echo "Please use 'make update' to update your options.h file from options.h.dist"
-	@echo "You must cp options.h.dist to options.h and edit it."
+	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the game/*.cnf files."
 	@exit 1
 
 autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h

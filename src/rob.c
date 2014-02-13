@@ -445,27 +445,32 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       }
 
       if (Mobile(thing) && (EnterOk(who) || controls(player, who))) {
+        char recipient[BUFFER_LEN];
+        char gift[BUFFER_LEN];
+        char giver[BUFFER_LEN];
         moveto(thing, who, player, "give");
+
+        strcpy(recipient, AName(who, AN_MOVE, NULL));
+        strcpy(gift, AName(thing, AN_MOVE, NULL));
+        strcpy(giver, AName(player, AN_MOVE, NULL));
+
 
         /* Notify the giver with their GIVE message */
         bp = tbuf1;
         safe_format(tbuf1, &bp, T("You gave %s to %s."),
-                    AName(thing, AN_MOVE, NULL), AName(who, AN_MOVE, NULL));
+                    gift, recipient);
         *bp = '\0';
         did_it_with(player, player, "GIVE", tbuf1, "OGIVE", NULL,
                     "AGIVE", NOTHING, thing, who, NA_INTER_SEE, AN_MOVE);
 
         /* Notify the object that it's been given */
-        strcpy(tbuf1, AName(player, AN_MOVE, NULL));
-        notify_format(thing, T("%s gave you to %s."), tbuf1,
-                      AName(who, AN_MOVE, NULL));
+        notify_format(thing, T("%s gave you to %s."), giver, recipient);
 
         /* Recipient gets success message on thing and receive on self */
         did_it(who, thing, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
                NOTHING, AN_SYS);
         bp = tbuf1;
-        safe_format(tbuf1, &bp, T("%s gave you %s."),
-                    AName(player, AN_MOVE, NULL), AName(thing, AN_MOVE, NULL));
+        safe_format(tbuf1, &bp, T("%s gave you %s."), giver, gift);
         *bp = '\0';
         did_it_with(who, who, "RECEIVE", tbuf1, "ORECEIVE", NULL,
                     "ARECEIVE", NOTHING, thing, player, NA_INTER_SEE, AN_SYS);

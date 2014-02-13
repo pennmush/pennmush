@@ -622,18 +622,19 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
           (controls(player, thing) ||
            (EnterOk(Location(thing)) &&
             eval_lock_with(player, Location(thing), Take_Lock, pe_info)))) {
+        char sourcename[BUFFER_LEN], stolen[BUFFER_LEN], thief[BUFFER_LEN];
+        
+        strcpy(sourcename, AName(Location(thing), AN_MOVE, NULL));
+        strcpy(stolen, AName(thing, AN_MOVE, NULL));
+        strcpy(thief, AName(player, AN_MOVE, NULL));
         notify_format(Location(thing),
-                      T("%s was taken from you."), AName(thing, AN_MOVE, NULL));
-        notify_format(thing, T("%s took you."), AName(player, AN_MOVE, NULL));
+                      T("%s was taken from you."), stolen);
+        notify_format(thing, T("%s took you."), thief);
         tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You take %s from %s."),
-                    AName(thing, AN_MOVE, NULL), AName(Location(thing), AN_MOVE,
-                                                       NULL));
+        safe_format(tbuf1, &tp, T("You take %s from %s."), stolen, sourcename);
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("takes %s from %s."),
-                    AName(thing, AN_MOVE, NULL), AName(Location(thing), AN_MOVE,
-                                                       NULL));
+        safe_format(tbuf2, &tp, T("takes %s from %s."), stolen, sourcename);
         *tp = '\0';
         moveto(thing, player, player, "get");
         did_it(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
@@ -860,20 +861,22 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     /* Now do the work, if we should. That includes triggering messages */
     if (empty_ok) {
       char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
+      char itemname[BUFFER_LEN], playername[BUFFER_LEN], thingname[BUFFER_LEN];
+        
+      strcpy(itemname, AName(item, AN_MOVE, NULL));
+      strcpy(playername, AName(player, AN_MOVE, NULL));
+      strcpy(thingname, AName(thing, AN_MOVE, NULL));
 
       count++;
       /* Get messages */
       if (thing != player) {
-        notify_format(thing, T("%s was taken from you."),
-                      AName(item, AN_MOVE, NULL));
-        notify_format(item, T("%s took you."), AName(player, AN_MOVE, NULL));
+        notify_format(thing, T("%s was taken from you."), itemname);
+        notify_format(item, T("%s took you."), playername);
         tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You take %s from %s."),
-                    AName(item, AN_MOVE, NULL), AName(thing, AN_MOVE, NULL));
+        safe_format(tbuf1, &tp, T("You take %s from %s."), itemname, thingname);
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("takes %s from %s."),
-                    AName(item, AN_MOVE, NULL), AName(thing, AN_MOVE, NULL));
+        safe_format(tbuf2, &tp, T("takes %s from %s."), itemname, thingname);
         *tp = '\0';
         moveto(item, player, player, "empty");
         did_it(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",

@@ -188,8 +188,15 @@ add_help_file(const char *command_name, const char *filename, int admin)
   if (help_init == 0)
     init_help_files();
 
-  if (!command_name || !filename || !*command_name || !*filename)
+  if (!command_name || !*command_name) {
+    do_rawlog(LT_ERR, "Missing help_command name ignored.");
     return;
+  }
+   
+  if (!filename || !*filename) {
+    do_rawlog(LT_ERR, "Missing help_command filename for '%s'.", command_name);
+    return;
+  }
 
   /* If there's already an entry for it, complain */
   h = hashfind(strupper(command_name), &help_files);
@@ -206,6 +213,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   h->admin = admin;
   help_build_index(h, h->admin);
   if (!h->indx) {
+    do_rawlog(LT_ERR, "Missing index for help_command %s", command_name);
     mush_free(h->command, "help_file.command");
     mush_free(h->file, "help_file.filename");
     mush_free(h, "help_file.entry");

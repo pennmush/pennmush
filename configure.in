@@ -144,7 +144,7 @@ AC_CHECK_HEADER(sys/stat.h, [AC_DEFINE(I_SYS_STAT)])
 AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
 AC_CHECK_HEADERS([sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h])
-AC_CHECK_HEADERS([zlib.h event.h event2/dns.h sys/prctl.h])
+AC_CHECK_HEADERS([zlib.h event.h event2/dns.h sys/prctl.h fenv.h])
 
 ### C language support
 # Only need to check C99 and GNU extensions
@@ -268,6 +268,7 @@ AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
 AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
 AC_CHECK_FUNCS([pread pwrite prctl])
+AC_CHECK_FUNCS([fetestexcept feclearexcept])
 # Some linux OSes (Old redhat, others?) will see these functions
 # through an AC_CHECK_FUNCS but not when it comes time to actually use
 # them in source. 

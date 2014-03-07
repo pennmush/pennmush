@@ -41,6 +41,7 @@ test('asin.3',$god, 'think asin(sin(1,r),r)', '^1$');
 test('tan.1',$god, 'think tan(45,d)', '^1$');
 test('tan.2',$god, 'think tan(pi(),r)', '^-?0$');
 test('tan.3',$god, 'think tan(pi())', '^-?0$');
+test('tan.4', $god, 'think tan(90, d)', '^#-1');
 
 test('atan.1',$god, 'think atan(tan(45,d),d)', '^45$');
 test('atan.2',$god, 'think atan(tan(1,r))', '^1$');

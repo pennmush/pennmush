@@ -28,6 +28,9 @@ Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
  * valid() now takes an optional <target> argument for some categories,
    to see if <string> is a valid name for <target>. [MG]
+ * tan(90,d) now reports an error instead of a really big number. Suggested by
+   Peppel. [SW]
+ * More math functions report errors. [SW]
  * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
 
 Minor changes:
@@ -47,6 +50,7 @@ Fixes:
  * Help/translation fixes by spork, Riorgan and others. [MG]
  * The 'give', 'take' and 'empty' commands displayed the wrong object names
    when mogrifiers were used. Reported by Riorgan. [MG]
+ * Fix crash in ssl_slave when a connection drops in the middle of hostname lookup.
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

@@ -251,6 +251,11 @@ address_resolved(int result, char type, int count, int ttl
 
   c->resolver_req = NULL;
 
+  if (result == DNS_ERR_CANCEL) {
+    /*  Called on a connection that gets dropped while still doing the hostname lookup */
+    return;
+  }
+
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
     c->remote_host = strdup(ipaddr->hostname);

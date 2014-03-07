@@ -42,6 +42,7 @@ Minor changes:
  * The message shown when you need to run 'make update' is now slightly 
    clearer about what to do and why. By Eratl.
  * Removed some 20 year old Sun OS workaround code. Suggested by mbrazaitis.
+ * Slightly less confusing error message for @chan/buffer. Suggested by ssstarduster.
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

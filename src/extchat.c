@@ -4080,7 +4080,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the channel.
- * \param lines a string given the number of lines to buffer.
+ * \param lines a string given the number of 8k chunks of data to buffer.
  */
 void
 do_chan_buffer(dbref player, const char *name, const char *lines)
@@ -4092,7 +4092,7 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     return;
   }
   if (!lines || !*lines || !is_strict_integer(lines)) {
-    notify(player, T("You need to specify the number of lines to buffer."));
+    notify(player, T("You need to specify the amount of data (In 8kb chunks) to use for the buffer."));
     return;
   }
   size = parse_integer(lines);

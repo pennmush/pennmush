@@ -160,9 +160,6 @@ int que_next(void);             /* from cque.c */
 
 dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
 
-#ifdef SUN_OS
-static int extrafd;
-#endif
 int shutdown_flag = 0;          /**< Is it time to shut down? */
 void chat_player_announce(dbref player, char *msg, int ungag);
 void report_mssp(DESC *d, char *buff, char **bp);
@@ -662,9 +659,6 @@ main(int argc, char **argv)
 
   /* save a file descriptor */
   reserve_fd();
-#ifdef SUN_OS
-  extrafd = open("/dev/null", O_RDWR);
-#endif
 
   /* decide if we're in @shutdown/reboot */
   restarting = 0;
@@ -5871,89 +5865,6 @@ hidden(dbref player)
   return (i > 0);
 }
 
-
-#ifdef SUN_OS
-/* SunOS's implementation of stdio breaks when you get a file descriptor
- * greater than 128. Brain damage, brain damage, brain damage!
- *
- * Our objective, therefore, is not to fix stdio, but to work around it,
- * so that performance degrades semi-gracefully when you are using a lot
- * of file descriptors.
- * Therefore, we'll save a file descriptor when we start up that is less
- * than 128, so that if we get a file descriptor that is >= 128, we can
- * use our own saved file descriptor instead. This is only one level of
- * defense; if you have more than 128 fd's in use, and you try two fopen's
- * before doing an fclose(), the second will fail.
- */
-
-FILE *
-fopen(file, mode)
-    const char *file;
-    const char *mode;
-{
-/* FILE *f; */
-  int fd, rw, oflags = 0;
-/* char tbchar; */
-  rw = (mode[1] == '+') || (mode[1] && (mode[2] == '+'));
-  switch (*mode) {
-  case 'a':
-    oflags = O_CREAT | (rw ? O_RDWR : O_WRONLY);
-    break;
-  case 'r':
-    oflags = rw ? O_RDWR : O_RDONLY;
-    break;
-  case 'w':
-    oflags = O_TRUNC | O_CREAT | (rw ? O_RDWR : O_WRONLY);
-    break;
-  default:
-    return (NULL);
-  }
-/* SunOS fopen() doesn't use the 't' or 'b' flags. */
-
-
-  fd = open(file, oflags, 0666);
-  if (fd < 0)
-    return NULL;
-  /* My addition, to cope with SunOS brain damage! */
-  if (fd >= 128) {
-    close(fd);
-    if ((extrafd < 128) && (extrafd >= 0)) {
-      close(extrafd);
-      fd = open(file, oflags, 0666);
-      extrafd = -1;
-    } else {
-      return NULL;
-    }
-  }
-  /* End addition. */
-
-  return fdopen(fd, mode);
-}
-
-
-#undef fclose(x)
-int
-f_close(stream)
-    FILE *stream;
-{
-  int fd = fileno(stream);
-  /* if extrafd is bad, and the fd we're closing is good, recycle the
-   * fd into extrafd.
-   */
-  fclose(stream);
-  if (((extrafd < 0)) && (fd >= 0) && (fd < 128)) {
-    extrafd = open("/dev/null", O_RDWR);
-    if (extrafd >= 128) {
-      /* To our surprise, we didn't get a usable fd. */
-      close(extrafd);
-      extrafd = -1;
-    }
-  }
-  return 0;
-}
-
-#define fclose(x) f_close(x)
-#endif                          /* SUN_OS */
 
 #ifndef SSL_SLAVE
 /** Take down all SSL client connections and close the SSL server socket.

@@ -664,11 +664,7 @@ FUNCTION(fun_convtime)
     ) {
     if (doutc)
       save_and_set_tz("");
-#ifdef SUN_OS
-    safe_integer(timelocal(&ttm), buff, bp);
-#else
     safe_integer(mktime(&ttm), buff, bp);
-#endif                          /* SUN_OS */
     if (doutc)
       restore_tz();
   } else {

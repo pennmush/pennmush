@@ -92,6 +92,8 @@
 
 #undef HAVE_STDBOOL_H
 
+#undef HAVE_FENV_H
+
 /* Libraries */
 
 #undef HAVE_MYSQL
@@ -354,6 +356,10 @@ typedef bool _Bool;
 #undef HAVE_POSIX_FADVISE
 
 #undef HAVE_POSIX_FALLOCATE
+
+#undef HAVE_FECLEAREXCEPT
+
+#undef HAVE_FETESTEXCEPT
 
 /* Variables and defines */
 

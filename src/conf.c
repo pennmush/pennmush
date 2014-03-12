@@ -1996,4 +1996,7 @@ show_compile_options(dbref player)
   notify(player, T(" IANA symbolic timezones can be used."));
 #endif
 
+#ifdef PCRE_CONFIG_JIT
+  notify(player, T(" Internal regular expressions are JIT-compiled."));
+#endif
 }

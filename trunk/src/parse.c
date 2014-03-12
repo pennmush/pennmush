@@ -306,6 +306,7 @@ bool
 is_objid(char const *str)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   const char *errptr;
   int erroffset;
   char *val;
@@ -313,10 +314,12 @@ is_objid(char const *str)
 
   if (!str)
     return 0;
-  if (!re)
+  if (!re) {
     re = pcre_compile("^#-?\\d+(?::\\d+)?$", 0, &errptr, &erroffset, NULL);
+    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+  }
   val = remove_markup((const char *) str, &vlen);
-  return pcre_exec(re, NULL, val, vlen - 1, 0, 0, NULL, 0) >= 0;
+  return pcre_exec(re, extra, val, vlen - 1, 0, 0, NULL, 0) >= 0;
 }
 
 /** Is string an integer?

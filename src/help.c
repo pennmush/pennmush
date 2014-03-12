@@ -657,11 +657,22 @@ string_spitfile(help_file *help_dat, char *arg1)
   size_t n;
   static char buff[BUFFER_LEN];
   char *bp;
+  int offset = 0;
 
   strcpy(the_topic, normalize_entry(help_dat, arg1));
 
   if (!help_dat->indx || help_dat->entries == 0)
     return T("#-1 NO INDEX FOR FILE");
+
+  if (is_index_entry(the_topic, &offset)) {
+    char *entries = entries_from_offset(help_dat, offset);
+    strcpy(the_topic, strupper(the_topic + (the_topic[0] == '&')));
+
+    if (!entries) 
+      return T("#-1 NO ENTRY");
+    else
+      return entries;
+  }
 
   entry = help_find_entry(help_dat, the_topic);
   if (!entry) {

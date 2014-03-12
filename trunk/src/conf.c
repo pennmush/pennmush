@@ -1997,6 +1997,11 @@ show_compile_options(dbref player)
 #endif
 
 #ifdef PCRE_CONFIG_JIT
-  notify(player, T(" Internal regular expressions are JIT-compiled."));
+  {
+    int jit = 0;
+    pcre_config(PCRE_CONFIG_JIT, &jit);
+    if (jit) 
+      notify(player, T(" Internal regular expressions are JIT-compiled."));
+  }
 #endif
 }

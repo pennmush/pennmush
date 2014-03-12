@@ -2575,7 +2575,7 @@ FUNCTION(fun_regreplace)
 
     /* If we're doing a lot, study the regexp to make sure it's good */
     if (all) {
-      study = pcre_study(re, 0, &errptr);
+      study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
       if (errptr != NULL) {
         pcre_free(re);
         DEL_CHECK("pcre");
@@ -2606,7 +2606,11 @@ FUNCTION(fun_regreplace)
       pcre_free(re);
       DEL_CHECK("pcre");
       if (study) {
+#ifdef PCRE_CONFIG_JIT
+	pcre_free_study(study);
+#else
         pcre_free(study);
+#endif
         DEL_CHECK("pcre.extra");
       }
       continue;
@@ -2658,8 +2662,11 @@ FUNCTION(fun_regreplace)
     pcre_free(re);
     DEL_CHECK("pcre");
     if (study != NULL) {
-      pcre_free(study);
-      DEL_CHECK("pcre.extra");
+#ifdef PCRE_CONFIG_JIT
+	pcre_free_study(study);
+#else
+        pcre_free(study);
+#endif
     }
   }
 
@@ -2693,7 +2700,7 @@ FUNCTION(fun_regreplace)
 
       /* If we're doing a lot, study the regexp to make sure it's good */
       if (all) {
-        study = pcre_study(re, 0, &errptr);
+        study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
         if (errptr != NULL) {
           pcre_free(re);
           DEL_CHECK("pcre");
@@ -2729,7 +2736,11 @@ FUNCTION(fun_regreplace)
             pcre_free(re);
             DEL_CHECK("pcre");
             if (study) {
-              pcre_free(study);
+#ifdef PCRE_CONFIG_JIT
+	      pcre_free_study(study);
+#else
+	      pcre_free(study);
+#endif
               DEL_CHECK("pcre.extra");
             }
             goto exit_sequence;
@@ -2762,7 +2773,11 @@ FUNCTION(fun_regreplace)
       pcre_free(re);
       DEL_CHECK("pcre");
       if (study != NULL) {
+#ifdef PCRE_CONFIG_JIT
+	pcre_free_study(study);
+#else
         pcre_free(study);
+#endif
         DEL_CHECK("pcre.extra");
       }
     }
@@ -2959,7 +2974,7 @@ FUNCTION(fun_regrab)
   }
   ADD_CHECK("pcre");
 
-  study = pcre_study(re, 0, &errptr);
+  study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
   if (errptr != NULL) {
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);
@@ -2996,7 +3011,11 @@ FUNCTION(fun_regrab)
   pcre_free(re);
   DEL_CHECK("pcre");
   if (study) {
+#ifdef PCRE_CONFIG_JIT
+    pcre_free_study(study);
+#else
     pcre_free(study);
+#endif
     DEL_CHECK("pcre.extra");
   }
 }

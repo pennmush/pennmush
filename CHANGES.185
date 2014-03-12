@@ -23,6 +23,7 @@ Hardcode:
  * Rewritten the telnet handler, to make it more manageable/modifiable,
    instead of it being a huge bunch of nested switch()es. [MG]
  * Update the SFMT random number generator to 1.4.1. [SW]
+ * Built in and persistant uses of regular expressions are JIT compiled if the host's PCRE version supports it, for faster matching.
 
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]

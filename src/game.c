@@ -1006,8 +1006,9 @@ do_readcache(dbref player)
 static char *
 passwd_filter(const char *cmd)
 {
-  static int initialized = 0;
+  static bool initialized = 0;
   static pcre *pass_ptn, *newpass_ptn;
+  static pcre_extra *pass_extra, *newpass_extra;
   static char buff[BUFFER_LEN];
   char *bp = buff;
   int ovec[20];
@@ -1022,17 +1023,19 @@ passwd_filter(const char *cmd)
                             PCRE_CASELESS, &errptr, &eo, tables);
     if (!pass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
+    pass_extra = pcre_study(pass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
     newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)",
                                PCRE_CASELESS, &errptr, &eo, tables);
     if (!newpass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
+    newpass_extra = pcre_study(newpass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
     initialized = 1;
   }
 
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched = pcre_exec(pass_ptn, NULL, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
+  if ((matched = pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -1040,7 +1043,7 @@ passwd_filter(const char *cmd)
     safe_fill('*', ovec[5] - ovec[4], buff, &bp);
     safe_chr('=', buff, &bp);
     safe_fill('*', ovec[7] - ovec[6], buff, &bp);
-  } else if ((matched = pcre_exec(newpass_ptn, NULL, cmd, cmdlen, 0, 0,
+  } else if ((matched = pcre_exec(newpass_ptn, newpass_extra, cmd, cmdlen, 0, 0,
                                   ovec, 20)) > 0) {
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);

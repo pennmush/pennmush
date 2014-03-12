@@ -759,15 +759,17 @@ static bool
 is_skippable_topic(const char *topic)
 {
   static pcre *skippable = NULL;
+  static pcre_extra *extra = NULL;
   const char *errptr = NULL;
   int ovec[33], ovecsize = 33;
 
   if (!skippable) {
     int erroffset;
     skippable = pcre_compile("^&?(?:entries(-\\d+)?)$", PCRE_CASELESS, &errptr, &erroffset, tables);
+    extra = pcre_study(skippable, PCRE_STUDY_JIT_COMPILE, &errptr);
   }
   
-  return pcre_exec(skippable, NULL, topic, strlen(topic), 0, 0, ovec, ovecsize) > 0;
+  return pcre_exec(skippable, extra, topic, strlen(topic), 0, 0, ovec, ovecsize) > 0;
 }
 
 /* Generate a page of the index of the help file (The old pre-generated 'help entries' tables), 0-indexed.
@@ -863,6 +865,7 @@ static bool
 is_index_entry(const char *topic, int *offset)
 {
   static pcre *entry_re = NULL;
+  static pcre_extra *extra = NULL;
   int ovec[33], ovecsize = 33;
   int r;
 
@@ -875,9 +878,10 @@ is_index_entry(const char *topic, int *offset)
     const char *errptr = NULL;
     int erroffset = 0;
     entry_re = pcre_compile("^&?entries-(\\d+)$", PCRE_CASELESS, &errptr, &erroffset, tables);
+    extra = pcre_study(entry_re, PCRE_STUDY_JIT_COMPILE, &errptr);
   }
 
-  if ((r = pcre_exec(entry_re, NULL, topic, strlen(topic), 0, 0, ovec, ovecsize)) == 2) {
+  if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec, ovecsize)) == 2) {
     char buff[BUFFER_LEN];
     pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
     *offset = parse_integer(buff) - 1;

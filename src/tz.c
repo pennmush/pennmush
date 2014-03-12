@@ -104,6 +104,7 @@ bool
 is_valid_tzname(const char *name)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   int len;
   int ovec[15];
 
@@ -120,11 +121,12 @@ is_valid_tzname(const char *name)
                 errptr);
       return 0;
     }
+    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
   }
 
   len = strlen(name);
 
-  return pcre_exec(re, NULL, name, len, 0, 0, ovec, 15) > 0;
+  return pcre_exec(re, extra, name, len, 0, 0, ovec, 15) > 0;
 }
 
 /** Tests to see if a timezone actually exists in the database.

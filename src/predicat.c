@@ -1542,7 +1542,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       return 0;
     }
     ADD_CHECK("pcre");
-    rgd.study = pcre_study(rgd.re, 0, &errptr);
+    rgd.study = pcre_study(rgd.re,  PCRE_STUDY_JIT_COMPILE, &errptr);
     if (errptr != NULL) {
       if (buff) {
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
@@ -1567,7 +1567,11 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
 
     atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
     if (free_study) {
+#ifdef PCRE_CONFIG_JIT
+      pcre_free_study(rgd.study);
+#else
       pcre_free(rgd.study);
+#endif
       DEL_CHECK("pcre.extra");
     }
     pcre_free(rgd.re);

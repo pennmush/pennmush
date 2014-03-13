@@ -765,7 +765,7 @@ is_skippable_topic(const char *topic)
 
   if (!skippable) {
     int erroffset;
-    skippable = pcre_compile("^&?(?:entries(-\\d+)?)$", PCRE_CASELESS, &errptr, &erroffset, tables);
+    skippable = pcre_compile("^&?entries(?:-\\d+)?$", PCRE_CASELESS, &errptr, &erroffset, tables);
     extra = pcre_study(skippable, PCRE_STUDY_JIT_COMPILE, &errptr);
   }
   
@@ -850,8 +850,13 @@ entries_from_offset(help_file *h,  int off)
     }
   }
   safe_chr('\n', buff, &bp);
-  if (n < h->entries)
-    safe_format(buff, &bp, "For more, see ENTRIES-%d\n", off + 2);
+  if (n < h->entries) {
+    int pages = h->entries /  ENTRIES_PER_PAGE;
+    if (pages > (off + 2)) 
+      safe_format(buff, &bp, "For more, see ENTRIES-%d through %d\n", off + 2, pages);
+    else if (pages != (off + 1))
+      safe_format(buff, &bp, "For more, see ENTRIES-%d\n", off + 2);
+  }
 
   *bp = '\0';
 

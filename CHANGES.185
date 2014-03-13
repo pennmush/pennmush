@@ -45,6 +45,7 @@ Minor changes:
  * Removed some 20 year old Sun OS workaround code. Suggested by mbrazaitis.
  * Slightly less confusing error message for @chan/buffer. Suggested by ssstarduster.
  * 'HELP ENTRIES' is generated on the fly. Suggested by Mike. [SW]
+ * It also shows how many pages the entries index is. Suggested by Trinsec. [SW]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

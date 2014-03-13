@@ -488,8 +488,8 @@ do_move(dbref player, const char *direction, enum move_type type,
           notify(player, T("Exit destination is invalid."));
           return;
         }
-        did_it(player, exit_m, "SUCCESS", NULL, "OSUCCESS", NULL,
-               "ASUCCESS", NOTHING, AN_MOVE);
+        did_it_with(player, exit_m, "SUCCESS", NULL, "OSUCCESS", NULL,
+		    "ASUCCESS", NOTHING, Location(player), NOTHING, NA_INTER_HEAR, AN_MOVE);
         did_it(player, exit_m, "DROP", NULL, "ODROP", NULL, "ADROP", var_dest,
                AN_MOVE);
         switch (Typeof(var_dest)) {
@@ -879,8 +879,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
         safe_format(tbuf2, &tp, T("takes %s from %s."), itemname, thingname);
         *tp = '\0';
         moveto(item, player, player, "empty");
-        did_it(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
-               NOTHING, AN_MOVE);
+        did_it_with(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
+		    NOTHING, thing_loc, NOTHING, NA_INTER_HEAR, AN_MOVE);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
                     "ARECEIVE", NOTHING, item, NOTHING, NA_INTER_HEAR, AN_MOVE);
       }

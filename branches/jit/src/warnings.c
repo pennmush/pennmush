@@ -6,23 +6,22 @@
  *
  */
 
-#include "config.h"
+#include "copyrite.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
-#include "copyrite.h"
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "lock.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "match.h"
 #include "attrib.h"
-#include "confmagic.h"
-
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "match.h"
+#include "mushdb.h"
+#include "notify.h"
+#include "strutil.h"
 
 /* We might check for both locked and unlocked warnings if we can't
  * figure out a lock.
@@ -113,7 +112,7 @@ complain(dbref player, dbref i, const char *name, const char *desc, ...)
   va_end(args);
 
   notify_format(player, T("Warning '%s' for %s:"),
-                name, unparse_object(player, i));
+                name, unparse_object(player, i, AN_SYS));
   notify(player, buff);
 }
 

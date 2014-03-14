@@ -5,29 +5,31 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
 #include "ansi.h"
-#include "parse.h"
+#include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
 #include "function.h"
+#include "lock.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "mypcre.h"
-#include "match.h"
-#include "command.h"
-#include "attrib.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "mushdb.h"
-#include "lock.h"
+#include "notify.h"
+#include "parse.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
@@ -209,8 +211,8 @@ find_list_position(char *numstr, int total, bool insert)
   }
 
   if (i < 1 || i > total) {
-    if (total == 0 && insert && negative && i == 0) {
-      /* Special case: inserting at -1 into an empty list
+    if (total == 0 && insert && ((i == 0 && negative) || i == 1)) {
+      /* Special case: inserting into an empty list
        * will create a one-element list */
       return 1;
     } else {
@@ -1388,7 +1390,6 @@ FUNCTION(fun_extract)
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
-  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1) {
     /* find_list_position does an is_integer check, but we
@@ -1402,6 +1403,8 @@ FUNCTION(fun_extract)
       return;
     }
   }
+
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1)
     start = find_list_position(args[1], nwords, 0) - 1;
@@ -1453,6 +1456,7 @@ FUNCTION(fun_remove)
   int list_counter, rem_counter, list_total, rem_total;
   int skip[MAX_SORTSIZE];
   int first = 1;
+
 
   /* zap word from string */
 
@@ -1639,7 +1643,7 @@ FUNCTION(fun_ldelete)
   int delimarg = 3;
   char *replace = NULL;
 
-  if (!strcmp(called_as, "REPLACE")) {
+  if (!strcmp(called_as, "LREPLACE")) {
     delimarg = 4;
     replace = args[2];
   }
@@ -2621,7 +2625,7 @@ FUNCTION(fun_regreplace)
       obp = args[i + 1];
 
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
+      pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, prebuf);
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
@@ -2717,7 +2721,8 @@ FUNCTION(fun_regreplace)
           /* Process the replacement */
           r = args[i + 1];
           pe_regs_clear(pe_regs);
-          pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
+          pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns,
+                                      orig);
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {

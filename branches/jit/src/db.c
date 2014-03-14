@@ -6,9 +6,10 @@
  *
  */
 
-#include "copyrite.h"
-#include "config.h"
 #define _GNU_SOURCE
+
+#include "copyrite.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -23,25 +24,27 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
-#include "conf.h"
-#include "dbio.h"
-#include "externs.h"
-#include "mushdb.h"
+
+#include "ansi.h"
 #include "attrib.h"
-#include "mymalloc.h"
-#include "game.h"
-#include "flags.h"
-#include "lock.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "dbio.h"
+#include "extchat.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "game.h"
+#include "htab.h"
+#include "lock.h"
 #include "log.h"
-#include "strtree.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
 #include "parse.h"
 #include "privtab.h"
-#include "htab.h"
-#include "extchat.h"
-#include "extmail.h"
-#include "confmagic.h"
-#include "ansi.h"
+#include "strtree.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */
@@ -68,7 +71,7 @@ dbref errobj;             /**< Dbref of object on which an error has occurred */
 int dbline = 0;           /**< Line of the database file being read */
 
 /** String that markes the end of dumps */
-const char *EOD = "***END OF DUMP***\n";
+const char EOD[] = "***END OF DUMP***\n";
 
 #ifndef DB_INITIAL_SIZE
 #define DB_INITIAL_SIZE 5000   /**< Initial size for db array */
@@ -263,7 +266,7 @@ putstring(PENNFILE *f, const char *s)
       penn_fputc('\\', f);
       /* FALL THROUGH */
     default:
-      penn_fputc((unsigned char) *s, f);
+      penn_fputc(*s, f);
     }
     s++;
   }
@@ -809,7 +812,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* smash unprintable characters in the name, replace with ! */
     strcpy(name, AL_NAME(list));
     for (p = name; *p; p++) {
-      if (!isprint((unsigned char) *p) || isspace((unsigned char) *p)) {
+      if (!isprint(*p) || isspace(*p)) {
         *p = '!';
         fixmemdb = err = 1;
       }
@@ -852,7 +855,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     strcpy(tbuf1, atr_value(list));
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!isprint((unsigned char) *p) && !isspace((unsigned char) *p) &&
+      if (!isprint(*p) && !isspace(*p) &&
           *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
           && *p != BEEP_CHAR) {
         *p = '!';
@@ -1620,6 +1623,10 @@ db_read(PENNFILE *f)
       } else if (c == 'A') {
         (void) getstring_noalloc(f);
         attr_read_all(f);
+        if (globals.new_indb_version < 2) {
+          add_new_attr("MONIKER",
+                       AF_WIZARD | AF_NOPROG | AF_VISUAL | AF_LOCKED);
+        }
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");
         return -1;

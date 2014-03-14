@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf --output-file lmathtab.c lmathtab.gperf  */
+/* Command-line: gperf -C --output-file lmathtab.c lmathtab.gperf  */
 /* Computed positions: -k'1-2,5' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -128,7 +128,7 @@ inline
   static unsigned int
 math_hash(register const char *str, register unsigned int len)
 {
-  static unsigned char asso_values[] = {
+  static const unsigned char asso_values[] = {
     65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
     65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
     65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
@@ -172,14 +172,15 @@ math_hash(register const char *str, register unsigned int len)
   return hval;
 }
 
+static
 #ifdef __GNUC__
-__inline
+ __inline
 #ifdef __GNUC_STDC_INLINE__
   __attribute__ ((__gnu_inline__))
 #endif
 #endif
-    struct math *math_hash_lookup(register const char *str,
-                                  register unsigned int len)
+    const struct math *math_hash_lookup(register const char *str,
+                                        register unsigned int len)
 {
   enum {
     TOTAL_KEYWORDS = 31,
@@ -189,14 +190,14 @@ __inline
     MAX_HASH_VALUE = 64
   };
 
-  static unsigned char lengthtable[] = {
+  static const unsigned char lengthtable[] = {
     0, 0, 2, 3, 0, 2, 3, 0, 3, 4, 2, 3, 0, 3,
     4, 0, 3, 0, 3, 9, 0, 6, 0, 3, 6, 0, 3, 0,
     3, 4, 0, 0, 2, 3, 0, 0, 6, 7, 3, 0, 0, 6,
     0, 3, 4, 0, 6, 0, 3, 0, 0, 0, 0, 8, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 4
   };
-  static struct math wordlist[] = {
+  static const struct math wordlist[] = {
     {"", NULL}, {"", NULL},
 #line 84 "lmathtab.gperf"
     {"EQ", math_eq},

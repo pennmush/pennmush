@@ -16,9 +16,8 @@
 #else
 #include <time.h>
 #endif
-#include "options.h"
-#include "mushtype.h"
 #include "htab.h"
+#include "mushtype.h"
 
 #define PLAYER_NAME_LIMIT (options.player_name_len) /**< limit on player name length */
 
@@ -223,6 +222,7 @@ struct options_table {
   int startups;         /**< Is startup run on startups? */
   int room_connects;    /**< Do players trigger aconnect/adisconnect on their location? */
   int ansi_names;       /**< Are object names shown in bold? */
+  int monikers;         /**< Allow @monikers? */
   int comma_exit_list;  /**< Should exit lists be itemized? */
   int count_all;        /**< Are hidden players included in total player counts? */
   int exits_connect_rooms;      /**< Does the presence of an exit make a room connected? */

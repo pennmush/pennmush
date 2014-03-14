@@ -1,7 +1,6 @@
 /** SSL slave controller related code. */
 
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
@@ -26,13 +25,12 @@
 #include <string.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "log.h"
 #include "mysocket.h"
-#include "ssl_slave.h"
 #include "parse.h"
+#include "sig.h"
+#include "ssl_slave.h"
 #include "wait.h"
-#include "confmagic.h"
 
 
 pid_t ssl_slave_pid = -1;

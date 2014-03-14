@@ -6,6 +6,7 @@
 
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
+
 #include "copyrite.h"
 #include <openssl/ssl.h>
 #ifdef HAVE_STDINT_H
@@ -169,11 +170,11 @@ void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 /* PE_REGS_REGEXP */
 struct real_pcre;
 struct _ansi_string;
-void pe_regs_set_rx_context(PE_REGS *regs,
+void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
                             struct real_pcre *re_code,
                             int *re_offsets,
                             int re_subpatterns, const char *re_from);
-void pe_regs_set_rx_context_ansi(PE_REGS *regs,
+void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
                                  struct real_pcre *re_code,
                                  int *re_offsets,
                                  int re_subpatterns,
@@ -217,9 +218,9 @@ int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 const char *pe_regs_intname(int num);
 void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
-const char *pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
+const char *pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name);
 int pi_regs_get_envc(NEW_PE_INFO *pe_info);
-#define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
+#define PE_Get_Env(pi,n) pi_regs_get_env(pi, pe_regs_intname(n))
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
 /** NEW_PE_INFO holds data about string evaluation via process_expression().  */
@@ -279,10 +280,10 @@ typedef ATTR ALIST;
 /** A text block
  */
 struct text_block {
-  int nchars;                   /**< Number of characters in the block */
-  struct text_block *nxt;       /**< Pointer to next block in queue */
-  unsigned char *start;         /**< Start of text */
-  unsigned char *buf;           /**< Current position in text */
+  int nchars;              /**< Number of characters in the block */
+  struct text_block *nxt;  /**< Pointer to next block in queue */
+  char *start;             /**< Start of text */
+  char *buf;               /**< Current position in text */
 };
 /** A queue of text blocks.
  */
@@ -369,15 +370,15 @@ struct descriptor_data {
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */
-  unsigned char *output_prefix; /**< Text to show before output */
-  unsigned char *output_suffix; /**< Text to show after output */
+  char *output_prefix;  /**< Text to show before output */
+  char *output_suffix;  /**< Text to show after output */
   int output_size;              /**< Size of output left to send */
   struct text_queue output;     /**< Output text queue */
   struct text_queue input;      /**< Input text queue */
-  unsigned char *raw_input;     /**< Pointer to start of next raw input */
-  unsigned char *raw_input_at;  /**< Pointer to position in raw input */
-  time_t connected_at;    /**< Time of connection */
-  time_t last_time;       /**< Time of last activity */
+  char *raw_input;      /**< Pointer to start of next raw input */
+  char *raw_input_at;   /**< Pointer to position in raw input */
+  time_t connected_at;  /**< Time of connection */
+  time_t last_time;     /**< Time of last activity */
   int quota;            /**< Quota of commands allowed */
   int cmds;             /**< Number of commands sent */
   int hide;             /**< Hide status */

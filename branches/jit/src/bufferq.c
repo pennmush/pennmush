@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "bufferq.h"
 
 #include <stdio.h>
 #ifdef I_UNISTD
@@ -30,13 +30,11 @@
 #endif
 
 #include "conf.h"
+#include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"
-#include "dbdefs.h"
-#include "bufferq.h"
-#include "mymalloc.h"
 #include "log.h"
-#include "confmagic.h"
+#include "mymalloc.h"
 
 #define BUFFERQLINEOVERHEAD     (2*sizeof(int)+sizeof(time_t)+sizeof(dbref))
 

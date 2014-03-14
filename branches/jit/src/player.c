@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+
 #include <stdio.h>
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -27,18 +27,20 @@
 #endif
 #include <fcntl.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
 #include "access.h"
-#include "mymalloc.h"
-#include "log.h"
+#include "attrib.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
-#include "lock.h"
-#include "parse.h"
 #include "game.h"
+#include "lock.h"
+#include "log.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 #ifdef HAS_CRYPT
 #ifdef I_CRYPT
@@ -48,14 +50,11 @@ extern char *crypt(const char *, const char *);
 #endif
 #endif
 
-#include "extmail.h"
-#include "confmagic.h"
-
-
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);
 char *password_hash(const char *key, const char *algo);
 bool password_comp(const char *saved, const char *pass);
+bool check_mux_password(const char *saved, const char *password);
 
 dbref email_register_player
   (DESC *d, const char *name, const char *email, const char *host,
@@ -201,14 +200,16 @@ password_check(dbref player, const char *password)
       if (strcmp(crypt(password, "XX"), saved) != 0) {
         /* Nope */
 #endif                          /* HAS_CRYPT */
-        /* crypt() didn't work. Try plaintext, being sure to not
-         * allow unencrypted entry of encrypted password */
-        if ((strcmp(saved, password) != 0)
-            || (strlen(password) < 4)
-            || ((password[0] == 'X') && (password[1] == 'X'))) {
-          /* Nothing worked. You lose. */
-          free(saved);
-          return 0;
+        /* See if it's a MUX password */
+        if (!check_mux_password(saved, password)) {
+          /* As long as it's not obviously encrypted, check for a
+           * plaintext password. */
+          if (strlen(password) < 4 || *password == '$' ||
+              (password[0] == 'X' && password[1] == 'X') ||
+              strcmp(saved, password)) {
+            free(saved);
+            return 0;
+          }
         }
 #ifdef HAS_CRYPT
       }
@@ -251,6 +252,7 @@ connect_player(DESC *d, const char *name, const char *password,
   if ((player = lookup_player(name)) == NOTHING) {
     /* Invalid player names are failures, too. */
     count = mark_failed(ip);
+    strcpy(errbuf, T("There is no player with that name."));
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d,%s",
                 d->descriptor, ip, count, "invalid player", -1, name);
     return NOTHING;
@@ -263,6 +265,7 @@ connect_player(DESC *d, const char *name, const char *password,
            Name(player), host, ip);
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d", d->descriptor,
                 ip, count_failed(ip), "player is going", player);
+    strcpy(errbuf, T("You cannot connect to that player at this time."));
     return NOTHING;
   }
   /* Check sitelock patterns */
@@ -301,6 +304,7 @@ connect_player(DESC *d, const char *name, const char *password,
       count = mark_failed(ip);
       queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
                   d->descriptor, ip, count, "invalid password", player);
+      strcpy(errbuf, T("That is not the correct password."));
       return NOTHING;
     }
 
@@ -334,7 +338,8 @@ connect_player(DESC *d, const char *name, const char *password,
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
  * \param ip ip address from which creation is attempted.
- * \return dbref of created player, NOTHING if bad name, AMBIGUOUS if bad
+ * \return dbref of created player, NOTHING if invalid name, AMBIGUOUS if taken
+ *  name, or HOME for a bad password
  *  password.
  */
 dbref
@@ -347,7 +352,7 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, ip, mark_failed(ip), "create: bad name", name);
     }
-    return NOTHING;
+    return (lookup_player(name) == NOTHING ? NOTHING : AMBIGUOUS);
   }
   if (!ok_password(password)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad password) from %s", host);
@@ -356,7 +361,7 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
                   d->descriptor, ip, mark_failed(ip),
                   "create: bad password", name);
     }
-    return AMBIGUOUS;
+    return HOME;
   }
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */

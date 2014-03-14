@@ -8,26 +8,28 @@
 /* speech.c */
 
 #include "copyrite.h"
-#include "config.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "conf.h"
-#include "externs.h"
+
 #include "ansi.h"
-#include "mushdb.h"
+#include "attrib.h"
+#include "conf.h"
 #include "dbdefs.h"
-#include "lock.h"
+#include "externs.h"
 #include "flags.h"
+#include "game.h"
+#include "lock.h"
 #include "log.h"
 #include "match.h"
-#include "attrib.h"
-#include "parse.h"
-#include "game.h"
+#include "mushdb.h"
+#include "mymalloc.h"
 #include "mypcre.h"
+#include "parse.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 static void do_one_remit(dbref executor, dbref speaker, const char *target,
                          const char *msg, int flags, struct format_msg *format,
@@ -35,7 +37,7 @@ static void do_one_remit(dbref executor, dbref speaker, const char *target,
 dbref na_zemit(dbref current, void *data);
 
 const char *
-spname(dbref thing)
+spname_int(dbref thing, bool ansi)
 {
   /* if FULL_INVIS is defined, dark wizards and dark objects will be
    * Someone and Something, respectively.
@@ -46,8 +48,12 @@ spname(dbref thing)
       return "Someone";
     else
       return "Something";
+  } else if (ansi) {
+    /* This uses accents */
+    return AaName(thing, AN_SAY, NULL);
   } else {
-    return accented_name(thing);
+    /* This does not */
+    return Name(thing);
   }
 }
 
@@ -76,7 +82,7 @@ okay_pemit(dbref player, dbref target, int dofails, int def,
     dp = defmsg;
     safe_format(defmsg, &dp,
                 T("I'm sorry, but %s wishes to be left alone now."),
-                Name(target));
+                AName(target, AN_SYS, NULL));
     *dp = '\0';
     dp = defmsg;
   }
@@ -348,6 +354,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   int overheard;
   char *current;
   const char **start;
+  char sname[BUFFER_LEN];
 
   if (!arg1 || !*arg1) {
     notify(player, T("Whisper to whom?"));
@@ -388,7 +395,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
       if (GoodObject(who))
-        notify_format(player, T("%s can't hear you."), Name(who));
+        notify_format(player, T("%s can't hear you."),
+                      AName(who, AN_SYS, NULL));
     } else {
       /* A good whisper */
       good[gcount++] = who;
@@ -419,20 +427,22 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     if (noisy && (get_random32(0, 100) < (uint32_t) WHISPER_LOUDNESS))
       overheard = 1;
     safe_itemizer(who + 1, (who == gcount - 1), ",", T("and"), " ", tbuf, &tp);
-    safe_str(Name(good[who]), tbuf, &tp);
+    safe_str(AName(good[who], AN_SAY, NULL), tbuf, &tp);
   }
   *tp = '\0';
 
   if (key == 1) {
     notify_format(player, (gcount > 1) ? T("%s sense: %s%s%s") :
-                  T("%s senses: %s%s%s"), tbuf + 4, Name(player), gap, arg2);
-    p = tprintf("You sense: %s%s%s", Name(player), gap, arg2);
+                  T("%s senses: %s%s%s"), tbuf + 4, AName(player, AN_SAY, NULL),
+                  gap, arg2);
+    p = tprintf("You sense: %s%s%s", AName(player, AN_SAY, NULL), gap, arg2);
   } else {
     notify_format(player, T("You whisper, \"%s\"%s."), arg2, tbuf);
-    p = tprintf(T("%s whispers%s: %s"), Name(player),
+    p = tprintf(T("%s whispers%s: %s"), AName(player, AN_SAY, NULL),
                 gcount > 1 ? tbuf : "", arg2);
   }
 
+  strcpy(sname, AName(player, AN_SAY, NULL));
   for (who = 0; who < gcount; who++) {
     notify_must_puppet(good[who], p);
     if (Location(good[who]) != Location(player))
@@ -442,7 +452,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     dbref first = Contents(Location(player));
     if (!GoodObject(first))
       return;
-    p = tprintf(T("%s whispers%s."), Name(player), tbuf);
+    p = tprintf(T("%s whispers%s."), sname, tbuf);
     DOLIST(first, first) {
       overheard = 1;
       for (who = 0; who < gcount; who++) {
@@ -502,7 +512,7 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
   format.numargs = numargs;
   format.targetarg = -1;
 
-  for (i = 0; i < numargs; i++) {
+  for (i = 0; i < numargs && i < MAX_STACK_ARGS; i++) {
     format.args[i] = argv[i];
     if (!strcmp(argv[i], "##"))
       format.targetarg = i;
@@ -578,7 +588,7 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
                     count);
     else if (last != executor)
       notify_format(executor, T("You pemit \"%s\" to %s."), message,
-                    Name(last));
+                    AName(last, AN_SAY, NULL));
   }
 
 }
@@ -685,12 +695,14 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
 
   /* broadcast the message */
   if (pose)
-    flag_broadcast(mask, 0, "%s %s%s%s", prefix, Name(player), gap, message);
+    flag_broadcast(mask, 0, "%s %s%s%s", prefix, AName(player, AN_SAY, NULL),
+                   gap, message);
   else if (emit)
-    flag_broadcast(mask, 0, "%s [%s]: %s", prefix, Name(player), message);
+    flag_broadcast(mask, 0, "%s [%s]: %s", prefix, AName(player, AN_SAY, NULL),
+                   message);
   else
     flag_broadcast(mask, 0,
-                   "%s %s %s, \"%s\"", prefix, Name(player),
+                   "%s %s %s, \"%s\"", prefix, AName(player, AN_SAY, NULL),
                    target == WALL_ALL ? T("shouts") : T("says"), message);
 }
 
@@ -853,7 +865,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
         for (repage = 1; repage <= gcount; repage++) {
           safe_itemizer(repage, (repage == gcount), ",", T("and"), " ", tbuf2,
                         &tp2);
-          safe_str(Name(good[repage - 1]), tbuf2, &tp2);
+          safe_str(AName(good[repage - 1], AN_SAY, NULL), tbuf2, &tp2);
         }
         *tp2 = '\0';
         notify_format(executor, T("You last paged %s."), tbuf2);
@@ -900,23 +912,25 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
         page_return(executor, target, "Away", "AWAY",
-                    tprintf(T("%s is not connected."), Name(target)));
+                    tprintf(T("%s is not connected."),
+                            AName(target, AN_SYS, NULL)));
         if (fails_lock)
           fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
-        safe_str_space(Name(target), tbuf, &tp);
+        safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (is_haven) {
         page_return(executor, target, "Haven", "HAVEN",
-                    tprintf(T("%s is not accepting any pages."), Name(target)));
+                    tprintf(T("%s is not accepting any pages."),
+                            AName(target, AN_SYS, NULL)));
         safe_chr(' ', tbuf, &tp);
-        safe_str_space(Name(target), tbuf, &tp);
+        safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (fails_lock) {
         page_return(executor, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting your pages."),
-                            Name(target)));
+                            AName(target, AN_SYS, NULL)));
         fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
-        safe_str_space(Name(target), tbuf, &tp);
+        safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else {
         /* This is a good page */
         good[gcount] = target;
@@ -996,7 +1010,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     safe_chr(':', tbuf, &tp);
     safe_integer(CreTime(good[i]), tbuf, &tp);
     safe_itemizer(i + 1, (i == gcount - 1), ",", T("and"), " ", namebuf, &nbp);
-    safe_str(Name(good[i]), namebuf, &nbp);
+    safe_str(AName(good[i], AN_SAY, NULL), namebuf, &nbp);
   }
   *tp = '\0';
   *nbp = '\0';
@@ -1009,12 +1023,12 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   if ((ap = shortalias(executor)) && *ap) {
     strcpy(alias, ap);
     if (PAGE_ALIASES && strcasecmp(ap, Name(executor)))
-      current = tprintf("%s (%s)", Name(executor), alias);
+      current = tprintf("%s (%s)", AName(executor, AN_SAY, NULL), alias);
     else
-      current = (char *) Name(executor);
+      current = (char *) AName(executor, AN_SAY, NULL);
   } else {
     alias[0] = '\0';
-    current = (char *) Name(executor);
+    current = (char *) AName(executor, AN_SAY, NULL);
   }
 
   /* Now, build the thing we want to send to the pagees,
@@ -1055,7 +1069,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   tosend = mush_malloc(BUFFER_LEN, "page_buff");
   if (key == 1) {
     snprintf(tosend, BUFFER_LEN, T("Long distance to %s: %s%s%s"), namebuf,
-             Name(executor), gap, message);
+             AName(executor, AN_SAY, NULL), gap, message);
   } else {
     snprintf(tosend, BUFFER_LEN, T("You paged %s with '%s'"), namebuf, message);
   }
@@ -1087,7 +1101,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     if (!okay_pemit(good[i], executor, 0, 0, pe_info)) {
       notify_format(executor,
                     T("You paged %s, but they are unable to page you."),
-                    Name(good[i]));
+                    AName(good[i], AN_SYS, NULL));
     }
   }
 
@@ -1238,7 +1252,7 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
     } else {
       if (!(flags & PEMIT_SILENT) && (Location(executor) != room)) {
         const char *rmno;
-        rmno = unparse_object(executor, room);
+        rmno = unparse_object(executor, room, AN_SYS);
         notify_format(executor, T("You remit, \"%s\" in %s"), msg, rmno);
       }
       if (flags & PEMIT_SPOOF)
@@ -1386,7 +1400,7 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
 
 
   if (!(flags & PEMIT_SILENT) && pass[3] != NOTHING) {
-    where = unparse_object(player, zone);
+    where = unparse_object(player, zone, AN_SYS);
     notify_format(player, T("You zemit, \"%s\" in zone %s"), message, where);
   }
 

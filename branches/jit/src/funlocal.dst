@@ -12,14 +12,15 @@
 /* Here are some includes you're likely to need or want.
  * If your functions are doing math, include <math.h>, too.
  */
+
 #include "copyrite.h"
-#include "config.h"
+
 #include <string.h>
+
 #include "conf.h"
 #include "externs.h"
-#include "parse.h"
-#include "confmagic.h"
 #include "function.h"
+#include "parse.h"
 
 void local_functions(void);
 

@@ -41,242 +41,45 @@
  * inserts are important, small for cases where we want to save save.
  */
 
-#include "config.h"
 #include "copyrite.h"
+#include "htab.h"
+
 #include <string.h>
 #include <math.h>
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
 #include <openssl/bn.h>
-#include "conf.h"
-#include "externs.h"
-#include "log.h"
-#include "htab.h"
+
+#include "hash_function.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
-/* The Jenkins hash:  http://burtleburtle.net/bob/hash/evahash.html */
+/* Temporary prototypes to make the compiler happy. */
+char *
+mush_strdup(const char *s, const char *check)
+  __attribute_malloc__;
+    uint32_t get_random32(uint32_t low, uint32_t high);
 
-/* The mixing step */
-#define mix(a,b,c) \
-{ \
-  a=a-b;  a=a-c;  a=a^(c>>13); \
-  b=b-c;  b=b-a;  b=b^(a<<8);  \
-  c=c-a;  c=c-b;  c=c^(b>>13); \
-  a=a-b;  a=a-c;  a=a^(c>>12); \
-  b=b-c;  b=b-a;  b=b^(a<<16); \
-  c=c-a;  c=c-b;  c=c^(b>>5);  \
-  a=a-b;  a=a-c;  a=a^(c>>3);  \
-  b=b-c;  b=b-a;  b=b^(a<<10); \
-  c=c-a;  c=c-b;  c=c^(b>>15); \
-}
+    struct hash_bucket {
+      const char *key;
+      void *data;
+      int keylen;
+    };
 
-/* The whole new hash function */
-static uint32_t
-jenkins_hash(const char *k, int len)
-{
-  uint32_t a, b, c;             /* the internal state */
-  uint32_t length;              /* how many key bytes still need mixing */
-  static uint32_t initval = 5432;       /* the previous hash, or an arbitrary value */
+    typedef uint32_t (*hash_func) (const char *, int, uint64_t);
 
-  /* Set up the internal state */
-  length = len;
-  a = b = 0x9e3779b9;           /* the golden ratio; an arbitrary value */
-  c = initval;                  /* variable initialization of internal state */
+    static const uint64_t hash_seed = 0x28187bcc53900639LLU;
 
-   /*---------------------------------------- handle most of the key */
-  while (len >= 12) {
-    a =
-      a + (k[0] + ((uint32_t) k[1] << 8) + ((uint32_t) k[2] << 16) +
-           ((uint32_t) k[3] << 24));
-    b =
-      b + (k[4] + ((uint32_t) k[5] << 8) + ((uint32_t) k[6] << 16) +
-           ((uint32_t) k[7] << 24));
-    c =
-      c + (k[8] + ((uint32_t) k[9] << 8) + ((uint32_t) k[10] << 16) +
-           ((uint32_t) k[11] << 24));
-    mix(a, b, c);
-    k = k + 12;
-    len = len - 12;
-  }
-
-   /*------------------------------------- handle the last 11 bytes */
-  c = c + length;
-  switch (len) {                /* all the case statements fall through */
-  case 11:
-    c = c + ((uint32_t) k[10] << 24);
-  case 10:
-    c = c + ((uint32_t) k[9] << 16);
-  case 9:
-    c = c + ((uint32_t) k[8] << 8);
-    /* the first byte of c is reserved for the length */
-  case 8:
-    b = b + ((uint32_t) k[7] << 24);
-  case 7:
-    b = b + ((uint32_t) k[6] << 16);
-  case 6:
-    b = b + ((uint32_t) k[5] << 8);
-  case 5:
-    b = b + k[4];
-  case 4:
-    a = a + ((uint32_t) k[3] << 24);
-  case 3:
-    a = a + ((uint32_t) k[2] << 16);
-  case 2:
-    a = a + ((uint32_t) k[1] << 8);
-  case 1:
-    a = a + k[0];
-    /* case 0: nothing left to add */
-  }
-  mix(a, b, c);
-   /*-------------------------------------------- report the result */
-  return c;
-}
-
-
-/* The Hsieh hash function. See
-   http://www.azillionmonkeys.com/qed/hash.html */
-
-#undef get16bits
-#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
-#define get16bits(d) (*((const uint16_t *) (d)))
-#endif
-
-#if !defined (get16bits)
-#define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
-                       +(uint32_t)(((const uint8_t *)(d))[0]) )
-#endif
-
-static uint32_t
-hsieh_hash(const char *data, int len)
-{
-  uint32_t hash, tmp;
-  int rem;
-
-  hash = len;
-
-  if (len <= 0 || data == NULL)
-    return 0;
-
-  rem = len & 3;
-  len >>= 2;
-
-  /* Main loop */
-  for (; len > 0; len--) {
-    hash += get16bits(data);
-    tmp = (get16bits(data + 2) << 11) ^ hash;
-    hash = (hash << 16) ^ tmp;
-    data += 2 * sizeof(uint16_t);
-    hash += hash >> 11;
-  }
-
-  /* Handle end cases */
-  switch (rem) {
-  case 3:
-    hash += get16bits(data);
-    hash ^= hash << 16;
-    hash ^= data[sizeof(uint16_t)] << 18;
-    hash += hash >> 11;
-    break;
-  case 2:
-    hash += get16bits(data);
-    hash ^= hash << 11;
-    hash += hash >> 17;
-    break;
-  case 1:
-    hash += *data;
-    hash ^= hash << 10;
-    hash += hash >> 1;
-  }
-
-  /* Force "avalanching" of final 127 bits */
-  hash ^= hash << 3;
-  hash += hash >> 5;
-  hash ^= hash << 4;
-  hash += hash >> 17;
-  hash ^= hash << 25;
-  hash += hash >> 6;
-
-  return hash;
-}
-
-/* FNV hash: http://isthe.com/chongo/tech/comp/fnv/ */
-/*
- * fnv_32_str - perform a 32 bit Fowler/Noll/Vo hash on a string
- *
- * input:
- *	str	- string to hash
- *	hval	- previous hash value or 0 if first call
- *
- * returns:
- *	32 bit hash as a static hash type
- *
- * NOTE: To use the 32 bit FNV-0 historic hash, use FNV0_32_INIT as the hval
- *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
- *
- * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
- *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
- *
- * Modified by Raevnos: Takes length arg, no hval arg, and does array-style
- * iteration of the string.
- */
-#define FNV_32_PRIME ((Fnv32_t)0x01000193)
-static inline uint32_t
-fnv_hash(const char *str, int len)
-{
-  const unsigned char *s = (const unsigned char *) str;
-  int n;
-  uint32_t hval = 0;
-
-  /*
-   * FNV-1 hash each octet in the buffer
-   */
-  for (n = 0; n < len; n++) {
-
-    /* multiply by the 32 bit FNV magic prime mod 2^32 */
-#if defined(NO_FNV_GCC_OPTIMIZATION)
-    hval *= FNV_32_PRIME;
-#else
-    hval +=
-      (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
-#endif
-
-    /* xor the bottom with the current octet */
-    hval ^= (uint32_t) s[n];
-  }
-
-  /* return our new hash value */
-  return hval;
-}
-
-/* Silly old Penn hash function. */
-static uint32_t
-penn_hash(const char *key, int len)
-{
-  uint32_t hash = 0;
-  int n;
-
-  if (!key || !*key || len == 0)
-    return 0;
-  for (n = 0; n < len; n++)
-    hash = (hash << 5) + hash + key[n];
-  return hash;
-}
-
-typedef uint32_t (*hash_func) (const char *, int);
-
-hash_func hash_functions[] = {
-  hsieh_hash,
-  fnv_hash,
-  jenkins_hash,
-  penn_hash,
-  hsieh_hash,
-  fnv_hash,
-  penn_hash,
-  jenkins_hash
-};
+    hash_func hash_functions[] = {
+      city_hash,
+      murmur3_hash,
+      spooky_hash,
+      jenkins_hash,
+      city_hash,
+      murmur3_hash,
+      jenkins_hash,
+      spooky_hash,
+    };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
 
@@ -332,8 +135,8 @@ hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
  * \param key key to look up in the table.
  * \return pointer to hash table entry for given key.
  */
-HASHENT *
-hash_find(HASHTAB *htab, const char *key)
+struct hash_bucket *
+hash_find(const HASHTAB *htab, const char *key)
 {
   int len, n;
 
@@ -346,7 +149,7 @@ hash_find(HASHTAB *htab, const char *key)
     hash_func hash;
     int hval, hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
     hash = hash_functions[hashindex];
-    hval = hash(key, len) % htab->hashsize;
+    hval = hash(key, len, hash_seed) % htab->hashsize;
 
     if (htab->buckets[hval].key && len == htab->buckets[hval].keylen &&
         memcmp(htab->buckets[hval].key, key, len) == 0)
@@ -354,6 +157,13 @@ hash_find(HASHTAB *htab, const char *key)
   }
 
   return NULL;
+}
+
+void *
+hash_value(const HASHTAB *htab, const char *key)
+{
+  struct hash_bucket *entry = hash_find(htab, key);
+  return entry ? entry->data : NULL;
 }
 
 enum { BUMP_LIMIT = 10 };
@@ -379,7 +189,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
       int hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
 
       hash = hash_functions[hashindex];
-      hval = hash(bump.key, bump.keylen) % htab->hashsize;
+      hval = hash(bump.key, bump.keylen, hash_seed) % htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
@@ -389,7 +199,8 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     /* None. Use a random func and bump the existing element */
     n = htab->hashfunc_offset + get_random32(0, NHASH_TRIES - 1);
     n %= NHASH_MOD;
-    hval = (hash_functions[n]) (bump.key, bump.keylen) % htab->hashsize;
+    hval =
+      (hash_functions[n]) (bump.key, bump.keylen, hash_seed) % htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -419,9 +230,9 @@ static int resize_calls = 0, first_offset = -1;
  * \param hashindex Index of first hash function to use
  */
 static bool
-real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
+hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
 {
-  HASHENT *oldarr;
+  struct hash_bucket *oldarr;
   int oldsize, oldoffset, i;
 
   /* Massive overkill here */
@@ -435,7 +246,7 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   if (hashfunc_offset == first_offset) {
     int newersize = next_prime_after(floor(newsize * 1.15));
     first_offset = -1;
-    return real_hash_resize(htab, newersize, hashfunc_offset);
+    return hash_resize(htab, newersize, hashfunc_offset);
   }
 
   resize_calls += 1;
@@ -459,31 +270,13 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
         htab->hashfunc_offset = oldoffset;
         if (first_offset == -1)
           first_offset = hashfunc_offset;
-        return
-          real_hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
+        return hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
       }
     }
   }
 
   mush_free(oldarr, "hash.buckets");
   return true;
-}
-
-/** Resize a hash table.
- * \param htab pointer to hashtable.
- * \param size new size.
- */
-bool
-hash_resize(HASHTAB *htab, int size)
-{
-  if (htab) {
-    htab->last_index = -1;
-    first_offset = -1;
-    resize_calls = 0;
-    return real_hash_resize(htab, next_prime_after(size),
-                            htab->hashfunc_offset);
-  } else
-    return false;
 }
 
 /** Add an entry to a hash table.
@@ -506,34 +299,40 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
   keylen = strlen(keycopy);
 
   if (htab->entries == htab->hashsize)
-    real_hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
-                     htab->hashfunc_offset);
+    hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
+                htab->hashfunc_offset);
 
   htab->entries += 1;
   if (!hash_insert(htab, keycopy, keylen, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
-    real_hash_resize(htab, htab->hashsize,
-                     (htab->hashfunc_offset + 1) % NHASH_MOD);
+    hash_resize(htab, htab->hashsize, (htab->hashfunc_offset + 1) % NHASH_MOD);
   }
   return true;
 }
 
-/** Delete an entry in a hash table.
- * \param htab pointer to hash table.
- * \param entry pointer to hash entry to delete (and free).
- */
-void
-hash_delete(HASHTAB *htab, HASHENT *entry)
+static void
+hash_delete_bucket(HASHTAB *htab, struct hash_bucket *entry)
 {
-  if (!entry)
-    return;
-
   if (htab->free_data)
     htab->free_data(entry->data);
   mush_free((void *) entry->key, "hash.key");
   memset(entry, 0, sizeof *entry);
   htab->entries -= 1;
+}
+
+/** Delete an entry in a hash table.
+ * \param htab pointer to hash table.
+ * \param key key to delete from the table.
+ */
+void
+hash_delete(HASHTAB *htab, const char *key)
+{
+  struct hash_bucket *entry = hash_find(htab, key);
+  if (!entry)
+    return;
+
+  hash_delete_bucket(htab, entry);
 }
 
 /** Flush a hash table, freeing all entries.
@@ -549,9 +348,7 @@ hash_flush(HASHTAB *htab, int size)
   if (htab->entries) {
     for (i = 0; i < htab->hashsize; i++) {
       if (htab->buckets[i].key) {
-        mush_free((void *) htab->buckets[i].key, "hash.key");
-        if (htab->free_data)
-          htab->free_data(htab->buckets[i].data);
+        hash_delete_bucket(htab, &htab->buckets[i]);
       }
     }
   }
@@ -647,55 +444,41 @@ hash_nextentry_key(HASHTAB *htab)
   return NULL;
 }
 
-/** Display a header for a stats listing.
- * \param player player to notify with header.
- */
-void
-hash_stats_header(dbref player)
-{
-  notify_format(player,
-                "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory");
-}
-
 /** Display stats on a hashtable.
- * \param player player to notify with stats.
  * \param htab pointer to the hash table.
- * \param hname name of the hash table.
+ * \param stats pointer to hashstats to output to.
  */
 void
-hash_stats(dbref player, HASHTAB *htab, const char *hname)
+hash_stats(const HASHTAB *htab, struct hashstats *stats)
 {
-  int n, entries = 0;
-  size_t bytes;
-  unsigned int compares[3] = { 0, 0, 0 };
+  int n;
 
-  if (!htab || !hname)
+  if (!htab || !stats)
     return;
 
-  bytes = sizeof *htab;
-  bytes += sizeof(struct hash_bucket) * htab->hashsize;
+  memset(stats, 0, sizeof *stats);
+  stats->bytes = sizeof(*htab);
+  stats->bytes += sizeof(struct hash_bucket) * htab->hashsize;
 
-  for (n = 0; n < htab->hashsize; n++)
+  for (n = 0; n < htab->hashsize; n++) {
     if (htab->buckets[n].key) {
       int i;
-      int len = strlen(htab->buckets[n].key);
-      bytes += len + 1;
-      entries += 1;
+      stats->bytes += htab->buckets[n].keylen + 1;
+      stats->key_length += htab->buckets[n].keylen;
+      stats->entries += 1;
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
-        if ((hash(htab->buckets[n].key, len) % htab->hashsize) == (uint32_t) n) {
-          compares[i] += 1;
+        if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) %
+             htab->hashsize) == (uint32_t) n) {
+          stats->lookups[i] += 1;
           break;
         }
       }
     }
+  }
 
-  notify_format(player,
-                "%-11s %7d %7d %7u %7u %7u %7u",
-                hname, htab->hashsize, htab->entries, compares[0], compares[1],
-                compares[2], (unsigned int) bytes);
-  if (entries != htab->entries)
-    notify_format(player, "Mismatch in size: %d expected, %d found!",
-                  htab->entries, entries);
+  if (stats->entries > 0) {
+    stats->key_length /= stats->entries;
+  }
 }

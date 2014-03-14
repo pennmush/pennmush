@@ -9,8 +9,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
+#include "notify.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -63,31 +62,29 @@
 #include <floatingpoint.h>
 #endif
 
-#include "conf.h"
-#include "mushdb.h"
-#include "externs.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "lock.h"
-#include "help.h"
-#include "match.h"
-#include "ansi.h"
-#include "pueblo.h"
-#include "parse.h"
 #include "access.h"
-#include "version.h"
-#include "mysocket.h"
-#include "strtree.h"
-#include "log.h"
-#include "mymalloc.h"
-
-#include "extchat.h"
-extern CHAN *channels;
-#include "extmail.h"
+#include "ansi.h"
 #include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
 #include "game.h"
-#include "confmagic.h"
+#include "help.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mysocket.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strtree.h"
+#include "strutil.h"
 
+extern CHAN *channels;
 
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode
@@ -120,29 +117,30 @@ extern CHAN *channels;
         for(d = descriptor_list;(d);d=(d)->next) \
           if((d)->connected)
 
-static const char *flushed_message = "\r\n<Output Flushed>\x1B[0m\r\n";
+static const char flushed_message[] = "\r\n<Output Flushed>\x1B[0m\r\n";
 
 extern DESC *descriptor_list;
 #ifdef WIN32
 static WSADATA wsadata;
 #endif
 
-static struct text_block *make_text_block(const unsigned char *s, int n);
+static struct text_block *make_text_block(const char *s, int n);
 void free_text_block(struct text_block *t);
-void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
+void add_to_queue(struct text_queue *q, const char *b, int n);
 static int flush_queue(struct text_queue *q, int n);
-int queue_write(DESC *d, const unsigned char *b, int n);
-int queue_newwrite(DESC *d, const unsigned char *b, int n);
+int queue_write(DESC *d, const char *b, int n);
+int queue_newwrite(DESC *d, const char *b, int n);
 int queue_string(DESC *d, const char *s);
 int queue_string_eol(DESC *d, const char *s);
 int queue_eol(DESC *d);
 void freeqs(DESC *d);
 int process_output(DESC *d);
+void init_text_queue(struct text_queue *q);
 
 static int str_type(const char *str);
 int notify_type(DESC *d);
 static int output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
-                             const unsigned char **ptr, char *buff, char **bp);
+                             const char **ptr, char *buff, char **bp);
 
 static int na_depth = 0; /**< Counter to prevent too much notify_anything recursion */
 
@@ -220,9 +218,9 @@ static enum na_type msg_to_na(int output_type);
 
 /** A place to store a single rendering of a message. */
 struct notify_strings {
-  unsigned char *message;  /**< The message text. */
-  size_t len;              /**< Length of message. */
-  int made;                /**< True if message has been rendered. */
+  const char *message;  /**< The message text. */
+  size_t len;           /**< Length of message. */
+  int made;             /**< True if message has been rendered. */
 };
 
 /** A message, in every possible rendering */
@@ -251,14 +249,13 @@ static void notify_internal(dbref target, dbref executor, dbref speaker,
                             struct notify_message_group *message,
                             struct notify_message *prefix, dbref loc,
                             struct format_msg *format);
-static unsigned char *make_nospoof(dbref speaker, int paranoid);
+static const char *make_nospoof(dbref speaker, int paranoid);
 static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
                             char *tbuf1);
 
-static unsigned char *notify_makestring_real(struct notify_message *message,
-                                             int output_type);
-static unsigned char *notify_makestring_nocache(unsigned char *message,
-                                                int output_type);
+static const char *notify_makestring_real(struct notify_message *message,
+                                          int output_type);
+static char *notify_makestring_nocache(const char *message, int output_type);
 
 #define notify_makestring(msg,ot) notify_makestring_real(msg,ot)
 
@@ -297,7 +294,7 @@ str_type(const char *str)
   while (*p) {
     if (*p == '\n')
       type |= MSG_PUEBLO;
-    else if (accent_table[(unsigned char) *p].base) {
+    else if (accent_table[*p].base) {
       type |= MSG_PUEBLO | MSG_STRIPACCENTS;
       break;
     }
@@ -343,7 +340,8 @@ notify_type(DESC *d)
   }
 
   /* At this point, we have a connected player on the descriptor */
-  if (IS(d->player, TYPE_PLAYER, "NOACCENTS") || (d->conn_flags & CONN_STRIPACCENTS))
+  if (IS(d->player, TYPE_PLAYER, "NOACCENTS")
+      || (d->conn_flags & CONN_STRIPACCENTS))
     type |= MSG_STRIPACCENTS;
 
   if (d->conn_flags & CONN_HTML) {
@@ -391,9 +389,9 @@ notify_type(DESC *d)
  */
 static int
 output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
-                  const unsigned char **ptr, char *buff, char **bp)
+                  const char **ptr, char *buff, char **bp)
 {
-  const unsigned char *p = *ptr;
+  const char *p = *ptr;
   int newaptr = *ansi_ptr;
   int retval = 0;
   ansi_data cur = states[*ansi_ptr];
@@ -406,7 +404,7 @@ output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
       p += 2;
       if (*p != '/') {
         newaptr++;
-        define_ansi_data(&(states[newaptr]), (const char *) p);
+        define_ansi_data(&(states[newaptr]), p);
       } else {
         if (*(p + 1) == 'a') {
           newaptr = 0;
@@ -420,7 +418,7 @@ output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
       break;
     case ESC_CHAR:
       newaptr++;
-      read_raw_ansi_data(&states[newaptr], (const char *) p);
+      read_raw_ansi_data(&states[newaptr], p);
       while (*p && *p != 'm')
         p++;
       break;
@@ -635,7 +633,7 @@ msg_to_na(int output_type)
  * \param paranoid make a paranoid nospoof prefix, instead of regular nospoof?
  * \return pointer to nospoof prefix
  */
-static unsigned char *
+static const char *
 make_nospoof(dbref speaker, int paranoid)
 {
   char *dest, *bp;
@@ -650,9 +648,9 @@ make_nospoof(dbref speaker, int paranoid)
       safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
                   Owner(speaker), Name(speaker), speaker);
   } else
-    safe_format(dest, &bp, "[%s:] ", spname(speaker));
+    safe_format(dest, &bp, "[%s:] ", spname_int(speaker, 0));
   *bp = '\0';
-  return (unsigned char *) dest;
+  return dest;
 }
 
 /** Render a string to the given format. Returns pointer to a STATIC buffer.
@@ -662,12 +660,12 @@ make_nospoof(dbref speaker, int paranoid)
  * \param output_type bitwise MSG_* flags for how to render the message
  * \return pointer to static string
  */
-unsigned char *
-render_string(unsigned char *message, int output_type)
+const char *
+render_string(const char *message, int output_type)
 {
   static char buff[BUFFER_LEN];
   static char *bp;
-  const unsigned char *p;
+  const char *p;
 
   int ansi_format = ANSI_FORMAT_NONE;
 
@@ -677,8 +675,9 @@ render_string(unsigned char *message, int output_type)
   ansifix = 0;
 
   if (output_type == MSG_INTERNAL) {
-    strcpy(buff, (char *) message);
-    return (unsigned char *) buff;
+    /* TODO: This looks really dangerous. Can't this overflow? */
+    strcpy(buff, message);
+    return buff;
   }
 
   /* Everything is explicitly off by default */
@@ -834,7 +833,7 @@ render_string(unsigned char *message, int output_type)
 
   *bp = '\0';
 
-  return (unsigned char *) buff;
+  return buff;
 
 }
 
@@ -846,11 +845,11 @@ render_string(unsigned char *message, int output_type)
  * \param output_type MSG_* flags of how to render the message
  * \return pointer to the cached, rendered string
  */
-static unsigned char *
+static const char *
 notify_makestring_real(struct notify_message *message, int output_type)
 {
   enum na_type msgtype;
-  unsigned char *newstr;
+  const char *newstr;
 
   if (output_type & MSG_PLAYER)
     output_type = (output_type & (message->type | MSG_PLAYER));
@@ -866,9 +865,8 @@ notify_makestring_real(struct notify_message *message, int output_type)
 
   /* Save the new message */
   message->strs[msgtype].made = 1;
-  message->strs[msgtype].message =
-    (unsigned char *) mush_strdup((char *) newstr, "notify_str");
-  message->strs[msgtype].len = u_strlen(newstr);
+  message->strs[msgtype].message = mush_strdup(newstr, "notify_str");
+  message->strs[msgtype].len = strlen(newstr);
 
   return message->strs[msgtype].message;
 
@@ -882,12 +880,10 @@ notify_makestring_real(struct notify_message *message, int output_type)
  * \param output_type MSG_* flags of how to render the msg
  * \return pointer to the newly rendered, strdup()'d string
  */
-static unsigned char *
-notify_makestring_nocache(unsigned char *message, int output_type)
+static char *
+notify_makestring_nocache(const char *message, int output_type)
 {
-  return (unsigned char *) mush_strdup((char *)
-                                       render_string(message, output_type),
-                                       "notify_str");
+  return mush_strdup(render_string(message, output_type), "notify_str");
 }
 
 /* notify_except() is #define'd to notify_except2() */
@@ -953,7 +949,7 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
   /* Do it */
   if (message && *message) {
     init_notify_message_group(&real_message);
-    real_message.messages.strs[0].message = (unsigned char *) message;
+    real_message.messages.strs[0].message = message;
     real_message.messages.strs[0].made = 1;
     real_message.messages.strs[0].len = strlen(message);
     real_message.messages.type = str_type(message);
@@ -1017,7 +1013,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
     int i;
 
     real_prefix = mush_malloc(sizeof(struct notify_message), "notify_message");
-    real_prefix->strs[0].message = (unsigned char *) prefix;
+    real_prefix->strs[0].message = prefix;
     real_prefix->strs[0].made = 1;
     real_prefix->strs[0].len = strlen(prefix);
     real_prefix->type = str_type(prefix);
@@ -1058,7 +1054,6 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
 }
 
 #define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
-#define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
 #define PROPAGATE_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | (na_flags & (NA_RELAY_ONCE | NA_NORELAY) ? NA_NORELAY : NA_RELAY_ONCE)) & ~NA_PROMPT)
 
 
@@ -1088,14 +1083,14 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 {
   int output_type = MSG_INTERNAL; /**< The way to render the message for the current target/descriptor */
   int last_output_type = -1; /**< For players, the way the msg was rendered for the previous descriptor */
-  unsigned char *spoofstr = NULL; /**< Pointer to the rendered nospoof prefix to use */
+  const char *spoofstr = NULL; /**< Pointer to the rendered nospoof prefix to use */
   int spooflen = 0; /**< Length of the rendered nospoof prefix */
-  unsigned char *msgstr = NULL; /**< Pointer to the rendered message */
+  const char *msgstr = NULL; /**< Pointer to the rendered message */
   int msglen = 0; /**< Length of the rendered message */
-  unsigned char *prefixstr = NULL;
+  const char *prefixstr = NULL;
   int prefixlen = 0;
   static char buff[BUFFER_LEN], *bp; /**< Buffer used for processing the format attr */
-  unsigned char *formatmsg = NULL; /**< Pointer to the rendered, formatted message. Must be free()d! */
+  char *formatmsg = NULL; /**< Pointer to the rendered, formatted message. Must be free()d! */
   int cache = 1; /**< Are we using a cached version of the message? */
   int prompt = 0; /**< Show a prompt? */
   int heard = 1; /**< After formatting, did this object hear something? */
@@ -1125,14 +1120,14 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       if (!d->connected || d->player != target
           || !(d->conn_flags & CONN_TELNET))
         continue;
-      queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
+      queue_newwrite(d, "\xFF\xF9", 2);
 
       if ((d->conn_flags & CONN_PROMPT_NEWLINES)) {
         /* send lineending */
         if ((output_type & MSG_PUEBLO)) {
-          queue_newwrite(d, (unsigned char *) "\n", 1);
+          queue_newwrite(d, "\n", 1);
         } else {
-          queue_newwrite(d, (unsigned char *) "\r\n", 2);
+          queue_newwrite(d, "\r\n", 2);
         }
       }
     }                           /* for loop */
@@ -1206,7 +1201,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
           /* Figure out */
           if (!prefixstr || output_type != last_output_type) {
             prefixstr = notify_makestring(prefix, output_type);
-            prefixlen = u_strlen(prefixstr);
+            prefixlen = strlen(prefixstr);
           }
         } else {
           prefixlen = 0;
@@ -1222,23 +1217,23 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
               message->paranoids.strs[0].message = make_nospoof(speaker, 1);
               message->paranoids.strs[0].made = 1;
               message->paranoids.strs[0].len =
-                u_strlen(message->paranoids.strs[0].message);
+                strlen(message->paranoids.strs[0].message);
               message->paranoids.type =
                 str_type((const char *) message->paranoids.strs[0].message);
             }
             spoofstr = notify_makestring(&message->paranoids, output_type);
-            spooflen = u_strlen(spoofstr);
+            spooflen = strlen(spoofstr);
           } else {
             if (!message->nospoofs.strs[0].made) {
               message->nospoofs.strs[0].message = make_nospoof(speaker, 0);
               message->nospoofs.strs[0].made = 1;
               message->nospoofs.strs[0].len =
-                u_strlen(message->nospoofs.strs[0].message);
+                strlen(message->nospoofs.strs[0].message);
               message->nospoofs.type =
                 str_type((const char *) message->nospoofs.strs[0].message);
             }
             spoofstr = notify_makestring(&message->nospoofs, output_type);
-            spooflen = u_strlen(spoofstr);
+            spooflen = strlen(spoofstr);
           }
         } else {
           spooflen = 0;
@@ -1252,10 +1247,9 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
             } else {
               if (formatmsg)
                 mush_free(formatmsg, "notify_str");
-              msgstr = formatmsg =
-                notify_makestring_nocache((unsigned char *) buff, output_type);
+              msgstr = formatmsg = notify_makestring_nocache(buff, output_type);
             }
-            msglen = u_strlen(msgstr);
+            msglen = strlen(msgstr);
           }
           last_output_type = output_type;
 
@@ -1270,7 +1264,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 
         prompt = ((flags & NA_PROMPT) && (d->conn_flags & CONN_TELNET));
         if (prompt) {           /* send prompt */
-          queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
+          queue_newwrite(d, "\xFF\xF9", 2);
         }
 
         if ((!(flags & NA_NOENTER) && msglen && heard && !prompt)
@@ -1278,11 +1272,11 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
           /* send lineending */
           if ((output_type & MSG_PUEBLO)) {
             if (flags & NA_NOPENTER)
-              queue_newwrite(d, (unsigned char *) "\n", 1);
+              queue_newwrite(d, "\n", 1);
             else
-              queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
+              queue_newwrite(d, "<BR>\n", 5);
           } else {
-            queue_newwrite(d, (unsigned char *) "\r\n", 2);
+            queue_newwrite(d, "\r\n", 2);
           }
         }
       }                         /* for loop */
@@ -1342,8 +1336,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if (cache)
       msgstr = notify_makestring(&message->messages, MSG_INTERNAL);
     else
-      msgstr = formatmsg =
-        notify_makestring_nocache((unsigned char *) buff, MSG_INTERNAL);
+      msgstr = formatmsg = notify_makestring_nocache(buff, MSG_INTERNAL);
 
     if (prefix) {
       /* Add the prefix to the beginning */
@@ -1370,10 +1363,10 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
         if (AF_Regexp(a)
             ? regexp_match_case_r(atrval, fullmsg,
                                   AF_Case(a), lenv, MAX_STACK_ARGS,
-                                  match_space, match_space_len, NULL)
+                                  match_space, match_space_len, NULL, 0)
             : wild_match_case_r(atrval, fullmsg,
                                 AF_Case(a), lenv, MAX_STACK_ARGS,
-                                match_space, match_space_len, NULL)) {
+                                match_space, match_space_len, NULL, 0)) {
           if (!listen_lock_checked)
             listen_lock_passed = eval_lock(speaker, target, Listen_Lock);
           if (listen_lock_passed) {
@@ -1608,7 +1601,7 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
 slab *text_block_slab = NULL; /**< Slab for 'struct text_block' allocations */
 
 static struct text_block *
-make_text_block(const unsigned char *s, int n)
+make_text_block(const char *s, int n)
 {
   struct text_block *p;
   if (text_block_slab == NULL) {
@@ -1661,7 +1654,7 @@ init_text_queue(struct text_queue *q)
  * \param n length of text to add.
  */
 void
-add_to_queue(struct text_queue *q, const unsigned char *b, int n)
+add_to_queue(struct text_queue *q, const char *b, int n)
 {
   struct text_block *p;
 
@@ -1698,7 +1691,7 @@ flush_queue(struct text_queue *q, int n)
 #endif                          /* DEBUG */
     free_text_block(p);
   }
-  p = make_text_block((unsigned char *) flushed_message, flen);
+  p = make_text_block(flushed_message, flen);
   p->nxt = q->head;
   q->head = p;
   if (!q->tail)
@@ -1725,7 +1718,7 @@ ssl_flush_queue(struct text_queue *q)
     q->tail = q->head;
     /* Set up the flushed message if we can */
     if (q->head->nchars + n < MAX_OUTPUT)
-      add_to_queue(q, (unsigned char *) flushed_message, n);
+      add_to_queue(q, flushed_message, n);
     /* Return the total size of the message */
     return q->head->nchars + n;
   }
@@ -1740,10 +1733,10 @@ ssl_flush_queue(struct text_queue *q)
  * \return number of characters added.
  */
 int
-queue_write(DESC *d, const unsigned char *b, int n)
+queue_write(DESC *d, const char *b, int n)
 {
   char buff[BUFFER_LEN];
-  unsigned char *s;
+  const char *s;
   int output_type;
   PUEBLOBUFF;
   size_t len;
@@ -1763,11 +1756,11 @@ queue_write(DESC *d, const unsigned char *b, int n)
     PUSE;
     tag_wrap("SAMP", NULL, buff);
     PEND;
-    s = render_string((unsigned char *) pbuff, output_type);
+    s = render_string(pbuff, output_type);
   } else {
-    s = render_string((unsigned char *) buff, output_type);
+    s = render_string(buff, output_type);
   }
-  len = u_strlen(s);
+  len = strlen(s);
   queue_newwrite(d, s, len);
 
   return len;
@@ -1782,7 +1775,7 @@ queue_write(DESC *d, const unsigned char *b, int n)
  * \return number of characters added.
  */
 int
-queue_newwrite(DESC *d, const unsigned char *b, int n)
+queue_newwrite(DESC *d, const char *b, int n)
 {
   int space;
 
@@ -1832,9 +1825,9 @@ int
 queue_eol(DESC *d)
 {
   if ((d->conn_flags & CONN_HTML))
-    return queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
+    return queue_newwrite(d, "<BR>\n", 5);
   else
-    return queue_newwrite(d, (unsigned char *) "\r\n", 2);
+    return queue_newwrite(d, "\r\n", 2);
 }
 
 /** Add a string and an end-of-line to a descriptor's text queue.
@@ -1858,13 +1851,13 @@ queue_string_eol(DESC *d, const char *s)
 int
 queue_string(DESC *d, const char *s)
 {
-  unsigned char *rendered;
+  const char *rendered;
   int output_type;
   int ret;
 
   output_type = notify_type(d);
-  rendered = render_string((unsigned char *) s, output_type);
-  ret = queue_newwrite(d, rendered, u_strlen(rendered));
+  rendered = render_string(s, output_type);
+  ret = queue_newwrite(d, rendered, strlen(rendered));
 
   return ret;
 }

@@ -6,23 +6,24 @@
  *
  */
 
-#include "config.h"
+#include "atr_tab.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "atr_tab.h"
-#include "ptab.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "dbdefs.h"
-#include "log.h"
-#include "parse.h"
-#include "confmagic.h"
+
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "parse.h"
+#include "privtab.h"
+#include "ptab.h"
+#include "strutil.h"
 
 extern const unsigned char *tables;
 
@@ -138,6 +139,8 @@ static ATTR *aname_find_exact(const char *name);
 static ATTR *attr_read(PENNFILE *f);
 static ATTR *attr_alias_read(PENNFILE *f, char *alias);
 
+const char *display_attr_limit(ATTR *ap);
+
 void init_aname_table(void);
 
 /** Attribute table lookup by name or alias.
@@ -222,12 +225,12 @@ attr_read(PENNFILE *f)
     a->data = NULL_CHUNK_REFERENCE;
   } else if (AL_FLAGS(a) & AF_ENUM) {
     /* Store string as it is */
-    unsigned char *t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(tmp);
+    a->data = chunk_create(t, strlen(t), 0);
     free(t);
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
-    unsigned char *t;
+    char *t;
     pcre *re;
     const char *errptr;
     int erroffset;
@@ -242,7 +245,7 @@ attr_read(PENNFILE *f)
     pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    a->data = chunk_create(t, strlen(t), 0);
     free(t);
   }
 
@@ -686,8 +689,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
                     T("%s -- Attribute limit or enum already unset."), name);
     }
   } else {
-    unsigned char *t = compress(buff);
-    ap->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(buff);
+    ap->data = chunk_create(t, strlen(t), 0);
     free(t);
     ap->flags |= type;
     notify_format(player,
@@ -782,6 +785,31 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
                 privs_to_string(attr_privs_view, flags));
 }
 
+/** Add a new attribute. Called from db.c to add new attributes
+ * to older databases which have their own attr table.
+ * \param name name of attr to add
+ * \param flags attribute flags (AF_*)
+ */
+void
+add_new_attr(char *name, uint32_t flags)
+{
+  ATTR *ap;
+  ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
+  if (ap || !good_atr_name(name))
+    return;
+
+  ap = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
+  if (!ap) {
+    do_log(LT_ERR, 0, 0, "add_new_attr: unable to malloc ATTR");
+    return;
+  }
+  AL_NAME(ap) = strdup(name);
+  ap->data = NULL_CHUNK_REFERENCE;
+  AL_FLAGS(ap) = flags;
+  AL_CREATOR(ap) = 0;
+  ptab_insert_one(&ptab_attrib, name, ap);
+
+}
 
 /** Delete an attribute from the attribute table.
  * \verbatim

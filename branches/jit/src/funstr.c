@@ -5,29 +5,31 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
 #include <locale.h>
 #include <stddef.h>
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "case.h"
-#include "match.h"
-#include "parse.h"
-#include "pueblo.h"
 #include "attrib.h"
-#include "flags.h"
+#include "case.h"
+#include "conf.h"
 #include "dbdefs.h"
-#include "mushdb.h"
+#include "externs.h"
+#include "flags.h"
 #include "htab.h"
 #include "lock.h"
+#include "markup.h"
+#include "match.h"
+#include "mushdb.h"
+#include "notify.h"
+#include "parse.h"
+#include "pueblo.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 
 #ifdef WIN32
@@ -42,7 +44,8 @@ static int align_one_line(char *buff, char **bp, int ncols,
                           ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                           int linenum, char *fieldsep, int fslen, char *linesep,
                           int lslen, char filler);
-static int comp_gencomp(dbref executor, char *left, char *right, char *type);
+static int comp_gencomp(dbref executor, char *left, char *right,
+                        const char *type);
 void init_pronouns(void);
 
 /** Return an indicator of a player's gender.
@@ -135,7 +138,7 @@ FUNCTION(fun_isword)
     return;
   }
   for (p = args[0]; *p; p++) {
-    if (!isalpha((unsigned char) *p)) {
+    if (!isalpha(*p)) {
       safe_chr('0', buff, bp);
       return;
     }
@@ -433,7 +436,7 @@ FUNCTION(fun_str_rep_or_ins)
 extern int sort_order;          /* from sort.c */
 
 static int
-comp_gencomp(dbref executor, char *left, char *right, char *type)
+comp_gencomp(dbref executor, char *left, char *right, const char *type)
 {
   int c;
   c = gencomp(executor, left, right, type);
@@ -547,7 +550,7 @@ FUNCTION(fun_strmatch)
 
   if (nargs > 2) {
     matches = wild_match_case_r(args[1], args[0], 0, ret,
-                                NUMQ, match_space, match_space_len, NULL);
+                                NUMQ, match_space, match_space_len, NULL, 0);
     safe_boolean(matches, buff, bp);
 
     if (matches) {
@@ -563,7 +566,7 @@ FUNCTION(fun_strmatch)
       }
     }
   } else {
-    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0, NULL);
+    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0, NULL, 0);
     safe_boolean(matches, buff, bp);
   }
 }
@@ -606,10 +609,10 @@ FUNCTION(fun_merge)
 
   /* find the characters to look for */
   if (!args[2] || !*args[2])
-    matched[(unsigned char) ' '] = 1;
+    matched[' '] = 1;
   else {
-    unsigned char *p;
-    for (p = (unsigned char *) remove_markup(args[2], &len); p && *p; p++)
+    char *p;
+    for (p = remove_markup(args[2], &len); p && *p; p++)
       matched[*p] = 1;
   }
 
@@ -641,9 +644,9 @@ FUNCTION(fun_merge)
       safe_chr(*(ptr++), buff, bp);
       break;
     default:
-      if (matched[(unsigned char) *ptr]) {
+      if (matched[*ptr]) {
         j = 0;
-        while (*ptr && matched[(unsigned char) *ptr]) {
+        while (*ptr && matched[*ptr]) {
           ptr++;
           j++;
         }
@@ -671,7 +674,7 @@ FUNCTION(fun_tr)
   char instr[BUFFER_LEN], outstr[BUFFER_LEN];
   char *ip, *op;
   size_t i, len;
-  unsigned char cur, dest;
+  char cur, dest;
   char *c;
   ansi_string *as;
 
@@ -687,7 +690,7 @@ FUNCTION(fun_tr)
   ip = instr;
   c = remove_markup(args[1], NULL);
   while (*c) {
-    cur = (unsigned char) *c;
+    cur = *c;
     if (!goodchr(cur)) {
       safe_str(T("#-1 TR CANNOT ACCEPT NONPRINTING CHARS"), buff, bp);
       return;
@@ -695,7 +698,7 @@ FUNCTION(fun_tr)
     /* Tack it onto the string */
     /* Do we have a range? */
     if (*(c + 1) && *(c + 1) == '-' && *(c + 2)) {
-      dest = (unsigned char) *(c + 2);
+      dest = *(c + 2);
       if (!goodchr(dest)) {
         safe_str(T("#-1 TR CANNOT ACCEPT NONPRINTING CHARS"), buff, bp);
         return;
@@ -725,7 +728,7 @@ FUNCTION(fun_tr)
   op = outstr;
   c = remove_markup(args[2], NULL);
   while (*c) {
-    cur = (unsigned char) *c;
+    cur = *c;
     if (!goodchr(cur)) {
       safe_str(T("#-1 TR CANNOT ACCEPT NONPRINTING CHARS"), buff, bp);
       return;
@@ -733,7 +736,7 @@ FUNCTION(fun_tr)
     /* Tack it onto the string */
     /* Do we have a range? */
     if (*(c + 1) && *(c + 1) == '-' && *(c + 2)) {
-      dest = (unsigned char) *(c + 2);
+      dest = *(c + 2);
       if (!goodchr(dest)) {
         safe_str(T("#-1 TR CANNOT ACCEPT NONPRINTING CHARS"), buff, bp);
         return;
@@ -766,13 +769,13 @@ FUNCTION(fun_tr)
   len = ip - instr;
 
   for (i = 0; i < len; i++)
-    charmap[(unsigned char) instr[i]] = outstr[i];
+    charmap[instr[i]] = outstr[i];
 
   /* walk the string, translating characters */
   as = parse_ansi_string(args[0]);
   len = as->len;
   for (i = 0; i < len; i++) {
-    as->text[i] = charmap[(unsigned char) as->text[i]];
+    as->text[i] = charmap[as->text[i]];
   }
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
@@ -896,9 +899,21 @@ FUNCTION(fun_ljust)
     spaces = BUFFER_LEN - 1;
 
   if (len >= spaces) {
-    safe_strl(args[0], arglens[0], buff, bp);
+    /* Check to see if we should truncate */
+    if (nargs > 3 && parse_boolean(args[3])) {
+      if (has_markup(args[0])) {
+        as = parse_ansi_string(args[0]);
+        safe_ansi_string(as, 0, spaces, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_strl(args[0], spaces, buff, bp);
+      }
+    } else {
+      safe_strl(args[0], arglens[0], buff, bp);
+    }
     return;
   }
+
   spaces -= len;
 
   if (!args[2] || !*args[2]) {
@@ -947,9 +962,21 @@ FUNCTION(fun_rjust)
     spaces = BUFFER_LEN - 1;
 
   if (len >= spaces) {
-    safe_strl(args[0], arglens[0], buff, bp);
+    /* Check to see if we should truncate */
+    if (nargs > 3 && parse_boolean(args[3])) {
+      if (has_markup(args[0])) {
+        as = parse_ansi_string(args[0]);
+        safe_ansi_string(as, as->len - spaces, as->len, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_strl(args[0], spaces, buff, bp);
+      }
+    } else {
+      safe_strl(args[0], arglens[0], buff, bp);
+    }
     return;
   }
+
   spaces -= len;
 
   if (!args[2] || !*args[2]) {
@@ -1170,9 +1197,9 @@ FUNCTION(fun_secure)
    * "unsafe" characters are defined by the escaped_chars table.
    * these characters get replaced by spaces
    */
-  unsigned char *p;
+  char *p;
 
-  for (p = (unsigned char *) args[0]; *p; p++)
+  for (p = args[0]; *p; p++)
     if (escaped_chars[*p])
       *p = ' ';
 
@@ -1182,12 +1209,12 @@ FUNCTION(fun_secure)
 /* ARGSUSED */
 FUNCTION(fun_escape)
 {
-  unsigned char *s;
+  char *s;
 
   if (arglens[0]) {
     safe_chr('\\', buff, bp);
-    for (s = (unsigned char *) args[0]; *s; s++) {
-      if ((s != (unsigned char *) args[0]) && escaped_chars[*s])
+    for (s = args[0]; *s; s++) {
+      if ((s != args[0]) && escaped_chars[*s])
         safe_chr('\\', buff, bp);
       safe_chr((char) *s, buff, bp);
     }
@@ -1249,11 +1276,11 @@ FUNCTION(fun_trim)
   if (nargs > trim_char_arg && args[trim_char_arg] && *args[trim_char_arg]) {
     delims = args[trim_char_arg];
     while (*delims) {
-      totrim[(unsigned char) *delims] = 1;
+      totrim[*delims] = 1;
       delims++;
     }
   } else {
-    totrim[(unsigned char) ' '] = 1;
+    totrim[' '] = 1;
   }
 
   /* We will never need to check for buffer length overrunning, since
@@ -1265,11 +1292,11 @@ FUNCTION(fun_trim)
   s = 0;
   e = as->len;
   if (trim != TRIM_LEFT) {
-    while (e > 0 && totrim[(unsigned char) as->text[e - 1]])
+    while (e > 0 && totrim[as->text[e - 1]])
       e--;
   }
   if (trim != TRIM_RIGHT) {
-    while (s < e && totrim[(unsigned char) as->text[s]])
+    while (s < e && totrim[as->text[s]])
       s++;
   }
   safe_ansi_string(as, s, e - s, buff, bp);
@@ -1369,7 +1396,7 @@ FUNCTION(fun_beep)
     k = 1;
 
   if ((k <= 0) || (k > 5)) {
-    safe_str(T(e_perm), buff, bp);
+    safe_str(T(e_range), buff, bp);
     return;
   }
   safe_fill(BEEP_CHAR, k, buff, bp);
@@ -1384,7 +1411,7 @@ FUNCTION(fun_ord)
     return;
   }
 
-  c = (unsigned char) args[0][0];
+  c = args[0][0];
 
   if (isprint(c)) {
     safe_integer(c, buff, bp);
@@ -1424,8 +1451,8 @@ FUNCTION(fun_stripaccents)
 {
   int n;
   for (n = 0; n < arglens[0]; n++) {
-    if (accent_table[(unsigned char) args[0][n]].base)
-      safe_str(accent_table[(unsigned char) args[0][n]].base, buff, bp);
+    if (accent_table[args[0][n]].base)
+      safe_str(accent_table[args[0][n]].base, buff, bp);
     else
       safe_chr(args[0][n], buff, bp);
   }
@@ -1529,7 +1556,7 @@ wraplen(char *str, size_t maxlen)
       return i;
     else if ((str[i] == '\n') || (str[i] == '\r'))
       return i;
-    else if ((str[i] == ' '))
+    else if (str[i] == ' ')
       last = i;
   }
 
@@ -1720,7 +1747,7 @@ align_one_line(char *buff, char **bp, int ncols,
     for (len = 0, ptr = ptrs[i], lastspace = NULL; len < cols[i]; ptr++, len++) {
       if ((!*ptr) || (*ptr == '\n'))
         break;
-      if (isspace((unsigned char) *ptr)) {
+      if (isspace(*ptr)) {
         lastspace = ptr;
       }
     }
@@ -1745,8 +1772,7 @@ align_one_line(char *buff, char **bp, int ncols,
 
       ptr = lastspace;
       skipspace = 1;
-      for (tptr = ptr;
-           *tptr && tptr >= ptrs[i] && isspace((unsigned char) *tptr); tptr--) ;
+      for (tptr = ptr; *tptr && tptr >= ptrs[i] && isspace(*tptr); tptr--) ;
       len = (tptr - ptrs[i]) + 1;
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
@@ -1833,9 +1859,7 @@ align_one_line(char *buff, char **bp, int ncols,
     if (i < (ncols - 1) && fslen)
       safe_str(fieldsep, line, &lp);
     if (skipspace)
-      for (;
-           *ptrs[i] && (*ptrs[i] != '\n') && isspace((unsigned char) *ptrs[i]);
-           ptrs[i]++) ;
+      for (; *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]); ptrs[i]++) ;
   }
 
   if (cols_done == ncols)
@@ -1877,7 +1901,7 @@ FUNCTION(fun_align)
   /* Get column widths */
   ncols = 0;
   for (ptr = args[0]; *ptr; ptr++) {
-    while (isspace((unsigned char) *ptr))
+    while (isspace(*ptr))
       ptr++;
     if (*ptr == '>') {
       calign[ncols] = AL_RIGHT;
@@ -1894,17 +1918,17 @@ FUNCTION(fun_align)
     } else if (*ptr == '=') {
       calign[ncols] = AL_WPFULL;
       ptr++;
-    } else if (isdigit((unsigned char) *ptr)) {
+    } else if (isdigit(*ptr)) {
       calign[ncols] = AL_LEFT;
     } else {
       safe_str(T("#-1 INVALID ALIGN STRING"), buff, bp);
       return;
     }
-    for (i = 0; *ptr && isdigit((unsigned char) *ptr); ptr++) {
+    for (i = 0; *ptr && isdigit(*ptr); ptr++) {
       i *= 10;
       i += *ptr - '0';
     }
-    while (*ptr && !isspace((unsigned char) *ptr)) {
+    while (*ptr && !isspace(*ptr)) {
       switch (*ptr) {
       case '.':
         calign[ncols] |= AL_REPEAT;
@@ -2290,6 +2314,5 @@ FUNCTION(fun_render)
   if (!flags)
     safe_str(remove_markup(args[0], NULL), buff, bp);
   else
-    safe_str((char *) render_string((unsigned char *) args[0], flags), buff,
-             bp);
+    safe_str(render_string(args[0], flags), buff, bp);
 }

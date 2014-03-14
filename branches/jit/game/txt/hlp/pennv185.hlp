@@ -1,4 +1,4 @@
-& 1.8.5p4
+& 1.8.5p5
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,123 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.5 patchlevel 5                                 Nov 20, 2013
+
+Commands:
+ * Added @moniker, to allow colored names. See 'help monikers' for more.
+   Requested by Mikoto Misaka. Idea from [MUX]. [MG]
+ * After a year of deprecation, @emit/room has been removed as an alias for
+   @lemit. [MG]
+ * @chan/list now takes /on and /off switches, to filter the channels shown,
+   and a /quiet switch to give a less verbose output. From a suggestion by
+   Fraibert. [MG]
+ * @trigger now takes a /spoof switch, which preserves the enactor. [MG]
+ * New @hook/extend, which allows adding new functionality to built-in
+   commands via softcode, while preserving the original command. [MG] [Rhost]
+
+Major changes:
+ * Regexp $-commands can now used name captures. They can be accessed via
+   r(<name>, args). Suggested by Mercutio. [MG]
+
+Hardcode:
+ * A number of changes have been made to accomodate monikers. Notably, a lot
+   of calls to the Name() macro now use the AName() macro. See the 
+   HACKING.185 file for more info. [MG]
+ * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
+   and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
+   flag to determine how matching subpatterns are stored in pe_regs. [MG]
+ * add_flag_generic() now returns an enum, and takes an additional final
+   pointer arg, where the new flag will be stored. add_flag() and add_power()
+   pass this pointer as NULL. [MG]
+ * Improve heuristics used for resizing the flagcache hash table. [DC]
+ * Update hashing functions used by various hash table implementations. [DC]
+
+Fixes:
+ * Commands which take multiple right-hand-side arguments could only have
+   8191-length arguments, instead of the usual 8192. Reported by Jules. [MG]
+ * It was possible to return non-printable characters from an SQL database,
+   which could cause undefined weirdness. Reported by spork. [MG]
+ * Many things which listed attributes from a parent, like lattrp() or
+   examine/parent, didn't respect no_inherit fully. [MG]
+ * Minor crashbug in @boot fixed. Reported by thomaswdyoung. [MG]
+ * @grep now ignores ansi when looking for a value. Suggested by Mouvar. [MG]
+ * colors() now complains when the color is 'n', 'd' or 'D', since they
+   have no actual color value. Reported by spork. [MG]
+ * Buffer overflow bug in ansi() fixed. Reported by tsen. [MG]
+ * Flag corruption issue due to incorrect flagset refcounts fixed. [DC]
+ * When a player was nuked, any @mail they had filed into another folder
+   would be retained, and visible to a new player created later with the
+   same dbref. Reported by Valkyrie. [MG]
+ * Crashbug in @message. Reported by Yuriko. [MG]
+ * linsert(,1,foo) now returns "foo", like it always used to, instead of
+   returning an empty list. [MG]
+ * SSL connections which had not yet logged into a player weren't always
+   fully cleaned up. Patch by Fraibert.
+ * channels() could include an extra delimiter in some cases. Reported by 
+   Mouvar. [MG]
+ * Translations weren't working in the chat system. Reported by Riorgan. [MG]
+
+Minor changes:
+ * strreplace() now works harder to keep existing ANSI intact, when you
+   replace an un-ansi'd string into an ansi'd one. [MG]
+ * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
+   when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
+ * New substitution, %k, returns the enactor's monikered name. [MUX] [MG]
+ * Help fixes and tweaks. [MG]
+ * PennMUSH can now read MUX-style passwords, to make moving dbs from MUX
+   to Penn less painful. Requested by Muse. [MG]
+ * Commands are no longer queued for HALTed non-players. (Since they'd be
+   dropped from the queue anyway, rather than being run, it saves us jumping
+   through a series of hoops for no good reason.) From a report by Muse and
+   Ashen-Shugar. [MG]
+ * The connect-screen WHO now shows moniker'd (ansi'd) names, if so 
+   configured. Requested by Trinsec. [MG]
+ * @mapsql and mapsql()'s attributes now receives named arguments. That is,
+   '@mapsql me/foo=SELECT bar FROM table' receives the value of the 'bar'
+   field as both %1 and [r(bar,args)]. [MG]
+ * Wizards can now give players names with spaces, even when the 
+   player_name_spaces option is off. Suggested by Paige. [MG]
+ * Removed the last traces of the 'events' help-style command. Noone ever
+   uses it, and we removed the helpfiles for it ages ago when the Event 
+   System was added, anyway. [MG]
+ * Updated the README for adding help-style commands, with clearer examples.
+   Requested by AnnePearn. [MG]
+ * Per-player mail limits can be set with @mailquota, to override the
+   mail_limit @config option selectively. Suggested by Ricochet. [MG]
+ * Attempting to create a character (at the login screen or via @pcreate)
+   is now specific about whether the name is already in use or invalid,
+   rather than leaving you guessing. [MG]
+ * Likewise, when failing to connect, the login screen tells you whether
+   there is no such player, or whether the password is wrong. [MG]
+ * beep() now returns out of range, instead of permission denied, when given
+   an arg which is not between 1 and 5. [MG]
+ * When an evaluation @search hits the CPU limit, it will now tell you which
+   object it failed on, to make it easier for you to continue with a partial 
+   search. [MG]
+ * Players are now warned when setting an unanchored regexp $-command, as
+   this is often an oversight which is problematic to track down later. [MG]
+ * More effort now goes into checking whether an attribute contains a valid
+   $-command when it's set, to avoid doing so unnecessarily during command
+   matching; the latter happens a lot more often. [MG]
+   
+Functions:
+ * delete(), replace() and insert() have been renamed to strdelete(), 
+   lreplace() and linsert(), respectively, for clarity and conformity. The
+   original names remain as aliases. [MG]
+ * moniker(<object>) returns an objects monikered name. [MUX] [MG]
+ * mapsql() only stored 10 columns, instead of the advertised 30. Reported
+   by Mercutio. [MG]
+ * fn() now takes an <obj>/ prefix to its first arg, to evaluate the built-in
+   function as <obj>. Useful when overriding side-effect functions. [MG]
+ * r() now takes two arguments, allowing it to return the stack (%0-%9),
+   itext() and stext() values, as well as q-registers(). [MG]
+ * Mortals can now use playermem() and objmem() on their own objects.
+   Suggested by Paige. [MG]
+ * ljust() and rjust() now take an optional <trunc?> arg which, if true,
+   causes strings already longer than <len> to be truncated. Suggested by
+   many people over the years, most recently Eratl and Quasar. [MG]
+
+& 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 
 Major changes:

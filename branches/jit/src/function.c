@@ -5,30 +5,30 @@
  *
  *
  */
-#include "copyrite.h"
 
-#include "config.h"
+#include "copyrite.h"
+#include "function.h"
+
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "dbdefs.h"
-#include "mushdb.h"
-#include "function.h"
-#include "match.h"
-#include "htab.h"
-#include "parse.h"
-#include "lock.h"
-#include "flags.h"
-#include "game.h"
-#include "mymalloc.h"
-#include "sort.h"
-#include "funs.h"
-#include "confmagic.h"
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "funs.h"
+#include "game.h"
+#include "htab.h"
+#include "lock.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "sort.h"
+#include "strutil.h"
 
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);
@@ -149,6 +149,10 @@ FUNALIAS faliases[] = {
   {"HOST", "HOSTNAME"},
   {"FLIP", "REVERSE"},
   {"E", "EXP"},
+  {"STRDELETE", "DELETE"},
+  {"LREPLACE", "REPLACE"},
+  {"LINSERT", "INSERT"},
+  {"MONIKER", "CNAME"},         /* Rhost alias */
   {NULL, NULL}
 };
 
@@ -242,7 +246,7 @@ FUNTAB flist[] = {
   {"DECOMPOSE", fun_decompose, 1, -1, FN_REG},
   {"DECRYPT", fun_decrypt, 2, 3, FN_REG},
   {"DEFAULT", fun_default, 2, INT_MAX, FN_NOPARSE},
-  {"DELETE", fun_delete, 3, 3, FN_REG},
+  {"STRDELETE", fun_delete, 3, 3, FN_REG},
   {"DIE", fun_die, 2, 3, FN_REG | FN_STRIPANSI},
   {"DIG", fun_dig, 1, 6, FN_REG},
   {"DIGEST", fun_digest, 1, -2, FN_REG},
@@ -313,7 +317,7 @@ FUNTAB flist[] = {
   {"INAME", fun_iname, 1, 1, FN_REG | FN_STRIPANSI},
   {"INC", fun_inc, 1, 1, FN_REG | FN_STRIPANSI},
   {"INDEX", fun_index, 4, 4, FN_REG},
-  {"INSERT", fun_insert, 3, 4, FN_REG},
+  {"LINSERT", fun_insert, 3, 4, FN_REG},
   {"INUM", fun_inum, 1, 1, FN_REG | FN_STRIPANSI},
   {"IPADDR", fun_ipaddr, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISDAYLIGHT", fun_isdaylight, 0, 0, FN_REG},
@@ -342,7 +346,7 @@ FUNTAB flist[] = {
   {"LIST", fun_list, 1, 2, FN_REG | FN_STRIPANSI},
   {"LISTQ", fun_listq, 0, 1, FN_REG | FN_STRIPANSI},
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
-  {"LJUST", fun_ljust, 2, 3, FN_REG},
+  {"LJUST", fun_ljust, 2, 4, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LLOCKS", fun_locks, 0, 1, FN_REG | FN_STRIPANSI},
   {"LMATH", fun_lmath, 2, 3, FN_REG | FN_STRIPANSI},
@@ -408,6 +412,7 @@ FUNTAB flist[] = {
   {"MWHO", fun_lwho, 0, 0, FN_REG | FN_STRIPANSI},
   {"MWHOID", fun_lwho, 0, 0, FN_REG | FN_STRIPANSI},
   {"NAME", fun_name, 1, 2, FN_REG | FN_STRIPANSI},
+  {"MONIKER", fun_moniker, 1, 1, FN_REG | FN_STRIPANSI},
   {"NAMELIST", fun_namelist, 1, 2, FN_REG},
   {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG},
   {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG},
@@ -474,7 +479,7 @@ FUNTAB flist[] = {
   {"PROMPT", fun_prompt, 2, -2, FN_REG},
   {"PUEBLO", fun_pueblo, 1, 1, FN_REG | FN_STRIPANSI},
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
-  {"R", fun_r, 1, 1, FN_REG | FN_STRIPANSI},
+  {"R", fun_r, 1, 2, FN_REG | FN_STRIPANSI},
   {"RAND", fun_rand, 0, 2, FN_REG | FN_STRIPANSI},
   {"RANDWORD", fun_randword, 1, 2, FN_REG},
   {"RECV", fun_recv, 1, 1, FN_REG | FN_STRIPANSI},
@@ -506,13 +511,13 @@ FUNTAB flist[] = {
   {"REMOVE", fun_remove, 2, 3, FN_REG},
   {"RENDER", fun_render, 2, 2, FN_REG},
   {"REPEAT", fun_repeat, 2, 2, FN_REG},
-  {"REPLACE", fun_ldelete, 3, 5, FN_REG},
+  {"LREPLACE", fun_ldelete, 3, 5, FN_REG},
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},
   {"REVWORDS", fun_revwords, 1, 3, FN_REG},
   {"RIGHT", fun_right, 2, 2, FN_REG},
-  {"RJUST", fun_rjust, 2, 3, FN_REG},
+  {"RJUST", fun_rjust, 2, 4, FN_REG},
   {"RLOC", fun_rloc, 2, 2, FN_REG | FN_STRIPANSI},
   {"RNUM", fun_rnum, 2, 2, FN_REG | FN_STRIPANSI | FN_DEPRECATED},
   {"ROOM", fun_room, 1, 1, FN_REG | FN_STRIPANSI},
@@ -729,7 +734,7 @@ fn_restrict_to_str(uint32_t b)
  * \param type "local", "builtin", "all" or NULL, to limit which functions are shown
  */
 void
-do_list_functions(dbref player, int lc, char *type)
+do_list_functions(dbref player, int lc, const char *type)
 {
   /* lists all built-in functions. */
   char *b = list_functions(type);
@@ -1064,7 +1069,7 @@ strip_braces(const char *str)
   buff = mush_malloc(BUFFER_LEN, "strip_braces.buff");
   bufc = buff;
 
-  while (isspace((unsigned char) *str)) /* eat spaces at the beginning */
+  while (isspace(*str))         /* eat spaces at the beginning */
     str++;
 
   switch (*str) {

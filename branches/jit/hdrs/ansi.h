@@ -29,6 +29,7 @@
 /* #define ANSI_DEBUG /**/
 #endif
 
+#include "compile.h"
 #include "mushtype.h"
 #include "mypcre.h"
 #include "strtree.h"
@@ -189,6 +190,7 @@ typedef struct _ansi_string {
 
 int ansi_strcmp(const char *astr, const char *bstr);
 char *remove_markup(const char *orig, size_t *stripped_len);
+void sanitize_moniker(char *input, char *buff, char **bp);
 char *skip_leading_ansi(const char *p);
 
 int has_markup(const char *test);
@@ -242,7 +244,7 @@ parse_ansi_string(const char *src)
     int valid_color_name(const char *name);
     uint32_t color_to_hex(const char *name, bool hilite);
     int ansi_map_16(const char *name, bool bg, bool *hilite);
-    int ansi_map_256(const char *name, bool hilite);
+    int ansi_map_256(const char *name, bool hilite, bool all);
 
 
 #endif                          /* __ANSI_H */

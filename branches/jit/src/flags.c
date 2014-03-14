@@ -18,7 +18,7 @@
  *
  */
 
-#include "config.h"
+#include "flags.h"
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -31,44 +31,44 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "command.h"
 #include "attrib.h"
-#include "mushdb.h"
-#include "parse.h"
-#include "match.h"
-#include "ptab.h"
-#include "htab.h"
-#include "privtab.h"
-#include "game.h"
-#include "flags.h"
+#include "command.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "dbio.h"
+#include "externs.h"
+#include "game.h"
+#include "hash_function.h"
+#include "htab.h"
 #include "lock.h"
 #include "log.h"
-#include "dbio.h"
-#include "sort.h"
+#include "match.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "oldflags.h"
-#include "confmagic.h"
+#include "parse.h"
+#include "privtab.h"
+#include "ptab.h"
+#include "sort.h"
+#include "strutil.h"
 
-
-static bool can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate);
-static FLAG *letter_to_flagptr(FLAGSPACE *n, char c, int type);
+static bool can_set_flag(dbref player, dbref thing, const FLAG *flagp,
+                         int negate);
+static FLAG *letter_to_flagptr(const FLAGSPACE *n, char c, int type);
 static void flag_add(FLAGSPACE *n, const char *name, FLAG *f);
-static bool has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f);
+static bool has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f);
 
 static FLAG *flag_read(PENNFILE *in);
 static FLAG *flag_read_oldstyle(PENNFILE *in);
 static void flag_read_all_oldstyle(PENNFILE *in, const char *ns);
 static void flag_write(PENNFILE *out, FLAG *f, const char *name);
-static FLAG *flag_hash_lookup(FLAGSPACE *n, const char *name, int type);
-static FLAG *clone_flag(FLAG *f);
+static FLAG *flag_hash_lookup(const FLAGSPACE *n, const char *name, int type);
+static FLAG *clone_flag(const FLAG *f);
 static FLAG *new_flag(void);
 static void flag_add_additional(FLAGSPACE *n);
-static char *list_aliases(FLAGSPACE *n, FLAG *given);
+static char *list_aliases(const FLAGSPACE *n, const FLAG *given);
 static void realloc_object_flag_bitmasks(FLAGSPACE *n);
-static FLAG *match_flag_ns(FLAGSPACE *n, const char *name);
+static FLAG *match_flag_ns(const FLAGSPACE *n, const char *name);
 
 /* Flag bitset cache data structures. All objects with the same flags
    set share the same storage space. */
@@ -80,6 +80,7 @@ struct flagbucket {
 };
 
 struct flagcache {
+  /* Number of buckets. */
   int size;
   int zero_refcount;
   int entries;
@@ -90,6 +91,7 @@ struct flagcache {
 
 static struct flagcache *new_flagcache(FLAGSPACE *, int);
 static void free_flagcache(struct flagcache *);
+static void flagcache_rebucket(FLAGSPACE *, int);
 static object_flag_type flagcache_find_ns(FLAGSPACE *, const object_flag_type);
 
 slab *flagbucket_slab = NULL;
@@ -106,9 +108,11 @@ extern PTAB ptab_command;       /* Uses flag bitmasks */
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
  * table in the db that counts, not this one.
+ * DO NOT ADD NEW FLAGS HERE. Any new flags added should be done via
+ * flag_add_additional() further down in this file.
  */
 /* Name     Letter   Type(s)   Flag   Perms   Negate_Perm */
-static FLAG flag_table[] = {
+static const FLAG flag_table[] = {
   {"CHOWN_OK", 'C', NOTYPE, CHOWN_OK, F_ANY, F_ANY},
   {"DARK", 'D', NOTYPE, DARK, F_ANY, F_ANY},
   {"GOING", 'G', NOTYPE, GOING, F_INTERNAL, F_INTERNAL},
@@ -178,7 +182,7 @@ static FLAG flag_table[] = {
 /** The old table to kludge multi-type toggles. Now used only
  * for conversion.
  */
-static FLAG hack_table[] = {
+static const FLAG hack_table[] = {
   {"MONITOR", 'M', TYPE_PLAYER, PLAYER_MONITOR, F_ROYAL, F_ROYAL},
   {"MONITOR", 'M', TYPE_THING, THING_LISTEN, F_ANY, F_ANY},
   {"MONITOR", 'M', TYPE_ROOM, ROOM_LISTEN, F_ANY, F_ANY},
@@ -202,7 +206,7 @@ static FLAG type_table[] = {
 };
 
 /** A table of types, as privileges. */
-static PRIV type_privs[] = {
+static const PRIV type_privs[] = {
   {"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER},
   {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM},
   {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT},
@@ -214,7 +218,7 @@ static PRIV type_privs[] = {
  * of old databases. Once a database is converted, the alias list in the
  * database is what counts.
  */
-static FLAG_ALIAS flag_alias_tab[] = {
+static const FLAG_ALIAS flag_alias_tab[] = {
   {"INHERIT", "TRUST"},
   {"TRACE", "DEBUG"},
   {"NOWARN", "NO_WARN"},
@@ -240,7 +244,7 @@ static FLAG_ALIAS flag_alias_tab[] = {
  * it's the power table in the db that counts, not this one.
  */
 /*   Name      Flag   */
-static FLAG power_table[] = {
+static const FLAG power_table[] = {
   {"Announce", '\0', NOTYPE, CAN_WALL, F_WIZARD | F_LOG, F_WIZARD},
   {"Boot", '\0', NOTYPE, CAN_BOOT, F_WIZARD | F_LOG, F_WIZARD},
   {"Builder", '\0', NOTYPE, CAN_BUILD, F_WIZARD | F_LOG, F_WIZARD},
@@ -275,7 +279,7 @@ static FLAG power_table[] = {
 };
 
 /** A table of aliases for powers. */
-static FLAG_ALIAS power_alias_tab[] = {
+static const FLAG_ALIAS power_alias_tab[] = {
   {"@cemit", "Cemit"},
   {"@wall", "Announce"},
   {"wall", "Announce"},
@@ -284,7 +288,7 @@ static FLAG_ALIAS power_alias_tab[] = {
 };
 
 /** The table of flag privilege bits. */
-static PRIV flag_privs[] = {
+static const PRIV flag_privs[] = {
   {"trusted", '\0', F_INHERIT, F_INHERIT},
   {"owned", '\0', F_OWNED, F_OWNED},
   {"royalty", '\0', F_ROYAL, F_ROYAL},
@@ -312,7 +316,7 @@ static PRIV flag_privs[] = {
 FLAG *
 match_flag(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("FLAG", &htab_flagspaces), name);
+  return match_flag_ns(hashfind("FLAG", &htab_flagspaces), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -323,7 +327,7 @@ match_flag(const char *name)
 FLAG *
 match_power(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("POWER", &htab_flagspaces), name);
+  return match_flag_ns(hashfind("POWER", &htab_flagspaces), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -332,7 +336,7 @@ match_power(const char *name)
  * \return poiner to flag structure, or NULL.
  */
 static FLAG *
-match_flag_ns(FLAGSPACE *n, const char *name)
+match_flag_ns(const FLAGSPACE *n, const char *name)
 {
   return (FLAG *) ptab_find(n->tab, name);
 }
@@ -348,7 +352,7 @@ match_flag_ns(FLAGSPACE *n, const char *name)
  * \return pointer to flag structure, or NULL.
  */
 static FLAG *
-flag_hash_lookup(FLAGSPACE *n, const char *name, int type)
+flag_hash_lookup(const FLAGSPACE *n, const char *name, int type)
 {
   FLAG *f;
 
@@ -416,7 +420,7 @@ clear_all_flags(FLAGSPACE *n)
 }
 
 static FLAG *
-clone_flag(FLAG *f)
+clone_flag(const FLAG *f)
 {
   FLAG *clone = new_flag();
   clone->name = mush_strdup(f->name, "flag.name");
@@ -443,7 +447,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
    */
 
   /* Can't have more than 255 references to the same flag */
-  if (FLAG_REF(f->perms) == 0xFFU)
+  if (!f || FLAG_REF(f->perms) == 0xFFU)
     return;
 
   if (f->bitpos < 0)
@@ -539,7 +543,7 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   numbytes = FlagBytes(n);
 
   oldcache = n->cache;
-  n->cache = new_flagcache(n, (double) oldcache->size * 1.1);
+  n->cache = new_flagcache(n, oldcache->size);
 
   flagpairs = slab_create("flagpairs", sizeof *migrate);
   migrate = NULL;
@@ -553,7 +557,6 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
       struct flagpair *newpair;
 
       grown = extend_bitmask(n, b->key, numbytes - 1);
-      flagcache_find_ns(n, grown);
 
       newpair = slab_malloc(flagpairs, NULL);
       newpair->orig = b->key;
@@ -577,18 +580,20 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
     } else {
       /* Has flags or powers. Update to new ones */
       for (m = migrate; m; m = m->next) {
-	if (n->tab == &ptab_flag) {
-	  if (Flags(it) == m->orig) {
-	    Flags(it) = m->grown;
-	    break;
-	  } 
-	} else {
-	  if (Powers(it) == m->orig) {
-	    Powers(it) = m->grown;
-	    break;
-	  }
-	}
+        if (n->tab == &ptab_flag) {
+          if (Flags(it) == m->orig) {
+            Flags(it) = m->grown;
+            break;
+          }
+        } else {
+          if (Powers(it) == m->orig) {
+            Powers(it) = m->grown;
+            break;
+          }
+        }
       }
+      /* Update the refcount for this flagset. */
+      flagcache_find_ns(n, m->grown);
     }
   }
   slab_destroy(flagpairs);
@@ -619,7 +624,7 @@ flag_read_oldstyle(PENNFILE *in)
 }
 
 static FLAG *
-flag_alias_read_oldstyle(PENNFILE *in, char *alias, FLAGSPACE *n)
+flag_alias_read_oldstyle(PENNFILE *in, char *alias, const FLAGSPACE *n)
 {
   FLAG *f;
   char *c;
@@ -881,6 +886,8 @@ flag_write_all(PENNFILE *out, const char *ns)
 void
 init_flagspaces(void)
 {
+  /* Initial flagcache sizes are estimates based on examining the output of
+   * @stats/flags in several games. */
   FLAGSPACE *flags;
 
   hashinit(&htab_flagspaces, 4);
@@ -892,7 +899,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = flag_table;
   flags->flag_alias_table = flag_alias_tab;
-  flags->cache = new_flagcache(flags, (sizeof flag_table / sizeof(FLAG)) * 4);
+  flags->cache = new_flagcache(flags, 257);
   hashadd("FLAG", (void *) flags, &htab_flagspaces);
   flags = mush_malloc(sizeof(FLAGSPACE), "flagspace");
   flags->name = strdup("POWER");
@@ -902,7 +909,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = power_table;
   flags->flag_alias_table = power_alias_tab;
-  flags->cache = new_flagcache(flags, (sizeof power_table / sizeof(FLAG)) * 2);
+  flags->cache = new_flagcache(flags, 31);
   hashadd("POWER", (void *) flags, &htab_flagspaces);
 }
 
@@ -915,8 +922,9 @@ init_flagspaces(void)
 void
 init_flag_table(const char *ns)
 {
-  FLAG *f, *cf;
-  FLAG_ALIAS *a;
+  const FLAG *f;
+  FLAG *cf;
+  const FLAG_ALIAS *a;
   FLAGSPACE *n;
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -934,8 +942,8 @@ init_flag_table(const char *ns)
   ptab_end_inserts(n->tab);
   /* now add in the aliases */
   for (a = n->flag_alias_table; a->alias; a++) {
-    if ((f = match_flag_ns(n, a->realname)))
-      flag_add(n, a->alias, f);
+    if ((cf = match_flag_ns(n, a->realname)))
+      flag_add(n, a->alias, cf);
     else
       do_rawlog(LT_ERR,
                 "FLAG INIT: flag alias %s matches no known flag.", a->alias);
@@ -983,7 +991,8 @@ flag_add_additional(FLAGSPACE *n)
       f->type = NOTYPE;
       f->letter = '\0';
     }
-    f = add_flag("CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT, F_INHERIT);
+    add_flag_generic("FLAG", "CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT,
+                     F_INHERIT, &f);
     flags = hashfind("FLAG", &htab_flagspaces);
     if (!match_flag("CHAN_FIRSTMATCH"))
       flag_add(flags, "CHAN_FIRSTMATCH", f);
@@ -995,8 +1004,10 @@ flag_add_additional(FLAGSPACE *n)
       f->perms |= F_LOG;
     if ((f = match_flag("ROYALTY")))
       f->perms |= F_LOG;
-    f = add_flag("XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY);
+    add_flag_generic("FLAG", "XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY, &f);
     flag_add(flags, "COLOR256", f);     /* MUX alias */
+
+    add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
 
   } else if (n->tab == &ptab_power) {
     if (!(globals.indb_flags & DBF_POWERS_LOGGED)) {
@@ -1005,8 +1016,9 @@ flag_add_additional(FLAGSPACE *n)
         n->flags[i]->perms |= F_LOG;
     }
     flags = hashfind("POWER", &htab_flagspaces);
-    f = add_power("Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
-    if (!match_power("Use_SQL"))
+    add_flag_generic("POWER", "Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY,
+                     &f);
+    if (f && !match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
     if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
       /* The "Can_nspemit" power was renamed "Can_spoof"... */
@@ -1080,7 +1092,7 @@ type_from_old_flags(long old_flags)
 object_flag_type
 flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 {
-  FLAG *f, *newf;
+  const FLAG *f, *newf;
   FLAGSPACE *n;
   object_flag_type bitmask;
 
@@ -1113,7 +1125,7 @@ flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 
 /* Given a single character, return the matching flag definition */
 static FLAG *
-letter_to_flagptr(FLAGSPACE *n, char c, int type)
+letter_to_flagptr(const FLAGSPACE *n, char c, int type)
 {
   FLAG *f;
   int i;
@@ -1142,7 +1154,6 @@ new_flagcache(FLAGSPACE *n, int initial_size)
 
   cache = mush_malloc(sizeof *cache, "flagset.cache");
 
-  initial_size = next_prime_after(initial_size);
   cache->size = initial_size;
   cache->entries = 0;
   cache->zero_refcount = 0;
@@ -1151,7 +1162,7 @@ new_flagcache(FLAGSPACE *n, int initial_size)
   cache->zero = slab_malloc(cache->flagset_slab, NULL);
   memset(cache->zero, 0, FlagBytes(n));
   cache->buckets =
-    mush_calloc(initial_size, sizeof(struct flagbucket *),
+    mush_calloc(cache->size, sizeof(struct flagbucket *),
                 "flagset.cache.bucketarray");
   return cache;
 }
@@ -1173,15 +1184,36 @@ free_flagcache(struct flagcache *cache)
   mush_free(cache, "flagset.cache");
 }
 
-static uint32_t
+static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  uint32_t h = 0, i, len;
+  static const uint64_t seed = 0xb12003afbb20eae3LLU;
+  return city_hash((const char *) f, FlagBytes(n), seed);
+}
 
-  for (i = 0, len = FlagBytes(n); i < len; i += 1)
-    h = (h << 5) + h + f[i];
+static void
+flagcache_rebucket(FLAGSPACE *n, int new_size)
+{
+  struct flagbucket **new_buckets;
+  int i;
 
-  return h;
+  new_buckets = mush_calloc(new_size, sizeof(struct flagbucket *),
+                            "flagset.cache.bucketarray");
+
+  for (i = 0; i < n->cache->size; ++i) {
+    struct flagbucket *bucket, *next;
+    int new_index;
+    for (bucket = n->cache->buckets[i]; bucket; bucket = next) {
+      next = bucket->next;
+      new_index = fc_hash(n, bucket->key) % new_size;
+      bucket->next = new_buckets[new_index];
+      new_buckets[new_index] = bucket;
+    }
+  }
+
+  mush_free(n->cache->buckets, "flagset.cache.bucketarray");
+  n->cache->size = new_size;
+  n->cache->buckets = new_buckets;
 }
 
 static inline bool
@@ -1200,14 +1232,12 @@ flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
   if (flagbucket_slab == NULL)
     flagbucket_slab = slab_create("flagcache entries", sizeof *b);
 
-  h = fc_hash(n, f);
-
-  if (h == 0) {
+  if (fc_eq(n, n->cache->zero, f)) {
     n->cache->zero_refcount += 1;
     return n->cache->zero;
   }
 
-  h %= n->cache->size;
+  h = fc_hash(n, f) % n->cache->size;
 
   for (b = n->cache->buckets[h]; b; b = b->next) {
     if (fc_eq(n, f, b->key)) {
@@ -1223,6 +1253,11 @@ flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
   b->next = n->cache->buckets[h];
   n->cache->entries += 1;
   n->cache->buckets[h] = b;
+
+  /* Resize at a load factor of two. */
+  if ((n->cache->entries / 2) > n->cache->size)
+    flagcache_rebucket(n, next_prime_after(n->cache->size * 2));
+
   return f;
 }
 
@@ -1240,14 +1275,12 @@ flagcache_delete(FLAGSPACE *n, const object_flag_type f)
   uint32_t h;
   struct flagbucket *b, *p;
 
-  h = fc_hash(n, f);
-
-  if (h == 0) {
+  if (fc_eq(n, n->cache->zero, f)) {
     n->cache->zero_refcount -= 1;
     return;
   }
 
-  h %= n->cache->size;
+  h = fc_hash(n, f) % n->cache->size;
 
   for (b = n->cache->buckets[h], p = NULL; b; p = b, b = b->next) {
     if (fc_eq(n, f, b->key)) {
@@ -1290,7 +1323,7 @@ flag_stats(dbref player)
                   "  %d different cached flagsets. %d objects with no flags set.",
                   n->cache->entries, n->cache->zero_refcount);
     notify(player, " Stats for flagset slab:");
-    slab_describe(player, n->cache->flagset_slab);
+    // slab_describe(player, n->cache->flagset_slab);
     for (i = 0; i < n->cache->size; i += 1) {
       struct flagbucket *b;
       int len = 0;
@@ -1648,8 +1681,8 @@ bool
 has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
                           int type)
 {
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   n = hashfind(ns, &htab_flagspaces);
   f = flag_hash_lookup(n, flag, type);
   if (!f)
@@ -1658,7 +1691,7 @@ has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
 }
 
 static bool
-has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
+has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f)
 {
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
@@ -1667,7 +1700,7 @@ has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
 }
 
 static bool
-can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_flag_generic(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   int myperms;
   if (!flagp || !GoodObject(player) || !GoodObject(thing))
@@ -1690,7 +1723,7 @@ can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
 }
 
 static bool
-can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_power(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
     return 0;
@@ -1704,7 +1737,7 @@ can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
 
 
 static bool
-can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
+can_set_flag(dbref player, dbref thing, const FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
     return 0;
@@ -1861,7 +1894,7 @@ decompile_flags_generic(dbref player, dbref thing, const char *name,
 void
 twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
 {
-  FLAG *f;
+  const FLAG *f;
   FLAGSPACE *n;
 
   if (IsGarbage(thing))
@@ -1899,7 +1932,7 @@ void
 set_flag(dbref player, dbref thing, const char *flag, int negate,
          int hear, int listener)
 {
-  FLAG *f;
+  const FLAG *f;
   char tbuf1[BUFFER_LEN];
   char *tp;
   FLAGSPACE *n;
@@ -1946,7 +1979,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) && (hear || listener) &&
         !Hearer(thing) && !Listener(thing)) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
+      safe_format(tbuf1, &tp, T("%s is no longer listening."),
+                  AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -1959,7 +1993,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         if (Audible(Source(thing))) {
           tp = tbuf1;
           safe_format(tbuf1, &tp, T("Exit %s is no longer broadcasting."),
-                      Name(thing));
+                      AName(thing, AN_SAY, NULL));
           *tp = '\0';
           notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
@@ -1979,7 +2013,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     }
     if (is_flag(f, "QUIET") || (!AreQuiet(player, thing))) {
       tp = tbuf1;
-      safe_str(Name(thing), tbuf1, &tp);
+      safe_str(AName(thing, AN_SYS, NULL), tbuf1, &tp);
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (!current)
@@ -2004,7 +2038,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (!IsPlayer(thing) &&
         (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {
       tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
+      safe_format(tbuf1, &tp, T("%s is now listening."),
+                  AName(thing, AN_SAY, NULL));
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(thing, Location(thing), NOTHING, tbuf1,
@@ -2018,7 +2053,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         if (Audible(Source(thing))) {
           tp = tbuf1;
           safe_format(tbuf1, &tp, T("Exit %s is now broadcasting."),
-                      Name(thing));
+                      AName(thing, AN_SAY, NULL));
           *tp = '\0';
           notify_except(thing, Source(thing), NOTHING, tbuf1, 0);
         }
@@ -2037,7 +2072,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     }
     if (is_flag(f, "QUIET") || (!AreQuiet(player, thing))) {
       tp = tbuf1;
-      safe_str(Name(thing), tbuf1, &tp);
+      safe_str(AName(thing, AN_SYS, NULL), tbuf1, &tp);
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (current)
@@ -2063,7 +2098,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
 void
 set_power(dbref player, dbref thing, const char *flag, int negate)
 {
-  FLAG *f;
+  const FLAG *f;
   FLAGSPACE *n;
   char tbuf1[BUFFER_LEN], *tp;
   int current;
@@ -2096,17 +2131,19 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     tp = tbuf1;
     if (negate) {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s removed."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s removed."),
+                    AName(thing, AN_SYS, NULL), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing),
-                    f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."),
+                    AName(thing, AN_SYS, NULL), f->name);
       }
     } else {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing),
-                    f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."),
+                    AName(thing, AN_SYS, NULL), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s granted."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s granted."),
+                    AName(thing, AN_SYS, NULL), f->name);
       }
     }
     *tp = '\0';
@@ -2140,10 +2177,10 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
                int type)
 {
   char *s;
-  FLAG *fp;
+  const FLAG *fp;
   int negate = 0, temp = 0;
   int ret = type;
-  FLAGSPACE *n;
+  const FLAGSPACE *n;
 
   if (!GoodObject(it))
     return 0;
@@ -2235,10 +2272,10 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
                     int type)
 {
   char *s, *copy, *sp;
-  FLAG *fp;
+  const FLAG *fp;
   int negate = 0, temp = 0;
   int ret = type;
-  FLAGSPACE *n;
+  const FLAGSPACE *n;
 
   if (!GoodObject(it))
     return 0;
@@ -2323,8 +2360,8 @@ bool
 sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
 {
   /* Does thing have the flag named name && can privs see it? */
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   n = hashfind(ns, &htab_flagspaces);
   if ((f = flag_hash_lookup(n, name, Typeof(thing))) == NULL)
     return 0;
@@ -2345,19 +2382,35 @@ sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
  * \param type mask of object types to which the flag applies.
  * \param perms mask of permissions to see/set the flag.
  * \param negate_perms mask of permissions to clear the flag.
+ * \param fp pointer to store the new flag in
+ * \return FLAG_* value from flag_res enum
  */
-FLAG *
+enum flag_res
 add_flag_generic(const char *ns, const char *name, const char letter, int type,
-                 int perms, int negate_perms)
+                 int perms, int negate_perms, FLAG **fp)
 {
   FLAG *f;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
+
+  if (fp)
+    *fp = NULL;
+
   /* Don't double-add */
   if ((f = match_flag_ns(n, strupper(name)))) {
-    if (strcasecmp(f->name, name) == 0)
-      return f;
+    if (strcasecmp(f->name, name) == 0) {
+      if (fp)
+        *fp = f;
+      return FLAG_EXISTS;
+    }
   }
+
+  if (!name || strlen(name) < 2 || !good_flag_name(strupper(name)))
+    return FLAG_NAME;
+
+  if (letter && letter_to_flagptr(n, letter, type))
+    return FLAG_LETTER;
+
   f = new_flag();
   f->name = mush_strdup(strupper(name), "flag.name");
   f->letter = letter;
@@ -2366,7 +2419,9 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
   f->negate_perms = negate_perms;
   f->bitpos = -1;
   flag_add(n, f->name, f);
-  return f;
+  if (fp)
+    *fp = f;
+  return FLAG_OK;
 }
 
 
@@ -2403,10 +2458,10 @@ do_list_flags(const char *ns, dbref player, const char *arg, int lc,
 void
 do_flag_info(const char *ns, dbref player, const char *name)
 {
-  FLAG *f;
-  FLAGSPACE *n;
+  const FLAG *f;
+  const FLAGSPACE *n;
   /* Find the flagspace */
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = (const FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
     return;
   }
@@ -2579,11 +2634,15 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   int negate_perms = F_ANY;
   FLAG *f;
   FLAGSPACE *n;
+  enum flag_res newflag;
 
   if (!God(player)) {
     notify(player, T("You don't have enough magic for that."));
     return;
   }
+
+  /* Some of these checks are done in add_flag_generic(), but are dupliated
+   * here to allow more specific error messages */
   if (!name || !*name) {
     notify_format(player, T("You must provide a name for the %s."),
                   strlower(ns));
@@ -2626,8 +2685,8 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
       }
     }
     /* Is this letter already in use for this type? */
-    if (*args_right[1]) {
-      if ((f = letter_to_flagptr(n, *args_right[1], type))) {
+    if (letter) {
+      if ((f = letter_to_flagptr(n, letter, type))) {
         notify_format(player, T("Letter conflicts with the %s %s."), f->name,
                       strlower(ns));
         return;
@@ -2659,12 +2718,25 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
       negate_perms = perms;
   }
   /* Ok, let's do it. */
-  add_flag_generic(ns, name, letter, type, perms, negate_perms);
-  /* Did it work? */
-  if (match_flag_ns(n, name))
+  newflag = add_flag_generic(ns, name, letter, type, perms, negate_perms, &f);
+  switch (newflag) {
+  case FLAG_OK:
+  case FLAG_EXISTS:
     do_flag_info(ns, player, name);
-  else
+    break;
+  case FLAG_NAME:
+    notify_format(player, T("That's not a valid %s name."), strlower(ns));
+    break;
+  case FLAG_LETTER:
+    notify_format(player, T("Invalid %s letter."), strlower(ns));
+    break;
+  case FLAG_PERMS:
+  case FLAG_TYPE:
+  default:
     notify_format(player, T("Unknown failure adding %s."), strlower(ns));
+    break;
+  }
+
 }
 
 /** Alias a flag.
@@ -2810,7 +2882,7 @@ do_flag_letter(const char *ns, dbref player, const char *name,
     return;
   }
   if (letter && *letter) {
-    FLAG *other;
+    const FLAG *other;
 
     if (strlen(letter) > 1) {
       notify_format(player, T("%s characters must be single characters."),
@@ -2976,9 +3048,9 @@ do_flag_enable(const char *ns, dbref player, const char *name)
 
 
 static char *
-list_aliases(FLAGSPACE *n, FLAG *given)
+list_aliases(const FLAGSPACE *n, const FLAG *given)
 {
-  FLAG *f;
+  const FLAG *f;
   static char buf[BUFFER_LEN];
   char *bp;
   const char *flagname;
@@ -3139,15 +3211,16 @@ extern char atr_name_table[UCHAR_MAX + 1];
 int
 good_flag_name(char const *s)
 {
-  const unsigned char *a;
+  const char *a;
   int len = 0;
   if (!s || !*s)
     return 0;
-  for (a = (const unsigned char *) s; *a; a++, len++)
+  for (a = s; *a; a++, len++)
     if (!atr_name_table[*a])
       return 0;
   if (*(s + len - 1) == '`')
     return 0;
+
   return len <= ATTRIBUTE_NAME_LIMIT;
 }
 
@@ -3165,23 +3238,27 @@ do_flag_debug(const char *ns, dbref player)
 
   Flagspace_Lookup(n, ns);
 
-  notify_format(player, "Flagspace name: %s\nFlag count: %d", n->name, n->flagbits);
+  notify_format(player, "Flagspace name: %s\nFlag count: %d", n->name,
+                n->flagbits);
 
   for (i = 0; i < n->flagbits; i += 1) {
     FLAG *f = n->flags[i];
-    
-    notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name, f->bitpos);
+
+    notify_format(player, "Flag %2d: %s. Bit position: %d", i, f->name,
+                  f->bitpos);
   }
 
-  notify_format(player, "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
-		n->cache->entries, n->cache->size, n->cache->zero_refcount);
+  notify_format(player,
+                "Flag cache:\n%d entries, %d buckets.\n%d zero entries.",
+                n->cache->entries, n->cache->size, n->cache->zero_refcount);
 
 #if 0
   for (i = 0; i < n->cache->size; i += 1) {
     struct flagbucket *b = n->cache->buckets[i];
     for (; b; b = b->next) {
-      notify_format(player, "Flagset: %s. Refcount: %d", bits_to_string(ns, b->key, ,), b->refcount);		   
+      notify_format(player, "Flagset: %s. Refcount: %d",
+                    bits_to_string(ns, b->key,,), b->refcount);
     }
-  } 
+  }
 #endif
 }

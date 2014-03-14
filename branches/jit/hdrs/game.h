@@ -9,7 +9,9 @@
 #ifndef __GAME_H
 #define __GAME_H
 
+#include "dbio.h"
 #include "mushtype.h"
+#include "notify.h"
 
 /* @scan flags */
 #define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */
@@ -52,13 +54,6 @@ void do_allhalt(dbref player);
 void do_allrestart(dbref player);
 void do_restart(void);
 void do_restart_com(dbref player, const char *arg1);
-
-/* From command.c */
-enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE };
-extern void do_hook(dbref player, char *command, char *obj, char *attrname,
-                    enum hook_type flag, int inplace);
-extern void do_hook_list(dbref player, char *command, bool verbose);
-
 
 /* From compress.c */
 #if (COMPRESSION_TYPE > 0)
@@ -139,8 +134,8 @@ extern void do_cpattr
 extern void do_edit(dbref player, char *it, char **argv, int flags);
 extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
                            NEW_PE_INFO *pe_info);
-extern void do_trigger(dbref player, char *object, char **argv,
-                       MQUE *queue_entry);
+extern void do_trigger(dbref executor, dbref enactor, char *object, char **argv,
+                       MQUE *queue_entry, bool spoof);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
 extern void do_parent(dbref player, char *name, char *parent_name,
                       NEW_PE_INFO *pe_info);

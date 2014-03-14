@@ -52,8 +52,8 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
+#include "access.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,17 +74,17 @@
 #include <unistd.h>
 #endif
 #include "conf.h"
-#include "externs.h"
-#include "mypcre.h"
-#include "access.h"
-#include "mymalloc.h"
-#include "match.h"
-#include "parse.h"
-#include "log.h"
-#include "mushdb.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
-#include "confmagic.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "notify.h"
+#include "parse.h"
+#include "strutil.h"
 
 /** An access flag. */
 typedef struct a_acsflag acsflag;
@@ -150,7 +150,7 @@ sitelock_alloc(const char *host, dbref who,
   struct access *tmp;
   tmp = mush_malloc(sizeof(struct access), "sitelock.rule");
   if (!tmp) {
-    static const char *memerr = "unable to allocate memory";
+    static const char memerr[] = "unable to allocate memory";
     if (errptr)
       *errptr = memerr;
     return NULL;
@@ -243,7 +243,7 @@ read_access_file(void)
         *p = '\0';
       /* Find beginning of line; ignore blank lines */
       p = buf;
-      if (*p && isspace((unsigned char) *p))
+      if (*p && isspace(*p))
         p++;
       if (*p && *p != '#') {
         can = cant = 0;
@@ -256,11 +256,11 @@ read_access_file(void)
         } else {
           if ((comment = strchr(p, '#'))) {
             *comment++ = '\0';
-            while (*comment && isspace((unsigned char) *comment))
+            while (*comment && isspace(*comment))
               comment++;
           }
           /* Move past the host name */
-          while (*p && !isspace((unsigned char) *p))
+          while (*p && !isspace(*p))
             p++;
           if (*p)
             *p++ = '\0';

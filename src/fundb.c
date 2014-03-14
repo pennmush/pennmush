@@ -8,24 +8,25 @@
 
 #include "copyrite.h"
 
-#include "config.h"
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "dbdefs.h"
-#include "flags.h"
 
-#include "match.h"
-#include "parse.h"
+#include "attrib.h"
 #include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
 #include "game.h"
-#include "mushdb.h"
-#include "privtab.h"
 #include "lock.h"
 #include "log.h"
-#include "attrib.h"
-#include "function.h"
-#include "confmagic.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "privtab.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -1775,6 +1776,20 @@ FUNCTION(fun_name)
   if (GoodObject(it))
     safe_str(shortname(it), buff, bp);
   else
+    safe_str(T(e_notvis), buff, bp);
+}
+
+/* ARGSUSED */
+FUNCTION(fun_moniker)
+{
+  dbref it;
+  /* bool accents = (strcmp(called_as, "AMONIKER") == 0); */
+
+  it = match_thing(executor, args[0]);
+  if (GoodObject(it)) {
+    safe_str(ansi_name(it, 0, NULL), buff, bp);
+    /*safe_str(ansi_name(it, accents, NULL), buff, bp); */
+  } else
     safe_str(T(e_notvis), buff, bp);
 }
 

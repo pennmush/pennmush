@@ -5,7 +5,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
@@ -32,14 +31,14 @@
 #include <errno.h>
 #include <string.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "access.h"
-#include "mysocket.h"
-#include "lookup.h"
+#include "conf.h"
 #include "log.h"
+#include "lookup.h"
+#include "mysocket.h"
+#include "sig.h"
+#include "strutil.h"
 #include "wait.h"
-
 
 #ifdef INFO_SLAVE
 

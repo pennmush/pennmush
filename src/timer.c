@@ -5,9 +5,8 @@
  *
  *
  */
+
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -30,21 +29,23 @@
 #include <unistd.h>
 #endif
 
-#include "conf.h"
-#include "externs.h"
-#include "dbdefs.h"
-#include "lock.h"
-#include "extmail.h"
-#include "match.h"
-#include "flags.h"
 #include "access.h"
-#include "log.h"
+#include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
 #include "game.h"
 #include "help.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mymalloc.h"
 #include "parse.h"
-#include "attrib.h"
-#include "confmagic.h"
-
+#include "sig.h"
+#include "strutil.h"
 
 static sig_atomic_t hup_triggered = 0;
 static sig_atomic_t usr1_triggered = 0;

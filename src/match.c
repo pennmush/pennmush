@@ -52,20 +52,23 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "match.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#include "conf.h"
-#include "mushdb.h"
-#include "externs.h"
-#include "case.h"
-#include "match.h"
-#include "parse.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "confmagic.h"
+
 #include "attrib.h"
+#include "case.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "parse.h"
+#include "strutil.h"
 
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
@@ -275,7 +278,7 @@ match_player(dbref who, const char *name, int partial)
     name++;
   }
 
-  while (isspace((unsigned char) *name)) {
+  while (isspace(*name)) {
     name++;
   }
 
@@ -543,7 +546,7 @@ parse_english(char **name, long *flags)
   }
 
   /* Handle count adjectives */
-  if (!isdigit((unsigned char) **name)) {
+  if (!isdigit(**name)) {
     /* Quick exit */
     return 0;
   }

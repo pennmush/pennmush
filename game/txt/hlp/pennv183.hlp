@@ -80,7 +80,7 @@ Functions:
  * unsetq(), to erase queue registers. [GM]
  * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
    #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]
- * benchmark(), to benchmark softcode.
+ * benchmark(), to benchmark softcode. [DC]
  * Added "flag" as a category to valid(), to check for valid names for
    @flag/add and @power/add. [MG]
  * New pfun() function, which evaluates attributes from your parent as if

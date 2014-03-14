@@ -5,32 +5,34 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
+#include "SFMT.h"
+#include "ansi.h"
+#include "attrib.h"
 #include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
 #include "externs.h"
-#include "version.h"
-#include "htab.h"
 #include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
 #include "lock.h"
 #include "match.h"
+#include "memcheck.h"
 #include "mushdb.h"
-#include "dbdefs.h"
+#include "mymalloc.h"
 #include "parse.h"
-#include "function.h"
-#include "command.h"
-#include "game.h"
-#include "attrib.h"
-#include "ansi.h"
 #include "strtree.h"
-#include "SFMT.h"
+#include "strutil.h"
 #include "svninfo.h"
-#include "confmagic.h"
+#include "version.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -44,6 +46,8 @@ extern char cf_motd_msg[BUFFER_LEN], cf_wizmotd_msg[BUFFER_LEN],
 extern HASHTAB htab_function;
 
 extern const unsigned char *tables;
+
+void clear_allq(NEW_PE_INFO *pe_info);
 
 /* ARGSUSED */
 FUNCTION(fun_valid)
@@ -110,6 +114,10 @@ FUNCTION(fun_message)
   int flags = PEMIT_LIST | PEMIT_SILENT;
   enum emit_type type = EMIT_PEMIT;
   dbref speaker = executor;
+
+  /* Instead of having the '10', '14', etc, hardcoded, this
+   * should be using MAX_STACK_ARGS. However, it's potentially
+   * slightly incompatible to change it, now. */
 
   for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
@@ -639,11 +647,67 @@ FUNCTION(fun_unsetq)
 /* ARGSUSED */
 FUNCTION(fun_r)
 {
-  /* returns a local register */
-  if (ValidQregName(args[0])) {
-    safe_str(PE_Getq(pe_info, args[0]), buff, bp);
-  } else {
-    safe_str(T(e_badregname), buff, bp);
+  int type = PE_REGS_Q;
+  const char *s;
+
+  if (nargs >= 2 && args[1] && *args[1]) {
+    if (string_prefix("qregisters", args[1]))
+      type = PE_REGS_Q;
+    else if (string_prefix("regexp", args[1]))
+      type = PE_REGS_REGEXP;
+    else if (strlen(args[1]) > 1 && string_prefix("switch", args[1]))
+      type = PE_REGS_SWITCH;
+    else if (string_prefix("iter", args[1]))
+      type = PE_REGS_ITER;
+    else if (string_prefix("args", args[1])
+             || (strlen(args[1]) > 1 && string_prefix("stack", args[1])))
+      type = PE_REGS_ARG;
+    else {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  switch (type) {
+  case PE_REGS_Q:
+    if (ValidQregName(args[0]))
+      safe_str(PE_Getq(pe_info, args[0]), buff, bp);
+    else
+      safe_str(T(e_badregname), buff, bp);
+    break;
+  case PE_REGS_ARG:
+    s = pi_regs_get_env(pe_info, args[0]);
+    if (s)
+      safe_str(s, buff, bp);
+    break;
+  case PE_REGS_ITER:
+  case PE_REGS_SWITCH:
+    {
+      int level = 0, total = 0;
+
+      if (type == PE_REGS_ITER)
+        total = PE_Get_Ilev(pe_info);
+      else
+        total = PE_Get_Slev(pe_info);
+
+      if ((*args[0] == 'l' || *args[0] == 'L') && !args[0][1])
+        level = total;
+      else if (!is_strict_number(args[0])) {
+        safe_str(T(e_badregname), buff, bp);
+        return;
+      } else {
+        level = parse_integer(args[0]);
+      }
+      if (level < 0 || level > total) {
+        safe_str(T(e_argrange), buff, bp);
+      } else {
+        if (type == PE_REGS_ITER)
+          safe_str(PE_Get_Itext(pe_info, level), buff, bp);
+        else
+          safe_str(PE_Get_Stext(pe_info, level), buff, bp);
+      }
+      break;
+    }
   }
 }
 
@@ -948,9 +1012,9 @@ FUNCTION(fun_reswitch)
       /* set regexp context here */
       pe_regs_clear(pe_regs);
       if (mas) {
-        pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, mas);
+        pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns, mas);
       } else {
-        pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, mstr);
+        pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, mstr);
       }
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
@@ -1116,11 +1180,11 @@ soundex(char *str)
   p++;
   /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
   while (*str) {
-    if (!isalpha((unsigned char) *str) || (unsigned char) *str > 127) {
+    if (!isalpha(*str) || *str > 127) {
       str++;
       continue;
     }
-    *p = soundex_val[(unsigned char) *str++];
+    *p = soundex_val[*str++];
     if (*p != *(p - 1))
       p++;
   }
@@ -1155,7 +1219,7 @@ FUNCTION(fun_soundex)
    * 5. Truncate to 4 characters or pad with 0's.
    * It's actually a bit messier than that to make it faster.
    */
-  if (!args[0] || !*args[0] || !isalpha((unsigned char) *args[0])
+  if (!args[0] || !*args[0] || !isalpha(*args[0])
       || strchr(args[0], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"), buff,
              bp);
@@ -1173,8 +1237,8 @@ FUNCTION(fun_soundlike)
    * I deem the modularity to be more important. So there.
    */
   char tbuf1[5];
-  if (!*args[0] || !*args[1] || !isalpha((unsigned char) *args[0])
-      || !isalpha((unsigned char) *args[1]) || strchr(args[0], ' ')
+  if (!*args[0] || !*args[1] || !isalpha(*args[0])
+      || !isalpha(*args[1]) || strchr(args[0], ' ')
       || strchr(args[1], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"),
              buff, bp);
@@ -1201,7 +1265,7 @@ FUNCTION(fun_null)
 FUNCTION(fun_list)
 {
   int which = 3;
-  char *fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = { "builtin", "local", "all" };
   if (nargs == 2) {
     if (!strcasecmp(args[1], "local"))
       which = 2;

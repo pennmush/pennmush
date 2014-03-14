@@ -25,7 +25,7 @@
 
   See also the following topics:    mail-sending   mail-reading   
       mail-folders   mail-forward   mail-other     mail-admin     
-      @malias        mail-reviewing
+      @malias        mail-reviewing @mailquota
 & mail-reading
 
   @mail <msg #>
@@ -135,6 +135,18 @@
         folder to a new folder, <folder#>.
 
 See also: @mailfilter
+& @mailquota
+  @mailquota <player>[=<limit>]
+  
+  This attribute allows wizards to change the maximum number of messages a 
+  player can have in their inbox, override the mail_limit @config option for
+  specific people. <limit> should be a number between 1 and 50000, inclusive.
+
+  Example:
+    > @alias *Walker=Complaints_Department
+    > @mailquota *Complaints_Department=50000
+    > @wall Please @mail any and all problems to Complaints_Department.
+
 & @mailfilter
 & mailfilter
   The @mailfilter attribute specifies automatic filing of incoming
@@ -205,7 +217,6 @@ members of that alias, if you're allowed to see them. Other forms of
 the same command are @malias/members <alias> or @malias/who <alias>
 
 See help @malias2 for more
-
 & @malias2
 @malias[/create] <alias>=<player list>
 @malias/desc <alias>=<Description>

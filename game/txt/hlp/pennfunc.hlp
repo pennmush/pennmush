@@ -136,11 +136,12 @@ See also: DBREF, Information functions
   findable()     flags()        fullalias()    fullname()     getpids()      
   hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
   iname()        lflags()       lock()         lockflags()    lockowner()    
-  locks()        lpids()        lstats()       money()        msecs()      
-  mtime()        mudname()      mudurl()       name()         nattr()        
-  nearby()       objid()        objmem()       orflags()      orlflags()     
-  orlpowers()    pidinfo()      playermem()    poll()         powers()       
-  quota()        restarts()     type()         version()      visible()
+  locks()        lpids()        lstats()       money()        moniker()
+  msecs()        mtime()        mudname()      mudurl()       name()         
+  nattr()        nearby()       objid()        objmem()       orflags()      
+  orlflags()     orlpowers()    pidinfo()      playermem()    poll()         
+  powers()       quota()        restarts()     type()         version()      
+  visible()
 
 See also: Dbref functions
 & List functions
@@ -152,10 +153,10 @@ See also: Dbref functions
 
   element()     elements()    extract()     filter()      filterbool()
   first()       fold()        grab()        graball()     index()
-  insert()      itemize()     items()       iter()        last()
-  ldelete()     lockfilter()  map()         match()       matchall()    
-  member()      mix()         munge()       namegrab()    namegraball() 
-  randword()    remove()      replace()     rest()        revwords()    
+  itemize()     items()       iter()        last()        ldelete()     
+  linsert()     lreplace()    lockfilter()  map()         match()       
+  matchall()    member()      mix()         munge()       namegrab()    
+  namegraball() randword()    remove()      rest()        revwords()    
   setdiff()     setinter()    setunion()    shuffle()     sort()        
   sortby()      sortkey()     splice()      step()        table()       
   unique()      wordpos()     words()
@@ -217,15 +218,15 @@ See also: string functions, regexp
   capstr()         case()           caseall()        cat()
   center()         chr()            comp()           cond()
   condall()        decode64()       decompose()      decrypt()        
-  delete()         digest()         edit()           encode64()       
-  encrypt()        escape()         flip()           foreach()        
-  if()             ifelse()         lcstr()          left()           
-  lit()            ljust()          lpos()           merge()          
-  mid()            ord()            ordinal()        pos()            
-  regedit()        regmatch()       repeat()         right()          
-  rjust()          scramble()       secure()         sha0()           
-  space()          spellnum()       squish()         strallof()       
-  strcat()         strfirstof()     strinsert()      stripaccents()   
+  digest()         edit()           encode64()       encrypt()        
+  escape()         flip()           foreach()        if()             
+  ifelse()         lcstr()          left()           lit()            
+  ljust()          lpos()           merge()          mid()            
+  ord()            ordinal()        pos()            regedit()        
+  regmatch()       repeat()         right()          rjust()          
+  scramble()       secure()         sha0()           space()          
+  spellnum()       squish()         strallof()       strcat()         
+  strdelete()      strfirstof()     strinsert()      stripaccents()   
   stripansi()      strlen()         strmatch()       strreplace()     
   switch()         tr()             trim()           ucstr()          
   wrap()
@@ -239,6 +240,7 @@ See also: STRINGS
   secs()        starttime()   stringsecs()  time()        timefmt()     
   timestring()  utctime()     uptime()
 
+See also: TIMEZONES
 & Utility functions
   These functions don't quite fit into any other category.
 
@@ -1095,7 +1097,7 @@ See also: CONNECTION FUNCTIONS
 See also: visible(), CONTROL
 & CONVSECS()
 & CONVUTCSECS()
-  convsecs(<seconds>[, <zone>])
+  convsecs(<seconds>[, <timezone>])
   convutcsecs(<seconds>) 
 
   This function converts seconds to a time string, based on how many
@@ -1103,10 +1105,12 @@ See also: visible(), CONTROL
   UTC, but returns local time, convsecs(0) is not going to be "Thu Jan
   1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
  
-  convutcsecs(), and convsecs() with a second argument of 'utc' return
-  the time based on UTC time instead of the server's local time. See
-  HELP TIMEZONES for more information on the zone argument.
+  If a <timezone> argument is given, the return value is based on that
+  timezone instead of the MUSH server's local time. See 'help timezones' for
+  more information on valid timezones.
   
+  convutcsecs(<seconds>) is an alias for convsecs(<seconds>, utc).
+
   Examples:
     > say secs()
     You say, "709395750"
@@ -1281,8 +1285,9 @@ See also: @decompile2, escape(), secure(), ]
  
 See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   strfirstof()
+& STRDELETE()
 & DELETE()
-  delete(<string>, <first>, <len>)
+  strdelete(<string>, <first>, <len>)
  
   Return a modified <string>, with <len> characters starting after the
   character at position <first> deleted. In other words, it copies
@@ -1291,13 +1296,15 @@ See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   leftwards from <first>.  Characters are numbered starting at 0.
 
   Examples:
-    > say delete(abcdefgh, 3, 2)
+    > say strdelete(abcdefgh, 3, 2)
     You say, "abcfgh"
 
-    > say delete(abcdefgh, 3, -2)
+    > say strdelete(abcdefgh, 3, -2)
     You say, "abefgh"
 
-See also: strreplace(), strinsert(), mid()
+  delete() is an alias for strdelete(), for backwards compatability.
+
+See also: strreplace(), strinsert(), mid(), ldelete()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
@@ -2203,7 +2210,8 @@ See also: dec(), add(), sub()
 
 See also: extract(), elements(), grab()
 & INSERT()
-  insert(<list>, <position>, <new item>[, <delim>])
+& LINSERT()
+  linsert(<list>, <position>, <new item>[, <delim>])
 
   If <position> is a positive integer, this inserts <new item> BEFORE
   the item at <position> from the left in <list>. That means that
@@ -2221,14 +2229,16 @@ See also: extract(), elements(), grab()
   when determining position, as in 'items()'.
 
   Examples:
-    > say insert(This is a string,4,test)
+    > say linsert(This is a string,4,test)
     You say, "This is a test string"
-    > say insert(one|three|four,2,two,|)
+    > say linsert(one|three|four,2,two,|)
     You say, "one|two|three|four"
-    > say insert(meep bleep gleep,-3,GOOP)
+    > say linsert(meep bleep gleep,-3,GOOP)
     You say, "meep GOOP bleep gleep"
 
-See also: replace(), ldelete(), strinsert()
+  insert() is an alias for linsert(), for backwards compatability.
+
+See also: lreplace(), ldelete(), strinsert()
 & ISDAYLIGHT()
   isdaylight()
 
@@ -2580,7 +2590,7 @@ See also: capstr(), ucstr()
     > say ldelete(foo bar baz boing,3,,%b~%b)
     You say, "foo ~ bar ~ boing"
 
-See also: delete(), remove(), insert()
+See also: strdelete(), remove(), linsert()
 & LEFT()
   left(<string>, <length>)
 
@@ -2627,12 +2637,15 @@ See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
-  ljust(<string>, <length>[, <fill>])
+  ljust(<string>, <length>[, <fill>[, <truncate?>]])
   
-  This function pads a string with trailing characters ("left-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. If <fill> is not specified, a space is
-  used. <fill> can be more than one character in length.
+  This function returns <string>, padded with the string <fill> until it's
+  <length> characters long. <fill> can be more than one character in length,
+  and defaults to a single space.
+  
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the first <length> characters of
+  <string> are returned.
   
   Examples:
     > say ljust(foo,6)
@@ -2645,6 +2658,9 @@ See also: lcon(), exit(), next(), lvexits()
     
     > say ljust(foo,12,=+)
     You say, "foo=+=+=+=+="
+    
+    > say ljust(This is too long, 9)
+    You say, "This is t"
 
 See also: align(), center(), rjust(), left()
 & LINK()
@@ -2997,7 +3013,7 @@ See also: lvthings(), lcon()
   This function returns a list of the positions where <character>
   appears in <string>, with the first character of the string being
   0. Note that this differs from the pos() function, but is consistent
-  with other string functions like mid() and delete().
+  with other string functions like mid() and strdelete().
 
   If <character> is a null argument, space is used.  If <character> is
   not found anywhere in <string>, an empty list is returned.
@@ -3297,7 +3313,7 @@ See also: @message, oemit(), remit(), speak()
     > say mid(testing, 2, -2)
     You say, "es"
 
-See also: left(), right(), delete() 
+See also: left(), right(), strdelete() 
 & MIN()
   min(<number>[, ... , <numberN>])
 
@@ -3511,7 +3527,16 @@ See also: fullname()
   With two arguments, name() attempts to rename <object> to <new name>, as
   per @name.
 
-See also: fullname(), accname(), iname(), alias()
+See also: fullname(), accname(), iname(), alias(), moniker()
+& MONIKER()
+& CNAME()
+  moniker(<object>)
+  
+  Returns <object>'s name, with the color template from its @moniker applied.
+  moniker() always returns the colored name, even if monikers are disabled
+  via @config.
+  
+See also: MONIKERS, @moniker, name(), MONIKER, iname(), accname()
 & NAMELIST()
   namelist(<player-list>[, [<object>/]<attribute>])
 
@@ -3996,18 +4021,32 @@ See also: @quota, @squota, @allquota, QUOTAS, Quotas Power, No_Quota Power
 & R()
 & %q
 & R-FUNCTION
-  r(<register>)
+  r(<register>[, <type>])
   
-  The r() function is used to access "local registers", as set by the setq(),
-  setr() or letq() functions, and returns the contents of the specified
-  register. Available register names can be found with the listq() function.
+  The r() function can be used to access registers. It can retrieve the value
+  of q-registers set with setq() and related functions, as well as the 30 
+  stack values (the first ten of which are also available via %0-%9), and
+  also iter() and switch() context (also available through itext() and
+  stext(), respectively). The registers() function can be used to obtain a
+  list of available registers.
 
-  Registers whose name is a single character can be accessed with the
-  substitution '%q<register>'. Longer register names must be enclosed in
-  literal angle brackets. For example, r(0) and %q0 are equivilent, as far
-  r(foo) and %q<foo>.
+  <type> defaults to "qregisters", and must be one of:
   
-See also: setq(), letq(), listq(), unsetq()
+    qregisters - registers set with setq(), setr() and similar functions
+    args       - the stack, usually accessed via %0-%9. There are up to 30
+                 stack registers, plus named stack registers from 
+                 regexp $-commands
+    iter       - itext() context from iter() or @dolist. Must be an int, or
+                 "L" for the outermost itext().
+    switch     - stext() context from switch() or @switch. Must be an int,
+                 or "L" for the outermost stext()
+    regexp     - regexp capture names from re*() regexp functions
+
+  qregisters can also be accessed via the %qX (for one-char register names)
+  or %q<X> (for registers with longer names) substitutions.
+
+See also: setq(), letq(), listq(), unsetq(), registers(), v(), itext(),
+  stext(), ilev(), slev()
 & RAND()
   rand()
   rand(<num>)
@@ -4124,7 +4163,7 @@ See also: @remit, pemit(), lemit()
   Elements of <list> and <words> are both separated by <delimiter>, which
   defaults to a space.
   
-See also: insert(), ldelete(), setdiff()
+See also: linsert(), ldelete(), setdiff()
 & RENDER()
   render(<string>, <formats>)
   
@@ -4157,8 +4196,9 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
     You say, "TestTestTestTestTest"
 
 See also: space()
+& LREPLACE()
 & REPLACE()
-  replace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
+  lreplace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
   
   This replaces the item(s) at the given <position(s)> in <list> with
   <new item>. <delimiter> defaults to a space, and <osep> defaults to 
@@ -4169,19 +4209,21 @@ See also: space()
   and so on.
   
   Examples:
-    > say replace(Turn north at the junction,2,south)
+    > say lreplace(Turn north at the junction,2,south)
     You say, "Turn south at the junction"
     
-    > say replace(Turn north at the junction,-1,crossroads)
+    > say lreplace(Turn north at the junction,-1,crossroads)
     You say, "Turn north at the crossroads"
     
-    > say replace(blue|red|green|yellow,3,white,|)
+    > say lreplace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
     
-    > say replace(this starts and ends the same, 1 -1, foo)
+    > say lreplace(this starts and ends the same, 1 -1, foo)
     You say, "foo starts and ends the foo"
   
-See also: ldelete(), setdiff(), splice()
+  replace() is an alias for lreplace(), for backwards compatability.
+  
+See also: ldelete(), linsert(), setdiff(), splice(), strreplace()
 & REST()
   rest(<list>[, <delimiter>])
 
@@ -4208,13 +4250,16 @@ See also: flip()
 
 See also: left(), mid()
 & RJUST()
-  rjust(<string>, <length>[, <fill>])
+  rjust(<string>, <length>[, <fill>[, <truncate?>]])
+
+  This function returns <string>, padded on the left with the string <fill>
+  until it's <length> characters long. <fill> can be more than one character
+  in length, and defaults to a single space.
   
-  This function pads a string with leading characters  ("right-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. <fill> can be more than one character
-  in length, and defaults to a space.
- 
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the last <length> characters of
+  <string> are returned.
+  
   Examples:
     > say -[rjust(foo,6)]-
     You say, "-   foo-"
@@ -4227,7 +4272,10 @@ See also: left(), mid()
     > say rjust(foo,12,=-)
     You say, "=-=-=-=-=foo"
 
-See also: align(), center(), ljust()
+    > say ljust(This is too long, 9)
+    You say, " too long"
+
+See also: align(), center(), ljust(), right()
 & RLOC()
   rloc(<object>, <levels>) 
   
@@ -4300,7 +4348,7 @@ See also: sqrt(), power()
  
 See also: ceil(), floor(), bound(), trunc()
 & FN()
-  fn(<function name>[, <arg0>[, ... , <argN>]])
+  fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
   fn() executes the built-in/hardcoded function <function name>, even if the
   function has been deleted or overridden with @function. It is primarily 
@@ -4314,9 +4362,8 @@ See also: ceil(), floor(), bound(), trunc()
     > think pemit(me,test)
     -->test   (in highlighted letters)
 
-  To restrict the use of fn() to @functions only (to prevent players
-  from skirting softcoded replacements), use @function/restrict
-  fn=userfn.
+  To restrict the use of fn() to @functions only (to prevent players from 
+  skirting softcoded replacements), use @function/restrict fn=userfn.
 
   To prevent deleted functions from being used with fn(), @function/disable
   them prior to deleting.
@@ -4324,18 +4371,20 @@ See also: ceil(), floor(), bound(), trunc()
   Continued in 'help fn2'.
 & FN2
 
-  The built-in function is run as the object calling fn(), which means that
-  permissions may be checked for the wrong object. objeval() can be useful
-  in getting around this problem. 
+  If <obj> is specified, the built-in function will be executed as <obj>,
+  rather than as the object which called fn(). This is useful when using
+  fn() to replace a side-effect function, to ensure priviledge checks, etc,
+  are done correctly. You must control <obj>, or (if function side effects 
+  are disabled) must be see_all.
   
+  When an <obj> is given, debug information is automatically suppressed when
+  evaluating the built-in function.
+
   Example:
-    > &BRIGHT_PEMIT #10=objeval(%@,pemit(%0,-->[ansi(h,%1)]))
-    @@ Make sure the caller doesn't see debug information for the objeval()'d
-    @@ code, even if he's set DEBUG.
-    > @set #10/BRIGHT_PEMIT=no_debug
+    > &BRIGHT_PEMIT #10=fn(%@/pemit, %0, -->[ansi(h,%1)]))
     > @function/delete PEMIT
     > @function PEMIT=#10, BRIGHT_PEMIT
-    > @lock/pemit *Mike=!=*Padraic
+    > @lock/page *Mike=!=*Padraic
     
     (As Padraic)
     > think pemit(me,test)
@@ -5064,10 +5113,13 @@ See also: merge()
 
   Each row of the result is passed to <attribute>, with the first nine 
   columns available as %1-%9, and twenty more available via v(10) - v(29).
-  %0 is set to the row number, which will start with 1.
+  %0 is set to the row number, which will start with 1. The fields will also
+  be available as named arguments, with r(<field name>, args) returning the
+  appropriate value.
 
   If <dofieldnames> evaluates to a true boolean, then the first call will be
-  with row number 0 and %1-%9 will be set to the field names.
+  with row number (%0) set to 0, and %1-%9 and v(10) - v(29) will be set to 
+  the field names.
 
   See 'help sql examples' for examples.
 
@@ -5114,10 +5166,14 @@ See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
     quote           text
 
     > &each_bb me=(%0) - %1 (%2)
-    > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+    > &query me=SELECT `name`, count(*) AS `total` FROM `bbs` GROUP BY 
+           `name` ORDER BY `name`
     > think mapsql(each_bb, v(query), %r)
     (1) - Announcements (5)
     (2) - Advertisements (20)
+
+  The same thing can be done using named arguments:
+    > &each_bb me=(%0) - [r(name, args)] ([r(total, args)])
 
   Using sql() to update fields:
     > &update me=UPDATE `foo` SET `time` = '[sqlescape(%0)]' WHERE 
@@ -5270,7 +5326,7 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
     > think strinsert(Myname, 2, %b)
     My name
 
-See also: delete(), insert(), strreplace()
+See also: strdelete(), linsert(), strreplace()
 & STRIPACCENTS()
   stripaccents(<string>)
 
@@ -5297,13 +5353,13 @@ See also: words(), strfirstof()
 & STRMATCH()
   strmatch(<string>, <pattern>[, <register list>])
   
-  This function matches <pattern> against the entire <string>. It returns 
-  1 if it matches and 0 if it doesn't. It is not case-sensitive, and 
-  <pattern> may contain wildcards.
+  This function matches <pattern> against the entire <string>. It returns 1
+  if it matches and 0 if it doesn't. It is not case-sensitive, and <pattern>
+  may contain wildcards.
 
-  If <register list> is given, there is a side-effect: Wildcards and
-  patterns are stored in q-registers, in the order they are given. 
-  <register list> must be a space-separated list of digits or letters.
+  If <register list> is given, there is a side-effect: Wildcards and patterns
+  are stored in q-registers, in the order they are given. <register list> is
+  a space-separated list of register names.
  
   Examples:
     > say strmatch(Foo bar baz, *Baz) 
@@ -5317,6 +5373,9 @@ See also: words(), strfirstof()
     
     > say strmatch(foo:bar,*:*,0 1)/%q0/%q1
     You say, "1/foo/bar"
+    
+    > say strmatch(foo:bar=baz,*:*=*,L1 L2 right)/%q<L1>/%q<L2>/%q<right>
+    You say, "1/foo/bar/baz"
 
 See also: comp(), match(), setq(), r()
 & STRREPLACE()
@@ -5328,12 +5387,18 @@ See also: comp(), match(), setq(), r()
 
   If <start> is less than 0, an error is returned, and if <start> is
   greater than the length of <string>, <string> is returned.
+  
+  strreplace() attempts to preserve ansi: if <text> contains ansi, it will
+  be kept the same. If <text> contains no ansi, but <string> does, <text>
+  will be inserted with the same ansi as the text it replaces. To force
+  <text> to be inserted with no ansi, even if <string> has ansi, wrap it 
+  in ansi(n,....).
 
   Example:
     > think strreplace(Fix teh typo, 4, 3, the)
     Fix the typo
 
-See also: delete(), strinsert(), ldelete(), replace()
+See also: strdelete(), strinsert(), ldelete(), lreplace()
 & SUB()
   sub(<number1>, <number>[, ... , <number>])
 
@@ -5595,20 +5660,18 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
     "
 & TIME()
 & UTCTIME()
-  time([utc])
-  utctime()
+  time()
   time(<timezone>)
   time(<dbref>)
 
-  time() gives you the current time on the MUSH.  WARNING!  This is
-  the time on the machine that the MUSH is running on, and not where
-  you are.
+  time() gives you the current time on the MUSH. By default this is the time
+  on the server the MUSH is running on, and not the time of the caller.
 
-  utctime() and time(utc) give the same time in UTC (aka GMT), not the
-  server's local timezone.
+  With an argument, time() returns the time in the specified timezone, or in
+  the timezone set in the specified object's TZ attribute; for more 
+  information, see 'help timezones'.
 
-  To control what time zone is used, specify it instead of 'utc'. See
-  HELP TIMEZONES for details.
+  utctime() is an alias for time(utc).
 
 Continued in HELP TIME2
 & TIME2
@@ -5625,7 +5688,7 @@ Continued in HELP TIME2
     > think time(US/Pacific)
     Thu Mar 01 19:20:25 2012
 
-See also: timefmt(), timestring(), convsecs(), convtime()
+See also: timefmt(), timestring(), convsecs(), convtime(), TIMEZONES
 & TIMEZONES
 & @TZ
 
@@ -6044,7 +6107,7 @@ See also: timestring(), timefmt(), etime()
     > think squish(etimefmt(Connected for $zxd $xzh $zxm $xzs, conn(me)))
     Connected for 5h 24m 45s
 & TIMEFMT()
-  timefmt(<format>[, <secs>, <timezone>])
+  timefmt(<format>[, <secs>[, <timezone>]])
 
   This function returns the time and date, formatted according to <format>.
   <secs> is the time/date to format, as the number of seconds since the 

@@ -1,5 +1,5 @@
-/* ANSI-C code produced by gperf version 3.0.3p1 */
-/* Command-line: gperf --output-file htmltab.c htmltab.gperf  */
+/* ANSI-C code produced by gperf version 3.0.3 */
+/* Command-line: gperf -C --output-file htmltab.c htmltab.gperf  */
 /* Computed positions: -k'1-2,$' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -76,12 +76,13 @@ gperf_case_memcmp(register const char *s1, register const char *s2,
 
 #ifdef __GNUC__
 __inline
-#ifdef __GNUC_STDC_INLINE__
-  __attribute__ ((__gnu_inline__))
+#else
+#ifdef __cplusplus
+inline
 #endif
 #endif
-    static unsigned int
-     htmltag_hash(register const char *str, register unsigned int len)
+  static unsigned int
+htmltag_hash(register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] = {
     128, 128, 128, 128, 128, 128, 128, 128, 128, 128,

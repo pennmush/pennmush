@@ -46,10 +46,10 @@ These '@' commands are building-related (they create or modify objects):
  
   @atrlock       @atrchown      @chown         @chzone        @clone         
   @cpattr        @create        @destroy       @dig           @elock         
-  @eunlock       @firstexit     @link          @lock          @mvattr        
-  @name          @nuke          @open          @parent        @recycle       
-  @set           @undestroy     @ulock         @unlink        @unlock        
-  @uunlock       @wipe
+  @eunlock       @firstexit     @link          @lock          @moniker
+  @mvattr        @name          @nuke          @open          @parent        
+  @recycle       @set           @undestroy     @ulock         @unlink        
+  @unlock        @uunlock       @wipe
   
 & @-GENERAL
 These '@' commands are general utility and programming commands:
@@ -614,7 +614,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
     @attribute/limit score=^\\d+$    <-- @score can only contain digits.
                                          (Remember, Penn parser eats a \)
 
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown,
+See also: ATTRIBUTES, attribute flags, @set, @atrchown,
   @atrlock, @list
 & @ause
 & @use
@@ -1100,7 +1100,7 @@ See also: look, @exitformat, @nameformat, @conformat, @descformat,
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
 
-See also: accent(), @nameformat, accname(), stripaccents()
+See also: accent(), @nameformat, accname(), stripaccents(), iname()
 & @nameformat
   @nameformat <object>[=<format>]
 
@@ -1120,7 +1120,7 @@ See also: accent(), @nameformat, accname(), stripaccents()
     > @nameformat here = %1 [if(zone(%0),<[name(zone(%0))]>)]
 
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
-    @invformat, @idescformat
+    @invformat, @idescformat, iname()
 & @cost
   @cost <object>[=<amount>]
   
@@ -2200,7 +2200,7 @@ See also: hidden(), WHO, lwho(), lports(), ports()
 
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
 & @hook
-  @hook/<switch> <command>[=<object>, <attribute>]
+  @hook/<switch> <command>[=<object>[, <attribute>]]
   @hook/list [<command>]
 
   @hook makes the command parser evaluate given attributes at certain points
@@ -2209,17 +2209,22 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   @hook/ignore: The attribute is evaluated before the built-in command is run.
                 If it returns a false value, the command is skipped
                 (the input is still matched against softcoded commands)
-  @hook/override: The object/attribute is matched for a $command,
+  @hook/override: The object/attribute is matched for a $-command,
                 and if it matches, it is run instead of the built-in command,
                 but with the precedence of the built-in command (thus
                 overriding not only the built-in command but any local
-                $commands that might match). If the match fails, normal
+                $-commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
   @hook/override/inline: Same as @hook/override, but the resulting matches
                 are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
+  @hook/extend: If an invalid switch is given to the command, attempt to run
+                a matching $-command in <object>[/<attribute>] instead of
+                giving an error. Allows extending built-in commands in
+                softcode without having to rewrite the core functionality.
+  @hook/extend/inline: As above, but the $-command won't be queued.
 
   In all cases, %# is the dbref of the object doing the command, and all
   hooks share the same set of q-registers. With /before and /after, 
@@ -2234,16 +2239,17 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   see existing hooks with @command or @hook/list.
 
   See 'help @hook2' for more information about @hook/override/inline,
-  and 'help @hook3' for examples.
+  'help @hook3' for information on @hook/extend, and 
+  'help @hook4' for examples.
 & @hook2
 
-  @hook/override/inline allows you to write softcoded commands which act
-  exactly like built-in commands - because they're run immediately, instead
-  of being queued, output from the command appears in the right order
-  relative to other commands in the action list. By default, commands hooked
-  with /inline have access to the q-registers of the calling action list, and
-  @breaks in the hooked command propagate to the calling action list,
-  allowing you to write your own control structures.
+  @hook/override/inline and @hook/extend/inline allow you to write softcoded 
+  commands which act exactly like built-in commands - because they're run 
+  immediately, instead of being queued, output from the command appears in 
+  the right order relative to other commands in the action list. By default, 
+  commands hooked with /inline have access to the q-registers of the calling 
+  action list, and @breaks in the hooked command propagate to the calling 
+  action list, allowing you to write your own control structures.
   
   For example, this adds a new command, @qbreak, which works like @break but
   stops command execution when %q0 contains a true value:
@@ -2262,8 +2268,24 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 
   @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
   
-  See 'help @hook4' for some examples of using @hook/inline.
+  See 'help @hook5' for some examples of using @hook/override/inline.
 & @hook3
+
+  @hook/extend can be used to add new features to a built-in command, via 
+  additional switches, without forcing you to also rewrite the existing
+  functionality like @hook/override would. For example:
+  
+  > &who`active #123=$who/active*: @nspemit %#=ufun(fun_who, lwho(%#),
+       switch(%0, ?*, stringsecs(%0)))
+  > &who`staff #123=$who/staff: @nspemit %#=ufun(fun_who, setunion(lwho(%#),
+       lsearch(all, elock, type^player&(flag^wizard|flag^royalty)))
+  > @hook/extend WHO=#123
+  
+  This leaves the built-in WHO command working as normal, but adds two new
+  switches for filtering the output in different ways.
+  
+  @hook/igswitch is an alias for @hook/extend, for Rhost compatability.
+& @hook4
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2282,8 +2304,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook4' for /inplace examples.
-& @hook4
+  See 'help @hook5' for /inplace examples.
+& @hook5
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance
@@ -2689,9 +2711,29 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
     You say (Spanish), "The rain in Spain falls mainly on the plain"
   Bob sees (something like):
     Mike says (Spanish), "The rain ... ... falls ... ... ... ..."
-  Juan says:
+  Juan sees:
     Mike says (Spanish), "The rain in Spain falls mainly on the plain"
 
+& @moniker
+  @moniker <object>[=<moniker>]
+  
+  This command sets or clears the "moniker" for <object>. A moniker is an
+  ansi template, to show the object's name in color. Exactly where this
+  color is displayed depends on the "monikers" @config option; 
+  see 'help monikers' for more information.
+  
+  <moniker> can contain any text - it will be ignored, and only the ansi
+  colors will be taken into account. If <object>'s name is longer than
+  <moniker>, the last color will be used for the remaining letters.
+  
+  Examples:
+   Display your name in highligted red
+   > @moniker me=ansi(hr,-)
+   
+   Show the first letter in orange, and the rest with no color
+   > @moniker me=ansi(+orange,-)[ansi(n,-)]
+
+See also: MONIKERS, moniker(), ansi(), @nameformat, @nameaccent, MONIKER
 & @motd
   @motd[/<switch>] [<message>]
  
@@ -3694,24 +3736,29 @@ See also: say, pose, @emit, @chatformat, @pageformat
 & @mapsql
   @mapsql[/notify][/colnames] <obj>/<attr>=<query>
 
-  This command issues an SQL query if the MUSH supports SQL and
-  can connect to an SQL server. You must be WIZARD or have the
-  Sql_Ok power to use @sql.
+  This command issues an SQL query if the MUSH supports SQL and can connect 
+  to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
 
-  For each row returned by the query, the action list in <obj>/<attr>
-  is queued, with row number passed as %0 and the columns passed as
-  %1-%9. Row numbers start at 1.
+  For each row returned by the query, the action list in <obj>/<attr> is 
+  queued, with row number passed as %0 and the columns passed as %1-%9 and
+  v(10) to v(29). Row numbers start at 1. The MUSH will also set named
+  arguments, with arg names matching the SQL field names. These are
+  accessible as r(<name>, arg).  
 
-  The /notify switch causes @mapsql to do an "@notify me" after all the
-  rows are processed.
+  The /notify switch causes @mapsql to do an "@notify me" after all the rows 
+  are processed.
 
-  The /colnames switch causes @mapsql to first queue the obj/attr with
-  row number 0 and %0-%9 being the column names.
+  The /colnames switch causes @mapsql to first queue the obj/attr with row 
+  number (%0) set to 0 and args %1 to v(29) being the column names.
+  
+  Examples:
+    > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
+    > @mapsql me/desctable=DESCRIBE table_name
+    
+    > &showresult me=@pemit %#=%0. [r(name, arg)] ([r(age, arg)])
+    > @mapsql me/showresult=SELECT `name`, `age` FROM `people`
 
-  Example:
-  > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
-  > @mapsql me/desctable=DESCRIBE table_name
-See also: sql(), sqlescape(), mapsql(), @sql
+See also: @sql, sql(), sqlescape(), mapsql()
 & @sql
   @sql <query>
 
@@ -3908,12 +3955,27 @@ See also: switch wildcards, switch(), @break, stext(), slev()
 
 See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
 & @trigger
-  @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
+  @trigger[/spoof] <object>/<attribute>[=<arg0>, <arg1>, ..., <arg29>]
 
-  @trigger can be used to set off commands stored in an attribute on 
-  an object. It can also pass values to that attribute on the stack 
-  as %0 - %9.
+  @trigger queues an action list stored in an attribute. It can also pass 
+  values to that attribute on the stack, as %0 to %9 and r(0,args) to 
+  r(29,args).
+  
+  You must control <object>, or it must be Link_OK and you must have the
+  same owner, to trigger an attribute on it.
+  
+  The triggered attribute is queued - the new action list is not run
+  instantly. The action list is executed by <object>, not by the object
+  using @trigger.
+  
+  By default, the object using @trigger will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor. This is useful for global 
+  commands with @a* verb attributes.
 
+  See 'help @trigger2' for examples.
+See also: @include, ufun(), VERBS
+& @trigger2
   Examples:
     > &GREET me=POSE waves hi.
     > @trigger me/GREET
@@ -3924,16 +3986,17 @@ See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
     Cyclonus waves to Gears.
     You say, "Hi there, Arcee."
 
-  Continued in 'help @trigger2'.
-& @trigger2
-  @trigger is very useful for splitting up large commands and for making
-  them neater, but it does cause a time delay in execution, because the 
-  commands are put into the queue a second later. For very commonly-used
-  globals that you want to execute quickly, you should probably avoid using 
-  @trigger. However, in most cases, the time saved by cramming everything 
-  into one attribute is outweighed by the time spent debugging.
+    > &cmd.foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger %q0/AFOO
+    > &AFOO Bar=:is foo'd by %n!
+    > FOO BAR
+    Bar is foo'd by Globals!
 
-See also: @include, ufun()
+    > &cmd.foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger/spoof %q0/AFOO
+    > FOO BAR
+    Bar is foo'd by Cyclonus!
+
 & @ulock
 & @uunlock
   @ulock <object>[=<key>]
@@ -4013,16 +4076,15 @@ See also: version(), numversion()
   This command provides a way to do user-defined verbs with associated
   @attr/@oattr/@aattr groups. Invoking it does the following:
   
-  <actor> sees the contents of <victim>'s <what> attribute, or
-    <whatd> if <victim> doesn't have a <what>.
-  Everyone in the same room as <actor> sees the contents of
-    <victim>'s <owhat> attribute, with <actor>'s name prepended,
-    or <owhatd>, also with <actor>'s name prepended, if <victim>
-    doesn't have an <owhat>.
+  <actor> sees the contents of <victim>'s <what> attribute, or <whatd> if 
+    <victim> doesn't have a <what>.
+  Everyone in the same room as <actor> sees the contents of <victim>'s 
+    <owhat> attribute, with <actor>'s name prepended, or <owhatd>, also with
+    <actor>'s name prepended, if <victim> doesn't have an <owhat>.
   <victim> executes the contents of his <awhat> attribute.
   
-  By supplying up to ten <args>, you may pass those values on
-  the stack (i.e. %0, %1, %2, etc. up through %9).
+  By supplying up to 29 <args>, you may pass those values on the stack (i.e.
+  %0, %1, %2, etc. up through %9, and r(0,args) to r(29,args)).
   
   Continued in 'help @verb2'.
 & @verb2
@@ -4030,7 +4092,7 @@ See also: version(), numversion()
   must apply:
     1. The object which did the @verb is a wizard.
     2. The object which did the @verb controls both <actor> and <victim>
-    3. The thing which triggered the @verb (such as through a $command on
+    3. The thing which triggered the @verb (such as through a $-command on
        the object which did the @verb) must be <actor>, AND the object
        which did the @verb must be either privileged or control <victim>
        or <victim> must be VISUAL.

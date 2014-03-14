@@ -24,20 +24,20 @@
  * See http://en.wikipedia.org/wiki/Skip_list for more on them, or the
  * original paper at ftp://ftp.cs.umd.edu/pub/skipLists/skiplists.pdf.
  *
- * A few notes about this implementation: 
+ * A few notes about this implementation:
  *
  * The probability used for calculating the number of skips in any
  * given node is \f$\frac{1}{p}\f$. For example, with \f$p = 2\f$: All
  * nodes have at least one link. Half of those will have at least
  * two. Half of those will have at least three, and so on up to our
- * maximimum. 
+ * maximimum.
  *
  * The algorithm that's typically shown for picking the number of
  * skips in a newly initialized node involves repeated generation of
  * random numbers and comparing them to p (See Figure 5 in the linked
  * paper.) We use a trick involving a logarithm to get the same
  * distribution in one step, with a single random number.
- * 
+ *
  * <img src="http://raevnos.pennmush.org/images/skip_list.png" />
  *
  * The maximum number of levels links we deal with, \f$L(N)\f$, is
@@ -50,21 +50,23 @@
  * of 1.33 links per node and around 17.5 nodes checked in a typical
  * search.
  */
-#include "config.h"
-#include "conf.h"
+
 #include "copyrite.h"
+#include "memcheck.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 
-#include "externs.h"
-#include "dbdefs.h"
-#include "mymalloc.h"
-#include "log.h"
 #include "SFMT.h"
-#include "confmagic.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "strutil.h"
+
+void memcheck_dump_struct(const char *filename);
 
 typedef struct mem_check_node MEM;
 
@@ -90,8 +92,8 @@ static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
 static MEM *memcheck_head = &memcheck_head_storage;
 
 /* MEM structs are kind of large for a slab, but storing them in one
-   will boost cache locality when iterating/searching the list. 
-   
+   will boost cache locality when iterating/searching the list.
+
    TODO: Consider storing nodes with different skip link counts in
    different slabs. Probably overkill when dealing with < 200
    elements, though. We can live with the wasted space.  */
@@ -304,18 +306,20 @@ del_check(const char *ref, const char *filename, int line)
 }
 
 /** List allocations in use.
- * \param player the enactor.
+ * \param callback Invoked for each chunk with a non-zero refcount.
+ * \param data Optional data that will be passed to the callback.
  */
 void
-list_mem_check(dbref player)
+list_mem_check(void (*callback)
+                (void *data, const char *const name, int ref_count), void *data)
 {
-  MEM *chk;
+  const MEM *chk;
 
   if (!options.mem_check)
     return;
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
     if (chk->ref_count != 0)
-      notify_format(player, "%s : %d", chk->ref_name, chk->ref_count);
+      callback(data, chk->ref_name, chk->ref_count);
   }
 }
 

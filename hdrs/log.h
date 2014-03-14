@@ -7,8 +7,9 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "bufferq.h"
 #include <stdio.h>
+#include "bufferq.h"
+#include "mushtype.h"
 
 /* log types */
 enum log_type {
@@ -52,5 +53,7 @@ void log_activity(enum log_act_type type, dbref player, const char *action);
 void notify_activity(dbref player, int num_lines, int dump);
 const char *last_activity(void);
 int last_activity_type(void);
+
+void penn_perror(const char *);
 
 #endif                          /* LOG_H */

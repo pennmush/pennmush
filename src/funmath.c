@@ -8,7 +8,6 @@
 
 #include "copyrite.h"
 
-#include "config.h"
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
@@ -20,11 +19,14 @@
 #ifdef HAVE_SSE3
 #include <pmmintrin.h>
 #endif
+
 #include "conf.h"
 #include "externs.h"
-#include "sort.h"
+#include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
-#include "confmagic.h"
+#include "sort.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -118,7 +120,7 @@ is_ival(char const *str)
     return 1;
   if (!str)
     return 0;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -148,11 +150,11 @@ is_uival(char const *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uival_full(str, &end, 10);
@@ -304,7 +306,7 @@ FUNCTION(fun_inc)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("1", buff, bp);
@@ -312,7 +314,7 @@ FUNCTION(fun_inc)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -320,7 +322,7 @@ FUNCTION(fun_inc)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -351,7 +353,7 @@ FUNCTION(fun_dec)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("-1", buff, bp);
@@ -359,7 +361,7 @@ FUNCTION(fun_dec)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -367,7 +369,7 @@ FUNCTION(fun_dec)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -1484,17 +1486,17 @@ FUNCTION(fun_xor)
 static void
 do_spellnum(char *num, unsigned int len, char **buff, char ***bp)
 {
-  static const char *bigones[] =
+  static const char *const bigones[] =
     { "", "thousand", "million", "billion", "trillion" };
-  static const char *singles[] = { "", "one", "two", "three", "four",
+  static const char *const singles[] = { "", "one", "two", "three", "four",
     "five", "six", "seven", "eight", "nine"
   };
-  static const char *special[] =
+  static const char *const special[] =
     { "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
     "sixteen",
     "seventeen", "eighteen", "nineteen"
   };
-  static const char *tens[] = { "", " ", "twenty", "thirty", "forty",
+  static const char *const tens[] = { "", " ", "twenty", "thirty", "forty",
     "fifty", "sixty", "seventy", "eighty", "ninety"
   };
   unsigned int x0, x1, x2;
@@ -1643,7 +1645,7 @@ FUNCTION(fun_spellnum)
       dot = 1;                  /* allow only 1 dot in a number */
       *pnumber = '\0';          /* devide the string */
       pnum2 = pnumber + 1;
-    } else if (!isdigit((unsigned char) *pnumber)) {
+    } else if (!isdigit(*pnumber)) {
       safe_str(T(e_num), buff, bp);
       return;
     }
@@ -1795,7 +1797,7 @@ FUNCTION(fun_lmath)
   int nptr;
   char sep;
   char **ptr;
-  MATH *op;
+  const MATH *op;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep)) {
     return;
@@ -1820,7 +1822,7 @@ FUNCTION(fun_lmath)
 
 /* Walker probably needs to convert from_base_XX arrays to a form
    suitable for putting in utils/gentables.c. Copy & paste is not it. ;)  */
-signed char from_base_64[256] = {
+static const signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, 62, -1, 63,
@@ -1839,10 +1841,10 @@ signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_64[] =
+static const signed char to_base_64[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-signed char from_base_36[256] = {
+static const signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1861,7 +1863,7 @@ signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+static const signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 
 FUNCTION(fun_baseconv)
@@ -1875,8 +1877,8 @@ FUNCTION(fun_baseconv)
 
 
   /* Base 36 by default. */
-  signed char *frombase = from_base_36;
-  signed char *tobase = to_base_36;
+  const signed char *frombase = from_base_36;
+  const signed char *tobase = to_base_36;
 
   if (!(is_integer(args[1]) && is_integer(args[2]))) {
     safe_str(T(e_ints), buff, bp);
@@ -1915,9 +1917,8 @@ FUNCTION(fun_baseconv)
     }
     while (*ptr) {
       n *= from;
-      if (frombase[(unsigned char) *ptr] >= 0 &&
-          frombase[(unsigned char) *ptr] < (int) from) {
-        n += frombase[(unsigned char) *ptr];
+      if (frombase[*ptr] >= 0 && frombase[*ptr] < (int) from) {
+        n += frombase[*ptr];
         ptr++;
       } else {
         safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
@@ -1932,7 +1933,7 @@ FUNCTION(fun_baseconv)
 
   /* Handle the 0-case. (And quickly handle < to_base case, too!) */
   if (n < to) {
-    safe_chr(tobase[(unsigned char) n], buff, bp);
+    safe_chr(tobase[n], buff, bp);
     return;
   }
 
@@ -1942,7 +1943,7 @@ FUNCTION(fun_baseconv)
   while (n > 0) {
     m = n % to;
     n = n / to;
-    safe_chr(tobase[(unsigned char) m], numbuff, &nbp);
+    safe_chr(tobase[m], numbuff, &nbp);
   }
 
   /* Reverse back onto buff. */

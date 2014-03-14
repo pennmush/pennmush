@@ -6,29 +6,37 @@
  *
  */
 
-#include "config.h"
+#define _GNU_SOURCE             /* For strchrnul, if applicable. */
 
-#include <stdio.h>
+#include "copyrite.h"
+#include "strutil.h"
+
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
-#include "copyrite.h"
-#include "conf.h"
-#include "case.h"
-#include "pueblo.h"
-#include "parse.h"
-#include "externs.h"
-#include "ansi.h"
-#include "mymalloc.h"
-#include "log.h"
-#include "mypcre.h"
-#include "confmagic.h"
 
+#include "ansi.h"
+#include "case.h"
+#include "conf.h"
+#include "log.h"
+#include "markup.h"
+#include "memcheck.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "pueblo.h"
+
+/* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
+   this up eventually... */
+void mush_panic(const char *);
+
+/* TODO: Move this prototype elsewhere since this function is shared. */
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
 /* Duplicate the first len characters of s */
@@ -215,9 +223,9 @@ string_match(const char *src, const char *sub)
       if (string_prefix(src, sub))
         return src;
       /* else scan to beginning of next word */
-      while (*src && isalnum((unsigned char) *src))
+      while (*src && isalnum(*src))
         src++;
-      while (*src && !isalnum((unsigned char) *src))
+      while (*src && !isalnum(*src))
         src++;
     }
   }
@@ -313,7 +321,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
 {
   /* base and tmplate must be the same length */
   size_t n;
-  unsigned char c;
+  char c;
 
   for (n = 0; n < len; n++) {
     switch (base[n]) {
@@ -827,6 +835,12 @@ safe_strl(const char *s, size_t len, char *buff, char **bp)
   return len - clen;
 }
 
+int
+safe_time_t(time_t t, char *buff, char **bp)
+{
+  return safe_integer((intmax_t) t, buff, bp);
+}
+
 /** Safely fill a string with a given character a given number of times.
  * \param x character to fill with.
  * \param n number of copies of character to fill in.
@@ -857,10 +871,45 @@ safe_fill(char x, size_t n, char *buff, char **bp)
   return ret;
 }
 
+/** Pad a string, which may contain ANSI, so it contains at least n
+ * visible (non-markup) chars.
+ * \param x character to pad with
+ * \param n desired size of buffer
+ * \param buff BUFFER_LEN char array to pad
+ * \retval 0 success
+ * \param 1 failure (filled to end of buffer but more was requested).
+ */
 int
-safe_hexchar(unsigned char c, char *buff, char **bp)
+safe_fill_to(char x, size_t n, char *buff)
 {
-  const char *digits = "0123456789abcdef";
+  char tmp[BUFFER_LEN];
+  char *p = tmp;
+  size_t curr;
+  int ret = 0;
+
+  curr = ansi_strlen(buff);
+
+  if (n >= BUFFER_LEN)
+    n = BUFFER_LEN - 1;
+
+  if (curr >= n)
+    return 0;
+
+  if (safe_str(buff, tmp, &p)) {
+    *p = '\0';
+    return 1;
+  }
+
+  ret = safe_fill(x, n - curr, tmp, &p);
+  *p = '\0';
+  strcpy(buff, tmp);
+  return ret;
+}
+
+int
+safe_hexchar(char c, char *buff, char **bp)
+{
+  static const char digits[] = "0123456789abcdef";
   if (safe_chr(digits[c >> 4], buff, bp))
     return 1;
   if (safe_chr(digits[c & 0x0F], buff, bp))
@@ -894,12 +943,11 @@ char *
 skip_space(const char *s)
 {
   char *c = (char *) s;
-  while (c && *c && isspace((unsigned char) *c))
+  while (c && *c && isspace(*c))
     c++;
   return c;
 }
 
-#ifndef HAVE_STRCHRNUL
 /** Return a pointer to next char in s which matches c, or to the terminating
  * nul at the end of s.
  * \param s string to search.
@@ -909,37 +957,16 @@ skip_space(const char *s)
 char *
 seek_char(const char *s, char c)
 {
+#ifdef HAVE_STRCHRNUL
+  return strchrnul(s, c);
+#else
   char *p = (char *) s;
   if (!p)
     return NULL;
   while (*p && (*p != c))
     p++;
   return p;
-}
-#endif
-
-/** Unsigned char version of strlen.
- * \param s string.
- * \return length of s.
- */
-size_t
-u_strlen(const unsigned char *s)
-{
-  return strlen((const char *) s);
-}
-
-/** Unsigned char version of mush_strncpy(). Destination string
- * is nul-terminated.
- * \param target destination for copy.
- * \param source string to copy.
- * \param len maximum number of bytes to copy.
- * \return pointer to copy.
- */
-unsigned char *
-u_strncpy(unsigned char *target, const unsigned char *source, size_t len)
-{
-  return (unsigned char *) mush_strncpy((char *) target, (const char *) source,
-                                        len);
+#endif                          /* HAVE_STRCHRNUL */
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -979,7 +1006,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 }
 
 /** Standard replacer tokens for text and position */
-const char *standard_tokens[2] = { "##", "#@" };
+const char *const standard_tokens[2] = { "##", "#@" };
 
 /* Replace two tokens in a string at once. All-around better than calling
  * replace_string() twice
@@ -993,7 +1020,7 @@ const char *standard_tokens[2] = { "##", "#@" };
  * \return allocated string with replacements performed.
  */
 char *
-replace_string2(const char *old[2], const char *newbits[2],
+replace_string2(const char *const old[2], const char *const newbits[2],
                 const char *restrict string)
 {
   char *result, *rp;
@@ -1289,7 +1316,7 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
   char *current;
   int size = 0, neg = 0;
   imaxdiv_t r;
-  const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+  static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
   /* Sanity checks */
   if (!bp || !buff || !*bp)
@@ -1651,10 +1678,9 @@ set_match_limit(struct pcre_extra *ex)
 size_t
 remove_trailing_whitespace(char *buff, size_t len)
 {
-  unsigned char *c;
+  char *c;
 
-  for (c = (unsigned char *) buff + len - 1; c >= (unsigned char *) buff;
-       c -= 1) {
+  for (c = buff + len - 1; c >= buff; c -= 1) {
     if (isspace(*c)) {
       len -= 1;
       *c = '\0';
@@ -1662,4 +1688,15 @@ remove_trailing_whitespace(char *buff, size_t len)
       break;
   }
   return len;
+}
+
+int
+safe_chr(char c, char *buff, char **bp)
+{
+  if ((*bp - buff) >= (BUFFER_LEN - 1))
+    return 1;
+  else {
+    *(*bp)++ = c;
+    return 0;
+  }
 }

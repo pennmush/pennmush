@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
-#include "config.h"
-#include "confmagic.h"
+#include "tz.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -27,13 +27,13 @@
 #endif
 #include <pcre.h>
 
+#include "attrib.h"
 #include "conf.h"
 #include "externs.h"
-#include "parse.h"
-#include "attrib.h"
-#include "tz.h"
 #include "log.h"
-#include "confmagic.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 #ifdef TZINFO_PATH
 #define USE_TZINFO 1

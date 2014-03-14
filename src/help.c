@@ -5,7 +5,8 @@
  *
  *
  */
-#include "config.h"
+#include "help.h"
+
 /* This might have to be uncommented on some linux distros... */
 /* #define _XOPEN_SOURCE 600 */
 #include <stdlib.h>
@@ -14,19 +15,21 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "conf.h"
-#include "externs.h"
-#include "command.h"
-#include "htab.h"
-#include "help.h"
-#include "log.h"
+
 #include "ansi.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "htab.h"
+#include "log.h"
+#include "memcheck.h"
+#include "mymalloc.h"
+#include "notify.h"
 #include "parse.h"
 #include "pueblo.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "mymalloc.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 HASHTAB help_files;  /**< Help filenames hash table */
 
@@ -110,7 +113,7 @@ COMMAND(cmd_helpcmd)
       int type = 0;
       pp = pattern;
       for (sp = save; *sp; sp++) {
-        if (isspace((unsigned char) *sp)) {
+        if (isspace(*sp)) {
           if (type) {
             type = 0;
             *pp = '*';
@@ -481,7 +484,7 @@ help_build_index(help_file *h, int restricted)
         fclose(rfp);
         return;
       }
-      if (isspace((unsigned char) line[0]))
+      if (isspace(line[0]))
         continue;
       if (line[0] != '&') {
         do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",

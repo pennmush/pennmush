@@ -23,20 +23,21 @@
  * popiel@wolfskeep.com to work out agreeable terms.
  */
 
-#include "config.h"
+#include "copyrite.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "copyrite.h"
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
 #include "ansi.h"
+#include "case.h"
+#include "conf.h"
+#include "externs.h"
+#include "memcheck.h"
 #include "mymalloc.h"
-#include "parse.h"
 #include "mypcre.h"
-#include "confmagic.h"
+#include "parse.h"
+#include "strutil.h"
 
 /** Force a char to be lowercase */
 #define FIXCASE(a) (DOWNCASE(a))
@@ -81,11 +82,6 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 }
 
 static bool
-
-
-
-
-
 
 
 real_atr_wild(const char *restrict tstr,
@@ -357,7 +353,7 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
 bool
 wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
                   char **matches, int nmatches, char *data, int len,
-                  PE_REGS *pe_regs)
+                  PE_REGS *pe_regs, int pe_reg_flags)
 {
   int results[BUFFER_LEN * 2];
   int n;
@@ -419,8 +415,10 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
         matches[n] = NULL;
       }
       if (pe_regs) {
+        if (!pe_reg_flags)
+          pe_reg_flags = PE_REGS_CAPTURE;
         for (n = 0; n < count; n++) {
-          pe_regs_set(pe_regs, PE_REGS_CAPTURE, pe_regs_intname(n),
+          pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(n),
                       matches[n] ? matches[n] : "");
         }
       }
@@ -454,7 +452,7 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
 bool
 regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
                     char **matches, size_t nmatches, char *data, ssize_t len,
-                    PE_REGS *pe_regs)
+                    PE_REGS *pe_regs, int pe_reg_flags)
 {
   pcre *re;
   pcre_extra *extra;
@@ -509,9 +507,11 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   /* If we have pe_regs, populate it. */
   if (pe_regs) {
     if (as) {
-      pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, as);
+      pe_regs_set_rx_context_ansi(pe_regs, pe_reg_flags, re, offsets,
+                                  subpatterns, as);
     } else {
-      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, val);
+      pe_regs_set_rx_context(pe_regs, pe_reg_flags, re, offsets, subpatterns,
+                             val);
     }
   }
 
@@ -693,7 +693,7 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs,
         char data[BUFFER_LEN * 2];
         char *matches[100];
         return wild_match_case_r(s, d, cs, matches, 100, data, BUFFER_LEN * 2,
-                                 pe_regs);
+                                 pe_regs, 0);
       } else {
         return quick_wild_new(s, d, cs);
       }

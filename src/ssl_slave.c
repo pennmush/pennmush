@@ -1,8 +1,6 @@
 /** SSL slave related code. */
 
 #include "copyrite.h"
-#include "config.h"
-
 
 #ifdef SSL_SLAVE
 
@@ -30,14 +28,13 @@
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "myssl.h"
-#include "mysocket.h"
 #include "SFMT.h"
+#include "conf.h"
+#include "log.h"
+#include "mysocket.h"
+#include "myssl.h"
 #include "ssl_slave.h"
-
-#include "confmagic.h"
+#include "wait.h"
 
 void errprintf(FILE *, const char *, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
@@ -53,6 +50,9 @@ const char *socket_file = NULL;
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
 void event_cb(struct bufferevent *bev, short e, void *data);
+struct conn *alloc_conn(void);
+void free_conn(struct conn *c);
+void delete_conn(struct conn *c);
 
 enum conn_state {
   C_SSL_CONNECTING,
@@ -135,6 +135,11 @@ delete_conn(struct conn *c)
   }
 }
 
+struct evdns_request *evdns_getnameinfo(struct evdns_base *base,
+                                        const struct sockaddr *addr, int flags,
+                                        evdns_callback_type callback,
+                                        void *data);
+
 /** Address to hostname lookup wrapper */
 struct evdns_request *
 evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
@@ -163,6 +168,8 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
 }
 
 /* libevent callback functions */
+
+void pipe_cb(struct bufferevent *from_bev, void *data);
 
 /** Read from one buffer and write the results to the other */
 void
@@ -197,6 +204,8 @@ pipe_cb(struct bufferevent *from_bev, void *data)
   }
 }
 
+void local_connected(struct conn *c);
+
 /** Called after the local connection to the mush has established */
 void
 local_connected(struct conn *c)
@@ -227,6 +236,9 @@ local_connected(struct conn *c)
   free(hostid);
 }
 
+void address_resolved(int result, char type, int count, int ttl
+                      __attribute__ ((__unused__)), void *addresses,
+                      void *data);
 /** Called after the remote hostname has been resolved. */
 void
 address_resolved(int result, char type, int count, int ttl
@@ -268,6 +280,7 @@ address_resolved(int result, char type, int count, int ttl
   bufferevent_enable(c->local_bev, EV_WRITE);
 }
 
+void ssl_connected(struct conn *c);
 /** Called after the SSL connection and initial handshaking is complete. */
 void
 ssl_connected(struct conn *c)
@@ -535,6 +548,8 @@ main(int argc, char **argv)
 
   return EXIT_SUCCESS;
 }
+
+const char *time_string(void);
 
 const char *
 time_string(void)

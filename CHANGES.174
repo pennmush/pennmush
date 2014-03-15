@@ -382,7 +382,7 @@ Fixes:
   * ident query timeouts could get doubled mistakenly. [SW]
   * Typo in mushcnf.dst fixed by Noltar@Korongil.
   * Fix to help puppets2 by TurtleKnee@M*U*S*H.
-  * Help pcreate() added. Report by Eratl@M*U*S*H.
+  * Help pcreate() added. Report by Rince@M*U*S*H.
   * @pcreate messages capitalized by Oriens@Alexandria.
   * create() used 10 as the default cost, instead of the configured
     default. Report by 8bitMUSH.
@@ -409,7 +409,7 @@ Minor changes:
     Galactica:TSC.
   * Buncha tprintfs replaced with notify_formats. [SW] 
   * New local_connect() and local_disconnect() hooks in local.dst.
-    Suggested by Eratl@M*U*S*H.
+    Suggested by Rince@M*U*S*H.
   * lookup_player now deals with player names prefixed with "*",
     so a bunch of commands like @newpassword will now treat those
     arguments. Suggested by Glonk@GlonkMUSH.
@@ -607,7 +607,7 @@ Fixes:
   * Added Configure check for <netdb.h> to help Cygwin builds.
     Reported by Xyrxwyrth@M*U*S*H.
   * Help fix or two.
-  * Grammatical correction by Eratl@M*U*S*H in @boot/me error message.
+  * Grammatical correction by Rince@M*U*S*H in @boot/me error message.
   * Cosmetics of @mail with folders > 9 improved. Reported by Bellemore@M*U*S*H
   * One could be disconnected at the connect screen under some conditions
     for no good reason. Reported by Oriens@Alexandria. [SW]

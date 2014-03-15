@@ -313,7 +313,7 @@ Minor changes:
   * The 'T' type character (for THING) is now shown when one-character
     flag lists are displayed. This is more consistent with other types,
     and makes it harder to confuse #23O (#23, opaque) with #230
-    (#230, no flags). Suggested by Eratl@M*U*S*H.
+    (#230, no flags). Suggested by Rince@M*U*S*H.
   * @lock/use on a parent used to apply to attempts to use $commands on
     a child. This is no longer necessary, given inheritable locks,
     so the behavior has been changed. Parents' locks are no longer checked

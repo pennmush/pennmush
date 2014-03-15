@@ -21,7 +21,8 @@ Hardcode:
  * Rewritten the telnet handler, to make it more manageable/modifiable,
    instead of it being a huge bunch of nested switch()es. [MG]
  * Update the SFMT random number generator to 1.4.1. [SW]
- * Built in and persistant uses of regular expressions are JIT compiled if the host's PCRE version supports it, for faster matching.
+ * Built in and persistant uses of regular expressions are JIT compiled if the
+   host's PCRE version supports it, for faster matching.
 
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
@@ -39,11 +40,13 @@ Minor changes:
    pennies to someone who has the maximum, or take pennies from someone who
    is broke. [MG]
  * The message shown when you need to run 'make update' is now slightly 
-   clearer about what to do and why. By Eratl.
+   clearer about what to do and why. By Rince.
  * Removed some 20 year old Sun OS workaround code. Suggested by mbrazaitis.
- * Slightly less confusing error message for @chan/buffer. Suggested by ssstarduster.
- * 'HELP ENTRIES' is generated on the fly. Suggested by Mike. [SW]
- * It also shows how many pages the entries index is. Suggested by Trinsec. [SW]
+ * Slightly less confusing error message for @chan/buffer suggested by Sketch.
+ * 'HELP ENTRIES' is generated on the fly, and shows the total number of
+   pages. Suggested by [MG] and Trinsec. [SW]
+ * @success/@osuccess/@asuccess now get the old location of the moving object
+   in %0. Suggested by Riorgan. [SW]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.
@@ -53,7 +56,8 @@ Fixes:
  * Help/translation fixes by spork, Riorgan and others. [MG]
  * The 'give', 'take' and 'empty' commands displayed the wrong object names
    when mogrifiers were used. Reported by Riorgan. [MG]
- * Fix crash in ssl_slave when a connection drops in the middle of hostname lookup.
+ * Fix crash in ssl_slave when a connection drops in the middle of hostname
+   lookup.
 
 & 1.8.5p5
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
@@ -170,7 +174,7 @@ Functions:
    Suggested by Paige. [MG]
  * ljust() and rjust() now take an optional <trunc?> arg which, if true,
    causes strings already longer than <len> to be truncated. Suggested by
-   many people over the years, most recently Eratl and Quasar. [MG]
+   many people over the years, most recently Rince and Quasar. [MG]
 
 & 1.8.5p4
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013

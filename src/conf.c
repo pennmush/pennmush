@@ -1277,6 +1277,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   return 0;
 }
 
+#define set_string_option(opt, val) mush_strncpy(opt, val, sizeof(opt))
+
 /** Set the default configuration options.
  */
 void
@@ -1311,9 +1313,9 @@ conf_default_set(void)
   options.unconnected_idle_timeout = 300;
   options.keepalive_timeout = 300;
   options.dump_interval = 3601;
-  strcpy(options.dump_message,
+  set_string_option(options.dump_message,
          T("GAME: Saving database. Game may freeze for a few moments."));
-  strcpy(options.dump_complete, T("GAME: Save complete. "));
+  set_string_option(options.dump_complete, T("GAME: Save complete. "));
   options.max_logins = 128;
   options.max_guests = 0;
   options.max_named_qregs = 50;
@@ -1332,9 +1334,9 @@ conf_default_set(void)
   options.use_quota = 1;
   options.function_side_effects = 1;
   options.empty_attrs = 1;
-  strcpy(options.money_singular, T("Penny"));
-  strcpy(options.money_plural, T("Pennies"));
-  strcpy(options.log_wipe_passwd, "zap!");
+  set_string_option(options.money_singular, T("Penny"));
+  set_string_option(options.money_plural, T("Pennies"));
+  set_string_option(options.log_wipe_passwd, "zap!");
 #ifdef WIN32
   strcpy(options.compressprog, "");
   strcpy(options.uncompressprog, "");
@@ -1373,8 +1375,8 @@ conf_default_set(void)
   options.warn_interval = 3600;
   options.use_dns = 1;
   options.safer_ufun = 1;
-  strcpy(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
-  strcpy(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
+  set_string_option(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
+  set_string_option(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
   options.noisy_whisper = 0;
   options.possessive_get = 1;
   options.possessive_get_d = 1;
@@ -1415,11 +1417,11 @@ conf_default_set(void)
   options.silent_pemit = 0;
   options.max_dbref = 0;
   options.chat_strip_quote = 1;
-  strcpy(options.wizwall_prefix, T("Broadcast:"));
-  strcpy(options.rwall_prefix, T("Admin:"));
-  strcpy(options.wall_prefix, T("Announcement:"));
-  strcpy(options.access_file, "access.cnf");
-  strcpy(options.names_file, "names.cnf");
+  set_string_option(options.wizwall_prefix, T("Broadcast:"));
+  set_string_option(options.rwall_prefix, T("Admin:"));
+  set_string_option(options.wall_prefix, T("Announcement:"));
+  set_string_option(options.access_file, "access.cnf");
+  set_string_option(options.names_file, "names.cnf");
   options.object_cost = 10;
   options.exit_cost = 1;
   options.link_cost = 1;
@@ -1462,6 +1464,8 @@ conf_default_set(void)
   strcpy(options.sql_password, "");
   strcpy(options.sql_host, "127.0.0.1");
 }
+
+#undef set_string_option
 
 /* Limit how many files we can nest */
 static int conf_recursion = 0;

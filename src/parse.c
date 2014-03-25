@@ -2279,7 +2279,7 @@ process_expression(char *buff, char **bp, char const **str,
         case 'k':
         case 'K':              /* enactor moniker (ansi'd name) */
           if (GoodObject(enactor))
-            safe_str(ansi_name(enactor, 0, NULL), buff, bp);
+            safe_str(ansi_name(enactor, 0, NULL, 0), buff, bp);
           else
             safe_str(T(e_notvis), buff, bp);
           break;

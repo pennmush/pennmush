@@ -49,6 +49,11 @@ Minor changes:
    pages. Suggested by [MG] and Trinsec. [SW]
  * @success/@osuccess/@asuccess now get the old location of the moving object
    in %0. Suggested by Riorgan. [SW]
+ * @mail/review with no args now lists all mail you've sent to everyone.
+   Suggested by Paige. [MG]
+ * @mail/review now shows the recipient in the message list, instead of the
+   sender. This is slightly more useful, since the person using the command
+   is always the sender. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

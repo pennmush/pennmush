@@ -685,10 +685,12 @@ shortname(dbref it)
  * \param had_moniker if non-null, set to 1 when the name is monikered,
  *           and 0 if it is returned without ANSI. Allows the caller to
  *           apply default ANSI for un-monikered names.
+ * \param maxlen the maximum number of visible (non-markup) characters to
+             copy, or 0 to copy the entire name
  * \retval pointer to STATIC buffer containing the monikered name
  */
 char *
-ansi_name(dbref thing, bool accents, bool *had_moniker)
+ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
 {
   static char name[BUFFER_LEN], *format, *np;
   ATTR *a;
@@ -706,6 +708,10 @@ ansi_name(dbref thing, bool accents, bool *had_moniker)
   else
     strcpy(name, Name(thing));
 
+  if (maxlen > 0 && maxlen < BUFFER_LEN) {
+    name[maxlen] = '\0';
+  }
+  
   a = atr_get(thing, "MONIKER");
   if (!a) {
     set_mp(0);
@@ -722,7 +728,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker)
   aname = parse_ansi_string(name);
   ansi_string_replace(as, 0, BUFFER_LEN, aname);
   np = name;
-  safe_ansi_string(as, 0, as->len, name, &np);
+  safe_ansi_string(as, 0, (maxlen > 0 ? maxlen : as->len), name, &np);
   *np = '\0';
   free_ansi_string(as);
   free_ansi_string(aname);

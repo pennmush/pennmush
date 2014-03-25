@@ -879,13 +879,13 @@ void
 do_mail_reviewlist(dbref player, dbref target)
 {
   char subj[30];
-  char sender[BUFFER_LEN];
   MAIL *mp;
   char nbuff[BUFFER_LEN], *np;
   int nlen;
   struct mail_selector ms;
   int i;
   bool isplayer;
+  dbref last = NOTHING;
 
   /* Initialize mail selector */
   ms.low = 0;
@@ -900,18 +900,31 @@ do_mail_reviewlist(dbref player, dbref target)
     notify_noenter(player, open_tag("SAMP"));
   /* MG: I haven't ANSI'd this because I'm lazy, and it requires more than just
    * replacing Name() with AName() */
-  np = nbuff;
-  safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
-  nlen = strlen(Name(target));
-  if (nlen < 27)
-    safe_fill(' ', 27 - nlen, nbuff, &np);
-  *np = '\0';
+  if (target != NOTHING) {
+    np = nbuff;
+    safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
+    nlen = strlen(Name(target));
+    if (nlen < 27)
+      safe_fill(' ', 27 - nlen, nbuff, &np);
+    *np = '\0';
+    mp = find_exact_starting_point(target);
+  } else {
+    np = nbuff;
+    safe_format(nbuff, &np, "%-27s", T("All"));
+    *np = '\0';
+    mp = HEAD;
+  }
   notify_format(player,
                 T
                 ("--------------------   MAIL: %s   ------------------"),
                 nbuff);
-  for (mp = find_exact_starting_point(target); mp && (mp->to == target);
+  for (; mp && ((target == NOTHING) || (mp->to == target));
        mp = mp->next) {
+    if (last != mp->to) {
+      i = 0;
+      last = mp->to;
+      nbuff[0] = '\0';
+    }
     if (mail_match(player, mp, ms, i)) {
       /* list it */
       i++;
@@ -919,17 +932,24 @@ do_mail_reviewlist(dbref player, dbref target)
         notify_noenter(player,
                        tprintf
                        ("%c%cA XCH_CMD=\"@mail/review %s=%d\" XCH_HINT=\"Read message %d sent to %s\"%c",
-                        TAG_START, MARKUP_HTML, Name(target),
-                        i, i, Name(target), TAG_END));
+                        TAG_START, MARKUP_HTML, Name(mp->to),
+                        i, i, Name(mp->to), TAG_END));
       strcpy(subj, chopstr(get_subject(mp), 28));
-      strcpy(sender, get_sender(mp, 0, 12, &isplayer));
-      safe_fill_to(' ', 12, sender);
-      np = nbuff;
+      if (!nbuff[0]) {
+        np = nbuff;
+        safe_str(AnsiNameWrapper(mp->to, 0, AN_SYS, NULL, 12), nbuff, &np);
+        nlen  = strlen(Name(mp->to));
+        if (nlen < 12) {
+          safe_fill(' ', 12 - nlen, nbuff, &np);
+        }
+        *np = '\0';
+      }
+      isplayer = IsPlayer(mp->to);
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
-                    (isplayer && (Connected(mp->from) && (!hidden(mp->from)
+                    (isplayer && (Connected(mp->to) && (!hidden(mp->to)
                                                           || Priv_Who(player)))
-                     ? '*' : ' '), sender, 30, subj,
+                     ? '*' : ' '), nbuff, 30, subj,
                     mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_PUEBLO)
         notify_noenter(player, tprintf("%c%c/A%c", TAG_START,
@@ -956,16 +976,16 @@ do_mail_review(dbref player, const char *name, const char *msglist)
   dbref target;
 
   if (!name || !*name) {
-    notify(player,
-           T("MAIL: I can't figure out whose mail you want to review."));
-    return;
-  }
-  if ((target = lookup_player(name)) == NOTHING) {
+    target = NOTHING;
+  } else if ((target = lookup_player(name)) == NOTHING) {
     notify(player, T("MAIL: I couldn't find that player."));
     return;
   }
   if (!msglist || !*msglist) {
     do_mail_reviewlist(player, target);
+  } else if (target == NOTHING) {
+    notify(player, T("MAIL: You must specify a player."));
+    return;
   } else {
     do_mail_reviewread(player, target, msglist);
   }

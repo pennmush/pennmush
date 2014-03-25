@@ -458,7 +458,7 @@ char *shortname(dbref it);
 dbref absolute_room(dbref it);
 int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
 
-char *ansi_name(dbref thing, bool accents, bool *had_moniker);
+char *ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen);
 /* From warnings.c */
 void run_topology(void);
 void do_warnings(dbref player, const char *name, const char *warns);

@@ -2575,7 +2575,7 @@ FUNCTION(fun_regreplace)
 
     /* If we're doing a lot, study the regexp to make sure it's good */
     if (all) {
-      study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+      study = pcre_study(re, pcre_study_flags, &errptr);
       if (errptr != NULL) {
         pcre_free(re);
         DEL_CHECK("pcre");
@@ -2700,7 +2700,7 @@ FUNCTION(fun_regreplace)
 
       /* If we're doing a lot, study the regexp to make sure it's good */
       if (all) {
-        study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+        study = pcre_study(re, pcre_study_flags, &errptr);
         if (errptr != NULL) {
           pcre_free(re);
           DEL_CHECK("pcre");
@@ -2974,7 +2974,7 @@ FUNCTION(fun_regrab)
   }
   ADD_CHECK("pcre");
 
-  study = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+  study = pcre_study(re, pcre_study_flags, &errptr);
   if (errptr != NULL) {
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);

@@ -12,9 +12,9 @@
 #include <time.h>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
-#include <pcre.h>
 
 #include "conf.h"
+#include "mypcre.h"
 #include "log.h"
 #include "notify.h"
 #include "strutil.h"
@@ -228,7 +228,7 @@ password_comp(const char *saved, const char *pass)
                 errptr, re[erroffset]);
       return 0;
     }
-    extra = pcre_study(passwd_re, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(passwd_re, pcre_study_flags, &errptr);
   }
 
   len = strlen(pass);

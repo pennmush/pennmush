@@ -1161,7 +1161,7 @@ valid_hex_digits(const char *digits, int len)
       do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
       return 0;
     }
-    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr); 
+    extra = pcre_study(re, pcre_study_flags, &errptr); 
   }
 
   if (!digits)
@@ -1188,7 +1188,7 @@ valid_angle_hex(const char *s, int len)
       do_rawlog(LT_ERR, "valid_angle_hex: Unable to compile re: %s", errptr);
       return 0;
     }
-    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!s)
@@ -1220,7 +1220,7 @@ valid_angle_triple(const char *s, int len, char *rgbs)
       do_rawlog(LT_ERR, "valid_angle_triple: Unable to compile re: %s", errptr);
       return 0;
     }
-    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!s)

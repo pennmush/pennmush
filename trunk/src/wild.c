@@ -50,6 +50,8 @@ bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
 const unsigned char *tables = NULL;  /** Pointer to character tables */
 
+int pcre_study_flags = PCRE_STUDY_JIT_COMPILE;
+
 /** Do a wildcard match, without remembering the wild data.
  *
  * This routine will cause crashes if fed NULLs instead of strings.

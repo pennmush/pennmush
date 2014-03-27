@@ -766,7 +766,7 @@ is_skippable_topic(const char *topic)
   if (!skippable) {
     int erroffset;
     skippable = pcre_compile("^&?entries(?:-\\d+)?$", PCRE_CASELESS, &errptr, &erroffset, tables);
-    extra = pcre_study(skippable, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(skippable, pcre_study_flags, &errptr);
   }
   
   return pcre_exec(skippable, extra, topic, strlen(topic), 0, 0, ovec, ovecsize) > 0;
@@ -883,7 +883,7 @@ is_index_entry(const char *topic, int *offset)
     const char *errptr = NULL;
     int erroffset = 0;
     entry_re = pcre_compile("^&?entries-(\\d+)$", PCRE_CASELESS, &errptr, &erroffset, tables);
-    extra = pcre_study(entry_re, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(entry_re, pcre_study_flags, &errptr);
   }
 
   if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec, ovecsize)) == 2) {

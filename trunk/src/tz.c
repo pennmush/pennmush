@@ -121,7 +121,7 @@ is_valid_tzname(const char *name)
                 errptr);
       return 0;
     }
-    extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errptr);
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   len = strlen(name);

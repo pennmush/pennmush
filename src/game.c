@@ -1023,12 +1023,12 @@ passwd_filter(const char *cmd)
                             PCRE_CASELESS, &errptr, &eo, tables);
     if (!pass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    pass_extra = pcre_study(pass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
+    pass_extra = pcre_study(pass_ptn, pcre_study_flags, &errptr);
     newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)",
                                PCRE_CASELESS, &errptr, &eo, tables);
     if (!newpass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    newpass_extra = pcre_study(newpass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
+    newpass_extra = pcre_study(newpass_ptn, pcre_study_flags, &errptr);
     initialized = 1;
   }
 

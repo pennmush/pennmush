@@ -539,6 +539,8 @@ main(int argc, char **argv)
             pidfile = argv[n + 1];
             n++;
           }
+	} else if (strcmp(argv[n], "--no-pcre-jit") == 0) {
+	  pcre_study_flags = 0;
         } else
           fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[n]);
       } else {

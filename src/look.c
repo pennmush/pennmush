@@ -607,7 +607,7 @@ do_look_around(dbref player)
 void
 do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
 {
-  dbref thing;
+  dbref thing = NOTHING;
   dbref loc;
   int nearthis = 0;
   bool outside = (key & LOOK_OUTSIDE);

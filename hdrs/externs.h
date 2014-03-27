@@ -65,11 +65,6 @@ extern FILE *wizlog_fp;
 extern FILE *tracelog_fp;
 extern FILE *cmdlog_fp;
 extern int restarting;
-#ifdef SUN_OS
-int f_close(FILE * file);
-/** SunOS fclose macro */
-#define fclose(f) f_close(f);
-#endif
 int hidden(dbref player);
 dbref guest_to_connect(dbref player);
 void dump_reboot_db(void);
@@ -106,7 +101,11 @@ text_compress(char const *s)
     char *safe_uncompress(char const *s) __attribute_malloc__;
 #else
 extern char ucbuff[];
-#define init_compress(f) 0
+static inline int
+init_compress(PENNFILE *f __attribute__((__unused__))) 
+{
+  return 0;
+}
 #define compress(s) (strdup(s))
 #define uncompress(s) (strcpy(ucbuff, (char *) s))
 #define safe_uncompress(s) (strdup((char *) s))

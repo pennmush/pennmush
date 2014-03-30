@@ -58,6 +58,8 @@ Minor changes:
    suggestion by Paige. [MG]
  * You can now always see a channel if you've been joined to it and can speak
    on it, even if you don't pass its @clock/see. Suggested by Rince. [MG]
+ * 'page foo=' now produces an error, instead of paging nothing. Suggested by
+   Paige. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

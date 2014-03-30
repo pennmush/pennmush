@@ -52,6 +52,8 @@ Minor changes:
  * @mail/review now shows the recipient in the message list, instead of the
    sender. This is slightly more useful, since the person using the command
    is always the sender. [MG]
+ * @mail/status now lets you twiddle the 'urgent' status of messages. From a
+   suggestion by Paige. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

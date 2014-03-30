@@ -1,3 +1,5 @@
+SHORTLANG=$(basename $(LANG))
+
 .SUFFIXES: .po .pox .mo
 
 POFILES=ru_RU.po nl_NL.po sv_SE.po hu_HU.po es_ES.po pt_BR.po fr_FR.po \
@@ -9,10 +11,10 @@ zh_TW.po fi_FI.po
 
 po-files: $(POFILES)
 
-localized: $(LANG).po
-	-msgfmt --strict $(LANG).po
-	-mkdir -p $(LANG)/LC_MESSAGES
-	-mv messages.mo $(LANG)/LC_MESSAGES/pennmush.mo
+localized: $(SHORTLANG).po
+	-msgfmt --strict $(SHORTLANG).po
+	-mkdir -p $(SHORTLANG)/LC_MESSAGES
+	-mv messages.mo $(SHORTLANG)/LC_MESSAGES/pennmush.mo
 
 .po:
 	@echo "No LANG variable set, no localization. Ignore errors."

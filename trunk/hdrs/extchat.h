@@ -202,7 +202,8 @@ struct chanlist {
      (eval_chan_lock(c,p, CLOCK_MOD))))
 #define Chan_Can_See(c,p) \
      (Hasprivs(p) || See_All(p) || (Chan_Can_Access(c,p) && \
-     (eval_chan_lock(c,p, CLOCK_SEE))))
+     (eval_chan_lock(c,p, CLOCK_SEE))) || \
+     (onchannel(p,c) && Chan_Can_Speak(c,p)))
 #define Chan_Can_Hide(c,p) \
      (Can_Hide(p) || (Channel_CanHide(c) && Chan_Can_Access(c,p) && \
      (eval_chan_lock(c,p, CLOCK_HIDE))))

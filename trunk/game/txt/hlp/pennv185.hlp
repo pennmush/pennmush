@@ -58,6 +58,8 @@ Minor changes:
    on it, even if you don't pass its @clock/see. Suggested by Rince. [MG]
  * 'page foo=' now produces an error, instead of paging nothing. Suggested by
    Paige. [MG]
+ * 'make localized' now ignores charset when building translation files, which
+   stops it throwing errors unnecessarily. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

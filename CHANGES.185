@@ -56,6 +56,8 @@ Minor changes:
    is always the sender. [MG]
  * @mail/status now lets you twiddle the 'urgent' status of messages. From a
    suggestion by Paige. [MG]
+ * You can now always see a channel if you've been joined to it and can speak
+   on it, even if you don't pass its @clock/see. Suggested by Rince. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

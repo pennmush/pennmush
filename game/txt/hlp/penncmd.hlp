@@ -911,14 +911,14 @@ See also: @create, clone(), create(), @cpattr
                comma-separated and are parsed individually
   /rsnoparse : The command does not evaluate the rightside arg(s).
 
-  Any command added without both the /noparse and /rsnoparse switchs is 
-  provided with a /noeval switch itself, so if you @command/add foo, then
-  foo's arguments are parsed by default, but you can call foo/noeval. 
-  Note: the $-command needs to make allowances for the /noeval switch in 
-  its matching.
+  Any command added with neither /noparse or /rsnoparse is provided with a 
+  /noeval switch automatically, so if you @command/add foo, then foo's 
+  arguments are parsed by default, but you can call foo/noeval. Note: when you
+  @hook/override foo, its $-command pattern must be able to match "foo/noeval"
+  as well for the switch to be used.
 
-  Commands added with @command/add, like other standard commands, are
-  never case-sensitive. Commands can also be added in the alias.cnf file.
+  Commands added with @command/add, like other standard commands, are always
+  case-insensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER

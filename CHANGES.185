@@ -62,6 +62,7 @@ Minor changes:
    Paige. [MG]
  * 'make localized' now ignores charset when building translation files, which
    stops it throwing errors unnecessarily. [MG]
+ * Use a more robust configure check for timezone data files. [SW]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

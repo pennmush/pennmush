@@ -622,6 +622,8 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 SSL_SLAVE_TARGET
 INFO_SLAVE_TARGET
+TZDIR
+TZSELECT
 LIBOBJS
 SQLITE3_VERSION
 SQLITE3_LDFLAGS
@@ -728,7 +730,6 @@ enable_sql
 with_mysql
 with_postgresql
 with_sqlite3
-with_tzinfo
 enable_ipv6
 enable_nls
 enable_info_slave
@@ -752,7 +753,8 @@ CXXFLAGS
 CCC
 SENDMAIL
 ED
-CPP'
+CPP
+TZDIR'
 
 
 # Initialize some variables set by options.
@@ -1391,9 +1393,6 @@ Optional Packages:
                           specify path to pg_config
   --with-sqlite3=[ARG]    use SQLite 3 library [default=yes], optionally
                           specify the prefix for sqlite3 library
-  --with-tzinfo=/path/to/zoneinfo
-                          Specify path to time zone data directory. (Defaults
-                          to /usr/share/zoneinfo)
 
 Some influential environment variables:
   CC          C compiler command
@@ -1409,6 +1408,7 @@ Some influential environment variables:
   SENDMAIL    Path to sendmail
   ED          Path to ed
   CPP         C preprocessor
+  TZDIR       Directory with compiled zoneinfo files.
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -9005,57 +9005,242 @@ if test "x$ac_cv_file__dev_urandom" = xyes; then :
 
 fi
 
+			ac_fn_c_check_header_mongrel "$LINENO" "tzfile.h" "ac_cv_header_tzfile_h" "$ac_includes_default"
+if test "x$ac_cv_header_tzfile_h" = xyes; then :
 
-
-# Check whether --with-tzinfo was given.
-if test "${with_tzinfo+set}" = set; then :
-  withval=$with_tzinfo;
-if test "x$withval" != "xno"; then
- if test "x$withval" = "xyes"; then
-   tzinfopath=/usr/share/zoneinfo
- else
-   tzinfopath="$withval"
- fi
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $tzinfopath exists" >&5
-$as_echo_n "checking if $tzinfopath exists... " >&6; }
- if test -d "$tzinfopath"; then
-
-cat >>confdefs.h <<_ACEOF
-#define TZINFO_PATH "$tzinfopath"
-_ACEOF
-
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
- else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
- fi
-else
- { $as_echo "$as_me:${as_lineno-$LINENO}: not using timezone database" >&5
-$as_echo "$as_me: not using timezone database" >&6;}
 fi
 
+
+
+
+
+		if test -L "/etc/localtime"; then
+		TZDIR_cand="`readlink /etc/localtime` ${TZDIR_cand}"
+	fi
+
+		if 				test -n "${TZDIR}" && test -d "${TZDIR}" 			; then
+		## bingo
+		TZDIR_cand="${TZDIR} ${TZDIR_cand}"
+	fi
+
+		# Extract the first word of "tzselect", so it can be a program name with args.
+set dummy tzselect; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_TZSELECT+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
+  case $TZSELECT in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_TZSELECT="$TZSELECT" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_TZSELECT="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
-# To-to: Find out where else various OSes put the db and check to see if they exist.
-tzinfopath=/usr/share/zoneinfo
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if $tzinfopath exists" >&5
-$as_echo_n "checking if $tzinfopath exists... " >&6; }
-if test -d "$tzinfopath"; then
-
-cat >>confdefs.h <<_ACEOF
-#define TZINFO_PATH "$tzinfopath"
-_ACEOF
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+  ;;
+esac
+fi
+TZSELECT=$ac_cv_path_TZSELECT
+if test -n "$TZSELECT"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TZSELECT" >&5
+$as_echo "$TZSELECT" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
+	if test -n "${ac_cv_path_TZSELECT}"; then
+				valtmp="`mktemp`"
+		strings "${ac_cv_path_TZSELECT}" | \
+			grep -F 'TZDIR=' > "${valtmp}"
+		. "${valtmp}"
+		TZDIR_cand="${TZDIR} ${TZDIR_cand}"
+		rm -f -- "${valtmp}"
+	fi
+
+		TZDIR_cand="${TZDIR_cand} \
+/usr/share/zoneinfo \
+/usr/lib/zoneinfo \
+/usr/local/etc/zoneinfo \
+/usr/share/lib/zoneinfo \
+"
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for TZDIR" >&5
+$as_echo_n "checking for TZDIR... " >&6; }
+if ${ax_cv_zoneinfo_tzdir+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  		ax_tmp_zoneinfo_nested="yes"
+		for c in ${TZDIR_cand}; do
+			ax_cv_zoneinfo_utc=""
+			for f in "UTC" "UCT" "Universal" "Zulu"; do
+
+
+
+
+
+
+	if test -z "${ax_tmp_zoneinfo_nested}"; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking zoneinfo file \"${c}/${f}\"" >&5
+$as_echo_n "checking zoneinfo file \"${c}/${f}\"... " >&6; }
+	fi
+
+	ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
+#include <fcntl.h>
+
+
+
+/* simplified struct */
+struct tzhead {
+	char	tzh_magic[4];		/* TZ_MAGIC */
+	char	tzh_version[1];		/* '\0' or '2' as of 2005 */
+	char	tzh_reserved[15];	/* reserved--must be zero */
+	char	tzh_ttisgmtcnt[4];	/* coded number of trans. time flags */
+	char	tzh_ttisstdcnt[4];	/* coded number of trans. time flags */
+	char	tzh_leapcnt[4];		/* coded number of leap seconds */
+	char	tzh_timecnt[4];		/* coded number of transition times */
+	char	tzh_typecnt[4];		/* coded number of local time types */
+	char	tzh_charcnt[4];		/* coded number of abbr. chars */
+};
+
+int
+main(int argc, char *argv[])
+{
+	struct tzhead foo;
+	int f;
+
+	if (argc <= 1) {
+		return 0;
+	} else if ((f = open(argv[1], O_RDONLY, 0644)) < 0) {
+		return 1;
+	} else if (read(f, &foo, sizeof(foo)) != sizeof(foo)) {
+		return 1;
+	} else if (close(f) < 0) {
+		return 1;
+	}
+
+	/* inspect the header */
+	if (memcmp(foo.tzh_magic, "TZif", sizeof(foo.tzh_magic))) {
+		return 1;
+	} else if (*foo.tzh_version && *foo.tzh_version != '2') {
+		return 1;
+#if defined CHECK_LEAPCNT
+	} else if (!foo.tzh_leapcnt[0] && !foo.tzh_leapcnt[1] &&
+		   !foo.tzh_leapcnt[2] && !foo.tzh_leapcnt[3]) {
+		return CHECK_LEAPCNT;
+#endif  /* CHECK_LEAPCNT */
+	}
+
+	/* otherwise everything's in order */
+	return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ## call the whole shebang again with the tzfile
+		if ./conftest$EXEEXT "${c}/${f}"; then
+			if test -z "${ax_tmp_zoneinfo_nested}"; then
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: looking good" >&5
+$as_echo "looking good" >&6; }
+			fi
+
+										ax_cv_zoneinfo_utc="${c}/${f}"
+					break
+
+		else
+			if test -z "${ax_tmp_zoneinfo_nested}"; then
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: looking bad ${ax_tmp_rc}" >&5
+$as_echo "looking bad ${ax_tmp_rc}" >&6; }
+			fi
+
+		fi
+
+else
+
+		if test -z "${ax_tmp_zoneinfo_nested}"; then
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: impossible" >&5
+$as_echo "impossible" >&6; }
+		fi
+
 fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+	ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+
+			done
+			if test -n "${ax_cv_zoneinfo_utc}"; then
+				ax_cv_zoneinfo_tzdir="${c}"
+				break
+			fi
+		done
+		ax_tmp_zoneinfo_nested=""
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_zoneinfo_tzdir" >&5
+$as_echo "$ax_cv_zoneinfo_tzdir" >&6; }
+	TZDIR="${ax_cv_zoneinfo_tzdir}"
+
+
+	if 				test -n "${ax_cv_zoneinfo_tzdir}" && test -d "${ax_cv_zoneinfo_tzdir}" 			; then
+
+$as_echo "#define HAVE_ZONEINFO 1" >>confdefs.h
+
+
+cat >>confdefs.h <<_ACEOF
+#define TZDIR "${ax_cv_zoneinfo_tzdir}"
+_ACEOF
+
+	fi
+
+
+
+
+
+
+
+
 
 
 

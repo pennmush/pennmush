@@ -374,7 +374,8 @@ typedef bool _Bool;
 #undef HAS_DEV_URANDOM
 
 /* Path to tzinfo database */
-#undef TZINFO_PATH
+#undef HAVE_ZONEINFO
+#undef TZDIR
 
 /* Misc. */
 

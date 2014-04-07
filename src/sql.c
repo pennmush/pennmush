@@ -527,6 +527,7 @@ COMMAND(cmd_mapsql)
         for (i = 0; i < useable_fields + 1; i++) {
           pe_regs_setenv(pe_regs, i, names[i]);
         }
+        pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
         queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
       }
 

@@ -3734,7 +3734,7 @@ See also: ANSI, COLOR, XTERM256, @sockset
     
 See also: say, pose, @emit, @chatformat, @pageformat
 & @mapsql
-  @mapsql[/notify][/colnames] <obj>/<attr>=<query>
+  @mapsql[/notify][/colnames][/spoof] <obj>/<attr>=<query>
 
   This command issues an SQL query if the MUSH supports SQL and can connect 
   to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
@@ -3745,11 +3745,16 @@ See also: say, pose, @emit, @chatformat, @pageformat
   arguments, with arg names matching the SQL field names. These are
   accessible as r(<name>, arg).  
 
-  The /notify switch causes @mapsql to do an "@notify me" after all the rows 
-  are processed.
+  The /notify switch causes the executor to do queue "@notify me" after all
+  the rows are processed. Note that this is the object running "@mapsql", and 
+  not <obj>.
 
   The /colnames switch causes @mapsql to first queue the obj/attr with row 
   number (%0) set to 0 and args %1 to v(29) being the column names.
+  
+  By default, the object using @mapsql will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor.
   
   Examples:
     > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)

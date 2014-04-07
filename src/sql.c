@@ -114,6 +114,7 @@ static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 #endif
 static sqlplatform sql_platform(void);
 static char *sql_sanitize(char *res);
+#define SANITIZE(s,n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -366,7 +367,7 @@ FUNCTION(fun_sql_escape)
   else
     safe_str(T("#-1 TOO LONG"), buff, bp);
 }
-#define SANITIZE(s,n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
+
 COMMAND(cmd_mapsql)
 {
 #ifdef HAVE_MYSQL
@@ -388,6 +389,8 @@ COMMAND(cmd_mapsql)
   dbref thing;
   int dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
   int donotify = SW_ISSET(sw, SWITCH_NOTIFY);
+  dbref triggerer = executor;
+  int spoof = SW_ISSET(sw, SWITCH_SPOOF);
 
   /* Find and fetch the attribute, first. */
   strncpy(tbuf, arg_left, BUFFER_LEN);
@@ -406,10 +409,15 @@ COMMAND(cmd_mapsql)
     return;
   }
 
-  if (!controls(executor, thing) && !(Owns(executor, thing) && LinkOk(thing))) {
-    notify(executor, T("Permission denied."));
-    return;
+  if (!controls(executor, thing)) {
+    if (spoof || !(Owns(executor, thing) && LinkOk(thing))) {
+      notify(executor, T("Permission denied."));
+      return;
+    }
   }
+  
+  if (spoof)
+    triggerer = enactor;
 
   if (God(thing) && !God(executor)) {
     notify(executor, T("You can't trigger God!"));
@@ -528,7 +536,7 @@ COMMAND(cmd_mapsql)
           pe_regs_setenv(pe_regs, i, names[i]);
         }
         pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-        queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
+        queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, 0, executor);
       }
 
       /* Queue the rest. */
@@ -541,7 +549,7 @@ COMMAND(cmd_mapsql)
           pe_regs_set(pe_regs, PE_REGS_ARG, names[i], cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-      queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
+      queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, 0, executor);
       for (i = 0; i < useable_fields; i++) {
         if (cells[i + 1])
           mush_free(cells[i + 1], "sql_row");

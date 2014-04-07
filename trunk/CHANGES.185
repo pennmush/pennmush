@@ -77,6 +77,8 @@ Fixes:
  * Crashbug in SQL fixed. Reported by Mercutio. [MG]
  * @mapsql/colnames cleared q-registers in the first (colnames) action list
    queued. Reported by Mercutio. [MG]
+ * @channel/join would give an 'ambiguous' error, even if you couldn't see the
+   other potentially-matching channels. Reported by Mercutio. [MG]
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

@@ -1011,6 +1011,8 @@ find_channel_partial(const char *name, CHAN **chan, dbref player)
     return CMATCH_NONE;
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
+    if (!onchannel(player, p) && !Chan_Can_See(p, player))
+      continue;
     strcpy(cleanp, remove_markup(ChanName(p), NULL));
     if (!strcasecmp(cleanname, cleanp)) {
       *chan = p;
@@ -1147,17 +1149,17 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
     return CMATCH_NONE;
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
-    if (!onchannel(player, p)) {
-      strcpy(cleanp, remove_markup(ChanName(p), NULL));
-      if (!strcasecmp(cleanname, cleanp)) {
+    if (onchannel(player, p) || !Chan_Can_See(p, player))
+      continue;
+    strcpy(cleanp, remove_markup(ChanName(p), NULL));
+    if (!strcasecmp(cleanname, cleanp)) {
+      *chan = p;
+      return CMATCH_EXACT;
+    }
+    if (string_prefix(cleanp, cleanname)) {
+      if (!*chan)
         *chan = p;
-        return CMATCH_EXACT;
-      }
-      if (string_prefix(cleanp, cleanname)) {
-        if (!*chan)
-          *chan = p;
-        count++;
-      }
+      count++;
     }
   }
   switch (count) {

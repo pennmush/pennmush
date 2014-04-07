@@ -74,6 +74,7 @@ Fixes:
    when mogrifiers were used. Reported by Riorgan. [MG]
  * Fix crash in ssl_slave when a connection drops in the middle of hostname
    lookup.
+ * Crashbug in SQL fixed. Reported by Mercutio. [MG]
 
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 

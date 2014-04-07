@@ -61,6 +61,8 @@ Minor changes:
  * 'make localized' now ignores charset when building translation files, which
    stops it throwing errors unnecessarily. [MG]
  * Use a more robust configure check for timezone data files. [SW]
+ * Added a /spoof switch to @mapsql, to spoof the enactor a la @trigger/spoof.
+   Suggested by Mercutio. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

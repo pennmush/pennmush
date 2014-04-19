@@ -2309,12 +2309,10 @@ TELNET_HANDLER(telnet_ttype_sb) {
 
 /* Handle DO CHARSET, send list of known charsets */
 TELNET_HANDLER(telnet_charset) {
-  if (*cmd != DO)
-    return;
   /* Send a list of supported charsets for the client to pick.
    * Currently, we only offer the single charset the MUSH is
-   * currently running in, or "ISO-8859-1" (latin1) if it's running
-   * in "C", "UTF-8" or an unknown charset. */
+   * currently running in (if known, and not "C" or "UTF-*"),
+   * and plain ol' ascii. */
   /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
   static const char reply_prefix[4] = {IAC, SB, TN_CHARSET, TN_SB_CHARSET_REQUEST};
   static const char reply_suffix[2] = {IAC, SE};
@@ -2325,6 +2323,9 @@ TELNET_HANDLER(telnet_charset) {
   char delim[2] = { '\0', '\0' };
   char *curr_locale = NULL;
 
+  if (*cmd != DO)
+    return;
+	
   queue_newwrite(d, reply_prefix, 4);
   curr_locale = nl_langinfo(CODESET);
   if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
@@ -2339,13 +2340,14 @@ TELNET_HANDLER(telnet_charset) {
       delim[0] = ';';       /* fall back on ; */
     }
   } else {
-    /* Fall back on latin-1 */
     delim[0] = ';';
-    curr_locale = "ISO-8859-1";
+    curr_locale = NULL;
   }
   queue_newwrite(d, delim, 1);
-  queue_newwrite(d, curr_locale, strlen(curr_locale));
-  queue_newwrite(d, delim, 1);
+  if (curr_locale && strlen(curr_locale)) {
+    queue_newwrite(d, curr_locale, strlen(curr_locale));
+    queue_newwrite(d, delim, 1);
+  }
   queue_newwrite(d, "US-ASCII", 8);
   queue_newwrite(d, delim, 1);
   queue_newwrite(d, "ASCII", 5);
@@ -2359,6 +2361,10 @@ TELNET_HANDLER(telnet_charset) {
    * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
    * but it's unlikely to contain a valid charset name, so probably
    * wouldn't help anyway.) */
+
+  if (*cmd != DO)
+    return;
+	
   queue_newwrite(d, reply_prefix, 4);
   queue_newwrite(d, ";ISO-8859-1", 11);
   queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);

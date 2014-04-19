@@ -79,6 +79,8 @@ Fixes:
    queued. Reported by Mercutio. [MG]
  * @channel/join would give an 'ambiguous' error, even if you couldn't see the
    other potentially-matching channels. Reported by Mercutio. [MG]
+ * Penn negotiated charset as iso-8859-1 (latin1) even if the MUSH was
+   running using a different charset. Reported by Tyler. [MG]
 
 & 1.8.5p5
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013

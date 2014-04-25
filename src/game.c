@@ -2131,9 +2131,6 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
 
 #ifdef HAVE_UPTIME
   fp =
-#ifdef __LCC__
-    (FILE *)
-#endif
     popen(UPTIME, "r");
 
   /* just in case the system is screwy */
@@ -2397,9 +2394,6 @@ db_open(const char *fname)
 
     if (access(filename, R_OK) == 0) {
       pf->handle.f =
-#ifdef __LCC__
-        (FILE *)
-#endif
         popen(tprintf("%s < '%s'", options.uncompressprog, filename), "r");
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
@@ -2481,9 +2475,6 @@ db_open_write(const char *fname)
   if (*options.compressprog) {
     pf->type = PFT_PIPE;
     pf->handle.f =
-#ifdef __LCC__
-      (FILE *)
-#endif
       popen(tprintf("%s > '%s'", options.compressprog, filename), "w");
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {

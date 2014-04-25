@@ -9,10 +9,9 @@ AC_CONFIG_HEADERS(config.h)
 AC_CANONICAL_BUILD
 
 if test "x$CFLAGS" = "x"; then
-CFLAGS="-O"
-DEFAULT_CFLAGS=yes
+  DEFAULT_CFLAGS=yes
 else
-DEFAULT_CFLAGS=no
+  DEFAULT_CFLAGS=no
 fi
 
 AC_LANG(C)
@@ -20,8 +19,8 @@ AC_LANG(C)
 ### Programs
 
 AC_PATH_PROG(CAT, cat)
-AC_PROG_CC
-AC_PROG_CC_C99
+AC_PROG_CC([gcc clang])
+AC_PROG_CC_C99([gcc clang])
 AC_PATH_PROG(GDB, gdb)
 AC_PATH_PROG(CHMOD, chmod)
 AC_PATH_PROG(CP, cp)
@@ -43,48 +42,70 @@ AC_PATH_PROG(CTAGS, ctags)
 AC_PATH_PROG(ETAGS, etags)
 AC_PATH_PROG(EXCTAGS, exctags)
 
-# Set good debug and warning options if using gcc
+# Detects FreeBSD
+case "${build_os}" in 
+  *freebsd*)
+    USING_FREEBSD=yes
+esac
+
+# Adds additional paths potentially needed for BSD compilation
+if test "${USING_FREEBSD}" = yes; then
+  CPPFLAGS="$CPPFLAGS -I/usr/local/include -I/usr/local/include/event2"
+  LDFLAGS="$LDFLAGS -L/usr/local/lib -L/usr/local/lib/event2"
+fi
+
+# Set good debug and warning options if using gcc or clang
 # and custom CFLAGS aren't being used.
 # Todo: Look into the warnings setting macros in the autoconf archive,
 # maybe use them instead?
-if test "${DEFAULT_CFLAGS}" = yes; then
- if test -n "${GDB}"; then
-  if test "${ac_cv_c_compiler_gnu}" = yes; then
-CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment -Wno-char-subscripts"
-   else
-CFLAGS="-g $CFLAGS -W"
+# CFLAGS for clang
+if test "${CC}" = "clang"; then
+  if test "${DEFAULT_CFLAGS}" = yes; then
+    CFLAGS="$CFLAGS -W -Wall -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
+  else
+    CFLAGS="-g $CFLAGS -W"
   fi
- else
-CFLAGS="-g $CFLAGS -W"
- fi
+elif test "${GCC}" = yes; then
+  if test "${DEFAULT_CFLAGS}" = yes; then
+    if test -n "${GDB}"; then
+      CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment -Wno-char-subscripts"
+    else
+      CFLAGS="-g $CFLAGS -W"
+    fi
+  else
+    CFLAGS="-g $CFLAGS -W"
+  fi
 fi
 
-# Reduce the size of the binary on PowerPC OS X 
-case "${build_cpu}-${build_os}" in
-  powerpc*-darwin*) 
-   AX_GCC_OPTION([-mdynamic-no-pic], [], [], [
-      CFLAGS="$CFLAGS -mdynamic-no-pic"
-   ], [])
-  ;;
-esac
-
-
-# Some useful security-related compiler, assembler and linker options
-AX_GCC_OPTION([-fstack-protector], [], [], [
-   CFLAGS="$CFLAGS -fstack-protector"
-], [])
-case "${build_os}" in
-     *linux*)
-     # These might be linux-specific and aren't always caught as not
-     # supported by configure
-     AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
-        LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
-	], [])
-	AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
-	   CFLAGS="$CFLAGS -Wa,--noexecstack"
+# The next two tests should only be run if we're using gcc
+# This is done as a precaution
+if test "${GNU}" = yes; then
+	# Reduce the size of the binary on PowerPC OS X 
+	case "${build_cpu}-${build_os}" in
+	  powerpc*-darwin*) 
+	   AX_GCC_OPTION([-mdynamic-no-pic], [], [], [
+		  CFLAGS="$CFLAGS -mdynamic-no-pic"
 	   ], [])
-	   ;;
-esac
+	  ;;   
+	esac
+
+	# Some useful security-related compiler, assembler and linker options
+	AX_GCC_OPTION([-fstack-protector], [], [], [
+	   CFLAGS="$CFLAGS -fstack-protector"
+	], [])
+	case "${build_os}" in
+		 *linux*)
+		 # These might be linux-specific and aren't always caught as not
+		 # supported by configure
+		 AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
+			LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+		], [])
+		AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
+		   CFLAGS="$CFLAGS -Wa,--noexecstack"
+		   ], [])
+		   ;;
+	esac
+fi
 
 
 if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
@@ -269,6 +290,7 @@ AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
 AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
 AC_CHECK_FUNCS([pread pwrite prctl])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
+
 # Some linux OSes (Old redhat, others?) will see these functions
 # through an AC_CHECK_FUNCS but not when it comes time to actually use
 # them in source. 
@@ -384,8 +406,8 @@ AC_CHECK_DECLS(SIGCLD, [AC_DEFINE(HAVE_SIGCLD)],,[AC_INCLUDES_DEFAULT
 
 ### Files
 AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAS_DEV_URANDOM)])
-AX_ZONEINFO()            
-
+AX_ZONEINFO()
+            
 ### Misc features
 AC_ARG_ENABLE(ipv6,  AS_HELP_STRING([--disable-ipv6],
       [Don't use IPv6 networking]), enable_ipv6=$enableval, enable_ipv6=yes)

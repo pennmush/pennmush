@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#if  (defined(__GNUC__) || defined(__LCC__)) && !defined(__USE_XOPEN_EXTENDED)
+#if  defined(__GNUC__)  && !defined(__USE_XOPEN_EXTENDED)
 /* Required to get the getdate() prototype on glibc. */
 #define __USE_XOPEN_EXTENDED
 #endif

@@ -424,6 +424,7 @@ sig_atomic_t slave_error = 0;
 sig_atomic_t ssl_slave_error = 0;
 extern bool ssl_slave_halted;
 #endif
+WAIT_TYPE error_code = 0;
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
@@ -1000,6 +1001,24 @@ got_new_connection(int sock, conn_source source)
 
 #endif
 
+#if defined(INFO_SLAVE) || defined(SSL_SLAVE)
+static char *
+exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
+{
+  static char buffer[BUFFER_LEN], *bp;
+  bp = buffer;
+  safe_format(buffer, &bp, "%s (PID %d) exited ", prog, pid);
+  if (WIFEXITED(code)) 
+    safe_format(buffer, &bp, "with code %d.", WEXITSTATUS(code));
+  else if (WIFSIGNALED(code)) 
+    safe_format(buffer, &bp, "with signal %d.", WTERMSIG(code));
+  else
+    safe_str("in an unknown fashion.", buffer, &bp);
+  *bp = '\0';
+  return buffer;
+}
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1098,16 +1117,14 @@ shovechars(Port_t port, Port_t sslport)
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, "info_slave (Pid %d) exited unexpectedly!",
-                slave_error);
-      slave_error = 0;
+      do_rawlog(LT_ERR, exit_report("info_slave", slave_error, error_code));
+      slave_error = error_code = 0;
     }
 #endif
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
-      do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
-                ssl_slave_error);
-      ssl_slave_error = 0;
+      do_rawlog(LT_ERR, exit_report("ssl_slave", ssl_slave_error, error_code));
+      ssl_slave_error = error_code = 0;
       if (!ssl_slave_halted)
         make_ssl_slave();
     }
@@ -3924,10 +3941,9 @@ bailout(int sig)
 void
 reaper(int sig __attribute__ ((__unused__)))
 {
-  WAIT_TYPE my_stat;
   pid_t pid;
 
-  while ((pid = mush_wait(-1, &my_stat, WNOHANG)) > 0) {
+  while ((pid = mush_wait(-1, &error_code, WNOHANG)) > 0) {
 #ifdef INFO_SLAVE
     if (info_slave_pid > -1 && pid == info_slave_pid) {
       slave_error = info_slave_pid;
@@ -3944,7 +3960,7 @@ reaper(int sig __attribute__ ((__unused__)))
 #endif
     if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
-      dump_status = my_stat;
+      dump_status = error_code;
       forked_dump_pid = -1;
     }
   }

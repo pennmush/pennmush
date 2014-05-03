@@ -59,7 +59,7 @@
                                ((!Mistrust(p) && (Owner(p) == Owner(t))) && \
                                 !(f->perms & (F_DARK | F_MDARK | F_DISABLED))) || \
                              (See_All(p) && !(f->perms & (F_DARK | F_DISABLED))) || \
-                             God(p)))
+                             God(p)) && can_see_flag_on(p,t,f))
 
 /* Can p locate x? */
 bool unfindable(dbref);

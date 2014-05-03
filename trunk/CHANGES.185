@@ -67,6 +67,9 @@ Minor changes:
  * Added a /spoof switch to @mapsql, to spoof the enactor a la @trigger/spoof.
    Suggested by Mercutio. [MG]
  * Improved error reporting when info_slave or ssl_slave exits unexpectedly. [SW]
+ * hasflag(<player>, connected) now returns 1 if the caller can see that the
+   player is online, instead of always returning 0 for mortal callers. Most
+   recently suggested by Odin@M*U*S*H. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

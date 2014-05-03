@@ -23,6 +23,7 @@ Hardcode:
  * Update the SFMT random number generator to 1.4.1. [SW]
  * Built in and persistant uses of regular expressions are JIT compiled if the
    host's PCRE version supports it, for faster matching.
+ * Better support for BSD systems. 
 
 Functions:
  * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
@@ -63,6 +64,10 @@ Minor changes:
  * Use a more robust configure check for timezone data files. [SW]
  * Added a /spoof switch to @mapsql, to spoof the enactor a la @trigger/spoof.
    Suggested by Mercutio. [MG]
+ * Improved error reporting when info_slave or ssl_slave exits unexpectedly. [SW]
+ * hasflag(<player>, connected) now returns 1 if the caller can see that the
+   player is online, instead of always returning 0 for mortal callers. Most
+   recently suggested by Odin@M*U*S*H. [MG]
 
 Fixes:
  * Windows compile fixes by ChaosMageX.

@@ -163,6 +163,8 @@ int good_flag_name(char const *s);
 #define clear_power_internal(t,f) twiddle_flag_internal("POWER",t,f,1)
 
 void flag_stats(dbref);
+bool can_see_connected(dbref player, dbref target);
+bool can_see_flag_on(dbref player, dbref thing, const FLAG *flagp);
 
 /*---------------------------------------------------------------------
  * Object types (no longer part of the flags)

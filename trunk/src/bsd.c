@@ -5220,6 +5220,18 @@ lookup_desc(dbref executor, const char *name)
   }
 }
 
+bool
+can_see_connected(dbref player, dbref target)
+{
+  DESC *d;
+  
+  DESC_ITER_CONN(d) {
+    if ((d->player == target) && (!Hidden(d) || Priv_Who(player)))
+      return 1;
+  }
+  return 0;
+}
+
 /** Return the least idle descriptor of a player.
  * Ignores hidden connections unless priv is true.
  * \param player dbref of the player to find the descriptor for

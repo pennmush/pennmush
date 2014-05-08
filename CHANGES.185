@@ -28,7 +28,7 @@ Hardcode:
  * Better support for BSD systems. 
 
 Functions:
- * valid() can now test for valid channel names. Suggested by Mouvar. [MG]
+ * valid() can now test for valid channel names. Suggested by Volund. [MG]
  * valid() now takes an optional <target> argument for some categories,
    to see if <string> is a valid name for <target>. [MG]
  * tan(90,d) now reports an error instead of a really big number. Suggested by

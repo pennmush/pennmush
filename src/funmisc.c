@@ -91,9 +91,9 @@ FUNCTION(fun_valid)
   } else if (!strcasecmp(args[0], "channel")) {
     CHAN *target = NULL;
     if (nargs >= 3) {
-      find_channel(args[3], &target, executor);
+      find_channel(args[2], &target, executor);
     }
-    safe_boolean(ok_channel_name(args[1], target), buff, bp);
+    safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }

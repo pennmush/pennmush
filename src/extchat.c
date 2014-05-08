@@ -1885,6 +1885,13 @@ do_chan_admin(dbref player, char *name, const char *perms,
   }
 }
 
+/** Is n a valid name for a channel? If unique is specified, see if n is a
+ * a valid name to rename that channel to.
+ * \param n name to check
+ * \param unique channel being renamed, or NULL if we're checking validity 
+ *        for a new channel
+ * \return an ok_chan_name enum
+ */
 enum ok_chan_name
 ok_channel_name(const char *n, CHAN *unique)
 {
@@ -1892,7 +1899,6 @@ ok_channel_name(const char *n, CHAN *unique)
   const char *p;
   char name[BUFFER_LEN];
   CHAN *check;
-  int res;
 
   if (!n || !*n)
     return NAME_INVALID;
@@ -1917,16 +1923,19 @@ ok_channel_name(const char *n, CHAN *unique)
   if (strlen(name) > CHAN_NAME_LEN - 1)
     return NAME_TOO_LONG;
 
-  res = find_channel(name, &check, GOD);
-  if (res != CMATCH_NONE) {
-    if (unique == NULL) {
-      return NAME_NOT_UNIQUE;   /* Name must be totally unique */
-    } else if (check != unique) {
-      return NAME_NOT_UNIQUE;
+  for (check = channels; check; check = check->next) {
+    p = remove_markup(ChanName(check), NULL);
+    if (!strcasecmp(p, name)) {
+      if (unique == NULL)
+        return NAME_NOT_UNIQUE; /* Name already in use */
+      else if (check != unique)
+        return NAME_NOT_UNIQUE; /* Name already in use by another channel */
+      else
+        return NAME_OK; /* Renaming the channel to its current name is fine */
     }
   }
 
-  return NAME_OK;
+  return NAME_OK; /* Name is valid and not in use */
 }
 
 

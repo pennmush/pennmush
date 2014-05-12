@@ -1124,7 +1124,7 @@ See also: visible(), CONTROL
 See also: convtime(), time()
 & CONVTIME()
 & CONVUTCTIME()
-  convtime(<time string>,[utc])
+  convtime(<time string>,[<timezone>])
   convutctime(<time string>)
 
   This functions converts a time string (in the server's time zone) to
@@ -1136,7 +1136,7 @@ See also: convtime(), time()
   -1.
 
   convutctime() and convtime() with a second argument of 'utc' assume
-  the timestring is based on UTC time.
+  the timestring is based on UTC time. Other time zones can be specified too.
 
   If the extended convtime() is supported (See @config compile), more
   formats for the date are enabled, including ones missing the day of
@@ -1149,7 +1149,7 @@ See also: convtime(), time()
     > say convtime(Wed Jun 24 10:22:54 1992)
     You say, "709395774"
 
-See also: convsecs(), time()
+See also: convsecs(), time(), timezones
 & COS()
   cos(<angle>[, <angle type>])
  

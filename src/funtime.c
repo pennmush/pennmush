@@ -654,18 +654,30 @@ FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
   struct tm ttm;
-  int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
-               (nargs > 1 && !strcmp(args[1], "utc")));
+  const char *tz = "";
+  bool save_tz = 0;
+
+  if (nargs == 2) {
+    if (strcasecmp(args[1], "utc") == 0) {
+      save_tz = 1;
+    } else if (is_valid_tzname(args[1]) && tzfile_exists(args[1])) {
+      tz = args[1];
+      save_tz = 1;      
+    } else {
+      safe_str("#-1 INVALID TIME ZONE", buff, bp);
+      return;
+    }
+  }
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
-    if (doutc)
-      save_and_set_tz("");
+    if (save_tz)
+      save_and_set_tz(tz);
     safe_integer(mktime(&ttm), buff, bp);
-    if (doutc)
+    if (save_tz)
       restore_tz();
   } else {
     safe_str("-1", buff, bp);

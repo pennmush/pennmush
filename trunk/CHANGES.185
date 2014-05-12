@@ -35,6 +35,7 @@ Functions:
    Peppel. [SW]
  * More math functions report errors. [SW]
  * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
+ * isdaylight() now accepts time and timezone arguments. [SW]
 
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by

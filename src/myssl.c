@@ -25,9 +25,6 @@
 #include <io.h>
 void shutdown_checkpoint(void);
 #else                           /* !WIN32 */
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -43,12 +40,6 @@ void shutdown_checkpoint(void);
 #endif
 #ifdef I_NETINET_IN
 #include <netinet/in.h>
-#endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
-#ifdef I_SYS_PARAM
-#include <sys/param.h>
 #endif
 #ifdef I_SYS_STAT
 #include <sys/stat.h>

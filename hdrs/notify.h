@@ -10,7 +10,7 @@
 #include "mushtype.h"
 #include "conf.h"
 
-#ifdef I_LIBINTL
+#ifdef HAVE_LIBINTL_H
 #include <libintl.h>
 #endif
 

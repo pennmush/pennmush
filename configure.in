@@ -145,27 +145,14 @@ AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADER(sys/time.h, [AC_DEFINE(I_SYS_TIME)])
-AC_CHECK_HEADER(arpa/inet.h, [AC_DEFINE(I_ARPA_INET)])
-AC_CHECK_HEADER(arpa/nameser.h, [AC_DEFINE(I_ARPA_NAMESER)])
-AC_CHECK_HEADER(fcntl.h, [AC_DEFINE(I_FCNTL)])
-AC_CHECK_HEADER(floatingpoint.h, [AC_DEFINE(I_FLOATINGPOINT)])
-AC_CHECK_HEADER(libintl.h, [AC_DEFINE(I_LIBINTL)])
-AC_CHECK_HEADER(malloc.h, [AC_DEFINE(I_MALLOC)])
-AC_CHECK_HEADER(netdb.h, [AC_DEFINE(I_NETDB)])
 AC_CHECK_HEADER(netinet/in.h, [AC_DEFINE(I_NETINET_IN)])
-AC_CHECK_HEADER(netinet/tcp.h, [AC_DEFINE(I_NETINET_TCP)])
-AC_CHECK_HEADER(sys/errno.h, [AC_DEFINE(I_SYS_ERRNO)])
-AC_CHECK_HEADER(sys/file.h, [AC_DEFINE(I_SYS_FILE)])
-AC_CHECK_HEADER(sys/in.h, [AC_DEFINE(I_SYS_IN)])
-AC_CHECK_HEADER(sys/mman.h, [AC_DEFINE(I_SYS_MMAN)])
-AC_CHECK_HEADER(sys/page.h, [AC_DEFINE(I_SYS_PAGE)])
-AC_CHECK_HEADER(sys/param.h, [AC_DEFINE(I_SYS_PARAM)])
 AC_CHECK_HEADER(sys/socket.h, [AC_DEFINE(I_SYS_SOCKET)])
 AC_CHECK_HEADER(sys/stat.h, [AC_DEFINE(I_SYS_STAT)])
 AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
-AC_CHECK_HEADERS([sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h])
-AC_CHECK_HEADERS([poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h])
-AC_CHECK_HEADERS([zlib.h event.h event2/dns.h sys/prctl.h fenv.h])
+AC_CHECK_HEADERS([arpa/inet.h libintl.h netdb.h netinet/tcp.h])
+AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h])
+AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h fam.h])
+AC_CHECK_HEADERS([zlib.h event.h event2/dns.h fenv.h])
 
 ### C language support
 # Only need to check C99 and GNU extensions
@@ -253,7 +240,6 @@ fi
 ### Functions
 AC_CHECK_FUNC(bindtextdomain, [AC_DEFINE(HAS_BINDTEXTDOMAIN)])
 AC_CHECK_FUNC(crypt, [AC_DEFINE(HAS_CRYPT)])
-AC_CHECK_FUNCS([fpsetmask fpsetround])
 AC_MSG_CHECKING([for isnormal])
 AC_LINK_IFELSE([
 AC_LANG_SOURCE([
@@ -287,8 +273,8 @@ fi
 AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
-AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
-AC_CHECK_FUNCS([pread pwrite prctl])
+AC_CHECK_FUNCS([fcntl poll kqueue inotify_init inotify_init1])
+AC_CHECK_FUNCS([pread pwrite])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
 
 # Some linux OSes (Old redhat, others?) will see these functions

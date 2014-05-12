@@ -24,9 +24,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <signal.h>
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #ifdef WIN32
 #include <windows.h>
 #include "process.h"
@@ -55,13 +53,6 @@ dbref find_entrance(dbref door);
 struct db_stat_info *get_stats(dbref owner);
 dbref find_player_by_desc(int port);
 char *password_hash(const char *password, const char *algo);
-
-
-#ifndef WIN32
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
-#endif
 
 /** \@search data */
 struct search_spec {

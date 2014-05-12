@@ -25,9 +25,6 @@
 #include <errno.h>
 #include <process.h>
 #else                           /* !WIN32 */
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -43,12 +40,6 @@
 #endif
 #ifdef I_NETINET_IN
 #include <netinet/in.h>
-#endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
-#ifdef I_SYS_PARAM
-#include <sys/param.h>
 #endif
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
@@ -69,12 +60,6 @@
 #include <sys/uio.h>
 #endif
 #include <limits.h>
-#ifdef I_FLOATINGPOINT
-#include <floatingpoint.h>
-#endif
-#ifdef HAVE_IEEEFP_H
-#include <ieeefp.h>
-#endif
 #include <locale.h>
 #ifndef _MSC_VER
 #include <langinfo.h>
@@ -602,14 +587,6 @@ main(int argc, char **argv)
 
 #ifdef HAS_GETRLIMIT
   init_rlimit();                /* unlimit file descriptors */
-#endif
-
-  /* These are BSDisms to fix floating point exceptions */
-#ifdef HAVE_FPSETROUND
-  fpsetround(FP_RN);
-#endif
-#ifdef HAVE_FPSETMASK
-  fpsetmask(0L);
 #endif
 
   time(&mudtime);

@@ -19,9 +19,7 @@
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
 #endif
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

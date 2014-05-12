@@ -8,9 +8,7 @@
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
 #endif
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #include <signal.h>
 #ifdef I_UNISTD
 #include <unistd.h>

@@ -5596,48 +5596,6 @@ if test "x$ac_cv_header_sys_time_h" = xyes; then :
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "arpa/inet.h" "ac_cv_header_arpa_inet_h" "$ac_includes_default"
-if test "x$ac_cv_header_arpa_inet_h" = xyes; then :
-  $as_echo "#define I_ARPA_INET 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "arpa/nameser.h" "ac_cv_header_arpa_nameser_h" "$ac_includes_default"
-if test "x$ac_cv_header_arpa_nameser_h" = xyes; then :
-  $as_echo "#define I_ARPA_NAMESER 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h" "$ac_includes_default"
-if test "x$ac_cv_header_fcntl_h" = xyes; then :
-  $as_echo "#define I_FCNTL 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "floatingpoint.h" "ac_cv_header_floatingpoint_h" "$ac_includes_default"
-if test "x$ac_cv_header_floatingpoint_h" = xyes; then :
-  $as_echo "#define I_FLOATINGPOINT 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "libintl.h" "ac_cv_header_libintl_h" "$ac_includes_default"
-if test "x$ac_cv_header_libintl_h" = xyes; then :
-  $as_echo "#define I_LIBINTL 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "malloc.h" "ac_cv_header_malloc_h" "$ac_includes_default"
-if test "x$ac_cv_header_malloc_h" = xyes; then :
-  $as_echo "#define I_MALLOC 1" >>confdefs.h
-
-fi
-
-
 ac_fn_c_check_header_mongrel "$LINENO" "netdb.h" "ac_cv_header_netdb_h" "$ac_includes_default"
 if test "x$ac_cv_header_netdb_h" = xyes; then :
   $as_echo "#define I_NETDB 1" >>confdefs.h
@@ -5655,41 +5613,6 @@ fi
 ac_fn_c_check_header_mongrel "$LINENO" "netinet/tcp.h" "ac_cv_header_netinet_tcp_h" "$ac_includes_default"
 if test "x$ac_cv_header_netinet_tcp_h" = xyes; then :
   $as_echo "#define I_NETINET_TCP 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/errno.h" "ac_cv_header_sys_errno_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_errno_h" = xyes; then :
-  $as_echo "#define I_SYS_ERRNO 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/file.h" "ac_cv_header_sys_file_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_file_h" = xyes; then :
-  $as_echo "#define I_SYS_FILE 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/in.h" "ac_cv_header_sys_in_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_in_h" = xyes; then :
-  $as_echo "#define I_SYS_IN 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/mman.h" "ac_cv_header_sys_mman_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_mman_h" = xyes; then :
-  $as_echo "#define I_SYS_MMAN 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/page.h" "ac_cv_header_sys_page_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_page_h" = xyes; then :
-  $as_echo "#define I_SYS_PAGE 1" >>confdefs.h
 
 fi
 
@@ -5722,7 +5645,7 @@ if test "x$ac_cv_header_sys_types_h" = xyes; then :
 fi
 
 
-for ac_header in sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h
+for ac_header in arpa/inet.h arpa/nameser.h libintl.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5735,7 +5658,7 @@ fi
 
 done
 
-for ac_header in poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h
+for ac_header in sys/un.h sys/resource.h sys/event.h sys/uio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5748,7 +5671,20 @@ fi
 
 done
 
-for ac_header in zlib.h event.h event2/dns.h sys/prctl.h fenv.h
+for ac_header in poll.h sys/select.h sys/inotify.h fam.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in zlib.h event.h event2/dns.h fenv.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -7918,18 +7854,6 @@ if test "x$ac_cv_func_crypt" = xyes; then :
 
 fi
 
-for ac_func in fpsetmask fpsetround
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isnormal" >&5
 $as_echo_n "checking for isnormal... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -8336,7 +8260,7 @@ _ACEOF
 fi
 done
 
-for ac_func in fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1
+for ac_func in fcntl poll kqueue inotify_init inotify_init1
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8348,7 +8272,7 @@ _ACEOF
 fi
 done
 
-for ac_func in pread pwrite prctl
+for ac_func in pread pwrite
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

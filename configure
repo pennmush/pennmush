@@ -5596,30 +5596,9 @@ if test "x$ac_cv_header_sys_time_h" = xyes; then :
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "netdb.h" "ac_cv_header_netdb_h" "$ac_includes_default"
-if test "x$ac_cv_header_netdb_h" = xyes; then :
-  $as_echo "#define I_NETDB 1" >>confdefs.h
-
-fi
-
-
 ac_fn_c_check_header_mongrel "$LINENO" "netinet/in.h" "ac_cv_header_netinet_in_h" "$ac_includes_default"
 if test "x$ac_cv_header_netinet_in_h" = xyes; then :
   $as_echo "#define I_NETINET_IN 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "netinet/tcp.h" "ac_cv_header_netinet_tcp_h" "$ac_includes_default"
-if test "x$ac_cv_header_netinet_tcp_h" = xyes; then :
-  $as_echo "#define I_NETINET_TCP 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/param.h" "ac_cv_header_sys_param_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_param_h" = xyes; then :
-  $as_echo "#define I_SYS_PARAM 1" >>confdefs.h
 
 fi
 
@@ -5645,7 +5624,7 @@ if test "x$ac_cv_header_sys_types_h" = xyes; then :
 fi
 
 
-for ac_header in arpa/inet.h arpa/nameser.h libintl.h
+for ac_header in arpa/inet.h libintl.h netdb.h netinet/tcp.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -8626,7 +8605,7 @@ fi
 ### Variables, constants, defines and other misc. stuff
 
 ac_fn_c_check_decl "$LINENO" "h_errno" "ac_cv_have_decl_h_errno" "$ac_includes_default
-#ifdef I_NETDB
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
@@ -8647,7 +8626,7 @@ fi
 
 
 ac_fn_c_check_type "$LINENO" "struct sockaddr_in6" "ac_cv_type_struct_sockaddr_in6" "$ac_includes_default
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
 

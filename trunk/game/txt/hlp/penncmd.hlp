@@ -552,6 +552,8 @@ See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
   through it, and the actions to be taken by the exit when someone passes
   through it, respectively.
   
+  In all cases, %0 is the dbref of the moving object's original location.
+  
   Example:
     > @success Door=You open the door and step inside.
     > @osuccess Door=opens the door and steps inside.

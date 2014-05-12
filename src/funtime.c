@@ -657,7 +657,9 @@ FUNCTION(fun_convtime)
   const char *tz = "";
   bool save_tz = 0;
 
-  if (nargs == 2) {
+  if (strcmp(called_as, "CONVUTCTIME") == 0) {
+    save_tz  = 1;
+  } else if (nargs == 2) {
     struct tz_result res;
     if (strcasecmp(args[1], "utc") == 0) {
       save_tz = 1;

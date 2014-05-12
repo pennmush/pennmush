@@ -320,7 +320,7 @@ FUNTAB flist[] = {
   {"LINSERT", fun_insert, 3, 4, FN_REG},
   {"INUM", fun_inum, 1, 1, FN_REG | FN_STRIPANSI},
   {"IPADDR", fun_ipaddr, 1, 1, FN_REG | FN_STRIPANSI},
-  {"ISDAYLIGHT", fun_isdaylight, 0, 0, FN_REG},
+  {"ISDAYLIGHT", fun_isdaylight, 0, 2, FN_REG},
   {"ISDBREF", fun_isdbref, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},

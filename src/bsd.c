@@ -1117,13 +1117,13 @@ shovechars(Port_t port, Port_t sslport)
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, exit_report("info_slave", slave_error, error_code));
+      do_rawlog(LT_ERR, "%s", exit_report("info_slave", slave_error, error_code));
       slave_error = error_code = 0;
     }
 #endif
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
-      do_rawlog(LT_ERR, exit_report("ssl_slave", ssl_slave_error, error_code));
+      do_rawlog(LT_ERR, "%s", exit_report("ssl_slave", ssl_slave_error, error_code));
       ssl_slave_error = error_code = 0;
       if (!ssl_slave_halted)
         make_ssl_slave();
@@ -6026,10 +6026,10 @@ load_reboot_db(void)
   PENNFILE *f;
   DESC *d = NULL;
   DESC *closed = NULL, *nextclosed;
-  int val = 0;
+  volatile int val = 0;
   const char *temp;
   char c;
-  uint32_t flags = 0;
+  volatile uint32_t flags = 0;
 
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {

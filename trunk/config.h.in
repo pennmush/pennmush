@@ -5,38 +5,15 @@
 
 /* Headers */
 
-/* <arpa/inet.h> What needs this? */
-#undef I_ARPA_INET
+#undef HAVE_ARPA_INET_H
 
-/* <arpa/nameser.h> What needs this? */
-#undef I_ARPA_NAMESER
+#undef HAVE_LIBINTL_H
 
-#undef I_FCNTL
-
-#undef I_FLOATINGPOINT
-
-#undef I_LIBINTL
-
-/* Get rid of this */
-#undef I_MALLOC
-
-#undef I_NETDB
+#undef HAVE_NETDB_H
 
 #undef I_NETINET_IN
 
-#undef I_NETINET_TCP
-
-#undef I_SYS_ERRNO
-
-#undef I_SYS_FILE
-
-#undef I_SYS_IN
-
-#undef I_SYS_MMAN
-
-#undef I_SYS_PAGE
-
-#undef I_SYS_PARAM
+#undef HAVE_NETINET_TCP_H
 
 #undef I_SYS_SOCKET
 
@@ -56,8 +33,6 @@
 
 #undef HAVE_SYS_WAIT_H
 
-#undef HAVE_IEEEFP_H
-
 #undef HAVE_SYS_UN_H
 
 #undef HAVE_SYS_RESOURCE_H
@@ -68,13 +43,9 @@
 
 #undef HAVE_POLL_H
 
-#undef HAVE_SYS_EPOLL_H
-
 #undef HAVE_SYS_SELECT_H
 
 #undef HAVE_SYS_INOTIFY_H
-
-#undef HAVE_SYS_PRCTL_H
 
 #undef HAVE_FAM_H
 
@@ -321,17 +292,9 @@ typedef bool _Bool;
 
 #undef HAVE_GETPPID
 
-#undef HAVE_PSELECT
-
 #undef HAVE_POLL
 
-#undef HAVE_PPOLL
-
-#undef HAVE_POLLTS
-
 #undef HAVE_KQUEUE
-
-#undef HAVE_EPOLL_CTL
 
 #undef HAVE_POSIX_MEMALIGN
 
@@ -350,8 +313,6 @@ typedef bool _Bool;
 #undef HAVE_PREAD
 
 #undef HAVE_PWRITE
-
-#undef HAVE_PRCTL
 
 #undef HAVE_POSIX_FADVISE
 

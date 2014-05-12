@@ -30,11 +30,11 @@
 #ifdef I_SYS_SOCKET
 #include <sys/socket.h>
 #endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
 #ifdef I_NETINET_IN
 #include <netinet/in.h>
-#endif
-#ifdef I_NETDB
-#include <netdb.h>
 #endif
 #include <ctype.h>
 #include <string.h>

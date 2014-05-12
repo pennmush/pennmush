@@ -679,10 +679,38 @@ FUNCTION(fun_convtime)
 FUNCTION(fun_isdaylight)
 {
   struct tm *ltime;
+  time_t when = mudtime;
 
-  ltime = localtime(&mudtime);
+  if (nargs == 1 && args[0] && *args[0]) {
+    if (!is_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    when = parse_integer(args[0]);
+    if (errno == ERANGE) {
+      safe_str(T(e_range), buff, bp);
+      return;
+    }
+    if (when < 0) {
+      safe_str(T(e_uint), buff, bp);
+      return;
+    }
+  }
+    
+  if (nargs == 2) {
+    struct tz_result res;
+    if (!parse_timezone_arg(args[1], when, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+    save_and_set_tz(res.tz_name);
+  }
 
+  ltime = localtime(&when);
   safe_boolean(ltime->tm_isdst > 0, buff, bp);
+
+  if (nargs == 2)
+    restore_tz();
 }
 
 /** Convert seconds to a formatted time string.

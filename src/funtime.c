@@ -694,7 +694,7 @@ FUNCTION(fun_isdaylight)
   struct tm *ltime;
   time_t when = mudtime;
 
-  if (nargs == 1 && args[0] && *args[0]) {
+  if (nargs >= 1 && args[0] && *args[0]) {
     if (!is_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
       return;

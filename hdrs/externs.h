@@ -102,10 +102,11 @@ text_compress(char const *s)
 #else
 extern char ucbuff[];
 static inline int
-init_compress(PENNFILE *f __attribute__((__unused__))) 
+init_compress(PENNFILE *f __attribute__ ((__unused__)))
 {
   return 0;
 }
+
 #define compress(s) (strdup(s))
 #define uncompress(s) (strcpy(ucbuff, (char *) s))
 #define safe_uncompress(s) (strdup((char *) s))

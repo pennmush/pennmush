@@ -66,7 +66,9 @@ FUNCTION(fun_valid)
   else if (!strcasecmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
-      target = noisy_match_result(executor, args[2], TYPE_PLAYER, MAT_PMATCH | MAT_TYPE);
+      target =
+        noisy_match_result(executor, args[2], TYPE_PLAYER,
+                           MAT_PMATCH | MAT_TYPE);
       if (target == NOTHING) {
         safe_str(T("#-1 NO SUCH OBJECT"), buff, bp);
         return;

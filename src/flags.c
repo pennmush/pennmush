@@ -1012,7 +1012,7 @@ flag_add_additional(FLAGSPACE *n)
     flag_add(flags, "COLOR256", f);     /* MUX alias */
 
     add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
-    
+
     if ((f = match_flag("CONNECTED"))) {
       f->perms &= ~F_MDARK;
       f->negate_perms &= ~F_MDARK;
@@ -1743,6 +1743,7 @@ can_set_power(dbref player, dbref thing, const FLAG *flagp, int negate)
   return 1;
 
 }
+
 /* Called by the Can_See_Flag macro, /after/ the checks to see if the player
  * can see the flag in general, to see if they can see the flag specifically
  * on the given thing */

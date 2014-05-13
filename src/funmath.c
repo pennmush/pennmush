@@ -42,7 +42,7 @@
 #endif
 
 #ifndef M_PI_2
-#define M_PI_2		1.57079632679489661923	/* pi/2 */
+#define M_PI_2		1.57079632679489661923  /* pi/2 */
 #endif
 
 #define EPSILON 0.000000001  /**< limit of precision for float equality */
@@ -914,13 +914,14 @@ FUNCTION(fun_fmod)
   m = fmod(x, y);
 
 #ifdef HAVE_FETESTEXCEPT
-  if (errno || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
 #endif
 
-  safe_number(m,  buff,  bp);
+  safe_number(m, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1022,7 +1023,8 @@ FUNCTION(fun_sin)
   s = sin(angle);
 
 #ifdef HAVE_FETESTEXCEPT
-  if (errno || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
@@ -1050,7 +1052,7 @@ FUNCTION(fun_asin)
 /* ARGSUSED */
 FUNCTION(fun_cos)
 {
-NVAL angle, c;
+  NVAL angle, c;
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;
@@ -1065,7 +1067,8 @@ NVAL angle, c;
   c = cos(angle);
 
 #ifdef HAVE_FETESTEXCEPT
-  if (errno || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
@@ -1100,12 +1103,11 @@ FUNCTION(fun_tan)
   }
   angle = angle_to_rad(parse_number(args[0]), args[1]);
 
-  if (fmod(fabs(angle), M_PI_2)  == 0.0 && fmod(fabs(angle),  M_PI) != 0.0) {
+  if (fmod(fabs(angle), M_PI_2) == 0.0 && fmod(fabs(angle), M_PI) != 0.0) {
     /* To infinity and beyond! */
     safe_str(T(e_range), buff, bp);
     return;
   }
-
 #ifdef HAVE_FECLEAREXCEPT
   errno = 0;
   feclearexcept(FE_ALL_EXCEPT);
@@ -1114,7 +1116,8 @@ FUNCTION(fun_tan)
   t = tan(angle);
 
 #ifdef HAVE_FETESTEXCEPT
-  if (errno || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
@@ -1195,7 +1198,8 @@ FUNCTION(fun_power)
   p = pow(num, m);
 
 #ifdef HAVE_FETESTEXCEPT
-  if (errno || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
     safe_str(T(e_range), buff, bp);
     return;
   }

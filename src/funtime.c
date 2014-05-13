@@ -658,14 +658,14 @@ FUNCTION(fun_convtime)
   bool save_tz = 0;
 
   if (strcmp(called_as, "CONVUTCTIME") == 0) {
-    save_tz  = 1;
+    save_tz = 1;
   } else if (nargs == 2) {
     struct tz_result res;
     if (strcasecmp(args[1], "utc") == 0) {
       save_tz = 1;
     } else if (parse_timezone_arg(args[1], mudtime, &res)) {
       tz = res.tz_name;
-      save_tz = 1;      
+      save_tz = 1;
     } else {
       safe_str("#-1 INVALID TIME ZONE", buff, bp);
       return;
@@ -711,7 +711,7 @@ FUNCTION(fun_isdaylight)
       return;
     }
   }
-    
+
   if (nargs == 2) {
     struct tz_result res;
     if (!parse_timezone_arg(args[1], when, &res)) {

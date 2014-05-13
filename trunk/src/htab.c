@@ -58,24 +58,24 @@
 char *
 mush_strdup(const char *s, const char *check)
   __attribute_malloc__;
-uint32_t get_random32(uint32_t low, uint32_t high);
+    uint32_t get_random32(uint32_t low, uint32_t high);
 
-struct hash_bucket {
-  const char *key;
-  void *data;
-  int keylen;
-};
+    struct hash_bucket {
+      const char *key;
+      void *data;
+      int keylen;
+    };
 
-static const uint64_t hash_seeds[] = {
-  0x28187BCC53900639ULL,
-  0x37FF1FD24D473811ULL,
-  0xDFBE49319032F8A0ULL,
-  0x511425D4D0A6E518ULL,
-  0xAC30C8C94941DE18ULL,
-  0xC61F7F133E0DCF02ULL,
-  0xA32C48FC8A34D36AULL,
-  0x6561992839F450CBULL,
-};
+    static const uint64_t hash_seeds[] = {
+      0x28187BCC53900639ULL,
+      0x37FF1FD24D473811ULL,
+      0xDFBE49319032F8A0ULL,
+      0x511425D4D0A6E518ULL,
+      0xAC30C8C94941DE18ULL,
+      0xC61F7F133E0DCF02ULL,
+      0xA32C48FC8A34D36AULL,
+      0x6561992839F450CBULL,
+    };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
 
@@ -182,7 +182,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
       seed_index = (n + htab->hashseed_offset) % NHASH_MOD;
 
       hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
-          htab->hashsize;
+        htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
@@ -193,7 +193,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     seed_index = htab->hashseed_offset + get_random32(0, NHASH_TRIES - 1);
     seed_index %= NHASH_MOD;
     hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
-        htab->hashsize;
+      htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;

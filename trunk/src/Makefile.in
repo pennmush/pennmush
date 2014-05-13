@@ -505,19 +505,6 @@ compress.o: ../hdrs/log.h
 compress.o: ../hdrs/bufferq.h
 compress.o: ../hdrs/mushtype.h
 compress.o: ../hdrs/copyrite.h
-compress.o: comp_h.c
-compress.o: ../hdrs/conf.h
-compress.o: ../hdrs/htab.h
-compress.o: ../hdrs/dbio.h
-compress.o: ../hdrs/externs.h
-compress.o: ../hdrs/compile.h
-compress.o: ../hdrs/dbdefs.h
-compress.o: ../hdrs/mushdb.h
-compress.o: ../hdrs/flags.h
-compress.o: ../hdrs/ptab.h
-compress.o: ../hdrs/chunk.h
-compress.o: ../hdrs/mypcre.h
-compress.o: ../hdrs/mymalloc.h
 conf.o: ../config.h
 conf.o: ../confmagic.h
 conf.o: ../options.h
@@ -984,6 +971,8 @@ funmisc.o: ../confmagic.h
 funmisc.o: ../options.h
 funmisc.o: ../hdrs/copyrite.h
 funmisc.o: ../hdrs/SFMT.h
+funmisc.o: ../hdrs/SFMT-params.h
+funmisc.o: ../hdrs/SFMT-params19937.h
 funmisc.o: ../hdrs/ansi.h
 funmisc.o: ../hdrs/compile.h
 funmisc.o: ../hdrs/mushtype.h
@@ -1002,6 +991,8 @@ funmisc.o: ../hdrs/dbdefs.h
 funmisc.o: ../hdrs/mushdb.h
 funmisc.o: ../hdrs/flags.h
 funmisc.o: ../hdrs/ptab.h
+funmisc.o: ../hdrs/extchat.h
+funmisc.o: ../hdrs/bufferq.h
 funmisc.o: ../hdrs/externs.h
 funmisc.o: ../hdrs/function.h
 funmisc.o: ../hdrs/game.h
@@ -1385,6 +1376,8 @@ memcheck.o: ../hdrs/copyrite.h
 memcheck.o: ../hdrs/memcheck.h
 memcheck.o: ../hdrs/mushtype.h
 memcheck.o: ../hdrs/SFMT.h
+memcheck.o: ../hdrs/SFMT-params.h
+memcheck.o: ../hdrs/SFMT-params19937.h
 memcheck.o: ../hdrs/conf.h
 memcheck.o: ../hdrs/htab.h
 memcheck.o: ../hdrs/dbdefs.h
@@ -1434,6 +1427,7 @@ mycrypt.o: ../hdrs/conf.h
 mycrypt.o: ../hdrs/copyrite.h
 mycrypt.o: ../hdrs/htab.h
 mycrypt.o: ../hdrs/mushtype.h
+mycrypt.o: ../hdrs/mypcre.h
 mycrypt.o: ../hdrs/log.h
 mycrypt.o: ../hdrs/bufferq.h
 mycrypt.o: ../hdrs/notify.h
@@ -1487,6 +1481,8 @@ myssl.o: ../options.h
 myssl.o: ../hdrs/copyrite.h
 myssl.o: ../hdrs/myssl.h
 myssl.o: ../hdrs/SFMT.h
+myssl.o: ../hdrs/SFMT-params.h
+myssl.o: ../hdrs/SFMT-params19937.h
 myssl.o: ../hdrs/conf.h
 myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
@@ -1742,6 +1738,7 @@ SFMT.o: ../options.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
+SFMT.o: ../hdrs/SFMT-common.h
 sig.o: ../config.h
 sig.o: ../confmagic.h
 sig.o: ../options.h
@@ -1977,6 +1974,8 @@ utils.o: ../confmagic.h
 utils.o: ../options.h
 utils.o: ../hdrs/copyrite.h
 utils.o: ../hdrs/SFMT.h
+utils.o: ../hdrs/SFMT-params.h
+utils.o: ../hdrs/SFMT-params19937.h
 utils.o: ../hdrs/ansi.h
 utils.o: ../hdrs/compile.h
 utils.o: ../hdrs/mushtype.h
@@ -2117,6 +2116,8 @@ ssl_slave.o: ../confmagic.h
 ssl_slave.o: ../options.h
 ssl_slave.o: ../hdrs/copyrite.h
 ssl_slave.o: ../hdrs/SFMT.h
+ssl_slave.o: ../hdrs/SFMT-params.h
+ssl_slave.o: ../hdrs/SFMT-params19937.h
 ssl_slave.o: ../hdrs/conf.h
 ssl_slave.o: ../hdrs/htab.h
 ssl_slave.o: ../hdrs/mushtype.h

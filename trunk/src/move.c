@@ -489,7 +489,8 @@ do_move(dbref player, const char *direction, enum move_type type,
           return;
         }
         did_it_with(player, exit_m, "SUCCESS", NULL, "OSUCCESS", NULL,
-		    "ASUCCESS", NOTHING, Location(player), NOTHING, NA_INTER_HEAR, AN_MOVE);
+                    "ASUCCESS", NOTHING, Location(player), NOTHING,
+                    NA_INTER_HEAR, AN_MOVE);
         did_it(player, exit_m, "DROP", NULL, "ODROP", NULL, "ADROP", var_dest,
                AN_MOVE);
         switch (Typeof(var_dest)) {
@@ -624,12 +625,11 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
            (EnterOk(Location(thing)) &&
             eval_lock_with(player, box, Take_Lock, pe_info)))) {
         char sourcename[BUFFER_LEN], stolen[BUFFER_LEN], thief[BUFFER_LEN];
-        
+
         strcpy(sourcename, AName(box, AN_MOVE, NULL));
         strcpy(stolen, AName(thing, AN_MOVE, NULL));
         strcpy(thief, AName(player, AN_MOVE, NULL));
-        notify_format(box,
-                      T("%s was taken from you."), stolen);
+        notify_format(box, T("%s was taken from you."), stolen);
         notify_format(thing, T("%s took you."), thief);
         tp = tbuf1;
         safe_format(tbuf1, &tp, T("You take %s from %s."), stolen, sourcename);
@@ -638,8 +638,8 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
         safe_format(tbuf2, &tp, T("takes %s from %s."), stolen, sourcename);
         *tp = '\0';
         moveto(thing, player, player, "get");
-        did_it_with(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
-               NOTHING, box, NOTHING, 0, AN_MOVE);
+        did_it_with(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2,
+                    "ASUCCESS", NOTHING, box, NOTHING, 0, AN_MOVE);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
                     "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR,
                     AN_MOVE);
@@ -689,7 +689,7 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
           safe_format(tbuf2, &tp, T("takes %s."), AName(thing, AN_MOVE, NULL));
           *tp = '\0';
           did_it_with(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2,
-                 "ASUCCESS", NOTHING, oldloc, NOTHING, 0, AN_MOVE);
+                      "ASUCCESS", NOTHING, oldloc, NOTHING, 0, AN_MOVE);
           did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
                       "ARECEIVE", NOTHING, thing, NOTHING, NA_INTER_HEAR,
                       AN_MOVE);
@@ -864,7 +864,7 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     if (empty_ok) {
       char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
       char itemname[BUFFER_LEN], playername[BUFFER_LEN], thingname[BUFFER_LEN];
-        
+
       strcpy(itemname, AName(item, AN_MOVE, NULL));
       strcpy(playername, AName(player, AN_MOVE, NULL));
       strcpy(thingname, AName(thing, AN_MOVE, NULL));
@@ -881,8 +881,9 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
         safe_format(tbuf2, &tp, T("takes %s from %s."), itemname, thingname);
         *tp = '\0';
         moveto(item, player, player, "empty");
-        did_it_with(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
-		    NOTHING, thing_loc, NOTHING, NA_INTER_HEAR, AN_MOVE);
+        did_it_with(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2,
+                    "ASUCCESS", NOTHING, thing_loc, NOTHING, NA_INTER_HEAR,
+                    AN_MOVE);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
                     "ARECEIVE", NOTHING, item, NOTHING, NA_INTER_HEAR, AN_MOVE);
       }

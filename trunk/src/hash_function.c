@@ -386,4 +386,3 @@ city_hash(const char *s, int len, uint64_t seed)
 {
   return city_CityHash64WithSeeds(s, len, city_k2, seed);
 }
-

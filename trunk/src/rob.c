@@ -457,8 +457,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
 
         /* Notify the giver with their GIVE message */
         bp = tbuf1;
-        safe_format(tbuf1, &bp, T("You gave %s to %s."),
-                    gift, recipient);
+        safe_format(tbuf1, &bp, T("You gave %s to %s."), gift, recipient);
         *bp = '\0';
         did_it_with(player, player, "GIVE", tbuf1, "OGIVE", NULL,
                     "AGIVE", NOTHING, thing, who, NA_INTER_SEE, AN_MOVE);
@@ -482,7 +481,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
   /* At this point, we're giving an amount. */
   amount = parse_integer(amnt);
   if (Pennies(who) >= Max_Pennies(who) && amount > 0) {
-    notify_format(player, T("%s is rich enough already."), AName(who, AN_SYS, NULL));
+    notify_format(player, T("%s is rich enough already."),
+                  AName(who, AN_SYS, NULL));
     return;
   }
   if (Pennies(who) + amount > Max_Pennies(who))
@@ -498,7 +498,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
   if (Can_Debit(player) && (amount < 0) && (Pennies(who) + amount < 0)) {
     amount = -Pennies(who);
     if (amount == 0) {
-      notify_format(player, T("%s have nothing left for you to take!"), AName(who, AN_SYS, NULL));
+      notify_format(player, T("%s have nothing left for you to take!"),
+                    AName(who, AN_SYS, NULL));
       return;
     }
   }

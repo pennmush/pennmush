@@ -50,7 +50,8 @@ static void free_user(CHANUSER *u);
 static int load_chatdb_oldstyle(PENNFILE *fp);
 static int load_channel(PENNFILE *fp, CHAN *ch);
 static int load_chanusers(PENNFILE *fp, CHAN *ch);
-static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting);
+static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags,
+                                int restarting);
 static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting);
 static void insert_channel(CHAN **ch);
 static void remove_channel(CHAN *ch);
@@ -1931,11 +1932,11 @@ ok_channel_name(const char *n, CHAN *unique)
       else if (check != unique)
         return NAME_NOT_UNIQUE; /* Name already in use by another channel */
       else
-        return NAME_OK; /* Renaming the channel to its current name is fine */
+        return NAME_OK;         /* Renaming the channel to its current name is fine */
     }
   }
 
-  return NAME_OK; /* Name is valid and not in use */
+  return NAME_OK;               /* Name is valid and not in use */
 }
 
 
@@ -4103,7 +4104,9 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     return;
   }
   if (!lines || !*lines || !is_strict_integer(lines)) {
-    notify(player, T("You need to specify the amount of data (In 8kb chunks) to use for the buffer."));
+    notify(player,
+           T
+           ("You need to specify the amount of data (In 8kb chunks) to use for the buffer."));
     return;
   }
   size = parse_integer(lines);

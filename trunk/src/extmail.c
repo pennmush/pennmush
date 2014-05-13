@@ -450,7 +450,8 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if ((*status == 'u' || *status == 'U') && (status[1] == 'n' || status[1] == 'N')) {
+  if ((*status == 'u' || *status == 'U')
+      && (status[1] == 'n' || status[1] == 'N')) {
     if (strlen(status) < 3) {
       notify(player, T("MAIL: Unknown status."));
       return;
@@ -551,9 +552,12 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
             if (!notified) {
               if (negate)
                 notify(player,
-                       T("MAIL: All messages in all folders marked as not urgent."));
+                       T
+                       ("MAIL: All messages in all folders marked as not urgent."));
               else
-                notify(player, T("MAIL: All messages in all folders marked as urgent."));
+                notify(player,
+                       T
+                       ("MAIL: All messages in all folders marked as urgent."));
               notified = 1;
             }
           } else {
@@ -957,8 +961,7 @@ do_mail_reviewlist(dbref player, dbref target)
                 T
                 ("--------------------   MAIL: %s   ------------------"),
                 nbuff);
-  for (; mp && ((target == NOTHING) || (mp->to == target));
-       mp = mp->next) {
+  for (; mp && ((target == NOTHING) || (mp->to == target)); mp = mp->next) {
     if (last != mp->to) {
       i = 0;
       last = mp->to;
@@ -977,7 +980,7 @@ do_mail_reviewlist(dbref player, dbref target)
       if (!nbuff[0]) {
         np = nbuff;
         safe_str(AnsiNameWrapper(mp->to, 0, AN_SYS, NULL, 12), nbuff, &np);
-        nlen  = strlen(Name(mp->to));
+        nlen = strlen(Name(mp->to));
         if (nlen < 12) {
           safe_fill(' ', 12 - nlen, nbuff, &np);
         }
@@ -987,7 +990,7 @@ do_mail_reviewlist(dbref player, dbref target)
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
                     (isplayer && (Connected(mp->to) && (!hidden(mp->to)
-                                                          || Priv_Who(player)))
+                                                        || Priv_Who(player)))
                      ? '*' : ' '), nbuff, 30, subj,
                     mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_PUEBLO)

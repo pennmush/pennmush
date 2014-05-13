@@ -2607,7 +2607,7 @@ FUNCTION(fun_regreplace)
       DEL_CHECK("pcre");
       if (study) {
 #ifdef PCRE_CONFIG_JIT
-	pcre_free_study(study);
+        pcre_free_study(study);
 #else
         pcre_free(study);
 #endif
@@ -2663,9 +2663,9 @@ FUNCTION(fun_regreplace)
     DEL_CHECK("pcre");
     if (study != NULL) {
 #ifdef PCRE_CONFIG_JIT
-	pcre_free_study(study);
+      pcre_free_study(study);
 #else
-        pcre_free(study);
+      pcre_free(study);
 #endif
     }
   }
@@ -2737,9 +2737,9 @@ FUNCTION(fun_regreplace)
             DEL_CHECK("pcre");
             if (study) {
 #ifdef PCRE_CONFIG_JIT
-	      pcre_free_study(study);
+              pcre_free_study(study);
 #else
-	      pcre_free(study);
+              pcre_free(study);
 #endif
               DEL_CHECK("pcre.extra");
             }
@@ -2774,7 +2774,7 @@ FUNCTION(fun_regreplace)
       DEL_CHECK("pcre");
       if (study != NULL) {
 #ifdef PCRE_CONFIG_JIT
-	pcre_free_study(study);
+        pcre_free_study(study);
 #else
         pcre_free(study);
 #endif

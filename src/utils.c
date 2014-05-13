@@ -711,7 +711,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
   if (maxlen > 0 && maxlen < BUFFER_LEN) {
     name[maxlen] = '\0';
   }
-  
+
   a = atr_get(thing, "MONIKER");
   if (!a) {
     set_mp(0);

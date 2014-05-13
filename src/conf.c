@@ -195,7 +195,8 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
-  {"socket_file", cf_str, &options.socket_file,  sizeof options.socket_file, 0, "net"}
+  {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
+   "net"}
   ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
@@ -1314,7 +1315,8 @@ conf_default_set(void)
   options.keepalive_timeout = 300;
   options.dump_interval = 3601;
   set_string_option(options.dump_message,
-         T("GAME: Saving database. Game may freeze for a few moments."));
+                    T
+                    ("GAME: Saving database. Game may freeze for a few moments."));
   set_string_option(options.dump_complete, T("GAME: Save complete. "));
   options.max_logins = 128;
   options.max_guests = 0;
@@ -1375,8 +1377,10 @@ conf_default_set(void)
   options.warn_interval = 3600;
   options.use_dns = 1;
   options.safer_ufun = 1;
-  set_string_option(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
-  set_string_option(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
+  set_string_option(options.dump_warning_1min,
+                    T("GAME: Database save in 1 minute."));
+  set_string_option(options.dump_warning_5min,
+                    T("GAME: Database save in 5 minutes."));
   options.noisy_whisper = 0;
   options.possessive_get = 1;
   options.possessive_get_d = 1;
@@ -2004,7 +2008,7 @@ show_compile_options(dbref player)
   {
     int jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &jit);
-    if (jit) 
+    if (jit)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
 #endif

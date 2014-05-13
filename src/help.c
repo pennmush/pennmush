@@ -47,7 +47,7 @@ static const char *normalize_entry(help_file *help_dat, const char *arg1);
 static void help_build_index(help_file *h, int restricted);
 
 static bool is_index_entry(const char *, int *);
-static char * entries_from_offset(help_file *, int);
+static char *entries_from_offset(help_file *, int);
 
 /** Linked list of help topic names. */
 typedef struct TLIST {
@@ -195,7 +195,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
     do_rawlog(LT_ERR, "Missing help_command name ignored.");
     return;
   }
-   
+
   if (!filename || !*filename) {
     do_rawlog(LT_ERR, "Missing help_command filename for '%s'.", command_name);
     return;
@@ -668,7 +668,7 @@ string_spitfile(help_file *help_dat, char *arg1)
     char *entries = entries_from_offset(help_dat, offset);
     strcpy(the_topic, strupper(the_topic + (the_topic[0] == '&')));
 
-    if (!entries) 
+    if (!entries)
       return T("#-1 NO ENTRY");
     else
       return entries;
@@ -765,17 +765,20 @@ is_skippable_topic(const char *topic)
 
   if (!skippable) {
     int erroffset;
-    skippable = pcre_compile("^&?entries(?:-\\d+)?$", PCRE_CASELESS, &errptr, &erroffset, tables);
+    skippable =
+      pcre_compile("^&?entries(?:-\\d+)?$", PCRE_CASELESS, &errptr, &erroffset,
+                   tables);
     extra = pcre_study(skippable, pcre_study_flags, &errptr);
   }
-  
-  return pcre_exec(skippable, extra, topic, strlen(topic), 0, 0, ovec, ovecsize) > 0;
+
+  return pcre_exec(skippable, extra, topic, strlen(topic), 0, 0, ovec,
+                   ovecsize) > 0;
 }
 
 /* Generate a page of the index of the help file (The old pre-generated 'help entries' tables), 0-indexed.
  */
 static char *
-entries_from_offset(help_file *h,  int off)
+entries_from_offset(help_file *h, int off)
 {
   enum { ENTRIES_PER_PAGE = 48, LONG_TOPIC = 25 };
   static char buff[BUFFER_LEN];
@@ -789,10 +792,10 @@ entries_from_offset(help_file *h,  int off)
 
   while (count <= ENTRIES_PER_PAGE && n < h->entries) {
 
-    while (n < h->entries && is_skippable_topic(h->indx[n].topic)) 
-      n += 1;							   
-    if (n >= h->entries)       
-      break;					   
+    while (n < h->entries && is_skippable_topic(h->indx[n].topic))
+      n += 1;
+    if (n >= h->entries)
+      break;
     entry1 = h->indx[n].topic;
     n += 1;
 
@@ -817,43 +820,45 @@ entries_from_offset(help_file *h,  int off)
 
     if (strlen(entry1) > LONG_TOPIC) {
       if (strlen(entry2) > LONG_TOPIC) {
-	safe_format(buff, &bp, " %-76.76s\n", entry1);
-	n -= 1;
-	count += 1;
+        safe_format(buff, &bp, " %-76.76s\n", entry1);
+        n -= 1;
+        count += 1;
       } else {
-	safe_format(buff, &bp, " %-51.51s %-25.25s\n", entry1, entry2);
-	count += 2;
+        safe_format(buff, &bp, " %-51.51s %-25.25s\n", entry1, entry2);
+        count += 2;
       }
     } else {
       if (strlen(entry2) > LONG_TOPIC) {
-	safe_format(buff, &bp, " %-25.25s %-51.51s\n", entry1, entry2);
-	count += 2;
+        safe_format(buff, &bp, " %-25.25s %-51.51s\n", entry1, entry2);
+        count += 2;
       } else {
-	while ( n < h->entries && is_skippable_topic(h->indx[n].topic))
-	  n += 1;
-	if (n < h->entries) {
-	  entry3 = h->indx[n].topic;
-	  if (entry3[0] == '&')
-	    entry3 += 1;
-	} else 
-	  entry3 = "";
+        while (n < h->entries && is_skippable_topic(h->indx[n].topic))
+          n += 1;
+        if (n < h->entries) {
+          entry3 = h->indx[n].topic;
+          if (entry3[0] == '&')
+            entry3 += 1;
+        } else
+          entry3 = "";
 
-	if (!*entry3 || strlen(entry3) > LONG_TOPIC) {
-	  safe_format(buff, &bp, " %-25.25s %-25.25s\n", entry1, entry2);
-	  count += 2;
-	} else {
-	  safe_format(buff, &bp, " %-25.25s %-25.25s %-25.25s\n", entry1, entry2, entry3);
-	  n += 1;	
-	  count += 3;
-	}
+        if (!*entry3 || strlen(entry3) > LONG_TOPIC) {
+          safe_format(buff, &bp, " %-25.25s %-25.25s\n", entry1, entry2);
+          count += 2;
+        } else {
+          safe_format(buff, &bp, " %-25.25s %-25.25s %-25.25s\n", entry1,
+                      entry2, entry3);
+          n += 1;
+          count += 3;
+        }
       }
     }
   }
   safe_chr('\n', buff, &bp);
   if (n < h->entries) {
-    int pages = h->entries /  ENTRIES_PER_PAGE;
-    if (pages > (off + 2)) 
-      safe_format(buff, &bp, "For more, see ENTRIES-%d through %d\n", off + 2, pages);
+    int pages = h->entries / ENTRIES_PER_PAGE;
+    if (pages > (off + 2))
+      safe_format(buff, &bp, "For more, see ENTRIES-%d through %d\n", off + 2,
+                  pages);
     else if (pages != (off + 1))
       safe_format(buff, &bp, "For more, see ENTRIES-%d\n", off + 2);
   }
@@ -862,7 +867,7 @@ entries_from_offset(help_file *h,  int off)
 
   if (count == 0)
     return NULL;
-  
+
   return buff;
 }
 
@@ -882,11 +887,15 @@ is_index_entry(const char *topic, int *offset)
   if (!entry_re) {
     const char *errptr = NULL;
     int erroffset = 0;
-    entry_re = pcre_compile("^&?entries-(\\d+)$", PCRE_CASELESS, &errptr, &erroffset, tables);
+    entry_re =
+      pcre_compile("^&?entries-(\\d+)$", PCRE_CASELESS, &errptr, &erroffset,
+                   tables);
     extra = pcre_study(entry_re, pcre_study_flags, &errptr);
   }
 
-  if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec, ovecsize)) == 2) {
+  if ((r =
+       pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec,
+                 ovecsize)) == 2) {
     char buff[BUFFER_LEN];
     pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
     *offset = parse_integer(buff) - 1;

@@ -89,7 +89,8 @@ make_ssl_slave(void)
   }
 
   if (pipe(fds) < 0) {
-    do_rawlog(LT_ERR, "Unable to create pipe to speak to ssl_slave: %s", strerror(errno));
+    do_rawlog(LT_ERR, "Unable to create pipe to speak to ssl_slave: %s",
+              strerror(errno));
     return -1;
   }
 
@@ -120,14 +121,14 @@ make_ssl_slave(void)
     if (lg)
       connfd = fileno(lg->fp);
 
-    dup2(fds[0], 0);               /* stdin */
+    dup2(fds[0], 0);            /* stdin */
     dup2(connfd, 1);            /* stdout */
     dup2(errfd, 2);             /* stderr */
 
     for (n = 3; n < maxd; n++)
       close(n);
 
-    execl("./ssl_slave",  "ssl_slave",  "for",  MUDNAME,  NULL);
+    execl("./ssl_slave", "ssl_slave", "for", MUDNAME, NULL);
     penn_perror("execing ssl slave");
     return EXIT_FAILURE;
   } else if (ssl_slave_pid < 0) {
@@ -136,7 +137,7 @@ make_ssl_slave(void)
   } else {
     struct ssl_slave_config cf;
 
-    ssl_slave_ctl_fd = fds[1];    
+    ssl_slave_ctl_fd = fds[1];
     close(fds[0]);
 
     /* Set up arguments to the slave */
@@ -151,7 +152,8 @@ make_ssl_slave(void)
     cf.keepalive_timeout = options.keepalive_timeout;
 
     if (write(ssl_slave_ctl_fd, &cf, sizeof cf) < 0) {
-      do_rawlog(LT_ERR, "Unable to send ssl_slave config options: %s", strerror(errno));
+      do_rawlog(LT_ERR, "Unable to send ssl_slave config options: %s",
+                strerror(errno));
       return -1;
     }
 

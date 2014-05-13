@@ -153,7 +153,7 @@ sql_sanitize(char *res)
     buff[0] = '\0';
     return buff;
   }
-  
+
   for (; *rp; rp++) {
     if (isprint(*rp) || *rp == '\n' || *rp == '\t' ||
         *rp == ESC_CHAR || *rp == TAG_START || *rp == TAG_END ||
@@ -415,7 +415,7 @@ COMMAND(cmd_mapsql)
       return;
     }
   }
-  
+
   if (spoof)
     triggerer = enactor;
 
@@ -515,11 +515,9 @@ COMMAND(cmd_mapsql)
 #ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
           cells[i + 1] =
-            SANITIZE((char *) sqlite3_column_text(qres, i),
-                     "sql_row");
+            SANITIZE((char *) sqlite3_column_text(qres, i), "sql_row");
           names[i + 1] =
-            SANITIZE((char *) sqlite3_column_name(qres, i),
-                     "sql_fieldname");
+            SANITIZE((char *) sqlite3_column_name(qres, i), "sql_fieldname");
           break;
 #endif
         default:

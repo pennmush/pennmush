@@ -1035,7 +1035,8 @@ passwd_filter(const char *cmd)
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched = pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
+  if ((matched =
+       pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -2130,8 +2131,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   int psize;
 
 #ifdef HAVE_UPTIME
-  fp =
-    popen(UPTIME, "r");
+  fp = popen(UPTIME, "r");
 
   /* just in case the system is screwy */
   if (fp == NULL) {

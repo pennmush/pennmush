@@ -400,8 +400,8 @@ ssl_event_cb(struct bufferevent *bev, short e, void *data)
 /* Called when a new connection is made on the ssl port */
 static void
 new_ssl_conn_cb(evutil_socket_t s, short flags
-            __attribute__ ((__unused__)), void *data
-            __attribute__ ((__unused__)))
+                __attribute__ ((__unused__)), void *data
+                __attribute__ ((__unused__)))
 {
   struct conn *c;
   int fd;
@@ -486,7 +486,8 @@ shutdown_cb(evutil_socket_t fd __attribute__ ((__unused__)),
 
 
 int
-main(int argc __attribute__((__unused__)), char **argv __attribute__((__unused__)))
+main(int argc __attribute__ ((__unused__)), char **argv
+     __attribute__ ((__unused__)))
 {
   struct ssl_slave_config cf;
   struct event *watch_parent, *sigterm_handler;
@@ -497,7 +498,9 @@ main(int argc __attribute__((__unused__)), char **argv __attribute__((__unused__
 
   len = read(0, &cf, sizeof cf);
   if (len < 0) {
-    errprintf(stderr, "ssl_slave: Unable to read configure settings: %s. Read %d bytes.\n", strerror(errno), len);
+    errprintf(stderr,
+              "ssl_slave: Unable to read configure settings: %s. Read %d bytes.\n",
+              strerror(errno), len);
     return EXIT_FAILURE;
   }
 

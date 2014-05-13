@@ -1161,7 +1161,7 @@ valid_hex_digits(const char *digits, int len)
       do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
       return 0;
     }
-    extra = pcre_study(re, pcre_study_flags, &errptr); 
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!digits)

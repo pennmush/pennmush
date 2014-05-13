@@ -837,8 +837,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   if (has_eq && (!message || !*message)) {
     notify(executor, T("What do you want to page?"));
     return;
-  }    
-  
+  }
+
   tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
   if (!tbuf2)
     mush_panic("Unable to allocate memory in do_page");

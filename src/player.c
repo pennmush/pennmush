@@ -493,8 +493,7 @@ email_register_player(DESC *d, const char *name, const char *email,
    */
 
   release_fd();
-  if ((fp =
-       popen(tprintf("%s -t", SENDMAIL), "w")) == NULL) {
+  if ((fp = popen(tprintf("%s -t", SENDMAIL), "w")) == NULL) {
     do_log(LT_CONN, 0, 0,
            "Failed registration of %s by %s: unable to open sendmail",
            name, email);

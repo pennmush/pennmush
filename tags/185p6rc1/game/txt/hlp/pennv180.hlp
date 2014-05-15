@@ -1,0 +1,268 @@
+& 1.8.0p13
+Version 1.8.0 patchlevel 13                     July 5, 2006
+
+Fixes:
+  * Crash bug in pcreate() fixed. Report by Phreq@M*U*S*H.
+  * Crash bug in setunion() fixed. Report by Gurenk@ST:Legacy.
+
+
+& 1.8.0p12
+Version 1.8.0 patchlevel 12                     March 25, 2006
+
+Minor changes:
+  * New config option keepalive_timeout for setting the socket-level
+    are-you-there ping interval used to help work around broken routers. [SW]
+  * Changing the SO_KEEPALIVE interval works on more OSes, including OS X. [SW]
+  * Passwords are masked when commands that require them are logged
+    in command.log. Suggested by Sumta. [SW]
+Fixes
+  * Added help entry for @debugforwardlist. Suggested by d'Ark@M*U*S*H.
+  * Help fixes by Talvo@M*U*S*H.
+  * When objects are nuked, their creation time is reset to 0. 
+    This prevents garbage objects from maintaining the same objid.
+    Suggested by Cooee@PDX
+  * When doing english-style matching, plain numbers ('3') were
+    treated as adjectives (like '3rd') and shouldn't have been.
+    Fixed. Reported by Stinky@M*U*S*H.
+
+
+& 1.8.0p11
+Version 1.8.0 patchlevel 11                     February 25, 2006
+
+Fixes:
+  * Help clarification to ancestors inspired by Viceroy@GuiltyPleasures. [TAP]
+  * Help clarification in @set by Skaven@M*U*S*H.
+  * Freebsd hints files combined and simplified.
+
+
+& 1.8.0p10
+Version 1.8.0 patchlevel 10                     January 29, 2006
+
+Minor changes:
+  * Row and field separators in sql() may now by more than one
+    character. Patch by Walker@M*U*S*H.
+Fixes:
+  * Fix to GNU libc detection in Configure by Petr Salinger.
+  * Definition of MAILER in options.h.dist made to work by Luke@M*U*S*H.
+  * Fix to double-parsing of row and field separators in sql()
+    by Walker@M*U*S*H.
+
+
+& 1.8.0p9
+Version 1.8.0 patchlevel 9                      December 12, 2005
+
+Fixes:
+  * On amd64 systems running FreeBSD (and possibly others), connections
+    could break after about 32 connections. Report by nails@M*U*S*H.
+  * The CONF and CONFGROUP structures are renamed PENNCONF and
+    PENNCONFGROUP to work around brokenness in Debian's openssl0.9.8
+    package.
+
+
+& 1.8.0p8
+Version 1.8.0 patchlevel 8                      September 15, 2005
+
+Fixes:
+  * /noflagcopy switch to @cpattr/@mvattr works now. Report by
+    Kimiko Muffin.
+  * SHS encryption now works on 64-bit architectures that define
+    uint32_t. Report by Licenser@M*U*S*H.
+  * MySQL detection by Configure was accidentally removed
+    in 1.8.0p7/1.8.1p2. It's back. Report by Walker@M*U*S*H.
+    Same applies to SO_KEEPIDLE and some other Configure units.
+
+
+& 1.8.0p7
+Version 1.8.0 patchlevel 7                      August 29, 2005
+
+Fixes:
+  * lsearch() with no results no longer returns #-1. It still does so when
+    there's an error. Suggested by Nathan Baum. [SW]
+  * Improved messages for @link of exits. Report by Nathan Baum. [SW]
+  * Restart script more portable to older bourne-like shells.
+    Patch by Walker@M*U*S*H.
+  * Fix to MinGW reboot. Patch by Nathan Baum.
+  * Help fixes by Tyr@M*U*S*H, Talvo@M*U*S*H, Dizzy@Forgotten Time,
+    and Trinsec@M*U*S*H.
+  * @flag/add of a flag with a name that is a unique prefix of an existing 
+    flag wouldn't add the new flag. Reported by Mike Griffiths. [SW]
+  * @config/set of an invalid option would still return a success message.
+    Report by Sholevi@M*U*S*H. [SW]
+  * sql() without a field delimiter defaulted to using the row delimiter,
+    instead of a space. Report by Kali@M*U*S*H.
+  * lock() didn't set user-defined locks properly. Report by 
+    Dahan@M*U*S*H. [SW]
+  * Infinite loop in fraction() fixed.
+  * FIXED players may no longer teleport through exits. Report by
+    Anyasha@bDv2
+  * Better messages when attempting to wipe SAFE attributes.
+    Suggested by Nathan Baum.
+
+
+& 1.8.0p6
+Version 1.8.0 patchlevel 6                      June 24, 2005
+
+Fixes:
+  * Weird logging ouput with function logargs fixed. Report by Sholevi@M*U*S*H.
+  * sort() and set functions now ignore ansi. Patch by Walker@M*U*S*H.
+  * @hook memory leak fixed. Reported by Shari@M*U*S*H.
+
+
+& 1.8.0p5
+Version 1.8.0 patchlevel 5                      May 30, 2005
+
+Minor changes:
+  * help substitutions{2,3,4} aliased to help %{2,3,4} respectively
+    for convenience. Suggested by Tokeli@M*U*S*H.
+  * help for ulocal() clarified. Suggested by Dahan@M*U*S*H.
+  * help fixes by Sketch@M*U*S*H.
+Fixes:
+  * next() on a thing or player behaved improperly. Reported by
+    Sketch@M*U*S*H.
+  * ancestor_* config options allow dbref specified with #<n> as
+    well as just <n>. Suggested by Nathan Baum.
+  * New MSVC6 project files. [EEH]
+  * NUMVERSION no longer starts with a 0, which made some compilers
+    think it might be an octal constant. Suggested by Shane DeRidder.
+  * @attribute did not check for validity of attribute names before
+    adding them. Report by Dahan@M*U*S*H.
+  * #<dbref> <action> forces ignored @hooks. Report by Mike Griffiths.
+  * access.cnf checks attempt to check against ipv6-ized versions
+    of ip addresses listed in sitelocks as well.
+  * Sort of dbrefs in @oemit was broken, which could lead to  
+    multiple messages to same target. Report by Cheetah@M*U*S*H. [TAP]
+  * Setting a password ending in % is now feasible. Report by Marc 
+    DVer [TAP].
+
+
+& 1.8.0p4
+Version 1.8.0 patchlevel 4                      March 20, 2005
+
+Fixes:
+  * @list powers crashed the MUSH. Report by Kevin@M*U*S*H.
+  * Multiplayer whisper-poses now use the correct conjugation of the
+    verb "to sense". Suggested by Cheetah@M*U*S*H.
+  * @attribute NAME and @attribute @NAME can both be used to display 
+    information about attributes. [SW]
+
+
+& 1.8.0p3
+Version 1.8.0 patchlevel 3                      February 26, 2005
+
+Fixes:
+  * 1.8.0p2 fixed ""hi when chat_strip_quote was on, and broke it
+    when it was off. Fixed both ways now. Report by Cheetah@M*U*S*H.
+  * The @break fix in 1.8.0p2 stopped compound break actions
+    in {}'s from working correctly. Fixed now. Report by 
+    Kevin@M*U*S*H. [TAP]
+  * @list/list() works right with flags/powers now.
+  * MS VS.NET project file now includes sql.c/h and bufferq.c/h.
+    Report by T'orA@M*U*S*H.
+  * playermem() and objectmem() now return #-1 NO MATCH consistently
+    when they can't match their argument to an object of an appropriate
+    type. Suggested by Cheetah@M*U*S*H.
+
+
+& 1.8.0p2
+Version 1.8.0 patchlevel 2                      February 2, 2005
+
+Fixes:
+  * @break/@assert could double-evaluate the right side.
+    Patch by Walker@M*U*S*H.
+  * ""hi didn't produce the right output. Patch by Walker@M*U*S*H.
+  * Better output for @warn me=none and invalid warning lists.
+    Suggested by T'orA@M*U*S*H
+  * Help fix by Meyer@M*U*S*H.
+  * Bug in reading dbs when no chatdb present. Discovered by
+    Benigo@M*U*S*H.
+
+
+& 1.8.0p1
+Version 1.8.0 patchlevel 1                      January 16, 2005
+
+Fixes:
+  * Win32 portability fixes. NT_TCP builds work again, too. [EEH]
+  * pennv180.hlp file added to MANIFEST so it's distributed now.
+    Report by Nymeria@M*U*S*H.
+  * More translation files included. [EEH]
+  * Help fixes by [EEH] and Chili@M*U*S*H.
+  * cflags() now shows the N (nonames), T (notitles), and C (nocemit)
+    flags for channels. Suggested by Prospero@Metro.
+  * If A can't receive from B (due to interactions), then A's
+    puppet would send a null line when it heard B. Now the puppet
+    doesn't send at all. Fix by Prospero@Metro.
+  * Multiple simultaneous flag sets behaved oddly when one of the
+    flags affected listener/hearer status. Report by Cheetah@M*U*S*H.
+  * NUMVERSION corrected.
+
+& 1.8.0p0
+Version 1.8.0 patchlevel 0                      January 1, 2005
+
+Major Changes (since 1.7.6):
+  * SQL support (MySQL server).
+  * SSL support.
+  * Attribute trees.
+  * Object ids uniquely identify an object across recycling dbrefs.
+  * Anonymous attributes via #lambda.
+  * Ancestor objects for each object type.
+  * Interactions (something like "realms" in mux2) control conditions
+    under which objects can see, hear, match, or establish the presence
+    of each other. See local.c.
+  * New flag/power internals, no more limits on number of flags, 
+    flags can be added/removed at runtime.
+  * New game/chat db formats, more readable, extensible, and 
+    better at detecting problems.
+  * New framework for performing lock failure activities in hardcode.
+  * Customized mush.cnf configuration parameters can be easily added.
+  * New chunk memory allocator does our own paging to disk,
+    so the resident memory footprint is much lower.
+  * Lock system rewrite. #true and #false atoms for locks.
+  * minimal.db is no more. If you start up the server and there's no
+    db to be found, it creates a new minimal database in memory.
+  * New commands: @command/alias, buy, @boot/silent, @assert, huh_command,
+    @decomp/prefix, @edit/first, ex/parent, empty, @nscemit, @function, 
+    @nsemit, @nsoemit, @nslemit, @nsremit, @nszemit, ], @command/add,
+    @command/del, warn_on_missing, @switch/regexp, @*emit/spoof,
+    @tel/inside, @hook/ignore, @hook/override, @chan/recall, with/room,
+    IDLE, @sitelock/check, SCREENWIDTH, SCREENHEIGHT, ex/all
+  * New functions: zwho, zmwho, l/lv/n/nv/x/xvthings, malias, locks, llocks,
+    lset, lockflags, llockflags, lattrp, nattr/p, xattr/p, mailsend,
+    x/xv/n/nv/exits/players/things, nsemit/cemit/remit/lemit/oemit/zemit,
+    andlflags, andlpowers, orlflags, orlpower, andpowers, orpowers,
+    align, sent, recv, scan, valid, allof, firstof, tr, vcross, hostname,
+    ipaddr, cmds, reswitch*, digest, cowner, baseconv, randword,
+    trimtiny, trimpenn, terminfo, lports, strreplace, fraction, root,
+    children, accname, lpos, width, height
+  * New behaviors: @adisconnect, No_Pay, @name, @lock/speech, examine,
+    @cemit, give, @cost, SUSPECT, @startup, escape(), time(), merge(),
+    @set, move, @name, etimefmt(), insert(), PUPPET, help, rand, DEBUG,
+    TERSE, powers(), @config/set, @function/restrict, %~, @lock/leave,
+    tel(), @descformat, @idescformat, @aconnect
+  * @lock/interact can prevent other players from transmitting any
+    normal sound to you (that is, you won't hear them speak, pose, 
+    emit, etc., like gagging them in a client). 
+  * New flags: HEAVY, ORPHAN, MISTRUST
+  * New powers: Debit, Can_NSPemit
+  * New attribute flags: NO_NAME, NO_SPACE, DEBUG, NEARBY, PUBLIC, VEILED
+  * New channel flags: Notitles, Nonames, Nocemit
+  * You can log setting/resetting of flags/powers, as well as individual
+    commands or function calls.
+  * Rolling activity log dumped on panic dumps or visible with @uptime.
+  * A new test harness for developing regression test suites in perl
+    for PennMUSH is now included; few test suites are. If you can figure
+    out how to use this, write some tests for us!
+  * More and better telnet negotiation.
+  * Many internal improvements. Many old compile-time options removed
+    or replaced by run-time options. Source code commenting using
+    doxygen. Improved internationalization.
+  * New config directives: unconnected_idle_timeout, max_guests,
+    max_global_fns, read_remote_desc, default_home
+Minor Changes (since last 1.7.7):
+  * The LFAIL/OLFAIL/ALFAIL messages are activated whenever a @lock/leave
+    is checked and failed, not just when a 'leave' command fails.
+    (So they work for failed attempts to leave rooms by exits/@tel).
+    Suggested by Zith@Lovarii.
+Fixes (since last 1.7.7):
+  * Help for grab() now references graball(). Report by Sketch@M*U*S*H.
+  * Reference to 'ducats' in code replaced by appropriate plural
+    currency unit. Report by Kinumi@ShoujoAi.

@@ -1,0 +1,189 @@
+      Everything you ever wanted to know about access.cnf and more
+
+
+The file "access.cnf" in the game/ subdirectory controls access to the
+MUSH. It's used to restrict which sites can conect to players or guests,
+create players, or register players by email. It can also flag a site
+as suspect; all players who connect from suspect sites have their
+SUSPECT flag set.
+
+This file replaces the older lockout.cnf and sites.cnf file; 
+typing 'make access' will create a new access.cnf file from your
+lockout.cnf and sites.cnf files.
+
+FILE SYNTAX
+
+The syntax of the file is simple. Each line gives information about
+a host or host-pattern:
+
+host [dbref] [options] [# comment]
+
+host - the only required file, this is a hostname or a wildcard pattern
+       to match. Examples: 
+         berkeley.edu	- matches hostname berkeley.edu
+	 *.berkeley.edu - matches hostname <anystring>.berkeley.edu
+         *berkeley.edu  - matches either of the above
+         *              - matches all hosts
+    
+       user@host also works, but since Penn no longer attempts to
+       resolve a user name, existing rules that use this will always
+       fail to match.
+dbref   - The dbref of a character to restrict the rule too.
+          (Only makes sense for connect rules). Leave it out
+          or use '-2' to match all characters. Leave out the '#'
+          in the dbref.
+options - A space-separated list of options which apply to connections
+          from the host. Described in detail below.
+comment - an optional comment
+
+Everything in the file is separate by a single space - don't use tabs.
+
+The file is read line-by-line, and the first match is used. This
+means that the order in which hosts are listed is very important.
+
+Also, since both hostnames and IPs are checked, some rules must take
+both into account.
+
+There is one special line in the file, which looks like this:
+
+@sitelock
+
+This line indicates where @sitelock'd sites will be inserted in
+the file. Hosts listed after this line can have their access
+options superseded by using @sitelock on-line. Hosts listed before
+this line can not have their access options overriden by @sitelock.
+If the line doesn't appear in the file, it will be added to the end
+of the file at startup.
+
+
+READING AND WRITING THE FILE
+
+The access.cnf file is read and cached at startup, and whenever the MUSH 
+receives a HUP signal.
+
+The access.cnf file is written back to disk whenever @sitelock is used.
+
+
+OPTIONS
+
+The following options are available for each host in the file:
+
+create	- People connecting from this host may 'create' players.
+!create	- People connecting from this host may NOT 'create' players.
+connect - People may connect to their existing non-guest players.
+!connect - People may NOT connect to their existing non-guest players.
+guest	- People may connect to guest players from this host.
+!guest	- People may NOT connect to guest players from this host.
+none    - shorthand for: !create !connect !guest
+default - shorthand for: create connect guest
+!god    - God cannot connect from this host.
+!wizard - Wizards cannot connect from this host.
+!admin  - Wizards and Royalty cannot connect from this host.
+register - People may use the 'register' command from this host.
+suspect	- All players connected to from this host will be set SUSPECT
+deny_silent - Don't log failed create/connect/guest/register attempts
+regexp - Use regexp match rather than glob matching for the pattern
+
+If no options are given, the host is treated as if option "none"
+were used. If at least one option is listed, it's assumed that
+hosts can do anything (create, connect, guest) that they are
+not prohibited from.
+
+
+EXAMPLE SCENARIOS
+
+Here are some typical ways you might want to set up your file:
+
+1. Totally ban specific sites, allow all others
+
+*badsite.com -2 none
+*.twink.edu -2 none
+
+This will totally lock out those sites (like lockout.cnf)
+
+
+2. Allow specific sites and no others. Note that you must list both
+   hostname-matching patterns and ip address-matching patterns, because
+   if either fails to match a rule that allows connection, the connection
+   will be refused. This is true in general when writing positive rules.
+
+*.berkeley.edu -2 default
+128.32.* -2 default
+* -2 none
+
+People may connect from .berkeley.edu (128.32.) sites only.
+
+
+3. Allow connection but not creation from some sites
+
+*.twink.edu -2 !create
+
+This is equivalent to the former function of sites.cnf
+
+
+4. Allow connection but not creation or guest-connection from some sites
+
+*.twink.edu -2 !guest !create
+
+
+5. Require that a given site use the 'register' command to register
+   players by email. 
+
+*.twink.edu -2 !create register
+
+Using !create prevents people from using the usual create command.
+Adding register allows them to use the register command.
+
+
+6. Disable creation from twink.edu sites, and don't let Wizards 
+   override this rule with @sitelock
+
+*.twink.edu -2 !create
+@sitelock
+
+Because the rule appears above "@sitelock", and @sitelock rules appear
+below "@sitelock", the rule will always be checked before any 
+@sitelock rules.
+
+
+7. Disable creation from twink.edu sites, but allow Wizards to
+   later override this rule with @sitelock
+
+@sitelock
+*.twink.edu -2 !create
+
+Because the rule appears below "@sitelock", new @sitelock rules
+(which will be added immediately following "@sitelock") will precede
+it, and will be checked first.
+
+8. God can only be connected to from one specific account on the
+   server, and nowhere else. Wizards cannot override it. This requires
+   you to connect to 'localhost <port>' from a given account on the
+   same server the mush runs on. If the server doesn't support ident,
+   remove 'username@' so that anyone on the server can connect. 
+
+username@localhost 1 connect 
+username@127.0.0.1 1 connect
+* -2 !god
+@sitelock
+
+9. A complex example:
+
+  a) Allow anybody from localhost.berkeley.edu complete access
+  b) Force people from *.twink.edu to use registration, and set their
+     players SUSPECT
+  c) Completely ban *badsite.com, and don't log attempts to connect
+  d) Don't allow jerk@netcom.com to connect to Guests
+  e) Allow people from somesite.org to connect to Guests only.
+  f) Allow @sitelock to override c-e above
+
+localhost.berkeley.edu -2 default
+127.0.0.1 -2 default
+*.twink.edu -2 !create register suspect
+@sitelock
+*badsite.com -2 none deny_silent
+jerk@netcom.com -2 !guest
+somesite.org -2 !connect !create guest
+
+
+

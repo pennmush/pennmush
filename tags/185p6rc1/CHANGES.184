@@ -1,0 +1,891 @@
+
+This is the changes file for PennMUSH 1.8.4. Please look it over; each
+version contains new things which might significantly affect the
+function of your server.  Changes are reported in reverse
+chronological order (most recent first)
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
+ responsible for most unattributed changes.
+[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.4 patchlevel 8                                 Nov 11, 2011
+
+Major changes:
+ * ssl_slave is enabled by default by configure if OpenSSL and
+  libevent2 are present. Passing --disable-ssl_slave to configure will
+  still disable it. [SW]
+ * The newline_one_char config option has been removed -- %r now
+   always returns a single-char newline (\n). [MG]
+ * Microsoft Visual Studio 2010 project files contributed by Daniko.
+
+Minor changes:
+ * crunch_code and crypt_code in funcrypt.c are no longer
+   static. Requested by qa'toq@M*U*S*H. [MG]
+ * @dump now notifies the executor when the dump is
+   complete. Suggested by Padraic. [MG]
+ * There is now a slight delay between a client connecting to the
+   MUSH, and the connect screen being shown. This means that the "<--
+   ... -->" HTML comments are no longer needed around the connect
+   screen when mud_url is enabled, the HTML shown when someone
+   connects to the MUSH with a browser works better, and that Pueblo
+   clients will usually only get the HTML connect screen, instead of
+   seeing both. Also, telnet negotiation should complete before the
+   screen is shown, making terminfo() and width() give useful values
+   for people using softcoded connect_files. Commands can still be
+   used before the connect screen is displayed. [MG]
+ * When looking at an object, all its components (describe,
+   descformat, conformat and exitformat) now share registers: a
+   q-register set in the desc can be accessed in the conformat, and so
+   on. [MG]
+ * When you fail to @mail a player because you don't pass their
+   @lock/mail, the MAIL_FAILURE verbs will be triggered, as per 'help
+   failure'.  Suggested by Cheetah. [MG]
+ * When using channels() on an object, the permission checks now
+   resemble those for cwho() / @channel/who. Based on a patch by
+   Padraic. [MG]
+ * Guests no longer control anything, including themselves, and can't
+   ever build, create or destroy objects. They can still examine themselves,
+   for backwards compatability. Suggested by [SW]. [MG]
+ * Changed many things which were evaluating an attribute value
+   manually to use call_ufun() instead, for better %+ / %= values,
+   among other benefits. [MG]
+ * fetch_ufun_attrib now takes a new flag, UFUN_NAME, which will add
+   the object's name to the beginning of the attr value (respecting
+   no_name and no_space attr flags), for @o-* attrs. [MG]
+ * Clean up the functions that send data across the network to 
+   connections. [SW]
+ * Updated intructions for compiling with MySQL support on Windows
+   contributed by Daniko.
+ * Improve ssl_slave cleanup code on lost connections and shutdowns. [SW]
+ * @list locks and list(locks) sort their results. [SW]
+   
+Fixes:
+ * @lock/infilter, not @lock/infitler. [SW]
+ * @shutdown/reboot handles failed database saves much more
+   gracefully.  [SW]
+ * Help fixes by Wiggles and Trelane. [MG]
+ * Fix a few places that could trigger an integer division exception.
+   Reported by Ashen-Shugar. [SW]
+ * A number of places in the hardcode incorrectly took TINY_MATH into
+   account when deciding if something was a valid number or not. From
+   a report by Daniel Powell. [MG]
+ * doing() now evaluates the DOING attribute with better values for %#
+   and %@. From a report by Padraic. [MG]
+ * Fix some cases where functions like lcon() could return partial
+   dbrefs at the end of a long output string. [SW]
+ * When magic-sorting strings with embedded dbrefs, setunion() no longer
+   treats different objects with the same name as being identical. Reported
+   by Minion. [MG] [GM]
+ * type() and hastype() claimed to work on GARBAGE objects, but actually
+   returned #-1 NO SUCH MATCH. Reported by Jules. [MG]
+ * A few messages were sent with incorrect nospoof data. Reported by 
+   Jules. [MG]
+ * Fix a harmless but annoying race condition when making a SSL connection 
+   to a game in the middle of starting. [SW]
+ * Fixed minor memory leak in chat system. [MG]
+ * @channel/decompile didn't recreate the ANSI in a channel's name. [MG]
+ * Channel names can now contain any amount of ANSI, as long as the visible
+   name is 30 chars or less in length. Suggested by Kimiko Muffin. [MG]
+ * @channel/rename allowed you to give channels invalid names. [MG]
+ * @readcache rebuilds the linux file watch list, allowing deleted
+   files to be watched for changes again when re-created. [SW]
+ * Crash bug in @boot/me. Reported by Minion. [SW]
+ * Fix in handling clients like putty that send telnet commands right
+   away instead of waiting for the mush to send them first. Reported
+   by Time. [SW]
+
+Functions:
+ * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]
+ * sqlescape() doesn't need to have commas escaped. Suggested by Daniko
+   and Padraic. [SW]
+ 
+Commands:
+ * 'examine' and 'brief' now take an /opaque switch, which omits contents
+   listings. Useful for spammy objects like the player_start room. [MG]
+
+Version 1.8.4 patchlevel 7                                 Sep 25, 2011
+
+Deprecation:
+ * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
+ * @doing is now deprecated (see below).
+ * The "newline_one_char" mush.cnf option is now deprecated, and will soon
+   always be "Yes". If you have it set to No and have any code that assumes
+   strlen(%r) == 2, you should change it now. [MG]
+
+Major changes:
+ * DOING is now a standard attribute. Your @doing can be any length, and
+   doing() returns the whole string (though it will still be truncated when
+   displayed on WHO), can contain ANSI and will be evaluated each time it's 
+   displayed, allowing for random/rotating doings. The @doing command will
+   escape its input before setting into an attribute, for backwards
+   compatability, but is now deprecated; use &doing to store code. [MG]
+ * All objects with the same flags or powers set share the same
+   storage for those flags. Large games should see slightly reduced memory
+   use. Suggested by [GM]. [SW]
+
+Minor changes:
+ * Rewrite memcheck allocation tracking to use a more efficient data
+   structure. [SW]
+ * Help file improvements, by Ender and others. [SW] [MG]
+ * Added a new 'getting started' helpfile, that gives a brief overview of
+   how to move, talk, use channels and @mail. Suggested by Wiggles. [MG]
+ * @decompile now uses '&attr obj=value', even for standard attributes, to
+   avoid possible clashes with command names. Suggested by Mercutio. [MG]
+ * Extended convtime understands timestamps of the form 
+   'YYYY-MM-DD hh:mm:ss'. Suggested by Padraic. [SW]
+ * pemit() now accepts a list of port numbers, to pemit to multiple ports
+   at once. Suggested by Padraic. [MG]
+ * Built in functions and commands can now be marked as being
+   deprecated.  Using one of these functions or commands results in a
+   warning to the owner of the object executing them. Deprecated
+   functions and commands might be removed in future patch levels;
+   code using them needs to be rewritten. [SW]
+ * Rewrite function restriction parsing and reporting to make it easier to
+   add new restrictions. [SW]
+ * Code cleanup. [SW]
+ * Channels are now ungagged on disconnect, instead of connect, so you'll
+   see your "<Foo> Bar has connected." message next time you log in. [MG]
+ * WARN_ON_MISSING can now be @hooked. Suggested by Padraic. Also, help has
+   been added for that and UNIMPLEMENTED_COMMAND. [MG]
+ * fn() didn't always work correctly on a UserFn function, especially when
+   nested in another function. Reported by Padraic. [MG]
+ * Accents are no longer stripped from output sent to players who haven't
+   logged in (those at the connect screen). Suggested by geradon. [MG]
+ * Softcode functions are now passed an additional argument, eflags,
+   by the hardcode, which should be used when the function calls
+   process_expression(). See HACKING.184 for more info. [MG]
+
+Functions:
+ * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be
+   used by all. Suggested by Minion. [MG]
+ * xwho() now takes an optional <looker> arg, like lwho(). [MG]
+ * rand() without an argument returns a floating point number greater than
+   or equal to 0 and less than 1. [SW]
+ * itemize() is now more ANSI-aware. Reported by Jules. [MG]
+ * fullalias() didn't include old-style exit aliases (which were a part of 
+   the exit name). [MG]
+
+Locks:
+ * New locks, @lock/filter and @lock/infilter, which must be passed (along
+   with any @filter/@infilter set) for an object to forward sound. Patch
+   by Padraic.
+
+Fixes:
+ * Verified that Penn compiles using the clang compiler, and fix a few
+   warnings it generated. [SW]
+ * Better fix for the DBREFLIST issue fixed in p6. [SW]
+ * @pemit/list stopped reporting when it failed to match an object in p5.
+   Reported by Padraic. [MG]
+ * 'page' evaluated its args incorrectly when used in an $-command.
+   Reported by Invidia@Dune3. [MG]
+ * Win32 compile fixes by Daniel Powell. [MG]
+ * Fix an off-by-one error in wrap(). Report by Padraic, patch by Minion [MG]
+ * Sorting code didn't do proper objid checks, so setinter(#1:123, #1:456)
+   would return #1:123 instead of nothing. [MG]
+ * The Can_spoof power was only aliased to Can_nspemit (its original name)
+   in upgraded dbs, not in new games created from minimal db. Reported by
+   Ben Ramsey. [MG]
+ * Fix a crash bug in @function/restrict on malformed input. Reported by
+   Padraic. [SW]
+ * Some fixes to the test suite. Reported by Covenent. [MG]
+ * @pageformat included nospoof information. Reported by Jules. [MG]
+ * case() clobbered $0-$9 subs. Reported by Jules. [MG]
+ * Named regexp captures -- (?P<NAME>pattern) -- were broken in a recent
+   patchlevel. Reported by Jules. [MG]
+ * Markup wasn't stripped from queued commands, making it possible for
+   ANSI to bleed. Reported by Wiggles. [MG]
+ * Pueblo players couldn't see ANSI in connect screens. From a report
+   by geradon. [MG]
+ * money() behaved incorrectly when the tiny_math config option was on.
+   Reported by Daniell Powell. [MG]
+ * Databases with 8-bit characters couldn't be saved using the internal
+   libz compression routines. [SW]
+ * It was possible to create a player with a forbidden name from the login
+   screen. Reported by Andrew Bell. [MG]
+
+Version 1.8.4 patchlevel 6                                 Jul 29,  2011
+
+Minor changes:
+ * Clean up the linux inotify file monitoring code a bit. [SW]
+ * @forwardlist can be inherited (But defaults to no-inherit). Suggested
+   by Padraic.
+ * @pemit/port now takes the /list switch, to pemit multiple ports at once.
+   Suggested by Padraic. [MG]
+ * When you 'register' a character at the connect screen, you can re-use the
+   command to send a new password to the same email address, as long as you
+   haven't connected yet. Suggested by Minion. [MG]
+ * @odescribe/@adescribe are no longer triggered when a Terse player moves
+   into a room, as he doesn't see the @describe. Suggested by Padraic. [MG]
+ * exit-oneway and exit-multiple warning checks now take global exits
+   into account. Suggested by Padraic and qa'toq. [SW]
+
+Functions:
+ * valid() can be used with the 'qreg' category to check if a string
+   is a valid q-register name.  [SW]
+ * crecall() now returns an error when given an invalid channel, and no
+   longer returns an error when used on a channel with nothing to recall.
+   Suggested by Trinsec. [MG]
+ * Added uptime(), which returns much of the information from @uptime.
+   From a suggestion by Jules. [MG]
+ * quota() now accepts 'me' as an argument. Suggested by Padraic. [MG]
+ * remove() is now ANSI-aware. [MG]
+ * money() now checks for an integer argument before checking for an object.
+   Suggested by qa'toq. [MG]
+   
+Fixes:
+ * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa
+   and Paige. [MG]
+ * Bug in matching code when a room tries to locate an exit. Reported by
+   Sketch. [MG]
+ * Help updates. [MG], [SW]
+ * Crash bug in dealing with Pueblo markup. Reported by Mercutio. [SW]
+ * Fix some issues in parsing flag/attribute/eval locks. Found by Padraic
+   and Jules. [SW]
+ * @[out]pageformat could sometimes receive the wrong alias in %2. Reported
+   by Padraic. [MG]
+ * align() didn't correctly apply ANSI to empty columns. Reported by
+   Padraic. [MG]
+ * Fix compile warning in player.c when sendmail is not enabled. Reported by
+   Padraic. [MG]
+ * Fix hardcode bug in ansi_strcmp, which affected the softcode splice()
+   function. [MG]
+ * @chan/what failed to report when Admin channels also had the Player priv.
+   Reported by Padraic. [MG]
+ * win32/config.h was lacking a definition for int16_t. Reported by Daniko.
+   [SW]
+ * DBREFLIST locks required the attrname be given in upper-case. Reported by
+   Sketch. [MG]
+
+Version 1.8.4 patchlevel 5                                 Jun 19,  2011
+
+Major Changes:
+
+ * The experimental --enable-ssl_slave option for configure allows
+   persistant SSL connections that won't get booted when the mush
+   restarts. Requires libevent v2.X. [SW]
+ * info_slave, the sub-process used for resolving hostnames, now uses
+   libevent if available. [SW]
+ * Rewrite of large portions of notify.c. The main public function
+   there, notify_anything(), now takes different arguments.
+   notify_format() and notify() are unchanged. Should be largely
+   unnoticable for players. [MG]
+
+Commands:
+ * @edit/quiet edits attributes, but doesn't spam you with the
+   modified values, just gives you a count of modified
+   attributes. Suggested by Padraic. [MG]
+ * You can now have more than one command (with the action list
+   enclosed in {curly braces}) in the rhs arg of @force/noeval. [MG]
+ * @ps/debug <pid> will display extra information about a queue
+   entry's evaluation environment. [SW]
+ * @pemit now acts as if /silent was given when the executor and
+   target are the same object, for consistency with other
+   sound-producing commands and to fix an issue with
+   @pemit/spoof. [SW]
+ * @command now shows the failure message that can be set with
+   restrict_command or @command/restrict. [SW]
+ * @message now takes a /remit or /oemit switch, to make it work like
+   those commands instead of @pemit. Also takes a /nospoof switch to
+   make it like the @ns*emit versions. [MG]
+ * @pemit/list/noisy now shows a confirmation message. [MG]
+
+Powers:
+ * can_dark power lets non-wizard players set themselves dark.
+   Suggested by AnneLions. [GM]
+
+Minor Changes:
+ * ansi_string has been rewritten to be much faster for non-marked up
+   strings, to take up considerably less memory, and has received
+   general all-around improvements in speed. Rewrite is in preparation
+   for 256 color and 24 bit color ansi. [GM]
+ * ansi_string no longer optimizes markup. In some pathological cases,
+   buffer_len will be hit much earlier than it used to be. Use ansi()
+   with wisdom! [GM]
+ * @edit no longer shows the full value of attributes which aren't
+   edited, it just shows that they are unchanged. Suggested by
+   Minion. [MG]
+ * @mail now shows the dbref of the sender for mail from non-players.
+   Suggested by Minion. [MG]
+ * Fix a potential buffer overflow in prefix table code. [SW]
+ * "enter <exit>" now works the same as "goto". Suggested by [GM]. [MG]
+ * Tweaks to the system queue introduced in the last patchlevel. [SW]
+ * @pemit now uses the same nospoof header as other commands. [MG]
+ * When creating a minimal db, the MUSH now respects the
+   read_remote_desc option, and may set @descs "nearby". Reported by
+   Paige. [MG]
+ * Exits now show accented names (via @nameaccent) in "look". Suggested
+   by Cheetah. [MG]
+ * @enter/@oenter/@aenter, @leave/@oleave/@aleave and
+   @move/@omove/@oxmove/@amove get passed the moving object's original and/or
+   new location as appropriate. Patch by Padraic.
+
+Fixes:
+ * Crashbug when players are in and homed to a room that is owned by a
+   player being @nuked fixed. Reported by Kimiko. [GM]
+ * qregs, %0-%9 and $0-$9 would occasionally smash each other.
+   Reported by Cheetah@M*U*S*H. [GM]
+ * No_Pay was implicit if executor is #1, but was _not_ implicit if
+   Owner(executor) was #1. Caused some obscure queue cost bugs.
+   Discovered by Padraic@M*U*S*H. [GM]
+ * %$-subs didn't work inside @switch's default case. Patch by Covenent.
+ * %0-9 were being overridden when using /inline/localize. Patch by Covenent.
+ * You couldn't @chat on open channels. Reported by Padraic. [MG]
+ * Win32 compile fixes by Daniel Powell. [MG]
+ * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.
+ * regrab*() functions removed ansi. Reported by Covenent. [MG]
+ * munge() didn't play nice with ansi. [MG]
+ * @shutdown/reboot would hang unencrypted sockets for players with
+   both SSL and normal connections. Reported by Padraic. [SW]
+ * @chatformat sometimes received the player's name without accents by
+   mistake. Reported by Sketch. [MG]
+ * Bug in @wipe fixed by Padraic.
+ * Objects couldn't be @tel'd to exits which weren't in their current
+   location. Reported by Padraic.
+ * Fixed an obscure bug in "say" when sound is propagated. From a report by
+   Padraic@M*U*S*H. [MG]
+ * Various help fixes. [MG], [SW]
+ * Prevent persistant 'Attempt to write to error log before it was started!'
+   error in netmush.log [MG]
+ * Rooms could not locate objects by name. Reported by Sketch. [MG]
+ * Players using Pueblo who are not set ANSI will no longer see
+   colors. [MG]
+ * The <inside> arg to tel() didn't work. Fixed by Padraic.
+ * 'make clean' in game/txt no longer deletes the configure-generated
+   compose.sh file. Suggested by Padraic. [SW]
+ * The new q-register code wasn't passing registers on to new commands
+   queued by @wait, @verb and @mapsql. [SW]
+ * Crash bug in unused code to reset hash tables fixed. Reported by
+   Trinisi.  [SW]
+
+Functions:
+ * Restrictions for the beep() function can now be modified with @function.
+   Suggested by Paige. [MG]
+ * Functions that take #lambda anonymous attributes also understand a new
+   #apply/<function name> shorthand for calling a single function. [SW]
+ * ldelete() now takes an osep. [MG]
+ * allof()/strallof() can now have mutli-char output separators, and null
+   oseps. Reported by Padraic. [MG]
+ * benchmark() warns when results are thrown off by hitting the
+   FIL. Reported by Padraic. [SW]
+ * New render() function which returns a string rendered as html, without
+   markup, etc. Useful for bots or storing data in SQL. [MG]
+
+Version 1.8.4 patchlevel 4                                 May 05,  2011
+
+Major changes:
+ * Q-registers are no longer limited to single characters. setq(name,joe)
+   and r(name) or %q<name>! Limited by max_named_qregs. [GM]
+ * Ident lookup and associated config options have been removed. Between
+   lack of people running ident servers, NAT, and issues in the code, it
+   rarely got results. [SW].
+
+Hardcode:
+ * global_eval_context has been removed. The BQUE, EVAL_CONTEXT and PE_Info
+   structs have been removed, replaced with MQUE and NEW_PE_INFO. Shouldn't
+   affect players, but will affect hardcode hacks. See HACKING.184 for more
+   info. [MG]
+ * Q-registers are now kept in a PE_REGS stack. See HACKING.184 for more
+   information. This will be used for other registers. [GM]
+ * Regexp information ($1, $<foo>) are now kept in the PE_REGS stack. [GM]
+ * Faster regexps in many cases when there is no markup. [GM]
+ * Switch, iter, and env (%0-%9) information are now kept in PE_REGS stack.
+   switch, iter, @switch and @dol are no longer limited, but new queue
+   entries only keep the last 50 @switch/@dols. [GM]
+ * Renamed some variables in COMMAND() definitions for consistency/clarity.
+   See HACKING.184 for more info. [MG]
+ * Assorted Windows fixes. [SW]
+ * Clean up code using vsnprintf() to remove #ifdefs. [SW]
+ * String trees are now fully reference counted with no undeletable
+   entries. [SW]
+
+Minor changes:
+ * Because switch() and @switch now store capture data, it can change
+   the nesting of $0-$9/$<foo> in rare cases. [GM]
+ * All @o* messages are now heard by rooms even when they're empty. Makes
+   room @listens and similar things work right. Suggested by Padraic. [MG]
+ * @zemit and zemit() will now show the executor the message, if he's in a
+   a room on the right zone. Suggested by Paige. [MG]
+
+Locks:
+ * objid locks are now turned into =-locks by the lock parser. The clearing
+   of references to deleted objects makes objid locks extraneous. [SW]
+ * Internal changes to validation of 'name^string' locks to use perfect
+   hash tables to validate the name. [SW]
+ * Locks worth better with escaped special characters. Patch by Covenent.
+ 
+Commands:
+ * @switch and @switch/regexp set $0-$9 for glob or pattern captures. [GM]
+ * @notify/setq can alter Q-registers of a semaphore queue entry before
+   dequeueing it. [GM]
+ * 'teach' now takes a /list switch, which lets it run an action list
+   instead of a single command. [MG]
+ * @force, @switch and @hook/override now all take an /inline switch, which
+   can be further modified with /clearregs, /localize and /nobreak to run
+   their actionlists without queueing (replaces /inplace). @include also
+   takes those three switches. See the help for more info. [MG]
+ * @retry, which causes a queue entry to restart from the beginning. Useful
+   for coding loops without the queue delay. [GM]
+   
+Substitutions:
+ * $<name> for accessing regexp substitutions can now have evaluation inside
+   the <>s: $<%qa>. [GM]
+ * %q<foo> can access named Q-registers. %q<%qa> can work as a q-register
+   dereference. [GM]
+ * New %= substitution, which evaluates to the dbref/attribute currently
+   being evaluated. Useful for coding things which loop. [MG]
+
+Attributes:
+ * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
+ * no_inherit and no_clone weren't propagated down attribute trees as
+   stated in the help, but now are. [MG]
+ * The debug and no_debug attribute flags now affect attributes which are
+   queued (via $-commands, @trigger, etc) as well as ufun()'d. Suggested
+   by Wiggles. [MG]
+ 
+Functions:
+ * switch() sets $0-$9 for glob captures.
+ * setq(), regmatch(), strmatch() and sql() accept q-register names of
+   more than one character. [GM]
+ * unsetq() now accepts patterns of q-register names. [GM]
+ * listq() lists q-registers available to r(), optionally limited to those
+   matching a pattern. [GM]
+ * elock() now only requires that you can see the lock you're trying to test.
+   Suggested by Sketch@M*U*S*H. [MG]
+ * Changes to scan(): Returned value now always returns the object which
+   would run the $-command (even if it's actually set on a parent). scan()
+   can also take a 3rd argument, to limit which objects are checked. Based
+   on a patch by Covenent. [MG]   
+
+Fixes:
+ * isword(ansi(r,foo)) would return 0. isword now removes markup before
+   checking. Ditto for isdbref, isnum, isint, isobjid. [GM]
+ * round() would sometimes return a number with a decimal point but no
+   digits after it, like "5.". Reported by Minion. [MG]
+ * sortby() and foreach() now use call_ufun in the hardcode, fixing a number
+   of minor bugs. [MG]
+ * rand(-X, -Y) where -X > -Y was broken. [SW]
+ * Fix a couple of minor memory leaks. [SW]
+ * Possible crashbug in switch(), @switch, iter() and @dolist fixed. [MG]
+ * Fix crash when reading a database with an invalid lock key. Reported by
+   Covenant. [SW]
+ * Some fixes to the test suite by Sketch.
+ * Help fixes by misskaly, Wiggles and others. [MG]
+ * warn_interval set to 0 would cause the MUSH to hang. Reported by
+   Nymeria @ Blood of Dragons.
+ * It was sometimes possible for a player to view config options he 
+   shouldn't have. Reported by qa'toq. [MG]
+ * Possible crashbug in @name reported by Wiggles. [MG]
+ * Object matching (a la locate()) with an exit as the looker didn't work
+   correctly. Reported by Covenent. [MG]
+ * Panic database dumps weren't always loading correctly. Reported by [MG],
+   fixed by [SW].
+ * A missing mail or chat database caused failures in mush startup. Reported
+   by Nveid. [SW]
+ * Various fixes to update-cnf.pl by Minion.
+ * Setting or clearing the MONITOR flag on rooms caused duplicate messages.
+   Reported by Minion. [SW]
+ * @mapsql/notify would sometimes run the "@notify me" before the triggered
+   attributes. Reported by Mercutio. [MG]
+ * Combined channels would generate duplicate connection/disconnection
+   messages to players connected multiple times. [SW]
+
+Version 1.8.4 patchlevel 3                                 Mar 18,  2011
+
+Events:
+ * Event system added. Certain things can now trigger events using @config
+   event_handler. See "help events" and "help event <type>". [GM]
+ * dump events: dump`5min, dump`1min, dump`complete.
+ * object events: object`create, object`destroy, object`move,
+   object`rename, object`kill.
+ * sql events: sql`connect, sql`disconnect.
+ * signal events: signal`usr1, signal`usr2.
+ * player events: player`create, player`fail, player`connect,
+   player`disconnect, player`inactivity.
+ * socket events: socket`connect, socket`disconnect
+ * database events: db`dbck, db`purge, db`wcheck
+ * Periodic system events like warnings checks and db consistency
+   checks are now handled by a timed queue and integrated with
+   softcode events. Local hackers: This involves changes to
+   local.c. If you have no changes in local.c, just delete the file.
+   Otherwise, see HACKING.184 for more info. [SW]
+
+Commands:
+ * @hook/override/inplace - You can now run softcode with the same priority
+   as hardcode! [GM]
+ * @lock (and all lock keys) now accepts NAME^<pattern> for matching against
+   an object's name. [GM]
+ * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
+ * @dig now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
+ * The help command now does some auto-expansion of topics. For example,
+   'help @chan ad2' will be expanded to match 'help @channel admin2'. [MG]
+ * @force/inplace, @switch/inplace and @select/inplace now run their commands
+   without queueing new events. These are limited by the @include limit. [GM]
+ * @hide without a switch now toggles hide status, rather than defaulting to
+   @hide/on. [MG]
+ * @log now takes a /recall switch for showing wizards the most recent activity
+   in a log file. [SW]
+ * @lemit and @zemit both have /noisy and /silent switches to suppress/show
+   confirmation messages. With no switch, silent_pemit determines whether
+   the message is shown. Suggested by Paige for consistancy. [MG]
+   
+Attributes:
+ * New no_debug flag, which prevents debug info being shown for an attribute
+   when the object is set DEBUG. [MG]
+   
+Config:
+ * New @config option chan_title_len controls the length of @channel/title's.
+   Suggested by Paige. [MG]
+
+Locks:
+ * New @lock/pay, controls who can "give" an object pennies or "buy" items
+   from an object. Based on patch by Covenent. [MG]
+
+Functions:
+ * lockfilter() lets you filter a list of dbrefs using a lock key. [GM]
+ * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
+   Suggested by Minion. [GM]
+ * dig() now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
+ * convutctime() and convtime(<time>, utc) to convert a timestring to
+   # of seconds since UTC. Patch by Minion.
+ * powers() with no arguments now returns a list of powers, similar to
+   lflags() with no args. [MG]
+ * trim() can now trim multiple characters. [MG] [GM]
+ * In some cases, privs are no longer needed to use locate(). [MG]
+ * cmogrifier(), returns the mogrifier object for a channel. Suggested by
+   Trinsec, patch by Minion.
+
+Minor Changes:
+ * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
+   its uses. Can_Nspemit is still an alias. [MG]
+ * Considerable improvement in the speed of functions that sort
+   case-insensitively, particularly using 'm' sort (Now default). [GM]
+ * Combined fun_setinter, fun_setdiff and fun_setunion into fun_setmanip. [GM]
+ * For hardcoders: list2arr and list2arr_ansi now take a third argument
+   on whether to include empty items. [GM]
+ * page and @mail will report to you if your recipient(s) cannot reply
+   to you. Suggested by Paige. [GM]
+ * The debug attribute flag now shows more debug info. [MG]
+ * @oemit now does better object matching, can match names with spaces when
+   enclosed in double quotes, and, when given a <room> but no matching
+   objects, shows the message to everyone in the room, instead of noone.
+   From a bug reported by Paige. [MG]
+ * Paranoid objects now see nospoof messages for their emits. [MG]
+ * ANSI is now ignored when checking the length of channel titles. Suggested
+   by Paige. [MG]
+ * @decompile with a <prefix> now shows cmds for setting attribute flags.
+   @decompile/tf still omits cmds for attr flags. [MG]
+ * @mail <msg-lists> which don't specify a folder now act on your current
+   folder, instead of Folder 0. Suggested by Paige, patch by Minion.
+ * @dig, @open and @name now set exit aliases into the @alias attribute,
+   instead of including them in the exit name. Also, @name can now set/clear
+   the @alias of players/exits while changing the name. See help @name for
+   details. Suggested by Minion. [MG]
+ * The logging code has been rewritten to make extending it with further
+   log files easier. [SW]
+ * When used by a non-player, @search and related functions now search from
+   the perspective of the object's owner. Suggested by Covenent. [MG]
+ * The LASTPAGED attribute now stores objids instead of names, allowing you
+   to repage even when the target changes their name. [MG]
+ * When zwho() or @chzone fail because you don't pass the @lock/zone, zone
+   failure verbs are triggered (as per 'help failure'). Based on a patch by
+   Covenent. [MG]
+ * sub() can now take more than two arguments. Suggested by Paige. [MG]
+ * In the hardcode, disconnected players in the DESC struct are shown as -1
+   instead of 0, to avoid conflicts with #0. Based on patch by Paige. [MG]
+ * It was sometimes possible to "buy" items from yourself. [MG]
+
+Fixes:
+ * Fixing list type autodetect. [GM]
+ * Help fixes by Daniel Powell, AnneLions, Minion and others. [MG]
+ * Connect/disconnect messages for combined channels incorrectly showed
+   NOSPOOF data. Reported by Sketch. [MG]
+ * The delimiter between combined channel names in @chatformat is now '|'
+   instead of ' | ', as documented. Reported by Trinsec. [MG]
+ * ansi(h,) now returns absolutely nothing, instead of an ansi-highlighted
+   nothing. Fixes a few minor/obscure bugs. [MG]
+ * @edit sometimes displayed a success message even when it failed. [MG]
+ * @cpattr/@mvattr would sometimes copy attribute flags, even when the
+   attribute value couldn't be copied. [MG]
+ * Bug in attribute comparisons added in p2 could cause attributes to
+   not be found at times. [MG]
+ * sortby()s results would sometimes be reversed by mistake. [GM]
+ * Minor bugfix in @include. [MG]
+ * round() sometimes returned numbers with more decimal digits than
+   desired. 
+ * The '*' option in locate() didn't actually include all match types. [MG]
+ * @include incorrectly refunded the queue_cost, giving people free pennies.
+   Reported by Covenent. [MG]
+ * lnum() didn't handle negative <step>s well. Reported by Minion. [MG]
+ * comp()s results was sometimes negated. Reported by Covenent. [MG]
+
+Version 1.8.4 patchlevel 2                                 Dec 06,  2010
+
+Major Changes:
+ * Wildcard matcher completely rewritten to avoid hangs and to provide
+   ansi-aware capturing. [GM]
+ * connection_fail_limit now lets you limit the # of connection fails in
+   a 10 minute time by any given IP. [GM]
+
+Minor Changes:
+ * update-cnf.pl perl script now handles optional config lines, by placing
+   A # OPTIONAL above them. This is for message translation. [GM]
+ * Config options can now be marked as optional. If they don't exist,
+   Penn will not complain in the log. [MG]
+ * Player names with spaces no longer need to be in given in quotes for
+   @name. Suggested by Minion. [MG]
+ * @decompile no longer shows flags which can't be set by players, like
+   GOING and CONNECTED. [MG]
+ * %il substitution as preparation to get rid of ##. [GM]
+ * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
+ * The %i<n> substitution, and itext()/inum()/ilev() functions, now work
+   for @dolist as well as iter(). [MG]
+ * iter() context (itext(), inum(), etc) is no longer propagated through
+   ufuns. [MG]
+ * @hook/overrides on huh_command are now matched against "huh_command" and
+   "huh_command <input>". From a suggestion by Mercutio. [MG]
+ * Various help fixes.
+ * @list and list() can now show only built-in or only local commands or
+   functions. Suggested by Trelane@M*U*S*H. [MG]
+ * Mortals can now use @search to find any objects they can examine.
+   Suggested by Paige. [MG]
+ * @function names can start with numbers again. Requested by Mercutio. [MG]
+ * @include and @break now work when entered directly from a client. [MG]
+ * The Drop and Give @locks now trigger verb <name>_LOCK`FAILURE attributes
+   when you fail to pass them, as described in 'help failure'. Suggested by 
+   Cas@BeforeTheDarkness. [MG]
+ * Set several attributes used internally AF_NOCOPY so they won't be included
+   in @decompile output. Suggested by Paige. [GM]
+ * The help for the chat system (@channel) has been rewritten. [MG]
+ * autodetect_list now returns 'm' sort for unknown list types instead of
+   alphanum, so sorting on strings will now treat numbers in them as
+   separate comparisons by default. [GM]
+ * setunion(), setdiff(), setinter() now autodetect lists in all cases where
+   no sort type is provided instead of just some cases. [GM]
+ * The pipe (|) character is no longer valid in channel names. [MG]
+
+Functions:
+ * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
+ * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
+   and reswitch*(), but can be used in nested switches/on user input. [MG]
+ * New slev() function, returns the current nesting depth of switches. [MG]
+ * maillist() returns a list of @mail messages matching a range, as per
+   @mail/list. Suggested by AnneLions. [MG]
+ * New sorttype, lattr, sorts a list of attribute names. [MG]
+
+Commands:
+ * @channel/combine and @channel/uncombine let you combine spammy connect
+   messages for channels into one line. [SW] [GM]
+ * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
+   regular expression greps (a la wildgrep() and regrep()). Also /nocase
+   for case-insensitive greps. Suggested by Paige. [MG]
+ * @attribute now allows limiting attribute values through /enum and
+   /limit switches. [GM]
+ * @ps <pid> shows info for a single queue entry. Suggested by Paige. [MG]
+   
+Fixes:
+ * Off-by-one bug in 'm' sort when using embedded numbers fixed. [GM]
+ * Debug output was sometimes sent to the wrong executor. [GM]
+ * A crashbug in @search was fixed. Reported by Paige. [GM]
+ * A crashbug in lpids() was fixed. Reported by Mercutio. Fixed by Javelin.
+ * @search elock class failed to report invalid lock strings. Fixed. [GM]
+ * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
+ * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
+ * map(), iter(), mix() and step() are ansi-aware, now. Using any of the
+   list functions without ansi should also be considerably faster. [GM]
+ * "look <container>'s <object>" incorrectly stopped working in p1 when
+   <object>'s desc was set "nearby". Reported by Yuriko@M*U*SH. [MG]
+ * Attribute names are now sorted better with regard to attribute trees,
+   hopefully fixing the recurring bug of @wipe leaving branch attributes
+   when removing a root attr for good. [MG]
+
+Version 1.8.4 patchlevel 1                                 Sep 05,  2010
+
+Major Changes:
+ * You can now do the equivilent of @command/add, @hook, @function and
+   @attribute/access from alias.cnf and restrict.cnf, to add/configure
+   commands, functions and standard attributes. Suggested by Paige. [MG]
+ * Exits now use @alias for alternate names. The old style of
+   including aliases directly in names is still supported, but
+   deprecated in new construction. Suggested by [MG]. [SW]
+
+Minor Changes:
+ * @power now reports when you try and set a power which is already set (or
+   clear one which isn't set), similar to @set. Suggested by Paige. [MG]
+ * Sorting methods now take - as a prefix to sort type in order to sort
+   in descending order. Suggested by Minion. [GM]
+ * The matching code no longer matches players who aren't nearby with
+   "*playername" when MAT_NEAR is given, more in line with other checks.
+   (This has virtually no impact for most players.) [MG]
+ * The internal pe_info (which manages the function invocation limit, among
+   other things) is now managed per-queue, not per-command argument. [MG]
+ * @chan/decompile now uses "*name" for players, and dbrefs for other
+   objects, when printing "@chan/on" statements. [MG]
+ * cpu_limit now works on Cygwin (though not quite as well as on unix).
+   A slightly higher limit may be needed than other platforms. [MG]
+ * The output from say, pose, semipose and @emit is now passed through the
+   SPEECHMOD attribute before being outputted. Suggested by Paige, based on
+   MUX and TinyMUSH. [MG]
+ * @config/list now accepts wildcard patterns to match against option names.
+   Suggested by Trinsec. [MG]
+ * The dreaded <Output flushed> message should show up a lot less frequently
+   on spammy debug output and the like. By popular demand. [SW]
+ * Added support for MSSP (Mud Server Status Protocol), based on patches by
+   Javelin and Teal. See mush.cnf for details. [MG]
+ * The script for updating config files is smarter about adding new alias
+   lines. [SW]
+ * @search now only charges for elock searches which use eval or indirect
+   locks.
+ * Added @mail/unread, to mark mail you've already read as new, and 
+   @mail/status to change read/cleared/tagged status for messages.. Suggested
+   by qa'toq. [MG]
+
+Commands:
+ * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.
+ * Rooms/exits must now have an @COST attribute in order to be given
+   pennies. Use @cost <ancestor>=%0 to enable giving to all rooms/exits. [MG]
+ * with/room can now check for commands in the Master Room or your ZMR, and
+   with can check for commands on your ZMT. [MG]
+ * @sitelock/register <host> now sets the access rules for <host> to be
+   "!create register", rather than "!create". Suggested by Trinsec. [MG]
+   
+Functions:
+ * remit() now works like @remit/list. Suggested by Minion. [MG]
+ * rand() now accepts negative arguments again. [MG]
+ * lcon() can now take a second argument to make it behave like lthings()
+   or l[v]players(), or makes it return only puppets/listening objects,
+   for MUX/Rhost compatability. Suggested by Bane. [MG]
+ * open() can now open rooms remotely. Suggested by Minion. [MG]
+ * reswitch() and co now perform $-replacements for subexpressions. [MG]
+
+Fixes:
+ * Help fixes.
+ * @search's output can now include garbage objects, like lsearch().
+   Reported by Minion. [MG]
+ * The command parser incorrectly expanded the names of disabled built-in
+   commands prior to $-command matching. Reported by Mercutio. [MG]
+ * benchmark()'s average would be thrown off when the CPU limit was 
+   exceeded during evaluation. Reported by Amberyl. [MG]
+ * Fix a few bugs in handling of command locks. [SW]
+ * Garbage objects could be matched by dbref. Reported by Paige. [MG]
+ * No longer complain about reboot.db not being present when we're not
+   doing a @shutdown/reboot anyway. Reported by Paige. [MG]
+ * The Telnet escape code was not properly escaped when sent literally to
+   Pueblo-aware clients. [MG]
+ * namelist() did not accept names in quotes. Reported by Amberyl. [MG]
+ * @attrib/access/retroactive could remove the 'root' flag from attribute
+   trees, making nasty things happen. Reported by Cooee. [MG]
+ * Fix fn() to check that the first arugment is actually the name of a
+   built-in function. Reported by Time and Cheetah. [DC]
+ * Nested @asserts/@breaks with no '=' would loop unintentionally.
+   Reported by Minion. [MG]
+ * Fixed a couple of small bugs in give/@cost. [MG]
+ * You can now always look at remote objects whose descs are not set nearby,
+   and can never look at remote objects with nearby descs. [MG]
+ * The chatdb didn't load correctly with invalid objects on channels. [MG]
+ * Fixed a crashbug in @boot on Windows. Reported by Daniel Powell. [MG]
+ * %q-registers did not carry over into @includes correctly. Reported by
+   Reaver. [MG]
+ * Double-free in follow command fixed. Reported by Anya@ST:DW. [MG]
+ * locate() sometimes returned #-2 when two objects matched, even if only
+   one of them was the preferred type. Reported by Minion. [MG]
+
+
+Version 1.8.4 patchlevel 0                                 May 09,  2010
+
+Major Changes:
+ * Commands can now be restricted with an @lock-style lock in restrict.cnf
+   and @command/restrict, allowing more complex restrictions. [MG]
+
+Minor Changes:
+ * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
+ * Rewrite of help @lock to improve clarity, by Sketch.
+ * New NO_LOG flag to disable command logging on a per-object basis.
+   Based on code by Teal. [SW]
+ * mindb+maxdb classes for lsearch/@search no longer reset to default
+   values when > db_top or < 0 is given: Instead treated as an integer
+   comparison. [GM]
+ * @open can now open exits in remote locations, as well as your current
+   location. Suggested by Bane. [MG]
+ * New OPEN_OK flag allows anyone to open exits in a room, and @lock/open
+   to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]
+ * Master Room exits and ZMR exits now run the "goto" command, and @ealias
+   and @lalias run the "enter"/"leave" commands, so @hooks get run, command
+   restrictions checked, etc. [MG]
+ * New @lock/from and @lock/receive locks, to control who can give to an
+   object, and what objects can be given to them, respectively. From a 
+   suggestion by Nammyung@M*U*S*H, based on locks on ElendorMUSH. [MG]
+ * Changed the restrictions for valid @function names to match what was
+   reported by valid(). [MG]
+
+Commands:
+ * New @include <obj>/<attr> command, which inserts <attr> into the current
+   action list. Patch by Javelin.
+ * @scan can now take multiple switches at the same time. [MG]
+ * @version now reports the SVN revision of the current version, when 
+   available. Suggested by Paige. [MG]
+ * @clone can take a garbage dbref for the new object, the same as @create.
+   Suggested by Dan. [MG]
+ * 'look' now supports more english-matching (look this foo's 1st bar). [MG]
+ * You can now look at objects on the other side of transparent exits, with
+   "look [toward] <exit>'s <object>". Suggested by Trinsec. [MG]
+ * All wizards can now use @command/add. Suggested by qa'toq. [MG]
+ * function_alias in alias.cnf now creates a proper alias, not a clone, of
+   functions. @function/alias added, which does the same in-game. [MG]
+ * New @command/clone and @function/clone commands, which create copies of
+   a command/function which initially work the same as, but are independant
+   of, the originals. Based on suggestion by Bane. [MG]
+ * Added a comment line to the beginning of @decompile's output showing
+   the object name and dbref. [MG]
+   
+Functions:
+ * Added strfirstof() and strallof(), which return the first arg/all args
+   which are non-empty strings. [MG]
+ * Added reglattr[p](), regxattr[p]() and regnattr[p](), regexp variants of 
+   lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
+ * The *emit() functions, and cbufferadd(), are now disabled when
+   function_side_effects are off. Suggested by Cheetah. [MG]
+ * round() now takes an optional third argument to 0-pad the results if
+   needed. Suggested by Trinsec. [SW]
+ * Many functions (particularly ones which take only numbers, dbrefs or
+   attribute names as arguments) now ignore ANSI in their arguments, rather
+   than throwing an error. [MG]
+ * nattr()'s <attribute pattern> now defaults to *, not **, the same as
+   lattr() and other attribute functions. [MG]
+ * clone() can now take a <new name> and <dbref>, as per @clone. [MG]
+ * cwho() now takes an optional 3rd argument to omit gagged objects.
+   Suggested by Trinsec. [MG]
+
+Attributes:
+ * @outpageformat lets you alter how you view pages that you send.
+
+Fixes:
+ * isprint() bug in ord() fixed. [GM]
+ * Possible crashbug in @destroy fixed. Reported by Dan. [MG]
+ * Minor bug in benchmark() fixed. [MG]
+ * channels(<object>) was incorrectly sorted for channel names containing
+   ansi. Reported by Trelane. [MG]
+ * Help fixes by Teal and others. [MG]
+ * Minor updates to some README files. [MG]
+ * Some typos and translation errors fixed by Stoko.
+ * namelist() now ignores null items. Reported by Minion. [MG]
+ * The matching code would always perform absolute (dbref) matches, even
+   when it wasn't told to. [MG]
+ * Improvements to the match flags used by many pieces of code, hopefully
+   fixing a number of minor bugs. [MG]
+ * Paranoid dumps no longer treat ANSI tags as invalid characters in attrs.
+   Reported by Trelane. [MG]
+ * The /silent switch for @lemit didn't work. [MG]
+ * @decompile/db showed '@create <dbref>' for THINGs, not '@create <name>',
+   and @decomp/name could break. Reported by Paige. [MG]
+ * Crash bug in locks fixed. Reported by Tanaku. [SW]
+

@@ -90,6 +90,8 @@ Fixes:
    running using a different charset. Reported by Tyler. [MG]
  * Better support for mixing IPv4 and IPv6 connections. FreeBSD and NetBSD
    should not need the --disable-ipv6 option to configure any more. [SW]
+ * Fixed an obscure buffer-overwrite bug in the channel system. Reported by
+   Volund@M*U*S*H/Roll@Multiverse Crisis MUSH. [MG]
 
 & 1.8.5p5
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013

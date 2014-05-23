@@ -903,7 +903,8 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
  *  onchannel - is player on channel?
  */
 
-/** Removes markup and <>'s in channel names.
+/** Removes markup and <>'s in channel names. You almost certainly want to
+ * duplicate the result of this immediately, to avoid it being overwritten.
  * \param name The name to normalize.
  * \retval a pointer to a static buffer with the normalized name.
  */
@@ -949,14 +950,14 @@ find_channel(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
 
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     strcpy(cleanp, remove_markup(ChanName(p), NULL));
     if (!strcasecmp(cleanname, cleanp)) {
@@ -1004,13 +1005,13 @@ find_channel_partial(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (!onchannel(player, p) && !Chan_Can_See(p, player))
       continue;
@@ -1042,7 +1043,7 @@ static void
 list_partial_matches(dbref player, const char *name, enum chan_match_type type)
 {
   CHAN *p;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
   char buff[BUFFER_LEN], *bp;
   bp = buff;
@@ -1051,7 +1052,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
     return;
 
   safe_str(T("CHAT: Partial matches are:"), buff, &bp);
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (!Chan_Can_See(p, player))
       continue;
@@ -1093,13 +1094,13 @@ find_channel_partial_on(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (onchannel(player, p)) {
       strcpy(cleanp, remove_markup(ChanName(p), NULL));
@@ -1142,13 +1143,13 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (onchannel(player, p) || !Chan_Can_See(p, player))
       continue;
@@ -1163,6 +1164,7 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
       count++;
     }
   }
+
   switch (count) {
   case 0:
     return CMATCH_NONE;
@@ -2877,10 +2879,10 @@ do_chan_what(dbref player, const char *partname)
 {
   CHAN *c;
   int found = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
-  cleanname = normalize_channel_name(partname);
+  strcpy(cleanname, normalize_channel_name(partname));
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {

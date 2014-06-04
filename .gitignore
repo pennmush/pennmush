@@ -30,3 +30,4 @@ src/local.c
 src/netmud
 src/netmud~
 test/alltests.sh
+third_party

@@ -13,7 +13,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 6                                 May ??, 2014
+Version 1.8.5 patchlevel 6                                 ??? ??, 2014
 
 Hardcode:
  * Removed an old debugging variable to reduce memory usage. Suggested by
@@ -37,6 +37,7 @@ Functions:
  * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
  * isdaylight() now accepts time and timezone arguments. [SW]
  * convtime() takes timezones besides just UTC. [SW]
+ * foreach() is now ansi-aware. Reported by Ashen-Shugar. [MG]
 
 Minor changes:
  * @channel/gag no longer persists across a full @shutdown. Suggested by

@@ -1584,7 +1584,6 @@ See also: enter, leave, goto, ENTER_OK
   @edit/regexp[/all][/nocase][/check][/quiet] 
                      <object>/<attributes>=<regexp>,<replace>
 
-
   When the /regexp switch is given, @edit performs a regular expression
   replacement, similar to the regedit() function. Normally, only the first
   match per attribute will be replaced; if the /all switch is given, all

@@ -1102,18 +1102,16 @@ FUNCTION(fun_foreach)
    * No delimiter is inserted between the results.
    */
 
-  const char *ap;
+  ansi_string *as;
   char *lp;
-  char cbuf[2];
+  char cbuf[BUFFER_LEN], *cp;
   PE_REGS *pe_regs;
   int placenr = 0;
   int funccount;
   char *oldbp;
   char start, end;
-  char letters[BUFFER_LEN];
   char result[BUFFER_LEN];
   char placestr[10];
-  size_t len;
   ufun_attrib ufun;
 
   if (nargs >= 3) {
@@ -1132,22 +1130,20 @@ FUNCTION(fun_foreach)
       (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
-  ap = remove_markup(args[1], &len);
-  memcpy(letters, ap, len);
+  as = parse_ansi_string(args[1]);
 
-  lp = trim_space_sep(letters, ' ');
+  lp = as->text;
   if (nargs >= 3) {
-    char *tmp = strchr(lp, start);
+    lp = strchr(as->text, start);
 
-    if (!tmp) {
-      safe_str(lp, buff, bp);
+    if (!lp) {
+      safe_str(args[1], buff, bp);
+      free_ansi_string(as);
       return;
     }
-
-    *tmp = '\0';
-    safe_str(lp, buff, bp);
-    placenr = (tmp + 1) - lp;
-    lp = tmp + 1;
+    
+    safe_ansi_string(as, 0, (lp++ - as->text), buff, bp);
+    placenr = (lp - as->text);
   }
 
   cbuf[1] = '\0';
@@ -1157,11 +1153,17 @@ FUNCTION(fun_foreach)
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_foreach");
   pe_regs_setenv_nocopy(pe_regs, 0, cbuf);
   pe_regs_setenv_nocopy(pe_regs, 1, placestr);
-  while (*lp && *lp != end) {
+  while (*lp) {
+    if (*lp == end) {
+      lp++;
+      break;
+    }
     /* Set env */
-    *cbuf = *lp++;
+    cp = cbuf;
+    safe_ansi_string(as, (lp - as->text), 1, cbuf, &cp);
+    *cp = '\0';
     snprintf(placestr, 10, "%d", placenr++);
-
+    lp++;
     if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
 
@@ -1173,9 +1175,11 @@ FUNCTION(fun_foreach)
     oldbp = *bp;
     funccount = pe_info->fun_invocations;
   }
+  placenr++;
   if (*lp)
-    safe_str(lp + 1, buff, bp);
+    safe_ansi_string(as, (lp - as->text), as->len, buff, bp);
   pe_regs_free(pe_regs);
+  free_ansi_string(as);
 }
 
 extern char escaped_chars[UCHAR_MAX + 1];

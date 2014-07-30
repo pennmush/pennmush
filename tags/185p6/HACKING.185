@@ -1,0 +1,75 @@
+This is the most current changes file for PennMUSH Hardcode.
+
+If you are maintaining an add-on for PennMUSH, this details any changes
+to extant functions that are likely to be used by the embracers and
+extenders out there.
+
+Changes are in reverse chronological order. You can probably find the reason
+for most of these changes in the equivalent CHANGES file, but only those
+that have altered hardcode will appear here.
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.5 patchlevel 6                                 ??? ??, 2014
+
+Monikers:
+ * ansi_name() now takes an additional arg, maxlen, to possibly trim (but not
+   pad) the name to be at most maxlen characters long. You probably don't want
+   to call ansi_name() directly, though; generally you'll want to use the 
+   AName() or AaName() wrappers. If you need to make use of maxlen, use the
+   new AnsiNameWrapper() macro instead:
+     AnsiNameWrapper(dbref, accents?, AN_* flag, pointer, maxlen)
+   AName and AaName are now wrappers around this wrapper. Hardcode Inception.
+
+Version 1.8.5 patchlevel 5                                 Nov 20, 2013
+
+Monikers:
+ * Many calls of Name() and accented_name() have been replaced with AName() 
+   and AaName(), respectively. Syntax is:
+     AName(dbref, AN_FLAG, pointer);
+   where dbref is the object whose name should be returned, AN_FLAG is one
+   of the AN_* flags defined in dbdefs.h, specifying what kind of the message
+   the name is used in, and pointer is an optional bool pointer, set to 1 if
+   the name returned is monikered. (Note: it is NOT always set to 0 when the 
+   name is not monikered. Initialize yourself before calling.)
+ * call_ufun() has been renamed call_ufun_int(), and has an extra arg,
+   void* data. Only used with UFUN_NAME. call_ufun() is an #define to
+   call_ufun_int(), passing data as NULL, for backwards compatability.
+ * The *did_it*() functions now take an extra arg
+ * spname() has been renamed spname_int(), and has an extra bool arg to 
+   determine whether ansi and accents should be included. spname() is now an
+   #define to spname_int, with ansi/accents on.
+
+Wildcards:
+ * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
+   and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
+   flag to determine how matching subpatterns are stored in pe_regs. This
+   allows the functions to be used directly from atr_comm_match (which 
+   matches for $-commands). The extra arg is immediately after the 
+   PE_REGS *pe_regs arg - for [wild|regexp]_match_case_r(), it's the final
+   arg, for pe_regs_set_rx_context[_ansi]() it's the second arg. In all
+   existing cases, pass it as PE_REGS_REGEXP for the old behaviour.
+   
+Pe_Regs:
+ * pi_regs_get_env()'s second arg is now char*, instead of int, to allow for
+   named arguments. Only use the function directly for named arguments - for
+   integer args (%0-%9) use the PE_Get_Env(pe_regs, int) macro
+   
+Other:
+ * add_flag_generic() now returns an enum, flag_res, so it can give more
+   specific failure information. The flag created (if any) is now stored
+   in a user-specific pointer, which is passed as the final arg to the
+   function. add_flag() and add_power() pass NULL for this arg so, if you
+   need to know which flag was created, call add_flag_generic() directly.
+
+Version 1.8.5 patchlevel 4                                 Nov 09, 2012
+
+  do_teleport() now takes a bitwise or of TEL_* flags (defined in externs.h)
+  instead of separate 'silent' and 'inside' args. [MG]

@@ -1,0 +1,25 @@
+deps = {
+  "third_party/gyp":
+    "https://chromium.googlesource.com/external/gyp",
+  "third_party/openssl":
+    "https://chromium.googlesource.com/chromium/deps/openssl",
+  "third_party/python_26":
+    "https://chromium.googlesource.com/chromium/deps/python_26",
+}
+hooks = [
+  {
+    "name": "win_toolchain",
+    "action": [
+      "python",
+      "win32/vs_toolchain.py",
+      "update",
+    ],
+  },
+  {
+    "name": "gyp",
+    "action": [
+      "python",
+      "win32/gyp_penn.py",
+    ],
+  },
+]

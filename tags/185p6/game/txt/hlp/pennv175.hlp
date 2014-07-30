@@ -1,0 +1,481 @@
+& 1.7.5p12
+Version 1.7.5 patchlevel 12                     November 3, 2002
+
+Fixes:
+   * Another bug in wrap() fixed. Reported by Rhysem. [SW]
+   * Bug in @wall fixed. [SW]
+   * Variable renaming to avoid C99 keyword 'conj'. [SW]
+   * Win32 project files for MSVC++ updated by Mark.
+   * Several portability fixes for MS VS.NET's compiler by BladedThoth.
+   * flip() and reverse() didn't mix well. Better now.
+     Reported by Julian. [SW]
+   * Compiling with CHAT_SYSTEM undefined works again. Report by
+     BladedThoth.
+   * bxor() was actually doing a bor(). Reported by Sketch@M*U*S*H. [SW]
+
+
+& 1.7.5p11
+Version 1.7.5 patchlevel 11                     October 31, 2002
+
+Config:
+   * New mush.cnf option only_ascii_in_names (defaults to yes) prohibits
+     the use of extended characters in names. Games that are running
+     in non-English locales will probably want to set this to no instead. 
+     Suggested by Philip Mak. [SW]
+Commands:
+   * Added @hook/before and @hook/after [SW,3]
+Locks:
+   * You can now use power^<power> and channel^<channel> in locks
+     to test if the enactor has a given power or is on a given channel.
+     Patch by Vadiv@M*U*S*H.
+   * @lock/dropto, if set on a room, can prevent objects from being
+     affected by the room's drop-to. Inspired by Oriens@Alexandria.
+Functions:
+   * The sha1() function computes the SHA-1 cryptographic hash of a string.
+   * A new nosidefx function restriction to allow disabling the side-effect
+     version of a function while still enabling the informational version.
+     For things like name() and parent(). [SW]
+   * @function's report includes more function restrictions in the flags
+     field. [SW]
+Minor changes:
+   * Modularization of code for itemizing lists by Vadiv@M*U*S*H.
+   * If there's no connect.html and you're on an html connection,
+     connect.txt is now better formatted when sent to you. Same for 
+     other cached text files. Suggested by BladedThoth@M*U*S*H.
+   * CRYPT_SYSTEM 1 now behaves like CRYPT_SYSTEM 3 (replacing
+     system-crypt passwords with SHS passwords). Suggested by Vadiv@M*U*S*H.
+   * flag_table is no longer referenced anywhere except when it is used
+     to seed the ptab_flag at startup. A stub "flag_add" function has
+     been added to make life easier for hardcoders. Suggested by
+     Gepht.
+Fixes:
+   * sig.c was broken on systems without sigprocmask. Reported by
+     Arithon@Oracle
+   * Bug with paging disconnected players and @away fixed.
+     Reported by Vadiv@M*U*S*H.
+   * Bashisms that crept into utils/mkcmds.sh has been replaced by
+     more portable alternatives based on Configure's results. 
+     Reported by Jason Newquist.
+   * Trigonometric functions were broken for non-radian degree types.
+     Fixed up.
+   * @decomp <room>/<attrib> didn't properly use 'here' as the name
+     of the object in its output. Reported by Oriens@Alexandria.
+   * Wizards can now modify any lock on anything but God. Reported by
+     Brian Favela.
+   * ex/mortal and ex now produce identical output when a mortal 
+     examines an object owned by someone else. Reported by Philip Mak.
+   * We do a little better about trying to close html and ansi tags
+     in all conditions. Bugs reported by BladedThoth @ M*U*S*H.
+   * whisper/@pemit to a puppet should be relayed to the owner, even if the 
+     owner is in the same room. Discovered thanks to MUSH sound test
+     suite designed by Trispis@M*U*S*H.
+   * The --longest switch in game/txt/Makefile was broken. Report by
+     Nymeria@M*U*S*H
+   * Help fixes by Noltar@Korongil and Intrevis@M*U*S*H
+   * The M_READ extmail bit is now renamed M_MSGREAD, as M_READ conflicts
+     with an included define on Solaris. Report by Jason Newquist.
+   * Setting flags using single characters was not well documented, and
+     didn't respect the character case. Reported by Intrevis@M*U*S*H.
+   * @chown by a Wizard attempted to debit the Wizard's money, rather than
+     that of the new owner of the object, which violated expected conservation
+     of money. Reported by Peter Bengtson.
+   * Several bugs in wrap()'s output fixed. Reported by Balerion@M*U*S*H. [SW]
+
+
+& 1.7.5p10
+Version 1.7.5 patchlevel 10                     September 19, 2002
+
+Major Changes:
+   * Commands can now be restricted by generic flags or powers.
+     Several mush.cnf options (restricted_building, free_objects,
+     hate_dest, player_locate, cemit_power) are now restrict.cnf
+     restrictions instead. By Vadiv@M*U*S*H.
+Functions:
+   * When a set function (setdiff, etc.) is called with 4 arguments,
+     if the last one isn't a valid sorting category, it's treated as
+     the output separator.  Inspired by Mux [SW]
+   * checkpass(), a wizard function that checks a string against a player's
+     password. Requested by Writh@M*U*S*H.
+   * regedit() and variants can now accept multiple regexps and
+     replacements, in order, like edit(). By Walker@M*U*S*H.
+   * comp() can take a third argument to specify the type of 
+     comparison to make. Suggested by Philip Mak.
+   * The trigonometric functions now take an optional argument to
+     control how the angles they work with are measured to allow them
+     to accept angles in degrees as well as the default radians. [SW,MUX2,Rhost]
+   * Added ctu() for converting between angle measurements. [SW,MUX2,Rhost]
+   * Added atan2(). [SW]
+   * dist2d() and dist3d() can take floating-point numbers. [SW]
+   * Other small cleanups in the math functions. [SW]
+Mail:
+   * The MAIL_SUBJECTS option has been removed. @mail now includes
+     subjects mandatorily. Suggested by Vadiv@M*U*S*H.
+Minor Changes:
+   * When a player @clones an object owned by another player, the
+     clone is now owned by the @cloning player, instead of the original
+     owner. Fixes a quota transfer issue reported by Sparta and
+     Philip Mak.
+   * The flag table is no longer walked with a linear search. Instead,
+     ptab_firstentry and ptab_nextentry are used. Flags no longer need
+     to be added in a particular order or groups in flags.c, and flags
+     added through hardcode should work better. Patch by Vadiv@M*U*S*H
+   * Error message for wrong number of arguments to a function
+     now tells you how many arguments it thinks you gave.
+     Suggested by Philip Mak.
+   * GAGGED players may now perform mail reading and maintenance.
+   * Internal reorganization of signal code. [SW]
+   * Attempts to speak on a channel that you can't speak on or see
+     now fail and command parsing continues. Suggested by Vadiv@M*U*S*H.
+   * The amount of CPU time spent running a queue entry can be limited.
+     This helps reduce the impact of some types of denial-of-service attacks.
+     New mush.cnf directive queue_entry_cpu_time. This currently
+     works only on Unix systems with setitimer. [SW]
+   * Internal rewrite of page/whisper code by Vadiv@M*U*S*H.
+   * Flag set/reset messages now include the name of the target object.
+     Suggested by Kyieren@M*U*S*H.
+   * game/txt/Makefile now includes options to limit the number of
+     news/etc topic aliases that are included in the 'entries' indices
+     generated by index-files.pl. Suggested by Nymeria@M*U*S*H.
+   * Minor inconsistencies in @sweep output punctuation reported by
+     Cmintrnt@M*U*S*H have been fixed.
+   * Added hints/cygwin.sh, tested with cygwin 1.3.12. Added additional
+     cygwin build information to README.
+   * The whisper-pose message is now Player senses: <pose>, with no
+     quotation marks added. This matches all other pose-type messages
+     in the server. Suggested by Philip Mak.
+   * Only escape codes described in the help are allowed in timefmt() [SW]
+Fixes:
+   * Archaic help reference to FORCE_WHITE removed. Noted by Oriens@Alexandria.
+   * Help fixes by Cerekk@bDv TrekMUSH, Julian@M*U*S*H, Letters@M*U*S*H,
+     and Philip Mak.
+   * The wildcard matcher could lag the MUSH under unusual conditions.
+     It's now smarter. Discovered by Sketch@M*U*S*H.
+   * Fixes from 1.7.4p20
+   * Fix a bug with setdiff() not using the output separator correctly. [SW]
+   * convsecs() could attempt to use values larger than 2^31, which could
+     crash Windows. Reported by Bellemore@M*U*S*H.
+   * @config didn't correctly show default flags for objects.
+     Reported by Vadiv@M*U*S*H.
+   * The strcasecoll function was poorly coded, and is now fixed.
+   * Created players who hadn't yet logged in didn't have LASTIP set
+     properly. Reported by Philip Mak.
+
+& 1.7.5p9
+Version 1.7.5 patchlevel 9                     July 16, 2002
+
+Minor Changes:
+   * /noeval switch added to @wall/@rwall/@wizwall and variants.
+     Suggested by Philip Mak.
+Fixes:
+   * Added a missing space in the @function report for softcoded
+     @functions. [SW]
+   * MUX-style @function foo=obj/attr works right. [SW]
+   * Cleaned up some multiple includes of the same header files. [SW]
+   * Lots of cleanup of old _() macros and similar by Vadiv@M*U*S*H.
+   * Added help for @stats/table. Suggested by Intrevis@M*U*S*H.
+   * Fixes to csrimalloc #ifdefs that broke in last patchlevel. [SW]
+   * A typo that could crash @function on certain operating systems
+     has been fixed. Report by Jeff Heinen.
+   * Improved switch() help. [SW]
+   * Changes in the way switchinc.c is generated, to reduce the number
+     of patches that attempt to patch it due to indentation changes. [SW]
+
+& 1.7.5p8
+Version 1.7.5 patchlevel 8                     June 26, 2002
+
+Minor Changes:
+  * Added @nspemit and nspemit(). Wizard-only versions of @pemit and
+    pemit() that don't print nospoof information. Suggested by many people,
+    most recently Mike Griffiths and Nymeria@M*U*S*H. [SW]
+  * Help updates. [SW]
+  * Force the pipes to compression program for database reads and saves to be
+    block-buffered. [SW]
+  * @function name=obj/attrib now works, as well as
+    @function name=obj,attrib [TAP]
+  * The AF_PREFIXMATCH flag is no longer shown on attributes it's set
+    on when you examine them.
+Fixes:
+  * A bunch of internal code cleanup, especially around casts. [SW]
+  * The disconnected room check is skipped on GOING rooms. Suggested
+    by Philip Mak.
+  * The dbck check for nameless rooms was only checking disconnected
+    rooms; now it checks all rooms.
+  * hasflag() did not work with single-character flag abbreviations.
+    Report by Mystery8.
+  * The variable named 'template' in src/strutil.c has been renamed
+    to avoid clashes with the C++ reserved word. Suggested by Mac@M*U*S*H.
+  * Improvement to help @filter. Suggested by Philip Mak. [SW]
+  * Files in the patches directory ending in ~ are ignored
+    when patches.h is rebuilt. [SW]
+  * Removed a // comment from strutil.c, as we're still
+    just following the c89 standard, not c99. Report by
+    Vadiv@M*U*S*H. [SW]
+  * make indent now indents the .dst files before the .c ones.
+    Fixes some spurious warnings from later makes. Suggested by
+    Vadiv@M*U*S*H. [SW]
+  * Code cleanup, mostly tprintf() and unneeded header file
+    checking elimination. [SW]
+  * Since a Windows header #defines OPAQUE, which conflicts with a
+    #define for the mush flag of the same name, rename
+    our #define rather than #undefining the Windows one. [SW]
+  * Fixes from 1.7.4p19
+
+
+& 1.7.5p7
+Version 1.7.5 patchlevel 7                     May 14, 2002
+
+Utilities:
+  * 'make globalinstall' will install executables, scripts, and
+    a game/ directory structure in a global location (/usr/libexec/pennmush
+    by default). Facilitates rpm builds. By Vadiv@M*U*S*H.
+  * The utils/ln-dir.sh script can be used to clone a globalinstall'd
+    pennmush for an individual MUSH/user. In combination, these two
+    are a replacement for 'make customize', especially for mud hosters.
+    By Vadiv@M*U*S*H.
+  * You can now configure options.h settings from the command line
+    using: make DEFINE="OPTION OPTION=value" UNDEFINE="OPTION" update
+    This will mostly be useful for autoinstallers and packaging scripts.
+    Suggested by Vadiv@M*U*S*H.
+Minor Changes:
+  * The default gcc compile flags now include some extra warnings.
+  * The prefix-table code now only aliases down to unique prefixes.
+    This prevents @w from calling @wipe (reported by Philip Mak),
+    and means that you'll need to use alias.cnf to get some of those
+    short aliases. [SW]
+  * Attribute lookups only do prefix-matching on attributes with the
+    AF_PREFIXMATCH flag. Most standard atr_tab.h attributes have this
+    flag, but newly added @attributes won't. Solves a problem with
+    inadvertant prefix-matching of @attribs reported by Sam Knowlton.
+Fixes:
+  * Fixes from 1.7.4p18
+  * @decomp/skipdefaults skips @lsets of default lock flags.
+    Suggested by Oriens@Alexandria. [SW]
+  * Typo in src/bsd.c corrected. Reported by Nymeria@M*U*S*H.
+  * Missing prototype in src/help.c. Reported by Nymeria@M*U*S*H.
+  * A bunch of linting.
+  * Win32 portability fixes. [EEH]
+  * Updated MSVC++ project files for win32. [EEH]
+  * @newpassword = foo would change the password of an arbitrary player.
+    This is now corrected. Report by Oriens@Alexandria.
+
+& 1.7.5p6
+Version 1.7.5 patchlevel 6                     April 22, 2002
+
+Config:
+  * New attribute_alias config directive, and some default attribute
+    aliases added to alias.cnf. Based on a report from Hilikiradi.
+Functions:
+  * textfile() returns help/news/etc. entries. Suggested by Trispis@M*U*S*H.
+Minor changes:
+  * New @warnings type lock-checks that reports problems with @locks. [SW]
+  * exit-unlinked checks do some sanity checks on variable exits. [SW]
+  * Improved error-checking in evaluation of @locks. [SW]
+  * No more hdrs/warnings.h file. [SW]
+  * New @nameaccent attribute to add accent marks to object
+    names in speech and things like look. Idea from Elendor. [SW]
+  * accent() understands a few more things. [SW]
+  * The accented characters->html entities table and other
+    lookup tables are now in a seperate file, src/tables.c,
+    which can be regenerated if needed by utils/gentables.c [SW]
+  * Improvements in caching of cached text files. [SW]
+Fixes:
+  * Buglet in ansi display of high-bit characters fixed. Report by
+    Trispis@M*U*S*H. [SW]
+  * Improved @clock2 help by Linda Antonsson.
+  * Fixes from 1.7.4p17
+  * A truly perverse database could cause an infinite loop on load. [TAP]
+  * Win32 portability fixes. [NJG, EEH]
+  * The notify code assumed that integers could be directly stored in
+    pointers. This isn't always true. [SW]
+  * Removed some un-used code. [SW]
+  * Fixed some compiler warnings and general code cleanup. [SW]
+  * Changed signal handlers to always use the ANSI/ISO C form (Returning
+    void, basically) [SW]
+  * A null string no longer prefix-matches anything. Report by Prot Diryn
+    and Cheetah@M*U*S*H.
+  * @sitelock/remove could remove entries it shouldn't if you remove the first
+    one after the '@sitelock will add sites...' line. Reported by
+    Ambrosia@M*U*S*H. [SW]
+  * The last line of the access.cnf file sometimes wouldn't get read
+    properly. [SW]
+
+
+& 1.7.5p5
+Version 1.7.5 patchlevel 5                     March 11, 2002
+
+Commands:
+  * @notify and @drain now accept a new switch /any. [TAP]
+  * Added @remit/list. Suggested by Tareldin@M*U*S*H [SW]
+Minor changes:
+  * We now use the Mersenne Twister pseudo-random number generator,
+    which is better that that available in most C libraries.
+    Moreover, we seed with /dev/urandom, if it's available. [SW]
+  * The 'T' type character (for THING) is now shown when one-character
+    flag lists are displayed. This is more consistent with other types,
+    and makes it harder to confuse #23O (#23, opaque) with #230
+    (#230, no flags). Suggested by Rince@M*U*S*H.
+  * @lock/use on a parent used to apply to attempts to use $commands on
+    a child. This is no longer necessary, given inheritable locks,
+    so the behavior has been changed. Parents' locks are no longer checked
+    when deciding if a $command inherited from the parent should be run
+    via a child.
+  * New 'call_limit' config option can limit the number of recursive
+    parser calls to control process stack size and avoid crashes
+    on systems with limited stack. Defaults to unlimited, however, because
+    setting this value too small breaks mushcode. Report by Bellemore
+    and BladedThoth @ M*U*S*H.
+Fixes:
+  * Code cleanup - some stuff from 1.7.4 got left in that isn't
+    used in 1.7.5 any more. [SW]
+  * Fixes from 1.7.4p16, notably an important fix for timed semaphores.
+  * Cygwin portability fixes. [NJG]
+  * Updated MSVC++ project files. [EEH]
+
+
+& 1.7.5p4
+Version 1.7.5 patchlevel 4                     February 15, 2002
+
+Major changes:
+  * The mush recognizes telnet-aware connections. This is
+    neccessary for properly sending them some 8-bit characters. [SW]
+  * Much more support for handling accented characters in the ISO 8859-1
+    character set. See help for accent(), stripaccents(), and NOACCENTS.
+    Inspired by Elendor. [SW]
+  * Things that do first-unique-prefix matching (command, attribute and flag
+    names) now use a more space-efficient data structure than before.
+    This adds two new files, src/ptab.c and hdrs/ptab.h [SW]
+Commands:
+  * @sitelock/remove removes a sitelock entry. [SW]
+Functions:
+  * ord() and chr() functions for converting characters to/from numerical
+    values that represent them. [SW]
+Minor changes:
+  * The useless FORCE_WHITE flag is really, truely, gone. [SW]
+  * Use the new arglens argument to functions in more places. [SW]
+  * capstr() and before() fixes reimplemented using arglens. [SW]
+  * We now use the Mersenne Twister PRNG algorithm. [SW]
+Fixes:
+  * setunion() no longer eats empty list elements. [SW]
+  * Setting an inherited lock on a child could change the parent's lock.
+    Reported by Riverwolf. [SW]
+  * Help fixes. [SW, Nymeria]
+  * Players waiting at the connect screen weren't being disconnected
+    by the idle_timeout.
+  * Detection of cygwin in Configure may be improved.
+  * Fixes from 1.7.4p15.
+
+& 1.7.5p3
+Version 1.7.5 patchlevel 3                     January 24, 2002
+
+Fixes:
+  * before() was broken in 1.7.5p2. Reported by Sam Knowlton.
+  * capstr() was broken in 1.7.5p2.
+  * Win32 portability fixes by Noltar@Korongil.
+
+& 1.7.5p2
+Version 1.7.5 patchlevel 2                     January 23, 2002
+
+Major changes:
+  * Implementations for softcode functions get the lengths of their arguments
+    passed to them, and this is taken advantage of in a number of places. [SW]
+Minor changes:
+  * It's harder to get a partial dbref because of end-of-buffer truncation. [SW]
+  * Code cleanup. In particular, safe_str() and friends are no longer
+    macros for a safe_copy_str() or the like, because hardly anything
+    used a different buffer length than BUFFER_LEN, and those places
+    can be handled other ways. [SW]
+Fixes:
+  * Win32 portability fixes by Noltar@Korongil and Eric Koske.
+  * When you have two hidden connections, one idle over the inactivity limit,
+    and the other not, @hide/off on the active connection unhides both,
+    but you also see the Inactivity re-hide message from the other
+    connection. Reported by Trispis.
+  * iname() function actually added to function table so it works.
+    Reported by K. Shirow.
+  * @lock obj=attrib:value locks didn't work properly. Reported by
+    Linda Antonsson.
+  * Fixes from 1.7.4p14.
+
+& 1.7.5p1
+Version 1.7.5 patchlevel 1                     December 3, 2001
+
+Minor Changes:
+  * PCRE updated to 3.7. [SW]
+  * player_name_len is now runtime configurable. Suggested by
+    Linda Antonsson. [SW]
+  * Any object of any type may be a ZMO, and any object of any type
+    may be zoned to a ZMO of any type. However, searching for
+    $commands has not changed, so $commands on a ZMO are only
+    searched when the ZMO is not a room, and $commands on objects
+    within the ZMO are only searched when the ZMO is a room. [TAP]
+  * @chzoneall nows directly calls @chzone, and @chzone now tells
+    you when it's not changing a zone. [TAP]
+  * The term "Zone Master" (player) has been replaced by "Shared
+    Player" in the help. [TAP]
+  * Many obsolete db formats are no longer readable. hdrs/oldattrib.h
+    and src/convdb.c are no more. [SW]
+  * Code cleanup. [SW]
+Fixes:
+  * Help file for mix updated. Report by Cmintrnt@M*U*S*H
+  * Updated win32 config.h file and other fixes by Noltar@Korongil
+  * WHO wasn't showing unconnected players. Report by Noltar@Korongil. [SW]
+  * Help fixes. [SW]
+
+& 1.7.5p0
+Version 1.7.5 patchlevel 0                     November 14, 2001
+
+Major Changes:
+  * This is now the development minor version. This first release includes
+    relatively few changes, to make converting to it easier.
+  * Internal changes to the lock system. This requires a new minimal.db,
+    which is now distributed. [SW]
+  * Locale-based string collation throughout.
+  * Only ANSI C compilers are still supported; no more K&R. Files are
+    gradually going to be converted to ANSI C only.
+  * There is now an option to make ZMOs and ZMRs not count for
+    control of objects, only ZMPs. [SW]
+Flags:
+  * The ZONE player flag has been renamed SHARED, to help seperate the
+    ZMP control-only meaning from the command-matching of ZMOs and ZMRs. [SW]
+Commands:
+  * /preserve switch for @link prevents @chowning. Suggested by Vexon@M*U*S*H
+  * Admin WHO and SESSION now includes unconnected descriptors. [SW]
+  * Unconnected descriptors can now be booted. Patch by Bellemore@M*U*S*H.
+  * Unconnected descriptors can now be paged by admin with page/port. [SW]
+Functions:
+  * mix() can take more than 10 lists and of unequal length. [3,SW]
+  * iname() returns the name of an object from inside (honoring nameformat)
+    Idea by Jeffrey@TheHotel.
+  * lplayers() returns a list of players in the location. Handy for
+    room parents. By Vexon@M*U*S*H.
+  * lvplayers(), lvcon(), lvexits() are like lplayers/lcon/lexits, but
+    leave out dark things (and disconnected players). Handy for room
+    parents. By Vexon@M*U*S*H.
+Minor Changes:
+  * munge() now passes its delimiter as %1 to make generic sorting easier. [SW]
+  * Word-based attribute compression is faster than before, for both
+    compression and decompression. [SW]
+  * Windows memory-usage information for wizards is now in @uptime, not
+    @stats [SW]
+  * Word-based attribute compression stats can be viewed on non-Windows
+    mushes as well, by defining COMP_STATS. See externs.h for details. [SW]
+  * Setting of the internal QUEUE and semaphore attributes does not modify
+    an object's last-modified timestamp. [SW]
+  * Speaking on a channel that you're gagging is now treated like
+    speaking on a channel that you're not on. Suggested by rodregis@M*U*S*H
+  * You can use @exitto in place of &DESTINATION to set the destinatino
+    for variable exits, though DESTINATION is checked first. [3]
+  * WATCHER is another name for the MONITOR flag. [3]
+  * max_guest_pennies and guest_paycheck config options. Inspired by [SW]
+  * Lock and unlock messages now show object name and dbref, and tell
+    you if you unlock an already unlocked object. Suggested by Jamie Warren.
+  * A version of portmsg for Win32 is in the win32 directory.
+    Donated by CU5@WCX
+  * Tweaks to info_slave, which now uses readv/writev. [SW]
+  * Lots of code cleanup. [SW]
+  * CHAT_SYSTEM, INFO_SLAVE, and FUNCTION_SIDE_EFFECTS are now #define'd
+    by default. [TAP]
+Fixes:
+  * Indentation fixes [SW]
+  * Fixes up to 1.7.4p12 merged in.
+

@@ -1,0 +1,325 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=gb2312\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 参数必须以一个整数结尾"
+
+#: src/fundb.c:657
+msgid "#-1 INVALID LOCATION"
+msgstr "#-1 非法的位置"
+
+#: src/extmail.c:1549
+msgid "#-1 INVALID MESSAGE OR PLAYER"
+msgstr "#-1 非法的信息或者玩家"
+
+#: src/funufun.c:293
+msgid "#-1 INVALID ZONE"
+msgstr "#-1 非法区域"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 没有这个配置选项"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 没有这种类型的锁"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 没有这样的玩家"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 没有这种类型"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 ~{3,3v76N'~}"
+
+#: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
+msgid "#-1 PERMISSION DENIED"
+msgstr "#-1 权限禁止"
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "收到%d封邮件，%d封未读，%d封已经删除。"
+
+#: src/extmail.c:1375
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
+msgstr "共发送%d封邮件，%d未读，%d封删除，总共有%d字符。"
+
+#: src/extmail.c:1368
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared."
+msgstr "%d 邮件发送，%d 未读，%d 删除。"
+
+#: src/wiz.c:686
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
+msgstr "%d对象 = %d房间，%d出口，%d物品，%d玩家，%d垃圾。"
+
+#: src/move.c:862
+#, c-format
+msgid "%s begins following you."
+msgstr "%s开始跟随你。"
+
+#: src/rob.c:213
+#, c-format
+msgid "%s gave you %s."
+msgstr "%s~{0Q~}%s~{8xAKDc!#~}"
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "亾%s 夞壠"
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s把你的房间%s放入删除队列中。"
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s目前位于%s。"
+
+#: src/flags.c:1127 src/flags.c:1133
+#, c-format
+msgid "%s is now listening."
+msgstr "%s现在正在听。"
+
+#: src/speech.c:179
+#, c-format
+msgid "%s says, \"%s\""
+msgstr "%s说道：“%s”"
+
+#: src/move.c:918 src/move.c:1063
+#, c-format
+msgid "%s stops following you."
+msgstr "%s决定不再跟随你。"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s试图定位你，但失败了。"
+
+#: src/move.c:495
+#, c-format
+msgid "%s was taken from you."
+msgstr "%s被从你身上拿走。"
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "没有%s这个玩家。"
+
+#: src/warnings.c:450
+msgid "@wcheck complete."
+msgstr "@wcheck 完成。"
+
+#: src/attrib.c:937
+msgid "Alias set."
+msgstr "~{1pC{IhVCMj1O!#~}"
+
+#: src/cque.c:924
+#, c-format
+msgid "All objects for %s have been halted."
+msgstr "%s的所有对象被中断。"
+
+#: src/wiz.c:273
+#, c-format
+msgid "All quotas changed to %d."
+msgstr "所有引用改变为%d。"
+
+#: src/attrib.c:1111
+msgid "Attribute owner changed."
+msgstr "~{JtPTKySPU_1d8|!#~}"
+
+#: src/extmail.c:1166
+#, c-format
+msgid "Bad object #%d has mail."
+msgstr "非法对象(#%d)有邮件。"
+
+#: extchat.c:1569
+#, c-format
+msgid "CHAT: Joinlock on <%s> set."
+msgstr "闲聊：<%s>的加入锁设定完毕。"
+
+#: src/extchat.c:859
+#, c-format
+msgid "CHAT: You remove %s from channel <%s>."
+msgstr "闲聊：你把%s从频道<%s>中删除。"
+
+#: src/destroy.c:1325
+msgid "GAME: Database consistency check complete."
+msgstr "~{SNO7#:J}>]?bR;VBPT<l2iMj1O!#~}"
+
+#: src/extchat.c:846
+msgid "Guests may not leave channels."
+msgstr "~{7C?MIm7]2;D\@k?*F55@!#~}"
+
+#: src/lock.c:362
+msgid "I don't see what you want to lock!"
+msgstr "変娕晄摓&#20320;梫&#38145;婲棃揑暔審両"
+
+#: src/speech.c:611 src/speech.c:1371
+#, c-format
+msgid "I'm sorry, but %s wishes to be left alone now."
+msgstr "对不起，%s现在想一个人呆一会儿。"
+
+#: src/version.c:37
+#, c-format
+msgid "Last restarted: %s"
+msgstr "最近一次重新开始：%s"
+
+#: src/extmail.c:763
+#, c-format
+msgid "MAIL: %d messages forwarded."
+msgstr "邮箱：%d封邮件被转发。"
+
+#: src/extmail.c:2504
+#, c-format
+msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
+msgstr "邮箱：%d封邮件在文件夹%d [%s](%d未读，%d删除)。"
+
+#: src/extmail.c:984
+#, c-format
+msgid "MAIL: %s is not accepting mail from you right now."
+msgstr "邮箱：刚才%s没有收到你的邮件。"
+
+#: src/extmail.c:432
+#, c-format
+msgid "MAIL: All messages filed in folder %d [%s]"
+msgstr "邮箱：所有邮件归档到目录%d[%s]"
+
+#: src/malias.c:378
+msgid "MAIL: I cannot find that player."
+msgstr "MAIL: 找不到那个玩家。"
+
+#: src/malias.c:158
+msgid "MAIL: Invalid character in mail alias."
+msgstr "~{SJOd#:SJ<~1pC{@o4fTZ7G7(5D5DWV7{!#~}"
+
+#: src/malias.c:629 src/malias.c:732
+#, c-format
+msgid "MAIL: Mail Alias '%s' not found."
+msgstr "邮箱：邮件别名%s没有找到。"
+
+#: src/extmail.c:1294
+#, c-format
+msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
+msgstr "邮件：邮件池中共有%d封邮件，其中%d未读，%d封已经删除。"
+
+#: src/extmail.c:1312
+#, c-format
+msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
+msgstr "邮箱：邮件池中共有%d封旧邮件，合计%d个字符。"
+
+#: src/extmail.c:393 src/extmail.c:446
+msgid "MAIL: You don't have any matching messages!"
+msgstr "~{SJOd#:C;SPF%Ed5DPE<~#!~}"
+
+#: src/extmail.c:1090
+#, c-format
+msgid "MAIL: You sent your message to %s."
+msgstr "邮箱：你将邮件发送给%s。"
+
+#: src/wiz.c:2069
+msgid "Name removed."
+msgstr "~{C{WV1;I>3}AK!#~}"
+
+#: src/bsd.c:3090
+#, c-format
+msgid "No entry for '%s'."
+msgstr "%s没有入口。"
+
+#: src/look.c:785
+msgid "No exits."
+msgstr "~{C;SP3v?Z!#~}"
+
+#: src/look.c:395
+msgid "No matching attributes."
+msgstr "~{C;SPF%Ed5DJtPT!#~}"
+
+#: src/rob.c:102
+msgid "Sorry, you can only kill players and objects."
+msgstr "~{6T2;Fp#,DcV;D\I15tMf<R:M6TOs!#~}"
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "那个对象已经置为安全(SAFE)。你必须置为不安全(!SAFE)后才能销毁它。"
+
+#: src/player.c:299
+#, c-format
+msgid "The password is %s\n"
+msgstr "口令是：%s\n"
+
+#: src/extmail.c:1281
+#, c-format
+msgid "There are %d messages in the mail spool."
+msgstr "~{SJ<~3X@o92SP~}%d~{7bSJ<~!#~}"
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "未知的访问选项：%s"
+
+#: src/extchat.c:1254 src/extchat.c:1364
+#, c-format
+msgid "You are not on channel <%s>."
+msgstr "你没有加入频道<%s>。"
+
+#: src/move.c:359 src/move.c:412 src/move.c:430
+msgid "You can't go that way."
+msgstr "~{Dc2;D\W_DGLuB7!#~}"
+
+#: src/wiz.c:359
+msgid "You can't teleport rooms."
+msgstr "adsfakldsfjkldasfjladsf"
+
+#: src/move.c:568 src/rob.c:191
+msgid "You don't have that!"
+msgstr "~{DcC;SPDG8v#!~}"
+
+#: src/look.c:853
+#, c-format
+msgid "You have %d %s."
+msgstr "你有%d个%s。"
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "你必须指定一个%s的正数。"
+
+#: src/rob.c:263
+#, c-format
+msgid "You paid %d %s."
+msgstr "你支付%d%s。"
+
+#: src/move.c:917 src/move.c:1036
+#, c-format
+msgid "You stop following %s."
+msgstr "你决定停止跟随%s。"
+
+#: src/extchat.c:1329
+#, c-format
+msgid "You will now hear messages on channel <%s>."
+msgstr "你现在开始聆听频道<%s>。"
+
+#: src/bsd.c:3419
+msgid "Your HAVEN flag is set. You cannot receive pages."
+msgstr "你的HAVEN标志被设置，你不能接收短信息。"
+

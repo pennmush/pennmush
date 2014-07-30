@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export LC_COLLATE=C
+
+exec @PERL@ runtest.pl $@ test*.pl
+

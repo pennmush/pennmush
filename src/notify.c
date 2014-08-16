@@ -1775,6 +1775,7 @@ queue_newwrite(DESC *d, const char *b, int n)
 
     if ((written = send(d->descriptor, b, n, 0)) > 0) {
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
+      d->output_chars += written;
       if (written == n)
         return written;
       n -= written;

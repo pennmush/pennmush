@@ -13,6 +13,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 7                                 ??? ??, 2???
+
+Fixes:
+ * Bytes received by connections weren't being properly recorded for
+   things like SESSION and recv().
+
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 
 Hardcode:

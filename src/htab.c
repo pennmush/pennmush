@@ -66,19 +66,15 @@ mush_strdup(const char *s, const char *check)
       int keylen;
     };
 
-    typedef uint32_t (*hash_func) (const char *, int, uint64_t);
-
-    static const uint64_t hash_seed = 0x28187bcc53900639LLU;
-
-    hash_func hash_functions[] = {
-      city_hash,
-      murmur3_hash,
-      spooky_hash,
-      jenkins_hash,
-      city_hash,
-      murmur3_hash,
-      jenkins_hash,
-      spooky_hash,
+    static const uint64_t hash_seeds[] = {
+      0x28187BCC53900639ULL,
+      0x37FF1FD24D473811ULL,
+      0xDFBE49319032F8A0ULL,
+      0x511425D4D0A6E518ULL,
+      0xAC30C8C94941DE18ULL,
+      0xC61F7F133E0DCF02ULL,
+      0xA32C48FC8A34D36AULL,
+      0x6561992839F450CBULL,
     };
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
@@ -125,7 +121,7 @@ hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
   htab->last_index = -1;
   htab->free_data = free_data;
   htab->hashsize = size;
-  htab->hashfunc_offset = 0;
+  htab->hashseed_offset = 0;
   htab->entries = 0;
   htab->buckets = mush_calloc(size, sizeof(struct hash_bucket), "hash.buckets");
 }
@@ -146,10 +142,8 @@ hash_find(const HASHTAB *htab, const char *key)
   len = strlen(key);
 
   for (n = 0; n < NHASH_TRIES; n++) {
-    hash_func hash;
-    int hval, hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
-    hash = hash_functions[hashindex];
-    hval = hash(key, len, hash_seed) % htab->hashsize;
+    int hval, seedindex = (n + htab->hashseed_offset) % NHASH_MOD;
+    hval = city_hash(key, len, hash_seeds[seedindex]) % htab->hashsize;
 
     if (htab->buckets[hval].key && len == htab->buckets[hval].keylen &&
         memcmp(htab->buckets[hval].key, key, len) == 0)
@@ -180,27 +174,26 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
   bump.data = data;
 
   while (loop < BUMP_LIMIT) {
-    int hval;
+    int hval, seed_index;
     struct hash_bucket temp;
 
     /* See if bump has any empty choices and use it */
     for (n = 0; n < NHASH_TRIES; n++) {
-      hash_func hash;
-      int hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
+      seed_index = (n + htab->hashseed_offset) % NHASH_MOD;
 
-      hash = hash_functions[hashindex];
-      hval = hash(bump.key, bump.keylen, hash_seed) % htab->hashsize;
+      hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
+        htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
       }
     }
 
-    /* None. Use a random func and bump the existing element */
-    n = htab->hashfunc_offset + get_random32(0, NHASH_TRIES - 1);
-    n %= NHASH_MOD;
-    hval =
-      (hash_functions[n]) (bump.key, bump.keylen, hash_seed) % htab->hashsize;
+    /* None. Use a random seed and bump the existing element */
+    seed_index = htab->hashseed_offset + get_random32(0, NHASH_TRIES - 1);
+    seed_index %= NHASH_MOD;
+    hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
+      htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -227,10 +220,10 @@ static int resize_calls = 0, first_offset = -1;
 /** Resize a hash table.
  * \param htab pointer to hashtable.
  * \param primesize new size.
- * \param hashindex Index of first hash function to use
+ * \param seed_index Index of first hash seed to use
  */
 static bool
-hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
+hash_resize(HASHTAB *htab, int newsize, int hashseed_offset)
 {
   struct hash_bucket *oldarr;
   int oldsize, oldoffset, i;
@@ -243,23 +236,23 @@ hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
 
   /* If all possible hash function combos have been exhausted,
      grow the array */
-  if (hashfunc_offset == first_offset) {
+  if (hashseed_offset == first_offset) {
     int newersize = next_prime_after(floor(newsize * 1.15));
     first_offset = -1;
-    return hash_resize(htab, newersize, hashfunc_offset);
+    return hash_resize(htab, newersize, hashseed_offset);
   }
 
   resize_calls += 1;
 
   /* Save the old data we need */
   oldsize = htab->hashsize;
-  oldoffset = htab->hashfunc_offset;
+  oldoffset = htab->hashseed_offset;
   oldarr = htab->buckets;
 
   htab->buckets =
     mush_calloc(newsize, sizeof(struct hash_bucket), "hash.buckets");
   htab->hashsize = newsize;
-  htab->hashfunc_offset = hashfunc_offset;
+  htab->hashseed_offset = hashseed_offset;
   for (i = 0; i < oldsize; i++) {
     if (oldarr[i].key) {
       if (!hash_insert(htab, oldarr[i].key, oldarr[i].keylen, oldarr[i].data)) {
@@ -267,10 +260,10 @@ hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
         mush_free(htab->buckets, "hash.buckets");
         htab->buckets = oldarr;
         htab->hashsize = oldsize;
-        htab->hashfunc_offset = oldoffset;
+        htab->hashseed_offset = oldoffset;
         if (first_offset == -1)
-          first_offset = hashfunc_offset;
-        return hash_resize(htab, newsize, (hashfunc_offset + 1) % NHASH_MOD);
+          first_offset = hashseed_offset;
+        return hash_resize(htab, newsize, (hashseed_offset + 1) % NHASH_MOD);
       }
     }
   }
@@ -300,13 +293,13 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
 
   if (htab->entries == htab->hashsize)
     hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
-                htab->hashfunc_offset);
+                htab->hashseed_offset);
 
   htab->entries += 1;
   if (!hash_insert(htab, keycopy, keylen, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
-    hash_resize(htab, htab->hashsize, (htab->hashfunc_offset + 1) % NHASH_MOD);
+    hash_resize(htab, htab->hashsize, (htab->hashseed_offset + 1) % NHASH_MOD);
   }
   return true;
 }
@@ -467,10 +460,11 @@ hash_stats(const HASHTAB *htab, struct hashstats *stats)
       stats->key_length += htab->buckets[n].keylen;
       stats->entries += 1;
       for (i = 0; i < 3; i++) {
-        hash_func hash =
-          hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
-        if ((hash(htab->buckets[n].key, htab->buckets[n].keylen, hash_seed) %
-             htab->hashsize) == (uint32_t) n) {
+        int seed_index = (i + htab->hashseed_offset) % NHASH_MOD;
+        if ((city_hash(htab->buckets[n].key,
+                       htab->buckets[n].keylen,
+                       hash_seeds[seed_index]) % htab->hashsize) ==
+            (uint32_t) n) {
           stats->lookups[i] += 1;
           break;
         }

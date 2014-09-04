@@ -306,6 +306,7 @@ bool
 is_objid(char const *str)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   const char *errptr;
   int erroffset;
   char *val;
@@ -313,10 +314,12 @@ is_objid(char const *str)
 
   if (!str)
     return 0;
-  if (!re)
+  if (!re) {
     re = pcre_compile("^#-?\\d+(?::\\d+)?$", 0, &errptr, &erroffset, NULL);
+    extra = pcre_study(re, pcre_study_flags, &errptr);
+  }
   val = remove_markup((const char *) str, &vlen);
-  return pcre_exec(re, NULL, val, vlen - 1, 0, 0, NULL, 0) >= 0;
+  return pcre_exec(re, extra, val, vlen - 1, 0, 0, NULL, 0) >= 0;
 }
 
 /** Is string an integer?
@@ -1606,7 +1609,11 @@ free_pe_info(NEW_PE_INFO *pe_info)
     pe_regs_free(pe_regs);
   }
 
+#ifdef DEBUG
   mush_free(pe_info, pe_info->name);
+#else
+  mush_free(pe_info, "new_pe_info");
+#endif
 
   return;
 }
@@ -1615,11 +1622,15 @@ free_pe_info(NEW_PE_INFO *pe_info)
  * \param name name of the calling function, for memory checking
  */
 NEW_PE_INFO *
-make_pe_info(char *name)
+make_pe_info(char *name __attribute__ ((__unused__)))
 {
   NEW_PE_INFO *pe_info;
 
+#ifdef DEBUG
   pe_info = mush_malloc(sizeof(NEW_PE_INFO), name);
+#else
+  pe_info = mush_malloc(sizeof(NEW_PE_INFO), "new_pe_info");
+#endif
   if (!pe_info)
     mush_panic("Unable to allocate memory in make_pe_info");
 
@@ -1639,7 +1650,9 @@ make_pe_info(char *name)
   *pe_info->cmd_evaled = '\0';
 
   pe_info->refcount = 1;
+#ifdef DEBUG
   strcpy(pe_info->name, name);
+#endif
 
   return pe_info;
 }
@@ -2266,7 +2279,7 @@ process_expression(char *buff, char **bp, char const **str,
         case 'k':
         case 'K':              /* enactor moniker (ansi'd name) */
           if (GoodObject(enactor))
-            safe_str(ansi_name(enactor, 0, NULL), buff, bp);
+            safe_str(ansi_name(enactor, 0, NULL, 0), buff, bp);
           else
             safe_str(T(e_notvis), buff, bp);
           break;

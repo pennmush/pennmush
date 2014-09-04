@@ -102,7 +102,7 @@ Fixes:
         returns the canoncalized raw command (SAY hi!) so you can trap
         it in softcode. Reported by Mackenzie@SWGT Mush  
       * General linting [SW]
-      * Help fixes by Eratl@M*U*S*H.
+      * Help fixes by Rince@M*U*S*H.
       * make customize doesn't try to link mkindx any more. And README and
         os2/Makefile don't refer to it either. By Bobby Bailey (Chil@M*U*S*H).
       * The internal tprintf() function is safer. [SW]
@@ -616,7 +616,7 @@ Fixes:
       * Various fixes to better resist crashing due to attacks involving
         overwhelming connections. 
       * @mail/stats for all was broken. Fixed now.
-      * Clearer message after failed @pemit. Suggested by Eratl@M*U*S*H
+      * Clearer message after failed @pemit. Suggested by Rince@M*U*S*H
       * Destroyed things stop following/leading. Report by Ashen-Shugar.
       * follow didn't properly set up the followers as enactors.
         We no longer short-circuit process_command. Report by Moe@Chicago.
@@ -4417,7 +4417,7 @@ Miscellaneous changes:
 For information on a specific patchlevel of one of the versions listed,
 type 'help <version>p<patchlevel>'. For example, 'help 1.7.2p3'
 
-1.8.5: 0, 1, 2, 3, 4, 5
+1.8.5: 0, 1, 2, 3, 4, 5, 6
 1.8.4: 0, 1, 2, 3, 4, 5, 6, 7, 8
 1.8.3: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 1.8.2: 0, 1, 2, 3, 4, 5, 6, 7, 8

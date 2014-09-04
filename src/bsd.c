@@ -25,9 +25,6 @@
 #include <errno.h>
 #include <process.h>
 #else                           /* !WIN32 */
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -43,12 +40,6 @@
 #endif
 #ifdef I_NETINET_IN
 #include <netinet/in.h>
-#endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
-#ifdef I_SYS_PARAM
-#include <sys/param.h>
 #endif
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
@@ -69,12 +60,6 @@
 #include <sys/uio.h>
 #endif
 #include <limits.h>
-#ifdef I_FLOATINGPOINT
-#include <floatingpoint.h>
-#endif
-#ifdef HAVE_IEEEFP_H
-#include <ieeefp.h>
-#endif
 #include <locale.h>
 #ifndef _MSC_VER
 #include <langinfo.h>
@@ -163,9 +148,6 @@ int que_next(void);             /* from cque.c */
 
 dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
 
-#ifdef SUN_OS
-static int extrafd;
-#endif
 int shutdown_flag = 0;          /**< Is it time to shut down? */
 void chat_player_announce(dbref player, char *msg, int ungag);
 void report_mssp(DESC *d, char *buff, char **bp);
@@ -238,6 +220,23 @@ static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
 bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, char **q, char *qend);
+
+typedef void (*telnet_handler) (DESC *d, char *cmd, int len);
+#define TELNET_HANDLER(x) \
+  void x(DESC *d __attribute__ ((__unused__)), char *cmd __attribute__ ((__unused__)), int len __attribute__ ((__unused__))); \
+  void x(DESC *d __attribute__ ((__unused__)), char *cmd __attribute__ ((__unused__)), int len __attribute__ ((__unused__)))
+
+struct telnet_opt {
+  int optcode; /**< Code for this telnet option */
+  int offer; /**< One of DO or WILL, to offer this during initial negotiation, or 0 to not */
+  telnet_handler handler; /**< Function to run on DO/WILL for this opt */
+  telnet_handler sb; /**< Function to run for subnegotiation requests for this opt */
+};
+
+/** Array of all possible telnet options */
+struct telnet_opt *telnet_options[256];
+char *starting_telnet_neg = NULL;
+int starting_telnet_neg_len = 0;
 
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
@@ -413,6 +412,7 @@ sig_atomic_t slave_error = 0;
 sig_atomic_t ssl_slave_error = 0;
 extern bool ssl_slave_halted;
 #endif
+WAIT_TYPE error_code = 0;
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
@@ -528,6 +528,8 @@ main(int argc, char **argv)
             pidfile = argv[n + 1];
             n++;
           }
+        } else if (strcmp(argv[n], "--no-pcre-jit") == 0) {
+          pcre_study_flags = 0;
         } else
           fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[n]);
       } else {
@@ -594,14 +596,6 @@ main(int argc, char **argv)
   init_rlimit();                /* unlimit file descriptors */
 #endif
 
-  /* These are BSDisms to fix floating point exceptions */
-#ifdef HAVE_FPSETROUND
-  fpsetround(FP_RN);
-#endif
-#ifdef HAVE_FPSETMASK
-  fpsetmask(0L);
-#endif
-
   time(&mudtime);
 
   /* initialize random number generator */
@@ -652,9 +646,6 @@ main(int argc, char **argv)
 
   /* save a file descriptor */
   reserve_fd();
-#ifdef SUN_OS
-  extrafd = open("/dev/null", O_RDWR);
-#endif
 
   /* decide if we're in @shutdown/reboot */
   restarting = 0;
@@ -994,6 +985,24 @@ got_new_connection(int sock, conn_source source)
 
 #endif
 
+#if defined(INFO_SLAVE) || defined(SSL_SLAVE)
+static char *
+exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
+{
+  static char buffer[BUFFER_LEN], *bp;
+  bp = buffer;
+  safe_format(buffer, &bp, "%s (PID %d) exited ", prog, pid);
+  if (WIFEXITED(code))
+    safe_format(buffer, &bp, "with code %d.", WEXITSTATUS(code));
+  else if (WIFSIGNALED(code))
+    safe_format(buffer, &bp, "with signal %d.", WTERMSIG(code));
+  else
+    safe_str("in an unknown fashion.", buffer, &bp);
+  *bp = '\0';
+  return buffer;
+}
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1092,16 +1101,16 @@ shovechars(Port_t port, Port_t sslport)
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, "info_slave (Pid %d) exited unexpectedly!",
-                slave_error);
-      slave_error = 0;
+      do_rawlog(LT_ERR, "%s",
+                exit_report("info_slave", slave_error, error_code));
+      slave_error = error_code = 0;
     }
 #endif
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
-      do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
-                ssl_slave_error);
-      ssl_slave_error = 0;
+      do_rawlog(LT_ERR, "%s",
+                exit_report("ssl_slave", ssl_slave_error, error_code));
+      ssl_slave_error = error_code = 0;
       if (!ssl_slave_halted)
         make_ssl_slave();
     }
@@ -2206,8 +2215,7 @@ test_telnet(DESC *d)
   /* Use rfc 1184 to test telnet support, as it tries to set linemode
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
-    /*  IAC DO LINEMODE */
-    static const char query[3] = "\xFF\xFD\x22";
+    static const char query[3] = { IAC, DO, TN_LINEMODE };
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -2225,15 +2233,273 @@ setup_telnet(DESC *d)
      apparently. Unfortunately, there doesn't seem to be a telnet
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
-  if (d->conn_flags & CONN_TELNET_QUERY) {
-    /* IAC-DO-NAWS IAC-DO-TTYPE IAC-WILL-MSSP IAC-WILL-CHARSET */
-    static const char extra_options[12] =
-      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46" "\xFF\xFB\x2A";
+  if ((d->conn_flags & CONN_TELNET_QUERY) && starting_telnet_neg) {
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
-    queue_newwrite(d, extra_options, 12);
+    queue_newwrite(d, starting_telnet_neg, starting_telnet_neg_len);
     process_output(d);
+  }
+}
+
+/* A standard response */
+TELNET_HANDLER(telnet_will)
+{
+  char response[3] = { IAC, WILL, 0 };
+  response[2] = *(cmd + 1);
+  queue_newwrite(d, response, 3);
+  process_output(d);
+}
+
+/* A standard response */
+TELNET_HANDLER(telnet_willdo)
+{
+  char response[6] = { IAC, WILL, 0, IAC, DO, 0 };
+  response[2] = response[5] = *(cmd + 1);
+  queue_newwrite(d, response, 6);
+  process_output(d);
+}
+
+/* Handle DO SUPPRESS-GOAHEAD */
+TELNET_HANDLER(telnet_sga)
+{
+  if (*cmd == DO) {
+    char response[6] = { IAC, WILL, TN_SGA, IAC, DO, TN_SGA };
+    queue_newwrite(d, response, 6);
+    process_output(d);
+    /* Yeah, we still will send GA, which they should treat as a NOP,
+     * but we'd better send newlines, too.
+     */
+    d->conn_flags |= CONN_PROMPT_NEWLINES;
+  }
+}
+
+/* NAWS subnegotiation */
+TELNET_HANDLER(telnet_naws_sb)
+{
+  union {
+    short s;
+    char bytes[2];
+  } raw;
+
+  if (len != 4)
+    return;                     /* Invalid */
+  raw.bytes[0] = *(cmd++);
+  raw.bytes[1] = *(cmd++);
+  d->width = ntohs(raw.s);
+
+  raw.bytes[0] = *(cmd++);
+  raw.bytes[1] = *cmd;
+  d->height = ntohs(raw.s);
+}
+
+/* Send TTYP subnegotiation request */
+TELNET_HANDLER(telnet_ttype)
+{
+  char reply[6] = { IAC, SB, TN_TTYPE, 1, IAC, SE };
+  queue_newwrite(d, reply, 6);
+  process_output(d);
+}
+
+/** Handle TTYP */
+TELNET_HANDLER(telnet_ttype_sb)
+{
+  /* cmd should begin with IS, which is 0 */
+  if (!len || *cmd != 0)
+    return;
+  cmd++;
+  if (d->ttype)
+    mush_free(d->ttype, "terminal description");
+  if (*cmd)
+    d->ttype = mush_strdup(cmd, "terminal description");
+  else
+    d->ttype = mush_strdup("unknown", "terminal description");
+}
+
+/* Handle DO CHARSET, send list of known charsets */
+TELNET_HANDLER(telnet_charset)
+{
+  /* Send a list of supported charsets for the client to pick.
+   * Currently, we only offer the single charset the MUSH is
+   * currently running in (if known, and not "C" or "UTF-*"),
+   * and plain ol' ascii. */
+  /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
+  static const char reply_prefix[4] =
+    { IAC, SB, TN_CHARSET, TN_SB_CHARSET_REQUEST };
+  static const char reply_suffix[2] = { IAC, SE };
+#ifndef _MSC_VER
+  /* Offer a selection of possible delimiters, to avoid it appearing
+   * in a charset name */
+  static const char *delim_list = "; +=/!", *delim_curr;
+  char delim[2] = { '\0', '\0' };
+  char *curr_locale = NULL;
+
+  if (*cmd != DO)
+    return;
+
+  queue_newwrite(d, reply_prefix, 4);
+  curr_locale = nl_langinfo(CODESET);
+  if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
+      strncasecmp(curr_locale, "UTF-", 4)) {
+    for (delim_curr = delim_list; *delim_curr; delim_curr++) {
+      if (strchr(curr_locale, *delim_curr) == NULL)
+        break;
+    }
+    if (*delim_curr) {
+      delim[0] = *delim_curr;
+    } else {
+      delim[0] = ';';           /* fall back on ; */
+    }
+  } else {
+    delim[0] = ';';
+    curr_locale = NULL;
+  }
+  queue_newwrite(d, delim, 1);
+  if (curr_locale && strlen(curr_locale)) {
+    queue_newwrite(d, curr_locale, strlen(curr_locale));
+    queue_newwrite(d, delim, 1);
+  }
+  queue_newwrite(d, "US-ASCII", 8);
+  queue_newwrite(d, delim, 1);
+  queue_newwrite(d, "ASCII", 5);
+  queue_newwrite(d, delim, 1);
+  queue_newwrite(d, "x-penn-def", 10);
+
+  queue_newwrite(d, reply_suffix, 2);
+#else                           /* _MSC_VER */
+  /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+   * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+   * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+   * but it's unlikely to contain a valid charset name, so probably
+   * wouldn't help anyway.) */
+
+  if (*cmd != DO)
+    return;
+
+  queue_newwrite(d, reply_prefix, 4);
+  queue_newwrite(d, ";ISO-8859-1", 11);
+  queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
+  queue_newwrite(d, reply_suffix, 2);
+#endif                          /* _MSC_VER */
+}
+
+/* Handle CHARSET subnegotiation */
+TELNET_HANDLER(telnet_charset_sb)
+{
+  /* Possible subnegotiations are
+   * CHARSET ACCEPTED <charset> IAC SE
+   * CHARSET REJECTED IAC SE
+   */
+  char type;
+
+  type = *(cmd++);
+  if (type != TN_SB_CHARSET_ACCEPTED) {
+    /* This is the only thing we support */
+    return;
+  }
+  if (!strcasecmp(cmd, "US-ASCII") || !strcasecmp(cmd, "ASCII")) {
+    /* ascii requested; strip accents for the connection */
+    d->conn_flags |= CONN_STRIPACCENTS;
+  }
+}
+
+/* Set our preferred line mods */
+TELNET_HANDLER(telnet_linemode)
+{
+  /* Set up our preferred linemode options. */
+  /* IAC SB LINEMODE MODE (EDIT|SOFT_TAB) IAC SE */
+  static const char reply[7] =
+    { IAC, SB, TN_LINEMODE, '\x01', '\x09', IAC, SE };
+  queue_newwrite(d, reply, 7);
+}
+
+/* Send MSSP data */
+TELNET_HANDLER(telnet_mssp)
+{
+  /* IAC SB MSSP MSSP_VAR "variable" MSSP_VAL "value" ... IAC SE */
+  char reply[BUFFER_LEN];
+  char *bp;
+  bp = reply;
+
+  safe_chr((char) IAC, reply, &bp);
+  safe_chr((char) SB, reply, &bp);
+  safe_chr((char) TN_MSSP, reply, &bp);
+  report_mssp((DESC *) NULL, reply, &bp);
+  safe_chr((char) IAC, reply, &bp);
+  safe_chr((char) SE, reply, &bp);
+  *bp = '\0';
+  queue_newwrite(d, reply, strlen(reply));
+  process_output(d);
+}
+
+void
+init_telnet_opts(void)
+{
+  int i, len;
+  struct telnet_opt *telopt;
+  for (i = 0; i < 256; i++) {
+    telnet_options[i] = NULL;
+  }
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_SGA;
+  telopt->offer = 0;
+  telopt->handler = telnet_sga;
+  telopt->sb = NULL;
+  telnet_options[i] = telopt;
+
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_TTYPE;
+  telopt->offer = DO;
+  telopt->handler = telnet_ttype;
+  telopt->sb = telnet_ttype_sb;
+  telnet_options[i] = telopt;
+
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_NAWS;
+  telopt->offer = DO;
+  telopt->handler = NULL;
+  telopt->sb = telnet_naws_sb;
+  telnet_options[i] = telopt;
+
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_LINEMODE;
+  telopt->offer = 0;
+  telopt->handler = telnet_linemode;
+  telopt->sb = NULL;
+  telnet_options[i] = telopt;
+
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_CHARSET;
+  telopt->offer = WILL;
+  telopt->handler = telnet_charset;
+  telopt->sb = telnet_charset_sb;
+  telnet_options[i] = telopt;
+
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_MSSP;
+  telopt->offer = WILL;
+  telopt->handler = telnet_mssp;
+  telopt->sb = NULL;
+  telnet_options[i] = telopt;
+
+  /* Store the telnet options we negotiate for new connections,
+   * to avoid looking them up every time someone connects */
+  len = 0;
+
+  for (i = 0; i < 256; i++) {
+    if (telnet_options[i] && telnet_options[i]->offer)
+      len += 3;
+  }
+  if (len) {
+    char *p = starting_telnet_neg = malloc(len);
+    for (i = 0; i < 256; i++) {
+      if (telnet_options[i] && telnet_options[i]->offer) {
+        *p++ = IAC;
+        *p++ = telnet_options[i]->offer;
+        *p++ = telnet_options[i]->optcode;
+      }
+    }
+    starting_telnet_neg_len = len;
   }
 }
 
@@ -2248,321 +2514,90 @@ setup_telnet(DESC *d)
 static int
 handle_telnet(DESC *d, char **q, char *qend)
 {
+  char *p;
+  char opt = '\0';
+  bool got_iac = 0;
+  static char telnet_buff[BUFFER_LEN];
+  char *tbp = telnet_buff;
+  static const char ayt_reply[] = "\r\n*** AYT received, I'm here ***\r\n";
+
   /* *(*q - q) == IAC at this point. */
   switch (**q) {
-  case SB:                     /* Sub-option */
-    if (*q >= qend)
-      return -1;
-    (*q)++;
-    if (**q == TN_LINEMODE) {
-      if ((*q + 2) >= qend)
-        return -1;
-      *q += 2;
-      while (*q < qend && **q != SE)
-        (*q)++;
-      if (*q >= qend)
-        return -1;
-    } else if (**q == TN_NAWS) {
-      /* Learn what size window the client is using. */
-      union {
-        short s;
-        char bytes[2];
-      } raw;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      /* Width */
-      if (**q == IAC) {
-        raw.bytes[0] = IAC;
-        if (*q >= qend)
-          return -1;
-        (*q)++;
-      } else
-        raw.bytes[0] = **q;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      if (**q == IAC) {
-        raw.bytes[1] = IAC;
-        if (*q >= qend)
-          return -1;
-        (*q)++;
-      } else
-        raw.bytes[1] = **q;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-
-      d->width = ntohs(raw.s);
-
-      /* Height */
-      if (**q == IAC) {
-        raw.bytes[0] = IAC;
-        if (*q >= qend)
-          return -1;
-        (*q)++;
-      } else
-        raw.bytes[0] = **q;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      if (**q == IAC) {
-        raw.bytes[1] = IAC;
-        if (*q >= qend)
-          return -1;
-        (*q)++;
-      } else
-        raw.bytes[1] = **q;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      d->height = ntohs(raw.s);
-
-      /* IAC SE */
-      if (*q + 1 >= qend)
-        return -1;
-      (*q)++;
-    } else if (**q == TN_TTYPE) {
-      /* Read the terminal type: TERMINAL-TYPE IS blah IAC SE */
-      char tbuf[BUFFER_LEN], *bp = tbuf;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      /* Skip IS */
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-
-      /* Read up to IAC SE */
-      while (1) {
-        if (*q >= qend)
-          return -1;
-        if (**q == IAC) {
-          if (*q + 1 >= qend)
-            return -1;
-          if (*(*q + 1) == IAC) {
-            safe_chr((char) IAC, tbuf, &bp);
-            (*q)++;
-          } else
-            break;
-        } else
-          safe_chr(**q, tbuf, &bp);
-        (*q)++;
-      }
-      while (*q < qend && **q != SE)
-        (*q)++;
-      *bp = '\0';
-      mush_free(d->ttype, "terminal description");
-      d->ttype = mush_strdup(tbuf, "terminal description");
-    } else if (**q == TN_CHARSET) {
-      /* Possible subnegotiations are
-       * CHARSET ACCEPTED <charset> IAC SE
-       * CHARSET REJECTED IAC SE
-       */
-      char tbuf[BUFFER_LEN], *bp = tbuf;
-      char type;
-      if (*q >= qend)
-        return -1;
-      (*q)++;
-      /* See whether it's ACCEPTED or REJECTED */
-      if (*q >= qend)
-        return -1;
-      type = **q;
-      (*q)++;
-
-      /* Read up to IAC SE */
-      while (1) {
-        if (*q >= qend)
-          return -1;
-        if (**q == IAC) {
-          if (*q + 1 >= qend)
-            return -1;
-          if (*(*q + 1) == IAC) {
-            safe_chr((char) IAC, tbuf, &bp);
-            (*q)++;
-          } else
-            break;
-        } else
-          safe_chr(**q, tbuf, &bp);
-        (*q)++;
-      }
-      while (*q < qend && **q != SE)
-        (*q)++;
-      *bp = '\0';
-      if (type == TN_SB_CHARSET_ACCEPTED) {
-        if (!strcasecmp(tbuf, "US-ASCII") || !strcasecmp(tbuf, "ASCII")) {
-          /* ascii requested; strip accents for the connection */
-          d->conn_flags |= CONN_STRIPACCENTS;
-        }
-      }
-      /* Since they've rejected all our offered charsets, we can either
-       * keep doing what we're doing, or start stripping accents (send
-       * plain ascii). For now, we'll just carry on as we were.
-       */
-    } else {
-      while (*q < qend && **q != SE)
-        (*q)++;
-    }
-    break;
+  case IAC:
+    setup_telnet(d);
+    /* We don't skip over the IAC, we leave it to be written out in process_input_helper */
+    return 0;
   case NOP:
-    /* No-op */
-    if (*q >= qend)
-      return -1;
-#ifdef DEBUG_TELNET
-    fprintf(stderr, "Got IAC NOP\n");
-#endif
-    *q += 1;
-    break;
-  case AYT:                    /* Are you there? */
-    if (*q >= qend)
-      return -1;
-    else {
-      static const char ayt_reply[] = "\r\n*** AYT received, I'm here ***\r\n";
-      queue_newwrite(d, ayt_reply, strlen(ayt_reply));
-      process_output(d);
-    }
-    break;
-  case WILL:                   /* Client is willing to do something, or confirming */
     setup_telnet(d);
-    if (*q >= qend)
-      return -1;
-    (*q)++;
-
-    if (**q == TN_LINEMODE) {
-      /* Set up our preferred linemode options. */
-      /* IAC SB LINEMODE MODE (EDIT|SOFT_TAB) IAC SE */
-      static const char reply[7] = "\xFF\xFA\x22\x01\x09\xFF\xF0";
-      queue_newwrite(d, reply, 7);
-#ifdef DEBUG_TELNET
-      fprintf(stderr, "Setting linemode options.\n");
-#endif
-    } else if (**q == TN_TTYPE) {
-      /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SE */
-      static const char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
-      queue_newwrite(d, reply, 6);
-    } else if (**q == TN_SGA || **q == TN_NAWS) {
-      /* This is good to be at. */
-    } else {                    /* Refuse options we don't handle */
-      char reply[3];
-      reply[0] = IAC;
-      reply[1] = DONT;
-      reply[2] = **q;
-      queue_newwrite(d, reply, sizeof reply);
-      process_output(d);
-    }
-    break;
-  case DO:                     /* Client is asking us to do something */
+    return 1;
+  case AYT:
     setup_telnet(d);
-    if (*q >= qend)
-      return -1;
+    queue_newwrite(d, ayt_reply, strlen(ayt_reply));
+    process_output(d);
+    return 1;
+  case DONT:
+  case WONT:
+    setup_telnet(d);
+    (*q)++;                     /* Skip DONT/WONT */
+    return 1;
+  case DO:
+  case WILL:
+    setup_telnet(d);
+    p = *q;
     (*q)++;
-    if (**q == TN_LINEMODE) {
-    } else if (**q == TN_SGA) {
-      /* IAC WILL SGA IAC DO SGA */
-      static const char reply[6] = "\xFF\xFB\x03\xFF\xFD\x03";
-      queue_newwrite(d, reply, 6);
+    opt = **q;
+    if (*q > qend)
+      return -1;
+    if (!telnet_options[opt]) {
+      telnet_buff[0] = IAC;
+      telnet_buff[1] = (*p == DO) ? WONT : DONT;
+      telnet_buff[2] = opt;
+      queue_newwrite(d, telnet_buff, 3);
       process_output(d);
-      /* Yeah, we still will send GA, which they should treat as a NOP,
-       * but we'd better send newlines, too.
-       */
-      d->conn_flags |= CONN_PROMPT_NEWLINES;
-#ifdef DEBUG_TELNET
-      fprintf(stderr, "GOT IAC DO SGA, sending IAC WILL SGA IAC DO SGA\n");
-#endif
-    } else if (**q == TN_MSSP) {
-      /* IAC SB MSSP MSSP_VAR "variable" MSSP_VAL "value" ... IAC SE */
-      char reply[BUFFER_LEN];
-      char *bp;
-      bp = reply;
-
-      safe_chr((char) IAC, reply, &bp);
-      safe_chr((char) SB, reply, &bp);
-      safe_chr((char) TN_MSSP, reply, &bp);
-      report_mssp((DESC *) NULL, reply, &bp);
-      safe_chr((char) IAC, reply, &bp);
-      safe_chr((char) SE, reply, &bp);
-      *bp = '\0';
-      queue_newwrite(d, reply, strlen(reply));
-      process_output(d);
-    } else if (**q == TN_CHARSET) {
-      /* Send a list of supported charsets for the client to pick.
-       * Currently, we only offer the single charset the MUSH is
-       * currently running in, or "ISO-8859-1" (latin1) if it's running
-       * in "C", "UTF-8" or an unknown charset. */
-      /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
-      static const char reply_prefix[4] = "\xFF\xFA\x2A\x01";
-      static const char reply_suffix[2] = "\xFF\xF0";
-#ifndef _MSC_VER
-      /* Offer a selection of possible delimiters, to avoid it appearing
-       * in a charset name */
-      static const char *delim_list = "; +=/!", *delim_curr;
-      char delim[2] = { '\0', '\0' };
-      char *curr_locale = NULL;
-
-      queue_newwrite(d, reply_prefix, 4);
-      curr_locale = nl_langinfo(CODESET);
-      if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
-          strncasecmp(curr_locale, "UTF-", 4)) {
-        for (delim_curr = delim_list; *delim_curr; delim_curr++) {
-          if (strchr(curr_locale, *delim_curr) == NULL)
-            break;
-        }
-        if (*delim_curr) {
-          delim[0] = *delim_curr;
+    } else if (telnet_options[opt]->handler) {
+      telnet_options[opt]->handler(d, p, 2);
+    }
+    return 1;
+  case SB:
+    /* Make sure we have a complete subcommand.  */
+    /* IAC SB <opt> ... IAC SE */
+    (*q)++;                     /* Skip over SB */
+    opt = **q;
+    (*q)++;
+    if (*q >= qend) {
+      return -1;
+    }
+    for (; *q < qend; (*q)++) {
+      if (got_iac) {
+        got_iac = 0;
+        if (**q == IAC) {
+          safe_chr(IAC, telnet_buff, &tbp);
+        } else if (**q == SE) {
+          /* A complete command */
+          *tbp = '\0';
+          if (telnet_options[opt] && telnet_options[opt]->sb) {
+            telnet_options[opt]->sb(d, telnet_buff, (tbp - telnet_buff));
+          }
+          return 1;
         } else {
-          delim[0] = ';';       /* fall back on ; */
+          /* We shouldn't get anything else here after an IAC! */
+          /* If we return 0 here, we're probably leaving gibberish
+           * in the buffer. However, since we know the telnet code
+           * isn't valid, we can't safely discard anything, either.
+           * Oh well.
+           */
+          return 0;
         }
+      } else if (**q == IAC) {
+        got_iac = 1;
       } else {
-        /* Fall back on latin-1 */
-        delim[0] = ';';
-        curr_locale = "ISO-8859-1";
+        safe_chr(**q, telnet_buff, &tbp);
       }
-      queue_newwrite(d, delim, 1);
-      queue_newwrite(d, curr_locale, strlen(curr_locale));
-      queue_newwrite(d, delim, 1);
-      queue_newwrite(d, "US-ASCII", 8);
-      queue_newwrite(d, delim, 1);
-      queue_newwrite(d, "ASCII", 5);
-      queue_newwrite(d, delim, 1);
-      queue_newwrite(d, "x-penn-def", 10);
-
-      queue_newwrite(d, reply_suffix, 2);
-#else                           /* _MSC_VER */
-      /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
-       * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
-       * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
-       * but it's unlikely to contain a valid charset name, so probably
-       * wouldn't help anyway.) */
-      queue_newwrite(d, reply_prefix, 4);
-      queue_newwrite(d, ";ISO-8859-1", 11);
-      queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
-      queue_newwrite(d, reply_suffix, 2);
-#endif                          /* _MSC_VER */
-    } else {
-      /* Stuff we won't do */
-      char reply[3];
-      reply[0] = IAC;
-      reply[1] = WONT;
-      reply[2] = (char) **q;
-      queue_newwrite(d, reply, sizeof reply);
-      process_output(d);
     }
-    break;
-  case WONT:                   /* Client won't do something we want. */
-  case DONT:                   /* Client doesn't want us to do something */
-    setup_telnet(d);
-#ifdef DEBUG_TELNET
-    fprintf(stderr, "Got IAC %s 0x%x\n", **q == WONT ? "WONT" : "DONT",
-            *(*q + 1));
-#endif
-    if (*q + 1 >= qend)
-      return -1;
-    (*q)++;
-    break;
-  default:                     /* Also catches IAC IAC for a literal 255 */
+    return -1;                  /* If we get here, we never found the closing IAC SE */
+  default:
     return 0;
   }
-  return 1;
 }
 
 static void
@@ -2601,7 +2636,8 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     } else if (*q == IAC) {     /* Telnet option foo */
       if (q >= qend)
         break;
-      q++;
+      q++;                      /* Skip over IAC */
+
       if (!MAYBE_TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
         if (p < pend && isprint(*q))
           *p++ = *q;
@@ -3902,10 +3938,9 @@ bailout(int sig)
 void
 reaper(int sig __attribute__ ((__unused__)))
 {
-  WAIT_TYPE my_stat;
   pid_t pid;
 
-  while ((pid = mush_wait(-1, &my_stat, WNOHANG)) > 0) {
+  while ((pid = mush_wait(-1, &error_code, WNOHANG)) > 0) {
 #ifdef INFO_SLAVE
     if (info_slave_pid > -1 && pid == info_slave_pid) {
       slave_error = info_slave_pid;
@@ -3922,7 +3957,7 @@ reaper(int sig __attribute__ ((__unused__)))
 #endif
     if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
-      dump_status = my_stat;
+      dump_status = error_code;
       forked_dump_pid = -1;
     }
   }
@@ -5182,6 +5217,18 @@ lookup_desc(dbref executor, const char *name)
   }
 }
 
+bool
+can_see_connected(dbref player, dbref target)
+{
+  DESC *d;
+
+  DESC_ITER_CONN(d) {
+    if ((d->player == target) && (!Hidden(d) || Priv_Who(player)))
+      return 1;
+  }
+  return 0;
+}
+
 /** Return the least idle descriptor of a player.
  * Ignores hidden connections unless priv is true.
  * \param player dbref of the player to find the descriptor for
@@ -5852,89 +5899,6 @@ hidden(dbref player)
 }
 
 
-#ifdef SUN_OS
-/* SunOS's implementation of stdio breaks when you get a file descriptor
- * greater than 128. Brain damage, brain damage, brain damage!
- *
- * Our objective, therefore, is not to fix stdio, but to work around it,
- * so that performance degrades semi-gracefully when you are using a lot
- * of file descriptors.
- * Therefore, we'll save a file descriptor when we start up that is less
- * than 128, so that if we get a file descriptor that is >= 128, we can
- * use our own saved file descriptor instead. This is only one level of
- * defense; if you have more than 128 fd's in use, and you try two fopen's
- * before doing an fclose(), the second will fail.
- */
-
-FILE *
-fopen(file, mode)
-    const char *file;
-    const char *mode;
-{
-/* FILE *f; */
-  int fd, rw, oflags = 0;
-/* char tbchar; */
-  rw = (mode[1] == '+') || (mode[1] && (mode[2] == '+'));
-  switch (*mode) {
-  case 'a':
-    oflags = O_CREAT | (rw ? O_RDWR : O_WRONLY);
-    break;
-  case 'r':
-    oflags = rw ? O_RDWR : O_RDONLY;
-    break;
-  case 'w':
-    oflags = O_TRUNC | O_CREAT | (rw ? O_RDWR : O_WRONLY);
-    break;
-  default:
-    return (NULL);
-  }
-/* SunOS fopen() doesn't use the 't' or 'b' flags. */
-
-
-  fd = open(file, oflags, 0666);
-  if (fd < 0)
-    return NULL;
-  /* My addition, to cope with SunOS brain damage! */
-  if (fd >= 128) {
-    close(fd);
-    if ((extrafd < 128) && (extrafd >= 0)) {
-      close(extrafd);
-      fd = open(file, oflags, 0666);
-      extrafd = -1;
-    } else {
-      return NULL;
-    }
-  }
-  /* End addition. */
-
-  return fdopen(fd, mode);
-}
-
-
-#undef fclose(x)
-int
-f_close(stream)
-    FILE *stream;
-{
-  int fd = fileno(stream);
-  /* if extrafd is bad, and the fd we're closing is good, recycle the
-   * fd into extrafd.
-   */
-  fclose(stream);
-  if (((extrafd < 0)) && (fd >= 0) && (fd < 128)) {
-    extrafd = open("/dev/null", O_RDWR);
-    if (extrafd >= 128) {
-      /* To our surprise, we didn't get a usable fd. */
-      close(extrafd);
-      extrafd = -1;
-    }
-  }
-  return 0;
-}
-
-#define fclose(x) f_close(x)
-#endif                          /* SUN_OS */
-
 #ifndef SSL_SLAVE
 /** Take down all SSL client connections and close the SSL server socket.
  * Typically, this is in preparation for a shutdown/reboot.
@@ -5983,7 +5947,7 @@ dump_reboot_db(void)
 #endif
 
 #ifdef SSL_SLAVE
-  flags |= RDBF_SSL_SLAVE;
+  flags |= RDBF_SSL_SLAVE | RDBF_SLAVE_FD;
 #endif
 
   if (setjmp(db_err)) {
@@ -6045,6 +6009,7 @@ dump_reboot_db(void)
     putref(f, globals.reboot_count);
 #ifdef SSL_SLAVE
     putref(f, ssl_slave_pid);
+    putref(f, ssl_slave_ctl_fd);
 #endif
     penn_fclose(f);
   }
@@ -6058,10 +6023,10 @@ load_reboot_db(void)
   PENNFILE *f;
   DESC *d = NULL;
   DESC *closed = NULL, *nextclosed;
-  int val = 0;
+  volatile int val = 0;
   const char *temp;
   char c;
-  uint32_t flags = 0;
+  volatile uint32_t flags = 0;
 
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
@@ -6199,6 +6164,12 @@ load_reboot_db(void)
 
 #ifdef SSL_SLAVE
     ssl_slave_pid = val;
+
+    if (flags & RDBF_SLAVE_FD)
+      ssl_slave_ctl_fd = getref(f);
+    else
+      ssl_slave_ctl_fd = -1;
+
     if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR,
@@ -6207,6 +6178,7 @@ load_reboot_db(void)
         do_rawlog(LT_ERR, "Unable to start ssl_slave");
     } else
       ssl_slave_state = SSL_SLAVE_RUNNING;
+
 #endif
 
     penn_fclose(f);

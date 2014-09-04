@@ -49,10 +49,11 @@ int keepalive_timeout = 300;
 const char *socket_file = NULL;
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
-void event_cb(struct bufferevent *bev, short e, void *data);
+void ssl_event_cb(struct bufferevent *bev, short e, void *data);
 struct conn *alloc_conn(void);
 void free_conn(struct conn *c);
 void delete_conn(struct conn *c);
+sfmt_t rand_state;
 
 enum conn_state {
   C_SSL_CONNECTING,
@@ -216,9 +217,9 @@ local_connected(struct conn *c)
 #if SSL_DEBUG_LEVEL > 0
   errputs(stdout, "Local connection attempt completed. Setting up pipe.");
 #endif
-  bufferevent_setcb(c->local_bev, pipe_cb, NULL, event_cb, c);
+  bufferevent_setcb(c->local_bev, pipe_cb, NULL, ssl_event_cb, c);
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
-  bufferevent_setcb(c->remote_bev, pipe_cb, NULL, event_cb, c);
+  bufferevent_setcb(c->remote_bev, pipe_cb, NULL, ssl_event_cb, c);
   bufferevent_enable(c->remote_bev, EV_READ | EV_WRITE);
 
   c->state = C_ESTABLISHED;
@@ -250,6 +251,11 @@ address_resolved(int result, char type, int count, int ttl
 
   c->resolver_req = NULL;
 
+  if (result == DNS_ERR_CANCEL) {
+    /*  Called on a connection that gets dropped while still doing the hostname lookup */
+    return;
+  }
+
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
     c->remote_host = strdup(ipaddr->hostname);
@@ -276,7 +282,7 @@ address_resolved(int result, char type, int count, int ttl
                            BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
   bufferevent_socket_connect(c->local_bev, (struct sockaddr *) &addr,
                              sizeof addr);
-  bufferevent_setcb(c->local_bev, NULL, NULL, event_cb, data);
+  bufferevent_setcb(c->local_bev, NULL, NULL, ssl_event_cb, data);
   bufferevent_enable(c->local_bev, EV_WRITE);
 }
 
@@ -316,7 +322,7 @@ ssl_connected(struct conn *c)
 
 /** Called on successful connections and errors */
 void
-event_cb(struct bufferevent *bev, short e, void *data)
+ssl_event_cb(struct bufferevent *bev, short e, void *data)
 {
   struct conn *c = data;
   uint32_t error_conditions =
@@ -393,9 +399,9 @@ event_cb(struct bufferevent *bev, short e, void *data)
 
 /* Called when a new connection is made on the ssl port */
 static void
-new_conn_cb(evutil_socket_t s, short flags
-            __attribute__ ((__unused__)), void *data
-            __attribute__ ((__unused__)))
+new_ssl_conn_cb(evutil_socket_t s, short flags
+                __attribute__ ((__unused__)), void *data
+                __attribute__ ((__unused__)))
 {
   struct conn *c;
   int fd;
@@ -439,7 +445,7 @@ new_conn_cb(evutil_socket_t s, short flags
     return;
   }
 
-  bufferevent_setcb(c->remote_bev, NULL, NULL, event_cb, c);
+  bufferevent_setcb(c->remote_bev, NULL, NULL, ssl_event_cb, c);
   bufferevent_set_timeouts(c->remote_bev, &handshake_timeout,
                            &handshake_timeout);
   bufferevent_enable(c->remote_bev, EV_WRITE);
@@ -478,46 +484,43 @@ shutdown_cb(evutil_socket_t fd __attribute__ ((__unused__)),
   event_base_loopexit(main_loop, NULL);
 }
 
+
 int
-main(int argc, char **argv)
+main(int argc __attribute__ ((__unused__)), char **argv
+     __attribute__ ((__unused__)))
 {
-  char *ssl_ipaddr;
-  int ssl_port;
-  char *ssl_private_key_file, *ssl_ca_file;
-  int ssl_require_client_cert;
+  struct ssl_slave_config cf;
   struct event *watch_parent, *sigterm_handler;
   struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
   struct event *ssl_listener;
   struct conn *c, *n;
+  int len;
 
-  if (argc != 8) {
-    errprintf(stderr, "ssl_slave expects 8 arguments, got %d!\n", argc - 1);
+  len = read(0, &cf, sizeof cf);
+  if (len < 0) {
+    errprintf(stderr,
+              "ssl_slave: Unable to read configure settings: %s. Read %d bytes.\n",
+              strerror(errno), len);
     return EXIT_FAILURE;
   }
 
-  socket_file = argv[1];
-  ssl_ipaddr = argv[2];
-  ssl_port = strtol(argv[3], NULL, 10);
-  ssl_private_key_file = argv[4];
-  ssl_ca_file = argv[5];
-  ssl_require_client_cert = strtol(argv[6], NULL, 10);
-  keepalive_timeout = strtol(argv[7], NULL, 10);
-
-  init_gen_rand(getpid());
+  sfmt_init_gen_rand(&rand_state, getpid());
   parent_pid = getppid();
 
-  if (!ssl_init(ssl_private_key_file, ssl_ca_file, ssl_require_client_cert)) {
+  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
     exit(EXIT_FAILURE);
   }
+
+  socket_file = cf.socket_file;
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
   /* Listen for incoming connections on the SSL port */
-  ssl_sock = make_socket(ssl_port, SOCK_STREAM, NULL, NULL, ssl_ipaddr);
+  ssl_sock = make_socket(cf.ssl_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
   ssl_listener =
-    event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_conn_cb, NULL);
+    event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
   event_add(ssl_listener, NULL);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */

@@ -50,8 +50,9 @@ static void free_user(CHANUSER *u);
 static int load_chatdb_oldstyle(PENNFILE *fp);
 static int load_channel(PENNFILE *fp, CHAN *ch);
 static int load_chanusers(PENNFILE *fp, CHAN *ch);
-static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags);
-static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch);
+static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags,
+                                int restarting);
+static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting);
 static void insert_channel(CHAN **ch);
 static void remove_channel(CHAN *ch);
 static void insert_obj_chan(dbref who, CHAN **ch);
@@ -75,8 +76,6 @@ static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
 void chat_player_announce(dbref player, char *msg, int ungag);
-enum ok_name { NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE };
-static enum ok_name ok_channel_name(const char *n, CHAN *unique);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -274,11 +273,12 @@ extern char db_timestamp[];
 
 /** Load the chat database from a file.
  * \param fp pointer to file to read from.
+ * \param restarting Is this an \@shutdown/reboot?
  * \retval 1 success
  * \retval 0 failure
  */
 int
-load_chatdb(PENNFILE *fp)
+load_chatdb(PENNFILE *fp, int restarting)
 {
   int i, flags;
   CHAN *ch;
@@ -325,7 +325,7 @@ load_chatdb(PENNFILE *fp)
       do_rawlog(LT_ERR, "CHAT: Unable to allocate memory for channel %d!", i);
       return 0;
     }
-    if (!load_labeled_channel(fp, ch, flags)) {
+    if (!load_labeled_channel(fp, ch, flags, restarting)) {
       do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
@@ -455,7 +455,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
  * successful, 0 otherwise.
  */
 static int
-load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
+load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
 {
   char *tmp;
   int i;
@@ -499,7 +499,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
   ChanMaxUsers(ch) = ChanNumUsers(ch);
   ChanUsers(ch) = NULL;
   if (ChanNumUsers(ch) > 0)
-    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch);
+    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch, restarting);
   return 1;
 }
 
@@ -539,7 +539,7 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
 
 /* Load the *channel's user list. Return number of users on success, or 0 */
 static int
-load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
+load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
 {
   int i, num = 0, n;
   char *tmp;
@@ -551,7 +551,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {
       user = new_user(player, ChanUsers(ch));
       db_read_this_labeled_int(fp, "flags", &n);
-      CUtype(user) = n;
+      CUtype(user) = (restarting ? n : n & ~CU_GAG);
       db_read_this_labeled_string(fp, "title", &tmp);
       if (tmp && *tmp)
         CUtitle(user) = mush_strdup(tmp, "chan_user.title");
@@ -903,7 +903,8 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
  *  onchannel - is player on channel?
  */
 
-/** Removes markup and <>'s in channel names.
+/** Removes markup and <>'s in channel names. You almost certainly want to
+ * duplicate the result of this immediately, to avoid it being overwritten.
  * \param name The name to normalize.
  * \retval a pointer to a static buffer with the normalized name.
  */
@@ -949,14 +950,14 @@ find_channel(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
 
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     strcpy(cleanp, remove_markup(ChanName(p), NULL));
     if (!strcasecmp(cleanname, cleanp)) {
@@ -1004,14 +1005,16 @@ find_channel_partial(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
+    if (!onchannel(player, p) && !Chan_Can_See(p, player))
+      continue;
     strcpy(cleanp, remove_markup(ChanName(p), NULL));
     if (!strcasecmp(cleanname, cleanp)) {
       *chan = p;
@@ -1040,7 +1043,7 @@ static void
 list_partial_matches(dbref player, const char *name, enum chan_match_type type)
 {
   CHAN *p;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
   char buff[BUFFER_LEN], *bp;
   bp = buff;
@@ -1049,7 +1052,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
     return;
 
   safe_str(T("CHAT: Partial matches are:"), buff, &bp);
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (!Chan_Can_See(p, player))
       continue;
@@ -1091,13 +1094,13 @@ find_channel_partial_on(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
     if (onchannel(player, p)) {
       strcpy(cleanp, remove_markup(ChanName(p), NULL));
@@ -1140,27 +1143,28 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
 {
   CHAN *p;
   int count = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
-  cleanname = normalize_channel_name(name);
+  strcpy(cleanname, normalize_channel_name(name));
   for (p = channels; p; p = p->next) {
-    if (!onchannel(player, p)) {
-      strcpy(cleanp, remove_markup(ChanName(p), NULL));
-      if (!strcasecmp(cleanname, cleanp)) {
+    if (onchannel(player, p) || !Chan_Can_See(p, player))
+      continue;
+    strcpy(cleanp, remove_markup(ChanName(p), NULL));
+    if (!strcasecmp(cleanname, cleanp)) {
+      *chan = p;
+      return CMATCH_EXACT;
+    }
+    if (string_prefix(cleanp, cleanname)) {
+      if (!*chan)
         *chan = p;
-        return CMATCH_EXACT;
-      }
-      if (string_prefix(cleanp, cleanname)) {
-        if (!*chan)
-          *chan = p;
-        count++;
-      }
+      count++;
     }
   }
+
   switch (count) {
   case 0:
     return CMATCH_NONE;
@@ -1884,14 +1888,20 @@ do_chan_admin(dbref player, char *name, const char *perms,
   }
 }
 
-static enum ok_name
+/** Is n a valid name for a channel? If unique is specified, see if n is a
+ * a valid name to rename that channel to.
+ * \param n name to check
+ * \param unique channel being renamed, or NULL if we're checking validity 
+ *        for a new channel
+ * \return an ok_chan_name enum
+ */
+enum ok_chan_name
 ok_channel_name(const char *n, CHAN *unique)
 {
   /* is name valid for a channel? */
   const char *p;
   char name[BUFFER_LEN];
   CHAN *check;
-  int res;
 
   if (!n || !*n)
     return NAME_INVALID;
@@ -1916,16 +1926,19 @@ ok_channel_name(const char *n, CHAN *unique)
   if (strlen(name) > CHAN_NAME_LEN - 1)
     return NAME_TOO_LONG;
 
-  res = find_channel(name, &check, GOD);
-  if (res != CMATCH_NONE) {
-    if (unique == NULL) {
-      return NAME_NOT_UNIQUE;   /* Name must be totally unique */
-    } else if (check != unique) {
-      return NAME_NOT_UNIQUE;
+  for (check = channels; check; check = check->next) {
+    p = remove_markup(ChanName(check), NULL);
+    if (!strcasecmp(p, name)) {
+      if (unique == NULL)
+        return NAME_NOT_UNIQUE; /* Name already in use */
+      else if (check != unique)
+        return NAME_NOT_UNIQUE; /* Name already in use by another channel */
+      else
+        return NAME_OK;         /* Renaming the channel to its current name is fine */
     }
   }
 
-  return NAME_OK;
+  return NAME_OK;               /* Name is valid and not in use */
 }
 
 
@@ -2866,10 +2879,10 @@ do_chan_what(dbref player, const char *partname)
 {
   CHAN *c;
   int found = 0;
-  char *cleanname;
+  char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
 
-  cleanname = normalize_channel_name(partname);
+  strcpy(cleanname, normalize_channel_name(partname));
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
@@ -3798,8 +3811,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
 
   snprintf(speechtext, BUFFER_LEN, T("says"));
-  notify_format(1, "in T() it's %s, in the buffer it's %s", T("says"),
-                speechtext);
 
   snprintf(message, BUFFER_LEN, "%s", origmessage);
 
@@ -3885,11 +3896,12 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     switch (flags & CB_TYPE) {
     case CB_POSE:
       safe_chr(' ', buff, &bp);
+      /* FALL THROUGH */
     case CB_SEMIPOSE:
       safe_str(message, buff, &bp);
       break;
     case CB_SPEECH:
-      safe_format(buff, &bp, " %s, \"%s\"", speechtext, message);
+      safe_format(buff, &bp, T(" %s, \"%s\""), speechtext, message);
       break;
     }
   }
@@ -4082,7 +4094,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the channel.
- * \param lines a string given the number of lines to buffer.
+ * \param lines a string given the number of 8k chunks of data to buffer.
  */
 void
 do_chan_buffer(dbref player, const char *name, const char *lines)
@@ -4094,7 +4106,9 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     return;
   }
   if (!lines || !*lines || !is_strict_integer(lines)) {
-    notify(player, T("You need to specify the number of lines to buffer."));
+    notify(player,
+           T
+           ("You need to specify the amount of data (In 8kb chunks) to use for the buffer."));
     return;
   }
   size = parse_integer(lines);

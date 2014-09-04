@@ -741,6 +741,8 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
       notify(player, T("That attribute's permissions can not be changed."));
       return;
     }
+    /* Preserve any existing @attribute/limit */
+    flags |= (AL_FLAGS(ap) & (AF_RLIMIT | AF_ENUM));
   } else {
     /* Create fresh if the name is ok */
     if (!good_atr_name(name)) {

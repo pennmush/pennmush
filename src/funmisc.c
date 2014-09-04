@@ -18,6 +18,7 @@
 #include "command.h"
 #include "conf.h"
 #include "dbdefs.h"
+#include "extchat.h"
 #include "externs.h"
 #include "flags.h"
 #include "function.h"
@@ -62,9 +63,19 @@ FUNCTION(fun_valid)
     safe_boolean(ok_name(args[1], 0), buff, bp);
   else if (!strcasecmp(args[0], "attrname"))
     safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "playername"))
-    safe_boolean(ok_player_name(args[1], executor, executor), buff, bp);
-  else if (!strcasecmp(args[0], "password"))
+  else if (!strcasecmp(args[0], "playername")) {
+    dbref target = executor;
+    if (nargs >= 3) {
+      target =
+        noisy_match_result(executor, args[2], TYPE_PLAYER,
+                           MAT_PMATCH | MAT_TYPE);
+      if (target == NOTHING) {
+        safe_str(T("#-1 NO SUCH OBJECT"), buff, bp);
+        return;
+      }
+    }
+    safe_boolean(ok_player_name(args[1], target, target), buff, bp);
+  } else if (!strcasecmp(args[0], "password"))
     safe_boolean(ok_password(args[1]), buff, bp);
   else if (!strcasecmp(args[0], "command"))
     safe_boolean(ok_command_name(upcasestr(args[1])), buff, bp);
@@ -79,6 +90,12 @@ FUNCTION(fun_valid)
   else if (!strcasecmp(args[0], "ansicodes")) {
     ansi_data colors;
     safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
+  } else if (!strcasecmp(args[0], "channel")) {
+    CHAN *target = NULL;
+    if (nargs >= 3) {
+      find_channel(args[2], &target, executor);
+    }
+    safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }
@@ -716,6 +733,8 @@ FUNCTION(fun_r)
  *      ESCAPE, SQUISH, ENCRYPT, DECRYPT, LIT
  */
 
+extern sfmt_t rand_state;
+
 /* ARGSUSED */
 FUNCTION(fun_rand)
 {
@@ -724,7 +743,7 @@ FUNCTION(fun_rand)
 
   if (nargs == 0) {
     /* Floating pont number in the range [0,1) */
-    safe_number(genrand_real2(), buff, bp);
+    safe_number(sfmt_genrand_real2(&rand_state), buff, bp);
     return;
   }
 

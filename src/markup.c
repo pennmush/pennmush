@@ -1149,6 +1149,7 @@ static bool
 valid_hex_digits(const char *digits, int len)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   int ovec[9];
 
   if (!re) {
@@ -1160,12 +1161,13 @@ valid_hex_digits(const char *digits, int len)
       do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
       return 0;
     }
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!digits)
     return 0;
 
-  return pcre_exec(re, NULL, digits, len, 0, 0, ovec, 9) > 0;
+  return pcre_exec(re, extra, digits, len, 0, 0, ovec, 9) > 0;
 }
 
 /* Return true if s is in the format <#RRGGBB>, with optional spaces. */
@@ -1173,6 +1175,7 @@ static bool
 valid_angle_hex(const char *s, int len)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   int ovec[9];
 
   if (!re) {
@@ -1185,12 +1188,13 @@ valid_angle_hex(const char *s, int len)
       do_rawlog(LT_ERR, "valid_angle_hex: Unable to compile re: %s", errptr);
       return 0;
     }
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!s)
     return 0;
 
-  return pcre_exec(re, NULL, s, len, 0, 0, ovec, 9) > 0;
+  return pcre_exec(re, extra, s, len, 0, 0, ovec, 9) > 0;
 }
 
 /* Return true if s of the format <R G B>, and store the color in
@@ -1200,6 +1204,7 @@ static bool
 valid_angle_triple(const char *s, int len, char *rgbs)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   int ovec[15];
   int matches;
   int n;
@@ -1215,12 +1220,13 @@ valid_angle_triple(const char *s, int len, char *rgbs)
       do_rawlog(LT_ERR, "valid_angle_triple: Unable to compile re: %s", errptr);
       return 0;
     }
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   if (!s)
     return 0;
 
-  matches = pcre_exec(re, NULL, s, len, 0, 0, ovec, 15);
+  matches = pcre_exec(re, extra, s, len, 0, 0, ovec, 15);
   if (matches != 4)
     return 0;
 

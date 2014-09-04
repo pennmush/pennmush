@@ -511,6 +511,8 @@ reverse(dbref list)
   return newlist;
 }
 
+sfmt_t rand_state;
+
 /** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
  * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
 void
@@ -532,7 +534,7 @@ initialize_mt(void)
               "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
       fprintf(stderr, "Seeded RNG from /dev/urandom\n");
-      init_by_array(buf, r / sizeof(uint32_t));
+      sfmt_init_by_array(&rand_state, buf, r / sizeof(uint32_t));
       return;
     }
   } else
@@ -542,9 +544,9 @@ initialize_mt(void)
 #endif
   /* Default seeder. Pick a seed that's fairly random */
 #ifdef WIN32
-  init_gen_rand(GetCurrentProcessId() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
 #else
-  init_gen_rand(getpid() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, getpid() | (time(NULL) << 16));
 #endif
 }
 
@@ -588,7 +590,7 @@ get_random32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = gen_rand32();
+    n = sfmt_genrand_uint32(&rand_state);
   } while (n >= n_limit);
 
   return low + (n % x);
@@ -683,10 +685,12 @@ shortname(dbref it)
  * \param had_moniker if non-null, set to 1 when the name is monikered,
  *           and 0 if it is returned without ANSI. Allows the caller to
  *           apply default ANSI for un-monikered names.
+ * \param maxlen the maximum number of visible (non-markup) characters to
+             copy, or 0 to copy the entire name
  * \retval pointer to STATIC buffer containing the monikered name
  */
 char *
-ansi_name(dbref thing, bool accents, bool *had_moniker)
+ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
 {
   static char name[BUFFER_LEN], *format, *np;
   ATTR *a;
@@ -704,6 +708,10 @@ ansi_name(dbref thing, bool accents, bool *had_moniker)
   else
     strcpy(name, Name(thing));
 
+  if (maxlen > 0 && maxlen < BUFFER_LEN) {
+    name[maxlen] = '\0';
+  }
+
   a = atr_get(thing, "MONIKER");
   if (!a) {
     set_mp(0);
@@ -720,7 +728,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker)
   aname = parse_ansi_string(name);
   ansi_string_replace(as, 0, BUFFER_LEN, aname);
   np = name;
-  safe_ansi_string(as, 0, as->len, name, &np);
+  safe_ansi_string(as, 0, (maxlen > 0 ? maxlen : as->len), name, &np);
   *np = '\0';
   free_ansi_string(as);
   free_ansi_string(aname);

@@ -114,6 +114,7 @@ static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 #endif
 static sqlplatform sql_platform(void);
 static char *sql_sanitize(char *res);
+#define SANITIZE(s,n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -147,6 +148,11 @@ sql_sanitize(char *res)
 {
   static char buff[BUFFER_LEN];
   char *bp = buff, *rp = res;
+
+  if (!res || !*res) {
+    buff[0] = '\0';
+    return buff;
+  }
 
   for (; *rp; rp++) {
     if (isprint(*rp) || *rp == '\n' || *rp == '\t' ||
@@ -354,7 +360,9 @@ FUNCTION(fun_sql_escape)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (chars_written < BUFFER_LEN)
+  if (chars_written == 0)
+    return;
+  else if (chars_written < BUFFER_LEN)
     safe_str(sql_sanitize(bigbuff), buff, bp);
   else
     safe_str(T("#-1 TOO LONG"), buff, bp);
@@ -381,6 +389,8 @@ COMMAND(cmd_mapsql)
   dbref thing;
   int dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
   int donotify = SW_ISSET(sw, SWITCH_NOTIFY);
+  dbref triggerer = executor;
+  int spoof = SW_ISSET(sw, SWITCH_SPOOF);
 
   /* Find and fetch the attribute, first. */
   strncpy(tbuf, arg_left, BUFFER_LEN);
@@ -399,10 +409,15 @@ COMMAND(cmd_mapsql)
     return;
   }
 
-  if (!controls(executor, thing) && !(Owns(executor, thing) && LinkOk(thing))) {
-    notify(executor, T("Permission denied."));
-    return;
+  if (!controls(executor, thing)) {
+    if (spoof || !(Owns(executor, thing) && LinkOk(thing))) {
+      notify(executor, T("Permission denied."));
+      return;
+    }
   }
+
+  if (spoof)
+    triggerer = enactor;
 
   if (God(thing) && !God(executor)) {
     notify(executor, T("You can't trigger God!"));
@@ -482,33 +497,27 @@ COMMAND(cmd_mapsql)
       }
     }
 #endif
-
     if (numfields > 0) {
       for (i = 0; i < useable_fields; i++) {
         switch (sql_platform()) {
 #ifdef HAVE_MYSQL
         case SQL_PLATFORM_MYSQL:
-          cells[i + 1] = mush_strdup(sql_sanitize(row_p[i]), "sql_row");
-          names[i + 1] =
-            mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
+          cells[i + 1] = SANITIZE(row_p[i], "sql_row");
+          names[i + 1] = SANITIZE(fields[i].name, "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_POSTGRESQL
         case SQL_PLATFORM_POSTGRESQL:
-          cells[i + 1] =
-            mush_strdup(sql_sanitize(PQgetvalue(qres, rownum, i)), "sql_row");
-          names[i + 1] =
-            mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
+          cells[i + 1] = SANITIZE(PQgetvalue(qres, rownum, i), "sql_row");
+          names[i + 1] = SANITIZE(PQfname(qres, i), "sql_fieldname");
           break;
 #endif
 #ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
           cells[i + 1] =
-            mush_strdup(sql_sanitize((char *) sqlite3_column_text(qres, i)),
-                        "sql_row");
+            SANITIZE((char *) sqlite3_column_text(qres, i), "sql_row");
           names[i + 1] =
-            mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)),
-                        "sql_fieldname");
+            SANITIZE((char *) sqlite3_column_name(qres, i), "sql_fieldname");
           break;
 #endif
         default:
@@ -524,7 +533,8 @@ COMMAND(cmd_mapsql)
         for (i = 0; i < useable_fields + 1; i++) {
           pe_regs_setenv(pe_regs, i, names[i]);
         }
-        queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
+        pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
+        queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, 0, executor);
       }
 
       /* Queue the rest. */
@@ -537,10 +547,12 @@ COMMAND(cmd_mapsql)
           pe_regs_set(pe_regs, PE_REGS_ARG, names[i], cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-      queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
+      queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, 0, executor);
       for (i = 0; i < useable_fields; i++) {
-        mush_free(cells[i + 1], "sql_row");
-        mush_free(names[i + 1], "sql_fieldname");
+        if (cells[i + 1])
+          mush_free(cells[i + 1], "sql_row");
+        if (names[i + 1])
+          mush_free(names[i + 1], "sql_fieldname");
       }
     } else {
       /* What to do if there are no fields? This should be an error?. */

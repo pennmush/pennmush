@@ -21,9 +21,6 @@
 #include <winsock2.h>
 #include <io.h>
 #else                           /* !WIN32 */
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -39,12 +36,6 @@
 #ifdef I_NETINET_IN
 #include <netinet/in.h>
 #endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
-#ifdef I_SYS_PARAM
-#include <sys/param.h>
-#endif
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
 #endif
@@ -58,9 +49,6 @@
 #include <unistd.h>
 #endif
 #include <limits.h>
-#ifdef I_FLOATINGPOINT
-#include <floatingpoint.h>
-#endif
 
 #include "access.h"
 #include "ansi.h"

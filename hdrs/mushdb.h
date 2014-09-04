@@ -59,7 +59,7 @@
                                ((!Mistrust(p) && (Owner(p) == Owner(t))) && \
                                 !(f->perms & (F_DARK | F_MDARK | F_DISABLED))) || \
                              (See_All(p) && !(f->perms & (F_DARK | F_DISABLED))) || \
-                             God(p)))
+                             God(p)) && can_see_flag_on(p,t,f))
 
 /* Can p locate x? */
 bool unfindable(dbref);
@@ -181,5 +181,6 @@ bool unfindable(dbref);
 #define RDBF_SSL_SLAVE          0x10
 #define RDBF_SOCKET_SRC         0x20
 #define RDBF_NO_DOING           0x40
+#define RDBF_SLAVE_FD            0x80
 
 #endif                          /* __DB_H */

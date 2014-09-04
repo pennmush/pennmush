@@ -67,10 +67,13 @@ sub start {
     die "Could not start game process properly; pid $child!\n";
   } elsif (defined($child)) {
     chdir("testgame");
-    my @execargs = ("./netmush", "--no-session", "test.cnf");
-    unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log',
-                       "--leak-check=full", "--track-origins=yes"
-	if $self->{VALGRIND};
+    my @execargs = ("./netmush", "--no-session");
+    if ($self->{VALGRIND}) {
+      unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log',
+	"--leak-check=full", "--track-origins=yes";
+      push @execargs, "--no-pcre-jit";
+    }
+    push @execargs, "test.cnf";
     exec @execargs;
   } else {
     die "Could not spawn game process!\n";

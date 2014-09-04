@@ -1124,7 +1124,7 @@ See also: visible(), CONTROL
 See also: convtime(), time()
 & CONVTIME()
 & CONVUTCTIME()
-  convtime(<time string>,[utc])
+  convtime(<time string>,[<timezone>])
   convutctime(<time string>)
 
   This functions converts a time string (in the server's time zone) to
@@ -1136,7 +1136,7 @@ See also: convtime(), time()
   -1.
 
   convutctime() and convtime() with a second argument of 'utc' assume
-  the timestring is based on UTC time.
+  the timestring is based on UTC time. Other time zones can be specified too.
 
   If the extended convtime() is supported (See @config compile), more
   formats for the date are enabled, including ones missing the day of
@@ -1149,7 +1149,7 @@ See also: convtime(), time()
     > say convtime(Wed Jun 24 10:22:54 1992)
     You say, "709395774"
 
-See also: convsecs(), time()
+See also: convsecs(), time(), timezones
 & COS()
   cos(<angle>[, <angle type>])
  
@@ -2240,10 +2240,13 @@ See also: extract(), elements(), grab()
 
 See also: lreplace(), ldelete(), strinsert()
 & ISDAYLIGHT()
-  isdaylight()
+  isdaylight([<secs>[, <timezone>]])
 
-  Returns 1 if it's daylight savings time in the MUSH time zone,
-  otherwise 0.
+  Returns 1 if it's daylight savings in the specified timezone at the given
+  time. Defaults to the host server's time zone and current time if not
+  specified.
+
+See also: timezones, secs()
 & ISDBREF()
 & ISOBJID()
   isdbref(<string>)
@@ -2547,9 +2550,9 @@ See also: lattr(), hasattr(), xattr(), wildcards
   
   For compatability with other codebases, a <type> can be given to limit
   the results. Valid <type>s are:
-    player             - equivilent to lplayers(<object>)
-    connect            - equivilent to lvplayers(<object>)
-    thing (or object)  - equivilent to lthings(<object>)
+    player             - equivalent to lplayers(<object>)
+    connect            - equivalent to lvplayers(<object>)
+    thing (or object)  - equivalent to lthings(<object>)
     listen             - return only listening objects
     puppet             - return only THINGs set PUPPET
 
@@ -3223,7 +3226,10 @@ See also: anonymous attributes, iter(), @dolist
   To get the matching elements, instead of the indexes of where they appear
   in the list, use grab()/graball(). To see if a single string matches a
   wildcard pattern, use strmatch().
-  
+
+  See 'help match2' for examples.
+See also: grab(), strmatch(), member(), reglmatch(), WILDCARDS
+& MATCH2
   Examples:
     > say match(I am testing a test, test*)
     You say, "3"
@@ -3236,8 +3242,40 @@ See also: anonymous attributes, iter(), @dolist
   
     >say matchall(foo bar baz boing, sprocket)
     You say, ""
+& REGLMATCH()
+& REGLMATCHI()
+& REGLMATCHALL()
+& REGLMATCHALLI()
+  reglmatch(<list>, <regexp>[, <delimiter>])
+  reglmatchi(<list>, <regexp>[, <delimiter>])
+  reglmatchall(<list>, <regexp>[, <delimiter>[, <output separator>]])
+  reglmatchalli(<list>, <regexp>[, <delimiter>[, <output separator>]])
+
+  These functions are the regexp versions of match() and matchall().
+  reglmatch() returns the position of the first element in <list> which
+  matches the regular expression <regexp>. reglmatchi() does the same thing,
+  but case-insensitively.
   
-See also: grab(), strmatch(), member(), WILDCARDS
+  reglmatchall() returns the positions of all elements in <list> which match
+  <regexp>. reglmatchalli() is case-insensitive.
+  
+  In all cases, the elements of <list> are separated by <delimiter>, which
+  defaults to a space. The elements outputted by reglmatchall() are separated
+  by <output separator>, if one is given, or by <delimiter> if not.
+  
+  See 'help reglmatch2' for examples.
+See also: regmatch(), regrab(), match(), REGEXP SYNTAX
+& REGLMATCH2
+  Examples:
+  
+  > say reglmatch(I am testing a test, test)
+  You say, "3"
+  
+  > say reglmatch(I am testing a test, test$)
+  You say, "5"
+  
+  > say reglmatchall(I am testing a test, test, , |)
+  You say, "3|5"
 & MAX()
   max(<number>[, ... , <numberN>])
 
@@ -4109,9 +4147,11 @@ See also: edit(), @edit, regmatch(), regrab()
   regmatch(<string>, <regexp>[, <register list>])
   regmatchi(<string>, <regexp>[, <register list>])
  
-  This function matches the regular expression <regexp> against the entirety
-  of <string>, returning 1 if it matches and 0 if it does not.  regmatchi() 
-  does the same thing, but case-insensitively.
+  regmatch() checks to see if the entirety of <string> matches the regular
+  expression <regexp>, and returns 1 if so and 0 if not. regmatchi() does the
+  same thing, but case-insensitively. They are the regexp-equivilent of 
+  strmatch(); if you're looking for a regexp version of match(), see 'help
+  reglmatch()'.
  
   If <register list> is specified, there is a side-effect: any parenthesized 
   substrings within the regular expression will be set into the specified 
@@ -4128,7 +4168,7 @@ See also: edit(), @edit, regmatch(), regrab()
 
   See 'help regmatch2' for an example.
 
-See also: regrab(), regedit(), valid(), reswitch(), regexp syntax
+See also: regrab(), regedit(), valid(), reswitch(), strmatch(), regexp syntax
 & REGMATCH2
 
   For example, in
@@ -6492,7 +6532,7 @@ See also: STACK, REGISTERS, SUBSTITUTIONS, get(), r(), ATTRIBUTES
   
 See also: VECTOR FUNCTIONS
 & VALID()
-  valid(<category>, <string>)
+  valid(<category>, <string>[, <target>])
 
   The valid() function checks to see if <string> is a valid member of
   <category>, and returns 1 if it is, 0 if not, and #-1 if an invalid
@@ -6501,29 +6541,43 @@ See also: VECTOR FUNCTIONS
   The categories are:
    name        Test for a valid object name.
    attrname    Test for a valid attribute name.
-   playername  Test for a valid player name that can be set with
-                @name or @alias.
+   playername  Test if <target> could @name himself to <string>. <target>
+                defaults to the caller.
    password    Test for a valid password.
-   command     Test for a valid command name for @command/add
-   function    Test for a valid function name for @function
+   command     Test for a valid command name for @command/add.
+   function    Test for a valid function name for @function.
    flag        Test for a valid flag/power name for @flag/add and @power/add
    qreg        Test for a valid name for a q-register.
-   colorname   Test for a valid color name for ansi()/colors()
-   ansicodes   Test for a valid color code sequence for ansi(<string>, ...)
+   colorname   Test for a valid color name for ansi()/colors().
+   ansicodes   Test for a valid color code sequence for ansi(<string>, ...).
+   channel     Test for a valid channel name. If <target> is given, check to
+                see if channel <target> could be renamed to <string>.
 
   Note that, for "playername", valid() returns 0 if the name is valid but
-  currently in use by a player other than the caller.
+  currently in use by a player other than <target>.
   
   For "ansicodes", when not using new-style color names or hex codes, valid()
   always returns 1, and invalid codes are simply ignored, the same as when
   used in the ansi() function.
 
+  See 'help valid2' for examples.
+See also: colors(), ansi()
+& valid2
+
   > think valid(name,Foobar)
   1 
   > think valid(attrname,Foo bar)
   0
+  
+  A player can change his own name to a variation of his current name,
+  but other players cannot:
+  > think pmatch(Foobar)/%#
+  #3/#4
+  > think valid(playername, FOOBAR)
+  0
+  > think valid(playername, FOOBAR, #3)
+  1
 
-See also: colors(), ansi()
 & VCROSS()
   vcross(<vector1>, <vector2>[, <delimiter>])
 

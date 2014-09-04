@@ -693,6 +693,7 @@ void init_names(void);
 extern struct db_stat_info current_state;
 void init_queue(void);
 void build_rgb_map(void);
+void init_telnet_opts(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
@@ -740,6 +741,9 @@ init_game_config(const char *conf)
 
   /* Initialize the attribute chunk storage */
   chunk_init();
+
+  /* Set up telnet stuff */
+  init_telnet_opts();
 
 #ifdef HAVE_GETPID
   mypid = getpid();
@@ -930,7 +934,7 @@ init_game_dbs(void)
 
     if (panicdb) {
       do_rawlog(LT_ERR, "LOADING: Trying to get chat from %s", infile);
-      if (load_chatdb(f) <= 0) {
+      if (load_chatdb(f, restarting) <= 0) {
         do_rawlog(LT_ERR, "FAILED: Reverting to normal chatdb");
         penn_fclose(f);
         panicdb = 0;
@@ -942,7 +946,7 @@ init_game_dbs(void)
       if (f) {
         do_rawlog(LT_ERR, "LOADING: %s", options.chatdb);
         dbline = 0;
-        if (load_chatdb(f)) {
+        if (load_chatdb(f, restarting)) {
           do_rawlog(LT_ERR, "LOADING: %s (done)", options.chatdb);
         } else {
           do_rawlog(LT_ERR, "ERROR LOADING %s", options.chatdb);
@@ -1002,9 +1006,9 @@ do_readcache(dbref player)
 static char *
 passwd_filter(const char *cmd)
 {
-  static int initialized = 0;
+  static bool initialized = 0;
   static pcre *pass_ptn, *newpass_ptn;
-  static pcre_extra *pass_study, *newpass_study;
+  static pcre_extra *pass_extra, *newpass_extra;
   static char buff[BUFFER_LEN];
   char *bp = buff;
   int ovec[20];
@@ -1019,23 +1023,20 @@ passwd_filter(const char *cmd)
                             PCRE_CASELESS, &errptr, &eo, tables);
     if (!pass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    else
-      pass_study = pcre_study(pass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
-
+    pass_extra = pcre_study(pass_ptn, pcre_study_flags, &errptr);
     newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)",
                                PCRE_CASELESS, &errptr, &eo, tables);
     if (!newpass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    else 
-      newpass_study = pcre_study(newpass_ptn, PCRE_STUDY_JIT_COMPILE, &errptr);
-
+    newpass_extra = pcre_study(newpass_ptn, pcre_study_flags, &errptr);
     initialized = 1;
   }
 
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched = pcre_exec(pass_ptn, pass_study, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
+  if ((matched =
+       pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -1043,7 +1044,7 @@ passwd_filter(const char *cmd)
     safe_fill('*', ovec[5] - ovec[4], buff, &bp);
     safe_chr('=', buff, &bp);
     safe_fill('*', ovec[7] - ovec[6], buff, &bp);
-  } else if ((matched = pcre_exec(newpass_ptn, newpass_study, cmd, cmdlen, 0, 0,
+  } else if ((matched = pcre_exec(newpass_ptn, newpass_extra, cmd, cmdlen, 0, 0,
                                   ovec, 20)) > 0) {
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -2130,11 +2131,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   int psize;
 
 #ifdef HAVE_UPTIME
-  fp =
-#ifdef __LCC__
-    (FILE *)
-#endif
-    popen(UPTIME, "r");
+  fp = popen(UPTIME, "r");
 
   /* just in case the system is screwy */
   if (fp == NULL) {
@@ -2397,9 +2394,6 @@ db_open(const char *fname)
 
     if (access(filename, R_OK) == 0) {
       pf->handle.f =
-#ifdef __LCC__
-        (FILE *)
-#endif
         popen(tprintf("%s < '%s'", options.uncompressprog, filename), "r");
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
@@ -2481,9 +2475,6 @@ db_open_write(const char *fname)
   if (*options.compressprog) {
     pf->type = PFT_PIPE;
     pf->handle.f =
-#ifdef __LCC__
-      (FILE *)
-#endif
       popen(tprintf("%s > '%s'", options.compressprog, filename), "w");
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {

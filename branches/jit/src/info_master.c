@@ -18,11 +18,11 @@
 #if !defined(I_SYS_TIME) || defined(TIME_WITH_SYS_TIME)
 #include <time.h>
 #endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
 #ifdef I_SYS_SOCKET
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
 #endif
 
 #include <stdlib.h>
@@ -192,7 +192,7 @@ make_info_slave(void)
 
     close(socks[1]);
 
-    execl("./info_slave", "info_slave", (char *) NULL);
+    execl("./info_slave", "info_slave", "for", MUDNAME, (char *) NULL);
     penn_perror("execing info slave");
     exit(1);
   }

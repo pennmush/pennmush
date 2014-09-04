@@ -13,6 +13,89 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 6                                 Jul 29, 2014
+
+Hardcode:
+ * Removed an old debugging variable to reduce memory usage. Suggested by
+   spork. [MG]
+ * ssl_slave now gets passed its settings via a pipe, instead of on the 
+   command line. [SW]
+ * Rewritten the telnet handler, to make it more manageable/modifiable,
+   instead of it being a huge bunch of nested switch()es. [MG]
+ * Update the SFMT random number generator to 1.4.1. [SW]
+ * Built in and persistant uses of regular expressions are JIT compiled if the
+   host's PCRE version supports it, for faster matching.
+ * Better support for BSD systems. 
+
+Functions:
+ * valid() can now test for valid channel names. Suggested by Volund. [MG]
+ * valid() now takes an optional <target> argument for some categories,
+   to see if <string> is a valid name for <target>. [MG]
+ * tan(90,d) now reports an error instead of a really big number. Suggested by
+   Peppel. [SW]
+ * More math functions report errors. [SW]
+ * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
+ * isdaylight() now accepts time and timezone arguments. [SW]
+ * convtime() takes timezones besides just UTC. [SW]
+ * foreach() is now ansi-aware. Reported by Ashen-Shugar. [MG]
+
+Minor changes:
+ * @channel/gag no longer persists across a full @shutdown. Suggested by
+   Trinsec. [MG]
+ * 'give' now gives more informative error messages when you try and give
+   pennies to someone who has the maximum, or take pennies from someone who
+   is broke. [MG]
+ * The message shown when you need to run 'make update' is now slightly 
+   clearer about what to do and why. By Rince.
+ * Removed some 20 year old Sun OS workaround code. Suggested by Fraibert.
+ * Slightly less confusing error message for @chan/buffer suggested by Sketch.
+ * 'HELP ENTRIES' is generated on the fly, and shows the total number of
+   pages. Suggested by [MG] and Trinsec. [SW]
+ * @success/@osuccess/@asuccess now get the old location of the moving object
+   in %0. Suggested by Riorgan. [SW]
+ * @mail/review with no args now lists all mail you've sent to everyone.
+   Suggested by Paige. [MG]
+ * @mail/review now shows the recipient in the message list, instead of the
+   sender. This is slightly more useful, since the person using the command
+   is always the sender. [MG]
+ * @mail/status now lets you twiddle the 'urgent' status of messages. From a
+   suggestion by Paige. [MG]
+ * You can now always see a channel if you've been joined to it and can speak
+   on it, even if you don't pass its @clock/see. Suggested by Rince. [MG]
+ * 'page foo=' now produces an error, instead of paging nothing. Suggested by
+   Paige. [MG]
+ * 'make localized' now ignores charset when building translation files, which
+   stops it throwing errors unnecessarily. [MG]
+ * Use a more robust configure check for timezone data files. [SW]
+ * Added a /spoof switch to @mapsql, to spoof the enactor a la @trigger/spoof.
+   Suggested by Mercutio. [MG]
+ * Improved error reporting when info_slave or ssl_slave exits unexpectedly. [SW]
+ * hasflag(<player>, connected) now returns 1 if the caller can see that the
+   player is online, instead of always returning 0 for mortal callers. Most
+   recently suggested by Odin@M*U*S*H. [MG]
+
+Fixes:
+ * Windows compile fixes by ChaosMageX.
+ * Fix a crash when expanding the flagset size. Reported by spork. [DC]
+ * @attribute/access incorrectly cleared an @attribute/limit on the same
+   attr. Reported by Ton Kyrion. [MG]
+ * Help/translation fixes by spork, Riorgan and others. [MG]
+ * The 'give', 'take' and 'empty' commands displayed the wrong object names
+   when mogrifiers were used. Reported by Riorgan. [MG]
+ * Fix crash in ssl_slave when a connection drops in the middle of hostname
+   lookup.
+ * Crashbug in SQL fixed. Reported by Mercutio. [MG]
+ * @mapsql/colnames cleared q-registers in the first (colnames) action list
+   queued. Reported by Mercutio. [MG]
+ * @channel/join would give an 'ambiguous' error, even if you couldn't see the
+   other potentially-matching channels. Reported by Mercutio. [MG]
+ * Penn negotiated charset as iso-8859-1 (latin1) even if the MUSH was
+   running using a different charset. Reported by Tyler. [MG]
+ * Better support for mixing IPv4 and IPv6 connections. FreeBSD and NetBSD
+   should not need the --disable-ipv6 option to configure any more. [SW]
+ * Fixed an obscure buffer-overwrite bug in the channel system. Reported by
+   Volund@M*U*S*H/Roll@Multiverse Crisis MUSH. [MG]
+
 Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 
 Commands:
@@ -127,7 +210,7 @@ Functions:
    Suggested by Paige. [MG]
  * ljust() and rjust() now take an optional <trunc?> arg which, if true,
    causes strings already longer than <len> to be truncated. Suggested by
-   many people over the years, most recently Eratl and Quasar. [MG]
+   many people over the years, most recently Rince and Quasar. [MG]
 
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 

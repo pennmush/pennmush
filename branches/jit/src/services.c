@@ -19,6 +19,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "notify.h"
 
 #ifdef WIN32SERVICES
 

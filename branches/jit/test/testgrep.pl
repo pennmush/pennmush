@@ -14,7 +14,7 @@ test('grep.6', $mortal, 'think wildgrep(me,*,d)', '!SECOND THIRD');
 test('grep.7', $mortal, 'think wildgrep(me,*,first)', 'FIRST');
 test('grep.8', $mortal, 'think wildgrep(me,*,FIRST)', '!FIRST');
 
-test('grep.9', $mortal, 'think regrep(me,*,*d*)', '!SECOND THIRD');
+test('grep.9', $mortal, 'think regrep(me,*,*d*)', '#-1 REGEXP ERROR');
 test('grep.10', $mortal, 'think regrep(me,*,d)', 'SECOND THIRD');
 test('grep.11', $mortal, 'think regrep(me,*,d$)', 'SECOND THIRD');
 test('grep.12', $mortal, 'think regrep(me,*,first)', 'FIRST');
@@ -30,7 +30,7 @@ test('grep.19', $mortal, 'think wildgrepi(me,*,d)', '!SECOND THIRD');
 test('grep.20', $mortal, 'think wildgrepi(me,*,first)', 'FIRST');
 test('grep.21', $mortal, 'think wildgrepi(me,*,FIRST)', 'FIRST');
 
-test('grep.22', $mortal, 'think regrepi(me,*,*d*)', '!SECOND THIRD');
+test('grep.22', $mortal, 'think regrepi(me,*,*d*)', '#-1 REGEXP ERROR');
 test('grep.23', $mortal, 'think regrepi(me,*,d)', 'SECOND THIRD');
 test('grep.24', $mortal, 'think regrepi(me,*,d$)', 'SECOND THIRD');
 test('grep.25', $mortal, 'think regrepi(me,*,first)', 'FIRST');

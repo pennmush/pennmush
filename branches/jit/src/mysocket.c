@@ -31,21 +31,17 @@
 #undef EINTR
 #endif
 #include <netinet/in.h>
-#else
-#ifdef I_SYS_IN
-#include <sys/in.h>
-#endif
 #endif
 
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
 
-#ifdef I_NETINET_TCP
+#ifdef HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
 #endif
 
-#ifdef I_ARPA_INET
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
 
@@ -54,9 +50,6 @@
 #endif
 
 #ifndef HAS_GETADDRINFO
-#ifdef I_ARPA_NAMESER
-#include <arpa/nameser.h>
-#endif
 #ifndef WIN32
 #ifdef __APPLE__
 #ifdef __APPLE_CC__
@@ -69,7 +62,7 @@
 #endif
 #endif
 
-#ifdef I_NETDB
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
@@ -78,14 +71,7 @@ extern int h_errno;
 #endif
 
 #include <errno.h>
-
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
-
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -311,6 +297,15 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
       penn_perror("setsockopt (Possibly ignorable)");
       continue;
     }
+#ifdef IPV6_V6ONLY
+    if (server->ai_family == AF_INET6 && host == NULL) {
+      opt = 0;
+      if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof opt) < 0) {
+        penn_perror("setsockopt (Possibly ignorable)");
+      }
+    }
+#endif
+
 
     if (bind(s, server->ai_addr, server->ai_addrlen) == 0)
       break;                    /* Success */

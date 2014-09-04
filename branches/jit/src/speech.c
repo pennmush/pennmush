@@ -819,11 +819,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   ATTR *a;
   char alias[BUFFER_LEN], *ap;
 
-  tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
-  if (!tbuf2)
-    mush_panic("Unable to allocate memory in do_page");
-
-  nbp = namebuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
 
   if (*arg1 && has_eq) {
     /* page to=[msg] */
@@ -838,6 +833,18 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     message = arg1;
     repage = 1;
   }
+
+  if (has_eq && (!message || !*message)) {
+    notify(executor, T("What do you want to page?"));
+    return;
+  }
+
+  tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
+  if (!tbuf2)
+    mush_panic("Unable to allocate memory in do_page");
+
+  nbp = namebuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
+
   if (repage) {
     a = atr_get_noparent(executor, "LASTPAGED");
     if (!a || !*((hp = head = safe_atr_value(a)))) {
@@ -980,7 +987,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     notify(executor, T("You are set HAVEN and cannot receive pages."));
 
   /* Figure out what kind of message */
-  /*G_E_C.wenv[0] = (char *) message; <-- Not sure why this was done */
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:

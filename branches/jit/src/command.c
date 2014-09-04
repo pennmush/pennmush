@@ -210,7 +210,8 @@ COMLIST commands[] = {
   {"@MALIAS",
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@MAPSQL", "NOTIFY COLNAMES", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@MAPSQL", "NOTIFY COLNAMES SPOOF", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0,
+   0},
   {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT SILENT NOISY", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@MONIKER", NULL, cmd_moniker, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -2581,8 +2582,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.override->
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.
+             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {

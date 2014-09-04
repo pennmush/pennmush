@@ -12,9 +12,9 @@
 #include <time.h>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
-#include <pcre.h>
 
 #include "conf.h"
+#include "mypcre.h"
 #include "log.h"
 #include "notify.h"
 #include "strutil.h"
@@ -211,6 +211,7 @@ bool
 password_comp(const char *saved, const char *pass)
 {
   static pcre *passwd_re = NULL;
+  static pcre_extra *extra = NULL;
   char buff[BUFFER_LEN], *bp;
   const char *algo = NULL, *shash = NULL;
   int len, slen;
@@ -227,12 +228,13 @@ password_comp(const char *saved, const char *pass)
                 errptr, re[erroffset]);
       return 0;
     }
+    extra = pcre_study(passwd_re, pcre_study_flags, &errptr);
   }
 
   len = strlen(pass);
   slen = strlen(saved);
 
-  if ((c = pcre_exec(passwd_re, NULL, saved, slen, 0, 0, ovec, 30)) <= 0) {
+  if ((c = pcre_exec(passwd_re, extra, saved, slen, 0, 0, ovec, 30)) <= 0) {
     /* Not a well-formed password string. */
     return 0;
   }

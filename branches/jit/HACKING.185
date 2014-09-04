@@ -17,7 +17,18 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.5 patchlevel 5                                 ??? ??, 2013
+Version 1.8.5 patchlevel 6                                 ??? ??, 2014
+
+Monikers:
+ * ansi_name() now takes an additional arg, maxlen, to possibly trim (but not
+   pad) the name to be at most maxlen characters long. You probably don't want
+   to call ansi_name() directly, though; generally you'll want to use the 
+   AName() or AaName() wrappers. If you need to make use of maxlen, use the
+   new AnsiNameWrapper() macro instead:
+     AnsiNameWrapper(dbref, accents?, AN_* flag, pointer, maxlen)
+   AName and AaName are now wrappers around this wrapper. Hardcode Inception.
+
+Version 1.8.5 patchlevel 5                                 Nov 20, 2013
 
 Monikers:
  * Many calls of Name() and accented_name() have been replaced with AName() 

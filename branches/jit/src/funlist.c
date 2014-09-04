@@ -2575,7 +2575,7 @@ FUNCTION(fun_regreplace)
 
     /* If we're doing a lot, study the regexp to make sure it's good */
     if (all) {
-      study = pcre_study(re, 0, &errptr);
+      study = pcre_study(re, pcre_study_flags, &errptr);
       if (errptr != NULL) {
         pcre_free(re);
         DEL_CHECK("pcre");
@@ -2606,7 +2606,11 @@ FUNCTION(fun_regreplace)
       pcre_free(re);
       DEL_CHECK("pcre");
       if (study) {
+#ifdef PCRE_CONFIG_JIT
+        pcre_free_study(study);
+#else
         pcre_free(study);
+#endif
         DEL_CHECK("pcre.extra");
       }
       continue;
@@ -2658,8 +2662,11 @@ FUNCTION(fun_regreplace)
     pcre_free(re);
     DEL_CHECK("pcre");
     if (study != NULL) {
+#ifdef PCRE_CONFIG_JIT
+      pcre_free_study(study);
+#else
       pcre_free(study);
-      DEL_CHECK("pcre.extra");
+#endif
     }
   }
 
@@ -2693,7 +2700,7 @@ FUNCTION(fun_regreplace)
 
       /* If we're doing a lot, study the regexp to make sure it's good */
       if (all) {
-        study = pcre_study(re, 0, &errptr);
+        study = pcre_study(re, pcre_study_flags, &errptr);
         if (errptr != NULL) {
           pcre_free(re);
           DEL_CHECK("pcre");
@@ -2729,7 +2736,11 @@ FUNCTION(fun_regreplace)
             pcre_free(re);
             DEL_CHECK("pcre");
             if (study) {
+#ifdef PCRE_CONFIG_JIT
+              pcre_free_study(study);
+#else
               pcre_free(study);
+#endif
               DEL_CHECK("pcre.extra");
             }
             goto exit_sequence;
@@ -2762,7 +2773,11 @@ FUNCTION(fun_regreplace)
       pcre_free(re);
       DEL_CHECK("pcre");
       if (study != NULL) {
+#ifdef PCRE_CONFIG_JIT
+        pcre_free_study(study);
+#else
         pcre_free(study);
+#endif
         DEL_CHECK("pcre.extra");
       }
     }
@@ -2913,7 +2928,8 @@ FUNCTION(fun_regmatch)
 }
 
 /* Like grab, but with a regexp pattern. This same function handles
- *  regrab(), regraball(), and the case-insenstive versions. */
+ * regrab(), regraball(), and the case-insenstive versions,
+ * as well as reglmatch() and reglmatchall(). */
 FUNCTION(fun_regrab)
 {
   char *r, *s, *b, sep;
@@ -2923,10 +2939,11 @@ FUNCTION(fun_regrab)
   const char *errptr;
   int erroffset;
   int offsets[99];
-  int flags = 0, all = 0;
+  int flags = 0;
   char *osep, osepd[2] = { '\0', '\0' };
   char **ptrs;
   int nptrs, i;
+  bool all = 0, pos = 0;
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
@@ -2943,8 +2960,11 @@ FUNCTION(fun_regrab)
   if (strrchr(called_as, 'I'))
     flags = PCRE_CASELESS;
 
-  if (string_prefix(called_as, "REGRABALL"))
+  if (strstr(called_as, "ALL"))
     all = 1;
+
+  if (strstr(called_as, "MATCH"))
+    pos = 1;
 
   if ((re = pcre_compile(args[1], flags, &errptr, &erroffset, tables)) == NULL) {
     /* Matching error. */
@@ -2954,7 +2974,7 @@ FUNCTION(fun_regrab)
   }
   ADD_CHECK("pcre");
 
-  study = pcre_study(re, 0, &errptr);
+  study = pcre_study(re, pcre_study_flags, &errptr);
   if (errptr != NULL) {
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);
@@ -2977,7 +2997,10 @@ FUNCTION(fun_regrab)
     if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)
         safe_str(osep, buff, bp);
-      safe_str(ptrs[i], buff, bp);
+      if (pos)
+        safe_integer(i + 1, buff, bp);
+      else
+        safe_str(ptrs[i], buff, bp);
       if (!all)
         break;
     }
@@ -2988,7 +3011,11 @@ FUNCTION(fun_regrab)
   pcre_free(re);
   DEL_CHECK("pcre");
   if (study) {
+#ifdef PCRE_CONFIG_JIT
+    pcre_free_study(study);
+#else
     pcre_free(study);
+#endif
     DEL_CHECK("pcre.extra");
   }
 }

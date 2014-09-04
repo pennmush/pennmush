@@ -354,7 +354,8 @@ extern const char EOD[];
   (IsExit(x) && (options.monikers & AN_EXIT)) || \
   has_flag_by_name(x, "MONIKER", NOTYPE))
 
-#define AName(x,level,p) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, 0, p) : Name(x))
-#define AaName(x,level,p) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, 1, p) : accented_name(x))
+#define AnsiNameWrapper(x,accents,level,p,len) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, accents, p, len) : (accents ? accented_name(x) : Name(x)))
+#define AName(x,level,p) AnsiNameWrapper(x,0,level,p,0)
+#define AaName(x,level,p) AnsiNameWrapper(x,1,level,p,0)
 
 #endif                          /* __DBDEFS_H */

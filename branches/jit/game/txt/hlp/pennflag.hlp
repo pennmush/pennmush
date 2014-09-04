@@ -180,8 +180,11 @@ See also: ANSI, COLOR, ansi(), @sockset
   This flag is used internally by the MUSH to track whether a player is
   currently connected. It cannot be set or cleared manually.
 
-  Mortal code can't use hasflag(<x>,connected) to test if a player is
-  connected. Consider using conn(), lwho(), or mwho() instead.
+  Prior to 1.8.5p6, mortal objects couldn't use hasflag(<player>, connected)
+  to see if a player was online, and needed to instead use conn() or lwho(). 
+  Starting with that version, any object can use hasflag() to see if they can 
+  see that a player is online. Be careful, when coding on a privileged 
+  object, not to give away the presence of hidden players!
 
 See also: conn(), lwho(), mwho()
 & DARK

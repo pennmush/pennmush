@@ -436,7 +436,9 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (string_prefix("read", status) || string_prefix("unread", status))
+  if (string_prefix("urgent", status) || string_prefix("unurgent", status))
+    flag = M_URGENT;
+  else if (string_prefix("read", status) || string_prefix("unread", status))
     flag = M_MSGREAD;
   else if (string_prefix("cleared", status)
            || string_prefix("uncleared", status))
@@ -448,8 +450,14 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (*status == 'u' || *status == 'U')
+  if ((*status == 'u' || *status == 'U')
+      && (status[1] == 'n' || status[1] == 'N')) {
+    if (strlen(status) < 3) {
+      notify(player, T("MAIL: Unknown status."));
+      return;
+    }
     negate = 1;
+  }
 
   do_mail_flags(player, msglist, flag, negate);
 }
@@ -468,7 +476,8 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
   struct mail_selector ms;
   mail_flag folder;
   folder_array i;
-  int notified = 0, j = 0;
+  bool notified = 0;
+  int inrange = 0, twiddled = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -480,7 +489,12 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
     if ((mp->to == player) && (All(ms) || (Folder(mp) == folder))) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
-        j++;
+        inrange++;
+        if ((negate & !(mp->read & flag)) || (!negate && (mp->read & flag))) {
+          /* Don't bother notifying about messages which already match */
+          continue;
+        }
+        twiddled++;
         if (negate) {
           mp->read &= ~flag;
         } else {
@@ -495,7 +509,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
                        T("MAIL: All messages in all folders untagged."));
               else
                 notify(player, T("MAIL: All messages in all folders tagged."));
-              notified++;
+              notified = 1;
             }
           } else {
             if (negate) {
@@ -516,7 +530,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
               } else {
                 notify(player, T("MAIL: All messages in all folders cleared."));
               }
-              notified++;
+              notified = 1;
             }
           } else {
             if (Unread(mp) && !negate) {
@@ -533,6 +547,29 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
             }
           }
           break;
+        case M_URGENT:
+          if (All(ms)) {
+            if (!notified) {
+              if (negate)
+                notify(player,
+                       T
+                       ("MAIL: All messages in all folders marked as not urgent."));
+              else
+                notify(player,
+                       T
+                       ("MAIL: All messages in all folders marked as urgent."));
+              notified = 1;
+            }
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d not urgent"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d tagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            }
+          }
+          break;
         case M_MSGREAD:
           if (All(ms)) {
             if (!notified) {
@@ -542,7 +579,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
                 notify(player,
                        T("MAIL: All messages in all folders marked as read."));
               }
-              notified++;
+              notified = 1;
             }
           } else {
             if (negate) {
@@ -558,9 +595,15 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
       }
     }
   }
-  if (!j) {
+  if (!inrange) {
     /* ran off the end of the list without finding anything */
     notify(player, T("MAIL: You don't have any matching messages!"));
+  } else if (!twiddled) {
+    if (negate) {
+      notify(player, T("MAIL: No messages had those flags."));
+    } else {
+      notify(player, T("MAIL: All messages had those flags already."));
+    }
   }
   return;
 }
@@ -879,13 +922,13 @@ void
 do_mail_reviewlist(dbref player, dbref target)
 {
   char subj[30];
-  char sender[BUFFER_LEN];
   MAIL *mp;
   char nbuff[BUFFER_LEN], *np;
   int nlen;
   struct mail_selector ms;
   int i;
   bool isplayer;
+  dbref last = NOTHING;
 
   /* Initialize mail selector */
   ms.low = 0;
@@ -900,18 +943,30 @@ do_mail_reviewlist(dbref player, dbref target)
     notify_noenter(player, open_tag("SAMP"));
   /* MG: I haven't ANSI'd this because I'm lazy, and it requires more than just
    * replacing Name() with AName() */
-  np = nbuff;
-  safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
-  nlen = strlen(Name(target));
-  if (nlen < 27)
-    safe_fill(' ', 27 - nlen, nbuff, &np);
-  *np = '\0';
+  if (target != NOTHING) {
+    np = nbuff;
+    safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
+    nlen = strlen(Name(target));
+    if (nlen < 27)
+      safe_fill(' ', 27 - nlen, nbuff, &np);
+    *np = '\0';
+    mp = find_exact_starting_point(target);
+  } else {
+    np = nbuff;
+    safe_format(nbuff, &np, "%-27s", T("All"));
+    *np = '\0';
+    mp = HEAD;
+  }
   notify_format(player,
                 T
                 ("--------------------   MAIL: %s   ------------------"),
                 nbuff);
-  for (mp = find_exact_starting_point(target); mp && (mp->to == target);
-       mp = mp->next) {
+  for (; mp && ((target == NOTHING) || (mp->to == target)); mp = mp->next) {
+    if (last != mp->to) {
+      i = 0;
+      last = mp->to;
+      nbuff[0] = '\0';
+    }
     if (mail_match(player, mp, ms, i)) {
       /* list it */
       i++;
@@ -919,17 +974,24 @@ do_mail_reviewlist(dbref player, dbref target)
         notify_noenter(player,
                        tprintf
                        ("%c%cA XCH_CMD=\"@mail/review %s=%d\" XCH_HINT=\"Read message %d sent to %s\"%c",
-                        TAG_START, MARKUP_HTML, Name(target),
-                        i, i, Name(target), TAG_END));
+                        TAG_START, MARKUP_HTML, Name(mp->to),
+                        i, i, Name(mp->to), TAG_END));
       strcpy(subj, chopstr(get_subject(mp), 28));
-      strcpy(sender, get_sender(mp, 0, 12, &isplayer));
-      safe_fill_to(' ', 12, sender);
-      np = nbuff;
+      if (!nbuff[0]) {
+        np = nbuff;
+        safe_str(AnsiNameWrapper(mp->to, 0, AN_SYS, NULL, 12), nbuff, &np);
+        nlen = strlen(Name(mp->to));
+        if (nlen < 12) {
+          safe_fill(' ', 12 - nlen, nbuff, &np);
+        }
+        *np = '\0';
+      }
+      isplayer = IsPlayer(mp->to);
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
-                    (isplayer && (Connected(mp->from) && (!hidden(mp->from)
-                                                          || Priv_Who(player)))
-                     ? '*' : ' '), sender, 30, subj,
+                    (isplayer && (Connected(mp->to) && (!hidden(mp->to)
+                                                        || Priv_Who(player)))
+                     ? '*' : ' '), nbuff, 30, subj,
                     mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_PUEBLO)
         notify_noenter(player, tprintf("%c%c/A%c", TAG_START,
@@ -956,16 +1018,16 @@ do_mail_review(dbref player, const char *name, const char *msglist)
   dbref target;
 
   if (!name || !*name) {
-    notify(player,
-           T("MAIL: I can't figure out whose mail you want to review."));
-    return;
-  }
-  if ((target = lookup_player(name)) == NOTHING) {
+    target = NOTHING;
+  } else if ((target = lookup_player(name)) == NOTHING) {
     notify(player, T("MAIL: I couldn't find that player."));
     return;
   }
   if (!msglist || !*msglist) {
     do_mail_reviewlist(player, target);
+  } else if (target == NOTHING) {
+    notify(player, T("MAIL: You must specify a player."));
+    return;
   } else {
     do_mail_reviewread(player, target, msglist);
   }

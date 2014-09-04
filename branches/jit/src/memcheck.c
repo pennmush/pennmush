@@ -148,12 +148,14 @@ lookup_check(const char *ref)
   return NULL;
 }
 
+extern sfmt_t rand_state;
+
 /* Return the number of links to use for a new node. Result's range is
    1..maxcount */
 static int
 pick_link_count(int maxcount)
 {
-  int lev = (int) floor(log(genrand_real3()) / log(P));
+  int lev = (int) floor(log(sfmt_genrand_real3(&rand_state)) / log(P));
   lev = -lev;
   if (lev > maxcount)
     return maxcount;

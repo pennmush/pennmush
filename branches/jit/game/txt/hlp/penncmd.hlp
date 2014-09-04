@@ -552,6 +552,8 @@ See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
   through it, and the actions to be taken by the exit when someone passes
   through it, respectively.
   
+  In all cases, %0 is the dbref of the moving object's original location.
+  
   Example:
     > @success Door=You open the door and step inside.
     > @osuccess Door=opens the door and steps inside.
@@ -911,14 +913,14 @@ See also: @create, clone(), create(), @cpattr
                comma-separated and are parsed individually
   /rsnoparse : The command does not evaluate the rightside arg(s).
 
-  Any command added without both the /noparse and /rsnoparse switchs is 
-  provided with a /noeval switch itself, so if you @command/add foo, then
-  foo's arguments are parsed by default, but you can call foo/noeval. 
-  Note: the $-command needs to make allowances for the /noeval switch in 
-  its matching.
+  Any command added with neither /noparse or /rsnoparse is provided with a 
+  /noeval switch automatically, so if you @command/add foo, then foo's 
+  arguments are parsed by default, but you can call foo/noeval. Note: when you
+  @hook/override foo, its $-command pattern must be able to match "foo/noeval"
+  as well for the switch to be used.
 
-  Commands added with @command/add, like other standard commands, are
-  never case-sensitive. Commands can also be added in the alias.cnf file.
+  Commands added with @command/add, like other standard commands, are always
+  case-insensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -1581,7 +1583,6 @@ See also: enter, leave, goto, ENTER_OK
 & @edit2
   @edit/regexp[/all][/nocase][/check][/quiet] 
                      <object>/<attributes>=<regexp>,<replace>
-
 
   When the /regexp switch is given, @edit performs a regular expression
   replacement, similar to the regedit() function. Normally, only the first
@@ -3734,7 +3735,7 @@ See also: ANSI, COLOR, XTERM256, @sockset
     
 See also: say, pose, @emit, @chatformat, @pageformat
 & @mapsql
-  @mapsql[/notify][/colnames] <obj>/<attr>=<query>
+  @mapsql[/notify][/colnames][/spoof] <obj>/<attr>=<query>
 
   This command issues an SQL query if the MUSH supports SQL and can connect 
   to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
@@ -3745,11 +3746,16 @@ See also: say, pose, @emit, @chatformat, @pageformat
   arguments, with arg names matching the SQL field names. These are
   accessible as r(<name>, arg).  
 
-  The /notify switch causes @mapsql to do an "@notify me" after all the rows 
-  are processed.
+  The /notify switch causes the executor to do queue "@notify me" after all
+  the rows are processed. Note that this is the object running "@mapsql", and 
+  not <obj>.
 
   The /colnames switch causes @mapsql to first queue the obj/attr with row 
   number (%0) set to 0 and args %1 to v(29) being the column names.
+  
+  By default, the object using @mapsql will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor.
   
   Examples:
     > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)

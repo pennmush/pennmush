@@ -145,8 +145,7 @@ static const FLAG flag_table[] = {
    F_ANY | F_ODARK},
   {"SHARED", 'Z', TYPE_PLAYER, PLAYER_ZONE, F_ANY, F_ANY},
   {"TRACK_MONEY", '\0', TYPE_PLAYER, 0, F_ANY, F_ANY},
-  {"CONNECTED", 'c', TYPE_PLAYER, PLAYER_CONNECT, F_INTERNAL | F_MDARK,
-   F_INTERNAL | F_MDARK},
+  {"CONNECTED", 'c', TYPE_PLAYER, PLAYER_CONNECT, F_INTERNAL, F_INTERNAL},
   {"GAGGED", 'g', TYPE_PLAYER, PLAYER_GAGGED, F_WIZARD, F_WIZARD},
   {"MYOPIC", 'm', TYPE_PLAYER, PLAYER_MYOPIC, F_ANY, F_ANY},
   {"TERSE", 'x', TYPE_PLAYER | TYPE_THING, PLAYER_TERSE, F_ANY, F_ANY},
@@ -538,7 +537,9 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   slab *flagpairs;
   int i, numbytes;
 
+#ifdef DEBUG
   do_rawlog(LT_TRACE, T("Resizing object flag arrays."));
+#endif
 
   numbytes = FlagBytes(n);
 
@@ -569,6 +570,9 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   /* Now adjust pointers in the db from old to new. This has poor
      big-O performance, but isn't done very often, so we can live with it. */
   for (it = 0; it < db_top; it += 1) {
+    /* Garbage objects have a null flagset */
+    if (IsGarbage(it))
+      continue;
     if (n->tab == &ptab_flag && Flags(it) == oldcache->zero) {
       /* No flags on object */
       Flags(it) = n->cache->zero;
@@ -1009,6 +1013,11 @@ flag_add_additional(FLAGSPACE *n)
 
     add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
 
+    if ((f = match_flag("CONNECTED"))) {
+      f->perms &= ~F_MDARK;
+      f->negate_perms &= ~F_MDARK;
+    }
+
   } else if (n->tab == &ptab_power) {
     if (!(globals.indb_flags & DBF_POWERS_LOGGED)) {
       int i;
@@ -1187,7 +1196,7 @@ free_flagcache(struct flagcache *cache)
 static inline uint32_t
 fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
-  static const uint64_t seed = 0xb12003afbb20eae3LLU;
+  static const uint64_t seed = 0xb12003afbb20eae3ULL;
   return city_hash((const char *) f, FlagBytes(n), seed);
 }
 
@@ -1735,6 +1744,19 @@ can_set_power(dbref player, dbref thing, const FLAG *flagp, int negate)
 
 }
 
+/* Called by the Can_See_Flag macro, /after/ the checks to see if the player
+ * can see the flag in general, to see if they can see the flag specifically
+ * on the given thing */
+bool
+can_see_flag_on(dbref player, dbref thing, const FLAG *flagp)
+{
+  if (is_flag(flagp, "CONNECTED")) {
+    /* You must be see_all to see a hidden player */
+    return can_see_connected(player, thing);
+  }
+
+  return 1;
+}
 
 static bool
 can_set_flag(dbref player, dbref thing, const FLAG *flagp, int negate)

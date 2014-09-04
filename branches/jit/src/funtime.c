@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#if  (defined(__GNUC__) || defined(__LCC__)) && !defined(__USE_XOPEN_EXTENDED)
+#if  defined(__GNUC__)  && !defined(__USE_XOPEN_EXTENDED)
 /* Required to get the getdate() prototype on glibc. */
 #define __USE_XOPEN_EXTENDED
 #endif
@@ -654,22 +654,33 @@ FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
   struct tm ttm;
-  int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
-               (nargs > 1 && !strcmp(args[1], "utc")));
+  const char *tz = "";
+  bool save_tz = 0;
+
+  if (strcmp(called_as, "CONVUTCTIME") == 0) {
+    save_tz = 1;
+  } else if (nargs == 2) {
+    struct tz_result res;
+    if (strcasecmp(args[1], "utc") == 0) {
+      save_tz = 1;
+    } else if (parse_timezone_arg(args[1], mudtime, &res)) {
+      tz = res.tz_name;
+      save_tz = 1;
+    } else {
+      safe_str("#-1 INVALID TIME ZONE", buff, bp);
+      return;
+    }
+  }
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
-    if (doutc)
-      save_and_set_tz("");
-#ifdef SUN_OS
-    safe_integer(timelocal(&ttm), buff, bp);
-#else
+    if (save_tz)
+      save_and_set_tz(tz);
     safe_integer(mktime(&ttm), buff, bp);
-#endif                          /* SUN_OS */
-    if (doutc)
+    if (save_tz)
       restore_tz();
   } else {
     safe_str("-1", buff, bp);
@@ -683,10 +694,38 @@ FUNCTION(fun_convtime)
 FUNCTION(fun_isdaylight)
 {
   struct tm *ltime;
+  time_t when = mudtime;
 
-  ltime = localtime(&mudtime);
+  if (nargs >= 1 && args[0] && *args[0]) {
+    if (!is_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    when = parse_integer(args[0]);
+    if (errno == ERANGE) {
+      safe_str(T(e_range), buff, bp);
+      return;
+    }
+    if (when < 0) {
+      safe_str(T(e_uint), buff, bp);
+      return;
+    }
+  }
 
+  if (nargs == 2) {
+    struct tz_result res;
+    if (!parse_timezone_arg(args[1], when, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+    save_and_set_tz(res.tz_name);
+  }
+
+  ltime = localtime(&when);
   safe_boolean(ltime->tm_isdst > 0, buff, bp);
+
+  if (nargs == 2)
+    restore_tz();
 }
 
 /** Convert seconds to a formatted time string.

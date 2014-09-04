@@ -1542,7 +1542,7 @@ strncasecoll(const char *s1, const char *s2, size_t t)
  * safe_*() pennstr functions.
  * \param dst the destination string to copy to
  * \param src the source string to copy from
- * \param len the maximum number of bytes to copy
+ * \param len the length of dst. At most len-1 bytes will be copied from src
  * \return dst
  */
 char *

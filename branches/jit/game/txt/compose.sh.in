@@ -17,9 +17,6 @@ cat=@CAT@
 rm=@RM@
 echo=@ECHO@
 
-# This process can eat CPU, so uncomment if you want to be nice
-#/etc/renice +4 $$
-
 # Force a standard locale for sorting purposes
 LC_ALL=C
 
@@ -33,21 +30,16 @@ fi
 index_args=$2
 
 # Ok, let's do 'em:
-  cd $dir
+cd $dir
 
-  # Remove the old index
-  $rm -f index.$dir
+# Remove the old index
+$rm -f index.$dir ../$dir.txt
 
-  # Build a new index, and tack it on.
-  $echo Building index for $dir...
-  if $test -f $perl; then
-    $cat *.$dir | tee ../$dir.txt | $perl ../index-files.pl $index_args > index.$dir
-    $cat index.$dir >> ../$dir.txt
-  else
-    $cat *.$dir > ../$dir.txt
-  fi
+# Build a new index, and tack it on.
+$echo Building master file for $dir
+$cat *.$dir > ../$dir.txt
  
-  cd ..
+cd ..
 
 $echo Done.
 $echo Remember to use @readcache if the mush is currently running.

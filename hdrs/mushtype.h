@@ -316,6 +316,8 @@ struct text_queue {
 #define CONN_STRIPACCENTS 0x80
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
+/** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
+#define CONN_SOCKET_ERROR 0x100
 
 /** Bits reserved for the color style */
 #define CONN_COLORSTYLE 0xF00

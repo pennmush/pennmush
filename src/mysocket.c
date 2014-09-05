@@ -105,6 +105,24 @@ void mush_panic(const char *);
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
 
+bool
+is_blocking_err(int code)
+{
+#ifdef WIN32
+  return code == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
+#else
+  if (code == EWOULDBLOCK)
+    return 1;
+  if (code == EINTR)
+    return 1;
+#ifdef EAGAIN
+  if (code == EAGAIN)
+    return 1;
+#endif
+  return 0;
+#endif
+}
+
 #ifndef SLAVE
 /** Given a sockaddr structure, try to look up and return hostname info.
  * If we can't get a hostname from DNS (or if we're not using DNS),

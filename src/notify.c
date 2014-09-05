@@ -49,6 +49,7 @@
 #include <unistd.h>
 #endif
 #include <limits.h>
+#include <errno.h>
 
 #include "access.h"
 #include "ansi.h"
@@ -1767,6 +1768,9 @@ queue_newwrite(DESC *d, const char *b, int n)
 {
   int space;
 
+  if (d->conn_flags & CONN_SOCKET_ERROR)
+    return 0;
+
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing
        directly to the socket. Add whatever's left to the buffer to
@@ -1780,6 +1784,14 @@ queue_newwrite(DESC *d, const char *b, int n)
         return written;
       n -= written;
       b += written;
+    } else if (written < 0) {
+      do_rawlog(LT_TRACE, "send() returned %d (error %s) trying to write %d bytes to %d", written, strerror(errno), n, d->descriptor);
+      if (!is_blocking_err(written)) {
+	d->conn_flags |= CONN_SOCKET_ERROR;
+	return 0;
+      }
+    } else { /* written == 0 */
+      do_rawlog(LT_TRACE, "send() wrote no bytes to %d", d->descriptor);
     }
   }
 

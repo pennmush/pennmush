@@ -11,11 +11,11 @@
 
 #undef HAVE_NETDB_H
 
-#undef I_NETINET_IN
+#undef HAVE_NETINET_IN_H
 
 #undef HAVE_NETINET_TCP_H
 
-#undef I_SYS_SOCKET
+#undef HAVE_SYS_SOCKET_H
 
 #undef I_SYS_STAT
 
@@ -64,6 +64,8 @@
 #undef HAVE_STDBOOL_H
 
 #undef HAVE_FENV_H
+
+#undef HAVE_SYS_UCRED_H
 
 /* Libraries */
 
@@ -340,7 +342,11 @@ typedef bool _Bool;
 
 /* Misc. */
 
-#undef HAVE_SOCKADDR_IN6
+#undef HAVE_STRUCT_SOCKADDR_SA_LEN
+
+#undef HAVE_STRUCT_SOCKADDR_IN6
+
+#undef HAVE_STRUCT_XUCRED
 
 #undef FORCE_IPV4
 

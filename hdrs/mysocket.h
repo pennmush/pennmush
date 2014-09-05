@@ -20,9 +20,9 @@
 
 #include <stddef.h>
 
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif                          /* I_SYS_SOCKET */
+#endif                          
 
 #ifdef WIN32
 #ifndef FD_SETSIZE

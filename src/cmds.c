@@ -15,7 +15,7 @@
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 

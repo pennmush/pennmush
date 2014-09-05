@@ -30,10 +30,10 @@
 #include <time.h>
 #endif
 #include <sys/ioctl.h>
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
 #ifdef I_SYS_STAT

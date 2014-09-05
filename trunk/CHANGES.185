@@ -19,6 +19,9 @@ Fixes:
  * Bytes received by connections weren't being properly recorded for
    things like SESSION and recv().
 
+Hardcode:
+ * Improvements to networking code; robustness on errors and portability. [SW]
+
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 
 Hardcode:

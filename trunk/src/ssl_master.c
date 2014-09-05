@@ -13,7 +13,7 @@
 #ifdef I_UNISTD
 #include <unistd.h>
 #endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 

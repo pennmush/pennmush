@@ -27,13 +27,13 @@
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
 #include <ctype.h>

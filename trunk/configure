@@ -2288,6 +2288,63 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_decl
+
+# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
+# ----------------------------------------------------
+# Tries to find if the field MEMBER exists in type AGGR, after including
+# INCLUDES, setting cache variable VAR accordingly.
+ac_fn_c_check_member ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
+$as_echo_n "checking for $2.$3... " >&6; }
+if eval \${$4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (sizeof ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  eval "$4=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$4
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_member
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -5596,20 +5653,6 @@ if test "x$ac_cv_header_sys_time_h" = xyes; then :
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "netinet/in.h" "ac_cv_header_netinet_in_h" "$ac_includes_default"
-if test "x$ac_cv_header_netinet_in_h" = xyes; then :
-  $as_echo "#define I_NETINET_IN 1" >>confdefs.h
-
-fi
-
-
-ac_fn_c_check_header_mongrel "$LINENO" "sys/socket.h" "ac_cv_header_sys_socket_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_socket_h" = xyes; then :
-  $as_echo "#define I_SYS_SOCKET 1" >>confdefs.h
-
-fi
-
-
 ac_fn_c_check_header_mongrel "$LINENO" "sys/stat.h" "ac_cv_header_sys_stat_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_stat_h" = xyes; then :
   $as_echo "#define I_SYS_STAT 1" >>confdefs.h
@@ -5624,7 +5667,7 @@ if test "x$ac_cv_header_sys_types_h" = xyes; then :
 fi
 
 
-for ac_header in arpa/inet.h libintl.h netdb.h netinet/tcp.h
+for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5663,7 +5706,7 @@ fi
 
 done
 
-for ac_header in zlib.h event.h event2/dns.h fenv.h
+for ac_header in zlib.h event.h event2/dns.h fenv.h sys/ucred.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -8625,9 +8668,28 @@ if test $ac_have_decl = 1; then :
 fi
 
 
-ac_fn_c_check_type "$LINENO" "struct sockaddr_in6" "ac_cv_type_struct_sockaddr_in6" "$ac_includes_default
+ac_fn_c_check_member "$LINENO" "struct sockaddr" "sa_len" "ac_cv_member_struct_sockaddr_sa_len" "
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+
+"
+if test "x$ac_cv_member_struct_sockaddr_sa_len" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_SOCKADDR_SA_LEN 1
+_ACEOF
+
+
+fi
+
+
+ac_fn_c_check_type "$LINENO" "struct sockaddr_in6" "ac_cv_type_struct_sockaddr_in6" "
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_UCRED_H
+#include <sys/ucred.h>
 #endif
 
 "
@@ -8637,7 +8699,23 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_STRUCT_SOCKADDR_IN6 1
 _ACEOF
 
-$as_echo "#define HAVE_SOCKADDR_IN6 1" >>confdefs.h
+
+fi
+ac_fn_c_check_type "$LINENO" "struct xucred" "ac_cv_type_struct_xucred" "
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_UCRED_H
+#include <sys/ucred.h>
+#endif
+
+"
+if test "x$ac_cv_type_struct_xucred" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_XUCRED 1
+_ACEOF
+
 
 fi
 
@@ -8673,8 +8751,6 @@ if test "x$ac_safe_toupper" = xyes; then
 	$as_echo "#define HAVE_SAFE_TOUPPER 1" >>confdefs.h
 
 fi
-
-
 
 # Which flavor of child killing to use? Prefer SIGCHLD.
 

@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #endif
 
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #ifdef WIN32
 #undef EINTR
 #endif
@@ -90,7 +90,7 @@ extern int h_errno;
 #include <sys/select.h>
 #endif
 
-#ifdef __APPLE__
+#ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
 #endif
 
@@ -532,7 +532,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
       *remote_uid = creds.uid;
     }
   }
-#elif defined(__APPLE__)
+#elif defined(HAVE_STRUCT_XUCRED)
   {
     struct xucred creds;
     socklen_t credlen = sizeof creds;
@@ -1217,7 +1217,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen
     }
 #endif
 
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:{
       struct sockaddr_in6 *sain = (struct sockaddr_in6 *) sa;
 
@@ -1308,7 +1308,7 @@ getaddrinfo(const char *hostname, const char *servname,
     }
 #endif
 
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     /* 4check for an IPv6 hex string */
     if ((isxdigit(sptr->host[0]) || sptr->host[0] == ':') &&
         (strchr(sptr->host, ':') != NULL)) {
@@ -1329,18 +1329,18 @@ getaddrinfo(const char *hostname, const char *servname,
 /* end ga3 */
 /* include ga4 */
     /* 4remainder of for() to look up hostname */
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     if ((_res.options & RES_INIT) == 0)
       res_init();               /* need this to set _res.options */
 #endif
 
     if (nsearch == 2) {
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       _res.options &= ~RES_USE_INET6;
 #endif
       hptr = gethostbyname2(sptr->host, sptr->family);
     } else {
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       if (sptr->family == AF_INET6)
         _res.options |= RES_USE_INET6;
       else
@@ -1444,7 +1444,7 @@ ga_echeck(const char *hostname, const char *servname,
       return (EAI_SOCKTYPE);    /* invalid socket type */
     break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:
     if (socktype != 0 &&
         (socktype != SOCK_STREAM &&
@@ -1484,7 +1484,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         nsearch++;
         break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       case AF_INET6:
         search[nsearch].host = "0::0";
         search[nsearch].family = AF_INET6;
@@ -1492,7 +1492,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         break;
 #endif
       case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
         search[nsearch].host = "0::0";  /* IPv6 first, then IPv4 */
         search[nsearch].family = AF_INET6;
         nsearch++;
@@ -1516,7 +1516,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         nsearch++;
         break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       case AF_INET6:
         search[nsearch].host = "0::1";
         search[nsearch].family = AF_INET6;
@@ -1524,7 +1524,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         break;
 #endif
       case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
         search[nsearch].host = "0::1";  /* IPv6 first, then IPv4 */
         search[nsearch].family = AF_INET6;
         nsearch++;
@@ -1548,7 +1548,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
       nsearch++;
       break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     case AF_INET6:
       search[nsearch].host = hostname;
       search[nsearch].family = AF_INET6;
@@ -1556,7 +1556,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
       break;
 #endif
     case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       search[nsearch].host = hostname;
       search[nsearch].family = AF_INET6;        /* IPv6 first */
       nsearch++;
@@ -1612,7 +1612,7 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
       /* 4allocate sockaddr_in{} and fill in all but port */
       if ((sinptr = calloc(1, sizeof(struct sockaddr_in))) == NULL)
         return (EAI_MEMORY);
-#ifdef  HAVE_SOCKADDR_SA_LEN
+#ifdef  HAVE_STRUCT_SOCKADDR_SA_LEN
       sinptr->sin_len = sizeof(struct sockaddr_in);
 #endif
       sinptr->sin_family = AF_INET;
@@ -1622,14 +1622,14 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
       break;
     }
 #endif                          /* IPV4 */
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:{
       struct sockaddr_in6 *sin6ptr;
 
       /* 4allocate sockaddr_in6{} and fill in all but port */
       if ((sin6ptr = calloc(1, sizeof(struct sockaddr_in6))) == NULL)
         return (EAI_MEMORY);
-#ifdef  HAVE_SOCKADDR_SA_LEN
+#ifdef  HAVE_STRUCT_SOCKADDR_SA_LEN
       sin6ptr->sin6_len = sizeof(struct sockaddr_in6);
 #endif
       sin6ptr->sin6_family = AF_INET6;
@@ -1741,7 +1741,7 @@ ga_port(struct addrinfo *aihead, int port, int socktype)
       nfound++;
       break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     case AF_INET6:
       ((struct sockaddr_in6 *) ai->ai_addr)->sin6_port = port;
       nfound++;

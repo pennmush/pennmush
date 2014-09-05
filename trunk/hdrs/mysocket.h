@@ -80,6 +80,8 @@ int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);
 void set_keepalive(int s, int timeout);
+bool is_blocking_err(int);
+
 /* Win32 uses closesocket() to close a socket, and so will we */
 #ifndef WIN32
 #define closesocket(s)  close(s)

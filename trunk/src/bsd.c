@@ -436,20 +436,6 @@ static char *get_doing(dbref player, dbref caller, dbref enactor,
 
 static bool who_check_name(DESC *d, char *name, bool wild);
 
-static inline bool
-is_blocking_err(int code)
-{
-  if (code == EWOULDBLOCK)
-    return 1;
-  if (code == EINTR)
-    return 1;
-#ifdef EAGAIN
-  if (code == EAGAIN)
-    return 1;
-#endif
-  return 0;
-}
-
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -1008,7 +994,7 @@ shovechars(Port_t port, Port_t sslport)
   struct timeval timeout, slice_timeout;
   int found;
   int queue_timeout;
-  DESC *d, *dnext;
+  DESC *d, *dnext, *dprev;
   int avail_descriptors;
   unsigned long input_ready, output_ready;
   int notify_fd = -1;
@@ -1166,7 +1152,17 @@ shovechars(Port_t port, Port_t sslport)
     if (info_slave_state == INFO_SLAVE_PENDING)
       FD_SET(info_slave, &input_set);
 #endif
-    for (d = descriptor_list; d; d = d->next) {
+    for (dprev = NULL, d = descriptor_list;
+	 d;
+	 dprev = d, d = d->next) {
+
+      if (d->conn_flags & CONN_SOCKET_ERROR) {
+	shutdownsock(d, "socket error", GOD);
+	d = dprev;
+	if (!d)
+	  d = descriptor_list;
+      }
+
       if (d->input.head) {
         timeout = slice_timeout;
       } else
@@ -2050,8 +2046,10 @@ network_send_writev(DESC *d)
     if (cnt < 0) {
       if (is_blocking_err(errno))
         return 1;
-      else
+      else {
+	d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
+      }
     }
     written += cnt;
     while (cnt > 0) {
@@ -2100,17 +2098,12 @@ network_send(DESC *d)
     int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
 
     if (cnt < 0) {
-      if (
-#ifdef WIN32
-           cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
-#else
-           is_blocking_err(errno)
-#endif
-        )
+      if (is_blocking_err(errno))
         return 1;
-
-      else
+      else {
+	d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
+      }
     }
     written += cnt;
 
@@ -2708,8 +2701,10 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
        */
       if (is_blocking_err(errno))
         return 1;
-      else
+      else {
+	d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
+      }
     }
   }
 

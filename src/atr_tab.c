@@ -139,6 +139,10 @@ static ATTR *aname_find_exact(const char *name);
 static ATTR *attr_read(PENNFILE *f);
 static ATTR *attr_alias_read(PENNFILE *f, char *alias);
 
+static int free_standard_attr(ATTR *a, bool inserted);
+static int free_standard_attr_aliases(ATTR *a);
+static void display_attr_info(dbref player, ATTR *ap);
+
 const char *display_attr_limit(ATTR *ap);
 
 void init_aname_table(void);
@@ -174,6 +178,66 @@ init_aname_table(void)
   ptab_end_inserts(&ptab_attrib);
 }
 
+/** Free all memory used by a standard attribute, and remove it from the hash
+ * table if necessary.
+ * \param a attr to remove
+ * \param inserted has the attr been inserted into the hash table already?
+ * \retval number of entries (including aliases) removed from the hash table
+ */
+static int 
+free_standard_attr(ATTR *a, bool inserted)
+{
+  int count = 0;
+  if (!a) {
+    return count;
+  }
+
+  /* If the attr has no name, there's no way it can be in the hash table */
+  if (AL_NAME(a)) {
+    if (inserted) {
+      count = free_standard_attr_aliases(a) + 1;
+      ptab_delete(&ptab_attrib, AL_NAME(a));
+    }
+    free((char *) AL_NAME(a));
+  }
+  
+  if (a->data != NULL_CHUNK_REFERENCE) {
+    chunk_delete(a->data);
+  }
+  
+  mush_free(a, "ATTR");
+  
+  return count;
+
+}
+
+/* Remove all aliases for a standard attr. */
+static int
+free_standard_attr_aliases(ATTR *a) {
+  bool found_alias;
+  ATTR *curr;
+  const char *aliasname;
+  int count = 0;
+  
+  /* Annoyingly convoluted because the ptab_delete will screw with the
+   * counter used by ptab_nextextry_new */
+  do {
+    found_alias = 0;
+    curr = ptab_firstentry_new(&ptab_attrib, &aliasname);
+    for (;curr;curr = ptab_nextentry_new(&ptab_attrib, &aliasname)) {
+      if (!strcmp(AL_NAME(curr), AL_NAME(a)) && 
+          strcmp(AL_NAME(curr), aliasname)) {
+        found_alias = 1;
+        ptab_delete(&ptab_attrib, aliasname);
+        count++;
+        break;
+      }
+    }
+  } while (found_alias);
+
+  return count;
+}
+
 static ATTR *
 attr_read(PENNFILE *f)
 {
@@ -200,6 +264,7 @@ attr_read(PENNFILE *f)
     (void) getstring_noalloc(f);        /* flags */
     (void) getstring_noalloc(f);        /* creator */
     (void) getstring_noalloc(f);        /* data */
+    free_standard_attr(a, 0);
     return NULL;
   }
 
@@ -212,6 +277,7 @@ attr_read(PENNFILE *f)
       free((char *) AL_NAME(a));
       (void) getstring_noalloc(f);      /* creator */
       (void) getstring_noalloc(f);      /* data */
+      free_standard_attr(a, 0);
       return NULL;
     }
   }
@@ -239,7 +305,7 @@ attr_read(PENNFILE *f)
     if (!re) {
       do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.",
                 AL_NAME(a));
-      free((char *) AL_NAME(a));
+      free_standard_attr(a, 0);
       return NULL;
     }
     pcre_free(re);              /* don't need it, just needed to check it */
@@ -824,6 +890,7 @@ void
 do_attribute_delete(dbref player, char *name)
 {
   ATTR *ap;
+  int count;
 
   if (!name || !*name) {
     notify(player, T("Which attribute do you mean?"));
@@ -837,14 +904,24 @@ do_attribute_delete(dbref player, char *name)
     return;
   }
 
-  /* Free everything it uses. */
-  if (ap->data != NULL_CHUNK_REFERENCE) {
-    chunk_delete(ap->data);
+  /* Display current attr info, for backup/safety reasons */
+  display_attr_info(player, ap);
+  
+  /* Free all data, remove any aliases, and remove from the hash table */
+  count = free_standard_attr(ap, 1);
+  
+  switch (count) {
+    case 0:
+      notify_format(player, T("Failed to remove %s from attribute table."), name);
+      break;
+    case 1:
+      notify_format(player, T("Removed %s from attribute table."), name);
+      break;
+    default:
+      notify_format(player, T("Removed %s and %d alias(es) from attribute table."), name, count - 1);
+      break;
   }
 
-  /* Ok, take it out of the hash table */
-  ptab_delete(&ptab_attrib, name);
-  notify_format(player, T("Removed %s from attribute table."), name);
   return;
 }
 
@@ -923,6 +1000,15 @@ do_attribute_info(dbref player, char *name)
     notify(player, T("That attribute isn't in the attribute table"));
     return;
   }
+
+  display_attr_info(player, ap);
+  return;
+}
+
+static void
+display_attr_info(dbref player, ATTR *ap)
+{
+
   notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
   if (ap->flags & AF_RLIMIT) {
     notify_format(player, "%9s: %s", T("Limit"), display_attr_limit(ap));
@@ -990,6 +1076,8 @@ attr_init_postconfig(void)
   ATTR *a;
   /* read_remote_desc affects AF_NEARBY flag on DESCRIBE attribute */
   a = aname_hash_lookup("DESCRIBE");
+  if (!a)
+    return;
   if (READ_REMOTE_DESC)
     a->flags &= ~AF_NEARBY;
   else

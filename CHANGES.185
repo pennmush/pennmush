@@ -18,9 +18,15 @@ Version 1.8.5 patchlevel 7                                 ??? ??, 2???
 Fixes:
  * Bytes received by connections weren't being properly recorded for
    things like SESSION and recv().
+ * Fix some highly unlikely crash bugs/memory leaks in atr_tab.c [MG]
+ * @attribute/delete now deletes all aliases for the deleted attr, too. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW]
+ 
+Minor changes:
+ * @attribute/delete now displays the info for an attribute, as per @attrib
+   <attr>, prior to deleting it. [MG]
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

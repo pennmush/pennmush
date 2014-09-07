@@ -1228,7 +1228,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   return result;
 }
 
-/** Helper function fr atr_pattern_count, passed to atr_iter_get() */
+/** Helper function for atr_pattern_count, passed to atr_iter_get() */
 static int
 atr_count_helper(dbref player __attribute__ ((__unused__)),
                  dbref thing __attribute__ ((__unused__)),

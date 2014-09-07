@@ -94,6 +94,9 @@
   db`dbck: Run after the regular database consistency check.
   db`purge: Run after the regular purging of destroyed objects.
   db`wcheck: Run after the regular @warnings check.
+  
+  Note: These events are only triggered after the automatic scheduled checks, 
+  and not if someone manually runs @dbck, @purge or @wcheck.
 & EVENT DUMP
   dump`5min (Original message, isforking)
       Database save will occur in 5 minutes.
@@ -114,9 +117,9 @@
       If you are seeing errors on dbsave, we recommend setting forking_dump
       to 0, as nonforking dumps have more verbose error messages.
 
-  These run in addition to any messages that may be sent. If you want to
-  replace the messages, config (via @config or the .cnf file) the dump
-  messages to be empty.
+  The standard messages shown on dumps are still displayed when these events
+  are set. To disable the standard message, set them to empty strings via
+  @config or in mush.cnf.
 & EVENT LOG
   Events in the log tree get triggered whenever the game logs any information
   to a log file (Either because of @log, or something else happening.) They
@@ -139,17 +142,17 @@
 & EVENT OBJECT
   object`create  (new objid, cloned-from)
       Triggered on the creation of any object except player.
-      If it was created using @clone, then cloned-from will be a objid.
-      Otherwise cloned-from will be null.
+      If it was created using @clone, then <cloned-from> will be a objid.
+      Otherwise <cloned-from> will be null.
 
   object`destroy (objid, origname, type, owner, parent, zone)
-      Triggered _after_ the object is destroyed. Passed arguments are former
-      objid, name, type, owner, etc. Enactor is always #-1, so use former
-      owner.
+      Triggered _after_ the object is totally destroyed. Passed arguments are 
+	  former objid, name, type, owner, etc. Enactor is always #-1, so use
+	  former owner.
 
   object`move (objid, newloc, origloc, issilent, cause)
       Triggered after the object is moved, @tel'd, or otherwise sent to a
-      new location. If issilent is 1, then the object was moved using
+      new location. If <issilent> is 1, then the object was moved using
       @tel/silent.
 
   object`kill    (objid of object killed, cost, wasslay)
@@ -166,9 +169,9 @@
       
   object`flag  (objid of object with flag, flag name, type, setbool, setstr)
       Triggered when a flag or power which has the "event" restriction is 
-      set or cleared. "type" is one of FLAG or POWER. setbool is 1 if the
-      flag/power is being set, and 0 if it's being cleared. setstr is either
-      "SET" or "CLEARED".
+      set or cleared. <type> is one of FLAG or POWER. <setbool> is 1 if the
+      flag/power is being set, and 0 if it's being cleared. <setstr> is
+	  either "SET" or "CLEARED".
     Example:
       &OBJECT`FLAG event handler=@cemit Admin=capstr(lcstr(%2)) %1 
                                     [lcstr(%4)] on [name(%0)] by %n.
@@ -176,12 +179,12 @@
 & EVENT SQL
   sql`connect (platform)
       Triggered on successful connect to the SQL database.
-      platform is 'mysql', 'psql' or similar.
+      <platform> is 'mysql', 'postgresql' or 'sqlite3'.
 
-  sql`connectfail (platform, Error message)
+  sql`connectfail (platform, error message)
       Triggered on unsuccessful connect to the SQL database.
 
-  sql`disconnect (platform, Error message)
+  sql`disconnect (platform, error message)
       Triggered if SQL disconnects for any reason. Usually not a worry since
       Penn will auto-reconnect if it can.
 & EVENT SIGNAL
@@ -195,7 +198,7 @@ No arguments are passed to these events.
   when it receives a signal. In effect, these override Penn's default actions.
 
   To mimic old behaviour:
-  &SIGNAL`USR1 Event Handler=@pemit/list lwho()=GAME: Reboot w/o disconnect
+  &SIGNAL`USR1 Event Handler=@nspemit/list lwho()=GAME: Reboot w/o disconnect
       from game account, please wait. ; @shutdown/reboot
   &SIGNAL`USR2 Event Handler=@dump
 & EVENT PLAYER
@@ -203,7 +206,7 @@ No arguments are passed to these events.
       Triggered when a player is created. If the player was @pcreated, then
       %# will be the person who did the @pcreate. If player was created
       by using 'create' at the connect screen, then %# will be #-1 and
-      descriptor will be non-null.
+      <descriptor> will be non-null.
       <how> is one of: "pcreate", "create" or "register".
 
   player`connect (objid, number of connections, descriptor)
@@ -219,7 +222,7 @@ No arguments are passed to these events.
       inactivity check.
 & EVENT SOCKET
   socket`connect (descriptor, ip)
-      Triggered when a socket first connects to the port. Using this and
+      Triggered when a socket first connects to the port. Using both this and
       player`connect could be spammy. This happens when a connecting socket
       sees the connect screen.
 
@@ -229,19 +232,19 @@ No arguments are passed to these events.
       could be spammy.
 
   socket`loginfail (descriptor, IP, count, reason, playerobjid, name)
-      Triggered when a connection attempt fails. 'count' is the number of
+      Triggered when a login attempt fails. <count> is the number of
       fails in the past 10 minutes. If used in conjuction with the config
       option connect_fail_limit, then any failures after the limit is reached
       will NOT trigger socket`loginfail. If the connect is a failed attempt 
-      to log into a valid player, playerobjid will be set to that objid. 
-      Otherwise it will be set to #-1 'name' is the name the connection
-      attempted to connect with, and is only set with 'playerobjid' is #-1.
+      to log into a valid player, <playerobjid> will be set to that objid. 
+      Otherwise it will be set to #-1. <name> is the name the connection
+      attempted to connect with, and is only set when <playerobjid> is #-1.
 
   socket`createfail (descriptor, ip, count, reason, name[, error])
       Triggered when a player create attempt fails. <count> is the # of
       fails caused by this ip. If the failure is from an attempt to 
       register a player via email, the error code of the mailer program
-      is provided.
+      is provided as <error>.
 
     A sitelock rule with deny_silent will not trigger socket`createfail or
     socket`createfail.

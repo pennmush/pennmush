@@ -20,6 +20,7 @@ Fixes:
    things like SESSION and recv().
  * Fix some highly unlikely crash bugs/memory leaks in atr_tab.c [MG]
  * @attribute/delete now deletes all aliases for the deleted attr, too. [MG]
+ * Help fixes. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW]

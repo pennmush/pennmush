@@ -28,6 +28,8 @@ Hardcode:
 Minor changes:
  * @attribute/delete now displays the info for an attribute, as per @attrib
    <attr>, prior to deleting it. [MG]
+ * The *div*() and *mod*() math functions now take an unlimited number of
+   args, instead of exactly 2 args. Suggested by Mercutio, patch by Luke.
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

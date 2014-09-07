@@ -372,9 +372,9 @@ See also: name(), fullname(), iname(), ACCENTS
 
 See also: asin(), atan(), cos(), ctu(), sin(), tan()
 & ADD()
-  add(<number>, <number>[, ... , <numberN>])
+  add(<number1>, <number2>[, ... , <numberN>])
 
-  Returns the sum of the given <number>s.
+  Returns the sum of the given numbers.
   
 See also: MATH FUNCTIONS, lmath()
 & AFTER()
@@ -1391,24 +1391,34 @@ See also: dist3d(), lmath()
 See also: dist2d(), lmath()
 & DIV()
 & FLOORDIV()
-  div(<number>, <number>)
-  floordiv(<number>, <number>)
- 
-  div() returns the integer part of the quotient of the first number
-  divided by the second number.  floordiv() returns the largest integer
-  less than or equal to the quotient of the first number divided by
-  the second.  For positive numbers, these are the same thing, but for
-  negative numbers they may be different:
+& FDIV()
+  div(<number1>, <number2>[, ... , <numberN>])
+  fdiv(<number1>, <number2>[, ... , <numberN>])
+  floordiv(<number1>, <number2>[, ... , <numberN>])
+  
+  These functions divide <number1> by <number2> (and, for each subsequent
+  argument, divide the previous result by <numberN>) and return the final
+  result.
+  
+  div() returns the integer part of the quotient. floordiv() returns the
+  largest integer less than or equal to the quotient; for positive numbers,
+  they are identical, but for negative numbers they may differ. fdiv() returns
+  the floating-point quotient.
 
-   div(13,4)          ==>  3       and     floordiv(13,4)     ==>  3
+  Examples:
+  
+   div(13,4)          ==>   3      and     floordiv(13,4)     ==>   3
    div(-13,4)         ==>  -3      but     floordiv(-13,4)    ==>  -4
    div(13,-4)         ==>  -3      but     floordiv(13,-4)    ==>  -4
-   div(-13,-4)        ==>  3       and     floordiv(-13,-4)   ==>  3
+   div(-13,-4)        ==>   3      and     floordiv(-13,-4)   ==>   3
+   
+   fdiv(13,4)         ==>  3.25            fdiv(-13,4)        ==> -3.25
+   fdiv(13,-4)        ==>  -3.25           fdiv(-13,-4)       ==>  3.25
 
   Note that add(mul(div(%0,%1),%1),remainder(%0,%1)) always yields %0,
   and add(mul(floordiv(%0,%1),%1),modulo(%0,%1)) also always yields %0.
 
-See also: modulo(), fdiv(), lmath()
+See also: modulo(), lmath()
 & DOING()
   doing(<player|descriptor>)
 
@@ -1582,7 +1592,7 @@ See also: encode64(), digest()
  
 See also: lsearch(), @entrances
 & EQ()
-  eq(<number>, <number>[, ... , <numberN>])
+  eq(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more <number>s, and returns 1 if they are all equal,
   and 0 otherwise.
@@ -1665,13 +1675,6 @@ See also: lexits(), next()
     last three elements
 
 See also: index(), elements(), grab()
-& FDIV()
-  fdiv(<numerator>, <denominator>)
- 
-  Returns the quotient of the two numbers. Note that the div() and
-  mod() functions cannot be used on floating point numbers.
-
-See also: div(), mod(), lmath()
 & FILTER()
 & FILTERBOOL()
   filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>]])
@@ -2029,14 +2032,14 @@ See also: match(), matchall(), grab(), regmatch()
   
 See also: @grep, lattr(), WILDCARDS
 & GT()
-  gt(<number>, <number>[, ... , <numberN>])
+  gt(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is greater than the number after it, and 0 otherwise.
 
 See also: gte(), lt(), lte(), eq(), neq(), lmath()
 & GTE()
-  gte(<number>, <number>[, ... , <numberN>])
+  gte(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is greater than or equal to the number after it, and 0 otherwise.
@@ -3282,20 +3285,20 @@ See also: regmatch(), regrab(), match(), REGEXP SYNTAX
   > say reglmatchall(I am testing a test, test, , |)
   You say, "3|5"
 & MAX()
-  max(<number>[, ... , <numberN>])
+  max(<number1>, <number2>[, ... , <numberN>])
 
   This function returns the largest number in its list of arguments.
   It can take any number of arguments.
   
 See also: min(), lmath(), bound(), alphamax()
 & MEAN()
-  mean(<number>[, ... , <numberN>])
+  mean(<number1>, <number2>[, ... , <numberN>])
 
   Returns the mean (arithmetic average) of its arguments.
 
 See also: median(), stddev(), lmath()
 & MEDIAN()
-  median(<number>[, ... , <numberN>)
+  median(<number>, <number>[, ... , <numberN>)
 
   Returns the median (the middlemost numerically) of its arguments.
 
@@ -3358,7 +3361,7 @@ See also: @message, oemit(), remit(), speak()
 
 See also: left(), right(), strdelete() 
 & MIN()
-  min(<number>[, ... , <numberN>])
+  min(<number1>, <number2>[, ... , <numberN>])
 
   This function returns the smallest number in its list of arguments.
   It can take any number of arguments.
@@ -3396,13 +3399,16 @@ See also: anonymous attributes, map(), step()
 & MODULO()
 & MODULUS()
 & REMAINDER()
-  mod(<number1>, <number2>)
-  modulo(<number1>, <number2>)
-  modulus(<number1>, <number2>)
-  remainder(<number1>, <number2>)
+  modulo(<number>, <number>[, ..., <numberN>])
+  remainder(<number>, <number>[, ..., <numberN>])
 
   remainder() returns the remainder of the integer division of the first
-  number by the second.  modulo() returns the modulo of the two numbers.
+  number by the second (and subsequent) number(s) (ie, the remainder from
+  calling div() with the same arguments).
+
+  modulo() returns the modulo of the given numbers (from calling floordiv()
+  with the same arguments).
+  
   For positive numbers, these are the same, but they may be different
   for negative numbers:
 
@@ -3416,7 +3422,7 @@ See also: anonymous attributes, map(), step()
 
   mod() and modulus() are aliases for modulo().
 
-See also: div(), fdiv(), lmath()
+See also: div(), lmath()
 & MONEY()
   money(<integer>)
   money(<object>)
@@ -5327,7 +5333,7 @@ See also: terminfo()
 
 See also: map(), iter(), fold(), anonymous attributes, registers()
 & STDDEV()
-  stddev(<number1>[, ... , <numberN>])
+  stddev(<number1>, <number2>[, ... , <numberN>])
 
   Returns the sample standard deviation of its arguments.
 

@@ -1001,7 +1001,7 @@ do_score(dbref player)
                   T("You have %d %s."),
                   Pennies(player), Pennies(player) == 1 ? MONEY : MONIES);
     if (Moneybags(player))
-      notify_format(player, T("You may give unlimited %s"), MONIES);
+      notify_format(player, T("You may give unlimited %s."), MONIES);
   }
 }
 

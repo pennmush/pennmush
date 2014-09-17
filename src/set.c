@@ -134,7 +134,7 @@ do_name(dbref player, const char *name, char *newname_)
   if (IsPlayer(thing)) {
     do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
            Name(thing), thing, newname);
-    if (Suspect(thing))
+    if (Suspect(thing) && strcmp(Name(thing), newname) != 0)
       flag_broadcast("WIZARD", 0,
                      T("Broadcast: Suspect %s changed name to %s."),
                      Name(thing), newname);

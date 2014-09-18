@@ -2886,14 +2886,14 @@ static int
 safe_markup(char const *a_tag, char *buf, char **bp, char type)
 {
   int result;
-  char *save = buf;
+  char *save = *bp;
   safe_chr(TAG_START, buf, bp);
   safe_chr(type, buf, bp);
   safe_str(a_tag, buf, bp);
   result = safe_chr(TAG_END, buf, bp);
   /* If it didn't all fit, rewind. */
-  if (result)
-    *bp = save;
+  if (result) 
+    memset(save, '\0', *bp - save);
   return result;
 }
 
@@ -2920,7 +2920,7 @@ static int
 safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type)
 {
   int result;
-  char *save = buf;
+  char *save = *bp;
   safe_chr(TAG_START, buf, bp);
   safe_chr(type, buf, bp);
   safe_chr('/', buf, bp);
@@ -2928,7 +2928,7 @@ safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type)
   result = safe_chr(TAG_END, buf, bp);
   /* If it didn't all fit, rewind. */
   if (result)
-    *bp = save;
+    memset(save, '\0', *bp - save);
   return result;
 }
 
@@ -2956,7 +2956,7 @@ safe_tag_wrap(char const *a_tag, char const *params,
               char const *data, char *buf, char **bp, dbref player)
 {
   int result = 0;
-  char *save = buf;
+  char *save = *bp;
   if (SUPPORT_PUEBLO) {
     safe_chr(TAG_START, buf, bp);
     safe_chr(MARKUP_HTML, buf, bp);
@@ -2972,7 +2972,7 @@ safe_tag_wrap(char const *a_tag, char const *params,
     result = safe_tag_cancel(a_tag, buf, bp);
   }
   /* If it didn't all fit, rewind. */
-  if (result)
-    *bp = save;
+  if (result) 
+    memset(save, '\0', *bp - save);
   return result;
 }

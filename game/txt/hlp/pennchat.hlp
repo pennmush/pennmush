@@ -266,7 +266,8 @@ See also: crecall(), cbufferadd(), @channel/buffer
   mortals can create, and a charge for doing so; see '@config chat'.
 
   @channel/privs changes the privs for <channel>. See 'help @channel privs'
-  for an explaination of all the possible priviledges.
+  for an explaination of all the possible priviledges. More specific and/or
+  complex restrictions can be set via @clocks (channel locks).
 
   @channel/describe sets a description for the channel, which is shown to
   players in @channel/what. Limited to 256 characters. If the desc includes
@@ -530,7 +531,7 @@ See also: cflags(), clflags()
   > @lock/user:anotherchanneljoin #10=flag^bar
   > @clock/join anotherchannel=@#10/anotherchanneljoin
 
-See also: clock(), @lock
+See also: clock(), @lock, @channel/privs
 & COWNER()
   cowner(<channel>)
 

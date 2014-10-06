@@ -6545,13 +6545,16 @@ See also: VECTOR FUNCTIONS
 & VALID()
   valid(<category>, <string>[, <target>])
 
-  The valid() function checks to see if <string> is a valid member of
-  <category>, and returns 1 if it is, 0 if not, and #-1 if an invalid
-  category is used.
+  The valid() function checks to see if <string> can be used as a valid 
+  <category>, and returns 1 if so, 0 if not, and #-1 if an invalid category is
+  used. For some categories, a <target> can be given to make the check more
+  specific.
   
   The categories are:
    name        Test for a valid object name.
    attrname    Test for a valid attribute name.
+   attrvalue   Test if <string> is a valid value for the attribute <target>.
+               Meaningful for standard attributes with @attrib/enum or /limit.
    playername  Test if <target> could @name himself to <string>. <target>
                 defaults to the caller.
    password    Test for a valid password.

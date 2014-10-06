@@ -530,7 +530,7 @@ display_attr_limit(ATTR *ap)
 }
 
 /** Check an attribute's value against /limit or /enum restrictions.
- * \param player Player attempting to set the attribute. Used for notify()
+ * \param player Player to send error message to, or NOTHING to skip
  * \param name the attribute name.
  * \param value The desired attribute value.
  * \retval The new value to set if valid, NULL if not.
@@ -579,7 +579,8 @@ check_attr_value(dbref player, const char *name, const char *value)
     if (subpatterns >= 0) {
       return value;
     } else {
-      notify(player, T("Attribute value does not match the /limit regexp."));
+      if (player != NOTHING)
+        notify(player, T("Attribute value does not match the /limit regexp."));
       return NULL;
     }
   } else if (ap->flags & AF_ENUM) {
@@ -587,9 +588,10 @@ check_attr_value(dbref player, const char *name, const char *value)
      * and the value cannot have the delimiter in it. */
     delim = *attrval;
     if (!*value || strchr(value, delim)) {
-      notify_format(player,
-                    T("Value for %s needs to be one of: %s"),
-                    ap->name, display_attr_limit(ap));
+      if (player != NOTHING)
+        notify_format(player,
+                      T("Value for %s needs to be one of: %s"),
+                      ap->name, display_attr_limit(ap));
       return NULL;
     }
 
@@ -623,9 +625,10 @@ check_attr_value(dbref player, const char *name, const char *value)
       buff[ptr2 - ptr] = '\0';
       return buff;
     } else {
-      notify_format(player,
-                    T("Value for %s needs to be one of: %s"),
-                    ap->name, display_attr_limit(ap));
+      if (player != NOTHING)
+        notify_format(player,
+                      T("Value for %s needs to be one of: %s"),
+                      ap->name, display_attr_limit(ap));
       return NULL;
     }
   }

@@ -101,11 +101,15 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
                                       data);
   } else if (addr->sa_family == AF_INET6) {
     const struct sockaddr_in6 *a = (const struct sockaddr_in6 *) addr;
-    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback,
-                                           data);
+    if (IN6_IS_ADDR_V4MAPPED(&a->sin6_addr)) {
+      struct in_addr *a4 = (struct in_addr *)(a->sin6_addr.s6_addr + 12);
+      return evdns_base_resolve_reverse(base, a4, flags, callback, data);
+    } else 
+      return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback,
+					     data);
   } else {
     lock_file(stderr);
-    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d",
+    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d\n",
             addr->sa_family);
     unlock_file(stderr);
     return NULL;

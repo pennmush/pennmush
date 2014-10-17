@@ -23,8 +23,8 @@ Fixes:
  * Help fixes. [MG]
 
 Hardcode:
- * Improvements to networking code; robustness on errors and portability. [SW]
- 
+ * Improvements to networking code; robustness on errors and portability. [SW] 
+
 Minor changes:
  * @attribute/delete now displays the info for an attribute, as per @attrib
    <attr>, prior to deleting it. [MG]

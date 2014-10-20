@@ -3449,7 +3449,7 @@ sockset_wrapper(DESC *d, char *cmd)
 
   if (!*cmd) {
     /* query all */
-    res = sockset_show(d);
+    res = sockset_show(d, ((d->conn_flags & CONN_HTML) ? "<br>\n" : "\r\n"));
     queue_newwrite(d, res, strlen(res));
     queue_eol(d);
     return;
@@ -3471,35 +3471,45 @@ sockset_wrapper(DESC *d, char *cmd)
 }
 
 const char *
-sockset_show(DESC *d)
+sockset_show(DESC *d, char *nl)
 {
   static char buff[BUFFER_LEN];
   char *bp = buff;
   char colorstyle[SBUF_LEN];
   int ntype;
+  int nllen = strlen(nl);
+  
+  safe_strl(nl, nllen, buff, &bp);
 
-  safe_chr('\n', buff, &bp);
-
-  if (d->output_prefix && *(d->output_prefix))
-    safe_format(buff, &bp, "%-15s:  %s\n", PREFIX_COMMAND, d->output_prefix);
-
-  if (d->output_suffix && *(d->output_suffix)) {
-    safe_format(buff, &bp, "%-15s:  %s\n", SUFFIX_COMMAND, d->output_suffix);
+  if (d->output_prefix && *(d->output_prefix)) {
+    safe_format(buff, &bp, "%-15s:  %s", PREFIX_COMMAND, d->output_prefix);
+    safe_strl(nl, nllen, buff, &bp);
   }
 
-  safe_format(buff, &bp, "%-15s:  %s\n", "Pueblo",
-              (d->conn_flags & CONN_HTML ? "Yes" : "No"));
-  safe_format(buff, &bp, "%-15s:  %s\n", "Telnet",
-              (TELNET_ABLE(d) ? "Yes" : "No"));
-  safe_format(buff, &bp, "%-15s:  %d\n", "Width", d->width);
-  safe_format(buff, &bp, "%-15s:  %d\n", "Height", d->height);
-  safe_format(buff, &bp, "%-15s:  %s\n", "Terminal Type", d->ttype);
+  if (d->output_suffix && *(d->output_suffix)) {
+    safe_format(buff, &bp, "%-15s:  %s", SUFFIX_COMMAND, d->output_suffix);
+    safe_strl(nl, nllen, buff, &bp);
+  }
 
+  safe_format(buff, &bp, "%-15s:  %s", "Pueblo",
+              (d->conn_flags & CONN_HTML ? "Yes" : "No"));
+  safe_strl(nl, nllen, buff, &bp);
+  safe_format(buff, &bp, "%-15s:  %s", "Telnet",
+              (TELNET_ABLE(d) ? "Yes" : "No"));
+  safe_strl(nl, nllen, buff, &bp);
+  safe_format(buff, &bp, "%-15s:  %d", "Width", d->width);
+  safe_strl(nl, nllen, buff, &bp);
+  safe_format(buff, &bp, "%-15s:  %d", "Height", d->height);
+  safe_strl(nl, nllen, buff, &bp);
+  safe_format(buff, &bp, "%-15s:  %s", "Terminal Type", d->ttype);
+  safe_strl(nl, nllen, buff, &bp);
+  
   ntype = notify_type(d);
 
-  safe_format(buff, &bp, "%-15s:  %s\n", "Stripaccents",
+  safe_format(buff, &bp, "%-15s:  %s", "Stripaccents",
               (ntype & MSG_STRIPACCENTS ? "Yes" : "No"));
-
+  safe_strl(nl, nllen, buff, &bp);
+  
   if (ntype & MSG_XTERM256)
     strcpy(colorstyle, "xterm256");
   else if (ntype & MSG_ANSI16)
@@ -3510,10 +3520,10 @@ sockset_show(DESC *d)
     strcpy(colorstyle, "plain");
 
   if (d->conn_flags & CONN_COLORSTYLE)
-    safe_format(buff, &bp, "%-15s:  %s\n", "Color Style", colorstyle);
+    safe_format(buff, &bp, "%-15s:  %s", "Color Style", colorstyle);
   else
-    safe_format(buff, &bp, "%-15s:  auto (%s)\n", "Color Style", colorstyle);
-
+    safe_format(buff, &bp, "%-15s:  auto (%s)", "Color Style", colorstyle);
+  safe_strl(nl, nllen, buff, &bp);
   safe_format(buff, &bp, "%-15s:  %s", "Prompt Newlines",
               (d->conn_flags & CONN_PROMPT_NEWLINES ? "Yes" : "No"));
 

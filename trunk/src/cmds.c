@@ -128,7 +128,7 @@ COMMAND(cmd_sockset)
 
   if (!rhs_present) {
     if (d->player == executor || See_All(executor))
-      notify(executor, sockset_show(d));
+      notify(executor, sockset_show(d, "\n"));
     else
       notify(executor, T("Permission denied."));
     return;

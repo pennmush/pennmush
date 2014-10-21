@@ -178,7 +178,7 @@ FUNTAB flist[] = {
   {"ANDLFLAGS", fun_andlflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ANDLPOWERS", fun_andlflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ANSI", fun_ansi, 2, -2, FN_REG},
-#ifdef ANSI_DEBUG
+#if defined(ANSI_DEBUG) || defined(DEBUG_PENNMUSH)
   {"ANSIGEN", fun_ansigen, 1, 1, FN_REG},
 #endif
   {"APOSS", fun_aposs, 1, 1, FN_REG | FN_STRIPANSI},
@@ -670,6 +670,9 @@ FUNTAB flist[] = {
   {"TAG", fun_tag, 1, INT_MAX, FN_REG},
   {"ENDTAG", fun_endtag, 1, 1, FN_REG},
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},
+#ifdef DEBUG_PENNMUSH
+  {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
+#endif /* DEBUG_PENNMUSH */
   {NULL, NULL, 0, 0, 0}
 };
 

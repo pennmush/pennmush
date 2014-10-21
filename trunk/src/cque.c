@@ -1123,15 +1123,19 @@ do_entry(MQUE *entry, int include_recurses)
       tmp = entry->inplace;
       /* We have a new queue to process, via @include, @break, @switch/inplace or similar */
       if (include_recurses < 50) {
-        if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
-          if (tmp->queue_type & QUEUE_CLEAR_QREG) {
-            pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_Q | PE_REGS_QSTOP, "do_entry");
-          } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q, "do_entry");
-          }
-        } else {
-          pe_regs = NULL;
+        switch (tmp->queue_type & (QUEUE_PRESERVE_QREG | QUEUE_CLEAR_QREG)) {
+          case QUEUE_PRESERVE_QREG:
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_LOCALQ, "do_entry");
+            break;
+          case QUEUE_CLEAR_QREG:
+            clear_allq(entry->pe_info);
+            pe_regs = NULL;
+            break;
+          case (QUEUE_CLEAR_QREG | QUEUE_PRESERVE_QREG):
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_LOCALQ | PE_REGS_QSTOP, "do_entry");
+            break;
+          default:
+            pe_regs = NULL;
         }
         if (tmp->regvals) {
           /* PE_INFO_SHARE - This comes after the localizing. */

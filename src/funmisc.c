@@ -48,8 +48,6 @@ extern HASHTAB htab_function;
 
 extern const unsigned char *tables;
 
-void clear_allq(NEW_PE_INFO *pe_info);
-
 /* ARGSUSED */
 FUNCTION(fun_valid)
 {
@@ -555,7 +553,12 @@ clear_allq(NEW_PE_INFO *pe_info)
         }
       }
     }
-    if (!(pe_regs->flags & PE_REGS_LET)) {
+    if ((pe_regs->flags & (PE_REGS_LET | PE_REGS_LOCALIZED))) {
+      /* This was created by localize(), letq(), or something similar,
+       * so we can't change anything above it.
+       * Instead, just set PE_REGS_QSTOP so we don't look at anything above it.
+       * This effectively clears everything above while this pe_regs exists,
+       * magically bringing it back when this localized pe_regs goes away */
       pe_regs->flags |= PE_REGS_QSTOP;
       return;
     }

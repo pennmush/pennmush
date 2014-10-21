@@ -87,6 +87,8 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch */
 #define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
 #define PE_REGS_ARGPASS 0x1000  /**< When used with NEWATTR, don't block args (%0-%9) */
+#define PE_REGS_LOCALIZED 0x2000 /**< This pe_regs created due to localize() or similar */
+#define PE_REGS_LOCALQ (PE_REGS_Q | PE_REGS_LOCALIZED)
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
@@ -181,6 +183,8 @@ void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
                                  struct _ansi_string *re_from);
 const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Get_re(pi,k) pi_regs_get_rx(pi,k)
+
+void clear_allq(NEW_PE_INFO *pe_info);
 
 /* PE_REGS_SWITCH and PE_REGS_ITER
  *

@@ -702,6 +702,23 @@ free_pe_regs_trees()
   st_flush(&pe_reg_vals);
 }
 
+#ifdef DEBUG_PENNMUSH
+FUNCTION(fun_pe_regs_dump)
+{
+  dbref who = caller;
+  
+  if (args[0] && *args[0]) {
+    who = lookup_player(args[0]);
+    if (!GoodObject(who)) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  pe_regs_dump(pe_info->regvals, who);
+}
+#endif
+
 /* For debugging purposes. */
 void
 pe_regs_dump(PE_REGS *pe_regs, dbref who)
@@ -709,6 +726,7 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
   int i = 0;
   PE_REG_VAL *val;
 
+  notify(who, " ");
   while (pe_regs && i < 100) {
     notify_format(who, "%d: %.4X '%s'", i, pe_regs->flags, pe_regs->name);
     i++;
@@ -727,6 +745,7 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     }
     pe_regs = pe_regs->prev;
   }
+  notify(who, " ");
 }
 
 /** Create a PE_REGS context.
@@ -852,7 +871,6 @@ pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name)
 
   return pe_regs;
 }
-
 
 /** Restore a PE_REGS context.
  *
@@ -2703,7 +2721,7 @@ process_expression(char *buff, char **bp, char const **str,
             global_fun_recursions++;
             pe_info->fun_recursions++;
             if (fp->flags & FN_LOCALIZE) {
-              pe_regs = pe_regs_localize(pe_info, PE_REGS_Q,
+              pe_regs = pe_regs_localize(pe_info, PE_REGS_LOCALQ,
                                          "process_expression");
             } else {
               pe_regs = NULL;

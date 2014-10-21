@@ -99,7 +99,7 @@ FUNCTION(fun_localize)
   char const *p;
   PE_REGS *pe_regs;
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_Q, "fun_localize");
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_LOCALQ, "fun_localize");
 
   p = args[0];
   process_expression(buff, bp, &p, executor, caller, enactor, eflags,

@@ -270,7 +270,7 @@ call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
   pe_regs_old = pe_info->regvals;
 
   if (ufun->ufun_flags & UFUN_LOCALIZE)
-    pe_reg_flags |= PE_REGS_Q;
+    pe_reg_flags |= PE_REGS_LOCALQ;
   else {
     pe_reg_flags |= PE_REGS_NEWATTR;
     if (ufun->ufun_flags & UFUN_SHARE_STACK)

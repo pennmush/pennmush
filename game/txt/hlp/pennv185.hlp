@@ -20,6 +20,8 @@ Fixes:
  * @attribute/delete now deletes all aliases for the deleted attr, too. [MG]
  * Help fixes. [MG]
  * SOCKSET didn't always send the corret lineendings. [MG]
+ * unsetq() and @include/clearregs were unpredictable, and hopefully now
+   function more reliably. Reported by spork, Mercutio and others. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

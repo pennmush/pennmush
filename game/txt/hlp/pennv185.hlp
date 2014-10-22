@@ -23,6 +23,8 @@ Fixes:
  * unsetq() and @include/clearregs were unpredictable, and hopefully now
    function more reliably. Reported by spork, Mercutio and others. [MG]
  * Remove compile warning when info_slave isn't used. [MG]
+ * %X now always returns the capitalized version of %x, even when the returned
+   value contains ANSI. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

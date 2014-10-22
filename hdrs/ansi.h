@@ -191,7 +191,7 @@ typedef struct _ansi_string {
 int ansi_strcmp(const char *astr, const char *bstr);
 char *remove_markup(const char *orig, size_t *stripped_len);
 void sanitize_moniker(char *input, char *buff, char **bp);
-char *skip_leading_ansi(const char *p);
+char *skip_leading_ansi(const char *p, const char *bound);
 
 int has_markup(const char *test);
 ansi_string *
@@ -239,7 +239,7 @@ parse_ansi_string(const char *src)
                       char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
-#define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)
+#define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p,NULL)) && *p)
 
     int valid_color_name(const char *name);
     uint32_t color_to_hex(const char *name, bool hilite);

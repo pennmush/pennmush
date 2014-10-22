@@ -2390,8 +2390,12 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(savec, buff, bp);
         }
 
-        if (isupper(savec))
-          *savepos = UPCASE(*savepos);
+        if (isupper(savec)) {
+          savepos = skip_leading_ansi(savepos, *bp);
+          if (savepos) {
+            *savepos = UPCASE(*savepos);
+          }
+        }
       }
       break;
     case '{':                  /* "{}" parse group; recurse with no function check */

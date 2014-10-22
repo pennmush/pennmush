@@ -469,8 +469,8 @@ ansi_strcmp(const char *astr, const char *bstr)
   const char *a, *b;
 
   for (a = astr, b = bstr; *a && *b;) {
-    a = skip_leading_ansi(a);
-    b = skip_leading_ansi(b);
+    a = skip_leading_ansi(a, NULL);
+    b = skip_leading_ansi(b, NULL);
     if (*a != *b)
       return (*a - *b);
     if (*b)
@@ -479,9 +479,9 @@ ansi_strcmp(const char *astr, const char *bstr)
       a++;
   }
   if (*a)
-    a = skip_leading_ansi(a);
+    a = skip_leading_ansi(a, NULL);
   if (*b)
-    b = skip_leading_ansi(b);
+    b = skip_leading_ansi(b, NULL);
   return (*a - *b);
 }
 
@@ -1572,25 +1572,28 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
 
 /** Return a string pointer past any ansi/html markup at the start.
  * \param p a string.
+ * \param bound if non-NULL, don't proceed past bound
  * \return pointer to string after any initial ansi/html markup.
  */
 
 char *
-skip_leading_ansi(const char *p)
+skip_leading_ansi(const char *p, const char *bound)
 {
   if (!p)
     return NULL;
-  while (*p == ESC_CHAR || *p == TAG_START) {
+  while ((*p == ESC_CHAR || *p == TAG_START) && (!bound || p < bound)) {
     if (*p == ESC_CHAR) {
-      while (*p && *p != 'm')
+      while (*p && *p != 'm' && (!bound || p <= bound))
         p++;
     } else {                    /* TAG_START */
-      while (*p && *p != TAG_END)
+      while (*p && *p != TAG_END && (!bound || p <= bound))
         p++;
     }
     if (*p)
       p++;
   }
+  if (p > bound)
+    return NULL;
   return (char *) p;
 
 }

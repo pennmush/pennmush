@@ -988,7 +988,9 @@ shovechars(Port_t port, Port_t sslport)
   /* this is the main game loop */
 
   fd_set input_set, output_set;
+#ifdef INFO_SLAVE
   time_t now;
+#endif
   struct timeval last_slice, current_time, then;
   struct timeval next_slice;
   struct timeval timeout, slice_timeout;
@@ -1084,7 +1086,7 @@ shovechars(Port_t port, Port_t sslport)
                 exit_report("info_slave", slave_error, error_code));
       slave_error = error_code = 0;
     }
-#endif
+#endif                          /* INFO_SLAVE */
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
       do_rawlog(LT_ERR, "%s",
@@ -1093,7 +1095,7 @@ shovechars(Port_t port, Port_t sslport)
       if (!ssl_slave_halted)
         make_ssl_slave();
     }
-#endif
+#endif                          /* SSL_SLAVE */
 #endif                          /* !WIN32 */
 
 
@@ -1198,8 +1200,8 @@ shovechars(Port_t port, Port_t sslport)
       } else {
         do_top(options.active_q_chunk);
       }
-      now = mudtime;
 #ifdef INFO_SLAVE
+      now = mudtime;
       if (info_slave_state == INFO_SLAVE_PENDING
           && FD_ISSET(info_slave, &input_set)) {
         reap_info_slave();
@@ -1216,7 +1218,7 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
-#endif
+#endif                          /* LOCAL_SOCKET */
 #else                           /* INFO_SLAVE */
       if (FD_ISSET(sock, &input_set))
         setup_desc(sock, CS_IP_SOCKET);
@@ -1225,8 +1227,8 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
-#endif
-#endif
+#endif                          /* LOCAL_SOCKET */
+#endif                          /* INFO_SLAVE */
 
       if (notify_fd >= 0 && FD_ISSET(notify_fd, &input_set))
         file_watch_event(notify_fd);

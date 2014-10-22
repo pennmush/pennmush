@@ -580,6 +580,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   @attribute/access[/retroactive] <attrib>=<flag list>
   @attribute/delete <attrib>
   @attribute/rename <attrib>=<new name>
+  @attribute/decompile[/retroactive] [<pattern>]
   
   @attribute/access adds <attrib> as a new standard attribute, with the
   default attribute flags <flag list>. If <attrib> is already a standard
@@ -594,6 +595,11 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   @attribute/rename renames a standard attribute. 
   
   Only Wizards can modify the attribute table.
+  
+  @attribute/decompile prints out a list of @attribute/access commands needed
+  to recreate the attribute table on another MUSH. If /retroactive is given,
+  that switch will be included in the output. If <pattern> is given, only
+  attributes matching <pattern> are decompiled.
   
   Continued in 'help @attribute3'.
 & @attribute3
@@ -1913,6 +1919,7 @@ See also: PUPPET, DBREF, objeval()
   @flag/type <flag name>=<type(s)>
   @flag/enable <flag name>
   @flag/disable <flagname>
+  @flag/decompile [<pattern>]
 
   This command manipulates the list of flags in the database.
   When given a flag name as an argument, the command displays information
@@ -1931,6 +1938,9 @@ See also: PUPPET, DBREF, objeval()
       in the database and the removing it permanently from the 
       flag table. It requires the exact flag name or alias to be used.
       Be very very careful with this. 
+	/decompile prints out a list of @flag/add commands needed to recreate
+	  the flag table on another MUSH. If <pattern> is given, only flags whose
+	  names match that wildcard pattern are shown.
 
   See 'help @flag2' for information on @flag/add.
   

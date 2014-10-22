@@ -1321,9 +1321,9 @@ FUNCTION(fun_list)
   else if (string_prefix("locks", args[0]))
     list_locks(buff, bp, NULL);
   else if (string_prefix("flags", args[0]))
-    safe_str(list_all_flags("FLAG", "", executor, 0x3), buff, bp);
+    safe_str(list_all_flags("FLAG", "", executor, FLAG_LIST_NAMECHAR), buff, bp);
   else if (string_prefix("powers", args[0]))
-    safe_str(list_all_flags("POWER", "", executor, 0x3), buff, bp);
+    safe_str(list_all_flags("POWER", "", executor, FLAG_LIST_NAMECHAR), buff, bp);
   else
     safe_str("#-1", buff, bp);
   return;

@@ -35,6 +35,7 @@ void do_attribute_delete(dbref player, char *name);
 void do_attribute_rename(dbref player, char *old, char *newname);
 void do_attribute_info(dbref player, char *name);
 void do_list_attribs(dbref player, int lc);
+void do_decompile_attribs(dbref player, char *pattern, int retroactive);
 char *list_attribs(void);
 void attr_init_postconfig(void);
 const char *check_attr_value(dbref player, const char *name, const char *value);

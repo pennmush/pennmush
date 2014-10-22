@@ -128,8 +128,13 @@ enum flag_res add_flag_generic(const char *ns, const char *name,
 int alias_flag_generic(const char *ns, const char *name, const char *alias);
 #define alias_flag(n,a) alias_flag_generic("FLAG",n,a);
 #define alias_power(n,a) alias_flag_generic("POWER",n,a);
-void do_list_flags(const char *ns, dbref player, const char *arg, int lc,
+void do_list_flags(const char *ns, dbref player, const char *arg, int style,
                    const char *label);
+#define FLAG_LIST_CHAR 0x01
+#define FLAG_LIST_NAME 0x02
+#define FLAG_LIST_DECOMPILE 0x04
+#define FLAG_LIST_LOWERCASE 0x08
+#define FLAG_LIST_NAMECHAR (FLAG_LIST_NAME | FLAG_LIST_CHAR)
 char *list_all_flags(const char *ns, const char *name, dbref privs, int which);
 void do_flag_info(const char *ns, dbref player, const char *name);
 void do_flag_delete(const char *ns, dbref player, const char *name);

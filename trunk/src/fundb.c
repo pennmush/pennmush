@@ -504,7 +504,7 @@ FUNCTION(fun_flags)
   char *p;
   ATTR *a;
   if (nargs == 0) {
-    safe_str(list_all_flags("FLAG", NULL, executor, 0x1), buff, bp);
+    safe_str(list_all_flags("FLAG", NULL, executor, FLAG_LIST_CHAR), buff, bp);
     return;
   }
   if ((p = strchr(args[0], '/')))
@@ -535,7 +535,7 @@ FUNCTION(fun_lflags)
   char *p;
   ATTR *a;
   if (nargs == 0) {
-    safe_str(list_all_flags("FLAG", NULL, executor, 0x2), buff, bp);
+    safe_str(list_all_flags("FLAG", NULL, executor, FLAG_LIST_NAME), buff, bp);
     return;
   }
   if ((p = strchr(args[0], '/')))
@@ -581,7 +581,7 @@ FUNCTION(fun_powers)
   dbref it;
 
   if (nargs == 0) {
-    safe_str(list_all_flags("POWER", NULL, executor, 0x2), buff, bp);
+    safe_str(list_all_flags("POWER", NULL, executor, FLAG_LIST_NAME), buff, bp);
     return;
   }
 

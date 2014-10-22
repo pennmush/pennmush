@@ -1025,6 +1025,38 @@ display_attr_info(dbref player, ATTR *ap)
   return;
 }
 
+/** Decompile the standard attribute table, as per \@attribute/decompile
+ * \param player The enactor
+ * \param pattern Wildcard pattern of attrnames to decompile
+ * \param retroactive Include the /retroactive switch?
+*/
+void
+do_decompile_attribs(dbref player, char *pattern, int retroactive)
+{
+  ATTR *ap;
+  const char *name;
+  
+  notify(player, T("@@ Standard Attributes:"));
+  for (ap = ptab_firstentry_new(&ptab_attrib, &name);
+       ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
+    if (strcmp(name, AL_NAME(ap)))
+      continue;
+    if (pattern && *pattern && !quick_wild(pattern, AL_NAME(ap)))
+      continue;
+    notify_format(player, "@attribute/access%s %s=%s",
+                  (retroactive ? "/retroactive" : ""),
+                  AL_NAME(ap),
+                  privs_to_string(attr_privs_view, AL_FLAGS(ap)));
+    if (ap->flags & AF_RLIMIT) {
+      notify_format(player, "@attribute/limit %s=%s", AL_NAME(ap), 
+                    display_attr_limit(ap));
+    } else if (ap->flags & AF_ENUM) {
+      notify_format(player, "@attribute/enum %s=%s", AL_NAME(ap),
+                    display_attr_limit(ap));
+    }
+  }
+}
+
 /** Display a list of standard attributes.
  * \verbatim
  * Top-level function for @list/attribs.

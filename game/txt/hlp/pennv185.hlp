@@ -22,6 +22,7 @@ Fixes:
  * SOCKSET didn't always send the corret lineendings. [MG]
  * unsetq() and @include/clearregs were unpredictable, and hopefully now
    function more reliably. Reported by spork, Mercutio and others. [MG]
+ * Remove compile warning when info_slave isn't used. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

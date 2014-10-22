@@ -2462,11 +2462,12 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
  * \param label label to prefix to list.
  */
 void
-do_list_flags(const char *ns, dbref player, const char *arg, int lc,
+do_list_flags(const char *ns, dbref player, const char *arg, int style,
               const char *label)
 {
-  char *b = list_all_flags(ns, arg, player, 0x3);
-  notify_format(player, "%s: %s", label, lc ? strlower(b) : b);
+  char *b = list_all_flags(ns, arg, player, style);
+  notify_format(player, "%s: %s", label, 
+               (style & FLAG_LIST_LOWERCASE) ? strlower(b) : b);
 }
 
 /** User interface to show flag detail.
@@ -3095,12 +3096,18 @@ list_aliases(const FLAGSPACE *n, const FLAG *given)
   return buf;
 }
 
-
+#define fld_args(args,to) \
+     if (args == 0) { \
+       safe_chr('=',buf,&bp); \
+       args++; \
+     } \
+     for (;args < to; args++) \
+       safe_chr(',',buf,&bp)
 /** Return a list of all flags.
  * \param ns name of namespace to search.
  * \param name wildcard to match against flag names, or NULL for all.
  * \param privs the looker, for permission checking.
- * \param which a bitmask of 0x1 (flag chars) and 0x2 (flag names).
+ * \param which a bitmask of FLAG_LIST_* options to control output
  */
 char *
 list_all_flags(const char *ns, const char *name, dbref privs, int which)
@@ -3110,6 +3117,7 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   int i, numptrs = 0;
   static char buf[BUFFER_LEN];
   char *bp;
+  char *p;
   int disallowed;
   FLAGSPACE *n;
 
@@ -3127,35 +3135,54 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   do_gensort(privs, ptrs, NULL, numptrs, ALPHANUM_LIST);
   bp = buf;
   for (i = 0; i < numptrs; i++) {
-    switch (which) {
-    case 0x3:
+    f = match_flag_ns(n, ptrs[i]);
+    if (!f)
+      continue;
+    if (which & FLAG_LIST_DECOMPILE) {
+      int args = 0;
+      safe_chr('\n', buf, &bp);
+      safe_format(buf, &bp, "@flag/add %s", f->name);
+      if (f->letter != '\0') {
+        safe_chr('=', buf, &bp);
+        safe_chr(f->letter, buf, &bp);
+        args++;
+      }
+      if ((f->type & (TYPE_PLAYER|TYPE_THING|TYPE_ROOM|TYPE_EXIT)) != (TYPE_PLAYER|TYPE_THING|TYPE_ROOM|TYPE_EXIT)) {
+        fld_args(args,2);
+        safe_str((char *) privs_to_string(type_privs, f->type), buf, &bp);
+      }
+      p = (char *) privs_to_string(flag_privs, f->perms);
+      if (*p) {
+        fld_args(args,3);
+        safe_str(p, buf, &bp);
+      }
+      p = (char *) privs_to_string(flag_privs, f->negate_perms);
+      if (*p) {
+        fld_args(args,4);
+        safe_str(p, buf, &bp);
+      }
+    } else if ((which & FLAG_LIST_NAMECHAR) == FLAG_LIST_NAMECHAR) {
       if (i)
         safe_strl(", ", 2, buf, &bp);
-      safe_str(ptrs[i], buf, &bp);
-      f = match_flag_ns(n, ptrs[i]);
-      if (!f)
-        break;
+      safe_str(f->name, buf, &bp);
       if (f->letter != '\0')
         safe_format(buf, &bp, " (%c)", f->letter);
       if (f->perms & F_DISABLED)
         safe_str(T(" (disabled)"), buf, &bp);
-      break;
-    case 0x2:
+    } else if (which & FLAG_LIST_NAME) {
       if (i)
         safe_chr(' ', buf, &bp);
-      safe_str(ptrs[i], buf, &bp);
-      break;
-    case 0x1:
-      f = match_flag_ns(n, ptrs[i]);
-      if (f && (f->letter != '\0'))
+      safe_str(f->name, buf, &bp);
+    } else if (which & FLAG_LIST_CHAR) {
+      if (f->letter != '\0')
         safe_chr(f->letter, buf, &bp);
-      break;
     }
   }
   *bp = '\0';
   free(ptrs);
   return buf;
 }
+#undef fld_args
 
 const char *
 flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)

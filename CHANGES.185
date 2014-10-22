@@ -40,6 +40,8 @@ Minor changes:
     an alert. Suggested by 0x0045. [SW]
  * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
    For @attrib/enum and /limit. [MG]
+ * Added @flag/decompile and @attribute/decompile, to decompile each table
+   to copy to another game. Suggested by spork. [MG]
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

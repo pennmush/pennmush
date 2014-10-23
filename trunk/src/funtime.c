@@ -731,11 +731,13 @@ FUNCTION(fun_isdaylight)
 /** Convert seconds to a formatted time string.
  * \verbatim
  * Format codes:
- *       $s - Seconds. $S - Seconds, force 2 digits.
- *       $m - Minutes. $M - Minutes, force 2 digits.
- *       $h - Hours.   $H - Hours, force 2 digits.
- *       $d - Days.    $D - Days, force 2 digits.
- * $$ - Literal $.
+ *       $s, $S - Seconds
+ *       $m, $M - Minutes
+ *       $h, $H - Hours.
+ *       $d, $D - Days.
+ *       $$ - Literal $.
+ *   All of the above can be given as $Nx to pad to N characters wide.
+ *   $Nx are padded with spaces. $NX are padded with 0's.
  * \endverbatim
  * \param buff string to store the result in.
  * \param bp pointer into end of buff.

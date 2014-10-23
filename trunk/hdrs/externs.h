@@ -124,7 +124,7 @@ init_compress(PENNFILE *f __attribute__ ((__unused__)))
 #define QUEUE_PRESERVE_QREG    0x0020   /**< Preserve/restore q-registers before/after running this inplace queue */
 #define QUEUE_CLEAR_QREG       0x0040   /**< Clear q-registers before running this inplace queue */
 #define QUEUE_PROPAGATE_QREG   0x0080   /**< At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
-#define QUEUE_RESTORE_ENV      0x0100   /**< At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_RESTORE_ENV      0x0100   /**< Obsolete */
 #define QUEUE_NOLIST           0x0200   /**< Don't separate commands at semicolons, and don't parse rhs in &attr setting */
 #define QUEUE_BREAK            0x0400   /**< set by \@break, stops further processing of queue entry */
 #define QUEUE_RETRY            0x0800   /**< Set by \@retry, restart current queue entry from beginning, without recalling do_entry */

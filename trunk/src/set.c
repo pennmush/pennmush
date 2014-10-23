@@ -1264,7 +1264,11 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
 
   pcre_free(re);
   DEL_CHECK("pcre");
+#ifdef PCRE_CONFIG_JIT
+  pcre_free_study(study);
+#else
   pcre_free(study);
+#endif
   DEL_CHECK("pcre.extra");
 
 }

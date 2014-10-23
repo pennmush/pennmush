@@ -2636,7 +2636,11 @@ FUNCTION(fun_regreplace)
         pcre_free(re);
         DEL_CHECK("pcre");
         if (study) {
-          pcre_free(study);
+#ifdef PCRE_CONFIG_JIT
+        pcre_free_study(study);
+#else
+        pcre_free(study);
+#endif
           DEL_CHECK("pcre.extra");
         }
         goto exit_sequence;
@@ -2667,6 +2671,7 @@ FUNCTION(fun_regreplace)
 #else
       pcre_free(study);
 #endif
+      DEL_CHECK("pcre.extra");
     }
   }
 

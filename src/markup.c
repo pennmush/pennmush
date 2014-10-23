@@ -466,11 +466,17 @@ ansi_strnlen(const char *p, size_t numchars)
 int
 ansi_strcmp(const char *astr, const char *bstr)
 {
+  char abuf[BUFFER_LEN];
+  char *bbuf;
+  size_t alen = 0;
   const char *a, *b;
 
+  bbuf = remove_markup(astr, &alen);
+  memcpy(abuf, bbuf, alen);
+  astr = abuf;
+  bstr = remove_markup(bstr, NULL);
+
   for (a = astr, b = bstr; *a && *b;) {
-    a = skip_leading_ansi(a, NULL);
-    b = skip_leading_ansi(b, NULL);
     if (*a != *b)
       return (*a - *b);
     if (*b)
@@ -478,10 +484,6 @@ ansi_strcmp(const char *astr, const char *bstr)
     if (*a)
       a++;
   }
-  if (*a)
-    a = skip_leading_ansi(a, NULL);
-  if (*b)
-    b = skip_leading_ansi(b, NULL);
   return (*a - *b);
 }
 

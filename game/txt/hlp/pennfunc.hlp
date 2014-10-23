@@ -427,8 +427,8 @@ See also: before(), rest()
   Other options: Adding these after the width will alter the column's
     behaviour in some situtations
     . Repeat for as long as there is non-repeating text in another column.
-    ` Merge with the column on the left when it runs out of text.
-    ' Merge with the column on the right when it runs out of text.
+    ` When this column runs out of text, merge with the column to the left
+    ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with
       merge-left, the column to its left inherits the 'nofill' when merged.
 
@@ -464,7 +464,7 @@ See also: center(), ljust(), rjust(), table()
               Not a creature was stirring, not even a mouse.%r
               The stockings were hung by the chimney with care,%r
               In hopes that St Nicholas soon would be there.
-  > th align(9'(ch) 68, u(dropcap), u(story)
+  > th align(9'(ch) 68, u(dropcap), u(story))
   
    _______  
   |__   __| 'was the night before Christmas, when all through the house

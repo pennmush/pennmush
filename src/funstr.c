@@ -1683,6 +1683,7 @@ align_one_line(char *buff, char **bp, int ncols,
   int len;
   int cols_done;
   int skipspace;
+  bool needsep = 0;
 
   lp = line;
   memset(line, filler, BUFFER_LEN);
@@ -1693,6 +1694,9 @@ align_one_line(char *buff, char **bp, int ncols,
       cols_done++;
       continue;
     }
+    if (needsep)
+      safe_str(fieldsep, line, &lp);
+    needsep = 1;
     /* Is the next column AL_COALESCE_LEFT and has it run out of
      * text? If so, do the coalesce now.
      */
@@ -1739,8 +1743,6 @@ align_one_line(char *buff, char **bp, int ncols,
             write_ansi_close(line, &lp);
           }
         }
-        if (i < (ncols - 1) && fslen)
-          safe_str(fieldsep, line, &lp);
         cols_done++;
         continue;
       }
@@ -1860,8 +1862,6 @@ align_one_line(char *buff, char **bp, int ncols,
     }
     if ((lp - line) > BUFFER_LEN)
       lp = (line + BUFFER_LEN - 1);
-    if (i < (ncols - 1) && fslen)
-      safe_str(fieldsep, line, &lp);
     if (skipspace)
       for (; *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]); ptrs[i]++) ;
   }

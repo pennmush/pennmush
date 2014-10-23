@@ -467,24 +467,15 @@ int
 ansi_strcmp(const char *astr, const char *bstr)
 {
   char abuf[BUFFER_LEN];
-  char *bbuf;
+  char *tmp;
   size_t alen = 0;
-  const char *a, *b;
 
-  bbuf = remove_markup(astr, &alen);
-  memcpy(abuf, bbuf, alen);
+  tmp = remove_markup(astr, &alen);
+  memcpy(abuf, tmp, alen);
   astr = abuf;
   bstr = remove_markup(bstr, NULL);
 
-  for (a = astr, b = bstr; *a && *b;) {
-    if (*a != *b)
-      return (*a - *b);
-    if (*b)
-      b++;
-    if (*a)
-      a++;
-  }
-  return (*a - *b);
+  return strcmp(astr, bstr);
 }
 
 /** Compare ansi_data for exact equality.

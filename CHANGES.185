@@ -27,6 +27,9 @@ Fixes:
  * Remove compile warning when info_slave isn't used. [MG]
  * %X now always returns the capitalized version of %x, even when the returned
    value contains ANSI. [MG]
+ * Fixed a few niggly bugs in @include, registers() and similar things
+   making too many or too few registers available at the wrong time. From a
+   report by Paige. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 
@@ -229,7 +232,7 @@ Functions:
  * delete(), replace() and insert() have been renamed to strdelete(), 
    lreplace() and linsert(), respectively, for clarity and conformity. The
    original names remain as aliases. [MG]
- * moniker(<object>) returns an objects monikered name. [MUX] [MG]
+ * moniker(<object>) returns an object's monikered name. [MUX] [MG]
  * mapsql() only stored 10 columns, instead of the advertised 30. Reported
    by Mercutio. [MG]
  * fn() now takes an <obj>/ prefix to its first arg, to evaluate the built-in

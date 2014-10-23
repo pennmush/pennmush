@@ -84,7 +84,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_LET     0x100   /**< Used for let(): Only set qregs that already
                                  **< exist otherwise pass them up. */
 #define PE_REGS_QSTOP   0x200   /**< Q-reg get()s don't travel past this. */
-#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch */
+#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch, and (unless PE_REGS_ARGPASS is included) %0-%9 */
 #define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
 #define PE_REGS_ARGPASS 0x1000  /**< When used with NEWATTR, don't block args (%0-%9) */
 #define PE_REGS_LOCALIZED 0x2000 /**< This pe_regs created due to localize() or similar */

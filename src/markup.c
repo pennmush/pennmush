@@ -1572,7 +1572,7 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
 
 /** Return a string pointer past any ansi/html markup at the start.
  * \param p a string.
- * \param bound if non-NULL, don't proceed past bound
+ * \param bound if non-NULL, don't proceed past bound. bound must point to somewhere in the string.
  * \return pointer to string after any initial ansi/html markup.
  */
 
@@ -1592,7 +1592,7 @@ skip_leading_ansi(const char *p, const char *bound)
     if (*p)
       p++;
   }
-  if (p > bound)
+  if (bound && p > bound)
     return NULL;
   return (char *) p;
 

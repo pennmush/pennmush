@@ -1542,7 +1542,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       return 0;
     }
     ADD_CHECK("pcre");
-    rgd.study = pcre_study(rgd.re, pcre_study_flags, &errptr);
+    rgd.study = pcre_study(rgd.re, pcre_public_study_flags, &errptr);
     if (errptr != NULL) {
       if (buff) {
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);

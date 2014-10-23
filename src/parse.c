@@ -2088,6 +2088,12 @@ process_expression(char *buff, char **bp, char const **str,
       }
       break;
     case '%':                  /* Percent substitutions */
+      if (eflags & PE_LITERAL) {
+        /* Show literal % in lit() */
+        safe_chr('%', buff, bp);
+        (*str)++;
+        break;
+      }
       if (!(eflags & PE_EVALUATE) || (*bp - buff >= BUFFER_LEN - 1)) {
         /* peak -- % escapes (at least) one character */
         char savec;

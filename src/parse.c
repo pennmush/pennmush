@@ -1187,7 +1187,8 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
         val = val->next;
       }
     }
-    if (pe_regs->flags & breaker)
+    if (pe_regs->flags & breaker && 
+        (type != PE_REGS_ARG || !(pe_regs->flags & PE_REGS_ARGPASS)))
       return 0;
     pe_regs = pe_regs->prev;
   }
@@ -1401,6 +1402,7 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
   }
 }
 
+/* Used by PE_Get_re, to get regexp values */
 const char *
 pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
 {
@@ -1423,7 +1425,7 @@ pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
   return NULL;
 }
 
-/* ITER and SWITCH getters. */
+/* PE_Get_Itext and PE_Get_Stext, for iter (%i0) and switch (%$0) values. */
 const char *
 pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
 {
@@ -1451,6 +1453,7 @@ pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
   return NULL;
 }
 
+/* PE_Get_Inum, for inum() values */
 int
 pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
 {
@@ -1478,6 +1481,7 @@ pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
   return 0;
 }
 
+/* PE_Get_Ilev and PE_Get_Slev */
 int
 pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
 {
@@ -1525,6 +1529,7 @@ pe_regs_intname(int num)
   }
 }
 
+/* Set %0-%9 */
 void
 pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
 {
@@ -1532,6 +1537,7 @@ pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
   pe_regs_set(pe_regs, PE_REGS_ARG, name, val);
 }
 
+/* Set %0-%9 without copying value */
 void
 pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
 {
@@ -1539,7 +1545,7 @@ pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
   pe_regs_set(pe_regs, PE_REGS_ARG | PE_REGS_NOCOPY, name, val);
 }
 
-/* Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
+/* Get %0-%9. Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
 const char *
 pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name)
 {
@@ -1563,6 +1569,7 @@ pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name)
   return NULL;
 }
 
+/* Return number of stack args (%0-%9) present, for %+. Powers PE_Get_Envc */
 int
 pi_regs_get_envc(NEW_PE_INFO *pe_info)
 {

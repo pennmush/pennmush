@@ -30,6 +30,7 @@ Fixes:
  * Fixed a few niggly bugs in @include, registers() and similar things
    making too many or too few registers available at the wrong time. From a
    report by Paige. [MG]
+ * lit(%) returned %) instead of %. Reported by Ashen-Shugar. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

@@ -20,6 +20,7 @@ struct pcre_extra *default_match_limit(void);
 #endif
 
 extern int pcre_study_flags;
+extern int pcre_public_study_flags;
 
 #else
 #error "You appear to have a system PCRE library but not the pcre.h header."

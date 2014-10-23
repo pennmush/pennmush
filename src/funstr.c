@@ -1652,17 +1652,17 @@ FUNCTION(fun_wrap)
 }
 
 /* Alignment types. */
-#define AL_LEFT 1    /**< Align left */
-#define AL_RIGHT 2   /**< Align right */
-#define AL_CENTER 3  /**< Align center */
-#define AL_FULL 4    /**< Full justify */
-#define AL_WPFULL 5  /**< Paragraph full-justify */
+#define AL_LEFT 1    /**< Align left (<) */
+#define AL_RIGHT 2   /**< Align right (>) */
+#define AL_CENTER 3  /**< Align center (-) */
+#define AL_FULL 4    /**< Full justify (_) */
+#define AL_WPFULL 5  /**< Paragraph full-justify (=) */
 #define AL_TYPE 0x0F /**< Only the bottom 4 bits are used for the type. */
 /* Flags */
-#define AL_REPEAT 0x100  /**< Repeat column */
-#define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left */
-#define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right */
-#define AL_NOFILL 0x800  /**< No filler on the right of this. */
+#define AL_REPEAT 0x100  /**< Repeat column (.) */
+#define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left (`) */
+#define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right (') */
+#define AL_NOFILL 0x800  /**< No filler on the right of this. ($) */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,

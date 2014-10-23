@@ -673,8 +673,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   queue_entry->action_list = mush_strdup(actionlist, "mque.action_list");
   queue_entry->queue_type = queue_type;
   if (pe_regs && (flags & PE_INFO_SHARE)) {
-    /* We used to do this, but we actually don't need to, and it leads to
-     * errors with nested inplace queues.
+    queue_entry->regvals = pe_regs;
+    /* We used to do this instead, but we actually don't need to, and it
+     * leads to errors with nested inplace queues.
     queue_entry->regvals =
       pe_regs_create(pe_regs->flags, "new_queue_actionlist");
     pe_regs_copystack(queue_entry->regvals, pe_regs, PE_REGS_QUEUE, 0);
@@ -740,13 +741,12 @@ queue_include_attribute(dbref thing, const char *atrname,
       /* Skip the ':' */
       command++;
   }
-
   pe_regs = pe_regs_create(PE_REGS_NEWATTR, "queue_include_attribute");
   if (args != NULL) {
     pe_regs->flags |= PE_REGS_ARG;
     for (i = 0; i < MAX_STACK_ARGS; i++) {
       if (args[i] && *args[i]) {
-        pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+        pe_regs_setenv(pe_regs, i, args[i]);
       }
     }
   }
@@ -764,8 +764,7 @@ queue_include_attribute(dbref thing, const char *atrname,
                            PE_INFO_SHARE, queue_type, pe_regs,
                            tprintf("#%d/%s", thing, atrname));
 
-  if (pe_regs)
-    pe_regs_free(pe_regs);
+  /* pe_regs is freed later when the new queue is freed */
   free(start);
   return 1;
 }

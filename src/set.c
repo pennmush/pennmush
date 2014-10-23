@@ -1235,7 +1235,7 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     return;
   }
   ADD_CHECK("pcre");
-  study = pcre_study(re, 0, &errptr);
+  study = pcre_study(re, pcre_public_study_flags, &errptr);
   if (errptr != NULL) {
     pcre_free(re);
     DEL_CHECK("pcre");

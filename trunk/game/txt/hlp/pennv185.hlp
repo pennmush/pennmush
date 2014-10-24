@@ -29,11 +29,18 @@ Fixes:
    making too many or too few registers available at the wrong time. From a
    report by Paige. [MG]
  * lit(%) returned %) instead of %. Reported by Ashen-Shugar. [MG]
- * PCRE's jit engine causes crashes when passed certain malicious regular expressions.
-    Disable it for all public-facing uses of REs. Reported by Ashen-Shugar. [SW]
+ * PCRE's jit engine causes crashes when passed certain malicious regular 
+   expressions. Disable it for all public-facing uses of REs. Reported by 
+   Ashen-Shugar. [SW]
+ * align() would sometimes show extra column separators when columns were
+   merged. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 
+
+Functions:
+ * Added two new column modifiers to wrap(), x and X, to allow truncation of
+   fields instead of wrapping. Suggested by Qon, spork and others. [MG]
 
 Minor changes:
  * @attribute/delete now displays the info for an attribute, as per @attrib

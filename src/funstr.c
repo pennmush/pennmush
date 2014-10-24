@@ -1663,6 +1663,8 @@ FUNCTION(fun_wrap)
 #define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left (`) */
 #define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right (') */
 #define AL_NOFILL 0x800  /**< No filler on the right of this. ($) */
+#define AL_TRUNC_EACH 0x1000 /**< Truncate each (%r-separated) line instead of wrapping */
+#define AL_TRUNC_ALL 0x2000 /**< Truncate the entire column output, at column width or %r, whichever comes first */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,
@@ -1694,9 +1696,6 @@ align_one_line(char *buff, char **bp, int ncols,
       cols_done++;
       continue;
     }
-    if (needsep)
-      safe_str(fieldsep, line, &lp);
-    needsep = 1;
     /* Is the next column AL_COALESCE_LEFT and has it run out of
      * text? If so, do the coalesce now.
      */
@@ -1734,6 +1733,9 @@ align_one_line(char *buff, char **bp, int ncols,
         cols_done++;
         continue;
       } else {
+        if (needsep && fslen)
+          safe_str(fieldsep, line, &lp);
+        needsep = 1;
         if (!(calign[i] & AL_NOFILL)) {
           if (HAS_ANSI(adata[i])) {
             write_ansi_data(&adata[i], line, &lp);
@@ -1772,7 +1774,10 @@ align_one_line(char *buff, char **bp, int ncols,
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }
-      ptrs[i] = ptr + 1;
+      if (calign[i] & AL_TRUNC_ALL)
+        ptrs[i] = strchr(ptr, '\0');
+      else
+        ptrs[i] = ptr + 1;
     } else if (lastspace) {
       char *tptr;
 
@@ -1783,15 +1788,36 @@ align_one_line(char *buff, char **bp, int ncols,
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }
-      ptrs[i] = lastspace;
+      if (calign[i] & AL_TRUNC_ALL)
+        ptrs[i] = strchr(ptr, '\0');
+      else if (calign[i] & AL_TRUNC_EACH) {
+        tptr = strchr(ptr, '\n');
+        if (tptr == NULL)
+          ptrs[i] = strchr(ptr, '\0');
+        else
+          ptrs[i] = tptr + 1;
+      } else
+        ptrs[i] = lastspace;
     } else {
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }
-      ptrs[i] = ptr;
+      if (calign[i] & AL_TRUNC_ALL)
+        ptrs[i] = strchr(ptr, '\0');
+      else if (calign[i] & AL_TRUNC_EACH) {
+        char *tptr = strchr(ptr, '\n');
+        if (tptr == NULL)
+          ptrs[i] = strchr(ptr, '\0');
+        else
+          ptrs[i] = tptr + 1;
+      } else
+        ptrs[i] = ptr;
     }
     *sp = '\0';
 
+    if (needsep && fslen)
+      safe_str(fieldsep, line, &lp);
+    needsep = 1;
     if (HAS_ANSI(adata[i])) {
       write_ansi_data(&adata[i], line, &lp);
     }
@@ -1946,6 +1972,12 @@ FUNCTION(fun_align)
       case '$':
         calign[ncols] |= AL_NOFILL;
         break;
+      case 'x':
+        calign[ncols] |= AL_TRUNC_EACH;
+        break;
+      case 'X':
+        calign[ncols] |= AL_TRUNC_ALL;
+        break;
       case '(':
         ptr++;
         ansistr = ptr;
@@ -1976,6 +2008,8 @@ FUNCTION(fun_align)
       safe_str(T("#-1 CANNOT HAVE COLUMNS THAT LARGE"), buff, bp);
       return;
     }
+    if (0 && (calign[i] & AL_REPEAT))
+      calign[i] &= ~(AL_TRUNC_EACH | AL_TRUNC_ALL); /* Don't allow trunc + repeat */
     totallen += cols[i];
   }
   if (totallen > BUFFER_LEN) {

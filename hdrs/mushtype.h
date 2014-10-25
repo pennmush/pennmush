@@ -297,7 +297,7 @@ struct text_queue {
 };
 
 /* Descriptor foo */
-/** Using Pueblo, Smial, Mushclient, Simplemu, or some other
+/** Using Pueblo, Smial, Mushclient, or some other
  *  pueblo-style HTML aware client */
 #define CONN_HTML 0x1
 /** Using a client that understands telnet options */
@@ -320,15 +320,16 @@ struct text_queue {
 #define CONN_STRIPACCENTS 0x80
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
-/** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
-#define CONN_SOCKET_ERROR 0x100
-
 /** Bits reserved for the color style */
 #define CONN_COLORSTYLE 0xF00
 #define CONN_PLAIN      0x100
 #define CONN_ANSI       0x200
 #define CONN_ANSICOLOR  0x300
 #define CONN_XTERM256   0x400
+#define CONN_RESERVED   0x800
+
+/** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
+#define CONN_SOCKET_ERROR 0x1000
 
 /** Maximum \@doing length */
 #define DOING_LEN 40

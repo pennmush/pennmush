@@ -1663,8 +1663,8 @@ FUNCTION(fun_wrap)
 #define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left (`) */
 #define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right (') */
 #define AL_NOFILL 0x800  /**< No filler on the right of this. ($) */
-#define AL_TRUNC_EACH 0x1000 /**< Truncate each (%r-separated) line instead of wrapping */
-#define AL_TRUNC_ALL 0x2000 /**< Truncate the entire column output, at column width or %r, whichever comes first */
+#define AL_TRUNC_EACH 0x1000 /**< Truncate each (%r-separated) line instead of wrapping (x) */
+#define AL_TRUNC_ALL 0x2000 /**< Truncate the entire column output, at column width or %r, whichever comes first (X) */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,

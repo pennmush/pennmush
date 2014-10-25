@@ -170,6 +170,8 @@ bool fcache_read_one(const char *filename);
 /** Is it possible this descriptor may be telnet-compatible? */
 #define MAYBE_TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
+const char *default_ttype = "unknown";
+#define REBOOT_DB_NOVALUE "__NONE__"
 
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode
@@ -1861,7 +1863,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
 
   {
     freeqs(d);
-    mush_free(d->ttype, "terminal description");
+    if (d->ttype && d->ttype != default_ttype)
+      mush_free(d->ttype, "terminal description");
     memset(d, 0xFF, sizeof *d);
     mush_free(d, "descriptor");
   }
@@ -1903,7 +1906,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->output_chars = 0;
   d->width = 78;
   d->height = 24;
-  d->ttype = mush_strdup("unknown", "terminal description");
+  d->ttype = NULL;
   d->checksum[0] = '\0';
   d->ssl = NULL;
   d->ssl_state = 0;
@@ -2296,12 +2299,13 @@ TELNET_HANDLER(telnet_ttype_sb)
   if (!len || *cmd != 0)
     return;
   cmd++;
-  if (d->ttype)
+
+  if (d->ttype && d->ttype != default_ttype)
     mush_free(d->ttype, "terminal description");
   if (*cmd)
     d->ttype = mush_strdup(cmd, "terminal description");
   else
-    d->ttype = mush_strdup("unknown", "terminal description");
+    d->ttype = (char *) default_ttype;
 }
 
 /* Handle DO CHARSET, send list of known charsets */
@@ -3503,7 +3507,7 @@ sockset_show(DESC *d, char *nl)
   safe_strl(nl, nllen, buff, &bp);
   safe_format(buff, &bp, "%-15s:  %d", "Height", d->height);
   safe_strl(nl, nllen, buff, &bp);
-  safe_format(buff, &bp, "%-15s:  %s", "Terminal Type", d->ttype);
+  safe_format(buff, &bp, "%-15s:  %s", "Terminal Type", (d->ttype ? d->ttype : default_ttype));
   safe_strl(nl, nllen, buff, &bp);
   
   ntype = notify_type(d);
@@ -3623,12 +3627,12 @@ sockset(DESC *d, char *name, char *val)
   }
 
   if (!strcasecmp(name, "TERMINALTYPE")) {
-    if (d->ttype)
+    if (d->ttype && d->ttype != default_ttype)
       mush_free(d->ttype, "terminal description");
     if (val && *val)
       d->ttype = mush_strdup(val, "terminal description");
     else
-      d->ttype = mush_strdup("unknown", "terminal description");
+      d->ttype = (char *) default_ttype;
     return T("Terminal Type set.");
   }
 
@@ -5568,9 +5572,9 @@ FUNCTION(fun_terminfo)
     bool has_privs = (match->player == executor) || See_All(executor);
     int type;
     if (has_privs)
-      safe_str(match->ttype, buff, bp);
+      safe_str((match->ttype ? match->ttype : default_ttype), buff, bp);
     else
-      safe_str("unknown", buff, bp);
+      safe_str(default_ttype, buff, bp);
     if (match->conn_flags & CONN_HTML)
       safe_str(" pueblo", buff, bp);
     if (has_privs) {
@@ -5988,17 +5992,20 @@ dump_reboot_db(void)
       if (d->output_prefix)
         putstring(f, (char *) d->output_prefix);
       else
-        putstring(f, "__NONE__");
+        putstring(f, REBOOT_DB_NOVALUE);
       if (d->output_suffix)
         putstring(f, (char *) d->output_suffix);
       else
-        putstring(f, "__NONE__");
+        putstring(f, REBOOT_DB_NOVALUE);
       putstring(f, d->addr);
       putstring(f, d->ip);
       putref(f, d->conn_flags);
       putref(f, d->width);
       putref(f, d->height);
-      putstring(f, d->ttype);
+      if (d->ttype)
+        putstring(f, d->ttype);
+      else
+        putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
     }                           /* for loop */
@@ -6078,11 +6085,11 @@ load_reboot_db(void)
                       && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
-      if (strcmp(temp, "__NONE__"))
+      if (strcmp(temp, REBOOT_DB_NOVALUE))
         set_userstring(&d->output_prefix, temp);
       temp = getstring_noalloc(f);
       d->output_suffix = NULL;
-      if (strcmp(temp, "__NONE__"))
+      if (strcmp(temp, REBOOT_DB_NOVALUE))
         set_userstring(&d->output_suffix, temp);
       mush_strncpy(d->addr, getstring_noalloc(f), 100);
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
@@ -6096,10 +6103,16 @@ load_reboot_db(void)
         d->width = 78;
         d->height = 24;
       }
-      if (flags & RDBF_TTYPE)
-        d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
-      else
-        d->ttype = mush_strdup("unknown", "terminal description");
+      if (flags & RDBF_TTYPE) {
+        temp = getstring_noalloc(f);
+        if (!strcmp(temp, REBOOT_DB_NOVALUE))
+          d->ttype = NULL;
+        else if (!strcmp(temp, default_ttype))
+          d->ttype = (char *) default_ttype;
+        else
+          d->ttype = mush_strdup(temp, "terminal description");
+      } else
+        d->ttype = NULL;
       if (flags & RDBF_SOCKET_SRC)
         d->source = getref(f);
       if (flags & RDBF_PUEBLO_CHECKSUM)
@@ -6189,7 +6202,9 @@ load_reboot_db(void)
   while (closed) {
     nextclosed = closed->next;
     announce_disconnect(closed, "disconnect", 1, NOTHING);
-    mush_free(closed->ttype, "terminal description");
+    if (closed->ttype && closed->ttype != default_ttype)
+      mush_free(closed->ttype, "terminal description");
+    closed->ttype = NULL;
     if (closed->output_prefix)
       mush_free(closed->output_prefix, "userstring");
     if (closed->output_suffix)

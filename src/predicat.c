@@ -1091,10 +1091,6 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
   if (!argv[1])
     return;
 
-  pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
-  pe_regs_clear(pe_regs);
-  pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
-
   /* now try a wild card match of buff with stuff in coms */
   for (a = 1;
        !(first && any) && (a < (MAX_ARG - 1)) && argv[a] && argv[a + 1];
@@ -1104,12 +1100,12 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     bp = buff;
     if (process_expression(buff, &bp, &ap, executor, enactor, enactor,
                            PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
-      pe_regs_free(pe_regs);
       return;
     }
     *bp = '\0';
     /* check for a match */
-    pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
+    pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
+    pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
     if (regexp ? regexp_match_case_r(buff, expression, 0,
                                      NULL, 0, NULL, 0, pe_regs, 0)
         : local_wild_match(buff, expression, pe_regs)) {
@@ -1131,6 +1127,8 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
+    pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
+    pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
     if (queue_type != QUEUE_DEFAULT) {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);
@@ -1140,7 +1138,7 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     }
     mush_free(tbuf1, "replace_string.buff");
   }
-  pe_regs_free(pe_regs);
+
   if (queue_type == QUEUE_DEFAULT) {
     if (notifyme)
       parse_que(executor, enactor, "@notify me", NULL);

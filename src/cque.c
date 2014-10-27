@@ -749,7 +749,8 @@ queue_include_attribute(dbref thing, const char *atrname,
         pe_regs_setenv(pe_regs, i, args[i]);
       }
     }
-  }
+  } else
+    pe_regs->flags |= PE_REGS_ARGPASS;
 
   if (AF_NoDebug(a))
     queue_type |= QUEUE_NODEBUG;

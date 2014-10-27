@@ -1597,6 +1597,8 @@ do_writelog(dbref player, char *str, int ltype)
   } else { \
     new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
                          PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs); \
+    if (pe_regs) \
+      pe_regs_free(pe_regs); \
   }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
@@ -1629,8 +1631,6 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
   pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
   queue_dolist(command, pe_regs);
-  /* And then pop it off the parent pe_info again */
-  pe_regs_free(pe_regs);
 
   mush_free(command, "replace_string.buff");
 }

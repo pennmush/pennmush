@@ -749,7 +749,7 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param player The victim to call it on.
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
- * \param flags flags NA_* flags to send in addition to NA_INTER_HEAR and NA_SPOOF
+ * \param flags flags NA_* flags to send in addition to NA_SPOOF
  * \param numargs number of arguments in argv
  * \param argv array of arguments
  * \retval 1 The player had the fooformat attribute.
@@ -766,7 +766,7 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   int i;
   int ret;
 
-  flags |= NA_INTER_HEAR | NA_SPOOF;
+  flags |= NA_SPOOF;
 
   *messbuff = '\0';
   pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");

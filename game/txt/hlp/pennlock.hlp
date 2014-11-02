@@ -389,10 +389,10 @@ See also: @lock, locktypes, lockkeys
   See also: @mail, @mailforward, @lock/forward
   
   @lock/interact
-    Controls who can send sound of any kind (page, say, channels, etc) to
-    you. Note that players who fail to pass your interact lock will not be
-    informed you're not receiving their messages, so you may also wish to
-    @lock/page them and set a haven message.
+    Controls whose indirect speech you'll hear (from say, pose, channels,
+    @emit, etc). Does not block sound directed specifically at you, such as
+    page, whisper, @pemit, etc; use @lock/page for those. Note that if sound
+    is blocked by the interact lock, the speaker will not be informed.
   
 See also: @lock, locktypes, lockkeys
 & @lock/drop
@@ -403,17 +403,13 @@ See also: @lock, locktypes, lockkeys
 & @lock/receive
 & @lock/take
   @lock/drop
-
     For players and things, controls who can drop the object. Has no
-      meaning for exits. On rooms, has the same meaning as
-      @lock/dropin
-
+    meaning for exits. On rooms, has the same meaning as @lock/dropin
     See also: drop, empty
-  
-  @lock/dropin
 
+  @lock/dropin
     When set on a player, thing or room, controls who can drop objects
-     into them. Has no meaning for exits.
+    into them. Has no meaning for exits.
 
   @lock/give
     For players and things, controls who may give the object away.

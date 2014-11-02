@@ -34,6 +34,8 @@ Fixes:
    Ashen-Shugar. [SW]
  * align() would sometimes show extra column separators when columns were
    merged. [MG]
+ * @lock/interact was wrongly checked when paging a player with an @pageformat
+   set. Reported by Odin. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

@@ -3253,6 +3253,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
         uv = onchannel(viewer, c);
         if (up && uv) {
           if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
+              && !Chanuser_Gag(uv)
               && (Channel_Admin(c) || Channel_Wizard(c)
                   || (!Chanuser_Hide(up) && !Dark(player)))) {
             if (Chanuser_Combine(uv)) {

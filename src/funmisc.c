@@ -521,7 +521,9 @@ FUNCTION(fun_listq)
     }
     if (pe_regs->flags & PE_REGS_NEWATTR) {
       /* Remove iter, switch, regexp and %0-%9 context */
-      types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP | PE_REGS_ARG);
+      types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP);
+      if (!(pe_regs->flags & PE_REGS_ARGPASS))
+        types &= ~PE_REGS_ARG;
     } else if (pe_regs->flags & PE_REGS_ARG) {
       /* Only the first pe_regs holding ARGs is checked */
       types &= ~PE_REGS_ARG;

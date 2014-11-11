@@ -1186,7 +1186,7 @@ See also: COSTS, give, @cost, @payment, @lock, buy, @buy, score, money()
   
   For example, to have monikers only appear for players when talking on
   channels, set the option to 129. To have it work for all types, but only
-  when looking at something, use 1928. To enable them everywhere, use 2047.
+  when looking at something, use 1928. To enable them everywhere, use 4095.
   
 See also: @moniker, moniker(), MONIKER
 & MUSHCODE

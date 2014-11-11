@@ -431,9 +431,9 @@ See also: before(), rest()
     ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with
       merge-left, the column to its left inherits the 'nofill' when merged.
-	x Truncate each (%r-separated) row instead or wrapping at the colwidth
-	X Truncate the entire column at the end of the first row instead of
-	  wrapping
+    x Truncate each (%r-separated) row instead or wrapping at the colwidth
+    X Truncate the entire column at the end of the first row instead of
+      wrapping
 
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
@@ -444,7 +444,7 @@ See also: center(), ljust(), rjust(), table()
   Examples:
   
     > &line me=align(<3 10 20$,([ljust(get(%0/sex),1,,1)]),
-	                 name(%0),name(loc(%0)))
+                     name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (M) Ashen-Shug Apartment 306
@@ -452,13 +452,13 @@ See also: center(), ljust(), rjust(), table()
       (F) Jane Doe   Nowhere
 
     > &line me=align(<3 10X 20X$,([ljust(get(%0/sex),1,,1)]),
-	                 name(%0),name(loc(%0)))
+                     name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (M) Ashen-Shug Apartment 306
       (F) Jane Doe   Nowhere
 
-	    See 'help align4' for more examples.
+        See 'help align4' for more examples.
 & ALIGN4
     > &haiku me = Alignment function,%rIt justifies your writing,%rBut the
                   words still suck.%rLuke
@@ -3200,9 +3200,9 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
   output of lwho() from <viewer>'s point of view.
   
   <status> can be used to include "#-1" dbrefs for unconnected ports, and
-  must be one of "all", "online" or "offline". It is primarily useful when
-  using a <status> with lports(), to make the dbrefs and ports match up.
-  Only See_All players can see offline dbrefs.
+  must be one of "all", "online" (the default) or "offline". It is primarily 
+  useful when using a <status> with lports(), to make the dbrefs and ports 
+  match up. Only See_All players can see offline dbrefs.
 
   lwhoid() returns a list of objid's instead.
 
@@ -6126,6 +6126,8 @@ Continued in HELP TIMEZONES13
     1m
     > think etime(61)
     1m  1s
+    > think etime(61, 5)
+    1m
 
 See also: etimefmt(), timestring(), stringsecs()
 & ETIMEFMT()
@@ -6681,10 +6683,10 @@ See also: VECTOR FUNCTIONS
     You say "1008001004"
      
     > say version()
-		You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
-		          (r1374 2012-02-23)"
-		> say numversion()
-		You say, "1008005000"
+        You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
+                  (r1374 2012-02-23)"
+        > say numversion()
+        You say, "1008005000"
 
 See also: @version
 & VISIBLE()

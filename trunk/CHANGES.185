@@ -40,6 +40,8 @@ Fixes:
    set. Reported by Odin. [MG]
  * Channels you had both @chan/gagged and @chan/combined would still show
    connect messages. Reported by Paige. [MG]
+ * Fix a memory leak in @dolist/inline when used with @break. From a report by
+   spork. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

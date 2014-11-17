@@ -5336,15 +5336,15 @@ See also: terminfo()
 
   Example:
     > &foo me=%0 - %1 - %2
-    > think step(foo, 1 2 3 4 5, 3,, %r)
-    1 - 2 - 3
-    4 - 5 -
+    > think step(foo, a b c d e, 3,, %r)
+    a - b - c
+    d - e -
     
   Using registers() to avoid extra delimiters:
     > &foo me=iter(registers(,args),v(%i0),,%b-%b)
-    > think step(foo, 1 2 3 4 5, 3,, %r)
-    1 - 2 - 3
-    4 - 5
+    > think step(foo, a b c d e, 3,, %r)
+    a - b - c
+    d - e
 
 See also: map(), iter(), fold(), anonymous attributes, registers()
 & STDDEV()

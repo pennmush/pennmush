@@ -248,7 +248,7 @@ free_qentry(MQUE *entry)
     free_qentry(tmp);
   }
 
-  if (entry->next) {
+  if (entry->next && (entry->queue_type & QUEUE_INPLACE)) {
     tmp = entry->next;
     entry->next = NULL;
     free_qentry(tmp);

@@ -248,6 +248,12 @@ free_qentry(MQUE *entry)
     free_qentry(tmp);
   }
 
+  if (entry->next) {
+    tmp = entry->next;
+    entry->next = NULL;
+    free_qentry(tmp);
+  }
+
   if (entry->action_list) {
     mush_free(entry->action_list, "mque.action_list");
     entry->action_list = NULL;
@@ -1174,6 +1180,7 @@ do_entry(MQUE *entry, int include_recurses)
         }
       }
       entry->inplace = tmp->next;
+      tmp->next = NULL;
       free_qentry(tmp);
       if (inplace_break_called)
         break;

@@ -42,6 +42,8 @@ Fixes:
    connect messages. Reported by Paige. [MG]
  * Fix a memory leak in @dolist/inline when used with @break. From a report by
    spork. [MG]
+ * @chan/decompile <hidden channel> by a mortal didn't give an error message.
+   Reported by Paige. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

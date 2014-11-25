@@ -2935,15 +2935,17 @@ do_chan_decompile(dbref player, const char *name, int brief)
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname)) {
-      found++;
       if (!(See_All(player) || Chan_Can_Modify(c, player)
             || (ChanCreator(c) == player))) {
-        if (Chan_Can_See(c, player))
+        if (Chan_Can_See(c, player)) {
+          found++;
           notify_format(player,
                         T("CHAT: You don't have permission to decompile <%s>."),
                         ChanName(c));
+        }
         continue;
       }
+      found++;
       strcpy(rawp, ChanName(c));        /* Because decompose_str is destructive */
       notify_format(player, "@channel/add %s = %s", decompose_str(rawp),
                     privs_to_string(priv_table, ChanType(c)));

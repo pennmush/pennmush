@@ -1252,7 +1252,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
   }
 
   victim = lookup_player(target);
-  if (victim == NOTHING && Channel_Object(chan))
+  if (victim == NOTHING)
     victim = match_result(player, target, TYPE_THING, MAT_OBJECTS);
 
   if (!GoodObject(victim)) {

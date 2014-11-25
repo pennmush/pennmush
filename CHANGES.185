@@ -44,6 +44,8 @@ Fixes:
    spork. [MG]
  * @chan/decompile <hidden channel> by a mortal didn't give an error message.
    Reported by Paige. [MG]
+ * It was impossible to remove a thing from a channel which had been 
+   restricted so only players could join. Reported by Paige. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

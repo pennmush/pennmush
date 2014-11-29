@@ -364,13 +364,21 @@ enum emit_type {
   EMIT_REMIT, /**< remit in given rooms */
   EMIT_OEMIT  /**< emit to all objects in location except the given objects */
 };
+
+enum msgformat_response {
+  MSGFORMAT_NONE = 0, /**< No messageformat set */
+  MSGFORMAT_SENT = 1, /**< Message sent to player */
+  MSGFORMAT_NULL = 2  /**< Attribute existed but eval'd null */
+};
 dbref speech_loc(dbref thing);
 int okay_pemit(dbref player, dbref target, int dofails, int def,
                NEW_PE_INFO *pe_info);
-int vmessageformat(dbref player, const char *attribute, dbref executor,
-                   int flags, int nargs, ...);
-int messageformat(dbref player, const char *attribute, dbref executor,
-                  int flags, int nargs, char *argv[]);
+enum msgformat_response vmessageformat(dbref player, const char *attribute,
+                                       dbref executor, int flags,
+									   int nargs, ...);
+enum msgformat_response messageformat(dbref player, const char *attribute,
+                                      dbref executor, int flags, int nargs,
+									  char *argv[]);
 void do_message(dbref executor, dbref speaker, char *list, char *attrname,
                 char *message, enum emit_type type, int flags, int numargs,
                 char *argv[], NEW_PE_INFO *pe_info);

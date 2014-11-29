@@ -715,10 +715,9 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
  * \param flags NA_* flags to send in addition to NA_INTER_HEAR and NA_SPOOF
  * \param numargs the number of arguments to the attribute
  * \param ... the arguments to the attribute
- * \retval 1 The player had the fooformat attribute.
- * \retval 0 The default message was sent.
+ * \return A MSGFORMAT_* enum; see messageformat() for more info
  */
-int
+enum msgformat_response
 vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
                int numargs, ...)
 {
@@ -752,10 +751,11 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param flags flags NA_* flags to send in addition to NA_SPOOF
  * \param numargs number of arguments in argv
  * \param argv array of arguments
- * \retval 1 The player had the fooformat attribute.
- * \retval 0 The default message was sent.
+ * \retval MSGFORMAT_SENT Player had the fooformat attr and a message was sent
+ * \retval MSGFORMAT_NONE No fooformat attribute was present, send default msg
+ * \retval MSGFORMAT_NULL The fooformat attr eval'd null, maybe send default msg
  */
-int
+enum msgformat_response
 messageformat(dbref player, const char *attribute, dbref enactor, int flags,
               int numargs, char *argv[])
 {
@@ -777,12 +777,14 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   pe_regs_free(pe_regs);
   if (ret) {
     /* We have a returned value. Notify the player. */
-    if (*messbuff)
+    if (*messbuff) {
       notify_anything(player, enactor, na_one, &player, NULL, flags, messbuff,
                       NULL, AMBIGUOUS, NULL);
-    return 1;
+      return MSGFORMAT_SENT;
+    } else
+      return MSGFORMAT_NULL;
   } else {
-    return 0;
+    return MSGFORMAT_NONE;
   }
 }
 
@@ -1079,9 +1081,9 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   } else {
     snprintf(tosend, BUFFER_LEN, T("You paged %s with '%s'"), namebuf, message);
   }
-  if (!vmessageformat(executor, "OUTPAGEFORMAT", executor, 0, 5, message,
+  if (vmessageformat(executor, "OUTPAGEFORMAT", executor, 0, 5, message,
                       (key == 1) ? (*gap ? ":" : ";") : "\"",
-                      (*alias) ? alias : "", tbuf2, tosend)) {
+                      (*alias) ? alias : "", tbuf2, tosend) != MSGFORMAT_SENT) {
     notify(executor, tosend);
   }
   mush_free(tosend, "page_buff");
@@ -1096,9 +1098,9 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       }
       tosend = nsbuf;
     }
-    if (!vmessageformat(good[i], "PAGEFORMAT", executor, 0, 5, message,
+    if (vmessageformat(good[i], "PAGEFORMAT", executor, 0, 5, message,
                         (key == 1) ? (*gap ? ":" : ";") : "\"",
-                        (*alias) ? alias : "", tbuf2, tbuf)) {
+                        (*alias) ? alias : "", tbuf2, tbuf) != MSGFORMAT_SENT) {
       /* Player doesn't have Pageformat, or it eval'd to 0 */
       notify(good[i], tosend);
     }

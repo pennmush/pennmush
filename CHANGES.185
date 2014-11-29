@@ -46,6 +46,8 @@ Fixes:
    Reported by Paige. [MG]
  * It was impossible to remove a thing from a channel which had been 
    restricted so only players could join. Reported by Paige. [MG]
+ * Players with an @pageformat which eval'd to an empty string wouldn't know
+   they were being paged. Reported by Ashen-Shugar. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

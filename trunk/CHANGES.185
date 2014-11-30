@@ -48,6 +48,7 @@ Fixes:
    restricted so only players could join. Reported by Paige. [MG]
  * Players with an @pageformat which eval'd to an empty string wouldn't know
    they were being paged. Reported by Ashen-Shugar. [MG]
+ * Fix crash in named q-registers. Reported by Qon@M*U*S*H. [DC]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

@@ -913,7 +913,7 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
   static const char noval[] = "";
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!(type & PE_REGS_NOCOPY)) {
@@ -971,7 +971,7 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (pval) {
@@ -1003,7 +1003,7 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!pval)
@@ -1028,7 +1028,7 @@ pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!pval)
@@ -1205,7 +1205,7 @@ int
 pi_regs_valid_key(const char *lckey)
 {
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   return ((good_atr_name(key)) && (strlen(key) <= PE_KEY_LEN) && *key);
 }

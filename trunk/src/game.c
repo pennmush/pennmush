@@ -1164,7 +1164,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     char *msg = passwd_filter(command);
 
     log_activity(LA_CMD, executor, msg);
-    if (options.log_commands || Suspect(executor))
+    if (!(queue_entry->queue_type & QUEUE_EVENT) && (options.log_commands || Suspect(executor)))
       do_log(LT_CMD, executor, NOTHING, "%s", msg);
     if (Verbose(executor))
       raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
@@ -1591,12 +1591,12 @@ do_writelog(dbref player, char *str, int ltype)
 }
 
 #define queue_dolist(al,pe_regs) \
-  if (queue_type != QUEUE_DEFAULT) { \
+  if (queue_type & QUEUE_INPLACE) { \
     new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
                          PE_INFO_SHARE, queue_type, pe_regs); \
   } else { \
     new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
-                         PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs); \
+                         PE_INFO_CLONE, queue_type, pe_regs); \
     if (pe_regs) \
       pe_regs_free(pe_regs); \
   }

@@ -170,14 +170,17 @@ COMMAND(cmd_boot)
 COMMAND(cmd_break)
 {
   if (parse_boolean(arg_left)) {
+    int flags = 0;
     queue_entry->queue_type |= QUEUE_BREAK;
+    if (queue_entry->queue_type & QUEUE_EVENT)
+      flags |= QUEUE_EVENT;
     if (arg_right && *arg_right) {
       if (SW_ISSET(sw, SWITCH_QUEUED))
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                             PE_INFO_CLONE, QUEUE_DEFAULT | flags, NULL);
       else
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+                             PE_INFO_SHARE, QUEUE_INPLACE | flags, NULL);
     }
   }
 }
@@ -185,14 +188,17 @@ COMMAND(cmd_break)
 COMMAND(cmd_assert)
 {
   if (!parse_boolean(arg_left)) {
+    int flags = 0;
     queue_entry->queue_type |= QUEUE_BREAK;
+    if (queue_entry->queue_type & QUEUE_EVENT)
+      flags |= QUEUE_EVENT;
     if (arg_right && *arg_right) {
       if (SW_ISSET(sw, SWITCH_QUEUED))
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                             PE_INFO_CLONE, QUEUE_DEFAULT | flags, NULL);
       else
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+                             PE_INFO_SHARE, QUEUE_INPLACE | flags, NULL);
     }
   }
 }

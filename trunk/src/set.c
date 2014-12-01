@@ -1294,6 +1294,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   int i;
   dbref triggerer = executor;   /* triggerer is totally a word. Shut up. */
   bool control;
+  int flags = (queue_entry->queue_type & QUEUE_EVENT);
 
   if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
     notify(executor, T("I need to know what attribute to trigger."));
@@ -1334,7 +1335,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
   if (queue_attribute_base_priv
-      (thing, upcasestr(attr), triggerer, 0, pe_regs, 0, executor)) {
+      (thing, upcasestr(attr), triggerer, 0, pe_regs, flags, executor)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {

@@ -132,6 +132,7 @@ init_compress(PENNFILE *f __attribute__ ((__unused__)))
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
 #define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For \@startups */
 #define QUEUE_DEBUG_PRIVS      0x8000   /**< Show DEBUG info for queue if on an object %# can see debug from (queued via %-prefix) */
+#define QUEUE_EVENT            0x10000  /**< Action list queued by the Event system */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 

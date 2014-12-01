@@ -400,20 +400,10 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   int i, len;
   MQUE *tmp;
   int pid;
-  static bool recur = 0;
-
-
-  /* Stop loops caused by logging triggering events triggering logging
-     triggering ... */
-  if (recur)
-    return 0;
-  else
-    recur = 1;
 
   /* Make sure we have an event to call, first. */
   if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
       Halted(EVENT_HANDLER)) {
-    recur = 0;
     return 0;
   }
 
@@ -426,13 +416,11 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   a = atr_get_noparent(EVENT_HANDLER, event);
   if (!(a && AL_STR(a) && *AL_STR(a))) {
     /* Nonexistant or empty attrib. */
-    recur = 0;
     return 0;
   }
 
   /* Because Event is so easy to run away. */
   if (!pay_queue(EVENT_HANDLER, event)) {
-    recur = 0;
     return 0;
   }
 
@@ -441,7 +429,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (pid == 0) {
     /* Too many queue entries */
     notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
-    recur = 0;
     return 0;
   }
 
@@ -495,6 +482,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   tmp->executor = EVENT_HANDLER;
   tmp->enactor = enactor;
   tmp->caller = enactor;
+  tmp->queue_type |= QUEUE_EVENT;
 
   aval = safe_atr_value(a);
   tmp->action_list = mush_strdup(aval, "mque.action_list");
@@ -533,7 +521,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* All good! */
   im_insert(queue_map, tmp->pid, tmp);
 
-  recur = 0;
   return 1;
 }
 
@@ -642,7 +629,6 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   MQUE *queue_entry;
 
   if (!(queue_type & QUEUE_INPLACE)) {
-
     /* Check the object isn't halted */
     if (!IsPlayer(executor) && Halted(executor)) {
       return;
@@ -694,6 +680,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
         mush_strdup(pe_info->attrname, "mque.attrname");
     strcpy(queue_entry->pe_info->attrname, fromattr);
   }
+
+  if (parent_queue && (parent_queue->queue_type & QUEUE_EVENT))
+    queue_type |= QUEUE_EVENT;
 
   insert_que(queue_entry, parent_queue);
 }
@@ -766,6 +755,8 @@ queue_include_attribute(dbref thing, const char *atrname,
     /* Inherit debug style from parent queue */
     queue_type |= (parent_queue->queue_type & (QUEUE_DEBUG | QUEUE_NODEBUG));
   }
+  if (parent_queue->queue_type & QUEUE_EVENT)
+    queue_type |= QUEUE_EVENT;
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
                            PE_INFO_SHARE, queue_type, pe_regs,
@@ -884,11 +875,14 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   MQUE *tmp;
   NEW_PE_INFO *pe_info;
   int pid;
+  int queue_type = QUEUE_DEFAULT;
+  if (parent_queue && (parent_queue->queue_type & QUEUE_EVENT))
+    queue_type |= QUEUE_EVENT;
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
     new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
-                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                         PE_INFO_CLONE, queue_type, NULL);
     return;
   }
   if (!pay_queue(executor, command))    /* make sure player can afford to do it */
@@ -908,6 +902,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   tmp->executor = executor;
   tmp->enactor = enactor;
   tmp->caller = enactor;
+  tmp->queue_type |= queue_type;
 
   if (until) {
     tmp->wait_until = (time_t) waittill;

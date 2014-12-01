@@ -657,13 +657,16 @@ do_force(dbref player, dbref caller, const char *what, char *command,
     return;
   }
 
+  if (queue_entry->queue_type & QUEUE_EVENT)
+    queue_type |= QUEUE_EVENT;
+  
   /* force victim to do command */
-  if (queue_type != QUEUE_DEFAULT)
+  if (queue_type & QUEUE_INPLACE)
     new_queue_actionlist(victim, player, caller, command, queue_entry,
                          PE_INFO_SHARE, queue_type, NULL);
   else
     new_queue_actionlist(victim, player, player, command, queue_entry,
-                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                         PE_INFO_CLONE, queue_type, NULL);
 }
 
 /** Parse a force token command, but don't force with it.

@@ -1114,12 +1114,12 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
         /* Add the new switch context to the parent queue... */
         any = 1;
       }
-      if (queue_type != QUEUE_DEFAULT) {
+      if (queue_type & QUEUE_INPLACE) {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_SHARE, queue_type, pe_regs);
       } else {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+                             PE_INFO_CLONE, queue_type, pe_regs);
       }
       mush_free(tbuf1, "replace_string.buff");
     }
@@ -1129,19 +1129,18 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     tbuf1 = replace_string("#$", expression, argv[a]);
     pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
     pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
-    if (queue_type != QUEUE_DEFAULT) {
+    if (queue_type & QUEUE_INPLACE) {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);
     } else {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
-                           PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+                           PE_INFO_CLONE, queue_type, pe_regs);
     }
     mush_free(tbuf1, "replace_string.buff");
   }
 
-  if (queue_type == QUEUE_DEFAULT) {
-    if (notifyme)
-      parse_que(executor, enactor, "@notify me", NULL);
+  if (!(queue_type & QUEUE_INPLACE) && notifyme) {
+    parse_que(executor, enactor, "@notify me", NULL);
   }
 }
 
@@ -1337,7 +1336,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, 0);
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, (queue_entry->queue_type & QUEUE_EVENT));
 
   pe_regs_free(pe_regs);
 }

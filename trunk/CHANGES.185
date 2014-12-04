@@ -72,7 +72,11 @@ Minor changes:
  * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
    For @attrib/enum and /limit. [MG]
  * Added @flag/decompile and @attribute/decompile, to decompile each table
-   to copy to another game. Suggested by spork. [MG]
+   to copy to another game. Suggested by spork. [MG]  
+ * Newly set player passwords are salted to be more resistant to
+    cracking via rainbow tables by somebody with a copy of the
+    database.  You still shouldn't be re-using a password for anything
+    important, of course. Existing passwords aren't automatically updated. [SW]
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

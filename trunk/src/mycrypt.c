@@ -18,6 +18,7 @@
 #include "log.h"
 #include "notify.h"
 #include "strutil.h"
+#include "externs.h"
 
 #define PASSWORD_HASH "sha1"
 
@@ -167,9 +168,14 @@ check_mux_password(const char *saved, const char *password)
  *
  * V:ALGO:HASH:TIMESTAMP
  *
- * V is the version number (Currently 1), ALGO is the digest algorithm
+ * V is the version number (Currently 2), ALGO is the digest algorithm
  * used (Default is SHA1), HASH is the hashed password. TIMESTAMP is
  * when it was set. If fields are added, the version gets bumped.
+ *
+ * HASH is salted; the first two characters of the hashed password are
+ * randomly chosen characters that are added to the start of the
+ * plaintext password before it's hashed. This way two characters with
+ * the same password will have different hashed ones.
  *
  * \param key The plaintext password to hash.
  * \param algo The digest algorithm to use. If NULL, uses SHA-1.
@@ -179,6 +185,8 @@ char *
 password_hash(const char *key, const char *algo)
 {
   static char buff[BUFFER_LEN];
+  static char *salts = "abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  char s1, s2;
   char *bp;
   int len;
 
@@ -187,11 +195,16 @@ password_hash(const char *key, const char *algo)
 
   len = strlen(key);
 
+  s1 = salts[get_random32(0, 61)];
+  s2 = salts[get_random32(0, 61)];
+  
   bp = buff;
-  safe_strl("1:", 2, buff, &bp);
+  safe_strl("2:", 2, buff, &bp);
   safe_str(algo, buff, &bp);
   safe_chr(':', buff, &bp);
-  safe_hash_byname(algo, key, len, buff, &bp, 0);
+  safe_chr(s1, buff, &bp);
+  safe_chr(s2, buff, &bp);
+  safe_hash_byname(algo, tprintf("%c%c%s", s1, s2, key), len + 2, buff, &bp, 0);
   safe_chr(':', buff, &bp);
   safe_time_t(time(NULL), buff, &bp);
   *bp = '\0';
@@ -213,13 +226,14 @@ password_comp(const char *saved, const char *pass)
   static pcre *passwd_re = NULL;
   static pcre_extra *extra = NULL;
   char buff[BUFFER_LEN], *bp;
-  const char *algo = NULL, *shash = NULL;
+  const char *version = NULL, *algo = NULL, *shash = NULL;
   int len, slen;
   int ovec[30];
-  int c;
-
+  int c, r;
+  int retval = 0;
+  
   if (!passwd_re) {
-    static const char re[] = "^\\d+:(\\w+):([0-9a-zA-Z]+):\\d+";
+    static const char re[] = "^(\\d+):(\\w+):([0-9a-zA-Z]+):\\d+";
     const char *errptr;
     int erroffset = 0;
     passwd_re = pcre_compile(re, 0, &errptr, &erroffset, tables);
@@ -239,23 +253,37 @@ password_comp(const char *saved, const char *pass)
     return 0;
   }
 
-  pcre_get_substring(saved, ovec, c, 1, &algo);
-  pcre_get_substring(saved, ovec, c, 2, &shash);
+  pcre_get_substring(saved, ovec, c, 1, &version);
+  pcre_get_substring(saved, ovec, c, 2, &algo);
+  pcre_get_substring(saved, ovec, c, 3, &shash);
 
   /* Hash the plaintext password using the right digest */
   bp = buff;
-  if (safe_hash_byname(algo, pass, len, buff, &bp, 0)) {
-    pcre_free_substring(algo);
-    pcre_free_substring(shash);
-    return 0;
+  if (strcmp(version, "1") == 0) {
+    r = safe_hash_byname(algo, pass, len, buff, &bp, 0);
+  } else if (strcmp(version, "2") == 0) {
+    /* Salted password */
+    safe_chr(shash[0], buff, &bp);
+    safe_chr(shash[1], buff, &bp);
+    r = safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass), len + 2, buff, &bp, 0);
+  } else {
+    /* Unknown password format version */
+    retval = 0;
+    goto cleanup;
   }
-  *bp = '\0';
+	     
+  if (r) {
+    retval = 0;
+    goto cleanup;
+  }
 
   /* And compare against the saved one */
-  c = strcmp(shash, buff);
+  *bp = '\0';
+  retval = strcmp(shash, buff) == 0;
+
+ cleanup:
+  pcre_free_substring(version);
   pcre_free_substring(algo);
   pcre_free_substring(shash);
-
-  return c == 0;
-
+  return retval;
 }

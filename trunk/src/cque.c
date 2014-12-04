@@ -106,6 +106,7 @@ extern dbref report_dbref;
 void
 init_queue(void)
 {
+  fprintf(stderr, "init_queue\n");
   queue_map = im_new();
 }
 
@@ -951,7 +952,7 @@ do_second(void)
 
   /* Advance the queue load average count */
   memmove(queue_load_record + 1, queue_load_record,
-          sizeof(queue_load_record) - sizeof(int16_t));
+          sizeof(queue_load_record) - sizeof(int32_t));
   queue_load_record[0] = 0;
 
   /* move contents of low priority queue onto end of normal one
@@ -2484,7 +2485,6 @@ average32(const int32_t *nums, int len)
 #ifdef HAVE_SSE2
   int chunks, n, total = 0;
   __m128i totals1, totals2, totals3, totals4, zero;
-  int16_t totarr[8];
 
   chunks = len / 16;
 
@@ -2544,7 +2544,7 @@ average32(const int32_t *nums, int len)
 #else                           /* Non-SSE2 version */
 
   int n;
-  int total = 0;
+  int32_t total = 0;
 
   for (n = 0; n < len; n += 1)
     total += nums[n];

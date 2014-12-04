@@ -106,7 +106,6 @@ extern dbref report_dbref;
 void
 init_queue(void)
 {
-  fprintf(stderr, "init_queue\n");
   queue_map = im_new();
 }
 

@@ -1,3 +1,7 @@
+=New Downloads=
+Since 2014, it's no longer possible to add new files for downloading from Google Code, so you can find the latest version of PennMUSH on the [http://download.pennmush.org/ PennMUSH Download page]. Except for pre-compiled Windows binaries; the latest one of those is here, because Intrevis hasn't updated it in forever. Shame on you.
+
+==Old Downloads==
 Use the links below to view PennMUSH downloads. If you're starting a new PennMUSH installation, you should download either the source code, or Windows executable, for the latest version. If you have an existing PennMUSH installation, you must patch from your current version to each subsequent version, until you're at the latest patchlevel. (If there are many patchlevels between your current game and the latest, you may find it easier to just download the latest version, and copy your database and other important files over.)
 
 || *_File Types / Versions_* || _All Files_ ||  _Source Code Tarball_ || _Patch_ || _Windows Executable_ ||

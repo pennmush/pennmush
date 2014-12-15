@@ -185,7 +185,8 @@ char *
 password_hash(const char *key, const char *algo)
 {
   static char buff[BUFFER_LEN];
-  static char *salts = "abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  static char *salts =
+    "abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   char s1, s2;
   char *bp;
   int len;
@@ -197,7 +198,7 @@ password_hash(const char *key, const char *algo)
 
   s1 = salts[get_random32(0, 61)];
   s2 = salts[get_random32(0, 61)];
-  
+
   bp = buff;
   safe_strl("2:", 2, buff, &bp);
   safe_str(algo, buff, &bp);
@@ -231,7 +232,7 @@ password_comp(const char *saved, const char *pass)
   int ovec[30];
   int c, r;
   int retval = 0;
-  
+
   if (!passwd_re) {
     static const char re[] = "^(\\d+):(\\w+):([0-9a-zA-Z]+):\\d+";
     const char *errptr;
@@ -265,13 +266,15 @@ password_comp(const char *saved, const char *pass)
     /* Salted password */
     safe_chr(shash[0], buff, &bp);
     safe_chr(shash[1], buff, &bp);
-    r = safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass), len + 2, buff, &bp, 0);
+    r =
+      safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass),
+                       len + 2, buff, &bp, 0);
   } else {
     /* Unknown password format version */
     retval = 0;
     goto cleanup;
   }
-	     
+
   if (r) {
     retval = 0;
     goto cleanup;
@@ -281,7 +284,7 @@ password_comp(const char *saved, const char *pass)
   *bp = '\0';
   retval = strcmp(shash, buff) == 0;
 
- cleanup:
+cleanup:
   pcre_free_substring(version);
   pcre_free_substring(algo);
   pcre_free_substring(shash);

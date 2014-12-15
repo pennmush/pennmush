@@ -659,7 +659,7 @@ do_force(dbref player, dbref caller, const char *what, char *command,
 
   if (queue_entry->queue_type & QUEUE_EVENT)
     queue_type |= QUEUE_EVENT;
-  
+
   /* force victim to do command */
   if (queue_type & QUEUE_INPLACE)
     new_queue_actionlist(victim, player, caller, command, queue_entry,

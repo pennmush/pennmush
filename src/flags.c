@@ -2466,8 +2466,8 @@ do_list_flags(const char *ns, dbref player, const char *arg, int style,
               const char *label)
 {
   char *b = list_all_flags(ns, arg, player, style);
-  notify_format(player, "%s: %s", label, 
-               (style & FLAG_LIST_LOWERCASE) ? strlower(b) : b);
+  notify_format(player, "%s: %s", label,
+                (style & FLAG_LIST_LOWERCASE) ? strlower(b) : b);
 }
 
 /** User interface to show flag detail.
@@ -3147,18 +3147,19 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
         safe_chr(f->letter, buf, &bp);
         args++;
       }
-      if ((f->type & (TYPE_PLAYER|TYPE_THING|TYPE_ROOM|TYPE_EXIT)) != (TYPE_PLAYER|TYPE_THING|TYPE_ROOM|TYPE_EXIT)) {
-        fld_args(args,2);
+      if ((f->type & (TYPE_PLAYER | TYPE_THING | TYPE_ROOM | TYPE_EXIT)) !=
+          (TYPE_PLAYER | TYPE_THING | TYPE_ROOM | TYPE_EXIT)) {
+        fld_args(args, 2);
         safe_str((char *) privs_to_string(type_privs, f->type), buf, &bp);
       }
       p = (char *) privs_to_string(flag_privs, f->perms);
       if (*p) {
-        fld_args(args,3);
+        fld_args(args, 3);
         safe_str(p, buf, &bp);
       }
       p = (char *) privs_to_string(flag_privs, f->negate_perms);
       if (*p) {
-        fld_args(args,4);
+        fld_args(args, 4);
         safe_str(p, buf, &bp);
       }
     } else if ((which & FLAG_LIST_NAMECHAR) == FLAG_LIST_NAMECHAR) {
@@ -3182,6 +3183,7 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   free(ptrs);
   return buf;
 }
+
 #undef fld_args
 
 const char *

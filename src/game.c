@@ -1164,7 +1164,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     char *msg = passwd_filter(command);
 
     log_activity(LA_CMD, executor, msg);
-    if (!(queue_entry->queue_type & QUEUE_EVENT) && (options.log_commands || Suspect(executor)))
+    if (!(queue_entry->queue_type & QUEUE_EVENT)
+        && (options.log_commands || Suspect(executor)))
       do_log(LT_CMD, executor, NOTHING, "%s", msg);
     if (Verbose(executor))
       raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));

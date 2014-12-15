@@ -1785,12 +1785,14 @@ queue_newwrite(DESC *d, const char *b, int n)
       n -= written;
       b += written;
     } else if (written < 0) {
-      do_rawlog(LT_TRACE, "send() returned %d (error %s) trying to write %d bytes to %d", written, strerror(errno), n, d->descriptor);
+      do_rawlog(LT_TRACE,
+                "send() returned %d (error %s) trying to write %d bytes to %d",
+                written, strerror(errno), n, d->descriptor);
       if (!is_blocking_err(written)) {
-	d->conn_flags |= CONN_SOCKET_ERROR;
-	return 0;
+        d->conn_flags |= CONN_SOCKET_ERROR;
+        return 0;
       }
-    } else { /* written == 0 */
+    } else {                    /* written == 0 */
       do_rawlog(LT_TRACE, "send() wrote no bytes to %d", d->descriptor);
     }
   }

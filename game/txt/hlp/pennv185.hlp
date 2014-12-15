@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.5 patchlevel 7                                 ??? ??, 2???
+Version 1.8.5 patchlevel 7                                 Dec 31, 2014
 
 Fixes:
  * Bytes received by connections weren't being properly recorded for
@@ -50,6 +50,8 @@ Fixes:
  * Enabling the log_commands config option while a LOG`CMD event was set would
    cause endless queueing, until the event handler was halted as a runaway
    object. Reported by spork. [MG]
+ * Fix a potential overflow problem in the code that computes queue load averages for
+   @ps. [SW]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 
@@ -68,7 +70,11 @@ Minor changes:
  * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
    For @attrib/enum and /limit. [MG]
  * Added @flag/decompile and @attribute/decompile, to decompile each table
-   to copy to another game. Suggested by spork. [MG]
+   to copy to another game. Suggested by spork. [MG]  
+ * Newly set player passwords are salted to be more resistant to
+    cracking via rainbow tables by somebody with a copy of the
+    database.  You still shouldn't be re-using a password for anything
+    important, of course. Existing passwords aren't automatically updated. [SW]
 
 & 1.8.5p6
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014

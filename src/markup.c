@@ -2888,7 +2888,7 @@ safe_markup(char const *a_tag, char *buf, char **bp, char type)
   safe_str(a_tag, buf, bp);
   result = safe_chr(TAG_END, buf, bp);
   /* If it didn't all fit, rewind. */
-  if (result) 
+  if (result)
     memset(save, '\0', *bp - save);
   return result;
 }
@@ -2968,7 +2968,7 @@ safe_tag_wrap(char const *a_tag, char const *params,
     result = safe_tag_cancel(a_tag, buf, bp);
   }
   /* If it didn't all fit, rewind. */
-  if (result) 
+  if (result)
     memset(save, '\0', *bp - save);
   return result;
 }

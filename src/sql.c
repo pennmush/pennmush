@@ -535,7 +535,8 @@ COMMAND(cmd_mapsql)
           pe_regs_setenv(pe_regs, i, names[i]);
         }
         pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-        queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type, executor);
+        queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type,
+                                  executor);
       }
 
       /* Queue the rest. */
@@ -548,7 +549,8 @@ COMMAND(cmd_mapsql)
           pe_regs_set(pe_regs, PE_REGS_ARG, names[i], cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-      queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type, executor);
+      queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type,
+                                executor);
       for (i = 0; i < useable_fields; i++) {
         if (cells[i + 1])
           mush_free(cells[i + 1], "sql_row");

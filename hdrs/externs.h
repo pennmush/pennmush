@@ -376,10 +376,10 @@ int okay_pemit(dbref player, dbref target, int dofails, int def,
                NEW_PE_INFO *pe_info);
 enum msgformat_response vmessageformat(dbref player, const char *attribute,
                                        dbref executor, int flags,
-									   int nargs, ...);
+                                       int nargs, ...);
 enum msgformat_response messageformat(dbref player, const char *attribute,
                                       dbref executor, int flags, int nargs,
-									  char *argv[]);
+                                      char *argv[]);
 void do_message(dbref executor, dbref speaker, char *list, char *attrname,
                 char *message, enum emit_type type, int flags, int numargs,
                 char *argv[], NEW_PE_INFO *pe_info);

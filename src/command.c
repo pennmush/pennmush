@@ -90,7 +90,8 @@ COMLIST commands[] = {
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM DECOMPILE", cmd_attribute,
+  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM DECOMPILE",
+   cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
   {"@BREAK", "INLINE QUEUED", cmd_break,
@@ -161,7 +162,8 @@ COMLIST commands[] = {
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
-  {"@FLAG", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG DECOMPILE",
+  {"@FLAG",
+   "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG DECOMPILE",
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
@@ -259,7 +261,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@POLL", "CLEAR", cmd_poll, CMD_T_ANY, 0, 0},
   {"@POOR", NULL, cmd_poor, CMD_T_ANY, 0, 0},
-  {"@POWER", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DECOMPILE",
+  {"@POWER",
+   "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DECOMPILE",
    cmd_power, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@PROMPT", "SILENT NOISY NOEVAL SPOOF", cmd_prompt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -2582,8 +2585,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.
-             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override->
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {

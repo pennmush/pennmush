@@ -706,7 +706,7 @@ free_pe_regs_trees()
 FUNCTION(fun_pe_regs_dump)
 {
   dbref who = caller;
-  
+
   if (args[0] && *args[0]) {
     who = lookup_player(args[0]);
     if (!GoodObject(who)) {
@@ -1187,7 +1187,7 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
         val = val->next;
       }
     }
-    if (pe_regs->flags & breaker && 
+    if (pe_regs->flags & breaker &&
         (type != PE_REGS_ARG || !(pe_regs->flags & PE_REGS_ARGPASS)))
       return 0;
     pe_regs = pe_regs->prev;

@@ -1433,6 +1433,13 @@ mycrypt.o: ../hdrs/bufferq.h
 mycrypt.o: ../hdrs/notify.h
 mycrypt.o: ../hdrs/strutil.h
 mycrypt.o: ../hdrs/compile.h
+mycrypt.o: ../hdrs/externs.h
+mycrypt.o: ../hdrs/dbdefs.h
+mycrypt.o: ../hdrs/mushdb.h
+mycrypt.o: ../hdrs/flags.h
+mycrypt.o: ../hdrs/dbio.h
+mycrypt.o: ../hdrs/ptab.h
+mycrypt.o: ../hdrs/chunk.h
 mymalloc.o: ../config.h
 mymalloc.o: ../confmagic.h
 mymalloc.o: ../options.h

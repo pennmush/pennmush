@@ -1141,7 +1141,7 @@ FUNCTION(fun_foreach)
       free_ansi_string(as);
       return;
     }
-    
+
     safe_ansi_string(as, 0, (lp++ - as->text), buff, bp);
     placenr = (lp - as->text);
   }
@@ -2009,7 +2009,7 @@ FUNCTION(fun_align)
       return;
     }
     if (0 && (calign[i] & AL_REPEAT))
-      calign[i] &= ~(AL_TRUNC_EACH | AL_TRUNC_ALL); /* Don't allow trunc + repeat */
+      calign[i] &= ~(AL_TRUNC_EACH | AL_TRUNC_ALL);     /* Don't allow trunc + repeat */
     totallen += cols[i];
   }
   if (totallen > BUFFER_LEN) {

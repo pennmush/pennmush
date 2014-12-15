@@ -1156,15 +1156,13 @@ shovechars(Port_t port, Port_t sslport)
     if (info_slave_state == INFO_SLAVE_PENDING)
       FD_SET(info_slave, &input_set);
 #endif
-    for (dprev = NULL, d = descriptor_list;
-	 d;
-	 dprev = d, d = d->next) {
+    for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
       if (d->conn_flags & CONN_SOCKET_ERROR) {
-	shutdownsock(d, "socket error", GOD);
-	d = dprev;
-	if (!d)
-	  d = descriptor_list;
+        shutdownsock(d, "socket error", GOD);
+        d = dprev;
+        if (!d)
+          d = descriptor_list;
       }
 
       if (d->input.head) {
@@ -2052,7 +2050,7 @@ network_send_writev(DESC *d)
       if (is_blocking_err(errno))
         return 1;
       else {
-	d->conn_flags |= CONN_SOCKET_ERROR;
+        d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
       }
     }
@@ -2106,7 +2104,7 @@ network_send(DESC *d)
       if (is_blocking_err(errno))
         return 1;
       else {
-	d->conn_flags |= CONN_SOCKET_ERROR;
+        d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
       }
     }
@@ -2708,7 +2706,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
       if (is_blocking_err(errno))
         return 1;
       else {
-	d->conn_flags |= CONN_SOCKET_ERROR;
+        d->conn_flags |= CONN_SOCKET_ERROR;
         return 0;
       }
     }
@@ -3484,7 +3482,7 @@ sockset_show(DESC *d, char *nl)
   char colorstyle[SBUF_LEN];
   int ntype;
   int nllen = strlen(nl);
-  
+
   safe_strl(nl, nllen, buff, &bp);
 
   if (d->output_prefix && *(d->output_prefix)) {
@@ -3507,15 +3505,16 @@ sockset_show(DESC *d, char *nl)
   safe_strl(nl, nllen, buff, &bp);
   safe_format(buff, &bp, "%-15s:  %d", "Height", d->height);
   safe_strl(nl, nllen, buff, &bp);
-  safe_format(buff, &bp, "%-15s:  %s", "Terminal Type", (d->ttype ? d->ttype : default_ttype));
+  safe_format(buff, &bp, "%-15s:  %s", "Terminal Type",
+              (d->ttype ? d->ttype : default_ttype));
   safe_strl(nl, nllen, buff, &bp);
-  
+
   ntype = notify_type(d);
 
   safe_format(buff, &bp, "%-15s:  %s", "Stripaccents",
               (ntype & MSG_STRIPACCENTS ? "Yes" : "No"));
   safe_strl(nl, nllen, buff, &bp);
-  
+
   if (ntype & MSG_XTERM256)
     strcpy(colorstyle, "xterm256");
   else if (ntype & MSG_ANSI16)

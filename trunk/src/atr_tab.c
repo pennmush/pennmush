@@ -184,7 +184,7 @@ init_aname_table(void)
  * \param inserted has the attr been inserted into the hash table already?
  * \retval number of entries (including aliases) removed from the hash table
  */
-static int 
+static int
 free_standard_attr(ATTR *a, bool inserted)
 {
   int count = 0;
@@ -200,32 +200,33 @@ free_standard_attr(ATTR *a, bool inserted)
     }
     free((char *) AL_NAME(a));
   }
-  
+
   if (a->data != NULL_CHUNK_REFERENCE) {
     chunk_delete(a->data);
   }
-  
+
   mush_free(a, "ATTR");
-  
+
   return count;
 
 }
 
 /* Remove all aliases for a standard attr. */
 static int
-free_standard_attr_aliases(ATTR *a) {
+free_standard_attr_aliases(ATTR *a)
+{
   bool found_alias;
   ATTR *curr;
   const char *aliasname;
   int count = 0;
-  
+
   /* Annoyingly convoluted because the ptab_delete will screw with the
    * counter used by ptab_nextextry_new */
   do {
     found_alias = 0;
     curr = ptab_firstentry_new(&ptab_attrib, &aliasname);
-    for (;curr;curr = ptab_nextentry_new(&ptab_attrib, &aliasname)) {
-      if (!strcmp(AL_NAME(curr), AL_NAME(a)) && 
+    for (; curr; curr = ptab_nextentry_new(&ptab_attrib, &aliasname)) {
+      if (!strcmp(AL_NAME(curr), AL_NAME(a)) &&
           strcmp(AL_NAME(curr), aliasname)) {
         found_alias = 1;
         ptab_delete(&ptab_attrib, aliasname);
@@ -909,20 +910,22 @@ do_attribute_delete(dbref player, char *name)
 
   /* Display current attr info, for backup/safety reasons */
   display_attr_info(player, ap);
-  
+
   /* Free all data, remove any aliases, and remove from the hash table */
   count = free_standard_attr(ap, 1);
-  
+
   switch (count) {
-    case 0:
-      notify_format(player, T("Failed to remove %s from attribute table."), name);
-      break;
-    case 1:
-      notify_format(player, T("Removed %s from attribute table."), name);
-      break;
-    default:
-      notify_format(player, T("Removed %s and %d alias(es) from attribute table."), name, count - 1);
-      break;
+  case 0:
+    notify_format(player, T("Failed to remove %s from attribute table."), name);
+    break;
+  case 1:
+    notify_format(player, T("Removed %s from attribute table."), name);
+    break;
+  default:
+    notify_format(player,
+                  T("Removed %s and %d alias(es) from attribute table."), name,
+                  count - 1);
+    break;
   }
 
   return;
@@ -1035,7 +1038,7 @@ do_decompile_attribs(dbref player, char *pattern, int retroactive)
 {
   ATTR *ap;
   const char *name;
-  
+
   notify(player, T("@@ Standard Attributes:"));
   for (ap = ptab_firstentry_new(&ptab_attrib, &name);
        ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
@@ -1045,10 +1048,9 @@ do_decompile_attribs(dbref player, char *pattern, int retroactive)
       continue;
     notify_format(player, "@attribute/access%s %s=%s",
                   (retroactive ? "/retroactive" : ""),
-                  AL_NAME(ap),
-                  privs_to_string(attr_privs_view, AL_FLAGS(ap)));
+                  AL_NAME(ap), privs_to_string(attr_privs_view, AL_FLAGS(ap)));
     if (ap->flags & AF_RLIMIT) {
-      notify_format(player, "@attribute/limit %s=%s", AL_NAME(ap), 
+      notify_format(player, "@attribute/limit %s=%s", AL_NAME(ap),
                     display_attr_limit(ap));
     } else if (ap->flags & AF_ENUM) {
       notify_format(player, "@attribute/enum %s=%s", AL_NAME(ap),

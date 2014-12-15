@@ -672,7 +672,7 @@ FUNTAB flist[] = {
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},
 #ifdef DEBUG_PENNMUSH
   {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
-#endif /* DEBUG_PENNMUSH */
+#endif                          /* DEBUG_PENNMUSH */
   {NULL, NULL, 0, 0, 0}
 };
 

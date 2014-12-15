@@ -1336,7 +1336,8 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, (queue_entry->queue_type & QUEUE_EVENT));
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs,
+                         (queue_entry->queue_type & QUEUE_EVENT));
 
   pe_regs_free(pe_regs);
 }

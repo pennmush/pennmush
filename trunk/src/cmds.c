@@ -84,7 +84,7 @@ COMMAND(cmd_attribute)
     else
       notify(executor, T("Permission denied."));
   } else if (SW_ISSET(sw, SWITCH_DECOMPILE)) {
-      do_decompile_attribs(executor, arg_left, SW_ISSET(sw, SWITCH_RETROACTIVE));
+    do_decompile_attribs(executor, arg_left, SW_ISSET(sw, SWITCH_RETROACTIVE));
   } else if (SW_ISSET(sw, SWITCH_DELETE)) {
     if (Wizard(executor))
       do_attribute_delete(executor, arg_left);
@@ -522,7 +522,8 @@ COMMAND(cmd_flag)
   if (SW_ISSET(sw, SWITCH_LIST))
     do_list_flags("FLAG", executor, arg_left, FLAG_LIST_NAMECHAR, T("Flags"));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))
-    do_list_flags("FLAG", executor, arg_left, FLAG_LIST_DECOMPILE, T("@@ Flags"));
+    do_list_flags("FLAG", executor, arg_left, FLAG_LIST_DECOMPILE,
+                  T("@@ Flags"));
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_flag_add("FLAG", executor, arg_left, args_right);
   else if (SW_ISSET(sw, SWITCH_DELETE))
@@ -873,11 +874,11 @@ do_list(dbref player, char *arg, int lc, int which)
   else if (string_prefix("attribs", arg))
     do_list_attribs(player, lc);
   else if (string_prefix("flags", arg))
-    do_list_flags("FLAG", player, "", 
+    do_list_flags("FLAG", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Flags"));
   else if (string_prefix("powers", arg))
-    do_list_flags("POWER", player, "", 
+    do_list_flags("POWER", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Powers"));
   else if (string_prefix("locks", arg))
@@ -916,8 +917,8 @@ COMMAND(cmd_list)
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Flags"));
   else if (SW_ISSET(sw, SWITCH_POWERS))
-    do_list_flags("POWER", executor, arg_left, 
-                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0), 
+    do_list_flags("POWER", executor, arg_left,
+                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Powers"));
   else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
     do_list_allocations(executor);
@@ -1288,7 +1289,8 @@ COMMAND(cmd_power)
   if (SW_ISSET(sw, SWITCH_LIST))
     do_list_flags("POWER", executor, arg_left, FLAG_LIST_NAMECHAR, T("Powers"));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))
-    do_list_flags("POWER", executor, arg_left, FLAG_LIST_NAMECHAR, T("@@ Powers"));
+    do_list_flags("POWER", executor, arg_left, FLAG_LIST_NAMECHAR,
+                  T("@@ Powers"));
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_flag_add("POWER", executor, arg_left, args_right);
   else if (SW_ISSET(sw, SWITCH_DELETE))

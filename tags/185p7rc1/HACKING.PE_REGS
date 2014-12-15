@@ -1,0 +1,227 @@
+DESCRIPTION
+
+If you want to jump to the code bit, either go to the bottom or do a search
+for "CODING:" or "EXAMPLES:" - A lot of meaningful details come beforehand,
+though =).
+
+Formerly, ufuns, $-commands, triggers, etc were both limited to 10 args, and
+required an array of char *args[nargs] to be passed to every function Penn
+uses for propagating state, or kept within PE_INFO as an ugly hack.
+
+PE_REGS is a register stack. As functions or commands (such as @switch/@dol)
+recurse, they create their own information and push it onto the bottom
+of the stack (This document treats the stack as growing _down_, and searches
+on the stack will go up the stack).
+
+A single PE_REGS object will contain one or more PE_REG_* flags to determine
+its type:
+
+  PE_REGS_Q
+  PE_REGS_REGEXP
+  PE_REGS_SWITCH
+  PE_REGS_ITER
+  PE_REGS_ARG
+  PE_REGS_SYS
+
+  PE_REGS_QUEUE = (PE_REGS_Q | PE_REGS_REGEXP | PE_REGS_SWITCH | PE_REGS_ITER
+                   | PE_REGS_ARG | PE_REGS_SYS)
+
+These tell the parser how to treat this particular pe_regs object: Whether
+to check it for Args (%0-%9), Q-regs (%q<foo>), Regexp ($<foo>),
+Switch/@switch (stext/%$0/slev), Iter/@dol (%i0/%il/itext/inum). At the
+time of this writing, SYS is unused, but it will eventually be used for
+other stateful information.
+
+REGEXP and ARG will only check the bottommost one matching their needs.
+SWITCH and ITER statefully impact each other on gets: itext(num)/stext(num)
+count from the bottom-up.
+
+The special one, PE_REGS_QUEUE, is created for every pe_info, and should exist
+at the top of every stack. When a new queue entry is created (@switch, @dol,
+@wait, @trigger, @include, @force, etc etc), then everything in the current
+queue entry's PE_REGS stack is compacted and placed into the pe_regs for
+the new queue.
+
+There are also other bitwise flags that may be or'd with the above types.
+
+Q-registers:
+  PE_REGS_LET      Used for let(): Only set qregs that already exist
+                   otherwise pass them up.
+  PE_REGS_QSTOP    Q-reg get()s don't travel past this.
+
+Args:
+  PE_REGS_ARGPASS  If set on a PE_REGS that is also set NEWATTR, then %0-%9
+                   will continue past the NEWATTR.
+
+Iter:
+  PE_REGS_IBREAK   A PE_REGS structure is flagged IBREAK only by the function
+                   ibreak() - It signals iter() to stop processing.
+
+Iter, arg (%0-%9), switch:
+  PE_REGS_NEWATTR  Iter, switch, arg checks don't travel past this.
+                   (If it is also set ARGPASS, %0-%9 checking will continue
+                    up)
+
+All:
+  PE_REGS_ISOLATE   A combination of:
+                    (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR),
+                    it is intended to stop any 'fetch' from going up the
+                    stack - essentially the same as wiping the pe_info of
+                    earlier implementations.
+
+Each PE_REGS has zero or more PE_REG_VAL items within it. A PE_REG_VAL is
+simply a key -> value map, with a unique key+type combo. (There can be a
+'0' for %q0 and a '0' for %0.) Each PE_REG_VAL should have a single
+PE_REGS_... type with it. In addition, there are some more flags that
+may be associated with it:
+
+INTERNAL, DO NOT USE:
+  PE_REGS_STR   - It's a string.
+  PE_REGS_INT   - It's an integer. (Duh).
+
+For your use:
+  PE_REGS_NOCOPY - Use NOCOPY when you are passing a value that will last
+                   longer than the pe_regs structure it is being saved to.
+                   Best used in ufuns. If you free the value you pass
+                   before you use the pe_regs structure it's saved in,
+                   it can do screwy things.
+
+CODING:
+
+If you want to access any values, use the handy macros or functions available
+that pull them straight from pe_info:
+
+Q-regs:
+  PE_Getq(pe_info, name)     - name being '0' for %q0 or %q<0>
+Regexps:
+  PE_Get_re(pe_info, name)   - name being '0' for $0 or $<0>
+Iter:
+  PE_Get_Itext(pe_info, num) - itext(<num>)/%i0. <num> is an integer.
+  PE_Get_Inum(pe_info, num)  - inum(<num>). <num> is an integer.
+  PE_Get_Ilev(pe_info)       - ilev()
+Switch:
+  PE_Get_Stext(pe_info, num) - stext(<num>)/%$0. <num> is an integer.
+  PE_Get_Slev(pe_info)       - slev()
+Env:
+  PE_Get_Env(pe_info, num)   - 0-9 for %0-%9
+  PE_Get_Envc(pe_info)       - %+
+
+Unique among all uses of the PE_REGS stack are Q-registers. Everything else
+has their values set when the pe_regs for it are created. Q-registers can
+travel up the stack to set at a higher stack item. For this reason, setting
+q-registers is based around pe_info:
+
+  PE_Setq(pe_info, name, value) - name being '0' for %0, etc.
+
+The next most common use of PE_REGS is to pass env args (%0-%9). There are
+two recommended ways to do this:
+
+1) Using call_ufun, or any function that takes a PE_REGS * as a parameter:
+
+  PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "functionname");
+
+  If you're using a value that's not going to last until pe_regs is used:
+
+        pe_regs_setenv(pe_regs, num, value);
+
+  If you are (Most common for fun_*. Not common for commands)
+
+        pe_regs_setenv_nocopy(pe_regs, num, value);
+
+  call_ufun(..., pe_regs);
+
+  pe_regs_free(pe_regs);
+
+2) When you need to impact a process_expression:
+
+  PE_REGS *pe_regs = pe_regs_localize(pe_info, PE_REGS_ARG, "functionname");
+  pe_regs_setenv(pe_regs, num, value); (or pe_regs_setenv_nocopy(...));
+
+  process_expression(..., pe_regs)
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
+Look at hdrs/mushtype.h for the full list of pe_regs functions available.
+
+* Every pe_regs_create must have a pe_regs_free, in the same function.
+
+* Every pe_regs_localize must have a pe_regs_restore, and a pre_regs_free,
+  in the same function.
+
+* Forgetting to call pe_regs_restore after a localize can cause crashes or
+  memory corruption.
+
+* If you used to do pe_info->env[num] = mush_strdup() or otherwise allocate
+  memory, then use pe_regs_setenv(), and it will create a copy itself. If you
+  didn't, then use pe_regs_setenv_nocopy().
+
+* while you can use pe_regs_localize around call_ufun, call_ufun creates its
+  own pe_regs stack, with PE_REGS_NEWATTR. If you want your args available
+  to what is called, use pe_regs_create and pass pe_regs to call_ufun.
+
+EXAMPLES:
+
+* fun_hello: A function calling the obj/attr in its first arg with two args:
+"Hello World" and a static counter of how many times it's been called since
+reboot.
+
+FUNCTION(fun_helloworld)
+{
+  char rbuff[BUFFER_LEN]; /* Response buffer */
+  ufun_attrib ufun;       /* Contains the ufun call information */
+  PE_REGS *pe_regs;
+  static int counter = 0;
+
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT)) {
+    safe_str(T(ufun.errmess), buff, bp);
+    return;
+  }
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_helloworld");
+
+  /* "Hello world" persists permanently - no need for pe_regs to make a copy */
+  pe_regs_setenv_nocopy(pe_regs, 0, "Hello world");
+
+  /* But unparse_integer returns a pointer to a buffer - it can change in the
+     course of calling the attribute, so we make a copy of it. */
+  pe_regs_setenv(pe_regs, 1, unparse_integer(counter++));
+
+  /* Call the ufun. In the ufun, "Hello world" will be %0 and the number
+     will be %1. */
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
+
+  pe_regs_free(pe_regs);
+
+  /* Copy the result back to the buffer. */
+  safe_str(rbuff, buff, bp);
+}
+
+FROM:
+
+  int argcount = 2;
+  const char *myenv[2];
+
+  myenv[0] = mush_strdup(unparse_dbref(executor), "dbcpy");
+  myenv[1] = message;
+
+  call_attrib(player, attrname, myenv, argcount, obuf, player, pe_info)
+
+  mush_free(myenv[0], "dbcpy");
+
+TO:
+
+  PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "my_function_name");
+
+  pe_regs_setenv(pe_regs, 0, unparse_dbref(executor));
+  pe_regs_setenv(pe_regs, 1, message);
+
+  call_attrib(player, attrname, obuf, player, pe_info, pe_regs)
+
+  pe_regs_free(pe_regs);
+
+NOTE: 
+If you don't know when to use pe_regs_setenv_nocopy instead of pe_regs_setenv,
+then just use pe_regs_setenv. pe_regs_setenv will create an in-memory clone of
+what's passed to it, so this is a memory leak:
+
+  pe_regs_setenv(pe_regs, 0, mush_strdup(message, "messagecopy"));

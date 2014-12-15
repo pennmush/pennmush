@@ -1,0 +1,179 @@
+#!/bin/sh
+#
+# usage: restart
+
+# Try to autodetect the game directory. First, follow any symlinks the script
+# may have been run through.
+SCRIPTPATH=$0
+while [ -h "$SCRIPTPATH" ]; do
+  SCRIPTPATH=`readlink "$SCRIPTPATH"`
+done
+
+# REQUIRED if the autodetect fails: set GAMEDIR to point to your game directory,
+# e.g. /home/mush/game.
+GAMEDIR="`cd $(dirname "$SCRIPTPATH"); pwd`"
+
+# OPTIONAL things that you may want to tweak.
+
+# Name of file to write the game's process id to. Used by restart to
+# check for an already running game.
+PIDFILE=netmush.pid
+
+# Uncomment the line below to attempt to allow crashes to produce
+# core dumps. If you're getting crashes, this is the best way
+# to debug them.
+ulimit -c unlimited
+
+# Internationalization stuff
+# Set LANG here to get international character sets and, if someone's
+# done it, translation of messages.
+# Vaild locales are usually <lang_code>_<COUNTRY CODE>
+# Example (uncomment to use):
+#LANG=fr_FR
+
+# Time zone stuff
+# If you want your MUSH to run in a different timezone than the one
+# you're in, you need to identify the target time zone file in
+# /usr/share/zoneinfo or /usr/lib/zoneinfo. Then uncomment the next
+# two lines and set TZ to the desired timezone file, as shown, with
+# an initial colon:
+#TZ=:EST5EDT
+#export TZ
+
+
+# The config file. Best to keep this as is. If you must change
+# the name, make it a link to mush.cnf.
+CONF_FILE=mush.cnf
+
+#######################################################################
+
+if [ -z "$GAMEDIR" ]; then
+  echo "You must set GAMEDIR in the restart script."
+  exit 1
+fi
+
+if [ ! -d "$GAMEDIR" ]; then
+  echo "GAMEDIR doesn't appear to be a directory. It's: $GAMEDIR"
+  exit 1
+fi
+
+cd $GAMEDIR
+echo Running from `pwd`
+
+if [ ! -f "$CONF_FILE" ]; then
+  echo "CONF_FILE doesn't exist. It's: $CONF_FILE"
+  echo "Create $CONF_FILE from $GAMEDIR/mushcnf.dst and run 'make update'"
+  exit 1
+fi
+
+# If netmush isn't here, they probably didn't make install
+# In any case, we'd better not proceed.
+if [ ! -e netmush ]; then
+  echo "I don't see $GAMEDIR/netmush. Did you remember to make install?"
+  exit 1
+fi
+
+#
+# Read the cnf file and set some variables.
+#
+
+RAW_INDB=`egrep "^input_database" $CONF_FILE | tail -n1`
+RAW_OUTDB=`egrep "^output_database" $CONF_FILE | tail -n1`
+RAW_PANICDB=`egrep "^crash_database" $CONF_FILE | tail -n1`
+
+INDIR=$(dirname ${RAW_INDB#input_database})
+INDB=$(basename ${RAW_INDB#input_database})
+
+OUTDIR=$(dirname ${RAW_OUTDB#output_database})
+OUTDB=$(basename ${RAW_OUTDB#output_database})
+
+PANICDIR=$(dirname ${RAW_PANICDB#crash_database})
+PANICDB=$(basename ${RAW_PANICDB#crash_database})
+
+COMPRESSOR="cat"
+SUFFIX=""
+
+# Find out what the compression program is, if any
+egrep -s "^compress_program[[:space:]]*[[:alnum:]/]" $CONF_FILE
+nocompress=$?
+if [ "$nocompress" -eq 0 ]; then
+    COMPRESSOR=`egrep "^compress_program" $CONF_FILE | tail -n1 | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
+    SUFFIX=`egrep "^compress_suffix" $CONF_FILE | tail -n1 | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
+fi
+
+#-- start up everything
+
+# Prevent double-starting things. You may need to provide a pathname for
+#  some of the commands. System V flavors need "ps -f" instead of "ps uwx".
+
+# Old style, look for a program using the config file. 
+#mush=`ps uwwx | grep " $GAMEDIR/$CONF_FILE" | grep -v grep | wc -l`
+# if [ "$mush" -gt 0 ]; then
+
+# New style, look for a pid file.
+if [ -f $PIDFILE ]; then
+    foo=`kill -0 \`cat $PIDFILE\` 2>/dev/null`
+    mush=$?
+else
+    mush=1;
+fi
+
+if [ "$mush" -eq 0 ]; then
+  echo Mush already active or some other process is using $GAMEDIR/$CONF_FILE.
+  exit 0
+fi
+
+echo Building text file indexes.
+(cd txt; make)
+
+echo Restarting Mush.
+
+if [ -r "$PANICDIR/$PANICDB" ]; then
+   end="`tail -1 $PANICDIR/$PANICDB`"
+   if [ "$end" = "***END OF DUMP***" ]; then
+      echo "Recovering PANIC dump."
+      cat $PANICDIR/$PANICDB | $COMPRESSOR > $OUTDIR/$OUTDB$SUFFIX
+      rm $PANICDIR/$PANICDB
+      echo "PANIC dump successfully recovered."
+   else
+      mv $PANICDIR/$PANICDB save/$PANICDB.corrupt
+      echo "Warning: PANIC dump corrupt. Using older db."
+   fi
+fi
+
+# Copy the last set of log files to save/ with a timestamp.
+TIMESTAMP=`date +%Y%m%d%H%M%S`
+for log in log/*.log; do
+    BASE=`basename $log`
+    mv -f $log save/$BASE.$TIMESTAMP
+done
+
+if [ -r "$OUTDIR/$OUTDB$SUFFIX" ]; then
+   ln -f $INDIR/$INDB$SUFFIX save/$INDB$SUFFIX.old
+   mv -f $INDIR/$INDB$SUFFIX save/$INDB$SUFFIX.$TIMESTAMP
+   mv $OUTDIR/$OUTDB$SUFFIX $INDIR/$INDB$SUFFIX
+else
+   echo "No $OUTDIR/$OUTDB$SUFFIX found."
+   if [ -r "$INDIR/$INDB$SUFFIX" ]; then
+      echo "Using $INDIR/$INDB$SUFFIX."
+   else
+      echo "No $INDIR/$INDB$SUFFIX found."
+      if [ -r "save/$INDB$SUFFIX.old" ]; then
+	 echo "Using save/$INDB$SUFFIX.old."
+	 cp save/$INDB$SUFFIX.old $INDIR/$INDB$SUFFIX
+      else
+	echo "No database found. Mush will start with a minimal world."
+     fi
+   fi
+fi
+
+if [ -r reboot.db ]; then
+  rm -f reboot.db
+fi
+
+DATEMSK="${GAMEDIR}/getdate.template"
+export DATEMSK
+
+export GAMEDIR
+
+LC_ALL=$LANG LANG=$LANG ./netmush $@ --pid-file=$PIDFILE "$GAMEDIR/$CONF_FILE" &

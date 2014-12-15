@@ -1,0 +1,13 @@
+-------------------------------------------------------------------------
+Congratulations on your newly created character. PennMUSH welcomes you.
+For more information about this game, type 'news' or 'help' to get help.
+
+Please read news for updates on program changes and other things that
+affect your life here at PennMUSH.  If you ask for help on a topic that is
+in the help, you will be told to read help and news first to see if you can
+figure out what you might be doing.  If you then still need help, the wizards
+will be more than happy to assist you.
+
+Yell at your god to personalize this file!
+-------------------------------------------------------------------------
+

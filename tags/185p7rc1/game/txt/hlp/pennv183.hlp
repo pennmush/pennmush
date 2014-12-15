@@ -1,0 +1,707 @@
+& 1.8.3p13
+Version 1.8.3 patchlevel 13                     Feb 13, 2010
+
+Minor Changes:
+ * align() columns can now have ansi color definitions. [GM]
+ 
+Fixes:
+ * Heisencrashbug in command parser fixed. Reported by Mercutio. [GM]
+ * Bug in randword() and extract() fixed. [MG]
+ * Fix several memory leaks. [SW]
+ * Help fixes by aumiiari and others. [MG]
+ * Add more specific log messages when the chatdb fails to load, from
+   report by Dan@M*U*S*H. [MG]
+
+& 1.8.3p12
+Version 1.8.3 patchlevel 12                     Feb 07, 2010
+
+Major Changes:
+ * 'mud_url' @config. If this is enabled, accessing the mush with an HTTP
+   browser will redirect the user to the selected mud_url. (This may need
+   some work and testing by a public place with many clients.) [GM]
+ * The internal code for object matching has been rewritten, hopefully
+   fixing a few bugs and improving match results in some cases. [MG]
+
+Minor Changes:
+ * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
+ * Wrapping fixes in align(). Reported by Trinsec@M*U*S*H [GM]
+ * Guests will no longer see "Guests can't do that" if @mail is restricted
+   to noguest. [GM]
+ * Helpfile cleanup. [MG]
+ * Expand the @lock key optimizer. Try '@lock me=!!=me'.
+ * When objects are destroyed, references to them in locks
+   are replaced by #FALSE, so that a newly created object reusing
+   some dbref won't pass locks it shouldn't.
+ * /'s can now be included in the subject of a @mail 
+   message via doubling it up -- @mail foo=a//s//l/What's up? 
+   Suggested by Paige.
+ * locate() now ignores spaces in its 3rd argument. [MG]
+ * Change the default mud_name in mush.cnf from TinyMUSH
+   to PennMUSH. Suggested by many people over the years.
+ * @firstexit can now take multiple exits, and can affect exits in other
+   rooms. Suggested by AnneLions. [MG]
+ * Changed some default mush.cnf options. [MG]
+ * Remove the old patches.h way of showing installed patches. It was 
+   broken and rarely used anyways.
+ * Removed the little-used "page_cost" @config option. [MG]
+ * Removed costs for @find, @zemit, @entrances and @mail/stats. [MG]
+ * @hide can now affect a single descriptor, rather than all of a player's
+   connections. A player is only considered hidden if all his connections
+   are hidden. Wizards can also @hide other players. [MG]
+ * Wizards no longer automatically @hide when set DARK (but are hidden when
+   connecting dark with "cd"). [MG]
+ * sql() now takes a fourth argument, to return the number of affected rows.
+   Suggested by Mercutio.
+ * baseconv() fixes for malformed input, "-" ambiguity in base 63/64, and
+   missing "-" sign for single-digit output.
+ * Flag names now have similar restrictions to attribute names. [MG]
+ * The @ns*emit commands and ns*emit() functions are no longer restricted;
+   when used by mortals, they work exactly the same as the non-ns versions.
+   Suggested by Michael Blackburn. [MG]
+ * Update autoconf to 2.65.
+ * @grep/print now shows a : before the attribute contents, the same as
+   examine. Suggested by Cheetah. [MG]
+   
+Commands:
+ * Removed the /functions, /attribs, /commands and /flags switches from
+   @config. Use @list/<switch> instead. [MG]
+ * @decompile changes: added /name, the opposite of /db. You can now give a
+   '=<prefix>' without needing the /prefix switch, and can use other
+   switches with /tf, like @decomp/tf/flags <obj>. Suggestedby Trinsec. [MG]
+ * @entrances can now take multiple switches, to show multiple types. [MG]
+ * Removed the obsolete @map command. [MG]
+ * @boot <player> now boots all of <player>'s connections, not just the
+   first. Similarly, @boot/me boots all your idle connections. [MG]
+ * @dump/debug was broken and undocumented. [MG]
+ * Removed page/blind (and the blind_page config option). [MG]
+
+Functions:
+ * llocks() without any arguments returns a list of the standard locks.
+ * unsetq(), to erase queue registers. [GM]
+ * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
+   #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]
+ * benchmark(), to benchmark softcode. [DC]
+ * Added "flag" as a category to valid(), to check for valid names for
+   @flag/add and @power/add. [MG]
+ * New pfun() function, which evaluates attributes from your parent as if
+   you were inheriting them, even if you have your own copy of the attr. [MG]
+ * locate() can take a new parameter, 'x', which causes it to only match 
+   exact object names, ignoring partial matches. Suggested by Minion. [MG]
+ * ncand()/ncor(), short-circuit versions of nand()/nor(). [MG]
+
+Fixes:
+ * Bug in ansi() when no colors are given and buffer_len is reached has
+   been fixed. Reported by Chris Humbert. [GM]
+ * Bug caused by silly assumptions in list2arr() regarding remove_markup
+   fixed. Reported by Stoko@M*U*S*H. [GM]
+ * Using some substitutions on the connect/motd/etc attributes introduced
+   in p11 could cause a crash. Reported by Minion@M*U*S*H. [GM]
+ * Substitions on the connect/motd/etc attributes now work as expected
+   when a player is connected. Suggested by Minion@M*U*S*H. [GM]
+ * English matching works better with possessive get
+   (get box's 2nd thing). Reported by israphel.
+ * Various additions and changes to the translatable server messages by
+   Stoko. Also updated the I18N file, and added /po/pennmush.pot.
+ * 'No such file' messages were logged by mistake when connect_file and
+   similar options were set to a dbref/attr. Reported by Zalethon. [MG]
+ * Some cygwin C library versions define the imaxdiv_t type but not the
+   associated imaxdiv() function. Split them up into 2 configure checks.
+   Reported by Rankard.
+ * Several math functions didn't complain if their first argument wasn't
+   a valid number. Reported by Jules. [MG]
+ * @wipe would incorrectly set the attribute list for an object in some 
+   cases, making some attributes appear to be deleted. Reported by
+   Cooee@M*U*S*H. [MG]
+ * The Pueblo_Send @power did not allow objects to send restricted HTML 
+   tags, just attributes. Reported by Daniel Powell. [MG]
+ * Fixed a crashbug in @uptime. [MG]
+ * Various Pueblo fixes. By Sketch.
+
+& 1.8.3p11
+Version 1.8.3 patchlevel 11                     Jan 01, 2010
+
+Major changes:
+  * The WHO, DOING and SESSION commands are now normal game commands,
+    and can be @hook'd, typed in lower-case, etc. (The WHO at the login
+    screen is separate.) If you have a softcoded 'who' command, you will
+    need to @hook/override WHO for it to continue working. Suggested by
+    Bane. [MG]
+  * The "take" command has been moved from the hardcode into alias.cnf.
+    If you want to keep it as an alias for "get", you should add the line
+    "command_alias get take" into your alias.cnf. [MG]
+
+Configuration:
+  * The *_file options (connect_file, motd_file, etc) can now be a
+    #dbref/attribute instead of a filename, in which case the given
+    attribute is evaluated and the result shown in place of the text file.
+    Based on patches by Nathan Baum and Mercutio@M*U*S*H. [MG]
+
+Commands:
+  * @decompile now takes multiple attribute patterns after the /
+    (@dec obj/attr attr2) [GM]
+  * @channel/decompile now shows the dbref of the channel mogrifier,
+    instead of its name. [SW]
+  * @pemit now takes a /port switch, which sends the message to the
+    specified port. Suggested by Mercutio. [MG]
+  * @hook/list without a <command> now shows all commands which have hooks.
+    Based on a patch by Trinsec. [MG]
+  * @search now takes multiple <class>=<restriction> pairs. [MG]
+  * The IDLE command now takes an optional argument, which it prints back
+    to the descriptor which sent the command. [MG]
+  * IDLE no longer increases the cmds() for a descriptor. [MG]
+
+Functions:
+  * die() now takes up to 700 dice.
+  * remove() will now remove a list of words.
+  * table() now supports <, > and - as alignment parameters to field width.
+  * testlock(<boolexp>, <victim>) tests a lock without setting it.
+    Suggested by Mercutio@M*U*S*H. [GM]
+  * lnum() now takes a fourth argument: A step. [GM]
+  * cwho() now takes an optional second argument, to control whether
+    online, offline or all players are returned. Suggested by Mercutio,
+    based on a patch by Ifrit. [MG]
+  * room(<room>) now returns <room>, instead of #-1. Also, room(<exit>)
+    returns the exit's source room, rather than the destination. Suggested
+    by Null@M*U*S*H. [MG]
+  * Fixed a bug in how align() strips spaces when wrapping text. Reported
+    by Paige@M*U*S*H. [MG]
+  * pemit(<port number>, <message>) sends <message> to the specified
+    port, like @pemit/port. Suggested by Mercutio. [MG]
+  * lports() and lwho() take an optional second argument to include
+    connections at the login screen. Suggested by Mercutio. [MG]
+  * namelist() now takes an optional #dbref/attr, called for each invalid
+    name in the first argument. [MG]
+  * lmath() can now do lt, lte, gt, gte, eq and neq. Also, lt(), lte(),
+    etc, can all take more than 2 arguments. [GM]
+  * Anyone can now use ctime() on any object. [MG]
+  * locks() reported built-in locks as being user: locks. [MG]
+
+Fixes:
+  * Help fixes by various folks.
+  * lsearch() with invalid syntax was failing to report it as such, causing
+    confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
+  * fun_merge() was eating characters when ansi was present. Reported
+    by Nammyung. Fixed. [GM]
+  * Windows compile fixes.
+  * Math-y crashbug fixed. Reported by Ghost@M*U*S*H. [GM]
+  * page/port didn't evaluate its arguments properly. Reported
+    by adkins@drigon.com. [SW]
+  * randword() with a single element list wasn't dealing correctly
+    with extra spaces. Reported by Minion. [SW]
+  * @listen/^-listens should now be triggered with the object being
+    spoofed as %#, not the object doing the spoofing, when @message/spoof
+    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
+  * Fixed some minor type-related warnings when compiling on cygwin. [MG]
+  * @functions which were set "localize" would report being set "Userfn"
+    as well, and functions set "Userfn" weren't reported as such. [MG]
+  * Objects could be set with flags which weren't valid for their object
+    type, if such flags were in the <type>_flags config option. Found by
+    Kitai. [MG]
+  * Crashbug in the command parser fixed. Found by Freon, patch by Javelin.
+  * Added some missing punctuation in channel messages. Reported by Stoko.
+
+   
+ Minor changes:
+  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
+  * @adisconnect now has %5, which is true if the disconnecting descriptor
+    was @hide. Suggested by Minion@M*U*S*H [GM]
+  * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
+    it does nothing at all. Reported by Minion. [MG]
+  * The connect screen can now contain ANSI color. Patch by Mercutio.
+  * Small bug fix in @search. [MG]
+  * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
+  * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
+  * The "Not enough money to queue command" message tells you which object
+    was attempting to queue the command. Suggested by Daniel Powell. [MG]
+
+Tools:
+  * New script in utils/ for searching change logs: grep-cl.pl [SW]
+
+& 1.8.3p10
+Version 1.8.3 patchlevel 10                     Aug 24, 2009
+
+Major changes:
+ * Switched project management (Bug tracking, revision control, etc.)
+   to Google Code. See http://code.google.com/p/pennmush
+
+Minor changes:
+ * @search and lsearch() now only charge 100 pennies if an evaluating
+   search (EVAL, EPLAYER, EROOM, ETHING, EOBJECT, EEXIT or ELOCK) or
+   an exhaustive attribute search (COMMAND, LISTEN) is performed.
+ * The %u sub now works for built-in commands, as well as $-commands.
+   Useful for @hooks. [MG]
+ * The use command now understands english matching. Suggested by
+   Yuriko.
+ * Rooms can now use @open/open(). [MG]
+ * Mortals can now use '@attribute <attrib>' to see the default flags
+   of a standard attribute. [MG]
+ * @channel/priv now uses 'thing' instead of 'object' for channels
+   which allow things to join. 'object' is kept as an alias. [MG]
+ * The chatdb now saves channel buffers and mogrifier objects, so you
+   don't need to put @chan/buffer or @chan/mogrifier in @startup. [MG]
+
+Flags:
+ * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow
+   players to see 'GAME: Foo has [dis]connected.' messages. MONITOR
+   on players now enables ^-patterns, the same as on things/rooms.
+   Any players with the MONITOR flag will have it replaced with the
+   HEAR_CONNECT flag automatically. Requested by Malix@8BitMUSH. [MG]
+
+Functions:
+  * lpids(), getpids(), and pidinfo() provide information about
+    wait/semaphore process ids and processes. Suggested by
+    Yuriko@M*U*S*H, code by Javelin.
+  * lalign() works like align(), but takes a single arg with a list of
+    columns, instead of one arg for each column. Suggested by Teal. [MG]
+  * New lockowner() function returns the owner of an @lock. Suggested
+    by Paige. [MG]
+
+Fixes:
+  * @pcreate without a password would crash the game. Fixed. [GM]
+  * DARK-disconnected on channels was turned into DARK-connected, on
+    disconnect. Reported by Paige@M*U*S*H, among others.
+  * MOGRIFY`BLOCK wasn't being called, as help @channel6 said it was.
+    Oops. [GM]
+  * Help fixes, by Sketch and others. [GM]
+  * @clone could mess up the names of the original and the clone. 
+    Reported by qa'toq. [SW]
+  * Crash bugs in rand() and randword(). [SW]
+  * Added --disable-zlib configure option to turn off using
+    zlib to work directly with compressed databases. Passing this to
+    configure makes the game act like pre p8 ones. [SW]
+  * member() now ignores ANSI in matches. Reported by Minion. [MG]
+  * Regexp $-commands are now ansi aware. As in: ansi is passed to %0-%9. [GM]
+  * hidden() now works on descriptors as advertised. Reported by Teal. [MG]
+  * @name could cause a crash. Fixed. Reported by Zedekiah@M*U*S*H [GM]
+  * @nscemit/silent didn't work. Reported by Paige. [MG]
+  * Win32 compile fixes and project file updates.
+  * The chatdb failed to load when objects of the wrong type were listed
+    as channel members. Reported by Teal. [MG]
+  * flags() on an attribute used as the root of a tree would include the
+    ` twice.
+  * baseconv() would hang the MUSH if passed a negative <number>. Reported
+    by Mercutio. [MG]
+
+& 1.8.3p9
+Version 1.8.3 patchlevel 9                      Feb 28, 2009
+
+Fixes:
+ * Starting up without an existing database was broken in p8.
+   Reported by many people. [SW]
+ * p8 didn't compile for many people for a number of reasons.
+   [SW]
+ * match() was broken. Reported by Kimiko. [SW]
+
+& 1.8.3p8
+Version 1.8.3 patchlevel 8                      Feb 26, 2009
+
+Major changes:
+ * @chan/mogrifier - Mogrify (mangle) any and all aspects of @channel
+   chatter. e.g: make <Public> into [cilbuP]. [GM]
+
+Minor changes:
+ * The restart script appends a timestamp to the backups of
+   existing databases and log files that it makes. Suggested
+   by Ray,
+ * @setting a flag that's already set will say so. Suggested by
+   Kimiko, patch by Talvo.
+ * Added 'magic sort': Sorts strings with embedded numbers and
+   dbrefs.
+ * Controlling whether info_slave is used or not moved into configure
+   from options.h. (--enable-info_slave/--disable-info_slave). [SW]
+ * Experimental change to attribute lookup to reduce the number of
+   expensive string comparisions needed. [SW]
+ * Updated the Mersenne Twister PRNG to a newer version (Look up
+   SFMT for details). [SW]
+ * New configure options --enable-sse2, --enable-sse2 and
+   --enable-altivec. Currently only used in a few spots, including
+   the new version of the PRNG. [SW]
+ * Remove the MALLOC_PACKAGE option and csrimalloc, the only remaining
+   non-system malloc() choice for it. csrimalloc didn't compile any more
+   and there are better memory debugging tools available these days (The
+   rational for keeping it when other malloc packages were removed.) [SW]
+ * The mush can now read and write gzip-compressed databases without 
+   relying on external programs if the server has zlib installed. [SW]
+ * @search and search() now have a 'command' and 'listen' search class,
+   allowing @searches for objects that respond to given $-commands and
+   listen patterns. [GM]
+ * New config option to reserve space on startup for the chunk swap
+   file to reduce on-disc fragmentation (With a supported OS). [SW]
+ * @shutdown/reboot makes an effort to verify that the executable
+   still exists before trying to restart. Suggested by Alrynnic. [SW]
+
+Commands:
+ * @config/save foo=bar acts like @config/set but also attempts to
+   alter the original configuration file to reflect the new value. [SW]
+ * Wizards can specify a garbage dbref for @create and @pcreate to
+   re-use instead of the first free one. Suggested by Mercutio, based
+   on patch by Talvo.
+
+Functions:
+ * Improved the soundex() implementation. [SW]
+ * Removed the arbitrary limit on the number of @functions. [SW]
+
+Fixes:
+ * locate() always used english matching even when not explicitly told
+   to. Patch by Talvo.
+ * sha0 hashing was broken on 64 bit systems without OpenSSL. Reported
+   by Exaurdon. [SW]
+ * The dump_complete message wasn't being shown on a successful forking
+   dump. Reported by cquesnel. [SW]
+ * speak() deals better with message strings like 'you," he adds, "rock!"'
+   Reported by Summer, fix based on Javelin's analysis.
+ * speak() deals better with mismatched quotes. Reported by Summer. [SW]
+ * A long-standing bug where it was possible for multiple mushes to use
+   the same port (One on an IPv6 version, one on a IPv4 one) is now
+   harder to trigger and gives a better error message. [SW]
+ * Plug a memory leak in decode64().
+ * wild matching with ansi involved has been fixed. [GM]
+ * clflags() sometimes truncated its result. Reported by dbwiddis. [SW]
+
+& 1.8.3p7
+Version 1.8.3 patchlevel 7                      Oct 01, 2008
+
+Minor changes:
+ * If compiling with a recent enough version of gcc to support the
+   -fstack-protector option to detect buffer overruns, use it.
+ * Compile with -mdynamic-no-pic on powerpc OS X, resulting in a smaller
+   binary.
+ * On newer Linux systems, detect when various indexed and cached files
+   are changed and automatically reload them instead of waiting for a 
+   @readcache.
+ * New map data structure with integer keys, used in various places.
+ * Queue entries now have process ids, used to identify and act on that
+   particular action list. This and associated commands inspired
+   by [Rhost].
+ * New configure option --disable-sql to turn off checks for all supported
+   SQL servers.
+ * @name strips out quotes around player names even if spaces in them are
+   disabled.
+ * The test suite can now use valgrind to identify buffer overflows and
+   similiar problems triggered by tests, by passing the --valgrind option
+   to test scripts.
+ * Significantly reduce memory usage in @sitelock rules. 
+
+Commands:
+ * '@hook/override cmd=#1234' will look at all attributes on the object
+   for a matching $command. By Talvo.
+ * @sitelock/delete NNN will remove the sitelock rule with that number.
+ * @halt/pid NNN will remove a specific queue entry. Get the pid from 
+   @ps. [Rhost]
+ * @wait/pid will adjust the wait time of queue entries. [Rhost]
+ * @chan/title <channel> will display your current channel title. 
+   @chan/title <channel>= will clear it. Patch by Talvo, suggested by
+   Ender.
+  * @chan/recall could be used on any channel, not just by people on
+   a given channel. Patch by Talvo.
+
+Functions:
+ * controls(<who>,<what>/<attribute>) tests if someone can change or
+   create a specific attribute on an object. By Talvo.
+ * hasattr() and family also understand foo(<object>/<attribute>) in
+   addition to the traditional two-argument form. Suggested by Impster,
+   patch by Talvo.
+ * cbufferadd() - Add text to a channel buffer without broadcasting it.
+   Allows for @chan/recall on an @chat that's been overridden.
+ * Rewrote the internals of round() to avoid some nasty kludges. [SW]
+ * ljust() and rjust() take fill strings now, not just single
+   characters. Suggested by Nyssa, patch by Talvo.
+ * baseconv() now supports up to base64.
+ * The undocumented (And unusable) orpowers() and andpowers() functions
+   were removed.
+ * andlpowers() and orlpowers() were missing help files. Reported by
+   Parusso.
+
+Fixes:
+ * Potential infinite loop in error logging fixed. Reported by Yuriko.
+ * Compilation fixes on various platforms. [SW]
+ * A repeatingly crashing info_slave won't block login attempts.
+ * @chan/what reports the number of actual lines stored in 
+   recall buffers, not the number of blocks. Reported by
+   qa'toq [SW]
+ * portmsg didn't compile. Reported by Impster. [SW]
+ * A chat db with a garbage object on a channel would fail to load.
+   Reported by Rince. 
+ * Fixed a double free error in page. By Ricochet.
+ * Many help file and source documentation fixes reported by far too
+   many people to list.
+ * Hard-to-trigger double free() in help file reindexing fixed.
+
+& 1.8.3p6
+Version 1.8.3 patchlevel 6                      Jan 01, 2008
+
+Major changes:
+ * If configure finds a copy of the pcre library installed, that will
+   be used instead of the (old) version bundled with Penn. use
+   --with-pcre=/path/to/it if it's not in the usual places, or
+   --with-pcre=no to force use of the bundled version.
+
+Minor changes:
+ * @sitelock when there are no rules will now say that instead of
+   having no output. By Talvo.
+ * Log files use locking to prevent the small chance of more than one
+   process writing to the same error log at the same time.
+ * info_slave's logging is more clear as to its source.
+ * Several places that used the select() system call now favor poll()
+   and/or socket timeouts instead. (The main event loop still uses
+   select() for now.)
+ * A wildcard help topic search (help foo*) that only matches one
+   entry will display that entry. Suggested by Cheetah.
+ * New switches for commands no longer have to be added to the
+   SWITCHES file; the internal list of switches is now built based on
+   what switches are given in the command table and cmdlocal.c
+   additions. Suggested by Talek. 
+
+
+Flags and powers:
+ * The announce power now also grants the ability to change the motd.
+   Suggested by Yuriko.
+ * New hook power grants rights to use @hook. Suggested by Paige.
+ * Windows compile fixes by Intrevis.
+
+Commands:
+ * @motd gives better feedback when clearing a message.
+ * The @tport/@otport/@atport/etc. attributes that get evalulated on a
+   @teleport now get the dbref of the object doing the teleport in %0
+   and the teleported object's old location in %1. Suggested by Daniel
+   Cheng.
+
+Functions:
+ * root() uses an improved algorithm to give a more precise
+   result.
+ * log(N,2) uses the C log2() function if available.
+ * log(N,e) takes the natural logarithm of N, like ln().
+ * lports() now takes an optional viewer argument, a la lwho(). By
+   Talvo.
+
+Fixes:
+ * Typo in info_slave preventing simultaneous hostname lookups fixed.
+ * Compiliation fix with some compilers. Reported by Kimiko.
+ * ident lookups of new connections was broken for several
+   patchlevels.  Works again. Sometimes.
+ * Cleaned up some warnings generated by gcc 4.2
+ * Fixed some minor bugs detected by running under valgrind.
+ * OpenBSD configuration fixes.
+ * Fixes from 1.8.2p8
+
+& 1.8.3p5
+Version 1.8.3 patchlevel 5                      October 6, 2007
+
+Major changes:
+ * Significant rewrite of ansi parsing and better ansi support
+   for many string-handling functions. Patch by Sketch.
+ * Rewrite of the softcode regression testing framework, and 
+   addition of more tests. [SW]
+
+Minor changes:
+ * Store a pointer to the start of a player's mailbox in objdata
+   instead of the connection struct.
+ * Experimental rewrite of hash tables to use the cuckoo hashing
+   algorithm, with constant-time lookups even in the worst case.
+   (And appears to have generally faster lookup even in normal usage.)
+ * Regular expression @sitelocks save the compiled regexp instead of
+   recompiling every time the rule is tested.
+ * Added %4 to @pageformat, which is the default page message.
+
+Commands:
+ * Added @message, which makes it easy to use @chatformat or
+   @pageformat via @hooks, or to create your own *format.
+
+Functions:
+ * Added message(), the function version of @message.
+
+Fixes:
+ * decode64() does better validation of its input. [SW]
+ * Various compile fixes reported by Interevis and Kimiko.
+   Win32 patched by Intrevis.
+ * @sitelock does better error reporting. [SW]
+ * Crash bug related to regeditall fixed.
+ * @decompile didn't handle attribute trees correctly.
+ * Compile failure in funstr.c on some systems. Fixed by Boris.
+ * '@set =foo' failed silently. Reported by Talvo.
+ * Fixes from 1.8.2p7
+
+& 1.8.3p4
+Version 1.8.3 patchlevel 4                      July 9, 2007
+
+Major changes:
+  * Parts of the build process that used a shell script to regenerate
+    certain headers now use perl scripts instead, making them much
+    faster. [SW]
+
+Minor changes:
+  * The hash tables used by lmath() and html functions now
+    use perfect hashing to speed up lookups. [SW]
+  * The various slab allocators used by attributes and locks
+    and other areas have been replaced with a generic
+    slab allocator. Also, many more allocations are handled
+    by the new code.
+  * Use the writev() system call to send data to unencrypted
+    connections in bigger chunks instead of using multiple send()s of
+    smaller chunks.
+  * New lock types can be added via src/local.c instead of having to
+    alter the table in src/locks.c. Based on patch by Talvo.
+  * Builtin lock names and default flags are stored in a hash table
+    instead of a list. [SW]
+
+Attributes:
+  * @chatformat allows you to customize Channel chat messages
+    that you see. [GM]
+
+Commands:
+  * '@list allocations' displays allocation information.
+  * @stats/tables no longer dumps mem_check information.
+  * @search (and by relation search()) now has an 'elock'
+    search class, permitting boolean expression searches. [GM]
+  * @channel/recall extended to support recalling by time. Example:
+    '@chan/recall Foo=1h' will recall lines only from the past
+    hour. Patch by Talvo.
+ 
+Functions:
+  * cond() works like an if, else if, else if ... ncond(),
+    condall(), ncondall() also added. [GM]
+  * speak() accepts a 1st argument beginning with '&' to use
+    an arbitrary speaker name. [GM]
+  * New speakpenn() function handles : <pose> in Penn style.
+    Suggested by Sketch, patch by Javeln.
+  * lmath() accepts dist2d and dist3d. Suggested by Jess.
+  * functions(local) returns just local @functions. [SW]
+  * New encode64() and decode64() functions convert between
+    normal text and base64 encoded text on games that have
+    SSL support compiled in. [SW]
+  * encrypt() and decrypt() now take an optional 3rd argument
+    to control using base 64 encoding. Suggested by Noltar.
+ 
+Fixes:
+  * Compile fixes for some linux (And other?) systems that expect
+    all libraries to be after source files on the command line
+    when linking. Reported by Balerion.
+  * Compile fix for some Postgresql installations. Reported by
+    Nymeria.
+  * Fix to fraction() when dealing with numbers that can't
+    be fractioned. Discovered by Ashen-Shugar.
+  * Fixes to align() and coalescing by Javelin. Bugs reported by
+    Sketch and tramp.
+  * Fixes to speak() to bring it closer to Tiny's behavior in
+    common cases by Sketch and Javelin.
+  * Fixes to ANSI output where extra ^[[m were being sent.
+  * Default flags weren't getting set on some attributes in certain
+    cases. Report by Talvo.
+  * Fixes from 1.8.2p6
+
+& 1.8.3p3
+Version 1.8.3 patchlevel 3                      June 13, 2007
+
+Minor changes:
+  * The sockets used to talk to info_slave changed from streams
+    to datagrams, simplifying code. [SW]
+  * info_slave deals better with simultaneous connections. [SW]
+  * info_slave requires the presence of the socketpair(2) function.
+    It was already using it anyways.
+  * Use of some system calls with portability issues encapsulated in
+    wrapper functions. [SW]
+  * sql() returns error codes directly instead of notifying %!. [SW]
+
+Functions:
+  * lattr() and lattrp() take an optional delimiter argument. Suggested
+    by Nathan Baum. [SW]
+  * New csecs() and msecs() functions, like ctime() and mtime() but
+    returning the time in seconds instead of a formatted string. Based on
+    a patch by Talvo.
+  * ctime() and mtime() take an optional second argument to control which
+    time zone the time is displayed for: UTC or the server's. [SW]
+  * fn() by Javelin
+  * letq(). Suggested by Nathan Baum. [SW]
+  
+Fixes:
+  * Assorted compiler warning fixes. [SW]
+  * Compile fix on OS X 10.3. Reported by Viila. [SW]
+  * @sql wasn't enabled if Sqlite3 was the only database turned on.
+    Reported by qa'toq.
+  * Problems with sql() using Sqlite3. Reported by qa'toq. [SW]
+  * Problems with null queries using MySQL. Reported by duckwa. [SW]
+  * Start fixing code that assumes that int and long are the same
+    size. [SW]
+  * Linting of code that uses strcpy, strncpy() and sprintf() to
+    rule out remote possibilities of buffer overflows. [SW]
+  * align() off-by-one error in left coalescing fixed. Reported by
+    Sketch. [Javelin]
+  * User locks were broken in the last patch. Reported by Michael Brazaitis.
+    [SW]
+  * ./configure --without-ssl works. Reported by Starr. [SW]
+  * objid matcher didn't work properly. [SW]
+  * Many functions that used parse_dbref updated to use parse_objid,
+    to see more objid compliance. [GM]
+  * Fixes from 1.8.2p5
+
+& 1.8.3p2
+Version 1.8.3 patchlevel 2                      May 16, 2007
+
+Major changes:
+  * configuration is now done by autoconf. ./Configure is
+    now ./configure and its options have changed. See
+    INSTALL and ./configure --help [SW]
+  * Support for the postgresql SQL server. Javelin.
+  * Support for sqlite3 SQL databases. [SW]
+
+Minor changes:
+  * You can no longer run a mush as root. [SW]
+  * cemit_noisy config option.  Suggested by Kimiko. [SW]
+  * @function sorts the list of user-defined functions
+    by object and then name. Suggested by Trinsec. [SW]
+  * Better logging of the register login screen command
+    for systems without a sendmail program. [SW]
+  * Assorted refactoring of source code. [SW]
+  
+Functions:
+  * isobjid(). By Balerion.
+  * player() returns the dbref of the player connected to a given
+    port.  By  Nathan Baum.
+  * root(X,3) uses the C cbrt() function if available. [SW]
+  * New formats for align() that allow flowing text. Javelin.
+  * isdbref() understands objids. By Balerion.
+
+Fixes:
+  * regmatch() broken with %q-registers. Javelin. 
+  * Better checking of dbref config options to make sure they're
+    valid objects. Suggested by Talvo. [SW]
+  * Fixed assorted cases of accidently modifying const objects.
+    Thanks to Jake. [SW]
+  * Fixed a crash bug in strmatch(). [GM]
+  * wrap() of Pueblo tags didn't work very well. Fixed by
+    Sketch.
+  * @wipe's count is accurate when attribute trees are being
+    deleted. Reported by Talvo.
+ 
+& 1.8.3p1
+Version 1.8.3 patchlevel 1                      March 11, 2007
+
+Minor changes:
+  * page command now processes page output through PAGEFORMAT
+    attribute, allowing user-set page messages. [GM]
+  * sql_host configuration option now permits alternate tcp port.
+    Suggested by Mercutio. Patch by Javelin.
+  * Refactoring of fun_stringsecs to help function etime_to_secs.
+    Patch by Javelin.
+  * %1 in @aconnect works like in @adisconnect. Patch by Javelin.
+
+Fixes:
+  * restart script once again includes DATEMSK export for
+    extended convtime support. Reported by KimikoMuffin.
+  * Memory leak in 1.8.3p0 regedit fixed.
+  * Fixes included from 1.8.2p3.
+  * Document change in @chan/title behavior with commas.
+
+& 1.8.3p0
+Version 1.8.3 patchlevel 0                      January 27, 2007
+
+Major changes:
+  * Rewrite of color handling. [GM]
+
+Minor changes:
+  * Cleaned up the internals of @wipe. [SW]
+  * strmatch() now takes a third argument, to store wildcard captures. [GM]
+  * Termination of OS/2 support. [SW]
+
+Fixes:
+  * Fixes included from versions up to 1.8.2p2.

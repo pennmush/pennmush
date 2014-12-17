@@ -25,7 +25,7 @@ Here's the details:
 
 So, if you want to add your own news entries, make a file called
 nws/local.nws and put 'em there. Or maybe organize it into parts:
-nws/theme.nws, nws/code.nws, etc. Don't edit news.txt, help.txt, etc.
+nws/theme.nws, nws/code.nws, etc. ** DO NOT ** edit news.txt, help.txt, etc.
 directly or those changes will be lost.
 
 Files distributed with PennMUSH always begin with "penn", so don't
@@ -56,7 +56,7 @@ we'll add a command called "foobar".
 foobar.txt: foobar/*.foobar foobar compose.sh
 	sh ./compose.sh foobar $(INDEX_FLAGS)
 	
-     (Note: The second line starts with 1 tab tab, not spaces.)
+     (Note: The second line starts with 1 tab, not spaces.)
      
   4) Add "foobar.txt" to the end of the TXT= line near the top of the file.
      You'll get something like

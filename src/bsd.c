@@ -6447,8 +6447,6 @@ file_watch_event_in(int fd)
 
       if (file) {
         if (!(ev->mask & IN_IGNORED)) {
-          do_rawlog(LT_TRACE, "Got inotify status change for file '%s': 0x%x",
-                    file, ev->mask);
           if (ev->mask & IN_DELETE_SELF) {
             inotify_rm_watch(fd, ev->wd);
             im_delete(watchtable, ev->wd);
@@ -6463,8 +6461,8 @@ file_watch_event_in(int fd)
             WATCH(file);
           } else {
             do_rawlog(LT_ERR,
-                      "Got status change for file '%s' but I don't know what to do with it!",
-                      file);
+                      "Got status change for file '%s' but I don't know what to do with it! Mask 0x%x",
+                      file, ev->mask);
           }
           lastwd = ev->wd;
         }

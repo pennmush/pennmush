@@ -305,7 +305,7 @@ PENNCONF conftable[] = {
   ,
   {"max_attrs_per_obj", cf_int, &options.max_attrcount, 8192, 0, "limits"}
   ,
-  {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
+  {"max_logins", cf_int, &options.max_logins, 1024, 0, "limits"}
   ,
   {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
   ,

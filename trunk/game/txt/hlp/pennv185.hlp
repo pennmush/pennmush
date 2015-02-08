@@ -66,15 +66,16 @@ Minor changes:
  * The *div*() and *mod*() math functions now take an unlimited number of
    args, instead of exactly 2 args. Suggested by Mercutio, patch by Luke.
  * A SUSPECT player changing their name to the same thing doesn't trigger
-    an alert. Suggested by 0x0045. [SW]
+   an alert. Suggested by 0x0045. [SW]
  * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
    For @attrib/enum and /limit. [MG]
  * Added @flag/decompile and @attribute/decompile, to decompile each table
    to copy to another game. Suggested by spork. [MG]  
- * Newly set player passwords are salted to be more resistant to
-    cracking via rainbow tables by somebody with a copy of the
-    database.  You still shouldn't be re-using a password for anything
-    important, of course. Existing passwords aren't automatically updated. [SW]
+ * Newly set player passwords are salted to be more resistant to cracking via
+   rainbow tables by somebody with a copy of the database. You still shouldn't
+   be re-using a password for anything important, of course. Existing 
+   passwords aren't automatically updated. [SW]
+ * Added /clearregs to @trigger. Suggested by Volund. [MG]
 
 & 1.8.5p6
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014

@@ -134,8 +134,11 @@ extern void do_cpattr
 extern void do_edit(dbref player, char *it, char **argv, int flags);
 extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
                            NEW_PE_INFO *pe_info);
+#define TRIGGER_DEFAULT   0
+#define TRIGGER_SPOOF     1
+#define TRIGGER_CLEARREGS 2
 extern void do_trigger(dbref executor, dbref enactor, char *object, char **argv,
-                       MQUE *queue_entry, bool spoof);
+                       MQUE *queue_entry, int flags);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
 extern void do_parent(dbref player, char *name, char *parent_name,
                       NEW_PE_INFO *pe_info);

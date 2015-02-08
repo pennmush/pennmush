@@ -1282,11 +1282,11 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
  * \param object the object/attribute pair.
  * \param argv array of arguments.
  * \param queue_entry parent queue entry
- * \param spoof Use the enactor, instead of the executor, as the enactor of the triggered attr?
+ * \param flags Use the enactor, instead of the executor, as the enactor of the triggered attr?
  */
 void
 do_trigger(dbref executor, dbref enactor, char *object, char **argv,
-           MQUE *queue_entry, bool spoof)
+           MQUE *queue_entry, int flags)
 {
   dbref thing;
   char *attr;
@@ -1294,7 +1294,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   int i;
   dbref triggerer = executor;   /* triggerer is totally a word. Shut up. */
   bool control;
-  int flags = (queue_entry->queue_type & QUEUE_EVENT);
+  int qflags = (queue_entry->queue_type & QUEUE_EVENT);
 
   if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
     notify(executor, T("I need to know what attribute to trigger."));
@@ -1313,7 +1313,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
     return;
   }
 
-  if (spoof) {
+  if (flags & TRIGGER_SPOOF) {
     if (!control) {
       notify(executor, T("Permission denied."));
       return;
@@ -1326,16 +1326,20 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
     return;
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
+  if ((flags & TRIGGER_CLEARREGS))
+    pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
+  else
+    pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
   for (i = 0; i < 10; i++) {
     if (argv[i + 1]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
     }
   }
-  pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
+  if (!(flags & TRIGGER_CLEARREGS))
+    pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
   if (queue_attribute_base_priv
-      (thing, upcasestr(attr), triggerer, 0, pe_regs, flags, executor)) {
+      (thing, upcasestr(attr), triggerer, 0, pe_regs, qflags, executor)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {

@@ -1591,8 +1591,12 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, enactor, arg_left, args_right, queue_entry,
-             SW_ISSET(sw, SWITCH_SPOOF));
+  int flags = TRIGGER_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_SPOOF))
+    flags |= TRIGGER_SPOOF;
+  if (SW_ISSET(sw, SWITCH_CLEARREGS))
+    flags |= TRIGGER_CLEARREGS;
+  do_trigger(executor, enactor, arg_left, args_right, queue_entry, flags);
 }
 
 COMMAND(cmd_ulock)

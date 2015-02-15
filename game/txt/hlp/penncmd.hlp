@@ -1639,9 +1639,6 @@ See also: @lock, locktypes, enter, ENTER_OK
   will be evaluated with <message> as %0, and | as %1, and the result will be
   shown instead of <message> as long as it evaluates to a non-empty string.
 
-  If the /room switch is given, this command acts like @lemit instead. The
-  /silent switch can be used with it to suppress the confirmation for @lemit.
-
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over

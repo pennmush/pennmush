@@ -2460,18 +2460,6 @@ See also: @remit, @nslemit
 
 See also: list(), @config, config(), functions(), @stats, @command,
     @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
-& @listmotd
-  @listmotd
-
-  This command lists the current MOTD (message of the day) for the MUSH.
-  If used by a wizard or admin, it will also include the wizard, full, and
-  down MOTDs to the user.
-  
-  There are two sets of MotDs: permanant ones defined in mush.cnf, and
-  temporary ones set in-game with @motd. Only the messages defined with
-  @motd are shown.
-
-See also: @motd, @list
 & @link
   @link[/preserve] <object>=[<dbref> | here | home | variable]
 
@@ -2743,25 +2731,35 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
 
 See also: MONIKERS, moniker(), ansi(), @nameformat, @nameaccent, MONIKER
 & @motd
-  @motd[/<switch>] [<message>]
- 
-  The default for this command (and with the /connect) switch, is a
-  wizard only command that will set a temporary message that 
-  will be shown to players when they connect. This MOTD is cleared
-  every time the MUSH restarts.
+& @listmotd
+& @wizmotd
+& @rejectmotd
+  @motd[/<type>] <message>
+  @motd/clear[/<type>]
+  @motd/list
 
-  Note that @motd by itself clears the message. Use @motd/list or
-  @listmotd to see the current messages.
+  This command is used for manipulating the various Messages of the Day, or
+  MotD. The first form of this command sets the <type> MotD to <message>, 
+  the second form clears the <type> MotD, and the third form lists the current
+  value of each MotD. If no switch is given, <type> defaults to /connect.
   
-  These messages are shown in addition to the permanent MotDs which are
-  defined in mush.cnf (motd_file, wizmotd_file, etc).
- 
-  Other switches:
-  /wizard : sets the message for wizards (like @wizmotd)
-  /down   : sets the logins-off message (like @rejectmotd)
-  /full   : sets the max-players-logged-in message
-  /list   : list the MOTDs (like @listmotd, can be used by anyone)
-See also: @listmotd
+  These messages are intended for temporary announcements; the given <message>
+  is shown in addition to the standard MotDs defined in the mush.cnf options.
+  MotDs set via this command are cleared when the MUSH restarts.
+  
+  Valid <type>..   shown with..   and is seen by...
+  /connect         motd_file      all players on connect
+  /wizard          wizmotd_file   connecting Wizards and Royalty
+  /full            full_file      players failing to connect because all
+                                  available connections are in use
+  /down            down_file      mortals failing to connect when logins are
+                                  disabled
+
+  You must have the Announce @power to change the Connect MotD; only wizards
+  and royalty can see or alter the others.
+
+  For historical reasons, @listmotd, @wizmotd and @rejectmotd are aliases for
+  @motd/list, @motd/wizard and @motd/full, respectively.
 & @name
   @name <object>=<new name>
   @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]
@@ -3276,15 +3274,6 @@ See also: QUOTAS, Quotas Power, No_Quota Power
  
   A site admin can achieve the same effect by sending the MUSH process
   a kill -1 or kill -HUP.
-& @rejectmotd
-  @rejectmotd <message>
-
-  This is a wizard only command that will set a short (non-longterm) message 
-  that will be shown to players that try to connect when logins are disabled. 
-  This is the "Down MOTD" in the @listmotd listing. The siteadmin can set a
-  more permanent message for this by editing the file "down.txt".
-  
-See also: @motd, @list, @listmotd
 & @remit
   @remit[/switches] <object>=<message>
 
@@ -4308,13 +4297,6 @@ See also: UNFINDABLE, loc()
   are currently logged in. 
 
 See also: @wall, @rwall
-& @wizmotd
-  @wizmotd <message>
-
-  This is a wizard only command that will set a short temporary message
-  that will be shown to all wizards when they connect. It is listed in
-  @listmotd as the Wiz MOTD. A more permanent message can be set by
-  the siteadmin by editing the file "wiz.txt".
 & @zemit
   @zemit[/silent|/noisy] <zone>=<message>
 

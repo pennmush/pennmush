@@ -2953,8 +2953,7 @@ parse_puebloclient(DESC *d, char *command)
   }
 }
 
-/** Show all the appropriate messages when a player
- * attempts to log in.
+/** Show all the appropriate messages when a player attempts to log in.
  * \param d descriptor
  * \param player dbref of player
  * \param isnew has the player just been created?
@@ -2985,12 +2984,16 @@ dump_messages(DESC *d, dbref player, int isnew)
       (Guest(player) && !options.guest_allow)) {
     if (!options.login_allow) {
       fcache_dump(d, fcache.down_fcache, NULL, NULL);
-      if (*cf_downmotd_msg)
-        raw_notify(player, cf_downmotd_msg);
+      if (*cf_downmotd_msg) {
+        queue_write(d, cf_downmotd_msg, strlen(cf_downmotd_msg));
+        queue_eol(d);
+      }
     } else if (MAX_LOGINS && !under_limit) {
       fcache_dump(d, fcache.full_fcache, NULL, NULL);
-      if (*cf_fullmotd_msg)
-        raw_notify(player, cf_fullmotd_msg);
+      if (*cf_fullmotd_msg) {
+        queue_write(d, cf_fullmotd_msg, strlen(cf_fullmotd_msg));
+        queue_eol(d);
+      }
     }
     if (!Can_Login(player)) {
       /* when the connection has been refused, we want to update the
@@ -3161,9 +3164,13 @@ check_connect(DESC *d, const char *msg)
       return 0;
     }
     if (!options.login_allow || !options.create_allow) {
-      if (!options.login_allow)
+      if (!options.login_allow) {
         fcache_dump(d, fcache.down_fcache, NULL, NULL);
-      else
+        if (*cf_downmotd_msg) {
+          queue_write(d, cf_downmotd_msg, strlen(cf_downmotd_msg));
+          queue_eol(d);
+        }
+      } else
         fcache_dump(d, fcache.register_fcache, NULL, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
@@ -3174,6 +3181,10 @@ check_connect(DESC *d, const char *msg)
       return 0;
     } else if (MAX_LOGINS && !under_limit) {
       fcache_dump(d, fcache.full_fcache, NULL, NULL);
+      if (*cf_fullmotd_msg) {
+        queue_write(d, cf_fullmotd_msg, strlen(cf_fullmotd_msg));
+        queue_eol(d);
+      }
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
@@ -4772,23 +4783,35 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
  * \param message text to set the motd to.
  */
 void
-do_motd(dbref player, enum motd_type key, const char *message)
+do_motd(dbref player, int key, const char *message)
 {
   const char *what;
 
-  if (key != MOTD_LIST && !Can_Announce(player)) {
+  if ((key & MOTD_ACTION) == MOTD_LIST || 
+      ((key & MOTD_ACTION) == MOTD_SET && (!message || !*message))) {
+    notify_format(player, T("MOTD: %s"), cf_motd_msg);
+    if (Hasprivs(player) && (key & MOTD_ACTION) != MOTD_MOTD) {
+      notify_format(player, T("Wiz MOTD: %s"), cf_wizmotd_msg);
+      notify_format(player, T("Down MOTD: %s"), cf_downmotd_msg);
+      notify_format(player, T("Full MOTD: %s"), cf_fullmotd_msg);
+    }
+    return;
+  }
+  
+  if (!(((key & MOTD_TYPE) == MOTD_MOTD) ? Can_Announce(player) : Hasprivs(player))) {
     notify(player,
            T
            ("You may get 15 minutes of fame and glory in life, but not right now."));
     return;
   }
-
-  if (!message || !*message)
+  
+  if (key & MOTD_CLEAR) {
     what = T("cleared");
-  else
+    message = "";
+  } else
     what = T("set");
 
-  switch (key) {
+  switch (key & MOTD_TYPE) {
   case MOTD_MOTD:
     mush_strncpy(cf_motd_msg, message, BUFFER_LEN);
     notify_format(player, T("Motd %s."), what);
@@ -4805,13 +4828,8 @@ do_motd(dbref player, enum motd_type key, const char *message)
     mush_strncpy(cf_fullmotd_msg, message, BUFFER_LEN);
     notify_format(player, T("Full motd %s."), what);
     break;
-  case MOTD_LIST:
-    notify_format(player, T("MOTD: %s"), cf_motd_msg);
-    if (Hasprivs(player)) {
-      notify_format(player, T("Wiz MOTD: %s"), cf_wizmotd_msg);
-      notify_format(player, T("Down MOTD: %s"), cf_downmotd_msg);
-      notify_format(player, T("Full MOTD: %s"), cf_fullmotd_msg);
-    }
+  default:
+    notify(player, T("Set what?"));
   }
 }
 

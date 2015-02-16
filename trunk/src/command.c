@@ -192,7 +192,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
-  {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
+  {"@LISTMOTD", NULL, cmd_motd, CMD_T_ANY, 0, 0},
 
   {"@LIST",
    "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS ALL BUILTIN LOCAL",
@@ -217,7 +217,7 @@ COMLIST commands[] = {
   {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT SILENT NOISY", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@MONIKER", NULL, cmd_moniker, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@MOTD", "CONNECT LIST WIZARD DOWN FULL", cmd_motd,
+  {"@MOTD", "CONNECT LIST WIZARD DOWN FULL CLEAR", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@MVATTR", "CONVERT NOFLAGCOPY", cmd_mvattr,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
@@ -274,7 +274,7 @@ COMLIST commands[] = {
 
   {"@REMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@REJECTMOTD", NULL, cmd_rejectmotd, CMD_T_ANY, "WIZARD", 0},
+  {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
@@ -334,7 +334,7 @@ COMLIST commands[] = {
   {"@WHEREIS", NULL, cmd_whereis, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@WIPE", NULL, cmd_wipe, CMD_T_ANY, 0, 0},
   {"@WIZWALL", "NOEVAL EMIT", cmd_wizwall, CMD_T_ANY, "WIZARD", 0},
-  {"@WIZMOTD", NULL, cmd_wizmotd, CMD_T_ANY, "WIZARD", 0},
+  {"@WIZMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@ZEMIT", "NOISY SILENT", cmd_zemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},

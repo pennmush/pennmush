@@ -52,8 +52,9 @@ Fixes:
  * Enabling the log_commands config option while a LOG`CMD event was set would
    cause endless queueing, until the event handler was halted as a runaway
    object. Reported by spork. [MG]
- * Fix a potential overflow problem in the code that computes queue load averages for
-   @ps. [SW]
+ * Fix a potential overflow problem in the code that computes queue load 
+   averages for @ps. [SW]
+ * @motd/down and @motd/full are actually shown now. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 
@@ -78,6 +79,8 @@ Minor changes:
    be re-using a password for anything important, of course. Existing 
    passwords aren't automatically updated. [SW]
  * Added /clearregs to @trigger. Suggested by Volund. [MG]
+ * @motd with no args now acts like @motd/list, instead of clearing the MotD.
+   Use @motd/clear to clear the current one. Suggested by Bodin. [MG]
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

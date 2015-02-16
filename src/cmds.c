@@ -732,11 +732,6 @@ COMMAND(cmd_link)
           queue_entry->pe_info);
 }
 
-COMMAND(cmd_listmotd)
-{
-  do_motd(executor, MOTD_LIST, "");
-}
-
 extern slab *attrib_slab;
 extern slab *bvm_asmnode_slab;
 extern slab *chanlist_slab;
@@ -841,7 +836,7 @@ do_list_allocations(dbref player)
 
 /** List various goodies.
  * \verbatim
- * This function implements the versino of @list that takes an argument instead
+ * This function implements the version of @list that takes an argument instead
  * of a switch.
  * \endverbatim
  * \param player the enactor.
@@ -870,7 +865,7 @@ do_list(dbref player, char *arg, int lc, int which)
       break;
     }
   } else if (string_prefix("motd", arg))
-    do_motd(player, MOTD_LIST, "");
+    do_motd(player, MOTD_LIST | MOTD_TYPE, "");
   else if (string_prefix("attribs", arg))
     do_list_attribs(player, lc);
   else if (string_prefix("flags", arg))
@@ -903,7 +898,7 @@ COMMAND(cmd_list)
     which = 1;
 
   if (SW_ISSET(sw, SWITCH_MOTD))
-    do_motd(executor, MOTD_LIST, "");
+    do_motd(executor, MOTD_LIST | MOTD_TYPE, "");
   else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
     do_list_functions(executor, lc, fwhich[which - 1]);
   else if (SW_ISSET(sw, SWITCH_COMMANDS))
@@ -1161,18 +1156,23 @@ COMMAND(cmd_moniker)
 
 COMMAND(cmd_motd)
 {
-  if (SW_ISSET(sw, SWITCH_CONNECT))
-    do_motd(executor, MOTD_MOTD, arg_left);
-  else if (SW_ISSET(sw, SWITCH_LIST))
-    do_motd(executor, MOTD_LIST, "");
-  else if (SW_ISSET(sw, SWITCH_WIZARD))
-    do_motd(executor, MOTD_WIZ, arg_left);
+  int action = (SW_ISSET(sw, SWITCH_CLEAR) ? MOTD_CLEAR : MOTD_SET);
+  int motd = MOTD_MOTD;
+  if (!strcmp(cmd->name, "@REJECTMOTD"))
+    motd = MOTD_DOWN;
+  else if (!strcmp(cmd->name, "@WIZMOTD"))
+    motd = MOTD_WIZ;
+  else if (!strcmp(cmd->name, "@LISTMOTD") || SW_ISSET(sw, SWITCH_LIST)) {
+    do_motd(executor, MOTD_LIST | MOTD_TYPE, "");
+    return;
+  }
+  if (SW_ISSET(sw, SWITCH_WIZARD))
+    motd = MOTD_WIZ;
   else if (SW_ISSET(sw, SWITCH_DOWN))
-    do_motd(executor, MOTD_DOWN, arg_left);
+    motd = MOTD_DOWN;
   else if (SW_ISSET(sw, SWITCH_FULL))
-    do_motd(executor, MOTD_FULL, arg_left);
-  else
-    do_motd(executor, MOTD_MOTD, arg_left);
+    motd = MOTD_FULL;
+  do_motd(executor, action | motd, arg_left);
 }
 
 COMMAND(cmd_mvattr)
@@ -1357,11 +1357,6 @@ COMMAND(cmd_remit)
 
   do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
            queue_entry->pe_info);
-}
-
-COMMAND(cmd_rejectmotd)
-{
-  do_motd(executor, MOTD_DOWN, arg_left);
 }
 
 COMMAND(cmd_restart)
@@ -1684,11 +1679,6 @@ COMMAND(cmd_wipe)
 COMMAND(cmd_wizwall)
 {
   do_wall(executor, arg_left, WALL_WIZ, SW_ISSET(sw, SWITCH_EMIT));
-}
-
-COMMAND(cmd_wizmotd)
-{
-  do_motd(executor, MOTD_WIZ, arg_left);
 }
 
 COMMAND(cmd_zemit)

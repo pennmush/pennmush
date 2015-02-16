@@ -35,8 +35,20 @@ extern void init_pronouns(void);        /* funstr.c */
 void fcache_init(void);
 void fcache_load(dbref player);
 void hide_player(dbref player, int hide, char *victim);
-enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
-void do_motd(dbref player, enum motd_type key, const char *message);
+/* 0x0N defines which MotD, and 0xN0 defines the action */
+#define MOTD_MOTD  0x01
+#define MOTD_WIZ   0x02
+#define MOTD_DOWN  0x04
+#define MOTD_FULL  0x08
+#define MOTD_TYPE   0x0F
+
+#define MOTD_LIST  0x10
+#define MOTD_CLEAR 0x20
+#define MOTD_SET   0x40
+#define MOTD_ACTION 0xF0
+
+
+void do_motd(dbref player, int key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
 void do_page_port(dbref executor, const char *pc, const char *msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);

@@ -79,6 +79,7 @@ Minor changes:
  * Added /clearregs to @trigger. Suggested by Volund. [MG]
  * @motd with no args now acts like @motd/list, instead of clearing the MotD.
    Use @motd/clear to clear the current one. Suggested by Bodin. [MG]
+ * @command can now be used by non-players. From a gripe of Kitai's. [MG]
 
 & 1.8.5p6
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014

@@ -884,7 +884,8 @@ See also: @create, clone(), create(), @cpattr
   currently work.
 
   With no switches, @command shows all sorts of interesting information
-  about how a command is parsed.
+  about how a command is parsed. Any player can use @command with no switch,
+  while the switches are Wizard-only.
   
   The /alias switch creates an alias for <command>, allowing players to type
   <alias> to run <command>. The /clone switch creates a separate copy of
@@ -895,10 +896,10 @@ See also: @create, clone(), create(), @cpattr
   restrict' for more information.
 
   Switches include:
-  /add       : Add a new command that does nothing, but can be @hook'd
-  /delete    : Delete a command added with @command/add or @command/alias
-  /disable   : Disable a command added in the hardcode
-  /enable    : Re-enable a command disabled with @command/disable
+  /add     : Add a new command that does nothing, but can be @hook'd
+  /delete  : Delete a command added with @command/add or /alias. God only.
+  /disable : Disable a command added in the hardcode
+  /enable  : Re-enable a command disabled with @command/disable
 
   The /quiet switch can be used to suppress output from @command.
 
@@ -907,7 +908,7 @@ See also: @create, clone(), create(), @cpattr
   @command/add is a powerful tool that lets you create new commands which
   are matched before normal $-commands, and which can be set not to parse
   their arguments, but (via @hook) can still execute softcode like an
-  $-command. Only Wizards can @command/add, and only God can @command/delete.
+  $-command.
 
   You can use these additional switches, along with @command/add, to control
   how the new command parses its arguments:
@@ -923,7 +924,7 @@ See also: @create, clone(), create(), @cpattr
   /noeval switch automatically, so if you @command/add foo, then foo's 
   arguments are parsed by default, but you can call foo/noeval. Note: when you
   @hook/override foo, its $-command pattern must be able to match "foo/noeval"
-  as well for the switch to be used.
+  as well for the switch to actually be used.
 
   Commands added with @command/add, like other standard commands, are always
   case-insensitive. Commands can also be added in the alias.cnf file.
@@ -1822,7 +1823,7 @@ See also: @search, lsearch(), @entrances
 
   If <object> is set AUDIBLE, any sound it hears which passes its @filter
   and @lock/filter will be forwarded (prefixed with its @prefix) to each
-  of the dbrefs given  in its @forwardlist attribute, in much the same way
+  of the dbrefs given in its @forwardlist attribute, in much the same way
   as puppets forward sound to their owners.
 
   In order to forward to an object, you must either control it, have the 

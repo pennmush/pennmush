@@ -44,13 +44,13 @@ This is a brief overview of how to install PennMUSH on Unix, or in Unix-like env
 
   # [Downloads Download PennMUSH]. On most linux systems you can do this with wget, for instance:
 {{{
- wget http://pennmush.googlecode.com/files/pennmush-1.8.3p13.tar.gz
+ wget http://download.pennmush.org/Source/pennmush-1.8.5p6.tar.gz
 }}}
 You can also check out the latest source from [http://code.google.com/p/pennmush/source/checkout SVN].
   # Extract the archive, and cd to the new directory. For example:
 {{{
- tar xfz pennmush-1.8.3p13.tar.gz
- cd pennmush-1.8.3p13
+ tar xfz pennmush-1.8.5p6.tar.gz
+ cd pennmush-1.8.5p6
 }}}
   # Run `./configure`. Some of the most useful/common arguments for configure are:
     * `--disable-sql`: Don't compile with [InstallSql SQL support].
@@ -78,7 +78,7 @@ You should then be able to restart the game, with
 }}}
 If you get an error that GAMEDIR doesn't seem to be a valid directory, edit the game/restart script, placing the path to your game directory on the GAMEDIR line, for example
 {{{
- GAMEDIR=/home/usr/pennmush-1.8.3p13/game
+ GAMEDIR=/home/usr/pennmush-1.8.5p6/game
 }}}
 
 ==Miscellaneous==

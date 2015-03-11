@@ -2222,7 +2222,7 @@ setup_telnet(DESC *d)
      apparently. Unfortunately, there doesn't seem to be a telnet
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
-  if ((d->conn_flags & CONN_TELNET_QUERY) && starting_telnet_neg) {
+  if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA)) && starting_telnet_neg) {
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);

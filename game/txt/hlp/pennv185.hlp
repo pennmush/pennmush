@@ -53,6 +53,8 @@ Fixes:
  * Fix a potential overflow problem in the code that computes queue load 
    averages for @ps. [SW]
  * @motd/down and @motd/full are actually shown now. [MG]
+ * Properly negotiate telnet with clients who spit out telnet codes instantly
+   upon connection like MUSHclient. Reported by Mercutio and AND. [MG]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 

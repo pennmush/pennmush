@@ -46,13 +46,20 @@ AC_PATH_PROG(EXCTAGS, exctags)
 case "${build_os}" in 
   *freebsd*)
     USING_FREEBSD=yes
+  *netbsd*)
+    USING_NETBSD=yes
 esac
 
-# Adds additional paths potentially needed for BSD compilation
+# Adds additional paths potentially needed or BSD compilation
 if test "${USING_FREEBSD}" = yes; then
   CPPFLAGS="$CPPFLAGS -I/usr/local/include -I/usr/local/include/event2"
   LDFLAGS="$LDFLAGS -L/usr/local/lib -L/usr/local/lib/event2"
 fi
+
+if test "$(USING_NETBSD}" = yes; then
+   CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"
+   LDFLAGS="$LDFLAGS -L/usr/pkg/lib -Wl,-R/usr/pkg/lib"
+ fi
 
 # Set good debug and warning options if using gcc or clang
 # and custom CFLAGS aren't being used.
@@ -192,6 +199,9 @@ AC_CHECK_SIZEOF([time_t])
 AC_CHECK_SIZEOF([void *])
 
 ### Libraries
+
+if test `uname
+
 AC_CHECK_LIB(m, sin)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)

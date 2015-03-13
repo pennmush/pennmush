@@ -1,12 +1,17 @@
-Penn will compile and run out of the box on NetBSD, including OpenSSL
-support, with the caveats below.
+Penn will compile and run on NetBSD, including OpenSSL
+support, with the caveats below. Tested with NetBSD 6.1.5.
 
-* Mysql and Postgres should be detected if their packages have been
-  installed through pkgsrc or pkg_add and /usr/pkg/bin is in your
-  path. If you have the sqlite3 package installed and want to use it,
-  you need to tell configure to look in the /usr/pkg hierarchy for it:
+Some packages need to be installed via pkgsrc if not already present
+on the server:
+   perl5, libevent, pcre, optional databases (Note: NetBSD comes with sqlite3 in
+   the base system).
 
-  % CPPFLAGS=-I/usr/pkg/include LDFLAGS=-L/usr/pkg/lib ./configure
+If set up to install binary packages, pkg_add them. Otherwise, go to
+/usr/pkgsrc and install from source. Locations of the mandatory ones
+are:
+  devel/libevent
+  devel/pcre
+  lang/perl5
 
 
 

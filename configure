@@ -629,7 +629,7 @@ SQLITE3_VERSION
 SQLITE3_LDFLAGS
 SQLITE3_CFLAGS
 POSTGRESQL_LDFLAGS
-POSTGRESQL_CPPFLAGS
+POSTGRESQL_CFLAGS
 POSTGRESQL_VERSION
 PG_CONFIG
 MYSQL_LDFLAGS
@@ -7561,7 +7561,7 @@ else
 fi
 
 
-    POSTGRESQL_CPPFLAGS=""
+    POSTGRESQL_CFLAGS=""
     POSTGRESQL_LDFLAGS=""
     POSTGRESQL_VERSION=""
 
@@ -7612,7 +7612,6 @@ fi
         fi
 
         if test ! -x "$PG_CONFIG"; then
-            as_fn_error $? "$PG_CONFIG does not exist or it is not an exectuable file" "$LINENO" 5
             PG_CONFIG="no"
             found_postgresql="no"
         fi
@@ -7621,8 +7620,8 @@ fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PostgreSQL libraries" >&5
 $as_echo_n "checking for PostgreSQL libraries... " >&6; }
 
-            POSTGRESQL_CPPFLAGS="-I`$PG_CONFIG --includedir`"
-            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir`"
+            POSTGRESQL_CFLAGS="-I`$PG_CONFIG --includedir`"
+            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir` -lpq"
 
             POSTGRESQL_VERSION=`$PG_CONFIG --version | sed -e 's#PostgreSQL ##'`
 
@@ -7635,8 +7634,6 @@ $as_echo "#define HAVE_POSTGRESQL 1" >>confdefs.h
 $as_echo "yes" >&6; }
         else
             found_postgresql="no"
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
         fi
     fi
 

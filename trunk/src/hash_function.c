@@ -150,11 +150,36 @@ CITY_UNALIGNED_LOAD32(const char *p)
 #define city_bswap_64(x) bswap64(x)
 #endif
 
-#else
+#elif defined(HAVE_BYTESWAP_H)
 
+/* Linux header */
 #include <byteswap.h>
 #define city_bswap_32(x) bswap_32(x)
 #define city_bswap_64(x) bswap_64(x)
+
+#else
+
+static inline uint32_t
+city_bswap_32(uint32_t word) __attribute__((__unused__))
+{
+  uint32_t low, hi;
+
+  low = word & 0xFFFF;
+  hi = word >> 16;
+
+  return hi + (low << 16);
+}
+
+static inline uint64_t
+city_bswap_64(uint64_t word)
+{
+  uint64_t low, hi;
+
+  low = word & 0xFFFFFFFF;
+  hi = word >> 32;
+
+  return hi + (low << 32);
+}
 
 #endif
 

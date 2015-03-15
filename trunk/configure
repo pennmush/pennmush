@@ -629,7 +629,7 @@ SQLITE3_VERSION
 SQLITE3_LDFLAGS
 SQLITE3_CFLAGS
 POSTGRESQL_LDFLAGS
-POSTGRESQL_CFLAGS
+POSTGRESQL_CPPFLAGS
 POSTGRESQL_VERSION
 PG_CONFIG
 MYSQL_LDFLAGS
@@ -722,7 +722,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_perl
 enable_zlib
 with_openssl
 with_pcre
@@ -747,13 +746,13 @@ CFLAGS
 LDFLAGS
 LIBS
 CPPFLAGS
-PERL
 CXX
 CXXFLAGS
 CCC
 SENDMAIL
 ED
 CPP
+MYSQL_CONFIG
 TZDIR'
 
 
@@ -1384,9 +1383,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-perl=[[PATH]]  absolute path to perl executable
   --with-openssl=DIR      root of the OpenSSL directory
-  --with-pcre             Use system pcre
+  --with-pcre[=prefix]    compile xmlpcre part (via libpcre check)
   --with-mysql=[ARG]      use MySQL client library [default=yes], optionally
                           specify path to mysql_config
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
@@ -1402,12 +1400,13 @@ Some influential environment variables:
   LIBS        libraries to pass to the linker, e.g. -l<library>
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
-  PERL        Absolute path to perl executable
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   SENDMAIL    Path to sendmail
   ED          Path to ed
   CPP         C preprocessor
+  MYSQL_CONFIG
+              Full path to mysql_config program
   TZDIR       Directory with compiled zoneinfo files.
 
 Use these variables to override the choices made by `configure' or to help
@@ -3900,51 +3899,7 @@ $as_echo "no" >&6; }
 fi
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    if test -z "$PERL"; then :
-
-    	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether perl executable path has been provided" >&5
-$as_echo_n "checking whether perl executable path has been provided... " >&6; }
-
-# Check whether --with-perl was given.
-if test "${with_perl+set}" = set; then :
-  withval=$with_perl;
-	    if test "$withval" != "yes"; then :
-
-	        PERL="$withval"
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $PERL" >&5
-$as_echo "$PERL" >&6; }
-
-else
-
-		PERL=""
-	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-fi
-
-else
-
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-fi
-
-
-        if test -z "$PERL"; then :
-
-	    # Extract the first word of "perl", so it can be a program name with args.
+# Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -3982,16 +3937,6 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-
-
-
-fi
-
-fi
-
-
-
-
 
 
 
@@ -4284,13 +4229,21 @@ fi
 case "${build_os}" in
   *freebsd*)
     USING_FREEBSD=yes
+    ;;
+  *netbsd*)
+    USING_NETBSD=yes
 esac
 
-# Adds additional paths potentially needed for BSD compilation
+# Adds additional paths potentially needed or BSD compilation
 if test "${USING_FREEBSD}" = yes; then
   CPPFLAGS="$CPPFLAGS -I/usr/local/include -I/usr/local/include/event2"
   LDFLAGS="$LDFLAGS -L/usr/local/lib -L/usr/local/lib/event2"
 fi
+
+if test "${USING_NETBSD}" = yes; then
+   CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"
+   LDFLAGS="$LDFLAGS -L/usr/pkg/lib -Wl,-R/usr/pkg/lib"
+ fi
 
 # Set good debug and warning options if using gcc or clang
 # and custom CFLAGS aren't being used.
@@ -6140,7 +6093,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socklen_t" >&5
 $as_echo_n "checking for socklen_t... " >&6; }
-if ${ac_cv_type_socklen_t+:} false; then :
+if ${ac_cv_ax_type_socklen_t+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -6157,16 +6110,16 @@ socklen_t len = 42; return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_type_socklen_t=yes
+  ac_cv_ax_type_socklen_t=yes
 else
-  ac_cv_type_socklen_t=no
+  ac_cv_ax_type_socklen_t=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_socklen_t" >&5
-$as_echo "$ac_cv_type_socklen_t" >&6; }
-  if test $ac_cv_type_socklen_t != yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_ax_type_socklen_t" >&5
+$as_echo "$ac_cv_ax_type_socklen_t" >&6; }
+  if test $ac_cv_ax_type_socklen_t != yes; then
 
 $as_echo "#define socklen_t int" >>confdefs.h
 
@@ -7468,6 +7421,7 @@ else
 fi
 
 
+
     MYSQL_CFLAGS=""
     MYSQL_LDFLAGS=""
     MYSQL_VERSION=""
@@ -7475,9 +7429,11 @@ fi
 
     if test "$want_mysql" = "yes"; then
 
-        if test -z "$MYSQL_CONFIG" -o test; then
-            # Extract the first word of "mysql_config", so it can be a program name with args.
-set dummy mysql_config; ac_word=$2
+        if test -z "$MYSQL_CONFIG" ; then
+            for ac_prog in mysql_config mysql_config5
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_path_MYSQL_CONFIG+:} false; then :
@@ -7503,7 +7459,6 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_MYSQL_CONFIG" && ac_cv_path_MYSQL_CONFIG="no"
   ;;
 esac
 fi
@@ -7517,24 +7472,19 @@ $as_echo "no" >&6; }
 fi
 
 
+  test -n "$MYSQL_CONFIG" && break
+done
+test -n "$MYSQL_CONFIG" || MYSQL_CONFIG="no"
+
         fi
 
         if test "$MYSQL_CONFIG" != "no"; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for MySQL libraries" >&5
-$as_echo_n "checking for MySQL libraries... " >&6; }
-
             MYSQL_CFLAGS="`$MYSQL_CONFIG --cflags`"
             MYSQL_LDFLAGS="`$MYSQL_CONFIG --libs`"
 
             MYSQL_VERSION=`$MYSQL_CONFIG --version`
 
-
-$as_echo "#define HAVE_MYSQL 1" >>confdefs.h
-
-
             found_mysql="yes"
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
         else
             found_mysql="no"
         fi
@@ -7581,6 +7531,12 @@ $as_echo "no" >&6; }
         fi
     fi
 
+    if test "$found_mysql" = "yes" ; then
+
+$as_echo "#define HAVE_MYSQL 1" >>confdefs.h
+
+    fi
+
 
 
 
@@ -7605,7 +7561,7 @@ else
 fi
 
 
-    POSTGRESQL_CFLAGS=""
+    POSTGRESQL_CPPFLAGS=""
     POSTGRESQL_LDFLAGS=""
     POSTGRESQL_VERSION=""
 
@@ -7656,6 +7612,7 @@ fi
         fi
 
         if test ! -x "$PG_CONFIG"; then
+            as_fn_error $? "$PG_CONFIG does not exist or it is not an exectuable file" "$LINENO" 5
             PG_CONFIG="no"
             found_postgresql="no"
         fi
@@ -7664,8 +7621,8 @@ fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PostgreSQL libraries" >&5
 $as_echo_n "checking for PostgreSQL libraries... " >&6; }
 
-            POSTGRESQL_CFLAGS="-I`$PG_CONFIG --includedir`"
-            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir` -lpq"
+            POSTGRESQL_CPPFLAGS="-I`$PG_CONFIG --includedir`"
+            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir`"
 
             POSTGRESQL_VERSION=`$PG_CONFIG --version | sed -e 's#PostgreSQL ##'`
 
@@ -7678,6 +7635,8 @@ $as_echo "#define HAVE_POSTGRESQL 1" >>confdefs.h
 $as_echo "yes" >&6; }
         else
             found_postgresql="no"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
         fi
     fi
 
@@ -7791,6 +7750,12 @@ $as_echo_n "checking for SQLite3 library >= $sqlite3_version_req... " >&6; }
         saved_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS $ac_sqlite3_cppflags"
 
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7821,17 +7786,22 @@ else
 
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
 $as_echo "not found" >&6; }
-            succees="no"
+            success="no"
 
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
         CPPFLAGS="$saved_CPPFLAGS"
 
         if test "$success" = "yes"; then
 
-            found_sqlite=yes
             SQLITE3_CFLAGS="$ac_sqlite3_cppflags"
             SQLITE3_LDFLAGS="$ac_sqlite3_ldflags"
 
@@ -7844,8 +7814,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 if test $ac_sqlite3_version != ""; then
                     SQLITE3_VERSION=$ac_sqlite3_version
                 else
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Can not find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&5
-$as_echo "$as_me: WARNING: Can not find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&2;}
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&5
+$as_echo "$as_me: WARNING: Cannot find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&2;}
                 fi
             fi
 

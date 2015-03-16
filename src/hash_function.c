@@ -145,10 +145,9 @@ CITY_UNALIGNED_LOAD32(const char *p)
 
 #include <sys/types.h>
 #include <machine/bswap.h>
-#if defined(__BSWAP_RENAME) && !defined(__bswap_32)
+
 #define city_bswap_32(x) bswap32(x)
 #define city_bswap_64(x) bswap64(x)
-#endif
 
 #elif defined(HAVE_BYTESWAP_H)
 
@@ -159,35 +158,37 @@ CITY_UNALIGNED_LOAD32(const char *p)
 
 #else
 
-static inline uint16_t __attribute__((__const__))
-city_bswap_16(uint16_t hword)
+static inline uint16_t __attribute__ ((__const__))
+  city_bswap_16(uint16_t hword)
 {
   uint16_t low, hi;
+
   low = hword & 0xFF;
   hi = hword >> 8;
+
   return hi + (low << 8);
 }
 
-static inline uint32_t __attribute__((__const__))
-city_bswap_32(uint32_t word) 
+static inline uint32_t __attribute__ ((__const__))
+  city_bswap_32(uint32_t word)
 {
   uint32_t low, hi;
 
   low = word & 0xFFFF;
   hi = word >> 16;
 
-  return city_bswap_16(hi) + ((uint32_t)city_bswap_16(low) << 16);
+  return city_bswap_16(hi) + ((uint32_t) city_bswap_16(low) << 16);
 }
 
-static inline uint64_t __attribute__((__const__))
-city_bswap_64(uint64_t word)
+static inline uint64_t __attribute__ ((__const__))
+  city_bswap_64(uint64_t dword)
 {
   uint64_t low, hi;
 
-  low = word & 0xFFFFFFFF;
-  hi = word >> 32;
+  low = dword & 0xFFFFFFFF;
+  hi = dword >> 32;
 
-  return city_bswap_32(hi) + ((uint64_t)city_bswap_32(low) << 32); 
+  return city_bswap_32(hi) + ((uint64_t) city_bswap_32(low) << 32);
 }
 
 #endif

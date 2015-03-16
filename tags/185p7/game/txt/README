@@ -1,0 +1,93 @@
+Your local help/news/etc files can now be kept separate from
+those distributed with PennMUSH, and can now be managed as a set of
+files rather than a single large file.
+
+Here's the details:
+
+1. The source files for help.txt, news.txt, and any other "help"-style 
+   commands you add are kept in separate files in their own directories -
+   for "help" and "news" these are called game/txt/hlp and game/txt/nws.
+
+2. Files in those directories which end in .<directoryname> are
+   considered to be part of the text. That is, files in hlp/ which end
+   in .hlp, and files in nws/ which end in .nws will be merged into
+   the final help.txt, news.txt, or whatever.
+
+3. When the MUSH is restarted, a 'make' is run in this directory. If a file 
+   in hlp/ is newer than help.txt, it calls compose.sh to rebuild help.txt.
+   Don't edit help.txt, news.txt, etc. directly; if you do, any changes will
+   be lost! 
+ 
+   compose.sh will also call index-files.pl to make an 'index' topic which 
+   lists all your topic names. The file <dir>/index.<dir> contains this 
+   index, and is overwritten each time the index is built. Don't use it for
+   your own content!
+
+So, if you want to add your own news entries, make a file called
+nws/local.nws and put 'em there. Or maybe organize it into parts:
+nws/theme.nws, nws/code.nws, etc. ** DO NOT ** edit news.txt, help.txt, etc.
+directly or those changes will be lost.
+
+Files distributed with PennMUSH always begin with "penn", so don't
+start your files with that.
+
+To add a new "help"-style command, follow these steps. For this example,
+we'll add a command called "foobar".
+
+  1) Create a new directory in the game/txt directory, in this case
+     game/txt/foobar
+     
+  2) Put your help topics in files in this directory. Each file's extension
+     should match the directory name - for example, "this.foobar", 
+     "that.foobar", and so on.
+     
+  2b) Make sure you include a topic with the same name as your command - 
+      this will be shown when people type the command with no topic name.
+      For example:
+      
+      & FOOBAR
+      
+      This is shown when you type "foobar" without a topic. Type
+      "foobar <topic>" to view a specific topic.
+
+  3) Edit game/txt/Makefile, duplicating the example for "rules.txt", but
+     using your command name. For example:
+     
+foobar.txt: foobar/*.foobar foobar compose.sh
+	sh ./compose.sh foobar $(INDEX_FLAGS)
+	
+     (Note: The second line starts with 1 tab, not spaces.)
+     
+  4) Add "foobar.txt" to the end of the TXT= line near the top of the file.
+     You'll get something like
+
+TXT=help.txt news.txt other.txt stuff.txt foobar.txt
+
+  5) To add the new command to your MUSH, add this line to your mush.cnf
+     help_command foobar txt/foobar.txt
+  
+After you've made these changes, and created your "*.foobar" files, run the
+"make" command in the game/txt directory. This will build the "foobar.txt"
+file from your "*.foobar" files. You'll then need to @shutdown/reboot, to
+make the MUSH re-read your mush.cnf and add the new command.
+
+In future, when you make changes to your *.foobar files, re-run "make" in
+game/txt, and then type "@readcache" in your MUSH to make it check for new
+topics.
+
+
+TIP: To add a hardcoded "+help" command which shares topics with the "help"
+command, add:
+
+  help_command +help txt/help.txt
+
+to your mush.cnf. Then just put your +help topics in hlp/*.hlp files. Make
+sure you include a topic called "+help" that'll be shown when people type
+"+help" without a topic! For example:
+
+& +HELP
+  MyMUSH has help for the following commands:
+  
+  +foo     +bar     +etc
+  
+

@@ -1,0 +1,22 @@
+Server log files are usually kept here.
+
+What they're used for:
+
+checkpt.log:
+        Database saves are recorded here.
+
+command.log:
+        Logging of SUSPECT player activity and other command logging.
+
+connect.log:
+        All connections and disconnections are recorded here.
+
+netmush.log:
+        General server messages and errors.
+
+trace.log:
+        Memory allocation stats and errors are recorded here.
+
+wizard.log:
+        Logs of game-altering things done by wizards, and things done TO
+        them.

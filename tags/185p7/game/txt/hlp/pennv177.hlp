@@ -1,0 +1,1487 @@
+& 1.7.7p40
+Version 1.7.7 patchlevel 40                     December 1, 2004
+
+Major Changes:
+  * Another pass at the chunk allocator! Simpler but effective.
+    Folks should, however, greatly reduce their chunk_migrate
+    value in mush.cnf -- we suggest '50'. [TAP]
+Commands:
+  * @command/alias can alias commands. Patch by Walker@M*U*S*H.
+Functions:
+  * zwho() and zmwho(). [EEH]
+Minor Changes:
+  * utils/penn-install is no longer part of the PennMUSH distribution
+    (it's part of the Debian maintainer's stuff). [EEH]
+  * Inheritable @locks are inherited off of ancestor objects. 
+    Suggested by Zith@Lovarii. [SW] 
+Fixes:
+  * Infinite recursion in @lock/examine fixed. Report by
+    Amy Kou'ai (Amy@ShoujoAi) and Sparta Kerleon (Sparta@ShoujoAi). [TAP]
+  * @flag/letter now allows setting a flag's letter to one used by
+    another flag that works on different object types. Report by Lenon.
+  * Translation corrections by Cheetah@M*U*S*H and [EEH].
+  * Added __USE_POSIX to the cflags for linux, and removed 
+    checking for -lbind, to help SuSE 9.  Report by Ambrosia@M*U*S*H.
+  * Fixes to panic db loading logic. [SW] 
+  * escape() shouldn't double-escape the first character of the
+    string when it's a special character. Report by Walker@M*U*S*H.
+
+
+& 1.7.7p39
+Version 1.7.7 patchlevel 39                     October 25, 2004
+
+Major Changes:
+  * Game and chat database formats have been rewritten. They are 
+    much more human-readable, can be extended with new fields
+    without using versioning flags, and provide better detection
+    and reporting of malformed databases. [SW]
+  * Chunk deref counts for locks are now stored in the database. [SW]
+Commands:
+  * New 'buy' command for purchasing items from vendors that can offer
+    multiple items at multiple prices. Patch by Walker@M*U*S*H.
+  * restrict_command and @command/restrict can now include an
+    error message to be sent when the player can't use the command,
+    which supercedes more generic errors. Suggested by Philip Mak.
+    Patch by Walker@M*U*S*H.
+Functions:
+  * lwho() can take an argument to produce the who list from that
+    player's viewpoint. Patch by Walker@M*U*S*H.
+Fixes:
+  * nattr(obj/attrib) returns 1 when matching a non-wildcarded attrib.
+    Report by Impster@M*U*S*H.
+  * +chan <msg> is now converted to @chat <chan>=<msg> (with noeval)
+    so @chat hooks apply to +chatting too. Patch by Walker@M*U*S*H.
+  * You must be able to locate a player to perform elock() on them.
+    Report by Ambrosia.
+  * Help fixes by Sketch@M*U*S*H.
+  * Simplification of @version code. [SW]
+  * cemit() restrictions are now based on those of @cemit, instead
+    of @emit. Report by BlackPhyr.
+  * Setting queue_loss to 0 disables queue_loss. A bad idea, but
+    more consistent behavior. Suggested by K Moon.
+  * Examining objects always shows their actual number of coins,
+    whether or not they're admin or no_pay.
+  * Code cleanup in @edit and in char routines. [SW].
+  * Wrong object checked when reporting money as unlimited. Report
+    by Nate Barney. [EEH]
+  * New hints/freebsd_5.sh. Suggested by James Lang.
+  * INFO command once again reports the server as "PennMUSH",
+    not just a version number. Report by Mark Hassman.
+  * Win32 linting. Builds with NT_TCP should work again (although
+    @shutdown/reboot under NT_TCP is still not functional). 
+    Reorganization of the Win32 services macros. [EEH]
+  * Fix to bug with login attempts using literal encrypted strings.
+    Reported by Cadar and Mirrador.
+  * @ps/all shows the right label on top. Patch by qa'toq@bDv.
+
+
+& 1.7.7p38
+Version 1.7.7 patchlevel 38                     August 25, 2004
+
+Commands:
+  * @boot/silent disconnects without the standard message.
+    Suggested by Thor@bDv.
+Fixes:
+  * Crash bug in is_objid fixed. Report by Wayne@PDX.
+  * God could cause a flag to lose its type status, and then become
+    inaccessible. Report by Wayne@PDX.
+
+
+& 1.7.7p37
+Version 1.7.7 patchlevel 37                     August 23, 2004
+
+Major changes:
+  * @adisconnect is triggered on every disconnection, partial or full.
+    This mirrors the behavior of @aconnect. Use %1 (the number of
+    remaining connections) to distinguish between partial and full
+    disconnects in @adisconnect code.
+Minor changes (user-visible):
+  * When a player disconnects, their recv(), sent(), and cmds()
+    values are passed to triggered @adisconnects as %2, %3, and %4.
+    The number of remaining connections is passed as %1.
+    Suggested by Jessica Hawthorne and Wayne@PDX.
+  * No_Pay players now have their money reported as unlimited by
+    examine and score (but money() still returns a useful integer value).
+    ex/debug can be used to see the object's Pennies field.
+    Suggested by Wayne@PDX.
+Fixes:
+  * ex obj/*1 and similar was matching like ex obj/*1*. Reported by
+    Math@HavenMUSH.
+  * inc() and dec() with out-of-range integers now return a more
+    useful error instead of odd behavior. Suggested by Jessica Hawthorne.
+  * Win32 bug with renamed temporary database files resolved.
+    Reported by AndromedaMU.
+  * Help fixes by Mike Griffiths.
+  * @mail commands with no message list were not using current folder.
+    Report by Jessica Hawthorne.
+
+& 1.7.7p36
+Version 1.7.7 patchlevel 36                     August 9, 2004
+
+Functions:
+  * l/lv/n/nv/x/xvthings() functions by Walker@M*U*S*H.
+  * New flag to locate(), 'y', for matching player names like pmatch(),
+    without requiring a leading * before the name like the 'p' flag. [SW]
+  * lattr()/nattr() works for mortals on non-owned objects, showing
+    or counting only attribs they can examine. Suggested by Philip Mak,
+    patch by Walker@M*U*S*H.
+Minor changes (user-visible):
+  * Mortals can no longer teleport HEAVY admin through exits.
+    Suggested by Ambrosia@M*U*S*H.
+Minor changes (internals):
+  * win32 directory has subdirectories for msvc6 and msvc.net. [EEH]
+  * locate() on dark rooms now works for see_all players. Suggested
+    by Wayne@PDX.
+Fixes:
+  * @mail subjects are stripped of ansi before being stored (escape
+    chars were always smashed on display). Suggested by Wayne@PDX.
+  * @command/delete by God of a non-existing command caused a crash.
+    Report by Wayne@PDX.
+  * Follow works again. Report by Shirow.
+  * Fix to digest()'s sha hash on systems without OpenSSL. [SW]
+  * @list/command no longer includes duplicates. Report by Relay@M*U*S*H. [EEH]
+  * comp() again returns -1/1 instead of -2/2. Report by Jessica Hawthorne.
+  * sort() of large floats works again. Report by Jessica Hawthorne.
+  * Linting of warnings in funlist.c. Report by Nymeria@M*U*S*H.
+  * It was possible for wizards to create circular zone chains that
+    would cause an infinite loop. Report by Wayne@PDX.
+  * safe_ansi_string was double-prepending starting ansi codes.
+    Report by Shirow.
+  * Debian packaging improvements. [EEH]
+  * Help fixes by Mike Griffiths.
+
+
+& 1.7.7p35
+Version 1.7.7 patchlevel 35                     July 21, 2004
+
+Attributes:
+  * NO_NAME and NO_SPACE attribute flags, when applied to @o-message
+    attributes, omit either the enactor's name or the space after it
+    when sending the message to others. Patch by Walker@M*U*S*H. [3]
+Commands:
+  * @break <expression>=<new command> now runs <new command>
+    instead of simply stopping execution when <expression> is true.
+    New command @assert breaks and runs new command when <expression>
+    is false.  Suggested by Philip Mak and Zebranky@M*U*S*H. Patch by 
+    Walker@M*U*S*H.
+  * The new command 'huh_command' is responsible for handling unmatched
+    command input. By default, it produces the usual Huh? message, but
+    it can be overridden with @hook. Logging of huhs is now controlled
+    in restrict.cnf and the log_huhs mush.cnf directive is removed.
+    Suggested by T'orA and Walker@M*U*S*H.
+  * New @decompile/prefix switch generalizes @decompile/tf.
+    Prefixes are now applied even when decompiling multiple attributes,
+    and a bug in doing so is corrected. Patch by Walker@M*U*S*H.
+  * New @edit/first switch only replaces first occurrence of string.
+    Suggested by Kevin@M*U*S*H.
+Functions:
+  * malias() function for examining mail aliases. Inspired by
+    Kevin@M*U*S*H.
+  * llocks()/locks() lists locks on an object. Patch by Walker@M*U*S*H.
+  * lset() function works like @lset. Patch by Walker@M*U*S*H.
+  * lockflags() and llockflags() show short and long flags set on a lock.
+    Patch by Walker@M*U*S*H.
+  * lattrp() is lattr() including parent attribs. Patch by Walker@M*U*S*H.
+  * nattr(obj/wildcardpattern) is now supported. Patch by Walker@M*U*S*H.
+  * nattrp() is nattr() including parent attribs. Patch by Walker@M*U*S*H.
+  * xattr(obj/wildcardpattern,start,count) extracts the corresponding
+    elements from lattr(). xattrp() is xattr() including parent attribs. 
+    Patch by Walker@M*U*S*H.
+Minor changes (user-visible):
+  * @lset and lock() recognize locks beginning with user:. Patch by
+    Walker@M*U*S*H.
+  * When a player causes an ambiguous channel match, the error message
+    mentions CHAN_USEFIRSTMATCH, which now has a help entry.
+    Suggested by Luke@M*U*S*H.
+  * New sort options: sorting by dbref name, idle time, connection seconds, 
+    creation time, owner dbref, and attribute values.  sort() and any 
+    functions that use list2arr() are now ansi-aware. Patch by Walker@M*U*S*H.
+  * You can @name yourself to your @alias; this swaps name and alias.
+    Suggested by Oriens@Alexandria. Patch by Walker@M*U*S*H.
+Minor changes (internals):
+  * Several global variables are now encapsulated in a single structure
+    to reduce potential namespace clashes.
+  * Reorganization of some filecopy.c code. [SW]
+Fixes:
+  * @mail manipulation specifying folder 0 explicitly when the
+    current folder is non-zero didn't work right. Report by 
+    Jess Hawthorne.
+  * Buffer overflow in string handling fixed. Report by Ashen-Shugar.
+  * @sitelock/name of an already locked name no longer creates extra
+    entries. Report by Nymeria@M*U*S*H.
+  * make depend no longer produces an unterminated Makefile.SH.
+    Reported by Bytor and Cheetah@M*U*S*H.
+  * Help fixes by [SW].
+  * Fix to replace_string2 to prevent overflow situations. Report by
+    Atuarre. [SW].
+  * Removed non-static shutdownsock prototype in hdrs/mysocket.h.
+    Report by Kholnuu@M*U*S*H.
+  * SQL code should be much more memory-efficient. [SW]
+  * Code cleanup and fixes to some memory leaks with strcoll. [SW]
+
+
+& 1.7.7p34
+Version 1.7.7 patchlevel 34                     June 22, 2004
+
+Flags and Powers:
+  * Debit power allows the giving of negative amounts of money.
+    Suggested by Hemlon@SevenStones.
+  * The setting and resetting of flags and powers can be logged 
+    by using the new 'log' restriction. Changes were made in
+    flaglocal.dst which you must carry over into flaglocal.c
+    (or, if you don't use flaglocal.c, just rm src/flaglocal.c and
+    flaglocal.dst will be copied in its place). Suggested by Sholevi@M*U*S*H
+    [SW]
+  * Setting and resetting @powers are once again logged by default. [SW]
+Locks:
+  * @lock/speech can now be set by unprivileged players. @lock/speech
+    now applies to all players (it is no longer automatically overridden
+    by admin). SPEECH_LOCK`*FAILURE attributes can be used to override 
+    the default failure messages when @lock/speech fails.
+Commands:
+  * ex/parent examines an object and shows attributes that will be
+    inherited from its parents (if you are permitted to examine
+    the parent as well). Suggested by BladedThoth@M*U*S*H. 
+  * examine now shows the complete (examinable-by-enactor) chain of 
+    parent objects, not just the nearest parent. Suggested by Luke@M*U*S*H.
+Functions:
+  * mailsend() is a function form of @mail/send. Suggested by Moe@ChicagoMUSH
+  * ncon, nvcon, nexits, nvexits, nplayers, nvplayers, nwho, nvwho 
+    functions to count the number of each thing. Patch by Walker@M*U*S*H.
+  * xcon, xvcon, xexits, xvexits, xplayers, xvplayers, xwho, xvwho functions 
+    to extract slices of potentially long contents, etc. lists. [Rhost,TM]
+    Patch by Walker@M*U*S*H.
+Minor changes (user-visible):
+  * Players can no longer be set CHOWN_OK. Suggested by Intrevis@M*U*S*H.
+    If you have existing CHOWN_OK players, you probably want to unset
+    this from them, or the results will be confusing (they'll continue
+    to appear to have the flag, even though it won't be testable or
+    settable or clearable; this is desired behavior).
+  * If you're See_All and Pemit_All, you may now @cemit on any channel.
+    Based on a suggestion by Philip Mak.
+  * Attempting to give a player more than max_pennies will give them
+    enough to get them to max_pennies, instead of being treated as
+    an error. Similarly, taking away more pennies than they have will
+    take away exactly all their pennies.
+  * Improved errors for unprivileged users doing @boot/port.
+    Suggested by Intrevis@M*U*S*H. [TAP]
+Minor changes (internals):
+  * pre OS X Macintosh OSes are no longer supported. Hints for 
+    Darwin are improved. [SW]
+  * An extra file descriptor only needed on Sun OS boxes was being
+    opened on all unix systems. [SW]
+  * If no config file name is given on the netmush program's command line,
+    it will assume you mean mush.cnf instead of quitting. You should still
+    be using the restart script instead of netmush directly, though, as it
+    does important things like using the right database... [SW]
+  * 'make local-files' will copy all the src/*local.dst files to their
+    respective .c counterparts. Suggested by Nymeria@M*U*S*H. [SW]
+Fixes:
+  * Configure handles the case where SO_KEEPALIVE works but TCP_KEEPIDLE isn't
+    defined. [SW]
+  * Win32 portability fixes and mingw hints. [EEH]
+  * Raising max_logins from 0 with @config/set wouldn't take existing
+    connections into account. [SW] 
+  * $commands starting with # (that don't look like an @force by dbref)
+    will now be matched. Reported by Intrevis@M*U*S*H.
+  * version() is verbose again. Reported by Sholevi@M*U*S*H.
+  * The double-add of SQL_OK on minimal.db is now really fixed.
+    See p33 changes for information. Report by Mordie@M*U*S*H.
+  * Help fixes by Kevin@M*U*S*H and Cerekk@bDv.
+  * @boot/desc on one's own descriptor is no longer translated to
+    @boot/me. [TAP]
+  * Overflow of integer argument in giving pennies fixed. Report by
+    Sholevi@M*U*S*H.
+  * Typo in fun_vcross() fixed. [SW]
+  * Configure does better when ssl shared libraries, but not static
+    libraries, are available. You can use -D no_openssl to skip SSL checks.
+
+
+& 1.7.7p33
+Version 1.7.7 patchlevel 33                     June 3, 2004
+
+Minor changes (internals):
+  * IsPlayer, etc. macros rewritten for clarity by Luke@M*U*S*H.
+  * Use enums in place of some more #defines and magic numbers. [SW]
+  * New did_it_with() hc function simplifies passing a dbref as %0
+    to did_it actions. [SW]
+Fixes:
+  * The SQL_OK power could get double-added. If this happened to you,
+    delete one of them and double-check that all sql-using objects
+    still have the power set. Report by Mordie@M*U*S*H.
+  * Missing include in game.c fixed.
+  * Improper include in bufferq.c fixed. Report by Leona and Walker@M*U*S*H.
+  * Obsolete bzero() uses removed. [SW]
+  * New win32/pennmush.dsp.
+  * Help fix by bleeder@M*U*S*H.
+  * Mac OS X linting [SW].
+
+
+& 1.7.7p32
+Version 1.7.7 patchlevel 32                     May 26, 2004
+
+Major Changes:
+  * SQL support. PennMUSH can now operate as an SQL client and perform
+    queries against an SQL server. Currently only the MySQL server is
+    supported. This adds the @sql command, the sql() and sqlescape()
+    functions, and the Sql_Ok power. See README.SQL for some 
+    additional information.  Mostly based on patches by Hans Engelen.
+  * Creating a leaf attribute automatically creates associated branch
+    attributes if they are not already present. [TAP]
+  * When a $command matches on an object, but the object's use-lock or
+    command-lock prevents the command from being run, the object's
+    COMMAND_LOCK`FAILURE, COMMAND_LOCK`OFAILURE, and COMMAND_LOCK`AFAILURE
+    attributes will be triggered if the $command never successfully 
+    matched, rather than returning a Huh? to the player.
+  * Exits and rooms may now run $commands. Rooms are treated as being
+    located in themselves for purposes of location checks. Exits are
+    treated as being located in their source room. Suggested by [TAP].
+Commands:
+  * 'empty <object>' attempts to get each item in <object> and put
+    it alongside <object> (in <object>'s location).
+  * 'give <object> to <player>' syntax added.
+Minor Changes (user-visible):
+  * @COST attribute is now evaluated, so you can make costs depend
+    on who's paying, a selected item, etc. Suggested by Walker@M*U*S*H.
+    Also, the amount given is passed in as %0, so you can code
+    vendors that accept any amount.
+  * New OBJID^<objid> lock atom.
+  * The server now maintains a rolling log of activity (commands issued,
+    evaluations parsed, and locks evaluated), that is dumped to the log 
+    file on panic, or can be seen by God with @uptime. This aids 
+    debugging code that causes a "clean" panic rather than a crash. 
+    Suggested by Intrevis@M*U*S*H.
+  * When checking a use/command/listen-lock on an object with patterns
+    that get matched, we only check the lock once and cache the result,
+    to prevent multiple lock evaluations if multiple patterns match. [TAP]
+  * @chan/recall now shows nospoof tags for @cemit'd lines.
+    Suggested by Sholevi@M*U*S*H.
+  * SUSPECT flag can now be applied to any type of object.
+    Suggested by Oriens@Alexandria.
+Minor Changes (internals):
+  * fun_escape() and fun_secure() use the same list of special characters, 
+    rather than each having their own copy. [SW]
+  * Buffer queue code used by @chan/buffer and the activity log refactored
+    into src/bufferq.c and hdrs/bufferq.h.
+  * Added mush_panicf(), with printf()-style format and arguments. [SW]
+Fixes: 
+  * @scan correctly shows attributes on parents again. Report by
+    Wayne@PDX.
+  * @shutdown/panic and @shutdown/paranoid work again. [SW]
+  * A panic DB could be created before the database files were actually read,
+    causing problems on the next restart. [SW]
+  * Win32 and Debian installer portability fixes. [EEH]
+  * Code cleanup around errno. [SW]
+  * The locate() function now respects visibility and interactions.
+    Report by Jules@M*U*S*H.
+
+
+& 1.7.7p31
+Version 1.7.7 patchlevel 31                     May 11, 2004
+
+Minor Changes:
+  * netmush is now started with only a single argument - the path to
+    the configuration file. The error log file (typically game/netmush.log)
+    is now configured in mush.cnf. Suggested by Vadiv@M*U*S*H.
+  * The restart script now bases its decision about whether the mush
+    is already running on the full path to the configuration file,
+    which means you can leave mush.cnf named mush.cnf without fear
+    of restart problems when multiple mushes are using the same
+    host. This also facilitates make update. Suggested by Vadiv@M*U*S*H.
+  * The GAMEDIR environment variable can be passed to 'make update'
+    to cause it to update *.cnf files in directories other than
+    game/ (using the template *.dst files in game/). 
+    E.g.: make GAMEDIR=/home/othermush/game update
+Commands:
+  * @nscemit. Suggested by Mystery8@ST:AW.
+Functions:
+  * nscemit(). Suggested by Mystery8@ST:AW.
+Flags:
+  * New HEAVY admin flag, prevents an object from being teleported
+    by a mortal between two containers they own. Admin without this
+    flag can now be teleported.
+Fixes:
+  * Help fixes by Anri@AkaneaMUSH and Intrevis@M*U*S*H.
+  * mix() now treats empty lists as empty, instead of containing a single
+    null element. Report by Luke@M*U*S*H.
+  * @power messages no longer reference 'flags'. Report by Nymeria@M*U*S*H.
+  * Crash bug with @clone in new power system fixed.
+
+
+& 1.7.7p30
+Version 1.7.7 patchlevel 30                     May 6, 2004
+
+Major changes:
+  * CHAT_SYSTEM option removed. If you don't want to use the chat system,
+    use restrict.cnf to disable @channel, @chat, etc.
+  * USE_MAILER and MAIL_ALIAS options removed. If you don't want to 
+    use the @mail or @malias systems, use restrict.cnf to disable
+    the associated commands.
+  * QUOTA, EMPTY_ATTRS, and FUNCTION_SIDE_EFFECTS options are now 
+    runtime options, instead of compile-time.
+  * SINGLE_LOGFILE option removed, and log filenames are now 
+    runtime options. You may now give the same name to
+    multiple log files and get a more fine-grained version of the
+    same effect. Based on ideas by Vadiv@M*U*S*H.
+Minor changes:
+  * New IP^ and HOSTNAME^ tests for boolexps. Suggested by Luke@M*U*S*H.
+  * ALLOW_NOSUBJECT option removed. We always use the beginning of the
+    message as the subject if one is not provided.
+  * JURY_OK and UNINSPECTED_FLAG options removed. Use @flag to add
+    flags if you need them. ONLINE_REG and VACATION_FLAG options
+    removed (default to always defined, add or remove with @flag as
+    desired).
+  * MEM_CHECK option removed from options.h; it is now a runtime
+    option in mush.cnf.
+  * @function/restrict can be applied to softcoded @functions, and
+    @function/add can accept a list of restrictions as a fifth argument.
+    Patch by Luke@M*U*S*H.
+  * log_walls run-time configuration option removed. Use the
+    logargs option in restrict.cnf instead.
+Fixes:
+  * Crash bug in anonymous attributes fixed. Report by Intrevis@M*U*S*H.
+  * lplayers() was broken. Report by T'orA@M*U*S*H.
+  * Failing to create a player by providing a bad password now gives
+    a better error. Suggested by [NJG].
+  * Setting/clearing a chan title on a notitles channel works, but
+    reminds you that titles are off. Suggested by Dan@InNomine.
+  * haspower_restricted removed from mushcnf.dst to stop spurious
+    warning on startup. Report by Nymeria@M*U*S*H.
+
+
+& 1.7.7p29
+Version 1.7.7 patchlevel 29                     April 28, 2004
+
+Major changes:
+  * Anonymous attributes via #lambda. See help anonymous attributes. [SW]
+  * Wizards (other than God) and royalty are no longer treated as No_Pay
+    unless the No_Pay power is explicitly set on them, although they
+    can still give (themselves or others) as many pennies as they wish.
+    This helps stop runaway wizards in the queue (they'll run out of cash
+    like anyone else). To get the old behavior back, @power your admin
+    No_Pay. You probably want to @power any globals that use search(),
+    children(), mail*stats(), etc, No_Pay as well. Suggested by Walker@M*U*S*H.
+  * game/restrict.cnf, alias.cnf, names.cnf are renamed in the tarball and
+    made with make update like mush.cnf. Suggested by Philip Mak. [SW]
+  * @powers now operate under the same code as the @flag system, so God
+    can add and modify powers in the MUSH with @power/add, etc. 
+Commands:
+  * @nsemit, @nsoemit, @nslemit, @nsremit, @nszemit and function forms
+    of the same. Suggested by Cloud@M*U*S*H.
+Functions:
+  * andlpowers(), orlpowers(), andpowers(), orpowers().
+  * align() performs fancy text alignment tricks. Patch by Walker@M*U*S*H.
+  * sent() and recv() show more player descriptor data from SESSION.
+    Suggested by Ricochet@M*U*S*H.
+  * scan() with a single argument assumes the executor's point of
+    view. Suggested by Cheetah@M*U*S*H.
+  * valid() can also check for syntactically correct passwords,
+    command names, and function names.
+Minor changes:
+  * No more CRYPT_SYSTEM in options.h. We try everything and we
+    always reset passwords to SHS. Patch by Vadiv@M*U*S*H.
+  * Wizards and other privileged players can @chan/recall on channels they're
+    not on. Suggested by Trispis@M*U*S*H. [SW]
+  * A separate ip address to bind the SSL port to can now be specified
+    in mush.cnf.
+  * @flag/type allows God to change flag types. Suggested by Renee@ShoreSide.
+  * After each @startup is enqueued (during startup or @restart/all),
+    we immediately run up to 5 queue cycles. This allows, e.g., God's
+    @startup to up to five levels of @dol/@tr/@switch/etc and still have
+    the queued code run ahead of other startups. This requires that you
+    keep God's dbref as #1. Based on comments by Philip Mak and o
+    Trispis@M*U*S*H.
+  * The message after successful @password is now clearer, to avoid
+    confusion in some unusual cases. Report by Kholnuu.
+  * Makefile is no longer set executable. Report by Luke@M*U*S*H.
+  * Server now handles telnet NOP and AYT commands. Suggested by
+    Philip Mak and Liz (author of Muckclient).
+  * announce.c is no longer distributed. portmsg.c cleanup.
+Fixes:
+  * @undestroy on an invalid (garbage, or !going) object now produces
+    an error message. Suggested by T'orA@M*U*S*H.
+  * On shutdowns, all queue deposits are now refunded.
+  * Ansi behavior on second and later lines of text fixed by Walker@M*U*S*H.
+  * Database reading improvements for win32 - ideally, you should now
+    be able to read a database written on win32/unix on either system.
+  * allof() now evaluates its separator argument. [SW]
+  * firstof() doesn't add an extra space before the value it returns. [SW] 
+  * Slackware portability fixes by Dale @ Wolfpaw.net hosting
+  * ]page properly noevals (the right hand side) now. Report by 
+    Cheetah@M*U*S*H.
+  * Partial channel match listings no longer reveal channels the player
+    isn't allowed to see. Report by Taz.
+  * Help fixes by Trispis@M*U*S*H and Tanaku@M*U*S*H.
+  * ssl() and terminfo() don't work on other players unless you're
+    See_All, as promised. Based on patch by Tanaku@M*U*S*H.
+  * lcon, etc. all do an INTERACT_SEE interaction check now.
+    Suggested by Thor@bDv.
+  * Code cleanup. [SW]
+  * Fixes from 1.7.6p16
+
+
+& 1.7.7p28
+Version 1.7.7 patchlevel 28                     March 12, 2004
+
+Major changes:
+  * You can add customized configuration parameters to set in mush.cnf
+    by adding a couple of new lines into the local_configs() function
+    in local.c. (YOU MUST UPDATE YOUR local.c FROM local.dst IN THIS
+    PATCHLEVEL). Patch by grapenut@M*U*S*H.
+  * Object ids: An object id is the string "#dbref:ctime"
+    where #dbref is the object's dbref and ctime is its creation time
+    in integer format. The %: substitution returns this
+    id for the enactor, and the objid() function returns it for an
+    arbitrary object. Object ids can be used in place of softcode that 
+    stores dbrefs to insure that a recycled dbref isn't used in place
+    of the intended one. The matcher code will also match objects by
+    id any time it's matching by dbref.
+  * @command/add and @command/del. You can add a custom command
+    (which will have the same precedence as a standard server command),
+    and then @hook it to softcode, effectively promoting the precedence
+    of softcoded globals, and letting them take advantage of some
+    command parser settings. Patch by Walker@M*U*S*H.
+Functions:
+  * tr() accepts ranges of characters like a-z instead of having to
+    give each one. [SW]
+  * escape() also escapes parens and commas now. Suggested by Philip Mak. [SW]
+  * time() can now take a time offset or object argument (in the latter
+    case, time offset is read from object's TZ attribute). Patch by
+    Walker@M*U*S*H.
+  * vcross() performs cross products of vectors. [SW]
+  * merge() can now take a list of characters. [SW]
+Minor changes:
+  * You can @set multiple flags at once by giving them as a list.
+    Suggested by Walker@M*U*S*H and others.
+  * Channel names are recognized when surround by <>'s, too. [SW]
+  * 'move' is now a command_alias for 'goto' (in alias.cnf), and not
+    a separate command.
+  * PAGE_LOCK`{,O,A}FAILURE attributes now activated when a page/pemit fails
+    due to the victim's @lock/page. Suggested by Sholevi@M*U*S*H.
+  * Tweaked game message for failing to provide correct password to
+    @password. Suggested by Philip Mak.
+  * New command 'warn_on_missing' (defaults to disabled), aliased to the
+    '[' character. If enabled, players who attempt to write commands
+    starting with functions will get errors. Suggested by [SW] and
+    Cheetah@M*U*S*H.
+  * Renaming something triggers its ONAME and ANAME attributes, if present.
+    The old name is passed as %0; the new as %1. Suggested by Philip Mak.
+  * Owner information on ex/br is reported using the usual object_header()
+    so dbref and flags appear. Suggested by Rince@M*U*S*H.
+  * Flags that are F_DARK or F_MDARK no longer appear on @flag/list
+    by non-admin. Suggested by Philip Mak.
+  * Warn players who set themselves SHARED with a weak zone lock.
+    Suggested by Philip Mak. [SW]
+  * @halt can now take "here". Suggested by Thor@bDv.
+  * When parsing eqsplit commands, don't evaluate the left side
+    of the equal sign if the command was run with ].
+Fixes:
+  * Fixes to robustify file reading on Windows systems.
+  * The 'nofixed' command restriction works as expected now (previously,
+    you had to use 'nofix').
+  * Exit movements are now translated into explicit GOTO commands,
+    so @hooks and restrictions on GOTO are now applied. Patch by
+    Walker@M*U*S*H.
+  * The AE/ae accent characters can now be produced (accent(a,e)).
+    Patch by Luke@M*U*S*H.
+  * @hook/ignore would double-evaluate arguments. Reported by 
+    Ambrosia@M*U*S*H. [SW]
+  * Mingw error in src/Makefile.SH fixed. Report by Thor@bDv. [SW]
+  * Help fixes by Cerekk@bDv, Mike Griffiths, Steve Varley, Thor@bDv, [SW],
+    Dahan, Jason Stover, and Kyieren@M*U*S*H.
+  * cmdlocal.dst now includes flags.h. By Dahan.
+  * Win32 portability fixes by Dahan, Nathan Baum, [EEH].
+  * utils/mkcmds.sh is now smarter about choosing temp filenames, so
+    parallel make should work. Fixed by Cheetah@M*U*S*H.
+  * The Zone: data in examine could be wrong.
+
+
+& 1.7.7p27
+Version 1.7.7 patchlevel 27                     January 25, 2004
+
+Minor Changes:
+  * New etimefmt() formatting codes to make it easier to get nice-looking
+    results without 0-valued times. Suggested by ranko_usa@M*U*S*H. [SW]
+  * Autodetect existence of /usr/kerberos/include to make compile 
+    easier for RH9 sufferers.
+  * src/Makefile is now autobuilt from src/Makefile.SH. IF you use
+    local hacks that require src/Makefile, this is likely to be a problem
+    for you. You'll want to start patching Makefile.SH instead.
+  * Fewer warning flags are now provided to the compiler by default.
+    You can set your own warning flags instead by defining the
+    warnings variable in config.over.
+Fixes:
+  * The startups option actually does what it's supposed to now.
+  * Potential DOS in etimefmt fixed. Report by Ashen-Shugar. [SW]
+  * Code cleanup. ok_tag_attribute should work. [SW]
+  * Channels are automatically ungagged only on initial connection
+    (not reconnection, partial disconnection, etc.). Suggested by
+    Mordie@M*U*S*H.
+  * notify() calls during startup would crash. Reported by Mordie@M*U*S*H. [SW]
+  * Fixes from 1.7.6p15.
+
+
+& 1.7.7p26
+Version 1.7.7 patchlevel 26                     December 15, 2003
+
+Commands:
+  * Add /regexp switch to @switch and @select. Suggested by BladedThoth. [SW]
+  * New /spoof switch to @pemit, @remit, @lemit, @oemit, @emit,
+    causes the message to appear to be generated by the cause, rather
+    than the enactor, which makes globals like $ooc show the right
+    NOSPOOF information (instead of the name of the global command object).
+    Patch by Philip Mak.
+Functions:
+  * hostname(), ipaddr(), and cmds() take a dbref or descriptor number
+    of a connected player and return the hostname, ipaddr, and number
+    of commands executed. Suggested by Sholevi@M*U*S*H and Renee@ShoreSide,
+    code by Sholevi@M*U*S*H.
+  * Add reswitch*() functions. Suggested by BladedThoth. [SW]
+  * insert() can take a negative position argument to insert from
+    the right. Patch by Sholevi@M*U*S*H.
+  * New firstof() and allof() functions return the first true value
+    or all true values from a set of expressions. Patch by Sholevi@M*U*S*H.
+  * tr() works like the Unix utility, translating characters. Patch
+    by Walker@M*U*S*H.
+Attributes:
+  * Attributes may be set DEBUG to cause their evaluation to be
+    debugged selectively. Patch by Pozzo@SWForum.
+  * @desc can no longer be gotten remotely without privileges.
+    To implement this, a new attribute flag NEARBY was added,
+    which prevents visual attributes from being remotely accessed.
+    See new configuration directive 'read_remote_desc' if you prefer
+    the old behavior. Patch by Philip Mak.
+  * @desc on privileged objects can now be evaluated by mortals.
+    To implement this, a new attribute flag PUBLIC was added,
+    which overrides safer_ufun for that attribute. This flag is dangerous
+    and should be avoided unless you are sure you know what you're doing.
+    Patch by Philip Mak.
+Minor Changes:
+  * "+<channel> <text>" complains if <channel> is ambiguous, and
+    displays a list of matching channels. Patch by Luke@M*U*S*H.
+  * Code cleanup around @oemit by Philip Mak.
+  * If an object has an IDESCFORMAT but no IDESCRIBE, interior viewers
+    now see the DESCRIBE formatted by IDESCFORMAT (instead of
+    the DESCRIBE formatted by DESCFORMAT). Suggested by Philip Mak.
+  * Ported to Win32 with the Mingw development environment. 
+    See win32/README.mingw for compile instructions. [EEH]
+  * null() can now take any number of arguments. Patch by Walker@M*U*S*H.
+  * Using @chan/quiet to control the quiet flag on a channel no longer works
+    (Actually, it never did). Use @chan/priv instead. [SW]
+  * The NO_WARN flag now prevents disconnected room warnings, too.
+    Suggested by several people. Patch by Philip Mak.
+  * @sitelock/name !name still unlocks a reserved name, but no longer 
+    removes that name from names.cnf. Suggested by Nymeria. [SW]
+  * Some cleanup of fopen() calls. [SW]
+  * The reference to channel Creator is now Owner in @chan/decomp.
+    Suggested by Howie@NFTrekMUSH. [SW]
+  * The name of the channel being tested is passed as %0 in channel locks.
+    Suggested by Philip Mak. [SW]
+  * help for @chownall mentions the /preserve switch.  Warnings from @chown 
+    and @chownall tell which objects they're for. Suggested by
+    Mordie@M*U*S*H. [SW]
+  * Home wrecking is allowed again. Suggested by Philip Mak.
+Fixes:
+  * Puppets in containers with @listen container=* now hear the
+    outside world correctly. Patch by Philip Mak.
+  * The email sent on player registration now double-quotes the
+    player name in the example connect statement. Suggested by
+    David Kali.
+  * Two rooms should never be nearby() each other. Fix by Philip Mak.
+  * can_look_at() now handles the look/out case, too. Fix by Philip Mak.
+  * Help fixes by Viila@M*U*S*H, MetBoy@M*U*S*H, Cheetah@M*U*S*H.
+  * @flag/alias or @flag/add without giving an alias no longer crashes 
+    the MUSH.  Report by Wildfire.
+  * Correctly retrieve user full name from /etc/passwd fields under
+    Linux in Configure. Record it in config.sh. Reported by Vadiv@M*U*S*H.
+  * Debian package changes. [EEH]
+  * As the help promises, XCH_CMD and SEND attributes don't work
+    for non-Wizards. Really.
+
+
+& 1.7.7p25
+Version 1.7.7 patchlevel 25                     October 30, 2003
+
+Fixes:
+  * Crash bug in the interaction between parents and attr trees
+    fixed. Report by Walker@M*U*S*H.
+  * Improvements to how locks are decompiled. Built-in locks with the
+    no_inherit flag cleared are handled better.  If the object doing
+    the @decompile is referenced in a lock key, it's decompiled as 'me'
+    rather than by dbref, to make it easier to port between games.
+    Report by Cerekk@bDv. [SW]
+  * The error typically logged by info_slave on a mush crash is worded 
+    better. [SW]
+  * panic() renamed mush_panic() as the Mach kernel now has a public
+    system call panic(). Report by Jeff Ferrell.
+
+
+& 1.7.7p24
+Version 1.7.7 patchlevel 24                     October 19, 2003
+
+Minor Changes:
+  * The puppet flag can now apply to rooms. Suggested by Philip Mak.
+  * @tel/inside allows priv'd players to teleport into another player's
+    inventory (instead of to their location). Suggested by Philip Mak.
+Fixes:
+  * Startups from a created minimal.db did not properly initialize
+    the objdata htab, so subsequent use of that htab (e.g. adding
+    players to channels) would crash. Report by [LdW].
+  * Help fixes by BladedThoth@M*U*S*H and Philip Mak.
+  * Attempting to clear a branch attribute when it has leaves now
+    gives a better message. Also better message for inability to
+    write an attribute due to tree issues. Patch by Luke@M*U*S*H.
+  * Bug in @debugforwardlist fixed by Luke@M*U*S*H.
+
+
+& 1.7.7p23
+Version 1.7.7 patchlevel 23                     October 10, 2003
+
+Major Changes:
+  * Forking dumps now work with the chunk memory manager. [TAP]
+Minor Changes:
+  * Chunk allocator improvements in partial read/writes and for
+    Win32. [TAP]
+  * Use the SHA0 algorithm from OpenSSL instead of our own when possible. [SW]
+Functions:
+  * New digest() function for generating checksums via a variety of 
+    algorithms. [SW]
+  * cowner() returns the dbref of a channel's owner. Suggested by
+    Sholevi@M*U*S*H. [SW]
+  * Added baseconv(), for converting numbers from one base to another.
+    Useful for tweaking things like Myrddin's bboard code. Suggested
+    by many people. [SW]
+Fixes:
+  * Remove warnings in set.c and pcre.c. Report by Nymeria@M*U*S*H
+  * @power messages now show the canonical name of the power.
+    Suggested by Cheetah@M*U*S*H.
+  * Adding DARK players to channels produced a duplicated message.
+    Reported by Mystery8@ST:AW.
+  * Players set WIZARD and ROYALTY would get double notification 
+    of some GAME: messages. Fixed now. [SW]
+  * Chatdb corruption possible when admin add players to channels.
+    Reported by several folks, diagnosed by Mordie@M*U*S*H.
+
+
+& 1.7.7p22
+Version 1.7.7 patchlevel 22                     September 30, 2003
+
+Minor Changes:
+  * When possible, sockets are now set SO_KEEPALIVE and TCP_KEEPIDLE.
+    This may help prevent disconnections of idle players behind
+    poorly designed NAT routers and the like, and make the use of
+    the IDLE command unnecessary. Patch by Philip Mak.
+  * Better failure messages for 'get blah's blah', especially when
+    the container or contained object is ambiguous. Suggested by
+    Philip Mak. 
+Fixes:
+  * Attempting to unset attribute flags actually set them.
+    Report by Ambrosia@M*U*S*H. [SW]
+
+
+& 1.7.7p21
+Version 1.7.7 patchlevel 21                     September 23, 2003
+
+Major Changes:
+  * Attribute trees. Attributes may now be organized hierarchically
+    like files and directories in a filesystem, using the backtick (`)
+    character as the branch separator. Attribute access restrictions
+    propagate down trees. New wildcard ** is introduced to match
+    all attributes at all tree levels. Suggested by Tabbifli. [TAP]
+Locks:
+  * New framework for performing lock failure activities in hardcode.
+    As a proof-of-concept, the attributes FOLLOW_LOCK`FAILURE,
+    FOLLOW_LOCK`OFAILURE, FOLLOW_LOCK`AFAILURE do what you'd expect
+    when set on a potential leader.  Suggested by Sholevi@M*U*S*H.
+Channels:
+  * New per-channel flags NoTitles, NoNames, and NoCemit do what you'd
+    expect. Set them with @chan/privs. Based on suggestion by 
+    Saturn@M3.
+  * @chan/recall/quiet omits timestamps. Suggested by Vadiv@M*U*S*H.
+Commands:
+  * 'help <wildcard-pattern>' now lists all help topics that match that 
+    pattern.  By popular request. [MUX,SW] 
+  * @flag/letter can be used to change or clear the one-letter alias for a 
+    flag.  Suggested by Nymeria@M*U*S*H. [SW]
+  * @flag/list by God notes disabled flags. Suggested by Nymeria@M*U*S*H. [SW]
+Functions:
+  * rand() now comes in a two-argument (low,high) flavor, and randword()
+    selects a random word from a list. The latter is aliased to
+    pickrand() to match Mux's name. Patch by Luke@M*U*S*H.
+Minor Changes:
+  * Although we're Pueblo 2.50 compliant, go back to sending Pueblo 1.10
+    as the server version until everyone upgrades their clients so
+    they can handle the 2.50 string. Suggested by Shirow.
+  * The locate() function is no longer noisy (no longer notifies
+    the executor in addition to returning a value). Suggested by
+    Mystery8@ST:AW. 
+  * @lock/interact now has a higher priority than other interaction
+    checks, so it will work for Wizards. Suggested by Viila@M*U*S*H.
+  * Tweaks to facilitate a Debian package of PennMUSH. [EEH]
+Fixes:
+  * max descriptor could get stomped in some cases. [SW]
+  * Removed extra struct def in hdrs/mushtype.h. Suggested by Kyle.
+  * Help tweak by Kevin@M*U*S*H.
+  * Fix to locks on players messing up their connection failure counts.
+    Reported by Luke@M*U*S*H.
+  * Fix to @entrances by Luke@M*U*S*H.
+  * Fix to Win32 not handling a missing minimal.db by Luke@M*U*S*H.
+  * The confirmation message for setting/clearing attribute flags would use
+    the flag name given as an argument, not neccessarily the the full name of
+    the flag. Reported by Vadiv@M*U*S*H.  [SW]
+  * Fix a potential memory leak in ident.c [SW]
+
+& 1.7.7p20
+Version 1.7.7 patchlevel 20                     September 4, 2003
+
+Major Changes:
+  * minimal.db is no more. If you start up the server and there's no
+    db to be found, it creates a new minimal database in memory
+    on the fly. Feel free to delete your coopy of minimal.db. [SW]
+    (In related news, the default OSUCC on #0 in minimal.db is gone. 
+    Suggested by Cheetah@M*U*S*H. So much for the mists.)
+Minor Changes:
+  * SSL connections are now ended before the dump when rebooting,
+    but their descriptor information sticks around to ensure that
+    their @adisconnect is run after the reboot. Based on suggestions
+    by Vadiv@M*U*S*H and [TAP].
+  * When _DEBUG is defined in a win32 build, don't copy pennmush.exe
+    to pennmush_run.exe. Makes debugging easier. Patch by Luke@M*U*S*H.
+  * In pueblo mode, no longer clear past images after each room look.
+    Patch by Konstantine Shirow.
+  * In pueblo mode, we no longer render ansi attributes or colors with
+    HTML tags; we assume the client will correctly handle them as ansi
+    intermixed with Pueblo. This solves a variety of problems.
+    Based on a discussion with Konstantine Shirow.
+  * When matching $commands and ^listens, insure that a matching attribute
+    exists before testing locks. This may break some strange locks using
+    %c, but hopefully won't. Suggested by Cheetah@M*U*S*H.
+  * The @scan command temporarily sets %c to the command to be scanned
+    (without "@scan" prefixed) so that it can detect commands that use
+    %c-matching. Based on ideas from Cheetah and Walker@M*U*S*H.
+  * Added support for Pueblo's md5 checksum. We track it on each
+    descriptor, though we don't do anything with it currently.
+  * Speed-up to fun_merge. Patch by Walker@M*U*S*H.
+  * Internal cleanup of flags in channel_broadcast.
+  * Wizards may @name themselves to names forbidden in names.cnf.
+    Patch by LeeLaLimaLLama@M*U*S*H.
+  * We are now forgiving of stupid non-RFC-compliant telnet clients
+    that send CR only even when they claim to be sending CRLF
+    (Read: MS Windows XP telnet). MS bug reported first by
+    Intrevis@M*U*S*H.
+  * Misleading restrict_command on @clone removed from restrict.cnf,
+    as @dig/@open/@create permissions already control @clone.
+    Suggested by Philip Mak.
+Functions:
+  * lstats() and quota() now allow objects to see stats/quota on other
+    objects they control (e.g., on their owners, perhaps). Suggested
+    by Philip Mak.
+  * hastype() can now test for type GARBAGE. Suggested by Tanaku@M*U*S*H.
+Commands:
+  * The new ']' command prefix causes the rest of the command-line
+    not to be evaluated by the expression parser. Try: ]think [add(1,1)]
+    Inspired by Elendor.
+  * @hook/ignore. [mux]
+  * @hook/override [Rhost, though they don't call it that]
+Attributes:
+  * @debugforwardlist forwards DEBUG output to dbrefs on the list.
+    Suggested by Balerion@M*U*S*H.
+Tests:
+  * A new test harness for developing regression test suites in perl
+    for PennMUSH is now included; few test suites are. If you can figure
+    out how to use this, write some tests for us! (If you can't, don't
+    ask about it, please :)
+Locks:
+  * @lock/interact can prevent other players from transmitting any
+    normal sound to you (that is, you won't hear them speak, pose, 
+    emit, etc., like gagging them in a client). It doesn't control
+    page (use @lock/page) or @mail (use @lock/mail). You still
+    hear 'presence' messages (connects/disconnects/arrivals/leaves)
+    so you can have a sense of who can hear you but you can't hear.
+    Patch by Philip Mak.
+Fixes:
+  * Configure script no longer keeps adding -lssl -lcrypto over and
+    over to the Makefile. Report by Sholevi@M*U*S*H.
+  * Portability fixes for compiling with MSVC5 by Luke@M*U*S*H.
+  * The behavior of spaces inside parentheses that aren't part of a
+    function has been improved. Report by Jason Newquist. [TAP]
+  * txt/*.html files were being improperly escaped before being
+    sent to Pueblo connections. Report by Konstantine Shirow.
+  * mushdb.h includes flags.h, as it relies on constants from there.
+    Suggested by Philip Mak.
+  * Better error reporting on some failure messages in chunk allocator.
+    Patch by Philip Mak.
+  * @config/set with an invalid option now returns an error.
+    Report by Sholevi@M*U*S*H.
+  * Fix to interaction checking in notify_anything that could result
+    in the wrong check being performed. Report by Philip Mak.
+  * Help fixes by LeeLaLimaLLama@M*U*S*H, Sunny@M*U*S*H, Sketch@M*U*S*H.
+
+
+& 1.7.7p19
+Version 1.7.7 patchlevel 19                     August 19, 2003
+
+Fixes:
+  * When SSL connections are dropped on reboot, other players weren't
+    seeing disconnect messages. Now they are.
+  * Two calls to flaglist_check_long didn't get converted to the new
+    abstraction layer, making flag_broadcast not work right.
+    Report by Luminar@M*U*S*H.
+
+
+& 1.7.7p18
+Version 1.7.7 patchlevel 18                     August 19, 2003
+
+Major Changes:
+  * The flag handling code has been additionally abstracted to 
+    allow, in a future patchlevel, @powers to be handled in the
+    same way that flags are now.
+Minor Changes:
+  * Wrap the OS-dependant code for making sure the mush always has a free
+    file descriptor available for use in a pair of functions. [SW]
+Fixes:
+  * Linted some ssl-related warnings. Reported by Cheetah@M*U*S*H.
+  * Compile failed in timer.c unless USE_MAILER was defined.
+    Reported by Sunny@M*U*S*H.
+  * Bug allowing players to view internal and mortal_dark attributes
+    introduced in p17 has been fixed. [TAP]
+
+
+& 1.7.7p17
+Version 1.7.7 patchlevel 17                     August 11, 2003
+
+Major changes:
+  * SSL support, including server and client authentication as options.
+    This should be considered experimental.  New ssl() function returns 1
+    if a player/descriptor is using SSL, 0 otherwise. New file README.SSL
+    documents how to set up SSL. Two things to note:
+    - SSL connections are dropped on @shutdown/reboot, so SSL users may 
+      wish to write client triggers to reconnect. 
+    - Output flushing behaves slightly differently for SSL connections.
+  * The way lock keys are handled internally has been rewritten to allow
+    them to be tracked by the same chunk-management code that handles
+    attributes. [SW]
+  * @mail message texts are now stored with the chunk-management code. [SW]
+  * The new code can no longer read databases created by versions of Penn
+    before 1.7.5p0. If you need to do this, load it in 1.7.6, shutdown,
+    and use that database. [SW]
+Minor changes:
+  * A new minimal.db is distributed (older ones probably won't work,
+    and this one probably won't work with older versions). [TAP]
+  * Contents/exits lists and functions that use first_visible (like
+    lcon, lexits, etc.) are now affected by INTERACT_SEE. Suggested by
+    Prospero@Metro.
+  * @chan/recall now displays the last 10 lines by default. Use
+    @chan/recall <chan>=0 to get the full buffer. Suggested by [TAP].
+  * Various boolexp tweaks. [SW]
+  * @power provides more verbose feedback. Suggested by Mordie@M*U*S*H. [SW]
+  * Additional chunk tweaks, including limiting migrations to one
+    per second. [TAP]
+  * PROFILING #define for use when profiling the code (surprise). This
+    just disables the CPU timer.
+  * When matching $-commands, only call the slower capturing wildcard match
+    function when we already know it succeeds, since it won't most of the time.
+    The faster non-capturing function is checked first to find a match. [SW]
+  * PCRE is initialized once, at startup, rather than testing to see if it has
+    to be done before each place regular expressions are used. [SW]
+  * The TERSE flag now applies to objects, not just players. Suggested
+    by Aur@M*U*S*H.
+  * The terminfo() function now returns SSL status as well.
+  * help-like commands without arguments now use the command name
+    as the argument. E.g. 'news' now looks for topic 'news', instead of
+    'help'. If not found, we fall back on help. Patch by Mike Griffiths.
+  * When an object is zoned to an unlocked ZMO, the ZMO is now autolocked
+    to =me instead of $me, because it's probably less confusing.
+    Suggested by Luke@M*U*S*H.
+  * @name now automatically trims leading and trailing spaces from its
+    newname argument, to avoid confusing people who use edit() to 
+    generate new names and leave in spaces. Report by [TAP], patch by [SW].
+Commands:
+  * New 'logargs' and 'logname' restrictions in restrict.cnf allow
+    per-command logging. Suggested by Saturn @ M3.
+Functions:
+  * The sha1() function has been renamed sha0(), since that's what it
+    really does. [TAP]
+  * trimtiny() and trimpenn() work like trim(), but force the TM or
+    Penn argument style.
+  * New 'logargs' and 'logname' restrictions in restrict.cnf allow
+    per-function logging. Suggested by Saturn @ M3.
+Fixes:
+  * The side-effect version of name() was producing a weird return
+    value. Reported by Saturn@M3.
+  * Problems with restrict_command and restrict_function with multiple
+    restrictions now fixed. Report by Sholevi@M*U*S*H.
+  * stddef.h now included in src/extchat.c. Report by [EEH]. [SW]
+  * INFO output now includes a missing newline. Report by [EEH]. [SW]
+  * help BUILDER updated. Report by Laura Langland-Shula.
+  * down.txt message wasn't being sent. Report by Sholevi@M*U*S*H. [SW]
+  * New Win32 project files that include the chunk code. [EEH]
+  * @chan/what no longer highlights the channel's name, as this is
+    confusing if you use ansified channel names. Suggested by 
+    Oriens@Alexandria.
+  * ex/mortal now operates more correctly. Report by Amy Kou'ai.
+  * Fixes from 1.7.6p13.
+
+& 1.7.7p16
+Version 1.7.7 patchlevel 16                     June 23, 2003
+
+Commands:
+  * New switch /room for 'with' to run a $command available in a remote
+    location. Suggested by Mike Griffiths. [SW]
+Functions:
+  * Added the terminfo() function, which returns information about a
+    client's name and capabilities for a particular connection. [SW]
+  * New lports() function. Like lwho() but returns port descriptors.
+    For mux2 compatibility. [SW]
+  * Functions that return information about a connected player now treat
+    integer arguments as a port descriptor to look up, rather than using
+    the least-idle connection of a player. To force a player name to
+    be treated as such even when it's a number, prefix it with a * in
+    softcode. For mux2 compatibility. [SW]
+  * Players can use ports() on themselves and use the descriptors
+    they're connected to as arguments to the information functions.
+    For mux2 compatibility. [SW]
+Minor Changes:
+  * Compute various chunk stats (total used, total free space, etc.)
+    on demand instead of keeping running totals. [TAP]
+  * @chan/what displays information about a channel's recall buffer, if any.
+    [SW]
+  * @chan/recall'ed lines are more clearly marked as such. Suggested by
+    Oriens@Alexandria. [SW]
+  * Consolidation of a common idiom used to format times throughout the source
+    into a simple function call. [SW]
+  * The time a @mail was sent was stored, unusually, as a string.
+    No longer. Now it's handled the same way as all other times. [SW]
+Fixes:
+  * Bug in resizing @chan/recall buffers fixed. Reported by Oriens@Alexandria.
+    [SW]
+  * Objects with user-defined locks had problems with finding built-in locks
+    on the object. Reported by Walker@M*U*S*H. [SW]
+  * Unregistered() macro was checking wrong flag name. Report by
+    Matt Kirby.
+  * Help fix by Adu@M*U*S*H.
+  * Potential problem with ambigious names in the information functions fixed.
+
+
+& 1.7.7p15
+Version 1.7.7 patchlevel 15                     June 1, 2003
+
+Fixes:
+  * Problem with checking command flag masks when the number of
+    flags was an even multiple of 8. Reported by Nymeria and
+    Mordie@M*U*S*H.
+  * Tweak to improve efficiency of ancestor checking code and delint
+    warning reported by Cheetah@M*U*S*H.
+  * SESSION output no longer misaligned with 5-digit dbrefs.
+    Reported by Cheetah@M*U*S*H. [TAP].
+  * Fixes from 1.7.6p11.
+  * game/txt/index-files.pl now uses locale information in the
+    environment to, e.g., correctly lowercase accented characters.
+    Report by Krad@M*U*S*H.
+  * Modified several Makefile.SH targets to prevent Javelin from
+    releasing patches that don't have the autogenerated files
+    up-to-date for Windows folks.
+  * Removed some dependence on typedefs that may or may not be in system
+    header files. [SW]
+  * Patch compiler warnings. [SW,EEH]
+  * Help fixes by Mike Griffiths and Oriens@Alexandria.
+
+
+& 1.7.7p14
+Version 1.7.7 patchlevel 14                     May 22, 2003
+
+Major changes:
+  * Ancestors: an object can be configured to serve as an 'ultimate
+    parent' of every room, exit, thing, or player, and attributes
+    that are not found on an object or any of its parents may be inherited
+    from the ancestor for that object type.  The ORPHAN flag prevents
+    ancestors from being used on an object.  Patch by Walker@M*U*S*H.
+  * Mail messages now track not only the dbref of the sender but the
+    sender's creation time, so messages from dbrefs that have been
+    nuked and recreated can be distinguished from messages from the
+    original sender. This modifies the maildb and make it not usable
+    with older versions. All existing @mail is grandfathered in, and
+    can't be tracked this way. Suggested by Philip Mak.
+  * New chunk memory allocator can be used to greatly reduce process
+    memory requirements by swapping little-used attribute texts out
+    to disk and caching often-used attribute texts in memory.
+    This is incompatible with forking dumps, so if you use it,
+    you'll do nonforking dumps.  Configurable in mush.cnf, see comments
+    there. [TAP]
+  * Hardcode: new interaction type INTERACT_PRESENCE marks the
+    arrival/departure/connection/disconnection/grows ears/loses ears
+    messages. Many message types that used to be considered auditory
+    (like most @verb-style messages) are now marked as visual instead.
+Functions:
+  * strreplace() works like replace() for strings. [SW]
+  * fraction(), for turning floating-point numbers into fractions. [SW]
+  * root(), for finding roots higher than the square root. [SW]
+Minor changes:
+  * We now use wrapper functions atr_value and safe_atr_value instead of
+    uncompress(AL_STR(...)) or safe_uncompress(AL_STR(...)), so we
+    can do future work with attribute storage cleanly. [TAP]
+  * @*payment attributes now receive the amount of money paid in
+    as %0. Suggested by Sholevi and Time@M*U*S*H. [SW]
+  * Config options that take times now accept a notation describing what kind
+    of units to use. For example, 3600s, 60m, 30m1800s, and 1h all refer to
+    the same period of time. Suggested by Time@M*U*S*H. [SW]
+  * Doxygen commenting of non-static members is essentially complete!
+    Pennhacks see: http://www.pennmush.org/docs/1.7.7/html/
+  * The mail() function no longer matches non-player objects by name.
+  * Several additional messages (locks, parents, etc.) are now quieted by
+    the QUIET flag. Patch by [EEH].
+  * New config option default_home sets the room to send homeless things
+    to. [TAP]
+  * Added visual progress indicators for utils/mkcmds.sh so that slow
+    systems won't think they're hung. Suggested by Cheetah@M*U*S*H.
+Fixes:
+  * Fixes from 1.7.6p10.
+  * The 'i' sort type was not properly implemented. Reported by
+    Noltar and BlaZE@M*U*S*H.
+  * Cleanup of all accesses to ATTR values to use AL_STR() in preparation
+    for future work on attribute storage. [TAP]
+  * The 'any' string for specifying flag types didn't work properly.
+    Reported by Krad@M*U*S*H.
+  * The connect screen may now appear correctly under windows telnet. [SW]
+  * The more efficient channel buffer shifting code now handles
+    pathological cases correctly.
+  * The tag*() functions could leave tags open at the end of full
+    buffers. No longer.
+  * Code cleanup in src/notify.c.
+  * @rejectmotd and @wizmotd set the wrong messages. Report by
+    Konstantine Shirow. [SW]
+  * Using @chan/buffer to resize a recall buffer gives feedback. Reported by
+    Sholevi@M*U*S*H. [SW]
+  * Help fix for grab() by Adu@AbryssMUSH.
+  * You can no longer destroy the base_room (or default_home). Suggested
+    by Philip Mak. [TAP]
+
+& 1.7.7p13
+Version 1.7.7 patchlevel 13                     April 9, 2003
+
+Major changes:
+  * Interactions (something like "realms" in mux2). Two functions
+    in local.c can now be used to control conditions under which
+    objects can see, hear, or match each other. Possibly useful for
+    implementing umbral worlds, etc. Patch by Vadiv@M*U*S*H.
+Functions:
+  * children(), syntactic sugar for lsearch(all,parent,<dbref>).
+    Suggested by Kyieren@M*U*S*H. Patch by BlaZe@M*U*S*H.
+  * powers() can now take a second argument to set an @power.
+    Suggested by Rob@BtFMUSH.
+Minor changes:
+  * @config/set can now set null strings. Suggested by Cheetah@M*U*S*H.
+  * In restart, set LC_ALL as well as LANG from the given LANG value,
+    in case the user's got an LC_ALL in their shell.
+  * The channel buffer shifting code has gotten much more efficient.
+    Suggested by [TAP].
+  * @function/restrict can accept arguments of the form '!<restriction>'
+    to clear a restriction. Suggested by Saturn@M3.
+  * Most of the asterisk lines between different login message files
+    have been removed. Suggested by Vadiv@M*U*S*H most recently.
+Fixes:
+  * Fixes from 1.7.6p9.
+  * Win32 portability fixes. [EEH]
+  * deny_silent in access.cnf was ignored in several cases, and no
+    longer is. Patch by Cloud@Sci-Fi Chat
+  * Help fixes by Cheetah@M*U*S*H and LeeLaLimaLLama@M*U*S*H.
+
+
+& 1.7.7p12
+Version 1.7.7 patchlevel 12                     March 21, 2003
+
+Commands:
+  * @channel/buffer creates a buffer for a channel to store the most
+    recent messages broadcast on the channel. @channel/recall can be
+    used to recall them. These are not stored across reboots and should
+    be set up by #1's @startup.
+Functions/Substitutions:
+  * accname() gives the accented name of an object (applying @nameaccent).
+  * %~ gives the accented name of the enactor.
+Minor Changes:
+  * The chat-related commands and functions have been moved out
+    of bsd.c and funmisc.c and into extchat.c. Patch by Vadiv@M*U*S*H.
+  * The notification stuff has been moved out of bsd.c and into a new
+    notify.c file.
+  * @name no longer requires a password for changing player names,
+    and ignores one if given. Suggested by Ambrosia@M*U*S*H (and others).
+  * @hook can not be used on the @password or @newpassword commands.
+  * The dump_complete message is also shown after a forking dump,
+    if one is defined. Suggested by Nathan Schuette.
+  * @lock/leave on a room now prevents people within it from leaving
+    via exits or via @tel. Suggested by Peter Bengtson, patch by
+    BlaZe@M*U*S*H.
+Fixes:
+  * Fixes from 1.7.6p8
+  * Cleanup of a few new db[x] mentions in the source to use dbdefs.h
+    macros. Inspired by Vadiv@M*U*S*H.
+  * @command/restrict didn't work properly for most flags, especially
+    new ones. Reported by Caesar and Sholevi@M*U*S*H.
+  * @pemit/list didn't honor NOSPOOF. Patch by Cheetah@M*U*S*H.
+
+
+& 1.7.7p11
+Version 1.7.7 patchlevel 11                     February 22, 2003
+
+Commands:
+  * New IDLE command (socket-level) does nothing, and does not update
+    the socket's last_time (so it doesn't change idle times). Useful
+    for people behind lame NAT firewalls that timeout their connections if
+    nothing is sent for 5 minutes. Suggested by Bolt and BladedThoth@M*U*S*H.
+Fixes:
+  * Win32 (and other OS) portability fixes. [EEH]
+  * Fixed the openssl Configure thing again. The right way, this time.
+
+& 1.7.7p10
+Version 1.7.7 patchlevel 10                     February 22, 2003
+
+Fixes:
+  * Fix to stupid typo in Configure script that breaks on systems
+    without openssl. Argh.
+
+& 1.7.7p9
+Version 1.7.7 patchlevel 9                      February 20, 2003
+
+Functions:
+  * New function scan() works like @scan. Suggested by Viila@M*U*S*H.
+Flags:
+  * New flag, MISTRUST, prevents an object from controlling anything
+    but itself.
+Configuration:
+  * mush.cnf directives ansi_justify, globals, and global_connects have
+    been removed (they are now always on).
+  * New unconnected_idle_timeout directive in mush.cnf controls
+    timeouts for connections idle at the connect screen.
+  * New max_guests directive in mush.cnf can limit the number of
+    guests allowed to connect at once. Suggested by Sholevi@M*U*SH.
+Minor Changes:
+  * New lflags search class takes a list of flag names.
+  * Improved connection failure messages.
+  * Somewhat more informative message when you @chan/gag,hide,mute
+    all channels at once. Suggested by Tanaku and Kevin@M*U*S*H.
+  * Began commenting files using doxygen.
+  * Internal code cleanup. Mostly converting some magic numbers to
+    #define'd symbols, and some #define'd symbols to enums for better
+    debugging and improved readability. Also some conversion of old
+    K&R style functions. [SW]
+  * sort() and the set functions understand all the same comparison
+    types as comp(). [SW]
+  * Case-sensitive comparison currently isn't always possible, depending
+    on the locale the mush is running on. Help files reflect this. [SW]
+  * @uptime shows the time of the last successful database save, and
+    the time of future events like saves, not just the time until them.
+    Suggested by Cheetah@M*U*S*H. [SW]
+  * Improvements to reporting of failed saves. [SW]
+  * Code cleanup. [SW]
+  * tel() now takes a third argument that makes it function like
+    @tel/silent. Suggested by Cheetah@M*U*S*H. [SW]
+  * @idescformat operates like @descformat for internal descriptions.
+    Suggested by Tanya@M*U*S*H.
+Fixes:
+  * local_startup() was getting run earlier than in the past due to
+    changes in the startup sequence. This has been rectified, so
+    local_startup() again runs after all other initialization (and
+    just before all object startups are triggered). Report by
+    BladedThoth and grapenut@M*U*S*H.
+  * Improved testing for openssl libraries in Configure. The old
+    approach used to cause problems on systems with runtime-only
+    openssl installations without development libraries.
+  * help opaque mentions that opaque blocks look/outside. Suggested
+    by Cheetah@M*U*S*H.
+  * itext() and inum() now generate an error on a null argument,
+    regardless of tiny_math and null_eq_zero settings. Reported by
+    Intrevis@M*U*S*H.
+  * Another fix to the new matcher. Bug report by Kyieren@M*U*S*H.
+  * @flag/alias was broken. Fixed. Reported by Kevin@M*U*S*H.
+
+
+& 1.7.7p8
+Version 1.7.7 patchlevel 8                      January 27, 2003
+
+Minor Changes:
+  * command_add now expects to receive the flag list and the
+    switch list as strings. Folks who hack into cmdlocal.c should
+    take note and read example in the new cmdlocal.dst
+Fixes:
+  * Players were not created with all the player_flags. In a related
+    bug, checking of command flag restrictions wouldn't work with
+    all flags. Reported by Cory Descoteau.
+  * Flagmasks on commands weren't grown properly when flags were added.
+
+
+& 1.7.7p7
+Version 1.7.7 patchlevel 7                      January 25, 2003
+
+Fixes:
+  * Crash bug in zone-checking during @dbck fixed.
+
+
+& 1.7.7p6
+Version 1.7.7 patchlevel 6                      January 23, 2003
+
+Major changes:
+  * Rewrite of the flag system. The new system allows for any number
+    of flags, which may apply to any set of object types (the flags/toggles
+    distinction has been eliminated). Flags without single-character
+    abbreviations are better supported. Flags are stored in the object
+    database, and are referenced in hardcode and the db by the name
+    of the flag rather than bit positions.  Older databases will be
+    automatically converted to the new format on load, but can not be
+    converted back (so make backups!). New flaglocal.dst file for
+    hardcode patch hackers to add custom flags.
+  * Rewrite of the matcher code (src/match.c). Some semantics of the
+    matching have changed: matching adjectives are parsed earlier and
+    restrict the match for greater efficiency; they also behave more
+    close as described in the help with respect to object ordering.
+    In addition, you can now do things by dbref without controlling
+    the object in many cases that previously required control.
+    Provoked by bug reports by Intrevis@M*U*S*H and Philip Mak.
+Commands:
+  * @flag allows God to manipulate flags within the game, including
+    adding new flags. Flags additions/changes are maintained across
+    reboots, so this command does not need to be run at every startup.
+Functions:
+  * lflags(), orlflags(), andlflags() return or test flag lists.
+Minor changes:
+  * New NUMVERSION macro defined in hdrs/version.h that can be tested
+    by hardcode hacks to add code conditional on version.
+  * Much cleanup of @wall. Minimally-user-visible changes:
+    The @rwallemit, @rwallpose, @wallemit, @wallpose, @wizemit and
+    @wizpose commands have been removed. @wall no longer accepts the
+    /wizard, /royalty, and /pose switches, and @rwall and @wizwall accept
+    the /emit switch. Suggested by Vadiv@M*U*S*H, though he'd really
+    rather see @wall removed.
+  * @lock and @unlock now show which type of lock was set/cleared.
+    @lset now specifically notes that lock flags are being changed.
+    Suggested by Tanaku@M*U*S*H.
+Fixes:
+  * @boot/me will no longer boot a connection if it is the sole
+    connection the player, even if it's technically inactive.
+    Suggested by Ambrosia@M*U*S*H.
+  * @boot'ing an active self (by descriptor) crashes the MUSH.
+    Discovered by Ashlynn@ChicagoMUSH.
+  * The thorn and eth characters generated with accent() would
+    convert to 'th' when stripped or viewed under NOACCENT, which
+    could be very confusing in object names. Same for the German sharp
+    s, which converted to 'ss'. Until we can cleverly set up separate
+    tables for object name unparsing, these have been reverted to their
+    old behavior so that stripaccents(accent(X,Y)) should return X for
+    any X and Y. Reported by DeeJee, Intrevis, and Time (@M*U*S*H).
+
+
+& 1.7.7p5
+Version 1.7.7 patchlevel 5                      January 7, 2003
+
+Fixes:
+  * Fixes from 1.7.6p5.
+
+
+& 1.7.7p4
+Version 1.7.7 patchlevel 4                      January 2, 2003
+
+Minor Changes:
+  * When room_connects is on, @aconnect and @adisconnect also
+    functions on things when players (dis)connect inside them.
+    Suggested by Philip Mak. [SW]
+  * Parser-enforced argument counts for user-defined @functions,
+    as an option to @function.
+Config:
+  * New mush.cnf option max_global_fns allows increasing the number
+    of @functions allowed without editing source code. If you change
+    this, you should reboot the MUSH or bad things can happen.
+    Suggested by hilikiradi@Dardalani.
+Fixes:
+  * mkcmds.sh doesn't always regenerate every file, only what's
+    needed. Speeds up compiles. Suggested by Philip Mak. [SW]
+  * Fixes from 1.7.6p4.
+
+
+& 1.7.7p3
+Version 1.7.7 patchlevel 3                      December 25, 2002
+
+Commands:
+  * @sitelock/check <host> tells you which rule, if any, would match.
+Fixes:
+  * The objdata hashtable routines had a serious bug that could
+    cause crashes.
+
+
+& 1.7.7p2
+Version 1.7.7 patchlevel 2                      December 22, 2002
+
+Major Changes:
+  * The LOCAL_DATA define has been removed along with the pointer
+    in the object structure. The local functions called on creation,
+    destruction, and cloning are now always called. Objects can
+    now store data in a single hashtable using the set_objdata()
+    and get_objdata() functions. As a proof of concept, the transitory
+    channel lists on objects are now stored here, and the "channels"
+    pointer has been removed from the object structure. Design
+    and much of the implementation by Vadiv@M*U*S*H.
+Powers:
+  * can_nspemit power can be used to provide access to @nspemit
+    without a Wizard bit. [SW]
+Functions:
+  * lpos from Mux, TM3. [SW]
+Fixes:
+  * Fix to some gcc-specific macros reported by Peter Bengston and
+    Michael Holbrook. [SW]
+  * Improvements to stripaccents/noaccents conversions. [SW]
+  * Fixes from 1.7.6p3.
+
+
+& 1.7.7p1
+Version 1.7.7 patchlevel 1                      December 17, 2002
+
+Minor Changes:
+  * ex obj/attrib returns the attribute value even if it's veiled,
+    if a specific (non-wildcard) attribute is given. Suggested by
+    Nhoj@M*U*S*H.
+Fixes:
+  * Win32 portability fixes. [EEH]
+  * Fixes from 1.7.6p2
+
+& 1.7.7p0
+Version 1.7.7 patchlevel 0                      December 8, 2002
+
+Major Changes:
+  * Clients that understand telnet NAWS (See RFC 1073) can tell the mush
+    what dimensions a given connection's display is.  Added the
+    width() and height() functions, and SCREENWIDTH and SCREENHEIGHT
+    psuedo-commands for getting/setting this information from the mush.
+    This changes the reboot.db format and requires a full shutdown. [SW]
+  * Two new atoms for locks. "#true" in a lock is always evaluated as true
+    (anyone can pass), and "#false" is always evaluated as false (no one
+    can pass). Suggested by Vadiv@M*U*S*H.
+Internationalization:
+  * The pronoun sets are no longer hardcoded. If you're running in a
+    locale other than C or en*, you'll see weird looking pronoun descriptions
+    for things like %s until a translation team translates them to your
+    locale's language. Suggested by Dandy@M*U*S*H.
+Attributes:
+  * @DESCFORMAT can be used to separate description contents from formatting.
+    Suggested by Philip Mak.
+  * VEILED attribute flag causes attribute value not to be displayed
+    on default examine, but otherwise accessible as usual. Good for spammy
+    data attributes. See 'help attribute flags'. Suggested by Cheetah@M*U*S*H.
+Commands:
+  * examine/all shows contents of veiled attributes. Suggested by
+    Intrevis@M*U*S*H.
+Flags:
+  * The FIXED and ROYALTY flags are no longer optional.
+Minor Changes:
+  * Object creation times are no longer optional.
+  * Warnings are no longer a compile-time option; they're turned on.
+    You can stop automatic warnings in mush.cnf, as before.
+  * Cleanup of the telnet-option code in general. [SW]
+  * Consolidation of much of the code for functions that return information
+    about the least-idle connection of a given player. [SW]
+  * The tiny_attrs configuration option has been removed.
+  * Removed a lot of preprocessor checks for conditionally including header
+    files that always succeed because they're standard C headers. [SW]
+  * Removed the Size_t typedef in favor of the standard size_t. [SW]
+  * Some optimization hints for the GCC and VS.NET compilers. [SW]
+  * We try to be more conservative about when we show lines of
+    asterisks around motd-type messages, to avoid showing them when
+    there's no message.
+  * Continued ansi-C-ification of function declarations.

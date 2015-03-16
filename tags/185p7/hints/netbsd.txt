@@ -1,0 +1,18 @@
+Penn will compile and run on NetBSD, including OpenSSL
+support, with the caveats below. Tested with NetBSD 6.1.5.
+
+Some packages need to be installed via pkgsrc if not already present
+on the server:
+
+   perl, pcre, libevent (Optional but strongly suggested), desired SQL
+   database if any (Note: NetBSD comes with sqlite3 in the base
+   system).
+
+If set up to install binary packages, pkg_add them. Otherwise, go to
+/usr/pkgsrc and install from source. Locations are:
+  devel/pcre
+  devel/libevent	
+  lang/perl5
+
+
+

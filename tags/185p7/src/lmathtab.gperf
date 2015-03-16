@@ -1,0 +1,90 @@
+/* Gperf data file for lmath()-callable functions. */
+%language=ANSI-C
+%define hash-function-name math_hash
+%define lookup-function-name math_hash_lookup
+%enum 
+%compare-lengths
+%ignore-case
+%struct-type
+%define initializer-suffix ,NULL
+
+%{
+/** Declaration macro for math functions */
+#define MATH_FUNC(func) static void func(char **ptr, int nptr, char *buff, char **bp)
+
+/** Prototype macro for math functions */
+#define MATH_PROTO(func) static void func (char **ptr, int nptr, char *buff, char **bp)
+
+MATH_PROTO(math_add);
+MATH_PROTO(math_sub);
+MATH_PROTO(math_mul);
+MATH_PROTO(math_div);
+MATH_PROTO(math_floordiv);
+MATH_PROTO(math_remainder);
+MATH_PROTO(math_modulo);
+MATH_PROTO(math_min);
+MATH_PROTO(math_max);
+MATH_PROTO(math_and);
+MATH_PROTO(math_nand);
+MATH_PROTO(math_or);
+MATH_PROTO(math_nor);
+MATH_PROTO(math_xor);
+MATH_PROTO(math_band);
+MATH_PROTO(math_bor);
+MATH_PROTO(math_bxor);
+MATH_PROTO(math_fdiv);
+MATH_PROTO(math_mean);
+MATH_PROTO(math_median);
+MATH_PROTO(math_stddev);
+MATH_PROTO(math_dist2d);
+MATH_PROTO(math_dist3d);
+MATH_PROTO(math_lt);
+MATH_PROTO(math_lte);
+MATH_PROTO(math_gt);
+MATH_PROTO(math_gte);
+MATH_PROTO(math_eq);
+MATH_PROTO(math_neq);
+
+/** A math function. */
+%}
+struct math {
+  const char *name;	/**< Name of the function. */
+  void (*func) (char **, int, char *, char **);	/**< Pointer to function code. */
+};
+%%
+ADD, math_add
+SUB, math_sub
+MUL, math_mul
+DIV, math_div
+FLOORDIV, math_floordiv
+MOD, math_modulo
+MODULO, math_modulo
+MODULUS, math_modulo
+REMAINDER, math_remainder
+MIN, math_min
+MAX, math_max
+AND, math_and
+NAND, math_nand
+OR, math_or
+NOR, math_nor
+XOR, math_xor
+BAND, math_band
+BOR, math_bor
+BXOR, math_bxor
+FDIV, math_fdiv
+MEAN, math_mean
+MEDIAN, math_median
+STDDEV, math_stddev
+DIST2D, math_dist2d
+DIST3D, math_dist3d
+LT, math_lt
+LTE, math_lte
+GT, math_gt
+GTE, math_gte
+EQ, math_eq
+NEQ, math_neq
+%%
+
+typedef struct math MATH;
+
+

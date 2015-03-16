@@ -2222,7 +2222,8 @@ setup_telnet(DESC *d)
      apparently. Unfortunately, there doesn't seem to be a telnet
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
-  if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA)) && starting_telnet_neg) {
+  if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
+      && starting_telnet_neg) {
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
@@ -4787,7 +4788,7 @@ do_motd(dbref player, int key, const char *message)
 {
   const char *what;
 
-  if ((key & MOTD_ACTION) == MOTD_LIST || 
+  if ((key & MOTD_ACTION) == MOTD_LIST ||
       ((key & MOTD_ACTION) == MOTD_SET && (!message || !*message))) {
     notify_format(player, T("MOTD: %s"), cf_motd_msg);
     if (Hasprivs(player) && (key & MOTD_ACTION) != MOTD_MOTD) {
@@ -4797,14 +4798,16 @@ do_motd(dbref player, int key, const char *message)
     }
     return;
   }
-  
-  if (!(((key & MOTD_TYPE) == MOTD_MOTD) ? Can_Announce(player) : Hasprivs(player))) {
+
+  if (!
+      (((key & MOTD_TYPE) ==
+        MOTD_MOTD) ? Can_Announce(player) : Hasprivs(player))) {
     notify(player,
            T
            ("You may get 15 minutes of fame and glory in life, but not right now."));
     return;
   }
-  
+
   if (key & MOTD_CLEAR) {
     what = T("cleared");
     message = "";

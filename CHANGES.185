@@ -57,6 +57,8 @@ Fixes:
  * @motd/down and @motd/full are actually shown now. [MG]
  * Properly negotiate telnet with clients who spit out telnet codes instantly
    upon connection like MUSHclient. Reported by Mercutio and AND. [MG]
+ * Improved configure support for NetBSD. [SW]
+ * Fix a compile error on non-Windows, non-BSD, non-Linux OSes. [SW]
 
 Hardcode:
  * Improvements to networking code; robustness on errors and portability. [SW] 
@@ -84,6 +86,7 @@ Minor changes:
  * @motd with no args now acts like @motd/list, instead of clearing the MotD.
    Use @motd/clear to clear the current one. Suggested by Bodin. [MG]
  * @command can now be used by non-players. From a gripe of Kitai's. [MG]
+ * Update some configure macros to the latest versions. [SW]
 
 Version 1.8.5 patchlevel 6                                 Jul 29, 2014
 

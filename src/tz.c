@@ -35,12 +35,8 @@
 
 #if defined(__linux__)
 #include <endian.h>
-#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/endian.h>
-#elif defined(__OpenBSD__)
-#include <sys/endian.h>
-#define be32toh(i) betoh32(i)
-#define be64toh(i) betoh64(i)
 #else
 
 #ifdef WIN32

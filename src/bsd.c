@@ -4026,7 +4026,7 @@ report_mssp(DESC *d, char *buff, char **bp)
     /* Required by current spec, as of 2010-08-15 */
     queue_string_eol(d, tprintf("%s\t%s", "NAME", options.mud_name));
     queue_string_eol(d, tprintf("%s\t%d", "PLAYERS", count_players()));
-    queue_string_eol(d, tprintf("%s\t%ld", "UPTIME", globals.first_start_time));
+    queue_string_eol(d, tprintf("%s\t%ld", "UPTIME", (long)globals.first_start_time));
     /* Not required, but we know anyway */
     queue_string_eol(d, tprintf("%s\t%d", "PORT", options.port));
     if (options.ssl_port)
@@ -4044,7 +4044,7 @@ report_mssp(DESC *d, char *buff, char **bp)
     safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PLAYERS", MSSP_VAL,
                 count_players());
     safe_format(buff, bp, "%c%s%c%ld", MSSP_VAR, "UPTIME", MSSP_VAL,
-                globals.first_start_time);
+                (long)globals.first_start_time);
 
     safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PORT", MSSP_VAL, options.port);
     if (options.ssl_port)

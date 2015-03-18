@@ -29,5 +29,6 @@ src/info_slave
 src/local.c
 src/netmud
 src/netmud~
+src/ssl_slave
 test/alltests.sh
 third_party

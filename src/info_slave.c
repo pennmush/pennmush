@@ -61,7 +61,7 @@
 void fputerr(const char *);
 const char *time_string(void);
 
-#ifdef HAVE_LIBEVENT
+#ifdef HAVE_LIBEVENT_CORE
 
 
 /* Version using libevent's async dns routines. Much shorter because
@@ -79,7 +79,7 @@ const char *time_string(void);
  * linux and other systems. Not as elegant, but it works.
  */
 
-#include <event.h>
+#include <event2/event.h>
 #include <event2/dns.h>
 
 struct event_base *main_loop = NULL;

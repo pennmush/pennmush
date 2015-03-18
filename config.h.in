@@ -89,16 +89,16 @@
 
 #undef HAVE_PCRE
 
-#undef HAVE_EVENT_H
+#undef HAVE_EVENT2_EVENT_H
 
 #undef HAVE_EVENT2_DNS_H
 
-#if defined(HAVE_EVENT_H) && defined(HAVE_EVENT2_DNS_H)
+#if defined(HAVE_EVENT2_EVENT_H) && defined(HAVE_EVENT2_DNS_H)
 
 /* Only define if it looks like libevent2 is installed. (Debian and
  * derived distros only have 1.X) */
 
-#undef HAVE_LIBEVENT
+#undef HAVE_LIBEVENT_CORE
 
 #endif
 

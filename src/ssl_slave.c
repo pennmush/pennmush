@@ -8,7 +8,7 @@
 #error "ssl_slave requires OpenSSL!"
 #endif
 
-#ifndef HAVE_LIBEVENT
+#ifndef HAVE_LIBEVENT_CORE
 #error "ssl_slave requires libevent!"
 #endif
 
@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <event.h>
+#include <event2/event.h>
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 

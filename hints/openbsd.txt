@@ -1,5 +1,4 @@
 Penn will not currently compile and run out of the box on OpenBSD 5.6.
-below:
 
 * OpenBSD will not forward IPv4 connections to a listening IPv6
   port. Specify a generic IPv4 address (0.0.0.0) or specific one in

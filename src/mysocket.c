@@ -90,6 +90,10 @@ extern int h_errno;
 #include <sys/select.h>
 #endif
 
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
 #ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
 #endif
@@ -530,6 +534,17 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     } else {
       *remote_pid = creds.pid;
       *remote_uid = creds.uid;
+    }
+  }
+#elif defined(__OpenBSD__)
+  {
+    struct sockpeercred creds;
+    socklen_t credlen = sizeof creds;
+    if (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &creds, &credlen) < 0) {
+       perror("getsockopt SO_PEERCRED");
+    } else {
+       *remote_pid = creds.pid;
+       *remote_uid = creds.uid;
     }
   }
 #elif defined(HAVE_STRUCT_XUCRED)

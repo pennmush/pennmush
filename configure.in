@@ -166,7 +166,13 @@ AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h])
 AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h fam.h])
-AC_CHECK_HEADERS([zlib.h event.h event2/dns.h fenv.h sys/ucred.h])
+AC_CHECK_HEADERS([zlib.h event.h event2/dns.h fenv.h sys/param.h])
+AC_CHECK_HEADERS([sys/ucred.h], [], [], [
+AC_INCLUDES_DEFAULT
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+])
 
 ### C language support
 # Only need to check C99 and GNU extensions
@@ -378,6 +384,9 @@ AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [], [
 AC_CHECK_TYPES([struct sockaddr_in6, struct xucred], [], [], [
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
 #endif
 #ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>

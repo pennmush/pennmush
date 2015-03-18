@@ -11,12 +11,14 @@ game/log
 game/mush.cnf
 game/names.cnf
 game/netmush
+game/netmush.pid
 game/restrict.cnf
 game/ssl_slave
 game/txt/compose.sh
 game/txt/events.txt
 game/txt/help.txt
 game/txt/news.txt
+game/save
 hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h

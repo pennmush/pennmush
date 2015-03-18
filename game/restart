@@ -81,14 +81,14 @@ RAW_INDB=`egrep "^input_database" $CONF_FILE | tail -n1`
 RAW_OUTDB=`egrep "^output_database" $CONF_FILE | tail -n1`
 RAW_PANICDB=`egrep "^crash_database" $CONF_FILE | tail -n1`
 
-INDIR=$(dirname ${RAW_INDB#input_database})
-INDB=$(basename ${RAW_INDB#input_database})
+INDIR=$(dirname "${RAW_INDB#input_database }")
+INDB=$(basename "${RAW_INDB#input_database }")
 
-OUTDIR=$(dirname ${RAW_OUTDB#output_database})
-OUTDB=$(basename ${RAW_OUTDB#output_database})
+OUTDIR=$(dirname "${RAW_OUTDB#output_database }")
+OUTDB=$(basename "${RAW_OUTDB#output_database }")
 
-PANICDIR=$(dirname ${RAW_PANICDB#crash_database})
-PANICDB=$(basename ${RAW_PANICDB#crash_database})
+PANICDIR=$(dirname "${RAW_PANICDB#crash_database }")
+PANICDB=$(basename "${RAW_PANICDB#crash_database }")
 
 COMPRESSOR="cat"
 SUFFIX=""

@@ -21,3 +21,4 @@ Major changes:
 Hardcode:
  * Clean up some more remnants of the previous configure package's
     naming convention in favor of autoconf style ones. [SW]
+ * OpenBSD fixes. [SW]

@@ -49,6 +49,9 @@ case "${build_os}" in
     ;;
   *netbsd*)
     USING_NETBSD=yes
+    ;;
+  *openbsd*)
+    USING_OPENBSD=yes
 esac
 
 # Adds additional paths potentially needed or BSD compilation
@@ -60,7 +63,12 @@ fi
 if test "${USING_NETBSD}" = yes; then
    CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"
    LDFLAGS="$LDFLAGS -L/usr/pkg/lib -Wl,-R/usr/pkg/lib"
- fi
+fi
+
+if test "${USING_OPENBSD}" = yes; then
+   CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+   LDFLAGS="$LDFLAGS -L/usr/local/lib"
+fi
 
 # Set good debug and warning options if using gcc or clang
 # and custom CFLAGS aren't being used.

@@ -4,6 +4,7 @@ Makefile
 config.h
 config.log
 config.status
+autom4te.cache
 game/alias.cnf
 game/data
 game/info_slave

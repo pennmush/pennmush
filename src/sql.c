@@ -28,7 +28,7 @@
 
 #include "copyrite.h"
 
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <ctype.h>

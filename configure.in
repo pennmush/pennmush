@@ -152,9 +152,7 @@ AC_HEADER_STDC
 AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
-AC_CHECK_HEADER(sys/time.h, [AC_DEFINE(I_SYS_TIME)])
-AC_CHECK_HEADER(sys/stat.h, [AC_DEFINE(I_SYS_STAT)])
-AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
+AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h])
 AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h fam.h])
@@ -244,8 +242,7 @@ AC_MSG_NOTICE([Skipping SQL server checks])
 fi
 
 ### Functions
-AC_CHECK_FUNC(bindtextdomain, [AC_DEFINE(HAS_BINDTEXTDOMAIN)])
-AC_CHECK_FUNC(crypt, [AC_DEFINE(HAS_CRYPT)])
+AC_CHECK_FUNCS([textdomain bindtextdomain crypt])
 AC_MSG_CHECKING([for isnormal])
 AC_LINK_IFELSE([
 AC_LANG_SOURCE([
@@ -259,18 +256,10 @@ int main(void) {
 [AC_DEFINE(HAVE_ISNORMAL)],
 AC_MSG_RESULT(no))
 
-AC_CHECK_FUNC(gai_strerror, [AC_DEFINE(HAS_GAI_STRERROR)])
-AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAS_GETADDRINFO)])
-AC_CHECK_FUNC(getdate, [AC_DEFINE(HAS_GETDATE)])
-AC_CHECK_FUNC(gethostbyname2, [AC_DEFINE(HAS_GETHOSTBYNAME2)])
-AC_CHECK_FUNC(getnameinfo, [AC_DEFINE(HAS_GETNAMEINFO)])
-AC_CHECK_FUNC(getpagesize, [AC_DEFINE(HAS_GETPAGESIZE)])
-AC_CHECK_FUNC(getrlimit, [AC_DEFINE(HAS_GETRLIMIT)])
-AC_CHECK_FUNC(getrusage, [AC_DEFINE(HAS_GETRUSAGE)])
+AC_CHECK_FUNCS([gai_strerror getaddrinfo getdate getnameinfo gethostbyname2])
+AC_CHECK_FUNCS([getpagesize getrlimit getrusage])
 AC_CHECK_FUNCS([gettext getpid getppid])
-AC_CHECK_FUNC(inet_pton, [AC_DEFINE(HAS_INET_PTON)])
-AC_CHECK_FUNC(setitimer, [AC_DEFINE(HAS_ITIMER)])
-AC_CHECK_FUNC(setlocale, [AC_DEFINE(HAS_SETLOCALE)])
+AC_CHECK_FUNCS([inet_pton setitimer])
 AC_FUNC_FORK
 AC_CHECK_FUNCS([setsid setpgid setpgrp])
 if test $ac_cv_func_setpgrp = yes; then
@@ -323,20 +312,17 @@ AC_MSG_RESULT(no))
 
 AX_FUNC_SNPRINTF
 if test "x$ac_cv_have_working_snprintf" = xyes; then
-AC_DEFINE(HAS_SNPRINTF)
+AC_DEFINE(HAVE_SNPRINTF)
 fi
 if test "x$ac_cv_have_working_vsnprintf" = xyes; then
-AC_DEFINE(HAS_VSNPRINTF)
+AC_DEFINE(HAVE_VSNPRINTF)
 fi
 AC_CHECK_FUNCS([_vsnprintf_s vasprintf])
 
 AC_CHECK_FUNCS([strcasecmp strncasecmp _stricmp _strnicmp strdup])
 AC_FUNC_STRCOLL
 AC_CHECK_FUNCS([strxfrm _strncoll _stricoll _strnicoll strchrnul])
-AC_CHECK_FUNC(sysconf, [AC_DEFINE(HAS_SYSCONF)])
-AC_CHECK_FUNC(textdomain, [AC_DEFINE(HAS_TEXTDOMAIN)])
-
-AC_CHECK_FUNCS(waitpid)
+AC_CHECK_FUNCS([sysconf waitpid])
 
 if test $ac_cv_func_waitpid = no; then
 
@@ -397,13 +383,8 @@ AC_CHECK_DECLS(SIGCHLD, [AC_DEFINE(HAVE_SIGCHLD)],,[AC_INCLUDES_DEFAULT
 #include <signal.h>
 ])
 
-AC_CHECK_DECLS(SIGCLD, [AC_DEFINE(HAVE_SIGCLD)],,[AC_INCLUDES_DEFAULT
-#include <signal.h>
-])
-
-
 ### Files
-AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAS_DEV_URANDOM)])
+AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAVE_DEV_URANDOM)])
 AX_ZONEINFO()
             
 ### Misc features

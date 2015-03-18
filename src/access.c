@@ -58,11 +58,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #include <fcntl.h>
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -70,7 +70,7 @@
 #else
 #include <time.h>
 #endif
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include "conf.h"

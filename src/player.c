@@ -9,12 +9,12 @@
 #include "copyrite.h"
 
 #include <stdio.h>
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -22,7 +22,7 @@
 #else
 #include <time.h>
 #endif
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #include <fcntl.h>
@@ -42,7 +42,7 @@
 #include "parse.h"
 #include "strutil.h"
 
-#ifdef HAS_CRYPT
+#ifdef HAVE_CRYPT
 #ifdef I_CRYPT
 #include <crypt.h>
 #else
@@ -196,10 +196,10 @@ password_check(dbref player, const char *password)
     char *passwd = mush_crypt_sha0(password);
     if (strcmp(saved, passwd) != 0) {
       /* Not SHA0 either. Try old-school crypt(); */
-#ifdef HAS_CRYPT
+#ifdef HAVE_CRYPT
       if (strcmp(crypt(password, "XX"), saved) != 0) {
         /* Nope */
-#endif                          /* HAS_CRYPT */
+#endif                          /* HAVE_CRYPT */
         /* See if it's a MUX password */
         if (!check_mux_password(saved, password)) {
           /* As long as it's not obviously encrypted, check for a
@@ -211,7 +211,7 @@ password_check(dbref player, const char *password)
             return 0;
           }
         }
-#ifdef HAS_CRYPT
+#ifdef HAVE_CRYPT
       }
 #endif
     }

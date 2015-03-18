@@ -17,19 +17,15 @@
 
 #undef HAVE_SYS_SOCKET_H
 
-#undef I_SYS_STAT
+#undef HAVE_SYS_STAT_H
 
-#undef I_SYS_TIME
+#undef HAVE_SYS_TIME_H
 
 #undef TIME_WITH_SYS_TIME
 
-#undef I_SYS_TYPES
+#undef HAVE_SYS_TYPES_H
 
 #undef HAVE_UNISTD_H
-
-#ifdef HAVE_UNISTD_H
-#define I_UNISTD
-#endif
 
 #undef HAVE_SYS_WAIT_H
 
@@ -78,10 +74,6 @@
 #undef HAVE_SQLITE3
 
 #undef HAVE_SSL
-
-#ifdef HAVE_SSL
-#define HAS_OPENSSL
-#endif
 
 #undef HAVE_PCRE_H
 
@@ -174,7 +166,7 @@ typedef bool _Bool;
 #undef WORDS_BIGENDIAN
 
 /* Functions */
-#undef HAS_BINDTEXTDOMAIN
+#undef HAVE_BINDTEXTDOMAIN
 
 #undef HAVE_CBRT
 
@@ -182,7 +174,7 @@ typedef bool _Bool;
 
 #undef HAVE_LRINT
 
-#undef HAS_CRYPT
+#undef HAVE_CRYPT
 
 #undef HAVE_FPSETMASK
 
@@ -190,29 +182,27 @@ typedef bool _Bool;
 
 #undef HAVE_ISNORMAL
 
-#undef HAS_GAI_STRERROR
+#undef HAVE_GAI_STRERROR
 
-#undef HAS_GETADDRINFO
+#undef HAVE_GETADDRINFO
 
-#undef HAS_GETDATE
+#undef HAVE_GETDATE
 
-#undef HAS_GETHOSTBYNAME2
+#undef HAVE_GETNAMEINFO
 
-#undef HAS_GETNAMEINFO
+#undef HAVE_GETHOSTBYNAME2
 
-#undef HAS_GETPAGESIZE
+#undef HAVE_GETPAGESIZE
 
-#undef HAS_GETRLIMIT
+#undef HAVE_GETRLIMIT
 
-#undef HAS_GETRUSAGE
+#undef HAVE_GETRUSAGE
 
 #undef HAVE_GETTEXT
 
-#undef HAS_INET_PTON
+#undef HAVE_INET_PTON
 
-#undef HAS_ITIMER
-
-#undef HAS_SETLOCALE
+#undef HAVE_SETITIMER
 
 #undef HAVE_FORK
 
@@ -274,11 +264,11 @@ typedef bool _Bool;
 
 #undef HAVE_STRXFRM
 
-#undef HAS_SYSCONF
+#undef HAVE_SYSCONF
 
-#undef HAS_TEXTDOMAIN
+#undef HAVE_TEXTDOMAIN
 
-#undef HAS_VSNPRINTF
+#undef HAVE_VSNPRINTF
 
 #undef HAVE_WAITPID
 
@@ -332,11 +322,9 @@ typedef bool _Bool;
 
 #undef HAVE_SIGCHLD
 
-#undef HAVE_SIGCLD
-
 /* Files */
 
-#undef HAS_DEV_URANDOM
+#undef HAVE_DEV_URANDOM
 
 /* Path to tzinfo database */
 #undef HAVE_ZONEINFO

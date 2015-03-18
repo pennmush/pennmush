@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #include <stdarg.h>

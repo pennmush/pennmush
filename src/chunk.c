@@ -231,7 +231,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 

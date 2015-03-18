@@ -4,7 +4,7 @@
 
 #ifdef SSL_SLAVE
 
-#ifndef HAS_OPENSSL
+#ifndef HAVE_SSL
 #error "ssl_slave requires OpenSSL!"
 #endif
 

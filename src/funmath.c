@@ -1178,18 +1178,6 @@ FUNCTION(fun_power)
   num = parse_number(args[0]);
   m = parse_number(args[1]);
 
-#ifndef HAS_IEEE_MATH
-  if (num < 0 && (!EQ(m, (int) m))) {
-    safe_str(T("#-1 FRACTIONAL POWER OF NEGATIVE"), buff, bp);
-    return;
-  }
-
-  if ((num > 100) || (m > 100)) {
-    safe_str(T(e_range), buff, bp);
-    return;
-  }
-#endif
-
 #ifdef HAVE_FECLEAREXCEPT
   errno = 0;
   feclearexcept(FE_ALL_EXCEPT);
@@ -1217,13 +1205,7 @@ FUNCTION(fun_ln)
     return;
   }
   num = parse_number(args[0]);
-#ifndef HAS_IEEE_MATH
-  /* log(0) is bad for you */
-  if (num == 0) {
-    safe_str(T("#-1 INFINITY"), buff, bp);
-    return;
-  }
-#endif
+
   if (num < 0) {
     safe_str(T(e_range), buff, bp);
     return;
@@ -1252,13 +1234,7 @@ FUNCTION(fun_log)
     return;
   }
   num = parse_number(args[0]);
-#ifndef HAS_IEEE_MATH
-  /* log(0) is bad for you */
-  if (num == 0) {
-    safe_str(T("#-1 INFINITY"), buff, bp);
-    return;
-  }
-#endif
+
   if (num < 0) {
     safe_str(T(e_range), buff, bp);
     return;
@@ -2780,13 +2756,6 @@ MATH_FUNC(math_dist2d)
   d1 = parse_number(ptr[0]) - parse_number(ptr[2]);
   d2 = parse_number(ptr[1]) - parse_number(ptr[3]);
   r = d1 * d1 + d2 * d2;
-#ifndef HAS_IEEE_MATH
-  /* You can overflow, which is bad. */
-  if (r < 0) {
-    safe_str(T("#-1 OVERFLOW ERROR"), buff, bp);
-    return;
-  }
-#endif
   safe_number(sqrt(r), buff, bp);
 }
 
@@ -2809,13 +2778,6 @@ MATH_FUNC(math_dist3d)
   d2 = parse_number(ptr[1]) - parse_number(ptr[4]);
   d3 = parse_number(ptr[2]) - parse_number(ptr[5]);
   r = d1 * d1 + d2 * d2 + d3 * d3;
-#ifndef HAS_IEEE_MATH
-  /* You can overflow, which is bad. */
-  if (r < 0) {
-    safe_str(T("#-1 OVERFLOW ERROR"), buff, bp);
-    return;
-  }
-#endif
   safe_number(sqrt(r), buff, bp);
 }
 

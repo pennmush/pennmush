@@ -12,7 +12,7 @@
 #include "conf.h"
 
 #include <stdio.h>
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -514,7 +514,7 @@ PENNCONF conftable[] = {
   {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0,
    "limits"}
   ,
-#ifdef HAS_OPENSSL
+#ifdef HAVE_SSL
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
    sizeof options.ssl_private_key_file, 0, "files"}
   ,
@@ -1454,7 +1454,7 @@ conf_default_set(void)
   options.chunk_cache_memory = 1000000;
   options.chunk_migrate_amount = 50;
   options.read_remote_desc = 0;
-#ifdef HAS_OPENSSL
+#ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");
   strcpy(options.ssl_ca_file, "");
   options.ssl_require_client_cert = 0;
@@ -1956,13 +1956,13 @@ show_compile_options(dbref player)
   notify(player, T(" DNS lookups are handled by the MUSH process."));
 #endif
 
-#ifdef HAS_GETDATE
+#ifdef HAVE_GETDATE
   notify(player, T(" Extended convtime() is supported."));
 #else
   notify(player, T(" convtime() is stricter."));
 #endif
 
-#if defined(HAS_ITIMER) || defined(WIN32)
+#if defined(HAVE_ITIMER) || defined(WIN32)
   notify(player, T(" CPU usage limiting is supported."));
 #else
   notify(player, T(" CPU usage limiting is NOT supported."));

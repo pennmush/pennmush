@@ -13,10 +13,10 @@
 #include <inttypes.h>
 #endif
 #include <ctype.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 #include <fcntl.h>

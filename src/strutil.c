@@ -110,7 +110,7 @@ mush_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
 #if defined(HAVE__VSNPRINTF_S)
   /* Windows version */
   ret = _vsnprintf_s(str, len, _TRUNCATE, fmt, ap);
-#elif defined(HAS_VSNPRINTF)
+#elif defined(HAVE_VSNPRINTF)
   /* C99 version */
   ret = vsnprintf(str, len, fmt, ap);
 #else

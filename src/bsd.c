@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef WIN32
@@ -25,14 +25,14 @@
 #include <errno.h>
 #include <process.h>
 #else                           /* !WIN32 */
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
 #endif
 #else
 #include <time.h>
-#endif                          /* I_SYS_TIME */
+#endif                          /* HAVE_SYS_TIME_H */
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef HAVE_SYS_SOCKET_H
@@ -41,7 +41,7 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 #endif                          /* !WIN32 */
@@ -120,7 +120,7 @@
 #define LOCAL_SOCKET 1
 #endif
 
-#ifdef HAS_GETRLIMIT
+#ifdef HAVE_GETRLIMIT
 void init_rlimit(void);
 #endif
 
@@ -138,7 +138,7 @@ void init_rlimit(void);
 #define FD_ISSET(n,p)    (*p & (1<<(n)))
 #endif                          /* defines for BSD 4.2 */
 
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
 #endif
 int que_next(void);             /* from cque.c */
@@ -573,7 +573,7 @@ main(int argc, char **argv)
   }
 #endif                          /* WIN32 */
 
-#ifdef HAS_GETRLIMIT
+#ifdef HAVE_GETRLIMIT
   init_rlimit();                /* unlimit file descriptors */
 #endif
 
@@ -589,7 +589,6 @@ main(int argc, char **argv)
   /* If we have setlocale, call it to set locale info
    * from environment variables
    */
-#ifdef HAS_SETLOCALE
   {
     char *loc;
     if ((loc = setlocale(LC_CTYPE, "")) == NULL)
@@ -613,11 +612,10 @@ main(int argc, char **argv)
     else
       do_rawlog(LT_ERR, "Setting collate locale to %s", loc);
   }
-#endif
-#ifdef HAS_TEXTDOMAIN
+#ifdef HAVE_TEXTDOMAIN
   textdomain("pennmush");
 #endif
-#ifdef HAS_BINDTEXTDOMAIN
+#ifdef HAVE_BINDTEXTDOMAIN
   bindtextdomain("pennmush", "../po");
 #endif
 
@@ -722,9 +720,9 @@ main(int argc, char **argv)
   shutdown_checkpoint();
 #endif
 
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
   rusage_stats();
-#endif                          /* HAS_RUSAGE */
+#endif                          /* HAVE_GETRUSAGE */
 
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 

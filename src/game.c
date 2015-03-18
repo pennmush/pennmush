@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <signal.h>
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -26,7 +26,7 @@
 #undef OPAQUE                   /* Clashes with flags.h */
 void Win32MUSH_setup(void);
 #endif
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef HAVE_SYS_RESOURCE_H
@@ -34,7 +34,7 @@ void Win32MUSH_setup(void);
 #endif
 #include <stdlib.h>
 #include <stdarg.h>
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -68,7 +68,7 @@ void Win32MUSH_setup(void);
 #include "strutil.h"
 #include "version.h"
 
-#ifdef HAS_OPENSSL
+#ifdef HAVE_SSL
 #include "myssl.h"
 #endif
 
@@ -112,7 +112,7 @@ void bind_and_queue(dbref executor, dbref enactor, char *action,
                     int queue_type);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
 #endif
 
@@ -234,7 +234,7 @@ report(void)
   notify_activity(NOTHING, 0, 1);
 }
 
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
 /** Log process statistics to the error log.
  */
 void
@@ -265,7 +265,7 @@ rusage_stats(void)
   do_rawlog(LT_ERR, "Signals:     %10ld", usage.ru_nsignals);
 }
 
-#endif                          /* HAS_GETRUSAGE */
+#endif                          /* HAVE_GETRUSAGE */
 
 /** User interface to shut down the MUSH.
  * \verbatim
@@ -352,13 +352,13 @@ dump_database_internal(void)
     if (f)
       penn_fclose((PENNFILE *) f);
 #ifndef PROFILING
-#ifdef HAS_ITIMER
+#ifdef HAVE_SETITIMER
 #ifdef __CYGWIN__
     install_sig_handler(SIGALRM, signal_cpu_limit);
 #else
     install_sig_handler(SIGPROF, signal_cpu_limit);
 #endif                          /* __CYGWIN__ */
-#endif                          /* HAS_ITIMER */
+#endif                          /* HAVE_SETITIMER */
 #endif                          /* PROFILING */
     return false;
   } else {
@@ -433,7 +433,7 @@ dump_database_internal(void)
   }
 
 #ifndef PROFILING
-#ifdef HAS_ITIMER
+#ifdef HAVE_SETITIMER
 #ifdef __CYGWIN__
   install_sig_handler(SIGALRM, signal_cpu_limit);
 #else
@@ -2017,7 +2017,7 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
   char *nl;
   pid_t pid;
   int psize;
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
   struct rusage usage;
 #endif
 
@@ -2082,7 +2082,7 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
 
   /* Linux's getrusage() is mostly unimplemented. Just has times, page faults
      and swapouts. We use /proc/self/status */
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
   notify_format(player, "Time used:   %10ld user   %10ld sys",
                 usage.ru_utime.tv_sec, usage.ru_stime.tv_sec);
@@ -2125,7 +2125,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   int i;
   char tbuf1[BUFFER_LEN];
 #endif
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
   struct rusage usage;
 #endif
   pid_t pid;
@@ -2157,7 +2157,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
                 "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
 
 
-#ifdef HAS_GETRUSAGE
+#ifdef HAVE_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
   notify_format(player, "Time used:   %10ld user   %10ld sys",
                 (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
@@ -2176,7 +2176,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   notify_format(player, "Context swi: %10ld vol    %10ld forced",
                 usage.ru_nvcsw, usage.ru_nivcsw);
   notify_format(player, "Signals:     %10ld", usage.ru_nsignals);
-#endif                          /* HAS_GETRUSAGE */
+#endif                          /* HAVE_GETRUSAGE */
 #endif
 }
 

@@ -1,9 +1,9 @@
 #ifndef __GETPGSIZ_H
 #define __GETPGSIZ_H
 
-#ifndef HAS_GETPAGESIZE
+#ifndef HAVE_GETPAGESIZE
 
-#ifdef HAS_SYSCONF
+#ifdef HAVE_SYSCONF
 #define getpagesize() sysconf(_SC_PAGESIZE)
 #elif defined(WIN32)
 unsigned int getpagesize_win32(void);
@@ -13,6 +13,6 @@ unsigned int getpagesize_win32(void);
 #define getpagesize() 4096
 #endif
 
-#endif                          /* !HAS_GETPAGESIZE */
+#endif                          /* !HAVE _GETPAGESIZE */
 
 #endif                          /* __GETPGSIZ_H */

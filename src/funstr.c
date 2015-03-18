@@ -101,7 +101,7 @@ void
 init_pronouns(void)
 {
   int translate = 0;
-#if defined(HAS_SETLOCALE) && defined(LC_MESSAGES)
+#ifdef LC_MESSAGES
   char *loc;
   if ((loc = setlocale(LC_MESSAGES, NULL))) {
     if (strcmp(loc, "C") && strncmp(loc, "en", 2))

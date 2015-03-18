@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef WIN32
@@ -21,10 +21,10 @@
 #include <winsock2.h>
 #include <io.h>
 #endif
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 #ifdef HAVE_SYS_RESOURCE_H
@@ -36,7 +36,7 @@
 #include "conf.h"
 #include "log.h"
 
-#ifdef HAS_GETRLIMIT
+#ifdef HAVE_GETRLIMIT
 void init_rlimit(void);
 #endif
 int how_many_fds(void);
@@ -45,7 +45,7 @@ int how_many_fds(void);
 static WSADATA wsadata;
 #endif
 
-#ifdef HAS_GETRLIMIT
+#ifdef HAVE_GETRLIMIT
 void
 init_rlimit(void)
 {
@@ -71,7 +71,7 @@ init_rlimit(void)
 #endif
   return;
 }
-#endif                          /* HAS_GETRLIMIT */
+#endif                          /* HAVE_GETRLIMIT */
 
 int
 how_many_fds(void)
@@ -115,7 +115,7 @@ how_many_fds(void)
     iMaxSocketsAllowed = wsadata.iMaxSockets;
   return iMaxSocketsAllowed;
 #else
-#ifdef HAS_SYSCONF
+#ifdef HAVE_SYSCONF
   errno = 0;
   if ((open_max = sysconf(_SC_OPEN_MAX)) < 0) {
     if (errno == 0)             /* Value was indeterminate */

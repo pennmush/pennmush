@@ -8,7 +8,7 @@
 #define WAIT_H
 
 #include <stdio.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef HAVE_SYS_WAIT_H
@@ -16,7 +16,7 @@
 #endif
 
 /* What does wait*() return? */
-#ifdef HAS_WAITPID
+#ifdef HAVE_WAITPID
 typedef int WAIT_TYPE;
 #else                           /* Use wait3 */
 #ifdef UNION_WAIT

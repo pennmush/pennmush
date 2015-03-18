@@ -21,10 +21,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
@@ -39,7 +39,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYS_EVENT_H

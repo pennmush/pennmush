@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef WIN32
@@ -21,7 +21,7 @@
 #include <winsock2.h>
 #include <io.h>
 #else                           /* !WIN32 */
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -36,7 +36,7 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 #endif                          /* !WIN32 */
@@ -45,7 +45,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <limits.h>
@@ -1689,7 +1689,7 @@ flush_queue(struct text_queue *q, int n)
   return really_flushed;
 }
 
-#ifdef HAS_OPENSSL
+#ifdef HAVE_SSL
 static int
 ssl_flush_queue(struct text_queue *q)
 {
@@ -1804,7 +1804,7 @@ queue_newwrite(DESC *d, const char *b, int n)
     process_output(d);
     space = MAX_OUTPUT - d->output_size - n;
     if (space < 0) {
-#ifdef HAS_OPENSSL
+#ifdef HAVE_SSL
       if (d->ssl) {
         /* Now we have a problem, as SSL works in blocks and you can't
          * just partially flush stuff.

@@ -91,16 +91,16 @@ extern BOOL GetErrorMessage(const DWORD dwError, LPTSTR lpszError, const UINT
 #endif
 
 
-#if !defined(HAS_GETHOSTBYNAME2) && !defined(__CYGWIN__)
+#if !defined(HAVE_GETHOSTBYNAME2) && !defined(__CYGWIN__)
 #define gethostbyname2(host, type) gethostbyname((host))
 #endif
 
-#ifndef HAS_INET_PTON
+#ifndef HAVE_INET_PTON
 int inet_pton(int, const char *, void *);
 const char *inet_ntop(int, const void *, char *, size_t);
 #endif
 
-#ifndef HAS_GETADDRINFO
+#ifndef HAVE_GETADDRINFO
 /** addrinfo structure for systems without it.
  * Everything here really belongs in <netdb.h>.
  * These defines are separate for now, to avoid having to modify the
@@ -143,13 +143,13 @@ int getaddrinfo(const char *hostname, const char *servname,
 
 void freeaddrinfo(struct addrinfo *old);
 
-#endif                          /* HAS_GETADDRINFO */
+#endif                          /* HAVE_GETADDRINFO */
 
-#ifndef HAS_GAI_STRERROR
+#ifndef HAVE_GAI_STRERROR
 const char *gai_strerror(int errval);
 #endif
 
-#ifndef HAS_GETNAMEINFO         /* following for getnameinfo() */
+#ifndef HAVE_GETNAMEINFO         /* following for getnameinfo() */
 #ifndef __APPLE__
 /* Apple has these in netdb.h */
 #define NI_MAXHOST        1025  /* max hostname returned */
@@ -164,6 +164,6 @@ const char *gai_strerror(int errval);
 
 int getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
                 size_t hostlen, char *serv, size_t servlen, int flags);
-#endif                          /* HAS_GETNAMEINFO */
+#endif                          /* HAVE_GETNAMEINFO */
 
 #endif                          /* MYSOCKET_H */

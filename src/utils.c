@@ -17,14 +17,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 #include <fcntl.h>
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #ifdef WIN32
@@ -518,7 +518,7 @@ sfmt_t rand_state;
 void
 initialize_mt(void)
 {
-#ifdef HAS_DEV_URANDOM
+#ifdef HAVE_DEV_URANDOM
   int fd;
   uint32_t buf[4];              /* The linux manpage for /dev/urandom
                                    advises against reading large amounts of

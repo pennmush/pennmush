@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef WIN32
@@ -25,7 +25,7 @@
 #include <io.h>
 void shutdown_checkpoint(void);
 #else                           /* !WIN32 */
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -41,7 +41,7 @@ void shutdown_checkpoint(void);
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
-#ifdef I_SYS_STAT
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 #endif                          /* !WIN32 */
@@ -53,7 +53,7 @@ void shutdown_checkpoint(void);
 #ifdef I_SYS_SELECT
 #include <sys/select.h>
 #endif
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <stdio.h>

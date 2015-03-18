@@ -14,7 +14,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -25,7 +25,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -97,7 +97,7 @@ init_timer(void)
   install_sig_handler(SIGUSR1, usr1_handler);
 #endif
 #ifndef PROFILING
-#ifdef HAS_ITIMER
+#ifdef HAVE_SETITIMER
 #ifdef __CYGWIN__
   install_sig_handler(SIGALRM, signal_cpu_limit);
 #else
@@ -363,7 +363,7 @@ sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
 int cpu_limit_warning_sent = 0;  /** Have we issued a cpu limit warning? */
 
 #ifndef PROFILING
-#if defined(HAS_ITIMER)
+#if defined(HAVE_SETITIMER)
 /** Handler for PROF signal.
  * Do the minimal work here - set a global variable and reload the handler.
  * \param signo unused.
@@ -401,7 +401,7 @@ start_cpu_timer(void)
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 1;
-#if defined(HAS_ITIMER)         /* UNIX way */
+#if defined(HAVE_SETITIMER)         /* UNIX way */
   {
     struct itimerval time_limit;
     if (options.queue_entry_cpu_time > 0) {
@@ -429,7 +429,7 @@ start_cpu_timer(void)
                         (TIMERPROC) win32_timer);
   else
     timer_set = 0;
-#endif                          /* HAS_ITIMER / WIN32 */
+#endif                          /* HAVE_SETITIMER / WIN32 */
 #endif                          /* PROFILING */
 }
 
@@ -440,7 +440,7 @@ reset_cpu_timer(void)
 {
 #ifndef PROFILING
   if (timer_set) {
-#if defined(HAS_ITIMER)
+#if defined(HAVE_SETITIMER)
     struct itimerval time_limit, time_left;
     time_limit.it_value.tv_sec = 0;
     time_limit.it_value.tv_usec = 0;
@@ -454,7 +454,7 @@ reset_cpu_timer(void)
       penn_perror("setitimer");
 #elif defined(WIN32)
     KillTimer(NULL, timer_id);
-#endif                          /* HAS_ITIMER / WIN32 */
+#endif                          /* HAVE_SETITIMER / WIN32 */
   }
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;

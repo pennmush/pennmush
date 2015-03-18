@@ -517,8 +517,9 @@ FUNCTION(fun_timestring)
     safe_format(buff, bp, "%2us", secs);
 }
 
-#ifdef HAS_GETDATE
 int do_convtime_gd(const char *str, struct tm *ttm);
+
+#ifdef HAVE_GETDATE
 /** Convert a time string to a struct tm using getdate().
  * Formats for the time string are taken from the file referenced in
  * the DATEMSK environment variable.
@@ -552,8 +553,14 @@ do_convtime_gd(const char *str, struct tm *ttm)
 
   return 1;
 }
-
+#else
+int
+do_convtime_gd(const char *str __attribute__((__unused__)), struct tm *ttm __attribute__((__unused__)))
+{
+  return 0;
+}
 #endif
+
 /* do_convtime for systems without getdate(). Will probably break if in
          a non en_US locale */
 static const char *month_table[] = {
@@ -673,9 +680,7 @@ FUNCTION(fun_convtime)
   }
 
   if (do_convtime(args[0], &ttm)
-#ifdef HAS_GETDATE
       || do_convtime_gd(args[0], &ttm)
-#endif
     ) {
     if (save_tz)
       save_and_set_tz(tz);

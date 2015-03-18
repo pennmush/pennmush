@@ -22,7 +22,7 @@
 #include <ws2tcpip.h>
 #endif
 
-#ifdef I_SYS_TYPES
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 
@@ -45,11 +45,11 @@
 #include <arpa/inet.h>
 #endif
 
-#ifdef I_UNISTD
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#ifndef HAS_GETADDRINFO
+#ifndef HAVE_GETADDRINFO
 #ifndef WIN32
 #ifdef __APPLE__
 #ifdef __APPLE_CC__
@@ -73,7 +73,7 @@ extern int h_errno;
 #include <errno.h>
 #include <fcntl.h>
 
-#ifdef I_SYS_TIME
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <time.h>
@@ -755,7 +755,7 @@ wait_for_connect(int s, int secs)
 #define IPv6
 #endif
 
-#ifndef HAS_INET_PTON
+#ifndef HAVE_INET_PTON
 /* This is from the BIND 4.9.4 release, modified to compile by itself */
 
 /* Copyright (c) 1996 by Internet Software Consortium.
@@ -1134,7 +1134,7 @@ inet_pton6(const char *src, char *dst)
 }
 #endif
 
-#ifndef HAS_GETNAMEINFO
+#ifndef HAVE_GETNAMEINFO
 static int gn_ipv46(char *, size_t, char *, size_t, void *, size_t,
                     int, int, int);
 
@@ -1161,7 +1161,7 @@ gn_ipv46(char *host, size_t hostlen, char *serv, size_t servlen,
           if ((ptr = strchr(hptr->h_name, '.')) != NULL)
             *ptr = 0;           /* overwrite first dot */
         }
-#ifdef HAS_SNPRINTF
+#ifdef HAVE_SNPRINTF
         snprintf(host, hostlen, "%s", hptr->h_name);
 #else
         strncpy(host, hptr->h_name, hostlen);
@@ -1178,7 +1178,7 @@ gn_ipv46(char *host, size_t hostlen, char *serv, size_t servlen,
 
   if (servlen > 0) {
     if (flags & NI_NUMERICSERV) {
-#ifdef HAS_SNPRINTF
+#ifdef HAVE_SNPRINTF
       snprintf(serv, servlen, "%hu", ntohs((unsigned short) port));
 #else
       sprintf(serv, "%hu", ntohs((unsigned short) port));
@@ -1186,7 +1186,7 @@ gn_ipv46(char *host, size_t hostlen, char *serv, size_t servlen,
 
     } else {
       /* We're not bothering with getservbyport */
-#ifdef HAS_SNPRINTF
+#ifdef HAVE_SNPRINTF
       snprintf(serv, servlen, "%hu", ntohs((unsigned short) port));
 #else
       sprintf(serv, "%hu", ntohs((unsigned short) port));
@@ -1236,7 +1236,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen
 
 #endif
 
-#ifndef HAS_GETADDRINFO
+#ifndef HAVE_GETADDRINFO
 
 /* include ga1 */
 struct search {
@@ -1784,13 +1784,13 @@ ga_clone(struct addrinfo *ai)
 }
 
 /* end ga_clone */
-#endif                          /* HAS_GETADDRINFO */
+#endif                          /* HAVE_GETADDRINFO */
 
 /*
  * Return a string containing some additional information after an
  * error from getaddrinfo().
  */
-#ifndef HAS_GAI_STRERROR
+#ifndef HAVE_GAI_STRERROR
 
 const char *
 gai_strerror(int err)
@@ -1822,9 +1822,9 @@ gai_strerror(int err)
     return ("unknown getaddrinfo() error");
   }
 }
-#endif                          /* HAS_GAI_STRERROR */
+#endif                          /* HAVE_GAI_STRERROR */
 
-#ifndef HAS_GETADDRINFO
+#ifndef HAVE_GETADDRINFO
 
 /* include freeaddrinfo */
 void
@@ -1846,4 +1846,4 @@ freeaddrinfo(struct addrinfo *aihead)
 
 /* end freeaddrinfo */
 
-#endif                          /* HAS_GETADDRINFO */
+#endif                          /* HAVE_GETADDRINFO */

@@ -26,8 +26,7 @@ MUSH directories before you try an upgrade. You were warned.
 A. Vanilla upgrade
 
 You have basically three choices here: upgrade with patch files, track
-the master subversion source code version control repository, or build
-a whole new distribution.
+a git version control repository, or build a whole new distribution.
 
 A.1. Upgrading with patch files
 
@@ -56,25 +55,16 @@ instructions, you should be good to go. In most cases, you can simply
 @shutdown/reboot after the final successful compile. If
 @shutdown/reboot crashes, you'll have to restart again.
 
-A.2 Using subversion
+A.2 Using git
 
-If you don't want to download and install patch files by hand, you can
-automate the process by checking out a copy of the master subversion
-tree. When you're first setting up a game, instead of downloading the
-source to the latest version as a tarball, get it from svn:
+% git clone https://github.com/pennmush/pennmush.git
 
-% svn checkout http://pennmush.googlecode.com/svn/tags/184p7 pennmush/
+To update from the master branch:
 
-Later, when a new patchlevel is released, go to the pennmush directory
-and update with:
+ %git pull
 
-% svn merge http://pennmush.googlecode.com/svn/tags/184p7 \
-            http://pennmush.googlecode.com/svn/tags/184p8
-
-Every time a new patch is released, do the same, bumping version
-numbers in the paths. You can also track the latest, unstable
-development version by checking out .../svn/trunk and doing regular
-'svn up's. Do so at your own risk.
+  TODO: Somebody who knows something about git should include a
+  mini-tutorial about checking out branches and tags.
 
 A.3. Building a new distribution
 
@@ -180,15 +170,6 @@ If you've seriously hacked your server source code, you're on your own
 in terms of keeping up with new patchlevels. Some people apply
 patchfiles and fix the rejected hunks.
 
-A better approach is probably that described in the Guide for Gods,
-and involves creating a set of patches from the distributed old
-version of pennmush (e.g. 1.7.4p16) to your hacked version of pennmush
-(e.g. 1.7.4p16 with hacks), and then applying those patches to the new
-version of PennMUSH (e.g. 1.8.0p0) to create a hacked version
-thereof. If some patch hunks fail, you'll have to apply them manually.
-
-Probably the best approach is to keep all multiple versions of the
-code (old distributed, old hacked, new distributed, new hacked) under
-a source code control system like prcs that can merge changes between
-versions. See the Guide for Gods.
-
+However, this should be easier to do with git. Just fork a copy of the
+main repository and update from it as needed and deal with merge
+conflicts through it.

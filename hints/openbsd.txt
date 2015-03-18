@@ -1,4 +1,4 @@
-Penn will compile and run out of the box on OpenBSD, with the caveats
+Penn will not currently compile and run out of the box on OpenBSD 5.6.
 below:
 
 * OpenBSD will not forward IPv4 connections to a listening IPv6

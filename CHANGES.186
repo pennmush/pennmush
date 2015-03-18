@@ -16,7 +16,7 @@ chronological order (most recent first)
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
 Major changes:
- * Hosted on github. Thanks, Google. [Intrevis]
+ * Hosted on github. Thanks, Google. [DC]
 
 Hardcode:
  * Clean up some more remnants of the previous configure package's

@@ -126,7 +126,7 @@ patches that have been written to deal with them. We are also
 interested in any extensions that people make to the code, and
 requests that ones that are of more than just local interest be sent
 to us for inclusion in the next release of this code. See
-http://code.google.com/p/pennmush/.
+https://github.com/pennmush/pennmush/.
 
 One important thing to remember is, if the MUSH refuses to start,
 there is probably a good reason. Check the MUSH log, and the core

@@ -12,8 +12,8 @@
  * from the default, PLEASE check to make sure that you know the full
  * effects of what you are changing. And if you encounter any errors
  * or compile time problems with any options other than the default
- * settings, PLEASE file a ticket at
- * http://code.google.com/p/pennmush/issues/list immediately, so that
+ * settings, PLEASE file an issue at
+ * https://github.com/pennmush/pennmush/issues immediately, so that
  * they can be fixed.  The same goes for any other bug you might find
  * in using this software.  All efforts will be made to fix errors
  * encountered, but unless given a FULL description of the error, (IE

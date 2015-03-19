@@ -9,7 +9,7 @@ PATCHLEVEL=0
 # This section of the file should be automatically configured by the
 # Configure script. If it doesn't work, you might try reporting your
 # problem (including this Makefile) at
-# http://code.google.com/p/pennmush/issues/list
+# https://github.com/pennmush/pennmush/issues
 #
 # If you want to profile the code, add -pg -a -DPROFILING to CCFLAGS
 # and (probably) remove -O

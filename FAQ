@@ -38,7 +38,7 @@ contributors over the years.
 
 In July 2006, Raevnos took over from Javelin as maintainer. Currently, 
 the active development team is Raevnos, Walker, Mike and Intrevis. 
-The current version is 1.8.4.
+The current version is 1.8.5.
 
 1. How do I ask for help with a problem?
 
@@ -52,7 +52,7 @@ There are several options:
 
 2. How do I report a bug?
 
-Visit http://code.google.com/p/pennmush/issues/list
+Visit https://github.com/pennmush/pennmush/issues
 
 Include specific information: PennMUSH version, OS, how to reproduce
 the problem, what local changes you've made to the source. If you know
@@ -62,7 +62,7 @@ a core dump, you can send along a stack trace.
 
 3. How do I request a new feature?
 
-Visit http://code.google.com/p/pennmush/issues/list
+Visit https://github.com/pennmush/pennmush/issues
 
 No promises, but we try to get back to you about the feasibility of
 suggestions quickly, and implement them as we can. Features that come
@@ -82,8 +82,7 @@ and reference material for working with mush hardcode.
 5. Where can I hear about new releases?
 
 New releases of the PennMUSH code are announced at
-http://community.pennmush.org and on M*U*S*H (mush.pennmush.org 4201)
-and as new featured downloads on the google code site.
+http://community.pennmush.org and on M*U*S*H (mush.pennmush.org 4201).
 
 6. Why doesn't %t or space() work right for Pueblo clients?
 

@@ -35,5 +35,5 @@ Modern:
   cause this include posix_fadvise() and posix_fallocate().
 
 You can browse the bug and suggestion database at
-http://code.google.com/p/pennmush/issues/list to see more.
+https://github.com/pennmush/pennmush/issues to see more.
 

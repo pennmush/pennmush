@@ -103,7 +103,7 @@ problems or generally look for help.
 There are three places one could get help with a problem:
 
 1. The PennMUSH bug-tracking site is
-   http://code.google.com/p/pennmush/issues/list To file a new report,
+   https://github.com/pennmush/pennmush/issues To file a new report,
    click on the 'New issue' link. If you want to get emails about
    updates to the bug report, put your email address in the
    appropriate field. For 'type', please select the most appropriate

@@ -21,4 +21,7 @@ Major changes:
 Hardcode:
  * Clean up some more remnants of the previous configure package's
     naming convention in favor of autoconf style ones. [SW]
- * OpenBSD fixes. [SW]
+ * OpenBSD compilation fixes. [SW]
+ * Support authorization of ssl_slave forwarded connections on NetBSD, OpenBSD. [SW].
+ * Remove old FAM-based file monitoring code, due to bitrot and FAM's last release being 2003. [SW].
+

@@ -68,9 +68,6 @@
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 #endif
-#ifdef HAVE_FAM_H
-#include <fam.h>
-#endif
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
@@ -6489,91 +6486,6 @@ file_watch_event_in(int fd)
     }
   }
 }
-
-#elif defined(HAVE_LIBFAM)
-/* libfam monitoring interface */
-
-static FAMConnection famc;
-
-static int
-file_watch_init_fam(void)
-{
-  int n;
-  help_file *h;
-  FAMRequest famr;
-  const char *gamedir;
-
-  memset(&famc, 0, sizeof famc);
-
-  gamedir = getenv("GAMEDIR");
-  if (!gamedir) {
-    do_rawlog(LT_TRACE,
-              "file_watch_init: Unable to get GAMEDIR environment variable.");
-    return -1;
-  }
-
-  if (FAMOpen(&famc) < 0) {
-    do_rawlog(LT_TRACE, "file_watch_init: FAMOpen: %s", FamErrlist[FAMErrno]);
-    return -1;
-  }
-#define WATCH(name) do { \
-    const char *fullname = tprintf("%s/%s", gamedir, (name));    \
-    do_rawlog(LT_TRACE, "Watching %s", fullname);           \
-    if (FAMMonitorFile(&famc, fullname, &famr, NULL) < 0)       \
-      do_rawlog(LT_TRACE, "file_watch_init:FAMMonitorFile(\"%s\"): %s", \
-        (name), FamErrlist[FAMErrno]);              \
-  } while (0)
-
-  do_rawlog(LT_TRACE,
-            "'No such file or directory' errors immediately following are probably harmless.");
-  for (n = 0; n < 2; n++) {
-    WATCH(options.connect_file[n]);
-    WATCH(options.motd_file[n]);
-    WATCH(options.wizmotd_file[n]);
-    WATCH(options.register_file[n]);
-    WATCH(options.quit_file[n]);
-    WATCH(options.down_file[n]);
-    WATCH(options.full_file[n]);
-    WATCH(options.guest_file[n]);
-  }
-
-  for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
-    WATCH(h->file);
-
-#undef WATCH
-
-  return FAMCONNECTION_GETFD(&famc);
-}
-
-static void
-file_watch_event_fam(void)
-{
-  do_rawlog(LT_TRACE, "In file_watch_event_fam()");
-
-  while (FAMPending(&famc)) {
-    FAMEvent famev;
-
-    memset(&famev, 0, sizeof famev);
-
-    if (FAMNextEvent(&famc, &famev) < 0) {
-      do_rawlog(LT_TRACE, "file_watch_event: FAMNextEvent: %s",
-                FamErrlist[FAMErrno]);
-      break;
-    }
-
-    do_rawlog(LT_TRACE, "Code is: %d for %s", famev.code, famev.filename);
-
-    switch (famev.code) {
-    case FAMChanged:
-    case FAMDeleted:
-      reload_files();
-      break;
-    default:
-      break;
-    }
-  }
-}
-
 #endif
 
 /** Start monitoring various useful files for changes.
@@ -6584,8 +6496,6 @@ file_watch_init(void)
 {
 #ifdef HAVE_INOTIFY
   return file_watch_init_in();
-#elif defined(HAVE_LIBFAM)
-  return file_watch_init_fam();
 #else
   return -1;
 #endif
@@ -6599,8 +6509,6 @@ file_watch_event(int fd __attribute__ ((__unused__)))
 {
 #ifdef HAVE_INOTIFY
   file_watch_event_in(fd);
-#elif defined(HAVE_LIBFAM)
-  file_watch_event_fam();
 #endif
   return;
 }

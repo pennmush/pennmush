@@ -1962,7 +1962,7 @@ show_compile_options(dbref player)
   notify(player, T(" convtime() is stricter."));
 #endif
 
-#if defined(HAVE_ITIMER) || defined(WIN32)
+#if defined(HAVE_SETITIMER) || defined(WIN32)
   notify(player, T(" CPU usage limiting is supported."));
 #else
   notify(player, T(" CPU usage limiting is NOT supported."));

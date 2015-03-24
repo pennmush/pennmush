@@ -34,4 +34,5 @@ src/netmud
 src/netmud~
 src/ssl_slave
 test/alltests.sh
+test/testgame
 third_party

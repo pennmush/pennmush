@@ -1,0 +1,10 @@
+language: c
+compiler: gcc
+before_install:
+  - sudo apt-get install -qq gperf
+  - locale
+before_script:
+  - ./configure
+  - yes "" | make update
+  - make
+script: make test

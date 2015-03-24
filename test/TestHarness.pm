@@ -89,6 +89,7 @@ END {
     print "Totals:\n";
     summary("all tests run", $alltests, \@allfailures, $allexpected)
         if $testfiles > 1;
+    $? = 1 if (scalar @allfailures != $allexpected);
 }
 
 $| = 1;

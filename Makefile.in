@@ -164,7 +164,7 @@ update-hdr:
 	-@@PERL@ utils/update.pl options.h options.h.dist
 
 test: netmud
-	(cd test; @PERL@ alltests.pl)
+	(cd test; sh alltests.sh)
 
 clean:
 	(cd src; make clean)

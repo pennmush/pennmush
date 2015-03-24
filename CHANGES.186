@@ -7,6 +7,7 @@ chronological order (most recent first)
  responsible for most unattributed changes.
 [GM] is Greg Millam, a PennMUSH developer (aka Walker)
 [MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TK] is Tim Krajcar, a PennMUSH developer (aka Rince)
 [3] refers to code by (or inspired by) TinyMUSH 3.0
 [MUX] refers to code by (or inspired by) TinyMUX 2.x
 [Rhost] refers to code by (or inspired by) RhostMUSH
@@ -26,3 +27,5 @@ Hardcode:
    OpenBSD. [SW]
  * Remove old FAM-based file monitoring code, due to bitrot and FAM's last
    release being 2003. [SW]
+ * Remove ancient @channel foo=on behavior (issue #870). Reported by
+   Cheetah. [TK]

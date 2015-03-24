@@ -1188,9 +1188,7 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
 /** User interface to channels.
  * \verbatim
  * This is one of the top-level functions for @channel.
- * It handles the /on, /off and /who switches. It also
- * parses and handles the older @channel <channel>=<command>
- * format, for the on, off, who, and wipe commands.
+ * It handles the /on, /off and /who switches.
  * \endverbatim
  * \param player the enactor.
  * \param name name of channel.
@@ -1206,10 +1204,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
 
   if (!name || !*name) {
     notify(player, T("You need to specify a channel."));
-    return;
-  }
-  if (!com || !*com) {
-    notify(player, T("What do you want to do with the channel?"));
     return;
   }
 
@@ -1236,9 +1230,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
   }
   if (!strcasecmp(com, "who")) {
     do_channel_who(player, chan);
-    return;
-  } else if (!strcasecmp(com, "wipe")) {
-    channel_wipe(player, chan);
     return;
   }
   /* It's on or off now */
@@ -3670,7 +3661,7 @@ COMMAND(cmd_channel)
   else if (SW_ISSET(sw, SWITCH_WHO))
     do_channel(executor, arg_left, args_right[1], "WHO");
   else
-    do_channel(executor, arg_left, NULL, args_right[1]);
+    notify(executor, T("What do you want to do with the channel?"));
 }
 
 COMMAND(cmd_chat)

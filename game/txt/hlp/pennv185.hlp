@@ -59,7 +59,7 @@ Minor changes:
  * The *div*() and *mod*() math functions now take an unlimited number of
    args, instead of exactly 2 args. Suggested by Mercutio, patch by Luke.
  * A SUSPECT player changing their name to the same thing doesn't trigger
-   an alert. Suggested by 0x0045. [SW]
+   an alert. Suggested by Rince. [SW]
  * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
    For @attrib/enum and /limit. [MG]
  * Added @flag/decompile and @attribute/decompile, to decompile each table

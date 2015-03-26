@@ -113,16 +113,9 @@ AX_GCC_OPTION([-fstack-protector], [], [], [
 AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
 	LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
 ], [])
-case "${build_os}" in
-	 *linux*)
-	 # These might be linux-specific and aren't always caught as not
-	 # supported by configure
-		AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
-		   CFLAGS="$CFLAGS -Wa,--noexecstack"
-		   ], [])
-		   ;;
-	esac
-
+AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
+   CFLAGS="$CFLAGS -Wa,--noexecstack"
+   ], [])
 
 if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
 	CTAGS=$EXCTAGS

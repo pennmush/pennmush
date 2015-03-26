@@ -4805,10 +4805,6 @@ else
 
 fi
 
-case "${build_os}" in
-	 *linux*)
-	 # These might be linux-specific and aren't always caught as not
-	 # supported by configure
 
 
 
@@ -4866,7 +4862,7 @@ $as_echo "$ac_res" >&6; }
 
     :
 
-		   CFLAGS="$CFLAGS -Wa,--noexecstack"
+   CFLAGS="$CFLAGS -Wa,--noexecstack"
 
 
 else
@@ -4875,9 +4871,6 @@ else
 
 
 fi
-
-		   ;;
-	esac
 
 
 if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then

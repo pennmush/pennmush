@@ -104,24 +104,24 @@ if test "${GNU}" = yes; then
 	   ], [])
 	  ;;   
 	esac
+fi
 
-	# Some useful security-related compiler, assembler and linker options
-	AX_GCC_OPTION([-fstack-protector], [], [], [
-	   CFLAGS="$CFLAGS -fstack-protector"
-	], [])
-	case "${build_os}" in
-		 *linux*)
-		 # These might be linux-specific and aren't always caught as not
-		 # supported by configure
-		 AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
-			LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
-		], [])
+# Some useful security-related compiler, assembler and linker options
+AX_GCC_OPTION([-fstack-protector], [], [], [
+   CFLAGS="$CFLAGS -fstack-protector"
+], [])
+AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
+	LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+], [])
+case "${build_os}" in
+	 *linux*)
+	 # These might be linux-specific and aren't always caught as not
+	 # supported by configure
 		AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
 		   CFLAGS="$CFLAGS -Wa,--noexecstack"
 		   ], [])
 		   ;;
 	esac
-fi
 
 
 if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then

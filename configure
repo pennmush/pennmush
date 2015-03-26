@@ -4346,8 +4346,9 @@ fi
 
 	  ;;
 	esac
+fi
 
-	# Some useful security-related compiler, assembler and linker options
+# Some useful security-related compiler, assembler and linker options
 
 
 
@@ -4392,7 +4393,7 @@ EOF
    	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-	   CFLAGS="$CFLAGS -fstack-protector"
+   CFLAGS="$CFLAGS -fstack-protector"
 
 
 else
@@ -4410,11 +4411,7 @@ $as_echo "no gcc available" >&6; }
 
 fi
 
-	case "${build_os}" in
-		 *linux*)
-		 # These might be linux-specific and aren't always caught as not
-		 # supported by configure
-		 ac_ext=cpp
+ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -4798,7 +4795,7 @@ $as_echo "$ac_res" >&6; }
 
     :
 
-			LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+	LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
 
 
 else
@@ -4808,6 +4805,10 @@ else
 
 fi
 
+case "${build_os}" in
+	 *linux*)
+	 # These might be linux-specific and aren't always caught as not
+	 # supported by configure
 
 
 
@@ -4877,7 +4878,6 @@ fi
 
 		   ;;
 	esac
-fi
 
 
 if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then

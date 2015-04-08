@@ -628,8 +628,9 @@ LIBOBJS
 SQLITE3_VERSION
 SQLITE3_LDFLAGS
 SQLITE3_CFLAGS
+POSTGRESQL_LIBS
 POSTGRESQL_LDFLAGS
-POSTGRESQL_CFLAGS
+POSTGRESQL_CPPFLAGS
 POSTGRESQL_VERSION
 PG_CONFIG
 MYSQL_LDFLAGS
@@ -7572,8 +7573,9 @@ else
 fi
 
 
-    POSTGRESQL_CFLAGS=""
+    POSTGRESQL_CPPFLAGS=""
     POSTGRESQL_LDFLAGS=""
+    POSTGRESQL_LIBS=""
     POSTGRESQL_VERSION=""
 
 
@@ -7623,6 +7625,8 @@ fi
         fi
 
         if test ! -x "$PG_CONFIG"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $PG_CONFIG does not exist or it is not an executable file" >&5
+$as_echo "$as_me: WARNING: $PG_CONFIG does not exist or it is not an executable file" >&2;}
             PG_CONFIG="no"
             found_postgresql="no"
         fi
@@ -7631,9 +7635,9 @@ fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PostgreSQL libraries" >&5
 $as_echo_n "checking for PostgreSQL libraries... " >&6; }
 
-            POSTGRESQL_CFLAGS="-I`$PG_CONFIG --includedir`"
-            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir` -lpq"
-
+            POSTGRESQL_CPPFLAGS="-I`$PG_CONFIG --includedir`"
+            POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir`"
+            POSTGRESQL_LIBS="-lpq"
             POSTGRESQL_VERSION=`$PG_CONFIG --version | sed -e 's#PostgreSQL ##'`
 
 
@@ -7645,6 +7649,8 @@ $as_echo "#define HAVE_POSTGRESQL 1" >>confdefs.h
 $as_echo "yes" >&6; }
         else
             found_postgresql="no"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
         fi
     fi
 
@@ -7686,8 +7692,15 @@ $as_echo "yes" >&6; }
         else
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+
+$as_echo "#define HAVE_POSTGRESQL 0" >>confdefs.h
+
+            POSTGRESQL_CPPFLAGS=""
+            POSTGRESQL_LDFLAGS=""
+            POSTGRESQL_LIBS=""
         fi
     fi
+
 
 
 

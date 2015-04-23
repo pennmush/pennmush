@@ -4,13 +4,12 @@
  * \brief Process and process-group control functions.
  */
 
-#include "config.h"
+#include "wait.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
@@ -26,12 +25,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "wait.h"
 
-void penn_perror(const char *);
+#include "log.h"
 
 /** Portable wait
- * \param child pid of specific child proccess to wait for. Only meaningful if HAVE_WAITPID is defined. 
+ * \param child pid of specific child proccess to wait for. Only meaningful if HAVE_WAITPID is defined.
  * \param status pointer to store the child process's exit status in.
  * \param flags optional flags to pass to waitpid() or wait3().
  * \return pid of child process that exited, or -1.
@@ -167,8 +165,8 @@ lock_fp(FILE * f, bool what)
 
   /* Only try to lock regular files; this might not be the case when
      logging to stdout during startup. */
-  if (!S_ISREG(fd)) 
-    return -1; 
+  if (!S_ISREG(fd))
+    return -1;
 
   memset(&lock, 0, sizeof lock);
   lock.l_whence = SEEK_SET;

@@ -7,8 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -26,45 +24,35 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <signal.h>
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #ifdef WIN32
 #include <windows.h>
 #include "process.h"
 #endif
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
-#include "match.h"
+
 #include "access.h"
-#include "parse.h"
-#include "mymalloc.h"
+#include "ansi.h"
+#include "attrib.h"
+#include "boolexp.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
+#include "game.h"
 #include "lock.h"
 #include "log.h"
-#include "game.h"
-#include "command.h"
-#include "dbdefs.h"
-#include "extmail.h"
-#include "boolexp.h"
-#include "ansi.h"
-
-
-#include "confmagic.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "strutil.h"
 
 dbref find_entrance(dbref door);
 struct db_stat_info *get_stats(dbref owner);
 dbref find_player_by_desc(int port);
 char *password_hash(const char *password, const char *algo);
-
-
-#ifndef WIN32
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
-#endif
 
 /** \@search data */
 struct search_spec {
@@ -139,15 +127,20 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
 
   player =
     create_player(NULL, creator, player_name, player_password, "None", "None");
-  if (player == NOTHING) {
+  switch (player) {
+  case NOTHING:
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;
-  }
-  if (player == AMBIGUOUS) {
+  case AMBIGUOUS:
+    notify_format(creator, T("Failure creating '%s' (name in use)"),
+                  player_name);
+    return NOTHING;
+  case HOME:
     notify_format(creator, T("Failure creating '%s' (bad password)"),
                   player_name);
     return NOTHING;
   }
+
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
   do_log(LT_WIZ, creator, player, "Player creation");
@@ -495,11 +488,11 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       && !inside) {
     if (!silent && loc != Location(destination))
       did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                  player, NOTHING, NA_INTER_HEAR);
+                  player, NOTHING, NA_INTER_HEAR, AN_MOVE);
     safe_tel(victim, Location(destination), silent, player, "teleport");
     if (!silent && loc != Location(destination))
       did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                  Location(destination), player, loc, NA_INTER_HEAR);
+                  Location(destination), player, loc, NA_INTER_HEAR, AN_MOVE);
     return;
   }
   /* check needed for NOTHING. Especially important for unlinked exits */
@@ -583,11 +576,11 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
             (!Fixed(Owner(victim)) && !Fixed(player)))) {
       if (!silent && loc != destination)
         did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
-                    player, NOTHING, NA_INTER_HEAR);
+                    player, NOTHING, NA_INTER_HEAR, AN_MOVE);
       safe_tel(victim, destination, silent, player, "teleport");
       if (!silent && loc != destination)
         did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
-                    destination, player, loc, NA_INTER_HEAR);
+                    destination, player, loc, NA_INTER_HEAR, AN_MOVE);
       if ((victim != player) && !(Puppet(victim) &&
                                   (Owner(victim) == Owner(player)))) {
         if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
@@ -606,7 +599,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       if (victim != player)
         notify_format(victim,
                       T("%s tries to impose his will on you and fails."),
-                      Name(player));
+                      AName(player, AN_SYS, NULL));
       return;
     }
     if (Fixed(Owner(victim)) || Fixed(player)) {
@@ -664,13 +657,16 @@ do_force(dbref player, dbref caller, const char *what, char *command,
     return;
   }
 
+  if (queue_entry->queue_type & QUEUE_EVENT)
+    queue_type |= QUEUE_EVENT;
+
   /* force victim to do command */
-  if (queue_type != QUEUE_DEFAULT)
+  if (queue_type & QUEUE_INPLACE)
     new_queue_actionlist(victim, player, caller, command, queue_entry,
                          PE_INFO_SHARE, queue_type, NULL);
   else
     new_queue_actionlist(victim, player, player, command, queue_entry,
-                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                         PE_INFO_CLONE, queue_type, NULL);
 }
 
 /** Parse a force token command, but don't force with it.
@@ -689,8 +685,8 @@ parse_force(char *command)
   char *s;
 
   s = command + 1;
-  while (*s && !isspace((unsigned char) *s)) {
-    if (!isdigit((unsigned char) *s))
+  while (*s && !isspace(*s)) {
+    if (!isdigit(*s))
       return 0;                 /* #1a is no good */
     s++;
   }
@@ -837,9 +833,10 @@ do_newpassword(dbref executor, dbref enactor,
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
-    notify_format(executor, T("Password for %s changed."), Name(victim));
+    notify_format(executor, T("Password for %s changed."),
+                  AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
-                  Name(executor));
+                  AName(executor, AN_SYS, NULL));
     do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
   }
 }
@@ -915,7 +912,8 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
       if (player == victim)
         notify(player, T("You boot a duplicate self."));
       else
-        notify_format(player, T("You booted %s off!"), Name(victim));
+        notify_format(player, T("You booted %s off!"),
+                      AName(victim, AN_SYS, NULL));
     } else {
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
@@ -929,7 +927,8 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
   if (count) {
     if (flag != BOOT_SELF) {
       do_log(LT_WIZ, player, victim, "*** BOOT ***");
-      notify_format(player, T("You booted %s off!"), Name(victim));
+      notify_format(player, T("You booted %s off!"),
+                    AName(victim, AN_SYS, NULL));
     }
   } else {
     if (flag == BOOT_SELF)
@@ -1220,26 +1219,25 @@ do_search(dbref player, const char *arg1, char **arg3)
 
   /* First argument is a player, so we could have a quoted name */
   if (*arg1 == '\"') {
-    for (; *arg1 && ((*arg1 == '\"') || isspace((unsigned char) *arg1));
-         arg1++) ;
+    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1)); arg1++) ;
     strcpy(tbuf, arg1);
     while (*arg2 && (*arg2 != '\"')) {
       while (*arg2 && (*arg2 != '\"'))
         arg2++;
       if (*arg2 == '\"') {
         *arg2++ = '\0';
-        while (*arg2 && isspace((unsigned char) *arg2))
+        while (*arg2 && isspace(*arg2))
           arg2++;
         break;
       }
     }
   } else {
     strcpy(tbuf, arg1);
-    while (*arg2 && !isspace((unsigned char) *arg2))
+    while (*arg2 && !isspace(*arg2))
       arg2++;
     if (*arg2)
       *arg2++ = '\0';
-    while (*arg2 && isspace((unsigned char) *arg2))
+    while (*arg2 && isspace(*arg2))
       arg2++;
   }
 
@@ -1727,10 +1725,10 @@ sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
   if (attrcount) {
     write_access_file();
     notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount,
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
   } else {
     notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."),
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
   }
 
 }
@@ -1783,10 +1781,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       if (whod != AMBIGUOUS) {
         notify_format(player,
                       T("Site %s access options for %s(%s) set to %s"),
-                      site, Name(whod), unparse_dbref(whod), opts);
-        do_log(LT_WIZ, player, NOTHING,
-               "*** SITELOCK *** %s for %s(%s) --> %s", site,
-               Name(whod), unparse_dbref(whod), opts);
+                      site, AName(whod, AN_SYS, NULL), unparse_dbref(whod),
+                      opts);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s for %s(%s) --> %s",
+               site, Name(whod), unparse_dbref(whod), opts);
       } else {
         notify_format(player, T("Site %s access options set to %s"), site,
                       opts);
@@ -2013,10 +2011,7 @@ mem_usage(dbref thing)
 FUNCTION(fun_objmem)
 {
   dbref thing;
-  if (!Search_All(executor)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
+
   if (!strcasecmp(args[0], "me"))
     thing = executor;
   else if (!strcasecmp(args[0], "here"))
@@ -2044,10 +2039,6 @@ FUNCTION(fun_playermem)
   dbref thing;
   dbref j;
 
-  if (!Search_All(executor)) {
-    safe_str(T(e_perm), buff, bp);
-    return;
-  }
   if (!strcasecmp(args[0], "me") && IsPlayer(executor))
     thing = executor;
   else if (*args[0] && *args[0] == '*')
@@ -2124,9 +2115,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     restriction = args[n + 1];
     /* A special old-timey kludge */
     if (class && !*class && restriction && *restriction) {
-      if (isdigit((unsigned char) *restriction)
+      if (isdigit(*restriction)
           || ((*restriction == '#') && *(restriction + 1)
-              && isdigit((unsigned char) *(restriction + 1)))) {
+              && isdigit(*(restriction + 1)))) {
         size_t offset = 0;
         if (*restriction == '#')
           offset = 1;
@@ -2136,16 +2127,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     if (!class || !*class || !restriction)
       continue;
-    if (isdigit((unsigned char) *class) || ((*class == '#') && *(class + 1)
-                                            && isdigit((unsigned char)
-                                                       *(class + 1)))) {
+    if (isdigit(*class) ||
+        ((*class == '#') && *(class + 1) && isdigit(*(class + 1)))) {
       size_t offset = 0;
       if (*class == '#')
         offset = 1;
       spec->low = parse_integer(class + offset);
-      if (isdigit((unsigned char) *restriction)
+      if (isdigit(*restriction)
           || ((*restriction == '#') && *(restriction + 1)
-              && isdigit((unsigned char) *(restriction + 1)))) {
+              && isdigit(*(restriction + 1)))) {
         offset = 0;
         if (*restriction == '#')
           offset = 1;
@@ -2396,9 +2386,9 @@ raw_search(dbref player, struct search_spec *spec,
         strcpy(lbuff, atr_value(a));
         ret = AF_Regexp(a)
           ? regexp_match_case_r(lbuff, spec->listenstring,
-                                AF_Case(a), NULL, 0, NULL, 0, NULL)
+                                AF_Case(a), NULL, 0, NULL, 0, NULL, 0)
           : wild_match_case_r(lbuff, spec->listenstring,
-                              AF_Case(a), NULL, 0, NULL, 0, NULL);
+                              AF_Case(a), NULL, 0, NULL, 0, NULL, 0);
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0,
@@ -2417,8 +2407,10 @@ raw_search(dbref player, struct search_spec *spec,
       bp = tbuf1;
       per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
-      if (per)
+      if (per) {
+	notify_format(player, T("CPU usage exceeded during #%d."), n);
         goto exit_sequence;
+      }
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;

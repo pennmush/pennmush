@@ -6,10 +6,9 @@
 #ifndef __FLAGS_H
 #define __FLAGS_H
 
-#include "confmagic.h"
+#include "dbio.h"
 #include "mushtype.h"
 #include "ptab.h"
-#include "dbio.h"
 
 typedef struct flag_info FLAG;
 
@@ -44,13 +43,13 @@ struct flagcache;
  * a set of flags, powers, or whatever.
  */
 struct flagspace {
-  const char *name;             /**< The name of this flagspace */
-  PTAB *tab;                    /**< Prefix table storing flags by name/alias */
-  FLAG **flags;                 /**< Variable-length array of pointers to canonical flags, indexed by bit */
-  int flagbits;                 /**< Current length of the flags array */
-  FLAG *flag_table;             /**< Pointer to flag table */
-  FLAG_ALIAS *flag_alias_table; /**< Pointer to flag alias table */
-  struct flagcache *cache;      /**< Cache of all set flag bitsets */
+  const char *name;                   /**< The name of this flagspace */
+  PTAB *tab;                          /**< Prefix table storing flags by name/alias */
+  FLAG **flags;                       /**< Variable-length array of pointers to canonical flags, indexed by bit */
+  int flagbits;                       /**< Current length of the flags array */
+  const FLAG *flag_table;             /**< Pointer to flag table */
+  const FLAG_ALIAS *flag_alias_table; /**< Pointer to flag alias table */
+  struct flagcache *cache;            /**< Cache of all set flag bitsets */
 };
 
 /* From flags.c */
@@ -113,16 +112,29 @@ void flag_read_all(PENNFILE *, const char *);
 int type_from_old_flags(long old_flags);
 object_flag_type flags_from_old_flags(const char *ns, long old_flags,
                                       long old_toggles, int type);
-FLAG *add_flag_generic(const char *ns, const char *name,
-                       const char letter, int type, int perms,
-                       int negate_perms);
-#define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x)
-#define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x)
+enum flag_res {
+  FLAG_OK = 0,                  /* No error */
+  FLAG_EXISTS,                  /* Flag already existed */
+  FLAG_NAME,                    /* Invalid flag name */
+  FLAG_LETTER,                  /* Invalid/in-use flag letter */
+  FLAG_TYPE,                    /* Invalid type */
+  FLAG_PERMS                    /* Invalid [reset] perms */
+};
+enum flag_res add_flag_generic(const char *ns, const char *name,
+                               const char letter, int type, int perms,
+                               int negate_perms, FLAG **fp);
+#define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x,NULL)
+#define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x,NULL)
 int alias_flag_generic(const char *ns, const char *name, const char *alias);
 #define alias_flag(n,a) alias_flag_generic("FLAG",n,a);
 #define alias_power(n,a) alias_flag_generic("POWER",n,a);
-void do_list_flags(const char *ns, dbref player, const char *arg, int lc,
+void do_list_flags(const char *ns, dbref player, const char *arg, int style,
                    const char *label);
+#define FLAG_LIST_CHAR 0x01
+#define FLAG_LIST_NAME 0x02
+#define FLAG_LIST_DECOMPILE 0x04
+#define FLAG_LIST_LOWERCASE 0x08
+#define FLAG_LIST_NAMECHAR (FLAG_LIST_NAME | FLAG_LIST_CHAR)
 char *list_all_flags(const char *ns, const char *name, dbref privs, int which);
 void do_flag_info(const char *ns, dbref player, const char *name);
 void do_flag_delete(const char *ns, dbref player, const char *name);
@@ -156,6 +168,8 @@ int good_flag_name(char const *s);
 #define clear_power_internal(t,f) twiddle_flag_internal("POWER",t,f,1)
 
 void flag_stats(dbref);
+bool can_see_connected(dbref player, dbref target);
+bool can_see_flag_on(dbref player, dbref thing, const FLAG *flagp);
 
 /*---------------------------------------------------------------------
  * Object types (no longer part of the flags)

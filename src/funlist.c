@@ -5,29 +5,31 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
 #include "ansi.h"
-#include "parse.h"
+#include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
 #include "function.h"
+#include "lock.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
 #include "mymalloc.h"
 #include "mypcre.h"
-#include "match.h"
-#include "command.h"
-#include "attrib.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "mushdb.h"
-#include "lock.h"
+#include "notify.h"
+#include "parse.h"
 #include "sort.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
@@ -187,8 +189,8 @@ find_list_position(char *numstr, int total, bool insert)
   }
 
   if (i < 1 || i > total) {
-    if (total == 0 && insert && negative && i == 0) {
-      /* Special case: inserting at -1 into an empty list
+    if (total == 0 && insert && ((i == 0 && negative) || i == 1)) {
+      /* Special case: inserting into an empty list
        * will create a one-element list */
       return 1;
     } else {
@@ -1327,7 +1329,6 @@ FUNCTION(fun_extract)
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
-  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1) {
     /* find_list_position does an is_integer check, but we
@@ -1341,6 +1342,8 @@ FUNCTION(fun_extract)
       return;
     }
   }
+
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   if (nargs > 1)
     start = find_list_position(args[1], nwords, 0) - 1;
@@ -1564,7 +1567,7 @@ FUNCTION(fun_ldelete)
   int delimarg = 3;
   char *replace = NULL;
 
-  if (!strcmp(called_as, "REPLACE")) {
+  if (!strcmp(called_as, "LREPLACE")) {
     delimarg = 4;
     replace = args[2];
   }
@@ -2228,7 +2231,6 @@ FUNCTION(fun_mix)
       break;
     }
   }
-
   pe_regs_free(pe_regs);
 }
 
@@ -2454,7 +2456,7 @@ FUNCTION(fun_regreplace)
 
     /* If we're doing a lot, study the regexp to make sure it's good */
     if (all) {
-      study = pcre_study(re, 0, &errptr);
+      study = pcre_study(re, pcre_public_study_flags, &errptr);
       if (errptr != NULL) {
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
@@ -2477,6 +2479,11 @@ FUNCTION(fun_regreplace)
     /* Match wasn't found... we're done */
     if (subpatterns < 0) {
       safe_str(prebuf, postbuf, &postp);
+      if (study) {
+#ifdef PCRE_CONFIG_JIT
+        pcre_free_study(study);
+#endif
+      }
       continue;
     }
 
@@ -2493,10 +2500,15 @@ FUNCTION(fun_regreplace)
       obp = args[i + 1];
 
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
+      pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, prebuf);
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
+        if (study) {
+#ifdef PCRE_CONFIG_JIT
+          pcre_free_study(study);
+#endif
+        }
         goto exit_sequence;
       }
       if ((*bp == (buff + BUFFER_LEN - 1))
@@ -2516,7 +2528,12 @@ FUNCTION(fun_regreplace)
 
     safe_str(start, postbuf, &postp);
     *postp = '\0';
-
+    if (study != NULL) {
+#ifdef PCRE_CONFIG_JIT
+      pcre_free_study(study);
+#else
+#endif
+    }
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2548,7 +2565,7 @@ FUNCTION(fun_regreplace)
 
       /* If we're doing a lot, study the regexp to make sure it's good */
       if (all) {
-        study = pcre_study(re, 0, &errptr);
+        study = pcre_study(re, pcre_public_study_flags, &errptr);
         if (errptr != NULL) {
           safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
           safe_str(errptr, buff, bp);
@@ -2571,10 +2588,16 @@ FUNCTION(fun_regreplace)
           /* Process the replacement */
           r = args[i + 1];
           pe_regs_clear(pe_regs);
-          pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
+          pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns,
+                                      orig);
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
+            if (study) {
+#ifdef PCRE_CONFIG_JIT
+              pcre_free_study(study);
+#endif
+            }
             goto exit_sequence;
           }
           *tbp = '\0';
@@ -2602,6 +2625,11 @@ FUNCTION(fun_regreplace)
           }
         }
       } while (subpatterns >= 0 && all);
+      if (study != NULL) {
+#ifdef PCRE_CONFIG_JIT
+        pcre_free_study(study);
+#endif
+      }
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
@@ -2744,7 +2772,8 @@ FUNCTION(fun_regmatch)
 }
 
 /* Like grab, but with a regexp pattern. This same function handles
- *  regrab(), regraball(), and the case-insenstive versions. */
+ * regrab(), regraball(), and the case-insenstive versions,
+ * as well as reglmatch() and reglmatchall(). */
 FUNCTION(fun_regrab)
 {
   char *r, *s, *b, sep;
@@ -2754,10 +2783,12 @@ FUNCTION(fun_regrab)
   const char *errptr;
   int erroffset;
   int offsets[99];
-  int flags = 0, all = 0;
+  int flags = 0;
   char *osep, osepd[2] = { '\0', '\0' };
   char **ptrs;
   int nptrs, i;
+  bool all = 0, pos = 0;
+
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
@@ -2774,8 +2805,11 @@ FUNCTION(fun_regrab)
   if (strrchr(called_as, 'I'))
     flags = PCRE_CASELESS;
 
-  if (string_prefix(called_as, "REGRABALL"))
+  if (strstr(called_as, "ALL"))
     all = 1;
+
+  if (strstr(called_as, "MATCH"))
+    pos = 1;
 
   if ((re = pcre_compile(args[1], flags, &errptr, &erroffset, tables)) == NULL) {
     /* Matching error. */
@@ -2784,7 +2818,7 @@ FUNCTION(fun_regrab)
     return;
   }
 
-  study = pcre_study(re, 0, &errptr);
+  study = pcre_study(re, pcre_public_study_flags, &errptr);
   if (errptr != NULL) {
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);
@@ -2803,10 +2837,18 @@ FUNCTION(fun_regrab)
     if (pcre_exec(re, study, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)
         safe_str(osep, buff, bp);
-      safe_str(ptrs[i], buff, bp);
+      if (pos)
+        safe_integer(i + 1, buff, bp);
+      else
+        safe_str(ptrs[i], buff, bp);
       if (!all)
         break;
     }
+  }
+  if (study) {
+#ifdef PCRE_CONFIG_JIT
+    pcre_free_study(study);
+#endif
   }
 }
 

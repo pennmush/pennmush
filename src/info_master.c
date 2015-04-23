@@ -5,7 +5,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
@@ -19,11 +18,11 @@
 #if !defined(I_SYS_TIME) || defined(TIME_WITH_SYS_TIME)
 #include <time.h>
 #endif
-#ifdef I_NETDB
-#include <netdb.h>
-#endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
 #endif
 
 #include <stdlib.h>
@@ -32,14 +31,14 @@
 #include <errno.h>
 #include <string.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "access.h"
-#include "mysocket.h"
-#include "lookup.h"
+#include "conf.h"
 #include "log.h"
+#include "lookup.h"
+#include "mysocket.h"
+#include "sig.h"
+#include "strutil.h"
 #include "wait.h"
-
 
 #ifdef INFO_SLAVE
 
@@ -193,7 +192,7 @@ make_info_slave(void)
 
     close(socks[1]);
 
-    execl("./info_slave", "info_slave", (char *) NULL);
+    execl("./info_slave", "info_slave", "for", MUDNAME, (char *) NULL);
     penn_perror("execing info slave");
     exit(1);
   }

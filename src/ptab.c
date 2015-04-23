@@ -5,16 +5,18 @@
  *
  *
  */
-#include "config.h"
+
 #include "copyrite.h"
+#include "ptab.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+
 #include "conf.h"
-#include "externs.h"
-#include "ptab.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "notify.h"
+#include "strutil.h"
 
 static int ptab_find_exact_nun(PTAB *tab, const char *key);
 static int WIN32_CDECL ptab_cmp(const void *, const void *);
@@ -312,7 +314,6 @@ ptab_insert(PTAB *tab, const char *key, void *data)
   klen = strlen(key) + 1;
 
   tab->tab[tab->len] = GC_MALLOC(PTAB_SIZE + klen);
-
   tab->tab[tab->len]->data = data;
   memcpy(tab->tab[tab->len]->key, key, klen);
   tab->len++;

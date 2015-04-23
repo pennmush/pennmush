@@ -136,11 +136,12 @@ See also: DBREF, Information functions
   findable()     flags()        fullalias()    fullname()     getpids()      
   hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
   iname()        lflags()       lock()         lockflags()    lockowner()    
-  locks()        lpids()        lstats()       money()        msecs()      
-  mtime()        mudname()      mudurl()       name()         nattr()        
-  nearby()       objid()        objmem()       orflags()      orlflags()     
-  orlpowers()    pidinfo()      playermem()    poll()         powers()       
-  quota()        restarts()     type()         version()      visible()
+  locks()        lpids()        lstats()       money()        moniker()
+  msecs()        mtime()        mudname()      mudurl()       name()         
+  nattr()        nearby()       objid()        objmem()       orflags()      
+  orlflags()     orlpowers()    pidinfo()      playermem()    poll()         
+  powers()       quota()        restarts()     type()         version()      
+  visible()
 
 See also: Dbref functions
 & List functions
@@ -152,10 +153,10 @@ See also: Dbref functions
 
   element()     elements()    extract()     filter()      filterbool()
   first()       fold()        grab()        graball()     index()
-  insert()      itemize()     items()       iter()        last()
-  ldelete()     lockfilter()  map()         match()       matchall()    
-  member()      mix()         munge()       namegrab()    namegraball() 
-  randword()    remove()      replace()     rest()        revwords()    
+  itemize()     items()       iter()        last()        ldelete()     
+  linsert()     lreplace()    lockfilter()  map()         match()       
+  matchall()    member()      mix()         munge()       namegrab()    
+  namegraball() randword()    remove()      rest()        revwords()    
   setdiff()     setinter()    setunion()    shuffle()     sort()        
   sortby()      sortkey()     splice()      step()        table()       
   unique()      wordpos()     words()
@@ -217,15 +218,15 @@ See also: string functions, regexp
   capstr()         case()           caseall()        cat()
   center()         chr()            comp()           cond()
   condall()        decode64()       decompose()      decrypt()        
-  delete()         digest()         edit()           encode64()       
-  encrypt()        escape()         flip()           foreach()        
-  if()             ifelse()         lcstr()          left()           
-  lit()            ljust()          lpos()           merge()          
-  mid()            ord()            ordinal()        pos()            
-  regedit()        regmatch()       repeat()         right()          
-  rjust()          scramble()       secure()         sha0()           
-  space()          spellnum()       squish()         strallof()       
-  strcat()         strfirstof()     strinsert()      stripaccents()   
+  digest()         edit()           encode64()       encrypt()        
+  escape()         flip()           foreach()        if()             
+  ifelse()         lcstr()          left()           lit()            
+  ljust()          lpos()           merge()          mid()            
+  ord()            ordinal()        pos()            regedit()        
+  regmatch()       repeat()         right()          rjust()          
+  scramble()       secure()         sha0()           space()          
+  spellnum()       squish()         strallof()       strcat()         
+  strdelete()      strfirstof()     strinsert()      stripaccents()   
   stripansi()      strlen()         strmatch()       strreplace()     
   switch()         tr()             trim()           ucstr()          
   wrap()
@@ -239,6 +240,7 @@ See also: STRINGS
   secs()        starttime()   stringsecs()  time()        timefmt()     
   timestring()  utctime()     uptime()
 
+See also: TIMEZONES
 & Utility functions
   These functions don't quite fit into any other category.
 
@@ -370,11 +372,11 @@ See also: name(), fullname(), iname(), ACCENTS
 
 See also: asin(), atan(), cos(), ctu(), sin(), tan()
 & ADD()
-  add(<number>, <number>[, ... , <numberN>])
+  add(<number1>, <number2>[, ... , <numberN>])
 
-  Returns the sum of the given <number>s.
+  Returns the sum of the given numbers.
   
-See also: MATH FUNCTIONS
+See also: MATH FUNCTIONS, lmath()
 & AFTER()
   after(<string1>, <string2>)
 
@@ -418,17 +420,20 @@ See also: before(), rest()
   [justification]Width[runout][(ansi)]
 
   Justification: Placing one of these characters before the width alters
-  the spacing for this column. (e.g: <30)
+  the spacing for this column (e.g: <30). Defaults to < (left-justify).
     < Left-justify       - Center-justify        > Right-justify
-    _ Full-justify.      = Paragraph-justify.
+    _ Full-justify       = Paragraph-justify
  
   Other options: Adding these after the width will alter the column's
     behaviour in some situtations
     . Repeat for as long as there is non-repeating text in another column.
-    ` Merge with the column on the left when it runs out of text.
-    ' Merge with the column on the right when it runs out of text.
+    ` When this column runs out of text, merge with the column to the left
+    ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with
       merge-left, the column to its left inherits the 'nofill' when merged.
+    x Truncate each (%r-separated) row instead or wrapping at the colwidth
+    X Truncate the entire column at the end of the first row instead of
+      wrapping
 
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
@@ -438,11 +443,23 @@ See also: center(), ljust(), rjust(), table()
 & ALIGN3
   Examples:
   
-    > &line me=align(<5 10 20,([left(get(%0/sex),1)]),name(%0),name(loc(%0)))
+    > &line me=align(<3 10 20$,([ljust(get(%0/sex),1,,1)]),
+                     name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
+      (M) Ashen-Shug Apartment 306
+          ar         
       (F) Jane Doe   Nowhere
 
+    > &line me=align(<3 10X 20X$,([ljust(get(%0/sex),1,,1)]),
+                     name(%0),name(loc(%0)))
+    > th iter(lwho(),u(line,##),%b,%r)
+      (M) Walker     Tree
+      (M) Ashen-Shug Apartment 306
+      (F) Jane Doe   Nowhere
+
+        See 'help align4' for more examples.
+& ALIGN4
     > &haiku me = Alignment function,%rIt justifies your writing,%rBut the
                   words still suck.%rLuke
 
@@ -455,14 +472,14 @@ See also: center(), ljust(), rjust(), table()
          +                  Luke                  +
          +----------------------------------------+
 
-  See 'help align4' for more examples.
-& ALIGN4
+  See 'help align5' for more examples.
+& ALIGN5
   > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
   > &story me=%r'was the night before Christmas, when all through the house%r
               Not a creature was stirring, not even a mouse.%r
               The stockings were hung by the chimney with care,%r
               In hopes that St Nicholas soon would be there.
-  > th align(9'(ch) 68, u(dropcap), u(story)
+  > th align(9'(ch) 68, u(dropcap), u(story))
   
    _______  
   |__   __| 'was the night before Christmas, when all through the house
@@ -531,7 +548,7 @@ See also: alphamax(), min()
   arguments (including side effects), while cand() stops evaluation
   after the first false argument.
 
-See also: BOOLEAN VALUES, nand(), or(), xor(), not()
+See also: BOOLEAN VALUES, nand(), or(), xor(), not(), lmath()
 & ANDFLAGS()
 & ANDLFLAGS()
   andflags(<object>, <string of flag letters>)
@@ -712,7 +729,7 @@ See also: set(), @set
   Does a bitwise AND of all its arguments, returning the result (a
   number with only the bits set in every argument set in it).
   
-See also: BITWISE FUNCTIONS
+See also: BITWISE FUNCTIONS, lmath()
 & BASECONV()
   baseconv(<number>, <from base>, <to base>)
 
@@ -796,13 +813,17 @@ See also: BITWISE FUNCTIONS
   Does a bitwise OR of all its arguments, returning the result.
   (A number with a bit set if that bit appears in any of its arguments).
   
-See also: BITWISE FUNCTIONS
+See also: BITWISE FUNCTIONS, lmath()
 & BOUND()
   bound(<number>, <lower bound>, <higher bound>)
 
   bound() returns <number> if it is between <lower bound> and <higher
   bound>. If it's lower than <lower bound>, <lower bound> is returned.
   If it's higher than <higher bound>, <higher bound> is returned.
+  
+  If you just want to know whether <number> is within the range of <lower> to
+  <higher>, consider using lte(<lower>, <number>, <higher>) instead to get
+  a boolean result.
   
 See also: ceil(), floor(), round(), trunc()
 & BXOR()
@@ -811,7 +832,7 @@ See also: ceil(), floor(), round(), trunc()
   Does a bitwise XOR of all its arguments, returning the result.
   (A number with a bit set if it's set in only one of its arguments).
   
-See also: BITWISE FUNCTIONS
+See also: BITWISE FUNCTIONS, lmath()
 & CAPSTR()
   capstr(<string>)
   
@@ -1095,7 +1116,7 @@ See also: CONNECTION FUNCTIONS
 See also: visible(), CONTROL
 & CONVSECS()
 & CONVUTCSECS()
-  convsecs(<seconds>[, <zone>])
+  convsecs(<seconds>[, <timezone>])
   convutcsecs(<seconds>) 
 
   This function converts seconds to a time string, based on how many
@@ -1103,10 +1124,12 @@ See also: visible(), CONTROL
   UTC, but returns local time, convsecs(0) is not going to be "Thu Jan
   1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
  
-  convutcsecs(), and convsecs() with a second argument of 'utc' return
-  the time based on UTC time instead of the server's local time. See
-  HELP TIMEZONES for more information on the zone argument.
+  If a <timezone> argument is given, the return value is based on that
+  timezone instead of the MUSH server's local time. See 'help timezones' for
+  more information on valid timezones.
   
+  convutcsecs(<seconds>) is an alias for convsecs(<seconds>, utc).
+
   Examples:
     > say secs()
     You say, "709395750"
@@ -1120,7 +1143,7 @@ See also: visible(), CONTROL
 See also: convtime(), time()
 & CONVTIME()
 & CONVUTCTIME()
-  convtime(<time string>,[utc])
+  convtime(<time string>,[<timezone>])
   convutctime(<time string>)
 
   This functions converts a time string (in the server's time zone) to
@@ -1132,7 +1155,7 @@ See also: convtime(), time()
   -1.
 
   convutctime() and convtime() with a second argument of 'utc' assume
-  the timestring is based on UTC time.
+  the timestring is based on UTC time. Other time zones can be specified too.
 
   If the extended convtime() is supported (See @config compile), more
   formats for the date are enabled, including ones missing the day of
@@ -1145,7 +1168,7 @@ See also: convtime(), time()
     > say convtime(Wed Jun 24 10:22:54 1992)
     You say, "709395774"
 
-See also: convsecs(), time()
+See also: convsecs(), time(), timezones
 & COS()
   cos(<angle>[, <angle type>])
  
@@ -1281,8 +1304,9 @@ See also: @decompile2, escape(), secure(), ]
  
 See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   strfirstof()
+& STRDELETE()
 & DELETE()
-  delete(<string>, <first>, <len>)
+  strdelete(<string>, <first>, <len>)
  
   Return a modified <string>, with <len> characters starting after the
   character at position <first> deleted. In other words, it copies
@@ -1291,13 +1315,15 @@ See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
   leftwards from <first>.  Characters are numbered starting at 0.
 
   Examples:
-    > say delete(abcdefgh, 3, 2)
+    > say strdelete(abcdefgh, 3, 2)
     You say, "abcfgh"
 
-    > say delete(abcdefgh, 3, -2)
+    > say strdelete(abcdefgh, 3, -2)
     You say, "abefgh"
 
-See also: strreplace(), strinsert(), mid()
+  delete() is an alias for strdelete(), for backwards compatability.
+
+See also: strreplace(), strinsert(), mid(), ldelete()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
@@ -1370,34 +1396,44 @@ See also: encode64(), encrypt()
   Returns the distance between two points in the Cartesian
   plane that have coordinates (<x1>, <y1>) and (<x2>, <y2>).
   
-See also: dist3d()
+See also: dist3d(), lmath()
 & DIST3D()
   dist3d(<x1>, <y1>, <z1>, <x2>, <y2>, <z2>)
 
   Returns the distance between two points in space, with
   coordinates (<x1>, <y1>, <z1>) and (<x2>, <y2>, <z2>).
   
-See also: dist2d()
+See also: dist2d(), lmath()
 & DIV()
 & FLOORDIV()
-  div(<number>, <number>)
-  floordiv(<number>, <number>)
- 
-  div() returns the integer part of the quotient of the first number
-  divided by the second number.  floordiv() returns the largest integer
-  less than or equal to the quotient of the first number divided by
-  the second.  For positive numbers, these are the same thing, but for
-  negative numbers they may be different:
+& FDIV()
+  div(<number1>, <number2>[, ... , <numberN>])
+  fdiv(<number1>, <number2>[, ... , <numberN>])
+  floordiv(<number1>, <number2>[, ... , <numberN>])
+  
+  These functions divide <number1> by <number2> (and, for each subsequent
+  argument, divide the previous result by <numberN>) and return the final
+  result.
+  
+  div() returns the integer part of the quotient. floordiv() returns the
+  largest integer less than or equal to the quotient; for positive numbers,
+  they are identical, but for negative numbers they may differ. fdiv() returns
+  the floating-point quotient.
 
-   div(13,4)          ==>  3       and     floordiv(13,4)     ==>  3
+  Examples:
+  
+   div(13,4)          ==>   3      and     floordiv(13,4)     ==>   3
    div(-13,4)         ==>  -3      but     floordiv(-13,4)    ==>  -4
    div(13,-4)         ==>  -3      but     floordiv(13,-4)    ==>  -4
-   div(-13,-4)        ==>  3       and     floordiv(-13,-4)   ==>  3
+   div(-13,-4)        ==>   3      and     floordiv(-13,-4)   ==>   3
+   
+   fdiv(13,4)         ==>  3.25            fdiv(-13,4)        ==> -3.25
+   fdiv(13,-4)        ==>  -3.25           fdiv(-13,-4)       ==>  3.25
 
   Note that add(mul(div(%0,%1),%1),remainder(%0,%1)) always yields %0,
   and add(mul(floordiv(%0,%1),%1),modulo(%0,%1)) also always yields %0.
 
-See also: modulo(), fdiv()
+See also: modulo(), lmath()
 & DOING()
   doing(<player|descriptor>)
 
@@ -1571,12 +1607,12 @@ See also: encode64(), digest()
  
 See also: lsearch(), @entrances
 & EQ()
-  eq(<number>, <number>[, ... , <numberN>])
+  eq(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more <number>s, and returns 1 if they are all equal,
   and 0 otherwise.
   
-See also: neq()
+See also: neq(), lmath()
 & ESCAPE()
   escape(<string>)
  
@@ -1654,13 +1690,6 @@ See also: lexits(), next()
     last three elements
 
 See also: index(), elements(), grab()
-& FDIV()
-  fdiv(<numerator>, <denominator>)
- 
-  Returns the quotient of the two numbers. Note that the div() and
-  mod() functions cannot be used on floating point numbers.
-
-See also: div(), mod()
 & FILTER()
 & FILTERBOOL()
   filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>]])
@@ -1797,7 +1826,7 @@ See also: ceil(), bound(), round(), trunc(), floordiv()
   Example:
     > think fmod(6.1,2.5)
     1.1
-See also: fdiv(), div(), mod()
+See also: fdiv(), div(), mod(), lmath()
 & FOLD()
   fold([<obj>/]<attr>, <list>[, <base case>[, <delimiter>]])
   
@@ -2018,18 +2047,19 @@ See also: match(), matchall(), grab(), regmatch()
   
 See also: @grep, lattr(), WILDCARDS
 & GT()
-  gt(<number>, <number>[, ... , <numberN>])
+  gt(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is greater than the number after it, and 0 otherwise.
 
-See also: gte(), lt(), lte(), eq(), neq()
+See also: gte(), lt(), lte(), eq(), neq(), lmath()
 & GTE()
-  gte(<number>, <number>[, ... , <numberN>])
+  gte(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is greater than or equal to the number after it, and 0 otherwise.
-See also: gt(), lt(), lte(), eq(), neq()
+
+See also: gt(), lt(), lte(), eq(), neq(), lmath()
 & HASATTR()
 & HASATTRP()
 & HASATTRVAL()
@@ -2203,7 +2233,8 @@ See also: dec(), add(), sub()
 
 See also: extract(), elements(), grab()
 & INSERT()
-  insert(<list>, <position>, <new item>[, <delim>])
+& LINSERT()
+  linsert(<list>, <position>, <new item>[, <delim>])
 
   If <position> is a positive integer, this inserts <new item> BEFORE
   the item at <position> from the left in <list>. That means that
@@ -2221,19 +2252,24 @@ See also: extract(), elements(), grab()
   when determining position, as in 'items()'.
 
   Examples:
-    > say insert(This is a string,4,test)
+    > say linsert(This is a string,4,test)
     You say, "This is a test string"
-    > say insert(one|three|four,2,two,|)
+    > say linsert(one|three|four,2,two,|)
     You say, "one|two|three|four"
-    > say insert(meep bleep gleep,-3,GOOP)
+    > say linsert(meep bleep gleep,-3,GOOP)
     You say, "meep GOOP bleep gleep"
 
-See also: replace(), ldelete(), strinsert()
-& ISDAYLIGHT()
-  isdaylight()
+  insert() is an alias for linsert(), for backwards compatability.
 
-  Returns 1 if it's daylight savings time in the MUSH time zone,
-  otherwise 0.
+See also: lreplace(), ldelete(), strinsert()
+& ISDAYLIGHT()
+  isdaylight([<secs>[, <timezone>]])
+
+  Returns 1 if it's daylight savings in the specified timezone at the given
+  time. Defaults to the host server's time zone and current time if not
+  specified.
+
+See also: timezones, secs()
 & ISDBREF()
 & ISOBJID()
   isdbref(<string>)
@@ -2537,9 +2573,9 @@ See also: lattr(), hasattr(), xattr(), wildcards
   
   For compatability with other codebases, a <type> can be given to limit
   the results. Valid <type>s are:
-    player             - equivilent to lplayers(<object>)
-    connect            - equivilent to lvplayers(<object>)
-    thing (or object)  - equivilent to lthings(<object>)
+    player             - equivalent to lplayers(<object>)
+    connect            - equivalent to lvplayers(<object>)
+    thing (or object)  - equivalent to lthings(<object>)
     listen             - return only listening objects
     puppet             - return only THINGs set PUPPET
 
@@ -2580,7 +2616,7 @@ See also: capstr(), ucstr()
     > say ldelete(foo bar baz boing,3,,%b~%b)
     You say, "foo ~ bar ~ boing"
 
-See also: delete(), remove(), insert()
+See also: strdelete(), remove(), linsert()
 & LEFT()
   left(<string>, <length>)
 
@@ -2627,12 +2663,15 @@ See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
-  ljust(<string>, <length>[, <fill>])
+  ljust(<string>, <length>[, <fill>[, <truncate?>]])
   
-  This function pads a string with trailing characters ("left-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. If <fill> is not specified, a space is
-  used. <fill> can be more than one character in length.
+  This function returns <string>, padded with the string <fill> until it's
+  <length> characters long. <fill> can be more than one character in length,
+  and defaults to a single space.
+  
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the first <length> characters of
+  <string> are returned.
   
   Examples:
     > say ljust(foo,6)
@@ -2645,6 +2684,9 @@ See also: lcon(), exit(), next(), lvexits()
     
     > say ljust(foo,12,=+)
     You say, "foo=+=+=+=+="
+    
+    > say ljust(This is too long, 9)
+    You say, "This is t"
 
 See also: align(), center(), rjust(), left()
 & LINK()
@@ -2997,7 +3039,7 @@ See also: lvthings(), lcon()
   This function returns a list of the positions where <character>
   appears in <string>, with the first character of the string being
   0. Note that this differs from the pos() function, but is consistent
-  with other string functions like mid() and delete().
+  with other string functions like mid() and strdelete().
 
   If <character> is a null argument, space is used.  If <character> is
   not found anywhere in <string>, an empty list is returned.
@@ -3105,14 +3147,14 @@ See also: nsearch()
     > th lt(1,3,2)
     0
   
-See also: lte(), gt(), gte(), lnum()
+See also: lte(), gt(), gte(), lnum(), lmath()
 & LTE()
   lte(<number1>, <number2>[, ... , <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is less than or equal to the number after it, and 0 otherwise.
   
-See also: lt(), gt(), gte(), lnum()
+See also: lt(), gt(), gte(), lnum(), lmath(), lmath()
 & LVCON()
   lvcon(<object>)
 
@@ -3158,9 +3200,9 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
   output of lwho() from <viewer>'s point of view.
   
   <status> can be used to include "#-1" dbrefs for unconnected ports, and
-  must be one of "all", "online" or "offline". It is primarily useful when
-  using a <status> with lports(), to make the dbrefs and ports match up.
-  Only See_All players can see offline dbrefs.
+  must be one of "all", "online" (the default) or "offline". It is primarily 
+  useful when using a <status> with lports(), to make the dbrefs and ports 
+  match up. Only See_All players can see offline dbrefs.
 
   lwhoid() returns a list of objid's instead.
 
@@ -3207,7 +3249,10 @@ See also: anonymous attributes, iter(), @dolist
   To get the matching elements, instead of the indexes of where they appear
   in the list, use grab()/graball(). To see if a single string matches a
   wildcard pattern, use strmatch().
-  
+
+  See 'help match2' for examples.
+See also: grab(), strmatch(), member(), reglmatch(), WILDCARDS
+& MATCH2
   Examples:
     > say match(I am testing a test, test*)
     You say, "3"
@@ -3220,23 +3265,55 @@ See also: anonymous attributes, iter(), @dolist
   
     >say matchall(foo bar baz boing, sprocket)
     You say, ""
+& REGLMATCH()
+& REGLMATCHI()
+& REGLMATCHALL()
+& REGLMATCHALLI()
+  reglmatch(<list>, <regexp>[, <delimiter>])
+  reglmatchi(<list>, <regexp>[, <delimiter>])
+  reglmatchall(<list>, <regexp>[, <delimiter>[, <output separator>]])
+  reglmatchalli(<list>, <regexp>[, <delimiter>[, <output separator>]])
+
+  These functions are the regexp versions of match() and matchall().
+  reglmatch() returns the position of the first element in <list> which
+  matches the regular expression <regexp>. reglmatchi() does the same thing,
+  but case-insensitively.
   
-See also: grab(), strmatch(), member(), WILDCARDS
+  reglmatchall() returns the positions of all elements in <list> which match
+  <regexp>. reglmatchalli() is case-insensitive.
+  
+  In all cases, the elements of <list> are separated by <delimiter>, which
+  defaults to a space. The elements outputted by reglmatchall() are separated
+  by <output separator>, if one is given, or by <delimiter> if not.
+  
+  See 'help reglmatch2' for examples.
+See also: regmatch(), regrab(), match(), REGEXP SYNTAX
+& REGLMATCH2
+  Examples:
+  
+  > say reglmatch(I am testing a test, test)
+  You say, "3"
+  
+  > say reglmatch(I am testing a test, test$)
+  You say, "5"
+  
+  > say reglmatchall(I am testing a test, test, , |)
+  You say, "3|5"
 & MAX()
-  max(<number>[, ... , <numberN>])
+  max(<number1>, <number2>[, ... , <numberN>])
 
   This function returns the largest number in its list of arguments.
   It can take any number of arguments.
   
 See also: min(), lmath(), bound(), alphamax()
 & MEAN()
-  mean(<number>[, ... , <numberN>])
+  mean(<number1>, <number2>[, ... , <numberN>])
 
   Returns the mean (arithmetic average) of its arguments.
 
 See also: median(), stddev(), lmath()
 & MEDIAN()
-  median(<number>[, ... , <numberN>)
+  median(<number>, <number>[, ... , <numberN>)
 
   Returns the median (the middlemost numerically) of its arguments.
 
@@ -3297,9 +3374,9 @@ See also: @message, oemit(), remit(), speak()
     > say mid(testing, 2, -2)
     You say, "es"
 
-See also: left(), right(), delete() 
+See also: left(), right(), strdelete() 
 & MIN()
-  min(<number>[, ... , <numberN>])
+  min(<number1>, <number2>[, ... , <numberN>])
 
   This function returns the smallest number in its list of arguments.
   It can take any number of arguments.
@@ -3337,13 +3414,16 @@ See also: anonymous attributes, map(), step()
 & MODULO()
 & MODULUS()
 & REMAINDER()
-  mod(<number1>, <number2>)
-  modulo(<number1>, <number2>)
-  modulus(<number1>, <number2>)
-  remainder(<number1>, <number2>)
+  modulo(<number>, <number>[, ..., <numberN>])
+  remainder(<number>, <number>[, ..., <numberN>])
 
   remainder() returns the remainder of the integer division of the first
-  number by the second.  modulo() returns the modulo of the two numbers.
+  number by the second (and subsequent) number(s) (ie, the remainder from
+  calling div() with the same arguments).
+
+  modulo() returns the modulo of the given numbers (from calling floordiv()
+  with the same arguments).
+  
   For positive numbers, these are the same, but they may be different
   for negative numbers:
 
@@ -3357,7 +3437,7 @@ See also: anonymous attributes, map(), step()
 
   mod() and modulus() are aliases for modulo().
 
-See also: div(), fdiv(), lmath()
+See also: div(), lmath()
 & MONEY()
   money(<integer>)
   money(<object>)
@@ -3511,7 +3591,16 @@ See also: fullname()
   With two arguments, name() attempts to rename <object> to <new name>, as
   per @name.
 
-See also: fullname(), accname(), iname(), alias()
+See also: fullname(), accname(), iname(), alias(), moniker()
+& MONIKER()
+& CNAME()
+  moniker(<object>)
+  
+  Returns <object>'s name, with the color template from its @moniker applied.
+  moniker() always returns the colored name, even if monikers are disabled
+  via @config.
+  
+See also: MONIKERS, @moniker, name(), MONIKER, iname(), accname()
 & NAMELIST()
   namelist(<player-list>[, [<object>/]<attribute>])
 
@@ -3613,7 +3702,7 @@ See also: @stats, stats()
   
   Equivalent to not(or()) and not(cor()), but more efficient.
 
-See also: and(), or(), xor(), not(), nand()
+See also: and(), or(), xor(), not(), nand(), lmath()
 & NOT()
   not(<boolean>)
 
@@ -3768,7 +3857,7 @@ See also: @open, @link, dig(), link(), create(), pcreate()
   them are true, and 0 if all are false. or() always evaluates all of its
   arguments, while cor() stops evaluating as soon as one is true.
 
-See also: BOOLEAN VALUES, and(), nor(), firstof(), allof()
+See also: BOOLEAN VALUES, and(), nor(), firstof(), allof(), lmath()
 & ORFLAGS()
 & ORLFLAGS()
   orflags(<object>, <string of flag characters>)
@@ -3996,18 +4085,32 @@ See also: @quota, @squota, @allquota, QUOTAS, Quotas Power, No_Quota Power
 & R()
 & %q
 & R-FUNCTION
-  r(<register>)
+  r(<register>[, <type>])
   
-  The r() function is used to access "local registers", as set by the setq(),
-  setr() or letq() functions, and returns the contents of the specified
-  register. Available register names can be found with the listq() function.
+  The r() function can be used to access registers. It can retrieve the value
+  of q-registers set with setq() and related functions, as well as the 30 
+  stack values (the first ten of which are also available via %0-%9), and
+  also iter() and switch() context (also available through itext() and
+  stext(), respectively). The registers() function can be used to obtain a
+  list of available registers.
 
-  Registers whose name is a single character can be accessed with the
-  substitution '%q<register>'. Longer register names must be enclosed in
-  literal angle brackets. For example, r(0) and %q0 are equivilent, as far
-  r(foo) and %q<foo>.
+  <type> defaults to "qregisters", and must be one of:
   
-See also: setq(), letq(), listq(), unsetq()
+    qregisters - registers set with setq(), setr() and similar functions
+    args       - the stack, usually accessed via %0-%9. There are up to 30
+                 stack registers, plus named stack registers from 
+                 regexp $-commands
+    iter       - itext() context from iter() or @dolist. Must be an int, or
+                 "L" for the outermost itext().
+    switch     - stext() context from switch() or @switch. Must be an int,
+                 or "L" for the outermost stext()
+    regexp     - regexp capture names from re*() regexp functions
+
+  qregisters can also be accessed via the %qX (for one-char register names)
+  or %q<X> (for registers with longer names) substitutions.
+
+See also: setq(), letq(), listq(), unsetq(), registers(), v(), itext(),
+  stext(), ilev(), slev()
 & RAND()
   rand()
   rand(<num>)
@@ -4070,9 +4173,11 @@ See also: edit(), @edit, regmatch(), regrab()
   regmatch(<string>, <regexp>[, <register list>])
   regmatchi(<string>, <regexp>[, <register list>])
  
-  This function matches the regular expression <regexp> against the entirety
-  of <string>, returning 1 if it matches and 0 if it does not.  regmatchi() 
-  does the same thing, but case-insensitively.
+  regmatch() checks to see if the entirety of <string> matches the regular
+  expression <regexp>, and returns 1 if so and 0 if not. regmatchi() does the
+  same thing, but case-insensitively. They are the regexp-equivilent of 
+  strmatch(); if you're looking for a regexp version of match(), see 'help
+  reglmatch()'.
  
   If <register list> is specified, there is a side-effect: any parenthesized 
   substrings within the regular expression will be set into the specified 
@@ -4089,7 +4194,7 @@ See also: edit(), @edit, regmatch(), regrab()
 
   See 'help regmatch2' for an example.
 
-See also: regrab(), regedit(), valid(), reswitch(), regexp syntax
+See also: regrab(), regedit(), valid(), reswitch(), strmatch(), regexp syntax
 & REGMATCH2
 
   For example, in
@@ -4124,7 +4229,7 @@ See also: @remit, pemit(), lemit()
   Elements of <list> and <words> are both separated by <delimiter>, which
   defaults to a space.
   
-See also: insert(), ldelete(), setdiff()
+See also: linsert(), ldelete(), setdiff()
 & RENDER()
   render(<string>, <formats>)
   
@@ -4157,8 +4262,9 @@ See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
     You say, "TestTestTestTestTest"
 
 See also: space()
+& LREPLACE()
 & REPLACE()
-  replace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
+  lreplace(<list>, <position(s)>, <new item>[, <delimiter>[, <osep>]])
   
   This replaces the item(s) at the given <position(s)> in <list> with
   <new item>. <delimiter> defaults to a space, and <osep> defaults to 
@@ -4169,19 +4275,21 @@ See also: space()
   and so on.
   
   Examples:
-    > say replace(Turn north at the junction,2,south)
+    > say lreplace(Turn north at the junction,2,south)
     You say, "Turn south at the junction"
     
-    > say replace(Turn north at the junction,-1,crossroads)
+    > say lreplace(Turn north at the junction,-1,crossroads)
     You say, "Turn north at the crossroads"
     
-    > say replace(blue|red|green|yellow,3,white,|)
+    > say lreplace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
     
-    > say replace(this starts and ends the same, 1 -1, foo)
+    > say lreplace(this starts and ends the same, 1 -1, foo)
     You say, "foo starts and ends the foo"
   
-See also: ldelete(), setdiff(), splice()
+  replace() is an alias for lreplace(), for backwards compatability.
+  
+See also: ldelete(), linsert(), setdiff(), splice(), strreplace()
 & REST()
   rest(<list>[, <delimiter>])
 
@@ -4208,13 +4316,16 @@ See also: flip()
 
 See also: left(), mid()
 & RJUST()
-  rjust(<string>, <length>[, <fill>])
+  rjust(<string>, <length>[, <fill>[, <truncate?>]])
+
+  This function returns <string>, padded on the left with the string <fill>
+  until it's <length> characters long. <fill> can be more than one character
+  in length, and defaults to a single space.
   
-  This function pads a string with leading characters  ("right-justifies") 
-  so it is <length> long. If <string> is longer than <length>, the <string>
-  is returned; it is not truncated. <fill> can be more than one character
-  in length, and defaults to a space.
- 
+  If <string> is longer than <length>, it will be returned unaltered, unless
+  <truncate?> is true, in which case only the last <length> characters of
+  <string> are returned.
+  
   Examples:
     > say -[rjust(foo,6)]-
     You say, "-   foo-"
@@ -4227,7 +4338,10 @@ See also: left(), mid()
     > say rjust(foo,12,=-)
     You say, "=-=-=-=-=foo"
 
-See also: align(), center(), ljust()
+    > say ljust(This is too long, 9)
+    You say, " too long"
+
+See also: align(), center(), ljust(), right()
 & RLOC()
   rloc(<object>, <levels>) 
   
@@ -4300,7 +4414,7 @@ See also: sqrt(), power()
  
 See also: ceil(), floor(), bound(), trunc()
 & FN()
-  fn(<function name>[, <arg0>[, ... , <argN>]])
+  fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
   fn() executes the built-in/hardcoded function <function name>, even if the
   function has been deleted or overridden with @function. It is primarily 
@@ -4314,9 +4428,8 @@ See also: ceil(), floor(), bound(), trunc()
     > think pemit(me,test)
     -->test   (in highlighted letters)
 
-  To restrict the use of fn() to @functions only (to prevent players
-  from skirting softcoded replacements), use @function/restrict
-  fn=userfn.
+  To restrict the use of fn() to @functions only (to prevent players from 
+  skirting softcoded replacements), use @function/restrict fn=userfn.
 
   To prevent deleted functions from being used with fn(), @function/disable
   them prior to deleting.
@@ -4324,18 +4437,20 @@ See also: ceil(), floor(), bound(), trunc()
   Continued in 'help fn2'.
 & FN2
 
-  The built-in function is run as the object calling fn(), which means that
-  permissions may be checked for the wrong object. objeval() can be useful
-  in getting around this problem. 
+  If <obj> is specified, the built-in function will be executed as <obj>,
+  rather than as the object which called fn(). This is useful when using
+  fn() to replace a side-effect function, to ensure priviledge checks, etc,
+  are done correctly. You must control <obj>, or (if function side effects 
+  are disabled) must be see_all.
   
+  When an <obj> is given, debug information is automatically suppressed when
+  evaluating the built-in function.
+
   Example:
-    > &BRIGHT_PEMIT #10=objeval(%@,pemit(%0,-->[ansi(h,%1)]))
-    @@ Make sure the caller doesn't see debug information for the objeval()'d
-    @@ code, even if he's set DEBUG.
-    > @set #10/BRIGHT_PEMIT=no_debug
+    > &BRIGHT_PEMIT #10=fn(%@/pemit, %0, -->[ansi(h,%1)]))
     > @function/delete PEMIT
     > @function PEMIT=#10, BRIGHT_PEMIT
-    > @lock/pemit *Mike=!=*Padraic
+    > @lock/page *Mike=!=*Padraic
     
     (As Padraic)
     > think pemit(me,test)
@@ -5064,10 +5179,13 @@ See also: merge()
 
   Each row of the result is passed to <attribute>, with the first nine 
   columns available as %1-%9, and twenty more available via v(10) - v(29).
-  %0 is set to the row number, which will start with 1.
+  %0 is set to the row number, which will start with 1. The fields will also
+  be available as named arguments, with r(<field name>, args) returning the
+  appropriate value.
 
   If <dofieldnames> evaluates to a true boolean, then the first call will be
-  with row number 0 and %1-%9 will be set to the field names.
+  with row number (%0) set to 0, and %1-%9 and v(10) - v(29) will be set to 
+  the field names.
 
   See 'help sql examples' for examples.
 
@@ -5114,10 +5232,14 @@ See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
     quote           text
 
     > &each_bb me=(%0) - %1 (%2)
-    > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+    > &query me=SELECT `name`, count(*) AS `total` FROM `bbs` GROUP BY 
+           `name` ORDER BY `name`
     > think mapsql(each_bb, v(query), %r)
     (1) - Announcements (5)
     (2) - Advertisements (20)
+
+  The same thing can be done using named arguments:
+    > &each_bb me=(%0) - [r(name, args)] ([r(total, args)])
 
   Using sql() to update fields:
     > &update me=UPDATE `foo` SET `time` = '[sqlescape(%0)]' WHERE 
@@ -5214,23 +5336,23 @@ See also: terminfo()
 
   Example:
     > &foo me=%0 - %1 - %2
-    > think step(foo, 1 2 3 4 5, 3,, %r)
-    1 - 2 - 3
-    4 - 5 -
+    > think step(foo, a b c d e, 3,, %r)
+    a - b - c
+    d - e -
     
   Using registers() to avoid extra delimiters:
     > &foo me=iter(registers(,args),v(%i0),,%b-%b)
-    > think step(foo, 1 2 3 4 5, 3,, %r)
-    1 - 2 - 3
-    4 - 5
+    > think step(foo, a b c d e, 3,, %r)
+    a - b - c
+    d - e
 
 See also: map(), iter(), fold(), anonymous attributes, registers()
 & STDDEV()
-  stddev(<number1>[, ... , <numberN>])
+  stddev(<number1>, <number2>[, ... , <numberN>])
 
   Returns the sample standard deviation of its arguments.
 
-See also: mean(), median()
+See also: mean(), median(), lmath()
 & STRFIRSTOF()
 & STRALLOF()
   strfirstof(<expr>[, ... , <exprN>], <default>)
@@ -5270,7 +5392,7 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
     > think strinsert(Myname, 2, %b)
     My name
 
-See also: delete(), insert(), strreplace()
+See also: strdelete(), linsert(), strreplace()
 & STRIPACCENTS()
   stripaccents(<string>)
 
@@ -5297,13 +5419,13 @@ See also: words(), strfirstof()
 & STRMATCH()
   strmatch(<string>, <pattern>[, <register list>])
   
-  This function matches <pattern> against the entire <string>. It returns 
-  1 if it matches and 0 if it doesn't. It is not case-sensitive, and 
-  <pattern> may contain wildcards.
+  This function matches <pattern> against the entire <string>. It returns 1
+  if it matches and 0 if it doesn't. It is not case-sensitive, and <pattern>
+  may contain wildcards.
 
-  If <register list> is given, there is a side-effect: Wildcards and
-  patterns are stored in q-registers, in the order they are given. 
-  <register list> must be a space-separated list of digits or letters.
+  If <register list> is given, there is a side-effect: Wildcards and patterns
+  are stored in q-registers, in the order they are given. <register list> is
+  a space-separated list of register names.
  
   Examples:
     > say strmatch(Foo bar baz, *Baz) 
@@ -5317,6 +5439,9 @@ See also: words(), strfirstof()
     
     > say strmatch(foo:bar,*:*,0 1)/%q0/%q1
     You say, "1/foo/bar"
+    
+    > say strmatch(foo:bar=baz,*:*=*,L1 L2 right)/%q<L1>/%q<L2>/%q<right>
+    You say, "1/foo/bar/baz"
 
 See also: comp(), match(), setq(), r()
 & STRREPLACE()
@@ -5328,12 +5453,18 @@ See also: comp(), match(), setq(), r()
 
   If <start> is less than 0, an error is returned, and if <start> is
   greater than the length of <string>, <string> is returned.
+  
+  strreplace() attempts to preserve ansi: if <text> contains ansi, it will
+  be kept the same. If <text> contains no ansi, but <string> does, <text>
+  will be inserted with the same ansi as the text it replaces. To force
+  <text> to be inserted with no ansi, even if <string> has ansi, wrap it 
+  in ansi(n,....).
 
   Example:
     > think strreplace(Fix teh typo, 4, 3, the)
     Fix the typo
 
-See also: delete(), strinsert(), ldelete(), replace()
+See also: strdelete(), strinsert(), ldelete(), lreplace()
 & SUB()
   sub(<number1>, <number>[, ... , <number>])
 
@@ -5595,20 +5726,18 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
     "
 & TIME()
 & UTCTIME()
-  time([utc])
-  utctime()
+  time()
   time(<timezone>)
   time(<dbref>)
 
-  time() gives you the current time on the MUSH.  WARNING!  This is
-  the time on the machine that the MUSH is running on, and not where
-  you are.
+  time() gives you the current time on the MUSH. By default this is the time
+  on the server the MUSH is running on, and not the time of the caller.
 
-  utctime() and time(utc) give the same time in UTC (aka GMT), not the
-  server's local timezone.
+  With an argument, time() returns the time in the specified timezone, or in
+  the timezone set in the specified object's TZ attribute; for more 
+  information, see 'help timezones'.
 
-  To control what time zone is used, specify it instead of 'utc'. See
-  HELP TIMEZONES for details.
+  utctime() is an alias for time(utc).
 
 Continued in HELP TIME2
 & TIME2
@@ -5625,7 +5754,7 @@ Continued in HELP TIME2
     > think time(US/Pacific)
     Thu Mar 01 19:20:25 2012
 
-See also: timefmt(), timestring(), convsecs(), convtime()
+See also: timefmt(), timestring(), convsecs(), convtime(), TIMEZONES
 & TIMEZONES
 & @TZ
 
@@ -5997,6 +6126,8 @@ Continued in HELP TIMEZONES13
     1m
     > think etime(61)
     1m  1s
+    > think etime(61, 5)
+    1m
 
 See also: etimefmt(), timestring(), stringsecs()
 & ETIMEFMT()
@@ -6044,7 +6175,7 @@ See also: timestring(), timefmt(), etime()
     > think squish(etimefmt(Connected for $zxd $xzh $zxm $xzs, conn(me)))
     Connected for 5h 24m 45s
 & TIMEFMT()
-  timefmt(<format>[, <secs>, <timezone>])
+  timefmt(<format>[, <secs>[, <timezone>]])
 
   This function returns the time and date, formatted according to <format>.
   <secs> is the time/date to format, as the number of seconds since the 
@@ -6429,38 +6560,55 @@ See also: STACK, REGISTERS, SUBSTITUTIONS, get(), r(), ATTRIBUTES
   
 See also: VECTOR FUNCTIONS
 & VALID()
-  valid(<category>, <string>)
+  valid(<category>, <string>[, <target>])
 
-  The valid() function checks to see if <string> is a valid member of
-  <category>, and returns 1 if it is, 0 if not, and #-1 if an invalid
-  category is used.
+  The valid() function checks to see if <string> can be used as a valid 
+  <category>, and returns 1 if so, 0 if not, and #-1 if an invalid category is
+  used. For some categories, a <target> can be given to make the check more
+  specific.
   
   The categories are:
    name        Test for a valid object name.
    attrname    Test for a valid attribute name.
-   playername  Test for a valid player name that can be set with
-                @name or @alias.
+   attrvalue   Test if <string> is a valid value for the attribute <target>.
+               Meaningful for standard attributes with @attrib/enum or /limit.
+   playername  Test if <target> could @name himself to <string>. <target>
+                defaults to the caller.
    password    Test for a valid password.
-   command     Test for a valid command name for @command/add
-   function    Test for a valid function name for @function
+   command     Test for a valid command name for @command/add.
+   function    Test for a valid function name for @function.
    flag        Test for a valid flag/power name for @flag/add and @power/add
    qreg        Test for a valid name for a q-register.
-   colorname   Test for a valid color name for ansi()/colors()
-   ansicodes   Test for a valid color code sequence for ansi(<string>, ...)
+   colorname   Test for a valid color name for ansi()/colors().
+   ansicodes   Test for a valid color code sequence for ansi(<string>, ...).
+   channel     Test for a valid channel name. If <target> is given, check to
+                see if channel <target> could be renamed to <string>.
 
   Note that, for "playername", valid() returns 0 if the name is valid but
-  currently in use by a player other than the caller.
+  currently in use by a player other than <target>.
   
   For "ansicodes", when not using new-style color names or hex codes, valid()
   always returns 1, and invalid codes are simply ignored, the same as when
   used in the ansi() function.
 
+  See 'help valid2' for examples.
+See also: colors(), ansi()
+& valid2
+
   > think valid(name,Foobar)
   1 
   > think valid(attrname,Foo bar)
   0
+  
+  A player can change his own name to a variation of his current name,
+  but other players cannot:
+  > think pmatch(Foobar)/%#
+  #3/#4
+  > think valid(playername, FOOBAR)
+  0
+  > think valid(playername, FOOBAR, #3)
+  1
 
-See also: colors(), ansi()
 & VCROSS()
   vcross(<vector1>, <vector2>[, <delimiter>])
 
@@ -6535,10 +6683,10 @@ See also: VECTOR FUNCTIONS
     You say "1008001004"
      
     > say version()
-		You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
-		          (r1374 2012-02-23)"
-		> say numversion()
-		You say, "1008005000"
+        You say, "PennMUSH version 1.8.5 patchlevel 0 [02/12/2012] 
+                  (r1374 2012-02-23)"
+        > say numversion()
+        You say, "1008005000"
 
 See also: @version
 & VISIBLE()
@@ -6721,7 +6869,7 @@ See also: nattr(), lattr(), wildcards
   Takes two or more booleans and returns a 1 if one, and only one, of
   the inputs is equivalent to true(1).
 
-See also: BOOLEAN VALUES, and(), or(), not(), nor()
+See also: BOOLEAN VALUES, and(), or(), not(), nor(), lmath()
 & XVCON()
 & XCON()
   xcon(<object>, <start>, <count>)

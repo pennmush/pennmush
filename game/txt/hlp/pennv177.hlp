@@ -567,7 +567,7 @@ Minor changes:
   * Renaming something triggers its ONAME and ANAME attributes, if present.
     The old name is passed as %0; the new as %1. Suggested by Philip Mak.
   * Owner information on ex/br is reported using the usual object_header()
-    so dbref and flags appear. Suggested by Eratl@M*U*S*H.
+    so dbref and flags appear. Suggested by Rince@M*U*S*H.
   * Flags that are F_DARK or F_MDARK no longer appear on @flag/list
     by non-admin. Suggested by Philip Mak.
   * Warn players who set themselves SHARED with a weak zone lock.

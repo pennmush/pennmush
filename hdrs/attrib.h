@@ -7,8 +7,10 @@
 #ifndef _ATTRIB_H
 #define _ATTRIB_H
 
-#include "mushtype.h"
 #include "chunk.h"
+#include "compile.h"
+#include "dbio.h"
+#include "mushtype.h"
 
 /** An attribute on an object.
  * This structure represents an attribute set on an object.
@@ -33,11 +35,13 @@ void do_attribute_delete(dbref player, char *name);
 void do_attribute_rename(dbref player, char *old, char *newname);
 void do_attribute_info(dbref player, char *name);
 void do_list_attribs(dbref player, int lc);
+void do_decompile_attribs(dbref player, char *pattern, int retroactive);
 char *list_attribs(void);
 void attr_init_postconfig(void);
 const char *check_attr_value(dbref player, const char *name, const char *value);
 int cnf_attribute_access(char *attrname, char *opts);
 
+void add_new_attr(char *name, uint32_t flags);
 /* From attrib.c */
 
 /** atr_add(), atr_clr() error codes */
@@ -97,11 +101,14 @@ void attr_write_all(PENNFILE *f);
 int can_read_attr_internal(dbref player, dbref obj, ATTR *attr);
 int can_write_attr_internal(dbref player, dbref obj, ATTR *attr, int safe);
 bool can_edit_attr(dbref player, dbref thing, const char *attrname);
-unsigned const char *atr_get_compressed_data(ATTR *atr);
-#define atr_value(a) safe_atr_value((a))
+const char *atr_get_compressed_data(ATTR *atr);
+char *atr_value(ATTR *atr);
 char *
 safe_atr_value(ATTR *atr)
   __attribute_malloc__;
+
+
+    void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
 
 /* possible attribute flags */
 /* 2013-03-03 MG: Several attrflags are marked "OBSOLETE! Leave here
@@ -150,7 +157,7 @@ safe_atr_value(ATTR *atr)
 #define AF_ODARK        0x1U
 
 
-extern ATTR attr[];           /**< external predefined attributes. */
+    extern ATTR attr[];       /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)

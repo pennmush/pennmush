@@ -7,7 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -26,19 +25,21 @@
 #endif
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "attrib.h"
-#include "lock.h"
-#include "flags.h"
-#include "match.h"
 #include "ansi.h"
-#include "parse.h"
+#include "attrib.h"
+#include "conf.h"
 #include "dbdefs.h"
-#include "privtab.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
+#include "lock.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "parse.h"
+#include "privtab.h"
+#include "strutil.h"
 
 int forbidden_name(const char *name);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
@@ -125,10 +126,11 @@ charge_action(dbref thing)
  */
 int
 did_it(dbref player, dbref thing, const char *what, const char *def,
-       const char *owhat, const char *odef, const char *awhat, dbref loc)
+       const char *owhat, const char *odef, const char *awhat, dbref loc,
+       int an_flags)
 {
   return real_did_it(player, thing, what, def, owhat, odef, awhat, loc, NULL,
-                     NA_INTER_HEAR);
+                     NA_INTER_HEAR, an_flags);
 }
 
 /** A wrapper for real_did_it that can set %0 and %1 to dbrefs.
@@ -149,7 +151,7 @@ did_it(dbref player, dbref thing, const char *what, const char *def,
 int
 did_it_with(dbref player, dbref thing, const char *what, const char *def,
             const char *owhat, const char *odef, const char *awhat,
-            dbref loc, dbref env0, dbref env1, int flags)
+            dbref loc, dbref env0, dbref env1, int flags, int an_flags)
 {
   PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "did_it_with");
   int retval;
@@ -161,7 +163,7 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
     pe_regs_setenv(pe_regs, 1, unparse_dbref(env1));
   }
   retval = real_did_it(player, thing, what, def, owhat, odef, awhat, loc,
-                       pe_regs, flags);
+                       pe_regs, flags, an_flags);
 
   pe_regs_free(pe_regs);
   return retval;
@@ -184,11 +186,11 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
 int
 did_it_interact(dbref player, dbref thing, const char *what, const char *def,
                 const char *owhat, const char *odef, const char *awhat,
-                dbref loc, int flags)
+                dbref loc, int flags, int an_flags)
 {
   /* Bunch o' nulls */
   return real_did_it(player, thing, what, def, owhat, odef, awhat, loc, NULL,
-                     flags);
+                     flags, an_flags);
 }
 
 /** Take an action on an object and trigger attributes.
@@ -214,7 +216,7 @@ did_it_interact(dbref player, dbref thing, const char *what, const char *def,
 int
 real_did_it(dbref player, dbref thing, const char *what, const char *def,
             const char *owhat, const char *odef, const char *awhat, dbref loc,
-            PE_REGS *pe_regs, int flags)
+            PE_REGS *pe_regs, int flags, int an_flags)
 {
 
   char buff[BUFFER_LEN], *bp;
@@ -248,11 +250,13 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
+        if (!call_ufun_int
+            (&ufun, buff, thing, player, pe_info, pe_regs,
+             (void *) AName(player, an_flags, NULL)) && buff[0])
           notify_except2(player, loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
-        safe_format(buff, &bp, "%s %s", Name(player), odef);
+        safe_format(buff, &bp, "%s %s", AName(player, an_flags, NULL), odef);
         *bp = '\0';
         notify_except2(player, loc, player, thing, buff, flags);
       }
@@ -494,7 +498,7 @@ payfor(dbref who, int cost)
   if ((tmp = Pennies(owner)) >= cost) {
     if (Track_Money(owner)) {
       notify_format(owner, T("GAME: %s(%s) spent %d %s."),
-                    Name(who), unparse_dbref(who), cost,
+                    AName(who, AN_SYS, NULL), unparse_dbref(who), cost,
                     (cost == 1) ? MONEY : MONIES);
     }
     s_Pennies(owner, tmp - cost);
@@ -502,7 +506,7 @@ payfor(dbref who, int cost)
   } else {
     if (Track_Money(owner)) {
       notify_format(owner, T("GAME: %s(%s) tried to spend %d %s."),
-                    Name(who), unparse_dbref(who), cost,
+                    AName(who, AN_SYS, NULL), unparse_dbref(who), cost,
                     (cost == 1) ? MONEY : MONIES);
     }
     return 0;
@@ -650,18 +654,18 @@ forbidden_name(const char *name)
 int
 ok_name(const char *n, int is_exit)
 {
-  const unsigned char *p, *name = (const unsigned char *) n;
+  const char *p, *name = n;
 
   if (!name || !*name)
     return 0;
 
   /* No leading spaces */
-  if (isspace((unsigned char) *name))
+  if (isspace(*name))
     return 0;
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint((unsigned char) *p))
+    if (!isprint(*p))
       return 0;
     if (ONLY_ASCII_NAMES && *p > 127)
       return 0;
@@ -671,11 +675,11 @@ ok_name(const char *n, int is_exit)
 
   /* No trailing spaces */
   p--;
-  if (isspace((unsigned char) *p))
+  if (isspace(*p))
     return 0;
 
   /* Not too long */
-  if (u_strlen(name) >= OBJECT_NAME_LIMIT)
+  if (strlen(name) >= OBJECT_NAME_LIMIT)
     return 0;
 
   /* No magic cookies */
@@ -683,9 +687,9 @@ ok_name(const char *n, int is_exit)
           && *name
           && *name != LOOKUP_TOKEN
           && *name != NUMBER_TOKEN
-          && *name != NOT_TOKEN && (is_exit || strcasecmp((char *) name, "me"))
-          && strcasecmp((char *) name, "home")
-          && strcasecmp((char *) name, "here"));
+          && *name != NOT_TOKEN && (is_exit || strcasecmp(name, "me"))
+          && strcasecmp(name, "home")
+          && strcasecmp(name, "here"));
 }
 
 /** Is a name a valid player name when applied by player to thing?
@@ -703,19 +707,19 @@ ok_name(const char *n, int is_exit)
 int
 ok_player_name(const char *name, dbref player, dbref thing)
 {
-  const unsigned char *scan, *good;
+  const char *scan, *good;
   dbref lookup;
 
   if (!ok_name(name, 0) || strlen(name) > (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
-  good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");
+  good = (PLAYER_NAME_SPACES || Wizard(player) ? " `$_-.,'" : "`$_-.,'");
 
   /* Make sure that the name contains legal characters only */
-  for (scan = (unsigned char *) name; scan && *scan; scan++) {
-    if (isalnum((unsigned char) *scan))
+  for (scan = name; scan && *scan; scan++) {
+    if (isalnum(*scan))
       continue;
-    if (!strchr((char *) good, *scan))
+    if (!strchr(good, *scan))
       return 0;
   }
 
@@ -909,14 +913,14 @@ ok_player_alias(const char *alias, dbref player, dbref thing)
 int
 ok_password(const char *password)
 {
-  const unsigned char *scan;
+  const char *scan;
   if (password == NULL)
     return 0;
 
   if (*password == '\0')
     return 0;
 
-  for (scan = (const unsigned char *) password; *scan; scan++) {
+  for (scan = password; *scan; scan++) {
     if (!(isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
@@ -936,10 +940,10 @@ ok_password(const char *password)
 int
 ok_command_name(const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   int cnt = 0;
   /* First char: uppercase alphanum or legal punctuation */
-  switch ((unsigned char) *name) {
+  switch (*name) {
   case SAY_TOKEN:
   case POSE_TOKEN:
   case SEMI_POSE_TOKEN:
@@ -951,14 +955,13 @@ ok_command_name(const char *name)
   case '[':
     return 0;
   default:
-    if (!isupper((unsigned char) *name) && !isdigit((unsigned char) *name)
-        && !ispunct((unsigned char) *name))
+    if (!isupper(*name) && !isdigit(*name) && !ispunct(*name))
       return 0;
   }
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
    */
-  for (p = (unsigned char *) name; p && *p; p++) {
+  for (p = name; p && *p; p++) {
     if (isspace(*p))
       return 0;
     if (isupper(*p))
@@ -983,10 +986,10 @@ ok_command_name(const char *name)
 int
 ok_function_name(const char *name)
 {
-  const unsigned char *p;
+  const char *p;
   int cnt = 0;
   /* First char: uppercase alpha or legal punctuation */
-  switch ((unsigned char) *name) {
+  switch (*name) {
   case SAY_TOKEN:
   case POSE_TOKEN:
   case SEMI_POSE_TOKEN:
@@ -999,7 +1002,7 @@ ok_function_name(const char *name)
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
    */
-  for (p = (unsigned char *) name; p && *p; p++) {
+  for (p = name; p && *p; p++) {
     if (isspace(*p) || !isprint(*p))
       return 0;
     if (isupper(*p))
@@ -1026,11 +1029,11 @@ ok_function_name(const char *name)
 int
 ok_tag_attribute(dbref player, const char *params)
 {
-  const unsigned char *p, *q;
+  const char *p, *q;
 
   if (!GoodObject(player) || Can_Pueblo_Send(player))
     return 1;
-  p = (const unsigned char *) params;
+  p = params;
   while (*p) {
     while (*p && isspace(*p))
       p++;
@@ -1041,8 +1044,7 @@ ok_tag_attribute(dbref player, const char *params)
       size_t n = q - p;
       /* Invalid params for non-priv'd. Turn to a hashtable if we ever
          get more? */
-      if (strncasecmp((char *) p, "SEND", n) == 0
-          || strncasecmp((char *) p, "XCH_CMD", n) == 0)
+      if (strncasecmp(p, "SEND", n) == 0 || strncasecmp(p, "XCH_CMD", n) == 0)
         return 0;
       while (*q && isspace(*q))
         q++;
@@ -1086,10 +1088,6 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
   if (!argv[1])
     return;
 
-  pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
-  pe_regs_clear(pe_regs);
-  pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
-
   /* now try a wild card match of buff with stuff in coms */
   for (a = 1;
        !(first && any) && (a < (MAX_ARG - 1)) && argv[a] && argv[a + 1];
@@ -1099,44 +1097,45 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     bp = buff;
     if (process_expression(buff, &bp, &ap, executor, enactor, enactor,
                            PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
-      pe_regs_free(pe_regs);
       return;
     }
     *bp = '\0';
     /* check for a match */
-    pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
+    pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
+    pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
     if (regexp ? regexp_match_case_r(buff, expression, 0,
-                                     NULL, 0, NULL, 0, pe_regs)
+                                     NULL, 0, NULL, 0, pe_regs, 0)
         : local_wild_match(buff, expression, pe_regs)) {
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
       if (!any) {
         /* Add the new switch context to the parent queue... */
         any = 1;
       }
-      if (queue_type != QUEUE_DEFAULT) {
+      if (queue_type & QUEUE_INPLACE) {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_SHARE, queue_type, pe_regs);
       } else {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+                             PE_INFO_CLONE, queue_type, pe_regs);
       }
     }
   }
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
-    if (queue_type != QUEUE_DEFAULT) {
+    pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
+    pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
+    if (queue_type & QUEUE_INPLACE) {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);
     } else {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
-                           PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+                           PE_INFO_CLONE, queue_type, pe_regs);
     }
   }
-  pe_regs_free(pe_regs);
-  if (queue_type == QUEUE_DEFAULT) {
-    if (notifyme)
-      parse_que(executor, enactor, "@notify me", NULL);
+
+  if (!(queue_type & QUEUE_INPLACE) && notifyme) {
+    parse_que(executor, enactor, "@notify me", NULL);
   }
 }
 
@@ -1168,7 +1167,7 @@ parse_match_possessor(dbref player, char **str, int exits)
   /* skip over the 's' and whitespace */
   do {
     obj++;
-  } while (isspace((unsigned char) *obj));
+  } while (isspace(*obj));
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */
@@ -1196,11 +1195,11 @@ page_return(dbref player, dbref target, const char *type,
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
-                      Name(target), buff);
+                      AName(target, AN_SYS, NULL), buff);
         if (!Haven(target))
           notify_format(target,
                         T("[%d:%02d] %s message sent to %s."), ptr->tm_hour,
-                        ptr->tm_min, type, Name(player));
+                        ptr->tm_min, type, AName(player, AN_SYS, NULL));
       }
     } else if (def && *def)
       notify(player, def);
@@ -1327,12 +1326,13 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
 
   real_did_it(actor, victim,
               upcasestr(argv[2]), argv[3], upcasestr(argv[4]), argv[5],
-              NULL, Location(actor), pe_regs, NA_INTER_HEAR);
+              NULL, Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
 
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, 0);
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs,
+                         (queue_entry->queue_type & QUEUE_EVENT));
 
   pe_regs_free(pe_regs);
 }
@@ -1384,45 +1384,57 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 {
   struct grep_data *gd = args;
   char *s;
-  char b1[BUFFER_LEN], b2[BUFFER_LEN];
-  char *tp = b1;
+  char buff[BUFFER_LEN];
+  char *bp = buff;
   int matched = 0;
   int cs;
+  ansi_string *aval = NULL, *repl = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
-  s = (char *) atr_value(attr); /* warning: static */
+  s = atr_value(attr);
+
   if (gd->flags & GREP_WILD) {
     if ((matched = quick_wild_new(gd->findstr, s, cs))) {
       /* Since, in order for a wildcard match to succeed, the _entire
          attribute_ value had to match the pattern, not just a substring,
          highlighting is totally pointless */
-      strcpy(b1, s);
+      strcpy(buff, s);
     }
   } else {
+    aval = parse_ansi_string(s);
+    s = aval->text;
+    repl =
+      parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
     while (s && *s) {
       if (!
           (cs ? strncmp(s, gd->findstr, gd->findlen) :
            strncasecmp(s, gd->findstr, gd->findlen))) {
         matched = 1;
-        strncpy(b2, s, gd->findlen);
-        b2[gd->findlen] = '\0';
+        ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         s += gd->findlen;
-        safe_format(b1, &tp, "%s%s%s", ANSI_HILITE, b2, ANSI_END);
       } else {
-        safe_chr(*s, b1, &tp);
         s++;
       }
     }
-    *tp = '\0';
+    free_ansi_string(repl);
+    repl = NULL;
+  }
+
+  if (aval) {
+    safe_ansi_string(aval, 0, aval->len, buff, &bp);
+    *bp = '\0';
+    free_ansi_string(aval);
   }
 
   if (!matched)
     return 0;
 
-  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, b1);
+  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, buff);
   gd->count++;
   return 1;
 }
+
+extern const unsigned char *tables;
 
 static int
 regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
@@ -1487,6 +1499,8 @@ int
 grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
           char **bp, int flags)
 {
+  char cleanfind[BUFFER_LEN];
+
   if (!findstr || !*findstr) {
     if (buff)
       safe_str(T("#-1 INVALID GREP PATTERN"), buff, bp);
@@ -1498,17 +1512,20 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
   if (!attrs || !*attrs)
     attrs = "**";
 
+  strcpy(cleanfind, remove_markup(findstr, NULL));
+
   if (flags & GREP_REGEXP) {
     /* regexp grep */
     struct regrep_data rgd;
     const char *errptr;
     int erroffset;
     int reflags = 0;
+    bool free_study = false;
 
     if (flags & GREP_NOCASE)
       reflags |= PCRE_CASELESS;
 
-    if ((rgd.re = pcre_compile(findstr, reflags,
+    if ((rgd.re = pcre_compile(cleanfind, reflags,
                                &errptr, &erroffset, tables)) == NULL) {
       /* Matching error. */
       if (buff) {
@@ -1519,7 +1536,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       }
       return 0;
     }
-    rgd.study = pcre_study(rgd.re, 0, &errptr);
+    rgd.study = pcre_study(rgd.re, pcre_public_study_flags, &errptr);
     if (errptr != NULL) {
       if (buff) {
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
@@ -1530,6 +1547,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       return 0;
     }
     if (rgd.study) {
+      free_study = true;
       set_match_limit(rgd.study);
     } else {
       rgd.study = default_match_limit();
@@ -1539,13 +1557,18 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     rgd.count = 0;
 
     atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
+    if (free_study) {
+#ifdef PCRE_CONFIG_JIT
+      pcre_free_study(rgd.study);
+#endif
+    }
 
     return rgd.count;
   } else {
     /* Wildcard or plain substring grep */
     struct grep_data gd;
-    gd.findstr = findstr;
-    gd.findlen = strlen(findstr);
+    gd.findstr = cleanfind;
+    gd.findlen = strlen(cleanfind);
     gd.buff = buff;
     gd.bp = bp;
     gd.count = 0;
@@ -1600,7 +1623,7 @@ do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
     if (grep_util(player, thing, pattern, lookfor, buff, &bp, flags)) {
       *bp = '\0';
       notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
-                    Name(thing), thing, buff);
+                    AName(thing, AN_LOOK, NULL), thing, buff);
     } else
       notify(player, T("No matches."));
   }

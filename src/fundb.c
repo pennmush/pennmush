@@ -8,25 +8,25 @@
 
 #include "copyrite.h"
 
-#include "config.h"
 #include <string.h>
-#include "conf.h"
-#include "externs.h"
-#include "dbdefs.h"
-#include "flags.h"
 
-#include "match.h"
-#include "parse.h"
+#include "attrib.h"
 #include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
 #include "game.h"
-#include "mushdb.h"
-#include "privtab.h"
 #include "lock.h"
 #include "log.h"
-#include "attrib.h"
-#include "function.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "parse.h"
+#include "privtab.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -41,7 +41,6 @@ static dbref dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
                     int type, dbref loc, dbref after, int skipdark,
                     int start, int count, int listening, int *retcount,
                     NEW_PE_INFO *pe_info);
-
 
 const char *
 do_get_attrib(dbref executor, dbref thing, const char *attrib)
@@ -498,7 +497,7 @@ FUNCTION(fun_flags)
   char *p;
   ATTR *a;
   if (nargs == 0) {
-    safe_str(list_all_flags("FLAG", NULL, executor, 0x1), buff, bp);
+    safe_str(list_all_flags("FLAG", NULL, executor, FLAG_LIST_CHAR), buff, bp);
     return;
   }
   if ((p = strchr(args[0], '/')))
@@ -529,7 +528,7 @@ FUNCTION(fun_lflags)
   char *p;
   ATTR *a;
   if (nargs == 0) {
-    safe_str(list_all_flags("FLAG", NULL, executor, 0x2), buff, bp);
+    safe_str(list_all_flags("FLAG", NULL, executor, FLAG_LIST_NAME), buff, bp);
     return;
   }
   if ((p = strchr(args[0], '/')))
@@ -575,7 +574,7 @@ FUNCTION(fun_powers)
   dbref it;
 
   if (nargs == 0) {
-    safe_str(list_all_flags("POWER", NULL, executor, 0x2), buff, bp);
+    safe_str(list_all_flags("POWER", NULL, executor, FLAG_LIST_NAME), buff, bp);
     return;
   }
 
@@ -1770,6 +1769,20 @@ FUNCTION(fun_name)
   if (GoodObject(it))
     safe_str(shortname(it), buff, bp);
   else
+    safe_str(T(e_notvis), buff, bp);
+}
+
+/* ARGSUSED */
+FUNCTION(fun_moniker)
+{
+  dbref it;
+  /* bool accents = (strcmp(called_as, "AMONIKER") == 0); */
+
+  it = match_thing(executor, args[0]);
+  if (GoodObject(it)) {
+    safe_str(ansi_name(it, 0, NULL, 0), buff, bp);
+    /*safe_str(ansi_name(it, accents, NULL, 0), buff, bp); */
+  } else
     safe_str(T(e_notvis), buff, bp);
 }
 

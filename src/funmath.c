@@ -8,11 +8,14 @@
 
 #include "copyrite.h"
 
-#include "config.h"
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+
+#ifdef HAVE_FENV_H
+#include <fenv.h>
+#endif
 
 #ifdef HAVE_SSE2
 #include <emmintrin.h>
@@ -20,12 +23,14 @@
 #ifdef HAVE_SSE3
 #include <pmmintrin.h>
 #endif
+
 #include "conf.h"
 #include "externs.h"
-#include "sort.h"
-#include "parse.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "notify.h"
+#include "parse.h"
+#include "sort.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -36,8 +41,13 @@
 #define M_PI 3.14159265358979323846264338327
 #endif
 
+#ifndef M_PI_2
+#define M_PI_2		1.57079632679489661923  /* pi/2 */
+#endif
+
 #define EPSILON 0.000000001  /**< limit of precision for float equality */
-#define EQ(x,y) (fabs(x-y) < EPSILON)  /**< floating point equality macro */
+#define EQE(x,y,e) (fabs(x-y) < e)  /**< floating point equality macro */
+#define EQ(x,y) EQE(x,y,EPSILON)  /**< floating point equality macro */
 
 static void do_spellnum(char *num, unsigned int len, char **buff, char ***bp);
 static void do_ordinalize(char **buff, char ***bp);
@@ -119,7 +129,7 @@ is_ival(char const *str)
     return 1;
   if (!str)
     return 0;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -149,11 +159,11 @@ is_uival(char const *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uival_full(str, &end, 10);
@@ -305,7 +315,7 @@ FUNCTION(fun_inc)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("1", buff, bp);
@@ -313,7 +323,7 @@ FUNCTION(fun_inc)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -321,7 +331,7 @@ FUNCTION(fun_inc)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -352,7 +362,7 @@ FUNCTION(fun_dec)
     return;
   }
   p = args[0] + arglens[0] - 1;
-  if (!isdigit((unsigned char) *p)) {
+  if (!isdigit(*p)) {
     if (NULL_EQ_ZERO) {
       safe_str(args[0], buff, bp);
       safe_str("-1", buff, bp);
@@ -360,7 +370,7 @@ FUNCTION(fun_dec)
       safe_str(T("#-1 ARGUMENT MUST END IN AN INTEGER"), buff, bp);
     return;
   }
-  while ((isdigit((unsigned char) *p) || (*p == '-')) && p != args[0]) {
+  while ((isdigit(*p) || (*p == '-')) && p != args[0]) {
     if (*p == '-') {
       p--;
       break;
@@ -368,7 +378,7 @@ FUNCTION(fun_dec)
     p--;
   }
   /* p now points to the last non-numeric character in the string */
-  if (p == args[0] && (isdigit((unsigned char) *p) || (*p == '-'))) {
+  if (p == args[0] && (isdigit(*p) || (*p == '-'))) {
     /* Special case - it's all digits, but out of range. */
     safe_str(T(e_range), buff, bp);
     return;
@@ -884,7 +894,7 @@ FUNCTION(fun_fdiv)
 /* ARGSUSED */
 FUNCTION(fun_fmod)
 {
-  NVAL x, y;
+  NVAL x, y, m;
   if (!is_strict_number(args[0]) || !is_strict_number(args[1])) {
     safe_str(T(e_nums), buff, bp);
     return;
@@ -895,7 +905,23 @@ FUNCTION(fun_fmod)
     return;
   }
   x = parse_number(args[0]);
-  safe_number(fmod(x, y), buff, bp);
+
+#ifdef HAVE_FECLEAREXCEPT
+  errno = 0;
+  feclearexcept(FE_ALL_EXCEPT);
+#endif
+
+  m = fmod(x, y);
+
+#ifdef HAVE_FETESTEXCEPT
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#endif
+
+  safe_number(m, buff, bp);
 }
 
 /* ARGSUSED */
@@ -982,13 +1008,29 @@ FUNCTION(fun_pi)
 /* ARGSUSED */
 FUNCTION(fun_sin)
 {
-  NVAL angle;
+  NVAL angle, s;
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;
   }
   angle = angle_to_rad(parse_number(args[0]), args[1]);
-  safe_number(sin(angle), buff, bp);
+
+#ifdef HAVE_FECLEAREXCEPT
+  errno = 0;
+  feclearexcept(FE_ALL_EXCEPT);
+#endif
+
+  s = sin(angle);
+
+#ifdef HAVE_FETESTEXCEPT
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#endif
+
+  safe_number(s, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1010,13 +1052,29 @@ FUNCTION(fun_asin)
 /* ARGSUSED */
 FUNCTION(fun_cos)
 {
-  NVAL angle;
+  NVAL angle, c;
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;
   }
   angle = angle_to_rad(parse_number(args[0]), args[1]);
-  safe_number(cos(angle), buff, bp);
+
+#ifdef HAVE_FECLEAREXCEPT
+  errno = 0;
+  feclearexcept(FE_ALL_EXCEPT);
+#endif
+
+  c = cos(angle);
+
+#ifdef HAVE_FETESTEXCEPT
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#endif
+
+  safe_number(c, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1038,13 +1096,34 @@ FUNCTION(fun_acos)
 /* ARGSUSED */
 FUNCTION(fun_tan)
 {
-  NVAL angle;
+  NVAL angle, t;
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
     return;
   }
   angle = angle_to_rad(parse_number(args[0]), args[1]);
-  safe_number(tan(angle), buff, bp);
+
+  if (fmod(fabs(angle), M_PI_2) == 0.0 && fmod(fabs(angle), M_PI) != 0.0) {
+    /* To infinity and beyond! */
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#ifdef HAVE_FECLEAREXCEPT
+  errno = 0;
+  feclearexcept(FE_ALL_EXCEPT);
+#endif
+
+  t = tan(angle);
+
+#ifdef HAVE_FETESTEXCEPT
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#endif
+
+  safe_number(t, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1090,8 +1169,7 @@ FUNCTION(fun_e)
 /* ARGSUSED */
 FUNCTION(fun_power)
 {
-  NVAL num;
-  NVAL m;
+  NVAL num, m, p;
 
   if (!is_number(args[0]) || !is_number(args[1])) {
     safe_str(T(e_nums), buff, bp);
@@ -1099,17 +1177,35 @@ FUNCTION(fun_power)
   }
   num = parse_number(args[0]);
   m = parse_number(args[1]);
+
+#ifndef HAS_IEEE_MATH
   if (num < 0 && (!EQ(m, (int) m))) {
     safe_str(T("#-1 FRACTIONAL POWER OF NEGATIVE"), buff, bp);
     return;
   }
-#ifndef HAS_IEEE_MATH
+
   if ((num > 100) || (m > 100)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
 #endif
-  safe_number(pow(num, m), buff, bp);
+
+#ifdef HAVE_FECLEAREXCEPT
+  errno = 0;
+  feclearexcept(FE_ALL_EXCEPT);
+#endif
+
+  p = pow(num, m);
+
+#ifdef HAVE_FETESTEXCEPT
+  if (errno
+      || fetestexcept(FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW | FE_DIVBYZERO)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+#endif
+
+  safe_number(p, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1486,17 +1582,17 @@ FUNCTION(fun_xor)
 static void
 do_spellnum(char *num, unsigned int len, char **buff, char ***bp)
 {
-  static const char *bigones[] =
+  static const char *const bigones[] =
     { "", "thousand", "million", "billion", "trillion" };
-  static const char *singles[] = { "", "one", "two", "three", "four",
+  static const char *const singles[] = { "", "one", "two", "three", "four",
     "five", "six", "seven", "eight", "nine"
   };
-  static const char *special[] =
+  static const char *const special[] =
     { "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
     "sixteen",
     "seventeen", "eighteen", "nineteen"
   };
-  static const char *tens[] = { "", " ", "twenty", "thirty", "forty",
+  static const char *const tens[] = { "", " ", "twenty", "thirty", "forty",
     "fifty", "sixty", "seventy", "eighty", "ninety"
   };
   unsigned int x0, x1, x2;
@@ -1645,7 +1741,7 @@ FUNCTION(fun_spellnum)
       dot = 1;                  /* allow only 1 dot in a number */
       *pnumber = '\0';          /* devide the string */
       pnum2 = pnumber + 1;
-    } else if (!isdigit((unsigned char) *pnumber)) {
+    } else if (!isdigit(*pnumber)) {
       safe_str(T(e_num), buff, bp);
       return;
     }
@@ -1797,7 +1893,7 @@ FUNCTION(fun_lmath)
   int nptr;
   char sep;
   char **ptr;
-  MATH *op;
+  const MATH *op;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep)) {
     return;
@@ -1819,7 +1915,7 @@ FUNCTION(fun_lmath)
 
 /* Walker probably needs to convert from_base_XX arrays to a form
    suitable for putting in utils/gentables.c. Copy & paste is not it. ;)  */
-signed char from_base_64[256] = {
+static const signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, 62, -1, 63,
@@ -1838,10 +1934,10 @@ signed char from_base_64[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_64[] =
+static const signed char to_base_64[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-signed char from_base_36[256] = {
+static const signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1860,7 +1956,7 @@ signed char from_base_36[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+static const signed char to_base_36[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 
 FUNCTION(fun_baseconv)
@@ -1874,8 +1970,8 @@ FUNCTION(fun_baseconv)
 
 
   /* Base 36 by default. */
-  signed char *frombase = from_base_36;
-  signed char *tobase = to_base_36;
+  const signed char *frombase = from_base_36;
+  const signed char *tobase = to_base_36;
 
   if (!(is_integer(args[1]) && is_integer(args[2]))) {
     safe_str(T(e_ints), buff, bp);
@@ -1914,9 +2010,8 @@ FUNCTION(fun_baseconv)
     }
     while (*ptr) {
       n *= from;
-      if (frombase[(unsigned char) *ptr] >= 0 &&
-          frombase[(unsigned char) *ptr] < (int) from) {
-        n += frombase[(unsigned char) *ptr];
+      if (frombase[*ptr] >= 0 && frombase[*ptr] < (int) from) {
+        n += frombase[*ptr];
         ptr++;
       } else {
         safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
@@ -1931,7 +2026,7 @@ FUNCTION(fun_baseconv)
 
   /* Handle the 0-case. (And quickly handle < to_base case, too!) */
   if (n < to) {
-    safe_chr(tobase[(unsigned char) n], buff, bp);
+    safe_chr(tobase[n], buff, bp);
     return;
   }
 
@@ -1941,7 +2036,7 @@ FUNCTION(fun_baseconv)
   while (n > 0) {
     m = n % to;
     n = n / to;
-    safe_chr(tobase[(unsigned char) m], numbuff, &nbp);
+    safe_chr(tobase[m], numbuff, &nbp);
   }
 
   /* Reverse back onto buff. */

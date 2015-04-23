@@ -17,8 +17,12 @@
 #define __MYSOCKET_H
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
+
+#include <stddef.h>
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
 
 #ifdef WIN32
 #ifndef FD_SETSIZE
@@ -76,6 +80,8 @@ int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);
 void set_keepalive(int s, int timeout);
+bool is_blocking_err(int);
+
 /* Win32 uses closesocket() to close a socket, and so will we */
 #ifndef WIN32
 #define closesocket(s)  close(s)
@@ -85,7 +91,7 @@ extern BOOL GetErrorMessage(const DWORD dwError, LPTSTR lpszError, const UINT
 #endif
 
 
-#ifndef HAS_GETHOSTBYNAME2
+#if !defined(HAS_GETHOSTBYNAME2) && !defined(__CYGWIN__)
 #define gethostbyname2(host, type) gethostbyname((host))
 #endif
 

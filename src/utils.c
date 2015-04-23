@@ -7,8 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -37,20 +35,20 @@
 #include <stdint.h>
 #endif
 
-#include "conf.h"
-#include "match.h"
-#include "externs.h"
+#include "SFMT.h"
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
 #include "mushdb.h"
 #include "mymalloc.h"
-#include "log.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "attrib.h"
 #include "parse.h"
-#include "lock.h"
-#include "SFMT.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 dbref find_entrance(dbref door);
 void initialize_mt(void);
@@ -239,12 +237,14 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  * \param pe_info The pe_info passed to the FUNCTION
  * \param user_regs Other arguments that may want to be added. This nests BELOW
  *                the pe_regs created by call_ufun. (It is checked first)
+ * \param data a void pointer to extra data. Currently only used to pass the
+ *             name to use, when UFUN_NAME is given.
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
-          NEW_PE_INFO *pe_info, PE_REGS *user_regs)
+call_ufun_int(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
+              NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
 {
   char rbuff[BUFFER_LEN];
   char *rp, *np = NULL;
@@ -269,7 +269,7 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
   pe_regs_old = pe_info->regvals;
 
   if (ufun->ufun_flags & UFUN_LOCALIZE)
-    pe_reg_flags |= PE_REGS_Q;
+    pe_reg_flags |= PE_REGS_LOCALQ;
   else {
     pe_reg_flags |= PE_REGS_NEWATTR;
     if (ufun->ufun_flags & UFUN_SHARE_STACK)
@@ -303,7 +303,10 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
   }
 
   if (ufun->ufun_flags & UFUN_NAME) {
-    safe_str(Name(enactor), ret, &rp);
+    char *name = (char *) data;
+    if (!name || !*name)
+      name = (char *) Name(enactor);
+    safe_str(name, ret, &rp);
     if (!(ufun->ufun_flags & UFUN_NAME_NOSPACE))
       safe_chr(' ', ret, &rp);
     np = rp;
@@ -381,7 +384,7 @@ find_entrance(dbref door)
 {
   dbref room;
   dbref thing;
-  for (room = 0; room < db_top; room++)
+  for (room = 0; room < db_top; room++) {
     if (IsRoom(room)) {
       thing = Exits(room);
       while (thing != NOTHING) {
@@ -390,6 +393,7 @@ find_entrance(dbref door)
         thing = Next(thing);
       }
     }
+  }
   return NOTHING;
 }
 
@@ -506,6 +510,8 @@ reverse(dbref list)
   return newlist;
 }
 
+sfmt_t rand_state;
+
 /** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
  * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
 void
@@ -527,7 +533,7 @@ initialize_mt(void)
               "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
       fprintf(stderr, "Seeded RNG from /dev/urandom\n");
-      init_by_array(buf, r / sizeof(uint32_t));
+      sfmt_init_by_array(&rand_state, buf, r / sizeof(uint32_t));
       return;
     }
   } else
@@ -537,9 +543,9 @@ initialize_mt(void)
 #endif
   /* Default seeder. Pick a seed that's fairly random */
 #ifdef WIN32
-  init_gen_rand(GetCurrentProcessId() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
 #else
-  init_gen_rand(getpid() | (time(NULL) << 16));
+  sfmt_init_gen_rand(&rand_state, getpid() | (time(NULL) << 16));
 #endif
 }
 
@@ -583,7 +589,7 @@ get_random32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = gen_rand32();
+    n = sfmt_genrand_uint32(&rand_state);
   } while (n >= n_limit);
 
   return low + (n % x);
@@ -596,15 +602,18 @@ get_random32(uint32_t low, uint32_t high)
 char *
 fullalias(dbref it)
 {
+  char *n;
   ATTR *a = atr_get_noparent(it, "ALIAS");
 
   if (!IsExit(it)) {
-    if (!a)
+    if (!a) {
       return "";
+    }
 
-    return atr_value(a);
+    n = GC_STRDUP(atr_value(a));
   } else {
-    char *n, *np, *sep;
+    char *np;
+    char *sep;
 
     np = n = GC_MALLOC_ATOMIC(BUFFER_LEN);
     
@@ -618,8 +627,9 @@ fullalias(dbref it)
       safe_str(atr_value(a), n, &np);
     }
     *np = '\0';
-    return n;
   }
+
+  return n;
 }
 
 /** Return only the first component of an object's alias. We expect
@@ -637,7 +647,7 @@ shortalias(dbref it)
     return "";
 
   n = GC_STRDUP(s);
-
+  
   copy_up_to(n, s, ';');
 
   return n;
@@ -661,6 +671,72 @@ shortname(dbref it)
   }
   return n;
 }
+
+#define set_mp(x) if (had_moniker) *had_moniker = x
+
+/** Return the ANSI'd name for an object, using its @moniker.
+ * Note that this will ALWAYS return the name with ANSI, regardless
+ * of how the "monikers" @config option is set. Use the AName() or
+ * AaName() macros if the config option must be respected.
+ * \param thing object to return the name for
+ * \param accents return accented name?
+ * \param had_moniker if non-null, set to 1 when the name is monikered,
+ *           and 0 if it is returned without ANSI. Allows the caller to
+ *           apply default ANSI for un-monikered names.
+ * \param maxlen the maximum number of visible (non-markup) characters to
+             copy, or 0 to copy the entire name
+ * \retval pointer to STATIC buffer containing the monikered name
+ */
+char *
+ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
+{
+  static char name[BUFFER_LEN], *format, *np;
+  ATTR *a;
+  ansi_string *as, *aname;
+
+  if (!RealGoodObject(thing)) {
+    set_mp(0);
+    return "Garbage";
+  }
+
+  if (accents)
+    strcpy(name, accented_name(thing));
+  else if (IsExit(thing))
+    strcpy(name, shortname(thing));
+  else
+    strcpy(name, Name(thing));
+
+  if (maxlen > 0 && maxlen < BUFFER_LEN) {
+    name[maxlen] = '\0';
+  }
+
+  a = atr_get(thing, "MONIKER");
+  if (!a) {
+    set_mp(0);
+    return name;
+  }
+
+  format = safe_atr_value(a);
+  if (!has_markup(format)) {
+    free(format);
+    set_mp(0);
+    return name;
+  }
+  as = parse_ansi_string(format);
+  aname = parse_ansi_string(name);
+  ansi_string_replace(as, 0, BUFFER_LEN, aname);
+  np = name;
+  safe_ansi_string(as, 0, (maxlen > 0 ? maxlen : as->len), name, &np);
+  *np = '\0';
+  free_ansi_string(as);
+  free_ansi_string(aname);
+  free(format);
+
+  set_mp(1);
+  return name;
+}
+
+#undef set_mp
 
 /** Return the absolute room (outermost container) of an object.
  * Return  NOTHING if it's in an invalid object or in an invalid

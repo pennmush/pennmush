@@ -9,7 +9,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "conf.h"
 
 #include <stdio.h>
 #ifdef I_SYS_TIME
@@ -26,27 +26,27 @@
 #include <errno.h>
 #include <float.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "pueblo.h"
-#include "mushdb.h"
-#include "parse.h"
-#include "command.h"
-#include "flags.h"
-#include "log.h"
-#include "dbdefs.h"
-#include "game.h"
 #include "attrib.h"
-#include "help.h"
+#include "command.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
 #include "function.h"
+#include "game.h"
+#include "help.h"
+#include "log.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 time_t mudtime;                 /**< game time, in seconds */
 
 static void show_compile_options(dbref player);
 static char *config_to_string(dbref player, PENNCONF *cp, int lc);
+int add_mssp(char *name, char *value);
 
 OPTTAB options;         /**< The table of configuration options */
 HASHTAB local_options;  /**< Hash table for local config options */
@@ -195,7 +195,8 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
-  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"}
+  {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
+   "net"}
   ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
@@ -267,6 +268,8 @@ PENNCONF conftable[] = {
   ,
   {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
   ,
+  {"monikers", cf_int, &options.monikers, INT_MAX, 0, "cosmetic"}
+  ,
   {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
    "cosmetic"}
   ,
@@ -302,7 +305,7 @@ PENNCONF conftable[] = {
   ,
   {"max_attrs_per_obj", cf_int, &options.max_attrcount, 8192, 0, "limits"}
   ,
-  {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
+  {"max_logins", cf_int, &options.max_logins, 1024, 0, "limits"}
   ,
   {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
   ,
@@ -858,7 +861,7 @@ cf_flag(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
     if (from_cmd == 0)
       do_rawlog(LT_ERR, "CONFIG: option %s value truncated", opt);
   }
-  sprintf((char *) loc, "%s %s", (char *) loc, val);
+  strncpy(loc, tprintf("%s %s", (char *) loc, val), maxval);
   return 1;
 }
 
@@ -999,7 +1002,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   if (!strcasecmp(opt, "restrict_command")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       command = command_find(val);
@@ -1030,7 +1033,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_function")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!restrict_function(val, p)) {
@@ -1054,7 +1057,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_attribute")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_attribute_access(val, p)) {
@@ -1077,7 +1080,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "command_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_command(val, p)) {
@@ -1098,7 +1101,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "hook_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       do_rawlog(LT_ERR, "CONFIG: Trying to hook command %s with options %s",
@@ -1116,7 +1119,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_command(val, p)) {
@@ -1134,7 +1137,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_function")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_function(val, p)) {
@@ -1151,7 +1154,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (!restrictions)
       return 0;
     do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_attribute(val, p)) {
@@ -1172,7 +1175,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "function_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    for (p = val; *p && !isspace(*p); p++) ;
     if (*p) {
       *p++ = '\0';
       if (!alias_function(NOTHING, val, p)) {
@@ -1205,7 +1208,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     comm = val;
-    for (file = val; *file && !isspace((unsigned char) *file); file++) ;
+    for (file = val; *file && !isspace(*file); file++) ;
     if (*file) {
       *file++ = '\0';
       add_help_file(comm, file, admin);
@@ -1275,6 +1278,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   return 0;
 }
 
+#define set_string_option(opt, val) mush_strncpy(opt, val, sizeof(opt))
+
 /** Set the default configuration options.
  */
 void
@@ -1309,9 +1314,10 @@ conf_default_set(void)
   options.unconnected_idle_timeout = 300;
   options.keepalive_timeout = 300;
   options.dump_interval = 3601;
-  strcpy(options.dump_message,
-         T("GAME: Saving database. Game may freeze for a few moments."));
-  strcpy(options.dump_complete, T("GAME: Save complete. "));
+  set_string_option(options.dump_message,
+                    T
+                    ("GAME: Saving database. Game may freeze for a few moments."));
+  set_string_option(options.dump_complete, T("GAME: Save complete. "));
   options.max_logins = 128;
   options.max_guests = 0;
   options.max_named_qregs = 50;
@@ -1330,9 +1336,9 @@ conf_default_set(void)
   options.use_quota = 1;
   options.function_side_effects = 1;
   options.empty_attrs = 1;
-  strcpy(options.money_singular, T("Penny"));
-  strcpy(options.money_plural, T("Pennies"));
-  strcpy(options.log_wipe_passwd, "zap!");
+  set_string_option(options.money_singular, T("Penny"));
+  set_string_option(options.money_plural, T("Pennies"));
+  set_string_option(options.log_wipe_passwd, "zap!");
 #ifdef WIN32
   strcpy(options.compressprog, "");
   strcpy(options.uncompressprog, "");
@@ -1371,8 +1377,10 @@ conf_default_set(void)
   options.warn_interval = 3600;
   options.use_dns = 1;
   options.safer_ufun = 1;
-  strcpy(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
-  strcpy(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
+  set_string_option(options.dump_warning_1min,
+                    T("GAME: Database save in 1 minute."));
+  set_string_option(options.dump_warning_5min,
+                    T("GAME: Database save in 5 minutes."));
   options.noisy_whisper = 0;
   options.possessive_get = 1;
   options.possessive_get_d = 1;
@@ -1392,6 +1400,7 @@ conf_default_set(void)
   options.room_connects = 0;
   options.reverse_shs = 1;
   options.ansi_names = 1;
+  options.monikers = 0;
   options.comma_exit_list = 1;
   options.count_all = 0;
   options.exits_connect_rooms = 0;
@@ -1412,11 +1421,11 @@ conf_default_set(void)
   options.silent_pemit = 0;
   options.max_dbref = 0;
   options.chat_strip_quote = 1;
-  strcpy(options.wizwall_prefix, T("Broadcast:"));
-  strcpy(options.rwall_prefix, T("Admin:"));
-  strcpy(options.wall_prefix, T("Announcement:"));
-  strcpy(options.access_file, "access.cnf");
-  strcpy(options.names_file, "names.cnf");
+  set_string_option(options.wizwall_prefix, T("Broadcast:"));
+  set_string_option(options.rwall_prefix, T("Admin:"));
+  set_string_option(options.wall_prefix, T("Announcement:"));
+  set_string_option(options.access_file, "access.cnf");
+  set_string_option(options.names_file, "names.cnf");
   options.object_cost = 10;
   options.exit_cost = 1;
   options.link_cost = 1;
@@ -1459,6 +1468,8 @@ conf_default_set(void)
   strcpy(options.sql_password, "");
   strcpy(options.sql_host, "127.0.0.1");
 }
+
+#undef set_string_option
 
 /* Limit how many files we can nest */
 static int conf_recursion = 0;
@@ -1518,7 +1529,7 @@ config_file_startup(const char *conf, int restrictions)
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {
 
-    while (*p && isspace((unsigned char) *p))
+    while (*p && isspace(*p))
       p++;
 
     if (*p == '\0' || *p == '#')
@@ -1533,23 +1544,23 @@ config_file_startup(const char *conf, int restrictions)
 
     for (p = tbuf1; *p && (*p != '\n') && (*p != '\r'); p++) ;
     *p = '\0';                  /* strip the end of line char(s) */
-    for (p = tbuf1; *p && isspace((unsigned char) *p); p++)     /* strip spaces */
+    for (p = tbuf1; *p && isspace(*p); p++)     /* strip spaces */
       ;
-    for (q = p; *q && !isspace((unsigned char) *q); q++)        /* move over command */
+    for (q = p; *q && !isspace(*q); q++)        /* move over command */
       ;
     if (*q)
       *q++ = '\0';              /* split off command */
-    for (; *q && isspace((unsigned char) *q); q++)      /* skip spaces */
+    for (; *q && isspace(*q); q++)      /* skip spaces */
       ;
     /* We define a comment as a # followed by something other than a
      * digit, so as no to be confused with dbrefs.
      * followed by a number, treat it as a dbref instead of a
      * comment. */
-    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s + 1))); s++) ;
+    for (s = q; *s && ((*s != '#') || isdigit(*(s + 1))); s++) ;
 
     if (*s)                     /* if found nuke it */
       *s = '\0';
-    for (s = s - 1; (s >= q) && isspace((unsigned char) *s); s--)       /* smash trailing stuff */
+    for (s = s - 1; (s >= q) && isspace(*s); s--)       /* smash trailing stuff */
       *s = '\0';
 
     if (strlen(p) != 0) {       /* skip blank lines */
@@ -1994,8 +2005,16 @@ show_compile_options(dbref player)
   notify(player, T(" Attribute contents are managed by the chunk system."));
 #endif
 
-#ifdef TZINFO_PATH
+#ifdef HAVE_ZONEINFO
   notify(player, T(" IANA symbolic timezones can be used."));
 #endif
 
+#ifdef PCRE_CONFIG_JIT
+  {
+    int jit = 0;
+    pcre_config(PCRE_CONFIG_JIT, &jit);
+    if (jit)
+      notify(player, T(" Internal regular expressions are JIT-compiled."));
+  }
+#endif
 }

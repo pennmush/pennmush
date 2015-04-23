@@ -12,8 +12,8 @@
  * info_slave takes one argument, the descriptor of the local socket.
  *
  */
+
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef WIN32
 #error "info_slave is not currently supported on Windows"
@@ -27,14 +27,14 @@
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
-#ifdef I_NETINET_IN
-#include <netinet/in.h>
-#endif
-#ifdef I_NETDB
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
 #endif
 #include <ctype.h>
 #include <string.h>
@@ -52,15 +52,14 @@
 #include <signal.h>
 
 #include "conf.h"
-#include "externs.h"
-#include "wait.h"
-#include "mysocket.h"
-#include "mymalloc.h"
+#include "log.h"
 #include "lookup.h"
-
-#include "confmagic.h"
+#include "mysocket.h"
+#include "wait.h"
+#include "sig.h"
 
 void fputerr(const char *);
+const char *time_string(void);
 
 #ifdef HAVE_LIBEVENT
 
@@ -70,7 +69,7 @@ void fputerr(const char *);
  * lookups asynchronously in one process instead of one blocking
  * lookup per process.  If we ever use libevent for the main netmush
  * loop, this can be moved into it with no need for an info_slave at
- * all! 
+ * all!
  *
  * On BSD systems with kqueue(2), you can (And we do) register to
  * watch for a process to exit, making checking to see if the parent
@@ -102,11 +101,15 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
                                       data);
   } else if (addr->sa_family == AF_INET6) {
     const struct sockaddr_in6 *a = (const struct sockaddr_in6 *) addr;
-    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback,
-                                           data);
+    if (IN6_IS_ADDR_V4MAPPED(&a->sin6_addr)) {
+      struct in_addr *a4 = (struct in_addr *) (a->sin6_addr.s6_addr + 12);
+      return evdns_base_resolve_reverse(base, a4, flags, callback, data);
+    } else
+      return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags,
+                                             callback, data);
   } else {
     lock_file(stderr);
-    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d",
+    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d\n",
             addr->sa_family);
     unlock_file(stderr);
     return NULL;
@@ -215,6 +218,10 @@ main(void)
   return EXIT_SUCCESS;
 }
 #else
+
+/* Old, forking version */
+
+void fputerr(const char *);
 
 /* Old, forking version */
 
@@ -406,8 +413,8 @@ static int pollfd_len = 0;
 #endif
 
 
-/** Initialize event loop 
- * \return 0 on success, -1 on failure 
+/** Initialize event loop
+ * \return 0 on success, -1 on failure
  */
 int
 eventwait_init(void)
@@ -498,7 +505,7 @@ eventwait_watch_fd_read(int fd)
   }
 }
 
-/** Monitor parent process for exiting. 
+/** Monitor parent process for exiting.
  * \return 0 on success, -1 on error.
  */
 int

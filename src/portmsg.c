@@ -50,7 +50,6 @@
  */
 /*#define SINGLE_IP_ADDR "your.address.goes.here" */
 
-#include "config.h"
 #include <stdio.h>
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -62,32 +61,23 @@
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
 #endif
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 #include <sys/ioctl.h>
 #include <errno.h>
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
-#endif
-#ifdef I_SYS_PARAM
-#include <sys/param.h>
 #endif
 #include <signal.h>
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #include <string.h>
 #include <signal.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "mysocket.h"
 #include "wait.h"
 

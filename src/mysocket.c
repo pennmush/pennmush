@@ -5,12 +5,11 @@
  *
  *
  */
-#include "copyrite.h"
-
-#include "config.h"
-#include "confmagic.h"
 
 #define _GNU_SOURCE
+
+#include "copyrite.h"
+#include "mysocket.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,30 +26,22 @@
 #include <sys/types.h>
 #endif
 
-#ifdef I_SYS_SOCKET
-#include <sys/socket.h>
-#endif
-
-#ifdef I_NETINET_IN
+#ifdef HAVE_NETINET_IN_H
 #ifdef WIN32
 #undef EINTR
 #endif
 #include <netinet/in.h>
-#else
-#ifdef I_SYS_IN
-#include <sys/in.h>
-#endif
 #endif
 
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
 
-#ifdef I_NETINET_TCP
+#ifdef HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
 #endif
 
-#ifdef I_ARPA_INET
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
 
@@ -59,9 +50,6 @@
 #endif
 
 #ifndef HAS_GETADDRINFO
-#ifdef I_ARPA_NAMESER
-#include <arpa/nameser.h>
-#endif
 #ifndef WIN32
 #ifdef __APPLE__
 #ifdef __APPLE_CC__
@@ -74,7 +62,7 @@
 #endif
 #endif
 
-#ifdef I_NETDB
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
@@ -83,14 +71,7 @@ extern int h_errno;
 #endif
 
 #include <errno.h>
-
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
-
-#ifdef I_SYS_FILE
-#include <sys/file.h>
-#endif
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -109,18 +90,38 @@ extern int h_errno;
 #include <sys/select.h>
 #endif
 
-#ifdef __APPLE__
+#ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
 #endif
 
 #include "conf.h"
-#include "externs.h"
+#include "log.h"
 #include "mymalloc.h"
-#include "mysocket.h"
-#include "confmagic.h"
+#include "wait.h"
+
+/* TODO: Hack until we move mush_panic() somewhere more reasonable. */
+void mush_panic(const char *);
 
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
+
+bool
+is_blocking_err(int code)
+{
+#ifdef WIN32
+  return code == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
+#else
+  if (code == EWOULDBLOCK)
+    return 1;
+  if (code == EINTR)
+    return 1;
+#ifdef EAGAIN
+  if (code == EAGAIN)
+    return 1;
+#endif
+  return 0;
+#endif
+}
 
 #ifndef SLAVE
 /** Given a sockaddr structure, try to look up and return hostname info.
@@ -314,6 +315,15 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
       penn_perror("setsockopt (Possibly ignorable)");
       continue;
     }
+#ifdef IPV6_V6ONLY
+    if (server->ai_family == AF_INET6 && host == NULL) {
+      opt = 0;
+      if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof opt) < 0) {
+        penn_perror("setsockopt (Possibly ignorable)");
+      }
+    }
+#endif
+
 
     if (bind(s, server->ai_addr, server->ai_addrlen) == 0)
       break;                    /* Success */
@@ -522,7 +532,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
       *remote_uid = creds.uid;
     }
   }
-#elif defined(__APPLE__)
+#elif defined(HAVE_STRUCT_XUCRED)
   {
     struct xucred creds;
     socklen_t credlen = sizeof creds;
@@ -778,8 +788,8 @@ wait_for_connect(int s, int secs)
  * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
  */
 
-static const char *inet_ntop4(const unsigned char *src, char *dst, size_t size);
-static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size);
+static const char *inet_ntop4(const char *src, char *dst, size_t size);
+static const char *inet_ntop6(const char *src, char *dst, size_t size);
 
 /* char *
  * inet_ntop(af, src, dst, size)
@@ -811,12 +821,11 @@ inet_ntop(int af, const void *src, char *dst, size_t size)
  *      `dst' (as a const)
  * notes:
  *      (1) uses no statics
- *      (2) takes a unsigned char* not an in_addr as input
  * author:
  *      Paul Vixie, 1996.
  */
 static const char *
-inet_ntop4(const unsigned char *src, char *dst, size_t size)
+inet_ntop4(const char *src, char *dst, size_t size)
 {
   static const char fmt[] = "%u.%u.%u.%u";
   char tmp[sizeof "255.255.255.255"];
@@ -837,7 +846,7 @@ inet_ntop4(const unsigned char *src, char *dst, size_t size)
  *      Paul Vixie, 1996.
  */
 static const char *
-inet_ntop6(const unsigned char *src, char *dst, size_t size)
+inet_ntop6(const char *src, char *dst, size_t size)
 {
   /*
    * Note that int32_t and int16_t need only be "at least" large enough
@@ -950,8 +959,8 @@ inet_ntop6(const unsigned char *src, char *dst, size_t size)
  * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
  */
 
-static int inet_pton4(const char *src, unsigned char *dst);
-static int inet_pton6(const char *src, unsigned char *dst);
+static int inet_pton4(const char *src, char *dst);
+static int inet_pton6(const char *src, char *dst);
 
 /* int
  * inet_pton(af, src, dst)
@@ -990,11 +999,11 @@ inet_pton(int af, const char *src, void *dst)
  *      Paul Vixie, 1996.
  */
 static int
-inet_pton4(const char *src, unsigned char *dst)
+inet_pton4(const char *src, char *dst)
 {
   static const char digits[] = "0123456789";
   int saw_digit, octets, ch;
-  unsigned char tmp[INADDRSZ], *tp;
+  char tmp[INADDRSZ], *tp;
 
   saw_digit = 0;
   octets = 0;
@@ -1042,11 +1051,11 @@ inet_pton4(const char *src, unsigned char *dst)
  *      Paul Vixie, 1996.
  */
 static int
-inet_pton6(const char *src, unsigned char *dst)
+inet_pton6(const char *src, char *dst)
 {
   static const char xdigits_l[] = "0123456789abcdef",
     xdigits_u[] = "0123456789ABCDEF";
-  unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
+  char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
   const char *xdigits, *curtok;
   int ch, saw_xdigit;
   unsigned int val;
@@ -1084,8 +1093,8 @@ inet_pton6(const char *src, unsigned char *dst)
       }
       if (tp + INT16SZ > endp)
         return (0);
-      *tp++ = (unsigned char) (val >> 8) & 0xff;
-      *tp++ = (unsigned char) val & 0xff;
+      *tp++ = (val >> 8) & 0xff;
+      *tp++ = val & 0xff;
       saw_xdigit = 0;
       val = 0;
       continue;
@@ -1100,8 +1109,8 @@ inet_pton6(const char *src, unsigned char *dst)
   if (saw_xdigit) {
     if (tp + INT16SZ > endp)
       return (0);
-    *tp++ = (unsigned char) (val >> 8) & 0xff;
-    *tp++ = (unsigned char) val & 0xff;
+    *tp++ = (val >> 8) & 0xff;
+    *tp++ = val & 0xff;
   }
   if (colonp != NULL) {
     /*
@@ -1208,7 +1217,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen
     }
 #endif
 
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:{
       struct sockaddr_in6 *sain = (struct sockaddr_in6 *) sa;
 
@@ -1283,7 +1292,7 @@ getaddrinfo(const char *hostname, const char *servname,
   for (sptr = &search[0]; sptr < &search[nsearch]; sptr++) {
 #ifdef  IPv4
     /* 4check for an IPv4 dotted-decimal string */
-    if (isdigit((unsigned char) sptr->host[0])) {
+    if (isdigit(sptr->host[0])) {
       struct in_addr inaddr;
 
       if (inet_pton(AF_INET, sptr->host, &inaddr) == 1) {
@@ -1299,9 +1308,9 @@ getaddrinfo(const char *hostname, const char *servname,
     }
 #endif
 
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     /* 4check for an IPv6 hex string */
-    if ((isxdigit((unsigned char) sptr->host[0]) || sptr->host[0] == ':') &&
+    if ((isxdigit(sptr->host[0]) || sptr->host[0] == ':') &&
         (strchr(sptr->host, ':') != NULL)) {
       struct in6_addr in6addr;
 
@@ -1320,18 +1329,18 @@ getaddrinfo(const char *hostname, const char *servname,
 /* end ga3 */
 /* include ga4 */
     /* 4remainder of for() to look up hostname */
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     if ((_res.options & RES_INIT) == 0)
       res_init();               /* need this to set _res.options */
 #endif
 
     if (nsearch == 2) {
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       _res.options &= ~RES_USE_INET6;
 #endif
       hptr = gethostbyname2(sptr->host, sptr->family);
     } else {
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       if (sptr->family == AF_INET6)
         _res.options |= RES_USE_INET6;
       else
@@ -1435,7 +1444,7 @@ ga_echeck(const char *hostname, const char *servname,
       return (EAI_SOCKTYPE);    /* invalid socket type */
     break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:
     if (socktype != 0 &&
         (socktype != SOCK_STREAM &&
@@ -1475,7 +1484,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         nsearch++;
         break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       case AF_INET6:
         search[nsearch].host = "0::0";
         search[nsearch].family = AF_INET6;
@@ -1483,7 +1492,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         break;
 #endif
       case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
         search[nsearch].host = "0::0";  /* IPv6 first, then IPv4 */
         search[nsearch].family = AF_INET6;
         nsearch++;
@@ -1507,7 +1516,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         nsearch++;
         break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       case AF_INET6:
         search[nsearch].host = "0::1";
         search[nsearch].family = AF_INET6;
@@ -1515,7 +1524,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
         break;
 #endif
       case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
         search[nsearch].host = "0::1";  /* IPv6 first, then IPv4 */
         search[nsearch].family = AF_INET6;
         nsearch++;
@@ -1539,7 +1548,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
       nsearch++;
       break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     case AF_INET6:
       search[nsearch].host = hostname;
       search[nsearch].family = AF_INET6;
@@ -1547,7 +1556,7 @@ ga_nsearch(const char *hostname, const struct addrinfo *hintsp,
       break;
 #endif
     case AF_UNSPEC:
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
       search[nsearch].host = hostname;
       search[nsearch].family = AF_INET6;        /* IPv6 first */
       nsearch++;
@@ -1613,7 +1622,7 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
       break;
     }
 #endif                          /* IPV4 */
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
   case AF_INET6:{
       struct sockaddr_in6 *sin6ptr;
 
@@ -1649,7 +1658,7 @@ ga_serv(struct addrinfo *aihead, const struct addrinfo *hintsp,
   int port, rc, nfound;
 
   nfound = 0;
-  if (isdigit((unsigned char) serv[0])) {       /* check for port number string first */
+  if (isdigit(serv[0])) {       /* check for port number string first */
     port = (int) htons((unsigned short) atoi(serv));
     if (hintsp->ai_socktype) {
       /* 4caller specifies socket type */
@@ -1732,7 +1741,7 @@ ga_port(struct addrinfo *aihead, int port, int socktype)
       nfound++;
       break;
 #endif
-#ifdef  HAVE_SOCKADDR_IN6
+#ifdef  HAVE_STRUCT_SOCKADDR_IN6
     case AF_INET6:
       ((struct sockaddr_in6 *) ai->ai_addr)->sin6_port = port;
       nfound++;

@@ -7,7 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -30,30 +29,26 @@
 #ifdef HAVE_SSE2
 #include <emmintrin.h>
 #endif
-#ifdef HAVE_SSSE3
-#include <tmmintrin.h>
-#endif
 
-#include "conf.h"
-#include "command.h"
-#include "mushdb.h"
-#include "match.h"
-#include "externs.h"
-#include "parse.h"
-#include "strtree.h"
-#include "mymalloc.h"
-#include "game.h"
+#include "ansi.h"
 #include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
 #include "function.h"
-#include "case.h"
-#include "dbdefs.h"
-#include "log.h"
+#include "game.h"
 #include "intmap.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
 #include "ptab.h"
-#include "ansi.h"
-#include "confmagic.h"
-
+#include "strtree.h"
+#include "strutil.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;
@@ -84,13 +79,15 @@ static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(MQUE **head, MQUE **tail);
 static int do_entry(MQUE *entry, int include_recurses);
 static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
+void init_queue(void);
+int execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs);
 
 /* Keep track of the last 15 minutes worth of queue activity per second */
 enum { QUEUE_LOAD_SECS = 900 };
-int16_t queue_load_record[QUEUE_LOAD_SECS] __attribute__ ((__aligned__(16))) = {
+int32_t queue_load_record[QUEUE_LOAD_SECS] __attribute__ ((__aligned__(16))) = {
 0};
 
-double average16(const int16_t *arr, int count);
+double average32(const int32_t *arr, int count);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -240,10 +237,22 @@ queue_limit(dbref player)
 void
 free_qentry(MQUE *entry)
 {
-  entry->inplace = NULL;
+  MQUE *tmp;
 
-  if (entry->action_list)
-    entry->action_list = NULL;
+  if (entry->inplace) {
+    tmp = entry->inplace;
+    entry->inplace = NULL;
+    free_qentry(tmp);
+  }
+
+  if (entry->next && (entry->queue_type & QUEUE_INPLACE)) {
+    tmp = entry->next;
+    entry->next = NULL;
+    free_qentry(tmp);
+  }
+  
+  entry->action_list = NULL;
+  entry->semaphore_attr = NULL;
 
   free_pe_info(entry->pe_info);
 
@@ -264,18 +273,18 @@ pay_queue(dbref player, const char *command)
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),
-                  Name(player), player);
+                  AName(player, AN_SYS, NULL), player);
     return 0;
   }
   if (!NoPay(player) && (estcost != QUEUE_COST) && Track_Money(Owner(player))) {
     notify_format(Owner(player),
                   T("GAME: Object %s(%s) lost a %s to queue loss."),
-                  Name(player), unparse_dbref(player), MONEY);
+                  AName(player, AN_SYS, NULL), unparse_dbref(player), MONEY);
   }
   if (queue_limit(QUEUE_PER_OWNER ? Owner(player) : player)) {
     notify_format(Owner(player),
                   T("Runaway object: %s(%s). Commands halted."),
-                  Name(player), unparse_dbref(player));
+                  AName(player, AN_SYS, NULL), unparse_dbref(player));
     do_log(LT_TRACE, player, player, "Runaway object %s executing: %s",
            unparse_dbref(player), command);
     /* Refund the queue costs */
@@ -374,20 +383,10 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   int i, len;
   MQUE *tmp;
   int pid;
-  static bool recur = 0;
-
-
-  /* Stop loops caused by logging triggering events triggering logging
-     triggering ... */
-  if (recur)
-    return 0;
-  else
-    recur = 1;
 
   /* Make sure we have an event to call, first. */
   if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
       Halted(EVENT_HANDLER)) {
-    recur = 0;
     return 0;
   }
 
@@ -400,13 +399,11 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   a = atr_get_noparent(EVENT_HANDLER, event);
   if (!(a && AL_STR(a) && *AL_STR(a))) {
     /* Nonexistant or empty attrib. */
-    recur = 0;
     return 0;
   }
 
   /* Because Event is so easy to run away. */
   if (!pay_queue(EVENT_HANDLER, event)) {
-    recur = 0;
     return 0;
   }
 
@@ -415,7 +412,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (pid == 0) {
     /* Too many queue entries */
     notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
-    recur = 0;
     return 0;
   }
 
@@ -470,6 +466,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   tmp->enactor = enactor;
   tmp->caller = enactor;
   tmp->action_list = safe_atr_value(a);
+  tmp->queue_type |= QUEUE_EVENT;
 
   /* Set up %0-%9 */
   if (tmp->pe_info->regvals == NULL) {
@@ -504,7 +501,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* All good! */
   im_insert(queue_map, tmp->pid, tmp);
 
-  recur = 0;
   return 1;
 }
 
@@ -534,6 +530,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
   if (!(queue_entry->queue_type & QUEUE_INPLACE)) {
     if (!pay_queue(queue_entry->executor, queue_entry->action_list)) {
       /* make sure player can afford to do it */
+      free_qentry(queue_entry);
       return;
     }
     queue_entry->pid = next_pid();
@@ -612,6 +609,11 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   MQUE *queue_entry;
 
   if (!(queue_type & QUEUE_INPLACE)) {
+    /* Check the object isn't halted */
+    if (!IsPlayer(executor) && Halted(executor)) {
+      return;
+    }
+
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
     queue_type =
       (queue_type &
@@ -643,17 +645,23 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   queue_entry->action_list = GC_STRDUP(actionlist);
   queue_entry->queue_type = queue_type;
   if (pe_regs && (flags & PE_INFO_SHARE)) {
-    queue_entry->regvals =
-      pe_regs_create(pe_regs->flags, "new_queue_actionlist");
-    pe_regs_copystack(queue_entry->regvals, pe_regs, PE_REGS_QUEUE, 0);
+    queue_entry->regvals = pe_regs;
+    /* We used to do this instead, but we actually don't need to, and it
+     * leads to errors with nested inplace queues.
+     queue_entry->regvals =
+     pe_regs_create(pe_regs->flags, "new_queue_actionlist");
+     pe_regs_copystack(queue_entry->regvals, pe_regs, PE_REGS_QUEUE, 0);
+     */
   }
 
   if (fromattr) {
     if (queue_type & QUEUE_INPLACE)
-      queue_entry->save_attrname =
-        GC_STRDUP(pe_info->attrname);
+      queue_entry->save_attrname = GC_STRDUP(pe_info->attrname);
     strcpy(queue_entry->pe_info->attrname, fromattr);
   }
+
+  if (parent_queue && (parent_queue->queue_type & QUEUE_EVENT))
+    queue_type |= QUEUE_EVENT;
 
   insert_que(queue_entry, parent_queue);
 }
@@ -707,16 +715,16 @@ queue_include_attribute(dbref thing, const char *atrname,
       /* Skip the ':' */
       command++;
   }
-
+  pe_regs = pe_regs_create(PE_REGS_NEWATTR, "queue_include_attribute");
   if (args != NULL) {
-    queue_type |= QUEUE_RESTORE_ENV;
-    pe_regs = pe_regs_create(PE_REGS_ARG, "queue_include_attribute");
+    pe_regs->flags |= PE_REGS_ARG;
     for (i = 0; i < MAX_STACK_ARGS; i++) {
       if (args[i] && *args[i]) {
-        pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+        pe_regs_setenv(pe_regs, i, args[i]);
       }
     }
-  }
+  } else
+    pe_regs->flags |= PE_REGS_ARGPASS;
 
   if (AF_NoDebug(a))
     queue_type |= QUEUE_NODEBUG;
@@ -726,13 +734,13 @@ queue_include_attribute(dbref thing, const char *atrname,
     /* Inherit debug style from parent queue */
     queue_type |= (parent_queue->queue_type & (QUEUE_DEBUG | QUEUE_NODEBUG));
   }
+  if (parent_queue->queue_type & QUEUE_EVENT)
+    queue_type |= QUEUE_EVENT;
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
                            PE_INFO_SHARE, queue_type, pe_regs,
                            tprintf("#%d/%s", thing, atrname));
 
-  if (pe_regs)
-    pe_regs_free(pe_regs);
   return 1;
 }
 
@@ -745,17 +753,20 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param noparent if true, parents of executor are not checked for atrname.
  * \param pe_regs the pe_regs args for the queue entry
  * \param flags QUEUE_* flags
+ * \param priv object to use for priv checks, or NOTHING to do none
  * \retval 0 failure.
  * \retval 1 success.
  */
 int
-queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent, PE_REGS *pe_regs, int flags)
+queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
+                          int noparent, PE_REGS *pe_regs, int flags, dbref priv)
 {
   ATTR *a;
 
   a = queue_attribute_getatr(executor, atrname, noparent);
   if (!a)
+    return 0;
+  if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
   queue_attribute_useatr(executor, a, enactor, pe_regs, flags);
   return 1;
@@ -840,11 +851,14 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   MQUE *tmp;
   NEW_PE_INFO *pe_info;
   int pid;
+  int queue_type = QUEUE_DEFAULT;
+  if (parent_queue && (parent_queue->queue_type & QUEUE_EVENT))
+    queue_type |= QUEUE_EVENT;
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
     new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
-                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                         PE_INFO_CLONE, queue_type, NULL);
     return;
   }
   if (!pay_queue(executor, command))    /* make sure player can afford to do it */
@@ -864,6 +878,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   tmp->executor = executor;
   tmp->enactor = enactor;
   tmp->caller = enactor;
+  tmp->queue_type |= queue_type;
 
   if (until) {
     tmp->wait_until = (time_t) waittill;
@@ -915,7 +930,7 @@ do_second(void)
 
   /* Advance the queue load average count */
   memmove(queue_load_record + 1, queue_load_record,
-          sizeof(queue_load_record) - sizeof(int16_t));
+          sizeof(queue_load_record) - sizeof(int32_t));
   queue_load_record[0] = 0;
 
   /* move contents of low priority queue onto end of normal one
@@ -1088,14 +1103,21 @@ do_entry(MQUE *entry, int include_recurses)
       tmp = entry->inplace;
       /* We have a new queue to process, via @include, @break, @switch/inplace or similar */
       if (include_recurses < 50) {
-        if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
-          if (tmp->queue_type & QUEUE_CLEAR_QREG) {
-            pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_Q | PE_REGS_QSTOP, "do_entry");
-          } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q, "do_entry");
-          }
-        } else {
+        switch (tmp->queue_type & (QUEUE_PRESERVE_QREG | QUEUE_CLEAR_QREG)) {
+        case QUEUE_PRESERVE_QREG:
+          pe_regs =
+            pe_regs_localize(entry->pe_info, PE_REGS_LOCALQ, "do_entry");
+          break;
+        case QUEUE_CLEAR_QREG:
+          clear_allq(entry->pe_info);
+          pe_regs = NULL;
+          break;
+        case (QUEUE_CLEAR_QREG | QUEUE_PRESERVE_QREG):
+          pe_regs =
+            pe_regs_localize(entry->pe_info, PE_REGS_LOCALQ | PE_REGS_QSTOP,
+                             "do_entry");
+          break;
+        default:
           pe_regs = NULL;
         }
         if (tmp->regvals) {
@@ -1124,6 +1146,13 @@ do_entry(MQUE *entry, int include_recurses)
           if (tmp->pe_info->regvals) {
             pe_regs_qcopy(entry->pe_info->regvals, tmp->pe_info->regvals);
           }
+          if (tmp->pe_info->regvals) {
+            pe_regs_qcopy(entry->pe_info->regvals, tmp->pe_info->regvals);
+          }
+        }
+        if (tmp->save_attrname) {
+          strcpy(tmp->pe_info->attrname, tmp->save_attrname);
+          tmp->save_attrname = NULL;
         }
         if (tmp->save_attrname) {
           strcpy(tmp->pe_info->attrname, tmp->save_attrname);
@@ -1131,6 +1160,7 @@ do_entry(MQUE *entry, int include_recurses)
         }
       }
       entry->inplace = tmp->next;
+      tmp->next = NULL;
       free_qentry(tmp);
       if (inplace_break_called)
         break;
@@ -1658,8 +1688,8 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
 FUNCTION(fun_pidinfo)
 {
   char *r, *s;
-  char *osep, osepd[2] = { ' ', '\0' };
-  char *fields, field[80] = "queue player time object attribute command";
+  const char *osep = " ";
+  char *fields, field[] = "queue player time object attribute command";
   uint32_t pid;
   MQUE *q;
   bool first = true;
@@ -1690,9 +1720,6 @@ FUNCTION(fun_pidinfo)
 
   if (nargs == 3)
     osep = args[2];
-  else {
-    osep = osepd;
-  }
 
   s = trim_space_sep(fields, ' ');
   do {
@@ -1874,23 +1901,27 @@ show_queue_single(dbref player, MQUE *q, int q_type)
     notify_format(player, "(Pid: %u) [%ld]%s: %s",
                   (unsigned int) q->pid, (long) difftime(q->wait_until,
                                                          mudtime),
-                  unparse_object(player, q->executor), q->action_list);
+                  unparse_object(player, q->executor, AN_UNPARSE),
+                  q->action_list);
     break;
   case 2:                      /* semaphore queue */
     if (q->wait_until != 0) {
       notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
                     (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
                     (long) difftime(q->wait_until, mudtime),
-                    unparse_object(player, q->executor), q->action_list);
+                    unparse_object(player, q->executor, AN_UNPARSE),
+                    q->action_list);
     } else {
       notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
                     (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
-                    unparse_object(player, q->executor), q->action_list);
+                    unparse_object(player, q->executor, AN_UNPARSE),
+                    q->action_list);
     }
     break;
   default:                     /* player or object queue */
     notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
-                  unparse_object(player, q->executor), q->action_list);
+                  unparse_object(player, q->executor, AN_UNPARSE),
+                  q->action_list);
   }
 }
 
@@ -1924,10 +1955,10 @@ show_queue_env(dbref player, MQUE *q)
   }
 
   /* %0 - %9 */
-  if (pi_regs_get_envc(q->pe_info)) {
+  if (PE_Get_Envc(q->pe_info)) {
     notify(player, "Arguments: ");
     for (i = 0; i < MAX_STACK_ARGS; i += 1) {
-      const char *arg = pi_regs_get_env(q->pe_info, i);
+      const char *arg = PE_Get_Env(q->pe_info, i);
       if (arg)
         notify_format(player, " %%%d : %s", i, arg);
     }
@@ -2010,7 +2041,7 @@ do_queue(dbref player, const char *what, enum queue_type flag)
       if (all)
         notify(player, T("Queue for : all"));
       else
-        notify_format(player, T("Queue for : %s"), Name(victim));
+        notify_format(player, T("Queue for : %s"), AName(victim, AN_SYS, NULL));
     }
     victim = Owner(victim);
     if (!quick)
@@ -2032,9 +2063,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
                   ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
     notify_format(player, T("Load average (1/5/15 minutes): %.2f %.2f %.2f"),
-                  average16(queue_load_record, 60), average16(queue_load_record,
+                  average32(queue_load_record, 60), average32(queue_load_record,
                                                               300),
-                  average16(queue_load_record, 900));
+                  average32(queue_load_record, 900));
   }
 }
 
@@ -2098,8 +2129,8 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   else
     player = victim;
   if (!Quiet(Owner(player)))
-    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player),
-                  player);
+    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"),
+                  AName(player, AN_SYS, NULL), player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor)
         && ((tmp->executor == player)
@@ -2193,17 +2224,22 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
         notify(player, T("All of your objects have been halted."));
       } else {
         notify_format(player,
-                      T("All objects for %s have been halted."), Name(victim));
-        notify_format(victim,
-                      T("All of your objects have been halted by %s."),
-                      Name(player));
+                      T("All objects for %s have been halted."), AName(victim,
+                                                                       AN_SYS,
+                                                                       NULL));
+        notify_format(victim, T("All of your objects have been halted by %s."),
+                      AName(player, AN_SYS, NULL));
       }
     } else {
       if (Owner(victim) != player) {
+        char owner[BUFFER_LEN];
+        char obj[BUFFER_LEN];
+        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
+        strcpy(obj, AName(victim, AN_SYS, NULL));
         notify_format(player, "%s: %s's %s(%s)", T("Halted"),
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+                      owner, obj, unparse_dbref(victim));
         notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"),
-                      Name(victim), unparse_dbref(victim), Name(player));
+                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
       if (arg2 && *arg2 == '\0')
         set_flag_internal(victim, "HALT");
@@ -2284,7 +2320,7 @@ do_allhalt(dbref player)
     if (IsPlayer(victim)) {
       notify_format(victim,
                     T("Your objects have been globally halted by %s"),
-                    Name(player));
+                    AName(player, AN_SYS, NULL));
       do_halt(victim, "", victim);
     }
   }
@@ -2315,7 +2351,7 @@ do_allrestart(dbref player)
       notify_format(thing,
                     T
                     ("Your objects are being globally restarted by %s"),
-                    Name(player));
+                    AName(player, AN_SYS, NULL));
     }
   }
 }
@@ -2360,24 +2396,28 @@ do_restart_com(dbref player, const char *arg1)
       if (IsPlayer(victim)) {
         notify_format(player,
                       T("All objects for %s are being restarted."),
-                      Name(victim));
+                      AName(victim, AN_SYS, NULL));
         notify_format(victim,
                       T
                       ("All of your objects are being restarted by %s."),
-                      Name(player));
+                      AName(player, AN_SYS, NULL));
       } else {
+        char owner[BUFFER_LEN];
+        char obj[BUFFER_LEN];
+        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
+        strcpy(obj, AName(victim, AN_SYS, NULL));
         notify_format(player,
                       T("Restarting: %s's %s(%s)"),
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+                      owner, obj, unparse_dbref(victim));
         notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
-                      Name(victim), unparse_dbref(victim), Name(player));
+                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
     } else {
       if (victim == player)
         notify(player, T("All of your objects are being restarted."));
       else
-        notify_format(player, T("Restarting: %s(%s)"), Name(victim),
-                      unparse_dbref(victim));
+        notify_format(player, T("Restarting: %s(%s)"),
+                      AName(victim, AN_SYS, NULL), unparse_dbref(victim));
     }
     do_halt(player, "", victim);
     do_raw_restart(victim);
@@ -2415,85 +2455,72 @@ shutdown_a_queue(MQUE **head, MQUE **tail)
   }
 }
 
-/** Averages an array of 16-bit integers.
+/** Averages an array of 32-bit integers.
  *
  * When compiling with SSE2 support, uses a vectorized code path that
- * takes 32 iterations to sum up the counts used to compute a 15
+ * takes only a few iterations to sum up the counts used to compute a 15
  * minute queue load average, instead of 900 from the plain scalar
  * version. Is it not nifty?
  *
- * \param nums The numbers
+ * \param nums The numbers. Must be aligned to 16 bytes.
  * \param len The length of the array
  * \return The average
  */
 double
-average16(const int16_t *nums, int len)
+average32(const int32_t *nums, int len)
 {
 #ifdef HAVE_SSE2
   int chunks, n, total = 0;
   __m128i totals1, totals2, totals3, totals4, zero;
-  int16_t totarr[8];
 
-  chunks = len / 32;
+  chunks = len / 16;
 
-  zero = _mm_set1_epi16(0);
+  zero = _mm_setzero_si128();
   totals1 = totals2 = totals3 = totals4 = zero;
 
-  /* 32-element chunks */
+  /* 16-element chunks */
   for (n = 0; n < chunks; n += 1) {
     __m128i chunk1, chunk2, chunk3, chunk4;
-    chunk1 = _mm_load_si128((__m128i *) (nums + (n * 32)));
-    chunk2 = _mm_load_si128((__m128i *) (nums + (n * 32) + 8));
-    chunk3 = _mm_load_si128((__m128i *) (nums + (n * 32) + 16));
-    chunk4 = _mm_load_si128((__m128i *) (nums + (n * 32) + 24));
-    totals1 = _mm_add_epi16(totals1, chunk1);
-    totals2 = _mm_add_epi16(totals2, chunk2);
-    totals3 = _mm_add_epi16(totals3, chunk3);
-    totals4 = _mm_add_epi16(totals4, chunk4);
+    chunk1 = _mm_load_si128((__m128i *) (nums + (n * 16)));
+    chunk2 = _mm_load_si128((__m128i *) (nums + (n * 16) + 4));
+    chunk3 = _mm_load_si128((__m128i *) (nums + (n * 16) + 8));
+    chunk4 = _mm_load_si128((__m128i *) (nums + (n * 16) + 12));
+    totals1 = _mm_add_epi32(totals1, chunk1);
+    totals2 = _mm_add_epi32(totals2, chunk2);
+    totals3 = _mm_add_epi32(totals3, chunk3);
+    totals4 = _mm_add_epi32(totals4, chunk4);
   }
 
-  n = chunks * 32;
-
-  /* Possible trailing 16-element chunk */
-  if (len - n >= 16) {
-    __m128i chunk1, chunk2;
-    chunk1 = _mm_load_si128((__m128i *) (nums + n));
-    chunk2 = _mm_load_si128((__m128i *) (nums + n + 8));
-    totals1 = _mm_add_epi16(totals1, chunk1);
-    totals2 = _mm_add_epi16(totals2, chunk2);
-    n += 16;
-  }
+  n = chunks * 16;
 
   /* Possible trailing 8-element chunk */
   if (len - n >= 8) {
-    __m128i chunk = _mm_load_si128((__m128i *) (nums + n));
-    totals3 = _mm_add_epi16(totals3, chunk);
+    __m128i chunk1, chunk2;
+    chunk1 = _mm_load_si128((__m128i *) (nums + n));
+    chunk2 = _mm_load_si128((__m128i *) (nums + n + 4));
+    totals1 = _mm_add_epi32(totals1, chunk1);
+    totals2 = _mm_add_epi32(totals2, chunk2);
     n += 8;
   }
 
-  /* Sum up all the totals vectors */
-  totals1 = _mm_add_epi16(totals1, totals2);
-  totals3 = _mm_add_epi16(totals3, totals4);
-  totals1 = _mm_add_epi16(totals1, totals3);
+  /* Possible trailing 4-element chunk */
+  if (len - n >= 4) {
+    __m128i chunk = _mm_load_si128((__m128i *) (nums + n));
+    totals3 = _mm_add_epi32(totals3, chunk);
+    n += 4;
+  }
 
-#ifdef HAVE_SSSE3
-  totals1 = _mm_hadd_epi16(totals1, totals2);
-  _mm_store_si128((__m128i *) totarr, totals1);
-  total = totarr[0];
-  total += totarr[1];
-  total += totarr[2];
-  total += totarr[3];
-#else
-  _mm_store_si128((__m128i *) totarr, totals1);
-  total = totarr[0];
-  total += totarr[1];
-  total += totarr[2];
-  total += totarr[3];
-  total += totarr[4];
-  total += totarr[5];
-  total += totarr[6];
-  total += totarr[7];
-#endif
+  /* Sum up all the totals vectors */
+  totals1 = _mm_add_epi32(totals1, totals2);
+  totals3 = _mm_add_epi32(totals3, totals4);
+  totals1 = _mm_add_epi32(totals1, totals3);
+
+  /* And sum the sums */
+  totals2 = _mm_shuffle_epi32(totals1, _MM_SHUFFLE(1, 0, 3, 2));
+  totals1 = _mm_add_epi32(totals1, totals2);
+  totals2 = _mm_shuffle_epi32(totals1, _MM_SHUFFLE(2, 3, 0, 1));
+  totals1 = _mm_add_epi32(totals1, totals2);
+  total = _mm_cvtsi128_si32(totals1);
 
   /* Sum up the remaining trailing elements */
   for (; n < len; n += 1)
@@ -2504,7 +2531,7 @@ average16(const int16_t *nums, int len)
 #else                           /* Non-SSE2 version */
 
   int n;
-  int total = 0;
+  int32_t total = 0;
 
   for (n = 0; n < len; n += 1)
     total += nums[n];

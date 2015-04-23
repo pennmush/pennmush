@@ -25,9 +25,11 @@
 
   See also the following topics:    mail-sending   mail-reading   
       mail-folders   mail-forward   mail-other     mail-admin     
-      @malias        mail-reviewing
+      @malias        mail-reviewing @mailquota
 & mail-reading
-
+& @mail/read
+& @mail/list
+& @mail/cstats
   @mail <msg #>
   @mail/read <msg-list>
         This displays messages which match the msg# or msg-list from
@@ -51,6 +53,8 @@
         Shows how many messages you have, in the same format as the 
         automatic mail check when you connect.
 & mail-sending
+& @mail/send
+& @mail/fwd
   @mail[/switch] <player-list> = [<subject>]/<msg>
         This sends the message <msg> to all players in <player-list>.
 
@@ -78,6 +82,13 @@
         be "Forwarded".
 
 & mail-other
+& @mail/clear
+& @mail/unclear
+& @mail/purge
+& @mail/tag
+& @mail/untag
+& @mail/unread
+& @mail/status
   @mail/clear [<msg-list> | all]
   @mail/unclear [<msg-list> | all]
         These commands mark mail in the current folder as cleared or
@@ -107,11 +118,15 @@
         
   @mail/status [<msg-list> | all]=<status>
         Set the status of the given messages. <status> can be one of tagged,
-        untagged, cleared, uncleared, read or unread. read marks a new
-        message as read without reading it, the others are equivilent to
+        untagged, cleared, uncleared, read, unread, urgent or unurgent.
+        read marks a new message as read without reading it, urgent/unurgent
+        toggle the urgent flag, and the others are equivilent to
         @mail/tag, @mail/untag, @mail/clear, @mail/unclear and @mail/unread
         respectively.
 & mail-folders
+& @mail/folder
+& @mail/unfolder
+& @mail/file
   The MUSH mail system allows each player 16 folders, numbered from 0
   to 15. Mail can only be in 1 folder at a time. Folder 0 is the
   "inbox" where new mail is received. Most @mail commands operate on
@@ -135,6 +150,30 @@
         folder to a new folder, <folder#>.
 
 See also: @mailfilter
+& mail-reviewing
+& @mail/review
+& @mail/retract
+  @mail/review [<player>]
+        Reviews the messages you have sent to <player>, or all messages you've
+        sent if no <player> is specified.
+ 
+  @mail/review <player>=<msglist>
+        Reads the messages you have sent to <player>.
+ 
+  @mail/retract <player>=<msglist>
+        Retracts (deletes) unread messages you have sent to <player>.
+& @mailquota
+  @mailquota <player>[=<limit>]
+  
+  This attribute allows wizards to change the maximum number of messages a 
+  player can have in their inbox, override the mail_limit @config option for
+  specific people. <limit> should be a number between 1 and 50000, inclusive.
+
+  Example:
+    > @alias *Walker=Complaints_Department
+    > @mailquota *Complaints_Department=50000
+    > @wall Please @mail any and all problems to Complaints_Department.
+
 & @mailfilter
 & mailfilter
   The @mailfilter attribute specifies automatic filing of incoming
@@ -205,7 +244,6 @@ members of that alias, if you're allowed to see them. Other forms of
 the same command are @malias/members <alias> or @malias/who <alias>
 
 See help @malias2 for more
-
 & @malias2
 @malias[/create] <alias>=<player list>
 @malias/desc <alias>=<Description>
@@ -262,15 +300,6 @@ See help @malias5 for more.
 number of aliases and members of aliases in use.
 @malias/chown is a wizard-only command that changes the owner of an alias.
 @malias/nuke is a God-only command that destroys all aliases.
-& mail-reviewing
-  @mail/review <player>
-        Reviews the messages you have sent to <player>.
- 
-  @mail/review <player>=<msglist>
-        Reads the messages you have sent to <player>.
- 
-  @mail/retract <player>=<msglist>
-        Retracts (deletes) unread messages you have sent to <player>.
 & Mail functions
   Mail functions work with @mail.
 

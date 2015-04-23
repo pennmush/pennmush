@@ -41,7 +41,9 @@
 				AdditionalIncludeDirectories="..\..;..\..\hdrs"
 				PreprocessorDefinitions="WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T"
 				RuntimeLibrary="1"
+				DefaultCharIsUnsigned="true"
 				CompileAs="1"
+				ForcedIncludeFiles="config.h;confmagic.h;options.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -115,7 +117,9 @@
 				AdditionalIncludeDirectories="..\..;..\..\hdrs"
 				PreprocessorDefinitions="WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T"
 				StringPooling="true"
+				DefaultCharIsUnsigned="true"
 				CompileAs="1"
+				ForcedIncludeFiles="config.h;confmagic.h;options.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -295,6 +299,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\hash_function.c"
 				>
 			</File>
 			<File
@@ -584,6 +592,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\hdrs\hash_function.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\hdrs\help.h"
 				>
 			</File>
@@ -616,7 +628,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\hdrs\markup.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\hdrs\match.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\hdrs\memcheck.h"
 				>
 			</File>
 			<File
@@ -641,6 +661,10 @@
 			</File>
 			<File
 				RelativePath="..\..\hdrs\myssl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\hdrs\notify.h"
 				>
 			</File>
 			<File
@@ -672,11 +696,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\hdrs\sig.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\hdrs\sort.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\hdrs\strtree.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\hdrs\strutil.h"
 				>
 			</File>
 			<File

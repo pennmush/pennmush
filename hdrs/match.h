@@ -18,6 +18,7 @@
 #define __MATCH_H
 
 #include "copyrite.h"
+#include "mushtype.h"
 
 /* match constants */
   /* match modifiers */
@@ -63,10 +64,6 @@
 dbref
  match_result(dbref who, const char *xname, int type, long flags);
 dbref
-
-
-
-
 match_result_relative(dbref who, dbref where, const char *xname, int type,
                       long flags);
 dbref noisy_match_result(const dbref who, const char *name,

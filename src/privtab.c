@@ -9,17 +9,17 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "privtab.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "conf.h"
 #include "mushtype.h"
-#include "privtab.h"
-#include "externs.h"
+#include "strutil.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 
 /** Convert a string to a set of privilege bits, masked by an original set.
@@ -34,9 +34,9 @@
  * \return a privilege bitmask.
  */
 privbits
-string_to_privs(PRIV *table, const char *str, privbits origprivs)
+string_to_privs(const PRIV *table, const char *str, privbits origprivs)
 {
-  PRIV *c;
+  const PRIV *c;
   privbits yes = 0;
   privbits no = 0;
   privbits ltr = 0;
@@ -99,9 +99,9 @@ string_to_privs(PRIV *table, const char *str, privbits origprivs)
  * \return a privilege bitmask.
  */
 privbits
-list_to_privs(PRIV *table, const char *str, privbits origprivs)
+list_to_privs(const PRIV *table, const char *str, privbits origprivs)
 {
-  PRIV *c;
+  const PRIV *c;
   privbits yes = 0;
   privbits no = 0;
   char *p, *r;
@@ -146,10 +146,10 @@ list_to_privs(PRIV *table, const char *str, privbits origprivs)
  * \retval -1 string at least one name matched no privs.
  */
 int
-string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
+string_to_privsets(const PRIV *table, const char *str, privbits *setprivs,
                    privbits *clrprivs)
 {
-  PRIV *c;
+  const PRIV *c;
   char *p, *r;
   char tbuf1[BUFFER_LEN];
   bool not;
@@ -212,9 +212,9 @@ string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
  * \return a privilege bitmask.
  */
 privbits
-letter_to_privs(PRIV *table, const char *str, privbits origprivs)
+letter_to_privs(const PRIV *table, const char *str, privbits origprivs)
 {
-  PRIV *c;
+  const PRIV *c;
   privbits yes = 0, no = 0;
   const char *p;
   bool not;
@@ -248,9 +248,9 @@ letter_to_privs(PRIV *table, const char *str, privbits origprivs)
  * \return allocated space-separated string of priv names.
  */
 const char *
-privs_to_string(PRIV *table, privbits privs)
+privs_to_string(const PRIV *table, privbits privs)
 {
-  PRIV *c;
+  const PRIV *c;
   char buf[BUFFER_LEN];
   char *bp;
 
@@ -274,9 +274,9 @@ privs_to_string(PRIV *table, privbits privs)
  * \return statically allocated string of priv letters.
  */
 const char *
-privs_to_letters(PRIV *table, privbits privs)
+privs_to_letters(const PRIV *table, privbits privs)
 {
-  PRIV *c;
+  const PRIV *c;
   char buf[BUFFER_LEN];
   char *bp;
 

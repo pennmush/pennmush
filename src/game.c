@@ -3,12 +3,10 @@
  *
  * \brief The main game driver.
  *
- *
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
+#include "game.h"
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -41,46 +39,47 @@ void Win32MUSH_setup(void);
 #endif
 #include <errno.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "game.h"
+#include "access.h"
+#include "ansi.h"
 #include "attrib.h"
-#include "match.h"
 #include "case.h"
-#include "extmail.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
 #include "extchat.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "function.h"
+#include "getpgsiz.h"
+#include "help.h"
+#include "htab.h"
+#include "intmap.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
+#include "parse.h"
+#include "ptab.h"
+#include "sig.h"
+#include "strtree.h"
+#include "strutil.h"
+#include "version.h"
+
 #ifdef HAS_OPENSSL
 #include "myssl.h"
 #endif
-#include "getpgsiz.h"
-#include "parse.h"
-#include "access.h"
-#include "version.h"
-#include "strtree.h"
-#include "command.h"
-#include "htab.h"
-#include "ptab.h"
-#include "intmap.h"
-#include "log.h"
-#include "lock.h"
-#include "dbdefs.h"
-#include "flags.h"
-#include "function.h"
-#include "help.h"
-#include "dbio.h"
-#include "mypcre.h"
+
 #ifndef WIN32
 #include "wait.h"
 #endif
-#include "ansi.h"
-#include "mymalloc.h"
+
 #ifdef hpux
 #include <sys/syscall.h>
 #define getrusage(x,p)   syscall(SYS_GETRUSAGE,x,p)
 #endif                          /* fix to HP-UX getrusage() braindamage */
-
-#include "confmagic.h"
 
 /* declarations */
 GLOBALTAB globals = { 0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -111,15 +110,12 @@ void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref executor, dbref enactor, char *action,
                     const char *arg, int num, MQUE *queue_entry,
                     int queue_type);
-void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
 #ifdef HAS_GETRUSAGE
 void rusage_stats(void);
 #endif
 
-void do_list_memstats(dbref player);
-void do_list_allocations(dbref player);
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
 void do_timestring(char *buff, char **bp, const char *format,
@@ -285,9 +281,10 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
-  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
-         Name(player), unparse_dbref(player));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"),
+                 AName(player, AN_ANNOUNCE, NULL));
+  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n", Name(player),
+         unparse_dbref(player));
 
   if (flag == SHUT_PANIC) {
     mush_panic("@shutdown/panic");
@@ -696,6 +693,7 @@ void init_names(void);
 extern struct db_stat_info current_state;
 void init_queue(void);
 void build_rgb_map(void);
+void init_telnet_opts(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
@@ -744,6 +742,9 @@ init_game_config(const char *conf)
 
   /* Initialize the attribute chunk storage */
   chunk_init();
+
+  /* Set up telnet stuff */
+  init_telnet_opts();
 
 #ifdef HAVE_GETPID
   mypid = getpid();
@@ -934,7 +935,7 @@ init_game_dbs(void)
 
     if (panicdb) {
       do_rawlog(LT_ERR, "LOADING: Trying to get chat from %s", infile);
-      if (load_chatdb(f) <= 0) {
+      if (load_chatdb(f, restarting) <= 0) {
         do_rawlog(LT_ERR, "FAILED: Reverting to normal chatdb");
         penn_fclose(f);
         panicdb = 0;
@@ -946,7 +947,7 @@ init_game_dbs(void)
       if (f) {
         do_rawlog(LT_ERR, "LOADING: %s", options.chatdb);
         dbline = 0;
-        if (load_chatdb(f)) {
+        if (load_chatdb(f, restarting)) {
           do_rawlog(LT_ERR, "LOADING: %s (done)", options.chatdb);
         } else {
           do_rawlog(LT_ERR, "ERROR LOADING %s", options.chatdb);
@@ -1006,9 +1007,10 @@ do_readcache(dbref player)
 static char *
 passwd_filter(const char *cmd)
 {
-  static int initialized = 0;
+  static bool initialized = 0;
   static pcre *pass_ptn, *newpass_ptn;
   char *buff, *bp;
+  static pcre_extra *pass_extra, *newpass_extra;
   int ovec[20];
   size_t cmdlen;
   int matched;
@@ -1021,10 +1023,12 @@ passwd_filter(const char *cmd)
                             PCRE_CASELESS, &errptr, &eo, tables);
     if (!pass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
+    pass_extra = pcre_study(pass_ptn, pcre_study_flags, &errptr);
     newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)",
                                PCRE_CASELESS, &errptr, &eo, tables);
     if (!newpass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
+    newpass_extra = pcre_study(newpass_ptn, pcre_study_flags, &errptr);
     initialized = 1;
   }
 
@@ -1033,7 +1037,8 @@ passwd_filter(const char *cmd)
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched = pcre_exec(pass_ptn, NULL, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
+  if ((matched =
+       pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -1041,7 +1046,7 @@ passwd_filter(const char *cmd)
     safe_fill('*', ovec[5] - ovec[4], buff, &bp);
     safe_chr('=', buff, &bp);
     safe_fill('*', ovec[7] - ovec[6], buff, &bp);
-  } else if ((matched = pcre_exec(newpass_ptn, NULL, cmd, cmdlen, 0, 0,
+  } else if ((matched = pcre_exec(newpass_ptn, newpass_extra, cmd, cmdlen, 0, 0,
                                   ovec, 20)) > 0) {
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -1136,12 +1141,12 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   orator = executor;
 
   /* eat leading whitespace */
-  while (*command && isspace((unsigned char) *command))
+  while (*command && isspace(*command))
     command++;
 
   /* eat trailing whitespace */
   p = command + strlen(command) - 1;
-  while (isspace((unsigned char) *p) && (p >= command))
+  while (isspace(*p) && (p >= command))
     p--;
   *++p = '\0';
 
@@ -1161,7 +1166,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     char *msg = passwd_filter(command);
 
     log_activity(LA_CMD, executor, msg);
-    if (options.log_commands || Suspect(executor))
+    if (!(queue_entry->queue_type & QUEUE_EVENT)
+        && (options.log_commands || Suspect(executor)))
       do_log(LT_CMD, executor, NOTHING, "%s", msg);
     if (Verbose(executor))
       raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
@@ -1373,14 +1379,14 @@ check_alias(const char *command, const char *list)
     for (p = command; (*p && DOWNCASE(*p) == DOWNCASE(*list)
                        && *list != ALIAS_DELIMITER); p++, list++) ;
     if (*p == '\0') {
-      while (isspace((unsigned char) *list))
+      while (isspace(*list))
         list++;
       if (*list == '\0' || *list == ALIAS_DELIMITER)
         return 1;               /* word matched */
     }
     /* didn't match. check next word in list */
     while (*list && *list++ != ALIAS_DELIMITER) ;
-    while (isspace((unsigned char) *list))
+    while (isspace(*list))
       list++;
   }
   /* reached the end of the list without matching anything */
@@ -1585,12 +1591,14 @@ do_writelog(dbref player, char *str, int ltype)
 }
 
 #define queue_dolist(al,pe_regs) \
-  if (queue_type != QUEUE_DEFAULT) { \
+  if (queue_type & QUEUE_INPLACE) { \
     new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
                          PE_INFO_SHARE, queue_type, pe_regs); \
   } else { \
     new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
-                         PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs); \
+                         PE_INFO_CLONE, queue_type, pe_regs); \
+    if (pe_regs) \
+      pe_regs_free(pe_regs); \
   }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
@@ -1623,8 +1631,6 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
   pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
   queue_dolist(command, pe_regs);
-  /* And then pop it off the parent pe_info again */
-  pe_regs_free(pe_regs);
 }
 
 /** Would the scan command find an matching attribute on x for player p? */
@@ -1811,7 +1817,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player,
-                      "%s  [%d:%s]", unparse_object(player, thing),
+                      "%s  [%d:%s]", unparse_object(player, thing, AN_UNPARSE),
                       num, atrname);
         ptr = atrname;
       }
@@ -1822,7 +1828,8 @@ do_scan(dbref player, char *command, int flag)
     if (ScanFind(player, Location(player), 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched here: %s  [%d:%s]"),
-                    unparse_object(player, Location(player)), num, atrname);
+                    unparse_object(player, Location(player), AN_UNPARSE), num,
+                    atrname);
     }
   }
   ptr = atrname;
@@ -1832,7 +1839,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
-                      unparse_object(player, thing), num, atrname);
+                      unparse_object(player, thing, AN_UNPARSE), num, atrname);
         ptr = atrname;
       }
     }
@@ -1842,7 +1849,7 @@ do_scan(dbref player, char *command, int flag)
     if (ScanFind(player, player, 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched self: %s  [%d:%s]"),
-                    unparse_object(player, player), num, atrname);
+                    unparse_object(player, player, AN_UNPARSE), num, atrname);
     }
   }
   ptr = atrname;
@@ -1857,7 +1864,8 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num,
+                            atrname);
               ptr = atrname;
             }
           }
@@ -1869,7 +1877,8 @@ do_scan(dbref player, char *command, int flag)
           notify_format(player,
                         T("Matched zone of location: %s  [%d:%s]"),
                         unparse_object(player,
-                                       Zone(Location(player))), num, atrname);
+                                       Zone(Location(player)), AN_UNPARSE), num,
+                        atrname);
         }
       }
     }
@@ -1884,7 +1893,8 @@ do_scan(dbref player, char *command, int flag)
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
-                            unparse_object(player, thing), num, atrname);
+                            unparse_object(player, thing, AN_UNPARSE), num,
+                            atrname);
               ptr = atrname;
             }
           }
@@ -1892,7 +1902,8 @@ do_scan(dbref player, char *command, int flag)
       } else if (ScanFind(player, Zone(player), 0)) {
         *ptr = '\0';
         notify_format(player, T("Matched personal zone: %s  [%d:%s]"),
-                      unparse_object(player, Zone(player)), num, atrname);
+                      unparse_object(player, Zone(player), AN_UNPARSE), num,
+                      atrname);
       }
     }
   }
@@ -1907,7 +1918,7 @@ do_scan(dbref player, char *command, int flag)
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
-                      unparse_object(player, thing), num, atrname);
+                      unparse_object(player, thing, AN_UNPARSE), num, atrname);
         ptr = atrname;
       }
     }
@@ -2108,7 +2119,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
 #ifndef WIN32
 #ifdef HAVE_UPTIME
   FILE *fp;
-  char c;
+  int c;
   int i;
   char tbuf1[BUFFER_LEN];
 #endif
@@ -2119,11 +2130,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   int psize;
 
 #ifdef HAVE_UPTIME
-  fp =
-#ifdef __LCC__
-    (FILE *)
-#endif
-    popen(UPTIME, "r");
+  fp = popen(UPTIME, "r");
 
   /* just in case the system is screwy */
   if (fp == NULL) {
@@ -2133,7 +2140,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   }
   /* print system uptime */
   for (i = 0; (c = getc(fp)) != '\n' && c != EOF; i++)
-    tbuf1[i] = c;
+    tbuf1[i] = (char) c;
   tbuf1[i] = '\0';
   pclose(fp);
 
@@ -2386,9 +2393,6 @@ db_open(const char *fname)
 
     if (access(filename, R_OK) == 0) {
       pf->handle.f =
-#ifdef __LCC__
-        (FILE *)
-#endif
         popen(tprintf("%s < '%s'", options.uncompressprog, filename), "r");
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
@@ -2470,9 +2474,6 @@ db_open_write(const char *fname)
   if (*options.compressprog) {
     pf->type = PFT_PIPE;
     pf->handle.f =
-#ifdef __LCC__
-      (FILE *)
-#endif
       popen(tprintf("%s > '%s'", options.compressprog, filename), "w");
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
@@ -2494,52 +2495,6 @@ db_open_write(const char *fname)
     longjmp(db_err, 1);
   }
   return pf;
-}
-
-
-/** List various goodies.
- * \verbatim
- * This function implements @list.
- * \endverbatim
- * \param player the enactor.
- * \param arg what to list.
- * \param lc if 1, list in lowercase.
- * \param which 1 for builins, 2 for local, 3 for all
- */
-void
-do_list(dbref player, char *arg, int lc, int which)
-{
-  if (!arg || !*arg)
-    notify(player, T("I don't understand what you want to @list."));
-  else if (string_prefix("commands", arg))
-    do_list_commands(player, lc, which);
-  else if (string_prefix("functions", arg)) {
-    switch (which) {
-    case 1:
-      do_list_functions(player, lc, "builtin");
-      break;
-    case 2:
-      do_list_functions(player, lc, "local");
-      break;
-    case 3:
-    default:
-      do_list_functions(player, lc, "all");
-      break;
-    }
-  } else if (string_prefix("motd", arg))
-    do_motd(player, MOTD_LIST, "");
-  else if (string_prefix("attribs", arg))
-    do_list_attribs(player, lc);
-  else if (string_prefix("flags", arg))
-    do_list_flags("FLAG", player, "", lc, T("Flags"));
-  else if (string_prefix("powers", arg))
-    do_list_flags("POWER", player, "", lc, T("Powers"));
-  else if (string_prefix("locks", arg))
-    do_list_locks(player, NULL, lc, T("Locks"));
-  else if (string_prefix("allocations", arg))
-    do_list_allocations(player);
-  else
-    notify(player, T("I don't understand what you want to @list."));
 }
 
 extern HASHTAB htab_function;
@@ -2568,17 +2523,40 @@ extern intmap *watchtable;
 void
 do_list_memstats(dbref player)
 {
+  static const struct {
+    const HASHTAB *const table;
+    const char *name;
+  } hash_tables[] = {
+    {
+    &htab_function, "Functions"}, {
+    &htab_user_function, "@Functions"}, {
+    &htab_player_list, "Players"}, {
+    &htab_reserved_aliases, "Aliases"}, {
+    &help_files, "HelpFiles"}, {
+    &htab_objdata, "ObjData"}, {
+    &htab_objdata_keys, "ObjDataKeys"}, {
+    &htab_locks, "@locks"}, {
+  &local_options, "ConfigOpts"},};
+  unsigned int i;
+
   notify(player, "Hash Tables:");
-  hash_stats_header(player);
-  hash_stats(player, &htab_function, "Functions");
-  hash_stats(player, &htab_user_function, "@Functions");
-  hash_stats(player, &htab_player_list, "Players");
-  hash_stats(player, &htab_reserved_aliases, "Aliases");
-  hash_stats(player, &help_files, "HelpFiles");
-  hash_stats(player, &htab_objdata, "ObjData");
-  hash_stats(player, &htab_objdata_keys, "ObjDataKeys");
-  hash_stats(player, &htab_locks, "@locks");
-  hash_stats(player, &local_options, "ConfigOpts");
+  notify(player,
+         "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
+  for (i = 0; i < sizeof(hash_tables) / sizeof(hash_tables[0]); ++i) {
+    const HASHTAB *htab = hash_tables[i].table;
+    struct hashstats stats;
+
+    hash_stats(htab, &stats);
+    notify_format(player, "%-11s %7d %7d %7d %7d %7d %7d %7.1f",
+                  hash_tables[i].name, htab->hashsize, htab->entries,
+                  stats.lookups[0], stats.lookups[1], stats.lookups[2],
+                  stats.bytes, stats.key_length);
+    if (stats.entries != htab->entries) {
+      notify_format(player, "Mismatch in size: %d expected, %d found!",
+                    htab->entries, stats.entries);
+    }
+  }
+
   notify(player, "Prefix Trees:");
   ptab_stats_header(player);
   ptab_stats(player, &ptab_attrib, "AttrPerms");

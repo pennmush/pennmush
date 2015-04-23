@@ -5,33 +5,35 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "conf.h"
+#include "SFMT.h"
+#include "ansi.h"
+#include "attrib.h"
 #include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "extchat.h"
 #include "externs.h"
-#include "version.h"
-#include "htab.h"
 #include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
 #include "lock.h"
 #include "match.h"
+#include "memcheck.h"
 #include "mushdb.h"
-#include "dbdefs.h"
-#include "parse.h"
-#include "function.h"
-#include "command.h"
-#include "game.h"
-#include "attrib.h"
 #include "mymalloc.h"
-#include "ansi.h"
+#include "parse.h"
 #include "strtree.h"
-#include "SFMT.h"
+#include "strutil.h"
 #include "svninfo.h"
-#include "confmagic.h"
+#include "version.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -59,9 +61,19 @@ FUNCTION(fun_valid)
     safe_boolean(ok_name(args[1], 0), buff, bp);
   else if (!strcasecmp(args[0], "attrname"))
     safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "playername"))
-    safe_boolean(ok_player_name(args[1], executor, executor), buff, bp);
-  else if (!strcasecmp(args[0], "password"))
+  else if (!strcasecmp(args[0], "playername")) {
+    dbref target = executor;
+    if (nargs >= 3) {
+      target =
+        noisy_match_result(executor, args[2], TYPE_PLAYER,
+                           MAT_PMATCH | MAT_TYPE);
+      if (target == NOTHING) {
+        safe_str(T("#-1 NO SUCH OBJECT"), buff, bp);
+        return;
+      }
+    }
+    safe_boolean(ok_player_name(args[1], target, target), buff, bp);
+  } else if (!strcasecmp(args[0], "password"))
     safe_boolean(ok_password(args[1]), buff, bp);
   else if (!strcasecmp(args[0], "command"))
     safe_boolean(ok_command_name(upcasestr(args[1])), buff, bp);
@@ -76,6 +88,14 @@ FUNCTION(fun_valid)
   else if (!strcasecmp(args[0], "ansicodes")) {
     ansi_data colors;
     safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
+  } else if (!strcasecmp(args[0], "channel")) {
+    CHAN *target = NULL;
+    if (nargs >= 3) {
+      find_channel(args[2], &target, executor);
+    }
+    safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
+  } else if (!strcasecmp(args[0], "attrvalue")) {
+    safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }
@@ -111,6 +131,10 @@ FUNCTION(fun_message)
   int flags = PEMIT_LIST | PEMIT_SILENT;
   enum emit_type type = EMIT_PEMIT;
   dbref speaker = executor;
+
+  /* Instead of having the '10', '14', etc, hardcoded, this
+   * should be using MAX_STACK_ARGS. However, it's potentially
+   * slightly incompatible to change it, now. */
 
   for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
@@ -497,7 +521,12 @@ FUNCTION(fun_listq)
     }
     if (pe_regs->flags & PE_REGS_NEWATTR) {
       /* Remove iter, switch, regexp and %0-%9 context */
-      types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP | PE_REGS_ARG);
+      types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP);
+      if (!(pe_regs->flags & PE_REGS_ARGPASS))
+        types &= ~PE_REGS_ARG;
+    } else if (pe_regs->flags & PE_REGS_ARG) {
+      /* Only the first pe_regs holding ARGs is checked */
+      types &= ~PE_REGS_ARG;
     }
     if (!types)
       break;                    /* nothing left */
@@ -529,7 +558,12 @@ clear_allq(NEW_PE_INFO *pe_info)
         }
       }
     }
-    if (!(pe_regs->flags & PE_REGS_LET)) {
+    if ((pe_regs->flags & (PE_REGS_LET | PE_REGS_LOCALIZED))) {
+      /* This was created by localize(), letq(), or something similar,
+       * so we can't change anything above it.
+       * Instead, just set PE_REGS_QSTOP so we don't look at anything above it.
+       * This effectively clears everything above while this pe_regs exists,
+       * magically bringing it back when this localized pe_regs goes away */
       pe_regs->flags |= PE_REGS_QSTOP;
       return;
     }
@@ -640,11 +674,67 @@ FUNCTION(fun_unsetq)
 /* ARGSUSED */
 FUNCTION(fun_r)
 {
-  /* returns a local register */
-  if (ValidQregName(args[0])) {
-    safe_str(PE_Getq(pe_info, args[0]), buff, bp);
-  } else {
-    safe_str(T(e_badregname), buff, bp);
+  int type = PE_REGS_Q;
+  const char *s;
+
+  if (nargs >= 2 && args[1] && *args[1]) {
+    if (string_prefix("qregisters", args[1]))
+      type = PE_REGS_Q;
+    else if (string_prefix("regexp", args[1]))
+      type = PE_REGS_REGEXP;
+    else if (strlen(args[1]) > 1 && string_prefix("switch", args[1]))
+      type = PE_REGS_SWITCH;
+    else if (string_prefix("iter", args[1]))
+      type = PE_REGS_ITER;
+    else if (string_prefix("args", args[1])
+             || (strlen(args[1]) > 1 && string_prefix("stack", args[1])))
+      type = PE_REGS_ARG;
+    else {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  switch (type) {
+  case PE_REGS_Q:
+    if (ValidQregName(args[0]))
+      safe_str(PE_Getq(pe_info, args[0]), buff, bp);
+    else
+      safe_str(T(e_badregname), buff, bp);
+    break;
+  case PE_REGS_ARG:
+    s = pi_regs_get_env(pe_info, args[0]);
+    if (s)
+      safe_str(s, buff, bp);
+    break;
+  case PE_REGS_ITER:
+  case PE_REGS_SWITCH:
+    {
+      int level = 0, total = 0;
+
+      if (type == PE_REGS_ITER)
+        total = PE_Get_Ilev(pe_info);
+      else
+        total = PE_Get_Slev(pe_info);
+
+      if ((*args[0] == 'l' || *args[0] == 'L') && !args[0][1])
+        level = total;
+      else if (!is_strict_number(args[0])) {
+        safe_str(T(e_badregname), buff, bp);
+        return;
+      } else {
+        level = parse_integer(args[0]);
+      }
+      if (level < 0 || level > total) {
+        safe_str(T(e_argrange), buff, bp);
+      } else {
+        if (type == PE_REGS_ITER)
+          safe_str(PE_Get_Itext(pe_info, level), buff, bp);
+        else
+          safe_str(PE_Get_Stext(pe_info, level), buff, bp);
+      }
+      break;
+    }
   }
 }
 
@@ -652,6 +742,8 @@ FUNCTION(fun_r)
  * Utility functions: RAND, DIE, SECURE, SPACE, BEEP, SWITCH, EDIT,
  *      ESCAPE, SQUISH, ENCRYPT, DECRYPT, LIT
  */
+
+extern sfmt_t rand_state;
 
 /* ARGSUSED */
 FUNCTION(fun_rand)
@@ -661,7 +753,7 @@ FUNCTION(fun_rand)
 
   if (nargs == 0) {
     /* Floating pont number in the range [0,1) */
-    safe_number(genrand_real2(), buff, bp);
+    safe_number(sfmt_genrand_real2(&rand_state), buff, bp);
     return;
   }
 
@@ -944,9 +1036,9 @@ FUNCTION(fun_reswitch)
       /* set regexp context here */
       pe_regs_clear(pe_regs);
       if (mas) {
-        pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, mas);
+        pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns, mas);
       } else {
-        pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, mstr);
+        pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, mstr);
       }
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
@@ -1112,11 +1204,11 @@ soundex(char *str)
   p++;
   /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
   while (*str) {
-    if (!isalpha((unsigned char) *str) || (unsigned char) *str > 127) {
+    if (!isalpha(*str) || *str > 127) {
       str++;
       continue;
     }
-    *p = soundex_val[(unsigned char) *str++];
+    *p = soundex_val[*str++];
     if (*p != *(p - 1))
       p++;
   }
@@ -1151,7 +1243,7 @@ FUNCTION(fun_soundex)
    * 5. Truncate to 4 characters or pad with 0's.
    * It's actually a bit messier than that to make it faster.
    */
-  if (!args[0] || !*args[0] || !isalpha((unsigned char) *args[0])
+  if (!args[0] || !*args[0] || !isalpha(*args[0])
       || strchr(args[0], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"), buff,
              bp);
@@ -1169,8 +1261,8 @@ FUNCTION(fun_soundlike)
    * I deem the modularity to be more important. So there.
    */
   char *code1, *code2;
-  if (!*args[0] || !*args[1] || !isalpha((unsigned char) *args[0])
-      || !isalpha((unsigned char) *args[1]) || strchr(args[0], ' ')
+  if (!*args[0] || !*args[1] || !isalpha(*args[0])
+      || !isalpha(*args[1]) || strchr(args[0], ' ')
       || strchr(args[1], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"),
              buff, bp);
@@ -1198,7 +1290,7 @@ FUNCTION(fun_null)
 FUNCTION(fun_list)
 {
   int which = 3;
-  char *fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = { "builtin", "local", "all" };
   if (nargs == 2) {
     if (!strcasecmp(args[1], "local"))
       which = 2;
@@ -1230,9 +1322,11 @@ FUNCTION(fun_list)
   else if (string_prefix("locks", args[0]))
     list_locks(buff, bp, NULL);
   else if (string_prefix("flags", args[0]))
-    safe_str(list_all_flags("FLAG", "", executor, 0x3), buff, bp);
+    safe_str(list_all_flags("FLAG", "", executor, FLAG_LIST_NAMECHAR), buff,
+             bp);
   else if (string_prefix("powers", args[0]))
-    safe_str(list_all_flags("POWER", "", executor, 0x3), buff, bp);
+    safe_str(list_all_flags("POWER", "", executor, FLAG_LIST_NAMECHAR), buff,
+             bp);
   else
     safe_str("#-1", buff, bp);
   return;

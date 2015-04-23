@@ -5,37 +5,38 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
-#include <time.h>
-#include <string.h>
 #include <ctype.h>
-#include "conf.h"
-#include "case.h"
-#include "externs.h"
-#include "version.h"
-#include "extchat.h"
-#include "htab.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "parse.h"
-#include "function.h"
-#include "command.h"
-#include "game.h"
-#include "attrib.h"
-#include "ansi.h"
-#include "match.h"
-#include "sort.h"
-#include "mymalloc.h"
-#include <openssl/sha.h>
-#include <openssl/evp.h>
 #include <openssl/bio.h>
-#include "confmagic.h"
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <string.h>
+#include <time.h>
 
+#include "ansi.h"
+#include "attrib.h"
+#include "case.h"
+#include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "extchat.h"
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
+#include "match.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "sort.h"
+#include "strutil.h"
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
+bool decode_base64(char *encoded, int len, bool printonly, char *buff,
+                   char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
@@ -79,8 +80,8 @@ encode_base64(const char *input, int len, char *buff, char **bp)
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
 
-static bool
-decode_base64(char *encoded, int len, char *buff, char **bp)
+bool
+decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
 {
   BIO *bio, *b64, *bmem;
   char *sbp;
@@ -125,7 +126,7 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
             return false;
           }
           for (; n < end; n++) {
-            if (!valid_ansi_codes[(unsigned char) decoded[n]]) {
+            if (!valid_ansi_codes[decoded[n]]) {
               BIO_free_all(bio);
               *bp = sbp;
               safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
@@ -133,7 +134,7 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
             }
           }
           n = end;
-        } else if (!isprint((unsigned char) decoded[n]))
+        } else if (printonly && !isprint(decoded[n]))
           decoded[n] = '?';
       }
       safe_strl(decoded, dlen, buff, bp);
@@ -161,7 +162,7 @@ FUNCTION(fun_encode64)
 /* Decode a string from base64 */
 FUNCTION(fun_decode64)
 {
-  decode_base64(args[0], arglens[0], buff, bp);
+  decode_base64(args[0], arglens[0], 1, buff, bp);
 }
 
 /* Copy over only alphanumeric chars */
@@ -262,7 +263,7 @@ FUNCTION(fun_decrypt)
 
   if (nargs == 3 && parse_boolean(args[2])) {
     tp = tbuff;
-    if (!decode_base64(args[0], arglens[0], tbuff, &tp)) {
+    if (!decode_base64(args[0], arglens[0], 1, tbuff, &tp)) {
       safe_strl(tbuff, tp - tbuff, buff, bp);
       return;
     }
@@ -295,9 +296,9 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
-  unsigned char hash[SHA_DIGEST_LENGTH];
+  uint8_t hash[SHA_DIGEST_LENGTH];
 
-  SHA((unsigned char *) args[0], arglens[0], hash);
+  SHA((uint8_t *) args[0], arglens[0], hash);
 
   safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
 }

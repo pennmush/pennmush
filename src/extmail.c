@@ -58,8 +58,8 @@
  * \endverbatim
  */
 
-#include "config.h"
 #include "copyrite.h"
+#include "extmail.h"
 
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -78,26 +78,25 @@
 #include <stdint.h>
 #endif
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "dbdefs.h"
-#include "match.h"
-#include "extmail.h"
-#include "function.h"
-#include "malias.h"
-#include "attrib.h"
-#include "parse.h"
-#include "mymalloc.h"
 #include "ansi.h"
-#include "pueblo.h"
-#include "flags.h"
-#include "log.h"
-#include "lock.h"
+#include "attrib.h"
 #include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
 #include "dbio.h"
-#include "confmagic.h"
-
+#include "externs.h"
+#include "flags.h"
+#include "function.h"
+#include "lock.h"
+#include "log.h"
+#include "malias.h"
+#include "match.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "parse.h"
+#include "pueblo.h"
+#include "strutil.h"
 
 extern int do_convtime(const char *str, struct tm *ttm);        /* funtime.c */
 
@@ -135,10 +134,12 @@ static char *status_chars(MAIL *mp);
 static char *status_string(MAIL *mp);
 static int sign(int x);
 static char *get_message(MAIL *mp);
-static unsigned char *get_compressed_message(MAIL *mp);
+static char *get_compressed_message(MAIL *mp);
 static char *get_subject(MAIL *mp);
-static char *get_sender(MAIL *mp, int full);
+static char *get_sender(MAIL *mp, int full, int len, bool *pisplayer);
 static int was_sender(dbref player, MAIL *mp);
+void do_mail_reviewread(dbref player, dbref target, const char *msglist);
+void do_mail_reviewlist(dbref player, dbref target);
 
 MAIL *maildb;            /**< The head of the mail list */
 MAIL *tail_ptr;          /**< The end of the mail list */
@@ -178,7 +179,7 @@ static char *
 get_message(MAIL *mp)
 {
   static char text[BUFFER_LEN * 2];
-  unsigned char tbuf[BUFFER_LEN * 2];
+  char tbuf[BUFFER_LEN * 2];
 
   if (!mp)
     return NULL;
@@ -189,12 +190,12 @@ get_message(MAIL *mp)
 }
 
 /* Return the compressed text of a @mail in a static buffer */
-static unsigned char *
+static char *
 get_compressed_message(MAIL *mp)
 {
-  unsigned char *text;
-  uint16_t len;
-
+  char *text;
+  size_t len;
+  
   if (!mp)
     return NULL;
 
@@ -219,7 +220,7 @@ get_subject(MAIL *mp)
         *p = '\0';
         break;
       }
-      if (!isprint((unsigned char) *p)) {
+      if (!isprint(*p)) {
         *p = ' ';
       }
     }
@@ -228,22 +229,45 @@ get_subject(MAIL *mp)
   return sbuf;
 }
 
-/* Return the name of the mail sender. */
+/** Return the name of the mail sender, possibly limited to len visible characters.
+ * \param mp The mail message
+ * \param full Include dbref and owner?
+ * \param len if > 0, limit name to len to visible chars
+ * \param pisplayer if non-null, pointer to a bool var, which will be set to 1 if sender is a player
+ * \return pointer to STATIC buffer containing name to display
+ */
 static char *
-get_sender(MAIL *mp, int full)
+get_sender(MAIL *mp, int full, int len, bool *pisplayer)
 {
   static char tbuf1[BUFFER_LEN], *bp;
+  bool isplayer = 0;
   bp = tbuf1;
   if (!GoodObject(mp->from))
     safe_str(T("!Purged!"), tbuf1, &bp);
   else if (!was_sender(mp->from, mp))
     safe_str(T("!Purged!"), tbuf1, &bp);
-  else if (IsPlayer(mp->from) || !full)
-    safe_str(Name(mp->from), tbuf1, &bp);
-  else
-    safe_format(tbuf1, &bp, T("%s (#%d, owner: %s)"), Name(mp->from),
-                mp->from, Name(Owner(mp->from)));
+  else if (IsPlayer(mp->from) || !full) {
+    safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
+    isplayer = IsPlayer(mp->from);
+  } else {
+    safe_str(AName(mp->from, AN_SYS, NULL), tbuf1, &bp);
+    safe_format(tbuf1, &bp, T(" (#%d, owner: %s)"), mp->from,
+                AName(Owner(mp->from), AN_SYS, NULL));
+  }
   *bp = '\0';
+  if (len > 0) {
+    if (has_markup(tbuf1)) {
+      ansi_string *as = parse_ansi_string(tbuf1);
+      bp = tbuf1;
+      safe_ansi_string(as, 0, len, tbuf1, &bp);
+      *bp = '\0';
+    } else {
+      tbuf1[len] = '\0';
+    }
+  }
+  if (pisplayer) {
+    *pisplayer = isplayer;
+  }
   return tbuf1;
 }
 
@@ -307,7 +331,7 @@ do_mail_change_folder(dbref player, char *fld, char *newname)
       return;
     }
     for (p = newname; p && *p; p++) {
-      if (!isalnum((unsigned char) *p)) {
+      if (!isalnum(*p)) {
         notify(player, T("MAIL: Illegal folder name"));
         return;
       }
@@ -415,7 +439,9 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (string_prefix("read", status) || string_prefix("unread", status))
+  if (string_prefix("urgent", status) || string_prefix("unurgent", status))
+    flag = M_URGENT;
+  else if (string_prefix("read", status) || string_prefix("unread", status))
     flag = M_MSGREAD;
   else if (string_prefix("cleared", status)
            || string_prefix("uncleared", status))
@@ -427,8 +453,14 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (*status == 'u' || *status == 'U')
+  if ((*status == 'u' || *status == 'U')
+      && (status[1] == 'n' || status[1] == 'N')) {
+    if (strlen(status) < 3) {
+      notify(player, T("MAIL: Unknown status."));
+      return;
+    }
     negate = 1;
+  }
 
   do_mail_flags(player, msglist, flag, negate);
 }
@@ -447,7 +479,8 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
   struct mail_selector ms;
   mail_flag folder;
   folder_array i;
-  int notified = 0, j = 0;
+  bool notified = 0;
+  int inrange = 0, twiddled = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -459,7 +492,12 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
     if ((mp->to == player) && (All(ms) || (Folder(mp) == folder))) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
-        j++;
+        inrange++;
+        if ((negate & !(mp->read & flag)) || (!negate && (mp->read & flag))) {
+          /* Don't bother notifying about messages which already match */
+          continue;
+        }
+        twiddled++;
         if (negate) {
           mp->read &= ~flag;
         } else {
@@ -474,7 +512,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
                        T("MAIL: All messages in all folders untagged."));
               else
                 notify(player, T("MAIL: All messages in all folders tagged."));
-              notified++;
+              notified = 1;
             }
           } else {
             if (negate) {
@@ -495,7 +533,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
               } else {
                 notify(player, T("MAIL: All messages in all folders cleared."));
               }
-              notified++;
+              notified = 1;
             }
           } else {
             if (Unread(mp) && !negate) {
@@ -512,6 +550,29 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
             }
           }
           break;
+        case M_URGENT:
+          if (All(ms)) {
+            if (!notified) {
+              if (negate)
+                notify(player,
+                       T
+                       ("MAIL: All messages in all folders marked as not urgent."));
+              else
+                notify(player,
+                       T
+                       ("MAIL: All messages in all folders marked as urgent."));
+              notified = 1;
+            }
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d not urgent"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d tagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            }
+          }
+          break;
         case M_MSGREAD:
           if (All(ms)) {
             if (!notified) {
@@ -521,7 +582,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
                 notify(player,
                        T("MAIL: All messages in all folders marked as read."));
               }
-              notified++;
+              notified = 1;
             }
           } else {
             if (negate) {
@@ -537,9 +598,15 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
       }
     }
   }
-  if (!j) {
+  if (!inrange) {
     /* ran off the end of the list without finding anything */
     notify(player, T("MAIL: You don't have any matching messages!"));
+  } else if (!twiddled) {
+    if (negate) {
+      notify(player, T("MAIL: No messages had those flags."));
+    } else {
+      notify(player, T("MAIL: All messages had those flags already."));
+    }
   }
   return;
 }
@@ -617,6 +684,7 @@ do_mail_read(dbref player, char *msglist)
   mail_flag folder;
   folder_array i;
   int j = 0;
+  bool isplayer;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -639,12 +707,12 @@ do_mail_read(dbref player, char *msglist)
         } else
           mush_strncpy(folderheader, T("Folder:"), BUFFER_LEN);
         notify(player, DASH_LINE);
-        mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        safe_fill_to(' ', 55, tbuf1);
         notify_format(player,
                       T
-                      ("From: %-55s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
-                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
-                              && Connected(mp->from)
+                      ("From: %-s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
+                      tbuf1, (isplayer && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
                       "      ", show_time(mp->time, 0), folderheader,
@@ -680,11 +748,12 @@ void
 do_mail_list(dbref player, const char *msglist)
 {
   char subj[30];
-  char sender[30];
+  char sender[BUFFER_LEN];
   MAIL *mp;
   struct mail_selector ms;
   mail_flag folder;
   folder_array i;
+  bool isplayer;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -711,12 +780,13 @@ do_mail_list(dbref player, const char *msglist)
                           i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
                           TAG_END));
         strcpy(subj, chopstr(get_subject(mp), 28));
-        strcpy(sender, chopstr(get_sender(mp, 0), 12));
+        strcpy(sender, get_sender(mp, 0, 12, &isplayer));
+        safe_fill_to(' ', 12, sender);
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",
                       status_chars(mp), (int) Folder(mp), i[Folder(mp)],
-                      ((*sender != '!') && (Connected(mp->from) &&
-                                            (!hidden(mp->from)
-                                             || Priv_Who(player)))
+                      (isplayer && (Connected(mp->from) && (!hidden(mp->from)
+                                                            ||
+                                                            Priv_Who(player)))
                        ? '*' : ' '), sender, 30, subj,
                       mail_list_time(show_time(mp->time, 0), 1));
         if (SUPPORT_PUEBLO)
@@ -790,6 +860,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
   char tbuf1[BUFFER_LEN];
   struct mail_selector ma, ms;
   int i, j;
+  bool isplayer;
 
   /* Initialize listing mail selector for all messages from player */
   ma.low = 0;
@@ -816,12 +887,12 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
         /* Read it */
         j++;
         notify(player, DASH_LINE);
-        mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        safe_fill_to(' ', 55, tbuf1);
         notify_format(player,
                       T
-                      ("From: %-55s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
-                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
-                              && Connected(mp->from)
+                      ("From: %s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
+                      tbuf1, (isplayer && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
                       "      ", show_time(mp->time, 0), i, status_string(mp));
@@ -854,10 +925,13 @@ void
 do_mail_reviewlist(dbref player, dbref target)
 {
   char subj[30];
-  char sender[30];
   MAIL *mp;
+  char nbuff[BUFFER_LEN], *np;
+  int nlen;
   struct mail_selector ms;
   int i;
+  bool isplayer;
+  dbref last = NOTHING;
 
   /* Initialize mail selector */
   ms.low = 0;
@@ -870,12 +944,32 @@ do_mail_reviewlist(dbref player, dbref target)
   i = 0;
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
+  /* MG: I haven't ANSI'd this because I'm lazy, and it requires more than just
+   * replacing Name() with AName() */
+  if (target != NOTHING) {
+    np = nbuff;
+    safe_str(AName(target, AN_SYS, NULL), nbuff, &np);
+    nlen = strlen(Name(target));
+    if (nlen < 27)
+      safe_fill(' ', 27 - nlen, nbuff, &np);
+    *np = '\0';
+    mp = find_exact_starting_point(target);
+  } else {
+    np = nbuff;
+    safe_format(nbuff, &np, "%-27s", T("All"));
+    *np = '\0';
+    mp = HEAD;
+  }
   notify_format(player,
                 T
-                ("--------------------   MAIL: %-27s   ------------------"),
-                Name(target));
-  for (mp = find_exact_starting_point(target); mp && (mp->to == target);
-       mp = mp->next) {
+                ("--------------------   MAIL: %s   ------------------"),
+                nbuff);
+  for (; mp && ((target == NOTHING) || (mp->to == target)); mp = mp->next) {
+    if (last != mp->to) {
+      i = 0;
+      last = mp->to;
+      nbuff[0] = '\0';
+    }
     if (mail_match(player, mp, ms, i)) {
       /* list it */
       i++;
@@ -883,16 +977,24 @@ do_mail_reviewlist(dbref player, dbref target)
         notify_noenter(player,
                        tprintf
                        ("%c%cA XCH_CMD=\"@mail/review %s=%d\" XCH_HINT=\"Read message %d sent to %s\"%c",
-                        TAG_START, MARKUP_HTML, Name(target),
-                        i, i, Name(target), TAG_END));
+                        TAG_START, MARKUP_HTML, Name(mp->to),
+                        i, i, Name(mp->to), TAG_END));
       strcpy(subj, chopstr(get_subject(mp), 28));
-      strcpy(sender, chopstr(get_sender(mp, 0), 12));
+      if (!nbuff[0]) {
+        np = nbuff;
+        safe_str(AnsiNameWrapper(mp->to, 0, AN_SYS, NULL, 12), nbuff, &np);
+        nlen = strlen(Name(mp->to));
+        if (nlen < 12) {
+          safe_fill(' ', 12 - nlen, nbuff, &np);
+        }
+        *np = '\0';
+      }
+      isplayer = IsPlayer(mp->to);
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
                     status_chars(mp), i,
-                    ((*sender != '!') && (Connected(mp->from) &&
-                                          (!hidden(mp->from)
-                                           || Priv_Who(player)))
-                     ? '*' : ' '), sender, 30, subj,
+                    (isplayer && (Connected(mp->to) && (!hidden(mp->to)
+                                                        || Priv_Who(player)))
+                     ? '*' : ' '), nbuff, 30, subj,
                     mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_PUEBLO)
         notify_noenter(player, tprintf("%c%c/A%c", TAG_START,
@@ -919,16 +1021,16 @@ do_mail_review(dbref player, const char *name, const char *msglist)
   dbref target;
 
   if (!name || !*name) {
-    notify(player,
-           T("MAIL: I can't figure out whose mail you want to review."));
-    return;
-  }
-  if ((target = lookup_player(name)) == NOTHING) {
+    target = NOTHING;
+  } else if ((target = lookup_player(name)) == NOTHING) {
     notify(player, T("MAIL: I couldn't find that player."));
     return;
   }
   if (!msglist || !*msglist) {
     do_mail_reviewlist(player, target);
+  } else if (target == NOTHING) {
+    notify(player, T("MAIL: You must specify a player."));
+    return;
   } else {
     do_mail_reviewread(player, target, msglist);
   }
@@ -1156,10 +1258,10 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
               notify(player, T("MAIL: You can't reply to nonexistant mail."));
             } else {
               char tbuf1[BUFFER_LEN];
-              unsigned char tbuf2[BUFFER_LEN];
+              char tbuf2[BUFFER_LEN];
               mush_strncpy(tbuf1, uncompress(mp->subject), BUFFER_LEN);
-              u_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
-              send_mail(player, temp->from, tbuf1, (char *) tbuf2,
+              mush_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
+              send_mail(player, temp->from, tbuf1, tbuf2,
                         M_FORWARD | M_REPLY, 1, 0);
               num_recpts++;
             }
@@ -1172,10 +1274,10 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
               notify_format(player, T("No such unique player: %s."), current);
             } else {
               char tbuf1[BUFFER_LEN];
-              unsigned char tbuf2[BUFFER_LEN];
+              char tbuf2[BUFFER_LEN];
               mush_strncpy(tbuf1, uncompress(mp->subject), BUFFER_LEN);
-              u_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
-              send_mail(player, target, tbuf1, (char *) tbuf2, M_FORWARD, 1, 0);
+              mush_strncpy(tbuf2, get_compressed_message(mp), BUFFER_LEN);
+              send_mail(player, target, tbuf1, tbuf2, M_FORWARD, 1, 0);
               num_recpts++;
             }
           }
@@ -1394,13 +1496,41 @@ send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (good)
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), Name(target));
+                    T("MAIL: You sent your message to %s."), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL));
     else
       notify_format(player,
                     T
                     ("MAIL: Your message was not sent to %s due to a mail forwarding problem."),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
   }
+}
+
+static int mail_limit(dbref target);
+
+static int
+mail_limit(dbref target)
+{
+  ATTR *a;
+  int quota;
+
+  a = atr_get(target, "MAILQUOTA");
+  if (!a)
+    return MAIL_LIMIT;
+
+  if (!is_integer(atr_value(a)))
+    return MAIL_LIMIT;
+
+  quota = parse_integer(atr_value(a));
+
+  if (quota <= 0)
+    return MAIL_LIMIT;
+  else if (quota > 50000)
+    return 50000;               /* Hard limit */
+  else
+    return quota;
+
 }
 
 static int
@@ -1442,7 +1572,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
       cp = sbuf;
       safe_format(sbuf, &cp,
                   T("MAIL: %s is not accepting mail from you right now."),
-                  Name(target));
+                  AName(target, AN_SYS, NULL));
       *cp = '\0';
       cp = sbuf;
     } else {
@@ -1452,10 +1582,10 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     return 0;
   }
   count_mail(target, 0, &rc, &uc, &cc);
-  if ((rc + uc + cc) >= MAIL_LIMIT) {
+  if ((rc + uc + cc) >= mail_limit(target)) {
     if (!silent)
       notify_format(player, T("MAIL: %s's mailbox is full. Can't send."),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
     return 0;
   }
 
@@ -1483,16 +1613,16 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     newp->subject = compress(chopstr(tprintf("Re: %s", sbuf), SUBJECT_LEN));
   else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL)
     /* Don't bother to uncompress a->value */
-    newp->subject = u_strdup(AL_STR(a));
+    newp->subject = strdup(AL_STR(a));
   else
     newp->subject = compress(sbuf);
   if (flags & M_FORWARD) {
     /* Forwarding passes the message already compressed */
     size_t len = strlen(message) + 1;
-    newp->msgid = chunk_create((unsigned char *) message, len, 1);
+    newp->msgid = chunk_create(message, len, 1);
   } else {
     uint16_t len;
-    unsigned char *text;
+    char *text;
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
 
     safe_str(message, newmsg, &nm);
@@ -1501,7 +1631,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
       safe_str(buff, newmsg, &nm);
     *nm = '\0';
     text = compress(newmsg);
-    len = u_strlen(text) + 1;
+    len = strlen(text) + 1;
     newp->msgid = chunk_create(text, len, 1);
   }
 
@@ -1538,24 +1668,26 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if (!silent) {
     if (can_mail_to(target, player)) {
       notify_format(player,
-                    T("MAIL: You sent your message to %s."), Name(target));
+                    T("MAIL: You sent your message to %s."), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL));
     } else {
       notify_format(player,
                     T
                     ("MAIL: You sent your message to %s, but they can't mail you!"),
-                    Name(target));
+                    AName(target, AN_SYS, NULL));
     }
   }
   notify_format(target,
                 T("MAIL: You have a new message (%d) from %s."),
-                rc + uc + cc + 1, Name(player));
+                rc + uc + cc + 1, AName(player, AN_SYS, NULL));
 
   /* Check @mailfilter */
   filter_mail(player, target, subject, message, rc + uc + cc + 1, flags);
 
   if (AMAIL_ATTR && (atr_get_noparent(target, "AMAIL"))
       && (player != target) && Hasprivs(target))
-    did_it(player, target, NULL, NULL, NULL, NULL, "AMAIL", NOTHING);
+    did_it(player, target, NULL, NULL, NULL, NULL, "AMAIL", NOTHING, 0);
 
   return 1;
 }
@@ -1614,7 +1746,8 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     }
     do_mail_clear(target, "ALL");
     do_mail_purge(target);
-    notify_format(player, T("Mail cleared for %s(#%d)."), Name(target), target);
+    notify_format(player, T("Mail cleared for %s(#%d)."),
+                  AName(target, AN_SYS, NULL), target);
     return;
   } else if (string_prefix("sanity", action)) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = mp->next) {
@@ -1773,8 +1906,10 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
       if (mp->to == target)
         tr++;
     }
-    notify_format(player, T("%s sent %d messages."), Name(target), fr);
-    notify_format(player, T("%s has %d messages."), Name(target), tr);
+    notify_format(player, T("%s sent %d messages."),
+                  AName(target, AN_SYS, NULL), fr);
+    notify_format(player, T("%s has %d messages."), AName(target, AN_SYS, NULL),
+                  tr);
     return;
   }
   /* more detailed message count */
@@ -1803,7 +1938,8 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
     }
   }
 
-  notify_format(player, T("Mail statistics for %s:"), Name(target));
+  notify_format(player, T("Mail statistics for %s:"),
+                AName(target, AN_SYS, NULL));
 
   if (full == MSTATS_READ) {
     notify_format(player, T("%d messages sent, %d unread, %d cleared."),
@@ -1877,7 +2013,7 @@ do_mail(dbref player, char *arg1, char *arg2)
   } else {
     /* Must be reading or listing mail - no arg2 */
     if (((p = strchr(arg1, ':')) && (*(p + 1) == '\0'))
-        || !(isdigit((unsigned char) *arg1) && !strchr(arg1, '-')))
+        || !(isdigit(*arg1) && !strchr(arg1, '-')))
       do_mail_list(player, arg1);
     else
       do_mail_read(player, arg1);
@@ -2395,8 +2531,8 @@ int
 load_mail(PENNFILE *fp)
 {
   char nbuf1[8];
-  unsigned char *tbuf = NULL;
-  unsigned char *text;
+  char *tbuf = NULL;
+  char *text;
   size_t len;
   int mail_top = 0;
   int mail_flags = 0;
@@ -2450,7 +2586,7 @@ load_mail(PENNFILE *fp)
     tbuf = compress(getstring_noalloc(fp));
   }
   text = compress(getstring_noalloc(fp));
-  len = u_strlen(text) + 1;
+  len = strlen(text) + 1;
   mp->msgid = chunk_create(text, len, 1);
   if (mail_flags & MDBF_SUBJECT)
     mp->subject = tbuf;
@@ -2483,7 +2619,7 @@ load_mail(PENNFILE *fp)
     else
       tbuf = NULL;
     text = compress(getstring_noalloc(fp));
-    len = u_strlen(text) + 1;
+    len = strlen(text) + 1;
     mp->msgid = chunk_create(text, len, 1);
     if (tbuf)
       mp->subject = tbuf;
@@ -2563,7 +2699,7 @@ get_folder_number(dbref player, char *name)
     return -1;
   res += 2 + strlen(name);
   p = res;
-  while (isdigit((unsigned char) *p))
+  while (isdigit(*p))
     p++;
   *p = '\0';
   return atoi(res);
@@ -2638,7 +2774,7 @@ add_folder_name(dbref player, int fld, const char *name)
   if (old && *old) {
     mush_strncpy(tbuf, str, BUFFER_LEN);
     r = old;
-    while (!isspace((unsigned char) *r))
+    while (!isspace(*r))
       r++;
     *r = '\0';
     res = replace_string(old, new, tbuf);       /* mallocs mem! */
@@ -2698,7 +2834,7 @@ parse_folder(dbref player, char *folder_string)
    * for now. Later, this will be where named folders are handled */
   if (!folder_string || !*folder_string)
     return -1;
-  if (isdigit((unsigned char) *folder_string)) {
+  if (isdigit(*folder_string)) {
     fnum = atoi(folder_string);
     if ((fnum < 0) || (fnum > MAX_FOLDERS))
       return -1;
@@ -2764,7 +2900,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Don't mess with msglist itself */
   strncpy(tbuf1, msglist, BUFFER_LEN - 1);
   p = tbuf1;
-  while (p && *p && isspace((unsigned char) *p))
+  while (p && *p && isspace(*p))
     p++;
   if (!p || !*p)
     return 1;                   /* all messages in current folder */
@@ -2945,10 +3081,10 @@ check_all_mail(dbref player)
                     ("MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."),
                     subtotal, folder, get_folder_name(player, folder), uc, cc);
       total += subtotal;
-      if (folder == 0 && (subtotal + 5) > MAIL_LIMIT)
+      if (folder == 0 && (subtotal + 5) > mail_limit(player))
         notify_format(player,
                       T("MAIL: Warning! Limit on inbox messages is %d!"),
-                      MAIL_LIMIT);
+                      mail_limit(player));
     }
   }
 
@@ -2980,9 +3116,9 @@ check_mail(dbref player, int folder, int silent)
                   total, folder, get_folder_name(player, folder), uc, cc);
   else if (!silent)
     notify(player, T("\nMAIL: You have no mail.\n"));
-  if ((folder == 0) && (total + 5 > MAIL_LIMIT))
+  if ((folder == 0) && (total + 5 > mail_limit(player)))
     notify_format(player, T("MAIL: Warning! Limit on inbox messages is %d!"),
-                  MAIL_LIMIT);
+                  mail_limit(player));
   return;
 }
 

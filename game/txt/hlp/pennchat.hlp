@@ -121,8 +121,8 @@ See also: CHAT, @chat, @cemit
 & @NSCEMIT
 & CEMIT()
 & NSCEMIT()
-  @cemit[/nosiy|/silent][/noeval] <channel>=<message>
-  @nscemit[/nosiy|/silent][/noeval] <channel>=<message>
+  @cemit[/noisy|/silent][/noeval] <channel>=<message>
+  @nscemit[/noisy|/silent][/noeval] <channel>=<message>
   cemit(<channel>, <message>[, <noisy>])
   nscemit(<channel>, <message>[, <noisy>])
 
@@ -167,7 +167,7 @@ See also: CHAT, @chat, @cemit
 & @channel/join
 & @channel/off
 & @channel/leave
-  @channel/list [<prefix>]
+  @channel/list[/on|/off][/quiet] [<prefix>]
   @channel/what [<prefix>]
   @channel/who <channel>
   @channel/on <channel>[=<player>]
@@ -176,7 +176,10 @@ See also: CHAT, @chat, @cemit
   @channel/list shows a list of all the channels you can see, along with some
   basic information such as whether you are on the channel, how it's locked,
   etc. 'help @channel list' explains the output in detail. If a <prefix> is
-  given, only channels whose names begin with <prefix> are shown.
+  given, only channels whose names begin with <prefix> are shown. If the /on
+  switch is given, only channels you've joined are shown. If /off is given,
+  channels you are on will not be shown. The /quiet switch shows just a list
+  of channel names, without any extra information.
 
   @channel/what shows the name, description, owner, priv flags, mogrifier and 
   buffer size for all channels, or all channels whose names begin with
@@ -263,7 +266,8 @@ See also: crecall(), cbufferadd(), @channel/buffer
   mortals can create, and a charge for doing so; see '@config chat'.
 
   @channel/privs changes the privs for <channel>. See 'help @channel privs'
-  for an explaination of all the possible priviledges.
+  for an explaination of all the possible priviledges. More specific and/or
+  complex restrictions can be set via @clocks (channel locks).
 
   @channel/describe sets a description for the channel, which is shown to
   players in @channel/what. Limited to 256 characters. If the desc includes
@@ -527,7 +531,7 @@ See also: cflags(), clflags()
   > @lock/user:anotherchanneljoin #10=flag^bar
   > @clock/join anotherchannel=@#10/anotherchanneljoin
 
-See also: clock(), @lock
+See also: clock(), @lock, @channel/privs
 & COWNER()
   cowner(<channel>)
 

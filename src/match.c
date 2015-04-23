@@ -52,21 +52,23 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "match.h"
+
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#include "conf.h"
-#include "mushdb.h"
-#include "externs.h"
-#include "case.h"
-#include "match.h"
-#include "parse.h"
-#include "flags.h"
-#include "dbdefs.h"
-#include "mymalloc.h"
-#include "confmagic.h"
+
 #include "attrib.h"
+#include "case.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "parse.h"
+#include "strutil.h"
 
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
@@ -276,7 +278,7 @@ match_player(dbref who, const char *name, int partial)
     name++;
   }
 
-  while (isspace((unsigned char) *name)) {
+  while (isspace(*name)) {
     name++;
   }
 
@@ -298,11 +300,11 @@ match_aliases(dbref match, const char *name)
   if (IsExit(match) && check_alias(name, Name(match)))
     return 1;
   else {
-    char tbuf1[BUFFER_LEN];
+    char *tbuf1;
     ATTR *a = atr_get_noparent(match, "ALIAS");
     if (!a)
       return 0;
-    mush_strncpy(tbuf1, atr_value(a), BUFFER_LEN);
+    tbuf1 = atr_value(a);
     return check_alias(name, tbuf1);
   }
 }
@@ -337,7 +339,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
   int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
   int goodwhere = RealGoodObject(where);
-  char *name;                  /* name contains the object name searched for, after english matching tokens are stripped from xname */
+  char *name;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
 
   if (!goodwhere)
     loc = NOTHING;
@@ -542,7 +544,7 @@ parse_english(char **name, long *flags)
   }
 
   /* Handle count adjectives */
-  if (!isdigit((unsigned char) **name)) {
+  if (!isdigit(**name)) {
     /* Quick exit */
     return 0;
   }

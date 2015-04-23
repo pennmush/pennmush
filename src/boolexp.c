@@ -86,28 +86,28 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "attrib.h"
 #include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
-#include "mushdb.h"
-#include "match.h"
-#include "externs.h"
-#include "lock.h"
-#include "parse.h"
-#include "attrib.h"
-#include "flags.h"
-#include "log.h"
 #include "extchat.h"
-#include "strtree.h"
+#include "externs.h"
+#include "flags.h"
+#include "lock.h"
+#include "log.h"
+#include "match.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "notify.h"
+#include "parse.h"
+#include "strtree.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */
@@ -308,7 +308,7 @@ safe_get_bytecode(boolexp b)
 
   len = chunk_len(b);
   bytecode = GC_MALLOC_ATOMIC(len);
-  chunk_fetch(b, bytecode, len);
+  chunk_fetch(b, (char *)bytecode, len);
   return bytecode;
 }
 
@@ -323,7 +323,7 @@ get_bytecode(boolexp b, uint16_t *storelen)
   static uint8_t bytecode[BUFFER_LEN * 2];
   uint16_t len;
 
-  len = chunk_fetch(b, bytecode, sizeof bytecode);
+  len = chunk_fetch(b, (char *) bytecode, sizeof bytecode);
   if (storelen)
     *storelen = len;
   return bytecode;
@@ -349,7 +349,7 @@ dup_bool(boolexp b)
 
   bytecode = get_bytecode(b, &len);
 
-  r = chunk_create(bytecode, len, 1);
+  r = chunk_create((char *) bytecode, len, 1);
 
   return r;
 }
@@ -638,7 +638,7 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
     return safe_dbref(thing, buff, bp);
   case UB_ALL:
   default:
-    return safe_str(unparse_object(player, thing), buff, bp);
+    return safe_str(unparse_object(player, thing, AN_UNPARSE), buff, bp);
   }
 }
 
@@ -650,9 +650,9 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
  * \return 0 on success, true on buffer overflow.
  */
 static int
-safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
+safe_bstr(uint8_t *s, bvm_opcode op, char *buff, char **bp)
 {
-  const unsigned char *p, *name = (const unsigned char *) s;
+  const uint8_t *p, *name = s;
   int n;
   int preserve;
 
@@ -687,7 +687,7 @@ safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
           return n;
       }
     }
-    if ((n = safe_chr(*p, buff, bp)) != 0)
+    if ((n = safe_chr((char) *p, buff, bp)) != 0)
       return n;
   }
 
@@ -707,8 +707,9 @@ int unparsing_boolexp = 0;
 char *
 unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
 {
-  char *boolexp_buf, *buftop;
-  unsigned char *bytecode = NULL;
+  char *boolexp_buf;
+  char *buftop;
+  uint8_t *bytecode = NULL;
 
   unparsing_boolexp = 1;
 
@@ -719,8 +720,8 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
   else {
     bvm_opcode op;
     int arg;
-    unsigned char *pc;
-    unsigned char *s = NULL;
+    uint8_t *pc;
+    uint8_t *s = NULL;
 
     bytecode = pc = get_bytecode(b, NULL);
 
@@ -755,7 +756,7 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
       case OP_PAREN:
         if (arg == 0) {
           int pstack = 1, parg;
-          unsigned char *tpc = pc;
+          uint8_t *tpc = pc;
           while (1) {
             if ((bvm_opcode) *tpc == OP_PAREN) {
               memcpy(&parg, tpc + 1, sizeof parg);
@@ -912,11 +913,51 @@ alloc_bool(void)
   return b;
 }
 
+/** Free a boolexp ast node.
+ * This function frees a boolexp, including all subexpressions,
+ * recursively.
+ * \param b boolexp to free.
+ */
+static void
+free_boolexp_node(struct boolexp_node *b)
+{
+  if (b) {
+    switch (b->type) {
+    case BOOLEXP_AND:
+    case BOOLEXP_OR:
+      free_boolexp_node(b->data.sub.a);
+      free_boolexp_node(b->data.sub.b);
+      break;
+    case BOOLEXP_NOT:
+      free_boolexp_node(b->data.n);
+      break;
+    case BOOLEXP_CONST:
+    case BOOLEXP_CARRY:
+    case BOOLEXP_IS:
+    case BOOLEXP_OWNER:
+    case BOOLEXP_BOOL:
+      break;
+    case BOOLEXP_IND:
+      if (b->data.ind_lock)
+        st_delete(b->data.ind_lock, &lock_names);
+      break;
+    case BOOLEXP_ATR:
+    case BOOLEXP_EVAL:
+    case BOOLEXP_FLAG:
+      if (b->data.atr_lock) {
+        if (b->data.atr_lock->name)
+          st_delete(b->data.atr_lock->name, &atr_names);
+      }
+      break;
+    }
+  }
+}
+
 /** Skip over leading whitespace characters in parsebuf */
 static void
 skip_whitespace(void)
 {
-  while (*parsebuf && isspace((unsigned char) *parsebuf))
+  while (*parsebuf && isspace(*parsebuf))
     parsebuf++;
 }
 
@@ -965,7 +1006,7 @@ test_atr(char *s, char c)
     } else if (!escaped && *s == '\\')
       escaped = 1;
     else {
-      safe_chr(UPCASE(*s), tbuf1, &tbp);
+      safe_chr((char) UPCASE(*s), tbuf1, &tbp);
       escaped = 0;
     }
   }
@@ -1061,7 +1102,7 @@ parse_boolexp_R(void)
 
   /* strip trailing whitespace */
   *p = '\0';
-  while (p != tbuf1 && isspace((unsigned char) *(--p)))
+  while (p != tbuf1 && isspace(*(--p)))
     *p = '\0';
 
   /* do the match */
@@ -1143,7 +1184,7 @@ parse_boolexp_L(void)
 
     /* strip trailing whitespace */
     *p = '\0';
-    while (p != tbuf1 && isspace((unsigned char) *(--p)))
+    while (p != tbuf1 && isspace(*(--p)))
       *p = '\0';
 
     /* check for an attribute */
@@ -1180,6 +1221,10 @@ parse_boolexp_O(void)
       return NULL;
     } else if (t->type != BOOLEXP_CONST) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
+      return NULL;
     } else {
       b2->thing = t->thing;
       return b2;
@@ -1203,6 +1248,10 @@ parse_boolexp_C(void)
       return NULL;
     } else if (t->type != BOOLEXP_CONST) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
+      return NULL;
     } else {
       b2->thing = t->thing;
       return b2;
@@ -1225,6 +1274,10 @@ parse_boolexp_I(void)
     if (t == NULL) {
       return NULL;
     } else if (t->type != BOOLEXP_CONST) {
+      return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
       return NULL;
     } else {
       b2->thing = t->thing;
@@ -1250,6 +1303,10 @@ parse_boolexp_A(void)
       return NULL;
     } else if (t->type != BOOLEXP_CONST) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
+      return NULL;
     }
     b2->thing = t->thing;
     if (*parsebuf == EVAL_TOKEN) {
@@ -1261,7 +1318,7 @@ parse_boolexp_A(void)
              (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
                            *parsebuf == ')'))) {
         if (escaped || *parsebuf != '\\') {
-          safe_chr(UPCASE(*parsebuf), tbuf1, &p);
+          safe_chr((char) UPCASE(*parsebuf), tbuf1, &p);
           escaped = 0;
         } else
           escaped = 1;
@@ -1270,7 +1327,7 @@ parse_boolexp_A(void)
       /* strip trailing whitespace */
 
       *p = '\0';
-      while (p != tbuf1 && isspace((unsigned char) *(--p)))
+      while (p != tbuf1 && isspace(*(--p)))
         *p = '\0';
       if (!good_atr_name(tbuf1)) {
         return NULL;
@@ -1399,11 +1456,7 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     /* Allocate a new string if needed. */
     if (!found) {
       newstr = GC_MALLOC(sizeof *newstr);
-      if (!s)
-        mush_panic("Unable to allocate memory for boolexp string node!");
       newstr->s = GC_STRDUP(s);
-      if (!newstr->s)
-        mush_panic("Unable to allocate memory for boolexp string!");
       newstr->len = strlen(s) + 1;
       newstr->next = NULL;
       if (a->shead == NULL)
@@ -1645,7 +1698,6 @@ optimize_bvm_ast(struct boolexp_node *ast)
       /* Turn =#123|+#123 into #123 */
 
       dbref thing = ast->data.sub.a->thing;
-
       ast->type = BOOLEXP_CONST;
       ast->thing = thing;
       ast->data.sub.a = ast->data.sub.b = NULL;
@@ -1749,7 +1801,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   boolexp b;
   struct bvm_asmnode *i;
   struct bvm_strnode *s;
-  unsigned char *pc, *bytecode;
+  char *pc, *bytecode;
   uint16_t len, blen;
 
   if (!a)
@@ -1811,7 +1863,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     pc += s->len;
   }
 
-  b = chunk_create(bytecode, len, derefs);
+  b = chunk_create((char *) bytecode, len, derefs);
   return b;
 }
 
@@ -2097,7 +2149,7 @@ warning_lock_type(const boolexp l)
 void
 check_lock(dbref player, dbref i, const char *name, boolexp be)
 {
-  unsigned char *pc, *bytecode;
+  uint8_t *pc, *bytecode;
   bvm_opcode op;
   int arg;
   char *s = NULL;
@@ -2140,7 +2192,7 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
       else if (!(Can_Read_Lock(i, arg, s) && getlock(arg, s) != TRUE_BOOLEXP))
         complain(player, i, "lock-checks",
                  T("%s lock has indirect lock to %s/%s that it can't read"),
-                 name, unparse_object(player, arg), s);
+                 name, unparse_object(player, arg, AN_UNPARSE), s);
       break;
     default:
       break;
@@ -2152,12 +2204,12 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
 boolexp
 cleanup_boolexp(boolexp b)
 {
-  unsigned char *pc, *bytecode;
+  uint8_t *pc, *bytecode;
   uint16_t bytecode_len = 0;
   bvm_opcode op;
   int arg;
   bool revised = 0;
-  unsigned char false_op[INSN_LEN] = { OP_LOADR, 0 };
+  char false_op[INSN_LEN] = { OP_LOADR, 0 };
 
   if (b == TRUE_BOOLEXP)
     return b;
@@ -2186,7 +2238,8 @@ cleanup_boolexp(boolexp b)
   }
 done:
   if (revised) {
-    boolexp copy = chunk_create(bytecode, bytecode_len, chunk_derefs(b));
+    boolexp copy =
+      chunk_create((char *) bytecode, bytecode_len, chunk_derefs(b));
     chunk_delete(b);
     return copy;
   } else

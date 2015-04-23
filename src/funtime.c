@@ -5,25 +5,26 @@
  *
  *
  */
+
 #include "copyrite.h"
 
-#include "config.h"
 #include <string.h>
 #include <ctype.h>
-#if  (defined(__GNUC__) || defined(__LCC__)) && !defined(__USE_XOPEN_EXTENDED)
+#if  defined(__GNUC__)  && !defined(__USE_XOPEN_EXTENDED)
 /* Required to get the getdate() prototype on glibc. */
 #define __USE_XOPEN_EXTENDED
 #endif
 #include <time.h>
 #include <errno.h>
 #include "conf.h"
-#include "externs.h"
-#include "parse.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "log.h"
 #include "match.h"
+#include "notify.h"
+#include "parse.h"
+#include "strutil.h"
 #include "tz.h"
-#include "confmagic.h"
 
 int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,
@@ -73,7 +74,7 @@ FUNCTION(fun_timefmt)
       n++;
       if (args[0][n] == '$')
         args[0][n] = '%';
-      else if (!valid_timefmt_codes[(unsigned char) args[0][n]]) {
+      else if (!valid_timefmt_codes[args[0][n]]) {
         safe_format(buff, bp, T("#-1 INVALID ESCAPE CODE '$%c'"),
                     args[0][n] ? args[0][n] : ' ');
         return;
@@ -434,7 +435,7 @@ etime_to_secs(char *input, int *secs)
     return 0;
 
   for (p = input; *p; p++) {
-    while (*p && isspace((unsigned char) *p))
+    while (*p && isspace(*p))
       p++;
     if (!*p)
       return any;
@@ -447,7 +448,7 @@ etime_to_secs(char *input, int *secs)
       /* Just a number of seconds */
       *secs += (int) num;
       return 1;
-    } else if (isspace((unsigned char) *errptr)) {
+    } else if (isspace(*errptr)) {
       /* Number of seconds, followed by a space */
       p = errptr;
       *secs += (int) num;
@@ -615,7 +616,7 @@ do_convtime(const char *mystr, struct tm *ttm)
 
   /* get the day of month */
   p = q;
-  while (isspace((unsigned char) *p))   /* skip leading space */
+  while (isspace(*p))           /* skip leading space */
     p++;
   if (!(q = strchr(p, ' ')))
     return 0;
@@ -653,22 +654,33 @@ FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
   struct tm ttm;
-  int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
-               (nargs > 1 && !strcmp(args[1], "utc")));
+  const char *tz = "";
+  bool save_tz = 0;
+
+  if (strcmp(called_as, "CONVUTCTIME") == 0) {
+    save_tz = 1;
+  } else if (nargs == 2) {
+    struct tz_result res;
+    if (strcasecmp(args[1], "utc") == 0) {
+      save_tz = 1;
+    } else if (parse_timezone_arg(args[1], mudtime, &res)) {
+      tz = res.tz_name;
+      save_tz = 1;
+    } else {
+      safe_str("#-1 INVALID TIME ZONE", buff, bp);
+      return;
+    }
+  }
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
-    if (doutc)
-      save_and_set_tz("");
-#ifdef SUN_OS
-    safe_integer(timelocal(&ttm), buff, bp);
-#else
+    if (save_tz)
+      save_and_set_tz(tz);
     safe_integer(mktime(&ttm), buff, bp);
-#endif                          /* SUN_OS */
-    if (doutc)
+    if (save_tz)
       restore_tz();
   } else {
     safe_str("-1", buff, bp);
@@ -682,20 +694,50 @@ FUNCTION(fun_convtime)
 FUNCTION(fun_isdaylight)
 {
   struct tm *ltime;
+  time_t when = mudtime;
 
-  ltime = localtime(&mudtime);
+  if (nargs >= 1 && args[0] && *args[0]) {
+    if (!is_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    when = parse_integer(args[0]);
+    if (errno == ERANGE) {
+      safe_str(T(e_range), buff, bp);
+      return;
+    }
+    if (when < 0) {
+      safe_str(T(e_uint), buff, bp);
+      return;
+    }
+  }
 
+  if (nargs == 2) {
+    struct tz_result res;
+    if (!parse_timezone_arg(args[1], when, &res)) {
+      safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
+      return;
+    }
+    save_and_set_tz(res.tz_name);
+  }
+
+  ltime = localtime(&when);
   safe_boolean(ltime->tm_isdst > 0, buff, bp);
+
+  if (nargs == 2)
+    restore_tz();
 }
 
 /** Convert seconds to a formatted time string.
  * \verbatim
  * Format codes:
- *       $s - Seconds. $S - Seconds, force 2 digits.
- *       $m - Minutes. $M - Minutes, force 2 digits.
- *       $h - Hours.   $H - Hours, force 2 digits.
- *       $d - Days.    $D - Days, force 2 digits.
- * $$ - Literal $.
+ *       $s, $S - Seconds
+ *       $m, $M - Minutes
+ *       $h, $H - Hours.
+ *       $d, $D - Days.
+ *       $$ - Literal $.
+ *   All of the above can be given as $Nx to pad to N characters wide.
+ *   $Nx are padded with spaces. $NX are padded with 0's.
  * \endverbatim
  * \param buff string to store the result in.
  * \param bp pointer into end of buff.

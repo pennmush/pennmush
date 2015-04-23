@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "log.h"
 
 #include <stdio.h>
 #ifdef I_UNISTD
@@ -28,14 +28,14 @@
 #endif
 #include <errno.h>
 
+#include "bufferq.h"
 #include "conf.h"
+#include "dbdefs.h"
 #include "externs.h"
 #include "flags.h"
-#include "dbdefs.h"
 #include "htab.h"
-#include "bufferq.h"
-#include "log.h"
-#include "confmagic.h"
+#include "notify.h"
+#include "strutil.h"
 
 struct log_stream;
 

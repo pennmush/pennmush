@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
-#include "config.h"
-#include "confmagic.h"
+#include "tz.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -19,28 +19,19 @@
 #ifdef I_SYS_STAT
 #include <sys/stat.h>
 #endif
-#ifdef I_FCNTL
 #include <fcntl.h>
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <pcre.h>
 
+#include "attrib.h"
 #include "conf.h"
 #include "externs.h"
-#include "parse.h"
-#include "attrib.h"
-#include "tz.h"
 #include "log.h"
 #include "mymalloc.h"
-#include "confmagic.h"
-
-#ifdef TZINFO_PATH
-#define USE_TZINFO 1
-#else
-#define TZINFO_PATH ""
-#endif
+#include "parse.h"
+#include "strutil.h"
 
 #if defined(__linux__)
 #include <endian.h>
@@ -97,6 +88,10 @@ decode64(int64_t i)
 
 extern const unsigned char *tables;
 
+#ifndef TZDIR
+#define TZDIR ""
+#endif
+
 /** Validates a timezone name to see if it fits the right format.
  * \param name The name of the time zone.
  * \return true or false
@@ -105,6 +100,7 @@ bool
 is_valid_tzname(const char *name)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   int len;
   int ovec[15];
 
@@ -121,11 +117,12 @@ is_valid_tzname(const char *name)
                 errptr);
       return 0;
     }
+    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
 
   len = strlen(name);
 
-  return pcre_exec(re, NULL, name, len, 0, 0, ovec, 15) > 0;
+  return pcre_exec(re, extra, name, len, 0, 0, ovec, 15) > 0;
 }
 
 /** Tests to see if a timezone actually exists in the database.
@@ -136,14 +133,14 @@ is_valid_tzname(const char *name)
 bool
 tzfile_exists(const char *name)
 {
-#ifdef USE_TZINFO
+#ifdef HAVE_ZONEINFO
   struct stat info;
   char path[BUFFER_LEN];
 
   if (!is_valid_tzname(name))
     return 0;
 
-  snprintf(path, sizeof path, "%s/%s", TZINFO_PATH, name);
+  snprintf(path, sizeof path, "%s/%s", TZDIR, name);
 
   if (stat(path, &info) < 0)
     return 0;
@@ -355,7 +352,7 @@ read_tzfile(const char *tzname)
   if (!is_valid_tzname(tzname))
     return NULL;
 
-  snprintf(tzfile, BUFFER_LEN, "%s/%s", TZINFO_PATH, tzname);
+  snprintf(tzfile, BUFFER_LEN, "%s/%s", TZDIR, tzname);
 
   if ((fd = open(tzfile, O_RDONLY)) < 0) {
     if (errno != ENOENT)
@@ -448,7 +445,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
 
     arg = atr_value(a);
   }
-#ifdef USE_TZINFO
+#ifdef HAVE_ZONEINFO
   {
     struct tzinfo *tz = NULL;
     static char tz_path[BUFFER_LEN];

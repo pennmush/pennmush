@@ -8,17 +8,17 @@
 /* Here are some includes you're likely to need or want.
  */
 #include "copyrite.h"
-#include "config.h"
+
 #include <string.h>
+
+#include "command.h"
 #include "conf.h"
 #include "dbio.h"
 #include "externs.h"
-#include "parse.h"
-#include "htab.h"
-#include "command.h"
-#include "lock.h"
 #include "game.h"
-#include "confmagic.h"
+#include "htab.h"
+#include "lock.h"
+#include "parse.h"
 
 
 extern HASHTAB htab_reserved_aliases;
@@ -116,8 +116,9 @@ local_dbck(void)
 {
 }
 
-/* This is called exactly once a second
- * After the MUSH has done all it's stuff
+/* This is called exactly once a second after the MUSH has done all 
+ * it's stuff. NOTE: This function MUST be enabled in local_startup();
+ * read the comments there for instructions.
  */
 bool
 local_timer(void *data __attribute__ ((__unused__)))

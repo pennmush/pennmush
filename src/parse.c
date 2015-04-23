@@ -8,8 +8,8 @@
  */
 
 #include "copyrite.h"
+#include "parse.h"
 
-#include "config.h"
 #include <math.h>
 #include <limits.h>
 #include <string.h>
@@ -21,22 +21,24 @@
 #endif
 #include <stdio.h>
 
-#include "conf.h"
-#include "externs.h"
 #include "ansi.h"
-#include "dbdefs.h"
-#include "function.h"
-#include "case.h"
-#include "match.h"
-#include "mushdb.h"
-#include "parse.h"
 #include "attrib.h"
-#include "mypcre.h"
+#include "case.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
+#include "function.h"
 #include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mushtype.h"
 #include "mymalloc.h"
+#include "mypcre.h"
+#include "notify.h"
 #include "strtree.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */
 int global_fun_invocations;
@@ -60,23 +62,23 @@ FUNCTION_PROTO(fun_gfun);
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 /* Common error messages */
-char e_int[] = "#-1 ARGUMENT MUST BE INTEGER";
-char e_ints[] = "#-1 ARGUMENTS MUST BE INTEGERS";
-char e_uint[] = "#-1 ARGUMENT MUST BE POSITIVE INTEGER";
-char e_uints[] = "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS";
-char e_num[] = "#-1 ARGUMENT MUST BE NUMBER";
-char e_nums[] = "#-1 ARGUMENTS MUST BE NUMBERS";
-char e_invoke[] = "#-1 FUNCTION INVOCATION LIMIT EXCEEDED";
-char e_call[] = "#-1 CALL LIMIT EXCEEDED";
-char e_perm[] = "#-1 PERMISSION DENIED";
-char e_atrperm[] = "#-1 NO PERMISSION TO GET ATTRIBUTE";
-char e_match[] = "#-1 NO MATCH";
-char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
-char e_disabled[] = "#-1 FUNCTION DISABLED";
-char e_range[] = "#-1 OUT OF RANGE";
-char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
-char e_badregname[] = "#-1 REGISTER NAME INVALID";
-char e_toomanyregs[] = "#-1 TOO MANY REGISTERS";
+const char e_int[] = "#-1 ARGUMENT MUST BE INTEGER";
+const char e_ints[] = "#-1 ARGUMENTS MUST BE INTEGERS";
+const char e_uint[] = "#-1 ARGUMENT MUST BE POSITIVE INTEGER";
+const char e_uints[] = "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS";
+const char e_num[] = "#-1 ARGUMENT MUST BE NUMBER";
+const char e_nums[] = "#-1 ARGUMENTS MUST BE NUMBERS";
+const char e_invoke[] = "#-1 FUNCTION INVOCATION LIMIT EXCEEDED";
+const char e_call[] = "#-1 CALL LIMIT EXCEEDED";
+const char e_perm[] = "#-1 PERMISSION DENIED";
+const char e_atrperm[] = "#-1 NO PERMISSION TO GET ATTRIBUTE";
+const char e_match[] = "#-1 NO MATCH";
+const char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
+const char e_disabled[] = "#-1 FUNCTION DISABLED";
+const char e_range[] = "#-1 OUT OF RANGE";
+const char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
+const char e_badregname[] = "#-1 REGISTER NAME INVALID";
+const char e_toomanyregs[] = "#-1 TOO MANY REGISTERS";
 
 #endif
 
@@ -125,7 +127,7 @@ parse_dbref(char const *str)
 
   if (!str || (*str != NUMBER_TOKEN) || !*(str + 1))
     return NOTHING;
-  for (p = str + 1; isdigit((unsigned char) *p); p++) {
+  for (p = str + 1; isdigit(*p); p++) {
   }
   if (*p)
     return NOTHING;
@@ -284,7 +286,7 @@ is_dbref(char const *str)
   if (*(str + 1) == '-') {
     str++;
   }
-  for (str++; isdigit((unsigned char) *str); str++) {
+  for (str++; isdigit(*str); str++) {
   }
   return !*str;
 }
@@ -304,6 +306,7 @@ bool
 is_objid(char const *str)
 {
   static pcre *re = NULL;
+  static pcre_extra *extra = NULL;
   const char *errptr;
   int erroffset;
   char *val;
@@ -311,10 +314,12 @@ is_objid(char const *str)
 
   if (!str)
     return 0;
-  if (!re)
+  if (!re) {
     re = pcre_compile("^#-?\\d+(?::\\d+)?$", 0, &errptr, &erroffset, NULL);
+    extra = pcre_study(re, pcre_study_flags, &errptr);
+  }
   val = remove_markup((const char *) str, &vlen);
-  return pcre_exec(re, NULL, val, vlen - 1, 0, 0, NULL, 0) >= 0;
+  return pcre_exec(re, extra, val, vlen - 1, 0, 0, NULL, 0) >= 0;
 }
 
 /** Is string an integer?
@@ -336,7 +341,7 @@ is_integer(char const *str)
     return 1;
   if (!str)
     return 0;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -367,11 +372,11 @@ is_uinteger(char const *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uint(str, &end, 10);
@@ -393,11 +398,11 @@ is_strict_uinteger(const char *str)
   if (!str)
     return 0;
   /* strtoul() accepts negative numbers, so we still have to do this check */
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return 0;
-  if (!(isdigit((unsigned char) *str) || *str == '+'))
+  if (!(isdigit(*str) || *str == '+'))
     return 0;
   errno = 0;
   parse_uint(str, &end, 10);
@@ -444,7 +449,7 @@ is_good_number(NVAL val)
   if (*p == '-')
     p++;
   /* Must start with a digit. */
-  if (!*p || !isdigit((unsigned char) *p))
+  if (!*p || !isdigit(*p))
     return 0;
   return 1;
 }
@@ -511,7 +516,7 @@ is_number(char const *str)
   /* If we're emulating Tiny, anything is a number */
   if (TINY_MATH)
     return 1;
-  while (isspace((unsigned char) *str))
+  while (isspace(*str))
     str++;
   if (*str == '\0')
     return NULL_EQ_ZERO;
@@ -697,6 +702,23 @@ free_pe_regs_trees()
   st_flush(&pe_reg_vals);
 }
 
+#ifdef DEBUG_PENNMUSH
+FUNCTION(fun_pe_regs_dump)
+{
+  dbref who = caller;
+
+  if (args[0] && *args[0]) {
+    who = lookup_player(args[0]);
+    if (!GoodObject(who)) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  pe_regs_dump(pe_info->regvals, who);
+}
+#endif
+
 /* For debugging purposes. */
 void
 pe_regs_dump(PE_REGS *pe_regs, dbref who)
@@ -704,6 +726,7 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
   int i = 0;
   PE_REG_VAL *val;
 
+  notify(who, " ");
   while (pe_regs && i < 100) {
     notify_format(who, "%d: %.4X '%s'", i, pe_regs->flags, pe_regs->name);
     i++;
@@ -722,6 +745,7 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     }
     pe_regs = pe_regs->prev;
   }
+  notify(who, " ");
 }
 
 /** Create a PE_REGS context.
@@ -841,7 +865,6 @@ pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name)
   return pe_regs;
 }
 
-
 /** Restore a PE_REGS context.
  *
  * \param pe_info The pe_info to pop the pe_regs out of.
@@ -882,8 +905,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
    * it doesn't recurse up the chain, etc. */
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  static const char *noval = "";
-  strncpy(key, lckey, PE_KEY_LEN);
+  static const char noval[] = "";
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!(type & PE_REGS_NOCOPY)) {
@@ -938,7 +961,7 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (pval) {
@@ -968,7 +991,7 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!pval)
@@ -993,7 +1016,7 @@ pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (!pval)
@@ -1152,7 +1175,8 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
         val = val->next;
       }
     }
-    if (pe_regs->flags & breaker)
+    if (pe_regs->flags & breaker &&
+        (type != PE_REGS_ARG || !(pe_regs->flags & PE_REGS_ARGPASS)))
       return 0;
     pe_regs = pe_regs->prev;
   }
@@ -1169,7 +1193,7 @@ int
 pi_regs_valid_key(const char *lckey)
 {
   char key[PE_KEY_LEN];
-  strncpy(key, lckey, PE_KEY_LEN);
+  mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   return ((good_atr_name(key)) && (strlen(key) <= PE_KEY_LEN) && *key);
 }
@@ -1251,7 +1275,7 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 
 /* REGEXPS */
 void
-pe_regs_set_rx_context(PE_REGS *pe_regs,
+pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
                        struct real_pcre *re_code,
                        int *re_offsets, int re_subpatterns, const char *re_from)
 {
@@ -1267,13 +1291,16 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   if (re_subpatterns < 0)
     return;
 
+  if (!pe_reg_flags)
+    pe_reg_flags = PE_REGS_REGEXP;
+
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
     buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1297,15 +1324,14 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
                         num, buff, BUFFER_LEN);
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
-     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
      */
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
-
+    pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
   }
 }
 
 void
-pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
                             struct real_pcre *re_code,
                             int *re_offsets,
                             int re_subpatterns, struct _ansi_string *re_from)
@@ -1322,6 +1348,9 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
   if (re_subpatterns < 0)
     return;
 
+  if (!pe_reg_flags)
+    pe_reg_flags = PE_REGS_REGEXP;
+
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
@@ -1329,7 +1358,7 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                              i, 1, buff, &bp);
     *bp = '\0';
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1354,12 +1383,13 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     *bp = '\0';
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
-     pe_regs_set(pe_regs, PE_REGS_REGEXP, unparse_integer(num), buff);
+     pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
      */
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
+    pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
   }
 }
 
+/* Used by PE_Get_re, to get regexp values */
 const char *
 pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
 {
@@ -1382,7 +1412,7 @@ pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
   return NULL;
 }
 
-/* ITER and SWITCH getters. */
+/* PE_Get_Itext and PE_Get_Stext, for iter (%i0) and switch (%$0) values. */
 const char *
 pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
 {
@@ -1410,6 +1440,7 @@ pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
   return NULL;
 }
 
+/* PE_Get_Inum, for inum() values */
 int
 pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
 {
@@ -1437,6 +1468,7 @@ pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
   return 0;
 }
 
+/* PE_Get_Ilev and PE_Get_Slev */
 int
 pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
 {
@@ -1484,6 +1516,7 @@ pe_regs_intname(int num)
   }
 }
 
+/* Set %0-%9 */
 void
 pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
 {
@@ -1491,6 +1524,7 @@ pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
   pe_regs_set(pe_regs, PE_REGS_ARG, name, val);
 }
 
+/* Set %0-%9 without copying value */
 void
 pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
 {
@@ -1498,12 +1532,11 @@ pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
   pe_regs_set(pe_regs, PE_REGS_ARG | PE_REGS_NOCOPY, name, val);
 }
 
-/* Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
+/* Get %0-%9. Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
 const char *
-pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
+pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name)
 {
   PE_REGS *pe_regs;
-  const char *name = pe_regs_intname(num);
   const char *ret;
 
   pe_regs = pe_info->regvals;
@@ -1523,6 +1556,7 @@ pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
   return NULL;
 }
 
+/* Return number of stack args (%0-%9) present, for %+. Powers PE_Get_Envc */
 int
 pi_regs_get_envc(NEW_PE_INFO *pe_info)
 {
@@ -1537,9 +1571,11 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
     if (pe_regs->flags & PE_REGS_ARG) {
       for (val = pe_regs->vals; val; val = val->next) {
         if (val->type & PE_REGS_ARG) {
-          sscanf(val->name, "%d", &num);
-          if (num >= max) {
-            max = num + 1;      /* %0 is 1 arg */
+          if (sscanf(val->name, "%d", &num) == 1) {
+            /* only check numeric args, ignore named ones */
+            if (num >= max) {
+              max = num + 1;    /* %0 is 1 arg */
+            }
           }
         }
       }
@@ -1590,11 +1626,13 @@ free_pe_info(NEW_PE_INFO *pe_info)
  * \param name name of the calling function, for memory checking
  */
 NEW_PE_INFO *
-make_pe_info(char *name)
+make_pe_info(char *name __attribute__ ((__unused__)))
 {
   NEW_PE_INFO *pe_info;
 
   pe_info = GC_MALLOC(sizeof(NEW_PE_INFO));
+  if (!pe_info)
+    mush_panic("Unable to allocate memory in make_pe_info");
 
   pe_info->fun_invocations = 0;
   pe_info->fun_recursions = 0;
@@ -1612,7 +1650,9 @@ make_pe_info(char *name)
   *pe_info->cmd_evaled = '\0';
 
   pe_info->refcount = 1;
+#ifdef DEBUG
   strcpy(pe_info->name, name);
+#endif
 
   return pe_info;
 }
@@ -1895,7 +1935,7 @@ process_expression(char *buff, char **bp, char const **str,
       int len, len2;
       /* Inlined strcspn() equivalent, to save on overhead and portability */
       pos = *str;
-      while (!active_table[*(unsigned char const *) *str])
+      while (!active_table[**str])
         (*str)++;
       /* Inlined safe_str(), since the source string
        * may not be null terminated */
@@ -1931,11 +1971,11 @@ process_expression(char *buff, char **bp, char const **str,
       else if (tflags & PT_NOT_COMMA) {
         if (pe_info && *pe_info->attrname)
           notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s by #%d in %s. This behaviour is deprecated.",
+                        "Unescaped comma in final arg of %s by #%d in %s. This behavior is deprecated.",
                         lca_func_name, executor, pe_info->attrname);
         else
           notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s by #%d. This behaviour is deprecated.",
+                        "Unescaped comma in final arg of %s by #%d. This behavior is deprecated.",
                         lca_func_name, executor);
       }
 /* End of r1628's deprecation */
@@ -1986,7 +2026,7 @@ process_expression(char *buff, char **bp, char const **str,
 
         (*str)++;
         /* Check the first character after the $ for a number */
-        if (isdigit((unsigned char) **str)) {
+        if (isdigit(**str)) {
           subspace[0] = **str;
           subspace[1] = '\0';
           (*str)++;
@@ -2022,6 +2062,12 @@ process_expression(char *buff, char **bp, char const **str,
       }
       break;
     case '%':                  /* Percent substitutions */
+      if (eflags & PE_LITERAL) {
+        /* Show literal % in lit() */
+        safe_chr('%', buff, bp);
+        (*str)++;
+        break;
+      }
       if (!(eflags & PE_EVALUATE) || (*bp - buff >= BUFFER_LEN - 1)) {
         /* peak -- % escapes (at least) one character */
         char savec;
@@ -2175,7 +2221,7 @@ process_expression(char *buff, char **bp, char const **str,
               safe_str(PE_Get_Itext(pe_info, itmp), buff, bp);
               break;
             }
-            if (!isdigit((unsigned char) nextc)) {
+            if (!isdigit(nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             }
@@ -2198,7 +2244,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (itmp >= 0) {
             if (nextc == 'l' || nextc == 'L') {
               inum_this = itmp;
-            } else if (!isdigit((unsigned char) nextc)) {
+            } else if (!isdigit(nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             } else {
@@ -2234,6 +2280,13 @@ process_expression(char *buff, char **bp, char const **str,
           } else {
             safe_str(T(e_notvis), buff, bp);
           }
+          break;
+        case 'k':
+        case 'K':              /* enactor moniker (ansi'd name) */
+          if (GoodObject(enactor))
+            safe_str(ansi_name(enactor, 0, NULL, 0), buff, bp);
+          else
+            safe_str(T(e_notvis), buff, bp);
           break;
         case 'O':
         case 'o':              /* enactor objective pronoun */
@@ -2324,8 +2377,12 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(savec, buff, bp);
         }
 
-        if (isupper((unsigned char) savec))
-          *savepos = UPCASE(*savepos);
+        if (isupper(savec)) {
+          savepos = skip_leading_ansi(savepos, *bp);
+          if (savepos) {
+            *savepos = UPCASE(*savepos);
+          }
+        }
       }
       break;
     case '{':                  /* "{}" parse group; recurse with no function check */

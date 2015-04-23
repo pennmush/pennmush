@@ -40,12 +40,11 @@
  * \endverbatim
  */
 
-#include "config.h"
-
-
 /* Uncomment this to turn off various consistency checks. Not
    recommended yet. */
 /* #define NDEBUG */
+
+#include "intmap.h"
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -55,10 +54,9 @@
 #include <assert.h>
 
 #include "conf.h"
-#include "externs.h"
 #include "mymalloc.h"
-#include "intmap.h"
-#include "confmagic.h"
+#include "notify.h"
+#include "log.h"
 
 /** Structure that represents a node in a patricia tree. */
 typedef struct patricia {
@@ -73,9 +71,6 @@ struct intmap {
   int64_t count; /**< Number of elements in tree */
   patricia *root; /**< pointer to root of tree */
 };
-
-#define MAX_BIT 31
-/* #define MAX_BIT 63 */
 
 slab *intmap_slab = NULL; /**< Allocator for patricia nodes */
 
@@ -410,7 +405,8 @@ static void
 pat_list_links(patricia *node, FILE * fp)
 {
   int i;
-  const char *edge_styles[] = { "style=dashed,arrowhead=open",
+  static const char *const edge_styles[] = {
+    "style=dashed,arrowhead=open",
     "style=solid,arrowhead=normal"
   };
 

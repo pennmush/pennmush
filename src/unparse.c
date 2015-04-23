@@ -7,7 +7,6 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
 
 #include <string.h>
 #ifdef HAVE_INTTYPES_H
@@ -15,18 +14,19 @@
 #endif
 #include <stdio.h>
 
+#include "ansi.h"
+#include "attrib.h"
 #include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
 #include "dbdefs.h"
+#include "externs.h"
 #include "flags.h"
 #include "lock.h"
-#include "attrib.h"
-#include "ansi.h"
-#include "pueblo.h"
+#include "mushdb.h"
+#include "notify.h"
 #include "parse.h"
+#include "pueblo.h"
+#include "strutil.h"
 #include "mymalloc.h"
-#include "confmagic.h"
 
 
 /** Format an object's name (and dbref and flags).
@@ -38,9 +38,9 @@
  * \return static formatted object name string.
  */
 const char *
-unparse_object(dbref player, dbref loc)
+unparse_object(dbref player, dbref loc, int an_flag)
 {
-  return real_unparse(player, loc, 0, 0, 0, NULL);
+  return real_unparse(player, loc, 0, 0, 0, an_flag, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership rules.
@@ -52,9 +52,9 @@ unparse_object(dbref player, dbref loc)
  * \return static formatted object name string.
  */
 const char *
-unparse_object_myopic(dbref player, dbref loc)
+unparse_object_myopic(dbref player, dbref loc, int an_flag)
 {
-  return real_unparse(player, loc, 1, 0, 1, NULL);
+  return real_unparse(player, loc, 1, 0, 1, an_flag, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership and NAMEFORMAT.
@@ -72,7 +72,7 @@ unparse_object_myopic(dbref player, dbref loc)
 const char *
 unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
 {
-  return real_unparse(player, loc, 1, 1, 1, pe_info);
+  return real_unparse(player, loc, 1, 1, 1, AN_LOOK, pe_info);
 }
 
 /** Format an object's name in several ways.
@@ -90,12 +90,13 @@ unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
  */
 const char *
 real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
-             int use_nameaccent, NEW_PE_INFO *pe_info)
+             int use_nameaccent, int an_flags, NEW_PE_INFO *pe_info)
 {
-  char *buf;
+  char *buf, *bp;
   char *tbuf1;
   static PUEBLOBUFF;
   char *p;
+  bool monikered = 0;
 
   if (!(GoodObject(loc) || (loc == NOTHING) || (loc == AMBIGUOUS) ||
         (loc == HOME)))
@@ -109,9 +110,9 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
     return T("*HOME*");
   default:
     if (use_nameaccent)
-      tbuf1 = accented_name(loc);
+      tbuf1 = AaName(loc, an_flags, &monikered);
     else
-      tbuf1 = GC_STRDUP(Name(loc));
+      tbuf1 = AName(loc, an_flags, &monikered);
     if (IsExit(loc) && obey_myopic) {
       if ((p = strchr(tbuf1, ';')))
         *p = '\0';
@@ -120,16 +121,19 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
          JumpOk(loc) || ChownOk(loc) || DestOk(loc)) &&
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */
-      if (ANSI_NAMES)
-        buf = tprintf("%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
-		      ANSI_END, loc, unparse_flags(loc, player));
+      bp = buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
+      if (ANSI_NAMES && !monikered)
+        safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
+                    ANSI_END, loc, unparse_flags(loc, player));
       else
         buf = tprintf("%s(#%d%s)", tbuf1, loc,
 		      unparse_flags(loc, player));
     } else {
       /* show only the name */
-      if (ANSI_NAMES) {
-        buf = tprintf("%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
+      if (ANSI_NAMES && !monikered) {
+        bp = buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
+        safe_format(buf, &bp, "%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
+        *bp = '\0';
       } else
         buf = tbuf1;
     }
@@ -244,7 +248,8 @@ unparse_uinteger(uintmax_t num)
 char *
 unparse_number(NVAL num)
 {
-  char str[1000];                /* Should be large enough for even the HUGE floats */
+  /* 100 is NOT large enough for even the huge floats */
+  static char str[1000];        /* Should be large enough for even the HUGE floats */
   char *p;
   snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 
@@ -268,26 +273,27 @@ char *
 accented_name(dbref thing)
 {
   ATTR *na;
-  char fbuf[BUFFER_LEN];
 
   na = atr_get(thing, "NAMEACCENT");
   if (!na)
     return GC_STRDUP(Name(thing));
   else {
-    char tbuf[BUFFER_LEN];
-    char *bp = fbuf;
+    char *tbuf, *fbuf;
+    char *bp;
     size_t len;
 
-    strcpy(tbuf, atr_value(na));
+    tbuf = atr_value(na);
 
     len = strlen(Name(thing));
 
     if (len != strlen(tbuf))
       return GC_STRDUP(Name(thing));
 
+    fbuf = bp = GC_MALLOC_ATOMIC(BUFFER_LEN);
     safe_accent(Name(thing), tbuf, len, fbuf, &bp);
     *bp = '\0';
-
-    return GC_STRDUP(fbuf);
+    tbuf = GC_STRDUP(fbuf);
+    GC_FREE(fbuf);
+    return tbuf;
   }
 }

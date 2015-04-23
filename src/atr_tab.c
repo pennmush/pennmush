@@ -6,23 +6,24 @@
  *
  */
 
-#include "config.h"
+#include "atr_tab.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "conf.h"
-#include "externs.h"
-#include "attrib.h"
-#include "atr_tab.h"
-#include "ptab.h"
-#include "privtab.h"
-#include "mymalloc.h"
-#include "dbdefs.h"
-#include "log.h"
-#include "parse.h"
-#include "confmagic.h"
+
 #include "ansi.h"
+#include "attrib.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "parse.h"
+#include "privtab.h"
+#include "ptab.h"
+#include "strutil.h"
 
 extern const unsigned char *tables;
 
@@ -138,6 +139,12 @@ static ATTR *aname_find_exact(const char *name);
 static ATTR *attr_read(PENNFILE *f);
 static ATTR *attr_alias_read(PENNFILE *f, char *alias);
 
+static int free_standard_attr(ATTR *a, bool inserted);
+static int free_standard_attr_aliases(ATTR *a);
+static void display_attr_info(dbref player, ATTR *ap);
+
+const char *display_attr_limit(ATTR *ap);
+
 void init_aname_table(void);
 
 /** Attribute table lookup by name or alias.
@@ -171,6 +178,63 @@ init_aname_table(void)
   ptab_end_inserts(&ptab_attrib);
 }
 
+/** Free all memory used by a standard attribute, and remove it from the hash
+ * table if necessary.
+ * \param a attr to remove
+ * \param inserted has the attr been inserted into the hash table already?
+ * \retval number of entries (including aliases) removed from the hash table
+ */
+static int
+free_standard_attr(ATTR *a, bool inserted)
+{
+  int count = 0;
+  if (!a) {
+    return count;
+  }
+
+  /* If the attr has no name, there's no way it can be in the hash table */
+  if (AL_NAME(a)) {
+    if (inserted) {
+      count = free_standard_attr_aliases(a) + 1;
+      ptab_delete(&ptab_attrib, AL_NAME(a));
+    }
+  }
+
+  if (a->data != NULL_CHUNK_REFERENCE) {
+    chunk_delete(a->data);
+  }
+
+  return count;
+}
+
+/* Remove all aliases for a standard attr. */
+static int
+free_standard_attr_aliases(ATTR *a)
+{
+  bool found_alias;
+  ATTR *curr;
+  const char *aliasname;
+  int count = 0;
+
+  /* Annoyingly convoluted because the ptab_delete will screw with the
+   * counter used by ptab_nextextry_new */
+  do {
+    found_alias = 0;
+    curr = ptab_firstentry_new(&ptab_attrib, &aliasname);
+    for (; curr; curr = ptab_nextentry_new(&ptab_attrib, &aliasname)) {
+      if (!strcmp(AL_NAME(curr), AL_NAME(a)) &&
+          strcmp(AL_NAME(curr), aliasname)) {
+        found_alias = 1;
+        ptab_delete(&ptab_attrib, aliasname);
+        count++;
+        break;
+      }
+    }
+  } while (found_alias);
+
+  return count;
+}
+
 static ATTR *
 attr_read(PENNFILE *f)
 {
@@ -197,10 +261,11 @@ attr_read(PENNFILE *f)
     (void) getstring_noalloc(f);        /* flags */
     (void) getstring_noalloc(f);        /* creator */
     (void) getstring_noalloc(f);        /* data */
+    free_standard_attr(a, 0);
     return NULL;
   }
 
-  AL_NAME(a) = strdup(tmp);
+  AL_NAME(a) = GC_STRDUP(tmp);
   db_read_this_labeled_string(f, "flags", &tmp);
   if (tmp && *tmp && strcasecmp(tmp, "none")) {
     flags = list_to_privs(attr_privs_db, tmp, 0);
@@ -208,6 +273,7 @@ attr_read(PENNFILE *f)
       do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
       (void) getstring_noalloc(f);      /* creator */
       (void) getstring_noalloc(f);      /* data */
+      free_standard_attr(a, 0);
       return NULL;
     }
   }
@@ -221,11 +287,11 @@ attr_read(PENNFILE *f)
     a->data = NULL_CHUNK_REFERENCE;
   } else if (AL_FLAGS(a) & AF_ENUM) {
     /* Store string as it is */
-    unsigned char *t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(tmp);
+    a->data = chunk_create(t, strlen(t), 0);
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
-    unsigned char *t;
+    char *t;
     pcre *re;
     const char *errptr;
     int erroffset;
@@ -234,12 +300,12 @@ attr_read(PENNFILE *f)
     if (!re) {
       do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.",
                 AL_NAME(a));
+      free_standard_attr(a, 0);
       return NULL;
     }
-    pcre_free(re);              /* don't need it, just needed to check it */
 
     t = compress(tmp);
-    a->data = chunk_create(t, u_strlen(t), 0);
+    a->data = chunk_create(t, strlen(t), 0);
   }
 
   return a;
@@ -427,7 +493,7 @@ cnf_attribute_access(char *attrname, char *opts)
     a = GC_MALLOC(sizeof(ATTR));
     if (!a)
       return 0;
-    AL_NAME(a) = strdup(attrname);
+    AL_NAME(a) = GC_STRDUP(attrname);
     a->data = NULL_CHUNK_REFERENCE;
     ptab_insert_one(&ptab_attrib, attrname, a);
   }
@@ -457,7 +523,7 @@ display_attr_limit(ATTR *ap)
 }
 
 /** Check an attribute's value against /limit or /enum restrictions.
- * \param player Player attempting to set the attribute. Used for notify()
+ * \param player Player to send error message to, or NOTHING to skip
  * \param name the attribute name.
  * \param value The desired attribute value.
  * \retval The new value to set if valid, NULL if not.
@@ -501,12 +567,12 @@ check_attr_value(dbref player, const char *name, const char *value)
 
     subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
                             0, 0, NULL, 0);
-    pcre_free(re);
 
     if (subpatterns >= 0) {
       return value;
     } else {
-      notify(player, T("Attribute value does not match the /limit regexp."));
+      if (player != NOTHING)
+        notify(player, T("Attribute value does not match the /limit regexp."));
       return NULL;
     }
   } else if (ap->flags & AF_ENUM) {
@@ -514,9 +580,10 @@ check_attr_value(dbref player, const char *name, const char *value)
      * and the value cannot have the delimiter in it. */
     delim = *attrval;
     if (!*value || strchr(value, delim)) {
-      notify_format(player,
-                    T("Value for %s needs to be one of: %s"),
-                    ap->name, display_attr_limit(ap));
+      if (player != NOTHING)
+        notify_format(player,
+                      T("Value for %s needs to be one of: %s"),
+                      ap->name, display_attr_limit(ap));
       return NULL;
     }
 
@@ -550,9 +617,10 @@ check_attr_value(dbref player, const char *name, const char *value)
       buff[ptr2 - ptr] = '\0';
       return buff;
     } else {
-      notify_format(player,
-                    T("Value for %s needs to be one of: %s"),
-                    ap->name, display_attr_limit(ap));
+      if (player != NOTHING)
+        notify_format(player,
+                      T("Value for %s needs to be one of: %s"),
+                      ap->name, display_attr_limit(ap));
       return NULL;
     }
   }
@@ -599,8 +667,6 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
         notify(player, T("Invalid Regular Expression."));
         return;
       }
-      /* We only care if it's valid, we're not using it. */
-      pcre_free(re);
 
       /* Copy it to buff to be placed into ap->data. */
       snprintf(buff, BUFFER_LEN, "%s", pattern);
@@ -682,8 +748,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
                     T("%s -- Attribute limit or enum already unset."), name);
     }
   } else {
-    unsigned char *t = compress(buff);
-    ap->data = chunk_create(t, u_strlen(t), 0);
+    char *t = compress(buff);
+    ap->data = chunk_create(t, strlen(t), 0);
     ap->flags |= type;
     notify_format(player,
                   T("%s -- Attribute %s set to: %s"), name,
@@ -733,6 +799,8 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
       notify(player, T("That attribute's permissions can not be changed."));
       return;
     }
+    /* Preserve any existing @attribute/limit */
+    flags |= (AL_FLAGS(ap) & (AF_RLIMIT | AF_ENUM));
   } else {
     /* Create fresh if the name is ok */
     if (!good_atr_name(name)) {
@@ -777,6 +845,31 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
                 privs_to_string(attr_privs_view, flags));
 }
 
+/** Add a new attribute. Called from db.c to add new attributes
+ * to older databases which have their own attr table.
+ * \param name name of attr to add
+ * \param flags attribute flags (AF_*)
+ */
+void
+add_new_attr(char *name, uint32_t flags)
+{
+  ATTR *ap;
+  ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
+  if (ap || !good_atr_name(name))
+    return;
+
+  ap = GC_MALLOC(sizeof(ATTR));
+  if (!ap) {
+    do_log(LT_ERR, 0, 0, "add_new_attr: unable to malloc ATTR");
+    return;
+  }
+  AL_NAME(ap) = GC_STRDUP(name);
+  ap->data = NULL_CHUNK_REFERENCE;
+  AL_FLAGS(ap) = flags;
+  AL_CREATOR(ap) = 0;
+  ptab_insert_one(&ptab_attrib, name, ap);
+
+}
 
 /** Delete an attribute from the attribute table.
  * \verbatim
@@ -789,6 +882,7 @@ void
 do_attribute_delete(dbref player, char *name)
 {
   ATTR *ap;
+  int count;
 
   if (!name || !*name) {
     notify(player, T("Which attribute do you mean?"));
@@ -802,14 +896,26 @@ do_attribute_delete(dbref player, char *name)
     return;
   }
 
-  /* Free everything it uses. */
-  if (ap->data != NULL_CHUNK_REFERENCE) {
-    chunk_delete(ap->data);
+  /* Display current attr info, for backup/safety reasons */
+  display_attr_info(player, ap);
+
+  /* Free all data, remove any aliases, and remove from the hash table */
+  count = free_standard_attr(ap, 1);
+
+  switch (count) {
+  case 0:
+    notify_format(player, T("Failed to remove %s from attribute table."), name);
+    break;
+  case 1:
+    notify_format(player, T("Removed %s from attribute table."), name);
+    break;
+  default:
+    notify_format(player,
+                  T("Removed %s and %d alias(es) from attribute table."), name,
+                  count - 1);
+    break;
   }
 
-  /* Ok, take it out of the hash table */
-  ptab_delete(&ptab_attrib, name);
-  notify_format(player, T("Removed %s from attribute table."), name);
   return;
 }
 
@@ -852,6 +958,9 @@ do_attribute_rename(dbref player, char *old, char *newname)
   }
   /* Ok, take it out and put it back under the new name */
   ptab_delete(&ptab_attrib, old);
+  /*  This causes a slight memory leak if you rename an attribute
+     added via /access. But that doesn't happen often. Will fix
+     someday.  */
   AL_NAME(ap) = GC_STRDUP(newname);
   ptab_insert_one(&ptab_attrib, newname, ap);
   notify_format(player,
@@ -885,6 +994,15 @@ do_attribute_info(dbref player, char *name)
     notify(player, T("That attribute isn't in the attribute table"));
     return;
   }
+
+  display_attr_info(player, ap);
+  return;
+}
+
+static void
+display_attr_info(dbref player, ATTR *ap)
+{
+
   notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
   if (ap->flags & AF_RLIMIT) {
     notify_format(player, "%9s: %s", T("Limit"), display_attr_limit(ap));
@@ -896,6 +1014,37 @@ do_attribute_info(dbref player, char *name)
                                                        AL_FLAGS(ap)));
   notify_format(player, "%9s: %s", T("Creator"), unparse_dbref(AL_CREATOR(ap)));
   return;
+}
+
+/** Decompile the standard attribute table, as per \@attribute/decompile
+ * \param player The enactor
+ * \param pattern Wildcard pattern of attrnames to decompile
+ * \param retroactive Include the /retroactive switch?
+*/
+void
+do_decompile_attribs(dbref player, char *pattern, int retroactive)
+{
+  ATTR *ap;
+  const char *name;
+
+  notify(player, T("@@ Standard Attributes:"));
+  for (ap = ptab_firstentry_new(&ptab_attrib, &name);
+       ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
+    if (strcmp(name, AL_NAME(ap)))
+      continue;
+    if (pattern && *pattern && !quick_wild(pattern, AL_NAME(ap)))
+      continue;
+    notify_format(player, "@attribute/access%s %s=%s",
+                  (retroactive ? "/retroactive" : ""),
+                  AL_NAME(ap), privs_to_string(attr_privs_view, AL_FLAGS(ap)));
+    if (ap->flags & AF_RLIMIT) {
+      notify_format(player, "@attribute/limit %s=%s", AL_NAME(ap),
+                    display_attr_limit(ap));
+    } else if (ap->flags & AF_ENUM) {
+      notify_format(player, "@attribute/enum %s=%s", AL_NAME(ap),
+                    display_attr_limit(ap));
+    }
+  }
 }
 
 /** Display a list of standard attributes.
@@ -920,19 +1069,19 @@ char *
 list_attribs(void)
 {
   ATTR *ap;
-  char *buff, *bp;
   const char *ptrs[BUFFER_LEN / 2];
+  static char buff[BUFFER_LEN];
+  char *bp;
   const char *name;
   int nptrs = -1, i;
 
-  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
-  
   for (ap = ptab_firstentry_new(&ptab_attrib, &name);
        ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
     if (strcmp(name, AL_NAME(ap)))
       continue;
     ptrs[++nptrs] = AL_NAME(ap);
   }
+  bp = buff;
   if (nptrs >= 0)
     safe_str(ptrs[0], buff, &bp);
   for (i = 1; i < nptrs; i++) {
@@ -952,6 +1101,8 @@ attr_init_postconfig(void)
   ATTR *a;
   /* read_remote_desc affects AF_NEARBY flag on DESCRIBE attribute */
   a = aname_hash_lookup("DESCRIBE");
+  if (!a)
+    return;
   if (READ_REMOTE_DESC)
     a->flags &= ~AF_NEARBY;
   else

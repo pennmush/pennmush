@@ -9,7 +9,9 @@
 #ifndef __GAME_H
 #define __GAME_H
 
+#include "dbio.h"
 #include "mushtype.h"
+#include "notify.h"
 
 /* @scan flags */
 #define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */
@@ -33,8 +35,20 @@ extern void init_pronouns(void);        /* funstr.c */
 void fcache_init(void);
 void fcache_load(dbref player);
 void hide_player(dbref player, int hide, char *victim);
-enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
-void do_motd(dbref player, enum motd_type key, const char *message);
+/* 0x0N defines which MotD, and 0xN0 defines the action */
+#define MOTD_MOTD  0x01
+#define MOTD_WIZ   0x02
+#define MOTD_DOWN  0x04
+#define MOTD_FULL  0x08
+#define MOTD_TYPE   0x0F
+
+#define MOTD_LIST  0x10
+#define MOTD_CLEAR 0x20
+#define MOTD_SET   0x40
+#define MOTD_ACTION 0xF0
+
+
+void do_motd(dbref player, int key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
 void do_page_port(dbref executor, const char *pc, const char *msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
@@ -52,13 +66,6 @@ void do_allhalt(dbref player);
 void do_allrestart(dbref player);
 void do_restart(void);
 void do_restart_com(dbref player, const char *arg1);
-
-/* From command.c */
-enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE };
-extern void do_hook(dbref player, char *command, char *obj, char *attrname,
-                    enum hook_type flag, int inplace);
-extern void do_hook_list(dbref player, char *command, bool verbose);
-
 
 /* From compress.c */
 #if (COMPRESSION_TYPE > 0)
@@ -139,8 +146,11 @@ extern void do_cpattr
 extern void do_edit(dbref player, char *it, char **argv, int flags);
 extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
                            NEW_PE_INFO *pe_info);
-extern void do_trigger(dbref player, char *object, char **argv,
-                       MQUE *queue_entry);
+#define TRIGGER_DEFAULT   0
+#define TRIGGER_SPOOF     1
+#define TRIGGER_CLEARREGS 2
+extern void do_trigger(dbref executor, dbref enactor, char *object, char **argv,
+                       MQUE *queue_entry, int flags);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
 extern void do_parent(dbref player, char *name, char *parent_name,
                       NEW_PE_INFO *pe_info);

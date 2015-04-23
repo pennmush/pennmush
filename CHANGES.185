@@ -13,6 +13,280 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 7                                 Mar 16, 2015
+
+Fixes:
+ * Bytes received by connections weren't being properly recorded for
+   things like SESSION and recv().
+ * Fix some highly unlikely crash bugs/memory leaks in atr_tab.c [MG]
+ * @attribute/delete now deletes all aliases for the deleted attr, too. [MG]
+ * Help fixes. [MG]
+ * SOCKSET didn't always send the corret lineendings. [MG]
+ * unsetq() and @include/clearregs were unpredictable, and hopefully now
+   function more reliably. Reported by spork, Mercutio and others. [MG]
+ * Remove compile warning when info_slave isn't used. [MG]
+ * %X now always returns the capitalized version of %x, even when the returned
+   value contains ANSI. [MG]
+ * Fixed a few niggly bugs in @include, registers() and similar things
+   making too many or too few registers available at the wrong time. From a
+   report by Paige. [MG]
+ * lit(%) returned %) instead of %. Reported by Ashen-Shugar. [MG]
+ * PCRE's jit engine causes crashes when passed certain malicious regular 
+   expressions. Disable it for all public-facing uses of REs. Reported by 
+   Ashen-Shugar. [SW]
+ * align() would sometimes show extra column separators when columns were
+   merged. [MG]
+ * @lock/interact was wrongly checked when paging a player with an @pageformat
+   set. Reported by Odin. [MG]
+ * Channels you had both @chan/gagged and @chan/combined would still show
+   connect messages. Reported by Paige. [MG]
+ * Fix a memory leak in @dolist/inline when used with @break. From a report by
+   spork. [MG]
+ * @chan/decompile <hidden channel> by a mortal didn't give an error message.
+   Reported by Paige. [MG]
+ * It was impossible to remove a thing from a channel which had been 
+   restricted so only players could join. Reported by Paige. [MG]
+ * Players with an @pageformat which eval'd to an empty string wouldn't know
+   they were being paged. Reported by Ashen-Shugar. [MG]
+ * Fix crash in named q-registers. Reported by Qon@M*U*S*H. [DC]
+ * Enabling the log_commands config option while a LOG`CMD event was set would
+   cause endless queueing, until the event handler was halted as a runaway
+   object. Reported by spork. [MG]
+ * Fix a potential overflow problem in the code that computes queue load 
+   averages for @ps. [SW]
+ * @motd/down and @motd/full are actually shown now. [MG]
+ * Properly negotiate telnet with clients who spit out telnet codes instantly
+   upon connection like MUSHclient. Reported by Mercutio and AND. [MG]
+ * Improved configure support for NetBSD. [SW]
+ * Fix a compile error on non-Windows, non-BSD, non-Linux OSes. [SW]
+
+Hardcode:
+ * Improvements to networking code; robustness on errors and portability. [SW] 
+
+Functions:
+ * Added two new column modifiers to wrap(), x and X, to allow truncation of
+   fields instead of wrapping. Suggested by Qon, spork and others. [MG]
+
+Minor changes:
+ * @attribute/delete now displays the info for an attribute, as per @attrib
+   <attr>, prior to deleting it. [MG]
+ * The *div*() and *mod*() math functions now take an unlimited number of
+   args, instead of exactly 2 args. Suggested by Mercutio, patch by Luke.
+ * A SUSPECT player changing their name to the same thing doesn't trigger
+   an alert. Suggested by 0x0045. [SW]
+ * valid(attrvalue, <value>, <name>) checks if &<name> obj=<value> is valid.
+   For @attrib/enum and /limit. [MG]
+ * Added @flag/decompile and @attribute/decompile, to decompile each table
+   to copy to another game. Suggested by spork. [MG]  
+ * Newly set player passwords are salted to be more resistant to cracking via
+   rainbow tables by somebody with a copy of the database. You still shouldn't
+   be re-using a password for anything important, of course. Existing 
+   passwords aren't automatically updated. [SW]
+ * Added /clearregs to @trigger. Suggested by Volund. [MG]
+ * @motd with no args now acts like @motd/list, instead of clearing the MotD.
+   Use @motd/clear to clear the current one. Suggested by Bodin. [MG]
+ * @command can now be used by non-players. From a gripe of Kitai's. [MG]
+ * Update some configure macros to the latest versions. [SW]
+
+Version 1.8.5 patchlevel 6                                 Jul 29, 2014
+
+Hardcode:
+ * Removed an old debugging variable to reduce memory usage. Suggested by
+   spork. [MG]
+ * ssl_slave now gets passed its settings via a pipe, instead of on the 
+   command line. [SW]
+ * Rewritten the telnet handler, to make it more manageable/modifiable,
+   instead of it being a huge bunch of nested switch()es. [MG]
+ * Update the SFMT random number generator to 1.4.1. [SW]
+ * Built in and persistant uses of regular expressions are JIT compiled if the
+   host's PCRE version supports it, for faster matching.
+ * Better support for BSD systems. 
+
+Functions:
+ * valid() can now test for valid channel names. Suggested by Volund. [MG]
+ * valid() now takes an optional <target> argument for some categories,
+   to see if <string> is a valid name for <target>. [MG]
+ * tan(90,d) now reports an error instead of a really big number. Suggested by
+   Peppel. [SW]
+ * More math functions report errors. [SW]
+ * Added reglmatch[all][i]() functions, regexp versions of match[all](). [MG]
+ * isdaylight() now accepts time and timezone arguments. [SW]
+ * convtime() takes timezones besides just UTC. [SW]
+ * foreach() is now ansi-aware. Reported by Ashen-Shugar. [MG]
+
+Minor changes:
+ * @channel/gag no longer persists across a full @shutdown. Suggested by
+   Trinsec. [MG]
+ * 'give' now gives more informative error messages when you try and give
+   pennies to someone who has the maximum, or take pennies from someone who
+   is broke. [MG]
+ * The message shown when you need to run 'make update' is now slightly 
+   clearer about what to do and why. By Rince.
+ * Removed some 20 year old Sun OS workaround code. Suggested by Fraibert.
+ * Slightly less confusing error message for @chan/buffer suggested by Sketch.
+ * 'HELP ENTRIES' is generated on the fly, and shows the total number of
+   pages. Suggested by [MG] and Trinsec. [SW]
+ * @success/@osuccess/@asuccess now get the old location of the moving object
+   in %0. Suggested by Riorgan. [SW]
+ * @mail/review with no args now lists all mail you've sent to everyone.
+   Suggested by Paige. [MG]
+ * @mail/review now shows the recipient in the message list, instead of the
+   sender. This is slightly more useful, since the person using the command
+   is always the sender. [MG]
+ * @mail/status now lets you twiddle the 'urgent' status of messages. From a
+   suggestion by Paige. [MG]
+ * You can now always see a channel if you've been joined to it and can speak
+   on it, even if you don't pass its @clock/see. Suggested by Rince. [MG]
+ * 'page foo=' now produces an error, instead of paging nothing. Suggested by
+   Paige. [MG]
+ * 'make localized' now ignores charset when building translation files, which
+   stops it throwing errors unnecessarily. [MG]
+ * Use a more robust configure check for timezone data files. [SW]
+ * Added a /spoof switch to @mapsql, to spoof the enactor a la @trigger/spoof.
+   Suggested by Mercutio. [MG]
+ * Improved error reporting when info_slave or ssl_slave exits unexpectedly. [SW]
+ * hasflag(<player>, connected) now returns 1 if the caller can see that the
+   player is online, instead of always returning 0 for mortal callers. Most
+   recently suggested by Odin@M*U*S*H. [MG]
+
+Fixes:
+ * Windows compile fixes by ChaosMageX.
+ * Fix a crash when expanding the flagset size. Reported by spork. [DC]
+ * @attribute/access incorrectly cleared an @attribute/limit on the same
+   attr. Reported by Ton Kyrion. [MG]
+ * Help/translation fixes by spork, Riorgan and others. [MG]
+ * The 'give', 'take' and 'empty' commands displayed the wrong object names
+   when mogrifiers were used. Reported by Riorgan. [MG]
+ * Fix crash in ssl_slave when a connection drops in the middle of hostname
+   lookup.
+ * Crashbug in SQL fixed. Reported by Mercutio. [MG]
+ * @mapsql/colnames cleared q-registers in the first (colnames) action list
+   queued. Reported by Mercutio. [MG]
+ * @channel/join would give an 'ambiguous' error, even if you couldn't see the
+   other potentially-matching channels. Reported by Mercutio. [MG]
+ * Penn negotiated charset as iso-8859-1 (latin1) even if the MUSH was
+   running using a different charset. Reported by Tyler. [MG]
+ * Better support for mixing IPv4 and IPv6 connections. FreeBSD and NetBSD
+   should not need the --disable-ipv6 option to configure any more. [SW]
+ * Fixed an obscure buffer-overwrite bug in the channel system. Reported by
+   Volund@M*U*S*H/Roll@Multiverse Crisis MUSH. [MG]
+
+Version 1.8.5 patchlevel 5                                 Nov 20, 2013
+
+Commands:
+ * Added @moniker, to allow colored names. See 'help monikers' for more.
+   Requested by Mikoto Misaka. Idea from [MUX]. [MG]
+ * After a year of deprecation, @emit/room has been removed as an alias for
+   @lemit. [MG]
+ * @chan/list now takes /on and /off switches, to filter the channels shown,
+   and a /quiet switch to give a less verbose output. From a suggestion by
+   Fraibert. [MG]
+ * @trigger now takes a /spoof switch, which preserves the enactor. [MG]
+ * New @hook/extend, which allows adding new functionality to built-in
+   commands via softcode, while preserving the original command. [MG] [Rhost]
+
+Major changes:
+ * Regexp $-commands can now used name captures. They can be accessed via
+   r(<name>, args). Suggested by Mercutio. [MG]
+
+Hardcode:
+ * A number of changes have been made to accomodate monikers. Notably, a lot
+   of calls to the Name() macro now use the AName() macro. See the 
+   HACKING.185 file for more info. [MG]
+ * wild_match_case_r(), regexp_match_case_r(), pe_regs_set_rx_context()
+   and pe_regs_set_rx_context_ansi() now take an extra argument, a PE_REGS*
+   flag to determine how matching subpatterns are stored in pe_regs. [MG]
+ * add_flag_generic() now returns an enum, and takes an additional final
+   pointer arg, where the new flag will be stored. add_flag() and add_power()
+   pass this pointer as NULL. [MG]
+ * Improve heuristics used for resizing the flagcache hash table. [DC]
+ * Update hashing functions used by various hash table implementations. [DC]
+
+Fixes:
+ * Commands which take multiple right-hand-side arguments could only have
+   8191-length arguments, instead of the usual 8192. Reported by Jules. [MG]
+ * It was possible to return non-printable characters from an SQL database,
+   which could cause undefined weirdness. Reported by spork. [MG]
+ * Many things which listed attributes from a parent, like lattrp() or
+   examine/parent, didn't respect no_inherit fully. [MG]
+ * Minor crashbug in @boot fixed. Reported by thomaswdyoung. [MG]
+ * @grep now ignores ansi when looking for a value. Suggested by Mouvar. [MG]
+ * colors() now complains when the color is 'n', 'd' or 'D', since they
+   have no actual color value. Reported by spork. [MG]
+ * Buffer overflow bug in ansi() fixed. Reported by tsen. [MG]
+ * Flag corruption issue due to incorrect flagset refcounts fixed. [DC]
+ * When a player was nuked, any @mail they had filed into another folder
+   would be retained, and visible to a new player created later with the
+   same dbref. Reported by Valkyrie. [MG]
+ * Crashbug in @message. Reported by Yuriko. [MG]
+ * linsert(,1,foo) now returns "foo", like it always used to, instead of
+   returning an empty list. [MG]
+ * SSL connections which had not yet logged into a player weren't always
+   fully cleaned up. Patch by Fraibert.
+ * channels() could include an extra delimiter in some cases. Reported by 
+   Mouvar. [MG]
+ * Translations weren't working in the chat system. Reported by Riorgan. [MG]
+
+Minor changes:
+ * strreplace() now works harder to keep existing ANSI intact, when you
+   replace an un-ansi'd string into an ansi'd one. [MG]
+ * colors(...,xterm256) can now return colors 0 to 15, to avoid confusion
+   when converting xterm -> hex -> xterm. Reported by Trinsec. [MG]
+ * New substitution, %k, returns the enactor's monikered name. [MUX] [MG]
+ * Help fixes and tweaks. [MG]
+ * PennMUSH can now read MUX-style passwords, to make moving dbs from MUX
+   to Penn less painful. Requested by Muse. [MG]
+ * Commands are no longer queued for HALTed non-players. (Since they'd be
+   dropped from the queue anyway, rather than being run, it saves us jumping
+   through a series of hoops for no good reason.) From a report by Muse and
+   Ashen-Shugar. [MG]
+ * The connect-screen WHO now shows moniker'd (ansi'd) names, if so 
+   configured. Requested by Trinsec. [MG]
+ * @mapsql and mapsql()'s attributes now receives named arguments. That is,
+   '@mapsql me/foo=SELECT bar FROM table' receives the value of the 'bar'
+   field as both %1 and [r(bar,args)]. [MG]
+ * Wizards can now give players names with spaces, even when the 
+   player_name_spaces option is off. Suggested by Paige. [MG]
+ * Removed the last traces of the 'events' help-style command. Noone ever
+   uses it, and we removed the helpfiles for it ages ago when the Event 
+   System was added, anyway. [MG]
+ * Updated the README for adding help-style commands, with clearer examples.
+   Requested by AnnePearn. [MG]
+ * Per-player mail limits can be set with @mailquota, to override the
+   mail_limit @config option selectively. Suggested by Ricochet. [MG]
+ * Attempting to create a character (at the login screen or via @pcreate)
+   is now specific about whether the name is already in use or invalid,
+   rather than leaving you guessing. [MG]
+ * Likewise, when failing to connect, the login screen tells you whether
+   there is no such player, or whether the password is wrong. [MG]
+ * beep() now returns out of range, instead of permission denied, when given
+   an arg which is not between 1 and 5. [MG]
+ * When an evaluation @search hits the CPU limit, it will now tell you which
+   object it failed on, to make it easier for you to continue with a partial 
+   search. [MG]
+ * Players are now warned when setting an unanchored regexp $-command, as
+   this is often an oversight which is problematic to track down later. [MG]
+ * More effort now goes into checking whether an attribute contains a valid
+   $-command when it's set, to avoid doing so unnecessarily during command
+   matching; the latter happens a lot more often. [MG]
+   
+Functions:
+ * delete(), replace() and insert() have been renamed to strdelete(), 
+   lreplace() and linsert(), respectively, for clarity and conformity. The
+   original names remain as aliases. [MG]
+ * moniker(<object>) returns an object's monikered name. [MUX] [MG]
+ * mapsql() only stored 10 columns, instead of the advertised 30. Reported
+   by Mercutio. [MG]
+ * fn() now takes an <obj>/ prefix to its first arg, to evaluate the built-in
+   function as <obj>. Useful when overriding side-effect functions. [MG]
+ * r() now takes two arguments, allowing it to return the stack (%0-%9),
+   itext() and stext() values, as well as q-registers(). [MG]
+ * Mortals can now use playermem() and objmem() on their own objects.
+   Suggested by Paige. [MG]
+ * ljust() and rjust() now take an optional <trunc?> arg which, if true,
+   causes strings already longer than <len> to be truncated. Suggested by
+   many people over the years, most recently Rince and Quasar. [MG]
+
 Version 1.8.5 patchlevel 4                                 Mar 17, 2013
 
 Major changes:

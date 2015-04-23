@@ -9,39 +9,40 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #include <string.h>
 
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
-#ifdef I_SYS_SOCKET
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 
-#include "conf.h"
-#include "externs.h"
-#include "dbdefs.h"
-#include "mushdb.h"
-#include "match.h"
-#include "game.h"
-#include "attrib.h"
-#include "extmail.h"
-#include "malias.h"
-#include "parse.h"
 #include "access.h"
-#include "version.h"
-#include "lock.h"
-#include "function.h"
+#include "ansi.h"
+#include "attrib.h"
 #include "command.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
 #include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "lock.h"
 #include "log.h"
-#include "mysocket.h"
 #include "lookup.h"
+#include "malias.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mysocket.h"
+#include "parse.h"
 #include "ssl_slave.h"
-#include "confmagic.h"
+#include "strutil.h"
+#include "version.h"
 
 /* External Stuff */
 void do_poor(dbref player, char *arg1);
@@ -50,13 +51,10 @@ void do_list_memstats(dbref player);
 #define DOL_NOTIFY 2            /**< dolist/notify bitflag */
 #define DOL_DELIM 4             /**< dolist/delim bitflag */
 
-void do_list(dbref player, char *arg, int lc, int which);
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
-
-void do_list_allocations(dbref player);
 
 extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
@@ -85,6 +83,8 @@ COMMAND(cmd_attribute)
                           SW_ISSET(sw, SWITCH_RETROACTIVE));
     else
       notify(executor, T("Permission denied."));
+  } else if (SW_ISSET(sw, SWITCH_DECOMPILE)) {
+    do_decompile_attribs(executor, arg_left, SW_ISSET(sw, SWITCH_RETROACTIVE));
   } else if (SW_ISSET(sw, SWITCH_DELETE)) {
     if (Wizard(executor))
       do_attribute_delete(executor, arg_left);
@@ -130,7 +130,7 @@ COMMAND(cmd_sockset)
 
   if (!rhs_present) {
     if (d->player == executor || See_All(executor))
-      notify(executor, sockset_show(d));
+      notify(executor, sockset_show(d, "\n"));
     else
       notify(executor, T("Permission denied."));
     return;
@@ -170,14 +170,17 @@ COMMAND(cmd_boot)
 COMMAND(cmd_break)
 {
   if (parse_boolean(arg_left)) {
+    int flags = 0;
     queue_entry->queue_type |= QUEUE_BREAK;
+    if (queue_entry->queue_type & QUEUE_EVENT)
+      flags |= QUEUE_EVENT;
     if (arg_right && *arg_right) {
       if (SW_ISSET(sw, SWITCH_QUEUED))
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                             PE_INFO_CLONE, QUEUE_DEFAULT | flags, NULL);
       else
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+                             PE_INFO_SHARE, QUEUE_INPLACE | flags, NULL);
     }
   }
 }
@@ -185,14 +188,17 @@ COMMAND(cmd_break)
 COMMAND(cmd_assert)
 {
   if (!parse_boolean(arg_left)) {
+    int flags = 0;
     queue_entry->queue_type |= QUEUE_BREAK;
+    if (queue_entry->queue_type & QUEUE_EVENT)
+      flags |= QUEUE_EVENT;
     if (arg_right && *arg_right) {
       if (SW_ISSET(sw, SWITCH_QUEUED))
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                             PE_INFO_CLONE, QUEUE_DEFAULT | flags, NULL);
       else
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
-                             PE_INFO_SHARE, QUEUE_INPLACE, NULL);
+                             PE_INFO_SHARE, QUEUE_INPLACE | flags, NULL);
     }
   }
 }
@@ -471,17 +477,7 @@ COMMAND(cmd_emit)
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   int speaker = SPOOF(executor, enactor, sw);
 
-  if (SW_ISSET(sw, SWITCH_ROOM)) {
-    notify_format(Owner(executor),
-                  T
-                  ("Deprecated command %s being used on object #%d. Use %s instead."),
-                  "@EMIT/ROOM", executor, "@LEMIT");
-
-    do_lemit(executor, speaker, arg_left,
-             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags,
-             queue_entry->pe_info);
-  } else
-    do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
+  do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_enable)
@@ -524,7 +520,10 @@ COMMAND(cmd_firstexit)
 COMMAND(cmd_flag)
 {
   if (SW_ISSET(sw, SWITCH_LIST))
-    do_list_flags("FLAG", executor, arg_left, 0, T("Flags"));
+    do_list_flags("FLAG", executor, arg_left, FLAG_LIST_NAMECHAR, T("Flags"));
+  else if (SW_ISSET(sw, SWITCH_DECOMPILE))
+    do_list_flags("FLAG", executor, arg_left, FLAG_LIST_DECOMPILE,
+                  T("@@ Flags"));
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_flag_add("FLAG", executor, arg_left, args_right);
   else if (SW_ISSET(sw, SWITCH_DELETE))
@@ -679,6 +678,8 @@ COMMAND(cmd_hook)
     flags = HOOK_IGNORE;
   else if (SW_ISSET(sw, SWITCH_OVERRIDE))
     flags = HOOK_OVERRIDE;
+  else if (SW_ISSET(sw, SWITCH_EXTEND) || SW_ISSET(sw, SWITCH_IGSWITCH))
+    flags = HOOK_EXTEND;
   else if (SW_ISSET(sw, SWITCH_LIST)) {
     do_hook_list(executor, arg_left, 1);
     return;
@@ -687,9 +688,10 @@ COMMAND(cmd_hook)
     return;
   }
   if (queue_type != QUEUE_DEFAULT) {
-    if (flags != HOOK_OVERRIDE) {
+    if (flags != HOOK_OVERRIDE && flags != HOOK_EXTEND) {
       notify(executor,
-             T("You can only use /inplace and /inline with /override."));
+             T
+             ("You can only use /inplace and /inline with /override or /extend."));
       return;
     }
   }
@@ -730,16 +732,154 @@ COMMAND(cmd_link)
           queue_entry->pe_info);
 }
 
-COMMAND(cmd_listmotd)
+extern slab *attrib_slab;
+extern slab *bvm_asmnode_slab;
+extern slab *chanlist_slab;
+extern slab *chanuser_slab;
+extern slab *flagbucket_slab;
+extern slab *function_slab;
+extern slab *huffman_slab;
+extern slab *intmap_slab;
+extern slab *lock_slab;
+extern slab *mail_slab;
+extern slab *namelist_slab;
+extern slab *pe_reg_slab;
+extern slab *pe_reg_val_slab;
+extern slab *text_block_slab;
+
+static void
+do_list_allocations(dbref player)
 {
-  do_motd(executor, MOTD_LIST, "");
+  /* TODO: I'm not sure if it's safe to make this a static const, since I need
+     to verify that each slab is never recreated. To be safe, just make it
+     non-static for now. */
+  const slab *const slabs[] = {
+    attrib_slab,
+#ifdef DEBUG
+    /* This should always be 0. No need to display it most of the
+       time. */
+    bvm_asmnode_slab,
+#endif
+    chanlist_slab,
+    chanuser_slab,
+    function_slab,
+#if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
+    huffman_slab,
+#endif
+    lock_slab,
+    mail_slab,
+    text_block_slab,
+    intmap_slab,
+    pe_reg_slab,
+    pe_reg_val_slab,
+    flagbucket_slab,
+    namelist_slab,              /* This used to be in a separate if check, so it may be
+                                   NULL. Be careful if making this static. */
+  };
+  size_t i;
+
+  if (!Hasprivs(player)) {
+    notify(player, T("Sorry."));
+    return;
+  }
+
+  for (i = 0; i < sizeof(slabs) / sizeof(slabs[0]); ++i) {
+    struct slab_stats stats;
+    slab_describe(slabs[i], &stats);
+    notify_format(player, "Allocator for %s:", stats.name);
+    notify_format(player,
+                  "   object size (bytes): %-6d       objects per page: %-6d",
+                  stats.item_size, stats.items_per_page);
+    notify_format(player,
+                  "       allocated pages: %-6d      objects added via: %s",
+                  stats.page_count,
+                  stats.fill_strategy ? "first fit" : "best fit");
+    notify_format(player,
+                  "     allocated objects: %-6d           free objects: %-6d",
+                  stats.allocated, stats.freed);
+    if (stats.allocated > 0) {
+      double allocation_average = stats.allocated;
+      allocation_average /= (stats.allocated + stats.freed);
+      allocation_average *= 100.0;
+      notify_format(player,
+                    " fewest allocs in page: %-6d    most allocs in page: %-6d",
+                    stats.min_fill, stats.max_fill);
+      notify_format(player,
+                    "    allocation average:%6.2f%%        pages 100%% full: %-6d",
+                    allocation_average, stats.full);
+      notify_format(player,
+                    "       pages >75%% full: %-6d        pages >50%% full: %-6d",
+                    stats.under100, stats.under75);
+      notify_format(player,
+                    "       pages >25%% full: %-6d        pages <25%% full: %d",
+                    stats.under50, stats.under25);
+    }
+  }
+
+  notify(player, T("GC Stats:"));
+  notify_format(player, T("Collector version: %d.%d"), GC_VERSION_MAJOR, GC_VERSION_MINOR);
+  notify_format(player, T("Heap size: %lu bytes. Free space: %lu bytes."), (unsigned long)GC_get_heap_size(),
+		(unsigned long)GC_get_free_bytes());
+  notify_format(player, T("GC cycles: %u. Memory allocated since last GC: %lu bytes."),
+		(unsigned int) GC_get_gc_no(), (unsigned long)GC_get_bytes_since_gc());
+}
+
+/** List various goodies.
+ * \verbatim
+ * This function implements the version of @list that takes an argument instead
+ * of a switch.
+ * \endverbatim
+ * \param player the enactor.
+ * \param arg what to list.
+ * \param lc if 1, list in lowercase.
+ * \param which 1 for builins, 2 for local, 3 for all
+ */
+static void
+do_list(dbref player, char *arg, int lc, int which)
+{
+  if (!arg || !*arg)
+    notify(player, T("I don't understand what you want to @list."));
+  else if (string_prefix("commands", arg))
+    do_list_commands(player, lc, which);
+  else if (string_prefix("functions", arg)) {
+    switch (which) {
+    case 1:
+      do_list_functions(player, lc, "builtin");
+      break;
+    case 2:
+      do_list_functions(player, lc, "local");
+      break;
+    case 3:
+    default:
+      do_list_functions(player, lc, "all");
+      break;
+    }
+  } else if (string_prefix("motd", arg))
+    do_motd(player, MOTD_LIST | MOTD_TYPE, "");
+  else if (string_prefix("attribs", arg))
+    do_list_attribs(player, lc);
+  else if (string_prefix("flags", arg))
+    do_list_flags("FLAG", player, "",
+                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
+                  T("Flags"));
+  else if (string_prefix("powers", arg))
+    do_list_flags("POWER", player, "",
+                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
+                  T("Powers"));
+  else if (string_prefix("locks", arg))
+    do_list_locks(player, NULL, lc, T("Locks"));
+  else if (string_prefix("allocations", arg))
+    do_list_allocations(player);
+  else
+    notify(player, T("I don't understand what you want to @list."));
 }
 
 COMMAND(cmd_list)
 {
   int lc;
   int which = 3;
-  char *fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = { "builtin", "local", "all" };
+
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
   if (SW_ISSET(sw, SWITCH_ALL))
     which = 3;
@@ -749,7 +889,7 @@ COMMAND(cmd_list)
     which = 1;
 
   if (SW_ISSET(sw, SWITCH_MOTD))
-    do_motd(executor, MOTD_LIST, "");
+    do_motd(executor, MOTD_LIST | MOTD_TYPE, "");
   else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
     do_list_functions(executor, lc, fwhich[which - 1]);
   else if (SW_ISSET(sw, SWITCH_COMMANDS))
@@ -759,9 +899,13 @@ COMMAND(cmd_list)
   else if (SW_ISSET(sw, SWITCH_LOCKS))
     do_list_locks(executor, arg_left, lc, T("Locks"));
   else if (SW_ISSET(sw, SWITCH_FLAGS))
-    do_list_flags("FLAG", executor, arg_left, lc, T("Flags"));
+    do_list_flags("FLAG", executor, arg_left,
+                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
+                  T("Flags"));
   else if (SW_ISSET(sw, SWITCH_POWERS))
-    do_list_flags("POWER", executor, arg_left, lc, T("Powers"));
+    do_list_flags("POWER", executor, arg_left,
+                  FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
+                  T("Powers"));
   else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
     do_list_allocations(executor);
   else
@@ -970,20 +1114,56 @@ COMMAND(cmd_message)
              queue_entry->pe_info);
 }
 
+COMMAND(cmd_moniker)
+{
+  dbref target;
+  char moniker[BUFFER_LEN], *mp;
+
+  target = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
+  if (target == NOTHING)
+    return;
+
+  if (!controls(executor, target)) {
+    notify(executor, "Permission denied.");
+    return;
+  }
+
+  if (!arg_right || !*arg_right) {
+    atr_clr(target, "MONIKER", GOD);
+    notify(executor, "Moniker cleared.");
+  } else {
+    mp = moniker;
+    sanitize_moniker(arg_right, moniker, &mp);
+    *mp = '\0';
+    if (!has_markup(moniker)) {
+      notify(executor, "You need to specify a moniker with some ANSI.");
+    } else {
+      atr_add(target, "MONIKER", moniker, GOD, 0);
+      notify(executor, "Moniker set.");
+    }
+  }
+
+}
+
 COMMAND(cmd_motd)
 {
-  if (SW_ISSET(sw, SWITCH_CONNECT))
-    do_motd(executor, MOTD_MOTD, arg_left);
-  else if (SW_ISSET(sw, SWITCH_LIST))
-    do_motd(executor, MOTD_LIST, "");
-  else if (SW_ISSET(sw, SWITCH_WIZARD))
-    do_motd(executor, MOTD_WIZ, arg_left);
+  int action = (SW_ISSET(sw, SWITCH_CLEAR) ? MOTD_CLEAR : MOTD_SET);
+  int motd = MOTD_MOTD;
+  if (!strcmp(cmd->name, "@REJECTMOTD"))
+    motd = MOTD_DOWN;
+  else if (!strcmp(cmd->name, "@WIZMOTD"))
+    motd = MOTD_WIZ;
+  else if (!strcmp(cmd->name, "@LISTMOTD") || SW_ISSET(sw, SWITCH_LIST)) {
+    do_motd(executor, MOTD_LIST | MOTD_TYPE, "");
+    return;
+  }
+  if (SW_ISSET(sw, SWITCH_WIZARD))
+    motd = MOTD_WIZ;
   else if (SW_ISSET(sw, SWITCH_DOWN))
-    do_motd(executor, MOTD_DOWN, arg_left);
+    motd = MOTD_DOWN;
   else if (SW_ISSET(sw, SWITCH_FULL))
-    do_motd(executor, MOTD_FULL, arg_left);
-  else
-    do_motd(executor, MOTD_MOTD, arg_left);
+    motd = MOTD_FULL;
+  do_motd(executor, action | motd, arg_left);
 }
 
 COMMAND(cmd_mvattr)
@@ -1098,7 +1278,10 @@ COMMAND(cmd_poor)
 COMMAND(cmd_power)
 {
   if (SW_ISSET(sw, SWITCH_LIST))
-    do_list_flags("POWER", executor, arg_left, 0, T("Powers"));
+    do_list_flags("POWER", executor, arg_left, FLAG_LIST_NAMECHAR, T("Powers"));
+  else if (SW_ISSET(sw, SWITCH_DECOMPILE))
+    do_list_flags("POWER", executor, arg_left, FLAG_LIST_NAMECHAR,
+                  T("@@ Powers"));
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_flag_add("POWER", executor, arg_left, args_right);
   else if (SW_ISSET(sw, SWITCH_DELETE))
@@ -1165,11 +1348,6 @@ COMMAND(cmd_remit)
 
   do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
            queue_entry->pe_info);
-}
-
-COMMAND(cmd_rejectmotd)
-{
-  do_motd(executor, MOTD_DOWN, arg_left);
 }
 
 COMMAND(cmd_restart)
@@ -1399,7 +1577,12 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, arg_left, args_right, queue_entry);
+  int flags = TRIGGER_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_SPOOF))
+    flags |= TRIGGER_SPOOF;
+  if (SW_ISSET(sw, SWITCH_CLEARREGS))
+    flags |= TRIGGER_CLEARREGS;
+  do_trigger(executor, enactor, arg_left, args_right, queue_entry, flags);
 }
 
 COMMAND(cmd_ulock)
@@ -1487,11 +1670,6 @@ COMMAND(cmd_wipe)
 COMMAND(cmd_wizwall)
 {
   do_wall(executor, arg_left, WALL_WIZ, SW_ISSET(sw, SWITCH_EMIT));
-}
-
-COMMAND(cmd_wizmotd)
-{
-  do_motd(executor, MOTD_WIZ, arg_left);
 }
 
 COMMAND(cmd_zemit)

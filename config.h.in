@@ -5,40 +5,17 @@
 
 /* Headers */
 
-/* <arpa/inet.h> What needs this? */
-#undef I_ARPA_INET
+#undef HAVE_ARPA_INET_H
 
-/* <arpa/nameser.h> What needs this? */
-#undef I_ARPA_NAMESER
+#undef HAVE_LIBINTL_H
 
-#undef I_FCNTL
+#undef HAVE_NETDB_H
 
-#undef I_FLOATINGPOINT
+#undef HAVE_NETINET_IN_H
 
-#undef I_LIBINTL
+#undef HAVE_NETINET_TCP_H
 
-/* Get rid of this */
-#undef I_MALLOC
-
-#undef I_NETDB
-
-#undef I_NETINET_IN
-
-#undef I_NETINET_TCP
-
-#undef I_SYS_ERRNO
-
-#undef I_SYS_FILE
-
-#undef I_SYS_IN
-
-#undef I_SYS_MMAN
-
-#undef I_SYS_PAGE
-
-#undef I_SYS_PARAM
-
-#undef I_SYS_SOCKET
+#undef HAVE_SYS_SOCKET_H
 
 #undef I_SYS_STAT
 
@@ -56,8 +33,6 @@
 
 #undef HAVE_SYS_WAIT_H
 
-#undef HAVE_IEEEFP_H
-
 #undef HAVE_SYS_UN_H
 
 #undef HAVE_SYS_RESOURCE_H
@@ -67,8 +42,6 @@
 #undef HAVE_SYS_UIO_H
 
 #undef HAVE_POLL_H
-
-#undef HAVE_SYS_EPOLL_H
 
 #undef HAVE_SYS_SELECT_H
 
@@ -82,6 +55,8 @@
 
 #undef HAVE_ZLIB_H
 
+#undef HAVE_BYTESWAP_H
+
 #undef HAVE_LIBZ
 
 /* C99ish headers. The first two are really really nice to have. */
@@ -91,6 +66,10 @@
 #undef HAVE_INTTYPES_H
 
 #undef HAVE_STDBOOL_H
+
+#undef HAVE_FENV_H
+
+#undef HAVE_SYS_UCRED_H
 
 /* Libraries */
 
@@ -319,17 +298,9 @@ typedef bool _Bool;
 
 #undef HAVE_GETPPID
 
-#undef HAVE_PSELECT
-
 #undef HAVE_POLL
 
-#undef HAVE_PPOLL
-
-#undef HAVE_POLLTS
-
 #undef HAVE_KQUEUE
-
-#undef HAVE_EPOLL_CTL
 
 #undef HAVE_POSIX_MEMALIGN
 
@@ -355,6 +326,10 @@ typedef bool _Bool;
 
 #undef HAVE_POSIX_FALLOCATE
 
+#undef HAVE_FECLEAREXCEPT
+
+#undef HAVE_FETESTEXCEPT
+
 /* Variables and defines */
 
 #undef HAVE_H_ERRNO
@@ -368,11 +343,16 @@ typedef bool _Bool;
 #undef HAS_DEV_URANDOM
 
 /* Path to tzinfo database */
-#undef TZINFO_PATH
+#undef HAVE_ZONEINFO
+#undef TZDIR
 
 /* Misc. */
 
-#undef HAVE_SOCKADDR_IN6
+#undef HAVE_STRUCT_SOCKADDR_SA_LEN
+
+#undef HAVE_STRUCT_SOCKADDR_IN6
+
+#undef HAVE_STRUCT_XUCRED
 
 #undef FORCE_IPV4
 

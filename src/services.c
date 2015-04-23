@@ -4,10 +4,7 @@
  * Original author: Nick Gammon 
  */
 
-
 #include "copyrite.h"
-#include "config.h"
-#include "confmagic.h"
 
 #ifdef WIN32
 
@@ -18,12 +15,11 @@
 #include <direct.h>
 
 #include "conf.h"
-#include "mushdb.h"
-
-#include "match.h"
 #include "externs.h"
+#include "match.h"
+#include "mushdb.h"
 #include "mymalloc.h"
-#include "confmagic.h"
+#include "notify.h"
 
 #ifdef WIN32SERVICES
 
@@ -398,8 +394,8 @@ worker_thread(VOID * notused)
   int argc = 3;
   char fullfilename[MAX_PATH];
   char directory[MAX_PATH];
-  char configname[] = "mush.cnf";
-  char errorlogname[] = "log\\game.log";
+  static const char configname[] = "mush.cnf";
+  static const char errorlogname[] = "log\\game.log";
   char *argv[3] = { fullfilename, configname, errorlogname };
   char *p;
 

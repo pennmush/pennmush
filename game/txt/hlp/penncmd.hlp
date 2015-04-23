@@ -46,10 +46,10 @@ These '@' commands are building-related (they create or modify objects):
  
   @atrlock       @atrchown      @chown         @chzone        @clone         
   @cpattr        @create        @destroy       @dig           @elock         
-  @eunlock       @firstexit     @link          @lock          @mvattr        
-  @name          @nuke          @open          @parent        @recycle       
-  @set           @undestroy     @ulock         @unlink        @unlock        
-  @uunlock       @wipe
+  @eunlock       @firstexit     @link          @lock          @moniker
+  @mvattr        @name          @nuke          @open          @parent        
+  @recycle       @set           @undestroy     @ulock         @unlink        
+  @unlock        @uunlock       @wipe
   
 & @-GENERAL
 These '@' commands are general utility and programming commands:
@@ -552,6 +552,8 @@ See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
   through it, and the actions to be taken by the exit when someone passes
   through it, respectively.
   
+  In all cases, %0 is the dbref of the moving object's original location.
+  
   Example:
     > @success Door=You open the door and step inside.
     > @osuccess Door=opens the door and steps inside.
@@ -578,6 +580,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   @attribute/access[/retroactive] <attrib>=<flag list>
   @attribute/delete <attrib>
   @attribute/rename <attrib>=<new name>
+  @attribute/decompile[/retroactive] [<pattern>]
   
   @attribute/access adds <attrib> as a new standard attribute, with the
   default attribute flags <flag list>. If <attrib> is already a standard
@@ -592,6 +595,11 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   @attribute/rename renames a standard attribute. 
   
   Only Wizards can modify the attribute table.
+  
+  @attribute/decompile prints out a list of @attribute/access commands needed
+  to recreate the attribute table on another MUSH. If /retroactive is given,
+  that switch will be included in the output. If <pattern> is given, only
+  attributes matching <pattern> are decompiled.
   
   Continued in 'help @attribute3'.
 & @attribute3
@@ -614,7 +622,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
     @attribute/limit score=^\\d+$    <-- @score can only contain digits.
                                          (Remember, Penn parser eats a \)
 
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown,
+See also: ATTRIBUTES, attribute flags, @set, @atrchown,
   @atrlock, @list
 & @ause
 & @use
@@ -876,7 +884,8 @@ See also: @create, clone(), create(), @cpattr
   currently work.
 
   With no switches, @command shows all sorts of interesting information
-  about how a command is parsed.
+  about how a command is parsed. Any player can use @command with no switch,
+  while the switches are Wizard-only.
   
   The /alias switch creates an alias for <command>, allowing players to type
   <alias> to run <command>. The /clone switch creates a separate copy of
@@ -887,10 +896,10 @@ See also: @create, clone(), create(), @cpattr
   restrict' for more information.
 
   Switches include:
-  /add       : Add a new command that does nothing, but can be @hook'd
-  /delete    : Delete a command added with @command/add or @command/alias
-  /disable   : Disable a command added in the hardcode
-  /enable    : Re-enable a command disabled with @command/disable
+  /add     : Add a new command that does nothing, but can be @hook'd
+  /delete  : Delete a command added with @command/add or /alias. God only.
+  /disable : Disable a command added in the hardcode
+  /enable  : Re-enable a command disabled with @command/disable
 
   The /quiet switch can be used to suppress output from @command.
 
@@ -899,7 +908,7 @@ See also: @create, clone(), create(), @cpattr
   @command/add is a powerful tool that lets you create new commands which
   are matched before normal $-commands, and which can be set not to parse
   their arguments, but (via @hook) can still execute softcode like an
-  $-command. Only Wizards can @command/add, and only God can @command/delete.
+  $-command.
 
   You can use these additional switches, along with @command/add, to control
   how the new command parses its arguments:
@@ -911,14 +920,14 @@ See also: @create, clone(), create(), @cpattr
                comma-separated and are parsed individually
   /rsnoparse : The command does not evaluate the rightside arg(s).
 
-  Any command added without both the /noparse and /rsnoparse switchs is 
-  provided with a /noeval switch itself, so if you @command/add foo, then
-  foo's arguments are parsed by default, but you can call foo/noeval. 
-  Note: the $-command needs to make allowances for the /noeval switch in 
-  its matching.
+  Any command added with neither /noparse or /rsnoparse is provided with a 
+  /noeval switch automatically, so if you @command/add foo, then foo's 
+  arguments are parsed by default, but you can call foo/noeval. Note: when you
+  @hook/override foo, its $-command pattern must be able to match "foo/noeval"
+  as well for the switch to actually be used.
 
-  Commands added with @command/add, like other standard commands, are
-  never case-sensitive. Commands can also be added in the alias.cnf file.
+  Commands added with @command/add, like other standard commands, are always
+  case-insensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -1100,7 +1109,7 @@ See also: look, @exitformat, @nameformat, @conformat, @descformat,
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
 
-See also: accent(), @nameformat, accname(), stripaccents()
+See also: accent(), @nameformat, accname(), stripaccents(), iname()
 & @nameformat
   @nameformat <object>[=<format>]
 
@@ -1120,7 +1129,7 @@ See also: accent(), @nameformat, accname(), stripaccents()
     > @nameformat here = %1 [if(zone(%0),<[name(zone(%0))]>)]
 
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
-    @invformat, @idescformat
+    @invformat, @idescformat, iname()
 & @cost
   @cost <object>[=<amount>]
   
@@ -1582,7 +1591,6 @@ See also: enter, leave, goto, ENTER_OK
   @edit/regexp[/all][/nocase][/check][/quiet] 
                      <object>/<attributes>=<regexp>,<replace>
 
-
   When the /regexp switch is given, @edit performs a regular expression
   replacement, similar to the regedit() function. Normally, only the first
   match per attribute will be replaced; if the /all switch is given, all
@@ -1631,9 +1639,6 @@ See also: @lock, locktypes, enter, ENTER_OK
   message, not even your name. If you have a SPEECHMOD attribute set, it
   will be evaluated with <message> as %0, and | as %1, and the result will be
   shown instead of <message> as long as it evaluates to a non-empty string.
-
-  If the /room switch is given, this command acts like @lemit instead. The
-  /silent switch can be used with it to suppress the confirmation for @lemit.
 
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
@@ -1818,7 +1823,7 @@ See also: @search, lsearch(), @entrances
 
   If <object> is set AUDIBLE, any sound it hears which passes its @filter
   and @lock/filter will be forwarded (prefixed with its @prefix) to each
-  of the dbrefs given  in its @forwardlist attribute, in much the same way
+  of the dbrefs given in its @forwardlist attribute, in much the same way
   as puppets forward sound to their owners.
 
   In order to forward to an object, you must either control it, have the 
@@ -1912,6 +1917,7 @@ See also: PUPPET, DBREF, objeval()
   @flag/type <flag name>=<type(s)>
   @flag/enable <flag name>
   @flag/disable <flagname>
+  @flag/decompile [<pattern>]
 
   This command manipulates the list of flags in the database.
   When given a flag name as an argument, the command displays information
@@ -1930,6 +1936,9 @@ See also: PUPPET, DBREF, objeval()
       in the database and the removing it permanently from the 
       flag table. It requires the exact flag name or alias to be used.
       Be very very careful with this. 
+	/decompile prints out a list of @flag/add commands needed to recreate
+	  the flag table on another MUSH. If <pattern> is given, only flags whose
+	  names match that wildcard pattern are shown.
 
   See 'help @flag2' for information on @flag/add.
   
@@ -2200,7 +2209,7 @@ See also: hidden(), WHO, lwho(), lports(), ports()
 
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
 & @hook
-  @hook/<switch> <command>[=<object>, <attribute>]
+  @hook/<switch> <command>[=<object>[, <attribute>]]
   @hook/list [<command>]
 
   @hook makes the command parser evaluate given attributes at certain points
@@ -2209,17 +2218,22 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   @hook/ignore: The attribute is evaluated before the built-in command is run.
                 If it returns a false value, the command is skipped
                 (the input is still matched against softcoded commands)
-  @hook/override: The object/attribute is matched for a $command,
+  @hook/override: The object/attribute is matched for a $-command,
                 and if it matches, it is run instead of the built-in command,
                 but with the precedence of the built-in command (thus
                 overriding not only the built-in command but any local
-                $commands that might match). If the match fails, normal
+                $-commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
   @hook/override/inline: Same as @hook/override, but the resulting matches
                 are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
+  @hook/extend: If an invalid switch is given to the command, attempt to run
+                a matching $-command in <object>[/<attribute>] instead of
+                giving an error. Allows extending built-in commands in
+                softcode without having to rewrite the core functionality.
+  @hook/extend/inline: As above, but the $-command won't be queued.
 
   In all cases, %# is the dbref of the object doing the command, and all
   hooks share the same set of q-registers. With /before and /after, 
@@ -2234,16 +2248,17 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   see existing hooks with @command or @hook/list.
 
   See 'help @hook2' for more information about @hook/override/inline,
-  and 'help @hook3' for examples.
+  'help @hook3' for information on @hook/extend, and 
+  'help @hook4' for examples.
 & @hook2
 
-  @hook/override/inline allows you to write softcoded commands which act
-  exactly like built-in commands - because they're run immediately, instead
-  of being queued, output from the command appears in the right order
-  relative to other commands in the action list. By default, commands hooked
-  with /inline have access to the q-registers of the calling action list, and
-  @breaks in the hooked command propagate to the calling action list,
-  allowing you to write your own control structures.
+  @hook/override/inline and @hook/extend/inline allow you to write softcoded 
+  commands which act exactly like built-in commands - because they're run 
+  immediately, instead of being queued, output from the command appears in 
+  the right order relative to other commands in the action list. By default, 
+  commands hooked with /inline have access to the q-registers of the calling 
+  action list, and @breaks in the hooked command propagate to the calling 
+  action list, allowing you to write your own control structures.
   
   For example, this adds a new command, @qbreak, which works like @break but
   stops command execution when %q0 contains a true value:
@@ -2262,8 +2277,24 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 
   @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
   
-  See 'help @hook4' for some examples of using @hook/inline.
+  See 'help @hook5' for some examples of using @hook/override/inline.
 & @hook3
+
+  @hook/extend can be used to add new features to a built-in command, via 
+  additional switches, without forcing you to also rewrite the existing
+  functionality like @hook/override would. For example:
+  
+  > &who`active #123=$who/active*: @nspemit %#=ufun(fun_who, lwho(%#),
+       switch(%0, ?*, stringsecs(%0)))
+  > &who`staff #123=$who/staff: @nspemit %#=ufun(fun_who, setunion(lwho(%#),
+       lsearch(all, elock, type^player&(flag^wizard|flag^royalty)))
+  > @hook/extend WHO=#123
+  
+  This leaves the built-in WHO command working as normal, but adds two new
+  switches for filtering the output in different ways.
+  
+  @hook/igswitch is an alias for @hook/extend, for Rhost compatability.
+& @hook4
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2282,8 +2313,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook4' for /inplace examples.
-& @hook4
+  See 'help @hook5' for /inplace examples.
+& @hook5
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance
@@ -2430,18 +2461,6 @@ See also: @remit, @nslemit
 
 See also: list(), @config, config(), functions(), @stats, @command,
     @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
-& @listmotd
-  @listmotd
-
-  This command lists the current MOTD (message of the day) for the MUSH.
-  If used by a wizard or admin, it will also include the wizard, full, and
-  down MOTDs to the user.
-  
-  There are two sets of MotDs: permanant ones defined in mush.cnf, and
-  temporary ones set in-game with @motd. Only the messages defined with
-  @motd are shown.
-
-See also: @motd, @list
 & @link
   @link[/preserve] <object>=[<dbref> | here | home | variable]
 
@@ -2689,29 +2708,59 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
     You say (Spanish), "The rain in Spain falls mainly on the plain"
   Bob sees (something like):
     Mike says (Spanish), "The rain ... ... falls ... ... ... ..."
-  Juan says:
+  Juan sees:
     Mike says (Spanish), "The rain in Spain falls mainly on the plain"
 
-& @motd
-  @motd[/<switch>] [<message>]
- 
-  The default for this command (and with the /connect) switch, is a
-  wizard only command that will set a temporary message that 
-  will be shown to players when they connect. This MOTD is cleared
-  every time the MUSH restarts.
-
-  Note that @motd by itself clears the message. Use @motd/list or
-  @listmotd to see the current messages.
+& @moniker
+  @moniker <object>[=<moniker>]
   
-  These messages are shown in addition to the permanent MotDs which are
-  defined in mush.cnf (motd_file, wizmotd_file, etc).
- 
-  Other switches:
-  /wizard : sets the message for wizards (like @wizmotd)
-  /down   : sets the logins-off message (like @rejectmotd)
-  /full   : sets the max-players-logged-in message
-  /list   : list the MOTDs (like @listmotd, can be used by anyone)
-See also: @listmotd
+  This command sets or clears the "moniker" for <object>. A moniker is an
+  ansi template, to show the object's name in color. Exactly where this
+  color is displayed depends on the "monikers" @config option; 
+  see 'help monikers' for more information.
+  
+  <moniker> can contain any text - it will be ignored, and only the ansi
+  colors will be taken into account. If <object>'s name is longer than
+  <moniker>, the last color will be used for the remaining letters.
+  
+  Examples:
+   Display your name in highligted red
+   > @moniker me=ansi(hr,-)
+   
+   Show the first letter in orange, and the rest with no color
+   > @moniker me=ansi(+orange,-)[ansi(n,-)]
+
+See also: MONIKERS, moniker(), ansi(), @nameformat, @nameaccent, MONIKER
+& @motd
+& @listmotd
+& @wizmotd
+& @rejectmotd
+  @motd[/<type>] <message>
+  @motd/clear[/<type>]
+  @motd/list
+
+  This command is used for manipulating the various Messages of the Day, or
+  MotD. The first form of this command sets the <type> MotD to <message>, 
+  the second form clears the <type> MotD, and the third form lists the current
+  value of each MotD. If no switch is given, <type> defaults to /connect.
+  
+  These messages are intended for temporary announcements; the given <message>
+  is shown in addition to the standard MotDs defined in the mush.cnf options.
+  MotDs set via this command are cleared when the MUSH restarts.
+  
+  Valid <type>..   shown with..   and is seen by...
+  /connect         motd_file      all players on connect
+  /wizard          wizmotd_file   connecting Wizards and Royalty
+  /full            full_file      players failing to connect because all
+                                  available connections are in use
+  /down            down_file      mortals failing to connect when logins are
+                                  disabled
+
+  You must have the Announce @power to change the Connect MotD; only wizards
+  and royalty can see or alter the others.
+
+  For historical reasons, @listmotd, @wizmotd and @rejectmotd are aliases for
+  @motd/list, @motd/wizard and @motd/full, respectively.
 & @name
   @name <object>=<new name>
   @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]
@@ -3226,15 +3275,6 @@ See also: QUOTAS, Quotas Power, No_Quota Power
  
   A site admin can achieve the same effect by sending the MUSH process
   a kill -1 or kill -HUP.
-& @rejectmotd
-  @rejectmotd <message>
-
-  This is a wizard only command that will set a short (non-longterm) message 
-  that will be shown to players that try to connect when logins are disabled. 
-  This is the "Down MOTD" in the @listmotd listing. The siteadmin can set a
-  more permanent message for this by editing the file "down.txt".
-  
-See also: @motd, @list, @listmotd
 & @remit
   @remit[/switches] <object>=<message>
 
@@ -3692,26 +3732,36 @@ See also: ANSI, COLOR, XTERM256, @sockset
     
 See also: say, pose, @emit, @chatformat, @pageformat
 & @mapsql
-  @mapsql[/notify][/colnames] <obj>/<attr>=<query>
+  @mapsql[/notify][/colnames][/spoof] <obj>/<attr>=<query>
 
-  This command issues an SQL query if the MUSH supports SQL and
-  can connect to an SQL server. You must be WIZARD or have the
-  Sql_Ok power to use @sql.
+  This command issues an SQL query if the MUSH supports SQL and can connect 
+  to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
 
-  For each row returned by the query, the action list in <obj>/<attr>
-  is queued, with row number passed as %0 and the columns passed as
-  %1-%9. Row numbers start at 1.
+  For each row returned by the query, the action list in <obj>/<attr> is 
+  queued, with row number passed as %0 and the columns passed as %1-%9 and
+  v(10) to v(29). Row numbers start at 1. The MUSH will also set named
+  arguments, with arg names matching the SQL field names. These are
+  accessible as r(<name>, arg).  
 
-  The /notify switch causes @mapsql to do an "@notify me" after all the
-  rows are processed.
+  The /notify switch causes the executor to do queue "@notify me" after all
+  the rows are processed. Note that this is the object running "@mapsql", and 
+  not <obj>.
 
-  The /colnames switch causes @mapsql to first queue the obj/attr with
-  row number 0 and %0-%9 being the column names.
+  The /colnames switch causes @mapsql to first queue the obj/attr with row 
+  number (%0) set to 0 and args %1 to v(29) being the column names.
+  
+  By default, the object using @mapsql will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor.
+  
+  Examples:
+    > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
+    > @mapsql me/desctable=DESCRIBE table_name
+    
+    > &showresult me=@pemit %#=%0. [r(name, arg)] ([r(age, arg)])
+    > @mapsql me/showresult=SELECT `name`, `age` FROM `people`
 
-  Example:
-  > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
-  > @mapsql me/desctable=DESCRIBE table_name
-See also: sql(), sqlescape(), mapsql(), @sql
+See also: @sql, sql(), sqlescape(), mapsql()
 & @sql
   @sql <query>
 
@@ -3908,12 +3958,33 @@ See also: switch wildcards, switch(), @break, stext(), slev()
 
 See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
 & @trigger
-  @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
+  @trigger[/spoof][/clearregs] <object>/<attribute>[=<arg0>, ..., <arg29>]
 
-  @trigger can be used to set off commands stored in an attribute on 
-  an object. It can also pass values to that attribute on the stack 
-  as %0 - %9.
+  @trigger queues an action list stored in an attribute. It can also pass 
+  values to that attribute on the stack, as %0 to %9 and r(0,args) to 
+  r(29,args).
+  
+  You must control <object>, or it must be Link_OK and you must have the
+  same owner, to trigger an attribute on it.
+  
+  The triggered attribute is queued - the new action list is not run
+  instantly. The action list is executed by <object>, not by the object
+  using @trigger.
+  
+  Continued in 'help @trigger2'.
+& @trigger2
 
+  By default, the object using @trigger will be the enactor (%#) for the
+  triggered attribute. However, if you control <object>, the /spoof switch
+  can be used to preserve the current enactor. This is useful for global 
+  commands with @a* verb attributes.
+  
+  Q-registers set at the time @trigger is run will be copied and made
+  available in the triggered attribute, unless the /clearregs switch is given.
+
+  See 'help @trigger3' for examples.
+See also: @include, ufun(), VERBS
+& @trigger3
   Examples:
     > &GREET me=POSE waves hi.
     > @trigger me/GREET
@@ -3924,16 +3995,16 @@ See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
     Cyclonus waves to Gears.
     You say, "Hi there, Arcee."
 
-  Continued in 'help @trigger2'.
-& @trigger2
-  @trigger is very useful for splitting up large commands and for making
-  them neater, but it does cause a time delay in execution, because the 
-  commands are put into the queue a second later. For very commonly-used
-  globals that you want to execute quickly, you should probably avoid using 
-  @trigger. However, in most cases, the time saved by cramming everything 
-  into one attribute is outweighed by the time spent debugging.
+    > &foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger %q0/AFOO
+    > &AFOO Bar=:is foo'd by %n!
+    > FOO BAR
+    Bar is foo'd by Globals!
 
-See also: @include, ufun()
+    > &foo Globals=$foo *: @assert setr(0,locate(%#,%0,*))=@nspemit %#=Who? ;
+          @nspemit %#=You foo [name(%q0)]. ; @trigger/spoof %q0/AFOO
+    > FOO BAR
+    Bar is foo'd by Cyclonus!
 & @ulock
 & @uunlock
   @ulock <object>[=<key>]
@@ -4013,16 +4084,15 @@ See also: version(), numversion()
   This command provides a way to do user-defined verbs with associated
   @attr/@oattr/@aattr groups. Invoking it does the following:
   
-  <actor> sees the contents of <victim>'s <what> attribute, or
-    <whatd> if <victim> doesn't have a <what>.
-  Everyone in the same room as <actor> sees the contents of
-    <victim>'s <owhat> attribute, with <actor>'s name prepended,
-    or <owhatd>, also with <actor>'s name prepended, if <victim>
-    doesn't have an <owhat>.
+  <actor> sees the contents of <victim>'s <what> attribute, or <whatd> if 
+    <victim> doesn't have a <what>.
+  Everyone in the same room as <actor> sees the contents of <victim>'s 
+    <owhat> attribute, with <actor>'s name prepended, or <owhatd>, also with
+    <actor>'s name prepended, if <victim> doesn't have an <owhat>.
   <victim> executes the contents of his <awhat> attribute.
   
-  By supplying up to ten <args>, you may pass those values on
-  the stack (i.e. %0, %1, %2, etc. up through %9).
+  By supplying up to 29 <args>, you may pass those values on the stack (i.e.
+  %0, %1, %2, etc. up through %9, and r(0,args) to r(29,args)).
   
   Continued in 'help @verb2'.
 & @verb2
@@ -4030,7 +4100,7 @@ See also: version(), numversion()
   must apply:
     1. The object which did the @verb is a wizard.
     2. The object which did the @verb controls both <actor> and <victim>
-    3. The thing which triggered the @verb (such as through a $command on
+    3. The thing which triggered the @verb (such as through a $-command on
        the object which did the @verb) must be <actor>, AND the object
        which did the @verb must be either privileged or control <victim>
        or <victim> must be VISUAL.
@@ -4228,13 +4298,6 @@ See also: UNFINDABLE, loc()
   are currently logged in. 
 
 See also: @wall, @rwall
-& @wizmotd
-  @wizmotd <message>
-
-  This is a wizard only command that will set a short temporary message
-  that will be shown to all wizards when they connect. It is listed in
-  @listmotd as the Wiz MOTD. A more permanent message can be set by
-  the siteadmin by editing the file "wiz.txt".
 & @zemit
   @zemit[/silent|/noisy] <zone>=<message>
 

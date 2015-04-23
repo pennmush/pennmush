@@ -9,16 +9,18 @@
  * BUILDDATE is correct
  * \endverbatim
  */
-#include "config.h"
+
 #include "copyrite.h"
-#include "conf.h"
-#include "externs.h"
 #include "version.h"
+
+#include "conf.h"
+#include "notify.h"
+#include "strutil.h"
+#include "svninfo.h"
+
 #ifndef WIN32
 #include "buildinf.h"
 #endif
-#include "confmagic.h"
-#include "svninfo.h"
 
 void do_version(dbref player);
 

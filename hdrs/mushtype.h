@@ -6,6 +6,7 @@
 
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
+
 #include "copyrite.h"
 #include <openssl/ssl.h>
 #ifdef HAVE_STDINT_H
@@ -83,9 +84,11 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_LET     0x100   /**< Used for let(): Only set qregs that already
                                  **< exist otherwise pass them up. */
 #define PE_REGS_QSTOP   0x200   /**< Q-reg get()s don't travel past this. */
-#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch */
+#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch, and (unless PE_REGS_ARGPASS is included) %0-%9 */
 #define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
 #define PE_REGS_ARGPASS 0x1000  /**< When used with NEWATTR, don't block args (%0-%9) */
+#define PE_REGS_LOCALIZED 0x2000 /**< This pe_regs created due to localize() or similar */
+#define PE_REGS_LOCALQ (PE_REGS_Q | PE_REGS_LOCALIZED)
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
@@ -169,17 +172,19 @@ void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 /* PE_REGS_REGEXP */
 struct real_pcre;
 struct _ansi_string;
-void pe_regs_set_rx_context(PE_REGS *regs,
+void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
                             struct real_pcre *re_code,
                             int *re_offsets,
                             int re_subpatterns, const char *re_from);
-void pe_regs_set_rx_context_ansi(PE_REGS *regs,
+void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
                                  struct real_pcre *re_code,
                                  int *re_offsets,
                                  int re_subpatterns,
                                  struct _ansi_string *re_from);
 const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Get_re(pi,k) pi_regs_get_rx(pi,k)
+
+void clear_allq(NEW_PE_INFO *pe_info);
 
 /* PE_REGS_SWITCH and PE_REGS_ITER
  *
@@ -217,9 +222,9 @@ int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 const char *pe_regs_intname(int num);
 void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
-const char *pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
+const char *pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name);
 int pi_regs_get_envc(NEW_PE_INFO *pe_info);
-#define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
+#define PE_Get_Env(pi,n) pi_regs_get_env(pi, pe_regs_intname(n))
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
 /** NEW_PE_INFO holds data about string evaluation via process_expression().  */
@@ -238,9 +243,9 @@ struct new_pe_info {
   char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
 
   char attrname[BUFFER_LEN];    /**< The attr currently being evaluated */
-
+#ifdef DEBUG
   char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
-
+#endif
   int refcount;                 /**< Number of times this pe_info is being used. > 1 when shared by sub-queues. free() when at 0 */
 };
 
@@ -279,10 +284,10 @@ typedef ATTR ALIST;
 /** A text block
  */
 struct text_block {
-  int nchars;                   /**< Number of characters in the block */
-  struct text_block *nxt;       /**< Pointer to next block in queue */
-  unsigned char *start;         /**< Start of text */
-  unsigned char *buf;           /**< Current position in text */
+  int nchars;              /**< Number of characters in the block */
+  struct text_block *nxt;  /**< Pointer to next block in queue */
+  char *start;             /**< Start of text */
+  char *buf;               /**< Current position in text */
 };
 /** A queue of text blocks.
  */
@@ -292,7 +297,7 @@ struct text_queue {
 };
 
 /* Descriptor foo */
-/** Using Pueblo, Smial, Mushclient, Simplemu, or some other
+/** Using Pueblo, Smial, Mushclient, or some other
  *  pueblo-style HTML aware client */
 #define CONN_HTML 0x1
 /** Using a client that understands telnet options */
@@ -315,13 +320,16 @@ struct text_queue {
 #define CONN_STRIPACCENTS 0x80
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
-
 /** Bits reserved for the color style */
 #define CONN_COLORSTYLE 0xF00
 #define CONN_PLAIN      0x100
 #define CONN_ANSI       0x200
 #define CONN_ANSICOLOR  0x300
 #define CONN_XTERM256   0x400
+#define CONN_RESERVED   0x800
+
+/** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
+#define CONN_SOCKET_ERROR 0x1000
 
 /** Maximum \@doing length */
 #define DOING_LEN 40
@@ -369,15 +377,15 @@ struct descriptor_data {
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */
-  unsigned char *output_prefix; /**< Text to show before output */
-  unsigned char *output_suffix; /**< Text to show after output */
+  char *output_prefix;  /**< Text to show before output */
+  char *output_suffix;  /**< Text to show after output */
   int output_size;              /**< Size of output left to send */
   struct text_queue output;     /**< Output text queue */
   struct text_queue input;      /**< Input text queue */
-  unsigned char *raw_input;     /**< Pointer to start of next raw input */
-  unsigned char *raw_input_at;  /**< Pointer to position in raw input */
-  time_t connected_at;    /**< Time of connection */
-  time_t last_time;       /**< Time of last activity */
+  char *raw_input;      /**< Pointer to start of next raw input */
+  char *raw_input_at;   /**< Pointer to position in raw input */
+  time_t connected_at;  /**< Time of connection */
+  time_t last_time;     /**< Time of last activity */
   int quota;            /**< Quota of commands allowed */
   int cmds;             /**< Number of commands sent */
   int hide;             /**< Hide status */

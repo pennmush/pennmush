@@ -307,25 +307,55 @@ typedef uint32_t mail_flag;
  * stored in a doubly-linked list sorted by message recipient.
  */
 struct mail {
-  struct mail *next;            /**< Pointer to next message */
-  struct mail *prev;            /**< Pointer to previous message */
-  dbref to;                     /**< Recipient dbref */
-  dbref from;                   /**< Sender's dbref */
-  time_t from_ctime;            /**< Sender's creation time */
-  chunk_reference_t msgid;      /**< Message text, compressed */
-  time_t time;                  /**< Message date/time */
-  unsigned char *subject;       /**< Message subject, compressed */
-  mail_flag read;               /**< Bitflags of message status */
+  struct mail *next;        /**< Pointer to next message */
+  struct mail *prev;        /**< Pointer to previous message */
+  dbref to;                 /**< Recipient dbref */
+  dbref from;               /**< Sender's dbref */
+  time_t from_ctime;        /**< Sender's creation time */
+  chunk_reference_t msgid;  /**< Message text, compressed */
+  time_t time;              /**< Message date/time */
+  char *subject;            /**< Message subject, compressed */
+  mail_flag read;           /**< Bitflags of message status */
 };
 
 typedef struct mail MAIL;
 
 
-extern const char *EOD;
+extern const char EOD[];
 
 #define SPOOF_NOSWITCH(executor, enactor) \
   ((Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor)
 #define SPOOF(executor, enactor, sw) \
   (SW_ISSET(sw, SWITCH_SPOOF) && (Can_Nspemit(executor) || controls(executor, enactor)) ? enactor : executor);
+
+/* Different times when a moniker (ansi'd name) may be shown.
+ * The MONIKER @config option is a bitwise or of these values.
+ */
+#define AN_CHAT      0x1        /* In the channel system */
+#define AN_SAY       0x2        /* Local speech; say, pose, semipose */
+#define AN_MOVE      0x4        /* Exit osucc/odrop, room oenter/oleave, etc */
+#define AN_LOOK      0x8        /* Contents lists, "look"ing at an object, etc */
+#define AN_UNPARSE   0x10       /* Other places unparse_name() is used */
+#define AN_WHO       0x20       /* WHO, DOING, SESSION, etc */
+#define AN_SYS       0x40       /* Other places the MUSH notify()s you with a name */
+
+#define AN_PLAYER    0x80       /* Only show monikers for players */
+#define AN_THING     0x100      /* Only show monikers for things */
+#define AN_ROOM      0x200      /* Only show monikers for rooms */
+#define AN_EXIT      0x400      /* only show monikers for exits */
+
+#define AN_ANNOUNCE  0x800      /* GAME: announcements to multiple players */
+
+#define AN_TYPES (AN_PLAYER | AN_THING | AN_ROOM | AN_EXIT)
+
+#define moniker_type(x) ((IsPlayer(x) && (options.monikers & AN_PLAYER)) || \
+  (IsThing(x) && (options.monikers & AN_THING)) || \
+  (IsRoom(x) && (options.monikers & AN_ROOM)) || \
+  (IsExit(x) && (options.monikers & AN_EXIT)) || \
+  has_flag_by_name(x, "MONIKER", NOTYPE))
+
+#define AnsiNameWrapper(x,accents,level,p,len) ((moniker_type(x) && (options.monikers & level)) ? ansi_name(x, accents, p, len) : (accents ? accented_name(x) : GC_STRDUP(Name(x))))
+#define AName(x,level,p) AnsiNameWrapper(x,0,level,p,0)
+#define AaName(x,level,p) AnsiNameWrapper(x,1,level,p,0)
 
 #endif                          /* __DBDEFS_H */

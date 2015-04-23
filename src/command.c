@@ -10,34 +10,34 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+#include "command.h"
 
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "dbdefs.h"
-#include "mushdb.h"
-#include "game.h"
-#include "match.h"
-#include "attrib.h"
-#include "extmail.h"
-#include "parse.h"
 #include "access.h"
-#include "version.h"
-#include "ptab.h"
-#include "htab.h"
-#include "strtree.h"
-#include "function.h"
-#include "command.h"
-#include "mymalloc.h"
-#include "flags.h"
-#include "log.h"
-#include "sort.h"
+#include "attrib.h"
 #include "cmds.h"
-#include "confmagic.h"
+#include "conf.h"
+#include "dbdefs.h"
+#include "externs.h"
+#include "extmail.h"
+#include "flags.h"
+#include "function.h"
+#include "game.h"
+#include "htab.h"
+#include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "parse.h"
+#include "ptab.h"
+#include "sort.h"
+#include "strtree.h"
+#include "strutil.h"
+#include "version.h"
 
 PTAB ptab_command;      /**< Prefix table for command names. */
 PTAB ptab_command_perms;        /**< Prefix table for command permissions */
@@ -66,10 +66,11 @@ static StrTree switch_names;
 int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
              NEW_PE_INFO *pe_info);
 
-int run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
-                      MQUE *from_queue);
+int run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
+                 MQUE *from_queue);
+void do_command_clone(dbref player, char *original, char *clone);
 
-const char *CommandLock = "CommandLock";
+static const char CommandLock[] = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
@@ -78,7 +79,7 @@ COMLIST commands[] = {
   {"@COMMAND",
    "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE RSNOPARSE",
    cmd_command,
-   CMD_T_PLAYER | CMD_T_EQSPLIT, 0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"@ALLHALT", NULL, cmd_allhalt, CMD_T_ANY, "WIZARD", "HALT"},
   {"@ALLQUOTA", "QUIET", cmd_allquota, CMD_T_ANY, "WIZARD", "QUOTA"},
@@ -88,7 +89,8 @@ COMLIST commands[] = {
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM", cmd_attribute,
+  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM DECOMPILE",
+   cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
   {"@BREAK", "INLINE QUEUED", cmd_break,
@@ -147,7 +149,7 @@ COMLIST commands[] = {
   {"@ELOCK", NULL, cmd_elock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-  {"@EMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
+  {"@EMIT", "NOEVAL SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
    0},
   {"@ENABLE", NULL, cmd_enable, CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
 
@@ -159,7 +161,8 @@ COMLIST commands[] = {
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
-  {"@FLAG", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG",
+  {"@FLAG",
+   "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG DECOMPILE",
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
@@ -172,10 +175,11 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
-  {"@HALT", "ALL NOEVAL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
+  {"@HALT", "ALL NOEVAL PID", cmd_halt,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
   {"@HOOK",
-   "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
    cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
@@ -187,7 +191,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
-  {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
+  {"@LISTMOTD", NULL, cmd_motd, CMD_T_ANY, 0, 0},
 
   {"@LIST",
    "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS ALL BUILTIN LOCAL",
@@ -207,10 +211,12 @@ COMLIST commands[] = {
   {"@MALIAS",
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@MAPSQL", "NOTIFY COLNAMES", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@MAPSQL", "NOTIFY COLNAMES SPOOF", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0,
+   0},
   {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT SILENT NOISY", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
-  {"@MOTD", "CONNECT LIST WIZARD DOWN FULL", cmd_motd,
+  {"@MONIKER", NULL, cmd_moniker, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@MOTD", "CONNECT LIST WIZARD DOWN FULL CLEAR", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@MVATTR", "CONVERT NOFLAGCOPY", cmd_mvattr,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
@@ -254,7 +260,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@POLL", "CLEAR", cmd_poll, CMD_T_ANY, 0, 0},
   {"@POOR", NULL, cmd_poor, CMD_T_ANY, 0, 0},
-  {"@POWER", "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE",
+  {"@POWER",
+   "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DECOMPILE",
    cmd_power, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@PROMPT", "SILENT NOISY NOEVAL SPOOF", cmd_prompt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -266,7 +273,7 @@ COMLIST commands[] = {
 
   {"@REMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@REJECTMOTD", NULL, cmd_rejectmotd, CMD_T_ANY, "WIZARD", 0},
+  {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
@@ -300,7 +307,7 @@ COMLIST commands[] = {
 
   {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@TRIGGER", NULL, cmd_trigger,
+  {"@TRIGGER", "CLEARREGS SPOOF", cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@ULOCK", NULL, cmd_ulock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
@@ -326,7 +333,7 @@ COMLIST commands[] = {
   {"@WHEREIS", NULL, cmd_whereis, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@WIPE", NULL, cmd_wipe, CMD_T_ANY, 0, 0},
   {"@WIZWALL", "NOEVAL EMIT", cmd_wizwall, CMD_T_ANY, "WIZARD", 0},
-  {"@WIZMOTD", NULL, cmd_wizmotd, CMD_T_ANY, "WIZARD", 0},
+  {"@WIZMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@ZEMIT", "NOISY SILENT", cmd_zemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
@@ -545,28 +552,20 @@ make_command(const char *name, int type,
         cmd->sw.mask = NULL;
     }
   }
-  cmd->hooks.before.obj = NOTHING;
-  cmd->hooks.before.attrname = NULL;
-  cmd->hooks.before.inplace = 0;
-  cmd->hooks.after.obj = NOTHING;
-  cmd->hooks.after.attrname = NULL;
-  cmd->hooks.after.inplace = 0;
-  cmd->hooks.ignore.obj = NOTHING;
-  cmd->hooks.ignore.attrname = NULL;
-  cmd->hooks.ignore.inplace = 0;
-  cmd->hooks.override.obj = NOTHING;
-  cmd->hooks.override.attrname = NULL;
-  cmd->hooks.override.inplace = 0;
+  cmd->hooks.before = NULL;
+  cmd->hooks.after = NULL;
+  cmd->hooks.ignore = NULL;
+  cmd->hooks.override = NULL;
+  cmd->hooks.extend = NULL;
   /* Restrict with no flags/powers, then manually parse flagstr and powerstr
      separately and add to restriction, to avoid issues with flags/powers with
      the same name (HALT flag and Halt power) */
-  restrict_command(NOTHING, cmd, ""); 
+  restrict_command(NOTHING, cmd, "");
   if ((flagstr && *flagstr) || (powerstr && *powerstr)) {
     char buff[BUFFER_LEN];
     char *bp, *one, list[BUFFER_LEN], *p;
     int first = 1;
     bp = buff;
-
     if (cmd->cmdlock != TRUE_BOOLEXP) {
       safe_chr('(', buff, &bp);
       safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
@@ -747,7 +746,7 @@ switchmask(const char *switches)
 void
 reserve_alias(const char *a)
 {
-  static char placeholder[2] = "x";
+  static const char placeholder[] = "x";
   hashadd(strupper(a), (void *) placeholder, &htab_reserved_aliases);
 }
 
@@ -1076,8 +1075,14 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
   static char exit_command[BUFFER_LEN], *ec;
+  /* TODO: Fix this as some commands actually modify lsp/rsp so we can't just
+   * make empty const, but if the value of empty were to ever change, things
+   * would probably break... */
+  static char *empty = "";
   char *lsa[MAX_ARG] = { NULL };
   char *rsa[MAX_ARG] = { NULL };
+  char *lsp = empty;
+  char *rsp = empty;
   char *ap, *swp;
   const char *attrib, *replacer;
   COMMAND_INFO *cmd;
@@ -1369,7 +1374,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
   }
 
-
   /* Finish setting up commandraw, for hooks and %u */
   p = command2;
   if (attrib) {
@@ -1390,6 +1394,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       }
     }
   } else {
+    lsp = ls;
     safe_str(ls, commandraw, &c2);
   }
   if (cmd->type & CMD_T_EQSPLIT) {
@@ -1408,6 +1413,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
           }
         }
       } else {
+        rsp = rs;
         safe_str(rs, commandraw, &c2);
       }
     }
@@ -1423,7 +1429,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     /* If we have a hook/ignore that returns false, we don't do the command */
     if (run_command
         (cmd, player, queue_entry->enactor, commandraw, sw, switch_err, string,
-         swp, ap, ls, lsa, rs, rsa, queue_entry)) {
+         swp, ap, lsp, lsa, rsp, rsa, queue_entry)) {
       retval = NULL;
     } else {
       retval = commandraw;
@@ -1432,7 +1438,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
 
   return retval;
 }
-
 
 /** Run a built-in command, with associated hooks
  * \param cmd the command to run
@@ -1449,6 +1454,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
  * \param rs The rightside arg, if the command has a single rhs arg
  * \param rsa Array of rhs args, if CMD_T_RS_ARGS
  * \param queue_entry The queue entry the command is being run in
+ * \retval 1 command has been successfully handled
+ * \retval 0 command hasn't been run (due to \@hook/ignore)
  */
 int
 run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
@@ -1475,32 +1482,36 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   if ((cmd->type & CMD_T_NOP) && ap && *ap) {
     /* Done this way because another call to tprintf during
-     * run_hook_override will blitz the string */
+     * run_cmd_hook will blitz the string */
     strcpy(nop_arg, tprintf("%s %s", cmd->name, ap));
   } else {
     nop_arg[0] = '\0';
   }
 
-  if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
+  if (!run_hook(executor, enactor, cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);
     return 0;
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, executor, cmd_evaled, queue_entry) &&
+  if (!run_cmd_hook(cmd->hooks.override, executor, cmd_evaled, queue_entry) &&
       !((cmd->type & CMD_T_NOP) && *ap &&
-        run_hook_override(cmd, executor, nop_arg, queue_entry))) {
+        run_cmd_hook(cmd->hooks.override, executor, nop_arg, queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
+      if (run_cmd_hook(cmd->hooks.extend, executor, cmd_evaled, queue_entry)) {
+        free_pe_info(pe_info);
+        return 1;
+      }
       notify(executor, switch_err);
       free_pe_info(pe_info);
       return 1;
     }
-    run_hook(executor, enactor, &cmd->hooks.before, pe_info);
+    run_hook(executor, enactor, cmd->hooks.before, pe_info);
     cmd->func(cmd, executor, enactor, enactor, sw, cmd_raw, swp, ap, ls, lsa,
               rs, rsa, queue_entry);
-    run_hook(executor, enactor, &cmd->hooks.after, pe_info);
+    run_hook(executor, enactor, cmd->hooks.after, pe_info);
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
@@ -1571,7 +1582,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   struct command_perms_t *c;
   char *message, *restriction;
   int clear;
-  FLAG *f;
+  const FLAG *f;
   char lockstr[BUFFER_LEN];
   char *tp;
   int make_boolexp = 0;
@@ -1723,7 +1734,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not part of the boolexp */
   *tp = '\0';
 
-  command->cmdlock = parse_boolexp(player, lockstr, CommandLock);
+  key = parse_boolexp(player, lockstr, CommandLock);
+  command->cmdlock = key;
 
   destroy_flag_bitmask("FLAG", flags);
   destroy_flag_bitmask("POWER", powers);
@@ -1776,11 +1788,11 @@ do_command_add(dbref player, char *name, int flags)
       notify(player, T("Bad command name."));
     } else {
       char *switches = NULL;
-      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) != (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
+      if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) !=
+          (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
         switches = "NOEVAL";
       command_add(GC_STRDUP(name),
-                  flags, NULL, 0, switches,
-                  cmd_unimplemented);
+                  flags, NULL, 0, switches, cmd_unimplemented);
       notify_format(player, T("Command %s added."), name);
     }
   } else {
@@ -1788,6 +1800,14 @@ do_command_add(dbref player, char *name, int flags)
   }
 }
 
+/** Clone a built-in command.
+ * \verbatim
+ * This code implements @command/clone, which clones a built-in command.
+ * \endverbatim
+ * \param player the enactor
+ * \param original name of command to clone
+ * \param clone name of new command
+ */
 void
 do_command_clone(dbref player, char *original, char *clone)
 {
@@ -1815,6 +1835,35 @@ do_command_clone(dbref player, char *original, char *clone)
 
 }
 
+/** Create a new \@hook.
+ * \verbatim
+ * Allocates memory for a new\@hook and initializes it,
+ *  possibly from an existing hook.
+ * \endverbatim
+ * \param from Hook to initialize from, or NULL
+ * \return pointer to a newly-allocated hook
+ */
+static struct hook_data *
+new_hook(struct hook_data *from)
+{
+  struct hook_data *newhook = GC_MALLOC(sizeof(struct hook_data));
+
+  if (from) {
+    newhook->obj = from->obj;
+    if (from->attrname)
+      newhook->attrname = GC_STRDUP(from->attrname);
+    else
+      newhook->attrname = NULL;
+    newhook->inplace = from->inplace;
+  } else {
+    newhook->obj = NOTHING;
+    newhook->attrname = NULL;
+    newhook->inplace = QUEUE_DEFAULT;
+  }
+
+  return newhook;
+}
+
 static COMMAND_INFO *
 clone_command(char *original, char *clone)
 {
@@ -1840,29 +1889,20 @@ clone_command(char *original, char *clone)
     free_boolexp(c2->cmdlock);
   c2->cmdlock = dup_bool(c1->cmdlock);
 
-  if (c1->hooks.before.obj)
-    c2->hooks.before.obj = c1->hooks.before.obj;
-  if (c1->hooks.before.attrname)
-    c2->hooks.before.attrname =
-      GC_STRDUP(c1->hooks.before.attrname);
+  if (c1->hooks.before)
+    c2->hooks.before = new_hook(c1->hooks.before);
 
-  if (c1->hooks.after.obj)
-    c2->hooks.after.obj = c1->hooks.after.obj;
-  if (c1->hooks.after.attrname)
-    c2->hooks.after.attrname =
-      GC_STRDUP(c1->hooks.after.attrname);
+  if (c1->hooks.after)
+    c2->hooks.after = new_hook(c1->hooks.after);
 
-  if (c1->hooks.ignore.obj)
-    c2->hooks.ignore.obj = c1->hooks.ignore.obj;
-  if (c1->hooks.ignore.attrname)
-    c2->hooks.ignore.attrname =
-      GC_STRDUP(c1->hooks.ignore.attrname);
+  if (c1->hooks.ignore)
+    c2->hooks.ignore = new_hook(c1->hooks.ignore);
 
-  if (c1->hooks.override.obj)
-    c2->hooks.override.obj = c1->hooks.override.obj;
-  if (c1->hooks.override.attrname)
-    c2->hooks.override.attrname =
-      GC_STRDUP(c1->hooks.override.attrname);
+  if (c1->hooks.override)
+    c2->hooks.override = new_hook(c1->hooks.override);
+
+  if (c1->hooks.extend)
+    c2->hooks.extend = new_hook(c1->hooks.extend);
 
   ptab_insert_one(&ptab_command, clone, c2);
   return command_find(clone);
@@ -1897,7 +1937,8 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
+    if (command->func != cmd_unimplemented
+        || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
       notify(player,
              T
              ("You can't delete built-in commands. @command/disable instead."));
@@ -2252,23 +2293,24 @@ run_hook(dbref executor, dbref enactor, struct hook_data *hook,
  * \return 1 if the hook has been run successfully, 0 otherwise
  */
 int
-run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
-                  MQUE *from_queue)
+run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
+             MQUE *from_queue)
 {
-  int queue_type = cmd->hooks.override.inplace;
+  int queue_type = QUEUE_DEFAULT;
 
-  if (!has_hook(&cmd->hooks.override))
+  if (!has_hook(hook))
     return 0;
+
+  queue_type = hook->inplace;
 
   if (from_queue && (from_queue->queue_type & QUEUE_DEBUG_PRIVS))
     queue_type |= QUEUE_DEBUG_PRIVS;
 
-  if (cmd->hooks.override.attrname) {
-    return one_comm_match(cmd->hooks.override.obj, executor,
-                          cmd->hooks.override.attrname, commandraw,
-                          from_queue, queue_type);
+  if (hook->attrname) {
+    return one_comm_match(hook->obj, executor,
+                          hook->attrname, commandraw, from_queue, queue_type);
   } else {
-    return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':',
+    return atr_comm_match(hook->obj, executor, '$', ':',
                           commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
                           queue_type);
   }
@@ -2282,7 +2324,7 @@ cnf_hook_command(char *command, char *opts)
   char *attrname, *p, *one;
   enum hook_type flag;
   COMMAND_INFO *cmd;
-  struct hook_data *h;
+  struct hook_data **h;
   int inplace = QUEUE_DEFAULT;
 
   if (!opts || !*opts)
@@ -2312,15 +2354,24 @@ cnf_hook_command(char *command, char *opts)
   } else if (string_prefix("ignore", one)) {
     flag = HOOK_IGNORE;
     h = &cmd->hooks.ignore;
+  } else if (string_prefix("extend/inplace", one)) {
+    flag = HOOK_EXTEND;
+    h = &cmd->hooks.extend;
+    inplace = QUEUE_INPLACE;
+  } else if (string_prefix("extend", one)) {
+    flag = HOOK_EXTEND;
+    h = &cmd->hooks.extend;
   } else {
     return 0;
   }
 
   if (!(one = split_token(&p, ' '))) {
     /* Clear existing hook */
-    h->obj = NOTHING;
-    if (h->attrname) {
-      h->attrname = NULL;
+    if (*h) {
+      if ((*h)->attrname) {
+        (*h)->attrname = NULL;
+      }
+      *h = NULL;
     }
     return 1;
   }
@@ -2348,13 +2399,17 @@ cnf_hook_command(char *command, char *opts)
   if (attrname && !good_atr_name(attrname))
     return 0;
 
-  h->obj = thing;
+  if (*h == NULL) {
+    *h = new_hook(NULL);
+  }
+
+  (*h)->obj = thing;
 
   if (attrname)
-    h->attrname = GC_STRDUP(attrname);
+    (*h)->attrname = GC_STRDUP(attrname);
   else
-    h->attrname = NULL;
-  h->inplace = inplace;
+    (*h)->attrname = NULL;
+  (*h)->inplace = inplace;
   return 1;
 
 }
@@ -2376,7 +2431,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
         enum hook_type flag, int queue_type)
 {
   COMMAND_INFO *cmd;
-  struct hook_data *h;
+  struct hook_data **h;
 
   cmd = command_find(command);
   if (!cmd) {
@@ -2396,6 +2451,8 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     h = &cmd->hooks.ignore;
   else if (flag == HOOK_OVERRIDE)
     h = &cmd->hooks.override;
+  else if (flag == HOOK_EXTEND)
+    h = &cmd->hooks.extend;
   else {
     notify(player, T("Unknown hook type"));
     return;
@@ -2403,11 +2460,15 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
 
   if (!obj && !attrname) {
     notify_format(player, T("Hook removed from %s."), cmd->name);
-    h->obj = NOTHING;
-    h->attrname = NULL;
-  } else if (!obj || !*obj
-             || (flag != HOOK_OVERRIDE && (!attrname || !*attrname))) {
-    if (flag == HOOK_OVERRIDE) {
+    if (*h) {
+      if ((*h)->attrname) {
+        (*h)->attrname = NULL;
+      }
+      *h = NULL;
+    }
+  } else if (!obj || !*obj || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND)
+                               && (!attrname || !*attrname))) {
+    if (flag == HOOK_OVERRIDE || flag == HOOK_EXTEND) {
       notify(player, T("You must give an object."));
     } else {
       notify(player, T("You must give both an object and attribute."));
@@ -2418,17 +2479,20 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
       notify(player, T("Invalid hook object."));
       return;
     }
-    h->obj = objdb;
+    if (!(*h))
+      *h = new_hook(NULL);
+    (*h)->obj = objdb;
+    if ((*h)->attrname)
+      (*h)->attrname = NULL;
     if (!attrname || !*attrname) {
-      h->attrname = NULL;
+      (*h)->attrname = NULL;
     } else {
-      h->attrname = strupper(attrname);
+      (*h)->attrname = strupper(attrname);
     }
-    h->inplace = queue_type;
-    notify_format(player, T("Hook set for %s"), cmd->name);
+    (*h)->inplace = queue_type;
+    notify_format(player, T("Hook set for %s."), cmd->name);
   }
 }
-
 
 /** List command hooks.
  * \verbatim
@@ -2454,8 +2518,8 @@ do_hook_list(dbref player, char *command, bool verbose)
 
     for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd;
          cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
-      if (has_hook(&cmd->hooks.ignore) || has_hook(&cmd->hooks.override)
-          || has_hook(&cmd->hooks.before) || has_hook(&cmd->hooks.after)) {
+      if (has_hook(cmd->hooks.ignore) || has_hook(cmd->hooks.override)
+          || has_hook(cmd->hooks.before) || has_hook(cmd->hooks.after)) {
         ptrs[count] = (char *) cmd->name;
         count++;
       }
@@ -2485,45 +2549,69 @@ do_hook_list(dbref player, char *command, bool verbose)
       return;
     }
     if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
-      char inplace[BUFFER_LEN], *bp;
-      bp = inplace;
-      if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.override.
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+      char override_inplace[BUFFER_LEN], *op;
+      char extend_inplace[BUFFER_LEN], *ep;
+      op = override_inplace;
+      ep = extend_inplace;
+      if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
+        if ((cmd->hooks.
+             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
-          safe_str("/inplace", inplace, &bp);
+          safe_str("/inplace", override_inplace, &op);
         else {
-          safe_str("/inline", inplace, &bp);
-          if (cmd->hooks.override.inplace & QUEUE_NO_BREAKS)
-            safe_str("/nobreak", inplace, &bp);
-          if (cmd->hooks.override.inplace & QUEUE_PRESERVE_QREG)
-            safe_str("/localize", inplace, &bp);
-          if (cmd->hooks.override.inplace & QUEUE_CLEAR_QREG)
-            safe_str("/clearregs", inplace, &bp);
+          safe_str("/inline", override_inplace, &op);
+          if (cmd->hooks.override->inplace & QUEUE_NO_BREAKS)
+            safe_str("/nobreak", override_inplace, &op);
+          if (cmd->hooks.override->inplace & QUEUE_PRESERVE_QREG)
+            safe_str("/localize", override_inplace, &op);
+          if (cmd->hooks.override->inplace & QUEUE_CLEAR_QREG)
+            safe_str("/clearregs", override_inplace, &op);
         }
       }
-      *bp = '\0';
+      *op = '\0';
 
-      if (GoodObject(cmd->hooks.before.obj)) {
+      if (cmd->hooks.extend && (cmd->hooks.extend->inplace & QUEUE_INPLACE)) {
+        if ((cmd->hooks.extend->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+            (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
+          safe_str("/inplace", extend_inplace, &ep);
+        else {
+          safe_str("/inline", extend_inplace, &ep);
+          if (cmd->hooks.extend->inplace & QUEUE_NO_BREAKS)
+            safe_str("/nobreak", extend_inplace, &ep);
+          if (cmd->hooks.extend->inplace & QUEUE_PRESERVE_QREG)
+            safe_str("/localize", extend_inplace, &ep);
+          if (cmd->hooks.extend->inplace & QUEUE_CLEAR_QREG)
+            safe_str("/clearregs", extend_inplace, &ep);
+        }
+      }
+      *ep = '\0';
+
+      if (cmd->hooks.before && GoodObject(cmd->hooks.before->obj)) {
         count++;
         notify_format(player, "@hook/before: #%d/%s",
-                      cmd->hooks.before.obj, cmd->hooks.before.attrname);
+                      cmd->hooks.before->obj, cmd->hooks.before->attrname);
       }
-      if (GoodObject(cmd->hooks.after.obj)) {
+      if (cmd->hooks.after && GoodObject(cmd->hooks.after->obj)) {
         count++;
-        notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after.obj,
-                      cmd->hooks.after.attrname);
+        notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after->obj,
+                      cmd->hooks.after->attrname);
       }
-      if (GoodObject(cmd->hooks.ignore.obj)) {
+      if (cmd->hooks.ignore && GoodObject(cmd->hooks.ignore->obj)) {
         count++;
         notify_format(player, "@hook/ignore: #%d/%s",
-                      cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
+                      cmd->hooks.ignore->obj, cmd->hooks.ignore->attrname);
       }
-      if (GoodObject(cmd->hooks.override.obj)) {
+      if (cmd->hooks.override && GoodObject(cmd->hooks.override->obj)) {
         count++;
         notify_format(player, "@hook/override%s: #%d/%s",
-                      inplace,
-                      cmd->hooks.override.obj, cmd->hooks.override.attrname);
+                      override_inplace,
+                      cmd->hooks.override->obj, cmd->hooks.override->attrname);
+      }
+      if (cmd->hooks.extend && GoodObject(cmd->hooks.extend->obj)) {
+        count++;
+        notify_format(player, "@hook/extend%s: #%d/%s",
+                      extend_inplace,
+                      cmd->hooks.extend->obj, cmd->hooks.extend->attrname);
       }
       if (!count && verbose)
         notify(player, T("That command has no hooks."));

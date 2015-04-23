@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-#include "config.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -24,22 +24,23 @@
 #endif
 #include <stdlib.h>
 
-#include "conf.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "mypcre.h"
-#include "match.h"
-#include "attrib.h"
 #include "ansi.h"
+#include "attrib.h"
 #include "command.h"
-#include "mymalloc.h"
-#include "flags.h"
+#include "conf.h"
 #include "dbdefs.h"
+#include "externs.h"
+#include "flags.h"
+#include "game.h"
 #include "lock.h"
 #include "log.h"
+#include "match.h"
+#include "memcheck.h"
+#include "mushdb.h"
+#include "mymalloc.h"
+#include "mypcre.h"
 #include "parse.h"
-#include "game.h"
-#include "confmagic.h"
+#include "strutil.h"
 
 static int chown_ok(dbref player, dbref thing, dbref newowner,
                     NEW_PE_INFO *pe_info);
@@ -56,7 +57,6 @@ static int wipe_helper(dbref player, dbref thing, dbref parent,
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
 extern int rhs_present;         /* from command.c */
-
 
 /** Rename something.
  * \verbatim
@@ -125,7 +125,7 @@ do_name(dbref player, const char *name, char *newname_)
   if (IsPlayer(thing)) {
     do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
            Name(thing), thing, newname);
-    if (Suspect(thing))
+    if (Suspect(thing) && strcmp(Name(thing), newname) != 0)
       flag_broadcast("WIZARD", 0,
                      T("Broadcast: Suspect %s changed name to %s."),
                      Name(thing), newname);
@@ -150,7 +150,7 @@ do_name(dbref player, const char *name, char *newname_)
   pe_regs_setenv_nocopy(pe_regs, 0, oldname);
   pe_regs_setenv_nocopy(pe_regs, 1, newname);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
-              pe_regs, NA_INTER_PRESENCE);
+              pe_regs, NA_INTER_PRESENCE, AN_SYS);
   pe_regs_free(pe_regs);
 }
 
@@ -503,7 +503,7 @@ af_helper(dbref player, dbref thing,
         ((af->clrf & AF_SAFE) &&
          Can_Write_Attr_Ignore_Safe(player, thing, AL_ATTR(atr))))) {
     notify_format(player, T("You cannot change that flag on %s/%s"),
-                  Name(thing), AL_NAME(atr));
+                  AName(thing, AN_SYS, NULL), AL_NAME(atr));
     return 0;
   }
 
@@ -511,14 +511,18 @@ af_helper(dbref player, dbref thing,
   if (af->clrf) {
     AL_FLAGS(atr) &= ~af->clrf;
     if (!AreQuiet(player, thing) && !AF_Quiet(atr))
-      notify_format(player, T("%s/%s - %s reset."), Name(thing), AL_NAME(atr),
-                    af->clrflags);
+      notify_format(player, T("%s/%s - %s reset."), AName(thing, AN_SYS, NULL),
+                    AL_NAME(atr), af->clrflags);
   }
   if (af->setf) {
     AL_FLAGS(atr) |= af->setf;
-    if (!AreQuiet(player, thing) && !AF_Quiet(atr))
-      notify_format(player, T("%s/%s - %s set."), Name(thing), AL_NAME(atr),
-                    af->setflags);
+    if (!AreQuiet(player, thing) && !AF_Quiet(atr)) {
+      notify_format(player, T("%s/%s - %s set."), AName(thing, AN_SYS, NULL),
+                    AL_NAME(atr), af->setflags);
+      if (af->setf & AF_REGEXP) {
+        unanchored_regexp_attr_check(thing, atr, player);
+      }
+    }
   }
 
   return 1;
@@ -531,7 +535,9 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
     return;
   if (!Can_Write_Attr(player, target, AL_ATTR(atr))) {
     notify_format(player,
-                  T("You cannot set attrib flags on %s/%s"), Name(target),
+                  T("You cannot set attrib flags on %s/%s"), AName(target,
+                                                                   AN_SYS,
+                                                                   NULL),
                   AL_NAME(atr));
     return;
   }
@@ -566,7 +572,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
 
   p = flag;
   /* Skip leading spaces */
-  while (*p && isspace((unsigned char) *p))
+  while (*p && isspace(*p))
     p++;
 
   af.setf = af.clrf = 0;
@@ -1050,7 +1056,7 @@ regedit_helper(dbref player, dbref thing,
       /* Process the replacement */
       r = gargs->to;
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context_ansi(pe_regs, gargs->re, offsets, subpatterns,
+      pe_regs_set_rx_context_ansi(pe_regs, 0, gargs->re, offsets, subpatterns,
                                   haystack);
       tbp = tbuf;
       if (process_expression(tbuf, &tbp, &r, player, player, player,
@@ -1210,7 +1216,7 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
-  study = pcre_study(re, 0, &errptr);
+  study = pcre_study(re, pcre_public_study_flags, &errptr);
   if (errptr != NULL) {
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
@@ -1234,63 +1240,82 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
                   args.skipped);
 
+#ifdef PCRE_CONFIG_JIT
   pcre_free_study(study);
-
+#endif
 }
 
 /** Trigger an attribute.
  * \verbatim
  * This implements @trigger obj/attribute = list-of-arguments.
  * \endverbatim
- * \param player the enactor.
+ * \param executor the executor running the command
+ * \param enactor the enactor.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
  * \param queue_entry parent queue entry
+ * \param flags Use the enactor, instead of the executor, as the enactor of the triggered attr?
  */
 void
-do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
+do_trigger(dbref executor, dbref enactor, char *object, char **argv,
+           MQUE *queue_entry, int flags)
 {
   dbref thing;
-  char *s;
-  char tbuf1[BUFFER_LEN];
+  char *attr;
   PE_REGS *pe_regs;
   int i;
+  dbref triggerer = executor;   /* triggerer is totally a word. Shut up. */
+  bool control;
+  int qflags = (queue_entry->queue_type & QUEUE_EVENT);
 
-  strcpy(tbuf1, object);
-  for (s = tbuf1; *s && (*s != '/'); s++) ;
-  if (!*s) {
-    notify(player, T("I need to know what attribute to trigger."));
+  if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
+    notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
-  *s++ = '\0';
+  *attr++ = '\0';
 
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, object, NOTYPE, MAT_EVERYTHING);
 
   if (thing == NOTHING)
     return;
 
-  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
-    notify(player, T("Permission denied."));
-    return;
-  }
-  if (God(thing) && !God(player)) {
-    notify(player, T("You can't trigger God!"));
+  control = controls(executor, thing);
+  if (!control && !(Owns(executor, thing) && LinkOk(thing))) {
+    notify(executor, T("Permission denied."));
     return;
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
+  if (flags & TRIGGER_SPOOF) {
+    if (!control) {
+      notify(executor, T("Permission denied."));
+      return;
+    }
+    triggerer = enactor;
+  }
+
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't trigger God!"));
+    return;
+  }
+
+  if ((flags & TRIGGER_CLEARREGS))
+    pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
+  else
+    pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
   for (i = 0; i < 10; i++) {
     if (argv[i + 1]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
     }
   }
-  pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
+  if (!(flags & TRIGGER_CLEARREGS))
+    pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs, 0)) {
-    if (!AreQuiet(player, thing))
-      notify_format(player, T("%s - Triggered."), Name(thing));
+  if (queue_attribute_base_priv
+      (thing, upcasestr(attr), triggerer, 0, pe_regs, qflags, executor)) {
+    if (!AreQuiet(executor, thing))
+      notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {
-    notify(player, T("No such attribute."));
+    notify(executor, T("No such attribute."));
   }
   pe_regs_free(pe_regs);
 }
@@ -1361,7 +1386,7 @@ do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
       return;
     } else {
       did_it(player, thing, "USE", T("Used."), "OUSE", NULL,
-             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING);
+             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING, AN_SYS);
     }
   }
 }

@@ -26,6 +26,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 #include <errno.h>
 
 #include "bufferq.h"
@@ -44,6 +47,7 @@ struct log_stream;
 static char *quick_unparse(dbref object);
 static void start_log(struct log_stream *);
 static void end_log(struct log_stream *);
+static void check_log_size(struct log_stream *);
 
 BUFFERQ *activity_bq = NULL;
 
@@ -207,6 +211,45 @@ end_all_logs(void)
 }
 
 
+/** Check to see if a log file is too big and if so,
+ * resize it.
+ */
+static void
+check_log_size(struct log_stream *log)
+{
+  off_t max_bytes;
+  struct stat logstats;
+  const char *policy;
+  
+  /* TO-DO: Changes from Kilo to Mega bytes when done testing. */
+  max_bytes = options.log_max_size * 1024;
+
+  if (fstat(fileno(log->fp), &logstats) < 0)
+    return; /* Unable to stat the file. Hmm. */
+
+  if (logstats.st_size <= max_bytes)
+    return;
+
+  policy = keystr_find(options.log_size_policy, log->name);
+
+  if (strcmp(policy, "wipe") == 0) {
+    end_log(log);
+    unlink(log->filename);
+    start_log(log);
+    lock_file(log->fp);
+    fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
+    fflush(log->fp);
+    unlock_file(log->fp);
+  } else if (strcmp(policy, "trim") == 0) {
+    /* Trim log file to 10% */
+  } else if (strcmp(policy, "rotate") == 0) {
+    /* Save current file as a copy, start new one. */
+  } else {
+    /* Unknown policy. Hmm. */
+  }
+}
+
+
 /** Log a raw message.
  * take a log type and format list and args, write to appropriate logfile.
  * log types are defined in log.h
@@ -245,6 +288,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
   queue_event(-1, log->event, "%s", tbuf1);
+  check_log_size(log);
 }
 
 /** Log a message, with useful information.
@@ -400,7 +444,6 @@ do_logwipe(dbref player, enum log_type logtype, char *str)
   }
   notify(player, T("Log wiped."));
 }
-
 
 /** Log a message to the activity log.
  * \param type message type (an LA_* constant)

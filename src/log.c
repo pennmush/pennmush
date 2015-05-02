@@ -211,8 +211,28 @@ end_all_logs(void)
 }
 
 
+static void
+format_log_name(char * restrict buff,
+		const char * restrict fname,
+		int n)
+{
+  char *bp = buff;
+  safe_format(buff, &bp, "%s.%d", fname, n);
+  if (options.compresssuff[0])
+    safe_str(options.compresssuff, buff, &bp);
+  *bp = '\0';
+}
+
 /** Check to see if a log file is too big and if so,
- * resize it.
+ * resize it according to policy. Policies are:
+ *
+ * wipe: Erase the log file completely and start over. Like
+ *  using @logwipe from in-game.
+ * trim: Deletes roughly the oldest 90% of the log.
+ * rotate: Archives the existing file, creates a new one. Copies are
+ * compressed per database settings, named things like
+ * command.log.1.gz (Most recent), command.log.2.gz (Next most), etc.
+ *
  */
 static void
 check_log_size(struct log_stream *log)
@@ -241,9 +261,42 @@ check_log_size(struct log_stream *log)
     fflush(log->fp);
     unlock_file(log->fp);
   } else if (strcmp(policy, "trim") == 0) {
-    /* Trim log file to 10% */
+    /* Trim log file to ~10% */
   } else if (strcmp(policy, "rotate") == 0) {
     /* Save current file as a copy, start new one. */
+    int n;
+    char namea[BUFFER_LEN], nameb[BUFFER_LEN];
+
+    for (n = 1; 1; n += 1) {
+      format_log_name(namea, log->filename, n);
+      if (stat(namea, &logstats) < 0)
+	break;
+    }
+    for (; n > 1; n -= 1) {
+      format_log_name(namea, log->filename, n - 1);
+      format_log_name(nameb, log->filename, n);
+      rename(namea, nameb);
+    }
+
+    format_log_name(namea, log->filename, 1);
+    
+    end_log(log);
+    if (options.compressprog[0]) {
+      /* This can be done better. */
+      char *np = nameb;
+      safe_format(nameb, &np, "%s < %s > %s", options.compressprog,
+		  log->filename, namea);
+      *np = '\0';
+      system(nameb);
+      unlink(log->filename);
+    } else {
+      rename(log->filename, namea);
+    }
+    start_log(log);
+    lock_file(log->fp);
+    fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
+    fflush(log->fp);
+    unlock_file(log->fp);
   } else {
     /* Unknown policy. Hmm. */
   }

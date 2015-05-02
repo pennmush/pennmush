@@ -1700,3 +1700,47 @@ safe_chr(char c, char *buff, char **bp)
     return 0;
   }
 }
+
+/* keystr format:
+ * 
+ * Either a single word, which is returned for any keyword 
+ * Or one or more key:value pairs, in which case the matching value
+ *  is returned, or deflt if none are found.
+ */
+
+extern const unsigned char *tables;
+
+const char *
+keystr_find_full(const char *restrict map,
+		 const char *restrict key,
+		 const char *restrict deflt,
+		 char delim)
+{
+  pcre *re;
+  int erroffset;
+  const char *errptr;
+  int offsets[33];
+  int matches;
+  static char tbuf[BUFFER_LEN];
+  char pattern[BUFFER_LEN], *pp;
+  
+  if (!strchr(map, ' '))
+    return map;
+
+  pp = pattern;
+  safe_format(pattern, &pp, "\\b\\Q%s%c\\E(\\w+)\\b", key, delim);
+  *pp = '\0';
+  
+  if (!(re = pcre_compile(pattern, 0, &errptr, &erroffset, tables)))
+    return deflt;
+  
+  matches = pcre_exec(re, NULL, map, strlen(map), 0, 0, offsets, 33);
+  pcre_free(re);
+  
+  if (matches == 2) {
+    pcre_copy_substring(map, offsets, matches, 1, tbuf, BUFFER_LEN);
+    return tbuf;
+  } else {
+    return deflt;
+  }
+}

@@ -527,8 +527,8 @@ PENNCONF conftable[] = {
 #endif
   {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"}
   ,
-  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, "log"},
-  {"log_size_policy", cf_str, options.log_size_policy, sizeof options.log_size_policy, 0, "log"},
+  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL},
+  {"log_size_policy", cf_str, options.log_size_policy, sizeof options.log_size_policy, 0, NULL},
   
   {NULL, NULL, NULL, 0, 0, NULL}
 };

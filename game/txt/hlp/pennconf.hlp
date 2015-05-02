@@ -225,9 +225,6 @@ Continued in help @config limits4
 
   log_commands=<boolean>: Are all commands logged?
   log_forces=<boolean>: Are @forces of wizard objects logged?
-  log_max_size=<number>: How big can a log file grow in megabytes?
-  log_size_policy=<string>: What to do when a log file exceeds the
-    maximum size. Choices are wipe, trim and rotate.
 & @config net
  Networking and connection-related options.
  

@@ -1703,9 +1703,10 @@ safe_chr(char c, char *buff, char **bp)
 
 /* keystr format:
  * 
- * Either a single word, which is returned for any keyword 
- * Or one or more key:value pairs, in which case the matching value
- *  is returned, or deflt if none are found.
+ * Either a single word, which is returned for any keyword Or one or
+ * more key:value pairs, in which case the matching value is
+ * returned. If none are found, looks for a key named default.  If
+ * that's missing too, returns the deflt argument.
  */
 
 extern const unsigned char *tables;
@@ -1741,7 +1742,8 @@ keystr_find_full(const char *restrict map,
   if (matches == 2) {
     pcre_copy_substring(map, offsets, matches, 1, tbuf, BUFFER_LEN);
     return tbuf;
-  } else {
+  } else if (strcmp(key, "default") == 0) 
     return deflt;
-  }
+  else
+    return keystr_find_full(map, "default", deflt, delim);
 }

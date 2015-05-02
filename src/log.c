@@ -185,12 +185,12 @@ end_log(struct log_stream *log)
     lock_file(fp);
     fprintf(fp, "END OF LOG.\n");
     fflush(fp);
-    for (n = 0; n < NLOGS; n++)
-      if (log->fp == fp)
-        log->fp = NULL;
+    for (n = 0; n < NLOGS; n++) {
+      if (logs[n].fp == fp)
+        logs[n].fp = NULL;
+    }
     fclose(fp);                 /* Implicit lock removal */
     free_bufferq(log->buffer);
-    log->fp = NULL;
     log->buffer = NULL;
     hashdelete(strupper(log->filename), &htab_logfiles);
   }

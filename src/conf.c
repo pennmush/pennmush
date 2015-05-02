@@ -509,7 +509,7 @@ PENNCONF conftable[] = {
    "files"}
   ,
   {"chunk_cache_memory", cf_int, &options.chunk_cache_memory,
-   1000000000, 65510 * 2, "files"}
+   1000000000, 0, "files"}
   ,
   {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0,
    "limits"}
@@ -527,7 +527,9 @@ PENNCONF conftable[] = {
 #endif
   {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"}
   ,
-
+  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, "log"},
+  {"log_size_policy", cf_str, options.log_size_policy, sizeof options.log_size_policy, 0, "log"},
+  
   {NULL, NULL, NULL, 0, 0, NULL}
 };
 
@@ -1467,6 +1469,8 @@ conf_default_set(void)
   strcpy(options.sql_username, "");
   strcpy(options.sql_password, "");
   strcpy(options.sql_host, "127.0.0.1");
+  options.log_max_size = 20;
+  strcpy(options.log_size_policy, "trim");
 }
 
 #undef set_string_option

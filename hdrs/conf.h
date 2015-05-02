@@ -298,6 +298,8 @@ struct options_table {
   char sql_username[256]; /**< Username for sql */
   char sql_password[256]; /**< Password for sql */
   char sql_database[256]; /**< Database for sql */
+  int log_max_size; /**< Maximum size of log file */
+  char log_size_policy[256]; /**< What to do when a log file is big. */
 };
 
 typedef struct mssp MSSP;

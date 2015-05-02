@@ -1731,7 +1731,8 @@ keystr_find_full(const char *restrict map,
   safe_format(pattern, &pp, "\\b\\Q%s%c\\E(\\w+)\\b", key, delim);
   *pp = '\0';
   
-  if (!(re = pcre_compile(pattern, 0, &errptr, &erroffset, tables)))
+  if (!(re = pcre_compile(pattern, PCRE_CASELESS, &errptr,
+			  &erroffset, tables)))
     return deflt;
   
   matches = pcre_exec(re, NULL, map, strlen(map), 0, 0, offsets, 33);

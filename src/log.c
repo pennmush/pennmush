@@ -223,6 +223,51 @@ format_log_name(char * restrict buff,
   *bp = '\0';
 }
 
+static void
+resize_log_wipe(struct log_stream *log)
+{
+  end_log(log);
+  unlink(log->filename);
+  start_log(log);
+}
+
+static void
+resize_log_rotate(struct log_stream *log)
+{
+  /* Save current file as a copy, start new one. */
+  int n;
+  char namea[BUFFER_LEN], nameb[BUFFER_LEN];
+  struct stat s;
+    
+  for (n = 1; 1; n += 1) {
+    format_log_name(namea, log->filename, n);
+    if (stat(namea, &s) < 0)
+      break;
+  }
+  for (; n > 1; n -= 1) {
+    format_log_name(namea, log->filename, n - 1);
+    format_log_name(nameb, log->filename, n);
+    rename(namea, nameb);
+  }
+
+  format_log_name(namea, log->filename, 1);
+    
+  end_log(log);
+
+  if (options.compressprog[0]) {
+    /* This can be done better. */
+    char *np = nameb;
+    safe_format(nameb, &np, "%s < %s > %s", options.compressprog,
+		log->filename, namea);
+    *np = '\0';
+    system(nameb);
+    unlink(log->filename);
+  } else {
+    rename(log->filename, namea);
+  }
+  start_log(log);
+}
+
 /** Check to see if a log file is too big and if so,
  * resize it according to policy. Policies are:
  *
@@ -233,6 +278,8 @@ format_log_name(char * restrict buff,
  * compressed per database settings, named things like
  * command.log.1.gz (Most recent), command.log.2.gz (Next most), etc.
  *
+ *
+ * \param log the log to check.
  */
 static void
 check_log_size(struct log_stream *log)
@@ -253,9 +300,7 @@ check_log_size(struct log_stream *log)
   policy = keystr_find(options.log_size_policy, log->name);
 
   if (strcmp(policy, "wipe") == 0) {
-    end_log(log);
-    unlink(log->filename);
-    start_log(log);
+    resize_log_wipe(log);
     lock_file(log->fp);
     fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);
@@ -263,36 +308,6 @@ check_log_size(struct log_stream *log)
   } else if (strcmp(policy, "trim") == 0) {
     /* Trim log file to ~10% */
   } else if (strcmp(policy, "rotate") == 0) {
-    /* Save current file as a copy, start new one. */
-    int n;
-    char namea[BUFFER_LEN], nameb[BUFFER_LEN];
-
-    for (n = 1; 1; n += 1) {
-      format_log_name(namea, log->filename, n);
-      if (stat(namea, &logstats) < 0)
-	break;
-    }
-    for (; n > 1; n -= 1) {
-      format_log_name(namea, log->filename, n - 1);
-      format_log_name(nameb, log->filename, n);
-      rename(namea, nameb);
-    }
-
-    format_log_name(namea, log->filename, 1);
-    
-    end_log(log);
-    if (options.compressprog[0]) {
-      /* This can be done better. */
-      char *np = nameb;
-      safe_format(nameb, &np, "%s < %s > %s", options.compressprog,
-		  log->filename, namea);
-      *np = '\0';
-      system(nameb);
-      unlink(log->filename);
-    } else {
-      rename(log->filename, namea);
-    }
-    start_log(log);
     lock_file(log->fp);
     fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);
@@ -486,9 +501,7 @@ do_logwipe(dbref player, enum log_type logtype, char *str)
   case LT_CMD:
   case LT_TRACE:
   case LT_WIZ:
-    end_log(log);
-    unlink(log->filename);
-    start_log(log);
+    resize_log_wipe(log);
     do_log(LT_ERR, player, NOTHING, "%s log wiped.", log->name);
     break;
   default:

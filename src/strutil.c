@@ -1725,7 +1725,7 @@ keystr_find_full(const char *restrict map,
   static char tbuf[BUFFER_LEN];
   char pattern[BUFFER_LEN], *pp;
   
-  if (!strchr(map, ' '))
+  if (!strchr(map, ' ') && !strchr(map, delim))
     return map;
 
   pp = pattern;

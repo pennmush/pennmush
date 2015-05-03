@@ -226,9 +226,15 @@ format_log_name(char * restrict buff,
 static void
 resize_log_wipe(struct log_stream *log)
 {
-  end_log(log);
-  unlink(log->filename);
-  start_log(log);
+  fseek(log->fp, 0, SEEK_SET);
+  ftruncate(fileno(log->fp), 0);
+}
+
+static void
+resize_log_trim(struct log_stream *log)
+{
+  /* Trim log file to ~10% */
+  
 }
 
 static void
@@ -306,7 +312,11 @@ check_log_size(struct log_stream *log)
     fflush(log->fp);
     unlock_file(log->fp);
   } else if (strcmp(policy, "trim") == 0) {
-    /* Trim log file to ~10% */
+    resize_log_trim(log);
+    lock_file(log->fp);
+    fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
+    fflush(log->fp);
+    unlock_file(log->fp);    
   } else if (strcmp(policy, "rotate") == 0) {
     lock_file(log->fp);
     fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);

@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #endif
 #include <errno.h>
+#include <math.h>
 
 #include "bufferq.h"
 #include "conf.h"
@@ -46,7 +47,7 @@ struct log_stream;
 
 static char *quick_unparse(dbref object);
 static void start_log(struct log_stream *);
-static void end_log(struct log_stream *);
+static void end_log(struct log_stream *, bool);
 static void check_log_size(struct log_stream *);
 
 BUFFERQ *activity_bq = NULL;
@@ -129,7 +130,7 @@ start_log(struct log_stream *log)
         log->fp = stderr;
       } else {
         hashadd(strupper(log->filename), log->fp, &htab_logfiles);
-        fprintf(log->fp, "START OF LOG.\n");
+        fputs("START OF LOG.\n", log->fp);
         fflush(log->fp);
       }
     }
@@ -177,7 +178,7 @@ redirect_streams(void)
 
 
 static void
-end_log(struct log_stream *log)
+  end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
 
@@ -187,15 +188,17 @@ end_log(struct log_stream *log)
     int n;
 
     lock_file(fp);
-    fprintf(fp, "END OF LOG.\n");
+    fputs("END OF LOG.\n", fp);
     fflush(fp);
     for (n = 0; n < NLOGS; n++) {
       if (logs[n].fp == fp)
         logs[n].fp = NULL;
     }
     fclose(fp);                 /* Implicit lock removal */
-    free_bufferq(log->buffer);
-    log->buffer = NULL;
+    if (!keep_buffer) {
+      free_bufferq(log->buffer);
+      log->buffer = NULL;
+    }
     hashdelete(strupper(log->filename), &htab_logfiles);
   }
 }
@@ -207,7 +210,7 @@ end_all_logs(void)
 {
   int n;
   for (n = 0; n < NLOGS; n++)
-    end_log(logs + n);
+    end_log(logs + n, 0);
 }
 
 
@@ -234,7 +237,31 @@ static void
 resize_log_trim(struct log_stream *log)
 {
   /* Trim log file to ~10% */
+  struct stat s;
+  long trim_at;
+  int c;
+  FILE *logcopy;
+  char buff[BUFFER_LEN];
+  size_t len;
   
+  fstat(fileno(log->fp), &s);
+
+  trim_at = floor(s.st_size * 0.9);
+
+  fseek(log->fp, trim_at, SEEK_SET);
+
+  while ((c = fgetc(log->fp)) != EOF)
+    if (c == '\n')
+      break;
+
+  logcopy = fopen("templog", "w");
+  while ((len = fread(buff, 1, BUFFER_LEN, log->fp)))
+    fwrite(buff, 1, BUFFER_LEN, logcopy);
+  fclose(logcopy);
+
+  end_log(log, 1);
+  rename_file("templog", log->filename);
+  start_log(log);  
 }
 
 static void
@@ -253,12 +280,12 @@ resize_log_rotate(struct log_stream *log)
   for (; n > 1; n -= 1) {
     format_log_name(namea, log->filename, n - 1);
     format_log_name(nameb, log->filename, n);
-    rename(namea, nameb);
+    rename_file(namea, nameb);
   }
 
   format_log_name(namea, log->filename, 1);
     
-  end_log(log);
+  end_log(log, 1);
 
   if (options.compressprog[0]) {
     /* This can be done better. */
@@ -269,7 +296,7 @@ resize_log_rotate(struct log_stream *log)
     system(nameb);
     unlink(log->filename);
   } else {
-    rename(log->filename, namea);
+    rename_file(log->filename, namea);
   }
   start_log(log);
 }
@@ -318,6 +345,7 @@ check_log_size(struct log_stream *log)
     fflush(log->fp);
     unlock_file(log->fp);    
   } else if (strcmp(policy, "rotate") == 0) {
+    resize_log_rotate(log);
     lock_file(log->fp);
     fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);

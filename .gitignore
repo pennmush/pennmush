@@ -1,5 +1,6 @@
 *.o
 *~
+*.bak
 Makefile
 config.h
 config.log
@@ -33,6 +34,7 @@ src/local.c
 src/netmud
 src/netmud~
 src/ssl_slave
+src/TAGS
 test/alltests.sh
 test/testgame
 third_party

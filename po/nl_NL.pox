@@ -4557,16 +4557,6 @@ msgstr "SQL: %d rijen beinvloed."
 msgid "SQL: Error: %s"
 msgstr "SQL: Fout: %s"
 
-#: version.c:50
-#, c-format
-msgid "SVN revision: %d [%s]"
-msgstr "SVN revisie: %d [%s]"
-
-#: version.c:52 version.c:54
-#, c-format
-msgid "SVN revision: %d"
-msgstr "SVN revisie: %d"
-
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."

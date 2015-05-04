@@ -183,9 +183,6 @@ totallyclean: distclean
 	(cd src; rm -rf *.rej)
 	-rm -f Makefile
 
-commit: indent
-	@svn commit
-
 patch: versions
 	@make-patch-header
 	@make diffs

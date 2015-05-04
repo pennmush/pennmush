@@ -35,7 +35,7 @@ the running server).
 
 Files with messages for translation are included with the source
 code in pennmush/po; they have the .pox extension. You can get
-the very latest versions of these files from the PennMUSH svn repository.
+the very latest versions of these files from the PennMUSH Git repository.
 
 These files have to be compiled to an efficient internal form before
 starting up the mush.  This means you should set your LANG environment

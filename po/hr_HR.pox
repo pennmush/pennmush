@@ -4625,16 +4625,6 @@ msgstr "SQL: Zahvaæeno je %d redaka."
 msgid "SQL: Error: %s"
 msgstr "SQL: Gre¹ka: %s"
 
-#: version.c:50
-#, c-format
-msgid "SVN revision: %d [%s]"
-msgstr "SVN revizija: %d [%s]"
-
-#: version.c:52 version.c:54
-#, c-format
-msgid "SVN revision: %d"
-msgstr "SVN revizija: %d"
-
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."

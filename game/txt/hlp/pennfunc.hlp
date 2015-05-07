@@ -2085,7 +2085,7 @@ See also: gt(), lt(), lte(), eq(), neq(), lmath()
   All four functions will also work with one argument in the form of
   <object>/<attribute>.
 
-See also: visible()
+See also: visible(), lattr()
 & HASFLAG()
   hasflag(<object>[/<attrib>], <flag>)
  

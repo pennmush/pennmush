@@ -17,9 +17,15 @@ TXT=help.txt news.txt
 # below.)
 INDEX_FLAGS=
 
+CHANGES_FILES=$(wildcard ../../CHANGES*)
+HELP_CHANGES_FILES=$(patsubst ../../CHANGES.%,hlp/pennv%.hlp,$(CHANGES_FILES))
+
 all: $(TXT)
 
-help.txt: hlp/*.hlp hlp compose.sh
+$(HELP_CHANGES_FILES): hlp/pennv%.hlp: ../../CHANGES.%
+	../../utils/mkvershlp.pl hlp ../../CHANGES*
+
+help.txt: hlp/*.hlp hlp compose.sh $(HELP_CHANGES_FILES)
 	sh ./compose.sh hlp
 	mv hlp.txt help.txt
 
@@ -36,5 +42,4 @@ index.txt: index/*.index index compose.sh
 clean:
 	-rm -f $(IDX) $(TXT)
 	-rm -f hlp/*.orig hlp/*.rej hlp/\#* hlp/*~
-
-
+	-rm -f hlp/pennv*.hlp

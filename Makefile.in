@@ -105,10 +105,6 @@ ssl_slave:
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)")
 
-versions: CHANGES*
-	-@rm -rf CHANGES*~ CHANGES*bak
-	@utils/mkvershlp.pl game/txt/hlp CHANGES*
-
 safety:
 	$(CP) src/*.c /var/pennmush-bak/src
 	$(CP) hdrs/*.h /var/pennmush-bak/hdrs
@@ -189,7 +185,7 @@ totallyclean: distclean
 	(cd src; rm -rf *.rej)
 	-rm -f Makefile
 
-patch: versions
+patch:
 	@make-patch-header
 	@make diffs
 

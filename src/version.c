@@ -16,6 +16,7 @@
 #include "conf.h"
 #include "notify.h"
 #include "strutil.h"
+#include "gitinfo.h"
 
 #ifndef WIN32
 #include "buildinf.h"
@@ -36,6 +37,9 @@ do_version(dbref player)
                 show_time(globals.start_time, 0));
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
+#ifdef GIT_REVISION
+  notify_format(player, T("Git revision: %s"), GIT_REVISION);
+#endif
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);
 #else

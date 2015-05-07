@@ -29,3 +29,4 @@ Hardcode:
    release being 2003. [SW]
  * Remove ancient @channel foo=on behavior (issue #870). Reported by
    Paige. [TK]
+ * Add git revision, if present to @version & version(). [TK]

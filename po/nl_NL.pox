@@ -4557,15 +4557,10 @@ msgstr "SQL: %d rijen beinvloed."
 msgid "SQL: Error: %s"
 msgstr "SQL: Fout: %s"
 
-#: version.c:50
+#: version.c:41
 #, c-format
-msgid "SVN revision: %d [%s]"
-msgstr "SVN revisie: %d [%s]"
-
-#: version.c:52 version.c:54
-#, c-format
-msgid "SVN revision: %d"
-msgstr "SVN revisie: %d"
+msgid "Git revision: %s"
+msgstr "Git revisie: %s"
 
 #: src/wiz.c:1471
 #, c-format

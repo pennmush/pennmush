@@ -1016,6 +1016,7 @@ funmisc.o: ../hdrs/memcheck.h
 funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/parse.h
 funmisc.o: ../hdrs/strutil.h
+funmisc.o: ../hdrs/gitinfo.h
 funmisc.o: ../hdrs/version.h
 funstr.o: ../config.h
 funstr.o: ../confmagic.h
@@ -2030,6 +2031,7 @@ version.o: ../hdrs/notify.h
 version.o: ../hdrs/strutil.h
 version.o: ../hdrs/compile.h
 version.o: ../hdrs/buildinf.h
+version.o: ../hdrs/gitinfo.h
 wait.o: ../config.h
 wait.o: ../confmagic.h
 wait.o: ../options.h

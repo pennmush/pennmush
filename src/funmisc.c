@@ -32,6 +32,7 @@
 #include "parse.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "gitinfo.h"
 #include "version.h"
 
 #ifdef WIN32
@@ -1133,6 +1134,9 @@ FUNCTION(fun_version)
 {
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
               VERSION, PATCHLEVEL, PATCHDATE);
+  #ifdef GIT_REVISION
+    safe_format(buff, bp, " (rev %s)", GIT_REVISION);
+  #endif
 }
 
 /* ARGSUSED */

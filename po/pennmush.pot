@@ -6494,14 +6494,9 @@ msgstr ""
 msgid "PennMUSH version %s patchlevel %s %s"
 msgstr ""
 
-#: version.c:53
+#: version.c:41
 #, c-format
-msgid "SVN revision: %d [%s]"
-msgstr ""
-
-#: version.c:55 version.c:57
-#, c-format
-msgid "SVN revision: %d"
+msgid "Git revision: %s"
 msgstr ""
 
 #: version.c:64 version.c:66

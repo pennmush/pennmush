@@ -86,7 +86,7 @@ B. Installation from source
     well (openssl-dev or some such name).
 2. Run ./configure with any desired options (See ./configure --help or
    read below)
-3. create options.h, or make update
+3. make update
 4. make install
 5. possibly make customize
 6. Read game/README and follow those instructions
@@ -120,21 +120,10 @@ B. Installation from source
        with detecting a SQL server.
 	
 
-3. EITHER:
-
-Type 'make update', and answer all the questions about which MUSH
-options you want.
-
-OR
-
-Copy options.h.dist to options.h. Note that these files stay in the
-pennmush directory.
-
-Edit the file. It's liberally commented. 
-
-Also, cp game/mushcnf.dst to game/mush.cnf and edit. 
-
-You should not need to change any of the other header files.
+3. Run "make update", and answer all the questions about which MUSH
+options you want. This will also create several config files in game/
+which you may wish to edit, particularly game/mush.cnf, and will create
+the game/restart script that's used to start your MUSH.
 
 4. Do a "make install". This will build all the necessary files, and
 set up some symbolic links for the restart script.  You will probably

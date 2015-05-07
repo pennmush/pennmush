@@ -105,7 +105,7 @@ ssl_slave:
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)")
 
-versions: CHANGES* hdrs/gitinfo.h
+versions: CHANGES*
 	-@rm -rf CHANGES*~ CHANGES*bak
 	@utils/mkvershlp.pl game/txt/hlp CHANGES*
 

@@ -50,7 +50,7 @@ config.h: configure
 	@exit 1
 
 options.h: options.h.dist
-	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the game/*.cnf files."
+	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the game/*.cnf files. This will also create game/restart."
 	@exit 1
 
 autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h
@@ -162,7 +162,10 @@ $(GAMEDIR)/mush.cnf: game/mushcnf.dst
 	-@@TOUCH@ game/mushcnf.dst
 	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/mush.cnf game/mushcnf.dst
 
-update: update-hdr update-conf
+$(GAMEDIR)/restart: game/restart.dst
+	-@if [ ! -f $(GAMEDIR)/restart ]; then $(CP) game/restart.dst $(GAMEDIR)/restart; fi
+
+update: update-hdr update-conf game/restart
 
 update-hdr:
 	-@@TOUCH@ options.h.dist
@@ -179,7 +182,7 @@ clean:
 distclean: 
 	(cd hdrs; rm -f *.orig *~ \#* *.rej *.bak funs.h cmds.h gitinfo.h buildinf.h)
 	(cd utils; rm -f *.orig *~ \#* *.rej *.bak mkcmds.sh *.o)
-	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf)
+	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf restart)
 	(cd src; make distclean; rm -f Makefile)
 	(cd game/txt; make clean)
 	(rm -rf .config Makefile config.h config.sh options.h)

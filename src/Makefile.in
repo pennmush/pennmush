@@ -127,14 +127,18 @@ local.c: local.dst
 ../po/pennmush.pot: $(C_FILES)
 	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES)
 
-# Use gperf to auto-generate these files, if it's present.
-GPERF_FILES=bflags.c htmltab.c lmathtab.c rgbtab.c
-$(GPERF_FILES): %.c: %.gperf
-	@if command -v gperf &> /dev/null; then \
-		gperf -C --output-file $@ $<; \
-	else \
-		echo "*** NOTE ***: src/$@ appears to be out of date, but you don't have gperf installed. Install gperf or touch src/$@ to suppress this message."; \
-	fi
+# The following source files are auto-generated with gperf.
+bflags.c: bflags.gperf
+	gperf -C --output-file bflags.c bflags.gperf
+
+htmltab.c: htmltab.gperf
+	gperf -C --output-file htmltab.c htmltab.gperf
+
+lmathtab.c: lmathtab.gperf
+	gperf -C --output-file lmathtab.c lmathtab.gperf
+
+rgbtab.c: rgbtab.gperf
+	gperf -C --output-file rgbtab.c rgbtab.gperf
 
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h

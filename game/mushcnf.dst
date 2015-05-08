@@ -576,8 +576,9 @@ log_max_size 20
 #        contents.
 # Defaults to trim.
 # This can be on a per-log basis, or global.
+# Logfile names: error, command, wizard, connection, trace, checkpoint
 # Example:
-# log_size_policy error:rotate checkpt:wipe default:trim
+# log_size_policy error:rotate checkpoint:wipe default:trim
 log_size_policy trim
 
 # perform memory allocation tracking (logged on @dump) to help find

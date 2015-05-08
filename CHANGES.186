@@ -24,6 +24,11 @@ Major changes:
 Functions:
  * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
 
+Commands:
+* Remove ancient @channel foo=on behavior (issue #870). Reported by
+   Cheetah. [TK]
+* @logwipe can do more than just erasing a log file. [SW]
+
 Hardcode:
  * Clean up some more remnants of the previous configure package's
    naming convention in favor of autoconf style ones. [SW]
@@ -32,5 +37,8 @@ Hardcode:
    OpenBSD. [SW]
  * Remove old FAM-based file monitoring code, due to bitrot and FAM's last
    release being 2003. [SW]
- * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * Add git revision, if present, to @version & version(). [994-TK]
+ * Log files that grow over a user-specified size can now be rotated or
+   trimmed down. [SW]
+
+

@@ -123,7 +123,7 @@ start_log(struct log_stream *log)
       /* We've already opened this file for another log, so just use that pointer */
       log->fp = f;
     } else {
-      log->fp = fopen(log->filename, "a");
+      log->fp = fopen(log->filename, "a+");
       if (log->fp == NULL) {
         fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename,
                 strerror(errno));
@@ -178,7 +178,7 @@ redirect_streams(void)
 
 
 static void
-  end_log(struct log_stream *log, bool keep_buffer)
+end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
 
@@ -229,8 +229,7 @@ format_log_name(char * restrict buff,
 static void
 resize_log_wipe(struct log_stream *log)
 {
-  fseek(log->fp, 0, SEEK_SET);
-  ftruncate(fileno(log->fp), 0);
+  trunc_file(log->fp);
 }
 
 static void
@@ -240,28 +239,29 @@ resize_log_trim(struct log_stream *log)
   struct stat s;
   long trim_at;
   int c;
-  FILE *logcopy;
-  char buff[BUFFER_LEN];
-  size_t len;
+  char copyname[BUFFER_LEN];
+  char *bp;
   
-  fstat(fileno(log->fp), &s);
+  if (fstat(fileno(log->fp), &s) < 0)
+    return; /* Oops */
 
   trim_at = floor(s.st_size * 0.9);
 
-  fseek(log->fp, trim_at, SEEK_SET);
+  if (fseek(log->fp, trim_at, SEEK_SET) < 0)
+    return;
 
   while ((c = fgetc(log->fp)) != EOF)
     if (c == '\n')
       break;
 
-  logcopy = fopen("templog", "w");
-  while ((len = fread(buff, 1, BUFFER_LEN, log->fp)))
-    fwrite(buff, 1, BUFFER_LEN, logcopy);
-  fclose(logcopy);
-
-  end_log(log, 1);
-  rename_file("templog", log->filename);
-  start_log(log);  
+  bp = copyname;
+  safe_format(copyname, &bp, "%s.tmp", log->filename);
+  *bp = '\0';
+  
+  copy_file(log->fp, copyname, 0);
+  trunc_file(log->fp);
+  copy_to_file(copyname, log->fp);
+  unlink(copyname);
 }
 
 static void
@@ -285,8 +285,6 @@ resize_log_rotate(struct log_stream *log)
 
   format_log_name(namea, log->filename, 1);
     
-  end_log(log, 1);
-
   if (options.compressprog[0]) {
     /* This can be done better. */
     char *np = nameb;
@@ -294,11 +292,10 @@ resize_log_rotate(struct log_stream *log)
 		log->filename, namea);
     *np = '\0';
     system(nameb);
-    unlink(log->filename);
   } else {
-    rename_file(log->filename, namea);
+    copy_file(log->fp, namea, 0);
   }
-  start_log(log);
+  trunc_file(log->fp);
 }
 
 /** Check to see if a log file is too big and if so,
@@ -333,20 +330,20 @@ check_log_size(struct log_stream *log)
   policy = keystr_find(options.log_size_policy, log->name);
 
   if (strcmp(policy, "wipe") == 0) {
-    resize_log_wipe(log);
     lock_file(log->fp);
+    resize_log_wipe(log);
     fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);
     unlock_file(log->fp);
   } else if (strcmp(policy, "trim") == 0) {
-    resize_log_trim(log);
     lock_file(log->fp);
+    resize_log_trim(log);
     fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);
     unlock_file(log->fp);    
   } else if (strcmp(policy, "rotate") == 0) {
-    resize_log_rotate(log);
     lock_file(log->fp);
+    resize_log_rotate(log);
     fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
     fflush(log->fp);
     unlock_file(log->fp);

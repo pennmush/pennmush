@@ -965,8 +965,17 @@ COMMAND(cmd_log)
 
 COMMAND(cmd_logwipe)
 {
+  enum logwipe_policy policy = LOGWIPE_WIPE;
   enum log_type type = logtype_from_switch(sw, LT_ERR);
-  do_logwipe(executor, type, arg_left);
+
+  if (SW_ISSET(sw, SWITCH_ROTATE))
+    policy = LOGWIPE_ROTATE;
+  else if (SW_ISSET(sw, SWITCH_TRIM))
+    policy = LOGWIPE_TRIM;
+  else if (SW_ISSET(sw, SWITCH_WIPE))
+    policy = LOGWIPE_WIPE;
+  
+  do_logwipe(executor, type, arg_left, policy);
 }
 
 COMMAND(cmd_lset)

@@ -230,6 +230,8 @@ static void
 resize_log_wipe(struct log_stream *log)
 {
   trunc_file(log->fp);
+  fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
+  fflush(log->fp);
 }
 
 static void
@@ -260,8 +262,10 @@ resize_log_trim(struct log_stream *log)
   
   copy_file(log->fp, copyname, 0);
   trunc_file(log->fp);
+  fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
   copy_to_file(copyname, log->fp);
   unlink(copyname);
+  fflush(log->fp);
 }
 
 static void
@@ -293,10 +297,27 @@ resize_log_rotate(struct log_stream *log)
     *np = '\0';
     system(nameb);
   } else {
-    copy_file(log->fp, namea, 0);
+    copy_file(log->fp, namea, 1);
   }
   trunc_file(log->fp);
+  fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
+  fflush(log->fp);
 }
+
+typedef void (*logwipe_fun)(struct log_stream *);
+struct lw_dispatch {
+  enum logwipe_policy policy;
+  logwipe_fun fun;
+};
+
+#define LW_SIZE 3
+
+static struct lw_dispatch lw_table[LW_SIZE] = {
+  {LOGWIPE_WIPE, resize_log_wipe},
+  {LOGWIPE_ROTATE, resize_log_rotate},
+  {LOGWIPE_TRIM, resize_log_trim},
+};
+
 
 /** Check to see if a log file is too big and if so,
  * resize it according to policy. Policies are:
@@ -318,8 +339,7 @@ check_log_size(struct log_stream *log)
   struct stat logstats;
   const char *policy;
   
-  /* TO-DO: Changes from Kilo to Mega bytes when done testing. */
-  max_bytes = options.log_max_size * 1024;
+  max_bytes = options.log_max_size * 1024 * 1024;
 
   if (fstat(fileno(log->fp), &logstats) < 0)
     return; /* Unable to stat the file. Hmm. */
@@ -329,27 +349,17 @@ check_log_size(struct log_stream *log)
 
   policy = keystr_find(options.log_size_policy, log->name);
 
+  lock_file(log->fp);
   if (strcmp(policy, "wipe") == 0) {
-    lock_file(log->fp);
     resize_log_wipe(log);
-    fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
-    fflush(log->fp);
-    unlock_file(log->fp);
   } else if (strcmp(policy, "trim") == 0) {
-    lock_file(log->fp);
     resize_log_trim(log);
-    fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
-    fflush(log->fp);
-    unlock_file(log->fp);    
   } else if (strcmp(policy, "rotate") == 0) {
-    lock_file(log->fp);
     resize_log_rotate(log);
-    fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
-    fflush(log->fp);
-    unlock_file(log->fp);
   } else {
     /* Unknown policy. Hmm. */
   }
+  unlock_file(log->fp);
 }
 
 
@@ -508,6 +518,8 @@ do_log_recall(dbref player, enum log_type type, int lines)
   notify(player, T("End log recall."));
 }
 
+
+
 /** Wipe out a game log. This is intended for those emergencies where
  * the log has grown out of bounds, overflowing the disk quota, etc.
  * Because someone with the god password can use this command to wipe
@@ -518,16 +530,16 @@ do_log_recall(dbref player, enum log_type type, int lines)
  * \param str password for wiping logs.
  */
 void
-do_logwipe(dbref player, enum log_type logtype, char *str)
+do_logwipe(dbref player, enum log_type logtype, const char *pass,
+	   enum logwipe_policy policy)
 {
-  struct log_stream *log;
+  struct log_stream *logst = lookup_log(logtype);
 
-  log = lookup_log(logtype);
-
-  if (strcmp(str, LOG_WIPE_PASSWD)) {
+  if (strcmp(pass, LOG_WIPE_PASSWD) != 0) {
     notify(player, T("Wrong password."));
     do_log(LT_WIZ, player, NOTHING,
-           "Invalid attempt to wipe the %s log, password %s", log->name, str);
+           "Invalid attempt to wipe the %s log, password '%s'", logst->name,
+	   pass);
     return;
   }
   switch (logtype) {
@@ -536,8 +548,21 @@ do_logwipe(dbref player, enum log_type logtype, char *str)
   case LT_CMD:
   case LT_TRACE:
   case LT_WIZ:
-    resize_log_wipe(log);
-    do_log(LT_ERR, player, NOTHING, "%s log wiped.", log->name);
+  case LT_ERR:
+    {
+      logwipe_fun doit;
+      int n;
+      for (n = 0; n < LW_SIZE; n += 1) {
+	if (lw_table[n].policy == policy) {
+	  doit = lw_table[n].fun;
+	  break;
+	}
+      }
+      if (n == LW_SIZE)
+	doit = lw_table[0].fun;      
+      doit(logst);
+      do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
+    }
     break;
   default:
     notify(player, T("That is not a clearable log."));

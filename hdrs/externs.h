@@ -553,6 +553,9 @@ dbref new_object(void);
 
 /* From filecopy.c */
 int rename_file(const char *origname, const char *newname);
+int trunc_file(FILE *);
+int copy_file(FILE *, const char *, bool);
+int copy_to_file(const char *, FILE *);
 
  /* local.c */
 void local_startup(void);

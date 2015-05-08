@@ -19,6 +19,9 @@ Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]
 
+Functions:
+ * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
+
 Hardcode:
  * Clean up some more remnants of the previous configure package's
    naming convention in favor of autoconf style ones. [SW]

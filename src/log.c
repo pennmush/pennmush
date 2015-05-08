@@ -297,7 +297,7 @@ resize_log_rotate(struct log_stream *log)
   if (options.compressprog[0]) {
     /* This can be done better. */
     char *np = nameb;
-    safe_format(nameb, &np, "%s < %s > %s", options.compressprog,
+    safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
 		log->filename, namea);
     *np = '\0';
     system(nameb);
@@ -312,15 +312,16 @@ resize_log_rotate(struct log_stream *log)
 typedef void (*logwipe_fun)(struct log_stream *);
 struct lw_dispatch {
   enum logwipe_policy policy;
+  const char *name;
   logwipe_fun fun;
 };
 
 #define LW_SIZE 3
 
 static struct lw_dispatch lw_table[LW_SIZE] = {
-  {LOGWIPE_WIPE, resize_log_wipe},
-  {LOGWIPE_ROTATE, resize_log_rotate},
-  {LOGWIPE_TRIM, resize_log_trim},
+  {LOGWIPE_WIPE, "wipe", resize_log_wipe},
+  {LOGWIPE_ROTATE, "rotate", resize_log_rotate},
+  {LOGWIPE_TRIM, "trim", resize_log_trim},
 };
 
 
@@ -343,6 +344,8 @@ check_log_size(struct log_stream *log)
   off_t max_bytes;
   struct stat logstats;
   const char *policy;
+  int n;
+  logwipe_fun doit = resize_log_trim;
   
   max_bytes = options.log_max_size * 1024 * 1024;
 
@@ -352,18 +355,17 @@ check_log_size(struct log_stream *log)
   if (logstats.st_size <= max_bytes)
     return;
 
-  policy = keystr_find(options.log_size_policy, log->name);
-
+  policy = keystr_find_d(options.log_size_policy, log->name,
+			 "trim");
+  
   lock_file(log->fp);
-  if (strcmp(policy, "wipe") == 0) {
-    resize_log_wipe(log);
-  } else if (strcmp(policy, "trim") == 0) {
-    resize_log_trim(log);
-  } else if (strcmp(policy, "rotate") == 0) {
-    resize_log_rotate(log);
-  } else {
-    /* Unknown policy. Hmm. */
+  for (n = 0; n < LW_SIZE; n += 1) {
+    if (strcmp(policy, lw_table[n].name) == 0) {
+      doit = lw_table[n].fun;
+      break;
+    }
   }
+  doit(log);
   unlock_file(log->fp);
 }
 
@@ -523,8 +525,6 @@ do_log_recall(dbref player, enum log_type type, int lines)
   notify(player, T("End log recall."));
 }
 
-
-
 /** Wipe out a game log. This is intended for those emergencies where
  * the log has grown out of bounds, overflowing the disk quota, etc.
  * Because someone with the god password can use this command to wipe
@@ -555,7 +555,7 @@ do_logwipe(dbref player, enum log_type logtype, const char *pass,
   case LT_WIZ:
   case LT_ERR:
     {
-      logwipe_fun doit;
+      logwipe_fun doit = resize_log_wipe;
       int n;
       for (n = 0; n < LW_SIZE; n += 1) {
 	if (lw_table[n].policy == policy) {

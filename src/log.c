@@ -145,18 +145,11 @@ void
 start_all_logs(void)
 {
   int n;
-
+  FILE *fp;
+  static bool once = 1;
+  
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
-}
-
-/** Redirect stderr to an error log file and close stdout and stdin.
- * Should be called after start_all_logs().
- */
-void
-redirect_streams(void)
-{
-  FILE *fp;
 
   fprintf(stderr, "Redirecting stderr to %s\n", ERRLOG);
   fp = fopen(ERRLOG, "a");
@@ -170,12 +163,24 @@ redirect_streams(void)
     }
     setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
   }
+  
+  if (once) {
 #ifndef DEBUG_BYTECODE
-  fclose(stdout);
+    fclose(stdout);
 #endif
-  fclose(stdin);
+    fclose(stdin);
+    once = 0;
+  }
 }
 
+/** Close and reopen the logfiles - called on SIGHUP */
+void
+reopen_logs(void)
+{
+  /* close up the log files */
+  end_all_logs();
+  start_all_logs();
+}
 
 static void
 end_log(struct log_stream *log, bool keep_buffer)

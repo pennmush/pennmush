@@ -37,7 +37,7 @@ struct log_stream {
 struct log_stream *lookup_log(enum log_type);
 void start_all_logs(void);
 void end_all_logs(void);
-void redirect_streams(void);
+void reopen_logs(void);
 void WIN32_CDECL do_log
   (enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 4, 5)));

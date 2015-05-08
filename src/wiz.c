@@ -96,7 +96,6 @@ void kill_info_slave(void);
 #endif
 
 extern char confname[BUFFER_LEN];
-extern char errlog[BUFFER_LEN];
 
 /** Create a player by Wizard fiat.
  * \verbatim

@@ -71,6 +71,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "parse.h"
+#include "strutil.h"
 
 dbref first_free = NOTHING;   /**< Object at top of free list */
 
@@ -92,6 +93,7 @@ static void mark_contents(dbref loc);
 static void check_contents(void);
 static void check_locations(void);
 static void check_zones(void);
+static void check_dbreflists(void);
 static int attribute_owner_helper
   (dbref player, dbref thing, dbref parent, char const *pattern, ATTR *atr,
    void *args);
@@ -1090,6 +1092,7 @@ dbck(void)
   check_locations();
   check_connected_rooms();
   check_zones();
+  check_dbreflists();
   local_dbck();
   validate_config();
 }
@@ -1511,6 +1514,66 @@ check_locations(void)
     else if (Mobile(thing)) {
       do_rawlog(LT_ERR, "ERROR DBCK: Moved object %d", thing);
       moveto(thing, DEFAULT_HOME, SYSEVENT, "dbck");
+    }
+}
+
+static int cdbl_helper(dbref player __attribute__ ((__unused__)),
+             dbref thing,
+             dbref parent __attribute__ ((__unused__)),
+             char const *pattern __attribute__ ((__unused__)),
+             ATTR *atr, void *args __attribute__ ((__unused__)))
+{
+    int first = 1, err = 0;
+    dbref it;
+    char *orig, *trimmed, *curr;
+    char buff[BUFFER_LEN], *bp;
+    bp = buff;
+    if (!(AL_FLAGS(atr) & AF_DBREFLIST)) {
+        return 0;
+    }
+    orig = safe_atr_value(atr);
+    trimmed = trim_space_sep(orig, ' ');
+    while ((curr = split_token(&trimmed, ' ')) != NULL) {
+        if (!is_objid(curr)) {
+            /* complain(?) and exit */
+            do_rawlog(LT_ERR, T("ERROR DBCK: Attr #%d/%s does not contain dbrefs"),
+                thing, AL_NAME(atr));
+            err = 1;
+            break;
+        }
+        it = parse_objid(curr);
+        if (it != NOTHING) {
+            if (first)
+                first = 0;
+            else
+                safe_chr(' ', buff, &bp);
+            safe_dbref(it, buff, &bp);
+            safe_chr(':', buff, &bp);
+            safe_integer(CreTime(it), buff, &bp);
+        }
+    }
+    free(orig);
+    if (!err) {
+        *bp = '\0';
+        atr_add(thing, AL_NAME(atr), buff, AL_CREATOR(atr), AL_FLAGS(atr));
+    }
+
+    return 1;
+}
+
+/* Check that every attribute on every object in the game with the DBREFLIST
+ * attribute flag contains a valid list of space-separated dbrefs or objids.
+ * Remove anything that looks like a dbref but isn't a valid object, and
+ * complain (and skip the attribute) if it contains anything that doesn't look
+ * like a dbref.
+ */
+static void
+check_dbreflists()
+{
+    int thing;
+    
+    for (thing = 0; thing < db_top; thing++) {
+        (void) atr_iter_get(1, thing, "**", 0, 0, cdbl_helper, NULL);
     }
 }
 

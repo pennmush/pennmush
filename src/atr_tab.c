@@ -64,6 +64,7 @@ PRIV attr_privs_set[] = {
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
   {"quiet", 'Q', AF_QUIET, AF_QUIET},
+  {"dbreflist", 'd', AF_DBREFLIST, AF_DBREFLIST},
   {"branch", '`', 0, 0},
   {NULL, '\0', 0, 0}
 };
@@ -94,6 +95,7 @@ PRIV attr_privs_db[] = {
   {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
   {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
   {"quiet", 'Q', AF_QUIET, AF_QUIET},
+  {"dbreflist", 'd', AF_DBREFLIST, AF_DBREFLIST},
   {NULL, '\0', 0, 0}
 };
 
@@ -127,6 +129,7 @@ PRIV attr_privs_view[] = {
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
   {"quiet", 'Q', AF_QUIET, AF_QUIET},
   {"branch", '`', AF_ROOT, AF_ROOT},
+  {"dbreflist", 'd', AF_DBREFLIST, AF_DBREFLIST},
   {NULL, '\0', 0, 0}
 };
 

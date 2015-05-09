@@ -136,7 +136,7 @@ safe_atr_value(ATTR *atr)
 #define AF_COMMAND      0x20000U        /**< INTERNAL: value starts with $ */
 #define AF_LISTEN       0x40000U        /**< INTERNAL: value starts with ^ */
 #define AF_NODUMP       0x80000U        /**< INTERNAL: attribute is not saved */
-#define AF_UNUSED3      0x100000U       /**< UNUSED */
+#define AF_DBREFLIST    0x100000U       /**< Attr contains a list of dbrefs */
 #define AF_PREFIXMATCH  0x200000U       /**< Subject to prefix-matching */
 #define AF_VEILED       0x400000U       /**< On ex, show presence, not value */
 #define AF_DEBUG        0x800000U       /**< Show debug when evaluated */

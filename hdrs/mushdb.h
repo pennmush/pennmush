@@ -167,8 +167,9 @@ bool unfindable(dbref);
 /* Int of db version currently used by PennMUSH. Versions are:
  *  1 - First version with new db flags. Cmds and attrs are stored in the db
  *  2 - Added MONIKER attr
+ *  3 - All previously-obsoleted AF_* attribute flag #defines are recycled
  */
-#define NDBF_VERSION 2
+#define NDBF_VERSION 3
 
 /* Reboot DB flag macros - these should be defined whether or not the
  * corresponding system option is defined

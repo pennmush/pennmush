@@ -119,7 +119,7 @@ safe_atr_value(ATTR *atr)
 #define AF_QUIET        0x1U    /**< Don't show a confirmation when setting. */
 #define AF_INTERNAL     0x2U    /**< no one can see it or set it */
 #define AF_WIZARD       0x4U    /**< Only wizards can change it */
-#define AF_NUKED        0x8U    /**< OBSOLETE! Leave here but don't use */
+#define AF_UNUNSED1     0x8U    /**< UNUSED! */
 #define AF_LOCKED       0x10U   /**< Only creator of attrib can change it. */
 #define AF_NOPROG       0x20U   /**< Won't be searched for $-commands. */
 #define AF_MDARK        0x40U   /**< Only wizards can see it */
@@ -132,11 +132,11 @@ safe_atr_value(ATTR *atr)
 #define AF_ROOT         0x2000U /**< INTERNAL: Root of an attribute tree */
 #define AF_RLIMIT       0x4000U /**< Attr value must match a regular expression */
 #define AF_ENUM         0x8000U /**< Attr value must be one of a given set */
-#define AF_STATIC       0x10000U        /**< OBSOLETE! Leave here but don't use */
+#define AF_UNUSED2      0x10000U        /**< UNUSED!  */
 #define AF_COMMAND      0x20000U        /**< INTERNAL: value starts with $ */
 #define AF_LISTEN       0x40000U        /**< INTERNAL: value starts with ^ */
 #define AF_NODUMP       0x80000U        /**< INTERNAL: attribute is not saved */
-#define AF_LISTED       0x100000U       /**< INTERNAL: Used in \@list attribs */
+#define AF_UNUSED3      0x100000U       /**< UNUSED */
 #define AF_PREFIXMATCH  0x200000U       /**< Subject to prefix-matching */
 #define AF_VEILED       0x400000U       /**< On ex, show presence, not value */
 #define AF_DEBUG        0x800000U       /**< Show debug when evaluated */
@@ -155,7 +155,9 @@ safe_atr_value(ATTR *atr)
 
 /* Obsolete attr flag definitons, only kept for oooold db updates */
 #define AF_ODARK        0x1U
-
+#define AF_NUKED        0x8U
+#define AF_STATIC       0x10000U
+#define AF_LISTED       0x100000U
 
     extern ATTR attr[];       /**< external predefined attributes. */
 

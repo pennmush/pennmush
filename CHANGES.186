@@ -25,9 +25,8 @@ Functions:
  * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
 
 Commands:
-* Remove ancient @channel foo=on behavior (issue #870). Reported by
-   Cheetah. [TK]
-* @logwipe can do more than just erasing a log file. [SW]
+ * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
+ * @logwipe can do more than just erasing a log file. [SW]
 
 Hardcode:
  * Clean up some more remnants of the previous configure package's
@@ -40,5 +39,3 @@ Hardcode:
  * Add git revision, if present, to @version & version(). [994-TK]
  * Log files that grow over a user-specified size can now be rotated or
    trimmed down. [SW]
-
-

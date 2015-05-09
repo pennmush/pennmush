@@ -29,3 +29,5 @@ Hardcode:
    release being 2003. [SW]
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * Add git revision, if present, to @version & version(). [994-TK]
+ * Generate the pennv*.hlp files that make up 'help changes' and friends in
+   game/txt/Makefile instead of distributing them. [TK]

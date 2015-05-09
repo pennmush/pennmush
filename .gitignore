@@ -22,6 +22,7 @@ game/txt/compose.sh
 game/txt/events.txt
 game/txt/help.txt
 game/txt/news.txt
+game/txt/hlp/pennv*.hlp
 game/save
 hdrs/buildinf.h
 hdrs/cmds.h

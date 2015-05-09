@@ -1522,44 +1522,6 @@ FUNCTION(fun_items)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_element)
-{
-  /* the equivalent of MEMBER for an arbitrary separator */
-  /* This differs from MEMBER in its use of quick_wild()
-   * instead of strcmp().
-   */
-
-  char *s, *t;
-  char c;
-  int el;
-
-  c = *args[2];
-
-  if (c == '\0')
-    c = ' ';
-  if (strchr(args[1], c)) {
-    safe_str(T("#-1 CAN ONLY TEST ONE ELEMENT"), buff, bp);
-    return;
-  }
-  s = args[0];
-  el = 1;
-
-  do {
-    t = s;
-    s = seek_char(t, c);
-    if (*s)
-      *s++ = '\0';
-    if (quick_wild(args[1], t)) {
-      safe_integer(el, buff, bp);
-      return;
-    }
-    el++;
-  } while (*s);
-
-  safe_chr('0', buff, bp);      /* no match */
-}
-
-/* ARGSUSED */
 FUNCTION(fun_index)
 {
   /* more or less the equivalent of EXTRACT for an arbitrary separator */

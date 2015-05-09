@@ -151,15 +151,15 @@ See also: Dbref functions
   specify what delimits list elements; if none is provided, a space is
   used by default.
 
-  element()     elements()    extract()     filter()      filterbool()
-  first()       fold()        grab()        graball()     index()
-  itemize()     items()       iter()        last()        ldelete()     
-  linsert()     lreplace()    lockfilter()  map()         match()       
-  matchall()    member()      mix()         munge()       namegrab()    
-  namegraball() randword()    remove()      rest()        revwords()    
-  setdiff()     setinter()    setunion()    shuffle()     sort()        
-  sortby()      sortkey()     splice()      step()        table()       
-  unique()      wordpos()     words()
+  elements()    extract()     filter()      filterbool()  first()
+  fold()        grab()        graball()     index()       itemize()
+  items()       iter()        last()        ldelete()     linsert()
+  lreplace()    lockfilter()  map()         match()       matchall()
+  member()      mix()         munge()       namegrab()    namegraball()
+  randword()    remove()      rest()        revwords()    setdiff()
+  setinter()    setunion()    shuffle()     sort()        sortby()
+  sortkey()     splice()      step()        table()       unique()
+  wordpos()     words()
 
 See also: LISTS
 & Math functions
@@ -1491,19 +1491,6 @@ See also: get(), eval(), ufun(), default(), udefault(), hasattr()
   edit() can not replace a literal single ^ or $. Use regedit() for that.
   
 See also: @edit, regedit()
-& ELEMENT()
-  element(<list>, <item>, <separator>)
-  
-  This returns the position of <item> in <list>, where <list>'s items
-  are separated by <separator>. A wildcard match is done, so this
-  function behaves much like MATCH(), except its separator argument is
-  required, not optional.
-  
-  Example:
-    > say element(this|is|a|test|string,*st,|)
-    You say, "4"
-
-See also: match(), grab(), member()
 & ELEMENTS()
   elements(<list of words>, <list of numbers>[, <delim>[, <osep>]])
  
@@ -1998,7 +1985,7 @@ See also: @ps, @wait, lpids(), pidinfo(), SEMAPHORES
     elements(<list>, match(<list>, <pattern>[, <delimiter>])[, <delimiter>])
   or the regular expression variation thereof.
 
-See also: graball(), match(), extract(), element(), elements(), regmatch()
+See also: graball(), match(), extract(), elements(), regmatch()
 & GRABALL()
 & REGRABALL()
 & REGRABALLI()
@@ -3230,6 +3217,7 @@ See also: mwho(), nwho(), xwho()
     You say, "2;4;6;8;10"
 
 See also: anonymous attributes, iter(), @dolist
+& ELEMENT()
 & MATCH()
 & MATCHALL()
   match(<list>, <pattern>[, <delimiter>])
@@ -3237,7 +3225,7 @@ See also: anonymous attributes, iter(), @dolist
   
   match() returns the index of the first element of <list> which matches
   the wildcard pattern <pattern>. The first word has an index of 1. If no
-  matches are found, 0 is returned.
+  matches are found, 0 is returned. element() is an alias for match().
   
   matchall() is similar, but returns the indexes of all matching elements.
   If no elements match, an empty string is returned.

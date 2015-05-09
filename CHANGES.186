@@ -12,12 +12,17 @@ chronological order (most recent first)
 [MUX] refers to code by (or inspired by) TinyMUX 2.x
 [Rhost] refers to code by (or inspired by) RhostMUSH
 
+Numbers next to the developer credit refer to Github issue numbers.
+
 ==========================================================================
 
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]
+
+Functions:
+ * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
 
 Hardcode:
  * Clean up some more remnants of the previous configure package's
@@ -27,6 +32,5 @@ Hardcode:
    OpenBSD. [SW]
  * Remove old FAM-based file monitoring code, due to bitrot and FAM's last
    release being 2003. [SW]
- * Remove ancient @channel foo=on behavior (issue #870). Reported by
-   Paige. [TK]
- * Add git revision, if present to @version & version(). [TK]
+ * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
+ * Add git revision, if present, to @version & version(). [994-TK]

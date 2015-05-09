@@ -153,6 +153,7 @@ FUNALIAS faliases[] = {
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
   {"MONIKER", "CNAME"},         /* Rhost alias */
+  {"MATCH", "ELEMENT"},
   {NULL, NULL}
 };
 
@@ -256,7 +257,6 @@ FUNTAB flist[] = {
   {"DOING", fun_doing, 1, 1, FN_REG | FN_STRIPANSI},
   {"EDEFAULT", fun_edefault, 2, 2, FN_NOPARSE},
   {"EDIT", fun_edit, 3, INT_MAX, FN_REG},
-  {"ELEMENT", fun_element, 3, 3, FN_REG},
   {"ELEMENTS", fun_elements, 2, 4, FN_REG},
   {"ELIST", fun_itemize, 1, 5, FN_REG},
   {"ELOCK", fun_elock, 2, 2, FN_REG | FN_STRIPANSI},

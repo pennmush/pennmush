@@ -1,6 +1,8 @@
 *.o
 *~
 *.bak
+*.patch
+*.patch.txt
 Makefile
 config.h
 config.log

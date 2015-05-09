@@ -37,13 +37,20 @@ struct log_stream {
 struct log_stream *lookup_log(enum log_type);
 void start_all_logs(void);
 void end_all_logs(void);
-void redirect_streams(void);
+void reopen_logs(void);
 void WIN32_CDECL do_log
   (enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 4, 5)));
 void WIN32_CDECL do_rawlog(enum log_type logtype, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
-void do_logwipe(dbref player, enum log_type logtype, char *str);
+
+enum logwipe_policy {
+  LOGWIPE_WIPE,
+  LOGWIPE_TRIM,
+  LOGWIPE_ROTATE
+};
+void do_logwipe(dbref, enum log_type, const char *,
+		enum logwipe_policy);
 void do_log_recall(dbref, enum log_type, int);
 
 /* Activity log types */

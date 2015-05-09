@@ -155,7 +155,6 @@ char cf_downmotd_msg[BUFFER_LEN] = { '\0' };     /**< The down message */
 char cf_fullmotd_msg[BUFFER_LEN] = { '\0' };     /**< The 'mush full' message */
 static char poll_msg[DOING_LEN] = { '\0' };
 char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
-char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
 char *etime_fmt(char *, time_t, int);
 const char *source_to_s(conn_source source);
@@ -418,7 +417,6 @@ static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
                                 dbref executor);
 bool inactivity_check(void);
-void reopen_logs(void);
 void load_reboot_db(void);
 
 static bool in_suid_root_mode = 0;
@@ -735,29 +733,6 @@ main(int argc, char **argv)
   exit(0);
 }
 #endif                          /* BOOLEXP_DEBUGGING */
-
-/** Close and reopen the logfiles - called on SIGHUP */
-void
-reopen_logs(void)
-{
-  FILE *newerr;
-  /* close up the log files */
-  end_all_logs();
-  newerr = fopen(errlog, "a");
-  if (!newerr) {
-    fprintf(stderr,
-            T("Unable to open %s. Error output continues to stderr.\n"),
-            errlog);
-  } else {
-    if (!freopen(errlog, "a", stderr)) {
-      printf(T("Ack!  Failed reopening stderr!"));
-      exit(1);
-    }
-    setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
-    fclose(newerr);
-  }
-  start_all_logs();
-}
 
 /** Install our default signal handlers. */
 void

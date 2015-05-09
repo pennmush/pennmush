@@ -299,3 +299,82 @@ rename_file(const char *origname, const char *newname)
 #endif
   return rename(origname, newname);
 }
+
+/** Truncate a file to 0 bytes without deleting it.
+ * Because info_slave and ssl_slave also write to the main error
+ * log file, we don't want to just delete the files and open new
+ * ones with the same name.
+ *
+ * \param f the FILE object to rewind.
+ * \return 0 on success, -1 on failure. 
+ */
+int
+trunc_file(FILE *f) {
+  if (fseek(f, 0, SEEK_SET) < 0)
+    return -1;
+  if (ftruncate(fileno(f), 0) < 0)
+    return -1;
+  return 0;
+}
+
+/** Block copy a file.
+ *
+ * Possible future direction: Use sendfile(2) on linux to reduce
+ * the amount of copying of data.
+ *
+ * \param f FILE object that must be open for reading.
+ * \param newname the name of the destination file.
+ * \param reset true to seek to the start of the file.
+ * \return 0 on success, -1 on failure.
+ */
+int
+copy_file(FILE *f, const char *newname, bool reset) {
+  FILE *copy = fopen(newname, "w");
+  if (copy) {
+    char buf[BUFSIZ];
+    size_t len;
+    if (reset) {
+      if (fseek(f, 0, SEEK_SET) < 0)
+	return -1;
+    }
+    while ((len = fread(buf, 1, BUFSIZ, f)) > 0) {
+      if (fwrite(buf, 1, len, copy) != len) {
+	fclose(copy);
+	return -1;
+      }
+    }
+    fclose(copy);
+    return feof(f) ? 0 : -1;
+  } else
+    return -1;
+}
+
+/** Copies the contents of a given file to an open FILE object.
+ * 
+ * Possible future direction: Use sendfile(2) on linux to reduce
+ * the amount of copying of data.
+ *
+ * \param name the name of the file to copy
+ * \param to the destination FILE.
+ * \return 0 on success, -1 on failure.
+ */
+int
+copy_to_file(const char *name, FILE *to) {
+  FILE *from;
+  char buf[BUFSIZ];
+  size_t len;
+  
+  from = fopen(name, "r");
+  if (!from)
+    return -1;
+
+  while ((len = fread(buf, 1, BUFSIZ, from)) > 0) {
+    if (fwrite(buf, 1, len, to) != len) {
+      fclose(from);
+      return -1;
+    }
+  }  
+  fclose(from);
+
+  return 0;
+}

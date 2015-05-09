@@ -737,7 +737,6 @@ init_game_config(const char *conf)
   config_file_startup(conf, 0);
   config_file_checks();
   start_all_logs();
-  redirect_streams();
 
   /* Initialize the attribute chunk storage */
   chunk_init();

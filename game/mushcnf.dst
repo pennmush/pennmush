@@ -424,10 +424,6 @@ warn_interval 1h
 # decimal point.
 float_precision 6
 
-# The password that must be given to do an @logwipe. You must also
-# be God, of course. CHANGE THIS.
-log_wipe_passwd zap!
-
 # The maximum length of player names. Lowering this won't change
 # current player names.
 player_name_len 15
@@ -565,6 +561,25 @@ log_commands no
 
 # log forces done by wizards
 log_forces yes
+
+# The password that must be given to do an @logwipe. You must also
+# be God, of course. CHANGE THIS.
+log_wipe_passwd zap!
+
+# The maximum size of a log file, in kilobytes
+log_max_size 100
+
+# What to do when a log file hits its max size.
+#  wipe: Erases the file completely, like @logwipe
+#  rotate: Backup existing log file to a new one.
+#  trim: Delete all but the most recent approximately 10% of the
+#        contents.
+# Defaults to trim.
+# This can be on a per-log basis, or global.
+# Logfile names: error, command, wizard, connection, trace, checkpoint
+# Example:
+# log_size_policy error:rotate checkpoint:wipe default:trim
+log_size_policy trim
 
 # perform memory allocation tracking (logged on @dump) to help find
 # memory leaks. This really shouldn't be changed while the server

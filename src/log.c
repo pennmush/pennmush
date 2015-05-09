@@ -26,7 +26,11 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 #include <errno.h>
+#include <math.h>
 
 #include "bufferq.h"
 #include "conf.h"
@@ -43,7 +47,8 @@ struct log_stream;
 
 static char *quick_unparse(dbref object);
 static void start_log(struct log_stream *);
-static void end_log(struct log_stream *);
+static void end_log(struct log_stream *, bool);
+static void check_log_size(struct log_stream *);
 
 BUFFERQ *activity_bq = NULL;
 
@@ -118,14 +123,14 @@ start_log(struct log_stream *log)
       /* We've already opened this file for another log, so just use that pointer */
       log->fp = f;
     } else {
-      log->fp = fopen(log->filename, "a");
+      log->fp = fopen(log->filename, "a+");
       if (log->fp == NULL) {
         fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename,
                 strerror(errno));
         log->fp = stderr;
       } else {
         hashadd(strupper(log->filename), log->fp, &htab_logfiles);
-        fprintf(log->fp, "START OF LOG.\n");
+        fputs("START OF LOG.\n", log->fp);
         fflush(log->fp);
       }
     }
@@ -140,18 +145,11 @@ void
 start_all_logs(void)
 {
   int n;
-
+  FILE *fp;
+  static bool once = 1;
+  
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
-}
-
-/** Redirect stderr to an error log file and close stdout and stdin.
- * Should be called after start_all_logs().
- */
-void
-redirect_streams(void)
-{
-  FILE *fp;
 
   fprintf(stderr, "Redirecting stderr to %s\n", ERRLOG);
   fp = fopen(ERRLOG, "a");
@@ -165,15 +163,27 @@ redirect_streams(void)
     }
     setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
   }
+  
+  if (once) {
 #ifndef DEBUG_BYTECODE
-  fclose(stdout);
+    fclose(stdout);
 #endif
-  fclose(stdin);
+    fclose(stdin);
+    once = 0;
+  }
 }
 
+/** Close and reopen the logfiles - called on SIGHUP */
+void
+reopen_logs(void)
+{
+  /* close up the log files */
+  end_all_logs();
+  start_all_logs();
+}
 
 static void
-end_log(struct log_stream *log)
+end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
 
@@ -183,15 +193,17 @@ end_log(struct log_stream *log)
     int n;
 
     lock_file(fp);
-    fprintf(fp, "END OF LOG.\n");
+    fputs("END OF LOG.\n", fp);
     fflush(fp);
-    for (n = 0; n < NLOGS; n++)
-      if (log->fp == fp)
-        log->fp = NULL;
+    for (n = 0; n < NLOGS; n++) {
+      if (logs[n].fp == fp)
+        logs[n].fp = NULL;
+    }
     fclose(fp);                 /* Implicit lock removal */
-    free_bufferq(log->buffer);
-    log->fp = NULL;
-    log->buffer = NULL;
+    if (!keep_buffer) {
+      free_bufferq(log->buffer);
+      log->buffer = NULL;
+    }
     hashdelete(strupper(log->filename), &htab_logfiles);
   }
 }
@@ -203,7 +215,158 @@ end_all_logs(void)
 {
   int n;
   for (n = 0; n < NLOGS; n++)
-    end_log(logs + n);
+    end_log(logs + n, 0);
+}
+
+
+static void
+format_log_name(char * restrict buff,
+		const char * restrict fname,
+		int n)
+{
+  char *bp = buff;
+  safe_format(buff, &bp, "%s.%d", fname, n);
+  if (options.compresssuff[0])
+    safe_str(options.compresssuff, buff, &bp);
+  *bp = '\0';
+}
+
+static void
+resize_log_wipe(struct log_stream *log)
+{
+  trunc_file(log->fp);
+  fputs("*** LOG WAS WIPED AFTER GROWING TOO LARGE ***\n", log->fp);
+  fflush(log->fp);
+}
+
+static void
+resize_log_trim(struct log_stream *log)
+{
+  /* Trim log file to ~10% */
+  struct stat s;
+  long trim_at;
+  int c;
+  char copyname[BUFFER_LEN];
+  char *bp;
+  
+  if (fstat(fileno(log->fp), &s) < 0)
+    return; /* Oops */
+
+  trim_at = floor(s.st_size * 0.9);
+
+  if (fseek(log->fp, trim_at, SEEK_SET) < 0)
+    return;
+
+  while ((c = fgetc(log->fp)) != EOF)
+    if (c == '\n')
+      break;
+
+  bp = copyname;
+  safe_format(copyname, &bp, "%s.tmp", log->filename);
+  *bp = '\0';
+  
+  copy_file(log->fp, copyname, 0);
+  trunc_file(log->fp);
+  fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
+  copy_to_file(copyname, log->fp);
+  unlink(copyname);
+  fflush(log->fp);
+}
+
+static void
+resize_log_rotate(struct log_stream *log)
+{
+  /* Save current file as a copy, start new one. */
+  int n;
+  char namea[BUFFER_LEN], nameb[BUFFER_LEN];
+  struct stat s;
+    
+  for (n = 1; 1; n += 1) {
+    format_log_name(namea, log->filename, n);
+    if (stat(namea, &s) < 0)
+      break;
+  }
+  for (; n > 1; n -= 1) {
+    format_log_name(namea, log->filename, n - 1);
+    format_log_name(nameb, log->filename, n);
+    rename_file(namea, nameb);
+  }
+
+  format_log_name(namea, log->filename, 1);
+    
+  if (options.compressprog[0]) {
+    /* This can be done better. */
+    char *np = nameb;
+    safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
+		log->filename, namea);
+    *np = '\0';
+    system(nameb);
+  } else {
+    copy_file(log->fp, namea, 1);
+  }
+  trunc_file(log->fp);
+  fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
+  fflush(log->fp);
+}
+
+typedef void (*logwipe_fun)(struct log_stream *);
+struct lw_dispatch {
+  enum logwipe_policy policy;
+  const char *name;
+  logwipe_fun fun;
+};
+
+#define LW_SIZE 3
+
+static struct lw_dispatch lw_table[LW_SIZE] = {
+  {LOGWIPE_WIPE, "wipe", resize_log_wipe},
+  {LOGWIPE_ROTATE, "rotate", resize_log_rotate},
+  {LOGWIPE_TRIM, "trim", resize_log_trim},
+};
+
+
+/** Check to see if a log file is too big and if so,
+ * resize it according to policy. Policies are:
+ *
+ * wipe: Erase the log file completely and start over. Like
+ *  using @logwipe from in-game.
+ * trim: Deletes roughly the oldest 90% of the log.
+ * rotate: Archives the existing file, creates a new one. Copies are
+ * compressed per database settings, named things like
+ * command.log.1.gz (Most recent), command.log.2.gz (Next most), etc.
+ *
+ *
+ * \param log the log to check.
+ */
+static void
+check_log_size(struct log_stream *log)
+{
+  off_t max_bytes;
+  struct stat logstats;
+  const char *policy;
+  int n;
+  logwipe_fun doit = resize_log_trim;
+  
+  max_bytes = options.log_max_size * 1024;
+
+  if (fstat(fileno(log->fp), &logstats) < 0)
+    return; /* Unable to stat the file. Hmm. */
+
+  if (logstats.st_size <= max_bytes)
+    return;
+
+  policy = keystr_find_d(options.log_size_policy, log->name,
+			 "trim");
+  
+  lock_file(log->fp);
+  for (n = 0; n < LW_SIZE; n += 1) {
+    if (strcmp(policy, lw_table[n].name) == 0) {
+      doit = lw_table[n].fun;
+      break;
+    }
+  }
+  doit(log);
+  unlock_file(log->fp);
 }
 
 
@@ -245,6 +408,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
   queue_event(-1, log->event, "%s", tbuf1);
+  check_log_size(log);
 }
 
 /** Log a message, with useful information.
@@ -371,16 +535,16 @@ do_log_recall(dbref player, enum log_type type, int lines)
  * \param str password for wiping logs.
  */
 void
-do_logwipe(dbref player, enum log_type logtype, char *str)
+do_logwipe(dbref player, enum log_type logtype, const char *pass,
+	   enum logwipe_policy policy)
 {
-  struct log_stream *log;
+  struct log_stream *logst = lookup_log(logtype);
 
-  log = lookup_log(logtype);
-
-  if (strcmp(str, LOG_WIPE_PASSWD)) {
+  if (strcmp(pass, LOG_WIPE_PASSWD) != 0) {
     notify(player, T("Wrong password."));
     do_log(LT_WIZ, player, NOTHING,
-           "Invalid attempt to wipe the %s log, password %s", log->name, str);
+           "Invalid attempt to wipe the %s log, password '%s'", logst->name,
+	   pass);
     return;
   }
   switch (logtype) {
@@ -389,10 +553,21 @@ do_logwipe(dbref player, enum log_type logtype, char *str)
   case LT_CMD:
   case LT_TRACE:
   case LT_WIZ:
-    end_log(log);
-    unlink(log->filename);
-    start_log(log);
-    do_log(LT_ERR, player, NOTHING, "%s log wiped.", log->name);
+  case LT_ERR:
+    {
+      logwipe_fun doit = resize_log_wipe;
+      int n;
+      for (n = 0; n < LW_SIZE; n += 1) {
+	if (lw_table[n].policy == policy) {
+	  doit = lw_table[n].fun;
+	  break;
+	}
+      }
+      if (n == LW_SIZE)
+	doit = lw_table[0].fun;      
+      doit(logst);
+      do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
+    }
     break;
   default:
     notify(player, T("That is not a clearable log."));
@@ -400,7 +575,6 @@ do_logwipe(dbref player, enum log_type logtype, char *str)
   }
   notify(player, T("Log wiped."));
 }
-
 
 /** Log a message to the activity log.
  * \param type message type (an LA_* constant)

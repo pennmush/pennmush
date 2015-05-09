@@ -51,7 +51,6 @@ static sig_atomic_t hup_triggered = 0;
 static sig_atomic_t usr1_triggered = 0;
 
 bool inactivity_check(void);
-void reopen_logs(void);
 static void migrate_stuff(int amount);
 
 #ifndef WIN32

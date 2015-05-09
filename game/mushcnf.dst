@@ -567,7 +567,7 @@ log_forces yes
 log_wipe_passwd zap!
 
 # The maximum size of a log file, in kilobytes
-log_max_size 20
+log_max_size 100
 
 # What to do when a log file hits its max size.
 #  wipe: Erases the file completely, like @logwipe

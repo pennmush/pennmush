@@ -347,7 +347,7 @@ check_log_size(struct log_stream *log)
   int n;
   logwipe_fun doit = resize_log_trim;
   
-  max_bytes = options.log_max_size * 1024 * 1024;
+  max_bytes = options.log_max_size * 1024;
 
   if (fstat(fileno(log->fp), &logstats) < 0)
     return; /* Unable to stat the file. Hmm. */

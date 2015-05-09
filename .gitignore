@@ -36,6 +36,7 @@ src/netmud
 src/netmud~
 src/ssl_slave
 src/TAGS
+src/*.exe
 test/alltests.sh
 test/testgame
 third_party

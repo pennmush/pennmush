@@ -1469,7 +1469,7 @@ conf_default_set(void)
   strcpy(options.sql_username, "");
   strcpy(options.sql_password, "");
   strcpy(options.sql_host, "127.0.0.1");
-  options.log_max_size = 20;
+  options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
 }
 

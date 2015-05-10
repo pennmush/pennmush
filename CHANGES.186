@@ -39,3 +39,4 @@ Hardcode:
  * Add git revision, if present, to @version & version(). [994-TK]
  * Log files that grow over a user-specified size can now be rotated or
    trimmed down. [SW]
+ * game/restart is now auto-generated during 'make update'. [928-TK]

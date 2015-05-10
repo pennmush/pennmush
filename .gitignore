@@ -16,6 +16,7 @@ game/mush.cnf
 game/names.cnf
 game/netmush
 game/netmush.pid
+game/restart
 game/restrict.cnf
 game/ssl_slave
 game/txt/compose.sh

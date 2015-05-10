@@ -113,6 +113,10 @@
 #endif
 #endif                          /* !WIN32 */
 
+#ifndef WITHOUT_WEBSOCKETS
+#include "websock.h"
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
 #endif
@@ -2174,6 +2178,12 @@ test_telnet(DESC *d)
   /* Use rfc 1184 to test telnet support, as it tries to set linemode
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
+#ifndef WITHOUT_WEBSOCKETS
+    if ((d->conn_flags & (CONN_WEBSOCKETS_REQUEST | CONN_WEBSOCKETS))) {
+      /* Don't bother testing for TELNET support. */
+      return;
+    }
+#endif /* undef WITHOUT_WEBSOCKETS */
     static const char query[3] = { IAC, DO, TN_LINEMODE };
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
@@ -2566,6 +2576,12 @@ process_input_helper(DESC *d, char *tbuf1, int got)
 {
   char *p, *pend, *q, *qend;
 
+#ifndef WITHOUT_WEBSOCKETS
+  if ((d->conn_flags & CONN_WEBSOCKETS)) {
+    /* Process using WebSockets framing. */
+    got = process_websocket_frame(d, tbuf1, got);
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
@@ -2581,14 +2597,20 @@ process_input_helper(DESC *d, char *tbuf1, int got)
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
+#ifdef WITHOUT_WEBSOCKETS
+      /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
+#endif /* WITHOUT_WEBSOCKETS */
         save_command(d, d->raw_input);
       p = d->raw_input;
       if (((q + 1) < qend) && (*(q + 1) == '\n'))
         q++;                    /* For clients that work */
     } else if (*q == '\n') {
       *p = '\0';
+#ifdef WITHOUT_WEBSOCKETS
+      /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
+#endif /* WITHOUT_WEBSOCKETS */
         save_command(d, d->raw_input);
       p = d->raw_input;
     } else if (*q == '\b') {
@@ -2784,6 +2806,17 @@ do_command(DESC *d, char *command)
 {
   int j;
 
+#ifndef WITHOUT_WEBSOCKETS
+  if ((d->conn_flags & CONN_WEBSOCKETS_REQUEST)) {
+    /* Parse WebSockets upgrade request. */
+    if (!process_websocket_request(d, command)) {
+      return CRES_HTTP;
+    }
+
+    return CRES_OK;
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
+
   if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
     j = strlen(IDLE_COMMAND);
     if ((int) strlen(command) > j) {
@@ -2799,6 +2832,14 @@ do_command(DESC *d, char *command)
   if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
                         !strncmp(command, POST_COMMAND,
                                  strlen(POST_COMMAND)))) {
+#ifndef WITHOUT_WEBSOCKETS
+    if (is_websocket(command)) {
+      /* Continue processing as a WebSockets upgrade request. */
+      d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
+      return CRES_OK;
+    }
+#endif /* undef WITHOUT_WEBSOCKETS */
+
     char buf[BUFFER_LEN];
     snprintf(buf, BUFFER_LEN,
              "HTTP/1.1 200 OK\r\n"

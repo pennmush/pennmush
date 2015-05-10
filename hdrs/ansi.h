@@ -133,6 +133,12 @@ void nest_ansi_data(ansi_data *old, ansi_data *cur);
 #define MARKUP_OLDANSI     'o'
 #define MARKUP_OLDANSI_STR "o"
 
+#ifndef WITHOUT_WEBSOCKETS
+#define MARKUP_WS 'w'
+#define MARKUP_WS_ALT 'W'
+#define MARKUP_WS_ALT_END 'M'
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 /* Markup information necessary for ansi_string */
 
 /* Miscellaneous notes on markup_information:

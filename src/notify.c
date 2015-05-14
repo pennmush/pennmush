@@ -171,7 +171,7 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
 #define MSGTYPE_TNXTERM256       (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_XTERM256)    /*    256        0         1          0    */
 
 #ifndef WITHOUT_WEBSOCKETS
-#define MSGTYPE_WEBSOCKETS       (MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
+#define MSGTYPE_WEBSOCKETS       (MSG_PLAYER | MSG_WEBSOCKETS)
 #endif /* undef WITHOUT_WEBSOCKETS */
 
 /* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
@@ -365,9 +365,7 @@ notify_type(DESC *d)
 
 #ifndef WITHOUT_WEBSOCKETS
   if (IsWebSocket(d)) {
-    /* WebSocket clients only get one rendering. */
-    /* TODO: Some players might want to disable ANSI/color, though. */
-    return MSGTYPE_WEBSOCKETS;
+    type |= MSGTYPE_WEBSOCKETS;
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
 

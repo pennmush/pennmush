@@ -137,7 +137,7 @@ access_file access.cnf
 
 # Where are the names you want to ban players from
 # creation/rename? A good idea to start with are swear words,
-# and features names like 'Luke', 'Merlin', 'Gandalf', 'Picard',
+# and featured names like 'Luke', 'Merlin', 'Gandalf', 'Picard',
 # 'Lessa', 'Dracula', 'Hercules', 'Scooby', 'Nancy Drew', etc,
 # depending on what type of MUSH you are running
 names_file names.cnf

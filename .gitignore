@@ -24,6 +24,7 @@ game/txt/events.txt
 game/txt/help.txt
 game/txt/news.txt
 game/save
+game/core
 hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h

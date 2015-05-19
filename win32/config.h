@@ -5,65 +5,51 @@
 
 /* Headers */
 
-#undef I_ARPA_INET
+#undef HAVE_ARPA_INET_H
 
-#undef I_ARPA_NAMESER
+#undef HAVE_LIBINTL_H
 
-#define I_FCNTL
+#undef HAVE_NETDB_H
 
-#undef I_FLOATINGPOINT
+#undef HAVE_NETINET_IN_H
 
-#undef I_LIBINTL
+#undef HAVE_NETINET_TCP_H
 
-#define I_MALLOC
+#undef HAVE_SYS_SOCKET_H
 
-#undef I_NETDB
+#define HAVE_SYS_STAT_H 1
 
-#undef I_NETINET_IN
-
-#undef I_NETINET_TCP
-
-#undef HAVE_STDINT_H
-
-#undef I_SYS_ERRNO
-
-#undef I_SYS_FILE
-
-#undef I_SYS_IN
-
-#undef I_SYS_MMAN
-
- #undef I_SYS_PAGE
-
-#undef I_SYS_PARAM
-
-#undef I_SYS_SOCKET
-
-#define I_SYS_STAT
-
-#undef I_SYS_TIME
+#undef HAVE_SYS_TIME_H
 
 #undef TIME_WITH_SYS_TIME
 
-#define I_SYS_TYPES
+#define HAVE_SYS_TYPES_H
 
 #undef HAVE_UNISTD_H
 
-#ifdef HAVE_UNISTD_H
-#define I_UNISTD
-#endif
-
 #undef HAVE_SYS_WAIT_H
-
-#ifdef HAVE_SYS_WAIT_H
-#define I_SYS_WAIT
-#endif
-
-#undef HAVE_IEEEFP_H
 
 #undef HAVE_SYS_UN_H
 
+#undef HAVE_SYS_RESOURCE_H
+
 #undef HAVE_SYS_EVENT_H
+
+#undef HAVE_SYS_EVENT_H
+
+#undef HAVE_SYS_UIO_H
+
+#undef HAVE_POLL_H
+
+#undef HAVE_SYS_SELECT_H
+
+#undef HAVE_SYS_INOTIFY_H
+
+#undef HAVE_ZLIB_H
+
+#undef HAVE_BYTESWAP_H
+
+#undef HAVE_LIBZ
 
 /* C99ish headers. The first two are really really nice to have. */
 
@@ -73,13 +59,15 @@
 
 #undef HAVE_STDBOOL_H
 
+#undef HAVE_FENV_H
+
+#undef HAVE_SYS_PARAM_H
+
+#undef HAVE_SYS_UCRED_H
+
 /* Libraries */
 
 #undef HAVE_MYSQL
-
-#ifdef HAVE_MYSQL
-#define HAS_MYSQL
-#endif
 
 #undef HAVE_POSTGRESQL
 
@@ -89,14 +77,16 @@
    win32/README_OPENSSL.txt */
 #define HAVE_SSL 1
 
-#ifdef HAVE_SSL
-#define HAS_OPENSSL
-#endif
-
 /* You MUST have the PCRE library installed. See
    win32/README_PCRE.txt */
 #define HAVE_PCRE
 #define HAVE_PCRE_H
+
+#undef HAVE_EVENT2_EVENT_H
+
+#undef HAVE_EVENT2_DNS_H
+
+#undef HAVE_LIBEVENT_CORE
 
 /* Types */
 
@@ -124,25 +114,6 @@
 #define uintmax_t unsigned __int64
 
 #define pid_t unsigned long
-
-/* 4 */
-#define SIZEOF_INT 4
-
-/* 4 or 8 */
-#define SIZEOF_LONG 4
-
-/* 0 if no 64-bit type (We shouldn't be seeing that case) or 8. See below. */
-#define SIZEOF_INT64_T 8
-
-/* 8 on most modern CPUs Penn will be used on. They either have  64-bit 
-* words (amd64, sparc64, powerpc64) or support an extended 64-bit type (i386, 
-* powerpc32) */
-#define SIZEOF_INTMAX_T 8
-
-#define SIZEOF_TIME_T 4
-
-/* 4 or 8 */
-#define SIZEOF_VOID_P 4
 
 /* Taken from autoconf manual */
 #if HAVE_STDBOOL_H

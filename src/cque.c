@@ -167,12 +167,6 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
   return num;
 }
 
-#if SIZEOF_VOID_P == 4
-typedef int32_t pint_t;
-#else
-typedef int64_t pint_t;
-#endif
-
 /** Wrapper for add_to_generic() to incremement a player's QUEUE attribute.
  * \param player object whose QUEUE should be incremented
  * \param am amount to increment the QUEUE by
@@ -181,23 +175,25 @@ typedef int64_t pint_t;
 static int
 add_to(dbref player, int am)
 {
-  pint_t count;
-  void *d;
+  int *count;
 
   if (QUEUE_PER_OWNER)
     player = Owner(player);
 
-  d = get_objdata(player, "QUEUE");
-  if (!d)
-    count = 0;
-  else
-    count = (pint_t) d;
-
-  count += am;
-
-  set_objdata(player, "QUEUE", (void *) count);
-
-  return count;
+  count = get_objdata(player, "QUEUE");
+  if (!count) {
+    count = mush_malloc(sizeof *count, "queue.count");
+    *count = 0;
+    set_objdata(player, "QUEUE", count);
+  }
+  *count += am;
+  if (*count == 0) {
+    set_objdata(player, "QUEUE", NULL);
+    mush_free(count, "queue.count");
+    return 0;
+  } else {
+    return *count;
+  }
 }
 
 /** Wrapper for add_to_generic() to incrememnt an attribute when a

@@ -541,19 +541,19 @@ parse_int(const char *s, char **end, int base)
 
   x = strtol(s, end, base);
 
-#if SIZEOF_INT == SIZEOF_LONG
-  return x;
-#else
-  /* These checks are only meaningful on 64-bit systems */
-  if (x < INT_MIN) {
-    errno = ERANGE;
-    return INT_MIN;
-  } else if (x > INT_MAX) {
-    errno = ERANGE;
-    return INT_MAX;
-  } else
+  if (sizeof(int) == sizeof(long))
     return x;
-#endif
+  else {
+    /* These checks are only meaningful on 64-bit systems */
+    if (x < INT_MIN) {
+      errno = ERANGE;
+      return INT_MIN;
+    } else if (x > INT_MAX) {
+      errno = ERANGE;
+      return INT_MAX;
+    } else
+      return x;
+  }
 }
 
 /** Convert a string containing a signed integer into an int32_t.
@@ -568,29 +568,24 @@ parse_int(const char *s, char **end, int base)
 int32_t
 parse_int32(const char *s, char **end, int base)
 {
-#if SIZEOF_INT == 4
+
+  if (sizeof(int) == 4)
   return parse_int(s, end, base);
-#elif defined(SCNd32)
+
+#if defined(SCNd32)
   /* This won't do overflow checking, which is why it isn't first */
-  const char *fmt;
   int32_t val;
 
-  if (base == 10)
-    fmt = "%" SCNd32;
-  else if (base == 8)
-    fmt = "%" SCNo32;
-  else if (base == 16)
-    fmt = "%" SCNx32;
-  else
-    /* Unsupported base in this mode */
+  /* Unsupported base in this mode */
+  if (base != 10)
     return 0;
 
-  if (sscanf(s, fmt, &val) != 1)
+  if (sscanf(s, "%" SCNd32, &val) != 1)
     return 0;
   else
     return val;
 #else
-#error "No way to parse a 32-bit integer string"
+  return 0;
 #endif
 }
 
@@ -612,16 +607,16 @@ parse_uint(const char *s, char **end, int base)
 
   x = strtoul(s, end, base);
 
-#if SIZEOF_INT == SIZEOF_LONG
-  return x;
-#else
-  /* These checks are only meaningful on 64-bit systems */
-  if (x > UINT_MAX) {
-    errno = ERANGE;
-    return UINT_MAX;
-  } else
+  if (sizeof(int) == sizeof(long))
     return x;
-#endif
+  else {
+    /* These checks are only meaningful on 64-bit systems */
+    if (x > UINT_MAX) {
+      errno = ERANGE;
+      return UINT_MAX;
+    } else
+      return x;
+  }
 }
 
 /** Convert a string containing an unsigned integer into an uint32_t.
@@ -636,22 +631,30 @@ parse_uint(const char *s, char **end, int base)
 uint32_t
 parse_uint32(const char *s, char **end, int base)
 {
-#if SIZEOF_INT == 4
-  return parse_uint(s, end, base);
-#elif defined(SCNu32)
+
+  if (sizeof(int) == 4)
+    return parse_uint(s, end, base);
+  
+#if defined(SCNu32)
   /* This won't do overflow checking, which is why it isn't first */
   const char *fmt;
   uint32_t val;
-
-  if (base != 10)
+  
+  if (base == 10)
+    fmt = "%" SCNu32;
+  else if (base == 8)
+    fmt = "%" SCNo32;
+  else if (base == 16)
+    fmt = "%" SCNx32;
+  else
     return 0;
-
-  if (sscanf(s, SCNu32, &val) != 1)
+  
+  if (sscanf(s, fmt, &val) != 1)
     return 0;
   else
     return val;
 #else
-#error "No way to parse a 32-bit integer string"
+  return 0;
 #endif
 }
 

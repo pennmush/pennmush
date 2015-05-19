@@ -25,8 +25,6 @@ typedef int32_t IVAL;
 /** Math function unsigned integral type */
 typedef uint32_t UIVAL;
 
-#define SIZEOF_IVAL 4
-
 /** Dbref type */
 typedef int dbref;
 

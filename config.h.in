@@ -125,25 +125,6 @@
 
 #undef uintmax_t
 
-/* 4 */
-#undef SIZEOF_INT
-
-/* 4 or 8 */
-#undef SIZEOF_LONG
-
-/* 0 if no 64-bit type (We shouldn't be seeing that case) or 8. See below. */
-#undef SIZEOF_INT64_T
-
-/* 8 on most modern CPUs Penn will be used on. They either have  64-bit 
-* words (amd64, sparc64, powerpc64) or support an extended 64-bit type (i386, 
-* powerpc32) */
-#undef SIZEOF_INTMAX_T
-
-#undef SIZEOF_TIME_T
-
-/* 4 or 8 */
-#undef SIZEOF_VOID_P
-
 /* Taken from autoconf manual */
 #if HAVE_STDBOOL_H
 # include <stdbool.h>

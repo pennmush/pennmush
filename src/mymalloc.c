@@ -199,10 +199,10 @@ slab_create(const char *name, size_t item_size)
   sl->keep_last_empty = 0;
   sl->hintless_threshold = 0;
   sl->slabs = NULL;
-  if (item_size < SIZEOF_VOID_P)
-    item_size = SIZEOF_VOID_P;
+  if (item_size < sizeof(void*))
+    item_size = sizeof(void*);
   /* Align objects after the first with the size of a pointer */
-  item_size += item_size % SIZEOF_VOID_P;
+  item_size += item_size % sizeof(void*);
   sl->item_size = item_size;
   sl->items_per_page = (pgsize - offset) / item_size;
 

@@ -81,11 +81,7 @@ static void lmathcomp(char **ptr, int nptr, char *buff, char **bp,
 static IVAL
 parse_ival_full(const char *str, char **end, int base)
 {
-#if SIZEOF_IVAL == 4
   return parse_int32(str, end, base);
-#else
-#error "Unsupported IVAL size"
-#endif
 }
 
 static IVAL
@@ -97,11 +93,7 @@ parse_ival(const char *str)
 static UIVAL
 parse_uival_full(const char *str, char **end, int base)
 {
-#if SIZEOF_IVAL == 4
   return parse_uint32(str, end, base);
-#else
-#error "Unsupported IVAL size"
-#endif
 }
 
 static UIVAL

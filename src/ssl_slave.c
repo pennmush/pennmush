@@ -28,6 +28,10 @@
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 
+#ifdef HAVE_WEBSOCK_WEBSOCK_H
+#include <websock/websock.h>
+#endif
+
 #include "SFMT.h"
 #include "conf.h"
 #include "log.h"
@@ -44,7 +48,6 @@ void errputs(FILE *, const char *);
 #define SSL_DEBUG_LEVEL 1
 
 pid_t parent_pid = -1;
-int ssl_sock = -1;
 int keepalive_timeout = 300;
 const char *socket_file = NULL;
 struct event_base *main_loop = NULL;
@@ -72,6 +75,11 @@ struct conn {
   struct bufferevent *local_bev;
   struct bufferevent *remote_bev;
   struct evdns_request *resolver_req;
+#ifdef HAVE_LIBWEBSOCK
+  libwebsock_client_state *ws_client;
+  char *backlog;
+  int bl_len;
+#endif
   struct conn *next;
   struct conn *prev;
 };
@@ -106,6 +114,10 @@ free_conn(struct conn *c)
     free(c->remote_ip);
   if (c->resolver_req)
     evdns_cancel_request(resolver, c->resolver_req);
+#ifdef HAVE_LIBWEBSOCK
+  if (c->backlog)
+    free(c->backlog);
+#endif
   free(c);
 }
 
@@ -170,8 +182,6 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
 
 /* libevent callback functions */
 
-void pipe_cb(struct bufferevent *from_bev, void *data);
-
 /** Read from one buffer and write the results to the other */
 void
 pipe_cb(struct bufferevent *from_bev, void *data)
@@ -205,8 +215,6 @@ pipe_cb(struct bufferevent *from_bev, void *data)
   }
 }
 
-void local_connected(struct conn *c);
-
 /** Called after the local connection to the mush has established */
 void
 local_connected(struct conn *c)
@@ -237,9 +245,6 @@ local_connected(struct conn *c)
   free(hostid);
 }
 
-void address_resolved(int result, char type, int count, int ttl
-                      __attribute__ ((__unused__)), void *addresses,
-                      void *data);
 /** Called after the remote hostname has been resolved. */
 void
 address_resolved(int result, char type, int count, int ttl
@@ -275,6 +280,7 @@ address_resolved(int result, char type, int count, int ttl
 
   c->state = C_LOCAL_CONNECTING;
 
+  memset(&addr, 0, sizeof addr);
   addr.sun_family = AF_LOCAL;
   strncpy(addr.sun_path, socket_file, sizeof(addr.sun_path) - 1);
   c->local_bev =
@@ -286,7 +292,6 @@ address_resolved(int result, char type, int count, int ttl
   bufferevent_enable(c->local_bev, EV_WRITE);
 }
 
-void ssl_connected(struct conn *c);
 /** Called after the SSL connection and initial handshaking is complete. */
 void
 ssl_connected(struct conn *c)
@@ -480,10 +485,134 @@ shutdown_cb(evutil_socket_t fd __attribute__ ((__unused__)),
       bufferevent_disable(c->local_bev, EV_READ);
       bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
     }
+#ifdef HAVE_LIBWEBSOCK
+    if (c->ws_client)
+      libwebsock_close_with_reason(c->ws_client, WS_CLOSE_GOING_AWAY, NULL);
+#endif
   }
   event_base_loopexit(main_loop, NULL);
 }
 
+#ifdef HAVE_LIBWEBSOCK
+
+void ws_bev_event_cb(struct bufferevent *, short, void *);
+
+/** Received text from the remote end of the web socket. */
+int
+ws_recv_cb(libwebsock_client_state *state, libwebsock_message *msg) {
+  struct conn *c = state->data;
+  if (c->state == C_ESTABLISHED)
+    bufferevent_write(c->local_bev, msg->payload, msg->payload_len);
+  else
+    0;
+  return 0;
+}
+
+/** Remote end of a web socket closed the connection */
+int
+ws_shutdown_cb(libwebsock_client_state *state) {
+  struct conn *c = state->data;
+  bufferevent_disable(c->local_bev, EV_READ);
+  bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
+  delete_conn(c);
+  return 0;
+}
+
+void
+ws_local_cb(struct bufferevent *bev, void *data)
+{
+  struct conn *c = data;
+  char buff[BUFFER_LEN];
+  size_t len;
+
+  len = bufferevent_read(bev, buff, sizeof buff);
+  if (len > 0)
+    libwebsock_send_text_with_length(c->ws_client, buff, len);
+}
+
+/** Call after completing the local connection */
+void
+ws_local_connected(struct conn *c) {
+  char *hostid;
+  int len;
+  
+  bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
+  bufferevent_setcb(c->local_bev, ws_local_cb, NULL, ws_bev_event_cb, c);
+  c->state = C_ESTABLISHED;
+
+  /* Now pass the remote host and IP to the mush as the very first line it gets */
+  len = strlen(c->remote_host) + strlen(c->remote_ip) + 3;
+  hostid = malloc(len + 1);
+  sprintf(hostid, "%s^%s\r\n", c->remote_ip, c->remote_host);
+
+  if (send_with_creds(bufferevent_getfd(c->local_bev), hostid, len) < 0) {
+    penn_perror("send_with_creds");
+    libwebsock_close(c->ws_client);
+    delete_conn(c);
+  }
+
+  free(hostid);
+}
+
+/** Opened a new web socket connection */
+int
+ws_connect_cb(libwebsock_client_state *state) {
+  struct conn *c;
+  struct hostname_info *ipaddr;
+  struct sockaddr_un addr;
+  
+  c = alloc_conn();
+
+  if (connections)
+    connections->prev = c;
+  c->next = connections;
+  connections = c;
+  
+  c->ws_client = state;
+  state->data = c;
+
+  /* This library doesn't let us pause a connection to wait for things like hostname lookup. Just use IP address for now */
+  c->remote_addrlen = sizeof(c->remote_addr);
+  getpeername(state->sockfd, &c->remote_addr.addr, &c->remote_addrlen);
+  ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
+  c->remote_host = strdup(ipaddr->hostname);
+  c->remote_ip = strdup(ipaddr->hostname);
+
+  /* Now make a local connection */
+  c->state = C_LOCAL_CONNECTING;
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_LOCAL;
+  strncpy(addr.sun_path, socket_file, sizeof(addr.sun_path) - 1);
+  c->local_bev =
+    bufferevent_socket_new(main_loop, -1, BEV_OPT_CLOSE_ON_FREE|BEV_OPT_DEFER_CALLBACKS);
+  bufferevent_socket_connect(c->local_bev, (struct sockaddr *)&addr,
+			     sizeof addr);
+  bufferevent_setcb(c->local_bev, NULL, NULL, ws_bev_event_cb, c);
+  bufferevent_enable(c->local_bev, EV_WRITE);
+  
+  return 0;
+}
+
+void
+ws_bev_event_cb(struct bufferevent *bev, short what, void *data)
+{
+  struct conn *c = data;
+  uint32_t error_conditions =
+    BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT;
+
+  if (what & BEV_EVENT_CONNECTED) {
+    ws_local_connected(c);
+  } else if (what & error_conditions) {
+    /* Local connection went away. */
+    bufferevent_disable(bev, EV_READ | EV_WRITE);
+    bufferevent_free(bev);
+    c->local_bev = NULL;
+    c->state = C_SHUTTINGDOWN;
+    delete_conn(c);
+  }
+}
+
+#endif
 
 int
 main(int argc __attribute__ ((__unused__)), char **argv
@@ -495,7 +624,12 @@ main(int argc __attribute__ ((__unused__)), char **argv
   struct event *ssl_listener;
   struct conn *c, *n;
   int len;
-
+  int ssl_sock = -1;
+#ifdef HAVE_LIBWEBSOCK
+  libwebsock_context *ws_ctx;
+  int ws_sock = -1;
+#endif
+  
   len = read(0, &cf, sizeof cf);
   if (len < 0) {
     errprintf(stderr,
@@ -509,7 +643,7 @@ main(int argc __attribute__ ((__unused__)), char **argv
 
   if (!ssl_init(cf.private_key_file, cf.ca_file, cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
-    exit(EXIT_FAILURE);
+    return EXIT_FAILURE;
   }
 
   socket_file = cf.socket_file;
@@ -519,10 +653,36 @@ main(int argc __attribute__ ((__unused__)), char **argv
 
   /* Listen for incoming connections on the SSL port */
   ssl_sock = make_socket(cf.ssl_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
-  ssl_listener =
-    event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
-  event_add(ssl_listener, NULL);
+  if (ssl_sock >= 0) {
+    ssl_listener =
+      event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
+    event_add(ssl_listener, NULL);
+  } else {
+    fputs("Unable to open SSL socket!\n", stderr);
+    return EXIT_FAILURE;
+  }
 
+  /* Websocket connections */
+#ifdef HAVE_LIBWEBSOCK
+  ws_ctx = libwebsock_init_base(main_loop, 0);
+  if (!ws_ctx) {
+    fputs("Web Socket initialization failure!\n", stderr);
+    return EXIT_FAILURE;
+  }
+  ws_sock = make_socket(cf.websock_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
+  if (ws_sock >= 0)
+    libwebsock_bind_socket(ws_ctx, ws_sock);
+  else {
+    fputs("Unable to open websocket!\n", stderr);
+    return EXIT_FAILURE;
+  }
+
+  ws_ctx->onmessage = ws_recv_cb;
+  ws_ctx->onopen = ws_connect_cb;
+  ws_ctx->onclose = ws_shutdown_cb;  
+#endif
+  
+  
   /* Run every 5 seconds to see if the parent mush process is still around. */
   watch_parent =
     event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
@@ -535,7 +695,13 @@ main(int argc __attribute__ ((__unused__)), char **argv
 
   errprintf(stderr, "ssl_slave: starting event loop using %s.\n",
             event_base_get_method(main_loop));
+
+#ifdef HAVE_LIBWEBSOCK
+  libwebsock_wait(ws_ctx);
+#else
   event_base_dispatch(main_loop);
+#endif
+
   errputs(stderr, "shutting down.");
 
   close(ssl_sock);

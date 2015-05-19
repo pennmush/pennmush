@@ -90,6 +90,10 @@
 
 #endif
 
+#undef HAVE_WEBSOCK_WEBSOCK_H
+
+#undef HAVE_LIBWEBSOCK
+
 /* Types */
 
 #undef HAVE__BOOL

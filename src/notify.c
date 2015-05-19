@@ -171,7 +171,10 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
 #define MSGTYPE_TNXTERM256       (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS | MSG_XTERM256)    /*    256        0         1          0    */
 
 #ifndef WITHOUT_WEBSOCKETS
-#define MSGTYPE_WEBSOCKETS       (MSG_PLAYER | MSG_WEBSOCKETS)
+#define MSGTYPE_WEBSOCKETS	(MSG_PLAYER | MSG_WEBSOCKETS)
+#define MSGTYPE_WSANSI2		(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI2)
+#define MSGTYPE_WSANSI16	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
+#define MSGTYPE_WSXTERM256	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_XTERM256)
 #endif /* undef WITHOUT_WEBSOCKETS */
 
 /* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
@@ -204,6 +207,9 @@ enum na_type {
   NA_TNXTERM256,
 #ifndef WITHOUT_WEBSOCKETS
   NA_WEBSOCKETS,
+  NA_WSANSI2,
+  NA_WSANSI16,
+  NA_WSXTERM256,
 #endif /* undef WITHOUT_WEBSOCKETS */
   NA_COUNT                      /* Total number of NA_* flags */
 };
@@ -590,14 +596,6 @@ make_prefix_str(dbref thing, dbref enactor, const char *msg, char *tbuf1)
 static enum na_type
 msg_to_na(int output_type)
 {
-#ifndef WITHOUT_WEBSOCKETS
-  if (output_type & MSG_WEBSOCKETS) {
-    /* WebSocket clients only get one rendering. */
-    /* TODO: Some players might want to disable ANSI/color, though. */
-    return NA_WEBSOCKETS;
-  }
-#endif /* undef WITHOUT_WEBSOCKETS */
-
   if (output_type & MSG_PUEBLO)
     output_type &= ~MSG_TELNET;
 
@@ -657,6 +655,16 @@ msg_to_na(int output_type)
     return NA_TNANSI16;
   case MSGTYPE_TNXTERM256:
     return NA_TNXTERM256;
+#ifndef WITHOUT_WEBSOCKETS
+  case MSGTYPE_WEBSOCKETS:
+    return NA_WEBSOCKETS;
+  case MSGTYPE_WSANSI2:
+    return NA_WSANSI2;
+  case MSGTYPE_WSANSI16:
+    return NA_WSANSI16;
+  case MSGTYPE_WSXTERM256:
+    return NA_WSXTERM256;
+#endif /* undef WITHOUT_WEBSOCKETS */
   }
 
   /* we should never get here. */

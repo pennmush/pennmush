@@ -1,4 +1,5 @@
 *.o
+*.s
 *~
 *.bak
 *.patch
@@ -24,6 +25,10 @@ game/txt/events.txt
 game/txt/help.txt
 game/txt/news.txt
 game/save
+game/core
+game/*.crt
+game/*.csr
+game/*.key
 hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h

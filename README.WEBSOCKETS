@@ -1,0 +1,15 @@
+This branch is a proof of concept work for integrating websocket
+support into ssl_slave. It doesn't actually work right now due to a
+library bug.
+
+There's a bigger bug, too. The libwebsock library it depends on
+(Available on arch linux as libwebsock-git in AUR), the only one I
+found that builds on libevent, the event dispatch system ssl_slave
+uses, is written by somebody who died last year, and there's no clear
+successor in taking over maintenance. It might end up being me...
+
+There's also grapenut's in-line websocket implementation, but one of
+my long term goals is moving all the network handling out of netmud to
+ssl_slave, to support things like STARTTLS connections without
+dropping them on a reboot. His version uses the same port as normal,
+this one uses a different port... I'm not sure yet what style I like.

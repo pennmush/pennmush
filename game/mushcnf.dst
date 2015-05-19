@@ -219,6 +219,14 @@ ssl_require_client_cert no
 socket_file data/netmush.sock
 
 ###
+### Websocket Support
+###
+
+# What port to listen to websocket connections on.
+# Uses ssl_ip_address for the IP address
+websocket_port 0
+
+###
 ### Limits, costs, and other constants
 ###
 

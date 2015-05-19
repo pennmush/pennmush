@@ -195,6 +195,7 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
+  {"websocket_port", cf_int, &options.ws_port, 65534, 0, "net"},
   {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
    "net"}
   ,
@@ -1291,6 +1292,7 @@ conf_default_set(void)
   strcpy(options.mud_url, "");
   options.port = 4201;
   options.ssl_port = 0;
+  options.ws_port = 0;
   strcpy(options.socket_file, "data/netmush.sock");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");

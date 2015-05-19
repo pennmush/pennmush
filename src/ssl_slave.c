@@ -626,7 +626,7 @@ main(int argc __attribute__ ((__unused__)), char **argv
   int len;
   int ssl_sock = -1;
 #ifdef HAVE_LIBWEBSOCK
-  libwebsock_context *ws_ctx;
+  libwebsock_context *ws_ctx = NULL;
   int ws_sock = -1;
 #endif
   
@@ -652,34 +652,39 @@ main(int argc __attribute__ ((__unused__)), char **argv
   resolver = evdns_base_new(main_loop, 1);
 
   /* Listen for incoming connections on the SSL port */
-  ssl_sock = make_socket(cf.ssl_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
-  if (ssl_sock >= 0) {
-    ssl_listener =
-      event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
-    event_add(ssl_listener, NULL);
-  } else {
-    fputs("Unable to open SSL socket!\n", stderr);
-    return EXIT_FAILURE;
+  if (cf.ssl_port > 0) {
+    ssl_sock = make_socket(cf.ssl_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
+    if (ssl_sock >= 0) {
+      ssl_listener =
+	event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
+      event_add(ssl_listener, NULL);
+    } else {
+      fputs("Unable to open SSL socket!\n", stderr);
+      return EXIT_FAILURE;
+    }
   }
 
   /* Websocket connections */
 #ifdef HAVE_LIBWEBSOCK
-  ws_ctx = libwebsock_init_base(main_loop, 0);
-  if (!ws_ctx) {
-    fputs("Web Socket initialization failure!\n", stderr);
-    return EXIT_FAILURE;
-  }
-  ws_sock = make_socket(cf.websock_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
-  if (ws_sock >= 0)
-    libwebsock_bind_socket(ws_ctx, ws_sock);
-  else {
-    fputs("Unable to open websocket!\n", stderr);
-    return EXIT_FAILURE;
-  }
+  if (cf.websock_port > 0) {
+    ws_ctx = libwebsock_init_base(main_loop, 0);
+    if (!ws_ctx) {
+      fputs("Web Socket initialization failure!\n", stderr);
+      return EXIT_FAILURE;
+    }
+    ws_sock = make_socket(cf.websock_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);
+    if (ws_sock >= 0) {
+      libwebsock_bind_socket(ws_ctx, ws_sock);
+      fprintf(stdout, "Listening for websocket connections on port %d\n", cf.websock_port);
+    } else {
+      fputs("Unable to open websocket!\n", stderr);
+      return EXIT_FAILURE;
+    }
 
-  ws_ctx->onmessage = ws_recv_cb;
-  ws_ctx->onopen = ws_connect_cb;
-  ws_ctx->onclose = ws_shutdown_cb;  
+    ws_ctx->onmessage = ws_recv_cb;
+    ws_ctx->onopen = ws_connect_cb;
+    ws_ctx->onclose = ws_shutdown_cb;
+  }
 #endif
   
   
@@ -697,9 +702,11 @@ main(int argc __attribute__ ((__unused__)), char **argv
             event_base_get_method(main_loop));
 
 #ifdef HAVE_LIBWEBSOCK
-  libwebsock_wait(ws_ctx);
+  if (cf.websock_port > 0)
+    libwebsock_wait(ws_ctx);
+  else
 #else
-  event_base_dispatch(main_loop);
+    event_base_dispatch(main_loop);
 #endif
 
   errputs(stderr, "shutting down.");

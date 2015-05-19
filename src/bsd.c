@@ -979,17 +979,18 @@ shovechars(Port_t port, Port_t sslport)
     if (sock >= maxd)
       maxd = sock + 1;
 
-    if (sslport) {
 #ifdef SSL_SLAVE
+    if (sslport || options.ws_port) 
       if (make_ssl_slave() < 0)
         do_rawlog(LT_ERR, "Unable to start ssl_slave");
 #else
+    if (sslport) {
       sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
       if (sslsock >= maxd)
         maxd = sslsock + 1;
-#endif
     }
+#endif
   }
 
   avail_descriptors = how_many_fds() - 5;
@@ -6173,7 +6174,7 @@ load_reboot_db(void)
     else
       ssl_slave_ctl_fd = -1;
 
-    if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
+    if ((SSLPORT || options.ws_port) && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR,
                 "ssl_slave does not appear to be running on reboot. Restarting the slave.");

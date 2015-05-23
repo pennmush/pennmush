@@ -746,7 +746,7 @@ WARN_FORMAT            = "$file:$line: $text"
 # messages should be written. If left blank the output is written to standard
 # error (stderr).
 
-WARN_LOGFILE           =
+WARN_LOGFILE           = doxygen_warnings.log
 
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
@@ -797,9 +797,8 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = utils \
-                         */obsolete/* \
-                         */RCS/* \
-                         */.svn/*
+                         win32 \
+                         */.git/*
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

@@ -1474,12 +1474,12 @@ FUNCTION(fun_benchmark)
   dbref thing = NOTHING;
 
   if (!is_number(args[1])) {
-    safe_str(T(e_nums), buff, bp);
+    safe_str(T(e_uint), buff, bp);
     return;
   }
   n = parse_number(args[1]);
   if (n < 1) {
-    safe_str(T(e_range), buff, bp);
+    safe_str(T(e_uint), buff, bp);
     return;
   }
 

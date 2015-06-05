@@ -1117,12 +1117,15 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
       if (queue_type & QUEUE_INPLACE) {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_SHARE, queue_type, pe_regs);
+        pe_regs = NULL; /* Already freed when the inplace queue is freed */
       } else {
         new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_CLONE, queue_type, pe_regs);
       }
       mush_free(tbuf1, "replace_string.buff");
     }
+    if (pe_regs)
+      pe_regs_free(pe_regs);
   }
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
@@ -1132,9 +1135,11 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     if (queue_type & QUEUE_INPLACE) {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);
+      /* pe_regs is freed automatically when the inplace queue is freed */
     } else {
       new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_CLONE, queue_type, pe_regs);
+      pe_regs_free(pe_regs);
     }
     mush_free(tbuf1, "replace_string.buff");
   }

@@ -78,7 +78,7 @@ See also: @chat, @pageformat, @message, speak(), mogrify
          %0[stripansi(%2)]),sub(width(%!),add(4,strlen(%1)))),%r,%r<%1>%b))]
 
   If you're on a system with chat_strip_quote set to "no", you might
-  want to change the "%0%2" arg to speak() to '[switch(%0,",%2,%0%2)]'
+  want to change the '%0%2' arg to speak() to '[switch(%0,",%2,%0%2)]'
 
   Suppose you want it just like the old version, but anytime somebody
   says your name, you want it all in red:

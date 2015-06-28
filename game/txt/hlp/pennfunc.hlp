@@ -4964,11 +4964,12 @@ See also: repeat()
                                              as SPEAKPENN())
   ;<pose>            <speaker's name><pose>
   |<emit>            <emit>
-  "<speech>          <speaker's name> says, "<speech>"
   <speech>           <speaker's name> says, "<speech>"
+  
+  The chat_strip_quote config option affects this function, so if <speech>
+  starts with a leading double quote ("), it may be stripped.
  
-  If <say string> is specified, it is used instead of "says," /
-  "says".
+  If <say string> is specified, it is used instead of "says,".
 
   Continued in 'help speak2'.
 & SPEAK2

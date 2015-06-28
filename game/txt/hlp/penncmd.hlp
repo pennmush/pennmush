@@ -3357,15 +3357,6 @@ See also: ACTION LISTS, BOOLEAN VALUES, @break, @include
   by a wizard.
 
 See also: @halt, @startup, @shutdown
-& @rwall
-  @rwall[/emit] <message>
-
-  Only wizards and royalty may use this command. It broadcasts a
-  message to all connected wizards and royals. If the /emit switch
-  is given, it's done as a prefixed emit. Otherwise, it acts like
-  a @channel.
-
-See also: @wall, @wizwall
 & @scan
   @scan[/<switch>] <command>
   
@@ -4200,15 +4191,20 @@ See also: SEMAPHORES, @drain, @notify
 
   You must control the object doing the wait, or have the halt @power.
 & @wall
-  @wall[/<switch>] <message>
+  @wall[/emit][/noeval] <message>
+  @rwall[/emit][/noeval] <message>
+  @wizwall[/emit][/noeval] <message>
 
-  Only wizards can use this command, which allows the player to shout
-  or pose a message to every player connected. It must be typed in full.
-  It can also take the following switches
-  /emit    : emit a prefixed message to all.
-  /noeval  : Don't evaluate the message.
-
-  You can also use @wall :<pose> to @wallpose.
+  @wall sends <message> to all connected players. @rwall only sends the
+  message to connected wizards and royalty, and @wizwall is seen only be
+  wizards.
+  
+  <message> can be prefixed with : or ; to pose or semi-pose it, respectively,
+  or the /emit switch can be given to emit the message. If <message> begins
+  with a " and the chat_strip_quote option is on, the " will be stripped.
+  
+  The message is prefixed with the value of the wall_prefix, rwall_prefix
+  or wizwall_prefix options, depending on the command used.
 
 See also: @wizwall, @rwall
 & @warnings
@@ -4300,14 +4296,6 @@ See also: UNFINDABLE, loc()
 
   When wiping an attribute that is the root of an attribute tree, all
   attributes in that tree will also be removed.
-& @wizwall
-  @wizwall[/emit] <message>
-
-  This wiz-only command works similarly to @rwall or @wall, sending
-  a message in either say, pose, or emit format to all wizards who
-  are currently logged in. 
-
-See also: @wall, @rwall
 & @zemit
   @zemit[/silent|/noisy] <zone>=<message>
 
@@ -4846,6 +4834,9 @@ See also: say, @emit, @speechmod
   If you have a SPEECHMOD attribute set, it will be evaluated with <message>
   passed as %0 and " (a double-quote) passed as %1. The result is shown 
   instead of <message>, as long as it evaluates to a non-empty string.
+  
+  If <message> begins with a double-quote and the chat_strip_quote @config
+  option is on, the leading " will be stripped.
 
 See also: pose, whisper, @speechmod, @emit, page
 & score

@@ -4191,6 +4191,8 @@ See also: SEMAPHORES, @drain, @notify
 
   You must control the object doing the wait, or have the halt @power.
 & @wall
+& @rwall
+& @wizwall
   @wall[/emit][/noeval] <message>
   @rwall[/emit][/noeval] <message>
   @wizwall[/emit][/noeval] <message>

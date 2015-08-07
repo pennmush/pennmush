@@ -137,10 +137,7 @@ customize: update-conf
 GAMEDIR=game
 
 $(GAMEDIR):
-	mkdir $(GAMEDIR)
-	mkdir $(GAMEDIR)/log
-	mkdir $(GAMEDIR)/data
-	$(CP) -R game/txt $(GAMEDIR)/
+	$(CP) -R game/ $(GAMEDIR)/
 
 $(GAMEDIR)/alias.cnf: game/aliascnf.dst $(GAMEDIR)
 	-@@TOUCH@ game/aliascnf.dst

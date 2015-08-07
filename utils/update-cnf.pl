@@ -42,7 +42,7 @@ if (-r $old) {
 } else {
     # Heck, let's just copy the new file to the old one and quit!
     print "*** Creating $old from $new...\n";
-    copy $new, $old or die "Unable to copy $old to $new: $!\n";
+    copy $new, $old or die "Unable to copy $new to $old: $!\n";
     exit 0;
 }
 

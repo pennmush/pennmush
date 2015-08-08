@@ -17,7 +17,7 @@
 $tar1="(cd game; tar cf - .) | (cd ";
 $tar2="; tar xfBp -)";
 
-@dontwrite = ("src","hdrs","hints","game");
+@dontwrite = ("src","hdrs","hints","game","po","utils","test","win32");
 
 
 # Interact with the user

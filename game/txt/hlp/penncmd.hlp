@@ -321,8 +321,8 @@ See also: get, move, @lock, ACTION LISTS, VERBS, @success
 & @ofollow
 & @afollow
   @follow <object>[=<message>]
-  @ofollow <object>[= <message>]
-  @aunfollow <object>[=<action list>]
+  @ofollow <object>[=<message>]
+  @afollow <object>[=<action list>]
   
   Sets the message shown to someone who begins following <object>,
   the message shown to others in the room, and the actions to be taken

@@ -2384,6 +2384,8 @@ See also: words()
   If you nest iter()s, ## and #@ refer to the first/outermost iter(). The
   ilev() function can be used to get the current iter() nesting level.
 
+  parse() is an alias for iter().
+
   See 'help iter2' for examples.
 See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
 & ITER2
@@ -2409,8 +2411,13 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     You say, "0
     1
     2"
-  
-  parse() is an alias for iter().
+
+  An example of why using ## instead of %i0 can be insecure, and lead to
+  unintended evaluation:
+    > say iter((1\,1),add##)
+	You say, "2"
+	> say iter((1\,1),add%i0)
+	You say, "add(1,1)"
 & IBREAK()
   ibreak([<level>])
   

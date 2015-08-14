@@ -679,8 +679,8 @@ check_lock_type(dbref player, dbref thing, lock_type name)
   /* If the lock is set, it's allowed, whether it exists normally or not. */
   if (getlock(thing, name) != TRUE_BOOLEXP)
     return name;
-  /* Check to see if it's a well-formed user-defined lock. */
 
+  /* Check to see if it's a well-formed user-defined lock. */
   if (!string_prefix(name, "User:")) {
     notify(player, T("Unknown lock type."));
     return NULL;
@@ -689,17 +689,15 @@ check_lock_type(dbref player, dbref thing, lock_type name)
     notify(player, T("The character \'|\' may not be used in lock names."));
     return NULL;
   }
-  mush_strncpy(user_name, name, BUFFER_LEN);
-  colon = strchr(user_name, ':');
-  if (colon)                    /* Should always be true */
-    *colon = '\0';
+  colon = strchr(name, ':') + 1;
+  mush_strncpy(user_name, colon, BUFFER_LEN);
 
   if (!good_atr_name(user_name)) {
     notify(player, T("That is not a valid lock name."));
     return NULL;
   }
 
-  return strchr(name, ':') + 1;
+  return colon;
 }
 
 /** Unlock a lock (user interface).

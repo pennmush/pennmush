@@ -36,3 +36,4 @@ Hardcode:
    trimmed down. [SW]
  * game/restart is now auto-generated during 'make update'. [928-TK]
  * Fixed a memory leak in @switch. [MG]
+ * A bug in @lock allowed invalid lock names to be used. [MG]

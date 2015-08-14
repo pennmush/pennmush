@@ -507,8 +507,8 @@ FUNCTION(fun_listq)
       }
 
       /* Insert it into the tree if it's non-blank. */
-      if ((val->type & PE_REGS_STR) && *(val->val.sval)
-          && !st_find(regname, &blanks)) {
+      if ((val->type & PE_REGS_INT) || ((val->type & PE_REGS_STR) && *(val->val.sval)
+          && !st_find(regname, &blanks))) {
         st_insert(regname, &qregs);
       } else {
         st_insert(regname, &blanks);

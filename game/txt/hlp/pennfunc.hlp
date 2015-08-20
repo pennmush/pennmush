@@ -5666,6 +5666,7 @@ See also: @teleport
   currently include:
   pueblo           present if the client is in Pueblo mode.
   telnet           present if the client understands the telnet protocol.
+  gmcp             present if GMCP is negotiated via telnet; see help oob()
   ssl              present if the client is using an SSL/TLS connection.
   prompt_newlines  see 'help prompt_newlines'
   stripaccents     client is receiving 7-bit ascii, no accented characters
@@ -5678,9 +5679,68 @@ See also: @teleport
   You must have see_all, or use terminfo() on yourself, to see all
   information or use a <descriptor>. Mortals using terminfo() on another
   player will always receive "unknown" for the client name, and will not
-  get telnet/ssl/prompt_newlines in the output list.
+  get telnet/gmcp/ssl/prompt_newlines in the output list.
 
-See also: pueblo(), width(), height(), ssl(), @sockset
+See also: pueblo(), width(), height(), ssl(), @sockset, oob()
+& OOB()
+& GMCP
+  oob(<player>, <package>[, <message>])
+  
+  This wiz-only function sends an out-of-band message to <player> using the 
+  General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp).
+  <package> is the name of the package/message type.
+  
+  If specified, <message> is a JSON-formatted message to be sent. Use the
+  JSON() function to construct valid JSON.
+  
+  Returns the number of descriptors the message was sent to on success, or a
+  string starting with #-1 on error.
+  
+See also: json()
+& JSON()
+  json(<type>[, <data>[, ..., <dataN>])
+  
+  This function encodes <data> as a valid JSON (JavaScript Object Notation)
+  message. <type> specifies the type of data to represent; valid <type>s and
+  correspending <data>s are listed below.
+  
+  If any errors occur, json() returns a string starting with #-1.
+  
+  For <type>...   <data> should be...
+  null            not given
+  boolean         one arg, either "true", "1", "false" or "0"
+  string          one arg, any string, including an empty string
+  number          one arg, a valid number
+  array           zero or more args, each themselves valid JSON
+  object          zero or more pairs of arguments, the first a string, the
+                  second valid JSON
+
+  When <type> is "array" or "object", it's recommended that subsequent JSON
+  arguments are created with nested calls to JSON().
+
+  See 'help json2' for examples.
+& JSON2
+  > think json(null)
+  null
+  
+  > think json(string, Look\, it's "JSON"!)
+  "Look, it's \"JSON\"!"
+  
+  > think json(array, json(number, pi()), json(string, Pie), json(bool, true))
+  [3.141593, "Pie", true]
+  
+  > &oneobject me=json(object, name, json(string, name(%0)), dbref, 
+       json(string, %0), created, json(number, csecs(%0)))
+  > think u(oneobject, #1)
+  {"name": "One", "dbref": "#1", "created": 1431039583}
+  
+  > think json(array, u(oneobject, #0), u(oneobject, #1), u(oneobject, #2))
+  [
+   {"name": "Room Zero", "dbref": "#0", "created": 1431039583},
+   {"name": "One", "dbref": "#1", "created": 1431039583},
+   {"name": "Master Room", "dbref": "#2", "created": 1431039583}
+  ]
+  
 & TESTLOCK()
   testlock(<key>, <victim>)
 

@@ -23,6 +23,8 @@ Major changes:
 
 Functions:
  * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
+ * filter() and filterbool() can now be passed additional arguments, for
+   Rhost compatability. Requested by Volund. [MG] [Rhost]
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]

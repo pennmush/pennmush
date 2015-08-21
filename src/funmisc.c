@@ -33,6 +33,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "gitinfo.h"
+#include "tz.h"
 #include "version.h"
 
 #ifdef WIN32
@@ -96,6 +97,9 @@ FUNCTION(fun_valid)
     safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
   } else if (!strcasecmp(args[0], "attrvalue")) {
     safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff, bp);
+  } else if (!strcasecmp(args[0], "timezone")) {
+    struct tz_result res;
+    safe_boolean(parse_timezone_arg(args[1], mudtime, &res), buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }

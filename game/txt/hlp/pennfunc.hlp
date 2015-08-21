@@ -1143,7 +1143,7 @@ See also: visible(), CONTROL
     > say convutcsecs(709395750)
     You say, "Wed Jun 24 14:22:30 1992"
 
-See also: convtime(), time()
+See also: convtime(), time(), timefmt()
 & CONVTIME()
 & CONVUTCTIME()
   convtime(<time string>,[<timezone>])

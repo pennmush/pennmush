@@ -31,6 +31,10 @@ Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * @logwipe can do more than just erasing a log file. [SW]
 
+Minor changes:
+ * Added a few more date formats to getdate.template for convtime(). Suggested
+   by Volund and Mercutio. [1020-MG]
+
 Hardcode:
  * Clean up some more remnants of the previous configure package's
    naming convention in favor of autoconf style ones. [SW]

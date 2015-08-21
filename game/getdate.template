@@ -1,6 +1,12 @@
 %a %b %d %H:%M:%S %Y
 %a %b %d %H:%M:%S
 %b %d %H:%M:%S %Y
+%a %b %d %H:%M %Y
+%a %b %d %H:%M
+%b %d %H:%M %Y
+%b %d %H:%M
+%B %d %H:%M
+%B %d %H:%M %Y
 %b %d %H:%M:%S
 %B %d %H:%M:%S
 %B %d %H:%M:%S %Y

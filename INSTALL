@@ -20,8 +20,7 @@ resources will be written with UNIX is mind.)
 
 You may also want to take a look at the Managing PennMUSH book at
 http://community.pennmush.org and at Javelin's Guide for PennMUSH
-Gods, at http://javelin.pennmush.org/~alansz/guide.html or by ftp from
-pennmush.org, /pub/PennMUSH/Guide
+Gods, at http://download.pennmush.org/Guide/guide-single.html
 ============================================================================
  
 A. Important background
@@ -101,8 +100,8 @@ B. Installation from source
 	% ./configure 
 
    Useful arguments to configure:
-       a. --disable-sql: Don't compile in SQL support. See README.SQL for more sql-related
-          config options.
+       a. --disable-sql: Don't compile in SQL support. See README.SQL for
+          more sql-related config options.
        b. --disable-nls: Turn off translation support if you don't need it.
        c. --disable-info_slave: Don't use an external process to do hostname
           lookups. This option is required on Windows.
@@ -154,7 +153,7 @@ A pre-built binary is frequently available for win32 users who don't
 want to customize their MUSH server, and don't feel like compiling it
 themselves.  This binary distribution may not contain the src, hdrs,
 or hints directories and may be missing several key files (like
-Configure) from the pennmush directory.  It does include the options.h
+configure) from the pennmush directory.  It does include the options.h
 that it was built with, as an aid to those who decide later that they
 want to customize the server; they are useful as a baseline to work
 from.

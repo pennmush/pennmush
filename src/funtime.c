@@ -179,10 +179,12 @@ FUNCTION(fun_convsecs)
     safe_str(T(e_range), buff, bp);
     return;
   }
+#ifndef HAVE_GETDATE
   if (tt < 0) {
     safe_str(T(e_uint), buff, bp);
     return;
   }
+#endif
 
   if (strcmp(called_as, "CONVUTCSECS") == 0) {
     utc = 1;
@@ -688,7 +690,7 @@ FUNCTION(fun_convtime)
     if (save_tz)
       restore_tz();
   } else {
-    safe_str("-1", buff, bp);
+    safe_str("#-1", buff, bp);
   }
 }
 

@@ -21,6 +21,11 @@ Functions:
  * filter() and filterbool() can now be passed additional arguments, for
    Rhost compatability. Requested by Volund. [1019-MG] [Rhost]
  * valid(timezone, <str>) validates timezones. Suggested by Volund. [1021-MG]
+ * convtime() now returns #-1, instead of -1, on error. This change is
+   -backwards incompatible-, but necessary as -1 is a potentially valid output
+   for convtime(). Suggested by Volund. [1010-MG]
+ * convsecs() can now accept negative inputs when Extended convtime() is
+   available. Suggested by Volund. [1010-MG]   
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]

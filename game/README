@@ -32,7 +32,7 @@ find another database to load.
 
 If you're starting with the minimal database, the god character "One"
 has no password, so you can log in without one. Of course, you should
-immediately set one (via @newpasswd).  mush.cnf has the Master Room
+immediately set one (via @newpassword).  mush.cnf has the Master Room
 as #2 by default; in the minimal database, this room is created for
 you.
 
@@ -139,7 +139,6 @@ unless you've backed up your database before trying!
 
 You can also find helpful tips in Javelin's Guide for Gods,
 which is available on the WWW as
-	http://javelin.pennmush.org/~alansz/guide.html
-and by ftp from ftp.pennmush.org as 
-	/PennMUSH/Guide/guide-single.txt
+	http://download.pennmush.org/Guide/guide-single.html
+
 

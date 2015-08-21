@@ -37,7 +37,7 @@ the best location.
 
  6. cd pennmush then type:
 
-    ./configure 
+    ./configure --disable-info_slave
 
  7. Now type:
 
@@ -47,9 +47,7 @@ the best location.
     suggestions in mind:
 
     a. Use MALLOC_PACKAGE 0
-    b. Do *NOT* define INFO_SLAVE 
 
-    Hopefully the last be changed in the future.
     Also, 'make update' does not currently work correctly with
     Msys (due to Msys problems), and this will also hopefully get
     worked around in the future. 

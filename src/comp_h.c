@@ -14,17 +14,6 @@
  */
 
 /* Compression routines */
-#include "copyrite.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-#include "conf.h"
-#include "dbio.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "mymalloc.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4244)        /* NJG: disable warning re conversion */
@@ -61,8 +50,6 @@ slab *huffman_slab = NULL;
 static int fix_tree_depth(CNode *node, int height, int zeros);
 static void add_ones(CNode *node);
 static void build_ctable(CNode *root, CType code, int numbits);
-int init_compress(PENNFILE *f);
-
 
 /** Huffman-compress a string.
  * Compress a string: this is pretty easy. For each char in the string,
@@ -79,8 +66,8 @@ int init_compress(PENNFILE *f);
  * \param s string to be compressed.
  * \return newly allocated compressed string.
  */
-char *
-text_compress(const char *s)
+static char *
+huff_text_compress(const char *s)
 {
   CType stage;
   int bits = 0;
@@ -165,8 +152,8 @@ do { \
  * \param s a compressed string.
  * \return a pointer to a static buffer containing the uncompressed string.
  */
-char *
-text_uncompress(const char *s)
+static char *
+huff_text_uncompress(const char *s)
 {
 
   static char buf[BUFFER_LEN];
@@ -193,28 +180,6 @@ text_uncompress(const char *s)
     p++;
   }
 }
-
-/** Huffman uncompress a string, allocating memory.
- * this function should be used when you're doing something like
- * \verbatim
- * char *attrib = safe_uncompress(a->value);
- *
- * NEVER use it with something like
- *
- * char tbuf1[BUFFER_LEN]; 
- * strcpy(tbuf1, safe_uncompress(a->value));
- * \endverbatim
- * or you will create a horrendous memory leak.
- *
- * \param s compressed string to uncompress.
- * \return pointer to newly allocated string containing uncompressed text.
- */
-char *
-safe_uncompress(char const *s)
-{
-  return strdup(uncompress(s));
-}
-
 
 static int
 fix_tree_depth(CNode *node, int height, int zeros)
@@ -323,8 +288,8 @@ build_ctable(CNode *root, CType code, int numbits)
  * 5. Construct a compression table by searching the tree
  * \param f filehandle to read from to build the tree.
  */
-int
-init_compress(PENNFILE *f)
+static bool
+huff_init_compress(PENNFILE *f)
 {
   int total;
   char c;
@@ -335,7 +300,7 @@ init_compress(PENNFILE *f)
   int indx, count;
   long temp;
   CNode *node;
-
+  
 #ifdef STANDALONE
   printf("init_compress: Part 1\n");
 #endif
@@ -545,8 +510,14 @@ init_compress(PENNFILE *f)
 #endif
 
   /* Whew */
-  return 0;
+  return 1;
 }
+
+struct compression_ops huffman_ops = {
+  huff_init_compress,
+  huff_text_compress,
+  huff_text_uncompress
+};
 
 #ifdef STANDALONE
 void

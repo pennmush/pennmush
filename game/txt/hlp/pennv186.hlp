@@ -13,6 +13,9 @@ be read in 'help patchlevels'.
 
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
+NOTE: When updating from an earlier version of PennMUSH, you'll need to run
+ './config.status' in the toplevel PennMUSH directory prior to running 'make'.
+
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]
 
@@ -49,3 +52,5 @@ Hardcode:
  * game/restart is now auto-generated during 'make update'. [928-TK]
  * Fixed a memory leak in @switch. [MG]
  * A bug in @lock allowed invalid lock names to be used. [MG]
+ * Choosing what scheme is used in compressing attribute text in-game is now 
+   a run-time option set in mush.cnf, not options.h [SW]

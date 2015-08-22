@@ -181,6 +181,16 @@ chunk_swap_initial_size 2048
 chunk_migrate 150
 
 ###
+### In-memory attribute compression
+###
+
+# The compression method used on attribute text.
+# Options: None, for no compression (But most memory use)
+# huffman (Balance between space and compression speed)
+# word (Faster decompression, more memory)
+attr_compression none
+
+###
 ### SSL support
 ###
 

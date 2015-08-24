@@ -97,6 +97,8 @@ COMLIST commands[] = {
   {"@BREAK", "INLINE QUEUED", cmd_break,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
+  {"@SKIP", "IFELSE", cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+  {"@IFELSE", NULL, cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CHANNEL",

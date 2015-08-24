@@ -2171,7 +2171,7 @@ See also: Connection Functions, conn()
   the <condition> is true, or <false expression> (if provided) if the
   <condition> is false. Only the returned <expression> is evaluated.
 
-See also: BOOLEAN VALUES, switch(), @break
+See also: BOOLEAN VALUES, switch(), @if, @break, cond()
 & INAME()
   iname(<object>)
 

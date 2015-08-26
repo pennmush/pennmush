@@ -14,7 +14,8 @@ be read in 'help patchlevels'.
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
 NOTE: When updating from an earlier version of PennMUSH, you'll need to run
- './config.status' in the toplevel PennMUSH directory prior to running 'make'.
+ 'make update' and './config.status' in the toplevel PennMUSH directory prior
+ to running 'make'.
 
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]

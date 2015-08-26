@@ -3308,11 +3308,13 @@ See also: regmatch(), regrab(), match(), REGEXP SYNTAX
   It can take any number of arguments.
   
 See also: min(), lmath(), bound(), alphamax()
+& AVG()
 & MEAN()
   mean(<number1>, <number2>[, ... , <numberN>])
 
   Returns the mean (arithmetic average) of its arguments.
 
+  avg() is an alias for mean(), for Rhost compatibility.
 See also: median(), stddev(), lmath()
 & MEDIAN()
   median(<number>, <number>[, ... , <numberN>)

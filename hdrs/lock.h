@@ -62,6 +62,7 @@ boolexp getlock(dbref thing, lock_type type);
 boolexp getlock_noparent(dbref thing, lock_type type);
 lock_type match_lock(lock_type type);
 const lock_list *get_lockproto(lock_type type);
+lock_type check_lock_type(dbref player, dbref thing, lock_type name, bool silent);
 int add_lock(dbref player, dbref thing, lock_type type, boolexp key,
              privbits flags);
 int add_lock_raw(dbref player, dbref thing, lock_type type,

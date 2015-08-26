@@ -67,9 +67,9 @@ FUNCTION(fun_valid)
     if (nargs >= 3) {
       target =
         noisy_match_result(executor, args[2], TYPE_PLAYER,
-                           MAT_PMATCH | MAT_TYPE);
+                           MAT_PMATCH | MAT_TYPE | MAT_ME);
       if (target == NOTHING) {
-        safe_str(T("#-1 NO SUCH OBJECT"), buff, bp);
+        safe_str(e_match, buff, bp);
         return;
       }
     }
@@ -96,10 +96,35 @@ FUNCTION(fun_valid)
     }
     safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
   } else if (!strcasecmp(args[0], "attrvalue")) {
-    safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff, bp);
+    safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff,
+                 bp);
   } else if (!strcasecmp(args[0], "timezone")) {
     struct tz_result res;
     safe_boolean(parse_timezone_arg(args[1], mudtime, &res), buff, bp);
+  } else if (!strcasecmp(args[0], "boolexp") || 
+             !strcasecmp(args[0], "lockkey")) {
+    boolexp key = parse_boolexp(executor, args[1],  "Basic");
+    if (key == TRUE_BOOLEXP)
+      safe_boolean(0, buff, bp);
+    else {
+      safe_boolean(1, buff, bp);
+      free_boolexp(key);
+    }
+  } else if (!strcasecmp(args[0], "locktype")) {
+    dbref target = executor;
+    lock_type lt;
+    if (nargs >= 3) {
+      target = noisy_match_result(executor, args[2], NOTYPE, MAT_EVERYTHING);
+      if (target == NOTHING) {
+        safe_str(e_match, buff, bp);
+        return;
+      } else if (!Can_Examine(executor, target)) {
+        safe_str(e_perm, buff, bp);
+        return;
+      }
+    }
+    lt = check_lock_type(executor, target, args[1], 1);
+    safe_boolean((lt != NULL), buff, bp);
   } else
     safe_str("#-1", buff, bp);
 }

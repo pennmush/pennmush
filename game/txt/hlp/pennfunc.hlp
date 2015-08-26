@@ -6587,6 +6587,9 @@ See also: VECTOR FUNCTIONS
    channel     Test for a valid channel name. If <target> is given, check to
                 see if channel <target> could be renamed to <string>.
    timezone    Test for a valid timezone; see 'help timezones'
+   locktype    Test for a valid locktype for @lock/<string> <target>. <target>
+               defaults to the caller.
+   lockkey     Test for a valid lockkey for @lock me=<string>
 
   Note that, for "playername", valid() returns 0 if the name is valid but
   currently in use by a player other than <target>.

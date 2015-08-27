@@ -28,7 +28,7 @@ Functions:
    Volund. [1021,1025-MG]
  * convtime() now returns #-1, instead of -1, on error. This change is
    -backwards incompatible-, but necessary as -1 is a potentially valid output
-   for convtime(). Suggested by Volund. [1010-MG]
+   for convtime(). Suggested by KimikoMuffin. [1010-MG]
  * convsecs() can now accept negative inputs when Extended convtime() is
    available. Suggested by Volund. [1010-MG]
  * avg() is now an alias for mean(). [1023-TK] [Rhost]

@@ -36,6 +36,7 @@ Functions:
    for convtime(). Suggested by Volund. [1010-MG]
  * convsecs() can now accept negative inputs when Extended convtime() is
    available. Suggested by Volund. [1010-MG]
+ * avg() is now an alias for mean(). [1023-TK] [Rhost]
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]

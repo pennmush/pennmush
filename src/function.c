@@ -152,7 +152,8 @@ FUNALIAS faliases[] = {
   {"STRDELETE", "DELETE"},
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
-  {"MONIKER", "CNAME"},         /* Rhost alias */
+  {"MONIKER", "CNAME"},  /* Rhost alias */
+  {"MEAN", "AVG"},  /* Rhost alias */
   {"MATCH", "ELEMENT"},
   {NULL, NULL}
 };

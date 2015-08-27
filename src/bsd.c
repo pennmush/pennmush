@@ -239,7 +239,9 @@ char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
 
 struct gmcp_handler *gmcp_handlers = NULL;
-
+static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs, 
+              NEW_PE_INFO *pe_info, JSON *json, dbref executor, 
+              dbref enactor);
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
  */
@@ -2619,7 +2621,7 @@ json_unescape_string(char *input)
  * \param verbose Add spaces, carriage returns, etc, to make the JSON human-readable?
  * \param recurse Number of recursions; always call with this set to 0
  * \retval NULL error occurred
- * \retval result string representation of the JSON struct, malloc'd as "json_string"
+ * \retval result string representation of the JSON struct, malloc'd as "json_str"
  */
 char *
 json_to_string_real(JSON *json, int verbose, int recurse)
@@ -2655,9 +2657,9 @@ json_to_string_real(JSON *json, int verbose, int recurse)
       error = safe_chr('[', buff, &bp);
       next = (JSON *) json->data;
       i = 0;
-      while (next) {
+      for (next = (JSON *) json->data, i = 0; next; next = next->next, i++) {
         sub = json_to_string_real(next, verbose, recurse + 1);
-        if (i++)
+        if (i)
           error = safe_chr(',', buff, &bp);
         if (sub != NULL) {
           if (verbose) {
@@ -2667,7 +2669,6 @@ json_to_string_real(JSON *json, int verbose, int recurse)
           error = safe_str(sub, buff, &bp);
           mush_free(sub, "json_str");
         }
-        next = next->next;
       }
       if (verbose) {
         error = safe_chr('\n', buff, &bp);
@@ -2963,8 +2964,11 @@ send_oob(DESC *d, char *package, JSON *data)
     return;
   
   if (data && data->type != JSON_NONE) {
-    safe_str(json_to_string(data, 0), buff, &bp);
+    char *str = json_to_string(data, 0);
+    safe_str(str, buff, &bp);
     *bp = '\0';
+    if (str)
+      mush_free(str, "json_str");
     escmsg = telnet_escape(buff);
     bp = buff;
   }
@@ -3011,6 +3015,135 @@ FUNCTION(fun_oob)
   json_free(json);
 }
 
+FUNCTION(fun_json_map)
+{
+  ufun_attrib ufun;
+  PE_REGS *pe_regs;
+  int funccount;
+  char *osep, osepd[2] = { ' ', '\0' };
+  JSON *json, *next;
+  int i;
+  char rbuff[BUFFER_LEN];
+
+  osep = (nargs >= 3) ? args[2] : osepd;
+
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+    return;
+
+  json = string_to_json(args[1]);
+  if (!json) {
+    safe_str(T("#-1 INVALID JSON"), buff, bp);
+    return;
+  }
+  
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_json_map");
+  for (i = 3; i <= nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+  }
+
+  switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NULL:
+    case JSON_NUMBER:
+      /* Basic data types */
+      json_map_call(&ufun, rbuff, pe_regs, pe_info, json, executor, enactor);
+      safe_str(rbuff, buff, bp);
+      break;
+    case JSON_ARRAY:
+    case JSON_OBJECT:
+      /* Complex types */
+      for (next = json->data, i = 0; next; next = next->next, i++) {
+        funccount = pe_info->fun_invocations;
+        if (json->type == JSON_ARRAY) {
+          pe_regs_setenv(pe_regs, 2, pe_regs_intname(i));
+        } else {
+          pe_regs_setenv_nocopy(pe_regs, 2, (char *) next->data);
+          next = next->next;
+          if (!next)
+            break;
+        }
+        if (json_map_call(&ufun, rbuff, pe_regs, pe_info, next, executor, enactor))
+          break;
+        if (i > 0)
+          safe_str(osep, buff, bp);
+        safe_str(rbuff, buff, bp);
+        if (*bp >= (buff + BUFFER_LEN - 1)
+            && pe_info->fun_invocations == funccount)
+          break;
+      }
+      break;
+  }
+
+  json_free(json);
+  pe_regs_free(pe_regs);  
+}
+
+/** Used by fun_json_map to call the attr for each JSON element. %2-%9 may
+ * already be set in the pe_regs
+ * \param ufun the ufun to call
+ * \param rbuff buffer to store results of ufun call in
+ * \param pe_regs the pe_regs holding info for the ufun call
+ * \param pe_info the pe_info to eval the attr with
+ * \param json the JSON element to pass to the ufun
+ * \param executor
+ * \param enactor
+ * \retval 0 success
+ * \retval 1 function invocation limit exceeded
+ */
+static bool
+json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs, 
+              NEW_PE_INFO *pe_info, JSON *json, dbref executor, 
+              dbref enactor)
+{
+  char *jstr = NULL;
+
+  switch (json->type) {
+    case JSON_NONE:
+      return 0;
+    case JSON_STR:
+      pe_regs_setenv_nocopy(pe_regs, 0, "string");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_BOOL:
+      pe_regs_setenv_nocopy(pe_regs, 0, "boolean");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_NULL:
+      pe_regs_setenv_nocopy(pe_regs, 0, "null");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_NUMBER:
+      pe_regs_setenv_nocopy(pe_regs, 0, "number");
+      {
+        char buff[BUFFER_LEN];
+        char *bp = buff;
+        safe_number(*(NVAL *) json->data, buff, &bp);
+        *bp = '\0';
+        pe_regs_setenv(pe_regs, 1, buff);
+      }
+      break;
+    case JSON_ARRAY:
+      pe_regs_setenv_nocopy(pe_regs, 0, "array");
+      jstr = json_to_string(json, 0);
+      pe_regs_setenv(pe_regs, 1, jstr);
+      if (jstr)
+        mush_free(jstr, "json_str");
+      break;
+    case JSON_OBJECT:
+      pe_regs_setenv_nocopy(pe_regs, 0, "object");
+      jstr = json_to_string(json, 0);
+      pe_regs_setenv(pe_regs, 1, jstr);
+      if (jstr)
+        mush_free(jstr, "json_str");
+      break;
+  }
+  
+  return call_ufun(ufun, rbuff, executor, enactor, pe_info, pe_regs);
+}
+
 FUNCTION(fun_json)
 {
   enum json_type type;
@@ -3035,14 +3168,17 @@ FUNCTION(fun_json)
     return;
   }
   
-  if ((type == JSON_NULL && nargs > 1) || ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) && nargs != 2) || (type == JSON_OBJECT && (nargs % 2) != 1)) {
+  if ((type == JSON_NULL && nargs > 2) || ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) && nargs != 2) || (type == JSON_OBJECT && (nargs % 2) != 1)) {
       safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
       return;
   }
   
   switch (type) {
     case JSON_NULL:
-      safe_str(json_vals[2], buff, bp);
+      if (nargs == 2 && !strcmp(args[1], json_vals[2]))
+        safe_str("#-1", buff, bp);
+      else
+        safe_str(json_vals[2], buff, bp);
       return;
     case JSON_BOOL:
       if (string_prefix(json_vals[0], args[1]) || !strcasecmp(args[1], "0"))

@@ -257,7 +257,7 @@ See also: ipaddr(), hostname(), LASTSITE
   @lock/parent          Who can @parent something to this object/room
   @lock/link            Who can @link something to this object/room
                         or who can @link this unlinked exit.
-  @link/open            Who can @open an exit from this room
+  @lock/open            Who can @open an exit from this room
   @lock/mail            Who can @mail the player
   @lock/user:<name>     User-defined. No built-in function of this lock,
                         but users can test it with elock()

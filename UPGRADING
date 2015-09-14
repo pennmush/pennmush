@@ -59,7 +59,7 @@ A.2 Using git
 
 To update from the master branch:
 
- %git pull
+% git pull
 
   TODO: Somebody who knows something about git should include a
   mini-tutorial about checking out branches and tags.

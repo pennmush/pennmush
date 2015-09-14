@@ -155,7 +155,6 @@ COMMAND(cmd_atrchown)
 
 COMMAND(cmd_boot)
 {
-
   int silent = (SW_ISSET(sw, SWITCH_SILENT));
 
   if (SW_ISSET(sw, SWITCH_ME))
@@ -182,6 +181,32 @@ COMMAND(cmd_break)
         new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
                              PE_INFO_SHARE, QUEUE_INPLACE | flags, NULL);
     }
+  }
+}
+
+COMMAND(cmd_ifelse)
+{
+  bool succ;
+  int arg = 1;
+
+  if (!rhs_present)
+    return;
+
+  succ = parse_boolean(arg_left);
+  if (!strcmp(cmd->name, "@SKIP") && !SW_ISSET(sw, SWITCH_IFELSE)) {
+    succ = !succ;
+    if (!succ)
+      return;
+  } else if (!succ)
+    arg = 2;
+
+  if (args_right[arg] && *args_right[arg]) {
+    int flags = 0;
+    if (queue_entry->queue_type & QUEUE_EVENT)
+      flags |= QUEUE_EVENT;
+    new_queue_actionlist(executor, enactor, caller, args_right[arg], 
+                         queue_entry, PE_INFO_SHARE, QUEUE_INPLACE | flags, 
+                         NULL);
   }
 }
 

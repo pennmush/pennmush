@@ -155,7 +155,6 @@ PRIV lock_privs[] = {
 StrTree lock_names;  /**< String tree of lock names */
 
 static void free_one_lock_list(lock_list *ll);
-static lock_type check_lock_type(dbref player, dbref thing, lock_type name);
 static int delete_lock(dbref player, dbref thing, lock_type type);
 static int can_write_lock(dbref player, dbref thing, lock_list *lock);
 static lock_list *getlockstruct_noparent(dbref thing, lock_type type);
@@ -647,24 +646,24 @@ free_locks(lock_list *ll)
 }
 
 
-/** Check to see that the lock type is a valid type.
- * If it's not in our lock table, it's not valid,
- * unless it begins with 'user:' or an abbreviation thereof,
- * in which case the lock type is the part after the :.
- * As an extra check, we don't allow '|' in lock names because it
- * will confuse our db-reading routines.
- *
- *
+/** Check to see that the lock type is a valid type. Valid types are either:
+ * 1) in the lock table of standard lock types,
+ * 2) prefixed with "user:", a valid attr name and don't contain '|' chars
+ * 3) the name of an already-existing lock set on 'thing'
+ * It was previously stated that '|' in lock names interfered with the db
+ * reading routines; I (MG) don't believe that's the case any longer, though.
  * \param player the enactor, for notification.
  * \param thing object on which to check the lock.
+ * \param silent skip specific error notifications to player?
  * \param name name of lock type.
- * \return lock type, or NULL.
+ * \retval NULL invalid lock type
+ * \retval locktype the name of the valid lock type, minus user: prefix
  */
-static lock_type
-check_lock_type(dbref player, dbref thing, lock_type name)
+lock_type
+check_lock_type(dbref player, dbref thing, lock_type name, bool silent)
 {
   lock_type ll;
-  char user_name[BUFFER_LEN];
+  char *user_name;
   char *colon;
 
   /* Special-case for basic locks. */
@@ -679,27 +678,28 @@ check_lock_type(dbref player, dbref thing, lock_type name)
   /* If the lock is set, it's allowed, whether it exists normally or not. */
   if (getlock(thing, name) != TRUE_BOOLEXP)
     return name;
-  /* Check to see if it's a well-formed user-defined lock. */
 
+  /* Check to see if it's a well-formed user-defined lock. */
   if (!string_prefix(name, "User:")) {
-    notify(player, T("Unknown lock type."));
+    if (!silent)
+      notify(player, T("Unknown lock type."));
     return NULL;
   }
   if (strchr(name, '|')) {
-    notify(player, T("The character \'|\' may not be used in lock names."));
+    if (!silent)
+      notify(player, T("The character \'|\' may not be used in lock names."));
     return NULL;
   }
-  mush_strncpy(user_name, name, BUFFER_LEN);
-  colon = strchr(user_name, ':');
-  if (colon)                    /* Should always be true */
-    *colon = '\0';
+  colon = strchr(name, ':') + 1;
+  user_name =  strupper(colon);
 
   if (!good_atr_name(user_name)) {
-    notify(player, T("That is not a valid lock name."));
+    if (!silent)
+      notify(player, T("That is not a valid lock name."));
     return NULL;
   }
 
-  return strchr(name, ':') + 1;
+  return colon;
 }
 
 /** Unlock a lock (user interface).
@@ -722,7 +722,7 @@ do_unlock(dbref player, const char *name, lock_type type)
     return;
   }
   if ((thing = match_controlled(player, name)) != NOTHING) {
-    if ((real_type = check_lock_type(player, thing, type)) != NULL) {
+    if ((real_type = check_lock_type(player, thing, type, 0)) != NULL) {
       if (getlock(thing, real_type) == TRUE_BOOLEXP) {
         if (!AreQuiet(player, thing))
           notify_format(player, T("%s(%s) - %s (already) unlocked."),
@@ -791,7 +791,7 @@ do_lock(dbref player, const char *name, const char *keyname, lock_type type)
   if (key == TRUE_BOOLEXP) {
     notify(player, T("I don't understand that key."));
   } else {
-    if ((real_type = check_lock_type(player, thing, type)) != NULL) {
+    if ((real_type = check_lock_type(player, thing, type, 0)) != NULL) {
       /* everything ok, do it */
       if (add_lock(player, thing, real_type, key, LF_DEFAULT)) {
         if (!AreQuiet(player, thing))

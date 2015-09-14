@@ -23,6 +23,8 @@ the best location. C:\cygwin is the usual default.
    From Libs:
 	openssl
 	openssl-devel
+	libpcre1
+	libpcre-devel
    From Perl:
 	perl
    From Shells:
@@ -30,12 +32,17 @@ the best location. C:\cygwin is the usual default.
    From Utils:
 	gnupg 		if you want to to verify signatures on penn dists
 	patch
+   From Text:
+    pcre
+   From Devel:
+    gettext-devel   if you want to run a translated copy of Penn
+	git   if you want to get Penn from the GIT repo
 
    Accept all dependencies needed to install these packages.
 	
 3. Start a cygwin bash shell and use that for all the following steps.
 
-4. `cd' to the desired install location with the .tar.gz file
+4. 'cd' to the desired install location with the .tar.gz file
    and unpack the downloaded <version> with:
 
     tar xzf pennmush-<version>.tar.gz
@@ -43,6 +50,10 @@ the best location. C:\cygwin is the usual default.
    Again, life is easier if your install location has no spaces
    in directory names. If your username has no spaces, unpacking
    in /home/yourname works fine.
+   
+   You can also obtain PennMUSH from the git repo rather than downloading
+   a tarball, if you prefer:
+     git clone https://github.com/pennmush/pennmush.git pennmush
 
 5. cd pennmush then type:
 
@@ -59,7 +70,7 @@ the best location. C:\cygwin is the usual default.
     
    and choose the desired options.
 
-7. Do a `make install' This will build the necessary files and
+7. Do a 'make install' This will build the necessary files and
    install the necessary symbolic links. 
 
 8. Read game/README and follow those instructions. 

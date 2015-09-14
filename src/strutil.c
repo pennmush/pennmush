@@ -864,6 +864,8 @@ safe_fill(char x, size_t n, char *buff, char **bp)
     if (n > 0)
       --n;
     ret = 1;
+    if (!n)
+      return ret;
   }
   memset(*bp, x, n);
   *bp += n;

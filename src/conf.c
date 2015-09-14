@@ -512,8 +512,10 @@ PENNCONF conftable[] = {
    1000000000, 0, "files"}
   ,
   {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0,
-   "limits"}
-  ,
+   "limits"},
+
+  {"attr_compression", cf_str, options.attr_compression, sizeof options.attr_compression, 0, NULL},
+  
 #ifdef HAVE_SSL
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
    sizeof options.ssl_private_key_file, 0, "files"}
@@ -1455,6 +1457,7 @@ conf_default_set(void)
   options.chunk_swap_initial = 2048;
   options.chunk_cache_memory = 1000000;
   options.chunk_migrate_amount = 50;
+  strcpy(options.attr_compression, "none");
   options.read_remote_desc = 0;
 #ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");

@@ -578,6 +578,7 @@ FUNCTION(fun_filter)
   int first;
   int check_bool = 0;
   int funccount;
+  int i;
   char *osep, osepd[2] = { '\0', '\0' };
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
@@ -598,6 +599,9 @@ FUNCTION(fun_filter)
   first = 1;
   funccount = pe_info->fun_invocations;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_filter");
+  for (i = 4; i < nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i - 3, args[i]);
+  }
   while (cp && *cp) {
     cur = split_token(&cp, sep);
     pe_regs_setenv_nocopy(pe_regs, 0, cur);

@@ -279,6 +279,7 @@ struct options_table {
   int chunk_swap_initial; /**< Disc space to reserve for the swap file, in kibibytes */
   int chunk_cache_memory;       /**< Memory to use for the attribute cache */
   int chunk_migrate_amount;     /**< Number of attrs to migrate each second */
+  char attr_compression[256]; /**< How to compress attribute text in-memory */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
   char ssl_private_key_file[FILE_PATH_LEN];       /**< File to load the server's cert from */
   char ssl_ca_file[FILE_PATH_LEN];        /**< File to load the CA certs from */

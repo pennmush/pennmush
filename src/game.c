@@ -845,7 +845,7 @@ init_game_dbs(void)
   } else {
     /* ok, read it in */
     do_rawlog(LT_ERR, "ANALYZING: %s", infile);
-    if (init_compress(f) < 0) {
+    if (init_compress(f) != 1) {
       do_rawlog(LT_ERR, "ERROR LOADING %s", infile);
       return -1;
     }

@@ -1119,14 +1119,17 @@ See also: visible(), CONTROL
   convsecs(<seconds>[, <timezone>])
   convutcsecs(<seconds>) 
 
-  This function converts seconds to a time string, based on how many
-  seconds the number is after Jan 1, 1970 UTC. Because it's based on
-  UTC, but returns local time, convsecs(0) is not going to be "Thu Jan
-  1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
+  This function converts <seconds> (the number of seconds which have elapsed
+  since midnight on January 1, 1970 UTC) to a time string. Because it's based 
+  on UTC, but returns local time, convsecs(0) is not going to be "Thu Jan 1 
+  00:00:00 1970" unless you're in the UTC (GMT) timezone.
  
   If a <timezone> argument is given, the return value is based on that
   timezone instead of the MUSH server's local time. See 'help timezones' for
   more information on valid timezones.
+  
+  If Extended convtime() is supported (see @config compile), negative values
+  for <seconds> representing dates prior to 1970 are allowed.
   
   convutcsecs(<seconds>) is an alias for convsecs(<seconds>, utc).
 
@@ -1140,26 +1143,28 @@ See also: visible(), CONTROL
     > say convutcsecs(709395750)
     You say, "Wed Jun 24 14:22:30 1992"
 
-See also: convtime(), time()
+See also: convtime(), time(), timefmt()
 & CONVTIME()
 & CONVUTCTIME()
   convtime(<time string>,[<timezone>])
   convutctime(<time string>)
 
-  This functions converts a time string (in the server's time zone) to
-  the number of seconds since Jan 1, 1970 GMT. A time string is of the
-  format: Ddd MMM DD HH:MM:SS YYYY where Ddd is the day of the week,
-  MMM is the month, DD is the day of the month, HH is the hour in
-  24-hour time, MM is the minutes, SS is the seconds, and YYYY is the
-  year.  If you supply an incorrectly formatted string, it will return
-  -1.
+  This functions converts a time string to the number of seconds since Jan 1, 
+  1970 GMT. A time string is of the format: 
+      Ddd MMM DD HH:MM:SS YYYY
+  where Ddd is the day of the week, MMM is the month, DD is the day of the 
+  month, HH is the hour in 24-hour time, MM is the minutes, SS is the seconds, 
+  and YYYY is the year. If you supply an incorrectly formatted string, it will
+  return #-1.
 
-  convutctime() and convtime() with a second argument of 'utc' assume
-  the timestring is based on UTC time. Other time zones can be specified too.
+  convutctime() and convtime() with a second argument of 'utc' assume the 
+  timestring is based on UTC time. Other time zones can be specified too. If
+  no <timezone> is given, the server's timezone is used.
 
-  If the extended convtime() is supported (See @config compile), more
-  formats for the date are enabled, including ones missing the day of
-  week and year, and a 'Month Day Year' format.
+  If the extended convtime() is supported (See @config compile), more formats 
+  for the date are enabled, including ones missing the day of week and year, 
+  and a 'Month Day Year' format. In this case, convtime() can also handle
+  dates prior to 1970 (in which case a negative number will be returned).
 
   Example:
     > say time()
@@ -1679,27 +1684,29 @@ See also: lexits(), next()
 See also: index(), elements(), grab()
 & FILTER()
 & FILTERBOOL()
-  filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>]])
-  filterbool([<obj>]/<attr>, <list>[, <delimiter>[, <osep>]])
+  filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>[, ..., <argN>]]])
+  filterbool([<obj>]/<attr>, <list>[, <delimiter>[, <osep>[, ..., <argN>]]])
 
-  This function returns the elements of <list> for which a user-defined
-  function evaluates to "1", or to a boolean true value if filterbool() is 
-  used. That function is specified by the first argument (just as with the 
-  ufun() function), and the element of the list being tested is passed to 
-  that user-defined function as %0.
+  These functions returns the elements of <list> for which a user-defined
+  function evaluates to "1" (for filter()), or to a boolean true value (for 
+  filterbool()). That function is specified by the first argument (just as 
+  with the ufun() function), and the element of the list being tested is 
+  passed to that user-defined function as %0. Up to 29 further <arg>s can be
+  specified, and will be available in the function as v(1) to v(30).
   
   <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
   
-  Thus, "filter(<obj>/<attr>, <list>)" is nearly equivalent to 
-  "iter(<list>, switch(ufun(<obj>/<attr>, %i0),1,%i0,))" though the iter
-  version may have extra <osep>s.
+  filter(<obj>/<attr>, <list>) is roughly equivalent to 
+  squish(iter(<list>, switch(ufun(<obj>/<attr>, %i0),1,%i0,)))
+  though the filter() version is much more efficient.
   
   Example:
     > &IS_ODD test=mod(%0,2)
     > say filter(test/is_odd, 1 2 3 4 5 6)
     You say, "1 3 5"
 
-See also: anonymous attributes, firstof(), allof(), lockfilter()
+See also: anonymous attributes, firstof(), allof(), lockfilter(), 
+  boolean values
 & FINDABLE()
   findable(<object>, <victim>)
  
@@ -2164,7 +2171,7 @@ See also: Connection Functions, conn()
   the <condition> is true, or <false expression> (if provided) if the
   <condition> is false. Only the returned <expression> is evaluated.
 
-See also: BOOLEAN VALUES, switch(), @break
+See also: BOOLEAN VALUES, switch(), @if, @break, cond()
 & INAME()
   iname(<object>)
 
@@ -3301,11 +3308,13 @@ See also: regmatch(), regrab(), match(), REGEXP SYNTAX
   It can take any number of arguments.
   
 See also: min(), lmath(), bound(), alphamax()
+& AVG()
 & MEAN()
   mean(<number1>, <number2>[, ... , <numberN>])
 
   Returns the mean (arithmetic average) of its arguments.
 
+  avg() is an alias for mean(), for Rhost compatibility.
 See also: median(), stddev(), lmath()
 & MEDIAN()
   median(<number>, <number>[, ... , <numberN>)
@@ -5754,23 +5763,23 @@ See also: timefmt(), timestring(), convsecs(), convtime(), TIMEZONES
 & TIMEZONES
 & @TZ
 
-  The time(), timefmt() and convsecs() functions have an optional time
-  zone argument that's used for formatting the time. Without this time
-  zone specified, the one the game's server is running under is used.
+  The time(), timefmt() and convsecs() functions have an optional time zone 
+  argument that's used for formatting the time. Without this time zone 
+  specified, the one the game's server is running under is used.
 
-  If the time zone argument is a dbref, the contents of that object's
-  @TZ attribute is used as the zone. The attribute is not evaluated.
-  If the object doesn't have this attribute, the server's time zone
-  will be used.
+  If the time zone argument is a dbref, the contents of that object's @TZ 
+  attribute is used as the zone. The attribute is not evaluated. If the object
+  doesn't have this attribute, the server's time zone will be used.
 
-  If it's the string 'UTC', that time zone is used instead of the
-  local one.
+  If it's the string 'UTC', that time zone is used instead of the local one.
 
-  If it's a number between -24 and +24, it adds that many hours from
-  UTC/GMT. Fractional times are supported, e.g., -1.5 hours.
+  If it's a number between -24 and +24, it adds that many hours from UTC/GMT. 
+  Fractional times are supported, e.g., -1.5 hours.
 
-  If the mush supports it (See @config compile), symbolic time zone
-  names can also be used.
+  If the MUSH supports it (See @config compile), symbolic time zone names can 
+  also be used.
+  
+  valid(timezone, <tz>) tests if <tz> can be used as a timezone.
 
   See HELP TIMEZONES2 for a list of known time zones and HELP TIME2
   for some examples.
@@ -6579,6 +6588,10 @@ See also: VECTOR FUNCTIONS
    ansicodes   Test for a valid color code sequence for ansi(<string>, ...).
    channel     Test for a valid channel name. If <target> is given, check to
                 see if channel <target> could be renamed to <string>.
+   timezone    Test for a valid timezone; see 'help timezones'
+   locktype    Test for a valid locktype for @lock/<string> <target>. <target>
+               defaults to the caller.
+   lockkey     Test for a valid lockkey for @lock me=<string>
 
   Note that, for "playername", valid() returns 0 if the name is valid but
   currently in use by a player other than <target>.

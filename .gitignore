@@ -29,6 +29,7 @@ game/core
 game/*.crt
 game/*.csr
 game/*.key
+game/*.stackdump
 hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h

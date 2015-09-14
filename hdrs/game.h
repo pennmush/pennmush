@@ -67,11 +67,6 @@ void do_allrestart(dbref player);
 void do_restart(void);
 void do_restart_com(dbref player, const char *arg1);
 
-/* From compress.c */
-#if (COMPRESSION_TYPE > 0)
-int init_compress(PENNFILE *f);
-#endif
-
 /* From game.c */
 enum dump_type { DUMP_NORMAL, DUMP_DEBUG, DUMP_PARANOID };
 extern void do_dump(dbref player, char *num, enum dump_type flag);

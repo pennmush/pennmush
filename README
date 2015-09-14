@@ -44,11 +44,10 @@ maintain this code.
 
 In January of 1992, Amberyl began working on the PernMUSH 1.15 code
 release, for TinyKrynn. She took over the code, which no one was
-supporting, and is continuing to work on extending this code, as well
-as improving its compatibility with TinyMUSH 2.0.  She changed the name
-to PennMUSH (named for her school, the University of Pennsylvania), to
-avoid the confusion that resulted from PernMUSH actually running
-TinyMUSH 2.0.
+supporting, and worked on extending this code, as well as improving its 
+compatibility with TinyMUSH 2.0.  She changed the name to PennMUSH (named for 
+her school, the University of Pennsylvania), to avoid the confusion that 
+resulted from PernMUSH actually running TinyMUSH 2.0.
 
 In January of 1995, Amberyl passed on her mantle to Javelin (aka
 Paul@Dune, Alan Schwartz), who continuted as the maintainer of the
@@ -88,7 +87,7 @@ should be numbered version 2.007 or higher.
 If you are planning on modifying the source code to PennMUSH, you'll
 probably want Javelin's Guide for PennMUSH Gods, which should be
 available where you got this code, or, in hypertext, as
-http://pennmush.org/~alansz/guide.html. More recent versions
+http://download.pennmush.org/Guide/guide-single.html. More recent versions
 may be available at http://community.pennmush.org.
 
       Enjoy!
@@ -112,14 +111,14 @@ There are three places one could get help with a problem:
    PennMUSH you found the problem on.
 
    If the problem resulted in a crash and a core dump, a stack trace
-   of the core dump (see the section above) should also be included.
+   of the core dump should also be included.
 
-   If we need additional stuff (like a log of the Configure or make),
+   If we need additional stuff (like a log of the configure or make),
    we'll ask for it, but if you know that it's relevant, you can send
    it along, too.
 
    You can also search to see if anyone else has already reported the
-   issue,' see what issues have been fixed for upcoming releases, and
+   issue, see what issues have been fixed for upcoming releases, and
    much more at the site.
 
 2. The PennMUSH community portal is at http://community.pennmush.org

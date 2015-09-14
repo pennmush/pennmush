@@ -22,6 +22,10 @@ Major changes:
 
 Functions:
  * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
+ * Added json(), for creating valid JSON-encoded data. [MG]
+ * Added oob(), for sending out-of-band messages via the General MUD 
+   Communication Protocol (GMCP) telnet option. Requested by Qon. [MG]
+ * registers() only listed registers whose values were strings, not ints. [MG]
  * filter() and filterbool() can now be passed additional arguments, for
    Rhost compatability. Requested by Volund. [1019-MG] [Rhost]
  * valid() can now validate timezones, locktypes and lockkeys. Suggested by 
@@ -36,6 +40,8 @@ Functions:
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * @logwipe can do more than just erasing a log file. [SW]
+ * @hooks now have a number of named registers (available through 
+   r(<name>,args)) with each of the hooked command's arguments. [MG]
  * Added @if and @skip. [MG] [Rhost] [MUX]
 
 Minor changes:
@@ -56,5 +62,7 @@ Hardcode:
  * game/restart is now auto-generated during 'make update'. [928-TK]
  * Fixed a memory leak in @switch. [MG]
  * A bug in @lock allowed invalid lock names to be used. [MG]
+ * Added support for the General MUD Communication Protocol (GMCP). See
+   http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
  * Choosing what scheme is used in compressing attribute text in-game is now 
    a run-time option set in mush.cnf, not options.h [SW]

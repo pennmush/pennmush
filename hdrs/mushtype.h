@@ -329,6 +329,9 @@ struct text_queue {
 /** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
 #define CONN_SOCKET_ERROR 0x1000
 
+/** Negotiated GMCP via Telnet */
+#define CONN_GMCP 0x2000
+
 /** Maximum \@doing length */
 #define DOING_LEN 40
 
@@ -399,6 +402,27 @@ struct descriptor_data {
   int ssl_state;                /**< Keep track of state of SSL object */
   conn_source source;           /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
+};
+
+
+enum json_type {JSON_NONE = 0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT};
+
+typedef struct json_data JSON;
+struct json_data {
+  enum json_type type;
+  void *data;
+  struct json_data *next;
+};
+
+typedef int (*gmcp_handler_func) (char *package, JSON *data, char *msg, DESC *d);
+#define GMCP_HANDLER(x) \
+  int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__))); \
+  int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__)))
+
+struct gmcp_handler {
+  char *package;
+  gmcp_handler_func func;
+  struct gmcp_handler *next;
 };
 
 

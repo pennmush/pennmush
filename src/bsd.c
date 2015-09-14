@@ -210,11 +210,13 @@ const char *default_ttype = "unknown";
 #define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
 #define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
 #define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
+#define TN_GMCP 201 /**< Generic MUD Communication Protocol; see http://www.gammon.com.au/gmcp */ 
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
 bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, char **q, char *qend);
+static void set_ttype(DESC *d, char *value);
 
 typedef void (*telnet_handler) (DESC *d, char *cmd, int len);
 #define TELNET_HANDLER(x) \
@@ -233,6 +235,13 @@ struct telnet_opt *telnet_options[256];
 char *starting_telnet_neg = NULL;
 int starting_telnet_neg_len = 0;
 
+char *json_vals[3] = {"false", "true", "null"};
+int json_val_lens[3] = {5, 4, 4};
+
+struct gmcp_handler *gmcp_handlers = NULL;
+static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs, 
+              NEW_PE_INFO *pe_info, JSON *json, dbref executor, 
+              dbref enactor);
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
  */
@@ -1805,6 +1814,9 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
               d->descriptor, d->ip,
               reason, d->input_chars, d->output_chars, d->cmds);
+  if (d->conn_flags & CONN_GMCP) {
+    send_oob(d, "Core.Goodbye", NULL);
+  }
   process_output(d);
   clearstrings(d);
   if (d->conn_timer) {
@@ -2253,6 +2265,23 @@ TELNET_HANDLER(telnet_naws_sb)
   d->height = ntohs(raw.s);
 }
 
+/** Set the TTYP (terminal type / client name) for a descriptor.
+ * \param d descriptor to set ttyp for
+ * \param value ttyp to set, or NULL/default_ttype for default */
+static void
+set_ttype(DESC *d, char *value)
+{
+  if (!d)
+    return;
+
+  if (d->ttype && d->ttype != default_ttype)
+    mush_free(d->ttype, "terminal description");
+  if (value && *value && value != default_ttype && strcmp(value, default_ttype))
+    d->ttype = mush_strdup(value, "terminal description");
+  else
+    d->ttype = (char *) default_ttype;
+}
+
 /* Send TTYP subnegotiation request */
 TELNET_HANDLER(telnet_ttype)
 {
@@ -2269,12 +2298,7 @@ TELNET_HANDLER(telnet_ttype_sb)
     return;
   cmd++;
 
-  if (d->ttype && d->ttype != default_ttype)
-    mush_free(d->ttype, "terminal description");
-  if (*cmd)
-    d->ttype = mush_strdup(cmd, "terminal description");
-  else
-    d->ttype = (char *) default_ttype;
+  set_ttype(d, cmd);
 }
 
 /* Handle DO CHARSET, send list of known charsets */
@@ -2393,6 +2417,811 @@ TELNET_HANDLER(telnet_mssp)
   process_output(d);
 }
 
+TELNET_HANDLER(telnet_gmcp)
+{
+  d->conn_flags |= CONN_GMCP;
+}
+
+TELNET_HANDLER(telnet_gmcp_sb)
+{
+  struct gmcp_handler *g;
+  char fullpackage[BUFFER_LEN], package[BUFFER_LEN], fullmsg[BUFFER_LEN];
+  char *p, *msg;
+  JSON *json = NULL;
+  int match, i = 50;
+
+  if (!gmcp_handlers)
+    return; /* Nothing to do */
+  
+  for (p = cmd; p < cmd+len; p++) {
+    if (!*p) {
+      notify_format(1, "Got a null at %d", (int) (p - cmd));
+    }
+  }
+  
+  mush_strncpy(fullpackage, cmd, BUFFER_LEN);
+  msg = strchr(fullpackage, ' ');
+  if (msg) {
+    *msg++ = '\0';
+  }
+  mush_strncpy(package, fullpackage, BUFFER_LEN);
+
+  p = package;
+  if (!*p)
+    return; /* We should always get a package name */
+  
+  if (msg && *msg) {
+    /* string_to_json destructively modifies msg, so make a copy */
+    mush_strncpy(fullmsg, msg, BUFFER_LEN);
+    json = string_to_json(msg);
+    if (!json)
+      return; /* Invalid json */
+  }
+  
+
+  while (i > 0) {
+    i--;
+    g = gmcp_handlers;
+    while (g && !match) {
+      if (!strcasecmp(g->package, p)) {
+        match = g->func(fullpackage, json, fullmsg, d);
+      }
+      g = g->next;
+    }
+    if (match || !*p) {
+      break; /* Either we got a match, or failed all possible matches */
+    } else {
+      if ((p = strrchr(p, '.'))) {
+        /* Trim off a subpackage and try again for a less specific match */
+        *p = '\0';
+        p = package;
+      } else {
+        /* Final check for 'last resort' handlers */
+        p = package;
+        *p = '\0';
+      }
+    }
+  }
+  json_free(json);
+}
+
+/** Escape a string so it can be sent as a telnet SB (IAC -> IAC IAC). Returns
+ * a STATIC buffer. */
+char *
+telnet_escape(char *str)
+{
+  static char buff[BUFFER_LEN];
+  char *bp = buff;
+  char *p, *save;
+  
+  *bp = '\0';
+  if (!str || !*str)
+    return buff;
+
+  for (p = str; *p; p++) {
+    if (*p == IAC) {
+      save = bp;
+      if (safe_chr(IAC, buff, &bp) || safe_chr(IAC, buff, &bp)) {
+        *save = '\0';
+        return buff;
+      }
+    } else if (safe_chr(*p, buff, &bp)) {
+      *bp = '\0';
+      return buff;
+    }
+  }
+  *bp = '\0';
+  return buff;
+}
+
+/** Free all memory used by a JSON struct */
+void
+json_free(JSON *json)
+{
+  if (!json)
+    return;
+
+  if (json->next) {
+    json_free(json->next);
+    json->next = NULL;
+  }
+  
+  if (json->data) {
+    switch (json->type) {
+      case JSON_NONE:
+        break; /* Included for completeness; never has data */
+      case JSON_NULL:
+      case JSON_BOOL:
+        break; /* pointers to static args */
+      case JSON_OBJECT:
+      case JSON_ARRAY:
+        json_free(json->data); /* Nested JSON structs */
+        break;
+      case JSON_STR:
+      case JSON_NUMBER:
+        mush_free(json->data, "json.data"); /* Plain, malloc'd value */
+        break;
+    }
+    json->data = NULL;
+  }
+  
+  mush_free(json, "json");  
+}
+
+/** Escape a string for use as a JSON string. Returns a STATIC buffer. */
+char *
+json_escape_string(char *input)
+{
+  static char buff[BUFFER_LEN];
+  char *bp = buff;
+  char *p;
+  
+  for (p = input; *p; p++) {
+    if (*p == '\n') {
+      safe_str("\\n", buff, &bp);
+    } else if (*p == '\r') {
+      // Nothing
+    } else if (*p == '\t') {
+      safe_str("\\t", buff, &bp);
+    } else {
+      if (*p == '"' || *p == '\\')
+        safe_chr('\\', buff, &bp);
+      safe_chr(*p, buff, &bp);
+    }
+  }
+  
+  *bp = '\0';
+  
+  return buff;
+  
+}
+
+/** Unescape a JSON string. Returns a STATIC buffer. */
+char *
+json_unescape_string(char *input)
+{
+  static char buff[BUFFER_LEN];
+  char *bp = buff;
+  char *p;
+  int escape = 0;
+  
+  for (p = input; *p; p++) {
+    if (escape) {
+      switch (*p) {
+        case 'n':
+          safe_chr('\n', buff, &bp);
+          break;
+        case 'r':
+          /* Nothing */
+          break;
+        case 't':
+          safe_chr('\t', buff, &bp);
+          break;
+        case '"':
+        case '\\':
+          safe_chr(*p, buff, &bp);
+          break;
+      }
+      escape = 0;
+    } else if (*p == '\\') {
+      escape = 1;
+    } else {
+      safe_chr(*p, buff, &bp);
+    }
+  }
+  
+  *bp = '\0';
+  
+  return buff;
+  
+}
+
+/** Convert a JSON struct into a string representation of the JSON
+ * \param json The JSON struct to convert
+ * \param verbose Add spaces, carriage returns, etc, to make the JSON human-readable?
+ * \param recurse Number of recursions; always call with this set to 0
+ * \retval NULL error occurred
+ * \retval result string representation of the JSON struct, malloc'd as "json_str"
+ */
+char *
+json_to_string_real(JSON *json, int verbose, int recurse)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  JSON *next;
+  int i = 0;
+  char *sub;
+  int error = 0;
+  double *np;
+  
+  if (!json)
+    return NULL;
+
+  switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_NUMBER:
+      np = (NVAL *) json->data;
+      error = safe_number(*np, buff, &bp);
+      break;
+    case JSON_STR:
+      error = safe_format(buff, &bp, "\"%s\"", json_escape_string((char *) json->data));
+      break;
+    case JSON_BOOL:
+      error = safe_str((char *) json->data, buff, &bp);
+      break;
+    case JSON_NULL:
+      error = safe_str((char *) json->data, buff, &bp);
+      break;
+    case JSON_ARRAY:
+      error = safe_chr('[', buff, &bp);
+      next = (JSON *) json->data;
+      i = 0;
+      for (next = (JSON *) json->data, i = 0; next; next = next->next, i++) {
+        sub = json_to_string_real(next, verbose, recurse + 1);
+        if (i)
+          error = safe_chr(',', buff, &bp);
+        if (sub != NULL) {
+          if (verbose) {
+            error = safe_chr('\n', buff, &bp);
+            error = safe_fill(' ', (recurse + 1) * 4, buff, &bp);
+          }
+          error = safe_str(sub, buff, &bp);
+          mush_free(sub, "json_str");
+        }
+      }
+      if (verbose) {
+        error = safe_chr('\n', buff, &bp);
+        error = safe_fill(' ', recurse * 4, buff, &bp);
+      }
+      error = safe_chr(']', buff, &bp);
+      break;
+    case JSON_OBJECT:
+      error = safe_chr('{', buff, &bp);
+      next = (JSON *) json->data;
+      i = 0;
+      while (next && !error) {
+        if (!(i % 2) && next->type != JSON_STR) {
+          error = 1;
+          break;
+        }
+        if (i > 0) {
+          error = safe_chr((i % 2) ? ':' : ',', buff, &bp);
+          if (verbose)
+            error = safe_chr(' ', buff, &bp);
+        }
+        if (verbose && !(i % 2)) {
+          error = safe_chr('\n', buff, &bp);
+          error = safe_fill(' ', (recurse + 1) * 4, buff, &bp);
+        }
+        sub = json_to_string_real(next, verbose, recurse + 1);
+        if (sub != NULL) {
+          error = safe_str(sub, buff, &bp);
+          mush_free(sub, "json_str");
+        } else {
+          error = 1;
+          break;
+        }
+        next = next->next;
+        i++;
+      }
+      if (verbose) {
+        error = safe_chr('\n', buff, &bp);
+        error = safe_fill(' ', recurse * 4, buff, &bp);
+      }
+      error = safe_chr('}', buff, &bp);
+      break;
+  }
+  
+  if (error) {
+    return NULL;
+  } else {
+    *bp = '\0';
+    return mush_strdup(buff, "json_str");
+  }
+}
+
+/** Register a handler for GMCP data.
+ * \param package the package name (Core.Hello, Foo.Bar.Baz). Use an empty
+ *        string as a default handler for all unhandled messages
+ * \param func function to run when matching messages are received
+ */
+void
+register_gmcp_handler(char *package, gmcp_handler_func func)
+{
+  char *p;
+  struct gmcp_handler *g;
+
+  if (!func)
+    return;
+  
+  if (!package)
+    p = "";
+  else
+    p = package;
+
+  g = mush_malloc(sizeof(struct gmcp_handler), "gmcp");
+  g->package = mush_strdup(p, "gmcp.package");
+  g->func = func;
+  g->next = gmcp_handlers;
+  
+  gmcp_handlers = g;
+}
+
+/* Handler for Core.Hello messages */
+GMCP_HANDLER(gmcp_core_hello) {
+  JSON *j;
+  
+  if (strcasecmp(package, "Core.Hello")) {
+    return 0; /* Package was Core.Hello.something, and we don't handle that */
+  }
+
+  if (json->type != JSON_OBJECT) {
+    return 0; /* We're expecting an object */
+  }
+
+  j = (JSON *) json->data;
+  while (j) {
+    if (j->type == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
+      if ((j = j->next) && j->type == JSON_STR && j->data && *((char *) j->data)) {
+        /* We have the client name. */
+        set_ttype(d, (char *) j->data);
+      }
+      break; /* This is all we care about */
+    } else {
+      j = j->next; /* Move to value */
+      if (j)
+        j = j->next; /* Move to next label */
+    }
+  }
+
+  return 1;
+}
+
+/* Handler for Core.Ping and Core.KeepAlive messages */
+GMCP_HANDLER(gmcp_core_ping) {
+
+  if (!strcasecmp(package, "Core.KeepAlive"))
+    return 1;
+  else if (!strcasecmp(package, "Core.Ping")) {
+    send_oob(d, "Core.Ping", NULL);
+    return 1;
+  }
+  return 0;
+}
+
+/** Convert a string representation to a JSON struct.
+ *  Destructively modifies input.
+ * \param input The string to parse
+ * \param ip A pointer to the position we're at in "input", for recursive calls.
+ *           Set to NULL for initial call.
+ * \param recurse Recursion level. Set to 0 for initial call.
+ * \retval NULL string did not contain valid JSON
+ * \retval json a JSON struct representing the json from input 
+ */
+JSON *
+string_to_json_real(char *input, char **ip, int recurse) {
+  JSON *result = NULL, *last = NULL, *next = NULL;
+  char *p;
+  double d;
+  
+  if (ip == NULL) {
+    ip = &input;
+  }
+  
+  result =  mush_malloc(sizeof(JSON), "json");
+  result->type = JSON_NONE;
+  result->data = NULL;
+  result->next = NULL;
+  
+  if (!input || !*input) {
+    return result;
+  }
+  
+  /* Skip over leading spaces */
+  while (**ip && isspace(**ip))
+    (*ip)++;
+
+  if (!**ip) {
+    return result;
+  }
+
+  if (!strncmp(*ip, json_vals[0], json_val_lens[0])) {
+    result->type = JSON_BOOL;
+    result->data = json_vals[0];
+    *ip += json_val_lens[0];
+  } else if (!strncmp(*ip, json_vals[1], json_val_lens[1])) {
+    result->type = JSON_BOOL;
+    result->data = json_vals[1];
+    *ip += json_val_lens[1];
+  } else if (!strncmp(*ip, json_vals[2], json_val_lens[2])) {
+    result->type = JSON_NULL;
+    result->data = json_vals[2];
+    *ip += json_val_lens[2];
+  } else if (**ip == '"') {
+    /* Validate string */
+    for (p = ++(*ip); **ip; (*ip)++) {
+      if (**ip == '\\') {
+        (*ip)++;
+      } else if (**ip == '"') {
+        break;
+      }
+    }
+    if (**ip == '"') {
+      result->type = JSON_STR;
+      *(*ip)++ = '\0';
+      result->data = mush_strdup(json_unescape_string(p), "json.data");
+    }
+  } else if (**ip == '[') {
+    int i = 0;
+    (*ip)++; /* Skip over the opening [ */
+    while (**ip) {
+      while (**ip && isspace(**ip))
+        (*ip)++; /* Skip over leading spaces */
+      if (**ip == ']')
+        break;
+      next = string_to_json_real(input, ip, recurse + 1);
+      if (next == NULL)
+        break; /* Error in the array contents */
+      if (i == 0) {
+        result->data = next;
+      } else {
+        last->next = next;
+      }
+      last = next;
+      while (**ip && isspace(**ip))
+        (*ip)++;
+      if (**ip == ',') {
+        (*ip)++;
+      } else {
+        break;
+      }
+      i++;
+    }
+    if (**ip == ']') {
+      (*ip)++;
+      result->type = JSON_ARRAY;
+    }
+  } else if (**ip == '{') {
+    int i = 0;
+    (*ip)++;
+    while (**ip) {
+      while (**ip && isspace(**ip))
+        (*ip)++;
+      if (**ip == '}')
+        break;
+      next = string_to_json_real(input, ip, recurse + 1);
+      if (next == NULL)
+        break; /* Error */
+      if (i == 0)
+        result->data = next;
+      else
+        last->next = next;
+      last = next;
+      if (!(i % 2) && next->type != JSON_STR) {
+        /* It should have been a label, but it's not */
+        break;
+      }
+      while (**ip && isspace(**ip))
+        (*ip)++;
+      if (**ip == ',' && (i % 2))
+        (*ip)++;
+      else if (**ip == ':' && !(i % 2))
+        (*ip)++;
+      else {
+        break; /* error */
+      }
+      i++;
+    }
+    if ((i % 2) && **ip == '}') {
+      (*ip)++;
+      result->type = JSON_OBJECT;
+    }
+  } else {
+    d = strtod(*ip, &p);
+    if (p != *ip) {
+      /* We have a number */
+      NVAL *data = mush_malloc(sizeof(NVAL), "json.data");
+      result->type = JSON_NUMBER;
+      *data = d;
+      result->data = data;
+      *ip = p;
+    } else {
+      result->type = JSON_NONE;
+    }
+  }
+  
+  if (result->type == JSON_NONE) {
+    /* If it's set to JSON_NONE at this point, we had an error */
+    json_free(result);
+    return NULL;
+  }
+  while (**ip && isspace(**ip))
+    (*ip)++;
+  if (!recurse && **ip != '\0') {
+    /* Text left after we finished parsing; invalid JSON */
+    json_free(result);
+    return NULL;
+  } else {
+    return result;
+  }
+}
+  
+/** Send an out-of-band message to a descriptor using the GMCP telnet subnegotiation
+ * \param d descriptor to send to
+ * \param package The name of the package[.subpackage(s)] the message belongs to
+ * \param data a JSON object, or NULL for no message 
+ */
+void
+send_oob(DESC *d, char *package, JSON *data)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  char *escmsg = NULL;
+  int error;
+
+  if (!d || !(d->conn_flags & CONN_GMCP) || !package || !*package)
+    return;
+  
+  if (data && data->type != JSON_NONE) {
+    char *str = json_to_string(data, 0);
+    safe_str(str, buff, &bp);
+    *bp = '\0';
+    if (str)
+      mush_free(str, "json_str");
+    escmsg = telnet_escape(buff);
+    bp = buff;
+  }
+  
+  if (escmsg && *escmsg)
+    error = safe_format(buff, &bp, "%c%c%c%s %s%c%c", IAC, SB, TN_GMCP, package, escmsg, IAC, SE);
+  else
+    error = safe_format(buff, &bp, "%c%c%c%s%c%c", IAC, SB, TN_GMCP, package, IAC, SE);
+
+  *bp = '\0';
+
+  if (!error) {
+    queue_newwrite(d, buff, strlen(buff));
+    process_output(d);
+  }
+}
+
+FUNCTION(fun_oob)
+{
+  dbref who;
+  DESC *d;
+  JSON *json;
+  int i = 0;
+  
+  who = lookup_player(args[0]);
+  if (who == NOTHING) {
+    safe_str(e_match, buff, bp);
+    return;
+  }
+
+  json = string_to_json(args[2]);
+  if (!json) {
+    safe_str(T("#-1 INVALID JSON"), buff, bp);
+    return;
+  }
+
+  DESC_ITER_CONN(d) {
+    if (d->player != who || !(d->conn_flags & CONN_GMCP))
+      continue;
+    send_oob(d, args[1], json);
+    i++;
+  }
+  safe_integer(i, buff, bp);
+  json_free(json);
+}
+
+FUNCTION(fun_json_map)
+{
+  ufun_attrib ufun;
+  PE_REGS *pe_regs;
+  int funccount;
+  char *osep, osepd[2] = { ' ', '\0' };
+  JSON *json, *next;
+  int i;
+  char rbuff[BUFFER_LEN];
+
+  osep = (nargs >= 3) ? args[2] : osepd;
+
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+    return;
+
+  json = string_to_json(args[1]);
+  if (!json) {
+    safe_str(T("#-1 INVALID JSON"), buff, bp);
+    return;
+  }
+  
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_json_map");
+  for (i = 3; i <= nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+  }
+
+  switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NULL:
+    case JSON_NUMBER:
+      /* Basic data types */
+      json_map_call(&ufun, rbuff, pe_regs, pe_info, json, executor, enactor);
+      safe_str(rbuff, buff, bp);
+      break;
+    case JSON_ARRAY:
+    case JSON_OBJECT:
+      /* Complex types */
+      for (next = json->data, i = 0; next; next = next->next, i++) {
+        funccount = pe_info->fun_invocations;
+        if (json->type == JSON_ARRAY) {
+          pe_regs_setenv(pe_regs, 2, pe_regs_intname(i));
+        } else {
+          pe_regs_setenv_nocopy(pe_regs, 2, (char *) next->data);
+          next = next->next;
+          if (!next)
+            break;
+        }
+        if (json_map_call(&ufun, rbuff, pe_regs, pe_info, next, executor, enactor))
+          break;
+        if (i > 0)
+          safe_str(osep, buff, bp);
+        safe_str(rbuff, buff, bp);
+        if (*bp >= (buff + BUFFER_LEN - 1)
+            && pe_info->fun_invocations == funccount)
+          break;
+      }
+      break;
+  }
+
+  json_free(json);
+  pe_regs_free(pe_regs);  
+}
+
+/** Used by fun_json_map to call the attr for each JSON element. %2-%9 may
+ * already be set in the pe_regs
+ * \param ufun the ufun to call
+ * \param rbuff buffer to store results of ufun call in
+ * \param pe_regs the pe_regs holding info for the ufun call
+ * \param pe_info the pe_info to eval the attr with
+ * \param json the JSON element to pass to the ufun
+ * \param executor
+ * \param enactor
+ * \retval 0 success
+ * \retval 1 function invocation limit exceeded
+ */
+static bool
+json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs, 
+              NEW_PE_INFO *pe_info, JSON *json, dbref executor, 
+              dbref enactor)
+{
+  char *jstr = NULL;
+
+  switch (json->type) {
+    case JSON_NONE:
+      return 0;
+    case JSON_STR:
+      pe_regs_setenv_nocopy(pe_regs, 0, "string");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_BOOL:
+      pe_regs_setenv_nocopy(pe_regs, 0, "boolean");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_NULL:
+      pe_regs_setenv_nocopy(pe_regs, 0, "null");
+      pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
+      break;
+    case JSON_NUMBER:
+      pe_regs_setenv_nocopy(pe_regs, 0, "number");
+      {
+        char buff[BUFFER_LEN];
+        char *bp = buff;
+        safe_number(*(NVAL *) json->data, buff, &bp);
+        *bp = '\0';
+        pe_regs_setenv(pe_regs, 1, buff);
+      }
+      break;
+    case JSON_ARRAY:
+      pe_regs_setenv_nocopy(pe_regs, 0, "array");
+      jstr = json_to_string(json, 0);
+      pe_regs_setenv(pe_regs, 1, jstr);
+      if (jstr)
+        mush_free(jstr, "json_str");
+      break;
+    case JSON_OBJECT:
+      pe_regs_setenv_nocopy(pe_regs, 0, "object");
+      jstr = json_to_string(json, 0);
+      pe_regs_setenv(pe_regs, 1, jstr);
+      if (jstr)
+        mush_free(jstr, "json_str");
+      break;
+  }
+  
+  return call_ufun(ufun, rbuff, executor, enactor, pe_info, pe_regs);
+}
+
+FUNCTION(fun_json)
+{
+  enum json_type type;
+  int i;
+  
+  if (!*args[0])
+    type = JSON_STR;
+  else if (string_prefix("string", args[0]))
+    type = JSON_STR;
+  else if (string_prefix("boolean", args[0]))
+    type = JSON_BOOL;
+  else if (string_prefix("array", args[0]))
+    type = JSON_ARRAY;
+  else if (string_prefix("object", args[0]))
+    type = JSON_OBJECT;
+  else if (string_prefix("null", args[0]) && arglens[0] > 2)
+    type = JSON_NULL;
+  else if (string_prefix("number", args[0]) && arglens[0] > 2)
+    type = JSON_NUMBER;
+  else {
+    safe_str(T("#-1 INVALID TYPE"), buff, bp);
+    return;
+  }
+  
+  if ((type == JSON_NULL && nargs > 2) || ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) && nargs != 2) || (type == JSON_OBJECT && (nargs % 2) != 1)) {
+      safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
+      return;
+  }
+  
+  switch (type) {
+    case JSON_NULL:
+      if (nargs == 2 && !strcmp(args[1], json_vals[2]))
+        safe_str("#-1", buff, bp);
+      else
+        safe_str(json_vals[2], buff, bp);
+      return;
+    case JSON_BOOL:
+      if (string_prefix(json_vals[0], args[1]) || !strcasecmp(args[1], "0"))
+        safe_str(json_vals[0], buff, bp);
+      else if (string_prefix(json_vals[1], args[1]) || !strcasecmp(args[1], "1"))
+        safe_str(json_vals[1], buff, bp);
+      else
+        safe_str("#-1 INVALID VALUE", buff, bp);
+      return;
+    case JSON_NUMBER:
+      if (!is_number(args[1])) {
+        safe_str(e_num, buff, bp);
+        return;
+      }
+      safe_str(args[1], buff, bp);
+      return;
+    case JSON_STR:
+      safe_format(buff, bp, "\"%s\"", json_escape_string(args[1]));
+      return;
+    case JSON_ARRAY:
+      safe_chr('[', buff, bp);
+      for (i = 1; i < nargs; i++) {
+        if (i > 1) {
+          safe_strl(", ", 2, buff, bp);
+        }
+        safe_str(args[i], buff, bp);
+      }
+      safe_chr(']', buff, bp);
+      return;
+    case JSON_OBJECT:
+      safe_chr('{', buff, bp);
+      for (i = 1; i < nargs; i+=2) {
+        if (i > 1)
+          safe_strl(", ", 2, buff, bp);
+        safe_format(buff, bp, "\"%s\": %s", json_escape_string(args[i]), args[i+1]);
+      }
+      safe_chr('}', buff, bp);
+      return;
+    case JSON_NONE:
+      break;
+  }
+}
+
 void
 init_telnet_opts(void)
 {
@@ -2443,6 +3272,13 @@ init_telnet_opts(void)
   telopt->sb = NULL;
   telnet_options[i] = telopt;
 
+  telopt = mush_malloc(sizeof(struct telnet_opt), "telopt");
+  telopt->optcode = i = TN_GMCP;
+  telopt->offer = WILL;
+  telopt->handler = telnet_gmcp;
+  telopt->sb = telnet_gmcp_sb;
+  telnet_options[i] = telopt;
+  
   /* Store the telnet options we negotiate for new connections,
    * to avoid looking them up every time someone connects */
   len = 0;
@@ -2462,6 +3298,10 @@ init_telnet_opts(void)
     }
     starting_telnet_neg_len = len;
   }
+  
+  register_gmcp_handler("Core.Hello", gmcp_core_hello);
+  register_gmcp_handler("Core.Ping", gmcp_core_ping);
+  register_gmcp_handler("Core.KeepAlive", gmcp_core_ping);
 }
 
 /** Parse a telnet code received from a connection.
@@ -3608,12 +4448,7 @@ sockset(DESC *d, char *name, char *val)
   }
 
   if (!strcasecmp(name, "TERMINALTYPE")) {
-    if (d->ttype && d->ttype != default_ttype)
-      mush_free(d->ttype, "terminal description");
-    if (val && *val)
-      d->ttype = mush_strdup(val, "terminal description");
-    else
-      d->ttype = (char *) default_ttype;
+    set_ttype(d, val);
     return T("Terminal Type set.");
   }
 
@@ -5561,8 +6396,8 @@ FUNCTION(fun_terminfo)
   else {
     bool has_privs = (match->player == executor) || See_All(executor);
     int type;
-    if (has_privs)
-      safe_str((match->ttype ? match->ttype : default_ttype), buff, bp);
+    if (has_privs && match->ttype)
+      safe_str(match->ttype, buff, bp);
     else
       safe_str(default_ttype, buff, bp);
     if (match->conn_flags & CONN_HTML)
@@ -5570,6 +6405,8 @@ FUNCTION(fun_terminfo)
     if (has_privs) {
       if (match->conn_flags & CONN_TELNET)
         safe_str(" telnet", buff, bp);
+      if (match->conn_flags & CONN_GMCP)
+        safe_str(" gmcp", buff, bp);
       if (match->conn_flags & CONN_PROMPT_NEWLINES)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
@@ -6095,14 +6932,12 @@ load_reboot_db(void)
       }
       if (flags & RDBF_TTYPE) {
         temp = getstring_noalloc(f);
-        if (!strcmp(temp, REBOOT_DB_NOVALUE))
-          d->ttype = NULL;
-        else if (!strcmp(temp, default_ttype))
-          d->ttype = (char *) default_ttype;
-        else
-          d->ttype = mush_strdup(temp, "terminal description");
+        if (!strcmp(temp, REBOOT_DB_NOVALUE) || !strcmp(temp, default_ttype))
+          set_ttype(d, NULL);
+        else 
+          set_ttype(d, (char *) temp);
       } else
-        d->ttype = NULL;
+        set_ttype(d, NULL);
       if (flags & RDBF_SOCKET_SRC)
         d->source = getref(f);
       if (flags & RDBF_PUEBLO_CHECKSUM)

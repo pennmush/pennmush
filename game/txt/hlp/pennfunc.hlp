@@ -2422,9 +2422,9 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
   An example of why using ## instead of %i0 can be insecure, and lead to
   unintended evaluation:
     > say iter((1\,1),add##)
-	You say, "2"
-	> say iter((1\,1),add%i0)
-	You say, "add(1,1)"
+    You say, "2"
+    > say iter((1\,1),add%i0)
+    You say, "add(1,1)"
 & IBREAK()
   ibreak([<level>])
   
@@ -5675,6 +5675,7 @@ See also: @teleport
   currently include:
   pueblo           present if the client is in Pueblo mode.
   telnet           present if the client understands the telnet protocol.
+  gmcp             present if GMCP is negotiated via telnet; see help oob()
   ssl              present if the client is using an SSL/TLS connection.
   prompt_newlines  see 'help prompt_newlines'
   stripaccents     client is receiving 7-bit ascii, no accented characters
@@ -5687,9 +5688,128 @@ See also: @teleport
   You must have see_all, or use terminfo() on yourself, to see all
   information or use a <descriptor>. Mortals using terminfo() on another
   player will always receive "unknown" for the client name, and will not
-  get telnet/ssl/prompt_newlines in the output list.
+  get telnet/gmcp/ssl/prompt_newlines in the output list.
 
-See also: pueblo(), width(), height(), ssl(), @sockset
+See also: pueblo(), width(), height(), ssl(), @sockset, oob()
+& OOB()
+& GMCP
+  oob(<player>, <package>[, <message>])
+  
+  This wiz-only function sends an out-of-band message to <player> using the 
+  General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp).
+  <package> is the name of the package/message type.
+  
+  If specified, <message> is a JSON-formatted message to be sent. Use the
+  JSON() function to construct valid JSON.
+  
+  Returns the number of descriptors the message was sent to on success, or a
+  string starting with #-1 on error.
+  
+See also: json()
+& JSON()
+  json(<type>[, <data>[, ..., <dataN>])
+  
+  This function encodes <data> as a valid JSON (JavaScript Object Notation)
+  message. <type> specifies the type of data to represent; valid <type>s and
+  correspending <data>s are listed below.
+  
+  If any errors occur, json() returns a string starting with #-1.
+  
+  For <type>...   <data> should be...
+  null            not given
+  boolean         one arg, either "true", "1", "false" or "0"
+  string          one arg, any string, including an empty string
+  number          one arg, a valid number
+  array           zero or more args, each themselves valid JSON
+  object          zero or more pairs of arguments, the first a string, the
+                  second valid JSON
+
+  When <type> is "array" or "object", it's recommended that subsequent JSON
+  arguments are created with nested calls to JSON().
+
+  See 'help json2' for examples.
+& JSON2
+  > think json(null)
+  null
+  
+  > think json(string, Look\, it's "JSON"!)
+  "Look, it's \"JSON\"!"
+  
+  > think json(array, json(number, pi()), json(string, Pie), json(bool, true))
+  [3.141593, "Pie", true]
+  
+  > &oneobject me=json(object, name, json(string, name(%0)), dbref, 
+       json(string, %0), created, json(number, csecs(%0)))
+  > think u(oneobject, #1)
+  {"name": "One", "dbref": "#1", "created": 1431039583}
+  
+  > think json(array, u(oneobject, #0), u(oneobject, #1), u(oneobject, #2))
+  [
+   {"name": "Room Zero", "dbref": "#0", "created": 1431039583},
+   {"name": "One", "dbref": "#1", "created": 1431039583},
+   {"name": "Master Room", "dbref": "#2", "created": 1431039583}
+  ]
+& JSON_MAP()
+  json_map([<object>/]<attribute>, <json>[, <osep>[, <arg>[, ..., <argN>]]])
+  
+  This function iterates over a JSON string, calling the specified <attribute>
+  for each element of the JSON. If <json> represents a basic JSON type (null,
+  boolean, string or number), the attribute will be called once. For arrays
+  and objects, it will be called once for each element of the array/object.
+  
+  When the attribute is called, %0 will be the type of the json object and %1
+  will be the value. When <json> is an array, %2 will be the array position of
+  the current element. For objects, %2 will be the label of the current 
+  element. You can pass user-specified arguments to the attribute; the first
+  <arg> will be available as %3, the second as %4, and so on.
+  
+  <osep> defaults to a space.
+  
+  See 'help json_map2' for examples.
+See also: JSON()
+& JSON_MAP2
+  A very basic example:
+  > &json me=We got [art(%0)] %0: %1
+  
+  > think json_map(me/json, "foo")
+  We got a string: foo
+  
+  > think json_map(me/json, \["foo"\, 5\], %r)
+  We got a string: foo
+  We got a number: 5
+  
+  > think json_map(me/json, \["foo"\, \["bar"\, 10\]\], %r)
+  We got a string: foo
+  We got an array: ["bar",10]
+  
+  See 'help json_map3' for a more complex example.
+& JSON_MAP3
+  A JSON pretty-printer, using nested calls to json_map() to handle nested
+  JSON objects/arrays:
+  > &pretty_json me=u(me/pretty_json_sub,,%0,,0,strmatch(%0,\\{*))
+  > &pretty_json_sub me=repeat(%t,%3)
+      [if(%4,json(string,%2):%b)]
+      [switch(%1,
+        \{*,\{%r[json_map(%=,%1,\,%r,inc(%3),1)]%r[repeat(%t,%3)]\},
+        \[*,\[%r[json_map(%=,%1,\,%r,inc(%3),0)]%r[repeat(%t,%3)]\],
+        json(%0,%1)
+      )]
+
+  > &json me=[5, null, ["nested!", 999, {"foo":5, "bar":"\"Whee\""}], 7]
+  > th u(me/pretty_json, v(json)
+  [
+      5,
+      #-1,
+      [
+          "nested!",
+          999,
+          {
+              "foo": 5,
+              "bar": "\"Whee\""
+          }
+      ],
+      7
+  ]
 & TESTLOCK()
   testlock(<key>, <victim>)
 

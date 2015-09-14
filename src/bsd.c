@@ -2428,7 +2428,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   char fullpackage[BUFFER_LEN], package[BUFFER_LEN], fullmsg[BUFFER_LEN];
   char *p, *msg;
   JSON *json = NULL;
-  int match, i = 50;
+  int match = 0, i = 50;
 
   if (!gmcp_handlers)
     return; /* Nothing to do */

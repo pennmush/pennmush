@@ -67,7 +67,7 @@ int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
              NEW_PE_INFO *pe_info);
 
 int run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
-                 MQUE *from_queue);
+                 MQUE *from_queue, PE_REGS *pe_regs);
 void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
@@ -97,6 +97,8 @@ COMLIST commands[] = {
   {"@BREAK", "INLINE QUEUED", cmd_break,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
+  {"@SKIP", "IFELSE", cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+  {"@IFELSE", NULL, cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CHANNEL",
@@ -1483,6 +1485,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 {
   NEW_PE_INFO *pe_info;
   char nop_arg[BUFFER_LEN];
+  int i, j;
 
   if (!cmd)
     return 0;
@@ -1497,11 +1500,56 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   pe_info = make_pe_info("pe_info-run_command");
   strcpy(pe_info->cmd_evaled, cmd_evaled);
   strcpy(pe_info->cmd_raw, cmd_raw);
+  
+  /* Set each command arg into a named stack variable, for use in hooks */
+  if (ap && *ap)
+    pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "args", ap);
+
+  if (swp && *swp)
+    pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "switches", swp);
+
+  if (cmd->type & CMD_T_EQSPLIT) {
+    /* ls, before the = */
+    if (cmd->type & CMD_T_LS_ARGS) {
+      char argname[10];
+      j = 0;
+      for (i = 1; i < MAX_ARG; i++) {
+        if (lsa[i] && *lsa[i]) {
+          mush_strncpy(argname, tprintf("lsa%d", i), 10);
+          pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname, lsa[i]);
+          j = i;
+        }
+      }
+      if (j)
+        pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
+    } else if (ls && *ls) {
+      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
+    }
+    /* The = itself */
+    if (rhs_present)
+      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "equals", "=");
+    /* rs, after the = */
+    if (cmd->type & CMD_T_RS_ARGS) {
+      char argname[10];
+      j = 0;
+      for (i = 1; i < MAX_ARG; i++) {
+        if (rsa[i] && *rsa[i]) {
+          mush_strncpy(argname, tprintf("rsa%d", i), 10);
+          pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname, rsa[i]);
+          j = i;
+        }
+      }
+      if (j)
+        pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "rsac", j);
+    } else if (rs && *rs) {
+      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "rs", rs);
+    }
+  }
 
   if ((cmd->type & CMD_T_NOP) && ap && *ap) {
     /* Done this way because another call to tprintf during
      * run_cmd_hook will blitz the string */
-    strcpy(nop_arg, tprintf("%s %s", cmd->name, ap));
+    mush_strncpy(nop_arg, tprintf("%s %s", cmd->name, ap), BUFFER_LEN);
   } else {
     nop_arg[0] = '\0';
   }
@@ -1512,13 +1560,13 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_cmd_hook(cmd->hooks.override, executor, cmd_evaled, queue_entry) &&
+  if (!run_cmd_hook(cmd->hooks.override, executor, cmd_evaled, queue_entry, pe_info->regvals) &&
       !((cmd->type & CMD_T_NOP) && *ap &&
-        run_cmd_hook(cmd->hooks.override, executor, nop_arg, queue_entry))) {
+        run_cmd_hook(cmd->hooks.override, executor, nop_arg, queue_entry, pe_info->regvals))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
-      if (run_cmd_hook(cmd->hooks.extend, executor, cmd_evaled, queue_entry)) {
+      if (run_cmd_hook(cmd->hooks.extend, executor, cmd_evaled, queue_entry, pe_info->regvals)) {
         free_pe_info(pe_info);
         return 1;
       }
@@ -2315,11 +2363,12 @@ run_hook(dbref executor, dbref enactor, struct hook_data *hook,
  * \param executor the player running the command
  * \param commandraw the evaluated command string to match against the hook
  * \param from_queue the queue entry the command is being executed in
+ * \param pe_regs pe_regs containing named stack variables for each command part
  * \return 1 if the hook has been run successfully, 0 otherwise
  */
 int
 run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
-             MQUE *from_queue)
+             MQUE *from_queue, PE_REGS *pe_regs)
 {
   int queue_type = QUEUE_DEFAULT;
 
@@ -2333,11 +2382,11 @@ run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
 
   if (hook->attrname) {
     return one_comm_match(hook->obj, executor,
-                          hook->attrname, commandraw, from_queue, queue_type);
+                          hook->attrname, commandraw, from_queue, queue_type, pe_regs);
   } else {
     return atr_comm_match(hook->obj, executor, '$', ':',
                           commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
-                          queue_type);
+                          queue_type, pe_regs);
   }
 }
 

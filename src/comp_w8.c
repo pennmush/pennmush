@@ -117,18 +117,6 @@
  * fixed at about 63% regardless of the amount of data compressed.
  */
 
-#include "copyrite.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-#include "conf.h"
-#include "dbio.h"
-#include "externs.h"
-#include "mushdb.h"
-#include "mymalloc.h"
-
 #define MAXTABLE 32768          /**< Maximum words in the table */
 #define MAXWORDS 100            /**< Maximum length of a word */
 #define COLLISION_LIMIT 20      /**< Maximum allowed collisions */
@@ -162,7 +150,6 @@ static long total_entries = 0;
 static char *b;
 
 static void output_previous_word(void);
-int init_compress(PENNFILE *f);
 #ifdef COMP_STATS
 void compress_stats(long *entries, long *mem_used,
                     long *total_uncompressed, long *total_compressed);
@@ -241,8 +228,8 @@ output_previous_word(void)
  * \param s string to be compressed.
  * \return newly allocated compressed string.
  */
-char *
-text_compress(char const *s)
+static char *
+word_text_compress(char const *s)
 {
   const char *p;
   static char buf[BUFFER_LEN];
@@ -293,8 +280,8 @@ text_compress(char const *s)
  * \param s a compressed string.
  * \return a pointer to a static buffer containing the uncompressed string.
  */
-char *
-text_uncompress(char const *s)
+static char *
+word_text_uncompress(char const *s)
 {
 
   const char *p;
@@ -339,38 +326,16 @@ text_uncompress(char const *s)
 
 }                               /* end of uncompress; */
 
-/** Word-uncompress a string, allocating memory.
- * this function should be used when you're doing something like
- * \verbatim
- * char *attrib = safe_uncompress(a->value);
- *
- * NEVER use it with something like
- *
- * char tbuf1[BUFFER_LEN];
- * strcpy(tbuf1, safe_uncompress(a->value));
- * \endverbatim
- * or you will create a horrendous memory leak.
- *
- * \param s compressed string to uncompress.
- * \return pointer to newly allocated string containing uncompressed text.
- */
-char *
-safe_uncompress(char const *s)
-{
-  return strdup(uncompress(s));
-}
-
-
 /** Initialize the word compression.
  * This function clears the words table the first time through.
  * \param f (unused).
  */
-int
-init_compress(PENNFILE *f __attribute__ ((__unused__)))
+static bool
+word_init_compress(PENNFILE *f __attribute__ ((__unused__)))
 {
   memset(words, 0, sizeof words);
   memset(words_len, 0, sizeof words_len);
-  return 0;
+  return 1;
 }
 
 #ifdef COMP_STATS
@@ -401,3 +366,9 @@ hash_fn(const char *s, int hashtab_mask)
     hashval = (hashval << 5) + hashval + *p;
   return (hashval & hashtab_mask);
 }
+
+struct compression_ops word_ops = {
+  word_init_compress,
+  word_text_compress,
+  word_text_uncompress
+};

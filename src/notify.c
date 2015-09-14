@@ -1417,7 +1417,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
         if (listen_lock_passed) {
           atr_comm_match(target, speaker, '^', ':',
                          fullmsg, 0, 1, NULL, NULL, 0, NULL, NULL,
-                         QUEUE_DEFAULT);
+                         QUEUE_DEFAULT, NULL);
         }
       }
 

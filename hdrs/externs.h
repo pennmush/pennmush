@@ -101,26 +101,13 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
  * in @stats/tables. Only for word-based compression (COMPRESSION_TYPE 3 or 4)
  */
 /* #define COMP_STATS /* */
-#if (COMPRESSION_TYPE != 0)
-char *
-text_compress(char const *s)
-  __attribute_malloc__;
-#define compress(str) text_compress(str)
-    char *text_uncompress(char const *s);
-#define uncompress(str) text_uncompress(str)
-    char *safe_uncompress(char const *s) __attribute_malloc__;
-#else
-extern char ucbuff[];
-static inline int
-init_compress(PENNFILE *f __attribute__ ((__unused__)))
-{
-  return 0;
-}
 
-#define compress(s) (strdup(s))
-#define uncompress(s) (strcpy(ucbuff, (char *) s))
-#define safe_uncompress(s) (strdup((char *) s))
-#endif
+bool init_compress(PENNFILE *);
+char *safe_uncompress(char const *) __attribute_malloc__;
+char *text_uncompress(char const *);
+char *text_compress(char const *) __attribute_malloc__;
+#define compress text_compress
+#define uncompress text_uncompress
 
 /* From cque.c */
 

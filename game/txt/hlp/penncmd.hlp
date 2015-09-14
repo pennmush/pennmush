@@ -699,7 +699,7 @@ See also: QUIT, LOGOUT
   false.
 
   See 'help @break2' for examples.
-See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
+See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch, @if
 & @break2
 & @assert2
   Examples:
@@ -1936,9 +1936,9 @@ See also: PUPPET, DBREF, objeval()
       in the database and the removing it permanently from the 
       flag table. It requires the exact flag name or alias to be used.
       Be very very careful with this. 
-	/decompile prints out a list of @flag/add commands needed to recreate
-	  the flag table on another MUSH. If <pattern> is given, only flags whose
-	  names match that wildcard pattern are shown.
+    /decompile prints out a list of @flag/add commands needed to recreate
+      the flag table on another MUSH. If <pattern> is given, only flags whose
+      names match that wildcard pattern are shown.
 
   See 'help @flag2' for information on @flag/add.
   
@@ -2235,6 +2235,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 softcode without having to rewrite the core functionality.
   @hook/extend/inline: As above, but the $-command won't be queued.
 
+  Continued in 'help @hook2'.
+& @hook2
   In all cases, %# is the dbref of the object doing the command, and all
   hooks share the same set of q-registers. With /before and /after, 
   the results of the evaluated attribute is thrown away like it was
@@ -2242,15 +2244,20 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   do the same thing (e.g., @pemit and pemit()), only the command gets
   the hooks.
   
+  A number of named registers are available in @hooks, accessible via
+  r(<name>, args), containing the arguments passed to the command. The exact
+  registers available depend on the command type and the arguments passed; see
+  'help @hook6' for a description of all possible registers.
+  
   Hooks can also be set in the alias.cnf file.
 
   Leaving out the object and attribute clears an existing hook. Wizards can
   see existing hooks with @command or @hook/list.
 
-  See 'help @hook2' for more information about @hook/override/inline,
-  'help @hook3' for information on @hook/extend, and 
-  'help @hook4' for examples.
-& @hook2
+  See 'help @hook3' for more information about @hook/override/inline,
+  'help @hook4' for information on @hook/extend, 'help @hook5' for examples,
+  and 'help @hook7' for an list of available named registers.
+& @hook3
 
   @hook/override/inline and @hook/extend/inline allow you to write softcoded 
   commands which act exactly like built-in commands - because they're run 
@@ -2277,8 +2284,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 
   @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
   
-  See 'help @hook5' for some examples of using @hook/override/inline.
-& @hook3
+  See 'help @hook6' for some examples of using @hook/override/inline.
+& @hook4
 
   @hook/extend can be used to add new features to a built-in command, via 
   additional switches, without forcing you to also rewrite the existing
@@ -2294,7 +2301,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   switches for filtering the output in different ways.
   
   @hook/igswitch is an alias for @hook/extend, for Rhost compatability.
-& @hook4
+& @hook5
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2313,8 +2320,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook5' for /inplace examples.
-& @hook5
+  See 'help @hook6' for /inplace examples.
+& @hook6
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance
@@ -2334,6 +2341,36 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   Walker sticks his right foot in
   Walker declares, "Do the hokey pokey"
   Walker sticks his right foot out
+& @hook7
+
+  The following named registers may be available (via r(<name>,args)) in your
+  @hook, depending on the command hooked and the arguments given when run;
+  use registers(,args) to get the available registers. /before, /after and
+  /ignore hooks can also use the %u substitution to access the entire command
+  string entered.
+  
+  Register  Description
+  --------  -------------------------------------------------------------
+  ARGS      The entire argument string. Always available.
+  
+  For EQSPLIT commands:
+  LS        If the command doesn't have multiple left-side args, LS is set to
+            the entire left-side arg (before the =)
+  LSAC      For commands with multiple left-side-args, the number of left-side
+            args given
+  LSAx      The xth left-side-arg, where x is between 1 and LSAC
+  EQUALS    If the = was given, this is set to "="
+  RS        For commands without multiple right-side args, this is the entire
+            right-side arg (after the =)
+  RSAC      For commands with multiple right-side-args, the number of 
+            right-side args given
+  RSAx      The xth right-side-arg, where x is between 1 and RSAC
+  
+  For SWITCHES commands (such as @lock):
+  SWITCHES  The switch string given. (Note: Currently, switches given to
+            normal commands are not available here, but can be accessed via
+            the %u substitution.)
+
 & HUH_COMMAND
 
   This internal command is run whenever someone attempts to run a command
@@ -2375,6 +2412,41 @@ See also: @hook, EVALUATION ORDER, warn_on_missing, unimplemented_command
   idle for over 2 minutes (120 seconds).
   
 See also: @away, @haven
+& @if
+& @ifelse
+& @skip
+  @if <boolean>=<true>[, <false>]
+  @skip <boolean>=<false>
+  
+  If <boolean> is true, the action list <true> is run, otherwise the action
+  list <false> is run. The action list is not queued, it is run immediately,
+  in the same action list as @if.
+  
+  For RhostMUSH compatability, @skip runs the action list <false> when 
+  <boolean> is false, and does nothing for true values.
+  
+  @ifelse and @skip/ifelse are aliases for @if.
+
+  See 'help @if2' for examples.
+See also: @break, @switch, if(), BOOLEAN VALUES
+& @if2
+  Examples:
+    > @if 1=say Yes, say No
+    You say, "Yes"
+
+    > @if 0=say Yes, say No
+    You say, "No"
+
+    > &foo me=$foo *: say Checking... ; @if %0=say Yes, {say No ; say Sorry!}
+
+    > foo 1
+    You say, "Checking..."
+    You say, "Yes"
+
+    > foo 0
+    You say, "Checking..."
+    You say, "No"
+    You say, "Sorry!"
 & @infilter
   @infilter <object>[=<pattern 1>[, <pattern 2>[, ..., <pattern N>]]]
   
@@ -3873,7 +3945,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook
   @switch/inplace is an alias for @switch/inline/nobreak/localize.
 
   See 'help @switch3' for examples.
-See also: switch wildcards, switch(), @break, stext(), slev()
+See also: switch wildcards, switch(), @if, @break, stext(), slev()
 & @switch3
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps

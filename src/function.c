@@ -152,7 +152,8 @@ FUNALIAS faliases[] = {
   {"STRDELETE", "DELETE"},
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
-  {"MONIKER", "CNAME"},         /* Rhost alias */
+  {"MONIKER", "CNAME"},  /* Rhost alias */
+  {"MEAN", "AVG"},  /* Rhost alias */
   {"MATCH", "ELEMENT"},
   {NULL, NULL}
 };
@@ -271,8 +272,8 @@ FUNTAB flist[] = {
   {"ESCAPE", fun_escape, 1, -1, FN_REG},
   {"EXIT", fun_exit, 1, 1, FN_REG | FN_STRIPANSI},
   {"EXTRACT", fun_extract, 1, 4, FN_REG},
-  {"FILTER", fun_filter, 2, 4, FN_REG},
-  {"FILTERBOOL", fun_filter, 2, 4, FN_REG},
+  {"FILTER", fun_filter, 2, MAX_STACK_ARGS + 3, FN_REG},
+  {"FILTERBOOL", fun_filter, 2, MAX_STACK_ARGS + 3, FN_REG},
   {"FINDABLE", fun_findable, 2, 2, FN_REG | FN_STRIPANSI},
   {"FIRST", fun_first, 1, 2, FN_REG},
   {"FIRSTOF", fun_firstof, 0, INT_MAX, FN_NOPARSE},

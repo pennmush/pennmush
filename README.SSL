@@ -3,8 +3,10 @@
 
 
 As of version 1.7.7p17, PennMUSH supports SSL connections when linked
-with the OpenSSL library (http://www.openssl.org). The following
-features are supported:
+with the OpenSSL library (http://www.openssl.org). As of version 1.8.4p9, 
+OpenSSL is a required.
+
+The following features are supported:
 
   * Encrypted sessions using SSLv2, SSLv3, and TLSv1 protocols
     with ephemeral Diffie-Hellman keying.
@@ -12,9 +14,6 @@ features are supported:
   * Authentication of the clients via certificates
   * Use of digest routines in the crytpo library for encrypting
     passwords and the digest() function.
-
-As of version 1.8.4p9, OpenSSL is a required, not just optional
-library.
 
 This document explains how to use SSL with PennMUSH, and covers
 the following issues:
@@ -72,7 +71,7 @@ II.a. What to install
   OpenSSL can also be compiled on Windows, and you could add its
   libraries to the PennMUSH project file and link it in that way.
   Noltar has done this succesfully; it requires compiling both OpenSSL
-  and PennMUSH in /MD (multithread dll) mode.
+  and PennMUSH in /MD (multithread dll) mode. See win32/README for more info.
 
 II.b Persistent SSL connections
 
@@ -80,29 +79,29 @@ II.b Persistent SSL connections
   restarts, because the internal OpenSSL state cannot be saved to disc
   and restored later. To allow persistant ssl connections via a proxy
   process, pass --enable-ssl_slave to configure when you run it. This
-  is experimental code (And thus not enabled by default) and does not
+  is experimental code (and thus not enabled by default) and does not
   work on Windows.
 
   It requires the libevent 2.X library and headers to be
   installed. Get it through your OS's package system or at
   http://monkey.org/~provos/libevent/ . Note that some popular OSes
-  only seem to have packages for an older 1.X release of libevent (As
+  only seem to have packages for an older 1.X release of libevent (as
   of p5, Debian and derived distributions like Ubuntu, possibly
   others). You'll have to install libevent2 from source if that's the
   case, and make sure the obsolete native package is removed to avoid
   conflicts.
  
-  To use the ssl slave, a full @shutdown and restart of the mush has
+  To use the ssl_slave, a full @shutdown and restart of the mush has
   to take place after the mush source has been configured to enable
   it, and compiled. Then players can connect via SSL capable clients
   exactly as they did before, with the only change being that they
   won't get booted on a @shutdown/reboot. It's transparent to the
   player and the game.
 
-  Once the ssl slave proxy becomes more widely tested and debugged, it
+  Once the ssl_slave proxy becomes more widely tested and debugged, it
   will be enabled by default.
 
-III. Mush configuration overview
+III. MUSH configuration overview
 
   mush.cnf includes five directives that configure the SSL support:
 

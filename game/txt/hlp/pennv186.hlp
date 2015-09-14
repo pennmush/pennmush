@@ -13,6 +13,10 @@ be read in 'help patchlevels'.
 
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
+NOTE: When updating from an earlier version of PennMUSH, you'll need to run
+ 'make update' and './config.status' in the toplevel PennMUSH directory prior
+ to running 'make'.
+
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]
 
@@ -21,10 +25,28 @@ Functions:
  * Added json(), for creating valid JSON-encoded data. [MG]
  * Added oob(), for sending out-of-band messages via the General MUD 
    Communication Protocol (GMCP) telnet option. Requested by Qon. [MG]
+ * registers() only listed registers whose values were strings, not ints. [MG]
+ * filter() and filterbool() can now be passed additional arguments, for
+   Rhost compatability. Requested by Volund. [1019-MG] [Rhost]
+ * valid() can now validate timezones, locktypes and lockkeys. Suggested by 
+   Volund. [1021,1025-MG]
+ * convtime() now returns #-1, instead of -1, on error. This change is
+   -backwards incompatible-, but necessary as -1 is a potentially valid output
+   for convtime(). Suggested by KimikoMuffin. [1010-MG]
+ * convsecs() can now accept negative inputs when Extended convtime() is
+   available. Suggested by Volund. [1010-MG]
+ * avg() is now an alias for mean(). [1023-TK] [Rhost]
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * @logwipe can do more than just erasing a log file. [SW]
+ * @hooks now have a number of named registers (available through 
+   r(<name>,args)) with each of the hooked command's arguments. [MG]
+ * Added @if and @skip. [MG] [Rhost] [MUX]
+
+Minor changes:
+ * Added a few more date formats to getdate.template for convtime(). Suggested
+   by Volund and Mercutio. [1020-MG]
 
 Hardcode:
  * Clean up some more remnants of the previous configure package's
@@ -42,3 +64,5 @@ Hardcode:
  * A bug in @lock allowed invalid lock names to be used. [MG]
  * Added support for the General MUD Communication Protocol (GMCP). See
    http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
+ * Choosing what scheme is used in compressing attribute text in-game is now 
+   a run-time option set in mush.cnf, not options.h [SW]

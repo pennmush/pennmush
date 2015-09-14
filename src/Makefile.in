@@ -200,7 +200,7 @@ portmsg: portmsg.c mysocket.c sig.o wait.o
 	wait.o $(LDFLAGS) $(LIBS)
 
 # Some dependencies that make depend doesn't handle well
-compress.o: comp_h.c comp_w.c comp_w8.c
+compress.o: comp_h.c comp_w8.c
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

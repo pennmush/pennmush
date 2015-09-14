@@ -6,7 +6,8 @@ Updated by Ervin Hearn <ehearn@pennmush.org>
 Last update: Monday, 20 August 2012
 
 For information on how to build the dependencies (OpenSSL and PCRE), please
-refer to https://github.com/pennmush/pennmush/wiki/InstallingWindows
+refer to 
+https://github.com/pennmush/pennmush/wiki/Installing-PennMUSH-on-Windows
 
 1. From the top-level pennmush directory,
 

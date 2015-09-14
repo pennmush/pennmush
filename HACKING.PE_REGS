@@ -137,7 +137,7 @@ two recommended ways to do this:
   PE_REGS *pe_regs = pe_regs_localize(pe_info, PE_REGS_ARG, "functionname");
   pe_regs_setenv(pe_regs, num, value); (or pe_regs_setenv_nocopy(...));
 
-  process_expression(..., pe_regs)
+  process_expression(..., pe_info)
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);
 

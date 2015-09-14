@@ -2006,6 +2006,7 @@ process_expression(char *buff, char **bp, char const **str,
           notify_format(Owner(executor),
                         "Unescaped comma in final arg of %s by #%d. This behavior is deprecated.",
                         lca_func_name, executor);
+        tflags &= ~PT_NOT_COMMA;
       }
 /* End of r1628's deprecation */
       break;

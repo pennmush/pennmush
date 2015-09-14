@@ -2391,7 +2391,7 @@ raw_search(dbref player, struct search_spec *spec,
       continue;
     if (spec->cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec->cmdstring, 1, 0,
-                        NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
+                        NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT, NULL))
       continue;
     if (spec->listenstring[0]) {
       ret = 0;
@@ -2407,7 +2407,7 @@ raw_search(dbref player, struct search_spec *spec,
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0,
-                          NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
+                          NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT, NULL))
         continue;
     }
     if (*spec->eval) {

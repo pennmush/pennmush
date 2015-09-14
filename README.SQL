@@ -58,15 +58,15 @@ II.a. MySQL
   If you want to avoid linking these libraries on systems where they
   are present, pass the --without-mysql switch to configure.
 
-  If you installed Mysql from a binary package (e.g. rpm or apt), you
+  If you installed MySQL from a binary package (e.g. rpm or apt), you
   should be sure that your system also has the development package
   (usually mysql-dev, mysql-devel or libmysqlclient-dev).
 
-  If you think you have mysql libraries and header files but configure
+  If you think you have MySQL libraries and header files but configure
   isn't finding them, they may be in an unusual location on your
   system, with mysql_config not in your default path.  Find its
   location ('where mysql_config' if the program works for you, 'find /
-  -name mysql_config' otherwise, and call configure with
+  -name mysql_config' otherwise), and call configure with
   --with-mysql=/path/to/mysql_config
 
 II.b. PostgresQL
@@ -82,16 +82,16 @@ II.b. PostgresQL
   you should be sure that your system also has the development package
   (usually postgresql-dev, or libpq or similar)
 
-  If you think you have postgresql libraries and header files but
+  If you think you have PostgresQL libraries and header files but
   configure isn't finding them, they may be in an unusual location on
   your system, with pg_config not in your default path.  Find its
   location ('where pg_config' if the program works for you, 'find /
-  -name pg_config' otherwise, and call configure with
+  -name pg_config' otherwise), and call configure with
   --with-postgresql=/path/to/pg_config
 
 II.c Sqlite
 
-  The configure script distrubted with PennMUSH looks for sqlite3
+  The configure script distributed with PennMUSH looks for sqlite3
   headers and libraries in /usr, /usr/local and /opt. If it's
   somewhere else on your system, call configure with
   --with-sqlite3=/path/to/sqlite3
@@ -102,12 +102,12 @@ II.c Sqlite
   The path is the directory that contains the hdrs/ and lib/
   directories that hold the sqlite3 headers and library respectively.
 
-III. Mush configuration overview
+III. MUSH configuration overview
 
   mush.cnf includes these directives that configure the SQL support:
 
   sql_platform provides the name of the SQL database server software
-  that will be used for connections. It current takes one of four
+  that will be used for connections. It currently takes one of four
   values: "disabled" (no SQL), "mysql", "postgresql", or "sqlite3".
   If not specified, it defaults to disabled.
 
@@ -124,13 +124,13 @@ III. Mush configuration overview
   tables. This must be specified and there is no default.
  
   sql_username provides a username to connect to the SQL server
-  with. If no specified, a null username will be used, which many SQL
+  with. If not specified, a null username will be used, which many SQL
   servers treat as "the user running this (pennmush) process".
 
   sql_password provides the password for the user. It defaults to no
   password.
  
-  For sqlite3, which uses a local file instead of connected to a
+  For sqlite3, which uses a local file instead of connecting to a
   database server, sql_database gives the name of the database file,
   sql_host must be localhost, and the username and password are
   currently ignored.

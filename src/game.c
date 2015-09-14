@@ -845,7 +845,7 @@ init_game_dbs(void)
   } else {
     /* ok, read it in */
     do_rawlog(LT_ERR, "ANALYZING: %s", infile);
-    if (init_compress(f) < 0) {
+    if (init_compress(f) != 1) {
       do_rawlog(LT_ERR, "ERROR LOADING %s", infile);
       return -1;
     }
@@ -983,7 +983,7 @@ do_readcache(dbref player)
 /** Check each attribute on each object in x for a $command matching cptr */
 #define list_match(x,q,qflags)        list_check(x, executor, '$', ':', cptr, 0, q, qflags)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x,q,qflags)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, q, qflags)
+#define cmd_match(x,q,qflags)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, q, qflags, NULL)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1417,7 +1417,7 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
                        end, str, just_match, 1, NULL, NULL, 0, &errdb,
-                       queue_entry, queue_flags))
+                       queue_entry, queue_flags, NULL))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1638,7 +1638,7 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
 /** Would the scan command find an matching attribute on x for player p? */
 #define ScanFind(p,x,c)  \
   (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c, NULL, NULL, QUEUE_DEFAULT)) != 0))
+      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c, NULL, NULL, QUEUE_DEFAULT, NULL)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the

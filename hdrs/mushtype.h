@@ -426,9 +426,4 @@ struct gmcp_handler {
 };
 
 
-/* Channel stuff */
-typedef struct chanuser CHANUSER;
-typedef struct chanlist CHANLIST;
-typedef struct channel CHAN;
-
 #endif

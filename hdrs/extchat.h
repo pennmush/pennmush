@@ -53,6 +53,7 @@
 
 #define CU_TITLE_LEN (options.chan_title_len)
 
+typedef struct chanuser CHANUSER;
 /** A channel user.
  * This structure represents an object joined to a chat channel.
  * Each chat channel maintains a linked list of users.
@@ -96,6 +97,8 @@ struct chanuser {
 /* This is a chat channel */
 #define CHAN_NAME_LEN 31
 #define CHAN_TITLE_LEN 256
+
+typedef struct channel CHAN;
 /** A chat channel.
  * This structure represents a MUSH chat channel. Channels are organized
  * into a sorted linked list.
@@ -120,6 +123,7 @@ struct channel {
   BUFFERQ *bufferq;             /**< Pointer to channel recall buffer queue */
 };
 
+typedef struct chanlist CHANLIST;
 /** A list of channels on an object.
  * This structure is a linked list of channels that is associated
  * with each object

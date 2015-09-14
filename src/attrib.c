@@ -1536,13 +1536,15 @@ can_debug(dbref player, dbref victim)
  * \param from_queue the parent queue to run matching attrs inplace for,
           if just_match is false and queue_type says to run inplace
  * \param queue_type QUEUE_* flags of how to queue any matching attrs
+ * \param pe_regs_parent if non-null, a PE_REGS containing named arguments,
+          copied into the pe_regs when a matched attribute is executed
  * \return number of attributes that matched, or 0
  */
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
                char *atrname, char **abp, int show_child, dbref *errobj,
-               MQUE *from_queue, int queue_type)
+               MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1599,8 +1601,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
   skipcount = 0;
 
-  if (!just_match)
+  if (!just_match) {
     pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
+    pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
+  }
 
   do {
     next = parent_depth ?
@@ -1765,6 +1769,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           }
           pe_regs_free(pe_regs);
           pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
+          pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
         }
       }
     }
@@ -1791,12 +1796,14 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
  * \param str the string to match
  * \param from_queue parent queue to run the cmds inplace for, if queue_type says to do so
  * \param queue_type QUEUE_* flags telling how to run the matched commands
+ * \param pe_regs_parent if non-null, a PE_REGS containing named arguments,
+          copied into the pe_regs when the matched attribute is executed
  * \retval 1 attribute matched.
  * \retval 0 attribute failed to match.
  */
 int
 one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
-               MQUE *from_queue, int queue_type)
+               MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent)
 {
   ATTR *ptr;
   char tbuf1[BUFFER_LEN];
@@ -1840,6 +1847,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     strcpy(tbuf2, tbuf1);
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
+  pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
   if (AF_Regexp(ptr) ?
       regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                           match_space, match_space_len, pe_regs, PE_REGS_ARG) :

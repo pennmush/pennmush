@@ -82,9 +82,9 @@ char const *convert_atr(int oldatr);
 int atr_comm_match(dbref thing, dbref player, int type, int end,
                    char const *str, int just_match, int check_locks,
                    char *atrname, char **abp, int show_child,
-                   dbref *errobj, MQUE *from_queue, int queue_type);
+                   dbref *errobj, MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent);
 int one_comm_match(dbref thing, dbref player, const char *atr,
-                   const char *str, MQUE *from_queue, int queue_type);
+                   const char *str, MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent);
 int do_set_atr(dbref thing, char const *RESTRICT atr,
                char const *RESTRICT s, dbref player, uint32_t flags);
 void do_atrlock(dbref player, char const *src, char const *action);

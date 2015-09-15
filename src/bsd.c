@@ -2433,12 +2433,6 @@ TELNET_HANDLER(telnet_gmcp_sb)
   if (!gmcp_handlers)
     return; /* Nothing to do */
   
-  for (p = cmd; p < cmd+len; p++) {
-    if (!*p) {
-      notify_format(1, "Got a null at %d", (int) (p - cmd));
-    }
-  }
-  
   mush_strncpy(fullpackage, cmd, BUFFER_LEN);
   msg = strchr(fullpackage, ' ');
   if (msg) {
@@ -2456,7 +2450,8 @@ TELNET_HANDLER(telnet_gmcp_sb)
     json = string_to_json(msg);
     if (!json)
       return; /* Invalid json */
-  }
+  } else
+    fullmsg[0] = '\0';
   
 
   while (i > 0) {
@@ -6932,6 +6927,7 @@ load_reboot_db(void)
       }
       if (flags & RDBF_TTYPE) {
         temp = getstring_noalloc(f);
+        d->ttype = NULL;
         if (!strcmp(temp, REBOOT_DB_NOVALUE) || !strcmp(temp, default_ttype))
           set_ttype(d, NULL);
         else 

@@ -6925,15 +6925,14 @@ load_reboot_db(void)
         d->width = 78;
         d->height = 24;
       }
+      d->ttype = NULL;
       if (flags & RDBF_TTYPE) {
         temp = getstring_noalloc(f);
-        d->ttype = NULL;
         if (!strcmp(temp, REBOOT_DB_NOVALUE) || !strcmp(temp, default_ttype))
           set_ttype(d, NULL);
         else 
           set_ttype(d, (char *) temp);
-      } else
-        set_ttype(d, NULL);
+      }
       if (flags & RDBF_SOCKET_SRC)
         d->source = getref(f);
       if (flags & RDBF_PUEBLO_CHECKSUM)

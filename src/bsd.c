@@ -2785,6 +2785,32 @@ GMCP_HANDLER(gmcp_core_ping) {
   return 0;
 }
 
+#ifdef GMCP_EXAMPLE
+/* An example softcode handler for GMCP data - in this case, triggering the 
+ * attr #0/GMCP whenever otherwise-unhandled data is received, with 
+ * %0 = port/descriptor number, %1 = package name, %2 = json message */
+GMCP_HANDLER(gmcp_softcode_example) {
+  dbref obj = 0;
+  char *attrname = "GMCP";
+  ATTR *a;
+  PE_REGS *pe_regs;
+
+  a = atr_get_noparent(obj, attrname);
+  if (!a)
+    return 0; /* No such attr; gmcp message unhandled */
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "gmcp_softcode");
+  pe_regs_set_int(pe_regs, PE_REGS_ARG, "0", d->descriptor);
+  pe_regs_setenv(pe_regs, 1, package);
+  pe_regs_setenv(pe_regs, 2, msg);
+  queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT, NOTHING);
+  return 1;
+}
+/* You'll also need to do:
+ *   register_gmcp_handler("", gmcp_softcode_example);
+ * somewhere like local_startup() to initialize the handler */
+#endif
+
 /** Convert a string representation to a JSON struct.
  *  Destructively modifies input.
  * \param input The string to parse

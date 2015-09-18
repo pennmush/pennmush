@@ -735,8 +735,8 @@ init_game_config(const char *conf)
   local_configs();
   conf_default_set();
   config_file_startup(conf, 0);
-  config_file_checks();
   start_all_logs();
+  config_file_checks();
 
   /* Initialize the attribute chunk storage */
   chunk_init();

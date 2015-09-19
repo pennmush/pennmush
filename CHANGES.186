@@ -41,6 +41,7 @@ Functions:
  * convsecs() can now accept negative inputs when Extended convtime() is
    available. Suggested by Volund. [1010-MG]
  * avg() is now an alias for mean(). [1023-TK] [Rhost]
+ * textsearch() allows searching the contents of helpfiles. [MG]
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
@@ -48,6 +49,7 @@ Commands:
  * @hooks now have a number of named registers (available through 
    r(<name>,args)) with each of the hooked command's arguments. [MG]
  * Added @if and @skip. [MG] [Rhost] [MUX]
+ * help/search <pattern> lets you search within helpfiles. [MG] [Rhost]
 
 Minor changes:
  * Added a few more date formats to getdate.template for convtime(). Suggested

@@ -231,7 +231,7 @@ COMMAND(cmd_helpcmd)
     while (*p && (isspace(*p) || *p == '*' || *p == '?'))
       p++;
     if (!*p) {
-      notify(executor, T("You may need to be a bit more specific."));
+      notify(executor, T("You may need to be a little more specific."));
       return;
     }
 

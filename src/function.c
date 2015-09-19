@@ -586,6 +586,7 @@ FUNTAB flist[] = {
   {"TESTLOCK", fun_testlock, 2, 2, FN_REG | FN_STRIPANSI},
   {"TEXTENTRIES", fun_textentries, 2, 3, FN_REG | FN_STRIPANSI},
   {"TEXTFILE", fun_textfile, 2, 2, FN_REG | FN_STRIPANSI},
+  {"TEXTSEARCH", fun_textsearch, 2, 3, FN_REG | FN_STRIPANSI},
   {"TIME", fun_time, 0, 1, FN_REG | FN_STRIPANSI},
   {"TIMEFMT", fun_timefmt, 1, 3, FN_REG},
   {"TIMESTRING", fun_timestring, 1, 2, FN_REG | FN_STRIPANSI},

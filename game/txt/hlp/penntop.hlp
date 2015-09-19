@@ -7,7 +7,6 @@ This is the index to the MUSH online help files.
   For the list of MUSH commands, type:            help commands
   For the list of MUSH topics, type:              help topics
   For an alphabetical list of all help entries:   help entries 
-  For a list of entries that match a pattern:     help <wildcard>
   For information about PennMUSH:                 help code
   
   For a list of flags:                            help flag list
@@ -15,6 +14,9 @@ This is the index to the MUSH online help files.
   For a list of attributes:                       help attribute list
   To see the configuration of this MUSH:          @config
 
+  Use 'help <wildcard>' to search for topic names that match <wildcard>, or
+  'help/search <wildcard>' for a list of topics whose text matches <wildcard>.
+  
   On many MUSHes, list local commands with:       +help
 
   If there are any errors in the help text, please notify a wizard in

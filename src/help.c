@@ -65,6 +65,133 @@ static void write_topic(long int p);
 
 extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
+static char * help_search(dbref executor, help_file *h, char *_term, char *delim);
+
+static char *
+help_search(dbref executor, help_file *h, char *_term, char *delim)
+{
+  static char results[BUFFER_LEN];
+  char *rp;
+  char searchterm[BUFFER_LEN], *st;
+  char topic[TOPIC_NAME_LEN + 1];
+  char line[LINE_SIZE + 1], *l, cleanline[LINE_SIZE + 1], *cl;
+  char buff[BUFFER_LEN], *bp;
+  int n;
+  size_t i;
+  help_indx *entry;
+  FILE *fp;
+  
+  memset(topic, 0, TOPIC_NAME_LEN + 1);
+  memset(line, 0, LINE_SIZE + 1);
+  memset(cleanline, 0, LINE_SIZE + 1);
+  memset(buff, 0, BUFFER_LEN);
+  memset(results, 0, BUFFER_LEN);
+  
+  rp = results;
+  
+  if (!delim || !*delim)
+    delim = " ";
+  
+  if (!_term || !*_term) {
+    notify(executor, T("What do you want to search for?"));
+    return NULL;
+  }
+
+  if (!h->indx || h->entries == 0) {
+    notify(executor, T("Sorry, that command is temporarily unvailable."));
+    do_rawlog(LT_ERR, "No index for %s.", h->command);
+    return NULL;
+  }
+  
+  st = _term;
+  while (*st && (isspace(*st) || *st == '*' || *st == '?')) {
+    st++;
+  }
+  if (!*st) {
+    notify(executor, T("You may need to be a little more specific."));
+    return NULL;
+  }
+  
+  st = searchterm;
+  safe_chr('*', searchterm, &st);
+  safe_str(_term, searchterm, &st);
+  safe_chr('*', searchterm, &st);
+  *st = '\0';
+
+  if (strchr(searchterm, '\n') || strchr(searchterm, '\r')) {
+    notify(executor, T("You can't search for mulitple lines."));
+    return NULL;
+  }
+  
+  if ((fp = fopen(h->file, FOPEN_READ)) == NULL) {
+    notify(executor, T("Sorry, that command is temporarily unavailable."));
+    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", h->file);
+    return NULL;
+  }
+  for (i = 0; i < h->entries; i++) {
+    entry = &h->indx[i];
+    bp = buff;
+    if (fseek(fp, entry->pos, 0) < 0L) {
+      notify(executor, T("Sorry, that command is temporarily unavailable."));
+      do_rawlog(LT_ERR, "Seek error in file %s", h->file);
+      return NULL;
+    }
+    strcpy(topic, strupper(entry->topic + (*entry->topic == '&')));
+    for (n = 0; n < BUFFER_LEN; n++) {
+      if (fgets(line, LINE_SIZE, fp) == NULL)
+        break;
+      if (line[0] == '&' || line[0] == '\n') {
+        if (i && bp > buff) {
+          *bp = '\0';
+          if (quick_wild(searchterm, buff)) {
+            /* Match */
+            if (rp != results)
+              safe_str(delim, results, &rp);
+            safe_str(topic, results, &rp);
+            break;
+          }
+        }
+        if (line[0] == '\n') {
+          bp = buff;
+          continue;
+        } else {
+          break;
+        }
+      } else {
+        l = line;
+        while (*l && isspace(*l))
+          l++;
+        for (cl = cleanline; *l; cl++) {
+          if (!isspace(*l)) {
+            *cl = *l++;
+          } else {
+            *cl = ' ';
+            while (*l && isspace(*l))
+              l++;
+          }
+        }
+        *cl = '\0';
+        if (bp > buff && !isspace(*(bp - 1)))
+          safe_chr(' ', buff, &bp);
+        if (safe_str(cleanline, buff, &bp)) {
+          *bp = '\0';
+          if (quick_wild(searchterm, buff)) {
+            /* Match */
+            if (rp != results)
+              safe_str(delim, results, &rp);
+            safe_str(topic, results, &rp);
+            break;
+          }
+          bp = buff;
+          safe_str(cleanline, buff, &bp);
+        }
+      }
+    }
+  }
+  
+  return results;
+}
+
 COMMAND(cmd_helpcmd)
 {
   help_file *h;
@@ -82,10 +209,31 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
+  if (SW_ISSET(sw, SWITCH_SEARCH)) {
+    char *r = help_search(executor, h, arg_left, ", ");
+    if (!r)
+      return;
+    if (*r)
+      notify_format(executor, T("Here are the entries which match '%s':\n%s"),
+                    arg_left, r);
+    else
+      notify(executor, T("No matches."));
+    return;
+  }
+  
   strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
     char **entries;
+    char *p;
+    
+    p = arg_left;
+    while (*p && (isspace(*p) || *p == '*' || *p == '?'))
+      p++;
+    if (!*p) {
+      notify(executor, T("You may need to be a little more specific."));
+      return;
+    }
 
     entries = list_matching_entries(arg_left, h, &len, 0);
     if (len == 0)
@@ -222,7 +370,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
     mush_free(h, "help_file.entry");
     return;
   }
-  (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0, NULL,
+  (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0, "SEARCH",
                      cmd_helpcmd);
   hashadd(h->command, h, &help_files);
 }
@@ -631,6 +779,31 @@ FUNCTION(fun_textentries)
   }
 }
 
+/* ARGSUSED */
+FUNCTION(fun_textsearch)
+{
+  help_file *h;
+  char *entries;
+  char *sep = " ";
+
+  h = hashfind(strupper(args[0]), &help_files);
+  if (!h) {
+    safe_str(T("#-1 NO SUCH FILE"), buff, bp);
+    return;
+  }
+  if (h->admin && !Hasprivs(executor)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+  if (nargs > 2)
+    sep = args[2];
+
+  entries = help_search(executor, h, args[1], sep);
+  if (entries)
+    safe_str(entries, buff, bp);
+  else
+    safe_str("#-1", buff, bp);
+}
 static const char *
 normalize_entry(help_file *help_dat, const char *arg1)
 {

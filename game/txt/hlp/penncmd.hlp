@@ -105,7 +105,7 @@ See also: lit(), decompose(), escape(), @command, }
     > ]test My name is %n.
     I got: My name is %n.
 
-  Preventing evaluation of code inside the $-command:  
+  Preventing evaluation of code inside the $-command:
     > &test Tester=$test *: ]@pemit %#=I got: %0
     > test My name is %n.
     I got: %0
@@ -531,7 +531,7 @@ See also: @idle, @haven
 See also: QUIT, LOGOUT
 & @break
 & @assert
-  @break[/queued]  <boolean>[=<action list>]
+  @break[/queued] <boolean>[=<action list>]
   @assert[/queued] <boolean>[=<action list>]
 
   @break stops the execution of further commands in the current action list if <boolean> is a true value. It doesn't affect new queue entries made by previous commands in the action list. It can be useful for doing error checking without having to nest @switches and suffer from delayed execution because of queueing.
@@ -628,7 +628,7 @@ See also: @chown
   
   You must control <object>, and either control <zone> or pass its @lock/chzone. 
 
-  Continued in 'help @chzone2'.  
+  Continued in 'help @chzone2'.
 & @chzone2
   To see the Zone of an object, you can use either 'brief' or 'examine' to examine it. The Zone is listed on the same line as the Owner of the object.
 
@@ -678,10 +678,10 @@ See also: @create, clone(), create(), @cpattr
   @command/restrict can be used to restrict who can use <command>. See 'help restrict' for more information.
 
   Switches include:
-  /add     : Add a new command that does nothing, but can be @hook'd
+  /add     : Add a new command that does nothing, but can be @hook'd.
   /delete  : Delete a command added with @command/add or /alias. God only.
-  /disable : Disable a command added in the hardcode
-  /enable  : Re-enable a command disabled with @command/disable
+  /disable : Disable a command added in the hardcode.
+  /enable  : Re-enable a command disabled with @command/disable.
 
   The /quiet switch can be used to suppress output from @command.
 
@@ -855,7 +855,7 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent, @invformat, @
   Example:
     > @cost Exit Machine=10
     > @apay Exit Machine=@open %n-exit 
-    > @pay Exit Machine=Your exit has been created.  
+    > @pay Exit Machine=Your exit has been created.
  
     > give Exit Machine=10
     Your exit has been created.
@@ -897,7 +897,7 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
 & @dbck
   @dbck
   
-  This is a wizard only command. It forces the database to perform a series of internal cleanup and consistency checks that normally run  approximately every 10 minutes:
+  This is a wizard only command. It forces the database to perform a series of internal cleanup and consistency checks that normally run approximately every 10 minutes:
 
   1. For every object, make sure its location, home, next, contents, parent, and zone fields are valid objects.
   2. Check for disconnected rooms that aren't set FLOATING
@@ -930,7 +930,7 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
   @decompile/db
     This switch makes @decompile use the object's dbref instead of its name, which is useful for editing code off-MUSH.
   @decompile/flags
-    Only the code to @create the object and set flags/powers/locks is printed.  When an <attribute pattern> is given, this switch is ignored, and @decompile only prints the matching attributes.
+    Only the code to @create the object and set flags/powers/locks is printed. When an <attribute pattern> is given, this switch is ignored, and @decompile only prints the matching attributes.
   @decompile/attribs
     Only the code to set the object's attributes is printed. Same as @decompile <object>/**
   @decompile/skipdefaults
@@ -946,7 +946,7 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
   The /tf works the same as if you'd typed:
     @decompile/db <obj>[/<attrs>]=[default(me/TFPREFIX, FugueEdit >%b)]
     
-  with the exception that @decompile/tf does not include commands for setting attribute flags. If you have a TFPREFIX attribute set, the (unevaluated) contents of that attribute is used as the prefix. Otherwise, the string "FugueEdit > " is used. It's useful for automatically copying @decompile output into your client to alter. It is highly recommended  that you set a TFPREFIX attribute, to prevent others from maliciously placing code in your client's command line.
+  with the exception that @decompile/tf does not include commands for setting attribute flags. If you have a TFPREFIX attribute set, the (unevaluated) contents of that attribute is used as the prefix. Otherwise, the string "FugueEdit > " is used. It's useful for automatically copying @decompile output into your client to alter. It is highly recommended that you set a TFPREFIX attribute, to prevent others from maliciously placing code in your client's command line.
 
   To set up @decompile/tf:
   
@@ -1060,7 +1060,7 @@ See also: @poll, WHO, doing()
               
   @dolist/inplace is an alias for @dolist/inline/nobreak/localize.
 
-  See 'help @dolist3' for examples.  
+  See 'help @dolist3' for examples.
 See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @dolist3
 
@@ -1096,9 +1096,9 @@ See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
   
   This command discards commands waiting on a semaphore without executing them. (For non-semaphore queues, use @halt or @halt/pid.)
 
-  If the /any switch is given, then all semaphores associated with <object> are @drained.  Otherwise, only the specified semaphore attribute (or SEMAPHORE if no <attribute> is specified) is @drained.
+  If the /any switch is given, then all semaphores associated with <object> are @drained. Otherwise, only the specified semaphore attribute (or SEMAPHORE if no <attribute> is specified) is @drained.
 
-  If the /all switch is given, then all queue entries associated with the selected semaphore(s) are discarded, and the semaphore attribute(s) are cleared.  Otherwise, only the indicated <number> of queue entries are discarded. If no <number> is given, then the /all switch is assumed.
+  If the /all switch is given, then all queue entries associated with the selected semaphore(s) are discarded, and the semaphore attribute(s) are cleared. Otherwise, only the indicated <number> of queue entries are discarded. If no <number> is given, then the /all switch is assumed.
 
   You may not specify both the /any switch and a specific attribute. Similarly, you may not specify both the /all switch and a number.
 
@@ -1500,7 +1500,7 @@ See also: FLAGS, @set, @power, flag permissions
   
   Continued in 'help @function4'.
 & @function4
-  Normally, built in functions cannot be overriden by @functions. However, if a built-in function is deleted with @function/delete, you can then make a @function with the same name. "Deleted" built-ins can still be called through the FN() function, and can have restrictions applied with @function/restrict/builtin.  @function/restore will delete the @function and turn the built in version back on.
+  Normally, built in functions cannot be overriden by @functions. However, if a built-in function is deleted with @function/delete, you can then make a @function with the same name. "Deleted" built-ins can still be called through the FN() function, and can have restrictions applied with @function/restrict/builtin. @function/restore will delete the @function and turn the built in version back on.
 
   Using @function on an already-added @function will delete the old one and install a new function with none of the settings of the old one kept.
 
@@ -1864,7 +1864,7 @@ See also: EXITS, @link, @open, LINK_OK, Link_Anywhere Power
   Rather than using @listen, it's recommended you use ^-listening patterns, which can be set in any attribute similar to $-commands. This allows for descriptive attribute names, and also allows multiple patterns per object. See 'help ^' for more information.
 
   For example:
-    > @listen Chair=*  
+    > @listen Chair=*
   Since the wildcard (*) matches anything, anyone inside the object will hear anything said outside it.
     > @listen Butler=* has arrived.
     > @ahear Butler=:walks over to the new arrival and takes %p coat.
@@ -2087,9 +2087,9 @@ See also: @password, checkpass()
   
   This command notifies a semaphore, allowing commands queued for that semaphore to be executed.
 
-  If the /any switch is given, then all semaphores associated with <object> are @notified.  Otherwise, only the specified semaphore <attribute> (or SEMAPHORE if no attribute is specified) is @notified.
+  If the /any switch is given, then all semaphores associated with <object> are @notified. Otherwise, only the specified semaphore <attribute> (or SEMAPHORE if no attribute is specified) is @notified.
 
-  If the /all switch is given, then all queue entries associated with the selected semaphore(s) are executed. Otherwise, only the first <number> of queue entries are run.  If no <number> is given, then only one queue entry is run.
+  If the /all switch is given, then all queue entries associated with the selected semaphore(s) are executed. Otherwise, only the first <number> of queue entries are run. If no <number> is given, then only one queue entry is run.
 
   If the /all switch was not used, and there were not enough queue entries waiting to satisfy the requested <number>, then the semaphore becomes negative, and subsequent @waits will not block until it reaches 0 again.
   
@@ -2233,7 +2233,7 @@ See also: give, @receive, ACTION LISTS, VERBS
 
   This wizard-only command creates a player with the given name and password. If specified, <dbref> is the dbref of a garbage object to be used for the new player.
   
-See also: pcreate()  
+See also: pcreate()
 & @prompt
   @prompt[/<switch>] <dbref list>[=<message>]
 
@@ -2294,7 +2294,7 @@ See also: MONEY, give
   @power <power>
   @power <object>=[!]<power>
   
-  @power/list lists the defined powers (see 'help powers').  A list of standard powers with explanations is given in 'help powers list'. When given a power name as an argument, @power displays information
+  @power/list lists the defined powers (see 'help powers'). A list of standard powers with explanations is given in 'help powers list'. When given a power name as an argument, @power displays information
   about a power.
 
   The third form manipulates powers on objects, and is limited to Wizards. @power <object>=[!]<power> sets (or clears) the given power on an object.
@@ -2362,7 +2362,7 @@ See also: @wait, @halt, @notify, @drain, SEMAPHORES
 & @purge
   @purge is a wizard only command that calls the internal purge routine to advance the clock of each object scheduled to be destroyed, and destroy those things whose time is up. The internal purge routine is normally run automatically approximately every 10 minutes.
 
-  The @purge command should almost never need to be performed  manually. If you do use it manually, you may want to use it twice in  a row to make sure that everything marked GOING is actually destroyed.
+  The @purge command should almost never need to be performed manually. If you do use it manually, you may want to use it twice in a row to make sure that everything marked GOING is actually destroyed.
 
 See also: @dbck
 & @quota
@@ -2373,7 +2373,7 @@ See also: @dbck
   @quota shows the current quota for <player>, or for the executor if no <player> is given. You must control <player>, or have either the See_All or Quotas @power.
 
   Continued in 'help @quota2'.
-& @quota2  
+& @quota2
 & @squota
 & @allquota
   @squota <player>=[+|-]<amount>
@@ -2460,7 +2460,7 @@ See also: $-commands, EVALUATION ORDER
 & @search
   @search [<player>] [<classN>=<restrictionN>[,...]][,<begin>,<end>]
   
-  This command searches the database and lists objects which meet user specified search criteria.  You can limit the scope of the search by specifying <begin> and <end> as the first and last dbrefs to search.
+  This command searches the database and lists objects which meet user specified search criteria. You can limit the scope of the search by specifying <begin> and <end> as the first and last dbrefs to search.
   
   If a <player> argument is supplied, only objects owned by that player will be listed, or all objects if "all" is used. Mortals attempting to match other players (aside from ZMPs whose @lock/zone they pass) or "all" will only get objects which they can examine.
   
@@ -2499,16 +2499,16 @@ See also: $-commands, EVALUATION ORDER
   Continued in 'help @search4'.
 & @search4
   
-  For the class TYPE=PLAYER, and for PLAYER=<player-name>, anyone may obtain information on any player.  In all other cases, wizards may obtain information about other players, and players who pass a ZMP's zone-lock may obtain information about the ZMP.
+  For the class TYPE=PLAYER, and for PLAYER=<player-name>, anyone may obtain information on any player. In all other cases, wizards may obtain information about other players, and players who pass a ZMP's zone-lock may obtain information about the ZMP.
 
   If multiple <class> and <restrictions> are given, objects must meet all criteria in order to match successfully. The exception to this is that if multiple 'type' searches (PLAYER, EROOM, etc) are used, only the last type given is used in the search.
 
-  @search is only mildly computationally expensive for most of the search classes.  Computationally expensive searches are the evaluating searches (EVAL, EPLAYER, ETHING, EROOM, EEXIT), the attribute pattern searches (COMMAND, LISTEN), and ELOCK searches which perform evaluation searches (attr/value) or indirect locks (@obj/lock). These searches all cost a number of pennies (the exact amount is configurable; see @config find_cost).
+  @search is only mildly computationally expensive for most of the search classes. Computationally expensive searches are the evaluating searches (EVAL, EPLAYER, ETHING, EROOM, EEXIT), the attribute pattern searches (COMMAND, LISTEN), and ELOCK searches which perform evaluation searches (attr/value) or indirect locks (@obj/lock). These searches all cost a number of pennies (the exact amount is configurable; see @config find_cost).
   
   See 'help @search5' for some examples.
 See also: lsearch(), @find
 & @search5
-  Examples:  
+  Examples:
     @search all type=player,flags=W      <-- list all Wizard players
     @search type=room     <-- list all rooms owned by me.
     @search zone=#50      <-- list all objects belong to zone #50.
@@ -2586,7 +2586,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   
   @sitelock without arguments lists all sites in access.cnf. Rules are processed in the order listed, and the first matching rule is applied. @sitelock/check tells you which rule will match for a given <host>.
 
-  @sitelock/name adds a name to the list of banned player names.  Use !<name> to remove a name from the list.
+  @sitelock/name adds a name to the list of banned player names. Use !<name> to remove a name from the list.
 
   @sitelock <host-pattern>=<options>[, <name>] controls the access options for hosts which match <host-pattern>, which may include wildcard characters "*" and "?". See help @sitelock2 for the list of options, and help @sitelock3 for an explanation about the name argument.
 
@@ -2710,7 +2710,7 @@ See also: say, pose, @emit, @chatformat, @pageformat
 
   This command issues an SQL query if the MUSH supports SQL and can connect to an SQL server. You must be WIZARD or have the Sql_Ok power to use @sql.
 
-  For each row returned by the query, the action list in <obj>/<attr> is queued, with row number passed as %0 and the columns passed as %1-%9 and v(10) to v(29). Row numbers start at 1. The MUSH will also set named arguments, with arg names matching the SQL field names. These are accessible as r(<name>, arg).  
+  For each row returned by the query, the action list in <obj>/<attr> is queued, with row number passed as %0 and the columns passed as %1-%9 and v(10) to v(29). Row numbers start at 1. The MUSH will also set named arguments, with arg names matching the SQL field names. These are accessible as r(<name>, arg).
 
   The /notify switch causes the executor to do queue "@notify me" after all the rows are processed. Note that this is the object running "@mapsql", and not <obj>.
 
@@ -2754,7 +2754,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook
   @stats/paging
   @stats/freespace
 
-  In its first form, display the number of objects in the game broken down by object types.  Wizards can supply a player name to count only objects owned by that player.
+  In its first form, display the number of objects in the game broken down by object types. Wizards can supply a player name to count only objects owned by that player.
 
   @stats/tables displays statistics on internal tables.
   @stats/flags displays statistics about the flag and power system.
@@ -2779,7 +2779,7 @@ See also: @scan
 
   The string "#$" in <action>'s will be replaced with the evaluated result of <string> before it is acted on. Note that this replacement happens BEFORE the <action> is queued and executed, and does not work well in nested switches. It is recommended that you use the %$N substitution, or the stext() function, instead.
   
-  @switch/all   runs <action>s for all matching <expr>s. Default for @switch.
+  @switch/all runs <action>s for all matching <expr>s. Default for @switch.
   @switch/first runs <action> for the first matching <expr> only. Same as @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
   @switch/inline runs all actions in place, instead of creating a new queue entry for them.
@@ -2994,7 +2994,7 @@ See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
 & @wait
   @wait[/until] <time>=<command_list>
   @wait <object>=<command_list>
-  @wait[/until] <object>/<time>=<command_list>  
+  @wait[/until] <object>/<time>=<command_list>
 
   The basic form of this command puts the command list (a semicolon-separated list of commands) into the wait queue to execute in <time> seconds. If the /until switch is given, the time is taken to be an absolute value in seconds, not an offset.
   
@@ -3052,7 +3052,7 @@ See also: @wcheck, NO_WARN
 & @warnings2
 
   Example 1: Normal building situations
-  Most people will simply want to leave their @warnings set to "normal" and their objects' @warnings set to "none". They will then receive  normal warnings for all their objects.
+  Most people will simply want to leave their @warnings set to "normal" and their objects' @warnings set to "none". They will then receive normal warnings for all their objects.
 
   Example 2: Warning-lover
   People who find warnings very helpful (like heavy builders) may want to set their personal @warnings to "extra" or "all", and keep their objects' warnings at "none". If a specific object should be treated less strictly, set that object's @warnings differently. If an object shouldn't be warned on at all, set the NO_WARN flag on the object.
@@ -3323,7 +3323,7 @@ See also: MSSP-REQUEST
 & inventory
   inventory
 
-  Lists what you are carrying. Can be abbreviated by just 'i', or 'inv'.  It also tells you how much MUSH money you have. If you are not set OPAQUE, others will also be able to see what is in your inventory by looking at you.
+  Lists what you are carrying. Can be abbreviated by just 'i', or 'inv'. It also tells you how much MUSH money you have. If you are not set OPAQUE, others will also be able to see what is in your inventory by looking at you.
 
   Note that on some MUSHes it is possible to take things that are in someone else's inventory. To be safe, @lock any objects that you do not want to lose.
   
@@ -3331,11 +3331,11 @@ See also: score, take, drop, OPAQUE, @lock, @invformat
 & kill
   kill <player/thing> [=<cost>]
 
-  Attempts to kill the specified object. Killing costs <cost> pennies, which gives you a <cost>% chance of killing the player. Thus, spending 100 pennies always works (except against wizards, who can never be killed).  If you don't specify a cost, the default is 10 (i.e. 10%).  The player, if killed, receives <cost>/2 pennies in insurance.
+  Attempts to kill the specified object. Killing costs <cost> pennies, which gives you a <cost>% chance of killing the player. Thus, spending 100 pennies always works (except against wizards, who can never be killed). If you don't specify a cost, the default is 10 (i.e. 10%).  The player, if killed, receives <cost>/2 pennies in insurance.
 
   You can not kill a player in a room that they control unless you also control the room. Only wizards can kill players in rooms which have been set HAVEN.
 
-See also: BEING KILLED, HAVEN, FLAGS, powers list
+See also: BEING KILLED, HAVEN, FLAGS, powers list, slay
 & leave
   leave
 
@@ -3468,7 +3468,7 @@ See also: @pemit, @@
 & QUIT
   QUIT
 
-  Log out and leave the game. Must be in all capitals.  
+  Log out and leave the game. Must be in all capitals.
 & unfollow
   unfollow
   unfollow <object>
@@ -3527,7 +3527,7 @@ See also: page, pose, @pemit
   
   For mortals, the WHO command displays a list of players currently connected to the MUSH, the amount of time they've been connected, their idle time, and their @doing. Hidden players are not shown.
   
-  For admin, WHO shows the names of online players, their location, connection/idle times, the number of commands typed through the connection, the descriptor/port number, and the host the player is  connected from. It also includes hidden players, and connections which are at the login screen, but have not yet connected to a player.
+  For admin, WHO shows the names of online players, their location, connection/idle times, the number of commands typed through the connection, the descriptor/port number, and the host the player is connected from. It also includes hidden players, and connections which are at the login screen, but have not yet connected to a player.
   
   Admin can use the DOING command to see the same output mortals see with WHO, with the exception that dark/hidden players are included.
   
@@ -3555,7 +3555,7 @@ See also: WHO
 & with
   with[/room] <obj>=<command>
 
-  Attempts to run a user-defined command on a specific object.  If the /room switch is given, <obj> must be a room or your current location, and its contents are checked for commands as if it was a master room.
+  Attempts to run a user-defined command on a specific object. If the /room switch is given, <obj> must be a room or your current location, and its contents are checked for commands as if it was a master room.
   
   <obj> must be an object near you, an object you control, your ZMO or (if the /room switch is given) the Master Room.
 

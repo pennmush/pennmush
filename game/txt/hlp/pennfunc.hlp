@@ -1,12 +1,7 @@
 & FUNCTIONS
-  Functions are specialized commands used to manipulate strings and
-  other input. Functions take the general form: [FUNCTION(<input>)]
+  Functions are specialized commands used to manipulate strings and other input. Functions take the general form: [FUNCTION(<input>)]
 
-  The brackets are used to delimit and force evaluation of the
-  function (or nested functions). The brackets can also be used to
-  group functions for the purposes of string concatenation. In
-  general, more than one pair of brackets is not required, but you can
-  nest an arbitrary number of brackets.
+  The brackets are used to delimit and force evaluation of the function (or nested functions). The brackets can also be used to group functions for the purposes of string concatenation. In general, more than one pair of brackets is not required, but you can nest an arbitrary number of brackets.
 
   Examples:
     > say first(rest(This is a nice day))
@@ -19,20 +14,13 @@
 
   See 'help functions2' for more.
 & FUNCTIONS2
-  There are two types of functions, "built-in functions" and "global
-  user functions", also known as "@functions". You can get a complete
-  list of functions on this game with "@list/functions".
+  There are two types of functions, "built-in functions" and "global user functions", also known as "@functions". You can get a complete list of functions on this game with "@list/functions".
   
-  Built-in functions are written in the game hardcode, while @functions
-  are written in softcode, and then made global with the "@function"
-  command. Both are used in exactly the same manner. For more information
-  on @functions, see 'help @function'.
+  Built-in functions are written in the game hardcode, while @functions are written in softcode, and then made global with the "@function" command. Both are used in exactly the same manner. For more information on @functions, see 'help @function'.
 
 See also: MUSHCODE
 & FUNCTION LIST
-  Several major variants of functions are available. The help topics
-  are listed below, together with a quick summary of the function type
-  and some examples of that type of function.
+  Several major variants of functions are available. The help topics are listed below, together with a quick summary of the function type and some examples of that type of function.
 
   Attribute functions: attribute-related manipulations (GET, UFUN)
   Bitwise functions: Manipulation of individual bits of numbers (SHL, BOR)
@@ -53,12 +41,10 @@ See also: MUSHCODE
   Utility functions: general utilities (ISINT, COMP)
 
   The command "@list/functions" lists all functions on the game.
-  The command "@function" lists only the game's custom global functions
-    defined via the @function command.
+  The command "@function" lists only the game's custom global functions defined via the @function command.
 
 & Attribute functions
-  These functions can access or alter information stored in attributes on
-  objects.
+  These functions can access or alter information stored in attributes on objects.
 
   aposs()        attrib_set()   default()      edefault()     eval()
   flags()        get()          grep()         grepi()        hasattr()
@@ -71,13 +57,9 @@ See also: MUSHCODE
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
-  These functions treat integers as a sequence of binary bits (either 0
-  or 1) and manipulate them.
+  These functions treat integers as a sequence of binary bits (either 0 or 1) and manipulate them.
 
-  For example, 2 is represented as '0010' and 4 as '0100'. If these
-  two numbers are bitwise-or'ed together with BOR(), the result is 6,
-  or (in binary) '0110'. These functions are useful for storing small
-  lists of toggle (Yes/No) options efficiently.
+  For example, 2 is represented as '0010' and 4 as '0100'. If these two numbers are bitwise-or'ed together with BOR(), the result is 6, or (in binary) '0110'. These functions are useful for storing small lists of toggle (Yes/No) options efficiently.
 
   baseconv()    band()        bnand()       bnot()        bor()
   bxor()        shl()         shr()
@@ -85,11 +67,7 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Boolean functions
   Boolean functions all return 0 or 1 as an answer.
 
-  Your MUSH may be configured to use traditional PennMUSH booleans, in
-  which case non-zero numbers, non-negative db#'s, and strings are all
-  considered "true" when passed to these functions.  Alternatively,
-  your MUSH may be using TinyMUSH 2.2 booleans, in which case only
-  non-zero numbers are "true". Check @config tiny_booleans.
+  Your MUSH may be configured to use traditional PennMUSH booleans, in which case non-zero numbers, non-negative db#'s, and strings are all considered "true" when passed to these functions. Alternatively, your MUSH may be using TinyMUSH 2.2 booleans, in which case only non-zero numbers are "true". Check @config tiny_booleans.
 
   and()         cand()        cor()         eq()          gt()
   gte()         lt()          lte()         nand()        neq()
@@ -97,8 +75,7 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 
 See also: BOOLEAN VALUES, @config
 & Communication functions
-  Communication functions are side-effect functions that send a message
-  to an object or objects.
+  Communication functions are side-effect functions that send a message to an object or objects.
 
   cemit()       emit()        lemit()       message()     nsemit()      
   nslemit()     nsoemit()     nspemit()     nsprompt()    nsremit()     
@@ -107,8 +84,7 @@ See also: BOOLEAN VALUES, @config
   
 See also: Channel functions, Mail functions
 & Connection functions
-  Connection functions return information about the connections open 
-  on a game, or about specific connections.
+  Connection functions return information about the connections open on a game, or about specific connections.
 
   cmds()        conn()        doing()       height()      host()
   hidden()      idle()        ipaddr()      lports()      lwho()
@@ -117,8 +93,7 @@ See also: Channel functions, Mail functions
   ssl()         terminfo()    width()       xmwho()       xmwhoid()
   xwho()        xwhoid()      zmwho()       zwho()
 & Dbref functions
-  Dbref functions return a dbref or list of dbrefs related to some value
-  on an object.
+  Dbref functions return a dbref or list of dbrefs related to some value on an object.
 
   children()    con()         entrances()   exit()        followers()
   following()   home()        lcon()        lexits()      loc()
@@ -145,11 +120,7 @@ See also: DBREF, Information functions
 
 See also: Dbref functions
 & List functions
-  List functions take at least one list of elements and return
-  transformed lists or one or more members of those lists. Most of
-  these functions can take an arbitrary <delimiter> argument to
-  specify what delimits list elements; if none is provided, a space is
-  used by default.
+  List functions take at least one list of elements and return transformed lists or one or more members of those lists. Most of these functions can take an arbitrary <delimiter> argument to specify what delimits list elements; if none is provided, a space is used by default.
 
   elements()    extract()     filter()      filterbool()  first()
   fold()        grab()        graball()     index()       itemize()
@@ -163,8 +134,7 @@ See also: Dbref functions
 
 See also: LISTS
 & Math functions
-  Math functions take one or more floating point numbers and return 
-  a numeric value.
+  Math functions take one or more floating point numbers and return a numeric value.
   abs()         acos()        add()         asin()        atan()
   atan2()       bound()       ceil()        cos()         ctu()
   dist2d()      dist3d()      e()           exp()         fdiv()
@@ -174,26 +144,22 @@ See also: LISTS
   sign()        sin()         sqrt()        stddev()      sub()
   tan()         trunc()       val()
 
-  These functions operate only on integers (if passed floating point
-  numbers, they will return an error or misbehave):
+  These functions operate only on integers (if passed floating point numbers, they will return an error or misbehave):
   dec()         div()         floordiv()    inc()         mod()
   remainder()
 
-  Math functions are affected by a number of @config options, including the
-  TinyMUSH compatability options null_eq_zero and tiny_math.
+  Math functions are affected by a number of @config options, including the TinyMUSH compatability options null_eq_zero and tiny_math.
 
 See also: Vector Functions
 & Vector functions
-  These functions operate on n-dimensional vectors. A vector
-  is a delimiter-separated list of numbers (space-separated, by default):
+  These functions operate on n-dimensional vectors. A vector is a delimiter-separated list of numbers (space-separated, by default):
   
   vadd()        vcross()      vdim()        vdot()        vmag()
   vmax()        vmin()        vmul()        vsub()        vunit()
 
 See also: Math functions
 & Regular expression functions
-  These functions take a regular expression (regexp, or re) and match
-  it against assorted things.
+  These functions take a regular expression (regexp, or re) and match it against assorted things.
 
   regedit()     regeditall()   regeditalli()  regediti()     reglattr()
   reglattrp()   regmatch()     regmatchi()    regnattr()     regnattrp()
@@ -203,15 +169,12 @@ See also: Math functions
 
 See also: string functions, regexp
 & SQL functions
-  These functions perform queries or other operations on an SQL
-  database to which the MUSH is connected, if SQL support is available
-  and enabled.
+  These functions perform queries or other operations on an SQL database to which the MUSH is connected, if SQL support is available and enabled.
 
   sql()         sqlescape()   mapsql()
 
 & String functions
-  String functions take at least one string and return a transformed
-  string, parts of a string, or a value related to the string(s).
+  String functions take at least one string and return a transformed string, parts of a string, or a value related to the string(s).
 
   accent()         after()          align()          alphamax()
   alphamin()       art()            before()         brackets()
@@ -262,12 +225,9 @@ See also: TIMEZONES
   @@(<expression>)
   null(<expression>[, ... , <expression>])
 
-  The @@() function does nothing and returns nothing. It does not evaluate
-  its argument. It could be used for commenting, perhaps. 
+  The @@() function does nothing and returns nothing. It does not evaluate its argument. It could be used for commenting, perhaps. 
 
-  The null() function is similar, but does evaluate its argument(s),
-  so side-effects can occur within a null(). Useful for eating the
-  output of functions when you don't use that output.
+  The null() function is similar, but does evaluate its argument(s), so side-effects can occur within a null(). Useful for eating the output of functions when you don't use that output.
   
 See also: @@
 & ABS()
@@ -286,25 +246,17 @@ See also: sign()
 & ACCENT()
   accent(<string>, <template>)
 
-  The accent() function will return <string>, with characters in it possibly
-  changed to accented ones according to <template>. Both arguments must be 
-  the same size.
+  The accent() function will return <string>, with characters in it possibly changed to accented ones according to <template>. Both arguments must be the same size.
 
-  Whether or not the resulting string is actually displayed correctly is 
-  client-dependent. Some OSes uses different character sets than the one 
-  assumed (ISO 8859-1), and some clients strip these 8-bit characters.
+  Whether or not the resulting string is actually displayed correctly is client-dependent. Some OSes uses different character sets than the one assumed (ISO 8859-1), and some clients strip these 8-bit characters.
 
-  For each character in <string>, the corresponding character of <template>
-  is checked according to the table in 'help accents', and a replacement 
-  done. If either the current <string> or <template> characters aren't in 
-  the table, the <string> character is passed through unchanged.
+  For each character in <string>, the corresponding character of <template> is checked according to the table in 'help accents', and a replacement done. If either the current <string> or <template> characters aren't in the table, the <string> character is passed through unchanged.
 
   See 'help accent2' for some examples.
 
 See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
 & ACCENTS
-  Below is the table of possible accents which can be used with accent()
-  and @nameformat.
+  Below is the table of possible accents which can be used with accent() and @nameformat.
 
   Accent                         Template   String
   Name       Description         Character  Character
@@ -326,8 +278,7 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
 
   Continued in 'HELP ACCENTS2'
 & ACCENTS2
-  These are non-accent special characters, mostly punctuation and
-  non-roman letters.
+  These are non-accent special characters, mostly punctuation and non-roman letters.
 
                       Template   String
   Description         Character  Character
@@ -365,8 +316,7 @@ See also: name(), fullname(), iname(), ACCENTS
 & ACOS()
   acos(<cosine>[, <angle type>])
  
-  Returns the angle that has the given <cosine> (arc-cosine), with the
-  angle expressed in the given <angle type>, or radians by default.
+  Returns the angle that has the given <cosine> (arc-cosine), with the angle expressed in the given <angle type>, or radians by default.
 
   See 'HELP ANGLES' for more on the <angle type>.
 
@@ -380,9 +330,7 @@ See also: MATH FUNCTIONS, lmath()
 & AFTER()
   after(<string1>, <string2>)
 
-  Returns the portion of <string1> that occurs after <string2>.  If
-  <string2> isn't in <string1>, the function returns nothing.
-  This is case-sensitive.
+  Returns the portion of <string1> that occurs after <string2>. If <string2> isn't in <string1>, the function returns nothing. This is case-sensitive.
  
   Examples:
     > say after(foo bar baz,bar)
@@ -397,21 +345,11 @@ See also: before(), rest()
   align(<widths>, <col>[, ... , <colN>[, <filler>[, <colsep>[, <rowsep>]]]])
   lalign(<widths>, <colList>[, <delim>[, <filler>[, <colsep>[, <rowsep>]]]])
 
-  Creates columns of text, each column designated by <col> arguments.
-  Each <col> is individually wrapped inside its own column, allowing
-  for easy creation of book pages, newsletters, or the like. In lalign(),
-  <colList> is a <delim>-separated list of the columns.
+  Creates columns of text, each column designated by <col> arguments. Each <col> is individually wrapped inside its own column, allowing for easy creation of book pages, newsletters, or the like. In lalign(), <colList> is a <delim>-separated list of the columns.
 
-  <widths> is a space-separated list of column widths. '10 10 10' for
-  the widths argument specifies that there are 3 columns, each 10
-  spaces wide. You can alter the behavior of a column in multiple ways.
-  (Check 'help align2' for more details)
+  <widths> is a space-separated list of column widths. '10 10 10' for the widths argument specifies that there are 3 columns, each 10 spaces wide. You can alter the behavior of a column in multiple ways. (Check 'help align2' for more details)
 
-  <filler> is a single character that, if given, is the character used
-  to fill empty columns and remaining spaces. <colsep>, if given, is
-  inserted between every column, on every row. <rowsep>, if given, is
-  inserted between every line. By default, <filler> and <colsep> are a
-  space, and <rowsep> is a newline.
+  <filler> is a single character that, if given, is the character used to fill empty columns and remaining spaces. <colsep>, if given, is inserted between every column, on every row. <rowsep>, if given, is inserted between every line. By default, <filler> and <colsep> are a space, and <rowsep> is a newline.
 
   Continued in 'help align2'
 & ALIGN2
@@ -419,40 +357,33 @@ See also: before(), rest()
 
   [justification]Width[runout][(ansi)]
 
-  Justification: Placing one of these characters before the width alters
-  the spacing for this column (e.g: <30). Defaults to < (left-justify).
+  Justification: Placing one of these characters before the width alters the spacing for this column (e.g: <30). Defaults to < (left-justify).
     < Left-justify       - Center-justify        > Right-justify
     _ Full-justify       = Paragraph-justify
  
-  Other options: Adding these after the width will alter the column's
-    behaviour in some situtations
+  Other options: Adding these after the width will alter the column's  behaviour in some situtations
     . Repeat for as long as there is non-repeating text in another column.
     ` When this column runs out of text, merge with the column to the left
     ' When this column runs out of text, merge with the column to the right
-    $ nofill: Don't use filler after the text. If this is combined with
-      merge-left, the column to its left inherits the 'nofill' when merged.
+    $ nofill: Don't use filler after the text. If this is combined with merge-left, the column to its left inherits the 'nofill' when merged.
     x Truncate each (%r-separated) row instead or wrapping at the colwidth
-    X Truncate the entire column at the end of the first row instead of
-      wrapping
+    X Truncate the entire column at the end of the first row instead of wrapping
 
-  Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
-  define a column's ansi markup.
+  Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to define a column's ansi markup.
 
   See 'help align3' for examples.
 See also: center(), ljust(), rjust(), table()
 & ALIGN3
   Examples:
   
-    > &line me=align(<3 10 20$,([ljust(get(%0/sex),1,,1)]),
-                     name(%0),name(loc(%0)))
+    > &line me=align(<3 10 20$,([ljust(get(%0/sex),1,,1)]), name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (M) Ashen-Shug Apartment 306
           ar         
       (F) Jane Doe   Nowhere
 
-    > &line me=align(<3 10X 20X$,([ljust(get(%0/sex),1,,1)]),
-                     name(%0),name(loc(%0)))
+    > &line me=align(<3 10X 20X$,([ljust(get(%0/sex),1,,1)]), name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (M) Ashen-Shug Apartment 306
@@ -460,8 +391,7 @@ See also: center(), ljust(), rjust(), table()
 
         See 'help align4' for more examples.
 & ALIGN4
-    > &haiku me = Alignment function,%rIt justifies your writing,%rBut the
-                  words still suck.%rLuke
+    > &haiku me = Alignment function,%rIt justifies your writing,%rBut the words still suck.%rLuke
 
     > th [align(5 -40 5,,[repeat(-,40)]%r[u(haiku)]%r[repeat(-,40)],,%b,+)]
 
@@ -475,10 +405,7 @@ See also: center(), ljust(), rjust(), table()
   See 'help align5' for more examples.
 & ALIGN5
   > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
-  > &story me=%r'was the night before Christmas, when all through the house%r
-              Not a creature was stirring, not even a mouse.%r
-              The stockings were hung by the chimney with care,%r
-              In hopes that St Nicholas soon would be there.
+  > &story me=%r'was the night before Christmas, when all through the house%rNot a creature was stirring, not even a mouse.%rThe stockings were hung by the chimney with care,%rIn hopes that St Nicholas soon would be there.
   > th align(9'(ch) 68, u(dropcap), u(story))
   
    _______  
@@ -497,13 +424,9 @@ See also: center(), ljust(), rjust(), table()
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 
-  Evaluates every <expr> argument (including side-effects) and returns the 
-  results of those which are true, in a list separated by <osep>. The output
-  separator argument is required, and can be a string of any length
-  (including an empty string; use %b for a space).
+  Evaluates every <expr> argument (including side-effects) and returns the results of those which are true, in a list separated by <osep>. The output separator argument is required, and can be a string of any length (including an empty string; use %b for a space).
 
-  The meaning of true or false depends on configuration options as
-  explained in the 'BOOLEAN VALUES' help topics.
+  The meaning of true or false depends on configuration options as explained in the 'BOOLEAN VALUES' help topics.
 
     > &s me=Bats are similar to Rats which are afraid of Cats
     > say allof(grab(v(s),rats),grab(v(s),mats),grab(v(s),bats),)
@@ -521,9 +444,7 @@ See also: firstof(), BOOLEAN VALUES, strallof(), filter()
 & ALPHAMAX()
   alphamax(<word>[, ... , <wordN>])
 
-  Takes any number of <word> arguments, and returns the one which is
-  lexicographically biggest. That is, the <word> would be last in
-  alphabetical order.
+  Takes any number of <word> arguments, and returns the one which is lexicographically biggest. That is, the <word> would be last in alphabetical order.
   
   This is equivilent to last(sort(<word> ... <wordN>,a)).
 
@@ -531,9 +452,7 @@ See also: alphamin(), max()
 & ALPHAMIN()
   alphamin(<word>[, ... , <wordN>])
 
-  Takes any number of <word> arguments, and returns the one which is
-  lexicographically smallest. That is, the word that would be first in
-  alphabetical order.
+  Takes any number of <word> arguments, and returns the one which is lexicographically smallest. That is, the word that would be first in alphabetical order.
   
   This is equivilent to first(sort(<word> ... <wordN>,a)).
 
@@ -543,10 +462,7 @@ See also: alphamax(), min()
   and(<boolean1>, <boolean2>[, ... , <booleanN>])
   cand(<boolean1>, <boolean2>[, ... , <booleanN>])
  
-  These functions take any number of boolean values, and return 1 if
-  all are true, and 0 otherwise. and() will always evaluate all its
-  arguments (including side effects), while cand() stops evaluation
-  after the first false argument.
+  These functions take any number of boolean values, and return 1 if all are true, and 0 otherwise. and() will always evaluate all its arguments (including side effects), while cand() stops evaluation after the first false argument.
 
 See also: BOOLEAN VALUES, nand(), or(), xor(), not(), lmath()
 & ANDFLAGS()
@@ -554,13 +470,9 @@ See also: BOOLEAN VALUES, nand(), or(), xor(), not(), lmath()
   andflags(<object>, <string of flag letters>)
   andlflags(<object>, <list of flag names>)
   
-  These functions return 1 if <object> has all of the given flags, and 0 if
-  it does not. andflags() takes a string of single flag letters, while
-  andlflags() takes a space-separated list of flag names. In both cases, a
-  ! before the flag means "not flag".
+  These functions return 1 if <object> has all of the given flags, and 0 if it does not. andflags() takes a string of single flag letters, while andlflags() takes a space-separated list of flag names. In both cases, a ! before the flag means "not flag".
   
-  If any of the flags given are invalid, both functions return 
-  "#-1 INVALID FLAG".
+  If any of the flags given are invalid, both functions return "#-1 INVALID FLAG".
   
   Example: Check to see if %# is set Wizard and Dark, but not Ansi.
     > say andflags(%#, WD!A)
@@ -570,43 +482,29 @@ See also: orflags(), flags(), lflags()
 & ANDLPOWERS()
   andlpowers(<object>, <list of powers>)
 
-  This function returns 1 if <object> has all the powers in a
-  specified list, and 0 if it does not. The list is a space-separated
-  list of power names.  A '!' preceding a flag name means "not power".
+  This function returns 1 if <object> has all the powers in a specified list, and 0 if it does not. The list is a space-separated list of power names. A '!' preceding a flag name means "not power".
 
-  Thus, ANDLPOWERS(me, no_quota no_pay) would return 1 if I was
-  powered no_quota and no_pay.  ANDLPOWERS(me, poll !guest) would
-  return 1 if I had the poll power but not the guest power.
+  Thus, ANDLPOWERS(me, no_quota no_pay) would return 1 if I was powered no_quota and no_pay. ANDLPOWERS(me, poll !guest) would return 1 if I had the poll power but not the guest power.
 
-  If a name does not correspond to any power, andlpowers() returns 
-  "#-1 INVALID POWER".
+  If a name does not correspond to any power, andlpowers() returns "#-1 INVALID POWER".
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
   ansi(<codes>[ ... <codesN>], <string>)
  
-  This allows you to mark up a string using ANSI terminal effects, 16-color
-  codes, and 256 XTERM colors (specified as color names or hex values).
+  This allows you to mark up a string using ANSI terminal effects, 16-color codes, and 256 XTERM colors (specified as color names or hex values).
   
   The old-style <ansi-codes> are listed in "help ansi2".
-  Each block of space-separated <codes> can be one or more old-style ANSI 
-  codes, as listed in "help ansi2", or a foreground and/or background color.
-  Background colors are prefixed with a "/". Each color can be one of:
+  Each block of space-separated <codes> can be one or more old-style ANSI codes, as listed in "help ansi2", or a foreground and/or background color. Background colors are prefixed with a "/". Each color can be one of:
 
     * +<colorname> (for a list of valid names, see "help colors()")
     * a hexcode, optionally in angle brackets (#000000, <#ff0055>, etc)
-    * a list of red, green and blue values from 0-255, in angle brackets
-      (<0 0 0>, <255 0 85>, etc)
-    * a number from 0-255; this is the same as using "+xterm<number>",
-      for Rhost compatability.
+    * a list of red, green and blue values from 0-255, in angle brackets (<0 0 0>, <255 0 85>, etc)
+    * a number from 0-255; this is the same as using "+xterm<number>", for Rhost compatability.
 
-  For example, "ansi(+orange/#0000ff,Test)" would color "Test" in orange,
-  on a blue background. In the event that your client does not support
-  those colors, PennMUSH will downgrade the color to the closest fit
-  that your client can understand.
+  For example, "ansi(+orange/#0000ff,Test)" would color "Test" in orange, on a blue background. In the event that your client does not support those colors, PennMUSH will downgrade the color to the closest fit that your client can understand.
   
-  Codes are parsed from left to right so, with later codes overriding earlier
-  ones. So, for example:
+  Codes are parsed from left to right so, with later codes overriding earlier ones. So, for example:
     ansi(y /+green B <#ffffff>, test)
   would show white text on an ANSI-blue background.
   
@@ -631,9 +529,7 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
         c - cyan foreground             C - cyan background
         w - white foreground            W - white background
  
-  For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan.
-  Default foreground and background use the client's default color for
-  fore and back.
+  For example, "ansi(fc, Test)" would hilight "Test" in flashing cyan. Default foreground and background use the client's default color for fore and back.
 & ANSI3
 
   Bright yellow text on a blue background:
@@ -651,21 +547,17 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
 & %a
   aposs(<object>)
 
-  Returns the absolute possessive pronoun - his/hers/its/theirs - for
-  an object. The %a substitution returns the absolute possessive
-  pronoun of the enactor.
+  Returns the absolute possessive pronoun - his/hers/its/theirs - for an object. The %a substitution returns the absolute possessive pronoun of the enactor.
   
 See also: obj(), poss(), subj()
 & ART()
   art(<string>)
 
-  This function returns the proper article, "a" or "an", based on
-  whether or not <string> begins with a vowel.
+  This function returns the proper article, "a" or "an", based on whether or not <string> begins with a vowel.
 & ASIN()
   asin(<sine>[, <angle type>])
  
-  Returns the angle with the given <sine> (arc-sine), with the angle
-  expressed in the given <angle type>, or radians by default.
+  Returns the angle with the given <sine> (arc-sine), with the angle expressed in the given <angle type>, or radians by default.
 
   See 'HELP ANGLES' for more on the angle type.
 
@@ -675,13 +567,9 @@ See also: acos(), atan(), cos(), ctu(), sin(), tan()
   atan(<tangent>[, <angle type>])
   atan2(<number1>, <number2>[, <angle type>])
 
-  Returns the angle with the given <tangent> (arc-tangent), with the
-  angle expressed in the given <angle type>, or radians by default.
+  Returns the angle with the given <tangent> (arc-tangent), with the angle expressed in the given <angle type>, or radians by default.
 
-  atan2(x, y) is like atan(fdiv(x, y)), except y can be 0, and the
-  signs of both arguments are used in determining the sign of the
-  result. It is useful in converting between cartesian and polar
-  coordinates.
+  atan2(x, y) is like atan(fdiv(x, y)), except y can be 0, and the signs of both arguments are used in determining the sign of the result. It is useful in converting between cartesian and polar coordinates.
 
   See 'HELP ANGLES' for more on the angle type.
 
@@ -689,52 +577,36 @@ See also: acos(), asin(), cos(), ctu(), sin(), tan()
 & ATRLOCK()
   atrlock(<object>/<attrib>[, [on|off]])
 
-  When given a single <object>/<attribute> pair as an argument, returns 1
-  if the attribute is locked, 0 if unlocked, and #-1 if the attribute
-  doesn't exist or can't be read by the function's caller.
+  When given a single <object>/<attribute> pair as an argument, returns 1 if the attribute is locked, 0 if unlocked, and #-1 if the attribute doesn't exist or can't be read by the function's caller.
 
-  When given a second argument of "on" (or "off"), attempts to lock
-  (or unlock) the specified attribute, as per @atrlock.
+  When given a second argument of "on" (or "off"), attempts to lock (or unlock) the specified attribute, as per @atrlock.
   
-  A locked attribute is one which has the "locked" attribute flag, so this
-  function is roughly equivilent to:
+  A locked attribute is one which has the "locked" attribute flag, so this function is roughly equivilent to:
 
     hasattr(<object>/<attrib>, locked)
     set(<object>/<attribute>, [!]locked)
   
-  except that the attribute's owner is also changed when you lock it via
-  atrlock().
+  except that the attribute's owner is also changed when you lock it via atrlock().
   
 See also: @atrlock, @atrchown, hasflag()
 & ATTRIB_SET()
   attrib_set(<object>/<attrib>[, <value>])
 
-  Sets or clears an attribute. With a <value>, it sets the attribute,
-  without one, it clears the attribute. This is an easier-to-read
-  replacement for the old set(<object>, <attrib>:<value>) notation,
-  and a less destructive replacement for wipe() that won't destroy
-  entire attribute trees in one shot.
+  Sets or clears an attribute. With a <value>, it sets the attribute, without one, it clears the attribute. This is an easier-to-read replacement for the old set(<object>, <attrib>:<value>) notation, and a less destructive replacement for wipe() that won't destroy entire attribute trees in one shot.
 
-  If there is a second argument, then attrib_set() will create an
-  attribute, even if the second argument is empty (in which case
-  attrib_set() will create an empty attribute).  If the empty_attrs
-  configuration option is off, the attribute will be set to a single
-  space. This means that attrib_set(me/foo,%0) will _always_
-  create an attribute.
+  If there is a second argument, then attrib_set() will create an attribute, even if the second argument is empty (in which case attrib_set() will create an empty attribute). If the empty_attrs configuration option is off, the attribute will be set to a single space. This means that attrib_set(me/foo,%0) will _always_ create an attribute.
 
 See also: set(), @set
 & BAND()
   band(<integer>, <integer>[, ... , <integerN>])
 
-  Does a bitwise AND of all its arguments, returning the result (a
-  number with only the bits set in every argument set in it).
+  Does a bitwise AND of all its arguments, returning the result (a number with only the bits set in every argument set in it).
   
 See also: BITWISE FUNCTIONS, lmath()
 & BASECONV()
   baseconv(<number>, <from base>, <to base>)
 
-  Converts <number>, which is in base <from base> into base <to base>.
-  The bases can be between 2 (binary) and 64, inclusive.
+  Converts <number>, which is in base <from base> into base <to base>. The bases can be between 2 (binary) and 64, inclusive.
 
   Numbers 36 and under use the standard numbers:
 
@@ -744,20 +616,16 @@ See also: BITWISE FUNCTIONS, lmath()
 
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
-  In base 63 and base 64, - is always treated as a digit.
-  Using base64 as a 'from' will also treat + as 62 and / as 63.
+  In base 63 and base 64, - is always treated as a digit. Using base64 as a 'from' will also treat + as 62 and / as 63.
 & BEEP()
   beep([<number>])
  
-  Returns <number> "alert" bell characters. <number> must be in the
-  range 1 to 5, or, if unspecified, defaults to 1.  This function may
-  only be used by royalty and wizards.
+  Returns <number> "alert" bell characters. <number> must be in the range 1 to 5, or, if unspecified, defaults to 1. This function may only be used by royalty and wizards.
  
 & BEFORE()
   before(<string1>, <string2>)
  
-  Returns the portion of <string1> that occurs before <string2>. If <string2>
-  isn't in <string1>, <string1> is returned. This is case-sensitive.
+  Returns the portion of <string1> that occurs before <string2>. If <string2> isn't in <string1>, <string1> is returned. This is case-sensitive.
  
   Examples:
      > say before(foo bar baz,bar)
@@ -771,11 +639,7 @@ See also: after(), first()
 & BENCHMARK()
   benchmark(<expression>, <number>[, <sendto>])
 
-  Evaluates <expression> <number> times, and returns the average, minimum,
-  and maximum time it took to evaluate <expression> in microseconds. If a
-  <sendto> argument is given, benchmark() instead pemits the times to the
-  object <sendto>, and returns the result of the last evaluation of 
-  <expression>.
+  Evaluates <expression> <number> times, and returns the average, minimum, and maximum time it took to evaluate <expression> in microseconds. If a <sendto> argument is given, benchmark() instead pemits the times to the object <sendto>, and returns the result of the last evaluation of <expression>.
 
   Example:
     > think benchmark(iter(lnum(1,100), ##), 200)
@@ -785,10 +649,7 @@ See also: after(), first()
 & BRACKETS()
   brackets(<string>)
 
-  Returns a count of the number of left and right square brackets,
-  parentheses, and curly braces in the string, in that order, as a
-  space-separated list of numbers. This is useful for finding missing
-  or extra brackets in MUSH code. <string> is evaluated.
+  Returns a count of the number of left and right square brackets, parentheses, and curly braces in the string, in that order, as a space-separated list of numbers. This is useful for finding missing or extra brackets in MUSH code. <string> is evaluated.
 
   Example:
     > @desc me=This is [ansi(h,a test)] of the { brackets() function.
@@ -803,34 +664,27 @@ See also: BITWISE FUNCTIONS
 & BNOT()
   bnot(<integer>)
 
-  Returns the bitwise complement of <integer>. Every bit set in it
-  is cleared, and every clear bit is set.
+  Returns the bitwise complement of <integer>. Every bit set in it is cleared, and every clear bit is set.
 
 See also: BITWISE FUNCTIONS
 & BOR()
   bor(<integer>, <integer>[, ... , <integerN>])
 
-  Does a bitwise OR of all its arguments, returning the result.
-  (A number with a bit set if that bit appears in any of its arguments).
+  Does a bitwise OR of all its arguments, returning the result. (A number with a bit set if that bit appears in any of its arguments).
   
 See also: BITWISE FUNCTIONS, lmath()
 & BOUND()
   bound(<number>, <lower bound>, <higher bound>)
 
-  bound() returns <number> if it is between <lower bound> and <higher
-  bound>. If it's lower than <lower bound>, <lower bound> is returned.
-  If it's higher than <higher bound>, <higher bound> is returned.
+  bound() returns <number> if it is between <lower bound> and <higher bound>. If it's lower than <lower bound>, <lower bound> is returned. If it's higher than <higher bound>, <higher bound> is returned.
   
-  If you just want to know whether <number> is within the range of <lower> to
-  <higher>, consider using lte(<lower>, <number>, <higher>) instead to get
-  a boolean result.
+  If you just want to know whether <number> is within the range of <lower> to <higher>, consider using lte(<lower>, <number>, <higher>) instead to get a boolean result.
   
 See also: ceil(), floor(), round(), trunc()
 & BXOR()
   bxor(<integer>, <integer>[, ... , <integerN>])
 
-  Does a bitwise XOR of all its arguments, returning the result.
-  (A number with a bit set if it's set in only one of its arguments).
+  Does a bitwise XOR of all its arguments, returning the result. (A number with a bit set if it's set in only one of its arguments).
   
 See also: BITWISE FUNCTIONS, lmath()
 & CAPSTR()
@@ -848,8 +702,7 @@ See also: lcstr(), ucstr()
   cat(<string>[, ... , <stringN>])
   strcat(<string1>[, ... , <stringN>])
 
-  These functions concatenate multiple strings together. cat() adds a space
-  between each string; strcat() does not.
+  These functions concatenate multiple strings together. cat() adds a space between each string; strcat() does not.
   
   Example:
     > say cat(foo bar, baz blech)
@@ -865,14 +718,9 @@ See also: floor(), bound(), round(), trunc()
 & CENTER()
   center(<string>, <width>[, <fill>[, <rightfill>]])
  
-  This function will center <string> within a field <width> characters
-  wide, using the <fill> string for padding on the left side of the
-  string, and <rightfill> for padding on the right side. <rightfill>
-  defaults to the mirror-image of <fill> if not specified. <fill>
-  defaults to a space if neither <fill> nor <rightfill> are specified.
+  This function will center <string> within a field <width> characters wide, using the <fill> string for padding on the left side of the string, and <rightfill> for padding on the right side. <rightfill> defaults to the mirror-image of <fill> if not specified. <fill> defaults to a space if neither <fill> nor <rightfill> are specified.
 
-  If <string> divides <width> into uneven portions, the left side will
-  be one character shorter than the right side.
+  If <string> divides <width> into uneven portions, the left side will be one character shorter than the right side.
  
   Examples:
     > say center(X,5,-)
@@ -891,8 +739,7 @@ See also: align(), ljust(), rjust()
 & CHECKPASS()
   checkpass(<player>, <string>)
 
-  Returns 1 if <string> matches <player>'s password, and 0 otherwise.  If
-  <player> has no password, this function will always return 1.
+  Returns 1 if <string> matches <player>'s password, and 0 otherwise. If <player> has no password, this function will always return 1.
 
   This function can only be used by wizards.
 
@@ -902,8 +749,7 @@ See also: @password, @newpassword
   chr(<number>)
   ord(<character>)
 
-  ord() returns the numerical value of the given character. chr()
-  returns the character with the given numerical value.
+  ord() returns the numerical value of the given character. chr() returns the character with the given numerical value.
 
   Examples:
     > say ord(A)
@@ -913,44 +759,33 @@ See also: @password, @newpassword
 & CLONE()
   clone(<object>[, <new name>[, <dbref>]])
  
-  This function clones <object>, as per @clone, and returns the dbref
-  number of the clone, or #-1 if the object could not be cloned.
+  This function clones <object>, as per @clone, and returns the dbref number of the clone, or #-1 if the object could not be cloned.
 
-  The clone will have the same name as the original object unless you
-  give a <new name> for it. Normally, the clone will be created with
-  the first available dbref, but wizards and objects with the
-  pick_dbref power may give the <dbref> of a garbage object to use
-  instead.
+  The clone will have the same name as the original object unless you give a <new name> for it. Normally, the clone will be created with the first available dbref, but wizards and objects with the pick_dbref power may give the <dbref> of a garbage object to use instead.
 
 See also: @clone, create(), dig(), open()
 & CMDS()
   cmds(<player|descriptor>)
 
-  Returns the number of commands issued by a player during this
-  connection as indicated by WHO.
+  Returns the number of commands issued by a player during this connection as indicated by WHO.
 
-  You must be a Wizard, Royalty or See_All to use this function on anyone
-  but yourself.
+  You must be a Wizard, Royalty or See_All to use this function on anyone but yourself.
 
 See also: CONNECTION FUNCTIONS
 & SENT()
   sent(<player|descriptor>)
 
-  Returns the number of characters sent by a player during this
-  connection as indicated by SESSION.
+  Returns the number of characters sent by a player during this connection as indicated by SESSION.
 
-  You must be a Wizard, Royalty or See_All to use this function on anyone
-  but yourself.
+  You must be a Wizard, Royalty or See_All to use this function on anyone but yourself.
 
 See also: Connection Functions
 & RECV()
   recv(<player|descriptor>)
 
-  Returns the number of characters received by a player during this
-  connection as indicated by SESSION.
+  Returns the number of characters received by a player during this connection as indicated by SESSION.
 
-  You must be a Wizard, Royalty or See_All to use this function on anyone
-  but yourself.
+  You must be a Wizard, Royalty or See_All to use this function on anyone but yourself.
 
 See also: Connection Functions
 & COLORS()
@@ -958,33 +793,20 @@ See also: Connection Functions
   colors(<wildcard>)
   colors(<colors>, <format>)
 
-  With no arguments, colors() returns an unsorted, space-separated list of
-  colors that PennMUSH knows the name of. You can use these colors in 
-  ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not 
-  included in the list, but can also be used in ansi().
+  With no arguments, colors() returns an unsorted, space-separated list of colors that PennMUSH knows the name of. You can use these colors in ansi(+<colorname>,text). The colors "xterm0" to "xterm255" are not included in the list, but can also be used in ansi().
   
-  With one argument, returns an unsorted, space-separated list of colors 
-  that match the wildcard pattern <wildcard>.
+  With one argument, returns an unsorted, space-separated list of colors that match the wildcard pattern <wildcard>.
   
-  With two arguments, colors() returns information about specific colors.
-  <colors> can be any string accepted by the ansi() function's first 
-  argument. <format> must be one of:
+  With two arguments, colors() returns information about specific colors. <colors> can be any string accepted by the ansi() function's first argument. <format> must be one of:
   
    hex:      return a hexcode in the format #rrggbb.
-   xterm256: return the number of the xterm color closest to the given
-              <color>.
-   16color:  return the letter of the closest ANSI color code (possibly 
-              including 'h' for highlight fg colors).
-   name:     return a list of names of all the colors exactly matching the
-             given colors, or '#-1 NO MATCHING COLOR NAME' if there is no
-              exact match with a named color.
+   xterm256: return the number of the xterm color closest to the given <color>.
+   16color:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
+   name:     return a list of names of all the colors exactly matching the given colors, or '#-1 NO MATCHING COLOR NAME' if there is no exact match with a named color.
 
-  It can be used for working out how certain colors will downgrade to
-  people using clients which aren't fully color-capable.
+  It can be used for working out how certain colors will downgrade to people using clients which aren't fully color-capable.
 
-  <format> can also include the word "styles", in which case all ANSI
-  styling options (f, u, i and h) present in <colors> are included in
-  the output.
+  <format> can also include the word "styles", in which case all ANSI styling options (f, u, i and h) present in <colors> are included in the output.
   
   See 'help colors2' for examples.
 See also: ansi(), colorstyle
@@ -992,9 +814,7 @@ See also: ansi(), colorstyle
 
   Examples:
     > think colors(*yellow*)
-    greenyellow yellowgreen lightgoldenrodyellow lightyellow yellow
-    lightyellow1 lightyellow2 lightyellow3 lightyellow4 yellow1 yellow2
-    yellow3 yellow4
+    greenyellow yellowgreen lightgoldenrodyellow lightyellow yellow lightyellow1 lightyellow2 lightyellow3 lightyellow4 yellow1 yellow2 yellow3 yellow4
     
     > think colors(+yellow, hex)
     #ffff00
@@ -1017,12 +837,9 @@ See also: ansi(), colorstyle
 & COMP()
   comp(<value1>, <value2>[, <type>])
 
-  comp() compares two values.  It returns 0 if they are the same, -1 if
-  <value1> is less than/precedes alphabetically <value2>, and 1 otherwise.
+  comp() compares two values. It returns 0 if they are the same, -1 if <value1> is less than/precedes alphabetically <value2>, and 1 otherwise.
 
-  By default the comparison is a case-sensitive lexicographic (string)
-  comparison. By giving the optional <type>, the comparison can be
-  specified:
+  By default the comparison is a case-sensitive lexicographic (string) comparison. By giving the optional <type>, the comparison can be specified:
 
       <type>            Comparison
         A               Maybe case-sensitive lexicographic (default)
@@ -1031,19 +848,14 @@ See also: ansi(), colorstyle
         N               Integers
         F               Floating point numbers
 
-  Whether or not the a sort type is case-sensitive or not depends on
-  the particular MUSH and its environment.
+  Whether or not the a sort type is case-sensitive or not depends on the particular MUSH and its environment.
 See also: strmatch(), eq()
 & CON()
   con(<object>)
 
   Returns the dbref of the first object in the <object>'s inventory.
 
-  You can get the complete contents of any container you may examine,
-  regardless of whether or not objects are dark.  You can get the
-  partial contents (obeying DARK/LIGHT/etc.) of your current location
-  or the enactor (%#).  You CANNOT get the contents of anything else,
-  regardless of whether or not you have objects in it.
+  You can get the complete contents of any container you may examine, regardless of whether or not objects are dark. You can get the partial contents (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#). You CANNOT get the contents of anything else, regardless of whether or not you have objects in it.
 
 See also: lcon(), next()
 & COND()
@@ -1055,14 +867,11 @@ See also: lcon(), next()
   ncond(<cond>, <expr>[, ... , <condN>, <exprN>][, <default>])
   ncondall(<cond>, <expr>[, ... , <condN>, <exprN>][, <default>])
 
-  cond() evaluates <cond>s until one returns a true value. Should
-  none return true, <default> is returned.
+  cond() evaluates <cond>s until one returns a true value. Should none return true, <default> is returned.
 
-  condall() returns all <expr>s for those <cond>s that evaluate to
-  true, or <default> if none are true.
+  condall() returns all <expr>s for those <cond>s that evaluate to true, or <default> if none are true.
 
-  ncond() and ncondall() are identical to cond(), except it returns
-  <expr>s for which <cond>s evaluate to false.
+  ncond() and ncondall() are identical to cond(), except it returns <expr>s for which <cond>s evaluate to false.
 
   Examples:
     > say cond(0,This is false,#-1,This is also false,#123,This is true)
@@ -1078,9 +887,7 @@ See also: firstof(), allof()
 & CONFIG()
   config([<option>])
 
-  With no arguments, config() returns a list of config option names.
-  If <option> is given, config() returns the value of the given option
-  Boolean configuration options will return values of "Yes" or "No".
+  With no arguments, config() returns a list of config option names. If <option> is given, config() returns the value of the given option Boolean configuration options will return values of "Yes" or "No".
 
   Example:
     > think config(money_singular)
@@ -1089,29 +896,15 @@ See also: firstof(), allof()
 & CONN()
   conn(<player|descriptor>)
  
-  This function returns the number of seconds a player has been
-  connected. <player> should be the full name of a player or a dbref.
-  You can also use a <descriptor> to get connection information for
-  a specific connection when a player is connected more than once.
-  Wizards can also specify the descriptor of a connection which is still
-  at the login screen.
+  This function returns the number of seconds a player has been connected. <player> should be the full name of a player or a dbref. You can also use a <descriptor> to get connection information for a specific connection when a player is connected more than once. Wizards can also specify the descriptor of a connection which is still at the login screen.
   
-  This function returns -1 for invalid <player|descriptor>s, offline 
-  players and players who are dark, if the caller is not able to see them.
+  This function returns -1 for invalid <player|descriptor>s, offline players and players who are dark, if the caller is not able to see them.
  
 See also: CONNECTION FUNCTIONS
 & CONTROLS()
   controls(<object>, <victim>[/<attribute>])
   
-  With no <attribute>, this function returns 1 if <object> controls
-  <victim>, or 0, if it does not. With an <attribute>, it will return
-  1 if <object> could successfully set <attribute> on <victim> (or
-  alter <attribute>, if it already exists). If one of the objects does
-  not exist, it will return #-1 ARGN NOT FOUND (where N is the
-  argument which is the invalid object). If <attribute> is not a valid
-  attribute name, it will return #-1 BAD ATTR NAME. You must control
-  <object> or <victim>, or have the See_All power, to use this
-  function.
+  With no <attribute>, this function returns 1 if <object> controls <victim>, or 0, if it does not. With an <attribute>, it will return 1 if <object> could successfully set <attribute> on <victim> (or alter <attribute>, if it already exists). If one of the objects does not exist, it will return #-1 ARGN NOT FOUND (where N is the argument which is the invalid object). If <attribute> is not a valid attribute name, it will return #-1 BAD ATTR NAME. You must control <object> or <victim>, or have the See_All power, to use this function.
 
 See also: visible(), CONTROL
 & CONVSECS()
@@ -1119,17 +912,11 @@ See also: visible(), CONTROL
   convsecs(<seconds>[, <timezone>])
   convutcsecs(<seconds>) 
 
-  This function converts <seconds> (the number of seconds which have elapsed
-  since midnight on January 1, 1970 UTC) to a time string. Because it's based 
-  on UTC, but returns local time, convsecs(0) is not going to be "Thu Jan 1 
-  00:00:00 1970" unless you're in the UTC (GMT) timezone.
- 
-  If a <timezone> argument is given, the return value is based on that
-  timezone instead of the MUSH server's local time. See 'help timezones' for
-  more information on valid timezones.
+  This function converts <seconds> (the number of seconds which have elapsed since midnight on January 1, 1970 UTC) to a time string. Because it's based on UTC, but returns local time, convsecs(0) is not going to be "Thu Jan 1 00:00:00 1970" unless you're in the UTC (GMT) timezone.
   
-  If Extended convtime() is supported (see @config compile), negative values
-  for <seconds> representing dates prior to 1970 are allowed.
+  If a <timezone> argument is given, the return value is based on that timezone instead of the MUSH server's local time. See 'help timezones' for more information on valid timezones.
+  
+  If Extended convtime() is supported (see @config compile), negative values for <seconds> representing dates prior to 1970 are allowed.
   
   convutcsecs(<seconds>) is an alias for convsecs(<seconds>, utc).
 
@@ -1149,22 +936,13 @@ See also: convtime(), time(), timefmt()
   convtime(<time string>,[<timezone>])
   convutctime(<time string>)
 
-  This functions converts a time string to the number of seconds since Jan 1, 
-  1970 GMT. A time string is of the format: 
+  This functions converts a time string to the number of seconds since Jan 1, 1970 GMT. A time string is of the format: 
       Ddd MMM DD HH:MM:SS YYYY
-  where Ddd is the day of the week, MMM is the month, DD is the day of the 
-  month, HH is the hour in 24-hour time, MM is the minutes, SS is the seconds, 
-  and YYYY is the year. If you supply an incorrectly formatted string, it will
-  return #-1.
+  where Ddd is the day of the week, MMM is the month, DD is the day of the month, HH is the hour in 24-hour time, MM is the minutes, SS is the seconds, and YYYY is the year. If you supply an incorrectly formatted string, it will return #-1.
 
-  convutctime() and convtime() with a second argument of 'utc' assume the 
-  timestring is based on UTC time. Other time zones can be specified too. If
-  no <timezone> is given, the server's timezone is used.
+  convutctime() and convtime() with a second argument of 'utc' assume the timestring is based on UTC time. Other time zones can be specified too. If no <timezone> is given, the server's timezone is used.
 
-  If the extended convtime() is supported (See @config compile), more formats 
-  for the date are enabled, including ones missing the day of week and year, 
-  and a 'Month Day Year' format. In this case, convtime() can also handle
-  dates prior to 1970 (in which case a negative number will be returned).
+  If the extended convtime() is supported (See @config compile), more formats for the date are enabled, including ones missing the day of week and year, and a 'Month Day Year' format. In this case, convtime() can also handle dates prior to 1970 (in which case a negative number will be returned).
 
   Example:
     > say time()
@@ -1177,8 +955,7 @@ See also: convsecs(), time(), timezones
 & COS()
   cos(<angle>[, <angle type>])
  
-  Returns the cosine of <angle>. Angle must be in the given angle
-  type, or radians by default.
+  Returns the cosine of <angle>. Angle must be in the given angle type, or radians by default.
 
   Examples:
     > say cos(90, d)
@@ -1193,22 +970,17 @@ See also: acos(), asin(), atan(), ctu(), sin(), tan()
 & PCREATE()
   pcreate(<name>, <password>[, <dbref>])
 
-  Creates a player with a given <name> and <password>. This function
-  can only be used by wizards.
+  Creates a player with a given <name> and <password>. This function can only be used by wizards.
   
-  The optional third argument can be used to specify a garbage object
-  to use for the new player.
+  The optional third argument can be used to specify a garbage object to use for the new player.
 
 See also: @pcreate, create(), dig(), open()
 & CREATE()
    create(<object>[, <cost>[, <dbref>]])
 
-   This function creates an object with name <object> for <cost> pennies,
-   and returns the dbref number of the created object. It returns #-1 on
-   error. 
+   This function creates an object with name <object> for <cost> pennies, and returns the dbref number of the created object. It returns #-1 on error. 
 
-   Wizards may also specify a <dbref>; if this refers to a garbage object,
-   the new object is created with this dbref.
+   Wizards may also specify a <dbref>; if this refers to a garbage object, the new object is created with this dbref.
    
 See also: @create, pcreate(), dig(), open()
 & CTIME()
@@ -1216,19 +988,14 @@ See also: @create, pcreate(), dig(), open()
   ctime(<object>[, <utc>])
   csecs(<object>)
  
-  ctime() returns the date and time that <object> was created. The time
-  returned is in the server's local timezone, unless <utc> is true, in
-  which case the time is in the UTC timezone.
+  ctime() returns the date and time that <object> was created. The time returned is in the server's local timezone, unless <utc> is true, in which case the time is in the UTC timezone.
  
-  csecs() returns the time as the number of seconds since the epoch.
-  Anyone can get the creation time of any object in the game.
+  csecs() returns the time as the number of seconds since the epoch. Anyone can get the creation time of any object in the game.
 
 See also: mtime(), time(), secs(), objid()
 & ANGLES
 
-  In any function which accepts an angle type, the argument can be one of
-  'd' for degrees, 'r' for radians, or 'g' for gradians. Gradians are not
-  used often, but it's included for completeness.
+  In any function which accepts an angle type, the argument can be one of 'd' for degrees, 'r' for radians, or 'g' for gradians. Gradians are not used often, but it's included for completeness.
 
   As a refresher, there are 180 degrees in pi radians in 200 gradians.
 
@@ -1236,9 +1003,7 @@ See also: acos(), asin(), atan(), cos(), ctu(), sin(), tan()
 & CTU()
   ctu(<angle>, <from>, <to>)
 
-  Converts between the different ways to measure angles.  <from>
-  controls what the angle is treated as, and <to> what form it is
-  turned into. See HELP ANGLES for more information.
+  Converts between the different ways to measure angles. <from> controls what the angle is treated as, and <to> what form it is turned into. See HELP ANGLES for more information.
   
   Example:
     > say 90 degrees is [ctu(90, d, r)] radians
@@ -1249,8 +1014,7 @@ See also: acos(), asin(), atan(), cos(), sin(), tan()
   dec(<integer>)
   dec(<string-ending-in-integer>)
 
-  desc() returns the given <integer> minus 1. If given a string that ends in
-  an integer, it decrements only the final integer portion. That is:
+  dec() returns the given <integer> minus 1. If given a string that ends in an integer, it decrements only the final integer portion. That is:
 
     > think dec(3)
     2
@@ -1264,20 +1028,15 @@ See also: acos(), asin(), atan(), cos(), sin(), tan()
     > think dec(1.3)
     1.2
 
-  Note especially the last example, which will trip you up if you use
-  floating point numbers with dec() and expect it to work like sub().
+  Note especially the last example, which will trip you up if you use floating point numbers with dec() and expect it to work like sub().
   
-  If the null_eq_zero @config option is on, using dec() on a string which
-  does not end in an integer will return <string>-1. When null_eq_zero is
-  turned off, it will return an error.
+  If the null_eq_zero @config option is on, using dec() on a string which does not end in an integer will return <string>-1. When null_eq_zero is turned off, it will return an error.
 
 See also: inc(), sub()
 & DECOMPOSE()
   decompose(<string>)
 
-  decompose() works like escape() with the additional caveat that it
-  inserts parse-able characters to recreate <string> exactly after one
-  parsing. It takes care of multiple spaces, '%r's, and '%t's.
+  decompose() works like escape() with the additional caveat that it inserts parse-able characters to recreate <string> exactly after one parsing. It takes care of multiple spaces, '%r's, and '%t's.
   
   Example:
     > think decompose(This is \[a [ansi(y,test)]\][space(3)])
@@ -1287,16 +1046,9 @@ See also: @decompile2, escape(), secure(), ]
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)
  
-  This function returns the value of the first possible <obj>/<attr>,
-  as if retrieved via the get() function, if the attribute exists and
-  is readable by you.  Otherwise, it evaluates <default>, and returns
-  that.  Note that <default> is only evaluated if none of the given
-  attributes exist or can be read. Note further than an empty attribute
-  counts as an existing attribute.
+  This function returns the value of the first possible <obj>/<attr>, as if retrieved via the get() function, if the attribute exists and is readable by you. Otherwise, it evaluates <default>, and returns that. Note that <default> is only evaluated if none of the given attributes exist or can be read. Note further than an empty attribute counts as an existing attribute.
 
-  This is useful for code that needs to return the value of an
-  attribute, or an error message or default case, if that attribute
-  does not exist.
+  This is useful for code that needs to return the value of an attribute, or an error message or default case, if that attribute does not exist.
  
   Examples:
     > &TEST me=apple orange banana
@@ -1307,17 +1059,12 @@ See also: @decompile2, escape(), secure(), ]
     > say default(me/Test, No fruits!)
     You say "No fruits!"
  
-See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
-  strfirstof()
+See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(), strfirstof()
 & STRDELETE()
 & DELETE()
   strdelete(<string>, <first>, <len>)
  
-  Return a modified <string>, with <len> characters starting after the
-  character at position <first> deleted. In other words, it copies
-  <first> characters, skips <len> characters, and then copies the
-  remainder of the string. If <len> is negative, deletes characters
-  leftwards from <first>.  Characters are numbered starting at 0.
+  Return a modified <string>, with <len> characters starting after the character at position <first> deleted. In other words, it copies <first> characters, skips <len> characters, and then copies the remainder of the string. If <len> is negative, deletes characters leftwards from <first>. Characters are numbered starting at 0.
 
   Examples:
     > say strdelete(abcdefgh, 3, 2)
@@ -1332,29 +1079,20 @@ See also: strreplace(), strinsert(), mid(), ldelete()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
-  This function simulates rolling dice. It "rolls" a die with a given
-  number of sides, a certain number of times, and adds the results.
-  For example, DIE(2, 6) would roll "2d6" - two six-sided dice,
-  generating a result in the range 2-12. The maximum number of dice
-  this function will roll in a single call is 700.  If <show> is true,
-  the result will be a space-seperated list of the individual rolls rather
-  than their sum.
+  This function simulates rolling dice. It "rolls" a die with a given number of sides, a certain number of times, and adds the results. For example, DIE(2, 6) would roll "2d6" - two six-sided dice, generating a result in the range 2-12. The maximum number of dice this function will roll in a single call is 700. If <show> is true, the result will be a space-seperated list of the individual rolls rather than their sum.
 
   Examples:
     > think die(3, 6)
     6
     > think die(3, 6, 1)
     5 2 1  
+See also: rand()
 & DIG()
   dig(<name>[, <exit to>[, <exit from>[, <room dbref>, <to dbref>, <from dbref>]]])
  
-  This function digs a room called <name>, and optionally opens and
-  links <exit to> and <exit from>, like the normal @dig command. It
-  returns the dbref number of the new room.
+  This function digs a room called <name>, and optionally opens and links <exit to> and <exit from>, like the normal @dig command. It returns the dbref number of the new room.
   
-  Wizards and objects with the pick_dbref power can supply optional
-  fourth through sixth arguments to specify garbage objects to use for
-  the new room and exits.
+  Wizards and objects with the pick_dbref power can supply optional fourth through sixth arguments to specify garbage objects to use for the new room and exits.
 
 See also: @dig, open(), @open, create(), pcreate()
 & DIGEST()
@@ -1365,20 +1103,13 @@ See also: @dig, open(), @open, create(), pcreate()
   digest(list)
   digest(<algorithm>, <string>)
 
-  Returns a checksum (hash, digest, etc.) of <string> using the given
-  <algorithm>. The result is a unique large number represented in base
-  16.
+  Returns a checksum (hash, digest, etc.) of <string> using the given <algorithm>. The result is a unique large number represented in base 16.
 
   Typically at least the following algorithms are supported:
 
   md4 md5 ripemd160 sha sha1 sha224 sha256 sha384 sha512 whirlpool
 
-  Depending on the host's OpenSSL version and how it was configured,
-  there might be more (or less) available. digest(list) returns the
-  methods a particular server understands if the OpenSSL library
-  version being used is recent enough (1.0.0 and higher), or '#-1
-  LISTING NOT SUPPORTED' on older versions. For portable code, stick
-  with MD5 and the SHA family.
+  Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5 and the SHA family.
 
   digest(sha, whatever) is equivalent to sha0(whatever).
 
@@ -1398,15 +1129,13 @@ See also: encode64(), encrypt()
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
-  Returns the distance between two points in the Cartesian
-  plane that have coordinates (<x1>, <y1>) and (<x2>, <y2>).
+  Returns the distance between two points in the Cartesian plane that have coordinates (<x1>, <y1>) and (<x2>, <y2>).
   
 See also: dist3d(), lmath()
 & DIST3D()
   dist3d(<x1>, <y1>, <z1>, <x2>, <y2>, <z2>)
 
-  Returns the distance between two points in space, with
-  coordinates (<x1>, <y1>, <z1>) and (<x2>, <y2>, <z2>).
+  Returns the distance between two points in space, with coordinates (<x1>, <y1>, <z1>) and (<x2>, <y2>, <z2>).
   
 See also: dist2d(), lmath()
 & DIV()
@@ -1416,14 +1145,9 @@ See also: dist2d(), lmath()
   fdiv(<number1>, <number2>[, ... , <numberN>])
   floordiv(<number1>, <number2>[, ... , <numberN>])
   
-  These functions divide <number1> by <number2> (and, for each subsequent
-  argument, divide the previous result by <numberN>) and return the final
-  result.
+  These functions divide <number1> by <number2> (and, for each subsequent argument, divide the previous result by <numberN>) and return the final result.
   
-  div() returns the integer part of the quotient. floordiv() returns the
-  largest integer less than or equal to the quotient; for positive numbers,
-  they are identical, but for negative numbers they may differ. fdiv() returns
-  the floating-point quotient.
+  div() returns the integer part of the quotient. floordiv() returns the largest integer less than or equal to the quotient; for positive numbers, they are identical, but for negative numbers they may differ. fdiv() returns the floating-point quotient.
 
   Examples:
   
@@ -1435,24 +1159,20 @@ See also: dist2d(), lmath()
    fdiv(13,4)         ==>  3.25            fdiv(-13,4)        ==> -3.25
    fdiv(13,-4)        ==>  -3.25           fdiv(-13,-4)       ==>  3.25
 
-  Note that add(mul(div(%0,%1),%1),remainder(%0,%1)) always yields %0,
-  and add(mul(floordiv(%0,%1),%1),modulo(%0,%1)) also always yields %0.
+  Note that add(mul(div(%0,%1),%1),remainder(%0,%1)) always yields %0, and add(mul(floordiv(%0,%1),%1),modulo(%0,%1)) also always yields %0.
 
 See also: modulo(), lmath()
 & DOING()
   doing(<player|descriptor>)
 
-  When given the name of a player or descriptor, doing() returns the player's
-  @doing. If no matching player or descriptor is found, or the descriptor is
-  not yet connected to a player, an empty string is returned.
+  When given the name of a player or descriptor, doing() returns the player's @doing. If no matching player or descriptor is found, or the descriptor is not yet connected to a player, an empty string is returned.
 
 See also: @poll, @doing, poll()
 & E()
 & EXP()
   e([<number>])
  
-  With no argument, returns the value of "e"  (2.71828182845904523536, 
-  rounded to the game's float_precision setting).
+  With no argument, returns the value of "e" (2.71828182845904523536, rounded to the game's float_precision setting).
   
   If a <number> is given, it returns e to the power of <number>.
   
@@ -1461,11 +1181,7 @@ See also: power(), log()
 & EDEFAULT()
   edefault([<obj>/]<attr>, <default case>)
  
-  This function returns the evaluated value of <obj>/<attr>, as if
-  retrieved via the get_eval() function, if the attribute exists and
-  is readable by you. Otherwise, it evaluates <default case>, and
-  returns that. <default case> is only evaluated if the attribute
-  does not exist or cannot be read.
+  This function returns the evaluated value of <obj>/<attr>, as if retrieved via the get_eval() function, if the attribute exists and is readable by you. Otherwise, it evaluates <default case>, and returns that. <default case> is only evaluated if the attribute does not exist or cannot be read.
  
   Example:
     > &TEST me=You have lost [rand(10)] marbles.
@@ -1480,17 +1196,15 @@ See also: get(), eval(), ufun(), default(), udefault(), hasattr()
 & EDIT()
   edit(<string>, <search>, <replace>[, ... , <searchN>, <replaceN>])
  
-  For each given <search> and <replace> pair, edit() replaces all
-  occurances of <search> in <string> with the corresponding <replace>.
+  For each given <search> and <replace> pair, edit() replaces all occurances of <search> in <string> with the corresponding <replace>.
   
   If <search> is a caret (^), <replace> is prepended.
   If <search> is a dollar sign ($), <replace> is appended.
-  If <search> is an empty string, <replace> is inserted between
-  every character, and before the first and after the last.
+  If <search> is an empty string, <replace> is inserted between every character, and before the first and after the last.
   If <replace> is an empty string, <search> is deleted from the string.
 
   Example:
-    > say [edit(this is a test,^,I think%b,$,.,a test,an exam)]
+    > say edit(this is a test,^,I think%b,$,.,a test,an exam)
     You say "I think this is an exam." 
 
   edit() can not replace a literal single ^ or $. Use regedit() for that.
@@ -1499,14 +1213,9 @@ See also: @edit, regedit()
 & ELEMENTS()
   elements(<list of words>, <list of numbers>[, <delim>[, <osep>]])
  
-  This function returns the words in <list of words> that are in the
-  positions specified by <list of numbers>. The <list of words> are
-  assumed to be space-separated, unless a <delim> is given. If <osep> is
-  given, the matching words are separated by <osep>, otherwise by <delim>.
+  This function returns the words in <list of words> that are in the positions specified by <list of numbers>. The <list of words> are assumed to be space-separated, unless a <delim> is given. If <osep> is given, the matching words are separated by <osep>, otherwise by <delim>.
   
-  If any of the <list of numbers> is negative, it counts backwards from the
-  end of the list of words, with -1 being the last word, -2 the word before
-  last, and so on.
+  If any of the <list of numbers> is negative, it counts backwards from the end of the list of words, with -1 being the last word, -2 the word before last, and so on.
  
   Examples:
     > say elements(Foo Ack Beep Moo Zot,2 4)
@@ -1522,14 +1231,9 @@ See also: extract(), index(), grab()
 & ELOCK()
   elock(<object>[/<locktype>], <victim>)
 
-  elock() returns 1 if the <victim> would pass the @lock/<locktype> on
-  <object>, and 0 if it would fail. Any locktype can be given, including
-  user-defined "user:" @locks. If no <locktype> is given, it defaults to
-  the Basic lock.
+  elock() returns 1 if the <victim> would pass the @lock/<locktype> on <object>, and 0 if it would fail. Any locktype can be given, including user-defined "user:" @locks. If no <locktype> is given, it defaults to the Basic lock.
   
-  You must be able to examine the lock, which means either that you must
-  control <object>, it must be @set VISUAL, or the <locktype> lock must be
-  @lset VISUAL.
+  You must be able to examine the lock, which means either that you must control <object>, it must be @set VISUAL, or the <locktype> lock must be @lset VISUAL.
 
   Examples:
     > @lock/drop Dancing Slippers=#0
@@ -1567,59 +1271,40 @@ See also: encrypt(), digest()
   encrypt(<string>, <password>[, <encode>]) 
   decrypt(<string>, <password>[, <encoded>])
 
-  encrypt() returns an encrypted string produced by a simple password-based 
-  encrypted algorithm. Good passwords are long passwords. This is not 
-  high-security encryption.
+  encrypt() returns an encrypted string produced by a simple password-based encrypted algorithm. Good passwords are long passwords. This is not high-security encryption.
 
-  If the optional <encode> argument is true, the resulting string is further
-  encoded in base-64 so that it only contains alphanumeric characters.
+  If the optional <encode> argument is true, the resulting string is further encoded in base-64 so that it only contains alphanumeric characters.
   
-  decrypt() decrypts a string encrypted with encrypt(). The <encoded> 
-  argument indicates that the encrypted string was base-64 encoded.
+  decrypt() decrypts a string encrypted with encrypt(). The <encoded> argument indicates that the encrypted string was base-64 encoded.
 
 See also: encode64(), digest()
 & ENTRANCES()
   entrances([<object>[, <type>[, <begin>[, <end>]]]])
 
-  With no arguments, the entrances() function returns a list of all exits, 
-  things, players, and rooms linked to your location, like @entrances. You 
-  can specify an object other than your current location with <object>. You 
-  can limit the type of objects found by specifying one or more of the 
-  following for <type>:
+  With no arguments, the entrances() function returns a list of all exits, things, players, and rooms linked to your location, like @entrances. You can specify an object other than your current location with <object>. You can limit the type of objects found by specifying one or more of the following for <type>:
         a        all (default)
         e        exits
         t        things
         p        players
         r        rooms
 
-  You can also limit the range of the dbrefs searched by giving <begin> and 
-  <end>. If you control <object>, or have the Search or See_All powers, all 
-  objects linked to <object> are returned. Otherwise, only objects you can 
-  examine will be included.
+  You can also limit the range of the dbrefs searched by giving <begin> and <end>. If you control <object>, or have the Search or See_All powers, all objects linked to <object> are returned. Otherwise, only objects you can examine will be included.
  
 See also: lsearch(), @entrances
 & EQ()
   eq(<number1>, <number2>[, ... , <numberN>])
 
-  Takes two or more <number>s, and returns 1 if they are all equal,
-  and 0 otherwise.
+  Takes two or more <number>s, and returns 1 if they are all equal, and 0 otherwise.
   
 See also: neq(), lmath()
 & ESCAPE()
   escape(<string>)
  
-  The escape() function "escapes out" potentially "dangerous"
-  characters, preventing function evaluation in the next pass of the
-  parser. It returns <string> after adding the escape character ('\')
-  at the beginning of the string, and before the following characters:
+  The escape() function "escapes out" potentially "dangerous" characters, preventing function evaluation in the next pass of the parser. It returns <string> after adding the escape character ('\') at the beginning of the string, and before the following characters:
 
   %  ;  [  ]  {  }  \ ( ) , ^ $
   
-  This function prevents code injection in strings entered by players. It
-  is only needed when <string> will be passed through a command or function
-  which will evaluate it again, which can usually be avoided. Since the
-  function preserves the original string, it is, in most cases, a better
-  choice than secure(), but decompose() is often better still.
+  This function prevents code injection in strings entered by players. It is only needed when <string> will be passed through a command or function which will evaluate it again, which can usually be avoided. Since the function preserves the original string, it is, in most cases, a better choice than secure(), but decompose() is often better still.
 
 See also: decompose(), secure(), ]
 & EVAL()
@@ -1627,12 +1312,7 @@ See also: decompose(), secure(), ]
   eval(<object>, <attribute>)
   get_eval(<object>/<attribute>)
  
-  eval() and get_eval() are similar to ufun(), in that they evaluate the 
-  given <attribute> on <object>. However, they change the enactor (%#) to 
-  the object executing the eval (%!). It does not modify the stack (%0-%9),
-  so the attribute being evaled sees the same values for them that the 
-  calling code does. Unless you need this behavior, it is better to
-  use u() instead, which hides the caller's stack.
+  eval() and get_eval() are similar to ufun(), in that they evaluate the given <attribute> on <object>. However, they change the enactor (%#) to the object executing the eval (%!). It does not modify the stack (%0-%9), so the attribute being evaled sees the same values for them that the calling code does. Unless you need this behavior, it is better to use u() instead, which hides the caller's stack.
 
   Example:
     > &TEST Foo=%b%b%b-[name(me)] (%n)
@@ -1647,29 +1327,17 @@ See also: get(), u(), xget(), edefault()
 
   Returns the dbref of the first exit in room <object>.
 
-  You can get the complete exit list of any room you may examine,
-  regardless of whether or not exits are dark.  You can get the
-  partial exit list (obeying DARK/LIGHT/etc.) of your current location
-  or the enactor (%#).  You CANNOT get the exit list of anything else,
-  regardless of whether or not you have objects in it.
+  You can get the complete exit list of any room you may examine, regardless of whether or not exits are dark. You can get the partial exit list (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#). You CANNOT get the exit list of anything else, regardless of whether or not you have objects in it.
 
 See also: lexits(), next()
 & EXTRACT()
   extract(<list>[, <first>[, <length>[, <delimiter>]]])
 
-  This function returns <length> elements of <list>, counting from the
-  <first>th element. If <length> is not specified, the default is 1, so
-  extract(<list>,3) acts like elements(<list>,3).  If <first> is not
-  specified, the default is the 1, so extract(<list>) acts like
-  first(<list>).
+  This function returns <length> elements of <list>, counting from the <first>th element. If <length> is not specified, the default is 1, so extract(<list>,3) acts like elements(<list>,3).  If <first> is not specified, the default is the 1, so extract(<list>) acts like first(<list>).
   
-  If <first> is negative, extract() will begin counting backwards from the
-  end of <list>, so -1 starts at the last element, -2 the element before
-  last, and so on.
+  If <first> is negative, extract() will begin counting backwards from the end of <list>, so -1 starts at the last element, -2 the element before last, and so on.
   
-  If <length> is negative, extract() will return up to and including the
-  <length>th element from the right, so -1 will extract up to the last
-  element, -2 up to the element before last, and so on.
+  If <length> is negative, extract() will return up to and including the <length>th element from the right, so -1 will extract up to the last element, -2 up to the element before last, and so on.
 
   Examples:
     > think extract(This is a test string,3,2)
@@ -1949,7 +1617,7 @@ See also: name(), accname(), iname(), alias(), fullalias()
 
   Returns a space-separated list of the names of functions. If <type>
   is "local", only @functions are listed. If "builtin", only builtin
-  functions.  If "all" or omitted, both are returned.
+  functions. If "all" or omitted, both are returned.
   
 See also: list(), config()
 & GET()
@@ -2237,7 +1905,7 @@ See also: extract(), elements(), grab()
   If <position> is a negative integer, this inserts <new item> AFTER
   the item at the absolute value of <position> from the RIGHT in
   <list>. This is the same as reversing the list before inserting <new item>,
-  and then reversing it again into correct order.  For example, when
+  and then reversing it again into correct order. For example, when
   <position> is -1, <new item> will be the last in the list; when
   <position> is -2, <new item> will be the second item from the right,
   and so on.
@@ -2328,7 +1996,7 @@ See also: REGEXP
   isword(<string>)
   
   This function returns 1 if every character in <string> is a letter,
-  or 0, if any character isn't a letter.  Case does not matter.
+  or 0, if any character isn't a letter. Case does not matter.
     
 & ITEMS()
   items(<list>, <delim>)
@@ -2490,7 +2158,7 @@ See also: iter(), @dolist
 & IPADDR()
   ipaddr(<player|descriptor>)
 
-  Returns the IP address of the connected player or descriptor.  This
+  Returns the IP address of the connected player or descriptor. This
   may be more reliable that get(<player>/lastip) if the player has
   multple connections from different locations, and the function is
   called with a descriptor argument.
@@ -2565,7 +2233,7 @@ See also: lattr(), hasattr(), xattr(), wildcards
   Returns a list of the dbrefs of objects which are located in <object>.
 
   You can get the complete contents of any object you may examine,
-  regardless of whether or not objects are dark.  You can get the
+  regardless of whether or not objects are dark. You can get the
   partial contents (obeying DARK/LIGHT/etc.) of your current location
   or the enactor (%#).  You CANNOT get the contents of anything else,
   regardless of whether or not you have objects in it.
@@ -2694,7 +2362,7 @@ See also: align(), center(), rjust(), left()
   link(<object>, <destination>[, <preserve>])
  
   This function links <object> to <destination>. While normally used on
-  exits, it has all of the other capabilities of @link as well.  It returns
+  exits, it has all of the other capabilities of @link as well. It returns
   nothing. If the optional third argument is true, acts like @link/preserve.
 
 See also: @link, open()
@@ -3042,7 +2710,7 @@ See also: lvthings(), lcon()
   0. Note that this differs from the pos() function, but is consistent
   with other string functions like mid() and strdelete().
 
-  If <character> is a null argument, space is used.  If <character> is
+  If <character> is a null argument, space is used. If <character> is
   not found anywhere in <string>, an empty list is returned.
 
   Example:
@@ -3096,7 +2764,7 @@ See also: pos(), member(), match()
   it costs find_cost pennies to perform the lsearch.
 
   lsearchr() is like an lsearch() run through revwords(). Results are
-  returned from highest dbref to lowest.  search() is an alias for
+  returned from highest dbref to lowest. search() is an alias for
   lsearch().
 
   See 'help lsearch3' for examples.
@@ -3512,7 +3180,7 @@ See also: lmath(), div(), fdiv()
  
   This function takes two lists of equal length. It passes the
   entirety of <list1> to the user-defined function as %0, and the
-  delimiter as %1.  Then, this resulting list is matched with elements
+  delimiter as %1. Then, this resulting list is matched with elements
   in <list 2>, and the rearranged <list2> is returned.
   
   This is useful for doing things like sorting a list, and then
@@ -3675,15 +3343,15 @@ See also: eq(), not(), lmath()
 
   If <object> is an exit, then next() will return the next exit in <object>'s
   source room. If <object> is a thing or a player, then next() will return
-  the next object in the contents list of <object>'s location.  Otherwise, 
+  the next object in the contents list of <object>'s location. Otherwise, 
   it returns a #-1. #-1 is also used to denote that there are no more exits
   or objects after <object>.
 
   You can get the complete contents of any container you may examine,
-  regardless of whether or not objects are dark.  You can get the
+  regardless of whether or not objects are dark. You can get the
   partial contents (obeying DARK/LIGHT/etc.) of your current location
   or the enactor (%#).  You CANNOT get the contents of anything else,
-  regardless of whether or not you have objects in it.  These rules
+  regardless of whether or not you have objects in it. These rules
   apply to exits, as well.
 
 See also: lcon(), lexits(), con(), exit()
@@ -3885,11 +3553,11 @@ See also: andflags(), flags(), lflags(), orlpowers()
 
   This function returns 1 if <object> has at least one of the powers
   in a specified list, and 0 if it does not. The list is a
-  space-separated list of power names.  A '!' preceding a flag name
+  space-separated list of power names. A '!' preceding a flag name
   means "not power".
 
   Thus, ORLPOWERS(me, poll login) would return 1 if I have the poll
-  and login powers.  ORLFLAGS(me, functions !guest) would return 1 if
+  and login powers. ORLFLAGS(me, functions !guest) would return 1 if
   I have the functions power or are not a guest.
 
   If a name does not correspond to any power, orlpowers() returns 
@@ -3899,7 +3567,7 @@ See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()
   owner(<object>[/<attribute>])
  
-  Given just an object, it returns the owner of the object.  Given an
+  Given just an object, it returns the owner of the object. Given an
   object/attribute pair, it returns the owner of that attribute.
   
 See also: lockowner()
@@ -3907,7 +3575,7 @@ See also: lockowner()
   parent(<object>[, <new parent>])
  
   This function returns the dbref number of an object's parent. You
-  must be able to examine the object to do this.  If you specify a
+  must be able to examine the object to do this. If you specify a
   second argument, parent() attempts to change the parent first.
   You must control <object>, and be allowed to @parent to <new parent>.
   
@@ -4358,7 +4026,7 @@ See also: align(), center(), ljust(), right()
   
   If rloc() encounters a room, the dbref of that room is returned. If
   rloc() encounters an exit, the dbref of that exit's destination is
-  returned.  You must control <object>, be near it, or it must be a
+  returned. You must control <object>, be near it, or it must be a
   findable player.
  
 See also: loc(), where(), room(), rnum(), locate() 
@@ -4383,7 +4051,7 @@ See also: locate(), num(), rloc(), room()
   Returns the "absolute" location of an object. This is always a room; it is 
   the container of all other containers of the object. The "absolute" 
   location of an object is the place @lemit messages are sent to and NO_TEL 
-  status determined.  You must control the object, be See_All, or be near 
+  status determined. You must control the object, be See_All, or be near 
   the object in order for this function to work. The exception to this are 
   players; if <object> is a player, the ROOM() function may be used to find 
   the player's absolute location if the player is not set UNFINDABLE.
@@ -4599,7 +4267,7 @@ See also: setdiff(), setunion()
   register in setting another, use multiple setq()s.
 
   Registers set via setq() or setr() can be accessed via the r()
-  function.  Single-character registers can also be accessed via the
+  function. Single-character registers can also be accessed via the
   %qN substitution, and ones with longer names via %q<NAME> (Note that
   the <>'s are required.) Attempting to access a register that hasn't
   been set results in an empty string.
@@ -4641,7 +4309,7 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
   function result once, but if TEST was a complex function being used
   multiple times within the same command, it would be much more
   efficient to use the local register, since TEST would then only be
-  evaluated once.  setq() can thus be used to improve the readability
+  evaluated once. setq() can thus be used to improve the readability
   of MUSH code, as well as to cut down the amount of time needed to do
   complex evaluations.
 
@@ -4656,7 +4324,7 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
   The registers set by setq() can be used in later commands in the same 
   thread. That is, the registers are set to null on all $-commands, 
   ^-commands, A-attribute triggers, etc., but are then retained from that 
-  point forward through the execution of all your code.  Code branches like 
+  point forward through the execution of all your code. Code branches like 
   @wait and @switch retain the register values from the time of the branch.
   
   Example:
@@ -4898,7 +4566,7 @@ See also: sort(), sortby(), sortkey(), setunion(), setinter(), setdiff()
 & SOUNDEX()
   soundex(<word>)
 
-  The soundex function returns the soundex pattern for a word.  A
+  The soundex function returns the soundex pattern for a word. A
   soundex pattern represents the sound of the word, and similar
   sounding words should have the same soundex pattern. Soundex
   patterns consist of an uppercase letter and 3 digits.
@@ -5036,7 +4704,7 @@ See also: repeat()
   specified, it defaults to <open>.
  
   The transformation function receives the speech text as %0, the
-  dbref of <speaker> as %1, and the speech fragment number as %2.  For
+  dbref of <speaker> as %1, and the speech fragment number as %2. For
   non-say input strings (i.e., for an original <string> beginning with
   the :, ;, or | tokens), fragments are numbered starting with 1;
   otherwise, fragments are numbered starting with 0. (A fragment is a
@@ -6352,7 +6020,7 @@ See also: convsecs(), etimefmt(), timezones
   The timestring function takes a number of seconds as input and
   returns the amount of time formatted into days, hours, minutes, and
   seconds. If <pad flag> is 1, all time periods will be used even if
-  the number of seconds is less than a day, hour, or minute.  If <pad
+  the number of seconds is less than a day, hour, or minute. If <pad
   flag> is 2, all numbers will be 2 digits long.
 
   Examples:
@@ -6777,7 +6445,7 @@ See also: VECTOR FUNCTIONS
   
   Returns the dot product of two vectors. A dot product is the sum of
   the products of the corresponding elements of the two vectors,
-  e.g. vdot(a b c,d e f) = ad + be + cf.  The vectors must be of the
+  e.g. vdot(a b c,d e f) = ad + be + cf. The vectors must be of the
   same length.
   
   > think vdot(1 2 3, 2 3 4)
@@ -6788,7 +6456,7 @@ See also: VECTOR FUNCTIONS
   vmin(<vector1>, <vector2>[, <delimiter>])
 
   Returns a new vector made out of the minimums of each corresponding
-  pair of numbers from the two vectors.  The vectors must be of the
+  pair of numbers from the two vectors. The vectors must be of the
   same length.
 
   > think vmin(1 2 3, 4 1 2)
@@ -6799,7 +6467,7 @@ See also: VECTOR FUNCTIONS
   vmax(<vector1>, <vector2>[, <delimiter>])
 
   Returns a new vector made out of the maximums of each corresponding
-  pair of numbers from the two vectors.  The vectors must be of the
+  pair of numbers from the two vectors. The vectors must be of the
   same length.
 
   > think vmax(1 2 3, 4 1 2)
@@ -6845,7 +6513,7 @@ See also: controls(), VISUAL
   vmag(<vector>[, <delimiter>])
 
   Returns the magnitude of a vector, using a Euclidean distance
-  metric.  That is, for vector a b c d, returns sqrt(a^2+b^2+c^2+d^2).
+  metric. That is, for vector a b c d, returns sqrt(a^2+b^2+c^2+d^2).
 
   > think vmag(3 4) 
   5
@@ -6969,7 +6637,7 @@ See also: strlen(), items()
 
   This function takes <string> and splits it into lines containing no
   more than <width> characters each. If <first line width> is given,
-  the first line may have a different width.  If <line separator> is
+  the first line may have a different width. If <line separator> is
   given, it is inserted between each line; by default the separator is
   a newline (%r).
 

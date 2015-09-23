@@ -4149,11 +4149,11 @@ See also: trim()
   Example:
     > say starttime()%r[restarttime()]
     You say "Sat Dec  7 00:09:13 1991
-	You say "Sat Dec  7 00:09:13 1991
-	> @shutdown/reboot
-	> say starttime()%r[restarttime()]
-	You say "Sat Dec  7 00:09:13 1991
-	Tue Sep 22 13:54:04 2015
+    You say "Sat Dec  7 00:09:13 1991
+    > @shutdown/reboot
+    > say starttime()%r[restarttime()]
+    You say "Sat Dec  7 00:09:13 1991
+    Tue Sep 22 13:54:04 2015
 
 See also: convtime(), restarts()
 & RESTARTS()
@@ -4571,10 +4571,10 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
   Example: 
     > say textentries(help, ?who())
     You say, "CWHO() LWHO() MWHO() NWHO() XWHO() ZWHO()"
-	
-	> say textsearch(help, pronouns, |)
+    
+    > say textsearch(help, pronouns, |)
     You say, "1.6.0P0|GENDER|SEX"
-	
+    
     > say textfile(help, ln\(\))
     You say, "  ln(<number>)
      

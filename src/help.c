@@ -431,7 +431,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
 {
   help_indx *entry = NULL;
   FILE *fp;
-  char *p, line[LINE_SIZE + 1];
+  char line[LINE_SIZE + 1];
   char the_topic[LINE_SIZE + 2];
   int default_topic = 0;
   int offset = 0;
@@ -507,10 +507,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
     if (line[0] == '\n') {
       notify(player, " ");
     } else {
-      for (p = line; *p != '\0'; p++)
-        if (*p == '\n')
-          *p = '\0';
-      notify(player, line);
+      notify_noenter(player, line);
     }
   }
   if (SUPPORT_PUEBLO)
@@ -616,7 +613,6 @@ help_build_index(help_file *h, int restricted)
   long bigpos, pos = 0;
   bool in_topic;
   int i, lineno, ntopics;
-  size_t n;
   char *s, *topic;
   char the_topic[TOPIC_NAME_LEN + 1];
   char line[LINE_SIZE + 1];
@@ -668,10 +664,6 @@ help_build_index(help_file *h, int restricted)
         fclose(rfp);
         return;
       }
-    }
-    n = strlen(line);
-    if (line[n - 1] != '\n') {
-      do_rawlog(LT_ERR, "Line %d of %s: line too long", lineno, h->file);
     }
     if (line[0] == '&') {
       ++ntopics;

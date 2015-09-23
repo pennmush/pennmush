@@ -504,11 +504,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
       break;
     if (line[0] == '&')
       break;
-    if (line[0] == '\n') {
-      notify(player, " ");
-    } else {
-      notify_noenter(player, line);
-    }
+    notify_noenter(player, line);
   }
   if (SUPPORT_PUEBLO)
     notify(player, close_tag("SAMP"));

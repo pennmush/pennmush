@@ -42,6 +42,8 @@ Functions:
    available. Suggested by Volund. [1010-MG]
  * avg() is now an alias for mean(). [1023-TK] [Rhost]
  * textsearch() allows searching the contents of helpfiles. [MG]
+ * speak() no longer has the odd TinyMUSH behaviour of ': foo' being a
+   semipose; speakpenn() is now an exact alias. [1034-MG]
 
 Commands:
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
@@ -54,7 +56,10 @@ Commands:
 Minor changes:
  * Added a few more date formats to getdate.template for convtime(). Suggested
    by Volund and Mercutio. [1020-MG]
-
+ * Most PennMUSH helpfiles are no longer hard-wrapped at 78 characters; noone 
+   connects from clients that can't wrap any more. [1030-MG]
+ * Other minor help fixes. [MG]
+   
 Hardcode:
  * Clean up some more remnants of the previous configure package's
    naming convention in favor of autoconf style ones. [SW]

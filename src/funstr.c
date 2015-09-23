@@ -2182,15 +2182,9 @@ FUNCTION(fun_speak)
   case ':':
     safe_str(speaker_name, buff, bp);
     string++;
-    if (*string == ' ') {
-      /* semipose it instead */
-      while (*string == ' ')
-        string++;
-      /* Penn: : foo -> Name foo. Tiny: : foo -> Namefoo */
-      if (!strcmp(called_as, "SPEAKPENN"))
-        safe_chr(' ', buff, bp);
-    } else
-      safe_chr(' ', buff, bp);
+    safe_chr(' ', buff, bp);
+    while (*string == ' ')
+      string++;
     break;
   case ';':
     string++;
@@ -2208,6 +2202,7 @@ FUNCTION(fun_speak)
   case '"':
     if (CHAT_STRIP_QUOTE)
       string++;
+    /* FALL THROUGH */
   default:
     say = 1;
     break;

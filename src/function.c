@@ -155,6 +155,7 @@ FUNALIAS faliases[] = {
   {"MONIKER", "CNAME"},  /* Rhost alias */
   {"MEAN", "AVG"},  /* Rhost alias */
   {"MATCH", "ELEMENT"},
+  {"SPEAK", "SPEAKPENN"}, /* Backwards compatability */
   {NULL, NULL}
 };
 
@@ -554,7 +555,6 @@ FUNTAB flist[] = {
   {"SOUNDSLIKE", fun_soundlike, 2, 2, FN_REG | FN_STRIPANSI},
   {"SPACE", fun_space, 1, 1, FN_REG | FN_STRIPANSI},
   {"SPEAK", fun_speak, 2, 7, FN_REG},
-  {"SPEAKPENN", fun_speak, 2, 7, FN_REG},
   {"SPELLNUM", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"SPLICE", fun_splice, 3, 4, FN_REG},
   {"SQL", fun_sql, 1, 4, FN_REG},

@@ -3887,7 +3887,6 @@ See also: repeat()
  
   If <string> is...  the resulting string is...
   :<pose>            <speaker's name> <pose>
-  : <pose>           <speaker's name><pose> (but same as :<pose> if called as SPEAKPENN())
   ;<pose>            <speaker's name><pose>
   |<emit>            <emit>
   <speech>           <speaker's name> says, "<speech>"
@@ -3905,9 +3904,6 @@ See also: repeat()
 
     > @emit [speak(me, :tests.)]
     Wizard tests.
-
-    > @emit [speak(me, : 's testing.)]
-    Wizard's testing.
 
     > @emit [speak(me, ;'s testing.)]
     Wizard's testing.
@@ -3956,9 +3952,6 @@ See also: repeat()
 
     > @emit speak(me, :tests. "Hi.", ,va)
     Wizard tests. "Fragment 1 is: Hi."
-
-    > @emit speak(me, : 's testing. "Hi.", ,va)
-    Wizard's testing. "Fragment 1 is: Hi."
 
     > @emit speak(me, ;'s testing. "Hi.", ,va)
     Wizard's testing. "Fragment 1 is: Hi."

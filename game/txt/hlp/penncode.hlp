@@ -1,7 +1,6 @@
 & code
 & contact
-PennMUSH is developed by a team of developers whose names are listed
-in 'help changes'. Suggestions, comments, and bug reports are welcome.
+PennMUSH is developed by a team of developers whose names are listed in 'help changes'. Suggestions, comments, and bug reports are welcome.
 
 The main PennMUSH web page is at http://www.pennmush.org
 
@@ -12,35 +11,22 @@ The PennMUSH community page is at http://community.pennmush.org
 For information about downloading PennMUSH, see 'help download'.
 For information about changes in versions of the code, see 'help changes'.
 & download
-The latest version of this MUSH code is available from
-http://code.google.com/p/pennmush/downloads/list. It will be called
-something like pennmush-1.8.3p9.tar.bz2, depending on the version number.
+The latest version of this MUSH code is available from https://github.com/pennmush/pennmush/releases or http://download.pennmush.org. It will be called something like pennmush-1.8.3p9.tar.bz2, depending on the version number.
 
-The MUSH manual is available from http://download.pennmush.org, in the 
-/Manuals directory. It should be called mushman.2.008.tar.Z or something 
-similar; you should attempt to get at least version 2.007. Also on that site
-is Javelin's Guide for PennMUSH Gods, in /Guide, available as plain text or
+The MUSH manual is available from http://download.pennmush.org, in the /Manuals directory. It should be called mushman.2.008.tar.Z or something similar; you should attempt to get at least version 2.007. Also on that site is Javelin's Guide for PennMUSH Gods, in /Guide, available as plain text or
 HTML.
 & i18n
 & internationalization
 & locale
 & translation
 Internationalization support in PennMUSH includes:
-* Support for (8-bit) locale-based character sets, including
-  translation of iso-8859-1 accented characters to html entities for
-  Pueblo, the accent() and stripaccents() functions, and the NOACCENTS
-  flag.
+* Support for (8-bit) locale-based character sets, including translation of iso-8859-1 accented characters to html entities for Pueblo, the accent() and stripaccents() functions, and the NOACCENTS flag.
 * Support for locale-based date/time formats
-* Support for locale-based message sets for translations of server
-  messages. There are active translation teams (and you can join!)
-  and several languages have practically complete translation files
-  available from the PennMUSH ftp site.
+* Support for locale-based message sets for translations of server messages. There are active translation teams (and you can join!) and several languages have practically complete translation files available.
 * Some support for locale-based string collation
-* The ability to alias command and function names, so you can generate
-  a set of translated commands/functions.
+* The ability to alias command and function names, so you can generate a set of translated commands/functions.
 
-Most of these features get enabled by setting an appropriate environment
-variable in the PennMUSH restart script.
+Most of these features get enabled by setting an appropriate environment variable in the PennMUSH restart script.
 
 Unicode is not currently supported.
 & copyright
@@ -51,27 +37,19 @@ Copyright, License, and Credits for PennMUSH 1.x. Revised March 2006.
 I. Copyrights
 
 PennMUSH 1.x
-Copyright (c) 1995-2006, T. Alexander Popiel <talek@pennmush.org>
-and Shawn Wagner <raevnos@pennmush.org>.
+Copyright (c) 1995-2006, T. Alexander Popiel <talek@pennmush.org> and Shawn Wagner <raevnos@pennmush.org>.
 
-Some code used in this server may have been derived from the
-TinyMUSH 2.2 source code, with permission. TinyMUSH 2.2 is
-Copyright (c) 1994-2002, Jean Marie Diaz, Lydia Leong, and Devin Hooker.
+Some code used in this server may have been derived from the TinyMUSH 2.2 source code, with permission. TinyMUSH 2.2 is Copyright (c) 1994-2002, Jean Marie Diaz, Lydia Leong, and Devin Hooker.
 
-Some code used in this server may have been derived from TinyMUSH 2.0.
-Copyright (c) 1995, Joseph Traub, Glenn Crocker.
+Some code used in this server may have been derived from TinyMUSH 2.0. Copyright (c) 1995, Joseph Traub, Glenn Crocker.
 
-Some code used in this server may have been derived from TinyMUD.
-Copyright (c) 1995, David Applegate, James Aspnes, Timothy Freeman
-and Bennet Yee.
+Some code used in this server may have been derived from TinyMUD. Copyright (c) 1995, David Applegate, James Aspnes, Timothy Freeman and Bennet Yee.
 
  *------------------------------------------------------------------------*
 
 II. License
 
-Because PennMUSH includes parts of multiple works, you must comply
-with all of the relevant licenses of those works. The portions derived
-from TinyMUD/TinyMUSH 2.0 are licensed under the following terms:
+Because PennMUSH includes parts of multiple works, you must comply with all of the relevant licenses of those works. The portions derived from TinyMUD/TinyMUSH 2.0 are licensed under the following terms:
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that: (1) source code distributions
@@ -86,9 +64,7 @@ from TinyMUD/TinyMUSH 2.0 are licensed under the following terms:
   WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
-The portions derived from TinyMUSH 2.2 are used under the Artistic
-License. The Artistic License is also the license under which you
-are granted permission to copy and modify PennMUSH:
+The portions derived from TinyMUSH 2.2 are used under the Artistic License. The Artistic License is also the license under which you are granted permission to copy and modify PennMUSH:
 
 The Artistic License
 

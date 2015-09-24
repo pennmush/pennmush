@@ -116,7 +116,7 @@ static const FLAG flag_table[] = {
   {"CHOWN_OK", 'C', NOTYPE, CHOWN_OK, F_ANY, F_ANY},
   {"DARK", 'D', NOTYPE, DARK, F_ANY, F_ANY},
   {"GOING", 'G', NOTYPE, GOING, F_INTERNAL, F_INTERNAL},
-  {"HAVEN", 'H', NOTYPE, HAVEN, F_ANY, F_ANY},
+  {"HAVEN", 'H', TYPE_PLAYER, HAVEN, F_ANY, F_ANY},
   {"TRUST", 'I', NOTYPE, INHERIT, F_INHERIT, F_INHERIT},
   {"LINK_OK", 'L', NOTYPE, LINK_OK, F_ANY, F_ANY},
   {"OPAQUE", 'O', NOTYPE, LOOK_OPAQUE, F_ANY, F_ANY},
@@ -254,7 +254,7 @@ static const FLAG power_table[] = {
   {"Halt", '\0', NOTYPE, HALT_ANYTHING, F_WIZARD | F_LOG, F_WIZARD},
   {"Hide", '\0', NOTYPE, CAN_HIDE, F_WIZARD | F_LOG, F_WIZARD},
   {"Idle", '\0', NOTYPE, UNLIMITED_IDLE, F_WIZARD | F_LOG, F_WIZARD},
-  {"Immortal", '\0', NOTYPE, NO_PAY | NO_QUOTA | UNKILLABLE, F_WIZARD,
+  {"Immortal", '\0', NOTYPE, NO_PAY | NO_QUOTA, F_WIZARD,
    F_WIZARD},
   {"Link_Anywhere", '\0', NOTYPE, LINK_ANYWHERE, F_WIZARD | F_LOG, F_WIZARD},
   {"Login", '\0', NOTYPE, LOGIN_ANYTIME, F_WIZARD | F_LOG, F_WIZARD},
@@ -272,7 +272,6 @@ static const FLAG power_table[] = {
   {"See_Queue", '\0', NOTYPE, PS_ALL, F_WIZARD | F_LOG, F_WIZARD},
   {"Tport_Anything", '\0', NOTYPE, TEL_OTHER, F_WIZARD | F_LOG, F_WIZARD},
   {"Tport_Anywhere", '\0', NOTYPE, TEL_ANYWHERE, F_WIZARD | F_LOG, F_WIZARD},
-  {"Unkillable", '\0', NOTYPE, UNKILLABLE, F_WIZARD | F_LOG, F_WIZARD},
   {"Can_spoof", '\0', NOTYPE, CAN_NSPEMIT, F_WIZARD | F_LOG, F_WIZARD},
   {NULL, '\0', 0, 0, 0, 0}
 };

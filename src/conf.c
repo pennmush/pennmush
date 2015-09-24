@@ -489,13 +489,6 @@ PENNCONF conftable[] = {
   ,
   {"find_cost", cf_int, &options.find_cost, 10000, 0, "costs"}
   ,
-  {"kill_default_cost", cf_int, &options.kill_default_cost, 10000, 0,
-   "costs"}
-  ,
-  {"kill_min_cost", cf_int, &options.kill_min_cost, 10000, 0, "costs"}
-  ,
-  {"kill_bonus", cf_int, &options.kill_bonus, 100, 0, "costs"}
-  ,
 
   {"log_wipe_passwd", cf_str, options.log_wipe_passwd,
    sizeof options.log_wipe_passwd, 0,
@@ -1437,9 +1430,6 @@ conf_default_set(void)
   options.queue_cost = 10;
   options.quota_cost = 1;
   options.find_cost = 100;
-  options.kill_default_cost = 100;
-  options.kill_min_cost = 10;
-  options.kill_bonus = 50;
   options.queue_loss = 63;
   options.max_pennies = 100000;
   options.max_guest_pennies = 100000;

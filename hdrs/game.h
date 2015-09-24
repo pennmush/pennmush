@@ -116,7 +116,6 @@ extern void do_grep(dbref player, char *obj, char *lookfor, int flag,
                     int insensitive);
 
 /* From rob.c */
-extern void do_kill(dbref player, const char *what, int cost, int slay);
 extern void do_give(dbref player, char *recipient, char *amnt, int silent,
                     NEW_PE_INFO *pe_info);
 extern void do_buy(dbref player, char *item, char *from, int price,

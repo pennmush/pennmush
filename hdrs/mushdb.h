@@ -39,9 +39,6 @@
 #define NoQuota(x)       (Hasprivs(x) || Hasprivs(Owner(x)) || \
                                 has_power_by_name(x,"NO_QUOTA",NOTYPE) || \
                                 ((!Mistrust(x) && has_power_by_name(Owner(x), "NO_QUOTA", NOTYPE))))
-#define NoKill(x)        (Hasprivs(x) || Hasprivs(Owner(x)) || \
-                                has_power_by_name(x,"UNKILLABLE",NOTYPE) || \
-                                ((!Mistrust(x) && has_power_by_name(Owner(x),"UNKILLABLE",NOTYPE))))
 #define Search_All(x)    (Hasprivs(x) || has_power_by_name(x,"SEARCH",NOTYPE))
 #define Global_Funcs(x)  (Hasprivs(x) || has_power_by_name(x,"FUNCTIONS",NOTYPE))
 #define Create_Player(x) (Wizard(x) || has_power_by_name(x,"PLAYER_CREATE",NOTYPE))

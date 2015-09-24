@@ -361,7 +361,6 @@ COMLIST commands[] = {
   {"HOME", NULL, cmd_home, CMD_T_PLAYER | CMD_T_THING, 0, 0},
   {"INVENTORY", NULL, cmd_inventory, CMD_T_ANY, 0, 0},
 
-  {"KILL", NULL, cmd_kill, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"LOOK", "OUTSIDE OPAQUE", cmd_look, CMD_T_ANY, 0, 0},
   {"LEAVE", NULL, cmd_leave, CMD_T_PLAYER | CMD_T_THING, 0, 0},
 
@@ -371,7 +370,6 @@ COMLIST commands[] = {
   {"SCORE", NULL, cmd_score, CMD_T_ANY, 0, 0},
   {"SAY", "NOEVAL", cmd_say, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"SEMIPOSE", "NOEVAL", cmd_semipose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
-  {"SLAY", NULL, cmd_slay, CMD_T_ANY, 0, 0},
 
   {"TEACH", "LIST", cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"THINK", "NOEVAL", cmd_think, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},

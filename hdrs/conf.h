@@ -258,9 +258,6 @@ struct options_table {
   int queue_cost;       /**< Deposit to queue a command */
   int quota_cost;       /**< Number of objects per quota unit */
   int find_cost;        /**< Cost to create an object */
-  int kill_default_cost;        /**< Default cost to use 'kill' */
-  int kill_min_cost;    /**< Minimum cost to use 'kill' */
-  int kill_bonus;       /**< Percentage of cost paid to victim of 'kill' */
   int queue_loss;       /**< 1/queue_loss chance of a command costing a penny */
   int max_pennies;      /**< Maximum pennies a player can have */
   int max_guest_pennies;        /**< Maximum pennies a guest can have */
@@ -404,9 +401,6 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define MAX_GUEST_PENNIES (options.max_guest_pennies)
 #define DBTOP_MAX (options.max_dbref)
 #define QUEUE_LOSS (options.queue_loss)
-#define KILL_BONUS (options.kill_bonus)
-#define KILL_MIN_COST (options.kill_min_cost)
-#define KILL_BASE_COST (options.kill_default_cost)
 #define FIND_COST (options.find_cost)
 #define QUOTA_COST (options.quota_cost)
 #define QUEUE_COST (options.queue_cost)

@@ -1,7 +1,7 @@
 /**
  * \file rob.c
  *
- * \brief Kill and give.
+ * \brief Give, buy, etc.
  *
  * This file is called rob.c for historical reasons, and one day it'll
  * probably get folded into some other file.
@@ -46,112 +46,6 @@ s_Pennies(dbref thing, int amount)
   Pennies(thing) = amount;
 }
 
-
-/** The kill command - send an object back home.
- * \param player the enactor.
- * \param what name of object to kill.
- * \param cost amount to pay to kill.
- * \param slay if 1, this is the wizard 'slay' command instead.
- */
-void
-do_kill(dbref player, const char *what, int cost, int slay)
-{
-  dbref victim;
-  int overridekill = 0;
-  char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
-
-  if (slay && !Wizard(player)) {
-    notify(player, T("You do not have such power."));
-    return;
-  }
-  victim = noisy_match_result(player, what, TYPE_PLAYER, MAT_NEAR_THINGS);
-
-  if (victim == NOTHING)
-    return;
-  else if (player == victim) {
-    notify(player, T("No suicide allowed."));
-    return;
-  }
-  if (slay)
-    do_log(LT_WIZ, player, victim, "SLAY");
-
-  if (Suspect(player))
-    flag_broadcast("WIZARD", 0,
-                   T("Broadcast: Suspect %s tried to kill %s(#%d)."),
-                   Name(player), Name(victim), victim);
-  if (!Mobile(victim)) {
-    notify(player, T("Sorry, you can only kill players and objects."));
-    return;
-  } else if ((Haven(Location(victim)) &&
-              !Wizard(player)) ||
-             (controls(victim, Location(victim)) &&
-              !controls(player, Location(victim)))) {
-    notify(player, T("Sorry."));
-    return;
-  } else if (NoKill(victim) && !Wizard(player) && (Owner(victim) != player)) {
-    notify(player, T("That object cannot be killed."));
-    return;
-  }
-  /* go for it */
-  /* set cost */
-  /* if this isn't called via slay */
-  if (!slay) {
-    if (cost < KILL_MIN_COST)
-      cost = KILL_MIN_COST;
-
-    /* see if it works */
-    if (!payfor(player, cost)) {
-      notify_format(player, T("You don't have enough %s."), MONIES);
-      return;
-    }
-  }
-  if (((get_random32(0, 100) < (uint32_t) cost) || slay) && !Wizard(victim)) {
-    /* you killed him */
-    tp = tbuf1;
-    safe_format(tbuf1, &tp, T("You killed %s!"), AName(victim, AN_SYS, NULL));
-    *tp = '\0';
-    tp = tbuf2;
-    safe_format(tbuf2, &tp, T("killed %s!"), AName(victim, AN_SYS, NULL));
-    *tp = '\0';
-
-    overridekill = queue_event(player, "OBJECT`KILL", "%s,%d,%d",
-                               unparse_objid(victim), cost, slay);
-    if (!overridekill) {
-      do_halt(victim, "", victim);
-    }
-    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING,
-           AN_SYS);
-
-    /* notify victim */
-    notify_format(victim, T("%s killed you!"), AName(player, AN_SYS, NULL));
-
-    if (!overridekill) {
-      /* Overriding the kill event with the events system prevents do_halt,
-       * @tel and the payoff. */
-      /* Pay off the bonus, if we were not called via slay */
-      if (!slay) {
-        int payoff = cost * KILL_BONUS / 100;
-        if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
-          payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
-        if (payoff > 0) {
-          notify_format(victim, T("Your insurance policy pays %d %s."),
-                        payoff, ((payoff == 1) ? MONEY : MONIES));
-          giveto(Owner(victim), payoff);
-        } else {
-          notify(victim, T("Your insurance policy has been revoked."));
-        }
-      }
-      /* send him home */
-      safe_tel(victim, HOME, 0, player, "killed");
-    }
-    /* if victim is object also dequeue all commands */
-  } else {
-    /* notify player and victim only */
-    notify(player, T("Your murder attempt failed."));
-    notify_format(victim, T("%s tried to kill you!"),
-                  AName(player, AN_SYS, NULL));
-  }
-}
 
 /** the buy command
  * \param player the enactor/buyer

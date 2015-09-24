@@ -137,7 +137,7 @@ extern dbref first_free;        /* pointer to free list */
 #define Going(x)        (has_flag_by_name(x, "GOING", NOTYPE))
 #define Going_Twice(x)  (has_flag_by_name(x, "GOING_TWICE", NOTYPE))
 #define Halted(x)       (has_flag_by_name(x, "HALT", NOTYPE))
-#define Haven(x)        (has_flag_by_name(x, "HAVEN", NOTYPE))
+#define Haven(x)        (has_flag_by_name(x, "HAVEN", TYPE_PLAYER))
 #define Heavy(x)        (has_flag_by_name(x, "HEAVY", NOTYPE))
 #define Inherit(x)      (has_flag_by_name(x, "TRUST", NOTYPE))
 #define Light(x)        (has_flag_by_name(x, "LIGHT", NOTYPE))

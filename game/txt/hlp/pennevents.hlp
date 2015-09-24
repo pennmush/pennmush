@@ -43,17 +43,6 @@
   > @pcreate Grid-BC
   Auto-Setting Grid-BC Builder and Shared
 
-  And for our last example: Suppose anytime somebody uses 'kill' or 'slay', you want to teleport them to a jail.
-  > @dig Kill-jail
-  > @desc Kill-Jail=You came here because you killed someone!
-  > @set Event=Wizard
-  > &object`kill event=@pemit %#=MURDERER! ; @tel %#=<dbref of Kill-Jail>
-  > kill Mercutio
-  You killed Mercutio!
-  MURDERER!
-  Jail (#123R)
-  You came here because you killed someone!
-
   The Event Handler object, since it's handling so many events, may become cluttered with attributes. We recommend using @trigger and @include to separate events to multiple objects.
 & EVENT LIST
   Event names are of the format <type>`<event>. The 'type' is used simply to group similar events together for help.
@@ -66,7 +55,7 @@
   dump: dump`5min, dump`1min, dump`complete, dump`error
   db: db`dbck, db`purge, db`warnings
   log: log`err, log`cmd, log`conn, log`trace, log`check, log`huh
-  object: object`create, object`destroy, object`move, object`rename, object`kill, object`flag
+  object: object`create, object`destroy, object`move, object`rename, object`flag
   sql: sql`connect, sql`connectfail, sql`disconnect
   signal: signal`usr1, signal`usr2
   player: player`create, player`connect, player`disconnect, player`inactivity
@@ -117,10 +106,6 @@
 
   object`move (objid, newloc, origloc, issilent, cause)
       Triggered after the object is moved, @tel'd, or otherwise sent to a new location. If <issilent> is 1, then the object was moved using @tel/silent.
-
-  object`kill    (objid of object killed, cost, wasslay)
-      Triggered when an object has been killed with 'kill' or 'slay' command. Note that if this is set, it overrides the default behavior of @halting the object, @teling it home and giving it an amount of money that was paid to kill them. So if you want to mimic old behavior, you need:
-      &OBJECT`KILL event handler=@halt %0 ; @tel %0=home ; give %0=mul(%1,fdiv(kill_bonus,100));
 
   object`rename  (objid, new name, old name)
       Triggered when any object is renamed.

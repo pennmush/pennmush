@@ -178,29 +178,29 @@ See also: @mail
 Help is available on the following topics:
 
   ACTION LISTS             ANCESTORS                ANONYMOUS ATTRIBUTES
-  ATTRIB-OWNERSHIP         ATTRIBUTES               BEING KILLED
-  BOOLEAN VALUES           CHAT                     CLIENTS
-  CONTROL                  COPYRIGHT                COSTS
-  CREDITS                  DBREFS                   DROP-TO
-  ENACTOR                  EVALUATION               EXECUTOR
-  EXITS                    FAILURE                  FLAGS
-  FUNCTIONS                GENDER                   GLOBALS                  
-  HERE                     HOMES                    INTERIORS                
-  LINKING                  LISTENING                LISTS                    
-  LOOPING                  MASTER ROOM              MATCHING
+  ATTRIB-OWNERSHIP         ATTRIBUTES               BOOLEAN VALUES
+  CHAT                     CLIENTS                  CONTROL
+  COPYRIGHT                COSTS                    CREDITS
+  DBREFS                   DROP-TO                  ENACTOR
+  EVALUATION               EXECUTOR                 EXITS
+  FAILURE                  FLAGS                    FUNCTIONS
+  GENDER                   GLOBALS                  HERE
+  HOMES                    INTERIORS                LINKING
+  LISTENING                LISTS                    LOOPING
+  MASTER ROOM              MATCHING                 ME
 
   Continued in 'help topics2'.
 & topics2
-  ME                       MONEY                    MUSHCODE
-  NON-STANDARD ATTRIBUTES  PARENTS                  POWERS
-  PUPPETS                  QUEUE                    REGEXPS
-  REGISTERS                SEMAPHORES               SETTING-ATTRIBUTES       
-  SPOOFING                 STACK                    STRINGS                  
-  SUBSTITUTIONS            SUCCESS                  SWITCHES                 
-  TYPES OF OBJECTS         USER-DEFINED COMMANDS    VERBS                    
-  WARNINGS                 WILDCARDS                ZONE MASTER ROOMS        
-  ZONE MASTERS             ZONES  
-  
+  MONEY                    MUSHCODE                 NON-STANDARD ATTRIBUTES
+  PARENTS                  POWERS                   PUPPETS
+  QUEUE                    REGEXPS                  REGISTERS
+  SEMAPHORES               SETTING-ATTRIBUTES       SPOOFING
+  STACK                    STRINGS                  SUBSTITUTIONS
+  SUCCESS                  SWITCHES                 TYPES OF OBJECTS
+  USER-DEFINED COMMANDS    VERBS                    WARNINGS
+  WILDCARDS                ZONE MASTER ROOMS        ZONE MASTERS
+  ZONES
+
 Type 'help <topic name>' for help.
 For a list of all topics, see 'help entries'.
 & ACTION LISTS
@@ -320,19 +320,18 @@ See also: @atrlock, @atrchown, ATTRIBUTES
   Attributes with (*) after them are special, cannot be set by players, and may only be visible to wizards or admin. For those attributes, there is no @-command, so you can just type 'help <attribute name>' for help. For all other attributes, type 'help @<attribute name>' for help.
 
 Standard Attributes: (see @list/attribs for the complete list)
-  AAHEAR        ACLONE        ACONNECT      ADEATH        ADESCRIBE
-  ADISCONNECT   ADROP         AEFAIL        AENTER        AFAILURE
-  AHEAR         ALEAVE        ALFAIL        AMHEAR        AMOVE
-  APAYMENT      ASUCCESS      AWAY          CHARGES       COST 
-  DEATH         DESCRIBE      DROP          EALIAS        EFAIL         
-  ENTER         FAILURE       FORWARDLIST   HAVEN         IDESCRIBE     
-  IDLE          LALIAS        LAST (*)      LASTIP (*)    LASTLOGOUT(*) 
-  LASTSITE (*)  LEAVE         LFAIL         LISTEN        MOVE          
-  ODEATH        ODESCRIBE     ODROP         OEFAIL        OENTER        
-  OFAILURE      OLEAVE        OLFAIL        OMOVE         OPAYMENT      
-  OSUCCESS      OXENTER       OXLEAVE       OXMOVE        PAYMENT       
-  QUEUE (*)     RQUOTA (*)    RUNOUT        SEX           STARTUP       
-  SUCCESS       TFPREFIX
+  AAHEAR        ACLONE        ACONNECT      ADESCRIBE     ADISCONNECT
+  ADROP         AEFAIL        AENTER        AFAILURE      AHEAR
+  ALEAVE        ALFAIL        AMHEAR        AMOVE         APAYMENT
+  ASUCCESS      AWAY          CHARGES       COST          DESCRIBE
+  DROP          EALIAS        EFAIL         ENTER         FAILURE
+  FORWARDLIST   HAVEN         IDESCRIBE     IDLE          LALIAS
+  LAST (*)      LASTIP (*)    LASTLOGOUT(*) LASTSITE (*)  LEAVE
+  LFAIL         LISTEN        MOVE          ODESCRIBE     ODROP
+  OEFAIL        OENTER        OFAILURE      OLEAVE        OLFAIL
+  OMOVE         OPAYMENT      OSUCCESS      OXENTER       OXLEAVE
+  OXMOVE        PAYMENT       QUEUE (*)     RQUOTA (*)    RUNOUT
+  SEX           STARTUP       SUCCESS       TFPREFIX
 
   Continued in 'help attributes2'.
 & ATTRIBUTES2
@@ -364,13 +363,6 @@ Standard Attributes: (see @list/attribs for the complete list)
   In addition to the standard attributes with pre-set effects, there are some special attributes that date from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
 
 See also: ATTRIB-OWNERSHIP, @set, examine, @atrchown, @atrlock, hasattr(), get(), v(), NON-STANDARD ATTRIBUTES, SETTING-ATTRIBUTES, ATTRIBUTE TREES
-& BEING KILLED
- 
-  Getting killed is no big deal. If you are killed, you return to your home, and all things you carry return to their homes. You also collect 50 pennies in insurance money (unless you have >= 10000 pennies or you were killed via the Wizard slay command). See 'MONEY'.  Generally, killing is not encouraged unless absolutely necessary.  It can be extremely rude and annoying.
-
-  Many MUSHes choose to disable the kill command.
-
-See also: kill, slay, @death
 & BOOLEAN VALUES
 
   A boolean variable, for those of you not familiar with programming, is a variable that is either true or false. Normally, a value of 1 is considered "true" and a value of 0 is considered "false". Many MUSH functions return either 1 if they are true or 0 if false. For example, the hasflag() function tests to see if an object has a certain flag set on it. If hasflag(<object>,<flag name>) is true (the object has the flag), it will return 1. If it is false, it will return 0.
@@ -453,7 +445,6 @@ See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 & COSTS
   Some things on the MUSH cost pennies. The default costs are shown below:
   
-          kill: 10 pennies (or more, up to 100 pennies)
           @dig: 10 pennies
           @create: 10 pennies (or more)
           @search: 100 pennies *

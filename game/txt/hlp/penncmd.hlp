@@ -2,13 +2,13 @@
 Help is available for the following MUSH commands:
  
   ahelp          anews          brief          DOING          drop
-  examine        enter          events         follow         get            
-  give           go             index          kill           leave          
-  LOGOUT         look           move           news           page           
-  pose           QUIT           read           rules          say
-  score          slay           teach          think          unfollow
-  use            whisper        WHO            with
-  "              :              ;              +              ]
+  examine        enter          events         follow         get
+  give           go             index          leave          LOGOUT
+  look           move           news           page           pose
+  QUIT           read           rules          say            score
+  teach          think          unfollow       use            whisper
+  WHO            with           "              :              ;
+  +              ]
  
   In addition to these, there are several types of '@' commands. @-commands are usually commands which have permanent effects on the MUSH (such as creating a new object). Here are the help topics on @-commands:
  
@@ -154,20 +154,6 @@ See also: @adisconnect, ACTION LISTS, EVENTS
   Sets the actions to be taken by <object> whenever it receives @mail. Admin-only, and is only triggered if enabled via the amail configuration option.
 
 See also: @mail
-& @death
-& @adeath
-& @odeath
-  @death <object>[=<message>]
-  @odeath <object>[=<message>]
-  @adeath <object>[=<action list>]
-  
-  These attributes contain the message shown to the killer, the message shown to others in the room, and the actions to be taken when <object> is killed.
-
-  Example:
-   > @death me=You have just slain Cyclonus!
-   > @odeath me=falls to the ground and vanishes.
-
-See also: kill, BEING KILLED, ACTION LISTS, VERBS
 & @adescribe
 & @odescribe
   @odescribe <object>[=<message>]
@@ -3328,14 +3314,6 @@ See also: MSSP-REQUEST
   Note that on some MUSHes it is possible to take things that are in someone else's inventory. To be safe, @lock any objects that you do not want to lose.
   
 See also: score, take, drop, OPAQUE, @lock, @invformat
-& kill
-  kill <player/thing> [=<cost>]
-
-  Attempts to kill the specified object. Killing costs <cost> pennies, which gives you a <cost>% chance of killing the player. Thus, spending 100 pennies always works (except against wizards, who can never be killed). If you don't specify a cost, the default is 10 (i.e. 10%).  The player, if killed, receives <cost>/2 pennies in insurance.
-
-  You can not kill a player in a room that they control unless you also control the room. Only wizards can kill players in rooms which have been set HAVEN.
-
-See also: BEING KILLED, HAVEN, FLAGS, powers list, slay
 & leave
   leave
 
@@ -3450,14 +3428,6 @@ See also: pose, whisper, @speechmod, @emit, page
   Displays how many pennies you have. Helpful to see if any machines are looping. If they are, your pennies will be being rapidly drained. MUSH money may also be used for other purposes in the game.
   
 See also: LOOPING, @ps, QUEUE, MONEY, TRACK_MONEY
-& slay
-  slay <player/thing>
-
-  This is a Wizard-only command that kills objects without paying any insurance to the victims. It is used in places where 'suicide' should not pay.
-  
-  (Su-ic-ide is pain-less... {MASH theme})
-
-See also: kill
 & think
   think <message>
 

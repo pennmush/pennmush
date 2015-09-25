@@ -41,6 +41,7 @@ Functions:
    semipose; speakpenn() is now an exact alias. [1034-MG]
 
 Commands:
+ * The 'kill' and 'slay' commands have been removed. [1033-TK]
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * @logwipe can do more than just erasing a log file. [SW]
  * @hooks now have a number of named registers (available through 
@@ -49,6 +50,7 @@ Commands:
  * help/search <pattern> lets you search within helpfiles. [MG] [Rhost]
 
 Minor changes:
+ * The 'HAVEN' flag can now only be set on players. [1033-TK]
  * Added a few more date formats to getdate.template for convtime(). Suggested
    by Volund and Mercutio. [1020-MG]
  * Most PennMUSH helpfiles are no longer hard-wrapped at 78 characters; noone 

@@ -233,13 +233,11 @@ See also: @destroy, @undestroy
 
 See also: @halt, @restart, HALT POWER
 & HAVEN
-  Flag:  HAVEN  (players, rooms)
+  Flag:  HAVEN  (players)
 
   If a player is set HAVEN, she cannot be paged and anyone paging them will be sent a brief notification. You can also set a longer @HAVEN message if you wish. You may prefer to use @lock/page to block out only specific individuals.
 
-  If a room is set HAVEN, the 'kill' command cannot be used in that room.
-
-See also: @haven, kill
+See also: @haven
 & HEAR_CONNECT
   Flag:  HEAR_CONNECT  (players)
   
@@ -338,7 +336,7 @@ See also: DBREF, TERSE
 & MISTRUST
   Flag:  MISTRUST  (things, rooms, exits)
   
-  The MISTRUST flag prevents an object from controlling another object via Control @locks, Zone @locks on ZMOs or SHARED players, or from controlling other objects with the same owner. It also prevents the object from inheriting the no_pay, unkillable and no_quota powers from its owner.
+  The MISTRUST flag prevents an object from controlling another object via Control @locks, Zone @locks on ZMOs or SHARED players, or from controlling other objects with the same owner. It also prevents the object from inheriting the no_pay and no_quota powers from its owner.
   
   This flag can be used when you with a single player to retain ownership of objects that other players will control or run arbitrary code on, and don't want those objects to be able ot affect your other objects.
   
@@ -469,7 +467,7 @@ See also: home, @teleport, DROP-TOS
 & SUSPECT
   Flag:  SUSPECT  (all types)
 
-  This flag is only settable by wizards. Players with this flag have their connects, disconnects, name changes, and kills reported to all connected wizards. Actions by any object with this flag are also logged to the MUSH log files.
+  This flag is only settable by wizards. Players with this flag have their connects, disconnects, and name changes reported to all connected wizards. Actions by any object with this flag are also logged to the MUSH log files.
 & TERSE
   Flag:  TERSE  (players, things)
 
@@ -607,7 +605,6 @@ See also: MONITOR, LISTENING
   sql_ok                Can perform SQL queries
   tport_anything        Can @teleport anything.
   tport_anywhere        Can @teleport to anywhere.
-  unkillable *          Cannot be killed
   can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
   can_dark              Can @set themselves dark
   
@@ -767,11 +764,6 @@ See also: @sql, sql(), @mapsql, mapsql(), sqlescape()
   Tport_Anywhere allows an object to teleporting anything it is allowed to teleport to any location.
   
 See also: HEAVY, @teleport, NO_TEL, Z_TEL
-& UNKILLABLE POWER
-
-  Objects with the Unkillable power cannot be "kill"ed by a non-wizard. If a player has this power and is not set MISTRUST, his objects have the power implicitly.
-  
-See also: kill, slay, MISTRUST
 & CAN_SPOOF POWER
 
   The Can_Spoof power lets you use the @ns*emit commands and ns*emit() functions, which show messages without nospoof information. It also lets you use the /spoof switch to various @*emit commands, which shows nospoof information as the enactor rather than the executor. Wizards have this power implicitly.

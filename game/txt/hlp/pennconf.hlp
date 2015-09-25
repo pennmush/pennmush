@@ -79,9 +79,6 @@ Continued in help @config cosmetic2
   queue_cost=<number>: How many pennies it costs to queue a command. Refunded when the command executes.
   quota_cost=<number>: How much @quota goes down by for each object.
   find_cost=<number>: How many pennies it costs to use @search, @find, @entrances, and their function versions.
-  kill_default_cost=<number>: Default cost for kill.
-  kill_min_cost=<number>: Smallest amount of pennies for kill.
-  kill_bonus=<number>: What percent of the pennies spent for a successful kill go to the victim.
 & @config db
  These are database options.
 

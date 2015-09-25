@@ -171,6 +171,8 @@ void flag_stats(dbref);
 bool can_see_connected(dbref player, dbref target);
 bool can_see_flag_on(dbref player, dbref thing, const FLAG *flagp);
 
+void set_flag_type_by_name(const char *ns, const char *name, privbits type);
+
 /*---------------------------------------------------------------------
  * Object types (no longer part of the flags)
  */
@@ -242,7 +244,7 @@ bool can_see_flag_on(dbref player, dbref thing, const FLAG *flagp);
 #define IS_GUEST        0x800000        /* Guest, restrict access */
 #define CAN_WALL        0x1000000       /* @wall */
 #define CEMIT           0x2000000       /* Was: Can @cemit */
-#define UNKILLABLE      0x4000000       /* Cannot be killed */
+#define UNKILLABLE      0x4000000       /* Was: Cannot be killed */
 #define PEMIT_ALL       0x8000000       /* Can @pemit to HAVEN players */
 #define NO_QUOTA        0x10000000      /* Has no quota restrictions */
 #define LINK_ANYWHERE   0x20000000      /* Can @link an exit to any room */

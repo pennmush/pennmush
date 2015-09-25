@@ -386,17 +386,6 @@ max_attrs_per_obj 2048
 # mailspammers.
 mail_limit 300
 
-# If you kill someone, you can spend up to 100 coins; the chance
-# of killing them is the number of coins you spend. What's the
-# minimum number of coins that must be spent, and the default
-# number if no number is given?
-kill_min_cost 10
-kill_default_cost 10
-
-# If you kill someone, they get paid off. The payoff is this
-# percentage of the amount you spent to kill them. The usual is 50%.
-kill_bonus 50
-
 # How much @search costs
 find_cost 100
 

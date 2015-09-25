@@ -1833,11 +1833,6 @@ COMMAND(cmd_inventory)
   do_inventory(executor);
 }
 
-COMMAND(cmd_kill)
-{
-  do_kill(executor, arg_left, atol(arg_right), 0);
-}
-
 COMMAND(cmd_look)
 {
   int key = LOOK_NORMAL;
@@ -1881,11 +1876,6 @@ COMMAND(cmd_score)
 COMMAND(cmd_semipose)
 {
   do_pose(executor, arg_left, 1, queue_entry->pe_info);
-}
-
-COMMAND(cmd_slay)
-{
-  do_kill(executor, arg_left, 0, 1);
 }
 
 COMMAND(cmd_think)

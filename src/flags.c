@@ -2626,8 +2626,19 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
       }
     }
   }
-  f->type = type;
+  set_flag_type_by_name(ns, name, type);
   notify_format(player, T("Type of %s %s set."), f->name, strlower(ns));
+}
+
+/** Given a namespace name and a flag name and a typestring, set a flag's type.
+ */
+void
+set_flag_type_by_name(const char *ns, const char *name, privbits type) {
+  FLAGSPACE *n;
+  FLAG *f;
+  Flagspace_Lookup(n, ns);
+  f = flag_hash_lookup(n, name, NOTYPE);
+  f->type = type;
 }
 
 /** Add a new flag

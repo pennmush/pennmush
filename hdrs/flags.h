@@ -171,6 +171,8 @@ void flag_stats(dbref);
 bool can_see_connected(dbref player, dbref target);
 bool can_see_flag_on(dbref player, dbref thing, const FLAG *flagp);
 
+void set_flag_type_by_name(const char *ns, const char *name, privbits type);
+
 /*---------------------------------------------------------------------
  * Object types (no longer part of the flags)
  */

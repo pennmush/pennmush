@@ -165,8 +165,9 @@ bool unfindable(dbref);
  *  1 - First version with new db flags. Cmds and attrs are stored in the db
  *  2 - Added MONIKER attr
  *  3 - All previously-obsoleted AF_* attribute flag #defines are recycled
+ *  4 - HAVEN flag moved from PLAYER | ROOM to PLAYER
  */
-#define NDBF_VERSION 3
+#define NDBF_VERSION 4
 
 /* Reboot DB flag macros - these should be defined whether or not the
  * corresponding system option is defined

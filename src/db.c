@@ -1526,6 +1526,12 @@ db_read_oldstyle(PENNFILE *f)
           set_flag_internal(i, "HEAR_CONNECT");
         }
       }
+
+      if (IsRoom(i) && has_flag_by_name(i, "HAVEN", TYPE_ROOM)) {
+        /* HAVEN flag is no longer settable on rooms. */
+        clear_flag_internal(i, "HAVEN");
+      }
+
       break;
 
     case '*':
@@ -1537,6 +1543,8 @@ db_read_oldstyle(PENNFILE *f)
           do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
           return -1;
         } else {
+          /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER | ROOM. */
+          set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
           do_rawlog(LT_ERR, "READING: done");
           loading_db = 0;
           fix_free_list();
@@ -1806,6 +1814,11 @@ db_read(PENNFILE *f)
             set_flag_internal(i, "HEAR_CONNECT");
           }
         }
+
+        if (globals.new_indb_version < 4 && IsRoom(i) && has_flag_by_name(i, "HAVEN", TYPE_ROOM)) {
+          /* HAVEN flag is no longer settable on rooms. */
+          clear_flag_internal(i, "HAVEN");
+        }
       }
       break;
     case '*':
@@ -1817,6 +1830,10 @@ db_read(PENNFILE *f)
           do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
           return -1;
         } else {
+          if(globals.new_indb_version < 4) {
+            /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER | ROOM. */
+            set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
+          }
           do_rawlog(LT_ERR, "READING: done");
           loading_db = 0;
           fix_free_list();

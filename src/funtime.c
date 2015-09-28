@@ -46,9 +46,7 @@ FUNCTION(fun_timefmt)
     return;                     /* No field? Bad user. */
 
   if (nargs >= 2 && args[1] && *args[1]) {
-    /* This is silly, but time_t is signed on several platforms,
-     * so we can't assign an unsigned int to it safely
-     */
+
     if (!is_integer(args[1])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -58,10 +56,15 @@ FUNCTION(fun_timefmt)
       safe_str(T(e_range), buff, bp);
       return;
     }
+#ifndef HAVE_GETDATE
+    /* This is silly, but time_t is signed on several platforms,
+     * so we can't assign an unsigned int to it safely
+     */
     if (tt < 0) {
       safe_str(T(e_uint), buff, bp);
       return;
     }
+#endif
   } else
     tt = mudtime;
 

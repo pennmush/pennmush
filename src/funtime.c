@@ -716,10 +716,12 @@ FUNCTION(fun_isdaylight)
       safe_str(T(e_range), buff, bp);
       return;
     }
+#ifndef HAVE_GETDATE
     if (when < 0) {
       safe_str(T(e_uint), buff, bp);
       return;
     }
+#endif
   }
 
   if (nargs == 2) {

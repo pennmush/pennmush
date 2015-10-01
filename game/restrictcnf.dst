@@ -72,9 +72,6 @@ restrict_command home nofixed " You can't do that IC!
 #restrict_function map noguest
 #restrict_function fold noguest
 
-# Don't allow kill (slay still works)
-#restrict_command kill nobody
-
 # Uncomment to allow only admin or @powered builders to build
 #restrict_command @open admin builder " You need the builder power to do that.
 #restrict_command @dig admin builder " You need the builder power to do that.

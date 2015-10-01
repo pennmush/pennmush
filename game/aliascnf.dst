@@ -86,13 +86,6 @@ function_alias atrlock attrlock
 # For rhost compatibility
 function_alias textfile dynhelp
 
-# And so can attributes!
-attribute_alias describe desc
-attribute_alias idescribe idesc
-attribute_alias success succ
-attribute_alias osuccess osucc
-attribute_alias asuccess asucc
-attribute_alias failure fail
-attribute_alias ofailure ofail
-attribute_alias afailure afail
+# But there's no point in aliasing attributes here, because they're stored
+# in the db now.
 

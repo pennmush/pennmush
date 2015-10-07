@@ -219,10 +219,11 @@ FUNCTION(fun_ansi)
 }
 
 enum color_styles {
-  COL_HEX = 1,
-  COL_16 = 2,
-  COL_256 = 3,
-  COL_NAME = 4
+  CS_HEX = 1,
+  CS_16 = 2,
+  CS_256 = 3,
+  CS_NAME = 4,
+  CS_AUTO = 5
 };
 
 /* ARGSUSED */
@@ -247,7 +248,7 @@ FUNCTION(fun_colors)
     char *color;
     char *curr, *list;
     int i;
-    enum color_styles cs = COL_HEX;
+    enum color_styles cs = CS_HEX;
     bool ansi_styles = 0;
 
     if (define_ansi_data(&ad, args[0])) {
@@ -266,14 +267,16 @@ FUNCTION(fun_colors)
       if (!*curr)
         continue;
       if (!strcmp("hex", curr))
-        cs = COL_HEX;
+        cs = CS_HEX;
       else if (!strcmp("16color", curr))
-        cs = COL_16;
+        cs = CS_16;
       else if (!strcmp("256color", curr)
                || !strcmp("xterm256", curr))
-        cs = COL_256;
+        cs = CS_256;
       else if (!strcmp("name", curr))
-        cs = COL_NAME;
+        cs = CS_NAME;
+      else if (!strcmp("auto", curr))
+        cs = CS_AUTO;
       else if (!strcmp("styles", curr))
         ansi_styles = 1;
       else {
@@ -301,16 +304,22 @@ FUNCTION(fun_colors)
       color = (i ? ad.bg : ad.fg);
       if (!*color)
         continue;
-      if (i && cs != COL_16)
+      if (i && cs != CS_16)
         safe_chr('/', buff, bp);
 
       switch (cs) {
-      case COL_HEX:
+      case CS_AUTO:
+        if (!i && color[1] == '\0' && (ad.bits & CBIT_HILITE))
+          safe_chr('h', buff, bp);
+        safe_str(color, buff, bp);
+        break;
+      case CS_HEX:
         safe_format(buff, bp, "#%06x",
                     color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
-      case COL_16:
+      case CS_16:
         j = ansi_map_16(color, i, &hilite);
+
         if (j)
           safe_chr(colormap_16[j - (i ? 40 : 30)].desc - (i ? 32 : 0), buff,
                    bp);
@@ -319,11 +328,11 @@ FUNCTION(fun_colors)
         if (!i && (hilite || (ad.bits & CBIT_HILITE)))
           safe_chr('h', buff, bp);
         break;
-      case COL_256:
+      case CS_256:
         safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0),
                      buff, bp);
         break;
-      case COL_NAME:
+      case CS_NAME:
         {
           uint32_t hex;
           struct rgb_namelist *names;

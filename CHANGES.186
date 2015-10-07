@@ -46,6 +46,8 @@ Functions:
    semipose; speakpenn() is now an exact alias. [1034-MG]
  * timefmt() and isdaylight() can now take a negative number of seconds for 
    times prior to 1970 when Extended Convtime is available. [MG]
+ * colors(...,auto) returns colors in the same style as their input. Suggested
+   by Kimiko. [MG]
 
 Commands:
  * The 'kill' and 'slay' commands have been removed. [1033-TK]

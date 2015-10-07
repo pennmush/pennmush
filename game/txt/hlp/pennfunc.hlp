@@ -803,13 +803,14 @@ See also: Connection Functions
    xterm256: return the number of the xterm color closest to the given <color>.
    16color:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
    name:     return a list of names of all the colors exactly matching the given colors, or '#-1 NO MATCHING COLOR NAME' if there is no exact match with a named color.
+   auto:     returns the colors in the same format(s) they were given in.
 
   It can be used for working out how certain colors will downgrade to people using clients which aren't fully color-capable.
 
   <format> can also include the word "styles", in which case all ANSI styling options (f, u, i and h) present in <colors> are included in the output.
   
   See 'help colors2' for examples.
-See also: ansi(), colorstyle
+See also: ansi(), valid(), colorstyle
 & colors2
 
   Examples:
@@ -833,6 +834,9 @@ See also: ansi(), colorstyle
     
     > think colors(iuB+red, hex styles)
     ui#ff0000/#0000ee
+	
+	> think colors(+blue huyG/+black, auto)
+	hy/+black
 
 & COMP()
   comp(<value1>, <value2>[, <type>])

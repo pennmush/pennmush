@@ -304,14 +304,20 @@ FUNCTION(fun_colors)
       color = (i ? ad.bg : ad.fg);
       if (!*color)
         continue;
-      if (i && cs != CS_16)
+      if (i && (cs != CS_16 && cs != CS_AUTO))
         safe_chr('/', buff, bp);
 
       switch (cs) {
       case CS_AUTO:
-        if (!i && color[1] == '\0' && (ad.bits & CBIT_HILITE))
-          safe_chr('h', buff, bp);
+        if (i && ad.fg[0]) {
+          if (ad.fg[1] && !color[1])
+            safe_chr(' ', buff, bp);
+          else if (color[1])
+            safe_chr('/', buff, bp);
+        }
         safe_str(color, buff, bp);
+        if (!i && !color[1] && (ad.bits & CBIT_HILITE))
+          safe_chr('h', buff, bp);
         break;
       case CS_HEX:
         safe_format(buff, bp, "#%06x",

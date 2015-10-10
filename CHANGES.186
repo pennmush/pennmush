@@ -65,6 +65,8 @@ Minor changes:
  * Most PennMUSH helpfiles are no longer hard-wrapped at 78 characters; noone 
    connects from clients that can't wrap any more. [1030-MG]
  * Other minor help fixes. [MG]
+ * Attempting to run an empty SQL query via any command/function now gives a
+   better error/return value. Reported by Qon. [MG]
    
 Hardcode:
  * Clean up some more remnants of the previous configure package's

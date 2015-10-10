@@ -393,6 +393,11 @@ COMMAND(cmd_mapsql)
   int spoof = SW_ISSET(sw, SWITCH_SPOOF);
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
 
+  if (!arg_right || !*arg_right) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+
   /* Find and fetch the attribute, first. */
   strncpy(tbuf, arg_left, BUFFER_LEN);
 
@@ -594,6 +599,11 @@ COMMAND(cmd_sql)
     return;
   }
 
+  if (!arg_left || !*arg_left) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+
   qres = sql_query(arg_left, &affected_rows);
 
   if (!qres) {
@@ -730,6 +740,9 @@ FUNCTION(fun_mapsql)
     safe_str(T(e_perm), buff, bp);
     return;
   }
+
+  if (!args[0] || !*args[0])
+    return;
 
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
@@ -909,6 +922,9 @@ FUNCTION(fun_sql)
     safe_str(T(e_perm), buff, bp);
     return;
   }
+
+  if (!args[0] || !*args[0])
+    return;
 
   if (nargs >= 2) {
     /* we have a row separator in args[1]. */

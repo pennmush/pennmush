@@ -48,6 +48,7 @@ Functions:
    times prior to 1970 when Extended Convtime is available. [MG]
  * colors(...,auto) returns colors in the same style as their input. Suggested
    by Kimiko. [MG]
+ * rjust(str,X,,1) truncated the end of the string, instead of the start. [MG]
 
 Commands:
  * The 'kill' and 'slay' commands have been removed. [1033-TK]

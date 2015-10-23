@@ -969,7 +969,7 @@ FUNCTION(fun_rjust)
         safe_ansi_string(as, as->len - spaces, as->len, buff, bp);
         free_ansi_string(as);
       } else {
-        safe_strl(args[0], spaces, buff, bp);
+        safe_strl(args[0] + (len-spaces), spaces, buff, bp);
       }
     } else {
       safe_strl(args[0], arglens[0], buff, bp);

@@ -3428,7 +3428,7 @@ See also: left(), mid()
     > say rjust(foo,12,=-)
     You say, "=-=-=-=-=foo"
 
-    > say ljust(This is too long, 9)
+    > say rjust(This is too long,9,,1)
     You say, " too long"
 
 See also: align(), center(), ljust(), right()

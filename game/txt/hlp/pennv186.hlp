@@ -13,9 +13,7 @@ be read in 'help patchlevels'.
 
 Version 1.8.6 patchlevel 0                                 ?? ??, 201?
 
-NOTE: When updating from an earlier version of PennMUSH, you'll need to run
- 'make update' and './config.status' in the toplevel PennMUSH directory prior
- to running 'make'.
+NOTE: When updating from an earlier version of PennMUSH, you'll need to run 'make update' and './config.status' in the toplevel PennMUSH directory prior to running 'make'.
 
 Major changes:
  * Hosted on Github. Thanks, Google. [DC]
@@ -23,62 +21,45 @@ Major changes:
 Functions:
  * element() is now an alias for match(). Suggested by Wiggles. [985-TK]
  * Added json(), for creating valid JSON-encoded data. [MG]
- * Added oob(), for sending out-of-band messages via the General MUD 
-   Communication Protocol (GMCP) telnet option. Requested by Qon. [MG]
+ * Added oob(), for sending out-of-band messages via the General MUD Communication Protocol (GMCP) telnet option. Requested by Qon. [MG]
  * registers() only listed registers whose values were strings, not ints. [MG]
- * filter() and filterbool() can now be passed additional arguments, for
-   Rhost compatability. Requested by Volund. [1019-MG] [Rhost]
- * valid() can now validate timezones, locktypes and lockkeys. Suggested by 
-   Volund. [1021,1025-MG]
- * convtime() now returns #-1, instead of -1, on error. This change is
-   -backwards incompatible-, but necessary as -1 is a potentially valid output
-   for convtime(). Suggested by KimikoMuffin. [1010-MG]
- * convsecs() can now accept negative inputs when Extended convtime() is
-   available. Suggested by Volund. [1010-MG]
+ * filter() and filterbool() can now be passed additional arguments, for Rhost compatability. Requested by Volund. [1019-MG] [Rhost]
+ * valid() can now validate timezones, locktypes and lockkeys. Suggested by Volund. [1021,1025-MG]
+ * convtime() now returns #-1, instead of -1, on error. This change is -backwards incompatible-, but necessary as -1 is a potentially valid output for convtime(). Suggested by KimikoMuffin. [1010-MG]
+ * convsecs() can now accept negative inputs when Extended convtime() is available. Suggested by Volund. [1010-MG]
  * avg() is now an alias for mean(). [1023-TK] [Rhost]
  * textsearch() allows searching the contents of helpfiles. [MG]
- * speak() no longer has the odd TinyMUSH behaviour of ': foo' being a
-   semipose; speakpenn() is now an exact alias. [1034-MG]
- * timefmt() and isdaylight() can now take a negative number of seconds for 
-   times prior to 1970 when Extended Convtime is available. [MG]
- * colors(...,auto) returns colors in the same style as their input. Suggested
-   by Kimiko. [MG]
+ * speak() no longer has the odd TinyMUSH behaviour of ': foo' being a semipose; speakpenn() is now an exact alias. [1034-MG]
+ * timefmt() and isdaylight() can now take a negative number of seconds for times prior to 1970 when Extended Convtime is available. [MG]
+ * colors(...,auto) returns colors in the same style as their input. Suggested by Kimiko. [MG]
  * rjust(str,X,,1) truncated the end of the string, instead of the start. [MG]
+ * Minor json() bug and documentation fixes. [MG]
 
 Commands:
  * The 'kill' and 'slay' commands have been removed. [1033-TK]
  * Remove ancient @channel foo=on behavior. Reported by Paige. [870-TK]
  * @logwipe can do more than just erasing a log file. [SW]
- * @hooks now have a number of named registers (available through 
-   r(<name>,args)) with each of the hooked command's arguments. [MG]
+ * @hooks now have a number of named registers (available through r(<name>,args)) with each of the hooked command's arguments. [MG]
  * Added @if and @skip. [MG] [Rhost] [MUX]
  * help/search <pattern> lets you search within helpfiles. [MG] [Rhost]
 
 Minor changes:
  * The 'HAVEN' flag can now only be set on players. [1033-TK]
- * Added a few more date formats to getdate.template for convtime(). Suggested
-   by Volund and Mercutio. [1020-MG]
- * Most PennMUSH helpfiles are no longer hard-wrapped at 78 characters; noone 
-   connects from clients that can't wrap any more. [1030-MG]
+ * Added a few more date formats to getdate.template for convtime(). Suggested by Volund and Mercutio. [1020-MG]
+ * Most PennMUSH helpfiles are no longer hard-wrapped at 78 characters; noone connects from clients that can't wrap any more. [1030-MG]
  * Other minor help fixes. [MG]
- * Attempting to run an empty SQL query via any command/function now gives a
-   better error/return value. Reported by Qon. [MG]
+ * Attempting to run an empty SQL query via any command/function now gives a better error/return value. Reported by Qon. [MG]
+ * Added some tests for json(), and more tests for ljust()/rjust(). [MG]
    
 Hardcode:
- * Clean up some more remnants of the previous configure package's
-   naming convention in favor of autoconf style ones. [SW]
+ * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]
  * OpenBSD compilation fixes. [SW]
- * Support authorization of ssl_slave forwarded connections on NetBSD,
-   OpenBSD. [SW]
- * Remove old FAM-based file monitoring code, due to bitrot and FAM's last
-   release being 2003. [SW]
+ * Support authorization of ssl_slave forwarded connections on NetBSD, OpenBSD. [SW]
+ * Remove old FAM-based file monitoring code, due to bitrot and FAM's last release being 2003. [SW]
  * Add git revision, if present, to @version & version(). [994-TK]
- * Log files that grow over a user-specified size can now be rotated or
-   trimmed down. [SW]
+ * Log files that grow over a user-specified size can now be rotated or trimmed down. [SW]
  * game/restart is now auto-generated during 'make update'. [928-TK]
  * Fixed a memory leak in @switch. [MG]
  * A bug in @lock allowed invalid lock names to be used. [MG]
- * Added support for the General MUD Communication Protocol (GMCP). See
-   http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
- * Choosing what scheme is used in compressing attribute text in-game is now 
-   a run-time option set in mush.cnf, not options.h [SW]
+ * Added support for the General MUD Communication Protocol (GMCP). See http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
+ * Choosing what scheme is used in compressing attribute text in-game is now a run-time option set in mush.cnf, not options.h [SW]

@@ -617,7 +617,7 @@ FUNTAB flist[] = {
   {"WILDGREP", fun_grep, 3, 3, FN_REG},
   {"WILDGREPI", fun_grep, 3, 3, FN_REG},
   {"WIPE", fun_wipe, 1, 1, FN_REG},
-  {"WORDPOS", fun_wordpos, 2, 3, FN_REG},
+  {"WORDPOS", fun_wordpos, 2, 3, FN_REG | FN_STRIPANSI},
   {"WORDS", fun_words, 1, 2, FN_REG | FN_STRIPANSI},
   {"WRAP", fun_wrap, 2, 4, FN_REG},
   {"XATTR", fun_lattr, 3, 4, FN_REG | FN_STRIPANSI},

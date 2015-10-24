@@ -1171,17 +1171,32 @@ split_token(char **sp, char sep)
     *sp = NULL;
     return NULL;
   }
-  while (*str && (*str != sep))
+  while (*str) {
+    if (*str == sep) {
+      break;
+    }
+    switch (*str) {
+    case TAG_START:
+      while (*str && *str != TAG_END)
+        str++;
+      break;
+    case ESC_CHAR:
+      while (*str && *str != 'm')
+        str++;
+      break;
+    }
     str++;
-  if (*str) {
+  }
+  if (!*str) {
+    str = NULL;
+  } else {
     *str++ = '\0';
     if (sep == ' ') {
       while (*str == sep)
         str++;
     }
-  } else {
-    str = NULL;
   }
+
   *sp = str;
   return save;
 }

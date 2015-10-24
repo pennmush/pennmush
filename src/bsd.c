@@ -3196,7 +3196,7 @@ FUNCTION(fun_json)
   
   switch (type) {
     case JSON_NULL:
-      if (nargs == 2 && !strcmp(args[1], json_vals[2]))
+      if (nargs == 2 && strcmp(args[1], json_vals[2]))
         safe_str("#-1", buff, bp);
       else
         safe_str(json_vals[2], buff, bp);

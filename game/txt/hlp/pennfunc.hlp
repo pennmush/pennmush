@@ -4463,7 +4463,7 @@ See also: json()
   string          one arg, any string, including an empty string
   number          one arg, a valid number
   array           zero or more args, each themselves valid JSON
-  object          zero or more pairs of arguments, the first a valid JSON string, the second valid JSON of any type
+  object          zero or more pairs of arguments, the first a plain string (NOT a quoted JSON string), the second valid JSON of any type
 
   When <type> is "array" or "object", it's recommended that subsequent JSON arguments are created with nested calls to JSON().
 

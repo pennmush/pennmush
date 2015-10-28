@@ -4034,7 +4034,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
     return;
   }
   u = onchannel(player, chan);
-  if (!u && !Chan_Can_Join(chan, player)) {
+  if (!u && (Guest(player) || !Chan_Can_Join(chan, player))) {
     notify(player,
            T("CHAT: You must be able to join a channel to recall from it."));
     return;

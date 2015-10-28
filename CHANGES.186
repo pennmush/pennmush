@@ -54,6 +54,7 @@ Minor changes:
  * Attempting to run an empty SQL query via any command/function now gives a better error/return value. Reported by Qon. [MG]
  * Added some tests for json(), and more tests for ljust()/rjust(). [MG]
  * Guests can no longer @channel/recall channels they aren't on. [MG]
+ * The hardcode no longer strictly enforces permissions for @wall, @rwall or @wizwall; anyone who can passes the normal command restriction can now use them. [MG]
    
 Hardcode:
  * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]

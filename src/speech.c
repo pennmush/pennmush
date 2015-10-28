@@ -649,15 +649,6 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
   const char *mask;
   int pose = 0;
 
-  /* Only @wall is available to those with the announce power.
-   * Only @rwall is available to royalty.
-   */
-  if (!(Wizard(player) ||
-        ((target == WALL_ALL) && Can_Announce(player)) ||
-        ((target == WALL_RW) && Royalty(player)))) {
-    notify(player, T("Posing as a wizard could be hazardous to your health."));
-    return;
-  }
   /* put together the message and figure out what type it is */
   if (!emit) {
     gap = " ";

@@ -134,6 +134,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     if (fseek(fp, entry->pos, 0) < 0L) {
       notify(executor, T("Sorry, that command is temporarily unavailable."));
       do_rawlog(LT_ERR, "Seek error in file %s", h->file);
+      fclose(fp);
       return NULL;
     }
     strcpy(topic, strupper(entry->topic + (*entry->topic == '&')));
@@ -491,6 +492,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
   if (fseek(fp, entry->pos, 0) < 0L) {
     notify(player, T("Sorry, that function is temporarily unavailable."));
     do_rawlog(LT_ERR, "Seek error in file %s", help_dat->file);
+    fclose(fp);
     return;
   }
   strcpy(the_topic, strupper(entry->topic + (*entry->topic == '&')));
@@ -844,6 +846,7 @@ string_spitfile(help_file *help_dat, char *arg1)
     return T("#-1 UNAVAILABLE");
   }
   if (fseek(fp, entry->pos, 0) < 0L) {
+    fclose(fp);
     return T("#-1 UNAVAILABLE");
   }
   bp = buff;

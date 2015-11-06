@@ -68,3 +68,4 @@ Hardcode:
  * A bug in @lock allowed invalid lock names to be used. [MG]
  * Added support for the General MUD Communication Protocol (GMCP). See http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
  * Choosing what scheme is used in compressing attribute text in-game is now a run-time option set in mush.cnf, not options.h [SW]
+ * Minor fixes and resource cleanups reported by Qon. [MG]

@@ -3337,7 +3337,7 @@ static int
 handle_telnet(DESC *d, char **q, char *qend)
 {
   char *p;
-  char opt = '\0';
+  unsigned char opt = '\0';
   bool got_iac = 0;
   static char telnet_buff[BUFFER_LEN];
   char *tbp = telnet_buff;

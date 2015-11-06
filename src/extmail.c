@@ -2233,9 +2233,8 @@ FUNCTION(fun_mailstats)
 
   /* find player */
   if (*args[0] == '\0') {
-    if Wizard
-      (executor)
-        target = AMBIGUOUS;
+    if (Wizard(executor))
+      target = AMBIGUOUS;
     else
       target = executor;
   } else {

@@ -334,13 +334,15 @@ copy_file(FILE *f, const char *newname, bool reset) {
     char buf[BUFSIZ];
     size_t len;
     if (reset) {
-      if (fseek(f, 0, SEEK_SET) < 0)
-	return -1;
+      if (fseek(f, 0, SEEK_SET) < 0) {
+        fclose(copy);
+        return -1;
+      }
     }
     while ((len = fread(buf, 1, BUFSIZ, f)) > 0) {
       if (fwrite(buf, 1, len, copy) != len) {
-	fclose(copy);
-	return -1;
+        fclose(copy);
+        return -1;
       }
     }
     fclose(copy);

@@ -236,7 +236,7 @@ unparse_uinteger(uintmax_t num)
   static char str[128];
 #ifndef PRIuMAX
   /* Probably not right */
-#define PRIuMAX "lld"
+#define PRIuMAX "llu"
 #endif
   sprintf(str, "%" PRIuMAX, num);
   return str;

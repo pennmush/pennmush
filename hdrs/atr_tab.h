@@ -266,4 +266,16 @@ ATTR attr[] = {
   {NULL, 0, NULL_CHUNK_REFERENCE, 0, NULL}
 };
 
+ATRALIAS attralias[] = {
+  {"DESC", "DESCRIBE"},
+  {"IDESC", "IDESCRIBE"},
+  {"SUCC", "SUCCESS"},
+  {"ASUCC", "ASUCCESS"},
+  {"OSUCC", "OSUCCESS"},
+  {"FAIL", "FAILURE"},
+  {"AFAIL", "AFAILURE"},
+  {"OFAIL", "OFAILURE"},
+  {NULL, NULL}
+};
+
 #endif                          /* __ATR_TAB_H */

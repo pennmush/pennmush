@@ -24,6 +24,13 @@ struct attr {
   ATTR *next;                   /**< Pointer to next attribute in list */
 };
 
+/** An alias for an attribute.
+ */
+typedef struct atr_alias {
+  const char *alias;            /**< The alias. */
+  const char *realname;         /**< The attribute's canonical name. */
+} ATRALIAS;
+
 
 /* Stuff that's actually in atr_tab.c */
 ATTR *aname_hash_lookup(const char *name);

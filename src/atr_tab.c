@@ -27,13 +27,6 @@
 
 extern const unsigned char *tables;
 
-/** An alias for an attribute.
- */
-typedef struct atr_alias {
-  const char *alias;            /**< The alias. */
-  const char *realname;         /**< The attribute's canonical name. */
-} ATRALIAS;
-
 /** Prefix table for standard attribute names */
 PTAB ptab_attrib;
 
@@ -170,12 +163,17 @@ void
 init_aname_table(void)
 {
   ATTR *ap;
+  ATRALIAS *aap;
 
   ptab_init(&ptab_attrib);
   ptab_start_inserts(&ptab_attrib);
   for (ap = attr; ap->name; ap++)
     ptab_insert(&ptab_attrib, ap->name, ap);
   ptab_end_inserts(&ptab_attrib);
+  
+  for (aap = attralias; aap->alias; aap++) {
+    alias_attribute(aap->realname, aap->alias);
+  }
 }
 
 /** Free all memory used by a standard attribute, and remove it from the hash

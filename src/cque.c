@@ -372,6 +372,7 @@ new_queue_entry(NEW_PE_INFO *pe_info)
 /** If handler is a valid object, pass this event to it. See: queue_event() wrapper in externs.h
  * \param handler The event handler object to pass the event to.
  * \param enactor The enactor who caused it.
+ * \param priotity If set to -1, put event at the head of the queue, otherwise at the back.
  * \param event The event. No spaces, only alphanumerics and dashes.
  * \param fmt A comma-deliminated string defining printf-style args.
  * \param ... The args passed to argstring.
@@ -379,7 +380,7 @@ new_queue_entry(NEW_PE_INFO *pe_info)
  * \retval 0 No event handler or no attribute for the given event.
  */
 bool
-queue_event_internal(dbref handler, dbref enactor, const char *event, const char *fmt, ...)
+queue_event_internal(dbref handler, dbref enactor, int priority, const char *event, const char *fmt, ...)
 {
   char myfmt[BUFFER_LEN];
   char buff[BUFFER_LEN * 4];
@@ -494,9 +495,8 @@ queue_event_internal(dbref handler, dbref enactor, const char *event, const char
 
   /* If the handler is the game EVENT_HANDLER object, stuff
    * into the front of the queue. Otherwise, it goes into the back.
-   * TODO: Possibly add a priority variable to decide?
-   */
-  if (handler == EVENT_HANDLER) {
+  */
+  if (handler == EVENT_HANDLER || priority == -1) {
     if (qlast) {
       qlast->next = tmp;
       qlast = tmp;

@@ -57,6 +57,7 @@ Minor changes:
  * The hardcode no longer strictly enforces permissions for @wall, @rwall or @wizwall; anyone who can passes the normal command restriction can now use them. [MG]
    
 Hardcode:
+ * queue_event() is now a macro to queue_event_internal() which takes an additional argument of a custom event handler. PR by Qon.
  * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]
  * OpenBSD compilation fixes. [SW]
  * Support authorization of ssl_slave forwarded connections on NetBSD, OpenBSD. [SW]

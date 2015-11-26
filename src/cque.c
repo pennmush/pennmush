@@ -493,7 +493,7 @@ queue_event_internal(dbref handler, dbref enactor, int priority, const char *eve
     }
   }
 
-  /* If the handler is the game EVENT_HANDLER object, stuff
+  /* If the handler is the game EVENT_HANDLER object, or priority is -1, stuff
    * into the front of the queue. Otherwise, it goes into the back.
   */
   if (handler == EVENT_HANDLER || priority == -1) {

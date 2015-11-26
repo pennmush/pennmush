@@ -369,8 +369,8 @@ new_queue_entry(NEW_PE_INFO *pe_info)
  */
 #define EVENT_DELIM_CHAR '\x11'
 
-/** If EVENT_HANDLER config option is set to a valid dbref, try triggering
- * its handler attribute
+/** If handler is a valid object, pass this event to it. See: queue_event() wrapper in externs.h
+ * \param handler The event handler object to pass the event to.
  * \param enactor The enactor who caused it.
  * \param event The event. No spaces, only alphanumerics and dashes.
  * \param fmt A comma-deliminated string defining printf-style args.
@@ -379,7 +379,7 @@ new_queue_entry(NEW_PE_INFO *pe_info)
  * \retval 0 No event handler or no attribute for the given event.
  */
 bool
-queue_event(dbref enactor, const char *event, const char *fmt, ...)
+queue_event_internal(dbref handler, dbref enactor, const char *event, const char *fmt, ...)
 {
   char myfmt[BUFFER_LEN];
   char buff[BUFFER_LEN * 4];
@@ -395,8 +395,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   int pid;
 
   /* Make sure we have an event to call, first. */
-  if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
-      Halted(EVENT_HANDLER)) {
+  if (!GoodObject(handler) || IsGarbage(handler) ||
+      Halted(handler)) {
     return 0;
   }
 
@@ -406,14 +406,14 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     enactor = -1;
   }
 
-  a = atr_get_noparent(EVENT_HANDLER, event);
+  a = atr_get_noparent(handler, event);
   if (!(a && AL_STR(a) && *AL_STR(a))) {
     /* Nonexistant or empty attrib. */
     return 0;
   }
 
   /* Because Event is so easy to run away. */
-  if (!pay_queue(EVENT_HANDLER, event)) {
+  if (!pay_queue(handler, event)) {
     return 0;
   }
 
@@ -421,7 +421,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   pid = next_pid();
   if (pid == 0) {
     /* Too many queue entries */
-    notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
+    notify(Owner(handler), T("Queue entry table full. Try again later."));
     return 0;
   }
 
@@ -472,7 +472,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* Build tmp. */
   tmp = new_queue_entry(NULL);
   tmp->pid = pid;
-  tmp->executor = EVENT_HANDLER;
+  tmp->executor = handler;
   tmp->enactor = enactor;
   tmp->caller = enactor;
   tmp->queue_type |= QUEUE_EVENT;
@@ -492,10 +492,11 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     }
   }
 
-  /* Hmm, should events queue ahead of anything else?
-   * For now, yes, but leaving code here anyway.
+  /* If the handler is the game EVENT_HANDLER object, stuff
+   * into the front of the queue. Otherwise, it goes into the back.
+   * TODO: Possibly add a priority variable to decide?
    */
-  if (1) {
+  if (handler == EVENT_HANDLER) {
     if (qlast) {
       qlast->next = tmp;
       qlast = tmp;

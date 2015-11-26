@@ -150,9 +150,9 @@ void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
-bool queue_event_internal(dbref handler, dbref enactor, const char *event, const char *fmt, ...)
-  __attribute__ ((__format__(__printf__, 3, 4)));
-#define queue_event(enactor, event, fmt, ...)   queue_event_internal(EVENT_HANDLER, enactor, event, fmt, ...)
+bool queue_event_internal(dbref handler, dbref enactor, int priority, const char *event, const char *fmt, ...)
+  __attribute__ ((__format__(__printf__, 5, 6)));
+#define queue_event(enactor, event, fmt, ...)   queue_event_internal(EVENT_HANDLER, enactor, -1, event, fmt, __VA_ARGS__)
 
 void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
                     PE_REGS *pe_regs, ATTR *a, bool force_debug);

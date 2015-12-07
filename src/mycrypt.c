@@ -186,7 +186,7 @@ password_hash(const char *key, const char *algo)
 {
   static char buff[BUFFER_LEN];
   static char *salts =
-    "abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   char s1, s2;
   char *bp;
   int len;

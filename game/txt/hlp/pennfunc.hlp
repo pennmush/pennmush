@@ -24,19 +24,19 @@ See also: MUSHCODE
 
   Attribute functions: attribute-related manipulations (GET, UFUN)
   Bitwise functions: Manipulation of individual bits of numbers (SHL, BOR)
-  Boolean functions:  produce 0 or 1 (false or true) answers  (OR, AND)
+  Boolean functions: produce 0 or 1 (false or true) answers (OR, AND)
   Channel functions: Get information about channels (CTITLE, CWHO)
   Communication functions: Send messages to objects (PEMIT, OEMIT)
   Connection functions: Get information about a player's connection (CONN)
   Dbref functions: return dbref info related to objects (LOC, LEXITS)
   Html functions: output html tags for Pueblo-compatible clients
-  Information functions:  find out something about objects (FLAGS, MONEY)
-  List functions:  manipulate lists (REVWORDS, FIRST)
+  Information functions: find out something about objects (FLAGS, MONEY)
+  List functions: manipulate lists (REVWORDS, FIRST)
   Mail functions: manipulate @mail (MAIL, FOLDERSTATS)
-  Math functions:  number manipulation, generic or integers only (ADD, DIV)
+  Math functions: number manipulation, generic or integers only (ADD, DIV)
   Regular expression functions: Regular expressions (REGMATCH, REGEDIT)
   SQL functions: Access SQL databases (SQL, SQLESCAPE)
-  String functions:  string manipulation (ESCAPE, FLIP)
+  String functions: string manipulation (ESCAPE, FLIP)
   Time functions: Formatting and display of time (TIME, CONVSECS)
   Utility functions: general utilities (ISINT, COMP)
 
@@ -361,7 +361,7 @@ See also: before(), rest()
     < Left-justify       - Center-justify        > Right-justify
     _ Full-justify       = Paragraph-justify
  
-  Other options: Adding these after the width will alter the column's  behaviour in some situtations
+  Other options: Adding these after the width will alter the column's behaviour in some situtations
     . Repeat for as long as there is non-repeating text in another column.
     ` When this column runs out of text, merge with the column to the left
     ' When this column runs out of text, merge with the column to the right
@@ -1337,7 +1337,7 @@ See also: lexits(), next()
 & EXTRACT()
   extract(<list>[, <first>[, <length>[, <delimiter>]]])
 
-  This function returns <length> elements of <list>, counting from the <first>th element. If <length> is not specified, the default is 1, so extract(<list>,3) acts like elements(<list>,3).  If <first> is not specified, the default is the 1, so extract(<list>) acts like first(<list>).
+  This function returns <length> elements of <list>, counting from the <first>th element. If <length> is not specified, the default is 1, so extract(<list>,3) acts like elements(<list>,3). If <first> is not specified, the default is the 1, so extract(<list>) acts like first(<list>).
   
   If <first> is negative, extract() will begin counting backwards from the end of <list>, so -1 starts at the last element, -2 the element before last, and so on.
   
@@ -1545,7 +1545,7 @@ See also: map(), anonymous attributes
 & FRACTION()
   fraction(<number>)
 
-  This function returns a fraction representing the floating-point <number>.  Since not all numbers can be expressed as a fraction, dividing the numerator by the denominator of the results will not always return the original <number>, but something close to it.
+  This function returns a fraction representing the floating-point <number>. Since not all numbers can be expressed as a fraction, dividing the numerator by the denominator of the results will not always return the original <number>, but something close to it.
 
   Examples:
     > think fraction(.75)
@@ -1636,7 +1636,7 @@ See also: match(), matchall(), grab(), regmatch()
   regrepi(<object>, <attrs>, <regexp>)
   wildgrepi(<object>, <attrs>, <pattern>)
   
-  These functions return a list of attributes on <object> containing <substring>, matching the wildcard <pattern>, or matching the regular expression <regexp>.  <attrs> is a wildcard pattern for attribute names to search.
+  These functions return a list of attributes on <object> containing <substring>, matching the wildcard <pattern>, or matching the regular expression <regexp>. <attrs> is a wildcard pattern for attribute names to search.
 
   Parsing _does_ occur before this function is invoked. Therefore, "special" characters will need to be escaped out.
 
@@ -1889,7 +1889,7 @@ See also: REGEXP
         items(X%b%bX,%b) => 3     (2 X items and 1 null item)
         items(,|)        => 1     (a single null item)
 
-   Another way to think about this is that items() counts the number  of times <delim> appears in <list>, and adds 1.
+   Another way to think about this is that items() counts the number of times <delim> appears in <list>, and adds 1.
    
 See also: words()
 & ITEMIZE()
@@ -2142,7 +2142,7 @@ See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 
   Returns a list of the dbrefs of exits in a room.
 
-  You can get the complete exit list of any room you may examine, regardless of whether or not exits are dark. You can get the partial exit list (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#).  You CANNOT get the exit list of anything else, regardless of whether or not you have objects in it.
+  You can get the complete exit list of any room you may examine, regardless of whether or not exits are dark. You can get the partial exit list (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#). You CANNOT get the exit list of anything else, regardless of whether or not you have objects in it.
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
@@ -2239,7 +2239,7 @@ See also: log()
   lnum(<number>)
   lnum(<start number>, <end number>[, <output separator>[, <step>]])
 
-  With one argument, lnum returns a list of numbers, from 0 to <number - 1>.  For example, lnum(4) returns the list "0 1 2 3". This is useful for creating loops.
+  With one argument, lnum returns a list of numbers, from 0 to <number - 1>. For example, lnum(4) returns the list "0 1 2 3". This is useful for creating loops.
 
   With two arguments, the numbers range from the first to the second argument. For example, lnum(1,4) => 1 2 3 4
 
@@ -2817,7 +2817,7 @@ See also: lmath(), div(), fdiv()
 
   See 'help munge2' for examples.
 & MUNGE2
-  For example: Consider attribute PLACES, which contains "Fort Benden Ista", and another attribute DBREFS contains the dbrefs of the main JUMP_OK location of these areas, "#20 #9000 #5000".  We want to return a list of dbrefs, corresponding to the names of the places sorted alphabetically. The places sorted this way would be "Benden Fort Ista", so we want the final list to be "#9000 #20 #5000". The functions, using munge(), are simple:
+  For example: Consider attribute PLACES, which contains "Fort Benden Ista", and another attribute DBREFS contains the dbrefs of the main JUMP_OK location of these areas, "#20 #9000 #5000". We want to return a list of dbrefs, corresponding to the names of the places sorted alphabetically. The places sorted this way would be "Benden Fort Ista", so we want the final list to be "#9000 #20 #5000". The functions, using munge(), are simple:
   
     > &sort me=sort(%0)
     > say munge(sort, v(places), v(dbrefs))
@@ -2934,7 +2934,7 @@ See also: eq(), not(), lmath()
 
   If <object> is an exit, then next() will return the next exit in <object>'s source room. If <object> is a thing or a player, then next() will return the next object in the contents list of <object>'s location. Otherwise, it returns a #-1. #-1 is also used to denote that there are no more exits or objects after <object>.
 
-  You can get the complete contents of any container you may examine, regardless of whether or not objects are dark. You can get the partial contents (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#).  You CANNOT get the contents of anything else, regardless of whether or not you have objects in it. These rules apply to exits, as well.
+  You can get the complete contents of any container you may examine, regardless of whether or not objects are dark. You can get the partial contents (obeying DARK/LIGHT/etc.) of your current location or the enactor (%#). You CANNOT get the contents of anything else, regardless of whether or not you have objects in it. These rules apply to exits, as well.
 
 See also: lcon(), lexits(), con(), exit()
 & NEXTDBREF()
@@ -3435,7 +3435,7 @@ See also: align(), center(), ljust(), right()
 & RLOC()
   rloc(<object>, <levels>) 
   
-  This function may be used to the get the location of <object>'s location (and on through the levels of locations), substituting for repeated nested loc() calls. <levels> indicates the number of loc()-equivalent calls to make; i.e., loc(loc(<object>)) is equivalent to rloc(<object>,2).  rloc(<object>,0) is equivalent to num(<object>), and rloc(<object>,1) is equivalent to loc(<object>).
+  This function may be used to the get the location of <object>'s location (and on through the levels of locations), substituting for repeated nested loc() calls. <levels> indicates the number of loc()-equivalent calls to make; i.e., loc(loc(<object>)) is equivalent to rloc(<object>,2). rloc(<object>,0) is equivalent to num(<object>), and rloc(<object>,1) is equivalent to loc(<object>).
   
   If rloc() encounters a room, the dbref of that room is returned. If rloc() encounters an exit, the dbref of that exit's destination is returned. You must control <object>, be near it, or it must be a findable player.
  

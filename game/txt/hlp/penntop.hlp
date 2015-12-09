@@ -235,7 +235,7 @@ See also: ATTRIBUTES, SUBSTITUTION, @asuccess, @dolist
 
   Objects can inherit attributes and locks from other objects through the use of parents. An object's parent, its parent's parent, its parent's parent's parent, etc. constitute the object's "parent chain" and lookups work the way up the chain until an inheritance occurs.
 
-  Ancestors are "virtual parents" that are assumed to be last on every parent chain. There is one ancestor for each object type (room, exit, thing, player), and @config lists the dbref of each ancestor object (@config ancestor_room, etc). Under normal circumstances, if an attribute/lock can't be retrieved from an object or any of its explicit parents, the attribute will be looked for on the appropriate ancestor.  The ORPHAN flag may be set on an object to cause lookups on that object to ignore ancestors (like the pre-ancestor behavior).
+  Ancestors are "virtual parents" that are assumed to be last on every parent chain. There is one ancestor for each object type (room, exit, thing, player), and @config lists the dbref of each ancestor object (@config ancestor_room, etc). Under normal circumstances, if an attribute/lock can't be retrieved from an object or any of its explicit parents, the attribute will be looked for on the appropriate ancestor. The ORPHAN flag may be set on an object to cause lookups on that object to ignore ancestors (like the pre-ancestor behavior).
 
   Ancestors may themselves have parent chains, but these are (obviously) not virtually terminated by ancestors.
 
@@ -358,7 +358,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   
   Continued in 'help attributes4'.
 & ATTRIBUTES4
-  Attributes can be owned by someone other than the object they are set on.  This allows the person to change the content of just that attribute while not the rest of the object. Attributes can also be locked, which prevents them from being changed by anyone.
+  Attributes can be owned by someone other than the object they are set on. This allows the person to change the content of just that attribute while not the rest of the object. Attributes can also be locked, which prevents them from being changed by anyone.
 
   In addition to the standard attributes with pre-set effects, there are some special attributes that date from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
 
@@ -405,7 +405,7 @@ See also: BOOLEAN FUNCTIONS, not(), t()
 & CLIENTS
   Clients are special software programs that you can use to connect to MUSHes. They are usually much nicer to use than raw telnet and give you many additional features, such as larger text buffers (so you can type more), backscroll, history of previous commands, macros, and so on.
 
-  Here is a list of common clients and the web sites where they can be found.  Please note that the below sites are subject to change.  The below are listed solely for your information and possible benefit. The developers of PennMUSH have nothing to do with the clients. Except for Potato, which is made by Mike. Not that this is a shameless plug. Noooo. Carry on.
+  Here is a list of common clients and the web sites where they can be found.  Please note that the below sites are subject to change. The below are listed solely for your information and possible benefit. The developers of PennMUSH have nothing to do with the clients. Except for Potato, which is made by Mike. Not that this is a shameless plug. Noooo. Carry on.
 
   OPERATING
   SYSTEM          CLIENT      WEB SITE
@@ -460,7 +460,7 @@ See also: MONEY, money(), score
   Past Porters: Nick Gammon [NJG] (win32), Dan Williams [DW] (MacOS), Sylvia (OS/2)
   Former developers: Rhyanna [RLM], Trivian [TN], Halatir [LdW], Talek [TAP], Javelin, Ervin Hearn III [EEH]
  
-  The original TinyMUSH 1.0 code was written by Lawrence Foard, and was based upon James Aspnes' TinyMUD server. Since then, the code has been modified by the programmers of MicroMUSE (then MicroMUSH), and Joseph Traub (Moonchilde of PernMUSH).  From January 1992 to January 1995, Lydia Leong (Amberyl of PernMUSH / Polgara of Belgariad) maintained the code currently known as PennMUSH 1.50. From January 1995 until July 2006, Alan Schwartz (Paul of DuneMUSH / Javelin elsewhere) maintained this code, along with a development team. From July 2006 on, Raevnos has been the maintainer.
+  The original TinyMUSH 1.0 code was written by Lawrence Foard, and was based upon James Aspnes' TinyMUD server. Since then, the code has been modified by the programmers of MicroMUSE (then MicroMUSH), and Joseph Traub (Moonchilde of PernMUSH). From January 1992 to January 1995, Lydia Leong (Amberyl of PernMUSH / Polgara of Belgariad) maintained the code currently known as PennMUSH 1.50. From January 1995 until July 2006, Alan Schwartz (Paul of DuneMUSH / Javelin elsewhere) maintained this code, along with a development team. From July 2006 on, Raevnos has been the maintainer.
 
   Big thanks to the developers of TinyMUSH 2.0, 2.2 [2.2], 3.0 [3], MUX2, and Rhost [Rhost] servers, as well as to the players of Belgariad MUSH, DuneMUSH, and M*U*S*H, and everyone else using this server!
 
@@ -594,7 +594,7 @@ See also: @command, @hook, $-commands, huh_command
 & FAILURE
   FAILURE  
 
-  A "failure" usually occurs when you try to do something that is governed by an @lock and you don't pass the lock. If you try to take a player or thing, or pass through an exit, and you don't pass its Basic @lock, you will set off their  @failure/@ofailure/@afailure attributes. A few failures have special attributes, while others use <locktype>_LOCK`FAILURE, <locktype>_LOCK`OFAILURE and <locktype>_LOCK`AFAILURE attributes.
+  A "failure" usually occurs when you try to do something that is governed by an @lock and you don't pass the lock. If you try to take a player or thing, or pass through an exit, and you don't pass its Basic @lock, you will set off their @failure/@ofailure/@afailure attributes. A few failures have special attributes, while others use <locktype>_LOCK`FAILURE, <locktype>_LOCK`OFAILURE and <locktype>_LOCK`AFAILURE attributes.
 
   See 'help failure2' for a list of failure verbs and when they're triggered.
 
@@ -700,7 +700,7 @@ See also: LASTSITE
 & LASTIP
   LASTSITE and LASTIP
 
-  The LASTSITE attribute gives the name of the site you last connected from.  The LASTIP attribute gives the IP address you last connected from.  Mortals cannot set them.
+  The LASTSITE attribute gives the name of the site you last connected from. The LASTIP attribute gives the IP address you last connected from. Mortals cannot set them.
   
 See also: LAST
 & LINKING
@@ -712,7 +712,7 @@ See also: LINK_OK, ABODE, @link
   
   There are two basic ways to trigger action on the MUSH. The basic way is to type in commands such as 'look' or '@emit'. These commands are not seen or heard by other players, although the results of the commands may be.
 
-  The other way is to "listen" for something said/emitted in your hearing.  There are two ways to listen for something in a room. The easiest way is to use a combination of @listen and @ahear/@aahear/@amhear.
+  The other way is to "listen" for something said/emitted in your hearing. There are two ways to listen for something in a room. The easiest way is to use a combination of @listen and @ahear/@aahear/@amhear.
 
   For example:
     > @listen Welcome Mat=* has arrived.
@@ -724,7 +724,7 @@ See also: LINK_OK, ABODE, @link
 & ^
 & ^-LISTENS
 & LISTENING2
-  If you need an object to "listen" for more than one pattern, you can also use ^-patterns.  These work similar to user-defined commands, using ^ instead of $. An object must be set MONITOR to have ^-patterns activated.
+  If you need an object to "listen" for more than one pattern, you can also use ^-patterns. These work similar to user-defined commands, using ^ instead of $. An object must be set MONITOR to have ^-patterns activated.
 
   Syntax:  &<attribute> <object> = ^<pattern>:<action list>
 
@@ -762,12 +762,12 @@ See also: @listen, @ahear, @amhear, @aahear, MONITOR, LISTEN_PARENT, USER-DEFINE
 
 See also: STRINGS, List Functions, ACTION LISTS
 & LOOPING
-  Looping in an object can have its good parts and its bad parts.  The good part is when you activate part of a program multiple times to exhaustively perform an operation.  This can be done like this:
+  Looping in an object can have its good parts and its bad parts. The good part is when you activate part of a program multiple times to exhaustively perform an operation. This can be done like this:
 
     &PART1 object=<action list> ; @trigger me/PART2
     &PART2 object= @select <test for being done>=<false>,@trigger me/PART1
 
-  Looping can be a problem when it goes on without stopping.  The @ps command can be used to see if you are looping.  Beware!  A looping machine that isn't @halt'd will drain your pennies while you are away from the mush!
+  Looping can be a problem when it goes on without stopping. The @ps command can be used to see if you are looping. Beware! A looping machine that isn't @halt'd will drain your pennies while you are away from the mush!
   
   The @retry and @include commands, and %= substitution, can also be useful for building code which needs to loop.
 
@@ -779,7 +779,7 @@ See also: @ps, HALT, COSTS, @trigger, @retry, SUBSTITUTIONS3
 See also: EVALUATION, GLOBAL COMMANDS
 & ME
   The word 'me' refers to yourself. Some things to do when starting out: 
-  1) give  yourself a description:      @desc me=<description>
+  1) give yourself a description:       @desc me=<description>
   2) check your desc.:                  look me
   3) lock yourself:                     @lock me==me
   4) set your gender:                   @sex me=<male|female|neuter|plural>
@@ -830,7 +830,7 @@ See also: @moniker, moniker(), MONIKER
 
   MUSHcode is the programming language available within the MUSH itself with which you can create user-defined commands and macros. It is sometimes called "softcode" to distinguish it from "hardcode", which is the language that the source code for the MUSH server is written in. (Incidentally, hardcode is written in the C programming language.)
   
-  At its most basic, writing MUSHcode is just stringing together a series of commands that you would otherwise just type in one at a time. You can store MUSHcode in attributes on any type of object you own or control (including yourself!).  The series of commands can be triggered by using a user-defined command or by using @trigger.
+  At its most basic, writing MUSHcode is just stringing together a series of commands that you would otherwise just type in one at a time. You can store MUSHcode in attributes on any type of object you own or control (including yourself!). The series of commands can be triggered by using a user-defined command or by using @trigger.
   
   Continued in 'help mushcode2'.
 & MUSHCODE2
@@ -1005,7 +1005,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
  
   Regular expression syntax is explained in 'help regexp syntax'.
 & REGEXP SYNTAX
-  PennMUSH uses PCRE for its regular expression engine.  PCRE is an open source library of functions to support regular expressions whose syntax and semantics are as close as possible to those of the Perl 5 language.  The text below is excerpted from its man page. PCRE was written by Philip Hazel <ph10@cam.ac.uk>, and is Copyright (c) 1997-1999 University of Cambridge, England. You can find it at ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+  PennMUSH uses PCRE for its regular expression engine. PCRE is an open source library of functions to support regular expressions whose syntax and semantics are as close as possible to those of the Perl 5 language. The text below is excerpted from its man page. PCRE was written by Philip Hazel <ph10@cam.ac.uk>, and is Copyright (c) 1997-1999 University of Cambridge, England. You can find it at ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
 
   (Note that in PennMUSH, if the regular expression is in an eval'd context (like an argument to regmatch), you'll have to do a lot of escaping to make things work right. One way to escape an argument like %0 is: regeditall(%0,\\W,\\$0) or similar).
 
@@ -1015,7 +1015,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
 & regexp syntax2
   A regular expression is a pattern that is matched against a subject string from left to right. Most characters stand for themselves in a pattern, and match the corresponding characters in the subject. 
 
-  There are two different sets of meta-characters: those that are recognized anywhere in the pattern except within square brackets, and those that are recognized in square  brackets.  Outside square brackets, the meta-characters are as follows:
+  There are two different sets of meta-characters: those that are recognized anywhere in the pattern except within square brackets, and those that are recognized in square brackets.  Outside square brackets, the meta-characters are as follows:
 
        \      general escape character with several uses
        ^      assert start of subject
@@ -1055,7 +1055,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
        \b     word boundary
        \B     not a word boundary
 
-  A word boundary is a position in the  subject  string  where the current character and the previous character do not both match \w or \W (i.e. one matches \w and  the  other  matches \W), or the start
+  A word boundary is a position in the subject string where the current character and the previous character do not both match \w or \W (i.e. one matches \w and  the  other  matches \W), or the start
   or end of the string if the first or last character matches \w, respectively.
 
   Continued in '"help regexp syntax5'.
@@ -1070,11 +1070,11 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
 
   Continued in '"help regexp syntax6'.
 & regexp syntax6
-  Outside a character class, a backslash followed by  a  digit greater than  0  (and  possibly  further  digits) is a back reference to a capturing subpattern  earlier  (i.e.  to  its left)  in  the  pattern, provided there have been that many previous capturing left parentheses. A back reference matches whatever actually matched the  capturing subpattern in the current subject string, rather than anything matching the subpattern itself. So the pattern
+  Outside a character class, a backslash followed by a digit greater than 0 (and possibly further digits) is a back reference to a capturing subpattern earlier (i.e. to its left) in the pattern, provided there have been that many previous capturing left parentheses. A back reference matches whatever actually matched the capturing subpattern in the current subject string, rather than anything matching the subpattern itself. So the pattern
 
     (sens|respons)e and \1ibility
 
-  matches "sense and sensibility" and "response and  responsibility", but not "sense  and  responsibility". 
+  matches "sense and sensibility" and "response and responsibility", but not "sense and responsibility". 
 
   You can give names to subpatterns and refer to them that way instead of using numbers.
 
@@ -1086,7 +1086,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
 
   Continued in '"help regexp syntax7'.
 & regexp syntax7
-  An assertion is  a  test  on  the  characters  following  or  preceding  the current matching point that does not actually consume  any characters.  There  are  two kinds:  those that look ahead of the  current position in the subject string, and those that look behind it.
+  An assertion is a test on the characters following or preceding the current matching point that does not actually consume any characters. There are two kinds: those that look ahead of the current position in the subject string, and those that look behind it.
 
   An assertion subpattern is matched in the normal way, except that it does not cause the current matching position to be changed. Lookahead assertions start with (?= for positive assertions and (?! for negative assertions. For example, Lookbehind assertions start with (?<= for positive assertions and (?<! for negative assertions.
 
@@ -1130,7 +1130,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
  
   See 'help regexp syntax' for a more detailed explanation.
 & REGISTERS
-  A register is essentially a little reserved piece of computer memory that can hold some variable information that you want to pass on to another command.  There are thirty registers on the MUSH available via the %0-%9 substitutions and v(0)-v(9) and r(0,args) to r(29,args). There are also many setq registers available via %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names), or the r() function.
+  A register is essentially a little reserved piece of computer memory that can hold some variable information that you want to pass on to another command. There are thirty registers on the MUSH available via the %0-%9 substitutions and v(0)-v(9) and r(0,args) to r(29,args). There are also many setq registers available via %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names), or the r() function.
 
   The basic registers are filled with information that matches the wildcard pattern of the command trigger. (Before you say "Huh?", here's an example.)
 
@@ -1158,7 +1158,7 @@ See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq(), v(), r(), regi
 
 See also: @quota, @squota
 & SEMAPHORES
-  The most complicated thing about semaphores is their name. Before you try to use semaphores, you should first be familiar with the "@wait" command.  If you are, then you know that normally, you type:
+  The most complicated thing about semaphores is their name. Before you try to use semaphores, you should first be familiar with the "@wait" command. If you are, then you know that normally, you type:
 
     @wait <number of seconds>=<action> 
 
@@ -1172,7 +1172,7 @@ See also: @quota, @squota
   Continued in 'help semaphores2'.
 & SEMAPHORES2
 
-  An object is notified using the "@notify" command.  When you type "@wait <object>=<action>", you are adding one to the SEMAPHORE attribute on the object. When you type "@notify <object>", you are decreasing the SEMAPHORE attribute on the object by one. Whenever the attribute decreases, one of the actions waiting on the object takes place. The actions occur in the order they were added.
+  An object is notified using the "@notify" command. When you type "@wait <object>=<action>", you are adding one to the SEMAPHORE attribute on the object. When you type "@notify <object>", you are decreasing the SEMAPHORE attribute on the object by one. Whenever the attribute decreases, one of the actions waiting on the object takes place. The actions occur in the order they were added.
 
   You can make the semaphore attribute of an object negative by @notify-ing it more times than things have been @wait-ed on it. If you do so, anything @wait-ed on the object will add one to the SEMAPHORE attribute and the action will take place immediately. You can also make all the actions waiting on an object take place right away by using "@notify/all", or wipe all the commands out and clear the SEMAPHORE attribute by using "@drain". Please note that all SEMAPHORE attributes are cleared out whenever the MUSH is restarted.
  
@@ -1250,7 +1250,7 @@ See also: @wait, @drain, @notify
   
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set, @wipe, attrib_set(), set(), wipe(), ATTRIBUTE FLAGS
 & SPOOFING
-  Spoofing is the act of making other characters think that a person said or did something that they did not.  This is very easy to accomplish, and has some good effects, which is why it is allowed. However, abusing it is very twinkish and will most likely get you in hot water with your wizards. Note that if you are being spoofed and want to know who is doing it, you can set yourself NOSPOOF and you will be notified who is making the @emits.
+  Spoofing is the act of making other characters think that a person said or did something that they did not. This is very easy to accomplish, and has some good effects, which is why it is allowed. However, abusing it is very twinkish and will most likely get you in hot water with your wizards. Note that if you are being spoofed and want to know who is doing it, you can set yourself NOSPOOF and you will be notified who is making the @emits.
   
   Most @*emit commands have a wizard-only @ns*emit version, which does not show nospoof information. These are useful for writing global commands.
   
@@ -1549,7 +1549,7 @@ See also: ZONES, MASTER ROOM, EVALUATION
   
   Anyone who passes the @lock/zone of the shared player can @chown objects to it. This, however, does not refund the original creator's money or quota, as does normal.
 
-  Shared players used to be known as Zone Masters.  The term was changed to emphasize the fact that they are not related to Zone Master Objects, which are used to allow area-specific $-commands.
+  Shared players used to be known as Zone Masters. The term was changed to emphasize the fact that they are not related to Zone Master Objects, which are used to allow area-specific $-commands.
 
   Continued in HELP SHARED PLAYERS2
 & SHARED PLAYERS2

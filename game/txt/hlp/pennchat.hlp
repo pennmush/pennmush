@@ -153,7 +153,7 @@ See also: CHAT, @chat, @cemit
   @channel/hide [<channel>][=<yes|no>]
   @channel/combine [<channel>][=<yes|no>]
 
-  @channel/gag allows you to stay on a channel but stop receiving messages on  it. Channels are automatically ungagged when you disconnect. You cannot speak on channels you're gagging unless they have the "open" priv.
+  @channel/gag allows you to stay on a channel but stop receiving messages on it. Channels are automatically ungagged when you disconnect. You cannot speak on channels you're gagging unless they have the "open" priv.
 
   Channels without the 'quiet' priv broadcast messages when players connect or disconnect from the MUSH. You can use @channel/mute to suppress these messages if you don't want to see them.
 
@@ -233,7 +233,7 @@ See also: @clock
 
   Mogrifiers let you tweak every aspect of a channel's output, before it goes to individual players' @chatformats. 
 
-  Before it begins mogrifying, three mogrifiers that alter the way chats are handled are run, using the same arguments as @chatformat (except that %5 is not set). First, <object>'s MOGRIFY`BLOCK attribute is called. If  MOGRIFY`BLOCK returns a non-empty string, then the resultant string is sent back to the player, and no message is broadcast on the channel.
+  Before it begins mogrifying, three mogrifiers that alter the way chats are handled are run, using the same arguments as @chatformat (except that %5 is not set). First, <object>'s MOGRIFY`BLOCK attribute is called. If MOGRIFY`BLOCK returns a non-empty string, then the resultant string is sent back to the player, and no message is broadcast on the channel.
   
   Next, MOGRIFY`OVERRIDE is called. If it returns a true value, player's individual @chatformats will not be called for the message.
   
@@ -243,9 +243,9 @@ See also: @clock
 & mogrify2
   After that, mogrifiers which alter individual portions of the message are called. See 'help mogrify3' for details.
   
-  After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has the same use as @chatformat, but on a channel-wide level. It receives all  mogrified text (if any), so is generally intended only for reformatting the whole channel text. It is also overriden by individual @chatformats (unless MOGRIFY`OVERRIDE returned true).
+  After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has the same use as @chatformat, but on a channel-wide level. It receives all mogrified text (if any), so is generally intended only for reformatting the whole channel text. It is also overriden by individual @chatformats (unless MOGRIFY`OVERRIDE returned true).
 
-  See 'help mogrify3' for info on specific mogrifiers, and 'help mogrify4'  for some examples.
+  See 'help mogrify3' for info on specific mogrifiers, and 'help mogrify4' for some examples.
 See also: cmogrifier()
 & mogrify3
 
@@ -443,7 +443,7 @@ See also: cwho(), cflags(), @channel/on, @channel/gag
   cmsgs(<channel>)
   cbuffer(<channel>)
 
-  Return the description (@channel/describe), number of users, number of messages in the recall buffer, or buffer size of <channel>, respectively.  This information is also displayed in @channel/list and @channel/what.
+  Return the description (@channel/describe), number of users, number of messages in the recall buffer, or buffer size of <channel>, respectively. This information is also displayed in @channel/list and @channel/what.
 
 See also: cbufferadd(), crecall()
 & CBUFFERADD()

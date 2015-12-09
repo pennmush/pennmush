@@ -739,7 +739,7 @@ See also: @@, @@()
     > @conformat here=edit(ucstr(%1), |, %r)
     
     Show just the object names (with no ansi) in a table:
-    > @conformat here=table(iter(%0, name(%i0), %b, |),  20, width(%#), |)
+    > @conformat here=table(iter(%0, name(%i0), %b, |), 20, width(%#), |)
 
 See also: look, @exitformat, @nameformat, @descformat, @invformat,
     @idescformat

@@ -3096,10 +3096,12 @@ See also: @nszemit, zemit(), zone(), zwho(), ZONES
 
   These commands, if enabled, show the admin-only help or news files for the MUSH. Only Wizards and Royalty may use them.
 
-  & brief
-  brief <object> 
+& brief
+  brief[/opaque] [<object>]
 
-  This command works like an abbreviated version of examine. It does not print out all the attributes on the object. 
+  This command works like an abbreviated version of "examine", showing information about an object including its name, owner, zone, type, flags and powers, locks, channels, warnings, home and location. Unlike "examine", it does not print out all the attributes on the object. It will include the contents of <object>, unless the /opaque switch is given.
+  
+  <object> defaults to "here".
 
 See also: examine
 & cd

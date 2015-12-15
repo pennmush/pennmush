@@ -268,7 +268,7 @@ str_type(const char *str)
   type &= ~(MSG_PUEBLO | MSG_STRIPACCENTS);
 #endif                          /* CHECK_FOR_HTML */
 
-  if (strstr(str, MARKUP_START "c") == NULL) {
+  if (strstr(str, MARKUP_START "c") == NULL && strchr(str, ESC_CHAR) == NULL) {
     /* No ANSI */
     type &= ~(MSG_ANSI2 | MSG_ANSI16 | MSG_XTERM256);
   }

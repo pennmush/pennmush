@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.6 patchlevel 0                                 ?? ??, 201?
+Version 1.8.6 patchlevel 0                                 Dec 25, 2015
 
 NOTE: When updating from an earlier version of PennMUSH, you'll need to run 'make update' and './config.status' in the toplevel PennMUSH directory prior to running 'make'.
 
@@ -68,3 +68,4 @@ Hardcode:
  * Added support for the General MUD Communication Protocol (GMCP). See http://www.gammon.com.au/gmcp for more info. Requested by Qon. [MG]
  * Choosing what scheme is used in compressing attribute text in-game is now a run-time option set in mush.cnf, not options.h [SW]
  * Minor fixes and resource cleanups reported by Qon. [MG]
+ * An off-by-one error led to passwords occassionally being hashed incorrectly and needing to be reset. Reported by Glass. [MG]

@@ -2523,7 +2523,7 @@ See also: lte(), gt(), gte(), lnum(), lmath()
 
   Takes two or more numbers, and returns 1 if and only if each number is less than or equal to the number after it, and 0 otherwise.
   
-See also: lt(), gt(), gte(), lnum(), lmath(), lmath()
+See also: lt(), gt(), gte(), lnum(), lmath()
 & LVCON()
   lvcon(<object>)
 

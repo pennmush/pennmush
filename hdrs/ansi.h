@@ -246,5 +246,7 @@ parse_ansi_string(const char *src)
     int ansi_map_16(const char *name, bool bg, bool *hilite);
     int ansi_map_256(const char *name, bool hilite, bool all);
 
+// Convert old ansi escape codes to new internal markup
+char *convert_ansi_codes(const char *src);
 
 #endif                          /* __ANSI_H */

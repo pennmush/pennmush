@@ -2987,3 +2987,86 @@ safe_tag_wrap(char const *a_tag, char const *params,
     memset(save, '\0', *bp - save);
   return result;
 }
+
+// Convert old ansi escape sequences into new internal markup.
+char *convert_ansi_codes(const char *src)
+{
+  static char tbuff[BUFFER_LEN], *tp;
+  const char *s;
+  char *next;
+ 
+  tp = tbuff;
+  
+  for (s = src; *s; ) {
+    int code = 0;
+    switch (*s) {
+      case ESC_CHAR:
+        *s++; *s++; // Skip past the code and the [
+        while (*s) {
+          code = strtol(s, &next, 10);
+          
+          switch(code) {
+            case 0: // Normal
+              safe_str(ANSI_NORMAL, tbuff, &tp); break;
+            case 1: // Hilite
+              safe_str(ANSI_HILITE, tbuff, &tp); break;
+            case 4: // Underscore
+              safe_str(ANSI_UNDERSCORE, tbuff, &tp); break;
+            case 5: // Flash
+              safe_str(ANSI_BLINK, tbuff, &tp); break;
+            case 7: // Inverse
+              safe_str(ANSI_INVERSE, tbuff, &tp); break;
+            case 30:
+              safe_str(ANSI_BLACK, tbuff, &tp); break;
+            case 31:
+              safe_str(ANSI_RED, tbuff, &tp); break;
+            case 32:
+              safe_str(ANSI_GREEN, tbuff, &tp); break;
+            case 33: 
+              safe_str(ANSI_YELLOW, tbuff, &tp); break;               
+            case 34:
+              safe_str(ANSI_BLUE, tbuff, &tp); break;
+            case 35:
+              safe_str(ANSI_MAGENTA, tbuff, &tp); break;
+            case 36:
+              safe_str(ANSI_CYAN, tbuff, &tp); break;
+            case 37:
+              safe_str(ANSI_WHITE, tbuff, &tp); break;
+            case 40:
+              safe_str(ANSI_BBLACK, tbuff, &tp); break;
+            case 41:
+              safe_str(ANSI_BRED, tbuff, &tp); break;
+            case 42:
+              safe_str(ANSI_BGREEN, tbuff, &tp); break;
+            case 43: 
+              safe_str(ANSI_BYELLOW, tbuff, &tp); break;               
+            case 44:
+              safe_str(ANSI_BBLUE, tbuff, &tp); break;
+            case 45:
+              safe_str(ANSI_BMAGENTA, tbuff, &tp); break;
+            case 46:
+              safe_str(ANSI_BCYAN, tbuff, &tp); break;
+            case 47:
+              safe_str(ANSI_BWHITE, tbuff, &tp); break;
+            default:
+              safe_str(ANSI_NORMAL, tbuff, &tp); break;
+          }
+          s = next;
+          if (*s == 'm') {
+            *s++;
+            break; // Break loop at end of the ansi sequence
+          } else { // More code follows
+            *s++;
+          }
+        } // while()
+          break;
+      default: // No ansi code, just copy the text.
+        safe_chr(*s, tbuff, &tp);
+        *s++;
+        break;
+    } // switch()
+  } // for()
+    safe_str(ANSI_NORMAL, tbuff, &tp);
+    *tp = '\0';
+    return tbuff;
+}

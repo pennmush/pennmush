@@ -70,3 +70,4 @@ Hardcode:
  * Minor fixes and resource cleanups reported by Qon. [MG]
  * An off-by-one error led to passwords occassionally being hashed incorrectly and needing to be reset. Reported by Glass. [MG]
  * Old-style raw ANSI codes (from old dbs, SQL, etc) was sometimes mistakenly stripped when sent to a client. Found and fixed by Qon. [1050]
+ * Some @mail selectors incorrectly selected all mail in the current folder. Found and fixed by Qon. [1055]

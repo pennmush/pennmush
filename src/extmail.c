@@ -2915,7 +2915,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   if (!p || !*p) {
     ms->flags |= M_FOLDER;
     return 1;                   /* all messages in current folder */
-
+  }
   if (isdigit(*p) || *p == '-') {
     if (!parse_message_spec(player, p, &ms->low, &ms->high, &folder)) {
       notify(player, T("MAIL: Invalid message specification"));

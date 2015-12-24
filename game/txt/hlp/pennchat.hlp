@@ -116,7 +116,7 @@ See also: @chat
   Other      - Setting channel titles, recalling previous chat messages
   Admin      - Adding, deleting and modifying channels
 
-See also: CHAT, @chat, @cemit
+See also: CHAT, @chat, @cemit, channel functions
 & @CHANNEL JOINING
 & @channel/list
 & @channel/what
@@ -371,7 +371,7 @@ Size of the channel buffer in full-length lines----------------------------/
   Example:
     > @channel/add Public=player quiet open nocemit
 
-See also: cflags(), clflags()
+See also: cflags(), clflags(), channel functions
 & @clock
   @clock/join <channel>[=<key>]
   @clock/speak <channel>[=<key>]
@@ -421,19 +421,19 @@ See also: clock(), @lock, @channel/privs
 
   Returns the dbref of the owner of a channel.
   
-See also: @channel/chown
+See also: @channel/chown, channel functions
 & CTITLE()
   ctitle(<channel>, <object>)
 
   Returns <object>'s @channel/title on <channel>. You must either be able to examine the object, or it must be visibly on <channel>, and you must either be on <channel> on able to join it.
   
-See also: @channel/title
+See also: @channel/title, channel functions
 & CSTATUS()
   cstatus(<channel>, <object>)
 
   Returns <object>'s status with respect to <channel>, which may be "Off", "On", or "Gag". You must either be able to examine the object, or it must visible be on the channel; "Off" is returned for objects that you cannot see on the channel.
   
-See also: cwho(), cflags(), @channel/on, @channel/gag
+See also: cwho(), cflags(), @channel/on, @channel/gag, channel functions
 & CDESC()
 & CUSERS()
 & CMSGS()
@@ -445,7 +445,7 @@ See also: cwho(), cflags(), @channel/on, @channel/gag
 
   Return the description (@channel/describe), number of users, number of messages in the recall buffer, or buffer size of <channel>, respectively. This information is also displayed in @channel/list and @channel/what.
 
-See also: cbufferadd(), crecall()
+See also: cbufferadd(), crecall(), channel functions
 & CBUFFERADD()
   cbufferadd(<channel>, <text>[, <spoof>])
 
@@ -453,7 +453,7 @@ See also: cbufferadd(), crecall()
 
   This function is only usable by objects that pass the channel's @clock/mod, and who can use the @cemit command (or @nscemit if <spoof> is true).
   
-See also: crecall(), cbuffer(), @channel/recall, @channel/buffer
+See also: crecall(), cbuffer(), @channel/recall, @channel/buffer, channel functions
 & CWHO()
   cwho(<channel>[, <status>[, <skip gagged?>]])
  
@@ -461,7 +461,7 @@ See also: crecall(), cbuffer(), @channel/recall, @channel/buffer
   
   If <skip gagged?> is given, and is true, gagged objects will not be included in the results.
 
-See also: cstatus(), @channel/who
+See also: cstatus(), @channel/who, channel functions
 & CFLAGS()
 & CLFLAGS()
   cflags(<channel>)
@@ -475,7 +475,7 @@ See also: cstatus(), @channel/who
 
   The clflags() versions return a space-separated list of flag names, rather than a string of flag characters.
   
-See also: cstatus()
+See also: cstatus(), channel functions
 & CHANNELS()
   channels([<delimiter>])
   channels(<object>)
@@ -487,13 +487,13 @@ See also: cstatus()
 
   If you can examine the object, the function returns all the channels it's on. Otherwise, it will only return those channels you can see that <object> is a member of with @channel/who.
   
-See also: @channel/list, @channel/who, cwho()
+See also: @channel/list, @channel/who, cwho(), channel functions
 & CLOCK()
   clock(<channel>[/<locktype>][, <new lock>])
 
   With one argument, returns the value of a lock on a channel, if you own the channel or are See_All. If no locktype is given, "JOIN" is assumed. With two arguments, sets the lock if you would be able to do so via @clock.
 
-See also: @clock, @lock
+See also: @clock, @lock, channel functions
 & CRECALL()
   crecall(<channel>[, <lines> [, <start line> [, <osep> [, <timestamps?> ]]]])
 
@@ -501,13 +501,13 @@ See also: @clock, @lock
   
   <lines> can be either a number of lines (in which case that many lines will be returned, starting from the <start line>th line), or a duration of time (for example, '5h' or '10m30s'), in which case all lines from the previous <lines> time are returned.
 
-See also: @channel/recall, cbufferadd()
+See also: @channel/recall, cbufferadd(), channel functions
 & CMOGRIFIER()
   cmogrifier(<channel>)
 
   Returns the dbref of the mogrifier of a channel.
   
-See also: @channel/mogrifier, @chatformat
+See also: @channel/mogrifier, @chatformat, channel functions
 & Channel functions
   Channel functions work with the channel system.
 

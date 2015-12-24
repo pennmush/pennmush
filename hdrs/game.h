@@ -209,7 +209,7 @@ extern void do_force(dbref player, dbref caller, const char *what,
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref executor, dbref enactor, const char *name, const char *password,
-   MQUE *queue_entry);
+   MQUE *queue_entry, bool generate);
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,
                     int silent, MQUE *queue_entry);

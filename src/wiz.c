@@ -817,7 +817,7 @@ do_newpassword(dbref executor, dbref enactor,
     int len = get_random32(7, 12);
    
     for (i = 0; i < len; i++)
-      passwd[i] = elems[get_random32(0, sizeof(elems) - 1)];
+      passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
     passwd[len] = '\0';
     password = passwd;
   } else 

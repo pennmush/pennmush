@@ -1,4 +1,4 @@
-& 1.8.6p0
+& 1.8.6p1
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,13 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.6 patchlevel 1                                 ??? ??, 2016
+
+Minor changes:
+ * moniker() now returns accented names, for Rhost/MUX compatability. Reported by Qon. [MG]
+ * Help fixes by Qon and others. [MG]
+
+& 1.8.6p0
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015
 
 NOTE: When updating from an earlier version of PennMUSH, you'll need to run 'make update' and './config.status' in the toplevel PennMUSH directory prior to running 'make'.
@@ -54,6 +61,7 @@ Minor changes:
  * Added some tests for json(), and more tests for ljust()/rjust(). [MG]
  * Guests can no longer @channel/recall channels they aren't on. [MG]
  * The hardcode no longer strictly enforces permissions for @wall, @rwall or @wizwall; anyone who can passes the normal command restriction can now use them. [MG]
+ * Add references to 'help channel functions' to various channel function help entries. [Qon]
    
 Hardcode:
  * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]

@@ -12,6 +12,12 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 ==========================================================================
 
+Version 1.8.6 patchlevel 1                                 ??? ??, 2016
+
+Minor changes:
+ * moniker() now returns accented names, for Rhost/MUX compatability. Reported by Qon. [1063-MG]
+ * Help fixes by Qon and others. [MG]
+
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015
 
 NOTE: When updating from an earlier version of PennMUSH, you'll need to run 'make update' and './config.status' in the toplevel PennMUSH directory prior to running 'make'.
@@ -55,6 +61,7 @@ Minor changes:
  * Added some tests for json(), and more tests for ljust()/rjust(). [MG]
  * Guests can no longer @channel/recall channels they aren't on. [MG]
  * The hardcode no longer strictly enforces permissions for @wall, @rwall or @wizwall; anyone who can passes the normal command restriction can now use them. [MG]
+ * Add references to 'help channel functions' to various channel function help entries. [Qon]
    
 Hardcode:
  * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]
@@ -71,3 +78,4 @@ Hardcode:
  * Minor fixes and resource cleanups reported by Qon. [MG]
  * An off-by-one error led to passwords occassionally being hashed incorrectly and needing to be reset. Reported by Glass. [MG]
  * Old-style raw ANSI codes (from old dbs, SQL, etc) was sometimes mistakenly stripped when sent to a client. Found and fixed by Qon. [1050]
+ * Some @mail selectors incorrectly selected all mail in the current folder. Found and fixed by Qon. [1055]

@@ -1783,12 +1783,10 @@ FUNCTION(fun_name)
 FUNCTION(fun_moniker)
 {
   dbref it;
-  /* bool accents = (strcmp(called_as, "AMONIKER") == 0); */
 
   it = match_thing(executor, args[0]);
   if (GoodObject(it)) {
-    safe_str(ansi_name(it, 0, NULL, 0), buff, bp);
-    /*safe_str(ansi_name(it, accents, NULL, 0), buff, bp); */
+    safe_str(ansi_name(it, 1, NULL, 0), buff, bp);
   } else
     safe_str(T(e_notvis), buff, bp);
 }

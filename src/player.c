@@ -538,8 +538,8 @@ email_register_player(DESC *d, const char *name, const char *email,
   } else {
     /* Ok, all's well, make a player */
     player = make_player(name, passwd, host, ip);
-    queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
-                unparse_objid(player), name, "register", d->descriptor);
+    queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d,%s",
+                unparse_objid(player), name, "register", d->descriptor, email);
     (void) atr_add(player, "REGISTERED_EMAIL", email, GOD, 0);
     return player;
   }

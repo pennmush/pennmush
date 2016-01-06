@@ -137,8 +137,8 @@ No arguments are passed to these events.
   &SIGNAL`USR1 Event Handler=@nspemit/list lwho()=GAME: Reboot w/o disconnect from game account, please wait. ; @shutdown/reboot
   &SIGNAL`USR2 Event Handler=@dump
 & EVENT PLAYER
-  player`create (objid, name, how, descriptor)
-      Triggered when a player is created. If the player was @pcreated, then %# will be the person who did the @pcreate. If player was created by using 'create' at the connect screen, then %# will be #-1 and <descriptor> will be non-null. <how> is one of: "pcreate", "create" or "register".
+  player`create (objid, name, how, descriptor, email)
+      Triggered when a player is created. If the player was @pcreated, then %# will be the person who did the @pcreate. If player was created by using 'create' at the connect screen, then %# will be #-1 and <descriptor> will be non-null. <how> is one of: "pcreate", "create" or "register". If created using 'register', <email> will be set appropriately.
 
   player`connect (objid, number of connections, descriptor)
       Similar to @aconnect, but for events, and so you can use descriptor.

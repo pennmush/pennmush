@@ -15,7 +15,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.6 patchlevel 1                                 ??? ??, 2016
 
 Minor changes:
-* PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
+ * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
  * moniker() now returns accented names, for Rhost/MUX compatability. Reported by Qon. [1063-MG]
  * Help fixes by Qon and others. [MG]
 

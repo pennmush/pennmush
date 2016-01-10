@@ -2378,7 +2378,7 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
     > think lockfilter(age:>20,lwho())
     #123 #456 #789
   
-See also: @lock, lock(), elock(), locktypes, filter(), testlock()
+See also: @lock, lock(), elock(), lockkeys, filter(), testlock()
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
   lockflags()

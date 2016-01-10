@@ -132,8 +132,6 @@ do_real_open(dbref player, const char *direction, const char *linkto,
 
     /* initialize everything */
     set_name(new_exit, name);
-    if (alias && *alias != ALIAS_DELIMITER)
-      atr_add(new_exit, "ALIAS", alias, player, 0);
     Owner(new_exit) = Owner(player);
     Zone(new_exit) = Zone(player);
     Source(new_exit) = loc;
@@ -149,8 +147,11 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     }
 
     mush_free(name, "name.newname");
-    if (alias)
+    if (alias) {
+      if (*alias != ALIAS_DELIMITER)
+        atr_add(new_exit, "ALIAS", alias, player, 0);
       mush_free(alias, "name.newname");
+    }
 
     /* link it in */
     PUSH(new_exit, Exits(loc));
@@ -745,7 +746,18 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
     if (!GoodObject(clone)) {
       return NOTHING;
     } else {
+      char *alias_val = NULL;
+      ATTR *alias_attr = NULL;
+      alias_attr = atr_get_noparent(clone, "ALIAS");
+      if (alias_attr) {
+        alias_val = safe_atr_value(alias_attr);
+        atr_clr(clone, "ALIAS", GOD);
+      }
       atr_cpy(clone, thing);
+      if (alias_val) {
+        atr_add(clone, "ALIAS", alias_val, player, 0);
+        free(alias_val);
+      }
       clone_locks(player, thing, clone);
       Zone(clone) = Zone(thing);
       Parent(clone) = Parent(thing);

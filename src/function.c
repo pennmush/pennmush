@@ -542,6 +542,7 @@ FUNTAB flist[] = {
   {"SETR", fun_setq, 2, INT_MAX, FN_REG},
   {"SETDIFF", fun_setmanip, 2, 5, FN_REG},
   {"SETINTER", fun_setmanip, 2, 5, FN_REG},
+  {"SETSYMDIFF", fun_setmanip, 2, 5, FN_REG},
   {"SETUNION", fun_setmanip, 2, 5, FN_REG},
   {"SHA0", fun_sha0, 1, 1, FN_REG | FN_DEPRECATED},
   {"SHL", fun_shl, 2, 2, FN_REG | FN_STRIPANSI},

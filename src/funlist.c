@@ -815,7 +815,9 @@ FUNCTION(fun_setmanip)
   ListTypeInfo *lti;
 
   bool dolt = 0, dogt = 0, doeq = 0;
-  if (strstr(called_as, "DIFF")) {
+  if (strstr(called_as, "SYMDIFF")) {
+    dogt = dolt = 1;
+  } else if (strstr(called_as, "DIFF")) {
     dolt = 1;
   } else if (strstr(called_as, "INTER")) {
     doeq = 1;

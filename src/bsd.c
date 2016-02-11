@@ -616,13 +616,15 @@ main(int argc, char **argv)
     else
       do_rawlog(LT_ERR, "Setting collate locale to %s", loc);
   }
+ #ifndef DONT_TRANSLATE
 #ifdef HAVE_TEXTDOMAIN
   textdomain("pennmush");
 #endif
 #ifdef HAVE_BINDTEXTDOMAIN
   bindtextdomain("pennmush", "../po");
 #endif
-
+#endif
+  
   /* Build the locale-dependant tables used by PCRE */
   tables = pcre_maketables();
 

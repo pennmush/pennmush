@@ -1,8 +1,10 @@
 package MUSHConnection;
 
-# use strict;
+use strict;
+no strict qw/refs/;
+use warnings;
 use IO::Poll;
-use IO::Socket::INET;
+use IO::Socket::IP;
 
 my $nextpat = "PATTERN000000001";
 
@@ -10,7 +12,7 @@ sub new {
   my $proto = shift;
   my $class = ref($proto) || $proto;
   my $self = [];
-  $self->[0] = IO::Socket::INET->new();
+  $self->[0] = undef;
   $self->[1] = {};
   $self->[1]->{PREFIX} = '=-=-= OUTPUTPREFIX =-=-=';
   $self->[1]->{SUFFIX} = '=-=-= OUTPUTSUFFIX =-=-=';
@@ -34,13 +36,13 @@ sub connect {
   my $name = shift;
   my $passwd = shift;
 
-
+  $self->[0] = IO::Socket::IP->new(PeerHost => "127.0.0.1",
+				   PeerPort => $port,
+				   Proto => "tcp");
+  if (not defined $self->[0]) {
+    die "Unable to open connection: '$addr', '$port': $!\n";
+  }
   my $socket = $self->[0];
-#  $socket->close if $socket->connected();
-  $self->[0] = IO::Socket::INET->new(PeerAddr => $addr, PeerPort => $port,
-                                     Proto => "tcp");
-  $socket = $self->[0];
-#  $socket->connect(PeerAddr => $addr, PeerPort => $port, Proto => "tcp");
   $socket->autoflush(1);
   $socket->timeout(30);
 

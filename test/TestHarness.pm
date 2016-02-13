@@ -1,8 +1,10 @@
 package TestHarness;
 use strict;
+use warnings;
 use vars qw/%tests $testcount @failures $alltests @allfailures $allexpected/;
 use vars qw/$testfiles $use_mortal/;
 use subs qw/test summary/;
+use feature qw/say/;
 
 $alltests = 0;
 @allfailures = ();
@@ -24,8 +26,8 @@ sub new {
     $self{-name} = $name;
     warn "Duplicate test $name\n" if exists $tests{$name};
     my $code = 'sub { my $god = shift; ' . "\n";
-    open IN, "<", $script or die "Couldn't open ${script}: $!\n";
-    while (<IN>) {
+    open my $IN, "<", $script or die "Couldn't open ${script}: $!\n";
+    while (<$IN>) {
         chomp;
         next if /^\s*(?:#|$)/o;
         last if /^run tests:$/o;
@@ -34,17 +36,17 @@ sub new {
         }
         if (/^expect (\d+) failures!$/) {
             $self{-expected} = $1;
-            print "Expecting $1 failures in $name\n";
+            say "Expecting $1 failures in $name";
         }
         if (/^\s*login mortal$/) {
             $code .= 'my $mortal = shift;' . "\n";
             $use_mortal = 1;
         }
     }
-    while (<IN>) {
+    while (<$IN>) {
         $code .= $_;
     }
-    close IN;
+    close $IN;
     $code .= "}\n";
 #    print "Test function for $name:\n$code\n";
 #    flush STDOUT;
@@ -73,7 +75,7 @@ sub run {
 
     my $name = $self->{-name};
 
-    print "Running tests for ${name}:\n";
+    say "Running tests for ${name}:";
 
     &{$self->{-test}}($god, $mortal);
 
@@ -86,7 +88,7 @@ sub run {
 }
 
 END {
-    print "Totals:\n";
+    say "Totals:" if $testfiles > 1;
     summary("all tests run", $alltests, \@allfailures, $allexpected)
         if $testfiles > 1;
     $? = 1 if (scalar @allfailures != $allexpected);
@@ -128,20 +130,20 @@ sub test {
   $testcount++;
   unless ($verdict) {
     push(@failures, $name);
-    print "TEST FAILURE: $name\n";
+    say "TEST FAILURE: $name";
     if (defined($command)) {
-      print "  command: $command\n";
+      say "  command: $command";
     } else {
-      print "  listening\n";
+      say "  listening\n";
     }
     chomp $result;
     if ($result =~ /\n/o) {
-      print "  result:\n$result\n";
+      say "  result:\n$result";
     } else {
-      print "  result:  $result\n";
+      say "  result:  $result";
     }
     foreach my $pattern (@$patterns) {
-      print "  pattern: $pattern\n";
+      say "  pattern: $pattern";
     }
     print "\n";
   }
@@ -149,7 +151,7 @@ sub test {
 
 sub summary {
     my ($name, $testcount, $failures, $expected) = @_;
-    print ":"x70, "\n";
+    say ":"x70;
     print "\n";
     my $fcount = 0;
     if (ref $failures) {
@@ -158,15 +160,15 @@ sub summary {
         $fcount = $failures;
     }
     my $scount = $testcount - $fcount;
-    print "$testcount tests, $scount succeeded, $fcount failed ($expected expected failures)\n";
+    say "$testcount tests, $scount succeeded, $fcount failed ($expected expected failures)";
     if ($fcount != $expected) {
-        print "failed tests:\n";
+        say "failed tests:";
         my $str = join(", ", @$failures);
         while (length($str) > 67) {
             $str =~ s/^(.{1,67}), //o;
-            print "  $1,\n";
+            print "  $1,";
         }
-        print "  $str\n";
+        say "  $str";
     }
     print "\n";
 }

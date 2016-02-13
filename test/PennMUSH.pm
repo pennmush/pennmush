@@ -1,10 +1,22 @@
 package PennMUSH;
-
+use strict;
+use warnings;
 use File::Copy;
 use File::Path;
 use MUSHConnection;
+use POSIX qw/:sys_wait_h/;
+use feature qw/say/;
+no warnings qw/experimental::smartmatch/;
 
 my @pids = ();
+
+$SIG{"CHLD"} = sub  {
+  while ((my $child = waitpid(-1, WNOHANG))  > 0) {
+    if ($child ~~ @pids) {
+      say "Child PennMUSH process $child exited.";
+    }
+  }
+};
 
 sub new {
   my $proto = shift;
@@ -27,7 +39,7 @@ sub start {
   my $self = shift;
   srand();
   $self->{HOST} = "localhost" unless defined $self->{HOST};
-  if (!exists $self->{PORT} || $self->{PORT} <= 0) {      
+  if (!exists $self->{PORT} || $self->{PORT} <= 0) {
       $self->{PORT} = int(rand(2000)) + 12000;
   }
   my $port = $self->{PORT};
@@ -57,9 +69,10 @@ sub start {
     push(@pids, $child);
     $self->{PID} = $child;
     foreach $j (1..20) {
-      next unless open(LOG, "testgame/log/netmush.log");
-      while ($line = <LOG>) {
-        close(LOG), return $port if $line =~ /^Listening on port $port /;
+      sleep(1);
+      next unless open my $LOG, "<", "testgame/log/netmush.log";
+      while ($line = <$LOG>) {
+        return $port if $line =~ /^Listening on port $port /;
       }
     } continue {
       sleep(1);
@@ -75,8 +88,9 @@ sub start {
     }
     push @execargs, "test.cnf";
     exec @execargs;
+    die "Unable to run '@execargs': $!\n";
   } else {
-    die "Could not spawn game process!\n";
+    die "Could not spawn game process: $!\n";
   }
 }
 
@@ -85,19 +99,19 @@ sub copyConfig {
   my $to = shift;
   my %subs = @_;
 
-  open(FROM, "<$from") || die "Could not open template configuration.\n";
-  open(TO, ">$to") || die "Could not write test configuration.\n";
+  open my $FROM, "<", $from or die "Could not open template configuration: $!\n";
+  open my $TO, ">", $to or die "Could not write test configuration: $!\n";
   my $line;
-  while ($line = <FROM>) {
+  while ($line = <$FROM>) {
     next if $line =~ /^\s*#/o;
     next unless $line =~ /^\s*(\w+)\s/o;
     my $key = $1;
     $line = $key . " " . $subs{$key} . "\n" if defined($subs{$key});
   } continue {
-    print TO $line;
+    print $TO $line;
   }
-  close(TO);
-  close(FROM);
+  close $TO;
+  close $FROM;
 }
 
 sub login {

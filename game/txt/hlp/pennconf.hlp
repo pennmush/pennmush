@@ -140,7 +140,7 @@ Continued in help @config limits2
   paycheck=<number>: How many pennies players get each day they log on.
   max_pennies=<number>: The maximum pennies an object can have.
   mail_limit=<number>: How many @mail messages someone can have.
-  max_depth=<number>: How deep can @parent chains can go.
+  max_depth=<number>: How deep indirect @lock chains can go.
   player_queue_limit=<number>: The number of commands a player can have queued at once.
   queue_loss=<number>: One in <number> times, queuing a command will cost an extra penny that doesn't get refunded.
   queue_chunk=<number>: How many queued commands get executed in a row when there's no network activity pending.

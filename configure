@@ -8764,13 +8764,13 @@ echo "* Compiler flags: $CFLAGS"
 if test "$enable_sql" = yes; then
  sql_servers=""
  if test "$found_mysql" = yes; then
-  sql_servers="MySQL "
+  sql_servers="MySQL"
  fi
  if test "$found_postgresql" = yes; then
-  sql_servers="${sql_servers} Postgres "
+  sql_servers="${sql_servers} Postgres"
  fi
- if test "$found_sqlite" = yes; then
-  sql_servers="${sql_servers} Sqlite3 "
+ if test -n "$SQLITE3_VERSION" ; then
+  sql_servers="${sql_servers} Sqlite3"
  fi
  echo "* SQL support: ${sql_servers:-No}"
 else

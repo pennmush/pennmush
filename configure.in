@@ -41,6 +41,7 @@ AC_PATH_PROG(INDENT, indent)
 AC_PATH_PROG(CTAGS, ctags)
 AC_PATH_PROG(ETAGS, etags)
 AC_PATH_PROG(EXCTAGS, exctags)
+AC_PATH_PROG(GPERF, gperf)
 
 # Detects FreeBSD
 case "${build_os}" in 
@@ -466,13 +467,13 @@ echo "* Compiler flags: $CFLAGS"
 if test "$enable_sql" = yes; then
  sql_servers=""
  if test "$found_mysql" = yes; then
-  sql_servers="MySQL "
+  sql_servers="MySQL"
  fi
  if test "$found_postgresql" = yes; then
-  sql_servers="${sql_servers} Postgres "
+  sql_servers="${sql_servers} Postgres"
  fi
- if test "$found_sqlite" = yes; then
-  sql_servers="${sql_servers} Sqlite3 "
+ if test -n "$SQLITE3_VERSION" ; then
+  sql_servers="${sql_servers} Sqlite3"
  fi
  echo "* SQL support: ${sql_servers:-No}"
 else

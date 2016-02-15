@@ -21,6 +21,7 @@ Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
  * moniker() now returns accented names, for Rhost/MUX compatability. Reported by Qon. [1063-MG]
  * Help fixes by Qon and others. [MG]
+ * The makefile warns if gperf is not installed but needed to regenerate some source files. Based on an idea by tkrajcar.
 
 Functions:
  * Added setsymdiff() [SW]

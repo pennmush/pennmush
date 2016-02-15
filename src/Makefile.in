@@ -129,29 +129,33 @@ local.c: local.dst
 
 # The following source files are auto-generated with gperf, if it's present.
 bflags.c: bflags.gperf
-	@if command -v gperf &> /dev/null; then \
-		gperf -C --output-file bflags.c bflags.gperf; \
+	@if [ -n "@GPERF@" ]; then \
+		echo "Rebuilding bflags.c from bflags.gperf"; \
+		@GPERF@ -C --output-file bflags.c bflags.gperf; \
 	else \
 		echo "*** NOTE ***: src/bflags.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/bflags.c to suppress this message."; \
 	fi
 
 htmltab.c: htmltab.gperf
-	@if command -v gperf &> /dev/null; then \
-		gperf -C --output-file htmltab.c htmltab.gperf; \
+	@if [ -n "@GPERF@" ]; then \
+		echo "Rebuilding htmltab.c from htmltab.gperf"; \
+		@GPERF@ -C --output-file htmltab.c htmltab.gperf; \
 	else \
 		echo "*** NOTE ***: src/htmltab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/htmltab.c to suppress this message."; \
 	fi
 
 lmathtab.c: lmathtab.gperf
-	@if command -v gperf &> /dev/null; then \
-		gperf -C --output-file lmathtab.c lmathtab.gperf; \
+	@if [ -n "@GPERF@" ]; then \
+		echo "Rebuilding lmathtab.c from lmathtab.gperf"; \
+		@GPERF@ -C --output-file lmathtab.c lmathtab.gperf; \
 	else \
 		echo "*** NOTE ***: src/lmathtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/lmathtab.c to suppress this message."; \
 	fi
 
 rgbtab.c: rgbtab.gperf
-	@if command -v gperf &> /dev/null; then \
-		gperf -C --output-file rgbtab.c rgbtab.gperf; \
+	@if [ -n "@GPERF@" ]; then \
+		echo "Rebuilding rgbtab.c from rgbtab.gperf"; \
+		@GPERF@ -C --output-file rgbtab.c rgbtab.gperf; \
 	else \
 		echo "*** NOTE ***: src/rgbtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/rgbtab.c to suppress this message."; \
 	fi

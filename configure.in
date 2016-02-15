@@ -41,6 +41,7 @@ AC_PATH_PROG(INDENT, indent)
 AC_PATH_PROG(CTAGS, ctags)
 AC_PATH_PROG(ETAGS, etags)
 AC_PATH_PROG(EXCTAGS, exctags)
+AC_PATH_PROG(GPERF, gperf)
 
 # Detects FreeBSD
 case "${build_os}" in 

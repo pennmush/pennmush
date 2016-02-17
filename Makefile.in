@@ -50,7 +50,7 @@ config.h: configure
 	@exit 1
 
 options.h: options.h.dist
-	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the game/*.cnf files. This will also create game/restart."
+	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the $(GAMEDIR)/*.cnf files. This will also create $(GAMEDIR)/restart."
 	@exit 1
 
 autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h
@@ -73,12 +73,12 @@ hdrs/gitinfo.h: $(wildcard .git/HEAD .git/index)
 	fi
 	@echo "/* Built at `date +%Y%m%d%H%M%S` */" >> hdrs/gitinfo.h
 
-install: localized all
-	-rm -f game/netmush
-	-rm -f game/info_slave
-	-rm -f game/ssl_slave
-	(cd game; $(INSTALL_LINKS))
-	(cd game/txt; make)
+install: localized all $(GAMEDIR)
+	-rm -f $(GAMEDIR)/netmush
+	-rm -f $(GAMEDIR)/info_slave
+	-rm -f $(GAMEDIR)/ssl_slave
+	(cd $(GAMEDIR); $(INSTALL_LINKS))
+	(cd $(GAMEDIR)/txt; make)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"
 
 netmud: 
@@ -136,36 +136,32 @@ customize: update-conf
 # other game directories.
 GAMEDIR=game
 
-update-conf: game/mushcnf.dst game/aliascnf.dst game/restrictcnf.dst game/namescnf.dst
-	-@@TOUCH@ game/mushcnf.dst
-	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/mush.cnf game/mushcnf.dst
-	-@@TOUCH@ game/aliascnf.dst
-	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/alias.cnf game/aliascnf.dst
-	-@@TOUCH@ game/restrictcnf.dst
-	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/restrict.cnf game/restrictcnf.dst
-	-@if [ ! -f $(GAMEDIR)/names.cnf ]; then $(CP) game/namescnf.dst $(GAMEDIR)/names.cnf; fi
+$(GAMEDIR):
+	$(CP) -R game/ $(GAMEDIR)/
 
-$(GAMEDIR)/alias.cnf: game/aliascnf.dst
+$(GAMEDIR)/alias.cnf: game/aliascnf.dst $(GAMEDIR)
 	-@@TOUCH@ game/aliascnf.dst
 	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/alias.cnf game/aliascnf.dst
 
-$(GAMEDIR)/restrict.cnf: game/restrictcnf.dst
+$(GAMEDIR)/restrict.cnf: game/restrictcnf.dst $(GAMEDIR)
 	-@@TOUCH@ game/restrictcnf.dst
 	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/restrict.cnf game/restrictcnf.dst
 
-$(GAMEDIR)/names.cnf: game/namescnf.dst
-	if [ ! -f game/names.cnf ]; then \
+$(GAMEDIR)/names.cnf: game/namescnf.dst $(GAMEDIR)
+	if [ ! -f $(GAMEDIR)/names.cnf ]; then \
 		$(CP) game/namescnf.dst $(GAMEDIR)/names.cnf \
 	fi
 
-$(GAMEDIR)/mush.cnf: game/mushcnf.dst
+$(GAMEDIR)/mush.cnf: game/mushcnf.dst $(GAMEDIR)
 	-@@TOUCH@ game/mushcnf.dst
 	-@@PERL@ utils/update-cnf.pl $(GAMEDIR)/mush.cnf game/mushcnf.dst
 
-$(GAMEDIR)/restart: game/restart.dst
+$(GAMEDIR)/restart: game/restart.dst $(GAMEDIR)
 	-@if [ ! -f $(GAMEDIR)/restart ]; then $(CP) game/restart.dst $(GAMEDIR)/restart; fi
 
-update: update-hdr update-conf game/restart
+update: update-hdr update-conf $(GAMEDIR)/restart
+
+update-conf: $(GAMEDIR)/mush.cnf $(GAMEDIR)/alias.cnf $(GAMEDIR)/restrict.cnf $(GAMEDIR)/restrict.cnf
 
 update-hdr:
 	-@@TOUCH@ options.h.dist

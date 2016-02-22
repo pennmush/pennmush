@@ -2633,7 +2633,8 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
 /** Given a namespace name and a flag name and a typestring, set a flag's type.
  */
 void
-set_flag_type_by_name(const char *ns, const char *name, privbits type) {
+set_flag_type_by_name(const char *ns, const char *name, privbits type)
+{
   FLAGSPACE *n;
   FLAG *f;
   Flagspace_Lookup(n, ns);

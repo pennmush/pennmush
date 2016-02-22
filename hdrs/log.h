@@ -49,8 +49,7 @@ enum logwipe_policy {
   LOGWIPE_TRIM,
   LOGWIPE_ROTATE
 };
-void do_logwipe(dbref, enum log_type, const char *,
-		enum logwipe_policy);
+void do_logwipe(dbref, enum log_type, const char *, enum logwipe_policy);
 void do_log_recall(dbref, enum log_type, int);
 
 /* Activity log types */

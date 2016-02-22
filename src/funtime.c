@@ -560,7 +560,8 @@ do_convtime_gd(const char *str, struct tm *ttm)
 }
 #else
 int
-do_convtime_gd(const char *str __attribute__((__unused__)), struct tm *ttm __attribute__((__unused__)))
+do_convtime_gd(const char *str __attribute__ ((__unused__)), struct tm *ttm
+               __attribute__ ((__unused__)))
 {
   return 0;
 }

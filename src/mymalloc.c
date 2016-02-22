@@ -199,10 +199,10 @@ slab_create(const char *name, size_t item_size)
   sl->keep_last_empty = 0;
   sl->hintless_threshold = 0;
   sl->slabs = NULL;
-  if (item_size < sizeof(void*))
-    item_size = sizeof(void*);
+  if (item_size < sizeof(void *))
+    item_size = sizeof(void *);
   /* Align objects after the first with the size of a pointer */
-  item_size += item_size % sizeof(void*);
+  item_size += item_size % sizeof(void *);
   sl->item_size = item_size;
   sl->items_per_page = (pgsize - offset) / item_size;
 
@@ -223,7 +223,7 @@ slab_create(const char *name, size_t item_size)
  * \param val Value to set option too (Not meaningful for all options)
  */
 void
-slab_set_opt(slab *sl, enum slab_options opt, int val
+slab_set_opt(slab * sl, enum slab_options opt, int val
              __attribute__ ((__unused__)))
 {
   if (!sl)
@@ -325,7 +325,7 @@ slab_alloc_obj(struct slab_page *where)
  * \return pointer to object, or NULL
  */
 void *
-slab_malloc(slab *sl, const void *hint)
+slab_malloc(slab * sl, const void *hint)
 {
   if (!sl)
     return NULL;
@@ -405,7 +405,7 @@ slab_malloc(slab *sl, const void *hint)
  * \param obj the object to free
  */
 void
-slab_free(slab *sl, void *obj)
+slab_free(slab * sl, void *obj)
 {
   struct slab_page *page, *last;
 
@@ -470,7 +470,7 @@ slab_free(slab *sl, void *obj)
  * \param sl the slab to destroy.
  */
 void
-slab_destroy(slab *sl)
+slab_destroy(slab * sl)
 {
   struct slab_page *page, *next;
   for (page = sl->slabs; page; page = next) {
@@ -484,7 +484,7 @@ slab_destroy(slab *sl)
  * \param sl the slab
  */
 void
-slab_describe(const slab *sl, struct slab_stats *stats)
+slab_describe(const slab * sl, struct slab_stats *stats)
 {
   const struct slab_page *page;
 

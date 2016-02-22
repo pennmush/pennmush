@@ -170,7 +170,7 @@ init_aname_table(void)
   for (ap = attr; ap->name; ap++)
     ptab_insert(&ptab_attrib, ap->name, ap);
   ptab_end_inserts(&ptab_attrib);
-  
+
   for (aap = attralias; aap->alias; aap++) {
     alias_attribute(aap->realname, aap->alias);
   }

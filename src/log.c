@@ -147,7 +147,7 @@ start_all_logs(void)
   int n;
   FILE *fp;
   static bool once = 1;
-  
+
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
 
@@ -163,7 +163,7 @@ start_all_logs(void)
     }
     setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
   }
-  
+
   if (once) {
 #ifndef DEBUG_BYTECODE
     fclose(stdout);
@@ -220,9 +220,7 @@ end_all_logs(void)
 
 
 static void
-format_log_name(char * restrict buff,
-		const char * restrict fname,
-		int n)
+format_log_name(char *restrict buff, const char *restrict fname, int n)
 {
   char *bp = buff;
   safe_format(buff, &bp, "%s.%d", fname, n);
@@ -248,9 +246,9 @@ resize_log_trim(struct log_stream *log)
   int c;
   char copyname[BUFFER_LEN];
   char *bp;
-  
+
   if (fstat(fileno(log->fp), &s) < 0)
-    return; /* Oops */
+    return;                     /* Oops */
 
   trim_at = floor(s.st_size * 0.9);
 
@@ -264,7 +262,7 @@ resize_log_trim(struct log_stream *log)
   bp = copyname;
   safe_format(copyname, &bp, "%s.tmp", log->filename);
   *bp = '\0';
-  
+
   copy_file(log->fp, copyname, 0);
   trunc_file(log->fp);
   fputs("*** LOG WAS TRIMMED AFTER GROWING TOO LARGE ***\n", log->fp);
@@ -280,7 +278,7 @@ resize_log_rotate(struct log_stream *log)
   int n;
   char namea[BUFFER_LEN], nameb[BUFFER_LEN];
   struct stat s;
-    
+
   for (n = 1; 1; n += 1) {
     format_log_name(namea, log->filename, n);
     if (stat(namea, &s) < 0)
@@ -293,12 +291,12 @@ resize_log_rotate(struct log_stream *log)
   }
 
   format_log_name(namea, log->filename, 1);
-    
+
   if (options.compressprog[0]) {
     /* This can be done better. */
     char *np = nameb;
     safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
-		log->filename, namea);
+                log->filename, namea);
     *np = '\0';
     system(nameb);
   } else {
@@ -309,7 +307,7 @@ resize_log_rotate(struct log_stream *log)
   fflush(log->fp);
 }
 
-typedef void (*logwipe_fun)(struct log_stream *);
+typedef void (*logwipe_fun) (struct log_stream *);
 struct lw_dispatch {
   enum logwipe_policy policy;
   const char *name;
@@ -346,18 +344,17 @@ check_log_size(struct log_stream *log)
   const char *policy;
   int n;
   logwipe_fun doit = resize_log_trim;
-  
+
   max_bytes = options.log_max_size * 1024;
 
   if (fstat(fileno(log->fp), &logstats) < 0)
-    return; /* Unable to stat the file. Hmm. */
+    return;                     /* Unable to stat the file. Hmm. */
 
   if (logstats.st_size <= max_bytes)
     return;
 
-  policy = keystr_find_d(options.log_size_policy, log->name,
-			 "trim");
-  
+  policy = keystr_find_d(options.log_size_policy, log->name, "trim");
+
   lock_file(log->fp);
   for (n = 0; n < LW_SIZE; n += 1) {
     if (strcmp(policy, lw_table[n].name) == 0) {
@@ -536,7 +533,7 @@ do_log_recall(dbref player, enum log_type type, int lines)
  */
 void
 do_logwipe(dbref player, enum log_type logtype, const char *pass,
-	   enum logwipe_policy policy)
+           enum logwipe_policy policy)
 {
   struct log_stream *logst = lookup_log(logtype);
 
@@ -544,7 +541,7 @@ do_logwipe(dbref player, enum log_type logtype, const char *pass,
     notify(player, T("Wrong password."));
     do_log(LT_WIZ, player, NOTHING,
            "Invalid attempt to wipe the %s log, password '%s'", logst->name,
-	   pass);
+           pass);
     return;
   }
   switch (logtype) {
@@ -558,13 +555,13 @@ do_logwipe(dbref player, enum log_type logtype, const char *pass,
       logwipe_fun doit = resize_log_wipe;
       int n;
       for (n = 0; n < LW_SIZE; n += 1) {
-	if (lw_table[n].policy == policy) {
-	  doit = lw_table[n].fun;
-	  break;
-	}
+        if (lw_table[n].policy == policy) {
+          doit = lw_table[n].fun;
+          break;
+        }
       }
       if (n == LW_SIZE)
-	doit = lw_table[0].fun;      
+        doit = lw_table[0].fun;
       doit(logst);
       do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
     }

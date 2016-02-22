@@ -50,12 +50,12 @@ extern "C" {
   STATIC FUNCTIONS
   ----------------*/
   inline static int idxof(int i);
-  inline static void gen_rand_array(sfmt_t * sfmt, w128_t *array, int size);
+  inline static void gen_rand_array(sfmt_t * sfmt, w128_t * array, int size);
   inline static uint32_t func1(uint32_t x);
   inline static uint32_t func2(uint32_t x);
   static void period_certification(sfmt_t * sfmt);
 #if defined(BIG_ENDIAN64) && !defined(ONLY64)
-  inline static void swap(w128_t *array, int size);
+  inline static void swap(w128_t * array, int size);
 #endif
 
 #if defined(HAVE_ALTIVEC)
@@ -91,7 +91,7 @@ extern "C" {
  * @param array an 128-bit array to be filled by pseudorandom numbers.
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
-  inline static void gen_rand_array(sfmt_t * sfmt, w128_t *array, int size) {
+  inline static void gen_rand_array(sfmt_t * sfmt, w128_t * array, int size) {
     int i, j;
     w128_t *r1, *r2;
 
@@ -129,7 +129,7 @@ extern "C" {
 #endif
 
 #if defined(BIG_ENDIAN64) && !defined(ONLY64) && !defined(HAVE_ALTIVEC)
-  inline static void swap(w128_t *array, int size) {
+  inline static void swap(w128_t * array, int size) {
     int i;
     uint32_t x, y;
 

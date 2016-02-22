@@ -152,10 +152,10 @@ FUNALIAS faliases[] = {
   {"STRDELETE", "DELETE"},
   {"LREPLACE", "REPLACE"},
   {"LINSERT", "INSERT"},
-  {"MONIKER", "CNAME"},  /* Rhost alias */
-  {"MEAN", "AVG"},  /* Rhost alias */
+  {"MONIKER", "CNAME"},         /* Rhost alias */
+  {"MEAN", "AVG"},              /* Rhost alias */
   {"MATCH", "ELEMENT"},
-  {"SPEAK", "SPEAKPENN"}, /* Backwards compatability */
+  {"SPEAK", "SPEAKPENN"},       /* Backwards compatability */
   {NULL, NULL}
 };
 

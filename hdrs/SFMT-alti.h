@@ -96,7 +96,7 @@ sfmt_gen_rand_all(sfmt_t * sfmt)
  * @param size number of 128-bit pesudorandom numbers to be generated.
  */
 inline static void
-gen_rand_array(sfmt_t * sfmt, w128_t *array, int size)
+gen_rand_array(sfmt_t * sfmt, w128_t * array, int size)
 {
   int i, j;
   vector unsigned int r, r1, r2;
@@ -149,7 +149,7 @@ gen_rand_array(sfmt_t * sfmt, w128_t *array, int size)
  * @param size size of 128-bit array.
  */
 inline static void
-swap(w128_t *array, int size)
+swap(w128_t * array, int size)
 {
   int i;
   const vector unsigned char perm = SFMT_ALTI_SWAP;

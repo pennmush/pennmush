@@ -400,7 +400,7 @@ start_cpu_timer(void)
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 1;
-#if defined(HAVE_SETITIMER)         /* UNIX way */
+#if defined(HAVE_SETITIMER)     /* UNIX way */
   {
     struct itimerval time_limit;
     if (options.queue_entry_cpu_time > 0) {

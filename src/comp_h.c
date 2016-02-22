@@ -300,7 +300,7 @@ huff_init_compress(PENNFILE *f)
   int indx, count;
   long temp;
   CNode *node;
-  
+
 #ifdef STANDALONE
   printf("init_compress: Part 1\n");
 #endif

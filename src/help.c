@@ -65,7 +65,8 @@ static void write_topic(long int p);
 
 extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
-static char * help_search(dbref executor, help_file *h, char *_term, char *delim);
+static char *help_search(dbref executor, help_file *h, char *_term,
+                         char *delim);
 
 static char *
 help_search(dbref executor, help_file *h, char *_term, char *delim)
@@ -80,18 +81,18 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
   size_t i;
   help_indx *entry;
   FILE *fp;
-  
+
   memset(topic, 0, TOPIC_NAME_LEN + 1);
   memset(line, 0, LINE_SIZE + 1);
   memset(cleanline, 0, LINE_SIZE + 1);
   memset(buff, 0, BUFFER_LEN);
   memset(results, 0, BUFFER_LEN);
-  
+
   rp = results;
-  
+
   if (!delim || !*delim)
     delim = " ";
-  
+
   if (!_term || !*_term) {
     notify(executor, T("What do you want to search for?"));
     return NULL;
@@ -102,7 +103,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     do_rawlog(LT_ERR, "No index for %s.", h->command);
     return NULL;
   }
-  
+
   st = _term;
   while (*st && (isspace(*st) || *st == '*' || *st == '?')) {
     st++;
@@ -111,7 +112,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     notify(executor, T("You may need to be a little more specific."));
     return NULL;
   }
-  
+
   st = searchterm;
   safe_chr('*', searchterm, &st);
   safe_str(_term, searchterm, &st);
@@ -122,7 +123,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     notify(executor, T("You can't search for mulitple lines."));
     return NULL;
   }
-  
+
   if ((fp = fopen(h->file, FOPEN_READ)) == NULL) {
     notify(executor, T("Sorry, that command is temporarily unavailable."));
     do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", h->file);
@@ -189,7 +190,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
       }
     }
   }
-  
+
   return results;
 }
 
@@ -221,13 +222,13 @@ COMMAND(cmd_helpcmd)
       notify(executor, T("No matches."));
     return;
   }
-  
+
   strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
     char **entries;
     char *p;
-    
+
     p = arg_left;
     while (*p && (isspace(*p) || *p == '*' || *p == '?'))
       p++;
@@ -794,6 +795,7 @@ FUNCTION(fun_textsearch)
   else
     safe_str("#-1", buff, bp);
 }
+
 static const char *
 normalize_entry(help_file *help_dat, const char *arg1)
 {

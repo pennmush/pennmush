@@ -25,8 +25,8 @@ mush_malloc(size_t bytes, const char *check)
     typedef struct slab slab;
     slab *slab_create(const char *name, size_t item_size);
     void slab_destroy(slab *);
-    void *slab_malloc(slab *sl, const void *hint);
-    void slab_free(slab *sl, void *obj);
+    void *slab_malloc(slab * sl, const void *hint);
+    void slab_free(slab * sl, void *obj);
 
     enum slab_options {
       SLAB_ALLOC_FIRST_FIT,
@@ -53,7 +53,7 @@ mush_malloc(size_t bytes, const char *check)
                               attributes. */
     };
 
-    void slab_set_opt(slab *sl, enum slab_options opt, int val);
+    void slab_set_opt(slab * sl, enum slab_options opt, int val);
 
     struct slab_stats {
       const char *name;
@@ -71,6 +71,6 @@ mush_malloc(size_t bytes, const char *check)
       int under50;
       int under25;
     };
-    void slab_describe(const slab *sl, struct slab_stats *stats);
+    void slab_describe(const slab * sl, struct slab_stats *stats);
 
 #endif                          /* _MYMALLOC_H */

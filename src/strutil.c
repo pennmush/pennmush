@@ -1730,9 +1730,8 @@ extern const unsigned char *tables;
 
 const char *
 keystr_find_full(const char *restrict map,
-		 const char *restrict key,
-		 const char *restrict deflt,
-		 char delim)
+                 const char *restrict key,
+                 const char *restrict deflt, char delim)
 {
   pcre *re;
   int erroffset;
@@ -1741,25 +1740,24 @@ keystr_find_full(const char *restrict map,
   int matches;
   static char tbuf[BUFFER_LEN];
   char pattern[BUFFER_LEN], *pp;
-  
+
   if (!strchr(map, ' ') && !strchr(map, delim))
     return map;
 
   pp = pattern;
   safe_format(pattern, &pp, "\\b\\Q%s%c\\E(\\w+)\\b", key, delim);
   *pp = '\0';
-  
-  if (!(re = pcre_compile(pattern, PCRE_CASELESS, &errptr,
-			  &erroffset, tables)))
+
+  if (!(re = pcre_compile(pattern, PCRE_CASELESS, &errptr, &erroffset, tables)))
     return deflt;
-  
+
   matches = pcre_exec(re, NULL, map, strlen(map), 0, 0, offsets, 33);
   pcre_free(re);
-  
+
   if (matches == 2) {
     pcre_copy_substring(map, offsets, matches, 1, tbuf, BUFFER_LEN);
     return tbuf;
-  } else if (strcmp(key, "default") == 0) 
+  } else if (strcmp(key, "default") == 0)
     return deflt;
   else
     return keystr_find_full(map, "default", deflt, delim);

@@ -505,10 +505,13 @@ PENNCONF conftable[] = {
    1000000000, 0, "files"}
   ,
   {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0,
-   "limits"},
+   "limits"}
+  ,
 
-  {"attr_compression", cf_str, options.attr_compression, sizeof options.attr_compression, 0, NULL},
-  
+  {"attr_compression", cf_str, options.attr_compression,
+   sizeof options.attr_compression, 0, NULL}
+  ,
+
 #ifdef HAVE_SSL
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
    sizeof options.ssl_private_key_file, 0, "files"}
@@ -522,9 +525,12 @@ PENNCONF conftable[] = {
 #endif
   {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"}
   ,
-  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL},
-  {"log_size_policy", cf_str, options.log_size_policy, sizeof options.log_size_policy, 0, NULL},
-  
+  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL}
+  ,
+  {"log_size_policy", cf_str, options.log_size_policy,
+   sizeof options.log_size_policy, 0, NULL}
+  ,
+
   {NULL, NULL, NULL, 0, 0, NULL}
 };
 
@@ -1504,11 +1510,11 @@ config_file_startup(const char *conf, int restrictions)
     }
     if (toplevel_cfile == NULL)
       toplevel_cfile = mush_strdup(cfile, "config.file");
-    if (restrictions ) {
+    if (restrictions) {
       /* Log files aren't open yet when we do the first readthrough of the
        * config files, but are open when we do the second, so we'll only
        * report that we're reading them on the second go through
-      */
+       */
       do_rawlog(LT_ERR, "Reading main config file %s", conf);
     }
   } else {
@@ -1565,7 +1571,8 @@ config_file_startup(const char *conf, int restrictions)
           do_rawlog(LT_ERR, "CONFIG: include depth too deep in file %s", conf);
         } else {
           if (restrictions) {
-            do_rawlog(LT_ERR, "Reading config file %s included from %s", q, conf);
+            do_rawlog(LT_ERR, "Reading config file %s included from %s", q,
+                      conf);
           }
           config_file_startup(q, restrictions);
         }

@@ -204,8 +204,8 @@ COMMAND(cmd_ifelse)
     int flags = 0;
     if (queue_entry->queue_type & QUEUE_EVENT)
       flags |= QUEUE_EVENT;
-    new_queue_actionlist(executor, enactor, caller, args_right[arg], 
-                         queue_entry, PE_INFO_SHARE, QUEUE_INPLACE | flags, 
+    new_queue_actionlist(executor, enactor, caller, args_right[arg],
+                         queue_entry, PE_INFO_SHARE, QUEUE_INPLACE | flags,
                          NULL);
   }
 }
@@ -999,7 +999,7 @@ COMMAND(cmd_logwipe)
     policy = LOGWIPE_TRIM;
   else if (SW_ISSET(sw, SWITCH_WIPE))
     policy = LOGWIPE_WIPE;
-  
+
   do_logwipe(executor, type, arg_left, policy);
 }
 

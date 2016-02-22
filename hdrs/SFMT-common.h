@@ -27,11 +27,11 @@ extern "C" {
 
 #include "SFMT.h"
 
-  inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b,
-                                  w128_t *c, w128_t *d);
+  inline static void do_recursion(w128_t * r, w128_t * a, w128_t * b,
+                                  w128_t * c, w128_t * d);
 
-  inline static void rshift128(w128_t *out, w128_t const *in, int shift);
-  inline static void lshift128(w128_t *out, w128_t const *in, int shift);
+  inline static void rshift128(w128_t * out, w128_t const *in, int shift);
+  inline static void lshift128(w128_t * out, w128_t const *in, int shift);
 
 /**
  * This function simulates SIMD 128-bit right shift by the standard C.
@@ -42,7 +42,7 @@ extern "C" {
  * @param shift the shift value
  */
 #ifdef ONLY64
-  inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
+  inline static void rshift128(w128_t * out, w128_t const *in, int shift) {
     uint64_t th, tl, oh, ol;
 
      th = ((uint64_t) in->u[2] << 32) | ((uint64_t) in->u[3]);
@@ -57,7 +57,7 @@ extern "C" {
      out->u[3] = (uint32_t) oh;
   }
 #else
-  inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
+  inline static void rshift128(w128_t * out, w128_t const *in, int shift) {
     uint64_t th, tl, oh, ol;
 
      th = ((uint64_t) in->u[3] << 32) | ((uint64_t) in->u[2]);
@@ -81,7 +81,7 @@ extern "C" {
  * @param shift the shift value
  */
 #ifdef ONLY64
-  inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
+  inline static void lshift128(w128_t * out, w128_t const *in, int shift) {
     uint64_t th, tl, oh, ol;
 
     th = ((uint64_t) in->u[2] << 32) | ((uint64_t) in->u[3]);
@@ -96,7 +96,7 @@ extern "C" {
     out->u[3] = (uint32_t) oh;
   }
 #else
-  inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
+  inline static void lshift128(w128_t * out, w128_t const *in, int shift) {
     uint64_t th, tl, oh, ol;
 
     th = ((uint64_t) in->u[3] << 32) | ((uint64_t) in->u[2]);
@@ -120,8 +120,8 @@ extern "C" {
  * @param d a 128-bit part of the internal state array
  */
 #ifdef ONLY64
-  inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b, w128_t *c,
-                                  w128_t *d) {
+  inline static void do_recursion(w128_t * r, w128_t * a, w128_t * b,
+                                  w128_t * c, w128_t * d) {
     w128_t x;
     w128_t y;
 
@@ -137,8 +137,8 @@ extern "C" {
       ^ (d->u[3] << SFMT_SL1);
   }
 #else
-  inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b,
-                                  w128_t *c, w128_t *d) {
+  inline static void do_recursion(w128_t * r, w128_t * a, w128_t * b,
+                                  w128_t * c, w128_t * d) {
     w128_t x;
     w128_t y;
 

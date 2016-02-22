@@ -96,14 +96,12 @@ FUNCTION(fun_valid)
     }
     safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
   } else if (!strcasecmp(args[0], "attrvalue")) {
-    safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff,
-                 bp);
+    safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff, bp);
   } else if (!strcasecmp(args[0], "timezone")) {
     struct tz_result res;
     safe_boolean(parse_timezone_arg(args[1], mudtime, &res), buff, bp);
-  } else if (!strcasecmp(args[0], "boolexp") || 
-             !strcasecmp(args[0], "lockkey")) {
-    boolexp key = parse_boolexp(executor, args[1],  "Basic");
+  } else if (!strcasecmp(args[0], "boolexp") || !strcasecmp(args[0], "lockkey")) {
+    boolexp key = parse_boolexp(executor, args[1], "Basic");
     if (key == TRUE_BOOLEXP)
       safe_boolean(0, buff, bp);
     else {
@@ -536,8 +534,9 @@ FUNCTION(fun_listq)
       }
 
       /* Insert it into the tree if it's non-blank. */
-      if ((val->type & PE_REGS_INT) || ((val->type & PE_REGS_STR) && *(val->val.sval)
-          && !st_find(regname, &blanks))) {
+      if ((val->type & PE_REGS_INT)
+          || ((val->type & PE_REGS_STR) && *(val->val.sval)
+              && !st_find(regname, &blanks))) {
         st_insert(regname, &qregs);
       } else {
         st_insert(regname, &blanks);
@@ -1163,9 +1162,9 @@ FUNCTION(fun_version)
 {
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
               VERSION, PATCHLEVEL, PATCHDATE);
-  #ifdef GIT_REVISION
-    safe_format(buff, bp, " (rev %s)", GIT_REVISION);
-  #endif
+#ifdef GIT_REVISION
+  safe_format(buff, bp, " (rev %s)", GIT_REVISION);
+#endif
 }
 
 /* ARGSUSED */

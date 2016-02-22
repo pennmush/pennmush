@@ -80,7 +80,7 @@ sfmt_gen_rand_all(sfmt_t * sfmt)
  * @param size number of 128-bit pseudorandom numbers to be generated.
  */
 static void
-gen_rand_array(sfmt_t * sfmt, w128_t *array, int size)
+gen_rand_array(sfmt_t * sfmt, w128_t * array, int size)
 {
   int i, j;
   __m128i r1, r2;

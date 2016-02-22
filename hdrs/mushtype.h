@@ -405,24 +405,26 @@ struct descriptor_data {
 };
 
 
-enum json_type {JSON_NONE = 0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT};
+enum json_type { JSON_NONE =
+    0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT };
 
 typedef struct json_data JSON;
 struct json_data {
-  enum json_type type; /* The type of JSON data represented by 'data' */
-  void *data; /* A pointer to a char *, int * or json_data struct, depending on the value of 'type' */
-  struct json_data *next; /* Pointer to the next json_data in the linked list, for arrays/objects */
+  enum json_type type;          /* The type of JSON data represented by 'data' */
+  void *data;                   /* A pointer to a char *, int * or json_data struct, depending on the value of 'type' */
+  struct json_data *next;       /* Pointer to the next json_data in the linked list, for arrays/objects */
 };
 
-typedef int (*gmcp_handler_func) (char *package, JSON *data, char *msg, DESC *d);
+typedef int (*gmcp_handler_func) (char *package, JSON *data, char *msg,
+                                  DESC *d);
 #define GMCP_HANDLER(x) \
   int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__))); \
   int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__)))
 
 struct gmcp_handler {
-  char *package; /* The name of the GMCP package this handler can handle, or the empty string to use as a default handler for all packages */
-  gmcp_handler_func func; /* The function for this handler */
-  struct gmcp_handler *next; /* A pointer to the next handler in the linked list */
+  char *package;                /* The name of the GMCP package this handler can handle, or the empty string to use as a default handler for all packages */
+  gmcp_handler_func func;       /* The function for this handler */
+  struct gmcp_handler *next;    /* A pointer to the next handler in the linked list */
 };
 
 

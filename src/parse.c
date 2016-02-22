@@ -570,7 +570,7 @@ parse_int32(const char *s, char **end, int base)
 {
 
   if (sizeof(int) == 4)
-  return parse_int(s, end, base);
+    return parse_int(s, end, base);
 
 #if defined(SCNd32)
   /* This won't do overflow checking, which is why it isn't first */
@@ -634,12 +634,12 @@ parse_uint32(const char *s, char **end, int base)
 
   if (sizeof(int) == 4)
     return parse_uint(s, end, base);
-  
+
 #if defined(SCNu32)
   /* This won't do overflow checking, which is why it isn't first */
   const char *fmt;
   uint32_t val;
-  
+
   if (base == 10)
     fmt = "%" SCNu32;
   else if (base == 8)
@@ -648,7 +648,7 @@ parse_uint32(const char *s, char **end, int base)
     fmt = "%" SCNx32;
   else
     return 0;
-  
+
   if (sscanf(s, fmt, &val) != 1)
     return 0;
   else

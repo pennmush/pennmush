@@ -149,7 +149,7 @@ void freeaddrinfo(struct addrinfo *old);
 const char *gai_strerror(int errval);
 #endif
 
-#ifndef HAVE_GETNAMEINFO         /* following for getnameinfo() */
+#ifndef HAVE_GETNAMEINFO        /* following for getnameinfo() */
 #ifndef __APPLE__
 /* Apple has these in netdb.h */
 #define NI_MAXHOST        1025  /* max hostname returned */

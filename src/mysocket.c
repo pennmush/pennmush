@@ -541,10 +541,10 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     struct unpcbid creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, 0, LOCAL_PEEREID, &creds, &credlen) < 0) {
-       perror("getsockopt LOCAL_PEEREID");
+      perror("getsockopt LOCAL_PEEREID");
     } else {
-       *remote_pid = creds.unp_pid;
-       *remote_uid = creds.unp_euid;
+      *remote_pid = creds.unp_pid;
+      *remote_uid = creds.unp_euid;
     }
   }
 #elif defined(__OpenBSD__)
@@ -552,14 +552,14 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     struct sockpeercred creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &creds, &credlen) < 0) {
-       perror("getsockopt SO_PEERCRED");
+      perror("getsockopt SO_PEERCRED");
     } else {
-       *remote_pid = creds.pid;
-       *remote_uid = creds.uid;
+      *remote_pid = creds.pid;
+      *remote_uid = creds.uid;
     }
   }
 #elif defined(HAVE_STRUCT_XUCRED)
-  { /* FreeBSD and OS X */
+  {                             /* FreeBSD and OS X */
     struct xucred creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, 0, LOCAL_PEERCRED, &creds, &credlen) < 0) {

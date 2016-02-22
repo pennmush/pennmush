@@ -691,7 +691,7 @@ check_lock_type(dbref player, dbref thing, lock_type name, bool silent)
     return NULL;
   }
   colon = strchr(name, ':') + 1;
-  user_name =  strupper(colon);
+  user_name = strupper(colon);
 
   if (!good_atr_name(user_name)) {
     if (!silent)

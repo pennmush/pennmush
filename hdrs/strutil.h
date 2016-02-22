@@ -136,19 +136,19 @@ mush_strndup(const char *src, size_t len, const char *check)
 
 /* Functions to work on strings holding key:value pairs or a single
  * default value  */
-const char *keystr_find_full(const char *restrict map,
-			     const char *restrict key,
-			     const char * restrict deflt,
-			     char delim);
-static inline const char *
-keystr_find(const char * restrict map,
-	    const char *restrict key) {
+    const char *keystr_find_full(const char *restrict map,
+                                 const char *restrict key,
+                                 const char *restrict deflt, char delim);
+    static inline const char *keystr_find(const char *restrict map,
+                                          const char *restrict key)
+{
   return keystr_find_full(map, key, NULL, ':');
 }
+
 static inline const char *
-keystr_find_d(const char * restrict map,
-	      const char *restrict key,
-	      const char *restrict deflt) {
+keystr_find_d(const char *restrict map,
+              const char *restrict key, const char *restrict deflt)
+{
   return keystr_find_full(map, key, deflt, ':');
 }
 

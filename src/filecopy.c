@@ -309,7 +309,8 @@ rename_file(const char *origname, const char *newname)
  * \return 0 on success, -1 on failure. 
  */
 int
-trunc_file(FILE *f) {
+trunc_file(FILE * f)
+{
   if (fseek(f, 0, SEEK_SET) < 0)
     return -1;
   if (ftruncate(fileno(f), 0) < 0)
@@ -328,7 +329,8 @@ trunc_file(FILE *f) {
  * \return 0 on success, -1 on failure.
  */
 int
-copy_file(FILE *f, const char *newname, bool reset) {
+copy_file(FILE * f, const char *newname, bool reset)
+{
   FILE *copy = fopen(newname, "w");
   if (copy) {
     char buf[BUFSIZ];
@@ -361,11 +363,12 @@ copy_file(FILE *f, const char *newname, bool reset) {
  * \return 0 on success, -1 on failure.
  */
 int
-copy_to_file(const char *name, FILE *to) {
+copy_to_file(const char *name, FILE * to)
+{
   FILE *from;
   char buf[BUFSIZ];
   size_t len;
-  
+
   from = fopen(name, "r");
   if (!from)
     return -1;
@@ -375,7 +378,7 @@ copy_to_file(const char *name, FILE *to) {
       fclose(from);
       return -1;
     }
-  }  
+  }
   fclose(from);
 
   return 0;

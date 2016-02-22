@@ -522,14 +522,13 @@ command.o: switchinc.c
 compress.o: ../config.h
 compress.o: ../confmagic.h
 compress.o: ../options.h
+compress.o: ../hdrs/copyrite.h
 compress.o: ../hdrs/log.h
 compress.o: ../hdrs/bufferq.h
 compress.o: ../hdrs/mushtype.h
-compress.o: ../hdrs/copyrite.h
-compress.o: comp_h.c
+compress.o: ../hdrs/dbio.h
 compress.o: ../hdrs/conf.h
 compress.o: ../hdrs/htab.h
-compress.o: ../hdrs/dbio.h
 compress.o: ../hdrs/externs.h
 compress.o: ../hdrs/compile.h
 compress.o: ../hdrs/dbdefs.h
@@ -539,6 +538,8 @@ compress.o: ../hdrs/ptab.h
 compress.o: ../hdrs/chunk.h
 compress.o: ../hdrs/mypcre.h
 compress.o: ../hdrs/mymalloc.h
+compress.o: comp_h.c
+compress.o: comp_w8.c
 conf.o: ../config.h
 conf.o: ../confmagic.h
 conf.o: ../options.h
@@ -1038,6 +1039,7 @@ funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/parse.h
 funmisc.o: ../hdrs/strutil.h
 funmisc.o: ../hdrs/gitinfo.h
+funmisc.o: ../hdrs/tz.h
 funmisc.o: ../hdrs/version.h
 funstr.o: ../config.h
 funstr.o: ../confmagic.h
@@ -2051,8 +2053,8 @@ version.o: ../hdrs/mushtype.h
 version.o: ../hdrs/notify.h
 version.o: ../hdrs/strutil.h
 version.o: ../hdrs/compile.h
-version.o: ../hdrs/buildinf.h
 version.o: ../hdrs/gitinfo.h
+version.o: ../hdrs/buildinf.h
 wait.o: ../config.h
 wait.o: ../confmagic.h
 wait.o: ../options.h

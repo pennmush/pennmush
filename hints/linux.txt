@@ -1,6 +1,23 @@
-No special configure options are needed for most linux
-distributions. Exceptions are listed below:
+There are a wide variety of different Linux distributions with a lot
+of variation in what packages are installed by default and what their
+names are. Some common ones have dependencies described below.
+
+* Debian and derived distributions like Ubuntu split libraries up from
+   the other files needed to compile code using them. You'll need to
+   install at a minimum the following packages:
+
+  | build-essentials libpcre3-dev libssl-dev
+
+  Installing libevent-dev is highly recommended as well, but not
+  required.  If you want to use SQL, you'll also need the appropriate
+  -dev package, like libsqlite3-dev.
+
+* For arch, the mandatory packages are:
+   | pcre openssl
+
+   and highly recommended libevent. Some or all of these might already
+   be present as part of a base install.
 
 
-* SuSE 9.X reportedly needs CFLAGS=-D__USE_POSIX
+
 

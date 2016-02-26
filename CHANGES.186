@@ -26,6 +26,9 @@ Minor changes:
 Functions:
  * Added setsymdiff() [SW]
 
+Documentation:
+ * Improve documentation for required packages in some Linux distributions.
+
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015
 
 NOTE: When updating from an earlier version of PennMUSH, you'll need to run 'make update' and './config.status' in the toplevel PennMUSH directory prior to running 'make'.

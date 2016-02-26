@@ -1,5 +1,5 @@
 Penn will compile and run on NetBSD, including OpenSSL
-support, with the caveats below. Tested with NetBSD 6.1.5.
+support, with the caveats below. Tested with NetBSD 7.
 
 Some packages need to be installed via pkgsrc if not already present
 on the server:

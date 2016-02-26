@@ -82,7 +82,7 @@ B. Installation from source
     libpcre3-dev).
 1d. A version of the OpenSSL library; most OSes these days come with
     it out of the box, but some might require a development package as
-    well (openssl-dev or some such name).
+    well (libssl-dev, openssl-dev or some such name).
 2. Run ./configure with any desired options (See ./configure --help or
    read below)
 3. make update

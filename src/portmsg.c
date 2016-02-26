@@ -77,9 +77,11 @@
 #include <string.h>
 #include <signal.h>
 
+#include "compile.h"
 #include "conf.h"
 #include "mysocket.h"
 #include "wait.h"
+#include "sig.h"
 
 #ifndef SINGLE_IP_ADDR
 const char *host_ip = "";

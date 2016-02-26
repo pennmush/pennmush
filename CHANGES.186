@@ -16,6 +16,7 @@ Version 1.8.6 patchlevel 1                                 ??? ??, 2016
 
 Fixes:
  * @clone'ing an old exit which had the alias built into the name incorrectly created a clone with no aliases. Reported by Qon. [MG]
+ * Fix compile errors in portmsg.c. Reported by mcgiwer. [SW]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

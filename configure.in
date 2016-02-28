@@ -157,7 +157,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h])
 AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h])
-AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h])
+AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h])
 AC_CHECK_HEADERS([zlib.h event2/event.h event2/dns.h fenv.h sys/param.h])
 AC_CHECK_HEADERS([sys/ucred.h], [], [], [
 AC_INCLUDES_DEFAULT
@@ -259,7 +259,7 @@ AC_MSG_RESULT(no))
 AC_CHECK_FUNCS([gai_strerror getaddrinfo getdate getnameinfo gethostbyname2])
 AC_CHECK_FUNCS([getpagesize getrlimit getrusage])
 AC_CHECK_FUNCS([gettext getpid getppid])
-AC_CHECK_FUNCS([inet_pton setitimer])
+AC_CHECK_FUNCS([inet_pton setitimer nl_langinfo])
 AC_FUNC_FORK
 AC_CHECK_FUNCS([setsid setpgid setpgrp])
 if test $ac_cv_func_setpgrp = yes; then

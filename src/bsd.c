@@ -61,7 +61,7 @@
 #endif
 #include <limits.h>
 #include <locale.h>
-#ifndef _MSC_VER
+#ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
 #include <setjmp.h>
@@ -2318,13 +2318,14 @@ TELNET_HANDLER(telnet_charset)
   /* Offer a selection of possible delimiters, to avoid it appearing
    * in a charset name */
   static const char *delim_list = "; +=/!", *delim_curr;
-  char delim[2] = { '\0', '\0' };
+  char delim[2] = { ';', '\0' };
   char *curr_locale = NULL;
 
   if (*cmd != DO)
     return;
 
   queue_newwrite(d, reply_prefix, 4);
+#ifdef HAVE_NL_LANGINFO
   curr_locale = nl_langinfo(CODESET);
   if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
       strncasecmp(curr_locale, "UTF-", 4)) {
@@ -2337,10 +2338,8 @@ TELNET_HANDLER(telnet_charset)
     } else {
       delim[0] = ';';           /* fall back on ; */
     }
-  } else {
-    delim[0] = ';';
-    curr_locale = NULL;
   }
+#endif
   queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));

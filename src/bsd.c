@@ -20,8 +20,8 @@
 #endif
 #ifdef WIN32
 #define FD_SETSIZE 256
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <errno.h>
 #include <process.h>
 #else                           /* !WIN32 */

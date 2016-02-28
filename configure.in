@@ -27,7 +27,7 @@ AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(ECHO, echo)
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_PATH_PROG(MAKE, make)
+AC_CHECK_PROGS(MAKE, [make gmake bmake])
 AC_PATH_PROG(PERL, perl)
 
 if test -z "${PERL}"; then

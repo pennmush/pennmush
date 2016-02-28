@@ -113,7 +113,7 @@ bool
 is_blocking_err(int code)
 {
 #ifdef WIN32
-  return code == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK
+  return code == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK;
 #else
   if (code == EWOULDBLOCK)
     return 1;

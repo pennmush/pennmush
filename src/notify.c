@@ -9,7 +9,6 @@
  */
 
 #include "copyrite.h"
-#include "notify.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -17,8 +16,9 @@
 #include <sys/types.h>
 #endif
 #ifdef WIN32
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
 #include <io.h>
 #else                           /* !WIN32 */
 #ifdef HAVE_SYS_TIME_H
@@ -51,6 +51,7 @@
 #include <limits.h>
 #include <errno.h>
 
+#include "notify.h"
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"

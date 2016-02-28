@@ -9,7 +9,6 @@
 #define _GNU_SOURCE
 
 #include "copyrite.h"
-#include "mysocket.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +16,6 @@
 #include <string.h>
 
 #ifdef WIN32
-#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
@@ -97,6 +95,8 @@ extern int h_errno;
 #ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
 #endif
+
+#include "mysocket.h"
 
 #include "conf.h"
 #include "log.h"

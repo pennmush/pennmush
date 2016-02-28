@@ -99,7 +99,9 @@
 #undef ssize_t
 
 /* Should be in <sys/socket.h> */
+#ifndef WIN32
 #undef socklen_t
+#endif
 
 #undef pid_t
 

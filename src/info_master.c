@@ -6,6 +6,12 @@
 
 #include "copyrite.h"
 
+#ifdef INFO_SLAVE
+
+#ifdef WIN32
+#error "info_slave will not work on Windows."
+#endif
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -39,12 +45,6 @@
 #include "sig.h"
 #include "strutil.h"
 #include "wait.h"
-
-#ifdef INFO_SLAVE
-
-#ifdef WIN32
-#error "info_slave will not work on Windows."
-#endif
 
 #ifndef HAVE_SOCKETPAIR
 #error "no supported communication options for talking with info_slave are available."

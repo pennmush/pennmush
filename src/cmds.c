@@ -19,6 +19,11 @@
 #include <sys/socket.h>
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"

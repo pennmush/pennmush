@@ -49,6 +49,9 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -471,6 +474,11 @@ im_stats_header(dbref player)
 void
 im_stats(dbref player, intmap *im, const char *name)
 {
-  notify_format(player, "%-11s %7lld %7u", name, (long long) im->count,
-                (unsigned int) (sizeof(*im) + (sizeof(patricia) * im->count)));
+  size_t bytes = sizeof *im + (sizeof(patricia) * im->count);
+#ifdef WIN32
+#define PRIszt "Iu"
+#else
+#define PRIszt "zu"
+#endif
+  notify_format(player, "%-11s %7" PRIi64 " %7" PRIszt, name, im->count, bytes);
 }

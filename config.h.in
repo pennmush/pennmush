@@ -167,15 +167,7 @@ typedef bool _Bool;
 
 #undef HAVE_ISNORMAL
 
-#undef HAVE_GAI_STRERROR
-
-#undef HAVE_GETADDRINFO
-
 #undef HAVE_GETDATE
-
-#undef HAVE_GETNAMEINFO
-
-#undef HAVE_GETHOSTBYNAME2
 
 #undef HAVE_GETPAGESIZE
 
@@ -184,8 +176,6 @@ typedef bool _Bool;
 #undef HAVE_GETRUSAGE
 
 #undef HAVE_GETTEXT
-
-#undef HAVE_INET_PTON
 
 #undef HAVE_SETITIMER
 

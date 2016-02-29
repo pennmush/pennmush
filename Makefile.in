@@ -78,11 +78,11 @@ install: localized all
 	-rm -f game/info_slave
 	-rm -f game/ssl_slave
 	(cd game; $(INSTALL_LINKS))
-	(cd game/txt; make)
+	(cd game/txt; @MAKE@)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"
 
 netmud: 
-	(cd src; make netmud "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	(cd src; @MAKE@ netmud "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"SQL_CFLAGS=$(SQL_CFLAGS)" "SQL_LDFLAGS=$(SQL_LDFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
@@ -94,14 +94,14 @@ pennmush.pot:
 
 localized:
 	-echo "Localizing for your locale..."
-	-(cd po; make localized)
+	-(cd po; @MAKE@ localized)
 
 portmsg:
-	(cd src; make portmsg "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	(cd src; @MAKE@ portmsg "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
 ssl_slave:
-	(cd src; make ssl_slave "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	(cd src; @MAKE@ ssl_slave "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)")
 
@@ -126,7 +126,7 @@ local-files:
 
 # REQUIRES GNU INDENT! DON'T INDENT WITH ANYTHING ELSE!
 indent:
-	@(cd src; make indent)
+	@(cd src; @MAKE@ indent)
 
 customize: update-conf
 	-@@PERL@ utils/customize.pl
@@ -176,15 +176,15 @@ test: netmud
 	(cd test; sh alltests.sh)
 
 clean:
-	(cd src; make clean)
+	(cd src; @MAKE@ clean)
 	(cd game; rm -f netmush info_slave)
 
 distclean: 
 	(cd hdrs; rm -f *.orig *~ \#* *.rej *.bak funs.h cmds.h gitinfo.h buildinf.h)
 	(cd utils; rm -f *.orig *~ \#* *.rej *.bak mkcmds.sh *.o)
 	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf restart)
-	(cd src; make distclean; rm -f Makefile)
-	(cd game/txt; make clean)
+	(cd src; @MAKE@ distclean; rm -f Makefile)
+	(cd game/txt; @MAKE@ clean)
 	(rm -rf .config Makefile config.h config.sh options.h)
 
 totallyclean: distclean 
@@ -192,15 +192,11 @@ totallyclean: distclean
 	(cd src; rm -rf *.rej)
 	-rm -f Makefile
 
-patch: versions
-	@make-patch-header
-	@make diffs
-
 etags: 
-	(cd src; make etags)
+	(cd src; @MAKE@ etags)
 
 ctags:
-	(cd src; make ctags)
+	(cd src; @MAKE@ ctags)
 
 cscope:
 	cscope *.h hdrs/*.h src/*.c
@@ -209,7 +205,7 @@ touchswitches:
 	@@TOUCH@ src/SWITCHES
 
 globalinstall: install
-	(cd game/txt; make clean compose.sh)
+	(cd game/txt; @MAKE@ clean compose.sh)
 #	$(INSTALLDIR) $(GLOBAL_INSTALL)
 	$(CP) -R game/* $(GLOBAL_INSTALL)
 	rm -f $(GLOBAL_INSTALL)/netmush $(GLOBAL_INSTALL)/info_slave

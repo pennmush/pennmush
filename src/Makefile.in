@@ -8,8 +8,13 @@ OUTFILES=buildinf netmud @INFO_SLAVE_TARGET@ @SSL_SLAVE_TARGET@
 
 # Libs EXCEPT for SQL ones
 LIBS=$(CLIBS)
-
 CFLAGS=$(CCFLAGS) $(SQL_CFLAGS)
+
+# On Windows, due to the bizarre way it handles cases in filesystems,
+# make thinks the file extension is .C and not .c and tries to compile files
+# as C++. Hack to work around that.
+CXX=$(CC)
+CXXFLAGS=$(CFLAGS)
 
 # List of C files, used for make depend:
 C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
@@ -46,7 +51,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 # directory (likely for emacs users who M-x compile.)
 # This means that the top-level make had better specifically 'make all' :)
 first:
-	(cd ..; make)
+	(cd ..; @MAKE@)
 
 all: $(OUTFILES)
 

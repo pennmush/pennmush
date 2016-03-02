@@ -269,8 +269,8 @@ address_resolved(int result, char type, int count, int ttl
 
 #if SSL_DEBUG_LEVEL > 0
   errprintf(stdout,
-            "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.\n",
-            c->remote_host, c->remote_ip);
+	    "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.\n",
+	    c->remote_host, c->remote_ip);
 #endif
 
   c->state = C_LOCAL_CONNECTING;
@@ -292,26 +292,25 @@ void
 ssl_connected(struct conn *c)
 {
   X509 *peer;
-  SSL *ssl;
+  SSL *ssl = bufferevent_openssl_get_ssl(c->remote_bev);
 
 #if SSL_DEBUG_LEVEL > 0
-  errputs(stdout,
-          "SSL connection attempt completed. Resolving remote host name.");
-  errprintf(stdout, "ssl_slave: ssl error code: %ld\n",
-            bufferevent_get_openssl_error(c->remote_bev));
+  errprintf(stdout,
+	    "ssl_slave: SSL connection attempt completed, using %s. Resolving remote host name.\n", SSL_get_version(ssl));
+  if (bufferevent_get_openssl_error(c->remote_bev))
+    errprintf(stdout, "ssl_slave: ssl error code: %ld\n",
+	      bufferevent_get_openssl_error(c->remote_bev));
 #endif
 
   bufferevent_set_timeouts(c->remote_bev, NULL, NULL);
-
-  ssl = bufferevent_openssl_get_ssl(c->remote_bev);
-
+  
   /* Successful accept. Log peer certificate, if any. */
   if ((peer = SSL_get_peer_certificate(ssl))) {
     if (SSL_get_verify_result(ssl) == X509_V_OK) {
       char buf[256];
       /* The client sent a certificate which verified OK */
       X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
-      errprintf(stdout, "SSL client certificate accepted: %s\n", buf);
+      errprintf(stdout, "ssl_slave: SSL client certificate accepted: %s\n", buf);
     }
   }
 

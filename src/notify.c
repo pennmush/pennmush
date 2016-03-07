@@ -1348,7 +1348,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
         char *lenv[MAX_STACK_ARGS];
         char *atrval;
 
-        atrval = safe_atr_value(a);
+        atrval = safe_atr_value(a, "atrval.notify");
 
         if (AF_Regexp(a)
             ? regexp_match_case_r(atrval, fullmsg,
@@ -1378,7 +1378,6 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
             }
             pe_regs_free(pe_regs);
           }
-          free(atrval);
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
               Contents(target) != NOTHING
@@ -1406,6 +1405,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
                                 (a) ? inprefix : NULL, loc, format);
           }
         }
+        mush_free(atrval, "atrval.notify");
       }
 
       /* if object is flagged MONITOR, check for ^ listen patterns
@@ -1518,7 +1518,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   a = atr_get(thing, atr);
   if (!a)
     return;
-  orig = safe_atr_value(a);
+  orig = safe_atr_value(a, "atrval.notify_list");
   fwdstr = trim_space_sep(orig, ' ');
 
   tbuf1[0] = '\0';
@@ -1551,7 +1551,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
       }
     }
   }
-  free(orig);
+  mush_free(orig, "atrval.notify_list");
 }
 
 /** Notify all connected players with the given flag(s).

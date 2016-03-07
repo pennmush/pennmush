@@ -5075,7 +5075,7 @@ who_check_name(DESC *d, char *name, bool wild)
   if (!a)
     return 0;
 
-  aval = safe_atr_value(a);
+  aval = safe_atr_value(a, "atrval.who-alias");
   all_aliases = trim_space_sep(aval, ';');
   while ((one_alias = split_token(&all_aliases, ';')) != NULL) {
     if (quick_wild(name, one_alias)) {
@@ -5083,7 +5083,7 @@ who_check_name(DESC *d, char *name, bool wild)
       return 1;
     }
   }
-  free(aval);
+  mush_free(aval, "atrval.who-alias");
   return 0;
 }
 

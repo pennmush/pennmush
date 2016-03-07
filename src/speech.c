@@ -840,8 +840,10 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
 
   if (repage) {
     a = atr_get_noparent(executor, "LASTPAGED");
-    if (!a || !*((hp = head = safe_atr_value(a)))) {
+    if (!a || !*((hp = head = safe_atr_value(a, "atrval.page")))) {
       notify(executor, T("You haven't paged anyone since connecting."));
+      if (hp)
+        mush_free(hp, "atrval.page");
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
       return;
@@ -873,7 +875,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
       if (hp)
-        free(hp);
+        mush_free(hp, "atrval.page");
       return;
     }
   }
@@ -951,7 +953,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     mush_free(tbuf2, "page_buff");
     mush_free(namebuf, "page_buff");
     if (hp)
-      free(hp);
+      mush_free(hp, "atrval.page");
     return;
   }
 
@@ -969,7 +971,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     mush_free(tbuf2, "page_buff");
     mush_free(namebuf, "page_buff");
     if (hp)
-      free(hp);
+      mush_free(hp, "atrval.page");
     return;
   }
 
@@ -1110,7 +1112,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   if (nsbuf)
     mush_free(nsbuf, "page_buff");
   if (hp)
-    free(hp);
+    mush_free(hp, "atrval.page");
 }
 
 
@@ -1153,7 +1155,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   if (!a)
     return matched;
 
-  temp = filter = safe_atr_value(a);
+  temp = filter = safe_atr_value(a, "atrval.filter");
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;
@@ -1172,7 +1174,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
       matched = local_wild_match_case(p, msg, AF_Case(a), NULL);
   }
 
-  free(temp);
+  mush_free(temp, "atrval.filter");
   return matched;
 }
 

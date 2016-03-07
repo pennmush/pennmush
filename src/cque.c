@@ -477,9 +477,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   tmp->caller = enactor;
   tmp->queue_type |= QUEUE_EVENT;
 
-  aval = safe_atr_value(a);
-  tmp->action_list = mush_strdup(aval, "mque.action_list");
-  free(aval);
+  /* safe_atr_value returns a mush_strdup'd buffer, which is freed in free_qentry */
+  tmp->action_list = safe_atr_value(a, "mque.action_list");
 
   /* Set up %0-%9 */
   if (tmp->pe_info->regvals == NULL) {
@@ -715,7 +714,7 @@ queue_include_attribute(dbref thing, const char *atrname,
   if (!Can_Read_Attr(executor, thing, a))
     return 0;
 
-  start = safe_atr_value(a);
+  start = safe_atr_value(a, "atrval.queue-attr");
   command = start;
   /* Trim off $-command or ^-command prefix */
   if (*command == '$' || *command == '^') {
@@ -756,7 +755,7 @@ queue_include_attribute(dbref thing, const char *atrname,
                            tprintf("#%d/%s", thing, atrname));
 
   /* pe_regs is freed later when the new queue is freed */
-  free(start);
+  mush_free(start, "atrval.queue-attr");
   return 1;
 }
 
@@ -818,7 +817,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   char *start, *command;
   int queue_type = QUEUE_DEFAULT | flags;
 
-  start = safe_atr_value(a);
+  start = safe_atr_value(a, "atrval.queue-attr");
   command = start;
   /* Trim off $-command or ^-command prefix */
   if (*command == '$' || *command == '^') {
@@ -842,7 +841,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
                            PE_INFO_DEFAULT, queue_type, pe_regs,
                            tprintf("#%d/%s", executor, AL_NAME(a)));
-  free(start);
+  mush_free(start, "atrval.queue-attr");
   return 1;
 }
 

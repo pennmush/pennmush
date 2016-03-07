@@ -596,7 +596,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           if (!a)
             break;
 
-          orig = safe_atr_value(a);
+          orig = safe_atr_value(a, "atrval.boolexp");
           idstr = trim_space_sep(orig, ' ');
 
           while ((curr = split_token(&idstr, ' ')) != NULL) {
@@ -606,7 +606,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
               break;
             }
           }
-          free(orig);
+          mush_free(orig, "atrval.boolextp");
         }
         break;
       default:

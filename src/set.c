@@ -737,7 +737,7 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     return;
   }
   /* we can read it. Copy the value. */
-  text = safe_atr_value(a);
+  text = safe_atr_value(a, "atrval.cpattr");
 
   /* now we loop through our new object pairs and copy, calling @set. */
   for (i = 1; i < MAX_ARG && (newpair[i] != NULL); i++) {
@@ -765,7 +765,7 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     }
   }
 
-  free(text);                   /* safe_uncompress malloc()s memory */
+  mush_free(text, "atrval.cpattr");
   if (copies) {
     notify_format(player, T("Attribute %s (%d copies)"),
                   (move ? T("moved") : T("copied")), copies);

@@ -15,11 +15,25 @@ Version 1.8.6 patchlevel 1                                 ??? ??, 2016
 
 Fixes:
  * @clone'ing an old exit which had the alias built into the name incorrectly created a clone with no aliases. Reported by Qon. [MG]
+ * Fix compile errors in portmsg.c. Reported by mcgiwer. [SW]
+ * Disable SSLv2 support. [SW]
+ * Fixed a memory leak in @listens. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
  * moniker() now returns accented names, for Rhost/MUX compatability. Reported by Qon. [1063-MG]
  * Help fixes by Qon and others. [MG]
+ * The makefile warns if gperf is not installed but needed to regenerate some source files. Based on an idea by tkrajcar.
+ * Work torwards supporting Windows via MSYS2. [SW]
+
+Functions:
+ * Added setsymdiff() [SW]
+
+Documentation:
+ * Improve documentation for required packages in some Linux distributions.
+
+Hardcode:
+ * safe_atr_value() now takes a second arg, for memory tracking (mem_check), and the returned value must be freed with mush_free() instead of just free(). [MG]
 
 & 1.8.6p0
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015

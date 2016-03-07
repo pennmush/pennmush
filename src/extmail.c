@@ -1477,7 +1477,7 @@ send_mail(dbref player, dbref target, char *subject, char *message,
     /* We have a forward list. Run through it. */
     char *fwdstr, *orig, *curr;
     dbref fwd;
-    orig = safe_atr_value(a);
+    orig = safe_atr_value(a, "atrval.mailforwardlist");
     fwdstr = trim_space_sep(orig, ' ');
     while ((curr = split_token(&fwdstr, ' ')) != NULL) {
       if (is_objid(curr)) {
@@ -1490,7 +1490,7 @@ send_mail(dbref player, dbref target, char *subject, char *message,
                         fwd);
       }
     }
-    free(orig);
+    mush_free(orig, "atrval.mailforwardlist");
   }
   if (!silent) {
     if (good)

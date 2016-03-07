@@ -190,7 +190,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
     pe_regs_setenv_nocopy(pe_regs, j, args[j]);
   }
 
-  tp = tbuf = safe_atr_value(attrib);
+  tp = tbuf = safe_atr_value(attrib, "atrval.do_userfn");
   if (AF_NoDebug(attrib))
     pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
   else if (AF_Debug(attrib))
@@ -199,7 +199,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   process_expression(buff, bp, &tp, obj, executor, enactor, pe_flags,
                      PT_DEFAULT, pe_info);
 
-  free(tbuf);
+  mush_free(tbuf, "atrval.do_userfn");
 
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);

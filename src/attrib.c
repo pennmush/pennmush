@@ -21,6 +21,7 @@
 #include "lock.h"
 #include "log.h"
 #include "match.h"
+#include "memcheck.h"
 #include "mushdb.h"
 #include "mymalloc.h"
 #include "notify.h"
@@ -1497,7 +1498,7 @@ can_debug(dbref player, dbref victim)
   if (!a) {
     return 0;
   }
-  aval = safe_atr_value(a);
+  aval = safe_atr_value(a, "atrval.can_debug");
   dfl = trim_space_sep(aval, ' ');
   while ((curr = split_token(&dfl, ' ')) != NULL) {
     if (!is_objid(curr))
@@ -1508,7 +1509,7 @@ can_debug(dbref player, dbref victim)
       break;
     }
   }
-  free(aval);
+  mush_free(aval, "atrval.can_debug");
   return success;
 }
 
@@ -2388,12 +2389,14 @@ atr_value(ATTR *atr)
 
 /** Return the uncompressed data for an attribute in a dynamic buffer.
  * This is a wrapper function, to centralize the use of compression/
- * decompression on attributes.
+ * decompression on attributes. The result must be mush_free()'d.
  * \param atr the attribute struct from which to get the data reference.
+ * \param check string to label allocation with.
  * \return a pointer to the uncompressed data, in a dynamic buffer.
  */
 char *
-safe_atr_value(ATTR *atr)
+safe_atr_value(ATTR *atr, char *check)
 {
+  add_check(check);
   return safe_uncompress(atr_get_compressed_data(atr));
 }

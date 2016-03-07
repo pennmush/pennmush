@@ -2350,10 +2350,9 @@ run_hook(dbref executor, dbref enactor, struct hook_data *hook,
   if (!atr)
     return 1;
 
-  code = safe_atr_value(atr);
+  code = safe_atr_value(atr, "hook.code");
   if (!code)
     return 1;
-  add_check("hook.code");
 
   cp = code;
   bp = buff;

@@ -750,13 +750,13 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       ATTR *alias_attr = NULL;
       alias_attr = atr_get_noparent(clone, "ALIAS");
       if (alias_attr) {
-        alias_val = safe_atr_value(alias_attr);
+        alias_val = safe_atr_value(alias_attr, "atrval.do_clone");
         atr_clr(clone, "ALIAS", GOD);
       }
       atr_cpy(clone, thing);
       if (alias_val) {
         atr_add(clone, "ALIAS", alias_val, player, 0);
-        free(alias_val);
+        mush_free(alias_val, "atrval.do_clone");
       }
       clone_locks(player, thing, clone);
       Zone(clone) = Zone(thing);

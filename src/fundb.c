@@ -304,9 +304,7 @@ FUNCTION(fun_default)
     parse_attrib(executor, mstr, &thing, &attrib);
     if (GoodObject(thing) && attrib && Can_Read_Attr(executor, thing, attrib)) {
       /* Ok, we've got it */
-      dp = safe_atr_value(attrib);
-      safe_str(dp, buff, bp);
-      free(dp);
+      safe_str(atr_value(attrib), buff, bp);
       return;
     }
   }
@@ -338,8 +336,7 @@ FUNCTION(fun_eval)
       safe_str(T(e_perm), buff, bp);
       return;
     }
-    tp = tbuf = safe_atr_value(a);
-    add_check("fun_eval.attr_value");
+    tp = tbuf = safe_atr_value(a, "fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        eflags, PT_DEFAULT, pe_info);
     mush_free(tbuf, "fun_eval.attr_value");
@@ -378,8 +375,7 @@ FUNCTION(fun_get_eval)
       safe_str(T(e_perm), buff, bp);
       return;
     }
-    tp = tbuf = safe_atr_value(a);
-    add_check("fun_eval.attr_value");
+    tp = tbuf = safe_atr_value(a, "fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        eflags, PT_DEFAULT, pe_info);
     mush_free(tbuf, "fun_eval.attr_value");
@@ -416,8 +412,7 @@ FUNCTION(fun_edefault)
       return;
     }
     /* Ok, we've got it */
-    sp = sbuf = safe_atr_value(attrib);
-    add_check("fun_edefault.attr_value");
+    sp = sbuf = safe_atr_value(attrib, "fun_edefault.attr_value");
     process_expression(buff, bp, &sp, thing, executor, executor,
                        eflags, PT_DEFAULT, pe_info);
     mush_free(sbuf, "fun_edefault.attr_value");

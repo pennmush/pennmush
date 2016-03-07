@@ -340,7 +340,7 @@ examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
                     T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
                     Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
   } else {
-    r = safe_atr_value(atr);
+    r = safe_atr_value(atr, "atrval.examine");
     if (GoodObject(parent))
       notify_format(player,
                     "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
@@ -349,7 +349,7 @@ examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
       notify_format(player,
                     "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
                     Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-    free(r);
+    mush_free(r, "atrval.examine");
   }
   return 1;
 }
@@ -370,7 +370,7 @@ examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   if (parent == thing || !GoodObject(parent))
     parent = NOTHING;
   strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
-  r = safe_atr_value(atr);
+  r = safe_atr_value(atr, "atrval.examine");
   if (GoodObject(parent))
     notify_format(player,
                   "%s#%d/%s [#%d%s]:%s %s", ANSI_HILITE, parent,
@@ -379,7 +379,7 @@ examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     notify_format(player,
                   "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(atr),
                   Owner(AL_CREATOR(atr)), fbuf, ANSI_END, r);
-  free(r);
+  mush_free(r, "atrval.examine");
   return 1;
 }
 
@@ -839,9 +839,9 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   if (EX_PUBLIC_ATTRIBS && (flag != EXAM_BRIEF)) {
     a = atr_get_noparent(thing, "DESCRIBE");
     if (a) {
-      r = safe_atr_value(a);
+      r = safe_atr_value(a, "atrval.examine");
       notify(player, r);
-      free(r);
+      mush_free(r, "atrval.examine");
     }
   }
   if (ok) {
@@ -1041,13 +1041,13 @@ do_inventory(dbref player)
     pe_info = make_pe_info("pe_info-do_inv");
     pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
     pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
-    sp = save = safe_atr_value(a);
+    sp = save = safe_atr_value(a, "atrval.inv");
     bp = buff;
     process_expression(buff, &bp, &sp, player, player, player,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
     free_pe_info(pe_info);
-    free(save);
+    mush_free(save, "atrval.inv");
     notify(player, buff);
     mush_free(arg, "string");
     mush_free(arg2, "string");

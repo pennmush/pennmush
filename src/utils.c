@@ -718,9 +718,9 @@ ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
     return name;
   }
 
-  format = safe_atr_value(a);
+  format = safe_atr_value(a, "atrval.moniker");
   if (!has_markup(format)) {
-    free(format);
+    mush_free(format, "atrval.moniker");
     set_mp(0);
     return name;
   }
@@ -732,7 +732,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
   *np = '\0';
   free_ansi_string(as);
   free_ansi_string(aname);
-  free(format);
+  mush_free(format, "atrval.moniker");
 
   set_mp(1);
   return name;

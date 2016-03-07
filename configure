@@ -6688,6 +6688,10 @@ _ACEOF
 
 fi
 
+
+# Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
+case "$build_os" in
+     *msys* | *mingw32* | *mingw64*)
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
 $as_echo_n "checking for WSAStartup in -lws2_32... " >&6; }
 if ${ac_cv_lib_ws2_32_WSAStartup+:} false; then :
@@ -6732,7 +6736,8 @@ _ACEOF
   LIBS="-lws2_32 $LIBS"
 
 fi
-
+;;
+esac
 
 # Check whether --enable-zlib was given.
 if test "${enable_zlib+set}" = set; then :

@@ -1665,6 +1665,7 @@ FUNCTION(fun_wrap)
 #define AL_NOFILL 0x800  /**< No filler on the right of this. ($) */
 #define AL_TRUNC_EACH 0x1000 /**< Truncate each (%r-separated) line instead of wrapping (x) */
 #define AL_TRUNC_ALL 0x2000 /**< Truncate the entire column output, at column width or %r, whichever comes first (X) */
+#define AL_NOCOLSEP 0x4000 /**< Don't add a column separator after this column */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,
@@ -1697,45 +1698,53 @@ align_one_line(char *buff, char **bp, int ncols,
       continue;
     }
     /* Is the next column AL_COALESCE_LEFT and has it run out of
-     * text? If so, do the coalesce now.
+     * text? If so, do the coalesce now. First, find the next column we
+     * haven't already coalesced.
      */
-    if ((i < (ncols - 1)) &&
-        (cols[i + 1] > 0) &&
-        (!(calign[i + 1] & AL_REPEAT) &&
-         (calign[i + 1] & AL_COALESCE_LEFT) &&
-         (!ptrs[i + 1] || !*ptrs[i + 1]))) {
+    for (j = i + 1; j < ncols; j++) {
+      if (cols[j] > 0)
+        break;
+    }
+    if ((j < ncols) &&
+        (!(calign[j] & AL_REPEAT) &&
+         (calign[j] & AL_COALESCE_LEFT) &&
+         (!ptrs[j] || !*ptrs[j]))) {
       /* To coalesce left on this line, modify the left column's
        * width and set the current column width to 0 (which we can
        * teach it to skip). */
-      /* If the next column is marked NOFILL, we inherit that. */
-      if (calign[i + 1] & AL_NOFILL) {
-        calign[i] |= AL_NOFILL;
-      }
-      cols[i] += cols[i + 1] + fslen;
-      cols[i + 1] = 0;
+      /* If the next column is marked NOFILL or NOCOLSEP, we inherit those. */
+      calign[i] |= (calign[j] & (AL_NOFILL | AL_NOCOLSEP));
+      cols[i] += cols[j] + fslen;
+      cols[j] = 0;
     }
     if (!ptrs[i] || !*ptrs[i]) {
       if (calign[i] & AL_REPEAT) {
         ptrs[i] = as[i]->text;
-      } else if (calign[i] & AL_COALESCE_RIGHT) {
-        /* To coalesce right on this line,
-         * modify the current column's width to 0, modify the right
-         * column's width, and continue on to processing the next
-         * column
-         */
-        for (j = i + 1; j < ncols; j++) {
-          if (cols[j] > 0) {
-            cols[j] += cols[i] + fslen;
-            break;
+      } else {
+        if (calign[i] & AL_COALESCE_RIGHT) {
+          /* To coalesce right on this line,
+           * modify the current column's width to 0, modify the right
+           * column's width, and continue on to processing the next
+           * column
+           */
+          for (j = i + 1; j < ncols; j++) {
+            if (cols[j] > 0) {
+              cols[j] += cols[i] + fslen;
+              cols[i] = 0;
+              break;
+            }
+          }
+          if (cols[i] > 0) {
+            /* We didn't have a column to coalesce with */
+            calign[i] &= ~AL_COALESCE_RIGHT;
+          } else {
+            cols_done++;
+            continue;
           }
         }
-        cols[i] = 0;
-        cols_done++;
-        continue;
-      } else {
         if (needsep && fslen)
           safe_str(fieldsep, line, &lp);
-        needsep = 1;
+        needsep = !(calign[i] & AL_NOCOLSEP);
         if (!(calign[i] & AL_NOFILL)) {
           if (HAS_ANSI(adata[i])) {
             write_ansi_data(&adata[i], line, &lp);
@@ -1817,7 +1826,7 @@ align_one_line(char *buff, char **bp, int ncols,
 
     if (needsep && fslen)
       safe_str(fieldsep, line, &lp);
-    needsep = 1;
+    needsep = !(calign[i] & AL_NOCOLSEP);
     if (HAS_ANSI(adata[i])) {
       write_ansi_data(&adata[i], line, &lp);
     }
@@ -1977,6 +1986,9 @@ FUNCTION(fun_align)
         break;
       case 'X':
         calign[ncols] |= AL_TRUNC_ALL;
+        break;
+      case '#':
+        calign[ncols] |= AL_NOCOLSEP;
         break;
       case '(':
         ptr++;

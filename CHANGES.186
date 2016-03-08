@@ -19,6 +19,7 @@ Fixes:
  * Fix compile errors in portmsg.c. Reported by mcgiwer. [SW]
  * Disable SSLv2 support. [SW]
  * Fixed a memory leak in @listens. [MG]
+ * Minor align() fixes when merging multiple columns. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
@@ -26,6 +27,7 @@ Minor changes:
  * Help fixes by Qon and others. [MG]
  * The makefile warns if gperf is not installed but needed to regenerate some source files. Based on an idea by tkrajcar.
  * Work torwards supporting Windows via MSYS2. [SW]
+ * New option for align(), # stops a colsep being added after a column. Suggested by Ashen-Shugar. [MG]
 
 Functions:
  * Added setsymdiff() [SW]

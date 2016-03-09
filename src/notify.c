@@ -133,6 +133,7 @@ static int output_ansichange(ansi_data *states, int *ansi_ptr, int ansi_format,
                              const char **ptr, char *buff, char **bp);
 
 static int na_depth = 0; /**< Counter to prevent too much notify_anything recursion */
+#define MAX_NA_DEPTH 7 /**< Maximum value for na_depth, notify_anything recursions */
 
 /** Complete list of possible groupings of MSG_* flags.
  * These are all the different kinds of messages we may produce to send to a
@@ -149,7 +150,7 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
 #define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)      /*                                      1        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)  /*                              2        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16) /*                             16        1         ?          1    */
-#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)       /*    256        1         ?          1    */
+#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256) /*                          256        1         ?          1    */
 
 #define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)      /*                                      1        0         1          1    */
 #define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)  /*                              2        0         1          1    */
@@ -933,7 +934,7 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   /* Don't recurse too much */
-  if (na_depth > 7)
+  if (na_depth > MAX_NA_DEPTH)
     return;
 
   /* Do it */
@@ -995,7 +996,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
     return;
 
   /* Don't recurse too much */
-  if (na_depth > 7)
+  if (na_depth > MAX_NA_DEPTH)
     return;
 
   na_depth++;

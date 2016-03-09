@@ -1210,7 +1210,8 @@ pi_regs_valid_key(const char *lckey)
   char key[PE_KEY_LEN];
   mush_strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
-  return ((good_atr_name(key)) && (strlen(key) <= PE_KEY_LEN) && *key);
+  return (strlen(key) <= PE_KEY_LEN && *key && (key[0] != '-' || key[1]) &&
+    good_atr_name(key));
 }
 
 /** Set a q-register value in the appropriate PE_REGS context.

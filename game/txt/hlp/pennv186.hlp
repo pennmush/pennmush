@@ -19,6 +19,7 @@ Fixes:
  * Disable SSLv2 support. [SW]
  * Fixed a memory leak in @listens. [MG]
  * Minor align() fixes when merging multiple columns. [MG]
+ * repeat() would sometimes fill the buffer with very large numbers of repetitions. Reported by Ashen-Shugar. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

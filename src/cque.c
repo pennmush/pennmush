@@ -970,7 +970,7 @@ do_second(void)
     qwait = point->next;
     point->next = NULL;
     point->wait_until = 0;
-    if (IsPlayer(point->enactor)) {
+    if ((point->enactor < 0) || IsPlayer(point->enactor)) {
       if (qlast) {
         qlast->next = point;
         qlast = point;

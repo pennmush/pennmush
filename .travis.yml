@@ -6,12 +6,13 @@ before_script:
   - ./configure
   - yes "" | make update
   - make
-  - cpan install IO::Socket::IP
+  - curl -L https://cpanmin.us/ -o cpanm && chmod +x cpanm
+  - ./cpanm IO::Socket::IP
 script: make test
 env:
   global:
     - PERL_MM_USE_DEFAULT=1 # tell CPAN to assume defaults as much as possible
-    - PERL5LIB=/home/travis/perl5
+    - PERL5LIB=/home/travis/perl5/lib/perl5
 addons:
   apt:
     packages:

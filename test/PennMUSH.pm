@@ -6,7 +6,7 @@ use File::Path;
 use MUSHConnection;
 use POSIX qw/:sys_wait_h/;
 use feature qw/say/;
-no warnings qw/experimental::smartmatch/;
+no if $] >= 5.017011, warnings => 'experimental::smartmatch'; # Don't blow up on Perls older than 5.18
 
 my @pids = ();
 

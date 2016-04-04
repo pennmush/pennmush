@@ -6,7 +6,8 @@ before_script:
   - ./configure
   - yes "" | make update
   - make
-  - cpan install IO::Socket::IP
+  - curl -L https://cpanmin.us/ -o cpanm && chmod +x cpanm
+  - ./cpanm IO::Socket::IP
 script: make test
 env:
   global:

@@ -1,0 +1,37 @@
+A sketch on how to make Penn handle Unicode.
+
+Right now, everything's based on c strings where one char is one
+character. Everything assumes at best a latin-1 character set. We want
+to make Penn Unicode aware.
+
+First, add a new type, penn_str (or ps for short). This is a
+dynamically growable (Replacing the BUFFER_LEN long strings everywhere
+and thus hopefully saving memory) string type that is encoding opaque,
+though we're going to assume for now it's actually utf-8. Most mushes
+are primarily english/ascii, so this will be more efficient memory
+wise than, say, utf-16. Though using that is still an option. All
+access to ps strings will be through functions, no treating them as
+arrays like now.
+
+To add unicode support, I'm currently looking at libunistring, with
+libicu as a possible alternative, though that uses utf-16 natively. I
+/think/ libunistring and PCRE will work for everything we
+need. Another option, since people hate adding new dependencies, is
+using pcre and our own utf8 code.
+
+With utf-8 and utf-16, characters are multi-byte, but can be
+represented by a 32 bit character type. Complicating things are
+extended grapheme clusters, where a base character can have multiple
+modifiers to add things like accent marks. When it comes to softcode,
+a EGC should be treated as a single character. Same in hardcode where
+it's needed -- reversing a string, for example. Thus, there will be
+functions that work with characters and with EGCs, themselves
+represented as penn_strs.
+
+I'm picturing three or four stages to the project:
+
+1. Write the utf-8 aware pennstr routines.
+2. Handle converting to/from utf8 at all places data enters or leaves the mush - player connections and files.
+3. Convert fairly standalone portions of the code to use utf8.
+4. Function and command system. This will be the worst part.
+

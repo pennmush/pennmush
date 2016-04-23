@@ -2317,9 +2317,8 @@ TELNET_HANDLER(telnet_charset)
 #ifndef _MSC_VER
   /* Offer a selection of possible delimiters, to avoid it appearing
    * in a charset name */
-  static const char *delim_list = "; +=/!";
 #ifdef HAVE_NL_LANGINFO
-  const char *delim_curr;
+  static const char *delim_list = "; +=/!", *delim_curr;
 #endif /* HAVE_NL_LANGINFO */
   char delim[2] = { ';', '\0' };
   char *curr_locale = NULL;

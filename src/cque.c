@@ -387,7 +387,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   char *s, *snext;
   ATTR *a;
   PE_REGS *pe_regs;
-  char *aval;
   int argcount = 0;
   char *wenv[MAX_STACK_ARGS];
   int i, len;

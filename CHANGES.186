@@ -23,6 +23,7 @@ Fixes:
  * repeat() would sometimes fill the buffer with very large numbers of repetitions. Reported by Ashen-Shugar. [MG]
  * SOCKET`CONNECT event caused a crash because cque expected a player to always be enactor. [GM]
  * 'help entries' was broken. Reported by Viila@M*U*S*H. [MG]
+ * @if incorrectly evaluated both its action list arguments prior to queueing one of them. Reported by Qon and Ashen-Shugar. [1076-MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

@@ -20,6 +20,8 @@ Fixes:
  * Fixed a memory leak in @listens. [MG]
  * Minor align() fixes when merging multiple columns. [MG]
  * repeat() would sometimes fill the buffer with very large numbers of repetitions. Reported by Ashen-Shugar. [MG]
+ * SOCKET`CONNECT event caused a crash because cque expected a player to always be enactor. [GM]
+ * 'help entries' was broken. Reported by Viila@M*U*S*H. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
@@ -82,7 +84,7 @@ Minor changes:
  * Added some tests for json(), and more tests for ljust()/rjust(). [MG]
  * Guests can no longer @channel/recall channels they aren't on. [MG]
  * The hardcode no longer strictly enforces permissions for @wall, @rwall or @wizwall; anyone who can passes the normal command restriction can now use them. [MG]
- * Add references to 'help channel functions' to various channel function help entries. [Qon]
+ * Add references to 'help channel functions' to various channel function help entries. By Qon.
    
 Hardcode:
  * Clean up some more remnants of the previous configure package's naming convention in favor of autoconf style ones. [SW]

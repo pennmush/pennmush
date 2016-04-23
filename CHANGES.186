@@ -32,6 +32,7 @@ Minor changes:
  * The makefile warns if gperf is not installed but needed to regenerate some source files. Based on an idea by [TK].
  * Work torwards supporting Windows via MSYS2. [SW]
  * New option for align(), # stops a colsep being added after a column. Suggested by Ashen-Shugar. [MG]
+ * If you own an object and are in its DEBUGFORWARDLIST, you'll now only get the debug output once. Suggested by Qon. [1059-MG]
 
 Functions:
  * Added setsymdiff() [SW]

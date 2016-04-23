@@ -2889,7 +2889,7 @@ exit_sequence:
             if (Connected(Owner(dbe)))
               raw_notify(Owner(dbe), dbuf);
             notify_list(dbe, dbe, "DEBUGFORWARDLIST", dbuf,
-                        NA_NOLISTEN | NA_NOPREFIX);
+                        NA_NOLISTEN | NA_NOPREFIX, Owner(dbe));
             pe_info->debug_strings = pe_info->debug_strings->next;
             mush_free(pe_info->debug_strings->prev,
                       "process_expression.debug_node");
@@ -2904,7 +2904,7 @@ exit_sequence:
         if (Connected(Owner(executor)))
           raw_notify(Owner(executor), dbuf);
         notify_list(executor, executor, "DEBUGFORWARDLIST", dbuf,
-                    NA_NOLISTEN | NA_NOPREFIX);
+                    NA_NOLISTEN | NA_NOPREFIX, Owner(executor));
       } else {
         Debug_Info *node;
         node = pe_info->debug_strings;

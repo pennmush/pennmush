@@ -1427,7 +1427,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
           && atr_get(target, "FORWARDLIST") != NULL
           && !filter_found(target, speaker, fullmsg, 0)) {
-        notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
+        notify_list(speaker, target, "FORWARDLIST", fullmsg, flags, NOTHING);
       }
     }
 
@@ -1506,10 +1506,11 @@ notify_format(dbref player, const char *fmt, ...)
  * \param atr attribute with list of dbrefs
  * \param msg message to transmit
  * \param flags bitmask of notification option flags
+ * \param skip dbref of an object to never send to, even if it appears in atr
  */
 void
 notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
-            int flags)
+            int flags, dbref skip)
 {
   char *fwdstr, *orig, *curr;
   char tbuf1[BUFFER_LEN], *prefix = NULL;
@@ -1540,7 +1541,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {
       fwd = parse_objid(curr);
-      if (RealGoodObject(fwd) && (thing != fwd) && Can_Forward(thing, fwd)) {
+      if (RealGoodObject(fwd) && (thing != fwd) && (skip != fwd) && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
           notify_anything(speaker, speaker, na_loc, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);

@@ -92,7 +92,7 @@ struct format_msg {
 };
 const char *render_string(const char *message, int output_type);
 void notify_list(dbref speaker, dbref thing, const char *atr,
-                 const char *msg, int flags);
+                 const char *msg, int flags, dbref skip);
 
 /* No longer passes an ns_func, all things will use the same nospoof function. Where a NULL ns_func was used before, now just
  * pass NA_SPOOF in the flags */

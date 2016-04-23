@@ -800,7 +800,9 @@ exits_connect_rooms no
 # the room with them.
 announce_connects yes
 
-# can players have names with spaces in them?
+# Can players have names with spaces in them?
+# Names with spaces need to be enclosed in "double quotes" at the login
+# screen, and in any commands that take space-separated args like page.
 player_name_spaces no
 
 # show expanded flag name list when you examine an object?

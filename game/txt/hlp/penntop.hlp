@@ -1595,6 +1595,9 @@ See also: @chzone, SHARED PLAYERS
     * this <obj> - an object in your location (also: this here <obj>)
     * toward <exit> - an exit in your location
     * 1st, 2nd, etc. <obj> - one of a set of objects with the same names. Objects are ordered in the order in which they're listed in your inventory, room contents, and exit list (in that order). If there aren't enough objects, this will fail.	You can use an adjective with an ordinal (my 1st <obj>, this 2nd <obj>, etc)
+
+  In commands that take a list of space-separated names (like page), you'll need to enclose names with spaces in "double quotes". The same is true on the login screen. For example:
+    page "Leeroy Jenkins"=Stop doing that.
 & &HELP
 This is the AHELP index.
 & RESTRICT

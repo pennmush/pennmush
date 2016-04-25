@@ -1635,6 +1635,11 @@ db_read(PENNFILE *f)
           add_new_attr("MONIKER",
                        AF_WIZARD | AF_NOPROG | AF_VISUAL | AF_LOCKED);
         }
+        if (globals.new_indb_version < 5) {
+          /* The MAILQUOTA attr was missing from some dbs for some reason */
+          add_new_attr("MAILQUOTA",
+                       AF_NOPROG | AF_NOCOPY | AF_LOCKED | AF_WIZARD);
+        }
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");
         return -1;

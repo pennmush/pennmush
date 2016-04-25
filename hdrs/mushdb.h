@@ -166,8 +166,9 @@ bool unfindable(dbref);
  *  2 - Added MONIKER attr
  *  3 - All previously-obsoleted AF_* attribute flag #defines are recycled
  *  4 - HAVEN flag moved from PLAYER | ROOM to PLAYER
+ *  5 - add in MAILQUOTA standard attr missing from some dbs for some reason
  */
-#define NDBF_VERSION 4
+#define NDBF_VERSION 5
 
 /* Reboot DB flag macros - these should be defined whether or not the
  * corresponding system option is defined

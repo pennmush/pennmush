@@ -92,6 +92,9 @@
 
 #endif
 
+#undef HAVE_UNISTR_H
+#undef HAVE_LIBUNISTRING
+
 /* Types */
 
 #undef HAVE__BOOL

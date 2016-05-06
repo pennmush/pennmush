@@ -228,7 +228,7 @@ COMLIST commands[] = {
    0, 0},
   {"@NAME", NULL, cmd_name, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED
    | CMD_T_NOGUEST, 0, 0},
-  {"@NEWPASSWORD", NULL, cmd_newpassword, CMD_T_ANY | CMD_T_EQSPLIT
+  {"@NEWPASSWORD", "GENERATE", cmd_newpassword, CMD_T_ANY | CMD_T_EQSPLIT
    | CMD_T_RS_NOPARSE, "WIZARD", 0},
   {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},

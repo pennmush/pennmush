@@ -805,23 +805,36 @@ do_stats(dbref player, const char *name)
  */
 void
 do_newpassword(dbref executor, dbref enactor,
-               const char *name, const char *password, MQUE *queue_entry)
+               const char *name, const char *password, MQUE *queue_entry, bool generate )
 {
   dbref victim;
-
-  if (!queue_entry->port) {
-    char pass_eval[BUFFER_LEN];
-    char const *sp;
-    char *bp;
-
-    sp = password;
-    bp = pass_eval;
-    process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
+  static char elems[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  char passwd[20];
+ 
+  if (generate) { 
+    int i;
+    int len = get_random32(7, 12);
+   
+    for (i = 0; i < len; i++)
+      passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
+    passwd[len] = '\0';
+    password = passwd;
+  } else 
+  {
+    
+    if (!queue_entry->port) {
+      char pass_eval[BUFFER_LEN];
+      char const *sp;
+      char *bp;
+      sp = password;
+      bp = pass_eval;
+      process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
-    *bp = '\0';
-    password = pass_eval;
+      *bp = '\0';
+      password = pass_eval;
+    }
   }
-
   if ((victim = lookup_player(name)) == NOTHING) {
     notify(executor, T("No such player."));
   } else if (*password != '\0' && !ok_password(password)) {
@@ -832,7 +845,11 @@ do_newpassword(dbref executor, dbref enactor,
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
-    notify_format(executor, T("Password for %s changed."),
+    if (generate) // If we generate a PW, tell the executor what it is.
+      notify_format(executor, T("Password for %s changed to %s."),
+                  AName(victim, AN_SYS, NULL), password);
+      else
+      notify_format(executor, T("Password for %s changed."),
                   AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
                   AName(executor, AN_SYS, NULL));

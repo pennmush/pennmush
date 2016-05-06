@@ -1226,7 +1226,7 @@ COMMAND(cmd_name)
 
 COMMAND(cmd_newpassword)
 {
-  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry);
+  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry, SW_ISSET(sw, SWITCH_GENERATE));
 }
 
 COMMAND(cmd_nuke)

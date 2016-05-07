@@ -25,7 +25,7 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	hash_function.c help.c htab.c intmap.c local.c lock.c log.c	\
 	look.c malias.c	 markup.c match.c memcheck.c move.c mycrypt.c	\
 	mymalloc.c mysocket.c myrlimit.c myssl.c notify.c parse.c	\
-	player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
+	pennstr.c player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
 	rob.c services.c set.c SFMT.c sig.c sort.c speech.c sql.c	\
 	ssl_master.c strdup.c strtree.c strutil.c tables.c timer.c	\
 	tz.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
@@ -39,9 +39,9 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	flags.o funcrypt.o function.o fundb.o funlist.o funlocal.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o		\
 	hash_function.o help.o htab.o intmap.o local.o lock.o log.o	\
-	look.o malias.o	 markup.o match.o memcheck.o move.o mycrypt.o	\
+	look.o malias.o markup.o match.o memcheck.o move.o mycrypt.o	\
 	mymalloc.o mysocket.o myrlimit.o myssl.o notify.o parse.o	\
-	player.o plyrlist.o predicat.o privtab.o info_master.o ptab.o	\
+	pennstr.o player.o plyrlist.o predicat.o privtab.o info_master.o ptab.o	\
 	rob.o services.o set.o SFMT.o sig.o sort.o speech.o sql.o	\
 	ssl_master.o strdup.o strtree.o strutil.o tables.o timer.o	\
 	tz.o unparse.o utils.o version.o wait.o warnings.o wild.o	\

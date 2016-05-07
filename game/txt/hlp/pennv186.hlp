@@ -77,6 +77,7 @@ Commands:
  * @hooks now have a number of named registers (available through r(<name>,args)) with each of the hooked command's arguments. [MG]
  * Added @if and @skip. [MG] [Rhost] [MUX]
  * help/search <pattern> lets you search within helpfiles. [MG] [Rhost]
+ * @newpassword now takes a generate switch, which creates a random password ala email_register and shows it to the executor. [Qon]
 
 Minor changes:
  * The 'HAVEN' flag can now only be set on players. [1033-TK]

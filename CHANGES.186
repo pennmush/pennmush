@@ -43,6 +43,7 @@ Documentation:
 
 Hardcode:
  * safe_atr_value() now takes a second arg, for memory tracking (mem_check), and the returned value must be freed with mush_free() instead of just free(). [MG]
+ * ChanTitle(), CHAN_TITLE_LEN, and the "title" member of the channel struct - used for @channel/desc - have been renamed to ChanDesc, CHAN_DESC_LEN and "desc", respectively. Now I won't confuse them as being relevant with @channel/title. Every. Single. Time. [MG]
 
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015
 

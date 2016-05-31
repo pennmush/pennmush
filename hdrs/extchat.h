@@ -96,7 +96,8 @@ struct chanuser {
 
 /* This is a chat channel */
 #define CHAN_NAME_LEN 31
-#define CHAN_TITLE_LEN 256
+#define CHAN_DESC_LEN 256
+
 
 typedef struct channel CHAN;
 /** A chat channel.
@@ -105,7 +106,7 @@ typedef struct channel CHAN;
  */
 struct channel {
   char *name;                   /**< Channel name */
-  char title[CHAN_TITLE_LEN];   /**< Channel description */
+  char desc[CHAN_DESC_LEN];   /**< Channel description */
   privbits type;                /**< Channel flags */
   int cost;             /**< What it cost to make this channel */
   dbref creator;                /**< This is who paid the cost for the channel */
@@ -156,7 +157,7 @@ struct chanlist {
 
 #define ChanName(c) ((c)->name)
 #define ChanType(c) ((c)->type)
-#define ChanTitle(c) ((c)->title)
+#define ChanDesc(c) ((c)->desc)
 #define ChanCreator(c) ((c)->creator)
 #define ChanMogrifier(c) ((c)->mogrifier)
 #define ChanCost(c) ((c)->cost)
@@ -236,7 +237,7 @@ void do_chan_lock
   (dbref player, const char *name, const char *lockstr,
    enum clock_type whichlock);
 void do_chan_what(dbref player, const char *partname);
-void do_chan_desc(dbref player, const char *name, const char *title);
+void do_chan_desc(dbref player, const char *name, const char *desc);
 void do_chan_title(dbref player, const char *name, const char *title);
 void do_chan_recall(dbref player, const char *name, char *lineinfo[],
                     int quiet);

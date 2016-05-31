@@ -354,7 +354,7 @@ new_channel(void)
   if (!ch)
     return NULL;
   ch->name = NULL;
-  ch->title[0] = '\0';
+  ch->desc[0] = '\0';
   ChanType(ch) = CHANNEL_DEFAULT_FLAGS;
   ChanCreator(ch) = NOTHING;
   ChanMogrifier(ch) = NOTHING;
@@ -432,7 +432,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
   ChanName(ch) = mush_strdup(getstring_noalloc(fp), "channel.name");
   if (penn_feof(fp))
     return 0;
-  mush_strncpy(ChanTitle(ch), getstring_noalloc(fp), CHAN_TITLE_LEN);
+  mush_strncpy(ChanDesc(ch), getstring_noalloc(fp), CHAN_DESC_LEN);
   ChanType(ch) = (privbits) getref(fp);
   ChanCreator(ch) = getref(fp);
   ChanMogrifier(ch) = NOTHING;
@@ -465,7 +465,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
   db_read_this_labeled_string(fp, "name", &tmp);
   ChanName(ch) = mush_strdup(tmp, "channel.name");
   db_read_this_labeled_string(fp, "description", &tmp);
-  mush_strncpy(ChanTitle(ch), tmp, CHAN_TITLE_LEN);
+  mush_strncpy(ChanDesc(ch), tmp, CHAN_DESC_LEN);
   db_read_this_labeled_int(fp, "flags", &i);
   ChanType(ch) = (privbits) i;
   db_read_this_labeled_dbref(fp, "creator", &d);
@@ -858,7 +858,7 @@ save_channel(PENNFILE *fp, CHAN *ch)
   CHANUSER *cu;
 
   db_write_labeled_string(fp, " name", ChanName(ch));
-  db_write_labeled_string(fp, "  description", ChanTitle(ch));
+  db_write_labeled_string(fp, "  description", ChanDesc(ch));
   db_write_labeled_int(fp, "  flags", ChanType(ch));
   db_write_labeled_dbref(fp, "  creator", ChanCreator(ch));
   db_write_labeled_int(fp, "  cost", ChanCost(ch));
@@ -2367,7 +2367,7 @@ FUNCTION(fun_cinfo)
       return;
     }
     if (string_prefix(called_as, "CD")) {
-      safe_str(ChanTitle(c), buff, bp);
+      safe_str(ChanDesc(c), buff, bp);
     } else if (string_prefix(called_as, "CB")) {
       if (ChanBufferQ(c) != NULL) {
         safe_integer(BufferQSize(ChanBufferQ(c)), buff, bp);
@@ -2878,7 +2878,7 @@ do_chan_what(dbref player, const char *partname)
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
-      notify_format(player, T("Description: %s"), ChanTitle(c));
+      notify_format(player, T("Description: %s"), ChanDesc(c));
       notify_format(player, T("Owner: %s"),
                     AName(ChanCreator(c), AN_SYS, NULL));
       if (ChanMogrifier(c) != NOTHING) {
@@ -2961,8 +2961,8 @@ do_chan_decompile(dbref player, const char *name, int brief)
       if (ChanSeeLock(c) != TRUE_BOOLEXP)
         notify_format(player, "@clock/see %s = %s", cleanp,
                       unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
-      if (ChanTitle(c))
-        notify_format(player, "@channel/desc %s = %s", cleanp, ChanTitle(c));
+      if (ChanDesc(c))
+        notify_format(player, "@channel/desc %s = %s", cleanp, ChanDesc(c));
       if (ChanBufferQ(c))
         notify_format(player, "@channel/buffer %s = %d", cleanp,
                       bufferq_blocks(ChanBufferQ(c)));
@@ -3110,11 +3110,11 @@ FUNCTION(fun_cwho)
  * \param title description of the channel.
  */
 void
-do_chan_desc(dbref player, const char *name, const char *title)
+do_chan_desc(dbref player, const char *name, const char *desc)
 {
   CHAN *c;
-  /* Check new title length */
-  if (title && strlen(title) > CHAN_TITLE_LEN - 1) {
+  /* Check new desc length */
+  if (desc && strlen(desc) > CHAN_DESC_LEN - 1) {
     notify(player, T("CHAT: New description too long."));
     return;
   }
@@ -3126,12 +3126,12 @@ do_chan_desc(dbref player, const char *name, const char *title)
     return;
   }
   /* Ok, let's do it */
-  if (!title || !*title) {
-    ChanTitle(c)[0] = '\0';
+  if (!desc || !*desc) {
+    ChanDesc(c)[0] = '\0';
     notify_format(player, T("CHAT: Channel <%s> description cleared."),
                   ChanName(c));
   } else {
-    strcpy(ChanTitle(c), title);
+    strcpy(ChanDesc(c), desc);
     notify_format(player, T("CHAT: Channel <%s> description set."),
                   ChanName(c));
   }

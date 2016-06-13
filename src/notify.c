@@ -1437,8 +1437,22 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       /* Propagate sound */
       if (IsRoom(target)) {
         dbref exit;
+        int i, skip = 0;
+
         DOLIST(exit, Exits(target)) {
+          skip = 0;
           if (Audible(exit)) {
+            if (skips != NULL) {
+              for (i = 0; skips[i] != NOTHING; i++) {
+                if (skips[i] == exit) {
+                  /* Skip this exit */
+                  skip = 1;
+                  break;
+                }
+              }
+            }
+            if (skip)
+              continue;
             if (VariableExit(exit))
               loc = find_var_dest(speaker, exit, NULL, NULL);
             else if (HomeExit(exit))

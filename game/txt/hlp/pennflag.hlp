@@ -43,6 +43,7 @@ x - Cloudy/Terse
     Chan_usefirstmatch     Hear_connect           Heavy             
     Loud                   No_log                 Paranoid          
     Track_money            XTERM256               MONIKER
+    open_ok
 -----------------------------------------------------------------------
 Some flags may not be enabled on some MUSHes. @flag/list will show which are available.
 

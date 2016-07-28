@@ -109,7 +109,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     st++;
   }
   if (!*st) {
-    notify(executor, T("You may need to be a little more specific."));
+    notify(executor, T("You need to be more specific."));
     return NULL;
   }
 
@@ -226,14 +226,22 @@ COMMAND(cmd_helpcmd)
   strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
+    int aw = 0;
     char **entries;
     char *p;
 
     p = arg_left;
-    while (*p && (isspace(*p) || *p == '*' || *p == '?'))
+    while (*p && (isspace(*p) || *p == '*' || *p == '?')) {
+      if (*p == '*')
+        aw++;
       p++;
-    if (!*p) {
-      notify(executor, T("You may need to be a little more specific."));
+    }
+    if (!*p && aw) {
+      if ((*arg_left == '*') && *(arg_left + 1) == '\0') {
+        notify(executor, T("You need to be more specific. Maybe you want 'help \\*'?"));
+      } else {
+        notify(executor, T("You need to be more specific."));
+      }
       return;
     }
 

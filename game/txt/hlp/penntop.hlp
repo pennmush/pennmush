@@ -14,7 +14,7 @@ This is the index to the MUSH online help files.
   For a list of attributes:                       help attribute list
   To see the configuration of this MUSH:          @config
 
-  Use 'help <wildcard>' to search for topic names that match <wildcard>, or 'help/search <wildcard>' for a list of topics whose text matches <wildcard>.
+  Use 'help <pattern>' to search for topic names that match the wildcard pattern <pattern>, or 'help/search <pattern>' for a list of topics whose text matches the wildcard pattern <pattern>.
   
   On many MUSHes, list local commands with:       +help
 
@@ -1515,6 +1515,9 @@ See also: @verb, attribute flags
   The warning "none" indicates no warnings.
   You can exclude warnings from a larger list by using !<warning> after the larger list. For example: @warnings me=all !exit-oneway
 & WILDCARDS
+& *
+& ?
+& **
   PennMUSH has two standard wildcards, which can be used in $-commands, as well as a number of softcode functions: an asterisk (*) matches zero or more of any characters, and a question mark (?) matches exactly one character. The most common use of wildcards is to allow people to pass arguments to $-commands. For example, let's say you want to have a 'wave' command which allows you to wave to a specific person:
   
     > &cmd.wave me=$wave *: pose waves.

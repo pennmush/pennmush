@@ -72,6 +72,10 @@ void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
 
+#ifdef MUXCOMM
+extern char *parse_chat_alias(dbref player, char *command); /* from extchat.c */
+#endif
+
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
  */
@@ -407,6 +411,14 @@ COMLIST commands[] = {
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
+#ifdef MUXCOMM
+  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"DELCOM", NULL, cmd_delcom, CMD_T_ANY, 0, 0},
+  {"@CLIST", "FULL", cmd_clist, CMD_T_ANY, 0, 0},
+  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
+#endif
+   
   {NULL, NULL, NULL, 0, 0, 0}
 };
 
@@ -1102,6 +1114,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *p, *t, *c, *c2;
   char command2[BUFFER_LEN];
   char b;
+  bool parse_switches = 1;
   int switchnum;
   switch_mask sw = NULL;
   char switch_err[BUFFER_LEN], *se;
@@ -1110,6 +1123,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *retval;
   NEW_PE_INFO *pe_info = queue_entry->pe_info;
   int pe_flags = 0;
+  int skip_char = 1;
 
   rhs_present = 0;
 
@@ -1204,12 +1218,35 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       replacer = "@FORCE";
       noevtoken = 1;
     }
+    skip_char = 0;
   }
+  
+  if (replacer)
+    parse_switches = 0;
+
+#ifdef MUXCOMM
+  if (!replacer && (replacer = parse_chat_alias(player, p)) && command_check_byname(player, replacer, pe_info)) {
+    noevtoken = 1;
+    skip_char = 0;
+    if (!strcmp(replacer, "@CHAT")) {
+      /* Don't parse switches for @chat. Do for @channel. */
+      parse_switches = 0;
+    }
+  }
+#endif
 
   if (replacer) {
     cmd = command_find(replacer);
-    if (*p != NUMBER_TOKEN)
+    if (skip_char)
       p++;
+    strcpy(command, p);
+    if (parse_switches && *p == '/') {
+      while (*p && *p != ' ') {
+        p++;
+      }
+      while (*p == ' ')
+        p++;
+    }
   } else {
     /* At this point, we have not done a replacer, so we continue with the
      * usual processing. Exits have next priority.  We still pass them
@@ -1285,14 +1322,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
    * appended at the position pointed to by c2.
    */
   c2 = c;
-  if (replacer) {
-    /* These commands don't allow switches, and need a space
-     * added after their canonical name
-     */
-    c2 = commandraw;
-    safe_str(cmd->name, commandraw, &c2);
-    safe_chr(' ', commandraw, &c2);
-  } else if (*c2 == '/') {
+  if (parse_switches && *c2 == '/') {
     /* Oh... DAMN */
     c2 = commandraw;
     strcpy(switches, commandraw);
@@ -1302,6 +1332,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   } else {
     c2 = commandraw;
     safe_str(cmd->name, commandraw, &c2);
+    if (replacer)
+      safe_chr(' ', commandraw, &c2);
   }
 
   /* Parse out any switches */
@@ -1313,7 +1345,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   t = NULL;
 
   /* Don't parse switches for one-char commands */
-  if (!replacer) {
+  if (parse_switches) {
     while (*c == '/') {
       t = swtch;
       c++;

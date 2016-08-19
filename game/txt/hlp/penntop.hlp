@@ -563,6 +563,7 @@ See also: ENACTOR, EXECUTOR
 
     Socket commands (*): QUIT, SCREENWIDTH, etc
     Single-token commands: ", :, ;, +, \, #
+    MUX-style channel aliases, if enabled (see 'help muxcomm')
     Exits in the room
     &attribute setting
     Regular game commands: get, inventory, @emit, etc

@@ -2021,4 +2021,8 @@ show_compile_options(dbref player)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
 #endif
+
+#ifdef MUXCOMM
+  notify(player, T("MUX-style channel aliases are enabled."));
+#endif
 }

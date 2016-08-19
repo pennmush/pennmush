@@ -520,6 +520,7 @@ See also: @channel/mogrifier, @chatformat, channel functions
 
 See also: CHAT, @channel, @cemit, @clock
 & MUXCOMSYS
+& MUXCOMM
 & ADDCOM
 & DELCOM
 & @CLIST
@@ -546,9 +547,10 @@ See also: CHAT, @channel, @cemit, @clock
   comlist
     Lists all aliases and their matching channels.
 
-  See 'help muxcommsys2' for how to enable MUX com aliases.
+  See 'help muxcomsys2' for how to enable MUX com aliases.
   See also: CHANNELS, @channel, @chat
 & MUXCOMSYS2
+& MUXCOMM2
   To enable the MUX comsys aliases in the hardcode, add:
     #define MUXCOMM
   to your options.h file, and then recompile the MUSH and @shutdown/reboot.

@@ -55,6 +55,7 @@
  * '<alias> <message> for chatting instead of '+<channel> <message>';
  * see 'help muxcomsys' for more details.
  * Would you like to enable the MUX aliases?
+ */
 /* #define MUXCOMM 1 /* */
 
 

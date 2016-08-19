@@ -49,6 +49,14 @@
  */
 /* #define CHAT_TOKEN_ALIAS '=' /* */
 
+/* Would you like to enable MUX-style channel aliases? These are
+ * wrappers for Penn's @channel system to provide more familiar syntax
+ * for MUX users, such as 'addcom <alias>=<channel>', then
+ * '<alias> <message> for chatting instead of '+<channel> <message>';
+ * see 'help muxcomsys' for more details.
+ * Would you like to enable the MUX aliases?
+/* #define MUXCOMM 1 /* */
+
 
 /*------------------------- Cosmetic Features --------------------*/
 

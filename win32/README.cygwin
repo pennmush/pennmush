@@ -30,13 +30,13 @@ the best location. C:\cygwin is the usual default.
    From Shells:
 	bash
    From Utils:
-	gnup		if you want to to verify signatures on penn dists
+	gnupg			if you want to to verify signatures on penn dists
 	patch
    From Text:
 	pcre
    From Devel:
-	gettext-deve	if you want to run a translated copy of Penn
-	gi		if you want to get Penn from the GIT repo
+	gettext-devel	if you want to run a translated copy of Penn
+	git				if you want to get Penn from the GIT repo
 
    Accept all dependencies needed to install these packages.
 	

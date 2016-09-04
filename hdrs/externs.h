@@ -203,7 +203,7 @@ safe_uncompress(char const *)
                    char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */
-    int etime_to_secs(char *input, int *secs);
+    int etime_to_secs(char *input, int *secs, bool default_minutes);
 
 /* From game.c */
     void report(void);

@@ -100,6 +100,18 @@ typedef struct options_table OPTTAB;
 typedef int (*config_func) (const char *opt, const char *val, void *loc,
                             int maxval, int source);
 
+#define CONFIG_FUNC_PROTO(cf) \
+  int cf(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+#define CONFIG_FUNC(cf) \
+  int cf(const char *opt, const char *val, void *loc, int maxval __attribute__ ((__unused__)), int from_cmd __attribute__ ((__unused__)))
+CONFIG_FUNC_PROTO(cf_bool);
+CONFIG_FUNC_PROTO(cf_str);
+CONFIG_FUNC_PROTO(cf_int);
+CONFIG_FUNC_PROTO(cf_dbref);
+CONFIG_FUNC_PROTO(cf_flag);
+CONFIG_FUNC_PROTO(cf_time);
+CONFIG_FUNC_PROTO(cf_priv);
+
 #define CP_OVERRIDDEN 1         /* Set by .cnf file */
 #define CP_OPTIONAL   2         /* Doesn't complain if it's missing. */
 #define CP_CONFIGSET  4         /* Overridden/set by @config/set */
@@ -117,6 +129,7 @@ typedef struct confparm {
   const char *group;            /**< The option's group name */
 } PENNCONF;
 
+char *display_config_value(PENNCONF *cp);
 
 #define FILE_PATH_LEN 256
 
@@ -126,7 +139,7 @@ typedef struct confparm {
  */
 struct options_table {
   char mud_name[128];   /**< The name of the mush */
-  char mud_url[256];   /**< The name of the mush */
+  char mud_url[256];    /**< The address of the MUSH's website */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
   char socket_file[FILE_PATH_LEN];  /**< The socket filename to use for SSL slave */
@@ -136,11 +149,11 @@ struct options_table {
   char mail_db[FILE_PATH_LEN];    /**< Name of the mail database file */
   dbref player_start;   /**< The room in which new players are created */
   dbref master_room;    /**< The master room for global commands/exits */
-  dbref ancestor_room;  /**< The ultimate parent room */
-  dbref ancestor_exit;  /**< The ultimate parent exit */
-  dbref ancestor_thing; /**< The ultimate parent thing */
-  dbref ancestor_player; /**< The ultimate parent player */
-  dbref event_handler;  /**< The object events. */
+  dbref ancestor_room;  /**< The ultimate parent room (help ancestors) */
+  dbref ancestor_exit;  /**< The ultimate parent exit (help ancestors) */
+  dbref ancestor_thing; /**< The ultimate parent thing (help ancestors) */
+  dbref ancestor_player; /**< The ultimate parent player (help ancestors) */
+  dbref event_handler;  /**< The Event Handler (help events). */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;     /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without dbrefs, in minutes */
@@ -224,7 +237,7 @@ struct options_table {
   int startups;         /**< Is startup run on startups? */
   int room_connects;    /**< Do players trigger aconnect/adisconnect on their location? */
   int ansi_names;       /**< Are object names shown in bold? */
-  int monikers;         /**< Allow @monikers? */
+  privbits monikers;    /**< Where/when to show @monikers */
   int comma_exit_list;  /**< Should exit lists be itemized? */
   int count_all;        /**< Are hidden players included in total player counts? */
   int exits_connect_rooms;      /**< Does the presence of an exit make a room connected? */
@@ -321,20 +334,6 @@ extern PENNCONF *add_config(const char *name, config_func handler, void *loc,
 extern PENNCONF *new_config(void);
 extern PENNCONF *get_config(const char *name);
 extern void validate_config(void);
-
-
-int cf_bool(const char *opt, const char *val, void *loc, int maxval,
-            int from_cmd);
-int cf_str(const char *opt, const char *val, void *loc, int maxval,
-           int from_cmd);
-int cf_int(const char *opt, const char *val, void *loc, int maxval,
-           int from_cmd);
-int cf_dbref(const char *opt, const char *val, void *loc, int maxval,
-             int from_cmd);
-int cf_flag(const char *opt, const char *val, void *loc, int maxval,
-            int from_cmd);
-int cf_time(const char *opt, const char *val, void *loc, int maxval,
-            int from_cmd);
 
 /* Config group viewing permissions */
 #define CGP_GOD         0x1  /**< Config group can only be seen by God */

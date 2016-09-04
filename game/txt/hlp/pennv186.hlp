@@ -38,6 +38,7 @@ Minor changes:
  * New option for align(), # stops a colsep being added after a column. Suggested by Ashen-Shugar. [MG]
  * If you own an object and are in its DEBUGFORWARDLIST, you'll now only get the debug output once. Suggested by Qon. [1059-MG]
  * Tweaks to 'help <wildcard>'s error messages, and the help for said syntax. Suggested by Wiggles. [1084-MG]
+ * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. 
 
 Functions:
  * Added setsymdiff() [SW]
@@ -48,6 +49,7 @@ Documentation:
 Hardcode:
  * safe_atr_value() now takes a second arg, for memory tracking (mem_check), and the returned value must be freed with mush_free() instead of just free(). [MG]
  * ChanTitle(), CHAN_TITLE_LEN, and the "title" member of the channel struct - used for @channel/desc - have been renamed to ChanDesc, CHAN_DESC_LEN and "desc", respectively. Now I won't confuse them as being relevant with @channel/title. Every. Single. Time. [MG]
+ * etime_to_secs() now takes a third, boolean argument, default_minutes. If true, purely numerical values are treated as a number of minutes, not seconds. This allows using the function for parsing time-related config options instead of having a separate implimentation. [MG]
 
 & 1.8.6p0
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015

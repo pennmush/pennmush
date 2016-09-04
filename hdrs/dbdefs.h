@@ -345,6 +345,8 @@ extern const char EOD[];
 
 #define AN_ANNOUNCE  0x800      /* GAME: announcements to multiple players */
 
+#define AN_EVERYWHERE (AN_CHAT | AN_SAY | AN_MOVE | AN_LOOK | AN_UNPARSE | AN_WHO | AN_SYS | AN_ANNOUNCE)
+
 #define AN_TYPES (AN_PLAYER | AN_THING | AN_ROOM | AN_EXIT)
 
 #define moniker_type(x) ((IsPlayer(x) && (options.monikers & AN_PLAYER)) || \

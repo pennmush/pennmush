@@ -3506,7 +3506,7 @@ FUNCTION(fun_crecall)
     num_lines = parse_integer(args[1]);
     if (num_lines == 0)
       num_lines = INT_MAX;
-  } else if (etime_to_secs(args[1], &num_lines)) {
+  } else if (etime_to_secs(args[1], &num_lines, 0)) {
     recall_timestring = 1;
     recall_from = (time_t) mudtime - num_lines;
   } else {
@@ -4010,7 +4010,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
       num_lines = parse_integer(lines);
       if (num_lines == 0)
         num_lines = INT_MAX;
-    } else if (etime_to_secs(lines, &num_lines)) {
+    } else if (etime_to_secs(lines, &num_lines, 0)) {
       recall_timestring = 1;
       recall_from = (time_t) mudtime - num_lines;
     } else {

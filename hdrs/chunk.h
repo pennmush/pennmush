@@ -8,21 +8,8 @@
 
 #undef LOG_CHUNK_STATS
 
-#if ATTR_STORAGE == 0
-
-typedef uint8_t *chunk_reference_t;
+typedef uintptr_t chunk_reference_t;
 #define NULL_CHUNK_REFERENCE 0
-
-#elif ATTR_STORAGE == 1
-
-typedef uint32_t chunk_reference_t;
-#define NULL_CHUNK_REFERENCE 0
-
-#else
-
-#error "Invalid ATTR_STORAGE setting."
-
-#endif
 
 chunk_reference_t chunk_create(char const *data, uint16_t len, uint8_t derefs);
 void chunk_delete(chunk_reference_t reference);

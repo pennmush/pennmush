@@ -141,7 +141,7 @@ access_file access.cnf
 # 'Lessa', 'Dracula', 'Hercules', 'Scooby', 'Nancy Drew', etc,
 # depending on what type of MUSH you are running
 names_file names.cnf
-  
+
 ###
 ### Attribute (chunk) cache
 ###
@@ -153,6 +153,9 @@ names_file names.cnf
 ### that nothing is ever swapped to disk), as well as several less
 ### important parameters here. 
 ###
+
+# True to use the attribute cache
+use_chunk_system yes
 
 # The file to store the attribute data in, when not in memory.
 # This is relative to the game/ directory.

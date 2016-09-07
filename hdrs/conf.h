@@ -285,6 +285,7 @@ struct options_table {
   int player_name_len;  /**< Maximum length of player names */
   int queue_entry_cpu_time;     /**< Maximum cpu time allowed per queue entry */
   int ascii_names;      /**< Are object names restricted to ascii characters? */
+  int use_chunk;        /**< Use the chunk system? */
   char chunk_swap_file[FILE_PATH_LEN];    /**< Name of the attribute swap file */
   int chunk_swap_initial; /**< Disc space to reserve for the swap file, in kibibytes */
   int chunk_cache_memory;       /**< Memory to use for the attribute cache */

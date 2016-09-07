@@ -496,6 +496,10 @@ PENNCONF conftable[] = {
    NULL}
   ,
 
+  {"use_chunk_system", cf_bool, &options.use_chunk,
+   sizeof options.use_chunk, 0,
+   NULL}
+  ,
   {"chunk_swap_file", cf_str, options.chunk_swap_file,
    sizeof options.chunk_swap_file, 0, "files"}
   ,
@@ -1503,6 +1507,7 @@ conf_default_set(void)
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
   options.call_lim = 10000;
+  options.use_chunk = 1;
   strcpy(options.chunk_swap_file, "data/chunkswap");
   options.chunk_swap_initial = 2048;
   options.chunk_cache_memory = 1000000;
@@ -2040,11 +2045,10 @@ show_compile_options(dbref player)
   notify(player, T(" @config/save is disabled."));
 #endif
 
-#if ATTR_STORAGE == 0
-  notify(player, T(" Attribute contents are managed by malloc."));
-#elif ATTR_STORAGE == 1
-  notify(player, T(" Attribute contents are managed by the chunk system."));
-#endif
+  if (options.use_chunk)
+      notify(player, T(" Attribute contents are managed by the chunk system."));
+  else
+    notify(player, T(" Attribute contents are managed by malloc."));
 
 #ifdef HAVE_ZONEINFO
   notify(player, T(" IANA symbolic timezones can be used."));

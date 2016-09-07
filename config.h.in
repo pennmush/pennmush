@@ -124,6 +124,8 @@
 
 #undef uint64_t
 
+#undef uintptr_t
+
 /* Type of the largest int type */
 #undef intmax_t
 

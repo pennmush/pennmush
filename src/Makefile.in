@@ -303,6 +303,7 @@ attrib.o: ../hdrs/boolexp.h
 attrib.o: ../hdrs/log.h
 attrib.o: ../hdrs/bufferq.h
 attrib.o: ../hdrs/match.h
+attrib.o: ../hdrs/memcheck.h
 attrib.o: ../hdrs/mymalloc.h
 attrib.o: ../hdrs/notify.h
 attrib.o: ../hdrs/parse.h
@@ -575,6 +576,7 @@ conf.o: ../hdrs/log.h
 conf.o: ../hdrs/bufferq.h
 conf.o: ../hdrs/mymalloc.h
 conf.o: ../hdrs/parse.h
+conf.o: ../hdrs/privtab.h
 conf.o: ../hdrs/pueblo.h
 conf.o: ../hdrs/strutil.h
 cque.o: ../config.h

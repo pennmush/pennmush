@@ -837,7 +837,7 @@ CONFIG_FUNC(cf_priv)
 
   if (is_strict_integer(val)) {
     if (!from_cmd) {
-      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update to a list of values.");
+      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update to a list of values.", opt);
     }
     *((privbits *) loc) = parse_integer(val);
     return 1;

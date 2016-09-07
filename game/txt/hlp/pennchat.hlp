@@ -551,9 +551,7 @@ See also: CHAT, @channel, @cemit, @clock
   See also: CHANNELS, @channel, @chat
 & MUXCOMSYS2
 & MUXCOMM2
-  To enable the MUX comsys aliases in the hardcode, add:
-    #define MUXCOMM
-  to your options.h file, and then recompile the MUSH and @shutdown/reboot.
+  To enable the MUX comsys aliases in the hardcode, set use_muxcomm to yes in game/mush.cnf and @shutdown/reboot.
   
   Aliases are stored by "addcom" in attributes on the player, in the format
   

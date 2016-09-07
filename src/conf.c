@@ -301,7 +301,9 @@ PENNCONF conftable[] = {
   ,
   {"chat_token_alias", cf_str, options.chat_token_alias, sizeof options.chat_token_alias,
    CP_OPTIONAL,
-   "cosmetic"}
+   "chat"}
+  ,
+  {"use_muxcomm", cf_bool, &options.use_muxcomm, 2, 0, "chat"}
   ,
   {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"}
   ,
@@ -1487,6 +1489,7 @@ conf_default_set(void)
   options.max_dbref = 0;
   options.chat_token_alias[0] = '\0';
   options.chat_token_alias[1] = '\0';
+  options.use_muxcomm = 0;
   options.chat_strip_quote = 1;
   set_string_option(options.wizwall_prefix, T("Broadcast:"));
   set_string_option(options.rwall_prefix, T("Admin:"));
@@ -2069,7 +2072,4 @@ show_compile_options(dbref player)
   }
 #endif
 
-#ifdef MUXCOMM
-  notify(player, T("MUX-style channel aliases are enabled."));
-#endif
 }

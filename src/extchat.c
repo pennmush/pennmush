@@ -90,9 +90,7 @@ static const char chan_mod_lock[] = "ChanModLock";      /**< Name of modify lock
 static const char chan_see_lock[] = "ChanSeeLock";      /**< Name of see lock */
 static const char chan_hide_lock[] = "ChanHideLock";    /**< Name of hide lock */
 
-#ifdef MUXCOMM
 char *parse_chat_alias(dbref player, char *command);
-#endif
 
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
@@ -4188,7 +4186,6 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
   return retval;
 }
 
-#ifdef MUXCOMM
 /* Parse a "channel_alias message" into "real_channel_name=message"
  * Used for MUX-style channel aliases
  */
@@ -4262,6 +4259,11 @@ COMMAND(cmd_addcom)
   ATTR *a;
   CHAN *chan = NULL;
 
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+  
   if (!arg_left || !*arg_left || strchr(arg_left, '`') || strlen(arg_left) > 15) {
     notify(executor, T("Invalid alias."));
     return;
@@ -4332,6 +4334,11 @@ COMMAND(cmd_delcom)
   char *channame;
   int matches;
 
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+  
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);
@@ -4401,6 +4408,11 @@ comlist_helper(dbref player
 
 COMMAND(cmd_comlist)
 {
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+  
   notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
                 T("Status"), T("Title"));
   atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
@@ -4409,6 +4421,11 @@ COMMAND(cmd_comlist)
 
 COMMAND(cmd_clist)
 {
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+  
   do_channel_list(executor, arg_left, CHANLIST_ALL);
 }
 
@@ -4418,6 +4435,11 @@ COMMAND(cmd_comtitle)
   char *bp = buff;
   ATTR *a;
 
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+  
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);
@@ -4430,4 +4452,3 @@ COMMAND(cmd_comtitle)
   do_chan_title(executor, buff, arg_right);
 }
 
-#endif

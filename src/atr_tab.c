@@ -1117,11 +1117,10 @@ attr_init_postconfig(void)
     else
       a->flags |= AF_NEARBY;
   }
-#ifdef MUXCOMM
-  a = aname_hash_lookup("CHANALIAS");
-  if (!a) {
-    add_new_attr("CHANALIAS", AF_NOPROG);
+  if (USE_MUXCOMM) {
+    a = aname_hash_lookup("CHANALIAS");
+    if (!a) {
+      add_new_attr("CHANALIAS", AF_NOPROG);
+    }
   }
-#endif
-
 }

@@ -830,6 +830,14 @@ page_aliases no
 # Allow a character other than + to be used for channel messages.
 # chat_token_alias =
 
+# Would you like to enable MUX-style channel aliases? These are
+# wrappers for Penn's @channel system to provide more familiar syntax
+# for MUX users, such as 'addcom <alias>=<channel>', then '<alias>
+# <message> for chatting instead of '+<channel> <message>'; see 'help
+# muxcomsys' for more details.  * Would you like to enable the MUX
+# aliases?
+use_muxcomm no
+
 # Should +whatever "hi! strip the initial quote and produce <whatever> X says,
 # "hi!", or not (producing <whatever> X says, ""hi!"). This also affects
 # the @*wall and say commands.

@@ -72,9 +72,7 @@ void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
 
-#ifdef MUXCOMM
-extern char *parse_chat_alias(dbref player, char *command);     /* from extchat.c */
-#endif
+char *parse_chat_alias(dbref player, char *command);     /* from extchat.c */
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
@@ -413,13 +411,11 @@ COMLIST commands[] = {
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-#ifdef MUXCOMM
   {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"DELCOM", NULL, cmd_delcom, CMD_T_ANY, 0, 0},
   {"@CLIST", "FULL", cmd_clist, CMD_T_ANY, 0, 0},
   {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
-#endif
 
   {NULL, NULL, NULL, 0, 0, 0}
 };
@@ -1226,17 +1222,17 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   if (replacer)
     parse_switches = 0;
 
-#ifdef MUXCOMM
-  if (!replacer && (replacer = parse_chat_alias(player, p))
-      && command_check_byname(player, replacer, pe_info)) {
-    noevtoken = 1;
-    skip_char = 0;
-    if (!strcmp(replacer, "@CHAT")) {
-      /* Don't parse switches for @chat. Do for @channel. */
-      parse_switches = 0;
+  if (USE_MUXCOMM) {
+    if (!replacer && (replacer = parse_chat_alias(player, p))
+	&& command_check_byname(player, replacer, pe_info)) {
+      noevtoken = 1;
+      skip_char = 0;
+      if (!strcmp(replacer, "@CHAT")) {
+	/* Don't parse switches for @chat. Do for @channel. */
+	parse_switches = 0;
+      }
     }
   }
-#endif
 
   if (replacer) {
     cmd = command_find(replacer);

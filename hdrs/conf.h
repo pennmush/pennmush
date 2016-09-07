@@ -311,6 +311,7 @@ struct options_table {
   char sql_database[256]; /**< Database for sql */
   int log_max_size; /**< Maximum size of log file */
   char log_size_policy[256]; /**< What to do when a log file is big. */
+  char sendmail_prog[256]; /**< Program used to send email. */
 };
 
 typedef struct mssp MSSP;

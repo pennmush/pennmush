@@ -531,6 +531,9 @@ PENNCONF conftable[] = {
   {"log_size_policy", cf_str, options.log_size_policy,
    sizeof options.log_size_policy, 0, NULL}
   ,
+  {"sendmail_prog", cf_str, options.sendmail_prog,
+   sizeof options.sendmail_prog, 0, NULL}
+  ,
 
   {NULL, NULL, NULL, 0, 0, NULL}
 };
@@ -1521,6 +1524,7 @@ conf_default_set(void)
   strcpy(options.sql_host, "127.0.0.1");
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
+  strcpy(options.sendmail_prog, "sendmail");
 }
 
 #undef set_string_option

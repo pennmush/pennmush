@@ -58,16 +58,4 @@
  */
 /* #define MUXCOMM 1 /* */
 
-
-/*------------------------- Cosmetic Features --------------------*/
-
-/* If you're using the email registration feature, but want to 
- * use a mailer other than sendmail, put the full path to the mailer
- * program here. The mailer must accept the -t command-line
- * argument ("get the recipient address from the message header To:").
- * If it doesn't, you could probably write a wrapper for it.
- * Example: #define MAILER "/full/path/to/other/mailer"
- */
-/* #define MAILER "" /* */
-
 #endif

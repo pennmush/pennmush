@@ -25,6 +25,7 @@ Fixes:
  * 'help entries' was broken. Reported by Viila@M*U*S*H. [MG]
  * @if incorrectly evaluated both its action list arguments prior to queueing one of them. Reported by Qon and Ashen-Shugar. [1076-MG]
  * The @mailquota standard attribute was missing from some dbs, for some unknown reason. It will be automatically be added back in when you first update to this version; if you aren't using the @mail system, you can @attribute/delete it once and it'll stay gone. Reported by Kimojuno. [1077-MG]
+ * Fix a crash if a particular file descriptor is -1. [SW]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

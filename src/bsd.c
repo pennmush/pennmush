@@ -299,7 +299,7 @@ SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
 static const char ssl_shutdown_message[] __attribute__ ((__unused__)) =
   "GAME: SSL connections must be dropped, sorry.";
 #ifdef LOCAL_SOCKET
-static int localsock = 0;
+static int localsock = -1;
 #endif
 static int ndescriptors = 0;
 #ifdef WIN32
@@ -703,7 +703,7 @@ main(int argc, char **argv)
   kill_ssl_slave();
 #endif
 #ifdef LOCAL_SOCKET
-  if (localsock) {
+  if (localsock >= 0) {
     closesocket(localsock);
     unlink(options.socket_file);
   }
@@ -1130,7 +1130,7 @@ shovechars(Port_t port, Port_t sslport)
     if (sslsock)
       FD_SET(sslsock, &input_set);
 #ifdef LOCAL_SOCKET
-    if (localsock)
+    if (localsock >= 0)
       FD_SET(localsock, &input_set);
 #endif
 #ifdef INFO_SLAVE
@@ -1197,7 +1197,7 @@ shovechars(Port_t port, Port_t sslport)
       if (sslsock && FD_ISSET(sslsock, &input_set))
         got_new_connection(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
-      if (localsock && FD_ISSET(localsock, &input_set))
+      if (localsock >= 0 && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif                          /* LOCAL_SOCKET */
 #else                           /* INFO_SLAVE */
@@ -1206,7 +1206,7 @@ shovechars(Port_t port, Port_t sslport)
       if (sslsock && FD_ISSET(sslsock, &input_set))
         setup_desc(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
-      if (localsock && FD_ISSET(localsock, &input_set))
+      if (localsock >= 0 && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif                          /* LOCAL_SOCKET */
 #endif                          /* INFO_SLAVE */

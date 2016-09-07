@@ -526,7 +526,7 @@ See also: CHAT, @channel, @cemit, @clock
 & @CLIST
 & COMTITLE
 & COMLIST
-  PennMUSH offers some compatability commands for players more familiar with the MUX communication system. For help on PennMUSH's channel system, see 'help channels'. The following commands are defined:
+  PennMUSH offers some compatability commands for players more familiar with the MUX communication system. For help on PennMUSH's channel system, see 'help channels'. The following commands are available:
   
   addcom <alias>=<channel>
     Join <channel> if you aren't already on it, and add <alias> as an alias for <channel>.
@@ -551,7 +551,7 @@ See also: CHAT, @channel, @cemit, @clock
   See also: CHANNELS, @channel, @chat
 & MUXCOMSYS2
 & MUXCOMM2
-  To enable the MUX comsys aliases in the hardcode, set use_muxcomm to yes in game/mush.cnf and @shutdown/reboot.
+  To enable the MUX comsys aliases, set use_muxcomm to yes in game/mush.cnf and @shutdown/reboot.
   
   Aliases are stored by "addcom" in attributes on the player, in the format
   

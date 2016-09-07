@@ -827,15 +827,15 @@ ex_public_attribs yes
 # Javelin (Jav) paged: ...
 page_aliases no
 
-# Allow a character other than + to be used for channel messages.
+# Allow a character other than + to be used for channel messages? This should
+# be a single character. Common choices include = and .
 # chat_token_alias =
 
 # Would you like to enable MUX-style channel aliases? These are
 # wrappers for Penn's @channel system to provide more familiar syntax
 # for MUX users, such as 'addcom <alias>=<channel>', then '<alias>
 # <message> for chatting instead of '+<channel> <message>'; see 'help
-# muxcomsys' for more details.  * Would you like to enable the MUX
-# aliases?
+# muxcomsys' for more details.
 use_muxcomm no
 
 # Should +whatever "hi! strip the initial quote and produce <whatever> X says,

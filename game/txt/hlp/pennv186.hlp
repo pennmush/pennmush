@@ -14,7 +14,8 @@ be read in 'help patchlevels'.
 Version 1.8.6 patchlevel 1                                 ??? ??, 2016
 
 Major changes:
- * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled by adding #define MUXCOMM to options.h. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
+ * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
+ * Move all remaining build-time settings out of options.h into mush.cnf and remove options.h. [SW]
 
 Fixes:
  * @clone'ing an old exit which had the alias built into the name incorrectly created a clone with no aliases. Reported by Qon. [MG]
@@ -28,6 +29,8 @@ Fixes:
  * @if incorrectly evaluated both its action list arguments prior to queueing one of them. Reported by Qon and Ashen-Shugar. [1076-MG]
  * The @mailquota standard attribute was missing from some dbs, for some unknown reason. It will be automatically be added back in when you first update to this version; if you aren't using the @mail system, you can @attribute/delete it once and it'll stay gone. Reported by Kimojuno. [1077-MG]
  * Messages - such as an exit's own @osuccess - could be propagated through an audible exit when they shouldn't be. [1081-MG]
+ * Fix a crash if a particular file descriptor is -1. [SW]
+ * Fix a potential crash in @stats/tables [SW]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
@@ -45,7 +48,8 @@ Functions:
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.
-
+ * Document how to get Penn running on the Windows 10 Bash For Ubuntu On Windows project.
+ 
 Hardcode:
  * safe_atr_value() now takes a second arg, for memory tracking (mem_check), and the returned value must be freed with mush_free() instead of just free(). [MG]
  * ChanTitle(), CHAN_TITLE_LEN, and the "title" member of the channel struct - used for @channel/desc - have been renamed to ChanDesc, CHAN_DESC_LEN and "desc", respectively. Now I won't confuse them as being relevant with @channel/title. Every. Single. Time. [MG]

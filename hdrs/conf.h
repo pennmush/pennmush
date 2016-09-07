@@ -257,6 +257,7 @@ struct options_table {
   int full_invis;       /**< Are DARK wizards anonymous? */
   int silent_pemit;     /**< Does pemit default to pemit/silent? */
   dbref max_dbref;      /**< Maximum allowable database size */
+  char chat_token_alias[2]; /**< Alternative character to start a channel message */
   int chat_strip_quote; /**< Should we strip initial quotes in chat? */
   char wizwall_prefix[256];     /**< Prefix for wizwall announcements */
   char rwall_prefix[256];       /**< Prefix for rwall announcements */
@@ -445,6 +446,7 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define ZONE_CONTROL_ZMP (options.zone_control)
 #define WIZWALL_PREFIX (options.wizwall_prefix)
 #define RWALL_PREFIX (options.rwall_prefix)
+#define CHAT_TOKEN_ALIAS options.chat_token_alias[0]
 #define CHAT_STRIP_QUOTE (options.chat_strip_quote)
 #define WALL_PREFIX (options.wall_prefix)
 #define NO_LINK_TO_OBJECT (!options.link_to_object)

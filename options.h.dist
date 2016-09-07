@@ -26,14 +26,6 @@
 
 /*------------------------- MUSH Features ----------------------*/
 
-/* Many MUSHes want to change the +channels to =channels. That's
- * annoying. So we've got this CHAT_TOKEN_ALIAS, which allows + as well
- * as = (or whatever) channels. If you want this, define it to be
- * the character you want to use in addition to +, enclosed in
- * single quotes, as in '=' or '.' or whatever. Don't define it to '+'!
- */
-/* #define CHAT_TOKEN_ALIAS '=' /* */
-
 /* Would you like to enable MUX-style channel aliases? These are
  * wrappers for Penn's @channel system to provide more familiar syntax
  * for MUX users, such as 'addcom <alias>=<channel>', then

@@ -827,6 +827,9 @@ ex_public_attribs yes
 # Javelin (Jav) paged: ...
 page_aliases no
 
+# Allow a character other than + to be used for channel messages.
+# chat_token_alias =
+
 # Should +whatever "hi! strip the initial quote and produce <whatever> X says,
 # "hi!", or not (producing <whatever> X says, ""hi!"). This also affects
 # the @*wall and say commands.

@@ -299,6 +299,10 @@ PENNCONF conftable[] = {
   ,
   {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
   ,
+  {"chat_token_alias", cf_str, options.chat_token_alias, sizeof options.chat_token_alias,
+   CP_OPTIONAL,
+   "cosmetic"}
+  ,
   {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"}
   ,
 
@@ -1481,6 +1485,8 @@ conf_default_set(void)
   options.full_invis = 0;
   options.silent_pemit = 0;
   options.max_dbref = 0;
+  options.chat_token_alias[0] = '\0';
+  options.chat_token_alias[1] = '\0';
   options.chat_strip_quote = 1;
   set_string_option(options.wizwall_prefix, T("Broadcast:"));
   set_string_option(options.rwall_prefix, T("Admin:"));

@@ -1169,6 +1169,15 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   else if (queue_entry->queue_type & QUEUE_DEBUG)
     pe_flags = PE_DEBUG;
 
+  if (*p == CHAT_TOKEN || (CHAT_TOKEN_ALIAS && *p == CHAT_TOKEN_ALIAS)) {
+      /* parse_chat() destructively modifies the command to replace
+     * the first space with a '=' if the command is an actual
+     * chat command */
+    if (parse_chat(player, p + 1)
+        && command_check_byname(player, "@CHAT", queue_entry->pe_info))
+      *p = CHAT_TOKEN;
+  }
+    
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
@@ -1195,20 +1204,11 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     replacer = "@EMIT";
     break;
   case CHAT_TOKEN:
-#ifdef CHAT_TOKEN_ALIAS
-  case CHAT_TOKEN_ALIAS:
-#endif
-    /* parse_chat() destructively modifies the command to replace
-     * the first space with a '=' if the command is an actual
-     * chat command */
-    if (parse_chat(player, p + 1)
-        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
-      /* This is a "+chan foo" chat style
-       * We set noevtoken to keep its noeval way, and
-       * set the cmd to allow @hook. */
-      replacer = "@CHAT";
-      noevtoken = 1;
-    }
+    /* This is a "+chan foo" chat style
+     * We set noevtoken to keep its noeval way, and
+     * set the cmd to allow @hook. */
+    replacer = "@CHAT";
+    noevtoken = 1;
     break;
   case NUMBER_TOKEN:
     /* parse_force() destructively modifies the command to replace

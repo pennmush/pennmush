@@ -2319,7 +2319,7 @@ TELNET_HANDLER(telnet_charset)
    * in a charset name */
 #ifdef HAVE_NL_LANGINFO
   static const char *delim_list = "; +=/!", *delim_curr;
-#endif /* HAVE_NL_LANGINFO */
+#endif                          /* HAVE_NL_LANGINFO */
   char delim[2] = { ';', '\0' };
   char *curr_locale = NULL;
 
@@ -2341,7 +2341,7 @@ TELNET_HANDLER(telnet_charset)
       delim[0] = ';';           /* fall back on ; */
     }
   }
-#endif                           /* HAVE_NL_LANGINFO */
+#endif                          /* HAVE_NL_LANGINFO */
   queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));

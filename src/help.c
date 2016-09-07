@@ -238,7 +238,8 @@ COMMAND(cmd_helpcmd)
     }
     if (!*p && aw) {
       if ((*arg_left == '*') && *(arg_left + 1) == '\0') {
-        notify(executor, T("You need to be more specific. Maybe you want 'help \\*'?"));
+        notify(executor,
+               T("You need to be more specific. Maybe you want 'help \\*'?"));
       } else {
         notify(executor, T("You need to be more specific."));
       }
@@ -274,7 +275,8 @@ COMMAND(cmd_helpcmd)
         notify_format(executor, T("No entry for '%s'."), strupper(arg_left));
         return;
       }
-      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left), ANSI_END);
+      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
+                    ANSI_END);
       if (SUPPORT_PUEBLO)
         notify_noenter(executor, open_tag("SAMP"));
       notify(executor, entries);
@@ -1041,7 +1043,7 @@ is_index_entry(const char *topic, int *offset)
   static pcre_extra *extra = NULL;
   int ovec[33], ovecsize = 33;
   int r;
-  
+
   if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
     *offset = 0;
     return 1;

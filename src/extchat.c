@@ -4192,7 +4192,8 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
 /* Parse a "channel_alias message" into "real_channel_name=message"
  * Used for MUX-style channel aliases
  */
-char *parse_chat_alias(dbref player, char *command)
+char *
+parse_chat_alias(dbref player, char *command)
 {
   char *alias;
   char *message;
@@ -4227,34 +4228,35 @@ char *parse_chat_alias(dbref player, char *command)
   }
 
   switch (find_channel_partial_on(av, &c, player)) {
-    case CMATCH_EXACT:
-      bp = command;
-      /* If message is "on", "off", or "who", it's not speech, it's @chan/ungag,
-       * @chan/gag, or @chan/who, respectively */
-      if (!strcasecmp("on", message)) {
-        safe_format(command, &bp, "/ungag %s", av);
-      } else if (!strcasecmp("off", message)) {
-        safe_format(command, &bp, "/gag %s", av);
-      } else if (!strcasecmp("who", message)) {
-        safe_format(command, &bp, "/who %s", av);
-      } else {        
-        safe_format(command, &bp, "%s=%s", av, message);
-        chat = 1;
-      }
-      *bp = '\0';
-      mush_free(av, "chanalias");
-      if (chat)
-        return "@CHAT";
-      else
-        return "@CHANNEL";
-    default:
-      *bp = save;
-      mush_free(av, "chanalias");
-      return NULL;
+  case CMATCH_EXACT:
+    bp = command;
+    /* If message is "on", "off", or "who", it's not speech, it's @chan/ungag,
+     * @chan/gag, or @chan/who, respectively */
+    if (!strcasecmp("on", message)) {
+      safe_format(command, &bp, "/ungag %s", av);
+    } else if (!strcasecmp("off", message)) {
+      safe_format(command, &bp, "/gag %s", av);
+    } else if (!strcasecmp("who", message)) {
+      safe_format(command, &bp, "/who %s", av);
+    } else {
+      safe_format(command, &bp, "%s=%s", av, message);
+      chat = 1;
+    }
+    *bp = '\0';
+    mush_free(av, "chanalias");
+    if (chat)
+      return "@CHAT";
+    else
+      return "@CHANNEL";
+  default:
+    *bp = save;
+    mush_free(av, "chanalias");
+    return NULL;
   }
 }
 
-COMMAND(cmd_addcom) {
+COMMAND(cmd_addcom)
+{
   char buff[BUFFER_LEN];
   char *bp = buff;
   ATTR *a;
@@ -4300,26 +4302,36 @@ COMMAND(cmd_addcom) {
     return;
   }
   atr_add(executor, buff, normalize_channel_name(ChanName(chan)), GOD, 0);
-  notify_format(executor, T("Alias %s added for channel <%s>."), arg_left, ChanName(chan));
+  notify_format(executor, T("Alias %s added for channel <%s>."), arg_left,
+                ChanName(chan));
 }
-static int
-delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing __attribute__ ((__unused__)), dbref parent __attribute__ ((__unused__)), const char *pattern __attribute__ ((__unused__)), ATTR *atr, void *args);
 
 static int
-delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing __attribute__ ((__unused__)), dbref parent __attribute__ ((__unused__)), const char *pattern __attribute__ ((__unused__)), ATTR *atr, void *args)
+
+delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
+              __attribute__ ((__unused__)), dbref parent
+              __attribute__ ((__unused__)), const char *pattern
+              __attribute__ ((__unused__)), ATTR *atr, void *args);
+
+static int
+delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
+              __attribute__ ((__unused__)), dbref parent
+              __attribute__ ((__unused__)), const char *pattern
+              __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  if (!strcasecmp(atr_value(atr), (char *)args))
+  if (!strcasecmp(atr_value(atr), (char *) args))
     return 1;
   return 0;
 }
 
-COMMAND(cmd_delcom) {
+COMMAND(cmd_delcom)
+{
   char buff[BUFFER_LEN];
   char *bp = buff;
   ATTR *a;
   char *channame;
   int matches;
-  
+
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);
@@ -4331,7 +4343,8 @@ COMMAND(cmd_delcom) {
   channame = safe_atr_value(a, "delcom");
 
   atr_clr(executor, buff, GOD);
-  matches = atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, delcom_helper, channame);
+  matches =
+    atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, delcom_helper, channame);
   if (!matches) {
     channel_leave_self(executor, channame);
   } else {
@@ -4340,10 +4353,17 @@ COMMAND(cmd_delcom) {
   mush_free(channame, "delcom");
 }
 
-static int comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing __attribute__ ((__unused__)), dbref parent __attribute__ ((__unused__)), const char *pattern __attribute__ ((__unused__)), ATTR *atr, void *args);
+static int comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing
+                          __attribute__ ((__unused__)), dbref parent
+                          __attribute__ ((__unused__)), const char *pattern
+                          __attribute__ ((__unused__)), ATTR *atr, void *args);
 
 static int
-comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing, dbref parent __attribute__ ((__unused__)), const char *pattern __attribute__ ((__unused__)), ATTR *atr, void *args __attribute__ ((__unused__))) 
+comlist_helper(dbref player
+               __attribute__ ((__unused__)), dbref thing, dbref parent
+               __attribute__ ((__unused__)), const char *pattern
+               __attribute__ ((__unused__)), ATTR *atr, void *args
+               __attribute__ ((__unused__)))
 {
   CHAN *c;
   CHANUSER *cu;
@@ -4352,13 +4372,13 @@ comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing, dbref par
   char channame[BUFFER_LEN];
   char *cn = channame;
   int namelen;
-  
+
   if (find_channel(atr_value(atr), &c, thing) != CMATCH_EXACT)
     return 0;
-  
+
   if (!(cu = onchannel(thing, c)))
     return 0;
-  
+
   mush_strncpy(buff, strlower(AL_NAME(atr)), BUFFER_LEN);
   bp = strchr(buff, '`');
   if (!bp)
@@ -4373,26 +4393,31 @@ comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing, dbref par
     safe_fill(' ', 30 - namelen, channame, &cn);
     *cn = '\0';
   }
-  notify_format(thing, "%-18s %s %-8s %s", bp, channame, Chanuser_Gag(cu) ? "Off" : "On", CUtitle(cu) ? CUtitle(cu) : "");
+  notify_format(thing, "%-18s %s %-8s %s", bp, channame,
+                Chanuser_Gag(cu) ? "Off" : "On",
+                CUtitle(cu) ? CUtitle(cu) : "");
   return 1;
 }
 
-COMMAND(cmd_comlist) {
+COMMAND(cmd_comlist)
+{
   notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
                 T("Status"), T("Title"));
   atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
   notify(executor, T("-- End of comlist --"));
 }
 
-COMMAND(cmd_clist) {
+COMMAND(cmd_clist)
+{
   do_channel_list(executor, arg_left, CHANLIST_ALL);
 }
 
-COMMAND(cmd_comtitle) {
+COMMAND(cmd_comtitle)
+{
   char buff[BUFFER_LEN];
   char *bp = buff;
   ATTR *a;
-  
+
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);

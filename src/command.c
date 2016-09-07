@@ -73,7 +73,7 @@ void do_command_clone(dbref player, char *original, char *clone);
 static const char CommandLock[] = "CommandLock";
 
 #ifdef MUXCOMM
-extern char *parse_chat_alias(dbref player, char *command); /* from extchat.c */
+extern char *parse_chat_alias(dbref player, char *command);     /* from extchat.c */
 #endif
 
 /** The list of standard commands. Additional commands can be added
@@ -101,9 +101,11 @@ COMLIST commands[] = {
   {"@BREAK", "INLINE QUEUED", cmd_break,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
-  {"@SKIP", "IFELSE", cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
+  {"@SKIP", "IFELSE", cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
    0},
-  {"@IFELSE", NULL, cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
+  {"@IFELSE", NULL, cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
    0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -418,7 +420,7 @@ COMLIST commands[] = {
   {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
 #endif
-   
+
   {NULL, NULL, NULL, 0, 0, 0}
 };
 
@@ -1220,12 +1222,13 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
     skip_char = 0;
   }
-  
+
   if (replacer)
     parse_switches = 0;
 
 #ifdef MUXCOMM
-  if (!replacer && (replacer = parse_chat_alias(player, p)) && command_check_byname(player, replacer, pe_info)) {
+  if (!replacer && (replacer = parse_chat_alias(player, p))
+      && command_check_byname(player, replacer, pe_info)) {
     noevtoken = 1;
     skip_char = 0;
     if (!strcmp(replacer, "@CHAT")) {
@@ -2674,8 +2677,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.override->
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.
+             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {

@@ -150,7 +150,7 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
 #define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)      /*                                      1        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)  /*                              2        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16) /*                             16        1         ?          1    */
-#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256) /*                          256        1         ?          1    */
+#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)       /*                          256        1         ?          1    */
 
 #define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)      /*                                      1        0         1          1    */
 #define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)  /*                              2        0         1          1    */
@@ -1555,7 +1555,8 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {
       fwd = parse_objid(curr);
-      if (RealGoodObject(fwd) && (thing != fwd) && (skip != fwd) && Can_Forward(thing, fwd)) {
+      if (RealGoodObject(fwd) && (thing != fwd) && (skip != fwd)
+          && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
           notify_anything(speaker, speaker, na_loc, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);

@@ -50,106 +50,99 @@ __inline
 inline
 #endif
 #endif
-static unsigned int
-bflag_hash (register const char *str, register unsigned int len)
+  static unsigned int
+bflag_hash(register const char *str, register unsigned int len)
 {
-  static const unsigned char asso_values[] =
-    {
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20,  0, 10, 20,
-      10, 20,  0,  0, 20, 20, 20, 20,  5,  5,
-       0, 20, 20, 20,  0, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-      20, 20, 20, 20, 20, 20
-    };
-  return len + asso_values[(unsigned char)str[0]];
+  static const unsigned char asso_values[] = {
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 0, 10, 20,
+    10, 20, 0, 0, 20, 20, 20, 20, 5, 5,
+    0, 20, 20, 20, 0, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    20, 20, 20, 20, 20, 20
+  };
+  return len + asso_values[(unsigned char) str[0]];
 }
 
 #ifdef __GNUC__
 __inline
 #if defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__
-__attribute__ ((__gnu_inline__))
+  __attribute__ ((__gnu_inline__))
 #endif
 #endif
-const struct flag_lock_types *
-is_allowed_bflag (register const char *str, register unsigned int len)
+    const struct flag_lock_types *is_allowed_bflag(register const char *str,
+                                                   register unsigned int len)
 {
-  enum
-    {
-      TOTAL_KEYWORDS = 9,
-      MIN_WORD_LENGTH = 2,
-      MAX_WORD_LENGTH = 9,
-      MIN_HASH_VALUE = 2,
-      MAX_HASH_VALUE = 19
-    };
+  enum {
+    TOTAL_KEYWORDS = 9,
+    MIN_WORD_LENGTH = 2,
+    MAX_WORD_LENGTH = 9,
+    MIN_HASH_VALUE = 2,
+    MAX_HASH_VALUE = 19
+  };
 
-  static const unsigned char lengthtable[] =
-    {
-       0,  0,  2,  0,  4,  5,  0,  7,  8,  4,  5,  0,  0,  0,
-       4,  0,  0,  0,  0,  9
-    };
-  static const struct flag_lock_types wordlist[] =
-    {
-      {"",-1,0}, {"",-1,0},
+  static const unsigned char lengthtable[] = {
+    0, 0, 2, 0, 4, 5, 0, 7, 8, 4, 5, 0, 0, 0,
+    4, 0, 0, 0, 0, 9
+  };
+  static const struct flag_lock_types wordlist[] = {
+    {"", -1, 0}, {"", -1, 0},
 #line 34 "bflags.gperf"
-      {"IP", OP_TIP, 1},
-      {"",-1,0},
+    {"IP", OP_TIP, 1},
+    {"", -1, 0},
 #line 30 "bflags.gperf"
-      {"TYPE", OP_TTYPE, 0},
+    {"TYPE", OP_TTYPE, 0},
 #line 29 "bflags.gperf"
-      {"POWER", OP_TPOWER, 0},
-      {"",-1,0},
+    {"POWER", OP_TPOWER, 0},
+    {"", -1, 0},
 #line 32 "bflags.gperf"
-      {"CHANNEL", OP_TCHANNEL, 0},
+    {"CHANNEL", OP_TCHANNEL, 0},
 #line 35 "bflags.gperf"
-      {"HOSTNAME", OP_THOSTNAME, 1},
+    {"HOSTNAME", OP_THOSTNAME, 1},
 #line 31 "bflags.gperf"
-      {"NAME", OP_TNAME, 1},
+    {"NAME", OP_TNAME, 1},
 #line 33 "bflags.gperf"
-      {"OBJID", OP_TIS, 0},
-      {"",-1,0}, {"",-1,0}, {"",-1,0},
+    {"OBJID", OP_TIS, 0},
+    {"", -1, 0}, {"", -1, 0}, {"", -1, 0},
 #line 28 "bflags.gperf"
-      {"FLAG", OP_TFLAG, 0},
-      {"",-1,0}, {"",-1,0}, {"",-1,0}, {"",-1,0},
+    {"FLAG", OP_TFLAG, 0},
+    {"", -1, 0}, {"", -1, 0}, {"", -1, 0}, {"", -1, 0},
 #line 36 "bflags.gperf"
-      {"DBREFLIST", OP_TDBREFLIST, 1}
-    };
+    {"DBREFLIST", OP_TDBREFLIST, 1}
+  };
 
-  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
-    {
-      register int key = bflag_hash (str, len);
+  if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
+    register int key = bflag_hash(str, len);
 
-      if (key <= MAX_HASH_VALUE && key >= 0)
-        if (len == lengthtable[key])
-          {
-            register const char *s = wordlist[key].name;
+    if (key <= MAX_HASH_VALUE && key >= 0)
+      if (len == lengthtable[key]) {
+        register const char *s = wordlist[key].name;
 
-            if (*str == *s && !memcmp (str + 1, s + 1, len - 1))
-              return &wordlist[key];
-          }
-    }
+        if (*str == *s && !memcmp(str + 1, s + 1, len - 1))
+          return &wordlist[key];
+      }
+  }
   return 0;
 }
+
 #line 37 "bflags.gperf"
-
-

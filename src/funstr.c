@@ -1708,8 +1708,7 @@ align_one_line(char *buff, char **bp, int ncols,
     }
     if ((j < ncols) &&
         (!(calign[j] & AL_REPEAT) &&
-         (calign[j] & AL_COALESCE_LEFT) &&
-         (!ptrs[j] || !*ptrs[j]))) {
+         (calign[j] & AL_COALESCE_LEFT) && (!ptrs[j] || !*ptrs[j]))) {
       /* To coalesce left on this line, modify the left column's
        * width and set the current column width to 0 (which we can
        * teach it to skip). */

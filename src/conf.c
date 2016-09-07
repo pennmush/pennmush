@@ -775,7 +775,7 @@ PRIV cf_priv_monikers[] = {
   {"things", '\0', AN_THING, AN_THING},
   {"rooms", '\0', AN_ROOM, AN_ROOM},
   {"exits", '\0', AN_EXIT, AN_EXIT},
-  
+
   {"everywhere", '\0', AN_EVERYWHERE, AN_EVERYWHERE},
   {"chat", '\0', AN_CHAT, AN_CHAT},
   {"say", '\0', AN_SAY, AN_SAY},
@@ -798,15 +798,16 @@ struct priv_option {
 /* List of cf_priv options, storing their names, location of value, and the
  * priv table which holds their possible values */
 struct priv_option priv_options[] = {
-  {"monikers", &options.monikers, cf_priv_monikers}, 
+  {"monikers", &options.monikers, cf_priv_monikers},
   {NULL, NULL, NULL}
 };
 
 /* Given a cf_priv option name, find its entry in the priv_options table. */
-struct priv_option*
-find_priv_option(const char *name) {
+struct priv_option *
+find_priv_option(const char *name)
+{
   struct priv_option *po;
-  
+
   for (po = priv_options; po->optname; po++) {
     if (!strcmp(po->optname, name)) {
       return po;
@@ -837,24 +838,26 @@ CONFIG_FUNC(cf_priv)
 
   if (is_strict_integer(val)) {
     if (!from_cmd) {
-      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update to a list of values.", opt);
+      do_rawlog(LT_ERR,
+                "CONFIG: Option '%s' set to an integer. Please update to a list of values.",
+                opt);
     }
     *((privbits *) loc) = parse_integer(val);
     return 1;
   }
   do_rawlog(LT_ERR, "Chk 1");
   po = find_priv_option(opt);
-  
+
   if (!po) {
     do_rawlog(LT_ERR, "CONFIG: Unknown priv-type option '%s'", opt);
     return 0;
   }
-  result = string_to_privs(po->table, val, *((privbits *)loc));
-  
+  result = string_to_privs(po->table, val, *((privbits *) loc));
+
   *((privbits *) loc) = result;
   return 1;
 }
-    
+
 /** Parse a time configuration option
  * \param opt name of the configuration option.
  * \param val value of the option.
@@ -1822,7 +1825,8 @@ config_to_string(dbref player
   static char result[BUFFER_LEN];
   char *bp = result;
 
-  safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name), display_config_value(cp));
+  safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name),
+              display_config_value(cp));
   *bp = '\0';
   return result;
 }
@@ -1860,10 +1864,11 @@ display_config_value(PENNCONF *cp)
     safe_format(result, &bp, "#%d", *((dbref *) cp->loc));
   else if (cp->handler == cf_priv) {
     struct priv_option *po;
-  
+
     po = find_priv_option(cp->name);
     if (po) {
-      safe_str(privs_to_string(po->table, *((privbits *) cp->loc)), result, &bp);
+      safe_str(privs_to_string(po->table, *((privbits *) cp->loc)), result,
+               &bp);
     }
   }
 

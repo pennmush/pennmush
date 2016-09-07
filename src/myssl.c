@@ -142,7 +142,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   meth = SSLv23_server_method();
   ctx = SSL_CTX_new(meth);
   SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-  
+
   /* Load keys/certs */
   if (private_key_file && *private_key_file) {
     if (!SSL_CTX_use_certificate_chain_file(ctx, private_key_file)) {

@@ -91,6 +91,7 @@ static bool
 
 
 
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.

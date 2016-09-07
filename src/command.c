@@ -1122,7 +1122,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   NEW_PE_INFO *pe_info = queue_entry->pe_info;
   int pe_flags = 0;
   int skip_char = 1;
-
+  bool is_chat = 0;
+  
   rhs_present = 0;
 
   command = mush_malloc(BUFFER_LEN, "string_command");
@@ -1169,9 +1170,11 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       /* parse_chat() destructively modifies the command to replace
      * the first space with a '=' if the command is an actual
      * chat command */
-    if (parse_chat(player, p + 1)
-        && command_check_byname(player, "@CHAT", queue_entry->pe_info))
+    if (parse_chat(player, p + 1) 
+        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
       *p = CHAT_TOKEN;
+      is_chat = 1;
+    }
   }
     
   switch (*p) {
@@ -1203,8 +1206,10 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     /* This is a "+chan foo" chat style
      * We set noevtoken to keep its noeval way, and
      * set the cmd to allow @hook. */
-    replacer = "@CHAT";
-    noevtoken = 1;
+    if (is_chat) {
+      replacer = "@CHAT";
+      noevtoken = 1;
+    }
     break;
   case NUMBER_TOKEN:
     /* parse_force() destructively modifies the command to replace

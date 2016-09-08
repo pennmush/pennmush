@@ -847,8 +847,6 @@ CONFIG_FUNC(cf_priv)
   if (!val || !*val)
     return 1;
 
-  do_rawlog(LT_ERR, "Validating '%s' set to '%s'", opt, val);
-
   if (is_strict_integer(val)) {
     if (!from_cmd) {
       do_rawlog(LT_ERR,

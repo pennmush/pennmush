@@ -34,7 +34,6 @@ hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h
 hdrs/gitinfo.h
-options.h
 src/Makefile
 src/cmdlocal.c
 src/flaglocal.c

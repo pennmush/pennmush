@@ -26,6 +26,9 @@
 #include <sys/types.h>
 #endif
 #include <fcntl.h>
+#ifdef HAVE_CRYPT_H
+#include <crypt.h>
+#endif
 
 #include "access.h"
 #include "attrib.h"
@@ -41,14 +44,6 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
-
-#ifdef HAVE_CRYPT
-#ifdef I_CRYPT
-#include <crypt.h>
-#else
-extern char *crypt(const char *, const char *);
-#endif
-#endif
 
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);

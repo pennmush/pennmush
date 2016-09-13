@@ -55,6 +55,8 @@
 
 #undef HAVE_LANGINFO_H
 
+#undef HAVE_CRYPT_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H

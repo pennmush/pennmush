@@ -157,7 +157,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h])
 AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h])
-AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h])
+AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h])
 AC_CHECK_HEADERS([zlib.h event2/event.h event2/dns.h fenv.h sys/param.h])
 AC_CHECK_HEADERS([sys/ucred.h], [], [], [
 AC_INCLUDES_DEFAULT

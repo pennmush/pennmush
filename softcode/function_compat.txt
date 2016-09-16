@@ -1,0 +1,35 @@
+@create Rhost Compatability Functions (RCF)
+@power RCF=Functions
+@startup RCF=@dol lattr(me/fun`*)=@function after(%i0,`)=me,%i0,v(%i0`min),v(%i0`max),v(%i0`restrict)
+
+@@ This assumes you haven't redefined GOD in the hardcode. 
+&fun`bittype RCF=switch(locate(%@,%0,N*),#-*,%$0,#1,7,cond(hasflag(%$0,wizard),6,hasflag(%$0,royalty),5,haspower(%$0,builder),3,haspower(%$0,guest),0,1))
+&fun`bittype`min RCF=1
+&fun`bittype`max RCF=2
+
+@@ between(<small>,<big>,<value>[,<X-or-equal>])
+&fun`between RCF=ufun(between,floor(%0),floor(%1),floor(%2),if(%3,,=))
+&fun`between`min RCF=3
+&fun`between`max RCF=4
+
+@@ fbetween() is a floating-point version of between()
+&fun`fbetween RCF=ufun(between,%0,%1,%2,if(%3,,=))
+&fun`fbetween`min RCF=3
+&fun`fbetween`max RCF=4
+
+&between RCF=switch(%2,<%3%0,0,>%3%1,0,1)
+
+@@ caplist(<list>[, <delim>[, <osep>[, <key>[, <type>]]]])
+@@ If <key> is L, lcstr(<list>) before working on it. Other values ignored.
+@@ If <type> is true and <key> is L or T, capitalise after hyphens.
+&fun`caplist RCF=u(caplist,%0,%1,strfirstof(%2,%1,%b),switch(%3,L,L,N),switch(t(%4)%3,0*,0,1N,0,1))
+&fun`caplist`min RCF=1
+&fun`caplist`max RCF=5
+
+&caplist RCF=map(#lambda/[if(%4,{map\(#lambda/capstr(%%%%0),%%0,-,-)},{capstr\(%%0)})],switch(%3,L,lcstr(%0),%0),%1,%2)
+
+@@ chomp(<string>[, B|L|R])
+&fun`chomp RCF=trimpenn(%0,%r,%1)
+&fun`chomp`min RCF=1
+&fun`chomp`max RCF=2
+

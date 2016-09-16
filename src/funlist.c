@@ -31,7 +31,6 @@
 #include "sort.h"
 #include "strutil.h"
 
-
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void freearr_member(char *p);
 extern const unsigned char *tables;
@@ -1111,41 +1110,106 @@ FUNCTION(fun_first)
   safe_str(split_token(&p, sep), buff, bp);
 }
 
+enum rand_types {
+  RAND_LINEAR,
+  RAND_NODUPLICATES,
+  RAND_DUPLICATES
+};
 /* ARGSUSED */
 FUNCTION(fun_randword)
 {
-  char *s, *r;
+  char **ptrs;
+  int nptrs;
   char sep;
-  int word_count, word_index;
+  char *osep;
+  char osepd[2] = {'\0', '\0'};
+  int separg = 2;
+  int randcount = 1;
+  enum rand_types randtype = RAND_NODUPLICATES;
+  bool first = 1;
+  int word_index = -1; 
 
-  if (!*args[0])
+  if (!*args[0]) {
     return;
-
-  if (!delim_check(buff, bp, nargs, args, 2, &sep))
-    return;
-
-  s = trim_space_sep(args[0], sep);
-  word_count = do_wordcount(s, sep);
-
-  if (word_count == 0)
-    return;
-
-  word_index = get_random32(0, word_count - 1);
-
-  /* Go to the start of the token we're interested in. */
-  while (word_index && s) {
-    s = next_token(s, sep);
-    word_index--;
+  }
+  if (!strcmp(called_as, "RANDEXTRACT")) {
+      separg = 3;
+      if (nargs > 1) {
+        if (args[1] && *args[1] && !is_strict_integer(args[1])) {
+          safe_str(T(e_int), buff, bp);
+          return;
+        }
+        randcount = parse_integer(args[1]);
+        if (randcount < 1) {
+          return;
+        }
+      }
   }
 
-  if (!s || !*s)                /* ran off the end of the string */
+  if (!delim_check(buff, bp, nargs, args, separg, &sep)) {
     return;
+  }
+  
+  if (nargs > 3 && args[3] && *args[3]) {
+    if (*args[3] == 'l' || *args[3] == 'L') {
+      randtype = RAND_LINEAR;
+    } else if (*args[3] == 'r' || *args[3] == 'R') {
+      randtype = RAND_NODUPLICATES;
+    } else if (*args[3] == 'd' || *args[3] == 'D') {
+      randtype = RAND_DUPLICATES;
+    } else {
+      safe_str(T("#-1 INVALID TYPE"), buff, bp);
+      return;
+    }
+  }
+  
+  if (nargs > 4) {
+    osep = args[4];
+  } else {
+    osepd[0] = sep;
+    osep = osepd;
+  }
 
-  /* Chop off the end, and copy. No length checking needed. */
-  r = s;
-  if (s && *s)
-    (void) split_token(&s, sep);
-  safe_str(r, buff, bp);
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep, 1);
+
+  if (!nptrs) {
+    return;
+  }
+  if (randcount > nptrs && randtype != RAND_DUPLICATES) {
+    randcount = nptrs;
+  }
+
+  for (;randcount;randcount--) {
+    if (word_index == -1 || randtype != RAND_LINEAR) {
+      word_index = get_random32(0, nptrs - 1);
+    } else {
+      word_index++;
+      if (word_index >= nptrs) {
+        break; /* End of string */
+      }
+    }
+    while (!ptrs[word_index]) {
+      /* Find an unused word - there will always be one */
+      word_index++;
+      if (word_index > nptrs) {
+        word_index = 0; /* Back to beginning */
+      }
+    }
+    if (first) {
+      first = 0;
+    } else {
+      safe_str(osep, buff, bp);
+    }
+    safe_str(ptrs[word_index], buff, bp);
+    if (randtype == RAND_NODUPLICATES) {
+      /* Don't pick this word again */
+      freearr_member(ptrs[word_index]);
+      ptrs[word_index] = NULL;
+    }
+  }
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 }
 
 /* ARGSUSED */

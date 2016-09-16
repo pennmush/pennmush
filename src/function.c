@@ -486,6 +486,7 @@ FUNTAB flist[] = {
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
   {"R", fun_r, 1, 2, FN_REG | FN_STRIPANSI},
   {"RAND", fun_rand, 0, 2, FN_REG | FN_STRIPANSI},
+  {"RANDEXTRACT", fun_randword, 1, 5, FN_REG},
   {"RANDWORD", fun_randword, 1, 2, FN_REG},
   {"RECV", fun_recv, 1, 1, FN_REG | FN_STRIPANSI},
   {"REGEDIT", fun_regreplace, 3, INT_MAX, FN_NOPARSE},

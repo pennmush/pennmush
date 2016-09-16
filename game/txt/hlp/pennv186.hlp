@@ -45,6 +45,8 @@ Minor changes:
 
 Functions:
  * Added setsymdiff() [SW]
+ * Added randextract(), a more powerful version of randword(). [MG,Rhost]
+ * randword() is now more ansi-aware. [MG]
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.

@@ -31,6 +31,7 @@ Fixes:
  * Messages - such as an exit's own @osuccess - could be propagated through an audible exit when they shouldn't be. [1081-MG]
  * Fix a crash if a particular file descriptor is -1. [SW]
  * Fix a potential crash in @stats/tables [SW]
+ * controls(<obj>, <victim>/<attr>) would return 1 even if <obj> didn't control <victim>. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

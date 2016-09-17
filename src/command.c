@@ -113,7 +113,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
    0, 0},
   {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHOWNALL", "PRESERVE", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
+  {"@CHOWNALL", "PRESERVE THINGS ROOMS EXITS", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
    0},
 
   {"@CHOWN", "PRESERVE", cmd_chown,

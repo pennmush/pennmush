@@ -965,9 +965,10 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
  * \param name name of player whose objects are to be chowned.
  * \param target name of new owner for objects.
  * \param preserve if 1, keep privileges and don't halt objects.
+ * \param types types of objects to chown
  */
 void
-do_chownall(dbref player, const char *name, const char *target, int preserve)
+do_chownall(dbref player, const char *name, const char *target, int preserve, int types)
 {
   int i;
   dbref victim;
@@ -993,7 +994,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
   }
 
   for (i = 0; i < db_top; i++) {
-    if ((Owner(i) == victim) && (!IsPlayer(i))) {
+    if ((Owner(i) == victim) && (Typeof(i) & types)) {
       chown_object(player, i, n_target, preserve);
       count++;
     }

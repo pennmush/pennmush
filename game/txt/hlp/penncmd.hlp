@@ -595,9 +595,11 @@ See also: use, @ause, ACTION LISTS
 
 See also: CHOWN_OK, Zone Masters, @chownall, owner()
 & @chownall
-  @chownall[/preserve] <player>[=<new owner>]
+  @chownall[/preserve][/<types>] <player>[=<new owner>]
 
   This command @chowns all objects currently owned by <player> to the player <new owner>, or to the person running the command if no <new owner> is given. All the objects will have priviledged flags and powers cleared, and be set halt, unless the /preserve switch is given.
+  
+  If one or more of /things, /rooms or /exits are provided, only objects of the given types are chowned. Otherwise, all objects are chowned.
   
   This command can only be used by Wizards.
 

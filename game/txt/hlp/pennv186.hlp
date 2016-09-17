@@ -42,7 +42,8 @@ Minor changes:
  * New option for align(), # stops a colsep being added after a column. Suggested by Ashen-Shugar. [MG]
  * If you own an object and are in its DEBUGFORWARDLIST, you'll now only get the debug output once. Suggested by Qon. [1059-MG]
  * Tweaks to 'help <wildcard>'s error messages, and the help for said syntax. Suggested by Wiggles. [1084-MG]
- * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. 
+ * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. [1089-MG]
+ * @chownall now takes /things, /rooms and /exits switches, to limit the types of objects chowned. [MG,Rhost]
 
 Functions:
  * Added setsymdiff() [SW]

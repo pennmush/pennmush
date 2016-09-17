@@ -224,7 +224,7 @@ extern void do_sitelock(dbref player, const char *site, const char *opts,
                         const char *charname, enum sitelock_type type, int psw);
 extern void do_sitelock_name(dbref player, const char *name);
 extern void do_chownall
-  (dbref player, const char *name, const char *target, int preserve);
+  (dbref player, const char *name, const char *target, int preserve, int types);
 extern void do_reboot(dbref player, int flag);
 
 /* From destroy.c */

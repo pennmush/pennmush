@@ -276,7 +276,16 @@ COMMAND(cmd_retry)
 
 COMMAND(cmd_chownall)
 {
-  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));
+  int types = 0;
+  if (SW_ISSET(sw, SWITCH_THINGS))
+    types |= TYPE_THING;
+  if (SW_ISSET(sw, SWITCH_ROOMS))
+    types |= TYPE_ROOM;
+  if (SW_ISSET(sw, SWITCH_EXITS))
+    types |= TYPE_EXIT;
+  if (!types)
+    types = TYPE_THING | TYPE_ROOM | TYPE_EXIT;
+  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE), types);
 }
 
 COMMAND(cmd_chown)

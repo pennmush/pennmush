@@ -45,11 +45,13 @@ Minor changes:
  * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. [1089-MG]
  * @chownall now takes /things, /rooms and /exits switches, to limit the types of objects chowned. [MG,Rhost]
  * @chown <obj>/<attr>=<owner> acts as an alias for @atrchown, for Rhost compatability. [MG]
+ * @grep/parent checks inherited attributes too. [MG,Rhost]
 
 Functions:
  * Added setsymdiff() [SW]
  * Added randextract(), a more powerful version of randword(). [MG,Rhost]
  * randword() is now more ansi-aware. [MG]
+ * pgrep(), like grep() but also checks parents. [MG,Rhost]
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.

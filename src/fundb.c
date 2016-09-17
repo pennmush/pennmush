@@ -2311,14 +2311,15 @@ FUNCTION(fun_grep)
     return;
   }
 
-  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI")
-      || !strcmp(called_as, "REGREPI"))
+  if (strstr(called_as, "GREPI"))
     flags |= GREP_NOCASE;
 
   if (*called_as == 'W')
     flags |= GREP_WILD;
   else if (*called_as == 'R')
     flags |= GREP_REGEXP;
+  else if (*called_as == 'P')
+    flags |= GREP_PARENT;
 
   grep_util(executor, it, args[1], args[2], buff, bp, flags);
 }

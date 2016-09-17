@@ -1630,12 +1630,14 @@ See also: match(), matchall(), grab(), regmatch()
 & GREPI()
 & REGREPI()
 & WILDGREPI()
+& PGREP()
   grep(<object>, <attrs>, <substring>)
   wildgrep(<object>, <attrs>, <pattern>)
   regrep(<object>, <attrs>, <regexp>)
   grepi(<object>, <attrs>, <substring>)
   regrepi(<object>, <attrs>, <regexp>)
   wildgrepi(<object>, <attrs>, <pattern>)
+  pgrep(<object>, <attrs>, <substring>)
   
   These functions return a list of attributes on <object> containing <substring>, matching the wildcard <pattern>, or matching the regular expression <regexp>. <attrs> is a wildcard pattern for attribute names to search.
 
@@ -1643,6 +1645,8 @@ See also: match(), matchall(), grab(), regmatch()
 
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
+  
+  pgrep() works like grep(), but also checks attributes inherited from parents.
   
 See also: @grep, lattr(), WILDCARDS
 & GT()

@@ -1513,9 +1513,8 @@ See also: RESTRICT, FUNCTIONS, @startup, fn(), valid()
   All matches are case-sensitive, unless the /nocase switch is given.
   
   @grep only shows a list of matching attributes. However, you can specify the /print switch, in which case attribute values are also shown, with the matching substrings ansi-highlighted if appropriate.
-
-  Continued in 'help @grep2'.
-& @grep2
+  
+  If the /parent switch is given, attributes <object> inherits from its parent(s) will be checked as well.
 
   For backwards compatability, the /list switch provides the default behaviour of listing attributes without printing the values, and /ilist and /iprint are aliases for /list/nocase and /print/nocase.
    

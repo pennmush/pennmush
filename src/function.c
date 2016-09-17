@@ -297,6 +297,7 @@ FUNTAB flist[] = {
   {"GRAB", fun_grab, 2, 3, FN_REG},
   {"GRABALL", fun_graball, 2, 4, FN_REG},
   {"GREP", fun_grep, 3, 3, FN_REG},
+  {"PGREP", fun_grep, 3, 3, FN_REG},
   {"GREPI", fun_grep, 3, 3, FN_REG},
   {"GT", fun_gt, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"GTE", fun_gte, 2, INT_MAX, FN_REG | FN_STRIPANSI},

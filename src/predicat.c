@@ -1568,7 +1568,11 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     rgd.bp = bp;
     rgd.count = 0;
 
-    atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
+    if (flags & GREP_PARENT) {
+      atr_iter_get_parent(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
+    } else {
+      atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
+    }      
     if (free_study) {
 #ifdef PCRE_CONFIG_JIT
       pcre_free_study(rgd.study);
@@ -1591,7 +1595,11 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     gd.count = 0;
     gd.flags = flags;
 
-    atr_iter_get(player, thing, attrs, 0, 0, grep_helper, (void *) &gd);
+    if (flags & GREP_PARENT) {
+      atr_iter_get_parent(player, thing, attrs, 0, 0, grep_helper, (void *) &gd);
+    } else {
+      atr_iter_get(player, thing, attrs, 0, 0, grep_helper, (void *) &gd);
+    }
 
     return gd.count;
   }

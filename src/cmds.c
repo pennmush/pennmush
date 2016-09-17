@@ -669,6 +669,9 @@ COMMAND(cmd_grep)
   else if (SW_ISSET(sw, SWITCH_WILD))
     flags |= GREP_WILD;
 
+  if (SW_ISSET(sw, SWITCH_PARENT))
+    flags |= GREP_PARENT;
+
   if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_PRINT))
     print = 1;
 

@@ -1562,6 +1562,37 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
         store->bg[0] = 0;
         break;
       }
+    } else if (curnum == 38 || curnum == 48) {
+      bool fg = (curnum == 38);
+      /* XTERM. Bah. */
+      while (*codes && isdigit(*codes))
+        codes++;
+      if (*codes && *codes == ';') {
+        codes++;
+        curnum = atoi(codes);
+      } else {
+        curnum = -1;
+      }
+      if (curnum != 5) {
+        /* Something is wrong; abort */
+        while (*codes && (*codes != 'm'))
+          codes++;
+        return 0; /* Should this return 1 or 0? Who knows */
+      }
+      codes++; /* skip over the '5' */
+      if (*codes && *codes == ';') {
+        codes++;
+        curnum = atoi(codes);
+      } else {
+        curnum = -1;
+      }
+      if (curnum < 0 || curnum > 255) {
+        /* Something is wrong; abort */
+        while (*codes && (*codes != 'm'))
+          codes++;
+        return 0; /* Should this return 1 or 0? Who knows */
+      }
+      snprintf((fg ? store->fg : store->bg), COLOR_NAME_LEN, "+xterm%d", curnum);      
     } else if (curnum < 40) {
       store->fg[0] = ansi_chars[curnum];
       store->fg[1] = 0;

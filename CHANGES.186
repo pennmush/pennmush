@@ -47,6 +47,7 @@ Minor changes:
  * @chownall now takes /things, /rooms and /exits switches, to limit the types of objects chowned. [MG,Rhost]
  * @chown <obj>/<attr>=<owner> acts as an alias for @atrchown, for Rhost compatability. [MG]
  * @grep/parent checks inherited attributes too. [MG,Rhost]
+ * Penn now understands XTERM when reading raw ansi tags. It essentially never does this, though. Requested by spork. [975-MG]
 
 Functions:
  * Added setsymdiff() [SW]

@@ -24,7 +24,6 @@ https://github.com/pennmush/pennmush/wiki/Installing-PennMUSH-on-Windows
    Copy the following files        to:
    win32/config.h                  config.h
    win32/confmagic.h               confmagic.h
-   win32/options.h                 options.h
    win32/cmds.h                    hdrs/cmds.h
    win32/funs.h                    hdrs/funs.h
    win32/patches.h                 hdrs/patches.h

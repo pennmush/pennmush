@@ -54,6 +54,3 @@ typedefs.scm: Compiles into a program used to update the list of
 update-cnf.pl: Used by make to reconcile changes between
  game/mushcnf.dst and your local game/mush.cnf.
 
-update.pl: Used by make to reconcile changes between options.h.dist
- and your options.h.
-

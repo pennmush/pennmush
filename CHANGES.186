@@ -45,6 +45,7 @@ Minor changes:
  * Tweaks to 'help <wildcard>'s error messages, and the help for said syntax. Suggested by Wiggles. [1084-MG]
  * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. [1089-MG]
  * @chownall now takes /things, /rooms and /exits switches, to limit the types of objects chowned. [MG,Rhost]
+ * @chown <obj>/<attr>=<owner> acts as an alias for @atrchown, for Rhost compatability. [MG]
 
 Functions:
  * Added setsymdiff() [SW]

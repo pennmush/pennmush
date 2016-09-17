@@ -394,7 +394,7 @@ See also: @teleport, ACTION LISTS, VERBS
   
   This command changes the ownership of the attribute <attribute> on <object> to <new owner>. You can only @atrchown attributes which you can set. Wizards can @atrchown to any player, while mortals can only @atrchown attributes to themselves. Only players can own attributes; if <new owner> is not a player, <new owner>'s owner is used instead.
 
-See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
+See also: @atrlock, @chown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @atrlock
 & @attrlock
   @atrlock <object>/<attribute>
@@ -584,20 +584,23 @@ See also: use, @ause, ACTION LISTS
     CHARGES [#6$]: 0
 & @chown
   @chown[/preserve] <object>=<player>
+  @chown <object>/<attribute>=<player>
 
   Changes the ownership of <object> to <player>. You can chown things, rooms or exits. Players can't be @chown'd - they always own themselves. To chown a thing, you have to be carrying it. If you do not own an object, you can only chown it if it has the CHOWN_OK flag. If you're not a Wizard, you can only @chown objects to yourself or a Zone Master whose zone-lock you pass.
 
   Normally, @chown'ing an object clears privileged flags and powers, and sets the object halt. Wizards can use @chown/preserve to avoid this. Doing this to an active object with queued commands is not recommended, and may have strange and insecure effects.
+  
+  If /<attribute> is specified, it acts as an alias for @atrchown; see 'help @atrchown' for details.
 
   Examples:
     > @chown here=me (for a room)
     > @chown box=Soundwave (for a thing)
 
-See also: CHOWN_OK, Zone Masters, @chownall, owner()
+See also: CHOWN_OK, Zone Masters, @chownall, owner(), @atrchown
 & @chownall
   @chownall[/preserve][/<types>] <player>[=<new owner>]
 
-  This command @chowns all objects currently owned by <player> to the player <new owner>, or to the person running the command if no <new owner> is given. All the objects will have priviledged flags and powers cleared, and be set halt, unless the /preserve switch is given.
+  This command @chowns all objects currently owned by <player> to the player <new owner>, or to the person running the command if no <new owner> is given. All the objects will have privileged flags and powers cleared, and be set halt, unless the /preserve switch is given.
   
   If one or more of /things, /rooms or /exits are provided, only objects of the given types are chowned. Otherwise, all objects are chowned.
   

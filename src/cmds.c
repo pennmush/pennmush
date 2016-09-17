@@ -290,8 +290,12 @@ COMMAND(cmd_chownall)
 
 COMMAND(cmd_chown)
 {
-  do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
-           queue_entry->pe_info);
+  if (strchr(arg_left, '/')) {
+    do_atrchown(executor, arg_left, arg_right);
+  } else {
+    do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+             queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_chzoneall)

@@ -2945,7 +2945,7 @@ string_to_json_real(char *input, char **ip, int recurse)
       }
       i++;
     }
-    if ((i % 2) && **ip == '}') {
+    if ((i == 0 || (i % 2)) && **ip == '}') {
       (*ip)++;
       result->type = JSON_OBJECT;
     }

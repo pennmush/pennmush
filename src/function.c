@@ -336,6 +336,7 @@ FUNTAB flist[] = {
   {"ITEXT", fun_itext, 1, 1, FN_REG | FN_STRIPANSI},
   {"JSON", fun_json, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"JSON_MAP", fun_json_map, 2, MAX_STACK_ARGS + 1, FN_REG | FN_STRIPANSI},
+  {"JSON_QUERY", fun_json_query, 1, 3, FN_REG | FN_STRIPANSI},
   {"LAST", fun_last, 1, 2, FN_REG},
   {"LATTR", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},

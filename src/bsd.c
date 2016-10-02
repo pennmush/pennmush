@@ -3051,6 +3051,156 @@ FUNCTION(fun_oob)
   json_free(json);
 }
 
+enum json_query {JSON_QUERY_TYPE, JSON_QUERY_SIZE, JSON_QUERY_EXISTS, JSON_QUERY_GET, JSON_QUERY_UNESCAPE};
+
+FUNCTION(fun_json_query)
+{
+  JSON *json, *next;
+  enum json_query query_type = JSON_QUERY_TYPE;
+  int i;
+  
+  if (nargs > 1 && args[1] && *args[1]) {
+    if (string_prefix("size", args[1])) {
+      query_type = JSON_QUERY_SIZE;
+    } else if (string_prefix("exists", args[1])) {
+      query_type = JSON_QUERY_EXISTS;
+    } else if (string_prefix("get", args[1])) {
+      query_type = JSON_QUERY_GET;
+    } else if (string_prefix("unescape", args[1])) {
+      query_type = JSON_QUERY_UNESCAPE;
+    } else {
+      safe_str(T("#-1 INVALID OPERATION"), buff, bp);
+      return;
+    }
+  }
+  
+  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS) && (nargs < 3 || !args[2] || !*args[2])) {
+    safe_str(T("#-1 MISSING VALUE"), buff, bp);
+    return;
+  }
+  
+  json = string_to_json(args[0]);
+  if (!json) {
+    safe_str(T("#-1 INVALID JSON"), buff, bp);
+    return;
+  }
+
+  switch (query_type) {
+  case JSON_QUERY_TYPE:
+    switch (json->type) {
+    case JSON_NONE:
+      break; /* Should never happen */
+    case JSON_STR:
+      safe_str("string", buff, bp);
+      break;
+    case JSON_BOOL:
+      safe_str("boolean", buff, bp);
+      break;
+    case JSON_NULL:
+      safe_str("null", buff, bp);
+      break;
+    case JSON_NUMBER:
+      safe_str("number", buff, bp);
+      break;
+    case JSON_ARRAY:
+      safe_str("array", buff, bp);
+      break;
+    case JSON_OBJECT:
+      safe_str("object", buff, bp);
+      break;
+    }
+    break;
+  case JSON_QUERY_SIZE:
+    switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NUMBER:
+      safe_chr('1', buff, bp);
+      break;
+    case JSON_NULL:
+      safe_chr('0', buff, bp);
+      break;
+    case JSON_ARRAY:
+    case JSON_OBJECT:
+      next = (JSON *) json->data;
+      if (!next) {
+        safe_chr('0', buff, bp);
+        break;
+      }
+      for (i = 1; next->next; i++, next = next->next);
+      if (json->type == JSON_OBJECT) {
+        i = i / 2; /* Key/value pairs, so we have half as many */
+      }
+      safe_integer(i, buff, bp);
+      break;
+    }
+    break;
+  case JSON_QUERY_UNESCAPE:
+    if (json->type != JSON_STR) {
+      safe_str("#-1", buff, bp);
+      break;
+    }
+    safe_str(json_unescape_string((char *) json->data), buff, bp);
+    break;
+  case JSON_QUERY_EXISTS:
+  case JSON_QUERY_GET:
+    switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NUMBER:
+    case JSON_NULL:
+      safe_str("#-1", buff, bp);
+      break;
+    case JSON_ARRAY:
+      if (!is_strict_integer(args[2])) {
+        safe_str(T(e_int), buff, bp);
+        break;
+      }
+      i = parse_integer(args[2]);
+      for (next = json->data; i > 0 && next; next = next->next, i--);
+      
+      if (query_type == JSON_QUERY_EXISTS) {
+          safe_chr((next) ? '1' : '0', buff, bp);
+      } else if (next) {
+        safe_str(json_to_string(next, 0), buff, bp);
+      }
+      break;
+    case JSON_OBJECT:
+      next = (JSON *) json->data;
+      while (next) {
+        if (next->type != JSON_STR) {
+          /* We should have a string label */
+          next = NULL;
+          break;
+        }
+        if (!strcasecmp((char *) next->data, args[2])) {
+          /* Success! */
+          next = next->next;
+          break;
+        } else {
+          /* Skip */
+          next = next->next; /* Move to this entry's value */
+          if (next) {
+            next = next->next; /* Move to next entry's name */
+          }
+        }
+      }
+      if (query_type == JSON_QUERY_EXISTS) {
+          safe_chr((next) ? '1' : '0', buff, bp);
+      } else if (next) {
+        safe_str(json_to_string(next, 0), buff, bp);
+      }
+      break;
+    }
+    break;
+  }
+  json_free(json);
+}
+
 FUNCTION(fun_json_map)
 {
   ufun_attrib ufun;

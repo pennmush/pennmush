@@ -53,6 +53,7 @@ Functions:
  * Added randextract(), a more powerful version of randword(). [MG,Rhost]
  * randword() is now more ansi-aware. [MG]
  * pgrep(), like grep() but also checks parents. [MG,Rhost]
+ * Added json_query(), for getting various information about JSON data. [MG]
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.

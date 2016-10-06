@@ -238,10 +238,27 @@ int starting_telnet_neg_len = 0;
 char *json_vals[3] = { "false", "true", "null" };
 int json_val_lens[3] = { 5, 4, 4 };
 
-struct gmcp_handler *gmcp_handlers = NULL;
+static void json_str_from_int(JSON *json, int i);
+static const char *json_str_ints[10] =
+  {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+static JSON *rest_poll_request(char *req);
+static bool json_reset_val(JSON *json, char *newval);
+
+static JSON *http_get_arg_parse(char *args);
+static JSON *http_get_arg_parse_find_elem(JSON *last, char *elem);
+static JSON *rest_poll_who(JSON *jargs);
+struct json_toggles {
+  char *name;
+  int value;
+};
+static bool set_json_toggles(struct json_toggles *args, JSON *jargs);
+
 static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
                           NEW_PE_INFO *pe_info, JSON *json, dbref executor,
                           dbref enactor);
+
+struct gmcp_handler *gmcp_handlers = NULL;
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
  */
@@ -2512,6 +2529,18 @@ telnet_escape(char *str)
   return buff;
 }
 
+JSON *
+json_alloc(int type) {
+  JSON *json = NULL;
+  
+  json = mush_malloc(sizeof(JSON), "json");
+  json->type = type;
+  json->data = NULL;
+  json->next = NULL;
+  
+  return json;
+}
+
 /** Free all memory used by a JSON struct */
 void
 json_free(JSON *json)
@@ -2525,7 +2554,7 @@ json_free(JSON *json)
   }
 
   if (json->data) {
-    switch (json->type) {
+    switch (JSONType(json)) {
     case JSON_NONE:
       break;                    /* Included for completeness; never has data */
     case JSON_NULL:
@@ -2537,7 +2566,8 @@ json_free(JSON *json)
       break;
     case JSON_STR:
     case JSON_NUMBER:
-      mush_free(json->data, "json.data");       /* Plain, malloc'd value */
+      if (!(json->type & JSON_NOCOPY))
+        mush_free(json->data, "json.data");       /* Plain, malloc'd value */
       break;
     }
     json->data = NULL;
@@ -2567,11 +2597,9 @@ json_escape_string(char *input)
       safe_chr(*p, buff, &bp);
     }
   }
-
   *bp = '\0';
 
   return buff;
-
 }
 
 /** Unescape a JSON string. Returns a STATIC buffer. */
@@ -2607,11 +2635,9 @@ json_unescape_string(char *input)
       safe_chr(*p, buff, &bp);
     }
   }
-
   *bp = '\0';
 
   return buff;
-
 }
 
 /** Convert a JSON struct into a string representation of the JSON
@@ -2635,7 +2661,7 @@ json_to_string_real(JSON *json, int verbose, int recurse)
   if (!json)
     return NULL;
 
-  switch (json->type) {
+  switch (JSONType(json)) {
   case JSON_NONE:
     break;
   case JSON_NUMBER:
@@ -2680,7 +2706,7 @@ json_to_string_real(JSON *json, int verbose, int recurse)
     next = (JSON *) json->data;
     i = 0;
     while (next && !error) {
-      if (!(i % 2) && next->type != JSON_STR) {
+      if (!(i % 2) && JSONType(next) != JSON_STR) {
         error = 1;
         break;
       }
@@ -2756,14 +2782,14 @@ GMCP_HANDLER(gmcp_core_hello)
     return 0;                   /* Package was Core.Hello.something, and we don't handle that */
   }
 
-  if (json->type != JSON_OBJECT) {
+  if (JSONType(json) != JSON_OBJECT) {
     return 0;                   /* We're expecting an object */
   }
 
   j = (JSON *) json->data;
   while (j) {
-    if (j->type == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
-      if ((j = j->next) && j->type == JSON_STR && j->data
+    if (JSONType(j) == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
+      if ((j = j->next) && JSONType(j) == JSON_STR && j->data
           && *((char *) j->data)) {
         /* We have the client name. */
         set_ttype(d, (char *) j->data);
@@ -2841,10 +2867,7 @@ string_to_json_real(char *input, char **ip, int recurse)
     ip = &input;
   }
 
-  result = mush_malloc(sizeof(JSON), "json");
-  result->type = JSON_NONE;
-  result->data = NULL;
-  result->next = NULL;
+  result = json_alloc(JSON_NONE);
 
   if (!input || !*input) {
     return result;
@@ -2930,7 +2953,7 @@ string_to_json_real(char *input, char **ip, int recurse)
       else
         last->next = next;
       last = next;
-      if (!(i % 2) && next->type != JSON_STR) {
+      if (!(i % 2) && JSONType(next) != JSON_STR) {
         /* It should have been a label, but it's not */
         break;
       }
@@ -2963,7 +2986,7 @@ string_to_json_real(char *input, char **ip, int recurse)
     }
   }
 
-  if (result->type == JSON_NONE) {
+  if (JSONType(result) == JSON_NONE) {
     /* If it's set to JSON_NONE at this point, we had an error */
     json_free(result);
     return NULL;
@@ -2995,7 +3018,7 @@ send_oob(DESC *d, char *package, JSON *data)
   if (!d || !(d->conn_flags & CONN_GMCP) || !package || !*package)
     return;
 
-  if (data && data->type != JSON_NONE) {
+  if (data && JSONType(data) != JSON_NONE) {
     char *str = json_to_string(data, 0);
     safe_str(str, buff, &bp);
     *bp = '\0';
@@ -3087,7 +3110,7 @@ FUNCTION(fun_json_query)
 
   switch (query_type) {
   case JSON_QUERY_TYPE:
-    switch (json->type) {
+    switch (JSONType(json)) {
     case JSON_NONE:
       break; /* Should never happen */
     case JSON_STR:
@@ -3111,7 +3134,7 @@ FUNCTION(fun_json_query)
     }
     break;
   case JSON_QUERY_SIZE:
-    switch (json->type) {
+    switch (JSONType(json)) {
     case JSON_NONE:
       break;
     case JSON_STR:
@@ -3130,7 +3153,7 @@ FUNCTION(fun_json_query)
         break;
       }
       for (i = 1; next->next; i++, next = next->next);
-      if (json->type == JSON_OBJECT) {
+      if (JSONType(json) == JSON_OBJECT) {
         i = i / 2; /* Key/value pairs, so we have half as many */
       }
       safe_integer(i, buff, bp);
@@ -3138,7 +3161,7 @@ FUNCTION(fun_json_query)
     }
     break;
   case JSON_QUERY_UNESCAPE:
-    if (json->type != JSON_STR) {
+    if (JSONType(json) != JSON_STR) {
       safe_str("#-1", buff, bp);
       break;
     }
@@ -3146,7 +3169,7 @@ FUNCTION(fun_json_query)
     break;
   case JSON_QUERY_EXISTS:
   case JSON_QUERY_GET:
-    switch (json->type) {
+    switch (JSONType(json)) {
     case JSON_NONE:
       break;
     case JSON_STR:
@@ -3176,7 +3199,7 @@ FUNCTION(fun_json_query)
     case JSON_OBJECT:
       next = (JSON *) json->data;
       while (next) {
-        if (next->type != JSON_STR) {
+        if (JSONType(next) != JSON_STR) {
           /* We should have a string label */
           next = NULL;
           break;
@@ -3235,7 +3258,7 @@ FUNCTION(fun_json_map)
     pe_regs_setenv_nocopy(pe_regs, i, args[i]);
   }
 
-  switch (json->type) {
+  switch (JSONType(json)) {
   case JSON_NONE:
     break;
   case JSON_STR:
@@ -3251,7 +3274,7 @@ FUNCTION(fun_json_map)
     /* Complex types */
     for (next = json->data, i = 0; next; next = next->next, i++) {
       funccount = pe_info->fun_invocations;
-      if (json->type == JSON_ARRAY) {
+      if (JSONType(json) == JSON_ARRAY) {
         pe_regs_setenv(pe_regs, 2, pe_regs_intname(i));
       } else {
         pe_regs_setenv_nocopy(pe_regs, 2, (char *) next->data);
@@ -3294,7 +3317,7 @@ json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
 {
   char *jstr = NULL;
 
-  switch (json->type) {
+  switch (JSONType(json)) {
   case JSON_NONE:
     return 0;
   case JSON_STR:
@@ -3340,7 +3363,7 @@ json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
 
 FUNCTION(fun_json)
 {
-  enum json_type type;
+  int type;
   int i;
 
   if (!*args[0])
@@ -3811,6 +3834,618 @@ process_commands(void)
     queue_eol(d); \
   }
 
+/** Given a simple JSON struct (not an object or array), change its value.
+ * The value is char*, and should be checked for each of the simple JSON types.
+ * \param json The JSON struct to alter the value of
+ * \param newval The new value, as a char* array
+ * \param return 1 if the value was updated, 0 if not
+ */
+static bool
+json_reset_val(JSON *json, char *newval)
+{
+  if (JSONType(json) == JSON_OBJECT || JSONType(json) == JSON_ARRAY) {
+    /* We should have a simple type here */
+    return 0;
+  }
+  if ((JSONType(json) == JSON_STR || JSONType(json) == JSON_NUMBER) && json->data && !(json->type && JSON_NOCOPY)) {
+    mush_free(json->data, "json.data");
+    json->data = NULL;
+    json->type = JSON_NONE;
+  }
+  if (!strcasecmp(json_vals[0], newval)) {
+    json->type = JSON_BOOL;
+    json->data = json_vals[0];
+  } else if (!strcasecmp(json_vals[1], newval)) {
+    json->type = JSON_BOOL;
+    json->data = json_vals[1];
+  } else if (!*newval || !strcasecmp(json_vals[2], newval)) {
+    json->type = JSON_NULL;
+    json->data = json_vals[2];
+  } else {
+    char *fail;
+    double d;
+
+    d = strtod(newval, &fail);
+    if (!*fail && (*newval != '0' || (d < 1 && d > -1))) {
+      /* A number */
+      NVAL *data = mush_malloc(sizeof(NVAL), "json.data");
+      *data = d;
+      json->type = JSON_NUMBER;
+      json->data = data;
+    } else {
+      /* Not a number */
+      json->type = JSON_STR;
+      json->data = mush_strdup(newval, "json.data");
+    }
+  }
+  return 1;
+}
+
+/** For a JSON struct with type JSON_STR, set its value to a string rep of
+ * the number i. For small numbers these are set to static copies, to avoid
+ * repeatedly malloc(tprintf()) and free()ing.
+ */
+static void
+json_str_from_int(JSON *json, int i)
+{
+   if (i >=0 && i < 10) {
+     json->type |= JSON_NOCOPY;
+     json->data = (char *) json_str_ints[i];
+   } else {
+     json->data = mush_strdup(tprintf("%d", i), "json.data");
+   }
+  
+}
+
+/** In the JSON object last, find the element represented by elem.
+ * elem is in the format used in HTTP GET requests, with arrays/objects
+ * represented with x[y][]. Return NULL if the elem can't be found/created.
+ */
+static JSON *
+http_get_arg_parse_find_elem(JSON *last, char *elem) {
+  JSON *curr;
+  char *close;
+  int i;
+
+  if (!*elem) {
+    /* Not good */
+    return NULL;
+  }
+  curr = last->data;
+
+  for (i = 0, close = elem; elem && *elem; elem = close, i++) {
+    if (JSONType(last) != JSON_ARRAY && JSONType(last) != JSON_OBJECT) {
+      return NULL;
+    }
+    if (i) {
+      if (!(close = strchr(elem, ']'))) {
+        return NULL;
+      }
+      *(close)++ = '\0';
+      if (*close) {
+        if (*close == '[') {
+          close++;
+        } else {
+          return NULL;
+        }
+      }
+    } else if (*elem == '[') {
+      return NULL;
+    } else if ((close = strchr(elem, '['))) {
+      *(close)++ = '\0';
+    }
+    if (!*elem) {
+      /* Append element */
+      if (last->data) {
+        int j = 0;
+        curr = last->data;
+        while (curr->next) {
+          curr = curr->next;
+          j++;
+        }
+        if (JSONType(last) == JSON_OBJECT) {
+          curr->next = json_alloc(JSON_STR);
+          json_str_from_int(curr->next, j / 2);
+          curr = curr->next;
+        }
+        curr->next = json_alloc(close && *close ? JSON_ARRAY : JSON_NONE);
+        curr = curr->next;
+      } else {
+        if (JSONType(last) == JSON_OBJECT) {
+          curr = last->data = json_alloc(JSON_STR);
+          json_str_from_int(curr, 0);
+          curr->next = json_alloc(close && *close ? JSON_ARRAY : JSON_NONE);
+          last = curr = curr->next;
+        } else {
+          last = curr = last->data = json_alloc(close && *close ? JSON_ARRAY : JSON_NONE);
+        }
+      }
+      return curr;
+    } else if (is_strict_integer(elem)) {
+      /* Array index */
+      int index, j;
+      JSON *prev = NULL;
+
+      index = parse_integer(elem);
+      if (index < 0 || index > 10) {
+        /* Invalid or too much nesting */
+        return NULL;
+      }
+      if (JSONType(last) == JSON_OBJECT) {
+        index *= 2; /* key/value pairs */
+      }
+      curr = last->data;
+      /* We should already have at least (index-1) elements in the array */
+      if (!curr && index) {
+        return NULL;
+      }
+      for (j = index; j > 0 && curr; curr = curr->next, j--) {
+         prev = curr;
+      }
+      if (j > 1) {
+        /* We didn't have enough elements */
+        return NULL;
+      }
+      if (!curr) {
+        /* Element doesn't exist, make a new one */
+        JSON *new;
+        if (JSONType(last) == JSON_OBJECT) {
+          new = json_alloc(JSON_STR);
+          json_str_from_int(new, index / 2);
+          if (prev) {
+            prev->next = new;
+          } else {
+            last->data = new;
+          }
+          prev = new;
+        }
+        new = json_alloc(close && *close ? JSON_ARRAY : JSON_NONE);
+        if (prev) {
+          prev->next = new;
+        } else {
+          last->data = new;
+        }
+        last = curr = new;
+      } else {
+        if (JSONType(last) == JSON_OBJECT) {
+          last = curr = curr->next;
+        } else {
+          last = curr;
+        }
+      }
+    } else {
+      /* We have a label. If we've got an array, we need to convert
+       * it to an object, which is annoying. */
+      if (JSONType(last) == JSON_ARRAY) {
+        last->type = JSON_OBJECT;
+        if (last->data) {
+          /* Damn */
+          JSON *prev, *new;
+          int j;
+
+          prev = NULL;
+          for (j = 0, curr = last->data; curr; j++, curr = curr->next) {
+            new = json_alloc(JSON_STR);
+            json_str_from_int(new, j);
+            new->next = curr;
+            if (prev)
+              prev->next = new;
+            else
+              last->data = new;
+            prev = curr;
+          }
+        }
+        curr = NULL;              
+      } else {
+        /* We have an object; find the label, or create it */
+        for (curr = last->data; curr; curr = curr->next->next) {
+          if (JSONType(curr) != JSON_STR) {
+            /* Something is wrong with this object */
+            return NULL;
+          }
+          if (!strcasecmp((char *) curr->data, elem)) {
+            /* We have a match */
+            last = curr = curr->next; /* Move onto the value */
+            break;
+          }
+        }
+      }
+      if (!curr) {
+        /* key is not currently present, make a new entry at the end */
+        JSON *new = json_alloc(JSON_STR);
+        if (last->data) {
+          for (curr = last->data; curr->next; curr = curr->next);
+          curr->next = new;
+        } else {
+          last->data = new;
+        }
+        new->data = mush_strdup(elem, "json.data");
+        new->next = json_alloc(close && *close ? JSON_ARRAY : JSON_NONE);
+        last = curr = new->next;
+      }
+    }
+  }
+  return curr;
+
+}
+
+/** Parse the argstring from an HTTP GET request. args is in the format
+ * arg1=value&arg2=value&array[]=value&array[]=value
+ */
+static JSON *
+http_get_arg_parse(char *args) {
+  char elem[BUFFER_LEN];
+  char *ep = elem;
+  JSON *json, *next = NULL;
+  char sep = '=';
+  bool parseerr = 0;
+
+  memset(elem, 0, BUFFER_LEN);
+  json = json_alloc(JSON_OBJECT);
+
+  for (; *args; args++) {
+    if (*args == sep) {
+      /* If sep is =, elem contains a key; find (or, if necessary, create) it.
+       * If sep is &, we have a value in elem - add it at curr
+       */
+      *ep = '\0';
+      if (sep == '=') {
+        if (!(next = http_get_arg_parse_find_elem(json, elem))) {
+          parseerr = 1;
+          break;
+        }
+        sep = '&';
+      } else if (sep == '&') {
+        if (!next) {
+          /* Something has gone wrong */
+          parseerr = 1;
+          break;
+        }
+        if (!json_reset_val(next, elem)) {
+          parseerr = 1;
+          break;
+        }
+        sep = '=';
+      }
+      ep = elem;
+    } else if (*args == '%') {
+      int val = 0, n = 0;
+      int i;
+
+      for (i = 0; i < 2; i++) {
+        args++;
+        if (!*args) {
+          parseerr = 1;
+          break;
+        } else if ((*args >= '0' && *args <= '9')) {
+          n = *args - '0';
+        } else if ((*args >= 'a' && *args <= 'f')) {
+          n = 10 + (*args - 'a');
+        } else if ((*args >= 'A' && *args <= 'F')) {
+          n = 10 + (*args - 'A');
+        } else {
+          parseerr = 1;
+          break;
+        }
+        val = n + (val * 16);
+      }
+      if (parseerr)
+        break;
+      if (isprint(val)) {
+        safe_chr(val, elem, &ep);
+      } else {
+        safe_chr('?', elem, &ep);
+      }
+    } else if (*args == '+') {
+      safe_chr(' ', elem, &ep);
+    } else {
+      safe_chr(*args, elem, &ep);
+    }
+  }
+
+  if (parseerr) {
+    json_free(json);
+    return NULL;
+  }
+
+  if (sep == '&') {
+    /* Set the final value */
+    *ep = '\0';
+    if (!json_reset_val(next, elem)) {
+      /* Something went wrong */
+      json_free(json);
+      return NULL;
+    }
+  } else if (sep == '=') {
+    /* Key without value */
+    if (!(next = http_get_arg_parse_find_elem(json, elem)) || !json_reset_val(next, "null")) {
+      json_free(json);
+      return NULL;
+    }
+  }
+  
+  return json;
+}
+
+/** Given an array of possible toggles, and a JSON object of supplied args, 
+ * toggle options on or off as appropriate */
+static bool
+set_json_toggles(struct json_toggles *args, JSON *jargs)
+{
+  struct json_toggles *jt;
+  bool set_any = 0;
+  if (jargs) {
+    if (JSONType(jargs) == JSON_STR) {
+      for (jt = args; jt->name; jt++) {
+        if (!strcmp(jt->name, (char *)jargs->data)) {
+          jt->value = 1;
+          set_any = 1;
+        }
+      }
+    } else if (JSONType(jargs) == JSON_OBJECT) {
+      JSON *next;
+      for (next = jargs->data; next; next = next->next->next) {
+        for (jt = args; jt->name; jt++) {
+          if (!strcmp(jt->name, (char *)next->data)) {
+            if (JSONType(next->next) == JSON_NULL) {
+              jt->value = 0;
+            } else if (JSONType(next->next) == JSON_BOOL) {
+              jt->value = (next->next->data == json_vals[1]);
+            } else {
+              jt->value = 1; /* Anything but NULL and FALSE is true */
+            }
+            set_any = 1;
+            break;
+          }
+        }
+      }
+    }
+  }
+  
+  for (jt = args; jt->name; jt++) {
+    if (jt->value == -1) {
+      jt->value = !set_any;
+    }
+  }
+  
+  for (jt = args; jt->name; jt++) {
+    if (jt->value) {
+      return 1;
+    }
+  }
+  
+  return 0;
+}
+
+/** Handle a REST request for WHO data */
+static JSON *
+rest_poll_who(JSON *jargs)
+{
+  JSON *json = json_alloc(JSON_ARRAY);
+  JSON *last = NULL;
+  DESC *d;
+  static struct json_toggles args[] = {
+    {"name", -1},
+    {"dbref", -1},
+    {"idle", -1},
+    {"onfor", -1},
+    {"doing", -1},
+    {NULL, 0}
+  };
+  
+  if (!set_json_toggles(args, jargs)) {
+    double count = 0;
+    NVAL *data;
+    
+    /* We've been asked for.. absolutely no info about the connections.
+     * I didn't write all this code for nothing, so let's give them
+     * a connection count instead. */
+    json->type = JSON_NUMBER;
+    DESC_ITER_CONN(d) {
+      if (!Hidden(d)) {
+        count += 1;
+      }
+    }
+    data = mush_malloc(sizeof(NVAL), "json.data");
+    *data = count;
+    json->data = data;
+    return json;
+  }
+  
+  DESC_ITER_CONN(d) {
+    if (!Hidden(d)) {
+      JSON *obj, *val, *olast = NULL;
+      obj = json_alloc(JSON_OBJECT);
+      if (args[0].value) {
+        val = json_alloc(JSON_STR | JSON_NOCOPY);
+        val->data = args[0].name;
+        val->next = json_alloc(JSON_STR);
+        val->next->data = mush_strdup(Name(d->player), "json.data");
+        if (olast) {
+          olast->next = val;
+        } else {
+          obj->data = val;
+        }
+        olast = val->next;
+      }
+      if (args[1].value) {
+        val = json_alloc(JSON_STR | JSON_NOCOPY);
+        val->data = args[1].name;
+        val->next = json_alloc(JSON_STR);
+        val->next->data = mush_strdup(tprintf("#%d", d->player), "json.data");
+        if (olast) {
+          olast->next = val;
+        } else {
+          obj->data = val;
+        }
+        olast = val->next;
+      }
+      if (args[2].value) {
+        NVAL *data = mush_malloc(sizeof(NVAL), "json.data");
+        double idle = difftime(mudtime, d->last_time);
+        *data = idle;
+
+        val = json_alloc(JSON_STR | JSON_NOCOPY);
+        val->data = args[2].name;
+        val->next = json_alloc(JSON_NUMBER);
+        val->next->data = data;
+        if (olast) {
+          olast->next = val;
+        } else {
+          obj->data = val;
+        }
+        olast = val->next;
+      }
+      if (args[3].value) {
+        NVAL *data = mush_malloc(sizeof(NVAL), "json.data");
+        double conn = difftime(mudtime, d->connected_at);
+        *data = conn;
+
+        val = json_alloc(JSON_STR | JSON_NOCOPY);
+        val->data = args[3].name;
+        val->next = json_alloc(JSON_NUMBER);
+        val->next->data = data;
+        if (olast) {
+          olast->next = val;
+        } else {
+          obj->data = val;
+        }
+        olast = val->next;
+      }
+      if (args[4].value) {
+        val = json_alloc(JSON_STR | JSON_NOCOPY);
+        val->data = args[4].name;
+        val->next = json_alloc(JSON_STR);
+        val->next->data = mush_strdup(get_doing(d->player, NOTHING, NOTHING, NULL, 1), "json.data");
+        if (olast) {
+          olast->next = val;
+        } else {
+          obj->data = val;
+        }
+        olast = val->next;
+      }
+      if (last) {
+        last->next = obj;
+      } else {
+        json->data = obj;
+      }
+      last = obj;
+    }
+  }
+
+  return json;
+}
+
+
+/** Parse a REST request from a browser and return JSON data supplying the
+ * appropriate response. The request string is in the format
+ * GET /REST/something.json?arg=value&argN=valueN HTTP/1.1
+ */
+static JSON *
+rest_poll_request(char *req)
+{
+  char *args = NULL, *p;
+  JSON *jargs = NULL, *json = NULL;
+  char buff[BUFFER_LEN];
+  PE_REGS *pe_regs;
+
+  if (strncmp(req, GET_COMMAND, strlen(GET_COMMAND))) {
+    return NULL; /* Only GET is supported at present */
+  }
+  
+  req += strlen(GET_COMMAND);
+  while (*req && isspace(*req)) {
+    req++; /* Skip over leading spaces */
+  }
+  
+  if (strncmp(req, REST_URL_PREFIX, strlen(REST_URL_PREFIX))) {
+    return NULL;
+  }
+  req += strlen(REST_URL_PREFIX);
+  
+  if (!*req) {
+    return NULL;
+  }
+
+  for (p = req; p && *p; p++) {
+    if (isspace(*p)) {
+      *p = '\0';
+      p = NULL;
+      break;
+    } else if (*p == '?' && !args) {
+      *p = '\0';
+      args = p + 1;
+    }
+  }
+  
+  if (p) {
+    /* There was no HTTP version, invalid request string */
+    return NULL;
+  }
+  
+  /* At this point, req points to "something.json", args points to key */
+  if (!*req || !(p = strrchr(req, '.')) || strcmp(p, ".json") || p == req) {
+    return NULL; /* invalid request */
+  }
+  *p = '\0';
+        
+  if (args && *args) {
+    jargs = http_get_arg_parse(args);
+    if (!jargs) {
+      /* Error parsing args */
+      return NULL;
+    }
+  }
+  
+  /* req points to "something", and jargs contains the JSON struct of args, if any */
+  if (RealGoodObject(options.rest_object)) {
+    char *s = NULL;
+    pe_regs = pe_regs_create(PE_REGS_ARG, "rest_poll_request");
+    pe_regs_setenv_nocopy(pe_regs, 0, req);
+    if (jargs) {
+      s = json_to_string(jargs, 0);
+      pe_regs_setenv_nocopy(pe_regs, 1, s);
+    } else {
+      pe_regs_setenv_nocopy(pe_regs, 1, "");
+    }
+    if (call_attrib(options.rest_object, 
+          (*options.rest_attr ? options.rest_attr : req),
+          buff, NOTHING, NULL, pe_regs)) {
+      pe_regs_free(pe_regs);
+      if (s) {
+        mush_free(s, "json_str");
+      }
+      if (*buff) {
+        if (jargs)
+          json_free(jargs);
+        if ((json = string_to_json(buff))) {
+          return json;
+        } else {
+          return NULL;
+        }
+      }
+    } else {
+      pe_regs_free(pe_regs);
+      if (s) {
+        mush_free(s, "json_str");
+      }
+    }
+  }
+  
+  /* If we get here, the request wasn't handled by softcode; see if there's
+   * a hardcoded handler for it */
+  
+  /* This could be handled with a table mapping names to functions. But right
+   * now I'm only doing one, so I don't really care enough. */
+  if (!strcmp(req, "who")) {
+    json = rest_poll_who(jargs);
+  }
+  if (jargs)
+    json_free(jargs);
+
+  return json;
+}
+
 /** Parse a command entered at the socket.
  * \param d descriptor
  * \param command command to parse
@@ -3837,20 +4472,47 @@ do_command(DESC *d, char *command)
                         !strncmp(command, POST_COMMAND,
                                  strlen(POST_COMMAND)))) {
     char buf[BUFFER_LEN];
-    snprintf(buf, BUFFER_LEN,
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Type: text/html; charset:iso-8859-1\r\n"
-             "Pragma: no-cache\r\n"
-             "\r\n"
-             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
-             " \"http://www.w3.org/TR/html4/loose.dtd\">"
-             "<HTML><HEAD>"
-             "<TITLE>Welcome to %s!</TITLE>"
-             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
-             "</HEAD><BODY>"
-             "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-             "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-             "</BODY></HEAD></HTML>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+    JSON *json;
+    if ((json = rest_poll_request(command))) {
+      char *s = json_to_string(json, 0);
+      snprintf(buf, BUFFER_LEN, 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json; charset:iso-8859-1\r\n"
+        "Pragma: no-cache\r\n"
+        "Access-Control-Allow-Origin:*\r\n"
+        "\r\n"
+        "%s", s);
+      mush_free(s, "json_str");
+      json_free(json);
+    } else if (MUDURL && *MUDURL) {
+      snprintf(buf, BUFFER_LEN,
+        "HTTP/1.1 303 Redirect\r\n"
+        "Location: %s"
+        "Content-Type: text/html; charset:iso-8859-1\r\n"
+        "Pragma: no-cache\r\n"
+        "\r\n"
+        "<!DOCTYPE html>"
+        "<html><head>"
+        "<title>Welcome to %s!</title>"
+        "<meta charset=\"iso-8859-1\">"
+        "</head><body>"
+        "<meta http-equiv=\"refresh\" content=\"0;%s\">"
+        "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+        "</body></head></html>", MUDURL, MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+    } else {
+      snprintf(buf, BUFFER_LEN,
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset:iso-8859-1\r\n"
+        "Pragma: no-cache\r\n"
+        "\r\n"
+        "<!DOCTYPE html>"
+        "<html><head>"
+        "<title>Welcome to %s!</title>"
+        "<meta charset=\"iso-8859-1\">"
+        "</head><body>"
+        "Please connect to <a href=\"telnet://%s:%d\">telnet://%s:%d</a> with a MUSH client to connect to %s."
+        "</body></head></html>", MUDNAME, MUSH_IP_ADDR, TINYPORT, MUSH_IP_ADDR, TINYPORT, MUDNAME);
+    }
     queue_write(d, buf, strlen(buf));
     queue_eol(d);
     return CRES_HTTP;

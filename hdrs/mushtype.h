@@ -405,13 +405,23 @@ struct descriptor_data {
 };
 
 
-enum json_type { JSON_NONE =
-    0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT
-};
+
+#define JSON_NONE   0x001
+#define JSON_NUMBER 0x002
+#define JSON_STR    0x004
+#define JSON_BOOL   0x008
+#define JSON_NULL   0x010
+#define JSON_ARRAY  0x020
+#define JSON_OBJECT 0x040
+
+#define JSON_TYPES  0x0FF
+#define JSON_NOCOPY 0x100
+
+#define JSONType(j) ((j->type & JSON_TYPES))
 
 typedef struct json_data JSON;
 struct json_data {
-  enum json_type type;          /* The type of JSON data represented by 'data' */
+  int type;          /* The type of JSON data represented by 'data' */
   void *data;                   /* A pointer to a char *, int * or json_data struct, depending on the value of 'type' */
   struct json_data *next;       /* Pointer to the next json_data in the linked list, for arrays/objects */
 };

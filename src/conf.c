@@ -544,6 +544,10 @@ PENNCONF conftable[] = {
   {"sendmail_prog", cf_str, options.sendmail_prog,
    sizeof options.sendmail_prog, 0, NULL}
   ,
+  {"rest_object", cf_dbref, &options.rest_object, 100000, 0, "net"}
+  ,
+  {"rest_attr", cf_str, options.rest_attr, sizeof options.rest_attr, 0, "net"}
+  ,
 
   {NULL, NULL, NULL, 0, 0, NULL}
 };
@@ -1537,6 +1541,8 @@ conf_default_set(void)
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
+  options.rest_object = NOTHING;
+  strcpy(options.rest_attr, "");
 }
 
 #undef set_string_option

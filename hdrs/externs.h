@@ -85,6 +85,7 @@ JSON *string_to_json_real(char *input, char **ip, int recurse);
 #define string_to_json(in) string_to_json_real(in, NULL, 0)
 char *json_unescape_string(char *input);
 char *json_escape_string(char *input);
+JSON *json_alloc(int type);
 void json_free(JSON *json);
 void register_gmcp_handler(char *package, gmcp_handler_func func);
 void send_oob(DESC *d, char *package, JSON *data);

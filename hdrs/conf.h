@@ -61,6 +61,7 @@
 
 #define GET_COMMAND "GET" /**< The GET command, for recognising browsers */
 #define POST_COMMAND "POST" /**< The POST command, for recognising browsers */
+#define REST_URL_PREFIX "/REST/" /**< The URL prefix for REST requests sent by browsers */
 
 #define PREFIX_COMMAND "OUTPUTPREFIX" /**< The OUTPUTPREFIX command */
 #define SUFFIX_COMMAND "OUTPUTSUFFIX" /**< The OUTPUTSUFFIX command */
@@ -315,6 +316,8 @@ struct options_table {
   int log_max_size; /**< Maximum size of log file */
   char log_size_policy[256]; /**< What to do when a log file is big. */
   char sendmail_prog[256]; /**< Program used to send email. */
+  dbref rest_object; /**< Dbref to send HTTP GET poll requests to */
+  char rest_attr[256]; /**< Attr to send HTTP GET poll requests to */
 };
 
 typedef struct mssp MSSP;

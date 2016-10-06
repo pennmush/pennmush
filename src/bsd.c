@@ -3166,7 +3166,11 @@ FUNCTION(fun_json_query)
       if (query_type == JSON_QUERY_EXISTS) {
           safe_chr((next) ? '1' : '0', buff, bp);
       } else if (next) {
-        safe_str(json_to_string(next, 0), buff, bp);
+        char *s = json_to_string(next, 0);
+        if (s) {
+          safe_str(s, buff, bp);
+          mush_free(s, "json_str");
+        }
       }
       break;
     case JSON_OBJECT:
@@ -3192,7 +3196,11 @@ FUNCTION(fun_json_query)
       if (query_type == JSON_QUERY_EXISTS) {
           safe_chr((next) ? '1' : '0', buff, bp);
       } else if (next) {
-        safe_str(json_to_string(next, 0), buff, bp);
+        char *s = json_to_string(next, 0);
+        if (s) {
+          safe_str(s, buff, bp);
+          mush_free(s, "json_str");
+        }
       }
       break;
     }

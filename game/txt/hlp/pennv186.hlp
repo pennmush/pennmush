@@ -56,6 +56,7 @@ Functions:
  * randword() is now more ansi-aware. [MG]
  * pgrep(), like grep() but also checks parents. [MG,Rhost]
  * Added json_query(), for getting various information about JSON data. [MG]
+ * A number of functions are now more ANSI-friendly, including first(), last(), rest(), fold(), filter(), grab(). Report by Qon. [1048-MG]
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.

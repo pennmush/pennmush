@@ -432,6 +432,7 @@ FUNCTION(fun_graball)
 
   char *r, *s, *b, sep;
   char *osep, osepd[2] = { '\0', '\0' };
+  ansi_string *as = NULL;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -444,18 +445,26 @@ FUNCTION(fun_graball)
   }
 
   s = trim_space_sep(args[0], sep);
+  if (has_markup(s)) {
+    as = parse_ansi_string(s);
+    s = as->text;
+  }
   b = *bp;
   do {
     r = split_token(&s, sep);
     if (quick_wild(args[1], r)) {
       if (*bp != b)
         safe_str(osep, buff, bp);
-      safe_str(r, buff, bp);
+      if (as) {
+        safe_ansi_string(as, r - as->text, strlen(r), buff, bp);
+      } else {
+        safe_str(r, buff, bp);
+      }
     }
   } while (s);
+  if (as)
+    free_ansi_string(as);
 }
-
-
 
 /* ARGSUSED */
 FUNCTION(fun_fold)
@@ -469,12 +478,13 @@ FUNCTION(fun_fold)
    */
 
   ufun_attrib ufun;
-  char *cp;
   PE_REGS *pe_regs;
   char sep;
   int funccount, per;
   char base[BUFFER_LEN];
   char result[BUFFER_LEN];
+  char *list[MAX_SORTSIZE];
+  int n, i = 0;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -482,27 +492,28 @@ FUNCTION(fun_fold)
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
-  cp = args[1];
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[1], sep, 1);
 
   /* If we have three or more arguments, the third one is the base case */
   if (nargs >= 3) {
     strncpy(base, args[2], BUFFER_LEN);
   } else {
-    strncpy(base, split_token(&cp, sep), BUFFER_LEN);
+    strncpy(base, list[i++], BUFFER_LEN);
   }
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
   pe_regs_setenv_nocopy(pe_regs, 0, base);
-  pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
+  pe_regs_setenv_nocopy(pe_regs, 1, list[i++]);
 
   call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
   strncpy(base, result, BUFFER_LEN);
 
   funccount = pe_info->fun_invocations;
+  
 
   /* handle the rest of the cases */
-  while (cp && *cp) {
-    pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
+  for (; i < n; i++) {
+    pe_regs_setenv_nocopy(pe_regs, 1, list[i]);
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))
@@ -511,6 +522,7 @@ FUNCTION(fun_fold)
     strncpy(base, result, BUFFER_LEN);
   }
   pe_regs_free(pe_regs);
+  freearr(list, n);
   safe_str(base, buff, bp);
 }
 
@@ -568,10 +580,10 @@ FUNCTION(fun_filter)
    */
 
   ufun_attrib ufun;
+  char *list[MAX_SORTSIZE];
+  int n;
   char result[BUFFER_LEN];
-  char *cp;
   PE_REGS *pe_regs;
-  const char *cur;
   char sep;
   int first;
   int check_bool = 0;
@@ -593,16 +605,15 @@ FUNCTION(fun_filter)
     return;
 
   /* Go through each argument */
-  cp = trim_space_sep(args[1], sep);
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[1], sep, 1);
   first = 1;
   funccount = pe_info->fun_invocations;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_filter");
   for (i = 4; i < nargs; i++) {
     pe_regs_setenv_nocopy(pe_regs, i - 3, args[i]);
   }
-  while (cp && *cp) {
-    cur = split_token(&cp, sep);
-    pe_regs_setenv_nocopy(pe_regs, 0, cur);
+  for (i = 0; i < n; i++) {
+    pe_regs_setenv_nocopy(pe_regs, 0, list[i]);
     if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
     if ((check_bool == 0)
@@ -612,7 +623,7 @@ FUNCTION(fun_filter)
         first = 0;
       else
         safe_str(osep, buff, bp);
-      safe_str(cur, buff, bp);
+      safe_str(list[i], buff, bp);
     }
     /* Can't do *bp == oldbp like in all the others, because bp might not
      * move even when not full, if one of the list elements is null and
@@ -622,6 +633,7 @@ FUNCTION(fun_filter)
     funccount = pe_info->fun_invocations;
   }
   pe_regs_free(pe_regs);
+  freearr(list, n);
 }
 
 /* ARGSUSED */
@@ -1106,8 +1118,18 @@ FUNCTION(fun_first)
   if (!delim_check(buff, bp, nargs, args, 2, &sep))
     return;
 
-  p = trim_space_sep(args[0], sep);
-  safe_str(split_token(&p, sep), buff, bp);
+  if (has_markup(args[0])) {
+    ansi_string *as = NULL;
+    char *q;
+    as = parse_ansi_string(args[0]);
+    p = trim_space_sep(as->text, sep);
+    q = split_token(&p, sep);
+    safe_ansi_string(as, q - as->text, p - q - 1, buff, bp);
+    free_ansi_string(as);
+  } else {
+    p = trim_space_sep(args[0], sep);
+    safe_str(split_token(&p, sep), buff, bp);
+  }
 }
 
 enum rand_types {
@@ -1217,6 +1239,7 @@ FUNCTION(fun_rest)
 {
   char *p;
   char sep;
+  ansi_string *as = NULL;
 
   if (!*args[0])
     return;
@@ -1225,8 +1248,17 @@ FUNCTION(fun_rest)
     return;
 
   p = trim_space_sep(args[0], sep);
+  if (has_markup(p)) {
+    as = parse_ansi_string(p);
+    p = as->text;
+  }
   (void) split_token(&p, sep);
-  safe_str(p, buff, bp);
+  if (as) {
+    safe_ansi_string(as, p - as->text, as->len, buff, bp);
+    free_ansi_string(as);
+  } else {
+    safe_str(p, buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -1236,6 +1268,7 @@ FUNCTION(fun_last)
 
   char *p, *r;
   char sep;
+  ansi_string *as = NULL;
 
   if (!*args[0])
     return;
@@ -1244,34 +1277,61 @@ FUNCTION(fun_last)
     return;
 
   p = trim_space_sep(args[0], sep);
-  if (!(r = strrchr(p, sep)))
-    r = p;
-  else
+
+  if (has_markup(p)) {
+    as = parse_ansi_string(p);
+    p = as->text;
+  }    
+
+  if (!(r = strrchr(p, sep))) {
+    if (as) {
+      safe_ansi_string(as, 0, as->len, buff, bp);
+    } else {
+      safe_str(p, buff, bp);
+    }
+  } else {
     r++;
-  safe_str(r, buff, bp);
+    if (as) {
+      safe_ansi_string(as, r - p, as->len, buff, bp);
+    } else {
+      safe_str(r, buff, bp);
+    }
+  }
+  if (as) {
+    free_ansi_string(as);
+  }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_grab)
 {
-  /* compares two strings with possible wildcards, returns the
-   * word matched. Based on the 2.2 version of this function.
-   */
-
   char *r, *s, sep;
+  ansi_string *as = NULL;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  /* Walk the wordstring, until we find the word we want. */
-  s = trim_space_sep(args[0], sep);
+  if (has_markup(args[0])) {
+    as = parse_ansi_string(args[0]);
+    s = trim_space_sep(as->text, sep);
+  } else {
+    s = trim_space_sep(args[0], sep);
+  }
+
   do {
     r = split_token(&s, sep);
     if (quick_wild(args[1], r)) {
-      safe_str(r, buff, bp);
+      if (as) {
+        safe_ansi_string(as, r - as->text, s - r - 1, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_str(r, buff, bp);
+      }
       return;
     }
   } while (s);
+  if (as)
+    free_ansi_string(as);
 }
 
 /* ARGSUSED */
@@ -1396,7 +1456,10 @@ FUNCTION(fun_match)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  /* Walk the wordstring, until we find the word we want. */
+  /* Walk the wordstring, until we find the word we want.
+   * The ANSI in args[1] isn't properly preserved, but since we aren't
+   * returning the string anyway, we don't care
+   */
   s = trim_space_sep(args[0], sep);
   do {
     r = split_token(&s, sep);

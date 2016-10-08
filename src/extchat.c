@@ -75,7 +75,7 @@ static char *list_cuflags(CHANUSER *u, int verbose);
 static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
-void chat_player_announce(dbref player, char *msg, int ungag);
+void chat_player_announce(DESC *desc_player, char *msg, int ungag);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -3187,12 +3187,12 @@ canstilladd(dbref player)
 extern DESC *descriptor_list;
 
 /** Tell players on a channel when someone connects or disconnects.
- * \param player player that is connecting or disconnecting.
+ * \param desc_player descriptor that is connecting or disconnecting.
  * \param msg message to announce.
  * \param ungag if 1, remove any channel gags the player has.
  */
 void
-chat_player_announce(dbref player, char *msg, int ungag)
+chat_player_announce(DESC *desc_player, char *msg, int ungag)
 {
   DESC *d;
   CHAN *c;
@@ -3205,14 +3205,18 @@ chat_player_announce(dbref player, char *msg, int ungag)
   intmap *seen;
   struct format_msg format;
   char *accname;
-
+  dbref player = desc_player->player;
+  
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
     up = onchannel(player, c);
     if (up) {
-      if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-                                || (!Chanuser_Hide(up) && !Dark(player)))) {
-        channel_send(c, player,
+      if (!Channel_Quiet(c)) {
+        if (Chanuser_Hide(up) || Hidden(desc_player))
+          channel_send(c, player,
+                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE | CB_SEEALL, msg);
+        else
+          channel_send(c, player,
                      CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
       }
       if (ungag) {
@@ -3241,15 +3245,17 @@ chat_player_announce(dbref player, char *msg, int ungag)
       shared = false;
       bp = buff;
       bp2 = buff2;
-
+      
+      if (Hidden(desc_player) && !See_All(viewer) && (player != viewer))
+        continue;
+      
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
         if (up && uv) {
           if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
               && !Chanuser_Gag(uv)
-              && (Channel_Admin(c) || Channel_Wizard(c)
-                  || (!Chanuser_Hide(up) && !Dark(player)))) {
+              && ((!Chanuser_Hide(up) || See_All(viewer) || (player == viewer)))) {
             if (Chanuser_Combine(uv)) {
               shared = true;
               safe_str(ChanName(c), buff, &bp);
@@ -3573,6 +3579,11 @@ FUNCTION(fun_crecall)
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
                              &timestamp)) && num_lines > 0) {
+    if ((type == CBTYPE_SEEALL) && !See_All(executor) && speaker != executor) {
+      num_lines--;
+      continue;
+    }
+    
     if (first)
       first = 0;
     else
@@ -3946,6 +3957,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     if ((flags & CB_NOCOMBINE) && Chanuser_Combine(u)) {
       continue;
     }
+    if((flags & CB_SEEALL) && !See_All(current) && (current != player))
+      continue;
+    
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
@@ -3954,8 +3968,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
 
   if (ChanBufferQ(channel) && !skip_buffer)
-    add_to_bufferq(ChanBufferQ(channel), 0,
-                   (flags & CB_NOSPOOF) ? player : NOTHING, buff);
+    add_to_bufferq(ChanBufferQ(channel), (flags & CB_SEEALL) ? CBTYPE_SEEALL : 0,
+                   (flags & CB_NOSPOOF) ? NOTHING : player, buff);
 
   if (!(flags & CB_PRESENCE) && !speaker) {
     notify_format(player, T("To channel %s: %s"), ChanName(channel), buff);
@@ -4067,6 +4081,10 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
                              &timestamp)) && num_lines > 0) {
+    if ((type == CBTYPE_SEEALL) && !See_All(player) && (speaker != player)) {
+      num_lines--;
+      continue;
+    }
     if (quiet)
       notify(player, buf);
     else {

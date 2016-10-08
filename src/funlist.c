@@ -1977,8 +1977,8 @@ FUNCTION(fun_words)
 FUNCTION(fun_splice)
 {
   /* like MERGE(), but does it for a word */
-  char **orig;
-  char **repl;
+  char *orig[MAX_SORTSIZE];
+  char *repl[MAX_SORTSIZE];
   char haystack[BUFFER_LEN];
   int ocount, rcount;
   int i;
@@ -1991,43 +1991,39 @@ FUNCTION(fun_splice)
   osep[0] = sep;
   osep[1] = '\0';
 
-  orig = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  repl = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  /* Turn them into lists */
-  ocount = list2arr(orig, MAX_SORTSIZE, args[0], sep, 1);
-  rcount = list2arr(repl, MAX_SORTSIZE, args[1], sep, 1);
-
   strncpy(haystack, remove_markup(args[2], NULL), BUFFER_LEN);
   if (!*haystack) {
     safe_str(T("#-1 NEED A WORD"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
     return;
   }
   if (do_wordcount(haystack, sep) != 1) {
     safe_str(T("#-1 TOO MANY WORDS"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
     return;
   }
 
+  /* Turn them into lists */
+  ocount = list2arr_ansi(orig, MAX_SORTSIZE, args[0], sep, 1);
+  rcount = list2arr_ansi(repl, MAX_SORTSIZE, args[1], sep, 1);
+  
   if (ocount != rcount) {
     safe_str(T("#-1 NUMBER OF WORDS MUST BE EQUAL"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
+    freearr(orig, ocount);
+    freearr(repl, rcount);
     return;
   }
 
   for (i = 0; i < ocount; i++) {
-    if (!ansi_strcmp(orig[i], haystack)) {
+    if (!strcmp(remove_markup(orig[i], NULL), haystack)) {
+      char *tmp = orig[i];
       orig[i] = repl[i];
+      repl[i] = tmp;
     }
   }
 
   arr2list(orig, ocount, buff, bp, osep);
 
-  mush_free(orig, "ptrarray");
-  mush_free(repl, "ptrarray");
+  freearr(orig, ocount);
+  freearr(repl, rcount);
 }
 
 /* ARGSUSED */

@@ -16,6 +16,7 @@ Version 1.8.6 patchlevel 1                                 ??? ??, 2016
 Major changes:
  * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
  * Move all remaining build-time settings out of options.h into mush.cnf and remove options.h. [SW]
+ * rjust(foobar,3,,1) previously returned "bar"; it now returns "foo", like the analogous functions on MUX and Rhost do. We won't be changing it again. Honest. [1092-MG]
 
 Fixes:
  * @clone'ing an old exit which had the alias built into the name incorrectly created a clone with no aliases. Reported by Qon. [MG]
@@ -33,7 +34,6 @@ Fixes:
  * Fix a potential crash in @stats/tables [SW]
  * controls(<obj>, <victim>/<attr>) would return 1 even if <obj> didn't control <victim>. [MG]
  * Although json(object) would correctly return {}, an empty JSON object, other JSON functions would throw an error and say it was invalid. [MG]
- * rjust(foobar,3,,1) previously returned "bar"; it now returns "foo", like the analogous functions on MUX and Rhost do. [1092-MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

@@ -71,7 +71,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
-
+#ifdef TREKMUSH
+#include "space.h"
+#endif
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -143,7 +145,7 @@ int que_next(void);             /* from cque.c */
 dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
 
 int shutdown_flag = 0;          /**< Is it time to shut down? */
-void chat_player_announce(dbref player, char *msg, int ungag);
+void chat_player_announce(DESC *desc_player, char *msg, int ungag);
 void report_mssp(DESC *d, char *buff, char **bp);
 
 static int login_number = 0;
@@ -1022,7 +1024,7 @@ shovechars(Port_t port, Port_t sslport)
 
     update_quotas(last_slice, current_time);
     last_slice = current_time;
-
+    
     if (msec_diff(current_time, then) >= 1000) {
       globals.on_second = 1;
       then = current_time;
@@ -5536,9 +5538,7 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   /* Redundant, but better for translators */
-  if (Dark(player)) {
-    message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-  } else if (Hidden(d)) {
+  if (Hidden(d)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");
   } else {
@@ -5558,7 +5558,7 @@ announce_connect(DESC *d, int isnew, int num)
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
   if (ANNOUNCE_CONNECTS)
-    chat_player_announce(player, message, 0);
+    chat_player_announce(d, message, 0);
 
   loc = Location(player);
   if (!GoodObject(loc)) {
@@ -5741,10 +5741,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   pe_regs_free(pe_regs);
 
   /* Redundant, but better for translators */
-  if (Dark(player)) {
-    message = (num > 1) ? T("has partially DARK-disconnected.") :
-      T("has DARK-disconnected.");
-  } else if (hidden(player)) {
+  if (Hidden(saved)) {
     message = (num > 1) ? T("has partially HIDDEN-disconnected.") :
       T("has HIDDEN-disconnected.");
   } else {
@@ -5760,7 +5757,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     /* notify contents */
     notify_except(player, player, player, tbuf1, 0);
     /* notify channels */
-    chat_player_announce(player, message, num == 1);
+    chat_player_announce(saved, message, num == 1);
   }
 
   /* Monitor broadcasts */

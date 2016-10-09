@@ -483,7 +483,7 @@ FUNCTION(fun_fold)
   int funccount, per;
   char base[BUFFER_LEN];
   char result[BUFFER_LEN];
-  char *list[MAX_SORTSIZE];
+  char *list[MAX_SORTSIZE] = { NULL };
   int n, i = 0;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
@@ -498,6 +498,10 @@ FUNCTION(fun_fold)
   if (nargs >= 3) {
     strncpy(base, args[2], BUFFER_LEN);
   } else {
+    if (!n) {
+      base[0] = '\0';
+      i++;
+    } else
     strncpy(base, list[i++], BUFFER_LEN);
   }
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");

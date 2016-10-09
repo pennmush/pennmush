@@ -87,7 +87,7 @@ struct chanuser {
 #define CB_SEEALL     0x200     /* Only see_all players can see this message */
 
 /* channel_buffer types */
-#define CBTYPE_SEEALL   0x01    /* Only see_all players can see this message
+#define CBTYPE_SEEALL   1    /* Only see_all players can see this message
                                  * using @chan/recall or crecall() */
                                  
 #define CUdbref(u) ((u)->who)
@@ -98,7 +98,6 @@ struct chanuser {
 #define Chanuser_Hide(u) ((CUtype(u) & CU_HIDE) || (IsPlayer(CUdbref(u)) && hidden(CUdbref(u))))
 #define Chanuser_Gag(u) (CUtype(u) & CU_GAG)
 #define Chanuser_Combine(u) (CUtype(u) & CU_COMBINE)
-#define Hidden(d) (d->hide == 1)
 
 /* This is a chat channel */
 #define CHAN_NAME_LEN 31

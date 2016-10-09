@@ -55,6 +55,8 @@ Minor changes:
  * Players hidden on a channel with @chan/hide will not show connect messages to players unless they are see_all or roy/wiz. PR by Qon.
  * Hidden-connects/disconnects only show on @chan/recall and crecall() if you are see_all, roy or wizard, except for your own messages. PR by Qon.
  * DARK-connect/disconnect/etc messages are no longer announced over channels. Dark and Hidden are two different things. PR by Qon.
+ * The Pueblo_Send power has been renamed Send_OOB, to reflect its new use for other, non-Pueblo-related, out of band messages. Pueblo_Send remains as an alias. (The hardcode macro checking for the power, Can_Pueblo_Send, has also changed to Can_Send_OOB.) [1041-MG]
+ * Mortals can now use oob() on themselves, and those with the Send_OOB power can use it to send to anyone. Suggested by Qon and Sketch. [1041-MG]
  
 Functions:
  * Added setsymdiff() [SW]

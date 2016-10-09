@@ -1034,7 +1034,7 @@ ok_tag_attribute(dbref player, const char *params)
 {
   const char *p, *q;
 
-  if (!GoodObject(player) || Can_Pueblo_Send(player))
+  if (!GoodObject(player) || Can_Send_OOB(player))
     return 1;
   p = params;
   while (*p) {

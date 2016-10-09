@@ -1037,6 +1037,15 @@ flag_add_additional(FLAGSPACE *n)
       /* ... but make sure "Can_nspemit" remains as an alias */
       flag_add(flags, "Can_nspemit", f);
     }
+    if ((f = match_power("Pueblo_Send")) && !match_power("Send_OOB")) {
+      /* The "Pueblo_Send" power was renamed "XXX"... */
+      mush_free((void *) f->name, "flag.name");
+      f->name = mush_strdup("Send_OOB", "flag.name");
+      flag_add(flags, "Send_OOB", f);
+    } else if ((f = match_power("Send_OOB")) && !match_power("Pueblo_Send")) {
+      /* ... but make sure "Pueblo_Send" remains as an alias */
+      flag_add(flags, "Pueblo_Send", f);
+    }
     add_power("Debit", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Pueblo_Send", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Many_Attribs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);

@@ -3033,6 +3033,11 @@ FUNCTION(fun_oob)
     safe_str(e_match, buff, bp);
     return;
   }
+  
+  if (Owner(who) != Owner(executor) && !Can_Send_OOB(executor)) {
+    safe_str("#-1", buff, bp);
+    return;
+  }
 
   json = string_to_json(args[2]);
   if (!json) {

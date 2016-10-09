@@ -4479,7 +4479,9 @@ See also: pueblo(), width(), height(), ssl(), @sockset, oob()
 & GMCP
   oob(<player>, <package>[, <message>])
   
-  This wiz-only function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp). <package> is the name of the package/message type.
+  This function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp). <package> is the name of the package/message type.
+  
+  You must be a wizard or have the Send_OOB power to send messages to anyone but yourself.
   
   If specified, <message> is a JSON-formatted message to be sent. Use the JSON() function to construct valid JSON.
   

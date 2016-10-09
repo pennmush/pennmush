@@ -49,7 +49,9 @@
 #define Sql_Ok(x)       (Wizard(x) || has_power_by_name(x, "SQL_OK", NOTYPE))
 #define Can_Debit(x)    (Wizard(x) || has_power_by_name(x, "DEBIT", NOTYPE))
 #define Many_Attribs(x)    (has_power_by_name(x, "MANY_ATTRIBS", NOTYPE))
-#define Can_Pueblo_Send(x)       (Wizard(x) || has_power_by_name(x, "PUEBLO_SEND", NOTYPE))
+#define Can_Send_OOB(x)       (Wizard(x) || has_power_by_name(x, "SEND_OOB", NOTYPE))
+/* For backwards compat for hackers */
+#define Can_Pueblo_Send(x)       (Wizard(x) || has_power_by_name(x, "SEND_OOB", NOTYPE))
 
 /* Permission macros */
 #define Can_See_Flag(p,t,f) ((!(f->perms & (F_DARK | F_MDARK | F_ODARK | F_DISABLED)) || \

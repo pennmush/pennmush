@@ -375,7 +375,7 @@ FUNCTION(fun_html)
 FUNCTION(fun_tag)
 {
   int i;
-  if (!Can_Pueblo_Send(executor)
+  if (!Can_Send_OOB(executor)
       && !is_allowed_tag(args[0], arglens[0])) {
     safe_str("#-1", buff, bp);
     return;
@@ -395,7 +395,7 @@ FUNCTION(fun_tag)
 /* ARGSUSED */
 FUNCTION(fun_endtag)
 {
-  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Send_OOB(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else
     safe_tag_cancel(args[0], buff, bp);
@@ -404,7 +404,7 @@ FUNCTION(fun_endtag)
 /* ARGSUSED */
 FUNCTION(fun_tagwrap)
 {
-  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Send_OOB(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else {
     if (nargs == 2)

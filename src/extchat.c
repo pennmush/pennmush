@@ -3212,7 +3212,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
     up = onchannel(player, c);
     if (up) {
       if (!Channel_Quiet(c)) {
-        if (Chanuser_Hide(up) || Hidden(desc_player))
+        if (Chanuser_Hide(up) || (desc_player->hide == 1))
           channel_send(c, player,
                      CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE | CB_SEEALL, msg);
         else
@@ -3246,7 +3246,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
       bp = buff;
       bp2 = buff2;
       
-      if (Hidden(desc_player) && !See_All(viewer) && (player != viewer))
+      if ((desc_player->hide == 1) && !See_All(viewer) && (player != viewer))
         continue;
       
       for (c = channels; c; c = c->next) {

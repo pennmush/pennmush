@@ -71,9 +71,6 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
-#ifdef TREKMUSH
-#include "space.h"
-#endif
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"

@@ -84,7 +84,12 @@ struct chanuser {
 #define CB_QUIET      0x80      /* Do not prepend the <Channel> name */
 #define CB_NOCOMBINE  0x100     /* Don't send this message to players with
                                  * their channels set COMBINE */
+#define CB_SEEALL     0x200     /* Only see_all players can see this message */
 
+/* channel_buffer types */
+#define CBTYPE_SEEALL   1    /* Only see_all players can see this message
+                                 * using @chan/recall or crecall() */
+                                 
 #define CUdbref(u) ((u)->who)
 #define CUtype(u) ((u)->type)
 #define CUtitle(u) ((u)->title)

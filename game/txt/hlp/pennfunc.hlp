@@ -1,4 +1,5 @@
 & FUNCTIONS
+& FUNCTION
   Functions are specialized commands used to manipulate strings and other input. Functions take the general form: [FUNCTION(<input>)]
 
   The brackets are used to delimit and force evaluation of the function (or nested functions). The brackets can also be used to group functions for the purposes of string concatenation. In general, more than one pair of brackets is not required, but you can nest an arbitrary number of brackets.
@@ -18,8 +19,9 @@
   
   Built-in functions are written in the game hardcode, while @functions are written in softcode, and then made global with the "@function" command. Both are used in exactly the same manner. For more information on @functions, see 'help @function'.
 
-See also: MUSHCODE
+See also: MUSHCODE, FUNCTION LIST
 & FUNCTION LIST
+& FUNCTION TYPES
   Several major variants of functions are available. The help topics are listed below, together with a quick summary of the function type and some examples of that type of function.
 
   Attribute functions: attribute-related manipulations (GET, UFUN)

@@ -400,7 +400,7 @@ FUNCTION(fun_etimefmt)
 {
   unsigned long secs;
 
-  if (!is_uinteger(args[1])) {
+  if (!is_strict_uinteger(args[1])) {
     safe_str(e_uint, buff, bp);
     return;
   }

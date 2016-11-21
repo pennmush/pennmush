@@ -854,7 +854,7 @@ safe_fill(char x, size_t n, char *buff, char **bp)
 {
   int ret = 0;
 
-  if (n == 0)
+  if (n < 1)
     return 0;
   else if (n == 1)
     return safe_chr(x, buff, bp);

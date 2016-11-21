@@ -1599,7 +1599,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   MQUE *q, *tmp, *last;
   bool found;
 
-  if (!is_uinteger(pidstr)) {
+  if (!is_strict_uinteger(pidstr)) {
     notify(player, T("That is not a valid pid!"));
     return;
   }
@@ -1703,8 +1703,8 @@ FUNCTION(fun_pidinfo)
   MQUE *q;
   bool first = true;
 
-  if (!is_uinteger(args[0])) {
-    safe_str(T(e_num), buff, bp);
+  if (!is_strict_uinteger(args[0])) {
+    safe_str(T(e_uint), buff, bp);
     return;
   }
 
@@ -2092,7 +2092,7 @@ do_queue_single(dbref player, char *pidstr, bool debug)
   uint32_t pid;
   MQUE *q;
 
-  if (!is_uinteger(pidstr)) {
+  if (!is_strict_uinteger(pidstr)) {
     notify(player, T("That is not a valid pid!"));
     return;
   }
@@ -2266,7 +2266,7 @@ do_haltpid(dbref player, const char *arg1)
   uint32_t pid;
   MQUE *q;
   dbref victim;
-  if (!is_uinteger(arg1)) {
+  if (!is_strict_uinteger(arg1)) {
     notify(player, T("That is not a valid pid!"));
     return;
   }

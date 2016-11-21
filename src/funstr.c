@@ -1370,13 +1370,13 @@ FUNCTION(fun_squish)
 /* ARGSUSED */
 FUNCTION(fun_space)
 {
-  int s;
+  size_t s;
 
-  if (!is_uinteger(args[0])) {
+  if (!is_strict_uinteger(args[0])) {
     safe_str(T(e_uint), buff, bp);
     return;
   }
-  s = parse_integer(args[0]);
+  s = parse_uinteger(args[0]);
   safe_fill(' ', s, buff, bp);
 }
 
@@ -1429,7 +1429,7 @@ FUNCTION(fun_chr)
 {
   int c;
 
-  if (!is_integer(args[0])) {
+  if (!is_strict_uinteger(args[0])) {
     safe_str(T(e_uint), buff, bp);
     return;
   }

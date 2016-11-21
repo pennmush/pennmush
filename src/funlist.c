@@ -1514,7 +1514,7 @@ FUNCTION(fun_extract)
   char **ptrs;
   char *wordlist;
   char sep;
-  int start = 1, len = 1, first = 1;
+  int start = 0, len = 1, first = 1;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;

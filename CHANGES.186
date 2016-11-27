@@ -59,6 +59,7 @@ Minor changes:
  * DARK-connect/disconnect/etc messages are no longer announced over channels. Dark and Hidden are two different things. PR by Qon.
  * The Pueblo_Send power has been renamed Send_OOB, to reflect its new use for other, non-Pueblo-related, out of band messages. Pueblo_Send remains as an alias. (The hardcode macro checking for the power, Can_Pueblo_Send, has also changed to Can_Send_OOB.) [1041-MG]
  * Mortals can now use oob() on themselves, and those with the Send_OOB power can use it to send to anyone. Suggested by Qon and Sketch. [1041-MG]
+ * Remove a duplicate message when @chzone'ing a priv'd player. [MG]
  
 Functions:
  * Added setsymdiff() [SW]

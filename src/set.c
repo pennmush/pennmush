@@ -454,7 +454,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
     check_zone_lock(player, zone, noisy);
 
   /* Warn Wiz/Royals when they zone their stuff */
-  if ((zone != NOTHING) && Hasprivs(Owner(thing))) {
+  if ((zone != NOTHING) && Hasprivs(Owner(thing)) && !IsPlayer(thing)) {
     if (noisy)
       notify(player, T("Warning: @chzoning admin-owned object!"));
   }

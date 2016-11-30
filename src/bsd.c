@@ -1021,7 +1021,7 @@ shovechars(Port_t port, Port_t sslport)
 
     update_quotas(last_slice, current_time);
     last_slice = current_time;
-    
+
     if (msec_diff(current_time, then) >= 1000) {
       globals.on_second = 1;
       then = current_time;
@@ -3033,7 +3033,7 @@ FUNCTION(fun_oob)
     safe_str(e_match, buff, bp);
     return;
   }
-  
+
   if (Owner(who) != Owner(executor) && !Can_Send_OOB(executor)) {
     safe_str("#-1", buff, bp);
     return;
@@ -3055,14 +3055,15 @@ FUNCTION(fun_oob)
   json_free(json);
 }
 
-enum json_query {JSON_QUERY_TYPE, JSON_QUERY_SIZE, JSON_QUERY_EXISTS, JSON_QUERY_GET, JSON_QUERY_UNESCAPE};
+enum json_query { JSON_QUERY_TYPE, JSON_QUERY_SIZE, JSON_QUERY_EXISTS,
+    JSON_QUERY_GET, JSON_QUERY_UNESCAPE };
 
 FUNCTION(fun_json_query)
 {
   JSON *json, *next;
   enum json_query query_type = JSON_QUERY_TYPE;
   int i;
-  
+
   if (nargs > 1 && args[1] && *args[1]) {
     if (string_prefix("size", args[1])) {
       query_type = JSON_QUERY_SIZE;
@@ -3077,12 +3078,13 @@ FUNCTION(fun_json_query)
       return;
     }
   }
-  
-  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS) && (nargs < 3 || !args[2] || !*args[2])) {
+
+  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS)
+      && (nargs < 3 || !args[2] || !*args[2])) {
     safe_str(T("#-1 MISSING VALUE"), buff, bp);
     return;
   }
-  
+
   json = string_to_json(args[0]);
   if (!json) {
     safe_str(T("#-1 INVALID JSON"), buff, bp);
@@ -3093,7 +3095,7 @@ FUNCTION(fun_json_query)
   case JSON_QUERY_TYPE:
     switch (json->type) {
     case JSON_NONE:
-      break; /* Should never happen */
+      break;                    /* Should never happen */
     case JSON_STR:
       safe_str("string", buff, bp);
       break;
@@ -3133,9 +3135,9 @@ FUNCTION(fun_json_query)
         safe_chr('0', buff, bp);
         break;
       }
-      for (i = 1; next->next; i++, next = next->next);
+      for (i = 1; next->next; i++, next = next->next) ;
       if (json->type == JSON_OBJECT) {
-        i = i / 2; /* Key/value pairs, so we have half as many */
+        i = i / 2;              /* Key/value pairs, so we have half as many */
       }
       safe_integer(i, buff, bp);
       break;
@@ -3165,10 +3167,10 @@ FUNCTION(fun_json_query)
         break;
       }
       i = parse_integer(args[2]);
-      for (next = json->data; i > 0 && next; next = next->next, i--);
-      
+      for (next = json->data; i > 0 && next; next = next->next, i--) ;
+
       if (query_type == JSON_QUERY_EXISTS) {
-          safe_chr((next) ? '1' : '0', buff, bp);
+        safe_chr((next) ? '1' : '0', buff, bp);
       } else if (next) {
         char *s = json_to_string(next, 0);
         if (s) {
@@ -3191,14 +3193,14 @@ FUNCTION(fun_json_query)
           break;
         } else {
           /* Skip */
-          next = next->next; /* Move to this entry's value */
+          next = next->next;    /* Move to this entry's value */
           if (next) {
-            next = next->next; /* Move to next entry's name */
+            next = next->next;  /* Move to next entry's name */
           }
         }
       }
       if (query_type == JSON_QUERY_EXISTS) {
-          safe_chr((next) ? '1' : '0', buff, bp);
+        safe_chr((next) ? '1' : '0', buff, bp);
       } else if (next) {
         char *s = json_to_string(next, 0);
         if (s) {

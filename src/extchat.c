@@ -3206,7 +3206,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
   struct format_msg format;
   char *accname;
   dbref player = desc_player->player;
-  
+
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
     up = onchannel(player, c);
@@ -3214,10 +3214,12 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
       if (!Channel_Quiet(c)) {
         if (Chanuser_Hide(up) || (desc_player->hide == 1))
           channel_send(c, player,
-                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE | CB_SEEALL, msg);
+                       CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE |
+                       CB_SEEALL, msg);
         else
           channel_send(c, player,
-                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
+                       CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+                       msg);
       }
       if (ungag) {
         CUtype(up) &= ~CU_GAG;
@@ -3245,17 +3247,18 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
       shared = false;
       bp = buff;
       bp2 = buff2;
-      
+
       if ((desc_player->hide == 1) && !See_All(viewer) && (player != viewer))
         continue;
-      
+
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
         if (up && uv) {
           if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
               && !Chanuser_Gag(uv)
-              && ((!Chanuser_Hide(up) || See_All(viewer) || (player == viewer)))) {
+              &&
+              ((!Chanuser_Hide(up) || See_All(viewer) || (player == viewer)))) {
             if (Chanuser_Combine(uv)) {
               shared = true;
               safe_str(ChanName(c), buff, &bp);
@@ -3583,7 +3586,7 @@ FUNCTION(fun_crecall)
       num_lines--;
       continue;
     }
-    
+
     if (first)
       first = 0;
     else
@@ -3957,9 +3960,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     if ((flags & CB_NOCOMBINE) && Chanuser_Combine(u)) {
       continue;
     }
-    if((flags & CB_SEEALL) && !See_All(current) && (current != player))
+    if ((flags & CB_SEEALL) && !See_All(current) && (current != player))
       continue;
-    
+
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
@@ -3968,7 +3971,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
 
   if (ChanBufferQ(channel) && !skip_buffer)
-    add_to_bufferq(ChanBufferQ(channel), (flags & CB_SEEALL) ? CBTYPE_SEEALL : 0,
+    add_to_bufferq(ChanBufferQ(channel),
+                   (flags & CB_SEEALL) ? CBTYPE_SEEALL : 0,
                    (flags & CB_NOSPOOF) ? NOTHING : player, buff);
 
   if (!(flags & CB_PRESENCE) && !speaker) {
@@ -4281,7 +4285,7 @@ COMMAND(cmd_addcom)
     notify(executor, T("Command disabled."));
     return;
   }
-  
+
   if (!arg_left || !*arg_left || strchr(arg_left, '`') || strlen(arg_left) > 15) {
     notify(executor, T("Invalid alias."));
     return;
@@ -4328,6 +4332,7 @@ COMMAND(cmd_addcom)
 
 static int
 
+
 delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
               __attribute__ ((__unused__)), dbref parent
               __attribute__ ((__unused__)), const char *pattern
@@ -4356,7 +4361,7 @@ COMMAND(cmd_delcom)
     notify(executor, T("Command disabled."));
     return;
   }
-  
+
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);
@@ -4430,7 +4435,7 @@ COMMAND(cmd_comlist)
     notify(executor, T("Command disabled."));
     return;
   }
-  
+
   notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
                 T("Status"), T("Title"));
   atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
@@ -4443,7 +4448,7 @@ COMMAND(cmd_clist)
     notify(executor, T("Command disabled."));
     return;
   }
-  
+
   do_channel_list(executor, arg_left, CHANLIST_ALL);
 }
 
@@ -4457,7 +4462,7 @@ COMMAND(cmd_comtitle)
     notify(executor, T("Command disabled."));
     return;
   }
-  
+
   safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
   *bp = '\0';
   upcasestr(buff);
@@ -4469,4 +4474,3 @@ COMMAND(cmd_comtitle)
   mush_strncpy(buff, atr_value(a), BUFFER_LEN);
   do_chan_title(executor, buff, arg_right);
 }
-

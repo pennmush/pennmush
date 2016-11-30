@@ -12,7 +12,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 ==========================================================================
 
-Version 1.8.6 patchlevel 1                                 ??? ??, 2016
+Version 1.8.6 patchlevel 1                                 Dec ??, 2016
 
 Major changes:
  * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]

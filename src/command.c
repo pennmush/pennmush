@@ -1545,24 +1545,25 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
     pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "switches",
                 swp);
 
-  if (cmd->type & CMD_T_EQSPLIT) {
-    /* ls, before the = */
-    if (cmd->type & CMD_T_LS_ARGS) {
-      char argname[10];
-      j = 0;
-      for (i = 1; i < MAX_ARG; i++) {
-        if (lsa[i] && *lsa[i]) {
-          mush_strncpy(argname, tprintf("lsa%d", i), 10);
-          pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
-                      lsa[i]);
-          j = i;
-        }
+
+  /* ls, before the = */
+  if (cmd->type & CMD_T_LS_ARGS) {
+    char argname[10];
+    j = 0;
+    for (i = 1; i < MAX_ARG; i++) {
+      if (lsa[i] && *lsa[i]) {
+        mush_strncpy(argname, tprintf("lsa%d", i), 10);
+        pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
+                    lsa[i]);
+        j = i;
       }
-      if (j)
-        pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
-    } else if (ls && *ls) {
-      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
     }
+    if (j)
+      pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
+  } else if (ls && *ls) {
+    pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
+  }
+  if (cmd->type & CMD_T_EQSPLIT) {
     /* The = itself */
     if (rhs_present)
       pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "equals",

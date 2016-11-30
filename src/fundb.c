@@ -923,7 +923,7 @@ FUNCTION(fun_controls)
       safe_str(T("#-1 BAD ATTR NAME"), buff, bp);
       return;
     }
-    if (controls(it,thing) && can_edit_attr(it, thing, attrname))
+    if (controls(it, thing) && can_edit_attr(it, thing, attrname))
       safe_chr('1', buff, bp);
     else
       safe_chr('0', buff, bp);

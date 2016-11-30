@@ -87,9 +87,9 @@ struct chanuser {
 #define CB_SEEALL     0x200     /* Only see_all players can see this message */
 
 /* channel_buffer types */
-#define CBTYPE_SEEALL   1    /* Only see_all players can see this message
+#define CBTYPE_SEEALL   1       /* Only see_all players can see this message
                                  * using @chan/recall or crecall() */
-                                 
+
 #define CUdbref(u) ((u)->who)
 #define CUtype(u) ((u)->type)
 #define CUtitle(u) ((u)->title)

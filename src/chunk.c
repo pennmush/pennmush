@@ -271,14 +271,14 @@ acm_chunk_create(char const *data, uint16_t len, uint8_t derefs
   memcpy(chunk, &len, 2);
   memcpy(chunk + 4, data, len);
 
-  return (uintptr_t)chunk;
+  return (uintptr_t) chunk;
 }
 
 static void
 acm_chunk_delete(chunk_reference_t reference)
 {
   if (reference)
-    mush_free((void *)reference, "chunk");
+    mush_free((void *) reference, "chunk");
 }
 
 static uint16_t
@@ -289,10 +289,10 @@ acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
   if (!reference)
     return 0;
 
-  memcpy(&len, (void *)reference, 2);
+  memcpy(&len, (void *) reference, 2);
 
   if (buffer_len >= len) {
-    memcpy(buffer, ((uint8_t *)reference) + 4, len);
+    memcpy(buffer, ((uint8_t *) reference) + 4, len);
   }
 
   return len;
@@ -304,7 +304,7 @@ acm_chunk_len(chunk_reference_t reference)
   uint16_t len;
   if (!reference)
     return 0;
-  memcpy(&len, (void *)reference, 2);
+  memcpy(&len, (void *) reference, 2);
   return len;
 }
 
@@ -2719,20 +2719,20 @@ acc_chunk_fork_done(void)
 #endif                          /* !WIN32 */
 
 struct ac_funcs {
-  chunk_reference_t (*chunk_create)(char const *, uint16_t, uint8_t);
-  void (*chunk_delete)(chunk_reference_t);
-  uint16_t (*fetch)(chunk_reference_t, char *, uint16_t);
-  uint16_t (*len)(chunk_reference_t);
-  uint8_t (*derefs)(chunk_reference_t);
-  void (*migration)(int, chunk_reference_t **);
-  int (*num_swapped)(void);
-  void (*init)(void);
-  void (*stats)(dbref, enum chunk_stats_type);
-  void (*new_period)(void);
-  int (*fork_file)(void);
-  void (*fork_parent)(void);
-  void (*fork_child)(void);
-  void (*fork_done)(void);
+  chunk_reference_t (*chunk_create) (char const *, uint16_t, uint8_t);
+  void (*chunk_delete) (chunk_reference_t);
+  uint16_t (*fetch) (chunk_reference_t, char *, uint16_t);
+  uint16_t (*len) (chunk_reference_t);
+  uint8_t (*derefs) (chunk_reference_t);
+  void (*migration) (int, chunk_reference_t **);
+  int (*num_swapped) (void);
+  void (*init) (void);
+  void (*stats) (dbref, enum chunk_stats_type);
+  void (*new_period) (void);
+  int (*fork_file) (void);
+  void (*fork_parent) (void);
+  void (*fork_child) (void);
+  void (*fork_done) (void);
 };
 
 static struct ac_funcs malloc_interface = {
@@ -2870,7 +2870,7 @@ chunk_init(void)
     chunker = &chunk_interface;
   else
     chunker = &malloc_interface;
-  
+
   chunker->init();
 }
 

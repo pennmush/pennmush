@@ -285,7 +285,8 @@ COMMAND(cmd_chownall)
     types |= TYPE_EXIT;
   if (!types)
     types = TYPE_THING | TYPE_ROOM | TYPE_EXIT;
-  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE), types);
+  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+              types);
 }
 
 COMMAND(cmd_chown)

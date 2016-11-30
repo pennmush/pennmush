@@ -72,7 +72,7 @@ void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
 
-char *parse_chat_alias(dbref player, char *command);     /* from extchat.c */
+char *parse_chat_alias(dbref player, char *command);    /* from extchat.c */
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
@@ -113,7 +113,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
    0, 0},
   {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHOWNALL", "PRESERVE THINGS ROOMS EXITS", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
+  {"@CHOWNALL", "PRESERVE THINGS ROOMS EXITS", cmd_chownall,
+   CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
    0},
 
   {"@CHOWN", "PRESERVE", cmd_chown,
@@ -1123,7 +1124,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   int pe_flags = 0;
   int skip_char = 1;
   bool is_chat = 0;
-  
+
   rhs_present = 0;
 
   command = mush_malloc(BUFFER_LEN, "string_command");
@@ -1167,16 +1168,16 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     pe_flags = PE_DEBUG;
 
   if (*p == CHAT_TOKEN || (CHAT_TOKEN_ALIAS && *p == CHAT_TOKEN_ALIAS)) {
-      /* parse_chat() destructively modifies the command to replace
+    /* parse_chat() destructively modifies the command to replace
      * the first space with a '=' if the command is an actual
      * chat command */
-    if (parse_chat(player, p + 1) 
+    if (parse_chat(player, p + 1)
         && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
       *p = CHAT_TOKEN;
       is_chat = 1;
     }
   }
-    
+
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
@@ -1229,12 +1230,12 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
 
   if (USE_MUXCOMM) {
     if (!replacer && (replacer = parse_chat_alias(player, p))
-	&& command_check_byname(player, replacer, pe_info)) {
+        && command_check_byname(player, replacer, pe_info)) {
       noevtoken = 1;
       skip_char = 0;
       if (!strcmp(replacer, "@CHAT")) {
-	/* Don't parse switches for @chat. Do for @channel. */
-	parse_switches = 0;
+        /* Don't parse switches for @chat. Do for @channel. */
+        parse_switches = 0;
       }
     }
   }
@@ -2678,8 +2679,8 @@ do_hook_list(dbref player, char *command, bool verbose)
       op = override_inplace;
       ep = extend_inplace;
       if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.
-             override->inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override->
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {

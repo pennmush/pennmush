@@ -414,14 +414,14 @@ start_cpu_timer(void)
       time_limit.it_interval.tv_sec = 0;
       time_limit.it_interval.tv_usec = 0;
       if (setitimer(itimer_which, &time_limit, NULL)) {
-	if (itimer_which == ITIMER_PROF) {
-	  itimer_which = ITIMER_REAL;
-	  start_cpu_timer();
-	  return;
-	} else {
-	  penn_perror("setitimer");
-	  timer_set = 0;
-	}
+        if (itimer_which == ITIMER_PROF) {
+          itimer_which = ITIMER_REAL;
+          start_cpu_timer();
+          return;
+        } else {
+          penn_perror("setitimer");
+          timer_set = 0;
+        }
       }
     } else
       timer_set = 0;

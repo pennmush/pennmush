@@ -1577,9 +1577,9 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
         /* Something is wrong; abort */
         while (*codes && (*codes != 'm'))
           codes++;
-        return 0; /* Should this return 1 or 0? Who knows */
+        return 0;               /* Should this return 1 or 0? Who knows */
       }
-      codes++; /* skip over the '5' */
+      codes++;                  /* skip over the '5' */
       if (*codes && *codes == ';') {
         codes++;
         curnum = atoi(codes);
@@ -1590,9 +1590,10 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
         /* Something is wrong; abort */
         while (*codes && (*codes != 'm'))
           codes++;
-        return 0; /* Should this return 1 or 0? Who knows */
+        return 0;               /* Should this return 1 or 0? Who knows */
       }
-      snprintf((fg ? store->fg : store->bg), COLOR_NAME_LEN, "+xterm%d", curnum);      
+      snprintf((fg ? store->fg : store->bg), COLOR_NAME_LEN, "+xterm%d",
+               curnum);
     } else if (curnum < 40) {
       store->fg[0] = ansi_chars[curnum];
       store->fg[1] = 0;

@@ -299,7 +299,8 @@ PENNCONF conftable[] = {
   ,
   {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
   ,
-  {"chat_token_alias", cf_str, options.chat_token_alias, sizeof options.chat_token_alias,
+  {"chat_token_alias", cf_str, options.chat_token_alias,
+   sizeof options.chat_token_alias,
    CP_OPTIONAL,
    "chat"}
   ,
@@ -2053,7 +2054,7 @@ show_compile_options(dbref player)
 #endif
 
   if (options.use_chunk)
-      notify(player, T(" Attribute contents are managed by the chunk system."));
+    notify(player, T(" Attribute contents are managed by the chunk system."));
   else
     notify(player, T(" Attribute contents are managed by malloc."));
 

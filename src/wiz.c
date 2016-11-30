@@ -968,7 +968,8 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
  * \param types types of objects to chown
  */
 void
-do_chownall(dbref player, const char *name, const char *target, int preserve, int types)
+do_chownall(dbref player, const char *name, const char *target, int preserve,
+            int types)
 {
   int i;
   dbref victim;

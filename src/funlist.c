@@ -502,7 +502,7 @@ FUNCTION(fun_fold)
       base[0] = '\0';
       i++;
     } else
-    strncpy(base, list[i++], BUFFER_LEN);
+      strncpy(base, list[i++], BUFFER_LEN);
   }
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
   pe_regs_setenv_nocopy(pe_regs, 0, base);
@@ -513,7 +513,7 @@ FUNCTION(fun_fold)
   strncpy(base, result, BUFFER_LEN);
 
   funccount = pe_info->fun_invocations;
-  
+
 
   /* handle the rest of the cases */
   for (; i < n; i++) {
@@ -1148,34 +1148,34 @@ FUNCTION(fun_randword)
   int nptrs;
   char sep;
   char *osep;
-  char osepd[2] = {'\0', '\0'};
+  char osepd[2] = { '\0', '\0' };
   int separg = 2;
   int randcount = 1;
   enum rand_types randtype = RAND_NODUPLICATES;
   bool first = 1;
-  int word_index = -1; 
+  int word_index = -1;
 
   if (!*args[0]) {
     return;
   }
   if (!strcmp(called_as, "RANDEXTRACT")) {
-      separg = 3;
-      if (nargs > 1) {
-        if (args[1] && *args[1] && !is_strict_integer(args[1])) {
-          safe_str(T(e_int), buff, bp);
-          return;
-        }
-        randcount = parse_integer(args[1]);
-        if (randcount < 1) {
-          return;
-        }
+    separg = 3;
+    if (nargs > 1) {
+      if (args[1] && *args[1] && !is_strict_integer(args[1])) {
+        safe_str(T(e_int), buff, bp);
+        return;
       }
+      randcount = parse_integer(args[1]);
+      if (randcount < 1) {
+        return;
+      }
+    }
   }
 
   if (!delim_check(buff, bp, nargs, args, separg, &sep)) {
     return;
   }
-  
+
   if (nargs > 3 && args[3] && *args[3]) {
     if (*args[3] == 'l' || *args[3] == 'L') {
       randtype = RAND_LINEAR;
@@ -1188,7 +1188,7 @@ FUNCTION(fun_randword)
       return;
     }
   }
-  
+
   if (nargs > 4) {
     osep = args[4];
   } else {
@@ -1206,20 +1206,20 @@ FUNCTION(fun_randword)
     randcount = nptrs;
   }
 
-  for (;randcount;randcount--) {
+  for (; randcount; randcount--) {
     if (word_index == -1 || randtype != RAND_LINEAR) {
       word_index = get_random32(0, nptrs - 1);
     } else {
       word_index++;
       if (word_index >= nptrs) {
-        break; /* End of string */
+        break;                  /* End of string */
       }
     }
     while (!ptrs[word_index]) {
       /* Find an unused word - there will always be one */
       word_index++;
       if (word_index > nptrs) {
-        word_index = 0; /* Back to beginning */
+        word_index = 0;         /* Back to beginning */
       }
     }
     if (first) {
@@ -1285,7 +1285,7 @@ FUNCTION(fun_last)
   if (has_markup(p)) {
     as = parse_ansi_string(p);
     p = as->text;
-  }    
+  }
 
   if (!(r = strrchr(p, sep))) {
     if (as) {
@@ -2008,7 +2008,7 @@ FUNCTION(fun_splice)
   /* Turn them into lists */
   ocount = list2arr_ansi(orig, MAX_SORTSIZE, args[0], sep, 1);
   rcount = list2arr_ansi(repl, MAX_SORTSIZE, args[1], sep, 1);
-  
+
   if (ocount != rcount) {
     safe_str(T("#-1 NUMBER OF WORDS MUST BE EQUAL"), buff, bp);
     freearr(orig, ocount);

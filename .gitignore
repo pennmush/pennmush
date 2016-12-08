@@ -5,6 +5,7 @@
 *.log
 *.patch
 *.patch.txt
+*.plist
 Makefile
 config.h
 config.log

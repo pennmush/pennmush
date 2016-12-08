@@ -927,11 +927,12 @@ db_paranoid_write(PENNFILE *f, int flag)
   dbflag += DBF_LABELS;
   dbflag += DBF_SPIFFY_AF_ANSI;
   dbflag += DBF_HEAR_CONNECT;
-
+  dbflag += DBF_NEW_VERSIONS;
+  
   do_rawlog(LT_CHECK, "PARANOID WRITE BEGINNING...\n");
 
   penn_fprintf(f, "+V%d\n", dbflag * 256 + 2);
-
+  db_write_labeled_int(f, "dbversion", NDBF_VERSION);
   db_write_labeled_string(f, "savedtime", show_time(mudtime, 1));
   db_write_flags(f);
   penn_fprintf(f, "~%d\n", db_top);

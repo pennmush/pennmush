@@ -2,6 +2,7 @@
 *.s
 *~
 *.bak
+*.log
 *.patch
 *.patch.txt
 Makefile

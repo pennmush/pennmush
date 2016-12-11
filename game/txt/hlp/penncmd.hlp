@@ -1671,7 +1671,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   Register  Description
   --------  -------------------------------------------------------------
   Always available:
-  ARGS      The entire argument string. Always available.
+  ARGS      The entire argument string, before evaluation. Always available.
   LS        If the command doesn't have multiple left-side args, LS is set to the entire left-side arg (before the = for EQSPLIT commands)
   LSAC      For commands with multiple left-side-args, the number of left-side args given
   LSAx      The xth left-side-arg, where x is between 1 and LSAC
@@ -2737,6 +2737,8 @@ See also: sql(), sqlescape(), mapsql(), @mapsql
   Sets the list of actions on <object> that will happen whenever the MUSH is restarted. This lets you start up objects that need to be running continuously. It is also useful for setting up @functions and @hooks, which are not saved across restarts.
   
   @startup is also triggered when an object is @restarted or @undestroyed.
+  
+  Note that @startups are NEVER inherited from parent objects.
   
 See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook
 & @stats

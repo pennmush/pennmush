@@ -2453,7 +2453,7 @@ See also: lvthings(), lcon()
     > say lpos(a-bc-def-g, -)
     You say, "1 4 8"
 
-See also: pos(), member(), match()
+See also: pos(), member(), match(), wordpos()
 & LSEARCH()
 & NLSEARCH()
 & SEARCH()
@@ -3204,7 +3204,7 @@ See also: player(), Connection Functions
 
   This function returns the position that <needle> begins in <haystack>. Unlike most other string functions, the first character of <haystack> is numbered 1, not 0. If <needle> is not present in <haystack>, pos() returns #-1.
   
-See also: member(), match(), lpos()
+See also: member(), match(), lpos(), wordpos()
 & POSS()
 & %p
   poss(<object>)

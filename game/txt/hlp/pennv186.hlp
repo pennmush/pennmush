@@ -37,6 +37,7 @@ Fixes:
  * Fixed channel_send() incorrectly setting speaker to NOTHING for non-spoofed chat messages when adding text to the channel buffer. PR by Qon.
  * extract(<list>) incorrectly returned the 2nd element of <list>, instead of the 1st. Reported by Jules@M*U*S*H. [MG]
  * Several places which checked for unsigned integers didn't ignore Tiny_Math, but should have. Reported by Kitten, debugged by Ashen-Shugar. [MG]
+ * Paranoid dumps didn't use the latest db flags. [SW]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

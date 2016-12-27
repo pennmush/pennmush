@@ -1203,7 +1203,7 @@ See also: get(), eval(), ufun(), default(), udefault(), hasattr()
 & EDIT()
   edit(<string>, <search>, <replace>[, ... , <searchN>, <replaceN>])
  
-  For each given <search> and <replace> pair, edit() replaces all occurances of <search> in <string> with the corresponding <replace>.
+  For each given <search> and <replace> pair, edit() replaces all occurrences of <search> in <string> with the corresponding <replace>.
   
   If <search> is a caret (^), <replace> is prepended.
   If <search> is a dollar sign ($), <replace> is appended.
@@ -1524,7 +1524,7 @@ See also: followers(), follow, unfollow
  
   For each character in <string>, <object>/<attribute> is called, with the character passed as %0, and its position in the string as %1 (the first character has position 0). The results are concatenated.
   
-  If <start> is given, everything before the first occurance of <start> is copied as-is, without being passed to the <object>/<attribute>. If <end> is given, everything after the first occurance of <end> is copied as-is. The <start> and <end> characters themselves are not copied.
+  If <start> is given, everything before the first occurrence of <start> is copied as-is, without being passed to the <object>/<attribute>. If <end> is given, everything after the first occurrence of <end> is copied as-is. The <start> and <end> characters themselves are not copied.
  
   See 'help foreach2' for examples.
 & FOREACH2
@@ -3360,7 +3360,7 @@ See also: @remit, pemit(), lemit()
 & REMOVE()
   remove(<list>, <words>[, <delimiter>])
 
-  This function removes the first occurance of every word in the list <words> from <list>, and returns the resulting <list>. It is case sensitive.
+  This function removes the first occurrence of every word in the list <words> from <list>, and returns the resulting <list>. It is case sensitive.
   
   Elements of <list> and <words> are both separated by <delimiter>, which defaults to a space.
   
@@ -5155,7 +5155,7 @@ See also: merge(), splice()
   trimpenn(<string>[, <characters to trim>[, <trim style>]])
   trimtiny(<string>[, <trim style>[, <characters to trim>]])
  
-  trim() strips leading and/or trailing occurances of each of the <characters to trim> from <string>.
+  trim() strips leading and/or trailing occurrences of each of the <characters to trim> from <string>.
 
   <characters to trim> defaults to a space.
   

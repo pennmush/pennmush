@@ -1128,7 +1128,10 @@ FUNCTION(fun_first)
     as = parse_ansi_string(args[0]);
     p = trim_space_sep(as->text, sep);
     q = split_token(&p, sep);
-    safe_ansi_string(as, q - as->text, p - q - 1, buff, bp);
+    if (p)
+      safe_ansi_string(as, q - as->text, p - q - 1, buff, bp);
+    else
+      safe_ansi_string(as, q - as->text, as->len, buff, bp);
     free_ansi_string(as);
   } else {
     p = trim_space_sep(args[0], sep);
@@ -1257,6 +1260,8 @@ FUNCTION(fun_rest)
     p = as->text;
   }
   (void) split_token(&p, sep);
+  if (!p || !*p)
+    return;
   if (as) {
     safe_ansi_string(as, p - as->text, as->len, buff, bp);
     free_ansi_string(as);
@@ -1324,7 +1329,7 @@ FUNCTION(fun_grab)
 
   do {
     r = split_token(&s, sep);
-    if (quick_wild(args[1], r)) {
+    if (r && quick_wild(args[1], r)) {
       if (as) {
         safe_ansi_string(as, r - as->text, s - r - 1, buff, bp);
         free_ansi_string(as);

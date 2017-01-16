@@ -62,7 +62,6 @@ static int
 static int escape_marked_str(char **str, char *buff, char **bp);
 static bool valid_hex_digits(const char *, int);
 
-const char *is_allowed_tag(const char *s, unsigned int len);
 void build_rgb_map(void);
 int ansi_equal(const ansi_data *a, const ansi_data *b);
 int ansi_isnull(const ansi_data a);

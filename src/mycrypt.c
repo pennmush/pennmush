@@ -40,6 +40,7 @@ bool password_comp(const char *saved, const char *pass);
 char *
 mush_crypt_sha0(const char *key)
 {
+#ifdef HAVE_SHA
   static char crypt_buff[70];
   uint8_t hash[SHA_DIGEST_LENGTH];
   unsigned int a, b;
@@ -64,6 +65,9 @@ mush_crypt_sha0(const char *key)
   sprintf(crypt_buff, "XX%u%u", a, b);
 
   return crypt_buff;
+#else
+  return "";
+#endif
 }
 
 /** Hash a string and store it base-16 encoded in a buffer.

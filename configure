@@ -6986,6 +6986,24 @@ rm -f core conftest.err conftest.$ac_objext \
 
 
 
+OLDLIBS="${LIBS}"
+OLDLDFLAGS="${LDFLAGS}"
+LIBS="${LIBS} ${OPENSSL_LIBS}"
+LDFLAGS="${LDFLAGS} ${OPENSSL_LDFLAGS}"
+for ac_func in SHA
+do :
+  ac_fn_c_check_func "$LINENO" "SHA" "ac_cv_func_SHA"
+if test "x$ac_cv_func_SHA" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SHA 1
+_ACEOF
+
+fi
+done
+
+LIBS="${OLDLIBS}"
+LDFLAGS="${OLDLDFLAGS}"
+
 # system libpcre
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
 $as_echo_n "checking lib pcre... " >&6; }

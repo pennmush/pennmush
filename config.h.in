@@ -295,6 +295,8 @@ typedef bool _Bool;
 
 #undef HAVE_FETESTEXCEPT
 
+#undef HAVE_SHA
+
 /* Variables and defines */
 
 #undef HAVE_H_ERRNO

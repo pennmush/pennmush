@@ -296,11 +296,15 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
+#ifdef HAVE_SHA
   uint8_t hash[SHA_DIGEST_LENGTH];
 
   SHA((uint8_t *) args[0], arglens[0], hash);
 
   safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
+#else
+  safe_str(T("#-1 NOT SUPPORTED"), buff, bp);
+#endif
 }
 
 /* From mycrypt.c */

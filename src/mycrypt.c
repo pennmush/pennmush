@@ -20,7 +20,7 @@
 #include "strutil.h"
 #include "externs.h"
 
-#define PASSWORD_HASH "sha1"
+#define PASSWORD_HASH "sha512"
 
 bool decode_base64(char *encoded, int len, bool printonly, char *buff,
                    char **bp);

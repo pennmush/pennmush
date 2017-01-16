@@ -64,6 +64,7 @@ Minor changes:
  * Remove a duplicate message when @chzone'ing a priv'd player. [MG]
  * @hooks now always have named registers for left-side args, even if the command isn't eqsplit (see 'help @hook7'). [MG] 
  * Make SHA-0 dependency optional to support OpenSSL 1.1. [SW]
+ * Change the default hash for player passwords to SHA-512 from SHA-1. [SW]
 
 Functions:
  * Added setsymdiff() [SW]

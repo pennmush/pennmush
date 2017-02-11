@@ -48,14 +48,14 @@ See also: MUSHCODE, FUNCTION LIST
 & Attribute functions
   These functions can access or alter information stored in attributes on objects.
 
-  aposs()        attrib_set()   default()      edefault()     eval()
-  flags()        get()          grep()         grepi()        hasattr()
-  hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
-  nattr()        obj()          pfun()         poss()         reglattr()
-  regrep()       regrepi()      regxattr()     set()          subj()
-  udefault()     ufun()         ulambda()      uldefault()    ulocal()
-  v()            wildgrep()     wildgrepi()    xattr()        xget()
-  zfun()
+  a()            aposs()        attrib_set()   default()      edefault()
+  eval()         flags()        get()          grep()         grepi()
+  hasattr()      hasattrp()     hasattrval()   hasflag()      lattr()
+  lflags()       nattr()        obj()          pfun()         poss()
+  reglattr()     regrep()       regrepi()      regxattr()     set()
+  subj()         udefault()     ufun()         ulambda()      uldefault()
+  ulocal()       v()            wildgrep()     wildgrepi()    xattr()
+  xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -232,6 +232,12 @@ See also: TIMEZONES
   The null() function is similar, but does evaluate its argument(s), so side-effects can occur within a null(). Useful for eating the output of functions when you don't use that output.
   
 See also: @@
+& A()
+  a(<attrib>, <value>)
+
+  Sets <attrib> to <value> on the enactor. This function is an efficient shorthand for attrib_set(me/<attrib>, <value>).
+
+See also: attrib_set()
 & ABS()
   abs(<number>)
 
@@ -599,7 +605,7 @@ See also: @atrlock, @atrchown, hasflag()
 
   If there is a second argument, then attrib_set() will create an attribute, even if the second argument is empty (in which case attrib_set() will create an empty attribute). If the empty_attrs configuration option is off, the attribute will be set to a single space. This means that attrib_set(me/foo,%0) will _always_ create an attribute.
 
-See also: set(), @set
+See also: a(), set(), @set
 & BAND()
   band(<integer>, <integer>[, ... , <integerN>])
 
@@ -3607,7 +3613,7 @@ See also: decompose(), escape()
 
   The attribute-setting ability of set() is deprecated. You should use attrib_set() instead; it's easier to read, and allows you to clear attributes, too.
 
-See also: attrib_set(), @set, wipe()
+See also: a(), attrib_set(), @set, wipe()
 & SETDIFF()
   setdiff(<list1>, <list2>[, <delimiter>[, <sort type>[, <osep>]]])
  

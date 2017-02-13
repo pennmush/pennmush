@@ -430,7 +430,7 @@ See also: BOOLEAN FUNCTIONS, not(), t()
    4. If O is a Wizard, O controls V
    5. If V is a Wizard, O does not control V
    6. If V is Royalty and O is not, O does not control V
-   7. If V is MISTRUST, O does not control V
+   7. If O is MISTRUST, O does not control V
    8. If O and V are owned by the same player, and either:
        a. V is not set TRUST, or
        b. O is set TRUST

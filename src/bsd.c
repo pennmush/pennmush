@@ -152,8 +152,11 @@ char cf_motd_msg[BUFFER_LEN] = { '\0' }; /**< The message of the day */
 char cf_wizmotd_msg[BUFFER_LEN] = { '\0' };      /**< The wizard motd */
 char cf_downmotd_msg[BUFFER_LEN] = { '\0' };     /**< The down message */
 char cf_fullmotd_msg[BUFFER_LEN] = { '\0' };     /**< The 'mush full' message */
-static char poll_msg[DOING_LEN] = { '\0' };
+static char poll_msg[DOING_LEN] = { '\0' }; /**< The \@poll/"Doing" message */
 char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
+
+char *get_poll(void);
+int set_poll(const char *message);
 
 char *etime_fmt(char *, time_t, int);
 const char *source_to_s(conn_source source);
@@ -5161,10 +5164,8 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, "<PRE>", 5);
   }
 
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
   snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s",
-           T("Player Name"), T("On For"), T("Idle"), poll_msg);
+           T("Player Name"), T("On For"), T("Idle"), get_poll());
   queue_string_eol(call_by, tbuf);
 
   for (d = descriptor_list; d; d = d->next) {
@@ -5267,9 +5268,6 @@ do_who_mortal(dbref player, char *name)
   int nlen;
   PUEBLOBUFF;
 
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
-
   if (SUPPORT_PUEBLO) {
     PUSE;
     tag("PRE");
@@ -5281,7 +5279,7 @@ do_who_mortal(dbref player, char *name)
     wild = 1;
 
   notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
-                T("Idle"), poll_msg);
+                T("Idle"), get_poll());
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected)
       continue;
@@ -5901,6 +5899,45 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
   return doing;
 }
 
+/** Get the current poll message.
+ * If there isn't one currently set, sets it to "Doing" first.
+ */
+char *
+get_poll(void)
+{
+  if (!*poll_msg)
+    set_poll(NULL);
+  return poll_msg;
+}
+
+/** Set the poll message.
+ * \param message The new poll, or NULL to use the default, "Doing")
+ * \return number of characters trimmed from new poll
+ */
+int
+set_poll(const char *message)
+{
+  int i = 0;
+  size_t len = 0;
+  
+  if (message && *message) {
+    strncpy(poll_msg, remove_markup(message, &len), DOING_LEN - 1);
+    len--; /* Length includes trailing null */
+  } else
+    strncpy(poll_msg, T("Doing"), DOING_LEN - 1);
+  for (i = 0; i < DOING_LEN; i++) {
+    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
+        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
+      poll_msg[i] = ' ';
+  }
+  poll_msg[DOING_LEN - 1] = '\0';
+
+  if ((int) len >= DOING_LEN)
+    return ((int) len - DOING_LEN);
+  else
+    return 0;
+}
+
 /** Set a poll message (which replaces "Doing" in the DOING output).
  * \verbatim
  * This implements @poll.
@@ -5916,7 +5953,7 @@ do_poll(dbref player, const char *message, int clear)
 
   if ((!message || !*message) && !clear) {
     /* Just display the poll. */
-    notify_format(player, T("The current poll is: %s"), poll_msg);
+    notify_format(player, T("The current poll is: %s"), get_poll());
     return;
   }
 
@@ -5926,24 +5963,16 @@ do_poll(dbref player, const char *message, int clear)
   }
 
   if (clear) {
-    strcpy(poll_msg, "Doing");
+    set_poll(NULL);
     notify(player, T("Poll reset."));
     return;
   }
 
-  strncpy(poll_msg, remove_markup(message, NULL), DOING_LEN - 1);
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
-        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
-      poll_msg[i] = ' ';
-  }
-  poll_msg[DOING_LEN - 1] = '\0';
+  i = set_poll(message);
 
-  if (strlen(message) >= DOING_LEN) {
-    poll_msg[DOING_LEN - 1] = 0;
+  if (i) {
     notify_format(player,
-                  T("Poll set to '%s'. %d characters lost."), poll_msg,
-                  (int) strlen(message) - (DOING_LEN - 1));
+                  T("Poll set to '%s'. %d characters lost."), poll_msg, i);
   } else
     notify_format(player, T("Poll set to: %s"), poll_msg);
   do_log(LT_WIZ, player, NOTHING, "Poll Set to '%s'.", poll_msg);
@@ -6525,11 +6554,7 @@ FUNCTION(fun_recv)
 
 FUNCTION(fun_poll)
 {
-  /* Gets the current poll */
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
-
-  safe_str(poll_msg, buff, bp);
+  safe_str(get_poll(), buff, bp);
 }
 
 FUNCTION(fun_pueblo)

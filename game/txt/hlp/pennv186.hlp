@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.6 patchlevel 1                                 Dec ??, 2016
+Version 1.8.6 patchlevel 1                                 ??? ??, 2017
 
 Major changes:
  * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
@@ -39,6 +39,7 @@ Fixes:
  * Several places which checked for unsigned integers didn't ignore Tiny_Math, but should have. Reported by Kitten, debugged by Ashen-Shugar. [MG]
  * Paranoid dumps didn't use the latest db flags. [SW]
  * Although they can't be destroyed directly, it was still possible to destroy some important objects like the player_start room by nuking their owner, with nasty consequences. Reported by Sistene@M*U*S*H. [MG]
+ * regrab(), reglmatch() and related functions didn't work if the <regexp> contained ansi. From a report by Riorgan@M*U*S*H. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
@@ -62,7 +63,9 @@ Minor changes:
  * Mortals can now use oob() on themselves, and those with the Send_OOB power can use it to send to anyone. Suggested by Qon and Sketch. [1041-MG]
  * Remove a duplicate message when @chzone'ing a priv'd player. [MG]
  * @hooks now always have named registers for left-side args, even if the command isn't eqsplit (see 'help @hook7'). [MG] 
- 
+ * Make SHA-0 dependency optional to support OpenSSL 1.1. [SW]
+ * Change the default hash for player passwords to SHA-512 from SHA-1. [SW]
+
 Functions:
  * Added setsymdiff() [SW]
  * Added randextract(), a more powerful version of randword(). [MG,Rhost]

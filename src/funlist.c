@@ -3071,7 +3071,7 @@ FUNCTION(fun_regrab)
   if (strstr(called_as, "MATCH"))
     pos = 1;
 
-  if ((re = pcre_compile(args[1], flags, &errptr, &erroffset, tables)) == NULL) {
+  if ((re = pcre_compile(remove_markup(args[1], NULL), flags, &errptr, &erroffset, tables)) == NULL) {
     /* Matching error. */
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);

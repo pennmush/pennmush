@@ -12,7 +12,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 ==========================================================================
 
-Version 1.8.6 patchlevel 1                                 Jan ??, 2017
+Version 1.8.6 patchlevel 1                                 ??? ??, 2017
 
 Major changes:
  * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
@@ -40,6 +40,7 @@ Fixes:
  * Several places which checked for unsigned integers didn't ignore Tiny_Math, but should have. Reported by Kitten, debugged by Ashen-Shugar. [MG]
  * Paranoid dumps didn't use the latest db flags. [SW]
  * Although they can't be destroyed directly, it was still possible to destroy some important objects like the player_start room by nuking their owner, with nasty consequences. Reported by Sistene@M*U*S*H. [MG]
+ * regrab(), reglmatch() and related functions didn't work if the <regexp> contained ansi. From a report by Riorgan@M*U*S*H. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.

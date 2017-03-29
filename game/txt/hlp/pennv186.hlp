@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.6 patchlevel 1                                 ??? ??, 2017
+Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 
 Major changes:
  * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
@@ -66,6 +66,7 @@ Minor changes:
  * Make SHA-0 dependency optional to support OpenSSL 1.1. [SW]
  * Change the default hash for player passwords to SHA-512 from SHA-1. [SW]
  * The default @poll message, "Doing", can now be translated. [MG]
+ * Clean up some of the shell scripts used in the build and startup processes. [SW]
 
 Functions:
  * Added setsymdiff() [SW]

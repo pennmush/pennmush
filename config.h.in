@@ -297,6 +297,8 @@ typedef bool _Bool;
 
 #undef HAVE_SHA
 
+#undef HAVE_DH_SET0_PQG
+
 /* Variables and defines */
 
 #undef HAVE_H_ERRNO

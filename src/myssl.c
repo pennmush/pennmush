@@ -214,7 +214,7 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
     fprintf(stderr, "verify error:num=%d:%s:depth=%d:%s\n", err,
             X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
-      X509_NAME_oneline(X509_get_issuer_name(x509_ctx->current_cert), buf, 256);
+      X509_NAME_oneline(X509_get_issuer_name(X509_STORE_CTX_get_current_cert(x509_ctx)), buf, 256);
       fprintf(stderr, "issuer= %s\n", buf);
     }
     unlock_file(stderr);
@@ -246,8 +246,33 @@ get_dh1024(void)
     0x02,
   };
   DH *dh;
+
   if ((dh = DH_new()) == NULL)
     return NULL;
+  
+#ifdef HAVE_DH_SET0_PQG
+  BIGNUM *p, *g;
+  p = BN_bin2bn(dh1024_p, sizeof(dh1024_p), NULL);
+  if (!p) {
+    lock_file(stderr);
+    fputs("Error in BN_bin2bn 1!\n", stderr);
+    unlock_file(stderr);
+    DH_free(dh);
+    return NULL;
+  }
+
+  g = BN_bin2bn(dh1024_g, sizeof(dh1024_g), NULL);
+  if (!g) {
+    lock_file(stderr);
+    fputs("Error in BN_bin2bn 2!\n", stderr);
+    unlock_file(stderr);
+    BN_free(p);
+    DH_free(dh);
+    return NULL;
+  }
+  
+  DH_set0_pqg(dh, p, NULL, g);
+#else
   if (dh->p) {
     BN_free(dh->p);
     dh->p = NULL;
@@ -274,7 +299,8 @@ get_dh1024(void)
     DH_free(dh);
     return NULL;
   }
-
+#endif
+  
   return dh;
 }
 

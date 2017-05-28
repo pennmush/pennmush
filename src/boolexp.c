@@ -606,7 +606,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
               break;
             }
           }
-          mush_free(orig, "atrval.boolextp");
+          mush_free(orig, "atrval.boolexp");
         }
         break;
       default:

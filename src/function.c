@@ -165,6 +165,7 @@ FUNALIAS faliases[] = {
  */
 FUNTAB flist[] = {
   {"@@", fun_null, 1, INT_MAX, FN_NOPARSE},
+  {"A", fun_a, 2, -2, FN_REG},
   {"ABS", fun_abs, 1, 1, FN_REG | FN_STRIPANSI},
   {"ACCENT", fun_accent, 2, 2, FN_REG},
   {"ACCNAME", fun_accname, 1, 1, FN_REG},

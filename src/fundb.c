@@ -2252,6 +2252,15 @@ FUNCTION(fun_attrib_set)
   }
 }
 
+FUNCTION(fun_a)
+{
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+  do_set_atr(executor, args[0], args[1], executor, 1);
+}
+
 
 /* --------------------------------------------------------------------------
  * Misc functions: TEL

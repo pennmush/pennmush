@@ -520,10 +520,11 @@ initialize_mt(void)
 {
 #ifdef HAVE_DEV_URANDOM
   int fd;
-  uint32_t buf[4];              /* The linux manpage for /dev/urandom
+  uint32_t buf[64];              /* The linux manpage for /dev/urandom
                                    advises against reading large amounts of
                                    data from it; we used to read 624*4 (Or *8 on 64-bit systems)
-                                   bytes. The new figure is much more reasonable. */
+                                   bytes. The new figure is much more reasonable, at the cost of reducing the
+				   number of possible starting states by a lot . */
 
   fd = open("/dev/urandom", O_RDONLY);
   if (fd >= 0) {
@@ -533,7 +534,7 @@ initialize_mt(void)
       fprintf(stderr,
               "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
-      fprintf(stderr, "Seeded RNG from /dev/urandom\n");
+      fprintf(stderr, "Seeded RNG with %d bytes from /dev/urandom\n", r);
       sfmt_init_by_array(&rand_state, buf, r / sizeof(uint32_t));
       return;
     }

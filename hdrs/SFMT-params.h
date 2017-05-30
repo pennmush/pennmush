@@ -2,13 +2,11 @@
 #ifndef SFMT_PARAMS_H
 #define SFMT_PARAMS_H
 
-#define SFMT_MEXP 19937
-
 #if !defined(SFMT_MEXP)
 #if defined(__GNUC__) && !defined(__ICC)
-#warning "SFMT_MEXP is not defined. I assume MEXP is 19937."
+  #warning "SFMT_MEXP is not defined. I assume MEXP is 19937."
 #endif
-#define SFMT_MEXP 19937
+  #define SFMT_MEXP 19937
 #endif
 /*-----------------
   BASIC DEFINITIONS
@@ -48,8 +46,8 @@
 */
 
 /** the parameter of shift right as one 128-bit register.
- * The 128-bit integer is shifted by (SFMT_SL2 * 8) bits.
-#define SFMT_SR21 1
+ * The 128-bit integer is shifted by (SFMT_SR2 * 8) bits.
+#define SFMT_SR2 1
 */
 
 /** A bitmask, used in the recursion.  These parameters are introduced
@@ -61,40 +59,40 @@
 */
 
 /** These definitions are part of a 128-bit period certification vector.
-#define SFMT_PARITY1	0x00000001U
-#define SFMT_PARITY2	0x00000000U
-#define SFMT_PARITY3	0x00000000U
-#define SFMT_PARITY4	0xc98e126aU
+#define SFMT_PARITY1    0x00000001U
+#define SFMT_PARITY2    0x00000000U
+#define SFMT_PARITY3    0x00000000U
+#define SFMT_PARITY4    0xc98e126aU
 */
 
 #if SFMT_MEXP == 607
-#include "SFMT-params607.h"
+  #include "SFMT-params607.h"
 #elif SFMT_MEXP == 1279
-#include "SFMT-params1279.h"
+  #include "SFMT-params1279.h"
 #elif SFMT_MEXP == 2281
-#include "SFMT-params2281.h"
+  #include "SFMT-params2281.h"
 #elif SFMT_MEXP == 4253
-#include "SFMT-params4253.h"
+  #include "SFMT-params4253.h"
 #elif SFMT_MEXP == 11213
-#include "SFMT-params11213.h"
+  #include "SFMT-params11213.h"
 #elif SFMT_MEXP == 19937
-#include "SFMT-params19937.h"
+  #include "SFMT-params19937.h"
 #elif SFMT_MEXP == 44497
-#include "SFMT-params44497.h"
+  #include "SFMT-params44497.h"
 #elif SFMT_MEXP == 86243
-#include "SFMT-params86243.h"
+  #include "SFMT-params86243.h"
 #elif SFMT_MEXP == 132049
-#include "SFMT-params132049.h"
+  #include "SFMT-params132049.h"
 #elif SFMT_MEXP == 216091
-#include "SFMT-params216091.h"
+  #include "SFMT-params216091.h"
 #else
 #if defined(__GNUC__) && !defined(__ICC)
-#error "SFMT_MEXP is not valid."
-#undef SFMT_MEXP
+  #error "SFMT_MEXP is not valid."
+  #undef SFMT_MEXP
 #else
-#undef SFMT_MEXP
+  #undef SFMT_MEXP
 #endif
 
 #endif
 
-#endif                          /* SFMT_PARAMS_H */
+#endif /* SFMT_PARAMS_H */

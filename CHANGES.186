@@ -16,6 +16,7 @@ Version 1.8.6 patchlevel 2                                 ??? ??, 20??
 
 Fixes:
  * Fix compilation errors with OpenSSL 1.1. [SW]
+ * Fix overflow bug in mapsql(). [MG]
 
 Minor changes:
  * Upgrade random number generator to SFMT 1.5.1. [SW]

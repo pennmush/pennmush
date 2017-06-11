@@ -783,10 +783,10 @@ FUNCTION(fun_mapsql)
     goto finished;
   }
 
-  if (numfields < MAX_STACK_ARGS)
+  if (numfields < (MAX_STACK_ARGS - 1))
     useable_fields = numfields;
   else
-    useable_fields = MAX_STACK_ARGS;
+    useable_fields = MAX_STACK_ARGS - 1;
 
   fieldnames = mush_calloc(sizeof(char *), useable_fields, "sql_fieldnames");
 

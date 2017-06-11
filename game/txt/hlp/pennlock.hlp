@@ -227,6 +227,7 @@ See also: ipaddr(), hostname(), LASTSITE
   @lock/interact        Who can send sound (say/pose/emit/etc) to this object
   @lock/take            Who can get things contained in this object
   @lock/mailforward     Who can forward mail to this object via @mailforward
+  @lock/chown           Who can @chown this CHOWN_OK object?
 
 See also: @lock, @lset, @clock, FAILURE
 & @lock/basic
@@ -361,6 +362,7 @@ See also: give, buy, @lock/basic, @lock/enter
   See also: examine, VISUAL
 & @lock/zone
 & @lock/chzone
+& @lock/chown
 & @lock/parent
 & @lock/link
 & @lock/open
@@ -371,7 +373,11 @@ See also: give, buy, @lock/basic, @lock/enter
   @lock/chzone
     If set, controls who can @chzone an object to this zone.
   See also: @chzone, ZONES
-    
+
+  @lock/chown
+    If set, controls who can change the owner of this CHOWN_OK object via @chown.
+  See also: CHOWN_OK, @chown
+
   @lock/parent
     Controls who can @parent something to this LINK_OK object.
   See also: @parent, LINK_OK

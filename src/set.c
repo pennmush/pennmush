@@ -286,7 +286,8 @@ chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
       && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
     return 1;
 
-  if (ChownOk(thing) && (!IsThing(thing) || (Location(thing) == player)))
+  if ((!IsThing(thing) || (Location(thing) == player)) && ChownOk(thing) &&
+      eval_lock_with(player, thing, Chown_Lock, pe_info))
     return 1;
 
   return 0;

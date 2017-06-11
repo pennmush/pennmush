@@ -1,4 +1,4 @@
-& 1.8.6p1
+& 1.8.6p2
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,16 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.6 patchlevel 2                                 ??? ??, 20??
+
+Fixes:
+ * Fix compilation errors with OpenSSL 1.1. [SW]
+
+Minor changes:
+ * Upgrade random number generator to SFMT 1.5.1. [SW]
+ * New @lock/chown controls who can @chown a CHOWN_OK object. Suggested by Frakir. [1127-MG]
+
+& 1.8.6p1
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 
 Major changes:

@@ -340,6 +340,7 @@ FUNCTION(fun_elements)
    * A separator for the first list is allowed.
    */
   int nwords, cur;
+  int count = 0;
   char **ptrs;
   char *wordlist;
   char *s, *r, sep;
@@ -369,16 +370,14 @@ FUNCTION(fun_elements)
   /* Go through the second list, grabbing the numbers and finding the
    * corresponding elements.
    */
-  r = split_token(&s, ' ');
-  cur = find_list_position(r, nwords, 0) - 1;
-  if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
-    safe_str(ptrs[cur], buff, bp);
-  }
+
   while (s) {
     r = split_token(&s, ' ');
     cur = find_list_position(r, nwords, 0) - 1;
     if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
-      safe_str(osep, buff, bp);
+      if (count)
+        safe_str(osep, buff, bp);
+      count++;
       safe_str(ptrs[cur], buff, bp);
     }
   }

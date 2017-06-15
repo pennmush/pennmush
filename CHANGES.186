@@ -24,6 +24,7 @@ Minor changes:
  * Upgrade random number generator to SFMT 1.5.1. [SW]
  * New @lock/chown controls who can @chown a CHOWN_OK object. Suggested by Frakir. [1127-MG]
  * The 'buy' command now pays the vendor, rather than the money disappearing into a black hole. Suggested by moniker, patch by CLDawes. [1128]
+ * Help changes by Xperta, Trinsec, Elwyndas and others. [MG]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

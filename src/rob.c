@@ -197,6 +197,7 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
               boughtit = 0;
               continue;
             }
+            giveto(vendor, boughtit);
             bp = strchr(finditem, ':');
             if (bp)
               *bp = '\0';
@@ -209,6 +210,7 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
             bp = obuff;
             safe_format(obuff, &bp, T("buys a %s from %s."),
                         finditem, AName(vendor, AN_MOVE, NULL));
+            *bp = '\0';
             bp = buycost;
             safe_integer(boughtit, buycost, &bp);
             *bp = '\0';

@@ -756,7 +756,7 @@ do_mail_list(dbref player, const char *msglist)
     return;
   }
   FA_Init(i);
-  folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
+  folder = (AllInFolder(ms) || ms.player != 0) ? player_folder(player) : MSFolder(ms);
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
   notify_format(player,

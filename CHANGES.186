@@ -19,6 +19,12 @@ Fixes:
  * Fix overflow bug in mapsql(). [MG]
  * elements() would very rarely give an extra delimiter. Reported by Ashen-Shugar. [1108-MG]
 
+Major changes:
+ * Supports client charset negotiation of UTF-8. This means the mush
+   can send and recieve UTF-8, but still uses latin-1
+   internally. Unicode characters that aren't part of latin-1 are not
+   supported. Yet. [SW]
+
 Minor changes:
  * Upgrade random number generator to SFMT 1.5.1. [SW]
  * New @lock/chown controls who can @chown a CHOWN_OK object. Suggested by Frakir. [1127-MG]

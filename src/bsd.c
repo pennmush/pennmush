@@ -101,6 +101,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "charconv.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -191,28 +192,6 @@ const char *default_ttype = "unknown";
  * and is the original purpose of adding telnet option support.
  */
 
-/* Telnet codes */
-#define IAC 255                 /**< interpret as command: */
-#define NOP 241                 /**< no operation */
-#define AYT 246                 /**< are you there? */
-#define DONT 254                /**< you are not to use option */
-#define DO      253             /**< please, you use option */
-#define WONT 252                /**< I won't use option */
-#define WILL    251             /**< I will use option */
-#define SB      250             /**< interpret as subnegotiation */
-#define SE      240             /**< end sub negotiation */
-#define TN_SGA 3                /**< Suppress go-ahead */
-#define TN_LINEMODE 34          /**< Line mode */
-#define TN_NAWS 31              /**< Negotiate About Window Size */
-#define TN_TTYPE 24             /**< Ask for termial type information */
-#define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
-#define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
-#define MSSP_VAR 1              /**< MSSP option name */
-#define MSSP_VAL 2              /**< MSSP option value */
-#define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
-#define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
-#define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
-#define TN_GMCP 201 /**< Generic MUD Communication Protocol; see http://www.gammon.com.au/gmcp */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -2178,7 +2157,25 @@ welcome_user(DESC *d, int telnet)
 static void
 save_command(DESC *d, const char *command)
 {
-  add_to_queue(&d->input, command, strlen(command) + 1);
+  if (d->conn_flags & CONN_UTF8) {
+    const char *latin1;
+    
+    if (!valid_utf8(command)) {
+      const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
+      // Expecting UTF-8, got something else!
+      queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
+      do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
+      return;
+    }
+    latin1 = utf8_to_latin1(command);
+    if (latin1) {
+      add_to_queue(&d->input, latin1, strlen(latin1) + 1);
+      mush_free(latin1, "string");
+    }
+  } else {  
+    add_to_queue(&d->input, command, strlen(command) + 1);
+  }
+
 }
 
 /** Send a telnet command to a descriptor to test for telnet support.
@@ -2310,8 +2307,8 @@ TELNET_HANDLER(telnet_charset)
 {
   /* Send a list of supported charsets for the client to pick.
    * Currently, we only offer the single charset the MUSH is
-   * currently running in (if known, and not "C" or "UTF-*"),
-   * and plain ol' ascii. */
+   * currently running in (if known, and not "C"),
+   * and UTF-8, and plain ol' ascii. */
   /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
   static const char reply_prefix[4] =
     { IAC, SB, TN_CHARSET, TN_SB_CHARSET_REQUEST };
@@ -2345,6 +2342,8 @@ TELNET_HANDLER(telnet_charset)
   }
 #endif                          /* HAVE_NL_LANGINFO */
   queue_newwrite(d, delim, 1);
+  queue_newwrite(d, "UTF-8", 5);
+  queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));
     queue_newwrite(d, delim, 1);
@@ -2367,6 +2366,7 @@ TELNET_HANDLER(telnet_charset)
     return;
 
   queue_newwrite(d, reply_prefix, 4);
+  queue_newwrite(d, ";UTF-8", 6);
   queue_newwrite(d, ";ISO-8859-1", 11);
   queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
   queue_newwrite(d, reply_suffix, 2);
@@ -2389,7 +2389,13 @@ TELNET_HANDLER(telnet_charset_sb)
   }
   if (!strcasecmp(cmd, "US-ASCII") || !strcasecmp(cmd, "ASCII")) {
     /* ascii requested; strip accents for the connection */
+    do_rawlog(LT_CONN, "Descriptor %d using charset ASCII.", d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
+  }
+  if (strcasecmp(cmd, "UTF-8") == 0) {
+    /* Send and receive UTF-8, translate to latin-1 */
+    do_rawlog(LT_CONN, "Descriptor %d using charset UTF-8.", d->descriptor);
+    d->conn_flags |= CONN_UTF8;
   }
 }
 

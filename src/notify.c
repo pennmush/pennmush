@@ -73,6 +73,7 @@
 #include "pueblo.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "charconv.h"
 
 extern CHAN *channels;
 
@@ -1786,9 +1787,18 @@ queue_newwrite(DESC *d, const char *b, int n)
 {
   int space;
 
+  const char *utf8 = NULL;
+  
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;
 
+  if (d->conn_flags & CONN_UTF8) {
+    int utf8bytes = 0;
+    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
+    b = utf8;
+    n = utf8bytes;
+  }
+  
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing
        directly to the socket. Add whatever's left to the buffer to
@@ -1798,8 +1808,11 @@ queue_newwrite(DESC *d, const char *b, int n)
     if ((written = send(d->descriptor, b, n, 0)) > 0) {
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
       d->output_chars += written;
-      if (written == n)
+      if (written == n) {
+	if (utf8)
+	  mush_free(utf8, "string");
         return written;
+      }
       n -= written;
       b += written;
     } else if (written < 0) {
@@ -1808,6 +1821,8 @@ queue_newwrite(DESC *d, const char *b, int n)
                 written, strerror(errno), n, d->descriptor);
       if (!is_blocking_err(written)) {
         d->conn_flags |= CONN_SOCKET_ERROR;
+	if (utf8)
+	  mush_free(utf8, "string");
         return 0;
       }
     } else {                    /* written == 0 */
@@ -1835,6 +1850,8 @@ queue_newwrite(DESC *d, const char *b, int n)
   }
   add_to_queue(&d->output, b, n);
   d->output_size += n;
+  if (utf8)
+    mush_free(utf8, "string");
   return n;
 }
 

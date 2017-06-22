@@ -332,6 +332,9 @@ struct text_queue {
 /** Negotiated GMCP via Telnet */
 #define CONN_GMCP 0x2000
 
+/** Sending and receiving UTF-8 */
+#define CONN_UTF8 0x4000
+
 /** Maximum \@doing length */
 #define DOING_LEN 40
 

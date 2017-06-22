@@ -90,4 +90,27 @@ extern BOOL GetErrorMessage(const DWORD dwError, LPTSTR lpszError, const UINT
                             nMaxError);
 #endif
 
+/* Telnet codes. Consider using <arpa/telnet.h> instead? */
+#define IAC 255                 /**< interpret as command: */
+#define NOP 241                 /**< no operation */
+#define AYT 246                 /**< are you there? */
+#define DONT 254                /**< you are not to use option */
+#define DO      253             /**< please, you use option */
+#define WONT 252                /**< I won't use option */
+#define WILL    251             /**< I will use option */
+#define SB      250             /**< interpret as subnegotiation */
+#define SE      240             /**< end sub negotiation */
+#define TN_SGA 3                /**< Suppress go-ahead */
+#define TN_LINEMODE 34          /**< Line mode */
+#define TN_NAWS 31              /**< Negotiate About Window Size */
+#define TN_TTYPE 24             /**< Ask for termial type information */
+#define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
+#define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
+#define MSSP_VAR 1              /**< MSSP option name */
+#define MSSP_VAL 2              /**< MSSP option value */
+#define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
+#define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
+#define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
+#define TN_GMCP 201 /**< Generic MUD Communication Protocol; see http://www.gammon.com.au/gmcp */
+
 #endif                          /* MYSOCKET_H */

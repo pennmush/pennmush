@@ -721,6 +721,8 @@ See also: LINK_OK, ABODE, @link
     Breaker has arrived.
     Welcome Mat says, "Welcome, Breaker!"
 
+  To trigger an object's @listen, you must pass its @lock/listen.
+
   Continued in 'help listening2'.
 & ^
 & ^-LISTENS
@@ -739,6 +741,8 @@ See also: LINK_OK, ABODE, @link
     Welcome Mat says as Grimlock leaves, "Bye!"
 
   Such attributes can also be @triggered as if the ^<pattern>: did not exist.
+  
+  In order to trigger an object's ^-listen patterns, you must pass BOTH its @lock/use and its @lock/listen.
 
   Continued in 'help listening3'.
 & LISTENING3

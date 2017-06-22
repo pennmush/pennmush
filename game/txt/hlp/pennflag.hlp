@@ -323,6 +323,8 @@ See also: MONIKERS, @moniker, moniker()
 
   If using the LISTEN Attribute Tree, you must set the Root Attribute !NO_COMMAND. By default this Attribute/Attribute Root has been set NO_COMMAND by the system. Attributes which are set NO_COMMAND will not be checked for ^-listen patterns.
   
+  In order to trigger an object's ^-listen patterns, you must pass both its @lock/use and its @lock/listen.
+
   This flag used to allow players to hear when someone connected to the game, but that is now controlled by the HEAR_CONNECT flag.  
   
 See also: LISTENING, @listen, LISTEN_PARENT, HEAR_CONNECT

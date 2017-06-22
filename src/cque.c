@@ -30,6 +30,10 @@
 #include <emmintrin.h>
 #endif
 
+#ifdef HAVE_SSSE3
+#include <tmmintrin.h>
+#endif
+
 #include "ansi.h"
 #include "attrib.h"
 #include "case.h"
@@ -2525,12 +2529,20 @@ average32(const int32_t *nums, int len)
   totals1 = _mm_add_epi32(totals1, totals3);
 
   /* And sum the sums */
+#ifdef HAVE_SSSE3
+  /* SSSE3 version */
+  totals1 = _mm_hadd_epi32(totals1, zero);
+  totals1 = _mm_hadd_epi32(totals1, zero);
+  total = _mm_cvtsi128_si32(totals1);
+#else
+  /* SSE2 version */
   totals2 = _mm_shuffle_epi32(totals1, _MM_SHUFFLE(1, 0, 3, 2));
   totals1 = _mm_add_epi32(totals1, totals2);
   totals2 = _mm_shuffle_epi32(totals1, _MM_SHUFFLE(2, 3, 0, 1));
   totals1 = _mm_add_epi32(totals1, totals2);
   total = _mm_cvtsi128_si32(totals1);
-
+#endif
+  
   /* Sum up the remaining trailing elements */
   for (; n < len; n += 1)
     total += nums[n];

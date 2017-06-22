@@ -32,6 +32,7 @@ Minor changes:
  * The 'buy' command now pays the vendor, rather than the money disappearing into a black hole. Suggested by moniker, patch by CLDawes. [1128]
  * Help changes by Xperta, Trinsec, Elwyndas and others. [MG]
  * MySQL Stored Procedures should now work without causing 'Out of sync' errors. Patch by Mercutio. [1100]
+ * Use a better seed for the RNG on Windows. [SW]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

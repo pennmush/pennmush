@@ -10,6 +10,7 @@
 
 #include <string.h>
 
+#include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
 #include "dbdefs.h"
@@ -217,12 +218,13 @@ FUNCTION(fun_ufun)
   int flags = UFUN_OBJECT;
   PE_REGS *pe_regs;
   int i;
-
+  char *stripped = remove_markup(args[0], NULL);
+  
   if (!strcmp(called_as, "ULAMBDA")) {
     flags |= UFUN_LAMBDA;
   }
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, flags)) {
+  if (!fetch_ufun_attrib(stripped, executor, &ufun, flags)) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }

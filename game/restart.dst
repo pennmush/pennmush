@@ -8,10 +8,11 @@ SCRIPTPATH="$0"
 while [ -h "$SCRIPTPATH" ]; do
   SCRIPTPATH=$(readlink "$SCRIPTPATH")
 done
+SCRIPTPATH=$(dirname "$SCRIPTPATH")
 
 # REQUIRED if the autodetect fails: set GAMEDIR to point to your game directory,
 # e.g. /home/mush/game.
-GAMEDIR=$(cd "$(dirname \"$SCRIPTPATH\")" && pwd)
+GAMEDIR=$(cd "$SCRIPTPATH" && pwd)
 
 # OPTIONAL things that you may want to tweak.
 

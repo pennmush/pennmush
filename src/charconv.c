@@ -10,6 +10,10 @@
 #include "mysocket.h"
 #include "log.h"
 
+#ifdef HAVE_SSE2
+#include <emmintrin.h>
+#endif
+
 /**
  * Convert a latin-1 encoded string to utf-8.
  *
@@ -28,6 +32,21 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
   const unsigned char *s = (const unsigned char *)latin;
   
   for (int n = 0; n < len; n += 1) {
+
+#ifdef HAVE_SSE2
+    if ((len - n) >= 16) {
+      __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
+      unsigned int eightbits = _mm_movemask_epi8(chunk);
+      /* For best results on CPUs with popcount instructions, compile
+         with appropriate -march=XXX setting or -mpopcount */
+      int set = __builtin_popcount(eightbits);
+      bytes += set * 2;
+      bytes += 16 - set;
+      n += 15;
+      continue;
+    }
+#endif
+    
     if (s[n] < 128)
       bytes += 1;
     else
@@ -44,6 +63,21 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
   } while (0)
   
   for (int n = 0; n < len; n += 1) {
+
+#ifdef HAVE_SSE2
+    // Copy a chunk of 16 ascii characters all at once
+    if ((len - n) >= 16) {
+      __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
+      if (_mm_movemask_epi8(chunk) == 0) {
+	_mm_storeu_si128((__m128i *)u, chunk);
+	n += 15; // + 1 in for loop
+	u += 16;
+	outbytes += 16;
+	continue;
+      }
+    }
+#endif
+    
     if (telnet && s[n] == IAC) {
       /* Single IAC is the start of a telnet sequence. Double IAC IAC is
        * an escape for a single byte. Either way it should never appear
@@ -98,12 +132,15 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
  * Convert a UTF-8 encoded string to Latin-1
  * 
  * \param utf8 a valid utf-8 string
+ * \param outlen the length of the returned string including trailing nul
  * \return a newly allocated latin-1 string
  */
 char*
-utf8_to_latin1(const char *utf8) {
+utf8_to_latin1(const char *utf8, int *outlen) {
   const unsigned char *u = (const unsigned char *)utf8;
   int bytes = 1;
+  int ulen = 0;
+  int n;
   
   while (*u) {
     if (*u < 128) {
@@ -114,36 +151,53 @@ utf8_to_latin1(const char *utf8) {
       bytes += 1;
     }
     u += 1;
+    ulen += 1;
   }
 
+  if (outlen)
+    *outlen = bytes;
+  
   char *s = mush_malloc(bytes, "string");
   unsigned char *p = (unsigned char *)s;
-  u = (const unsigned char *)utf8;
-
   unsigned char output = 0;
   
-  while (*u) {
-    if (*u < 128) {
-      *p++ = *u++;
-    } else if ((*u & 0xE0) == 0xC0) {
-      if ((*u & 0x1F) <= 0x03) {
-	output = *u << 6;
-	u++;
+  for (n = 0; n < ulen;) {
+
+#ifdef HAVE_SSE2
+    // Copy a block of 16 ascii characters all at once.
+    if ((ulen - n) >= 16) {
+      __m128i chunk = _mm_loadu_si128((__m128i *)(utf8 + n));
+      if (_mm_movemask_epi8(chunk) == 0) {
+	_mm_storeu_si128((__m128i *)p, chunk);
+	n += 16;
+	p += 16;
+	continue;
+      }
+    }
+#endif
+    
+    if (utf8[n] < 128) {
+      *p++ = utf8[n];
+      n += 1;
+    } else if ((utf8[n] & 0xE0) == 0xC0) {
+      if ((utf8[n] & 0x1F) <= 0x03) {
+	output = utf8[n] << 6;
+	n += 1;
       } else {
 	*p++ = '?';
-	u += 2;
+	n += 2;
       }
-    } else if ((*u & 0xC0) == 0x80) {
-      output = output | (*u & 0x3F);
+    } else if ((utf8[n] & 0xC0) == 0x80) {
+      output = output | (utf8[n] & 0x3F);
       *p++ = output;
       output = 0;
-      u++;
-    } else if ((*u & 0xF8) == 0xF0) {
+      n += 1;
+    } else if ((utf8[n] & 0xF8) == 0xF0) {
       *p++ = '?';
-      u += 4;
-    } else if ((*u & 0xF0) == 0xE0) {
+      n += 4;
+    } else if ((utf8[n] & 0xF0) == 0xE0) {
       *p++ = '?';
-      u += 3;
+      n += 3;
     }
   }
   

@@ -169,7 +169,7 @@ FUNCTION(fun_art)
   }
   c = DOWNCASE(*args[0]);
   if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
-    safe_str("an", buff, bp);
+    safe_strl("an", 2, buff, bp);
   else
     safe_chr('a', buff, bp);
 }

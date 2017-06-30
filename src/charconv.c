@@ -30,15 +30,17 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
   int outbytes = 0;
   
   const unsigned char *s = (const unsigned char *)latin;
-  
+
+  /* Compute the number of bytes in the output string */
   for (int n = 0; n < len; n += 1) {
 
 #ifdef HAVE_SSE2
+    /* Handle a chunk of 16 chars all together */
     if ((len - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
       unsigned int eightbits = _mm_movemask_epi8(chunk);
       /* For best results on CPUs with popcount instructions, compile
-         with appropriate -march=XXX setting or -mpopcount */
+         with appropriate -march=XXX setting or -mpopcnt */
       int set = __builtin_popcount(eightbits);
       bytes += set * 2;
       bytes += 16 - set;
@@ -109,6 +111,11 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
 	n += 1;
 	outbytes += 3;
 	break;
+      case NOP:
+	*u++ = IAC;
+	*u++ = NOP;
+	outbytes += 2;
+	break;
       default:
 	/* This should never be reached. */
 	do_rawlog(LT_ERR, "Invalid telnet sequence character %X", s[n]);
@@ -164,7 +171,7 @@ utf8_to_latin1(const char *utf8, int *outlen) {
   for (n = 0; n < ulen;) {
 
 #ifdef HAVE_SSE2
-    // Copy a block of 16 ascii characters all at once.
+    // Copy a chunk of 16 ascii characters all at once.
     if ((ulen - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *)(utf8 + n));
       if (_mm_movemask_epi8(chunk) == 0) {

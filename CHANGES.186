@@ -19,6 +19,7 @@ Fixes:
  * Fix overflow bug in mapsql(). [MG]
  * elements() would very rarely give an extra delimiter. Reported by Ashen-Shugar. [1108-MG]
  * Missing null termination in 'buy' fixed by CLDawes. [1128]
+ * Strip markup from u()'s first argument (obj/attrib) before attempting to find and parse it. Patch by Qon.
 
 Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush

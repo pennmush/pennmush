@@ -1536,6 +1536,7 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
              ("CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."));
       return 1;
     }
+    /* FALLTHRU */
   case CMATCH_EXACT:
   case CMATCH_PARTIAL:
     do_chat(player, c, msg);

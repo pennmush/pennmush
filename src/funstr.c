@@ -1868,6 +1868,7 @@ align_one_line(char *buff, char **bp, int ncols,
         }
         break;
       }
+      /* FALLTHRU */
     default:                   /* Left-align */
       safe_str(segment, line, &lp);
       /* Don't fill if we're set NOFILL */

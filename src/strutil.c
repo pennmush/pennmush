@@ -1408,20 +1408,28 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
     case 0:
       while (current < stack + sizeof(stack)) {
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 7:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 6:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 5:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 4:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 3:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 2:
         *((*bp)++) = *(current++);
+	/* Fall through */
     case 1:
         *((*bp)++) = *(current++);
+	/* Fall through */
       }
     }
   } else {

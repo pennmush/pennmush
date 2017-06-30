@@ -1390,7 +1390,7 @@ define_ansi_data(ansi_data *store, const char *str)
           }
           break;
         }
-        /* Fall through on other numbers starting with 0 */
+        /* fall through - on other numbers starting with 0 */
       case '1':
       case '2':
       case '3':

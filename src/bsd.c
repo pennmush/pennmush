@@ -3794,7 +3794,7 @@ process_commands(void)
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
-          /* Fall through to free input buffer */
+          /* Falls through - to free input buffer */
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)

@@ -149,7 +149,6 @@ real_atr_wild(const char *restrict tstr,
       /* Delimiter match.  Special handling if at end of pattern. */
       if (sep != '`') {
         tstr--;
-        /* FALL THROUGH */
       } else {
         if (*dstr != sep)
           return 0;
@@ -157,6 +156,7 @@ real_atr_wild(const char *restrict tstr,
           return !strchr(dstr + 1, sep);
         break;
       }
+      /* FALL THROUGH */
     case '\\':
       /* Escape character.  Move up, and force literal
        * match of next character.
@@ -314,12 +314,14 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
     case '\\':
       /* Literal match of the next character, which may be a * or ?. */
       pi++;
+      /* Fall through */
     default:
       if (str[sbase + i] == pat[pbase + pi]) {
         pi++;
         i++;
         break;
       }
+      /* Fall through */
     case 0:                    /* Pattern is too short to match */
       /* If we're dealing with a glob, advance it by 1 character. */
       if (globbing) {

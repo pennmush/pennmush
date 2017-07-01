@@ -702,6 +702,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -738,6 +739,7 @@ enable_ssl_slave
 enable_sse2
 enable_sse3
 enable_ssse3
+enable_sse42
 enable_altivec
 '
       ac_precious_vars='build_alias
@@ -794,6 +796,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1046,6 +1049,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1183,7 +1195,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1336,6 +1348,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1379,6 +1392,8 @@ Optional Features:
                           SSE3)
   --enable-ssse3          Use SSSE3 instructions (Requires a CPU that supports
                           SSSE3)
+  --enable-sse42          Use SSE4.2 instructions (Requires a CPU that
+                          supports SSE 4.2)
   --enable-altivec        Use PowerPC Altivec instructions (Requires a CPU
                           that supports Altivec)
 
@@ -8806,24 +8821,33 @@ if test "${enable_ssse3+set}" = set; then :
   enableval=$enable_ssse3;
 fi
 
+# Check whether --enable-sse42 was given.
+if test "${enable_sse42+set}" = set; then :
+  enableval=$enable_sse42;
+fi
+
 # Check whether --enable-altivec was given.
 if test "${enable_altivec+set}" = set; then :
   enableval=$enable_altivec;
 fi
 
 
+if test "$enable_sse42" = yes; then
+   $as_echo "#define HAVE_SSE42 1" >>confdefs.h
+
+   CFLAGS="$CFLAGS -msse4.2"
+fi
+
 if test "$enable_ssse3" = yes; then
    $as_echo "#define HAVE_SSSE3 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -mssse3"
-   enable_sse3=yes
 fi
 
 if test "$enable_sse3" = yes; then
    $as_echo "#define HAVE_SSE3 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -msse3"
-   enable_sse2=yes
 fi
 
 if test "$enable_sse2" = yes; then
@@ -8884,8 +8908,6 @@ if test "$enable_ipv6" = yes; then
 else
   echo "* Sockets are limited to IPv4"
 fi
-
-
 
 ac_config_files="$ac_config_files Makefile src/Makefile"
 

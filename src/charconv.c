@@ -11,7 +11,12 @@
 #include "log.h"
 
 #ifdef HAVE_SSE2
+#include <string.h>
 #include <emmintrin.h>
+#endif
+
+#ifdef HAVE_SSE42
+#include <nmmintrin.h>
 #endif
 
 /**
@@ -21,7 +26,7 @@
  * \param s the latin-1 string.
  * \param latin the length of the string.
  * \param outlen the number of bytes of the returned string, NOT counting the trailing nul.
- * \param telnet true if we should skip telnet escape sequences.
+ * \param telnet true if we should handle telnet escape sequences.
  * \return a newly allocated utf-8 string.
  */
 char *
@@ -31,8 +36,28 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
   
   const unsigned char *s = (const unsigned char *)latin;
 
+#ifdef HAVE_SSE42
+  __m128i zeros = _mm_setzero_si128();
+  const char ar[16] __attribute__((aligned(16))) = { 0x01, 0x7F };
+  __m128i ascii_range = _mm_load_si128((__m128i *)ar);
+#endif
+  
   /* Compute the number of bytes in the output string */
-  for (int n = 0; n < len; n += 1) {
+  for (int n = 0; n < len;) {
+
+#ifdef HAVE_SSE42
+    __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
+    int eos = _mm_cmpistri(zeros, chunk, 
+			   _SIDD_UBYTE_OPS + _SIDD_CMP_EQUAL_EACH
+			   + _SIDD_LEAST_SIGNIFICANT);
+    int ascii = _mm_movemask_epi8(_mm_cmpistrm(ascii_range, chunk,
+					       _SIDD_UBYTE_OPS
+					       + _SIDD_CMP_RANGES));
+    ascii = _mm_popcnt_u32(ascii); // Assume that SSE4.2 means popcnt too
+    bytes += ascii;
+    bytes += 2 * (eos - ascii);
+    n += eos;
+#else
 
 #ifdef HAVE_SSE2
     /* Handle a chunk of 16 chars all together */
@@ -40,11 +65,12 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
       __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
       unsigned int eightbits = _mm_movemask_epi8(chunk);
       /* For best results on CPUs with popcount instructions, compile
-         with appropriate -march=XXX setting or -mpopcnt */
+         with appropriate -march=XXX setting or -mpopcnt. But those
+         have SSE4.2 which is better yet.  */
       int set = __builtin_popcount(eightbits);
       bytes += set * 2;
       bytes += 16 - set;
-      n += 15;
+      n += 16;
       continue;
     }
 #endif
@@ -53,6 +79,8 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
       bytes += 1;
     else
       bytes += 2;
+    n += 1;
+#endif
   }
 
   unsigned char *utf8 = mush_malloc(bytes, "string");
@@ -63,19 +91,68 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
     *u++ = 0xC0 | (c >> 6); \
     *u++ = 0x80 | (c & 0x3F); \
   } while (0)
-  
-  for (int n = 0; n < len; n += 1) {
 
-#ifdef HAVE_SSE2
-    // Copy a chunk of 16 ascii characters all at once
+  
+  for (int n = 0; n < len; ) {
+
+#if defined(HAVE_SSE42)
+    // Use SSE4.2 instructions to find the first 8 bit character and
+    // copy everything before that point in a chunk. Faster than the
+    // SSE2 version that follows.
+
+    __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
+    int eos = _mm_cmpistri(zeros, chunk, 
+			   _SIDD_UBYTE_OPS + _SIDD_CMP_EQUAL_EACH
+			   + _SIDD_LEAST_SIGNIFICANT);
+    int nonascii = _mm_cmpistri(ascii_range, chunk,
+				_SIDD_UBYTE_OPS + _SIDD_CMP_RANGES
+				+ _SIDD_NEGATIVE_POLARITY
+				+ _SIDD_LEAST_SIGNIFICANT);
+    //printf("For fragment '%.16s': n=%d, nonascii=%d, eos=%d\n",
+    //s + n, n, nonascii, eos);
+    if (nonascii == 16 && eos == 16) {
+      //puts("Copying complete chunk");
+      _mm_storeu_si128((__m128i *)u, chunk);
+      n += 16;
+      u += 16;
+      outbytes += 16;
+      continue;
+    } else if (nonascii == 1) {
+      //puts("Copying single leading ascii char");
+      *u++ = s[n++];
+      outbytes += 1;
+      continue;
+    } else if (nonascii > 0) {
+      //puts("Copying partial chunk");
+      int nlen = nonascii;
+      memcpy(u, s + n, nlen);
+      n += nlen;
+      u += nlen;
+      outbytes += nlen;
+      if (n >= len)
+	break;
+    }
+
+#elif defined(HAVE_SSE2)
+
     if ((len - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
-      if (_mm_movemask_epi8(chunk) == 0) {
+      int nonascii = ffs(_mm_movemask_epi8(chunk));
+      if (nonascii == 0) {
+	// Copy a chunk of 16 ascii characters all at once
 	_mm_storeu_si128((__m128i *)u, chunk);
-	n += 15; // + 1 in for loop
+	n += 16;
 	u += 16;
 	outbytes += 16;
 	continue;
+      } else if (nonascii > 1) {
+	// Copy up to the first 8 bit character and process it in the
+	// rest of the loop.
+	nonascii -= 1;
+	memcpy(u, s + n, nonascii);
+	n += nonascii;
+	u += nonascii;
+	outbytes += nonascii;
       }
     }
 #endif
@@ -88,6 +165,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
       switch (s[n]) {
       case IAC:
 	ENCODE_CHAR(u, IAC);
+	n += 1;
 	outbytes += 2;
 	break;
       case SB:
@@ -99,6 +177,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
 	  n += 1;
 	}
 	*u++ = SE;
+	n += 1;
 	outbytes += 1;
 	break;
       case DO:
@@ -108,12 +187,13 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
 	*u++ = IAC;
 	*u++ = s[n];
 	*u++ = s[n + 1];
-	n += 1;
+	n += 2;
 	outbytes += 3;
 	break;
       case NOP:
 	*u++ = IAC;
 	*u++ = NOP;
+	n += 1;
 	outbytes += 2;
 	break;
       default:
@@ -121,10 +201,11 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
 	do_rawlog(LT_ERR, "Invalid telnet sequence character %X", s[n]);
       }
     } else if (s[n] < 128) {
-      *u++ = s[n];
+      *u++ = s[n++];
       outbytes += 1;
     } else {
       ENCODE_CHAR(u, s[n]);
+      n += 1;
       outbytes += 2;
     }
   }
@@ -148,7 +229,15 @@ utf8_to_latin1(const char *utf8, int *outlen) {
   int bytes = 1;
   int ulen = 0;
   int n;
+
+#ifdef HAVE_SSE42
+  const char maskarray[16] __attribute__((aligned(16))) = {
+    0x1, 0x7F,
+  };
+  __m128i mask = _mm_load_si128((__m128i *) maskarray);
   
+  
+#else
   while (*u) {
     if (*u < 128) {
       bytes += 1;
@@ -160,25 +249,77 @@ utf8_to_latin1(const char *utf8, int *outlen) {
     u += 1;
     ulen += 1;
   }
-
+#endif
+  
   if (outlen)
     *outlen = bytes;
   
   char *s = mush_malloc(bytes, "string");
   unsigned char *p = (unsigned char *)s;
-  unsigned char output = 0;
-  
+
+#ifdef HAVE_SSE42
+  __m128i zeros = _mm_setzero_si128();
+  const char ar[16] __attribute__((aligned(16))) = { 0x01, 0x7F };
+  __m128i ascii_range = _mm_load_si128((__m128i *)ar);
+#endif
+
   for (n = 0; n < ulen;) {
 
-#ifdef HAVE_SSE2
-    // Copy a chunk of 16 ascii characters all at once.
+#if defined(HAVE_SSE42)
+    // Use SSE4.2 instructions to find the first 8 bit character and
+    // copy everything before that point in a chunk. Faster than the
+    // SSE2 version that follows.
+
+    __m128i chunk = _mm_loadu_si128((__m128i *)(utf8 + n));
+    int eos = _mm_cmpistri(zeros, chunk, 
+			   _SIDD_UBYTE_OPS + _SIDD_CMP_EQUAL_EACH
+			   + _SIDD_LEAST_SIGNIFICANT);
+    int nonascii = _mm_cmpistri(ascii_range, chunk,
+				_SIDD_UBYTE_OPS + _SIDD_CMP_RANGES
+				+ _SIDD_NEGATIVE_POLARITY
+				+ _SIDD_LEAST_SIGNIFICANT);
+    //    printf("For fragment '%.16s': n=%d, nonascii=%d, eos=%d\n",
+    //	   utf8 + n, n, nonascii, eos);
+    if (nonascii == 16 && eos == 16) {
+      //puts("Copying complete chunk");
+      _mm_storeu_si128((__m128i *)p, chunk);
+      n += 16;
+      p += 16;
+      continue;
+    } else if (nonascii == 1) {
+      //puts("Copying single leading ascii char");
+      *p++ = utf8[n++];
+      continue;
+    } else if (nonascii > 0) {
+      //puts("Copying partial chunk");
+      int len = nonascii;
+      memcpy(p, utf8 + n, len);
+      n += len;
+      p += len;
+      if (n >= ulen)
+	break;
+    }
+
+#elif defined(HAVE_SSE2)
+    
     if ((ulen - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *)(utf8 + n));
-      if (_mm_movemask_epi8(chunk) == 0) {
+      int nonascii = ffs(_mm_movemask_epi8(chunk));
+      if (nonascii == 0) {
+	// Copy a chunk of 16 ascii characters all at once.
 	_mm_storeu_si128((__m128i *)p, chunk);
 	n += 16;
 	p += 16;
 	continue;
+      } else if (nonascii > 1) {
+	// Copy up to the first 8 bit character and process it in the
+	// rest of the loop.
+	nonascii -= 1;
+	memcpy(p, utf8 + n, nonascii);
+	n += nonascii;
+	p += nonascii;
+	if (n >= ulen)
+	  break;
       }
     }
 #endif
@@ -188,17 +329,15 @@ utf8_to_latin1(const char *utf8, int *outlen) {
       n += 1;
     } else if ((utf8[n] & 0xE0) == 0xC0) {
       if ((utf8[n] & 0x1F) <= 0x03) {
-	output = utf8[n] << 6;
+	unsigned char output = utf8[n] << 6;
+	n += 1;
+	output |= utf8[n] & 0x3F;
+	*p++ = output;
 	n += 1;
       } else {
 	*p++ = '?';
 	n += 2;
       }
-    } else if ((utf8[n] & 0xC0) == 0x80) {
-      output = output | (utf8[n] & 0x3F);
-      *p++ = output;
-      output = 0;
-      n += 1;
     } else if ((utf8[n] & 0xF8) == 0xF0) {
       *p++ = '?';
       n += 4;

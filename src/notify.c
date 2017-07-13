@@ -1787,16 +1787,16 @@ queue_newwrite(DESC *d, const char *b, int n)
 {
   int space;
 
-  const char *utf8 = NULL;
+  const char *latin1 = NULL;
   
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;
 
-  if (d->conn_flags & CONN_UTF8) {
-    int utf8bytes = 0;
-    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
-    b = utf8;
-    n = utf8bytes;
+  if (!(d->conn_flags & CONN_UTF8)) {
+    size_t latin1bytes = 0;
+    latin1 = utf8_to_latin1(b, &latin1bytes, d->conn_flags & CONN_TELNET);
+    b = latin1;
+    n = latin1bytes;
   }
   
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
@@ -1809,8 +1809,8 @@ queue_newwrite(DESC *d, const char *b, int n)
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
       d->output_chars += written;
       if (written == n) {
-	if (utf8)
-	  mush_free(utf8, "string");
+	if (latin1)
+	  mush_free(latin1, "string");
         return written;
       }
       n -= written;
@@ -1821,8 +1821,8 @@ queue_newwrite(DESC *d, const char *b, int n)
                 written, strerror(errno), n, d->descriptor);
       if (!is_blocking_err(written)) {
         d->conn_flags |= CONN_SOCKET_ERROR;
-	if (utf8)
-	  mush_free(utf8, "string");
+	if (latin1)
+	  mush_free(latin1, "string");
         return 0;
       }
     } else {                    /* written == 0 */
@@ -1850,8 +1850,8 @@ queue_newwrite(DESC *d, const char *b, int n)
   }
   add_to_queue(&d->output, b, n);
   d->output_size += n;
-  if (utf8)
-    mush_free(utf8, "string");
+  if (latin1)
+    mush_free(latin1, "string");
   return n;
 }
 

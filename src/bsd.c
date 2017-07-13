@@ -71,6 +71,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+
+#include <unistr.h>
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -2158,23 +2161,28 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    const char *latin1;
-    int len;
+    size_t len = strlen(command) + 1;
     
-    if (!valid_utf8(command)) {
+    if (u8_check((uint8_t *)command, len)) {
       const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
       // Expecting UTF-8, got something else!
       queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
       do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
       return;
     }
-    latin1 = utf8_to_latin1(command, &len);
-    if (latin1) {
-      add_to_queue(&d->input, latin1, len);
-      mush_free(latin1, "string");
-    }
-  } else {  
-    add_to_queue(&d->input, command, strlen(command) + 1);
+
+    size_t normlen;
+    char *normalized = normalized_utf8(command, len, &normlen);
+    add_to_queue(&d->input, normalized, normlen);
+    mush_free(normalized, "string");
+  } else {
+    size_t inlen, outlen;
+    const char *utf8;
+
+    inlen = strlen(command);
+    utf8 = latin1_to_utf8(command, inlen, &outlen, false);
+    add_to_queue(&d->input, utf8, outlen + 1);
+    mush_free(utf8, "string");
   }
 
 }

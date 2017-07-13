@@ -5,7 +5,12 @@
  */
 
 #include "copyrite.h"
+
+#include <unistr.h>
+#include <uninorm.h>
+
 #include "mymalloc.h"
+#include "memcheck.h"
 #include "charconv.h"
 #include "mysocket.h"
 #include "log.h"
@@ -30,9 +35,9 @@
  * \return a newly allocated utf-8 string.
  */
 char *
-latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
-  int bytes = 1;
-  int outbytes = 0;
+latin1_to_utf8(const char *latin, size_t len, size_t *outlen, bool telnet) {
+  size_t bytes = 1;
+  size_t outbytes = 0;
   
   const unsigned char *s = (const unsigned char *)latin;
 
@@ -43,7 +48,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
 #endif
   
   /* Compute the number of bytes in the output string */
-  for (int n = 0; n < len;) {
+  for (size_t n = 0; n < len;) {
 
 #ifdef HAVE_SSE42
     __m128i chunk = _mm_loadu_si128((__m128i *)(s + n));
@@ -93,7 +98,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
   } while (0)
 
   
-  for (int n = 0; n < len; ) {
+  for (size_t n = 0; n < len; ) {
 
 #if defined(HAVE_SSE42)
     // Use SSE4.2 instructions to find the first 8 bit character and
@@ -210,9 +215,15 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
     }
   }
   *u = '\0';
+
+  size_t normlen;
+  char *normalized = normalized_utf8((char *)utf8, outbytes, &normlen);
+  mush_free(utf8, "string");
+
   if (outlen)
-    *outlen = outbytes;
-  return (char *)utf8;
+    *outlen = normlen;
+
+  return normalized;
 #undef ENCODE_CHAR
 }
 
@@ -221,46 +232,45 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
  * 
  * \param utf8 a valid utf-8 string
  * \param outlen the length of the returned string including trailing nul
+ * \param telnet true to handle telnet escape sequences
  * \return a newly allocated latin-1 string
  */
 char*
-utf8_to_latin1(const char *utf8, int *outlen) {
+utf8_to_latin1(const char *utf8, size_t *outlen, bool telnet) {
   const unsigned char *u = (const unsigned char *)utf8;
-  int bytes = 1;
-  int ulen = 0;
-  int n;
-
-#ifdef HAVE_SSE42
-  __m128i zeros = _mm_setzero_si128();
-  const unsigned char maskarray[16] __attribute__((aligned(16))) = {
-    0x1, 0x7F, 0xC1, 0xDF, 0xE1, 0xEF, 0xF1, 0xF7
-  };
-  __m128i mask = _mm_load_si128((__m128i *) maskarray);
-  
-  while (1) {
-    __m128i chunk = _mm_loadu_si128((__m128i *) u);
-    int r = _mm_cvtsi128_si32(_mm_cmpistrm(mask, chunk, _SIDD_UBYTE_OPS +
-					       _SIDD_CMP_RANGES));
-    int chars = _mm_popcnt_u32(r);
-    bytes += chars;
-    int eos = _mm_cmpistri(zeros, chunk, _SIDD_UBYTE_OPS +
-			   _SIDD_CMP_EQUAL_EACH + _SIDD_LEAST_SIGNIFICANT);
-    //fprintf("Chunk '%.16s': chars = %d, eos = %d\n",
-    //	    u, chars, eos);
-    u += 16;
-    if (eos != 16) {
-      ulen += eos;
-      break;
-    } else {
-      ulen += 16;
-    }
-  }
-  
-#else
+  size_t bytes = 1;
+  size_t ulen = 0;
+  size_t n;
 
   while (*u) {
     if (*u < 128) {
       bytes += 1;
+    } else if (telnet && *u == IAC) {
+      bytes += 1;
+      u += 1;
+      switch (*u) {
+      case SB:
+	while (*u != SE) {
+	  u += 1;
+	  bytes += 1;	  
+	}
+	u += 1;
+	bytes += 1;
+	break;
+      case DO:
+      case DONT:
+      case WILL:
+      case WONT:
+	u += 2;
+	bytes += 2;
+	break;
+      case NOP:
+	u += 1;
+	bytes += 1;
+      default:
+	/* Shouldn't ever happen */
+	(void)0;
+      }
     } else if ((*u & 0xC0) == 0x80) {
       // Skip continuation bytes
     } else {
@@ -269,7 +279,6 @@ utf8_to_latin1(const char *utf8, int *outlen) {
     u += 1;
     ulen += 1;
   }
-#endif
   
   if (outlen)
     *outlen = bytes;
@@ -278,6 +287,7 @@ utf8_to_latin1(const char *utf8, int *outlen) {
   unsigned char *p = (unsigned char *)s;
 
 #ifdef HAVE_SSE42
+  __m128i zeros = _mm_setzero_si128();
   const char ar[16] __attribute__((aligned(16))) = { 0x01, 0x7F };
   __m128i ascii_range = _mm_load_si128((__m128i *)ar);
 #endif
@@ -344,14 +354,38 @@ utf8_to_latin1(const char *utf8, int *outlen) {
 #endif
     
     if (utf8[n] < 128) {
-      *p++ = utf8[n];
-      n += 1;
+      *p++ = utf8[n++];
+    } else if (telnet && utf8[n] == IAC) {
+      *p++ = utf8[n++];
+      switch (utf8[n]) {
+      case SB:
+	while (utf8[n] != SE) {
+	  *p++ = utf8[n++];
+	}
+	*p++ = utf8[n++];
+	break;
+      case DO:
+      case DONT:
+      case WILL:
+      case WONT:
+	*p++ = utf8[n++];
+	*p++ = utf8[n++];
+	break;
+      case NOP:
+	*p++ = utf8[n++];
+	break;
+      default:	
+	// Shouldn't happen.
+	(void)0;
+      }
     } else if ((utf8[n] & 0xE0) == 0xC0) {
       if ((utf8[n] & 0x1F) <= 0x03) {
 	unsigned char output = utf8[n] << 6;
 	n += 1;
 	output |= utf8[n] & 0x3F;
 	*p++ = output;
+	if (telnet && output == IAC) // Escape a literal 0xFF character
+	  *p++ = output;
 	n += 1;
       } else {
 	*p++ = '?';
@@ -377,36 +411,21 @@ utf8_to_latin1(const char *utf8, int *outlen) {
  */
 bool
 valid_utf8(const char *utf8) {
-  const unsigned char *u = (const unsigned char *)utf8;
+  size_t len = strlen(utf8);
+  return u8_check((uint8_t *)utf8, len) == NULL;
+}
 
-  int nconts = 0;
-  
-  while (*u) {
-    if (*u < 128) {
-      if (nconts)
-	return 0;
-    } else if ((*u & 0xF8) == 0xF0) {
-      if (nconts)
-	return 0;
-      nconts = 3;
-    } else if ((*u & 0xF0) == 0xE0) {
-      if (nconts)
-	return 0;
-      nconts = 2;
-    } else if ((*u & 0xE0) == 0xC0) {
-      if (nconts)
-	return 0;
-      nconts = 1;
-    } else if ((*u & 0xC0) == 0x80) {
-      if (nconts > 0)
-	nconts -= 1;
-      else
-	return 0;
-    } else {
-      return 0;
-    }
-    u += 1;
-  }
-
-  return nconts == 0;
+/**
+ * Normalize a utf-8 string.
+ * \param utf8 original string
+ * \param len length of string
+ * \param outlen pointer to save the length of the result in
+ * \return a newly allocated normalized string
+ */
+char *
+normalized_utf8(const char *utf8, size_t len, size_t *outlen) {
+  uint8_t *normalized = u8_normalize(UNINORM_NFC, (uint8_t *)utf8, len,
+				     NULL, outlen);
+  add_check("string");
+  return (char*)normalized;
 }

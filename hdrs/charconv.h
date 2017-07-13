@@ -5,7 +5,9 @@
 
 bool valid_utf8(const char *);
 
-char *latin1_to_utf8(const char *, int, int *, bool) __attribute_malloc__;
-char *utf8_to_latin1(const char *, int *) __attribute_malloc__;
+char* normalized_utf8(const char *, size_t, size_t *);
+
+char *latin1_to_utf8(const char *, size_t, size_t *, bool) __attribute_malloc__;
+char *utf8_to_latin1(const char *, size_t *, bool) __attribute_malloc__;
 
 #endif

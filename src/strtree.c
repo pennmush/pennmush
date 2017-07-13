@@ -135,6 +135,9 @@ st_stats(dbref player, StrTree *root, const char *name)
   unsigned long bytes;
   int maxdepth = 0, mindepth = 0, avgdepth = 0, leaves = 0;
 
+  if (!root)
+    return;
+
   bytes = (sizeof(StrNode) - BUFFER_LEN) * root->count + root->mem;
   st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves);
   notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu",

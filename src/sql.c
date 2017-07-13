@@ -783,10 +783,10 @@ FUNCTION(fun_mapsql)
     goto finished;
   }
 
-  if (numfields < MAX_STACK_ARGS)
+  if (numfields < (MAX_STACK_ARGS - 1))
     useable_fields = numfields;
   else
-    useable_fields = MAX_STACK_ARGS;
+    useable_fields = MAX_STACK_ARGS - 1;
 
   fieldnames = mush_calloc(sizeof(char *), useable_fields, "sql_fieldnames");
 
@@ -1177,8 +1177,20 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 static void
 penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
-  while (mysql_fetch_row(qres)) ;
+  while (mysql_fetch_row(qres));
   mysql_free_result(qres);
+  while (mysql_more_results(mysql_connp)) {
+    int affected_rows =  mysql_affected_rows(mysql_connp);
+    /*
+       We are assuming the first result is the only result we wanted. After all,
+       we do not support multi-query or multiple results.
+       As such, we're cleaning the rest up with empty strings - just so we can free
+       the remaining results from the structure.
+    */
+    qres = sql_query("", &affected_rows);
+    mysql_free_result(qres);
+    mysql_next_result(mysql_connp);
+  }
 }
 
 #endif

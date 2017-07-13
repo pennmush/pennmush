@@ -70,7 +70,7 @@ extern dbref first_free;        /* pointer to free list */
 #define IsExit(x)       ((Typeof(x) & TYPE_EXIT) == TYPE_EXIT)
 /* Was Destroyed() */
 #define IsGarbage(x)    ((Typeof(x) & TYPE_GARBAGE) == TYPE_GARBAGE)
-#define Marked(x)       ((db[(x)].type & TYPE_MARKED) == TYPE_MARKED)
+#define Marked(x)       ((Type(x) & TYPE_MARKED) == TYPE_MARKED)
 
 #define IS(thing,type,flag) \
                      ((Typeof(thing) == type) && has_flag_by_name(thing,flag,type))
@@ -81,8 +81,8 @@ extern dbref first_free;        /* pointer to free list */
 
 /******* Player toggles */
 #define Connected(x)    (IS(x, TYPE_PLAYER, "CONNECTED"))
-#define Track_Money(x)       (IS(x, TYPE_PLAYER, "TRACK_MONEY"))
-#define ZMaster(x)      (IS(x, TYPE_PLAYER, "ZONE"))
+#define Track_Money(x)  (IS(x, TYPE_PLAYER, "TRACK_MONEY"))
+#define ZMaster(x)      (IS(x, TYPE_PLAYER, "SHARED"))
 #define Unregistered(x) (IS(x, TYPE_PLAYER, "UNREGISTERED"))
 #define Fixed(x)        (IS(Owner(x), TYPE_PLAYER, "FIXED"))
 #define Vacation(x)     (IS(x, TYPE_PLAYER, "ON-VACATION"))
@@ -344,6 +344,8 @@ extern const char EOD[];
 #define AN_EXIT      0x400      /* only show monikers for exits */
 
 #define AN_ANNOUNCE  0x800      /* GAME: announcements to multiple players */
+
+#define AN_EVERYWHERE (AN_CHAT | AN_SAY | AN_MOVE | AN_LOOK | AN_UNPARSE | AN_WHO | AN_SYS | AN_ANNOUNCE)
 
 #define AN_TYPES (AN_PLAYER | AN_THING | AN_ROOM | AN_EXIT)
 

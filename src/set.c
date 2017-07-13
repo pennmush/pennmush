@@ -286,7 +286,8 @@ chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
       && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
     return 1;
 
-  if (ChownOk(thing) && (!IsThing(thing) || (Location(thing) == player)))
+  if ((!IsThing(thing) || (Location(thing) == player)) && ChownOk(thing) &&
+      eval_lock_with(player, thing, Chown_Lock, pe_info))
     return 1;
 
   return 0;
@@ -454,7 +455,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
     check_zone_lock(player, zone, noisy);
 
   /* Warn Wiz/Royals when they zone their stuff */
-  if ((zone != NOTHING) && Hasprivs(Owner(thing))) {
+  if ((zone != NOTHING) && Hasprivs(Owner(thing)) && !IsPlayer(thing)) {
     if (noisy)
       notify(player, T("Warning: @chzoning admin-owned object!"));
   }

@@ -1,4 +1,4 @@
-& 1.8.6p1
+& 1.8.6p2
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,7 +11,28 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.6 patchlevel 1                                 ??? ??, 2016
+Version 1.8.6 patchlevel 2                                 ??? ??, 20??
+
+Fixes:
+ * Fix compilation errors with OpenSSL 1.1. [SW]
+ * Fix overflow bug in mapsql(). [MG]
+ * elements() would very rarely give an extra delimiter. Reported by Ashen-Shugar. [1108-MG]
+ * Missing null termination in 'buy' fixed by CLDawes. [1128]
+
+Minor changes:
+ * Upgrade random number generator to SFMT 1.5.1. [SW]
+ * New @lock/chown controls who can @chown a CHOWN_OK object. Suggested by Frakir. [1127-MG]
+ * The 'buy' command now pays the vendor, rather than the money disappearing into a black hole. Suggested by moniker, patch by CLDawes. [1128]
+ * Help changes by Xperta, Trinsec, Elwyndas and others. [MG]
+ * MySQL Stored Procedures should now work without causing 'Out of sync' errors. Patch by Mercutio. [1100]
+
+& 1.8.6p1
+Version 1.8.6 patchlevel 1                                 Mar 29, 2017
+
+Major changes:
+ * Added some aliases for the MUX com system, including the addcom, delcom, comtitle, comlist and @clist commands. Enabled in mush.cnf. See 'help muxcomsys' for details. Requested by many people over the years. [MG]
+ * Move all remaining build-time settings out of options.h into mush.cnf and remove options.h. [SW]
+ * rjust(foobar,3,,1) previously returned "bar"; it now returns "foo", like the analogous functions on MUX and Rhost do. We won't be changing it again. Honest. [1092-MG]
 
 Fixes:
  * @clone'ing an old exit which had the alias built into the name incorrectly created a clone with no aliases. Reported by Qon. [MG]
@@ -24,6 +45,17 @@ Fixes:
  * 'help entries' was broken. Reported by Viila@M*U*S*H. [MG]
  * @if incorrectly evaluated both its action list arguments prior to queueing one of them. Reported by Qon and Ashen-Shugar. [1076-MG]
  * The @mailquota standard attribute was missing from some dbs, for some unknown reason. It will be automatically be added back in when you first update to this version; if you aren't using the @mail system, you can @attribute/delete it once and it'll stay gone. Reported by Kimojuno. [1077-MG]
+ * Messages - such as an exit's own @osuccess - could be propagated through an audible exit when they shouldn't be. [1081-MG]
+ * Fix a crash if a particular file descriptor is -1. [SW]
+ * Fix a potential crash in @stats/tables [SW]
+ * controls(<obj>, <victim>/<attr>) would return 1 even if <obj> didn't control <victim>. [MG]
+ * Although json(object) would correctly return {}, an empty JSON object, other JSON functions would throw an error and say it was invalid. [MG]
+ * Fixed channel_send() incorrectly setting speaker to NOTHING for non-spoofed chat messages when adding text to the channel buffer. PR by Qon.
+ * extract(<list>) incorrectly returned the 2nd element of <list>, instead of the 1st. Reported by Jules@M*U*S*H. [MG]
+ * Several places which checked for unsigned integers didn't ignore Tiny_Math, but should have. Reported by Kitten, debugged by Ashen-Shugar. [MG]
+ * Paranoid dumps didn't use the latest db flags. [SW]
+ * Although they can't be destroyed directly, it was still possible to destroy some important objects like the player_start room by nuking their owner, with nasty consequences. Reported by Sistene@M*U*S*H. [MG]
+ * regrab(), reglmatch() and related functions didn't work if the <regexp> contained ansi. From a report by Riorgan@M*U*S*H. [MG]
 
 Minor changes:
  * PLAYER`CREATE event now passes the registered email if the player was created using 'register' at the login screen. PR by Qon.
@@ -33,15 +65,42 @@ Minor changes:
  * Work torwards supporting Windows via MSYS2. [SW]
  * New option for align(), # stops a colsep being added after a column. Suggested by Ashen-Shugar. [MG]
  * If you own an object and are in its DEBUGFORWARDLIST, you'll now only get the debug output once. Suggested by Qon. [1059-MG]
+ * Tweaks to 'help <wildcard>'s error messages, and the help for said syntax. Suggested by Wiggles. [1084-MG]
+ * The "monikers" config option now takes a list of words, rather than a bitflag - less confusing and more user-friendly. [1089-MG]
+ * @chownall now takes /things, /rooms and /exits switches, to limit the types of objects chowned. [MG,Rhost]
+ * @chown <obj>/<attr>=<owner> acts as an alias for @atrchown, for Rhost compatability. [MG]
+ * @grep/parent checks inherited attributes too. [MG,Rhost]
+ * Penn now understands XTERM when reading raw ansi tags. It essentially never does this, though. Requested by spork. [975-MG]
+ * Players that are See_All, Royaty or Wizard can see Hidden-connect messages on any channel. PR by Qon.
+ * Players hidden on a channel with @chan/hide will not show connect messages to players unless they are see_all or roy/wiz. PR by Qon.
+ * Hidden-connects/disconnects only show on @chan/recall and crecall() if you are see_all, roy or wizard, except for your own messages. PR by Qon.
+ * DARK-connect/disconnect/etc messages are no longer announced over channels. Dark and Hidden are two different things. PR by Qon.
+ * The Pueblo_Send power has been renamed Send_OOB, to reflect its new use for other, non-Pueblo-related, out of band messages. Pueblo_Send remains as an alias. (The hardcode macro checking for the power, Can_Pueblo_Send, has also changed to Can_Send_OOB.) [1041-MG]
+ * Mortals can now use oob() on themselves, and those with the Send_OOB power can use it to send to anyone. Suggested by Qon and Sketch. [1041-MG]
+ * Remove a duplicate message when @chzone'ing a priv'd player. [MG]
+ * @hooks now always have named registers for left-side args, even if the command isn't eqsplit (see 'help @hook7'). [MG] 
+ * Make SHA-0 dependency optional to support OpenSSL 1.1. [SW]
+ * Change the default hash for player passwords to SHA-512 from SHA-1. [SW]
+ * The default @poll message, "Doing", can now be translated. [MG]
+ * Clean up some of the shell scripts used in the build and startup processes. [SW]
 
 Functions:
  * Added setsymdiff() [SW]
+ * Added randextract(), a more powerful version of randword(). [MG,Rhost]
+ * randword() is now more ansi-aware. [MG]
+ * pgrep(), like grep() but also checks parents. [MG,Rhost]
+ * Added json_query(), for getting various information about JSON data. [MG]
+ * A number of functions are now more ANSI-friendly, including first(), last(), rest(), fold(), filter(), grab(). Report by Qon. [1048-MG]
+ * splice() no longer strips ANSI. [1045-MG]
 
 Documentation:
  * Improve documentation for required packages in some Linux distributions.
-
+ * Document how to get Penn running on the Windows 10 Bash For Ubuntu On Windows project.
+ 
 Hardcode:
  * safe_atr_value() now takes a second arg, for memory tracking (mem_check), and the returned value must be freed with mush_free() instead of just free(). [MG]
+ * ChanTitle(), CHAN_TITLE_LEN, and the "title" member of the channel struct - used for @channel/desc - have been renamed to ChanDesc, CHAN_DESC_LEN and "desc", respectively. Now I won't confuse them as being relevant with @channel/title. Every. Single. Time. [MG]
+ * etime_to_secs() now takes a third, boolean argument, default_minutes. If true, purely numerical values are treated as a number of minutes, not seconds. This allows using the function for parsing time-related config options instead of having a separate implimentation. [MG]
 
 & 1.8.6p0
 Version 1.8.6 patchlevel 0                                 Dec 25, 2015
@@ -77,6 +136,7 @@ Commands:
  * @hooks now have a number of named registers (available through r(<name>,args)) with each of the hooked command's arguments. [MG]
  * Added @if and @skip. [MG] [Rhost] [MUX]
  * help/search <pattern> lets you search within helpfiles. [MG] [Rhost]
+ * @newpassword now takes a generate switch, which creates a random password ala email_register and shows it to the executor. [Qon]
 
 Minor changes:
  * The 'HAVEN' flag can now only be set on players. [1033-TK]

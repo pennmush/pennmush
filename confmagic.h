@@ -12,18 +12,6 @@
 #ifndef _confmagic_h_
 #define _confmagic_h_
 
-/*
- * (which isn't exportable from the U.S.), then don't encrypt
- */
-#ifndef HAVE_CRYPT
-#define crypt(s,t) (s)
-#endif
-
-#ifndef HAVE_STRCOLL
-#undef strcoll
-#define strcoll strcmp
-#endif
-
 #ifndef HAVE_SNPRINTF
 #ifdef HAVE__VSNPRINTF_S
 #define snprintf sane_snprintf_s
@@ -43,12 +31,6 @@ int sane_snprintf_s(char *, size_t, const char *, ...);
 #elif defined(HAVE__VSNPRINTF)
 #define vsnprintf _vsnprintf
 #endif
-#endif
-
-#if defined(HAVE_POLLTS) && !defined(HAVE_PPOLL)
-/* Linux's ppoll() is identical to NetBSD's pollts() in all but name. */
-#define ppoll pollts
-#define HAVE_PPOLL
 #endif
 
 #endif

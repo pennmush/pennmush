@@ -97,11 +97,8 @@ init_timer(void)
 #endif
 #ifndef PROFILING
 #ifdef HAVE_SETITIMER
-#ifdef __CYGWIN__
   install_sig_handler(SIGALRM, signal_cpu_limit);
-#else
   install_sig_handler(SIGPROF, signal_cpu_limit);
-#endif
 #endif
 #endif
 }
@@ -368,15 +365,12 @@ int cpu_limit_warning_sent = 0;  /** Have we issued a cpu limit warning? */
  * \param signo unused.
  */
 void
-signal_cpu_limit(int signo __attribute__ ((__unused__)))
+signal_cpu_limit(int signo)
 {
   cpu_time_limit_hit = 1;
-#ifdef __CYGWIN__
-  reload_sig_handler(SIGALRM, signal_cpu_limit);
-#else
-  reload_sig_handler(SIGPROF, signal_cpu_limit);
-#endif
+  reload_sig_handler(signo, signal_cpu_limit);
 }
+
 #elif defined(WIN32)
 #if _MSC_VER <= 1100 && !defined(UINT_PTR)
 #define UINT_PTR UINT
@@ -390,6 +384,14 @@ win32_timer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 #endif
 #endif
 int timer_set = 0;      /**< Is a CPU timer set? */
+
+/* setitmer() supports multiple types of timer clocks. Windows-based
+ * environments (Ubuntu For Windows, Cygwin, etc.) only support
+ * ITIMER_REAL, which isn't the most useful. Fall back on that if
+ * ITIMER_PROF fails. */
+#ifdef HAVE_SETITIMER
+static int itimer_which = ITIMER_PROF;
+#endif
 
 /** Start the cpu timer (before running a command).
  */
@@ -411,13 +413,15 @@ start_cpu_timer(void)
       time_limit.it_value.tv_usec = t.rem * 1000;
       time_limit.it_interval.tv_sec = 0;
       time_limit.it_interval.tv_usec = 0;
-#ifdef __CYGWIN__
-      if (setitimer(ITIMER_REAL, &time_limit, NULL)) {
-#else
-      if (setitimer(ITIMER_PROF, &time_limit, NULL)) {
-#endif                          /* __CYGWIN__ */
-        penn_perror("setitimer");
-        timer_set = 0;
+      if (setitimer(itimer_which, &time_limit, NULL)) {
+        if (itimer_which == ITIMER_PROF) {
+          itimer_which = ITIMER_REAL;
+          start_cpu_timer();
+          return;
+        } else {
+          penn_perror("setitimer");
+          timer_set = 0;
+        }
       }
     } else
       timer_set = 0;
@@ -445,11 +449,7 @@ reset_cpu_timer(void)
     time_limit.it_value.tv_usec = 0;
     time_limit.it_interval.tv_sec = 0;
     time_limit.it_interval.tv_usec = 0;
-#ifdef __CYGWIN__
-    if (setitimer(ITIMER_REAL, &time_limit, &time_left))
-#else
-    if (setitimer(ITIMER_PROF, &time_limit, &time_left))
-#endif                          /* __CYGWIN__ */
+    if (setitimer(itimer_which, &time_limit, &time_left))
       penn_perror("setitimer");
 #elif defined(WIN32)
     KillTimer(NULL, timer_id);

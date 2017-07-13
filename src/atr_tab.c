@@ -1111,10 +1111,16 @@ attr_init_postconfig(void)
   ATTR *a;
   /* read_remote_desc affects AF_NEARBY flag on DESCRIBE attribute */
   a = aname_hash_lookup("DESCRIBE");
-  if (!a)
-    return;
-  if (READ_REMOTE_DESC)
-    a->flags &= ~AF_NEARBY;
-  else
-    a->flags |= AF_NEARBY;
+  if (a) {
+    if (READ_REMOTE_DESC)
+      a->flags &= ~AF_NEARBY;
+    else
+      a->flags |= AF_NEARBY;
+  }
+  if (USE_MUXCOMM) {
+    a = aname_hash_lookup("CHANALIAS");
+    if (!a) {
+      add_new_attr("CHANALIAS", AF_NOPROG);
+    }
+  }
 }

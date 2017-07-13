@@ -39,6 +39,7 @@
 #include "mushdb.h"
 #include "mymalloc.h"
 #include "parse.h"
+#include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
 
@@ -268,7 +269,7 @@ PENNCONF conftable[] = {
   ,
   {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
   ,
-  {"monikers", cf_int, &options.monikers, INT_MAX, 0, "cosmetic"}
+  {"monikers", cf_priv, &options.monikers, INT_MAX, 0, "cosmetic"}
   ,
   {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
    "cosmetic"}
@@ -297,6 +298,13 @@ PENNCONF conftable[] = {
    "cosmetic"}
   ,
   {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
+  ,
+  {"chat_token_alias", cf_str, options.chat_token_alias,
+   sizeof options.chat_token_alias,
+   CP_OPTIONAL,
+   "chat"}
+  ,
+  {"use_muxcomm", cf_bool, &options.use_muxcomm, 2, 0, "chat"}
   ,
   {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"}
   ,
@@ -495,6 +503,10 @@ PENNCONF conftable[] = {
    NULL}
   ,
 
+  {"use_chunk_system", cf_bool, &options.use_chunk,
+   sizeof options.use_chunk, 0,
+   NULL}
+  ,
   {"chunk_swap_file", cf_str, options.chunk_swap_file,
    sizeof options.chunk_swap_file, 0, "files"}
   ,
@@ -529,6 +541,9 @@ PENNCONF conftable[] = {
   ,
   {"log_size_policy", cf_str, options.log_size_policy,
    sizeof options.log_size_policy, 0, NULL}
+  ,
+  {"sendmail_prog", cf_str, options.sendmail_prog,
+   sizeof options.sendmail_prog, 0, NULL}
   ,
 
   {NULL, NULL, NULL, 0, 0, NULL}
@@ -649,9 +664,7 @@ get_config(const char *name)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_bool(const char *opt, const char *val, void *loc,
-        int maxval __attribute__ ((__unused__)), int from_cmd)
+CONFIG_FUNC(cf_bool)
 {
   /* enter boolean parameter */
 
@@ -680,8 +693,7 @@ cf_bool(const char *opt, const char *val, void *loc,
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_str)
 {
   /* enter string parameter */
   size_t len = strlen(val);
@@ -712,9 +724,7 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_dbref(const char *opt, const char *val, void *loc,
-         int maxval __attribute__ ((__unused__)), int from_cmd)
+CONFIG_FUNC(cf_dbref)
 {
   /* enter dbref or integer parameter */
   int n;
@@ -750,8 +760,7 @@ cf_dbref(const char *opt, const char *val, void *loc,
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_int)
 {
   /* enter integer parameter */
 
@@ -773,8 +782,95 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
   return 1;
 }
 
+/* Possible values for the "monikers" config option */
+PRIV cf_priv_monikers[] = {
+  {"alltypes", '\0', AN_TYPES, AN_TYPES},
+  {"players", '\0', AN_PLAYER, AN_PLAYER},
+  {"things", '\0', AN_THING, AN_THING},
+  {"rooms", '\0', AN_ROOM, AN_ROOM},
+  {"exits", '\0', AN_EXIT, AN_EXIT},
 
-/** Parse an time configuration option with a default unit of seconds
+  {"everywhere", '\0', AN_EVERYWHERE, AN_EVERYWHERE},
+  {"chat", '\0', AN_CHAT, AN_CHAT},
+  {"say", '\0', AN_SAY, AN_SAY},
+  {"movement", '\0', AN_MOVE, AN_MOVE},
+  {"look", '\0', AN_LOOK, AN_LOOK},
+  {"unparse", '\0', AN_UNPARSE, AN_UNPARSE},
+  {"who", '\0', AN_WHO, AN_WHO},
+  {"system", '\0', AN_SYS, AN_SYS},
+  {"announcements", '\0', AN_ANNOUNCE, AN_ANNOUNCE},
+  {NULL, '\0', 0, 0}
+};
+
+/* Format for the list of cf_priv options */
+struct priv_option {
+  char *optname;
+  privbits *value;
+  PRIV *table;
+};
+
+/* List of cf_priv options, storing their names, location of value, and the
+ * priv table which holds their possible values */
+struct priv_option priv_options[] = {
+  {"monikers", &options.monikers, cf_priv_monikers},
+  {NULL, NULL, NULL}
+};
+
+/* Given a cf_priv option name, find its entry in the priv_options table. */
+struct priv_option *
+find_priv_option(const char *name)
+{
+  struct priv_option *po;
+
+  for (po = priv_options; po->optname; po++) {
+    if (!strcmp(po->optname, name)) {
+      return po;
+    }
+  }
+  return NULL;
+}
+
+/** Parse a priv tab option. 
+ * This takes a list of string values, and uses a privtab to convert them to
+ * a bitflag.
+ * \param opt name of the configuration option.
+ * \param val value of the option.
+ * \param loc address to store the value.
+ * \param maxval maximum length of value.
+ * \param from_cmd 0 if read from config file; 1 if from command.
+ * \retval 0 failure (unable to parse val).
+ * \retval 1 success.
+ */
+CONFIG_FUNC(cf_priv)
+{
+  struct priv_option *po;
+  privbits result = 0;
+  if (!val || !*val)
+    return 1;
+
+  if (is_strict_integer(val)) {
+    if (!from_cmd) {
+      do_rawlog(LT_ERR,
+                "CONFIG: Option '%s' set to an integer. Please update to a list of values.",
+                opt);
+    }
+    *((privbits *) loc) = parse_integer(val);
+    return 1;
+  }
+  do_rawlog(LT_ERR, "Chk 1");
+  po = find_priv_option(opt);
+
+  if (!po) {
+    do_rawlog(LT_ERR, "CONFIG: Unknown priv-type option '%s'", opt);
+    return 0;
+  }
+  result = string_to_privs(po->table, val, *((privbits *) loc));
+
+  *((privbits *) loc) = result;
+  return 1;
+}
+
+/** Parse a time configuration option
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.
@@ -783,48 +879,16 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_time(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_time)
 {
   /* enter time parameter */
-  char *end = NULL;
-  int in_minutes = 0;
-  int n, secs = 0;
-
-
-  if (strstr(opt, "idle"))
-    in_minutes = 1;
-
-  while (val && *val) {
-    n = parse_int(val, &end, 10);
-
-    switch (*end) {
-    case '\0':
-      if (in_minutes)
-        secs += n * 60;
-      else
-        secs += n;
-      goto done;                /* Sigh. What I wouldn't give for named loops in C */
-    case 's':
-    case 'S':
-      secs += n;
-      break;
-    case 'm':
-    case 'M':
-      secs += n * 60;
-      break;
-    case 'h':
-    case 'H':
-      secs += n * 3600;
-      break;
-    default:
-      if (from_cmd == 0)
-        do_rawlog(LT_ERR, "CONFIG: Unknown time interval in option %s", opt);
-      return 0;
-    }
-    val = end + 1;
+  int secs = 0;
+  if (!etime_to_secs((char *) val, &secs, (strstr(opt, "idle")))) {
+    if (from_cmd == 0)
+      do_rawlog(LT_ERR, "CONFIG: Unknown time interval in option %s", opt);
+    return 0;
   }
-done:
+
   /* enforce limits */
   if ((maxval >= 0) && (secs > maxval)) {
     secs = maxval;
@@ -847,8 +911,7 @@ done:
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_flag(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_flag)
 {
   size_t len = strlen(val);
   size_t total = strlen((char *) loc);
@@ -1423,6 +1486,9 @@ conf_default_set(void)
   options.full_invis = 0;
   options.silent_pemit = 0;
   options.max_dbref = 0;
+  options.chat_token_alias[0] = '\0';
+  options.chat_token_alias[1] = '\0';
+  options.use_muxcomm = 0;
   options.chat_strip_quote = 1;
   set_string_option(options.wizwall_prefix, T("Broadcast:"));
   set_string_option(options.rwall_prefix, T("Admin:"));
@@ -1449,6 +1515,7 @@ conf_default_set(void)
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
   options.call_lim = 10000;
+  options.use_chunk = 1;
   strcpy(options.chunk_swap_file, "data/chunkswap");
   options.chunk_swap_initial = 2048;
   options.chunk_cache_memory = 1000000;
@@ -1470,6 +1537,7 @@ conf_default_set(void)
   strcpy(options.sql_host, "127.0.0.1");
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
+  strcpy(options.sendmail_prog, "sendmail");
 }
 
 #undef set_string_option
@@ -1774,51 +1842,23 @@ config_to_string(dbref player
   static char result[BUFFER_LEN];
   char *bp = result;
 
-  if ((cp->handler == cf_str) || (cp->handler == cf_flag))
-    safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name), (char *) cp->loc);
-  else if (cp->handler == cf_int)
-    safe_format(result, &bp, " %-40s %d", MAYBE_LC(cp->name),
-                *((int *) cp->loc));
-  else if (cp->handler == cf_time) {
-    div_t n;
-    int secs = *(int *) cp->loc;
-
-    safe_format(result, &bp, " %-40s ", MAYBE_LC(cp->name));
-
-    if (secs >= 3600) {
-      n = div(secs, 3600);
-      secs = n.rem;
-      safe_format(result, &bp, "%dh", n.quot);
-    }
-    if (secs >= 60) {
-      n = div(secs, 60);
-      secs = n.rem;
-      safe_format(result, &bp, "%dm", n.quot);
-    }
-    if (secs)
-      safe_format(result, &bp, "%ds", secs);
-  } else if (cp->handler == cf_bool)
-    safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name),
-                (*((int *) cp->loc) ? "Yes" : "No"));
-  else if (cp->handler == cf_dbref)
-    safe_format(result, &bp, " %-40s #%d", MAYBE_LC(cp->name),
-                *((dbref *) cp->loc));
+  safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name),
+              display_config_value(cp));
   *bp = '\0';
   return result;
 }
 
-/* This one doesn't return the names */
-static char *
-config_to_string2(dbref player
-                  __attribute__ ((__unused__)), PENNCONF *cp, int lc
-                  __attribute__ ((__unused__)))
+/* Get the display value (showing Yes/No for bools, turning privbits 
+ * to strings, etc) for a config option */
+char *
+display_config_value(PENNCONF *cp)
 {
   static char result[BUFFER_LEN];
   char *bp = result;
   if ((cp->handler == cf_str) || (cp->handler == cf_flag))
-    safe_format(result, &bp, "%s", (char *) cp->loc);
+    safe_str((char *) cp->loc, result, &bp);
   else if (cp->handler == cf_int)
-    safe_format(result, &bp, "%d", *((int *) cp->loc));
+    safe_integer(*((int *) cp->loc), result, &bp);
   else if (cp->handler == cf_time) {
     div_t n;
     int secs = *(int *) cp->loc;
@@ -1839,6 +1879,16 @@ config_to_string2(dbref player
     safe_format(result, &bp, "%s", (*((int *) cp->loc) ? "Yes" : "No"));
   else if (cp->handler == cf_dbref)
     safe_format(result, &bp, "#%d", *((dbref *) cp->loc));
+  else if (cp->handler == cf_priv) {
+    struct priv_option *po;
+
+    po = find_priv_option(cp->name);
+    if (po) {
+      safe_str(privs_to_string(po->table, *((privbits *) cp->loc)), result,
+               &bp);
+    }
+  }
+
   *bp = '\0';
   return result;
 }
@@ -1856,7 +1906,7 @@ FUNCTION(fun_config)
     for (cp = conftable; cp->name; cp++) {
       if (!strcasecmp(cp->name, args[0])
           && can_view_config_option(executor, cp)) {
-        safe_str(config_to_string2(executor, cp, 0), buff, bp);
+        safe_str(display_config_value(cp), buff, bp);
         return;
       }
     }
@@ -1864,7 +1914,7 @@ FUNCTION(fun_config)
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
       if (!strcasecmp(cp->name, args[0])
           && can_view_config_option(executor, cp)) {
-        safe_str(config_to_string2(executor, cp, 0), buff, bp);
+        safe_str(display_config_value(cp), buff, bp);
         return;
       }
     }
@@ -1993,6 +2043,10 @@ show_compile_options(dbref player)
   notify(player, T(" SSSE3 instructions are being used."));
 #endif
 
+#ifdef HAVE_SSE42
+  notify(player, T(" SSE4.2 instructions are being used."));
+#endif
+  
 #ifdef HAVE_ALTIVEC
   notify(player, T(" Altivec instructions are being used."));
 #endif
@@ -2003,11 +2057,10 @@ show_compile_options(dbref player)
   notify(player, T(" @config/save is disabled."));
 #endif
 
-#if ATTR_STORAGE == 0
-  notify(player, T(" Attribute contents are managed by malloc."));
-#elif ATTR_STORAGE == 1
-  notify(player, T(" Attribute contents are managed by the chunk system."));
-#endif
+  if (options.use_chunk)
+    notify(player, T(" Attribute contents are managed by the chunk system."));
+  else
+    notify(player, T(" Attribute contents are managed by malloc."));
 
 #ifdef HAVE_ZONEINFO
   notify(player, T(" IANA symbolic timezones can be used."));
@@ -2021,4 +2074,5 @@ show_compile_options(dbref player)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
 #endif
+
 }

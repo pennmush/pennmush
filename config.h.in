@@ -55,6 +55,8 @@
 
 #undef HAVE_LANGINFO_H
 
+#undef HAVE_CRYPT_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H
@@ -126,6 +128,8 @@
 #undef int64_t
 
 #undef uint64_t
+
+#undef uintptr_t
 
 /* Type of the largest int type */
 #undef intmax_t
@@ -294,6 +298,10 @@ typedef bool _Bool;
 
 #undef HAVE_FETESTEXCEPT
 
+#undef HAVE_SHA
+
+#undef HAVE_DH_SET0_PQG
+
 /* Variables and defines */
 
 #undef HAVE_H_ERRNO
@@ -374,6 +382,11 @@ typedef bool _Bool;
 #undef HAVE_SSSE3
 #ifdef __SSSE3__
 #define HAVE_SSSE3
+#endif
+
+#undef HAVE_SSE42
+#ifdef __SSE4_2__
+#define HAVE_SSE42
 #endif
 
 #undef HAVE_ALTIVEC

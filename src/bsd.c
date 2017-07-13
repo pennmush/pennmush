@@ -71,7 +71,6 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
-
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -102,6 +101,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "charconv.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -143,7 +143,7 @@ int que_next(void);             /* from cque.c */
 dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
 
 int shutdown_flag = 0;          /**< Is it time to shut down? */
-void chat_player_announce(dbref player, char *msg, int ungag);
+void chat_player_announce(DESC *desc_player, char *msg, int ungag);
 void report_mssp(DESC *d, char *buff, char **bp);
 
 static int login_number = 0;
@@ -153,8 +153,11 @@ char cf_motd_msg[BUFFER_LEN] = { '\0' }; /**< The message of the day */
 char cf_wizmotd_msg[BUFFER_LEN] = { '\0' };      /**< The wizard motd */
 char cf_downmotd_msg[BUFFER_LEN] = { '\0' };     /**< The down message */
 char cf_fullmotd_msg[BUFFER_LEN] = { '\0' };     /**< The 'mush full' message */
-static char poll_msg[DOING_LEN] = { '\0' };
+static char poll_msg[DOING_LEN] = { '\0' }; /**< The \@poll/"Doing" message */
 char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
+
+char *get_poll(void);
+int set_poll(const char *message);
 
 char *etime_fmt(char *, time_t, int);
 const char *source_to_s(conn_source source);
@@ -189,28 +192,6 @@ const char *default_ttype = "unknown";
  * and is the original purpose of adding telnet option support.
  */
 
-/* Telnet codes */
-#define IAC 255                 /**< interpret as command: */
-#define NOP 241                 /**< no operation */
-#define AYT 246                 /**< are you there? */
-#define DONT 254                /**< you are not to use option */
-#define DO      253             /**< please, you use option */
-#define WONT 252                /**< I won't use option */
-#define WILL    251             /**< I will use option */
-#define SB      250             /**< interpret as subnegotiation */
-#define SE      240             /**< end sub negotiation */
-#define TN_SGA 3                /**< Suppress go-ahead */
-#define TN_LINEMODE 34          /**< Line mode */
-#define TN_NAWS 31              /**< Negotiate About Window Size */
-#define TN_TTYPE 24             /**< Ask for termial type information */
-#define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
-#define TN_CHARSET 42           /**< Negotiate Character Set (RFC 2066) */
-#define MSSP_VAR 1              /**< MSSP option name */
-#define MSSP_VAL 2              /**< MSSP option value */
-#define TN_SB_CHARSET_REQUEST 1 /**< Charset subnegotiation REQUEST */
-#define TN_SB_CHARSET_ACCEPTED 2 /**< Charset subnegotiation ACCEPTED */
-#define TN_SB_CHARSET_REJECTED 3 /**< Charset subnegotiation REJECTED */
-#define TN_GMCP 201 /**< Generic MUD Communication Protocol; see http://www.gammon.com.au/gmcp */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 bool test_telnet_wrapper(void *data);
@@ -2176,7 +2157,26 @@ welcome_user(DESC *d, int telnet)
 static void
 save_command(DESC *d, const char *command)
 {
-  add_to_queue(&d->input, command, strlen(command) + 1);
+  if (d->conn_flags & CONN_UTF8) {
+    const char *latin1;
+    int len;
+    
+    if (!valid_utf8(command)) {
+      const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
+      // Expecting UTF-8, got something else!
+      queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
+      do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
+      return;
+    }
+    latin1 = utf8_to_latin1(command, &len);
+    if (latin1) {
+      add_to_queue(&d->input, latin1, len);
+      mush_free(latin1, "string");
+    }
+  } else {  
+    add_to_queue(&d->input, command, strlen(command) + 1);
+  }
+
 }
 
 /** Send a telnet command to a descriptor to test for telnet support.
@@ -2308,8 +2308,8 @@ TELNET_HANDLER(telnet_charset)
 {
   /* Send a list of supported charsets for the client to pick.
    * Currently, we only offer the single charset the MUSH is
-   * currently running in (if known, and not "C" or "UTF-*"),
-   * and plain ol' ascii. */
+   * currently running in (if known, and not "C"),
+   * and UTF-8, and plain ol' ascii. */
   /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
   static const char reply_prefix[4] =
     { IAC, SB, TN_CHARSET, TN_SB_CHARSET_REQUEST };
@@ -2319,7 +2319,7 @@ TELNET_HANDLER(telnet_charset)
    * in a charset name */
 #ifdef HAVE_NL_LANGINFO
   static const char *delim_list = "; +=/!", *delim_curr;
-#endif /* HAVE_NL_LANGINFO */
+#endif                          /* HAVE_NL_LANGINFO */
   char delim[2] = { ';', '\0' };
   char *curr_locale = NULL;
 
@@ -2341,7 +2341,9 @@ TELNET_HANDLER(telnet_charset)
       delim[0] = ';';           /* fall back on ; */
     }
   }
-#endif                           /* HAVE_NL_LANGINFO */
+#endif                          /* HAVE_NL_LANGINFO */
+  queue_newwrite(d, delim, 1);
+  queue_newwrite(d, "UTF-8", 5);
   queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));
@@ -2365,6 +2367,7 @@ TELNET_HANDLER(telnet_charset)
     return;
 
   queue_newwrite(d, reply_prefix, 4);
+  queue_newwrite(d, ";UTF-8", 6);
   queue_newwrite(d, ";ISO-8859-1", 11);
   queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
   queue_newwrite(d, reply_suffix, 2);
@@ -2387,7 +2390,13 @@ TELNET_HANDLER(telnet_charset_sb)
   }
   if (!strcasecmp(cmd, "US-ASCII") || !strcasecmp(cmd, "ASCII")) {
     /* ascii requested; strip accents for the connection */
+    do_rawlog(LT_CONN, "Descriptor %d using charset ASCII.", d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
+  }
+  if (strcasecmp(cmd, "UTF-8") == 0) {
+    /* Send and receive UTF-8, translate to latin-1 */
+    do_rawlog(LT_CONN, "Descriptor %d using charset UTF-8.", d->descriptor);
+    d->conn_flags |= CONN_UTF8;
   }
 }
 
@@ -2945,7 +2954,7 @@ string_to_json_real(char *input, char **ip, int recurse)
       }
       i++;
     }
-    if ((i % 2) && **ip == '}') {
+    if ((i == 0 || (i % 2)) && **ip == '}') {
       (*ip)++;
       result->type = JSON_OBJECT;
     }
@@ -3035,6 +3044,11 @@ FUNCTION(fun_oob)
     return;
   }
 
+  if (Owner(who) != Owner(executor) && !Can_Send_OOB(executor)) {
+    safe_str("#-1", buff, bp);
+    return;
+  }
+
   json = string_to_json(args[2]);
   if (!json) {
     safe_str(T("#-1 INVALID JSON"), buff, bp);
@@ -3048,6 +3062,166 @@ FUNCTION(fun_oob)
     i++;
   }
   safe_integer(i, buff, bp);
+  json_free(json);
+}
+
+enum json_query { JSON_QUERY_TYPE, JSON_QUERY_SIZE, JSON_QUERY_EXISTS,
+    JSON_QUERY_GET, JSON_QUERY_UNESCAPE };
+
+FUNCTION(fun_json_query)
+{
+  JSON *json, *next;
+  enum json_query query_type = JSON_QUERY_TYPE;
+  int i;
+
+  if (nargs > 1 && args[1] && *args[1]) {
+    if (string_prefix("size", args[1])) {
+      query_type = JSON_QUERY_SIZE;
+    } else if (string_prefix("exists", args[1])) {
+      query_type = JSON_QUERY_EXISTS;
+    } else if (string_prefix("get", args[1])) {
+      query_type = JSON_QUERY_GET;
+    } else if (string_prefix("unescape", args[1])) {
+      query_type = JSON_QUERY_UNESCAPE;
+    } else {
+      safe_str(T("#-1 INVALID OPERATION"), buff, bp);
+      return;
+    }
+  }
+
+  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS)
+      && (nargs < 3 || !args[2] || !*args[2])) {
+    safe_str(T("#-1 MISSING VALUE"), buff, bp);
+    return;
+  }
+
+  json = string_to_json(args[0]);
+  if (!json) {
+    safe_str(T("#-1 INVALID JSON"), buff, bp);
+    return;
+  }
+
+  switch (query_type) {
+  case JSON_QUERY_TYPE:
+    switch (json->type) {
+    case JSON_NONE:
+      break;                    /* Should never happen */
+    case JSON_STR:
+      safe_str("string", buff, bp);
+      break;
+    case JSON_BOOL:
+      safe_str("boolean", buff, bp);
+      break;
+    case JSON_NULL:
+      safe_str("null", buff, bp);
+      break;
+    case JSON_NUMBER:
+      safe_str("number", buff, bp);
+      break;
+    case JSON_ARRAY:
+      safe_str("array", buff, bp);
+      break;
+    case JSON_OBJECT:
+      safe_str("object", buff, bp);
+      break;
+    }
+    break;
+  case JSON_QUERY_SIZE:
+    switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NUMBER:
+      safe_chr('1', buff, bp);
+      break;
+    case JSON_NULL:
+      safe_chr('0', buff, bp);
+      break;
+    case JSON_ARRAY:
+    case JSON_OBJECT:
+      next = (JSON *) json->data;
+      if (!next) {
+        safe_chr('0', buff, bp);
+        break;
+      }
+      for (i = 1; next->next; i++, next = next->next) ;
+      if (json->type == JSON_OBJECT) {
+        i = i / 2;              /* Key/value pairs, so we have half as many */
+      }
+      safe_integer(i, buff, bp);
+      break;
+    }
+    break;
+  case JSON_QUERY_UNESCAPE:
+    if (json->type != JSON_STR) {
+      safe_str("#-1", buff, bp);
+      break;
+    }
+    safe_str(json_unescape_string((char *) json->data), buff, bp);
+    break;
+  case JSON_QUERY_EXISTS:
+  case JSON_QUERY_GET:
+    switch (json->type) {
+    case JSON_NONE:
+      break;
+    case JSON_STR:
+    case JSON_BOOL:
+    case JSON_NUMBER:
+    case JSON_NULL:
+      safe_str("#-1", buff, bp);
+      break;
+    case JSON_ARRAY:
+      if (!is_strict_integer(args[2])) {
+        safe_str(T(e_int), buff, bp);
+        break;
+      }
+      i = parse_integer(args[2]);
+      for (next = json->data; i > 0 && next; next = next->next, i--) ;
+
+      if (query_type == JSON_QUERY_EXISTS) {
+        safe_chr((next) ? '1' : '0', buff, bp);
+      } else if (next) {
+        char *s = json_to_string(next, 0);
+        if (s) {
+          safe_str(s, buff, bp);
+          mush_free(s, "json_str");
+        }
+      }
+      break;
+    case JSON_OBJECT:
+      next = (JSON *) json->data;
+      while (next) {
+        if (next->type != JSON_STR) {
+          /* We should have a string label */
+          next = NULL;
+          break;
+        }
+        if (!strcasecmp((char *) next->data, args[2])) {
+          /* Success! */
+          next = next->next;
+          break;
+        } else {
+          /* Skip */
+          next = next->next;    /* Move to this entry's value */
+          if (next) {
+            next = next->next;  /* Move to next entry's name */
+          }
+        }
+      }
+      if (query_type == JSON_QUERY_EXISTS) {
+        safe_chr((next) ? '1' : '0', buff, bp);
+      } else if (next) {
+        char *s = json_to_string(next, 0);
+        if (s) {
+          safe_str(s, buff, bp);
+          mush_free(s, "json_str");
+        }
+      }
+      break;
+    }
+    break;
+  }
   json_free(json);
 }
 
@@ -3620,7 +3794,7 @@ process_commands(void)
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
-          /* Fall through to free input buffer */
+          /* Falls through - to free input buffer */
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
@@ -4997,10 +5171,8 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, "<PRE>", 5);
   }
 
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
   snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s",
-           T("Player Name"), T("On For"), T("Idle"), poll_msg);
+           T("Player Name"), T("On For"), T("Idle"), get_poll());
   queue_string_eol(call_by, tbuf);
 
   for (d = descriptor_list; d; d = d->next) {
@@ -5103,9 +5275,6 @@ do_who_mortal(dbref player, char *name)
   int nlen;
   PUEBLOBUFF;
 
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
-
   if (SUPPORT_PUEBLO) {
     PUSE;
     tag("PRE");
@@ -5117,7 +5286,7 @@ do_who_mortal(dbref player, char *name)
     wild = 1;
 
   notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
-                T("Idle"), poll_msg);
+                T("Idle"), get_poll());
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected)
       continue;
@@ -5378,9 +5547,7 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   /* Redundant, but better for translators */
-  if (Dark(player)) {
-    message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-  } else if (Hidden(d)) {
+  if (Hidden(d)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");
   } else {
@@ -5400,7 +5567,7 @@ announce_connect(DESC *d, int isnew, int num)
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
   if (ANNOUNCE_CONNECTS)
-    chat_player_announce(player, message, 0);
+    chat_player_announce(d, message, 0);
 
   loc = Location(player);
   if (!GoodObject(loc)) {
@@ -5583,10 +5750,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   pe_regs_free(pe_regs);
 
   /* Redundant, but better for translators */
-  if (Dark(player)) {
-    message = (num > 1) ? T("has partially DARK-disconnected.") :
-      T("has DARK-disconnected.");
-  } else if (hidden(player)) {
+  if (Hidden(saved)) {
     message = (num > 1) ? T("has partially HIDDEN-disconnected.") :
       T("has HIDDEN-disconnected.");
   } else {
@@ -5602,7 +5766,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     /* notify contents */
     notify_except(player, player, player, tbuf1, 0);
     /* notify channels */
-    chat_player_announce(player, message, num == 1);
+    chat_player_announce(saved, message, num == 1);
   }
 
   /* Monitor broadcasts */
@@ -5742,6 +5906,45 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
   return doing;
 }
 
+/** Get the current poll message.
+ * If there isn't one currently set, sets it to "Doing" first.
+ */
+char *
+get_poll(void)
+{
+  if (!*poll_msg)
+    set_poll(NULL);
+  return poll_msg;
+}
+
+/** Set the poll message.
+ * \param message The new poll, or NULL to use the default, "Doing")
+ * \return number of characters trimmed from new poll
+ */
+int
+set_poll(const char *message)
+{
+  int i = 0;
+  size_t len = 0;
+  
+  if (message && *message) {
+    strncpy(poll_msg, remove_markup(message, &len), DOING_LEN - 1);
+    len--; /* Length includes trailing null */
+  } else
+    strncpy(poll_msg, T("Doing"), DOING_LEN - 1);
+  for (i = 0; i < DOING_LEN; i++) {
+    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
+        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
+      poll_msg[i] = ' ';
+  }
+  poll_msg[DOING_LEN - 1] = '\0';
+
+  if ((int) len >= DOING_LEN)
+    return ((int) len - DOING_LEN);
+  else
+    return 0;
+}
+
 /** Set a poll message (which replaces "Doing" in the DOING output).
  * \verbatim
  * This implements @poll.
@@ -5757,7 +5960,7 @@ do_poll(dbref player, const char *message, int clear)
 
   if ((!message || !*message) && !clear) {
     /* Just display the poll. */
-    notify_format(player, T("The current poll is: %s"), poll_msg);
+    notify_format(player, T("The current poll is: %s"), get_poll());
     return;
   }
 
@@ -5767,24 +5970,16 @@ do_poll(dbref player, const char *message, int clear)
   }
 
   if (clear) {
-    strcpy(poll_msg, "Doing");
+    set_poll(NULL);
     notify(player, T("Poll reset."));
     return;
   }
 
-  strncpy(poll_msg, remove_markup(message, NULL), DOING_LEN - 1);
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
-        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
-      poll_msg[i] = ' ';
-  }
-  poll_msg[DOING_LEN - 1] = '\0';
+  i = set_poll(message);
 
-  if (strlen(message) >= DOING_LEN) {
-    poll_msg[DOING_LEN - 1] = 0;
+  if (i) {
     notify_format(player,
-                  T("Poll set to '%s'. %d characters lost."), poll_msg,
-                  (int) strlen(message) - (DOING_LEN - 1));
+                  T("Poll set to '%s'. %d characters lost."), poll_msg, i);
   } else
     notify_format(player, T("Poll set to: %s"), poll_msg);
   do_log(LT_WIZ, player, NOTHING, "Poll Set to '%s'.", poll_msg);
@@ -6366,11 +6561,7 @@ FUNCTION(fun_recv)
 
 FUNCTION(fun_poll)
 {
-  /* Gets the current poll */
-  if (poll_msg[0] == '\0')
-    strcpy(poll_msg, "Doing");
-
-  safe_str(poll_msg, buff, bp);
+  safe_str(get_poll(), buff, bp);
 }
 
 FUNCTION(fun_pueblo)

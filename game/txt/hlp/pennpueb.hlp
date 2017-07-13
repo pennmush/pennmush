@@ -63,7 +63,7 @@ See also: HTML, PUEBLO
   Each of these produces the HTML output:
     <a href="http://www.pennmush.org">PennMUSH</a>
 
-  Mortals are restricted in the tags they may use. Most standard HTML tags are ok; protocol-specific tags like SEND and XCH_CMD can only be sent by Wizards or those with the Pueblo_Send @power.
+  Mortals are restricted in the tags they may use. Most standard HTML tags are ok; protocol-specific tags like SEND and XCH_CMD can only be sent by Wizards or those with the Send_OOB @power.
 & HTML()
   html(<string>)
 

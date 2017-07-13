@@ -109,7 +109,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     st++;
   }
   if (!*st) {
-    notify(executor, T("You may need to be a little more specific."));
+    notify(executor, T("You need to be more specific."));
     return NULL;
   }
 
@@ -226,14 +226,23 @@ COMMAND(cmd_helpcmd)
   strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
+    int aw = 0;
     char **entries;
     char *p;
 
     p = arg_left;
-    while (*p && (isspace(*p) || *p == '*' || *p == '?'))
+    while (*p && (isspace(*p) || *p == '*' || *p == '?')) {
+      if (*p == '*')
+        aw++;
       p++;
-    if (!*p) {
-      notify(executor, T("You may need to be a little more specific."));
+    }
+    if (!*p && aw) {
+      if ((*arg_left == '*') && *(arg_left + 1) == '\0') {
+        notify(executor,
+               T("You need to be more specific. Maybe you want 'help \\*'?"));
+      } else {
+        notify(executor, T("You need to be more specific."));
+      }
       return;
     }
 
@@ -266,7 +275,8 @@ COMMAND(cmd_helpcmd)
         notify_format(executor, T("No entry for '%s'."), strupper(arg_left));
         return;
       }
-      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left), ANSI_END);
+      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
+                    ANSI_END);
       if (SUPPORT_PUEBLO)
         notify_noenter(executor, open_tag("SAMP"));
       notify(executor, entries);
@@ -1033,7 +1043,7 @@ is_index_entry(const char *topic, int *offset)
   static pcre_extra *extra = NULL;
   int ovec[33], ovecsize = 33;
   int r;
-  
+
   if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
     *offset = 0;
     return 1;

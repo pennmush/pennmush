@@ -111,10 +111,12 @@ int can_write_attr_internal(dbref player, dbref obj, ATTR *attr, int safe);
 bool can_edit_attr(dbref player, dbref thing, const char *attrname);
 const char *atr_get_compressed_data(ATTR *atr);
 char *atr_value(ATTR *atr);
-char *safe_atr_value(ATTR *atr, char *check)  __attribute_malloc__;
+char *
+safe_atr_value(ATTR *atr, char *check)
+  __attribute_malloc__;
 
 
-void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
+    void unanchored_regexp_attr_check(dbref thing, ATTR *atr, dbref player);
 
 /* possible attribute flags */
 /* 2013-03-03 MG: Several attrflags are marked "OBSOLETE! Leave here

@@ -400,7 +400,7 @@ FUNCTION(fun_etimefmt)
 {
   unsigned long secs;
 
-  if (!is_uinteger(args[1])) {
+  if (!is_strict_uinteger(args[1])) {
     safe_str(e_uint, buff, bp);
     return;
   }
@@ -415,7 +415,7 @@ FUNCTION(fun_etimefmt)
 FUNCTION(fun_stringsecs)
 {
   int secs;
-  if (etime_to_secs(args[0], &secs))
+  if (etime_to_secs(args[0], &secs, 0))
     safe_integer(secs, buff, bp);
   else
     safe_str(T("#-1 INVALID TIMESTRING"), buff, bp);
@@ -424,11 +424,12 @@ FUNCTION(fun_stringsecs)
 /** Convert an elapsed time string (3d 2h 1m 10s) to seconds.
  * \param input a time string.
  * \param secs pointer to an int to fill with number of seconds.
+ * \param default_minutes if a number is given with no type, assume minutes not seconds?
  * \retval 1 success.
  * \retval 0 failure.
  */
 int
-etime_to_secs(char *input, int *secs)
+etime_to_secs(char *input, int *secs, bool default_minutes)
 {
   /* parse the result from timestring() back into a number of seconds */
   char *p, *errptr;
@@ -451,7 +452,10 @@ etime_to_secs(char *input, int *secs)
       return 0;
     } else if (!*errptr) {
       /* Just a number of seconds */
-      *secs += (int) num;
+      if (default_minutes)
+        *secs += ((int) num * 60);
+      else
+        *secs += (int) num;
       return 1;
     } else if (isspace(*errptr)) {
       /* Number of seconds, followed by a space */

@@ -6,9 +6,9 @@ names are. Some common ones have dependencies described below.
    the other files needed to compile code using them. You'll need to
    install at a minimum the following packages:
 
-  | build-essentials libpcre3-dev libssl-dev
+  | build-essentials libpcre3-dev libssl-dev 
 
-  Installing libevent-dev is highly recommended as well, but not
+  Installing libevent-openssl-2.0 is highly recommended as well, but not
   required.  If you want to use SQL, you'll also need the appropriate
   -dev package, like libsqlite3-dev.
 

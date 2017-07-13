@@ -276,13 +276,27 @@ COMMAND(cmd_retry)
 
 COMMAND(cmd_chownall)
 {
-  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));
+  int types = 0;
+  if (SW_ISSET(sw, SWITCH_THINGS))
+    types |= TYPE_THING;
+  if (SW_ISSET(sw, SWITCH_ROOMS))
+    types |= TYPE_ROOM;
+  if (SW_ISSET(sw, SWITCH_EXITS))
+    types |= TYPE_EXIT;
+  if (!types)
+    types = TYPE_THING | TYPE_ROOM | TYPE_EXIT;
+  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+              types);
 }
 
 COMMAND(cmd_chown)
 {
-  do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
-           queue_entry->pe_info);
+  if (strchr(arg_left, '/')) {
+    do_atrchown(executor, arg_left, arg_right);
+  } else {
+    do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+             queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_chzoneall)
@@ -655,6 +669,9 @@ COMMAND(cmd_grep)
     flags |= GREP_REGEXP;
   else if (SW_ISSET(sw, SWITCH_WILD))
     flags |= GREP_WILD;
+
+  if (SW_ISSET(sw, SWITCH_PARENT))
+    flags |= GREP_PARENT;
 
   if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_PRINT))
     print = 1;
@@ -1226,7 +1243,8 @@ COMMAND(cmd_name)
 
 COMMAND(cmd_newpassword)
 {
-  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry, SW_ISSET(sw, SWITCH_GENERATE));
+  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry,
+                 SW_ISSET(sw, SWITCH_GENERATE));
 }
 
 COMMAND(cmd_nuke)

@@ -332,6 +332,9 @@ struct text_queue {
 /** Negotiated GMCP via Telnet */
 #define CONN_GMCP 0x2000
 
+/** Sending and receiving UTF-8 */
+#define CONN_UTF8 0x4000
+
 /** Maximum \@doing length */
 #define DOING_LEN 40
 
@@ -406,7 +409,8 @@ struct descriptor_data {
 
 
 enum json_type { JSON_NONE =
-    0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT };
+    0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT
+};
 
 typedef struct json_data JSON;
 struct json_data {

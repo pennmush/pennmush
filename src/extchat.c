@@ -75,7 +75,7 @@ static char *list_cuflags(CHANUSER *u, int verbose);
 static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
-void chat_player_announce(dbref player, char *msg, int ungag);
+void chat_player_announce(DESC *desc_player, char *msg, int ungag);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -89,6 +89,8 @@ static const char chan_join_lock[] = "ChanJoinLock";    /**< Name of join lock *
 static const char chan_mod_lock[] = "ChanModLock";      /**< Name of modify lock */
 static const char chan_see_lock[] = "ChanSeeLock";      /**< Name of see lock */
 static const char chan_hide_lock[] = "ChanHideLock";    /**< Name of hide lock */
+
+char *parse_chat_alias(dbref player, char *command);
 
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
@@ -354,7 +356,7 @@ new_channel(void)
   if (!ch)
     return NULL;
   ch->name = NULL;
-  ch->title[0] = '\0';
+  ch->desc[0] = '\0';
   ChanType(ch) = CHANNEL_DEFAULT_FLAGS;
   ChanCreator(ch) = NOTHING;
   ChanMogrifier(ch) = NOTHING;
@@ -432,7 +434,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
   ChanName(ch) = mush_strdup(getstring_noalloc(fp), "channel.name");
   if (penn_feof(fp))
     return 0;
-  mush_strncpy(ChanTitle(ch), getstring_noalloc(fp), CHAN_TITLE_LEN);
+  mush_strncpy(ChanDesc(ch), getstring_noalloc(fp), CHAN_DESC_LEN);
   ChanType(ch) = (privbits) getref(fp);
   ChanCreator(ch) = getref(fp);
   ChanMogrifier(ch) = NOTHING;
@@ -465,7 +467,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
   db_read_this_labeled_string(fp, "name", &tmp);
   ChanName(ch) = mush_strdup(tmp, "channel.name");
   db_read_this_labeled_string(fp, "description", &tmp);
-  mush_strncpy(ChanTitle(ch), tmp, CHAN_TITLE_LEN);
+  mush_strncpy(ChanDesc(ch), tmp, CHAN_DESC_LEN);
   db_read_this_labeled_int(fp, "flags", &i);
   ChanType(ch) = (privbits) i;
   db_read_this_labeled_dbref(fp, "creator", &d);
@@ -858,7 +860,7 @@ save_channel(PENNFILE *fp, CHAN *ch)
   CHANUSER *cu;
 
   db_write_labeled_string(fp, " name", ChanName(ch));
-  db_write_labeled_string(fp, "  description", ChanTitle(ch));
+  db_write_labeled_string(fp, "  description", ChanDesc(ch));
   db_write_labeled_int(fp, "  flags", ChanType(ch));
   db_write_labeled_dbref(fp, "  creator", ChanCreator(ch));
   db_write_labeled_int(fp, "  cost", ChanCost(ch));
@@ -1492,7 +1494,6 @@ parse_chat(dbref player, char *command)
   }
 }
 
-
 /** Chat on a channel, given its name.
  * \verbatim
  * This function parses a channel name and then calls do_chat()
@@ -1535,6 +1536,7 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
              ("CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."));
       return 1;
     }
+    /* FALLTHRU */
   case CMATCH_EXACT:
   case CMATCH_PARTIAL:
     do_chat(player, c, msg);
@@ -2367,7 +2369,7 @@ FUNCTION(fun_cinfo)
       return;
     }
     if (string_prefix(called_as, "CD")) {
-      safe_str(ChanTitle(c), buff, bp);
+      safe_str(ChanDesc(c), buff, bp);
     } else if (string_prefix(called_as, "CB")) {
       if (ChanBufferQ(c) != NULL) {
         safe_integer(BufferQSize(ChanBufferQ(c)), buff, bp);
@@ -2878,7 +2880,7 @@ do_chan_what(dbref player, const char *partname)
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
-      notify_format(player, T("Description: %s"), ChanTitle(c));
+      notify_format(player, T("Description: %s"), ChanDesc(c));
       notify_format(player, T("Owner: %s"),
                     AName(ChanCreator(c), AN_SYS, NULL));
       if (ChanMogrifier(c) != NOTHING) {
@@ -2961,8 +2963,8 @@ do_chan_decompile(dbref player, const char *name, int brief)
       if (ChanSeeLock(c) != TRUE_BOOLEXP)
         notify_format(player, "@clock/see %s = %s", cleanp,
                       unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
-      if (ChanTitle(c))
-        notify_format(player, "@channel/desc %s = %s", cleanp, ChanTitle(c));
+      if (ChanDesc(c))
+        notify_format(player, "@channel/desc %s = %s", cleanp, ChanDesc(c));
       if (ChanBufferQ(c))
         notify_format(player, "@channel/buffer %s = %d", cleanp,
                       bufferq_blocks(ChanBufferQ(c)));
@@ -3110,11 +3112,11 @@ FUNCTION(fun_cwho)
  * \param title description of the channel.
  */
 void
-do_chan_desc(dbref player, const char *name, const char *title)
+do_chan_desc(dbref player, const char *name, const char *desc)
 {
   CHAN *c;
-  /* Check new title length */
-  if (title && strlen(title) > CHAN_TITLE_LEN - 1) {
+  /* Check new desc length */
+  if (desc && strlen(desc) > CHAN_DESC_LEN - 1) {
     notify(player, T("CHAT: New description too long."));
     return;
   }
@@ -3126,12 +3128,12 @@ do_chan_desc(dbref player, const char *name, const char *title)
     return;
   }
   /* Ok, let's do it */
-  if (!title || !*title) {
-    ChanTitle(c)[0] = '\0';
+  if (!desc || !*desc) {
+    ChanDesc(c)[0] = '\0';
     notify_format(player, T("CHAT: Channel <%s> description cleared."),
                   ChanName(c));
   } else {
-    strcpy(ChanTitle(c), title);
+    strcpy(ChanDesc(c), desc);
     notify_format(player, T("CHAT: Channel <%s> description set."),
                   ChanName(c));
   }
@@ -3186,12 +3188,12 @@ canstilladd(dbref player)
 extern DESC *descriptor_list;
 
 /** Tell players on a channel when someone connects or disconnects.
- * \param player player that is connecting or disconnecting.
+ * \param desc_player descriptor that is connecting or disconnecting.
  * \param msg message to announce.
  * \param ungag if 1, remove any channel gags the player has.
  */
 void
-chat_player_announce(dbref player, char *msg, int ungag)
+chat_player_announce(DESC *desc_player, char *msg, int ungag)
 {
   DESC *d;
   CHAN *c;
@@ -3204,15 +3206,21 @@ chat_player_announce(dbref player, char *msg, int ungag)
   intmap *seen;
   struct format_msg format;
   char *accname;
+  dbref player = desc_player->player;
 
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
     up = onchannel(player, c);
     if (up) {
-      if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-                                || (!Chanuser_Hide(up) && !Dark(player)))) {
-        channel_send(c, player,
-                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
+      if (!Channel_Quiet(c)) {
+        if (Chanuser_Hide(up) || (desc_player->hide == 1))
+          channel_send(c, player,
+                       CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE |
+                       CB_SEEALL, msg);
+        else
+          channel_send(c, player,
+                       CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+                       msg);
       }
       if (ungag) {
         CUtype(up) &= ~CU_GAG;
@@ -3241,14 +3249,17 @@ chat_player_announce(dbref player, char *msg, int ungag)
       bp = buff;
       bp2 = buff2;
 
+      if ((desc_player->hide == 1) && !See_All(viewer) && (player != viewer))
+        continue;
+
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
         if (up && uv) {
           if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
               && !Chanuser_Gag(uv)
-              && (Channel_Admin(c) || Channel_Wizard(c)
-                  || (!Chanuser_Hide(up) && !Dark(player)))) {
+              &&
+              ((!Chanuser_Hide(up) || See_All(viewer) || (player == viewer)))) {
             if (Chanuser_Combine(uv)) {
               shared = true;
               safe_str(ChanName(c), buff, &bp);
@@ -3503,7 +3514,7 @@ FUNCTION(fun_crecall)
     num_lines = parse_integer(args[1]);
     if (num_lines == 0)
       num_lines = INT_MAX;
-  } else if (etime_to_secs(args[1], &num_lines)) {
+  } else if (etime_to_secs(args[1], &num_lines, 0)) {
     recall_timestring = 1;
     recall_from = (time_t) mudtime - num_lines;
   } else {
@@ -3572,6 +3583,11 @@ FUNCTION(fun_crecall)
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
                              &timestamp)) && num_lines > 0) {
+    if ((type == CBTYPE_SEEALL) && !See_All(executor) && speaker != executor) {
+      num_lines--;
+      continue;
+    }
+
     if (first)
       first = 0;
     else
@@ -3945,6 +3961,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     if ((flags & CB_NOCOMBINE) && Chanuser_Combine(u)) {
       continue;
     }
+    if ((flags & CB_SEEALL) && !See_All(current) && (current != player))
+      continue;
+
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
@@ -3953,8 +3972,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
 
   if (ChanBufferQ(channel) && !skip_buffer)
-    add_to_bufferq(ChanBufferQ(channel), 0,
-                   (flags & CB_NOSPOOF) ? player : NOTHING, buff);
+    add_to_bufferq(ChanBufferQ(channel),
+                   (flags & CB_SEEALL) ? CBTYPE_SEEALL : 0,
+                   (flags & CB_NOSPOOF) ? NOTHING : player, buff);
 
   if (!(flags & CB_PRESENCE) && !speaker) {
     notify_format(player, T("To channel %s: %s"), ChanName(channel), buff);
@@ -4007,7 +4027,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
       num_lines = parse_integer(lines);
       if (num_lines == 0)
         num_lines = INT_MAX;
-    } else if (etime_to_secs(lines, &num_lines)) {
+    } else if (etime_to_secs(lines, &num_lines, 0)) {
       recall_timestring = 1;
       recall_from = (time_t) mudtime - num_lines;
     } else {
@@ -4066,6 +4086,10 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
                              &timestamp)) && num_lines > 0) {
+    if ((type == CBTYPE_SEEALL) && !See_All(player) && (speaker != player)) {
+      num_lines--;
+      continue;
+    }
     if (quiet)
       notify(player, buf);
     else {
@@ -4183,4 +4207,271 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
   retval = eval_boolexp(p, b, p, pe_info);
   free_pe_info(pe_info);
   return retval;
+}
+
+/* Parse a "channel_alias message" into "real_channel_name=message"
+ * Used for MUX-style channel aliases
+ */
+char *
+parse_chat_alias(dbref player, char *command)
+{
+  char *alias;
+  char *message;
+  char *bp;
+  char channame[BUFFER_LEN];
+  char save;
+  char *av;
+  ATTR *a;
+  CHAN *c;
+  bool chat = 0;
+
+  alias = bp = command;
+  while (*bp && !isspace((unsigned char) *bp))
+    bp++;
+
+  if (!*bp)
+    return NULL;
+
+  save = *bp;
+  message = bp;
+  *message++ = '\0';
+  while (*message && isspace((unsigned char) *message))
+    message++;
+
+  strcpy(channame, alias);
+  upcasestr(channame);
+  a = atr_get(player, tprintf("CHANALIAS`%s", channame));
+  if (!a || !(av = safe_atr_value(a, "chanalias"))) {
+    /* Not an alias */
+    *bp = save;
+    return NULL;
+  }
+
+  switch (find_channel_partial_on(av, &c, player)) {
+  case CMATCH_EXACT:
+    bp = command;
+    /* If message is "on", "off", or "who", it's not speech, it's @chan/ungag,
+     * @chan/gag, or @chan/who, respectively */
+    if (!strcasecmp("on", message)) {
+      safe_format(command, &bp, "/ungag %s", av);
+    } else if (!strcasecmp("off", message)) {
+      safe_format(command, &bp, "/gag %s", av);
+    } else if (!strcasecmp("who", message)) {
+      safe_format(command, &bp, "/who %s", av);
+    } else {
+      safe_format(command, &bp, "%s=%s", av, message);
+      chat = 1;
+    }
+    *bp = '\0';
+    mush_free(av, "chanalias");
+    if (chat)
+      return "@CHAT";
+    else
+      return "@CHANNEL";
+  default:
+    *bp = save;
+    mush_free(av, "chanalias");
+    return NULL;
+  }
+}
+
+COMMAND(cmd_addcom)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  ATTR *a;
+  CHAN *chan = NULL;
+
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+
+  if (!arg_left || !*arg_left || strchr(arg_left, '`') || strlen(arg_left) > 15) {
+    notify(executor, T("Invalid alias."));
+    return;
+  }
+  safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
+  *bp = '\0';
+  upcasestr(buff);
+  if (!good_atr_name(buff)) {
+    notify(executor, T("Invalid alias."));
+    return;
+  }
+  a = atr_get_noparent(executor, buff);
+  if (a) {
+    notify(executor, T("That alias is already in use."));
+    return;
+  }
+  switch (find_channel(arg_right, &chan, executor)) {
+  case CMATCH_NONE:
+    notify(executor, T("I don't recognise that channel."));
+    return;
+  case CMATCH_AMBIG:
+    notify(executor, T("I don't know which channel you mean."));
+    list_partial_matches(executor, arg_right, PMATCH_ALL);
+    return;
+  default:
+    break;
+  }
+  if (!Chan_Can_See(chan, executor)) {
+    notify(executor, T("I don't recognise that channel."));
+    return;
+  }
+  if (!onchannel(executor, chan)) {
+    /* Not currently on channel; try and join them to it */
+    channel_join_self(executor, ChanName(chan));
+  }
+  if (!onchannel(executor, chan)) {
+    /* Still not on it? You can't join. channel_join_self will have told you so */
+    return;
+  }
+  atr_add(executor, buff, normalize_channel_name(ChanName(chan)), GOD, 0);
+  notify_format(executor, T("Alias %s added for channel <%s>."), arg_left,
+                ChanName(chan));
+}
+
+static int
+
+
+delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
+              __attribute__ ((__unused__)), dbref parent
+              __attribute__ ((__unused__)), const char *pattern
+              __attribute__ ((__unused__)), ATTR *atr, void *args);
+
+static int
+delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
+              __attribute__ ((__unused__)), dbref parent
+              __attribute__ ((__unused__)), const char *pattern
+              __attribute__ ((__unused__)), ATTR *atr, void *args)
+{
+  if (!strcasecmp(atr_value(atr), (char *) args))
+    return 1;
+  return 0;
+}
+
+COMMAND(cmd_delcom)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  ATTR *a;
+  char *channame;
+  int matches;
+
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+
+  safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
+  *bp = '\0';
+  upcasestr(buff);
+  a = atr_get_noparent(executor, buff);
+  if (!a) {
+    notify(executor, T("No such alias."));
+    return;
+  }
+  channame = safe_atr_value(a, "delcom");
+
+  atr_clr(executor, buff, GOD);
+  matches =
+    atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, delcom_helper, channame);
+  if (!matches) {
+    channel_leave_self(executor, channame);
+  } else {
+    notify(executor, T("Alias removed."));
+  }
+  mush_free(channame, "delcom");
+}
+
+static int comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing
+                          __attribute__ ((__unused__)), dbref parent
+                          __attribute__ ((__unused__)), const char *pattern
+                          __attribute__ ((__unused__)), ATTR *atr, void *args);
+
+static int
+comlist_helper(dbref player
+               __attribute__ ((__unused__)), dbref thing, dbref parent
+               __attribute__ ((__unused__)), const char *pattern
+               __attribute__ ((__unused__)), ATTR *atr, void *args
+               __attribute__ ((__unused__)))
+{
+  CHAN *c;
+  CHANUSER *cu;
+  char buff[BUFFER_LEN];
+  char *bp;
+  char channame[BUFFER_LEN];
+  char *cn = channame;
+  int namelen;
+
+  if (find_channel(atr_value(atr), &c, thing) != CMATCH_EXACT)
+    return 0;
+
+  if (!(cu = onchannel(thing, c)))
+    return 0;
+
+  mush_strncpy(buff, strlower(AL_NAME(atr)), BUFFER_LEN);
+  bp = strchr(buff, '`');
+  if (!bp)
+    return 0;
+  bp++;
+  if (!*bp)
+    return 0;
+  safe_str(ChanName(c), channame, &cn);
+  *cn = '\0';
+  namelen = ansi_strlen(channame);
+  if (namelen < 30) {
+    safe_fill(' ', 30 - namelen, channame, &cn);
+    *cn = '\0';
+  }
+  notify_format(thing, "%-18s %s %-8s %s", bp, channame,
+                Chanuser_Gag(cu) ? "Off" : "On",
+                CUtitle(cu) ? CUtitle(cu) : "");
+  return 1;
+}
+
+COMMAND(cmd_comlist)
+{
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+
+  notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
+                T("Status"), T("Title"));
+  atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
+  notify(executor, T("-- End of comlist --"));
+}
+
+COMMAND(cmd_clist)
+{
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+
+  do_channel_list(executor, arg_left, CHANLIST_ALL);
+}
+
+COMMAND(cmd_comtitle)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  ATTR *a;
+
+  if (!USE_MUXCOMM) {
+    notify(executor, T("Command disabled."));
+    return;
+  }
+
+  safe_format(buff, &bp, "CHANALIAS`%s", arg_left);
+  *bp = '\0';
+  upcasestr(buff);
+  a = atr_get_noparent(executor, buff);
+  if (!a) {
+    notify_format(executor, T("No such alias '%s'."), arg_left);
+    return;
+  }
+  mush_strncpy(buff, atr_value(a), BUFFER_LEN);
+  do_chan_title(executor, buff, arg_right);
 }

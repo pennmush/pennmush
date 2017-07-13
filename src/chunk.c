@@ -255,9 +255,6 @@
 #define PRIdS "t"
 #endif
 
-
-#if ATTR_STORAGE == 0           /* Malloc system */
-
 /* Data format is a 16 bit length field , followed by 16 bits reserved
    for future use (And to ensure 4-byte alignment), followed by the
    data. Derefs are not used. */
@@ -274,14 +271,14 @@ acm_chunk_create(char const *data, uint16_t len, uint8_t derefs
   memcpy(chunk, &len, 2);
   memcpy(chunk + 4, data, len);
 
-  return chunk;
+  return (uintptr_t) chunk;
 }
 
 static void
 acm_chunk_delete(chunk_reference_t reference)
 {
   if (reference)
-    mush_free(reference, "chunk");
+    mush_free((void *) reference, "chunk");
 }
 
 static uint16_t
@@ -292,10 +289,10 @@ acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
   if (!reference)
     return 0;
 
-  memcpy(&len, reference, 2);
+  memcpy(&len, (void *) reference, 2);
 
   if (buffer_len >= len) {
-    memcpy(buffer, reference + 4, len);
+    memcpy(buffer, ((uint8_t *) reference) + 4, len);
   }
 
   return len;
@@ -307,7 +304,7 @@ acm_chunk_len(chunk_reference_t reference)
   uint16_t len;
   if (!reference)
     return 0;
-  memcpy(&len, reference, 2);
+  memcpy(&len, (void *) reference, 2);
   return len;
 }
 
@@ -377,8 +374,6 @@ acm_chunk_fork_done(void)
 }
 
 #endif                          /* !WIN32 */
-
-#elif ATTR_STORAGE == 1         /* Chunk system */
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
@@ -2723,14 +2718,58 @@ acc_chunk_fork_done(void)
 }
 #endif                          /* !WIN32 */
 
-#endif                          /* ATTR_STORAGE == 1, chunk system */
+struct ac_funcs {
+  chunk_reference_t (*chunk_create) (char const *, uint16_t, uint8_t);
+  void (*chunk_delete) (chunk_reference_t);
+  uint16_t (*fetch) (chunk_reference_t, char *, uint16_t);
+  uint16_t (*len) (chunk_reference_t);
+  uint8_t (*derefs) (chunk_reference_t);
+  void (*migration) (int, chunk_reference_t **);
+  int (*num_swapped) (void);
+  void (*init) (void);
+  void (*stats) (dbref, enum chunk_stats_type);
+  void (*new_period) (void);
+  int (*fork_file) (void);
+  void (*fork_parent) (void);
+  void (*fork_child) (void);
+  void (*fork_done) (void);
+};
 
-#if ATTR_STORAGE == 0
-#define ACPREFIX(name) acm_ ## name
-#elif ATTR_STORAGE == 1
-#define ACPREFIX(name) acc_ ## name
-#endif
+static struct ac_funcs malloc_interface = {
+  acm_chunk_create,
+  acm_chunk_delete,
+  acm_chunk_fetch,
+  acm_chunk_len,
+  acm_chunk_derefs,
+  acm_chunk_migration,
+  acm_chunk_num_swapped,
+  acm_chunk_init,
+  acm_chunk_stats,
+  acm_chunk_new_period,
+  acm_chunk_fork_file,
+  acm_chunk_fork_parent,
+  acm_chunk_fork_child,
+  acm_chunk_fork_done
+};
 
+static struct ac_funcs chunk_interface = {
+  acc_chunk_create,
+  acc_chunk_delete,
+  acc_chunk_fetch,
+  acc_chunk_len,
+  acc_chunk_derefs,
+  acc_chunk_migration,
+  acc_chunk_num_swapped,
+  acc_chunk_init,
+  acc_chunk_stats,
+  acc_chunk_new_period,
+  acc_chunk_fork_file,
+  acc_chunk_fork_parent,
+  acc_chunk_fork_child,
+  acc_chunk_fork_done
+};
+
+static struct ac_funcs *chunker = NULL;
 /*
  * Interface routines
  */
@@ -2743,7 +2782,7 @@ acc_chunk_fork_done(void)
 chunk_reference_t
 chunk_create(char const *data, uint16_t len, uint8_t derefs)
 {
-  return ACPREFIX(chunk_create) (data, len, derefs);
+  return chunker->chunk_create(data, len, derefs);
 }
 
 /** Deallocate a chunk of storage.
@@ -2752,7 +2791,7 @@ chunk_create(char const *data, uint16_t len, uint8_t derefs)
 void
 chunk_delete(chunk_reference_t reference)
 {
-  ACPREFIX(chunk_delete) (reference);
+  chunker->chunk_delete(reference);
 }
 
 /** Fetch a chunk of data.
@@ -2768,7 +2807,7 @@ chunk_delete(chunk_reference_t reference)
 uint16_t
 chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
 {
-  return ACPREFIX(chunk_fetch) (reference, buffer, buffer_len);
+  return chunker->fetch(reference, buffer, buffer_len);
 }
 
 /** Get the length of a chunk.
@@ -2781,7 +2820,7 @@ chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
 uint16_t
 chunk_len(chunk_reference_t reference)
 {
-  return ACPREFIX(chunk_len) (reference);
+  return chunker->len(reference);
 }
 
 /** Get the deref count of a chunk.
@@ -2793,7 +2832,7 @@ chunk_len(chunk_reference_t reference)
 uint8_t
 chunk_derefs(chunk_reference_t reference)
 {
-  return ACPREFIX(chunk_derefs) (reference);
+  return chunker->derefs(reference);
 }
 
 /** Migrate allocated chunks around.
@@ -2805,7 +2844,7 @@ chunk_derefs(chunk_reference_t reference)
 void
 chunk_migration(int count, chunk_reference_t **references)
 {
-  ACPREFIX(chunk_migration) (count, references);
+  chunker->migration(count, references);
 }
 
 /** Get the number of paged regions.
@@ -2818,7 +2857,7 @@ chunk_migration(int count, chunk_reference_t **references)
 int
 chunk_num_swapped(void)
 {
-  return ACPREFIX(chunk_num_swapped) ();
+  return chunker->num_swapped();
 }
 
 /** Initialize chunk subsystem.
@@ -2827,7 +2866,12 @@ chunk_num_swapped(void)
 void
 chunk_init(void)
 {
-  ACPREFIX(chunk_init) ();
+  if (options.use_chunk)
+    chunker = &chunk_interface;
+  else
+    chunker = &malloc_interface;
+
+  chunker->init();
 }
 
 /** Report statistics.
@@ -2838,7 +2882,7 @@ chunk_init(void)
 void
 chunk_stats(dbref player, enum chunk_stats_type which)
 {
-  ACPREFIX(chunk_stats) (player, which);
+  chunker->stats(player, which);
 }
 
 /** Start a new migration period.
@@ -2849,7 +2893,7 @@ chunk_stats(dbref player, enum chunk_stats_type which)
 void
 chunk_new_period(void)
 {
-  ACPREFIX(chunk_new_period) ();
+  chunker->new_period();
 }
 
 #ifndef WIN32
@@ -2860,7 +2904,7 @@ chunk_new_period(void)
 int
 chunk_fork_file(void)
 {
-  return ACPREFIX(chunk_fork_file) ();
+  return chunker->fork_file();
 }
 
 /** Assert that we're the parent after fork.
@@ -2868,7 +2912,7 @@ chunk_fork_file(void)
 void
 chunk_fork_parent(void)
 {
-  ACPREFIX(chunk_fork_parent) ();
+  chunker->fork_parent();
 }
 
 /** Assert that we're the child after fork.
@@ -2876,7 +2920,7 @@ chunk_fork_parent(void)
 void
 chunk_fork_child(void)
 {
-  ACPREFIX(chunk_fork_child) ();
+  chunker->fork_child();
 }
 
 /** Assert that we're done with the cloned chunkswap file.
@@ -2884,7 +2928,7 @@ chunk_fork_child(void)
 void
 chunk_fork_done(void)
 {
-  ACPREFIX(chunk_fork_done) ();
+  chunker->fork_done();
 }
 
 #endif                          /* !WIN32 */

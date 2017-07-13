@@ -434,6 +434,9 @@ ptab_stats(dbref player, PTAB *tab, const char *pname)
 {
   size_t m, n;
 
+  if (!tab)
+    return;
+
   m = sizeof(struct ptab_entry *) * tab->maxlen;
 
   for (n = 0; n < tab->len; n++)

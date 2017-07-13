@@ -474,6 +474,9 @@ im_stats_header(dbref player)
 void
 im_stats(dbref player, intmap *im, const char *name)
 {
+  if (!im)
+    return;
+
   size_t bytes = sizeof *im + (sizeof(patricia) * im->count);
 #ifdef WIN32
 #define PRIszt "Iu"

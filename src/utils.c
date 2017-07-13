@@ -30,9 +30,14 @@
 #ifdef WIN32
 #include <wtypes.h>
 #include <winbase.h>            /* For GetCurrentProcessId() */
+#include <Wincrypt.h>
 #endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
+
+#ifdef __RDRND__
+#include <immintrin.h>
 #endif
 
 #include "SFMT.h"
@@ -520,21 +525,39 @@ initialize_mt(void)
 {
 #ifdef HAVE_DEV_URANDOM
   int fd;
-  uint32_t buf[4];              /* The linux manpage for /dev/urandom
+  uint32_t buf[128];              /* The linux manpage for /dev/urandom
                                    advises against reading large amounts of
                                    data from it; we used to read 624*4 (Or *8 on 64-bit systems)
-                                   bytes. The new figure is much more reasonable. */
+                                   bytes. The new figure is much more reasonable, at the cost of reducing the
+				   number of possible starting states by a lot . */
+  int to_read = sizeof buf;
+
+#ifdef __RDRND__
+  to_read = to_read / 2;
+#endif
 
   fd = open("/dev/urandom", O_RDONLY);
   if (fd >= 0) {
-    int r = read(fd, buf, sizeof buf);
+    int r = read(fd, buf, to_read);
     close(fd);
     if (r <= 0) {
       fprintf(stderr,
               "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
-      fprintf(stderr, "Seeded RNG from /dev/urandom\n");
-      sfmt_init_by_array(&rand_state, buf, r / sizeof(uint32_t));
+#ifdef __RDRND__
+      /* Also use rdrand to fill in some more bytes when
+	 available. Could just use /dev/urandom for all of it, but
+	 playing around with this is more fun. Plus it spreads the
+	 entropy around a bit. */
+      for (int i = r/4; i < 128; i += 1) {
+	if (_rdrand32_step(buf + i))
+	  r += 4;
+	else
+	  break;      
+      }
+#endif
+      fprintf(stderr, "Seeded RNG with %d bytes from /dev/urandom\n", r);
+      sfmt_init_by_array(&rand_state, buf, r / sizeof buf[0]);
       return;
     }
   } else
@@ -544,7 +567,27 @@ initialize_mt(void)
 #endif
   /* Default seeder. Pick a seed that's fairly random */
 #ifdef WIN32
-  sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
+
+  /* Use the Win32 crypto RNG interface */
+  HCRYPTPROV hCryptProv;  
+  uint32_t buf[128];
+  bool acquired = 1;
+
+  if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
+			   CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
+    fprintf(stderr, "Unable to acquire crypt context: %d\n", GetLastError());
+    acquired = 0;
+  }
+  if (acquired && CryptGenRandom(hCryptProv, sizeof buf, (BYTE *)buf)) {
+    fprintf(stderr, "Seeded RNG with %u bytes from CryptGenRandom()\n",
+	    sizeof buf);
+    sfmt_init_by_array(&rand_state, buf, sizeof buf / sizeof buf[0]);    
+  } else {
+    sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
+  }
+  if (acquired)
+    CryptReleaseContext(hCryptProv, 0);
+  
 #else
   sfmt_init_gen_rand(&rand_state, getpid() | (time(NULL) << 16));
 #endif

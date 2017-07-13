@@ -60,6 +60,13 @@ void *
 mush_malloc(size_t bytes, const char *check)
 {
   void *ptr;
+
+#ifdef HAVE_SSE42
+  if (strcmp(check, "string") == 0 ||
+      strcmp(check, "descriptor_raw_input") == 0)
+    bytes += 16;
+#endif
+  
   ptr = malloc(bytes);
   if (!ptr)
     do_rawlog(LT_TRACE, "mush_malloc failed to malloc %lu bytes for %s",

@@ -95,6 +95,7 @@ static void check_zones(void);
 static int attribute_owner_helper
   (dbref player, dbref thing, dbref parent, char const *pattern, ATTR *atr,
    void *args);
+static bool special_object(dbref thing);
 
 extern void remove_all_obj_chan(dbref thing);
 extern void chan_chownall(dbref old, dbref new);
@@ -196,6 +197,17 @@ extern struct db_stat_info current_state;
  */
 
 
+ /** Is thing a special object that should absolutely not be destroyed? */
+static bool
+special_object(dbref thing)
+{
+  if (thing == PLAYER_START || thing == MASTER_ROOM || thing == BASE_ROOM ||
+      thing == DEFAULT_HOME || God(thing) || thing == options.probate_judge) {
+    return 1;
+  }
+  return 0;
+}
+
 /** Determine what object to destroy and if we're allowed.
  * Do all matching and permissions checking. Returns the object to be
  * destroyed if all the permissions checks are successful, otherwise
@@ -238,8 +250,7 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
     notify(player, T("Permission denied."));
     return NOTHING;
   }
-  if (thing == PLAYER_START || thing == MASTER_ROOM || thing == BASE_ROOM ||
-      thing == DEFAULT_HOME || God(thing)) {
+  if (special_object(thing)) {
     notify(player, T("That is too special to be destroyed."));
     return NOTHING;
   }
@@ -887,7 +898,8 @@ clear_player(dbref thing)
   /* Deal with objects owned by the player. */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == thing && i != thing) {
-      if (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1) {
+      if (special_object(i) || 
+        (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1)) {
         chown_object(GOD, i, probate, 0);
       } else {
         free_object(i);
@@ -1048,7 +1060,12 @@ purge(void)
       continue;
     } else if (Going(thing)) {
       if (Going_Twice(thing)) {
-        free_object(thing);
+        if (special_object(thing)) {
+          /* Ruh-roh */
+          (void) undestroy(GOD, thing);
+        } else {
+          free_object(thing);
+        }
       } else {
         set_flag_internal(thing, "GOING_TWICE");
       }

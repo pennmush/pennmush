@@ -3,7 +3,7 @@
 # - System configuration - #
 
 VERSION=1.8.6
-PATCHLEVEL=0
+PATCHLEVEL=1
 
 #
 # This section of the file should be automatically configured by the
@@ -34,7 +34,7 @@ SHELL=/bin/sh
 # Where to install with 'make globalinstall'
 GLOBAL_INSTALL=@libexecdir@
 
-all: config.h options.h autogen game/mush.cnf
+all: config.h autogen game/mush.cnf
 	@echo "Making all in src."
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
@@ -47,10 +47,6 @@ config.h: configure
 	@echo "Run that first. If you did just run configure and"
 	@echo "it said that config.h was unchanged, 'touch config.h'"
 	@echo "to suppress this message and continue compiling."
-	@exit 1
-
-options.h: options.h.dist
-	@echo "Please use 'make update' to set/update your MUSH configuration in options.h and the game/*.cnf files. This will also create game/restart."
 	@exit 1
 
 autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h
@@ -165,12 +161,7 @@ $(GAMEDIR)/mush.cnf: game/mushcnf.dst
 $(GAMEDIR)/restart: game/restart.dst
 	-@if [ ! -f $(GAMEDIR)/restart ]; then $(CP) game/restart.dst $(GAMEDIR)/restart; fi
 
-update: update-hdr update-conf game/restart
-
-update-hdr:
-	-@@TOUCH@ options.h.dist
-	-@sleep 2
-	-@@PERL@ utils/update.pl options.h options.h.dist
+update: update-conf game/restart
 
 test: netmud
 	(cd test; sh alltests.sh)
@@ -185,7 +176,7 @@ distclean:
 	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf restart)
 	(cd src; @MAKE@ distclean; rm -f Makefile)
 	(cd game/txt; @MAKE@ clean)
-	(rm -rf .config Makefile config.h config.sh options.h)
+	(rm -rf .config Makefile config.h config.sh)
 
 totallyclean: distclean 
 	(cd hdrs; rm -rf *.rej)

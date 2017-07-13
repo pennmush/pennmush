@@ -26,6 +26,9 @@
 #include <sys/types.h>
 #endif
 #include <fcntl.h>
+#ifdef HAVE_CRYPT_H
+#include <crypt.h>
+#endif
 
 #include "access.h"
 #include "attrib.h"
@@ -41,14 +44,6 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
-
-#ifdef HAVE_CRYPT
-#ifdef I_CRYPT
-#include <crypt.h>
-#else
-extern char *crypt(const char *, const char *);
-#endif
-#endif
 
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);
@@ -377,19 +372,6 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
   return make_player(name, password, host, ip);
 }
 
-/* The HAS_SENDMAIL ifdef is kept here as a hint to metaconfig */
-#ifdef MAILER
-#undef HAVE_SENDMAIL
-#define HAVE_SENDMAIL 1
-#undef SENDMAIL
-#define SENDMAIL MAILER
-#endif
-
-#ifdef HAVE_SENDMAIL
-
-/** Size of the elems array */
-#define NELEMS (sizeof(elems)-1)
-
 /** Attempt to register a new player at the connect screen.
  * If registration is allowed, a new player object is created with
  * a random password which is emailed to the registering player.
@@ -411,10 +393,14 @@ email_register_player(DESC *d, const char *name, const char *email,
   bool resend = 0;
   dbref player = NOTHING;
   FILE *fp;
+  size_t NELEMS = sizeof(elems) - 1;
 
   if (!check_fails(ip)) {
     return NOTHING;
   }
+
+  if (strlen(options.sendmail_prog) == 0)
+    return NOTHING;
 
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     /* Check for re-registration request */
@@ -493,7 +479,7 @@ email_register_player(DESC *d, const char *name, const char *email,
    */
 
   release_fd();
-  if ((fp = popen(tprintf("%s -t", SENDMAIL), "w")) == NULL) {
+  if ((fp = popen(tprintf("%s -t", options.sendmail_prog), "w")) == NULL) {
     do_log(LT_CONN, 0, 0,
            "Failed registration of %s by %s: unable to open sendmail",
            name, email);
@@ -544,19 +530,6 @@ email_register_player(DESC *d, const char *name, const char *email,
     return player;
   }
 }
-#else
-dbref
-email_register_player(DESC *d
-                      __attribute__ ((__unused__)), const char *name,
-                      const char *email, const char *host, const char *ip
-                      __attribute__ ((__unused__)))
-{
-  do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);
-  do_log(LT_CONN, 0, 0, "Requested character: '%s'. Email address: %s\n",
-         name, email);
-  return NOTHING;
-}
-#endif                          /* !HAVE_SENDMAIL */
 
 static dbref
 make_player(const char *name, const char *password, const char *host,

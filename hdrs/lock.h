@@ -135,5 +135,6 @@ extern lock_type Open_Lock;     /* who can @open exits in this room? */
 extern lock_type Filter_Lock;   /* Who can be forwarded by audible objects */
 extern lock_type InFilter_Lock; /* Whose sound is played inside listening objects */
 extern lock_type DropIn_Lock;   /* Who can drop objects in a location */
+extern lock_type Chown_Lock;    /* Who can @chown me if I'm chown_ok? */
 
 #endif                          /* __LOCK_H */

@@ -157,7 +157,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h])
 AC_CHECK_HEADERS([sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h])
-AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h unistr.h])
+AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h unistr.h])
 AC_CHECK_HEADERS([zlib.h event2/event.h event2/dns.h fenv.h sys/param.h])
 AC_CHECK_HEADERS([sys/ucred.h], [], [], [
 AC_INCLUDES_DEFAULT
@@ -195,6 +195,7 @@ AC_TYPE_INT64_T
 AC_TYPE_UINT64_T
 AC_TYPE_INTMAX_T
 AC_TYPE_UINTMAX_T
+AC_TYPE_UINTPTR_T
 AC_CHECK_TYPES([imaxdiv_t])
 
 ### Libraries
@@ -224,6 +225,14 @@ AX_CHECK_OPENSSL(
  AC_DEFINE(HAVE_SSL),
  AC_MSG_ERROR([The OpenSSL library must be installed to run PennMUSH.])
 )
+
+OLDLIBS="${LIBS}"
+OLDLDFLAGS="${LDFLAGS}"
+LIBS="${LIBS} ${OPENSSL_LIBS}"
+LDFLAGS="${LDFLAGS} ${OPENSSL_LDFLAGS}"
+AC_CHECK_FUNCS([SHA DH_set0_pqg])
+LIBS="${OLDLIBS}"
+LDFLAGS="${OLDLDFLAGS}"
 
 # system libpcre
 AX_PATH_LIB_PCRE()
@@ -437,19 +446,24 @@ AC_ARG_ENABLE(sse3, AS_HELP_STRING([--enable-sse3],
   [Use SSE3 instructions (Requires a CPU that supports SSE3)]))
 AC_ARG_ENABLE(ssse3, AS_HELP_STRING([--enable-ssse3],
   [Use SSSE3 instructions (Requires a CPU that supports SSSE3)]))
+AC_ARG_ENABLE(sse42, AS_HELP_STRING([--enable-sse42],
+  [Use SSE4.2 instructions (Requires a CPU that supports SSE 4.2)]))
 AC_ARG_ENABLE(altivec, AS_HELP_STRING([--enable-altivec],
   [Use PowerPC Altivec instructions (Requires a CPU that supports Altivec)]))
+
+if test "$enable_sse42" = yes; then
+   AC_DEFINE(HAVE_SSE42)
+   CFLAGS="$CFLAGS -msse4.2"
+fi
 
 if test "$enable_ssse3" = yes; then
    AC_DEFINE(HAVE_SSSE3)
    CFLAGS="$CFLAGS -mssse3"
-   enable_sse3=yes
 fi
 
 if test "$enable_sse3" = yes; then
    AC_DEFINE(HAVE_SSE3)
    CFLAGS="$CFLAGS -msse3"
-   enable_sse2=yes
 fi
 
 if test "$enable_sse2" = yes; then
@@ -508,8 +522,6 @@ if test "$enable_ipv6" = yes; then
 else
   echo "* Sockets are limited to IPv4"
 fi
-
-
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES([game/txt/compose.sh], [chmod +x game/txt/compose.sh])

@@ -20,7 +20,7 @@
 #include "strutil.h"
 #include "externs.h"
 
-#define PASSWORD_HASH "sha1"
+#define PASSWORD_HASH "sha512"
 
 bool decode_base64(char *encoded, int len, bool printonly, char *buff,
                    char **bp);
@@ -38,8 +38,9 @@ bool password_comp(const char *saved, const char *pass);
  * \return encrypted password.
  */
 char *
-mush_crypt_sha0(const char *key)
+mush_crypt_sha0(const char *key __attribute__((__unused__)))
 {
+#ifdef HAVE_SHA
   static char crypt_buff[70];
   uint8_t hash[SHA_DIGEST_LENGTH];
   unsigned int a, b;
@@ -64,6 +65,9 @@ mush_crypt_sha0(const char *key)
   sprintf(crypt_buff, "XX%u%u", a, b);
 
   return crypt_buff;
+#else
+  return "";
+#endif
 }
 
 /** Hash a string and store it base-16 encoded in a buffer.
@@ -79,7 +83,7 @@ int
 safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
                  char **bp, bool inplace_err)
 {
-  EVP_MD_CTX ctx;
+  EVP_MD_CTX *ctx;
   const EVP_MD *md;
   uint8_t hash[EVP_MAX_MD_SIZE];
   unsigned int rlen = EVP_MAX_MD_SIZE;
@@ -93,11 +97,12 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
                 "safe_hash_byname: Unknown password hash function: %s", algo);
     return 1;
   }
-
-  EVP_DigestInit(&ctx, md);
-  EVP_DigestUpdate(&ctx, plaintext, len);
-  EVP_DigestFinal(&ctx, hash, &rlen);
-
+  ctx = EVP_MD_CTX_create();
+  EVP_DigestInit(ctx, md);
+  EVP_DigestUpdate(ctx, plaintext, len);
+  EVP_DigestFinal(ctx, hash, &rlen);
+  EVP_MD_CTX_destroy(ctx);
+  
   return safe_hexstr(hash, rlen, buff, bp);
 }
 
@@ -105,7 +110,7 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
 bool
 check_mux_password(const char *saved, const char *password)
 {
-  EVP_MD_CTX ctx;
+  EVP_MD_CTX *ctx;
   const EVP_MD *md;
   uint8_t hash[EVP_MAX_MD_SIZE];
   unsigned int rlen = EVP_MAX_MD_SIZE;
@@ -147,11 +152,13 @@ check_mux_password(const char *saved, const char *password)
   decode_base64(start, strlen(start), 0, decoded, &dp);
   *dp = '\0';
   /* Double-hash the password */
-  EVP_DigestInit(&ctx, md);
-  EVP_DigestUpdate(&ctx, start, strlen(start));
-  EVP_DigestUpdate(&ctx, password, strlen(password));
-  EVP_DigestFinal(&ctx, hash, &rlen);
-
+  ctx = EVP_MD_CTX_create();
+  EVP_DigestInit(ctx, md);
+  EVP_DigestUpdate(ctx, start, strlen(start));
+  EVP_DigestUpdate(ctx, password, strlen(password));
+  EVP_DigestFinal(ctx, hash, &rlen);
+  EVP_MD_CTX_destroy(ctx);
+  
   /* Decode the stored password */
   dp = decoded;
   decode_base64(end, strlen(end), 0, decoded, &dp);

@@ -73,6 +73,7 @@
 #include "pueblo.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "charconv.h"
 
 extern CHAN *channels;
 
@@ -150,7 +151,7 @@ static int na_depth = 0; /**< Counter to prevent too much notify_anything recurs
 #define MSGTYPE_PUEBLO           (MSG_PLAYER | MSG_PUEBLO)      /*                                      1        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI2      (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI2)  /*                              2        1         ?          1    */
 #define MSGTYPE_PUEBLOANSI16     (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI16) /*                             16        1         ?          1    */
-#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256) /*                          256        1         ?          1    */
+#define MSGTYPE_PUEBLOXTERM256   (MSG_PLAYER | MSG_PUEBLO | MSG_XTERM256)       /*                          256        1         ?          1    */
 
 #define MSGTYPE_TPASCII          (MSG_PLAYER | MSG_TELNET)      /*                                      1        0         1          1    */
 #define MSGTYPE_TANSI2           (MSG_PLAYER | MSG_TELNET | MSG_ANSI2)  /*                              2        0         1          1    */
@@ -1437,8 +1438,22 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       /* Propagate sound */
       if (IsRoom(target)) {
         dbref exit;
+        int i, skip = 0;
+
         DOLIST(exit, Exits(target)) {
+          skip = 0;
           if (Audible(exit)) {
+            if (skips != NULL) {
+              for (i = 0; skips[i] != NOTHING; i++) {
+                if (skips[i] == exit) {
+                  /* Skip this exit */
+                  skip = 1;
+                  break;
+                }
+              }
+            }
+            if (skip)
+              continue;
             if (VariableExit(exit))
               loc = find_var_dest(speaker, exit, NULL, NULL);
             else if (HomeExit(exit))
@@ -1541,7 +1556,8 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {
       fwd = parse_objid(curr);
-      if (RealGoodObject(fwd) && (thing != fwd) && (skip != fwd) && Can_Forward(thing, fwd)) {
+      if (RealGoodObject(fwd) && (thing != fwd) && (skip != fwd)
+          && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
           notify_anything(speaker, speaker, na_loc, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);
@@ -1771,9 +1787,18 @@ queue_newwrite(DESC *d, const char *b, int n)
 {
   int space;
 
+  const char *utf8 = NULL;
+  
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;
 
+  if (d->conn_flags & CONN_UTF8) {
+    int utf8bytes = 0;
+    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
+    b = utf8;
+    n = utf8bytes;
+  }
+  
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing
        directly to the socket. Add whatever's left to the buffer to
@@ -1783,8 +1808,11 @@ queue_newwrite(DESC *d, const char *b, int n)
     if ((written = send(d->descriptor, b, n, 0)) > 0) {
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
       d->output_chars += written;
-      if (written == n)
+      if (written == n) {
+	if (utf8)
+	  mush_free(utf8, "string");
         return written;
+      }
       n -= written;
       b += written;
     } else if (written < 0) {
@@ -1793,6 +1821,8 @@ queue_newwrite(DESC *d, const char *b, int n)
                 written, strerror(errno), n, d->descriptor);
       if (!is_blocking_err(written)) {
         d->conn_flags |= CONN_SOCKET_ERROR;
+	if (utf8)
+	  mush_free(utf8, "string");
         return 0;
       }
     } else {                    /* written == 0 */
@@ -1820,6 +1850,8 @@ queue_newwrite(DESC *d, const char *b, int n)
   }
   add_to_queue(&d->output, b, n);
   d->output_size += n;
+  if (utf8)
+    mush_free(utf8, "string");
   return n;
 }
 

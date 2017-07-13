@@ -18,11 +18,6 @@ Here's the details:
    Don't edit help.txt, news.txt, etc. directly; if you do, any changes will
    be lost! 
  
-   compose.sh will also call index-files.pl to make an 'index' topic which 
-   lists all your topic names. The file <dir>/index.<dir> contains this 
-   index, and is overwritten each time the index is built. Don't use it for
-   your own content!
-
 So, if you want to add your own news entries, make a file called
 nws/local.nws and put 'em there. Or maybe organize it into parts:
 nws/theme.nws, nws/code.nws, etc. ** DO NOT ** edit news.txt, help.txt, etc.
@@ -32,7 +27,7 @@ Files distributed with PennMUSH always begin with "penn", so don't
 start your files with that.
 
 To add a new "help"-style command, follow these steps. For this example,
-we'll add a command called "foobar".
+we'll add a command called "+foobar".
 
   1) Create a new directory in the game/txt directory, in this case
      game/txt/foobar
@@ -64,7 +59,7 @@ foobar.txt: foobar/*.foobar foobar compose.sh
 TXT=help.txt news.txt other.txt stuff.txt foobar.txt
 
   5) To add the new command to your MUSH, add this line to your mush.cnf
-     help_command foobar txt/foobar.txt
+     help_command +foobar txt/foobar.txt
   
 After you've made these changes, and created your "*.foobar" files, run the
 "make" command in the game/txt directory. This will build the "foobar.txt"

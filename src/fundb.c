@@ -923,7 +923,10 @@ FUNCTION(fun_controls)
       safe_str(T("#-1 BAD ATTR NAME"), buff, bp);
       return;
     }
-    safe_chr(can_edit_attr(it, thing, attrname) ? '1' : '0', buff, bp);
+    if (controls(it, thing) && can_edit_attr(it, thing, attrname))
+      safe_chr('1', buff, bp);
+    else
+      safe_chr('0', buff, bp);
   } else
     safe_chr(controls(it, thing) ? '1' : '0', buff, bp);
 }
@@ -2308,14 +2311,15 @@ FUNCTION(fun_grep)
     return;
   }
 
-  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI")
-      || !strcmp(called_as, "REGREPI"))
+  if (strstr(called_as, "GREPI"))
     flags |= GREP_NOCASE;
 
   if (*called_as == 'W')
     flags |= GREP_WILD;
   else if (*called_as == 'R')
     flags |= GREP_REGEXP;
+  else if (*called_as == 'P')
+    flags |= GREP_PARENT;
 
   grep_util(executor, it, args[1], args[2], buff, bp, flags);
 }

@@ -169,7 +169,7 @@ FUNCTION(fun_art)
   }
   c = DOWNCASE(*args[0]);
   if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
-    safe_str("an", buff, bp);
+    safe_strl("an", 2, buff, bp);
   else
     safe_chr('a', buff, bp);
 }
@@ -967,10 +967,10 @@ FUNCTION(fun_rjust)
     if (nargs > 3 && parse_boolean(args[3])) {
       if (has_markup(args[0])) {
         as = parse_ansi_string(args[0]);
-        safe_ansi_string(as, as->len - spaces, as->len, buff, bp);
+        safe_ansi_string(as, 0, spaces, buff, bp);
         free_ansi_string(as);
       } else {
-        safe_strl(args[0] + (len - spaces), spaces, buff, bp);
+        safe_strl(args[0], spaces, buff, bp);
       }
     } else {
       safe_strl(args[0], arglens[0], buff, bp);
@@ -1370,13 +1370,13 @@ FUNCTION(fun_squish)
 /* ARGSUSED */
 FUNCTION(fun_space)
 {
-  int s;
+  size_t s;
 
-  if (!is_uinteger(args[0])) {
+  if (!is_strict_uinteger(args[0])) {
     safe_str(T(e_uint), buff, bp);
     return;
   }
-  s = parse_integer(args[0]);
+  s = parse_uinteger(args[0]);
   safe_fill(' ', s, buff, bp);
 }
 
@@ -1429,7 +1429,7 @@ FUNCTION(fun_chr)
 {
   int c;
 
-  if (!is_integer(args[0])) {
+  if (!is_strict_uinteger(args[0])) {
     safe_str(T(e_uint), buff, bp);
     return;
   }
@@ -1708,8 +1708,7 @@ align_one_line(char *buff, char **bp, int ncols,
     }
     if ((j < ncols) &&
         (!(calign[j] & AL_REPEAT) &&
-         (calign[j] & AL_COALESCE_LEFT) &&
-         (!ptrs[j] || !*ptrs[j]))) {
+         (calign[j] & AL_COALESCE_LEFT) && (!ptrs[j] || !*ptrs[j]))) {
       /* To coalesce left on this line, modify the left column's
        * width and set the current column width to 0 (which we can
        * teach it to skip). */
@@ -1869,6 +1868,7 @@ align_one_line(char *buff, char **bp, int ncols,
         }
         break;
       }
+      /* FALLTHRU */
     default:                   /* Left-align */
       safe_str(segment, line, &lp);
       /* Don't fill if we're set NOFILL */

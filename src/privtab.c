@@ -24,9 +24,10 @@
 /** Convert a string to a set of privilege bits, masked by an original set.
  * Given a privs table, a string, and an original set of privileges,
  * return a modified set of privileges by applying the privs in the
- * string to the original set of privileges. IF A SINGLE WORD STRING
- * IS GIVEN AND IT ISN'T THE NAME OF A PRIV, PARSE IT AS INDIVIDUAL
- * PRIV CHARS.
+ * string to the original set of privileges.
+ * 
+ * Matches single-letter words against one-char aliases, and does prefix
+ * matching; intended for user-input, not internal uses.
  * \param table pointer to a privtab.
  * \param str a space-separated string of privilege names to apply.
  * \param origprivs the original privileges.
@@ -90,8 +91,11 @@ string_to_privs(const PRIV *table, const char *str, privbits origprivs)
 /** Convert a list to a set of privilege bits, masked by an original set.
  * Given a privs table, a list, and an original set of privileges,
  * return a modified set of privileges by applying the privs in the
- * string to the original set of privileges. No prefix-matching is
- * permitted in this list.
+ * string to the original set of privileges. 
+ *
+ * Does NO prefix matching, and does not match single-character elements
+ * against the one-character aliases; intended primarily for internal use,
+ * not for code taking player input.
  * \param table pointer to a privtab.
  * \param str a space-separated string of privilege names to apply.
  * \param origprivs the original privileges.
@@ -142,7 +146,7 @@ list_to_privs(const PRIV *table, const char *str, privbits origprivs)
  * \param clrprivs pointer to address to store privileges to clear.
  * \retval 1 string successfully parsed for bits with no errors.
  * \retval 0 string contained no privs
- * \retval -1 string at least one name matched no privs.
+ * \retval -1 at least one name matched no privs.
  */
 int
 string_to_privsets(const PRIV *table, const char *str, privbits *setprivs,
@@ -255,7 +259,7 @@ privs_to_string(const PRIV *table, privbits privs)
 
   bp = buf;
   for (c = table; c->name; c++) {
-    if (privs & c->bits_to_show) {
+    if ((privs & c->bits_to_show) == c->bits_to_show) {
       if (bp != buf)
         safe_chr(' ', buf, &bp);
       safe_str(c->name, buf, &bp);
@@ -281,7 +285,7 @@ privs_to_letters(const PRIV *table, privbits privs)
 
   bp = buf;
   for (c = table; c->name; c++) {
-    if ((privs & c->bits_to_show) && c->letter) {
+    if ((privs & c->bits_to_show) == c->bits_to_show && c->letter) {
       safe_chr(c->letter, buf, &bp);
       privs &= ~c->bits_to_set;
     }

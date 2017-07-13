@@ -394,7 +394,7 @@ See also: @teleport, ACTION LISTS, VERBS
   
   This command changes the ownership of the attribute <attribute> on <object> to <new owner>. You can only @atrchown attributes which you can set. Wizards can @atrchown to any player, while mortals can only @atrchown attributes to themselves. Only players can own attributes; if <new owner> is not a player, <new owner>'s owner is used instead.
 
-See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
+See also: @atrlock, @chown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @atrlock
 & @attrlock
   @atrlock <object>/<attribute>
@@ -584,20 +584,25 @@ See also: use, @ause, ACTION LISTS
     CHARGES [#6$]: 0
 & @chown
   @chown[/preserve] <object>=<player>
+  @chown <object>/<attribute>=<player>
 
-  Changes the ownership of <object> to <player>. You can chown things, rooms or exits. Players can't be @chown'd - they always own themselves. To chown a thing, you have to be carrying it. If you do not own an object, you can only chown it if it has the CHOWN_OK flag. If you're not a Wizard, you can only @chown objects to yourself or a Zone Master whose zone-lock you pass.
+  Changes the ownership of <object> to <player>. You can chown things, rooms or exits. Players can't be @chown'd - they always own themselves. To chown a thing, you have to be carrying it. If you do not own an object, you can only chown it if it has the CHOWN_OK flag and you pass its @lock/chown. If you're not a Wizard, you can only @chown objects to yourself or a Zone Master whose zone-lock you pass.
 
   Normally, @chown'ing an object clears privileged flags and powers, and sets the object halt. Wizards can use @chown/preserve to avoid this. Doing this to an active object with queued commands is not recommended, and may have strange and insecure effects.
+  
+  If /<attribute> is specified, it acts as an alias for @atrchown; see 'help @atrchown' for details.
 
   Examples:
     > @chown here=me (for a room)
     > @chown box=Soundwave (for a thing)
 
-See also: CHOWN_OK, Zone Masters, @chownall, owner()
+See also: CHOWN_OK, Zone Masters, @chownall, owner(), @atrchown
 & @chownall
-  @chownall[/preserve] <player>[=<new owner>]
+  @chownall[/preserve][/<types>] <player>[=<new owner>]
 
-  This command @chowns all objects currently owned by <player> to the player <new owner>, or to the person running the command if no <new owner> is given. All the objects will have priviledged flags and powers cleared, and be set halt, unless the /preserve switch is given.
+  This command @chowns all objects currently owned by <player> to the player <new owner>, or to the person running the command if no <new owner> is given. All the objects will have privileged flags and powers cleared, and be set halt, unless the /preserve switch is given.
+  
+  If one or more of /things, /rooms or /exits are provided, only objects of the given types are chowned. Otherwise, all objects are chowned.
   
   This command can only be used by Wizards.
 
@@ -1508,9 +1513,8 @@ See also: RESTRICT, FUNCTIONS, @startup, fn(), valid()
   All matches are case-sensitive, unless the /nocase switch is given.
   
   @grep only shows a list of matching attributes. However, you can specify the /print switch, in which case attribute values are also shown, with the matching substrings ansi-highlighted if appropriate.
-
-  Continued in 'help @grep2'.
-& @grep2
+  
+  If the /parent switch is given, attributes <object> inherits from its parent(s) will be checked as well.
 
   For backwards compatability, the /list switch provides the default behaviour of listing attributes without printing the values, and /ilist and /iprint are aliases for /list/nocase and /print/nocase.
    
@@ -1666,18 +1670,19 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   
   Register  Description
   --------  -------------------------------------------------------------
-  ARGS      The entire argument string. Always available.
-  
-  For EQSPLIT commands:
-  LS        If the command doesn't have multiple left-side args, LS is set to the entire left-side arg (before the =)
+  Always available:
+  ARGS      The entire argument string, before evaluation. Always available.
+  LS        If the command doesn't have multiple left-side args, LS is set to the entire left-side arg (before the = for EQSPLIT commands)
   LSAC      For commands with multiple left-side-args, the number of left-side args given
   LSAx      The xth left-side-arg, where x is between 1 and LSAC
+  
+  Available for EQSPLIT commands:
   EQUALS    If the = was given, this is set to "="
   RS        For commands without multiple right-side args, this is the entire right-side arg (after the =)
   RSAC      For commands with multiple right-side-args, the number of right-side args given
   RSAx      The xth right-side-arg, where x is between 1 and RSAC
   
-  For SWITCHES commands (such as @lock):
+  Available for SWITCHES commands (such as @lock):
   SWITCHES  The switch string given. (Note: Currently, switches given to normal commands are not available here, but can be accessed via the %u substitution.)
 
 & HUH_COMMAND
@@ -2061,10 +2066,13 @@ Config options: player_name_spaces, player_name_len, only_ascii_in_names
 See also: @name, name(), VERBS
 & @newpassword
   @newpassword <player>=<password>
+  @newpassword/generate <player>
 
   This wizard-only command changes <player>'s password. If <player> is connected, she will be informed that the password was changed and who by, but not what it was changed to.
   
-  The <player> argument is evaluated, but the <password> argument is not.
+  The <player> argument is evaluated, but the <password> argument is not when the command is entered directly from a client.
+  
+  If the /generate switch is given, a new, random password is generated automatically, and shown to the enactor (but not to <player>).
 
 See also: @password, checkpass()
 & @notify
@@ -2729,6 +2737,8 @@ See also: sql(), sqlescape(), mapsql(), @mapsql
   Sets the list of actions on <object> that will happen whenever the MUSH is restarted. This lets you start up objects that need to be running continuously. It is also useful for setting up @functions and @hooks, which are not saved across restarts.
   
   @startup is also triggered when an object is @restarted or @undestroyed.
+  
+  Note that @startups are NEVER inherited from parent objects.
   
 See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook
 & @stats

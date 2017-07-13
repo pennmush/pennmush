@@ -678,5 +678,5 @@ notify_activity(dbref player, int num_lines, int dump)
 void
 penn_perror(const char *err)
 {
-  do_rawlog(LT_ERR, "%s:%s", err, strerror(errno));
+  do_rawlog(LT_ERR, "%s: %s", err, strerror(errno));
 }

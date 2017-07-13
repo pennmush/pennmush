@@ -62,7 +62,6 @@ static int
 static int escape_marked_str(char **str, char *buff, char **bp);
 static bool valid_hex_digits(const char *, int);
 
-const char *is_allowed_tag(const char *s, unsigned int len);
 void build_rgb_map(void);
 int ansi_equal(const ansi_data *a, const ansi_data *b);
 int ansi_isnull(const ansi_data a);
@@ -375,7 +374,7 @@ FUNCTION(fun_html)
 FUNCTION(fun_tag)
 {
   int i;
-  if (!Can_Pueblo_Send(executor)
+  if (!Can_Send_OOB(executor)
       && !is_allowed_tag(args[0], arglens[0])) {
     safe_str("#-1", buff, bp);
     return;
@@ -395,7 +394,7 @@ FUNCTION(fun_tag)
 /* ARGSUSED */
 FUNCTION(fun_endtag)
 {
-  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Send_OOB(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else
     safe_tag_cancel(args[0], buff, bp);
@@ -404,7 +403,7 @@ FUNCTION(fun_endtag)
 /* ARGSUSED */
 FUNCTION(fun_tagwrap)
 {
-  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Send_OOB(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else {
     if (nargs == 2)
@@ -1391,7 +1390,7 @@ define_ansi_data(ansi_data *store, const char *str)
           }
           break;
         }
-        /* Fall through on other numbers starting with 0 */
+        /* fall through - on other numbers starting with 0 */
       case '1':
       case '2':
       case '3':
@@ -1562,6 +1561,38 @@ read_raw_ansi_data(ansi_data *store, const char *codes)
         store->bg[0] = 0;
         break;
       }
+    } else if (curnum == 38 || curnum == 48) {
+      bool fg = (curnum == 38);
+      /* XTERM. Bah. */
+      while (*codes && isdigit(*codes))
+        codes++;
+      if (*codes && *codes == ';') {
+        codes++;
+        curnum = atoi(codes);
+      } else {
+        curnum = -1;
+      }
+      if (curnum != 5) {
+        /* Something is wrong; abort */
+        while (*codes && (*codes != 'm'))
+          codes++;
+        return 0;               /* Should this return 1 or 0? Who knows */
+      }
+      codes++;                  /* skip over the '5' */
+      if (*codes && *codes == ';') {
+        codes++;
+        curnum = atoi(codes);
+      } else {
+        curnum = -1;
+      }
+      if (curnum < 0 || curnum > 255) {
+        /* Something is wrong; abort */
+        while (*codes && (*codes != 'm'))
+          codes++;
+        return 0;               /* Should this return 1 or 0? Who knows */
+      }
+      snprintf((fg ? store->fg : store->bg), COLOR_NAME_LEN, "+xterm%d",
+               curnum);
     } else if (curnum < 40) {
       store->fg[0] = ansi_chars[curnum];
       store->fg[1] = 0;

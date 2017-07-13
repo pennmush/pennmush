@@ -376,6 +376,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   switch (*arg2) {
   case SEMI_POSE_TOKEN:
     gap = "";
+    /* Fall through */
   case POSE_TOKEN:
     key = 1;
     arg2++;
@@ -659,6 +660,7 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
       break;
     case SEMI_POSE_TOKEN:
       gap = "";
+      /* Fall through */
     case POSE_TOKEN:
       pose = 1;
       message++;
@@ -986,6 +988,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   switch (*message) {
   case SEMI_POSE_TOKEN:
     gap = "";
+    /* Fall through */
   case POSE_TOKEN:
     key = 1;
     message++;

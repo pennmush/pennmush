@@ -805,24 +805,24 @@ do_stats(dbref player, const char *name)
  */
 void
 do_newpassword(dbref executor, dbref enactor,
-               const char *name, const char *password, MQUE *queue_entry, bool generate )
+               const char *name, const char *password, MQUE *queue_entry,
+               bool generate)
 {
   dbref victim;
   static char elems[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   char passwd[20];
- 
-  if (generate) { 
+
+  if (generate) {
     int i;
     int len = get_random32(7, 12);
-   
+
     for (i = 0; i < len; i++)
       passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
     passwd[len] = '\0';
     password = passwd;
-  } else 
-  {
-    
+  } else {
+
     if (!queue_entry->port) {
       char pass_eval[BUFFER_LEN];
       char const *sp;
@@ -830,7 +830,7 @@ do_newpassword(dbref executor, dbref enactor,
       sp = password;
       bp = pass_eval;
       process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                         PE_DEFAULT, PT_DEFAULT, NULL);
       *bp = '\0';
       password = pass_eval;
     }
@@ -845,12 +845,12 @@ do_newpassword(dbref executor, dbref enactor,
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
-    if (generate) // If we generate a PW, tell the executor what it is.
+    if (generate)               // If we generate a PW, tell the executor what it is.
       notify_format(executor, T("Password for %s changed to %s."),
-                  AName(victim, AN_SYS, NULL), password);
-      else
+                    AName(victim, AN_SYS, NULL), password);
+    else
       notify_format(executor, T("Password for %s changed."),
-                  AName(victim, AN_SYS, NULL));
+                    AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
                   AName(executor, AN_SYS, NULL));
     do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
@@ -965,9 +965,11 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
  * \param name name of player whose objects are to be chowned.
  * \param target name of new owner for objects.
  * \param preserve if 1, keep privileges and don't halt objects.
+ * \param types types of objects to chown
  */
 void
-do_chownall(dbref player, const char *name, const char *target, int preserve)
+do_chownall(dbref player, const char *name, const char *target, int preserve,
+            int types)
 {
   int i;
   dbref victim;
@@ -993,7 +995,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
   }
 
   for (i = 0; i < db_top; i++) {
-    if ((Owner(i) == victim) && (!IsPlayer(i))) {
+    if ((Owner(i) == victim) && (Typeof(i) & types)) {
       chown_object(player, i, n_target, preserve);
       count++;
     }

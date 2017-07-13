@@ -72,6 +72,8 @@ void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
 
+char *parse_chat_alias(dbref player, char *command);    /* from extchat.c */
+
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
  */
@@ -97,9 +99,11 @@ COMLIST commands[] = {
   {"@BREAK", "INLINE QUEUED", cmd_break,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
-  {"@SKIP", "IFELSE", cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
+  {"@SKIP", "IFELSE", cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
    0},
-  {"@IFELSE", NULL, cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
+  {"@IFELSE", NULL, cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
    0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -109,7 +113,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
    0, 0},
   {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHOWNALL", "PRESERVE", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
+  {"@CHOWNALL", "PRESERVE THINGS ROOMS EXITS", cmd_chownall,
+   CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
    0},
 
   {"@CHOWN", "PRESERVE", cmd_chown,
@@ -178,7 +183,7 @@ COMLIST commands[] = {
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
    cmd_function,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
-  {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
+  {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE PARENT", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL NOEVAL PID", cmd_halt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
@@ -406,6 +411,12 @@ COMLIST commands[] = {
 /* A way to let people override the unimplemented message */
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
+
+  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"DELCOM", NULL, cmd_delcom, CMD_T_ANY, 0, 0},
+  {"@CLIST", "FULL", cmd_clist, CMD_T_ANY, 0, 0},
+  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
 
   {NULL, NULL, NULL, 0, 0, 0}
 };
@@ -1102,6 +1113,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *p, *t, *c, *c2;
   char command2[BUFFER_LEN];
   char b;
+  bool parse_switches = 1;
   int switchnum;
   switch_mask sw = NULL;
   char switch_err[BUFFER_LEN], *se;
@@ -1110,6 +1122,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *retval;
   NEW_PE_INFO *pe_info = queue_entry->pe_info;
   int pe_flags = 0;
+  int skip_char = 1;
+  bool is_chat = 0;
 
   rhs_present = 0;
 
@@ -1153,6 +1167,17 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   else if (queue_entry->queue_type & QUEUE_DEBUG)
     pe_flags = PE_DEBUG;
 
+  if (*p == CHAT_TOKEN || (CHAT_TOKEN_ALIAS && *p == CHAT_TOKEN_ALIAS)) {
+    /* parse_chat() destructively modifies the command to replace
+     * the first space with a '=' if the command is an actual
+     * chat command */
+    if (parse_chat(player, p + 1)
+        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
+      *p = CHAT_TOKEN;
+      is_chat = 1;
+    }
+  }
+
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
@@ -1179,17 +1204,10 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     replacer = "@EMIT";
     break;
   case CHAT_TOKEN:
-#ifdef CHAT_TOKEN_ALIAS
-  case CHAT_TOKEN_ALIAS:
-#endif
-    /* parse_chat() destructively modifies the command to replace
-     * the first space with a '=' if the command is an actual
-     * chat command */
-    if (parse_chat(player, p + 1)
-        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
-      /* This is a "+chan foo" chat style
-       * We set noevtoken to keep its noeval way, and
-       * set the cmd to allow @hook. */
+    /* This is a "+chan foo" chat style
+     * We set noevtoken to keep its noeval way, and
+     * set the cmd to allow @hook. */
+    if (is_chat) {
       replacer = "@CHAT";
       noevtoken = 1;
     }
@@ -1204,12 +1222,36 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       replacer = "@FORCE";
       noevtoken = 1;
     }
+    skip_char = 0;
+  }
+
+  if (replacer)
+    parse_switches = 0;
+
+  if (USE_MUXCOMM) {
+    if (!replacer && (replacer = parse_chat_alias(player, p))
+        && command_check_byname(player, replacer, pe_info)) {
+      noevtoken = 1;
+      skip_char = 0;
+      if (!strcmp(replacer, "@CHAT")) {
+        /* Don't parse switches for @chat. Do for @channel. */
+        parse_switches = 0;
+      }
+    }
   }
 
   if (replacer) {
     cmd = command_find(replacer);
-    if (*p != NUMBER_TOKEN)
+    if (skip_char)
       p++;
+    strcpy(command, p);
+    if (parse_switches && *p == '/') {
+      while (*p && *p != ' ') {
+        p++;
+      }
+      while (*p == ' ')
+        p++;
+    }
   } else {
     /* At this point, we have not done a replacer, so we continue with the
      * usual processing. Exits have next priority.  We still pass them
@@ -1285,14 +1327,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
    * appended at the position pointed to by c2.
    */
   c2 = c;
-  if (replacer) {
-    /* These commands don't allow switches, and need a space
-     * added after their canonical name
-     */
-    c2 = commandraw;
-    safe_str(cmd->name, commandraw, &c2);
-    safe_chr(' ', commandraw, &c2);
-  } else if (*c2 == '/') {
+  if (parse_switches && *c2 == '/') {
     /* Oh... DAMN */
     c2 = commandraw;
     strcpy(switches, commandraw);
@@ -1302,6 +1337,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   } else {
     c2 = commandraw;
     safe_str(cmd->name, commandraw, &c2);
+    if (replacer)
+      safe_chr(' ', commandraw, &c2);
   }
 
   /* Parse out any switches */
@@ -1313,7 +1350,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   t = NULL;
 
   /* Don't parse switches for one-char commands */
-  if (!replacer) {
+  if (parse_switches) {
     while (*c == '/') {
       t = swtch;
       c++;
@@ -1509,24 +1546,25 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
     pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "switches",
                 swp);
 
-  if (cmd->type & CMD_T_EQSPLIT) {
-    /* ls, before the = */
-    if (cmd->type & CMD_T_LS_ARGS) {
-      char argname[10];
-      j = 0;
-      for (i = 1; i < MAX_ARG; i++) {
-        if (lsa[i] && *lsa[i]) {
-          mush_strncpy(argname, tprintf("lsa%d", i), 10);
-          pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
-                      lsa[i]);
-          j = i;
-        }
+
+  /* ls, before the = */
+  if (cmd->type & CMD_T_LS_ARGS) {
+    char argname[10];
+    j = 0;
+    for (i = 1; i < MAX_ARG; i++) {
+      if (lsa[i] && *lsa[i]) {
+        mush_strncpy(argname, tprintf("lsa%d", i), 10);
+        pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
+                    lsa[i]);
+        j = i;
       }
-      if (j)
-        pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
-    } else if (ls && *ls) {
-      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
     }
+    if (j)
+      pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
+  } else if (ls && *ls) {
+    pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
+  }
+  if (cmd->type & CMD_T_EQSPLIT) {
     /* The = itself */
     if (rhs_present)
       pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "equals",

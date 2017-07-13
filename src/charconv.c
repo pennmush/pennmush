@@ -50,7 +50,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet) {
     int eos = _mm_cmpistri(zeros, chunk, 
 			   _SIDD_UBYTE_OPS + _SIDD_CMP_EQUAL_EACH
 			   + _SIDD_LEAST_SIGNIFICANT);
-    int ascii = _mm_movemask_epi8(_mm_cmpistrm(ascii_range, chunk,
+    int ascii = _mm_cvtsi128_si32(_mm_cmpistrm(ascii_range, chunk,
 					       _SIDD_UBYTE_OPS
 					       + _SIDD_CMP_RANGES));
     ascii = _mm_popcnt_u32(ascii); // Assume that SSE4.2 means popcnt too
@@ -231,13 +231,33 @@ utf8_to_latin1(const char *utf8, int *outlen) {
   int n;
 
 #ifdef HAVE_SSE42
-  const char maskarray[16] __attribute__((aligned(16))) = {
-    0x1, 0x7F,
+  __m128i zeros = _mm_setzero_si128();
+  const unsigned char maskarray[16] __attribute__((aligned(16))) = {
+    0x1, 0x7F, 0xC1, 0xDF, 0xE1, 0xEF, 0xF1, 0xF7
   };
   __m128i mask = _mm_load_si128((__m128i *) maskarray);
   
+  while (1) {
+    __m128i chunk = _mm_loadu_si128((__m128i *) u);
+    int r = _mm_cvtsi128_si32(_mm_cmpistrm(mask, chunk, _SIDD_UBYTE_OPS +
+					       _SIDD_CMP_RANGES));
+    int chars = _mm_popcnt_u32(r);
+    bytes += chars;
+    int eos = _mm_cmpistri(zeros, chunk, _SIDD_UBYTE_OPS +
+			   _SIDD_CMP_EQUAL_EACH + _SIDD_LEAST_SIGNIFICANT);
+    //fprintf("Chunk '%.16s': chars = %d, eos = %d\n",
+    //	    u, chars, eos);
+    u += 16;
+    if (eos != 16) {
+      ulen += eos;
+      break;
+    } else {
+      ulen += 16;
+    }
+  }
   
 #else
+
   while (*u) {
     if (*u < 128) {
       bytes += 1;
@@ -258,7 +278,6 @@ utf8_to_latin1(const char *utf8, int *outlen) {
   unsigned char *p = (unsigned char *)s;
 
 #ifdef HAVE_SSE42
-  __m128i zeros = _mm_setzero_si128();
   const char ar[16] __attribute__((aligned(16))) = { 0x01, 0x7F };
   __m128i ascii_range = _mm_load_si128((__m128i *)ar);
 #endif

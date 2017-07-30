@@ -19,6 +19,7 @@ Fixes:
  * Fix overflow bug in mapsql(). [MG]
  * elements() would very rarely give an extra delimiter. Reported by Ashen-Shugar. [1108-MG]
  * Missing null termination in 'buy' fixed by CLDawes. [1128]
+ * Fix an off-by-one error in switch handling code that could cause a crash on startup. [SW]
 
 Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush

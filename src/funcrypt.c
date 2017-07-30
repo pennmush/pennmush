@@ -312,7 +312,7 @@ int safe_hash_byname(const char *algo, const char *plaintext, int len,
                      char *buff, char **bp, bool inplace_err);
 
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#ifdef HAVE_EVP_MD_DO_ALL
 #define CAN_LIST_DIGESTS
 
 static void

@@ -229,7 +229,7 @@ OLDLIBS="${LIBS}"
 OLDLDFLAGS="${LDFLAGS}"
 LIBS="${LIBS} ${OPENSSL_LIBS}"
 LDFLAGS="${LDFLAGS} ${OPENSSL_LDFLAGS}"
-AC_CHECK_FUNCS([SHA DH_set0_pqg])
+AC_CHECK_FUNCS([SHA DH_set0_pqg EVP_MD_do_all])
 LIBS="${OLDLIBS}"
 LDFLAGS="${OLDLDFLAGS}"
 
@@ -350,7 +350,6 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
  ])
 
 fi
-
 
 ### Variables, constants, defines and other misc. stuff
 

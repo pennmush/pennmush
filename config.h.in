@@ -299,6 +299,8 @@ typedef bool _Bool;
 
 #undef HAVE_DH_SET0_PQG
 
+#undef HAVE_EVP_MD_DO_ALL
+
 /* Variables and defines */
 
 #undef HAVE_H_ERRNO

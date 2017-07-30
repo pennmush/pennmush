@@ -170,7 +170,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
 #ifdef ALWAYS_PARANOID
     if (1) {
 #else
-    if (flag != DUMP_NORMAL) {
+    if (flag != DUMP_NORMAL && flag != DUMP_NOFORK) {
 #endif
       /* want to do a scan before dumping each object */
       globals.paranoid_dump = (flag == DUMP_DEBUG ? 2 : 1);
@@ -211,7 +211,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
       do_rawlog(LT_CHECK, "** DUMP ** done by %s(#%d) at %s",
                 Name(player), player, show_time(mudtime, 0));
     }
-    fork_and_dump(1);
+    fork_and_dump(flag == DUMP_NORMAL);
     globals.paranoid_dump = 0;
     notify(player, T("Dump complete."));
   } else {

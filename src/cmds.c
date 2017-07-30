@@ -478,12 +478,15 @@ COMMAND(cmd_dolist)
 
 COMMAND(cmd_dump)
 {
+  enum dump_type flag = DUMP_NORMAL;
   if (SW_ISSET(sw, SWITCH_PARANOID))
-    do_dump(executor, arg_left, DUMP_PARANOID);
+    flag = DUMP_PARANOID;
   else if (SW_ISSET(sw, SWITCH_DEBUG))
-    do_dump(executor, arg_left, DUMP_DEBUG);
-  else
-    do_dump(executor, arg_left, DUMP_NORMAL);
+    flag = DUMP_DEBUG;
+  else if (SW_ISSET(sw, SWITCH_NOFORK))
+    flag = DUMP_NOFORK;
+
+  do_dump(executor, arg_left, flag);
 }
 
 COMMAND(cmd_edit)

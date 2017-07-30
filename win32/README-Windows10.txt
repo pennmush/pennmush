@@ -15,7 +15,11 @@ Instructions:
     ./configure --disable-info_slave --disable-ssl_slave
    Note that the arguments to configure are required; Penn will not
    work right without them in my tests. This might be fixed in future
-   WSL updates. Seems to be an issue with socketpair(2).
+   WSL updates. Seems to be an issue with socketpair(2). 
+   
+   Update 7/17: socketpair() and unix domain sockets now appear functional and
+   the slaves should work.
+   
 6. Compile like usual:
     make update; make install
 7. Edit game/mush.cnf as needed.

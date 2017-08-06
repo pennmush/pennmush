@@ -15,6 +15,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.6 patchlevel 2                                 ??? ??, 20??
 
 Fixes:
+ * Remove markup from fetch_ufun_attrib() Reported by several people. PR by Qon.
  * Fix compilation errors with OpenSSL 1.1. [SW]
  * Fix overflow bug in mapsql(). [MG]
  * elements() would very rarely give an extra delimiter. Reported by Ashen-Shugar. [1108-MG]

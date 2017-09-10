@@ -36,6 +36,7 @@ Minor changes:
  * MySQL Stored Procedures should now work without causing 'Out of sync' errors. Patch by Mercutio. [1100]
  * Use a better seed for the RNG on Windows. [SW]
  * Make log rotation more robust. [SW]
+ * mkcmds.pl uses a better way to generate temporary files. [SW]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

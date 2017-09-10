@@ -13,10 +13,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <string.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <limits.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -29,6 +25,10 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <limits.h>
 #include <errno.h>
 #include <math.h>
 
@@ -220,11 +220,11 @@ end_all_logs(void)
 
 
 static void
-format_log_name(char *restrict buff, const char *restrict fname, int n)
+format_log_name(char *restrict buff, const char *restrict fname, int n, bool comp)
 {
   char *bp = buff;
   safe_format(buff, &bp, "%s.%d", fname, n);
-  if (options.compresssuff[0])
+  if (comp && options.compresssuff[0])
     safe_str(options.compresssuff, buff, &bp);
   *bp = '\0';
 }
@@ -277,30 +277,50 @@ resize_log_rotate(struct log_stream *log)
   /* Save current file as a copy, start new one. */
   int n;
   char namea[BUFFER_LEN], nameb[BUFFER_LEN];
-  struct stat s;
-
+  
   for (n = 1; 1; n += 1) {
-    format_log_name(namea, log->filename, n);
-    if (stat(namea, &s) < 0)
-      break;
+    format_log_name(namea, log->filename, n, 1);
+    if (!file_exists(namea)) {
+      format_log_name(namea, log->filename, n, 0);
+      if (!file_exists(namea))
+	break;
+    }
   }
   for (; n > 1; n -= 1) {
-    format_log_name(namea, log->filename, n - 1);
-    format_log_name(nameb, log->filename, n);
+    bool comp = 1;
+    format_log_name(namea, log->filename, n - 1, 1);
+    if (!file_exists(namea)) {
+      comp = 0;
+      format_log_name(namea, log->filename, n - 1, 0);
+    }
+    format_log_name(nameb, log->filename, n, comp);
     rename_file(namea, nameb);
   }
 
-  format_log_name(namea, log->filename, 1);
+  format_log_name(namea, log->filename, 1, 1);
 
   if (options.compressprog[0]) {
     /* This can be done better. */
+    pid_t res;
     char *np = nameb;
     safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
                 log->filename, namea);
     *np = '\0';
-    system(nameb);
+    res = system(nameb);
+    if (res == -1 || (WIFEXITED(res) && WEXITSTATUS(res) != 0)) {
+      /* Error with the compression attempt; try an uncompressed copy. */
+      fprintf(stderr, "Unable to make compressed copy of \"%s\"\n", log->filename);
+      format_log_name(namea, log->filename, 1, 0);
+      if (copy_file(log->fp, namea, 1) < 0) {
+	fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
+		log->filename, namea);
+      }
+    }
   } else {
-    copy_file(log->fp, namea, 1);
+      if (copy_file(log->fp, namea, 1) < 0) {
+		fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
+		log->filename, namea);
+      }
   }
   trunc_file(log->fp);
   fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);

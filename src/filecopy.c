@@ -12,10 +12,15 @@
 #include <direct.h>
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-
 #include "conf.h"
 #include "externs.h"
 #include "log.h"
@@ -382,4 +387,18 @@ copy_to_file(const char *name, FILE * to)
   fclose(from);
 
   return 0;
+}
+
+/** Test to see if a filename exists.
+ *
+ * Normal caveat about a race condition involving the file being
+ * created or deleted by something else after this function is used.
+ *
+ * \param name the name of the file
+ * \return true if it exists, false if it doesn't.
+ */
+bool
+file_exists(const char *name) {
+  struct stat s;
+  return stat(name, &s) == 0;
 }

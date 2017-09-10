@@ -573,6 +573,7 @@ safe_uncompress(char const *)
     int trunc_file(FILE *);
     int copy_file(FILE *, const char *, bool);
     int copy_to_file(const char *, FILE *);
+    bool file_exists(const char *);
 
  /* local.c */
     void local_startup(void);

@@ -24,22 +24,18 @@
 #include <nmmintrin.h>
 #endif
 
-/**
- * Convert a latin-1 encoded string to utf-8.
+/** Return the maximum number of bytes a latin-1 string
+ * will take when encoded as utf-8. Actual size might be
+ * smaller if it has telnet escape sequences embedded.
  *
- *
- * \param s the latin-1 string.
- * \param latin the length of the string.
- * \param outlen the number of bytes of the returned string, NOT counting the trailing nul.
- * \param telnet true if we should handle telnet escape sequences.
- * \return a newly allocated utf-8 string.
+ * \param latin1 the string
+ * \param len the length of the string
+ * \return the size in bytes
  */
-char *
-latin1_to_utf8(const char *latin, size_t len, size_t *outlen, bool telnet) {
-  size_t bytes = 1;
-  size_t outbytes = 0;
-  
-  const unsigned char *s = (const unsigned char *)latin;
+size_t
+latin1_as_utf8_bytes(const char *latin1, size_t len) {
+  size_t bytes = 0;
+  const unsigned char *s = (const unsigned char *)latin1;
 
 #ifdef HAVE_SSE42
   __m128i zeros = _mm_setzero_si128();
@@ -87,9 +83,29 @@ latin1_to_utf8(const char *latin, size_t len, size_t *outlen, bool telnet) {
     n += 1;
 #endif
   }
+  
+  return bytes;
+}
 
+/**
+ * Convert a latin-1 encoded string to utf-8.
+ *
+ *
+ * \param s the latin-1 string.
+ * \param latin the length of the string.
+ * \param outlen the number of bytes of the returned string, NOT counting the trailing nul.
+ * \param telnet true if we should handle telnet escape sequences.
+ * \return a newly allocated utf-8 string.
+ */
+char *
+latin1_to_utf8(const char *latin1, size_t len, size_t *outlen, bool telnet) {
+  size_t bytes = 1;
+  size_t outbytes = 0;
+
+  bytes += latin1_as_utf8_bytes(latin1, len);
   unsigned char *utf8 = mush_malloc(bytes, "string");
 
+  const unsigned char *s = (const unsigned char *)latin1;
   unsigned char *u = utf8;
 
 #define ENCODE_CHAR(u, c) do { \
@@ -97,6 +113,12 @@ latin1_to_utf8(const char *latin, size_t len, size_t *outlen, bool telnet) {
     *u++ = 0x80 | (c & 0x3F); \
   } while (0)
 
+
+#ifdef HAVE_SSE42
+  __m128i zeros = _mm_setzero_si128();
+  const char ar[16] __attribute__((aligned(16))) = { 0x01, 0x7F };
+  __m128i ascii_range = _mm_load_si128((__m128i *)ar);
+#endif
   
   for (size_t n = 0; n < len; ) {
 

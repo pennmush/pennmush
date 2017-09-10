@@ -45,6 +45,7 @@
 #include "privtab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "charconv.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* disable warning re conversion */
@@ -1003,7 +1004,7 @@ getstring_noalloc(PENNFILE *f)
         *p = '\0';
         if (c == '\n')
           dbline++;
-        return buf;
+	goto end;
       }
       safe_chr(c, buf, &p);
       c = penn_fgetc(f);
@@ -1029,11 +1030,30 @@ getstring_noalloc(PENNFILE *f)
       }
       if ((c == '\0') || (c == EOF)) {
         *p = '\0';
-        return buf;
+	goto end;
       }
       safe_chr(c, buf, &p);
     }
   }
+ end:
+  {
+    size_t utf8len;
+    char *utf8 = latin1_to_utf8(buf, p - buf, &utf8len, 0);
+
+    if (utf8len + 1 <= BUFFER_LEN) {
+      /* String will fit in a buffer. */
+      memcpy(buf, utf8, utf8len + 1);
+    } else {
+      /* String too long; truncate. Eventually make this use pennstrs */
+      size_t n = BUFFER_LEN - 1;
+      memcpy(buf, utf8, utf8len + 1);
+      while (buf[n] & (1 << 7))
+	buf[n--] = '\0';
+  }
+    
+    mush_free(utf8, "string");
+  }
+  return buf;
 }
 
 /** Read a boolexp from a file.

@@ -21,6 +21,7 @@ Fixes:
  * Missing null termination in 'buy' fixed by CLDawes. [1128]
  * Fix an off-by-one error in switch handling code that could cause a crash on startup. [SW]
  * Fix an issue with table() not fitting maximum number of columns in a line. Reported by Degraine. [1119-SW].
+ * Fix an issue where writes to a socket sometimes shut down the connection needlessly. [1136-SW]
 
 Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush

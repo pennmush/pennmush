@@ -1816,10 +1816,13 @@ queue_newwrite(DESC *d, const char *b, int n)
       n -= written;
       b += written;
     } else if (written < 0) {
-      do_rawlog(LT_TRACE,
-                "send() returned %d (error %s) trying to write %d bytes to %d",
-                written, strerror(errno), n, d->descriptor);
-      if (!is_blocking_err(written)) {
+      if (!is_blocking_err(errno)) {
+	/* Ignore cases where the socket can't handle any bytes before blocking, report 
+	 * and fail on other errors. 
+	 */
+	do_rawlog(LT_TRACE,
+		  "send() returned %d (error %s) trying to write %d bytes to %d",
+		  written, strerror(errno), n, d->descriptor);
         d->conn_flags |= CONN_SOCKET_ERROR;
 	if (utf8)
 	  mush_free(utf8, "string");

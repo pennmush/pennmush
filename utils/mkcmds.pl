@@ -12,7 +12,8 @@ use File::Temp qw/tempfile/;
 my @tmpfiles;
 
 END {
-    # Make sure temp files get deleted.
+    # Make sure temp files get deleted. Should be done in maybemove(), but...
+    # print "$_\n" foreach @tmpfiles;
     unlink @tmpfiles;
 }
 
@@ -72,8 +73,8 @@ sub scan_files_for_pattern {
 sub make_switches {
     print "Rebuilding command switch file and header.\n";
 
-    my ($HDR, $temphdr) = tempfile();
-    my ($SRC, $tempsrc) = tempfile();
+    my ($HDR, $temphdr) = tempfile("switchXXXXX", SUFFIX => ".h", TMPDIR => 1);
+    my ($SRC, $tempsrc) = tempfile("switchXXXXX", SUFFIX => ".c", TMPDIR => 1);
 
     push @tmpfiles, $temphdr, $tempsrc;
     
@@ -121,7 +122,7 @@ EOS
 sub make_cmds {
     print "Rebuilding command prototype header.\n";
 
-    my ($HDR, $tempfile) = tempfile();
+    my ($HDR, $tempfile) = tempfile("cmdsXXXXX", SUFFIX => ".h", TMPDIR => 1);
 
     push @tmpfiles, $tempfile;
 
@@ -149,7 +150,7 @@ EOH
 sub make_funs {
     print "Rebuilding function prototype header.\n";
 
-    my ($HDR, $tempfile) = tempfile();
+    my ($HDR, $tempfile) = tempfile("funsXXXXX", SUFFIX => ".h", TMPDIR => 1);
     my @functions =
         scan_files_for_pattern "src/*.c", qr/^\s*FUNCTION\(([^\)]+)\)/;
 

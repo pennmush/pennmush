@@ -2544,15 +2544,17 @@ FUNCTION(fun_table)
     }
     break;
   }
-  col = field_width + (osep != '\0');
+  col = field_width;
   while (cp) {
-    col += field_width + (osep != '\0');
+    col += field_width;
     if (col > line_length) {
       safe_chr('\n', buff, bp);
-      col = field_width + ! !osep;
+      col = field_width;
     } else {
-      if (osep)
+      if (osep) {
         safe_chr(osep, buff, bp);
+	col += 1;
+      }
     }
     t = split_token(&cp, sep);
     if (!t)

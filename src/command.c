@@ -151,7 +151,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
-  {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
+  {"@DUMP", "PARANOID DEBUG NOFORK", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
   {"@EDIT", "FIRST CHECK QUIET REGEXP NOCASE ALL", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
@@ -870,7 +870,7 @@ command_init_postconfig(void)
   sw_data.n = 0;
   sw_data.start = sizeof switch_list / sizeof(SWITCH_VALUE);
   st_walk(&switch_names, build_switch_table, &sw_data);
-  num_switches = sw_data.start;
+  num_switches = sw_data.start - 1; /* Don't count the trailing NULL-name switch */
   dyn_switch_list[sw_data.n].name = NULL;
   st_flush(&switch_names);
   switch_bytes = ceil((double) num_switches / 8.0);

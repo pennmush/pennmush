@@ -24,10 +24,7 @@ Fixes:
  * Fix an issue where writes to a socket sometimes shut down the connection needlessly. [1136-SW]
 
 Major changes:
- * Supports client charset negotiation of UTF-8. This means the mush
-   can send and recieve UTF-8, but still uses latin-1
-   internally. Unicode characters that aren't part of latin-1 are not
-   supported. Yet. [SW]
+ * Supports client charset negotiation of UTF-8. This means the mush can send and recieve UTF-8, but still uses latin-1 internally. Unicode characters that aren't part of latin-1 are not supported. Yet. [SW]
 
 Minor changes:
  * Upgrade random number generator to SFMT 1.5.1. [SW]
@@ -38,6 +35,7 @@ Minor changes:
  * Use a better seed for the RNG on Windows. [SW]
  * Make log rotation more robust. [SW]
  * mkcmds.pl uses a better way to generate temporary files. [SW]
+ * fraction() now takes a second arg; fraction(1.5,true) returns "1 1/2", rather than "3/2". [MG]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

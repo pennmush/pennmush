@@ -1424,6 +1424,7 @@ frac(double v, double *RESTRICT n, double *RESTRICT d, double error)
 FUNCTION(fun_fraction)
 {
   double num = 0, denom = 0;
+  int whole = 0;
   NVAL n;
 
   if (!is_number(args[0])) {
@@ -1442,12 +1443,23 @@ FUNCTION(fun_fraction)
   }
 
   if (is_good_number(n)) {
+    if (nargs > 1 && parse_boolean(args[1])) {
+      whole = floor(n);
+      n = n - whole;
+    }
     frac(n, &num, &denom, 1.0e-10);
 
-    if (fabs(denom - 1) < 1.0e-10)
-      safe_format(buff, bp, "%.0f", num);
-    else
-      safe_format(buff, bp, "%.0f/%.0f", num, denom);
+    if (fabs(denom - 1) < 1.0e-10) {
+      if (whole)
+        safe_integer(whole, buff, bp);
+      else
+        safe_format(buff, bp, "%.0f", num);
+    } else {
+      if (whole)
+        safe_format(buff, bp, "%d %.0f/%.0f", whole, num, denom);
+      else
+        safe_format(buff, bp, "%.0f/%.0f", num, denom);
+    }
   } else {
     safe_number(n, buff, bp);
   }

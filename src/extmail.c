@@ -2588,7 +2588,12 @@ load_mail(PENNFILE *fp)
   if (mail_flags & MDBF_SUBJECT) {
     tbuf = compress(getstring_noalloc(fp));
   }
-  text = compress(getstring_noalloc(fp));
+    mush_strncpy(sbuf, getstring_noalloc(fp), BUFFER_LEN);
+    if (strchr(sbuf, ESC_CHAR))  //Found old ansi, convert it
+      text = compress(convert_ansi_codes(sbuf));
+    else
+      text = compress(sbuf);
+      
   len = strlen(text) + 1;
   mp->msgid = chunk_create(text, len, 1);
   free(text);
@@ -2622,7 +2627,12 @@ load_mail(PENNFILE *fp)
       tbuf = compress(getstring_noalloc(fp));
     else
       tbuf = NULL;
-    text = compress(getstring_noalloc(fp));
+    
+    mush_strncpy(sbuf, getstring_noalloc(fp), BUFFER_LEN);
+    if (strchr(sbuf, ESC_CHAR))  //Found old ansi, convert it
+      text = compress(convert_ansi_codes(sbuf));
+    else
+      text = compress(sbuf);
     len = strlen(text) + 1;
     mp->msgid = chunk_create(text, len, 1);
     free(text);

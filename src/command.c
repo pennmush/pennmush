@@ -254,7 +254,7 @@ COMLIST commands[] = {
   {"@NSZEMIT", "NOISY SILENT", cmd_zemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
-  {"@NUKE", NULL, cmd_nuke, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@NUKE", "LIST", cmd_nuke, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {"@OEMIT", "NOEVAL SPOOF", cmd_oemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},

@@ -967,9 +967,12 @@ See also: look, @adescribe, @idescribe, @descformat
 & @nuke
   @destroy[/override] <object>
   @nuke <object>
+  @nuke/list <object-list>
   @undestroy <object>
 
   The @destroy command marks <object> for destruction by setting the GOING flag on it. If <object> is a room, all the exits in the room are marked for destruction as well. If <object> is a player, and the @config option destroy_possessions is on, everything he owns is marked for destruction as well. (If really_safe is also on, his SAFE objects will not be destroyed.) If the adestroy @config option is on, the ADESTROY attribute will be triggered when the object is first @destroy'd.
+
+  The @nuke/list command marks all objects in the space-separated <object-list> for destruction in the same manner as a normal @nuke.
   
   The MUSH checks for GOING objects every ten minutes or so (see '@config purge_interval'); each one is set with the GOING_TWICE flag, and will be destroyed totally on the next cycle. You can save it from destruction during this period using the @undestroy command, or @destroy it again to destroy it instantly.
   

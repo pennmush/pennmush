@@ -1252,7 +1252,26 @@ COMMAND(cmd_newpassword)
 
 COMMAND(cmd_nuke)
 {
-  do_destroy(executor, arg_left, 1, queue_entry->pe_info);
+  char *s = arg_left;
+  char *e;
+  if (SW_ISSET(sw, SWITCH_LIST)) {
+    while (s != NULL) {
+      e = strchr(s, ' ');
+      if(e != NULL) {
+        *e = '\0';
+        do_destroy(executor, s, 1, queue_entry->pe_info);
+        *e = ' ';
+        s = e + 1;
+      }
+      else {
+        do_destroy(executor, s, 1, queue_entry->pe_info);
+        s = NULL;
+      }
+    }
+  }
+  else {
+    do_destroy(executor, arg_left, 1, queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_oemit)

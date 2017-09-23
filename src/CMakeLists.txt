@@ -14,6 +14,32 @@ include(FindPackageHandleStandardArgs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
+
+# Header files
+CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
+CHECK_INCLUDE_FILE(stdbool.h HAVE_STDBOOL_H)
+CHECK_INCLUDE_FILE(sys/wait.h HAVE_SYS_WAIT_H)
+CHECK_INCLUDE_FILE(sys/time.h HAVE_SYS_TIME_H)
+CHECK_INCLUDE_FILE(sys/stat.h HAVE_SYS_STAT_H)
+CHECK_INCLUDE_FILE(sys/types.h HAVE_SYS_TYPES_H)
+CHECK_INCLUDE_FILE(sys/socket.h HAVE_SYS_SOCKET_H)
+CHECK_INCLUDE_FILE(arpa/inet.h HAVE_ARPA_INET_H)
+CHECK_INCLUDE_FILE(netdb.h HAVE_NETDB_H)
+CHECK_INCLUDE_FILE(netinet/tcp.h HAVE_NETINET_TCP_H)
+CHECK_INCLUDE_FILE(netinet/in.h HAVE_NETINET_IN_H)
+CHECK_INCLUDE_FILE(sys/un.h HAVE_SYS_UN_H)
+CHECK_INCLUDE_FILE(sys/resource.h HAVE_SYS_RESOURCE_H)
+CHECK_INCLUDE_FILE(sys/event.h HAVE_SYS_EVENT_H)
+CHECK_INCLUDE_FILE(sys/uio.h HAVE_SYS_UIO.H)
+CHECK_INCLUDE_FILE(byteswap.h HAVE_BYTESWAP.H)
+CHECK_INCLUDE_FILE(poll.h HAVE_POLL_H)
+CHECK_INCLUDE_FILE(sys/select.h HAVE_SYS_SELECT_H)
+CHECK_INCLUDE_FILE(sys/inotify.h HAVE_SYS_INOTIFY_H)
+CHECK_INCLUDE_FILE(langinfo.h HAVE_LANGINFO_H)
+CHECK_INCLUDE_FILE(fenv.h HAVE_FENV_H)
+CHECK_INCLUDE_FILE(sys/param.h HAVE_SYS_PARAM_H)
+
+
 # Required libraries
 include(FindOpenSSL)
 if(NOT ${OPENSSL_FOUND})
@@ -21,7 +47,7 @@ if(NOT ${OPENSSL_FOUND})
 endif(NOT ${OPENSSL_FOUND})
 include(FindPCRE)
 if(NOT ${OPENSSL_FOUND})
-       message(FATA_ERROR "PCRE is required to use PennMUSH")
+       message(FATAL_ERROR "PCRE is required to use PennMUSH")
 endif(NOT ${OPENSSL_FOUND})
 
 # Optional libraries
@@ -31,8 +57,8 @@ find_library(LIBCRYPT_LIBRARY crypt)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibCrypt DEFAULT_MSG LIBCRYPT_LIBRARY LIBCRYPT_INCLUDE_DIR)
 include(FindLibEvent)
 if(${Libevent_FOUND})
-  find_library(LIBEVENT_EXTRA_LIBRARY libevent_extra)
-  find_library(LIBEVENT_OPENSSL_LIBRARY libevent_openssl)
+  find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
+  find_library(LIBEVENT_OPENSSL_LIBRARY event_openssl)
   set(LIBEVENT_LIBARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
 endif()
 
@@ -42,6 +68,9 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibZ DEFAULT_MSG LIBZ_LIBRARY LIBZ_INCLUDE_DIR
 
 # TODO: MySQL, Sqlite3
 include(FindPostgreSQL)
+
+# Assorted headers
+
 
 # create local source files
 if(NOT EXISTS cmdlocal.c)

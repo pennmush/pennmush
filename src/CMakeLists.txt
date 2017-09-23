@@ -9,6 +9,8 @@ include(FindDoxygen)
 find_program(GPERF gperf)
 
 include(CheckLibraryExists)
+include(CheckIncludeFile)
+include(FindPackageHandleStandardArgs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
@@ -23,14 +25,23 @@ if(NOT ${OPENSSL_FOUND})
 endif(NOT ${OPENSSL_FOUND})
 
 # Optional libraries
-CHECK_LIBRARY_EXISTS(intl gettext "" HAVE_LIBINTL)
-CHECK_LIBRARY_EXISTS(crypt crypt "" HAVE_LIBCRYPT)
-CHECK_LIBRARY_EXISTS(event_core event_base_loop "" HAVE_LIBEVENT_CORE)
-CHECK_LIBRARY_EXISTS(event_extra evdns_base_new "" HAVE_LIBEVENT_EXTRA)
-CHECK_LIBRARY_EXISTS(event_openssl bufferevent_openssl_socket_new "" HAVE_LIBEVENT_OPENSSL)
-CHECK_LIBRARY_EXISTS(z gzungetz "" HAVE_LIBZ)
-include(FindPostgreSQL)
+include(FindIntl)
+find_path(LIBCRYPT_INCLUDE_DIR crypt.h)
+find_library(LIBCRYPT_LIBRARY crypt)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibCrypt DEFAULT_MSG LIBCRYPT_LIBRARY LIBCRYPT_INCLUDE_DIR)
+include(FindLibEvent)
+if(${Libevent_FOUND})
+  find_library(LIBEVENT_EXTRA_LIBRARY libevent_extra)
+  find_library(LIBEVENT_OPENSSL_LIBRARY libevent_openssl)
+  set(LIBEVENT_LIBARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
+endif()
 
+find_path(LIBZ_INCLUDE_DIR zlib.h)
+find_library(LIBZ_LIBRARY z)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibZ DEFAULT_MSG LIBZ_LIBRARY LIBZ_INCLUDE_DIR)
+
+# TODO: MySQL, Sqlite3
+include(FindPostgreSQL)
 
 # create local source files
 if(NOT EXISTS cmdlocal.c)
@@ -87,4 +98,4 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
 	wait.c warnings.c wild.c wiz.c)
 	
-target_link_libraries(netmush ${OPENSSL_LIBRARIES} ${PostgreSQL_LIBRARY_DIRS} ${PostgreSQL_LIBRARIES})
+target_link_libraries(netmush ${OPENSSL_LIBRARIES} ${PostgreSQL_LIBRARY_DIRS} ${PostgreSQL_LIBRARIES} ${LIBEVENT_LIBRARIES})

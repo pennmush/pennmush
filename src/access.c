@@ -53,6 +53,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "access.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +86,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** An access flag. */
 typedef struct a_acsflag acsflag;

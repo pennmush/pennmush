@@ -43,11 +43,11 @@ CHECK_INCLUDE_FILE(sys/param.h HAVE_SYS_PARAM_H)
 include(FindOpenSSL)
 if(NOT ${OPENSSL_FOUND})
        message(FATAL_ERROR "OpenSSL is required to use PennMUSH")
-endif(NOT ${OPENSSL_FOUND})
+endif()
 include(FindPCRE)
-if(NOT ${OPENSSL_FOUND})
-       message(FATAL_ERROR "PCRE is required to use PennMUSH")
-endif(NOT ${OPENSSL_FOUND})
+if(NOT ${PCRE_FOUND})
+  message(FATAL_ERROR "PCRE is required to use PennMUSH")
+endif()
 
 # Optional libraries
 include(FindIntl)
@@ -125,9 +125,11 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	
 	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
 	wait.c warnings.c wild.c wiz.c)
+target_compile_features(netmush PUBLIC c_restrict)
 target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
 #target_compile_options(netmush PUBLIC "-include config.h" "-include options.h" "-include confmagic.h")
 target_link_libraries(netmush ${OPENSSL_LIBRARIES} ${PostgreSQL_LIBRARY_DIRS} ${PostgreSQL_LIBRARIES} ${LIBEVENT_LIBRARIES})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
+include(WriteCompilerDetectionHeader)
+write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang FEATURES c_restrict)

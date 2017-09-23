@@ -1,0 +1,42 @@
+/* CMake generated config.h file */
+
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_STDBOOL_H
+#cmakedefine HAVE_SYS_WAIT_H
+#cmakedefine HAVE_SYS_TIME_H
+#cmakedefine HAVE_SYS_STAT_H
+#cmakedefine HAVE_SYS_TYPES_H
+#cmakedefine HAVE_SYS_SOCKET_H
+#cmakedefine HAVE_ARPA_INET_H
+#cmakedefine HAVE_NETDB_H
+#cmakedefine HAVE_NETINET_TCP_H
+#cmakedefine HAVE_NETINET_IN_H
+#cmakedefine HAVE_SYS_UN_H
+#cmakedefine HAVE_SYS_RESOURCE_H
+#cmakedefine HAVE_SYS_EVENT_H
+#cmakedefine HAVE_SYS_UIO_H
+#cmakedefine HAVE_BYTESWAP_H
+#cmakedefine HAVE_POLL_H
+#cmakedefine HAVE_SYS_SELECT_H
+#cmakedefine HAVE_SYS_INOTIFY_H
+#cmakedefine HAVE_LANGINFO_H
+#cmakedefine HAVE_FENV_H
+#cmakedefine HAVE_SYS_PARAM_H
+
+
+/* Taken from autoconf manual */
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#else
+# if ! HAVE__BOOL
+#  ifdef __cplusplus
+typedef bool _Bool;
+#  else
+#   define _Bool signed char
+#  endif
+# endif
+# define bool _Bool
+# define false 0
+# define true 1
+# define __bool_true_false_are_defined 1
+#endif

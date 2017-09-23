@@ -14,7 +14,6 @@ include(FindPackageHandleStandardArgs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
-
 # Header files
 CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
 CHECK_INCLUDE_FILE(stdbool.h HAVE_STDBOOL_H)
@@ -59,7 +58,7 @@ include(FindLibEvent)
 if(${Libevent_FOUND})
   find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
   find_library(LIBEVENT_OPENSSL_LIBRARY event_openssl)
-  set(LIBEVENT_LIBARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
+  set(LIBEVENT_LIBRARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
 endif()
 
 find_path(LIBZ_INCLUDE_DIR zlib.h)
@@ -126,5 +125,9 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	
 	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
 	wait.c warnings.c wild.c wiz.c)
-	
+target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
+#target_compile_options(netmush PUBLIC "-include config.h" "-include options.h" "-include confmagic.h")
 target_link_libraries(netmush ${OPENSSL_LIBRARIES} ${PostgreSQL_LIBRARY_DIRS} ${PostgreSQL_LIBRARIES} ${LIBEVENT_LIBRARIES})
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+

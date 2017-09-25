@@ -12,5 +12,6 @@ ForEachMacros: ['DESC_ITER_CONN', 'DESC_ITER' ]
 IndentCaseLabels: false
 IndentWidth: 2
 KeepEmptyLinesAtTheStartOfBlocks: true
+SortIncludes: false
 SpaceAfterCStyleCast: true
 SpaceBeforeParens: ControlStatements

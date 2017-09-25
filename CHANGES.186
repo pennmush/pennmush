@@ -36,6 +36,7 @@ Minor changes:
  * Make log rotation more robust. [SW]
  * mkcmds.pl uses a better way to generate temporary files. [SW]
  * fraction() now takes a second arg; fraction(1.5,true) returns "1 1/2", rather than "3/2". [MG]
+ * Use clang-format instead of GNU indent to format source code. [SW]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

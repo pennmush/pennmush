@@ -37,6 +37,7 @@ CHECK_INCLUDE_FILE(sys/inotify.h HAVE_SYS_INOTIFY_H)
 CHECK_INCLUDE_FILE(langinfo.h HAVE_LANGINFO_H)
 CHECK_INCLUDE_FILE(fenv.h HAVE_FENV_H)
 CHECK_INCLUDE_FILE(sys/param.h HAVE_SYS_PARAM_H)
+CHECK_INCLUDE_FILE(unistd.h HAVE_UNISTD_H)
 
 
 # Required libraries
@@ -110,6 +111,8 @@ else()
   endif()
 
 endif()
+
+execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING DIRECTORY ${PROJECT_SOURCE_DIR})
 
 
 add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c

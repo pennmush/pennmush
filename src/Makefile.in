@@ -175,41 +175,10 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 	makedepend -fMakefile.in -w10 -- $(CFLAGS) -- $(C_FILES) info_slave.c ssl_slave.c 2>/dev/null
 	@PERL@ ../utils/fixdepend.pl Makefile.in
 
-# Requires GNU indent 1.2 or better! 
+# Requires clang-format
 
 indent:
-	(set +e; for file in *.dst *.c  ../hdrs/*.h ; do echo $$file; \
-	@INDENT@ -npro -kr -ci2 -ss -psl -ip4 -i2 -cs -l80 -lc75 -nut \
-	-T accent_info -T acsflag -T aig_func -T ALIST -T ansi_data \
-	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BIO -T BOOL \
-	-T bool -T boolexp -T boolexp_type -T BUFFERQ -T bvm_opcode \
-	-T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t -T CNode \
-	-T COMLIST -T command_func -T COMMAND_INFO -T comp_fn \
-	-T comp_func -T config_func -T conn_source -T conn_status \
-	-T CType -T dbref -T Debug_Info -T DESC -T DH -T EVP_MD \
-	-T Fail_Info -T FBLOCK -T fd_type -T FLAG -T FLAG_ALIAS \
-	-T FLAGSPACE -T folder_array -T FUN -T FUNALIAS -T function_func \
-	-T FUNTAB -T GLOBALTAB -T gmcp_handler_func -T HASHTAB \
-	-T help_file -T help_indx -T im_key -T imaxdiv_t -T init_fn \
-	-T int16_t -T int32_t -T int64_t -T int8_t -T intmap -T intmax_t \
-	-T IVAL -T JSON -T ldiv_t -T ListTypeInfo -T lock_list \
-	-T lock_type -T LOCKMSGINFO -T logwipe_fun -T ltype -T MAIL \
-	-T mail_flag -T makerecord -T MATH -T MEM -T MQUE -T MSSP \
-	-T MYSQL_FIELD -T MYSQL_RES -T na_lookup \
-	-T new_markup_information -T NEW_PE_INFO -T NVAL \
-	-T object_flag_type -T OPTTAB -T patricia -T pcre -T pcre_extra \
-	-T PE_REG_VAL -T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE \
-	-T PGresult -T pid_t -T Port_t -T PRIV -T privbits -T PTAB \
-	-T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
-	-T RegionHeader -T s_rec -T sig_atomic_t -T Sigfunc -T sigset_t \
-	-T size_t -T socklen_t -T SortType -T sq_func -T sqlite3_stmt \
-	-T sqlplatform -T ssize_t -T SSL -T SSL_CTX -T SSL_METHOD \
-	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
-	-T tcheck -T telnet_handler -T time_t -T tlist -T ufun_attrib \
-	-T uint16_t -T uint32_t -T uint64_t -T uint8_t -T uintmax_t \
-	-T UIVAL -T UsedAttr -T USERFN_ENTRY -T WAIT_TYPE -T warn_type \
-	-T writer_func -T X509 -T X509_STORE_CTX \
-	$$file ; done)
+	@INDENT@ -i --style=file *.dst $(C_FILES) ../hdrs/*.h
 
 clean:
 	-rm -f *.o 

@@ -23,9 +23,8 @@
 #include "mushdb.h"
 #include "mymalloc.h"
 
-
-typedef bool (*init_fn) (PENNFILE *);
-typedef char *(*comp_fn) (char const *);
+typedef bool (*init_fn)(PENNFILE *);
+typedef char *(*comp_fn)(char const *);
 
 struct compression_ops {
   init_fn init;
@@ -37,7 +36,7 @@ struct compression_ops {
 #include "comp_w8.c"
 
 static bool
-dummy_init(PENNFILE *f __attribute__ ((__unused__)))
+dummy_init(PENNFILE *f __attribute__((__unused__)))
 {
   return 1;
 }
@@ -56,11 +55,8 @@ dummy_decompress(char const *s)
   return strcpy(dummy_buff, s);
 }
 
-struct compression_ops nocompression_ops = {
-  dummy_init,
-  dummy_compress,
-  dummy_decompress
-};
+struct compression_ops nocompression_ops = {dummy_init, dummy_compress,
+                                            dummy_decompress};
 
 struct compression_ops *comp_ops = NULL;
 

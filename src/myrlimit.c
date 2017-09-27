@@ -49,10 +49,10 @@ static WSADATA wsadata;
 void
 init_rlimit(void)
 {
-  /* Unlimit file descriptors. */
-  /* Ultrix 4.4 and others may have getrlimit but may not be able to
-   * change number of file descriptors
-   */
+/* Unlimit file descriptors. */
+/* Ultrix 4.4 and others may have getrlimit but may not be able to
+ * change number of file descriptors
+ */
 #ifdef RLIMIT_NOFILE
   struct rlimit rlp;
 
@@ -71,7 +71,7 @@ init_rlimit(void)
 #endif
   return;
 }
-#endif                          /* HAVE_GETRLIMIT */
+#endif /* HAVE_GETRLIMIT */
 
 int
 how_many_fds(void)
@@ -118,7 +118,7 @@ how_many_fds(void)
 #ifdef HAVE_SYSCONF
   errno = 0;
   if ((open_max = sysconf(_SC_OPEN_MAX)) < 0) {
-    if (errno == 0)             /* Value was indeterminate */
+    if (errno == 0) /* Value was indeterminate */
       open_max = 0;
   }
   if (open_max)
@@ -133,5 +133,5 @@ how_many_fds(void)
    */
   open_max = 0;
   return getdtablesize();
-#endif                          /* WIN 32 */
+#endif /* WIN 32 */
 }

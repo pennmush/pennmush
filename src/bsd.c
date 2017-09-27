@@ -24,7 +24,7 @@
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
-#else                           /* !WIN32 */
+#else /* !WIN32 */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -32,7 +32,7 @@
 #endif
 #else
 #include <time.h>
-#endif                          /* HAVE_SYS_TIME_H */
+#endif /* HAVE_SYS_TIME_H */
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef HAVE_SYS_SOCKET_H
@@ -44,7 +44,7 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */
 #include <fcntl.h>
 #include <ctype.h>
 #include <signal.h>
@@ -111,7 +111,7 @@
 #ifdef SSL_SLAVE
 #include "ssl_slave.h"
 #endif
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */
 
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
@@ -126,35 +126,37 @@ void init_rlimit(void);
 /** An fd_set is 4 bytes */
 #define fd_set int
 /** Clear an fd_set */
-#define FD_ZERO(p)       (*p = 0)
+#define FD_ZERO(p) (*p = 0)
 /** Set a bit in an fd_set */
-#define FD_SET(n,p)      (*p |= (1<<(n)))
+#define FD_SET(n, p) (*p |= (1 << (n)))
 /** Clear a bit in an fd_set */
-#define FD_CLR(n,p)      (*p &= ~(1<<(n)))
+#define FD_CLR(n, p) (*p &= ~(1 << (n)))
 /** Check a bit in an fd_set */
-#define FD_ISSET(n,p)    (*p & (1<<(n)))
-#endif                          /* defines for BSD 4.2 */
+#define FD_ISSET(n, p) (*p & (1 << (n)))
+#endif /* defines for BSD 4.2 */
 
 #ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
 #endif
-int que_next(void);             /* from cque.c */
+int que_next(void); /* from cque.c */
 
-dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
+dbref email_register_player(DESC *d, const char *name, const char *email,
+                            const char *host,
+                            const char *ip); /* from player.c */
 
-int shutdown_flag = 0;          /**< Is it time to shut down? */
+int shutdown_flag = 0; /**< Is it time to shut down? */
 void chat_player_announce(DESC *desc_player, char *msg, int ungag);
 void report_mssp(DESC *d, char *buff, char **bp);
 
 static int login_number = 0;
 static int under_limit = 1;
 
-char cf_motd_msg[BUFFER_LEN] = { '\0' }; /**< The message of the day */
-char cf_wizmotd_msg[BUFFER_LEN] = { '\0' };      /**< The wizard motd */
-char cf_downmotd_msg[BUFFER_LEN] = { '\0' };     /**< The down message */
-char cf_fullmotd_msg[BUFFER_LEN] = { '\0' };     /**< The 'mush full' message */
-static char poll_msg[DOING_LEN] = { '\0' }; /**< The \@poll/"Doing" message */
-char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
+char cf_motd_msg[BUFFER_LEN] = {'\0'};     /**< The message of the day */
+char cf_wizmotd_msg[BUFFER_LEN] = {'\0'};  /**< The wizard motd */
+char cf_downmotd_msg[BUFFER_LEN] = {'\0'}; /**< The down message */
+char cf_fullmotd_msg[BUFFER_LEN] = {'\0'}; /**< The 'mush full' message */
+static char poll_msg[DOING_LEN] = {'\0'};  /**< The \@poll/"Doing" message */
+char confname[BUFFER_LEN] = {'\0'};        /**< Name of the config file */
 
 char *get_poll(void);
 int set_poll(const char *message);
@@ -163,11 +165,12 @@ char *etime_fmt(char *, time_t, int);
 const char *source_to_s(conn_source source);
 bool fcache_read_one(const char *filename);
 
-
 /** Is this descriptor connected to a telnet-compatible terminal? */
 #define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
 /** Is it possible this descriptor may be telnet-compatible? */
-#define MAYBE_TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
+#define MAYBE_TELNET_ABLE(d)                                                   \
+  ((d)->conn_flags &                                                           \
+   (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
 const char *default_ttype = "unknown";
 #define REBOOT_DB_NOVALUE "__NONE__"
@@ -199,16 +202,22 @@ bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, char **q, char *qend);
 static void set_ttype(DESC *d, char *value);
 
-typedef void (*telnet_handler) (DESC *d, char *cmd, int len);
-#define TELNET_HANDLER(x) \
-  void x(DESC *d __attribute__ ((__unused__)), char *cmd __attribute__ ((__unused__)), int len __attribute__ ((__unused__))); \
-  void x(DESC *d __attribute__ ((__unused__)), char *cmd __attribute__ ((__unused__)), int len __attribute__ ((__unused__)))
+typedef void (*telnet_handler)(DESC *d, char *cmd, int len);
+#define TELNET_HANDLER(x)                                                      \
+  void x(DESC *d __attribute__((__unused__)),                                  \
+         char *cmd __attribute__((__unused__)),                                \
+         int len __attribute__((__unused__)));                                 \
+  void x(DESC *d __attribute__((__unused__)),                                  \
+         char *cmd __attribute__((__unused__)),                                \
+         int len __attribute__((__unused__)))
 
 struct telnet_opt {
   int optcode; /**< Code for this telnet option */
-  int offer; /**< One of DO or WILL, to offer this during initial negotiation, or 0 to not */
+  int offer;   /**< One of DO or WILL, to offer this during initial negotiation,
+                  or 0 to not */
   telnet_handler handler; /**< Function to run on DO/WILL for this opt */
-  telnet_handler sb; /**< Function to run for subnegotiation requests for this opt */
+  telnet_handler
+    sb; /**< Function to run for subnegotiation requests for this opt */
 };
 
 /** Array of all possible telnet options */
@@ -216,8 +225,8 @@ struct telnet_opt *telnet_options[256];
 char *starting_telnet_neg = NULL;
 int starting_telnet_neg_len = 0;
 
-char *json_vals[3] = { "false", "true", "null" };
-int json_val_lens[3] = { 5, 4, 4 };
+char *json_vals[3] = {"false", "true", "null"};
+int json_val_lens[3] = {5, 4, 4};
 
 struct gmcp_handler *gmcp_handlers = NULL;
 static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
@@ -226,15 +235,14 @@ static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
  */
-#define DESC_ITER_CONN(d) \
-        for(d = descriptor_list;(d);d=(d)->next) \
-          if((d)->connected)
+#define DESC_ITER_CONN(d)                                                      \
+  for (d = descriptor_list; (d); d = (d)->next)                                \
+    if ((d)->connected)
 
-#define DESC_ITER(d) \
-                for(d = descriptor_list;(d);d=(d)->next) \
+#define DESC_ITER(d) for (d = descriptor_list; (d); d = (d)->next)
 
 /** Is a descriptor hidden? */
-#define Hidden(d)        ((d->hide == 1))
+#define Hidden(d) ((d->hide == 1))
 
 static const char create_fail_preexisting[] =
   "There is already a player with that name.";
@@ -248,11 +256,11 @@ static const char shutdown_message[] = "Going down - Bye";
 static const char asterisk_line[] =
   "**********************************************************************";
 /** Where we save the descriptor info across reboots. */
-#define REBOOTFILE              "reboot.db"
+#define REBOOTFILE "reboot.db"
 
 static void sockset_wrapper(DESC *d, char *cmd);
 
-extern int notify_type(DESC *d);        /* from notify.c */
+extern int notify_type(DESC *d); /* from notify.c */
 #if 0
 /* For translation */
 static void dummy_msgs(void);
@@ -271,13 +279,13 @@ dummy_msgs()
 
 #endif
 
-DESC *descriptor_list = NULL;   /**< The linked list of descriptors */
-intmap *descs_by_fd = NULL; /**< Map of ports to DESC* objects */
+DESC *descriptor_list = NULL; /**< The linked list of descriptors */
+intmap *descs_by_fd = NULL;   /**< Map of ports to DESC* objects */
 
 static int sock;
 static int sslsock = 0;
-SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
-static const char ssl_shutdown_message[] __attribute__ ((__unused__)) =
+SSL *ssl_master_socket = NULL; /**< Master SSL socket for ssl port */
+static const char ssl_shutdown_message[] __attribute__((__unused__)) =
   "GAME: SSL connections must be dropped, sorry.";
 #ifdef LOCAL_SOCKET
 static int localsock = -1;
@@ -286,13 +294,13 @@ static int ndescriptors = 0;
 #ifdef WIN32
 static WSADATA wsadata;
 #endif
-int restarting = 0;     /**< Are we restarting the server after a reboot? */
+int restarting = 0; /**< Are we restarting the server after a reboot? */
 int maxd = 0;
 
 extern const unsigned char *tables;
 
-sig_atomic_t signal_shutdown_flag = 0;  /**< Have we caught a shutdown signal? */
-sig_atomic_t usr2_triggered = 0;        /**< Have we caught a USR2 signal? */
+sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
+sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -310,7 +318,7 @@ static struct timeval timeval_sub(struct timeval now, struct timeval then);
 static void win_gettimeofday(struct timeval *now);
 #else
 /** A wrapper for gettimeofday() in case the system doesn't have it */
-#define our_gettimeofday(now) gettimeofday((now), (struct timezone *)NULL)
+#define our_gettimeofday(now) gettimeofday((now), (struct timezone *) NULL)
 #endif
 static long int msec_diff(struct timeval now, struct timeval then);
 static struct timeval msec_add(struct timeval t, int x);
@@ -325,23 +333,24 @@ static void clearstrings(DESC *d);
 
 /** A block of cached text. */
 typedef struct fblock {
-  char *buff;   /**< Pointer to the block as a string */
-  size_t len;   /**< Length of buff */
-  dbref thing;  /**< If NOTHING, display buff as raw text. Otherwise, buff is an attrname on thing to eval and display */
+  char *buff;  /**< Pointer to the block as a string */
+  size_t len;  /**< Length of buff */
+  dbref thing; /**< If NOTHING, display buff as raw text. Otherwise, buff is an
+                  attrname on thing to eval and display */
 } FBLOCK;
 
 /** The complete collection of cached text files. */
 struct fcache_entries {
-  FBLOCK connect_fcache[2];     /**< connect.txt and connect.html */
-  FBLOCK motd_fcache[2];        /**< motd.txt and motd.html */
-  FBLOCK wizmotd_fcache[2];     /**< wizmotd.txt and wizmotd.html */
-  FBLOCK newuser_fcache[2];     /**< newuser.txt and newuser.html */
-  FBLOCK register_fcache[2];    /**< register.txt and register.html */
-  FBLOCK quit_fcache[2];        /**< quit.txt and quit.html */
-  FBLOCK down_fcache[2];        /**< down.txt and down.html */
-  FBLOCK full_fcache[2];        /**< full.txt and full.html */
-  FBLOCK guest_fcache[2];       /**< guest.txt and guest.html */
-  FBLOCK who_fcache[2];         /**< textfiles to override connect screen WHO */
+  FBLOCK connect_fcache[2];  /**< connect.txt and connect.html */
+  FBLOCK motd_fcache[2];     /**< motd.txt and motd.html */
+  FBLOCK wizmotd_fcache[2];  /**< wizmotd.txt and wizmotd.html */
+  FBLOCK newuser_fcache[2];  /**< newuser.txt and newuser.html */
+  FBLOCK register_fcache[2]; /**< register.txt and register.html */
+  FBLOCK quit_fcache[2];     /**< quit.txt and quit.html */
+  FBLOCK down_fcache[2];     /**< down.txt and down.html */
+  FBLOCK full_fcache[2];     /**< full.txt and full.html */
+  FBLOCK guest_fcache[2];    /**< guest.txt and guest.html */
+  FBLOCK who_fcache[2];      /**< textfiles to override connect screen WHO */
 };
 
 static struct fcache_entries fcache;
@@ -371,8 +380,13 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
-enum comm_res { CRES_OK =
-    0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP, CRES_BOOTED
+enum comm_res {
+  CRES_OK = 0,
+  CRES_LOGOUT,
+  CRES_QUIT,
+  CRES_SITELOCK,
+  CRES_HTTP,
+  CRES_BOOTED
 };
 static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
@@ -399,7 +413,7 @@ extern bool ssl_slave_halted;
 #endif
 WAIT_TYPE error_code = 0;
 #endif
-extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
+extern pid_t forked_dump_pid; /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
 static char *onfor_time_fmt(time_t at, int len);
 static char *idle_time_fmt(time_t last, int len);
@@ -423,7 +437,6 @@ static char *get_doing(dbref player, dbref caller, dbref enactor,
 
 static bool who_check_name(DESC *d, char *name, bool wild);
 
-
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -439,7 +452,7 @@ mainthread(int argc, char **argv)
  */
 int
 main(int argc, char **argv)
-#endif                          /* WIN32SERVICES */
+#endif /* WIN32SERVICES */
 {
   FILE *newerr;
   bool detach_session = 1;
@@ -456,7 +469,7 @@ main(int argc, char **argv)
           stderr);
     return EXIT_FAILURE;
   }
-  /* Add suid-root checks here. */
+/* Add suid-root checks here. */
 #endif
 #ifdef HAVE_GETEUID
   if (geteuid() == 0) {
@@ -472,13 +485,14 @@ main(int argc, char **argv)
       in_suid_root_mode = 1;
 #endif
   }
-#endif                          /* HAVE_GETEUID */
-#endif                          /* !WIN32 */
+#endif /* HAVE_GETEUID */
+#endif /* !WIN32 */
 
   /* read the configuration file */
   if (argc < 2) {
-    fprintf(stderr,
-            "WARNING: Called without a config file argument. Assuming mush.cnf\n");
+    fprintf(
+      stderr,
+      "WARNING: Called without a config file argument. Assuming mush.cnf\n");
     strcpy(confname, "mush.cnf");
   } else {
     int n;
@@ -556,10 +570,10 @@ main(int argc, char **argv)
       exit(1);
     }
   }
-#endif                          /* WIN32 */
+#endif /* WIN32 */
 
 #ifdef HAVE_GETRLIMIT
-  init_rlimit();                /* unlimit file descriptors */
+  init_rlimit(); /* unlimit file descriptors */
 #endif
 
   time(&mudtime);
@@ -609,7 +623,6 @@ main(int argc, char **argv)
   /* Build the locale-dependant tables used by PCRE */
   tables = pcre_maketables();
 
-
   /* save a file descriptor */
   reserve_fd();
 
@@ -627,7 +640,6 @@ main(int argc, char **argv)
       maxd = localsock + 1;
   }
 #endif
-
 
   if (init_game_dbs() < 0) {
     do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
@@ -660,7 +672,7 @@ main(int argc, char **argv)
 
   shovechars(TINYPORT, SSLPORT);
 
-  /* someone has told us to shut down */
+/* someone has told us to shut down */
 #ifdef WIN32SERVICES
   /* Keep service manager happy */
   shutdown_checkpoint();
@@ -709,7 +721,7 @@ main(int argc, char **argv)
 
 #ifdef HAVE_GETRUSAGE
   rusage_stats();
-#endif                          /* HAVE_GETRUSAGE */
+#endif /* HAVE_GETRUSAGE */
 
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
@@ -720,11 +732,11 @@ main(int argc, char **argv)
 #ifdef WIN32SERVICES
   shutdown_checkpoint();
 #endif
-  WSACleanup();                 /* clean up */
+  WSACleanup(); /* clean up */
 #endif
   exit(0);
 }
-#endif                          /* BOOLEXP_DEBUGGING */
+#endif /* BOOLEXP_DEBUGGING */
 
 /** Install our default signal handlers. */
 void
@@ -739,17 +751,16 @@ set_signals(void)
   install_sig_handler(SIGTERM, bailout);
   install_sig_handler(SIGCHLD, reaper);
 #else
-  /* Win32 stuff:
-   *   No support for SIGUSR2 or SIGINT.
-   *   SIGTERM is never generated on NT-based Windows (according to MSDN)
-   *   MSVC++ will let you get away with installing a handler anyway,
-   *   but VS.NET will not. So if it's MSVC++, we give it a try.
-   */
+/* Win32 stuff:
+ *   No support for SIGUSR2 or SIGINT.
+ *   SIGTERM is never generated on NT-based Windows (according to MSDN)
+ *   MSVC++ will let you get away with installing a handler anyway,
+ *   but VS.NET will not. So if it's MSVC++, we give it a try.
+ */
 #if _MSC_VER < 1200
   install_sig_handler(SIGTERM, bailout);
 #endif
 #endif
-
 }
 
 #ifdef WIN32
@@ -767,7 +778,8 @@ win_gettimeofday(struct timeval *now)
   /* dwLow is in 100-s nanoseconds, not microseconds */
   now->tv_usec = win_time.dwLowDateTime % 10000000 / 10;
 
-  /* dwLow contains at most 429 least significant seconds, since 32 bits maxint is 4294967294 */
+  /* dwLow contains at most 429 least significant seconds, since 32 bits maxint
+   * is 4294967294 */
   win_time.dwLowDateTime /= 10000000;
 
   /* Make room for the seconds of dwLow in dwHigh */
@@ -986,7 +998,7 @@ shovechars(Port_t port, Port_t sslport)
 
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
-  avail_descriptors -= 2;       /* reserve some more for setting up the slave */
+  avail_descriptors -= 2; /* reserve some more for setting up the slave */
 #endif
 
   /* done. print message to the log */
@@ -1011,7 +1023,7 @@ shovechars(Port_t port, Port_t sslport)
 
     process_commands();
 
-    /* Check signal handler flags */
+/* Check signal handler flags */
 
 #ifndef WIN32
 
@@ -1020,23 +1032,23 @@ shovechars(Port_t port, Port_t sslport)
         do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
                   WTERMSIG(dump_status));
         queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
-                    T("GAME: ERROR! Forking database save failed!"),
-                    1, dump_status);
+                    T("GAME: ERROR! Forking database save failed!"), 1,
+                    dump_status);
         flag_broadcast("ROYALTY WIZARD", 0,
                        T("GAME: ERROR! Forking database save failed!"));
       } else if (WIFEXITED(dump_status)) {
         if (WEXITSTATUS(dump_status) == 0) {
           time(&globals.last_dump_time);
-          queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
-                      DUMP_NOFORK_COMPLETE, 1);
+          queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
+                      1);
           if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
             flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         } else {
           do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
                     WEXITSTATUS(dump_status));
           queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
-                      T("GAME: ERROR! Forking database save failed!"),
-                      1, dump_status);
+                      T("GAME: ERROR! Forking database save failed!"), 1,
+                      dump_status);
           flag_broadcast("ROYALTY WIZARD", 0,
                          T("GAME: ERROR! Forking database save failed!"));
         }
@@ -1050,7 +1062,7 @@ shovechars(Port_t port, Port_t sslport)
                 exit_report("info_slave", slave_error, error_code));
       slave_error = error_code = 0;
     }
-#endif                          /* INFO_SLAVE */
+#endif /* INFO_SLAVE */
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
       do_rawlog(LT_ERR, "%s",
@@ -1059,9 +1071,8 @@ shovechars(Port_t port, Port_t sslport)
       if (!ssl_slave_halted)
         make_ssl_slave();
     }
-#endif                          /* SSL_SLAVE */
-#endif                          /* !WIN32 */
-
+#endif /* SSL_SLAVE */
+#endif /* !WIN32 */
 
     if (signal_shutdown_flag) {
       flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
@@ -1164,11 +1175,11 @@ shovechars(Port_t port, Port_t sslport)
       }
 #ifdef INFO_SLAVE
       now = mudtime;
-      if (info_slave_state == INFO_SLAVE_PENDING
-          && FD_ISSET(info_slave, &input_set)) {
+      if (info_slave_state == INFO_SLAVE_PENDING &&
+          FD_ISSET(info_slave, &input_set)) {
         reap_info_slave();
-      } else if (info_slave_state == INFO_SLAVE_PENDING
-                 && now > info_queue_time + 30) {
+      } else if (info_slave_state == INFO_SLAVE_PENDING &&
+                 now > info_queue_time + 30) {
         /* rerun any pending queries that got lost */
         update_pending_info_slaves();
       }
@@ -1180,8 +1191,8 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef LOCAL_SOCKET
       if (localsock >= 0 && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
-#endif                          /* LOCAL_SOCKET */
-#else                           /* INFO_SLAVE */
+#endif /* LOCAL_SOCKET */
+#else  /* INFO_SLAVE */
       if (FD_ISSET(sock, &input_set))
         setup_desc(sock, CS_IP_SOCKET);
       if (sslsock && FD_ISSET(sslsock, &input_set))
@@ -1189,8 +1200,8 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef LOCAL_SOCKET
       if (localsock >= 0 && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
-#endif                          /* LOCAL_SOCKET */
-#endif                          /* INFO_SLAVE */
+#endif /* LOCAL_SOCKET */
+#endif /* INFO_SLAVE */
 
       if (notify_fd >= 0 && FD_ISSET(notify_fd, &input_set))
         file_watch_event(notify_fd);
@@ -1275,20 +1286,20 @@ new_connection(int oldsock, int *result, conn_source source)
     hi = hostname_convert(&addr.addr, addr_len);
     safe_str(hi ? hi->hostname : "", hostbuf, &bp);
     *bp = '\0';
-  } else {                      /* source == CS_LOCAL_SOCKET */
+  } else { /* source == CS_LOCAL_SOCKET */
     int len;
     char *split;
     int remote_pid = -1;
     int remote_uid = -1;
     bool good_to_read = 1;
 
-    /* As soon as the SSL slave opens a new connection to the mush, it
-       writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-       not block unless somebody's being naughty. People obviously can
-       be. So we'll wait a short time for readable data, and use a
-       non-blocking socket read anyways. If the client doesn't send
-       the hostname string fast enough, oh well.
-     */
+/* As soon as the SSL slave opens a new connection to the mush, it
+   writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
+   not block unless somebody's being naughty. People obviously can
+   be. So we'll wait a short time for readable data, and use a
+   non-blocking socket read anyways. If the client doesn't send
+   the hostname string fast enough, oh well.
+ */
 
 #ifdef HAVE_POLL
     {
@@ -1337,11 +1348,11 @@ new_connection(int oldsock, int *result, conn_source source)
       }
     }
 
-    /* Use credential passing to tell if a local socket connection was
-       made by ssl_slave or something else (Like a web-based client's
-       server side). At the moment, this is only implemented on linux
-       and OS X. For other OSes, all local connections look like SSL
-       ones since that's the usual case. */
+/* Use credential passing to tell if a local socket connection was
+   made by ssl_slave or something else (Like a web-based client's
+   server side). At the moment, this is only implemented on linux
+   and OS X. For other OSes, all local connections look like SSL
+   ones since that's the usual case. */
 #ifdef SSL_SLAVE
     if (remote_pid >= 0) {
       if (remote_pid == ssl_slave_pid) {
@@ -1373,8 +1384,8 @@ new_connection(int oldsock, int *result, conn_source source)
   }
 
   if (Forbidden_Site(ipbuf) || Forbidden_Site(hostbuf)) {
-    if (!Deny_Silent_Site(ipbuf, AMBIGUOUS)
-        || !Deny_Silent_Site(hostbuf, AMBIGUOUS)) {
+    if (!Deny_Silent_Site(ipbuf, AMBIGUOUS) ||
+        !Deny_Silent_Site(hostbuf, AMBIGUOUS)) {
       do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
                 newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
@@ -1427,9 +1438,8 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
 
-  if (!fetch_ufun_attrib
-      (attr, thing, &ufun,
-       UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib(attr, thing, &ufun,
+                         UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
   bp = descarg;
@@ -1462,7 +1472,6 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   return 1;
 }
 
-
 /** Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
@@ -1479,8 +1488,8 @@ fcache_dump(DESC *d, FBLOCK fb[2], const char *prefix, char *arg)
 
   for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
     if (fb[i].thing != NOTHING) {
-      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix, arg)
-          == 1) {
+      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix,
+                           arg) == 1) {
         /* Attr successfully evaluated and displayed */
         return 1;
       }
@@ -1550,9 +1559,8 @@ fcache_read(FBLOCK *fb, const char *filename)
     BY_HANDLE_FILE_INFORMATION sb;
     DWORD r = 0;
 
-
-    if ((fh = CreateFile(filename, GENERIC_READ, 0, NULL,
-                         OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE)
+    if ((fh = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0,
+                         NULL)) == INVALID_HANDLE_VALUE)
       return -1;
 
     if (!GetFileInformationByHandle(fh, &sb)) {
@@ -1599,7 +1607,6 @@ fcache_read(FBLOCK *fb, const char *filename)
       return -1;
     }
 
-
     if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
       do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
                 (int) sb.st_size, filename);
@@ -1620,9 +1627,8 @@ fcache_read(FBLOCK *fb, const char *filename)
     close(fd);
     reserve_fd();
     fb->len = sb.st_size;
-
   }
-#endif                          /* Posix read code */
+#endif /* Posix read code */
 
   return fb->len;
 }
@@ -1689,14 +1695,13 @@ fcache_load(dbref player)
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
-      notify_format(player,
-                    T
-                    ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d  Who...%d"),
+      notify_format(player, T("%s sizes:  NewUser...%d  Connect...%d  "
+                              "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
+                              "Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
                     reg, down, full, who);
     }
   }
-
 }
 
 /** Initialize all of the cached text files (at startup).
@@ -1716,8 +1721,7 @@ logout_sock(DESC *d)
 {
   if (d->connected) {
     fcache_dump(d, fcache.quit_fcache, NULL, NULL);
-    do_rawlog(LT_CONN,
-              "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
+    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     announce_disconnect(d, "logout", 0, d->player);
     if (can_mail(d->player)) {
@@ -1727,8 +1731,7 @@ logout_sock(DESC *d)
     if (MAX_LOGINS) {
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
-        do_rawlog(LT_CONN,
-                  "Below maximum player limit of %d. Logins enabled.",
+        do_rawlog(LT_CONN, "Below maximum player limit of %d. Logins enabled.",
                   MAX_LOGINS);
       }
     }
@@ -1737,7 +1740,7 @@ logout_sock(DESC *d)
               "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
               d->descriptor, d->addr, d->ip);
   }
-  process_output(d);            /* flush our old output */
+  process_output(d); /* flush our old output */
   /* pretend we have a new connection */
   d->connected = CONN_SCREEN;
   d->output_prefix = 0;
@@ -1769,9 +1772,8 @@ static void
 shutdownsock(DESC *d, const char *reason, dbref executor)
 {
   if (d->connected) {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)",
-              d->descriptor, d->addr, d->ip, Name(d->player), d->player,
-              reason);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)", d->descriptor,
+              d->addr, d->ip, Name(d->player), d->player, reason);
     if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
@@ -1784,8 +1786,7 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     if (MAX_LOGINS) {
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
-        do_rawlog(LT_CONN,
-                  "Below maximum player limit of %d. Logins enabled.",
+        do_rawlog(LT_CONN, "Below maximum player limit of %d. Logins enabled.",
                   MAX_LOGINS);
       }
     }
@@ -1795,8 +1796,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
   }
   /* (descriptor, ip, cause, recv/sent/cmds) */
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
-              d->descriptor, d->ip,
-              reason, d->input_chars, d->output_chars, d->cmds);
+              d->descriptor, d->ip, reason, d->input_chars, d->output_chars,
+              d->cmds);
   if (d->conn_flags & CONN_GMCP) {
     send_oob(d, "Core.Goodbye", NULL);
   }
@@ -1812,7 +1813,7 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     pc_dnext = d->next;
   if (d->prev)
     d->prev->next = d->next;
-  else                          /* d was the first one! */
+  else /* d was the first one! */
     descriptor_list = d->next;
   if (d->next)
     d->next->prev = d->prev;
@@ -1966,12 +1967,11 @@ network_send_ssl(DESC *d)
   while ((cur = d->output.head) != NULL) {
     int cnt = 0;
     need_write = 0;
-    d->ssl_state =
-      ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
-                cur->nchars, &cnt);
+    d->ssl_state = ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
+                             cur->nchars, &cnt);
     if (ssl_want_write(d->ssl_state)) {
       need_write = 1;
-      break;                    /* Need to retry */
+      break; /* Need to retry */
     }
     written += cnt;
     if (cnt == cur->nchars) {
@@ -2160,7 +2160,7 @@ save_command(DESC *d, const char *command)
   if (d->conn_flags & CONN_UTF8) {
     const char *latin1;
     int len;
-    
+
     if (!valid_utf8(command)) {
       const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
       // Expecting UTF-8, got something else!
@@ -2173,10 +2173,9 @@ save_command(DESC *d, const char *command)
       add_to_queue(&d->input, latin1, len);
       mush_free(latin1, "string");
     }
-  } else {  
+  } else {
     add_to_queue(&d->input, command, strlen(command) + 1);
   }
-
 }
 
 /** Send a telnet command to a descriptor to test for telnet support.
@@ -2188,7 +2187,7 @@ test_telnet(DESC *d)
   /* Use rfc 1184 to test telnet support, as it tries to set linemode
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
-    static const char query[3] = { IAC, DO, TN_LINEMODE };
+    static const char query[3] = {IAC, DO, TN_LINEMODE};
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -2206,11 +2205,11 @@ setup_telnet(DESC *d)
      apparently. Unfortunately, there doesn't seem to be a telnet
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
-  if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
-      && starting_telnet_neg) {
+  if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA)) &&
+      starting_telnet_neg) {
     d->conn_flags &= ~CONN_TELNET_QUERY;
-    do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
-              d->descriptor, d->addr, d->ip);
+    do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.", d->descriptor,
+              d->addr, d->ip);
     queue_newwrite(d, starting_telnet_neg, starting_telnet_neg_len);
     process_output(d);
   }
@@ -2219,7 +2218,7 @@ setup_telnet(DESC *d)
 /* A standard response */
 TELNET_HANDLER(telnet_will)
 {
-  char response[3] = { IAC, WILL, 0 };
+  char response[3] = {IAC, WILL, 0};
   response[2] = *(cmd + 1);
   queue_newwrite(d, response, 3);
   process_output(d);
@@ -2228,7 +2227,7 @@ TELNET_HANDLER(telnet_will)
 /* A standard response */
 TELNET_HANDLER(telnet_willdo)
 {
-  char response[6] = { IAC, WILL, 0, IAC, DO, 0 };
+  char response[6] = {IAC, WILL, 0, IAC, DO, 0};
   response[2] = response[5] = *(cmd + 1);
   queue_newwrite(d, response, 6);
   process_output(d);
@@ -2238,7 +2237,7 @@ TELNET_HANDLER(telnet_willdo)
 TELNET_HANDLER(telnet_sga)
 {
   if (*cmd == DO) {
-    char response[6] = { IAC, WILL, TN_SGA, IAC, DO, TN_SGA };
+    char response[6] = {IAC, WILL, TN_SGA, IAC, DO, TN_SGA};
     queue_newwrite(d, response, 6);
     process_output(d);
     /* Yeah, we still will send GA, which they should treat as a NOP,
@@ -2257,7 +2256,7 @@ TELNET_HANDLER(telnet_naws_sb)
   } raw;
 
   if (len != 4)
-    return;                     /* Invalid */
+    return; /* Invalid */
   raw.bytes[0] = *(cmd++);
   raw.bytes[1] = *(cmd++);
   d->width = ntohs(raw.s);
@@ -2287,7 +2286,7 @@ set_ttype(DESC *d, char *value)
 /* Send TTYP subnegotiation request */
 TELNET_HANDLER(telnet_ttype)
 {
-  char reply[6] = { IAC, SB, TN_TTYPE, 1, IAC, SE };
+  char reply[6] = {IAC, SB, TN_TTYPE, 1, IAC, SE};
   queue_newwrite(d, reply, 6);
   process_output(d);
 }
@@ -2311,16 +2310,16 @@ TELNET_HANDLER(telnet_charset)
    * currently running in (if known, and not "C"),
    * and UTF-8, and plain ol' ascii. */
   /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
-  static const char reply_prefix[4] =
-    { IAC, SB, TN_CHARSET, TN_SB_CHARSET_REQUEST };
-  static const char reply_suffix[2] = { IAC, SE };
+  static const char reply_prefix[4] = {IAC, SB, TN_CHARSET,
+                                       TN_SB_CHARSET_REQUEST};
+  static const char reply_suffix[2] = {IAC, SE};
 #ifndef _MSC_VER
-  /* Offer a selection of possible delimiters, to avoid it appearing
-   * in a charset name */
+/* Offer a selection of possible delimiters, to avoid it appearing
+ * in a charset name */
 #ifdef HAVE_NL_LANGINFO
   static const char *delim_list = "; +=/!", *delim_curr;
-#endif                          /* HAVE_NL_LANGINFO */
-  char delim[2] = { ';', '\0' };
+#endif /* HAVE_NL_LANGINFO */
+  char delim[2] = {';', '\0'};
   char *curr_locale = NULL;
 
   if (*cmd != DO)
@@ -2338,10 +2337,10 @@ TELNET_HANDLER(telnet_charset)
     if (*delim_curr) {
       delim[0] = *delim_curr;
     } else {
-      delim[0] = ';';           /* fall back on ; */
+      delim[0] = ';'; /* fall back on ; */
     }
   }
-#endif                          /* HAVE_NL_LANGINFO */
+#endif /* HAVE_NL_LANGINFO */
   queue_newwrite(d, delim, 1);
   queue_newwrite(d, "UTF-8", 5);
   queue_newwrite(d, delim, 1);
@@ -2356,7 +2355,7 @@ TELNET_HANDLER(telnet_charset)
   queue_newwrite(d, "x-penn-def", 10);
 
   queue_newwrite(d, reply_suffix, 2);
-#else                           /* _MSC_VER */
+#else  /* _MSC_VER */
   /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
    * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
    * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
@@ -2371,7 +2370,7 @@ TELNET_HANDLER(telnet_charset)
   queue_newwrite(d, ";ISO-8859-1", 11);
   queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
   queue_newwrite(d, reply_suffix, 2);
-#endif                          /* _MSC_VER */
+#endif /* _MSC_VER */
 }
 
 /* Handle CHARSET subnegotiation */
@@ -2405,8 +2404,7 @@ TELNET_HANDLER(telnet_linemode)
 {
   /* Set up our preferred linemode options. */
   /* IAC SB LINEMODE MODE (EDIT|SOFT_TAB) IAC SE */
-  static const char reply[7] =
-    { IAC, SB, TN_LINEMODE, '\x01', '\x09', IAC, SE };
+  static const char reply[7] = {IAC, SB, TN_LINEMODE, '\x01', '\x09', IAC, SE};
   queue_newwrite(d, reply, 7);
 }
 
@@ -2429,10 +2427,7 @@ TELNET_HANDLER(telnet_mssp)
   process_output(d);
 }
 
-TELNET_HANDLER(telnet_gmcp)
-{
-  d->conn_flags |= CONN_GMCP;
-}
+TELNET_HANDLER(telnet_gmcp) { d->conn_flags |= CONN_GMCP; }
 
 TELNET_HANDLER(telnet_gmcp_sb)
 {
@@ -2443,7 +2438,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   int match = 0, i = 50;
 
   if (!gmcp_handlers)
-    return;                     /* Nothing to do */
+    return; /* Nothing to do */
 
   mush_strncpy(fullpackage, cmd, BUFFER_LEN);
   msg = strchr(fullpackage, ' ');
@@ -2454,17 +2449,16 @@ TELNET_HANDLER(telnet_gmcp_sb)
 
   p = package;
   if (!*p)
-    return;                     /* We should always get a package name */
+    return; /* We should always get a package name */
 
   if (msg && *msg) {
     /* string_to_json destructively modifies msg, so make a copy */
     mush_strncpy(fullmsg, msg, BUFFER_LEN);
     json = string_to_json(msg);
     if (!json)
-      return;                   /* Invalid json */
+      return; /* Invalid json */
   } else
     fullmsg[0] = '\0';
-
 
   while (i > 0) {
     i--;
@@ -2476,7 +2470,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
       g = g->next;
     }
     if (match || !*p) {
-      break;                    /* Either we got a match, or failed all possible matches */
+      break; /* Either we got a match, or failed all possible matches */
     } else {
       if ((p = strrchr(p, '.'))) {
         /* Trim off a subpackage and try again for a less specific match */
@@ -2536,17 +2530,17 @@ json_free(JSON *json)
   if (json->data) {
     switch (json->type) {
     case JSON_NONE:
-      break;                    /* Included for completeness; never has data */
+      break; /* Included for completeness; never has data */
     case JSON_NULL:
     case JSON_BOOL:
-      break;                    /* pointers to static args */
+      break; /* pointers to static args */
     case JSON_OBJECT:
     case JSON_ARRAY:
-      json_free(json->data);    /* Nested JSON structs */
+      json_free(json->data); /* Nested JSON structs */
       break;
     case JSON_STR:
     case JSON_NUMBER:
-      mush_free(json->data, "json.data");       /* Plain, malloc'd value */
+      mush_free(json->data, "json.data"); /* Plain, malloc'd value */
       break;
     }
     json->data = NULL;
@@ -2580,7 +2574,6 @@ json_escape_string(char *input)
   *bp = '\0';
 
   return buff;
-
 }
 
 /** Unescape a JSON string. Returns a STATIC buffer. */
@@ -2620,15 +2613,16 @@ json_unescape_string(char *input)
   *bp = '\0';
 
   return buff;
-
 }
 
 /** Convert a JSON struct into a string representation of the JSON
  * \param json The JSON struct to convert
- * \param verbose Add spaces, carriage returns, etc, to make the JSON human-readable?
+ * \param verbose Add spaces, carriage returns, etc, to make the JSON
+ * human-readable?
  * \param recurse Number of recursions; always call with this set to 0
  * \retval NULL error occurred
- * \retval result string representation of the JSON struct, malloc'd as "json_str"
+ * \retval result string representation of the JSON struct, malloc'd as
+ * "json_str"
  */
 char *
 json_to_string_real(JSON *json, int verbose, int recurse)
@@ -2762,26 +2756,26 @@ GMCP_HANDLER(gmcp_core_hello)
   JSON *j;
 
   if (strcasecmp(package, "Core.Hello")) {
-    return 0;                   /* Package was Core.Hello.something, and we don't handle that */
+    return 0; /* Package was Core.Hello.something, and we don't handle that */
   }
 
   if (json->type != JSON_OBJECT) {
-    return 0;                   /* We're expecting an object */
+    return 0; /* We're expecting an object */
   }
 
   j = (JSON *) json->data;
   while (j) {
     if (j->type == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
-      if ((j = j->next) && j->type == JSON_STR && j->data
-          && *((char *) j->data)) {
+      if ((j = j->next) && j->type == JSON_STR && j->data &&
+          *((char *) j->data)) {
         /* We have the client name. */
         set_ttype(d, (char *) j->data);
       }
-      break;                    /* This is all we care about */
+      break; /* This is all we care about */
     } else {
-      j = j->next;              /* Move to value */
+      j = j->next; /* Move to value */
       if (j)
-        j = j->next;            /* Move to next label */
+        j = j->next; /* Move to next label */
     }
   }
 
@@ -2802,8 +2796,8 @@ GMCP_HANDLER(gmcp_core_ping)
 }
 
 #ifdef GMCP_EXAMPLE
-/* An example softcode handler for GMCP data - in this case, triggering the 
- * attr #0/GMCP whenever otherwise-unhandled data is received, with 
+/* An example softcode handler for GMCP data - in this case, triggering the
+ * attr #0/GMCP whenever otherwise-unhandled data is received, with
  * %0 = port/descriptor number, %1 = package name, %2 = json message */
 GMCP_HANDLER(gmcp_softcode_example)
 {
@@ -2814,7 +2808,7 @@ GMCP_HANDLER(gmcp_softcode_example)
 
   a = atr_get_noparent(obj, attrname);
   if (!a)
-    return 0;                   /* No such attr; gmcp message unhandled */
+    return 0; /* No such attr; gmcp message unhandled */
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "gmcp_softcode");
   pe_regs_set_int(pe_regs, PE_REGS_ARG, "0", d->descriptor);
@@ -2837,7 +2831,7 @@ GMCP_HANDLER(gmcp_softcode_example)
  *           Set to NULL for initial call.
  * \param recurse Recursion level. Set to 0 for initial call.
  * \retval NULL string did not contain valid JSON
- * \retval json a JSON struct representing the json from input 
+ * \retval json a JSON struct representing the json from input
  */
 JSON *
 string_to_json_real(char *input, char **ip, int recurse)
@@ -2895,15 +2889,15 @@ string_to_json_real(char *input, char **ip, int recurse)
     }
   } else if (**ip == '[') {
     int i = 0;
-    (*ip)++;                    /* Skip over the opening [ */
+    (*ip)++; /* Skip over the opening [ */
     while (**ip) {
       while (**ip && isspace(**ip))
-        (*ip)++;                /* Skip over leading spaces */
+        (*ip)++; /* Skip over leading spaces */
       if (**ip == ']')
         break;
       next = string_to_json_real(input, ip, recurse + 1);
       if (next == NULL)
-        break;                  /* Error in the array contents */
+        break; /* Error in the array contents */
       if (i == 0) {
         result->data = next;
       } else {
@@ -2933,7 +2927,7 @@ string_to_json_real(char *input, char **ip, int recurse)
         break;
       next = string_to_json_real(input, ip, recurse + 1);
       if (next == NULL)
-        break;                  /* Error */
+        break; /* Error */
       if (i == 0)
         result->data = next;
       else
@@ -2950,7 +2944,7 @@ string_to_json_real(char *input, char **ip, int recurse)
       else if (**ip == ':' && !(i % 2))
         (*ip)++;
       else {
-        break;                  /* error */
+        break; /* error */
       }
       i++;
     }
@@ -2988,10 +2982,11 @@ string_to_json_real(char *input, char **ip, int recurse)
   }
 }
 
-/** Send an out-of-band message to a descriptor using the GMCP telnet subnegotiation
+/** Send an out-of-band message to a descriptor using the GMCP telnet
+ * subnegotiation
  * \param d descriptor to send to
  * \param package The name of the package[.subpackage(s)] the message belongs to
- * \param data a JSON object, or NULL for no message 
+ * \param data a JSON object, or NULL for no message
  */
 void
 send_oob(DESC *d, char *package, JSON *data)
@@ -3015,13 +3010,11 @@ send_oob(DESC *d, char *package, JSON *data)
   }
 
   if (escmsg && *escmsg)
-    error =
-      safe_format(buff, &bp, "%c%c%c%s %s%c%c", IAC, SB, TN_GMCP, package,
-                  escmsg, IAC, SE);
+    error = safe_format(buff, &bp, "%c%c%c%s %s%c%c", IAC, SB, TN_GMCP, package,
+                        escmsg, IAC, SE);
   else
-    error =
-      safe_format(buff, &bp, "%c%c%c%s%c%c", IAC, SB, TN_GMCP, package, IAC,
-                  SE);
+    error = safe_format(buff, &bp, "%c%c%c%s%c%c", IAC, SB, TN_GMCP, package,
+                        IAC, SE);
 
   *bp = '\0';
 
@@ -3055,7 +3048,7 @@ FUNCTION(fun_oob)
     return;
   }
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (d->player != who || !(d->conn_flags & CONN_GMCP))
       continue;
     send_oob(d, args[1], json);
@@ -3065,8 +3058,13 @@ FUNCTION(fun_oob)
   json_free(json);
 }
 
-enum json_query { JSON_QUERY_TYPE, JSON_QUERY_SIZE, JSON_QUERY_EXISTS,
-    JSON_QUERY_GET, JSON_QUERY_UNESCAPE };
+enum json_query {
+  JSON_QUERY_TYPE,
+  JSON_QUERY_SIZE,
+  JSON_QUERY_EXISTS,
+  JSON_QUERY_GET,
+  JSON_QUERY_UNESCAPE
+};
 
 FUNCTION(fun_json_query)
 {
@@ -3089,8 +3087,8 @@ FUNCTION(fun_json_query)
     }
   }
 
-  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS)
-      && (nargs < 3 || !args[2] || !*args[2])) {
+  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS) &&
+      (nargs < 3 || !args[2] || !*args[2])) {
     safe_str(T("#-1 MISSING VALUE"), buff, bp);
     return;
   }
@@ -3105,7 +3103,7 @@ FUNCTION(fun_json_query)
   case JSON_QUERY_TYPE:
     switch (json->type) {
     case JSON_NONE:
-      break;                    /* Should never happen */
+      break; /* Should never happen */
     case JSON_STR:
       safe_str("string", buff, bp);
       break;
@@ -3145,9 +3143,10 @@ FUNCTION(fun_json_query)
         safe_chr('0', buff, bp);
         break;
       }
-      for (i = 1; next->next; i++, next = next->next) ;
+      for (i = 1; next->next; i++, next = next->next)
+        ;
       if (json->type == JSON_OBJECT) {
-        i = i / 2;              /* Key/value pairs, so we have half as many */
+        i = i / 2; /* Key/value pairs, so we have half as many */
       }
       safe_integer(i, buff, bp);
       break;
@@ -3177,7 +3176,8 @@ FUNCTION(fun_json_query)
         break;
       }
       i = parse_integer(args[2]);
-      for (next = json->data; i > 0 && next; next = next->next, i--) ;
+      for (next = json->data; i > 0 && next; next = next->next, i--)
+        ;
 
       if (query_type == JSON_QUERY_EXISTS) {
         safe_chr((next) ? '1' : '0', buff, bp);
@@ -3203,9 +3203,9 @@ FUNCTION(fun_json_query)
           break;
         } else {
           /* Skip */
-          next = next->next;    /* Move to this entry's value */
+          next = next->next; /* Move to this entry's value */
           if (next) {
-            next = next->next;  /* Move to next entry's name */
+            next = next->next; /* Move to next entry's name */
           }
         }
       }
@@ -3230,7 +3230,7 @@ FUNCTION(fun_json_map)
   ufun_attrib ufun;
   PE_REGS *pe_regs;
   int funccount;
-  char *osep, osepd[2] = { ' ', '\0' };
+  char *osep, osepd[2] = {' ', '\0'};
   JSON *json, *next;
   int i;
   char rbuff[BUFFER_LEN];
@@ -3275,14 +3275,14 @@ FUNCTION(fun_json_map)
         if (!next)
           break;
       }
-      if (json_map_call
-          (&ufun, rbuff, pe_regs, pe_info, next, executor, enactor))
+      if (json_map_call(&ufun, rbuff, pe_regs, pe_info, next, executor,
+                        enactor))
         break;
       if (i > 0)
         safe_str(osep, buff, bp);
       safe_str(rbuff, buff, bp);
-      if (*bp >= (buff + BUFFER_LEN - 1)
-          && pe_info->fun_invocations == funccount)
+      if (*bp >= (buff + BUFFER_LEN - 1) &&
+          pe_info->fun_invocations == funccount)
         break;
     }
     break;
@@ -3378,9 +3378,10 @@ FUNCTION(fun_json)
     return;
   }
 
-  if ((type == JSON_NULL && nargs > 2)
-      || ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL)
-          && nargs != 2) || (type == JSON_OBJECT && (nargs % 2) != 1)) {
+  if ((type == JSON_NULL && nargs > 2) ||
+      ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) &&
+       nargs != 2) ||
+      (type == JSON_OBJECT && (nargs % 2) != 1)) {
     safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
     return;
   }
@@ -3539,7 +3540,8 @@ handle_telnet(DESC *d, char **q, char *qend)
   switch (**q) {
   case IAC:
     setup_telnet(d);
-    /* We don't skip over the IAC, we leave it to be written out in process_input_helper */
+    /* We don't skip over the IAC, we leave it to be written out in
+     * process_input_helper */
     return 0;
   case NOP:
     setup_telnet(d);
@@ -3552,7 +3554,7 @@ handle_telnet(DESC *d, char **q, char *qend)
   case DONT:
   case WONT:
     setup_telnet(d);
-    (*q)++;                     /* Skip DONT/WONT */
+    (*q)++; /* Skip DONT/WONT */
     return 1;
   case DO:
   case WILL:
@@ -3575,7 +3577,7 @@ handle_telnet(DESC *d, char **q, char *qend)
   case SB:
     /* Make sure we have a complete subcommand.  */
     /* IAC SB <opt> ... IAC SE */
-    (*q)++;                     /* Skip over SB */
+    (*q)++; /* Skip over SB */
     opt = **q;
     (*q)++;
     if (*q >= qend) {
@@ -3608,7 +3610,7 @@ handle_telnet(DESC *d, char **q, char *qend)
         safe_chr(**q, telnet_buff, &tbp);
       }
     }
-    return -1;                  /* If we get here, we never found the closing IAC SE */
+    return -1; /* If we get here, we never found the closing IAC SE */
   default:
     return 0;
   }
@@ -3638,7 +3640,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         save_command(d, d->raw_input);
       p = d->raw_input;
       if (((q + 1) < qend) && (*(q + 1) == '\n'))
-        q++;                    /* For clients that work */
+        q++; /* For clients that work */
     } else if (*q == '\n') {
       *p = '\0';
       if (p > d->raw_input)
@@ -3647,10 +3649,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     } else if (*q == '\b') {
       if (p > d->raw_input)
         p--;
-    } else if (*q == IAC) {     /* Telnet option foo */
+    } else if (*q == IAC) { /* Telnet option foo */
       if (q >= qend)
         break;
-      q++;                      /* Skip over IAC */
+      q++; /* Skip over IAC */
 
       if (!MAYBE_TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
         if (p < pend && isprint(*q))
@@ -3673,7 +3675,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
 
 /* ARGSUSED */
 static int
-process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
+process_input(DESC *d, int output_ready __attribute__((__unused__)))
 {
   int got = 0;
   char tbuf1[BUFFER_LEN];
@@ -3710,9 +3712,8 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
       }
     }
     /* It's an SSL connection, proceed accordingly */
-    d->ssl_state =
-      ssl_read(d->ssl, d->ssl_state, 1, output_ready, tbuf1, sizeof tbuf1,
-               &got);
+    d->ssl_state = ssl_read(d->ssl, d->ssl_state, 1, output_ready, tbuf1,
+                            sizeof tbuf1, &got);
     if (d->ssl_state < 0) {
       /* Fatal error */
       ssl_close_connection(d->ssl);
@@ -3794,14 +3795,14 @@ process_commands(void)
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
-          /* Falls through - to free input buffer */
+        /* Falls through - to free input buffer */
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
             cdesc->input.tail = NULL;
 #ifdef DEBUG
           do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
-#endif                          /* DEBUG */
+#endif /* DEBUG */
           free_text_block(t);
           break;
         case CRES_BOOTED:
@@ -3814,17 +3815,17 @@ process_commands(void)
 }
 
 /** Send a descriptor's output prefix */
-#define send_prefix(d) \
-  if (d->output_prefix) { \
-    queue_newwrite(d, d->output_prefix, strlen(d->output_prefix)); \
-    queue_eol(d); \
+#define send_prefix(d)                                                         \
+  if (d->output_prefix) {                                                      \
+    queue_newwrite(d, d->output_prefix, strlen(d->output_prefix));             \
+    queue_eol(d);                                                              \
   }
 
 /** Send a descriptor's output suffix */
-#define send_suffix(d) \
-  if (d->output_suffix) { \
-    queue_newwrite(d, d->output_suffix, strlen(d->output_suffix)); \
-    queue_eol(d); \
+#define send_suffix(d)                                                         \
+  if (d->output_suffix) {                                                      \
+    queue_newwrite(d, d->output_suffix, strlen(d->output_suffix));             \
+    queue_eol(d);                                                              \
   }
 
 /** Parse a command entered at the socket.
@@ -3849,9 +3850,9 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                        !strncmp(command, POST_COMMAND,
-                                 strlen(POST_COMMAND)))) {
+  if (!d->connected &&
+      (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+       !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
     char buf[BUFFER_LEN];
     snprintf(buf, BUFFER_LEN,
              "HTTP/1.1 200 OK\r\n"
@@ -3862,22 +3863,24 @@ do_command(DESC *d, char *command)
              " \"http://www.w3.org/TR/html4/loose.dtd\">"
              "<HTML><HEAD>"
              "<TITLE>Welcome to %s!</TITLE>"
-             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
+             "<meta http-equiv=\"Content-Type\" content=\"text/html; "
+             "charset=iso-8859-1\">"
              "</HEAD><BODY>"
              "<meta http-equiv=\"refresh\" content=\"0;%s\">"
              "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-             "</BODY></HEAD></HTML>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+             "</BODY></HEAD></HTML>",
+             MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
     queue_write(d, buf, strlen(buf));
     queue_eol(d);
     return CRES_HTTP;
-  } else if (SUPPORT_PUEBLO
-             && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
+  } else if (SUPPORT_PUEBLO &&
+             !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
     if (!(d->conn_flags & CONN_HTML)) {
       queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
       process_output(d);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
-                d->descriptor, d->addr, d->ip);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.", d->descriptor,
+                d->addr, d->ip);
       d->conn_flags |= CONN_HTML;
       if (!d->connected && !d->conn_timer)
         welcome_user(d, 1);
@@ -3999,8 +4002,8 @@ dump_messages(DESC *d, dbref player, int isnew)
     /* check for exceeding max player limit */
     if (under_limit && (login_number > MAX_LOGINS)) {
       under_limit = 0;
-      do_rawlog(LT_CONN,
-                "Limit of %d players reached. Logins disabled.\n", MAX_LOGINS);
+      do_rawlog(LT_CONN, "Limit of %d players reached. Logins disabled.\n",
+                MAX_LOGINS);
     }
   }
   /* give players a message on connection */
@@ -4029,7 +4032,7 @@ dump_messages(DESC *d, dbref player, int isnew)
   }
 
   /* check to see if this is a reconnect */
-  DESC_ITER_CONN(tmpd) {
+  DESC_ITER_CONN (tmpd) {
     if (tmpd->player == player) {
       num++;
     }
@@ -4049,8 +4052,8 @@ dump_messages(DESC *d, dbref player, int isnew)
     notify_format(player, T("%ld failed connections since last login."),
                   (long) ModTime(player));
   ModTime(player) = (time_t) 0;
-  announce_connect(d, isnew, num);      /* broadcast connect message */
-  check_last(player, d->addr, d->ip);   /* set Last, Lastsite, give paycheck */
+  announce_connect(d, isnew, num);    /* broadcast connect message */
+  check_last(player, d->addr, d->ip); /* set Last, Lastsite, give paycheck */
   /* Check all mail folders. If empty, report lack of mail. */
   queue_eol(d);
   if (can_mail(player)) {
@@ -4061,9 +4064,8 @@ dump_messages(DESC *d, dbref player, int isnew)
   if (Haven(player))
     notify(player, T("Your HAVEN flag is set. You cannot receive pages."));
   if (Vacation(player)) {
-    notify(player,
-           T
-           ("Welcome back from vacation! Don't forget to unset your ON-VACATION flag"));
+    notify(player, T("Welcome back from vacation! Don't forget to unset your "
+                     "ON-VACATION flag"));
   }
   local_connect(player, isnew, num);
   return 1;
@@ -4092,11 +4094,11 @@ check_connect(DESC *d, const char *msg)
     return 1;
   }
   if (string_prefix("connect", command)) {
-    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
-        == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
+        NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
+                d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
@@ -4108,14 +4110,13 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "cd")) {
-    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
-        == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
+        NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
+                d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
+      do_rawlog(LT_CONN, "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player dark */
@@ -4132,11 +4133,11 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "cv")) {
-    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
-        == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
+        NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
+                d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
@@ -4152,14 +4153,13 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "ch")) {
-    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
-        == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
+        NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
+                d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
+      do_rawlog(LT_CONN, "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player hidden */
@@ -4177,10 +4177,10 @@ check_connect(DESC *d, const char *msg)
   } else if (string_prefix("create", command)) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
-          && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
-        do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
-                  d->descriptor, d->addr, d->ip, user);
+      if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
+          !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
+        do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.", d->descriptor,
+                  d->addr, d->ip, user);
         queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                     d->descriptor, d->ip, count_failed(d->ip),
                     "create: sitelocked !create", user);
@@ -4196,8 +4196,7 @@ check_connect(DESC *d, const char *msg)
         }
       } else
         fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN,
-                "REFUSED CREATION for %s from %s on descriptor %d.\n",
+      do_rawlog(LT_CONN, "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, count_failed(d->ip),
@@ -4209,8 +4208,7 @@ check_connect(DESC *d, const char *msg)
         queue_write(d, cf_fullmotd_msg, strlen(cf_fullmotd_msg));
         queue_eol(d);
       }
-      do_rawlog(LT_CONN,
-                "REFUSED CREATION for %s from %s on descriptor %d.\n",
+      do_rawlog(LT_CONN, "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, count_failed(d->ip),
@@ -4221,36 +4219,33 @@ check_connect(DESC *d, const char *msg)
     switch (player) {
     case NOTHING:
     case AMBIGUOUS:
-      queue_string_eol(d,
-                       T((player ==
-                          NOTHING ? create_fail_bad :
-                          create_fail_preexisting)));
+      queue_string_eol(
+        d, T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
                 d->descriptor, d->addr, d->ip, user);
       break;
     case HOME:
       queue_string_eol(d, T(password_fail));
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Failed create for '%s' (bad password).",
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad password).",
                 d->descriptor, d->addr, d->ip, user);
       break;
     default:
       queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
                   unparse_objid(player), Name(player), "create", d->descriptor);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)", d->descriptor, d->addr,
+                d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
         d->connected = CONN_DENIED;
         return 0;
       }
       break;
-    }                           /* successful player creation */
+    } /* successful player creation */
 
   } else if (string_prefix("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
-          && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
+      if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
+          !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN,
                   "[%d/%s/%s] Refused registration (bad site) for '%s'.",
                   d->descriptor, d->addr, d->ip, user);
@@ -4262,8 +4257,8 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.create_allow) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN,
-                "Refused registration (creation disabled) for %s from %s on descriptor %d.\n",
+      do_rawlog(LT_CONN, "Refused registration (creation disabled) for %s from "
+                         "%s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, mark_failed(d->ip),
@@ -4277,8 +4272,8 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, user);
     } else {
       queue_string_eol(d, T(register_success));
-      do_rawlog(LT_CONN, "[%d/%s/%s] Registered %s(#%d) to %s",
-                d->descriptor, d->addr, d->ip, Name(player), player, password);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Registered %s(#%d) to %s", d->descriptor,
+                d->addr, d->ip, Name(player), player, password);
     }
     /* Whether it succeeds or fails, leave them connected */
 
@@ -4313,7 +4308,8 @@ parse_connect(const char *msg1, char *command, char *user, char *pass)
   p = user;
 
   if (*msg == '\"') {
-    for (; *msg && ((*msg == '\"') || isspace(*msg)); msg++) ;
+    for (; *msg && ((*msg == '\"') || isspace(*msg)); msg++)
+      ;
     while (*msg && (*msg != '\"')) {
       while (*msg && !isspace(*msg) && (*msg != '\"'))
         *p++ = *msg++;
@@ -4348,7 +4344,7 @@ close_sockets(void)
   DESC *d, *dnext;
   const char *shutmsg;
   int shutlen;
-  int ignoreme __attribute__ ((__unused__));
+  int ignoreme __attribute__((__unused__));
 
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
@@ -4397,7 +4393,8 @@ emergency_shutdown(void)
 }
 
 /** Boot a player.
- * Boot all connections associated with victim, or all idle connections if idleonly is true
+ * Boot all connections associated with victim, or all idle connections if
+ * idleonly is true
  * \param player the player being booted
  * \param idleonly only boot idle connections?
  * \param silent suppress notice to player that he's being booted?
@@ -4414,13 +4411,13 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
   if (idleonly)
     ignore = least_idle_desc(player, 1);
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (boot) {
       boot_desc(boot, "boot", booter);
       boot = NULL;
     }
-    if (d->player == player
-        && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
+    if (d->player == player &&
+        (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
       if (!idleonly && !silent && !count)
         notify(player, T("You are politely shown to the door."));
       count++;
@@ -4439,12 +4436,12 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
   }
 
   return count;
-
 }
 
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
- * \param cause the reason for the descriptor being disconnected, used for events
+ * \param cause the reason for the descriptor being disconnected, used for
+ * events
  * \param executor object causing the boot
  */
 void
@@ -4506,7 +4503,6 @@ sockset_wrapper(DESC *d, char *cmd)
     queue_newwrite(d, res, strlen(res));
     queue_eol(d);
   }
-
 }
 
 const char *
@@ -4673,7 +4669,8 @@ sockset(DESC *d, char *name, char *val)
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       return tprintf(T("Colorstyle set to '%s'"), "plain");
-    } else if (string_prefix("hilite", val) || string_prefix("highlight", val)) {
+    } else if (string_prefix("hilite", val) ||
+               string_prefix("highlight", val)) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
       return tprintf(T("Colorstyle set to '%s'"), "hilite");
@@ -4783,15 +4780,13 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
   if (!(flags & PEMIT_SILENT)) {
     if (total == 1) {
       notify_format(player, T("You pemit \"%s\" to %s."), message,
-                    (last
-                     && last->connected ? AName(last->player, AN_SYS, NULL) :
-                     T("a connecting player")));
+                    (last && last->connected ? AName(last->player, AN_SYS, NULL)
+                                             : T("a connecting player")));
     } else {
       notify_format(player, T("You pemit \"%s\" to %d connections."), message,
                     total);
     }
   }
-
 }
 
 /** Page a specified socket.
@@ -4825,12 +4820,11 @@ do_page_port(dbref executor, const char *pc, const char *message)
     return;
   }
 
-
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:
     gap = "";
-    /* Fall through */
+  /* Fall through */
   case POSE_TOKEN:
     key = 1;
     break;
@@ -4851,15 +4845,16 @@ do_page_port(dbref executor, const char *pc, const char *message)
     safe_format(tbuf, &tbp, T("From afar, %s%s%s"), Name(executor), gap,
                 message + 1);
     notify_format(executor, T("Long distance to %s: %s%s%s"),
-                  target != NOTHING ? AName(target, AN_SAY, NULL) :
-                  T("a connecting player"), AName(executor, AN_SAY, NULL), gap,
-                  message + 1);
+                  target != NOTHING ? AName(target, AN_SAY, NULL)
+                                    : T("a connecting player"),
+                  AName(executor, AN_SAY, NULL), gap, message + 1);
     break;
   case 3:
     safe_format(tbuf, &tbp, T("%s pages: %s"), Name(executor), message);
     notify_format(executor, T("You paged %s with '%s'"),
-                  target != NOTHING ? AName(target, AN_SAY, NULL) :
-                  T("a connecting player"), message);
+                  target != NOTHING ? AName(target, AN_SAY, NULL)
+                                    : T("a connecting player"),
+                  message);
     break;
   }
   *tbp = '\0';
@@ -4870,7 +4865,6 @@ do_page_port(dbref executor, const char *pc, const char *message)
   else
     queue_string_eol(d, tbuf);
 }
-
 
 /** Return an inactive descriptor, as long as there's more than
  * one descriptor connected. Used for boot/me.
@@ -4884,7 +4878,7 @@ inactive_desc(dbref player)
   time_t now;
   int numd = 0;
   now = mudtime;
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (d->player == player) {
       numd++;
       if (difftime(now, d->last_time) > 60.0)
@@ -4931,13 +4925,12 @@ find_player_by_desc(int port)
   return NOTHING;
 }
 
-
 #ifndef WIN32
 /** Handler for SIGINT. Note that we've received it, and reinstall.
  * \param sig signal caught.
  */
 void
-signal_shutdown(int sig __attribute__ ((__unused__)))
+signal_shutdown(int sig __attribute__((__unused__)))
 {
   signal_shutdown_flag = 1;
   reload_sig_handler(SIGINT, signal_shutdown);
@@ -4947,7 +4940,7 @@ signal_shutdown(int sig __attribute__ ((__unused__)))
  * \param sig signal caught.
  */
 void
-signal_dump(int sig __attribute__ ((__unused__)))
+signal_dump(int sig __attribute__((__unused__)))
 {
   usr2_triggered = 1;
   reload_sig_handler(SIGUSR2, signal_dump);
@@ -4969,7 +4962,7 @@ bailout(int sig)
  * \param sig signal caught.
  */
 void
-reaper(int sig __attribute__ ((__unused__)))
+reaper(int sig __attribute__((__unused__)))
 {
   pid_t pid;
 
@@ -4982,13 +4975,13 @@ reaper(int sig __attribute__ ((__unused__)))
     } else
 #endif
 #ifdef SSL_SLAVE
-    if (ssl_slave_pid > -1 && pid == ssl_slave_pid) {
+      if (ssl_slave_pid > -1 && pid == ssl_slave_pid) {
       ssl_slave_error = ssl_slave_pid;
       ssl_slave_state = SSL_SLAVE_DOWN;
       ssl_slave_pid = -1;
     } else
 #endif
-    if (forked_dump_pid > -1 && pid == forked_dump_pid) {
+      if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
       dump_status = error_code;
       forked_dump_pid = -1;
@@ -4996,7 +4989,7 @@ reaper(int sig __attribute__ ((__unused__)))
   }
   reload_sig_handler(SIGCHLD, reaper);
 }
-#endif                          /* !(Mac or WIN32) */
+#endif /* !(Mac or WIN32) */
 
 /** Return the number of connected players,
  * possibly including Hidden connections */
@@ -5028,9 +5021,8 @@ dump_info(DESC *call_by)
 
   queue_string_eol(call_by, tprintf("Name: %s", options.mud_name));
   queue_string_eol(call_by, tprintf("Address: %s", options.mud_url));
-  queue_string_eol(call_by,
-                   tprintf("Uptime: %s",
-                           show_time(globals.first_start_time, 0)));
+  queue_string_eol(
+    call_by, tprintf("Uptime: %s", show_time(globals.first_start_time, 0)));
   queue_string_eol(call_by, tprintf("Connected: %d", count_players()));
   queue_string_eol(call_by, tprintf("Size: %d", db_top));
   queue_string_eol(call_by,
@@ -5049,17 +5041,15 @@ report_mssp(DESC *d, char *buff, char **bp)
     /* Required by current spec, as of 2010-08-15 */
     queue_string_eol(d, tprintf("%s\t%s", "NAME", options.mud_name));
     queue_string_eol(d, tprintf("%s\t%d", "PLAYERS", count_players()));
-    queue_string_eol(d,
-                     tprintf("%s\t%ld", "UPTIME",
-                             (long) globals.first_start_time));
+    queue_string_eol(
+      d, tprintf("%s\t%ld", "UPTIME", (long) globals.first_start_time));
     /* Not required, but we know anyway */
     queue_string_eol(d, tprintf("%s\t%d", "PORT", options.port));
     if (options.ssl_port)
       queue_string_eol(d, tprintf("%s\t%d", "SSL", options.ssl_port));
     queue_string_eol(d, tprintf("%s\t%d", "PUEBLO", options.support_pueblo));
-    queue_string_eol(d,
-                     tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION,
-                             PATCHLEVEL));
+    queue_string_eol(
+      d, tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION, PATCHLEVEL));
     queue_string_eol(d, tprintf("%s\t%s", "FAMILY", "TinyMUD"));
     if (strlen(options.mud_url))
       queue_string_eol(d, tprintf("%s\t%s", "WEBSITE", options.mud_url));
@@ -5125,17 +5115,17 @@ guest_to_connect(dbref player)
   int desc_count = 0;
   dbref i;
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (!GoodObject(d->player))
       continue;
     if (Guest(d->player))
       desc_count++;
   }
   if ((MAX_GUESTS > 0) && (desc_count >= MAX_GUESTS))
-    return NOTHING;             /* Limit already reached */
+    return NOTHING; /* Limit already reached */
 
   if (!Connected(player))
-    return player;              /* Connecting to a free guest */
+    return player; /* Connecting to a free guest */
 
   /* The requested guest isn't free. Find an available guest in the db */
   for (i = 0; i < db_top; i++) {
@@ -5171,8 +5161,8 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, "<PRE>", 5);
   }
 
-  snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s",
-           T("Player Name"), T("On For"), T("Idle"), get_poll());
+  snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s", T("Player Name"),
+           T("On For"), T("Idle"), get_poll());
   queue_string_eol(call_by, tbuf);
 
   for (d = descriptor_list; d; d = d->next) {
@@ -5190,9 +5180,9 @@ dump_users(DESC *call_by, char *match)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
     sprintf(tbuf, "%s %10s   %4s%c %s", nbuff,
-            onfor_time_fmt(d->connected_at, 10),
-            idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' ')
-            , get_doing(d->player, NOTHING, NOTHING, NULL, 0));
+            onfor_time_fmt(d->connected_at, 10), idle_time_fmt(d->last_time, 4),
+            (Dark(d->player) ? 'D' : ' '),
+            get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf);
   }
   switch (count) {
@@ -5261,7 +5251,6 @@ who_check_name(DESC *d, char *name, bool wild)
   return 0;
 }
 
-
 /** The DOING command */
 void
 do_who_mortal(dbref player, char *name)
@@ -5305,8 +5294,8 @@ do_who_mortal(dbref player, char *name)
     notify_format(player, "%s %10s   %4s%c %s", nbuff,
                   onfor_time_fmt(d->connected_at, 10),
                   idle_time_fmt(d->last_time, 4),
-                  (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , get_doing(d->player, player, player, NULL, 0));
+                  (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' ')),
+                  get_doing(d->player, player, player, NULL, 0));
   }
   switch (count) {
   case 0:
@@ -5326,7 +5315,6 @@ do_who_mortal(dbref player, char *name)
     PEND;
     notify_noenter(player, pbuff);
   }
-
 }
 
 /** The admin WHO command */
@@ -5411,7 +5399,6 @@ do_who_admin(dbref player, char *name)
     PEND;
     notify_noenter(player, pbuff);
   }
-
 }
 
 /** The SESSION command */
@@ -5453,19 +5440,19 @@ do_who_session(dbref player, char *name)
         safe_fill(' ', 16 - nlen, nbuff, &np);
       *np = '\0';
 
-      notify_format(player, "%s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
-                    nbuff, unparse_dbref(Location(d->player)),
+      notify_format(player, "%s %6s %9s %5s %5d %3d%c %7lu %7lu %7d", nbuff,
+                    unparse_dbref(Location(d->player)),
                     onfor_time_fmt(d->connected_at, 9),
                     idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                    is_ssl_desc(d) ? 'S' : ' ',
-                    d->input_chars, d->output_chars, d->output_size);
+                    is_ssl_desc(d) ? 'S' : ' ', d->input_chars, d->output_chars,
+                    d->output_size);
     } else {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     T("Connecting..."), "#-1",
                     onfor_time_fmt(d->connected_at, 9),
                     idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                    is_ssl_desc(d) ? 'S' : ' ',
-                    d->input_chars, d->output_chars, d->output_size);
+                    is_ssl_desc(d) ? 'S' : ' ', d->input_chars, d->output_chars,
+                    d->output_size);
     }
   }
 
@@ -5487,7 +5474,6 @@ do_who_session(dbref player, char *name)
     PEND;
     notify_noenter(player, pbuff);
   }
-
 }
 
 /** Format the time the player has been on for for WHO/DOING/ETC.
@@ -5548,8 +5534,8 @@ announce_connect(DESC *d, int isnew, int num)
 
   /* Redundant, but better for translators */
   if (Hidden(d)) {
-    message = (num > 1) ? T("has HIDDEN-reconnected.") :
-      T("has HIDDEN-connected.");
+    message =
+      (num > 1) ? T("has HIDDEN-reconnected.") : T("has HIDDEN-connected.");
   } else {
     message = (num > 1) ? T("has reconnected.") : T("has connected.");
   }
@@ -5593,8 +5579,8 @@ announce_connect(DESC *d, int isnew, int num)
     if (!Dark(player))
       notify_except(player, loc, player, tbuf1, NA_INTER_PRESENCE);
 
-  queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
-              unparse_objid(player), num, d->descriptor);
+  queue_event(player, "PLAYER`CONNECT", "%s,%d,%d", unparse_objid(player), num,
+              d->descriptor);
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections after connect)
@@ -5618,18 +5604,19 @@ announce_connect(DESC *d, int isnew, int num)
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone)) {
+      DOLIST(obj, Contents(zone))
+      {
         (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
       }
       break;
     default:
-      do_rawlog(LT_ERR,
-                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+      do_rawlog(LT_ERR, "Invalid zone #%d for %s(#%d) has bad type %d", zone,
                 Name(player), player, Typeof(zone));
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM)) {
+  DOLIST(obj, Contents(MASTER_ROOM))
+  {
     (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
   }
   pe_regs_free(pe_regs);
@@ -5680,16 +5667,11 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
    * (objid, count, hidden, cause, ip, descriptor, conn,
    * idle, recv/sent/commands)  */
   queue_event(executor, "PLAYER`DISCONNECT",
-              "%s,%d,%d,%s,%s,%d,%d,%d,%lu/%lu/%d",
-              unparse_objid(player),
-              num - 1,
-              Hidden(saved),
-              reason,
-              saved->ip,
-              saved->descriptor,
+              "%s,%d,%d,%s,%s,%d,%d,%d,%lu/%lu/%d", unparse_objid(player),
+              num - 1, Hidden(saved), reason, saved->ip, saved->descriptor,
               (int) difftime(mudtime, saved->connected_at),
-              (int) difftime(mudtime, saved->last_time),
-              saved->input_chars, saved->output_chars, saved->cmds);
+              (int) difftime(mudtime, saved->last_time), saved->input_chars,
+              saved->output_chars, saved->cmds);
 
   (void) queue_attribute_base(player, "ADISCONNECT", player, 0, pe_regs, 0);
   if (ROOM_CONNECTS)
@@ -5718,7 +5700,8 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone)) {
+      DOLIST(obj, Contents(zone))
+      {
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5730,13 +5713,13 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       }
       break;
     default:
-      do_rawlog(LT_ERR,
-                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+      do_rawlog(LT_ERR, "Invalid zone #%d for %s(#%d) has bad type %d", zone,
                 Name(player), player, Typeof(zone));
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM)) {
+  DOLIST(obj, Contents(MASTER_ROOM))
+  {
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5751,11 +5734,11 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
 
   /* Redundant, but better for translators */
   if (Hidden(saved)) {
-    message = (num > 1) ? T("has partially HIDDEN-disconnected.") :
-      T("has HIDDEN-disconnected.");
+    message = (num > 1) ? T("has partially HIDDEN-disconnected.")
+                        : T("has HIDDEN-disconnected.");
   } else {
-    message = (num > 1) ? T("has partially disconnected.") :
-      T("has disconnected.");
+    message =
+      (num > 1) ? T("has partially disconnected.") : T("has disconnected.");
   }
   snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL),
            message);
@@ -5809,12 +5792,10 @@ do_motd(dbref player, int key, const char *message)
     return;
   }
 
-  if (!
-      (((key & MOTD_TYPE) ==
-        MOTD_MOTD) ? Can_Announce(player) : Hasprivs(player))) {
-    notify(player,
-           T
-           ("You may get 15 minutes of fame and glory in life, but not right now."));
+  if (!(((key & MOTD_TYPE) == MOTD_MOTD) ? Can_Announce(player)
+                                         : Hasprivs(player))) {
+    notify(player, T("You may get 15 minutes of fame and glory in life, but "
+                     "not right now."));
     return;
   }
 
@@ -5868,10 +5849,9 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
     return "";
   }
 
-  if (!fetch_ufun_attrib
-      ("DOING", player, &ufun,
-       UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
-    return "";                  /* No DOING attribute */
+  if (!fetch_ufun_attrib("DOING", player, &ufun,
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+    return ""; /* No DOING attribute */
 
   call_ufun(&ufun, doing, caller, enactor, pe_info, NULL);
   if (!doing[0])
@@ -5895,7 +5875,8 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
 
   /* Smash any undesirable characters */
   dp = doing;
-  WALK_ANSI_STRING(dp) {
+  WALK_ANSI_STRING(dp)
+  {
     if (!isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';
@@ -5926,7 +5907,7 @@ set_poll(const char *message)
 {
   int i = 0;
   size_t len = 0;
-  
+
   if (message && *message) {
     strncpy(poll_msg, remove_markup(message, &len), DOING_LEN - 1);
     len--; /* Length includes trailing null */
@@ -5978,8 +5959,8 @@ do_poll(dbref player, const char *message, int clear)
   i = set_poll(message);
 
   if (i) {
-    notify_format(player,
-                  T("Poll set to '%s'. %d characters lost."), poll_msg, i);
+    notify_format(player, T("Poll set to '%s'. %d characters lost."), poll_msg,
+                  i);
   } else
     notify_format(player, T("Poll set to: %s"), poll_msg);
   do_log(LT_WIZ, player, NOTHING, "Poll Set to '%s'.", poll_msg);
@@ -6070,9 +6051,8 @@ FUNCTION(fun_xwho)
       powered = 0;
   }
 
-
-  if (!is_strict_integer(args[firstnum])
-      || !is_strict_integer(args[firstnum + 1])) {
+  if (!is_strict_integer(args[firstnum]) ||
+      !is_strict_integer(args[firstnum + 1])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
@@ -6087,7 +6067,7 @@ FUNCTION(fun_xwho)
   nwho = 0;
   first = 1;
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (!Hidden(d) || (powered)) {
       nwho += 1;
       if (nwho >= start && nwho < (start + count)) {
@@ -6103,7 +6083,6 @@ FUNCTION(fun_xwho)
       }
     }
   }
-
 }
 
 /* ARGSUSED */
@@ -6130,7 +6109,7 @@ FUNCTION(fun_nwho)
       powered = 0;
   }
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (!Hidden(d) || powered) {
       count++;
     }
@@ -6187,7 +6166,7 @@ FUNCTION(fun_lwho)
     }
   }
 
-  DESC_ITER(d) {
+  DESC_ITER (d) {
     if ((d->connected && !online) || (!d->connected && !offline))
       continue;
     if (!powered && (d->connected && Hidden(d)))
@@ -6208,7 +6187,7 @@ FUNCTION(fun_lwho)
 }
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* Disable bogus conversion warning */
+#pragma warning(disable : 4761) /* Disable bogus conversion warning */
 #endif
 /* ARGSUSED */
 FUNCTION(fun_hidden)
@@ -6238,7 +6217,7 @@ FUNCTION(fun_hidden)
 }
 
 #ifdef WIN32
-#pragma warning( default : 4761)        /* Re-enable conversion warning */
+#pragma warning(default : 4761) /* Re-enable conversion warning */
 #endif
 
 /** Look up a DESC by character name or file descriptor.
@@ -6260,7 +6239,7 @@ lookup_desc(dbref executor, const char *name)
       return d;
     else
       return NULL;
-  } else {                      /* Look up player name */
+  } else { /* Look up player name */
     DESC *match = NULL;
     dbref target = lookup_player(name);
     if (target == NOTHING) {
@@ -6271,9 +6250,8 @@ lookup_desc(dbref executor, const char *name)
       return NULL;
     else {
       /* walk the descriptor list looking for a match of a dbref */
-      DESC_ITER_CONN(d) {
-        if ((d->player == target) &&
-            (!Hidden(d) || Priv_Who(executor)) &&
+      DESC_ITER_CONN (d) {
+        if ((d->player == target) && (!Hidden(d) || Priv_Who(executor)) &&
             (!match || (d->last_time > match->last_time)))
           match = d;
       }
@@ -6287,7 +6265,7 @@ can_see_connected(dbref player, dbref target)
 {
   DESC *d;
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if ((d->player == target) && (!Hidden(d) || Priv_Who(player)))
       return 1;
   }
@@ -6304,7 +6282,7 @@ DESC *
 least_idle_desc(dbref player, int priv)
 {
   DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if ((d->player == player) && (priv || !Hidden(d)) &&
         (!match || (d->last_time > match->last_time)))
       match = d;
@@ -6322,10 +6300,9 @@ int
 most_conn_time(dbref player)
 {
   DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && !Hidden(d) && (!match ||
-                                                (d->connected_at >
-                                                 match->connected_at)))
+  DESC_ITER_CONN (d) {
+    if ((d->player == player) && !Hidden(d) &&
+        (!match || (d->connected_at > match->connected_at)))
       match = d;
   }
   if (match) {
@@ -6344,9 +6321,9 @@ int
 most_conn_time_priv(dbref player)
 {
   DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && (!match ||
-                                  (d->connected_at > match->connected_at)))
+  DESC_ITER_CONN (d) {
+    if ((d->player == player) &&
+        (!match || (d->connected_at > match->connected_at)))
       match = d;
   }
   if (match) {
@@ -6452,9 +6429,9 @@ FUNCTION(fun_zwho)
     return;
   }
 
-  if (!GoodObject(zone)
-      || (!Priv_Who(executor)
-          && !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
+  if (!GoodObject(zone) ||
+      (!Priv_Who(executor) &&
+       !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
     if (GoodObject(zone))
       fail_lock(victim, zone, Zone_Lock, NULL, NOTHING);
     safe_str(T(e_perm), buff, bp);
@@ -6470,7 +6447,7 @@ FUNCTION(fun_zwho)
   if (!Priv_Who(victim))
     powered = 0;
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (!Hidden(d) || powered) {
       if (Zone(Location(d->player)) == zone) {
         if (first) {
@@ -6559,10 +6536,7 @@ FUNCTION(fun_recv)
     safe_integer(-1, buff, bp);
 }
 
-FUNCTION(fun_poll)
-{
-  safe_str(get_poll(), buff, bp);
-}
+FUNCTION(fun_poll) { safe_str(get_poll(), buff, bp); }
 
 FUNCTION(fun_pueblo)
 {
@@ -6735,7 +6709,7 @@ FUNCTION(fun_lports)
     }
   }
 
-  DESC_ITER(d) {
+  DESC_ITER (d) {
     if ((d->connected && !online) || (!d->connected && !offline))
       continue;
     if (!powered && (d->connected && Hidden(d)))
@@ -6774,7 +6748,7 @@ FUNCTION(fun_ports)
   }
   /* Walk descriptor chain. */
   first = 1;
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (d->player == target) {
       if (first)
         first = 0;
@@ -6785,13 +6759,14 @@ FUNCTION(fun_ports)
   }
 }
 
-
 /** Hide or unhide the specified descriptor/player.
  * Although hiding is a per-descriptor state, this function sets all of
  * a player's connected descriptors to be hidden.
  * \param player dbref of player using command.
- * \param hide if 1, hide; if 0, unhide. If 2, unhide if all connections are hidden, hide if any are unhidden
- * \param victim descriptor, or name of player, to hide (or NULL to hide enacting player)
+ * \param hide if 1, hide; if 0, unhide. If 2, unhide if all connections are
+ * hidden, hide if any are unhidden
+ * \param victim descriptor, or name of player, to hide (or NULL to hide
+ * enacting player)
  */
 void
 hide_player(dbref player, int hide, char *victim)
@@ -6834,9 +6809,8 @@ hide_player(dbref player, int hide, char *victim)
       }
       return;
     } else {
-      thing =
-        noisy_match_result(player, victim, TYPE_PLAYER,
-                           MAT_ABSOLUTE | MAT_PMATCH | MAT_ME | MAT_TYPE);
+      thing = noisy_match_result(player, victim, TYPE_PLAYER,
+                                 MAT_ABSOLUTE | MAT_PMATCH | MAT_ME | MAT_TYPE);
       if (!GoodObject(thing)) {
         return;
       }
@@ -6850,7 +6824,7 @@ hide_player(dbref player, int hide, char *victim)
 
   if (hide == 2) {
     hide = 0;
-    DESC_ITER_CONN(d) {
+    DESC_ITER_CONN (d) {
       if (d->player == thing && !d->hide) {
         hide = 1;
         break;
@@ -6858,7 +6832,7 @@ hide_player(dbref player, int hide, char *victim)
     }
   }
 
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (d->player == thing)
       d->hide = hide;
   }
@@ -6898,15 +6872,15 @@ inactivity_check(void)
 
     /* If they've been connected for 60 seconds without getting a telnet-option
        back, the client probably doesn't understand them */
-    if (d->conn_flags & CONN_TELNET_QUERY
-        && difftime(now, d->connected_at) >= 60.0)
+    if (d->conn_flags & CONN_TELNET_QUERY &&
+        difftime(now, d->connected_at) >= 60.0)
       d->conn_flags &= ~CONN_TELNET_QUERY;
 
     /* If they've been idle for 60 seconds and are set KEEPALIVE and using
        a telnet-aware client, send a NOP */
-    if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60
-        && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
-      static const char nopmsg[2] = { IAC, NOP };
+    if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60 &&
+        IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
+      static const char nopmsg[2] = {IAC, NOP};
       queue_newwrite(d, nopmsg, 2);
       process_output(d);
     }
@@ -6919,17 +6893,15 @@ inactivity_check(void)
       } else if (!Can_Idle(d->player)) {
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
-        do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
+        do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
         boot_desc(d, "idle", NOTHING);
         booted = true;
       } else if (Unfind(d->player)) {
 
         if ((Can_Hide(d->player)) && (!Hidden(d))) {
-          queue_string(d,
-                       T
-                       ("\n*** Inactivity limit reached. You are now HIDDEN. ***\n"));
+          queue_string(
+            d, T("\n*** Inactivity limit reached. You are now HIDDEN. ***\n"));
           d->hide = 1;
           booted = true;
         }
@@ -6938,7 +6910,6 @@ inactivity_check(void)
   }
   return booted;
 }
-
 
 /** Given a player dbref, return the player's hidden status.
  * \param player dbref of player to check.
@@ -6950,7 +6921,7 @@ hidden(dbref player)
 {
   DESC *d;
   int i = 0;
-  DESC_ITER_CONN(d) {
+  DESC_ITER_CONN (d) {
     if (d->player == player) {
       if (!Hidden(d))
         return 0;
@@ -6960,7 +6931,6 @@ hidden(dbref player)
   }
   return (i > 0);
 }
-
 
 #ifndef SSL_SLAVE
 /** Take down all SSL client connections and close the SSL server socket.
@@ -6975,7 +6945,7 @@ close_ssl_connections(void)
     return;
 
   /* Close clients */
-  DESC_ITER(d) {
+  DESC_ITER (d) {
     if (d->ssl) {
       queue_string_eol(d, T(ssl_shutdown_message));
       process_output(d);
@@ -6993,7 +6963,6 @@ close_ssl_connections(void)
 }
 #endif
 
-
 /** Dump the descriptor list to our REBOOTFILE so we can restore it on reboot.
  */
 void
@@ -7001,9 +6970,8 @@ dump_reboot_db(void)
 {
   PENNFILE *f;
   DESC *d;
-  uint32_t flags =
-    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC |
-    RDBF_NO_DOING;
+  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM |
+                   RDBF_SOCKET_SRC | RDBF_NO_DOING;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -7034,7 +7002,8 @@ dump_reboot_db(void)
     /* First, iterate through all descriptors to get to the end
      * we do this so the descriptor_list isn't reversed on reboot
      */
-    for (d = descriptor_list; d && d->next; d = d->next) ;
+    for (d = descriptor_list; d && d->next; d = d->next)
+      ;
     /* Second, we iterate backwards from the end of descriptor_list
      * which is now in the d variable.
      */
@@ -7067,7 +7036,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
-    }                           /* for loop */
+    } /* for loop */
 
     putref(f, 0);
     putstring(f, poll_msg);
@@ -7110,7 +7079,7 @@ load_reboot_db(void)
      * If not, assume we're using the original format, in which the
      * sock appears first
      * */
-    c = penn_fgetc(f);          /* Skip the V */
+    c = penn_fgetc(f); /* Skip the V */
     if (c == 'V') {
       flags = getref(f);
     } else {
@@ -7140,8 +7109,9 @@ load_reboot_db(void)
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = (GoodObject(d->player)
-                      && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
+      d->connected = (GoodObject(d->player) && IsPlayer(d->player))
+                       ? CONN_PLAYER
+                       : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, REBOOT_DB_NOVALUE))
@@ -7212,7 +7182,7 @@ load_reboot_db(void)
           d->player = NOTHING;
         }
       }
-    }                           /* while loop */
+    } /* while loop */
 
     strcpy(poll_msg, getstring_noalloc(f));
     globals.first_start_time = getref(f);
@@ -7242,8 +7212,8 @@ load_reboot_db(void)
 
     if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
-      do_rawlog(LT_ERR,
-                "ssl_slave does not appear to be running on reboot. Restarting the slave.");
+      do_rawlog(LT_ERR, "ssl_slave does not appear to be running on reboot. "
+                        "Restarting the slave.");
       if (make_ssl_slave() < 0)
         do_rawlog(LT_ERR, "Unable to start ssl_slave");
     } else
@@ -7299,14 +7269,11 @@ do_reboot(dbref player, int flag)
 #endif
 
   if (player == NOTHING) {
-    flag_broadcast(0, 0,
-                   T
-                   ("GAME: Reboot w/o disconnect from game account, please wait."));
+    flag_broadcast(
+      0, 0, T("GAME: Reboot w/o disconnect from game account, please wait."));
     do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by signal.");
   } else {
-    flag_broadcast(0, 0,
-                   T
-                   ("GAME: Reboot w/o disconnect by %s, please wait."),
+    flag_broadcast(0, 0, T("GAME: Reboot w/o disconnect by %s, please wait."),
                    AName(Owner(player), AN_ANNOUNCE, NULL));
     do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by %s(#%d).",
               Name(player), player);
@@ -7329,17 +7296,17 @@ do_reboot(dbref player, int flag)
   shutdown_queues();
 #ifndef PROFILING
 #ifndef WIN32
-  /* Some broken libcs appear to retain the itimer across exec!
-   * So we make sure that if we get a SIGPROF in our next incarnation,
-   * we ignore it until our proper handler is set up.
-   */
+/* Some broken libcs appear to retain the itimer across exec!
+ * So we make sure that if we get a SIGPROF in our next incarnation,
+ * we ignore it until our proper handler is set up.
+ */
 #ifdef __CYGWIN__
   ignore_signal(SIGALRM);
 #else
   ignore_signal(SIGPROF);
-#endif                          /* __CYGWIN__ */
-#endif                          /* WIN32 */
-#endif                          /* PROFILING */
+#endif /* __CYGWIN__ */
+#endif /* WIN32 */
+#endif /* PROFILING */
   dump_reboot_db();
 #ifdef INFO_SLAVE
   kill_info_slave();
@@ -7364,13 +7331,12 @@ do_reboot(dbref player, int flag)
   }
 #else
   execl("pennmush.exe", "pennmush.exe", "/run", NULL);
-#endif                          /* WIN32 */
+#endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
   fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
           strerror(errno));
   exit(1);
 }
-
 
 /* File modification watching code. Linux-specific for now.
  * Future directions include: kqueue() for BSD, fam for linux, irix, others?
@@ -7383,13 +7349,14 @@ do_reboot(dbref player, int flag)
 
 extern HASHTAB help_files;
 
-static void reload_files(void) __attribute__ ((__unused__));
+static void reload_files(void) __attribute__((__unused__));
 
 static void
 reload_files(void)
 {
-  do_rawlog(LT_TRACE,
-            "Reloading help indexes and cached files after detecting a change.");
+  do_rawlog(
+    LT_TRACE,
+    "Reloading help indexes and cached files after detecting a change.");
   fcache_load(NOTHING);
   help_reindex(NOTHING);
 }
@@ -7411,8 +7378,8 @@ WATCH(const char *name)
   if (*name != NUMBER_TOKEN) {
     if ((wd = inotify_add_watch(watch_fd, name,
                                 IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
-      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s",
-                name, strerror(errno));
+      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", name,
+                strerror(errno));
     else
       im_insert(watchtable, wd, (void *) name);
   }
@@ -7430,8 +7397,8 @@ watch_files_in(void)
   if (watch_fd < 0)
     return;
 
-  do_rawlog(LT_TRACE,
-            "'No such file or directory' errors immediately following are probably harmless.");
+  do_rawlog(LT_TRACE, "'No such file or directory' errors immediately "
+                      "following are probably harmless.");
   for (n = 0; n < 2; n++) {
     WATCH(options.connect_file[n]);
     WATCH(options.motd_file[n]);
@@ -7518,8 +7485,8 @@ file_watch_event_in(int fd)
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
-            do_rawlog(LT_ERR,
-                      "Got status change for file '%s' but I don't know what to do with it! Mask 0x%x",
+            do_rawlog(LT_ERR, "Got status change for file '%s' but I don't "
+                              "know what to do with it! Mask 0x%x",
                       file, ev->mask);
           }
           lastwd = ev->wd;
@@ -7547,7 +7514,7 @@ file_watch_init(void)
  * \param fd the notification monitorh descriptor
  */
 void
-file_watch_event(int fd __attribute__ ((__unused__)))
+file_watch_event(int fd __attribute__((__unused__)))
 {
 #ifdef HAVE_INOTIFY
   file_watch_event_in(fd);

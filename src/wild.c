@@ -42,13 +42,13 @@
 /** Force a char to be lowercase */
 #define FIXCASE(a) (DOWNCASE(a))
 /** Check for equality of characters, maybe case-sensitive */
-#define EQUAL(cs,a,b) ((cs) ? (a == b) : (FIXCASE(a) == FIXCASE(b)))
+#define EQUAL(cs, a, b) ((cs) ? (a == b) : (FIXCASE(a) == FIXCASE(b)))
 /** Check for inequality of characters, maybe case-sensitive */
-#define NOTEQUAL(cs,a,b) ((cs) ? (a != b) : (FIXCASE(a) != FIXCASE(b)))
+#define NOTEQUAL(cs, a, b) ((cs) ? (a != b) : (FIXCASE(a) != FIXCASE(b)))
 
 bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
-const unsigned char *tables = NULL;  /** Pointer to character tables */
+const unsigned char *tables = NULL; /** Pointer to character tables */
 
 int pcre_study_flags = PCRE_STUDY_JIT_COMPILE;
 int pcre_public_study_flags = 0;
@@ -86,15 +86,8 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 
 static bool
 
-
-
-
-
-
-
-
-real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr, int *invokes, char sep);
+real_atr_wild(const char *restrict tstr, const char *restrict dstr,
+              int *invokes, char sep);
 /** Do an attribute name wildcard match.
  *
  * This probably crashes if fed NULLs instead of strings, too.
@@ -123,8 +116,8 @@ help_wild(const char *restrict tstr, const char *restrict dstr)
 }
 
 static bool
-real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr, int *invokes, char sep)
+real_atr_wild(const char *restrict tstr, const char *restrict dstr,
+              int *invokes, char sep)
 {
   int starcount;
   if (*invokes > 0) {
@@ -156,13 +149,13 @@ real_atr_wild(const char *restrict tstr,
           return !strchr(dstr + 1, sep);
         break;
       }
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case '\\':
       /* Escape character.  Move up, and force literal
        * match of next character.
        */
       tstr++;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     default:
       /* Literal character.  Check for a match.
        * If matching end of data, return true.
@@ -218,7 +211,7 @@ real_atr_wild(const char *restrict tstr,
     while (*dstr) {
       if (EQUAL(0, *dstr, *tstr)) {
         if (!*(tstr + 1) && *(dstr + 1))
-          return 0;             /* No more in pattern string, but more in target */
+          return 0; /* No more in pattern string, but more in target */
         if (real_atr_wild(tstr + 1, dstr + 1, invokes, sep))
           return 1;
       }
@@ -251,8 +244,8 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
                 int *matches, int nmatches)
 {
   int i, pi;
-  bool globbing = 0;            /* Are we in a glob match right now? */
-  int pbase = 0, sbase = 0;     /* Guaranteed matched so far. */
+  bool globbing = 0;        /* Are we in a glob match right now? */
+  int pbase = 0, sbase = 0; /* Guaranteed matched so far. */
   int matchi = 0, mbase = 0;
   int slen;
   char pbuff[BUFFER_LEN];
@@ -314,15 +307,15 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
     case '\\':
       /* Literal match of the next character, which may be a * or ?. */
       pi++;
-      /* Fall through */
+    /* Fall through */
     default:
       if (str[sbase + i] == pat[pbase + pi]) {
         pi++;
         i++;
         break;
       }
-      /* Fall through */
-    case 0:                    /* Pattern is too short to match */
+    /* Fall through */
+    case 0: /* Pattern is too short to match */
       /* If we're dealing with a glob, advance it by 1 character. */
       if (globbing) {
         if (mbase < nmatches) {
@@ -395,8 +388,9 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
         bp = data;
         maxbuff = data + len - BUFFER_LEN;
 
-        for (n = 0; (n < BUFFER_LEN) && (results[n * 2] >= 0)
-             && n < nmatches && bp < (data + len); n++) {
+        for (n = 0; (n < BUFFER_LEN) && (results[n * 2] >= 0) && n < nmatches &&
+                    bp < (data + len);
+             n++) {
           /* Eww, eww, eww, EWWW! */
           count = n + 1;
           buff = bp;
@@ -506,8 +500,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    * Now we try to match the pattern. The relevant fields will
    * automatically be filled in by this.
    */
-  if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99))
-      < 0) {
+  if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99)) < 0) {
     if (as)
       free_ansi_string(as);
     pcre_free(re);
@@ -594,10 +587,10 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
   int erroffset;
   int offsets[99];
   int r;
-  int flags = 0;                /* There's a PCRE_NO_AUTO_CAPTURE flag to turn all raw
-                                   ()'s into (?:)'s, which would be nice to use,
-                                   except that people might use backreferences in
-                                   their patterns. Argh. */
+  int flags = 0; /* There's a PCRE_NO_AUTO_CAPTURE flag to turn all raw
+                    ()'s into (?:)'s, which would be nice to use,
+                    except that people might use backreferences in
+                    their patterns. Argh. */
 
   if (!cs)
     flags |= PCRE_CASELESS;
@@ -655,7 +648,6 @@ qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
   return pcre_exec(re, extra, subj, len, 0, 0, offsets, 99) >= 0;
 }
 
-
 /** Either an order comparison or a wildcard match with optional
  *  pe_regs memory.
  *
@@ -709,10 +701,12 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs,
 }
 
 /** Check to see if a string contains either wildcard characters (* or ?), or
- * backslash-escaped characters. If there are no wildcards but there are escaped characters,
+ * backslash-escaped characters. If there are no wildcards but there are escaped
+ * characters,
  * destructively modify the string to remove the escapes, if requested.
  * \param s string to check
- * \param unescape If no unescaped wildcards are present, should we modify s to remove escapes?
+ * \param unescape If no unescaped wildcards are present, should we modify s to
+ * remove escapes?
  * \retval -1 s contains unescaped wildcards
  * \retval >-1 number of \-escaped characters remaining in s
  */

@@ -24,7 +24,7 @@
 #include <winsock2.h>
 #include <io.h>
 void shutdown_checkpoint(void);
-#else                           /* !WIN32 */
+#else /* !WIN32 */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -44,7 +44,7 @@ void shutdown_checkpoint(void);
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */
 #include <fcntl.h>
 #include <ctype.h>
 #include <signal.h>
@@ -68,13 +68,13 @@ void shutdown_checkpoint(void);
 #include "parse.h"
 #include "wait.h"
 
-#define MYSSL_RB        0x1     /**< Read blocked (on read) */
-#define MYSSL_WB        0x2     /**< Write blocked (on write) */
-#define MYSSL_RBOW      0x4     /**< Read blocked (on write) */
-#define MYSSL_WBOR      0x8     /**< Write blocked (on read) */
-#define MYSSL_ACCEPT    0x10    /**< We need to call SSL_accept (again) */
-#define MYSSL_VERIFIED  0x20    /**< This is an authenticated connection */
-#define MYSSL_HANDSHAKE 0x40    /**< We need to call SSL_do_handshake */
+#define MYSSL_RB 0x1         /**< Read blocked (on read) */
+#define MYSSL_WB 0x2         /**< Write blocked (on write) */
+#define MYSSL_RBOW 0x4       /**< Read blocked (on write) */
+#define MYSSL_WBOR 0x8       /**< Write blocked (on read) */
+#define MYSSL_ACCEPT 0x10    /**< We need to call SSL_accept (again) */
+#define MYSSL_VERIFIED 0x20  /**< This is an authenticated connection */
+#define MYSSL_HANDSHAKE 0x40 /**< We need to call SSL_do_handshake */
 
 #undef MYSSL_DEBUG
 #ifdef MYSSL_DEBUG
@@ -87,7 +87,6 @@ static void ssl_errordump(const char *msg);
 static int client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
 static DH *get_dh1024(void);
 
-
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
 
@@ -99,8 +98,9 @@ extern sfmt_t rand_state;
 SSL_CTX *
 ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 {
-  const SSL_METHOD *meth;       /* If this const gives you a warning, you're
-                                   using an old version of OpenSSL. Walker, this means you! */
+  const SSL_METHOD
+    *meth; /* If this const gives you a warning, you're
+              using an old version of OpenSSL. Walker, this means you! */
   /* uint8_t context[128]; */
   DH *dh;
   unsigned int reps = 1;
@@ -118,7 +118,8 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
-       places will have enough entropy. Otherwise, be lazy and use random numbers
+       places will have enough entropy. Otherwise, be lazy and use random
+       numbers
        until it's satisfied. */
     uint32_t gibberish[4];
     int n;
@@ -146,12 +147,12 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* Load keys/certs */
   if (private_key_file && *private_key_file) {
     if (!SSL_CTX_use_certificate_chain_file(ctx, private_key_file)) {
-      ssl_errordump
-        ("Unable to load server certificate - only anonymous ciphers supported.");
+      ssl_errordump("Unable to load server certificate - only anonymous "
+                    "ciphers supported.");
     }
     if (!SSL_CTX_use_PrivateKey_file(ctx, private_key_file, SSL_FILETYPE_PEM)) {
-      ssl_errordump
-        ("Unable to load private key - only anonymous ciphers supported.");
+      ssl_errordump(
+        "Unable to load private key - only anonymous ciphers supported.");
     }
   }
 
@@ -173,9 +174,8 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   }
 
   SSL_CTX_set_options(ctx, SSL_OP_SINGLE_DH_USE | SSL_OP_ALL);
-  SSL_CTX_set_mode(ctx,
-                   SSL_MODE_ENABLE_PARTIAL_WRITE |
-                   SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+  SSL_CTX_set_mode(
+    ctx, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
   /* Set up DH callback */
   dh = get_dh1024();
@@ -214,14 +214,16 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
     fprintf(stderr, "verify error:num=%d:%s:depth=%d:%s\n", err,
             X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
-      X509_NAME_oneline(X509_get_issuer_name(X509_STORE_CTX_get_current_cert(x509_ctx)), buf, 256);
+      X509_NAME_oneline(
+        X509_get_issuer_name(X509_STORE_CTX_get_current_cert(x509_ctx)), buf,
+        256);
       fprintf(stderr, "issuer= %s\n", buf);
     }
     unlock_file(stderr);
     return preverify_ok;
   }
   /* They've passed the preverification */
-  /* if there are contents of the cert we wanted to verify, we'd do it here. 
+  /* if there are contents of the cert we wanted to verify, we'd do it here.
    */
   return preverify_ok;
 }
@@ -249,7 +251,7 @@ get_dh1024(void)
 
   if ((dh = DH_new()) == NULL)
     return NULL;
-  
+
 #ifdef HAVE_DH_SET0_PQG
   BIGNUM *p, *g;
   p = BN_bin2bn(dh1024_p, sizeof(dh1024_p), NULL);
@@ -270,7 +272,7 @@ get_dh1024(void)
     DH_free(dh);
     return NULL;
   }
-  
+
   DH_set0_pqg(dh, p, NULL, g);
 #else
   if (dh->p) {
@@ -300,7 +302,7 @@ get_dh1024(void)
     return NULL;
   }
 #endif
-  
+
   return dh;
 }
 
@@ -371,7 +373,6 @@ ssl_resume(int sock, int *state)
   return ssl;
 }
 
-
 /** Perform an SSL handshake.
  * In some cases, a handshake may block, so we may have to call this
  * function again. Accordingly, we return state information that
@@ -412,7 +413,7 @@ ssl_handshake(SSL *ssl)
   return state;
 }
 
-/** Given connection state, determine if an SSL_accept needs to be 
+/** Given connection state, determine if an SSL_accept needs to be
  * performed. This is a just a wrapper so we don't have to expose
  * our internal state management stuff.
  * \param state an ssl connection state.
@@ -424,7 +425,7 @@ ssl_need_accept(int state)
   return (state & MYSSL_ACCEPT);
 }
 
-/** Given connection state, determine if an SSL_handshake needs to be 
+/** Given connection state, determine if an SSL_handshake needs to be
  * performed. This is a just a wrapper so we don't have to expose
  * our internal state management stuff.
  * \param state an ssl connection state.
@@ -498,7 +499,6 @@ ssl_accept(SSL *ssl)
   return state;
 }
 
-
 /** Given an SSL object and its last known state, attempt to read from it.
  * \param ssl pointer to SSL object.
  * \param state saved state of SSL object.
@@ -562,7 +562,8 @@ ssl_write(SSL *ssl, int state, int net_read_ready, int net_write_ready,
           const char *buf, int bufsize, int *offset)
 {
   int r;
-  if ((net_write_ready && bufsize) || (net_read_ready && !(state & MYSSL_WBOR))) {
+  if ((net_write_ready && bufsize) ||
+      (net_read_ready && !(state & MYSSL_WBOR))) {
     state &= ~(MYSSL_WBOR | MYSSL_WB);
     r = SSL_write(ssl, buf + *offset, bufsize);
     switch (SSL_get_error(ssl, r)) {
@@ -589,7 +590,6 @@ ssl_write(SSL *ssl, int state, int net_read_ready, int net_write_ready,
   }
   return state;
 }
-
 
 static void
 ssl_errordump(const char *msg)

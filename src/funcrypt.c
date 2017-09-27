@@ -99,7 +99,8 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
     BIO_free(b64);
     return false;
   }
-  /*  len = BIO_set_close(bmem, BIO_NOCLOSE); This makes valgrind report a memory leak. */
+  /*  len = BIO_set_close(bmem, BIO_NOCLOSE); This makes valgrind report a
+   * memory leak. */
 
   bio = BIO_push(b64, bmem);
 
@@ -154,16 +155,10 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
 }
 
 /* Encode a string in base64 */
-FUNCTION(fun_encode64)
-{
-  encode_base64(args[0], arglens[0], buff, bp);
-}
+FUNCTION(fun_encode64) { encode_base64(args[0], arglens[0], buff, bp); }
 
 /* Decode a string from base64 */
-FUNCTION(fun_decode64)
-{
-  decode_base64(args[0], arglens[0], 1, buff, bp);
-}
+FUNCTION(fun_decode64) { decode_base64(args[0], arglens[0], 1, buff, bp); }
 
 /* Copy over only alphanumeric chars */
 char *
@@ -175,7 +170,8 @@ crunch_code(char *code)
 
   out = output;
   in = code;
-  WALK_ANSI_STRING(in) {
+  WALK_ANSI_STRING(in)
+  {
     if ((*in >= 32) && (*in <= 126)) {
       *out++ = *in;
     }
@@ -311,14 +307,13 @@ FUNCTION(fun_sha0)
 int safe_hash_byname(const char *algo, const char *plaintext, int len,
                      char *buff, char **bp, bool inplace_err);
 
-
 #ifdef HAVE_EVP_MD_DO_ALL
 #define CAN_LIST_DIGESTS
 
 static void
-list_dgst_populate(const EVP_MD *m, const char *from
-                   __attribute__ ((__unused__)), const char *to
-                   __attribute__ ((__unused__)), void *data)
+list_dgst_populate(const EVP_MD *m,
+                   const char *from __attribute__((__unused__)),
+                   const char *to __attribute__((__unused__)), void *data)
 {
   HASHTAB *digests = data;
   if (m)
@@ -340,8 +335,8 @@ FUNCTION(fun_digest)
     EVP_MD_do_all(list_dgst_populate, &digests_tab);
     digests = mush_calloc(digests_tab.entries, sizeof(char *), "digest.list");
 
-    for (n = 0, d = hash_firstentry_key(&digests_tab);
-         d; n += 1, d = hash_nextentry_key(&digests_tab))
+    for (n = 0, d = hash_firstentry_key(&digests_tab); d;
+         n += 1, d = hash_nextentry_key(&digests_tab))
       digests[n] = d;
 
     qsort(digests, n, sizeof(char *), stri_comp);

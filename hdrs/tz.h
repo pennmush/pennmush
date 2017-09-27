@@ -10,7 +10,7 @@
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif                          /* HAVE_STDINT_H */
+#endif /* HAVE_STDINT_H */
 
 struct ttinfo {
   int32_t tt_gmtoff;
@@ -26,15 +26,15 @@ struct ttleapsecs {
 };
 
 struct tzinfo {
-  int timecnt; /**< The size of the transitions array */
-  time_t *transitions; /**< When time zone rules change */
-  uint8_t *offset_indexes; /**< Indexes into offsets array */
-  int typecnt; /**< The size of the offsets array */
-  struct ttinfo *offsets; /**< Array of tz offsets */
-  int leapcnt; /**< The size of the leapsecs array */
+  int timecnt;                 /**< The size of the transitions array */
+  time_t *transitions;         /**< When time zone rules change */
+  uint8_t *offset_indexes;     /**< Indexes into offsets array */
+  int typecnt;                 /**< The size of the offsets array */
+  struct ttinfo *offsets;      /**< Array of tz offsets */
+  int leapcnt;                 /**< The size of the leapsecs array */
   struct ttleapsecs *leapsecs; /**< Leapsecond database */
-  int charcnt; /** The size of the tz abbreviation array */
-  char *abbrevs; /**< Array of timezone name abbreviations */
+  int charcnt;                 /** The size of the tz abbreviation array */
+  char *abbrevs;               /**< Array of timezone name abbreviations */
 };
 
 #define TZMAGIC "TZif"
@@ -48,12 +48,15 @@ int32_t offset_for_tzinfo(struct tzinfo *tz, time_t when);
 
 /** Structure used to store information about a timezone's offset. */
 struct tz_result {
-  time_t tz_when; /**< The UTC time being used as a base. */
-  int32_t tz_offset; /**< Offset from UTC for the base time. */
-  const char *tz_name; /**< Name of the timezone in a format suitable for use with tzset() IF tz_has_file is true. */
-  bool tz_has_file; /**< True if an underlying file in the zoneinfo database was found for this timezone. */
-  bool tz_attr_missing; /**< True if the time zone was requested from an object without a \@TZ attribute. */
-  bool tz_utc; /**< True if UTC was requested. */
+  time_t tz_when;      /**< The UTC time being used as a base. */
+  int32_t tz_offset;   /**< Offset from UTC for the base time. */
+  const char *tz_name; /**< Name of the timezone in a format suitable for use
+                          with tzset() IF tz_has_file is true. */
+  bool tz_has_file; /**< True if an underlying file in the zoneinfo database was
+                       found for this timezone. */
+  bool tz_attr_missing; /**< True if the time zone was requested from an object
+                           without a \@TZ attribute. */
+  bool tz_utc;          /**< True if UTC was requested. */
 };
 
 bool parse_timezone_arg(const char *tz, time_t when, struct tz_result *);
@@ -61,4 +64,4 @@ bool parse_timezone_arg(const char *tz, time_t when, struct tz_result *);
 void save_and_set_tz(const char *newzone);
 void restore_tz(void);
 
-#endif                          /* TZ_H */
+#endif /* TZ_H */

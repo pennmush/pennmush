@@ -93,8 +93,8 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
     if (inplace_err)
       safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
     else
-      do_rawlog(LT_ERR,
-                "safe_hash_byname: Unknown password hash function: %s", algo);
+      do_rawlog(LT_ERR, "safe_hash_byname: Unknown password hash function: %s",
+                algo);
     return 1;
   }
   ctx = EVP_MD_CTX_create();
@@ -102,10 +102,9 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
   EVP_DigestUpdate(ctx, plaintext, len);
   EVP_DigestFinal(ctx, hash, &rlen);
   EVP_MD_CTX_destroy(ctx);
-  
+
   return safe_hexstr(hash, rlen, buff, bp);
 }
-
 
 bool
 check_mux_password(const char *saved, const char *password)
@@ -158,7 +157,7 @@ check_mux_password(const char *saved, const char *password)
   EVP_DigestUpdate(ctx, password, strlen(password));
   EVP_DigestFinal(ctx, hash, &rlen);
   EVP_MD_CTX_destroy(ctx);
-  
+
   /* Decode the stored password */
   dp = decoded;
   decode_base64(end, strlen(end), 0, decoded, &dp);
@@ -166,9 +165,7 @@ check_mux_password(const char *saved, const char *password)
 
   /* Compare stored to hashed */
   return (memcmp(decoded, hash, rlen) == 0);
-
 }
-
 
 /** Encrypt a password and return the formatted password
  * string. Supports user-supplied algorithms. Password format:
@@ -273,9 +270,8 @@ password_comp(const char *saved, const char *pass)
     /* Salted password */
     safe_chr(shash[0], buff, &bp);
     safe_chr(shash[1], buff, &bp);
-    r =
-      safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass),
-                       len + 2, buff, &bp, 0);
+    r = safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass),
+                         len + 2, buff, &bp, 0);
   } else {
     /* Unknown password format version */
     retval = 0;

@@ -48,11 +48,11 @@ FUNCTION(fun_fn)
   char *ap;
 
   if (!args[0] || !*args[0])
-    return;                     /* No function name */
+    return; /* No function name */
   /* Evaluate first argument */
   p = args[0];
-  if (process_expression(tbuf, &tp, &p, executor, caller,
-                         enactor, PE_DEFAULT, PT_DEFAULT, pe_info))
+  if (process_expression(tbuf, &tp, &p, executor, caller, enactor, PE_DEFAULT,
+                         PT_DEFAULT, pe_info))
     return;
   *tp = '\0';
   if ((ap = strchr(tbuf, '/'))) {
@@ -62,8 +62,8 @@ FUNCTION(fun_fn)
       safe_str(T(e_notvis), buff, bp);
       return;
     }
-    if (!(!FUNCTION_SIDE_EFFECTS && See_All(executor))
-        && !controls(executor, as)) {
+    if (!(!FUNCTION_SIDE_EFFECTS && See_All(executor)) &&
+        !controls(executor, as)) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
@@ -89,8 +89,8 @@ FUNCTION(fun_fn)
   safe_chr(')', newfun, &tp);
   *tp = '\0';
   p = newfun;
-  process_expression(buff, bp, &p, as, caller, enactor,
-                     eflags | PE_BUILTINONLY, PT_DEFAULT, pe_info);
+  process_expression(buff, bp, &p, as, caller, enactor, eflags | PE_BUILTINONLY,
+                     PT_DEFAULT, pe_info);
 }
 
 /* ARGSUSED */
@@ -132,21 +132,21 @@ FUNCTION(fun_objeval)
      * to allow a see_all player to evaluate functions from someone else's
      * standpoint. We require control.
      */
-    if (((obj = match_thing(executor, name)) == NOTHING)
-        || !controls(executor, obj))
+    if (((obj = match_thing(executor, name)) == NOTHING) ||
+        !controls(executor, obj))
       obj = executor;
   } else {
     /* In order to evaluate from something else's viewpoint, you
      * must control it, or be able to see_all.
      */
-    if (((obj = match_thing(executor, name)) == NOTHING)
-        || (!controls(executor, obj) && !See_All(executor)))
+    if (((obj = match_thing(executor, name)) == NOTHING) ||
+        (!controls(executor, obj) && !See_All(executor)))
       obj = executor;
   }
 
   p = args[1];
-  process_expression(buff, bp, &p, obj, executor, enactor, eflags,
-                     PT_DEFAULT, pe_info);
+  process_expression(buff, bp, &p, obj, executor, enactor, eflags, PT_DEFAULT,
+                     pe_info);
 }
 
 /** Helper function for calling \@functioned funs.
@@ -164,9 +164,8 @@ FUNCTION(fun_objeval)
  */
 void
 do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
-          char **args, dbref executor, dbref caller
-          __attribute__ ((__unused__)), dbref enactor, NEW_PE_INFO *pe_info,
-          int extra_flags)
+          char **args, dbref executor, dbref caller __attribute__((__unused__)),
+          dbref enactor, NEW_PE_INFO *pe_info, int extra_flags)
 {
   int j;
   int made_pe_info = 0;
@@ -176,7 +175,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   PE_REGS *pe_regs;
 
   if (nargs > MAX_STACK_ARGS)
-    nargs = MAX_STACK_ARGS;     /* maximum no of args */
+    nargs = MAX_STACK_ARGS; /* maximum no of args */
 
   /* save our stack */
   if (!pe_info) {
@@ -192,7 +191,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
 
   tp = tbuf = safe_atr_value(attrib, "atrval.do_userfn");
   if (AF_NoDebug(attrib))
-    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
+    pe_flags |= PE_NODEBUG; /* no_debug overrides debug */
   else if (AF_Debug(attrib))
     pe_flags |= PE_DEBUG;
 
@@ -263,14 +262,14 @@ FUNCTION(fun_pfun)
 
   a = atr_get(parent, upcasestr(args[0]));
   if (!a)
-    return;                     /* no attr */
+    return; /* no attr */
 
   if (AF_Internal(a) || AF_Private(a))
-    return;                     /* attr isn't inheritable */
+    return; /* attr isn't inheritable */
 
   /* DEBUG attributes */
   if (AF_NoDebug(a))
-    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
+    pe_flags |= PE_NODEBUG; /* no_debug overrides debug */
   else if (AF_Debug(a))
     pe_flags |= PE_DEBUG;
 
@@ -312,17 +311,17 @@ FUNCTION(fun_udefault)
   /* find our object and attribute */
   dp = mstr;
   sp = args[0];
-  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                         eflags, PT_DEFAULT, pe_info))
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
+                         PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
-  if (!fetch_ufun_attrib
-      (mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
+  if (!fetch_ufun_attrib(mstr, executor, &ufun,
+                         UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
     /* We couldn't get it. Evaluate args[1] and return it */
     sp = args[1];
 
-    process_expression(buff, bp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
     return;
   }
 
@@ -348,7 +347,7 @@ FUNCTION(fun_udefault)
   call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
   safe_str(rbuff, buff, bp);
 
-  /* Free the xargs */
+/* Free the xargs */
 cleanup:
   pe_regs_free(pe_regs);
   if (nargs > 2) {
@@ -359,7 +358,6 @@ cleanup:
     mush_free(xargs, "udefault.xargs");
   }
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_zfun)

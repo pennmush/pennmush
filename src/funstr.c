@@ -31,16 +31,14 @@
 #include "sort.h"
 #include "strutil.h"
 
-
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
+#pragma warning(disable : 4761) /* NJG: disable warning re conversion */
 #endif
 
-#define MAX_COLS 32  /**< Maximum number of columns for align() */
+#define MAX_COLS 32 /**< Maximum number of columns for align() */
 static int wraplen(char *str, size_t maxlen);
-static int align_one_line(char *buff, char **bp, int ncols,
-                          int cols[MAX_COLS], int calign[MAX_COLS],
-                          char *ptrs[MAX_COLS],
+static int align_one_line(char *buff, char **bp, int ncols, int cols[MAX_COLS],
+                          int calign[MAX_COLS], char *ptrs[MAX_COLS],
                           ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                           int linenum, char *fieldsep, int fslen, char *linesep,
                           int lslen, char filler);
@@ -84,13 +82,13 @@ get_gender(dbref player)
   }
 }
 
-char *subj[4];  /**< Subjective pronouns */
-char *poss[4];  /**< Possessive pronouns */
-char *obj[4];   /**< Objective pronouns */
-char *absp[4];  /**< Absolute possessive pronouns */
+char *subj[4]; /**< Subjective pronouns */
+char *poss[4]; /**< Possessive pronouns */
+char *obj[4];  /**< Objective pronouns */
+char *absp[4]; /**< Absolute possessive pronouns */
 
 /** Macro to set a pronoun entry based on whether we're translating or not */
-#define SET_PRONOUN(p,v,u)  p = strdup((translate) ? (v) : (u))
+#define SET_PRONOUN(p, v, u) p = strdup((translate) ? (v) : (u))
 
 /** Initialize the pronoun translation strings.
  * This function sets up the values of the arrays of subjective,
@@ -150,7 +148,8 @@ FUNCTION(fun_isword)
 FUNCTION(fun_capstr)
 {
   char *p = args[0];
-  WALK_ANSI_STRING(p) {
+  WALK_ANSI_STRING(p)
+  {
     *p = UPCASE(*p);
     break;
   }
@@ -253,10 +252,7 @@ FUNCTION(fun_alphamin)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_strlen)
-{
-  safe_integer(ansi_strlen(args[0]), buff, bp);
-}
+FUNCTION(fun_strlen) { safe_integer(ansi_strlen(args[0]), buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_mid)
@@ -433,7 +429,7 @@ FUNCTION(fun_str_rep_or_ins)
   free_ansi_string(src);
 }
 
-extern int sort_order;          /* from sort.c */
+extern int sort_order; /* from sort.c */
 
 static int
 comp_gencomp(dbref executor, char *left, char *right, const char *type)
@@ -456,20 +452,19 @@ FUNCTION(fun_comp)
   }
 
   switch (type) {
-  case 'A':                    /* Case-sensitive lexicographic */
-    {
-      safe_integer(comp_gencomp(executor, args[0], args[1], ALPHANUM_LIST),
-                   buff, bp);
-      return;
-    }
-  case 'I':                    /* Case-insensitive lexicographic */
-    {
-      safe_integer(comp_gencomp
-                   (executor, args[0], args[1], INSENS_ALPHANUM_LIST), buff,
-                   bp);
-      return;
-    }
-  case 'N':                    /* Integers */
+  case 'A': /* Case-sensitive lexicographic */
+  {
+    safe_integer(comp_gencomp(executor, args[0], args[1], ALPHANUM_LIST), buff,
+                 bp);
+    return;
+  }
+  case 'I': /* Case-insensitive lexicographic */
+  {
+    safe_integer(comp_gencomp(executor, args[0], args[1], INSENS_ALPHANUM_LIST),
+                 buff, bp);
+    return;
+  }
+  case 'N': /* Integers */
     if (!is_strict_integer(args[0]) || !is_strict_integer(args[1])) {
       safe_str(T(e_ints), buff, bp);
       return;
@@ -485,19 +480,18 @@ FUNCTION(fun_comp)
     safe_integer(comp_gencomp(executor, args[0], args[1], FLOAT_LIST), buff,
                  bp);
     return;
-  case 'D':
-    {
-      dbref a, b;
-      a = parse_objid(args[0]);
-      b = parse_objid(args[1]);
-      if (a == NOTHING || b == NOTHING) {
-        safe_str(T("#-1 INVALID DBREF"), buff, bp);
-        return;
-      }
-      safe_integer(comp_gencomp(executor, args[0], args[1], DBREF_LIST), buff,
-                   bp);
+  case 'D': {
+    dbref a, b;
+    a = parse_objid(args[0]);
+    b = parse_objid(args[1]);
+    if (a == NOTHING || b == NOTHING) {
+      safe_str(T("#-1 INVALID DBREF"), buff, bp);
       return;
     }
+    safe_integer(comp_gencomp(executor, args[0], args[1], DBREF_LIST), buff,
+                 bp);
+    return;
+  }
   default:
     safe_str(T("#-1 INVALID THIRD ARGUMENT"), buff, bp);
     return;
@@ -549,8 +543,8 @@ FUNCTION(fun_strmatch)
   /* matches a wildcard pattern for an _entire_ string */
 
   if (nargs > 2) {
-    matches = wild_match_case_r(args[1], args[0], 0, ret,
-                                NUMQ, match_space, match_space_len, NULL, 0);
+    matches = wild_match_case_r(args[1], args[0], 0, ret, NUMQ, match_space,
+                                match_space_len, NULL, 0);
     safe_boolean(matches, buff, bp);
 
     if (matches) {
@@ -589,7 +583,6 @@ FUNCTION(fun_flip)
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_merge)
@@ -786,7 +779,8 @@ FUNCTION(fun_lcstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p) {
+  WALK_ANSI_STRING(p)
+  {
     *p = DOWNCASE(*p);
     p++;
   }
@@ -799,7 +793,8 @@ FUNCTION(fun_ucstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p) {
+  WALK_ANSI_STRING(p)
+  {
     *p = UPCASE(*p);
     p++;
   }
@@ -939,7 +934,6 @@ FUNCTION(fun_ljust)
   *fp = '\0';
   free_ansi_string(as);
   safe_str(fillstr, buff, bp);
-
 }
 
 /* ARGSUSED */
@@ -951,7 +945,6 @@ FUNCTION(fun_rjust)
   ansi_string *as;
   int fillq, fillr, i;
   char fillstr[BUFFER_LEN], *fp;
-
 
   if (!is_uinteger(args[1])) {
     safe_str(T(e_uint), buff, bp);
@@ -1002,7 +995,6 @@ FUNCTION(fun_rjust)
   free_ansi_string(as);
   safe_str(fillstr, buff, bp);
   safe_strl(args[0], arglens[0], buff, bp);
-
 }
 
 /* ARGSUSED */
@@ -1127,8 +1119,8 @@ FUNCTION(fun_foreach)
     end = '\0';
   }
 
-  if (!fetch_ufun_attrib
-      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun,
+                         UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
   as = parse_ansi_string(args[1]);
@@ -1232,7 +1224,6 @@ FUNCTION(fun_trim)
   /* Similar to squish() but it doesn't trim spaces in the center, and
    * takes a delimiter argument and trim style.
    */
-
 
   enum trim_style { TRIM_LEFT, TRIM_RIGHT, TRIM_BOTH } trim;
   int trim_style_arg, trim_char_arg;
@@ -1440,7 +1431,6 @@ FUNCTION(fun_chr)
     safe_chr(c, buff, bp);
   else
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
-
 }
 
 FUNCTION(fun_accent)
@@ -1513,7 +1503,7 @@ FUNCTION(fun_brackets)
   int rbrack, lbrack, rbrace, lbrace, lcurl, rcurl;
 
   lcurl = rcurl = rbrack = lbrack = rbrace = lbrace = 0;
-  str = args[0];                /* The string to count the brackets in */
+  str = args[0]; /* The string to count the brackets in */
   while (*str) {
     switch (*str) {
     case '[':
@@ -1539,8 +1529,8 @@ FUNCTION(fun_brackets)
     }
     str++;
   }
-  safe_format(buff, bp, "%d %d %d %d %d %d", lbrack, rbrack,
-              lbrace, rbrace, lcurl, rcurl);
+  safe_format(buff, bp, "%d %d %d %d %d %d", lbrack, rbrack, lbrace, rbrace,
+              lcurl, rcurl);
 }
 
 /* Returns the length of str up to the first return character,
@@ -1575,16 +1565,16 @@ wraplen(char *str, size_t maxlen)
 
 FUNCTION(fun_wrap)
 {
-/*  args[0]  =  text to be wrapped (required)
- *  args[1]  =  line width (width) (required)
- *  args[2]  =  width of first line (width1st)
- *  args[3]  =  output delimiter (linesep) (btwn lines)
- */
+  /*  args[0]  =  text to be wrapped (required)
+   *  args[1]  =  line width (width) (required)
+   *  args[2]  =  width of first line (width1st)
+   *  args[3]  =  output delimiter (linesep) (btwn lines)
+   */
 
-  char *pstr;                   /* start of string */
+  char *pstr; /* start of string */
   ansi_string *as;
   ansi_string *hyphen = NULL;
-  const char *pend;             /* end of string */
+  const char *pend; /* end of string */
   int linewidth, width1st, width;
   int linenr = 0;
   const char *linesep;
@@ -1638,13 +1628,13 @@ FUNCTION(fun_wrap)
       if (!ansi_string_insert(as, pstr - as->text + linewidth - 1, hyphen))
         pend++;
       safe_ansi_string(as, pstr - as->text, linewidth, buff, bp);
-      pstr += linewidth;        /* move to start of next line */
+      pstr += linewidth; /* move to start of next line */
     } else {
       /* normal line */
       safe_ansi_string(as, pstr - as->text, ansilen, buff, bp);
       if (pstr[ansilen] == '\r')
         ++ansilen;
-      pstr += ansilen + 1;      /* move to start of next line */
+      pstr += ansilen + 1; /* move to start of next line */
     }
   }
   free_ansi_string(as);
@@ -1660,20 +1650,26 @@ FUNCTION(fun_wrap)
 #define AL_WPFULL 5  /**< Paragraph full-justify (=) */
 #define AL_TYPE 0x0F /**< Only the bottom 4 bits are used for the type. */
 /* Flags */
-#define AL_REPEAT 0x100  /**< Repeat column (.) */
-#define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left (`) */
-#define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right (') */
-#define AL_NOFILL 0x800  /**< No filler on the right of this. ($) */
-#define AL_TRUNC_EACH 0x1000 /**< Truncate each (%r-separated) line instead of wrapping (x) */
-#define AL_TRUNC_ALL 0x2000 /**< Truncate the entire column output, at column width or %r, whichever comes first (X) */
-#define AL_NOCOLSEP 0x4000 /**< Don't add a column separator after this column */
+#define AL_REPEAT 0x100 /**< Repeat column (.) */
+#define AL_COALESCE_LEFT                                                       \
+  0x200 /**< Coalesce empty column with column to left (`) */
+#define AL_COALESCE_RIGHT                                                      \
+  0x400                 /**< Coalesce empty column with column to right (') */
+#define AL_NOFILL 0x800 /**< No filler on the right of this. ($) */
+#define AL_TRUNC_EACH                                                          \
+  0x1000 /**< Truncate each (%r-separated) line instead of wrapping (x) */
+#define AL_TRUNC_ALL                                                           \
+  0x2000 /**< Truncate the entire column output, at column width or %r,        \
+            whichever comes first (X) */
+#define AL_NOCOLSEP                                                            \
+  0x4000 /**< Don't add a column separator after this column */
 
 static int
-align_one_line(char *buff, char **bp, int ncols,
-               int cols[MAX_COLS], int calign[MAX_COLS], char *ptrs[MAX_COLS],
+align_one_line(char *buff, char **bp, int ncols, int cols[MAX_COLS],
+               int calign[MAX_COLS], char *ptrs[MAX_COLS],
                ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
-               int linenum, char *fieldsep, int fslen,
-               char *linesep, int lslen, char filler)
+               int linenum, char *fieldsep, int fslen, char *linesep, int lslen,
+               char filler)
 {
   static char line[BUFFER_LEN];
   static char segment[BUFFER_LEN];
@@ -1707,8 +1703,8 @@ align_one_line(char *buff, char **bp, int ncols,
         break;
     }
     if ((j < ncols) &&
-        (!(calign[j] & AL_REPEAT) &&
-         (calign[j] & AL_COALESCE_LEFT) && (!ptrs[j] || !*ptrs[j]))) {
+        (!(calign[j] & AL_REPEAT) && (calign[j] & AL_COALESCE_LEFT) &&
+         (!ptrs[j] || !*ptrs[j]))) {
       /* To coalesce left on this line, modify the left column's
        * width and set the current column width to 0 (which we can
        * teach it to skip). */
@@ -1761,7 +1757,8 @@ align_one_line(char *buff, char **bp, int ncols,
     if (calign[i] & AL_REPEAT) {
       cols_done++;
     }
-    for (len = 0, ptr = ptrs[i], lastspace = NULL; len < cols[i]; ptr++, len++) {
+    for (len = 0, ptr = ptrs[i], lastspace = NULL; len < cols[i];
+         ptr++, len++) {
       if ((!*ptr) || (*ptr == '\n'))
         break;
       if (isspace(*ptr)) {
@@ -1792,7 +1789,8 @@ align_one_line(char *buff, char **bp, int ncols,
 
       ptr = lastspace;
       skipspace = 1;
-      for (tptr = ptr; *tptr && tptr >= ptrs[i] && isspace(*tptr); tptr--) ;
+      for (tptr = ptr; *tptr && tptr >= ptrs[i] && isspace(*tptr); tptr--)
+        ;
       len = (tptr - ptrs[i]) + 1;
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
@@ -1848,8 +1846,8 @@ align_one_line(char *buff, char **bp, int ncols,
           numspaces++;
         }
       }
-      if (spacesneeded > 0 &&
-          (!iswpfull || (cols[i] / spacesneeded) >= 2) && numspaces > 0) {
+      if (spacesneeded > 0 && (!iswpfull || (cols[i] / spacesneeded) >= 2) &&
+          numspaces > 0) {
         spacecount = 0;
         for (j = 0; segment[j]; j++) {
           /* Copy the char over. */
@@ -1868,8 +1866,8 @@ align_one_line(char *buff, char **bp, int ncols,
         }
         break;
       }
-      /* FALLTHRU */
-    default:                   /* Left-align */
+    /* FALLTHRU */
+    default: /* Left-align */
       safe_str(segment, line, &lp);
       /* Don't fill if we're set NOFILL */
       if (!(calign[i] & AL_NOFILL)) {
@@ -1899,7 +1897,8 @@ align_one_line(char *buff, char **bp, int ncols,
     if ((lp - line) > BUFFER_LEN)
       lp = (line + BUFFER_LEN - 1);
     if (skipspace)
-      for (; *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]); ptrs[i]++) ;
+      for (; *ptrs[i] && (*ptrs[i] != '\n') && isspace(*ptrs[i]); ptrs[i]++)
+        ;
   }
 
   if (cols_done == ncols)
@@ -2022,7 +2021,8 @@ FUNCTION(fun_align)
       return;
     }
     if (0 && (calign[i] & AL_REPEAT))
-      calign[i] &= ~(AL_TRUNC_EACH | AL_TRUNC_ALL);     /* Don't allow trunc + repeat */
+      calign[i] &=
+        ~(AL_TRUNC_EACH | AL_TRUNC_ALL); /* Don't allow trunc + repeat */
     totallen += cols[i];
   }
   if (totallen > BUFFER_LEN) {
@@ -2107,9 +2107,8 @@ FUNCTION(fun_align)
 
   nline = 0;
   while (1) {
-    if (!align_one_line(buff, bp, ncols, cols, calign, ptrs,
-                        as, adata, nline++, fieldsep, fslen,
-                        linesep, lslen, filler))
+    if (!align_one_line(buff, bp, ncols, cols, calign, ptrs, as, adata, nline++,
+                        fieldsep, fslen, linesep, lslen, filler))
       break;
   }
   **bp = '\0';
@@ -2190,7 +2189,6 @@ FUNCTION(fun_speak)
   else
     close = args[6];
 
-
   switch (*string) {
   case ':':
     safe_str(speaker_name, buff, bp);
@@ -2215,7 +2213,7 @@ FUNCTION(fun_speak)
   case '"':
     if (CHAT_STRIP_QUOTE)
       string++;
-    /* FALL THROUGH */
+  /* FALL THROUGH */
   default:
     say = 1;
     break;

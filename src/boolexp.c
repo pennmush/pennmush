@@ -58,7 +58,8 @@
  * [Development] Brazil says, "That might not be a bad idea."
  * [Development] Raevnos has redone everything else in boolexp.c in Penn, so why
  * not? :)
- * [Development] Raevnos says, "Using the justification that it's a lot easier to
+ * [Development] Raevnos says, "Using the justification that it's a lot easier
+ * to
  * expand the langage by adding new key types that way."
  *
  * So now you know who to blame if that particular item appears in a
@@ -110,25 +111,25 @@
 #include "strutil.h"
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* disable warning re conversion */
+#pragma warning(disable : 4761) /* disable warning re conversion */
 #endif
 
 /* #define DEBUG_BYTECODE */
 
 /** Parse tree node types */
 typedef enum boolexp_type {
-  BOOLEXP_AND, /**< A&B */
-  BOOLEXP_OR, /**< A|B */
-  BOOLEXP_NOT, /**< !A */
+  BOOLEXP_AND,   /**< A&B */
+  BOOLEXP_OR,    /**< A|B */
+  BOOLEXP_NOT,   /**< !A */
   BOOLEXP_CONST, /**< A */
-  BOOLEXP_ATR, /**< A:B */
-  BOOLEXP_IND, /**< \@A/B */
+  BOOLEXP_ATR,   /**< A:B */
+  BOOLEXP_IND,   /**< \@A/B */
   BOOLEXP_CARRY, /**< +A */
-  BOOLEXP_IS, /**< =A */
+  BOOLEXP_IS,    /**< =A */
   BOOLEXP_OWNER, /**< $A */
-  BOOLEXP_EVAL, /**< A/B */
-  BOOLEXP_FLAG, /**< A^B */
-  BOOLEXP_BOOL /**< \#true, \#false */
+  BOOLEXP_EVAL,  /**< A/B */
+  BOOLEXP_FLAG,  /**< A^B */
+  BOOLEXP_BOOL   /**< \#true, \#false */
 } boolexp_type;
 
 /** An attribute lock specification for the parse tree.
@@ -137,8 +138,8 @@ typedef enum boolexp_type {
  * FLAG^WIZARD.
  */
 struct boolatr {
-  const char *name;             /**< Name of attribute, flag, etc. to test */
-  char text[BUFFER_LEN];        /**< Value to test against */
+  const char *name;      /**< Name of attribute, flag, etc. to test */
+  char text[BUFFER_LEN]; /**< Value to test against */
 };
 
 /** A boolean expression parse tree node.
@@ -154,7 +155,7 @@ struct boolexp_node {
    * owner, eval, flag, etc.
    */
   boolexp_type type;
-  dbref thing;                  /**< An object, or a boolean val */
+  dbref thing; /**< An object, or a boolean val */
   /** The expression itself.
    * This union comprises the various possible types of data we
    * might need to represent any of the expression types.
@@ -164,41 +165,40 @@ struct boolexp_node {
      * This union member is used with and and or locks.
      */
     struct {
-      struct boolexp_node *a;   /**< One boolean expression */
-      struct boolexp_node *b;   /**< Another boolean expression */
+      struct boolexp_node *a; /**< One boolean expression */
+      struct boolexp_node *b; /**< Another boolean expression */
     } sub;
-    struct boolexp_node *n;             /**< Not locks: boolean expression to negate */
-    struct boolatr *atr_lock;   /**< Atr, eval and flag locks */
-    const char *ind_lock;       /**< Indirect locks */
+    struct boolexp_node *n;   /**< Not locks: boolean expression to negate */
+    struct boolatr *atr_lock; /**< Atr, eval and flag locks */
+    const char *ind_lock;     /**< Indirect locks */
   } data;
 };
 
-
 /** The opcodes supported by the boolexp virtual machine. */
 typedef enum bvm_opcode {
-  OP_JMPT, /**< Jump to ARG if R is true */
-  OP_JMPF, /**< Jump to ARG if R is false */
-  OP_TCONST, /**< Tests plain \#ARG */
-  OP_TATR, /**< Tests S:ARG */
-  OP_TIND, /**< Tests \@\#ARG/S */
-  OP_TCARRY, /**< Tests +\#ARG */
-  OP_TIS, /**< Tests =\#ARG */
-  OP_TOWNER, /**< Tests $\#ARG */
-  OP_TEVAL, /**< Tests S/ARG */
-  OP_TFLAG, /**< Tests FLAG^ARG */
-  OP_TTYPE, /**< Tests TYPE^ARG */
-  OP_TNAME, /**< Tests name == ARG */
-  OP_TPOWER, /**< Tests POWER^ARG */
-  OP_TCHANNEL, /**< Tests CHANNEL^ARG */
-  OP_TIP, /**< Tests IP^ARG */
-  OP_THOSTNAME, /**< Tests HOSTNAME^ARG */
-  OP_TDBREFLIST,        /**< Tests DBREFLIST^ARG */
-  OP_LOADS, /**< Load ARG into S */
-  OP_LOADR, /**< Load ARG into R */
-  OP_NEGR,  /**< Negate R */
-  OP_PAREN, /**< ARG = 0 for a (, ARG = 1 for a ) in decompiling */
-  OP_LABEL, /**< A label. Not actually in compiled bytecode */
-  OP_RET    /**< Stop evaluating bytecode */
+  OP_JMPT,       /**< Jump to ARG if R is true */
+  OP_JMPF,       /**< Jump to ARG if R is false */
+  OP_TCONST,     /**< Tests plain \#ARG */
+  OP_TATR,       /**< Tests S:ARG */
+  OP_TIND,       /**< Tests \@\#ARG/S */
+  OP_TCARRY,     /**< Tests +\#ARG */
+  OP_TIS,        /**< Tests =\#ARG */
+  OP_TOWNER,     /**< Tests $\#ARG */
+  OP_TEVAL,      /**< Tests S/ARG */
+  OP_TFLAG,      /**< Tests FLAG^ARG */
+  OP_TTYPE,      /**< Tests TYPE^ARG */
+  OP_TNAME,      /**< Tests name == ARG */
+  OP_TPOWER,     /**< Tests POWER^ARG */
+  OP_TCHANNEL,   /**< Tests CHANNEL^ARG */
+  OP_TIP,        /**< Tests IP^ARG */
+  OP_THOSTNAME,  /**< Tests HOSTNAME^ARG */
+  OP_TDBREFLIST, /**< Tests DBREFLIST^ARG */
+  OP_LOADS,      /**< Load ARG into S */
+  OP_LOADR,      /**< Load ARG into R */
+  OP_NEGR,       /**< Negate R */
+  OP_PAREN,      /**< ARG = 0 for a (, ARG = 1 for a ) in decompiling */
+  OP_LABEL,      /**< A label. Not actually in compiled bytecode */
+  OP_RET         /**< Stop evaluating bytecode */
 } bvm_opcode;
 
 /** The size of a single bytecode instruction. Probably 5 bytes
@@ -209,28 +209,29 @@ typedef enum bvm_opcode {
  * intermediate "assembly" generated from a parse tree. The nodes are
  * part of a linked list.  */
 struct bvm_asmnode {
-  bvm_opcode op; /**< The opcode */
-  int arg; /**< The arg value, or a label or string number */
+  bvm_opcode op;            /**< The opcode */
+  int arg;                  /**< The arg value, or a label or string number */
   struct bvm_asmnode *next; /**< Pointer to the next node */
 };
 
 /** Information describing a string to emit in the string section of
  * the bytecode. The nodes are part of a linked list.  */
 struct bvm_strnode {
-  char *s; /**< The string */
-  size_t len; /**< Its length */
+  char *s;                  /**< The string */
+  size_t len;               /**< Its length */
   struct bvm_strnode *next; /**< Pointer to the next node */
 };
 
 /** A struct describing the complete assembly information needed to
  * generate bytecode */
 struct bvm_asm {
-  struct bvm_asmnode *head; /**< The start of the list of assembly instructions */
-  struct bvm_asmnode *tail; /**< The end of the list */
+  struct bvm_asmnode
+    *head; /**< The start of the list of assembly instructions */
+  struct bvm_asmnode *tail;  /**< The end of the list */
   struct bvm_strnode *shead; /**< The start of the list of strings */
   struct bvm_strnode *stail; /**< The end of the list */
-  int label; /**< The current label id to use */
-  size_t strcount;      /**< The number of nodes in the string list */
+  int label;                 /**< The current label id to use */
+  size_t strcount;           /**< The number of nodes in the string list */
 };
 
 /* The flag lock key (A^B) only allows a few values for A. The list of
@@ -239,71 +240,66 @@ struct bvm_asm {
  * type.  */
 #include "bflags.c"
 
-static uint8_t *
-safe_get_bytecode(boolexp b)
-  __attribute_malloc__;
-    static uint8_t *get_bytecode(boolexp b, uint16_t *storelen);
-    static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
-    static struct boolatr *alloc_atr(const char *name,
-                                     const char *s,
-                                     bool upcase_s) __attribute_malloc__;
-    static void skip_whitespace(void);
-    static void free_bool(struct boolexp_node *b);
-    static struct boolexp_node *test_atr(char *s, char c);
-    static struct boolexp_node *parse_boolexp_R(void);
-    static struct boolexp_node *parse_boolexp_L(void);
-    static struct boolexp_node *parse_boolexp_O(void);
-    static struct boolexp_node *parse_boolexp_C(void);
-    static struct boolexp_node *parse_boolexp_I(void);
-    static struct boolexp_node *parse_boolexp_A(void);
-    static struct boolexp_node *parse_boolexp_F(void);
-    static struct boolexp_node *parse_boolexp_T(void);
-    static struct boolexp_node *parse_boolexp_E(void);
-    static int check_attrib_lock(dbref player, dbref target,
-                                 const char *atrname, const char *str,
-                                 NEW_PE_INFO *pe_info);
-    static void free_boolexp_node(struct boolexp_node *b);
-    static int gen_label_id(struct bvm_asm *a);
-    static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
-                            const char *s);
-    static struct bvm_asm *generate_bvm_asm(struct boolexp_node *b)
- __attribute_malloc__;
-    static void generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b,
-                                  boolexp_type outer);
-    static size_t pos_of_label(struct bvm_asm *a, int label);
-    static size_t offset_to_string(struct bvm_asm *a, int c);
-    static struct bvm_asmnode *insn_after_label(struct bvm_asm *a, int label);
-    static void optimize_bvm_asm(struct bvm_asm *a);
-    static void optimize_bvm_ast(struct boolexp_node *);
-    static boolexp emit_bytecode(struct bvm_asm *a, int derefs);
-    static void free_bvm_asm(struct bvm_asm *a);
+static uint8_t *safe_get_bytecode(boolexp b) __attribute_malloc__;
+static uint8_t *get_bytecode(boolexp b, uint16_t *storelen);
+static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
+static struct boolatr *alloc_atr(const char *name, const char *s,
+                                 bool upcase_s) __attribute_malloc__;
+static void skip_whitespace(void);
+static void free_bool(struct boolexp_node *b);
+static struct boolexp_node *test_atr(char *s, char c);
+static struct boolexp_node *parse_boolexp_R(void);
+static struct boolexp_node *parse_boolexp_L(void);
+static struct boolexp_node *parse_boolexp_O(void);
+static struct boolexp_node *parse_boolexp_C(void);
+static struct boolexp_node *parse_boolexp_I(void);
+static struct boolexp_node *parse_boolexp_A(void);
+static struct boolexp_node *parse_boolexp_F(void);
+static struct boolexp_node *parse_boolexp_T(void);
+static struct boolexp_node *parse_boolexp_E(void);
+static int check_attrib_lock(dbref player, dbref target, const char *atrname,
+                             const char *str, NEW_PE_INFO *pe_info);
+static void free_boolexp_node(struct boolexp_node *b);
+static int gen_label_id(struct bvm_asm *a);
+static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
+                        const char *s);
+static struct bvm_asm *
+generate_bvm_asm(struct boolexp_node *b) __attribute_malloc__;
+static void generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b,
+                              boolexp_type outer);
+static size_t pos_of_label(struct bvm_asm *a, int label);
+static size_t offset_to_string(struct bvm_asm *a, int c);
+static struct bvm_asmnode *insn_after_label(struct bvm_asm *a, int label);
+static void optimize_bvm_asm(struct bvm_asm *a);
+static void optimize_bvm_ast(struct boolexp_node *);
+static boolexp emit_bytecode(struct bvm_asm *a, int derefs);
+static void free_bvm_asm(struct bvm_asm *a);
 #ifdef DEBUG_BYTECODE
-    static int sizeof_boolexp_node(struct boolexp_node *b);
-    static void print_bytecode(boolexp b);
+static int sizeof_boolexp_node(struct boolexp_node *b);
+static void print_bytecode(boolexp b);
 #endif
-    extern void complain
-      (dbref player, dbref i, const char *name, const char *desc, ...)
-  __attribute__ ((__format__(__printf__, 4, 5)));
-    void check_lock(dbref player, dbref i, const char *name, boolexp be);
-    int warning_lock_type(const boolexp l);
-
+extern void complain(dbref player, dbref i, const char *name, const char *desc,
+                     ...) __attribute__((__format__(__printf__, 4, 5)));
+void check_lock(dbref player, dbref i, const char *name, boolexp be);
+int warning_lock_type(const boolexp l);
 
 /** String tree of attribute names. Used in the parse tree. Might go
  * away as the trees aren't persistant any more. */
-    extern StrTree atr_names;
+extern StrTree atr_names;
 /** String tree of lock names. Used in the parse tree. Might go away
  * as the trees aren't persistant any more. */
-    extern StrTree lock_names;
+extern StrTree lock_names;
 /** Are we currently loading the db? If so, we avoid certain checks that
  * would create a circularity.
  */
-    extern int loading_db;
+extern int loading_db;
 
 /** Given a chunk id, return the bytecode for a boolexp.
  * \param b the boolexp to retrieve.
  * \return a malloced copy of the bytecode.
  */
-    static uint8_t *safe_get_bytecode(boolexp b)
+static uint8_t *
+safe_get_bytecode(boolexp b)
 {
   uint8_t *bytecode;
   uint16_t len;
@@ -389,7 +385,8 @@ sizeof_boolexp(boolexp b)
  * \param player the player trying to pass the lock.
  * \param b the boolexp to evaluate.
  * \param target the object with the lock.
- * \param pe_info pe_info to use for any softcode evaluation in the lock, or NULL to use a tmp one
+ * \param pe_info pe_info to use for any softcode evaluation in the lock, or
+ * NULL to use a tmp one
  * \retval 0 player fails to pass lock.
  * \retval 1 player successfully passes lock.
  */
@@ -452,24 +449,18 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
         r = !r;
         break;
       case OP_TCONST:
-        r = (GoodObject(arg)
-             && !IsGarbage(arg)
-             && (arg == player || member(arg, Contents(player))));
+        r = (GoodObject(arg) && !IsGarbage(arg) &&
+             (arg == player || member(arg, Contents(player))));
         break;
       case OP_TIS:
-        r = (GoodObject(arg)
-             && !IsGarbage(arg)
-             && arg == player);
+        r = (GoodObject(arg) && !IsGarbage(arg) && arg == player);
         break;
       case OP_TCARRY:
-        r = (GoodObject(arg)
-             && !IsGarbage(arg)
-             && member(arg, Contents(player)));
+        r =
+          (GoodObject(arg) && !IsGarbage(arg) && member(arg, Contents(player)));
         break;
       case OP_TOWNER:
-        r = (GoodObject(arg)
-             && !IsGarbage(arg)
-             && Owner(arg) == Owner(player));
+        r = (GoodObject(arg) && !IsGarbage(arg) && Owner(arg) == Owner(player));
         break;
       case OP_TIND:
         /* We only allow evaluation of indirect locks if target can run
@@ -498,15 +489,14 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
         break;
       case OP_TEVAL:
         boolexp_recursion++;
-        r =
-          check_attrib_lock(player, target, s, (char *) bytecode + arg,
-                            pe_info);
+        r = check_attrib_lock(player, target, s, (char *) bytecode + arg,
+                              pe_info);
         boolexp_recursion--;
         break;
       case OP_TNAME:
         boolexp_recursion++;
         r = quick_wild((char *) bytecode + arg, Name(player)) ||
-          match_aliases(player, (char *) bytecode + arg);
+            match_aliases(player, (char *) bytecode + arg);
         boolexp_recursion--;
         break;
       case OP_TFLAG:
@@ -522,15 +512,13 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
         else
           r = 0;
         break;
-      case OP_TCHANNEL:
-        {
-          CHAN *chan;
-          boolexp_recursion++;
-          find_channel((char *) bytecode + arg, &chan, target);
-          r = chan && onchannel(player, chan);
-          boolexp_recursion--;
-        }
-        break;
+      case OP_TCHANNEL: {
+        CHAN *chan;
+        boolexp_recursion++;
+        find_channel((char *) bytecode + arg, &chan, target);
+        r = chan && onchannel(player, chan);
+        boolexp_recursion--;
+      } break;
       case OP_TIP:
         boolexp_recursion++;
         if (!Connected(Owner(player)))
@@ -586,32 +574,30 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           break;
         }
         break;
-      case OP_TDBREFLIST:
-        {
-          char *idstr, *curr, *orig;
-          dbref mydb;
+      case OP_TDBREFLIST: {
+        char *idstr, *curr, *orig;
+        dbref mydb;
 
-          r = 0;
-          a = atr_get(target, (char *) bytecode + arg);
-          if (!a)
+        r = 0;
+        a = atr_get(target, (char *) bytecode + arg);
+        if (!a)
+          break;
+
+        orig = safe_atr_value(a, "atrval.boolexp");
+        idstr = trim_space_sep(orig, ' ');
+
+        while ((curr = split_token(&idstr, ' ')) != NULL) {
+          mydb = parse_objid(curr);
+          if (mydb == player) {
+            r = 1;
             break;
-
-          orig = safe_atr_value(a, "atrval.boolexp");
-          idstr = trim_space_sep(orig, ' ');
-
-          while ((curr = split_token(&idstr, ' ')) != NULL) {
-            mydb = parse_objid(curr);
-            if (mydb == player) {
-              r = 1;
-              break;
-            }
           }
-          mush_free(orig, "atrval.boolexp");
         }
-        break;
+        mush_free(orig, "atrval.boolexp");
+      } break;
       default:
-        do_log(LT_ERR, 0, 0, "Bad boolexp opcode %d %d in object #%d",
-               op, arg, target);
+        do_log(LT_ERR, 0, 0, "Bad boolexp opcode %d %d in object #%d", op, arg,
+               target);
         report();
         r = 0;
       }
@@ -744,7 +730,7 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         break;
       case OP_RET:
         goto done;
-      case OP_LABEL:           /* Will never happen, but shuts up the compiler */
+      case OP_LABEL: /* Will never happen, but shuts up the compiler */
       case OP_NEGR:
         break;
       case OP_LOADS:
@@ -854,7 +840,8 @@ done:
   return boolexp_buf;
 }
 
-/* Parser and parse-tree related functions. If the parser returns NULL, you lose */
+/* Parser and parse-tree related functions. If the parser returns NULL, you lose
+ */
 /** The source string for the lock we're parsing */
 static const char *parsebuf;
 /** The player from whose perspective we're parsing */
@@ -980,10 +967,9 @@ skip_whitespace(void)
     parsebuf++;
 }
 
-
 enum test_atr_errs {
-  TAE_NONE,                     /*< Not an attribute-type lock; continue parsing. */
-  TAE_PARSE                     /*< Fatal parsing error. */
+  TAE_NONE, /*< Not an attribute-type lock; continue parsing. */
+  TAE_PARSE /*< Fatal parsing error. */
 };
 
 static enum test_atr_errs test_atr_err = TAE_NONE;
@@ -1018,7 +1004,6 @@ test_atr(char *s, char c)
           test_atr_err = TAE_PARSE;
           return NULL;
         }
-
       }
       s += 1;
       break;
@@ -1112,10 +1097,9 @@ parse_boolexp_R(void)
   p = tbuf1;
   escaped = 0;
 
-
-  while (*parsebuf
-         && (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                          *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
+  while (*parsebuf && (escaped ||
+                       !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                         *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
     if (escaped || *parsebuf != '\\') {
       safe_chr(*parsebuf, tbuf1, &p);
       escaped = 0;
@@ -1196,16 +1180,16 @@ parse_boolexp_L(void)
     } else {
       return b;
     }
-    /* break; */
+  /* break; */
   default:
     /* must have hit an object ref */
     /* load the name into our buffer */
     p = tbuf1;
     savebuf = parsebuf;
     escaped = 0;
-    while (*parsebuf &&
-           (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                         *parsebuf == ')'))) {
+    while (*parsebuf && (escaped ||
+                         !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                           *parsebuf == ')'))) {
       escaped = escaped ? 0 : (*parsebuf == '\\');
       *p++ = *parsebuf++;
     }
@@ -1342,9 +1326,9 @@ parse_boolexp_A(void)
       const char *m;
       parsebuf++;
       p = tbuf1;
-      while (*parsebuf &&
-             (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                           *parsebuf == ')'))) {
+      while (*parsebuf && (escaped ||
+                           !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                             *parsebuf == ')'))) {
         if (escaped || *parsebuf != '\\') {
           safe_chr((char) UPCASE(*parsebuf), tbuf1, &p);
           escaped = 0;
@@ -1389,7 +1373,6 @@ parse_boolexp_F(void)
   }
   return parse_boolexp_A();
 }
-
 
 /* T -> F; T -> F & T */
 static struct boolexp_node *
@@ -1465,7 +1448,8 @@ slab *bvm_asmnode_slab = NULL;
  * \param a the assembler list.
  * \param op the opcode of the instruction.
  * \param arg the argument for the instruction if numeric.
- * \param s the string to use as the argument for the instruction. If non-NULL, arg's value is ignored.
+ * \param s the string to use as the argument for the instruction. If non-NULL,
+ * arg's value is ignored.
  */
 static void
 append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
@@ -1587,16 +1571,14 @@ generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b, boolexp_type outer)
     append_insn(a, OP_LOADS, 0, b->data.atr_lock->name);
     append_insn(a, OP_TEVAL, 0, b->data.atr_lock->text);
     break;
-  case BOOLEXP_FLAG:
-    {
-      const struct flag_lock_types *bflag;
-      /* Always returns non-null at this point. */
-      bflag =
-        is_allowed_bflag(b->data.atr_lock->name,
-                         strlen(b->data.atr_lock->name));
-      append_insn(a, bflag->op, 0, b->data.atr_lock->text);
-      break;
-    }
+  case BOOLEXP_FLAG: {
+    const struct flag_lock_types *bflag;
+    /* Always returns non-null at this point. */
+    bflag =
+      is_allowed_bflag(b->data.atr_lock->name, strlen(b->data.atr_lock->name));
+    append_insn(a, bflag->op, 0, b->data.atr_lock->text);
+    break;
+  }
   }
 }
 
@@ -1664,13 +1646,14 @@ pos_of_label(struct bvm_asm *as, int label)
     if (a->op != OP_LABEL)
       offset++;
   }
-  return offset;                /* Never reached! */
+  return offset; /* Never reached! */
 }
 
 /** Find the position of a string.
  * \param a the assembler list
  * \param c The c-th string is the one that's wanted.
- * \return the distance from the start of the string section to the start of the c-th string.
+ * \return the distance from the start of the string section to the start of the
+ * c-th string.
  */
 static size_t
 offset_to_string(struct bvm_asm *a, int c)
@@ -1685,13 +1668,14 @@ offset_to_string(struct bvm_asm *a, int c)
     else
       offset += s->len;
   }
-  return offset;                /* Never reached! */
+  return offset; /* Never reached! */
 }
 
 /** Find the next instruction after a label.
  * \param a the assembler list.
  * \param label the label id to look for.
- * \return a pointer to the first real instruction after a label; where a jump to that label will go to.
+ * \return a pointer to the first real instruction after a label; where a jump
+ * to that label will go to.
  */
 static struct bvm_asmnode *
 insn_after_label(struct bvm_asm *a, int label)
@@ -1708,7 +1692,6 @@ insn_after_label(struct bvm_asm *a, int label)
   }
   return NULL;
 }
-
 
 /** Do some trivial optimizations at the syntax tree level. Some of
  * these catch things that no normal person would do with a lock, but
@@ -1738,11 +1721,11 @@ optimize_bvm_ast(struct boolexp_node *ast)
     return;
   switch (ast->type) {
   case BOOLEXP_OR:
-    if (((ast->data.sub.a->type == BOOLEXP_IS
-          && ast->data.sub.b->type == BOOLEXP_CARRY)
-         || (ast->data.sub.a->type == BOOLEXP_CARRY
-             && ast->data.sub.b->type == BOOLEXP_IS))
-        && (ast->data.sub.a->thing == ast->data.sub.b->thing)) {
+    if (((ast->data.sub.a->type == BOOLEXP_IS &&
+          ast->data.sub.b->type == BOOLEXP_CARRY) ||
+         (ast->data.sub.a->type == BOOLEXP_CARRY &&
+          ast->data.sub.b->type == BOOLEXP_IS)) &&
+        (ast->data.sub.a->thing == ast->data.sub.b->thing)) {
       /* Turn =#123|+#123 into #123 */
 
       dbref thing = ast->data.sub.a->thing;
@@ -1782,10 +1765,9 @@ optimize_bvm_ast(struct boolexp_node *ast)
       optimize_bvm_ast(ast->data.n);
     break;
   default:
-    (void) 0;                   /* Nothing to do. */
+    (void) 0; /* Nothing to do. */
   }
 }
-
 
 /** Do some trivial optimizations of boolexp vm assembly.
  *
@@ -1793,7 +1775,8 @@ optimize_bvm_ast(struct boolexp_node *ast)
  * Current optimizations: Thread jumping
  *
  * Possible future additions:
- * Just-in-time compiling of locks to machine code? Raevnos did this once as a proof of concept.
+ * Just-in-time compiling of locks to machine code? Raevnos did this once as a
+ * proof of concept.
  *
  *  \param a the assembler list to transform.
  */
@@ -1988,18 +1971,17 @@ parse_boolexp(dbref player, const char *buf, lock_type ltype)
  * \retval 0 the lock fails.
  */
 static int
-check_attrib_lock(dbref player, dbref target,
-                  const char *atrname, const char *str, NEW_PE_INFO *pe_info)
+check_attrib_lock(dbref player, dbref target, const char *atrname,
+                  const char *str, NEW_PE_INFO *pe_info)
 {
   char buff[BUFFER_LEN];
   ufun_attrib ufun;
 
   if (!atrname || !*atrname || !str || !*str)
     return 0;
-  if (!fetch_ufun_attrib
-      (atrname, target, &ufun,
-       UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_SHARE_STACK))
-    return 0;                   /* fail if there's no matching attribute */
+  if (!fetch_ufun_attrib(atrname, target, &ufun,
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_SHARE_STACK))
+    return 0; /* fail if there's no matching attribute */
 
   call_ufun(&ufun, buff, player, player, pe_info, NULL);
 
@@ -2028,7 +2010,6 @@ is_eval_lock(boolexp b)
       return 0;
     }
   }
-
 }
 
 #ifdef DEBUG_BYTECODE
@@ -2054,13 +2035,13 @@ sizeof_boolexp_node(struct boolexp_node *b)
     return sizeof *b + sizeof_boolexp_node(b->data.n);
   case BOOLEXP_AND:
   case BOOLEXP_OR:
-    return sizeof *b +
-      sizeof_boolexp_node(b->data.sub.a) + sizeof_boolexp_node(b->data.sub.b);
+    return sizeof *b + sizeof_boolexp_node(b->data.sub.a) +
+           sizeof_boolexp_node(b->data.sub.b);
   case BOOLEXP_ATR:
   case BOOLEXP_EVAL:
   case BOOLEXP_FLAG:
     return sizeof *b + sizeof *b->data.atr_lock - BUFFER_LEN +
-      strlen(b->data.atr_lock->text) + 1;
+           strlen(b->data.atr_lock->text) + 1;
   default:
     /* Broken lock */
     return sizeof *b;
@@ -2168,8 +2149,8 @@ print_bytecode(boolexp b)
 
 /* Warnings-related stuff here because I don't want to export details
    of the bytecode outside this file. */
-#define W_UNLOCKED      0x1  /**< Returned if a boolexp is unlocked */
-#define W_LOCKED        0x2  /**< Returned if a boolexp is locked */
+#define W_UNLOCKED 0x1 /**< Returned if a boolexp is unlocked */
+#define W_LOCKED 0x2   /**< Returned if a boolexp is locked */
 
 /** Check to see if a lock is considered possibly unlocked or not.
  *  This is really simple-minded for efficiency. Basically, if it's *
@@ -2182,7 +2163,7 @@ print_bytecode(boolexp b)
  */
 int
 warning_lock_type(const boolexp l)
-     /* 0== unlocked. 1== locked, 2== sometimes */
+/* 0== unlocked. 1== locked, 2== sometimes */
 {
   if (l == TRUE_BOOLEXP)
     return W_UNLOCKED;
@@ -2229,17 +2210,15 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
         complain(player, i, "lock-checks",
                  T("%s lock refers to garbage object"), name);
       break;
-    case OP_TEVAL:
-      {
-        ATTR *a;
-        a = atr_get(i, s);
-        if (!a || !Can_Read_Attr(i, i, a))
-          complain(player, i, "lock-checks",
-                   T
-                   ("%s lock has eval-lock that uses a nonexistant attribute '%s'."),
-                   name, s);
-      }
-      break;
+    case OP_TEVAL: {
+      ATTR *a;
+      a = atr_get(i, s);
+      if (!a || !Can_Read_Attr(i, i, a))
+        complain(
+          player, i, "lock-checks",
+          T("%s lock has eval-lock that uses a nonexistant attribute '%s'."),
+          name, s);
+    } break;
     case OP_TIND:
       if (!GoodObject(arg) || IsGarbage(arg))
         complain(player, i, "lock-checks",
@@ -2264,7 +2243,7 @@ cleanup_boolexp(boolexp b)
   bvm_opcode op;
   int arg;
   bool revised = 0;
-  char false_op[INSN_LEN] = { OP_LOADR, 0 };
+  char false_op[INSN_LEN] = {OP_LOADR, 0};
 
   if (b == TRUE_BOOLEXP)
     return b;
@@ -2275,7 +2254,7 @@ cleanup_boolexp(boolexp b)
     memcpy(&arg, pc + 1, sizeof arg);
     switch (op) {
     case OP_RET:
-      goto done;                /* Oh, for named loops */
+      goto done; /* Oh, for named loops */
     case OP_TCONST:
     case OP_TCARRY:
     case OP_TIS:
@@ -2287,7 +2266,7 @@ cleanup_boolexp(boolexp b)
       }
       break;
     default:
-      (void) 0;                 /* Do nothing for other opcodes */
+      (void) 0; /* Do nothing for other opcodes */
     }
     pc += INSN_LEN;
   }

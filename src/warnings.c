@@ -26,46 +26,45 @@
 /* We might check for both locked and unlocked warnings if we can't
  * figure out a lock.
  */
-#define W_UNLOCKED      0x1     /**< Check for unlocked-object warnings */
-#define W_LOCKED        0x2     /**< Check for locked-object warnings */
+#define W_UNLOCKED 0x1 /**< Check for unlocked-object warnings */
+#define W_LOCKED 0x2   /**< Check for locked-object warnings */
 
-#define W_EXIT_ONEWAY   0x1     /**< Find one-way exits */
-#define W_EXIT_MULTIPLE 0x2     /**< Find multiple exits to same place */
-#define W_EXIT_MSGS     0x4     /**< Find exits without messages */
-#define W_EXIT_DESC     0x8     /**< Find exits without descs */
-#define W_EXIT_UNLINKED 0x10    /**< Find unlinked exits */
+#define W_EXIT_ONEWAY 0x1    /**< Find one-way exits */
+#define W_EXIT_MULTIPLE 0x2  /**< Find multiple exits to same place */
+#define W_EXIT_MSGS 0x4      /**< Find exits without messages */
+#define W_EXIT_DESC 0x8      /**< Find exits without descs */
+#define W_EXIT_UNLINKED 0x10 /**< Find unlinked exits */
 /* Space for more exit stuff */
-#define W_THING_MSGS    0x100   /**< Find things without messages */
-#define W_THING_DESC    0x200   /**< Find things without descs */
+#define W_THING_MSGS 0x100 /**< Find things without messages */
+#define W_THING_DESC 0x200 /**< Find things without descs */
 /* Space for more thing stuff */
-#define W_ROOM_DESC     0x1000  /**< Find rooms without descs */
+#define W_ROOM_DESC 0x1000 /**< Find rooms without descs */
 /* Space for more room stuff */
-#define W_PLAYER_DESC   0x10000 /**< Find players without descs */
+#define W_PLAYER_DESC 0x10000 /**< Find players without descs */
 
-#define W_LOCK_PROBS    0x100000        /**< Find bad locks */
+#define W_LOCK_PROBS 0x100000 /**< Find bad locks */
 
 /* Groups of warnings */
-#define W_NONE          0      /**< No warnings */
+#define W_NONE 0 /**< No warnings */
 /** Serious warnings only */
-#define W_SERIOUS       (W_EXIT_UNLINKED|W_THING_DESC|W_ROOM_DESC|W_PLAYER_DESC|W_LOCK_PROBS)
+#define W_SERIOUS                                                              \
+  (W_EXIT_UNLINKED | W_THING_DESC | W_ROOM_DESC | W_PLAYER_DESC | W_LOCK_PROBS)
 /** Standard warnings: serious warnings plus others */
-#define W_NORMAL        (W_SERIOUS|W_EXIT_ONEWAY|W_EXIT_MULTIPLE|W_EXIT_MSGS)
+#define W_NORMAL (W_SERIOUS | W_EXIT_ONEWAY | W_EXIT_MULTIPLE | W_EXIT_MSGS)
 /** Extra warnings: standard warnings plus others */
-#define W_EXTRA         (W_NORMAL|W_THING_MSGS)
+#define W_EXTRA (W_NORMAL | W_THING_MSGS)
 /** All warnings */
-#define W_ALL           (W_EXTRA|W_EXIT_DESC)
-
+#define W_ALL (W_EXTRA | W_EXIT_DESC)
 
 /** A structure representing a topology warning check. */
 typedef struct a_tcheck {
-  const char *name;     /**< Name of warning. */
-  warn_type flag;       /**< Bitmask of warning. */
+  const char *name; /**< Name of warning. */
+  warn_type flag;   /**< Bitmask of warning. */
 } tcheck;
-
 
 extern int warning_lock_type(const boolexp l);
 void complain(dbref player, dbref i, const char *name, const char *desc, ...)
-  __attribute__ ((__format__(__printf__, 4, 5)));
+  __attribute__((__format__(__printf__, 4, 5)));
 extern void check_lock(dbref player, dbref i, const char *name, boolexp be);
 static void ct_generic(dbref player, dbref i, warn_type flags);
 static void ct_room(dbref player, dbref i, warn_type flags);
@@ -73,27 +72,24 @@ static void ct_exit(dbref player, dbref i, warn_type flags);
 static void ct_player(dbref player, dbref i, warn_type flags);
 static void ct_thing(dbref player, dbref i, warn_type flags);
 
+static tcheck checklist[] = {{"none", W_NONE}, /* MUST BE FIRST! */
+                             {"exit-unlinked", W_EXIT_UNLINKED},
+                             {"thing-desc", W_THING_DESC},
+                             {"room-desc", W_ROOM_DESC},
+                             {"my-desc", W_PLAYER_DESC},
+                             {"exit-oneway", W_EXIT_ONEWAY},
+                             {"exit-multiple", W_EXIT_MULTIPLE},
+                             {"exit-msgs", W_EXIT_MSGS},
+                             {"thing-msgs", W_THING_MSGS},
+                             {"exit-desc", W_EXIT_DESC},
+                             {"lock-checks", W_LOCK_PROBS},
 
-static tcheck checklist[] = {
-  {"none", W_NONE},             /* MUST BE FIRST! */
-  {"exit-unlinked", W_EXIT_UNLINKED},
-  {"thing-desc", W_THING_DESC},
-  {"room-desc", W_ROOM_DESC},
-  {"my-desc", W_PLAYER_DESC},
-  {"exit-oneway", W_EXIT_ONEWAY},
-  {"exit-multiple", W_EXIT_MULTIPLE},
-  {"exit-msgs", W_EXIT_MSGS},
-  {"thing-msgs", W_THING_MSGS},
-  {"exit-desc", W_EXIT_DESC},
-  {"lock-checks", W_LOCK_PROBS},
-
-  /* These should stay at the end */
-  {"serious", W_SERIOUS},
-  {"normal", W_NORMAL},
-  {"extra", W_EXTRA},
-  {"all", W_ALL},
-  {NULL, 0}
-};
+                             /* These should stay at the end */
+                             {"serious", W_SERIOUS},
+                             {"normal", W_NORMAL},
+                             {"extra", W_EXTRA},
+                             {"all", W_ALL},
+                             {NULL, 0}};
 
 /** Issue a warning about an object.
  * \param player player to receive the warning notification.
@@ -111,8 +107,8 @@ complain(dbref player, dbref i, const char *name, const char *desc, ...)
   mush_vsnprintf(buff, sizeof buff, desc, args);
   va_end(args);
 
-  notify_format(player, T("Warning '%s' for %s:"),
-                name, unparse_object(player, i, AN_SYS));
+  notify_format(player, T("Warning '%s' for %s:"), name,
+                unparse_object(player, i, AN_SYS));
   notify(player, buff);
 }
 
@@ -175,9 +171,8 @@ ct_exit(dbref player, dbref i, warn_type flags)
   if (!Dark(i)) {
     if (flags & W_EXIT_MSGS) {
       lt = warning_lock_type(getlock(i, Basic_Lock));
-      if ((lt & W_UNLOCKED) &&
-          (!atr_get(i, "OSUCCESS") || !atr_get(i, "ODROP") ||
-           !atr_get(i, "SUCCESS")))
+      if ((lt & W_UNLOCKED) && (!atr_get(i, "OSUCCESS") ||
+                                !atr_get(i, "ODROP") || !atr_get(i, "SUCCESS")))
         complain(player, i, "exit-msgs",
                  T("possibly unlocked exit missing succ/osucc/odrop"));
       if ((lt & W_LOCKED) && !atr_get(i, "FAILURE"))
@@ -226,16 +221,12 @@ ct_exit(dbref player, dbref i, warn_type flags)
   }
 }
 
-
-
 static void
 ct_player(dbref player, dbref i, warn_type flags)
 {
   if ((flags & W_PLAYER_DESC) && !atr_get(i, "DESCRIBE"))
     complain(player, i, "my-desc", T("player is missing description"));
 }
-
-
 
 static void
 ct_thing(dbref player, dbref i, warn_type flags)
@@ -250,9 +241,8 @@ ct_thing(dbref player, dbref i, warn_type flags)
 
   if (flags & W_THING_MSGS) {
     lt = warning_lock_type(getlock(i, Basic_Lock));
-    if ((lt & W_UNLOCKED) &&
-        (!atr_get(i, "OSUCCESS") || !atr_get(i, "ODROP") ||
-         !atr_get(i, "SUCCESS") || !atr_get(i, "DROP")))
+    if ((lt & W_UNLOCKED) && (!atr_get(i, "OSUCCESS") || !atr_get(i, "ODROP") ||
+                              !atr_get(i, "SUCCESS") || !atr_get(i, "DROP")))
       complain(player, i, "thing-msgs",
                T("possibly unlocked thing missing succ/osucc/drop/odrop"));
     if ((lt & W_LOCKED) && !atr_get(i, "FAILURE"))
@@ -447,7 +437,6 @@ check_topology_on(dbref player, dbref i)
   return;
 }
 
-
 /** Loop through all objects and check their topology.  */
 void
 run_topology(void)
@@ -494,7 +483,6 @@ do_wcheck_me(dbref player)
   notify(player, T("@wcheck complete."));
   return;
 }
-
 
 /** Check warnings on a specific object.
  * We check for ownership or hasprivs before allowing this.

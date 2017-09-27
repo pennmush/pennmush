@@ -72,7 +72,7 @@
 #include "mushdb.h"
 #include "parse.h"
 
-dbref first_free = NOTHING;   /**< Object at top of free list */
+dbref first_free = NOTHING; /**< Object at top of free list */
 
 static dbref what_to_destroy(dbref player, char *name, int confirm,
                              NEW_PE_INFO *pe_info);
@@ -92,9 +92,8 @@ static void mark_contents(dbref loc);
 static void check_contents(void);
 static void check_locations(void);
 static void check_zones(void);
-static int attribute_owner_helper
-  (dbref player, dbref thing, dbref parent, char const *pattern, ATTR *atr,
-   void *args);
+static int attribute_owner_helper(dbref player, dbref thing, dbref parent,
+                                  char const *pattern, ATTR *atr, void *args);
 static bool special_object(dbref thing);
 
 extern void remove_all_obj_chan(dbref thing);
@@ -103,10 +102,9 @@ extern void chan_chownall(dbref old, dbref new);
 extern struct db_stat_info current_state;
 
 /** Mark an object */
-#define SetMarked(x)    Type(x) |= TYPE_MARKED
+#define SetMarked(x) Type(x) |= TYPE_MARKED
 /** Unmark an object */
-#define ClearMarked(x)  Type(x) &= ~TYPE_MARKED
-
+#define ClearMarked(x) Type(x) &= ~TYPE_MARKED
 
 /* Section I: do_destroy() and related functions. This section is where
  * the human interface of do_destroy() should largely be determined.
@@ -196,8 +194,7 @@ extern struct db_stat_info current_state;
  * the vote from room #1.
  */
 
-
- /** Is thing a special object that should absolutely not be destroyed? */
+/** Is thing a special object that should absolutely not be destroyed? */
 static bool
 special_object(dbref thing)
 {
@@ -241,12 +238,10 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
    * 3. Be dealing with a dest-ok thing and pass its lock/destroy
    */
   if (!controls(player, thing) &&
-      !(IsExit(thing) &&
-        (controls(player, Destination(thing)) ||
-         controls(player, Source(thing)))) && !(DestOk(thing)
-                                                && eval_lock_with(player, thing,
-                                                                  Destroy_Lock,
-                                                                  pe_info))) {
+      !(IsExit(thing) && (controls(player, Destination(thing)) ||
+                          controls(player, Source(thing)))) &&
+      !(DestOk(thing) &&
+        eval_lock_with(player, thing, Destroy_Lock, pe_info))) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }
@@ -256,12 +251,11 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   }
   if (REALLY_SAFE) {
     if (Safe(thing) && !DestOk(thing)) {
-      notify(player,
-             T
-             ("That object is set SAFE. You must set it !SAFE before destroying it."));
+      notify(player, T("That object is set SAFE. You must set it !SAFE before "
+                       "destroying it."));
       return NOTHING;
     }
-  } else {                      /* REALLY_SAFE */
+  } else { /* REALLY_SAFE */
     if (Safe(thing) && !DestOk(thing) && !confirm) {
       notify(player, T("That object is marked SAFE. Use @nuke to destroy it."));
       return NOTHING;
@@ -317,9 +311,7 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
     break;
   }
   return thing;
-
 }
-
 
 /** User interface to destroy an object.
  * \verbatim
@@ -349,57 +341,51 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   }
   /* Present informative messages. */
   if (!REALLY_SAFE && Safe(thing))
-    notify(player,
-           T
-           ("Warning: Target is set SAFE, but scheduling for destruction anyway."));
+    notify(
+      player,
+      T("Warning: Target is set SAFE, but scheduling for destruction anyway."));
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     /* wait until dbck */
     notify_except(thing, thing, NOTHING,
                   T("The room shakes and begins to crumble."), NA_SPOOF);
     if (Owns(player, thing))
-      notify_format(player,
-                    T("You will be rewarded shortly for %s."),
+      notify_format(player, T("You will be rewarded shortly for %s."),
                     unparse_object(player, thing, AN_SYS));
     else {
-      notify_format(player,
-                    T
-                    ("The wrecking ball is on its way for %s's %s and its exits."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
-                                                                      thing,
-                                                                      AN_SYS));
+      notify_format(
+        player, T("The wrecking ball is on its way for %s's %s and its exits."),
+        AName(Owner(thing), AN_SYS, NULL),
+        unparse_object(player, thing, AN_SYS));
       notify_format(Owner(thing),
                     T("%s has scheduled your room %s to be destroyed."),
-                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
-                                                                thing, AN_SYS));
+                    AName(player, AN_SYS, NULL),
+                    unparse_object(Owner(thing), thing, AN_SYS));
     }
     break;
   case TYPE_PLAYER:
     /* wait until dbck */
     do_log(LT_WIZ, player, thing, "Player scheduled for destruction.");
-    notify_format(player,
-                  (DESTROY_POSSESSIONS ?
-                   (REALLY_SAFE ?
-                    T
-                    ("%s and all their (non-SAFE) objects are scheduled to be destroyed.")
-                    :
-                    T
-                    ("%s and all their objects are scheduled to be destroyed."))
-                   : T("%s is scheduled to be destroyed.")),
-                  unparse_object(player, thing, AN_SYS));
+    notify_format(
+      player,
+      (DESTROY_POSSESSIONS
+         ? (REALLY_SAFE
+              ? T("%s and all their (non-SAFE) objects are scheduled to be "
+                  "destroyed.")
+              : T("%s and all their objects are scheduled to be destroyed."))
+         : T("%s is scheduled to be destroyed.")),
+      unparse_object(player, thing, AN_SYS));
     break;
   case TYPE_THING:
     if (!Owns(player, thing)) {
       notify_format(player, T("%s's %s is scheduled to be destroyed."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
-                                                                      thing,
-                                                                      AN_SYS));
+                    AName(Owner(thing), AN_SYS, NULL),
+                    unparse_object(player, thing, AN_SYS));
       if (!DestOk(thing))
         notify_format(Owner(thing),
                       T("%s has scheduled your %s for destruction."),
-                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
-                                                                  thing,
-                                                                  AN_SYS));
+                      AName(player, AN_SYS, NULL),
+                      unparse_object(Owner(thing), thing, AN_SYS));
     } else {
       notify_format(player, T("%s is scheduled to be destroyed."),
                     unparse_object(player, thing, AN_SYS));
@@ -409,15 +395,13 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
     if (!Owns(player, thing)) {
       notify_format(Owner(thing),
                     T("%s has scheduled your %s for destruction."),
-                    AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
-                                                                thing, AN_SYS));
+                    AName(player, AN_SYS, NULL),
+                    unparse_object(Owner(thing), thing, AN_SYS));
       notify_format(player, T("%s's %s is scheduled to be destroyed."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
-                                                                      thing,
-                                                                      AN_SYS));
+                    AName(Owner(thing), AN_SYS, NULL),
+                    unparse_object(player, thing, AN_SYS));
     } else
-      notify_format(player,
-                    T("%s is scheduled to be destroyed."),
+      notify_format(player, T("%s is scheduled to be destroyed."),
                     unparse_object(player, thing, AN_SYS));
     break;
   default:
@@ -428,7 +412,6 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   pre_destroy(player, thing);
   return;
 }
-
 
 /** Spare an object from slated destruction.
  * \verbatim
@@ -452,15 +435,12 @@ do_undestroy(dbref player, char *name)
     return;
   }
   if (undestroy(player, thing)) {
-    notify_format(Owner(thing),
-                  T("Your %s has been spared from destruction."),
+    notify_format(Owner(thing), T("Your %s has been spared from destruction."),
                   unparse_object(Owner(thing), thing, AN_SYS));
     if (player != Owner(thing)) {
-      notify_format(player,
-                    T("%s's %s has been spared from destruction."),
-                    AName(Owner(thing), AN_SYS, NULL), unparse_object(player,
-                                                                      thing,
-                                                                      AN_SYS));
+      notify_format(player, T("%s's %s has been spared from destruction."),
+                    AName(Owner(thing), AN_SYS, NULL),
+                    unparse_object(player, thing, AN_SYS));
     }
     if (IsPlayer(thing))
       do_log(LT_WIZ, player, thing, "Player spared from destruction.");
@@ -468,8 +448,6 @@ do_undestroy(dbref player, char *name)
     notify(player, T("That can't be undestroyed."));
   }
 }
-
-
 
 /* Section II: Functions that manage the actual work of destroying
  * Objects.
@@ -490,15 +468,13 @@ pre_destroy(dbref player, dbref thing)
   /* Present informative messages, and do recursive destruction. */
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-    DOLIST(tmp, Exits(thing)) {
-      pre_destroy(player, tmp);
-    }
+    DOLIST(tmp, Exits(thing)) { pre_destroy(player, tmp); }
     break;
   case TYPE_PLAYER:
     if (DESTROY_POSSESSIONS) {
       for (tmp = 0; tmp < db_top; tmp++) {
-        if (Owner(tmp) == thing &&
-            (tmp != thing) && (!REALLY_SAFE || !Safe(thing))) {
+        if (Owner(tmp) == thing && (tmp != thing) &&
+            (!REALLY_SAFE || !Safe(thing))) {
           pre_destroy(player, tmp);
         }
       }
@@ -513,9 +489,8 @@ pre_destroy(dbref player, dbref thing)
       if (!Owns(player, thing)) {
         notify_format(Owner(thing),
                       T("%s has scheduled your %s for destruction."),
-                      AName(player, AN_SYS, NULL), unparse_object(Owner(thing),
-                                                                  thing,
-                                                                  AN_SYS));
+                      AName(player, AN_SYS, NULL),
+                      unparse_object(Owner(thing), thing, AN_SYS));
       }
     }
     break;
@@ -529,9 +504,7 @@ pre_destroy(dbref player, dbref thing)
   }
 
   return;
-
 }
-
 
 /** Spare an object from destruction.
  * Not undestroy, quite--it's actually 'remove it from its status as about
@@ -555,8 +528,7 @@ undestroy(dbref player, dbref thing)
   /* undestroy owner, if need be. */
   if (Going(Owner(thing))) {
     if (Owner(thing) != player) {
-      notify_format(player,
-                    T("%s has been spared from destruction."),
+      notify_format(player, T("%s has been spared from destruction."),
                     unparse_object(player, Owner(thing), AN_SYS));
       notify_format(Owner(thing),
                     T("You have been spared from destruction by %s."),
@@ -574,8 +546,7 @@ undestroy(dbref player, dbref thing)
        * be purged when the room is purged.
        */
       for (tmp = 0; tmp < db_top; tmp++) {
-        if (Owns(thing, tmp) &&
-            (tmp != thing) &&
+        if (Owns(thing, tmp) && (tmp != thing) &&
             !(IsExit(tmp) && !Owns(thing, Source(tmp)) && Going(Source(tmp)))) {
           (void) undestroy(player, tmp);
         }
@@ -587,14 +558,14 @@ undestroy(dbref player, dbref thing)
     /* undestroy containing room. */
     if (Going(Source(thing))) {
       (void) undestroy(player, Source(thing));
-      notify_format(player,
-                    T("The room %s has been spared from destruction."),
+      notify_format(player, T("The room %s has been spared from destruction."),
                     unparse_object(player, Source(thing), AN_SYS));
       if (Owner(Source(thing)) != player) {
-        notify_format(Owner(Source(thing)),
-                      T("The room %s has been spared from destruction by %s."),
-                      unparse_object(Owner(Source(thing)), Source(thing),
-                                     AN_SYS), AName(player, AN_SYS, NULL));
+        notify_format(
+          Owner(Source(thing)),
+          T("The room %s has been spared from destruction by %s."),
+          unparse_object(Owner(Source(thing)), Source(thing), AN_SYS),
+          AName(player, AN_SYS, NULL));
       }
     }
     break;
@@ -602,7 +573,8 @@ undestroy(dbref player, dbref thing)
     /* undestroy exits in this room, except exits that are going to be
      * destroyed anyway due to a GOING player.
      */
-    DOLIST(tmp, Exits(thing)) {
+    DOLIST(tmp, Exits(thing))
+    {
       if (DESTROY_POSSESSIONS ? (!Going(Owner(tmp)) || Safe(tmp)) : 1) {
         (void) undestroy(player, tmp);
       }
@@ -614,7 +586,6 @@ undestroy(dbref player, dbref thing)
   }
   return 1;
 }
-
 
 /* Does the real work of freeing all the memory and unlinking an object.
  * This is going to have to be very tightly coupled with the implementation;
@@ -658,11 +629,10 @@ free_object(dbref thing)
    * Information needed:
    *   dbref, type, owner dbref, parent dbref, zone dbref
    */
-  queue_event(SYSEVENT, "OBJECT`DESTROY",
-              "%s,%s,%s,%s,%s,%s",
+  queue_event(SYSEVENT, "OBJECT`DESTROY", "%s,%s,%s,%s,%s,%s",
               unparse_objid(thing), Name(thing), type,
-              unparse_objid(Owner(thing)),
-              unparse_objid(Parent(thing)), unparse_objid(Zone(thing)));
+              unparse_objid(Owner(thing)), unparse_objid(Parent(thing)),
+              unparse_objid(Zone(thing)));
 
   change_quota(Owner(thing), QUOTA_COST);
   do_halt(thing, "", thing);
@@ -743,10 +713,10 @@ free_object(dbref thing)
   remove_all_obj_chan(thing);
 
   switch (Typeof(thing)) {
-    /* Make absolutely sure we are removed from Location's content or
-       exit list. If we are in a room we own and destroy_possessions
-       is yes, this can happen, causing much ickyness: All garbage
-       items would be in DEFAULT_HOME. */
+  /* Make absolutely sure we are removed from Location's content or
+     exit list. If we are in a room we own and destroy_possessions
+     is yes, this can happen, causing much ickyness: All garbage
+     items would be in DEFAULT_HOME. */
   case TYPE_PLAYER:
   case TYPE_THING:
     loc = Location(thing);
@@ -757,7 +727,7 @@ free_object(dbref thing)
     else
       current_state.players--;
     break;
-  case TYPE_EXIT:              /* This probably won't be needed, but lets make sure */
+  case TYPE_EXIT: /* This probably won't be needed, but lets make sure */
     loc = Source(thing);
     if (GoodObject(loc))
       Exits(loc) = remove_first(Exits(loc), thing);
@@ -780,7 +750,7 @@ free_object(dbref thing)
   set_name(thing, "Garbage");
   Exits(thing) = NOTHING;
   Home(thing) = NOTHING;
-  CreTime(thing) = 0;           /* Prevents it from matching objids */
+  CreTime(thing) = 0; /* Prevents it from matching objids */
 
   clear_objdata(thing);
 
@@ -788,7 +758,6 @@ free_object(dbref thing)
   first_free = thing;
 
   current_state.garbage++;
-
 }
 
 static void
@@ -798,24 +767,22 @@ empty_contents(dbref thing)
   dbref first, rest, target;
 
   notify_except(thing, thing, NOTHING,
-                T
-                ("The floor disappears under your feet, you fall through NOTHINGness and then:"),
+                T("The floor disappears under your feet, you fall through "
+                  "NOTHINGness and then:"),
                 NA_SPOOF);
   first = Contents(thing);
   Contents(thing) = NOTHING;
   /* send all objects to nowhere */
-  DOLIST(rest, first) {
-    Location(rest) = NOTHING;
-  }
+  DOLIST(rest, first) { Location(rest) = NOTHING; }
   /* now send them home */
   while (first != NOTHING) {
     rest = Next(first);
     /* if home is in thing set it to limbo */
     switch (Typeof(first)) {
-    case TYPE_EXIT:            /* if holding exits, destroy it */
+    case TYPE_EXIT: /* if holding exits, destroy it */
       free_object(first);
       break;
-    case TYPE_THING:           /* move to home */
+    case TYPE_THING: /* move to home */
     case TYPE_PLAYER:
       /* Make sure the home is a reasonable object. */
       if (!GoodObject(Home(first)) || IsExit(Home(first)) ||
@@ -854,9 +821,8 @@ clear_thing(dbref thing)
   empty_contents(thing);
   clear_flag_internal(thing, "PUPPET");
   if (!Quiet(thing) && !Quiet(Owner(thing)))
-    notify_format(Owner(thing),
-                  T("You get your %d %s deposit back for %s."),
-                  a, ((a == 1) ? MONEY : MONIES),
+    notify_format(Owner(thing), T("You get your %d %s deposit back for %s."), a,
+                  ((a == 1) ? MONEY : MONIES),
                   unparse_object(Owner(thing), thing, AN_SYS));
 }
 
@@ -894,12 +860,11 @@ clear_player(dbref thing)
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 
-
   /* Deal with objects owned by the player. */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == thing && i != thing) {
-      if (special_object(i) || 
-        (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1)) {
+      if (special_object(i) ||
+          (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1)) {
         chown_object(GOD, i, probate, 0);
       } else {
         free_object(i);
@@ -919,9 +884,7 @@ clear_room(dbref thing)
   first = Exits(thing);
   Source(thing) = NOTHING;
   /* set destination of all exits to nothing */
-  DOLIST(rest, first) {
-    Destination(rest) = NOTHING;
-  }
+  DOLIST(rest, first) { Destination(rest) = NOTHING; }
   /* Clear all exits out of exit list */
   while (first != NOTHING) {
     rest = Next(first);
@@ -931,7 +894,6 @@ clear_room(dbref thing)
     first = rest;
   }
 }
-
 
 static void
 clear_exit(dbref thing)
@@ -981,9 +943,9 @@ make_first_free(dbref object)
   dbref prev = NOTHING;
 
   if (first_free == NOTHING || !GoodObject(object) || !IsGarbage(object))
-    return 0;                   /* no garbage, or object isn't garbage */
+    return 0; /* no garbage, or object isn't garbage */
   else if (first_free == object)
-    return 1;                   /* object is already at the head of the queue */
+    return 1; /* object is already at the head of the queue */
   for (curr = first_free; Next(curr); curr = Next(curr)) {
     if (curr == object) {
       Next(prev) = Next(curr);
@@ -994,7 +956,6 @@ make_first_free(dbref object)
       prev = curr;
   }
   return 0;
-
 }
 
 /** Return a cleaned up object off the free list or NOTHING.
@@ -1076,7 +1037,6 @@ purge(void)
   purge_locks();
 }
 
-
 /** Destroy objects slated for destruction.
  * \verbatim
  * This is the top-level function for @purge.
@@ -1092,8 +1052,6 @@ do_purge(dbref player)
   } else
     notify(player, T("Sorry, you are a mortal."));
 }
-
-
 
 /* Section III: dbck() and related functions. */
 
@@ -1141,8 +1099,8 @@ check_fields(void)
         Parent(thing) = NOTHING;
       owner = Owner(thing);
       if (!GoodObject(owner) || IsGarbage(owner) || !IsPlayer(owner)) {
-        do_rawlog(LT_ERR, "ERROR: Invalid object owner on %s(%d)",
-                  Name(thing), thing);
+        do_rawlog(LT_ERR, "ERROR: Invalid object owner on %s(%d)", Name(thing),
+                  thing);
         report();
         Owner(thing) = GOD;
       }
@@ -1174,14 +1132,14 @@ check_fields(void)
                     "ERROR: Exit %s has a contents list. Wiping it out.",
                     unparse_object(GOD, thing, 0));
         }
-        if (!GoodObject(loc)
-            && !((loc == NOTHING) || (loc == AMBIGUOUS) || (loc == HOME))) {
+        if (!GoodObject(loc) &&
+            !((loc == NOTHING) || (loc == AMBIGUOUS) || (loc == HOME))) {
           /* Bad news. We're linked to a really impossible object.
            * Relink to our source
            */
           Destination(thing) = Source(thing);
-          do_rawlog(LT_ERR,
-                    "ERROR: Exit %s leading to invalid room #%d relinked to its source room.",
+          do_rawlog(LT_ERR, "ERROR: Exit %s leading to invalid room #%d "
+                            "relinked to its source room.",
                     unparse_object(GOD, thing, 0), home);
         } else if (GoodObject(loc) && IsGarbage(loc)) {
           /* If our destination is destroyed, then we relink to the
@@ -1191,8 +1149,8 @@ check_fields(void)
            * into nasty limbo exits.
            */
           Destination(thing) = Source(thing);
-          do_rawlog(LT_ERR,
-                    "ERROR: Exit %s leading to garbage room #%d relinked to its source room.",
+          do_rawlog(LT_ERR, "ERROR: Exit %s leading to garbage room #%d "
+                            "relinked to its source room.",
                     unparse_object(GOD, thing, 0), home);
         }
         /* This must come last */
@@ -1226,12 +1184,11 @@ check_fields(void)
 }
 
 static int
-attribute_owner_helper(dbref player __attribute__ ((__unused__)),
-                       dbref thing __attribute__ ((__unused__)),
-                       dbref parent __attribute__ ((__unused__)),
-                       char const *pattern
-                       __attribute__ ((__unused__)), ATTR *atr, void *args
-                       __attribute__ ((__unused__)))
+attribute_owner_helper(dbref player __attribute__((__unused__)),
+                       dbref thing __attribute__((__unused__)),
+                       dbref parent __attribute__((__unused__)),
+                       char const *pattern __attribute__((__unused__)),
+                       ATTR *atr, void *args __attribute__((__unused__)))
 {
   if (!GoodObject(AL_CREATOR(atr)))
     AL_CREATOR(atr) = GOD;
@@ -1295,7 +1252,7 @@ check_zones(void)
       continue;
     if (ZONE_CONTROL_ZMP && !IsPlayer(zone))
       continue;
-    if (zone != n)              /* Objects can be zoned to themselves */
+    if (zone != n) /* Objects can be zoned to themselves */
       for (zone_depth = MAX_ZONES, tmp = Zone(zone);
            zone_depth-- && GoodObject(tmp); tmp = Zone(tmp)) {
         if (tmp == n) {
@@ -1304,7 +1261,7 @@ check_zones(void)
                         unparse_object(Owner(n), n, AN_SYS));
           break;
         }
-        if (tmp == Zone(tmp))   /* Object zoned to itself */
+        if (tmp == Zone(tmp)) /* Object zoned to itself */
           break;
       }
 
@@ -1317,10 +1274,10 @@ check_zones(void)
   for (n = 0; n < db_top; n++) {
     if (!IsGarbage(n) && Marked(n)) {
       ClearMarked(n);
-      notify_format(Owner(n),
-                    T
-                    ("You own an object without a @lock/zone being used as a zone: %s"),
-                    unparse_object(Owner(n), n, AN_SYS));
+      notify_format(
+        Owner(n),
+        T("You own an object without a @lock/zone being used as a zone: %s"),
+        unparse_object(Owner(n), n, AN_SYS));
     }
   }
 }
@@ -1329,24 +1286,25 @@ check_zones(void)
  * no side effects and results in a dbref to be checked.
  * All hell will break loose if this is not so.
  */
-#define CHECK(field)            \
-  if ((field) != NOTHING) { \
-     if (!GoodObject(field) || IsGarbage(field)) { \
-       do_rawlog(LT_ERR, "Bad reference #%d from %s severed.", \
-                 (field), unparse_object(GOD, thing, 0)); \
-       (field) = NOTHING; \
-     } else if (IsRoom(field)) { \
-       do_rawlog(LT_ERR, "Reference to room #%d from %s severed.", \
-                 (field), unparse_object(GOD, thing, 0)); \
-       (field) = NOTHING; \
-     } else if (Marked(field)) {  \
-       do_rawlog(LT_ERR, "Multiple references to %s. Reference from #%d severed.", \
-                 unparse_object(GOD, (field), 0), thing); \
-       (field) = NOTHING; \
-     } else { \
-       SetMarked(field); \
-       mark_contents(field); \
-     } \
+#define CHECK(field)                                                           \
+  if ((field) != NOTHING) {                                                    \
+    if (!GoodObject(field) || IsGarbage(field)) {                              \
+      do_rawlog(LT_ERR, "Bad reference #%d from %s severed.", (field),         \
+                unparse_object(GOD, thing, 0));                                \
+      (field) = NOTHING;                                                       \
+    } else if (IsRoom(field)) {                                                \
+      do_rawlog(LT_ERR, "Reference to room #%d from %s severed.", (field),     \
+                unparse_object(GOD, thing, 0));                                \
+      (field) = NOTHING;                                                       \
+    } else if (Marked(field)) {                                                \
+      do_rawlog(LT_ERR,                                                        \
+                "Multiple references to %s. Reference from #%d severed.",      \
+                unparse_object(GOD, (field), 0), thing);                       \
+      (field) = NOTHING;                                                       \
+    } else {                                                                   \
+      SetMarked(field);                                                        \
+      mark_contents(field);                                                    \
+    }                                                                          \
   }
 
 /* An auxiliary function for check_contents. */
@@ -1407,11 +1365,11 @@ check_contents(void)
       switch (Typeof(thing)) {
       case TYPE_PLAYER:
       case TYPE_THING:
-        if (GoodObject(Location(thing)) &&
-            !IsGarbage(Location(thing)) && Marked(Location(thing))) {
+        if (GoodObject(Location(thing)) && !IsGarbage(Location(thing)) &&
+            Marked(Location(thing))) {
           PUSH(thing, Contents(Location(thing)));
-        } else if (GoodObject(Home(thing)) &&
-                   !IsGarbage(Home(thing)) && Marked(Home(thing))) {
+        } else if (GoodObject(Home(thing)) && !IsGarbage(Home(thing)) &&
+                   Marked(Home(thing))) {
           Contents(Location(thing)) =
             remove_first(Contents(Location(thing)), thing);
           PUSH(thing, Contents(Home(thing)));
@@ -1463,7 +1421,6 @@ check_contents(void)
   }
 }
 
-
 /* Check that every player and thing occurs in the contents list of its
  * location, and that every exit occurs in the exit list of its source.
  */
@@ -1488,8 +1445,7 @@ check_locations(void)
            * we've done a check_contents already, so let's just put it
            * here.
            */
-          do_rawlog(LT_ERR,
-                    "Incorrect location on object %s. Reset to #%d.",
+          do_rawlog(LT_ERR, "Incorrect location on object %s. Reset to #%d.",
                     unparse_object(GOD, thing, 0), loc);
           Location(thing) = loc;
         }
@@ -1500,27 +1456,24 @@ check_locations(void)
       for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
         if (!IsExit(thing)) {
           do_rawlog(LT_ERR,
-                    "ERROR: Exits of room %d corrupt at object %d cleared",
-                    loc, thing);
+                    "ERROR: Exits of room %d corrupt at object %d cleared", loc,
+                    thing);
           /* Remove this from the list and start over. */
           Exits(loc) = remove_first(Exits(loc), thing);
           thing = Exits(loc);
           continue;
         } else if (Source(thing) != loc) {
-          do_rawlog(LT_ERR,
-                    "Incorrect source on exit %s. Reset to #%d.",
+          do_rawlog(LT_ERR, "Incorrect source on exit %s. Reset to #%d.",
                     unparse_object(GOD, thing, 0), loc);
           /* Make sure it's only in the first room we found it in */
           if (RealGoodObject(Source(thing)))
             remove_first(Exits(Source(thing)), thing);
           /* And make sure it knows it */
           Source(thing) = loc;
-
         }
       }
     }
   }
-
 
   for (thing = 0; thing < db_top; thing++)
     if (!IsGarbage(thing) && Marked(thing))
@@ -1530,7 +1483,6 @@ check_locations(void)
       moveto(thing, DEFAULT_HOME, SYSEVENT, "dbck");
     }
 }
-
 
 /** Database checkup, user interface.
  * \verbatim

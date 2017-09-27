@@ -10,10 +10,13 @@
 #include <ctype.h>
 
 #ifdef HAVE_SAFE_TOUPPER
-#define DOWNCASE(x)     tolower(x) /**< Returns 'x' lowercased */
-#define UPCASE(x)       toupper(x) /**< Returns 'x' uppercased */
+#define DOWNCASE(x) tolower(x) /**< Returns 'x' lowercased */
+#define UPCASE(x) toupper(x)   /**< Returns 'x' uppercased */
 #else
-#define DOWNCASE(x) (isupper(x) ? tolower(x) : (x)) /**< Returns 'x' lowercased */
-#define UPCASE(x)   (islower(x) ? toupper(x) : (x)) /**< Returns 'x' uppercased */
+#define DOWNCASE(x)                                                            \
+  (isupper(x) ? tolower(x) : (x)) /**< Returns 'x' lowercased */
+#define UPCASE(x)                                                              \
+  (islower(x) ? toupper(x) : (x)) /**< Returns 'x' uppercased                  \
+                                     */
 #endif
-#endif                          /* CASE_H */
+#endif /* CASE_H */

@@ -106,8 +106,8 @@ extern int h_errno;
 /* TODO: Hack until we move mush_panic() somewhere more reasonable. */
 void mush_panic(const char *);
 
-static int connect_nonb
-  (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
+static int connect_nonb(int sockfd, const struct sockaddr *saptr,
+                        socklen_t salen, bool nonb);
 
 bool
 is_blocking_err(int code)
@@ -193,7 +193,7 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   int res;
 
   memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_UNSPEC;  /* Try to use IPv6 if available */
+  hints.ai_family = AF_UNSPEC; /* Try to use IPv6 if available */
   hints.ai_socktype = socktype;
 
   sprintf(cport, "%hu", port);
@@ -222,7 +222,8 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
     if (s < 0)
       continue;
 
-    if (myiterface && myilen > 0 && myiterface->sa_family == server->ai_family) {
+    if (myiterface && myilen > 0 &&
+        myiterface->sa_family == server->ai_family) {
       /* Bind to a specific interface. Don't even try for the case of
        * an IPv4 socket and an IPv6 interface. Happens with ident, which
        * seems to work okay without the bind(). */
@@ -253,7 +254,6 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   return s;
 }
 
-
 /** Start listening on a given port. Basically tcp_listen
  * from UNPv1
  * \param port port to listen on.
@@ -280,10 +280,10 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_flags = AI_PASSIVE;
 #ifdef FORCE_IPV4
-  hints.ai_family = AF_INET;    /* OpenBSD apparently doesn't properly
-                                   map IPv4 connections to IPv6 servers. */
+  hints.ai_family = AF_INET; /* OpenBSD apparently doesn't properly
+                                map IPv4 connections to IPv6 servers. */
 #else
-  hints.ai_family = AF_UNSPEC;  /* Try to use IPv6 if available */
+  hints.ai_family = AF_UNSPEC; /* Try to use IPv6 if available */
 #endif
   hints.ai_socktype = socktype;
 
@@ -315,7 +315,8 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
       continue;
 
     opt = 1;
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(opt)) < 0) {
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(opt)) <
+        0) {
       penn_perror("setsockopt (Possibly ignorable)");
       continue;
     }
@@ -329,17 +330,16 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
     }
 #endif
 
-
     if (bind(s, server->ai_addr, server->ai_addrlen) == 0)
-      break;                    /* Success */
+      break; /* Success */
 
 #ifdef WIN32
     if (WSAGetLastError() == WSAEADDRINUSE) {
 #else
     if (errno == EADDRINUSE) {
 #endif
-      fprintf(stderr,
-              "Another process (Possibly another copy of this mush?) appears to be using port %hu. Aborting.\n",
+      fprintf(stderr, "Another process (Possibly another copy of this mush?) "
+                      "appears to be using port %hu. Aborting.\n",
               port);
       exit(1);
     }
@@ -453,9 +453,9 @@ ssize_t
 send_with_creds(int s, void *buf, size_t len)
 {
   ssize_t slen;
-  /* Linux and OS X can get credentials on the receiving end via a
-     getsockopt() call. Use it instead of sendmsg() because it's a lot
-     simpler. */
+/* Linux and OS X can get credentials on the receiving end via a
+   getsockopt() call. Use it instead of sendmsg() because it's a lot
+   simpler. */
 #if 0
   /* Sample sendmsg() credential passing using linux structs. */
   {
@@ -510,8 +510,10 @@ send_with_creds(int s, void *buf, size_t len)
  * \param s the socket descriptor
  * \param buf The buffer to read into
  * \param len the length of the buffer
- * \param remote_pid Non-null pointer that returns the remote side's pid or -1 if unable to read credentials.
- * \param remote_uid Non-null pointer that returns the remote side's uid or -1 if unable to read credentials.
+ * \param remote_pid Non-null pointer that returns the remote side's pid or -1
+ * if unable to read credentials.
+ * \param remote_uid Non-null pointer that returns the remote side's uid or -1
+ * if unable to read credentials.
  * \return the number of bytes read, or -1 on read failure
  */
 ssize_t
@@ -560,7 +562,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     }
   }
 #elif defined(HAVE_STRUCT_XUCRED)
-  {                             /* FreeBSD and OS X */
+  { /* FreeBSD and OS X */
     struct xucred creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, 0, LOCAL_PEERCRED, &creds, &credlen) < 0) {
@@ -575,7 +577,6 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
 
   return recv(s, buf, len, MSG_DONTWAIT);
 }
-
 
 /** Make a socket do nonblocking i/o.
  * \param s file descriptor of socket.
@@ -664,36 +665,35 @@ make_blocking(int s)
  */
 /* ARGSUSED */
 void
-set_keepalive(int s __attribute__ ((__unused__)), int keepidle
-              __attribute__ ((__unused__)))
+set_keepalive(int s __attribute__((__unused__)),
+              int keepidle __attribute__((__unused__)))
 {
 #ifdef SO_KEEPALIVE
   int keepalive = 1;
 
   /* enable TCP keepalive */
-  if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,
-                 (void *) &keepalive, sizeof(keepalive)) == -1)
+  if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (void *) &keepalive,
+                 sizeof(keepalive)) == -1)
     fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s,
             strerror(errno));
 
-  /* And set the ping time to something reasonable instead of the
-     default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
-     this. OS X and possibly others use TCP_KEEPALIVE. */
+/* And set the ping time to something reasonable instead of the
+   default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
+   this. OS X and possibly others use TCP_KEEPALIVE. */
 #if defined(TCP_KEEPIDLE)
-  if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE,
-                 (void *) &keepidle, sizeof(keepidle)) == -1)
+  if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE, (void *) &keepidle,
+                 sizeof(keepidle)) == -1)
     fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s,
             strerror(errno));
 #elif defined(TCP_KEEPALIVE)
-  if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,
-                 (void *) &keepidle, sizeof(keepidle)) == -1)
+  if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE, (void *) &keepidle,
+                 sizeof(keepidle)) == -1)
     fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s,
             strerror(errno));
 #endif
 #endif
   return;
 }
-
 
 /** Connect a socket, possibly making it nonblocking first.
  * From UNP, with changes. If nsec > 0, we set the socket

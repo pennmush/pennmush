@@ -23,7 +23,7 @@
 #ifdef WIN32
 #include <process.h>
 #include <windows.h>
-#undef OPAQUE                   /* Clashes with flags.h */
+#undef OPAQUE /* Clashes with flags.h */
 void Win32MUSH_setup(void);
 #endif
 #ifdef HAVE_SYS_TYPES_H
@@ -78,18 +78,19 @@ void Win32MUSH_setup(void);
 
 #ifdef hpux
 #include <sys/syscall.h>
-#define getrusage(x,p)   syscall(SYS_GETRUSAGE,x,p)
-#endif                          /* fix to HP-UX getrusage() braindamage */
+#define getrusage(x, p) syscall(SYS_GETRUSAGE, x, p)
+#endif /* fix to HP-UX getrusage() braindamage */
 
 /* declarations */
-GLOBALTAB globals = { 0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
-static int reserved;                    /**< Reserved file descriptor */
+static int reserved;            /**< Reserved file descriptor */
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
-static dbref *errdbtail = NULL;        /**< Pointer to end of errdblist */
+static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
 #define ERRDB_INITIAL_SIZE 5
-static int errdbsize = ERRDB_INITIAL_SIZE; /**< Current size of errdblist array */
+static int errdbsize =
+  ERRDB_INITIAL_SIZE; /**< Current size of errdblist array */
 static void errdb_grow(void);
 
 extern const unsigned char *tables;
@@ -100,9 +101,8 @@ static PENNFILE *db_open_write(const char *);
 static int fail_commands(dbref player);
 void do_readcache(dbref player);
 int check_alias(const char *command, const char *list);
-static int list_check(dbref thing, dbref player, char type,
-                      char end, char *str, int just_match, MQUE *queue_entry,
-                      int queue_flags);
+static int list_check(dbref thing, dbref player, char type, char end, char *str,
+                      int just_match, MQUE *queue_entry, int queue_flags);
 int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
@@ -121,13 +121,13 @@ void st_stats(dbref player, StrTree *root, const char *name);
 void do_timestring(char *buff, char **bp, const char *format,
                    unsigned long secs);
 
-extern void create_minimal_db(void);    /* From db.c */
+extern void create_minimal_db(void); /* From db.c */
 
-dbref orator = NOTHING;  /**< Last dbref to issue a speech command. DEPRECATED. DO NOT USE. */
+dbref orator =
+  NOTHING; /**< Last dbref to issue a speech command. DEPRECATED. DO NOT USE. */
 
 #ifdef COMP_STATS
-extern void compress_stats(long *entries,
-                           long *mem_used,
+extern void compress_stats(long *entries, long *mem_used,
                            long *total_uncompressed, long *total_compressed);
 #endif
 
@@ -177,8 +177,8 @@ do_dump(dbref player, char *num, enum dump_type flag)
       if (num && *num) {
         /* checkpoint interval given */
         globals.paranoid_checkpt = atoi(num);
-        if ((globals.paranoid_checkpt < 1)
-            || (globals.paranoid_checkpt >= db_top)) {
+        if ((globals.paranoid_checkpt < 1) ||
+            (globals.paranoid_checkpt >= db_top)) {
           notify(player, T("Permission denied. Invalid checkpoint interval."));
           globals.paranoid_dump = 0;
           return;
@@ -192,24 +192,22 @@ do_dump(dbref player, char *num, enum dump_type flag)
       if (flag == DUMP_PARANOID) {
         notify_format(player, T("Paranoid dumping, checkpoint interval %d."),
                       globals.paranoid_checkpt);
-        do_rawlog(LT_CHECK,
-                  "*** PARANOID DUMP *** done by %s(#%d),\n",
+        do_rawlog(LT_CHECK, "*** PARANOID DUMP *** done by %s(#%d),\n",
                   Name(player), player);
       } else {
         notify_format(player, T("Debug dumping, checkpoint interval %d."),
                       globals.paranoid_checkpt);
-        do_rawlog(LT_CHECK,
-                  "*** DEBUG DUMP *** done by %s(#%d),\n",
+        do_rawlog(LT_CHECK, "*** DEBUG DUMP *** done by %s(#%d),\n",
                   Name(player), player);
       }
       do_rawlog(LT_CHECK, "\tcheckpoint interval %d, at %s",
                 globals.paranoid_checkpt, show_time(mudtime, 0));
     } else {
       /* normal dump */
-      globals.paranoid_dump = 0;        /* just to be safe */
+      globals.paranoid_dump = 0; /* just to be safe */
       notify(player, T("Dumping..."));
-      do_rawlog(LT_CHECK, "** DUMP ** done by %s(#%d) at %s",
-                Name(player), player, show_time(mudtime, 0));
+      do_rawlog(LT_CHECK, "** DUMP ** done by %s(#%d) at %s", Name(player),
+                player, show_time(mudtime, 0));
     }
     fork_and_dump(flag == DUMP_NORMAL);
     globals.paranoid_dump = 0;
@@ -219,7 +217,6 @@ do_dump(dbref player, char *num, enum dump_type flag)
   }
 }
 
-
 /** Print global variables to the trace log.
  * This function is used for error reporting.
  */
@@ -227,8 +224,8 @@ void
 report(void)
 {
   if (GoodObject(report_dbref))
-    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d",
-              (char *) report_cmd, report_dbref, Location(report_dbref));
+    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d", (char *) report_cmd,
+              report_dbref, Location(report_dbref));
   else
     do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", report_cmd, report_dbref);
   notify_activity(NOTHING, 0, 1);
@@ -249,23 +246,22 @@ rusage_stats(void)
   do_rawlog(LT_ERR, "Process statistics:");
   do_rawlog(LT_ERR, "Time used:   %10ld user   %10ld sys",
             (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
-  do_rawlog(LT_ERR, "Max res mem: %10ld pages  %10ld bytes",
-            usage.ru_maxrss, (usage.ru_maxrss * psize));
+  do_rawlog(LT_ERR, "Max res mem: %10ld pages  %10ld bytes", usage.ru_maxrss,
+            (usage.ru_maxrss * psize));
   do_rawlog(LT_ERR, "Integral mem:%10ld shared %10ld private %10ld stack",
             usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
-  do_rawlog(LT_ERR,
-            "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
+  do_rawlog(LT_ERR, "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
             usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
-  do_rawlog(LT_ERR, "Disk I/O:    %10ld reads  %10ld writes",
-            usage.ru_inblock, usage.ru_oublock);
+  do_rawlog(LT_ERR, "Disk I/O:    %10ld reads  %10ld writes", usage.ru_inblock,
+            usage.ru_oublock);
   do_rawlog(LT_ERR, "Network I/O: %10ld in     %10ld out", usage.ru_msgrcv,
             usage.ru_msgsnd);
-  do_rawlog(LT_ERR, "Context swi: %10ld vol    %10ld forced",
-            usage.ru_nvcsw, usage.ru_nivcsw);
+  do_rawlog(LT_ERR, "Context swi: %10ld vol    %10ld forced", usage.ru_nvcsw,
+            usage.ru_nivcsw);
   do_rawlog(LT_ERR, "Signals:     %10ld", usage.ru_nsignals);
 }
 
-#endif                          /* HAVE_GETRUSAGE */
+#endif /* HAVE_GETRUSAGE */
 
 /** User interface to shut down the MUSH.
  * \verbatim
@@ -315,9 +311,9 @@ dump_database_internal(void)
   ignore_signal(SIGALRM);
 #else
   ignore_signal(SIGPROF);
-#endif                          /* __CYGWIN__ */
-#endif                          /* WIN32 */
-#endif                          /* PROFILING */
+#endif /* __CYGWIN__ */
+#endif /* WIN32 */
+#endif /* PROFILING */
 
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
@@ -332,14 +328,14 @@ dump_database_internal(void)
         break;
       case PFT_GZFILE:
 #ifdef HAVE_LIBZ
-        {
-          int errnum = 0;
-          errmsg = gzerror(f->handle.g, &errnum);
-          if (errnum == Z_ERRNO)
-            errmsg = strerror(errno);
-        }
+      {
+        int errnum = 0;
+        errmsg = gzerror(f->handle.g, &errnum);
+        if (errnum == Z_ERRNO)
+          errmsg = strerror(errno);
+      }
 #endif
-        break;
+      break;
       }
     } else
       errmsg = strerror(errno);
@@ -357,9 +353,9 @@ dump_database_internal(void)
     install_sig_handler(SIGALRM, signal_cpu_limit);
 #else
     install_sig_handler(SIGPROF, signal_cpu_limit);
-#endif                          /* __CYGWIN__ */
-#endif                          /* HAVE_SETITIMER */
-#endif                          /* PROFILING */
+#endif /* __CYGWIN__ */
+#endif /* HAVE_SETITIMER */
+#endif /* PROFILING */
     return false;
   } else {
     local_dump_database();
@@ -460,8 +456,8 @@ mush_panic(const char *message)
   static int already_panicking = 0;
 
   if (already_panicking) {
-    do_rawlog(LT_ERR,
-              "PANIC: Attempted to panic because of '%s' while already panicking. Run in circles, scream and shout!",
+    do_rawlog(LT_ERR, "PANIC: Attempted to panic because of '%s' while already "
+                      "panicking. Run in circles, scream and shout!",
               message);
     abort();
   }
@@ -518,7 +514,7 @@ mush_panicf(const char *msg, ...)
   va_end(args);
 
   mush_panic(c);
-  _exit(136);                   /* Not reached but kills warnings */
+  _exit(136); /* Not reached but kills warnings */
 }
 
 /** Dump the database.
@@ -559,7 +555,8 @@ fork_and_dump(int forking)
   if (NO_FORK)
     nofork = 1;
   else
-    nofork = !forking || (globals.paranoid_dump == 2);  /* Don't fork for dump/debug */
+    nofork =
+      !forking || (globals.paranoid_dump == 2); /* Don't fork for dump/debug */
 #if defined(WIN32) || !defined(HAVE_FORK)
   nofork = 1;
 #endif
@@ -571,11 +568,11 @@ fork_and_dump(int forking)
       split = 1;
     } else {
       /* Ack, can't fork, 'cause we have stuff on disk... */
-      do_log(LT_ERR, 0, 0,
-             "fork_and_dump: Data are swapped to disk, so nonforking dumps will be used.");
-      flag_broadcast("WIZARD", 0,
-                     T
-                     ("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
+      do_log(LT_ERR, 0, 0, "fork_and_dump: Data are swapped to disk, so "
+                           "nonforking dumps will be used.");
+      flag_broadcast(
+        "WIZARD", 0,
+        T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
       nofork = 1;
     }
 #endif
@@ -608,7 +605,7 @@ fork_and_dump(int forking)
     } else {
       chunk_fork_child();
     }
-#endif                          /* WIN32 */
+#endif /* WIN32 */
   } else {
     if (DUMP_NOFORK_MESSAGE && *DUMP_NOFORK_MESSAGE)
       flag_broadcast(0, 0, "%s", DUMP_NOFORK_MESSAGE);
@@ -623,12 +620,13 @@ fork_and_dump(int forking)
       chunk_fork_done();
 #endif
     if (!nofork) {
-      _exit(status ? 0 : 1);    /* d_d_i() returns true on success but exit code should be 0 on success */
+      _exit(status ? 0 : 1); /* d_d_i() returns true on success but exit code
+                                should be 0 on success */
     } else {
       reserve_fd();
       if (status) {
-        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
-                    DUMP_NOFORK_COMPLETE, 0);
+        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
+                    0);
         if (status && DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE) {
           flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         }
@@ -749,8 +747,8 @@ init_game_config(const char *conf)
 #endif
 
   do_rawlog(LT_ERR, "%s", VERSION);
-  do_rawlog(LT_ERR, "MUSH restarted, PID %d, at %s",
-            (int) mypid, show_time(globals.start_time, 0));
+  do_rawlog(LT_ERR, "MUSH restarted, PID %d, at %s", (int) mypid,
+            show_time(globals.start_time, 0));
 }
 
 /** Post-db-load configuration.
@@ -779,13 +777,12 @@ init_game_postdb(const char *conf)
   /* Build color/RGB mappings */
   build_rgb_map();
 
-  /* Set up ssl */
+/* Set up ssl */
 #ifndef SSL_SLAVE
-  if (!ssl_init
-      (options.ssl_private_key_file, options.ssl_ca_file,
-       options.ssl_require_client_cert)) {
+  if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
+                options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
-    options.ssl_port = 0;       /* Disable ssl */
+    options.ssl_port = 0; /* Disable ssl */
   }
 #endif
   /* Load hash algorithms */
@@ -810,7 +807,7 @@ init_game_dbs(void)
   volatile int panicdb;
 
 #ifdef WIN32
-  Win32MUSH_setup();            /* create index files, copy databases etc. */
+  Win32MUSH_setup(); /* create index files, copy databases etc. */
 #endif
 
   infile = restarting ? options.output_db : options.input_db;
@@ -891,8 +888,6 @@ init_game_dbs(void)
                 DEFAULT_HOME);
     if (!GoodObject(GOD) || (!IsPlayer(GOD)))
       do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
-
-
   }
 
   /* read mail database */
@@ -952,7 +947,7 @@ init_game_dbs(void)
         }
         penn_fclose(f);
       }
-    } else                      /* Close the panicdb file handle */
+    } else /* Close the panicdb file handle */
       penn_fclose(f);
   }
 
@@ -981,21 +976,24 @@ do_readcache(dbref player)
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
-#define list_match(x,q,qflags)        list_check(x, executor, '$', ':', cptr, 0, q, qflags)
+#define list_match(x, q, qflags)                                               \
+  list_check(x, executor, '$', ':', cptr, 0, q, qflags)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x,q,qflags)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, q, qflags, NULL)
-#define MAYBE_ADD_ERRDB(errdb)  \
-        do { \
-          if (GoodObject(errdb) && errdblist) { \
-            if ((errdbtail - errdblist) >= errdbsize) \
-              errdb_grow(); \
-            if ((errdbtail - errdblist) < errdbsize) { \
-              *errdbtail = errdb; \
-              errdbtail++; \
-            } \
-            errdb = NOTHING; \
-          } \
-         } while(0)
+#define cmd_match(x, q, qflags)                                                \
+  atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, q,  \
+                 qflags, NULL)
+#define MAYBE_ADD_ERRDB(errdb)                                                 \
+  do {                                                                         \
+    if (GoodObject(errdb) && errdblist) {                                      \
+      if ((errdbtail - errdblist) >= errdbsize)                                \
+        errdb_grow();                                                          \
+      if ((errdbtail - errdblist) < errdbsize) {                               \
+        *errdbtail = errdb;                                                    \
+        errdbtail++;                                                           \
+      }                                                                        \
+      errdb = NOTHING;                                                         \
+    }                                                                          \
+  } while (0)
 
 /** Attempt to tell if the command is a @password or @newpassword, so
   * that the password isn't logged by Suspect or log_commands
@@ -1018,13 +1016,13 @@ passwd_filter(const char *cmd)
     const char *errptr;
     int eo;
 
-    pass_ptn = pcre_compile("^(@pass.*?)\\s([^=]*)=(.*)",
-                            PCRE_CASELESS, &errptr, &eo, tables);
+    pass_ptn = pcre_compile("^(@pass.*?)\\s([^=]*)=(.*)", PCRE_CASELESS,
+                            &errptr, &eo, tables);
     if (!pass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
     pass_extra = pcre_study(pass_ptn, pcre_study_flags, &errptr);
-    newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)",
-                               PCRE_CASELESS, &errptr, &eo, tables);
+    newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)", PCRE_CASELESS,
+                               &errptr, &eo, tables);
     if (!newpass_ptn)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
     newpass_extra = pcre_study(newpass_ptn, pcre_study_flags, &errptr);
@@ -1034,8 +1032,8 @@ passwd_filter(const char *cmd)
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched =
-       pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
+  if ((matched = pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) >
+      0) {
     /* It's a password */
     pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
     bp = buff + strlen(buff);
@@ -1055,7 +1053,6 @@ passwd_filter(const char *cmd)
   *bp = '\0';
   return buff;
 }
-
 
 /** Attempt to match and execute a command.
  * This function performs some sanity checks and then attempts to
@@ -1077,12 +1074,12 @@ void
 process_command(dbref executor, char *command, MQUE *queue_entry)
 {
   int a;
-  char *p;                      /* utility */
+  char *p; /* utility */
 
-  char unp[BUFFER_LEN];         /* unparsed command */
+  char unp[BUFFER_LEN]; /* unparsed command */
   /* general form command arg0=arg1,arg2...arg10 */
-  char temp[BUFFER_LEN];        /* utility */
-  int i;                        /* utility */
+  char temp[BUFFER_LEN]; /* utility */
+  int i;                 /* utility */
   char *cptr;
   dbref errdb;
   dbref check_loc;
@@ -1113,8 +1110,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     return;
   /* Halted objects can't execute commands */
   /* And neither can halted players if the command isn't from_port */
-  if (Halted(executor)
-      && (!IsPlayer(executor) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
+  if (Halted(executor) &&
+      (!IsPlayer(executor) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
     notify_format(Owner(executor),
                   T("Attempt to execute command by halted object #%d"),
                   executor);
@@ -1132,7 +1129,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
            "Command attempted by %s(#%d) in invalid location #%d.",
            Name(executor), executor, Location(executor));
     if (Mobile(executor)) {
-      moveto(executor, PLAYER_START, SYSEVENT, "dbck"); /* move it someplace valid */
+      moveto(executor, PLAYER_START, SYSEVENT,
+             "dbck"); /* move it someplace valid */
     }
   }
   orator = executor;
@@ -1163,8 +1161,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     char *msg = passwd_filter(command);
 
     log_activity(LA_CMD, executor, msg);
-    if (!(queue_entry->queue_type & QUEUE_EVENT)
-        && (options.log_commands || Suspect(executor)))
+    if (!(queue_entry->queue_type & QUEUE_EVENT) &&
+        (options.log_commands || Suspect(executor)))
       do_log(LT_CMD, executor, NOTHING, "%s", msg);
     if (Verbose(executor))
       raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
@@ -1183,23 +1181,21 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
         /* try matching enter aliases */
         if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
             !(cmd->type & CMD_T_DISABLED) &&
-            (i =
-             alias_list_check(Contents(check_loc), cptr,
-                              "EALIAS")) != NOTHING) {
+            (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) !=
+              NOTHING) {
           if (command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
             char upd[SBUF_LEN];
             sprintf(temp, "ENTER #%d", i);
             sprintf(upd, "#%d", i);
-            run_command(cmd, executor, queue_entry->enactor, temp, NULL,
-                        NULL, temp, NULL, NULL, upd, NULL, NULL, NULL,
-                        queue_entry);
+            run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
+                        temp, NULL, NULL, upd, NULL, NULL, NULL, queue_entry);
           }
           goto done;
         }
         /* if that didn't work, try matching leave aliases */
-        if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
-            && !(cmd->type & CMD_T_DISABLED)
-            && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
+        if (!IsRoom(check_loc) && (cmd = command_find("LEAVE")) &&
+            !(cmd->type & CMD_T_DISABLED) &&
+            (loc_alias_check(check_loc, cptr, "LALIAS"))) {
           if (command_check_with(executor, cmd, 1, queue_entry->pe_info))
             run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL,
                         NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
@@ -1230,17 +1226,16 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
            * so we check for exits and commands
            */
           /* check zone master room exits */
-          if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
-              && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(executor)
-                || !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
+          if (remote_exit(executor, cptr) && (cmd = command_find("GOTO")) &&
+              !(cmd->type & CMD_T_DISABLED)) {
+            if (!Mobile(executor) ||
+                !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
               goto done;
             } else {
               sprintf(temp, "GOTO %s", cptr);
-              run_command(cmd, executor, queue_entry->enactor,
-                          temp, NULL, NULL,
-                          temp, NULL, NULL, cptr, NULL,
-                          NULL, NULL, queue_entry);
+              run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
+                          temp, NULL, NULL, cptr, NULL, NULL, NULL,
+                          queue_entry);
               goto done;
             }
           } else
@@ -1269,16 +1264,15 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
       /* end of zone stuff */
       /* check global exits only if no other commands are matched */
       if ((!a) && (check_loc != MASTER_ROOM)) {
-        if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
-            && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(executor)
-              || !command_check_with(executor, cmd, 1, queue_entry->pe_info))
+        if (global_exit(executor, cptr) && (cmd = command_find("GOTO")) &&
+            !(cmd->type & CMD_T_DISABLED)) {
+          if (!Mobile(executor) ||
+              !command_check_with(executor, cmd, 1, queue_entry->pe_info))
             goto done;
           else {
             sprintf(temp, "GOTO %s", cptr);
-            run_command(cmd, executor, queue_entry->enactor,
-                        temp, NULL, NULL, temp,
-                        NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
+            run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
+                        temp, NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
           }
         } else
@@ -1288,7 +1282,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           a += list_match(Contents(MASTER_ROOM), queue_entry, queue_flags);
       }
       /* end of master room check */
-    }                           /* end of special checks */
+    } /* end of special checks */
     if (!a) {
       /* Do we have any error dbs queued up, and if so, do any
        * have associated failure messages?
@@ -1300,7 +1294,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     }
   }
 
-  /* command has been executed. Free up memory. */
+/* command has been executed. Free up memory. */
 
 done:
   if (errdblist) {
@@ -1321,8 +1315,8 @@ COMMAND(cmd_with)
   what = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
-  if (!(nearby(executor, what) || Long_Fingers(executor)
-        || controls(executor, what))) {
+  if (!(nearby(executor, what) || Long_Fingers(executor) ||
+        controls(executor, what))) {
     if (SW_ISSET(sw, SWITCH_ROOM)) {
       if (what != MASTER_ROOM && what != Zone(executor)) {
         notify(executor, T("I don't see that here."));
@@ -1376,16 +1370,19 @@ check_alias(const char *command, const char *list)
   /* check if a string matches part of a semi-colon separated list */
   const char *p;
   while (*list) {
-    for (p = command; (*p && DOWNCASE(*p) == DOWNCASE(*list)
-                       && *list != ALIAS_DELIMITER); p++, list++) ;
+    for (p = command;
+         (*p && DOWNCASE(*p) == DOWNCASE(*list) && *list != ALIAS_DELIMITER);
+         p++, list++)
+      ;
     if (*p == '\0') {
       while (isspace(*list))
         list++;
       if (*list == '\0' || *list == ALIAS_DELIMITER)
-        return 1;               /* word matched */
+        return 1; /* word matched */
     }
     /* didn't match. check next word in list */
-    while (*list && *list++ != ALIAS_DELIMITER) ;
+    while (*list && *list++ != ALIAS_DELIMITER)
+      ;
     while (isspace(*list))
       list++;
   }
@@ -1415,9 +1412,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
   dbref errdb = NOTHING;
 
   while (thing != NOTHING) {
-    if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, 0, &errdb,
-                       queue_entry, queue_flags, NULL))
+    if (atr_comm_match(thing, player, type, end, str, just_match, 1, NULL, NULL,
+                       0, &errdb, queue_entry, queue_flags, NULL))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1448,7 +1444,7 @@ alias_list_check(dbref thing, const char *command, const char *type)
     if (a) {
       strcpy(alias, atr_value(a));
       if (check_alias(command, alias) != 0)
-        return thing;           /* matched an alias */
+        return thing; /* matched an alias */
     }
     thing = Next(thing);
   }
@@ -1561,13 +1557,11 @@ do_poor(dbref player, char *arg1)
     if (IsPlayer(a))
       s_Pennies(a, amt);
   notify_format(player,
-                T
-                ("The money supply of all players has been reset to %d %s."),
+                T("The money supply of all players has been reset to %d %s."),
                 amt, MONIES);
   do_log(LT_WIZ, player, NOTHING,
          "** POOR done ** Money supply reset to %d %s.", amt, MONIES);
 }
-
 
 /** User interface to write a message to a log.
  * \verbatim
@@ -1590,15 +1584,15 @@ do_writelog(dbref player, char *str, int ltype)
   notify(player, T("Logged."));
 }
 
-#define queue_dolist(al,pe_regs) \
-  if (queue_type & QUEUE_INPLACE) { \
-    new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
-                         PE_INFO_SHARE, queue_type, pe_regs); \
-  } else { \
-    new_queue_actionlist(executor, enactor, enactor, al, queue_entry, \
-                         PE_INFO_CLONE, queue_type, pe_regs); \
-    if (pe_regs) \
-      pe_regs_free(pe_regs); \
+#define queue_dolist(al, pe_regs)                                              \
+  if (queue_type & QUEUE_INPLACE) {                                            \
+    new_queue_actionlist(executor, enactor, enactor, al, queue_entry,          \
+                         PE_INFO_SHARE, queue_type, pe_regs);                  \
+  } else {                                                                     \
+    new_queue_actionlist(executor, enactor, enactor, al, queue_entry,          \
+                         PE_INFO_CLONE, queue_type, pe_regs);                  \
+    if (pe_regs)                                                               \
+      pe_regs_free(pe_regs);                                                   \
   }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
@@ -1611,8 +1605,8 @@ do_writelog(dbref player, char *str, int ltype)
  * \param queue_type QUEUE_* values
  */
 void
-bind_and_queue(dbref executor, dbref enactor, char *action,
-               const char *arg, int num, MQUE *queue_entry, int queue_type)
+bind_and_queue(dbref executor, dbref enactor, char *action, const char *arg,
+               int num, MQUE *queue_entry, int queue_type)
 {
   char *command;
   const char *replace[2];
@@ -1636,9 +1630,10 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
 }
 
 /** Would the scan command find an matching attribute on x for player p? */
-#define ScanFind(p,x,c)  \
-  (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c, NULL, NULL, QUEUE_DEFAULT, NULL)) != 0))
+#define ScanFind(p, x, c)                                                      \
+  (Can_Examine(p, x) &&                                                        \
+   ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c,     \
+                          NULL, NULL, QUEUE_DEFAULT, NULL)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the
@@ -1685,7 +1680,8 @@ scan_list(dbref player, char *command, int flag)
 
   if (flag & CHECK_NEIGHBORS) {
     flag &= ~CHECK_SELF;
-    DOLIST(thing, Contents(loc)) {
+    DOLIST(thing, Contents(loc))
+    {
       if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
@@ -1707,7 +1703,8 @@ scan_list(dbref player, char *command, int flag)
   }
 
   if (flag & CHECK_INVENTORY) {
-    DOLIST(thing, Contents(player)) {
+    DOLIST(thing, Contents(player))
+    {
       if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
@@ -1723,7 +1720,8 @@ scan_list(dbref player, char *command, int flag)
       if (IsRoom(Zone(Location(player)))) {
         /* zone of player's location is a zone master room */
         if (Location(player) != Zone(player)) {
-          DOLIST(thing, Contents(Zone(Location(player)))) {
+          DOLIST(thing, Contents(Zone(Location(player))))
+          {
             if (ScanFind(player, thing, 1)) {
               *ptr = '\0';
               safe_str(atrname, tbuf, &tp);
@@ -1742,12 +1740,13 @@ scan_list(dbref player, char *command, int flag)
         }
       }
     }
-    if ((Zone(player) != NOTHING) && !(matches && (flag & CHECK_BREAK))
-        && (Zone(player) != Zone(loc))) {
+    if ((Zone(player) != NOTHING) && !(matches && (flag & CHECK_BREAK)) &&
+        (Zone(player) != Zone(loc))) {
       /* check the player's personal zone */
       if (IsRoom(Zone(player))) {
         if (Location(player) != Zone(player)) {
-          DOLIST(thing, Contents(Zone(player))) {
+          DOLIST(thing, Contents(Zone(player)))
+          {
             if (ScanFind(player, thing, 1)) {
               *ptr = '\0';
               safe_str(atrname, tbuf, &tp);
@@ -1765,13 +1764,12 @@ scan_list(dbref player, char *command, int flag)
     }
   }
 
-  if ((flag & CHECK_GLOBAL)
-      && !(matches && (flag & CHECK_BREAK))
-      && (loc != MASTER_ROOM)
-      && (Zone(loc) != MASTER_ROOM)
-      && (Zone(player) != MASTER_ROOM)) {
+  if ((flag & CHECK_GLOBAL) && !(matches && (flag & CHECK_BREAK)) &&
+      (loc != MASTER_ROOM) && (Zone(loc) != MASTER_ROOM) &&
+      (Zone(player) != MASTER_ROOM)) {
     /* try Master Room stuff */
-    DOLIST(thing, Contents(MASTER_ROOM)) {
+    DOLIST(thing, Contents(MASTER_ROOM))
+    {
       if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
@@ -1782,7 +1780,7 @@ scan_list(dbref player, char *command, int flag)
   }
   *tp = '\0';
   if (*tbuf && *tbuf == ' ')
-    return tbuf + 1;            /* atrname comes with leading spaces */
+    return tbuf + 1; /* atrname comes with leading spaces */
   return tbuf;
 }
 
@@ -1814,12 +1812,12 @@ do_scan(dbref player, char *command, int flag)
   }
   if (flag & CHECK_NEIGHBORS) {
     notify(player, T("Matches on contents of this room:"));
-    DOLIST(thing, Contents(Location(player))) {
+    DOLIST(thing, Contents(Location(player)))
+    {
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
-        notify_format(player,
-                      "%s  [%d:%s]", unparse_object(player, thing, AN_UNPARSE),
-                      num, atrname);
+        notify_format(player, "%s  [%d:%s]",
+                      unparse_object(player, thing, AN_UNPARSE), num, atrname);
         ptr = atrname;
       }
     }
@@ -1836,7 +1834,8 @@ do_scan(dbref player, char *command, int flag)
   ptr = atrname;
   if (flag & CHECK_INVENTORY) {
     notify(player, T("Matches on carried objects:"));
-    DOLIST(thing, Contents(player)) {
+    DOLIST(thing, Contents(player))
+    {
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
@@ -1861,7 +1860,8 @@ do_scan(dbref player, char *command, int flag)
         /* zone of player's location is a zone master room */
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on zone master room of location:"));
-          DOLIST(thing, Contents(Zone(Location(player)))) {
+          DOLIST(thing, Contents(Zone(Location(player))))
+          {
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
@@ -1875,22 +1875,21 @@ do_scan(dbref player, char *command, int flag)
         /* regular zone object */
         if (ScanFind(player, Zone(Location(player)), 0)) {
           *ptr = '\0';
-          notify_format(player,
-                        T("Matched zone of location: %s  [%d:%s]"),
-                        unparse_object(player,
-                                       Zone(Location(player)), AN_UNPARSE), num,
-                        atrname);
+          notify_format(
+            player, T("Matched zone of location: %s  [%d:%s]"),
+            unparse_object(player, Zone(Location(player)), AN_UNPARSE), num,
+            atrname);
         }
       }
     }
     ptr = atrname;
-    if ((Zone(player) != NOTHING)
-        && (Zone(player) != Zone(Location(player)))) {
+    if ((Zone(player) != NOTHING) && (Zone(player) != Zone(Location(player)))) {
       /* check the player's personal zone */
       if (IsRoom(Zone(player))) {
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on personal zone master room:"));
-          DOLIST(thing, Contents(Zone(player))) {
+          DOLIST(thing, Contents(Zone(player)))
+          {
             if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
@@ -1909,13 +1908,13 @@ do_scan(dbref player, char *command, int flag)
     }
   }
   ptr = atrname;
-  if ((flag & CHECK_GLOBAL)
-      && (Location(player) != MASTER_ROOM)
-      && (Zone(Location(player)) != MASTER_ROOM)
-      && (Zone(player) != MASTER_ROOM)) {
+  if ((flag & CHECK_GLOBAL) && (Location(player) != MASTER_ROOM) &&
+      (Zone(Location(player)) != MASTER_ROOM) &&
+      (Zone(player) != MASTER_ROOM)) {
     /* try Master Room stuff */
     notify(player, T("Matches on objects in the Master Room:"));
-    DOLIST(thing, Contents(MASTER_ROOM)) {
+    DOLIST(thing, Contents(MASTER_ROOM))
+    {
       if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
@@ -1926,9 +1925,8 @@ do_scan(dbref player, char *command, int flag)
   }
 }
 
-#define DOL_NOTIFY 2   /**< Add a notify after a dolist */
-#define DOL_DELIM 4    /**< Specify a delimiter to a dolist */
-
+#define DOL_NOTIFY 2 /**< Add a notify after a dolist */
+#define DOL_DELIM 4  /**< Specify a delimiter to a dolist */
 
 /** Execute a command for each element of a list.
  * \verbatim
@@ -2001,18 +1999,18 @@ do_dolist(dbref executor, char *list, char *command, dbref enactor,
   }
 }
 
-static void linux_uptime(dbref player) __attribute__ ((__unused__));
-static void unix_uptime(dbref player) __attribute__ ((__unused__));
-static void win32_uptime(dbref player) __attribute__ ((__unused__));
+static void linux_uptime(dbref player) __attribute__((__unused__));
+static void unix_uptime(dbref player) __attribute__((__unused__));
+static void win32_uptime(dbref player) __attribute__((__unused__));
 
 static void
-linux_uptime(dbref player __attribute__ ((__unused__)))
+linux_uptime(dbref player __attribute__((__unused__)))
 {
 #ifdef linux
   /* Use /proc files instead of calling the external uptime program on linux */
   char tbuf1[BUFFER_LEN];
   FILE *fp;
-  char line[128];               /* Overkill */
+  char line[128]; /* Overkill */
   char *nl;
   pid_t pid;
   int psize;
@@ -2060,8 +2058,8 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
       load[1] = strtod(l, &x);
       l = x;
       load[2] = strtod(l, NULL);
-      safe_format(tbuf1, &nl, " load average: %.2f, %.2f, %.2f",
-                  load[0], load[1], load[2]);
+      safe_format(tbuf1, &nl, " load average: %.2f, %.2f, %.2f", load[0],
+                  load[1], load[2]);
     } else {
       safe_str("Unknown load", tbuf1, &nl);
     }
@@ -2076,11 +2074,11 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
   /* do process stats */
   pid = getpid();
   psize = getpagesize();
-  notify_format(player,
-                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
+  notify_format(player, "\nProcess ID:  %10u        %10d bytes per page", pid,
+                psize);
 
-  /* Linux's getrusage() is mostly unimplemented. Just has times, page faults
-     and swapouts. We use /proc/self/status */
+/* Linux's getrusage() is mostly unimplemented. Just has times, page faults
+   and swapouts. We use /proc/self/status */
 #ifdef HAVE_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
   notify_format(player, "Time used:   %10ld user   %10ld sys",
@@ -2095,9 +2093,8 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
   /* Skip lines we don't care about. */
   while (fgets(line, sizeof line, fp) != NULL) {
     static const char *fields[] = {
-      "VmSize:", "VmRSS:", "VmData:", "VmStk:", "VmExe:", "VmLib:",
-      "SigPnd:", "SigBlk:", "SigIgn:", "SigCgt:", NULL
-    };
+      "VmSize:", "VmRSS:",  "VmData:", "VmStk:",  "VmExe:", "VmLib:",
+      "SigPnd:", "SigBlk:", "SigIgn:", "SigCgt:", NULL};
     int n;
     for (n = 0; fields[n]; n++) {
       size_t len = strlen(fields[n]);
@@ -2115,7 +2112,7 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
 }
 
 static void
-unix_uptime(dbref player __attribute__ ((__unused__)))
+unix_uptime(dbref player __attribute__((__unused__)))
 {
 #ifndef WIN32
 #ifdef HAVE_UPTIME
@@ -2146,15 +2143,14 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   pclose(fp);
 
   notify(player, tbuf1);
-#endif                          /* HAVE_UPTIME */
+#endif /* HAVE_UPTIME */
 
   /* do process stats */
 
   pid = getpid();
   psize = getpagesize();
-  notify_format(player,
-                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
-
+  notify_format(player, "\nProcess ID:  %10u        %10d bytes per page", pid,
+                psize);
 
 #ifdef HAVE_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
@@ -2162,26 +2158,25 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
                 (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
   notify_format(player, "Max res mem: %10ld pages  %10ld bytes",
                 usage.ru_maxrss, (usage.ru_maxrss * psize));
-  notify_format(player,
-                "Integral mem:%10ld shared %10ld private %10ld stack",
+  notify_format(player, "Integral mem:%10ld shared %10ld private %10ld stack",
                 usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
   notify_format(player,
                 "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
                 usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
   notify_format(player, "Disk I/O:    %10ld reads  %10ld writes",
                 usage.ru_inblock, usage.ru_oublock);
-  notify_format(player, "Network I/O: %10ld in     %10ld out",
-                usage.ru_msgrcv, usage.ru_msgsnd);
+  notify_format(player, "Network I/O: %10ld in     %10ld out", usage.ru_msgrcv,
+                usage.ru_msgsnd);
   notify_format(player, "Context swi: %10ld vol    %10ld forced",
                 usage.ru_nvcsw, usage.ru_nivcsw);
   notify_format(player, "Signals:     %10ld", usage.ru_nsignals);
-#endif                          /* HAVE_GETRUSAGE */
+#endif /* HAVE_GETRUSAGE */
 #endif
 }
 
 static void
-win32_uptime(dbref player __attribute__ ((__unused__)))
-{                               /* written by NJG */
+win32_uptime(dbref player __attribute__((__unused__)))
+{ /* written by NJG */
 #ifdef WIN32
   MEMORYSTATUS memstat;
   double mem;
@@ -2200,8 +2195,14 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
 #endif
 }
 
-enum uptime_type { UPTIME_UPSINCE, UPTIME_REBOOT, UPTIME_LAST_SAVE,
-  UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING
+enum uptime_type {
+  UPTIME_UPSINCE,
+  UPTIME_REBOOT,
+  UPTIME_LAST_SAVE,
+  UPTIME_NEXT_SAVE,
+  UPTIME_DBCK,
+  UPTIME_PURGE,
+  UPTIME_WARNING
 };
 /* ARGSUSED */
 FUNCTION(fun_uptime)
@@ -2258,7 +2259,6 @@ FUNCTION(fun_uptime)
       safe_str("-1", buff, bp);
     break;
   }
-
 }
 
 /** Report on server uptime.
@@ -2299,30 +2299,26 @@ do_uptime(dbref player, int mortal)
   when = localtime(&options.dump_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dump_counter, mudtime), 60);
-  notify_format(player,
-                T("%29s: %ld minutes %ld seconds, at %s."),
+  notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next database save"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.dbck_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dbck_counter, mudtime), 60);
-  notify_format(player,
-                T("%29s: %ld minutes %ld seconds, at %s."),
+  notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next dbck check"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.purge_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.purge_counter, mudtime), 60);
-  notify_format(player,
-                T("%29s: %ld minutes %ld seconds, at %s."),
+  notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next purge"), secs.quot, secs.rem, tbuf1);
 
   if (options.warn_interval) {
     when = localtime(&options.warn_counter);
     strftime(tbuf1, sizeof tbuf1, "%X", when);
     secs = ldiv((long) difftime(options.warn_counter, mudtime), 60);
-    notify_format(player,
-                  T("%29s: %ld minutes %ld seconds, at %s."),
+    notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                   T("Time until next @warnings"), secs.quot, secs.rem, tbuf1);
   }
 
@@ -2336,11 +2332,9 @@ do_uptime(dbref player, int mortal)
     hours = ldiv(secs.rem, 3600);
     mins = ldiv(hours.rem, 60);
 
-
-    notify_format(player,
-                  T
-                  ("PennMUSH Uptime: %ld days %ld hours %ld minutes %ld seconds"),
-                  days, hours.quot, mins.quot, mins.rem);
+    notify_format(
+      player, T("PennMUSH Uptime: %ld days %ld hours %ld minutes %ld seconds"),
+      days, hours.quot, mins.quot, mins.rem);
   }
   /* Mortals, go no further! */
   if (!Wizard(player) || mortal)
@@ -2358,8 +2352,8 @@ do_uptime(dbref player, int mortal)
     notify_activity(player, 0, 0);
 }
 
-
-/* Open a db file, which may be compressed, and return a file pointer. These probably should be moved into db.c or
+/* Open a db file, which may be compressed, and return a file pointer. These
+ probably should be moved into db.c or
  a new dbio.c */
 static PENNFILE *
 db_open(const char *fname)
@@ -2372,7 +2366,8 @@ db_open(const char *fname)
   pf = mush_malloc(sizeof *pf, "pennfile");
 
 #ifdef HAVE_LIBZ
-  if (*options.uncompressprog && strcmp(options.uncompressprog, "gunzip") == 0) {
+  if (*options.uncompressprog &&
+      strcmp(options.uncompressprog, "gunzip") == 0) {
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
     if (!pf->handle.g) {
@@ -2399,14 +2394,14 @@ db_open(const char *fname)
       if (pf->handle.f) {
         setvbuf(pf->handle.f, NULL, _IOFBF, BUFSIZ);
       } else
-        do_rawlog(LT_ERR, "Unable to run '%s < %s': %s",
-                  options.uncompressprog, filename, strerror(errno));
+        do_rawlog(LT_ERR, "Unable to run '%s < %s': %s", options.uncompressprog,
+                  filename, strerror(errno));
     } else {
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
   } else
-#endif                          /* WIN32 */
+#endif /* WIN32 */
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, FOPEN_READ);
@@ -2416,7 +2411,6 @@ db_open(const char *fname)
     else if (pf->handle.f)
       posix_fadvise(fileno(pf->handle.f), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
-
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");
@@ -2435,9 +2429,9 @@ db_open_write(const char *fname)
 
   snprintf(filename, sizeof filename, "%s%s", fname, options.compresssuff);
 
-  /* Be safe in case our game directory was removed and restored,
-   * in which case our inode is screwy
-   */
+/* Be safe in case our game directory was removed and restored,
+ * in which case our inode is screwy
+ */
 #ifdef WIN32
   if (GetCurrentDirectory(BUFFER_LEN, workdir)) {
     if (SetCurrentDirectory(workdir) < 0)
@@ -2445,13 +2439,11 @@ db_open_write(const char *fname)
   if (getcwd(workdir, BUFFER_LEN)) {
     if (chdir(workdir) < 0)
 #endif
-      fprintf(stderr,
-              "chdir to %s failed in db_open_write, errno %d (%s)\n",
+      fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
               workdir, errno, strerror(errno));
   } else {
     /* If this fails, we probably can't write to a log, either, though */
-    fprintf(stderr,
-            "getcwd failed during db_open_write, errno %d (%s)\n",
+    fprintf(stderr, "getcwd failed during db_open_write, errno %d (%s)\n",
             errno, strerror(errno));
   }
 
@@ -2480,11 +2472,11 @@ db_open_write(const char *fname)
     if (pf->handle.f) {
       setvbuf(pf->handle.f, NULL, _IOFBF, BUFSIZ);
     } else
-      do_rawlog(LT_ERR, "Unable to run '%s > %s': %s",
-                options.compressprog, filename, strerror(errno));
+      do_rawlog(LT_ERR, "Unable to run '%s > %s': %s", options.compressprog,
+                filename, strerror(errno));
 
   } else
-#endif                          /* WIN32 */
+#endif /* WIN32 */
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, "wb");
@@ -2528,16 +2520,12 @@ do_list_memstats(dbref player)
     const HASHTAB *const table;
     const char *name;
   } hash_tables[] = {
-    {
-    &htab_function, "Functions"}, {
-    &htab_user_function, "@Functions"}, {
-    &htab_player_list, "Players"}, {
-    &htab_reserved_aliases, "Aliases"}, {
-    &help_files, "HelpFiles"}, {
-    &htab_objdata, "ObjData"}, {
-    &htab_objdata_keys, "ObjDataKeys"}, {
-    &htab_locks, "@locks"}, {
-  &local_options, "ConfigOpts"},};
+    {&htab_function, "Functions"},       {&htab_user_function, "@Functions"},
+    {&htab_player_list, "Players"},      {&htab_reserved_aliases, "Aliases"},
+    {&help_files, "HelpFiles"},          {&htab_objdata, "ObjData"},
+    {&htab_objdata_keys, "ObjDataKeys"}, {&htab_locks, "@locks"},
+    {&local_options, "ConfigOpts"},
+  };
   unsigned int i;
 
   notify(player, "Hash Tables:");
@@ -2584,9 +2572,9 @@ do_list_memstats(dbref player)
     double percent;
     compress_stats(&items, &used, &total_uncomp, &total_comp);
     notify(player, "---------- Internal attribute compression  ----------");
-    notify_format(player,
-                  "%10ld compression table items used, "
-                  "taking %ld bytes.", items, used);
+    notify_format(player, "%10ld compression table items used, "
+                          "taking %ld bytes.",
+                  items, used);
     notify_format(player, "%10ld bytes in text before compression. ",
                   total_uncomp);
     notify_format(player, "%10ld bytes in text AFTER  compression. ",
@@ -2595,18 +2583,17 @@ do_list_memstats(dbref player)
     notify_format(player,
                   "%10.0f %% text    compression ratio (lower is better). ",
                   percent);
-    percent =
-      ((float) (total_comp + used + (32768L * sizeof(char *)))) /
-      ((float) total_uncomp) * 100.0;
+    percent = ((float) (total_comp + used + (32768L * sizeof(char *)))) /
+              ((float) total_uncomp) * 100.0;
     notify_format(player,
                   "%10.0f %% OVERALL compression ratio (lower is better). ",
                   percent);
-    notify_format(player,
-                  "          (Includes table items, and table of words pointers of %ld bytes)",
+    notify_format(player, "          (Includes table items, and table of words "
+                          "pointers of %ld bytes)",
                   32768L * sizeof(char *));
     if (percent >= 100.0)
-      notify(player,
-             "          " "(Compression ratio improves with larger database)");
+      notify(player, "          "
+                     "(Compression ratio improves with larger database)");
   }
 #endif
 }
@@ -2614,14 +2601,13 @@ do_list_memstats(dbref player)
 static char *
 make_new_epoch_file(const char *basename, int the_epoch)
 {
-  static char result[BUFFER_LEN];       /* STATIC! */
+  static char result[BUFFER_LEN]; /* STATIC! */
   /* Unlink the last the_epoch and create a new one */
   sprintf(result, "%s.#%d#", basename, the_epoch - 1);
   unlink(result);
   sprintf(result, "%s.#%d#", basename, the_epoch);
   return result;
 }
-
 
 /* Given a list of dbrefs on which a command has matched but been
  * denied by a lock, queue up the COMMAND`*FAILURE attributes, if
@@ -2647,9 +2633,9 @@ errdb_grow(void)
 {
   dbref *newerrdb;
   if (errdbsize >= 50)
-    return;                     /* That's it, no more, forget it */
-  newerrdb = mush_realloc(errdblist, (errdbsize + 1) * sizeof(dbref),
-                          "errdblist");
+    return; /* That's it, no more, forget it */
+  newerrdb =
+    mush_realloc(errdblist, (errdbsize + 1) * sizeof(dbref), "errdblist");
   if (newerrdb) {
     errdblist = newerrdb;
     errdbtail = errdblist + errdbsize;

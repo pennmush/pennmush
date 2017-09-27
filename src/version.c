@@ -47,5 +47,4 @@ do_version(dbref player)
   notify_format(player, T("Compiler: %s"), COMPILER);
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
 #endif
-
 }

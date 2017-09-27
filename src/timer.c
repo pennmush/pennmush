@@ -67,7 +67,7 @@ void dispatch(void);
  * \param x unused.
  */
 void
-hup_handler(int x __attribute__ ((__unused__)))
+hup_handler(int x __attribute__((__unused__)))
 {
   hup_triggered = 1;
   reload_sig_handler(SIGHUP, hup_handler);
@@ -78,13 +78,13 @@ hup_handler(int x __attribute__ ((__unused__)))
  * \param x unused.
  */
 void
-usr1_handler(int x __attribute__ ((__unused__)))
+usr1_handler(int x __attribute__((__unused__)))
 {
   usr1_triggered = 1;
   reload_sig_handler(SIGUSR1, usr1_handler);
 }
 
-#endif                          /* WIN32 */
+#endif /* WIN32 */
 
 /** Set up signal handlers.
  */
@@ -147,9 +147,8 @@ migrate_stuff(int amount)
   if (!refs || actual > refs_size) {
     if (refs)
       mush_free(refs, "migration reference array");
-    refs =
-      mush_calloc(actual, sizeof(chunk_reference_t *),
-                  "migration reference array");
+    refs = mush_calloc(actual, sizeof(chunk_reference_t *),
+                       "migration reference array");
     refs_size = actual;
     if (!refs)
       mush_panic("Could not allocate migration reference array");
@@ -185,16 +184,16 @@ migrate_stuff(int amount)
 }
 
 static bool
-idle_event(void *data __attribute__ ((__unused__)))
+idle_event(void *data __attribute__((__unused__)))
 {
   return inactivity_check();
 }
 
 static bool
-purge_event(void *data __attribute__ ((__unused__)))
+purge_event(void *data __attribute__((__unused__)))
 {
   if (PURGE_INTERVAL <= 0)
-    return false;               /* in case purge_interval is set to 0 with @config */
+    return false; /* in case purge_interval is set to 0 with @config */
   purge();
   options.purge_counter = mudtime + PURGE_INTERVAL;
   sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
@@ -202,10 +201,10 @@ purge_event(void *data __attribute__ ((__unused__)))
 }
 
 static bool
-dbck_event(void *data __attribute__ ((__unused__)))
+dbck_event(void *data __attribute__((__unused__)))
 {
   if (DBCK_INTERVAL <= 0)
-    return false;               /* in case dbck_interval is set to 0 with @config */
+    return false; /* in case dbck_interval is set to 0 with @config */
   dbck();
   options.dbck_counter = mudtime + DBCK_INTERVAL;
   sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
@@ -213,10 +212,10 @@ dbck_event(void *data __attribute__ ((__unused__)))
 }
 
 static bool
-warning_event(void *data __attribute__ ((__unused__)))
+warning_event(void *data __attribute__((__unused__)))
 {
   if (options.warn_interval <= 0)
-    return false;               /* in case warn_interval is set to 0 with @config */
+    return false; /* in case warn_interval is set to 0 with @config */
   options.warn_counter = options.warn_interval + mudtime;
   run_topology();
   sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
@@ -225,15 +224,15 @@ warning_event(void *data __attribute__ ((__unused__)))
 
 /** Info on the events run for impending dbsaves */
 struct dbsave_warn_data {
-  int secs;           /**< How many seconds before the dbsave to run */
-  const char *event;  /**< The name of the event to trigger */
-  char *msg;          /**< The \@config'd message to show */
+  int secs;          /**< How many seconds before the dbsave to run */
+  const char *event; /**< The name of the event to trigger */
+  char *msg;         /**< The \@config'd message to show */
 };
 
-struct dbsave_warn_data dbsave_5min =
-  { 300, "DUMP`5MIN", options.dump_warning_5min };
-struct dbsave_warn_data dbsave_1min =
-  { 60, "DUMP`1MIN", options.dump_warning_1min };
+struct dbsave_warn_data dbsave_5min = {300, "DUMP`5MIN",
+                                       options.dump_warning_5min};
+struct dbsave_warn_data dbsave_1min = {60, "DUMP`1MIN",
+                                       options.dump_warning_1min};
 
 static bool
 dbsave_warn_event(void *data)
@@ -258,10 +257,10 @@ reg_dbsave_warnings(void)
 }
 
 static bool
-dbsave_event(void *data __attribute__ ((__unused__)))
+dbsave_event(void *data __attribute__((__unused__)))
 {
   if (options.dump_interval <= 0)
-    return false;               /* in case dump_interval is set to 0 with @config */
+    return false; /* in case dump_interval is set to 0 with @config */
 
   log_mem_check();
   options.dump_counter = options.dump_interval + mudtime;
@@ -274,7 +273,7 @@ dbsave_event(void *data __attribute__ ((__unused__)))
 }
 
 static bool
-migrate_event(void *data __attribute__ ((__unused__)))
+migrate_event(void *data __attribute__((__unused__)))
 {
   migrate_stuff(CHUNK_MIGRATE_AMOUNT);
   return false;
@@ -290,7 +289,7 @@ extern int file_watch_init(void);
  * purge, dump, or inactivity checks.
  */
 static bool
-check_signals(void *data __attribute__ ((__unused__)))
+check_signals(void *data __attribute__((__unused__)))
 {
 
   /* A HUP reloads configuration and reopens logs */
@@ -309,16 +308,18 @@ check_signals(void *data __attribute__ ((__unused__)))
   if (usr1_triggered) {
     if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
       do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-      do_reboot(NOTHING, 0);    /* We don't return from this except in case of a failed db save */
+      do_reboot(
+        NOTHING,
+        0); /* We don't return from this except in case of a failed db save */
     }
-    usr1_triggered = 0;         /* But just in case */
+    usr1_triggered = 0; /* But just in case */
   }
 
   return false;
 }
 
 static bool
-on_every_second(void *data __attribute__ ((__unused__)))
+on_every_second(void *data __attribute__((__unused__)))
 {
   time(&mudtime);
   do_second();
@@ -355,8 +356,8 @@ init_sys_events(void)
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
-sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
-int cpu_limit_warning_sent = 0;  /** Have we issued a cpu limit warning? */
+sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
+int cpu_limit_warning_sent = 0;      /** Have we issued a cpu limit warning? */
 
 #ifndef PROFILING
 #if defined(HAVE_SETITIMER)
@@ -383,7 +384,7 @@ win32_timer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 }
 #endif
 #endif
-int timer_set = 0;      /**< Is a CPU timer set? */
+int timer_set = 0; /**< Is a CPU timer set? */
 
 /* setitmer() supports multiple types of timer clocks. Windows-based
  * environments (Ubuntu For Windows, Cygwin, etc.) only support
@@ -402,7 +403,7 @@ start_cpu_timer(void)
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 1;
-#if defined(HAVE_SETITIMER)     /* UNIX way */
+#if defined(HAVE_SETITIMER) /* UNIX way */
   {
     struct itimerval time_limit;
     if (options.queue_entry_cpu_time > 0) {
@@ -426,14 +427,14 @@ start_cpu_timer(void)
     } else
       timer_set = 0;
   }
-#elif defined(WIN32)            /* Windoze way */
+#elif defined(WIN32) /* Windoze way */
   if (options.queue_entry_cpu_time > 0)
     timer_id = SetTimer(NULL, 0, (unsigned) options.queue_entry_cpu_time,
                         (TIMERPROC) win32_timer);
   else
     timer_set = 0;
-#endif                          /* HAVE_SETITIMER / WIN32 */
-#endif                          /* PROFILING */
+#endif               /* HAVE_SETITIMER / WIN32 */
+#endif               /* PROFILING */
 }
 
 /** Reset the cpu timer (after running a command).
@@ -453,14 +454,13 @@ reset_cpu_timer(void)
       penn_perror("setitimer");
 #elif defined(WIN32)
     KillTimer(NULL, timer_id);
-#endif                          /* HAVE_SETITIMER / WIN32 */
+#endif /* HAVE_SETITIMER / WIN32 */
   }
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 0;
-#endif                          /* PROFILING */
+#endif /* PROFILING */
 }
-
 
 /** System queue stuff. Timed events like dbcks and purges are handled
  *  through this system. */
@@ -554,10 +554,10 @@ sq_register_in(int n, sq_func f, void *d, const char *ev)
 
 /** A timed event that runs on a loop */
 struct sq_loop {
-  sq_func fun;  /**< The function to run for the event */
-  void *data;   /**< The data for the event */
-  const char *event;  /**< The name of the event attr to trigger */
-  int secs;     /**< How often to run the event */
+  sq_func fun;       /**< The function to run for the event */
+  void *data;        /**< The data for the event */
+  const char *event; /**< The name of the event attr to trigger */
+  int secs;          /**< How often to run the event */
 };
 
 static bool

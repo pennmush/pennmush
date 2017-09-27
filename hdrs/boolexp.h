@@ -12,16 +12,16 @@
 typedef chunk_reference_t boolexp;
 
 /* tokens for locks */
-#define NOT_TOKEN '!'    /**< Invert meaning of lock key */
-#define AND_TOKEN '&'    /**< Require both keys */
-#define OR_TOKEN '|'     /**< Require either key */
-#define AT_TOKEN '@'     /**< Check a lock on another object */
-#define IN_TOKEN '+'     /**< Must be carrying object */
-#define IS_TOKEN '='     /**< Match a specific object */
-#define OWNER_TOKEN '$'  /**< Anything owned by this object */
-#define ATR_TOKEN ':'    /**< Compare attr value */
-#define EVAL_TOKEN '/'   /**< Evaluation lock */
-#define FLAG_TOKEN '^'   /**< Flag, power, chan, etc, locks */
+#define NOT_TOKEN '!'   /**< Invert meaning of lock key */
+#define AND_TOKEN '&'   /**< Require both keys */
+#define OR_TOKEN '|'    /**< Require either key */
+#define AT_TOKEN '@'    /**< Check a lock on another object */
+#define IN_TOKEN '+'    /**< Must be carrying object */
+#define IS_TOKEN '='    /**< Match a specific object */
+#define OWNER_TOKEN '$' /**< Anything owned by this object */
+#define ATR_TOKEN ':'   /**< Compare attr value */
+#define EVAL_TOKEN '/'  /**< Evaluation lock */
+#define FLAG_TOKEN '^'  /**< Flag, power, chan, etc, locks */
 
 enum { TRUE_BOOLEXP = NULL_CHUNK_REFERENCE };
 
@@ -39,14 +39,14 @@ void putboolexp(PENNFILE *f, boolexp b);
  * displayed to a player in various commands
  */
 enum u_b_f {
-  UB_ALL, /**< Use names of objects */
+  UB_ALL,   /**< Use names of objects */
   UB_DBREF, /**< Use dbrefs */
-  UB_MEREF /**< Use dbrefs or "me" if the object is the player arg
-              from unparse_boolexp(). For \@decompile. */
+  UB_MEREF  /**< Use dbrefs or "me" if the object is the player arg
+               from unparse_boolexp(). For \@decompile. */
 };
 char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);
 boolexp cleanup_boolexp(boolexp);
 
 bool is_eval_lock(boolexp b);
 
-#endif                          /* BOOLEXP_H */
+#endif /* BOOLEXP_H */

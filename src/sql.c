@@ -71,7 +71,8 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "strutil.h"
 
 /* Supported platforms */
-typedef enum { SQL_PLATFORM_DISABLED = -1,
+typedef enum {
+  SQL_PLATFORM_DISABLED = -1,
   SQL_PLATFORM_MYSQL = 1,
   SQL_PLATFORM_POSTGRESQL,
   SQL_PLATFORM_SQLITE3
@@ -80,15 +81,15 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
 /* Number of times to try a connection */
 #define SQL_RETRY_TIMES 3
 
-#define sql_test_result(qres) \
-  if (!qres) { \
-    if (affected_rows >= 0) { \
-    } else if (!sql_connected()) { \
-      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp); \
-    } else { \
-      safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error()); \
-    } \
-    return; \
+#define sql_test_result(qres)                                                  \
+  if (!qres) {                                                                 \
+    if (affected_rows >= 0) {                                                  \
+    } else if (!sql_connected()) {                                             \
+      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp);           \
+    } else {                                                                   \
+      safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error());              \
+    }                                                                          \
+    return;                                                                    \
   }
 
 #ifdef HAVE_MYSQL
@@ -114,7 +115,7 @@ static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 #endif
 static sqlplatform sql_platform(void);
 static char *sql_sanitize(char *res);
-#define SANITIZE(s,n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
+#define SANITIZE(s, n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -155,9 +156,8 @@ sql_sanitize(char *res)
   }
 
   for (; *rp; rp++) {
-    if (isprint(*rp) || *rp == '\n' || *rp == '\t' ||
-        *rp == ESC_CHAR || *rp == TAG_START || *rp == TAG_END ||
-        *rp == BEEP_CHAR) {
+    if (isprint(*rp) || *rp == '\n' || *rp == '\t' || *rp == ESC_CHAR ||
+        *rp == TAG_START || *rp == TAG_END || *rp == BEEP_CHAR) {
       *bp++ = *rp;
     }
   }
@@ -240,7 +240,6 @@ sql_error(void)
   }
 }
 
-
 /** Shut down a connection to an SQL database */
 void
 sql_shutdown(void)
@@ -267,7 +266,7 @@ sql_shutdown(void)
 }
 
 static void
-free_sql_query(void *queryp __attribute__ ((__unused__)))
+free_sql_query(void *queryp __attribute__((__unused__)))
 {
   switch (sql_platform()) {
 #ifdef HAVE_MYSQL
@@ -291,8 +290,8 @@ free_sql_query(void *queryp __attribute__ ((__unused__)))
 }
 
 static void *
-sql_query(const char *query_str __attribute__ ((__unused__)), int *affected_rows
-          __attribute__ ((__unused__)))
+sql_query(const char *query_str __attribute__((__unused__)),
+          int *affected_rows __attribute__((__unused__)))
 {
   switch (sql_platform()) {
 #ifdef HAVE_MYSQL
@@ -455,8 +454,8 @@ COMMAND(cmd_mapsql)
   case SQL_PLATFORM_MYSQL:
     affected_rows = mysql_affected_rows(mysql_connp);
     numfields = mysql_num_fields(qres);
-    numrows = INT_MAX;          /* Using mysql_use_result() doesn't know the number
-                                   of rows ahead of time. */
+    numrows = INT_MAX; /* Using mysql_use_result() doesn't know the number
+                          of rows ahead of time. */
     fields = mysql_fetch_fields(qres);
     break;
 #endif
@@ -623,8 +622,8 @@ COMMAND(cmd_sql)
   case SQL_PLATFORM_MYSQL:
     affected_rows = mysql_affected_rows(mysql_connp);
     numfields = mysql_num_fields(qres);
-    numrows = INT_MAX;          /* Using mysql_use_result() doesn't know the number
-                                   of rows ahead of time. */
+    numrows = INT_MAX; /* Using mysql_use_result() doesn't know the number
+                          of rows ahead of time. */
     fields = mysql_fetch_fields(qres);
     break;
 #endif
@@ -702,8 +701,8 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(executor, T("Row %d, Field %s: %s"),
-                      rownum + 1, name, (cell && *cell) ? cell : "NULL");
+        notify_format(executor, T("Row %d, Field %s: %s"), rownum + 1, name,
+                      (cell && *cell) ? cell : "NULL");
       }
     } else
       notify_format(executor, T("Row %d: NULL"), rownum + 1);
@@ -811,9 +810,8 @@ FUNCTION(fun_mapsql)
 #endif
 #ifdef HAVE_SQLITE3
     case SQL_PLATFORM_SQLITE3:
-      fieldnames[i] =
-        mush_strdup(sql_sanitize((char *) sqlite3_column_name(qres, i)),
-                    "sql_fieldname");
+      fieldnames[i] = mush_strdup(
+        sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
       break;
 #endif
     default:
@@ -884,8 +882,7 @@ FUNCTION(fun_mapsql)
     /* Now call the ufun. */
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
-    if (safe_str(rbuff, buff, bp)
-        && funccount == pe_info->fun_invocations)
+    if (safe_str(rbuff, buff, bp) && funccount == pe_info->fun_invocations)
       goto finished;
     funccount = pe_info->fun_invocations;
   }
@@ -1030,15 +1027,13 @@ FUNCTION(fun_sql)
           cell = tbuf;
         }
         if (safe_str(cell, buff, bp))
-          goto finished;        /* We filled the buffer, best stop */
+          goto finished; /* We filled the buffer, best stop */
       }
     }
   }
 finished:
   free_sql_query(qres);
 }
-
-
 
 /* MYSQL-specific functions */
 #ifdef HAVE_MYSQL
@@ -1057,7 +1052,6 @@ penn_mysql_sql_connected(void)
 {
   return mysql_connp ? 1 : 0;
 }
-
 
 static int
 penn_mysql_sql_init(void)
@@ -1096,12 +1090,12 @@ penn_mysql_sql_init(void)
      */
     mysql_connp = mysql_init(NULL);
 
-    if (!mysql_real_connect
-        (mysql_connp, sql_host, SQL_USER, SQL_PASS, SQL_DB, sql_port, 0, 0)) {
+    if (!mysql_real_connect(mysql_connp, sql_host, SQL_USER, SQL_PASS, SQL_DB,
+                            sql_port, 0, 0)) {
       do_rawlog(LT_ERR, "Failed mysql connection: %s\n",
                 mysql_error(mysql_connp));
-      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
-                  "mysql", mysql_error(mysql_connp));
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "mysql",
+                  mysql_error(mysql_connp));
       penn_mysql_sql_shutdown();
       sleep(1);
     }
@@ -1143,8 +1137,8 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   fail = mysql_real_query(mysql_connp, q_string, strlen(q_string));
   if (fail && (mysql_errno(mysql_connp) == CR_SERVER_GONE_ERROR)) {
     if (mysql_connp) {
-      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
-                  "mysql", mysql_error(mysql_connp));
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s", "mysql",
+                  mysql_error(mysql_connp));
     }
     /* If it's CR_SERVER_GONE_ERROR, the server went away.
      * Try reconnecting. */
@@ -1177,14 +1171,16 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 static void
 penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
-  while (mysql_fetch_row(qres));
+  while (mysql_fetch_row(qres))
+    ;
   mysql_free_result(qres);
   while (mysql_more_results(mysql_connp)) {
-    int affected_rows =  mysql_affected_rows(mysql_connp);
+    int affected_rows = mysql_affected_rows(mysql_connp);
     /*
        We are assuming the first result is the only result we wanted. After all,
        we do not support multi-query or multiple results.
-       As such, we're cleaning the rest up with empty strings - just so we can free
+       As such, we're cleaning the rest up with empty strings - just so we can
+       free
        the remaining results from the structure.
     */
     qres = sql_query("", &affected_rows);
@@ -1210,7 +1206,6 @@ penn_pg_sql_connected(void)
 {
   return postgres_connp ? 1 : 0;
 }
-
 
 static int
 penn_pg_sql_init(void)
@@ -1253,8 +1248,8 @@ penn_pg_sql_init(void)
     if (PQstatus(postgres_connp) != CONNECTION_OK) {
       do_rawlog(LT_ERR, "Failed postgresql connection to %s: %s\n",
                 PQdb(postgres_connp), PQerrorMessage(postgres_connp));
-      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
-                  "postgresql", PQerrorMessage(postgres_connp));
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "postgresql",
+                  PQerrorMessage(postgres_connp));
       penn_pg_sql_shutdown();
       sleep(1);
     }
@@ -1298,8 +1293,8 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
                 PQresultStatus(qres) != PGRES_TUPLES_OK)) {
     /* Serious error, try one more time */
     if (postgres_connp) {
-      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
-                  "postgresql", PQerrorMessage(postgres_connp));
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s", "postgresql",
+                  PQerrorMessage(postgres_connp));
     }
     penn_pg_sql_init();
     if (penn_pg_sql_connected())
@@ -1323,7 +1318,7 @@ penn_pg_free_sql_query(PGresult *qres)
 {
   PQclear(qres);
 }
-#endif                          /* HAVE_POSTGRESQL */
+#endif /* HAVE_POSTGRESQL */
 
 #ifdef HAVE_SQLITE3
 
@@ -1379,7 +1374,7 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   retcode = sqlite3_prepare(sqlite3_connp, query, q_len, &statement, &eoq);
 #endif
 
-  *affected_rows = -1;          /* Can't find this out yet */
+  *affected_rows = -1; /* Can't find this out yet */
 
   if (retcode == SQLITE_OK)
     return statement;
@@ -1392,4 +1387,4 @@ penn_sqlite3_free_sql_query(sqlite3_stmt *stmt)
 {
   sqlite3_finalize(stmt);
 }
-#endif                          /* HAVE_SQLITE3 */
+#endif /* HAVE_SQLITE3 */

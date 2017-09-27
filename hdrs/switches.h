@@ -189,4 +189,4 @@
 #define SWITCH_WIZARD 186
 #define SWITCH_YES 187
 #define SWITCH_ZONE 188
-#endif                          /* SWITCHES_H */
+#endif /* SWITCHES_H */

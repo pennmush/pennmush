@@ -5,8 +5,8 @@
 
 #ifndef __GNUC_PREREQ
 #if defined __GNUC__ && defined __GNUC_MINOR__
-#define __GNUC_PREREQ(maj, min) \
-        ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#define __GNUC_PREREQ(maj, min)                                                \
+  ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 #else
 #define __GNUC_PREREQ(maj, min) 0
 #endif
@@ -27,7 +27,7 @@
 #if defined(WIN32) && _MSC_VER >= 1200
 #define NORETURN __declspec(noreturn)
 #elif defined(HAVE___ATTRIBUTE__)
-#define NORETURN __attribute__ ((__noreturn__))
+#define NORETURN __attribute__((__noreturn__))
 #else
 #define NORETURN
 #endif
@@ -56,8 +56,8 @@
    Force stdlib.h to be included first so we don't mangle a system header.
  */
 #include <stdlib.h>
-#define exit(arg) Win32_Exit (arg)
+#define exit(arg) Win32_Exit(arg)
 void NORETURN WIN32_CDECL Win32_Exit(int exit_code);
 #endif
 
-#endif                          /* __COMPILE_H */
+#endif /* __COMPILE_H */

@@ -63,7 +63,6 @@ const char *time_string(void);
 
 #ifdef HAVE_LIBEVENT_CORE
 
-
 /* Version using libevent's async dns routines. Much shorter because
  * we don't have our own event loop implementation. It also runs all
  * lookups asynchronously in one process instead of one blocking
@@ -117,8 +116,7 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
 }
 
 static void
-send_resp(evutil_socket_t fd, short what
-          __attribute__ ((__unused__)), void *arg)
+send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *arg)
 {
   struct is_data *data = arg;
   ssize_t len;
@@ -133,8 +131,9 @@ send_resp(evutil_socket_t fd, short what
 }
 
 static void
-address_resolved(int result, char type, int count, int ttl
-                 __attribute__ ((__unused__)), void *addresses, void *arg)
+address_resolved(int result, char type, int count,
+                 int ttl __attribute__((__unused__)), void *addresses,
+                 void *arg)
 {
   struct is_data *data = arg;
 
@@ -150,9 +149,8 @@ address_resolved(int result, char type, int count, int ttl
 }
 
 static void
-got_request(evutil_socket_t fd,
-            short what __attribute__ ((__unused__)),
-            void *arg __attribute__ ((__unused__)))
+got_request(evutil_socket_t fd, short what __attribute__((__unused__)),
+            void *arg __attribute__((__unused__)))
 {
   struct request_dgram req;
   struct is_data *data;
@@ -164,7 +162,6 @@ got_request(evutil_socket_t fd,
     penn_perror("reading request datagram");
     exit(EXIT_FAILURE);
   }
-
 
   data = malloc(sizeof *data);
   memset(data, 0, sizeof *data);
@@ -179,9 +176,9 @@ got_request(evutil_socket_t fd,
 
 /** Called periodically to ensure the parent mush is still there. */
 static void
-check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
-             short what __attribute__ ((__unused__)),
-             void *arg __attribute__ ((__unused__)))
+check_parent(evutil_socket_t fd __attribute__((__unused__)),
+             short what __attribute__((__unused__)),
+             void *arg __attribute__((__unused__)))
 {
   if (getppid() == 1) {
     fputerr("Parent mush process exited unexpectedly! Shutting down.");
@@ -193,7 +190,7 @@ int
 main(void)
 {
   struct event *watch_parent, *watch_request;
-  struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
+  struct timeval parent_timeout = {.tv_sec = 5, .tv_usec = 0};
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
@@ -298,7 +295,7 @@ main(void)
         return EXIT_FAILURE;
       } else
         continue;
-    } else                      /* ev == 0 */
+    } else /* ev == 0 */
       continue;
 
     if (len == -1 && errno == EINTR)
@@ -333,9 +330,8 @@ main(void)
     memset(&resp, 0, sizeof resp);
     resp.fd = req.fd;
 
-    if (getnameinfo(&req.remote.addr, req.rlen, resp.ipaddr,
-                    sizeof resp.ipaddr, NULL, 0,
-                    NI_NUMERICHOST | NI_NUMERICSERV) != 0)
+    if (getnameinfo(&req.remote.addr, req.rlen, resp.ipaddr, sizeof resp.ipaddr,
+                    NULL, 0, NI_NUMERICHOST | NI_NUMERICSERV) != 0)
       strcpy(resp.ipaddr, "An error occured");
 
     if (getnameinfo(&req.local.addr, req.llen, NULL, 0, localport,
@@ -406,7 +402,6 @@ static struct pollfd *poll_fds = NULL;
 static int pollfd_len = 0;
 #endif
 
-
 /** Initialize event loop
  * \return 0 on success, -1 on failure
  */
@@ -431,14 +426,14 @@ eventwait_init(void)
   } else
 #endif
 #ifdef HAVE_POLL
-  if (1) {
+    if (1) {
     fputerr("trying poll event loop... ok. Using poll.");
     method = METHOD_POLL;
     return 0;
   } else
 #endif
 #ifdef HAVE_SELECT
-  if (1) {
+    if (1) {
     fputerr("trying select event loop... ok. Using select.");
     FD_ZERO(&readers);
     method = METHOD_SELECT;
@@ -462,19 +457,19 @@ eventwait_watch_fd_read(int fd)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
-      memset(&add, 0, sizeof add);
-      add.ident = fd;
-      add.flags = EV_ADD | EV_ENABLE;
-      add.filter = EVFILT_READ;
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    memset(&add, 0, sizeof add);
+    add.ident = fd;
+    add.flags = EV_ADD | EV_ENABLE;
+    add.filter = EVFILT_READ;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
 #ifdef HAVE_POLL
   case METHOD_POLL:
@@ -504,7 +499,6 @@ eventwait_watch_parent_exit(void)
 {
   pid_t parent;
 
-
 #ifdef HAVE_GETPPID
   parent = getppid();
 #else
@@ -514,24 +508,24 @@ eventwait_watch_parent_exit(void)
 
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
-      memset(&add, 0, sizeof(add));
-      add.ident = parent;
-      add.flags = EV_ADD | EV_ENABLE;
-      add.filter = EVFILT_PROC;
-      add.fflags = NOTE_EXIT;
+    memset(&add, 0, sizeof(add));
+    add.ident = parent;
+    add.flags = EV_ADD | EV_ENABLE;
+    add.filter = EVFILT_PROC;
+    add.fflags = NOTE_EXIT;
 
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
 #ifdef HAVE_POLL
-  case METHOD_POLL:            /* Fall through */
+  case METHOD_POLL: /* Fall through */
 #endif
 #ifdef HAVE_SELECT
   case METHOD_SELECT:
@@ -550,30 +544,30 @@ eventwait_watch_child_exit(void)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
 #ifdef HAVE_SIGPROCMASK
-      sigset_t chld_mask;
+    sigset_t chld_mask;
 
-      sigemptyset(&chld_mask);
-      sigaddset(&chld_mask, SIGCHLD);
+    sigemptyset(&chld_mask);
+    sigaddset(&chld_mask, SIGCHLD);
 #endif
 
-      memset(&add, 0, sizeof(add));
-      add.filter = EVFILT_SIGNAL;
-      add.ident = SIGCHLD;
-      add.flags = EV_ADD | EV_ENABLE;
+    memset(&add, 0, sizeof(add));
+    add.filter = EVFILT_SIGNAL;
+    add.ident = SIGCHLD;
+    add.flags = EV_ADD | EV_ENABLE;
 
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      if (sigprocmask(SIG_BLOCK, &chld_mask, NULL) < 0)
-        return -1;
+    if (sigprocmask(SIG_BLOCK, &chld_mask, NULL) < 0)
+      return -1;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
   default:
     install_sig_handler(SIGCHLD, reaper);
@@ -590,106 +584,106 @@ eventwait(void)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent triggered[2];
-      int res;
+  case METHOD_KQUEUE: {
+    struct kevent triggered[2];
+    int res;
 
-      while (1) {
-        res = kevent(kqueue_id, NULL, 0, triggered, 2, NULL);
-        if (res == 1) {
-          if (triggered[0].filter == EVFILT_SIGNAL) {
-            reap_children();
-            continue;
-          } else
-            return triggered[0].ident;
-        } else if (res == 2) {
-          if (triggered[0].filter == EVFILT_SIGNAL) {
-            reap_children();
-            return triggered[1].ident;
-          } else if (triggered[1].filter == EVFILT_SIGNAL) {
-            reap_children();
-            return triggered[0].ident;
-          }
-        } else if (res < 0)
-          return -1;
-      }
+    while (1) {
+      res = kevent(kqueue_id, NULL, 0, triggered, 2, NULL);
+      if (res == 1) {
+        if (triggered[0].filter == EVFILT_SIGNAL) {
+          reap_children();
+          continue;
+        } else
+          return triggered[0].ident;
+      } else if (res == 2) {
+        if (triggered[0].filter == EVFILT_SIGNAL) {
+          reap_children();
+          return triggered[1].ident;
+        } else if (triggered[1].filter == EVFILT_SIGNAL) {
+          reap_children();
+          return triggered[0].ident;
+        }
+      } else if (res < 0)
+        return -1;
     }
+  }
 #endif
 #if defined(HAVE_POLL)
-  case METHOD_POLL:{
-      /* It's more complex to use poll(), since it can only poll
-       * file descriptor events, not process events too. Wake up every
-       * 5 seconds to see if the given pid has turned into 1.
-       */
-      int timeout;
-      int res;
+  case METHOD_POLL: {
+    /* It's more complex to use poll(), since it can only poll
+     * file descriptor events, not process events too. Wake up every
+     * 5 seconds to see if the given pid has turned into 1.
+     */
+    int timeout;
+    int res;
 
-      if (parent_pid > 0)
-        timeout = 5000;
-      else
-        timeout = -1;
+    if (parent_pid > 0)
+      timeout = 5000;
+    else
+      timeout = -1;
 
-      while (1) {
-        res = poll(poll_fds, pollfd_len, timeout);
-        if (res > 0) {
-          int n;
-          for (n = 0; n < pollfd_len; n++)
-            if (poll_fds[n].revents & POLLIN)
-              return poll_fds[n].fd;
-        } else if (res == 0 && parent_pid) {
+    while (1) {
+      res = poll(poll_fds, pollfd_len, timeout);
+      if (res > 0) {
+        int n;
+        for (n = 0; n < pollfd_len; n++)
+          if (poll_fds[n].revents & POLLIN)
+            return poll_fds[n].fd;
+      } else if (res == 0 && parent_pid) {
 #ifdef HAVE_GETPPID
-          if (getppid() == 1)
-            /* Parent rocess no longer exists; parent is now init */
-            return parent_pid;
+        if (getppid() == 1)
+          /* Parent rocess no longer exists; parent is now init */
+          return parent_pid;
 #endif
-        } else if (res < 0)
-          return -1;
-      }
+      } else if (res < 0)
+        return -1;
     }
+  }
 #endif
 #ifdef HAVE_SELECT
-  case METHOD_SELECT:{
-      /* It's more complex to use select(), since it can only poll
-       * file descriptor events, not process events too. Wake up every
-       * 5 seconds to see if the given pid has turned into 1.
-       */
-      struct timeval timeout, *tout;
-      int res;
+  case METHOD_SELECT: {
+    /* It's more complex to use select(), since it can only poll
+     * file descriptor events, not process events too. Wake up every
+     * 5 seconds to see if the given pid has turned into 1.
+     */
+    struct timeval timeout, *tout;
+    int res;
 
-      if (parent_pid > 0)
-        tout = &timeout;
-      else
-        tout = NULL;
+    if (parent_pid > 0)
+      tout = &timeout;
+    else
+      tout = NULL;
 
-      while (1) {
-        fd_set local_readers;
+    while (1) {
+      fd_set local_readers;
+      int n;
+
+      timeout.tv_sec = 5;
+      timeout.tv_usec = 0;
+
+      FD_ZERO(&local_readers);
+
+      for (n = 0; n < maxd; n++)
+        if (FD_ISSET(n, &readers))
+          FD_SET(n, &local_readers);
+
+      res = select(maxd, &local_readers, NULL, NULL, tout);
+      if (res > 0) {
         int n;
-
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
-
-        FD_ZERO(&local_readers);
-
         for (n = 0; n < maxd; n++)
-          if (FD_ISSET(n, &readers))
-            FD_SET(n, &local_readers);
-
-        res = select(maxd, &local_readers, NULL, NULL, tout);
-        if (res > 0) {
-          int n;
-          for (n = 0; n < maxd; n++)
-            if (FD_ISSET(n, &local_readers))
-              return n;
-        } else if (res == 0 && parent_pid) {
+          if (FD_ISSET(n, &local_readers))
+            return n;
+      } else if (res == 0 && parent_pid) {
 #ifdef HAVE_GETPPID
-          if (getppid() == 1)
-            /* Parent process no longer exists; parent is now init */
-            return parent_pid;
+        if (getppid() == 1)
+          /* Parent process no longer exists; parent is now init */
+          return parent_pid;
 #endif
-        } else if (res < 0)
-          return -1;
-      }
+      } else if (res < 0)
+        return -1;
     }
+  }
 #endif
   default:
     return -1;

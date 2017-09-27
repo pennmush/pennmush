@@ -40,7 +40,7 @@
 #include "strtree.h"
 #include "strutil.h"
 
-extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */
+extern char *absp[], *obj[], *poss[], *subj[]; /* fundb.c */
 int global_fun_invocations;
 int global_fun_recursions;
 /* extern int re_subpatterns; */
@@ -51,10 +51,10 @@ extern int cpu_limit_warning_sent;
 
 /** Structure for storing DEBUG output in a linked list */
 struct debug_info {
-  char *string;         /**< A DEBUG string */
-  dbref executor;       /**< Object executing code */
-  Debug_Info *prev;     /**< Previous node in the linked list */
-  Debug_Info *next;     /**< Next node in the linked list */
+  char *string;     /**< A DEBUG string */
+  dbref executor;   /**< Object executing code */
+  Debug_Info *prev; /**< Previous node in the linked list */
+  Debug_Info *next; /**< Next node in the linked list */
 };
 
 FUNCTION_PROTO(fun_gfun);
@@ -212,7 +212,6 @@ real_parse_objid(char const *str, bool strict)
   }
 }
 
-
 /** Given a string, parse out a boolean value.
  * The meaning of boolean is fuzzy. To TinyMUSH, any string that begins with
  * a non-zero number is true, and everything else is false.
@@ -246,12 +245,12 @@ parse_boolean(char const *str)
       return 0;
     /* Non-zero numbers are true, zero is false */
     if (is_strict_number(clean))
-      return parse_number(clean) != 0;  /* avoid rounding problems */
+      return parse_number(clean) != 0; /* avoid rounding problems */
     /* Skip blanks */
     while (clean[i] == ' ')
       i++;
     /* If there's any non-blanks left, it's true */
-    return clean[i] != '\0';    /* force to 1 or 0 */
+    return clean[i] != '\0'; /* force to 1 or 0 */
   }
 }
 
@@ -421,7 +420,7 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  int throwaway __attribute__ ((__unused__));
+  int throwaway __attribute__((__unused__));
   if (!str)
     return 0;
   errno = 0;
@@ -589,7 +588,6 @@ parse_int32(const char *s, char **end, int base)
 #endif
 }
 
-
 /** Convert a string containing an unsigned integer into an int.
  * Does not do any format checking. Invalid strings will return 0.
  * Use this instead of strtoul() when storing to an int to avoid problems
@@ -669,8 +667,8 @@ slab *pe_reg_slab;
 slab *pe_reg_val_slab;
 
 /* Lame speed-up so we don't constantly call tprintf :D */
-static const char *envid[10] =
-  { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *envid[10] = {"0", "1", "2", "3", "4",
+                                "5", "6", "7", "8", "9"};
 
 void
 init_pe_regs_trees()
@@ -886,13 +884,14 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
   pe_info->regvals = pe_regs->prev;
 }
 
-#define FIND_PVAL(pval, key, type) \
-  do { \
-    if (!pval) break; \
-    if ((pval->type & type & PE_REGS_TYPE) && !strcmp(pval->name, key)) { \
-      break; \
-    } \
-    pval = pval->next; \
+#define FIND_PVAL(pval, key, type)                                             \
+  do {                                                                         \
+    if (!pval)                                                                 \
+      break;                                                                   \
+    if ((pval->type & type & PE_REGS_TYPE) && !strcmp(pval->name, key)) {      \
+      break;                                                                   \
+    }                                                                          \
+    pval = pval->next;                                                         \
   } while (pval)
 
 /** Set a string value in a PE_REGS structure.
@@ -908,8 +907,8 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
  * \param override If it already exists, then overwrite it.
  */
 void
-pe_regs_set_if(PE_REGS *pe_regs, int type,
-               const char *lckey, const char *val, int override)
+pe_regs_set_if(PE_REGS *pe_regs, int type, const char *lckey, const char *val,
+               int override)
 {
   /* pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
    * it doesn't recurse up the chain, etc. */
@@ -939,9 +938,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') &&
-            ((key[0] >= 'A' && key[0] <= 'Z') ||
-             (key[0] >= '0' && key[0] <= '9')))) {
+      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
+                                 (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }
@@ -969,8 +967,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
  * \param override If 1, then replace any extant value for the register
  */
 void
-pe_regs_set_int_if(PE_REGS *pe_regs, int type,
-                   const char *lckey, int val, int override)
+pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *lckey, int val,
+                   int override)
 {
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
@@ -990,9 +988,8 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') &&
-            ((key[0] >= 'A' && key[0] <= 'Z') ||
-             (key[0] >= '0' && key[0] <= '9')))) {
+      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
+                                 (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }
@@ -1018,7 +1015,6 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
   }
   return NULL;
 }
-
 
 /** Get a typed value from a pe_regs structure, returned as an integer.
  *
@@ -1067,11 +1063,11 @@ pe_regs_qcopy(PE_REGS *dst, PE_REGS *src)
 }
 
 void
-pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
-                  int copytypes, int override)
+pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
+                  int override)
 {
-  int scount = 0;               /* stext counts */
-  int icount = 0;               /* itext counts */
+  int scount = 0; /* stext counts */
+  int icount = 0; /* itext counts */
   int smax = 0;
   int imax = 0;
   char itype;
@@ -1085,8 +1081,7 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
   if (!pe_regs)
     return;
 
-  if (override && (copytypes & PE_REGS_ARG)
-      && (pe_regs->flags & PE_REGS_ARG)) {
+  if (override && (copytypes & PE_REGS_ARG) && (pe_regs->flags & PE_REGS_ARG)) {
     /* Look for all PE_REGS_ARG flags in new_regs, and delete them. */
     for (val = new_regs->vals; val; val = next) {
       next = val->next;
@@ -1125,21 +1120,21 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
           if (inum < MAX_ITERS) {
             snprintf(numbuff, 10, "%c%d", itype, inum);
             if (val->type & PE_REGS_STR) {
-              pe_regs_set(new_regs, val->type & andflags,
-                          numbuff, val->val.sval);
+              pe_regs_set(new_regs, val->type & andflags, numbuff,
+                          val->val.sval);
             } else {
-              pe_regs_set_int(new_regs, val->type & andflags,
-                              numbuff, val->val.ival);
+              pe_regs_set_int(new_regs, val->type & andflags, numbuff,
+                              val->val.ival);
             }
           }
         } else {
           /* Set, but maybe don't override. */
           if (val->type & PE_REGS_STR) {
-            pe_regs_set_if(new_regs, val->type & andflags,
-                           val->name, val->val.sval, override);
+            pe_regs_set_if(new_regs, val->type & andflags, val->name,
+                           val->val.sval, override);
           } else {
-            pe_regs_set_int_if(new_regs, val->type & andflags,
-                               val->name, val->val.ival, override);
+            pe_regs_set_int_if(new_regs, val->type & andflags, val->name,
+                               val->val.ival, override);
           }
         }
       }
@@ -1292,8 +1287,8 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 /* REGEXPS */
 void
 pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
-                       struct real_pcre *re_code,
-                       int *re_offsets, int re_subpatterns, const char *re_from)
+                       struct real_pcre *re_code, int *re_offsets,
+                       int re_subpatterns, const char *re_from)
 {
   int i;
   unsigned char *entry, *nametable;
@@ -1314,8 +1309,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
     buff[0] = '\0';
-    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
-                        i, buff, BUFFER_LEN);
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns, i, buff,
+                        BUFFER_LEN);
     pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
@@ -1336,21 +1331,19 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
     entry = nametable + (entrysize * i);
     num = (entry[0] << 8) + entry[1];
     buff[0] = '\0';
-    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
-                        num, buff, BUFFER_LEN);
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns, num, buff,
+                        BUFFER_LEN);
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
      pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
      */
     pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
-
   }
 }
 
 void
 pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
-                            struct real_pcre *re_code,
-                            int *re_offsets,
+                            struct real_pcre *re_code, int *re_offsets,
                             int re_subpatterns, struct _ansi_string *re_from)
 {
   int i;
@@ -1372,8 +1365,8 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
     bp = buff;
-    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
-                             i, 1, buff, &bp);
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns, i, 1, buff,
+                             &bp);
     *bp = '\0';
     pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
@@ -1395,8 +1388,8 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
     entry = nametable + (entrysize * i);
     num = (entry[0] << 8) + entry[1];
     bp = buff;
-    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
-                             num, 1, buff, &bp);
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns, num, 1, buff,
+                             &bp);
     *bp = '\0';
     /* we don't need to do this, as it's done in the 'numbered captures'
      * for loop above.
@@ -1446,7 +1439,7 @@ pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
       if (ret) {
         return ret;
       }
-      lev--;                    /* Not this level, go up one. */
+      lev--; /* Not this level, go up one. */
     }
     /* NEWATTR halts switch and itext. */
     if (pe_regs->flags & PE_REGS_NEWATTR) {
@@ -1474,7 +1467,7 @@ pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
       if (ret) {
         return ret;
       }
-      lev--;                    /* Not this level, go up one. */
+      lev--; /* Not this level, go up one. */
     }
     /* NEWATTR halts switch and itext. */
     if (pe_regs->flags & PE_REGS_NEWATTR) {
@@ -1564,8 +1557,8 @@ pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name)
       return ret;
     }
     /* NEWATTR without ARGPASS halts switch and itext. */
-    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
-        == (PE_REGS_NEWATTR)) {
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS)) ==
+        (PE_REGS_NEWATTR)) {
       return NULL;
     }
     pe_regs = pe_regs->prev;
@@ -1591,7 +1584,7 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
           if (sscanf(val->name, "%d", &num) == 1) {
             /* only check numeric args, ignore named ones */
             if (num >= max) {
-              max = num + 1;    /* %0 is 1 arg */
+              max = num + 1; /* %0 is 1 arg */
             }
           }
         }
@@ -1599,8 +1592,8 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
       return max;
     }
     /* NEWATTR without ARGPASS halts switch and itext. */
-    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
-        == (PE_REGS_NEWATTR)) {
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS)) ==
+        (PE_REGS_NEWATTR)) {
       return 0;
     }
     pe_regs = pe_regs->prev;
@@ -1612,7 +1605,7 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
 extern char active_table[UCHAR_MAX + 1];
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
+#pragma warning(disable : 4761) /* NJG: disable warning re conversion */
 #endif
 
 /** Free a pe_info at the end of its use. Note that a pe_info may be in use
@@ -1630,7 +1623,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
 
   pe_info->refcount--;
   if (pe_info->refcount > 0)
-    return;                     /* Still in use */
+    return; /* Still in use */
 
   while (pe_info->regvals) {
     pe_regs = pe_info->regvals;
@@ -1651,7 +1644,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
  * \param name name of the calling function, for memory checking
  */
 NEW_PE_INFO *
-make_pe_info(char *name __attribute__ ((__unused__)))
+make_pe_info(char *name __attribute__((__unused__)))
 {
   NEW_PE_INFO *pe_info;
 
@@ -1701,7 +1694,8 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
   NEW_PE_INFO *pe_info;
 
   if (flags & PE_INFO_SHARE) {
-    /* Don't create a new pe_info, just increase the refcount for the existing one
+    /* Don't create a new pe_info, just increase the refcount for the existing
+       one
        and return that. Used for inplace queue entries */
     /* Warning: Any function calling this with pe_regs also needs to set
      * MQUE->regvals to pe_regs. */
@@ -1716,8 +1710,10 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
   }
 
   if (flags & PE_INFO_CLONE) {
-    /* Clone all the pertinent information in the original pe_info (env, q-reg, itext/stext info),
-       reset all the counters (like function invocation limit). Used for cmds that queue a
+    /* Clone all the pertinent information in the original pe_info (env, q-reg,
+       itext/stext info),
+       reset all the counters (like function invocation limit). Used for cmds
+       that queue a
        new actionlist for the current executor */
     pe_info = make_pe_info("pe_info-from_old-clone");
     if (!old_pe_info) {
@@ -1725,7 +1721,7 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
         pe_regs->prev = NULL;
         pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
       }
-      return pe_info;           /* nothing to do */
+      return pe_info; /* nothing to do */
     }
 
     /* OK, copy everything over */
@@ -1738,8 +1734,8 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
       pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
       pe_regs->prev = NULL;
     } else if (old_pe_info) {
-      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
-                        PE_REGS_QUEUE, 0);
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_QUEUE,
+                        0);
     }
 
     return pe_info;
@@ -1824,9 +1820,9 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
  * \retval 1 CPU time limit exceeded.
  */
 int
-process_expression(char *buff, char **bp, char const **str,
-                   dbref executor, dbref caller, dbref enactor,
-                   int eflags, int tflags, NEW_PE_INFO *pe_info)
+process_expression(char *buff, char **bp, char const **str, dbref executor,
+                   dbref caller, dbref enactor, int eflags, int tflags,
+                   NEW_PE_INFO *pe_info)
 {
   int debugging = 0, made_info = 0;
   char *debugstr = NULL, *sourcestr = NULL;
@@ -1844,10 +1840,11 @@ process_expression(char *buff, char **bp, char const **str,
   PE_REGS *pe_regs;
   const char *stmp;
   int itmp;
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
- * added 17 Sep 2012. Remove when this behaviour is removed. */
+  /* Part of r1628's deprecation of unescaped commas as the final arg of a
+   * function,
+   * added 17 Sep 2012. Remove when this behaviour is removed. */
   static char *lca_func_name = NULL;
-/* End of r1628's deprecation */
+  /* End of r1628's deprecation */
 
   if (!buff || !bp || !str || !*str)
     return 0;
@@ -1859,9 +1856,10 @@ process_expression(char *buff, char **bp, char const **str,
        */
       if (GoodObject(enactor) && !Quiet(enactor))
         notify(enactor, T("CPU usage exceeded."));
-      do_rawlog(LT_TRACE,
-                "CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s",
-                enactor, executor, caller, *str);
+      do_rawlog(
+        LT_TRACE,
+        "CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s",
+        enactor, executor, caller, *str);
     }
     return 1;
   }
@@ -1917,9 +1915,10 @@ process_expression(char *buff, char **bp, char const **str,
     pe_info->debugging = -1;
 
   if (eflags != PE_NOTHING) {
-    debugging = ((Debug(executor) && pe_info->debugging != -1)
-                 || (pe_info->debugging == 1))
-      && (Connected(Owner(executor)) || atr_get(executor, "DEBUGFORWARDLIST"));
+    debugging =
+      ((Debug(executor) && pe_info->debugging != -1) ||
+       (pe_info->debugging == 1)) &&
+      (Connected(Owner(executor)) || atr_get(executor, "DEBUGFORWARDLIST"));
     if (debugging) {
       int j;
       char *debugp;
@@ -1934,8 +1933,7 @@ process_expression(char *buff, char **bp, char const **str,
         safe_chr(' ', debugstr, &debugp);
       sourcestr = debugp;
       mark = *str;
-      process_expression(debugstr, &debugp, str,
-                         executor, caller, enactor,
+      process_expression(debugstr, &debugp, str, executor, caller, enactor,
                          PE_NOTHING, tflags, pe_info);
       *str = mark;
       if (eflags & PE_COMPRESS_SPACES)
@@ -1980,7 +1978,7 @@ process_expression(char *buff, char **bp, char const **str,
     }
 
     switch (**str) {
-      /* Possible terminators */
+    /* Possible terminators */
     case '}':
       if (tflags & PT_BRACE)
         goto exit_sequence;
@@ -1996,20 +1994,22 @@ process_expression(char *buff, char **bp, char const **str,
     case ',':
       if (tflags & PT_COMMA)
         goto exit_sequence;
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
- * added 17 Sep 2012. Remove when this behaviour is removed. */
+      /* Part of r1628's deprecation of unescaped commas as the final arg of a
+       * function,
+       * added 17 Sep 2012. Remove when this behaviour is removed. */
       else if (tflags & PT_NOT_COMMA) {
         if (pe_info && *pe_info->attrname)
-          notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s by #%d in %s. This behavior is deprecated.",
+          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
+                                         "by #%d in %s. This behavior is "
+                                         "deprecated.",
                         lca_func_name, executor, pe_info->attrname);
         else
-          notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s by #%d. This behavior is deprecated.",
+          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
+                                         "by #%d. This behavior is deprecated.",
                         lca_func_name, executor);
         tflags &= ~PT_NOT_COMMA;
       }
-/* End of r1628's deprecation */
+      /* End of r1628's deprecation */
       break;
     case ';':
       if (tflags & PT_SEMI)
@@ -2041,7 +2041,7 @@ process_expression(char *buff, char **bp, char const **str,
         (*str)++;
       }
       break;
-    case ESC_CHAR:             /* ANSI escapes. */
+    case ESC_CHAR: /* ANSI escapes. */
       /* Skip over until the 'm' that matches the end. */
       for (; *str && **str && **str != 'm'; (*str)++)
         safe_chr(**str, buff, bp);
@@ -2050,7 +2050,7 @@ process_expression(char *buff, char **bp, char const **str,
         (*str)++;
       }
       break;
-    case '$':                  /* Dollar subs for regedit() */
+    case '$': /* Dollar subs for regedit() */
       if ((eflags & (PE_DOLLAR | PE_EVALUATE)) == (PE_DOLLAR | PE_EVALUATE) &&
           PE_HAS_REGTYPE(pe_info, PE_REGS_REGEXP)) {
         char subspace[BUFFER_LEN];
@@ -2066,8 +2066,7 @@ process_expression(char *buff, char **bp, char const **str,
           /* Look for a named or numbered subexpression */
           char *nbp = subspace;
           (*str)++;
-          if (process_expression(subspace, &nbp, str,
-                                 executor, caller, enactor,
+          if (process_expression(subspace, &nbp, str, executor, caller, enactor,
                                  eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
             retval = 1;
             break;
@@ -2083,8 +2082,7 @@ process_expression(char *buff, char **bp, char const **str,
         safe_chr('$', buff, bp);
         (*str)++;
         if ((**str) == '<') {
-          if (process_expression(buff, bp, str,
-                                 executor, caller, enactor,
+          if (process_expression(buff, bp, str, executor, caller, enactor,
                                  eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
             retval = 1;
             break;
@@ -2092,7 +2090,7 @@ process_expression(char *buff, char **bp, char const **str,
         }
       }
       break;
-    case '%':                  /* Percent substitutions */
+    case '%': /* Percent substitutions */
       if (eflags & PE_LITERAL) {
         /* Show literal % in lit() */
         safe_chr('%', buff, bp);
@@ -2120,8 +2118,7 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(savec, buff, bp);
           if (savec == '<') {
             (*str)++;
-            process_expression(buff, bp, str,
-                               executor, caller, enactor,
+            process_expression(buff, bp, str, executor, caller, enactor,
                                eflags & ~PE_STRIP_BRACES, PT_GT, pe_info);
           } else {
             (*str)++;
@@ -2157,22 +2154,22 @@ process_expression(char *buff, char **bp, char const **str,
         (*str)++;
 
         switch (savec) {
-        case '%':              /* %% - a real % */
+        case '%': /* %% - a real % */
           safe_chr('%', buff, bp);
           break;
-        case ' ':              /* "% " for more natural typing */
+        case ' ': /* "% " for more natural typing */
           safe_str("% ", buff, bp);
           break;
-        case '!':              /* executor dbref */
+        case '!': /* executor dbref */
           safe_dbref(executor, buff, bp);
           break;
-        case '@':              /* caller dbref */
+        case '@': /* caller dbref */
           safe_dbref(caller, buff, bp);
           break;
-        case '#':              /* enactor dbref */
+        case '#': /* enactor dbref */
           safe_dbref(enactor, buff, bp);
           break;
-        case ':':              /* enactor unique id */
+        case ':': /* enactor unique id */
           if (GoodObject(enactor)) {
             safe_dbref(enactor, buff, bp);
             safe_chr(':', buff, bp);
@@ -2181,7 +2178,7 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(e_notvis), buff, bp);
           }
           break;
-        case '?':              /* function limits */
+        case '?': /* function limits */
           if (pe_info) {
             safe_integer(pe_info->fun_invocations, buff, bp);
             safe_chr(' ', buff, bp);
@@ -2190,14 +2187,14 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str("0 0", buff, bp);
           }
           break;
-        case '~':              /* enactor accented name */
+        case '~': /* enactor accented name */
           if (GoodObject(enactor)) {
             safe_str(accented_name(enactor), buff, bp);
           } else {
             safe_str(T(e_notvis), buff, bp);
           }
           break;
-        case '+':              /* argument count */
+        case '+': /* argument count */
           if (pe_info) {
             safe_integer(PE_Get_Envc(pe_info), buff, bp);
           } else {
@@ -2217,13 +2214,13 @@ process_expression(char *buff, char **bp, char const **str,
         case '6':
         case '7':
         case '8':
-        case '9':              /* positional argument */
+        case '9': /* positional argument */
           stmp = PE_Get_Env(pe_info, savec - '0');
           if (stmp)
             safe_str(stmp, buff, bp);
           break;
         case 'A':
-        case 'a':              /* enactor absolute possessive pronoun */
+        case 'a': /* enactor absolute possessive pronoun */
           if (GoodObject(enactor)) {
             if (gender < 0)
               gender = get_gender(enactor);
@@ -2233,11 +2230,11 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'B':
-        case 'b':              /* blank space */
+        case 'b': /* blank space */
           safe_chr(' ', buff, bp);
           break;
         case 'C':
-        case 'c':              /* command line */
+        case 'c': /* command line */
           safe_str(pe_info->cmd_raw, buff, bp);
           break;
         case 'I':
@@ -2295,7 +2292,7 @@ process_expression(char *buff, char **bp, char const **str,
           safe_str(pe_info->cmd_evaled, buff, bp);
           break;
         case 'L':
-        case 'l':              /* enactor location dbref */
+        case 'l': /* enactor location dbref */
           if (GoodObject(enactor)) {
             /* The security implications of this have
              * already been talked to death.  Deal. */
@@ -2305,7 +2302,7 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'N':
-        case 'n':              /* enactor name */
+        case 'n': /* enactor name */
           if (GoodObject(enactor)) {
             safe_str(Name(enactor), buff, bp);
           } else {
@@ -2313,14 +2310,14 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'k':
-        case 'K':              /* enactor moniker (ansi'd name) */
+        case 'K': /* enactor moniker (ansi'd name) */
           if (GoodObject(enactor))
             safe_str(ansi_name(enactor, 0, NULL, 0), buff, bp);
           else
             safe_str(T(e_notvis), buff, bp);
           break;
         case 'O':
-        case 'o':              /* enactor objective pronoun */
+        case 'o': /* enactor objective pronoun */
           if (GoodObject(enactor)) {
             if (gender < 0)
               gender = get_gender(enactor);
@@ -2330,7 +2327,7 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'P':
-        case 'p':              /* enactor possessive pronoun */
+        case 'p': /* enactor possessive pronoun */
           if (GoodObject(enactor)) {
             if (gender < 0)
               gender = get_gender(enactor);
@@ -2340,7 +2337,7 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'Q':
-        case 'q':              /* temporary storage */
+        case 'q': /* temporary storage */
           nextc = **str;
           if (!nextc)
             goto exit_sequence;
@@ -2348,9 +2345,9 @@ process_expression(char *buff, char **bp, char const **str,
           if (nextc == '<') {
             char subspace[BUFFER_LEN];
             char *nbp = subspace;
-            if (process_expression(subspace, &nbp, str,
-                                   executor, caller, enactor,
-                                   eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+            if (process_expression(subspace, &nbp, str, executor, caller,
+                                   enactor, eflags & ~PE_STRIP_BRACES, PT_GT,
+                                   pe_info)) {
               retval = 1;
               break;
             }
@@ -2370,11 +2367,11 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'R':
-        case 'r':              /* newline */
+        case 'r': /* newline */
           safe_chr('\n', buff, bp);
           break;
         case 'S':
-        case 's':              /* enactor subjective pronoun */
+        case 's': /* enactor subjective pronoun */
           if (GoodObject(enactor)) {
             if (gender < 0)
               gender = get_gender(enactor);
@@ -2384,7 +2381,7 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case 'T':
-        case 't':              /* tab */
+        case 't': /* tab */
           safe_chr('\t', buff, bp);
           break;
         case 'V':
@@ -2392,7 +2389,7 @@ process_expression(char *buff, char **bp, char const **str,
         case 'W':
         case 'w':
         case 'X':
-        case 'x':              /* attribute substitution */
+        case 'x': /* attribute substitution */
           nextc = **str;
           if (!nextc)
             goto exit_sequence;
@@ -2404,7 +2401,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (attrib)
             safe_str(atr_value(attrib), buff, bp);
           break;
-        default:               /* just copy */
+        default: /* just copy */
           safe_chr(savec, buff, bp);
         }
 
@@ -2416,7 +2413,7 @@ process_expression(char *buff, char **bp, char const **str,
         }
       }
       break;
-    case '{':                  /* "{}" parse group; recurse with no function check */
+    case '{': /* "{}" parse group; recurse with no function check */
       if (CALL_LIMIT && (pe_info->call_depth > CALL_LIMIT)) {
         (*str)++;
         break;
@@ -2429,13 +2426,12 @@ process_expression(char *buff, char **bp, char const **str,
       if (!(eflags & (PE_STRIP_BRACES | PE_COMMAND_BRACES)))
         safe_chr('{', buff, bp);
       (*str)++;
-      if (process_expression(buff, bp, str,
-                             executor, caller, enactor,
-                             eflags & PE_COMMAND_BRACES
-                             ? (eflags & ~PE_COMMAND_BRACES)
-                             : (eflags &
-                                ~(PE_STRIP_BRACES | PE_FUNCTION_CHECK)),
-                             PT_BRACE, pe_info)) {
+      if (process_expression(
+            buff, bp, str, executor, caller, enactor,
+            eflags & PE_COMMAND_BRACES
+              ? (eflags & ~PE_COMMAND_BRACES)
+              : (eflags & ~(PE_STRIP_BRACES | PE_FUNCTION_CHECK)),
+            PT_BRACE, pe_info)) {
         retval = 1;
         break;
       }
@@ -2448,7 +2444,7 @@ process_expression(char *buff, char **bp, char const **str,
       /* Only strip one set of braces for commands */
       eflags &= ~PE_COMMAND_BRACES;
       break;
-    case '[':                  /* "[]" parse group; recurse with mandatory function check */
+    case '[': /* "[]" parse group; recurse with mandatory function check */
       if (CALL_LIMIT && (pe_info->call_depth > CALL_LIMIT)) {
         (*str)++;
         break;
@@ -2464,8 +2460,7 @@ process_expression(char *buff, char **bp, char const **str,
       } else
         temp_eflags = eflags | PE_FUNCTION_CHECK | PE_FUNCTION_MANDATORY;
       (*str)++;
-      if (process_expression(buff, bp, str,
-                             executor, caller, enactor,
+      if (process_expression(buff, bp, str, executor, caller, enactor,
                              temp_eflags, PT_BRACKET, pe_info)) {
         retval = 1;
         break;
@@ -2476,7 +2471,7 @@ process_expression(char *buff, char **bp, char const **str,
         (*str)++;
       }
       break;
-    case '(':                  /* Function call */
+    case '(': /* Function call */
       if (CALL_LIMIT && (pe_info->call_depth > CALL_LIMIT)) {
         (*str)++;
         break;
@@ -2488,8 +2483,7 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(**str, buff, bp);
           (*str)++;
         }
-        if (process_expression(buff, bp, str,
-                               executor, caller, enactor,
+        if (process_expression(buff, bp, str, executor, caller, enactor,
                                eflags & ~PE_STRIP_BRACES, PT_PAREN, pe_info))
           retval = 1;
         if (**str == ')') {
@@ -2527,16 +2521,15 @@ process_expression(char *buff, char **bp, char const **str,
           safe_chr(UPCASE(*sp), name, &tp);
         *tp = '\0';
         fp = (eflags & PE_BUILTINONLY) ? builtin_func_hash_lookup(name)
-          : func_hash_lookup(name);
-        eflags &= ~PE_BUILTINONLY;      /* Only applies to the outermost call */
+                                       : func_hash_lookup(name);
+        eflags &= ~PE_BUILTINONLY; /* Only applies to the outermost call */
         if (!fp) {
           if (eflags & PE_FUNCTION_MANDATORY) {
             *bp = startpos;
             safe_str(T("#-1 FUNCTION ("), buff, bp);
             safe_str(name, buff, bp);
             safe_str(T(") NOT FOUND"), buff, bp);
-            if (process_expression(name, &tp, str,
-                                   executor, caller, enactor,
+            if (process_expression(name, &tp, str, executor, caller, enactor,
                                    PE_NOTHING, PT_PAREN, pe_info))
               retval = 1;
             if (**str == ')')
@@ -2572,8 +2565,7 @@ process_expression(char *buff, char **bp, char const **str,
           e_len = strlen(e_msg);
           if ((buff + e_len > *bp) || strcmp(e_msg, *bp - e_len))
             safe_strl(e_msg, e_len, buff, bp);
-          if (process_expression(name, &tp, str,
-                                 executor, caller, enactor,
+          if (process_expression(name, &tp, str, executor, caller, enactor,
                                  PE_NOTHING, PT_PAREN, pe_info))
             retval = 1;
           if (**str == ')')
@@ -2584,8 +2576,7 @@ process_expression(char *buff, char **bp, char const **str,
         if ((pe_info->fun_recursions + 1 >= RECURSION_LIMIT) ||
             (global_fun_recursions + 1 >= RECURSION_LIMIT * 5)) {
           safe_str(T("#-1 FUNCTION RECURSION LIMIT EXCEEDED"), buff, bp);
-          if (process_expression(name, &tp, str,
-                                 executor, caller, enactor,
+          if (process_expression(name, &tp, str, executor, caller, enactor,
                                  PE_NOTHING, PT_PAREN, pe_info))
             retval = 1;
           if (**str == ')')
@@ -2593,15 +2584,15 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         }
         /* Get the arguments */
-        temp_eflags = (eflags & ~PE_FUNCTION_MANDATORY)
-          | PE_COMPRESS_SPACES | PE_EVALUATE | PE_FUNCTION_CHECK;
+        temp_eflags = (eflags & ~PE_FUNCTION_MANDATORY) | PE_COMPRESS_SPACES |
+                      PE_EVALUATE | PE_FUNCTION_CHECK;
         switch (fp->flags & FN_ARG_MASK) {
         case FN_LITERAL:
           temp_eflags |= PE_LITERAL;
-          /* FALL THROUGH */
+        /* FALL THROUGH */
         case FN_NOPARSE:
-          temp_eflags &= ~(PE_COMPRESS_SPACES | PE_EVALUATE |
-                           PE_FUNCTION_CHECK);
+          temp_eflags &=
+            ~(PE_COMPRESS_SPACES | PE_EVALUATE | PE_FUNCTION_CHECK);
           break;
         }
         denied = !check_func(executor, fp);
@@ -2611,15 +2602,15 @@ process_expression(char *buff, char **bp, char const **str,
             ~(PE_COMPRESS_SPACES | PE_EVALUATE | PE_FUNCTION_CHECK);
         temp_tflags = PT_COMMA | PT_PAREN;
         nfargs = 0;
-        onearg =
-          mush_malloc(BUFFER_LEN,
-                      "process_expression.single_function_argument");
+        onearg = mush_malloc(BUFFER_LEN,
+                             "process_expression.single_function_argument");
         do {
           char *argp;
           char *lca_safe_func_name = NULL;
           if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs)) {
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
- * added 17 Sep 2012. Remove when this behaviour is removed. */
+            /* Part of r1628's deprecation of unescaped commas as the final arg
+             * of a function,
+             * added 17 Sep 2012. Remove when this behaviour is removed. */
             if (lca_func_name != NULL) {
               lca_safe_func_name = mush_strdup(lca_func_name, "lca_func_name");
             } else {
@@ -2631,7 +2622,7 @@ process_expression(char *buff, char **bp, char const **str,
               temp_tflags = PT_PAREN | PT_NOT_COMMA;
             strcpy(lca_func_name, fp->name);
             // temp_tflags = PT_PAREN;
-/* End of r1628's deprecation */
+            /* End of r1628's deprecation */
           }
           if (nfargs >= args_alloced) {
             char **nargs;
@@ -2652,22 +2643,22 @@ process_expression(char *buff, char **bp, char const **str,
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] = mush_malloc(BUFFER_LEN,
-                                      "process_expression.function_argument");
+          fargs[nfargs] =
+            mush_malloc(BUFFER_LEN, "process_expression.function_argument");
           argp = onearg;
-          if (process_expression(onearg, &argp, str,
-                                 executor, caller, enactor,
+          if (process_expression(onearg, &argp, str, executor, caller, enactor,
                                  temp_eflags, temp_tflags, pe_info)) {
             retval = 1;
             nfargs++;
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
- * added 17 Sep 2012. Remove when this behaviour is removed. */
+            /* Part of r1628's deprecation of unescaped commas as the final arg
+             * of a function,
+             * added 17 Sep 2012. Remove when this behaviour is removed. */
             if (lca_safe_func_name) {
               strcpy(lca_func_name, lca_safe_func_name);
               mush_free(lca_safe_func_name, "lca_func_name");
               lca_safe_func_name = NULL;
             }
-/* End of r1628's deprecation */
+            /* End of r1628's deprecation */
             goto free_func_args;
           }
           *argp = '\0';
@@ -2677,20 +2668,20 @@ process_expression(char *buff, char **bp, char const **str,
             strcpy(fargs[nfargs], onearg);
           }
           arglens[nfargs] = strlen(fargs[nfargs]);
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
- * added 17 Sep 2012. Remove when this behaviour is removed. */
+          /* Part of r1628's deprecation of unescaped commas as the final arg of
+           * a function,
+           * added 17 Sep 2012. Remove when this behaviour is removed. */
           if (lca_safe_func_name) {
             strcpy(lca_func_name, lca_safe_func_name);
             mush_free(lca_safe_func_name, "lca_func_name");
             lca_safe_func_name = NULL;
           }
-/* End of r1628's deprecation */
+          /* End of r1628's deprecation */
           (*str)++;
           nfargs++;
         } while ((*str)[-1] == ',');
         if ((*str)[-1] != ')')
           (*str)--;
-
 
         /* Warn about deprecated functions */
         if (fp->flags & FN_DEPRECATED)
@@ -2743,8 +2734,8 @@ process_expression(char *buff, char **bp, char const **str,
             global_fun_recursions++;
             pe_info->fun_recursions++;
             if (fp->flags & FN_LOCALIZE) {
-              pe_regs = pe_regs_localize(pe_info, PE_REGS_LOCALQ,
-                                         "process_expression");
+              pe_regs =
+                pe_regs_localize(pe_info, PE_REGS_LOCALQ, "process_expression");
             } else {
               pe_regs = NULL;
             }
@@ -2799,8 +2790,8 @@ process_expression(char *buff, char **bp, char const **str,
                 safe_str(fp->where.ufun->name, buff, bp);
                 safe_chr(')', buff, bp);
               } else {
-                do_userfn(fbuff, &fbp, thing, attrib, nfargs, fargs,
-                          executor, caller, enactor, pe_info, PE_USERFN);
+                do_userfn(fbuff, &fbp, thing, attrib, nfargs, fargs, executor,
+                          caller, enactor, pe_info, PE_USERFN);
               }
             }
             if (realbuff)
@@ -2816,7 +2807,7 @@ process_expression(char *buff, char **bp, char const **str,
             global_fun_recursions--;
           }
         }
-        /* Free up the space allocated for the args */
+      /* Free up the space allocated for the args */
       free_func_args:
         for (j = 0; j < nfargs; j++)
           if (fargs[j])
@@ -2829,7 +2820,7 @@ process_expression(char *buff, char **bp, char const **str,
           mush_free(onearg, "process_expression.single_function_argument");
       }
       break;
-      /* Space compression */
+    /* Space compression */
     case ' ':
       had_space = 1;
       safe_chr(' ', buff, bp);
@@ -2843,7 +2834,7 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
         }
       break;
-      /* Escape character */
+    /* Escape character */
     case '\\':
       if (eflags & PE_LITERAL) {
         /* Show literal backslash in lit() */
@@ -2856,8 +2847,8 @@ process_expression(char *buff, char **bp, char const **str,
       (*str)++;
       if (!**str)
         goto exit_sequence;
-      /* FALL THROUGH */
-      /* Basic character */
+    /* FALL THROUGH */
+    /* Basic character */
     default:
       safe_chr(**str, buff, bp);
       (*str)++;
@@ -2867,8 +2858,8 @@ process_expression(char *buff, char **bp, char const **str,
 
 exit_sequence:
   if (eflags != PE_NOTHING) {
-    if ((eflags & PE_COMPRESS_SPACES) && had_space &&
-        ((*str)[-1] == ' ') && ((*bp)[-1] == ' '))
+    if ((eflags & PE_COMPRESS_SPACES) && had_space && ((*str)[-1] == ' ') &&
+        ((*bp)[-1] == ' '))
       (*bp)--;
     if (debugging) {
       pe_info->nest_depth--;
@@ -2936,5 +2927,5 @@ exit_sequence:
 }
 
 #ifdef WIN32
-#pragma warning( default : 4761)        /* NJG: enable warning re conversion */
+#pragma warning(default : 4761) /* NJG: enable warning re conversion */
 #endif

@@ -66,7 +66,7 @@ mush_malloc(size_t bytes, const char *check)
       strcmp(check, "descriptor_raw_input") == 0)
     bytes += 16;
 #endif
-  
+
   ptr = malloc(bytes);
   if (!ptr)
     do_rawlog(LT_TRACE, "mush_malloc failed to malloc %lu bytes for %s",
@@ -157,31 +157,31 @@ struct slab_page_list {
 
 /** A struct that represents one page's worth of objects */
 struct slab_page {
-  int nalloced; /**< Number of objects allocated from this page */
-  int nfree; /**< Number of objects on this page's free list */
-  void *last_obj; /**< Pointer to last object in page. */
+  int nalloced;           /**< Number of objects allocated from this page */
+  int nfree;              /**< Number of objects on this page's free list */
+  void *last_obj;         /**< Pointer to last object in page. */
   struct slab_page *next; /**< Pointer to next allocated page */
-  struct slab_page_list *freelist; /**< Pointer to list of unallocated objects */
+  struct slab_page_list
+    *freelist; /**< Pointer to list of unallocated objects */
 };
 
 /** Struct for a slab allocator */
 struct slab {
-  char name[64]; /**< Name of the slab */
-  int item_size; /**< Size of the objects this slab returns */
-  int items_per_page; /**< Number of objects that fit into a page */
-  ptrdiff_t data_offset; /**< offset from start of the page where objects
-                      are allocated from. */
-  bool fill_strategy; /**< How to find empty nodes? true for
-                         FIRST_FIT, false for BEST_FIT. */
-  bool keep_last_empty; /**< False if empty pages are always deleted,
-                           true to keep an empty page if it is the
-                           only allocated page. */
-  int hintless_threshold; /**< See documentation for
-                             SLAB_HINTLESS_THRESHOLD option */
+  char name[64];           /**< Name of the slab */
+  int item_size;           /**< Size of the objects this slab returns */
+  int items_per_page;      /**< Number of objects that fit into a page */
+  ptrdiff_t data_offset;   /**< offset from start of the page where objects
+                        are allocated from. */
+  bool fill_strategy;      /**< How to find empty nodes? true for
+                              FIRST_FIT, false for BEST_FIT. */
+  bool keep_last_empty;    /**< False if empty pages are always deleted,
+                              true to keep an empty page if it is the
+                              only allocated page. */
+  int hintless_threshold;  /**< See documentation for
+                              SLAB_HINTLESS_THRESHOLD option */
   struct slab_page *slabs; /**< Pointer to the head of the list of
                               allocated pages. */
 };
-
 
 /** Create a new slab allocator.
  * \param name The name of the allocator
@@ -214,8 +214,9 @@ slab_create(const char *name, size_t item_size)
   sl->items_per_page = (pgsize - offset) / item_size;
 
   if (item_size >= (pgsize - offset)) {
-    do_rawlog(LT_TRACE,
-              "slab(%s): item_size of %lu bytes is too large for a pagesize of %lu bytes. Using malloc() for allocations from this slab.",
+    do_rawlog(LT_TRACE, "slab(%s): item_size of %lu bytes is too large for a "
+                        "pagesize of %lu bytes. Using malloc() for allocations "
+                        "from this slab.",
               name, (unsigned long) item_size, (unsigned long) pgsize);
     sl->items_per_page = 0;
     return sl;
@@ -230,8 +231,8 @@ slab_create(const char *name, size_t item_size)
  * \param val Value to set option too (Not meaningful for all options)
  */
 void
-slab_set_opt(slab * sl, enum slab_options opt, int val
-             __attribute__ ((__unused__)))
+slab_set_opt(slab *sl, enum slab_options opt,
+             int val __attribute__((__unused__)))
 {
   if (!sl)
     return;
@@ -297,8 +298,8 @@ slab_alloc_page(struct slab *sl)
   sp->last_obj = sp->freelist;
   sp->next = NULL;
 #ifdef SLAB_DEBUG
-  do_rawlog(LT_TRACE,
-            "Allocating page starting at %p for slab(%s).\n\tFirst object allocated at %p, last object at %p",
+  do_rawlog(LT_TRACE, "Allocating page starting at %p for slab(%s).\n\tFirst "
+                      "object allocated at %p, last object at %p",
             (void *) sp, sl->name, (void *) (sp + sl->data_offset),
             sp->last_obj);
 #endif
@@ -332,7 +333,7 @@ slab_alloc_obj(struct slab_page *where)
  * \return pointer to object, or NULL
  */
 void *
-slab_malloc(slab * sl, const void *hint)
+slab_malloc(slab *sl, const void *hint)
 {
   if (!sl)
     return NULL;
@@ -396,7 +397,7 @@ slab_malloc(slab * sl, const void *hint)
       }
       last = page;
     }
-    /* This should never be reached, but handle it anyways. */
+/* This should never be reached, but handle it anyways. */
 #ifdef SLAB_DEBUG
     do_rawlog(LT_TRACE, "page hint %p not found in slab(%s)", (void *) hint,
               sl->name);
@@ -412,7 +413,7 @@ slab_malloc(slab * sl, const void *hint)
  * \param obj the object to free
  */
 void
-slab_free(slab * sl, void *obj)
+slab_free(slab *sl, void *obj)
 {
   struct slab_page *page, *last;
 
@@ -431,9 +432,10 @@ slab_free(slab * sl, void *obj)
       struct slab_page_list *scan;
       for (scan = page->freelist; scan; scan = scan->next)
         if (item == scan)
-          do_rawlog(LT_TRACE,
-                    "Attempt to free already free object %p from page %p of slab(%s)",
-                    (void *) item, (void *) page, sl->name);
+          do_rawlog(
+            LT_TRACE,
+            "Attempt to free already free object %p from page %p of slab(%s)",
+            (void *) item, (void *) page, sl->name);
 #endif
       item->next = page->freelist;
       page->freelist = item;
@@ -466,8 +468,7 @@ slab_free(slab * sl, void *obj)
     last = page;
   }
   /* Ooops. An object not allocated by this allocator! */
-  do_rawlog(LT_TRACE,
-            "Attempt to free object %p not allocated by slab(%s)",
+  do_rawlog(LT_TRACE, "Attempt to free object %p not allocated by slab(%s)",
             obj, sl->name);
 }
 
@@ -477,7 +478,7 @@ slab_free(slab * sl, void *obj)
  * \param sl the slab to destroy.
  */
 void
-slab_destroy(slab * sl)
+slab_destroy(slab *sl)
 {
   struct slab_page *page, *next;
   for (page = sl->slabs; page; page = next) {
@@ -491,7 +492,7 @@ slab_destroy(slab * sl)
  * \param sl the slab
  */
 void
-slab_describe(const slab * sl, struct slab_stats *stats)
+slab_describe(const slab *sl, struct slab_stats *stats)
 {
   const struct slab_page *page;
 

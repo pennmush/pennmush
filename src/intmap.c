@@ -64,14 +64,15 @@
 /** Structure that represents a node in a patricia tree. */
 typedef struct patricia {
   im_key key; /**< Key value */
-  int bit; /**< Which bit to test in this node */
+  int bit;    /**< Which bit to test in this node */
   void *data; /**< Pointer to data */
-  struct patricia *links[2]; /**< Links to nodes to branch to based on set bit */
+  struct patricia
+    *links[2]; /**< Links to nodes to branch to based on set bit */
 } patricia;
 
 /** Integer map struct */
 struct intmap {
-  int64_t count; /**< Number of elements in tree */
+  int64_t count;  /**< Number of elements in tree */
   patricia *root; /**< pointer to root of tree */
 };
 
@@ -220,7 +221,8 @@ im_insert(intmap *im, im_key key, void *data)
 
   /* Not a duplicate, so key and here->key /will/ differ in at least one
      bit. No need to make sure that bit doesn't go > 31 */
-  for (bit = 0; digit(key, bit) == digit(here->key, bit); bit++) ;
+  for (bit = 0; digit(key, bit) == digit(here->key, bit); bit++)
+    ;
 
   newnode->bit = bit;
 
@@ -259,7 +261,6 @@ im_insert(intmap *im, im_key key, void *data)
   assert(0);
   return false;
 }
-
 
 /** Delete a key from the map.
  * \param im the map.
@@ -373,7 +374,7 @@ im_delete(intmap *im, im_key key)
 int format_long(intmax_t n, char *buff, char **bp, int maxlen, int base);
 
 static void
-pat_list_nodes(patricia *node, FILE * fp)
+pat_list_nodes(patricia *node, FILE *fp)
 {
   int n;
   char tmpbuf[100];
@@ -385,8 +386,8 @@ pat_list_nodes(patricia *node, FILE * fp)
   format_long(node->key, tmpbuf, &bp, 99, 2);
   *bp = '\0';
 
-  fprintf(fp,
-          "node%u [label=\"{ <key> key = 0b%s (%u) | bit = %d | { <b0> 0 | <b1> 1 } }\", ",
+  fprintf(fp, "node%u [label=\"{ <key> key = 0b%s (%u) | bit = %d | { <b0> 0 | "
+              "<b1> 1 } }\", ",
           (unsigned int) node->key, tmpbuf, (unsigned int) node->key,
           node->bit);
   if (node->links[0]->bit > node->bit && node->links[1]->bit > node->bit)
@@ -405,13 +406,11 @@ pat_list_nodes(patricia *node, FILE * fp)
 }
 
 static void
-pat_list_links(patricia *node, FILE * fp)
+pat_list_links(patricia *node, FILE *fp)
 {
   int i;
-  static const char *const edge_styles[] = {
-    "style=dashed,arrowhead=open",
-    "style=solid,arrowhead=normal"
-  };
+  static const char *const edge_styles[] = {"style=dashed,arrowhead=open",
+                                            "style=solid,arrowhead=normal"};
 
   if (!node)
     return;

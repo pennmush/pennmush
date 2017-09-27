@@ -1797,7 +1797,7 @@ FUNCTION(fun_lpids)
   int qmask = 0;
   dbref thing = NOTHING;
   dbref player = NOTHING;
-  char *attr = NULL;
+  char *attrib = NULL;
   bool first = true;
   const char *list;
   char *elem;
@@ -1846,9 +1846,9 @@ FUNCTION(fun_lpids)
   } else {
     /* getpids(obj[/attrib]) */
     qmask = LPIDS_SEMAPHORE;
-    attr = strchr(args[0], '/');
-    if (attr)
-      *attr++ = '\0';
+    attrib = strchr(args[0], '/');
+    if (attrib)
+      *attrib++ = '\0';
     thing = match_thing(executor, args[0]);
     if (!GoodObject(thing)) {
       safe_str(T(e_notvis), buff, bp);
@@ -1880,7 +1880,7 @@ FUNCTION(fun_lpids)
         continue;
       if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;
-      if (attr && *attr && strcasecmp(tmp->semaphore_attr, attr))
+      if (attrib && *attrib && strcasecmp(tmp->semaphore_attr, attrib))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);

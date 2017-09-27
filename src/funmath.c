@@ -921,10 +921,10 @@ FUNCTION(fun_round)
 
     decimal = strchr(sbp, '.');
     if (!pad && decimal && places > 1) {
-      int n, trailing;
+      int i, trailing;
       decimal += 2;
       trailing = strlen(decimal);
-      for (n = 0; n < trailing; n++, decimal++) {
+      for (i = 0; i < trailing; i++, decimal++) {
         size_t len = strspn(decimal, "0");
         if (*(decimal + len) == '\0') {
           *bp = decimal;

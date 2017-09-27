@@ -1360,18 +1360,18 @@ struct grep_data {
 };
 
 static void
-grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attr,
+grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attrib,
               char *atrval)
 {
 
   if (buff) {
     if (count)
       safe_chr(' ', buff, bp);
-    safe_str(AL_NAME(attr), buff, bp);
+    safe_str(AL_NAME(attrib), buff, bp);
   } else {
-    notify_format(player, "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(attr),
-                  Owner(AL_CREATOR(attr)),
-                  privs_to_letters(attr_privs_view, AL_FLAGS(attr)), ANSI_END,
+    notify_format(player, "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(attrib),
+                  Owner(AL_CREATOR(attrib)),
+                  privs_to_letters(attr_privs_view, AL_FLAGS(attrib)), ANSI_END,
                   atrval);
   }
 }
@@ -1381,7 +1381,7 @@ extern const unsigned char *tables;
 static int
 grep_helper(dbref player, dbref thing __attribute__((__unused__)),
             dbref parent __attribute__((__unused__)),
-            char const *pattern __attribute__((__unused__)), ATTR *attr,
+            char const *pattern __attribute__((__unused__)), ATTR *attrib,
             void *args)
 {
   struct grep_data *gd = args;
@@ -1393,7 +1393,7 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   ansi_string *aval = NULL, *repl = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
-  s = atr_value(attr);
+  s = atr_value(attrib);
 
   if (gd->flags & GREP_WILD) {
     if ((matched = quick_wild_new(gd->findstr, s, cs))) {
@@ -1430,7 +1430,7 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   if (!matched)
     return 0;
 
-  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, buff);
+  grep_add_attr(gd->buff, gd->bp, player, gd->count, attrib, buff);
   gd->count++;
   return 1;
 }
@@ -1438,7 +1438,7 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
 static int
 regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
               dbref parent __attribute__((__unused__)),
-              char const *pattern __attribute__((__unused__)), ATTR *attr,
+              char const *pattern __attribute__((__unused__)), ATTR *attrib,
               void *args)
 {
   struct regrep_data *rgd = args;
@@ -1449,7 +1449,7 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
   char rbuff[BUFFER_LEN];
   char *rbp = rbuff;
 
-  s = atr_value(attr);
+  s = atr_value(attrib);
   orig = parse_ansi_string(s);
   if ((subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len,
                                search, 0, offsets, 99)) < 0) {
@@ -1486,7 +1486,7 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
   safe_ansi_string(orig, 0, orig->len, rbuff, &rbp);
   *rbp = '\0';
   free_ansi_string(orig);
-  grep_add_attr(rgd->buff, rgd->bp, player, rgd->count, attr, rbuff);
+  grep_add_attr(rgd->buff, rgd->bp, player, rgd->count, attrib, rbuff);
   rgd->count++;
   return 1;
 }

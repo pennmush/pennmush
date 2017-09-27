@@ -899,12 +899,12 @@ is_ssl_desc(DESC *d)
 }
 
 static void
-setup_desc(int sock, conn_source source)
+setup_desc(int sockfd, conn_source source)
 {
   DESC *newd;
   int result;
 
-  if (!(newd = new_connection(sock, &result, source))) {
+  if (!(newd = new_connection(sockfd, &result, source))) {
     if (test_connection(result) < 0)
       return;
   } else {
@@ -917,7 +917,7 @@ setup_desc(int sock, conn_source source)
 #ifdef INFO_SLAVE
 
 static void
-got_new_connection(int sock, conn_source source)
+got_new_connection(int sockfd, conn_source source)
 {
   union sockaddr_u addr;
   socklen_t addr_len;
@@ -925,7 +925,7 @@ got_new_connection(int sock, conn_source source)
 
   if (!info_slave_halted) {
     addr_len = sizeof(addr);
-    newsock = accept(sock, (struct sockaddr *) &addr, &addr_len);
+    newsock = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
     if (newsock < 0) {
       if (test_connection(newsock) < 0)
         return;
@@ -935,7 +935,7 @@ got_new_connection(int sock, conn_source source)
     if (newsock >= maxd)
       maxd = newsock + 1;
   } else
-    setup_desc(sock, source);
+    setup_desc(sockfd, source);
 }
 
 #endif
@@ -1428,7 +1428,7 @@ clearstrings(DESC *d)
  * \return 1 if something was written, 0 if not
  */
 static int
-fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
+fcache_dump_attr(DESC *d, dbref thing, const char *attrib, int html,
                  const char *prefix, char *arg)
 {
   char descarg[SBUF_LEN], dbrefarg[SBUF_LEN], buff[BUFFER_LEN], *bp;
@@ -1438,7 +1438,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
 
-  if (!fetch_ufun_attrib(attr, thing, &ufun,
+  if (!fetch_ufun_attrib(attrib, thing, &ufun,
                          UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
@@ -1518,7 +1518,7 @@ static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
   char objname[BUFFER_LEN];
-  char *attr;
+  char *attrib;
   dbref thing;
   size_t len;
 
@@ -1536,17 +1536,17 @@ fcache_read(FBLOCK *fb, const char *filename)
   /* Check for #dbref/attr */
   if (*filename == NUMBER_TOKEN) {
     strcpy(objname, filename);
-    if ((attr = strchr(objname, '/')) != NULL) {
-      *attr++ = '\0';
+    if ((attrib = strchr(objname, '/')) != NULL) {
+      *attrib++ = '\0';
       if ((thing = qparse_dbref(objname)) != NOTHING) {
         /* we have #dbref/attr */
         if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
           return -1;
         }
-        len = strlen(attr);
+        len = strlen(attrib);
         fb->thing = thing;
         fb->len = len;
-        memcpy(fb->buff, upcasestr(attr), len);
+        memcpy(fb->buff, upcasestr(attrib), len);
         *((char *) fb->buff + len) = '\0';
         return fb->len;
       }

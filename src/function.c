@@ -1207,17 +1207,17 @@ static int
 func_comp(const void *s1, const void *s2)
 {
   const FUN *a, *b;
-  dbref da, db;
+  dbref d1, d2;
 
   a = *(const FUN **) s1;
   b = *(const FUN **) s2;
 
-  da = a->where.ufun->thing;
-  db = b->where.ufun->thing;
+  d1 = a->where.ufun->thing;
+  d2 = b->where.ufun->thing;
 
-  if (da == db)
+  if (d1 == d2)
     return strcmp(a->name, b->name);
-  else if (da < db)
+  else if (d1 < d2)
     return -1;
   else
     return 1;

@@ -207,18 +207,18 @@ FUNCTION(fun_lattr)
 FUNCTION(fun_hasattr)
 {
   dbref thing;
-  char *attr;
+  char *attrib;
   ATTR *a;
 
   if (nargs == 1) {
-    attr = strchr(args[0], '/');
-    if (!attr) {
+    attrib = strchr(args[0], '/');
+    if (!attrib) {
       safe_format(buff, bp, T("#-1 BAD ARGUMENT FORMAT TO %s"), called_as);
       return;
     }
-    *attr++ = '\0';
+    *attrib++ = '\0';
   } else {
-    attr = args[1];
+    attrib = args[1];
   }
 
   thing = match_thing(executor, args[0]);
@@ -227,9 +227,9 @@ FUNCTION(fun_hasattr)
     return;
   }
   if (strchr(called_as, 'P'))
-    a = atr_get(thing, upcasestr(attr));
+    a = atr_get(thing, upcasestr(attrib));
   else
-    a = atr_get_noparent(thing, upcasestr(attr));
+    a = atr_get_noparent(thing, upcasestr(attrib));
   if (a && Can_Read_Attr(executor, thing, a)) {
     if (strchr(called_as, 'V'))
       safe_chr(*AL_STR(a) ? '1' : '0', buff, bp);

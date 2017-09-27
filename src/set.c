@@ -1274,18 +1274,18 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
            MQUE *queue_entry, int flags)
 {
   dbref thing;
-  char *attr;
+  char *attrib;
   PE_REGS *pe_regs;
   int i;
   dbref triggerer = executor; /* triggerer is totally a word. Shut up. */
   bool control;
   int qflags = (queue_entry->queue_type & QUEUE_EVENT);
 
-  if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
+  if (!(attrib = strchr(object, '/')) || !*(attrib + 1)) {
     notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
-  *attr++ = '\0';
+  *attrib++ = '\0';
 
   thing = noisy_match_result(executor, object, NOTYPE, MAT_EVERYTHING);
 
@@ -1323,7 +1323,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   if (!(flags & TRIGGER_CLEARREGS))
     pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base_priv(thing, upcasestr(attr), triggerer, 0, pe_regs,
+  if (queue_attribute_base_priv(thing, upcasestr(attrib), triggerer, 0, pe_regs,
                                 qflags, executor)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));

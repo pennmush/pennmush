@@ -2156,7 +2156,7 @@ void
 do_atrlock(dbref player, const char *src, const char *action)
 {
   dbref thing;
-  char *target, *attr;
+  char *target, *attrib;
   ATTR *ptr;
   enum atrlock_status status = ATRLOCK_CHECK;
 
@@ -2180,13 +2180,13 @@ do_atrlock(dbref player, const char *src, const char *action)
 
   target = mush_strdup(src, "atrlock.string");
 
-  if (!(attr = strchr(target, '/')) || !(*(attr + 1))) {
+  if (!(attrib = strchr(target, '/')) || !(*(attrib + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
     mush_free(target, "atrlock.string");
     return;
   }
 
-  *attr++ = '\0';
+  *attrib++ = '\0';
   if ((thing = noisy_match_result(player, target, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
     mush_free(target, "atrlock.string");
@@ -2198,7 +2198,7 @@ do_atrlock(dbref player, const char *src, const char *action)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(attr));
+  ptr = atr_get_noparent(thing, strupper(attrib));
   mush_free(target, "atrlock.string");
   if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));

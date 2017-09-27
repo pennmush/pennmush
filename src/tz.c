@@ -267,10 +267,10 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   {
     uint8_t *buf;
-    int m, size = tz->typecnt * 6;
+    int m, offsize = tz->typecnt * 6;
 
-    buf = malloc(size);
-    READ_CHUNKF(buf, size);
+    buf = malloc(offsize);
+    READ_CHUNKF(buf, offsize);
 
     tz->offsets = calloc(tz->typecnt, sizeof(struct ttinfo));
 
@@ -293,10 +293,10 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 #define READ_LEAPSECS(type, decode)                                            \
   do {                                                                         \
     type *buf;                                                                 \
-    int m, size = tz->leapcnt * (4 + time_size);                               \
+    int m, lpsize = tz->leapcnt * (4 + time_size);                               \
                                                                                \
-    buf = malloc(size);                                                        \
-    READ_CHUNKF(buf, size);                                                    \
+    buf = malloc(lpsize);                                                        \
+    READ_CHUNKF(buf, lpsize);                                                    \
                                                                                \
     tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));             \
                                                                                \
@@ -321,21 +321,21 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   {
     uint8_t *buf;
-    int n;
+    int i;
 
     buf = malloc(isstdcnt);
     READ_CHUNKF(buf, isstdcnt);
 
-    for (n = 0; n < isstdcnt; n += 1)
-      tz->offsets[n].tt_std = buf[n];
+    for (i = 0; i < isstdcnt; i += 1)
+      tz->offsets[i].tt_std = buf[i];
 
     free(buf);
 
     buf = malloc(isgmtcnt);
     READ_CHUNKF(buf, isgmtcnt);
 
-    for (n = 0; n < isgmtcnt; n += 1)
-      tz->offsets[n].tt_utc = buf[n];
+    for (i = 0; i < isgmtcnt; i += 1)
+      tz->offsets[i].tt_utc = buf[i];
 
     free(buf);
   }

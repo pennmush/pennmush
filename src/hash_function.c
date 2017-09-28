@@ -201,7 +201,7 @@ static inline uint64_t __attribute__((__const__)) city_bswap_64(uint64_t dword)
 #endif
 
 #if !defined(LIKELY)
-#if HAVE_BUILTIN_EXPECT
+#ifdef HAVE_BUILTIN_EXPECT
 #define LIKELY(x) (__builtin_expect(!!(x), 1))
 #else
 #define LIKELY(x) (x)

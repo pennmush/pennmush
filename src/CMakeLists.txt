@@ -7,6 +7,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
 include(CheckSymbolExists)
+include(CheckCSourceCompiles)
 
 include(FindUnixCommands)
 include(FindPerl)
@@ -254,8 +255,10 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
 
+check_c_source_compiles(
+    "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
+
 # TO-DO:
-# __builtin_expect
 # Warnings
 # march=native
 # stack protector

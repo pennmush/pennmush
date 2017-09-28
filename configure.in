@@ -78,14 +78,14 @@ fi
 # CFLAGS for clang
 if test "${CC}" = "clang"; then
   if test "${DEFAULT_CFLAGS}" = yes; then
-    CFLAGS="$CFLAGS -W -Wall -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
+    CFLAGS="$CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
   else
     CFLAGS="-g $CFLAGS -W"
   fi
 elif test "${GCC}" = yes; then
   if test "${DEFAULT_CFLAGS}" = yes; then
     if test -n "${GDB}"; then
-      CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment -Wno-char-subscripts"
+      CFLAGS="-ggdb $CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-char-subscripts"
     else
       CFLAGS="-g $CFLAGS -W"
     fi

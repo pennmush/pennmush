@@ -353,12 +353,6 @@ fi
 
 ### Variables, constants, defines and other misc. stuff
 
-AC_CHECK_DECLS(h_errno, [AC_DEFINE(HAVE_H_ERRNO)],,[AC_INCLUDES_DEFAULT
-#ifdef HAVE_NETDB_H
-#include <netdb.h>
-#endif
-])
-
 AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [], [
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>

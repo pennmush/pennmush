@@ -303,8 +303,6 @@ typedef bool _Bool;
 
 /* Variables and defines */
 
-#undef HAVE_H_ERRNO
-
 #undef HAVE_SIGCHLD
 
 /* Files */

@@ -64,10 +64,6 @@
 #include <netdb.h>
 #endif
 
-#if !defined(HAVE_H_ERRNO) && !defined(WIN32)
-extern int h_errno;
-#endif
-
 #include <errno.h>
 #include <fcntl.h>
 

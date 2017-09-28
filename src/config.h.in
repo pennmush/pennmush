@@ -28,8 +28,86 @@
 #cmakedefine HAVE_UNISTD_H
 
 /* Functions */
-#cmakedefine HAVE_LOG2
+#cmakedefine HAVE_BINDTEXTDOMAIN
+#cmakedefine HAVE_CBRT
+#cmakedefine HAVE_CRYPT
+#cmakedefine HAVE_DH_SET0_PQG
+#cmakedefine HAVE_EVP_MD_DO_ALL
+#cmakedefine HAVE_FCNTL
+#cmakedefine HAVE_FECLEAREXCEPT
+#cmakedefine HAVE_FETESTEXCEPT
+#cmakedefine HAVE_FORK
+#cmakedefine HAVE_GETADDRINFO
+#cmakedefine HAVE_GETDATE
+#cmakedefine HAVE_GETEUID
+#cmakedefine HAVE_GETPID
+#cmakedefine HAVE_GETPPID
+#cmakedefine HAVE_GETPRIORITY
+#cmakedefine HAVE_GETRLIMIT
+#cmakedefine HAVE_GETRUSAGE
+#cmakedefine HAVE_GETUID
 #cmakedefine HAVE_IMAXDIV
+#cmakedefine HAVE_INOTIFY_INIT
+#cmakedefine HAVE_INOTIFY_INIT1
+#cmakedefine HAVE_ISNORMAL
+#cmakedefine HAVE_KQUEUE
+#cmakedefine HAVE_LOG2
+#cmakedefine HAVE_LRINT
+#cmakedefine HAVE_NL_LANGINFO
+#cmakedefine HAVE_POLL
+#cmakedefine HAVE_POSIX_FADVISE
+#cmakedefine HAVE_POSIX_FALLOCATE
+#cmakedefine HAVE_POSIX_MEMALIGN
+#cmakedefine HAVE_PREAD
+#cmakedefine HAVE_PWRITE
+#cmakedefine HAVE_SELECT
+#cmakedefine HAVE_SETEUID
+#cmakedefine HAVE_SETITIMER
+#cmakedefine HAVE_SETPGID
+#cmakedefine HAVE_SETPRIORITY
+#cmakedefine HAVE_SETSID
+#cmakedefine HAVE_SHA
+#cmakedefine HAVE_SIGACTION
+#cmakedefine HAVE_SIGPROCMASK
+#cmakedefine HAVE_SOCKETPAIR
+#cmakedefine HAVE_STRCHRNUL
+#cmakedefine HAVE_STRDUP
+#cmakedefine HAVE_STRXFRM
+#cmakedefine HAVE_SYSCONF
+#cmakedefine HAVE_TEXTDOMAIN
+#cmakedefine HAVE_VASPRINTF
+#cmakedefine HAVE_WAITPID
+#cmakedefine HAVE_WRITEV
+#cmakedefine HAVE__STRICMP
+#cmakedefine HAVE__STRICOLL
+#cmakedefine HAVE__STRNCOLL
+#cmakedefine HAVE__STRNICMP
+#cmakedefine HAVE__STRNICOLL
+#cmakedefine HAVE__VSNPRINTF_S
+
+/* Other stuff */
+#cmakedefine HAVE_BUILTIN_EXPECT
+#cmakedefine HAVE_DEV_URANDOM
+#cmakedefine HAVE_H_ERRNO
+#cmakedefine HAVE_ZONEINFO
+
+#if defined(HAVE_INOTIFY_INIT) || defined(HAVE_INOTIFY_INIT1)
+#define HAVE_INOTIFY 1
+#endif
+
+/* Programs */
+#cmakedefine HAVE_ED
+#cmakedefine HAVE_UPTIME
+
+/* Libraries */
+#cmakedefine HAVE_MYSQL
+#cmakedefine HAVE_LIBEVENT_CORE
+#cmakedefine HAVE_LIBZ
+#cmakedefine HAVE_POSTGRESQL
+#cmakedefine HAVE_SQLITE3
+//#cmakedefine HAVE_SSL
+#define HAVE_SSL 1
+
 
 /* Taken from autoconf manual */
 #ifdef HAVE_STDBOOL_H
@@ -56,5 +134,9 @@ typedef bool _Bool;
 
 #include "confcompiler.h"
 
+#ifdef HAVE_RESTRCT
 #define RESTRICT HAVE_RESTRICT
+#else
+#define RESTRICT
+#endif
 

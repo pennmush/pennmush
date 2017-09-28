@@ -1,7 +1,8 @@
 /* CMake generated config.h file */
 
-#cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_STDBOOL_H
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_UNISTD_H
 #cmakedefine HAVE_SYS_WAIT_H
 #cmakedefine HAVE_SYS_TIME_H
@@ -23,6 +24,10 @@
 #cmakedefine HAVE_LANGINFO_H
 #cmakedefine HAVE_FENV_H
 #cmakedefine HAVE_SYS_PARAM_H
+#cmakedefine HAVE_SYS_UCRED_H
+
+#cmakedefine HAVE_LOG2
+#cmakedefine HAVE_IMAXDIV
 
 /* Taken from autoconf manual */
 #ifdef HAVE_STDBOOL_H

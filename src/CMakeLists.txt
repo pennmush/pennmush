@@ -11,12 +11,15 @@ find_program(GPERF gperf)
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
+include(CheckFunctionExists)
+include(CheckSymbolExists)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
 # Header files
 CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
 CHECK_INCLUDE_FILE(stdbool.h HAVE_STDBOOL_H)
+CHECK_INCLUDE_FILE(inttypes.h HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILE(sys/wait.h HAVE_SYS_WAIT_H)
 CHECK_INCLUDE_FILE(sys/time.h HAVE_SYS_TIME_H)
 CHECK_INCLUDE_FILE(sys/stat.h HAVE_SYS_STAT_H)
@@ -38,17 +41,29 @@ CHECK_INCLUDE_FILE(langinfo.h HAVE_LANGINFO_H)
 CHECK_INCLUDE_FILE(fenv.h HAVE_FENV_H)
 CHECK_INCLUDE_FILE(sys/param.h HAVE_SYS_PARAM_H)
 CHECK_INCLUDE_FILE(unistd.h HAVE_UNISTD_H)
-
+CHECK_INCLUDE_FILE(sys/ucred.h HAVE_SYS_UCRED_H)
 
 # Required libraries
-include(FindOpenSSL)
-if(NOT ${OPENSSL_FOUND})
-       message(FATAL_ERROR "OpenSSL is required to use PennMUSH")
+#set(CMAKE_REQUIRED_QUIET 1)
+check_symbol_exists(sin "math.h" HAVE_SIN)
+if(NOT HAVE_SIN)
+  unset(HAVE_SIN)
+  list(APPEND CMAKE_REQUIRED_LIBRARIES m)
+  list(APPEND LIBS m)
+  check_symbol_exists(sin "math.h" HAVE_SIN2)
+  if(NOT HAVE_SIN2)
+    message(FATAL_ERROR " Unable to link with math functions.")
+  endif()
 endif()
-include(FindPCRE)
-if(NOT ${PCRE_FOUND})
-  message(FATAL_ERROR "PCRE is required to use PennMUSH")
-endif()
+#set(CMAKE_REQUIRED_QUIET 0)
+
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+list(APPEND LIBS ${OPENSSL_LIBRARIES})
+
+find_package(PCRE REQUIRED)
+include_directories(${PCRE_INCLUDE_DIR})
+list(APPEND LIBS ${PCRE_LIBRARY})
 
 # Optional libraries
 include(FindIntl)
@@ -67,10 +82,16 @@ find_library(LIBZ_LIBRARY z)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibZ DEFAULT_MSG LIBZ_LIBRARY LIBZ_INCLUDE_DIR)
 
 # TODO: MySQL, Sqlite3
-include(FindPostgreSQL)
+find_package(PostgreSQL)
+if(${PostgreSQL_FOUND})
+  include_directories(${PostgreSQL_INCLUDE_DIRS})
+  list(APPEND LIBS ${PostgreSQL_LIBRARIES})
+endif()
 
-# Assorted headers
 
+# Functions
+check_symbol_exists(log2 "math.h" HAVE_LOG2)
+check_symbol_exists(imaxdiv "inttypes.h" HAVE_IMAXDIV)
 
 # create local source files
 if(NOT EXISTS cmdlocal.c)
@@ -112,8 +133,7 @@ else()
 
 endif()
 
-execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING DIRECTORY ${PROJECT_SOURCE_DIR})
-
+execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c	
@@ -130,8 +150,7 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	wait.c warnings.c wild.c wiz.c)
 target_compile_features(netmush PUBLIC c_restrict)
 target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-#target_compile_options(netmush PUBLIC "-include config.h" "-include options.h" "-include confmagic.h")
-target_link_libraries(netmush ${OPENSSL_LIBRARIES} ${PostgreSQL_LIBRARY_DIRS} ${PostgreSQL_LIBRARIES} ${LIBEVENT_LIBRARIES})
+target_link_libraries(netmush ${LIBS})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include(WriteCompilerDetectionHeader)

@@ -2141,7 +2141,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
 
     va_start(ap, fmt);
     r = mush_vsnprintf(line, sizeof line, fmt, ap);
-    va_end(ap, fmt);
+    va_end(ap);
     if (r > -1)
       OUTPUT(gzputs(f->handle.g, line));
     else

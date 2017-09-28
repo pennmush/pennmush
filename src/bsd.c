@@ -64,6 +64,9 @@
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
+#ifdef HAVE_LIBINTL_H
+#include <libintl.h>
+#endif
 #include <setjmp.h>
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>

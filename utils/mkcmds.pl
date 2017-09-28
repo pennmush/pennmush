@@ -109,7 +109,7 @@ EOS
 EOS
     close $SRC;
 
-    print $HDR "#endif                          /* SWITCHES_H */\n";
+    print $HDR "#endif /* SWITCHES_H */\n";
     close $HDR;
 
     maybemove $temphdr, "hdrs/switches.h";

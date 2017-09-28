@@ -6,7 +6,6 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
-include(CheckFunctionExists)
 include(CheckSymbolExists)
 
 include(FindUnixCommands)
@@ -178,10 +177,6 @@ check_symbol_exists(_strncoll "string.h" HAVE__STRNCOLL)
 check_symbol_exists(_strnicmp "string.h" HAVE__STRNICMP)
 check_symbol_exists(_strnicoll "string.h" HAVE__STRNICOLL)
 check_symbol_exists(_vsnprintf_s "string.h" HAVE__VSNPRINTF_S)
-
-# Variables
-# TO-DO:
-# h_errno from gethostinfo
 
 # Files
 if(EXISTS /dev/urandom)

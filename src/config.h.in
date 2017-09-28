@@ -90,7 +90,6 @@
 /* Other stuff */
 #cmakedefine HAVE_BUILTIN_EXPECT
 #cmakedefine HAVE_DEV_URANDOM
-#cmakedefine HAVE_H_ERRNO
 #cmakedefine HAVE_ZONEINFO
 
 #if defined(HAVE_INOTIFY_INIT) || defined(HAVE_INOTIFY_INIT1)

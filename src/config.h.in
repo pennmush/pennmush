@@ -1,31 +1,33 @@
 /* CMake generated config.h file */
 
+/* Headers */
+#cmakedefine HAVE_ARPA_INET_H
+#cmakedefine HAVE_CRYPT_H
+#cmakedefine HAVE_FENV_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine HAVE_LANGINFO_H
+#cmakedefine HAVE_NETDB_H
+#cmakedefine HAVE_NETINET_IN_H
+#cmakedefine HAVE_NETINET_TCP_H
+#cmakedefine HAVE_POLL_H
 #cmakedefine HAVE_STDBOOL_H
 #cmakedefine HAVE_STDINT_H
-#cmakedefine HAVE_INTTYPES_H
-#cmakedefine HAVE_UNISTD_H
-#cmakedefine HAVE_SYS_WAIT_H
-#cmakedefine HAVE_SYS_TIME_H
-#cmakedefine HAVE_SYS_STAT_H
-#cmakedefine HAVE_SYS_TYPES_H
-#cmakedefine HAVE_SYS_SOCKET_H
-#cmakedefine HAVE_ARPA_INET_H
-#cmakedefine HAVE_NETDB_H
-#cmakedefine HAVE_NETINET_TCP_H
-#cmakedefine HAVE_NETINET_IN_H
-#cmakedefine HAVE_SYS_UN_H
-#cmakedefine HAVE_SYS_RESOURCE_H
 #cmakedefine HAVE_SYS_EVENT_H
-#cmakedefine HAVE_SYS_UIO_H
-#cmakedefine HAVE_BYTESWAP_H
-#cmakedefine HAVE_POLL_H
-#cmakedefine HAVE_SYS_SELECT_H
 #cmakedefine HAVE_SYS_INOTIFY_H
-#cmakedefine HAVE_LANGINFO_H
-#cmakedefine HAVE_FENV_H
 #cmakedefine HAVE_SYS_PARAM_H
+#cmakedefine HAVE_SYS_RESOURCE_H
+#cmakedefine HAVE_SYS_SELECT_H
+#cmakedefine HAVE_SYS_SOCKET_H
+#cmakedefine HAVE_SYS_STAT_H
+#cmakedefine HAVE_SYS_TIME_H
+#cmakedefine HAVE_SYS_TYPES_H
 #cmakedefine HAVE_SYS_UCRED_H
+#cmakedefine HAVE_SYS_UIO_H
+#cmakedefine HAVE_SYS_UN_H
+#cmakedefine HAVE_SYS_WAIT_H
+#cmakedefine HAVE_UNISTD_H
 
+/* Functions */
 #cmakedefine HAVE_LOG2
 #cmakedefine HAVE_IMAXDIV
 

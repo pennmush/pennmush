@@ -97,7 +97,9 @@
 
 /* Programs */
 #cmakedefine HAVE_ED
+#define ED_PATH "@ED@"
 #cmakedefine HAVE_UPTIME
+#define UPTIME_PATH "@UPTIME@"
 
 /* Libraries */
 #cmakedefine HAVE_MYSQL

@@ -3,16 +3,18 @@ project(PennMUSH LANGUAGES C VERSION 1.8.6.2)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-include(FindUnixCommands)
-include(FindPerl)
-include(FindDoxygen)
-find_program(GPERF gperf)
-
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
+
+include(FindUnixCommands)
+include(FindPerl)
+include(FindDoxygen)
+find_program(GPERF gperf)
+find_program(ED ed)
+find_program(UPTIME uptime)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
@@ -170,6 +172,26 @@ check_symbol_exists(_strnicmp "string.h" HAVE__STRNICMP)
 check_symbol_exists(_strnicoll "string.h" HAVE__STRNICOLL)
 check_symbol_exists(_vsnprintf_s "string.h" HAVE__VSNPRINTF_S)
 
+# Variables
+# TO-DO:
+# h_errno from gethostinfo
+
+# Files
+if(EXISTS /dev/urandom)
+  set(HAVE_DEV_URANDOM 1)
+endif()
+
+# Programs
+if(ED)
+  set(HAVE_ED 1)
+endif()
+if(UPTIME)
+  set(HAVE_UPTIME 1)
+endif()
+
+# TO-DO:
+# ZONEINFO
+
 # create local source files
 if(NOT EXISTS cmdlocal.c)
   execute_process(COMMAND ${CP} cmdlocal.dst cmdlocal.c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
@@ -225,10 +247,22 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	
 	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
 	wait.c warnings.c wild.c wiz.c)
+
+# Compiler features
 target_compile_features(netmush PUBLIC c_restrict)
+# TO-DO:
+# __builtin_expect
+# Warnings
+# march=native
+# stack protector
+
+
 target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
+
 target_link_libraries(netmush ${LIBS})
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
+
 include(WriteCompilerDetectionHeader)
+
 write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang FEATURES c_restrict)

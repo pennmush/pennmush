@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
@@ -35,6 +35,7 @@
 #include "gitinfo.h"
 #include "tz.h"
 #include "version.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 #include <windows.h>

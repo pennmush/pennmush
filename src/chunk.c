@@ -215,6 +215,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "chunk.h"
 
 #define _XOPEN_SOURCE 600
@@ -224,7 +225,9 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <assert.h>
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #ifdef WIN32
 #include <wtypes.h>
 #include <io.h>
@@ -247,6 +250,8 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "notify.h"
+
+#include "confmagic.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */

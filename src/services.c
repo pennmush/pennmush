@@ -5,7 +5,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #ifdef WIN32
 
 #include <windows.h> /* for service and thread routines */
@@ -20,6 +20,7 @@
 #include "mushdb.h"
 #include "mymalloc.h"
 #include "notify.h"
+#include "confmagic.h"
 
 #ifdef WIN32SERVICES
 

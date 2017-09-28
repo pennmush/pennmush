@@ -27,6 +27,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -69,6 +70,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /* Supported platforms */
 typedef enum {

@@ -31,6 +31,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "strtree.h"
 
 #include <assert.h>
@@ -44,6 +45,7 @@
 #include "conf.h"
 #include "mymalloc.h"
 #include "notify.h"
+#include "confmagic.h"
 
 /* Various constants.  Their import is either bleedingly obvious
  * or explained below. */

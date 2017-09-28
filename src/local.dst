@@ -8,7 +8,7 @@
 /* Here are some includes you're likely to need or want.
  */
 #include "copyrite.h"
-
+#include "config.h"
 #include <string.h>
 
 #include "command.h"
@@ -19,6 +19,7 @@
 #include "htab.h"
 #include "lock.h"
 #include "parse.h"
+#include "confmagic.h"
 
 extern HASHTAB htab_reserved_aliases;
 

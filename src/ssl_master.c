@@ -1,6 +1,7 @@
 /** SSL slave controller related code. */
 
 #include "copyrite.h"
+#include "config.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -33,6 +34,7 @@
 #include "sig.h"
 #include "ssl_slave.h"
 #include "wait.h"
+#include "confmagic.h"
 
 pid_t ssl_slave_pid = -1;
 enum ssl_slave_state ssl_slave_state = SSL_SLAVE_DOWN;

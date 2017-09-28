@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -14,6 +15,7 @@
 
 #include "conf.h"
 #include "mymalloc.h"
+#include "confmagic.h"
 
 #ifndef HAVE_STRDUP
 char *strdup(const char *s);

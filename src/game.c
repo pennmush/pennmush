@@ -6,6 +6,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "game.h"
 
 #include <ctype.h>
@@ -80,6 +81,8 @@ void Win32MUSH_setup(void);
 #include <sys/syscall.h>
 #define getrusage(x, p) syscall(SYS_GETRUSAGE, x, p)
 #endif /* fix to HP-UX getrusage() braindamage */
+
+#include "confmagic.h"
 
 /* declarations */
 GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};

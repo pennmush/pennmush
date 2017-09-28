@@ -11,9 +11,11 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "hash_function.h"
 
 #include <string.h>
+#include "confmagic.h"
 
 #if defined(_M_X64) || defined(__x86_64__)
 /* We assume that x86-64 provides relatively fast unaligned reads. */

@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <string.h>
 #include <ctype.h>
 #if defined(__GNUC__) && !defined(__USE_XOPEN_EXTENDED)
@@ -25,6 +25,7 @@
 #include "parse.h"
 #include "strutil.h"
 #include "tz.h"
+#include "confmagic.h"
 
 int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,

@@ -11,6 +11,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "version.h"
 
 #include "conf.h"
@@ -19,8 +20,10 @@
 #include "gitinfo.h"
 
 #ifndef WIN32
-#include "buildinf.h"
+//#include "buildinf.h"
 #endif
+
+#include "confmagic.h"
 
 void do_version(dbref player);
 
@@ -40,11 +43,15 @@ do_version(dbref player)
 #ifdef GIT_REVISION
   notify_format(player, T("Git revision: %s"), GIT_REVISION);
 #endif
-#ifdef WIN32
-  notify_format(player, T("Build date: %s"), __DATE__);
-#else
+#ifdef BUILDDATE
   notify_format(player, T("Build date: %s"), BUILDDATE);
+#else
+  notify_format(player, T("Build date: %s"), __DATE__);
+#endif
+#ifdef COMPILER
   notify_format(player, T("Compiler: %s"), COMPILER);
+#endif
+#ifdef CCFLAGS
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
 #endif
 }

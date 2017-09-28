@@ -10,7 +10,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +28,7 @@
 #include "mushdb.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static void do_give_to(dbref player, char *arg, int silent,
                        NEW_PE_INFO *pe_info);

@@ -52,6 +52,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <limits.h>
@@ -71,6 +72,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "parse.h"
+#include "confmagic.h"
 
 dbref first_free = NOTHING; /**< Object at top of free list */
 

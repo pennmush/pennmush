@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -40,6 +41,7 @@
 #include "parse.h"
 #include "privtab.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 int forbidden_name(const char *name);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,

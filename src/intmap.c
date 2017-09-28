@@ -44,6 +44,9 @@
    recommended yet. */
 /* #define NDEBUG */
 
+#include "copyrite.h"
+#include "config.h"
+
 #include "intmap.h"
 
 #ifdef HAVE_STDINT_H
@@ -60,6 +63,7 @@
 #include "mymalloc.h"
 #include "notify.h"
 #include "log.h"
+#include "confmagic.h"
 
 /** Structure that represents a node in a patricia tree. */
 typedef struct patricia {

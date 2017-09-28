@@ -24,6 +24,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -38,6 +39,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** Force a char to be lowercase */
 #define FIXCASE(a) (DOWNCASE(a))

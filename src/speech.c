@@ -8,6 +8,7 @@
 /* speech.c */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -30,6 +31,7 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static void do_one_remit(dbref executor, dbref speaker, const char *target,
                          const char *msg, int flags, struct format_msg *format,

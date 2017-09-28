@@ -28,6 +28,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "lock.h"
 
 #include <stdio.h>
@@ -49,6 +50,7 @@
 #include "privtab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /* If any lock_type ever contains the character '|', reading in locks
  * from the db will break.

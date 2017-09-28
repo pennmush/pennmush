@@ -10,6 +10,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "command.h"
 
 #include <string.h>
@@ -38,6 +39,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "confmagic.h"
 
 PTAB ptab_command;       /**< Prefix table for command names. */
 PTAB ptab_command_perms; /**< Prefix table for command permissions */

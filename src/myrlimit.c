@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -35,6 +36,7 @@
 
 #include "conf.h"
 #include "log.h"
+#include "confmagic.h"
 
 #ifdef HAVE_GETRLIMIT
 void init_rlimit(void);

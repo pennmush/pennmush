@@ -59,6 +59,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "extmail.h"
 
 #ifdef HAVE_SYS_TIME_H
@@ -97,6 +98,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 extern int do_convtime(const char *str, struct tm *ttm); /* funtime.c */
 

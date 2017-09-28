@@ -5,7 +5,9 @@
  *
  *
  */
-#include "help.h"
+
+#include "copyrite.h"
+#include "config.h"
 
 /* This might have to be uncommented on some linux distros... */
 /* #define _XOPEN_SOURCE 600 */
@@ -16,6 +18,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pcre.h>
+#include "help.h"
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
@@ -30,6 +33,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 HASHTAB help_files; /**< Help filenames hash table */
 

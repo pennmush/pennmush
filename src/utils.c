@@ -7,12 +7,11 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <limits.h>
-#ifdef sgi
 #include <math.h>
-#endif
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -54,6 +53,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 dbref find_entrance(dbref door);
 void initialize_mt(void);

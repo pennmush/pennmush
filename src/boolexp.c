@@ -87,7 +87,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <ctype.h>
 #include <string.h>
 #ifdef HAVE_STDINT_H
@@ -109,7 +109,7 @@
 #include "parse.h"
 #include "strtree.h"
 #include "strutil.h"
-
+#include "confmagic.h"
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
 #endif

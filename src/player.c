@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
@@ -44,6 +45,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);

@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <string.h>
 
@@ -48,6 +49,7 @@
 #include "ssl_slave.h"
 #include "strutil.h"
 #include "version.h"
+#include "confmagic.h"
 
 /* External Stuff */
 void do_poor(dbref player, char *arg1);

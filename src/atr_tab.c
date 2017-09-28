@@ -6,6 +6,8 @@
  *
  */
 
+#include "copyrite.h"
+#include "config.h"
 #include "atr_tab.h"
 
 #include <string.h>
@@ -24,6 +26,8 @@
 #include "privtab.h"
 #include "ptab.h"
 #include "strutil.h"
+#include "confmagic.h"
+
 
 extern const unsigned char *tables;
 

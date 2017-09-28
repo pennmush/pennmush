@@ -52,6 +52,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "memcheck.h"
 
 #include <stdlib.h>
@@ -65,6 +66,7 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 void memcheck_dump_struct(const char *filename);
 

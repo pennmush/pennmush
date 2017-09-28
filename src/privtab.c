@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "privtab.h"
 
 #include <stdio.h>
@@ -19,6 +20,7 @@
 #include "conf.h"
 #include "mushtype.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** Convert a string to a set of privilege bits, masked by an original set.
  * Given a privs table, a string, and an original set of privileges,

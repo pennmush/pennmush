@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -32,6 +32,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static void look_exits(dbref player, dbref loc, const char *exit_name,
                        NEW_PE_INFO *pe_info);

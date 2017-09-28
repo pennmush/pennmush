@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "markup.h"
 
 #include <stdio.h>
@@ -27,6 +28,7 @@
 #include "pueblo.h"
 #include "rgb.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 #define ANSI_BEGIN "\x1B["
 #define ANSI_FINISH "m"

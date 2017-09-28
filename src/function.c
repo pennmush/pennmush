@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "function.h"
 
 #include <limits.h>
@@ -29,6 +30,7 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);

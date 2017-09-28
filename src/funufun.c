@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <string.h>
 
 #include "attrib.h"
@@ -23,6 +23,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /* ARGSUSED */
 FUNCTION(fun_s)

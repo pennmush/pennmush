@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -74,6 +75,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "charconv.h"
+#include "confmagic.h"
 
 extern CHAN *channels;
 

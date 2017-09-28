@@ -7,8 +7,8 @@
  */
 
 #include "copyrite.h"
-
 #define _GNU_SOURCE
+#include "config.h"
 #include <string.h>
 #include <ctype.h>
 #include "ansi.h"
@@ -30,6 +30,7 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void freearr_member(char *p);

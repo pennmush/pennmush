@@ -6,10 +6,12 @@
  *
  */
 
+#include "config.h"
 #include <signal.h>
 
 #include "conf.h"
 #include "sig.h"
+#include "confmagic.h"
 
 #ifndef HAVE_SIGPROCMASK
 static Sigfunc saved_handlers[NSIG];

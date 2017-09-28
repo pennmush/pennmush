@@ -14,13 +14,14 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <string.h>
 
 #include "conf.h"
 #include "externs.h"
 #include "function.h"
 #include "parse.h"
+#include "confmagic.h"
 
 void local_functions(void);
 

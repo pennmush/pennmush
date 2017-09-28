@@ -4,6 +4,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "sort.h"
 
 #include <string.h>
@@ -18,6 +19,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 #define EPSILON 0.000000001 /**< limit of precision for float equality */
 

@@ -9,6 +9,7 @@
 #define _GNU_SOURCE
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +81,7 @@
 #include <poll.h>
 #endif
 
-#ifdef I_SYS_SELECT
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 
@@ -98,6 +99,7 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "wait.h"
+#include "confmagic.h"
 
 /* TODO: Hack until we move mush_panic() somewhere more reasonable. */
 void mush_panic(const char *);

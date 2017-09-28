@@ -14,6 +14,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #ifdef WIN32
 #error "info_slave is not currently supported on Windows"
@@ -57,6 +58,7 @@
 #include "mysocket.h"
 #include "wait.h"
 #include "sig.h"
+#include "confmagic.h"
 
 void fputerr(const char *);
 const char *time_string(void);

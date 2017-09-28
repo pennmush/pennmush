@@ -9,6 +9,7 @@
 #define _GNU_SOURCE /* For strchrnul, if applicable. */
 
 #include "copyrite.h"
+#include "config.h"
 #include "strutil.h"
 
 #include <ctype.h>
@@ -31,6 +32,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "confmagic.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -1284,7 +1286,7 @@ next_in_list(const char **head)
   return buf;
 }
 
-#ifndef HAVE_IMAXDIV_T
+#ifndef HAVE_IMAXDIV
 typedef struct imaxdiv_t {
   intmax_t rem;
   intmax_t quot;

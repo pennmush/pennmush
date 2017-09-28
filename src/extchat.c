@@ -6,6 +6,8 @@
  *
  */
 #include "copyrite.h"
+#include "config.h"
+
 #include "extchat.h"
 
 #include <assert.h>
@@ -40,6 +42,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static CHAN *new_channel(void);
 static CHANLIST *new_chanlist(const void *hint);

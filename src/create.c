@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <string.h>
 
@@ -25,6 +26,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static dbref parse_linkable_room(dbref player, const char *room_name,
                                  NEW_PE_INFO *pe_info);

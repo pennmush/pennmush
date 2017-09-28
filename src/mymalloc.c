@@ -28,6 +28,8 @@
  *
  */
 
+#include "copyrite.h"
+#include "config.h"
 #include "mymalloc.h"
 
 #include <stdlib.h>
@@ -48,6 +50,7 @@
 #include "log.h"
 #include "memcheck.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,

@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -26,6 +27,7 @@
 #include "mushdb.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 void moveit(dbref what, dbref where, int nomovemsgs, dbref enactor,
             const char *cause);

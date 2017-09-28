@@ -5,6 +5,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #ifdef INFO_SLAVE
 
@@ -45,6 +46,7 @@
 #include "sig.h"
 #include "strutil.h"
 #include "wait.h"
+#include "confmagic.h"
 
 #ifndef HAVE_SOCKETPAIR
 #error                                                                         \

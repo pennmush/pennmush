@@ -18,6 +18,9 @@
  *
  */
 
+#include "copyrite.h"
+#include "config.h"
+
 #include "flags.h"
 
 #ifdef HAVE_SYS_TIME_H
@@ -51,6 +54,7 @@
 #include "ptab.h"
 #include "sort.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static bool can_set_flag(dbref player, dbref thing, const FLAG *flagp,
                          int negate);

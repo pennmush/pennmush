@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** Hash table of player names */
 HASHTAB htab_player_list;

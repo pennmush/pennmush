@@ -7,6 +7,9 @@
  * Also see player.c.
  */
 
+#include "copyrite.h"
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -19,6 +22,7 @@
 #include "notify.h"
 #include "strutil.h"
 #include "externs.h"
+#include "confmagic.h"
 
 #define PASSWORD_HASH "sha512"
 

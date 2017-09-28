@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "bufferq.h"
 
 #include <stdio.h>
@@ -35,8 +36,10 @@
 #include "flags.h"
 #include "log.h"
 #include "mymalloc.h"
+#include "confmagic.h"
 
 #define BUFFERQLINEOVERHEAD (2 * sizeof(int) + sizeof(time_t) + sizeof(dbref))
+
 
 static void shift_bufferq(BUFFERQ *bq, int space_needed);
 

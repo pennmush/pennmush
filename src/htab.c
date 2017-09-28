@@ -42,6 +42,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "htab.h"
 
 #include <string.h>
@@ -53,6 +54,7 @@
 
 #include "hash_function.h"
 #include "mymalloc.h"
+#include "confmagic.h"
 
 /* Temporary prototypes to make the compiler happy. */
 char *mush_strdup(const char *s, const char *check) __attribute_malloc__;

@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #include "mushdb.h"
 #include "notify.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /* We might check for both locked and unlocked warnings if we can't
  * figure out a lock.

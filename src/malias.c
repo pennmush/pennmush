@@ -34,6 +34,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "malias.h"
 
 #ifdef HAVE_SYS_TIME_H
@@ -65,6 +66,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 #define MA_INC 3 /**< How many maliases we malloc at a time */
 

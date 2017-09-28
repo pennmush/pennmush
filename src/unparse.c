@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #include <string.h>
 #ifdef HAVE_INTTYPES_H
@@ -26,6 +27,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 /** Format an object's name (and dbref and flags).
  * This is a wrapper for real_unparse() that conditionally applies

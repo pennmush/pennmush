@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <ctype.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -32,6 +32,7 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);

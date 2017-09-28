@@ -4,6 +4,9 @@
  * \brief Process and process-group control functions.
  */
 
+
+#include "copyrite.h"
+#include "config.h"
 #include "wait.h"
 
 #ifdef HAVE_UNISTD_H
@@ -27,6 +30,7 @@
 #include <errno.h>
 
 #include "log.h"
+#include "confmagic.h"
 
 /** Portable wait
  * \param child pid of specific child proccess to wait for. Only meaningful if

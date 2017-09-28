@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -53,6 +53,7 @@
 #include "ptab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;

@@ -7,7 +7,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -46,6 +46,7 @@
 #include "parse.h"
 #include "sig.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static sig_atomic_t hup_triggered = 0;
 static sig_atomic_t usr1_triggered = 0;

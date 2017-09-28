@@ -9,6 +9,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "conf.h"
 
 #include <stdio.h>
@@ -42,6 +43,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 time_t mudtime; /**< game time, in seconds */
 

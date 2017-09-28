@@ -5,6 +5,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "mymalloc.h"
 #include "charconv.h"
 #include "mysocket.h"

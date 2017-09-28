@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "log.h"
 
 #include <stdio.h>
@@ -40,6 +41,7 @@
 #include "htab.h"
 #include "notify.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 struct log_stream;
 

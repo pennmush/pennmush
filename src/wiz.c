@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -48,6 +49,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 dbref find_entrance(dbref door);
 struct db_stat_info *get_stats(dbref owner);

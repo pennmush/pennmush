@@ -8,6 +8,8 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
+
 #include "parse.h"
 
 #include <math.h>
@@ -39,6 +41,7 @@
 #include "notify.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 extern char *absp[], *obj[], *poss[], *subj[]; /* fundb.c */
 int global_fun_invocations;

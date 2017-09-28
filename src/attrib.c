@@ -7,6 +7,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "attrib.h"
 
 #include <string.h>
@@ -30,6 +31,7 @@
 #include "sort.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */

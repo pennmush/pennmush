@@ -54,6 +54,7 @@
  */
 
 #include "copyrite.h"
+#include "config.h"
 #include "match.h"
 
 #include <ctype.h>
@@ -71,6 +72,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "confmagic.h"
 
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);

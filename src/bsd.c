@@ -12,7 +12,7 @@
  */
 
 #include "copyrite.h"
-
+#include "config.h"
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef HAVE_SYS_TYPES_H
@@ -115,6 +115,8 @@
 #include "ssl_slave.h"
 #endif
 #endif /* !WIN32 */
+
+#include "confmagic.h"
 
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
@@ -3540,7 +3542,7 @@ handle_telnet(DESC *d, char **q, char *qend)
   static const char ayt_reply[] = "\r\n*** AYT received, I'm here ***\r\n";
 
   /* *(*q - q) == IAC at this point. */
-  switch (**q) {
+  switch ((int)**q) {
   case IAC:
     setup_telnet(d);
     /* We don't skip over the IAC, we leave it to be written out in

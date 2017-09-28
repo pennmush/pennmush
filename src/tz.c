@@ -1,4 +1,12 @@
+/**
+ * \file tz.c
+ *
+ * \brief Time zone data file parsing.
+ */
+
 #define _GNU_SOURCE
+#include "copyrite.h"
+#include "config.h"
 #include "tz.h"
 
 #include <stdio.h>
@@ -46,6 +54,8 @@
 #endif
 
 #endif
+
+#include "confmagic.h"
 
 #ifndef be32toh
 #define be32toh(i) ntohl(i)

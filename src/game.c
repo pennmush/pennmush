@@ -2131,7 +2131,7 @@ unix_uptime(dbref player __attribute__((__unused__)))
   int psize;
 
 #ifdef HAVE_UPTIME
-  fp = popen(UPTIME, "r");
+  fp = popen(UPTIME_PATH, "r");
 
   /* just in case the system is screwy */
   if (fp == NULL) {

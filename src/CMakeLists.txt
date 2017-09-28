@@ -37,6 +37,7 @@ check_include_file(sys/param.h HAVE_SYS_PARAM_H)
 check_include_file(sys/resource.h HAVE_SYS_RESOURCE_H)
 check_include_file(sys/select.h HAVE_SYS_SELECT_H)
 check_include_file(sys/socket.h HAVE_SYS_SOCKET_H)
+check_include_file(sqlite3.h HAVE_SQLITE3_H)
 check_include_file(sys/stat.h HAVE_SYS_STAT_H)
 check_include_file(sys/time.h HAVE_SYS_TIME_H)
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
@@ -75,12 +76,15 @@ list(APPEND LIBS ${PCRE_LIBRARY})
 
 # Optional libraries
 include(FindIntl)
+if(Intl_FOUND)
+  list(APPEND LIBS ${Intl_LIBRARIES})
+endif()
 
 find_library(LIBCRYPT_LIBRARY crypt)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibCrypt DEFAULT_MSG LIBCRYPT_LIBRARY)
-if(LIBCRYPT_LIBRARY)
+find_package_handle_standard_args(LibCrypt REQUIRED_VARS LIBCRYPT_LIBRARY)
+if(LibCrypt_FOUND)
   list(APPEND CMAKE_REQUIRED_LIBRARIES crypt)
-  list(APPEND LIBS crypt)
+  list(APPEND MUSHLIBS crypt)
 endif()
 
 include(FindLibEvent)
@@ -88,21 +92,28 @@ if(Libevent_FOUND)
   find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
   find_library(LIBEVENT_OPENSSL_LIBRARY event_openssl)
   set(LIBEVENT_LIBRARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
+  list(APPEND SLAVELIBS ${LIBEVENT_LIBRARIES})
 endif()
 
-find_path(LIBZ_INCLUDE_DIR zlib.h)
 find_library(LIBZ_LIBRARY z)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibZ DEFAULT_MSG LIBZ_LIBRARY LIBZ_INCLUDE_DIR)
-if(LIBZ_LIBRARY)
-  list(APPEND LIBS z)
+find_package_handle_standard_args(LibZ REQUIRED_VARS LIBZ_LIBRARY HAVE_ZLIB_H)
+if(LibZ_FOUND)
+  list(APPEND LIBS ${LIBZ_LIBRARY})
   set(HAVE_LIBZ 1)
 endif()
 
-# TODO: MySQL, Sqlite3
+# TODO: MySQL
+find_library(SQLITE3_LIBRARY sqlite3)
+find_package_handle_standard_args(LibSqlite3 REQUIRED_VARS SQLITE3_LIBRARY HAVE_SQLITE3_H)
+if(LibSqlite3_FOUND)
+  list(APPEND MUSHLIBS ${SQLITE3_LIBRARY})
+  set(HAVE_SQLITE3 1)
+endif()
+
 find_package(PostgreSQL)
 if(${PostgreSQL_FOUND})
   include_directories(${PostgreSQL_INCLUDE_DIRS})
-  list(APPEND LIBS ${PostgreSQL_LIBRARIES})
+  list(APPEND MUSHLIBS ${PostgreSQL_LIBRARIES})
   set(HAVE_POSTGRESQL 1)
 endif()
 
@@ -246,7 +257,6 @@ else()
   if(${PROJECT_SOURCE_DIR}/bflags.gperf IS_NEWER_THAN ${PROJECT_SOURCE_DIR}/bflags.c OR ${PROJECT_SOURCE_DIR}/htmltab.gperf IS_NEWER_THAN ${PROJECT_SOURCE_DIR}/htmltab.c OR ${PROJECT_SOURCE_DIR}/lmathtab.gperf IS_NEWER_THAN ${PROJECT_SOURCE_DIR}/lmathtab.c OR ${PROJECT_SOURCE_DIR}/rgbtab.gperf IS_NEWER_THAN ${PROJECT_SOURCE_DIR}/rgbtab.c)
     message(WARNING "gperf not installed and hash tables need to be updated.")
   endif()
-
 endif()
 
 execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -280,7 +290,7 @@ check_c_source_compiles(
 
 target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(netmush ${LIBS})
+target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 

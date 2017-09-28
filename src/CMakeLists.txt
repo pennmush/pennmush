@@ -24,6 +24,7 @@ check_include_file(crypt.h HAVE_CRYPT_H)
 check_include_file(fenv.h HAVE_FENV_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 check_include_file(langinfo.h HAVE_LANGINFO_H)
+check_include_file(libintl.h HAVE_LIBINTL_H)
 check_include_file(netdb.h HAVE_NETDB_H)
 check_include_file(netinet/in.h HAVE_NETINET_IN_H)
 check_include_file(netinet/tcp.h HAVE_NETINET_TCP_H)
@@ -44,6 +45,7 @@ check_include_file(sys/uio.h HAVE_SYS_UIO_H)
 check_include_file(sys/un.h HAVE_SYS_UN_H)
 check_include_file(sys/wait.h HAVE_SYS_WAIT_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
+check_include_file(zlib.h HAVE_ZLIB_H)
 
 # Required libraries
 set(SAVED_CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET})
@@ -162,7 +164,12 @@ check_symbol_exists(strdup "string.h" HAVE_STRDUP)
 check_symbol_exists(strxfrm "string.h" HAVE_STRXFRM)
 check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
 check_symbol_exists(textdomain "libintl.h" HAVE_TEXTDOMAIN)
+
+set(SAVED_CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS})
+set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(vasprintf "stdio.h" HAVE_VASPRINTF)
+set(CMAKE_REQUIRED_DEFINITIONS ${SAVED_CMAKE_REQUIRED_DEFINITIONS})
+
 check_symbol_exists(waitpid "sys/types.h;sys/wait.h" HAVE_WAITPID)
 check_symbol_exists(writev "sys/uio.h" HAVE_WRITEV)
 check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
@@ -249,7 +256,9 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	wait.c warnings.c wild.c wiz.c)
 
 # Compiler features
+set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
+
 # TO-DO:
 # __builtin_expect
 # Warnings

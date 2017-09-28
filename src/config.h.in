@@ -6,6 +6,7 @@
 #cmakedefine HAVE_FENV_H
 #cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_LANGINFO_H
+#cmakedefine HAVE_LIBINTL_H
 #cmakedefine HAVE_NETDB_H
 #cmakedefine HAVE_NETINET_IN_H
 #cmakedefine HAVE_NETINET_TCP_H
@@ -26,6 +27,7 @@
 #cmakedefine HAVE_SYS_UN_H
 #cmakedefine HAVE_SYS_WAIT_H
 #cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_ZLIB_H
 
 /* Functions */
 #cmakedefine HAVE_BINDTEXTDOMAIN

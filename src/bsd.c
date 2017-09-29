@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #endif
 #ifdef WIN32
-#define FD_SETSIZE 256
 #include <winsock2.h>
 #include <windows.h>
 #include <errno.h>
@@ -967,8 +966,6 @@ static void
 shovechars(Port_t port, Port_t sslport)
 {
   /* this is the main game loop */
-
-  fd_set input_set, output_set;
 #ifdef INFO_SLAVE
   time_t now;
 #endif
@@ -979,9 +976,16 @@ shovechars(Port_t port, Port_t sslport)
   int queue_timeout;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
-  unsigned long input_ready, output_ready;
   int notify_fd = -1;
-
+#ifdef WIN32
+  WSAPOLLFD *fds;
+  ULONG fd_size = 0, fds_used = 0;
+#else
+  struct pollfd *fds = NULL;
+  nfds_t fd_size = 0, fds_used = 0;
+#endif
+  int polltimeout;
+  
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1119,21 +1123,39 @@ shovechars(Port_t port, Port_t sslport)
       slice_timeout.tv_sec = 0;
     if (slice_timeout.tv_usec < 0)
       slice_timeout.tv_usec = 0;
+      
+    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 5)) {
+      fd_size = im_count(descs_by_fd) + 10;
+      fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
+    }
+    fds_used = 0;
 
-    FD_ZERO(&input_set);
-    FD_ZERO(&output_set);
-    if (ndescriptors < avail_descriptors)
-      FD_SET(sock, &input_set);
-    if (sslsock)
-      FD_SET(sslsock, &input_set);
+    if (ndescriptors < avail_descriptors) {
+      fds[fds_used].fd = sock;
+      fds[fds_used++].events = POLLIN;
+      
+      if (sslsock) {
+	fds[fds_used].fd = sslsock;
+	fds[fds_used++].events = POLLIN;
+      }
 #ifdef LOCAL_SOCKET
-    if (localsock >= 0)
-      FD_SET(localsock, &input_set);
+      if (localsock >= 0) {
+	fds[fds_used].fd = localsock;
+	fds[fds_used++].events = POLLIN;
+      }
 #endif
+    }
 #ifdef INFO_SLAVE
-    if (info_slave_state == INFO_SLAVE_PENDING)
-      FD_SET(info_slave, &input_set);
+    if (info_slave_state == INFO_SLAVE_PENDING) {
+      fds[fds_used].fd = info_slave;
+      fds[fds_used++].events = POLLIN;
+    }
 #endif
+    if (notify_fd >= 0) {
+      fds[fds_used].fd = notify_fd;
+      fds[fds_used++].events = POLLIN;
+    }
+    
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
       if (d->conn_flags & CONN_SOCKET_ERROR) {
@@ -1145,16 +1167,23 @@ shovechars(Port_t port, Port_t sslport)
 
       if (d->input.head) {
         timeout = slice_timeout;
-      } else
-        FD_SET(d->descriptor, &input_set);
-      if (d->output.head)
-        FD_SET(d->descriptor, &output_set);
+      } else {
+	fds[fds_used].fd = d->descriptor;
+	fds[fds_used].events = POLLIN;
+      }
+      if (d->output.head) {
+	fds[fds_used].events |= POLLOUT;
+      }
+      if (!d->input.head || d->output.head)
+	fds_used += 1;
     }
 
-    if (notify_fd >= 0)
-      FD_SET(notify_fd, &input_set);
-
-    found = select(maxd, &input_set, &output_set, (fd_set *) 0, &timeout);
+    polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
+#ifdef WIN32
+    found = WSAPoll(fds, fds_used, polltimeout);
+#else
+    found = poll(fds, fds_used, polltimeout);
+#endif
     if (found < 0) {
 #ifdef WIN32
       if (found == SOCKET_ERROR && WSAGetLastError() != WSAEINTR)
@@ -1162,7 +1191,7 @@ shovechars(Port_t port, Port_t sslport)
       if (errno != EINTR)
 #endif
       {
-        penn_perror("select");
+        penn_perror("poll");
         return;
       }
 #ifdef INFO_SLAVE
@@ -1178,10 +1207,23 @@ shovechars(Port_t port, Port_t sslport)
       } else {
         do_top(options.active_q_chunk);
       }
+
+      fds_used = 1;
+      
 #ifdef INFO_SLAVE
       now = mudtime;
+
+      if (fds[0].revents & POLLIN)
+        got_new_connection(sock, CS_IP_SOCKET);    
+      if (sslsock && fds[fds_used++].revents & POLLIN)
+        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+#ifdef LOCAL_SOCKET
+      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
+        setup_desc(localsock, CS_LOCAL_SOCKET);
+#endif /* LOCAL_SOCKET */
+
       if (info_slave_state == INFO_SLAVE_PENDING &&
-          FD_ISSET(info_slave, &input_set)) {
+          fds[fds_used++].revents & POLLIN) {
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
                  now > info_queue_time + 30) {
@@ -1189,46 +1231,52 @@ shovechars(Port_t port, Port_t sslport)
         update_pending_info_slaves();
       }
 
-      if (FD_ISSET(sock, &input_set))
-        got_new_connection(sock, CS_IP_SOCKET);
-      if (sslsock && FD_ISSET(sslsock, &input_set))
-        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
-#ifdef LOCAL_SOCKET
-      if (localsock >= 0 && FD_ISSET(localsock, &input_set))
-        setup_desc(localsock, CS_LOCAL_SOCKET);
-#endif /* LOCAL_SOCKET */
 #else  /* INFO_SLAVE */
-      if (FD_ISSET(sock, &input_set))
+      if (fds[0].revents & POLLIN)
         setup_desc(sock, CS_IP_SOCKET);
-      if (sslsock && FD_ISSET(sslsock, &input_set))
+      if (sslsock && fds[fds_used++].revents & POLLIN)
         setup_desc(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
-      if (localsock >= 0 && FD_ISSET(localsock, &input_set))
+      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
         setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif /* LOCAL_SOCKET */
 #endif /* INFO_SLAVE */
 
-      if (notify_fd >= 0 && FD_ISSET(notify_fd, &input_set))
+      if (notify_fd >= 0 && fds[fds_used++].revents & POLLIN)
         file_watch_event(notify_fd);
-
+      
       for (d = descriptor_list; d; d = dnext) {
+	unsigned int input_ready, output_ready, errors;
+	
         dnext = d->next;
-        input_ready = FD_ISSET(d->descriptor, &input_set);
-        output_ready = FD_ISSET(d->descriptor, &output_set);
-        if (input_ready) {
-          if (!process_input(d, output_ready)) {
-            shutdownsock(d, "disconnect", d->player);
-            continue;
-          }
-        }
-        if (output_ready) {
-          if (!process_output(d)) {
-            shutdownsock(d, "disconnect", d->player);
-          }
-        }
+
+	if (d->descriptor != fds[fds_used].fd)
+	  continue;
+	
+        input_ready = fds[fds_used].revents & POLLIN;
+	errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+        output_ready = fds[fds_used++].revents & POLLOUT;
+	if (errors) {
+	  /* Socket error; kill this connection. */
+	  shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);	 
+	} else {
+	  if (input_ready) {
+	    if (!process_input(d, output_ready)) {
+	      shutdownsock(d, "disconnect", d->player);
+	      continue;
+	    }
+	  }
+	  if (output_ready) {
+	    if (!process_output(d)) {
+	      shutdownsock(d, "disconnect", d->player);
+	    }
+	  }
+	}
       }
     }
   }
+  if (fds)
+    mush_free(fds, "pollfds");
 }
 
 static int

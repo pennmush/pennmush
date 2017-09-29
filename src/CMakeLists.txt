@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.5)
 project(PennMUSH LANGUAGES C VERSION 1.8.6.2)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -405,7 +405,7 @@ if(CHMOD)
 endif()
 
 include(WriteCompilerDetectionHeader)
-write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang Intel MSVC AppleClang SunPro FEATURES c_restrict)
+write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang MSVC AppleClang SunPro FEATURES c_restrict)
 
 # Assorted extra make targets
 if(CTAGS)

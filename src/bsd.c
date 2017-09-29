@@ -1252,7 +1252,7 @@ shovechars(Port_t port, Port_t sslport)
 	  continue;
 	
         input_ready = fds[fds_used].revents & POLLIN;
-	errors = fds[fds_used].revents & (POLLERR | POLLNVAL)
+	errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
         output_ready = fds[fds_used++].revents & POLLOUT;
 	if (errors) {
 	  /* Socket error; kill this connection. */

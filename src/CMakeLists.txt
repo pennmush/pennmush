@@ -8,6 +8,7 @@ include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
+include(CheckCCompilerFlag)
 
 include(FindUnixCommands)
 include(FindPerl)
@@ -210,12 +211,46 @@ endif()
 # Compiler features
 
 check_c_source_compiles(
-    "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
+  "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
+check_c_source_compiles(
+  "int main(int argc, char **argv __attribute__((unused))) { return 0; }"
+  HAVE___ATTRIBUTE__)
+check_c_source_compiles(
+  "char *mystrdup(void) __attribute__((__malloc__)); int main(void) { return 0; }"
+  HAVE___ATTRIBUTE___MALLOC)
+check_c_compiler_flag(-Wall HAVE_W_ALL)
+check_c_compiler_flag(-Wextra HAVE_W_EXTRA)
+check_c_compiler_flag(-Wno-comment HAVE_W_NO_COMMENT)
+check_c_compiler_flag(-Wno-char-subscripts HAVE_W_NO_CHAR_SUBSCRIPTS)
+check_c_compiler_flag(-funsigned-char HAVE_UNSIGNED_CHAR)
+check_c_compiler_flag(-fstack-protector HAVE_STACK_PROTECTOR)
+check_c_compiler_flag(-Wa,--noexecstack HAVE_NOEXECSTACK)
+check_c_compiler_flag(-march=native HAVE_MARCH_NATIVE)
 
-# TO-DO:
-# Warnings
-# march=native
-# stack protector
+if(HAVE_W_ALL)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wall)
+endif()
+if(HAVE_W_EXTRA)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wextra)
+endif()
+if(HAVE_W_NO_COMMENT)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wno-comment)
+endif()
+if(HAVE_W_NO_CHAR_SUBSCRIPTS)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wno-char-subscripts)
+endif()
+if(HAVE_UNSIGNED_CHAR)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -funsigned-char)
+endif()
+if(HAVE_STACK_PROTECTOR)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -fstack-protector)
+endif()
+if(HAVE_NOEXECSTACK)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wa,--noexecstack)
+endif()
+if(HAVE_MARCH_NATIVE)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -march=native)
+endif()
 
 # create local source files
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmdlocal.c)
@@ -289,6 +324,7 @@ target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${
 target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
 set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
+target_compile_options(netmush PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
 set(INFO_SLAVE 1)
 add_executable(info_slave info_slave.c strdup.c sig.c wait.c mysocket.c)
@@ -296,6 +332,9 @@ target_compile_definitions(info_slave PUBLIC SLAVE)
 target_include_directories(info_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
 set_property(TARGET info_slave PROPERTY LINKER_LANGUAGE C)
 target_link_libraries(info_slave ${LIBS} ${SLAVELIBS})
+set_property(TARGET info_slave PROPERTY C_STANDARD 99)
+target_compile_features(info_slave PUBLIC c_restrict)
+target_compile_options(info_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
 set(SSL_SLAVE 1)
 add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
@@ -303,6 +342,9 @@ target_compile_definitions(ssl_slave PUBLIC SLAVE)
 target_include_directories(ssl_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
 set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
 target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
+set_property(TARGET ssl_slave PROPERTY C_STANDARD 99)
+target_compile_features(ssl_slave PUBLIC c_restrict)
+target_compile_options(ssl_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 

@@ -89,6 +89,8 @@
 
 /* Other stuff */
 #cmakedefine HAVE_BUILTIN_EXPECT
+#cmakedefine HAVE___ATTRIBUTE__
+#cmakedefine HAVE___ATTRIBUTE___MALLOC
 #cmakedefine HAVE_DEV_URANDOM
 #cmakedefine HAVE_ZONEINFO
 
@@ -146,3 +148,25 @@ typedef bool _Bool;
 #define RESTRICT
 #endif
 
+#ifndef HAVE___ATTRIBUTE__
+#define __attribute__(x)
+#endif
+#ifdef HAVE___ATTRIBUTE___MALLOC
+#define GCC_MALLOC_CALL __attribute__((__malloc__))
+#endif
+
+#ifdef __SSE2__
+#define HAVE_SSE2
+#endif
+
+#ifdef __SSE3__
+#define HAVE_SSE3
+#endif
+
+#ifdef __SSSE3__
+#define HAVE_SSSE3
+#endif
+
+#ifdef __SSE4_2__
+#define HAVE_SSE42
+#endif

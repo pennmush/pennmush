@@ -49,6 +49,11 @@ check_include_file(sys/wait.h HAVE_SYS_WAIT_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
 check_include_file(zlib.h HAVE_ZLIB_H)
 
+check_c_source_compiles(
+  "#include <sys/time.h>
+#include <time.h>
+int main(void) { return 0; }" TIME_WITH_SYS_TIME)
+
 # Required libraries
 set(SAVED_CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET})
 set(CMAKE_REQUIRED_QUIET 1)

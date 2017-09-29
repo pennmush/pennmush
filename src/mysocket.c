@@ -81,10 +81,6 @@
 #include <poll.h>
 #endif
 
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
-
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
@@ -723,47 +719,4 @@ connect_nonb(int sockfd, const struct sockaddr *saptr, socklen_t salen,
       return -1;
 
   return 0;
-}
-
-/** Wait up to N seconds for a non-blocking connect to establish.
- * \param s the socket
- * \param secs timeout value
- * \return -1 on error, 0 if the socket is not yet connected, >0 on success
- */
-int
-wait_for_connect(int s, int secs)
-{
-  int res;
-#ifdef HAVE_POLL
-  struct pollfd ev;
-
-  ev.fd = s;
-  ev.events = POLLOUT;
-  if ((res = poll(&ev, 1, secs)) <= 0) {
-    if (res == 0)
-      errno = EINPROGRESS;
-    return res;
-  } else {
-    errno = ENOTCONN;
-    return ev.revents & POLLOUT;
-  }
-#else
-  fd_set wrs;
-  struct timeval timeout, *to;
-
-  FD_ZERO(&wrs);
-  FD_SET(s, &wrs);
-  timeout.tv_sec = secs;
-  timeout.tv_usec = 0;
-  if (secs >= 0)
-    to = &timeout;
-  if ((res = select(s + 1, NULL, &wrs, NULL, to)) <= 0) {
-#ifndef WIN32
-    if (res == 0)
-      errno = EINPROGRESS;
-#endif
-    return res;
-  } else
-    return FD_ISSET(s, &wrs);
-#endif
 }

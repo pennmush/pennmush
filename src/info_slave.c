@@ -232,7 +232,7 @@ int eventwait_watch_parent_exit(void);
 int eventwait_watch_child_exit(void);
 int eventwait(void);
 
-enum methods { METHOD_KQUEUE, METHOD_POLL, METHOD_SELECT };
+enum methods { METHOD_KQUEUE, METHOD_POLL };
 
 enum methods method;
 
@@ -243,6 +243,7 @@ enum methods method;
 enum { MAX_SLAVES = 5 };
 sig_atomic_t children = 0;
 pid_t child_pids[MAX_SLAVES];
+pid_t parent_pid = 0;
 
 int
 main(void)
@@ -383,17 +384,9 @@ reaper(int signo)
  * of waiting for a variety of events.  In particular, on BSD
  * (Including OS X) systems, it uses kqueue()/kevent() to wait for a
  * fd to be readable or a process to exit.  On others, it uses poll(2)
- * or select(2) with a timeout and periodic checking of getppid() to
- * see if the parent netmush process still exists.
+ * with a timeout and periodic checking of getppid() to see if the
+ * parent netmush process still exists.
  */
-
-#define HAVE_SELECT
-
-#ifdef HAVE_SELECT
-static fd_set readers;
-static int maxd = 0;
-static pid_t parent_pid = 0;
-#endif
 
 #ifdef HAVE_KQUEUE
 static int kqueue_id = -1;
@@ -431,14 +424,6 @@ eventwait_init(void)
     if (1) {
     fputerr("trying poll event loop... ok. Using poll.");
     method = METHOD_POLL;
-    return 0;
-  } else
-#endif
-#ifdef HAVE_SELECT
-    if (1) {
-    fputerr("trying select event loop... ok. Using select.");
-    FD_ZERO(&readers);
-    method = METHOD_SELECT;
     return 0;
   } else
 #endif
@@ -481,13 +466,6 @@ eventwait_watch_fd_read(int fd)
     pollfd_len += 1;
     return 0;
 #endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT:
-    FD_SET(fd, &readers);
-    if (fd >= maxd)
-      maxd = fd + 1;
-    return 0;
-#endif
   default:
     return -1;
   }
@@ -499,7 +477,7 @@ eventwait_watch_fd_read(int fd)
 int
 eventwait_watch_parent_exit(void)
 {
-  pid_t parent;
+  pid_t parent = 0;
 
 #ifdef HAVE_GETPPID
   parent = getppid();
@@ -526,14 +504,13 @@ eventwait_watch_parent_exit(void)
     return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
   }
 #endif
+    
 #ifdef HAVE_POLL
-  case METHOD_POLL: /* Fall through */
-#endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT:
+  case METHOD_POLL:
     parent_pid = parent;
     return 0;
 #endif
+    
   default:
     errno = ENOTSUP;
     return -1;
@@ -636,50 +613,6 @@ eventwait(void)
 #ifdef HAVE_GETPPID
         if (getppid() == 1)
           /* Parent rocess no longer exists; parent is now init */
-          return parent_pid;
-#endif
-      } else if (res < 0)
-        return -1;
-    }
-  }
-#endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT: {
-    /* It's more complex to use select(), since it can only poll
-     * file descriptor events, not process events too. Wake up every
-     * 5 seconds to see if the given pid has turned into 1.
-     */
-    struct timeval timeout, *tout;
-    int res;
-
-    if (parent_pid > 0)
-      tout = &timeout;
-    else
-      tout = NULL;
-
-    while (1) {
-      fd_set local_readers;
-      int n;
-
-      timeout.tv_sec = 5;
-      timeout.tv_usec = 0;
-
-      FD_ZERO(&local_readers);
-
-      for (n = 0; n < maxd; n++)
-        if (FD_ISSET(n, &readers))
-          FD_SET(n, &local_readers);
-
-      res = select(maxd, &local_readers, NULL, NULL, tout);
-      if (res > 0) {
-        int n;
-        for (n = 0; n < maxd; n++)
-          if (FD_ISSET(n, &local_readers))
-            return n;
-      } else if (res == 0 && parent_pid) {
-#ifdef HAVE_GETPPID
-        if (getppid() == 1)
-          /* Parent process no longer exists; parent is now init */
           return parent_pid;
 #endif
       } else if (res < 0)

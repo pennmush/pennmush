@@ -72,7 +72,6 @@ int connect_unix_socket(const char *filename, int socktype);
 ssize_t send_with_creds(int, void *, size_t);
 ssize_t recv_with_creds(int, void *, size_t, int *, int *);
 
-int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);
 void set_keepalive(int s, int timeout);

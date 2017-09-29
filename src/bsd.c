@@ -49,9 +49,6 @@
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -1992,22 +1989,19 @@ network_send_ssl(DESC *d)
    * So let's find out
    */
   {
-#ifdef HAVE_POLL
+#ifdef WIN32
+    WSAPOLLFD p;
+#else
     struct pollfd p;
-
+#endif
+    
     p.fd = d->descriptor;
     p.events = POLLIN;
     p.revents = 0;
-    input_ready = poll(&p, 1, 0);
+#ifdef WIN32
+    input_ready = WSAPoll(&p, 1, 0);
 #else
-    struct timeval pad;
-    fd_set input_set;
-
-    pad.tv_sec = 0;
-    pad.tv_usec = 0;
-    FD_ZERO(&input_set);
-    FD_SET(d->descriptor, &input_set);
-    input_ready = select(d->descriptor + 1, &input_set, NULL, NULL, &pad);
+    input_ready = poll(&p, 1, 0);
 #endif
   }
 

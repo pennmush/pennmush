@@ -210,6 +210,8 @@ endif()
 
 # Compiler features
 
+set(SAVED_CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET})
+set(CMAKE_REQUIRED_QUIET 1)
 check_c_source_compiles(
   "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
 check_c_source_compiles(
@@ -218,6 +220,10 @@ check_c_source_compiles(
 check_c_source_compiles(
   "char *mystrdup(void) __attribute__((__malloc__)); int main(void) { return 0; }"
   HAVE___ATTRIBUTE___MALLOC)
+check_c_compiler_flag(-ggdb HAVE_G_GDB)
+check_c_compiler_flag(-g HAVE_G)
+check_c_compiler_flag(-Og HAVE_OG)
+check_c_compiler_flag(-O HAVE_O)
 check_c_compiler_flag(-Wall HAVE_W_ALL)
 check_c_compiler_flag(-Wextra HAVE_W_EXTRA)
 check_c_compiler_flag(-Wno-comment HAVE_W_NO_COMMENT)
@@ -226,7 +232,19 @@ check_c_compiler_flag(-funsigned-char HAVE_UNSIGNED_CHAR)
 check_c_compiler_flag(-fstack-protector HAVE_STACK_PROTECTOR)
 check_c_compiler_flag(-Wa,--noexecstack HAVE_NOEXECSTACK)
 check_c_compiler_flag(-march=native HAVE_MARCH_NATIVE)
+check_c_compiler_flag(-Wl,-z,noexecstack HAVE_LD_NOEXECSTACK)
+set(CMAKE_REQUIRED_QUIET ${SAVED_CMAKE_REQUIRED_QUIET})
 
+if(HAVE_G_GDB)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -ggdb)
+elseif(HAVE_G)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -g)
+endif()
+if(HAVE_OG)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS -Og)
+elseif(HAVE_O)
+  list(APPEND CMAKE_REQUIRED_DEFINIITONS -O)
+endif()
 if(HAVE_W_ALL)
   list(APPEND CMAKE_REQUIRED_DEFINITIONS -Wall)
 endif()
@@ -250,6 +268,9 @@ if(HAVE_NOEXECSTACK)
 endif()
 if(HAVE_MARCH_NATIVE)
   list(APPEND CMAKE_REQUIRED_DEFINITIONS -march=native)
+endif()
+if(HAVE_LD_NOEXECSTACK)
+  list(APPEND LIBS -Wl,-z,noexecstack)
 endif()
 
 # create local source files

@@ -24,8 +24,8 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
-typedef bool (*init_fn) (PENNFILE *);
-typedef char *(*comp_fn) (char const *);
+typedef bool (*init_fn)(PENNFILE *);
+typedef char *(*comp_fn)(char const *);
 
 struct compression_ops {
   init_fn init;

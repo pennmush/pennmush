@@ -28,7 +28,6 @@
 #include "strutil.h"
 #include "confmagic.h"
 
-
 extern const unsigned char *tables;
 
 /** Prefix table for standard attribute names */

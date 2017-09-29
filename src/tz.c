@@ -303,10 +303,10 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 #define READ_LEAPSECS(type, decode)                                            \
   do {                                                                         \
     type *buf;                                                                 \
-    int m, lpsize = tz->leapcnt * (4 + time_size);                               \
+    int m, lpsize = tz->leapcnt * (4 + time_size);                             \
                                                                                \
-    buf = malloc(lpsize);                                                        \
-    READ_CHUNKF(buf, lpsize);                                                    \
+    buf = malloc(lpsize);                                                      \
+    READ_CHUNKF(buf, lpsize);                                                  \
                                                                                \
     tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));             \
                                                                                \

@@ -40,7 +40,6 @@
 
 #define BUFFERQLINEOVERHEAD (2 * sizeof(int) + sizeof(time_t) + sizeof(dbref))
 
-
 static void shift_bufferq(BUFFERQ *bq, int space_needed);
 
 /** Add data to a buffer queue.

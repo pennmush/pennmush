@@ -4,7 +4,6 @@
  * \brief Process and process-group control functions.
  */
 
-
 #include "copyrite.h"
 #include "config.h"
 #include "wait.h"

@@ -19,5 +19,4 @@ struct pcre_extra *default_match_limit(void);
 extern int pcre_study_flags;
 extern int pcre_public_study_flags;
 
-#endif                          /* End of pcre.h */
-
+#endif /* End of pcre.h */

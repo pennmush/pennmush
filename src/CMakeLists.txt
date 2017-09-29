@@ -17,7 +17,8 @@ find_program(GPERF gperf)
 find_program(ED ed)
 find_program(UPTIME uptime)
 find_program(CTAGS ctags)
-find_Program(ETAGS etags)
+find_program(ETAGS etags)
+find_program(INDENT clang-format)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
@@ -335,19 +336,20 @@ endif()
 
 execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
-add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
-	charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c	
-	conf.c cque.c create.c db.c destroy.c extchat.c extmail.c	
-	filecopy.c flaglocal.c flags.c funcrypt.c function.c fundb.c	
-	funlist.c funlocal.c funmath.c funmisc.c funstr.c funtime.c	
-	funufun.c game.c hash_function.c help.c htab.c intmap.c		
-	local.c lock.c log.c look.c malias.c markup.c match.c		
-	memcheck.c move.c mycrypt.c mymalloc.c mysocket.c myrlimit.c	
-	myssl.c notify.c parse.c player.c plyrlist.c predicat.c		
-	privtab.c info_master.c ptab.c rob.c services.c set.c SFMT.c	
-	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	
-	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
-	wait.c warnings.c wild.c wiz.c)
+set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
+  charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c conf.c
+  cque.c create.c db.c destroy.c extchat.c extmail.c filecopy.c
+  flaglocal.c flags.c funcrypt.c function.c fundb.c funlist.c
+  funlocal.c funmath.c funmisc.c funstr.c funtime.c funufun.c game.c
+  hash_function.c help.c htab.c intmap.c local.c lock.c log.c look.c
+  malias.c markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c
+  mysocket.c myrlimit.c myssl.c notify.c parse.c player.c plyrlist.c
+  predicat.c privtab.c info_master.c ptab.c rob.c services.c set.c
+  SFMT.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c
+  strutil.c tables.c timer.c tz.c unparse.c utils.c version.c wait.c
+  warnings.c wild.c wiz.c)
+
+add_executable(netmush ${SRC_FILES})
 target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
 set_property(TARGET netmush PROPERTY C_STANDARD 99)
@@ -386,4 +388,7 @@ if(CTAGS)
 endif()
 if(ETAGS)
   add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+if(INDENT)
+  add_custom_target(indent COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()

@@ -70,7 +70,6 @@ void shutdown_checkpoint(void);
 #include "wait.h"
 #include "confmagic.h"
 
-
 #define MYSSL_RB 0x1         /**< Read blocked (on read) */
 #define MYSSL_WB 0x2         /**< Write blocked (on write) */
 #define MYSSL_RBOW 0x4       /**< Read blocked (on write) */

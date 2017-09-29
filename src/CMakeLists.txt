@@ -100,7 +100,7 @@ if(LibCrypt_FOUND)
   list(APPEND MUSHLIBS crypt)
 endif()
 
-include(FindLibEvent)
+find_package(LibEvent)
 if(Libevent_FOUND)
   find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
   find_library(LIBEVENT_OPENSSL_LIBRARY event_openssl)
@@ -385,7 +385,7 @@ target_compile_features(info_slave PUBLIC c_restrict)
 target_compile_options(info_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
 # TO-DO: Configurable
-if(LibEvent_FOUND)
+if(Libevent_FOUND)
   set(SSL_SLAVE 1)
   add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
   target_compile_definitions(ssl_slave PUBLIC SLAVE)

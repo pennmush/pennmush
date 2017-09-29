@@ -27,16 +27,19 @@ Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush can send and recieve UTF-8, but still uses latin-1 internally. Unicode characters that aren't part of latin-1 are not supported. Yet. [SW]
 
 Minor changes:
- * Upgrade random number generator to SFMT 1.5.1. [SW]
  * New @lock/chown controls who can @chown a CHOWN_OK object. Suggested by Frakir. [1127-MG]
  * The 'buy' command now pays the vendor, rather than the money disappearing into a black hole. Suggested by moniker, patch by CLDawes. [1128]
  * Help changes by Xperta, Trinsec, Elwyndas and others. [MG]
  * MySQL Stored Procedures should now work without causing 'Out of sync' errors. Patch by Mercutio. [1100]
- * Use a better seed for the RNG on Windows. [SW]
  * Make log rotation more robust. [SW]
- * mkcmds.pl uses a better way to generate temporary files. [SW]
  * fraction() now takes a second arg; fraction(1.5,true) returns "1 1/2", rather than "3/2". [MG]
+
+Hardcode:
+ * Upgrade random number generator to SFMT 1.5.1. [SW]
+ * Use a better seed for the RNG on Windows. [SW]
+ * mkcmds.pl uses a better way to generate temporary files. [SW]	
  * Use clang-format instead of GNU indent to format source code. [SW]
+ * Use poll(2) instead of select(2) for the main game event loop. [SW]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

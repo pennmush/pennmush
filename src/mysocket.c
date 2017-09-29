@@ -80,7 +80,7 @@
 #include <poll.h>
 #endif
 
-#ifdef I_SYS_SELECT
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 

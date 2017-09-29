@@ -95,6 +95,7 @@
 #cmakedefine HAVE___ATTRIBUTE___MALLOC
 #cmakedefine HAVE_DEV_URANDOM
 #cmakedefine HAVE_ZONEINFO
+#cmakedefine WORDS_BIGENDIAN
 
 #if defined(HAVE_INOTIFY_INIT) || defined(HAVE_INOTIFY_INIT1)
 #define HAVE_INOTIFY 1

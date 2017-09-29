@@ -209,6 +209,7 @@ endif()
 if(ED)
   set(HAVE_ED 1)
 endif()
+
 if(UPTIME)
   set(HAVE_UPTIME 1)
 endif()
@@ -217,6 +218,9 @@ endif()
 # ZONEINFO
 
 # Compiler features
+
+include(TestBigEndian)
+test_big_endian(WORDS_BIGENDIAN)
 
 set(SAVED_CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET})
 set(CMAKE_REQUIRED_QUIET 1)
@@ -325,6 +329,7 @@ else()
   endif()
 endif()
 
+# TO-DO: Make this happen at compile time
 execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
@@ -347,6 +352,7 @@ set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
 target_compile_options(netmush PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
+# TO-DO: Configurable
 set(INFO_SLAVE 1)
 add_executable(info_slave info_slave.c strdup.c sig.c wait.c mysocket.c)
 target_compile_definitions(info_slave PUBLIC SLAVE)
@@ -357,16 +363,19 @@ set_property(TARGET info_slave PROPERTY C_STANDARD 99)
 target_compile_features(info_slave PUBLIC c_restrict)
 target_compile_options(info_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 
-set(SSL_SLAVE 1)
-add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
-target_compile_definitions(ssl_slave PUBLIC SLAVE)
-target_include_directories(ssl_slave PUBLIC ${PROJECT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
-target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
-set_property(TARGET ssl_slave PROPERTY C_STANDARD 99)
-target_compile_features(ssl_slave PUBLIC c_restrict)
-target_compile_options(ssl_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
-
+# TO-DO: Configurable
+if(LibEvent_FOUND)
+  set(SSL_SLAVE 1)
+  add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
+  target_compile_definitions(ssl_slave PUBLIC SLAVE)
+  target_include_directories(ssl_slave PUBLIC ${PROJECT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
+  set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
+  target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
+  set_property(TARGET ssl_slave PROPERTY C_STANDARD 99)
+  target_compile_features(ssl_slave PUBLIC c_restrict)
+  target_compile_options(ssl_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
+endif()
+  
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 
 include(WriteCompilerDetectionHeader)

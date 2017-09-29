@@ -241,6 +241,7 @@ enum methods method;
 enum { MAX_SLAVES = 5 };
 sig_atomic_t children = 0;
 pid_t child_pids[MAX_SLAVES];
+pid_t parent_pid = 0;
 
 int
 main(void)
@@ -474,7 +475,7 @@ eventwait_watch_fd_read(int fd)
 int
 eventwait_watch_parent_exit(void)
 {
-  pid_t parent;
+  pid_t parent = 0;
 
 #ifdef HAVE_GETPPID
   parent = getppid();
@@ -501,9 +502,13 @@ eventwait_watch_parent_exit(void)
     return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
   }
 #endif
+    
 #ifdef HAVE_POLL
-  case METHOD_POLL: /* Fall through */
+  case METHOD_POLL:
+    parent_pid = parent;
+    return 0;
 #endif
+    
   default:
     errno = ENOTSUP;
     return -1;

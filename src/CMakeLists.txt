@@ -117,6 +117,12 @@ if(LibZ_FOUND)
 endif()
 
 # TODO: MySQL
+include(FindMySQL)
+if(MYSQL_FOUND)
+  list(APPEND MUSHLIBS ${MYSQL_LIBRARIES})
+  include_directories(${MYSQL_INCLUDE_DIRS})
+endif()
+  
 find_library(SQLITE3_LIBRARY sqlite3)
 find_package_handle_standard_args(LibSqlite3 REQUIRED_VARS SQLITE3_LIBRARY HAVE_SQLITE3_H)
 if(LibSqlite3_FOUND)
@@ -394,7 +400,7 @@ endif()
 
 include(WriteCompilerDetectionHeader)
 
-write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang FEATURES c_restrict)
+write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang Intel MSVC AppleClang SunPro FEATURES c_restrict)
 
 # Assorted extra make targets
 if(CTAGS)

@@ -297,14 +297,12 @@ target_include_directories(info_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs
 set_property(TARGET info_slave PROPERTY LINKER_LANGUAGE C)
 target_link_libraries(info_slave ${LIBS} ${SLAVELIBS})
 
-if (LibSqlite3_FOUND OR PostgreSQL_FOUND)
-  set(SSL_SLAVE 1)
-  add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
-  target_compile_definitions(ssl_slave PUBLIC SLAVE)
-  target_include_directories(ssl_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-  set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
-  target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
-endif()
+set(SSL_SLAVE 1)
+add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
+target_compile_definitions(ssl_slave PUBLIC SLAVE)
+target_include_directories(ssl_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
+set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
+target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 

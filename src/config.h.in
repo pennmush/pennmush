@@ -95,6 +95,7 @@
 #cmakedefine HAVE___ATTRIBUTE___MALLOC
 #cmakedefine HAVE_DEV_URANDOM
 #cmakedefine HAVE_ZONEINFO
+#define TZDIR "@TZDIR@"
 #cmakedefine WORDS_BIGENDIAN
 
 #if defined(HAVE_INOTIFY_INIT) || defined(HAVE_INOTIFY_INIT1)

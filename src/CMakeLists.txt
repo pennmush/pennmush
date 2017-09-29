@@ -117,7 +117,7 @@ if(LibZ_FOUND)
 endif()
 
 # TODO: MySQL
-include(FindMySQL)
+find_package(MySQL)
 if(MYSQL_FOUND)
   list(APPEND MUSHLIBS ${MYSQL_LIBRARIES})
   include_directories(${MYSQL_INCLUDE_DIRS})
@@ -226,6 +226,13 @@ endif()
 
 # TO-DO:
 # ZONEINFO
+foreach(DIR IN ITEMS /usr/share/zoneinfo /usr/lib/zoneinfo /usr/local/etc/zoneinfo /usr/share/lib/zoneinfo)
+  if(EXISTS ${DIR}/UTC)
+    set(TZDIR ${DIR})
+    set(HAVE_ZONEINFO 1)
+    break()
+  endif()
+endforeach()
 
 # Compiler features and options
 
@@ -393,13 +400,11 @@ endif()
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh.in test/alltests.sh @ONLY)
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh.in game/txt/compose.sh @ONLY)
-
 if(CHMOD)
   execute_process(COMMAND ${CHMOD} +x test/alltests.sh game/txt/compose.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 include(WriteCompilerDetectionHeader)
-
 write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang Intel MSVC AppleClang SunPro FEATURES c_restrict)
 
 # Assorted extra make targets

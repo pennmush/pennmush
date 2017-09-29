@@ -19,6 +19,10 @@ find_program(UPTIME uptime)
 find_program(CTAGS ctags)
 find_program(ETAGS etags)
 find_program(INDENT clang-format)
+find_program(TEST test)
+find_program(CAT cat)
+find_program(ECHO echo)
+find_program(CHMOD chmod)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
@@ -217,7 +221,7 @@ endif()
 # TO-DO:
 # ZONEINFO
 
-# Compiler features
+# Compiler features and options
 
 include(TestBigEndian)
 test_big_endian(WORDS_BIGENDIAN)
@@ -284,6 +288,10 @@ endif()
 if(HAVE_LD_NOEXECSTACK)
   list(APPEND LIBS -Wl,-z,noexecstack)
 endif()
+
+# Misc stuff
+
+# TO-DO: disable-nls, disable-ipv6, 
 
 # create local source files
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmdlocal.c)
@@ -376,7 +384,13 @@ if(LibEvent_FOUND)
   target_compile_options(ssl_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 endif()
   
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh.in test/alltests.sh @ONLY)
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh.in game/txt/compose.sh @ONLY)
+
+if(CHMOD)
+  execute_process(COMMAND ${CHMOD} +x test/alltests.sh game/txt/compose.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 
 include(WriteCompilerDetectionHeader)
 

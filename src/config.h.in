@@ -80,7 +80,9 @@
 #cmakedefine HAVE_SYSCONF
 #cmakedefine HAVE_TEXTDOMAIN
 #cmakedefine HAVE_VASPRINTF
+#cmakedefine HAVE_WAIT
 #cmakedefine HAVE_WAITPID
+#cmakedefine HAVE_WAIT3
 #cmakedefine HAVE_WRITEV
 #cmakedefine HAVE__STRICMP
 #cmakedefine HAVE__STRICOLL

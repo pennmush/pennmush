@@ -201,7 +201,10 @@ set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(vasprintf "stdio.h" HAVE_VASPRINTF)
 set(CMAKE_REQUIRED_DEFINITIONS ${SAVED_CMAKE_REQUIRED_DEFINITIONS})
 
+check_symbol_exists(wait "sys/types.h;sys/wait.h" HAVE_WAIT)
 check_symbol_exists(waitpid "sys/types.h;sys/wait.h" HAVE_WAITPID)
+check_symbol_exists(wait3 "sys/types.h;sys/time.h;sys/resource.h;sys/wait.h" HAVE_WAIT3)
+
 check_symbol_exists(writev "sys/uio.h" HAVE_WRITEV)
 check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
 check_symbol_exists(_stricoll "string.h" HAVE__STRICOLL)

@@ -91,9 +91,8 @@ include(FindLibEvent)
 if(Libevent_FOUND)
   find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
   find_library(LIBEVENT_OPENSSL_LIBRARY event_openssl)
-  list(APPEND LIBEVENT_LIBRARIES ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY})
+  set(LIBEVENT_LIBRARIES "${LIBEVENT_LIBRARIES} ${LIBEVENT_EXTRA_LIBRARY} ${LIBEVENT_OPENSSL_LIBRARY}")
   list(APPEND SLAVELIBS ${LIBEVENT_LIBRARIES})
-  set(HAVE_LIBEVENT_CORE 1)
 endif()
 
 find_library(LIBZ_LIBRARY z)
@@ -207,16 +206,6 @@ endif()
 # TO-DO:
 # ZONEINFO
 
-# Compiler features
-
-check_c_source_compiles(
-    "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
-
-# TO-DO:
-# Warnings
-# march=native
-# stack protector
-
 # create local source files
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/cmdlocal.c)
   message(STATUS "Copying cmdlocal.dst to cmdlocal.c")
@@ -285,26 +274,23 @@ add_executable(netmush access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
 	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	
 	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	
 	wait.c warnings.c wild.c wiz.c)
-target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
+
+# Compiler features
 set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
 
-set(INFO_SLAVE 1)
-add_executable(info_slave info_slave.c strdup.c sig.c wait.c mysocket.c)
-target_compile_definitions(info_slave PUBLIC SLAVE)
-target_include_directories(info_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-set_property(TARGET info_slave PROPERTY LINKER_LANGUAGE C)
-target_link_libraries(info_slave ${LIBS} ${SLAVELIBS})
+check_c_source_compiles(
+    "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
 
-if (LibSqlite3_FOUND OR PostgreSQL_FOUND)
-  set(SSL_SLAVE 1)
-  add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
-  target_compile_definitions(ssl_slave PUBLIC SLAVE)
-  target_include_directories(ssl_slave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
-  set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
-  target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
-endif()
+# TO-DO:
+# Warnings
+# march=native
+# stack protector
+
+
+target_include_directories(netmush PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../hdrs ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 

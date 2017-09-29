@@ -1,7 +1,6 @@
 /** SSL slave related code. */
 
 #include "copyrite.h"
-#include "config.h"
 
 #ifdef SSL_SLAVE
 
@@ -36,7 +35,6 @@
 #include "myssl.h"
 #include "ssl_slave.h"
 #include "wait.h"
-#include "confmagic.h"
 
 void errprintf(FILE *, const char *, ...)
   __attribute__((__format__(__printf__, 2, 3)));

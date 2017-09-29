@@ -974,7 +974,6 @@ shovechars(Port_t port, Port_t sslport)
   int queue_timeout;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
-  unsigned long input_ready, output_ready;
   int notify_fd = -1;
 #ifdef WIN32
   WSAPOLLFD *fds;
@@ -985,7 +984,6 @@ shovechars(Port_t port, Port_t sslport)
 #endif
   int polltimeout;
   
-
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1246,24 +1244,32 @@ shovechars(Port_t port, Port_t sslport)
         file_watch_event(notify_fd);
       
       for (d = descriptor_list; d; d = dnext) {
+	unsigned int input_ready, output_ready, errors;
+	
         dnext = d->next;
 
 	if (d->descriptor != fds[fds_used].fd)
 	  continue;
 	
         input_ready = fds[fds_used].revents & POLLIN;
+	errors = fds[fds_used].revents & (POLLERR | POLLNVAL)
         output_ready = fds[fds_used++].revents & POLLOUT;
-        if (input_ready) {
-          if (!process_input(d, output_ready)) {
-            shutdownsock(d, "disconnect", d->player);
-            continue;
-          }
-        }
-        if (output_ready) {
-          if (!process_output(d)) {
-            shutdownsock(d, "disconnect", d->player);
-          }
-        }
+	if (errors) {
+	  /* Socket error; kill this connection. */
+	  shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);	 
+	} else {
+	  if (input_ready) {
+	    if (!process_input(d, output_ready)) {
+	      shutdownsock(d, "disconnect", d->player);
+	      continue;
+	    }
+	  }
+	  if (output_ready) {
+	    if (!process_output(d)) {
+	      shutdownsock(d, "disconnect", d->player);
+	    }
+	  }
+	}
       }
     }
   }

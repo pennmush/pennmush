@@ -112,6 +112,9 @@
 #define HAVE_SSL 1
 
 
+#cmakedefine SSL_SLAVE
+#cmakedefine INFO_SLAVE
+
 /* Taken from autoconf manual */
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>

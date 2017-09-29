@@ -16,6 +16,8 @@ include(FindDoxygen)
 find_program(GPERF gperf)
 find_program(ED ed)
 find_program(UPTIME uptime)
+find_program(CTAGS ctags)
+find_Program(ETAGS etags)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
@@ -377,3 +379,11 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
 include(WriteCompilerDetectionHeader)
 
 write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Clang FEATURES c_restrict)
+
+# Assorted extra make targets
+if(CTAGS)
+  add_custom_target(ctags COMMAND ${CTAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+if(ETAGS)
+  add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

@@ -25,7 +25,7 @@
   ; Load the appropriate libraries in the interpeter
   (use utils)))
 
-(require-extension regex)
+(require-extension irregex)
 
 (define (for-each-line f)
   (let loop ((line (read-line)))
@@ -38,9 +38,9 @@
 ;; Some testing suggests the regular expression approach is a little
 ;; bit faster (Especially when run through csi instead of compiled to
 ;; a binary)
-(define path-regexp (regexp "^(?:\\+\\+\\+|---|\\*\\*\\*|Index:|diff)\\s"))
+(define path-regexp (irregex "^(?:\\+\\+\\+|---|\\*\\*\\*|Index:|diff)\\s"))
 (define (fix-paths line)
-  (if (string-search path-regexp line)
+  (if (irregex-search path-regexp line)
       (string-translate line #\\ #\/)
       line))
 

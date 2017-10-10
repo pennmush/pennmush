@@ -16,6 +16,7 @@
 #cmakedefine HAVE_SYS_EVENT_H
 #cmakedefine HAVE_SYS_INOTIFY_H
 #cmakedefine HAVE_SYS_PARAM_H
+#cmakedefine HAVE_SYS_PRCTL_H
 #cmakedefine HAVE_SYS_RESOURCE_H
 #cmakedefine HAVE_SYS_SELECT_H
 #cmakedefine HAVE_SYS_SOCKET_H
@@ -62,6 +63,7 @@
 #cmakedefine HAVE_POSIX_FADVISE
 #cmakedefine HAVE_POSIX_FALLOCATE
 #cmakedefine HAVE_POSIX_MEMALIGN
+#cmakedefine HAVE_PRCTL
 #cmakedefine HAVE_PREAD
 #cmakedefine HAVE_PWRITE
 #cmakedefine HAVE_SELECT

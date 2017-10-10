@@ -40,6 +40,7 @@ Hardcode:
  * mkcmds.pl uses a better way to generate temporary files. [SW]	
  * Use clang-format instead of GNU indent to format source code. [SW]
  * Use poll(2) instead of select(2) for the main game event loop. [SW]
+ * Slave procceses use prctl(2) on Linux to be notified of the mush exiting instead of checking periodically. [SW]
 
 Version 1.8.6 patchlevel 1                                 Mar 29, 2017
 

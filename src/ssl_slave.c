@@ -23,6 +23,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#endif
 
 #include <event2/event.h>
 #include <event2/dns.h>
@@ -452,6 +455,23 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
   bufferevent_enable(c->remote_bev, EV_WRITE);
 }
 
+static void
+close_connections(bool flush_local)
+{
+  struct conn *c;   
+  for (c = connections; c; c = c->next) {
+    c->state = C_SHUTTINGDOWN;
+    if (c->remote_bev) {
+      bufferevent_disable(c->remote_bev, EV_READ);
+      bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
+    }
+    if (flush_local && c->local_bev) {
+      bufferevent_disable(c->local_bev, EV_READ);
+      bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
+    }
+  }
+}
+
 /** Called periodically to ensure the parent mush is still there. */
 static void
 check_parent(evutil_socket_t fd __attribute__((__unused__)),
@@ -460,28 +480,26 @@ check_parent(evutil_socket_t fd __attribute__((__unused__)),
 {
   if (getppid() != parent_pid) {
     errputs(stderr, "Parent mush process exited unexpectedly! Shutting down.");
+    close_connections(0);
     event_base_loopbreak(main_loop);
   }
 }
 
-/* Shut down gracefully on a SIGTERM */
+/* Shut down gracefully on a SIGTERM or SIGUSR1 */
 static void
 shutdown_cb(evutil_socket_t fd __attribute__((__unused__)),
             short what __attribute__((__unused__)),
             void *arg __attribute__((__unused__)))
 {
-  struct conn *c;
-  for (c = connections; c; c = c->next) {
-    c->state = C_SHUTTINGDOWN;
-    if (c->remote_bev) {
-      bufferevent_disable(c->remote_bev, EV_READ);
-      bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
-    }
-    if (c->local_bev) {
-      bufferevent_disable(c->local_bev, EV_READ);
-      bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
-    }
+  bool flush_local = 1;
+  if (what == SIGTERM)
+    errputs(stderr, "Recieved SIGTERM.");
+  else if (what == SIGUSR1) {
+    errputs(stderr, "Parent mush process exited unexpectedly! Shutting down.");
+    flush_local = 0;
   }
+
+  close_connections(flush_local);
   event_base_loopexit(main_loop, NULL);
 }
 
@@ -524,14 +542,24 @@ main(int argc __attribute__((__unused__)),
     event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
   event_add(ssl_listener, NULL);
 
-  /* Run every 5 seconds to see if the parent mush process is still around. */
-  watch_parent =
-    event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
-  event_add(watch_parent, &parent_timeout);
+#ifdef HAVE_PRCTL
+  if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
+    // fputerr("Using prctl() to track parent status.");
+    watch_parent = evsignal_new(main_loop, SIGUSR1, shutdown_cb, NULL);
+    event_add(watch_parent, NULL);
+  } else {
+#endif
+    /* Run every 5 seconds to see if the parent mush process is still around. */
+    watch_parent =
+      event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+    event_add(watch_parent, &parent_timeout);
+#ifdef HAVE_PRCTL
+  }
+#endif
 
   /* Catch shutdown requests from the parent mush */
   sigterm_handler =
-    event_new(main_loop, SIGTERM, EV_SIGNAL | EV_PERSIST, shutdown_cb, NULL);
+    evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);
   event_add(sigterm_handler, NULL);
 
   errprintf(stderr, "ssl_slave: starting event loop using %s.\n",

@@ -48,6 +48,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#endif
 #include <errno.h>
 #include <signal.h>
 
@@ -174,17 +177,30 @@ got_request(evutil_socket_t fd, short what __attribute__((__unused__)),
   evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, data);
 }
 
+static pid_t parent_pid = 0;
+
 /** Called periodically to ensure the parent mush is still there. */
 static void
 check_parent(evutil_socket_t fd __attribute__((__unused__)),
              short what __attribute__((__unused__)),
              void *arg __attribute__((__unused__)))
 {
-  if (getppid() == 1) {
+  if (getppid() != parent_pid) {
     fputerr("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
+
+#ifdef HAVE_PRCTL
+static void
+check_parent_signal(evutil_socket_t fd __attribute__((__unused__)),
+             short what __attribute__((__unused__)),
+             void *arg __attribute__((__unused__)))
+{
+  fputerr("Parent mush process exited unexpectedly! Shutting down.");
+  event_base_loopbreak(main_loop);
+}
+#endif
 
 int
 main(void)
@@ -192,14 +208,26 @@ main(void)
   struct event *watch_parent, *watch_request;
   struct timeval parent_timeout = {.tv_sec = 5, .tv_usec = 0};
 
+  parent_pid = getppid();
+  
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
+#ifdef HAVE_PRCTL
+  if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
+    // fputerr("Using prctl() to track parent status.");
+    watch_parent = evsignal_new(main_loop, SIGUSR1, check_parent_signal, NULL);
+    event_add(watch_parent, NULL);
+  } else {
+#endif
   /* Run every 5 seconds to see if the parent mush process is still around. */
   watch_parent =
     event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
   event_add(watch_parent, &parent_timeout);
-
+#ifdef HAVE_PRCTL
+  }
+#endif
+  
   /* Wait for an incoming request datagram from the mush */
   watch_request =
     event_new(main_loop, 0, EV_READ | EV_PERSIST, got_request, NULL);
@@ -209,6 +237,7 @@ main(void)
   fprintf(stderr, "info_slave: starting event loop using %s.\n",
           event_base_get_method(main_loop));
   unlock_file(stderr);
+  
   event_base_dispatch(main_loop);
   fputerr("shutting down.");
 

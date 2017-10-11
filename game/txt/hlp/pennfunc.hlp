@@ -1686,7 +1686,7 @@ See also: gt(), lt(), lte(), eq(), neq(), lmath()
   
   hasattrp() also checks for <attribute> on <object>'s parent/ancestor.
 
-  hasattrval() only returns 1 if <attribute> exists and is non-empty.
+  hasattrval() only returns 1 if <attribute> exists and is non-empty. An "empty" attr is one containing a null value (if the empty_attrs config option is on), or one containing a single space (if the option is off).
   
   hasattrpval() is like hasattrval() but also checks parents.
   

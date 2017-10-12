@@ -287,7 +287,10 @@ COMMAND(cmd_helpcmd)
       char **entries;
       int len = 0;
       int type = 0;
+      static const char digits[16] __attribute__((__aligned__(16))) = "0123456789";
+
       pp = pattern;
+      
       for (sp = save; *sp; sp++) {
         if (isspace(*sp)) {
           if (type) {
@@ -299,7 +302,7 @@ COMMAND(cmd_helpcmd)
               return;
             }
           }
-        } else if (strchr("0123456789", *sp)) {
+        } else if (exists_in_ss(digits, 10, *sp)) {
           if (type == 1) {
             type = 2;
             *pp = '*';

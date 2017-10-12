@@ -10,6 +10,7 @@ include(CheckSymbolExists)
 include(CheckCSourceCompiles)
 include(CheckCCompilerFlag)
 
+message(STATUS "Looking for installed programs.")
 find_package(UnixCommands)
 find_package(Perl REQUIRED)
 find_package(Doxygen)
@@ -27,6 +28,7 @@ find_program(CHMOD chmod)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../hdrs)
 
 # Header files
+message(STATUS "Looking for system header files.")
 check_include_file(arpa/inet.h HAVE_ARPA_INET_H)
 check_include_file(crypt.h HAVE_CRYPT_H)
 check_include_file(fenv.h HAVE_FENV_H)
@@ -56,13 +58,13 @@ check_include_file(sys/un.h HAVE_SYS_UN_H)
 check_include_file(sys/wait.h HAVE_SYS_WAIT_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
 check_include_file(zlib.h HAVE_ZLIB_H)
-
 check_c_source_compiles(
   "#include <sys/time.h>
 #include <time.h>
 int main(void) { return 0; }" TIME_WITH_SYS_TIME)
 
 # Required libraries
+message(STATUS "Checking for required library dependencies.")
 set(SAVED_CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET})
 set(CMAKE_REQUIRED_QUIET 1)
 check_symbol_exists(sin "math.h" HAVE_SIN)
@@ -89,6 +91,7 @@ include_directories(${PCRE_INCLUDE_DIR})
 list(APPEND LIBS ${PCRE_LIBRARY})
 
 # Optional libraries
+message(STATUS "Checking for optional library dependencies.")
 include(FindIntl)
 if(Intl_FOUND)
   list(APPEND LIBS ${Intl_LIBRARIES})
@@ -101,6 +104,7 @@ if(LibCrypt_FOUND)
   list(APPEND MUSHLIBS crypt)
 endif()
 
+#set(Libevent_FIND_QUIETLY 1)
 find_package(LibEvent)
 if(Libevent_FOUND)
   find_library(LIBEVENT_EXTRA_LIBRARY event_extra)
@@ -117,7 +121,6 @@ if(LibZ_FOUND)
   set(HAVE_LIBZ 1)
 endif()
 
-# TODO: MySQL
 find_package(MySQL)
 if(MYSQL_FOUND)
   list(APPEND MUSHLIBS ${MYSQL_LIBRARIES})
@@ -132,13 +135,14 @@ if(LibSqlite3_FOUND)
 endif()
 
 find_package(PostgreSQL)
-if(${PostgreSQL_FOUND})
+if(PostgreSQL_FOUND)
   include_directories(${PostgreSQL_INCLUDE_DIRS})
   list(APPEND MUSHLIBS ${PostgreSQL_LIBRARIES})
   set(HAVE_POSTGRESQL 1)
 endif()
 
 # Functions
+message(STATUS "Checking for available system functions.")
 check_symbol_exists(bindtextdomain "libintl.h" HAVE_BINDTEXTDOMAIN)
 check_symbol_exists(cbrt "math.h" HAVE_CBRT)
 check_symbol_exists(crypt "unistd.h;crypt.h" HAVE_CRYPT)
@@ -235,6 +239,7 @@ foreach(DIR IN ITEMS /usr/share/zoneinfo /usr/lib/zoneinfo /usr/local/etc/zonein
   if(EXISTS ${DIR}/UTC)
     set(TZDIR ${DIR})
     set(HAVE_ZONEINFO 1)
+    message(STATUS "Time zone files found at ${DIR}")
     break()
   endif()
 endforeach()

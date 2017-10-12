@@ -231,9 +231,14 @@ FUNCTION(fun_hasattr)
   else
     a = atr_get_noparent(thing, upcasestr(attrib));
   if (a && Can_Read_Attr(executor, thing, a)) {
-    if (strchr(called_as, 'V'))
-      safe_chr(*AL_STR(a) ? '1' : '0', buff, bp);
-    else
+    if (strchr(called_as, 'V')) {
+      if (!*AL_STR(a))
+        safe_chr('0', buff, bp);
+      else if (!EMPTY_ATTRS && *AL_STR(a) && *AL_STR(a) == ' ' && !(AL_STR(a))[1])
+        safe_chr('0', buff, bp);
+      else
+        safe_chr('1', buff, bp);        
+    } else
       safe_chr('1', buff, bp);
     return;
   } else if (a || !Can_Examine(executor, thing)) {

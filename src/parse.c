@@ -1959,12 +1959,39 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
   for (;;) {
     /* Find the first "interesting" character */
     {
-      char const *pos;
+      char const *pos = *str;
       int len, len2;
+
+#ifdef HAVE_SSE42
+      /* Characters that the parser looks for. Same as active_table from tables.c */
+      static const char interesting[16] __attribute__((__aligned__(16))) = "%{[(\\ }>]),;=$\x1B";
+      __m128i a = _mm_load_si128((const __m128i *) interesting);
+
+      while (1) {
+        __m128i b = _mm_loadu_si128((__m128i *)*str);
+        int z = _mm_cmpistrz(a, b, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT);
+        int i = _mm_cmpistri(a, b, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT);
+        if (i != 16) {
+          *str += i;
+          break;
+        }
+        if (z) {
+          /* At end of the string with no interesting characters remaining. Find the 0 byte */
+          while (**str)
+            (*str)++;
+          break;
+        }
+        *str += 16;
+      }
+
+      // fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos), pos, **str);
+
+#else
       /* Inlined strcspn() equivalent, to save on overhead and portability */
-      pos = *str;
       while (!active_table[**str])
         (*str)++;
+#endif
+
       /* Inlined safe_str(), since the source string
        * may not be null terminated */
       len = *str - pos;

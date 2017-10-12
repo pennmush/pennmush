@@ -352,14 +352,17 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
 {
   struct access *ap;
   acsflag *c;
-
+  size_t hlen;
+  
   if (!hname || !*hname)
     return 0;
 
+  hlen = strlen(hname);
+  
   for (ap = access_top; ap; ap = ap->next) {
     if (ap->can & ACS_SITELOCK)
       continue;
-    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, ap->study, hname)
+    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
                                 : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
@@ -403,16 +406,19 @@ struct access *
 site_check_access(const char *hname, dbref who, int *rulenum)
 {
   struct access *ap;
-
+  size_t hlen;
+  
   *rulenum = 0;
   if (!hname || !*hname)
     return 0;
 
+  hlen = strlen(hname);
+  
   for (ap = access_top; ap; ap = ap->next) {
     (*rulenum)++;
     if (ap->can & ACS_SITELOCK)
       continue;
-    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, ap->study, hname)
+    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
                                 : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */

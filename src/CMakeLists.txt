@@ -348,10 +348,10 @@ set_source_files_properties(funmath.c PROPERTIES OBJECT_DEPENDS ${PROJECT_SOURCE
 
 if(EXISTS ${GPERF})
 
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/bflags.c COMMAND ${GPERF} -C --output-file bflags.c bflags.gperf DEPENDS ${PROJECT_SOURCE_DIR}/bflags.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding bflags.c")
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/htmltab.c COMMAND ${GPERF} -C --output-file htmltab.c htmltab.gperf DEPENDS ${PROJECT_SOURCE_DIR}/htmltab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding htmltab.c")
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/lmathtab.c COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf DEPENDS ${PROJECT_SOURCE_DIR}/lmathtab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding lmathtab.c")
-  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/rgbtab.c COMMAND ${GPERF} -C --output-file rgbtab.c rgbtab.gperf DEPENDS ${PROJECT_SOURCE_DIR}/rgbtab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding rgbtab.c")
+  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/bflags.c COMMAND ${GPERF} -C --output-file bflags.c bflags.gperf MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/bflags.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding bflags.c" VERBATIM)
+  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/htmltab.c COMMAND ${GPERF} -C --output-file htmltab.c htmltab.gperf MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/htmltab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding htmltab.c" VERBATIM)
+  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/lmathtab.c COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/lmathtab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding lmathtab.c" VERBATIM)
+  add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/rgbtab.c COMMAND ${GPERF} -C --output-file rgbtab.c rgbtab.gperf MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/rgbtab.gperf WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "Rebuilding rgbtab.c" VERBATIM)
 
 else()
 
@@ -361,7 +361,18 @@ else()
 endif()
 
 # TO-DO: Make this happen at compile time
-execute_process(COMMAND ${PERL} ${PROJECT_SOURCE_DIR}/../utils/mkcmds.pl all WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+execute_process(COMMAND ${PERL} utils/mkcmds.pl gitinfo WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+# By my understanding this next line shouldn't be needed, but...
+set_source_files_properties(command.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/switchinc.c")
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/switchinc.c" "${PROJECT_SOURCE_DIR}/../hdrs/switches.h" COMMAND ${PERL} utils/mkcmds.pl switches WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/SWITCHES" COMMENT "Rebuilding switchinc.c and switches.h" VERBATIM)
+
+# Adding command.c here means the switchinc.c target above doesn't get generated?
+set_source_files_properties(cmdlocal.c move.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/../hdrs/cmds.h")
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/cmds.h" COMMAND ${PERL} utils/mkcmds.pl commands VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" DEPENDS "${PROJECT_SOURCE_DIR}/cmds.c" "${PROJECT_SOURCE_DIR}/command.c" "${PROJECT_SOURCE_DIR}/cque.c" "${PROJECT_SOURCE_DIR}/set.c" "${PROJECT_SOURCE_DIR}/sql.c" COMMENT "Rebuilding cmds.h")
+
+set_source_files_properties(function.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/../hdrs/funs.h")
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h" COMMAND ${PERL} utils/mkcmds.pl functions VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" DEPENDS "${PROJECT_SOURCE_DIR}/funcrypt.c" "${PROJECT_SOURCE_DIR}/function.c" "${PROJECT_SOURCE_DIR}/fundb.c" "${PROJECT_SOURCE_DIR}/funlist.c" "${PROJECT_SOURCE_DIR}/funlocal.c" "${PROJECT_SOURCE_DIR}/funmath.c" "${PROJECT_SOURCE_DIR}/funmisc.c" "${PROJECT_SOURCE_DIR}/funstr.c" "${PROJECT_SOURCE_DIR}/funtime.c" "${PROJECT_SOURCE_DIR}/funufun.c" "${PROJECT_SOURCE_DIR}/bsd.c" "${PROJECT_SOURCE_DIR}/conf.c" "${PROJECT_SOURCE_DIR}/extmail.c" "${PROJECT_SOURCE_DIR}/help.c" "${PROJECT_SOURCE_DIR}/markup.c" "${PROJECT_SOURCE_DIR}/wiz.c" "${PROJECT_SOURCE_DIR}/sql.c" "${PROJECT_SOURCE_DIR}/cque.c")
 
 set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c conf.c

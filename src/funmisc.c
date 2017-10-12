@@ -14,7 +14,6 @@
 #include "SFMT.h"
 #include "ansi.h"
 #include "attrib.h"
-#include "case.h"
 #include "command.h"
 #include "conf.h"
 #include "dbdefs.h"
@@ -1185,10 +1184,10 @@ soundex(char *str)
   p = tbuf1;
 
   /* First character is just copied */
-  *p = UPCASE(*str);
+  *p = toupper(*str);
   str++;
   /* Special case for PH->F */
-  if ((UPCASE(*p) == 'P') && *str && (UPCASE(*str) == 'H')) {
+  if ((toupper(*p) == 'P') && *str && (toupper(*str) == 'H')) {
     *p = 'F';
     str++;
   }

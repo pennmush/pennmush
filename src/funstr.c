@@ -15,7 +15,6 @@
 #include <stddef.h>
 #include "ansi.h"
 #include "attrib.h"
-#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "externs.h"
@@ -151,7 +150,7 @@ FUNCTION(fun_capstr)
   char *p = args[0];
   WALK_ANSI_STRING(p)
   {
-    *p = UPCASE(*p);
+    *p = toupper(*p);
     break;
   }
   safe_strl(args[0], arglens[0], buff, bp);
@@ -167,7 +166,7 @@ FUNCTION(fun_art)
     safe_chr('a', buff, bp);
     return;
   }
-  c = DOWNCASE(*args[0]);
+  c = tolower(*args[0]);
   if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
     safe_strl("an", 2, buff, bp);
   else
@@ -449,7 +448,7 @@ FUNCTION(fun_comp)
     safe_str(T("#-1 INVALID THIRD ARGUMENT"), buff, bp);
     return;
   } else if (nargs == 3) {
-    type = UPCASE(*args[2]);
+    type = toupper(*args[2]);
   }
 
   switch (type) {
@@ -782,7 +781,7 @@ FUNCTION(fun_lcstr)
   p = args[0];
   WALK_ANSI_STRING(p)
   {
-    *p = DOWNCASE(*p);
+    *p = tolower(*p);
     p++;
   }
   safe_str(args[0], buff, bp);
@@ -796,7 +795,7 @@ FUNCTION(fun_ucstr)
   p = args[0];
   WALK_ANSI_STRING(p)
   {
-    *p = UPCASE(*p);
+    *p = toupper(*p);
     p++;
   }
   safe_str(args[0], buff, bp);

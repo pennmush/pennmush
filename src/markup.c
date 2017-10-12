@@ -17,7 +17,6 @@
 #include <stdarg.h>
 #include <limits.h>
 #include "ansi.h"
-#include "case.h"
 #include "conf.h"
 #include "externs.h"
 #include "game.h"

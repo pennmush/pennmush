@@ -25,7 +25,6 @@
 
 #include "ansi.h"
 #include "attrib.h"
-#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "externs.h"
@@ -2362,7 +2361,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
             if (**str == '>')
               (*str)++;
           } else {
-            qv[0] = UPCASE(nextc);
+            qv[0] = toupper(nextc);
             qval = PE_Getq(pe_info, qv);
             if (qval) {
               safe_str(qval, buff, bp);
@@ -2397,8 +2396,8 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          temp[0] = UPCASE(savec);
-          temp[1] = UPCASE(nextc);
+          temp[0] = toupper(savec);
+          temp[1] = toupper(nextc);
           temp[2] = '\0';
           attrib = atr_get(executor, temp);
           if (attrib)
@@ -2411,7 +2410,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         if (isupper(savec)) {
           savepos = skip_leading_ansi(savepos, *bp);
           if (savepos) {
-            *savepos = UPCASE(*savepos);
+            *savepos = toupper(*savepos);
           }
         }
       }
@@ -2521,7 +2520,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         eflags &= ~PE_FUNCTION_CHECK;
         /* Get the function name */
         for (sp = startpos, tp = name; sp < *bp; sp++)
-          safe_chr(UPCASE(*sp), name, &tp);
+          safe_chr(toupper(*sp), name, &tp);
         *tp = '\0';
         fp = (eflags & PE_BUILTINONLY) ? builtin_func_hash_lookup(name)
                                        : func_hash_lookup(name);

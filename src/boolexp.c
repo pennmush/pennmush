@@ -94,7 +94,6 @@
 #include <stdint.h>
 #endif
 #include "attrib.h"
-#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "extchat.h"
@@ -1010,7 +1009,7 @@ test_atr(char *s, char c)
     } else if (!escaped && *s == '\\')
       escaped = 1;
     else {
-      safe_chr((char) UPCASE(*s), tbuf1, &tbp);
+      safe_chr((char) toupper(*s), tbuf1, &tbp);
       escaped = 0;
     }
   }
@@ -1330,7 +1329,7 @@ parse_boolexp_A(void)
                            !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
                              *parsebuf == ')'))) {
         if (escaped || *parsebuf != '\\') {
-          safe_chr((char) UPCASE(*parsebuf), tbuf1, &p);
+          safe_chr((char) toupper(*parsebuf), tbuf1, &p);
           escaped = 0;
         } else
           escaped = 1;

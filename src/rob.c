@@ -1,4 +1,4 @@
-/**
+ /**
  * \file rob.c
  *
  * \brief Give, buy, etc.
@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "attrib.h"
-#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "externs.h"
@@ -202,7 +201,7 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
             if (bp)
               *bp = '\0';
             for (bp = finditem; *bp; bp++)
-              *bp = DOWNCASE(*bp);
+              *bp = tolower(*bp);
             bp = buff;
             safe_format(buff, &bp, T("You buy a %s from %s."), finditem,
                         AName(vendor, AN_MOVE, NULL));

@@ -13,7 +13,6 @@
 #include <ctype.h>
 #include "ansi.h"
 #include "attrib.h"
-#include "case.h"
 #include "command.h"
 #include "conf.h"
 #include "dbdefs.h"

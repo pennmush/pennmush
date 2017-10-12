@@ -62,7 +62,6 @@
 #include <stdlib.h>
 
 #include "attrib.h"
-#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "externs.h"

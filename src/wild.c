@@ -31,7 +31,6 @@
 #include <stdlib.h>
 
 #include "ansi.h"
-#include "case.h"
 #include "conf.h"
 #include "externs.h"
 #include "memcheck.h"
@@ -42,7 +41,7 @@
 #include "confmagic.h"
 
 /** Force a char to be lowercase */
-#define FIXCASE(a) (DOWNCASE(a))
+#define FIXCASE(a) (tolower(a))
 /** Check for equality of characters, maybe case-sensitive */
 #define EQUAL(cs, a, b) ((cs) ? (a == b) : (FIXCASE(a) == FIXCASE(b)))
 /** Check for inequality of characters, maybe case-sensitive */

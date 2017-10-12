@@ -43,7 +43,6 @@ void Win32MUSH_setup(void);
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
-#include "case.h"
 #include "command.h"
 #include "conf.h"
 #include "dbdefs.h"
@@ -1374,7 +1373,7 @@ check_alias(const char *command, const char *list)
   const char *p;
   while (*list) {
     for (p = command;
-         (*p && DOWNCASE(*p) == DOWNCASE(*list) && *list != ALIAS_DELIMITER);
+         (*p && tolower(*p) == tolower(*list) && *list != ALIAS_DELIMITER);
          p++, list++)
       ;
     if (*p == '\0') {

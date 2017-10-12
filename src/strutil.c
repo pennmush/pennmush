@@ -23,7 +23,6 @@
 #endif
 
 #include "ansi.h"
-#include "case.h"
 #include "conf.h"
 #include "log.h"
 #include "markup.h"
@@ -161,10 +160,10 @@ chopstr(const char *str, size_t lim)
 int
 strcasecmp(const char *s1, const char *s2)
 {
-  while (*s1 && *s2 && DOWNCASE(*s1) == DOWNCASE(*s2))
+  while (*s1 && *s2 && tolower(*s1) == tolower(*s2))
     s1++, s2++;
 
-  return (DOWNCASE(*s1) - DOWNCASE(*s2));
+  return (tolower(*s1) - tolower(*s2));
 }
 #endif
 
@@ -181,8 +180,8 @@ int
 strncasecmp(const char *s1, const char *s2, size_t n)
 {
   for (; 0 < n; ++s1, ++s2, --n)
-    if (DOWNCASE(*s1) != DOWNCASE(*s2))
-      return DOWNCASE(*s1) - DOWNCASE(*s2);
+    if (tolower(*s1) != tolower(*s2))
+      return tolower(*s1) - tolower(*s2);
     else if (*s1 == 0)
       return 0;
   return 0;
@@ -201,7 +200,7 @@ string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix)
     return 0;
-  while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
+  while (*string && *prefix && tolower(*string) == tolower(*prefix))
     string++, prefix++;
   return *prefix == '\0';
 }
@@ -247,8 +246,8 @@ strinitial(const char *s)
   }
   strcpy(buf1, s);
   for (p = buf1; *p; p++)
-    *p = DOWNCASE(*p);
-  buf1[0] = UPCASE(buf1[0]);
+    *p = tolower(*p);
+  buf1[0] = toupper(buf1[0]);
   return buf1;
 }
 
@@ -268,7 +267,7 @@ strupper(const char *s)
   }
   mush_strncpy(buf1, s, BUFFER_LEN);
   for (p = buf1; *p; p++)
-    *p = UPCASE(*p);
+    *p = toupper(*p);
   return buf1;
 }
 
@@ -288,7 +287,7 @@ strlower(const char *s)
   }
   mush_strncpy(buf1, s, BUFFER_LEN);
   for (p = buf1; *p; p++)
-    *p = DOWNCASE(*p);
+    *p = tolower(*p);
   return buf1;
 }
 
@@ -301,7 +300,7 @@ upcasestr(char *s)
 {
   char *p;
   for (p = s; p && *p; p++)
-    *p = UPCASE(*p);
+    *p = toupper(*p);
   return s;
 }
 

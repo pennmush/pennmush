@@ -2,6 +2,7 @@
 
 /* Headers */
 #cmakedefine HAVE_ARPA_INET_H
+#cmakedefine HAVE_BYTESWAP_H
 #cmakedefine HAVE_CRYPT_H
 #cmakedefine HAVE_FENV_H
 #cmakedefine HAVE_INTTYPES_H
@@ -45,11 +46,13 @@
 #cmakedefine HAVE_GETADDRINFO
 #cmakedefine HAVE_GETDATE
 #cmakedefine HAVE_GETEUID
+#cmakedefine HAVE_GETPAGESIZE
 #cmakedefine HAVE_GETPID
 #cmakedefine HAVE_GETPPID
 #cmakedefine HAVE_GETPRIORITY
 #cmakedefine HAVE_GETRLIMIT
 #cmakedefine HAVE_GETRUSAGE
+#cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
 #cmakedefine HAVE_IMAXDIV
 #cmakedefine HAVE_INOTIFY_INIT
@@ -66,7 +69,6 @@
 #cmakedefine HAVE_PRCTL
 #cmakedefine HAVE_PREAD
 #cmakedefine HAVE_PWRITE
-#cmakedefine HAVE_SELECT
 #cmakedefine HAVE_SETEUID
 #cmakedefine HAVE_SETITIMER
 #cmakedefine HAVE_SETPGID
@@ -76,8 +78,10 @@
 #cmakedefine HAVE_SIGACTION
 #cmakedefine HAVE_SIGPROCMASK
 #cmakedefine HAVE_SOCKETPAIR
+#cmakedefine HAVE_STRCASECMP
 #cmakedefine HAVE_STRCHRNUL
 #cmakedefine HAVE_STRDUP
+#cmakedefine HAVE_STRNCASECMP
 #cmakedefine HAVE_STRXFRM
 #cmakedefine HAVE_SYSCONF
 #cmakedefine HAVE_TEXTDOMAIN
@@ -86,12 +90,16 @@
 #cmakedefine HAVE_WAITPID
 #cmakedefine HAVE_WAIT3
 #cmakedefine HAVE_WRITEV
+#cmakedefine HAVE_VSNPRINTF
 #cmakedefine HAVE__STRICMP
 #cmakedefine HAVE__STRICOLL
 #cmakedefine HAVE__STRNCOLL
 #cmakedefine HAVE__STRNICMP
 #cmakedefine HAVE__STRNICOLL
 #cmakedefine HAVE__VSNPRINTF_S
+
+/* Types */
+#cmakedefine HAVE_STRUCT_XUCRED
 
 /* Other stuff */
 #cmakedefine HAVE_BUILTIN_EXPECT

@@ -41,9 +41,12 @@
 #cmakedefine HAVE_EVP_MD_DO_ALL
 #cmakedefine HAVE_FCNTL
 #cmakedefine HAVE_FECLEAREXCEPT
+#cmakedefine HAVE_FGETS_UNLOCKED
+#cmakedefine HAVE_FPUTS_UNLOCKED
 #cmakedefine HAVE_FETESTEXCEPT
 #cmakedefine HAVE_FORK
 #cmakedefine HAVE_GETADDRINFO
+#cmakedefine HAVE_GETC_UNLOCKED
 #cmakedefine HAVE_GETDATE
 #cmakedefine HAVE_GETEUID
 #cmakedefine HAVE_GETPAGESIZE
@@ -54,6 +57,7 @@
 #cmakedefine HAVE_GETRUSAGE
 #cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
+#cmakedefine HAVE_GZVPRINTF
 #cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV
 #cmakedefine HAVE_INOTIFY_INIT
@@ -69,6 +73,7 @@
 #cmakedefine HAVE_POSIX_MEMALIGN
 #cmakedefine HAVE_PRCTL
 #cmakedefine HAVE_PREAD
+#cmakedefine HAVE_PUTC_UNLOCKED
 #cmakedefine HAVE_PWRITE
 #cmakedefine HAVE_SETEUID
 #cmakedefine HAVE_SETITIMER

@@ -2376,6 +2376,7 @@ db_open(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+    gzbuffer(pf->handle.g, 1024 * 64); /* Large buffer to speed up decompression */
     return pf;
   }
 #endif
@@ -2392,7 +2393,7 @@ db_open(const char *fname)
         popen(tprintf("%s < '%s'", options.uncompressprog, filename), "r");
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
-        setvbuf(pf->handle.f, NULL, _IOFBF, BUFSIZ);
+        setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
       } else
         do_rawlog(LT_ERR, "Unable to run '%s < %s': %s", options.uncompressprog,
                   filename, strerror(errno));
@@ -2405,12 +2406,14 @@ db_open(const char *fname)
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, FOPEN_READ);
-    if (!pf->handle.f)
+    if (!pf->handle.f) {
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
+    } else {
+      setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
 #ifdef HAVE_POSIX_FADVISE
-    else if (pf->handle.f)
       posix_fadvise(fileno(pf->handle.f), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
+    }
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");
@@ -2459,6 +2462,7 @@ db_open_write(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+    gzbuffer(pf->handle.g, 1024 * 64);
     return pf;
   }
 #endif
@@ -2470,7 +2474,7 @@ db_open_write(const char *fname)
       popen(tprintf("%s > '%s'", options.compressprog, filename), "w");
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
-      setvbuf(pf->handle.f, NULL, _IOFBF, BUFSIZ);
+      setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
     } else
       do_rawlog(LT_ERR, "Unable to run '%s > %s': %s", options.compressprog,
                 filename, strerror(errno));
@@ -2486,6 +2490,8 @@ db_open_write(const char *fname)
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");
     longjmp(db_err, 1);
+  } else {
+    setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
   }
   return pf;
 }

@@ -351,6 +351,7 @@ bsd.o: ../hdrs/pueblo.h
 bsd.o: ../hdrs/sig.h
 bsd.o: ../hdrs/strutil.h
 bsd.o: ../hdrs/version.h
+bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
@@ -373,6 +374,17 @@ bufferq.o: ../hdrs/compile.h
 bufferq.o: ../hdrs/mypcre.h
 bufferq.o: ../hdrs/log.h
 bufferq.o: ../hdrs/mymalloc.h
+charconv.o: ../config.h
+charconv.o: ../confmagic.h
+charconv.o: ../options.h
+charconv.o: ../hdrs/copyrite.h
+charconv.o: ../hdrs/mymalloc.h
+charconv.o: ../hdrs/compile.h
+charconv.o: ../hdrs/mushtype.h
+charconv.o: ../hdrs/charconv.h
+charconv.o: ../hdrs/mysocket.h
+charconv.o: ../hdrs/log.h
+charconv.o: ../hdrs/bufferq.h
 chunk.o: ../config.h
 chunk.o: ../confmagic.h
 chunk.o: ../options.h
@@ -1543,6 +1555,7 @@ notify.o: ../hdrs/mysocket.h
 notify.o: ../hdrs/parse.h
 notify.o: ../hdrs/pueblo.h
 notify.o: ../hdrs/strutil.h
+notify.o: ../hdrs/charconv.h
 parse.o: ../config.h
 parse.o: ../confmagic.h
 parse.o: ../options.h

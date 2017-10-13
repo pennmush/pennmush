@@ -115,10 +115,14 @@
  * \@stats/chunks generates output similar to this:
  * \verbatim
  * Chunks:         99407 allocated (   8372875 bytes,     223808 ( 2%) overhead)
- *                   74413 short     (   1530973 bytes,     148826 ( 9%) overhead)
- *                   24994 medium    (   6841902 bytes,      74982 ( 1%) overhead)
- *                       0 long      (         0 bytes,          0 ( 0%) overhead)
- *                   128 free      (   1319349 bytes,      23058 ( 1%) fragmented)
+ *                   74413 short     (   1530973 bytes,     148826 ( 9%)
+ * overhead)
+ *                   24994 medium    (   6841902 bytes,      74982 ( 1%)
+ * overhead)
+ *                       0 long      (         0 bytes,          0 ( 0%)
+ * overhead)
+ *                   128 free      (   1319349 bytes,      23058 ( 1%)
+ * fragmented)
  * Regions:          147 total,       16 cached
  * Paging:        158686 out,     158554 in
  * Storage:      9628500 total (86% saturation)
@@ -227,14 +231,13 @@
 #else
 #ifndef __USE_UNIX98
 #define __USE_UNIX98
-#endif                          /* __USE_UNIX98 */
+#endif /* __USE_UNIX98 */
 #include <unistd.h>
 #endif
 #include <errno.h>
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-
 
 #include "command.h"
 #include "conf.h"
@@ -246,7 +249,7 @@
 #include "notify.h"
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* disable warning re conversion */
+#pragma warning(disable : 4761) /* disable warning re conversion */
 #endif
 
 #ifdef WIN32
@@ -260,8 +263,8 @@
    data. Derefs are not used. */
 
 static chunk_reference_t
-acm_chunk_create(char const *data, uint16_t len, uint8_t derefs
-                 __attribute__ ((__unused__)))
+acm_chunk_create(char const *data, uint16_t len,
+                 uint8_t derefs __attribute__((__unused__)))
 {
   uint8_t *chunk;
 
@@ -309,14 +312,14 @@ acm_chunk_len(chunk_reference_t reference)
 }
 
 static uint8_t
-acm_chunk_derefs(chunk_reference_t reference __attribute__ ((__unused__)))
+acm_chunk_derefs(chunk_reference_t reference __attribute__((__unused__)))
 {
   return 0;
 }
 
 static void
-acm_chunk_migration(int count __attribute__ ((__unused__)),
-                    chunk_reference_t **references __attribute__ ((__unused__)))
+acm_chunk_migration(int count __attribute__((__unused__)),
+                    chunk_reference_t **references __attribute__((__unused__)))
 {
   return;
 }
@@ -334,8 +337,8 @@ acm_chunk_init(void)
 }
 
 static void
-acm_chunk_stats(dbref player, enum chunk_stats_type which
-                __attribute__ ((__unused__)))
+acm_chunk_stats(dbref player,
+                enum chunk_stats_type which __attribute__((__unused__)))
 {
   notify(player,
          T("Attribute storage stats are not supported for malloc scheme."));
@@ -373,7 +376,7 @@ acm_chunk_fork_done(void)
   return;
 }
 
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
@@ -399,10 +402,10 @@ acm_chunk_fork_done(void)
 /* debug... */
 #ifdef CHUNK_DEBUG
 #define ASSERT(x) assert(x)
-#else                           /* CHUNK_DEBUG */
-static int ignore;      /**< Used to shut up compiler warnings when not asserting */
+#else /* CHUNK_DEBUG */
+static int ignore; /**< Used to shut up compiler warnings when not asserting */
 #define ASSERT(x) ignore++
-#endif                          /* CHUNK_DEBUG */
+#endif /* CHUNK_DEBUG */
 
 /*
  * Sizes, limits, etc.
@@ -421,7 +424,7 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
  * This is fairly arbitrary, but must be less than
  * REGION_CAPACITY (it must fit in a region).
  */
-#define MAX_CHUNK_LEN (16384-1)
+#define MAX_CHUNK_LEN (16384 - 1)
 
 /** Number of oddballs tracked in regions.
  * This is used to figure out when we should pull regions in because
@@ -481,9 +484,9 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 /** Get the region from a chunk_reference_t. */
 #define ChunkReferenceToRegion(ref) ((ref) >> 16)
 /** Get the offset from a chunk_reference_t. */
-#define ChunkReferenceToOffset(ref) ((ref) & 0xFFFF)
+#define ChunkReferenceToOffset(ref) ((ref) &0xFFFF)
 /** Make a chunk_reference_t from a region and offset. */
-#define ChunkReference(region, offset) \
+#define ChunkReference(region, offset)                                         \
   ((chunk_reference_t)(((region) << 16) | (offset)))
 
 /** Sentinel value used to mark unused cache regions. */
@@ -541,18 +544,18 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 /*
  * Fields in chunk headers
  */
-#define CHUNK_FREE_MASK   0x80
-#define CHUNK_FREE        0x80
-#define CHUNK_USED        0x00
+#define CHUNK_FREE_MASK 0x80
+#define CHUNK_FREE 0x80
+#define CHUNK_USED 0x00
 
-#define CHUNK_TAG1_MASK   0x40
-#define CHUNK_TAG1_SHORT  0x00
+#define CHUNK_TAG1_MASK 0x40
+#define CHUNK_TAG1_SHORT 0x00
 #define CHUNK_TAG1_MEDIUM 0x40
-#define CHUNK_TAG1_LONG   0x40
+#define CHUNK_TAG1_LONG 0x40
 
-#define CHUNK_TAG2_MASK   0x20
+#define CHUNK_TAG2_MASK 0x20
 #define CHUNK_TAG2_MEDIUM 0x00
-#define CHUNK_TAG2_LONG   0x20
+#define CHUNK_TAG2_LONG 0x20
 
 #define CHUNK_SHORT_LEN_MASK 0x3F
 #define CHUNK_SHORT_LEN_OFFSET 0
@@ -579,18 +582,17 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 #define MIN_REMNANT_LEN (CHUNK_SHORT_DATA_OFFSET + MIN_CHUNK_LEN)
 
 #define MAX_SHORT_CHUNK_LEN CHUNK_SHORT_LEN_MASK
-#define MAX_MEDIUM_CHUNK_LEN \
-        ((CHUNK_MEDIUM_LEN_MSB_MASK << 8) | CHUNK_MEDIUM_LEN_LSB_MASK)
-#define MAX_LONG_CHUNK_LEN \
-        (REGION_CAPACITY - CHUNK_LONG_DATA_OFFSET)
+#define MAX_MEDIUM_CHUNK_LEN                                                   \
+  ((CHUNK_MEDIUM_LEN_MSB_MASK << 8) | CHUNK_MEDIUM_LEN_LSB_MASK)
+#define MAX_LONG_CHUNK_LEN (REGION_CAPACITY - CHUNK_LONG_DATA_OFFSET)
 
 static int
 LenToFullLen(int len)
 {
   return (len + ((len > MAX_SHORT_CHUNK_LEN)
-                 ? (len > MAX_MEDIUM_CHUNK_LEN)
-                 ? CHUNK_LONG_DATA_OFFSET
-                 : CHUNK_MEDIUM_DATA_OFFSET : CHUNK_SHORT_DATA_OFFSET));
+                   ? (len > MAX_MEDIUM_CHUNK_LEN) ? CHUNK_LONG_DATA_OFFSET
+                                                  : CHUNK_MEDIUM_DATA_OFFSET
+                   : CHUNK_SHORT_DATA_OFFSET));
 }
 
 static inline char *ChunkPointer(uint16_t, uint16_t);
@@ -607,15 +609,16 @@ CPLenShort(const char *cptr)
 static inline uint16_t
 CPLenMedium(const char *cptr)
 {
-  return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8)
-    + (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
+  return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK)
+          << 8) +
+         (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
 }
 
 static inline uint16_t
 CPLenLong(const char *cptr)
 {
   return ((cptr[CHUNK_LONG_LEN_MSB_OFFSET] & CHUNK_LONG_LEN_MSB_MASK) << 8) +
-    (cptr[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK);
+         (cptr[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK);
 }
 
 static uint16_t
@@ -669,17 +672,18 @@ ChunkIsShort(uint16_t region, uint16_t offset)
 static inline bool
 ChunkIsMedium(uint16_t region, uint16_t offset)
 {
-  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK))
-    == (CHUNK_TAG1_MEDIUM | CHUNK_TAG2_MEDIUM);
+  return (*ChunkPointer(region, offset) &
+          (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) ==
+         (CHUNK_TAG1_MEDIUM | CHUNK_TAG2_MEDIUM);
 }
 
 static inline bool
 ChunkIsLong(uint16_t region, uint16_t offset)
 {
-  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK))
-    == (CHUNK_TAG1_LONG | CHUNK_TAG2_LONG);
+  return (*ChunkPointer(region, offset) &
+          (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) ==
+         (CHUNK_TAG1_LONG | CHUNK_TAG2_LONG);
 }
-
 
 static inline uint8_t
 ChunkDerefs(uint16_t region, uint16_t offset)
@@ -732,28 +736,27 @@ FitsInSpace(int size, int capacity)
  * the rest of the 64K bytes of the region contain chunks.
  */
 typedef struct region_header {
-  uint16_t region_id;           /**< will be INVALID_REGION_ID if not in use */
-  uint16_t first_free;          /**< offset of 1st free chunk */
-  struct region_header *prev;   /**< linked list prev for LRU cache */
-  struct region_header *next;   /**< linked list next for LRU cache */
+  uint16_t region_id;         /**< will be INVALID_REGION_ID if not in use */
+  uint16_t first_free;        /**< offset of 1st free chunk */
+  struct region_header *prev; /**< linked list prev for LRU cache */
+  struct region_header *next; /**< linked list next for LRU cache */
 } RegionHeader;
 
 #define FIRST_CHUNK_OFFSET_IN_REGION sizeof(RegionHeader)
 
 /** In-memory (never paged) region info.  */
 typedef struct region {
-  uint16_t used_count;          /**< number of used chunks */
-  uint16_t free_count;          /**< number of free chunks */
-  uint16_t free_bytes;          /**< number of free bytes (with headers) */
-  uint16_t largest_free_chunk;  /**< largest single free chunk */
-  uint32_t total_derefs;        /**< total of all used chunk derefs */
-  uint32_t period_last_touched; /**< "this" period, for deref counts;
-                                           we don't page in regions to update
-                                           counts on period change! */
-  RegionHeader *in_memory;      /**< cache entry; NULL if paged out */
-  uint16_t oddballs[NUM_ODDBALLS];      /**< chunk offsets with odd derefs */
+  uint16_t used_count;             /**< number of used chunks */
+  uint16_t free_count;             /**< number of free chunks */
+  uint16_t free_bytes;             /**< number of free bytes (with headers) */
+  uint16_t largest_free_chunk;     /**< largest single free chunk */
+  uint32_t total_derefs;           /**< total of all used chunk derefs */
+  uint32_t period_last_touched;    /**< "this" period, for deref counts;
+                                              we don't page in regions to update
+                                              counts on period change! */
+  RegionHeader *in_memory;         /**< cache entry; NULL if paged out */
+  uint16_t oddballs[NUM_ODDBALLS]; /**< chunk offsets with odd derefs */
 } Region;
-
 
 /*
  *  Globals
@@ -779,44 +782,42 @@ static uint32_t curr_period;
 /*
  * Info about all regions
  */
-static uint32_t region_count;   /**< regions in use */
-static uint32_t region_array_len;       /**< length of regions array */
-static Region *regions;         /**< regions array, realloced as (rarely) needed */
+static uint32_t region_count;     /**< regions in use */
+static uint32_t region_array_len; /**< length of regions array */
+static Region *regions; /**< regions array, realloced as (rarely) needed */
 
 /*
  * regions presently in memory
  */
-static uint32_t cached_region_count;    /**< number of regions in cache */
-static RegionHeader *cache_head;        /**< most recently used region */
-static RegionHeader *cache_tail;        /**< least recently used region */
+static uint32_t cached_region_count; /**< number of regions in cache */
+static RegionHeader *cache_head;     /**< most recently used region */
+static RegionHeader *cache_tail;     /**< least recently used region */
 
 /*
  * statistics
  */
-static int stat_used_short_count;       /**< How many short chunks? */
-static int stat_used_short_bytes;       /**< How much space in short chunks? */
-static int stat_used_medium_count;      /**< How many medium chunks? */
-static int stat_used_medium_bytes;      /**< How much space in medium chunks? */
-static int stat_used_long_count;        /**< How many long chunks? */
-static int stat_used_long_bytes;        /**< How much space in long chunks? */
-static int stat_deref_count;            /**< Dereferences this period */
-static int stat_deref_maxxed;           /**< Number of chunks with max derefs */
+static int stat_used_short_count;  /**< How many short chunks? */
+static int stat_used_short_bytes;  /**< How much space in short chunks? */
+static int stat_used_medium_count; /**< How many medium chunks? */
+static int stat_used_medium_bytes; /**< How much space in medium chunks? */
+static int stat_used_long_count;   /**< How many long chunks? */
+static int stat_used_long_bytes;   /**< How much space in long chunks? */
+static int stat_deref_count;       /**< Dereferences this period */
+static int stat_deref_maxxed;      /**< Number of chunks with max derefs */
 /** histogram for average derefs of regions being paged in/out */
 static int stat_paging_histogram[CHUNK_DEREF_MAX + 1];
-static int stat_page_out;               /**< Number of page-outs */
-static int stat_page_in;                /**< Number of page-ins */
-static int stat_migrate_slide;          /**< Number of slide migrations */
-static int stat_migrate_move;           /**< Number of move migrations */
-static int stat_migrate_away;           /**< Number of chunk evictions */
-static int stat_create;                 /**< Number of chunk creations */
-static int stat_delete;                 /**< Number of chunk deletions */
-
-
+static int stat_page_out;      /**< Number of page-outs */
+static int stat_page_in;       /**< Number of page-ins */
+static int stat_migrate_slide; /**< Number of slide migrations */
+static int stat_migrate_move;  /**< Number of move migrations */
+static int stat_migrate_away;  /**< Number of chunk evictions */
+static int stat_create;        /**< Number of chunk creations */
+static int stat_delete;        /**< Number of chunk deletions */
 
 /*
  * migration globals that are used for holding relevant data...
  */
-static int m_count;             /**< The used length for the arrays. */
+static int m_count;                      /**< The used length for the arrays. */
 static chunk_reference_t **m_references; /**< The passed-in references array. */
 
 #ifdef CHUNK_PARANOID
@@ -825,7 +826,6 @@ static char rolling_log[ROLLING_LOG_SIZE][ROLLING_LOG_ENTRY_LEN];
 static int rolling_pos;
 static int noisy_log = 0;
 #endif
-
 
 /*
  * Forward decls
@@ -848,7 +848,7 @@ RegionDerefs(uint16_t region)
   if (regions[region].used_count)
     return (regions[region].total_derefs >>
             (curr_period - regions[region].period_last_touched)) /
-      regions[region].used_count;
+           regions[region].used_count;
   else
     return 0;
 }
@@ -857,8 +857,9 @@ static uint8_t
 RegionDerefsWithChunk(uint16_t region, uint16_t derefs)
 {
   return ((regions[region].total_derefs >>
-           (curr_period - regions[region].period_last_touched)) + derefs) /
-    (regions[region].used_count + 1);
+           (curr_period - regions[region].period_last_touched)) +
+          derefs) /
+         (regions[region].used_count + 1);
 }
 
 /*
@@ -881,14 +882,14 @@ debug_log(char const *format, ...)
   rolling_pos = (rolling_pos + 1) % ROLLING_LOG_SIZE;
 #else
   if (format)
-    return;                     /* shut up the compiler warning */
+    return; /* shut up the compiler warning */
 #endif
 }
 
 #ifdef CHUNK_PARANOID
 /** Dump the rolling log. */
 static void
-dump_debug_log(FILE * fp)
+dump_debug_log(FILE *fp)
 {
   int j;
   fputs("Recent chunk activity:\n", fp);
@@ -926,7 +927,7 @@ migratable(uint16_t region, uint16_t offset)
  * \param fp the FILE* to output to.
  */
 static void
-debug_dump_region(uint16_t region, FILE * fp)
+debug_dump_region(uint16_t region, FILE *fp)
 {
   Region *rp = regions + region;
   RegionHeader *rhp;
@@ -948,13 +949,14 @@ debug_dump_region(uint16_t region, FILE * fp)
   fflush(fp);
 
   if (rhp) {
-    for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-         offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
+    for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+         offset += ChunkFullLen(region, offset)) {
       fprintf(fp, "chunk:%c%4s %-6s off:%04x full:%04x ",
               migratable(region, offset) ? '*' : ' ',
               ChunkIsFree(region, offset) ? "FREE" : "",
-              ChunkIsShort(region, offset) ? "SHORT" :
-              (ChunkIsMedium(region, offset) ? "MEDIUM" : "LONG"),
+              ChunkIsShort(region, offset)
+                ? "SHORT"
+                : (ChunkIsMedium(region, offset) ? "MEDIUM" : "LONG"),
               offset, ChunkFullLen(region, offset));
       if (ChunkIsFree(region, offset)) {
         fprintf(fp, "next:%04x\n", ChunkNextFree(region, offset));
@@ -985,8 +987,8 @@ verify_used_chunk(uint16_t region, uint16_t offset)
 
   ASSERT(region < region_count);
 
-  for (pos = FIRST_CHUNK_OFFSET_IN_REGION;
-       pos < REGION_SIZE; pos += ChunkFullLen(region, pos)) {
+  for (pos = FIRST_CHUNK_OFFSET_IN_REGION; pos < REGION_SIZE;
+       pos += ChunkFullLen(region, pos)) {
     if (pos == offset) {
       if (ChunkIsFree(region, pos))
         mush_panic("Invalid reference to free chunk as used");
@@ -1065,12 +1067,12 @@ region_is_valid(uint16_t region)
   largest_free = 0;
   was_free = 0;
   next_free = rhp->first_free;
-  for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-       offset < REGION_SIZE; offset += len) {
+  for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+       offset += len) {
     if (was_free && ChunkIsFree(region, offset)) {
-      do_rawlog(LT_ERR,
-                "region 0x%04x is not valid: uncoalesced free chunk:"
-                " 0x%04x (see map)", region, offset);
+      do_rawlog(LT_ERR, "region 0x%04x is not valid: uncoalesced free chunk:"
+                        " 0x%04x (see map)",
+                region, offset);
       result = 0;
       dump = 1;
     }
@@ -1082,9 +1084,8 @@ region_is_valid(uint16_t region)
       if (largest_free < len)
         largest_free = len;
       if (next_free != offset) {
-        do_rawlog(LT_ERR,
-                  "region 0x%04x is not valid: free chain broken:"
-                  " 0x%04x, expecting 0x%04x (see map)",
+        do_rawlog(LT_ERR, "region 0x%04x is not valid: free chain broken:"
+                          " 0x%04x, expecting 0x%04x (see map)",
                   region, offset, next_free);
         result = 0;
         dump = 1;
@@ -1095,17 +1096,17 @@ region_is_valid(uint16_t region)
       total_derefs += ChunkDerefs(region, offset);
       if (ChunkIsMedium(region, offset) &&
           ChunkLen(region, offset) <= MAX_SHORT_CHUNK_LEN) {
-        do_rawlog(LT_ERR,
-                  "region 0x%04x is not valid: medium chunk too small:"
-                  " 0x%04x (see map)", region, offset);
+        do_rawlog(LT_ERR, "region 0x%04x is not valid: medium chunk too small:"
+                          " 0x%04x (see map)",
+                  region, offset);
         result = 0;
         dump = 1;
       }
       if (ChunkIsLong(region, offset) &&
           ChunkLen(region, offset) <= MAX_MEDIUM_CHUNK_LEN) {
-        do_rawlog(LT_ERR,
-                  "region 0x%04x is not valid: long chunk too small:"
-                  " 0x%04x (see map)", region, offset);
+        do_rawlog(LT_ERR, "region 0x%04x is not valid: long chunk too small:"
+                          " 0x%04x (see map)",
+                  region, offset);
         result = 0;
         dump = 1;
       }
@@ -1118,41 +1119,39 @@ region_is_valid(uint16_t region)
     result = 0;
   }
   if (next_free != 0) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: free chain unterminated:"
-              " expecting 0x%04x (see map)", region, next_free);
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: free chain unterminated:"
+                      " expecting 0x%04x (see map)",
+              region, next_free);
     result = 0;
     dump = 1;
   }
   if (rp->used_count != used_count) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: used count is wrong:"
-              " 0x%04x should be 0x%04x", region, rp->used_count, used_count);
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: used count is wrong:"
+                      " 0x%04x should be 0x%04x",
+              region, rp->used_count, used_count);
     result = 0;
   }
   if (rp->total_derefs != total_derefs) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: total derefs is wrong:"
-              " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: total derefs is wrong:"
+                      " 0x%04x should be 0x%04x",
               region, (unsigned int) rp->total_derefs, total_derefs);
     result = 0;
   }
   if (rp->free_count != free_count) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: free count is wrong:"
-              " 0x%04x should be 0x%04x", region, rp->free_count, free_count);
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: free count is wrong:"
+                      " 0x%04x should be 0x%04x",
+              region, rp->free_count, free_count);
     result = 0;
   }
   if (rp->free_bytes != free_bytes) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: free bytes is wrong:"
-              " 0x%04x should be 0x%04x", region, rp->free_bytes, free_bytes);
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: free bytes is wrong:"
+                      " 0x%04x should be 0x%04x",
+              region, rp->free_bytes, free_bytes);
     result = 0;
   }
   if (rp->largest_free_chunk != largest_free) {
-    do_rawlog(LT_ERR,
-              "region 0x%04x is not valid: largest free is wrong:"
-              " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR, "region 0x%04x is not valid: largest free is wrong:"
+                      " 0x%04x should be 0x%04x",
               region, rp->largest_free_chunk, largest_free);
     result = 0;
   }
@@ -1162,7 +1161,6 @@ region_is_valid(uint16_t region)
   return result;
 }
 #endif
-
 
 /*
  * Utility Routines - Chunks
@@ -1182,8 +1180,8 @@ write_used_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
   char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
     /* chunk is short */
-    cptr[0] = full_len - CHUNK_SHORT_DATA_OFFSET +
-      CHUNK_USED + CHUNK_TAG1_SHORT;
+    cptr[0] =
+      full_len - CHUNK_SHORT_DATA_OFFSET + CHUNK_USED + CHUNK_TAG1_SHORT;
     cptr[CHUNK_DEREF_OFFSET] = derefs;
     memcpy(cptr + CHUNK_SHORT_DATA_OFFSET, data, data_len);
   } else if (full_len <= MAX_MEDIUM_CHUNK_LEN + CHUNK_MEDIUM_DATA_OFFSET) {
@@ -1217,8 +1215,8 @@ write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
   char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
     /* chunk is short */
-    cptr[0] = full_len - CHUNK_SHORT_DATA_OFFSET +
-      CHUNK_FREE + CHUNK_TAG1_SHORT;
+    cptr[0] =
+      full_len - CHUNK_SHORT_DATA_OFFSET + CHUNK_FREE + CHUNK_TAG1_SHORT;
     cptr[CHUNK_SHORT_DATA_OFFSET] = next >> 8;
     cptr[CHUNK_DEREF_OFFSET] = next & 0xff;
   } else if (full_len <= MAX_MEDIUM_CHUNK_LEN + CHUNK_MEDIUM_DATA_OFFSET) {
@@ -1351,8 +1349,8 @@ largest_hole(uint16_t region)
   uint16_t size;
   uint16_t offset;
   size = 0;
-  for (offset = regions[region].in_memory->first_free;
-       offset; offset = ChunkNextFree(region, offset))
+  for (offset = regions[region].in_memory->first_free; offset;
+       offset = ChunkNextFree(region, offset))
     if (size < ChunkFullLen(region, offset))
       size = ChunkFullLen(region, offset);
   return size;
@@ -1396,8 +1394,8 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
       rp->in_memory->first_free = ChunkNextFree(region, offset);
     else {
       uint16_t hole;
-      for (hole = rp->in_memory->first_free;
-           hole; hole = ChunkNextFree(region, hole))
+      for (hole = rp->in_memory->first_free; hole;
+           hole = ChunkNextFree(region, hole))
         if (ChunkNextFree(region, hole) == offset)
           break;
       ASSERT(hole);
@@ -1417,14 +1415,14 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
   }
   if (align == 1) {
     rp->free_bytes -= full_len;
-    write_free_chunk(region, offset + full_len,
-                     hole_len - full_len, ChunkNextFree(region, offset));
+    write_free_chunk(region, offset + full_len, hole_len - full_len,
+                     ChunkNextFree(region, offset));
     if (rp->in_memory->first_free == offset)
       rp->in_memory->first_free += full_len;
     else {
       uint16_t hole;
-      for (hole = rp->in_memory->first_free;
-           hole; hole = ChunkNextFree(region, hole))
+      for (hole = rp->in_memory->first_free; hole;
+           hole = ChunkNextFree(region, hole))
         if (ChunkNextFree(region, hole) == offset)
           break;
       ASSERT(hole);
@@ -1435,8 +1433,8 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
     return offset;
   } else {
     rp->free_bytes -= full_len;
-    write_free_chunk(region, offset,
-                     hole_len - full_len, ChunkNextFree(region, offset));
+    write_free_chunk(region, offset, hole_len - full_len,
+                     ChunkNextFree(region, offset));
     if (rp->largest_free_chunk == hole_len)
       rp->largest_free_chunk = largest_hole(region);
     return offset + hole_len - full_len;
@@ -1479,7 +1477,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #else
     mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
 #endif
-#endif                          /* !HAVE_PREAD */
+#endif /* !HAVE_PREAD */
   pos = (char *) rhp;
   remaining = REGION_SIZE;
   for (j = 0; j < 10; j++) {
@@ -1541,7 +1539,7 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #else
     mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
 #endif
-#endif                          /* !HAVE_PWRITE */
+#endif /* !HAVE_PWRITE */
   pos = (char *) rhp;
   remaining = REGION_SIZE;
 
@@ -1616,7 +1614,7 @@ find_available_cache_region(void)
 
   if (!cache_tail ||
       cached_region_count * REGION_SIZE < (unsigned) CHUNK_CACHE_MEMORY) {
-    /* first use ... normal case if empty ... so allocate space */
+/* first use ... normal case if empty ... so allocate space */
 #ifdef DEBUG_CHUNK_MALLOC
     do_rawlog(LT_TRACE, "CHUNK: malloc()ing a cache region");
 #endif
@@ -1677,10 +1675,10 @@ bring_in_region(uint16_t region)
   prev = rhp->prev;
   next = rhp->next;
 
-  /* page it in */
+/* page it in */
 #ifdef DEBUG_CHUNK_PAGING
-  do_rawlog(LT_TRACE, "CHUNK: Paging in region %04x (offset %08x)",
-            region, (unsigned) file_offset);
+  do_rawlog(LT_TRACE, "CHUNK: Paging in region %04x (offset %08x)", region,
+            (unsigned) file_offset);
 #endif
   read_cache_region(swap_fd, rhp, region);
   /* link the region to its cache entry */
@@ -1696,14 +1694,14 @@ bring_in_region(uint16_t region)
     shift = curr_period - rp->period_last_touched;
     if (shift > 8) {
       rp->total_derefs = 0;
-      for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-           offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
+      for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+           offset += ChunkFullLen(region, offset)) {
         SetChunkDerefs(region, offset, 0);
       }
     } else {
       rp->total_derefs = 0;
-      for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-           offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
+      for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+           offset += ChunkFullLen(region, offset)) {
         if (ChunkIsFree(region, offset))
           continue;
         SetChunkDerefs(region, offset, ChunkDerefs(region, offset) >> shift);
@@ -1782,8 +1780,8 @@ find_oddballs(uint16_t region)
 
   mean = RegionDerefs(region);
 
-  for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-       offset < REGION_SIZE; offset += len) {
+  for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+       offset += len) {
     len = ChunkFullLen(region, offset);
     if (ChunkIsFree(region, offset))
       continue;
@@ -1861,7 +1859,7 @@ find_best_region(uint16_t full_len, int derefs, uint16_t old_region)
     best_region = create_region();
   } else if (best_score > (1 << LONLINESS_LIMIT) + IN_MEMORY_BIAS &&
              (free_bytes * 100 / (REGION_CAPACITY * region_count)) <
-             FREE_PERCENT_LIMIT) {
+               FREE_PERCENT_LIMIT) {
 #ifdef DEBUG_CHUNK_REGION_CREATE
     do_rawlog(LT_TRACE, "find_best_region chose to create region %04x", region);
 #endif
@@ -1877,8 +1875,8 @@ find_best_region(uint16_t full_len, int derefs, uint16_t old_region)
  * \param old_offset the offset the chunk was at before (if any).
  */
 static uint16_t
-find_best_offset(uint16_t full_len, uint16_t region,
-                 uint16_t old_region, uint16_t old_offset)
+find_best_offset(uint16_t full_len, uint16_t region, uint16_t old_region,
+                 uint16_t old_offset)
 {
   uint16_t fits, offset;
 
@@ -1941,13 +1939,13 @@ chunk_freehist(void)
 
 /** Display statistics to a player, or dump them to a log
  */
-#define STAT_OUT(x) \
-  do { \
-    s = (x); \
-    if (GoodObject(player)) \
-      notify(player, s); \
-    else \
-      do_rawlog(LT_TRACE, "%s", s); \
+#define STAT_OUT(x)                                                            \
+  do {                                                                         \
+    s = (x);                                                                   \
+    if (GoodObject(player))                                                    \
+      notify(player, s);                                                       \
+    else                                                                       \
+      do_rawlog(LT_TRACE, "%s", s);                                            \
   } while (0)
 
 /** Display the stats summary page.
@@ -1977,40 +1975,37 @@ chunk_statistics(dbref player)
     do_rawlog(LT_TRACE, "---- Chunk statistics");
   }
   overhead = stat_used_short_count * CHUNK_SHORT_DATA_OFFSET +
-    stat_used_medium_count * CHUNK_MEDIUM_DATA_OFFSET +
-    stat_used_long_count * CHUNK_LONG_DATA_OFFSET;
-  STAT_OUT(tprintf
-           ("Chunks:    %10d allocated (%10d bytes, %10d (%2d%%) overhead)",
-            used_count, used_bytes, overhead,
-            used_bytes ? overhead * 100 / used_bytes : 0));
+             stat_used_medium_count * CHUNK_MEDIUM_DATA_OFFSET +
+             stat_used_long_count * CHUNK_LONG_DATA_OFFSET;
+  STAT_OUT(tprintf(
+    "Chunks:    %10d allocated (%10d bytes, %10d (%2d%%) overhead)", used_count,
+    used_bytes, overhead, used_bytes ? overhead * 100 / used_bytes : 0));
   overhead = stat_used_short_count * CHUNK_SHORT_DATA_OFFSET;
-  STAT_OUT(tprintf
-           ("             %10d short     (%10d bytes, %10d (%2d%%) overhead)",
-            stat_used_short_count, stat_used_short_bytes, overhead,
-            stat_used_short_bytes ? overhead * 100 /
-            stat_used_short_bytes : 0));
+  STAT_OUT(tprintf(
+    "             %10d short     (%10d bytes, %10d (%2d%%) overhead)",
+    stat_used_short_count, stat_used_short_bytes, overhead,
+    stat_used_short_bytes ? overhead * 100 / stat_used_short_bytes : 0));
   overhead = stat_used_medium_count * CHUNK_MEDIUM_DATA_OFFSET;
-  STAT_OUT(tprintf
-           ("             %10d medium    (%10d bytes, %10d (%2d%%) overhead)",
-            stat_used_medium_count, stat_used_medium_bytes, overhead,
-            stat_used_medium_bytes ? overhead * 100 /
-            stat_used_medium_bytes : 0));
+  STAT_OUT(tprintf(
+    "             %10d medium    (%10d bytes, %10d (%2d%%) overhead)",
+    stat_used_medium_count, stat_used_medium_bytes, overhead,
+    stat_used_medium_bytes ? overhead * 100 / stat_used_medium_bytes : 0));
   overhead = stat_used_long_count * CHUNK_LONG_DATA_OFFSET;
-  STAT_OUT(tprintf
-           ("             %10d long      (%10d bytes, %10d (%2d%%) overhead)",
+  STAT_OUT(
+    tprintf("             %10d long      (%10d bytes, %10d (%2d%%) overhead)",
             stat_used_long_count, stat_used_long_bytes, overhead,
             stat_used_long_bytes ? overhead * 100 / stat_used_long_bytes : 0));
-  STAT_OUT(tprintf
-           ("           %10d free      (%10d bytes, %10d (%2d%%) fragmented)",
+  STAT_OUT(
+    tprintf("           %10d free      (%10d bytes, %10d (%2d%%) fragmented)",
             free_count, free_bytes, free_bytes - free_large,
             free_bytes ? (free_bytes - free_large) * 100 / free_bytes : 0));
   overhead = region_count * REGION_SIZE + region_array_len * sizeof(Region);
-  STAT_OUT(tprintf("Storage:   %10d total (%2d%% saturation)",
-                   overhead, used_bytes * 100 / overhead));
-  STAT_OUT(tprintf("Regions:   %10d total, %8d cached",
-                   (int) region_count, (int) cached_region_count));
-  STAT_OUT(tprintf("Paging:    %10d out, %10d in",
-                   stat_page_out, stat_page_in));
+  STAT_OUT(tprintf("Storage:   %10d total (%2d%% saturation)", overhead,
+                   used_bytes * 100 / overhead));
+  STAT_OUT(tprintf("Regions:   %10d total, %8d cached", (int) region_count,
+                   (int) cached_region_count));
+  STAT_OUT(
+    tprintf("Paging:    %10d out, %10d in", stat_page_out, stat_page_in));
   STAT_OUT(" ");
   STAT_OUT(tprintf("Period:    %10d (%10d accesses so far, %10d chunks at max)",
                    (int) curr_period, stat_deref_count, stat_deref_maxxed));
@@ -2018,8 +2013,8 @@ chunk_statistics(dbref player)
                    stat_create, stat_delete));
   STAT_OUT(tprintf("Migration: %10d moves this period",
                    stat_migrate_slide + stat_migrate_move));
-  STAT_OUT(tprintf("             %10d slide    %10d move",
-                   stat_migrate_slide, stat_migrate_move));
+  STAT_OUT(tprintf("             %10d slide    %10d move", stat_migrate_slide,
+                   stat_migrate_move));
   STAT_OUT(tprintf("             %10d in region%10d out of region",
                    stat_migrate_slide + stat_migrate_move - stat_migrate_away,
                    stat_migrate_away));
@@ -2032,8 +2027,8 @@ static void
 chunk_page_stats(dbref player)
 {
   const char *s;
-  STAT_OUT(tprintf("Paging:    %10d out, %10d in",
-                   stat_page_out, stat_page_in));
+  STAT_OUT(
+    tprintf("Paging:    %10d out, %10d in", stat_page_out, stat_page_in));
 }
 
 /** Display the per-region stats.
@@ -2049,12 +2044,11 @@ chunk_region_statistics(dbref player)
     do_rawlog(LT_TRACE, "---- Region statistics");
   }
   for (rid = 0; rid < region_count; rid++) {
-    STAT_OUT(tprintf
-             ("region:%4d  #used:%5d  #free:%5d  "
-              "fbytes:%04x  largest:%04x  deref:%3d",
-              rid, regions[rid].used_count, regions[rid].free_count,
-              regions[rid].free_bytes, regions[rid].largest_free_chunk,
-              (int) RegionDerefs(rid)));
+    STAT_OUT(tprintf("region:%4d  #used:%5d  #free:%5d  "
+                     "fbytes:%04x  largest:%04x  deref:%3d",
+                     rid, regions[rid].used_count, regions[rid].free_count,
+                     regions[rid].free_bytes, regions[rid].largest_free_chunk,
+                     (int) RegionDerefs(rid)));
   }
 }
 
@@ -2073,8 +2067,8 @@ chunk_histogram(dbref player, int const *histogram, char const *legend)
 
   max = pen = ante = 0;
   for (j = 0; j < 64; j++) {
-    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] +
-      histogram[j * 4 + 2] + histogram[j * 4 + 3];
+    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] + histogram[j * 4 + 2] +
+        histogram[j * 4 + 3];
     if (max < k) {
       ante = pen;
       pen = max;
@@ -2100,8 +2094,8 @@ chunk_histogram(dbref player, int const *histogram, char const *legend)
     buffer[j][64] = '\0';
   }
   for (j = 0; j < 64; j++) {
-    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] +
-      histogram[j * 4 + 2] + histogram[j * 4 + 3];
+    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] + histogram[j * 4 + 2] +
+        histogram[j * 4 + 3];
     k = k * 20 / max;
     if (k >= 20)
       k = 20;
@@ -2110,8 +2104,8 @@ chunk_histogram(dbref player, int const *histogram, char const *legend)
   }
   pen = 0;
   for (j = 0; j < 64; j++) {
-    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] +
-      histogram[j * 4 + 2] + histogram[j * 4 + 3];
+    k = histogram[j * 4 + 0] + histogram[j * 4 + 1] + histogram[j * 4 + 2] +
+        histogram[j * 4 + 3];
     if (k > max) {
       sprintf(num, "(%d)", k);
       if (j < 32) {
@@ -2146,7 +2140,6 @@ chunk_histogram(dbref player, int const *histogram, char const *legend)
 
 #undef STAT_OUT
 
-
 /*
  * Utility Routines - Migration
  */
@@ -2179,8 +2172,8 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
   Region *rp = regions + region;
   uint16_t o_len, len, next, other, prev, o_off, o_oth;
 
-  debug_log("migrate_slide %d (%08x) to %04x%04x",
-            which, m_references[which][0], region, offset);
+  debug_log("migrate_slide %d (%08x) to %04x%04x", which,
+            m_references[which][0], region, offset);
 
   bring_in_region(region);
 
@@ -2251,8 +2244,8 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
   uint16_t s_reg, s_off, s_len, o_off, length;
   Region *srp;
 
-  debug_log("migrate_move %d (%08x) to %04x%04x, alignment %d",
-            which, m_references[which][0], region, offset, align);
+  debug_log("migrate_move %d (%08x) to %04x%04x, alignment %d", which,
+            m_references[which][0], region, offset, align);
 
   s_reg = ChunkReferenceToRegion(m_references[which][0]);
   s_off = ChunkReferenceToOffset(m_references[which][0]);
@@ -2268,7 +2261,8 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
   s_len = ChunkFullLen(s_reg, s_off);
   length = ChunkFullLen(region, offset);
 
-  if (s_reg == region && (s_off + s_len == offset || offset + length == s_off)) {
+  if (s_reg == region &&
+      (s_off + s_len == offset || offset + length == s_off)) {
     migrate_slide(region, offset, which);
     return;
   }
@@ -2507,8 +2501,8 @@ acc_chunk_init(void)
   ASSERT(BUFFER_LEN <= MAX_LONG_CHUNK_LEN);
 
 #ifdef WIN32
-  swap_fd = CreateFile(CHUNK_SWAP_FILE, GENERIC_READ | GENERIC_WRITE,
-                       0, NULL, CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+  swap_fd = CreateFile(CHUNK_SWAP_FILE, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+                       CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
   if (swap_fd == INVALID_HANDLE_VALUE)
     mush_panicf("Cannot open swap file: %d", GetLastError());
 #else
@@ -2537,10 +2531,10 @@ acc_chunk_init(void)
   if (!regions)
     mush_panic("cannot malloc space for chunk region list");
 
-/*
-  command_add("@DEBUGCHUNK", CMD_T_ANY | CMD_T_GOD, 0, 0, 0,
-              switchmask("ALL BRIEF FULL"), cmd_debugchunk);
-*/
+  /*
+    command_add("@DEBUGCHUNK", CMD_T_ANY | CMD_T_GOD, 0, 0, 0,
+                switchmask("ALL BRIEF FULL"), cmd_debugchunk);
+  */
   do_rawlog(LT_TRACE, "CHUNK: chunk subsystem initialized");
 }
 
@@ -2605,14 +2599,14 @@ acc_chunk_new_period(void)
     shift = curr_period - rp->period_last_touched;
     if (shift > 8) {
       rp->total_derefs = 0;
-      for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-           offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
+      for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+           offset += ChunkFullLen(region, offset)) {
         SetChunkDerefs(region, offset, 0);
       }
     } else {
       rp->total_derefs = 0;
-      for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
-           offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
+      for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
+           offset += ChunkFullLen(region, offset)) {
         if (ChunkIsFree(region, offset))
           continue;
         SetChunkDerefs(region, offset, ChunkDerefs(region, offset) >> shift);
@@ -2646,7 +2640,8 @@ acc_chunk_fork_file(void)
   }
 
 #ifdef HAVE_POSIX_FALLOCATE
-  /* Try to reserve all the space needed for the child's copy of the chunk file all at once. */
+  /* Try to reserve all the space needed for the child's copy of the chunk file
+   * all at once. */
   {
     struct stat fsize;
     if (fstat(swap_fd, &fsize) == 0)
@@ -2716,58 +2711,38 @@ acc_chunk_fork_done(void)
   unlink(child_filename);
   swap_fd_child = -1;
 }
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */
 
 struct ac_funcs {
-  chunk_reference_t (*chunk_create) (char const *, uint16_t, uint8_t);
-  void (*chunk_delete) (chunk_reference_t);
-  uint16_t (*fetch) (chunk_reference_t, char *, uint16_t);
-  uint16_t (*len) (chunk_reference_t);
-  uint8_t (*derefs) (chunk_reference_t);
-  void (*migration) (int, chunk_reference_t **);
-  int (*num_swapped) (void);
-  void (*init) (void);
-  void (*stats) (dbref, enum chunk_stats_type);
-  void (*new_period) (void);
-  int (*fork_file) (void);
-  void (*fork_parent) (void);
-  void (*fork_child) (void);
-  void (*fork_done) (void);
+  chunk_reference_t (*chunk_create)(char const *, uint16_t, uint8_t);
+  void (*chunk_delete)(chunk_reference_t);
+  uint16_t (*fetch)(chunk_reference_t, char *, uint16_t);
+  uint16_t (*len)(chunk_reference_t);
+  uint8_t (*derefs)(chunk_reference_t);
+  void (*migration)(int, chunk_reference_t **);
+  int (*num_swapped)(void);
+  void (*init)(void);
+  void (*stats)(dbref, enum chunk_stats_type);
+  void (*new_period)(void);
+  int (*fork_file)(void);
+  void (*fork_parent)(void);
+  void (*fork_child)(void);
+  void (*fork_done)(void);
 };
 
 static struct ac_funcs malloc_interface = {
-  acm_chunk_create,
-  acm_chunk_delete,
-  acm_chunk_fetch,
-  acm_chunk_len,
-  acm_chunk_derefs,
-  acm_chunk_migration,
-  acm_chunk_num_swapped,
-  acm_chunk_init,
-  acm_chunk_stats,
-  acm_chunk_new_period,
-  acm_chunk_fork_file,
-  acm_chunk_fork_parent,
-  acm_chunk_fork_child,
-  acm_chunk_fork_done
-};
+  acm_chunk_create,      acm_chunk_delete,    acm_chunk_fetch,
+  acm_chunk_len,         acm_chunk_derefs,    acm_chunk_migration,
+  acm_chunk_num_swapped, acm_chunk_init,      acm_chunk_stats,
+  acm_chunk_new_period,  acm_chunk_fork_file, acm_chunk_fork_parent,
+  acm_chunk_fork_child,  acm_chunk_fork_done};
 
 static struct ac_funcs chunk_interface = {
-  acc_chunk_create,
-  acc_chunk_delete,
-  acc_chunk_fetch,
-  acc_chunk_len,
-  acc_chunk_derefs,
-  acc_chunk_migration,
-  acc_chunk_num_swapped,
-  acc_chunk_init,
-  acc_chunk_stats,
-  acc_chunk_new_period,
-  acc_chunk_fork_file,
-  acc_chunk_fork_parent,
-  acc_chunk_fork_child,
-  acc_chunk_fork_done
-};
+  acc_chunk_create,      acc_chunk_delete,    acc_chunk_fetch,
+  acc_chunk_len,         acc_chunk_derefs,    acc_chunk_migration,
+  acc_chunk_num_swapped, acc_chunk_init,      acc_chunk_stats,
+  acc_chunk_new_period,  acc_chunk_fork_file, acc_chunk_fork_parent,
+  acc_chunk_fork_child,  acc_chunk_fork_done};
 
 static struct ac_funcs *chunker = NULL;
 /*
@@ -2931,4 +2906,4 @@ chunk_fork_done(void)
   chunker->fork_done();
 }
 
-#endif                          /* !WIN32 */
+#endif /* !WIN32 */

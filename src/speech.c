@@ -137,8 +137,8 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
   if (!GoodObject(loc))
     return;
 
-  if (!Loud(player)
-      && !eval_lock_with(player, loc, Speech_Lock, parent_queue->pe_info)) {
+  if (!Loud(player) &&
+      !eval_lock_with(player, loc, Speech_Lock, parent_queue->pe_info)) {
     fail_lock(player, loc, Speech_Lock, T("You may not speak here!"), NOTHING);
     return;
   }
@@ -192,8 +192,8 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
   pe_regs_setenv_nocopy(pe_regs, 1, "\"");
   modmsg[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", modmsg, player, pe_info, pe_regs)
-      && *modmsg != '\0')
+  if (call_attrib(player, "SPEECHMOD", modmsg, player, pe_info, pe_regs) &&
+      *modmsg != '\0')
     mod = 1;
   pe_regs_free(pe_regs);
 
@@ -215,7 +215,8 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \param list the list of dbrefs to oemit from the emit.
  * \param message the message to emit.
  * \param flags PEMIT_* flags.
- * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param format a format_msg structure to pass to notify_anything() from
+ * \@message
  * \param pe_info the pe_info to use for evaluating speech locks
  */
 void
@@ -266,13 +267,14 @@ do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
       return;
     }
 
-    if (!Loud(speaker) && !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
+    if (!Loud(speaker) &&
+        !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
       fail_lock(executor, room, Speech_Lock, T("You may not speak there!"),
                 NOTHING);
       return;
     }
 
-    oneloc = 1;                 /* we are only oemitting to one location */
+    oneloc = 1; /* we are only oemitting to one location */
   } else {
     temp = list;
   }
@@ -291,10 +293,9 @@ do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
      * locs[0..10] are corresponding dbrefs of locations
      * pass[11] is always NOTHING
      */
-    if (GoodObject(who) && GoodObject(Location(who))
-        && (Loud(speaker) || (oneloc && Location(who) == room) ||
-            eval_lock_with(speaker, Location(who), Speech_Lock, pe_info))
-      ) {
+    if (GoodObject(who) && GoodObject(Location(who)) &&
+        (Loud(speaker) || (oneloc && Location(who) == room) ||
+         eval_lock_with(speaker, Location(who), Speech_Lock, pe_info))) {
       if (matched < 10) {
         locs[matched] = Location(who);
         pass[matched] = who;
@@ -328,9 +329,7 @@ do_oemit_list(dbref executor, dbref speaker, char *list, const char *message,
     notify_anything(executor, speaker, na_loc, &locs[i], pass, na_flags,
                     message, NULL, locs[i], format);
   }
-
 }
-
 
 /** The whisper command.
  * \param player the enactor.
@@ -376,7 +375,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   switch (*arg2) {
   case SEMI_POSE_TOKEN:
     gap = "";
-    /* Fall through */
+  /* Fall through */
   case POSE_TOKEN:
     key = 1;
     arg2++;
@@ -390,9 +389,10 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   /* Make up a list of good and bad names */
   while (head && *head) {
     current = next_in_list(start);
-    who = match_result(player, current, TYPE_PLAYER, MAT_NEAR_THINGS |
-                       MAT_CONTAINER);
-    if (!GoodObject(who) || !can_interact(player, who, INTERACT_HEAR, pe_info)) {
+    who = match_result(player, current, TYPE_PLAYER,
+                       MAT_NEAR_THINGS | MAT_CONTAINER);
+    if (!GoodObject(who) ||
+        !can_interact(player, who, INTERACT_HEAR, pe_info)) {
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
       if (GoodObject(who))
@@ -433,9 +433,9 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   *tp = '\0';
 
   if (key == 1) {
-    notify_format(player, (gcount > 1) ? T("%s sense: %s%s%s") :
-                  T("%s senses: %s%s%s"), tbuf + 4, AName(player, AN_SAY, NULL),
-                  gap, arg2);
+    notify_format(player,
+                  (gcount > 1) ? T("%s sense: %s%s%s") : T("%s senses: %s%s%s"),
+                  tbuf + 4, AName(player, AN_SAY, NULL), gap, arg2);
     p = tprintf("You sense: %s%s%s", AName(player, AN_SAY, NULL), gap, arg2);
   } else {
     notify_format(player, T("You whisper, \"%s\"%s."), arg2, tbuf);
@@ -454,7 +454,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     if (!GoodObject(first))
       return;
     p = tprintf(T("%s whispers%s."), sname, tbuf);
-    DOLIST(first, first) {
+    DOLIST(first, first)
+    {
       overheard = 1;
       for (who = 0; who < gcount; who++) {
         if ((first == player) || (first == good[who])) {
@@ -530,7 +531,6 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
     do_pemit(executor, speaker, list, message, flags, &format, pe_info);
     break;
   }
-
 }
 
 /** Send a message to an object.
@@ -539,7 +539,8 @@ do_message(dbref executor, dbref speaker, char *list, char *attrname,
  * \param target the name(s) of the object(s) to pemit to.
  * \param message the message to pemit.
  * \param flags PEMIT_* flags.
- * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param format a format_msg structure to pass to notify_anything() from
+ * \@message
  * \param pe_info the pe_info for lock checks, etc
  */
 void
@@ -553,8 +554,8 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
   int one = 1;
   int count = 0;
 
-  if (!target || !*target
-      || ((!message || !*message) && !(flags & PEMIT_PROMPT)))
+  if (!target || !*target ||
+      ((!message || !*message) && !(flags & PEMIT_PROMPT)))
     return;
 
   if (flags & PEMIT_SPOOF)
@@ -582,7 +583,6 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
                     NULL, AMBIGUOUS, format);
   } while (!one && l && *l && (p = next_in_list(&l)));
 
-
   if (!(flags & PEMIT_SILENT) && count) {
     if (count > 1)
       notify_format(executor, T("You pemit \"%s\" to %d objects."), message,
@@ -591,13 +591,13 @@ do_pemit(dbref executor, dbref speaker, char *target, const char *message,
       notify_format(executor, T("You pemit \"%s\" to %s."), message,
                     AName(last, AN_SAY, NULL));
   }
-
 }
 
 /** The pose and semipose command.
  * \param player the enactor.
  * \param tbuf1 the message to pose.
- * \param nospace if 1, omit space between name and pose (semipose); if 0, include space (pose)
+ * \param nospace if 1, omit space between name and pose (semipose); if 0,
+ * include space (pose)
  * \param pe_info the pe_info for speechmod, lock checks, etc
  */
 void
@@ -622,8 +622,8 @@ do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info)
   pe_regs_setenv_nocopy(pe_regs, 1, nospace ? ";" : ":");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", tbuf2, player, pe_info, pe_regs)
-      && *tbuf2 != '\0')
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, pe_info, pe_regs) &&
+      *tbuf2 != '\0')
     mod = 1;
 
   pe_regs_free(pe_regs);
@@ -660,7 +660,7 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
       break;
     case SEMI_POSE_TOKEN:
       gap = "";
-      /* Fall through */
+    /* Fall through */
     case POSE_TOKEN:
       pose = 1;
       message++;
@@ -694,8 +694,8 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
     flag_broadcast(mask, 0, "%s [%s]: %s", prefix, AName(player, AN_SAY, NULL),
                    message);
   else
-    flag_broadcast(mask, 0,
-                   "%s %s %s, \"%s\"", prefix, AName(player, AN_SAY, NULL),
+    flag_broadcast(mask, 0, "%s %s %s, \"%s\"", prefix,
+                   AName(player, AN_SAY, NULL),
                    target == WALL_ALL ? T("shouts") : T("says"), message);
 }
 
@@ -787,7 +787,8 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param arg2 the message to page.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
- * \param pe_info the pe_info to use when evaluating locks, idle/away/haven msg, etc
+ * \param pe_info the pe_info to use when evaluating locks, idle/away/haven msg,
+ * etc
  */
 void
 do_page(dbref executor, const char *arg1, const char *arg2, int override,
@@ -813,7 +814,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   int is_haven;
   ATTR *a;
   char alias[BUFFER_LEN], *ap;
-
 
   if (*arg1 && has_eq) {
     /* page to=[msg] */
@@ -904,20 +904,20 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
     } else if (target == AMBIGUOUS) {
-      notify_format(executor,
-                    T("I'm not sure who you want to page with: %s"), current);
+      notify_format(executor, T("I'm not sure who you want to page with: %s"),
+                    current);
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
     } else {
-      fails_lock = !(override
-                     || eval_lock_with(executor, target, Page_Lock, pe_info));
+      fails_lock =
+        !(override || eval_lock_with(executor, target, Page_Lock, pe_info));
       is_haven = !override && Haven(target);
       if (!Connected(target) || (Dark(target) && (is_haven || fails_lock))) {
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
-        page_return(executor, target, "Away", "AWAY",
-                    tprintf(T("%s is not connected."),
-                            AName(target, AN_SYS, NULL)));
+        page_return(
+          executor, target, "Away", "AWAY",
+          tprintf(T("%s is not connected."), AName(target, AN_SYS, NULL)));
         if (fails_lock)
           fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
@@ -988,7 +988,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   switch (*message) {
   case SEMI_POSE_TOKEN:
     gap = "";
-    /* Fall through */
+  /* Fall through */
   case POSE_TOKEN:
     key = 1;
     message++;
@@ -1118,7 +1118,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
     mush_free(hp, "atrval.page");
 }
 
-
 /** Does a message match a filter pattern on an object?
  * \param thing object with the filter.
  * \param speaker object responsible for msg.
@@ -1143,13 +1142,13 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   if (!flag) {
     if (!eval_lock_with(speaker, thing, Filter_Lock, pe_info)) {
       free_pe_info(pe_info);
-      return 1;                 /* thing's @lock/filter not passed */
+      return 1; /* thing's @lock/filter not passed */
     }
     a = atr_get(thing, "FILTER");
   } else {
     if (!eval_lock_with(speaker, thing, InFilter_Lock, pe_info)) {
       free_pe_info(pe_info);
-      return 1;                 /* thing's @lock/infilter not passed */
+      return 1; /* thing's @lock/infilter not passed */
     }
     a = atr_get(thing, "INFILTER");
   }
@@ -1162,14 +1161,14 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;
-    if (process_expression(p, &bp, (char const **) &filter, 0, 0, 0,
-                           PE_NOTHING, PT_COMMA, NULL))
+    if (process_expression(p, &bp, (char const **) &filter, 0, 0, 0, PE_NOTHING,
+                           PT_COMMA, NULL))
       break;
     if (*filter == ',')
       *filter++ = '\0';
-    if (*p == '\0' && *filter == '\0')  /* No more filters */
+    if (*p == '\0' && *filter == '\0') /* No more filters */
       break;
-    if (*p == '\0')             /* Empty filter */
+    if (*p == '\0') /* Empty filter */
       continue;
     if (AF_Regexp(a))
       matched = quick_regexp_match(p, msg, AF_Case(a), NULL);
@@ -1215,8 +1214,8 @@ do_emit(dbref executor, dbref speaker, const char *message, int flags,
   pe_regs_setenv_nocopy(pe_regs, 1, "|");
   msgmod[0] = '\0';
 
-  if (call_attrib(executor, "SPEECHMOD", msgmod, executor, pe_info, pe_regs)
-      && *msgmod != '\0')
+  if (call_attrib(executor, "SPEECHMOD", msgmod, executor, pe_info, pe_regs) &&
+      *msgmod != '\0')
     message = msgmod;
   pe_regs_free(pe_regs);
 
@@ -1249,8 +1248,8 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
       notify(executor, T("There can't be anything in that!"));
     } else if (!okay_pemit(speaker, room, 1, 1, pe_info)) {
       /* Do nothing, but do it well */
-    } else if (!Loud(speaker)
-               && !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
+    } else if (!Loud(speaker) &&
+               !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
       fail_lock(executor, room, Speech_Lock, T("You may not speak there!"),
                 NOTHING);
     } else {
@@ -1276,7 +1275,8 @@ do_one_remit(dbref executor, dbref speaker, const char *target, const char *msg,
  * \param rooms string containing dbref(s) of rooms to remit it.
  * \param message message to emit.
  * \param flags for remit.
- * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param format a format_msg structure to pass to notify_anything() from
+ * \@message
  * \param pe_info pe_info for locks/permission checks
  */
 void
@@ -1318,8 +1318,8 @@ do_lemit(dbref executor, dbref speaker, const char *message, int flags,
   if (!GoodObject(room) || !IsRoom(room)) {
     notify(executor, T("Too many containers."));
     return;
-  } else if (!Loud(speaker)
-             && !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
+  } else if (!Loud(speaker) &&
+             !eval_lock_with(speaker, room, Speech_Lock, pe_info)) {
     fail_lock(executor, room, Speech_Lock, T("You may not speak there!"),
               NOTHING);
     return;
@@ -1346,9 +1346,8 @@ na_zemit(dbref current, void *data)
   do {
     if (current == NOTHING) {
       for (room = dbrefs[0]; room < db_top; room++) {
-        if (IsRoom(room) && (Zone(room) == dbrefs[1])
-            && (Loud(dbrefs[2]) || eval_lock(dbrefs[2], room, Speech_Lock))
-          )
+        if (IsRoom(room) && (Zone(room) == dbrefs[1]) &&
+            (Loud(dbrefs[2]) || eval_lock(dbrefs[2], room, Speech_Lock)))
           break;
       }
       if (!(room < db_top))
@@ -1402,10 +1401,8 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
   notify_anything(player, player, na_zemit, &pass, NULL, na_flags, message,
                   NULL, NOTHING, NULL);
 
-
   if (!(flags & PEMIT_SILENT) && pass[3] != NOTHING) {
     where = unparse_object(player, zone, AN_SYS);
     notify_format(player, T("You zemit, \"%s\" in zone %s"), message, where);
   }
-
 }

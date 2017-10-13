@@ -104,9 +104,8 @@ is_valid_tzname(const char *name)
     int erroffset;
     const char *errptr;
 
-    re =
-      pcre_compile("^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$", 0, &errptr, &erroffset,
-                   tables);
+    re = pcre_compile("^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$", 0, &errptr,
+                      &erroffset, tables);
 
     if (!re) {
       do_rawlog(LT_ERR, "tz: Unable to compile timezone name validation RE: %s",
@@ -150,21 +149,23 @@ tzfile_exists(const char *name)
 #endif
 }
 
-#define READ_CHUNK(buf, size)						\
-  do {									\
-    if (read(fd, (buf), (size)) != (size)) {				\
-      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno)); \
-      goto error;							\
-    } 									\
+#define READ_CHUNK(buf, size)                                                  \
+  do {                                                                         \
+    if (read(fd, (buf), (size)) != (size)) {                                   \
+      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile,      \
+                strerror(errno));                                              \
+      goto error;                                                              \
+    }                                                                          \
   } while (0)
 
-#define READ_CHUNKF(buf, size)						\
-  do {									\
-    if (read(fd, (buf), (size)) != (size)) {				\
-      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile, strerror(errno)); \
-      free((buf));							\
-      goto error;							\
-    } 									\
+#define READ_CHUNKF(buf, size)                                                 \
+  do {                                                                         \
+    if (read(fd, (buf), (size)) != (size)) {                                   \
+      do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile,      \
+                strerror(errno));                                              \
+      free((buf));                                                             \
+      goto error;                                                              \
+    }                                                                          \
   } while (0)
 
 static struct tzinfo *
@@ -176,7 +177,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
   int isstdcnt, isgmtcnt;
 
   {
-    char magic[5] = { '\0' };
+    char magic[5] = {'\0'};
 
     if (read(fd, magic, 4) != 4) {
       do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile,
@@ -223,7 +224,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   /* Use 64-bit time_t version on such systems. */
   if (has_64bit_times && sizeof(time_t) == 8 && time_size == 4) {
-    off_t skip = 44;            /* Header and sizes */
+    off_t skip = 44; /* Header and sizes */
 
     skip += tz->timecnt * 5;
     skip += tz->typecnt * 6;
@@ -240,19 +241,19 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     mush_free(tz, "timezone");
     return do_read_tzfile(fd, tzfile, 8);
   }
-#define READ_TRANSITIONS(type, decode)			\
-  do {							\
-    type *buf;						\
-    							\
-    size = tz->timecnt * time_size;			\
-    buf = malloc(size);						\
-    READ_CHUNKF(buf, size);					\
-    								\
-    tz->transitions = calloc(tz->timecnt, sizeof(time_t));	\
-    for (n = 0; n < tz->timecnt; n += 1)			\
-      tz->transitions[n] = (time_t) decode(buf[n]);		\
-    								\
-    free(buf);							\
+#define READ_TRANSITIONS(type, decode)                                         \
+  do {                                                                         \
+    type *buf;                                                                 \
+                                                                               \
+    size = tz->timecnt * time_size;                                            \
+    buf = malloc(size);                                                        \
+    READ_CHUNKF(buf, size);                                                    \
+                                                                               \
+    tz->transitions = calloc(tz->timecnt, sizeof(time_t));                     \
+    for (n = 0; n < tz->timecnt; n += 1)                                       \
+      tz->transitions[n] = (time_t) decode(buf[n]);                            \
+                                                                               \
+    free(buf);                                                                 \
   } while (0)
 
   if (time_size == 4) {
@@ -266,10 +267,10 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   {
     uint8_t *buf;
-    int m, size = tz->typecnt * 6;
+    int m, offsize = tz->typecnt * 6;
 
-    buf = malloc(size);
-    READ_CHUNKF(buf, size);
+    buf = malloc(offsize);
+    READ_CHUNKF(buf, offsize);
 
     tz->offsets = calloc(tz->typecnt, sizeof(struct ttinfo));
 
@@ -289,26 +290,26 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
   tz->abbrevs = malloc(tz->charcnt);
   READ_CHUNK(tz->abbrevs, tz->charcnt);
 
-#define READ_LEAPSECS(type, decode) \
-  do {				    \
-    type *buf;					 \
-    int m, size = tz->leapcnt * (4 + time_size); \
-    						 \
-    buf = malloc(size);				 \
-    READ_CHUNKF(buf, size);			 \
-    									\
-    tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));	\
-    									\
-    for (n = 0, m = 0; n < tz->leapcnt; n += 1, m += (4 + time_size)) { \
-       type when;							\
-      int32_t secs;							\
-      									\
-      memcpy(&when, buf, time_size);					\
-      memcpy(&secs, buf + time_size, 4);				\
-      tz->leapsecs[n].tt_when = (time_t) decode(when);			\
-      tz->leapsecs[n].tt_secs = decode32(secs);				\
-    }									\
-    free(buf);								\
+#define READ_LEAPSECS(type, decode)                                            \
+  do {                                                                         \
+    type *buf;                                                                 \
+    int m, lpsize = tz->leapcnt * (4 + time_size);                               \
+                                                                               \
+    buf = malloc(lpsize);                                                        \
+    READ_CHUNKF(buf, lpsize);                                                    \
+                                                                               \
+    tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));             \
+                                                                               \
+    for (n = 0, m = 0; n < tz->leapcnt; n += 1, m += (4 + time_size)) {        \
+      type when;                                                               \
+      int32_t secs;                                                            \
+                                                                               \
+      memcpy(&when, buf, time_size);                                           \
+      memcpy(&secs, buf + time_size, 4);                                       \
+      tz->leapsecs[n].tt_when = (time_t) decode(when);                         \
+      tz->leapsecs[n].tt_secs = decode32(secs);                                \
+    }                                                                          \
+    free(buf);                                                                 \
   } while (0)
 
   if (tz->leapcnt) {
@@ -320,21 +321,21 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 
   {
     uint8_t *buf;
-    int n;
+    int i;
 
     buf = malloc(isstdcnt);
     READ_CHUNKF(buf, isstdcnt);
 
-    for (n = 0; n < isstdcnt; n += 1)
-      tz->offsets[n].tt_std = buf[n];
+    for (i = 0; i < isstdcnt; i += 1)
+      tz->offsets[i].tt_std = buf[i];
 
     free(buf);
 
     buf = malloc(isgmtcnt);
     READ_CHUNKF(buf, isgmtcnt);
 
-    for (n = 0; n < isgmtcnt; n += 1)
-      tz->offsets[n].tt_utc = buf[n];
+    for (i = 0; i < isgmtcnt; i += 1)
+      tz->offsets[i].tt_utc = buf[i];
 
     free(buf);
   }
@@ -385,7 +386,8 @@ free_tzinfo(struct tzinfo *tz)
   mush_free(tz, "timezone");
 }
 
-/** Given a time zone struct and a time, return the offset in seconds from GMT at that time.
+/** Given a time zone struct and a time, return the offset in seconds from GMT
+ * at that time.
  * \param tz the time zone description struct
  * \param when the time to calculate the offset for.
  * \return the offset in seconds.
@@ -417,7 +419,8 @@ offset_for_tzinfo(struct tzinfo *tz, time_t when)
  * If arg is a objid, look up that object's @TZ attribute and parse
  * that. Otherwise, parse arg.
  *
- * If an object doesn't have a @TZ set, offset is set to 0 and tznotset to 1, to be able to tell
+ * If an object doesn't have a @TZ set, offset is set to 0 and tznotset to 1, to
+ * be able to tell
  * that case apart from a UTC timezone.
  *
  * If a timezone database is present, try to read the given zone from

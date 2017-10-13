@@ -13,10 +13,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <string.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <limits.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -29,6 +25,13 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <limits.h>
 #include <errno.h>
 #include <math.h>
 
@@ -52,7 +55,7 @@ static void check_log_size(struct log_stream *);
 
 BUFFERQ *activity_bq = NULL;
 
-HASHTAB htab_logfiles;  /**< Hash table of logfile names and descriptors */
+HASHTAB htab_logfiles; /**< Hash table of logfile names and descriptors */
 
 #define NLOGS 7
 
@@ -76,7 +79,6 @@ lookup_log(enum log_type type)
   return NULL;
 }
 
-
 /* From wait.c */
 int lock_file(FILE *);
 int unlock_file(FILE *);
@@ -98,8 +100,8 @@ quick_unparse(dbref object)
     break;
   default:
     bp = buff;
-    safe_format(buff, &bp, "%s(#%d%s)",
-                Name(object), object, unparse_flags(object, GOD));
+    safe_format(buff, &bp, "%s(#%d%s)", Name(object), object,
+                unparse_flags(object, GOD));
     *bp = '\0';
   }
 
@@ -120,7 +122,8 @@ start_log(struct log_stream *log)
       ht_initialized = 1;
     }
     if ((f = hashfind(strupper(log->filename), &htab_logfiles))) {
-      /* We've already opened this file for another log, so just use that pointer */
+      /* We've already opened this file for another log, so just use that
+       * pointer */
       log->fp = f;
     } else {
       log->fp = fopen(log->filename, "a+");
@@ -199,7 +202,7 @@ end_log(struct log_stream *log, bool keep_buffer)
       if (logs[n].fp == fp)
         logs[n].fp = NULL;
     }
-    fclose(fp);                 /* Implicit lock removal */
+    fclose(fp); /* Implicit lock removal */
     if (!keep_buffer) {
       free_bufferq(log->buffer);
       log->buffer = NULL;
@@ -218,13 +221,13 @@ end_all_logs(void)
     end_log(logs + n, 0);
 }
 
-
 static void
-format_log_name(char *restrict buff, const char *restrict fname, int n)
+format_log_name(char *restrict buff, const char *restrict fname, int n,
+                bool comp)
 {
   char *bp = buff;
   safe_format(buff, &bp, "%s.%d", fname, n);
-  if (options.compresssuff[0])
+  if (comp && options.compresssuff[0])
     safe_str(options.compresssuff, buff, &bp);
   *bp = '\0';
 }
@@ -248,7 +251,7 @@ resize_log_trim(struct log_stream *log)
   char *bp;
 
   if (fstat(fileno(log->fp), &s) < 0)
-    return;                     /* Oops */
+    return; /* Oops */
 
   trim_at = floor(s.st_size * 0.9);
 
@@ -277,37 +280,58 @@ resize_log_rotate(struct log_stream *log)
   /* Save current file as a copy, start new one. */
   int n;
   char namea[BUFFER_LEN], nameb[BUFFER_LEN];
-  struct stat s;
 
   for (n = 1; 1; n += 1) {
-    format_log_name(namea, log->filename, n);
-    if (stat(namea, &s) < 0)
-      break;
+    format_log_name(namea, log->filename, n, 1);
+    if (!file_exists(namea)) {
+      format_log_name(namea, log->filename, n, 0);
+      if (!file_exists(namea))
+        break;
+    }
   }
   for (; n > 1; n -= 1) {
-    format_log_name(namea, log->filename, n - 1);
-    format_log_name(nameb, log->filename, n);
+    bool comp = 1;
+    format_log_name(namea, log->filename, n - 1, 1);
+    if (!file_exists(namea)) {
+      comp = 0;
+      format_log_name(namea, log->filename, n - 1, 0);
+    }
+    format_log_name(nameb, log->filename, n, comp);
     rename_file(namea, nameb);
   }
 
-  format_log_name(namea, log->filename, 1);
+  format_log_name(namea, log->filename, 1, 1);
 
   if (options.compressprog[0]) {
     /* This can be done better. */
+    pid_t res;
     char *np = nameb;
     safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
                 log->filename, namea);
     *np = '\0';
-    system(nameb);
+    res = system(nameb);
+    if (res == -1 || (WIFEXITED(res) && WEXITSTATUS(res) != 0)) {
+      /* Error with the compression attempt; try an uncompressed copy. */
+      fprintf(stderr, "Unable to make compressed copy of \"%s\"\n",
+              log->filename);
+      format_log_name(namea, log->filename, 1, 0);
+      if (copy_file(log->fp, namea, 1) < 0) {
+        fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
+                log->filename, namea);
+      }
+    }
   } else {
-    copy_file(log->fp, namea, 1);
+    if (copy_file(log->fp, namea, 1) < 0) {
+      fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
+              log->filename, namea);
+    }
   }
   trunc_file(log->fp);
   fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
   fflush(log->fp);
 }
 
-typedef void (*logwipe_fun) (struct log_stream *);
+typedef void (*logwipe_fun)(struct log_stream *);
 struct lw_dispatch {
   enum logwipe_policy policy;
   const char *name;
@@ -321,7 +345,6 @@ static struct lw_dispatch lw_table[LW_SIZE] = {
   {LOGWIPE_ROTATE, "rotate", resize_log_rotate},
   {LOGWIPE_TRIM, "trim", resize_log_trim},
 };
-
 
 /** Check to see if a log file is too big and if so,
  * resize it according to policy. Policies are:
@@ -348,7 +371,7 @@ check_log_size(struct log_stream *log)
   max_bytes = options.log_max_size * 1024;
 
   if (fstat(fileno(log->fp), &logstats) < 0)
-    return;                     /* Unable to stat the file. Hmm. */
+    return; /* Unable to stat the file. Hmm. */
 
   if (logstats.st_size <= max_bytes)
     return;
@@ -365,7 +388,6 @@ check_log_size(struct log_stream *log)
   doit(log);
   unlock_file(log->fp);
 }
-
 
 /** Log a raw message.
  * take a log type and format list and args, write to appropriate logfile.
@@ -472,10 +494,10 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
     if (!controls(player, Location(player))) {
       strcpy(unp1, quick_unparse(player));
       strcpy(unp2, quick_unparse(Location(player)));
-      do_rawlog(logtype, "HUH: %s in %s [%s]: %s",
-                unp1, unp2,
-                (GoodObject(Location(player))) ?
-                Name(Owner(Location(player))) : T("bad object"), tbuf1);
+      do_rawlog(logtype, "HUH: %s in %s [%s]: %s", unp1, unp2,
+                (GoodObject(Location(player))) ? Name(Owner(Location(player)))
+                                               : T("bad object"),
+                tbuf1);
     }
     break;
   default:
@@ -512,9 +534,8 @@ do_log_recall(dbref player, enum log_type type, int lines)
 
   notify(player, T("Begin log recall."));
   p = NULL;
-  while ((line =
-          iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type,
-                       &dummy_ts))) {
+  while ((line = iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type,
+                              &dummy_ts))) {
     if (nlines <= lines)
       notify(player, line);
     nlines -= 1;
@@ -550,22 +571,20 @@ do_logwipe(dbref player, enum log_type logtype, const char *pass,
   case LT_CMD:
   case LT_TRACE:
   case LT_WIZ:
-  case LT_ERR:
-    {
-      logwipe_fun doit = resize_log_wipe;
-      int n;
-      for (n = 0; n < LW_SIZE; n += 1) {
-        if (lw_table[n].policy == policy) {
-          doit = lw_table[n].fun;
-          break;
-        }
+  case LT_ERR: {
+    logwipe_fun doit = resize_log_wipe;
+    int n;
+    for (n = 0; n < LW_SIZE; n += 1) {
+      if (lw_table[n].policy == policy) {
+        doit = lw_table[n].fun;
+        break;
       }
-      if (n == LW_SIZE)
-        doit = lw_table[0].fun;
-      doit(logst);
-      do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
     }
-    break;
+    if (n == LW_SIZE)
+      doit = lw_table[0].fun;
+    doit(logst);
+    do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
+  } break;
   default:
     notify(player, T("That is not a clearable log."));
     return;
@@ -609,7 +628,6 @@ last_activity_type(void)
   else
     return BufferQLastType(activity_bq);
 }
-
 
 /** Dump out (to a player or the error log) the activity buffer queue.
  * \param player player to receive notification, if notifying.
@@ -668,7 +686,6 @@ notify_activity(dbref player, int num_lines, int dump)
     }
     skip--;
   } while (buf);
-
 
   if (!dump)
     notify(player, T("GAME: End recall"));

@@ -56,7 +56,7 @@ static int wipe_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
-extern int rhs_present;         /* from command.c */
+extern int rhs_present; /* from command.c */
 
 /** Rename something.
  * \verbatim
@@ -85,8 +85,8 @@ do_name(dbref player, const char *name, char *newname_)
   }
   switch (Typeof(thing)) {
   case TYPE_PLAYER:
-    switch (ok_object_name
-            (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
+    switch (
+      ok_object_name(newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
     case OPAE_INVALID:
     case OPAE_NULL:
       notify(player, T("You can't give a player that name or alias."));
@@ -132,8 +132,8 @@ do_name(dbref player, const char *name, char *newname_)
   mush_strncpy(oldname, Name(thing), BUFFER_LEN);
 
   if (IsPlayer(thing)) {
-    do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
-           Name(thing), thing, newname);
+    do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s", Name(thing), thing,
+           newname);
     if (Suspect(thing) && strcmp(Name(thing), newname) != 0)
       flag_broadcast("WIZARD", 0,
                      T("Broadcast: Suspect %s changed name to %s."),
@@ -151,8 +151,8 @@ do_name(dbref player, const char *name, char *newname_)
     mush_free(alias, "name.newname");
   }
 
-  queue_event(player, "OBJECT`RENAME", "%s,%s,%s",
-              unparse_objid(thing), newname, oldname);
+  queue_event(player, "OBJECT`RENAME", "%s,%s,%s", unparse_objid(thing),
+              newname, oldname);
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
@@ -183,7 +183,6 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
   dbref newowner = NOTHING;
   long match_flags = MAT_POSSESSION | MAT_HERE | MAT_EXIT | MAT_ABSOLUTE;
 
-
   /* check for '@chown <object>/<atr>=<player>'  */
   if (strchr(name, '/')) {
     do_atrchown(player, name, newobj);
@@ -192,8 +191,8 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
   if (Wizard(player))
     match_flags |= MAT_PLAYER;
 
-  if ((thing = noisy_match_result(player, name, TYPE_THING, match_flags))
-      == NOTHING)
+  if ((thing = noisy_match_result(player, name, TYPE_THING, match_flags)) ==
+      NOTHING)
     return;
 
   if (!*newobj || !strcasecmp(newobj, "me")) {
@@ -229,9 +228,8 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
     if (!can_pay_fees(newowner, Pennies(thing))) {
       /* not enough money or quota */
       if (newowner != player)
-        notify(player,
-               T
-               ("That player doesn't have enough money or quota to receive that object."));
+        notify(player, T("That player doesn't have enough money or quota to "
+                         "receive that object."));
       return;
     }
     /* Credit the current owner */
@@ -273,17 +271,17 @@ chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
   /* Does player control newowner, or is newowner a Zone Master and player
    * passes the lock?
    */
-  if (!(controls(player, newowner) || (ZMaster(newowner)
-                                       && eval_lock_with(player, newowner,
-                                                         Zone_Lock, pe_info))))
+  if (!(controls(player, newowner) ||
+        (ZMaster(newowner) &&
+         eval_lock_with(player, newowner, Zone_Lock, pe_info))))
     return 0;
 
   /* Target player is legitimate. Does player control the object? */
   if (Owns(player, thing))
     return 1;
 
-  if (controls(player, Owner(thing)) && ZMaster(newowner)
-      && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
+  if (controls(player, Owner(thing)) && ZMaster(newowner) &&
+      eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
     return 1;
 
   if ((!IsThing(thing) || (Location(thing) == player)) && ChownOk(thing) &&
@@ -292,7 +290,6 @@ chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
 
   return 0;
 }
-
 
 /** Actually change the ownership of something, and fix bits.
  * \param player the enactor.
@@ -321,7 +318,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
         ok_to_zone = 0;
         break;
       }
-      if (tmp == Zone(tmp))     /* Ran into an object zoned to itself */
+      if (tmp == Zone(tmp)) /* Ran into an object zoned to itself */
         break;
       zone_depth--;
       if (!zone_depth) {
@@ -344,17 +341,15 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
     do_halt(thing, "", thing);
   } else {
     if ((newowner != player) && Wizard(thing) && !God(player)) {
-      notify_format(player,
-                    T
-                    ("Warning: WIZ flag reset on #%d because @CHOWN/PRESERVE is to a third party."),
+      notify_format(player, T("Warning: WIZ flag reset on #%d because "
+                              "@CHOWN/PRESERVE is to a third party."),
                     thing);
       clear_flag_internal(thing, "WIZARD");
     }
     if (!null_flagmask("POWER", Powers(thing)) || Wizard(thing) ||
         Royalty(thing) || Inherit(thing))
-      notify_format(player,
-                    T
-                    ("Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."),
+      notify_format(player, T("Warning: @CHOWN/PRESERVE on an object (#%d) "
+                              "with WIZ, ROY, INHERIT, or @power privileges."),
                     thing);
   }
 }
@@ -386,8 +381,8 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
   if (!newobj || !*newobj || !strcasecmp(newobj, "none"))
     zone = NOTHING;
   else {
-    if ((zone = noisy_match_result(player, newobj, NOTYPE, MAT_EVERYTHING))
-        == NOTHING)
+    if ((zone = noisy_match_result(player, newobj, NOTYPE, MAT_EVERYTHING)) ==
+        NOTHING)
       return 0;
   }
 
@@ -396,7 +391,6 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
       notify(player, T("That object is already in that zone."));
     return 0;
   }
-
 
   if (!controls(player, thing)) {
     if (noisy)
@@ -437,7 +431,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
         notify(player, T("You can't make circular zones!"));
         return 0;
       }
-      if (tmp == Zone(tmp))     /* Ran into an object zoned to itself */
+      if (tmp == Zone(tmp)) /* Ran into an object zoned to itself */
         break;
       zone_depth--;
       if (!zone_depth) {
@@ -493,17 +487,16 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
 
 /** Structure for af_helper() data. */
 struct af_args {
-  privbits setf;        /**< flag bits to set */
-  privbits clrf;        /**< flag bits to clear */
-  char *setflags;       /**< list of names of flags to set */
-  char *clrflags;       /**< list of names of flags to clear */
+  privbits setf;  /**< flag bits to set */
+  privbits clrf;  /**< flag bits to clear */
+  char *setflags; /**< list of names of flags to set */
+  char *clrflags; /**< list of names of flags to clear */
 };
 
 static int
-af_helper(dbref player, dbref thing,
-          dbref parent __attribute__ ((__unused__)),
-          char const *pattern
-          __attribute__ ((__unused__)), ATTR *atr, void *args)
+af_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
+          char const *pattern __attribute__((__unused__)), ATTR *atr,
+          void *args)
 {
   struct af_args *af = args;
 
@@ -546,11 +539,8 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
   if (!atr)
     return;
   if (!Can_Write_Attr(player, target, AL_ATTR(atr))) {
-    notify_format(player,
-                  T("You cannot set attrib flags on %s/%s"), AName(target,
-                                                                   AN_SYS,
-                                                                   NULL),
-                  AL_NAME(atr));
+    notify_format(player, T("You cannot set attrib flags on %s/%s"),
+                  AName(target, AN_SYS, NULL), AL_NAME(atr));
     return;
   }
   if (AL_FLAGS(atr) & AF_ROOT)
@@ -604,7 +594,6 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
   mush_free(af.clrflags, "af_flag list");
   mush_free(af.setflags, "af_flag list");
 }
-
 
 /** Set a flag, attribute flag, or attribute.
  * \verbatim
@@ -762,7 +751,6 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
           copy_attrib_flags(player, newobj,
                             atr_get_noparent(newobj, strupper(q)), a->flags);
       }
-
     }
   }
 
@@ -781,18 +769,17 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
 
 /** Argument struct for edit_helper */
 struct edit_args {
-  int flags; /**< The type of edit */
-  char *from; /**< What is going to be replaced? */
-  char *to; /**< What it gets replaced with. */
-  int edited; /**< Number of attributes edited */
+  int flags;   /**< The type of edit */
+  char *from;  /**< What is going to be replaced? */
+  char *to;    /**< What it gets replaced with. */
+  int edited;  /**< Number of attributes edited */
   int skipped; /**< Number of attributes skipped */
 };
 
 static int
-edit_helper(dbref player, dbref thing,
-            dbref parent __attribute__ ((__unused__)),
-            char const *pattern
-            __attribute__ ((__unused__)), ATTR *a, void *args)
+edit_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
+            char const *pattern __attribute__((__unused__)), ATTR *a,
+            void *args)
 {
   int ansi_long_flag = 0;
   const char *r;
@@ -813,7 +800,7 @@ edit_helper(dbref player, dbref thing,
   tbufp = tbuf1;
   tbufap = tbuf_ansi;
 
-  if (!a) {                     /* Shouldn't ever happen, but better safe than sorry */
+  if (!a) { /* Shouldn't ever happen, but better safe than sorry */
     notify(player, T("No such attribute, try set instead."));
     return 0;
   }
@@ -822,7 +809,7 @@ edit_helper(dbref player, dbref thing,
     gargs->skipped++;
     return 0;
   }
-  s = (char *) atr_value(a);    /* warning: pointer to static buffer */
+  s = (char *) atr_value(a); /* warning: pointer to static buffer */
 
   if (vlen == 1 && *val == '$') {
     /* append */
@@ -884,11 +871,11 @@ edit_helper(dbref player, dbref thing,
 
     haystack = parse_ansi_string(s);
 
-    while (last < (size_t) haystack->len
-           && (p = strstr(haystack->text + last, val)) != NULL) {
+    while (last < (size_t) haystack->len &&
+           (p = strstr(haystack->text + last, val)) != NULL) {
       edited = 1;
-      if (safe_ansi_string(haystack, last, p - (haystack->text + last),
-                           tbuf1, &tbufp)) {
+      if (safe_ansi_string(haystack, last, p - (haystack->text + last), tbuf1,
+                           &tbufp)) {
         too_long = 1;
         break;
       }
@@ -923,7 +910,6 @@ edit_helper(dbref player, dbref thing,
 
   *tbufp = '\0';
   *tbufap = '\0';
-
 
   if (edited)
     gargs->edited++;
@@ -1005,26 +991,25 @@ do_edit(dbref player, char *it, char **argv, int flags)
                   args.skipped);
 }
 
-extern const unsigned char *tables;     /* for do_edit_regexp */
-
+extern const unsigned char *tables; /* for do_edit_regexp */
 
 /** Argument struct for edit_helper */
 struct regedit_args {
   int flags; /**< The type of edit */
-  pcre *re; /**< Regexp to match string against */
+  pcre *re;  /**< Regexp to match string against */
   pcre_extra *extra;
-  char *to; /**< Replacement string. */
-  int edited; /**< Number of attributes edited */
-  int skipped; /**< Number of attributes skipped */
-  bool call_limit_hit; /**< Have we hit the call limit? */
+  char *to;             /**< Replacement string. */
+  int edited;           /**< Number of attributes edited */
+  int skipped;          /**< Number of attributes skipped */
+  bool call_limit_hit;  /**< Have we hit the call limit? */
   NEW_PE_INFO *pe_info; /**< the pe_info to eval replacements with */
 };
 
 static int
 regedit_helper(dbref player, dbref thing,
-               dbref parent __attribute__ ((__unused__)),
-               char const *pattern
-               __attribute__ ((__unused__)), ATTR *a, void *args)
+               dbref parent __attribute__((__unused__)),
+               char const *pattern __attribute__((__unused__)), ATTR *a,
+               void *args)
 {
   char *s;
   char tbuf1[BUFFER_LEN], tbuf_ansi[BUFFER_LEN];
@@ -1048,7 +1033,7 @@ regedit_helper(dbref player, dbref thing,
     return 0;
   }
 
-  if (!a) {                     /* Shouldn't ever happen, but better safe than sorry */
+  if (!a) { /* Shouldn't ever happen, but better safe than sorry */
     notify(player, T("No such attribute, try set instead."));
     return 0;
   }
@@ -1057,7 +1042,7 @@ regedit_helper(dbref player, dbref thing,
     gargs->skipped++;
     return 0;
   }
-  s = (char *) atr_value(a);    /* warning: pointer to static buffer */
+  s = (char *) atr_value(a); /* warning: pointer to static buffer */
 
   haystack = parse_ansi_string(s);
   display_str = parse_ansi_string(s);
@@ -1066,9 +1051,8 @@ regedit_helper(dbref player, dbref thing,
   search = 0;
   /* Do all the searches and replaces we can */
   do {
-    subpatterns =
-      pcre_exec(gargs->re, gargs->extra, haystack->text, haystack->len, search,
-                0, offsets, 99);
+    subpatterns = pcre_exec(gargs->re, gargs->extra, haystack->text,
+                            haystack->len, search, 0, offsets, 99);
     if (subpatterns >= 0) {
       edited = 1;
       /* We have a match */
@@ -1099,14 +1083,14 @@ regedit_helper(dbref player, dbref thing,
             safe_str(ANSI_END, tbuf1, &tbufp);
             *tbufp = '\0';
             hilite = parse_ansi_string(tbuf1);
-            if (ansi_string_replace
-                (display_str, offsets[0], offsets[1] - offsets[0], hilite)) {
+            if (ansi_string_replace(display_str, offsets[0],
+                                    offsets[1] - offsets[0], hilite)) {
               ansi_long_flag = 1;
             }
             free_ansi_string(hilite);
           } else {
-            if (ansi_string_replace
-                (display_str, offsets[0], offsets[1] - offsets[0], repl)) {
+            if (ansi_string_replace(display_str, offsets[0],
+                                    offsets[1] - offsets[0], repl)) {
               ansi_long_flag = 1;
             }
           }
@@ -1127,8 +1111,8 @@ regedit_helper(dbref player, dbref thing,
         break;
       }
     }
-  } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST)
-           && !gargs->call_limit_hit);
+  } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST) &&
+           !gargs->call_limit_hit);
 
   if (gargs->call_limit_hit) {
     /* Bail out */
@@ -1156,9 +1140,9 @@ regedit_helper(dbref player, dbref thing,
     *tbufp = '\0';
     tbufp = tbuf1;
     tbufap = tbuf_ansi;
-    if (!ansi_long_flag
-        && !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi,
-                             &tbufap)) {
+    if (!ansi_long_flag &&
+        !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi,
+                          &tbufap)) {
       *tbufap = '\0';
       tbufp = tbuf_ansi;
     }
@@ -1230,8 +1214,8 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   }
 
   if ((re = pcre_compile(remove_markup(argv[1], NULL),
-                         (flags & EDIT_CASE ? 0 : PCRE_CASELESS),
-                         &errptr, &erroffset, tables)) == NULL) {
+                         (flags & EDIT_CASE ? 0 : PCRE_CASELESS), &errptr,
+                         &erroffset, tables)) == NULL) {
     notify_format(player, T("Invalid regexp: %s"), errptr);
     return;
   }
@@ -1271,7 +1255,6 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   pcre_free(study);
 #endif
   DEL_CHECK("pcre.extra");
-
 }
 
 /** Trigger an attribute.
@@ -1283,25 +1266,26 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
  * \param object the object/attribute pair.
  * \param argv array of arguments.
  * \param queue_entry parent queue entry
- * \param flags Use the enactor, instead of the executor, as the enactor of the triggered attr?
+ * \param flags Use the enactor, instead of the executor, as the enactor of the
+ * triggered attr?
  */
 void
 do_trigger(dbref executor, dbref enactor, char *object, char **argv,
            MQUE *queue_entry, int flags)
 {
   dbref thing;
-  char *attr;
+  char *attrib;
   PE_REGS *pe_regs;
   int i;
-  dbref triggerer = executor;   /* triggerer is totally a word. Shut up. */
+  dbref triggerer = executor; /* triggerer is totally a word. Shut up. */
   bool control;
   int qflags = (queue_entry->queue_type & QUEUE_EVENT);
 
-  if (!(attr = strchr(object, '/')) || !*(attr + 1)) {
+  if (!(attrib = strchr(object, '/')) || !*(attrib + 1)) {
     notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
-  *attr++ = '\0';
+  *attrib++ = '\0';
 
   thing = noisy_match_result(executor, object, NOTYPE, MAT_EVERYTHING);
 
@@ -1339,8 +1323,8 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   if (!(flags & TRIGGER_CLEARREGS))
     pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base_priv
-      (thing, upcasestr(attr), triggerer, 0, pe_regs, qflags, executor)) {
+  if (queue_attribute_base_priv(thing, upcasestr(attrib), triggerer, 0, pe_regs,
+                                qflags, executor)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {
@@ -1348,7 +1332,6 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   }
   pe_regs_free(pe_regs);
 }
-
 
 /** Include an attribute.
  * \verbatim
@@ -1370,7 +1353,8 @@ do_include(dbref executor, dbref enactor, char *object, char **argv,
   char tbuf1[BUFFER_LEN];
 
   strcpy(tbuf1, object);
-  for (s = tbuf1; *s && (*s != '/'); s++) ;
+  for (s = tbuf1; *s && (*s != '/'); s++)
+    ;
   if (!*s) {
     notify(executor, T("I need to know what attribute to include."));
     return;
@@ -1388,9 +1372,9 @@ do_include(dbref executor, dbref enactor, char *object, char **argv,
   }
 
   /* include modifies the stack, but only if arguments are given */
-  if (!queue_include_attribute
-      (thing, upcasestr(s), executor, enactor, enactor,
-       (rhs_present ? argv + 1 : NULL), queue_type, parent_queue))
+  if (!queue_include_attribute(thing, upcasestr(s), executor, enactor, enactor,
+                               (rhs_present ? argv + 1 : NULL), queue_type,
+                               parent_queue))
     notify(executor, T("No such attribute."));
 }
 
@@ -1407,9 +1391,8 @@ do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
 
   /* if we pass the use key, do it */
 
-  if ((thing =
-       noisy_match_result(player, what, TYPE_THING,
-                          MAT_NEAR_THINGS | MAT_ENGLISH)) != NOTHING) {
+  if ((thing = noisy_match_result(player, what, TYPE_THING,
+                                  MAT_NEAR_THINGS | MAT_ENGLISH)) != NOTHING) {
     if (!eval_lock_with(player, thing, Use_Lock, pe_info)) {
       fail_lock(player, thing, Use_Lock, T("Permission denied."), NOTHING);
       return;
@@ -1437,8 +1420,8 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
   dbref check;
   int i;
 
-  if ((thing =
-       noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING)
+  if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) ==
+      NOTHING)
     return;
 
   if (!parent_name || !*parent_name || !strcasecmp(parent_name, "none"))
@@ -1460,12 +1443,9 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
    * control check (wich does those things
    * anyway, right?)]
    */
-  if ((parent != NOTHING) && !controls(player, parent) && !(LinkOk(parent)
-                                                            &&
-                                                            eval_lock_with
-                                                            (player, parent,
-                                                             Parent_Lock,
-                                                             pe_info))) {
+  if ((parent != NOTHING) && !controls(player, parent) &&
+      !(LinkOk(parent) &&
+        eval_lock_with(player, parent, Parent_Lock, pe_info))) {
     notify(player, T("Permission denied."));
     return;
   }
@@ -1475,8 +1455,8 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
     return;
   }
   if (parent != NOTHING) {
-    for (i = 0, check = Parent(parent);
-         (i < MAX_PARENTS) && (check != NOTHING); i++, check = Parent(check)) {
+    for (i = 0, check = Parent(parent); (i < MAX_PARENTS) && (check != NOTHING);
+         i++, check = Parent(check)) {
       if (check == thing) {
         notify(player, T("You are not allowed to be your own ancestor!"));
         return;
@@ -1494,10 +1474,9 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
 }
 
 static int
-wipe_helper(dbref player, dbref thing,
-            dbref parent __attribute__ ((__unused__)),
-            char const *pattern,
-            ATTR *atr, void *args __attribute__ ((__unused__)))
+wipe_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
+            char const *pattern, ATTR *atr,
+            void *args __attribute__((__unused__)))
 {
   /* for added security, only God can modify wiz-only-modifiable
    * attributes using this command and wildcards.  Wiping a specific
@@ -1517,11 +1496,10 @@ wipe_helper(dbref player, dbref thing,
     notify_format(player, T("Unable to wipe attribute %s"), AL_NAME(atr));
     return 0;
   case AE_TREE:
-    notify_format(player,
-                  T
-                  ("Attribute %s cannot be wiped because a child attribute cannot be wiped."),
+    notify_format(player, T("Attribute %s cannot be wiped because a child "
+                            "attribute cannot be wiped."),
                   AL_NAME(atr));
-    /* Fall through */
+  /* Fall through */
   default:
     return saved_count - AttrCount(thing);
   }

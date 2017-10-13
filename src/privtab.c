@@ -20,12 +20,11 @@
 #include "mushtype.h"
 #include "strutil.h"
 
-
 /** Convert a string to a set of privilege bits, masked by an original set.
  * Given a privs table, a string, and an original set of privileges,
  * return a modified set of privileges by applying the privs in the
  * string to the original set of privileges.
- * 
+ *
  * Matches single-letter words against one-char aliases, and does prefix
  * matching; intended for user-input, not internal uses.
  * \param table pointer to a privtab.
@@ -81,7 +80,7 @@ string_to_privs(const PRIV *table, const char *str, privbits origprivs)
       }
     }
   }
-  /* If we made no changes, and were given one word, 
+  /* If we made no changes, and were given one word,
    * we probably were given letters instead */
   if (!no && !yes && (words == 1))
     return letter_to_privs(table, str, origprivs);
@@ -91,7 +90,7 @@ string_to_privs(const PRIV *table, const char *str, privbits origprivs)
 /** Convert a list to a set of privilege bits, masked by an original set.
  * Given a privs table, a list, and an original set of privileges,
  * return a modified set of privileges by applying the privs in the
- * string to the original set of privileges. 
+ * string to the original set of privileges.
  *
  * Does NO prefix matching, and does not match single-character elements
  * against the one-character aliases; intended primarily for internal use,
@@ -136,7 +135,6 @@ list_to_privs(const PRIV *table, const char *str, privbits origprivs)
   }
   return ((origprivs | yes) & ~no);
 }
-
 
 /** Convert a string to 2 sets of privilege bits, privs to set and
  * privs to clear.
@@ -205,7 +203,8 @@ string_to_privsets(const PRIV *table, const char *str, privbits *setprivs,
   return 1;
 }
 
-/** Convert a letter string to a set of privilege bits, masked by an original set.
+/** Convert a letter string to a set of privilege bits, masked by an original
+ * set.
  * Given a privs table, a letter string, and an original set of privileges,
  * return a modified set of privileges by applying the privs in the
  * string to the original set of privileges.
@@ -270,8 +269,8 @@ privs_to_string(const PRIV *table, privbits privs)
   return buf;
 }
 
-
-/** Given a table and a bitmask, return a privs letter string (static allocation).
+/** Given a table and a bitmask, return a privs letter string (static
+ * allocation).
  * \param table pointer to a privtab.
  * \param privs bitmask of privileges.
  * \return statically allocated string of priv letters.

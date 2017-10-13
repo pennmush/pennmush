@@ -96,14 +96,16 @@ static object_flag_type flagcache_find_ns(FLAGSPACE *, const object_flag_type);
 
 slab *flagbucket_slab = NULL;
 
-PTAB ptab_flag;                 /**< Table of flags by name, inc. aliases */
-PTAB ptab_power;                /**< Table of powers by name, inc. aliases */
-HASHTAB htab_flagspaces;                /**< Hash of flagspaces */
+PTAB ptab_flag;          /**< Table of flags by name, inc. aliases */
+PTAB ptab_power;         /**< Table of powers by name, inc. aliases */
+HASHTAB htab_flagspaces; /**< Hash of flagspaces */
 slab *flag_slab = NULL;
-extern PTAB ptab_command;       /* Uses flag bitmasks */
+extern PTAB ptab_command; /* Uses flag bitmasks */
 
 /** Attempt to find a flagspace from its name */
-#define Flagspace_Lookup(n,ns)  if (!(n = (FLAGSPACE *)hashfind(ns,&htab_flagspaces))) mush_panic("Unable to locate flagspace");
+#define Flagspace_Lookup(n, ns)                                                \
+  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces)))                     \
+    mush_panic("Unable to locate flagspace");
 
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
@@ -175,8 +177,7 @@ static const FLAG flag_table[] = {
   {"KEEPALIVE", 'k', TYPE_PLAYER, 0, F_ANY, F_ANY},
   {"NO_LOG", '\0', NOTYPE, 0, F_WIZARD | F_MDARK | F_LOG, F_WIZARD | F_MDARK},
   {"OPEN_OK", '\0', TYPE_ROOM, 0, F_ANY, F_ANY},
-  {NULL, '\0', 0, 0, 0, 0}
-};
+  {NULL, '\0', 0, 0, 0, 0}};
 
 /** The old table to kludge multi-type toggles. Now used only
  * for conversion.
@@ -189,9 +190,7 @@ static const FLAG hack_table[] = {
   {"LISTEN_PARENT", '^', TYPE_ROOM, ROOM_INHEARIT, F_ANY, F_ANY},
   {"Z_TEL", 'Z', TYPE_THING, THING_Z_TEL, F_ANY, F_ANY},
   {"Z_TEL", 'Z', TYPE_ROOM, ROOM_Z_TEL, F_ANY, F_ANY},
-  {NULL, '\0', 0, 0, 0, 0}
-};
-
+  {NULL, '\0', 0, 0, 0, 0}};
 
 /** A table of types, as if they were flags. Some functions that
  * expect flags also accept, for historical reasons, types.
@@ -201,42 +200,37 @@ static FLAG type_table[] = {
   {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM, F_INTERNAL, F_INTERNAL},
   {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT, F_INTERNAL, F_INTERNAL},
   {"THING", 'T', TYPE_THING, TYPE_THING, F_INTERNAL, F_INTERNAL},
-  {NULL, '\0', 0, 0, 0, 0}
-};
+  {NULL, '\0', 0, 0, 0, 0}};
 
 /** A table of types, as privileges. */
-static const PRIV type_privs[] = {
-  {"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER},
-  {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM},
-  {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT},
-  {"THING", 'T', TYPE_THING, TYPE_THING},
-  {NULL, '\0', 0, 0}
-};
+static const PRIV type_privs[] = {{"PLAYER", 'P', TYPE_PLAYER, TYPE_PLAYER},
+                                  {"ROOM", 'R', TYPE_ROOM, TYPE_ROOM},
+                                  {"EXIT", 'E', TYPE_EXIT, TYPE_EXIT},
+                                  {"THING", 'T', TYPE_THING, TYPE_THING},
+                                  {NULL, '\0', 0, 0}};
 
 /** The old default aliases for flags. This table is only used in conversion
  * of old databases. Once a database is converted, the alias list in the
  * database is what counts.
  */
-static const FLAG_ALIAS flag_alias_tab[] = {
-  {"INHERIT", "TRUST"},
-  {"TRACE", "DEBUG"},
-  {"NOWARN", "NO_WARN"},
-  {"NOCOMMAND", "NO_COMMAND"},
-  {"LISTENER", "MONITOR"},
-  {"WATCHER", "MONITOR"},
-  {"ZONE", "SHARED"},
-  {"COLOUR", "COLOR"},
-  {"JURYOK", "JURY_OK"},
-  {"VACATION", "ON-VACATION"},
-  {"DEST_OK", "DESTROY_OK"},
-  {"NOLEAVE", "NO_LEAVE"},
-  {"TEL_OK", "JUMP_OK"},
-  {"TELOK", "JUMP_OK"},
-  {"TEL-OK", "JUMP_OK"},
-  {"^", "LISTEN_PARENT"},
+static const FLAG_ALIAS flag_alias_tab[] = {{"INHERIT", "TRUST"},
+                                            {"TRACE", "DEBUG"},
+                                            {"NOWARN", "NO_WARN"},
+                                            {"NOCOMMAND", "NO_COMMAND"},
+                                            {"LISTENER", "MONITOR"},
+                                            {"WATCHER", "MONITOR"},
+                                            {"ZONE", "SHARED"},
+                                            {"COLOUR", "COLOR"},
+                                            {"JURYOK", "JURY_OK"},
+                                            {"VACATION", "ON-VACATION"},
+                                            {"DEST_OK", "DESTROY_OK"},
+                                            {"NOLEAVE", "NO_LEAVE"},
+                                            {"TEL_OK", "JUMP_OK"},
+                                            {"TELOK", "JUMP_OK"},
+                                            {"TEL-OK", "JUMP_OK"},
+                                            {"^", "LISTEN_PARENT"},
 
-  {NULL, NULL}
-};
+                                            {NULL, NULL}};
 
 /** This is the old defaultpowr table. We still use it when we
  * have to convert old dbs, but once you have a converted db,
@@ -254,8 +248,7 @@ static const FLAG power_table[] = {
   {"Halt", '\0', NOTYPE, HALT_ANYTHING, F_WIZARD | F_LOG, F_WIZARD},
   {"Hide", '\0', NOTYPE, CAN_HIDE, F_WIZARD | F_LOG, F_WIZARD},
   {"Idle", '\0', NOTYPE, UNLIMITED_IDLE, F_WIZARD | F_LOG, F_WIZARD},
-  {"Immortal", '\0', NOTYPE, NO_PAY | NO_QUOTA, F_WIZARD,
-   F_WIZARD},
+  {"Immortal", '\0', NOTYPE, NO_PAY | NO_QUOTA, F_WIZARD, F_WIZARD},
   {"Link_Anywhere", '\0', NOTYPE, LINK_ANYWHERE, F_WIZARD | F_LOG, F_WIZARD},
   {"Login", '\0', NOTYPE, LOGIN_ANYTIME, F_WIZARD | F_LOG, F_WIZARD},
   {"Long_Fingers", '\0', NOTYPE, LONG_FINGERS, F_WIZARD | F_LOG, F_WIZARD},
@@ -273,34 +266,29 @@ static const FLAG power_table[] = {
   {"Tport_Anything", '\0', NOTYPE, TEL_OTHER, F_WIZARD | F_LOG, F_WIZARD},
   {"Tport_Anywhere", '\0', NOTYPE, TEL_ANYWHERE, F_WIZARD | F_LOG, F_WIZARD},
   {"Can_spoof", '\0', NOTYPE, CAN_NSPEMIT, F_WIZARD | F_LOG, F_WIZARD},
-  {NULL, '\0', 0, 0, 0, 0}
-};
+  {NULL, '\0', 0, 0, 0, 0}};
 
 /** A table of aliases for powers. */
-static const FLAG_ALIAS power_alias_tab[] = {
-  {"@cemit", "Cemit"},
-  {"@wall", "Announce"},
-  {"wall", "Announce"},
-  {"Can_nspemit", "Can_spoof"},
-  {NULL, NULL}
-};
+static const FLAG_ALIAS power_alias_tab[] = {{"@cemit", "Cemit"},
+                                             {"@wall", "Announce"},
+                                             {"wall", "Announce"},
+                                             {"Can_nspemit", "Can_spoof"},
+                                             {NULL, NULL}};
 
 /** The table of flag privilege bits. */
-static const PRIV flag_privs[] = {
-  {"trusted", '\0', F_INHERIT, F_INHERIT},
-  {"owned", '\0', F_OWNED, F_OWNED},
-  {"royalty", '\0', F_ROYAL, F_ROYAL},
-  {"wizard", '\0', F_WIZARD, F_WIZARD},
-  {"god", '\0', F_GOD, F_GOD},
-  {"internal", '\0', F_INTERNAL, F_INTERNAL},
-  {"dark", '\0', F_DARK, F_DARK},
-  {"mdark", '\0', F_MDARK, F_MDARK},
-  {"odark", '\0', F_ODARK, F_ODARK},
-  {"disabled", '\0', F_DISABLED, F_DISABLED},
-  {"log", '\0', F_LOG, F_LOG},
-  {"event", '\0', F_EVENT, F_EVENT},
-  {NULL, '\0', 0, 0}
-};
+static const PRIV flag_privs[] = {{"trusted", '\0', F_INHERIT, F_INHERIT},
+                                  {"owned", '\0', F_OWNED, F_OWNED},
+                                  {"royalty", '\0', F_ROYAL, F_ROYAL},
+                                  {"wizard", '\0', F_WIZARD, F_WIZARD},
+                                  {"god", '\0', F_GOD, F_GOD},
+                                  {"internal", '\0', F_INTERNAL, F_INTERNAL},
+                                  {"dark", '\0', F_DARK, F_DARK},
+                                  {"mdark", '\0', F_MDARK, F_MDARK},
+                                  {"odark", '\0', F_ODARK, F_ODARK},
+                                  {"disabled", '\0', F_DISABLED, F_DISABLED},
+                                  {"log", '\0', F_LOG, F_LOG},
+                                  {"event", '\0', F_EVENT, F_EVENT},
+                                  {NULL, '\0', 0, 0}};
 
 /*---------------------------------------------------------------------------
  * Flag definition functions, including flag hash table handlers
@@ -414,7 +402,6 @@ clear_all_flags(FLAGSPACE *n)
     mush_free(n->flags, "flagspace.flags");
   n->flags = NULL;
   n->flagbits = 0;
-
 }
 
 static FLAG *
@@ -468,9 +455,8 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
     int i;
     if (f->bitpos >= n->flagbits) {
       /* Oops, we need a bigger array */
-      n->flags =
-        mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
-                     "flagspace.flags");
+      n->flags = mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
+                              "flagspace.flags");
       if (!n->flags)
         mush_panic("Unable to reallocate flags array!\n");
 
@@ -603,7 +589,6 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   free_flagcache(oldcache);
 }
 
-
 /* Read in a flag from a file and return it */
 static FLAG *
 flag_read_oldstyle(PENNFILE *in)
@@ -613,7 +598,7 @@ flag_read_oldstyle(PENNFILE *in)
   c = mush_strdup(getstring_noalloc(in), "flag.name");
   if (!strcmp(c, "FLAG ALIASES")) {
     mush_free(c, "flag.name");
-    return NULL;                /* We're done */
+    return NULL; /* We're done */
   }
   f = new_flag();
   f->name = c;
@@ -635,14 +620,14 @@ flag_alias_read_oldstyle(PENNFILE *in, char *alias, const FLAGSPACE *n)
   c = mush_strdup(getstring_noalloc(in), "flag alias");
   if (!strcmp(c, "END OF FLAGS")) {
     mush_free(c, "flag alias");
-    return NULL;                /* We're done */
+    return NULL; /* We're done */
   }
   f = match_flag_ns(n, c);
   if (!f) {
     /* Corrupt db. Recover as well as we can. */
-    do_rawlog(LT_ERR,
-              "FLAG READ: flag alias %s matches no known flag. Skipping aliases.",
-              c);
+    do_rawlog(
+      LT_ERR,
+      "FLAG READ: flag alias %s matches no known flag. Skipping aliases.", c);
     mush_free(c, "flag alias");
     do {
       c = (char *) getstring_noalloc(in);
@@ -723,9 +708,10 @@ flag_alias_read(PENNFILE *in, char *alias, FLAGSPACE *n)
   f = match_flag_ns(n, c);
   if (!f) {
     /* Corrupt db. Recover as well as we can. */
-    do_rawlog(LT_ERR,
-              "FLAG READ: flag alias %s matches no known flag. Skipping this alias.",
-              c);
+    do_rawlog(
+      LT_ERR,
+      "FLAG READ: flag alias %s matches no known flag. Skipping this alias.",
+      c);
     mush_free(c, "flag alias");
     (void) getstring_noalloc(in);
     return NULL;
@@ -782,8 +768,8 @@ flag_read_all(PENNFILE *in, const char *ns)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual number of flags (%d) different than expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual number of flags (%d) different than "
+                      "expected count (%d).",
               found, count);
 
   /* Assumes we'll always have at least one alias */
@@ -803,13 +789,12 @@ flag_read_all(PENNFILE *in, const char *ns)
       flag_add(n, alias, f);
   }
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual number of flag aliases (%d) different than expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual number of flag aliases (%d) different "
+                      "than expected count (%d).",
               found, count);
 
   flag_add_additional(n);
 }
-
 
 /* Write a flag out to a file */
 static void
@@ -823,7 +808,6 @@ flag_write(PENNFILE *out, FLAG *f, const char *name)
   db_write_labeled_string(out, "  negate_perms",
                           privs_to_string(flag_privs, f->negate_perms));
 }
-
 
 /* Write a flag alias out to a file */
 static void
@@ -916,7 +900,6 @@ init_flagspaces(void)
   hashadd("POWER", (void *) flags, &htab_flagspaces);
 }
 
-
 /** Initialize a flag table with defaults.
  * This function loads the standard flags as a baseline
  * (and for dbs that haven't yet converted).
@@ -948,8 +931,8 @@ init_flag_table(const char *ns)
     if ((cf = match_flag_ns(n, a->realname)))
       flag_add(n, a->alias, cf);
     else
-      do_rawlog(LT_ERR,
-                "FLAG INIT: flag alias %s matches no known flag.", a->alias);
+      do_rawlog(LT_ERR, "FLAG INIT: flag alias %s matches no known flag.",
+                a->alias);
   }
   flag_add_additional(n);
 }
@@ -1008,7 +991,7 @@ flag_add_additional(FLAGSPACE *n)
     if ((f = match_flag("ROYALTY")))
       f->perms |= F_LOG;
     add_flag_generic("FLAG", "XTERM256", '\0', TYPE_PLAYER, F_ANY, F_ANY, &f);
-    flag_add(flags, "COLOR256", f);     /* MUX alias */
+    flag_add(flags, "COLOR256", f); /* MUX alias */
 
     add_flag("MONIKER", '\0', NOTYPE, F_ROYAL, F_ROYAL);
 
@@ -1138,7 +1121,7 @@ flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 }
 
 /** Macro to detrmine if flag f's name is n */
-#define is_flag(f,n)    (!strcmp(f->name,n))
+#define is_flag(f, n) (!strcmp(f->name, n))
 
 /* Given a single character, return the matching flag definition */
 static FLAG *
@@ -1154,7 +1137,6 @@ letter_to_flagptr(const FLAGSPACE *n, char c, int type)
   /* Do we need to do this? */
   return NULL;
 }
-
 
 /*----------------------------------------------------------------------
  * Functions for managing bitmasks. All flagsets in a given space are
@@ -1178,9 +1160,8 @@ new_flagcache(FLAGSPACE *n, int initial_size)
   cache->flagset_slab = slab_create("flagset", FlagBytes(n));
   cache->zero = slab_malloc(cache->flagset_slab, NULL);
   memset(cache->zero, 0, FlagBytes(n));
-  cache->buckets =
-    mush_calloc(cache->size, sizeof(struct flagbucket *),
-                "flagset.cache.bucketarray");
+  cache->buckets = mush_calloc(cache->size, sizeof(struct flagbucket *),
+                               "flagset.cache.bucketarray");
   return cache;
 }
 
@@ -1239,7 +1220,8 @@ fc_eq(const FLAGSPACE *n, const object_flag_type f1, const object_flag_type f2)
   return memcmp(f1, f2, FlagBytes(n)) == 0;
 }
 
-/** Returns a pointer to the cached copy of this flag bitset. If the flagset isn't already in the cache, inserts it. */
+/** Returns a pointer to the cached copy of this flag bitset. If the flagset
+ * isn't already in the cache, inserts it. */
 static object_flag_type
 flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
 {
@@ -1307,7 +1289,7 @@ flagcache_delete(FLAGSPACE *n, const object_flag_type f)
         if (!p) {
           /* First entry in chain */
           n->cache->buckets[h] = b->next;
-          goto cleanup;         /* Not evil */
+          goto cleanup; /* Not evil */
         } else {
           p->next = b->next;
           goto cleanup;
@@ -1336,9 +1318,9 @@ flag_stats(dbref player)
     notify_format(player,
                   "  %d entries in flag table. Flagsets are %d bytes long.",
                   n->flagbits, (int) FlagBytes(n));
-    notify_format(player,
-                  "  %d different cached flagsets. %d objects with no flags set.",
-                  n->cache->entries, n->cache->zero_refcount);
+    notify_format(
+      player, "  %d different cached flagsets. %d objects with no flags set.",
+      n->cache->entries, n->cache->zero_refcount);
     notify(player, " Stats for flagset slab:");
     // slab_describe(player, n->cache->flagset_slab);
     for (i = 0; i < n->cache->size; i += 1) {
@@ -1354,11 +1336,11 @@ flag_stats(dbref player)
       if (len > maxlen)
         maxlen = len;
     }
-    notify_format(player,
-                  "  %d objects share the most common set of flags.\n  %d objects have unique flagsets.",
+    notify_format(player, "  %d objects share the most common set of flags.\n  "
+                          "%d objects have unique flagsets.",
                   maxref, uniques);
-    notify_format(player,
-                  "  Cache hashtable has %d buckets. Longest collision chain is %d elements.",
+    notify_format(player, "  Cache hashtable has %d buckets. Longest collision "
+                          "chain is %d elements.",
                   n->cache->size, maxlen);
   }
 }
@@ -1530,7 +1512,6 @@ clear_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit)
   return clear_flag_bitmask_ns(n, bitmask, bit);
 }
 
-
 /** Test a bit in a bitmask.
  * This function tests a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
@@ -1664,7 +1645,7 @@ string_to_bits(const char *ns, const char *str)
   Flagspace_Lookup(n, ns);
   bitmask = new_flag_bitmask_ns(n);
   if (!str || !*str)
-    return bitmask;             /* We're done, then */
+    return bitmask; /* We're done, then */
   copy = mush_strdup(str, "flagstring");
   s = trim_space_sep(copy, ' ');
   while (s) {
@@ -1678,11 +1659,9 @@ string_to_bits(const char *ns, const char *str)
   return bitmask;
 }
 
-
 /*----------------------------------------------------------------------
  * Functions for working with flags on objects
  */
-
 
 /** Check an object for a flag.
  * This function tests to see if an object has a flag. It is the
@@ -1712,8 +1691,8 @@ has_flag_ns(const FLAGSPACE *n, dbref thing, const FLAG *f)
 {
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
-  return (n->tab == &ptab_flag) ?
-    has_bit(Flags(thing), f->bitpos) : has_bit(Powers(thing), f->bitpos);
+  return (n->tab == &ptab_flag) ? has_bit(Flags(thing), f->bitpos)
+                                : has_bit(Powers(thing), f->bitpos);
 }
 
 static bool
@@ -1749,7 +1728,6 @@ can_set_power(dbref player, dbref thing, const FLAG *flagp, int negate)
     return 0;
   }
   return 1;
-
 }
 
 /* Called by the Can_See_Flag macro, /after/ the checks to see if the player
@@ -1800,8 +1778,8 @@ can_set_flag(dbref player, dbref thing, const FLAG *flagp, int negate)
    * players.
    */
   if (Wizard(thing) && is_flag(flagp, "GAGGED"))
-    return negate;              /* can't gag wizards/God, but can ungag */
-  if (God(player))              /* God can do (almost) anything) */
+    return negate; /* can't gag wizards/God, but can ungag */
+  if (God(player)) /* God can do (almost) anything) */
     return 1;
   /* Make sure we don't accidentally permission-check toggles when
    * checking priv bits.
@@ -1815,9 +1793,9 @@ can_set_flag(dbref player, dbref thing, const FLAG *flagp, int negate)
   /* Wizards can set or unset anything royalty. Royalty can set anything
    * they own royalty, but cannot reset their own bits. */
   if (is_flag(flagp, "ROYALTY")) {
-    return (!Guest(thing) && (Wizard(player) || (Royalty(player) &&
-                                                 Owns(player, thing)
-                                                 && !IsPlayer(thing))));
+    return (!Guest(thing) &&
+            (Wizard(player) ||
+             (Royalty(player) && Owns(player, thing) && !IsPlayer(thing))));
   }
   return 1;
 }
@@ -1858,8 +1836,8 @@ unparse_flags(dbref thing, dbref player)
   }
   for (i = 0; i < n->flagbits; i++) {
     if ((f = n->flags[i])) {
-      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f)
-          && f->letter)
+      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f) &&
+          f->letter)
         *p++ = f->letter;
     }
   }
@@ -1886,8 +1864,6 @@ flag_description(dbref player, dbref thing)
   return buf;
 }
 
-
-
 /** Print out the flags for a decompile.
  * \param player looker, for permission checking.
  * \param thing object being decompiled.
@@ -1906,12 +1882,11 @@ decompile_flags_generic(dbref player, dbref thing, const char *name,
   Flagspace_Lookup(n, ns);
   for (i = 0; i < n->flagbits; i++)
     if ((f = n->flags[i])) {
-      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f)
-          && !(f->perms & F_INTERNAL))
+      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f) &&
+          !(f->perms & F_INTERNAL))
         notify_format(player, "%s%s %s = %s", prefix, command, name, f->name);
     }
 }
-
 
 /** Set or clear flags on an object, without permissions/hear checking.
  * This function is for server internal use, only, when a flag should
@@ -1936,15 +1911,14 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
   if (f && (n->flag_table != type_table)) {
     if (n->tab == &ptab_flag) {
       Flags(thing) = negate ? clear_flag_bitmask_ns(n, Flags(thing), f->bitpos)
-        : set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+                            : set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
     } else {
-      Powers(thing) =
-        negate ? clear_flag_bitmask_ns(n, Powers(thing), f->bitpos)
-        : set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
+      Powers(thing) = negate
+                        ? clear_flag_bitmask_ns(n, Powers(thing), f->bitpos)
+                        : set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
     }
   }
 }
-
 
 /** Set or clear flags on an object, with full permissions/hear checking.
  * \verbatim
@@ -1959,8 +1933,8 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
  * \param listener 1 if object is a listener.
  */
 void
-set_flag(dbref player, dbref thing, const char *flag, int negate,
-         int hear, int listener)
+set_flag(dbref player, dbref thing, const char *flag, int negate, int hear,
+         int listener)
 {
   const FLAG *f;
   char tbuf1[BUFFER_LEN];
@@ -1984,8 +1958,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     return;
   }
   /* The only players who can be Dark are wizards. */
-  if (is_flag(f, "DARK") && !negate && Alive(thing) && !Wizard(thing)
-      && !has_power_by_name(thing, "Can_dark", NOTYPE)) {
+  if (is_flag(f, "DARK") && !negate && Alive(thing) && !Wizard(thing) &&
+      !has_power_by_name(thing, "Can_dark", NOTYPE)) {
     notify(player, T("Permission denied."));
     return;
   }
@@ -2006,8 +1980,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
                   f->name, "FLAG", 0, "CLEARED");
     /* notify the area if something stops listening, but only if it
        was listening before */
-    if (!IsPlayer(thing) && (hear || listener) &&
-        !Hearer(thing) && !Listener(thing)) {
+    if (!IsPlayer(thing) && (hear || listener) && !Hearer(thing) &&
+        !Listener(thing)) {
       tp = tbuf1;
       safe_format(tbuf1, &tp, T("%s is no longer listening."),
                   AName(thing, AN_SAY, NULL));
@@ -2065,8 +2039,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (is_flag(f, "SHARED"))
       check_zone_lock(player, thing, 1);
     /* notify area if something starts listening */
-    if (!IsPlayer(thing) &&
-        (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {
+    if (!IsPlayer(thing) && (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) &&
+        !hear && !listener) {
       tp = tbuf1;
       safe_format(tbuf1, &tp, T("%s is now listening."),
                   AName(thing, AN_SAY, NULL));
@@ -2113,7 +2087,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     }
   }
 }
-
 
 /** Set or clear powers on an object, with full permissions checking.
  * \verbatim
@@ -2226,8 +2199,8 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
       negate = 1;
       s++;
     } else {
-      negate = 0;               /* It's important to clear this at appropriate times;
-                                 * else !Dc means (!D && !c), instead of (!D && c). */
+      negate = 0; /* It's important to clear this at appropriate times;
+                   * else !Dc means (!D && !c), instead of (!D && c). */
     }
     if (!*s)
       /* We got a '!' that wasn't followed by a letter.
@@ -2241,10 +2214,12 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
          * flags, but we grandfather them in to preserve old code
          */
         if ((*s == 'T') || (*s == 'R') || (*s == 'E') || (*s == 'P')) {
-          temp = (*s == 'T') ? (Typeof(it) == TYPE_THING) :
-            ((*s == 'R') ? (Typeof(it) == TYPE_ROOM) :
-             ((*s == 'E') ? (Typeof(it) == TYPE_EXIT) :
-              (Typeof(it) == TYPE_PLAYER)));
+          temp =
+            (*s == 'T')
+              ? (Typeof(it) == TYPE_THING)
+              : ((*s == 'R') ? (Typeof(it) == TYPE_ROOM)
+                             : ((*s == 'E') ? (Typeof(it) == TYPE_EXIT)
+                                            : (Typeof(it) == TYPE_PLAYER)));
           if ((type == 1) && ((negate && temp) || (!negate && !temp)))
             return 0;
           else if ((type == 0) && ((!negate && temp) || (negate && !temp)))
@@ -2324,8 +2299,8 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
       negate = 1;
       s++;
     } else {
-      negate = 0;               /* It's important to clear this at appropriate times;
-                                 * else !D c means (!D && !c), instead of (!D && c). */
+      negate = 0; /* It's important to clear this at appropriate times;
+                   * else !D c means (!D && !c), instead of (!D && c). */
     }
     if (!*s) {
       /* We got a '!' that wasn't followed by a string.
@@ -2377,7 +2352,6 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
   return ret;
 }
 
-
 /** Can a player see a flag?
  * \param ns name of the flagspace to use.
  * \param privs looker.
@@ -2397,7 +2371,6 @@ sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
     return 0;
   return has_flag_ns(n, thing, f) && Can_See_Flag(privs, thing, f);
 }
-
 
 /** A hacker interface for adding a flag.
  * \verbatim
@@ -2453,7 +2426,6 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
     *fp = f;
   return FLAG_OK;
 }
-
 
 /*--------------------------------------------------------------------------
  * MUSHcode interface
@@ -2627,9 +2599,8 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
      */
     for (it = 0; it < db_top; it++) {
       if (!(type & Typeof(it)) && has_flag_ns(n, it, f)) {
-        notify_format(player,
-                      T
-                      ("Objects of other types already have this %s set. Search for them and remove it first."),
+        notify_format(player, T("Objects of other types already have this %s "
+                                "set. Search for them and remove it first."),
                       strlower(ns));
         return;
       }
@@ -2779,7 +2750,6 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
     notify_format(player, T("Unknown failure adding %s."), strlower(ns));
     break;
   }
-
 }
 
 /** Alias a flag.
@@ -2826,9 +2796,9 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
   }
 
   af = match_flag_ns(n, alias);
-  if (!delete && af) {
-    notify_format(player, T("That alias already matches the %s %s."),
-                  af->name, strlower(ns));
+  if (!delete &&af) {
+    notify_format(player, T("That alias already matches the %s %s."), af->name,
+                  strlower(ns));
     return;
   }
   f = match_flag_ns(n, name);
@@ -2840,9 +2810,9 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
     notify_format(player, T("That %s is disabled."), strlower(ns));
     return;
   }
-  if (delete && !af) {
-    notify_format(player, T("That isn't an alias of the %s %s."),
-                  f->name, strlower(ns));
+  if (delete &&!af) {
+    notify_format(player, T("That isn't an alias of the %s %s."), f->name,
+                  strlower(ns));
     return;
   }
   if (delete) {
@@ -2866,13 +2836,13 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
   }
 }
 
- /** Add a new alias for a flag.
-  * \param ns name of the flagspace to use.
-  * \param name name of the flag
-  * \param alias new alias for the flag
-  * \retval 1 alias added successfully
-  * \retval 0 failed to add alias
-  */
+/** Add a new alias for a flag.
+ * \param ns name of the flagspace to use.
+ * \param name name of the flag
+ * \param alias new alias for the flag
+ * \retval 1 alias added successfully
+ * \retval 0 failed to add alias
+ */
 int
 alias_flag_generic(const char *ns, const char *name, const char *alias)
 {
@@ -2883,15 +2853,15 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 
   f = match_flag_ns(n, name);
   if (!f) {
-    return 0;                   /* no such flag 'name' */
+    return 0; /* no such flag 'name' */
   }
 
   if (ptab_find_exact(n->tab, strupper(alias))) {
-    return 0;                   /* a flag called 'alias' already exists */
+    return 0; /* a flag called 'alias' already exists */
   }
 
   if (FLAG_REF(f->perms) == 0xFFU)
-    return 0;                   /* Too many copies already */
+    return 0; /* Too many copies already */
 
   f->perms = INCR_FLAG_REF(f->perms);
 
@@ -2899,7 +2869,6 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 
   return (match_flag_ns(n, alias) ? 1 : 0);
 }
-
 
 /** Change a flag's letter.
  * \param ns name of the flagspace to use.
@@ -2934,21 +2903,20 @@ do_flag_letter(const char *ns, dbref player, const char *name,
     }
 
     if ((other = letter_to_flagptr(n, *letter, f->type))) {
-      notify_format(player, T("Letter conflicts with the %s %s."),
-                    other->name, strlower(ns));
+      notify_format(player, T("Letter conflicts with the %s %s."), other->name,
+                    strlower(ns));
       return;
     }
 
     f->letter = *letter;
-    notify_format(player, T("Letter for %s %s set to '%c'."),
-                  strlower(ns), f->name, *letter);
-  } else {                      /* Clear a flag */
+    notify_format(player, T("Letter for %s %s set to '%c'."), strlower(ns),
+                  f->name, *letter);
+  } else { /* Clear a flag */
     f->letter = '\0';
     notify_format(player, T("Letter for %s %s cleared."), strlower(ns),
                   f->name);
   }
 }
-
 
 /** Disable a flag.
  * \verbatim
@@ -3089,7 +3057,6 @@ do_flag_enable(const char *ns, dbref player, const char *name)
   notify_format(player, T("%s %s enabled."), strinitial(ns), f->name);
 }
 
-
 static char *
 list_aliases(const FLAGSPACE *n, const FLAG *given)
 {
@@ -3116,13 +3083,13 @@ list_aliases(const FLAGSPACE *n, const FLAG *given)
   return buf;
 }
 
-#define fld_args(args,to) \
-     if (args == 0) { \
-       safe_chr('=',buf,&bp); \
-       args++; \
-     } \
-     for (;args < to; args++) \
-       safe_chr(',',buf,&bp)
+#define fld_args(args, to)                                                     \
+  if (args == 0) {                                                             \
+    safe_chr('=', buf, &bp);                                                   \
+    args++;                                                                    \
+  }                                                                            \
+  for (; args < to; args++)                                                    \
+  safe_chr(',', buf, &bp)
 /** Return a list of all flags.
  * \param ns name of namespace to search.
  * \param name wildcard to match against flag names, or NULL for all.
@@ -3248,11 +3215,9 @@ flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
   return tprintf("(%s)", buff);
 }
 
-
 /*--------------------------------------------------------------------------
  * Powers
  */
-
 
 /** Return the object's power for examine.
  * \param player looker, for permission checking.

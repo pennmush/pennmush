@@ -29,7 +29,6 @@ typedef struct pennfile {
   } handle;
 } PENNFILE;
 
-
 PENNFILE *penn_fopen(const char *, const char *);
 void penn_fclose(PENNFILE *);
 
@@ -38,7 +37,7 @@ char *penn_fgets(char *, int, PENNFILE *);
 int penn_fputc(int, PENNFILE *);
 int penn_fputs(const char *, PENNFILE *);
 int penn_fprintf(PENNFILE *, const char *fmt, ...)
-  __attribute__ ((__format__(__printf__, 2, 3)));
+  __attribute__((__format__(__printf__, 2, 3)));
 int penn_ungetc(int, PENNFILE *);
 
 int penn_feof(PENNFILE *);
@@ -66,8 +65,6 @@ void db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *val);
 void db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val);
 void db_read_labeled_dbref(PENNFILE *f, char **label, dbref *val);
 
-
 dbref db_read(PENNFILE *f);
-
 
 #endif

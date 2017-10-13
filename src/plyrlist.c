@@ -38,7 +38,6 @@ delete_dbref(void *data)
   slab_free(player_dbref_slab, data);
 }
 
-
 static void
 init_hft(void)
 {
@@ -56,7 +55,6 @@ clear_players(void)
   else
     init_hft();
 }
-
 
 /** Add a player to the player list htab.
  * \param player dbref of player to add.
@@ -145,7 +143,6 @@ lookup_player_name(const char *name)
   }
   return NOTHING;
 }
-
 
 /** Remove a player from the player list htab.
  * \param player dbref of player to remove.

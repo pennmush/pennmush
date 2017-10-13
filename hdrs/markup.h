@@ -8,4 +8,4 @@
 int ansi_strlen(const char *string);
 int ansi_strnlen(const char *string, size_t numchars);
 
-#endif                          /* __MARKUP_H */
+#endif /* __MARKUP_H */

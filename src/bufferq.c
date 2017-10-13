@@ -36,7 +36,7 @@
 #include "log.h"
 #include "mymalloc.h"
 
-#define BUFFERQLINEOVERHEAD     (2*sizeof(int)+sizeof(time_t)+sizeof(dbref))
+#define BUFFERQLINEOVERHEAD (2 * sizeof(int) + sizeof(time_t) + sizeof(dbref))
 
 static void shift_bufferq(BUFFERQ *bq, int space_needed);
 
@@ -72,7 +72,6 @@ add_to_bufferq(BUFFERQ *bq, int type, dbref player, const char *msg)
   bq->last_type = type;
   bq->num_buffered++;
 }
-
 
 static void
 shift_bufferq(BUFFERQ *bq, int space_needed)
@@ -176,8 +175,6 @@ reallocate_bufferq(BUFFERQ *bq, int lines)
   return bq;
 }
 
-
-
 /** Iterate through messages in a bufferq.
  * This function returns the next message in a bufferq, given
  * a pointer to the start of entry (which is modified).
@@ -205,7 +202,7 @@ iter_bufferq(BUFFERQ *bq, char **p, dbref *player, int *type, time_t *timestamp)
     return NULL;
 
   if (!*p)
-    *p = bq->buffer;            /* Reset to beginning */
+    *p = bq->buffer; /* Reset to beginning */
 
   memcpy(&size, *p, sizeof(size));
   *p += sizeof(size);
@@ -245,7 +242,6 @@ bufferq_lines(BUFFERQ *bq)
   dbref player;
   int type;
   time_t t;
-
 
   if (isempty_bufferq(bq))
     return 0;

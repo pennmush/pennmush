@@ -47,10 +47,10 @@
 
 /* Various constants.  Their import is either bleedingly obvious
  * or explained below. */
-#define ST_MAX_DEPTH 64         /**< Max depth of the tree */
-#define ST_RED 1                /**< This node is red */
-#define ST_BLACK 0              /**< This node is black */
-#define ST_COLOR 1              /**< Bit mask for colors */
+#define ST_MAX_DEPTH 64 /**< Max depth of the tree */
+#define ST_RED 1        /**< This node is red */
+#define ST_BLACK 0      /**< This node is black */
+#define ST_COLOR 1      /**< Bit mask for colors */
 #define ST_USE_STEP 2
 #define ST_USE_LIMIT (UINT32_MAX - ST_USE_STEP + 1)
 
@@ -64,13 +64,13 @@
  */
 static StrNode *path[ST_MAX_DEPTH];
 
-unsigned long st_mem = 0;       /**< Memory used by string trees */
+unsigned long st_mem = 0; /**< Memory used by string trees */
 
 static void st_left_rotate(int tree_depth, StrNode **root);
 static void st_right_rotate(int tree_depth, StrNode **root);
 static void st_print_tree(StrNode *node, int tree_depth, int lead);
-static void st_traverse_stats
-  (StrNode *node, int *maxdepth, int *mindepth, int *avgdepth, int *leaves);
+static void st_traverse_stats(StrNode *node, int *maxdepth, int *mindepth,
+                              int *avgdepth, int *leaves);
 
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
@@ -99,7 +99,6 @@ delete_node(StrNode *node, const char *name)
     delete_node(node->right, name);
   mush_free(node, name);
 }
-
 
 /** Clear a string tree.
  * \param root pointer to root of string tree.
@@ -140,9 +139,8 @@ st_stats(dbref player, StrTree *root, const char *name)
 
   bytes = (sizeof(StrNode) - BUFFER_LEN) * root->count + root->mem;
   st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves);
-  notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu",
-                name, (int) root->count, leaves, mindepth, maxdepth,
-                avgdepth, bytes);
+  notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu", name,
+                (int) root->count, leaves, mindepth, maxdepth, avgdepth, bytes);
 }
 
 /* Tree rotations.  These preserve left-to-right ordering,
@@ -589,12 +587,11 @@ st_print(StrTree *root)
   printf("----\n");
 }
 
-static void st_depth_helper
-  (StrNode *node, int *maxdepth, int *mindepth, int *avgdepth, int *leaves,
-   int count);
+static void st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
+                            int *avgdepth, int *leaves, int count);
 static void
-st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
-                int *avgdepth, int *leaves, int count)
+st_depth_helper(StrNode *node, int *maxdepth, int *mindepth, int *avgdepth,
+                int *leaves, int count)
 {
   if (!node)
     return;
@@ -612,14 +609,13 @@ st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
     st_depth_helper(node->right, maxdepth, mindepth, avgdepth, leaves,
                     count + 1);
   }
-  if (!node->left && !node->right) {    /* This is a leaf node */
+  if (!node->left && !node->right) { /* This is a leaf node */
     (*leaves)++;
     (*avgdepth) += count;
     if (*mindepth > count)
       *mindepth = count;
   }
 }
-
 
 /* Find the depth and number of permanment nodes */
 static void

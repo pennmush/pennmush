@@ -13,6 +13,6 @@ unsigned int getpagesize_win32(void);
 #define getpagesize() 4096
 #endif
 
-#endif                          /* !HAVE _GETPAGESIZE */
+#endif /* !HAVE _GETPAGESIZE */
 
-#endif                          /* __GETPGSIZ_H */
+#endif /* __GETPGSIZ_H */

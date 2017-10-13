@@ -1,7 +1,8 @@
 /**
  * \file conf.h
  *
- * \brief Routines for Penn's \@config system, and options used in Penn's internals.
+ * \brief Routines for Penn's \@config system, and options used in Penn's
+ * internals.
  */
 
 #ifndef __PENNCONF_H
@@ -19,75 +20,81 @@
 #include "htab.h"
 #include "mushtype.h"
 
-#define PLAYER_NAME_LIMIT (options.player_name_len) /**< limit on player name length */
+#define PLAYER_NAME_LIMIT                                                      \
+  (options.player_name_len) /**< limit on player name length */
 
 #define OBJECT_NAME_LIMIT 256 /**< limit on (non-player) object name length */
 
 #define ATTRIBUTE_NAME_LIMIT 1024 /**< Limit on attribute name length */
 
-#define COMMAND_NAME_LIMIT 64  /**< Loose limit on command/function name length */
+#define COMMAND_NAME_LIMIT                                                     \
+  64 /**< Loose limit on command/function name length */
 
-#define MAX_STACK_ARGS 30 /**< Number of possible args that can be passed, available as %0-%9 and v(N) */
+#define MAX_STACK_ARGS                                                         \
+  30 /**< Number of possible args that can be passed, available as %0-%9 and   \
+        v(N) */
 
 /* magic cookies */
-#define LOOKUP_TOKEN '*'  /**< Token that denotes player name in object matching */
+#define LOOKUP_TOKEN                                                           \
+  '*' /**< Token that denotes player name in object matching */
 #define NUMBER_TOKEN '#'  /**< Dbref token */
 #define ARG_DELIMITER '=' /**< No longer used */
 
 /* magic command cookies */
-#define SAY_TOKEN '"'    /**< One-char alias for SAY command */
-#define POSE_TOKEN ':'   /**< One-char alias for POSE command */
-#define SEMI_POSE_TOKEN ';'   /**< One-char alias for SEMIPOSE command */
-#define EMIT_TOKEN '\\'   /**< One-char alias for \@EMIT command */
-#define CHAT_TOKEN '+'   /**< One-char alias for \@CHAT command */
-#define NOEVAL_TOKEN ']'   /**< Prefix that prevents cmd evaluation */
-#define DEBUG_TOKEN '}'   /**< Prefix that enables debug for the queue entry */
+#define SAY_TOKEN '"'       /**< One-char alias for SAY command */
+#define POSE_TOKEN ':'      /**< One-char alias for POSE command */
+#define SEMI_POSE_TOKEN ';' /**< One-char alias for SEMIPOSE command */
+#define EMIT_TOKEN '\\'     /**< One-char alias for \@EMIT command */
+#define CHAT_TOKEN '+'      /**< One-char alias for \@CHAT command */
+#define NOEVAL_TOKEN ']'    /**< Prefix that prevents cmd evaluation */
+#define DEBUG_TOKEN '}' /**< Prefix that enables debug for the queue entry */
 
-#define ALIAS_DELIMITER ';'  /**< Delimiter in player/exit aliases */
+#define ALIAS_DELIMITER ';' /**< Delimiter in player/exit aliases */
 
 /** No longer used, but kept for hackers */
 #define EXIT_DELIMITER ALIAS_DELIMITER
 
 /* Socket commands */
 #define QUIT_COMMAND "QUIT" /**< The QUIT command */
-#define WHO_COMMAND "WHO"   /**< The socket WHO command. Separate from the in-game WHO */
-#define LOGOUT_COMMAND "LOGOUT" /**< The LOGOUT command. */
-#define INFO_COMMAND "INFO" /**< The INFO command */
-#define INFO_VERSION "1.1"  /**< The version of the INFO command output */
-#define DOING_COMMAND "DOING" /**< The socket DOING command */
+#define WHO_COMMAND                                                            \
+  "WHO" /**< The socket WHO command. Separate from the in-game WHO */
+#define LOGOUT_COMMAND "LOGOUT"   /**< The LOGOUT command. */
+#define INFO_COMMAND "INFO"       /**< The INFO command */
+#define INFO_VERSION "1.1"        /**< The version of the INFO command output */
+#define DOING_COMMAND "DOING"     /**< The socket DOING command */
 #define SESSION_COMMAND "SESSION" /**< The SESSION command */
-#define IDLE_COMMAND "IDLE" /**< The IDLE command */
+#define IDLE_COMMAND "IDLE"       /**< The IDLE command */
 #define MSSPREQUEST_COMMAND "MSSP-REQUEST" /**< The MSSP-REQUEST command */
 
-#define GET_COMMAND "GET" /**< The GET command, for recognising browsers */
+#define GET_COMMAND "GET"   /**< The GET command, for recognising browsers */
 #define POST_COMMAND "POST" /**< The POST command, for recognising browsers */
 
 #define PREFIX_COMMAND "OUTPUTPREFIX" /**< The OUTPUTPREFIX command */
 #define SUFFIX_COMMAND "OUTPUTSUFFIX" /**< The OUTPUTSUFFIX command */
-/** The PUEBLOCLIENT command, sent by a client to signifiy its support of Pueblo */
+/** The PUEBLOCLIENT command, sent by a client to signifiy its support of Pueblo
+ */
 #define PUEBLO_COMMAND "PUEBLOCLIENT "
 
 /* These CAN be modified, but it's heavily NOT suggested */
-#define PUEBLO_SEND "</xch_mudtext><img xch_mode=purehtml><xch_page clear=text>\n"
+#define PUEBLO_SEND                                                            \
+  "</xch_mudtext><img xch_mode=purehtml><xch_page clear=text>\n"
 #define PUEBLO_SEND_SHORT "</xch_mudtext><img xch_mode=purehtml>\n"
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
-
 
 /** How much pending outgoing text can be queued up on a socket before
  * the dreaded 'Output flushed' message shows up? Used to be 16k, now 1m.
  */
-#define MAX_OUTPUT (1024*1024)
+#define MAX_OUTPUT (1024 * 1024)
 /** How much output buffer space must be left before we flush the
  * buffer? Reportedly, using '0' fixes problems with Win32 port,
  * and may be more efficient in network use. Using (MAX_OUTPUT / 2)
  * is how it's been done in the past. You get to pick.
  */
-#define SPILLOVER_THRESHOLD     0
+#define SPILLOVER_THRESHOLD 0
 /* #define SPILLOVER_THRESHOLD  (MAX_OUTPUT / 2) */
-#define COMMAND_TIME_MSEC 1000  /* time slice length in milliseconds */
-#define COMMAND_BURST_SIZE 100  /* commands allowed per user in a burst */
-#define COMMANDS_PER_TIME 1     /* commands per time slice after burst */
-
+#define COMMAND_TIME_MSEC 1000 /* time slice length in milliseconds */
+#define COMMAND_BURST_SIZE 100 /* commands allowed per user in a burst */
+#define COMMANDS_PER_TIME 1    /* commands per time slice after burst */
 
 /* From conf.c */
 bool config_file_startup(const char *conf, int restrictions);
@@ -97,13 +104,15 @@ void do_config_list(dbref player, const char *type, int lc);
 
 typedef struct options_table OPTTAB;
 
-typedef int (*config_func) (const char *opt, const char *val, void *loc,
-                            int maxval, int source);
+typedef int (*config_func)(const char *opt, const char *val, void *loc,
+                           int maxval, int source);
 
-#define CONFIG_FUNC_PROTO(cf) \
+#define CONFIG_FUNC_PROTO(cf)                                                  \
   int cf(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
-#define CONFIG_FUNC(cf) \
-  int cf(const char *opt, const char *val, void *loc, int maxval __attribute__ ((__unused__)), int from_cmd __attribute__ ((__unused__)))
+#define CONFIG_FUNC(cf)                                                        \
+  int cf(const char *opt, const char *val, void *loc,                          \
+         int maxval __attribute__((__unused__)),                               \
+         int from_cmd __attribute__((__unused__)))
 CONFIG_FUNC_PROTO(cf_bool);
 CONFIG_FUNC_PROTO(cf_str);
 CONFIG_FUNC_PROTO(cf_int);
@@ -112,21 +121,21 @@ CONFIG_FUNC_PROTO(cf_flag);
 CONFIG_FUNC_PROTO(cf_time);
 CONFIG_FUNC_PROTO(cf_priv);
 
-#define CP_OVERRIDDEN 1         /* Set by .cnf file */
-#define CP_OPTIONAL   2         /* Doesn't complain if it's missing. */
-#define CP_CONFIGSET  4         /* Overridden/set by @config/set */
-#define CP_GODONLY    8         /* Only God can see. */
+#define CP_OVERRIDDEN 1 /* Set by .cnf file */
+#define CP_OPTIONAL 2   /* Doesn't complain if it's missing. */
+#define CP_CONFIGSET 4  /* Overridden/set by @config/set */
+#define CP_GODONLY 8    /* Only God can see. */
 
 /** Runtime configuration parameter.
  * This structure represents a runtime configuration option.
  */
 typedef struct confparm {
-  const char *name;             /**< name of option. */
-  config_func handler;          /**< the function handler. */
-  void *loc;                    /**< place to put this option. */
-  int max;                      /**< max: string length, integer value. */
-  int flags;                    /**< Has the default been overridden? */
-  const char *group;            /**< The option's group name */
+  const char *name;    /**< name of option. */
+  config_func handler; /**< the function handler. */
+  void *loc;           /**< place to put this option. */
+  int max;             /**< max: string length, integer value. */
+  int flags;           /**< Has the default been overridden? */
+  const char *group;   /**< The option's group name */
 } PENNCONF;
 
 char *display_config_value(PENNCONF *cp);
@@ -138,183 +147,210 @@ char *display_config_value(PENNCONF *cp);
  * that are typically set in mush.cnf.
  */
 struct options_table {
-  char mud_name[128];   /**< The name of the mush */
-  char mud_url[256];    /**< The address of the MUSH's website */
-  int port;             /**< The port to listen for connections */
-  int ssl_port;         /**< The port to listen for SSL connections */
-  char socket_file[FILE_PATH_LEN];  /**< The socket filename to use for SSL slave */
-  char input_db[FILE_PATH_LEN];   /**< Name of the input database file */
-  char output_db[FILE_PATH_LEN];  /**< Name of the output database file */
-  char crash_db[FILE_PATH_LEN];   /**< Name of the panic database file */
-  char mail_db[FILE_PATH_LEN];    /**< Name of the mail database file */
-  dbref player_start;   /**< The room in which new players are created */
-  dbref master_room;    /**< The master room for global commands/exits */
-  dbref ancestor_room;  /**< The ultimate parent room (help ancestors) */
-  dbref ancestor_exit;  /**< The ultimate parent exit (help ancestors) */
-  dbref ancestor_thing; /**< The ultimate parent thing (help ancestors) */
-  dbref ancestor_player; /**< The ultimate parent player (help ancestors) */
-  dbref event_handler;  /**< The Event Handler (help events). */
+  char mud_name[128]; /**< The name of the mush */
+  char mud_url[256];  /**< The address of the MUSH's website */
+  int port;           /**< The port to listen for connections */
+  int ssl_port;       /**< The port to listen for SSL connections */
+  char
+    socket_file[FILE_PATH_LEN]; /**< The socket filename to use for SSL slave */
+  char input_db[FILE_PATH_LEN]; /**< Name of the input database file */
+  char output_db[FILE_PATH_LEN]; /**< Name of the output database file */
+  char crash_db[FILE_PATH_LEN];  /**< Name of the panic database file */
+  char mail_db[FILE_PATH_LEN];   /**< Name of the mail database file */
+  dbref player_start;     /**< The room in which new players are created */
+  dbref master_room;      /**< The master room for global commands/exits */
+  dbref ancestor_room;    /**< The ultimate parent room (help ancestors) */
+  dbref ancestor_exit;    /**< The ultimate parent exit (help ancestors) */
+  dbref ancestor_thing;   /**< The ultimate parent thing (help ancestors) */
+  dbref ancestor_player;  /**< The ultimate parent player (help ancestors) */
+  dbref event_handler;    /**< The Event Handler (help events). */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
-  int idle_timeout;     /**< Maximum idle time allowed, in minutes */
-  int unconnected_idle_timeout; /**< Maximum idle time for connections without dbrefs, in minutes */
-  int keepalive_timeout; /**< Number of seconds between TCP keepalive pings */
-  int dump_interval;    /**< Interval between database dumps, in seconds */
-  char dump_message[256]; /**< Message shown at start of nonforking dump */
+  int idle_timeout;       /**< Maximum idle time allowed, in minutes */
+  int unconnected_idle_timeout; /**< Maximum idle time for connections without
+                                   dbrefs, in minutes */
+  int keepalive_timeout;   /**< Number of seconds between TCP keepalive pings */
+  int dump_interval;       /**< Interval between database dumps, in seconds */
+  char dump_message[256];  /**< Message shown at start of nonforking dump */
   char dump_complete[256]; /**< Message shown at end of nonforking dump */
-  time_t dump_counter;  /**< Time since last dump */
-  int max_logins;       /**< Maximum total logins allowed at once */
-  int max_guests;       /**< Maximum guests logins allowed at once */
-  int max_named_qregs;  /**< Maximum # of non-a-z0-9 qregs per pe_regs. */
-  int whisper_loudness; /**< % chance that a noisy whisper is overheard */
-  int page_aliases;     /**< Does page include aliases? */
-  int paycheck;         /**< Number of pennies awarded each day of connection */
-  int guest_paycheck;   /**< Paycheck for guest connections */
-  int starting_money;   /**< Number of pennies for newly created players */
-  int starting_quota;   /**< Object quota for newly created players */
+  time_t dump_counter;     /**< Time since last dump */
+  int max_logins;          /**< Maximum total logins allowed at once */
+  int max_guests;          /**< Maximum guests logins allowed at once */
+  int max_named_qregs;     /**< Maximum # of non-a-z0-9 qregs per pe_regs. */
+  int whisper_loudness;    /**< % chance that a noisy whisper is overheard */
+  int page_aliases;        /**< Does page include aliases? */
+  int paycheck;       /**< Number of pennies awarded each day of connection */
+  int guest_paycheck; /**< Paycheck for guest connections */
+  int starting_money; /**< Number of pennies for newly created players */
+  int starting_quota; /**< Object quota for newly created players */
   int player_queue_limit; /**< Maximum commands a player can queue at once */
-  int queue_chunk;      /**< Number of commands run from queue when no input from sockets is waiting */
-  int active_q_chunk;   /**< Number of commands run from queue when input from sockets is waiting */
-  int func_nest_lim;    /**< Maximum function recursion depth */
-  int func_invk_lim;    /**< Maximum number of function invocations */
-  int call_lim;         /**< Maximum parser calls allowed in a queue cycle */
-  char log_wipe_passwd[256];    /**< Password for logwipe command */
-  char money_singular[32];      /**< Currency unit name, singular */
-  char money_plural[32];        /**< Currency unit name, plural */
-  char compressprog[256];       /**< Program to compress database dumps */
-  char uncompressprog[256];     /**< Program to uncompress database dumps */
-  char compresssuff[256];       /**< Suffix for compressed dump files */
-  char chatdb[FILE_PATH_LEN];             /**< Name of the chat database file */
-  int max_player_chans;         /**< Number of channels a player can create */
-  int max_channels;             /**< Total maximum allowed channels */
-  int chan_title_len;           /**< Maximum length of a player's channel title */
-  int chan_cost;                /**< Cost to create a channel */
-  int noisy_cemit;              /**< Is \@cemit noisy by default? */
-  char connect_file[2][FILE_PATH_LEN];    /**< Names of text and html connection files */
-  char motd_file[2][FILE_PATH_LEN];       /**< Names of text and html motd files */
-  char wizmotd_file[2][FILE_PATH_LEN];    /**< Names of text and html wizmotd files */
-  char newuser_file[2][FILE_PATH_LEN];    /**< Names of text and html new user files */
-  char register_file[2][FILE_PATH_LEN];   /**< Names of text and html registration files */
-  char quit_file[2][FILE_PATH_LEN];       /**< Names of text and html disconnection files */
-  char down_file[2][FILE_PATH_LEN];       /**< Names of text and html server down files */
-  char full_file[2][FILE_PATH_LEN];       /**< Names of text and html server full files */
-  char guest_file[2][FILE_PATH_LEN];      /**< Names of text and html guest files */
-  char who_file[2][FILE_PATH_LEN];        /**< Names of text and html who files */
-  int log_commands;     /**< Should we log all commands? */
-  int log_forces;       /**< Should we log force commands? */
-  int support_pueblo;   /**< Should the MUSH send Pueblo tags? */
-  int login_allow;      /**< Are mortals allowed to log in? */
-  int guest_allow;      /**< Are guests allowed to log in? */
-  int create_allow;     /**< Can new players be created? */
-  int reverse_shs;      /**< Should the SHS routines assume little-endian byte order? */
-  char player_flags[BUFFER_LEN];        /**< Space-separated list of flags to set on newly created players. */
-  char room_flags[BUFFER_LEN];          /**< Space-separated list of flags to set on newly created rooms. */
-  char exit_flags[BUFFER_LEN];          /**< Space-separated list of flags to set on newly created exits. */
-  char thing_flags[BUFFER_LEN];         /**< Space-separated list of flags to set on newly created things. */
-  char channel_flags[BUFFER_LEN];       /**< Space-separated list of flags to set on newly created channels. */
-  int warn_interval;    /**< Interval between warning checks */
-  time_t warn_counter;  /**< Time since last warning check */
-  dbref base_room;      /**< Room which floating checks consider as the base */
-  dbref default_home;   /**< Home for the homeless */
-  int use_dns;          /**< Should we use DNS lookups? */
-  int safer_ufun;       /**< Should we require security for ufun calls? */
-  char dump_warning_1min[256];  /**< 1 minute nonforking dump warning message */
-  char dump_warning_5min[256];  /**< 5 minute nonforking dump warning message */
-  int noisy_whisper;    /**< Does whisper default to whisper/noisy? */
-  int possessive_get;   /**< Can possessive get be used? */
-  int possessive_get_d; /**< Can possessive get be used on disconnected players? */
+  int queue_chunk;    /**< Number of commands run from queue when no input from
+                         sockets is waiting */
+  int active_q_chunk; /**< Number of commands run from queue when input from
+                         sockets is waiting */
+  int func_nest_lim;  /**< Maximum function recursion depth */
+  int func_invk_lim;  /**< Maximum number of function invocations */
+  int call_lim;       /**< Maximum parser calls allowed in a queue cycle */
+  char log_wipe_passwd[256];  /**< Password for logwipe command */
+  char money_singular[32];    /**< Currency unit name, singular */
+  char money_plural[32];      /**< Currency unit name, plural */
+  char compressprog[256];     /**< Program to compress database dumps */
+  char uncompressprog[256];   /**< Program to uncompress database dumps */
+  char compresssuff[256];     /**< Suffix for compressed dump files */
+  char chatdb[FILE_PATH_LEN]; /**< Name of the chat database file */
+  int max_player_chans;       /**< Number of channels a player can create */
+  int max_channels;           /**< Total maximum allowed channels */
+  int chan_title_len;         /**< Maximum length of a player's channel title */
+  int chan_cost;              /**< Cost to create a channel */
+  int noisy_cemit;            /**< Is \@cemit noisy by default? */
+  char connect_file[2][FILE_PATH_LEN]; /**< Names of text and html connection
+                                          files */
+  char motd_file[2][FILE_PATH_LEN];    /**< Names of text and html motd files */
+  char wizmotd_file[2]
+                   [FILE_PATH_LEN]; /**< Names of text and html wizmotd files */
+  char newuser_file[2][FILE_PATH_LEN]; /**< Names of text and html new user
+                                          files */
+  char register_file
+    [2][FILE_PATH_LEN]; /**< Names of text and html registration files */
+  char quit_file[2][FILE_PATH_LEN];  /**< Names of text and html disconnection
+                                        files */
+  char down_file[2][FILE_PATH_LEN];  /**< Names of text and html server down
+                                        files */
+  char full_file[2][FILE_PATH_LEN];  /**< Names of text and html server full
+                                        files */
+  char guest_file[2][FILE_PATH_LEN]; /**< Names of text and html guest files */
+  char who_file[2][FILE_PATH_LEN];   /**< Names of text and html who files */
+  int log_commands;                  /**< Should we log all commands? */
+  int log_forces;                    /**< Should we log force commands? */
+  int support_pueblo;                /**< Should the MUSH send Pueblo tags? */
+  int login_allow;                   /**< Are mortals allowed to log in? */
+  int guest_allow;                   /**< Are guests allowed to log in? */
+  int create_allow;                  /**< Can new players be created? */
+  int reverse_shs; /**< Should the SHS routines assume little-endian byte order?
+                      */
+  char player_flags[BUFFER_LEN];  /**< Space-separated list of flags to set on
+                                     newly created players. */
+  char room_flags[BUFFER_LEN];    /**< Space-separated list of flags to set on
+                                     newly created rooms. */
+  char exit_flags[BUFFER_LEN];    /**< Space-separated list of flags to set on
+                                     newly created exits. */
+  char thing_flags[BUFFER_LEN];   /**< Space-separated list of flags to set on
+                                     newly created things. */
+  char channel_flags[BUFFER_LEN]; /**< Space-separated list of flags to set on
+                                     newly created channels. */
+  int warn_interval;              /**< Interval between warning checks */
+  time_t warn_counter;            /**< Time since last warning check */
+  dbref base_room;    /**< Room which floating checks consider as the base */
+  dbref default_home; /**< Home for the homeless */
+  int use_dns;        /**< Should we use DNS lookups? */
+  int safer_ufun;     /**< Should we require security for ufun calls? */
+  char dump_warning_1min[256]; /**< 1 minute nonforking dump warning message */
+  char dump_warning_5min[256]; /**< 5 minute nonforking dump warning message */
+  int noisy_whisper;           /**< Does whisper default to whisper/noisy? */
+  int possessive_get;          /**< Can possessive get be used? */
+  int possessive_get_d; /**< Can possessive get be used on disconnected players?
+                           */
   int really_safe;      /**< Does the SAFE flag protect objects from nuke */
-  int destroy_possessions;      /**< Are the possessions of a nuked player nuked? */
-  dbref probate_judge;    /**< Who owns the possessions if they're not? */
-  int null_eq_zero;     /**< Is null string treated as 0 in math functions? */
-  int tiny_booleans;    /**< Do strings and db#'s evaluate as false, like TinyMUSH? */
-  int tiny_trim_fun;    /**< Does the trim function take arguments in TinyMUSH order? */
-  int tiny_math;        /**< Can you use strings in math functions, like TinyMUSH? */
-  int adestroy;         /**< Is the adestroy attribute available? */
-  int amail;            /**< Is the amail attribute available? */
-  int mail_limit;       /**< Maximum number of mail messages per player */
-  int player_listen;    /**< Does listen work on players? */
-  int player_ahear;     /**< Does ahear work on players? */
-  int startups;         /**< Is startup run on startups? */
-  int room_connects;    /**< Do players trigger aconnect/adisconnect on their location? */
-  int ansi_names;       /**< Are object names shown in bold? */
-  privbits monikers;    /**< Where/when to show @monikers */
-  int comma_exit_list;  /**< Should exit lists be itemized? */
-  int count_all;        /**< Are hidden players included in total player counts? */
-  int exits_connect_rooms;      /**< Does the presence of an exit make a room connected? */
-  int zone_control;     /**< Are only ZMPs allowed to determine zone-based control? */
-  int link_to_object;   /**< Can exits be linked to objects? */
-  int owner_queues;     /**< Are queues tracked by owner or individual object? */
-  int wiz_noaenter;     /**< Do DARK wizards trigger aenters? */
-  char ip_addr[64];     /**< What ip address should the server bind to? */
-  char ssl_ip_addr[64]; /**< What ip address should the server bind to? */
-  int player_name_spaces;       /**< Can players have multiword names? */
-  int max_aliases;              /**< Maximum allowed aliases per player */
-  int forking_dump;     /**< Should we fork to dump? */
-  int restrict_building;        /**< Is the builder power required to build? */
-  int free_objects;     /**< If builder power is required, can you create without it? */
-  int flags_on_examine; /**< Are object flags shown when it's examined? */
-  int ex_public_attribs;        /**< Are visual attributes shown on examine? */
-  int full_invis;       /**< Are DARK wizards anonymous? */
-  int silent_pemit;     /**< Does pemit default to pemit/silent? */
-  dbref max_dbref;      /**< Maximum allowable database size */
-  char chat_token_alias[2]; /**< Alternative character to start a channel message. */
-  int use_muxcomm;      /**< True to use MUX style channel commands. */
-  int chat_strip_quote; /**< Should we strip initial quotes in chat? */
-  char wizwall_prefix[256];     /**< Prefix for wizwall announcements */
-  char rwall_prefix[256];       /**< Prefix for rwall announcements */
-  char wall_prefix[256];        /**< Prefix for wall announcements */
-  int announce_connects;        /**< Should dis/connects be announced? */
-  char access_file[FILE_PATH_LEN];        /**< Name of file of access control rules */
+  int destroy_possessions; /**< Are the possessions of a nuked player nuked? */
+  dbref probate_judge;     /**< Who owns the possessions if they're not? */
+  int null_eq_zero;  /**< Is null string treated as 0 in math functions? */
+  int tiny_booleans; /**< Do strings and db#'s evaluate as false, like TinyMUSH?
+                        */
+  int tiny_trim_fun; /**< Does the trim function take arguments in TinyMUSH
+                        order? */
+  int tiny_math;  /**< Can you use strings in math functions, like TinyMUSH? */
+  int adestroy;   /**< Is the adestroy attribute available? */
+  int amail;      /**< Is the amail attribute available? */
+  int mail_limit; /**< Maximum number of mail messages per player */
+  int player_listen;   /**< Does listen work on players? */
+  int player_ahear;    /**< Does ahear work on players? */
+  int startups;        /**< Is startup run on startups? */
+  int room_connects;   /**< Do players trigger aconnect/adisconnect on their
+                          location? */
+  int ansi_names;      /**< Are object names shown in bold? */
+  privbits monikers;   /**< Where/when to show @monikers */
+  int comma_exit_list; /**< Should exit lists be itemized? */
+  int count_all; /**< Are hidden players included in total player counts? */
+  int exits_connect_rooms; /**< Does the presence of an exit make a room
+                              connected? */
+  int
+    zone_control; /**< Are only ZMPs allowed to determine zone-based control? */
+  int link_to_object; /**< Can exits be linked to objects? */
+  int owner_queues;   /**< Are queues tracked by owner or individual object? */
+  int wiz_noaenter;   /**< Do DARK wizards trigger aenters? */
+  char ip_addr[64];   /**< What ip address should the server bind to? */
+  char ssl_ip_addr[64];   /**< What ip address should the server bind to? */
+  int player_name_spaces; /**< Can players have multiword names? */
+  int max_aliases;        /**< Maximum allowed aliases per player */
+  int forking_dump;       /**< Should we fork to dump? */
+  int restrict_building;  /**< Is the builder power required to build? */
+  int free_objects; /**< If builder power is required, can you create without
+                       it? */
+  int flags_on_examine;     /**< Are object flags shown when it's examined? */
+  int ex_public_attribs;    /**< Are visual attributes shown on examine? */
+  int full_invis;           /**< Are DARK wizards anonymous? */
+  int silent_pemit;         /**< Does pemit default to pemit/silent? */
+  dbref max_dbref;          /**< Maximum allowable database size */
+  char chat_token_alias[2]; /**< Alternative character to start a channel
+                               message. */
+  int use_muxcomm;          /**< True to use MUX style channel commands. */
+  int chat_strip_quote;     /**< Should we strip initial quotes in chat? */
+  char wizwall_prefix[256]; /**< Prefix for wizwall announcements */
+  char rwall_prefix[256];   /**< Prefix for rwall announcements */
+  char wall_prefix[256];    /**< Prefix for wall announcements */
+  int announce_connects;    /**< Should dis/connects be announced? */
+  char access_file[FILE_PATH_LEN]; /**< Name of file of access control rules */
   char names_file[FILE_PATH_LEN]; /**< Name of file of forbidden player names */
-  int object_cost;      /**< Cost to create an object */
-  int exit_cost;        /**< Cost to create an exit */
-  int link_cost;        /**< Cost to link an exit */
-  int room_cost;        /**< Cost to dig a room */
-  int queue_cost;       /**< Deposit to queue a command */
-  int quota_cost;       /**< Number of objects per quota unit */
-  int find_cost;        /**< Cost to create an object */
-  int queue_loss;       /**< 1/queue_loss chance of a command costing a penny */
-  int max_pennies;      /**< Maximum pennies a player can have */
-  int max_guest_pennies;        /**< Maximum pennies a guest can have */
-  int max_depth;        /**< Maximum container depth */
-  int max_parents;      /**< Maximum parent depth */
-  int purge_interval;   /**< Time between automatic purges */
-  time_t purge_counter; /**< Time since last automatic purge */
-  int dbck_interval;    /**< Time between automatic dbcks */
-  time_t dbck_counter;  /**< Time since last automatic dbck */
-  int max_attrcount;    /**< Maximum number of attributes per object */
-  int float_precision;  /**< Precision of floating point display */
-  int player_name_len;  /**< Maximum length of player names */
-  int queue_entry_cpu_time;     /**< Maximum cpu time allowed per queue entry */
-  int ascii_names;      /**< Are object names restricted to ascii characters? */
-  int use_chunk;        /**< Use the chunk system? */
-  char chunk_swap_file[FILE_PATH_LEN];    /**< Name of the attribute swap file */
-  int chunk_swap_initial; /**< Disc space to reserve for the swap file, in kibibytes */
-  int chunk_cache_memory;       /**< Memory to use for the attribute cache */
-  int chunk_migrate_amount;     /**< Number of attrs to migrate each second */
+  int object_cost;                /**< Cost to create an object */
+  int exit_cost;                  /**< Cost to create an exit */
+  int link_cost;                  /**< Cost to link an exit */
+  int room_cost;                  /**< Cost to dig a room */
+  int queue_cost;                 /**< Deposit to queue a command */
+  int quota_cost;                 /**< Number of objects per quota unit */
+  int find_cost;                  /**< Cost to create an object */
+  int queue_loss;  /**< 1/queue_loss chance of a command costing a penny */
+  int max_pennies; /**< Maximum pennies a player can have */
+  int max_guest_pennies;    /**< Maximum pennies a guest can have */
+  int max_depth;            /**< Maximum container depth */
+  int max_parents;          /**< Maximum parent depth */
+  int purge_interval;       /**< Time between automatic purges */
+  time_t purge_counter;     /**< Time since last automatic purge */
+  int dbck_interval;        /**< Time between automatic dbcks */
+  time_t dbck_counter;      /**< Time since last automatic dbck */
+  int max_attrcount;        /**< Maximum number of attributes per object */
+  int float_precision;      /**< Precision of floating point display */
+  int player_name_len;      /**< Maximum length of player names */
+  int queue_entry_cpu_time; /**< Maximum cpu time allowed per queue entry */
+  int ascii_names; /**< Are object names restricted to ascii characters? */
+  int use_chunk;   /**< Use the chunk system? */
+  char chunk_swap_file[FILE_PATH_LEN]; /**< Name of the attribute swap file */
+  int chunk_swap_initial;     /**< Disc space to reserve for the swap file, in
+                                 kibibytes */
+  int chunk_cache_memory;     /**< Memory to use for the attribute cache */
+  int chunk_migrate_amount;   /**< Number of attrs to migrate each second */
   char attr_compression[256]; /**< How to compress attribute text in-memory */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
-  char ssl_private_key_file[FILE_PATH_LEN];       /**< File to load the server's cert from */
-  char ssl_ca_file[FILE_PATH_LEN];        /**< File to load the CA certs from */
-  int ssl_require_client_cert;  /**< Are clients required to present certs? */
-  int mem_check;        /**< Turn on the memory allocation checker? */
-  int use_quota;        /**< Are quotas enabled? */
-  int empty_attrs;      /**< Are empty attributes preserved? */
-  int function_side_effects; /**< Turn on side effect functions? */
+  char ssl_private_key_file
+    [FILE_PATH_LEN];               /**< File to load the server's cert from */
+  char ssl_ca_file[FILE_PATH_LEN]; /**< File to load the CA certs from */
+  int ssl_require_client_cert;   /**< Are clients required to present certs? */
+  int mem_check;                 /**< Turn on the memory allocation checker? */
+  int use_quota;                 /**< Are quotas enabled? */
+  int empty_attrs;               /**< Are empty attributes preserved? */
+  int function_side_effects;     /**< Turn on side effect functions? */
   char error_log[FILE_PATH_LEN]; /**< File to log connections */
   char connect_log[FILE_PATH_LEN]; /**< File to log connections */
-  char wizard_log[FILE_PATH_LEN]; /**< File to log wizard commands */
+  char wizard_log[FILE_PATH_LEN];  /**< File to log wizard commands */
   char command_log[FILE_PATH_LEN]; /**< File to log suspect commands */
-  char trace_log[FILE_PATH_LEN]; /**< File to log trace data */
+  char trace_log[FILE_PATH_LEN];   /**< File to log trace data */
   char checkpt_log[FILE_PATH_LEN]; /**< File to log checkpoint data */
-  char sql_platform[256]; /**< Type of SQL server, or "disabled" */
-  char sql_host[256]; /**< Hostname of sql server */
-  char sql_username[256]; /**< Username for sql */
-  char sql_password[256]; /**< Password for sql */
-  char sql_database[256]; /**< Database for sql */
-  int log_max_size; /**< Maximum size of log file */
-  char log_size_policy[256]; /**< What to do when a log file is big. */
-  char sendmail_prog[256]; /**< Program used to send email. */
+  char sql_platform[256];          /**< Type of SQL server, or "disabled" */
+  char sql_host[256];              /**< Hostname of sql server */
+  char sql_username[256];          /**< Username for sql */
+  char sql_password[256];          /**< Password for sql */
+  char sql_database[256];          /**< Database for sql */
+  int log_max_size;                /**< Maximum size of log file */
+  char log_size_policy[256];       /**< What to do when a log file is big. */
+  char sendmail_prog[256];         /**< Program used to send email. */
 };
 
 typedef struct mssp MSSP;
@@ -340,63 +376,62 @@ extern PENNCONF *get_config(const char *name);
 extern void validate_config(void);
 
 /* Config group viewing permissions */
-#define CGP_GOD         0x1  /**< Config group can only be seen by God */
-#define CGP_WIZARD      0x3  /**< Config group can only be seen by Wizards */
-#define CGP_ADMIN       0x7  /**< Config group can only be seen by Wiz/Roy */
-#define Can_View_Config_Group(p,g) \
-        (!(g->viewperms) || (God(p) && (g->viewperms & CGP_GOD)) || \
-         (Wizard(p) && (g->viewperms & CGP_WIZARD)) || \
-         (Hasprivs(p) && (g->viewperms & CGP_ADMIN)))
+#define CGP_GOD 0x1    /**< Config group can only be seen by God */
+#define CGP_WIZARD 0x3 /**< Config group can only be seen by Wizards */
+#define CGP_ADMIN 0x7  /**< Config group can only be seen by Wiz/Roy */
+#define Can_View_Config_Group(p, g)                                            \
+  (!(g->viewperms) || (God(p) && (g->viewperms & CGP_GOD)) ||                  \
+   (Wizard(p) && (g->viewperms & CGP_WIZARD)) ||                               \
+   (Hasprivs(p) && (g->viewperms & CGP_ADMIN)))
 
 int can_view_config_option(dbref player, PENNCONF *opt);
 
-
-#define DUMP_INTERVAL       (options.dump_interval)
-#define DUMP_NOFORK_MESSAGE  (options.dump_message)
+#define DUMP_INTERVAL (options.dump_interval)
+#define DUMP_NOFORK_MESSAGE (options.dump_message)
 #define DUMP_NOFORK_COMPLETE (options.dump_complete)
-#define CONNECT_FAIL_LIMIT   (options.connect_fail_limit)
-#define INACTIVITY_LIMIT    (options.idle_timeout)
-#define UNCONNECTED_LIMIT    (options.unconnected_idle_timeout)
+#define CONNECT_FAIL_LIMIT (options.connect_fail_limit)
+#define INACTIVITY_LIMIT (options.idle_timeout)
+#define UNCONNECTED_LIMIT (options.unconnected_idle_timeout)
 
-#define MAX_LOGINS      (options.max_logins)
-#define MAX_GUESTS      (options.max_guests)
+#define MAX_LOGINS (options.max_logins)
+#define MAX_GUESTS (options.max_guests)
 #define MAX_NAMED_QREGS (options.max_named_qregs)
 
 /* dbrefs are in the conf file */
 
-#define TINYPORT         (options.port)
-#define SSLPORT          (options.ssl_port)
-#define PLAYER_START     (options.player_start)
-#define MASTER_ROOM      (options.master_room)
-#define ANCESTOR_ROOM           (options.ancestor_room)
-#define ANCESTOR_EXIT           (options.ancestor_exit)
-#define ANCESTOR_THING          (options.ancestor_thing)
-#define ANCESTOR_PLAYER         (options.ancestor_player)
-#define EVENT_HANDLER    (options.event_handler)
-#define MONEY            (options.money_singular)
-#define MONIES           (options.money_plural)
-#define WHISPER_LOUDNESS        (options.whisper_loudness)
-#define PAGE_ALIASES    (options.page_aliases)
+#define TINYPORT (options.port)
+#define SSLPORT (options.ssl_port)
+#define PLAYER_START (options.player_start)
+#define MASTER_ROOM (options.master_room)
+#define ANCESTOR_ROOM (options.ancestor_room)
+#define ANCESTOR_EXIT (options.ancestor_exit)
+#define ANCESTOR_THING (options.ancestor_thing)
+#define ANCESTOR_PLAYER (options.ancestor_player)
+#define EVENT_HANDLER (options.event_handler)
+#define MONEY (options.money_singular)
+#define MONIES (options.money_plural)
+#define WHISPER_LOUDNESS (options.whisper_loudness)
+#define PAGE_ALIASES (options.page_aliases)
 
-#define START_BONUS      (options.starting_money)
-#define PAY_CHECK        (options.paycheck)
-#define GUEST_PAY_CHECK        (options.guest_paycheck)
-#define START_QUOTA      (options.starting_quota)
-#define LOG_WIPE_PASSWD  (options.log_wipe_passwd)
-#define SUPPORT_PUEBLO   (options.support_pueblo)
+#define START_BONUS (options.starting_money)
+#define PAY_CHECK (options.paycheck)
+#define GUEST_PAY_CHECK (options.guest_paycheck)
+#define START_QUOTA (options.starting_quota)
+#define LOG_WIPE_PASSWD (options.log_wipe_passwd)
+#define SUPPORT_PUEBLO (options.support_pueblo)
 
-#define QUEUE_QUOTA      (options.player_queue_limit)
+#define QUEUE_QUOTA (options.player_queue_limit)
 
-#define MUDNAME          (options.mud_name)
-#define MUDURL           (options.mud_url)
-#define DEF_DB_IN        (options.input_db)
-#define DEF_DB_OUT       (options.output_db)
+#define MUDNAME (options.mud_name)
+#define MUDURL (options.mud_url)
+#define DEF_DB_IN (options.input_db)
+#define DEF_DB_OUT (options.output_db)
 
-#define BASE_ROOM        (options.base_room)
-#define DEFAULT_HOME     (options.default_home)
+#define BASE_ROOM (options.base_room)
+#define DEFAULT_HOME (options.default_home)
 
-#define PURGE_INTERVAL   (options.purge_interval)
-#define DBCK_INTERVAL    (options.dbck_interval)
+#define PURGE_INTERVAL (options.purge_interval)
+#define DBCK_INTERVAL (options.dbck_interval)
 #define MAX_PARENTS (options.max_parents)
 #define MAX_ZONES (30)
 #define MAX_DEPTH (options.max_depth)
@@ -493,19 +528,19 @@ typedef struct globals_table GLOBALTAB;
  * info on the current state of the MUSH in memory
  */
 struct globals_table {
-  int database_loaded;        /**< True after the database has been read. */
-  char dumpfile[200];         /**< File name to dump database to */
-  time_t start_time;          /**< MUSH start time (since process exec'd) */
-  time_t first_start_time;    /**< MUSH start time (since last shutdown) */
-  time_t last_dump_time;      /**< Time of last successful db save */
-  int reboot_count;           /**< Number of reboots so far */
-  int paranoid_dump;          /**< if paranoid, scan before dumping */
-  int paranoid_checkpt;       /**< write out an okay message every x objs */
-  long indb_flags;            /**< flags set in the input database */
-  int new_indb_version;       /**< new (as of 1.8.5) version of the input db */
-  int on_second;              /**< is it time for per-second processes? */
+  int database_loaded;     /**< True after the database has been read. */
+  char dumpfile[200];      /**< File name to dump database to */
+  time_t start_time;       /**< MUSH start time (since process exec'd) */
+  time_t first_start_time; /**< MUSH start time (since last shutdown) */
+  time_t last_dump_time;   /**< Time of last successful db save */
+  int reboot_count;        /**< Number of reboots so far */
+  int paranoid_dump;       /**< if paranoid, scan before dumping */
+  int paranoid_checkpt;    /**< write out an okay message every x objs */
+  long indb_flags;         /**< flags set in the input database */
+  int new_indb_version;    /**< new (as of 1.8.5) version of the input db */
+  int on_second;           /**< is it time for per-second processes? */
 };
 
 extern GLOBALTAB globals;
 
-#endif                          /* __PENN_CONF_H */
+#endif /* __PENN_CONF_H */

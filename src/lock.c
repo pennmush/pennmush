@@ -53,41 +53,41 @@
 /* If any lock_type ever contains the character '|', reading in locks
  * from the db will break.
  */
-lock_type Basic_Lock = "Basic";     /**< Name of basic lock */
-lock_type Enter_Lock = "Enter";     /**< Name of enter lock */
-lock_type Use_Lock = "Use";         /**< Name of use lock */
-lock_type Zone_Lock = "Zone";       /**< Name of zone lock */
-lock_type Page_Lock = "Page";       /**< Name of page lock */
-lock_type Tport_Lock = "Teleport";  /**< Name of teleport lock */
-lock_type Speech_Lock = "Speech";   /**< Name of speech lock */
-lock_type Listen_Lock = "Listen";   /**< Name of listen lock */
-lock_type Command_Lock = "Command"; /**< Name of command lock */
-lock_type Parent_Lock = "Parent";   /**< Name of parent lock */
-lock_type Link_Lock = "Link";       /**< Name of link lock */
-lock_type Leave_Lock = "Leave";     /**< Name of leave lock */
-lock_type Drop_Lock = "Drop";       /**< Name of drop lock */
-lock_type Give_Lock = "Give";       /**< Name of give lock */
-lock_type From_Lock = "From";       /**< Name of from lock */
-lock_type Pay_Lock = "Pay";         /**< Name of pay lock */
-lock_type Receive_Lock = "Receive"; /**< Name of receive lock */
-lock_type Mail_Lock = "Mail";       /**< Name of mail lock */
-lock_type Follow_Lock = "Follow";   /**< Name of follow lock */
-lock_type Examine_Lock = "Examine"; /**< Name of examine lock */
-lock_type Chzone_Lock = "Chzone";   /**< Name of chzone lock */
-lock_type Forward_Lock = "Forward"; /**< Name of forward lock */
-lock_type Control_Lock = "Control"; /**< Name of control lock */
-lock_type Dropto_Lock = "Dropto";   /**< Name of dropto lock */
-lock_type Destroy_Lock = "Destroy"; /**< Name of destroy lock */
-lock_type Interact_Lock = "Interact"; /**< Name of interaction lock */
+lock_type Basic_Lock = "Basic";             /**< Name of basic lock */
+lock_type Enter_Lock = "Enter";             /**< Name of enter lock */
+lock_type Use_Lock = "Use";                 /**< Name of use lock */
+lock_type Zone_Lock = "Zone";               /**< Name of zone lock */
+lock_type Page_Lock = "Page";               /**< Name of page lock */
+lock_type Tport_Lock = "Teleport";          /**< Name of teleport lock */
+lock_type Speech_Lock = "Speech";           /**< Name of speech lock */
+lock_type Listen_Lock = "Listen";           /**< Name of listen lock */
+lock_type Command_Lock = "Command";         /**< Name of command lock */
+lock_type Parent_Lock = "Parent";           /**< Name of parent lock */
+lock_type Link_Lock = "Link";               /**< Name of link lock */
+lock_type Leave_Lock = "Leave";             /**< Name of leave lock */
+lock_type Drop_Lock = "Drop";               /**< Name of drop lock */
+lock_type Give_Lock = "Give";               /**< Name of give lock */
+lock_type From_Lock = "From";               /**< Name of from lock */
+lock_type Pay_Lock = "Pay";                 /**< Name of pay lock */
+lock_type Receive_Lock = "Receive";         /**< Name of receive lock */
+lock_type Mail_Lock = "Mail";               /**< Name of mail lock */
+lock_type Follow_Lock = "Follow";           /**< Name of follow lock */
+lock_type Examine_Lock = "Examine";         /**< Name of examine lock */
+lock_type Chzone_Lock = "Chzone";           /**< Name of chzone lock */
+lock_type Forward_Lock = "Forward";         /**< Name of forward lock */
+lock_type Control_Lock = "Control";         /**< Name of control lock */
+lock_type Dropto_Lock = "Dropto";           /**< Name of dropto lock */
+lock_type Destroy_Lock = "Destroy";         /**< Name of destroy lock */
+lock_type Interact_Lock = "Interact";       /**< Name of interaction lock */
 lock_type MailForward_Lock = "MailForward"; /**< Name of mailforward lock */
-lock_type Take_Lock = "Take";       /**< Name of take lock */
-lock_type Open_Lock = "Open";       /**< Name of open lock */
-lock_type Filter_Lock = "Filter";   /**< Name of filter lock */
-lock_type InFilter_Lock = "InFilter"; /**< Name of infilter lock */
-lock_type DropIn_Lock = "DropIn"; /**< Name of the DropIn lock */
-lock_type Chown_Lock = "Chown"; /**< Name of Chown lock */
+lock_type Take_Lock = "Take";               /**< Name of take lock */
+lock_type Open_Lock = "Open";               /**< Name of open lock */
+lock_type Filter_Lock = "Filter";           /**< Name of filter lock */
+lock_type InFilter_Lock = "InFilter";       /**< Name of infilter lock */
+lock_type DropIn_Lock = "DropIn";           /**< Name of the DropIn lock */
+lock_type Chown_Lock = "Chown";             /**< Name of Chown lock */
 
- /** Table of lock names and permissions */
+/** Table of lock names and permissions */
 lock_list lock_types[] = {
   {"Basic", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Enter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
@@ -122,39 +122,34 @@ lock_list lock_types[] = {
   {"InFilter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"DropIn", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Chown", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
-  {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
-};
+  {NULL, TRUE_BOOLEXP, GOD, 0, NULL}};
 
 HASHTAB htab_locks;
 
- /**
-  * \verbatim
-  * Table of base attributes associated with success and failure of
-  * locks. These are the historical ones; we automatically generate
-  * such attribute names for those that aren't in this table using
-  * <lock>_LOCK`<message>
-  * \endverbatim
-  */
-const LOCKMSGINFO lock_msgs[] = {
-  {"Basic", "SUCCESS", "FAILURE"},
-  {"Enter", "ENTER", "EFAIL"},
-  {"Use", "USE", "UFAIL"},
-  {"Leave", "LEAVE", "LFAIL"},
-  {NULL, NULL, NULL}
-};
+/**
+ * \verbatim
+ * Table of base attributes associated with success and failure of
+ * locks. These are the historical ones; we automatically generate
+ * such attribute names for those that aren't in this table using
+ * <lock>_LOCK`<message>
+ * \endverbatim
+ */
+const LOCKMSGINFO lock_msgs[] = {{"Basic", "SUCCESS", "FAILURE"},
+                                 {"Enter", "ENTER", "EFAIL"},
+                                 {"Use", "USE", "UFAIL"},
+                                 {"Leave", "LEAVE", "LFAIL"},
+                                 {NULL, NULL, NULL}};
 
 /** Table of lock permissions */
-PRIV lock_privs[] = {
-  {"visual", 'v', LF_VISUAL, LF_VISUAL},
-  {"no_inherit", 'i', LF_PRIVATE, LF_PRIVATE},
-  {"no_clone", 'c', LF_NOCLONE, LF_NOCLONE},
-  {"wizard", 'w', LF_WIZARD, LF_WIZARD},
-  /*  {"owner", 'o', LF_OWNER, LF_OWNER}, */
-  {"locked", '+', LF_LOCKED, LF_LOCKED},
-  {NULL, '\0', 0, 0}
-};
+PRIV lock_privs[] = {{"visual", 'v', LF_VISUAL, LF_VISUAL},
+                     {"no_inherit", 'i', LF_PRIVATE, LF_PRIVATE},
+                     {"no_clone", 'c', LF_NOCLONE, LF_NOCLONE},
+                     {"wizard", 'w', LF_WIZARD, LF_WIZARD},
+                     /*  {"owner", 'o', LF_OWNER, LF_OWNER}, */
+                     {"locked", '+', LF_LOCKED, LF_LOCKED},
+                     {NULL, '\0', 0, 0}};
 
-StrTree lock_names;  /**< String tree of lock names */
+StrTree lock_names; /**< String tree of lock names */
 
 static void free_one_lock_list(lock_list *ll);
 static int delete_lock(dbref player, dbref thing, lock_type type);
@@ -170,7 +165,8 @@ extern int unparsing_boolexp;
 static int
 lock_compare(const void *a, const void *b)
 {
-  const lock_list *la = *(lock_list *const *) a, *lb = *(lock_list *const *) b;
+  const lock_list *la = *(lock_list * const *) a,
+                  *lb = *(lock_list * const *) b;
   return strcmp(la->type, lb->type);
 }
 
@@ -188,7 +184,8 @@ list_locks(char *buff, char **bp, const char *name)
 
   locks = mush_calloc(htab_locks.entries, sizeof(lock_list), "lock.list");
 
-  for (lk = hash_firstentry(&htab_locks); lk; lk = hash_nextentry(&htab_locks)) {
+  for (lk = hash_firstentry(&htab_locks); lk;
+       lk = hash_nextentry(&htab_locks)) {
     /* Skip those that don't match */
     if (name && !string_prefix(lk->type, name))
       continue;
@@ -227,7 +224,6 @@ do_list_locks(dbref player, const char *arg, int lc, const char *label)
   *bp = '\0';
   notify_format(player, "%s: %s", label, lc ? strlower(buff) : buff);
 }
-
 
 /** Return a list of lock flag characters.
  * \param ll pointer to a lock.
@@ -282,7 +278,6 @@ lock_flags_long(lock_list *ll)
   return privs_to_string(lock_privs, L_FLAGS(ll));
 }
 
-
 static int
 string_to_lockflag(dbref player, char const *p, privbits *flag)
 {
@@ -310,7 +305,6 @@ init_locks(void)
 
   local_locks();
 }
-
 
 /** Add a new lock to the table.
  * \param name The name of the lock
@@ -348,7 +342,6 @@ can_write_lock(dbref player, dbref thing, lock_list *lock)
     return 0;
   return 1;
 }
-
 
 static lock_list *
 next_free_lock(const void *hint)
@@ -442,7 +435,6 @@ getlockstruct_noparent(dbref thing, lock_type type)
   }
   return NULL;
 }
-
 
 /** Determine if a lock type is one of the standard types or not.
  * \param type type of lock to check.
@@ -647,7 +639,6 @@ free_locks(lock_list *ll)
   }
 }
 
-
 /** Check to see that the lock type is a valid type. Valid types are either:
  * 1) in the lock table of standard lock types,
  * 2) prefixed with "user:", a valid attr name and don't contain '|' chars
@@ -826,7 +817,6 @@ clone_locks(dbref player, dbref orig, dbref clone)
   }
 }
 
-
 /** Evaluate a lock.
  * Evaluate lock ltype on thing for player.
  * \param player dbref attempting to pass the lock.
@@ -846,7 +836,8 @@ eval_lock_with(dbref player, dbref thing, lock_type ltype, NEW_PE_INFO *pe_info)
   return eval_boolexp(player, b, thing, pe_info);
 }
 
-/* eval_lock(player,thing,ltype) is #defined to eval_lock_with(player,thing,ltype,NULL) */
+/* eval_lock(player,thing,ltype) is #defined to
+ * eval_lock_with(player,thing,ltype,NULL) */
 
 /** Evaluate a lock, saving/clearing the env (%0-%9) and qreg (%q*) first,
  ** and restoring them after.
@@ -894,14 +885,14 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   char *bp;
 
   if (def)
-    strcpy(realdef, def);       /* Because a lot of default msgs use tprintf */
+    strcpy(realdef, def); /* Because a lot of default msgs use tprintf */
   else
     realdef[0] = '\0';
 
   /* Find the lock's failure attribute, if it's there */
   for (lm = lock_msgs; lm->type; lm++) {
     if (!strcmp(lm->type, ltype))
-       break;
+      break;
   }
   if (lm->type) {
     strcpy(atr, lm->failbase);
@@ -930,7 +921,6 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   upcasestr(aatr);
   return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc, AN_SYS);
 }
-
 
 /** Determine if a lock is visual.
  * \param thing object containing the lock.
@@ -1021,10 +1011,9 @@ check_zone_lock(dbref player, dbref zone, int noisy)
     add_lock(GOD, zone, Zone_Lock, parse_boolexp(zone, "=me", Zone_Lock),
              LF_DEFAULT);
     if (noisy) {
-      notify_format(player,
-                    T
-                    ("Unlocked zone %s - automatically zone-locking to itself"),
-                    unparse_object(player, zone, AN_UNPARSE));
+      notify_format(
+        player, T("Unlocked zone %s - automatically zone-locking to itself"),
+        unparse_object(player, zone, AN_UNPARSE));
     }
   } else if (!noisy) {
     return;
@@ -1037,9 +1026,8 @@ check_zone_lock(dbref player, dbref zone, int noisy)
                     unparse_object(player, zone, AN_UNPARSE));
     } else {
       /* Probably inexact zone lock */
-      notify_format(player,
-                    T
-                    ("Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"),
+      notify_format(player, T("Warning: Zone %s may have loose zone lock. Lock "
+                              "zones to =player, not player"),
                     unparse_object(player, zone, AN_UNPARSE));
     }
   }

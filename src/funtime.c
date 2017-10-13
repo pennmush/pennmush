@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#if  defined(__GNUC__)  && !defined(__USE_XOPEN_EXTENDED)
+#if defined(__GNUC__) && !defined(__USE_XOPEN_EXTENDED)
 /* Required to get the getdate() prototype on glibc. */
 #define __USE_XOPEN_EXTENDED
 #endif
@@ -43,7 +43,7 @@ FUNCTION(fun_timefmt)
   bool need_tz_reset = 0, utc = 0;
 
   if (!args[0] || !*args[0])
-    return;                     /* No field? Bad user. */
+    return; /* No field? Bad user. */
 
   if (nargs >= 2 && args[1] && *args[1]) {
 
@@ -159,10 +159,7 @@ FUNCTION(fun_time)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_secs)
-{
-  safe_time_t(mudtime, buff, bp);
-}
+FUNCTION(fun_secs) { safe_time_t(mudtime, buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_convsecs)
@@ -216,20 +213,17 @@ FUNCTION(fun_convsecs)
 
 /** Descriptions of various time periods. */
 struct timeperiods {
-  char lc; /**< The lower-case letter representing the time ('h' for hours, etc) */
-  char uc; /**< The upper-case letter representing the time ('H' for hours, etc) */
-  int seconds; /**< Number of seconds in the time period (3600 for hours, etc) */
+  char
+    lc; /**< The lower-case letter representing the time ('h' for hours, etc) */
+  char
+    uc; /**< The upper-case letter representing the time ('H' for hours, etc) */
+  int
+    seconds; /**< Number of seconds in the time period (3600 for hours, etc) */
 };
 
 struct timeperiods TIMEPERIODS[] = {
-  {'s', 'S', 1},
-  {'m', 'M', 60},
-  {'h', 'H', 3600},
-  {'d', 'D', 86400},
-  {'w', 'W', 604800},
-  {'y', 'Y', 31536000},
-  {'\0', '\0', 0}
-};
+  {'s', 'S', 1},      {'m', 'M', 60},       {'h', 'H', 3600}, {'d', 'D', 86400},
+  {'w', 'W', 604800}, {'y', 'Y', 31536000}, {'\0', '\0', 0}};
 
 enum {
   SECS_SECOND = 0,
@@ -353,8 +347,8 @@ etime_fmt(char *buf, int secs, int len)
     secs = r.rem;
   }
 
-  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds",
-          years, weeks, days, hours, mins, secs);
+  sprintf(buf, "%2dy %2dw %2dd %2dh %2dm %2ds", years, weeks, days, hours, mins,
+          secs);
 
   return squish_time(buf, len);
 }
@@ -393,8 +387,6 @@ FUNCTION(fun_etime)
   safe_str(etime_fmt(tbuf, secs, len), buff, bp);
 }
 
-
-
 /* ARGSUSED */
 FUNCTION(fun_etimefmt)
 {
@@ -408,7 +400,6 @@ FUNCTION(fun_etimefmt)
   secs = strtoul(args[1], NULL, 10);
 
   do_timestring(buff, bp, args[0], secs);
-
 }
 
 /* ARGSUSED */
@@ -424,7 +415,8 @@ FUNCTION(fun_stringsecs)
 /** Convert an elapsed time string (3d 2h 1m 10s) to seconds.
  * \param input a time string.
  * \param secs pointer to an int to fill with number of seconds.
- * \param default_minutes if a number is given with no type, assume minutes not seconds?
+ * \param default_minutes if a number is given with no type, assume minutes not
+ * seconds?
  * \retval 1 success.
  * \retval 0 failure.
  */
@@ -564,8 +556,8 @@ do_convtime_gd(const char *str, struct tm *ttm)
 }
 #else
 int
-do_convtime_gd(const char *str __attribute__ ((__unused__)), struct tm *ttm
-               __attribute__ ((__unused__)))
+do_convtime_gd(const char *str __attribute__((__unused__)),
+               struct tm *ttm __attribute__((__unused__)))
 {
   return 0;
 }
@@ -574,18 +566,8 @@ do_convtime_gd(const char *str __attribute__ ((__unused__)), struct tm *ttm
 /* do_convtime for systems without getdate(). Will probably break if in
          a non en_US locale */
 static const char *month_table[] = {
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 };
 
 /** Convert a time string to a struct tm, without getdate().
@@ -625,15 +607,16 @@ do_convtime(const char *mystr, struct tm *ttm)
   *q++ = '\0';
   if (strlen(p) != 3)
     return 0;
-  for (i = 0; (i < 12) && strcmp(month_table[i], p); i++) ;
-  if (i == 12)                  /* not found */
+  for (i = 0; (i < 12) && strcmp(month_table[i], p); i++)
+    ;
+  if (i == 12) /* not found */
     return 0;
   else
     ttm->tm_mon = i;
 
   /* get the day of month */
   p = q;
-  while (isspace(*p))           /* skip leading space */
+  while (isspace(*p)) /* skip leading space */
     p++;
   if (!(q = strchr(p, ' ')))
     return 0;
@@ -689,9 +672,7 @@ FUNCTION(fun_convtime)
     }
   }
 
-  if (do_convtime(args[0], &ttm)
-      || do_convtime_gd(args[0], &ttm)
-    ) {
+  if (do_convtime(args[0], &ttm) || do_convtime_gd(args[0], &ttm)) {
     if (save_tz)
       save_and_set_tz(tz);
     safe_integer(mktime(&ttm), buff, bp);
@@ -703,7 +684,7 @@ FUNCTION(fun_convtime)
 }
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
+#pragma warning(disable : 4761) /* NJG: disable warning re conversion */
 #endif
 /* ARGSUSED */
 FUNCTION(fun_isdaylight)
@@ -922,5 +903,5 @@ do_timestring(char *buff, char **bp, const char *format, unsigned long secs)
 }
 
 #ifdef WIN32
-#pragma warning( default : 4761)        /* NJG: enable warning re conversion */
+#pragma warning(default : 4761) /* NJG: enable warning re conversion */
 #endif

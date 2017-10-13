@@ -51,8 +51,8 @@ static int load_chatdb_oldstyle(PENNFILE *fp);
 static int load_channel(PENNFILE *fp, CHAN *ch);
 static int load_chanusers(PENNFILE *fp, CHAN *ch);
 static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags,
-                                int restarting);
-static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting);
+                                bool restart);
+static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch, bool restart);
 static void insert_channel(CHAN **ch);
 static void remove_channel(CHAN *ch);
 static void insert_obj_chan(dbref who, CHAN **ch);
@@ -84,33 +84,33 @@ void do_chan_set_mogrifier(dbref player, const char *name, const char *newobj);
 char *mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs,
               const char *argv[], const char *orig);
 
-static const char chan_speak_lock[] = "ChanSpeakLock";  /**< Name of speak lock */
-static const char chan_join_lock[] = "ChanJoinLock";    /**< Name of join lock */
-static const char chan_mod_lock[] = "ChanModLock";      /**< Name of modify lock */
-static const char chan_see_lock[] = "ChanSeeLock";      /**< Name of see lock */
-static const char chan_hide_lock[] = "ChanHideLock";    /**< Name of hide lock */
+static const char chan_speak_lock[] =
+  "ChanSpeakLock";                                   /**< Name of speak lock */
+static const char chan_join_lock[] = "ChanJoinLock"; /**< Name of join lock */
+static const char chan_mod_lock[] = "ChanModLock";   /**< Name of modify lock */
+static const char chan_see_lock[] = "ChanSeeLock";   /**< Name of see lock */
+static const char chan_hide_lock[] = "ChanHideLock"; /**< Name of hide lock */
 
 char *parse_chat_alias(dbref player, char *command);
 
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
 
-#define YES 1     /**< An affirmative. */
-#define NO 0      /**< A negative. */
-#define ERR -1    /**< An error. Clever, eh? */
+#define YES 1  /**< An affirmative. */
+#define NO 0   /**< A negative. */
+#define ERR -1 /**< An error. Clever, eh? */
 
 /** Wrapper for insert_user() that generates a new CHANUSER and inserts it */
-#define insert_user_by_dbref(who,chan) \
-  insert_user(new_user(who, ChanUsers(chan)),chan)
+#define insert_user_by_dbref(who, chan)                                        \
+  insert_user(new_user(who, ChanUsers(chan)), chan)
 /** Wrapper for remove_user() that searches for the CHANUSER to remove */
-#define remove_user_by_dbref(who,chan) \
-        remove_user(onchannel(who,chan),chan)
+#define remove_user_by_dbref(who, chan) remove_user(onchannel(who, chan), chan)
 
-int num_channels;  /**< Number of channels defined */
+int num_channels; /**< Number of channels defined */
 
-CHAN *channels;    /**< Pointer to channel list */
+CHAN *channels; /**< Pointer to channel list */
 
-extern int rhs_present;         /* from command.c */
+extern int rhs_present; /* from command.c */
 
 /* Player must come before Admin and Wizard, otherwise @chan/what
  * will fail to report when Admin channels are also set Player */
@@ -128,17 +128,13 @@ static PRIV priv_table[] = {
   {"NoNames", 'N', CHANNEL_NONAMES, CHANNEL_NONAMES},
   {"NoCemit", 'C', CHANNEL_NOCEMIT, CHANNEL_NOCEMIT},
   {"Interact", 'I', CHANNEL_INTERACT, CHANNEL_INTERACT},
-  {NULL, '\0', 0, 0}
-};
+  {NULL, '\0', 0, 0}};
 
-static PRIV chanuser_priv[] = {
-  {"Quiet", 'Q', CU_QUIET, CU_QUIET},
-  {"Hide", 'H', CU_HIDE, CU_HIDE},
-  {"Gag", 'G', CU_GAG, CU_GAG},
-  {"Combine", 'C', CU_COMBINE, CU_COMBINE},
-  {NULL, '\0', 0, 0}
-};
-
+static PRIV chanuser_priv[] = {{"Quiet", 'Q', CU_QUIET, CU_QUIET},
+                               {"Hide", 'H', CU_HIDE, CU_HIDE},
+                               {"Gag", 'G', CU_GAG, CU_GAG},
+                               {"Combine", 'C', CU_COMBINE, CU_COMBINE},
+                               {NULL, '\0', 0, 0}};
 
 /** Get a player's CHANUSER entry if they're on a channel.
  * This function checks to see if a given player is on a given channel.
@@ -160,52 +156,51 @@ onchannel(dbref who, CHAN *ch)
   return NULL;
 }
 
-
 /** A macro to test if a channel exists and, if not, to notify. */
-#define test_channel_fun(player,name,chan,buff,bp) \
-   do { \
-    chan = NULL; \
-    switch (find_channel(name,&chan,player)) { \
-    case CMATCH_NONE: \
-      notify(player, T ("CHAT: I don't recognize that channel.")); \
-      if (buff) \
-        safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp); \
-      return; \
-    case CMATCH_AMBIG: \
-      notify(player, T("CHAT: I don't know which channel you mean.")); \
-      list_partial_matches(player, name, PMATCH_ALL); \
-      if (buff) \
-        safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp); \
-      return; \
-    case CMATCH_EXACT: \
-    case CMATCH_PARTIAL: \
-    default: \
-      break; \
-     } \
-    } while (0)
+#define test_channel_fun(player, name, chan, buff, bp)                         \
+  do {                                                                         \
+    chan = NULL;                                                               \
+    switch (find_channel(name, &chan, player)) {                               \
+    case CMATCH_NONE:                                                          \
+      notify(player, T("CHAT: I don't recognize that channel."));              \
+      if (buff)                                                                \
+        safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);                          \
+      return;                                                                  \
+    case CMATCH_AMBIG:                                                         \
+      notify(player, T("CHAT: I don't know which channel you mean."));         \
+      list_partial_matches(player, name, PMATCH_ALL);                          \
+      if (buff)                                                                \
+        safe_str(T("#-2 AMBIGUOUS CHANNEL NAME"), buff, bp);                   \
+      return;                                                                  \
+    case CMATCH_EXACT:                                                         \
+    case CMATCH_PARTIAL:                                                       \
+    default:                                                                   \
+      break;                                                                   \
+    }                                                                          \
+  } while (0)
 
-#define test_channel(player,name,chan) test_channel_fun(player,name,chan,NULL,NULL);
-
+#define test_channel(player, name, chan)                                       \
+  test_channel_fun(player, name, chan, NULL, NULL);
 
 /** A macro to test if a channel exists and player's on it, and,
  * if not, to notify. */
-#define test_channel_on(player,name,chan) \
-   do { \
-    chan = NULL; \
-    switch (find_channel_partial_on(name,&chan,player)) { \
-    case CMATCH_NONE: \
-      notify(player, T ("CHAT: I don't recognize that channel.")); \
-      return; \
-    case CMATCH_AMBIG: \
-      notify(player, T("CHAT: I don't know which channel you mean.")); \
-      list_partial_matches(player, name, PMATCH_ALL); \
-      return; \
-    case CMATCH_EXACT: \
-    case CMATCH_PARTIAL: \
-    default: \
-      break; \
-     } \
-    } while (0)
+#define test_channel_on(player, name, chan)                                    \
+  do {                                                                         \
+    chan = NULL;                                                               \
+    switch (find_channel_partial_on(name, &chan, player)) {                    \
+    case CMATCH_NONE:                                                          \
+      notify(player, T("CHAT: I don't recognize that channel."));              \
+      return;                                                                  \
+    case CMATCH_AMBIG:                                                         \
+      notify(player, T("CHAT: I don't know which channel you mean."));         \
+      list_partial_matches(player, name, PMATCH_ALL);                          \
+      return;                                                                  \
+    case CMATCH_EXACT:                                                         \
+    case CMATCH_PARTIAL:                                                       \
+    default:                                                                   \
+      break;                                                                   \
+    }                                                                          \
+  } while (0)
 
 /*----------------------------------------------------------
  * Loading and saving the chatdb
@@ -275,12 +270,12 @@ extern char db_timestamp[];
 
 /** Load the chat database from a file.
  * \param fp pointer to file to read from.
- * \param restarting Is this an \@shutdown/reboot?
+ * \param restart Is this an \@shutdown/reboot?
  * \retval 1 success
  * \retval 0 failure
  */
 int
-load_chatdb(PENNFILE *fp, int restarting)
+load_chatdb(PENNFILE *fp, bool restart)
 {
   int i, flags;
   CHAN *ch;
@@ -308,8 +303,9 @@ load_chatdb(PENNFILE *fp, int restarting)
   db_read_this_labeled_string(fp, "savedtime", &chat_timestamp);
 
   if (strcmp(chat_timestamp, db_timestamp))
-    do_rawlog(LT_ERR,
-              "CHAT: warning: chatdb and game db were saved at different times!");
+    do_rawlog(
+      LT_ERR,
+      "CHAT: warning: chatdb and game db were saved at different times!");
 
   /* How many channels? */
   db_read_this_labeled_int(fp, "channels", &num_channels);
@@ -327,7 +323,7 @@ load_chatdb(PENNFILE *fp, int restarting)
       do_rawlog(LT_ERR, "CHAT: Unable to allocate memory for channel %d!", i);
       return 0;
     }
-    if (!load_labeled_channel(fp, ch, flags, restarting)) {
+    if (!load_labeled_channel(fp, ch, flags, restart)) {
       do_rawlog(LT_ERR, "CHAT: Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
@@ -344,7 +340,6 @@ load_chatdb(PENNFILE *fp, int restarting)
 
   return 1;
 }
-
 
 /* Malloc memory for a new channel, and initialize it */
 static CHAN *
@@ -375,8 +370,6 @@ new_channel(void)
   ChanBufferQ(ch) = NULL;
   return ch;
 }
-
-
 
 /* Malloc memory for a new user, and initialize it */
 static CHANUSER *
@@ -457,7 +450,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
  * successful, 0 otherwise.
  */
 static int
-load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
+load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, bool restart)
 {
   char *tmp;
   int i;
@@ -501,10 +494,9 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags, int restarting)
   ChanMaxUsers(ch) = ChanNumUsers(ch);
   ChanUsers(ch) = NULL;
   if (ChanNumUsers(ch) > 0)
-    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch, restarting);
+    ChanNumUsers(ch) = load_labeled_chanusers(fp, ch, restart);
   return 1;
 }
-
 
 /* Load the *channel's user list. Return number of users on success, or 0 */
 static int
@@ -530,8 +522,8 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
         num++;
     } else {
       /* But be sure to read (and discard) the player's info */
-      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s",
-             player, ChanName(ch));
+      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s", player,
+             ChanName(ch));
       (void) getref(fp);
       (void) getstring_noalloc(fp);
     }
@@ -541,7 +533,7 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
 
 /* Load the *channel's user list. Return number of users on success, or 0 */
 static int
-load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
+load_labeled_chanusers(PENNFILE *fp, CHAN *ch, bool restart)
 {
   int i, num = 0, n;
   char *tmp;
@@ -553,7 +545,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {
       user = new_user(player, ChanUsers(ch));
       db_read_this_labeled_int(fp, "flags", &n);
-      CUtype(user) = (restarting ? n : n & ~CU_GAG);
+      CUtype(user) = (restart ? n : n & ~CU_GAG);
       db_read_this_labeled_string(fp, "title", &tmp);
       if (tmp && *tmp)
         CUtitle(user) = mush_strdup(tmp, "chan_user.title");
@@ -564,8 +556,8 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
         num++;
     } else {
       /* But be sure to read (and discard) the player's info */
-      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s",
-             player, ChanName(ch));
+      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s", player,
+             ChanName(ch));
       db_read_this_labeled_int(fp, "flags", &n);
       db_read_this_labeled_string(fp, "title", &tmp);
       ChanNumUsers(ch) -= 1;
@@ -573,7 +565,6 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch, int restarting)
   }
   return num;
 }
-
 
 /* Insert the channel onto the list of channels, sorted by name */
 static void
@@ -631,7 +622,8 @@ remove_channel(CHAN *ch)
     return;
   }
   /* Otherwise, find the channel before this one */
-  for (p = channels; p->next && (p->next != ch); p = p->next) ;
+  for (p = channels; p->next && (p->next != ch); p = p->next)
+    ;
 
   if (p->next) {
     p->next = ch->next;
@@ -713,7 +705,8 @@ remove_obj_chan(dbref who, CHAN *ch)
     return;
   }
   /* Otherwise, find the channel before this one */
-  for (; p->next && (p->next->chan != ch); p = p->next) ;
+  for (; p->next && (p->next->chan != ch); p = p->next)
+    ;
 
   if (p->next) {
     q = p->next;
@@ -740,7 +733,6 @@ remove_all_obj_chan(dbref thing)
   return;
 }
 
-
 static CHANLIST *
 new_chanlist(const void *hint)
 {
@@ -759,7 +751,6 @@ free_chanlist(CHANLIST *cl)
   slab_free(chanlist_slab, cl);
 }
 
-
 /* Insert the user onto the channel's list, sorted by the user's name */
 static int
 insert_user(CHANUSER *user, CHAN *ch)
@@ -777,10 +768,10 @@ insert_user(CHANUSER *user, CHAN *ch)
     ChanUsers(ch) = user;
   } else {
     /* Otherwise, find which user this user should be inserted after */
-    for (;
-         p->next
-         && (strcasecoll(Name(CUdbref(p->next)), Name(CUdbref(user))) <= 0);
-         p = p->next) ;
+    for (; p->next &&
+           (strcasecoll(Name(CUdbref(p->next)), Name(CUdbref(user))) <= 0);
+         p = p->next)
+      ;
     if (CUdbref(p) == CUdbref(user)) {
       /* Don't add the same user twice! */
       slab_free(chanuser_slab, user);
@@ -813,7 +804,8 @@ remove_user(CHANUSER *u, CHAN *ch)
     free_user(u);
   } else {
     /* Otherwise, find the user before this one */
-    for (; p->next && (p->next != u); p = p->next) ;
+    for (; p->next && (p->next != u); p = p->next)
+      ;
 
     if (p->next) {
       p->next = u->next;
@@ -827,7 +819,6 @@ remove_user(CHANUSER *u, CHAN *ch)
   ChanNumUsers(ch)--;
   return 1;
 }
-
 
 /** Write the chat database to disk.
  * \param fp pointer to file to write to.
@@ -987,7 +978,6 @@ find_channel(const char *name, CHAN **chan, dbref player)
   return CMATCH_AMBIG;
 }
 
-
 /** Attempt to match a channel name for a player.
  * Given name and a chan pointer, set chan pointer to point to
  * channel if found (NULL otherwise), and return an indication
@@ -1058,9 +1048,8 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
   for (p = channels; p; p = p->next) {
     if (!Chan_Can_See(p, player))
       continue;
-    if ((type == PMATCH_ALL) || ((type == PMATCH_ON)
-                                 ? ! !onchannel(player, p)
-                                 : !onchannel(player, p))) {
+    if ((type == PMATCH_ALL) || ((type == PMATCH_ON) ? !!onchannel(player, p)
+                                                     : !onchannel(player, p))) {
       strcpy(cleanp, remove_markup(ChanName(p), NULL));
       if (string_prefix(cleanp, cleanname)) {
         safe_chr(' ', buff, &bp);
@@ -1071,11 +1060,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
 
   safe_chr('\0', buff, &bp);
   notify(player, buff);
-
 }
-
-
-
 
 /** Attempt to match a channel name for a player.
  * Given name and a chan pointer, set chan pointer to point to
@@ -1223,8 +1208,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
   test_channel(player, name, chan);
   if (!Chan_Can_See(chan, player)) {
     if (onchannel(player, chan))
-      notify_format(player,
-                    T("CHAT: You can't do that with channel <%s>."),
+      notify_format(player, T("CHAT: You can't do that with channel <%s>."),
                     ChanName(chan));
     else
       notify(player, T("CHAT: I don't recognize that channel."));
@@ -1254,8 +1238,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
   }
   if (!strcasecmp("on", com) || !strcasecmp("join", com)) {
     if (!Chan_Ok_Type(chan, victim)) {
-      notify_format(player,
-                    T("Sorry, wrong type of thing for channel <%s>."),
+      notify_format(player, T("Sorry, wrong type of thing for channel <%s>."),
                     ChanName(chan));
       return;
     }
@@ -1269,44 +1252,35 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     }
     /* Is victim already on the channel? */
     if (onchannel(victim, chan)) {
-      notify_format(player,
-                    T("%s is already on channel <%s>."), AName(victim, AN_SYS,
-                                                               NULL),
-                    ChanName(chan));
+      notify_format(player, T("%s is already on channel <%s>."),
+                    AName(victim, AN_SYS, NULL), ChanName(chan));
       return;
     }
     /* Does victim pass the joinlock? */
     if (!Chan_Can_Join(chan, victim)) {
       if (Wizard(player)) {
         /* Wizards can override join locks */
-        notify(player,
-               T
-               ("CHAT: Warning: Target does not meet channel join permissions! (joining anyway)"));
+        notify(player, T("CHAT: Warning: Target does not meet channel join "
+                         "permissions! (joining anyway)"));
       } else {
         notify(player, T("Permission to join denied."));
         return;
       }
     }
     if (insert_user_by_dbref(victim, chan)) {
-      notify_format(victim,
-                    T("CHAT: %s joins you to channel <%s>."), AName(player,
-                                                                    AN_SYS,
-                                                                    NULL),
-                    ChanName(chan));
+      notify_format(victim, T("CHAT: %s joins you to channel <%s>."),
+                    AName(player, AN_SYS, NULL), ChanName(chan));
       notify_format(player, T("CHAT: You join %s to channel <%s>."),
                     AName(victim, AN_SYS, NULL), ChanName(chan));
       onchannel(victim, chan);
       ChanNumUsers(chan)++;
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
-        channel_send(chan, victim,
-                     CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+        channel_send(chan, victim, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
                      T("has joined this channel."));
       }
     } else {
-      notify_format(player,
-                    T("%s is already on channel <%s>."), AName(victim, AN_SYS,
-                                                               NULL),
-                    ChanName(chan));
+      notify_format(player, T("%s is already on channel <%s>."),
+                    AName(victim, AN_SYS, NULL), ChanName(chan));
     }
     return;
   } else if (!strcasecmp("off", com) || !strcasecmp("leave", com)) {
@@ -1322,15 +1296,12 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     u = onchannel(victim, chan);
     if (remove_user(u, chan)) {
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
-        channel_send(chan, victim,
-                     CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+        channel_send(chan, victim, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
                      T("has left this channel."));
       }
-      notify_format(victim,
-                    T("CHAT: %s removes you from channel <%s>."),
+      notify_format(victim, T("CHAT: %s removes you from channel <%s>."),
                     AName(player, AN_SYS, NULL), ChanName(chan));
-      notify_format(player,
-                    T("CHAT: You remove %s from channel <%s>."),
+      notify_format(player, T("CHAT: You remove %s from channel <%s>."),
                     AName(victim, AN_SYS, NULL), ChanName(chan));
     } else {
       notify_format(player, T("%s is not on channel <%s>."),
@@ -1373,8 +1344,7 @@ channel_join_self(dbref player, const char *name)
     return;
   }
   if (!Chan_Ok_Type(chan, player)) {
-    notify_format(player,
-                  T("Sorry, wrong type of thing for channel <%s>."),
+    notify_format(player, T("Sorry, wrong type of thing for channel <%s>."),
                   ChanName(chan));
     return;
   }
@@ -1382,9 +1352,8 @@ channel_join_self(dbref player, const char *name)
   if (!Chan_Can_Join(chan, player)) {
     if (Wizard(player)) {
       /* Wizards can override join locks */
-      notify(player,
-             T
-             ("CHAT: Warning: You don't meet channel join permissions! (joining anyway)"));
+      notify(player, T("CHAT: Warning: You don't meet channel join "
+                       "permissions! (joining anyway)"));
     } else {
       notify(player, T("Permission to join denied."));
       return;
@@ -1395,15 +1364,12 @@ channel_join_self(dbref player, const char *name)
     onchannel(player, chan);
     ChanNumUsers(chan)++;
     if (!Channel_Quiet(chan) && !DarkLegal(player))
-      channel_send(chan, player,
-                   CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+      channel_send(chan, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
                    T("has joined this channel."));
   } else {
     /* Should never happen */
-    notify_format(player,
-                  T("%s is already on channel <%s>."), AName(player, AN_SYS,
-                                                             NULL),
-                  ChanName(chan));
+    notify_format(player, T("%s is already on channel <%s>."),
+                  AName(player, AN_SYS, NULL), ChanName(chan));
   }
 }
 
@@ -1419,8 +1385,8 @@ channel_leave_self(dbref player, const char *name)
   }
   switch (find_channel_partial_on(name, &chan, player)) {
   case CMATCH_NONE:
-    if (find_channel_partial_off(name, &chan, player)
-        && Chan_Can_See(chan, player))
+    if (find_channel_partial_off(name, &chan, player) &&
+        Chan_Can_See(chan, player))
       notify_format(player, T("CHAT: You are not on channel <%s>."),
                     ChanName(chan));
     else
@@ -1436,8 +1402,7 @@ channel_leave_self(dbref player, const char *name)
   u = onchannel(player, chan);
   if (remove_user(u, chan)) {
     if (!Channel_Quiet(chan) && !DarkLegal(player))
-      channel_send(chan, player,
-                   CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+      channel_send(chan, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
                    T("has left this channel."));
     notify_format(player, T("CHAT: You leave channel <%s>."), ChanName(chan));
   } else {
@@ -1531,12 +1496,11 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
     if (!ChanUseFirstMatch(player)) {
       notify(player, T("CHAT: I don't know which channel you mean."));
       list_partial_matches(player, name, PMATCH_ON);
-      notify(player,
-             T
-             ("CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."));
+      notify(player, T("CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag "
+                       "on yourself."));
       return 1;
     }
-    /* FALLTHRU */
+  /* FALLTHRU */
   case CMATCH_EXACT:
   case CMATCH_PARTIAL:
     do_chat(player, c, msg);
@@ -1567,8 +1531,7 @@ do_chat(dbref player, CHAN *chan, const char *arg1)
 
   if (!Chan_Ok_Type(chan, player)) {
     notify_format(player,
-                  T
-                  ("Sorry, you're not the right type to be on channel <%s>."),
+                  T("Sorry, you're not the right type to be on channel <%s>."),
                   ChanName(chan));
     return;
   }
@@ -1604,7 +1567,7 @@ do_chat(dbref player, CHAN *chan, const char *arg1)
   switch (*arg1) {
   case SEMI_POSE_TOKEN:
     type = ';';
-    /* FALLTHRU */
+  /* FALLTHRU */
   case POSE_TOKEN:
     arg1 = arg1 + 1;
     channel_send(chan, player, type == ';' ? CB_SEMIPOSE : CB_POSE, arg1);
@@ -1663,8 +1626,7 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     override_checks = 1;
   if (!override_checks && !Chan_Ok_Type(chan, player)) {
     notify_format(player,
-                  T
-                  ("Sorry, you're not the right type to be on channel <%s>."),
+                  T("Sorry, you're not the right type to be on channel <%s>."),
                   ChanName(chan));
     return;
   }
@@ -1694,7 +1656,7 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     cb_flags |= CB_QUIET;
 
   if (!(flags & PEMIT_SPOOF))
-    cb_flags |= CB_NOSPOOF;     /* Show NOSPOOF headers */
+    cb_flags |= CB_NOSPOOF; /* Show NOSPOOF headers */
 
   channel_send(chan, player, cb_flags, msg);
   ChanNumMsgs(chan)++;
@@ -1708,7 +1670,8 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the channel.
- * \param perms the permissions to set on an added/priv'd channel, the newname for a renamed channel, or on/off for a quieted channel.
+ * \param perms the permissions to set on an added/priv'd channel, the newname
+ * for a renamed channel, or on/off for a quieted channel.
  * \param flag what to do with the channel.
  */
 void
@@ -1847,10 +1810,10 @@ do_chan_admin(dbref player, char *name, const char *perms,
       mush_free(ChanName(chan), "channel.name");
     ChanName(chan) = mush_strdup(perms, "channel.name");
     insert_channel(&chan);
-    snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."),
-             old, ChanName(chan));
-    channel_send(chan, player,
-                 CB_CHECKQUIET | CB_PRESENCE | CB_POSE, announcebuff);
+    snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."), old,
+             ChanName(chan));
+    channel_send(chan, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+                 announcebuff);
     notify(player, T("Channel renamed."));
     break;
   case CH_ADMIN_PRIV:
@@ -1868,14 +1831,14 @@ do_chan_admin(dbref player, char *name, const char *perms,
     if (type & CHANNEL_DISABLED)
       notify(player, T("Warning: channel will be disabled."));
     if (type == ChanType(chan)) {
-      notify_format(player,
-                    T
-                    ("Invalid or same permissions on channel <%s>. No changes made."),
-                    ChanName(chan));
+      notify_format(
+        player,
+        T("Invalid or same permissions on channel <%s>. No changes made."),
+        ChanName(chan));
     } else {
       ChanType(chan) = type;
-      notify_format(player,
-                    T("Permissions on channel <%s> changed."), ChanName(chan));
+      notify_format(player, T("Permissions on channel <%s> changed."),
+                    ChanName(chan));
     }
     break;
   }
@@ -1884,7 +1847,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
 /** Is n a valid name for a channel? If unique is specified, see if n is a
  * a valid name to rename that channel to.
  * \param n name to check
- * \param unique channel being renamed, or NULL if we're checking validity 
+ * \param unique channel being renamed, or NULL if we're checking validity
  *        for a new channel
  * \return an ok_chan_name enum
  */
@@ -1927,13 +1890,12 @@ ok_channel_name(const char *n, CHAN *unique)
       else if (check != unique)
         return NAME_NOT_UNIQUE; /* Name already in use by another channel */
       else
-        return NAME_OK;         /* Renaming the channel to its current name is fine */
+        return NAME_OK; /* Renaming the channel to its current name is fine */
     }
   }
 
-  return NAME_OK;               /* Name is valid and not in use */
+  return NAME_OK; /* Name is valid and not in use */
 }
-
 
 /** Modify a user's settings on a channel.
  * \verbatim
@@ -1971,20 +1933,24 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     silent = 1;
     switch (flag) {
     case CU_QUIET:
-      notify(player, setting ? T("All channels have been muted.")
-             : T("All channels have been unmuted."));
+      notify(player,
+             setting ? T("All channels have been muted.")
+                     : T("All channels have been unmuted."));
       break;
     case CU_HIDE:
-      notify(player, setting ? T("You hide on all the channels you can.")
-             : T("You unhide on all channels."));
+      notify(player,
+             setting ? T("You hide on all the channels you can.")
+                     : T("You unhide on all channels."));
       break;
     case CU_GAG:
-      notify(player, setting ? T("All channels have been gagged.")
-             : T("All channels have been ungagged."));
+      notify(player,
+             setting ? T("All channels have been gagged.")
+                     : T("All channels have been ungagged."));
       break;
     case CU_COMBINE:
-      notify(player, setting ? T("All channels have been combined.")
-             : T("All channels have been uncombined."));
+      notify(player,
+             setting ? T("All channels have been combined.")
+                     : T("All channels have been uncombined."));
       break;
     }
   } else {
@@ -2015,17 +1981,16 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
       if (setting) {
         CUtype(u) |= CU_QUIET;
         if (!silent)
-          notify_format(player,
-                        T
-                        ("You will no longer hear connection messages on channel <%s>."),
-                        ChanName(c));
+          notify_format(
+            player,
+            T("You will no longer hear connection messages on channel <%s>."),
+            ChanName(c));
       } else {
         CUtype(u) &= ~CU_QUIET;
         if (!silent)
-          notify_format(player,
-                        T
-                        ("You will now hear connection messages on channel <%s>."),
-                        ChanName(c));
+          notify_format(
+            player, T("You will now hear connection messages on channel <%s>."),
+            ChanName(c));
       }
       break;
 
@@ -2041,15 +2006,13 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
           CUtype(u) |= CU_HIDE;
           if (!silent)
             notify_format(player,
-                          T
-                          ("You no longer appear on channel <%s>'s who list."),
+                          T("You no longer appear on channel <%s>'s who list."),
                           ChanName(c));
         }
       } else {
         CUtype(u) &= ~CU_HIDE;
         if (!silent)
-          notify_format(player,
-                        T("You now appear on channel <%s>'s who list."),
+          notify_format(player, T("You now appear on channel <%s>'s who list."),
                         ChanName(c));
       }
       break;
@@ -2059,8 +2022,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
         CUtype(u) |= CU_GAG;
         if (!silent)
           notify_format(player,
-                        T
-                        ("You will no longer hear messages on channel <%s>."),
+                        T("You will no longer hear messages on channel <%s>."),
                         ChanName(c));
       } else {
         CUtype(u) &= ~CU_GAG;
@@ -2075,16 +2037,14 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
       if (setting) {
         CUtype(u) |= CU_COMBINE;
         if (!silent)
-          notify_format(player,
-                        T
-                        ("Connect messages on channel <%s> will now be combined with others."),
+          notify_format(player, T("Connect messages on channel <%s> will now "
+                                  "be combined with others."),
                         ChanName(c));
       } else {
         CUtype(u) &= ~CU_COMBINE;
         if (!silent)
-          notify_format(player,
-                        T
-                        ("Connect messages on channel <%s> will no longer be combined with others."),
+          notify_format(player, T("Connect messages on channel <%s> will no "
+                                  "longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -2146,10 +2106,10 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
   scan = title;
-  WALK_ANSI_STRING(scan) {
+  WALK_ANSI_STRING(scan)
+  {
     /* Stomp newlines and other weird whitespace */
-    if ((isspace(*scan) && (*scan != ' '))
-        || (*scan == BEEP_CHAR)) {
+    if ((isspace(*scan) && (*scan != ' ')) || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
       return;
     }
@@ -2190,9 +2150,8 @@ do_channel_list(dbref player, const char *partname, int types)
   if (!(types & CHANLIST_QUIET)) {
     if (SUPPORT_PUEBLO)
       notify_noenter(player, open_tag("SAMP"));
-    notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s",
-                  T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
-                  T("Buf"));
+    notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s", T("Name"),
+                  T("Users"), T("Msgs"), T("Chan Type"), T("Status"), T("Buf"));
   } else {
     shortoutput = mush_malloc(BUFFER_LEN, "chan_list");
     sp = shortoutput;
@@ -2217,8 +2176,9 @@ do_channel_list(dbref player, const char *partname, int types)
       continue;
     }
     if (SUPPORT_PUEBLO)
-      snprintf(numusers, BUFFER_LEN,
-               "%c%cA XCH_CMD=\"@channel/who %s\" XCH_HINT=\"See who's on this channel now\"%c%5d%c%c/A%c",
+      snprintf(numusers, BUFFER_LEN, "%c%cA XCH_CMD=\"@channel/who %s\" "
+                                     "XCH_HINT=\"See who's on this channel "
+                                     "now\"%c%5d%c%c/A%c",
                TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
                TAG_START, MARKUP_HTML, TAG_END);
     else
@@ -2236,29 +2196,25 @@ do_channel_list(dbref player, const char *partname, int types)
     if (numblanks > 0)
       safe_fill(' ', numblanks, dispname, &dp);
     *dp = '\0';
-    notify_format(player,
-                  "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
-                  dispname, numusers, ChanNumMsgs(c),
-                  Channel_Disabled(c) ? 'D' : '-',
-                  Channel_Player(c) ? 'P' : '-',
-                  Channel_Object(c) ? 'T' : '-',
-                  Channel_Admin(c) ? 'A' : (Channel_Wizard(c) ? 'W' : '-'),
-                  Channel_Quiet(c) ? 'Q' : '-',
-                  Channel_CanHide(c) ? 'H' : '-', Channel_Open(c) ? 'o' : '-',
-                  /* Locks */
-                  ChanJoinLock(c) != TRUE_BOOLEXP ? 'j' : '-',
-                  ChanSpeakLock(c) != TRUE_BOOLEXP ? 's' : '-',
-                  ChanModLock(c) != TRUE_BOOLEXP ? 'm' : '-',
-                  ChanSeeLock(c) != TRUE_BOOLEXP ? 'v' : '-',
-                  ChanHideLock(c) != TRUE_BOOLEXP ? 'h' : '-',
-                  /* Does the player own it? */
-                  ChanCreator(c) == player ? '*' : '-',
-                  /* User status */
-                  u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
-                  (u && Chanuser_Quiet(u)) ? 'Q' : ' ',
-                  (u && Chanuser_Hide(u)) ? 'H' : ' ',
-                  (u && Chanuser_Combine(u)) ? 'C' : ' ',
-                  bufferq_blocks(ChanBufferQ(c)));
+    notify_format(
+      player, "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
+      dispname, numusers, ChanNumMsgs(c), Channel_Disabled(c) ? 'D' : '-',
+      Channel_Player(c) ? 'P' : '-', Channel_Object(c) ? 'T' : '-',
+      Channel_Admin(c) ? 'A' : (Channel_Wizard(c) ? 'W' : '-'),
+      Channel_Quiet(c) ? 'Q' : '-', Channel_CanHide(c) ? 'H' : '-',
+      Channel_Open(c) ? 'o' : '-',
+      /* Locks */
+      ChanJoinLock(c) != TRUE_BOOLEXP ? 'j' : '-',
+      ChanSpeakLock(c) != TRUE_BOOLEXP ? 's' : '-',
+      ChanModLock(c) != TRUE_BOOLEXP ? 'm' : '-',
+      ChanSeeLock(c) != TRUE_BOOLEXP ? 'v' : '-',
+      ChanHideLock(c) != TRUE_BOOLEXP ? 'h' : '-',
+      /* Does the player own it? */
+      ChanCreator(c) == player ? '*' : '-',
+      /* User status */
+      u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
+      (u && Chanuser_Quiet(u)) ? 'Q' : ' ', (u && Chanuser_Hide(u)) ? 'H' : ' ',
+      (u && Chanuser_Combine(u)) ? 'C' : ' ', bufferq_blocks(ChanBufferQ(c)));
   }
   if (types & CHANLIST_QUIET) {
     if (sp == shortoutput)
@@ -2396,8 +2352,8 @@ FUNCTION(fun_cbufferadd)
   }
 
   /* Person must be able to do nospoof cemits. */
-  if (!command_check_byname(executor, "@cemit", pe_info)
-      || fun->flags & FN_NOSIDEFX) {
+  if (!command_check_byname(executor, "@cemit", pe_info) ||
+      fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2440,7 +2396,6 @@ FUNCTION(fun_cbufferadd)
     }
   }
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_ctitle)
@@ -2570,7 +2525,6 @@ FUNCTION(fun_cowner)
   default:
     safe_dbref(ChanCreator(c), buff, bp);
   }
-
 }
 
 FUNCTION(fun_cmogrifier)
@@ -2592,9 +2546,7 @@ FUNCTION(fun_cmogrifier)
   default:
     safe_dbref(ChanMogrifier(c), buff, bp);
   }
-
 }
-
 
 /* Remove all players from a channel, notifying them. This is the
  * utility routine for handling it. The command @channel/wipe
@@ -2676,14 +2628,13 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
       return;
     }
   } else if (ChanMogrifier(c) != NOTHING) {
-    notify_format(player,
-                  T("CHAT: Channel <%s> no longer mogrified by %s."),
+    notify_format(player, T("CHAT: Channel <%s> no longer mogrified by %s."),
                   ChanName(c), AName(ChanMogrifier(c), AN_SYS, NULL));
     ChanMogrifier(c) = NOTHING;
     return;
   } else {
-    notify_format(player,
-                  T("CHAT: Channel <%s> isn't being mogrified."), ChanName(c));
+    notify_format(player, T("CHAT: Channel <%s> isn't being mogrified."),
+                  ChanName(c));
     return;
   }
 
@@ -2693,9 +2644,8 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
     return;
   }
   ChanMogrifier(c) = it;
-  notify_format(player,
-                T("CHAT: Channel <%s> now mogrified by %s."), ChanName(c),
-                AName(it, AN_SYS, NULL));
+  notify_format(player, T("CHAT: Channel <%s> now mogrified by %s."),
+                ChanName(c), AName(it, AN_SYS, NULL));
   return;
 }
 
@@ -2729,8 +2679,7 @@ do_chan_chown(dbref player, const char *name, const char *newowner)
    * new owner.
    */
   chan_chown(c, victim);
-  notify_format(player,
-                T("CHAT: Channel <%s> now owned by %s."), ChanName(c),
+  notify_format(player, T("CHAT: Channel <%s> now owned by %s."), ChanName(c),
                 AName(ChanCreator(c), AN_SYS, NULL));
   return;
 }
@@ -2823,42 +2772,46 @@ do_chan_lock(dbref player, const char *name, const char *lockstr,
   case CLOCK_JOIN:
     free_boolexp(ChanJoinLock(c));
     ChanJoinLock(c) = key;
-    notify_format(player, (key == TRUE_BOOLEXP) ?
-                  T("CHAT: Joinlock on <%s> reset.") :
-                  T("CHAT: Joinlock on <%s> set."), ChanName(c));
+    notify_format(player,
+                  (key == TRUE_BOOLEXP) ? T("CHAT: Joinlock on <%s> reset.")
+                                        : T("CHAT: Joinlock on <%s> set."),
+                  ChanName(c));
     break;
   case CLOCK_SPEAK:
     free_boolexp(ChanSpeakLock(c));
     ChanSpeakLock(c) = key;
-    notify_format(player, (key == TRUE_BOOLEXP) ?
-                  T("CHAT: Speaklock on <%s> reset.") :
-                  T("CHAT: Speaklock on <%s> set."), ChanName(c));
+    notify_format(player,
+                  (key == TRUE_BOOLEXP) ? T("CHAT: Speaklock on <%s> reset.")
+                                        : T("CHAT: Speaklock on <%s> set."),
+                  ChanName(c));
     break;
   case CLOCK_SEE:
     free_boolexp(ChanSeeLock(c));
     ChanSeeLock(c) = key;
-    notify_format(player, (key == TRUE_BOOLEXP) ?
-                  T("CHAT: Seelock on <%s> reset.") :
-                  T("CHAT: Seelock on <%s> set."), ChanName(c));
+    notify_format(player,
+                  (key == TRUE_BOOLEXP) ? T("CHAT: Seelock on <%s> reset.")
+                                        : T("CHAT: Seelock on <%s> set."),
+                  ChanName(c));
     break;
   case CLOCK_HIDE:
     free_boolexp(ChanHideLock(c));
     ChanHideLock(c) = key;
-    notify_format(player, (key == TRUE_BOOLEXP) ?
-                  T("CHAT: Hidelock on <%s> reset.") :
-                  T("CHAT: Hidelock on <%s> set."), ChanName(c));
+    notify_format(player,
+                  (key == TRUE_BOOLEXP) ? T("CHAT: Hidelock on <%s> reset.")
+                                        : T("CHAT: Hidelock on <%s> set."),
+                  ChanName(c));
     break;
   case CLOCK_MOD:
     free_boolexp(ChanModLock(c));
     ChanModLock(c) = key;
-    notify_format(player, (key == TRUE_BOOLEXP) ?
-                  T("CHAT: Modlock on <%s> reset.") :
-                  T("CHAT: Modlock on <%s> set."), ChanName(c));
+    notify_format(player,
+                  (key == TRUE_BOOLEXP) ? T("CHAT: Modlock on <%s> reset.")
+                                        : T("CHAT: Modlock on <%s> set."),
+                  ChanName(c));
     break;
   }
   return;
 }
-
 
 /** A channel list with names and descriptions only.
  * \verbatim
@@ -2890,19 +2843,17 @@ do_chan_what(dbref player, const char *partname)
       notify_format(player, T("Flags: %s"),
                     privs_to_string(priv_table, ChanType(c)));
       if (ChanBufferQ(c))
-        notify_format(player,
-                      T
-                      ("Recall buffer: %db (%d full lines), with %d lines stored."),
-                      BufferQSize(ChanBufferQ(c)),
-                      bufferq_blocks(ChanBufferQ(c)),
-                      bufferq_lines(ChanBufferQ(c)));
+        notify_format(
+          player,
+          T("Recall buffer: %db (%d full lines), with %d lines stored."),
+          BufferQSize(ChanBufferQ(c)), bufferq_blocks(ChanBufferQ(c)),
+          bufferq_lines(ChanBufferQ(c)));
       found++;
     }
   }
   if (!found)
     notify(player, T("CHAT: I don't recognize that channel."));
 }
-
 
 /** A decompile of a channel.
  * \verbatim
@@ -2928,8 +2879,8 @@ do_chan_decompile(dbref player, const char *name, int brief)
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname)) {
-      if (!(See_All(player) || Chan_Can_Modify(c, player)
-            || (ChanCreator(c) == player))) {
+      if (!(See_All(player) || Chan_Can_Modify(c, player) ||
+            (ChanCreator(c) == player))) {
         if (Chan_Can_See(c, player)) {
           found++;
           notify_format(player,
@@ -2939,7 +2890,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
         continue;
       }
       found++;
-      strcpy(rawp, ChanName(c));        /* Because decompose_str is destructive */
+      strcpy(rawp, ChanName(c)); /* Because decompose_str is destructive */
       notify_format(player, "@channel/add %s = %s", decompose_str(rawp),
                     privs_to_string(priv_table, ChanType(c)));
       notify_format(player, "@channel/chown %s = %s", cleanp,
@@ -3072,8 +3023,7 @@ FUNCTION(fun_cwho)
    * quicktypers.
    */
 
-  if (!Chan_Can_See(chan, Owner(executor))
-      && !Chan_Can_See(chan, executor)) {
+  if (!Chan_Can_See(chan, Owner(executor)) && !Chan_Can_See(chan, executor)) {
     safe_str(T("#-1 NO PERMISSIONS FOR CHANNEL"), buff, bp);
     return;
   }
@@ -3100,7 +3050,6 @@ FUNCTION(fun_cwho)
     safe_dbref(who, buff, bp);
   }
 }
-
 
 /** Modify a channel's description.
  * \verbatim
@@ -3138,8 +3087,6 @@ do_chan_desc(dbref player, const char *name, const char *desc)
                   ChanName(c));
   }
 }
-
-
 
 static int
 yesno(const char *str)
@@ -3216,7 +3163,8 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
         if (Chanuser_Hide(up) || (desc_player->hide == 1))
           channel_send(c, player,
                        CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE |
-                       CB_SEEALL, msg);
+                         CB_SEEALL,
+                       msg);
         else
           channel_send(c, player,
                        CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
@@ -3256,9 +3204,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
         if (up && uv) {
-          if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
-              && !Chanuser_Gag(uv)
-              &&
+          if (!Channel_Quiet(c) && !Chanuser_Quiet(uv) && !Chanuser_Gag(uv) &&
               ((!Chanuser_Hide(up) || See_All(viewer) || (player == viewer)))) {
             if (Chanuser_Combine(uv)) {
               shared = true;
@@ -3290,7 +3236,6 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
         dmp = defmsg;
         smp = shrtmsg;
 
-
         safe_format(shrtmsg, &smp, "%s %s", accname, msg);
         *smp = '\0';
         format.args[2] = shrtmsg;
@@ -3301,7 +3246,6 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
 
         notify_anything(player, player, na_one, &viewer, NULL, na_flags, defmsg,
                         NULL, AMBIGUOUS, &format);
-
       }
     }
   }
@@ -3336,7 +3280,6 @@ channel_description(dbref player)
   return buf;
 }
 
-
 FUNCTION(fun_channels)
 {
   dbref it;
@@ -3365,11 +3308,9 @@ FUNCTION(fun_channels)
       can_ex = Can_Examine(executor, it);
       priv_who = Priv_Who(executor);
       for (cl = Chanlist(it); cl; cl = cl->next) {
-        if (can_ex || (Chan_Can_See(cl->chan, executor)
-                       && (u = onchannel(it, cl->chan)) && (priv_who
-                                                            ||
-                                                            !Chanuser_Hide(u))))
-        {
+        if (can_ex || (Chan_Can_See(cl->chan, executor) &&
+                       (u = onchannel(it, cl->chan)) &&
+                       (priv_who || !Chanuser_Hide(u)))) {
           if (!first)
             safe_chr(sep, buff, bp);
           else
@@ -3449,8 +3390,8 @@ FUNCTION(fun_clock)
 
   if (nargs == 2) {
     if (FUNCTION_SIDE_EFFECTS) {
-      if (!command_check_byname(executor, "@clock", pe_info)
-          || fun->flags & FN_NOSIDEFX) {
+      if (!command_check_byname(executor, "@clock", pe_info) ||
+          fun->flags & FN_NOSIDEFX) {
         safe_str(T(e_perm), buff, bp);
         return;
       }
@@ -3509,7 +3450,7 @@ FUNCTION(fun_crecall)
   }
 
   if (!args[1] || !*args[1]) {
-    num_lines = 10;             /* default */
+    num_lines = 10; /* default */
   } else if (is_strict_integer(args[1])) {
     num_lines = parse_integer(args[1]);
     if (num_lines == 0)
@@ -3563,8 +3504,8 @@ FUNCTION(fun_crecall)
 
   if (recall_timestring) {
     num_lines = 0;
-    while ((buf =
-            iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp))) {
+    while ((
+      buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp))) {
       if (timestamp >= recall_from)
         num_lines++;
     }
@@ -3572,8 +3513,8 @@ FUNCTION(fun_crecall)
   }
   if (start < 0)
     start = BufferQNum(ChanBufferQ(chan)) - num_lines;
-  if (isempty_bufferq(ChanBufferQ(chan))
-      || BufferQNum(ChanBufferQ(chan)) <= start) {
+  if (isempty_bufferq(ChanBufferQ(chan)) ||
+      BufferQNum(ChanBufferQ(chan)) <= start) {
     return;
   }
 
@@ -3581,8 +3522,9 @@ FUNCTION(fun_crecall)
     buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp);
     start--;
   }
-  while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
-                             &timestamp)) && num_lines > 0) {
+  while (
+    (buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp)) &&
+    num_lines > 0) {
     if ((type == CBTYPE_SEEALL) && !See_All(executor) && speaker != executor) {
       num_lines--;
       continue;
@@ -3600,8 +3542,6 @@ FUNCTION(fun_crecall)
     }
     num_lines--;
   }
-
-
 }
 
 COMMAND(cmd_cemit)
@@ -3680,10 +3620,7 @@ COMMAND(cmd_channel)
     notify(executor, T("What do you want to do with the channel?"));
 }
 
-COMMAND(cmd_chat)
-{
-  do_chat_by_name(executor, arg_left, arg_right, 1);
-}
+COMMAND(cmd_chat) { do_chat_by_name(executor, arg_left, arg_right, 1); }
 
 COMMAND(cmd_clock)
 {
@@ -3715,8 +3652,8 @@ COMMAND(cmd_clock)
  * \retval Mogrified text.
  */
 char *
-mogrify(dbref mogrifier, const char *attrname,
-        dbref player, int numargs, const char *argv[], const char *orig)
+mogrify(dbref mogrifier, const char *attrname, dbref player, int numargs,
+        const char *argv[], const char *orig)
 {
   static char buff[BUFFER_LEN];
   int i;
@@ -3755,10 +3692,10 @@ mogrify(dbref mogrifier, const char *attrname,
 void
 channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 {
-/* flags:
- *     CB_CHECKQUIET CB_NOSPOOF CB_PRESENCE CB_POSE CB_EMIT CB_SPEECH
- *     CB_NOCOMBINE
- */
+  /* flags:
+   *     CB_CHECKQUIET CB_NOSPOOF CB_PRESENCE CB_POSE CB_EMIT CB_SPEECH
+   *     CB_NOCOMBINE
+   */
 
   /* These are static only to prevent them from chewing up
    * time to malloc/free, and chewing up space.
@@ -3780,7 +3717,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   static const char someone[] = "Someone";
   dbref mogrifier = NOTHING;
   const char *ctype = NULL;
-  const char *argv[10] = { NULL };      /* Doesn't need to be MAX_STACK_ARGS */
+  const char *argv[10] = {NULL}; /* Doesn't need to be MAX_STACK_ARGS */
   int override_chatformat = 0;
   bool skip_buffer = 0;
 
@@ -3792,8 +3729,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
   snprintf(channame, BUFFER_LEN, "<%s>", ChanName(channel));
 
-  if (!Channel_NoTitles(channel) && speaker &&
-      CUtitle(speaker) && *CUtitle(speaker)) {
+  if (!Channel_NoTitles(channel) && speaker && CUtitle(speaker) &&
+      *CUtitle(speaker)) {
     snprintf(title, BUFFER_LEN, "%s", CUtitle(speaker));
   } else {
     title[0] = '\0';
@@ -3840,14 +3777,14 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
         return;
       }
       /* Do we override chatformats? */
-      if (parse_boolean
-          (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 5, argv, ""))) {
+      if (parse_boolean(
+            mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 5, argv, ""))) {
         override_chatformat = 1;
       }
 
       /* Should we skip buffering this message? */
-      if (parse_boolean
-          (mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
+      if (parse_boolean(
+            mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
         skip_buffer = 1;
       }
 
@@ -3858,18 +3795,18 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
       argv[5] = playername;
 
       argv[0] = channame;
-      snprintf(channame, BUFFER_LEN, "%s",
-               mogrify(mogrifier, "MOGRIFY`CHANNAME", player, 6, argv,
-                       channame));
+      snprintf(
+        channame, BUFFER_LEN, "%s",
+        mogrify(mogrifier, "MOGRIFY`CHANNAME", player, 6, argv, channame));
 
       argv[0] = title;
       snprintf(title, BUFFER_LEN, "%s",
                mogrify(mogrifier, "MOGRIFY`TITLE", player, 6, argv, title));
 
       argv[0] = playername;
-      snprintf(playername, BUFFER_LEN, "%s",
-               mogrify(mogrifier, "MOGRIFY`PLAYERNAME", player, 6, argv,
-                       playername));
+      snprintf(
+        playername, BUFFER_LEN, "%s",
+        mogrify(mogrifier, "MOGRIFY`PLAYERNAME", player, 6, argv, playername));
 
       if (flags & CB_SPEECH) {
         argv[0] = speechtext;
@@ -3906,7 +3843,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     switch (flags & CB_TYPE) {
     case CB_POSE:
       safe_chr(' ', buff, &bp);
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case CB_SEMIPOSE:
       safe_str(message, buff, &bp);
       break;
@@ -3954,7 +3891,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.args[4] = title;
   format.args[5] = buff;
 
-
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
 
@@ -3964,8 +3900,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     if ((flags & CB_SEEALL) && !See_All(current) && (current != player))
       continue;
 
-    if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
-          Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
+    if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) || Chanuser_Gag(u) ||
+          (IsPlayer(current) && !Connected(current)))) {
       notify_anything(player, player, na_one, &current, NULL, na_flags, buff,
                       NULL, AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
@@ -4035,7 +3971,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
       return;
     }
   } else {
-    num_lines = 10;             /* default value */
+    num_lines = 10; /* default value */
   }
 
   if (num_lines < 1) {
@@ -4046,8 +3982,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   test_channel(player, name, chan);
   if (!Chan_Can_See(chan, player)) {
     if (onchannel(player, chan))
-      notify_format(player,
-                    T("CHAT: You can't do that with channel <%s>."),
+      notify_format(player, T("CHAT: You can't do that with channel <%s>."),
                     ChanName(chan));
     else
       notify(player, T("CHAT: I don't recognize that channel."));
@@ -4073,8 +4008,8 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   }
   if (start < 0)
     start = BufferQNum(ChanBufferQ(chan)) - num_lines;
-  if (isempty_bufferq(ChanBufferQ(chan))
-      || (BufferQNum(ChanBufferQ(chan)) <= start)) {
+  if (isempty_bufferq(ChanBufferQ(chan)) ||
+      (BufferQNum(ChanBufferQ(chan)) <= start)) {
     notify(player, T("CHAT: Nothing to recall."));
     return;
   }
@@ -4084,8 +4019,9 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
     iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp);
     start--;
   }
-  while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
-                             &timestamp)) && num_lines > 0) {
+  while (
+    (buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp)) &&
+    num_lines > 0) {
     if ((type == CBTYPE_SEEALL) && !See_All(player) && (speaker != player)) {
       num_lines--;
       continue;
@@ -4101,8 +4037,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   notify(player, T("CHAT: End recall"));
   if (!all)
     notify_format(player,
-                  T
-                  ("CHAT: To recall the entire buffer, use @chan/recall %s=0"),
+                  T("CHAT: To recall the entire buffer, use @chan/recall %s=0"),
                   ChanName(chan));
 }
 
@@ -4124,9 +4059,8 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     return;
   }
   if (!lines || !*lines || !is_strict_integer(lines)) {
-    notify(player,
-           T
-           ("You need to specify the amount of data (In 8kb chunks) to use for the buffer."));
+    notify(player, T("You need to specify the amount of data (In 8kb chunks) "
+                     "to use for the buffer."));
     return;
   }
   size = parse_integer(lines);
@@ -4145,26 +4079,23 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
       free_bufferq(ChanBufferQ(chan));
       ChanBufferQ(chan) = NULL;
       notify_format(player,
-                    T
-                    ("CHAT: Channel buffering disabled for channel <%s>."),
+                    T("CHAT: Channel buffering disabled for channel <%s>."),
                     ChanName(chan));
     } else {
-      notify_format(player,
-                    T
-                    ("CHAT: Channel buffering already disabled for channel <%s>."),
-                    ChanName(chan));
+      notify_format(
+        player, T("CHAT: Channel buffering already disabled for channel <%s>."),
+        ChanName(chan));
     }
   } else {
     if (ChanBufferQ(chan)) {
       /* Resize a buffer */
       ChanBufferQ(chan) = reallocate_bufferq(ChanBufferQ(chan), size);
-      notify_format(player,
-                    T("CHAT: Resizing buffer of channel <%s>"), ChanName(chan));
+      notify_format(player, T("CHAT: Resizing buffer of channel <%s>"),
+                    ChanName(chan));
     } else {
       /* Start a new buffer */
       ChanBufferQ(chan) = allocate_bufferq(size);
-      notify_format(player,
-                    T("CHAT: Buffering enabled on channel <%s>."),
+      notify_format(player, T("CHAT: Buffering enabled on channel <%s>."),
                     ChanName(chan));
     }
   }
@@ -4287,7 +4218,8 @@ COMMAND(cmd_addcom)
     return;
   }
 
-  if (!arg_left || !*arg_left || strchr(arg_left, '`') || strlen(arg_left) > 15) {
+  if (!arg_left || !*arg_left || strchr(arg_left, '`') ||
+      strlen(arg_left) > 15) {
     notify(executor, T("Invalid alias."));
     return;
   }
@@ -4323,7 +4255,8 @@ COMMAND(cmd_addcom)
     channel_join_self(executor, ChanName(chan));
   }
   if (!onchannel(executor, chan)) {
-    /* Still not on it? You can't join. channel_join_self will have told you so */
+    /* Still not on it? You can't join. channel_join_self will have told you so
+     */
     return;
   }
   atr_add(executor, buff, normalize_channel_name(ChanName(chan)), GOD, 0);
@@ -4333,17 +4266,18 @@ COMMAND(cmd_addcom)
 
 static int
 
-
-delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
-              __attribute__ ((__unused__)), dbref parent
-              __attribute__ ((__unused__)), const char *pattern
-              __attribute__ ((__unused__)), ATTR *atr, void *args);
+delcom_helper(dbref player __attribute__((__unused__)),
+              dbref thing __attribute__((__unused__)),
+              dbref parent __attribute__((__unused__)),
+              const char *pattern __attribute__((__unused__)), ATTR *atr,
+              void *args);
 
 static int
-delcom_helper(dbref player __attribute__ ((__unused__)), dbref thing
-              __attribute__ ((__unused__)), dbref parent
-              __attribute__ ((__unused__)), const char *pattern
-              __attribute__ ((__unused__)), ATTR *atr, void *args)
+delcom_helper(dbref player __attribute__((__unused__)),
+              dbref thing __attribute__((__unused__)),
+              dbref parent __attribute__((__unused__)),
+              const char *pattern __attribute__((__unused__)), ATTR *atr,
+              void *args)
 {
   if (!strcasecmp(atr_value(atr), (char *) args))
     return 1;
@@ -4384,17 +4318,17 @@ COMMAND(cmd_delcom)
   mush_free(channame, "delcom");
 }
 
-static int comlist_helper(dbref player __attribute__ ((__unused__)), dbref thing
-                          __attribute__ ((__unused__)), dbref parent
-                          __attribute__ ((__unused__)), const char *pattern
-                          __attribute__ ((__unused__)), ATTR *atr, void *args);
+static int comlist_helper(dbref player __attribute__((__unused__)),
+                          dbref thing __attribute__((__unused__)),
+                          dbref parent __attribute__((__unused__)),
+                          const char *pattern __attribute__((__unused__)),
+                          ATTR *atr, void *args);
 
 static int
-comlist_helper(dbref player
-               __attribute__ ((__unused__)), dbref thing, dbref parent
-               __attribute__ ((__unused__)), const char *pattern
-               __attribute__ ((__unused__)), ATTR *atr, void *args
-               __attribute__ ((__unused__)))
+comlist_helper(dbref player __attribute__((__unused__)), dbref thing,
+               dbref parent __attribute__((__unused__)),
+               const char *pattern __attribute__((__unused__)), ATTR *atr,
+               void *args __attribute__((__unused__)))
 {
   CHAN *c;
   CHANUSER *cu;

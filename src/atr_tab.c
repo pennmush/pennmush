@@ -31,98 +31,90 @@ extern const unsigned char *tables;
 PTAB ptab_attrib;
 
 /** Attribute flags for setting */
-PRIV attr_privs_set[] = {
-  {"no_command", '$', AF_NOPROG, AF_NOPROG},
-  {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
-  {"private", 'i', AF_PRIVATE, AF_PRIVATE},
-  {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
-  {"wizard", 'w', AF_WIZARD, AF_WIZARD},
-  {"visual", 'v', AF_VISUAL, AF_VISUAL},
-  {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
-  {"hidden", 'm', AF_MDARK, AF_MDARK},
-  {"regexp", 'R', AF_REGEXP, AF_REGEXP},
-  {"case", 'C', AF_CASE, AF_CASE},
-  {"locked", '+', AF_LOCKED, AF_LOCKED},
-  {"safe", 'S', AF_SAFE, AF_SAFE},
-  {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
-  {"veiled", 'V', AF_VEILED, AF_VEILED},
-  {"debug", 'b', AF_DEBUG, AF_DEBUG},
-  {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
-  {"public", 'p', AF_PUBLIC, AF_PUBLIC},
-  {"nearby", 'n', AF_NEARBY, AF_NEARBY},
-  {"noname", 'N', AF_NONAME, AF_NONAME},
-  {"no_name", 'N', AF_NONAME, AF_NONAME},
-  {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
-  {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
-  {"amhear", 'M', AF_MHEAR, AF_MHEAR},
-  {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-  {"quiet", 'Q', AF_QUIET, AF_QUIET},
-  {"branch", '`', 0, 0},
-  {NULL, '\0', 0, 0}
-};
+PRIV attr_privs_set[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
+                         {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
+                         {"private", 'i', AF_PRIVATE, AF_PRIVATE},
+                         {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
+                         {"wizard", 'w', AF_WIZARD, AF_WIZARD},
+                         {"visual", 'v', AF_VISUAL, AF_VISUAL},
+                         {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
+                         {"hidden", 'm', AF_MDARK, AF_MDARK},
+                         {"regexp", 'R', AF_REGEXP, AF_REGEXP},
+                         {"case", 'C', AF_CASE, AF_CASE},
+                         {"locked", '+', AF_LOCKED, AF_LOCKED},
+                         {"safe", 'S', AF_SAFE, AF_SAFE},
+                         {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
+                         {"veiled", 'V', AF_VEILED, AF_VEILED},
+                         {"debug", 'b', AF_DEBUG, AF_DEBUG},
+                         {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
+                         {"public", 'p', AF_PUBLIC, AF_PUBLIC},
+                         {"nearby", 'n', AF_NEARBY, AF_NEARBY},
+                         {"noname", 'N', AF_NONAME, AF_NONAME},
+                         {"no_name", 'N', AF_NONAME, AF_NONAME},
+                         {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
+                         {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
+                         {"amhear", 'M', AF_MHEAR, AF_MHEAR},
+                         {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+                         {"quiet", 'Q', AF_QUIET, AF_QUIET},
+                         {"branch", '`', 0, 0},
+                         {NULL, '\0', 0, 0}};
 
 /** Attribute flags which may be present in the db */
-PRIV attr_privs_db[] = {
-  {"no_command", '$', AF_NOPROG, AF_NOPROG},
-  {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
-  {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
-  {"wizard", 'w', AF_WIZARD, AF_WIZARD},
-  {"visual", 'v', AF_VISUAL, AF_VISUAL},
-  {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
-  {"regexp", 'R', AF_REGEXP, AF_REGEXP},
-  {"case", 'C', AF_CASE, AF_CASE},
-  {"locked", '+', AF_LOCKED, AF_LOCKED},
-  {"safe", 'S', AF_SAFE, AF_SAFE},
-  {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
-  {"veiled", 'V', AF_VEILED, AF_VEILED},
-  {"debug", 'b', AF_DEBUG, AF_DEBUG},
-  {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
-  {"public", 'p', AF_PUBLIC, AF_PUBLIC},
-  {"nearby", 'n', AF_NEARBY, AF_NEARBY},
-  {"noname", 'N', AF_NONAME, AF_NONAME},
-  {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
-  {"amhear", 'M', AF_MHEAR, AF_MHEAR},
-  {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-  {"enum", '\0', AF_ENUM, AF_ENUM},
-  {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
-  {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
-  {"quiet", 'Q', AF_QUIET, AF_QUIET},
-  {NULL, '\0', 0, 0}
-};
-
+PRIV attr_privs_db[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
+                        {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
+                        {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
+                        {"wizard", 'w', AF_WIZARD, AF_WIZARD},
+                        {"visual", 'v', AF_VISUAL, AF_VISUAL},
+                        {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
+                        {"regexp", 'R', AF_REGEXP, AF_REGEXP},
+                        {"case", 'C', AF_CASE, AF_CASE},
+                        {"locked", '+', AF_LOCKED, AF_LOCKED},
+                        {"safe", 'S', AF_SAFE, AF_SAFE},
+                        {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
+                        {"veiled", 'V', AF_VEILED, AF_VEILED},
+                        {"debug", 'b', AF_DEBUG, AF_DEBUG},
+                        {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
+                        {"public", 'p', AF_PUBLIC, AF_PUBLIC},
+                        {"nearby", 'n', AF_NEARBY, AF_NEARBY},
+                        {"noname", 'N', AF_NONAME, AF_NONAME},
+                        {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
+                        {"amhear", 'M', AF_MHEAR, AF_MHEAR},
+                        {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+                        {"enum", '\0', AF_ENUM, AF_ENUM},
+                        {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
+                        {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+                        {"quiet", 'Q', AF_QUIET, AF_QUIET},
+                        {NULL, '\0', 0, 0}};
 
 /** Attribute flags for viewing */
-PRIV attr_privs_view[] = {
-  {"no_command", '$', AF_NOPROG, AF_NOPROG},
-  {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
-  {"private", 'i', AF_PRIVATE, AF_PRIVATE},
-  {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
-  {"wizard", 'w', AF_WIZARD, AF_WIZARD},
-  {"visual", 'v', AF_VISUAL, AF_VISUAL},
-  {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
-  {"hidden", 'm', AF_MDARK, AF_MDARK},
-  {"regexp", 'R', AF_REGEXP, AF_REGEXP},
-  {"case", 'C', AF_CASE, AF_CASE},
-  {"locked", '+', AF_LOCKED, AF_LOCKED},
-  {"safe", 'S', AF_SAFE, AF_SAFE},
-  {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
-  {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
-  {"veiled", 'V', AF_VEILED, AF_VEILED},
-  {"debug", 'b', AF_DEBUG, AF_DEBUG},
-  {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
-  {"public", 'p', AF_PUBLIC, AF_PUBLIC},
-  {"nearby", 'n', AF_NEARBY, AF_NEARBY},
-  {"noname", 'N', AF_NONAME, AF_NONAME},
-  {"no_name", 'N', AF_NONAME, AF_NONAME},
-  {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
-  {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
-  {"amhear", 'M', AF_MHEAR, AF_MHEAR},
-  {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-  {"quiet", 'Q', AF_QUIET, AF_QUIET},
-  {"branch", '`', AF_ROOT, AF_ROOT},
-  {NULL, '\0', 0, 0}
-};
-
+PRIV attr_privs_view[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
+                          {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
+                          {"private", 'i', AF_PRIVATE, AF_PRIVATE},
+                          {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
+                          {"wizard", 'w', AF_WIZARD, AF_WIZARD},
+                          {"visual", 'v', AF_VISUAL, AF_VISUAL},
+                          {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
+                          {"hidden", 'm', AF_MDARK, AF_MDARK},
+                          {"regexp", 'R', AF_REGEXP, AF_REGEXP},
+                          {"case", 'C', AF_CASE, AF_CASE},
+                          {"locked", '+', AF_LOCKED, AF_LOCKED},
+                          {"safe", 'S', AF_SAFE, AF_SAFE},
+                          {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+                          {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
+                          {"veiled", 'V', AF_VEILED, AF_VEILED},
+                          {"debug", 'b', AF_DEBUG, AF_DEBUG},
+                          {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
+                          {"public", 'p', AF_PUBLIC, AF_PUBLIC},
+                          {"nearby", 'n', AF_NEARBY, AF_NEARBY},
+                          {"noname", 'N', AF_NONAME, AF_NONAME},
+                          {"no_name", 'N', AF_NONAME, AF_NONAME},
+                          {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
+                          {"no_space", 's', AF_NOSPACE, AF_NOSPACE},
+                          {"amhear", 'M', AF_MHEAR, AF_MHEAR},
+                          {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+                          {"quiet", 'Q', AF_QUIET, AF_QUIET},
+                          {"branch", '`', AF_ROOT, AF_ROOT},
+                          {NULL, '\0', 0, 0}};
 
 /*----------------------------------------------------------------------
  * Prefix-table functions of various sorts
@@ -206,7 +198,6 @@ free_standard_attr(ATTR *a, bool inserted)
   mush_free(a, "ATTR");
 
   return count;
-
 }
 
 /* Remove all aliases for a standard attr. */
@@ -260,9 +251,9 @@ attr_read(PENNFILE *f)
 
   if (!good_atr_name(tmp)) {
     do_rawlog(LT_ERR, "Invalid attribute name '%s' in db.", tmp);
-    (void) getstring_noalloc(f);        /* flags */
-    (void) getstring_noalloc(f);        /* creator */
-    (void) getstring_noalloc(f);        /* data */
+    (void) getstring_noalloc(f); /* flags */
+    (void) getstring_noalloc(f); /* creator */
+    (void) getstring_noalloc(f); /* data */
     free_standard_attr(a, 0);
     return NULL;
   }
@@ -274,8 +265,8 @@ attr_read(PENNFILE *f)
     if (!flags) {
       do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
       free((char *) AL_NAME(a));
-      (void) getstring_noalloc(f);      /* creator */
-      (void) getstring_noalloc(f);      /* data */
+      (void) getstring_noalloc(f); /* creator */
+      (void) getstring_noalloc(f); /* data */
       free_standard_attr(a, 0);
       return NULL;
     }
@@ -307,7 +298,7 @@ attr_read(PENNFILE *f)
       free_standard_attr(a, 0);
       return NULL;
     }
-    pcre_free(re);              /* don't need it, just needed to check it */
+    pcre_free(re); /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, strlen(t), 0);
@@ -336,7 +327,6 @@ attr_alias_read(PENNFILE *f, char *alias)
 
   return a;
 }
-
 
 void
 attr_read_all(PENNFILE *f)
@@ -368,8 +358,8 @@ attr_read_all(PENNFILE *f)
   ptab_end_inserts(&ptab_attrib);
 
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual number of attrs (%d) different than expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual number of attrs (%d) different than "
+                      "expected count (%d).",
               found, count);
 
   /* Assumes we'll always have at least one alias */
@@ -388,9 +378,10 @@ attr_read_all(PENNFILE *f)
       if (!good_atr_name(alias)) {
         do_rawlog(LT_ERR, "Bad attribute name on alias '%s' in db.", alias);
       } else if (aname_find_exact(strupper(alias))) {
-        do_rawlog(LT_ERR,
-                  "Unable to alias attribute '%s' to '%s' in db: alias already in use.",
-                  AL_NAME(a), alias);
+        do_rawlog(
+          LT_ERR,
+          "Unable to alias attribute '%s' to '%s' in db: alias already in use.",
+          AL_NAME(a), alias);
       } else if (!alias_attribute(AL_NAME(a), alias)) {
         do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db.",
                   AL_NAME(a), alias);
@@ -398,8 +389,8 @@ attr_read_all(PENNFILE *f)
     }
   }
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual number of attr aliases (%d) different than expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual number of attr aliases (%d) different "
+                      "than expected count (%d).",
               found, count);
 
   return;
@@ -425,7 +416,7 @@ attr_write_all(PENNFILE *f)
   for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a;
        a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
     if (strcmp(attrname, AL_NAME(a)))
-      continue;                 /* skip aliases */
+      continue; /* skip aliases */
     db_write_labeled_string(f, " name", AL_NAME(a));
     db_write_labeled_string(f, "  flags",
                             privs_to_string(attr_privs_db, AL_FLAGS(a)));
@@ -438,11 +429,10 @@ attr_write_all(PENNFILE *f)
   for (a = ptab_firstentry_new(&ptab_attrib, &attrname); a;
        a = ptab_nextentry_new(&ptab_attrib, &attrname)) {
     if (!strcmp(attrname, AL_NAME(a)))
-      continue;                 /* skip non-aliases */
+      continue; /* skip non-aliases */
     db_write_labeled_string(f, " name", AL_NAME(a));
     db_write_labeled_string(f, "  alias", attrname);
   }
-
 }
 
 /** Associate a new alias with an existing attribute.
@@ -566,13 +556,13 @@ check_attr_value(dbref player, const char *name, const char *value)
   }
 
   if (ap->flags & AF_RLIMIT) {
-    re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS,
-                      &errptr, &erroffset, tables);
+    re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS, &errptr,
+                      &erroffset, tables);
     if (!re)
       return value;
 
-    subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
-                            0, 0, NULL, 0);
+    subpatterns =
+      pcre_exec(re, default_match_limit(), value, strlen(value), 0, 0, NULL, 0);
     pcre_free(re);
 
     if (subpatterns >= 0) {
@@ -588,8 +578,7 @@ check_attr_value(dbref player, const char *name, const char *value)
     delim = *attrval;
     if (!*value || strchr(value, delim)) {
       if (player != NOTHING)
-        notify_format(player,
-                      T("Value for %s needs to be one of: %s"),
+        notify_format(player, T("Value for %s needs to be one of: %s"),
                       ap->name, display_attr_limit(ap));
       return NULL;
     }
@@ -606,7 +595,7 @@ check_attr_value(dbref player, const char *name, const char *value)
 
     ptr = strstr(buff, vbuff);
     if (!ptr) {
-      *(vbuff + len + 1) = '\0';        /* Remove the second delim */
+      *(vbuff + len + 1) = '\0'; /* Remove the second delim */
       ptr = strstr(buff, vbuff);
     }
 
@@ -616,7 +605,7 @@ check_attr_value(dbref player, const char *name, const char *value)
       ptr++;
       ptr2 = strchr(ptr, delim);
       if (!ptr2)
-        return NULL;            /* Shouldn't happen, but sanity check. */
+        return NULL; /* Shouldn't happen, but sanity check. */
 
       /* Now we need to copy over the _original case_ version of the
        * enumerated string. Nasty pointer arithmetic. */
@@ -625,8 +614,7 @@ check_attr_value(dbref player, const char *name, const char *value)
       return buff;
     } else {
       if (player != NOTHING)
-        notify_format(player,
-                      T("Value for %s needs to be one of: %s"),
+        notify_format(player, T("Value for %s needs to be one of: %s"),
                       ap->name, display_attr_limit(ap));
       return NULL;
     }
@@ -668,8 +656,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
   if (pattern && *pattern) {
     if (type == AF_RLIMIT) {
       /* Compile to regexp. */
-      re = pcre_compile(remove_markup(pattern, NULL), PCRE_CASELESS,
-                        &errptr, &erroffset, tables);
+      re = pcre_compile(remove_markup(pattern, NULL), PCRE_CASELESS, &errptr,
+                        &erroffset, tables);
       if (!re) {
         notify(player, T("Invalid Regular Expression."));
         return;
@@ -730,9 +718,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
   ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
 
   if (!ap) {
-    notify(player,
-           T
-           ("I don't know that attribute. Please use @attribute/access to create it, first."));
+    notify(player, T("I don't know that attribute. Please use "
+                     "@attribute/access to create it, first."));
     return;
   }
 
@@ -753,16 +740,15 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
       ap->data = NULL_CHUNK_REFERENCE;
       notify_format(player, T("%s -- Attribute limit or enum unset."), name);
     } else {
-      notify_format(player,
-                    T("%s -- Attribute limit or enum already unset."), name);
+      notify_format(player, T("%s -- Attribute limit or enum already unset."),
+                    name);
     }
   } else {
     char *t = compress(buff);
     ap->data = chunk_create(t, strlen(t), 0);
     free(t);
     ap->flags |= type;
-    notify_format(player,
-                  T("%s -- Attribute %s set to: %s"), name,
+    notify_format(player, T("%s -- Attribute %s set to: %s"), name,
                   type == AF_RLIMIT ? "limit" : "enum", display_attr_limit(ap));
   }
 }
@@ -878,7 +864,6 @@ add_new_attr(char *name, uint32_t flags)
   AL_FLAGS(ap) = flags;
   AL_CREATOR(ap) = 0;
   ptab_insert_one(&ptab_attrib, name, ap);
-
 }
 
 /** Delete an attribute from the attribute table.
@@ -973,8 +958,8 @@ do_attribute_rename(dbref player, char *old, char *newname)
      someday.  */
   AL_NAME(ap) = strdup(newname);
   ptab_insert_one(&ptab_attrib, newname, ap);
-  notify_format(player,
-                T("Renamed %s to %s in attribute table."), old, newname);
+  notify_format(player, T("Renamed %s to %s in attribute table."), old,
+                newname);
   return;
 }
 
@@ -1019,9 +1004,8 @@ display_attr_info(dbref player, ATTR *ap)
   } else if (ap->flags & AF_ENUM) {
     notify_format(player, "%9s: %s", T("Enum"), display_attr_limit(ap));
   }
-  notify_format(player,
-                "%9s: %s", T("Flags"), privs_to_string(attr_privs_view,
-                                                       AL_FLAGS(ap)));
+  notify_format(player, "%9s: %s", T("Flags"),
+                privs_to_string(attr_privs_view, AL_FLAGS(ap)));
   notify_format(player, "%9s: %s", T("Creator"), unparse_dbref(AL_CREATOR(ap)));
   return;
 }
@@ -1038,15 +1022,15 @@ do_decompile_attribs(dbref player, char *pattern, int retroactive)
   const char *name;
 
   notify(player, T("@@ Standard Attributes:"));
-  for (ap = ptab_firstentry_new(&ptab_attrib, &name);
-       ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
+  for (ap = ptab_firstentry_new(&ptab_attrib, &name); ap;
+       ap = ptab_nextentry_new(&ptab_attrib, &name)) {
     if (strcmp(name, AL_NAME(ap)))
       continue;
     if (pattern && *pattern && !quick_wild(pattern, AL_NAME(ap)))
       continue;
     notify_format(player, "@attribute/access%s %s=%s",
-                  (retroactive ? "/retroactive" : ""),
-                  AL_NAME(ap), privs_to_string(attr_privs_view, AL_FLAGS(ap)));
+                  (retroactive ? "/retroactive" : ""), AL_NAME(ap),
+                  privs_to_string(attr_privs_view, AL_FLAGS(ap)));
     if (ap->flags & AF_RLIMIT) {
       notify_format(player, "@attribute/limit %s=%s", AL_NAME(ap),
                     display_attr_limit(ap));
@@ -1085,8 +1069,8 @@ list_attribs(void)
   const char *name;
   int nptrs = -1, i;
 
-  for (ap = ptab_firstentry_new(&ptab_attrib, &name);
-       ap; ap = ptab_nextentry_new(&ptab_attrib, &name)) {
+  for (ap = ptab_firstentry_new(&ptab_attrib, &name); ap;
+       ap = ptab_nextentry_new(&ptab_attrib, &name)) {
     if (strcmp(name, AL_NAME(ap)))
       continue;
     ptrs[++nptrs] = AL_NAME(ap);

@@ -57,6 +57,8 @@
 
 #undef HAVE_CRYPT_H
 
+#undef HAVE_SYS_PRCTL_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H
@@ -304,9 +306,21 @@ typedef bool _Bool;
 
 #undef HAVE_EVP_MD_DO_ALL
 
-/* Variables and defines */
+#undef HAVE_PRCTL
 
-#undef HAVE_H_ERRNO
+#undef HAVE_HYPOT
+
+#undef HAVE_GZVPRINTF
+
+#undef HAVE_GETC_UNLOCKED
+
+#undef HAVE_FGETS_UNLOCKED
+
+#undef HAVE_PUTC_UNLOCKED
+
+#undef HAVE_FPUTS_UNLOCKED
+
+/* Variables and defines */
 
 #undef HAVE_SIGCHLD
 

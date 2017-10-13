@@ -29,10 +29,7 @@ void local_functions(void);
  */
 
 #ifdef EXAMPLE
-FUNCTION(local_fun_silly)
-{
-  safe_format(buff, bp, "Silly%sSilly", args[0]);
-}
+FUNCTION(local_fun_silly) { safe_format(buff, bp, "Silly%sSilly", args[0]); }
 
 #endif
 

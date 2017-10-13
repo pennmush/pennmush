@@ -73,9 +73,8 @@ void wait_que(dbref executor, int waittill, char *command, dbref enactor,
               dbref sem, const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
-static void show_queue(dbref player, dbref victim, int q_type,
-                       int q_quiet, int q_all, MQUE *q_ptr,
-                       int *tot, int *self, int *del);
+static void show_queue(dbref player, dbref victim, int q_type, int q_quiet,
+                       int q_all, MQUE *q_ptr, int *tot, int *self, int *del);
 static void show_queue_single(dbref player, MQUE *q, int q_type);
 static void show_queue_env(dbref player, MQUE *q);
 static void do_raw_restart(dbref victim);
@@ -88,8 +87,8 @@ int execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs);
 
 /* Keep track of the last 15 minutes worth of queue activity per second */
 enum { QUEUE_LOAD_SECS = 900 };
-int32_t queue_load_record[QUEUE_LOAD_SECS] __attribute__ ((__aligned__(16))) = {
-0};
+int32_t queue_load_record[QUEUE_LOAD_SECS]
+  __attribute__((__aligned__(16))) = {0};
 
 double average32(const int32_t *arr, int count);
 
@@ -123,12 +122,12 @@ waitable_attr(dbref thing, const char *atr)
   if (!atr || !*atr)
     return 0;
   a = atr_get_noparent(thing, atr);
-  if (!a) {                     /* Attribute isn't set */
+  if (!a) { /* Attribute isn't set */
     a = atr_match(atr);
-    if (!a)                     /* It's not a built in attribute */
+    if (!a) /* It's not a built in attribute */
       return 1;
-    return !strcmp(AL_NAME(a), "SEMAPHORE");    /* Only allow SEMAPHORE for now */
-  } else {                      /* Attribute is set. Check for proper owner and flags and value */
+    return !strcmp(AL_NAME(a), "SEMAPHORE"); /* Only allow SEMAPHORE for now */
+  } else { /* Attribute is set. Check for proper owner and flags and value */
     if ((AL_CREATOR(a) == GOD) && (AL_FLAGS(a) == SEMAPHORE_FLAGS)) {
       char *v = atr_value(a);
       if (!*v || is_strict_integer(v))
@@ -139,7 +138,7 @@ waitable_attr(dbref thing, const char *atr)
       return 0;
     }
   }
-  return 0;                     /* Not reached */
+  return 0; /* Not reached */
 }
 
 /** Incrememt an integer attribute.
@@ -267,10 +266,10 @@ free_qentry(MQUE *entry)
   if (entry->save_attrname)
     mush_free(entry->save_attrname, "mque.attrname");
 
-  if (entry->pid)               /* INPLACE queue entries have no pid */
+  if (entry->pid) /* INPLACE queue entries have no pid */
     im_delete(queue_map, entry->pid);
 
-  if (entry->regvals)           /* Nested pe_regs */
+  if (entry->regvals) /* Nested pe_regs */
     pe_regs_free(entry->regvals);
 
   mush_free(entry, "mque");
@@ -280,9 +279,8 @@ static int
 pay_queue(dbref player, const char *command)
 {
   int estcost;
-  estcost =
-    QUEUE_COST +
-    (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
+  estcost = QUEUE_COST +
+            (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),
@@ -295,8 +293,7 @@ pay_queue(dbref player, const char *command)
                   AName(player, AN_SYS, NULL), unparse_dbref(player), MONEY);
   }
   if (queue_limit(QUEUE_PER_OWNER ? Owner(player) : player)) {
-    notify_format(Owner(player),
-                  T("Runaway object: %s(%s). Commands halted."),
+    notify_format(Owner(player), T("Runaway object: %s(%s). Commands halted."),
                   AName(player, AN_SYS, NULL), unparse_dbref(player));
     do_log(LT_TRACE, player, player, "Runaway object %s executing: %s",
            unparse_dbref(player), command);
@@ -317,9 +314,10 @@ next_pid(void)
   uint32_t pid = top_pid;
 
   if (im_count(queue_map) >= (int) MAX_PID) {
-    do_rawlog(LT_ERR,
-              "There are %ld queue entries! That's too many. Failing to add another.",
-              (long) im_count(queue_map));
+    do_rawlog(
+      LT_ERR,
+      "There are %ld queue entries! That's too many. Failing to add another.",
+      (long) im_count(queue_map));
     return 0;
   }
 
@@ -437,7 +435,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   s = myfmt;
 
   if (*s)
-    argcount++;                 /* At least one arg. */
+    argcount++; /* At least one arg. */
   while ((s = strchr(s, ',')) != NULL) {
     *(s++) = EVENT_DELIM_CHAR;
     argcount++;
@@ -467,7 +465,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
       }
       wenv[i] = s;
     }
-
   }
 
   /* Let's queue this mother. */
@@ -480,7 +477,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   tmp->caller = enactor;
   tmp->queue_type |= QUEUE_EVENT;
 
-  /* safe_atr_value returns a mush_strdup'd buffer, which is freed in free_qentry */
+  /* safe_atr_value returns a mush_strdup'd buffer, which is freed in
+   * free_qentry */
   tmp->action_list = safe_atr_value(a, "mque.action_list");
 
   /* Set up %0-%9 */
@@ -524,7 +522,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
  * object command queues (depending on whether the call was
  * caused by a player or an object).
  * \param queue_entry the queue entry to insert
- * \param parent_queue the parent queue entry, used for placing inplace queues, or NULL
+ * \param parent_queue the parent queue entry, used for placing inplace queues,
+ * or NULL
  */
 void
 insert_que(MQUE *queue_entry, MQUE *parent_queue)
@@ -559,8 +558,8 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     }
   }
 
-  switch ((queue_entry->queue_type &
-           (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
+  switch (
+    (queue_entry->queue_type & (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
   case QUEUE_PLAYER:
     if (qlast) {
       qlast->next = queue_entry;
@@ -599,26 +598,28 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     im_insert(queue_map, queue_entry->pid, queue_entry);
 }
 
-
 /** Replacement for parse_que and inplace_queue_actionlist - queue an action
  * list
  *
  * Queue the given actionlist for executor to run.
  * \param executor object queueing the action list
  * \param enactor object which caused the action list to queue
- * \param caller for \@force/inplace queues, the object using \@force. Otherwise, same as enactor.
+ * \param caller for \@force/inplace queues, the object using \@force.
+ * Otherwise, same as enactor.
  * \param actionlist the actionlist of cmds to queue
- * \param parent_queue the parent queue entry which caused this queueing, or NULL
- * \param flags a bitwise collection of PE_INFO_* flags that determine the environment for the new queue
- * \param queue_type bitwise collection of the QUEUE_* flags, to determine which queue this goes in
+ * \param parent_queue the parent queue entry which caused this queueing, or
+ * NULL
+ * \param flags a bitwise collection of PE_INFO_* flags that determine the
+ * environment for the new queue
+ * \param queue_type bitwise collection of the QUEUE_* flags, to determine which
+ * queue this goes in
  * \param pe_regs the pe_regs for the queue entry
  * \param fromattr The attribute the actionlist is queued from
  */
 void
 new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
-                         char *actionlist, MQUE *parent_queue,
-                         int flags, int queue_type, PE_REGS *pe_regs,
-                         char *fromattr)
+                         char *actionlist, MQUE *parent_queue, int flags,
+                         int queue_type, PE_REGS *pe_regs, char *fromattr)
 {
   NEW_PE_INFO *pe_info;
   MQUE *queue_entry;
@@ -631,22 +632,25 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
     queue_type =
-      (queue_type &
-       (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS | QUEUE_NOLIST |
-        QUEUE_PRIORITY));
-    queue_type |= (((GoodObject(enactor) && IsPlayer(enactor))
-                    || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER :
-                   QUEUE_OBJECT);
+      (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS |
+                     QUEUE_NOLIST | QUEUE_PRIORITY));
+    queue_type |= (((GoodObject(enactor) && IsPlayer(enactor)) ||
+                    (queue_type & QUEUE_PRIORITY))
+                     ? QUEUE_PLAYER
+                     : QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {
-      /* You can only share the pe_info for an inplace queue entry. Since you've asked us
-       * to share for a fully queued entry, you're an idiot, because it will crash. I know;
-       * I'm an idiot too, and it crashed when I did it as well. I'll fix it for you; aren't
+      /* You can only share the pe_info for an inplace queue entry. Since you've
+       * asked us
+       * to share for a fully queued entry, you're an idiot, because it will
+       * crash. I know;
+       * I'm an idiot too, and it crashed when I did it as well. I'll fix it for
+       * you; aren't
        * you lucky? */
-      do_rawlog(LT_ERR,
-                "Attempt to create a non-inplace queue entry using a shared pe_info by #%d from %s",
+      do_rawlog(LT_ERR, "Attempt to create a non-inplace queue entry using a "
+                        "shared pe_info by #%d from %s",
                 executor,
                 (fromattr ? fromattr : "the socket, or an unknown attribute"));
-      flags = PE_INFO_CLONE;    /* The closest we can come to what you asked for */
+      flags = PE_INFO_CLONE; /* The closest we can come to what you asked for */
     }
   }
 
@@ -701,9 +705,9 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist,
 }
 
 int
-queue_include_attribute(dbref thing, const char *atrname,
-                        dbref executor, dbref enactor, dbref caller,
-                        char **args, int queue_type, MQUE *parent_queue)
+queue_include_attribute(dbref thing, const char *atrname, dbref executor,
+                        dbref enactor, dbref caller, char **args,
+                        int queue_type, MQUE *parent_queue)
 {
   ATTR *a;
   char *start, *command;
@@ -799,8 +803,8 @@ queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
 ATTR *
 queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 {
-  return (noparent ? atr_get_noparent(executor, strupper(atrname)) :
-          atr_get(executor, strupper(atrname)));
+  return (noparent ? atr_get_noparent(executor, strupper(atrname))
+                   : atr_get(executor, strupper(atrname)));
 }
 
 /** Queue an attribute.
@@ -840,14 +844,12 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   else if (AF_Debug(a))
     queue_type |= QUEUE_DEBUG;
 
-
   new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
                            PE_INFO_DEFAULT, queue_type, pe_regs,
                            tprintf("#%d/%s", executor, AL_NAME(a)));
   mush_free(start, "atrval.queue-attr");
   return 1;
 }
-
 
 /** Queue an entry on the wait or semaphore queues.
  * This function creates and adds a queue entry to the wait queue
@@ -880,7 +882,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
                          PE_INFO_CLONE, queue_type, NULL);
     return;
   }
-  if (!pay_queue(executor, command))    /* make sure player can afford to do it */
+  if (!pay_queue(executor, command)) /* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
@@ -905,15 +907,15 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
     if (waittill >= 0)
       tmp->wait_until = mudtime + waittill;
     else
-      tmp->wait_until = 0;      /* semaphore wait without a timeout */
+      tmp->wait_until = 0; /* semaphore wait without a timeout */
   }
   tmp->semaphore_obj = sem;
   if (sem == NOTHING) {
     /* No semaphore, put on normal wait queue, sorted by time */
     MQUE *point, *trail = NULL;
 
-    for (point = qwait;
-         point && (point->wait_until <= tmp->wait_until); point = point->next)
+    for (point = qwait; point && (point->wait_until <= tmp->wait_until);
+         point = point->next)
       trail = point;
 
     tmp->next = point;
@@ -993,7 +995,7 @@ do_second(void)
   for (point = qsemfirst, trail = NULL; point; point = next) {
     if (point->wait_until == 0 || point->wait_until > mudtime) {
       next = (trail = point)->next;
-      continue;                 /* skip non-timed and those that haven't gone off yet */
+      continue; /* skip non-timed and those that haven't gone off yet */
     }
     if (trail != NULL)
       trail->next = next = point->next;
@@ -1098,7 +1100,8 @@ do_entry(MQUE *entry, int include_recurses)
   s = entry->action_list;
   if (!include_recurses) {
     start_cpu_timer();
-    /* These vars are used in report() if mush_panic() is called, to print useful debug info */
+    /* These vars are used in report() if mush_panic() is called, to print
+     * useful debug info */
     strcpy(report_cmd, entry->pe_info->cmd_raw);
     report_dbref = executor;
   }
@@ -1110,9 +1113,11 @@ do_entry(MQUE *entry, int include_recurses)
     *r = '\0';
     if (*s == ';')
       s++;
-    /* process_command() destructively modifies the cmd, so we need to copy it */
+    /* process_command() destructively modifies the cmd, so we need to copy it
+     */
     if (has_markup(entry->pe_info->cmd_raw)) {
-      /* Remove any markup, as it can cause bleed when split by command_argparse() */
+      /* Remove any markup, as it can cause bleed when split by
+       * command_argparse() */
       strcpy(tbuf, remove_markup(entry->pe_info->cmd_raw, NULL));
     } else {
       strcpy(tbuf, entry->pe_info->cmd_raw);
@@ -1120,7 +1125,8 @@ do_entry(MQUE *entry, int include_recurses)
     process_command(executor, tbuf, entry);
     while (entry->inplace) {
       tmp = entry->inplace;
-      /* We have a new queue to process, via @include, @break, @switch/inplace or similar */
+      /* We have a new queue to process, via @include, @break, @switch/inplace
+       * or similar */
       if (include_recurses < 50) {
         switch (tmp->queue_type & (QUEUE_PRESERVE_QREG | QUEUE_CLEAR_QREG)) {
         case QUEUE_PRESERVE_QREG:
@@ -1132,9 +1138,8 @@ do_entry(MQUE *entry, int include_recurses)
           pe_regs = NULL;
           break;
         case (QUEUE_CLEAR_QREG | QUEUE_PRESERVE_QREG):
-          pe_regs =
-            pe_regs_localize(entry->pe_info, PE_REGS_LOCALQ | PE_REGS_QSTOP,
-                             "do_entry");
+          pe_regs = pe_regs_localize(
+            entry->pe_info, PE_REGS_LOCALQ | PE_REGS_QSTOP, "do_entry");
           break;
         default:
           pe_regs = NULL;
@@ -1246,10 +1251,10 @@ que_next(void)
 }
 
 static int
-drain_helper(dbref player __attribute__ ((__unused__)), dbref thing,
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern __attribute__ ((__unused__)), ATTR *atr,
-             void *args __attribute__ ((__unused__)))
+drain_helper(dbref player __attribute__((__unused__)), dbref thing,
+             dbref parent __attribute__((__unused__)),
+             char const *pattern __attribute__((__unused__)), ATTR *atr,
+             void *args __attribute__((__unused__)))
 {
   if (waitable_attr(thing, AL_NAME(atr)))
     (void) atr_clr(thing, AL_NAME(atr), GOD);
@@ -1275,8 +1280,8 @@ execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs)
   point = &qsemfirst;
   while (*point) {
     entry = *point;
-    if (entry->semaphore_obj != thing
-        || (aname && strcmp(entry->semaphore_attr, aname))) {
+    if (entry->semaphore_obj != thing ||
+        (aname && strcmp(entry->semaphore_attr, aname))) {
       point = &(entry->next);
       continue;
     }
@@ -1346,8 +1351,8 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
   point = &qsemfirst;
   while (*point && count > 0) {
     entry = *point;
-    if (entry->semaphore_obj != thing
-        || (aname && strcmp(entry->semaphore_attr, aname))) {
+    if (entry->semaphore_obj != thing ||
+        (aname && strcmp(entry->semaphore_attr, aname))) {
       point = &(entry->next);
       continue;
     }
@@ -1428,9 +1433,9 @@ COMMAND(cmd_notify_drain)
   pos = strchr(arg_left, '/');
   if (pos) {
     if (SW_ISSET(sw, SWITCH_ANY)) {
-      notify(executor,
-             T
-             ("You may not specify a semaphore attribute with the ANY switch."));
+      notify(
+        executor,
+        T("You may not specify a semaphore attribute with the ANY switch."));
       return;
     }
     *pos++ = '\0';
@@ -1451,8 +1456,8 @@ COMMAND(cmd_notify_drain)
   /* must control something or have it link_ok in order to use it as
    * as a semaphore.
    */
-  if ((!controls(executor, thing) && !LinkOk(thing))
-      || (aname && !waitable_attr(thing, aname))) {
+  if ((!controls(executor, thing) && !LinkOk(thing)) ||
+      (aname && !waitable_attr(thing, aname))) {
     notify(executor, T("Permission denied."));
     return;
   }
@@ -1462,8 +1467,8 @@ COMMAND(cmd_notify_drain)
     pe_regs = pe_regs_create(PE_REGS_Q, "cmd_notify_drain");
     for (i = 1; args_right[i]; i += 2) {
       if (args_right[i + 1]) {
-        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY,
-                    args_right[i], args_right[i + 1]);
+        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY, args_right[i],
+                    args_right[i + 1]);
       } else {
         pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY, args_right[i], "");
       }
@@ -1538,8 +1543,8 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   aname = strchr(arg1, '/');
   if (aname)
     *aname++ = '\0';
-  if ((thing =
-       noisy_match_result(executor, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
+  if ((thing = noisy_match_result(executor, arg1, NOTYPE, MAT_EVERYTHING)) ==
+      NOTHING) {
     return;
   }
 
@@ -1551,13 +1556,13 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   if (aname) {
     tcount = strchr(aname, '/');
     if (!tcount) {
-      if (is_strict_integer(aname)) {   /* Timeout */
+      if (is_strict_integer(aname)) { /* Timeout */
         tcount = aname;
         aname = (char *) "SEMAPHORE";
-      } else {                  /* Attribute */
+      } else { /* Attribute */
         upcasestr(aname);
       }
-    } else {                    /* attribute/timeout */
+    } else { /* attribute/timeout */
       *tcount++ = '\0';
       upcasestr(aname);
     }
@@ -1565,8 +1570,8 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
     aname = (char *) "SEMAPHORE";
   }
 
-  if ((!controls(executor, thing) && !LinkOk(thing))
-      || (aname && !waitable_attr(thing, aname))) {
+  if ((!controls(executor, thing) && !LinkOk(thing)) ||
+      (aname && !waitable_attr(thing, aname))) {
     notify(executor, T("Permission denied."));
     return;
   }
@@ -1583,7 +1588,7 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
     num = 0;
   if (num <= 0) {
     thing = NOTHING;
-    waitfor = -1;               /* just in case there was a timeout given */
+    waitfor = -1; /* just in case there was a timeout given */
   }
   wait_que(executor, waitfor, (char *) cmd, enactor, thing, aname, until,
            parent_queue);
@@ -1792,7 +1797,7 @@ FUNCTION(fun_lpids)
   int qmask = 0;
   dbref thing = NOTHING;
   dbref player = NOTHING;
-  char *attr = NULL;
+  char *attrib = NULL;
   bool first = true;
   const char *list;
   char *elem;
@@ -1811,8 +1816,8 @@ FUNCTION(fun_lpids)
           safe_str(T(e_notvis), buff, bp);
           return;
         }
-        if (!LookQueue(executor)
-            && !(Owns(executor, player) || controls(executor, player))) {
+        if (!LookQueue(executor) &&
+            !(Owns(executor, player) || controls(executor, player))) {
           safe_str(T(e_perm), buff, bp);
           return;
         }
@@ -1841,9 +1846,9 @@ FUNCTION(fun_lpids)
   } else {
     /* getpids(obj[/attrib]) */
     qmask = LPIDS_SEMAPHORE;
-    attr = strchr(args[0], '/');
-    if (attr)
-      *attr++ = '\0';
+    attrib = strchr(args[0], '/');
+    if (attrib)
+      *attrib++ = '\0';
     thing = match_thing(executor, args[0]);
     if (!GoodObject(thing)) {
       safe_str(T(e_notvis), buff, bp);
@@ -1856,9 +1861,9 @@ FUNCTION(fun_lpids)
   }
   if (qmask & LPIDS_WAIT) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->executor)
-          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
-              !Owns(tmp->executor, player))) {
+      if (GoodObject(player) && GoodObject(tmp->executor) &&
+          ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player)
+                                       : !Owns(tmp->executor, player))) {
         continue;
       }
       if (!first)
@@ -1869,13 +1874,13 @@ FUNCTION(fun_lpids)
   }
   if (qmask & LPIDS_SEMAPHORE) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->executor)
-          && ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player) :
-              !Owns(tmp->executor, player)))
+      if (GoodObject(player) && GoodObject(tmp->executor) &&
+          ((qmask & LPIDS_INDEPENDENT) ? (tmp->executor != player)
+                                       : !Owns(tmp->executor, player)))
         continue;
       if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;
-      if (attr && *attr && strcasecmp(tmp->semaphore_attr, attr))
+      if (attrib && *attrib && strcasecmp(tmp->semaphore_attr, attrib))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1886,8 +1891,8 @@ FUNCTION(fun_lpids)
 }
 
 static void
-show_queue(dbref player, dbref victim, int q_type, int q_quiet,
-           int q_all, MQUE *q_ptr, int *tot, int *self, int *del)
+show_queue(dbref player, dbref victim, int q_type, int q_quiet, int q_all,
+           MQUE *q_ptr, int *tot, int *self, int *del)
 {
   MQUE *tmp;
   for (tmp = q_ptr; tmp; tmp = tmp->next) {
@@ -1895,8 +1900,7 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
     if (!GoodObject(tmp->executor))
       (*del)++;
     else if (q_all || (Owner(tmp->executor) == victim)) {
-      if ((LookQueue(player)
-           || Owns(tmp->executor, player))) {
+      if ((LookQueue(player) || Owns(tmp->executor, player))) {
         (*self)++;
         if (!q_quiet)
           show_queue_single(player, tmp, q_type);
@@ -1910,14 +1914,13 @@ static void
 show_queue_single(dbref player, MQUE *q, int q_type)
 {
   switch (q_type) {
-  case 1:                      /* wait queue */
-    notify_format(player, "(Pid: %u) [%ld]%s: %s",
-                  (unsigned int) q->pid, (long) difftime(q->wait_until,
-                                                         mudtime),
+  case 1: /* wait queue */
+    notify_format(player, "(Pid: %u) [%ld]%s: %s", (unsigned int) q->pid,
+                  (long) difftime(q->wait_until, mudtime),
                   unparse_object(player, q->executor, AN_UNPARSE),
                   q->action_list);
     break;
-  case 2:                      /* semaphore queue */
+  case 2: /* semaphore queue */
     if (q->wait_until != 0) {
       notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
                     (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
@@ -1925,13 +1928,13 @@ show_queue_single(dbref player, MQUE *q, int q_type)
                     unparse_object(player, q->executor, AN_UNPARSE),
                     q->action_list);
     } else {
-      notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
-                    (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
+      notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", (unsigned int) q->pid,
+                    q->semaphore_obj, q->semaphore_attr,
                     unparse_object(player, q->executor, AN_UNPARSE),
                     q->action_list);
     }
     break;
-  default:                     /* player or object queue */
+  default: /* player or object queue */
     notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
                   unparse_object(player, q->executor, AN_UNPARSE),
                   q->action_list);
@@ -1983,8 +1986,8 @@ show_queue_env(dbref player, MQUE *q)
   for (regs = q->pe_info->regvals; regs; regs = regs->prev) {
     PE_REG_VAL *val;
     for (val = regs->vals; val; val = val->next) {
-      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q)
-          && *(val->val.sval))
+      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q) &&
+          *(val->val.sval))
         ptab_insert(&qregs, val->name, (char *) val->val.sval);
     }
     if (regs->flags & PE_REGS_QSTOP)
@@ -1994,8 +1997,8 @@ show_queue_env(dbref player, MQUE *q)
 
   if (qregs.len) {
     notify(player, "Registers:");
-    for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name);
-         qreg_val; qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
+    for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name); qreg_val;
+         qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
       int len = strlen(qreg_name);
       if (len > 1) {
         int spacer = 19 - len;
@@ -2072,12 +2075,12 @@ do_queue(dbref player, const char *what, enum queue_type flag)
     if (!quick)
       notify(player, T("------------  Queue Done  ------------"));
     notify_format(player,
-                  T
-                  ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
+                  T("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  "
+                    "Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
     notify_format(player, T("Load average (1/5/15 minutes): %.2f %.2f %.2f"),
-                  average32(queue_load_record, 60), average32(queue_load_record,
-                                                              300),
+                  average32(queue_load_record, 60),
+                  average32(queue_load_record, 300),
                   average32(queue_load_record, 900));
   }
 }
@@ -2145,25 +2148,22 @@ do_halt(dbref owner, const char *ncom, dbref victim)
     notify_format(Owner(player), "%s: %s(#%d)", T("Halted"),
                   AName(player, AN_SYS, NULL), player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
-    if (GoodObject(tmp->executor)
-        && ((tmp->executor == player)
-            || (Owner(tmp->executor) == player))) {
+    if (GoodObject(tmp->executor) &&
+        ((tmp->executor == player) || (Owner(tmp->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       tmp->executor = NOTHING;
     }
   for (tmp = qlfirst; tmp; tmp = tmp->next)
-    if (GoodObject(tmp->executor)
-        && ((tmp->executor == player)
-            || (Owner(tmp->executor) == player))) {
+    if (GoodObject(tmp->executor) &&
+        ((tmp->executor == player) || (Owner(tmp->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       tmp->executor = NOTHING;
     }
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
-    if (((point->executor == player)
-         || (Owner(point->executor) == player))) {
+    if (((point->executor == player) || (Owner(point->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
@@ -2178,8 +2178,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   /* clear semaphore queue */
 
   for (point = qsemfirst, trail = NULL; point; point = next) {
-    if (((point->executor == player)
-         || (Owner(point->executor) == player))) {
+    if (((point->executor == player) || (Owner(point->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
@@ -2216,9 +2215,8 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
   if (*arg1 == '\0')
     do_halt(player, "", player);
   else {
-    if ((victim =
-         noisy_match_result(player, arg1, NOTYPE,
-                            MAT_OBJECTS | MAT_HERE)) == NOTHING)
+    if ((victim = noisy_match_result(player, arg1, NOTYPE,
+                                     MAT_OBJECTS | MAT_HERE)) == NOTHING)
       return;
     if (!Owns(player, victim) && !HaltAny(player)) {
       notify(player, T("Permission denied."));
@@ -2236,10 +2234,8 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
       if (victim == player) {
         notify(player, T("All of your objects have been halted."));
       } else {
-        notify_format(player,
-                      T("All objects for %s have been halted."), AName(victim,
-                                                                       AN_SYS,
-                                                                       NULL));
+        notify_format(player, T("All objects for %s have been halted."),
+                      AName(victim, AN_SYS, NULL));
         notify_format(victim, T("All of your objects have been halted by %s."),
                       AName(player, AN_SYS, NULL));
       }
@@ -2249,10 +2245,10 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
         char obj[BUFFER_LEN];
         strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
         strcpy(obj, AName(victim, AN_SYS, NULL));
-        notify_format(player, "%s: %s's %s(%s)", T("Halted"),
-                      owner, obj, unparse_dbref(victim));
-        notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"),
-                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
+        notify_format(player, "%s: %s's %s(%s)", T("Halted"), owner, obj,
+                      unparse_dbref(victim));
+        notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"), obj,
+                      unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
       if (arg2 && *arg2 == '\0')
         set_flag_internal(victim, "HALT");
@@ -2316,7 +2312,6 @@ do_haltpid(dbref player, const char *arg1)
                 (unsigned int) pid);
 }
 
-
 /** Halt all objects in the database.
  * \param player the enactor.
  */
@@ -2331,8 +2326,7 @@ do_allhalt(dbref player)
   }
   for (victim = 0; victim < db_top; victim++) {
     if (IsPlayer(victim)) {
-      notify_format(victim,
-                    T("Your objects have been globally halted by %s"),
+      notify_format(victim, T("Your objects have been globally halted by %s"),
                     AName(player, AN_SYS, NULL));
       do_halt(victim, "", victim);
     }
@@ -2361,9 +2355,7 @@ do_allrestart(dbref player)
       do_top(5);
     }
     if (IsPlayer(thing)) {
-      notify_format(thing,
-                    T
-                    ("Your objects are being globally restarted by %s"),
+      notify_format(thing, T("Your objects are being globally restarted by %s"),
                     AName(player, AN_SYS, NULL));
     }
   }
@@ -2375,8 +2367,7 @@ do_raw_restart(dbref victim)
   dbref thing;
   if (IsPlayer(victim)) {
     for (thing = 0; thing < db_top; thing++) {
-      if ((Owner(thing) == victim) && !IsGarbage(thing)
-          && !(Halted(thing)))
+      if ((Owner(thing) == victim) && !IsGarbage(thing) && !(Halted(thing)))
         (void) queue_attribute_noparent(thing, "STARTUP", thing);
     }
   } else {
@@ -2398,8 +2389,8 @@ do_restart_com(dbref player, const char *arg1)
     do_halt(player, "", player);
     do_raw_restart(player);
   } else {
-    if ((victim =
-         noisy_match_result(player, arg1, NOTYPE, MAT_OBJECTS)) == NOTHING)
+    if ((victim = noisy_match_result(player, arg1, NOTYPE, MAT_OBJECTS)) ==
+        NOTHING)
       return;
     if (!Owns(player, victim) && !HaltAny(player)) {
       notify(player, T("Permission denied."));
@@ -2407,23 +2398,20 @@ do_restart_com(dbref player, const char *arg1)
     }
     if (Owner(victim) != player) {
       if (IsPlayer(victim)) {
-        notify_format(player,
-                      T("All objects for %s are being restarted."),
+        notify_format(player, T("All objects for %s are being restarted."),
                       AName(victim, AN_SYS, NULL));
         notify_format(victim,
-                      T
-                      ("All of your objects are being restarted by %s."),
+                      T("All of your objects are being restarted by %s."),
                       AName(player, AN_SYS, NULL));
       } else {
         char owner[BUFFER_LEN];
         char obj[BUFFER_LEN];
         strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
         strcpy(obj, AName(victim, AN_SYS, NULL));
-        notify_format(player,
-                      T("Restarting: %s's %s(%s)"),
-                      owner, obj, unparse_dbref(victim));
-        notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
-                      obj, unparse_dbref(victim), AName(player, AN_SYS, NULL));
+        notify_format(player, T("Restarting: %s's %s(%s)"), owner, obj,
+                      unparse_dbref(victim));
+        notify_format(Owner(victim), T("Restarting: %s(%s), by %s"), obj,
+                      unparse_dbref(victim), AName(player, AN_SYS, NULL));
       }
     } else {
       if (victim == player)
@@ -2449,7 +2437,6 @@ shutdown_queues(void)
   shutdown_a_queue(&qsemfirst, &qsemlast);
   shutdown_a_queue(&qwait, NULL);
 }
-
 
 static void
 shutdown_a_queue(MQUE **head, MQUE **tail)
@@ -2528,7 +2515,7 @@ average32(const int32_t *nums, int len)
   totals3 = _mm_add_epi32(totals3, totals4);
   totals1 = _mm_add_epi32(totals1, totals3);
 
-  /* And sum the sums */
+/* And sum the sums */
 #ifdef HAVE_SSSE3
   /* SSSE3 version */
   totals1 = _mm_hadd_epi32(totals1, zero);
@@ -2542,14 +2529,14 @@ average32(const int32_t *nums, int len)
   totals1 = _mm_add_epi32(totals1, totals2);
   total = _mm_cvtsi128_si32(totals1);
 #endif
-  
+
   /* Sum up the remaining trailing elements */
   for (; n < len; n += 1)
     total += nums[n];
 
   return (double) total / (double) len;
 
-#else                           /* Non-SSE2 version */
+#else /* Non-SSE2 version */
 
   int n;
   int32_t total = 0;

@@ -24,8 +24,8 @@ static int WIN32_CDECL ptab_cmp(const void *, const void *);
 
 /** A ptab entry. */
 typedef struct ptab_entry {
-  void *data;                   /**< pointer to data */
-  char key[BUFFER_LEN];         /**< the index key */
+  void *data;           /**< pointer to data */
+  char key[BUFFER_LEN]; /**< the index key */
 } ptab_entry;
 
 /** The memory usage of a ptab entry, not including data. */
@@ -76,7 +76,7 @@ ptab_find(PTAB *tab, const char *key)
   if (!tab || !key || !*key || tab->state)
     return NULL;
 
-  if (tab->len < 10) {          /* Just do a linear search for small tables */
+  if (tab->len < 10) { /* Just do a linear search for small tables */
     size_t n;
     for (n = 0; n < tab->len; n++) {
       if (string_prefix(tab->tab[n]->key, key)) {
@@ -86,7 +86,7 @@ ptab_find(PTAB *tab, const char *key)
           return tab->tab[n]->data;
       }
     }
-  } else {                      /* Binary search of the index */
+  } else { /* Binary search of the index */
     size_t left = 0;
     int cmp;
     size_t right = tab->len - 1;
@@ -132,7 +132,7 @@ ptab_find(PTAB *tab, const char *key)
         if (n == 0)
           break;
         right = n - 1;
-      } else {                  /* cmp > 0 */
+      } else { /* cmp > 0 */
         if (left == right)
           break;
         left = n + 1;
@@ -167,7 +167,7 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
   if (!tab || !key || tab->state)
     return -1;
 
-  if (tab->len < 10) {          /* Just do a linear search for small tables */
+  if (tab->len < 10) { /* Just do a linear search for small tables */
     int cmp;
     for (n = 0; n < tab->len; n++) {
       cmp = strcasecmp(tab->tab[n]->key, key);
@@ -176,7 +176,7 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
       else if (cmp > 0)
         return -1;
     }
-  } else {                      /* Binary search of the index */
+  } else { /* Binary search of the index */
     size_t left = 0;
     int cmp;
     size_t right = tab->len - 1;
@@ -197,7 +197,7 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
         if (n == 0)
           break;
         right = n - 1;
-      } else                    /* cmp > 0 */
+      } else /* cmp > 0 */
         left = n + 1;
     }
   }
@@ -301,7 +301,7 @@ ptab_grow(PTAB *tab)
   tab->tab = tmp;
 }
 
-/** Insert an entry into a ptab. This needs to be bracketed between 
+/** Insert an entry into a ptab. This needs to be bracketed between
  * calls to ptab_start_inserts() and ptab_end_inserts(), and is meant
  * for mass additions to the table. To insert a single isolated entry,
  * see ptab_insert_one().
@@ -327,7 +327,6 @@ ptab_insert(PTAB *tab, const char *key, void *data)
   tab->tab[tab->len]->data = data;
   memcpy(tab->tab[tab->len]->key, key, klen);
   tab->len++;
-
 }
 
 /** Insert an entry into a ptab. This should be used for inserting single
@@ -356,7 +355,7 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
   /* Figure out where to insert at */
   for (n = 0; n < tab->len; n++) {
     int m = strcasecmp(tab->tab[n]->key, key);
-    if (m == 0)                 /* Duplicate entry. */
+    if (m == 0) /* Duplicate entry. */
       return;
     else if (m > 0)
       break;
@@ -378,7 +377,6 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
   tab->tab[n]->data = data;
   memcpy(tab->tab[n]->key, key, len);
   tab->len++;
-
 }
 
 /** Return the data (and optionally the key) of the first entry in a ptab.

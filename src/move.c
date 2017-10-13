@@ -27,8 +27,8 @@
 #include "parse.h"
 #include "strutil.h"
 
-void moveit(dbref what, dbref where, int nomovemsgs,
-            dbref enactor, const char *cause);
+void moveit(dbref what, dbref where, int nomovemsgs, dbref enactor,
+            const char *cause);
 static void send_contents(dbref loc, dbref dest);
 static void maybe_dropto(dbref loc, dbref dropto);
 static void add_follower(dbref leader, dbref follower);
@@ -55,7 +55,6 @@ moveto(dbref what, dbref where, dbref enactor, const char *cause)
   enter_room(what, where, 0, enactor, cause);
 }
 
-
 /** Send an object somewhere.
  * \param what object to move.
  * \param where location to move it to.
@@ -64,8 +63,8 @@ moveto(dbref what, dbref where, dbref enactor, const char *cause)
  * \param cause the reason for the object moving, for events
  */
 void
-moveit(dbref what, dbref where, int nomovemsgs,
-       dbref enactor, const char *cause)
+moveit(dbref what, dbref where, int nomovemsgs, dbref enactor,
+       const char *cause)
 {
   dbref loc, old;
   dbref absloc, absold;
@@ -86,9 +85,9 @@ moveit(dbref what, dbref where, int nomovemsgs,
   switch (where) {
   case NOTHING:
     Location(what) = NOTHING;
-    return;                     /* NOTHING doesn't have contents */
+    return; /* NOTHING doesn't have contents */
   case HOME:
-    where = Home(what);         /* home */
+    where = Home(what); /* home */
     safe_tel(what, where, nomovemsgs, enactor, cause);
     return;
     /*NOTREACHED */
@@ -104,8 +103,8 @@ moveit(dbref what, dbref where, int nomovemsgs,
   absloc = absolute_room(what);
   if (!WIZ_NOAENTER || !(Wizard(what) && DarkLegal(what)))
     if ((where != NOTHING) && (old != where)) {
-      did_it_with(what, what, NULL, NULL, "OXMOVE", NULL,
-                  NULL, old, where, old, NA_INTER_HEAR, AN_MOVE);
+      did_it_with(what, what, NULL, NULL, "OXMOVE", NULL, NULL, old, where, old,
+                  NA_INTER_HEAR, AN_MOVE);
       if (Hearer(what)) {
         if (GoodObject(where) && oldSeeswhat) {
           did_it_with(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
@@ -141,8 +140,8 @@ moveit(dbref what, dbref where, int nomovemsgs,
                       AN_MOVE);
         } else {
           did_it_interact(what, where, "ENTER", NULL, "OENTER",
-                          T("has arrived."), "AENTER", where,
-                          NA_INTER_PRESENCE, AN_MOVE);
+                          T("has arrived."), "AENTER", where, NA_INTER_PRESENCE,
+                          AN_MOVE);
         }
       } else {
         /* non-listeners only trigger the actions not the messages */
@@ -152,21 +151,20 @@ moveit(dbref what, dbref where, int nomovemsgs,
              (Zone(absloc) != Zone(absold))))
           did_it(what, Zone(absold), NULL, NULL, NULL, NULL, "AZLEAVE", old,
                  AN_MOVE);
-        if (GoodObject(absloc) && GoodObject(Zone(absloc))
-            && (!GoodObject(absold) || !GoodObject(Zone(absold))
-                || (Zone(absloc) != Zone(absold))))
+        if (GoodObject(absloc) && GoodObject(Zone(absloc)) &&
+            (!GoodObject(absold) || !GoodObject(Zone(absold)) ||
+             (Zone(absloc) != Zone(absold))))
           did_it(what, Zone(absloc), NULL, NULL, NULL, NULL, "AZENTER", where,
                  AN_MOVE);
         did_it(what, where, NULL, NULL, NULL, NULL, "AENTER", where, AN_MOVE);
       }
     }
   if (!nomovemsgs)
-    did_it_with(what, what, "MOVE", NULL, "OMOVE", NULL,
-                "AMOVE", where, where, old, NA_INTER_SEE, AN_MOVE);
-  queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
-              unparse_objid(what),
-              unparse_objid(where),
-              unparse_objid(old), nomovemsgs ? 1 : 0, cause);
+    did_it_with(what, what, "MOVE", NULL, "OMOVE", NULL, "AMOVE", where, where,
+                old, NA_INTER_SEE, AN_MOVE);
+  queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s", unparse_objid(what),
+              unparse_objid(where), unparse_objid(old), nomovemsgs ? 1 : 0,
+              cause);
 }
 
 /** A dropper is an object that can hear and has a connected owner */
@@ -207,11 +205,12 @@ maybe_dropto(dbref loc, dbref dropto)
 {
   dbref thing;
   if (loc == dropto)
-    return;                     /* bizarre special case */
+    return; /* bizarre special case */
   if (!IsRoom(loc))
     return;
   /* check for players */
-  DOLIST(thing, Contents(loc)) {
+  DOLIST(thing, Contents(loc))
+  {
     if (Dropper(thing))
       return;
   }
@@ -228,8 +227,8 @@ maybe_dropto(dbref loc, dbref dropto)
  * \param cause what command or event caused this move
  */
 void
-enter_room(dbref player, dbref loc, int nomovemsgs,
-           dbref enactor, const char *cause)
+enter_room(dbref player, dbref loc, int nomovemsgs, dbref enactor,
+           const char *cause)
 {
   dbref old;
   dbref dropto;
@@ -276,17 +275,14 @@ enter_room(dbref player, dbref loc, int nomovemsgs,
 
   /* if old location has STICKY dropto, send stuff through it */
 
-  if ((loc != old) && Dropper(player) &&
-      (old != NOTHING) && (IsRoom(old)) &&
+  if ((loc != old) && Dropper(player) && (old != NOTHING) && (IsRoom(old)) &&
       ((dropto = Location(old)) != NOTHING) && Sticky(old))
     maybe_dropto(old, dropto);
-
 
   /* autolook */
   look_room(player, loc, LOOK_AUTO, NULL);
   deep--;
 }
-
 
 /** Teleport player to location while removing items they shouldn't take.
  * \param player player to teleport.
@@ -296,8 +292,8 @@ enter_room(dbref player, dbref loc, int nomovemsgs,
  * \param cause what command or event caused this move
  */
 void
-safe_tel(dbref player, dbref dest, int nomovemsgs,
-         dbref enactor, const char *cause)
+safe_tel(dbref player, dbref dest, int nomovemsgs, dbref enactor,
+         const char *cause)
 {
   dbref first;
   dbref rest;
@@ -311,9 +307,7 @@ safe_tel(dbref player, dbref dest, int nomovemsgs,
   Contents(player) = NOTHING;
 
   /* blast locations of everything in list */
-  DOLIST(rest, first) {
-    Location(rest) = NOTHING;
-  }
+  DOLIST(rest, first) { Location(rest) = NOTHING; }
 
   while (first != NOTHING) {
     rest = Next(first);
@@ -321,9 +315,7 @@ safe_tel(dbref player, dbref dest, int nomovemsgs,
      * thing is not okay to move if it's STICKY and its home is not
      * the player.
      */
-    if (!controls(player, first)
-        && (Sticky(first)
-            && (Home(first) != player)))
+    if (!controls(player, first) && (Sticky(first) && (Home(first) != player)))
       enter_room(first, HOME, nomovemsgs, enactor, cause);
     else {
       PUSH(first, Contents(player));
@@ -350,12 +342,10 @@ can_move(dbref player, const char *direction)
     ok = command_check_byname(player, "HOME", NULL);
   } else {
     /* otherwise match on exits - don't use GoodObject here! */
-    ok =
-      (match_result
-       (player, direction, TYPE_EXIT,
-        MAT_ENGLISH | MAT_EXIT | MAT_TYPE) != NOTHING);
+    ok = (match_result(player, direction, TYPE_EXIT,
+                       MAT_ENGLISH | MAT_EXIT | MAT_TYPE) != NOTHING);
   }
-  return ok;                    /* Written like this due to overeager compiler */
+  return ok; /* Written like this due to overeager compiler */
 }
 
 /** Find the correct location for a variable exit.
@@ -381,9 +371,8 @@ find_var_dest(dbref player, dbref exit_obj, char *exit_name,
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  if (!
-      (has_attr =
-       call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
+  if (!(has_attr =
+          call_attrib(exit_obj, "DESTINATION", buff, player, pe_info, pe_regs)))
     has_attr = call_attrib(exit_obj, "EXITTO", buff, player, pe_info, pe_regs);
 
   if (pe_regs)
@@ -394,7 +383,6 @@ find_var_dest(dbref player, dbref exit_obj, char *exit_name,
 
   return parse_objid(buff);
 }
-
 
 /** The move command.
  * \param player the enactor.
@@ -411,8 +399,7 @@ do_move(dbref player, const char *direction, enum move_type type,
     /* send him home */
     /* but steal all his possessions */
     if (!Mobile(player) || !GoodObject(Home(player)) ||
-        recursive_member(Home(player), player, 0)
-        || (player == Home(player))) {
+        recursive_member(Home(player), player, 0) || (player == Home(player))) {
       notify(player, T("Bad destination."));
       return;
     }
@@ -465,11 +452,12 @@ do_move(dbref player, const char *direction, enum move_type type,
         case AMBIGUOUS:
           var_dest = find_var_dest(player, exit_m, (char *) direction, pe_info);
           /* Only allowed if the owner of the exit could link to var_dest */
-          if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest, pe_info)) {
-            notify_format(player,
-                          T
-                          ("Variable exit destination #%d is invalid or not permitted."),
-                          var_dest);
+          if (!GoodObject(var_dest) ||
+              !can_link_to(exit_m, var_dest, pe_info)) {
+            notify_format(
+              player,
+              T("Variable exit destination #%d is invalid or not permitted."),
+              var_dest);
             return;
           }
           break;
@@ -478,8 +466,7 @@ do_move(dbref player, const char *direction, enum move_type type,
         }
 
         if (!GoodObject(var_dest)) {
-          do_rawlog(LT_ERR,
-                    "Exit #%d destination became %d during move.\n",
+          do_rawlog(LT_ERR, "Exit #%d destination became %d during move.\n",
                     exit_m, var_dest);
           notify(player, T("Exit destination is invalid."));
           return;
@@ -547,9 +534,9 @@ do_firstexit(dbref player, const char **what)
   int i;
 
   for (i = 1; i < MAX_ARG && what[i]; i++) {
-    if ((thing =
-         noisy_match_result(player, what[i], TYPE_EXIT,
-                            MAT_ENGLISH | MAT_EXIT | MAT_TYPE)) == NOTHING)
+    if ((thing = noisy_match_result(player, what[i], TYPE_EXIT,
+                                    MAT_ENGLISH | MAT_EXIT | MAT_TYPE)) ==
+        NOTHING)
       continue;
     loc = Home(thing);
     if (!controls(player, loc)) {
@@ -560,11 +547,10 @@ do_firstexit(dbref player, const char **what)
     Source(thing) = loc;
     PUSH(thing, Exits(loc));
     notify_format(player, T("%s is now the first exit in %s."),
-                  AName(thing, AN_SYS, NULL), unparse_object(player, loc,
-                                                             AN_SYS));
+                  AName(thing, AN_SYS, NULL),
+                  unparse_object(player, loc, AN_SYS));
   }
 }
-
 
 /** The get command.
  * \param player the enactor.
@@ -618,9 +604,7 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
        */
       box = Location(thing);
       if (could_doit(player, thing, pe_info) &&
-          (POSSGET_ON_DISCONNECTED ||
-           (!IsPlayer(box) ||
-            Connected(box))) &&
+          (POSSGET_ON_DISCONNECTED || (!IsPlayer(box) || Connected(box))) &&
           (controls(player, thing) ||
            (EnterOk(Location(thing)) &&
             eval_lock_with(player, box, Take_Lock, pe_info)))) {
@@ -651,8 +635,8 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
     }
     return;
   } else {
-    if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))
-        != NOTHING) {
+    if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags)) !=
+        NOTHING) {
       dbref oldloc = Location(thing);
       if (oldloc == player) {
         notify(player, T("You already have that!"));
@@ -708,7 +692,6 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
   }
 }
 
-
 /** Drop an object.
  * \param player the enactor.
  * \param name name of object to drop.
@@ -724,9 +707,8 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
     return;
   if (!Mobile(player))
     return;
-  switch (thing =
-          match_result(player, name, TYPE_THING | TYPE_PLAYER,
-                       MAT_POSSESSION | MAT_ENGLISH | MAT_TYPE)) {
+  switch (thing = match_result(player, name, TYPE_THING | TYPE_PLAYER,
+                               MAT_POSSESSION | MAT_ENGLISH | MAT_TYPE)) {
   case NOTHING:
     notify(player, T("You don't have that!"));
     return;
@@ -745,7 +727,8 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
       fail_lock(player, thing, Drop_Lock,
                 T("You can't seem to get rid of that."), NOTHING);
       return;
-    } else if (IsRoom(loc) && !eval_lock_with(player, loc, Drop_Lock, pe_info)) {
+    } else if (IsRoom(loc) &&
+               !eval_lock_with(player, loc, Drop_Lock, pe_info)) {
       fail_lock(player, loc, Drop_Lock,
                 T("You can't seem to drop things here."), NOTHING);
       return;
@@ -755,8 +738,8 @@ do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));
       safe_tel(thing, HOME, 0, player, "drop");
-    } else if ((Location(loc) != NOTHING) && IsRoom(loc) && !Sticky(loc)
-               && eval_lock_with(thing, loc, Dropto_Lock, pe_info)) {
+    } else if ((Location(loc) != NOTHING) && IsRoom(loc) && !Sticky(loc) &&
+               eval_lock_with(thing, loc, Dropto_Lock, pe_info)) {
       /* location has immediate dropto */
       notify_format(thing, T("%s drops you."), AName(player, AN_MOVE, NULL));
       moveto(thing, Location(loc), player, "drop");
@@ -813,9 +796,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     return;
   if (!Mobile(player))
     return;
-  thing =
-    noisy_match_result(player, what, TYPE_THING | TYPE_PLAYER,
-                       MAT_NEAR_THINGS | MAT_ENGLISH | MAT_TYPE);
+  thing = noisy_match_result(player, what, TYPE_THING | TYPE_PLAYER,
+                             MAT_NEAR_THINGS | MAT_ENGLISH | MAT_TYPE);
   if (!GoodObject(thing))
     return;
   thing_loc = Location(thing);
@@ -829,21 +811,20 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
        item = first_visible(player, next)) {
     next = Next(item);
     if (IsExit(item))
-      continue;                 /* No dropping exits */
+      continue; /* No dropping exits */
     empty_ok = 0;
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
       if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
           eval_lock_with(player, thing_loc, DropIn_Lock, pe_info) &&
-          (!IsRoom(thing_loc)
-           || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
+          (!IsRoom(thing_loc) ||
+           eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Check that player can get stuff from thing */
-    else if (controls(player, thing) || (EnterOk(thing)
-                                         && eval_lock_with(player, thing,
-                                                           Enter_Lock,
-                                                           pe_info))) {
+    else if (controls(player, thing) ||
+             (EnterOk(thing) &&
+              eval_lock_with(player, thing, Enter_Lock, pe_info))) {
       /* Check that player can get item */
       if (!could_doit(player, item, pe_info)) {
         /* Send failure message if set, otherwise be quiet */
@@ -856,8 +837,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
         empty_ok = 1;
       /* Thing is in player's location - player must also be able to drop */
       else if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
-               (!IsRoom(thing_loc)
-                || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
+               (!IsRoom(thing_loc) ||
+                eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Now do the work, if we should. That includes triggering messages */
@@ -891,9 +872,9 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
       if (thing_loc != player) {
         if (Sticky(item) && !Fixed(item)) {
           safe_tel(thing, HOME, 0, player, "empty");
-        } else if ((Location(thing_loc) != NOTHING) && IsRoom(thing_loc)
-                   && !Sticky(thing_loc)
-                   && eval_lock_with(item, thing_loc, Dropto_Lock, pe_info)) {
+        } else if ((Location(thing_loc) != NOTHING) && IsRoom(thing_loc) &&
+                   !Sticky(thing_loc) &&
+                   eval_lock_with(item, thing_loc, Dropto_Lock, pe_info)) {
           /* location has immediate dropto */
           notify_format(item, T("%s drops you."), AName(player, AN_MOVE, NULL));
           moveto(item, Location(thing_loc), player, "empty");
@@ -916,12 +897,11 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     notify_format(player, T("You remove 1 object from %s."),
                   AName(thing, AN_MOVE, NULL));
   else
-    notify_format(player, T("You remove %d objects from %s."),
-                  count, AName(thing, AN_MOVE, NULL));
+    notify_format(player, T("You remove %d objects from %s."), count,
+                  AName(thing, AN_MOVE, NULL));
 
   return;
 }
-
 
 /** The enter command.
  * \param player the enactor.
@@ -939,8 +919,8 @@ do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
     return;
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
-  if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))
-      == NOTHING)
+  if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags)) ==
+      NOTHING)
     return;
   switch (Typeof(thing)) {
   case TYPE_ROOM:
@@ -960,8 +940,7 @@ do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
     /* the object must pass the lock. Also, the thing being entered */
     /* has to be controlled, or must be enter_ok */
     if (!((EnterOk(thing) || controls(player, thing)) &&
-          (eval_lock_with(player, thing, Enter_Lock, pe_info))
-        )) {
+          (eval_lock_with(player, thing, Enter_Lock, pe_info)))) {
       fail_lock(player, thing, Enter_Lock, T("Permission denied."), NOTHING);
       return;
     }
@@ -989,10 +968,8 @@ do_leave(dbref player, NEW_PE_INFO *pe_info)
   loc = Location(player);
   if (!Mobile(player))
     return;
-  if (IsRoom(loc) || IsGarbage(loc) || IsGarbage(Location(loc))
-      || NoLeave(loc)
-      || !eval_lock_with(player, loc, Leave_Lock, pe_info)
-    ) {
+  if (IsRoom(loc) || IsGarbage(loc) || IsGarbage(Location(loc)) ||
+      NoLeave(loc) || !eval_lock_with(player, loc, Leave_Lock, pe_info)) {
     fail_lock(player, loc, Leave_Lock, T("You can't leave."), NOTHING);
     return;
   }
@@ -1010,8 +987,8 @@ do_leave(dbref player, NEW_PE_INFO *pe_info)
 int
 global_exit(dbref player, const char *direction)
 {
-  return (GoodObject
-          (match_result(player, direction, TYPE_EXIT, MAT_GLOBAL | MAT_EXIT)));
+  return (GoodObject(
+    match_result(player, direction, TYPE_EXIT, MAT_GLOBAL | MAT_EXIT)));
 }
 
 /** Is direction a remote exit?
@@ -1023,8 +1000,8 @@ global_exit(dbref player, const char *direction)
 int
 remote_exit(dbref player, const char *direction)
 {
-  return (GoodObject
-          (match_result(player, direction, TYPE_EXIT, MAT_REMOTES | MAT_EXIT)));
+  return (GoodObject(
+    match_result(player, direction, TYPE_EXIT, MAT_REMOTES | MAT_EXIT)));
 }
 
 /** Wrapper for exit movement.
@@ -1043,8 +1020,7 @@ move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info)
     do_move(player, command, MOVE_NORMAL, pe_info);
   else if ((Zone(Location(player)) != NOTHING) && remote_exit(player, command))
     do_move(player, command, MOVE_ZONE, pe_info);
-  else if ((Location(player) != MASTER_ROOM)
-           && global_exit(player, command))
+  else if ((Location(player) != MASTER_ROOM) && global_exit(player, command))
     do_move(player, command, MOVE_GLOBAL, pe_info);
   else
     do_move(player, command, MOVE_NORMAL, pe_info);
@@ -1074,11 +1050,10 @@ do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
       notify(player, T("I can't tell which one to follow."));
       return;
     }
-    if (!GoodObject(leader) || !GoodObject(Location(player))
-        || (IsPlayer(leader) && !Connected(leader))
-        || ((DarkLegal(leader)
-             || (Dark(Location(player)) && !Light(leader)))
-            && !See_All(player))) {
+    if (!GoodObject(leader) || !GoodObject(Location(player)) ||
+        (IsPlayer(leader) && !Connected(leader)) ||
+        ((DarkLegal(leader) || (Dark(Location(player)) && !Light(leader))) &&
+         !See_All(player))) {
       notify(player, T("You don't see that here."));
       return;
     }
@@ -1098,8 +1073,8 @@ do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
     }
     /* Ok, are we allowed to follow them? */
     if (!eval_lock_with(player, leader, Follow_Lock, pe_info)) {
-      fail_lock(player, leader, Follow_Lock,
-                T("You're not allowed to follow."), Location(player));
+      fail_lock(player, leader, Follow_Lock, T("You're not allowed to follow."),
+                Location(player));
       return;
     }
     /* Ok, looks good */
@@ -1148,7 +1123,6 @@ do_unfollow(dbref player, const char *arg)
     notify(player, T("You stop following anyone."));
   }
 }
-
 
 /** The dismiss command.
  * \verbatim
@@ -1204,12 +1178,9 @@ do_desert(dbref player, const char *arg)
       return;
     }
     /* Are we following or leading them? */
-    if (!is_following(who, player)
-        && !is_following(player, who)) {
-      notify_format(player,
-                    T("%s isn't following you, nor vice versa."), AName(who,
-                                                                        AN_SYS,
-                                                                        NULL));
+    if (!is_following(who, player) && !is_following(player, who)) {
+      notify_format(player, T("%s isn't following you, nor vice versa."),
+                    AName(who, AN_SYS, NULL));
       return;
     }
     /* Ok, looks good */
@@ -1279,7 +1250,6 @@ add_follow(dbref leader, dbref follower, int noisy)
   }
 }
 
-
 /* Delete someone from a player's FOLLOWERS attribute */
 static void
 del_follower(dbref leader, dbref follower)
@@ -1289,7 +1259,7 @@ del_follower(dbref leader, dbref follower)
   char flwr[BUFFER_LEN];
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
-    return;                     /* No followers, so no deletion */
+    return; /* No followers, so no deletion */
   /* Let's take it apart and put it back together w/o follower */
   strcpy(flwr, unparse_dbref(follower));
   strcpy(tbuf1, atr_value(a));
@@ -1305,7 +1275,7 @@ del_following(dbref follower, dbref leader)
   char ldr[BUFFER_LEN];
   a = atr_get_noparent(follower, "FOLLOWING");
   if (!a)
-    return;                     /* Not following, so no deletion */
+    return; /* Not following, so no deletion */
   /* Let's take it apart and put it back together w/o leader */
   strcpy(ldr, unparse_dbref(leader));
   strcpy(tbuf1, atr_value(a));
@@ -1402,7 +1372,7 @@ is_following(dbref follower, dbref leader)
    */
   a = atr_get_noparent(follower, "FOLLOWING");
   if (!a)
-    return 0;                   /* Following no one */
+    return 0; /* Following no one */
   strcpy(tbuf1, atr_value(a));
   s = trim_space_sep(tbuf1, ' ');
   while (s) {
@@ -1426,7 +1396,7 @@ clear_followers(dbref leader, int noisy)
   dbref flwr;
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
-    return;                     /* No one's following me */
+    return; /* No one's following me */
   strcpy(tbuf1, atr_value(a));
   s = trim_space_sep(tbuf1, ' ');
   while (s) {
@@ -1455,7 +1425,7 @@ clear_following(dbref follower, int noisy)
   dbref ldr;
   a = atr_get_noparent(follower, "FOLLOWING");
   if (!a)
-    return;                     /* I'm not following anyone */
+    return; /* I'm not following anyone */
   strcpy(tbuf1, atr_value(a));
   s = trim_space_sep(tbuf1, ' ');
   while (s) {
@@ -1490,17 +1460,16 @@ follower_command(dbref leader, dbref loc, const char *com, dbref toward)
     strcpy(combuf, com);
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
-    return;                     /* No followers */
+    return; /* No followers */
   strcpy(tbuf1, atr_value(a));
   s = tbuf1;
   while (s) {
     sp = split_token(&s, ' ');
     follower = parse_dbref(sp);
-    if (GoodObject(follower) && (Location(follower) == loc)
-        && (Connected(follower) || IsThing(follower))
-        && (!(DarkLegal(leader)
-              || (Dark(Location(follower)) && !Light(leader)))
-            || See_All(follower))) {
+    if (GoodObject(follower) && (Location(follower) == loc) &&
+        (Connected(follower) || IsThing(follower)) &&
+        (!(DarkLegal(leader) || (Dark(Location(follower)) && !Light(leader))) ||
+         See_All(follower))) {
       /* This is a follower who was in the room with the leader. Follow. */
       notify_format(follower, T("You follow %s."), AName(leader, AN_SYS, NULL));
       parse_que(follower, leader, combuf, NULL);

@@ -30,7 +30,7 @@
 	   (disable-interrupts)))
  ((and chicken csi)))
 
-(require-extension srfi-1 srfi-13 extras regex)
+(require-extension srfi-1 srfi-13 extras irregex)
 
 (define-constant line-width 78)
 (define-constant screen-height 25)
@@ -38,8 +38,8 @@
 (define words
   (drop-while string-null?
 	      (sort
-	       (string-split-fields (regexp "[A-Za-z0-9_@()/+-]+")
-				    (string-join (read-lines) " "))
+	       (irregex-extract (irregex "[A-Za-z0-9_@()/+-]+")
+                              (string-join (read-lines) " "))
 	       string-ci<?)))
 (define max-word-length (fold (lambda (w len) (fxmax (string-length w) len))
 			      0 words))

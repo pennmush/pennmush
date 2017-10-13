@@ -32,7 +32,7 @@
 #include "strutil.h"
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* disable warning re conversion */
+#pragma warning(disable : 4761) /* disable warning re conversion */
 #endif
 
 /** A string tree of attribute names in use, to save us memory since
@@ -175,7 +175,6 @@ atr_sub_branch_prev(ATTR *branch)
   return NULL;
 }
 
-
 /** Scan an attribute list for an attribute with the specified name.
  * This continues from whatever start point is passed in.
  *
@@ -224,7 +223,7 @@ find_atr_in_list(ATTR *atr, char const *name)
   const char *memoized;
 
   memoized = st_find(name, &atr_names);
-  if (!memoized)                /* This attribute name doesn't exist on any object */
+  if (!memoized) /* This attribute name doesn't exist on any object */
     return NULL;
 
   while (atr) {
@@ -367,21 +366,19 @@ can_read_attr_internal(dbref player, dbref obj, ATTR *atr)
   int parent_depth;
   visible = (player == NOTHING);
   if (visible) {
-    cansee = (Visual(obj) &&
-              eval_lock(PLAYER_START, obj, Examine_Lock) &&
+    cansee = (Visual(obj) && eval_lock(PLAYER_START, obj, Examine_Lock) &&
               eval_lock(MASTER_ROOM, obj, Examine_Lock));
     canlook = 0;
   } else {
     cansee = controls(player, obj) ||
-      (Visual(obj) && eval_lock(player, obj, Examine_Lock));
+             (Visual(obj) && eval_lock(player, obj, Examine_Lock));
     canlook = can_look_at(player, obj);
   }
 
   /* Take an easy out if there is one... */
   /* If we can't see the attribute itself, then that's easy. */
   if (AF_Internal(atr) || AF_Mdark(atr) ||
-      !(cansee ||
-        (AF_Visual(atr) && (!AF_Nearby(atr) || canlook)) ||
+      !(cansee || (AF_Visual(atr) && (!AF_Nearby(atr) || canlook)) ||
         (!visible && !Mistrust(player) &&
          (Owner(AL_CREATOR(atr)) == Owner(player)))))
     return 0;
@@ -409,8 +406,7 @@ can_read_attr_internal(dbref player, dbref obj, ATTR *atr)
         goto continue_target;
       }
       if (AF_Internal(atr) || AF_Mdark(atr) ||
-          !(cansee ||
-            (AF_Visual(atr) && (!AF_Nearby(atr) || canlook)) ||
+          !(cansee || (AF_Visual(atr) && (!AF_Nearby(atr) || canlook)) ||
             (!visible && !Mistrust(player) &&
              (Owner(AL_CREATOR(atr)) == Owner(player)))))
         return 0;
@@ -441,13 +437,11 @@ can_read_attr_internal(dbref player, dbref obj, ATTR *atr)
  * \param a the attribute to be written
  * \param s obey the safe flag?
  */
-#define Cannot_Write_This_Attr(p,a,s) \
-  (!God((p)) && \
-   (AF_Internal((a)) || \
-    ((s) && AF_Safe((a))) || \
-    !(Wizard((p)) || \
-      (!AF_Wizard((a)) && \
-       (!AF_Locked((a)) || (AL_CREATOR((a)) == Owner((p))))))))
+#define Cannot_Write_This_Attr(p, a, s)                                        \
+  (!God((p)) &&                                                                \
+   (AF_Internal((a)) || ((s) && AF_Safe((a))) ||                               \
+    !(Wizard((p)) || (!AF_Wizard((a)) &&                                       \
+                      (!AF_Locked((a)) || (AL_CREATOR((a)) == Owner((p))))))))
 
 /** Traversal routine for Can_Write_Attr.
  * This function determines if an attribute can be written by examining
@@ -504,14 +498,14 @@ can_edit_attr(dbref player, dbref thing, const char *attrname)
 }
 
 /** Utility define for atr_add and can_create_attr */
-#define set_default_flags(atr,flags) \
-  do { \
-    ATTR *std = atr_match(AL_NAME((atr))); \
-    if (std && !strcmp(AL_NAME(std), AL_NAME((atr)))) { \
-      AL_FLAGS(atr) = AL_FLAGS(std) | flags; \
-    } else { \
-        AL_FLAGS(atr) = flags; \
-    } \
+#define set_default_flags(atr, flags)                                          \
+  do {                                                                         \
+    ATTR *std = atr_match(AL_NAME((atr)));                                     \
+    if (std && !strcmp(AL_NAME(std), AL_NAME((atr)))) {                        \
+      AL_FLAGS(atr) = AL_FLAGS(std) | flags;                                   \
+    } else {                                                                   \
+      AL_FLAGS(atr) = flags;                                                   \
+    }                                                                          \
   } while (0)
 
 /** Can an attribute of specified name be created?
@@ -672,7 +666,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         free(t);
       }
     } else {
-      if (!(AL_FLAGS(root) & AF_ROOT))  /* Upgrading old database */
+      if (!(AL_FLAGS(root) & AF_ROOT)) /* Upgrading old database */
         AL_FLAGS(root) |= AF_ROOT;
     }
   }
@@ -708,7 +702,7 @@ set_cmd_flags(ATTR *a)
   switch (*p) {
   case '^':
     flag = AF_LISTEN;
-    /* FALL THROUGH */
+  /* FALL THROUGH */
   case '$':
     for (; *p; p++) {
       if (*p == '\\') {
@@ -927,11 +921,9 @@ atr_clear_children(dbref player, dbref thing, ATTR *root)
     AL_NEXT(prev) = next;
     atr_free_one(sub);
     AttrCount(thing)--;
-
   }
 
   return !skipped;
-
 }
 
 /** Remove an attribute from an object.
@@ -1015,7 +1007,6 @@ atr_clr(dbref thing, char const *atr, dbref player)
 {
   return real_atr_clr(thing, atr, player, 0);
 }
-
 
 /** \@wipe an attribute (And any leaves) from an object.
  * This function clears an attribute from an object.
@@ -1206,20 +1197,22 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
-  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify
+   * name */
+  if (!regexp && name[len - 1] != '`' &&
+      wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_noparent(thing, strupper(name));
     if (ptr && (mortal ? Is_Visible_Attr(thing, ptr)
-                : Can_Read_Attr(player, thing, ptr)))
+                       : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
   } else {
     indirect = &List(thing);
     while (*indirect) {
       ptr = *indirect;
       if ((mortal ? Is_Visible_Attr(thing, ptr)
-           : Can_Read_Attr(player, thing, ptr))
-          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
-              atr_wild(name, AL_NAME(ptr))))
+                  : Can_Read_Attr(player, thing, ptr)) &&
+          (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                  : atr_wild(name, AL_NAME(ptr))))
         result += func(player, thing, NOTHING, name, ptr, args);
       if (ptr == *indirect)
         indirect = &AL_NEXT(ptr);
@@ -1231,16 +1224,15 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
 
 /** Helper function for atr_pattern_count, passed to atr_iter_get() */
 static int
-atr_count_helper(dbref player __attribute__ ((__unused__)),
-                 dbref thing __attribute__ ((__unused__)),
-                 dbref parent __attribute__ ((__unused__)),
-                 char const *pattern __attribute__ ((__unused__)),
-                 ATTR *atr __attribute__ ((__unused__)), void *args
-                 __attribute__ ((__unused__)))
+atr_count_helper(dbref player __attribute__((__unused__)),
+                 dbref thing __attribute__((__unused__)),
+                 dbref parent __attribute__((__unused__)),
+                 char const *pattern __attribute__((__unused__)),
+                 ATTR *atr __attribute__((__unused__)),
+                 void *args __attribute__((__unused__)))
 {
   return 1;
 }
-
 
 /** Count the number of attributes an object has that match a pattern,
  * \verbatim
@@ -1256,16 +1248,15 @@ atr_count_helper(dbref player __attribute__ ((__unused__)),
  * \return the count of matching attributes
  */
 int
-atr_pattern_count(dbref player, dbref thing, const char *name,
-                  int doparent, int mortal, int regexp)
+atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
+                  int mortal, int regexp)
 {
   if (doparent)
-    return atr_iter_get_parent(player, thing, name, mortal,
-                               regexp, atr_count_helper, NULL);
+    return atr_iter_get_parent(player, thing, name, mortal, regexp,
+                               atr_count_helper, NULL);
   else
-    return atr_iter_get(player, thing, name, mortal, regexp,
-                        atr_count_helper, NULL);
-
+    return atr_iter_get(player, thing, name, mortal, regexp, atr_count_helper,
+                        NULL);
 }
 
 /** Apply a function to a set of attributes, including inherited ones.
@@ -1303,11 +1294,13 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
-  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify
+   * name */
+  if (!regexp && name[len - 1] != '`' &&
+      wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
     if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
-                : Can_Read_Attr(player, parent, ptr)))
+                       : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
   } else {
     StrTree seen;
@@ -1348,9 +1341,9 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
             }
           }
           if ((mortal ? Is_Visible_Attr(parent, ptr)
-               : Can_Read_Attr(player, parent, ptr))
-              && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
-                  atr_wild(name, AL_NAME(ptr))))
+                      : Can_Read_Attr(player, parent, ptr)) &&
+              (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                      : atr_wild(name, AL_NAME(ptr))))
             result += func(player, thing, parent, name, ptr, args);
         }
       }
@@ -1407,8 +1400,7 @@ atr_cpy(dbref dest, dbref source)
   max_attrs = (Many_Attribs(dest) ? HARD_MAX_ATTRCOUNT : MAX_ATTRCOUNT);
   List(dest) = NULL;
   for (ptr = List(source); ptr; ptr = AL_NEXT(ptr))
-    if (!AF_Nocopy(ptr)
-        && (AttrCount(dest) < max_attrs)) {
+    if (!AF_Nocopy(ptr) && (AttrCount(dest) < max_attrs)) {
       atr_new_add(dest, AL_NAME(ptr), atr_value(ptr), AL_CREATOR(ptr),
                   AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
     }
@@ -1417,9 +1409,9 @@ atr_cpy(dbref dest, dbref source)
 /** Structure for keeping track of which attributes have appeared
  * on children when doing command matching. */
 typedef struct used_attr {
-  struct used_attr *next;       /**< Next attribute in list */
-  char const *name;             /**< The name of the attribute */
-  int no_prog;                  /**< Was it AF_NOPROG */
+  struct used_attr *next; /**< Next attribute in list */
+  char const *name;       /**< The name of the attribute */
+  int no_prog;            /**< Was it AF_NOPROG */
 } UsedAttr;
 
 /** Find an attribute in the list of seen attributes.
@@ -1543,9 +1535,9 @@ can_debug(dbref player, dbref victim)
  */
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
-               int just_match, int check_locks,
-               char *atrname, char **abp, int show_child, dbref *errobj,
-               MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent)
+               int just_match, int check_locks, char *atrname, char **abp,
+               int show_child, dbref *errobj, MQUE *from_queue, int queue_type,
+               PE_REGS *pe_regs_parent)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1569,8 +1561,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   /* check for lots of easy ways out */
   if (type != '$' && type != '^')
     return 0;
-  if (check_locks && (!GoodObject(thing) || Halted(thing)
-                      || (type == '$' && NoCommand(thing))))
+  if (check_locks && (!GoodObject(thing) || Halted(thing) ||
+                      (type == '$' && NoCommand(thing))))
     return 0;
 
   if (type == '$') {
@@ -1578,8 +1570,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     parent_depth = GoodObject(Parent(thing));
   } else {
     flag_mask = AF_LISTEN;
-    if (has_flag_by_name
-        (thing, "LISTEN_PARENT", TYPE_PLAYER | TYPE_THING | TYPE_ROOM)) {
+    if (has_flag_by_name(thing, "LISTEN_PARENT",
+                         TYPE_PLAYER | TYPE_THING | TYPE_ROOM)) {
       parent_depth = GoodObject(Parent(thing));
     } else {
       parent_depth = 0;
@@ -1608,8 +1600,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   }
 
   do {
-    next = parent_depth ?
-      next_parent(thing, current, &parent_count, NULL) : NOTHING;
+    next =
+      parent_depth ? next_parent(thing, current, &parent_count, NULL) : NOTHING;
     prev = &used_list;
 
     /* do_rawlog(LT_TRACE, "Searching %s:", Name(current)); */
@@ -1665,8 +1657,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         continue;
       *s++ = '\0';
       if (type == '^' && !AF_Ahear(ptr)) {
-        if ((thing == player && !AF_Mhear(ptr))
-            || (thing != player && AF_Mhear(ptr)))
+        if ((thing == player && !AF_Mhear(ptr)) ||
+            (thing != player && AF_Mhear(ptr)))
           continue;
       }
 
@@ -1684,9 +1676,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
       match_found = 0;
       if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r
-            (tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS, match_space,
-             match_space_len, pe_regs, PE_REGS_ARG)) {
+        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
+                                MAX_STACK_ARGS, match_space, match_space_len,
+                                pe_regs, PE_REGS_ARG)) {
           match_found = 1;
           match++;
         }
@@ -1709,11 +1701,11 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
          */
         if (!lock_checked) {
           lock_checked = 1;
-          if ((type == '$'
-               && !eval_lock_with(player, thing, Command_Lock, pe_info))
-              || (type == '^'
-                  && !eval_lock_with(player, thing, Listen_Lock, pe_info))
-              || !eval_lock_with(player, thing, Use_Lock, pe_info)) {
+          if ((type == '$' &&
+               !eval_lock_with(player, thing, Command_Lock, pe_info)) ||
+              (type == '^' &&
+               !eval_lock_with(player, thing, Listen_Lock, pe_info)) ||
+              !eval_lock_with(player, thing, Use_Lock, pe_info)) {
             match--;
             if (errobj)
               *errobj = thing;
@@ -1732,7 +1724,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
-          if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
+          if (from_queue &&
+              (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
             int pe_flags = PE_INFO_DEFAULT;
             if (!(queue_type & QUEUE_CLEAR_QREG)) {
               /* Copy parent q-registers into new queue */
@@ -1749,7 +1742,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               queue_type |= QUEUE_PROPAGATE_QREG;
             } else {
               /* Since we use a new pe_info for this inplace entry, instead of
-                 sharing the parent's, we don't need to implicitly save/reset the
+                 sharing the parent's, we don't need to implicitly save/reset
+                 the
                  q-registers - we'll be altering different copies anyway */
               queue_type &= ~QUEUE_PRESERVE_QREG;
             }
@@ -1764,9 +1758,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                                      tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, pe_regs, ptr,
-                           (queue_type & QUEUE_DEBUG_PRIVS ?
-                            can_debug(player, thing) : 0));
+            parse_que_attr(
+              thing, player, s, pe_regs, ptr,
+              (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
           }
           pe_regs_free(pe_regs);
           pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
@@ -1787,7 +1781,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   return match;
 }
 
-
 /** Match input against a specified object's specified $command
  * attribute. Matches may be glob or regex matches. Used in command hooks.
  * depending on the attribute's flags.
@@ -1795,7 +1788,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
  * \param player the enactor, for privilege checks.
  * \param atr the name of the attribute
  * \param str the string to match
- * \param from_queue parent queue to run the cmds inplace for, if queue_type says to do so
+ * \param from_queue parent queue to run the cmds inplace for, if queue_type
+ says to do so
  * \param queue_type QUEUE_* flags telling how to run the matched commands
  * \param pe_regs_parent if non-null, a PE_REGS containing named arguments,
           copied into the pe_regs when the matched attribute is executed
@@ -1849,12 +1843,13 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
   pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
-  if (AF_Regexp(ptr) ?
-      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
-                          match_space, match_space_len, pe_regs, PE_REGS_ARG) :
-      wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        MAX_STACK_ARGS, match_space, match_space_len, pe_regs,
-                        PE_REGS_ARG)) {
+  if (AF_Regexp(ptr)
+        ? regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
+                              MAX_STACK_ARGS, match_space, match_space_len,
+                              pe_regs, PE_REGS_ARG)
+        : wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
+                            match_space, match_space_len, pe_regs,
+                            PE_REGS_ARG)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     NEW_PE_INFO *pe_info;
 
@@ -1868,8 +1863,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     }
     strcpy(pe_info->cmd_raw, str);
     strcpy(pe_info->cmd_evaled, str);
-    if (eval_lock_clear(player, thing, Command_Lock, pe_info)
-        && eval_lock_clear(player, thing, Use_Lock, pe_info))
+    if (eval_lock_clear(player, thing, Command_Lock, pe_info) &&
+        eval_lock_clear(player, thing, Use_Lock, pe_info))
       success = 1;
     if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       /* Restore */
@@ -1907,14 +1902,14 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
           queue_type |= QUEUE_DEBUG;
 
         /* inplace queue */
-        new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                 pe_flags, queue_type, pe_regs,
+        new_queue_actionlist_int(thing, player, player, s, from_queue, pe_flags,
+                                 queue_type, pe_regs,
                                  tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, pe_regs, ptr,
-                       (queue_type & QUEUE_DEBUG_PRIVS ?
-                        can_debug(player, thing) : 0));
+        parse_que_attr(
+          thing, player, s, pe_regs, ptr,
+          (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
       }
     }
   }
@@ -2020,9 +2015,9 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         }
       }
     }
-  } else if (s && *s && (!strcmp(name, "FORWARDLIST")
-                         || !strcmp(name, "MAILFORWARDLIST")
-                         || !strcmp(name, "DEBUGFORWARDLIST"))) {
+  } else if (s && *s && (!strcmp(name, "FORWARDLIST") ||
+                         !strcmp(name, "MAILFORWARDLIST") ||
+                         !strcmp(name, "DEBUGFORWARDLIST"))) {
     /* You can only set this to dbrefs of things you're allowed to
      * forward to. If you get one wrong, we puke.
      */
@@ -2040,8 +2035,8 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         notify_format(player, T("Invalid dbref #%d in %s."), fwd, name);
         return -1;
       }
-      if ((!strcmp(name, "FORWARDLIST") || !strcmp(name, "DEBUGFORWARDLIST"))
-          && !Can_Forward(thing, fwd)) {
+      if ((!strcmp(name, "FORWARDLIST") || !strcmp(name, "DEBUGFORWARDLIST")) &&
+          !Can_Forward(thing, fwd)) {
         notify_format(player, T("I don't think #%d wants to hear from %s."),
                       fwd, AName(thing, AN_SYS, NULL));
         return -1;
@@ -2067,7 +2062,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   was_hearer = Hearer(thing);
   was_listener = Listener(thing);
   res = s ? atr_add(thing, name, s, player, (flags & 0x02) ? AF_NOPROG : 0)
-    : atr_clr(thing, name, player);
+          : atr_clr(thing, name, player);
   switch (res) {
   case AE_SAFE:
     notify_format(player, T("Attribute %s is SAFE. Set it !SAFE to modify it."),
@@ -2075,15 +2070,14 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     return 0;
   case AE_TREE:
     if (!s) {
-      notify_format(player,
-                    T
-                    ("Unable to remove '%s' because of a protected tree attribute."),
-                    name);
+      notify_format(
+        player,
+        T("Unable to remove '%s' because of a protected tree attribute."),
+        name);
       return 0;
     } else {
-      notify_format(player,
-                    T
-                    ("Unable to set '%s' because of a failure to create a needed parent attribute."),
+      notify_format(player, T("Unable to set '%s' because of a failure to "
+                              "create a needed parent attribute."),
                     name);
       return 0;
     }
@@ -2142,19 +2136,14 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   if ((flags & 0x01) && !AreQuiet(player, thing)) {
     old = atr_get(thing, name);
     if (!old || !AF_Quiet(old)) {
-      notify_format(player,
-                    "%s/%s - %s.", AName(thing, AN_SYS, NULL), name,
+      notify_format(player, "%s/%s - %s.", AName(thing, AN_SYS, NULL), name,
                     s ? T("Set") : T("Cleared"));
     }
   }
   return 1;
 }
 
-enum atrlock_status {
-  ATRLOCK_CHECK = 0,
-  ATRLOCK_LOCK,
-  ATRLOCK_UNLOCK
-};
+enum atrlock_status { ATRLOCK_CHECK = 0, ATRLOCK_LOCK, ATRLOCK_UNLOCK };
 
 /** Lock or unlock an attribute.
  * Attribute locks are largely obsolete and should be deprecated,
@@ -2167,16 +2156,16 @@ void
 do_atrlock(dbref player, const char *src, const char *action)
 {
   dbref thing;
-  char *target, *attr;
+  char *target, *attrib;
   ATTR *ptr;
   enum atrlock_status status = ATRLOCK_CHECK;
 
   if (action && *action) {
-    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes")
-        || !strcasecmp(action, "1"))
+    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") ||
+        !strcasecmp(action, "1"))
       status = ATRLOCK_LOCK;
-    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no")
-             || !strcasecmp(action, "0"))
+    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no") ||
+             !strcasecmp(action, "0"))
       status = ATRLOCK_UNLOCK;
     else {
       notify(player, T("Invalid argument."));
@@ -2191,13 +2180,13 @@ do_atrlock(dbref player, const char *src, const char *action)
 
   target = mush_strdup(src, "atrlock.string");
 
-  if (!(attr = strchr(target, '/')) || !(*(attr + 1))) {
+  if (!(attrib = strchr(target, '/')) || !(*(attrib + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
     mush_free(target, "atrlock.string");
     return;
   }
 
-  *attr++ = '\0';
+  *attrib++ = '\0';
   if ((thing = noisy_match_result(player, target, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
     mush_free(target, "atrlock.string");
@@ -2209,7 +2198,7 @@ do_atrlock(dbref player, const char *src, const char *action)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(attr));
+  ptr = atr_get_noparent(thing, strupper(attrib));
   mush_free(target, "atrlock.string");
   if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));
@@ -2311,7 +2300,6 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
   mush_free(arg1, "atrchown.string");
 }
 
-
 /** Allocate a new ATTR from a slab allocator.
  * \return the pointer to the head of the attribute free list.
  */
@@ -2326,7 +2314,6 @@ alloc_atr(const void *hint)
 
   return slab_malloc(attrib_slab, hint);
 }
-
 
 /** Free an unused attribute struct.
  * \param An attribute that's been deleted from an object and
@@ -2364,7 +2351,7 @@ char const *
 atr_get_compressed_data(ATTR *atr)
 {
   static char buffer[BUFFER_LEN * 2];
-  static char const empty_string[] = { 0 };
+  static char const empty_string[] = {0};
   size_t len;
   if (!atr->data)
     return empty_string;

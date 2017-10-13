@@ -174,7 +174,7 @@ exists_in_ss(const char ss[static 16], int len, char c) {
 #else
   /* Scalar approach */
   for (int n = 0; n < len; n += 1) {
-    if (s[n] == c)
+    if (ss[n] == c)
       return true;
   }
   return false;

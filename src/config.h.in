@@ -54,6 +54,7 @@
 #cmakedefine HAVE_GETRUSAGE
 #cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
+#cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV
 #cmakedefine HAVE_INOTIFY_INIT
 #cmakedefine HAVE_INOTIFY_INIT1

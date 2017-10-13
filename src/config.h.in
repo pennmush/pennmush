@@ -127,9 +127,6 @@
 #cmakedefine HAVE_LIBZ
 #cmakedefine HAVE_POSTGRESQL
 #cmakedefine HAVE_SQLITE3
-//#cmakedefine HAVE_SSL
-#define HAVE_SSL 1
-
 
 #cmakedefine SSL_SLAVE
 #cmakedefine INFO_SLAVE

@@ -5,10 +5,6 @@
 
 #ifdef SSL_SLAVE
 
-#ifndef HAVE_SSL
-#error "ssl_slave requires OpenSSL!"
-#endif
-
 #ifndef HAVE_LIBEVENT_CORE
 #error "ssl_slave requires libevent!"
 #endif

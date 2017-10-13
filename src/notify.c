@@ -1780,7 +1780,6 @@ flush_queue(struct text_queue *q, int n)
   return really_flushed;
 }
 
-#ifdef HAVE_SSL
 static int
 ssl_flush_queue(struct text_queue *q)
 {
@@ -1804,7 +1803,6 @@ ssl_flush_queue(struct text_queue *q)
   }
   return 0;
 }
-#endif
 
 /** Render and add text to the queue associated with a given descriptor.
  * \param d pointer to descriptor to receive the text.
@@ -1914,14 +1912,12 @@ queue_newwrite(DESC *d, const char *b, int n)
     process_output(d);
     space = MAX_OUTPUT - d->output_size - n;
     if (space < 0) {
-#ifdef HAVE_SSL
       if (d->ssl) {
         /* Now we have a problem, as SSL works in blocks and you can't
          * just partially flush stuff.
          */
         d->output_size = ssl_flush_queue(&d->output);
       } else
-#endif
         d->output_size -= flush_queue(&d->output, -space);
     }
   }

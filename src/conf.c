@@ -318,14 +318,13 @@ PENNCONF conftable[] = {
   {"attr_compression", cf_str, options.attr_compression,
    sizeof options.attr_compression, 0, NULL},
 
-#ifdef HAVE_SSL
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
    sizeof options.ssl_private_key_file, 0, "files"},
   {"ssl_ca_file", cf_str, options.ssl_ca_file, sizeof options.ssl_ca_file, 0,
    "files"},
   {"ssl_require_client_cert", cf_bool, &options.ssl_require_client_cert, 2, 0,
    "net"},
-#endif
+
   {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"},
   {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL},
   {"log_size_policy", cf_str, options.log_size_policy,
@@ -1314,11 +1313,9 @@ conf_default_set(void)
   options.chunk_migrate_amount = 50;
   strcpy(options.attr_compression, "none");
   options.read_remote_desc = 0;
-#ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");
   strcpy(options.ssl_ca_file, "");
   options.ssl_require_client_cert = 0;
-#endif
   /* Set this to 1 so that allocations made before reading the config file
      will be tracked. */
   options.mem_check = 1;
@@ -1791,9 +1788,7 @@ show_compile_options(dbref player)
   notify(player, T(" Attributes are 8-bit word compressed in memory."));
 #endif
 
-#ifdef HAVE_SSL
   notify(player, T(" The MUSH was compiled with SSL support."));
-#endif
 
 #ifdef SSL_SLAVE
   notify(player, T(" SSL connections are handled by a slave process."));

@@ -67,10 +67,7 @@ void Win32MUSH_setup(void);
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
-
-#ifdef HAVE_SSL
 #include "myssl.h"
-#endif
 
 #ifndef WIN32
 #include "wait.h"

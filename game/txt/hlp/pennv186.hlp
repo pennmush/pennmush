@@ -33,6 +33,7 @@ Minor changes:
  * Make log rotation more robust. [SW]
  * fraction() now takes a second arg; fraction(1.5,true) returns "1 1/2", rather than "3/2". [MG]
  * hasattrval() now returns 0 for attributes containing a single space when the empty_attrs config option is false. [MG]
+ * fold() now passes the number of times <attr> has been called as %2. Suggested by Shaenyl. [MG]
 
 Hardcode:
  * Upgrade random number generator to SFMT 1.5.1. [SW]

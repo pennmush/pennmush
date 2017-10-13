@@ -1482,6 +1482,8 @@ See also: fdiv(), div(), mod(), lmath()
   
   If a base case is provided, it is passed as %0, and the first element of list is passed as %1, to the user-defined function. The process for the no-base-case fold() is then used.
   
+  The number of times <attr> has been called is passed as %2, starting from 0.
+  
   Note that it's not possible to pass a <delimiter> to fold without also giving a <base case>; see the examples for a way around this.
   
   See 'help fold2' for examples.

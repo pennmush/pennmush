@@ -305,6 +305,8 @@ typedef bool _Bool;
 
 #undef HAVE_PRCTL
 
+#undef HAVE_HYPOT
+
 /* Variables and defines */
 
 #undef HAVE_SIGCHLD

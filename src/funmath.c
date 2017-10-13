@@ -2623,7 +2623,7 @@ MATH_FUNC(math_stddev)
 
 MATH_FUNC(math_dist2d)
 {
-  NVAL d1, d2, r;
+  NVAL d1, d2;
 
   if (nptr != 4) {
     safe_str(T("#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"), buff, bp);
@@ -2637,8 +2637,12 @@ MATH_FUNC(math_dist2d)
   }
   d1 = parse_number(ptr[0]) - parse_number(ptr[2]);
   d2 = parse_number(ptr[1]) - parse_number(ptr[3]);
-  r = d1 * d1 + d2 * d2;
-  safe_number(sqrt(r), buff, bp);
+#ifdef HAVE_HYPOT
+  safe_number(hypot(d1, d2), buff, bp);
+#else
+  safe_number(sqrt(d1 * d1 + d2 * d2), buff, bp);
+#endif
+  
 }
 
 MATH_FUNC(math_dist3d)

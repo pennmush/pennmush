@@ -217,6 +217,7 @@ AC_ARG_ENABLE(zlib, AS_HELP_STRING([--disable-zlib], [Don't use zlib for databas
 		    enable_zlib=$enableval, enable_zlib=yes)
 if test "$enable_zlib" = "yes"; then
  AC_CHECK_LIB(z, gzungetc)
+ AC_CHECK_FUNCS([gzvprintf])
 fi
 
 # with_ssl=set
@@ -278,7 +279,7 @@ AC_CHECK_FUNCS([setsid setpgid setpgrp])
 if test $ac_cv_func_setpgrp = yes; then
 AC_FUNC_SETPGRP
 fi
-AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv])
+AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
 AC_CHECK_FUNCS([fcntl poll kqueue inotify_init inotify_init1])
@@ -350,6 +351,10 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
  ])
 
 fi
+
+AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
+
+
 
 ### Variables, constants, defines and other misc. stuff
 

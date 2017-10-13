@@ -753,16 +753,16 @@ db_write(PENNFILE *f, int flag)
 static void
 db_write_flags(PENNFILE *f)
 {
-  penn_fprintf(f, "+FLAGS LIST\n");
+  penn_fputs("+FLAGS LIST\n", f);
   flag_write_all(f, "FLAG");
-  penn_fprintf(f, "+POWER LIST\n");
+  penn_fputs("+POWER LIST\n", f);
   flag_write_all(f, "POWER");
 }
 
 static void
 db_write_attrs(PENNFILE *f)
 {
-  penn_fprintf(f, "+ATTRIBUTES LIST\n");
+  penn_fputs("+ATTRIBUTES LIST\n", f);
   attr_write_all(f);
 }
 
@@ -790,7 +790,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 
   o = db + i;
   db_write_obj_basic(f, i, o);
-  /* fflush(f); */
 
   /* write the attribute list, scanning */
   for (list = o->list; list; list = AL_NEXT(list)) {
@@ -2043,7 +2042,11 @@ penn_fgetc(PENNFILE *f)
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
-    return fgetc(f->handle.f);
+#ifdef HAVE_GETC_UNLOCKED
+    return getc_unlocked(f->handle.f);
+#else
+    return getc(f->handle.f);
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2060,7 +2063,11 @@ penn_fgets(char *buf, int len, PENNFILE *pf)
   switch (pf->type) {
   case PFT_FILE:
   case PFT_PIPE:
+#ifdef HAVE_FGETS_UNLOCKED
+    return fgets_unlocked(buf, len, pf->handle.f);
+#else
     return fgets(buf, len, pf->handle.f);
+#endif
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
     return gzgets(pf->handle.g, buf, len);
@@ -2078,7 +2085,11 @@ penn_fputc(int c, PENNFILE *f)
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
-    OUTPUT(fputc(c, f->handle.f));
+#ifdef HAVE_PUTC_UNLOCKED
+    OUTPUT(putc_unlocked(c, f->handle.f));
+#else
+    OUTPUT(putc(c, f->handle.f));
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2095,7 +2106,11 @@ penn_fputs(const char *s, PENNFILE *f)
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
+#ifdef HAVE_FPUTS_UNLOCKED
+    OUTPUT(fputs_unlocked(s, f->handle.f));
+#else
     OUTPUT(fputs(s, f->handle.f));
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2123,8 +2138,14 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
-/* No equivalent to vfprintf in zlib... */
-#ifdef HAVE_VASPRINTF
+#ifdef HAVE_GZVPRINTF
+    va_start(ap, fmt);
+    /* Total length of outputted string can't be more than 64K */
+    r = gzvprintf(f->handle.g, fmt, ap);
+    va_end(ap);
+    if (r <= 0)
+      longjmp(db_err, 1);
+#elif defined(HAVE_VASPRINTF)
   { /* Safe GNU/BSD way */
     char *line = NULL;
     va_start(ap, fmt);

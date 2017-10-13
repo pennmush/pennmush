@@ -1155,11 +1155,16 @@ shovechars(Port_t port, Port_t sslport)
 
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
+    recheck_d:
       if (d->conn_flags & CONN_SOCKET_ERROR) {
         shutdownsock(d, "socket error", GOD);
         d = dprev;
-        if (!d)
+        if (d) {
+          continue;
+        } else {
           d = descriptor_list;
+          goto recheck_d;
+        }
       }
 
       if (d->input.head) {

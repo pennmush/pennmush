@@ -305,6 +305,18 @@ typedef bool _Bool;
 
 #undef HAVE_PRCTL
 
+#undef HAVE_HYPOT
+
+#undef HAVE_GZVPRINTF
+
+#undef HAVE_GETC_UNLOCKED
+
+#undef HAVE_FGETS_UNLOCKED
+
+#undef HAVE_PUTC_UNLOCKED
+
+#undef HAVE_FPUTS_UNLOCKED
+
 /* Variables and defines */
 
 #undef HAVE_SIGCHLD

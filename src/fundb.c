@@ -234,10 +234,11 @@ FUNCTION(fun_hasattr)
     if (strchr(called_as, 'V')) {
       if (!*AL_STR(a))
         safe_chr('0', buff, bp);
-      else if (!EMPTY_ATTRS && *AL_STR(a) && *AL_STR(a) == ' ' && !(AL_STR(a))[1])
+      else if (!EMPTY_ATTRS && *AL_STR(a) && *AL_STR(a) == ' ' &&
+               !(AL_STR(a))[1])
         safe_chr('0', buff, bp);
       else
-        safe_chr('1', buff, bp);        
+        safe_chr('1', buff, bp);
     } else
       safe_chr('1', buff, bp);
     return;

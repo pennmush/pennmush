@@ -2376,7 +2376,8 @@ db_open(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
-    gzbuffer(pf->handle.g, 1024 * 64); /* Large buffer to speed up decompression */
+    gzbuffer(pf->handle.g,
+             1024 * 64); /* Large buffer to speed up decompression */
     return pf;
   }
 #endif

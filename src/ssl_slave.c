@@ -458,7 +458,7 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
 static void
 close_connections(bool flush_local)
 {
-  struct conn *c;   
+  struct conn *c;
   for (c = connections; c; c = c->next) {
     c->state = C_SHUTTINGDOWN;
     if (c->remote_bev) {
@@ -558,8 +558,7 @@ main(int argc __attribute__((__unused__)),
 #endif
 
   /* Catch shutdown requests from the parent mush */
-  sigterm_handler =
-    evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);
+  sigterm_handler = evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);
   event_add(sigterm_handler, NULL);
 
   errprintf(stderr, "ssl_slave: starting event loop using %s.\n",

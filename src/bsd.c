@@ -960,7 +960,7 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 static void
 shovechars(Port_t port, Port_t sslport)
 {
-  /* this is the main game loop */
+/* this is the main game loop */
 #ifdef INFO_SLAVE
   time_t now;
 #endif
@@ -980,7 +980,7 @@ shovechars(Port_t port, Port_t sslport)
   nfds_t fd_size = 0, fds_used = 0;
 #endif
   int polltimeout;
-  
+
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1118,7 +1118,7 @@ shovechars(Port_t port, Port_t sslport)
       slice_timeout.tv_sec = 0;
     if (slice_timeout.tv_usec < 0)
       slice_timeout.tv_usec = 0;
-      
+
     if (((int) fd_size) < ((int) im_count(descs_by_fd) + 5)) {
       fd_size = im_count(descs_by_fd) + 10;
       fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
@@ -1128,15 +1128,15 @@ shovechars(Port_t port, Port_t sslport)
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
       fds[fds_used++].events = POLLIN;
-      
+
       if (sslsock) {
-	fds[fds_used].fd = sslsock;
-	fds[fds_used++].events = POLLIN;
+        fds[fds_used].fd = sslsock;
+        fds[fds_used++].events = POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
-	fds[fds_used].fd = localsock;
-	fds[fds_used++].events = POLLIN;
+        fds[fds_used].fd = localsock;
+        fds[fds_used++].events = POLLIN;
       }
 #endif
     }
@@ -1150,7 +1150,7 @@ shovechars(Port_t port, Port_t sslport)
       fds[fds_used].fd = notify_fd;
       fds[fds_used++].events = POLLIN;
     }
-    
+
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
     recheck_d:
@@ -1168,14 +1168,14 @@ shovechars(Port_t port, Port_t sslport)
       if (d->input.head) {
         timeout = slice_timeout;
       } else {
-	fds[fds_used].fd = d->descriptor;
-	fds[fds_used].events = POLLIN;
+        fds[fds_used].fd = d->descriptor;
+        fds[fds_used].events = POLLIN;
       }
       if (d->output.head) {
-	fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= POLLOUT;
       }
       if (!d->input.head || d->output.head)
-	fds_used += 1;
+        fds_used += 1;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
@@ -1209,12 +1209,12 @@ shovechars(Port_t port, Port_t sslport)
       }
 
       fds_used = 1;
-      
+
 #ifdef INFO_SLAVE
       now = mudtime;
 
       if (fds[0].revents & POLLIN)
-        got_new_connection(sock, CS_IP_SOCKET);    
+        got_new_connection(sock, CS_IP_SOCKET);
       if (sslsock && fds[fds_used++].revents & POLLIN)
         got_new_connection(sslsock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
@@ -1231,7 +1231,7 @@ shovechars(Port_t port, Port_t sslport)
         update_pending_info_slaves();
       }
 
-#else  /* INFO_SLAVE */
+#else /* INFO_SLAVE */
       if (fds[0].revents & POLLIN)
         setup_desc(sock, CS_IP_SOCKET);
       if (sslsock && fds[fds_used++].revents & POLLIN)
@@ -1244,34 +1244,34 @@ shovechars(Port_t port, Port_t sslport)
 
       if (notify_fd >= 0 && fds[fds_used++].revents & POLLIN)
         file_watch_event(notify_fd);
-      
+
       for (d = descriptor_list; d; d = dnext) {
-	unsigned int input_ready, output_ready, errors;
-	
+        unsigned int input_ready, output_ready, errors;
+
         dnext = d->next;
 
-	if (d->descriptor != fds[fds_used].fd)
-	  continue;
-	
+        if (d->descriptor != fds[fds_used].fd)
+          continue;
+
         input_ready = fds[fds_used].revents & POLLIN;
-	errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
         output_ready = fds[fds_used++].revents & POLLOUT;
-	if (errors) {
-	  /* Socket error; kill this connection. */
-	  shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);	 
-	} else {
-	  if (input_ready) {
-	    if (!process_input(d, output_ready)) {
-	      shutdownsock(d, "disconnect", d->player);
-	      continue;
-	    }
-	  }
-	  if (output_ready) {
-	    if (!process_output(d)) {
-	      shutdownsock(d, "disconnect", d->player);
-	    }
-	  }
-	}
+        if (errors) {
+          /* Socket error; kill this connection. */
+          shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);
+        } else {
+          if (input_ready) {
+            if (!process_input(d, output_ready)) {
+              shutdownsock(d, "disconnect", d->player);
+              continue;
+            }
+          }
+          if (output_ready) {
+            if (!process_output(d)) {
+              shutdownsock(d, "disconnect", d->player);
+            }
+          }
+        }
       }
     }
   }
@@ -1997,7 +1997,7 @@ network_send_ssl(DESC *d)
 #else
     struct pollfd p;
 #endif
-    
+
     p.fd = d->descriptor;
     p.events = POLLIN;
     p.revents = 0;

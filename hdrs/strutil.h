@@ -152,22 +152,23 @@ keystr_find_d(const char *restrict map, const char *restrict key,
   return keystr_find_full(map, key, deflt, ':');
 }
 
-
 /** Return true if a character is in a short string.
  *
  * A short string: Is 16-byte aligned. Has at least 16 bytes
  * available in the array.
  *
- * \param ss a short string. 
- * \param len The number of characters used in the string. Cannot be more than 16.
+ * \param ss a short string.
+ * \param len The number of characters used in the string. Cannot be more than
+ * 16.
  * \param c The character to look for.
  */
 
 static inline bool
-exists_in_ss(const char ss[static 16], int len, char c) {
+exists_in_ss(const char ss[static 16], int len, char c)
+{
 #ifdef HAVE_SSE42
   __m128i a = _mm_cvtsi32_si128(c);
-  __m128i b = _mm_load_si128((const __m128i *)ss);
+  __m128i b = _mm_load_si128((const __m128i *) ss);
 
   return _mm_cmpestrc(a, 1, b, len, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY);
 
@@ -179,8 +180,6 @@ exists_in_ss(const char ss[static 16], int len, char c) {
   }
   return false;
 #endif
-
 }
-
 
 #endif /* __STRUTIL_H */

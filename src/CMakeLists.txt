@@ -445,11 +445,11 @@ write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Cl
 
 # Assorted extra make targets
 if(CTAGS)
-  add_custom_target(ctags COMMAND ${CTAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running ctags on source" VERBATIN)
+  add_custom_target(ctags COMMAND ${CTAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running ctags on source")
 endif()
 if(ETAGS)
-  add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running etags on source" VERBATIM)
+  add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running etags on source")
 endif()
 if(INDENT)
-  add_custom_target(indent COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Reformatting source code" VERBATIM)
+  add_custom_target(indent COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Reformatting source code")
 endif()

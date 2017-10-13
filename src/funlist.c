@@ -482,7 +482,8 @@ FUNCTION(fun_fold)
   char base[BUFFER_LEN];
   char result[BUFFER_LEN];
   char *list[MAX_SORTSIZE] = {NULL};
-  int n, i = 0;
+  int n, j, i = 0;
+  const char *strtwo = pe_regs_intname(2);
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -505,7 +506,7 @@ FUNCTION(fun_fold)
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
   pe_regs_setenv_nocopy(pe_regs, 0, base);
   pe_regs_setenv_nocopy(pe_regs, 1, list[i++]);
-
+  pe_regs_set_int(pe_regs, PE_REGS_ARG, strtwo, 0);
   call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
   strncpy(base, result, BUFFER_LEN);
@@ -513,8 +514,9 @@ FUNCTION(fun_fold)
   funccount = pe_info->fun_invocations;
 
   /* handle the rest of the cases */
-  for (; i < n; i++) {
+  for (j = 1; i < n; i++, j++) {
     pe_regs_setenv_nocopy(pe_regs, 1, list[i]);
+    pe_regs_set_int(pe_regs, PE_REGS_ARG, strtwo, j);
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))

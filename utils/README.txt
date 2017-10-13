@@ -19,9 +19,6 @@ cscope.sh: Wrapper script for invoking cscope, a handy source code
 customize.pl: perl script used by 'make customize'
 
 fixdepend.pl: perl script used by 'make distdepend'
-
-fixdiff.scm:  scheme script to convert a diff with Windows-style path
- separators to Unix-style ones.
  
 genrgb.pl: Creates hdrs/rgb.h and src/rgbtab.gperf with color name
   to RGB tuple maps.
@@ -44,12 +41,6 @@ mkvershlp.pl: perl script that turns the CHANGES.* files into
 
 pwutil.pl: perl script used to manipulate player passwords in an
  offline database. Run it with --help for more.
-
-splint.sh: Wrapper for the splint code analysis tool to control
- what warnings are printed out.
-
-typedefs.scm: Compiles into a program used to update the list of
- typedefs used by 'make indent'.
 
 update-cnf.pl: Used by make to reconcile changes between
  game/mushcnf.dst and your local game/mush.cnf.

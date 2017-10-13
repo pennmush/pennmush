@@ -1482,6 +1482,8 @@ See also: fdiv(), div(), mod(), lmath()
   
   If a base case is provided, it is passed as %0, and the first element of list is passed as %1, to the user-defined function. The process for the no-base-case fold() is then used.
   
+  The number of times <attr> has been called is passed as %2, starting from 0.
+  
   Note that it's not possible to pass a <delimiter> to fold without also giving a <base case>; see the examples for a way around this.
   
   See 'help fold2' for examples.
@@ -1686,7 +1688,7 @@ See also: gt(), lt(), lte(), eq(), neq(), lmath()
   
   hasattrp() also checks for <attribute> on <object>'s parent/ancestor.
 
-  hasattrval() only returns 1 if <attribute> exists and is non-empty.
+  hasattrval() only returns 1 if <attribute> exists and is non-empty. An "empty" attr is one containing a null value (if the empty_attrs config option is on), or one containing a single space (if the option is off).
   
   hasattrpval() is like hasattrval() but also checks parents.
   
@@ -2576,7 +2578,7 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
 
   lwhoid() returns a list of objid's instead.
 
-See also: mwho(), nwho(), xwho()
+See also: mwho(), nwho(), xwho(), lports()
 & MAP()
   map([<object>/]<attribute>, <list>[, <delim>[, <osep>]])
   
@@ -3206,7 +3208,7 @@ See also: @ps, getpids(), pidinfo()
 
   These port numbers also appear in the wizard WHO, and can be used with @boot/port, page/port, and the functions that return information about a connection to make them use a specific connection rather than the least-idle one when a player has multiple connections open. Players can get information about their own connections. See_all is needed to use them to get information about other people's ports.
 
-See also: player(), Connection Functions
+See also: lwho(), player(), Connection Functions
 & POS()
   pos(<needle>, <haystack>)
 

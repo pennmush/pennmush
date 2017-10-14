@@ -57,6 +57,7 @@
 #cmakedefine HAVE_GETRUSAGE
 #cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
+#cmakedefine HAVE_GZBUFFER
 #cmakedefine HAVE_GZVPRINTF
 #cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV

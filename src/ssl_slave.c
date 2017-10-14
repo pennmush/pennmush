@@ -526,7 +526,7 @@ main(int argc __attribute__((__unused__)),
   sfmt_init_gen_rand(&rand_state, getpid());
   parent_pid = getppid();
 
-  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.require_client_cert)) {
+  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.ca_dir, cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
     exit(EXIT_FAILURE);
   }

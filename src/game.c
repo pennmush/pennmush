@@ -780,6 +780,7 @@ init_game_postdb(const char *conf)
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
+                options.ssl_ca_dir,
                 options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
     options.ssl_port = 0; /* Disable ssl */

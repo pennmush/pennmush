@@ -96,7 +96,7 @@ extern sfmt_t rand_state;
  * \return pointer to SSL context object.
  */
 SSL_CTX *
-ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
+ssl_init(char *private_key_file, char *ca_file, char *ca_dir, int req_client_cert)
 {
   const SSL_METHOD
     *meth; /* If this const gives you a warning, you're
@@ -158,7 +158,8 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 
   /* Load trusted CAs */
   if (ca_file && *ca_file) {
-    if (!SSL_CTX_load_verify_locations(ctx, ca_file, NULL)) {
+    if (!SSL_CTX_load_verify_locations(ctx, (ca_file && *ca_file) ? ca_file : NULL,
+                                       (ca_dir && *ca_dir) ? ca_dir : NULL)) {
       ssl_errordump("Unable to load CA certificates");
     } else {
       if (req_client_cert)

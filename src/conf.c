@@ -321,6 +321,8 @@ PENNCONF conftable[] = {
    sizeof options.ssl_private_key_file, 0, "files"},
   {"ssl_ca_file", cf_str, options.ssl_ca_file, sizeof options.ssl_ca_file, 0,
    "files"},
+  {"ssl_ca_dir", cf_str, options.ssl_ca_dir, sizeof options.ssl_ca_dir, 0,
+   "files"},
   {"ssl_require_client_cert", cf_bool, &options.ssl_require_client_cert, 2, 0,
    "net"},
 #endif
@@ -1315,6 +1317,7 @@ conf_default_set(void)
 #ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");
   strcpy(options.ssl_ca_file, "");
+  strcpy(options.ssl_ca_dir, "");
   options.ssl_require_client_cert = 0;
 #endif
   /* Set this to 1 so that allocations made before reading the config file

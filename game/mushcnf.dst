@@ -219,7 +219,7 @@ ssl_private_key_file  server-key.crt
 # A file containing one or more certificates of certifying authorities
 # that the server should trust to certify clients who connect and
 # present certificates.
-ssl_ca_file
+ssl_ca_file /etc/ssl/certs/ca-certificates.crt
 
 # A directory containing one or more certificates of certifying
 # authorities that the server should trust to certify clients who
@@ -230,7 +230,7 @@ ssl_ca_dir /etc/ssl/certs
 
 
 # Are clients *required* to present a valid certificate in order to
-# make an SSL connection?
+# make an SSL connection? If true, ssl_ca_file needs to be set too.
 ssl_require_client_cert no
 
 # Filename to use as a unix-domain socket for talking to the ssl

@@ -157,11 +157,18 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir, int req_client_cer
   }
 
   /* Load trusted CAs */
-  if (ca_file && *ca_file) {
+  if ((ca_file && *ca_file) || (ca_dir && *ca_dir)) {
     if (!SSL_CTX_load_verify_locations(ctx, (ca_file && *ca_file) ? ca_file : NULL,
                                        (ca_dir && *ca_dir) ? ca_dir : NULL)) {
       ssl_errordump("Unable to load CA certificates");
-    } else {
+    }
+    {
+      STACK_OF(X509_NAME) *certs = NULL;
+      if (ca_file && *ca_file)
+        certs = SSL_load_client_CA_file(ca_file);
+      if (certs)
+        SSL_CTX_set_client_CA_list(ctx, certs);
+
       if (req_client_cert)
         SSL_CTX_set_verify(ctx,
                            SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,

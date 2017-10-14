@@ -186,7 +186,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* Set the cipher list to the usual default list, except that
    * we'll allow anonymous diffie-hellman, too.
    */
-  SSL_CTX_set_cipher_list(ctx, "ALL:ADH:RC4+RSA:+SSLv2:@STRENGTH");
+  SSL_CTX_set_cipher_list(ctx, "ALL:ECDH:ADH:!LOW:!MEDIUM:@STRENGTH");
 
   /* Set up session cache if we can */
   /*

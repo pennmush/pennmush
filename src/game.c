@@ -2377,8 +2377,10 @@ db_open(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+#ifdef HAVE_GZBUFFER
     gzbuffer(pf->handle.g,
              1024 * 64); /* Large buffer to speed up decompression */
+#endif
     return pf;
   }
 #endif
@@ -2464,7 +2466,9 @@ db_open_write(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+#ifdef HAVE_GZBUFFER
     gzbuffer(pf->handle.g, 1024 * 64);
+#endif
     return pf;
   }
 #endif

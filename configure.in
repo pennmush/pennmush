@@ -217,7 +217,7 @@ AC_ARG_ENABLE(zlib, AS_HELP_STRING([--disable-zlib], [Don't use zlib for databas
 		    enable_zlib=$enableval, enable_zlib=yes)
 if test "$enable_zlib" = "yes"; then
  AC_CHECK_LIB(z, gzungetc)
- AC_CHECK_FUNCS([gzvprintf])
+ AC_CHECK_FUNCS([gzbuffer gzvprintf])
 fi
 
 # with_ssl=set

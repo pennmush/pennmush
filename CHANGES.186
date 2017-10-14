@@ -36,7 +36,7 @@ Minor changes:
  * hasattrval() now returns 0 for attributes containing a single space when the empty_attrs config option is false. [MG]
  * fold() now passes the number of times <attr> has been called as %2. Suggested by Shaenyl. [MG]
  * Attempt to speed up database saves and loads a bit. [SW]
- * Improvements to SSL certificate checking. The ssl_ca_file config option should now be left blank unless you've customized it, in favor of the new ssl_ca_dir option. [SW]
+ * Improvements to SSL certificate checking. The ssl_ca_file config option should now be set to /etc/ssl/certs/ca-certificates.crt unless you've customized it, and the new ssl_ca_dir option to /etc/ssl/certs. [SW]
 
 Hardcode:
  * Upgrade random number generator to SFMT 1.5.1. [SW]

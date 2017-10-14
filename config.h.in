@@ -307,6 +307,8 @@ typedef bool _Bool;
 
 #undef HAVE_HYPOT
 
+#undef HAVE_GZBUFFER
+
 #undef HAVE_GZVPRINTF
 
 #undef HAVE_GETC_UNLOCKED

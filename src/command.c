@@ -509,8 +509,7 @@ make_command(const char *name, int type, const char *flagstr,
              const char *powerstr, const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
-  cmd = mush_malloc(sizeof *cmd, "command");
-  memset(cmd, 0, sizeof(COMMAND_INFO));
+  cmd = mush_malloc_zero(sizeof *cmd, "command");
   cmd->name = name;
   cmd->cmdlock = TRUE_BOOLEXP;
   cmd->restrict_message = NULL;

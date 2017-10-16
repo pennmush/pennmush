@@ -69,10 +69,28 @@ mush_malloc(size_t bytes, const char *check)
 
   ptr = malloc(bytes);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %lu bytes for %s",
-              (unsigned long) bytes, check);
+    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %zu bytes for %s",
+              bytes, check);
   add_check(check);
   return ptr;
+}
+
+/** Like mush_malloc(), but ensures the returned memory is
+ * zero'ed out.
+ *
+ * \param bytes amount of memory to allocate.
+ * \param check string to label allocation with.
+ * \return allocated block of memory or NULL.
+ */
+void *
+mush_malloc_zero(size_t bytes, const char *check) {
+  void *ptr = calloc(bytes, 1);
+  if (!ptr)
+    do_rawlog(LT_TRACE, "mush_malloc_zero failed to allocate %zu bytes for %s",
+              bytes, check);
+  add_check(check);
+  return ptr;
+
 }
 
 /** A calloc wrapper that tracks type of allocation.
@@ -90,8 +108,8 @@ mush_calloc(size_t count, size_t size, const char *check)
 
   ptr = calloc(count, size);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %lu bytes for %s",
-              (unsigned long) (size * count), check);
+    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %zu bytes for %s",
+              size * count, check);
   add_check(check);
   return ptr;
 }

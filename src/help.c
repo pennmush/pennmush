@@ -72,19 +72,16 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
 {
   static char results[BUFFER_LEN];
   char *rp;
-  char searchterm[BUFFER_LEN], *st;
-  char topic[TOPIC_NAME_LEN + 1];
-  char line[LINE_SIZE + 1], *l, cleanline[LINE_SIZE + 1], *cl;
-  char buff[BUFFER_LEN], *bp;
+  char searchterm[BUFFER_LEN] = { '\0' }, *st;
+  char topic[TOPIC_NAME_LEN + 1] = { '\0' };
+  char line[LINE_SIZE + 1] = { '\0' }, *l;
+  char cleanline[LINE_SIZE + 1] = { '\0' }, *cl;
+  char buff[BUFFER_LEN] = { '\0' }, *bp;
   int n;
   size_t i;
   help_indx *entry;
   FILE *fp;
 
-  memset(topic, 0, TOPIC_NAME_LEN + 1);
-  memset(line, 0, LINE_SIZE + 1);
-  memset(cleanline, 0, LINE_SIZE + 1);
-  memset(buff, 0, BUFFER_LEN);
   memset(results, 0, BUFFER_LEN);
 
   rp = results;

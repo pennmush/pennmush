@@ -110,7 +110,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   if (!ufun)
     return 0;
 
-  ufun->contents[0] = '\0';
+  memset(ufun->contents, 0, sizeof ufun->contents);
   ufun->errmess = (char *) "";
   ufun->thing = executor;
   ufun->pe_flags = PE_UDEFAULT;

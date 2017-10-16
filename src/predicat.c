@@ -762,14 +762,13 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
   char *bon, *eon;
-  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN];
+  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN] = { '\0' };
   char *ap = abuff;
   int aliases = 0;
   int empty = 0;
 
   strncpy(nbuff, name, BUFFER_LEN - 1);
   nbuff[BUFFER_LEN - 1] = '\0';
-  memset(abuff, 0, BUFFER_LEN);
 
   /* First, check for a quoted player name */
   if (type == TYPE_PLAYER && *name == '"') {

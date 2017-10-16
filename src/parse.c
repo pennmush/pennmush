@@ -1668,7 +1668,7 @@ make_pe_info(char *name __attribute__((__unused__)))
 
   pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "make_pe_info");
 
-  *pe_info->cmd_raw = '\0';
+  memset(pe_info->cmd_raw, 0, sizeof pe_info->cmd_raw);
   *pe_info->cmd_evaled = '\0';
 
   pe_info->refcount = 1;
@@ -2679,7 +2679,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
             args_alloced += 10;
           }
           fargs[nfargs] =
-            mush_malloc(BUFFER_LEN, "process_expression.function_argument");
+            mush_malloc_zero(BUFFER_LEN + 16, "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str, executor, caller, enactor,
                                  temp_eflags, temp_tflags, pe_info)) {

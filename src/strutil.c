@@ -69,18 +69,10 @@ char *
 mush_strdup(const char *s, const char *check __attribute__((__unused__)))
 {
   char *x;
-
-#ifdef HAVE_STRDUP
-  x = strdup(s);
-  if (x)
-    add_check(check);
-#else
-
   size_t len = strlen(s) + 1;
-  x = mush_malloc(len, check);
+  x = mush_malloc_zero(len + 16, check);
   if (x)
     memcpy(x, s, len);
-#endif
   return x;
 }
 
@@ -978,10 +970,10 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  r = result = mush_malloc_zero(BUFFER_LEN + 16, "replace_string.buff");
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
-
+  
   len = strlen(old);
   newlen = strlen(newbit);
 

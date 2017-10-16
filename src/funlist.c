@@ -1586,7 +1586,7 @@ FUNCTION(fun_remove)
   char sep;
   char **list, **rem;
   int list_counter, rem_counter, list_total, rem_total;
-  int skip[MAX_SORTSIZE];
+  int skip[MAX_SORTSIZE] = { 0 };
   int first = 1;
 
   /* zap word from string */
@@ -1599,8 +1599,6 @@ FUNCTION(fun_remove)
 
   list_total = list2arr_ansi(list, MAX_SORTSIZE, args[0], sep, 1);
   rem_total = list2arr_ansi(rem, MAX_SORTSIZE, args[1], sep, 1);
-
-  memset(skip, 0, sizeof(int) * MAX_SORTSIZE);
 
   for (rem_counter = 0; rem_counter < rem_total; rem_counter++) {
     for (list_counter = 0; list_counter < list_total; list_counter++) {

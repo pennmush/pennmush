@@ -239,7 +239,7 @@ struct new_pe_info {
 
   PE_REGS *regvals; /**< Saved register values. */
 
-  char cmd_raw[BUFFER_LEN];    /**< Unevaluated cmd executed (%c) */
+  char cmd_raw[BUFFER_LEN + 16];    /**< Unevaluated cmd executed (%c) */
   char cmd_evaled[BUFFER_LEN]; /**< Evaluated cmd executed (%u) */
 
   char attrname[BUFFER_LEN]; /**< The attr currently being evaluated */

@@ -1164,18 +1164,17 @@ shovechars(Port_t port, Port_t sslport)
           goto recheck_d;
         }
       }
-
+      fds[fds_used].events = 0;
       if (d->input.head) {
         timeout = slice_timeout;
       } else {
-        fds[fds_used].fd = d->descriptor;
         fds[fds_used].events = POLLIN;
       }
       if (d->output.head) {
         fds[fds_used].events |= POLLOUT;
       }
       if (!d->input.head || d->output.head)
-        fds_used += 1;
+        fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
@@ -1208,22 +1207,31 @@ shovechars(Port_t port, Port_t sslport)
         do_top(options.active_q_chunk);
       }
 
-      fds_used = 1;
+      fds_used = 0;
 
 #ifdef INFO_SLAVE
       now = mudtime;
 
-      if (fds[0].revents & POLLIN)
-        got_new_connection(sock, CS_IP_SOCKET);
-      if (sslsock && fds[fds_used++].revents & POLLIN)
-        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+      if (ndescriptors < avail_descriptors) {
+        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          got_new_connection(sock, CS_IP_SOCKET);
+        }
+        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+        }
 #ifdef LOCAL_SOCKET
-      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
-        setup_desc(localsock, CS_LOCAL_SOCKET);
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(localsock, CS_LOCAL_SOCKET);
+        }
 #endif /* LOCAL_SOCKET */
+      }
 
-      if (info_slave_state == INFO_SLAVE_PENDING &&
+      if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
           fds[fds_used++].revents & POLLIN) {
+        found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
                  now > info_queue_time + 30) {
@@ -1232,30 +1240,42 @@ shovechars(Port_t port, Port_t sslport)
       }
 
 #else /* INFO_SLAVE */
-      if (fds[0].revents & POLLIN)
-        setup_desc(sock, CS_IP_SOCKET);
-      if (sslsock && fds[fds_used++].revents & POLLIN)
-        setup_desc(sslsock, CS_OPENSSL_SOCKET);
+      if (ndescriptors < avail_descriptors) {
+        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(sock, CS_IP_SOCKET);
+        }
+        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(sslsock, CS_OPENSSL_SOCKET);
+        }
 #ifdef LOCAL_SOCKET
-      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
-        setup_desc(localsock, CS_LOCAL_SOCKET);
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(localsock, CS_LOCAL_SOCKET);
+        }
 #endif /* LOCAL_SOCKET */
+      }
 #endif /* INFO_SLAVE */
-
-      if (notify_fd >= 0 && fds[fds_used++].revents & POLLIN)
+        
+      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+        found -= 1;
         file_watch_event(notify_fd);
+      }
 
-      for (d = descriptor_list; d; d = dnext) {
+      for (d = descriptor_list; d && found > 0; d = dnext) {
         unsigned int input_ready, output_ready, errors;
 
         dnext = d->next;
-
+        
         if (d->descriptor != fds[fds_used].fd)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
         errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
         output_ready = fds[fds_used++].revents & POLLOUT;
+        if (input_ready || errors || output_ready)
+          found -= 1;
         if (errors) {
           /* Socket error; kill this connection. */
           shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);

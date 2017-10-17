@@ -70,7 +70,7 @@ mush_strdup(const char *s, const char *check __attribute__((__unused__)))
 {
   char *x;
   size_t len = strlen(s) + 1;
-  x = mush_malloc_zero(len + 16, check);
+  x = mush_malloc_zero(len + SSE_OFFSET, check);
   if (x)
     memcpy(x, s, len);
   return x;
@@ -970,7 +970,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc_zero(BUFFER_LEN + 16, "replace_string.buff");
+  r = result = mush_malloc_zero(BUFFER_LEN + SSE_OFFSET, "replace_string.buff");
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
   

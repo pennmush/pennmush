@@ -1072,7 +1072,7 @@ static int
 do_entry(MQUE *entry, int include_recurses)
 {
   dbref executor;
-  char tbuf[BUFFER_LEN + 16] = { '\0' };
+  char tbuf[BUFFER_LEN + SSE_OFFSET] = { '\0' };
   int inplace_break_called = 0;
   char *r;
   char const *s;

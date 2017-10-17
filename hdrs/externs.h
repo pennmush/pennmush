@@ -449,7 +449,7 @@ void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
  */
 typedef struct _ufun_attrib {
   dbref thing;               /**< Object with attribute */
-  char contents[BUFFER_LEN + 16]; /**< Attribute value */
+  char contents[BUFFER_LEN + SSE_OFFSET]; /**< Attribute value */
   char attrname[ATTRIBUTE_NAME_LIMIT + 1];
   /**< Name of attribute */
   int pe_flags; /**< Flags to use when evaluating attr (for debug, no_debug) */

@@ -4,6 +4,7 @@
 #cmakedefine HAVE_ARPA_INET_H
 #cmakedefine HAVE_BYTESWAP_H
 #cmakedefine HAVE_CRYPT_H
+#cmakedefine HAVE_ENDIAN_H
 #cmakedefine HAVE_FENV_H
 #cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_LANGINFO_H
@@ -14,6 +15,7 @@
 #cmakedefine HAVE_POLL_H
 #cmakedefine HAVE_STDBOOL_H
 #cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_SYS_ENDIAN_H
 #cmakedefine HAVE_SYS_EVENT_H
 #cmakedefine HAVE_SYS_INOTIFY_H
 #cmakedefine HAVE_SYS_PARAM_H

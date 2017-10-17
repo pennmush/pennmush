@@ -971,7 +971,7 @@ shovechars(Port_t port, Port_t sslport)
   int avail_descriptors;
   int notify_fd = -1;
 #ifdef WIN32
-  WSAPOLLFD *fds;
+  WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;

@@ -102,11 +102,6 @@
 
 #undef ssize_t
 
-/* Should be in <sys/socket.h> */
-#ifndef WIN32
-#undef socklen_t
-#endif
-
 #undef pid_t
 
 /* All of these are in <stdint.h> if present. Otherwise autoconf
@@ -319,6 +314,8 @@ typedef bool _Bool;
 
 #undef HAVE_FPUTS_UNLOCKED
 
+#undef HAVE_FFS
+
 /* Variables and defines */
 
 #undef HAVE_SIGCHLD
@@ -411,5 +408,11 @@ typedef bool _Bool;
 
 /* TODO: Change in source */
 #define RESTRICT restrict
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#include <w32api.h>
+#define _WIN32_WINNT Windows7
+#define WINVER Windows7
+#endif
 
 #endif /* __CONFIG_H */ 

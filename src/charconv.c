@@ -134,7 +134,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet)
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((len - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (s + n));
@@ -321,7 +321,7 @@ utf8_to_latin1(const char *utf8, int *outlen)
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((ulen - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (utf8 + n));

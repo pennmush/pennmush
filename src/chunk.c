@@ -350,8 +350,6 @@ acm_chunk_new_period(void)
   return;
 }
 
-#ifndef WIN32
-
 static int
 acm_chunk_fork_file(void)
 {
@@ -375,8 +373,6 @@ acm_chunk_fork_done(void)
 {
   return;
 }
-
-#endif /* !WIN32 */
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
@@ -1483,7 +1479,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   for (j = 0; j < 10; j++) {
 #if defined(HAVE_PREAD)
     done = pread(fd, pos, remaining, file_offset);
-#elif defined(WIN32) && !defined(__MINGW32__)
+#elif defined(WIN32)
     if (!ReadFile(fd, pos, remaining, &done, NULL)) {
       /* nothing */
     }
@@ -1551,7 +1547,7 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 
 #if defined(HAVE_PWRITE)
     done = pwrite(fd, pos, remaining, file_offset);
-#elif defined(WIN32) && !defined(__MINGW32__)
+#elif defined(WIN32)
     if (!WriteFile(fd, pos, remaining, &done, NULL)) {
       /* nothing */
     }
@@ -2711,6 +2707,33 @@ acc_chunk_fork_done(void)
   unlink(child_filename);
   swap_fd_child = -1;
 }
+
+#else
+
+static int
+acc_chunk_fork_file(void)
+{
+  return 1;
+}
+
+static void
+acc_chunk_fork_parent(void)
+{
+  return;
+}
+
+static void
+acc_chunk_fork_child(void)
+{
+  return;
+}
+
+static void
+acc_chunk_fork_done(void)
+{
+  return;
+}
+
 #endif /* !WIN32 */
 
 struct ac_funcs {

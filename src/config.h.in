@@ -44,6 +44,7 @@
 #cmakedefine HAVE_FGETS_UNLOCKED
 #cmakedefine HAVE_FPUTS_UNLOCKED
 #cmakedefine HAVE_FETESTEXCEPT
+#cmakedefine HAVE_FFS
 #cmakedefine HAVE_FORK
 #cmakedefine HAVE_GETADDRINFO
 #cmakedefine HAVE_GETC_UNLOCKED

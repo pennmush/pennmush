@@ -551,12 +551,13 @@ initialize_rng(void)
 
   if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
                            CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
-    fprintf(stderr, "Unable to acquire crypt context: %d\n", GetLastError());
+    fprintf(stderr, "Unable to acquire crypt context: %lu\n", GetLastError());
     acquired = 0;
-  } else if (CryptGenRandom(hCryptProv, sizeof seeds, (BYTE *) seeds)) {
-    fprintf(stderr, "Seeding RNG with %u bytes from CryptGenRandom()\n",
-            sizeof seeds);
-    seed_generated = true;
+  }
+  if (acquired && CryptGenRandom(hCryptProv, sizeof cryptbuf, (BYTE *) cryptbuf)) {
+    fprintf(stderr, "Seeded RNG with %I64u bytes from CryptGenRandom()\n",
+            sizeof buf);
+    sfmt_init_by_array(&rand_state, buf, sizeof cryptbuf / sizeof cryptbuf[0]);
   } else {
     seed_generated = true;
     seeds[0] = (uint64_t) time(NULL);

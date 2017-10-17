@@ -47,6 +47,10 @@
 
 #undef HAVE_BYTESWAP_H
 
+#undef HAVE_ENDIAN_H
+
+#undef HAVE_SYS_ENDIAN_H
+
 #undef HAVE_LIBZ
 
 #undef HAVE_SYS_PARAM_H

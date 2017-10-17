@@ -1482,15 +1482,13 @@ config_file_checks(void)
   /* if we're on Win32, complain about compression */
   if ((options.compressprog && *options.compressprog)) {
     do_rawlog(LT_ERR, "CONFIG: compression program is specified but not used "
-                      "in Win32, ignoring",
-              options.compressprog);
+                      "in Win32, ignoring.");
   }
 
   if (((options.compresssuff && *options.compresssuff))) {
     do_rawlog(
       LT_ERR,
-      "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-      options.compresssuff);
+      "CONFIG: compression suffix is specified but not used in Win32, ignoring.");
   }
 
   /* Also remove the compression options */

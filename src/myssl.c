@@ -11,7 +11,6 @@
  */
 
 #include "copyrite.h"
-#include "myssl.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -19,9 +18,8 @@
 #include <sys/types.h>
 #endif
 #ifdef WIN32
-#define FD_SETSIZE 256
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <io.h>
 void shutdown_checkpoint(void);
 #else /* !WIN32 */
@@ -63,6 +61,7 @@ void shutdown_checkpoint(void);
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
+#include "myssl.h"
 #include "pcg_basic.h"
 #include "conf.h"
 #include "parse.h"

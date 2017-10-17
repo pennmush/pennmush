@@ -5,9 +5,10 @@
  */
 
 #include "copyrite.h"
+
+#include "mysocket.h"
 #include "mymalloc.h"
 #include "charconv.h"
-#include "mysocket.h"
 #include "log.h"
 
 #ifdef HAVE_SSE2

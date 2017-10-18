@@ -381,14 +381,29 @@ set_source_files_properties(funmath.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURC
 
 if(EXISTS ${GPERF})
 
-  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/bflags.c" COMMAND ${GPERF} -C --output-file bflags.c bflags.gperf MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/bflags.gperf" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding bflags.c" VERBATIM)
-  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/htmltab.c" COMMAND ${GPERF} -C --output-file htmltab.c htmltab.gperf MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/htmltab.gperf" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding htmltab.c" VERBATIM)
-  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/lmathtab.c" COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/lmathtab.gperf" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding lmathtab.c" VERBATIM)
-  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/rgbtab.c" COMMAND ${GPERF} -C --output-file rgbtab.c rgbtab.gperf MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/rgbtab.gperf" WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding rgbtab.c" VERBATIM)
+  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/bflags.c"
+    COMMAND ${GPERF} -C --output-file bflags.c bflags.gperf
+    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/bflags.gperf"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding bflags.c" VERBATIM)
+  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/htmltab.c"
+    COMMAND ${GPERF} -C --output-file htmltab.c htmltab.gperf
+    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/htmltab.gperf"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding htmltab.c" VERBATIM)
+  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/lmathtab.c"
+    COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf
+    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/lmathtab.gperf"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding lmathtab.c" VERBATIM)
+  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/rgbtab.c"
+    COMMAND ${GPERF} -C --output-file rgbtab.c rgbtab.gperf
+    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/rgbtab.gperf"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding rgbtab.c" VERBATIM)
 
 else()
 
-  if("${PROJECT_SOURCE_DIR}/bflags.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/bflags.c" OR "${PROJECT_SOURCE_DIR}/htmltab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/htmltab.c" OR "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c" OR "${PROJECT_SOURCE_DIR}/rgbtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/rgbtab.c")
+  if("${PROJECT_SOURCE_DIR}/bflags.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/bflags.c" OR
+      "${PROJECT_SOURCE_DIR}/htmltab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/htmltab.c" OR
+      "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c" OR
+      "${PROJECT_SOURCE_DIR}/rgbtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/rgbtab.c")
     message(WARNING "gperf not installed and hash tables need to be updated.")
   endif()
 endif()
@@ -398,14 +413,28 @@ execute_process(COMMAND ${PERL} utils/mkcmds.pl gitinfo WORKING_DIRECTORY "${PRO
 
 # By my understanding this next line shouldn't be needed, but...
 set_source_files_properties(command.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/switchinc.c;${PROJECT_SOURCE_DIR}/../hdrs/cmds.h")
-add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/switchinc.c" "${PROJECT_SOURCE_DIR}/../hdrs/switches.h" COMMAND ${PERL} utils/mkcmds.pl switches WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/SWITCHES" COMMENT "Rebuilding switchinc.c and switches.h" VERBATIM)
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/switchinc.c" "${PROJECT_SOURCE_DIR}/../hdrs/switches.h"
+  COMMAND ${PERL} utils/mkcmds.pl switches WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+  MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/SWITCHES" COMMENT "Rebuilding switchinc.c and switches.h"
+  VERBATIM)
 
 # command.c handled above
 set_source_files_properties(cmdlocal.c move.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/../hdrs/cmds.h")
-add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/cmds.h" COMMAND ${PERL} utils/mkcmds.pl commands VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" DEPENDS "${PROJECT_SOURCE_DIR}/cmds.c" "${PROJECT_SOURCE_DIR}/command.c" "${PROJECT_SOURCE_DIR}/cque.c" "${PROJECT_SOURCE_DIR}/set.c" "${PROJECT_SOURCE_DIR}/sql.c" COMMENT "Rebuilding cmds.h")
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/cmds.h"
+  COMMAND ${PERL} utils/mkcmds.pl commands VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+  DEPENDS "${PROJECT_SOURCE_DIR}/cmds.c" "${PROJECT_SOURCE_DIR}/command.c" "${PROJECT_SOURCE_DIR}/cque.c"
+  "${PROJECT_SOURCE_DIR}/set.c" "${PROJECT_SOURCE_DIR}/sql.c" COMMENT "Rebuilding cmds.h")
 
 set_source_files_properties(function.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/../hdrs/funs.h")
-add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h" COMMAND ${PERL} utils/mkcmds.pl functions VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" DEPENDS "${PROJECT_SOURCE_DIR}/funcrypt.c" "${PROJECT_SOURCE_DIR}/function.c" "${PROJECT_SOURCE_DIR}/fundb.c" "${PROJECT_SOURCE_DIR}/funlist.c" "${PROJECT_SOURCE_DIR}/funlocal.c" "${PROJECT_SOURCE_DIR}/funmath.c" "${PROJECT_SOURCE_DIR}/funmisc.c" "${PROJECT_SOURCE_DIR}/funstr.c" "${PROJECT_SOURCE_DIR}/funtime.c" "${PROJECT_SOURCE_DIR}/funufun.c" "${PROJECT_SOURCE_DIR}/bsd.c" "${PROJECT_SOURCE_DIR}/conf.c" "${PROJECT_SOURCE_DIR}/extmail.c" "${PROJECT_SOURCE_DIR}/help.c" "${PROJECT_SOURCE_DIR}/markup.c" "${PROJECT_SOURCE_DIR}/wiz.c" "${PROJECT_SOURCE_DIR}/sql.c" "${PROJECT_SOURCE_DIR}/cque.c")
+add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h"
+  COMMAND ${PERL} utils/mkcmds.pl functions VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+  DEPENDS "${PROJECT_SOURCE_DIR}/funcrypt.c" "${PROJECT_SOURCE_DIR}/function.c"
+  "${PROJECT_SOURCE_DIR}/fundb.c" "${PROJECT_SOURCE_DIR}/funlist.c" "${PROJECT_SOURCE_DIR}/funlocal.c"
+  "${PROJECT_SOURCE_DIR}/funmath.c" "${PROJECT_SOURCE_DIR}/funmisc.c" "${PROJECT_SOURCE_DIR}/funstr.c"
+  "${PROJECT_SOURCE_DIR}/funtime.c" "${PROJECT_SOURCE_DIR}/funufun.c" "${PROJECT_SOURCE_DIR}/bsd.c"
+  "${PROJECT_SOURCE_DIR}/conf.c" "${PROJECT_SOURCE_DIR}/extmail.c" "${PROJECT_SOURCE_DIR}/help.c"
+  "${PROJECT_SOURCE_DIR}/markup.c" "${PROJECT_SOURCE_DIR}/wiz.c" "${PROJECT_SOURCE_DIR}/sql.c"
+  "${PROJECT_SOURCE_DIR}/cque.c")
 
 set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c conf.c
@@ -421,7 +450,7 @@ set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   version.c wait.c warnings.c wild.c wiz.c)
 
 add_executable(netmush ${SRC_FILES})
-target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${CMAKE_CURRENT_BINARY_DIR}")
+target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")
 target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
 set_property(TARGET netmush PROPERTY C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
@@ -431,7 +460,7 @@ if(NOT (NO_INFO_SLAVE OR WIN32))
   set(INFO_SLAVE 1)
   add_executable(info_slave info_slave.c strdup.c sig.c wait.c mysocket.c)
   target_compile_definitions(info_slave PUBLIC SLAVE)
-  target_include_directories(info_slave PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${CMAKE_CURRENT_BINARY_DIR}")
+  target_include_directories(info_slave PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")
   set_property(TARGET info_slave PROPERTY LINKER_LANGUAGE C)
   target_link_libraries(info_slave ${LIBS} ${SLAVELIBS})
   set_property(TARGET info_slave PROPERTY C_STANDARD 99)
@@ -443,7 +472,7 @@ if(Libevent_FOUND AND NOT (NO_SSL_SLAVE OR WIN32))
   set(SSL_SLAVE 1)
   add_executable(ssl_slave ssl_slave.c mysocket.c myssl.c pcg_basic.c sig.c strdup.c wait.c)
   target_compile_definitions(ssl_slave PUBLIC SLAVE)
-  target_include_directories(ssl_slave PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${CMAKE_CURRENT_BINARY_DIR}")
+  target_include_directories(ssl_slave PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")
   set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)
   target_link_libraries(ssl_slave ${LIBS} ${SLAVELIBS})
   set_property(TARGET ssl_slave PROPERTY C_STANDARD 99)
@@ -451,11 +480,11 @@ if(Libevent_FOUND AND NOT (NO_SSL_SLAVE OR WIN32))
   target_compile_options(ssl_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 endif()
   
-configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_BINARY_DIR}/config.h" @ONLY)
 if(CHMOD)
-  configure_file("${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh" @ONLY)
-configure_file("${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh" @ONLY)
-  execute_process(COMMAND ${CHMOD} +x test/alltests.sh game/txt/compose.sh WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+  configure_file("${PROJECT_BINARY_DIR}/test/alltests.sh.in" "${PROJECT_BINARY_DIR}/test/alltests.sh" @ONLY)
+configure_file("${PROJECT_BINARY_DIR}/game/txt/compose.sh.in" "${PROJECT_BINARY_DIR}/game/txt/compose.sh" @ONLY)
+  execute_process(COMMAND ${CHMOD} +x test/alltests.sh game/txt/compose.sh WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
 endif()
 
 include(WriteCompilerDetectionHeader)
@@ -463,13 +492,17 @@ write_compiler_detection_header(FILE confcompiler.h PREFIX HAVE COMPILERS GNU Cl
 
 # Assorted extra make targets
 if(CTAGS)
-  add_custom_target(ctags COMMAND ${CTAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running ctags on source")
+  add_custom_target(ctags COMMAND ${CTAGS} *.c ../hdrs/*.h ../*.h
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running ctags on source")
 endif()
 if(ETAGS)
-  add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running etags on source")
+  add_custom_target(etags COMMAND ${ETAGS} *.c ../hdrs/*.h ../*.h
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Running etags on source")
 endif()
 if(INDENT)
-  add_custom_target(indent COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Reformatting source code")
+  add_custom_target(indent
+    COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Reformatting source code")
 endif()
 
 add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/mush.cnf"
@@ -489,6 +522,6 @@ add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/restrict.cnf"
 
 add_custom_target(update
   DEPENDS "${PROJECT_BINARY_DIR}/game/mush.cnf" "${PROJECT_BINARY_DIR}/game/alias.cnf"
-          "${PROJECT_BINARY_DIR}/game/restrict.cnf")
+          "${PROJECT_BINARY_DIR}/game/restrict.cnf" COMMENT "Updating config files.")
         
 install(TARGETS netmush info_slave ssl_slave DESTINATION "game" OPTIONAL)

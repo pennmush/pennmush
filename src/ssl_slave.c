@@ -31,7 +31,6 @@
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 
-#include "SFMT.h"
 #include "conf.h"
 #include "log.h"
 #include "mysocket.h"
@@ -57,7 +56,6 @@ void ssl_event_cb(struct bufferevent *bev, short e, void *data);
 struct conn *alloc_conn(void);
 void free_conn(struct conn *c);
 void delete_conn(struct conn *c);
-sfmt_t rand_state;
 
 enum conn_state {
   C_SSL_CONNECTING,
@@ -522,8 +520,7 @@ main(int argc __attribute__((__unused__)),
       strerror(errno), len);
     return EXIT_FAILURE;
   }
-
-  sfmt_init_gen_rand(&rand_state, getpid());
+  
   parent_pid = getppid();
 
   if (!ssl_init(cf.private_key_file, cf.ca_file, cf.ca_dir, cf.require_client_cert)) {

@@ -673,7 +673,7 @@ FUNCTION(fun_shuffle)
   /* shuffle it */
   for (i = 0; i < n; i++) {
     char *tmp;
-    j = get_random32(i, n - 1);
+    j = get_random_u32(i, n - 1);
     tmp = words[j];
     words[j] = words[i];
     words[i] = tmp;
@@ -1203,7 +1203,7 @@ FUNCTION(fun_randword)
 
   for (; randcount; randcount--) {
     if (word_index == -1 || randtype != RAND_LINEAR) {
-      word_index = get_random32(0, nptrs - 1);
+      word_index = get_random_u32(0, nptrs - 1);
     } else {
       word_index++;
       if (word_index >= nptrs) {

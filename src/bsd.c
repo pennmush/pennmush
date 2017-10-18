@@ -429,8 +429,6 @@ static char **saved_argv = NULL;
 int file_watch_init(void);
 void file_watch_event(int);
 
-void initialize_mt(void);
-
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
 
@@ -578,7 +576,7 @@ main(int argc, char **argv)
   time(&mudtime);
 
   /* initialize random number generator */
-  initialize_mt();
+  initialize_rng();
 
   options.mem_check = 1;
 

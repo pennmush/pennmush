@@ -280,7 +280,7 @@ pay_queue(dbref player, const char *command)
 {
   int estcost;
   estcost = QUEUE_COST +
-            (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
+            (QUEUE_LOSS ? ((get_random_u32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),

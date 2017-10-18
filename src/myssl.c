@@ -63,7 +63,7 @@ void shutdown_checkpoint(void);
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#include "SFMT.h"
+#include "pcg_basic.h"
 #include "conf.h"
 #include "parse.h"
 #include "wait.h"
@@ -90,8 +90,6 @@ static DH *get_dh1024(void);
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
 
-extern sfmt_t rand_state;
-
 /** Initialize the SSL context.
  * \return pointer to SSL context object.
  */
@@ -104,7 +102,8 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir, int req_client_cer
   /* uint8_t context[128]; */
   DH *dh;
   unsigned int reps = 1;
-
+  pcg32_random_t rand_state;
+  
   if (!bio_err) {
     if (!SSL_library_init())
       return NULL;
@@ -113,20 +112,19 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir, int req_client_cer
     bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
   }
 
+  pcg32_srandom_r(&rand_state, time(NULL), getpid() + 1);
   lock_file(stderr);
   fputs("Seeding OpenSSL random number pool.\n", stderr);
   unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
        places will have enough entropy. Otherwise, be lazy and use random
-       numbers
-       until it's satisfied. */
-    uint32_t gibberish[4];
+       numbers until it's satisfied. */
+    uint32_t gibberish[8];
     int n;
-
-    /* sfmt_fill_array32 requires a much larger array. */
-    for (n = 0; n < 4; n++)
-      gibberish[n] = sfmt_genrand_uint32(&rand_state);
+    
+    for (n = 0; n < 8; n++)
+      gibberish[n] = pcg32_random_r(&rand_state);
 
     RAND_seed(gibberish, sizeof gibberish);
 

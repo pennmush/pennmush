@@ -39,7 +39,7 @@ Minor changes:
  * Improvements to SSL certificate checking. The ssl_ca_file config option should now be set to /etc/ssl/certs/ca-certificates.crt unless you've customized it, and the new ssl_ca_dir option to /etc/ssl/certs. [SW]
 
 Hardcode:
- * Upgrade random number generator to SFMT 1.5.1. [SW]
+ * Use the much lighter weight and higher quality PCG random number generator. [SW]
  * Use a better seed for the RNG on Windows. [SW]
  * mkcmds.pl uses a better way to generate temporary files. [SW]	
  * Use clang-format instead of GNU indent to format source code. [SW]

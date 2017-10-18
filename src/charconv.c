@@ -14,10 +14,30 @@
 #ifdef HAVE_SSE2
 #include <string.h>
 #include <emmintrin.h>
+#ifdef WIN32
+#include <intrin.h>
+#endif
 #endif
 
 #ifdef HAVE_SSE42
 #include <nmmintrin.h>
+#endif
+
+
+#if defined(WIN32) && !defined(HAVE_FFS)
+
+/* Windows version of ffs() */
+
+int ffs(int i) {
+	unsigned long pos;
+	
+	if (_BitScanForward(&pos, (unsigned long)i))
+		return (int)pos;
+	else
+		return 0;	
+}
+
+#define HAVE_FFS
 #endif
 
 /**

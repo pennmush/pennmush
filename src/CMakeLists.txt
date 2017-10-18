@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(PennMUSH LANGUAGES C VERSION 1.8.6.2)
 
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR})
 
 include(CheckLibraryExists)
 include(CheckIncludeFile)
@@ -346,27 +348,31 @@ endif()
 # create local source files
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/cmdlocal.c")
   message(STATUS "Copying cmdlocal.dst to cmdlocal.c")
-  execute_process(COMMAND ${CP} cmdlocal.dst cmdlocal.c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  execute_process(COMMAND ${CP} cmdlocal.dst cmdlocal.c WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 elseif("${PROJECT_SOURCE_DIR}/cmdlocal.dst" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/cmdlocal.c")
   message(WARNING "cmdlocal.dst is newer than cmdlocal.c. You might need to update cmdlocal.c")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/flaglocal.c")
   message(STATUS "Copying flaglocal.dst to flaglocal.c")
-  execute_process(COMMAND ${CP} flaglocal.dst flaglocal.c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  execute_process(COMMAND ${CP} flaglocal.dst flaglocal.c WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 elseif("${PROJECT_SOURCE_DIR}/flaglocal.dst" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/flaglocal.c")
   message(WARNING "flaglocal.dst is newer than flaglocal.c. You might need to update flaglocal.c")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/funlocal.c")
   message(STATUS "Copying funlocal.dst to funlocal.c")
-  execute_process(COMMAND ${CP} funlocal.dst funlocal.c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  execute_process(COMMAND ${CP} funlocal.dst funlocal.c WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 elseif("${PROJECT_SOURCE_DIR}/funlocal.dst" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/funlocal.c")
   message(WARNING "funlocal.dst is newer than funlocal.c. You might need to update funlocal.c")
 endif()
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/local.c")
   message(STATUS "Copying local.dst to local.c")
-  execute_process(COMMAND ${CP} local.dst local.c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  execute_process(COMMAND ${CP} local.dst local.c WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 elseif("${PROJECT_SOURCE_DIR}/local.dst" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/local.c")
     message(WARNING "local.dst is newer than local.c. You might need to update local.c")
+endif()
+if(NOT EXISTS "${PROJECT_BINARY_DIR}/game/names.cnf")
+  message(STATUS "Copying namescnf.dst to names.cnf")
+  execute_process(COMMAND ${CP} namescnf.dst names.cnf WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/game")
 endif()
 
 set_source_files_properties(boolexp.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/bflags.c")
@@ -446,9 +452,9 @@ if(Libevent_FOUND AND NOT (NO_SSL_SLAVE OR WIN32))
 endif()
   
 configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-configure_file("${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh" @ONLY)
-configure_file("${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh" @ONLY)
 if(CHMOD)
+  configure_file("${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/alltests.sh" @ONLY)
+configure_file("${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/game/txt/compose.sh" @ONLY)
   execute_process(COMMAND ${CHMOD} +x test/alltests.sh game/txt/compose.sh WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
@@ -465,3 +471,24 @@ endif()
 if(INDENT)
   add_custom_target(indent COMMAND ${INDENT} -i --style=file ${SRC_FILES} info_slave.c ssl_slave.c ../hdrs/*.h WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Reformatting source code")
 endif()
+
+add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/mush.cnf"
+  COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/update-cnf.pl" game/mush.cnf game/mushcnf.dst
+  DEPENDS "${PROJECT_BINARY_DIR}/game/mushcnf.dst"
+  WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating mush.cnf" VERBATIM)
+
+add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/alias.cnf"
+  COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/update-cnf.pl" game/alias.cnf game/aliascnf.dst
+  DEPENDS "${PROJECT_BINARY_DIR}/game/aliascnf.dst"
+  WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating alias.cnf" VERBATIM)
+
+add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/restrict.cnf"
+  COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/update-cnf.pl" game/restrict.cnf game/restrictcnf.dst
+  DEPENDS "${PROJECT_BINARY_DIR}/game/restrictcnf.dst"
+  WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating restrict.cnf" VERBATIM)
+
+add_custom_target(update
+  DEPENDS "${PROJECT_BINARY_DIR}/game/mush.cnf" "${PROJECT_BINARY_DIR}/game/alias.cnf"
+          "${PROJECT_BINARY_DIR}/game/restrict.cnf")
+        
+install(TARGETS netmush info_slave ssl_slave DESTINATION "game" OPTIONAL)

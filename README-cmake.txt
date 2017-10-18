@@ -19,7 +19,11 @@ Instructions for use (Subject to change):
 
 2. Build:
   % cmake --build . -- [make options like -j8]
+  % cmake --build . -- install update
 
+Other targets:
+
+clean -- remove compiled files etc.
 
 Extra optional targets created depending on what's found by cmake during the configuration step:
 

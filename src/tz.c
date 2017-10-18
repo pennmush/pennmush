@@ -6,9 +6,6 @@
 
 #define _GNU_SOURCE
 #include "copyrite.h"
-#include "config.h"
-#include "tz.h"
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -33,6 +30,21 @@
 #endif
 #include <pcre.h>
 
+#if defined(HAVE_ENDIAN_H)
+#include <endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+#include <sys/endian.h>
+#elif defined(WIN32)
+/* For ntohl() */
+#include <Winsock2.h>
+#elif defined(HAVE_ARPA_INET_H)
+/* For ntohl() */
+#include <arpa/inet.h>
+#else
+#error "No endian conversion functions available!"
+#endif
+
+#include "tz.h"
 #include "attrib.h"
 #include "conf.h"
 #include "externs.h"

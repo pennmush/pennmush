@@ -40,6 +40,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -51,6 +54,12 @@
 #include "memcheck.h"
 #include "strutil.h"
 #include "confmagic.h"
+
+#ifdef WIN32
+#define SZT PRIu64
+#else
+#define SZT "zu"
+#endif
 
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
@@ -72,7 +81,7 @@ mush_malloc(size_t bytes, const char *check)
 
   ptr = malloc(bytes);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %zu bytes for %s",
+    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %" SZT " bytes for %s",
               bytes, check);
   add_check(check);
   return ptr;
@@ -89,7 +98,7 @@ void *
 mush_malloc_zero(size_t bytes, const char *check) {
   void *ptr = calloc(bytes, 1);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc_zero failed to allocate %zu bytes for %s",
+    do_rawlog(LT_TRACE, "mush_malloc_zero failed to allocate %" SZT " bytes for %s",
               bytes, check);
   add_check(check);
   return ptr;
@@ -111,7 +120,7 @@ mush_calloc(size_t count, size_t size, const char *check)
 
   ptr = calloc(count, size);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %zu bytes for %s",
+    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %" SZT " bytes for %s",
               size * count, check);
   add_check(check);
   return ptr;

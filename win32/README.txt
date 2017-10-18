@@ -1,3 +1,9 @@
+Note: This is an old document and the steps in it have not been tested for some
+time and it relies on long-obsolete software. The current reccomended ways to
+use Penn on Windows is MinGW installed through MSYS2 (See README-MSYS2.txt) or
+on the Windows 10 Linux subsystem (README-Windows10.txt). Raevnos hopes to
+eventually supported Visual Studio 2017, though.
+
 How to compile PennMUSH 1.8.x under Windows using Visual Studio
 ---------------------------------------------------------------
 by Nick Gammon <nick@gammon.com.au> and Javelin and Luuk de Waard

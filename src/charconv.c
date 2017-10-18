@@ -6,18 +6,39 @@
 
 #include "copyrite.h"
 #include "config.h"
+
+#include "mysocket.h"
 #include "mymalloc.h"
 #include "charconv.h"
-#include "mysocket.h"
 #include "log.h"
 
 #ifdef HAVE_SSE2
 #include <string.h>
 #include <emmintrin.h>
+#ifdef WIN32
+#include <intrin.h>
+#endif
 #endif
 
 #ifdef HAVE_SSE42
 #include <nmmintrin.h>
+#endif
+
+
+#if defined(WIN32) && !defined(HAVE_FFS)
+
+/* Windows version of ffs() */
+
+int ffs(int i) {
+	unsigned long pos;
+	
+	if (_BitScanForward(&pos, (unsigned long)i))
+		return (int)pos;
+	else
+		return 0;	
+}
+
+#define HAVE_FFS
 #endif
 
 /**
@@ -135,7 +156,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet)
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((len - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (s + n));
@@ -322,7 +343,7 @@ utf8_to_latin1(const char *utf8, int *outlen)
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((ulen - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (utf8 + n));

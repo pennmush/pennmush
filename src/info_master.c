@@ -393,3 +393,9 @@ kill_info_slave(void)
 }
 
 #endif /* INFO_SLAVE */
+
+#ifdef WIN32
+void dummy_function(void) {
+	/* Supress a warning about empty soure files. */
+}
+#endif

@@ -1,5 +1,6 @@
 PennMUSH for MSYS2 Instructions.
 
+Minimum OS requirements: Windows 7 or Server 2008 or better.
 
 Setting up environment and prereqs:
 
@@ -8,7 +9,11 @@ Setting up environment and prereqs:
 3. Install the following packages with pacman:
    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-openssl mingw-w64-x86_64-pcre perl make
 3.a. Optionally also install the following packages:
-   pacman -S cmake git gperf mingw-w64-x86_64-gdb
+   pacman -S cmake git gperf mingw-w64-x86_64-gdb ed
+3.b Optionally instally a sql library if needed (Use the MinGW version,
+     not the plain MSYS2 version):
+   pacman -S mingw-w64-x86_64-sqlite3
+
    
 Building Penn:   
 1. Navigate to the PennMUSH folder (Or clone the repository with git).

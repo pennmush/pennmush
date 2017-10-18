@@ -299,9 +299,9 @@ ssl_connected(struct conn *c)
   SSL *ssl = bufferevent_openssl_get_ssl(c->remote_bev);
 
 #if SSL_DEBUG_LEVEL > 0
-  errprintf(stdout, "ssl_slave: SSL connection attempt completed, using %s. "
+  errprintf(stdout, "ssl_slave: SSL connection attempt completed, using %s and cipher %s. "
                     "Resolving remote host name.\n",
-            SSL_get_version(ssl));
+            SSL_get_version(ssl), SSL_get_cipher(ssl));
   if (bufferevent_get_openssl_error(c->remote_bev))
     errprintf(stdout, "ssl_slave: ssl error code: %ld\n",
               bufferevent_get_openssl_error(c->remote_bev));

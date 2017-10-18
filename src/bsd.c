@@ -325,7 +325,12 @@ static void update_quotas(struct timeval last, struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
-static int test_connection(int newsock);
+
+#ifndef WIN32
+typedef int SOCKET;
+#endif
+
+static int test_connection(SOCKET newsock);
 static DESC *new_connection(int oldsock, int *result, conn_source source);
 
 static void clearstrings(DESC *d);
@@ -422,7 +427,7 @@ static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
 bool inactivity_check(void);
 void load_reboot_db(void);
 
-static bool in_suid_root_mode = 0;
+static bool in_suid_root_mode __attribute__((__unused__)) = 0;
 static char *pidfile = NULL;
 static char **saved_argv = NULL;
 
@@ -452,7 +457,7 @@ main(int argc, char **argv)
 #endif /* WIN32SERVICES */
 {
   FILE *newerr;
-  bool detach_session = 1;
+  bool detach_session __attribute__((__unused__)) = 1;
 
 /* disallow running as root on unix.
  * This is done as early as possible, before translation is initialized.
@@ -971,7 +976,7 @@ shovechars(Port_t port, Port_t sslport)
   int avail_descriptors;
   int notify_fd = -1;
 #ifdef WIN32
-  WSAPOLLFD *fds;
+  WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
@@ -1266,7 +1271,7 @@ shovechars(Port_t port, Port_t sslport)
 
         dnext = d->next;
         
-        if (d->descriptor != fds[fds_used].fd)
+      if ((SOCKET)d->descriptor != fds[fds_used].fd)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
@@ -1298,7 +1303,7 @@ shovechars(Port_t port, Port_t sslport)
 }
 
 static int
-test_connection(int newsock)
+test_connection(SOCKET newsock)
 {
 #ifdef WIN32
   if (newsock == INVALID_SOCKET && WSAGetLastError() != WSAEINTR)

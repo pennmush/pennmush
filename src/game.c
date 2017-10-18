@@ -85,7 +85,9 @@ void Win32MUSH_setup(void);
 GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
+#ifndef WIN32
 static int reserved;            /**< Reserved file descriptor */
+#endif
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
 static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
 #define ERRDB_INITIAL_SIZE 5
@@ -544,8 +546,12 @@ bool
 fork_and_dump(int forking)
 {
   pid_t child;
-  bool nofork, status = true, split;
-  epoch++;
+  bool nofork, status = true;
+#ifndef WIN32
+  bool split = false;
+#endif
+
+	epoch++;
 
 #ifdef LOG_CHUNK_STATS
   chunk_stats(NOTHING, 0);
@@ -560,7 +566,7 @@ fork_and_dump(int forking)
 #if defined(WIN32) || !defined(HAVE_FORK)
   nofork = 1;
 #endif
-  split = 0;
+
   if (!nofork && chunk_num_swapped()) {
 #ifndef WIN32
     /* Try to clone the chunk swapfile. */

@@ -302,6 +302,7 @@ resize_log_rotate(struct log_stream *log)
 
   format_log_name(namea, log->filename, 1, 1);
 
+#ifndef WIN32
   if (options.compressprog[0]) {
     /* This can be done better. */
     pid_t res;
@@ -320,7 +321,9 @@ resize_log_rotate(struct log_stream *log)
                 log->filename, namea);
       }
     }
-  } else {
+  } else 
+#endif
+  {
     if (copy_file(log->fp, namea, 1) < 0) {
       fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
               log->filename, namea);

@@ -111,9 +111,6 @@ extern CHAN *channels;
 static const char flushed_message[] = "\r\n<Output Flushed>\x1B[0m\r\n";
 
 extern DESC *descriptor_list;
-#ifdef WIN32
-static WSADATA wsadata;
-#endif
 
 static struct text_block *make_text_block(const char *s, int n);
 void free_text_block(struct text_block *t);

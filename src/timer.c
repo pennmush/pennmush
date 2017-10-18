@@ -378,7 +378,10 @@ signal_cpu_limit(int signo)
 #endif
 UINT_PTR timer_id;
 VOID CALLBACK
-win32_timer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+win32_timer(HWND hwnd __attribute__((__unused__)),
+	UINT uMsg __attribute__((__unused__)),
+	UINT_PTR idEvent __attribute__((__unused__)),
+	DWORD dwTime __attribute__((__unused__)))
 {
   cpu_time_limit_hit = 1;
 }

@@ -1,4 +1,6 @@
 *.o
+*.obj
+*.exe
 *.s
 *~
 *.bak
@@ -6,6 +8,8 @@
 *.patch
 *.patch.txt
 *.plist
+core
+*.core
 Makefile
 config.h
 config.log
@@ -27,7 +31,6 @@ game/txt/events.txt
 game/txt/help.txt
 game/txt/news.txt
 game/save
-game/core
 game/*.crt
 game/*.csr
 game/*.key
@@ -43,10 +46,8 @@ src/funlocal.c
 src/info_slave
 src/local.c
 src/netmud
-src/netmud~
 src/ssl_slave
 src/TAGS
-src/*.exe
 test/alltests.sh
 test/testgame
 third_party

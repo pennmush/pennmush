@@ -28,9 +28,12 @@
 #include <unistd.h>
 #endif
 #ifdef WIN32
+#include <windows.h>
+#include <ntstatus.h>
 #include <wtypes.h>
 #include <winbase.h> /* For GetCurrentProcessId() */
-#include <Wincrypt.h>
+#include <Bcrypt.h>
+#pragma comment(lib, "bcrypt.lib")
 #endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -522,12 +525,12 @@ void
 initialize_rng(void)
 {
   uint64_t seeds[4];
-  bool seed_generated = false;
+  bool seed_generated __attribute__((__unused__))= false;
   
 #ifdef HAVE_DEV_URANDOM
   /* Seed from /dev/urandom if available */  
   int fd;
-
+  
   fd = open("/dev/urandom", O_RDONLY);
   if (fd >= 0) {
     int r = read(fd, (void *)seeds, sizeof seeds);
@@ -545,26 +548,15 @@ initialize_rng(void)
 #endif
   
 #ifdef WIN32
-  /* Use the Win32 crypto RNG interface */
-  HCRYPTPROV hCryptProv;
-  bool acquired = 1;
-
-  if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
-                           CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
-    fprintf(stderr, "Unable to acquire crypt context: %lu\n", GetLastError());
-    acquired = 0;
-  }
-  if (acquired && CryptGenRandom(hCryptProv, sizeof cryptbuf, (BYTE *) cryptbuf)) {
-    fprintf(stderr, "Seeded RNG with %I64u bytes from CryptGenRandom()\n",
-            sizeof buf);
-    sfmt_init_by_array(&rand_state, buf, sizeof cryptbuf / sizeof cryptbuf[0]);
-  } else {
-    seed_generated = true;
+  /* Use the Win32 bcrypto RNG interface */
+if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
+  BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
+    fprintf(stderr, "Seeding RNG with %I64u bytes from BCryptGenRandom()\n",
+      sizeof seeds);    
+} else {
     seeds[0] = (uint64_t) time(NULL);
     seeds[1] = (uint64_t) GetCurrentProcessId();
   }
-  if (acquired)
-    CryptReleaseContext(hCryptProv, 0);
 #else
   /* Default seeder. Pick a seed that's slightly random */
   if (!seed_generated) {

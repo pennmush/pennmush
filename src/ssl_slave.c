@@ -28,7 +28,6 @@
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 
-#include "SFMT.h"
 #include "conf.h"
 #include "log.h"
 #include "mysocket.h"
@@ -55,7 +54,6 @@ void ssl_event_cb(struct bufferevent *bev, short e, void *data);
 struct conn *alloc_conn(void);
 void free_conn(struct conn *c);
 void delete_conn(struct conn *c);
-sfmt_t rand_state;
 
 enum conn_state {
   C_SSL_CONNECTING,
@@ -456,7 +454,7 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
 static void
 close_connections(bool flush_local)
 {
-  struct conn *c;   
+  struct conn *c;
   for (c = connections; c; c = c->next) {
     c->state = C_SHUTTINGDOWN;
     if (c->remote_bev) {
@@ -520,11 +518,10 @@ main(int argc __attribute__((__unused__)),
       strerror(errno), len);
     return EXIT_FAILURE;
   }
-
-  sfmt_init_gen_rand(&rand_state, getpid());
+  
   parent_pid = getppid();
 
-  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.require_client_cert)) {
+  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.ca_dir, cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
     exit(EXIT_FAILURE);
   }
@@ -556,8 +553,7 @@ main(int argc __attribute__((__unused__)),
 #endif
 
   /* Catch shutdown requests from the parent mush */
-  sigterm_handler =
-    evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);
+  sigterm_handler = evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);
   event_add(sigterm_handler, NULL);
 
   errprintf(stderr, "ssl_slave: starting event loop using %s.\n",

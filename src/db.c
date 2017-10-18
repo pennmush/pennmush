@@ -2171,7 +2171,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
   }
 #endif
 #endif
-  break;
+    break;
   }
   return r;
 }

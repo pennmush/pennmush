@@ -192,4 +192,7 @@ typedef bool _Bool;
 
 #ifdef __SSE4_2__
 #define HAVE_SSE42
+#define SSE_OFFSET 16
+#else
+#define SSE_OFFSET 0
 #endif

@@ -43,7 +43,6 @@
 
 #include "copyrite.h"
 #include "config.h"
-#include "htab.h"
 
 #include <string.h>
 #include <math.h>
@@ -52,13 +51,15 @@
 #endif
 #include <openssl/bn.h>
 
+#include "conf.h"
+#include "externs.h"
 #include "hash_function.h"
+#include "htab.h"
 #include "mymalloc.h"
 #include "confmagic.h"
 
 /* Temporary prototypes to make the compiler happy. */
 char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
-uint32_t get_random32(uint32_t low, uint32_t high);
 
 struct hash_bucket {
   const char *key;
@@ -186,7 +187,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     }
 
     /* None. Use a random seed and bump the existing element */
-    seed_index = htab->hashseed_offset + get_random32(0, NHASH_TRIES - 1);
+    seed_index = htab->hashseed_offset + get_random_u32(0, NHASH_TRIES - 1);
     seed_index %= NHASH_MOD;
     hval =
       city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) % htab->hashsize;

@@ -2346,7 +2346,7 @@ scramble_ansi_string(ansi_string *as)
   uint16_t idxtmp;
 
   for (i = 0; i < as->len; i++) {
-    j = get_random32(0, as->len - 1);
+    j = get_random_u32(0, as->len - 1);
     tmp = as->text[i];
     as->text[i] = as->text[j];
     as->text[j] = tmp;

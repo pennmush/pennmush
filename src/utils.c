@@ -39,7 +39,6 @@
 #include <immintrin.h>
 #endif
 
-#include "SFMT.h"
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"
@@ -53,10 +52,10 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "pcg_basic.h"
 #include "confmagic.h"
 
 dbref find_entrance(dbref door);
-void initialize_mt(void);
 
 /** Parse object/attribute strings into components.
  * This function takes a string which is of the format obj/attr or attr,
@@ -110,7 +109,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   if (!ufun)
     return 0;
 
-  ufun->contents[0] = '\0';
+  memset(ufun->contents, 0, sizeof ufun->contents);
   ufun->errmess = (char *) "";
   ufun->thing = executor;
   ufun->pe_flags = PE_UDEFAULT;
@@ -514,83 +513,68 @@ reverse(dbref list)
   return newlist;
 }
 
-sfmt_t rand_state;
+pcg32_random_t rand_state1, rand_state2;
 
-/** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
- * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
+/** Initialize the random number generator used by the mush. Attempts to use a seed value
+ * provided by the host OS's cryptographic RNG facilities; failing that uses the current time
+ * and PID. */
 void
-initialize_mt(void)
+initialize_rng(void)
 {
+  uint64_t seeds[4];
+  bool seed_generated = false;
+  
 #ifdef HAVE_DEV_URANDOM
+  /* Seed from /dev/urandom if available */  
   int fd;
-  uint32_t buf[128]; /* The linux manpage for /dev/urandom
-                      advises against reading large amounts of
-                      data from it; we used to read 624*4 (Or *8 on 64-bit
-                      systems)
-                      bytes. The new figure is much more reasonable, at the cost
-                      of reducing the
-                      number of possible starting states by a lot . */
-  int to_read = sizeof buf;
-
-#ifdef __RDRND__
-  to_read = to_read / 2;
-#endif
 
   fd = open("/dev/urandom", O_RDONLY);
   if (fd >= 0) {
-    int r = read(fd, buf, to_read);
+    int r = read(fd, (void *)seeds, sizeof seeds);
     close(fd);
     if (r <= 0) {
       fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
-                      "seeding method.\n");
+              "seeding method.\n");
     } else {
-#ifdef __RDRND__
-      /* Also use rdrand to fill in some more bytes when
-         available. Could just use /dev/urandom for all of it, but
-         playing around with this is more fun. Plus it spreads the
-         entropy around a bit. */
-      for (int i = r / 4; i < 128; i += 1) {
-        if (_rdrand32_step(buf + i))
-          r += 4;
-        else
-          break;
-      }
-#endif
-      fprintf(stderr, "Seeded RNG with %d bytes from /dev/urandom\n", r);
-      sfmt_init_by_array(&rand_state, buf, r / sizeof buf[0]);
-      return;
+      fprintf(stderr, "Seeding RNG with %d bytes from /dev/urandom\n", r);
+      seed_generated = true;
     }
   } else
     fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
                     "generator. Resorting to normal seeding method.\n");
-
 #endif
-/* Default seeder. Pick a seed that's fairly random */
+  
 #ifdef WIN32
-
   /* Use the Win32 crypto RNG interface */
   HCRYPTPROV hCryptProv;
-  uint32_t buf[128];
   bool acquired = 1;
 
   if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
                            CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
     fprintf(stderr, "Unable to acquire crypt context: %d\n", GetLastError());
     acquired = 0;
-  }
-  if (acquired && CryptGenRandom(hCryptProv, sizeof buf, (BYTE *) buf)) {
-    fprintf(stderr, "Seeded RNG with %u bytes from CryptGenRandom()\n",
-            sizeof buf);
-    sfmt_init_by_array(&rand_state, buf, sizeof buf / sizeof buf[0]);
+  } else if (CryptGenRandom(hCryptProv, sizeof seeds, (BYTE *) seeds)) {
+    fprintf(stderr, "Seeding RNG with %u bytes from CryptGenRandom()\n",
+            sizeof seeds);
+    seed_generated = true;
   } else {
-    sfmt_init_gen_rand(&rand_state, GetCurrentProcessId() | (time(NULL) << 16));
+    seed_generated = true;
+    seeds[0] = (uint64_t) time(NULL);
+    seeds[1] = (uint64_t) GetCurrentProcessId();
   }
   if (acquired)
     CryptReleaseContext(hCryptProv, 0);
-
 #else
-  sfmt_init_gen_rand(&rand_state, getpid() | (time(NULL) << 16));
+  /* Default seeder. Pick a seed that's slightly random */
+  if (!seed_generated) {
+    seeds[0] = (uint64_t) time(NULL);
+    seeds[1] = (uint64_t) getpid();
+  }
 #endif
+
+  pcg32_srandom_r(&rand_state1, seeds[0], seeds[1]);
+  pcg32_srandom_r(&rand_state2, seeds[2], seeds[3]);
+
 }
 
 /** Get a uniform random long between low and high values, inclusive.
@@ -600,7 +584,7 @@ initialize_mt(void)
  * \return random number between low and high, or 0 or -1 for error.
  */
 uint32_t
-get_random32(uint32_t low, uint32_t high)
+get_random_u32(uint32_t low, uint32_t high)
 {
   uint32_t x, n, n_limit;
 
@@ -633,10 +617,34 @@ get_random32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = sfmt_genrand_uint32(&rand_state);
+    n = pcg32_random_r(&rand_state1);
   } while (n >= n_limit);
 
   return low + (n % x);
+}
+
+
+/** Return a random double in the range [0,1) */
+double
+get_random_d(void)
+{
+  uint64_t a, b, c;
+  a = pcg32_random_r(&rand_state1);
+  b = pcg32_random_r(&rand_state2);
+  c = (a << 32) | b;
+  return ldexp((double) c, -64);
+}
+
+
+/** Return a random double in the range (0,1) */
+double
+get_random_d2(void)
+{
+  uint64_t a, b, c;
+  a = pcg32_random_r(&rand_state1);
+  b = pcg32_random_r(&rand_state2);
+  c = (a << 32) | b;
+  return ldexp(((double) c) + 0.5, -64);
 }
 
 /** Return an object's alias. We expect a valid object.

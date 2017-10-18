@@ -400,11 +400,11 @@ set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   funlocal.c funmath.c funmisc.c funstr.c funtime.c funufun.c game.c
   hash_function.c help.c htab.c intmap.c local.c lock.c log.c look.c
   malias.c markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c
-  mysocket.c myrlimit.c myssl.c notify.c parse.c player.c plyrlist.c
-  predicat.c privtab.c info_master.c ptab.c rob.c services.c set.c
-  SFMT.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c
-  strutil.c tables.c timer.c tz.c unparse.c utils.c version.c wait.c
-  warnings.c wild.c wiz.c)
+  mysocket.c myrlimit.c myssl.c notify.c parse.c pcg_basic.c player.c
+  plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c
+  services.c set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c
+  strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c
+  version.c wait.c warnings.c wild.c wiz.c)
 
 add_executable(netmush ${SRC_FILES})
 target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${CMAKE_CURRENT_BINARY_DIR}")
@@ -427,7 +427,7 @@ target_compile_options(info_slave PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})
 # TO-DO: Configurable
 if(Libevent_FOUND)
   set(SSL_SLAVE 1)
-  add_executable(ssl_slave ssl_slave.c strdup.c sig.c wait.c myssl.c SFMT.c mysocket.c)
+  add_executable(ssl_slave ssl_slave.c mysocket.c myssl.c pcg_basic.c sig.c strdup.c wait.c)
   target_compile_definitions(ssl_slave PUBLIC SLAVE)
   target_include_directories(ssl_slave PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${CMAKE_CURRENT_BINARY_DIR}")
   set_property(TARGET ssl_slave PROPERTY LINKER_LANGUAGE C)

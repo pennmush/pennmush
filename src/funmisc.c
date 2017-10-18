@@ -11,7 +11,7 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "SFMT.h"
+
 #include "ansi.h"
 #include "attrib.h"
 #include "command.h"
@@ -769,8 +769,6 @@ FUNCTION(fun_r)
  *      ESCAPE, SQUISH, ENCRYPT, DECRYPT, LIT
  */
 
-extern sfmt_t rand_state;
-
 /* ARGSUSED */
 FUNCTION(fun_rand)
 {
@@ -779,7 +777,7 @@ FUNCTION(fun_rand)
 
   if (nargs == 0) {
     /* Floating pont number in the range [0,1) */
-    safe_number(sfmt_genrand_real2(&rand_state), buff, bp);
+    safe_number(get_random_d(), buff, bp);
     return;
   }
 
@@ -824,7 +822,7 @@ FUNCTION(fun_rand)
       high = highint;
     }
   }
-  rand = get_random32(low, high);
+  rand = get_random_u32(low, high);
   safe_integer((int) rand - offset, buff, bp);
 }
 
@@ -856,11 +854,11 @@ FUNCTION(fun_die)
         first = 0;
       else
         safe_chr(' ', buff, bp);
-      safe_uinteger(get_random32(1, die), buff, bp);
+      safe_uinteger(get_random_u32(1, die), buff, bp);
     }
   } else {
     for (count = 0; count < n; count++)
-      total += get_random32(1, die);
+      total += get_random_u32(1, die);
 
     safe_uinteger(total, buff, bp);
   }

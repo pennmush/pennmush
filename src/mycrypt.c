@@ -204,8 +204,8 @@ password_hash(const char *key, const char *algo)
 
   len = strlen(key);
 
-  s1 = salts[get_random32(0, 61)];
-  s2 = salts[get_random32(0, 61)];
+  s1 = salts[get_random_u32(0, 61)];
+  s2 = salts[get_random_u32(0, 61)];
 
   bp = buff;
   safe_strl("2:", 2, buff, &bp);

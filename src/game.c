@@ -779,6 +779,7 @@ init_game_postdb(const char *conf)
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
+                options.ssl_ca_dir,
                 options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
     options.ssl_port = 0; /* Disable ssl */
@@ -2375,7 +2376,10 @@ db_open(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
-    gzbuffer(pf->handle.g, 1024 * 64); /* Large buffer to speed up decompression */
+#ifdef HAVE_GZBUFFER
+    gzbuffer(pf->handle.g,
+             1024 * 64); /* Large buffer to speed up decompression */
+#endif
     return pf;
   }
 #endif
@@ -2461,7 +2465,9 @@ db_open_write(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+#ifdef HAVE_GZBUFFER
     gzbuffer(pf->handle.g, 1024 * 64);
+#endif
     return pf;
   }
 #endif

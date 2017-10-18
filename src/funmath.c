@@ -2643,7 +2643,6 @@ MATH_FUNC(math_dist2d)
 #else
   safe_number(sqrt(d1 * d1 + d2 * d2), buff, bp);
 #endif
-  
 }
 
 MATH_FUNC(math_dist3d)

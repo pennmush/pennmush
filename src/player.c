@@ -466,9 +466,9 @@ email_register_player(DESC *d, const char *name, const char *email,
   }
 
   /* Come up with a random password of length 7-12 chars */
-  len = get_random32(7, 12);
+  len = get_random_u32(7, 12);
   for (i = 0; i < len; i++)
-    passwd[i] = elems[get_random32(0, NELEMS - 1)];
+    passwd[i] = elems[get_random_u32(0, NELEMS - 1)];
   passwd[len] = '\0';
 
   /* If we've made it here, we can send the email and create the

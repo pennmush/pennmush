@@ -595,10 +595,8 @@ FUNCTION(fun_merge)
   int i, j;
   size_t len;
   char *ptr = args[0];
-  char matched[UCHAR_MAX + 1];
+  char matched[UCHAR_MAX + 1] = { '\0' };
   ansi_string *as;
-
-  memset(matched, 0, sizeof matched);
 
   /* find the characters to look for */
   if (!args[2] || !*args[2])
@@ -1230,9 +1228,7 @@ FUNCTION(fun_trim)
   ansi_string *as;
   int s, e;
   char *delims;
-  char totrim[0x100];
-
-  memset(totrim, 0, 0x100);
+  char totrim[0x100] = { '\0' };
 
   /* Alas, PennMUSH and TinyMUSH used different orders for the arguments.
    * We'll give the users an option about it

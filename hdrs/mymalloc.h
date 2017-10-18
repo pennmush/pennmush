@@ -9,6 +9,7 @@
 #include "mushtype.h"
 
 void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;
+void *mush_malloc_zero(size_t bytes, const char *check) __attribute_malloc__;
 void *mush_calloc(size_t count, size_t size,
                   const char *check) __attribute_malloc__;
 #define mush_realloc(ptr, size, tag)                                           \

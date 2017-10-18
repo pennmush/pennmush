@@ -552,10 +552,11 @@ look_description(dbref player, dbref thing, const char *def,
                  NEW_PE_INFO *pe_info)
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
-  char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
+  char buff[BUFFER_LEN];
+  char fbuff[BUFFER_LEN];
   ufun_attrib ufun;
   char *bp = buff;
-
+  
   if (!GoodObject(player) || !GoodObject(thing))
     return;
   if (fetch_ufun_attrib(descname, thing, &ufun,

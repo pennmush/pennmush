@@ -427,7 +427,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   tp = tbuf;
   safe_str(T(" to "), tbuf, &tp);
   for (who = 0; who < gcount; who++) {
-    if (noisy && (get_random32(0, 100) < (uint32_t) WHISPER_LOUDNESS))
+    if (noisy && (get_random_u32(0, 100) < (uint32_t) WHISPER_LOUDNESS))
       overheard = 1;
     safe_itemizer(who + 1, (who == gcount - 1), ",", T("and"), " ", tbuf, &tp);
     safe_str(AName(good[who], AN_SAY, NULL), tbuf, &tp);

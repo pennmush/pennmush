@@ -64,7 +64,7 @@ void shutdown_checkpoint(void);
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#include "SFMT.h"
+#include "pcg_basic.h"
 #include "conf.h"
 #include "parse.h"
 #include "wait.h"
@@ -92,13 +92,11 @@ static DH *get_dh1024(void);
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
 
-extern sfmt_t rand_state;
-
 /** Initialize the SSL context.
  * \return pointer to SSL context object.
  */
 SSL_CTX *
-ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
+ssl_init(char *private_key_file, char *ca_file, char *ca_dir, int req_client_cert)
 {
   const SSL_METHOD
     *meth; /* If this const gives you a warning, you're
@@ -106,7 +104,8 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* uint8_t context[128]; */
   DH *dh;
   unsigned int reps = 1;
-
+  pcg32_random_t rand_state;
+  
   if (!bio_err) {
     if (!SSL_library_init())
       return NULL;
@@ -115,20 +114,19 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
     bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
   }
 
+  pcg32_srandom_r(&rand_state, time(NULL), getpid() + 1);
   lock_file(stderr);
   fputs("Seeding OpenSSL random number pool.\n", stderr);
   unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
        places will have enough entropy. Otherwise, be lazy and use random
-       numbers
-       until it's satisfied. */
-    uint32_t gibberish[4];
+       numbers until it's satisfied. */
+    uint32_t gibberish[8];
     int n;
-
-    /* sfmt_fill_array32 requires a much larger array. */
-    for (n = 0; n < 4; n++)
-      gibberish[n] = sfmt_genrand_uint32(&rand_state);
+    
+    for (n = 0; n < 8; n++)
+      gibberish[n] = pcg32_random_r(&rand_state);
 
     RAND_seed(gibberish, sizeof gibberish);
 
@@ -159,10 +157,18 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   }
 
   /* Load trusted CAs */
-  if (ca_file && *ca_file) {
-    if (!SSL_CTX_load_verify_locations(ctx, ca_file, NULL)) {
+  if ((ca_file && *ca_file) || (ca_dir && *ca_dir)) {
+    if (!SSL_CTX_load_verify_locations(ctx, (ca_file && *ca_file) ? ca_file : NULL,
+                                       (ca_dir && *ca_dir) ? ca_dir : NULL)) {
       ssl_errordump("Unable to load CA certificates");
-    } else {
+    }
+    {
+      STACK_OF(X509_NAME) *certs = NULL;
+      if (ca_file && *ca_file)
+        certs = SSL_load_client_CA_file(ca_file);
+      if (certs)
+        SSL_CTX_set_client_CA_list(ctx, certs);
+
       if (req_client_cert)
         SSL_CTX_set_verify(ctx,
                            SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
@@ -188,7 +194,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* Set the cipher list to the usual default list, except that
    * we'll allow anonymous diffie-hellman, too.
    */
-  SSL_CTX_set_cipher_list(ctx, "ALL:ADH:RC4+RSA:+SSLv2:@STRENGTH");
+  SSL_CTX_set_cipher_list(ctx, "ALL:ECDH:ADH:!LOW:!MEDIUM:@STRENGTH");
 
   /* Set up session cache if we can */
   /*

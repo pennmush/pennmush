@@ -807,10 +807,10 @@ do_newpassword(dbref executor, dbref enactor, const char *name,
 
   if (generate) {
     int i;
-    int len = get_random32(7, 12);
+    int len = get_random_u32(7, 12);
 
     for (i = 0; i < len; i++)
-      passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
+      passwd[i] = elems[get_random_u32(0, sizeof(elems) - 2)];
     passwd[len] = '\0';
     password = passwd;
   } else {

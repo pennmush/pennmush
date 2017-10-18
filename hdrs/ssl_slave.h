@@ -20,6 +20,7 @@ struct ssl_slave_config {
   int websock_port;
   char private_key_file[FILE_PATH_LEN];
   char ca_file[FILE_PATH_LEN];
+  char ca_dir[FILE_PATH_LEN];
   int require_client_cert;
   int keepalive_timeout;
 };

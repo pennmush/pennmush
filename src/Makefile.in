@@ -25,11 +25,11 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	funufun.c game.c hash_function.c help.c htab.c intmap.c		\
 	local.c lock.c log.c look.c malias.c markup.c match.c		\
 	memcheck.c move.c mycrypt.c mymalloc.c mysocket.c myrlimit.c	\
-	myssl.c notify.c parse.c player.c plyrlist.c predicat.c		\
-	privtab.c info_master.c ptab.c rob.c services.c set.c SFMT.c	\
-	sig.c sort.c speech.c sql.c ssl_master.c strdup.c strtree.c	\
-	strutil.c tables.c timer.c tz.c unparse.c utils.c version.c	\
-	wait.c warnings.c wild.c wiz.c
+	myssl.c notify.c parse.c pcg_basic.c player.c plyrlist.c	\
+	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
+	set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c		\
+	strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c	\
+	version.c wait.c warnings.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -41,11 +41,11 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	funufun.o game.o hash_function.o help.o htab.o intmap.o		\
 	local.o lock.o log.o look.o malias.o markup.o match.o		\
 	memcheck.o move.o mycrypt.o mymalloc.o mysocket.o myrlimit.o	\
-	myssl.o notify.o parse.o player.o plyrlist.o predicat.o		\
-	privtab.o info_master.o ptab.o rob.o services.o set.o SFMT.o	\
-	sig.o sort.o speech.o sql.o ssl_master.o strdup.o strtree.o	\
-	strutil.o tables.o timer.o tz.o unparse.o utils.o version.o	\
-	wait.o warnings.o wild.o wiz.o
+	myssl.o notify.o parse.o pcg_basic.o player.o plyrlist.o	\
+	predicat.o privtab.o info_master.o ptab.o rob.o services.o	\
+	set.o sig.o sort.o speech.o sql.o ssl_master.o strdup.o		\
+	strtree.o strutil.o tables.o timer.o tz.o unparse.o utils.o	\
+	version.o wait.o warnings.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -69,10 +69,10 @@ info_slave: info_slave.o strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for ssl_slave.
-ssl_slave: ssl_slave.o strdup.o sig.o wait.o myssl.o SFMT.o mysocket.c
+ssl_slave: ssl_slave.o strdup.o sig.o wait.o myssl.o pcg_basic.o mysocket.c
 	@echo "Making ssl_slave."
 	$(CC) $(CCFLAGS) -DSLAVE -o ssl_slave ssl_slave.o strdup.o	\
-	sig.o wait.o myssl.o SFMT.o mysocket.c $(LDFLAGS) $(LIBS)
+	sig.o wait.o myssl.o pcg_basic.o mysocket.c $(LDFLAGS) $(LIBS)
 
 # It should always be out of date.
 buildinf:
@@ -351,6 +351,7 @@ bsd.o: ../hdrs/pueblo.h
 bsd.o: ../hdrs/sig.h
 bsd.o: ../hdrs/strutil.h
 bsd.o: ../hdrs/version.h
+bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
@@ -373,6 +374,17 @@ bufferq.o: ../hdrs/compile.h
 bufferq.o: ../hdrs/mypcre.h
 bufferq.o: ../hdrs/log.h
 bufferq.o: ../hdrs/mymalloc.h
+charconv.o: ../config.h
+charconv.o: ../confmagic.h
+charconv.o: ../options.h
+charconv.o: ../hdrs/copyrite.h
+charconv.o: ../hdrs/mymalloc.h
+charconv.o: ../hdrs/compile.h
+charconv.o: ../hdrs/mushtype.h
+charconv.o: ../hdrs/charconv.h
+charconv.o: ../hdrs/mysocket.h
+charconv.o: ../hdrs/log.h
+charconv.o: ../hdrs/bufferq.h
 chunk.o: ../config.h
 chunk.o: ../confmagic.h
 chunk.o: ../options.h
@@ -982,9 +994,6 @@ funmisc.o: ../config.h
 funmisc.o: ../confmagic.h
 funmisc.o: ../options.h
 funmisc.o: ../hdrs/copyrite.h
-funmisc.o: ../hdrs/SFMT.h
-funmisc.o: ../hdrs/SFMT-params.h
-funmisc.o: ../hdrs/SFMT-params19937.h
 funmisc.o: ../hdrs/ansi.h
 funmisc.o: ../hdrs/compile.h
 funmisc.o: ../hdrs/mushtype.h
@@ -1177,11 +1186,20 @@ htab.o: ../config.h
 htab.o: ../confmagic.h
 htab.o: ../options.h
 htab.o: ../hdrs/copyrite.h
+htab.o: ../hdrs/conf.h
 htab.o: ../hdrs/htab.h
+htab.o: ../hdrs/mushtype.h
+htab.o: ../hdrs/externs.h
+htab.o: ../hdrs/compile.h
+htab.o: ../hdrs/dbdefs.h
+htab.o: ../hdrs/mushdb.h
+htab.o: ../hdrs/flags.h
+htab.o: ../hdrs/dbio.h
+htab.o: ../hdrs/ptab.h
+htab.o: ../hdrs/chunk.h
+htab.o: ../hdrs/mypcre.h
 htab.o: ../hdrs/hash_function.h
 htab.o: ../hdrs/mymalloc.h
-htab.o: ../hdrs/compile.h
-htab.o: ../hdrs/mushtype.h
 intmap.o: ../config.h
 intmap.o: ../confmagic.h
 intmap.o: ../options.h
@@ -1388,21 +1406,20 @@ memcheck.o: ../options.h
 memcheck.o: ../hdrs/copyrite.h
 memcheck.o: ../hdrs/memcheck.h
 memcheck.o: ../hdrs/mushtype.h
-memcheck.o: ../hdrs/SFMT.h
-memcheck.o: ../hdrs/SFMT-params.h
-memcheck.o: ../hdrs/SFMT-params19937.h
 memcheck.o: ../hdrs/conf.h
 memcheck.o: ../hdrs/htab.h
+memcheck.o: ../hdrs/externs.h
+memcheck.o: ../hdrs/compile.h
 memcheck.o: ../hdrs/dbdefs.h
 memcheck.o: ../hdrs/mushdb.h
 memcheck.o: ../hdrs/flags.h
 memcheck.o: ../hdrs/dbio.h
 memcheck.o: ../hdrs/ptab.h
 memcheck.o: ../hdrs/chunk.h
+memcheck.o: ../hdrs/mypcre.h
 memcheck.o: ../hdrs/log.h
 memcheck.o: ../hdrs/bufferq.h
 memcheck.o: ../hdrs/mymalloc.h
-memcheck.o: ../hdrs/compile.h
 memcheck.o: ../hdrs/strutil.h
 move.o: ../config.h
 move.o: ../confmagic.h
@@ -1500,9 +1517,7 @@ myssl.o: ../confmagic.h
 myssl.o: ../options.h
 myssl.o: ../hdrs/copyrite.h
 myssl.o: ../hdrs/myssl.h
-myssl.o: ../hdrs/SFMT.h
-myssl.o: ../hdrs/SFMT-params.h
-myssl.o: ../hdrs/SFMT-params19937.h
+myssl.o: ../hdrs/pcg_basic.h
 myssl.o: ../hdrs/conf.h
 myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
@@ -1543,6 +1558,7 @@ notify.o: ../hdrs/mysocket.h
 notify.o: ../hdrs/parse.h
 notify.o: ../hdrs/pueblo.h
 notify.o: ../hdrs/strutil.h
+notify.o: ../hdrs/charconv.h
 parse.o: ../config.h
 parse.o: ../confmagic.h
 parse.o: ../options.h
@@ -1572,6 +1588,10 @@ parse.o: ../hdrs/memcheck.h
 parse.o: ../hdrs/mymalloc.h
 parse.o: ../hdrs/notify.h
 parse.o: ../hdrs/strutil.h
+pcg_basic.o: ../config.h
+pcg_basic.o: ../confmagic.h
+pcg_basic.o: ../options.h
+pcg_basic.o: ../hdrs/pcg_basic.h
 player.o: ../config.h
 player.o: ../confmagic.h
 player.o: ../options.h
@@ -1752,13 +1772,6 @@ set.o: ../hdrs/memcheck.h
 set.o: ../hdrs/mymalloc.h
 set.o: ../hdrs/parse.h
 set.o: ../hdrs/strutil.h
-SFMT.o: ../config.h
-SFMT.o: ../confmagic.h
-SFMT.o: ../options.h
-SFMT.o: ../hdrs/SFMT.h
-SFMT.o: ../hdrs/SFMT-params.h
-SFMT.o: ../hdrs/SFMT-params19937.h
-SFMT.o: ../hdrs/SFMT-common.h
 sig.o: ../config.h
 sig.o: ../confmagic.h
 sig.o: ../options.h
@@ -1993,9 +2006,6 @@ utils.o: ../config.h
 utils.o: ../confmagic.h
 utils.o: ../options.h
 utils.o: ../hdrs/copyrite.h
-utils.o: ../hdrs/SFMT.h
-utils.o: ../hdrs/SFMT-params.h
-utils.o: ../hdrs/SFMT-params19937.h
 utils.o: ../hdrs/ansi.h
 utils.o: ../hdrs/compile.h
 utils.o: ../hdrs/mushtype.h
@@ -2019,6 +2029,7 @@ utils.o: ../hdrs/match.h
 utils.o: ../hdrs/mymalloc.h
 utils.o: ../hdrs/parse.h
 utils.o: ../hdrs/strutil.h
+utils.o: ../hdrs/pcg_basic.h
 version.o: ../config.h
 version.o: ../confmagic.h
 version.o: ../options.h
@@ -2135,9 +2146,6 @@ ssl_slave.o: ../config.h
 ssl_slave.o: ../confmagic.h
 ssl_slave.o: ../options.h
 ssl_slave.o: ../hdrs/copyrite.h
-ssl_slave.o: ../hdrs/SFMT.h
-ssl_slave.o: ../hdrs/SFMT-params.h
-ssl_slave.o: ../hdrs/SFMT-params19937.h
 ssl_slave.o: ../hdrs/conf.h
 ssl_slave.o: ../hdrs/htab.h
 ssl_slave.o: ../hdrs/mushtype.h

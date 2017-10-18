@@ -216,8 +216,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       has_64bit_times = 1;
   }
 
-  tz = mush_malloc(sizeof *tz, "timezone");
-  memset(tz, 0, sizeof *tz);
+  tz = mush_malloc_zero(sizeof *tz, "timezone");
 
   {
     int32_t counts[6];

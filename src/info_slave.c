@@ -196,8 +196,8 @@ check_parent(evutil_socket_t fd __attribute__((__unused__)),
 #ifdef HAVE_PRCTL
 static void
 check_parent_signal(evutil_socket_t fd __attribute__((__unused__)),
-             short what __attribute__((__unused__)),
-             void *arg __attribute__((__unused__)))
+                    short what __attribute__((__unused__)),
+                    void *arg __attribute__((__unused__)))
 {
   fputerr("Parent mush process exited unexpectedly! Shutting down.");
   event_base_loopbreak(main_loop);
@@ -211,7 +211,7 @@ main(void)
   struct timeval parent_timeout = {.tv_sec = 5, .tv_usec = 0};
 
   parent_pid = getppid();
-  
+
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
@@ -222,14 +222,14 @@ main(void)
     event_add(watch_parent, NULL);
   } else {
 #endif
-  /* Run every 5 seconds to see if the parent mush process is still around. */
-  watch_parent =
-    event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
-  event_add(watch_parent, &parent_timeout);
+    /* Run every 5 seconds to see if the parent mush process is still around. */
+    watch_parent =
+      event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+    event_add(watch_parent, &parent_timeout);
 #ifdef HAVE_PRCTL
   }
 #endif
-  
+
   /* Wait for an incoming request datagram from the mush */
   watch_request =
     event_new(main_loop, 0, EV_READ | EV_PERSIST, got_request, NULL);
@@ -239,7 +239,7 @@ main(void)
   fprintf(stderr, "info_slave: starting event loop using %s.\n",
           event_base_get_method(main_loop));
   unlock_file(stderr);
-  
+
   event_base_dispatch(main_loop);
   fputerr("shutting down.");
 
@@ -533,13 +533,13 @@ eventwait_watch_parent_exit(void)
     return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
   }
 #endif
-    
+
 #ifdef HAVE_POLL
   case METHOD_POLL:
     parent_pid = parent;
     return 0;
 #endif
-    
+
   default:
     errno = ENOTSUP;
     return -1;

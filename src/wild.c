@@ -629,7 +629,8 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj, size_t len)
+qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj,
+                   size_t len)
 {
   int offsets[99];
   pcre_extra *extra;

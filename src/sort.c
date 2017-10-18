@@ -177,7 +177,7 @@ loop:
   /* Pick something at random at swap it into the leftmost slot   */
   /* This is the pivot, we'll put it back in the right spot later */
 
-  i = get_random32(left, right);
+  i = get_random_u32(left, right);
   tmp = array[i];
   array[i] = array[left];
   array[left] = tmp;

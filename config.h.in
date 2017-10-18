@@ -307,6 +307,8 @@ typedef bool _Bool;
 
 #undef HAVE_HYPOT
 
+#undef HAVE_GZBUFFER
+
 #undef HAVE_GZVPRINTF
 
 #undef HAVE_GETC_UNLOCKED
@@ -400,6 +402,9 @@ typedef bool _Bool;
 #undef HAVE_SSE42
 #ifdef __SSE4_2__
 #define HAVE_SSE42
+#define SSE_OFFSET 16
+#else
+#define SSE_OFFSET 0
 #endif
 
 #undef HAVE_ALTIVEC

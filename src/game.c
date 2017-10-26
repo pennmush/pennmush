@@ -82,7 +82,7 @@ void Win32MUSH_setup(void);
 #endif /* fix to HP-UX getrusage() braindamage */
 
 /* declarations */
-GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};
+GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
 #ifndef WIN32

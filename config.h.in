@@ -63,6 +63,8 @@
 
 #undef HAVE_SYS_PRCTL_H
 
+#undef HAVE_SYS_EVENTFD_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H
@@ -319,6 +321,8 @@ typedef bool _Bool;
 #undef HAVE_FPUTS_UNLOCKED
 
 #undef HAVE_FFS
+
+#undef HAVE_EVENTFD
 
 /* Variables and defines */
 

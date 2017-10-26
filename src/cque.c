@@ -1224,7 +1224,7 @@ que_next(void)
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
    */
-  min = 5;
+  min = 500;
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */

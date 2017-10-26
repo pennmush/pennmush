@@ -539,7 +539,6 @@ struct globals_table {
   int paranoid_checkpt;    /**< write out an okay message every x objs */
   long indb_flags;         /**< flags set in the input database */
   int new_indb_version;    /**< new (as of 1.8.5) version of the input db */
-  int on_second;           /**< is it time for per-second processes? */
 };
 
 extern GLOBALTAB globals;

@@ -17,6 +17,7 @@
 #cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_SYS_ENDIAN_H
 #cmakedefine HAVE_SYS_EVENT_H
+#cmakedefine HAVE_SYS_EVENTFD_H
 #cmakedefine HAVE_SYS_INOTIFY_H
 #cmakedefine HAVE_SYS_PARAM_H
 #cmakedefine HAVE_SYS_PRCTL_H
@@ -40,6 +41,7 @@
 #cmakedefine HAVE_CBRT
 #cmakedefine HAVE_CRYPT
 #cmakedefine HAVE_DH_SET0_PQG
+#cmakedefine HAVE_EVENTFD
 #cmakedefine HAVE_EVP_MD_DO_ALL
 #cmakedefine HAVE_FCNTL
 #cmakedefine HAVE_FECLEAREXCEPT

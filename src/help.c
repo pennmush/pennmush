@@ -186,7 +186,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
       }
     }
   }
-
+  fclose(fp);
   return results;
 }
 

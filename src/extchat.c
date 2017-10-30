@@ -2145,7 +2145,7 @@ do_channel_list(dbref player, const char *partname, int types)
   char dispname[BUFFER_LEN];
   char *dp;
   char *shortoutput = NULL, *sp;
-  int numblanks;
+  int numblanks = 0;
 
   if (!(types & CHANLIST_QUIET)) {
     if (SUPPORT_PUEBLO)

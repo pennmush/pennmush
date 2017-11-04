@@ -22,6 +22,7 @@ Fixes:
  * Fix an off-by-one error in switch handling code that could cause a crash on startup. [SW]
  * Fix an issue with table() not fitting maximum number of columns in a line. Reported by Degraine. [1119-SW].
  * Fix an issue where writes to a socket sometimes shut down the connection needlessly. [1136-SW]
+ * Disallow '=' to be used in passwords. Causes problems when changing passwords later. Reported by Volund, PR by Qon.
 
 Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush can send and recieve UTF-8, but still uses latin-1 internally. Unicode characters that aren't part of latin-1 are not supported. Yet. [SW]

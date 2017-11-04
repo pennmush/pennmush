@@ -921,6 +921,8 @@ ok_password(const char *password)
     if (!(isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
+    if (*scan == '=')
+      return 0;
   }
 
   return 1;

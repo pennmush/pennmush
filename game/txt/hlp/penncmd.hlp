@@ -2075,7 +2075,8 @@ See also: @name, name(), VERBS
   The <player> argument is evaluated, but the <password> argument is not when the command is entered directly from a client.
   
   If the /generate switch is given, a new, random password is generated automatically, and shown to the enactor (but not to <player>).
-
+  The <password> must not contain whitespace, unprintable characters, or '='.
+  
 See also: @password, checkpass()
 & @notify
   @notify[/any][/all] <object>[/<attribute>][=<number>]
@@ -2170,6 +2171,7 @@ See also: PARENTS, parent(), lparent(), ANCESTORS
   @password <old password>=<new password>
 
   This changes your password. Please note that passwords ARE case-sensitive. The arguments are not evaluated.
+  The <new password> must not contain whitespace, unprintable characters, or '='.
   
 See also: @newpassword, checkpass()
 & @pageformat

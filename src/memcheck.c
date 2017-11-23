@@ -148,7 +148,6 @@ lookup_check(const char *ref)
   return NULL;
 }
 
-
 /* Return the number of links to use for a new node. Result's range is
    1..maxcount */
 static int

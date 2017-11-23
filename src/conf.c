@@ -1486,9 +1486,8 @@ config_file_checks(void)
   }
 
   if (((options.compresssuff && *options.compresssuff))) {
-    do_rawlog(
-      LT_ERR,
-      "CONFIG: compression suffix is specified but not used in Win32, ignoring.");
+    do_rawlog(LT_ERR, "CONFIG: compression suffix is specified but not used in "
+                      "Win32, ignoring.");
   }
 
   /* Also remove the compression options */

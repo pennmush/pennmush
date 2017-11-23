@@ -555,7 +555,7 @@ look_description(dbref player, dbref thing, const char *def,
   char fbuff[BUFFER_LEN];
   ufun_attrib ufun;
   char *bp = buff;
-  
+
   if (!GoodObject(player) || !GoodObject(thing))
     return;
   if (fetch_ufun_attrib(descname, thing, &ufun,

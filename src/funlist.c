@@ -1586,7 +1586,7 @@ FUNCTION(fun_remove)
   char sep;
   char **list, **rem;
   int list_counter, rem_counter, list_total, rem_total;
-  int skip[MAX_SORTSIZE] = { 0 };
+  int skip[MAX_SORTSIZE] = {0};
   int first = 1;
 
   /* zap word from string */

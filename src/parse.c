@@ -2678,8 +2678,8 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] =
-            mush_malloc_zero(BUFFER_LEN + SSE_OFFSET, "process_expression.function_argument");
+          fargs[nfargs] = mush_malloc_zero(
+            BUFFER_LEN + SSE_OFFSET, "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str, executor, caller, enactor,
                                  temp_eflags, temp_tflags, pe_info)) {

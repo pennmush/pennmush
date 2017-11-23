@@ -306,9 +306,9 @@ signal_cpu_limit(int signo)
 UINT_PTR timer_id;
 VOID CALLBACK
 win32_timer(HWND hwnd __attribute__((__unused__)),
-	UINT uMsg __attribute__((__unused__)),
-	UINT_PTR idEvent __attribute__((__unused__)),
-	DWORD dwTime __attribute__((__unused__)))
+            UINT uMsg __attribute__((__unused__)),
+            UINT_PTR idEvent __attribute__((__unused__)),
+            DWORD dwTime __attribute__((__unused__)))
 {
   cpu_time_limit_hit = 1;
 }
@@ -573,7 +573,8 @@ sq_secs_till_next(void)
 {
   time_t now = time(NULL);
   for (struct squeue *s = sq_head; s; s = s->next) {
-    if (s->fun == sq_loop_fun && ((struct sq_loop *)s->data)->fun == on_every_second)
+    if (s->fun == sq_loop_fun &&
+        ((struct sq_loop *) s->data)->fun == on_every_second)
       continue;
     return difftime(s->when, now);
   }

@@ -147,7 +147,8 @@ lower_priority_by(pid_t pid __attribute__((__unused__)), int prio)
    will draw it too much stuff into info_slave */
 
 static int
-lock_fp(FILE *f __attribute__((__unused__)), bool what __attribute__((__unused__)))
+lock_fp(FILE *f __attribute__((__unused__)),
+        bool what __attribute__((__unused__)))
 {
 #if defined(HAVE_FCNTL) && !defined(WIN32)
   struct flock lock;

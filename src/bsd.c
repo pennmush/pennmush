@@ -1106,8 +1106,8 @@ shovechars(Port_t port, Port_t sslport)
       if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
         do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
         do_reboot(
-                  NOTHING,
-                  0); /* We don't return from this except in case of a failed db save */
+          NOTHING,
+          0); /* We don't return from this except in case of a failed db save */
       }
     }
 
@@ -1143,7 +1143,7 @@ shovechars(Port_t port, Port_t sslport)
     if (slice_timeout.tv_usec < 0)
       slice_timeout.tv_usec = 0;
 
-    timeout = (struct timeval){ .tv_sec = queue_timeout, .tv_usec = 0 };
+    timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
 
     if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
       fd_size = im_count(descs_by_fd) + 16;
@@ -1197,7 +1197,9 @@ shovechars(Port_t port, Port_t sslport)
         }
       }
       fds[fds_used].events = 0;
-      if (d->input.head) { /* Don't get more input while this desc has a command ready to eval. */
+      if (d
+            ->input.head) { /* Don't get more input while this desc has a
+                               command ready to eval. */
         timeout = slice_timeout;
       } else {
         fds[fds_used].events = POLLIN;
@@ -1289,7 +1291,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif /* LOCAL_SOCKET */
       }
 #endif /* INFO_SLAVE */
-        
+
       if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
@@ -1301,13 +1303,13 @@ shovechars(Port_t port, Port_t sslport)
         sigrecv_ack();
       }
 #endif
-      
+
       for (d = descriptor_list; d && found > 0; d = dnext) {
         unsigned int input_ready, output_ready, errors;
 
         dnext = d->next;
-        
-      if ((SOCKET)d->descriptor != fds[fds_used].fd)
+
+        if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
@@ -5119,10 +5121,10 @@ reaper(int sig __attribute__((__unused__)))
     } else
 #endif
       if (forked_dump_pid > -1 && pid == forked_dump_pid) {
-        dump_error = forked_dump_pid;
-        dump_status = error_code;
-        forked_dump_pid = -1;
-        sigrecv_notify();
+      dump_error = forked_dump_pid;
+      dump_status = error_code;
+      forked_dump_pid = -1;
+      sigrecv_notify();
     }
   }
   reload_sig_handler(SIGCHLD, reaper);

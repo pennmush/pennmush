@@ -518,26 +518,28 @@ reverse(dbref list)
 
 pcg32_random_t rand_state1, rand_state2;
 
-/** Initialize the random number generator used by the mush. Attempts to use a seed value
- * provided by the host OS's cryptographic RNG facilities; failing that uses the current time
+/** Initialize the random number generator used by the mush. Attempts to use a
+ * seed value
+ * provided by the host OS's cryptographic RNG facilities; failing that uses the
+ * current time
  * and PID. */
 void
 initialize_rng(void)
 {
   uint64_t seeds[4];
-  bool seed_generated __attribute__((__unused__))= false;
-  
+  bool seed_generated __attribute__((__unused__)) = false;
+
 #ifdef HAVE_DEV_URANDOM
-  /* Seed from /dev/urandom if available */  
+  /* Seed from /dev/urandom if available */
   int fd;
-  
+
   fd = open("/dev/urandom", O_RDONLY);
   if (fd >= 0) {
-    int r = read(fd, (void *)seeds, sizeof seeds);
+    int r = read(fd, (void *) seeds, sizeof seeds);
     close(fd);
     if (r <= 0) {
       fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
-              "seeding method.\n");
+                      "seeding method.\n");
     } else {
       fprintf(stderr, "Seeding RNG with %d bytes from /dev/urandom\n", r);
       seed_generated = true;
@@ -546,14 +548,14 @@ initialize_rng(void)
     fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
                     "generator. Resorting to normal seeding method.\n");
 #endif
-  
+
 #ifdef WIN32
   /* Use the Win32 bcrypto RNG interface */
-if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
-  BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
+  if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
+                      BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
     fprintf(stderr, "Seeding RNG with %I64u bytes from BCryptGenRandom()\n",
-      sizeof seeds);    
-} else {
+            sizeof seeds);
+  } else {
     seeds[0] = (uint64_t) time(NULL);
     seeds[1] = (uint64_t) GetCurrentProcessId();
   }
@@ -567,7 +569,6 @@ if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
 
   pcg32_srandom_r(&rand_state1, seeds[0], seeds[1]);
   pcg32_srandom_r(&rand_state2, seeds[2], seeds[3]);
-
 }
 
 /** Get a uniform random long between low and high values, inclusive.
@@ -616,7 +617,6 @@ get_random_u32(uint32_t low, uint32_t high)
   return low + (n % x);
 }
 
-
 /** Return a random double in the range [0,1) */
 double
 get_random_d(void)
@@ -627,7 +627,6 @@ get_random_d(void)
   c = (a << 32) | b;
   return ldexp((double) c, -64);
 }
-
 
 /** Return a random double in the range (0,1) */
 double

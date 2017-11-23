@@ -29,8 +29,10 @@ static Sigfunc saved_handlers[NSIG];
 #endif
 
 #ifndef WIN32
-/* Since we install restartable signal handler calls, we have to have a way to tell the
- * main game loop that a signal has been received. Use a pipe, or on linux, an eventfd. */
+/* Since we install restartable signal handler calls, we have to have a way to
+ * tell the
+ * main game loop that a signal has been received. Use a pipe, or on linux, an
+ * eventfd. */
 
 /** Set up signal notification pipeline. Should only be called once. */
 void
@@ -50,7 +52,7 @@ sigrecv_setup(void)
   signotifier_fd = fds[1];
 #endif
 }
- 
+
 /** Called by signal handler functions to announce a signal has been
  * received. */
 void

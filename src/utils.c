@@ -38,10 +38,6 @@
 #include <stdint.h>
 #endif
 
-#ifdef __RDRND__
-#include <immintrin.h>
-#endif
-
 #include "ansi.h"
 #include "attrib.h"
 #include "conf.h"

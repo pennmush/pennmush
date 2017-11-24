@@ -167,7 +167,7 @@ typedef bool _Bool;
 
 #include "confcompiler.h"
 
-#ifdef HAVE_RESTRCT
+#ifdef HAVE_RESTRICT
 #define RESTRICT HAVE_RESTRICT
 #else
 #define RESTRICT

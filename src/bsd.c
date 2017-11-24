@@ -115,26 +115,12 @@
 #include "confmagic.h"
 
 #if defined(SSL_SLAVE) && !defined(WIN32)
-#define LOCAL_SOCKET 1
+#define LOCAL_SOCKET
 #endif
 
 #ifdef HAVE_GETRLIMIT
 void init_rlimit(void);
 #endif
-
-/* BSD 4.2 and maybe some others need these defined */
-#ifndef FD_ZERO
-/** An fd_set is 4 bytes */
-#define fd_set int
-/** Clear an fd_set */
-#define FD_ZERO(p) (*p = 0)
-/** Set a bit in an fd_set */
-#define FD_SET(n, p) (*p |= (1 << (n)))
-/** Clear a bit in an fd_set */
-#define FD_CLR(n, p) (*p &= ~(1 << (n)))
-/** Check a bit in an fd_set */
-#define FD_ISSET(n, p) (*p & (1 << (n)))
-#endif /* defines for BSD 4.2 */
 
 #ifdef HAVE_GETRUSAGE
 void rusage_stats(void);

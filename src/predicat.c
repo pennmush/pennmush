@@ -764,7 +764,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
   char *bon, *eon;
-  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN] = { '\0' };
+  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN] = {'\0'};
   char *ap = abuff;
   int aliases = 0;
   int empty = 0;
@@ -923,6 +923,8 @@ ok_password(const char *password)
     if (!(isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
+    if (*scan == '=')
+      return 0;
   }
 
   return 1;

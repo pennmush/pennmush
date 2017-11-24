@@ -1458,14 +1458,15 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   char *pos;
   size_t remaining;
   ssize_t done = 0;
-  
+
   debug_log("read_cache_region %04x", region);
 
 #ifndef HAVE_PREAD
   /* Try to seek up to 3 times... */
   for (j = 0; j < 3; j++)
 #ifdef WIN32
-    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
+        INVALID_SET_FILE_POINTER)
       break;
 #else
     if (lseek(fd, file_offset, SEEK_SET) == file_offset)
@@ -1488,7 +1489,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
     if (ReadFile(fd, pos, remaining, &rfbytes, NULL))
       done = (ssize_t) rfbytes;
     else
-    	done = -1;
+      done = -1;
 #else
     done = read(fd, pos, remaining);
 #endif
@@ -1529,7 +1530,8 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   /* Try to seek up to 3 times... */
   for (j = 0; j < 3; j++)
 #ifdef WIN32
-    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
+        INVALID_SET_FILE_POINTER)
       break;
 #else
     if (lseek(fd, file_offset, SEEK_SET) == file_offset)
@@ -1556,9 +1558,9 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #elif defined(WIN32)
     DWORD wfbytes;
     if (WriteFile(fd, pos, remaining, &wfbytes, NULL))
-      	done = (ssize_t) wfbytes;
+      done = (ssize_t) wfbytes;
     else
-    		done = -1;
+      done = -1;
 #else
     done = write(fd, pos, remaining);
 #endif

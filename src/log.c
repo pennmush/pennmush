@@ -323,7 +323,7 @@ resize_log_rotate(struct log_stream *log)
                 log->filename, namea);
       }
     }
-  } else 
+  } else
 #endif
   {
     if (copy_file(log->fp, namea, 1) < 0) {

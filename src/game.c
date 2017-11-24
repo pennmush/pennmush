@@ -81,11 +81,11 @@ void Win32MUSH_setup(void);
 #include "confmagic.h"
 
 /* declarations */
-GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};
+GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
 #ifndef WIN32
-static int reserved;            /**< Reserved file descriptor */
+static int reserved; /**< Reserved file descriptor */
 #endif
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
 static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
@@ -550,7 +550,7 @@ fork_and_dump(int forking)
   bool split = false;
 #endif
 
-	epoch++;
+  epoch++;
 
 #ifdef LOG_CHUNK_STATS
   chunk_stats(NOTHING, 0);
@@ -785,8 +785,7 @@ init_game_postdb(const char *conf)
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
-                options.ssl_ca_dir,
-                options.ssl_require_client_cert)) {
+                options.ssl_ca_dir, options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
     options.ssl_port = 0; /* Disable ssl */
   }

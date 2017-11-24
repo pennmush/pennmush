@@ -332,7 +332,7 @@ struct options_table {
   char ssl_private_key_file
     [FILE_PATH_LEN];               /**< File to load the server's cert from */
   char ssl_ca_file[FILE_PATH_LEN]; /**< File to load the CA certs from */
-  char ssl_ca_dir[FILE_PATH_LEN]; /**< Directory to load the CA certs from */
+  char ssl_ca_dir[FILE_PATH_LEN];  /**< Directory to load the CA certs from */
   int ssl_require_client_cert;   /**< Are clients required to present certs? */
   int mem_check;                 /**< Turn on the memory allocation checker? */
   int use_quota;                 /**< Are quotas enabled? */
@@ -539,7 +539,6 @@ struct globals_table {
   int paranoid_checkpt;    /**< write out an okay message every x objs */
   long indb_flags;         /**< flags set in the input database */
   int new_indb_version;    /**< new (as of 1.8.5) version of the input db */
-  int on_second;           /**< is it time for per-second processes? */
 };
 
 extern GLOBALTAB globals;

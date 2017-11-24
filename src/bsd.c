@@ -301,7 +301,9 @@ int maxd = 0;
 extern const unsigned char *tables;
 
 sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
+sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
 sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
+sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -403,10 +405,14 @@ static void parse_connect(const char *msg, char *command, char *user,
 static void close_sockets(void);
 dbref find_player_by_desc(int port);
 DESC *lookup_desc(dbref executor, const char *name);
-void NORETURN bailout(int sig);
-void WIN32_CDECL signal_shutdown(int sig);
-void WIN32_CDECL signal_dump(int sig);
+void WIN32_CDECL bailout(int sig);
+#ifndef WIN32
+void signal_shutdown(int sig);
+void signal_dump(int sig);
+void hup_handler(int);
+void usr1_handler(int);
 void reaper(int sig);
+#endif
 #ifndef WIN32
 sig_atomic_t dump_error = 0;
 WAIT_TYPE dump_status = 0;
@@ -750,10 +756,13 @@ set_signals(void)
 #ifndef WIN32
   /* we don't care about SIGPIPE, we notice it in select() and write() */
   ignore_signal(SIGPIPE);
+  install_sig_handler(SIGHUP, hup_handler);
+  install_sig_handler(SIGUSR1, usr1_handler);
   install_sig_handler(SIGUSR2, signal_dump);
   install_sig_handler(SIGINT, signal_shutdown);
   install_sig_handler(SIGTERM, bailout);
   install_sig_handler(SIGCHLD, reaper);
+  sigrecv_setup();
 #else
 /* Win32 stuff:
  *   No support for SIGUSR2 or SIGINT.
@@ -969,11 +978,10 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef INFO_SLAVE
   time_t now;
 #endif
-  struct timeval last_slice, current_time, then;
-  struct timeval next_slice;
+  struct timeval next_slice, last_slice, current_time;
   struct timeval timeout, slice_timeout;
   int found;
-  int queue_timeout;
+  int queue_timeout, sq_timeout;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
@@ -1016,19 +1024,14 @@ shovechars(Port_t port, Port_t sslport)
 
   notify_fd = file_watch_init();
 
-  our_gettimeofday(&then);
-  last_slice = then;
+  our_gettimeofday(&current_time);
+  last_slice = current_time;
 
   while (shutdown_flag == 0) {
     our_gettimeofday(&current_time);
 
     update_quotas(last_slice, current_time);
     last_slice = current_time;
-
-    if (msec_diff(current_time, then) >= 1000) {
-      globals.on_second = 1;
-      then = current_time;
-    }
 
     process_commands();
 
@@ -1089,6 +1092,27 @@ shovechars(Port_t port, Port_t sslport)
       shutdown_flag = 1;
     }
 
+    if (hup_triggered) {
+      do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
+      config_file_startup(NULL, 0);
+      config_file_startup(NULL, 1);
+      file_watch_init();
+      fcache_load(NOTHING);
+      help_reindex(NOTHING);
+      read_access_file();
+      reopen_logs();
+      hup_triggered = 0;
+    }
+
+    if (usr1_triggered) {
+      if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+        do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+        do_reboot(
+          NOTHING,
+          0); /* We don't return from this except in case of a failed db save */
+      }
+    }
+
     if (usr2_triggered) {
       if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
         globals.paranoid_dump = 0;
@@ -1101,19 +1125,16 @@ shovechars(Port_t port, Port_t sslport)
     if (shutdown_flag)
       break;
 
-    /* test for events */
+    /* run pending events */
     sq_run_all();
 
-    /* any queued robot commands waiting? */
-    /* timeout.tv_sec used to be set to que_next(), the number of
-     * seconds before something on the queue needed to run, but this
-     * caused a problem with stuff that had to be triggered by alarm
-     * signal every second, so we're reduced to what's below:
-     */
+    /* any queued commands or events waiting? */
     queue_timeout = que_next();
-    /* timeout = { .tv_sec = queue_timeout ? 1 : 0, .tv_usec = 0 }; */
-    timeout.tv_sec = queue_timeout ? 1 : 0;
-    timeout.tv_usec = 0;
+    sq_timeout = sq_secs_till_next();
+    if (sq_timeout < queue_timeout)
+      queue_timeout = sq_timeout;
+    if (queue_timeout < 0)
+      queue_timeout = 0;
 
     next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
     slice_timeout = timeval_sub(next_slice, current_time);
@@ -1124,8 +1145,10 @@ shovechars(Port_t port, Port_t sslport)
     if (slice_timeout.tv_usec < 0)
       slice_timeout.tv_usec = 0;
 
-    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 5)) {
-      fd_size = im_count(descs_by_fd) + 10;
+    timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
+
+    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
+      fd_size = im_count(descs_by_fd) + 16;
       fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
     }
     fds_used = 0;
@@ -1155,6 +1178,12 @@ shovechars(Port_t port, Port_t sslport)
       fds[fds_used].fd = notify_fd;
       fds[fds_used++].events = POLLIN;
     }
+#ifndef WIN32
+    if (sigrecv_fd >= 0) {
+      fds[fds_used].fd = sigrecv_fd;
+      fds[fds_used++].events = POLLIN;
+    }
+#endif
 
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
@@ -1170,7 +1199,9 @@ shovechars(Port_t port, Port_t sslport)
         }
       }
       fds[fds_used].events = 0;
-      if (d->input.head) {
+      if (d
+            ->input.head) { /* Don't get more input while this desc has a
+                               command ready to eval. */
         timeout = slice_timeout;
       } else {
         fds[fds_used].events = POLLIN;
@@ -1262,18 +1293,25 @@ shovechars(Port_t port, Port_t sslport)
 #endif /* LOCAL_SOCKET */
       }
 #endif /* INFO_SLAVE */
-        
+
       if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
       }
 
+#ifndef WIN32
+      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+        found -= 1;
+        sigrecv_ack();
+      }
+#endif
+
       for (d = descriptor_list; d && found > 0; d = dnext) {
         unsigned int input_ready, output_ready, errors;
 
         dnext = d->next;
-        
-      if ((SOCKET)d->descriptor != fds[fds_used].fd)
+
+        if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
@@ -5008,7 +5046,32 @@ void
 signal_shutdown(int sig __attribute__((__unused__)))
 {
   signal_shutdown_flag = 1;
+  sigrecv_notify();
   reload_sig_handler(SIGINT, signal_shutdown);
+}
+
+/** Handler for HUP signal.
+ * Do the minimal work here - set a global variable and reload the handler.
+ * \param x unused.
+ */
+void
+hup_handler(int x __attribute__((__unused__)))
+{
+  hup_triggered = 1;
+  sigrecv_notify();
+  reload_sig_handler(SIGHUP, hup_handler);
+}
+
+/** Handler for USR1 signal.
+ * Do the minimal work here - set a global variable and reload the handler.
+ * \param x unused.
+ */
+void
+usr1_handler(int x __attribute__((__unused__)))
+{
+  usr1_triggered = 1;
+  sigrecv_notify();
+  reload_sig_handler(SIGUSR1, usr1_handler);
 }
 
 /** Handler for SIGUSR2. Note that we've received it, and reinstall
@@ -5018,6 +5081,7 @@ void
 signal_dump(int sig __attribute__((__unused__)))
 {
   usr2_triggered = 1;
+  sigrecv_notify();
   reload_sig_handler(SIGUSR2, signal_dump);
 }
 #endif
@@ -5047,6 +5111,7 @@ reaper(int sig __attribute__((__unused__)))
       slave_error = info_slave_pid;
       info_slave_state = INFO_SLAVE_DOWN;
       info_slave_pid = -1;
+      sigrecv_notify();
     } else
 #endif
 #ifdef SSL_SLAVE
@@ -5054,12 +5119,14 @@ reaper(int sig __attribute__((__unused__)))
       ssl_slave_error = ssl_slave_pid;
       ssl_slave_state = SSL_SLAVE_DOWN;
       ssl_slave_pid = -1;
+      sigrecv_notify();
     } else
 #endif
       if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
       dump_status = error_code;
       forked_dump_pid = -1;
+      sigrecv_notify();
     }
   }
   reload_sig_handler(SIGCHLD, reaper);

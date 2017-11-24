@@ -24,18 +24,19 @@
 #include <nmmintrin.h>
 #endif
 
-
 #if defined(WIN32) && !defined(HAVE_FFS)
 
 /* Windows version of ffs() */
 
-int ffs(int i) {
-	unsigned long pos;
-	
-	if (_BitScanForward(&pos, (unsigned long)i))
-		return (int)pos;
-	else
-		return 0;	
+int
+ffs(int i)
+{
+  unsigned long pos;
+
+  if (_BitScanForward(&pos, (unsigned long) i))
+    return (int) pos;
+  else
+    return 0;
 }
 
 #define HAVE_FFS

@@ -95,14 +95,15 @@ mush_malloc(size_t bytes, const char *check)
  * \return allocated block of memory or NULL.
  */
 void *
-mush_malloc_zero(size_t bytes, const char *check) {
+mush_malloc_zero(size_t bytes, const char *check)
+{
   void *ptr = calloc(bytes, 1);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc_zero failed to allocate %" SZT " bytes for %s",
+    do_rawlog(LT_TRACE,
+              "mush_malloc_zero failed to allocate %" SZT " bytes for %s",
               bytes, check);
   add_check(check);
   return ptr;
-
 }
 
 /** A calloc wrapper that tracks type of allocation.

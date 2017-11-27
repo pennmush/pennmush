@@ -559,6 +559,18 @@ parse_english(char **name, long *flags)
     /* Quick exit */
     return 0;
   }
+  count = strtoul(*name, &e, 10);
+  if (!e || !*e) {
+    /* We just have an object named '3' */
+    return 0;
+  }
+  if (*e == '.' && *(e + 1)) {
+    /* The 'count'th object */
+    *name = e + 1;
+    return count;
+  } else if (!(mname = strchr(*name, ' '))) {
+    return 0;
+  }
   mname = strchr(*name, ' ');
   if (!mname) {
     /* Quick exit - count without a noun */
@@ -567,27 +579,23 @@ parse_english(char **name, long *flags)
   /* Ok, let's see if we can get a count adjective */
   savename = *name;
   *mname = '\0';
-  count = strtoul(*name, &e, 10);
-  if (e && *e) {
-    if (count < 1) {
-      count = -1;
-    } else if ((count > 10) && (count < 14)) {
-      if (strcasecmp(e, "th"))
-        count = -1;
-    } else if ((count % 10) == 1) {
-      if (strcasecmp(e, "st"))
-        count = -1;
-    } else if ((count % 10) == 2) {
-      if (strcasecmp(e, "nd"))
-        count = -1;
-    } else if ((count % 10) == 3) {
-      if (strcasecmp(e, "rd"))
-        count = -1;
-    } else if (strcasecmp(e, "th")) {
-      count = -1;
-    }
-  } else
+  if (count < 1) {
     count = -1;
+  } else if ((count > 10) && (count < 14)) {
+    if (strcasecmp(e, "th"))
+      count = -1;
+  } else if ((count % 10) == 1) {
+    if (strcasecmp(e, "st"))
+      count = -1;
+  } else if ((count % 10) == 2) {
+    if (strcasecmp(e, "nd"))
+      count = -1;
+  } else if ((count % 10) == 3) {
+    if (strcasecmp(e, "rd"))
+      count = -1;
+  } else if (strcasecmp(e, "th")) {
+    count = -1;
+  }
   *mname = ' ';
   if (count < 0) {
     /* An error (like '0th' or '12nd') - this wasn't really a count

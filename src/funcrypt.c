@@ -9,6 +9,10 @@
 #include "copyrite.h"
 
 #include <ctype.h>
+#ifdef WIN32
+#include <Windows.h>
+#include <Wincrypt.h>
+#endif
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -41,6 +45,29 @@ bool decode_base64(char *encoded, int len, bool printonly, char *buff,
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
 {
+#ifdef WIN32
+	LPTSTR encoded;
+	DWORD encodedlen = 0;
+	
+	if (!CryptBinaryToString((const BYTE *)input, len,
+		CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, NULL, &encodedlen)) {
+		safe_str(T("#-1 ENCODING ERROR"), buff, bp);
+		return false;
+	}
+	
+	encoded = mush_malloc(encodedlen, "string");
+	if (!CryptBinaryToString((const BYTE *)input, len, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,
+		encoded, &encodedlen)) {
+		mush_free(encoded, "string");
+		safe_str(T("#-1 ENCODING ERROR"), buff, bp);
+		return false;
+	}
+		
+	safe_strl(encoded, encodedlen, buff, bp);
+	mush_free(encoded, "string");
+	
+	return true;
+#else
   BIO *bio, *b64, *bmem;
   char *membuf;
 
@@ -76,6 +103,7 @@ encode_base64(const char *input, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
+#endif
 }
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
@@ -83,6 +111,56 @@ extern char valid_ansi_codes[UCHAR_MAX + 1];
 bool
 decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
 {
+#ifdef WIN32
+	BYTE *decoded;
+	DWORD dlen = 0;
+	char *sbp = *bp;
+	
+	if (!CryptStringToBinary((LPCTSTR)encoded, len, CRYPT_STRING_BASE64, NULL,
+		&dlen, NULL, NULL)) {
+		safe_str(T("#-1 DECODING ERROR"), buff, bp);
+		return false;
+	}
+	
+	decoded = mush_malloc(dlen + 1, "string");
+	if (!CryptStringToBinary((LPCTSTR)encoded, len, CRYPT_STRING_BASE64, decoded,
+		&dlen, NULL, NULL)) {
+		mush_free(decoded, "string");
+		safe_str(T("#-1 DECODING ERROR"), buff, bp);
+		return false;
+	}
+	decoded[dlen] = '\0';	
+	
+	for (DWORD n = 0; n < dlen; n++) {
+		if (decoded[n] == TAG_START) {
+			DWORD end;
+     	n += 1;
+     	for (end = n; end < dlen; end++) { 
+     		if (decoded[end] == TAG_END)
+     			break;
+     	}
+     	if (end == dlen || decoded[n] != MARKUP_COLOR) {
+     		mush_free(decoded, "string");
+     		*bp = sbp;
+     		safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
+     		return false;
+     	}
+     	for (; n < end; n++) {
+     		if (!valid_ansi_codes[decoded[n]]) {
+     			mush_free(decoded, "string");
+     			*bp = sbp;
+     			safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
+     			return false;
+     		}
+     	}
+     	n = end;
+    } else if (printonly && !isprint(decoded[n]))
+    	decoded[n] = '?';
+  }
+  safe_strl((const char *)decoded, dlen, buff, bp);
+	mush_free(decoded, "string");
+	return true;
+#else
   BIO *bio, *b64, *bmem;
   char *sbp;
 
@@ -152,6 +230,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
+#endif
 }
 
 /* Encode a string in base64 */

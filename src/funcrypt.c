@@ -12,10 +12,12 @@
 #ifdef WIN32
 #include <Windows.h>
 #include <Wincrypt.h>
-#endif
+#include <Bcrypt.h>
+#else
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#endif
 #include <string.h>
 #include <time.h>
 
@@ -404,7 +406,10 @@ list_dgst_populate(const EVP_MD *m,
 FUNCTION(fun_digest)
 {
   if (nargs == 1 && strcmp(args[0], "list") == 0) {
-#ifdef CAN_LIST_DIGESTS
+#ifdef WIN32
+	safe_str("MD2 MD4 MD5 SHA1 SHA256 SHA384 SHA512", buff, bp);
+	return;
+#elif defined(CAN_LIST_DIGESTS)
     HASHTAB digests_tab;
     const char **digests;
     const char *d;

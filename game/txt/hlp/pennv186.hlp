@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.6 patchlevel 2                                 ??? ??, 20??
+Version 1.8.6 patchlevel 2                                 Dec 19, 2017
 
 Fixes:
  * Fix compilation errors with OpenSSL 1.1. [SW]
@@ -21,6 +21,7 @@ Fixes:
  * Fix an off-by-one error in switch handling code that could cause a crash on startup. [SW]
  * Fix an issue with table() not fitting maximum number of columns in a line. Reported by Degraine. [1119-SW].
  * Fix an issue where writes to a socket sometimes shut down the connection needlessly. [1136-SW]
+ * Disallow '=' to be used in passwords. Causes problems when changing passwords later. Reported by Volund, PR by Qon.
 
 Major changes:
  * Supports client charset negotiation of UTF-8. This means the mush can send and recieve UTF-8, but still uses latin-1 internally. Unicode characters that aren't part of latin-1 are not supported. Yet. [SW]
@@ -34,9 +35,11 @@ Minor changes:
  * fraction() now takes a second arg; fraction(1.5,true) returns "1 1/2", rather than "3/2". [MG]
  * hasattrval() now returns 0 for attributes containing a single space when the empty_attrs config option is false. [MG]
  * fold() now passes the number of times <attr> has been called as %2. Suggested by Shaenyl. [MG]
+ * Attempt to speed up database saves and loads a bit. [SW]
+ * Improvements to SSL certificate checking. The ssl_ca_file config option should now be set to /etc/ssl/certs/ca-certificates.crt unless you've customized it, and the new ssl_ca_dir option to /etc/ssl/certs. [SW]
 
 Hardcode:
- * Upgrade random number generator to SFMT 1.5.1. [SW]
+ * Use the much lighter weight and higher quality PCG random number generator. [SW]
  * Use a better seed for the RNG on Windows. [SW]
  * mkcmds.pl uses a better way to generate temporary files. [SW]	
  * Use clang-format instead of GNU indent to format source code. [SW]

@@ -974,7 +974,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   r = result = mush_malloc_zero(BUFFER_LEN + SSE_OFFSET, "replace_string.buff");
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
-  
+
   len = strlen(old);
   newlen = strlen(newbit);
 

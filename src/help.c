@@ -76,11 +76,11 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
 {
   static char results[BUFFER_LEN];
   char *rp;
-  char searchterm[BUFFER_LEN] = { '\0' }, *st;
-  char topic[TOPIC_NAME_LEN + 1] = { '\0' };
-  char line[LINE_SIZE + 1] = { '\0' }, *l;
-  char cleanline[LINE_SIZE + 1] = { '\0' }, *cl;
-  char buff[BUFFER_LEN] = { '\0' }, *bp;
+  char searchterm[BUFFER_LEN] = {'\0'}, *st;
+  char topic[TOPIC_NAME_LEN + 1] = {'\0'};
+  char line[LINE_SIZE + 1] = {'\0'}, *l;
+  char cleanline[LINE_SIZE + 1] = {'\0'}, *cl;
+  char buff[BUFFER_LEN] = {'\0'}, *bp;
   int n;
   size_t i;
   help_indx *entry;
@@ -190,7 +190,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
       }
     }
   }
-
+  fclose(fp);
   return results;
 }
 

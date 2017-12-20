@@ -5476,7 +5476,7 @@ $as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
 
 fi
 
-for ac_header in sys/stat.h sys/time.h sys/types.h
+for ac_header in sys/stat.h sys/time.h sys/types.h sys/eventfd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5489,7 +5489,7 @@ fi
 
 done
 
-for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h
+for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5502,7 +5502,7 @@ fi
 
 done
 
-for ac_header in sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h
+for ac_header in netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5528,7 +5528,20 @@ fi
 
 done
 
-for ac_header in zlib.h event2/event.h event2/dns.h fenv.h sys/param.h sys/prctl.h
+for ac_header in zlib.h event2/event.h event2/dns.h fenv.h sys/param.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/prctl.h byteswap.h endian.h sys/endian.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -6744,7 +6757,7 @@ fi
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
      *msys* | *mingw32* | *mingw64*)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
 $as_echo_n "checking for WSAStartup in -lws2_32... " >&6; }
 if ${ac_cv_lib_ws2_32_WSAStartup+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -6788,7 +6801,55 @@ _ACEOF
   LIBS="-lws2_32 $LIBS"
 
 fi
-;;
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BCryptGenRandom in -lbcrypt" >&5
+$as_echo_n "checking for BCryptGenRandom in -lbcrypt... " >&6; }
+if ${ac_cv_lib_bcrypt_BCryptGenRandom+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbcrypt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char BCryptGenRandom ();
+int
+main ()
+{
+return BCryptGenRandom ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_bcrypt_BCryptGenRandom=yes
+else
+  ac_cv_lib_bcrypt_BCryptGenRandom=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bcrypt_BCryptGenRandom" >&5
+$as_echo "$ac_cv_lib_bcrypt_BCryptGenRandom" >&6; }
+if test "x$ac_cv_lib_bcrypt_BCryptGenRandom" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBBCRYPT 1
+_ACEOF
+
+  LIBS="-lbcrypt $LIBS"
+
+fi
+
+  # And silence a bunch of warnings about MSVC stuff.
+  CFLAGS="$CFLAGS -Wno-unknown-pragmas"
+  ;;
 esac
 
 # Check whether --enable-zlib was given.
@@ -8024,7 +8085,7 @@ _ACEOF
 fi
 done
 
-for ac_func in pread pwrite
+for ac_func in pread pwrite eventfd
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8309,7 +8370,7 @@ _ACEOF
 fi
 done
 
-for ac_func in sysconf waitpid prctl
+for ac_func in sysconf waitpid prctl ffs
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

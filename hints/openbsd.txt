@@ -1,5 +1,8 @@
 Penn will compile and run on OpenBSD, with the caveats below. Tested
-with OpenBSD 5.6.
+with OpenBSD 6.2.
+
+Using clang instead of gcc is recommended (CC=clang ./configure ...),
+as OpenBSD's gcc is a very old version.
 
 Some packages need to be installed via pkg_add or from source if not
 already present on the server:

@@ -17,9 +17,8 @@
 #include <sys/types.h>
 #endif
 #ifdef WIN32
-#define FD_SETSIZE 256
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <io.h>
 #endif
 #ifdef HAVE_UNISTD_H

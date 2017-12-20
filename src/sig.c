@@ -8,13 +8,75 @@
 
 #include "config.h"
 #include <signal.h>
+#include <stdio.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_EVENTFD_H
+#include <sys/eventfd.h>
+#endif
 
 #include "conf.h"
 #include "sig.h"
 #include "confmagic.h"
 
+int sigrecv_fd = -1;
+int signotifier_fd = -1;
+
 #ifndef HAVE_SIGPROCMASK
 static Sigfunc saved_handlers[NSIG];
+#endif
+
+#ifndef WIN32
+/* Since we install restartable signal handler calls, we have to have a way to
+ * tell the
+ * main game loop that a signal has been received. Use a pipe, or on linux, an
+ * eventfd. */
+
+/** Set up signal notification pipeline. Should only be called once. */
+void
+sigrecv_setup(void)
+{
+#ifdef HAVE_EVENTFD
+  sigrecv_fd = signotifier_fd = eventfd(0, EFD_CLOEXEC);
+  if (sigrecv_fd < 0)
+    perror("sigrecv_setup: eventfd");
+#else
+  int fds[2];
+  if (pipe(fds) < 0) {
+    perror("sigrecv_setup: pipe");
+    return;
+  }
+  sigrecv_fd = fds[0];
+  signotifier_fd = fds[1];
+#endif
+}
+
+/** Called by signal handler functions to announce a signal has been
+ * received. */
+void
+sigrecv_notify(void)
+{
+  int64_t data = 1;
+  if (write(signotifier_fd, &data, sizeof data) < 0) {
+    perror("sigrecv_notify: write");
+  }
+}
+
+/** Called by shovechars() to acknowledge that a signal has been received.
+ */
+void
+sigrecv_ack(void)
+{
+  int64_t data;
+  if (read(sigrecv_fd, &data, sizeof data) < 0) {
+    perror("sigrecv_ack: read");
+  }
+}
+
 #endif
 
 /** Our own version of signal().

@@ -279,8 +279,9 @@ static int
 pay_queue(dbref player, const char *command)
 {
   int estcost;
-  estcost = QUEUE_COST +
-            (QUEUE_LOSS ? ((get_random_u32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
+  estcost =
+    QUEUE_COST +
+    (QUEUE_LOSS ? ((get_random_u32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),
@@ -1072,7 +1073,7 @@ static int
 do_entry(MQUE *entry, int include_recurses)
 {
   dbref executor;
-  char tbuf[BUFFER_LEN + SSE_OFFSET] = { '\0' };
+  char tbuf[BUFFER_LEN + SSE_OFFSET] = {'\0'};
   int inplace_break_called = 0;
   char *r;
   char const *s;
@@ -1224,7 +1225,7 @@ que_next(void)
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
    */
-  min = 5;
+  min = 500;
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */

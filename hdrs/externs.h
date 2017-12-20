@@ -448,7 +448,7 @@ void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
  * Prepared via fetch_ufun_attrib, used in call_ufun
  */
 typedef struct _ufun_attrib {
-  dbref thing;               /**< Object with attribute */
+  dbref thing;                            /**< Object with attribute */
   char contents[BUFFER_LEN + SSE_OFFSET]; /**< Attribute value */
   char attrname[ATTRIBUTE_NAME_LIMIT + 1];
   /**< Name of attribute */

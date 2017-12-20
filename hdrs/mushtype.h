@@ -239,8 +239,8 @@ struct new_pe_info {
 
   PE_REGS *regvals; /**< Saved register values. */
 
-  char cmd_raw[BUFFER_LEN + SSE_OFFSET];    /**< Unevaluated cmd executed (%c) */
-  char cmd_evaled[BUFFER_LEN]; /**< Evaluated cmd executed (%u) */
+  char cmd_raw[BUFFER_LEN + SSE_OFFSET]; /**< Unevaluated cmd executed (%c) */
+  char cmd_evaled[BUFFER_LEN];           /**< Evaluated cmd executed (%u) */
 
   char attrname[BUFFER_LEN]; /**< The attr currently being evaluated */
 #ifdef DEBUG

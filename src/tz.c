@@ -54,21 +54,6 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
-
-#if defined(__linux__)
-#include <endian.h>
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/endian.h>
-#else
-
-#ifdef WIN32
-#include <Winsock2.h>
-#else
-#include <arpa/inet.h>
-#endif
-
-#endif
-
 #include "confmagic.h"
 
 #ifndef be32toh

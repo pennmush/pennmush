@@ -12,7 +12,6 @@
 
 #include "copyrite.h"
 #include "config.h"
-
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef HAVE_SYS_TYPES_H

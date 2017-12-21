@@ -1,4 +1,4 @@
 #define VERSION "1.8.6"
 #define PATCHLEVEL "2"
-#define PATCHDATE "[12/01/2017]"
+#define PATCHDATE "[12/19/2017]"
 #define NUMVERSION 1008006002

@@ -12,7 +12,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 ==========================================================================
 
-Version 1.8.6 patchlevel 2                                 Dec 01, 2017
+Version 1.8.6 patchlevel 2                                 Dec 19, 2017
 
 Fixes:
  * Fix compilation errors with OpenSSL 1.1. [SW]

@@ -1,19 +1,6 @@
 Frequently asked questions about the PennMUSH Server, 1.8.7
 ===========================================================
 
-Updated: December 2017
-
-1. What's the release history since 1.50pl10?
-2. How do I ask for help with a problem?
-3. How do I report a bug?
-4. How do I request a new feature?
-5. Where can I get more information about admin'ing and hacking MUSH?
-6. Where can I hear about new releases?
-7. Why doesn't %t or space() work right for Pueblo clients?
-8. Which signals does PennMUSH understand?
-
--------------------------------------------------------------------------------
-
 ## 1. What's the release history since 1.50pl10? ##
 
 PennMUSH has been around for a long time. The above-mentioned 1.50p10
@@ -41,9 +28,6 @@ contributors over the years.
 In July 2006, Raevnos took over from Javelin as maintainer. Currently,
 the active development team is Raevnos, Walker, Mike, Intrevis, and Rince.
 The current version is 1.8.7.
-
-[kp]: l
-
 
 ## 2. How do I ask for help with a problem? ##
 

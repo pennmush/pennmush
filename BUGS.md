@@ -1,9 +1,6 @@
 Bugs that aren't our fault, but might bite people:
 ==================================================
 
-Modern:
--------
-
 * You might experience crashes because the default executable stack
   size is too small. An 8 megabyte stack is more than ample. On unix,
   it can be raised with `ulimit -s 8192`. On Windows, you must use the

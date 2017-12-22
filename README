@@ -156,7 +156,7 @@ IV. Miscellaneous
 IV.a Announcing when a mush is down
 
 If your mush is no longer running on a given port or server and you
-want to and are able to leave a programming running listening on that
+want to and are able to leave a program running listening on that
 port, you can tell people about a new location or other news.
 
 Run:

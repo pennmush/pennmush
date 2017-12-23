@@ -27,7 +27,7 @@ Version 1.8.7p0, ??? ?? 20??
 
 #### OpenBSD ####
 
-* info_slave uses pledge(2) to limit its privileges.
+* netmush and slave processes use pledge(2) to limit their privileges.
 
 #### Windows ####
 

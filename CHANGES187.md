@@ -25,6 +25,10 @@ Version 1.8.7p0, ??? ?? 20??
 
 ### OS Specific ###
 
+#### OpenBSD ####
+
+* info_slave uses pledge(2) to limit its privileges.
+
 #### Windows ####
 
 * Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL.

@@ -210,6 +210,12 @@ main(void)
 
   parent_pid = getppid();
 
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio flock inet dns", NULL) < 0) {
+    perror("pledge");
+  }
+#endif
+
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
@@ -286,6 +292,12 @@ main(void)
 
 #ifdef HAVE_GETPPID
   netmush = getppid();
+#endif
+
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio flock dns proc", NULL) < 0) {
+    perror("pledge");
+  }
 #endif
 
   if (eventwait_init() < 0) {

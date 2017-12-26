@@ -496,6 +496,13 @@ main(int argc, char **argv)
 #endif /* HAVE_GETEUID */
 #endif /* !WIN32 */
 
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ", NULL)
+      < 0) {
+    perror("pledge");
+  }
+#endif
+
   /* read the configuration file */
   if (argc < 2) {
     fprintf(

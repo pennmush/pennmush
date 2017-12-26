@@ -22,3 +22,14 @@ Version 1.8.7p0, ??? ?? 20??
 
 * Changelog's using Markdown. Other docs and help files might follow.
 * Start trying to clean up and revise ancient documentation.
+
+### OS Specific ###
+
+#### OpenBSD ####
+
+* netmush and slave processes use pledge(2) to limit their privileges.
+
+#### Windows ####
+
+* Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL.
+

@@ -73,6 +73,7 @@
 #cmakedefine HAVE_LOG2
 #cmakedefine HAVE_LRINT
 #cmakedefine HAVE_NL_LANGINFO
+#cmakedefine HAVE_PLEDGE
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_POSIX_FADVISE
 #cmakedefine HAVE_POSIX_FALLOCATE

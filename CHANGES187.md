@@ -22,6 +22,10 @@ Version 1.8.7p0, ??? ?? 20??
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
 
+### Fixes ###
+
+* A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
+
 ### Documentation ###
 
 * Changelogs and other documentation use markup. [SW, 1140]

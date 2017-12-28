@@ -272,7 +272,7 @@ FUNCTION(fun_colors)
         continue;
       if (strcmp("hex", curr) == 0 || strcmp("x", curr) == 0)
         cs = CS_HEX;
-      else if (strcmp("16color", curr) == 0 | strcmp("c", curr) == 0)
+      else if (strcmp("16color", curr) == 0 || strcmp("c", curr) == 0)
         cs = CS_16;
       else if (strcmp("256color", curr) == 0 || strcmp("xterm256", curr) == 0
                || strcmp("d", curr) == 0)

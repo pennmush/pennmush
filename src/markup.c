@@ -97,7 +97,9 @@ build_rgb_map(void)
   rgb_to_name = im_new();
   namelist_slab = slab_create("rgb namelist", sizeof *node);
 
-  for (n = 256; allColors[n].name; n += 1) {
+  for (n = 0; allColors[n].name; n += 1) {
+    if (strncmp("xterm", allColors[n].name, 5) == 0)
+      continue;
     lst = im_find(rgb_to_name, allColors[n].hex);
     node = slab_malloc(namelist_slab, lst);
     node->name = allColors[n].name;

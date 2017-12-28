@@ -24,7 +24,7 @@
 </ul>
 </nav>
 <h1 id="users-guide-to-pennmush-1.8.x">User's Guide to PennMUSH 1.8.x</h1>
-<p>Some of this Guide was written by Amberyl, and is used with permission. Most of it is by Paul/Javelin. This most recent version has been updated by Raevnos.</p>
+<p>PennMUSH is a server used to create text-based multiplayer games.</p>
 <p>Installation information can be found in the files INSTALL or UPGRADING.md, depending on whether it's a new install or an upgrade. The file I18N discusses internationalization.</p>
 <p>You may also want to take a look at Javelin's Guide for PennMUSH Gods, at <a href="http://download.pennmush.org/Guide/" class="uri">http://download.pennmush.org/Guide/</a></p>
 <h2 id="introduction-and-history">Introduction and history</h2>
@@ -64,6 +64,6 @@
 <pre><code>% ./src/portmsg message.txt port#</code></pre>
 <p>Any connections to the given port will see the contents of the message file and then be disconnected after a few seconds.</p>
 <h3 id="running-under-gdb">Running under gdb</h3>
-<p>If you start the game through gdb (As opposed to attaching to a running process) pass the --no-session argument to netmush/netmud to avoid detaching from the controlling terminal (Done via fork() and setsid()). If you don't know what gdb is, don't worry about this.</p>
+<p>If you start the game through gdb (As opposed to attaching to a running process) pass the <code>--no-session</code> argument to netmush/netmud to avoid detaching from the controlling terminal (Done via <code>fork()</code> and <code>setsid()</code> as part of the normal mush startup). If you don't know what gdb is, don't worry about this.</p>
 </body>
 </html>

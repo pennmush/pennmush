@@ -1,7 +1,8 @@
 Frequently asked questions about the PennMUSH Server, 1.8.7
 ===========================================================
 
-## 1. What's the release history since 1.50pl10? ##
+What's the release history since 1.50pl10?
+------------------------------------------
 
 PennMUSH has been around for a long time. The above-mentioned 1.50p10
 (1.5.0p10) release was made in 1995, and Penn wasn't new then.
@@ -29,7 +30,8 @@ In July 2006, Raevnos took over from Javelin as maintainer. Currently,
 the active development team is Raevnos, Walker, Mike, Intrevis, and Rince.
 The current version is 1.8.7.
 
-## 2. How do I ask for help with a problem? ##
+How do I ask for help with a problem?
+----------------------------------------
 
 There are several options:
 
@@ -37,7 +39,8 @@ There are several options:
    talented folk hang out. mush.pennmush.org 4201
  * File an issue with the devs (See the link below for the github bug tracker)
 
-## 3. How do I report a bug? ##
+How do I report a bug?
+----------------------
 
 Visit the [issue tracker](https://github.com/pennmush/pennmush/issues).
 
@@ -47,7 +50,8 @@ what's causing the bug, or how to fix it, or if you have a patch for
 the bug, send it along. If you don't, and the bug caused a crash with
 a core dump, you can send along a stack trace.
 
-## 4. How do I request a new feature? ##
+How do I request a new feature?
+----------------------------------
 
 Visit the [issue tracker](https://github.com/pennmush/pennmush/issues).
 
@@ -56,7 +60,8 @@ suggestions quickly, and implement them as we can. Features that come
 with a patch implementing them tend to get accepted faster than those
 that don't unless it's a trivial addition.
 
-## 5. Where can I get more information about admin'ing and hacking MUSH? ##
+Where can I get more information about admin'ing and hacking MUSH?
+------------------------------------------------------------------
 
 Read
 [Javelin's God for PennMUSH Gods](http://download.pennmush.org/Guide/),
@@ -68,12 +73,18 @@ The [community portal](http://community.pennmush.org) also has guides
 and reference material for working with mush hardcode that are
 slightly less out of date.
 
-## 6. Where can I hear about new releases? ##
+The source code has
+[doxygen documentation](http://doxygen.pennmush.org) that can be
+browsed.
+
+Where can I hear about new releases?
+------------------------------------
 
 New releases of the PennMUSH code are announced on `M*U*S*H`
 (mush.pennmush.org 4201).
 
-## 7. Why doesn't %t or space() work right for Pueblo clients? ##
+Why doesn't %t or space() work right for Pueblo clients?
+--------------------------------------------------------
 
 Actually, it does. Pueblo is built around an HTML browser. In HTML,
 multiple whitespace is ignored and treated as a single space.  This is
@@ -81,7 +92,8 @@ correct behavior. In HTML, if you really want spaces to count as
 spaces, you must put your text in `<PRE>..</PRE>` blocks,
 e.g. `tagwrap(PRE,this %t has %t tabs %t and %b%b spaces`).
 
-## 8. Which signals does PennMUSH understand? ##
+What signals does PennMUSH understand?
+--------------------------------------
 
 PennMUSH understands the following signals, and performs the listed action:
 

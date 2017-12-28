@@ -1,9 +1,7 @@
 User's Guide to PennMUSH 1.8.x
 ==============================
 
-Some of this Guide was written by Amberyl, and is used with
-permission.  Most of it is by Paul/Javelin.  This most recent version
-has been updated by Raevnos.
+PennMUSH is a server used to create text-based multiplayer games.
 
 Installation information can be found in the files INSTALL or
 UPGRADING.md, depending on whether it's a new install or an upgrade.
@@ -141,7 +139,8 @@ file and then be disconnected after a few seconds.
 ### Running under gdb
 
 If you start the game through gdb (As opposed to attaching to a
-running process) pass the --no-session argument to netmush/netmud to
-avoid detaching from the controlling terminal (Done via fork() and
-setsid()). If you don't know what gdb is, don't worry about this.
+running process) pass the `--no-session` argument to netmush/netmud to
+avoid detaching from the controlling terminal (Done via `fork()` and
+`setsid()` as part of the normal mush startup). If you don't know what
+gdb is, don't worry about this.
 

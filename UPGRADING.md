@@ -1,34 +1,33 @@
-============================================================================
-                         Upgrading to PennMUSH 1.8.x
-============================================================================
+Upgrading to PennMUSH 1.8.x
+===========================
 
 This file explains how to upgrade to a new version of PennMUSH.
 
 There are three basic upgrade situations:
-  A. You're running a stock ("vanilla") PennMUSH server of some
-     version and you want to upgrade to a later version
-  B. You've hacked your server source code a little bit here and there
-     (adding a flag, for example). Hacks to the *local.c files don't
-     count as hacks, as they're easy to handle.
-  C. You've hacked your server source code a lot.
+
+1. You're running a stock ("vanilla") PennMUSH server of some version
+  and you want to upgrade to a later version
+2. You've hacked your server source code a little bit here and there
+  (adding a flag, for example). Hacks to the \*local.c files don't
+  count as hacks, as they're easy to handle.
+3. You've hacked your server source code a lot.
 
 There is also a list of upgrade "GOTCHAS" at the end of this file.
 Please read them.
 
-The PennMUSH developers actually only support situation A, but we'll
-give some useful tips for B and C here, too.
+The PennMUSH developers actually only support situation 1, but we'll
+give some useful tips for 2 and 3 here, too.
 
 DISCLAIMER: It is very wise to always back up your current working
 MUSH directories before you try an upgrade. You were warned.
 
-============================================================================
-
 A. Vanilla upgrade
+------------------
 
 You have basically three choices here: upgrade with patch files, track
 a git version control repository, or build a whole new distribution.
 
-A.1. Upgrading with patch files
+### Upgrading with patch files
 
 This is the easiest way to upgrade your source code if you're keeping
 up with patches as they come out, or if you're upgrading patchlevels
@@ -53,41 +52,44 @@ instructions, you should be good to go. In most cases, you can simply
 @shutdown/reboot after the final successful compile. If
 @shutdown/reboot crashes, you'll have to restart again.
 
-A.2 Using git
+### Using git
 
-% git clone https://github.com/pennmush/pennmush.git
+    % git clone https://github.com/pennmush/pennmush.git
 
 To update from the master branch:
 
-% git pull
+    % git pull
 
-  TODO: Somebody who knows something about git should include a
-  mini-tutorial about checking out branches and tags.
 
-A.3. Building a new distribution
+Each release is tagged; if you don't want to follow the latest
+changest you can check out a specific one:
+
+    % git checkout 186p1
+
+### Building a new distribution
 
 When you're upgrading across release and no patchlevel is provided to
 make the upgrade (e.g. from 1.7.4p3 to 1.8.0p0), it's often easier to
 simply build a new distribution following the INSTALL instructions,
 but with your old configuration stuff.
 
-Up until 1.8.2p5, all PennMUSH installs unpacked into a directory called
-pennmush/, so it was necessary to rename your existing directory to 
-something like oldpenn/ prior to unpacking the new version. From 1.8.2p5
-and onwards, directory names are version-specific (pennmush-1.8.2p5/),
-so this is no longer necessary.
+Up until 1.8.2p5, all PennMUSH installs unpacked into a directory
+called pennmush/, so it was necessary to rename your existing
+directory to something like oldpenn/ prior to unpacking the new
+version. From 1.8.2p5 and onwards, directory names are
+version-specific (pennmush-1.8.2p5/), so this is no longer necessary.
 
 All of the steps below should be taken before running ./configure for
 the new version:
 
-A.3.a. options.h and game/*.cnf
+#### options.h and game/*.cnf
 
 You can copy the options.h file and game/mush.cnf file from your old
-version to the new version. The 'make update' command (run after
-configure) will compare your files with the newly distributed ones and
-tell you about options that have been added or removed. If you have
-any options defined that the new version doesn't recognize, you'll be
-asked if you want to retain them (which is safe).
+version to the new version. The `make update` command (run after
+`configure`) will compare your files with the newly distributed ones
+and tell you about options that have been added or removed. If you
+have any options defined that the new version doesn't recognize,
+you'll be asked if you want to retain them (which is safe).
 
 If your mush.cnf file is called something else, copy it to mush.cnf in
 pennmush/game anyway, since that's the file that gets updated. Then
@@ -103,45 +105,32 @@ script to reduce conflicts when patching.
 You can also copy your old game/access.cnf, game/names.cnf, and
 game/txt/*.txt files into the appropriate locations. You may wish to
 do the same thing for game/restrict.cnf and game/alias.cnf, but you
-should compare them to the new versions, as restrictions and aliases 
-that may formerly have been compiled into the server may now be 
+should compare them to the new versions, as restrictions and aliases
+that may formerly have been compiled into the server may now be
 specified in the .cnf files instead.
 
-A.3.b. src/*local.c
+#### src/*local.c
 
 You should copy local.c, cmdlocal.c, and funlocal.c from oldpenn/src
 to pennmush/src if you want to retain this local code. Of course, it
 may not still work, but it's quite likely that it will. If you don't
 have any such code, you can skip this step.
 
-A.3.c. Databases
+####. Databases
 
-This MUSH version should read databases along the main branch of MUSH
-evolution -- TinyMUD, vanilla TinyMUSH up to 2.0, MicroMUSH, and all
-Pern/PennMUSH versions. If you need to convert a TinyMUSH 2.0
-database, please contact Amberyl, and she'll mail you an extension to
-2.0 that will dump a 1.50-readable flatfile. You're probably out of
-luck with databases for TinyMUSH 2.2 and later.
+If you are upgrading from 1.7.4 (or earlier) to 1.7.7 (or later),
+you must first load your old database under PennMUSH 1.7.6 and
+then dump it, and load this converted database under your
+target version of PennMUSH. PennMUSH 1.7.7+ can no longer read
+1.7.4 databases.
 
-Be sure that your options.h settings correctly reflect the type of
-password encryption that was used on your database. The default has
-changed to SHS, so if your db used crypt(3) encryption, be sure you
-set the appropriate definition in options.h.
+If you are upgrading from 1.7.6 or certain 1.7.7 versions,
+you may also first need to load your database under PennMUSH
+1.8.0p13 and then dump it, and load this converted database
+under your target version of PennMUSH.
 
-*** If you are upgrading from 1.7.4 (or earlier) to 1.7.7 (or later),
-*** you must first load your old database under PennMUSH 1.7.6 and
-*** then dump it, and load this converted database under your
-*** target version of PennMUSH. PennMUSH 1.7.7+ can no longer read
-*** 1.7.4 databases.
-
-*** If you are upgrading from 1.7.6 or certain 1.7.7 versions,
-*** you may also first need to load your database under PennMUSH
-*** 1.8.0p13 and then dump it, and load this converted database
-*** under your target version of PennMUSH.
-
-============================================================================
-
-B. PennMUSH with a few hacks
+PennMUSH with a few hacks
+-------------------------
 
 When you have only a few local hacks outside of the src/*local.c
 files, you can often patch up using the patch file method discussed
@@ -154,15 +143,14 @@ added flags or toggles.  You probably had an #define in hdrs/flags.h
 for your flag's bit value.  This now should be moved to
 hdrs/oldflags.h; you should leave in the table entry in
 src/flags.c. If you set up a macro for testing your flag in
-hdrs/mushdb.h, you'll need to change it to use the has_flag_by_name()
+hdrs/mushdb.h, you'll need to change it to use the `has_flag_by_name()`
 function - see the many examples in that file.
 
 If this isn't suitable (you're crossing releases or your hacks are too
 many for this to work cleanly), see below.
 
-============================================================================
-
-C. PennMUSH with a lot of hacks
+PennMUSH with a lot of hacks
+----------------------------
 
 If you've seriously hacked your server source code, you're on your own
 in terms of keeping up with new patchlevels. Some people apply

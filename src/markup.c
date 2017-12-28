@@ -237,9 +237,13 @@ FUNCTION(fun_colors)
     bool shown = 0;
     /* Return list of available color names, skipping over the 256 'xtermN'
      * colors */
-    for (i = 256; allColors[i].name; i++) {
-      if (args[0] && *args[0] && !quick_wild(args[0], allColors[i].name))
+    for (i = 0; allColors[i].name; i++) {
+      if (args[0] && *args[0]) {
+        if (!quick_wild(args[0], allColors[i].name))
+          continue;
+      } else if (strncmp("xterm", allColors[i].name, 5) == 0) {
         continue;
+      }
       if (shown)
         safe_chr(' ', buff, bp);
       else

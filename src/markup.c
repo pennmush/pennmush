@@ -220,11 +220,13 @@ FUNCTION(fun_ansi)
 }
 
 enum color_styles {
-  CS_HEX = 1,
-  CS_16 = 2,
-  CS_256 = 3,
-  CS_NAME = 4,
-  CS_AUTO = 5
+  CS_HEX,
+  CS_16,
+  CS_256,
+  CS_256hex,
+  CS_RGB,
+  CS_NAME,
+  CS_AUTO
 };
 
 /* ARGSUSED */
@@ -268,12 +270,17 @@ FUNCTION(fun_colors)
     while ((curr = split_token(&list, ' ')) != NULL) {
       if (!*curr)
         continue;
-      if (!strcmp("hex", curr))
+      if (strcmp("hex", curr) == 0 || strcmp("x", curr) == 0)
         cs = CS_HEX;
-      else if (!strcmp("16color", curr))
+      else if (strcmp("16color", curr) == 0 | strcmp("c", curr) == 0)
         cs = CS_16;
-      else if (!strcmp("256color", curr) || !strcmp("xterm256", curr))
+      else if (strcmp("256color", curr) == 0 || strcmp("xterm256", curr) == 0
+               || strcmp("d", curr) == 0)
         cs = CS_256;
+      else if (strcmp("xterm256x", curr) == 0 || strcmp("h", curr) == 0)
+        cs = CS_256hex;
+      else if (strcmp("rgb", curr) == 0 || strcmp("r", curr) == 0)
+        cs = CS_RGB;
       else if (!strcmp("name", curr))
         cs = CS_NAME;
       else if (!strcmp("auto", curr))
@@ -324,6 +331,13 @@ FUNCTION(fun_colors)
         safe_format(buff, bp, "#%06x",
                     color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
+      case CS_RGB:
+        {
+          uint32_t hex = color_to_hex(color, (!i && (ad.bits & CBIT_HILITE)));
+          safe_format(buff, bp, "%d %d %d", (hex >> 16) & 0xFF,
+                      (hex >> 8) & 0xFF, hex & 0xFF);
+          break;
+        }
       case CS_16:
         j = ansi_map_16(color, i, &hilite);
 
@@ -338,6 +352,9 @@ FUNCTION(fun_colors)
       case CS_256:
         safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0),
                      buff, bp);
+        break;
+      case CS_256hex:
+        safe_format(buff, bp, "%x", ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0));
         break;
       case CS_NAME: {
         uint32_t hex;

@@ -18,10 +18,14 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.7p0, ??? ?? 20??
 ----------------------------
 
+### Softcode ###
+
+* Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+
 ### Documentation ###
 
-* Changelog's using Markdown. Other docs and help files might follow.
-* Start trying to clean up and revise ancient documentation.
+* Changelogs and other documentation use markup. [SW, 1140]
+* Start trying to clean up and revise ancient documentation. [1095]
 
 ### OS Specific ###
 

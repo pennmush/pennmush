@@ -17,6 +17,12 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.7p0, ??? ?? 20??
 ============================
 
+Major Changes
+-------------
+
+* Support websocket connections. See <http://grapenut.org/code/wsclient/index.html> for a
+  sample in-browser client. [Grapenut, 1007]
+
 Softcode
 --------
 

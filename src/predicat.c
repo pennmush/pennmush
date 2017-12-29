@@ -1391,7 +1391,7 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   char *bp = buff;
   int matched = 0;
   int cs;
-  ansi_string *aval = NULL, *repl = NULL;
+  ansi_string *aval = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
   s = atr_value(attrib);
@@ -1406,20 +1406,22 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   } else {
     aval = parse_ansi_string(s);
     s = aval->text;
-    repl =
-      parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
     while (s && *s) {
       if (!(cs ? strncmp(s, gd->findstr, gd->findlen)
                : strncasecmp(s, gd->findstr, gd->findlen))) {
+        ansi_string *repl;
         matched = 1;
+        repl = parse_ansi_string(tprintf("%s%.*s%s",
+                                         ANSI_HILITE,
+                                         gd->findlen, s,
+                                         ANSI_END));
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
+        free_ansi_string(repl);
         s += gd->findlen;
       } else {
         s++;
       }
     }
-    free_ansi_string(repl);
-    repl = NULL;
   }
 
   if (aval) {

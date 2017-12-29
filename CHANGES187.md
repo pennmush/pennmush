@@ -1,5 +1,4 @@
-PennMUSH 1.8.7 Changes
-======================
+% PennMUSH 1.8.7 Changes
 
 This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server.  Changes are reported in reverse chronological order (most recent first)
 
@@ -16,28 +15,33 @@ Numbers next to the developer credit refer to Github issue numbers.
 -------------------------------------------------------------------------------
 
 Version 1.8.7p0, ??? ?? 20??
-----------------------------
+============================
 
-### Softcode ###
+Softcode
+--------
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
 
-### Fixes ###
+Fixes
+-----
 
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
+* `@grep/iprint` hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
 
-### Documentation ###
+Documentation
+-------------
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
 
-### OS Specific ###
+OS Specific
+-----------
 
-#### OpenBSD ####
+### OpenBSD ###
 
-* netmush and slave processes use pledge(2) to limit their privileges.
+* netmush and slave processes use pledge(2) to limit their privileges. [SW]
 
-#### Windows ####
+### Windows ###
 
-* Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL.
+* Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL. [SW]
 

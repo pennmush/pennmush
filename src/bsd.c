@@ -920,6 +920,20 @@ is_ssl_desc(DESC *d)
   return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SSL_SOCKET;
 }
 
+/** Is a descriptor using a websocket? */
+static inline bool
+is_ws_desc(DESC *d)
+{
+  if (!d)
+    return 0;
+#ifndef WITHOUT_WEBSOCKETS
+  return d->conn_flags | CONN_WEBSOCKETS;
+#else
+  return 0;
+#endif
+}
+
+
 static void
 setup_desc(int sockfd, conn_source source)
 {
@@ -5537,16 +5551,25 @@ do_who_admin(dbref player, char *name)
     if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
+      char conntype[3] = { '\0' };
+      int cti = 0;
       tp = tbuf;
       safe_str(AName(d->player, AN_WHO, NULL), tbuf, &tp);
       nlen = strlen(Name(d->player));
       if (nlen < 16)
         safe_fill(' ', 16 - nlen, tbuf, &tp);
-      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%c ",
+
+      if (is_ssl_desc(d))
+        conntype[cti++] = 'S';
+      else if (!is_remote_desc(d))
+        conntype[cti++] = 'L';
+      if (is_ws_desc(d))
+        conntype[cti] = 'W';
+      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
                   unparse_dbref(Location(d->player)),
                   onfor_time_fmt(d->connected_at, 9),
                   idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                  is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'));
+                  conntype);
       strncpy(addr, d->addr, 28);
       if (Dark(d->player)) {
         addr[20] = '\0';
@@ -7169,6 +7192,10 @@ dump_reboot_db(void)
   flags |= RDBF_SSL_SLAVE | RDBF_SLAVE_FD;
 #endif
 
+#ifndef WITHOUT_WEBSOCKETS
+  flags |= RDBF_WEBSOCKET_FRAME;
+#endif
+  
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
@@ -7215,7 +7242,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putstring(f, d->addr);
       putstring(f, d->ip);
-      putref(f, d->conn_flags);
+      putref_u32(f, d->conn_flags);
       putref(f, d->width);
       putref(f, d->height);
       if (d->ttype)
@@ -7224,6 +7251,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
+      putref_u64(f, d->ws_frame_len);
     } /* for loop */
 
     putref(f, 0);
@@ -7312,7 +7340,7 @@ load_reboot_db(void)
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
       if (!(flags & RDBF_NO_DOING))
         (void) getstring_noalloc(f);
-      d->conn_flags = getref(f);
+      d->conn_flags = getref_u32(f);
       if (flags & RDBF_SCREENSIZE) {
         d->width = getref(f);
         d->height = getref(f);
@@ -7334,6 +7362,19 @@ load_reboot_db(void)
         strcpy(d->checksum, getstring_noalloc(f));
       else
         d->checksum[0] = '\0';
+      if (flags & RDBF_WEBSOCKET_FRAME) {
+#ifdef WITHOUT_WEBSOCKETS
+        (void)getref_u64(f);
+#else
+        d->ws_frame_len = getref_u64(f);
+#endif
+      }
+#ifndef WITHOUT_WEBSOCKETS
+      else {
+        d->ws_frame_len = 0;
+      }
+#endif
+  
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;

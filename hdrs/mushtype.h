@@ -413,7 +413,7 @@ struct descriptor_data {
   int hide;                     /**< Hide status */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  int conn_flags;             /**< Flags of connection (telnet status, etc.) */
+  uint32_t conn_flags;             /**< Flags of connection (telnet status, etc.) */
   unsigned long input_chars;  /**< Characters received */
   unsigned long output_chars; /**< Characters sent */
   int width;                  /**< Screen width */

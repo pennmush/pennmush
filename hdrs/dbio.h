@@ -44,6 +44,8 @@ int penn_feof(PENNFILE *);
 
 /* Output */
 void putref(PENNFILE *f, long int ref);
+void putref_u32(PENNFILE *f, uint32_t ref);
+void putref_u64(PENNFILE *f, uint64_t ref);
 void putstring(PENNFILE *f, const char *s);
 void db_write_labeled_string(PENNFILE *f, char const *label, char const *value);
 void db_write_labeled_int(PENNFILE *f, char const *label, int value);
@@ -56,6 +58,8 @@ int db_paranoid_write(PENNFILE *f, int flag);
 /* Input functions */
 char *getstring_noalloc(PENNFILE *f);
 long getref(PENNFILE *f);
+uint32_t getref_u32(PENNFILE *);
+uint64_t getref_u64(PENNFILE *f);
 void db_read_this_labeled_string(PENNFILE *f, const char *label, char **val);
 void db_read_labeled_string(PENNFILE *f, char **label, char **val);
 void db_read_this_labeled_int(PENNFILE *f, const char *label, int *val);

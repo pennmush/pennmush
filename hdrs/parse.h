@@ -54,6 +54,7 @@ unsigned int parse_uint(const char *, char **, int);
 
 int32_t parse_int32(const char *, char **, int);
 uint32_t parse_uint32(const char *, char **, int);
+uint64_t parse_uint64(const char *, char **, int);
 
 /* TO-DO: Add parse_X/is_X/unparse_X and maybe safe_X as needed for
  * long, unsigned long, size_t, intmax_t, int32_t, uint32_t, int64_t

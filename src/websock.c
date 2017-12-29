@@ -177,6 +177,9 @@ complete_handshake(DESC *d)
   d->conn_flags |= CONN_WEBSOCKETS;
 
   d->checksum[0] = 4;
+
+  do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Websocket mode.", d->descriptor,
+            d->addr, d->ip);
 }
 
 int

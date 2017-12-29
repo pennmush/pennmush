@@ -190,5 +190,6 @@ bool unfindable(dbref);
 #define RDBF_SOCKET_SRC 0x20
 #define RDBF_NO_DOING 0x40
 #define RDBF_SLAVE_FD 0x80
+#define RDBF_WEBSOCKET_FRAME 0x100
 
 #endif /* __DB_H */

@@ -656,6 +656,58 @@ parse_uint32(const char *s, char **end, int base)
 #endif
 }
 
+/** Convert a string containing an unsigned integer into an uint64_t.
+ * Does not do any format checking. Invalid strings will return 0.
+ * \param s The string to convert
+ * \param end pointer to store the end of the parsed part of the string in
+ * if not NULL.
+ * \param base the base to convert from.
+ * \return the number, or UINT64_MIN on underflow, UINT64_MAX on overflow,
+ * with errno set to ERANGE.
+ */
+uint64_t
+parse_uint64(const char *s, char **end, int base)
+{
+  const char *fmt = NULL;
+  uint64_t val;
+
+  if (sizeof(long) == 8)
+    return strtoul(s, end, base);
+
+#if defined(WIN32)
+  /* This won't do overflow checking, which is why it isn't first */
+
+  if (base == 10)
+    fmt = "%I64x";
+  else if (base == 8)
+    fmt = "%I64o";
+  else if (base == 16)
+    fmt = "%64x";
+  else
+    return 0;  
+#elif defined(SCNu64)
+  /* This won't do overflow checking, which is why it isn't first */
+
+  if (base == 10)
+    fmt = "%" SCNu64;
+  else if (base == 8)
+    fmt = "%" SCNo64;
+  else if (base == 16)
+    fmt = "%" SCNx64;
+  else
+    return 0;
+#endif
+
+  if (!fmt)
+    return 0;
+  
+  if (sscanf(s, fmt, &val) != 1)
+    return 0;
+  else
+    return val;
+}
+
+
 /** PE_REGS: Named Q-registers. We have two strtrees: One for names,
  * one for values.
  */

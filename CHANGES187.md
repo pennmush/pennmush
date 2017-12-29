@@ -27,6 +27,7 @@ Fixes
 
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
 * `@grep/iprint` hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
+* @mail wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
 
 Documentation
 -------------

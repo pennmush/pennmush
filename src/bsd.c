@@ -4031,6 +4031,7 @@ do_command(DESC *d, char *command)
              "HTTP/1.1 200 OK\r\n"
              "Content-Type: text/html; charset:iso-8859-1\r\n"
              "Pragma: no-cache\r\n"
+             "Connection: Close\r\n"
              "\r\n"
              "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
              " \"http://www.w3.org/TR/html4/loose.dtd\">"
@@ -4040,7 +4041,7 @@ do_command(DESC *d, char *command)
              "charset=iso-8859-1\">"
              "</HEAD><BODY>"
              "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-             "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+             "<P>Please click <a href=\"%s\">%s</a> to go to the website for %s.</P>"
              "</BODY></HEAD></HTML>",
              MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
     queue_write(d, buf, strlen(buf));

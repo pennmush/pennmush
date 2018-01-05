@@ -1,17 +1,17 @@
-User's Guide to PennMUSH 1.8.x
-==============================
+% User's Guide to PennMUSH 1.8.x
 
 PennMUSH is a server used to create text-based multiplayer games.
 
-Installation information can be found in the files INSTALL or
-UPGRADING.md, depending on whether it's a new install or an upgrade.
-The file I18N discusses internationalization.
+Installation information can be found in the files
+[INSTALL.md](INSTALL.html) or [UPGRADING.md](UPGRADING.html),
+depending on whether it's a new install or an upgrade.  The file I18N
+discusses internationalization.
 
 You may also want to take a look at Javelin's Guide for PennMUSH Gods,
 at <http://download.pennmush.org/Guide/>
 
 Introduction and history
-------------------------
+========================
 
 PennMUSH uses a version-numbering system that includes version numbers
 (like 1.7.2) and patchlevels (like p32), usually written together
@@ -80,14 +80,14 @@ versions may be available at <http://community.pennmush.org>.
 Enjoy!
 
 Getting Help, Reporting Bugs
-----------------------------
+============================
 
 Here are some guidelines about where and how to report bugs or
 problems or generally look for help.
 
 There are three places one could get help with a problem:
 
-1. The PennMUSH bug-tracking site is
+*  The PennMUSH bug-tracking site is
    <https://github.com/pennmush/pennmush/issues> To file a new report,
    click on the 'New issue' link. If you want to get emails about
    updates to the bug report, put your email address in the
@@ -107,19 +107,20 @@ There are three places one could get help with a problem:
    issue, see what issues have been fixed for upcoming releases, and
    much more at the site.
 
-2. The PennMUSH community portal is at <http://community.pennmush.org>
+* The PennMUSH community portal is at <http://community.pennmush.org>
 
-   There is documentation there about many aspects of working with
-   mushes, and after you create an account, you can make blog posts
-   asking for help.
+  There is documentation there about many aspects of working with
+  mushes, and after you create an account, you can make blog posts
+  asking for help.
 
-3. `M*U*S*H`, at mush.pennmush.org 4201 is where the devs and many other
+* `M*U*S*H`, at mush.pennmush.org 4201 is where the devs and many other
    talented folk hang out.
 
 Miscellaneous
--------------
+=============
 
-### Announcing when a mush is down
+Announcing when a mush is down
+------------------------------
 
 If your mush is no longer running on a given port or server and you
 want to and are able to leave a program running listening on that
@@ -136,7 +137,8 @@ Then start the port announcer with:
 Any connections to the given port will see the contents of the message
 file and then be disconnected after a few seconds.
 
-### Running under gdb
+Running under gdb
+-----------------
 
 If you start the game through gdb (As opposed to attaching to a
 running process) pass the `--no-session` argument to netmush/netmud to

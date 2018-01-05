@@ -1,5 +1,7 @@
-Bugs that aren't our fault, but might bite people:
-==================================================
+% Bugs and Issues
+
+Bugs that aren't our fault, but might bite people
+=================================================
 
 * You might experience crashes because the default executable stack
   size is too small. An 8 megabyte stack is more than ample. On unix,
@@ -33,6 +35,9 @@ Bugs that aren't our fault, but might bite people:
   and macros visible to Penn, let us know! Some functions known to
   cause this include `posix_fadvise()` and `posix_fallocate()`.
 
+Bugs that are our fault
+=======================
+
 You can browse the bug and suggestion database at
-<https://github.com/pennmush/pennmush/issues> to see more.
+<https://github.com/pennmush/pennmush/issues> to see the list.
 

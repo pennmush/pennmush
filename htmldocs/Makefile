@@ -1,6 +1,9 @@
 .PHONY: all
 
-all: *.html
+all: index.html *.html
+
+index.html: index.md
+	pandoc -t html5 -c mushdoc.css -o index.html -s index.md
 
 %.html: ../%.md
-	pandoc -t html5 -o $@ -s --toc $<
+	pandoc -t html5 -c mushdoc.css -o $@ -s --toc --toc-depth=2 $<

@@ -1,5 +1,7 @@
-Upgrading to PennMUSH 1.8.x
-===========================
+% Upgrading to PennMUSH 1.8.x
+
+Introduction
+============
 
 This file explains how to upgrade to a new version of PennMUSH.
 
@@ -18,16 +20,17 @@ Please read them.
 The PennMUSH developers actually only support situation 1, but we'll
 give some useful tips for 2 and 3 here, too.
 
-DISCLAIMER: It is very wise to always back up your current working
+**DISCLAIMER**: It is very wise to always back up your current working
 MUSH directories before you try an upgrade. You were warned.
 
-A. Vanilla upgrade
-------------------
+Vanilla upgrade
+==================
 
 You have basically three choices here: upgrade with patch files, track
 a git version control repository, or build a whole new distribution.
 
-### Upgrading with patch files
+Upgrading with patch files
+--------------------------
 
 This is the easiest way to upgrade your source code if you're keeping
 up with patches as they come out, or if you're upgrading patchlevels
@@ -37,22 +40,23 @@ To upgrade with patch files, get all the patch files for higher
 patchlevels than your current version. For example, if you're running
 1.8.0p0 and the latest version is 1.8.0p4, you need patches 1-4.
 
-Patchfiles can be downloaded via http://download.pennmush.org/Source/
+Patchfiles can be downloaded via <http://download.pennmush.org/Source/>
 and are usually named things like 1.8.0-patch02 (the patch from 1.8.0p1
 to 1.8.0p2) or, in some cases, 1.7.6p16-1.8.0p0.patch (the patch from
 1.7.6p16 to 1.8.0p0).
 
 Each patch file contains instructions at the top explaining how to
-apply it. FOLLOW THESE! Don't assume they're all the same. The options
-to use with the patch program change, and sometimes further steps are
-required.
+apply it. **FOLLOW THESE!** Don't assume they're all the same. The
+options to use with the patch program change, and sometimes further
+steps are required.
 
 After you've applied all the patches and followed all the
 instructions, you should be good to go. In most cases, you can simply
-@shutdown/reboot after the final successful compile. If
-@shutdown/reboot crashes, you'll have to restart again.
+`@shutdown/reboot` after the final successful compile. If
+`@shutdown/reboot` crashes, you'll have to restart again.
 
-### Using git
+Using git
+---------
 
     % git clone https://github.com/pennmush/pennmush.git
 
@@ -60,13 +64,13 @@ To update from the master branch:
 
     % git pull
 
-
 Each release is tagged; if you don't want to follow the latest
 changest you can check out a specific one:
 
     % git checkout 186p1
 
-### Building a new distribution
+Building a new distribution
+---------------------------
 
 When you're upgrading across release and no patchlevel is provided to
 make the upgrade (e.g. from 1.7.4p3 to 1.8.0p0), it's often easier to
@@ -79,10 +83,10 @@ directory to something like oldpenn/ prior to unpacking the new
 version. From 1.8.2p5 and onwards, directory names are
 version-specific (pennmush-1.8.2p5/), so this is no longer necessary.
 
-All of the steps below should be taken before running ./configure for
+All of the steps below should be taken before running `./configure` for
 the new version:
 
-#### options.h and game/*.cnf
+### options.h and game/*.cnf
 
 You can copy the options.h file and game/mush.cnf file from your old
 version to the new version. The `make update` command (run after
@@ -109,14 +113,14 @@ should compare them to the new versions, as restrictions and aliases
 that may formerly have been compiled into the server may now be
 specified in the .cnf files instead.
 
-#### src/*local.c
+### src/*local.c
 
 You should copy local.c, cmdlocal.c, and funlocal.c from oldpenn/src
 to pennmush/src if you want to retain this local code. Of course, it
 may not still work, but it's quite likely that it will. If you don't
 have any such code, you can skip this step.
 
-####. Databases
+### Databases
 
 If you are upgrading from 1.7.4 (or earlier) to 1.7.7 (or later),
 you must first load your old database under PennMUSH 1.7.6 and
@@ -130,7 +134,7 @@ you may also first need to load your database under PennMUSH
 under your target version of PennMUSH.
 
 PennMUSH with a few hacks
--------------------------
+=========================
 
 When you have only a few local hacks outside of the src/*local.c
 files, you can often patch up using the patch file method discussed
@@ -150,7 +154,7 @@ If this isn't suitable (you're crossing releases or your hacks are too
 many for this to work cleanly), see below.
 
 PennMUSH with a lot of hacks
-----------------------------
+============================
 
 If you've seriously hacked your server source code, you're on your own
 in terms of keeping up with new patchlevels. Some people apply

@@ -1,8 +1,7 @@
-Frequently asked questions about the PennMUSH Server, 1.8.7
-===========================================================
+% Frequently asked questions about the PennMUSH Server, 1.8.7
 
 What's the release history since 1.50pl10?
-------------------------------------------
+==========================================
 
 PennMUSH has been around for a long time. The above-mentioned 1.50p10
 (1.5.0p10) release was made in 1995, and Penn wasn't new then.
@@ -31,7 +30,7 @@ the active development team is Raevnos, Walker, Mike, Intrevis, and Rince.
 The current version is 1.8.7.
 
 How do I ask for help with a problem?
-----------------------------------------
+=====================================
 
 There are several options:
 
@@ -40,7 +39,7 @@ There are several options:
  * File an issue with the devs (See the link below for the github bug tracker)
 
 How do I report a bug?
-----------------------
+======================
 
 Visit the [issue tracker](https://github.com/pennmush/pennmush/issues).
 
@@ -51,7 +50,7 @@ the bug, send it along. If you don't, and the bug caused a crash with
 a core dump, you can send along a stack trace.
 
 How do I request a new feature?
-----------------------------------
+===============================
 
 Visit the [issue tracker](https://github.com/pennmush/pennmush/issues).
 
@@ -61,7 +60,7 @@ with a patch implementing them tend to get accepted faster than those
 that don't unless it's a trivial addition.
 
 Where can I get more information about admin'ing and hacking MUSH?
-------------------------------------------------------------------
+==================================================================
 
 Read
 [Javelin's God for PennMUSH Gods](http://download.pennmush.org/Guide/),
@@ -78,13 +77,13 @@ The source code has
 browsed.
 
 Where can I hear about new releases?
-------------------------------------
+====================================
 
 New releases of the PennMUSH code are announced on `M*U*S*H`
 (mush.pennmush.org 4201).
 
 Why doesn't %t or space() work right for Pueblo clients?
---------------------------------------------------------
+========================================================
 
 Actually, it does. Pueblo is built around an HTML browser. In HTML,
 multiple whitespace is ignored and treated as a single space.  This is
@@ -93,12 +92,15 @@ spaces, you must put your text in `<PRE>..</PRE>` blocks,
 e.g. `tagwrap(PRE,this %t has %t tabs %t and %b%b spaces`).
 
 What signals does PennMUSH understand?
---------------------------------------
+======================================
 
 PennMUSH understands the following signals, and performs the listed action:
 
-*  -HUP   ( 1) Performs a silent @readcache
-*  -USR1  (16) Performs an @shutdown/reboot
-*  -USR2  (17) Performs an @dump
-*  -INT   ( 2) Performs an @shutdown
-*  -TERM  (15) Performs an @shutdown/panic
+Name  Number Description
+----  ------ -----------
+HUP        1 Performs a silent `@readcache`
+USR1      16 Performs an `@shutdown/reboot`
+USR2      17 Performs an `@dump`
+INT        2 Performs an `@shutdown`
+TERM      15 Performs an `@shutdown/panic`
+

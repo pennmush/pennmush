@@ -1,4 +1,6 @@
 % PennMUSH 1.8.7 Changes
+%
+% Last release: ??? ?? 20??
 
 This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server.  Changes are reported in reverse chronological order (most recent first)
 

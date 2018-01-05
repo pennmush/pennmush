@@ -1,10 +1,12 @@
-Use SSL with PennMUSH
-=====================
+% Use SSL with PennMUSH
+%
+% Revised: 04 Jan 2018
 
-Revised: 27 Dec 2017
+Introduction
+============
 
 As of version 1.7.7p17, PennMUSH supports SSL connections when linked
-with the OpenSSL library (<http://www.openssl.org>). As of version 1.8.4p9, 
+with the OpenSSL library (<https://www.openssl.org>). As of version 1.8.4p9, 
 OpenSSL is a requirement. OpenBSD's LibreSSL also works.
 
 The following features are supported:
@@ -17,7 +19,7 @@ The following features are supported:
   passwords and the digest() function.
 
 An SSL overview
----------------
+===============
 
 When an SSL client connects to an SSL server, it performs a
 "handshake" that looks something like this:
@@ -43,9 +45,10 @@ Once session keys have been exchanged, the client and server can
 communicate secure from eavesdropping.
 
 Compiling with OpenSSL
-----------------------
+======================
 
-### What to install
+What to install
+---------------
 
 The configure script distributed with PennMUSH automatically detects
 the OpenSSL libraries (libssl and libcrypto) and sets up the proper
@@ -65,7 +68,8 @@ libraries to the PennMUSH project file and link it in that way.  It's
 easier to use something like MSYS2 though - see the README files in
 win32/.
 
-### Persistent SSL connections
+Persistent SSL connections
+--------------------------
 
 Normally, encrypted connections will be booted when a running game
 restarts, because the internal OpenSSL state cannot be saved to disc
@@ -74,7 +78,8 @@ process, pass --enable-ssl_slave to configure when you run it. This
 does not work on Windows.
 
 It requires the libevent 2.X library and headers to be installed. Get
-it through your OS's package system or at <http://libevent.org/>.
+it through your OS's package system or at <http://libevent.org/>. If
+libevent is detected, the ssl slave is automatically enabled.
  
 To use the ssl_slave, a full `@shutdown` and restart of the mush has
 to take place after the mush source has been configured to enable it,
@@ -84,45 +89,62 @@ booted on a `@shutdown/reboot`. It's transparent to the player and the
 game.
 
 MUSH configuration overview
----------------------------
+===========================
 
 mush.cnf includes a number of directives that control SSL configuration:
 
-* `ssl_port` selects the port number for the MUSH to listen for SSL
-  connections. Any port number other than the MUSH's ordinary
-  listening port can be chosen (subject, of course, to other system
-  restrictions on choosing port numbers).
+`ssl_port`
 
-  If left blank, SSL connections will not be enabled. However, other
-  parts of the mush, such as the `digest()` softcode function, and
-  password encryption, will still use OpenSSL library routines.
+:    selects the port number for the MUSH to listen for SSL
+     connections. Any port number other than the MUSH's ordinary
+     listening port can be chosen (subject, of course, to other system
+     restrictions on choosing port numbers).
 
-* `ssl_ip_addr` controlls the IP address to listen on. When in doubt,
-  leave blank.
+     If left blank, SSL connections will not be enabled. However, other
+     parts of the mush, such as the `digest()` softcode function, and
+     password encryption, will still use OpenSSL library routines.
 
-* `ssl_private_key_file` specifies the name of the file (relative to the
-  game/ directory if it's not an absolute path) that contains the MUSH
-  server's certificate and private key. See section IV below.
+`ssl_ip_addr`
 
-* `ssl_ca_file` specifies the name of the file that contains
-  certificates of trusted certificate authorities. OpenSSL distributes
-  a file containing the best known CAs that is suitable for use here.
-  If you comment this out, client certificate checking will not be
-  performed.
+:    Controls the IP address to listen on. When in doubt, leave blank.
 
-* `ssl_ca_dir` specifies a directory containing multiple certificate files.
+`ssl_private_key_file`
 
-* `ssl_require_client_cert` is a boolean option that controls whether
-  the MUSH server will require clients to present valid (that is,
-  signed by a CA for which ssl_ca_file holds a certificate)
-  certificates in order to connect. As no mud clients currently do
-  this, you probably want it off. See section V below.
+:    Specifies the name of the file (relative to the
+     game/ directory if it's not an absolute path) that contains the MUSH
+     server's certificate and private key. See section IV below.
 
-* `socket_file` is the path to a file to use as a unix domain socket
-  used for talking to the optional SSL connection proxy.
+`ssl_ca_file`
+
+:    The name of the file that contains
+     certificates of trusted certificate authorities. OpenSSL distributes
+     a file containing the best known CAs that is suitable for use here.
+     If you comment this out, client certificate checking will not be
+     performed.
+     
+     Defaults to /etc/ssl/certs/ca-certifcates.crt
+
+`ssl_ca_dir`
+
+:    A directory containing multiple certificate files.
+
+     Defaults to /etc/ssl/certs
+
+`ssl_require_client_cert`
+
+:    A boolean option that controls whether
+     the MUSH server will require clients to present valid (that is,
+     signed by a CA for which ssl_ca_file holds a certificate)
+     certificates in order to connect. As no mud clients currently do
+     this, you probably want it off. See section V below.
+
+`socket_file`
+
+:    The path to a file to use as a unix domain socket
+     used for talking to the optional SSL connection proxy.
 
 Installing a server certificate
--------------------------------
+===============================
 
 SSL support requires that the MUSH present a server certificate
 (except as discussed below).  You must create a file containing the
@@ -137,13 +159,13 @@ How do you get such a certificate and private key? Here are the steps
    key (temp.key). You will be asked to answer several questions.
    Be sure the Common Name you request is your MUSH's hostname:
 
-    $ openssl req -new -out mymush.csr -keyout temp.key -passin pass:foobar
+        $ openssl req -new -out mymush.csr -keyout temp.key -passin pass:foobar
 
 2. Strip the passphrase off of your private key, leaving you with an
    unpassworded mymush.key file:
  
-     $ openssl rsa -in temp.key -out mymush.key -passin pass:foobar
-     $ rm temp.key
+        $ openssl rsa -in temp.key -out mymush.key -passin pass:foobar
+        $ rm temp.key
 
 3. Send the certificate signing request to a certifying authority to
    have it signed. If the CA needs the private key, send the
@@ -153,35 +175,34 @@ How do you get such a certificate and private key? Here are the steps
 4. Concatenate the certificate with the unpassworded private key and
    use this as the `ssl_private_key_file`:
 
-    $ cat mymush.key >> mymush.crt
+        $ cat mymush.key >> mymush.crt
 
-  Commercial CAs like Verisign sign certificates for a yearly or
-  two-yearly fee that is probably too steep for most MUSH
-  Gods. Instead of using a commercial CA, you can generate a
-  self-signed certificate by changing step 1 above to:
+Commercial CAs like Verisign sign certificates for a yearly or
+two-yearly fee that is probably too steep for most MUSH Gods. Instead
+of using a commercial CA, you can generate a self-signed certificate
+by changing step 1 above to:
 
     $ openssl req -new -x509 -days 3650 -out mymush.crt -keyout temp.key -passin pass:foobar
 
-  A self-signed certificate is free, but clients that attempt to
-  validate certificates will fail to validate a self-signed
-  certificate unless the user manually installs the certificate in
-  their client and configures it to be trusted. How to do that is
-  beyond the scope of this document, and highly client-dependent.
+A self-signed certificate is free, but clients that attempt to
+validate certificates will fail to validate a self-signed certificate
+unless the user manually installs the certificate in their client and
+configures it to be trusted. How to do that is beyond the scope of
+this document, and highly client-dependent.
 
-  Another option is to skip the use of a certificate altogether.  If
-  you don't provide an `ssl_private_key_file`, the server will only
-  accept connections from clients that are willing to use the
-  anonymous Diffie-Hellman cipher; it is unknown which clients are
-  configured to offer this. This provides clients with no security
-  that they are actually connecting to your server, and exposes them
-  to a man-in-the-middle attack, but requires no work on your part at
-  all.
+Another option is to skip the use of a certificate altogether.  If you
+don't provide an `ssl_private_key_file`, the server will only accept
+connections from clients that are willing to use the anonymous
+Diffie-Hellman cipher; it is unknown which clients are configured to
+offer this. This provides clients with no security that they are
+actually connecting to your server, and exposes them to a
+man-in-the-middle attack, but requires no work on your part at all.
 
-  Hosting providers or other parties may one day provide CA service to
-  PennMUSHes for free. When they do, you'll have to install those CAs'
-  certificates in your client as trusted in order to have the server's
-  certificate validate, but if a few CAs certify many MUSHes, this is
-  efficient.
+Hosting providers or other parties may one day provide CA service to
+PennMUSHes for free. When they do, you'll have to install those CAs'
+certificates in your client as trusted in order to have the server's
+certificate validate, but if a few CAs certify many MUSHes, this is
+efficient.
 
 Using client certificates for authentication
 --------------------------------------------
@@ -202,126 +223,3 @@ own certs and not allow Verisign, etc. certs. You'd probably want to
 have the server validate extra attributes on each client cert, which
 should probably include the player's dbref and creation time. This is
 left as an exercise for the reader for now.
-
-Legal issues
-------------
-
-OpenSSL is used in PennMUSH and may be redistributed with PennMUSH
-under the following license(s):
-
-    /* ====================================================================
-     * Copyright (c) 1998-2001 The OpenSSL Project.  All rights reserved.
-     *
-     * Redistribution and use in source and binary forms, with or without
-     * modification, are permitted provided that the following conditions
-     * are met:
-     *
-     * 1. Redistributions of source code must retain the above copyright
-     *    notice, this list of conditions and the following disclaimer. 
-     *
-     * 2. Redistributions in binary form must reproduce the above copyright
-     *    notice, this list of conditions and the following disclaimer in
-     *    the documentation and/or other materials provided with the
-     *    distribution.
-     *
-     * 3. All advertising materials mentioning features or use of this
-     *    software must display the following acknowledgment:
-     *    "This product includes software developed by the OpenSSL Project
-     *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
-     *
-     * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
-     *    endorse or promote products derived from this software without
-     *    prior written permission. For written permission, please contact
-     *    openssl-core@openssl.org.
-     *
-     * 5. Products derived from this software may not be called "OpenSSL"
-     *    nor may "OpenSSL" appear in their names without prior written
-     *    permission of the OpenSSL Project.
-     *
-     * 6. Redistributions of any form whatsoever must retain the following
-     *    acknowledgment:
-     *    "This product includes software developed by the OpenSSL Project
-     *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
-     *
-     * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
-     * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-     * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-     * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
-     * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-     * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-     * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-     * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-     * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-     * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-     * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-     * OF THE POSSIBILITY OF SUCH DAMAGE.
-     * ====================================================================
-     *
-     * This product includes cryptographic software written by Eric Young
-     * (eay@cryptsoft.com).  This product includes software written by Tim
-     * Hudson (tjh@cryptsoft.com).
-     *
-     */
-    
-     Original SSLeay License
-     -----------------------
-    
-    /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
-     * All rights reserved.
-     *
-     * This package is an SSL implementation written
-     * by Eric Young (eay@cryptsoft.com).
-     * The implementation was written so as to conform with Netscapes SSL.
-     * 
-     * This library is free for commercial and non-commercial use as long as
-     * the following conditions are aheared to.  The following conditions
-     * apply to all code found in this distribution, be it the RC4, RSA,
-     * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
-     * included with this distribution is covered by the same copyright terms
-     * except that the holder is Tim Hudson (tjh@cryptsoft.com).
-     * 
-     * Copyright remains Eric Young's, and as such any Copyright notices in
-     * the code are not to be removed.
-     * If this package is used in a product, Eric Young should be given attribution
-     * as the author of the parts of the library used.
-     * This can be in the form of a textual message at program startup or
-     * in documentation (online or textual) provided with the package.
-     * 
-     * Redistribution and use in source and binary forms, with or without
-     * modification, are permitted provided that the following conditions
-     * are met:
-     * 1. Redistributions of source code must retain the copyright
-     *    notice, this list of conditions and the following disclaimer.
-     * 2. Redistributions in binary form must reproduce the above copyright
-     *    notice, this list of conditions and the following disclaimer in the
-     *    documentation and/or other materials provided with the distribution.
-     * 3. All advertising materials mentioning features or use of this software
-     *    must display the following acknowledgement:
-     *    "This product includes cryptographic software written by
-     *     Eric Young (eay@cryptsoft.com)"
-     *    The word 'cryptographic' can be left out if the rouines from the library
-     *    being used are not cryptographic related :-).
-     * 4. If you include any Windows specific code (or a derivative thereof) from 
-     *    the apps directory (application code) you must include an acknowledgement:
-     *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
-     * 
-     * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
-     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-     * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-     * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-     * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-     * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-     * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-     * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-     * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-     * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-     * SUCH DAMAGE.
-     * 
-     * The licence and distribution terms for any publically available version or
-     * derivative of this code cannot be changed.  i.e. this code cannot simply be
-     * copied and put under another distribution licence
-     * [including the GNU Public Licence.]
-     */
-
-
-

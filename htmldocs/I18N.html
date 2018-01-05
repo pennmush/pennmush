@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Internationalization in PennMUSH</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="mushdoc.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">Internationalization in PennMUSH</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#current-state">Current State</a></li>
+<li><a href="#compiling-the-mush">Compiling the MUSH</a></li>
+<li><a href="#starting-up-the-mush">Starting up the MUSH</a></li>
+<li><a href="#development">Development</a></li>
+</ul>
+</nav>
+<h1 id="introduction">Introduction</h1>
+<p>PennMUSH 1.7.3 and later have extensive support for running in non-English environments. There are two parts to this. First, what the mush considers to be valid characters, what’s upper-case, what’s lower-case, how they are sorted, and so on. The second is translating the messages produced by the game into another language. (Helpfiles aren’t currently translated.)</p>
+<p>Several languages are currently supported to one degree or another. If your favorite language isn’t (or if you want to increase the level of support), and you’re fluent in it, you can help out! Contact the PennMUSH devs for more info.</p>
+<p>Localization (the process of making a MUSH conform to a given “locale”) is controlled by the <code>LANG</code> or <code>LC_ALL</code> environment variables, which have the form “la_DI”, where la is a language code and DI is a dialect. For example, “en_US” stands for English, United States dialect. The language codes are usually the same as a country’s top level domain in URLs. Spanish is ‘es’, Russian is ‘ru’, and so on.</p>
+<p>You need to have appropriate locale files installed in your operating system to have everything work right (specifically, to get the right character sets). How you do this is system-specific; Unix/linux users should start with <code>man -k locale</code> to find their system commands (often <code>man locale</code> or <code>man locale-gen</code> will be helpful).</p>
+<p>There are two places where you have to use LANG: when you’re compiling the MUSH (in order to compile the message translation files) and when you start up the MUSH (in order to set the locale for the running server).</p>
+<h1 id="current-state">Current State</h1>
+<p>Nobody currently owns the translation project and the translation files have not been updated in years. There might be many examples of messages that are not included in the available listings. If you’re interested in taking over the project, contact the dev team!</p>
+<h1 id="compiling-the-mush">Compiling the MUSH</h1>
+<p>Files with messages for translation are included with the source code in pennmush/po; they have the .pox extension. You can get the very latest versions of these files from the PennMUSH Git repository.</p>
+<p>These files have to be compiled to an efficient internal form before starting up the mush. This means you should set your LANG environment variable before you compile your server.</p>
+<p>To do this using the common bash shell, <code>export LANG=en_US</code>, or whatever your setting is. If that doesn’t work, consult the documentation for the shell you’re using.</p>
+<p>The message files are compiled during the <code>make install</code> step, which runs 1make localized1 in the the po directory. (Technically, a pox file for your LANG is merged with <code>po/pennmush.pot</code> to produce a po file for your LANG, and then that is compiled into <code>po/&lt;LANG&gt;/LC_MESSAGES/pennmush.mo</code>, which is loaded by the server.)</p>
+<p>You can disable translation support entirely if so desired by passing <code>--disable-nls</code> to the configure script.</p>
+<h1 id="starting-up-the-mush">Starting up the MUSH</h1>
+<p>The LANG environment variable that controls what language the mush uses is normally set in the pennmush/game/restart script. There’s an example for using French in the script already that can be used as a starting point.</p>
+<p>Your server account might be set up with a non-english language as the default. If so, and you don’t set LANG in the restart script, that default language will be used.</p>
+<p>You may also wish to change the <code>only_ascii_in_names</code> config option in mush.cnf, to allow accented characters in object names.</p>
+<h1 id="development">Development</h1>
+<p>Generally, the rules that the devteam use to decide what strings should be made translatable in the source code (tagged with T()) are:</p>
+<ul>
+<li><p>tag in-game messages (stuff shown to players) with T(), except:</p>
+<ul>
+<li>panic messages</li>
+<li>very technical output like <code>@list alloc</code> and <code>@stats/table</code></li>
+</ul></li>
+<li>don’t tag log messages with <code>T()</code></li>
+<li><p>don’t tag console messages with <code>T()</code></p></li>
+</ul>
+</body>
+</html>

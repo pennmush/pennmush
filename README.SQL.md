@@ -1,7 +1,9 @@
-Use SQL with PennMUSH
-=====================
+% Use SQL with PennMUSH
+%
+% Revised: 04 Jan 2018
 
-Revised: 27 Dec 2017
+Introduction
+============
 
 As of version 1.7.7p32, PennMUSH includes functions and commands that
 can access SQL databases. Currently, the following databases are
@@ -15,7 +17,7 @@ This document explains how to use (or avoid) SQL with PennMUSH, and
 covers the following issues:
 
 How SQL can be used
--------------------
+===================
  
 Penn doesn't use SQL for any storage internally. It just allows access
 to a database via softcode functions (See `help @sql` and `help sql
@@ -31,7 +33,7 @@ tables, or queries to a SQL server on a different host computer can
 lag the mush for everyone!
 
 Compiling with/without SQL
---------------------------
+==========================
 
 In general, configure attempts to detect all supported sql client
 libraries on the host, and will link with all of them, permitting you
@@ -45,7 +47,8 @@ use the latter, you can invoke configure like so:
 
     % ./configure --without-mysql --with-sqlite3
 
-### MySQL
+MySQL
+-----
 
 The configure script distributed with PennMUSH automatically detects
 the MySQL client library via the presence of the `mysql_config` program,
@@ -65,7 +68,10 @@ with `mysql_config` not in your default path.  Find its location
 mysql_config` otherwise), and call configure with
 `--with-mysql=/path/to/mysql_config`
 
-### PostgresQL
+All this also applies to MariaDB.
+
+PostgresQL
+----------
 
 The configure script distributed with PennMUSH automatically detects
 the PostgresQL client library via the pg_conf program, which will tell
@@ -85,7 +91,8 @@ location (`where pg_config` if the program works for you, `find /
 -name pg_config` otherwise), and call configure with
 `--with-postgresql=/path/to/pg_config`
 
-### Sqlite
+Sqlite
+------
 
 The configure script distributed with PennMUSH looks for sqlite3
 headers and libraries in /usr, /usr/local and /opt. If it's somewhere
@@ -99,33 +106,43 @@ The path is the directory that contains the hdrs/ and lib/ directories
 that hold the sqlite3 headers and library respectively.
 
 MUSH configuration overview
----------------------------
+===========================
 
 mush.cnf includes these directives that configure the SQL support:
 
-* `sql_platform` provides the name of the SQL database server software
-  that will be used for connections. It currently takes one of four
-  values: "disabled" (no SQL), "mysql", "postgresql", or "sqlite3".
-  If not specified, it defaults to disabled.
+`sql_platform`
 
-* `sql_host` gives the name of the host running the SQL server.  It
-  defaults to 127.0.0.1, which makes a TCP connection to the local
-  host. For MySQL, the keyword "localhost" instead makes a domain
-  socket (Unix) or named pipe (Windows) connection. For PostgreSQL on
-  Unix, if a path is specified (e.g. /var/run/postgresql), PennMUSH
-  will use the domain socket connection found in that directory. You
-  can also specify an alternate port by setting sql_host to
-  hostname:port (e.g. 127.0.0.1:5444).
+:     Provides the name of the SQL database server software that will be
+      used for connections. It currently takes one of four values:
+      "disabled" (no SQL), "mysql", "postgresql", or "sqlite3".  If
+      not specified, it defaults to disabled.
 
-* `sql_database` gives the name of the database that contains the
-  MUSH's tables. This must be specified and there is no default.
+`sql_host`
+
+:    The name of the host running the SQL server.  It defaults to
+     127.0.0.1, which makes a TCP connection to the local host. For
+     MySQL, the keyword "localhost" instead makes a domain socket
+     (Unix) or named pipe (Windows) connection. For PostgreSQL on
+     Unix, if a path is specified (e.g. /var/run/postgresql), PennMUSH
+     will use the domain socket connection found in that
+     directory. You can also specify an alternate port by setting
+     sql_host to hostname:port (e.g. 127.0.0.1:5444).
+
+`sql_database`
+
+:    The name of the database that contains the
+     MUSH's tables. This must be specified and there is no default.
  
-* `sql_username` provides a username to connect to the SQL server
-  with. If not specified, a null username will be used, which many SQL
-  servers treat as "the user running this (pennmush) process".
+`sql_username`
 
-* `sql_password` provides the password for the user. It defaults to no
-  password.
+:    The username to connect to the SQL server
+     with. If not specified, a null username will be used, which many SQL
+     servers treat as "the user running this (pennmush) process".
+
+`sql_password`
+
+:    provides the password for the user. It defaults to no
+     password.
  
 For sqlite3, which uses a local file instead of connecting to a
 database server, `sql_database` gives the name of the database file,

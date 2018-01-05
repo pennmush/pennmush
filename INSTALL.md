@@ -1,5 +1,7 @@
-Installation Guide to PennMUSH 1.8.x
-====================================
+% Installation Guide to PennMUSH 1.8.x
+
+Introduction
+============
 
 This file explains how to install PennMUSH. It comes in three parts:
 
@@ -8,10 +10,10 @@ This file explains how to install PennMUSH. It comes in three parts:
 3. Installation of precompiled binaries (only for Windows platforms)
 
 If you are upgrading from a previous PennMUSH release, this is
-probably not the file you want to start with. Read the UPGRADING file
-first.
+probably not the file you want to start with. Read the
+[UPGRADING.md](UPGRADING.html) file first.
 
-DISCLAIMER: Before attempting to run a MUD of any sort, you should
+**DISCLAIMER**: Before attempting to run a MUD of any sort, you should
 have some reasonable knowledge of UNIX and C.  If you do not, it is
 _strongly_ suggested that you learn UNIX and C to some reasonable
 level of competency before attempting to set up a MUSH.  (Note that
@@ -24,7 +26,7 @@ You may also want to take a look at the Managing PennMUSH book at
 Gods, at <http://download.pennmush.org/Guide/guide-single.html>
  
 Important background
---------------------
+====================
 
 Here's a quick picture of the organization of the MUSH directory tree.
 The "src" directory contains C source code.  The "hdrs" directory
@@ -70,7 +72,7 @@ primarily done on GNU/Linux and NetBSD systems.
 Mac OS 9 and earlier ("Classic"), and OS/2 are not supported.
 
 Installation from source
-------------------------
+========================
 
 The quickstart version of the installation is:
 
@@ -98,27 +100,39 @@ Here's the process in detail:
    for information on how to compile with various compilers.
 
 2. On Unix systems, unpack the code and:
-    % cd pennmush
-    % ./configure 
+
+        % cd pennmush
+        % ./configure 
 
    Useful arguments to configure:
-       a. --disable-sql: Don't compile in SQL support. See README.SQL for
-          more sql-related config options.
-       b. --disable-nls: Turn off translation support if you don't need it.
-       c. --disable-info_slave: Don't use an external process to do hostname
-          lookups. This option is required on Windows.
-       d. --help: See all options.       
+   
+   `--disable-sql`
+   
+   :    Don't compile in SQL support. See [README.SQL](README.SQL.html) for
+        more sql-related config options.
 
-       Environment variables to customize search paths:
-       CPPFLAGS=-I/path/to/extra/headers
-       LDFLAGS=-L/path/to/extra/libraries
-       CFLAGS=-Optimization and -Warning options.
+   `--disable-nls`
+   
+   :    Turn off translation support if you don't need it.
+   
+   `--disable-info_slave`
+   
+   :    Don't use an external process to do hostname lookups. This option
+        is required on Windows.
 
-       VAR=arg ... ./configure
+   `--help`
+   
+   :    See all options.
 
-       See hints/your-os.txt and hints/your-processor if present for
-       more details and system-specific help, and README.SQL for help
-       with detecting a SQL server.
+   Environment variables to customize search paths:
+
+   * CPPFLAGS=-I/path/to/extra/headers
+   * LDFLAGS=-L/path/to/extra/libraries
+   * CFLAGS=-Optimization and -Warning options.
+
+   See hints/your-os.txt and hints/your-processor if present for more
+   details and system-specific help, and [README.SQL](README.SQL.html)
+   for help with detecting a SQL server.
 	
 
 3. Run `make update`, and answer all the questions about which MUSH
@@ -139,11 +153,12 @@ This is probably broken.
 
 6. Read game/README and follow those instructions. 
 
-A final thing you may want to think about is compiling portmsg.c (make
-portmsg). This is a port announcer; if your MUSH ever goes down, you
-can set one up, and a message will be given to a person attempting to
-connect to that port.  Read the comments in src/portmsg.c for
-details. It is not an official MUSH piece of code; rather, it is a
-freely distributable program available via anonymous FTP that is
-included in this code because it happens to be fairly useful.
+A final thing you may want to think about is compiling portmsg.c
+(`make portmsg`). This is a port announcer; if your MUSH ever goes
+down, you can set one up, and a message will be given to a person
+attempting to connect to that port.  Read the comments in
+src/portmsg.c for details. It is not an official MUSH piece of code;
+rather, it is a freely distributable program available via anonymous
+FTP that is included in this code because it happens to be fairly
+useful.
 

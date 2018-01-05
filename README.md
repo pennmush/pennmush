@@ -4,8 +4,8 @@ PennMUSH is a server used to create text-based multiplayer games.
 
 Installation information can be found in the files
 [INSTALL.md](INSTALL.html) or [UPGRADING.md](UPGRADING.html),
-depending on whether it's a new install or an upgrade.  The file I18N
-discusses internationalization.
+depending on whether it's a new install or an upgrade.  The file
+[I18N](I18N.html) discusses internationalization.
 
 You may also want to take a look at Javelin's Guide for PennMUSH Gods,
 at <http://download.pennmush.org/Guide/>

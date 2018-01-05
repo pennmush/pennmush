@@ -1,0 +1,23 @@
+body {
+    color: black;
+    font-family: Verdana, sans-serif;
+    margin: 5%;
+}
+p {
+    text-align: justify;
+}
+pre {
+    font-family: monospace;
+}
+code {
+    font-family: monospace;
+    color: green;
+                     
+}
+nav#TOC {
+    border: 1px solid black;
+}
+h1 {
+    text-decoration: underline;
+}
+                        

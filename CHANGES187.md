@@ -22,7 +22,7 @@ Version 1.8.7p0, ??? ?? 20??
 Major Changes
 -------------
 
-* Support websocket connections. See <http://grapenut.org/code/wsclient/index.html> for a
+* Support websocket connections. See <https://github.com/grapenut/websockclient> for a
   sample in-browser client. [Grapenut, 1007]
 
 Softcode

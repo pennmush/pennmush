@@ -148,7 +148,7 @@ See also: HTML Functions, json(), pueblo, wshtml(), wsjson()
 
   For example, if one uses:
 
-    @emit wshtml(<a href="http://pennmush.org">PennMUSH</a>,Go to http://pennmush.org)
+    @emit [wshtml(<a href="http://pennmush.org">PennMUSH</a>,Go to http://pennmush.org)]
 
   then any players in the room with a Websocket connection would see (rendered as HTML)
 

@@ -4027,24 +4027,32 @@ do_command(DESC *d, char *command)
 #endif /* undef WITHOUT_WEBSOCKETS */
 
     char buf[BUFFER_LEN];
-    snprintf(buf, BUFFER_LEN,
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Type: text/html; charset:iso-8859-1\r\n"
-             "Pragma: no-cache\r\n"
-             "Connection: Close\r\n"
-             "\r\n"
-             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
-             " \"http://www.w3.org/TR/html4/loose.dtd\">"
-             "<HTML><HEAD>"
-             "<TITLE>Welcome to %s!</TITLE>"
-             "<meta http-equiv=\"Content-Type\" content=\"text/html; "
-             "charset=iso-8859-1\">"
-             "</HEAD><BODY>"
-             "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-             "<P>Please click <a href=\"%s\">%s</a> to go to the website for %s.</P>"
-             "</BODY></HEAD></HTML>",
-             MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-    queue_write(d, buf, strlen(buf));
+    char *bp = buf;
+    bool has_url = strncmp(MUDURL, "http", 4) == 0;
+    safe_format(buf, &bp,
+		"HTTP/1.1 200 OK\r\n"
+		"Content-Type: text/html; charset:iso-8859-1\r\n"
+		"Pragma: no-cache\r\n"
+		"Connection: Close\r\n"
+		"\r\n"
+		"<!DOCTYPE html>\r\n"
+		"<HTML><HEAD>"
+		"<TITLE>Welcome to %s!</TITLE>",
+		MUDNAME);
+    if (has_url) {
+      safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">", MUDURL);
+    }
+    safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
+    if (has_url) {
+      safe_format(buf, &bp, "<p>You've come here by accident! Please click <a href=\"%s\">%s</a> to go to the website for %s if your browser doesn't redirect you in a few seconds.</p>",
+		  MUDURL, MUDURL, MUDNAME);
+    } else {
+      safe_format(buf, &bp, "<p>You've come here by accident! Try using a MUSH client, not a browser, to connect to %s.</p>",
+		  MUDNAME);
+    }
+    safe_str("</BODY></HTML>\r\n", buf, &bp);
+    *bp = '\0';
+    queue_write(d, buf, bp - buf);
     queue_eol(d);
     return CRES_HTTP;
   } else if (SUPPORT_PUEBLO &&

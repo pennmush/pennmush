@@ -139,6 +139,8 @@ PENNCONF conftable[] = {
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"},
   {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
    "net"},
+  {"use_ws", cf_bool, &options.use_ws, sizeof options.use_ws, 0, "net"},
+  {"ws_url", cf_str, options.ws_url, sizeof options.ws_url, 0, "net"},
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"},
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"},
   {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"},
@@ -1148,6 +1150,8 @@ conf_default_set(void)
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.socket_file, "data/netmush.sock");
+  options.use_ws = 1;
+  strcpy(options.ws_url, "/wsclient");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");
   strcpy(options.crash_db, "data/PANIC.db");

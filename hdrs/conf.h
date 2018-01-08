@@ -153,6 +153,8 @@ struct options_table {
   int ssl_port;       /**< The port to listen for SSL connections */
   char
     socket_file[FILE_PATH_LEN]; /**< The socket filename to use for SSL slave */
+  int use_ws;             /**< True to enable websockets */
+  char ws_url[FILE_PATH_LEN];   /**< path to recognize as websocket one in HTTP requests. */
   char input_db[FILE_PATH_LEN]; /**< Name of the input database file */
   char output_db[FILE_PATH_LEN]; /**< Name of the output database file */
   char crash_db[FILE_PATH_LEN];  /**< Name of the panic database file */

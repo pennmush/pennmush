@@ -15,4 +15,4 @@ Other stuff
 
 * [Bugs](BUGS.html)
 * [FAQ](FAQ.html)
-* [Recent Changes](CHANGES187.html)
+* [Recent Changes](CHANGES.187.html)

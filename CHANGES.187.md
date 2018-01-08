@@ -16,8 +16,8 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.7p0, ??? ?? 20??
-============================
+Version 1.8.7 patchlevel 0 ??? ?? 20??
+======================================
 
 Major Changes
 -------------
@@ -35,7 +35,7 @@ Fixes
 
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
 * `@grep/iprint` hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
-* @mail wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
+* `@mail` wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
 
 Documentation
 -------------

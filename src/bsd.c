@@ -3993,7 +3993,7 @@ do_command(DESC *d, char *command)
   int j;
 
 #ifndef WITHOUT_WEBSOCKETS
-  if ((d->conn_flags & CONN_WEBSOCKETS_REQUEST)) {
+  if (d->conn_flags & CONN_WEBSOCKETS_REQUEST) {
     /* Parse WebSockets upgrade request. */
     if (!process_websocket_request(d, command)) {
       return CRES_HTTP;
@@ -4019,7 +4019,7 @@ do_command(DESC *d, char *command)
                         !strncmp(command, POST_COMMAND,
                                  strlen(POST_COMMAND)))) {
 #ifndef WITHOUT_WEBSOCKETS
-    if (is_websocket(command)) {
+    if (options.use_ws && is_websocket(command)) {
       /* Continue processing as a WebSockets upgrade request. */
       d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
       return CRES_OK;

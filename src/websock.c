@@ -185,11 +185,12 @@ complete_handshake(DESC *d)
 int
 is_websocket(const char *command)
 {
-  static const char *const REQUEST_LINE = "GET /wsclient HTTP/1.1";
-
+  static char REQUEST_LINE[BUFFER_LEN];
   static size_t REQUEST_LINE_LEN = 0;
 
-  if (!REQUEST_LINE_LEN) {
+  if (REQUEST_LINE_LEN == 0) {
+    snprintf(REQUEST_LINE, sizeof REQUEST_LINE, "GET %s HTTP/1.1",
+             options.ws_url);
     REQUEST_LINE_LEN = strlen(REQUEST_LINE);
   }
 

@@ -46,7 +46,7 @@
 </ul>
 <p>This document explains how to use (or avoid) SQL with PennMUSH, and covers the following issues:</p>
 <h1 id="how-sql-can-be-used">How SQL can be used</h1>
-<p>Penn doesn’t use SQL for any storage internally. It just allows access to a database via softcode functions (See <code>help @sql</code> and <code>help sql functions</code> from in a game.) People have used it to hold information that can be accessed from a game and from other programs – for example, a mail or bulletin board system with an in-game and a web interface. Another common use is to hold data that can be queried via SQL more convienently than in softcode.</p>
+<p>Penn doesn't use SQL for any storage internally. It just allows access to a database via softcode functions (See <code>help @sql</code> and <code>help sql functions</code> from in a game.) People have used it to hold information that can be accessed from a game and from other programs -- for example, a mail or bulletin board system with an in-game and a web interface. Another common use is to hold data that can be queried via SQL more convienently than in softcode.</p>
 <p>A word of caution: The sql functions are synchronous: Nothing else can happen in the game until a query finishes. Complex queries over large tables, or queries to a SQL server on a different host computer can lag the mush for everyone!</p>
 <h1 id="compiling-withwithout-sql">Compiling with/without SQL</h1>
 <p>In general, configure attempts to detect all supported sql client libraries on the host, and will link with all of them, permitting you to select which platform you want at runtime. You can selectively prevent linking with client libraries that are present on your system, by passing configure a <code>--without-FOO</code> option. <code>--disable-sql</code> turns off all checks for SQL servers.</p>
@@ -55,32 +55,32 @@
 <h2 id="mysql">MySQL</h2>
 <p>The configure script distributed with PennMUSH automatically detects the MySQL client library via the presence of the <code>mysql_config</code> program, which will tell configure where needed headers and libraries are.</p>
 <p>If you want to avoid linking these libraries on systems where they are present, pass the <code>--without-mysql</code> switch to configure.</p>
-<p>If you installed MySQL from a binary package (e.g. rpm or apt), you should be sure that your system also has the development package (usually mysql-dev, mysql-devel or libmysqlclient-dev).</p>
-<p>If you think you have MySQL libraries and header files but configure isn’t finding them, they may be in an unusual location on your system, with <code>mysql_config</code> not in your default path. Find its location (<code>where mysql_config</code> if the program works for you, <code>find / -name mysql_config</code> otherwise), and call configure with <code>--with-mysql=/path/to/mysql_config</code></p>
+<p>If you installed MySQL from a binary package (e.g. rpm or apt), you should be sure that your system also has the development package (usually mysql-dev, mysql-devel or libmysqlclient-dev).</p>
+<p>If you think you have MySQL libraries and header files but configure isn't finding them, they may be in an unusual location on your system, with <code>mysql_config</code> not in your default path. Find its location (<code>where mysql_config</code> if the program works for you, <code>find / -name mysql_config</code> otherwise), and call configure with <code>--with-mysql=/path/to/mysql_config</code></p>
 <p>All this also applies to MariaDB.</p>
 <h2 id="postgresql">PostgresQL</h2>
 <p>The configure script distributed with PennMUSH automatically detects the PostgresQL client library via the pg_conf program, which will tell configure where needed headers and libraries are.</p>
 <p>If you want to avoid linking these libraries on systems where they are present, pass the <code>--without-postgresql</code> switch to configure.</p>
-<p>If you installed PostgresQL from a binary package (e.g. rpm or apt), you should be sure that your system also has the development package (usually postgresql-dev, or libpq or similar)</p>
-<p>If you think you have PostgresQL libraries and header files but configure isn’t finding them, they may be in an unusual location on your system, with <code>pg_config</code> not in your default path. Find its location (<code>where pg_config</code> if the program works for you, <code>find / -name pg_config</code> otherwise), and call configure with <code>--with-postgresql=/path/to/pg_config</code></p>
+<p>If you installed PostgresQL from a binary package (e.g. rpm or apt), you should be sure that your system also has the development package (usually postgresql-dev, or libpq or similar)</p>
+<p>If you think you have PostgresQL libraries and header files but configure isn't finding them, they may be in an unusual location on your system, with <code>pg_config</code> not in your default path. Find its location (<code>where pg_config</code> if the program works for you, <code>find / -name pg_config</code> otherwise), and call configure with <code>--with-postgresql=/path/to/pg_config</code></p>
 <h2 id="sqlite">Sqlite</h2>
-<p>The configure script distributed with PennMUSH looks for sqlite3 headers and libraries in /usr, /usr/local and /opt. If it’s somewhere else on your system, call configure with <code>--with-sqlite3=/path/to/sqlite3</code></p>
+<p>The configure script distributed with PennMUSH looks for sqlite3 headers and libraries in /usr, /usr/local and /opt. If it's somewhere else on your system, call configure with <code>--with-sqlite3=/path/to/sqlite3</code></p>
 <p>If you want to avoid linking with sqlite on systems where it is present, pass the <code>--without-sqlite3</code> switch to configure.</p>
 <p>The path is the directory that contains the hdrs/ and lib/ directories that hold the sqlite3 headers and library respectively.</p>
 <h1 id="mush-configuration-overview">MUSH configuration overview</h1>
 <p>mush.cnf includes these directives that configure the SQL support:</p>
 <dl>
 <dt><code>sql_platform</code></dt>
-<dd><p>Provides the name of the SQL database server software that will be used for connections. It currently takes one of four values: “disabled” (no SQL), “mysql”, “postgresql”, or “sqlite3”. If not specified, it defaults to disabled.</p>
+<dd><p>Provides the name of the SQL database server software that will be used for connections. It currently takes one of four values: &quot;disabled&quot; (no SQL), &quot;mysql&quot;, &quot;postgresql&quot;, or &quot;sqlite3&quot;. If not specified, it defaults to disabled.</p>
 </dd>
 <dt><code>sql_host</code></dt>
-<dd><p>The name of the host running the SQL server. It defaults to 127.0.0.1, which makes a TCP connection to the local host. For MySQL, the keyword “localhost” instead makes a domain socket (Unix) or named pipe (Windows) connection. For PostgreSQL on Unix, if a path is specified (e.g. /var/run/postgresql), PennMUSH will use the domain socket connection found in that directory. You can also specify an alternate port by setting sql_host to hostname:port (e.g. 127.0.0.1:5444).</p>
+<dd><p>The name of the host running the SQL server. It defaults to 127.0.0.1, which makes a TCP connection to the local host. For MySQL, the keyword &quot;localhost&quot; instead makes a domain socket (Unix) or named pipe (Windows) connection. For PostgreSQL on Unix, if a path is specified (e.g. /var/run/postgresql), PennMUSH will use the domain socket connection found in that directory. You can also specify an alternate port by setting sql_host to hostname:port (e.g. 127.0.0.1:5444).</p>
 </dd>
 <dt><code>sql_database</code></dt>
-<dd><p>The name of the database that contains the MUSH’s tables. This must be specified and there is no default.</p>
+<dd><p>The name of the database that contains the MUSH's tables. This must be specified and there is no default.</p>
 </dd>
 <dt><code>sql_username</code></dt>
-<dd><p>The username to connect to the SQL server with. If not specified, a null username will be used, which many SQL servers treat as “the user running this (pennmush) process”.</p>
+<dd><p>The username to connect to the SQL server with. If not specified, a null username will be used, which many SQL servers treat as &quot;the user running this (pennmush) process&quot;.</p>
 </dd>
 <dt><code>sql_password</code></dt>
 <dd><p>provides the password for the user. It defaults to no password.</p>
@@ -89,7 +89,7 @@
 <p>For sqlite3, which uses a local file instead of connecting to a database server, <code>sql_database</code> gives the name of the database file, <code>sql_host</code> must be localhost, and the username and password are currently ignored.</p>
 <h2 id="sql-setup-tips">SQL setup tips</h2>
 <p>You will have to set up the appropriate database on the SQL server, and username permitted to perform operations in that database, and a password for that username. This is a platform-specific process.</p>
-<p>If you’re not sure how to configure a SQL server, but want to use SQL from softcode, using the Sqlite3 library is the easiest route, as it doesn’t require a seperate server to be up and running.</p>
+<p>If you're not sure how to configure a SQL server, but want to use SQL from softcode, using the Sqlite3 library is the easiest route, as it doesn't require a seperate server to be up and running.</p>
 <h3 id="mysql-platform">MySQL platform</h3>
 <p>Easiest way is:</p>
 <pre><code>% mysql_setpermission --user root           REQUIRED
@@ -144,7 +144,7 @@ CREATE ROLE
 postgres=# CREATE DATABASE mush OWNER musher;
 CREATE DATABASE
 postgres=# \q</code></pre>
-<p>If you are using domain sockets on Unix and don’t need to use password authentication, simply omit “WITH PASSWORD ‘mush’”.</p>
+<p>If you are using domain sockets on Unix and don't need to use password authentication, simply omit &quot;WITH PASSWORD 'mush'&quot;.</p>
 <h3 id="sqlite3">Sqlite3:</h3>
 <p>As the same user account that runs the mush:</p>
 <p>Edit mush.cnf so that <code>sql_database</code> is set to data/mush.db and <code>sql_platform</code> is set to sqlite3.</p>

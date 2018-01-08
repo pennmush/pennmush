@@ -78,7 +78,7 @@ my %ansicodes = (
 my $xterm256_raw = read_binary "utils/xterm256.json";
 my $xterm256colors = decode_json $xterm256_raw;
 
-my @schemes = all_schemes;
+my @schemes = ("X"); #all_schemes;
 say "Using the following color name schemes: XTerm256 @schemes";
 
 tie my %x11colors, 'Graphics::ColorNames', @schemes;
@@ -96,13 +96,19 @@ sub hex_difference {
 }
 
 my %seen;
+my %xterm256_rgb;
 
 sub map_to_256 {
-    my $rgb = hex shift;
+    my $rgb = shift;
     my $diff = 0x0FFFFFFF;
     my $best = 0;
+    if (exists $xterm256_rgb{$rgb}) {
+	return $xterm256_rgb{$rgb};
+    }
+    $rgb = hex $rgb;
     for (my $n = 0; $n < 256; $n += 1) {
-	my $cdiff = hex_difference $seen{"xterm$n"}, $rgb;
+	my $xtermrgb = $seen{"xterm$n"};
+	my $cdiff = hex_difference $xtermrgb, $rgb;
 	if ($cdiff < $diff) {
 	    $best = $n;
 	    $diff = $cdiff;
@@ -116,21 +122,16 @@ my $counter = 0;
 
 foreach my $color (@$xterm256colors) {
     my $rgb = $$color{"hexString"};
-    my $name = lc $$color{"name"};
     my $num = $$color{"colorId"};
     my $ansi = $map_16[$num];
     $rgb =~ s/^\#//;
-
+    
     $counter += 1;
     $seen{"xterm$num"} = hex $rgb;
+    $xterm256_rgb{$rgb} = $num;
     push @allcolors, ["xterm$num", "0x$rgb", $num, $ansi];
-
-    # Some colors have multiple definitions for the same name. Go with the first.
-    next if exists $seen{$name};
-    $counter += 1;
-    $seen{$name} = hex $rgb;
-    push @allcolors, [$name, "0x$rgb", $num, $ansi];
 }
+
 
 while (my ($name, $rgb) = each %x11colors) {
     $name =~ s/\s+//;
@@ -141,6 +142,20 @@ while (my ($name, $rgb) = each %x11colors) {
     my $xnum = map_to_256 $rgb;
     my $ansi = $map_16[$xnum];
     push @allcolors, [$name, "0x$rgb", $xnum, $ansi];
+}
+
+foreach my $color (@$xterm256colors) {
+    my $rgb = $$color{"hexString"};
+    my $num = $$color{"colorId"};
+    my $name = lc $$color{"name"};
+    my $ansi = $map_16[$num];
+    $rgb =~ s/^\#//;
+
+    # Add any missing color names    
+    next if exists $seen{$name};
+    $counter += 1;
+    $seen{$name} = hex $rgb;
+    push @allcolors, [$name, "0x$rgb", $num, $ansi];
 }
 
 open RGBH, ">", "hdrs/rgb.h";

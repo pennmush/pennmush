@@ -6829,6 +6829,8 @@ FUNCTION(fun_terminfo)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
+      if (is_ws_desc(match))
+        safe_str(" websocket", buff, bp);
     }
     type = notify_type(match);
     if (type & MSG_STRIPACCENTS)

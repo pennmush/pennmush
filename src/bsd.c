@@ -927,7 +927,7 @@ is_ws_desc(DESC *d)
   if (!d)
     return 0;
 #ifndef WITHOUT_WEBSOCKETS
-  return d->conn_flags | CONN_WEBSOCKETS;
+  return IsWebSocket(d);
 #else
   return 0;
 #endif

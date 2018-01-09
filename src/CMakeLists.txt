@@ -523,6 +523,10 @@ add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/restrict.cnf"
   DEPENDS "${PROJECT_BINARY_DIR}/game/restrictcnf.dst"
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating restrict.cnf" VERBATIM)
 
+add_custom_target(versions
+	COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/mkvershlp.pl" game/txt/hlp/ CHANGES.*
+	WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating changelog help files.")
+
 add_custom_target(update
   DEPENDS "${PROJECT_BINARY_DIR}/game/mush.cnf" "${PROJECT_BINARY_DIR}/game/alias.cnf"
           "${PROJECT_BINARY_DIR}/game/restrict.cnf" COMMENT "Updating config files.")

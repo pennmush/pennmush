@@ -4278,7 +4278,7 @@ check_connect(DESC *d, const char *msg)
     queue_string_eol(d, T(connect_fail_limit_exceeded));
     return 1;
   }
-  if (strcasecmp("connect", command) == 0) {
+  if (string_prefix("connect", command)) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4426,7 +4426,7 @@ check_connect(DESC *d, const char *msg)
       break;
     } /* successful player creation */
 
-  } else if (strcasecmp("register", command) == 0) {
+  } else if (string_prefix("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&

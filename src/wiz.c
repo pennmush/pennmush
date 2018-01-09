@@ -2174,8 +2174,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         spec->type = TYPE_ROOM;
       } else if (string_prefix("exits", restriction)) {
         spec->type = TYPE_EXIT;
-      } else if (string_prefix("rooms", restriction)) {
-        spec->type = TYPE_ROOM;
       } else if (string_prefix("players", restriction)) {
         spec->type = TYPE_PLAYER;
       } else if (strcasecmp("garbage", restriction) == 0) {
@@ -2251,8 +2249,8 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       strcpy(spec->cmdstring, restriction);
     } else if (strcasecmp("listen", class) == 0) {
       strcpy(spec->listenstring, restriction);
-    } else if (strcasecmp("ethings", class) == 0 ||
-               strcasecmp("eobjects", class) == 0) {
+    } else if (string_prefix("ethings", class) ||
+               string_prefix("eobjects", class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_THING;
     } else if (string_prefix("eexits", class)) {

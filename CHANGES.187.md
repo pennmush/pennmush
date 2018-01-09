@@ -39,6 +39,9 @@ Fixes
 * Connecting with a web browser to a mush without a mud_url config
   option set caused an infinite refresh loop. Reported by
   grapenut. [1149]
+* Make sure sigrecv_ack() won't hang the mush if it somehow gets
+  called at the wrong time. Also fix a file descriptor leak in the
+  signal handling code. [SW]
 
 Documentation
 -------------

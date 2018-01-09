@@ -598,7 +598,7 @@ make_nonblocking(int s)
 #endif
   }
 
-  flags |= O_NDELAY;
+  flags |= O_NONBLOCK;
 
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");

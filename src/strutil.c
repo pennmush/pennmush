@@ -181,7 +181,8 @@ strncasecmp(const char *s1, const char *s2, size_t n)
 #endif
 
 /** Does string begin with prefix?
- * This comparison is case-insensitive.
+ * This comparison is case-insensitive. An empty prefix always
+ * matches.
  * \param string to check.
  * \param prefix to check against.
  * \retval 1 string begins with prefix.

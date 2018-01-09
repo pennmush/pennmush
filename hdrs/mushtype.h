@@ -347,6 +347,12 @@ struct text_queue {
 /** Sending and receiving UTF-8 */
 #define CONN_UTF8 0x4000
 
+#ifndef WITHOUT_WEBSOCKETS
+/* Flag for WebSocket client. */
+#define CONN_WEBSOCKETS_REQUEST 0x10000000
+#define CONN_WEBSOCKETS         0x20000000
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 /** Maximum \@doing length */
 #define DOING_LEN 40
 
@@ -407,7 +413,7 @@ struct descriptor_data {
   int hide;                     /**< Hide status */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  int conn_flags;             /**< Flags of connection (telnet status, etc.) */
+  uint32_t conn_flags;             /**< Flags of connection (telnet status, etc.) */
   unsigned long input_chars;  /**< Characters received */
   unsigned long output_chars; /**< Characters sent */
   int width;                  /**< Screen width */
@@ -417,6 +423,10 @@ struct descriptor_data {
   int ssl_state;              /**< Keep track of state of SSL object */
   conn_source source;         /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1]; /**< Pueblo checksum */
+#ifndef WITHOUT_WEBSOCKETS
+  /* TODO: Need to add this state to reboot.db. */
+  uint64_t ws_frame_len;
+#endif /* undef WITHOUT_WEBSOCKETS */
 };
 
 enum json_type {

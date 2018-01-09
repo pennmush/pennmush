@@ -2041,7 +2041,7 @@ FUNCTION(fun_align)
       return;
     }
     if (nargs >= (ncols + 2)) {
-      if (!args[ncols + 1] || strlen(args[ncols + 1]) > 1) {
+      if (!args[ncols + 1] || arglens[ncols + 1] > 1) {
         safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
         return;
       }
@@ -2076,7 +2076,7 @@ FUNCTION(fun_align)
       return;
     }
     if (nargs > 3) {
-      if (!args[3] || strlen(args[3]) > 1) {
+      if (!args[3] || arglens[3] > 1) {
         safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
         return;
       }
@@ -2332,18 +2332,18 @@ FUNCTION(fun_render)
     word = split_token(&list, ' ');
     if (!word || !*word)
       continue;
-    if (string_prefix("ansi", word)) {
+    if (strcasecmp("ansi", word) == 0) {
       if (Can_Nspemit(executor)) {
         flags |= MSG_XTERM256;
       } else {
         safe_str(T(e_perm), buff, bp);
         return;
       }
-    } else if (string_prefix("noaccents", word))
+    } else if (strcasecmp("noaccents", word) == 0)
       flags |= MSG_STRIPACCENTS;
-    else if (string_prefix("markup", word))
+    else if (strcasecmp("markup", word) == 0)
       flags |= MSG_MARKUP;
-    else if (string_prefix("html", word))
+    else if (strcasecmp("html", word) == 0)
       flags |= MSG_PUEBLO;
     else {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);

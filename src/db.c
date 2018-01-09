@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 #include "ansi.h"
 #include "attrib.h"
@@ -247,6 +250,31 @@ putref(PENNFILE *f, long int ref)
 {
   penn_fprintf(f, "%ld\n", ref);
 }
+
+/** Output a uint32_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u32(PENNFILE *f, uint32_t ref)
+{
+  penn_fprintf(f, "%" PRIu32 "\n", ref);
+}
+
+/** Output a uint64_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u64(PENNFILE *f, uint64_t ref)
+{
+#ifdef WIN32
+  penn_fprintf(f, "%I64u\n", ref);
+#else
+  penn_fprintf(f, "%" PRIu64 "\n", ref);
+#endif
+}
+
 
 /** Output a string to a file.
  * This function writes a string to a file, double-quoted,
@@ -966,6 +994,39 @@ getref(PENNFILE *f)
   dbline++;
   return parse_integer(buf);
 }
+
+/** Read in a uint32_t
+ * \param f file pointer to read from.
+ * \return uint32_t read.
+ */
+uint32_t
+getref_u32(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint32(buf, NULL, 10);
+}
+
+/** Read in a uint64_t
+ * \param f file pointer to read from.
+ * \return uint64_t read.
+ */
+uint64_t
+getref_u64(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint64(buf, NULL, 10);
+}
+
 
 /** Read in a string, into a static buffer.
  * This function reads a double-quoted escaped string of the form

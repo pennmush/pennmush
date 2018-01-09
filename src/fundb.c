@@ -763,19 +763,19 @@ FUNCTION(fun_dbwalker)
   char **bptr = bp;
   dbref loc = match_thing(executor, args[0]);
 
-  if (!strcmp(called_as, "LCON") && nargs == 2) {
-    if (string_prefix("player", args[1])) {
+  if (strcmp(called_as, "LCON") == 0 && nargs == 2) {
+    if (strcasecmp("player", args[1])) {
       type = TYPE_PLAYER;
-    } else if (string_prefix("object", args[1]) ||
-               string_prefix("thing", args[1])) {
+    } else if (strcasecmp("object", args[1]) == 0 ||
+               strcasecmp("thing", args[1]) == 0) {
       type = TYPE_THING;
-    } else if (string_prefix("connect", args[1])) {
+    } else if (strcasecmp("connect", args[1]) == 0) {
       type = TYPE_PLAYER;
       vis = 1;
-    } else if (string_prefix("puppet", args[1])) {
+    } else if (strcasecmp("puppet", args[1]) == 0) {
       type = TYPE_THING;
       listening = 1;
-    } else if (string_prefix("listen", args[1])) {
+    } else if (strcasecmp("listen", args[1]) == 0) {
       type = TYPE_THING | TYPE_PLAYER;
       listening = 2;
     } else {
@@ -2240,7 +2240,7 @@ FUNCTION(fun_attrib_set)
   }
   if (nargs == 1) {
     do_set_atr(thing, s, NULL, executor, 1);
-  } else if (strlen(args[1]) == 0 && !EMPTY_ATTRS) {
+  } else if (arglens[1] == 0 && !EMPTY_ATTRS) {
     do_set_atr(thing, s, " ", executor, 1);
   } else {
     do_set_atr(thing, s, args[1], executor, 1);

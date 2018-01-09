@@ -2215,19 +2215,19 @@ FUNCTION(fun_uptime)
   enum uptime_type which = UPTIME_UPSINCE;
 
   if (args[0] && *args[0]) {
-    if (string_prefix("upsince", args[0]))
+    if (strcasecmp("upsince", args[0]) == 0)
       which = UPTIME_UPSINCE;
-    else if (string_prefix("reboot", args[0]))
+    else if (strcasecmp("reboot", args[0]) == 0)
       which = UPTIME_REBOOT;
-    else if (string_prefix("save", args[0]))
+    else if (strcasecmp("save", args[0]) == 0)
       which = UPTIME_LAST_SAVE;
-    else if (string_prefix("nextsave", args[0]))
+    else if (strcasecmp("nextsave", args[0]) == 0)
       which = UPTIME_NEXT_SAVE;
-    else if (string_prefix("dbck", args[0]))
+    else if (strcasecmp("dbck", args[0]) == 0)
       which = UPTIME_DBCK;
-    else if (string_prefix("purge", args[0]))
+    else if (strcasecmp("purge", args[0]) == 0)
       which = UPTIME_PURGE;
-    else if (string_prefix("warnings", args[0]))
+    else if (strcasecmp("warnings", args[0]) == 0)
       which = UPTIME_WARNING;
     else {
       safe_str("#-1", buff, bp);

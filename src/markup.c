@@ -2955,7 +2955,7 @@ safe_markup(char const *a_tag, char *buf, char **bp, char type)
 int
 safe_tag(char const *a_tag, char *buff, char **bp)
 {
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_HTML)
     return safe_markup(a_tag, buff, bp, MARKUP_HTML);
   return 0;
 }
@@ -2990,7 +2990,7 @@ safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type)
 int
 safe_tag_cancel(char const *a_tag, char *buf, char **bp)
 {
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_HTML)
     return safe_markup_cancel(a_tag, buf, bp, MARKUP_HTML);
   return 0;
 }
@@ -3012,7 +3012,7 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
 {
   int result = 0;
   char *save = *bp;
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     safe_chr(TAG_START, buf, bp);
     safe_chr(MARKUP_HTML, buf, bp);
     safe_str(a_tag, buf, bp);
@@ -3023,7 +3023,7 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
     safe_chr(TAG_END, buf, bp);
   }
   result = safe_str(data, buf, bp);
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     result = safe_tag_cancel(a_tag, buf, bp);
   }
   /* If it didn't all fit, rewind. */

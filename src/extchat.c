@@ -2175,7 +2175,7 @@ do_channel_list(dbref player, const char *partname, int types)
       safe_str(ChanName(c), shortoutput, &sp);
       continue;
     }
-    if (SUPPORT_PUEBLO)
+    if (SUPPORT_HTML)
       snprintf(numusers, BUFFER_LEN, "%c%cA XCH_CMD=\"@channel/who %s\" "
                                      "XCH_HINT=\"See who's on this channel "
                                      "now\"%c%5d%c%c/A%c",

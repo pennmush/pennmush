@@ -19,6 +19,7 @@
 #include <sys/eventfd.h>
 #endif
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "conf.h"
 #include "mysocket.h"
@@ -47,6 +48,17 @@ sigrecv_setup(void)
     perror("sigrecv_setup: eventfd");
 #else
   int fds[2];
+
+#ifdef HAVE_PIPE2
+  if (pipe2(fds, O_CLOEXEC | O_NONBLOCK) < 0) {
+    perror("sigrecv_setup: pipe2");
+    return;
+  }
+  
+  sigrecv_fd = fds[0];
+  signotifier_fd = fds[1];
+
+#else
   int flags;
   
   if (pipe(fds) < 0) {
@@ -60,27 +72,28 @@ sigrecv_setup(void)
   if (flags >= 0) {
     flags |= FD_CLOEXEC;
     if (fcntl(sigrecv_fd, F_SETFD, flags) < 0)
-      perror("sigrecv_setup: fcntl F_SETFD:");
+      perror("sigrecv_setup: fcntl F_SETFD");
 
   } else {
-    perror("sigrecv_setup: fcntl F_GETFD:");
+    perror("sigrecv_setup: fcntl F_GETFD");
   }
   flags = fcntl(signotifier_fd, F_GETFD);
   if (flags >= 0) {
     flags |= FD_CLOEXEC;
     if (fcntl(signotifier_fd, F_SETFD, flags) < 0)
-          perror("sigrecv_setup: fcntl F_SETFD:");
+          perror("sigrecv_setup: fcntl F_SETFD");
   } else {
-    perror("sigrecv_setup: fcntl F_GETFD:");
+    perror("sigrecv_setup: fcntl F_GETFD");
   }
   flags = fcntl(signotifier_fd, F_GETFL);
   if (flags >= 0) {
-    flags |= O_NDELAY;
+    flags |= O_NONBLOCK;
     if (fcntl(signotifier_fd, F_SETFL, flags) < 0)
-          perror("sigrecv_setup: fcntl F_SETFL:");
+          perror("sigrecv_setup: fcntl F_SETFL");
   } else {
-    perror("sigrecv_setup: fcntl F_GETFL:");
+    perror("sigrecv_setup: fcntl F_GETFL");
   }
+#endif
 #endif
 #endif
 }

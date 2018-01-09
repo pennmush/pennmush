@@ -288,7 +288,7 @@ AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
 AC_CHECK_FUNCS([fcntl poll kqueue inotify_init inotify_init1])
-AC_CHECK_FUNCS([pread pwrite eventfd pledge])
+AC_CHECK_FUNCS([pread pwrite eventfd pledge pipe2])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
 
 # Some linux OSes (Old redhat, others?) will see these functions

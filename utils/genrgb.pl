@@ -7,11 +7,12 @@
 # Gets xterm color data from utils/xterm256.json and other color
 # schemes from Graphics::ColorNames
 #
-# Requires a fairly modern perl and the File::Sluper,
+# Requires a fairly modern perl and the File::Sluper, Sort::Versions
 # Graphics::ColorNames and JSON::XS packages. Install off of CPAN or
-# your package manager (lib-file-slurper-perl,
+# your package manager (lib-file-slurper-perl, libsort-versions-perl,
 # libgraphics-colornames-perl, libjson-xs-perl on Debian/Ubuntu/etc.,
-# perl-file-slurper, perl-graphics-colornames, perl-json-xs on arch)
+# perl-file-slurper, perl-sort-versions, perl-graphics-colornames,
+# perl-json-xs on arch)
 #
 
 use strict;
@@ -22,6 +23,7 @@ use integer;
 use Graphics::ColorNames 2.0, qw/all_schemes/;
 use File::Slurper qw/read_binary/;
 use JSON::XS;
+use Sort::Versions;
 
 # spork's color map
 my @map_16 = qw/
@@ -194,7 +196,7 @@ struct RGB_COLORMAP;
 %%
 EOC
 
-foreach my $color (sort { $$a[0] cmp $$b[0]} @allcolors) {
+foreach my $color (sort { versioncmp $$a[0], $$b[0] } @allcolors) {
     my ($name, $rgb, $num, $ansi) = @$color;
     say RGBH "  {\"$name\", $rgb, $num, $ansi},";
     say GPERF "$name, $rgb, $num, $ansi";       

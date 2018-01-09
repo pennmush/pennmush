@@ -884,9 +884,20 @@ ansi_map_256(const char *name, bool hilite, bool all)
   int best = 0;
   int i;
   struct rgb_namelist *color;
+  static int xtermi = -1;
+
+  if (xtermi == -1) {
+    int n;
+    for (n = 0; allColors[n].name; n += 1) {
+      if (strcmp(allColors[n].name, "xterm0") == 0) {
+        xtermi = n;
+        break;
+      }
+    }
+  }
 
   /* Is it an xterm color number? */
-  if (strncasecmp(name, "+xterm", 5) == 0) {
+  if (strncasecmp(name, "+xterm", 6) == 0) {
     unsigned int xnum;
     xnum = strtoul(name + 6, NULL, 10);
     if (xnum > 255)
@@ -904,14 +915,18 @@ ansi_map_256(const char *name, bool hilite, bool all)
   /* Now find the closest 256 color match. */
   best = 0;
 
-  for (i = (all ? 0 : 16); i < 256; i++) {
+  for (i = (all ? xtermi : xtermi + 16); i < xtermi + 256; i++) {
+    if (allColors[i].hex == hex) {
+      best = i;
+      break;
+    }
     cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {
       best = i;
       diff = cdiff;
     }
   }
-  return best;
+  return best - xtermi;
 }
 
 typedef int (*writer_func)(ansi_data *old, ansi_data *cur, int ansi_format,

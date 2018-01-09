@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: /usr/bin/gperf -C --output-file rgbtab.c rgbtab.gperf  */
+/* Command-line: /usr/local/bin/gperf -C --output-file rgbtab.c rgbtab.gperf  */
 /* Computed positions: -k'1,3,5-8,12-13,$' */
 
 #if !(                                                                         \
@@ -131,54 +131,54 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 789 "rgbtab.gperf"
+#line 679 "rgbtab.gperf"
     {"xterm2", 0x008000, 2, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 278 "rgbtab.gperf"
     {"grey1", 0x030303, 0, 0},
-#line 281 "rgbtab.gperf"
+#line 288 "rgbtab.gperf"
     {"grey11", 0x1c1c1c, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 159 "rgbtab.gperf"
     {"gold1", 0xffd700, 220, 259},
-#line 292 "rgbtab.gperf"
+#line 298 "rgbtab.gperf"
     {"grey21", 0x363636, 237, 256},
     {"", 0, 0, 0},
-#line 703 "rgbtab.gperf"
+#line 798 "rgbtab.gperf"
     {"xterm121", 0x87ffaf, 121, 258},
     {"", 0, 0, 0},
-#line 290 "rgbtab.gperf"
+#line 279 "rgbtab.gperf"
     {"grey2", 0x050505, 232, 0},
-#line 282 "rgbtab.gperf"
+#line 289 "rgbtab.gperf"
     {"grey12", 0x1f1f1f, 234, 256},
-#line 701 "rgbtab.gperf"
+#line 689 "rgbtab.gperf"
     {"xterm12", 0x0000ff, 12, 260},
-#line 814 "rgbtab.gperf"
+#line 898 "rgbtab.gperf"
     {"xterm221", 0xffd75f, 221, 259},
     {"", 0, 0, 0},
 #line 160 "rgbtab.gperf"
     {"gold2", 0xeec900, 220, 259},
-#line 293 "rgbtab.gperf"
+#line 299 "rgbtab.gperf"
     {"grey22", 0x383838, 237, 256},
-#line 812 "rgbtab.gperf"
+#line 699 "rgbtab.gperf"
     {"xterm22", 0x005f00, 22, 2},
-#line 704 "rgbtab.gperf"
+#line 799 "rgbtab.gperf"
     {"xterm122", 0x87ffd7, 122, 263},
     {"", 0, 0, 0},
 #line 629 "rgbtab.gperf"
     {"snow1", 0xfffafa, 15, 263},
-#line 347 "rgbtab.gperf"
+#line 348 "rgbtab.gperf"
     {"grey71", 0xb5b5b5, 249, 263},
     {"", 0, 0, 0},
-#line 815 "rgbtab.gperf"
+#line 899 "rgbtab.gperf"
     {"xterm222", 0xffd787, 222, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 900 "rgbtab.gperf"
+#line 684 "rgbtab.gperf"
     {"xterm7", 0xc0c0c0, 7, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -186,9 +186,9 @@ colorname_lookup(register const char *str, register size_t len)
     {"snow", 0xfffafa, 15, 263},
 #line 630 "rgbtab.gperf"
     {"snow2", 0xeee9e9, 255, 263},
-#line 348 "rgbtab.gperf"
+#line 349 "rgbtab.gperf"
     {"grey72", 0xb8b8b8, 250, 263},
-#line 903 "rgbtab.gperf"
+#line 749 "rgbtab.gperf"
     {"xterm72", 0x5faf87, 72, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -197,107 +197,107 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 345 "rgbtab.gperf"
+#line 284 "rgbtab.gperf"
     {"grey7", 0x121212, 233, 0},
-#line 287 "rgbtab.gperf"
+#line 294 "rgbtab.gperf"
     {"grey17", 0x2b2b2b, 235, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 298 "rgbtab.gperf"
+#line 304 "rgbtab.gperf"
     {"grey27", 0x454545, 238, 256},
     {"", 0, 0, 0},
-#line 709 "rgbtab.gperf"
+#line 804 "rgbtab.gperf"
     {"xterm127", 0xaf00af, 127, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 820 "rgbtab.gperf"
+#line 904 "rgbtab.gperf"
     {"xterm227", 0xffff5f, 227, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 671 "rgbtab.gperf"
     {"wheat1", 0xffe7ba, 223, 263},
-#line 690 "rgbtab.gperf"
+#line 688 "rgbtab.gperf"
     {"xterm11", 0xffff00, 11, 259},
-#line 692 "rgbtab.gperf"
+#line 788 "rgbtab.gperf"
     {"xterm111", 0x87afff, 111, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 353 "rgbtab.gperf"
+#line 354 "rgbtab.gperf"
     {"grey77", 0xc4c4c4, 251, 263},
-#line 801 "rgbtab.gperf"
+#line 698 "rgbtab.gperf"
     {"xterm21", 0x0000ff, 21, 260},
-#line 803 "rgbtab.gperf"
+#line 888 "rgbtab.gperf"
     {"xterm211", 0xff87af, 211, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 672 "rgbtab.gperf"
     {"wheat2", 0xeed8ae, 223, 263},
     {"", 0, 0, 0},
-#line 693 "rgbtab.gperf"
+#line 789 "rgbtab.gperf"
     {"xterm112", 0x87d700, 112, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 336 "rgbtab.gperf"
+#line 338 "rgbtab.gperf"
     {"grey61", 0x9c9c9c, 247, 7},
     {"", 0, 0, 0},
-#line 804 "rgbtab.gperf"
+#line 889 "rgbtab.gperf"
     {"xterm212", 0xff87d7, 212, 261},
 #line 276 "rgbtab.gperf"
     {"grey", 0xbebebe, 7, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 902 "rgbtab.gperf"
+#line 748 "rgbtab.gperf"
     {"xterm71", 0x5faf5f, 71, 2},
-#line 681 "rgbtab.gperf"
+#line 778 "rgbtab.gperf"
     {"xterm101", 0x87875f, 101, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 337 "rgbtab.gperf"
+#line 339 "rgbtab.gperf"
     {"grey62", 0x9e9e9e, 247, 7},
-#line 892 "rgbtab.gperf"
+#line 739 "rgbtab.gperf"
     {"xterm62", 0x5f5fd7, 62, 260},
-#line 792 "rgbtab.gperf"
+#line 878 "rgbtab.gperf"
     {"xterm201", 0xff00ff, 201, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 682 "rgbtab.gperf"
+#line 779 "rgbtab.gperf"
     {"xterm102", 0x878787, 102, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 325 "rgbtab.gperf"
+#line 328 "rgbtab.gperf"
     {"grey51", 0x828282, 8, 256},
     {"", 0, 0, 0},
-#line 793 "rgbtab.gperf"
+#line 879 "rgbtab.gperf"
     {"xterm202", 0xff5f00, 202, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 698 "rgbtab.gperf"
+#line 794 "rgbtab.gperf"
     {"xterm117", 0x87d7ff, 117, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 326 "rgbtab.gperf"
+#line 329 "rgbtab.gperf"
     {"grey52", 0x858585, 102, 2},
-#line 881 "rgbtab.gperf"
+#line 729 "rgbtab.gperf"
     {"xterm52", 0x5f0000, 52, 1},
-#line 809 "rgbtab.gperf"
+#line 894 "rgbtab.gperf"
     {"xterm217", 0xffafaf, 217, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 271 "rgbtab.gperf"
-    {"green1", 0x00ff00, 10, 258},
+    {"green1", 0x00ff00, 46, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 342 "rgbtab.gperf"
+#line 344 "rgbtab.gperf"
     {"grey67", 0xababab, 248, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -307,25 +307,25 @@ colorname_lookup(register const char *str, register size_t len)
 #line 272 "rgbtab.gperf"
     {"green2", 0x00ee00, 10, 258},
     {"", 0, 0, 0},
-#line 687 "rgbtab.gperf"
+#line 784 "rgbtab.gperf"
     {"xterm107", 0x87af5f, 107, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 933 "rgbtab.gperf"
-    {"yellow", 0xffff00, 11, 259},
+    {"yellow", 0xffff00, 226, 259},
     {"", 0, 0, 0},
-#line 798 "rgbtab.gperf"
+#line 884 "rgbtab.gperf"
     {"xterm207", 0xff5fff, 207, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 889 "rgbtab.gperf"
+#line 683 "rgbtab.gperf"
     {"xterm6", 0x008080, 6, 6},
-#line 891 "rgbtab.gperf"
+#line 738 "rgbtab.gperf"
     {"xterm61", 0x5f5faf, 61, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 331 "rgbtab.gperf"
+#line 334 "rgbtab.gperf"
     {"grey57", 0x919191, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -336,26 +336,26 @@ colorname_lookup(register const char *str, register size_t len)
     {"yellow2", 0xeeee00, 11, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 334 "rgbtab.gperf"
+#line 283 "rgbtab.gperf"
     {"grey6", 0x0f0f0f, 233, 0},
-#line 286 "rgbtab.gperf"
+#line 293 "rgbtab.gperf"
     {"grey16", 0x292929, 235, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 297 "rgbtab.gperf"
+#line 303 "rgbtab.gperf"
     {"grey26", 0x424242, 238, 256},
-#line 880 "rgbtab.gperf"
+#line 728 "rgbtab.gperf"
     {"xterm51", 0x00ffff, 51, 262},
-#line 708 "rgbtab.gperf"
+#line 803 "rgbtab.gperf"
     {"xterm126", 0xaf0087, 126, 5},
 #line 644 "rgbtab.gperf"
     {"tan1", 0xffa54f, 215, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 819 "rgbtab.gperf"
+#line 903 "rgbtab.gperf"
     {"xterm226", 0xffff00, 226, 259},
 #line 645 "rgbtab.gperf"
     {"tan2", 0xee9a49, 209, 257},
@@ -367,14 +367,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 164 "rgbtab.gperf"
     {"goldenrod1", 0xffc125, 214, 259},
-#line 352 "rgbtab.gperf"
+#line 353 "rgbtab.gperf"
     {"grey76", 0xc2c2c2, 7, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 165 "rgbtab.gperf"
     {"goldenrod2", 0xeeb422, 214, 259},
-#line 878 "rgbtab.gperf"
+#line 682 "rgbtab.gperf"
     {"xterm5", 0x800080, 5, 5},
 #line 656 "rgbtab.gperf"
     {"tomato2", 0xee5c42, 203, 257},
@@ -392,41 +392,41 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 323 "rgbtab.gperf"
+#line 282 "rgbtab.gperf"
     {"grey5", 0x0d0d0d, 232, 0},
-#line 285 "rgbtab.gperf"
+#line 292 "rgbtab.gperf"
     {"grey15", 0x262626, 235, 256},
 #line 934 "rgbtab.gperf"
-    {"yellow1", 0xffff00, 11, 259},
+    {"yellow1", 0xffff00, 226, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 296 "rgbtab.gperf"
+#line 302 "rgbtab.gperf"
     {"grey25", 0x404040, 238, 256},
     {"", 0, 0, 0},
-#line 707 "rgbtab.gperf"
+#line 802 "rgbtab.gperf"
     {"xterm125", 0xaf005f, 125, 5},
 #line 158 "rgbtab.gperf"
     {"gold", 0xffd700, 220, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 818 "rgbtab.gperf"
+#line 902 "rgbtab.gperf"
     {"xterm225", 0xffd7ff, 225, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 697 "rgbtab.gperf"
+#line 793 "rgbtab.gperf"
     {"xterm116", 0x87d7d7, 116, 262},
     {"", 0, 0, 0},
 #line 433 "rgbtab.gperf"
     {"lightgreen", 0x90ee90, 120, 258},
-#line 351 "rgbtab.gperf"
+#line 352 "rgbtab.gperf"
     {"grey75", 0xbfbfbf, 7, 7},
 #line 587 "rgbtab.gperf"
     {"salmon1", 0xff8c69, 209, 257},
-#line 808 "rgbtab.gperf"
+#line 893 "rgbtab.gperf"
     {"xterm216", 0xffaf87, 216, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -435,8 +435,8 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 270 "rgbtab.gperf"
-    {"green", 0x00ff00, 10, 258},
-#line 341 "rgbtab.gperf"
+    {"green", 0x00ff00, 46, 258},
+#line 343 "rgbtab.gperf"
     {"grey66", 0xa8a8a8, 248, 263},
 #line 655 "rgbtab.gperf"
     {"tomato1", 0xff6347, 203, 257},
@@ -445,13 +445,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 686 "rgbtab.gperf"
+#line 783 "rgbtab.gperf"
     {"xterm106", 0x87af00, 106, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 797 "rgbtab.gperf"
+#line 883 "rgbtab.gperf"
     {"xterm206", 0xff5fd7, 206, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -460,7 +460,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 330 "rgbtab.gperf"
+#line 333 "rgbtab.gperf"
     {"grey56", 0x8f8f8f, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -469,14 +469,14 @@ colorname_lookup(register const char *str, register size_t len)
 #line 586 "rgbtab.gperf"
     {"salmon", 0xfa8072, 209, 257},
     {"", 0, 0, 0},
-#line 696 "rgbtab.gperf"
+#line 792 "rgbtab.gperf"
     {"xterm115", 0x87d7af, 115, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 607 "rgbtab.gperf"
     {"silver", 0xc0c0c0, 7, 7},
     {"", 0, 0, 0},
-#line 807 "rgbtab.gperf"
+#line 892 "rgbtab.gperf"
     {"xterm215", 0xffaf5f, 215, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -487,7 +487,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"mistyrose", 0xffe4e1, 224, 263},
 #line 497 "rgbtab.gperf"
     {"mistyrose1", 0xffe4e1, 224, 263},
-#line 340 "rgbtab.gperf"
+#line 342 "rgbtab.gperf"
     {"grey65", 0xa6a6a6, 248, 263},
     {"", 0, 0, 0},
 #line 643 "rgbtab.gperf"
@@ -497,63 +497,63 @@ colorname_lookup(register const char *str, register size_t len)
     {"mistyrose2", 0xeed5d2, 224, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 685 "rgbtab.gperf"
+#line 782 "rgbtab.gperf"
     {"xterm105", 0x8787ff, 105, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 796 "rgbtab.gperf"
+#line 882 "rgbtab.gperf"
     {"xterm205", 0xff5faf, 205, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 725 "rgbtab.gperf"
+#line 818 "rgbtab.gperf"
     {"xterm141", 0xaf87ff, 141, 261},
     {"", 0, 0, 0},
 #line 675 "rgbtab.gperf"
-    {"white", 0xffffff, 15, 263},
-#line 329 "rgbtab.gperf"
+    {"white", 0xffffff, 231, 263},
+#line 332 "rgbtab.gperf"
     {"grey55", 0x8c8c8c, 245, 7},
     {"", 0, 0, 0},
-#line 836 "rgbtab.gperf"
+#line 918 "rgbtab.gperf"
     {"xterm241", 0x626262, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 474 "rgbtab.gperf"
     {"maroon2", 0xee30a7, 205, 261},
-#line 726 "rgbtab.gperf"
+#line 819 "rgbtab.gperf"
     {"xterm142", 0xafaf00, 142, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 369 "rgbtab.gperf"
+#line 368 "rgbtab.gperf"
     {"grey91", 0xe8e8e8, 254, 263},
     {"", 0, 0, 0},
-#line 837 "rgbtab.gperf"
+#line 919 "rgbtab.gperf"
     {"xterm242", 0x6c6c6c, 242, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 714 "rgbtab.gperf"
+#line 808 "rgbtab.gperf"
     {"xterm131", 0xaf5f5f, 131, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 370 "rgbtab.gperf"
+#line 369 "rgbtab.gperf"
     {"grey92", 0xebebeb, 255, 263},
-#line 925 "rgbtab.gperf"
+#line 769 "rgbtab.gperf"
     {"xterm92", 0x8700d7, 92, 261},
-#line 825 "rgbtab.gperf"
+#line 908 "rgbtab.gperf"
     {"xterm231", 0xffffff, 231, 263},
 #line 571 "rgbtab.gperf"
-    {"red1", 0xff0000, 9, 257},
+    {"red1", 0xff0000, 196, 257},
 #line 510 "rgbtab.gperf"
     {"olive", 0x808000, 3, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 715 "rgbtab.gperf"
+#line 809 "rgbtab.gperf"
     {"xterm132", 0xaf5f87, 132, 257},
 #line 572 "rgbtab.gperf"
     {"red2", 0xee0000, 9, 257},
@@ -561,22 +561,22 @@ colorname_lookup(register const char *str, register size_t len)
 #line 358 "rgbtab.gperf"
     {"grey81", 0xcfcfcf, 252, 263},
     {"", 0, 0, 0},
-#line 826 "rgbtab.gperf"
+#line 909 "rgbtab.gperf"
     {"xterm232", 0x080808, 232, 0},
     {"", 0, 0, 0},
 #line 466 "rgbtab.gperf"
     {"linen", 0xfaf0e6, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 731 "rgbtab.gperf"
+#line 824 "rgbtab.gperf"
     {"xterm147", 0xafafff, 147, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 359 "rgbtab.gperf"
     {"grey82", 0xd1d1d1, 252, 263},
-#line 914 "rgbtab.gperf"
+#line 759 "rgbtab.gperf"
     {"xterm82", 0x5fff00, 82, 258},
-#line 842 "rgbtab.gperf"
+#line 924 "rgbtab.gperf"
     {"xterm247", 0x9e9e9e, 247, 7},
     {"", 0, 0, 0},
 #line 427 "rgbtab.gperf"
@@ -587,7 +587,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 428 "rgbtab.gperf"
     {"lightgoldenrod2", 0xeedc82, 222, 259},
-#line 375 "rgbtab.gperf"
+#line 374 "rgbtab.gperf"
     {"grey97", 0xf7f7f7, 15, 263},
 #line 473 "rgbtab.gperf"
     {"maroon1", 0xff34b3, 205, 261},
@@ -596,19 +596,19 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 720 "rgbtab.gperf"
+#line 814 "rgbtab.gperf"
     {"xterm137", 0xaf875f, 137, 3},
     {"", 0, 0, 0},
 #line 431 "rgbtab.gperf"
     {"lightgoldenrodyellow", 0xfafad2, 230, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 831 "rgbtab.gperf"
+#line 914 "rgbtab.gperf"
     {"xterm237", 0x3a3a3a, 237, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 924 "rgbtab.gperf"
+#line 768 "rgbtab.gperf"
     {"xterm91", 0x8700af, 91, 5},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -622,7 +622,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 769 "rgbtab.gperf"
+#line 858 "rgbtab.gperf"
     {"xterm181", 0xd7afaf, 181, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -634,15 +634,15 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 472 "rgbtab.gperf"
     {"maroon", 0xb03060, 131, 257},
-#line 913 "rgbtab.gperf"
+#line 758 "rgbtab.gperf"
     {"xterm81", 0x5fd7ff, 81, 262},
-#line 770 "rgbtab.gperf"
+#line 859 "rgbtab.gperf"
     {"xterm182", 0xd7afd7, 182, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 758 "rgbtab.gperf"
+#line 848 "rgbtab.gperf"
     {"xterm171", 0xd75fff, 171, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -655,7 +655,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 394 "rgbtab.gperf"
     {"ivory1", 0xfffff0, 15, 263},
     {"", 0, 0, 0},
-#line 759 "rgbtab.gperf"
+#line 849 "rgbtab.gperf"
     {"xterm172", 0xd78700, 172, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -667,16 +667,16 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 395 "rgbtab.gperf"
     {"ivory2", 0xeeeee0, 255, 263},
-#line 756 "rgbtab.gperf"
+#line 694 "rgbtab.gperf"
     {"xterm17", 0x00005f, 17, 4},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 157 "rgbtab.gperf"
     {"ghostwhite", 0xf8f8ff, 15, 263},
     {"", 0, 0, 0},
-#line 853 "rgbtab.gperf"
+#line 704 "rgbtab.gperf"
     {"xterm27", 0x005fff, 27, 260},
-#line 775 "rgbtab.gperf"
+#line 864 "rgbtab.gperf"
     {"xterm187", 0xd7d7af, 187, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -691,21 +691,21 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 908 "rgbtab.gperf"
+#line 754 "rgbtab.gperf"
     {"xterm77", 0x5fd75f, 77, 258},
-#line 764 "rgbtab.gperf"
+#line 854 "rgbtab.gperf"
     {"xterm177", 0xd787ff, 177, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 730 "rgbtab.gperf"
+#line 823 "rgbtab.gperf"
     {"xterm146", 0xafafd7, 146, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 841 "rgbtab.gperf"
+#line 923 "rgbtab.gperf"
     {"xterm246", 0x949494, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -714,7 +714,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 374 "rgbtab.gperf"
+#line 373 "rgbtab.gperf"
     {"grey96", 0xf5f5f5, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -724,13 +724,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"saddlebrown", 0x8b4513, 94, 2},
 #line 142 "rgbtab.gperf"
     {"dimgrey", 0x696969, 242, 7},
-#line 719 "rgbtab.gperf"
+#line 813 "rgbtab.gperf"
     {"xterm136", 0xaf8700, 136, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 830 "rgbtab.gperf"
+#line 913 "rgbtab.gperf"
     {"xterm236", 0x303030, 236, 256},
     {"", 0, 0, 0},
 #line 676 "rgbtab.gperf"
@@ -749,14 +749,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"ivory", 0xfffff0, 15, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 729 "rgbtab.gperf"
+#line 822 "rgbtab.gperf"
     {"xterm145", 0xafafaf, 145, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 897 "rgbtab.gperf"
+#line 744 "rgbtab.gperf"
     {"xterm67", 0x5f87af, 67, 6},
-#line 840 "rgbtab.gperf"
+#line 922 "rgbtab.gperf"
     {"xterm245", 0x8a8a8a, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -765,7 +765,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 373 "rgbtab.gperf"
+#line 372 "rgbtab.gperf"
     {"grey95", 0xf2f2f2, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -773,37 +773,37 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 718 "rgbtab.gperf"
+#line 812 "rgbtab.gperf"
     {"xterm135", 0xaf5fff, 135, 261},
-#line 736 "rgbtab.gperf"
+#line 828 "rgbtab.gperf"
     {"xterm151", 0xafd7af, 151, 263},
     {"", 0, 0, 0},
 #line 633 "rgbtab.gperf"
     {"springgreen", 0x00ff7f, 48, 258},
-#line 886 "rgbtab.gperf"
+#line 734 "rgbtab.gperf"
     {"xterm57", 0x5f00ff, 57, 260},
-#line 829 "rgbtab.gperf"
+#line 912 "rgbtab.gperf"
     {"xterm235", 0x262626, 235, 256},
-#line 847 "rgbtab.gperf"
+#line 928 "rgbtab.gperf"
     {"xterm251", 0xc6c6c6, 251, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 570 "rgbtab.gperf"
-    {"red", 0xff0000, 9, 257},
-#line 737 "rgbtab.gperf"
+    {"red", 0xff0000, 196, 257},
+#line 829 "rgbtab.gperf"
     {"xterm152", 0xafd7d7, 152, 263},
     {"", 0, 0, 0},
 #line 362 "rgbtab.gperf"
     {"grey85", 0xd9d9d9, 253, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 848 "rgbtab.gperf"
+#line 929 "rgbtab.gperf"
     {"xterm252", 0xd0d0d0, 252, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 774 "rgbtab.gperf"
+#line 863 "rgbtab.gperf"
     {"xterm186", 0xd7d787, 186, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -820,7 +820,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 763 "rgbtab.gperf"
+#line 853 "rgbtab.gperf"
     {"xterm176", 0xd787d7, 176, 261},
     {"", 0, 0, 0},
 #line 143 "rgbtab.gperf"
@@ -829,7 +829,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"dodgerblue1", 0x1e90ff, 33, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 742 "rgbtab.gperf"
+#line 834 "rgbtab.gperf"
     {"xterm157", 0xafffaf, 157, 259},
     {"", 0, 0, 0},
 #line 145 "rgbtab.gperf"
@@ -851,7 +851,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 494 "rgbtab.gperf"
     {"midnightblue", 0x191970, 4, 4},
-#line 773 "rgbtab.gperf"
+#line 862 "rgbtab.gperf"
     {"xterm185", 0xd7d75f, 185, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -867,11 +867,11 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 762 "rgbtab.gperf"
+#line 852 "rgbtab.gperf"
     {"xterm175", 0xd787af, 175, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 922 "rgbtab.gperf"
+#line 686 "rgbtab.gperf"
     {"xterm9", 0xff0000, 9, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -884,44 +884,44 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 734 "rgbtab.gperf"
+#line 692 "rgbtab.gperf"
     {"xterm15", 0xffffff, 15, 263},
     {"", 0, 0, 0},
-#line 367 "rgbtab.gperf"
+#line 286 "rgbtab.gperf"
     {"grey9", 0x171717, 233, 0},
-#line 289 "rgbtab.gperf"
+#line 296 "rgbtab.gperf"
     {"grey19", 0x303030, 236, 256},
     {"", 0, 0, 0},
-#line 845 "rgbtab.gperf"
+#line 702 "rgbtab.gperf"
     {"xterm25", 0x005faf, 25, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 300 "rgbtab.gperf"
+#line 306 "rgbtab.gperf"
     {"grey29", 0x4a4a4a, 239, 256},
     {"", 0, 0, 0},
-#line 711 "rgbtab.gperf"
+#line 806 "rgbtab.gperf"
     {"xterm129", 0xaf00ff, 129, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 822 "rgbtab.gperf"
+#line 906 "rgbtab.gperf"
     {"xterm229", 0xffffaf, 229, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 906 "rgbtab.gperf"
+#line 752 "rgbtab.gperf"
     {"xterm75", 0x5fafff, 75, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 355 "rgbtab.gperf"
+#line 356 "rgbtab.gperf"
     {"grey79", 0xc9c9c9, 251, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 911 "rgbtab.gperf"
+#line 685 "rgbtab.gperf"
     {"xterm8", 0x808080, 8, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -936,49 +936,49 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 356 "rgbtab.gperf"
+#line 285 "rgbtab.gperf"
     {"grey8", 0x141414, 233, 0},
-#line 288 "rgbtab.gperf"
+#line 295 "rgbtab.gperf"
     {"grey18", 0x2e2e2e, 236, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 299 "rgbtab.gperf"
+#line 305 "rgbtab.gperf"
     {"grey28", 0x474747, 238, 256},
     {"", 0, 0, 0},
-#line 710 "rgbtab.gperf"
+#line 805 "rgbtab.gperf"
     {"xterm128", 0xaf00d7, 128, 261},
-#line 741 "rgbtab.gperf"
+#line 833 "rgbtab.gperf"
     {"xterm156", 0xafff87, 156, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 821 "rgbtab.gperf"
+#line 905 "rgbtab.gperf"
     {"xterm228", 0xffff87, 228, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 700 "rgbtab.gperf"
+#line 796 "rgbtab.gperf"
     {"xterm119", 0x87ff5f, 119, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 354 "rgbtab.gperf"
+#line 355 "rgbtab.gperf"
     {"grey78", 0xc7c7c7, 251, 263},
     {"", 0, 0, 0},
-#line 811 "rgbtab.gperf"
+#line 896 "rgbtab.gperf"
     {"xterm219", 0xffafff, 219, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 441 "rgbtab.gperf"
     {"lightsalmon1", 0xffa07a, 216, 263},
-#line 895 "rgbtab.gperf"
+#line 742 "rgbtab.gperf"
     {"xterm65", 0x5f875f, 65, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 344 "rgbtab.gperf"
+#line 346 "rgbtab.gperf"
     {"grey69", 0xb0b0b0, 145, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -987,55 +987,55 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 442 "rgbtab.gperf"
     {"lightsalmon2", 0xee9572, 209, 257},
-#line 689 "rgbtab.gperf"
+#line 786 "rgbtab.gperf"
     {"xterm109", 0x87afaf, 109, 6},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 800 "rgbtab.gperf"
+#line 886 "rgbtab.gperf"
     {"xterm209", 0xff875f, 209, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 767 "rgbtab.gperf"
+#line 695 "rgbtab.gperf"
     {"xterm18", 0x000087, 18, 4},
-#line 884 "rgbtab.gperf"
+#line 732 "rgbtab.gperf"
     {"xterm55", 0x5f00af, 55, 260},
-#line 740 "rgbtab.gperf"
+#line 832 "rgbtab.gperf"
     {"xterm155", 0xafff5f, 155, 259},
     {"", 0, 0, 0},
-#line 333 "rgbtab.gperf"
+#line 336 "rgbtab.gperf"
     {"grey59", 0x969696, 246, 7},
-#line 854 "rgbtab.gperf"
+#line 705 "rgbtab.gperf"
     {"xterm28", 0x008700, 28, 258},
     {"", 0, 0, 0},
-#line 851 "rgbtab.gperf"
+#line 932 "rgbtab.gperf"
     {"xterm255", 0xeeeeee, 255, 263},
     {"", 0, 0, 0},
 #line 69 "rgbtab.gperf"
     {"coral1", 0xff7256, 203, 257},
     {"", 0, 0, 0},
-#line 699 "rgbtab.gperf"
+#line 795 "rgbtab.gperf"
     {"xterm118", 0x87ff00, 118, 258},
     {"", 0, 0, 0},
 #line 68 "rgbtab.gperf"
     {"coral", 0xff7f50, 209, 257},
     {"", 0, 0, 0},
-#line 930 "rgbtab.gperf"
+#line 774 "rgbtab.gperf"
     {"xterm97", 0x875faf, 97, 5},
-#line 810 "rgbtab.gperf"
+#line 895 "rgbtab.gperf"
     {"xterm218", 0xffafd7, 218, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 70 "rgbtab.gperf"
     {"coral2", 0xee6a50, 203, 257},
-#line 909 "rgbtab.gperf"
+#line 755 "rgbtab.gperf"
     {"xterm78", 0x5fd787, 78, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 343 "rgbtab.gperf"
+#line 345 "rgbtab.gperf"
     {"grey68", 0xadadad, 145, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1043,14 +1043,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 688 "rgbtab.gperf"
+#line 785 "rgbtab.gperf"
     {"xterm108", 0x87af87, 108, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 919 "rgbtab.gperf"
+#line 764 "rgbtab.gperf"
     {"xterm87", 0x5fffff, 87, 262},
-#line 799 "rgbtab.gperf"
+#line 885 "rgbtab.gperf"
     {"xterm208", 0xff8700, 208, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1059,7 +1059,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 332 "rgbtab.gperf"
+#line 335 "rgbtab.gperf"
     {"grey58", 0x949494, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1076,36 +1076,36 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 170 "rgbtab.gperf"
     {"gray1", 0x030303, 0, 0},
-#line 173 "rgbtab.gperf"
+#line 180 "rgbtab.gperf"
     {"gray11", 0x1c1c1c, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 184 "rgbtab.gperf"
+#line 190 "rgbtab.gperf"
     {"gray21", 0x363636, 237, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 182 "rgbtab.gperf"
+#line 171 "rgbtab.gperf"
     {"gray2", 0x050505, 232, 0},
-#line 174 "rgbtab.gperf"
+#line 181 "rgbtab.gperf"
     {"gray12", 0x1f1f1f, 234, 256},
-#line 898 "rgbtab.gperf"
+#line 745 "rgbtab.gperf"
     {"xterm68", 0x5f87d7, 68, 6},
 #line 468 "rgbtab.gperf"
-    {"magenta1", 0xff00ff, 13, 261},
+    {"magenta1", 0xff00ff, 201, 261},
     {"", 0, 0, 0},
 #line 624 "rgbtab.gperf"
     {"slategrey1", 0xc6e2ff, 189, 263},
-#line 185 "rgbtab.gperf"
+#line 191 "rgbtab.gperf"
     {"gray22", 0x383838, 237, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 625 "rgbtab.gperf"
     {"slategrey2", 0xb9d3ee, 153, 263},
-#line 239 "rgbtab.gperf"
+#line 240 "rgbtab.gperf"
     {"gray71", 0xb5b5b5, 249, 263},
     {"", 0, 0, 0},
 #line 469 "rgbtab.gperf"
@@ -1119,13 +1119,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightyellow1", 0xffffe0, 230, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 240 "rgbtab.gperf"
+#line 241 "rgbtab.gperf"
     {"gray72", 0xb8b8b8, 250, 263},
-#line 887 "rgbtab.gperf"
+#line 735 "rgbtab.gperf"
     {"xterm58", 0x5f5f00, 58, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 780 "rgbtab.gperf"
+#line 868 "rgbtab.gperf"
     {"xterm191", 0xd7ff5f, 191, 259},
 #line 516 "rgbtab.gperf"
     {"orange", 0xffa500, 214, 259},
@@ -1134,16 +1134,16 @@ colorname_lookup(register const char *str, register size_t len)
 #line 461 "rgbtab.gperf"
     {"lightyellow2", 0xeeeed1, 254, 263},
     {"", 0, 0, 0},
-#line 237 "rgbtab.gperf"
+#line 176 "rgbtab.gperf"
     {"gray7", 0x121212, 233, 0},
-#line 179 "rgbtab.gperf"
+#line 186 "rgbtab.gperf"
     {"gray17", 0x2b2b2b, 235, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 781 "rgbtab.gperf"
+#line 869 "rgbtab.gperf"
     {"xterm192", 0xd7ff87, 192, 259},
-#line 190 "rgbtab.gperf"
+#line 196 "rgbtab.gperf"
     {"gray27", 0x454545, 238, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1152,19 +1152,19 @@ colorname_lookup(register const char *str, register size_t len)
 #line 522 "rgbtab.gperf"
     {"orangered1", 0xff4500, 202, 257},
     {"", 0, 0, 0},
-#line 679 "rgbtab.gperf"
+#line 687 "rgbtab.gperf"
     {"xterm10", 0x00ff00, 10, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 523 "rgbtab.gperf"
     {"orangered2", 0xee4000, 202, 257},
     {"", 0, 0, 0},
-#line 790 "rgbtab.gperf"
+#line 697 "rgbtab.gperf"
     {"xterm20", 0x0000d7, 20, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 245 "rgbtab.gperf"
+#line 246 "rgbtab.gperf"
     {"gray77", 0xc4c4c4, 251, 263},
 #line 518 "rgbtab.gperf"
     {"orange2", 0xee9a00, 208, 257},
@@ -1176,14 +1176,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 228 "rgbtab.gperf"
+#line 230 "rgbtab.gperf"
     {"gray61", 0x9c9c9c, 247, 7},
-#line 901 "rgbtab.gperf"
+#line 747 "rgbtab.gperf"
     {"xterm70", 0x5faf00, 70, 258},
     {"", 0, 0, 0},
 #line 168 "rgbtab.gperf"
     {"gray", 0xbebebe, 7, 7},
-#line 786 "rgbtab.gperf"
+#line 874 "rgbtab.gperf"
     {"xterm197", 0xff005f, 197, 257},
     {"", 0, 0, 0},
 #line 275 "rgbtab.gperf"
@@ -1191,7 +1191,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 229 "rgbtab.gperf"
+#line 231 "rgbtab.gperf"
     {"gray62", 0x9e9e9e, 247, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1203,7 +1203,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 623 "rgbtab.gperf"
     {"slategrey", 0x708090, 66, 2},
     {"", 0, 0, 0},
-#line 217 "rgbtab.gperf"
+#line 220 "rgbtab.gperf"
     {"gray51", 0x828282, 8, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1215,7 +1215,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 218 "rgbtab.gperf"
+#line 221 "rgbtab.gperf"
     {"gray52", 0x858585, 102, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1227,7 +1227,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 234 "rgbtab.gperf"
+#line 236 "rgbtab.gperf"
     {"gray67", 0xababab, 248, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1241,45 +1241,45 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 890 "rgbtab.gperf"
+#line 737 "rgbtab.gperf"
     {"xterm60", 0x5f5f87, 60, 6},
-#line 733 "rgbtab.gperf"
+#line 826 "rgbtab.gperf"
     {"xterm149", 0xafd75f, 149, 259},
     {"", 0, 0, 0},
 #line 409 "rgbtab.gperf"
     {"lawngreen", 0x7cfc00, 118, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 844 "rgbtab.gperf"
+#line 926 "rgbtab.gperf"
     {"xterm249", 0xb2b2b2, 249, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 223 "rgbtab.gperf"
+#line 226 "rgbtab.gperf"
     {"gray57", 0x919191, 246, 7},
     {"", 0, 0, 0},
-#line 928 "rgbtab.gperf"
+#line 772 "rgbtab.gperf"
     {"xterm95", 0x875f5f, 95, 1},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 377 "rgbtab.gperf"
+#line 376 "rgbtab.gperf"
     {"grey99", 0xfcfcfc, 15, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 226 "rgbtab.gperf"
+#line 175 "rgbtab.gperf"
     {"gray6", 0x0f0f0f, 233, 0},
-#line 178 "rgbtab.gperf"
+#line 185 "rgbtab.gperf"
     {"gray16", 0x292929, 235, 256},
-#line 879 "rgbtab.gperf"
+#line 727 "rgbtab.gperf"
     {"xterm50", 0x00ffd7, 50, 262},
-#line 722 "rgbtab.gperf"
+#line 816 "rgbtab.gperf"
     {"xterm139", 0xaf87af, 139, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 189 "rgbtab.gperf"
+#line 195 "rgbtab.gperf"
     {"gray26", 0x424242, 238, 256},
     {"", 0, 0, 0},
-#line 833 "rgbtab.gperf"
+#line 916 "rgbtab.gperf"
     {"xterm239", 0x4e4e4e, 239, 256},
 #line 454 "rgbtab.gperf"
     {"lightsteelblue", 0xb0c4de, 152, 263},
@@ -1287,7 +1287,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightsteelblue1", 0xcae1ff, 189, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 917 "rgbtab.gperf"
+#line 762 "rgbtab.gperf"
     {"xterm85", 0x5fffaf, 85, 258},
     {"", 0, 0, 0},
 #line 456 "rgbtab.gperf"
@@ -1298,18 +1298,18 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 244 "rgbtab.gperf"
+#line 245 "rgbtab.gperf"
     {"gray76", 0xc2c2c2, 7, 7},
 #line 603 "rgbtab.gperf"
     {"sienna1", 0xff8247, 209, 257},
-#line 732 "rgbtab.gperf"
+#line 825 "rgbtab.gperf"
     {"xterm148", 0xafd700, 148, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 107 "rgbtab.gperf"
     {"darkorchid1", 0xbf3eff, 135, 261},
     {"", 0, 0, 0},
-#line 843 "rgbtab.gperf"
+#line 925 "rgbtab.gperf"
     {"xterm248", 0xa8a8a8, 248, 263},
 #line 432 "rgbtab.gperf"
     {"lightgray", 0xd3d3d3, 252, 263},
@@ -1319,27 +1319,27 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 785 "rgbtab.gperf"
+#line 873 "rgbtab.gperf"
     {"xterm196", 0xff0000, 196, 257},
-#line 376 "rgbtab.gperf"
+#line 375 "rgbtab.gperf"
     {"grey98", 0xfafafa, 15, 263},
 #line 111 "rgbtab.gperf"
     {"darkred", 0x8b0000, 88, 1},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 215 "rgbtab.gperf"
+#line 174 "rgbtab.gperf"
     {"gray5", 0x0d0d0d, 232, 0},
-#line 177 "rgbtab.gperf"
+#line 184 "rgbtab.gperf"
     {"gray15", 0x262626, 235, 256},
     {"", 0, 0, 0},
-#line 721 "rgbtab.gperf"
+#line 815 "rgbtab.gperf"
     {"xterm138", 0xaf8787, 138, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 188 "rgbtab.gperf"
+#line 194 "rgbtab.gperf"
     {"gray25", 0x404040, 238, 256},
     {"", 0, 0, 0},
-#line 832 "rgbtab.gperf"
+#line 915 "rgbtab.gperf"
     {"xterm238", 0x444444, 238, 256},
     {"", 0, 0, 0},
 #line 478 "rgbtab.gperf"
@@ -1356,75 +1356,75 @@ colorname_lookup(register const char *str, register size_t len)
 #line 44 "rgbtab.gperf"
     {"brown1", 0xff4040, 203, 257},
     {"", 0, 0, 0},
-#line 243 "rgbtab.gperf"
+#line 244 "rgbtab.gperf"
     {"gray75", 0xbfbfbf, 7, 7},
     {"", 0, 0, 0},
-#line 777 "rgbtab.gperf"
+#line 866 "rgbtab.gperf"
     {"xterm189", 0xd7d7ff, 189, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 314 "rgbtab.gperf"
+#line 318 "rgbtab.gperf"
     {"grey41", 0x696969, 242, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 45 "rgbtab.gperf"
     {"brown2", 0xee3b3b, 203, 257},
     {"", 0, 0, 0},
-#line 233 "rgbtab.gperf"
+#line 235 "rgbtab.gperf"
     {"gray66", 0xa8a8a8, 248, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 784 "rgbtab.gperf"
+#line 872 "rgbtab.gperf"
     {"xterm195", 0xd7ffff, 195, 263},
-#line 315 "rgbtab.gperf"
+#line 319 "rgbtab.gperf"
     {"grey42", 0x6b6b6b, 242, 7},
-#line 870 "rgbtab.gperf"
+#line 719 "rgbtab.gperf"
     {"xterm42", 0x00d787, 42, 258},
-#line 766 "rgbtab.gperf"
+#line 856 "rgbtab.gperf"
     {"xterm179", 0xd7af5f, 179, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 931 "rgbtab.gperf"
+#line 775 "rgbtab.gperf"
     {"xterm98", 0x875fd7, 98, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 303 "rgbtab.gperf"
+#line 308 "rgbtab.gperf"
     {"grey31", 0x4f4f4f, 239, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 222 "rgbtab.gperf"
+#line 225 "rgbtab.gperf"
     {"gray56", 0x8f8f8f, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 521 "rgbtab.gperf"
     {"orangered", 0xff4500, 202, 257},
     {"", 0, 0, 0},
-#line 304 "rgbtab.gperf"
+#line 309 "rgbtab.gperf"
     {"grey32", 0x525252, 239, 256},
-#line 859 "rgbtab.gperf"
+#line 709 "rgbtab.gperf"
     {"xterm32", 0x0087d7, 32, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 920 "rgbtab.gperf"
+#line 765 "rgbtab.gperf"
     {"xterm88", 0x870000, 88, 1},
-#line 776 "rgbtab.gperf"
+#line 865 "rgbtab.gperf"
     {"xterm188", 0xd7d7d7, 188, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 320 "rgbtab.gperf"
+#line 324 "rgbtab.gperf"
     {"grey47", 0x787878, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 232 "rgbtab.gperf"
+#line 234 "rgbtab.gperf"
     {"gray65", 0xa6a6a6, 248, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1433,13 +1433,13 @@ colorname_lookup(register const char *str, register size_t len)
 #line 154 "rgbtab.gperf"
     {"forestgreen", 0x228b22, 28, 258},
     {"", 0, 0, 0},
-#line 765 "rgbtab.gperf"
+#line 855 "rgbtab.gperf"
     {"xterm178", 0xd7af00, 178, 3},
     {"", 0, 0, 0},
 #line 666 "rgbtab.gperf"
     {"violetred1", 0xff3e96, 204, 257},
     {"", 0, 0, 0},
-#line 869 "rgbtab.gperf"
+#line 718 "rgbtab.gperf"
     {"xterm41", 0x00d75f, 41, 258},
 #line 649 "rgbtab.gperf"
     {"thistle", 0xd8bfd8, 182, 261},
@@ -1447,14 +1447,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"thistle1", 0xffe1ff, 225, 263},
 #line 667 "rgbtab.gperf"
     {"violetred2", 0xee3a8c, 204, 257},
-#line 309 "rgbtab.gperf"
+#line 314 "rgbtab.gperf"
     {"grey37", 0x5e5e5e, 59, 2},
     {"", 0, 0, 0},
 #line 114 "rgbtab.gperf"
     {"darkseagreen1", 0xc1ffc1, 157, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 221 "rgbtab.gperf"
+#line 224 "rgbtab.gperf"
     {"gray55", 0x8c8c8c, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1468,9 +1468,9 @@ colorname_lookup(register const char *str, register size_t len)
 #line 489 "rgbtab.gperf"
     {"mediumseagreen", 0x3cb371, 71, 2},
     {"", 0, 0, 0},
-#line 261 "rgbtab.gperf"
+#line 260 "rgbtab.gperf"
     {"gray91", 0xe8e8e8, 254, 263},
-#line 858 "rgbtab.gperf"
+#line 708 "rgbtab.gperf"
     {"xterm31", 0x0087af, 31, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1481,7 +1481,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 125 "rgbtab.gperf"
     {"darkslategrey1", 0x97ffff, 123, 263},
     {"", 0, 0, 0},
-#line 262 "rgbtab.gperf"
+#line 261 "rgbtab.gperf"
     {"gray92", 0xebebeb, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1512,7 +1512,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"gray82", 0xd1d1d1, 252, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 778 "rgbtab.gperf"
+#line 696 "rgbtab.gperf"
     {"xterm19", 0x0000af, 19, 4},
 #line 661 "rgbtab.gperf"
     {"turquoise2", 0x00e5ee, 45, 262},
@@ -1520,14 +1520,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 411 "rgbtab.gperf"
     {"lemonchiffon1", 0xfffacd, 230, 263},
-#line 855 "rgbtab.gperf"
+#line 706 "rgbtab.gperf"
     {"xterm29", 0x00875f, 29, 2},
     {"", 0, 0, 0},
-#line 267 "rgbtab.gperf"
+#line 266 "rgbtab.gperf"
     {"gray97", 0xf7f7f7, 15, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 744 "rgbtab.gperf"
+#line 836 "rgbtab.gperf"
     {"xterm159", 0xafffff, 159, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1538,11 +1538,11 @@ colorname_lookup(register const char *str, register size_t len)
     {"navy", 0x000080, 4, 4},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 923 "rgbtab.gperf"
+#line 767 "rgbtab.gperf"
     {"xterm90", 0x870087, 90, 5},
 #line 29 "rgbtab.gperf"
     {"beige", 0xf5f5dc, 230, 263},
-#line 910 "rgbtab.gperf"
+#line 756 "rgbtab.gperf"
     {"xterm79", 0x5fd7af, 79, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1558,7 +1558,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 87 "rgbtab.gperf"
     {"darkgoldenrod1", 0xffb90f, 214, 259},
     {"", 0, 0, 0},
-#line 319 "rgbtab.gperf"
+#line 323 "rgbtab.gperf"
     {"grey46", 0x757575, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1567,7 +1567,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 106 "rgbtab.gperf"
     {"darkorchid", 0x9932cc, 98, 261},
     {"", 0, 0, 0},
-#line 912 "rgbtab.gperf"
+#line 757 "rgbtab.gperf"
     {"xterm80", 0x5fd7d7, 80, 262},
     {"", 0, 0, 0},
 #line 647 "rgbtab.gperf"
@@ -1582,11 +1582,11 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 124 "rgbtab.gperf"
     {"darkslategrey", 0x2f4f4f, 238, 256},
-#line 743 "rgbtab.gperf"
+#line 835 "rgbtab.gperf"
     {"xterm158", 0xafffd7, 158, 263},
 #line 167 "rgbtab.gperf"
     {"goldenrod4", 0x8b6914, 94, 2},
-#line 308 "rgbtab.gperf"
+#line 313 "rgbtab.gperf"
     {"grey36", 0x5c5c5c, 59, 2},
     {"", 0, 0, 0},
 #line 49 "rgbtab.gperf"
@@ -1612,11 +1612,11 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 576 "rgbtab.gperf"
     {"rosybrown1", 0xffc1c1, 217, 263},
-#line 899 "rgbtab.gperf"
+#line 746 "rgbtab.gperf"
     {"xterm69", 0x5f87ff, 69, 260},
 #line 166 "rgbtab.gperf"
     {"goldenrod3", 0xcd9b1d, 172, 3},
-#line 318 "rgbtab.gperf"
+#line 322 "rgbtab.gperf"
     {"grey45", 0x737373, 243, 7},
 #line 527 "rgbtab.gperf"
     {"orchid1", 0xff83fa, 213, 261},
@@ -1639,11 +1639,11 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 888 "rgbtab.gperf"
+#line 736 "rgbtab.gperf"
     {"xterm59", 0x5f5f5f, 59, 2},
 #line 565 "rgbtab.gperf"
     {"purple", 0xa020f0, 129, 261},
-#line 307 "rgbtab.gperf"
+#line 312 "rgbtab.gperf"
     {"grey35", 0x595959, 240, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1663,7 +1663,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 92 "rgbtab.gperf"
     {"darkgreen", 0x006400, 22, 2},
-#line 266 "rgbtab.gperf"
+#line 265 "rgbtab.gperf"
     {"gray96", 0xf5f5f5, 255, 263},
 #line 410 "rgbtab.gperf"
     {"lemonchiffon", 0xfffacd, 230, 263},
@@ -1718,7 +1718,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 265 "rgbtab.gperf"
+#line 264 "rgbtab.gperf"
     {"gray95", 0xf2f2f2, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1731,7 +1731,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 723 "rgbtab.gperf"
+#line 691 "rgbtab.gperf"
     {"xterm14", 0x00ffff, 14, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1739,7 +1739,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"mistyrose3", 0xcdb7b5, 181, 261},
 #line 566 "rgbtab.gperf"
     {"purple1", 0x9b30ff, 99, 261},
-#line 834 "rgbtab.gperf"
+#line 701 "rgbtab.gperf"
     {"xterm24", 0x005f87, 24, 4},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1758,7 +1758,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"seashell1", 0xfff5ee, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 905 "rgbtab.gperf"
+#line 751 "rgbtab.gperf"
     {"xterm74", 0x5fafd7, 74, 262},
 #line 597 "rgbtab.gperf"
     {"seashell", 0xfff5ee, 255, 263},
@@ -1787,14 +1787,14 @@ colorname_lookup(register const char *str, register size_t len)
 #line 64 "rgbtab.gperf"
     {"chocolate1", 0xff7f24, 208, 257},
     {"", 0, 0, 0},
-#line 712 "rgbtab.gperf"
+#line 690 "rgbtab.gperf"
     {"xterm13", 0xff00ff, 13, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 65 "rgbtab.gperf"
     {"chocolate2", 0xee7621, 208, 257},
     {"", 0, 0, 0},
-#line 823 "rgbtab.gperf"
+#line 700 "rgbtab.gperf"
     {"xterm23", 0x005f5f, 23, 6},
     {"", 0, 0, 0},
 #line 573 "rgbtab.gperf"
@@ -1806,7 +1806,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 80 "rgbtab.gperf"
-    {"cyan1", 0x00ffff, 14, 262},
+    {"cyan1", 0x00ffff, 51, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 86 "rgbtab.gperf"
@@ -1814,7 +1814,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 904 "rgbtab.gperf"
+#line 750 "rgbtab.gperf"
     {"xterm73", 0x5fafaf, 73, 6},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1827,7 +1827,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 429 "rgbtab.gperf"
     {"lightgoldenrod3", 0xcdbe70, 179, 3},
     {"", 0, 0, 0},
-#line 894 "rgbtab.gperf"
+#line 741 "rgbtab.gperf"
     {"xterm64", 0x5f8700, 64, 2},
 #line 480 "rgbtab.gperf"
     {"mediumorchid1", 0xe066ff, 171, 261},
@@ -1849,18 +1849,18 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 259 "rgbtab.gperf"
+#line 178 "rgbtab.gperf"
     {"gray9", 0x171717, 233, 0},
-#line 181 "rgbtab.gperf"
+#line 188 "rgbtab.gperf"
     {"gray19", 0x303030, 236, 256},
-#line 883 "rgbtab.gperf"
+#line 731 "rgbtab.gperf"
     {"xterm54", 0x5f0087, 54, 5},
     {"", 0, 0, 0},
 #line 453 "rgbtab.gperf"
     {"lightslategrey", 0x778899, 102, 2},
 #line 389 "rgbtab.gperf"
     {"indianred1", 0xff6a6a, 203, 257},
-#line 192 "rgbtab.gperf"
+#line 198 "rgbtab.gperf"
     {"gray29", 0x4a4a4a, 239, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1880,15 +1880,15 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 247 "rgbtab.gperf"
+#line 248 "rgbtab.gperf"
     {"gray79", 0xc9c9c9, 251, 263},
-#line 893 "rgbtab.gperf"
+#line 740 "rgbtab.gperf"
     {"xterm63", 0x5f5fff, 63, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 875 "rgbtab.gperf"
+#line 724 "rgbtab.gperf"
     {"xterm47", 0x00ff5f, 47, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1896,27 +1896,27 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 932 "rgbtab.gperf"
+#line 776 "rgbtab.gperf"
     {"xterm99", 0x875fff, 99, 261},
-#line 788 "rgbtab.gperf"
+#line 876 "rgbtab.gperf"
     {"xterm199", 0xff00af, 199, 261},
     {"", 0, 0, 0},
 #line 937 "rgbtab.gperf"
     {"yellow4", 0x8b8b00, 100, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 248 "rgbtab.gperf"
+#line 177 "rgbtab.gperf"
     {"gray8", 0x141414, 233, 0},
-#line 180 "rgbtab.gperf"
+#line 187 "rgbtab.gperf"
     {"gray18", 0x2e2e2e, 236, 256},
-#line 882 "rgbtab.gperf"
+#line 730 "rgbtab.gperf"
     {"xterm53", 0x5f005f, 53, 5},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 191 "rgbtab.gperf"
+#line 197 "rgbtab.gperf"
     {"gray28", 0x474747, 238, 256},
-#line 864 "rgbtab.gperf"
+#line 714 "rgbtab.gperf"
     {"xterm37", 0x00afaf, 37, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1924,7 +1924,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 921 "rgbtab.gperf"
+#line 766 "rgbtab.gperf"
     {"xterm89", 0x87005f, 89, 1},
 #line 97 "rgbtab.gperf"
     {"darkolivegreen1", 0xcaff70, 191, 259},
@@ -1935,7 +1935,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 98 "rgbtab.gperf"
     {"darkolivegreen2", 0xbcee68, 155, 259},
-#line 246 "rgbtab.gperf"
+#line 247 "rgbtab.gperf"
     {"gray78", 0xc7c7c7, 251, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -1946,14 +1946,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"tomato4", 0x8b3626, 94, 2},
     {"", 0, 0, 0},
 #line 79 "rgbtab.gperf"
-    {"cyan", 0x00ffff, 14, 262},
+    {"cyan", 0x00ffff, 51, 262},
     {"", 0, 0, 0},
-#line 236 "rgbtab.gperf"
+#line 238 "rgbtab.gperf"
     {"gray69", 0xb0b0b0, 145, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 787 "rgbtab.gperf"
+#line 875 "rgbtab.gperf"
     {"xterm198", 0xff0087, 198, 257},
     {"", 0, 0, 0},
 #line 936 "rgbtab.gperf"
@@ -1974,15 +1974,15 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 225 "rgbtab.gperf"
+#line 228 "rgbtab.gperf"
     {"gray59", 0x969696, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 610 "rgbtab.gperf"
     {"skyblue2", 0x7ec0ee, 111, 262},
 #line 277 "rgbtab.gperf"
-    {"grey0", 0x000000, 0, 0},
-#line 279 "rgbtab.gperf"
+    {"grey0", 0x000000, 16, 0},
+#line 287 "rgbtab.gperf"
     {"grey10", 0x1a1a1a, 234, 256},
 #line 589 "rgbtab.gperf"
     {"salmon3", 0xcd7054, 167, 257},
@@ -1990,10 +1990,10 @@ colorname_lookup(register const char *str, register size_t len)
     {"darkturquoise", 0x00ced1, 44, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 291 "rgbtab.gperf"
+#line 297 "rgbtab.gperf"
     {"grey20", 0x333333, 236, 256},
     {"", 0, 0, 0},
-#line 702 "rgbtab.gperf"
+#line 797 "rgbtab.gperf"
     {"xterm120", 0x87ff87, 120, 258},
     {"", 0, 0, 0},
 #line 422 "rgbtab.gperf"
@@ -2001,18 +2001,18 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 657 "rgbtab.gperf"
     {"tomato3", 0xcd4f39, 167, 257},
-#line 813 "rgbtab.gperf"
+#line 897 "rgbtab.gperf"
     {"xterm220", 0xffd700, 220, 259},
     {"", 0, 0, 0},
 #line 423 "rgbtab.gperf"
     {"lightcyan2", 0xd1eeee, 254, 263},
-#line 235 "rgbtab.gperf"
+#line 237 "rgbtab.gperf"
     {"gray68", 0xadadad, 145, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 346 "rgbtab.gperf"
+#line 347 "rgbtab.gperf"
     {"grey70", 0xb3b3b3, 249, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2030,7 +2030,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 224 "rgbtab.gperf"
+#line 227 "rgbtab.gperf"
     {"gray58", 0x949494, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2056,14 +2056,14 @@ colorname_lookup(register const char *str, register size_t len)
 #line 147 "rgbtab.gperf"
     {"dodgerblue4", 0x104e8b, 24, 4},
     {"", 0, 0, 0},
-#line 691 "rgbtab.gperf"
+#line 787 "rgbtab.gperf"
     {"xterm110", 0x87afd7, 110, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 467 "rgbtab.gperf"
-    {"magenta", 0xff00ff, 13, 261},
-#line 802 "rgbtab.gperf"
+    {"magenta", 0xff00ff, 201, 261},
+#line 887 "rgbtab.gperf"
     {"xterm210", 0xff8787, 210, 261},
 #line 96 "rgbtab.gperf"
     {"darkolivegreen", 0x556b2f, 239, 256},
@@ -2075,7 +2075,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 620 "rgbtab.gperf"
     {"slategray2", 0xb9d3ee, 153, 263},
-#line 335 "rgbtab.gperf"
+#line 337 "rgbtab.gperf"
     {"grey60", 0x999999, 246, 7},
 #line 479 "rgbtab.gperf"
     {"mediumorchid", 0xba55d3, 134, 261},
@@ -2085,14 +2085,14 @@ colorname_lookup(register const char *str, register size_t len)
 #line 146 "rgbtab.gperf"
     {"dodgerblue3", 0x1874cd, 32, 260},
     {"", 0, 0, 0},
-#line 680 "rgbtab.gperf"
+#line 777 "rgbtab.gperf"
     {"xterm100", 0x878700, 100, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 476 "rgbtab.gperf"
     {"maroon4", 0x8b1c62, 89, 1},
-#line 791 "rgbtab.gperf"
+#line 877 "rgbtab.gperf"
     {"xterm200", 0xff00d7, 200, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2101,35 +2101,35 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 324 "rgbtab.gperf"
+#line 327 "rgbtab.gperf"
     {"grey50", 0x7f7f7f, 8, 256},
-#line 280 "rgbtab.gperf"
-    {"grey100", 0xffffff, 15, 263},
+#line 377 "rgbtab.gperf"
+    {"grey100", 0xffffff, 231, 263},
     {"", 0, 0, 0},
 #line 388 "rgbtab.gperf"
     {"indianred", 0xcd5c5c, 167, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 927 "rgbtab.gperf"
+#line 771 "rgbtab.gperf"
     {"xterm94", 0x875f00, 94, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 37 "rgbtab.gperf"
-    {"blue", 0x0000ff, 12, 260},
+    {"blue", 0x0000ff, 21, 260},
 #line 38 "rgbtab.gperf"
-    {"blue1", 0x0000ff, 12, 260},
+    {"blue1", 0x0000ff, 21, 260},
 #line 30 "rgbtab.gperf"
     {"bisque", 0xffe4c4, 224, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 873 "rgbtab.gperf"
+#line 722 "rgbtab.gperf"
     {"xterm45", 0x00d7ff, 45, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 322 "rgbtab.gperf"
+#line 326 "rgbtab.gperf"
     {"grey49", 0x7d7d7d, 8, 256},
     {"", 0, 0, 0},
 #line 39 "rgbtab.gperf"
@@ -2138,7 +2138,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightcyan", 0xe0ffff, 195, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 916 "rgbtab.gperf"
+#line 761 "rgbtab.gperf"
     {"xterm84", 0x5fff87, 84, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2151,19 +2151,19 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 862 "rgbtab.gperf"
+#line 712 "rgbtab.gperf"
     {"xterm35", 0x00af5f, 35, 258},
     {"", 0, 0, 0},
 #line 32 "rgbtab.gperf"
     {"bisque2", 0xeed5b7, 223, 263},
-#line 311 "rgbtab.gperf"
+#line 316 "rgbtab.gperf"
     {"grey39", 0x636363, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 926 "rgbtab.gperf"
+#line 770 "rgbtab.gperf"
     {"xterm93", 0x8700ff, 93, 261},
     {"", 0, 0, 0},
 #line 618 "rgbtab.gperf"
@@ -2182,14 +2182,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 594 "rgbtab.gperf"
     {"seagreen2", 0x4eee94, 84, 258},
-#line 321 "rgbtab.gperf"
+#line 325 "rgbtab.gperf"
     {"grey48", 0x7a7a7a, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 915 "rgbtab.gperf"
+#line 760 "rgbtab.gperf"
     {"xterm83", 0x5fff5f, 83, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2205,7 +2205,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 310 "rgbtab.gperf"
+#line 315 "rgbtab.gperf"
     {"grey38", 0x616161, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2222,7 +2222,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 269 "rgbtab.gperf"
+#line 268 "rgbtab.gperf"
     {"gray99", 0xfcfcfc, 15, 263},
     {"", 0, 0, 0},
 #line 501 "rgbtab.gperf"
@@ -2236,7 +2236,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 876 "rgbtab.gperf"
+#line 725 "rgbtab.gperf"
     {"xterm48", 0x00ff87, 48, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2260,7 +2260,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 865 "rgbtab.gperf"
+#line 715 "rgbtab.gperf"
     {"xterm38", 0x00afd7, 38, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2270,7 +2270,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 268 "rgbtab.gperf"
+#line 267 "rgbtab.gperf"
     {"gray98", 0xfafafa, 15, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2303,7 +2303,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 206 "rgbtab.gperf"
+#line 210 "rgbtab.gperf"
     {"gray41", 0x696969, 242, 7},
     {"", 0, 0, 0},
 #line 118 "rgbtab.gperf"
@@ -2315,51 +2315,51 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 207 "rgbtab.gperf"
+#line 211 "rgbtab.gperf"
     {"gray42", 0x6b6b6b, 242, 7},
 #line 384 "rgbtab.gperf"
     {"hotpink1", 0xff6eb4, 205, 261},
-#line 724 "rgbtab.gperf"
+#line 817 "rgbtab.gperf"
     {"xterm140", 0xaf87d7, 140, 261},
     {"", 0, 0, 0},
 #line 627 "rgbtab.gperf"
     {"slategrey4", 0x6c7b8b, 66, 2},
     {"", 0, 0, 0},
-#line 747 "rgbtab.gperf"
+#line 838 "rgbtab.gperf"
     {"xterm161", 0xd7005f, 161, 257},
-#line 835 "rgbtab.gperf"
+#line 917 "rgbtab.gperf"
     {"xterm240", 0x585858, 240, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 195 "rgbtab.gperf"
+#line 200 "rgbtab.gperf"
     {"gray31", 0x4f4f4f, 239, 256},
 #line 385 "rgbtab.gperf"
     {"hotpink2", 0xee6aa7, 205, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 368 "rgbtab.gperf"
+#line 367 "rgbtab.gperf"
     {"grey90", 0xe5e5e5, 254, 263},
-#line 748 "rgbtab.gperf"
+#line 839 "rgbtab.gperf"
     {"xterm162", 0xd70087, 162, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 196 "rgbtab.gperf"
+#line 201 "rgbtab.gperf"
     {"gray32", 0x525252, 239, 256},
     {"", 0, 0, 0},
-#line 713 "rgbtab.gperf"
+#line 807 "rgbtab.gperf"
     {"xterm130", 0xaf5f00, 130, 257},
     {"", 0, 0, 0},
 #line 626 "rgbtab.gperf"
     {"slategrey3", 0x9fb6cd, 146, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 824 "rgbtab.gperf"
+#line 907 "rgbtab.gperf"
     {"xterm230", 0xffffd7, 230, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 212 "rgbtab.gperf"
+#line 216 "rgbtab.gperf"
     {"gray47", 0x787878, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2373,20 +2373,20 @@ colorname_lookup(register const char *str, register size_t len)
 #line 525 "rgbtab.gperf"
     {"orangered4", 0x8b2500, 88, 1},
     {"", 0, 0, 0},
-#line 868 "rgbtab.gperf"
+#line 717 "rgbtab.gperf"
     {"xterm40", 0x00d700, 40, 258},
 #line 490 "rgbtab.gperf"
     {"mediumslateblue", 0x7b68ee, 99, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 753 "rgbtab.gperf"
+#line 844 "rgbtab.gperf"
     {"xterm167", 0xd75f5f, 167, 257},
 #line 85 "rgbtab.gperf"
     {"darkcyan", 0x008b8b, 30, 6},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 201 "rgbtab.gperf"
+#line 206 "rgbtab.gperf"
     {"gray37", 0x5e5e5e, 59, 2},
     {"", 0, 0, 0},
 #line 559 "rgbtab.gperf"
@@ -2401,7 +2401,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 524 "rgbtab.gperf"
     {"orangered3", 0xcd3700, 166, 257},
     {"", 0, 0, 0},
-#line 857 "rgbtab.gperf"
+#line 707 "rgbtab.gperf"
     {"xterm30", 0x008787, 30, 6},
     {"", 0, 0, 0},
 #line 561 "rgbtab.gperf"
@@ -2418,17 +2418,17 @@ colorname_lookup(register const char *str, register size_t len)
 #line 120 "rgbtab.gperf"
     {"darkslategray1", 0x97ffff, 123, 263},
     {"", 0, 0, 0},
-#line 745 "rgbtab.gperf"
+#line 693 "rgbtab.gperf"
     {"xterm16", 0x000000, 16, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 121 "rgbtab.gperf"
     {"darkslategray2", 0x8deeee, 123, 263},
     {"", 0, 0, 0},
-#line 852 "rgbtab.gperf"
+#line 703 "rgbtab.gperf"
     {"xterm26", 0x005fd7, 26, 260},
     {"", 0, 0, 0},
-#line 768 "rgbtab.gperf"
+#line 857 "rgbtab.gperf"
     {"xterm180", 0xd7af87, 180, 259},
     {"", 0, 0, 0},
 #line 533 "rgbtab.gperf"
@@ -2445,10 +2445,10 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 907 "rgbtab.gperf"
+#line 753 "rgbtab.gperf"
     {"xterm76", 0x5fd700, 76, 258},
     {"", 0, 0, 0},
-#line 757 "rgbtab.gperf"
+#line 847 "rgbtab.gperf"
     {"xterm170", 0xd75fd7, 170, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2483,7 +2483,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 211 "rgbtab.gperf"
+#line 215 "rgbtab.gperf"
     {"gray46", 0x757575, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2503,16 +2503,16 @@ colorname_lookup(register const char *str, register size_t len)
     {"steelblue2", 0x5cacee, 75, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 896 "rgbtab.gperf"
+#line 743 "rgbtab.gperf"
     {"xterm66", 0x5f8787, 66, 2},
-#line 752 "rgbtab.gperf"
+#line 843 "rgbtab.gperf"
     {"xterm166", 0xd75f00, 166, 257},
 #line 119 "rgbtab.gperf"
     {"darkslategray", 0x2f4f4f, 238, 256},
 #line 451 "rgbtab.gperf"
     {"lightslateblue", 0x8470ff, 99, 261},
     {"", 0, 0, 0},
-#line 200 "rgbtab.gperf"
+#line 205 "rgbtab.gperf"
     {"gray36", 0x5c5c5c, 59, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2530,13 +2530,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 885 "rgbtab.gperf"
+#line 733 "rgbtab.gperf"
     {"xterm56", 0x5f00d7, 56, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 210 "rgbtab.gperf"
+#line 214 "rgbtab.gperf"
     {"gray45", 0x737373, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2549,46 +2549,46 @@ colorname_lookup(register const char *str, register size_t len)
     {"peru", 0xcd853f, 173, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 867 "rgbtab.gperf"
+#line 681 "rgbtab.gperf"
     {"xterm4", 0x000080, 4, 4},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 751 "rgbtab.gperf"
+#line 842 "rgbtab.gperf"
     {"xterm165", 0xd700ff, 165, 261},
     {"", 0, 0, 0},
 #line 532 "rgbtab.gperf"
     {"palegreen", 0x98fb98, 120, 258},
     {"", 0, 0, 0},
-#line 199 "rgbtab.gperf"
+#line 204 "rgbtab.gperf"
     {"gray35", 0x595959, 240, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 312 "rgbtab.gperf"
+#line 281 "rgbtab.gperf"
     {"grey4", 0x0a0a0a, 232, 0},
-#line 284 "rgbtab.gperf"
+#line 291 "rgbtab.gperf"
     {"grey14", 0x242424, 235, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 162 "rgbtab.gperf"
     {"gold4", 0x8b7500, 3, 3},
-#line 295 "rgbtab.gperf"
+#line 301 "rgbtab.gperf"
     {"grey24", 0x3d3d3d, 237, 256},
     {"", 0, 0, 0},
-#line 706 "rgbtab.gperf"
+#line 801 "rgbtab.gperf"
     {"xterm124", 0xaf0000, 124, 1},
-#line 735 "rgbtab.gperf"
+#line 827 "rgbtab.gperf"
     {"xterm150", 0xafd787, 150, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 817 "rgbtab.gperf"
+#line 901 "rgbtab.gperf"
     {"xterm224", 0xffd7d7, 224, 263},
-#line 846 "rgbtab.gperf"
+#line 927 "rgbtab.gperf"
     {"xterm250", 0xbcbcbc, 250, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2599,14 +2599,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 632 "rgbtab.gperf"
     {"snow4", 0x8b8989, 245, 7},
-#line 350 "rgbtab.gperf"
+#line 351 "rgbtab.gperf"
     {"grey74", 0xbdbdbd, 250, 263},
     {"", 0, 0, 0},
 #line 417 "rgbtab.gperf"
     {"lightblue2", 0xb2dfee, 153, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 856 "rgbtab.gperf"
+#line 680 "rgbtab.gperf"
     {"xterm3", 0x808000, 3, 3},
 #line 502 "rgbtab.gperf"
     {"navajowhite", 0xffdead, 223, 263},
@@ -2624,25 +2624,25 @@ colorname_lookup(register const char *str, register size_t len)
 #line 504 "rgbtab.gperf"
     {"navajowhite2", 0xeecfa1, 223, 263},
     {"", 0, 0, 0},
-#line 301 "rgbtab.gperf"
+#line 280 "rgbtab.gperf"
     {"grey3", 0x080808, 232, 0},
-#line 283 "rgbtab.gperf"
+#line 290 "rgbtab.gperf"
     {"grey13", 0x212121, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 161 "rgbtab.gperf"
     {"gold3", 0xcdad00, 178, 3},
-#line 294 "rgbtab.gperf"
+#line 300 "rgbtab.gperf"
     {"grey23", 0x3b3b3b, 237, 256},
     {"", 0, 0, 0},
-#line 705 "rgbtab.gperf"
+#line 800 "rgbtab.gperf"
     {"xterm123", 0x87ffff, 123, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 816 "rgbtab.gperf"
+#line 900 "rgbtab.gperf"
     {"xterm223", 0xffd7af, 223, 263},
     {"", 0, 0, 0},
 #line 669 "rgbtab.gperf"
@@ -2650,15 +2650,15 @@ colorname_lookup(register const char *str, register size_t len)
 #line 674 "rgbtab.gperf"
     {"wheat4", 0x8b7e66, 101, 2},
     {"", 0, 0, 0},
-#line 695 "rgbtab.gperf"
+#line 791 "rgbtab.gperf"
     {"xterm114", 0x87d787, 114, 258},
     {"", 0, 0, 0},
 #line 631 "rgbtab.gperf"
     {"snow3", 0xcdc9c9, 251, 263},
-#line 349 "rgbtab.gperf"
+#line 350 "rgbtab.gperf"
     {"grey73", 0xbababa, 250, 263},
     {"", 0, 0, 0},
-#line 806 "rgbtab.gperf"
+#line 891 "rgbtab.gperf"
     {"xterm214", 0xffaf00, 214, 259},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2667,7 +2667,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 339 "rgbtab.gperf"
+#line 341 "rgbtab.gperf"
     {"grey64", 0xa3a3a3, 247, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2676,13 +2676,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"violetred3", 0xcd3278, 168, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 684 "rgbtab.gperf"
+#line 781 "rgbtab.gperf"
     {"xterm104", 0x8787d7, 104, 260},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 795 "rgbtab.gperf"
+#line 881 "rgbtab.gperf"
     {"xterm204", 0xff5f87, 204, 257},
 #line 128 "rgbtab.gperf"
     {"darkslategrey4", 0x528b8b, 66, 2},
@@ -2692,7 +2692,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 328 "rgbtab.gperf"
+#line 331 "rgbtab.gperf"
     {"grey54", 0x8a8a8a, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2701,14 +2701,14 @@ colorname_lookup(register const char *str, register size_t len)
 #line 673 "rgbtab.gperf"
     {"wheat3", 0xcdba96, 180, 259},
     {"", 0, 0, 0},
-#line 694 "rgbtab.gperf"
+#line 790 "rgbtab.gperf"
     {"xterm113", 0x87d75f, 113, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 531 "rgbtab.gperf"
     {"palegoldenrod", 0xeee8aa, 223, 263},
-#line 805 "rgbtab.gperf"
+#line 890 "rgbtab.gperf"
     {"xterm213", 0xff87ff, 213, 261},
 #line 127 "rgbtab.gperf"
     {"darkslategrey3", 0x79cdcd, 116, 262},
@@ -2718,10 +2718,10 @@ colorname_lookup(register const char *str, register size_t len)
     {"green4", 0x008b00, 28, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 877 "rgbtab.gperf"
+#line 726 "rgbtab.gperf"
     {"xterm49", 0x00ffaf, 49, 262},
     {"", 0, 0, 0},
-#line 338 "rgbtab.gperf"
+#line 340 "rgbtab.gperf"
     {"grey63", 0xa1a1a1, 247, 7},
 #line 520 "rgbtab.gperf"
     {"orange4", 0x8b5a00, 94, 2},
@@ -2730,13 +2730,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 683 "rgbtab.gperf"
+#line 780 "rgbtab.gperf"
     {"xterm103", 0x8787af, 103, 6},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 794 "rgbtab.gperf"
+#line 880 "rgbtab.gperf"
     {"xterm203", 0xff5f5f, 203, 257},
     {"", 0, 0, 0},
 #line 662 "rgbtab.gperf"
@@ -2744,10 +2744,10 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 866 "rgbtab.gperf"
+#line 716 "rgbtab.gperf"
     {"xterm39", 0x00afff, 39, 260},
     {"", 0, 0, 0},
-#line 327 "rgbtab.gperf"
+#line 330 "rgbtab.gperf"
     {"grey53", 0x878787, 102, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2790,7 +2790,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 89 "rgbtab.gperf"
     {"darkgoldenrod3", 0xcd950c, 172, 3},
     {"", 0, 0, 0},
-#line 929 "rgbtab.gperf"
+#line 773 "rgbtab.gperf"
     {"xterm96", 0x875f87, 96, 5},
     {"", 0, 0, 0},
 #line 52 "rgbtab.gperf"
@@ -2816,7 +2816,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"rosybrown4", 0x8b6969, 95, 1},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 918 "rgbtab.gperf"
+#line 763 "rgbtab.gperf"
     {"xterm86", 0x5fffd7, 86, 262},
     {"", 0, 0, 0},
 #line 51 "rgbtab.gperf"
@@ -2897,15 +2897,15 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 169 "rgbtab.gperf"
-    {"gray0", 0x000000, 0, 0},
-#line 171 "rgbtab.gperf"
+    {"gray0", 0x000000, 16, 0},
+#line 179 "rgbtab.gperf"
     {"gray10", 0x1a1a1a, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 405 "rgbtab.gperf"
     {"lavenderblush1", 0xfff0f5, 15, 263},
-#line 183 "rgbtab.gperf"
+#line 189 "rgbtab.gperf"
     {"gray20", 0x333333, 236, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2924,17 +2924,17 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 238 "rgbtab.gperf"
+#line 239 "rgbtab.gperf"
     {"gray70", 0xb3b3b3, 249, 263},
-#line 872 "rgbtab.gperf"
+#line 721 "rgbtab.gperf"
     {"xterm44", 0x00d7d7, 44, 262},
-#line 728 "rgbtab.gperf"
+#line 821 "rgbtab.gperf"
     {"xterm144", 0xafaf87, 144, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 839 "rgbtab.gperf"
+#line 921 "rgbtab.gperf"
     {"xterm244", 0x808080, 244, 7},
 #line 18 "rgbtab.gperf"
     {"aqua", 0x00ffff, 14, 262},
@@ -2943,9 +2943,9 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 779 "rgbtab.gperf"
+#line 867 "rgbtab.gperf"
     {"xterm190", 0xd7ff00, 190, 259},
-#line 372 "rgbtab.gperf"
+#line 371 "rgbtab.gperf"
     {"grey94", 0xf0f0f0, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2953,16 +2953,16 @@ colorname_lookup(register const char *str, register size_t len)
     {"seashell4", 0x8b8682, 102, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 861 "rgbtab.gperf"
+#line 711 "rgbtab.gperf"
     {"xterm34", 0x00af00, 34, 258},
-#line 717 "rgbtab.gperf"
+#line 811 "rgbtab.gperf"
     {"xterm134", 0xaf5fd7, 134, 261},
     {"", 0, 0, 0},
 #line 515 "rgbtab.gperf"
     {"olivedrab4", 0x698b22, 64, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 828 "rgbtab.gperf"
+#line 911 "rgbtab.gperf"
     {"xterm234", 0x1c1c1c, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -2980,26 +2980,26 @@ colorname_lookup(register const char *str, register size_t len)
 #line 67 "rgbtab.gperf"
     {"chocolate4", 0x8b4513, 94, 2},
     {"", 0, 0, 0},
-#line 871 "rgbtab.gperf"
+#line 720 "rgbtab.gperf"
     {"xterm43", 0x00d7af, 43, 262},
-#line 727 "rgbtab.gperf"
+#line 820 "rgbtab.gperf"
     {"xterm143", 0xafaf5f, 143, 3},
     {"", 0, 0, 0},
 #line 514 "rgbtab.gperf"
     {"olivedrab3", 0x9acd32, 113, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 838 "rgbtab.gperf"
+#line 920 "rgbtab.gperf"
     {"xterm243", 0x767676, 243, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 227 "rgbtab.gperf"
+#line 229 "rgbtab.gperf"
     {"gray60", 0x999999, 246, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 371 "rgbtab.gperf"
+#line 370 "rgbtab.gperf"
     {"grey93", 0xededed, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3007,22 +3007,22 @@ colorname_lookup(register const char *str, register size_t len)
 #line 66 "rgbtab.gperf"
     {"chocolate3", 0xcd661d, 166, 257},
     {"", 0, 0, 0},
-#line 860 "rgbtab.gperf"
+#line 710 "rgbtab.gperf"
     {"xterm33", 0x0087ff, 33, 260},
-#line 716 "rgbtab.gperf"
+#line 810 "rgbtab.gperf"
     {"xterm133", 0xaf5faf, 133, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 827 "rgbtab.gperf"
+#line 910 "rgbtab.gperf"
     {"xterm233", 0x121212, 233, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 216 "rgbtab.gperf"
+#line 219 "rgbtab.gperf"
     {"gray50", 0x7f7f7f, 8, 256},
-#line 172 "rgbtab.gperf"
-    {"gray100", 0xffffff, 15, 263},
+#line 269 "rgbtab.gperf"
+    {"gray100", 0xffffff, 231, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3034,7 +3034,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 772 "rgbtab.gperf"
+#line 861 "rgbtab.gperf"
     {"xterm184", 0xd7d700, 184, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3043,7 +3043,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 214 "rgbtab.gperf"
+#line 218 "rgbtab.gperf"
     {"gray49", 0x7d7d7d, 8, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3052,7 +3052,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"indianred4", 0x8b3a3a, 95, 1},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 761 "rgbtab.gperf"
+#line 851 "rgbtab.gperf"
     {"xterm174", 0xd78787, 174, 3},
 #line 439 "rgbtab.gperf"
     {"lightpink4", 0x8b5f65, 95, 1},
@@ -3065,12 +3065,12 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 397 "rgbtab.gperf"
     {"ivory4", 0x8b8b83, 102, 2},
-#line 755 "rgbtab.gperf"
+#line 846 "rgbtab.gperf"
     {"xterm169", 0xd75faf, 169, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 203 "rgbtab.gperf"
+#line 208 "rgbtab.gperf"
     {"gray39", 0x636363, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3085,7 +3085,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 771 "rgbtab.gperf"
+#line 860 "rgbtab.gperf"
     {"xterm183", 0xd7afff, 183, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3097,7 +3097,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 75 "rgbtab.gperf"
     {"cornsilk1", 0xfff8dc, 230, 263},
     {"", 0, 0, 0},
-#line 213 "rgbtab.gperf"
+#line 217 "rgbtab.gperf"
     {"gray48", 0x7a7a7a, 243, 7},
     {"", 0, 0, 0},
 #line 150 "rgbtab.gperf"
@@ -3107,7 +3107,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 760 "rgbtab.gperf"
+#line 850 "rgbtab.gperf"
     {"xterm173", 0xd7875f, 173, 3},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3120,13 +3120,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"darkolivegreen4", 0x6e8b3d, 65, 2},
 #line 396 "rgbtab.gperf"
     {"ivory3", 0xcdcdc1, 251, 263},
-#line 754 "rgbtab.gperf"
+#line 845 "rgbtab.gperf"
     {"xterm168", 0xd75f87, 168, 257},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
 #line 398 "rgbtab.gperf"
     {"khaki", 0xf0e68c, 222, 259},
-#line 202 "rgbtab.gperf"
+#line 207 "rgbtab.gperf"
     {"gray38", 0x616161, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3165,7 +3165,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightpink", 0xffb6c1, 217, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 313 "rgbtab.gperf"
+#line 317 "rgbtab.gperf"
     {"grey40", 0x666666, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3189,14 +3189,14 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 486 "rgbtab.gperf"
     {"mediumpurple2", 0x9f79ee, 141, 261},
-#line 739 "rgbtab.gperf"
+#line 831 "rgbtab.gperf"
     {"xterm154", 0xafff00, 154, 259},
     {"", 0, 0, 0},
-#line 302 "rgbtab.gperf"
+#line 307 "rgbtab.gperf"
     {"grey30", 0x4d4d4d, 239, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 850 "rgbtab.gperf"
+#line 931 "rgbtab.gperf"
     {"xterm254", 0xe4e4e4, 254, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3234,13 +3234,13 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 738 "rgbtab.gperf"
+#line 830 "rgbtab.gperf"
     {"xterm153", 0xafd7ff, 153, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 849 "rgbtab.gperf"
+#line 930 "rgbtab.gperf"
     {"xterm253", 0xdadada, 253, 263},
 #line 622 "rgbtab.gperf"
     {"slategray4", 0x6c7b8b, 66, 2},
@@ -3257,7 +3257,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 260 "rgbtab.gperf"
+#line 259 "rgbtab.gperf"
     {"gray90", 0xe5e5e5, 254, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3456,15 +3456,15 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 204 "rgbtab.gperf"
+#line 173 "rgbtab.gperf"
     {"gray4", 0x0a0a0a, 232, 0},
-#line 176 "rgbtab.gperf"
+#line 183 "rgbtab.gperf"
     {"gray14", 0x242424, 235, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 187 "rgbtab.gperf"
+#line 193 "rgbtab.gperf"
     {"gray24", 0x3d3d3d, 237, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3483,7 +3483,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"cadetblue1", 0x98f5ff, 123, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 242 "rgbtab.gperf"
+#line 243 "rgbtab.gperf"
     {"gray74", 0xbdbdbd, 250, 263},
     {"", 0, 0, 0},
 #line 55 "rgbtab.gperf"
@@ -3501,21 +3501,21 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 783 "rgbtab.gperf"
+#line 871 "rgbtab.gperf"
     {"xterm194", 0xd7ffd7, 194, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 193 "rgbtab.gperf"
+#line 172 "rgbtab.gperf"
     {"gray3", 0x080808, 232, 0},
-#line 175 "rgbtab.gperf"
+#line 182 "rgbtab.gperf"
     {"gray13", 0x212121, 234, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 186 "rgbtab.gperf"
+#line 192 "rgbtab.gperf"
     {"gray23", 0x3b3b3b, 237, 256},
 #line 542 "rgbtab.gperf"
     {"palevioletred", 0xdb7093, 168, 257},
@@ -3533,7 +3533,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 241 "rgbtab.gperf"
+#line 242 "rgbtab.gperf"
     {"gray73", 0xbababa, 250, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3545,12 +3545,12 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightyellow3", 0xcdcdb4, 187, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 231 "rgbtab.gperf"
+#line 233 "rgbtab.gperf"
     {"gray64", 0xa3a3a3, 247, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 782 "rgbtab.gperf"
+#line 870 "rgbtab.gperf"
     {"xterm193", 0xd7ffaf, 193, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3564,13 +3564,13 @@ colorname_lookup(register const char *str, register size_t len)
 #line 123 "rgbtab.gperf"
     {"darkslategray4", 0x528b8b, 66, 2},
     {"", 0, 0, 0},
-#line 874 "rgbtab.gperf"
+#line 723 "rgbtab.gperf"
     {"xterm46", 0x00ff00, 46, 258},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 220 "rgbtab.gperf"
+#line 223 "rgbtab.gperf"
     {"gray54", 0x8a8a8a, 245, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3589,13 +3589,13 @@ colorname_lookup(register const char *str, register size_t len)
 #line 122 "rgbtab.gperf"
     {"darkslategray3", 0x79cdcd, 116, 262},
     {"", 0, 0, 0},
-#line 863 "rgbtab.gperf"
+#line 713 "rgbtab.gperf"
     {"xterm36", 0x00af87, 36, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 230 "rgbtab.gperf"
+#line 232 "rgbtab.gperf"
     {"gray63", 0xa1a1a1, 247, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3618,7 +3618,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
 #line 34 "rgbtab.gperf"
     {"bisque4", 0x8b7d6b, 101, 2},
-#line 219 "rgbtab.gperf"
+#line 222 "rgbtab.gperf"
     {"gray53", 0x878787, 102, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3701,7 +3701,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 317 "rgbtab.gperf"
+#line 321 "rgbtab.gperf"
     {"grey44", 0x707070, 242, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3725,7 +3725,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightblue4", 0x68838b, 66, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 306 "rgbtab.gperf"
+#line 311 "rgbtab.gperf"
     {"grey34", 0x575757, 240, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3748,7 +3748,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lightblue3", 0x9ac0cd, 110, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 316 "rgbtab.gperf"
+#line 320 "rgbtab.gperf"
     {"grey43", 0x6e6e6e, 242, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3770,7 +3770,7 @@ colorname_lookup(register const char *str, register size_t len)
 #line 653 "rgbtab.gperf"
     {"thistle4", 0x8b7b8b, 102, 2},
     {"", 0, 0, 0},
-#line 305 "rgbtab.gperf"
+#line 310 "rgbtab.gperf"
     {"grey33", 0x545454, 240, 256},
     {"", 0, 0, 0},
 #line 117 "rgbtab.gperf"
@@ -3787,7 +3787,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 264 "rgbtab.gperf"
+#line 263 "rgbtab.gperf"
     {"gray94", 0xf0f0f0, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3832,7 +3832,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"lemonchiffon4", 0x8b8970, 101, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 263 "rgbtab.gperf"
+#line 262 "rgbtab.gperf"
     {"gray93", 0xededed, 255, 263},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3971,7 +3971,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 205 "rgbtab.gperf"
+#line 209 "rgbtab.gperf"
     {"gray40", 0x666666, 241, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -3990,12 +3990,12 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 746 "rgbtab.gperf"
+#line 837 "rgbtab.gperf"
     {"xterm160", 0xd70000, 160, 1},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 194 "rgbtab.gperf"
+#line 199 "rgbtab.gperf"
     {"gray30", 0x4d4d4d, 239, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -4465,7 +4465,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 209 "rgbtab.gperf"
+#line 213 "rgbtab.gperf"
     {"gray44", 0x707070, 242, 7},
     {"", 0, 0, 0},
 #line 549 "rgbtab.gperf"
@@ -4485,17 +4485,17 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 750 "rgbtab.gperf"
+#line 841 "rgbtab.gperf"
     {"xterm164", 0xd700d7, 164, 261},
 #line 57 "rgbtab.gperf"
     {"cadetblue4", 0x53868b, 66, 2},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 198 "rgbtab.gperf"
+#line 203 "rgbtab.gperf"
     {"gray34", 0x575757, 240, 256},
     {"", 0, 0, 0},
 #line 35 "rgbtab.gperf"
-    {"black", 0x000000, 0, 0},
+    {"black", 0x000000, 16, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -4514,7 +4514,7 @@ colorname_lookup(register const char *str, register size_t len)
     {"cadetblue3", 0x7ac5cd, 116, 262},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 208 "rgbtab.gperf"
+#line 212 "rgbtab.gperf"
     {"gray43", 0x6e6e6e, 242, 7},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
@@ -4532,12 +4532,12 @@ colorname_lookup(register const char *str, register size_t len)
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 749 "rgbtab.gperf"
+#line 840 "rgbtab.gperf"
     {"xterm163", 0xd700af, 163, 261},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
     {"", 0, 0, 0},
-#line 197 "rgbtab.gperf"
+#line 202 "rgbtab.gperf"
     {"gray33", 0x545454, 240, 256},
     {"", 0, 0, 0},
     {"", 0, 0, 0},

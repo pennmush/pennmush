@@ -450,7 +450,7 @@ set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c
   services.c set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c
   strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c
-  version.c wait.c warnings.c wild.c wiz.c)
+  version.c wait.c warnings.c websock.c wild.c wiz.c)
 
 add_executable(netmush ${SRC_FILES})
 target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")

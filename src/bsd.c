@@ -3784,7 +3784,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS /* */
+#ifdef WITHOUT_WEBSOCKETS
       /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
 #endif /* WITHOUT_WEBSOCKETS */
@@ -3794,7 +3794,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         q++; /* For clients that work */
     } else if (*q == '\n') {
       *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS /* */
+#ifdef WITHOUT_WEBSOCKETS
       /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
 #endif /* WITHOUT_WEBSOCKETS */
@@ -4271,6 +4271,7 @@ check_connect(DESC *d, const char *msg)
 
   parse_connect(msg, command, user, password);
   
+  /* fail quietly if command is an empty string */
   if (strlen(command) < 1) return 1;
 
   if (!check_fails(d->ip)) {

@@ -14,7 +14,6 @@
 #define WEBSOCKET_CHANNEL_JSON ('j')
 #define WEBSOCKET_CHANNEL_HTML ('h')
 #define WEBSOCKET_CHANNEL_PUEBLO ('p')
-#define WEBSOCKET_CHANNEL_BINARY ('b')
 #define WEBSOCKET_CHANNEL_PROMPT ('>')
 
 /* notify.c */
@@ -30,10 +29,8 @@ int markup_websocket(
   char *buff, char **bp, char *data, int datalen, char *alt, int altlen,
   char channel
 );
-int encode_websocket_binary(char *buff, char **bp, const char *src, int len);
 
 FUNCTION_PROTO(fun_websocket_json);
 FUNCTION_PROTO(fun_websocket_html);
-FUNCTION_PROTO(fun_websocket_binary);
 
 #endif /* undef MUSH_WEBSOCK_H */

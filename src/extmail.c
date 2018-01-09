@@ -763,7 +763,7 @@ do_mail_list(dbref player, const char *msglist)
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
         /* list it */
-        if (SUPPORT_PUEBLO)
+        if (SUPPORT_HTML)
           notify_noenter(player,
                          tprintf("%c%cA XCH_CMD=\"@mail/read %d:%d\" "
                                  "XCH_HINT=\"Read message %d in folder %d\"%c",
@@ -781,7 +781,7 @@ do_mail_list(dbref player, const char *msglist)
                          : ' '),
                       sender, 30, subj,
                       mail_list_time(show_time(mp->time, 0), 1));
-        if (SUPPORT_PUEBLO)
+        if (SUPPORT_HTML)
           notify_noenter(player,
                          tprintf("%c%c/A%c", TAG_START, MARKUP_HTML, TAG_END));
       }
@@ -966,7 +966,7 @@ do_mail_reviewlist(dbref player, dbref target)
     if (mail_match(player, mp, ms, i)) {
       /* list it */
       i++;
-      if (SUPPORT_PUEBLO)
+      if (SUPPORT_HTML)
         notify_noenter(player,
                        tprintf("%c%cA XCH_CMD=\"@mail/review %s=%d\" "
                                "XCH_HINT=\"Read message %d sent to %s\"%c",
@@ -989,7 +989,7 @@ do_mail_reviewlist(dbref player, dbref target)
                           ? '*'
                           : ' '),
                     nbuff, 30, subj, mail_list_time(show_time(mp->time, 0), 1));
-      if (SUPPORT_PUEBLO)
+      if (SUPPORT_HTML)
         notify_noenter(player,
                        tprintf("%c%c/A%c", TAG_START, MARKUP_HTML, TAG_END));
     }

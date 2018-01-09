@@ -422,6 +422,8 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define START_QUOTA (options.starting_quota)
 #define LOG_WIPE_PASSWD (options.log_wipe_passwd)
 #define SUPPORT_PUEBLO (options.support_pueblo)
+#define SUPPORT_WEBSOCKETS (options.use_ws)
+#define SUPPORT_HTML (SUPPORT_PUEBLO || SUPPORT_WEBSOCKETS)
 
 #define QUEUE_QUOTA (options.player_queue_limit)
 

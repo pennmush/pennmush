@@ -4270,6 +4270,9 @@ check_connect(DESC *d, const char *msg)
   dbref player;
 
   parse_connect(msg, command, user, password);
+  
+  /* fail quietly if command is an empty string */
+  if (strlen(command) < 1) return 1;
 
   if (!check_fails(d->ip)) {
     queue_string_eol(d, T(connect_fail_limit_exceeded));

@@ -174,7 +174,7 @@ complete_handshake(DESC *d)
    * response back from the server before switching, so we're probably OK.
    */
   d->conn_flags &= ~CONN_WEBSOCKETS_REQUEST;
-  d->conn_flags |= CONN_WEBSOCKETS;
+  d->conn_flags |= CONN_WEBSOCKETS | CONN_UTF8;
 
   d->checksum[0] = 4;
 

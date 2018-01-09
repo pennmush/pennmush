@@ -1950,6 +1950,13 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;
+
+  if (d->conn_flags & CONN_UTF8) {
+    int utf8bytes = 0;
+    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
+    b = utf8;
+    n = utf8bytes;
+  }
   
 #ifndef WITHOUT_WEBSOCKETS
   /*
@@ -1961,13 +1968,6 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
     to_websocket_frame(&b, &n, ch);
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
-
-  if (d->conn_flags & CONN_UTF8) {
-    int utf8bytes = 0;
-    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
-    b = utf8;
-    n = utf8bytes;
-  }
 
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing

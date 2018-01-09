@@ -683,9 +683,8 @@ FUNTAB flist[] = {
   {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
 #endif                          /* DEBUG_PENNMUSH */
 #ifndef WITHOUT_WEBSOCKETS
-  {"WSB", fun_websocket_binary, 1, 2, FN_REG},
-  {"WSJ", fun_websocket_json, 1, 2, FN_REG},
-  {"WSH", fun_websocket_html, 1, 2, FN_REG},
+  {"WSJSON", fun_websocket_json, 1, 2, FN_REG},
+  {"WSHTML", fun_websocket_html, 1, 2, FN_REG},
 #endif /* undef WITHOUT_WEBSOCKETS */
   {NULL, NULL, 0, 0, 0}
 };

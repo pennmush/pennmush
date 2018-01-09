@@ -426,14 +426,8 @@ write_message(
   }
 
   /* Write frame header. */
-  if (channel == WEBSOCKET_CHANNEL_BINARY) {
-    op = WS_OP_BINARY;
-    dstlen = srclen;
-  } else {
-    op = WS_OP_TEXT;
-    dstlen = 1 + srclen;
-  }
-
+  op = WS_OP_TEXT;
+  dstlen = 1 + srclen;
   *dst++ = 0x80 | op;
 
   if (dstlen < 126) {
@@ -463,53 +457,6 @@ write_message(
   dst += srclen;
 
   return dst;
-}
-
-static char *
-write_message_encoded(
-	char *dst, char *const dstend,
-	const char *src, const char *const srcend,
-	char channel
-)
-{
-  char decoded[BUFFER_LEN], *wp;
-  int escaped = 0;
-
-  /* Decode source. */
-  for (wp = decoded; src != srcend; ++src) {
-    char ch = (char)*src;
-
-    if (escaped) {
-      switch (ch) {
-      case WEBSOCKET_ESCAPE_NUL:
-        ch = '\0';
-        break;
-
-      case WEBSOCKET_ESCAPE_END:
-        ch = TAG_END;
-        break;
-
-      case WEBSOCKET_ESCAPE_IAC:
-        ch = WEBSOCKET_ESCAPE_IAC;
-        break;
-      }
-
-      escaped = 0;
-    } else if (ch == WEBSOCKET_ESCAPE_IAC) {
-      escaped = 1;
-      continue;
-    }
-
-    if (safe_chr(ch, decoded, &wp)) {
-      /* Not enough buffer space... which shouldn't ever happen... */
-      return dst;
-    }
-  }
-
-  /* Write decoded. */
-  return write_message(
-    dst, dstend, decoded, wp, channel
-  );
 }
 
 void
@@ -574,11 +521,6 @@ to_websocket_frame(const char **bp, int *np, char channel)
           switch (channel) {
           case TAG_END:
             /* Premature end of tag. */
-            break;
-
-          case WEBSOCKET_CHANNEL_BINARY:
-            /* Encoded tag. */
-            dst = write_message_encoded(dst, dstend, tag, end, channel);
             break;
 
           default:
@@ -650,42 +592,6 @@ markup_websocket(
   return 0;
 }
 
-int
-encode_websocket_binary(char *buff, char **bp, const char *src, int len)
-{
-  const char *end;
-  char *saved = *bp;
-
-  for (end = src + len; src != end; ++src) {
-    char ch = *src;
-
-    switch (ch) {
-    case '\0':
-      safe_chr(WEBSOCKET_ESCAPE_IAC, buff, bp);
-      ch = WEBSOCKET_ESCAPE_NUL;
-      break;
-
-    case TAG_END:
-      safe_chr(WEBSOCKET_ESCAPE_IAC, buff, bp);
-      ch = WEBSOCKET_ESCAPE_END;
-      break;
-
-    case WEBSOCKET_ESCAPE_IAC:
-      safe_chr(WEBSOCKET_ESCAPE_IAC, buff, bp);
-      ch = WEBSOCKET_ESCAPE_IAC;
-      break;
-    }
-
-    if (safe_chr(ch, buff, bp)) {
-      /* Not enough space in buffer. */
-      *bp = saved;
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
 static void
 do_fun_markup_websocket(
   char *buff, char **bp, int nargs, char *args[], int arglens[],
@@ -728,155 +634,6 @@ FUNCTION(fun_websocket_html)
 {
   do_fun_markup_websocket(
     buff, bp, nargs, args, arglens, executor, WEBSOCKET_CHANNEL_HTML
-  );
-}
-
-FUNCTION(fun_websocket_binary)
-{
-  char encoded[BUFFER_LEN], bytes[BUFFER_LEN], *wp, *arg0, *arg1;
-  int arglen1;
-
-  if (!Can_Pueblo_Send(executor)) {
-    /* TODO: May want to restrict this to wizards. */
-    safe_str(e_perm, buff, bp);
-    return;
-  }
-
-  /* Convert binary description to raw bytes. */
-  wp = bytes;
-
-  for (arg0 = args[0]; *arg0;) {
-    int nbytes, type, ii;
-    char *end;
-
-    union {
-      char bytes[8];
-      long val;
-      unsigned long uval;
-      float fval;
-      double dval;
-    } tmp;
-
-    /*
-     * Parse type description. Available types restricted to DataView; codes
-     * based on IA-64 C++ ABI.
-     */
-    switch (*arg0++) {
-    case ' ': /* skip space */
-      continue;
-
-    case 'a': /* signed integer (8-bit) */
-      nbytes = 1;
-      type = 0;
-      break;
-
-    case 'h': /* unsigned integer (8-bit) */
-      nbytes = 1;
-      type = 1;
-      break;
-
-    case 's': /* signed integer (16-bit) */
-      nbytes = 2;
-      type = 0;
-      break;
-
-    case 't': /* unsigned integer (16-bit) */
-      nbytes = 2;
-      type = 1;
-      break;
-
-    case 'i': /* signed integer (32-bit) */
-      nbytes = 4;
-      type = 0;
-      break;
-
-    case 'j': /* unsigned integer (32-bit) */
-      nbytes = 4;
-      type = 1;
-      break;
-
-    case 'f': /* floating point (32-bit) */
-      nbytes = 4;
-      type = 2;
-      break;
-
-    case 'd': /* floating point (64-bit) */
-      nbytes = 8;
-      type = 3;
-      break;
-
-    default:
-      /* Invalid type code. */
-      safe_str(e_argrange, buff, bp);
-      return;
-    }
-
-    /* Parse value. Note we won't handle range errors. */
-    switch (type) {
-    case 0: /* signed integer */
-      tmp.val = strtol(arg0, &end, 0);
-      break;
-
-    case 1: /* unsigned integer */
-      tmp.uval = strtoul(arg0, &end, 0);
-      break;
-
-    case 2: /* single precision floating point */
-      tmp.fval = strtod(arg0, &end);
-      break;
-
-    case 3: /* double precision floating point */
-      tmp.dval = strtod(arg0, &end);
-      break;
-    }
-
-    if (arg0 == end) {
-      /* No conversion was performed. */
-      safe_str(e_argrange, buff, bp);
-      return;
-    }
-
-    arg0 = end;
-
-    /* Write bytes. (Little endian, because that's most clients.) */
-    /* TODO: This isn't strictly portable, but should work in many cases. */
-    for (ii = 0; ii < nbytes; ++ii) {
-      char bval;
-
-#ifdef WORDS_BIGENDIAN
-      bval = tmp.bytes[7 - ii];
-#else /* undef WORDS_BIGENDIAN */
-      bval = tmp.bytes[ii];
-#endif /* undef WORDS_BIGENDIAN */
-
-      if (safe_chr(bval, bytes, &wp)) {
-        /* Not enough space in buffer. */
-        return;
-      }
-    }
-  }
-
-  /* Encode raw bytes to escape special characters. */
-  arg0 = wp;
-  wp = encoded;
-  if (encode_websocket_binary(encoded, &wp, bytes, arg0 - bytes)) {
-    /* Not enough space in buffer. */
-    return;
-  }
-
-  *wp = '\0';
-
-  /* Mark up the encoded bytes. */
-  if (nargs > 1) {
-    arg1 = args[1];
-    arglen1 = arglens[1];
-  } else {
-    arg1 = NULL;
-    arglen1 = 0;
-  }
-
-  markup_websocket(
-    buff, bp, encoded, wp - encoded, arg1, arglen1, WEBSOCKET_CHANNEL_BINARY
   );
 }
 

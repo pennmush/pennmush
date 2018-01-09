@@ -654,7 +654,7 @@ make_prefix_str(dbref thing, dbref enactor, const char *msg, char *tbuf1)
 static enum na_type
 msg_to_na(int output_type)
 {
-  if (output_type & MSG_PUEBLO)
+  if (output_type & (MSG_PUEBLO | MSG_WEBSOCKETS))
     output_type &= ~MSG_TELNET;
 
   if (output_type & MSG_XTERM256)

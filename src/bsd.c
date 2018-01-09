@@ -3215,13 +3215,13 @@ FUNCTION(fun_json_query)
   int i;
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("size", args[1])) {
+    if (strcasecmp("size", args[1]) == 0) {
       query_type = JSON_QUERY_SIZE;
-    } else if (string_prefix("exists", args[1])) {
+    } else if (strcasecmp("exists", args[1]) == 0) {
       query_type = JSON_QUERY_EXISTS;
-    } else if (string_prefix("get", args[1])) {
+    } else if (strcasecmp("get", args[1]) == 0) {
       query_type = JSON_QUERY_GET;
-    } else if (string_prefix("unescape", args[1])) {
+    } else if (strcasecmp("unescape", args[1]) == 0) {
       query_type = JSON_QUERY_UNESCAPE;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
@@ -3503,17 +3503,17 @@ FUNCTION(fun_json)
 
   if (!*args[0])
     type = JSON_STR;
-  else if (string_prefix("string", args[0]))
+  else if (strcasecmp("string", args[0]) == 0)
     type = JSON_STR;
-  else if (string_prefix("boolean", args[0]))
+  else if (strcasecmp("boolean", args[0]) == 0)
     type = JSON_BOOL;
-  else if (string_prefix("array", args[0]))
+  else if (strcasecmp("array", args[0]) == 0)
     type = JSON_ARRAY;
-  else if (string_prefix("object", args[0]))
+  else if (strcasecmp("object", args[0]) == 0)
     type = JSON_OBJECT;
-  else if (string_prefix("null", args[0]) && arglens[0] > 2)
+  else if (strcasecmp("null", args[0]) == 0)
     type = JSON_NULL;
-  else if (string_prefix("number", args[0]) && arglens[0] > 2)
+  else if (strcasecmp("number", args[0]) == 0)
     type = JSON_NUMBER;
   else {
     safe_str(T("#-1 INVALID TYPE"), buff, bp);
@@ -3536,9 +3536,9 @@ FUNCTION(fun_json)
       safe_str(json_vals[2], buff, bp);
     return;
   case JSON_BOOL:
-    if (string_prefix(json_vals[0], args[1]) || !strcasecmp(args[1], "0"))
+    if (strcmp(json_vals[0], args[1]) == 0 || strcmp(args[1], "0") == 0)
       safe_str(json_vals[0], buff, bp);
-    else if (string_prefix(json_vals[1], args[1]) || !strcasecmp(args[1], "1"))
+    else if (strcmp(json_vals[1], args[1]) == 0 || strcmp(args[1], "1") == 0)
       safe_str(json_vals[1], buff, bp);
     else
       safe_str("#-1 INVALID VALUE", buff, bp);
@@ -4275,7 +4275,7 @@ check_connect(DESC *d, const char *msg)
     queue_string_eol(d, T(connect_fail_limit_exceeded));
     return 1;
   }
-  if (string_prefix("connect", command)) {
+  if (strcasecmp("connect", command) == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4291,7 +4291,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "cd")) {
+  } else if (strcasecmp(command, "cd") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4314,7 +4314,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "cv")) {
+  } else if (strcasecmp(command, "cv") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4334,7 +4334,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "ch")) {
+  } else if (strcasecmp(command, "ch") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4356,7 +4356,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (string_prefix("create", command)) {
+  } else if (strcasecmp("create", command) == 0) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
@@ -4423,7 +4423,7 @@ check_connect(DESC *d, const char *msg)
       break;
     } /* successful player creation */
 
-  } else if (string_prefix("register", command)) {
+  } else if (strcasecmp("register", command) == 0) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
@@ -4843,24 +4843,27 @@ sockset(DESC *d, char *name, char *val)
     return T("Terminal Type set.");
   }
 
-  if (!strcasecmp(name, "COLORSTYLE") || !strcasecmp(name, "COLOURSTYLE")) {
-    if (!strcasecmp(val, "auto")) {
+  if (strcasecmp(name, "COLORSTYLE") == 0 ||
+      strcasecmp(name, "COLOURSTYLE") == 0) {
+    if (strcasecmp(val, "auto") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
-    } else if (string_prefix("plain", val) || string_prefix("none", val)) {
+    } else if (strcasecmp("plain", val) == 0 ||
+               strcasecmp("none", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       return tprintf(T("Colorstyle set to '%s'"), "plain");
-    } else if (string_prefix("hilite", val) ||
-               string_prefix("highlight", val)) {
+    } else if (strcasecmp("hilite", val) == 0 ||
+               strcasecmp("highlight", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
       return tprintf(T("Colorstyle set to '%s'"), "hilite");
-    } else if (string_prefix("16color", val)) {
+    } else if (strcasecmp("16color", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
       return tprintf(T("Colorstyle set to '%s'"), "16color");
-    } else if (string_prefix("xterm256", val) || !strcmp(val, "256")) {
+    } else if (strcasecmp("xterm256", val) == 0 ||
+               strcmp(val, "256") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
       return tprintf(T("Colorstyle set to '%s'"), "xterm256");
@@ -6365,15 +6368,12 @@ FUNCTION(fun_lwho)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("all", args[1])) {
+    if (strcasecmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strlen(args[1]) < 2) {
-      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-      return;
-    } else if (string_prefix("online", args[1])) {
+    } else if (strcasecmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (string_prefix("offline", args[1])) {
+    } else if (strcasecmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {
@@ -6910,15 +6910,12 @@ FUNCTION(fun_lports)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("all", args[1])) {
+    if (strcasecmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strlen(args[1]) < 2) {
-      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-      return;
-    } else if (string_prefix("online", args[1])) {
+    } else if (strcasecmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (string_prefix("offline", args[1])) {
+    } else if (strcasecmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {

@@ -434,26 +434,24 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (string_prefix("urgent", status) || string_prefix("unurgent", status))
+  if (strcasecmp("urgent", status) == 0 ||
+      strcasecmp("unurgent", status) == 0)
     flag = M_URGENT;
-  else if (string_prefix("read", status) || string_prefix("unread", status))
+  else if (strcasecmp("read", status) == 0 ||
+           strcasecmp("unread", status) == 0)
     flag = M_MSGREAD;
-  else if (string_prefix("cleared", status) ||
-           string_prefix("uncleared", status))
+  else if (strcasecmp("cleared", status) == 0 ||
+           strcasecmp("uncleared", status) == 0)
     flag = M_CLEARED;
-  else if (string_prefix("tagged", status) || string_prefix("untagged", status))
+  else if (strcasecmp("tagged", status) == 0 ||
+           strcasecmp("untagged", status) == 0)
     flag = M_TAG;
   else {
     notify(player, T("MAIL: Unknown status."));
     return;
   }
 
-  if ((*status == 'u' || *status == 'U') &&
-      (status[1] == 'n' || status[1] == 'N')) {
-    if (strlen(status) < 3) {
-      notify(player, T("MAIL: Unknown status."));
-      return;
-    }
+  if (string_prefix(status, "un")) {
     negate = 1;
   }
 
@@ -1726,7 +1724,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     notify(player, T("Go get some bugspray."));
     return;
   }
-  if (string_prefix("clear", action)) {
+  if (strcasecmp("clear", action) == 0) {
     target =
       match_result(player, victim, TYPE_PLAYER, MAT_PMATCH | MAT_ABSOLUTE);
     if (target == NOTHING) {
@@ -1738,7 +1736,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     notify_format(player, T("Mail cleared for %s(#%d)."),
                   AName(target, AN_SYS, NULL), target);
     return;
-  } else if (string_prefix("sanity", action)) {
+  } else if (strcasecmp("sanity", action) == 0) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = mp->next) {
       if (!GoodObject(mp->to))
         notify_format(player, T("Bad object #%d has mail."), mp->to);
@@ -1754,7 +1752,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
       mdb_top = i;
     }
     notify(player, T("Mail sanity check completed."));
-  } else if (string_prefix("fix", action)) {
+  } else if (strcasecmp("fix", action) == 0) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = nextp) {
       if (!GoodObject(mp->to) || !IsPlayer(mp->to)) {
         notify_format(player, T("Fixing mail for #%d."), mp->to);
@@ -2193,11 +2191,11 @@ FUNCTION(fun_mailstats)
   int full;
 
   /* Figure out how we were called */
-  if (string_prefix(called_as, "mailstats")) {
+  if (strcasecmp(called_as, "mailstats") == 0) {
     full = 0;
-  } else if (string_prefix(called_as, "maildstats")) {
+  } else if (strcasecmp(called_as, "maildstats") == 0) {
     full = 1;
-  } else if (string_prefix(called_as, "mailfstats")) {
+  } else if (strcasecmp(called_as, "mailfstats") == 0) {
     full = 2;
   } else {
     safe_str(T("#-? fun_mailstats called with invalid called_as!"), buff, bp);

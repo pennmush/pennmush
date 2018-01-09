@@ -176,14 +176,14 @@ FUNCTION(fun_message)
       word = split_token(&list, ' ');
       if (!word || !*word)
         continue;
-      if (string_prefix("nospoof", word)) {
+      if (strcasecmp("nospoof", word) == 0) {
         if (Can_Nspemit(executor))
           flags |= PEMIT_SPOOF;
-      } else if (string_prefix("spoof", word)) {
+      } else if (strcasecmp("spoof", word) == 0) {
         speaker = SPOOF_NOSWITCH(executor, enactor);
-      } else if (string_prefix("remit", word))
+      } else if (strcasecmp("remit", word) == 0)
         type = EMIT_REMIT;
-      else if (string_prefix("oemit", word))
+      else if (strcasecmp("oemit", word) == 0)
         type = EMIT_OEMIT;
     } while (list);
   }
@@ -466,16 +466,16 @@ FUNCTION(fun_listq)
     while ((item = split_token(&list, ' '))) {
       if (!*item)
         continue;
-      if (string_prefix("qregisters", item))
+      if (strcasecmp("qregisters", item) == 0)
         types |= PE_REGS_Q;
-      else if (string_prefix("regexp", item))
+      else if (strcasecmp("regexp", item) == 0)
         types |= PE_REGS_REGEXP;
-      else if (strlen(item) > 1 && string_prefix("switch", item))
+      else if (strcasecmp("switch", item) == 0)
         types |= PE_REGS_SWITCH;
-      else if (string_prefix("iter", item))
+      else if (strcasecmp("iter", item) == 0)
         types |= PE_REGS_ITER;
-      else if (string_prefix("args", item) ||
-               (strlen(item) > 1 && string_prefix("stack", item)))
+      else if (strcasecmp("args", item) == 0 ||
+               strcasecmp("stack", item) == 0)
         types |= PE_REGS_ARG;
       else {
         safe_str("#-1", buff, bp);
@@ -705,16 +705,16 @@ FUNCTION(fun_r)
   const char *s;
 
   if (nargs >= 2 && args[1] && *args[1]) {
-    if (string_prefix("qregisters", args[1]))
+    if (strcasecmp("qregisters", args[1]) == 0)
       type = PE_REGS_Q;
-    else if (string_prefix("regexp", args[1]))
+    else if (strcasecmp("regexp", args[1]) == 0)
       type = PE_REGS_REGEXP;
-    else if (strlen(args[1]) > 1 && string_prefix("switch", args[1]))
+    else if (strcasecmp("switch", args[1]) == 0)
       type = PE_REGS_SWITCH;
-    else if (string_prefix("iter", args[1]))
+    else if (strcasecmp("iter", args[1]) == 0)
       type = PE_REGS_ITER;
-    else if (string_prefix("args", args[1]) ||
-             (strlen(args[1]) > 1 && string_prefix("stack", args[1])))
+    else if (strcasecmp("args", args[1]) == 0 ||
+             strcasecmp("stack", args[1]) == 0)
       type = PE_REGS_ARG;
     else {
       safe_str("#-1", buff, bp);
@@ -1286,28 +1286,28 @@ FUNCTION(fun_list)
   }
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
-  else if (string_prefix("motd", args[0]))
+  else if (strcasecmp("motd", args[0]) == 0)
     safe_str(cf_motd_msg, buff, bp);
-  else if (string_prefix("wizmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("wizmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_wizmotd_msg, buff, bp);
-  else if (string_prefix("downmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("downmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_downmotd_msg, buff, bp);
-  else if (string_prefix("fullmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("fullmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_fullmotd_msg, buff, bp);
-  else if (string_prefix("functions", args[0]))
+  else if (strcasecmp("functions", args[0]) == 0)
     safe_str(list_functions(fwhich[which - 1]), buff, bp);
-  else if (string_prefix("@functions", args[0]))
+  else if (strcasecmp("@functions", args[0]) == 0)
     safe_str(list_functions("local"), buff, bp);
-  else if (string_prefix("commands", args[0]))
+  else if (strcasecmp("commands", args[0]) == 0)
     safe_str(list_commands(which), buff, bp);
-  else if (string_prefix("attribs", args[0]))
+  else if (strcasecmp("attribs", args[0]) == 0)
     safe_str(list_attribs(), buff, bp);
-  else if (string_prefix("locks", args[0]))
+  else if (strcasecmp("locks", args[0]) == 0)
     list_locks(buff, bp, NULL);
-  else if (string_prefix("flags", args[0]))
+  else if (strcasecmp("flags", args[0]) == 0)
     safe_str(list_all_flags("FLAG", "", executor, FLAG_LIST_NAMECHAR), buff,
              bp);
-  else if (string_prefix("powers", args[0]))
+  else if (strcasecmp("powers", args[0]) == 0)
     safe_str(list_all_flags("POWER", "", executor, FLAG_LIST_NAMECHAR), buff,
              bp);
   else
@@ -1341,17 +1341,17 @@ FUNCTION(fun_scan)
   if (nargs == 3 && arglens[2]) {
     prefstr = trim_space_sep(args[2], ' ');
     while ((thispref = split_token(&prefstr, ' '))) {
-      if (string_prefix("room", thispref))
+      if (strcasecmp("room", thispref) == 0)
         scan_type |= CHECK_HERE | CHECK_NEIGHBORS;
-      else if (string_prefix("self", thispref))
+      else if (strcasecmp("self", thispref) == 0)
         scan_type |= CHECK_SELF | CHECK_INVENTORY;
-      else if (string_prefix("zone", thispref))
+      else if (strcasecmp("zone", thispref) == 0)
         scan_type |= CHECK_ZONE;
-      else if (string_prefix("globals", thispref))
+      else if (strcasecmp("globals", thispref) == 0)
         scan_type |= CHECK_GLOBAL;
-      else if (string_prefix("break", thispref))
+      else if (strcasecmp("break", thispref) == 0)
         scan_type |= CHECK_BREAK;
-      else if (string_prefix("all", thispref)) {
+      else if (strcasecmp("all", thispref) == 0) {
         scan_type |= CHECK_ALL;
       } else {
         notify(executor, T("Invalid type."));

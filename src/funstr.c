@@ -2332,18 +2332,18 @@ FUNCTION(fun_render)
     word = split_token(&list, ' ');
     if (!word || !*word)
       continue;
-    if (string_prefix("ansi", word)) {
+    if (strcasecmp("ansi", word) == 0) {
       if (Can_Nspemit(executor)) {
         flags |= MSG_XTERM256;
       } else {
         safe_str(T(e_perm), buff, bp);
         return;
       }
-    } else if (string_prefix("noaccents", word))
+    } else if (strcasecmp("noaccents", word) == 0)
       flags |= MSG_STRIPACCENTS;
-    else if (string_prefix("markup", word))
+    else if (strcasecmp("markup", word) == 0)
       flags |= MSG_MARKUP;
-    else if (string_prefix("html", word))
+    else if (strcasecmp("html", word) == 0)
       flags |= MSG_PUEBLO;
     else {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);

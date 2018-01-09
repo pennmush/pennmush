@@ -863,9 +863,9 @@ do_list(dbref player, char *arg, int lc, int which)
 {
   if (!arg || !*arg)
     notify(player, T("I don't understand what you want to @list."));
-  else if (string_prefix("commands", arg))
+  else if (strcasecmp("commands", arg) == 0)
     do_list_commands(player, lc, which);
-  else if (string_prefix("functions", arg)) {
+  else if (strcasecmp("functions", arg) == 0) {
     switch (which) {
     case 1:
       do_list_functions(player, lc, "builtin");
@@ -878,21 +878,21 @@ do_list(dbref player, char *arg, int lc, int which)
       do_list_functions(player, lc, "all");
       break;
     }
-  } else if (string_prefix("motd", arg))
+  } else if (strcasecmp("motd", arg) == 0)
     do_motd(player, MOTD_LIST | MOTD_TYPE, "");
-  else if (string_prefix("attribs", arg))
+  else if (strcasecmp("attribs", arg) == 0)
     do_list_attribs(player, lc);
-  else if (string_prefix("flags", arg))
+  else if (strcasecmp("flags", arg) == 0)
     do_list_flags("FLAG", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Flags"));
-  else if (string_prefix("powers", arg))
+  else if (strcasecmp("powers", arg) == 0)
     do_list_flags("POWER", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Powers"));
-  else if (string_prefix("locks", arg))
+  else if (strcasecmp("locks", arg) == 0)
     do_list_locks(player, NULL, lc, T("Locks"));
-  else if (string_prefix("allocations", arg))
+  else if (strcasecmp("allocations", arg) == 0)
     do_list_allocations(player);
   else
     notify(player, T("I don't understand what you want to @list."));

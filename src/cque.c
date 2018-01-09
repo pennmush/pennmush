@@ -1743,7 +1743,7 @@ FUNCTION(fun_pidinfo)
   s = trim_space_sep(fields, ' ');
   do {
     r = split_token(&s, ' ');
-    if (string_prefix("queue", r)) {
+    if (strcasecmp("queue", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1751,12 +1751,13 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (string_prefix("player", r) || string_prefix("executor", r)) {
+    } else if (strcasecmp("player", r) == 0 ||
+               strcasecmp("executor", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
       safe_dbref(q->executor, buff, bp);
-    } else if (string_prefix("time", r)) {
+    } else if (strcasecmp("time", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1764,12 +1765,12 @@ FUNCTION(fun_pidinfo)
         safe_integer(-1, buff, bp);
       else
         safe_integer(difftime(q->wait_until, mudtime), buff, bp);
-    } else if (string_prefix("object", r)) {
+    } else if (strcasecmp("object", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
       safe_dbref(q->semaphore_obj, buff, bp);
-    } else if (string_prefix("attribute", r)) {
+    } else if (strcasecmp("attribute", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1778,7 +1779,7 @@ FUNCTION(fun_pidinfo)
       } else {
         safe_dbref(NOTHING, buff, bp);
       }
-    } else if (string_prefix("command", r)) {
+    } else if (strcasecmp("command", r) == 0) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1803,10 +1804,10 @@ FUNCTION(fun_lpids)
   const char *list;
   char *elem;
 
-  if (string_prefix(called_as, "LPIDS")) {
+  if (strcasecmp(called_as, "LPIDS") == 0) {
     /* lpids(player[,type]) */
     if (args[0] && *args[0]) {
-      if (!strcasecmp(args[0], "all")) {
+      if (strcasecmp(args[0], "all") == 0) {
         if (LookQueue(executor))
           player = NOTHING;
         else
@@ -1830,11 +1831,11 @@ FUNCTION(fun_lpids)
       list = args[1];
       while (list && *list) {
         elem = next_in_list(&list);
-        if (string_prefix("wait", elem))
+        if (strcasecmp("wait", elem) == 0)
           qmask |= LPIDS_WAIT;
-        else if (string_prefix("semaphore", elem))
+        else if (strcasecmp("semaphore", elem) == 0)
           qmask |= LPIDS_SEMAPHORE;
-        else if (string_prefix("independent", elem))
+        else if (strcasecmp("independent", elem) == 0)
           qmask |= LPIDS_INDEPENDENT;
         else {
           safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);

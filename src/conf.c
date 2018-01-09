@@ -1549,7 +1549,7 @@ do_config_list(dbref player, const char *type, int lc)
     /* Look up the type in the group table */
     int found = 0;
     for (cgp = confgroups; cgp->name; cgp++) {
-      if (string_prefix(T(cgp->name), type) &&
+      if (strcasecmp(T(cgp->name), type) == 0 &&
           Can_View_Config_Group(player, cgp)) {
         found = 1;
         break;
@@ -1558,7 +1558,7 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (string_prefix(cp->name, type) &&
+        if (strcasecmp(cp->name, type) == 0 &&
             can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
@@ -1568,7 +1568,7 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (!strcasecmp(cp->name, type) &&
+          if (strcasecmp(cp->name, type) == 0 &&
               can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
@@ -1605,7 +1605,7 @@ do_config_list(dbref player, const char *type, int lc)
     } else {
       /* Show all entries of that type */
       notify(player, cgp->desc);
-      if (string_prefix("compile", type))
+      if (strcasecmp("compile", type) == 0)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
@@ -1616,7 +1616,7 @@ do_config_list(dbref player, const char *type, int lc)
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->group, cgp->name) &&
+          if (cp->group && strcasecmp(cp->group, cgp->name) == 0 &&
               can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }

@@ -1136,13 +1136,13 @@ do_sweep(dbref player, const char *arg1)
     return;
 
   if (arg1 && *arg1) {
-    if (string_prefix(arg1, "connected"))
+    if (strcasecmp(arg1, "connected") == 0)
       connect_flag = 1;
-    else if (string_prefix(arg1, "here"))
+    else if (strcasecmp(arg1, "here") == 0)
       here_flag = 1;
-    else if (string_prefix(arg1, "inventory"))
+    else if (strcasecmp(arg1, "inventory") == 0)
       inven_flag = 1;
-    else if (string_prefix(arg1, "exits"))
+    else if (strcasecmp(arg1, "exits") == 0)
       exit_flag = 1;
     else {
       notify(player, T("Invalid parameter."));

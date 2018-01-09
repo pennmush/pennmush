@@ -2239,7 +2239,7 @@ FUNCTION(fun_attrib_set)
   }
   if (nargs == 1) {
     do_set_atr(thing, s, NULL, executor, 1);
-  } else if (strlen(args[1]) == 0 && !EMPTY_ATTRS) {
+  } else if (arglens[1] == 0 && !EMPTY_ATTRS) {
     do_set_atr(thing, s, " ", executor, 1);
   } else {
     do_set_atr(thing, s, args[1], executor, 1);

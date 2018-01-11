@@ -175,7 +175,7 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
                            SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
                            client_verify_callback);
       else
-        SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, client_verify_callback);
+        SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, client_verify_callback);
 #if (OPENSSL_VERSION_NUMBER < 0x0090600fL)
       SSL_CTX_set_verify_depth(ctx, 1);
 #endif

@@ -763,18 +763,18 @@ FUNCTION(fun_dbwalker)
   dbref loc = match_thing(executor, args[0]);
 
   if (strcmp(called_as, "LCON") == 0 && nargs == 2) {
-    if (strcasecmp("player", args[1])) {
+    if (string_prefixe("player", args[1])) {
       type = TYPE_PLAYER;
-    } else if (strcasecmp("object", args[1]) == 0 ||
-               strcasecmp("thing", args[1]) == 0) {
+    } else if (string_prefixe("object", args[1]) ||
+               string_prefixe("thing", args[1])) {
       type = TYPE_THING;
-    } else if (strcasecmp("connect", args[1]) == 0) {
+    } else if (string_prefixe("connect", args[1])) {
       type = TYPE_PLAYER;
       vis = 1;
-    } else if (strcasecmp("puppet", args[1]) == 0) {
+    } else if (string_prefixe("puppet", args[1])) {
       type = TYPE_THING;
       listening = 1;
-    } else if (strcasecmp("listen", args[1]) == 0) {
+    } else if (string_prefixe("listen", args[1])) {
       type = TYPE_THING | TYPE_PLAYER;
       listening = 2;
     } else {

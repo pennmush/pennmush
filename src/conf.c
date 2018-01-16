@@ -1549,7 +1549,7 @@ do_config_list(dbref player, const char *type, int lc)
     /* Look up the type in the group table */
     int found = 0;
     for (cgp = confgroups; cgp->name; cgp++) {
-      if (strcasecmp(T(cgp->name), type) == 0 &&
+      if (string_prefixe(T(cgp->name), type) &&
           Can_View_Config_Group(player, cgp)) {
         found = 1;
         break;
@@ -1558,7 +1558,7 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (strcasecmp(cp->name, type) == 0 &&
+        if (string_prefixe(cp->name, type) &&
             can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;

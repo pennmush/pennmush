@@ -2191,11 +2191,11 @@ FUNCTION(fun_mailstats)
   int full;
 
   /* Figure out how we were called */
-  if (strcasecmp(called_as, "mailstats") == 0) {
+  if (strcmp(called_as, "MAILSTATS") == 0) {
     full = 0;
-  } else if (strcasecmp(called_as, "maildstats") == 0) {
+  } else if (strcmp(called_as, "MAILDSTATS") == 0) {
     full = 1;
-  } else if (strcasecmp(called_as, "mailfstats") == 0) {
+  } else if (strcmp(called_as, "MAILFSTATS") == 0) {
     full = 2;
   } else {
     safe_str(T("#-? fun_mailstats called with invalid called_as!"), buff, bp);

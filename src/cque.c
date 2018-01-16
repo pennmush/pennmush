@@ -1743,7 +1743,7 @@ FUNCTION(fun_pidinfo)
   s = trim_space_sep(fields, ' ');
   do {
     r = split_token(&s, ' ');
-    if (strcasecmp("queue", r) == 0) {
+    if (string_prefix("queue", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1751,13 +1751,13 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (strcasecmp("player", r) == 0 ||
-               strcasecmp("executor", r) == 0) {
+    } else if (string_prefix("player", r) ||
+               string_prefix("executor", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
       safe_dbref(q->executor, buff, bp);
-    } else if (strcasecmp("time", r) == 0) {
+    } else if (string_prefix("time", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1765,12 +1765,12 @@ FUNCTION(fun_pidinfo)
         safe_integer(-1, buff, bp);
       else
         safe_integer(difftime(q->wait_until, mudtime), buff, bp);
-    } else if (strcasecmp("object", r) == 0) {
+    } else if (string_prefix("object", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
       safe_dbref(q->semaphore_obj, buff, bp);
-    } else if (strcasecmp("attribute", r) == 0) {
+    } else if (string_prefix("attribute", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1779,7 +1779,7 @@ FUNCTION(fun_pidinfo)
       } else {
         safe_dbref(NOTHING, buff, bp);
       }
-    } else if (strcasecmp("command", r) == 0) {
+    } else if (string_prefix("command", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;

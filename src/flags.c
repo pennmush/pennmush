@@ -241,7 +241,7 @@ static const FLAG power_table[] = {
   {"Announce", '\0', NOTYPE, CAN_WALL, F_WIZARD | F_LOG, F_WIZARD},
   {"Boot", '\0', NOTYPE, CAN_BOOT, F_WIZARD | F_LOG, F_WIZARD},
   {"Builder", '\0', NOTYPE, CAN_BUILD, F_WIZARD | F_LOG, F_WIZARD},
-  {"Cemit", '\0', NOTYPE, CEMIT, F_WIZARD | F_LOG, F_WIZARD},
+  //  {"Cemit", '\0', NOTYPE, CEMIT, F_WIZARD | F_LOG, F_WIZARD},
   {"Chat_Privs", '\0', NOTYPE, CHAT_PRIVS, F_WIZARD | F_LOG, F_WIZARD},
   {"Functions", '\0', NOTYPE, GLOBAL_FUNCS, F_WIZARD | F_LOG, F_WIZARD},
   {"Guest", '\0', NOTYPE, IS_GUEST, F_WIZARD | F_LOG, F_WIZARD},
@@ -269,11 +269,12 @@ static const FLAG power_table[] = {
   {NULL, '\0', 0, 0, 0, 0}};
 
 /** A table of aliases for powers. */
-static const FLAG_ALIAS power_alias_tab[] = {{"@cemit", "Cemit"},
-                                             {"@wall", "Announce"},
-                                             {"wall", "Announce"},
-                                             {"Can_nspemit", "Can_spoof"},
-                                             {NULL, NULL}};
+static const FLAG_ALIAS power_alias_tab[] = {
+  // {"@cemit", "Cemit"},
+  {"@wall", "Announce"},
+  {"wall", "Announce"},
+  {"Can_nspemit", "Can_spoof"},
+  {NULL, NULL}};
 
 /** The table of flag privilege bits. */
 static const PRIV flag_privs[] = {{"trusted", '\0', F_INHERIT, F_INHERIT},

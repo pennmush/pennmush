@@ -2049,6 +2049,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2063,6 +2064,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;

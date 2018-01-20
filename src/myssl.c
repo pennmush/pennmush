@@ -140,7 +140,11 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   /* Set up SIGPIPE handler here? */
 
   /* Create context */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  meth = TLS_server_method();
+#else
   meth = SSLv23_server_method();
+#endif
   ctx = SSL_CTX_new(meth);
   SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 

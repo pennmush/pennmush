@@ -202,10 +202,12 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
     case '!': {
       dbref d = db_getref(in);
       while (static_cast<std::size_t>(d) != db.objects.size()) {
-        std::cerr << "Missing object #"
-                  << db.objects.size()
-                  << istream_line(in)
-                  << '\n';
+        if (!(flags & DBF_LESS_GARBAGE)) {
+          std::cerr << "Missing object #"
+                    << db.objects.size()
+                    << istream_line(in)
+                    << '\n';
+        }
         dbthing garbage{};
         garbage.num = db.objects.size();
         db.objects.push_back(std::move(garbage));
@@ -364,6 +366,9 @@ write_db_labelsv1(std::ostream &out, const database &db)
   write_db_attribs(out, db.attribs);
   out << '~' << db.objects.size() << '\n';
   for (const auto &obj : db.objects) {
+    if (obj.type == dbtype::GARBAGE) {
+      continue;
+    }
     out << '!' << obj.num << '\n';
     db_write_labeled_string(out, "name", obj.name);
     out << "location #" << obj.location << '\n';

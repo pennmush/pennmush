@@ -3,10 +3,7 @@
  *
  * \brief Malloc wrapper file.
  *
- * Three things in this file:
- *
- * -# It includes the body of csrimalloc.c if using a MALLOC_PACKAGE
- *     of 2 or 3.
+ * Two things in this file:
  *
  * -# It has the mush_FOO() wrapper functions for
  *     malloc()/calloc()/realloc()/free(). These are used to keep

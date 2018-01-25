@@ -16,7 +16,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
 endif()
 
 add_library(dbio STATIC database.cpp io_primitives.cpp db_labelsv1.cpp
-  db_oldstyle.cpp utils.cpp bits.cpp)
+  db_oldstyle.cpp utils.cpp bits.cpp boolexp.cpp)
 set_property(TARGET dbio PROPERTY CXX_STANDARD 17)
 target_include_directories(dbio PRIVATE ${Boost_INCLUDES} "${CMAKE_SOURCE_DIR}/..")
 

@@ -10,7 +10,7 @@
 using namespace std::literals::string_literals;
 
 std::map<std::string, lock>
-read_old_locks(istream &in, dbref obj)
+read_old_locks(istream &in, dbref obj, std::uint32_t flags)
 {
   // Penn 1.8.X has support for reading a lock format that appears to
   // be: _NAME|key "boolexp". Not sure what versions produce it, if any.
@@ -31,7 +31,11 @@ read_old_locks(istream &in, dbref obj)
     l.type = name;
     l.creator = obj;
     l.flags = default_lock_flags(name);
-    l.key = db_read_this_labeled_string(in, "key");
+    if (flags & DBF_SPIFFY_LOCKS) {
+      l.key = db_read_this_labeled_string(in, "key");
+    } else {
+      l.key = read_boolexp(in);
+    }
     locks.emplace(name, std::move(l));
   }
   return locks;
@@ -102,7 +106,7 @@ read_old_object(istream &in, dbref d, std::uint32_t flags)
     obj.locks = read_locks(in, flags);
   } else if (flags & DBF_NEW_LOCKS) {
     // There is a certain irony in my choice of function names
-    obj.locks = read_old_locks(in, d);
+    obj.locks = read_old_locks(in, d, flags);
   } else {
     throw db_format_exception{"Unsupported lock format."};
   }
@@ -179,10 +183,12 @@ read_db_oldstyle(istream &in, std::uint32_t flags)
     case '!': {
       dbref d = db_getref(in);
       while (static_cast<std::size_t>(d) != db.objects.size()) {
-        std::cerr << "Missing object #"
-                  << db.objects.size()
-                  << istream_line(in)
-                  << '\n';
+        if (!(flags & DBF_LESS_GARBAGE)) {
+          std::cerr << "Missing object #"
+                    << db.objects.size()
+                    << istream_line(in)
+                    << '\n';
+        }
         dbthing garbage{};
         garbage.num = db.objects.size();
         db.objects.push_back(std::move(garbage));

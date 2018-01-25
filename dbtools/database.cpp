@@ -88,6 +88,8 @@ fix_up_database(database &db, int dbversion, std::uint32_t flags)
      DBF_NO_CHAT_SYSTEM
      DBF_WARNINGS
      DBF_CREATION_TIMES
+     DBF_NEW_LOCKS
+     DBF_LESS_GARBAGE
      DBF_AF_VISUAL 
      DBF_SPIFFY_LOCKS
      DBF_NEW_FLAGS
@@ -255,7 +257,7 @@ read_database(const std::string &name, COMP compress_type, bool vrbse)
   verbose = vrbse;
   
   istream dbin;
-  dbin.push(io::counter{});
+  dbin.push(io::counter{1});
   
   switch (compress_type) {
   case COMP::Z:

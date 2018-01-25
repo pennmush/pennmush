@@ -1446,7 +1446,10 @@ db_read_oldstyle(PENNFILE *f)
       o->next = getref(f);
       o->parent = getref(f);
       o->locks = NULL;
-      get_new_locks(i, f, -1);
+      if (globals.indb_flags & DBF_SPIFFY_LOCKS)
+        get_new_locks(i, f, -1);
+      else
+        getlocks(i, f);
       o->owner = getref(f);
       o->zone = getref(f);
       s_Pennies(i, getref(f));

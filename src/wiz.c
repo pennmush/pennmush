@@ -57,7 +57,7 @@ char *password_hash(const char *password, const char *algo);
 /** \@search data */
 struct search_spec {
   dbref owner;                /**< Limit to this owner, if specified */
-  int type;                   /**< Limit to this type */
+  uint32_t type;                   /**< Limit to this type */
   dbref parent;               /**< Limit to children of this parent */
   dbref zone;                 /**< Limit to those in this zone */
   dbref entrances;            /**< Objects linked here, for \@entrances */

@@ -119,6 +119,11 @@ fix_up_database(database &db, int dbversion, std::uint32_t flags)
         0}});
   }
 
+  if (dbversion < 6) {
+    db.powers.erase("Cemit");
+    db.powers.erase("@cemit");
+  }
+  
   for (auto &obj : db.objects) {
 
     obj.flags.erase("GOING");
@@ -127,6 +132,10 @@ fix_up_database(database &db, int dbversion, std::uint32_t flags)
     if (!(flags & DBF_AF_NODUMP)) {
       obj.attribs.erase("QUEUE");
       obj.attribs.erase("SEMAPHORE");
+    }
+
+    if (dbversion < 6) {
+      obj.powers.erase("Cemit");
     }
     
     switch (obj.type) {
@@ -217,16 +226,19 @@ operator>>(istream &in, database &db)
     DBF_NEW_STRINGS | DBF_TYPE_GARBAGE | DBF_SPLIT_IMMORTAL | DBF_NO_TEMPLE;
 
   if (verbose) {
-    std::cerr << "Database Flags: " << dbflags_to_str(flags) << '\n';
+    std::cerr << "Present database flags: " << dbflags_to_str(flags) << '\n';
   }
   
   if ((flags & minimum_flags) != minimum_flags) {
-    throw db_format_exception{"Unable to read this database version."};
+    throw db_format_exception{"Unable to read this database version. Minimum flags: "s + dbflags_to_str(minimum_flags)};
   }
   
   int dbversion = 0;
   if (flags & DBF_LABELS) {
     std::tie(db, dbversion) = read_db_labelsv1(in, flags);
+    if (verbose) {
+      std::cerr << "Database version " << dbversion << '\n';
+    }
   } else {
     db = read_db_oldstyle(in, flags);
   }

@@ -352,7 +352,7 @@ write_db_labelsv1(std::ostream &out, const database &db)
   dbflag = dbflag * 256 + 2;
 
   out << "+V" << dbflag << '\n';
-  out << "dbversion 5\n";
+  out << "dbversion 6\n";
   
   out << "savedtime \"" << get_time() << "\"\n";
 

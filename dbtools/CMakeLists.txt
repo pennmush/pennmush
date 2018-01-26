@@ -1,8 +1,16 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 project(dbtools)
 
+if(MSVC)
+#  set(Boost_USE_STATIC_LIBS "ON")
+#  set(OPENSSL_USE_STATIC_LIBS "TRUE")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
+
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(Boost REQUIRED COMPONENTS iostreams program_options)
+find_package(ZLIB)
+find_package(BZip2)
 find_program(INDENT NAMES clang-format clang-format-6.0 clang-format-5.0 clang-format-4.0 DOC "clang-format version")
 include(CheckCXXCompilerFlag)
 
@@ -15,25 +23,52 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
   endif()
 endif()
 
+if(CMAKE_VERSION VERSION_GREATER 3.7)
+  set(SUPPORTS_CXX17 1)
+else()
+  set(SUPPORTS_CX X17 0)
+endif()
+
+configure_file("db_config.h.in" "db_config.h")
+
 add_library(dbio STATIC database.cpp io_primitives.cpp db_labelsv1.cpp
   db_oldstyle.cpp utils.cpp bits.cpp boolexp.cpp)
-set_property(TARGET dbio PROPERTY CXX_STANDARD 17)
-target_include_directories(dbio PRIVATE ${Boost_INCLUDES} "${CMAKE_SOURCE_DIR}/..")
+if(SUPPORTS_CXX17)
+  set_property(TARGET dbio PROPERTY CXX_STANDARD 17)
+else()
+  set_property(TARGET dbio PROPERTY CXX_STANDARD 14)
+endif()
+if(WIN32)
+  target_compile_definitions(dbio PRIVATE _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING _CRT_SECURE_NO_WARNINGS)
+endif()
+target_include_directories(dbio PRIVATE ${Boost_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/..")
 
 add_executable(db2dot db2dot.cpp)
-set_property(TARGET db2dot PROPERTY CXX_STANDARD 17)
-target_include_directories(db2dot PRIVATE ${Boost_INCLUDES})
-target_link_libraries(db2dot dbio ${Boost_IOSTREAMS_LIBRARY})
+if(SUPPORTS_CXX17)
+  set_property(TARGET db2dot PROPERTY CXX_STANDARD 17)
+else()
+  set_property(TARGET db2dot PROPERTY CXX_STANDARD 14)
+endif()
+target_include_directories(db2dot PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(db2dot dbio ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
 
 add_executable(dbupgrade dbupgrade.cpp)
-set_property(TARGET dbupgrade PROPERTY CXX_STANDARD 17)
-target_include_directories(dbupgrade PRIVATE ${Boost_INCLUDES})
-target_link_libraries(dbupgrade dbio ${Boost_IOSTREAMS_LIBRARY})
+if(SUPPORTS_CXX17)
+  set_property(TARGET dbupgrade PROPERTY CXX_STANDARD 17)
+else()
+  set_property(TARGET dbupgrade PROPERTY CXX_STANDARD 14)
+endif()
+target_include_directories(dbupgrade PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(dbupgrade dbio ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
 
 add_executable(pwutil pwutil.cpp)
-set_property(TARGET pwutil PROPERTY CXX_STANDARD 17)
-target_include_directories(pwutil PRIVATE ${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-target_link_libraries(pwutil dbio ${OPENSSL_LIBRARIES} ${Boost_IOSTREAMS_LIBRARY})
+if(SUPPORTS_CXX17)
+  set_property(TARGET pwutil PROPERTY CXX_STANDARD 17)
+else()
+  set_property(TARGET pwutil PROPERTY CXX_STANDARD 14)
+endif()
+target_include_directories(pwutil PRIVATE ${OPENSSL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+target_link_libraries(pwutil dbio OpenSSL::Crypto ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
 
 add_custom_target(indent COMMAND ${INDENT} -i --style=file *.cpp *.h
   COMMENT "Formatting source files")
@@ -43,4 +78,3 @@ add_custom_command(OUTPUT README.html
   MAIN_DEPENDENCY README.md
   COMMENT "Creating README.html")
 add_custom_target(html DEPENDS README.html)
-

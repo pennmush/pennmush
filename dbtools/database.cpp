@@ -2,10 +2,16 @@
 #include <string>
 #include <tuple>
 
+#include "db_config.h"
+
 #include <boost/iostreams/device/file.hpp>
+#ifdef ZLIB_FOUND
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#endif
+#ifdef BZIP2_FOUND
 #include <boost/iostreams/filter/bzip2.hpp>
+#endif
 #include <boost/iostreams/filter/counter.hpp>
 
 #include "database.h"
@@ -202,7 +208,7 @@ std::pair<std::uint32_t, const char *> dbflag_table[] = {
 
 std::string
 dbflags_to_str(std::uint32_t bits) {
-  strset flags;
+  stringset flags;
   for (int i = 0; dbflag_table[i].second; i += 1) {
     if (dbflag_table[i].first & bits) {
       flags.insert(dbflag_table[i].second);
@@ -260,16 +266,23 @@ read_database(const std::string &name, COMP compress_type, bool vrbse)
   dbin.push(io::counter{1});
   
   switch (compress_type) {
+  case COMP::NONE:
+  	break;
+#ifdef ZLIB_FOUND
   case COMP::Z:
     dbin.push(io::zlib_decompressor{});
     break;
   case COMP::GZ:
     dbin.push(io::gzip_decompressor{});
     break;
+#endif
+#ifdef BZIP2_FOUND
   case COMP::BZ2:
     dbin.push(io::bzip2_decompressor{});
     break;
+#endif
   default:
+  	throw std::runtime_error{"Unsupported compression type!"};
     break;
   }
   
@@ -298,17 +311,24 @@ write_database(const database &db, const std::string &name, COMP compress_type)
   io::filtering_ostream dbout;
 
   switch (compress_type) {
+  case COMP::NONE:
+  	break;
+#ifdef ZLIB_FOUND
   case COMP::Z:
     dbout.push(io::zlib_compressor{});
     break;
   case COMP::GZ:
     dbout.push(io::gzip_compressor{});
     break;
+#endif
+#ifdef BZIP2_FOUND
   case COMP::BZ2:
     dbout.push(io::bzip2_compressor{});
     break;
+#endif
   default:
-    break;
+  	throw std::runtime_error{"Unsupported compression type!\n"};
+  	return;
   }
   
   if (name == "-") {

@@ -177,7 +177,7 @@ read_db_oldstyle(istream &in, std::uint32_t flags)
         throw db_format_exception{"Unrecognized database format!"};
       }
       break;
-    case '#': [[fallthrough]]
+    case '#': // [[fallthrough]]
     case '&':
       throw db_format_exception{"Old style database."};
     case '!': {
@@ -190,7 +190,7 @@ read_db_oldstyle(istream &in, std::uint32_t flags)
                     << '\n';
         }
         dbthing garbage{};
-        garbage.num = db.objects.size();
+        garbage.num = static_cast<dbref>(db.objects.size());
         db.objects.push_back(std::move(garbage));
       }
       db.objects.push_back(read_old_object(in, d, flags));

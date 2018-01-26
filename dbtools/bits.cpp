@@ -3,7 +3,17 @@
 #include <string>
 #include <cstdint>
 
+#ifndef _MSC_VER
 #include "config.h"
+#else
+#define HAVE_STDINT_H
+#define HAVE_INTTYPES_H
+#define SSE_OFFSET 0
+#define WIN32_CDECL __cdecl
+#define __attribute__(x)
+#define RESTRICT
+#endif
+
 #include "hdrs/privtab.h"
 #include "hdrs/atr_tab.h"
 #include "hdrs/lock.h"
@@ -18,10 +28,10 @@
 
 using namespace std::literals::string_literals;
 
-strset
+stringset
 privs_to_set(const PRIV *privs, std::uint32_t bits)
 {
-  strset flags;
+  stringset flags;
 
   for (int i = 0; privs[i].name; i += 1) {
     if (bits & privs[i].bits_to_show) {
@@ -32,16 +42,16 @@ privs_to_set(const PRIV *privs, std::uint32_t bits)
   return flags;
 }
 
-strset
+stringset
 flagprivs_to_set(std::uint32_t bits)
 {
   return privs_to_set(flag_privs, bits);
 }
 
-strset
+stringset
 typebits_to_set(std::uint32_t bits)
 {
-  strset types;
+  stringset types;
   for (int i = 0; type_table[i].name; i += 1) {
     if (bits & type_table[i].perms) {
       types.insert(type_table[i].name);
@@ -50,7 +60,7 @@ typebits_to_set(std::uint32_t bits)
   return types;
 }
 
-strset
+stringset
 attrflags_to_set(std::uint32_t bits)
 {
   return privs_to_set(attr_privs_db, bits);
@@ -111,10 +121,10 @@ standard_flags()
   return build_standard_flags(flag_table, flag_alias_tab);
 }
 
-strset
+stringset
 flagbits_to_set(dbtype type, std::uint32_t bits, std::uint32_t toggles)
 {
-  strset flags;
+  stringset flags;
   std::uint32_t typebit = dbtype_to_num(type);
 
   for (int i = 0; flag_table[i].name; i += 1) {
@@ -140,9 +150,9 @@ standard_powers()
   return build_standard_flags(power_table, power_alias_tab);
 }
 
-strset
+stringset
 powerbits_to_set(std::uint32_t bits) {
-  strset powers;
+  stringset powers;
 
   for (int i = 0; power_table[i].name; i += 1) {
     if (power_table[i].bitpos & bits) {
@@ -153,10 +163,10 @@ powerbits_to_set(std::uint32_t bits) {
   return powers;
 }
 
-strset
+stringset
 warnbits_to_set(std::uint32_t bits)
 {
-  strset warnings;
+  stringset warnings;
 
   for (int i = 0; checklist[i].name; i += 1) {
     if (checklist[i].flag & bits) {
@@ -167,12 +177,12 @@ warnbits_to_set(std::uint32_t bits)
   return warnings;
 }
 
-strset
+stringset
 lockbits_to_set(std::uint32_t bits) {
   return privs_to_set(lock_privs, bits);
 }
 
-strset
+stringset
 default_lock_flags(const std::string &name)
 {
   for (int i = 0; lock_types[i].type; i += 1) {

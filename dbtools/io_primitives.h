@@ -11,8 +11,14 @@
 #include <string_view>
 using string_view = std::string_view;
 #else
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 106000
 #include <boost/utility/string_view.hpp>
 using string_view = boost::string_view;
+#else
+#include <boost/utility/string_ref.hpp>
+using string_view = boost::string_ref;
+#endif
 #endif
 
 long db_getref(istream &);

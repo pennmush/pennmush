@@ -20,7 +20,7 @@ struct db_format_exception : public std::runtime_error {
 
 std::string istream_line(const istream &);
 
-using strset = std::set<std::string>;
+using stringset = std::set<std::string>;
 
 using dbref = int;
 #undef NOTHING
@@ -35,15 +35,15 @@ int dbtype_to_num(dbtype);
 struct flag {
   std::string name;
   char letter = '\0';
-  strset types;
-  strset perms;
-  strset negate_perms;
+  stringset types;
+  stringset perms;
+  stringset negate_perms;
 };
 
 struct attrib {
   std::string name;
   dbref creator = -1;
-  strset flags;
+  stringset flags;
   std::string data;
   int derefs = 0;
 };
@@ -51,7 +51,7 @@ struct attrib {
 struct lock {
   std::string type;
   dbref creator = -1;
-  strset flags;
+  stringset flags;
   int derefs = 0;
   std::string key;
 };
@@ -71,9 +71,9 @@ struct dbthing {
   std::time_t created;
   std::time_t modified;
   std::map<std::string, lock> locks;
-  strset flags;
-  strset powers;
-  strset warnings;
+  stringset flags;
+  stringset powers;
+  stringset warnings;
   std::map<std::string, attrib> attribs;
 };
 
@@ -114,9 +114,11 @@ struct database {
 #define DBF_HEAR_CONNECT 0x400000
 #define DBF_NEW_VERSIONS 0x800000
 
-enum class COMP { NONE, Z, GZ, BZ2 };
+enum COMP { NONE, Z, GZ, BZ2 };
 
 extern bool verbose;
+
+constexpr int CURRENT_DB_VERSION = 6;
 
 database read_database(const std::string &, COMP = COMP::NONE, bool = false);
 void write_database(const database &, const std::string &, COMP = COMP::NONE);

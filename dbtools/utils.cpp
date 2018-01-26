@@ -3,14 +3,7 @@
 #include <set>
 #include <ctime>
 
-#define USE_BOOST
-
-#ifdef USE_BOOST
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#else
-#include <regex>
-#endif
 
 #include "database.h"
 #include "utils.h"
@@ -25,30 +18,17 @@ split_on(const std::string &words, char sep)
 }
 
 // Turn a space-seperated list of words into a set of words
-strset
+stringset
 split_words(const std::string &words)
 {
-#ifdef USE_BOOST
   using namespace boost::algorithm;
-  strset res;
-  split(res, words, [](char c){ return c == ' '; } /* is_any_of(" ") */, token_compress_on);
+  stringset res;
+  split(res, words, [](char c){ return c == ' '; }, token_compress_on);
   return res;
-#else
-  static std::regex whitespace{"\\s+"};
-  strset res;
-
-  for (auto i =
-         std::sregex_token_iterator(words.begin(), words.end(), whitespace, -1);
-       i != std::sregex_token_iterator{}; ++i) {
-    res.insert(i->str());
-  }
-
-  return res;
-#endif
 }
 
 std::string
-join_words(const strset &words)
+join_words(const stringset &words)
 {
   std::ostringstream out;
 

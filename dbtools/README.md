@@ -18,17 +18,53 @@ Building
 ========
 
 dbtools programs are written in C++, not C like Penn itself. They
-depend on OpenSSL, and the [boost.iostreams] library as well as some
-header-only boost libraries. The latter can be installed on Ubuntu
-like systems with `apt install libboost-dev
-libboost-iostreams-dev`. `cmake` is used for configuration and
-creating Makefiles.
+depend on OpenSSL, and the [boost.iostreams] and
+[boost.program-options] libraries as well as some header-only boost
+libraries. The latter can be installed on Ubuntu like systems with
+`sudo apt install libboost-dev libboost-iostreams-dev
+libboost-program-options`, and arch via `sudo pacman -S boost`.
+`cmake` is used for configuration and creating Makefiles.
+
+### Unix
 
 To build:
 
     % cd dbtools
     % cmake -DCMAKE_BUILD_TYPE=Release .
     % make -j4
+
+### Windows, using Visual Studio 2017
+
+#### Installing dependencies
+
+1. Install a git client if not already present.
+
+2. Install [vcpkg] if not already present, following the instuctions on that page.
+
+3. Install the following packages if needed (Via `.\vcpkg install`):
+   openssl boost-iostreams boost-program-options boost-algorithm (This
+   might take a while)
+
+   vcpkg supports both 32-bit and 64-bit targets. You might need to
+   explicitly request the one you want to use (64 bit is suggested),
+   by `.\vcpkg install openssl:x64-windows` or `.\vcpkg install
+   openssl:x86-windows`.
+
+### Actually building
+
+1. Open VS 2017.
+
+2. *File->Open->Folder* and select the dbtools directory.
+
+3. Right click on *CMakeLists.txt* in the Solution Explorer and select
+   *Change CMake Settings*. This will bring up a file called
+   *CMakeSettings.json*. It has an assortment of build targets (Like
+   `x64-Release`, any of which you plan on using needs to be updated
+   to let CMake know about the vcpkg installation. Instructions and an
+   example is
+   [here](https://vcpkg.readthedocs.io/en/latest/examples/using-sqlite/#cmake).
+
+4. Select *CMake->Build All*.
 
 The Utilities
 =============
@@ -77,10 +113,10 @@ password.
 
 ### Options
 
--d DBREF | -a 
+-d DBREF | -a
 
 :    Specifies a particular player dbref (Without the \#), or `-a` for
-all players. One of these two options **must** be given.
+     all players. One of these two options **must** be given.
 
 -p PASSWORD
 
@@ -88,8 +124,8 @@ all players. One of these two options **must** be given.
 
 -c
 
-:     Instead of setting a password, erase it. `-ac` clears all players
-passwords.
+:    Instead of setting a password, erase it. `-ac` clears all players
+     passwords.
 
 -z
 
@@ -150,8 +186,8 @@ used as the length of that edge (Used by some graphviz utilities like
 
 :    Database is compressed with bzip2.
 
-If a filename is not given on the command line, standard input is used.
-The resulting graph is always printed to standard output.
+If a filename is not given on the command line, standard input is
+used. The resulting graph is always printed to standard output.
 
 ### Examples
 
@@ -164,3 +200,5 @@ To limit the output to only rooms reachable from #0: `dbtools/db2dot
 [graphviz]: https://graphviz.org
 [this sample]: world.svg
 [boost.iostreams]: https://www.boost.org/doc/libs/1_66_0/libs/iostreams/doc/index.html
+[boost.program-options]: https://www.boost.org/doc/libs/1_66_0/doc/html/program_options.html
+[vcpkg]: https://github.com/Microsoft/vcpkg

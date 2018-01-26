@@ -1,8 +1,11 @@
 #include <iostream>
 #include <string>
-#include <unistd.h>
+
+#include <boost/program_options.hpp>
 
 #include "database.h"
+
+using namespace std::literals::string_literals;
 
 std::string
 first(const std::string &s, char delim)
@@ -26,33 +29,41 @@ print_color(const dbthing &obj) {
 int
 main(int argc, char **argv)
 {
-  COMP comp{};
+  int comp{COMP::NONE};
   std::string dbfile = "-";
-  int opt;
+ 
+  namespace po = boost::program_options;
+  po::options_description desc("Options");
+  desc.add_options()
+  	("help,h", "print help message")
+	  (",z", po::value<int>(&comp)->implicit_value(COMP::GZ, ""s)->zero_tokens(), "compressed with gzip")
+	  (",Z", po::value<int>(&comp)->implicit_value(COMP::Z, ""s)->zero_tokens(), "compressed with compress")
+	  (",j", po::value<int>(&comp)->implicit_value(COMP::BZ2, ""s)->zero_tokens(), "compressed with bzip2");
+	po::options_description hidden("Hidden options");
+	hidden.add_options()
+	   ("input-file", po::value<std::string>(), "input file");
+  po::positional_options_description p;
+  p.add("input-file", -1);
+  po::options_description allopts;
+  allopts.add(desc).add(hidden);
+  
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(allopts).positional(p).run(), vm);
+  po::notify(vm);
 
-  while ((opt = getopt(argc, argv, "zZj")) != -1) {
-    switch (opt) {
-    case 'z':
-      comp = COMP::GZ;
-      break;
-    case 'Z':
-      comp = COMP::Z;
-      break;
-    case 'j':
-      comp = COMP::BZ2;
-      break;
-    default:
-      std::cerr << "Usage: " << argv[0] << " [-z] [FILENAME]\n";
-      return EXIT_FAILURE;
-    }
+  if (vm.count("help")) {
+  	std::cout << "Usage: " << argv[0] << " [OPTIONS] [FILE]\n\n"
+  		<< "Turn a Penn DB into a graphviz dot file.\n\n"	
+  		<< desc << '\n';
+  	return 0;
   }
-
-  if (optind < argc) {
-    dbfile = argv[optind];
+  
+  if (vm.count("input-file")) {
+	  dbfile = vm["input-file"].as<std::string>();
   }
 
   try {
-    auto db = read_database(dbfile, comp);
+    auto db = read_database(dbfile, static_cast<COMP>(comp));
 
     std::cout << "digraph world {\n"
               << "\tnode [style=filled]\n"
@@ -80,7 +91,8 @@ main(int argc, char **argv)
               auto d = std::stoi(dist->second.data);
               std::cout << ", len=" << d;
             }
-          } catch (std::logic_error &e) {
+          } catch (std::logic_error &) {
+			  // DISTANCE didn't hold an integer. Ignore it.
           }
           print_color(obj);
           std::cout << "]\n";

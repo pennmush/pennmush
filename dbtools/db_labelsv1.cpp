@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <tuple>
 
 #include "database.h"
 #include "utils.h"
@@ -209,7 +210,7 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
                     << '\n';
         }
         dbthing garbage{};
-        garbage.num = db.objects.size();
+        garbage.num = static_cast<dbref>(db.objects.size());
         db.objects.push_back(std::move(garbage));
       }
       db.objects.push_back(read_object(in, d, dbversion, flags));
@@ -225,7 +226,7 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
       throw db_format_exception{"Unexpected character: "s + c};
     }
   }
-  return {db, dbversion};
+  return std::make_tuple(db, dbversion);
 }
 
 void

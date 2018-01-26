@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <tuple>
 
 #include "database.h"
 #include "io_primitives.h"
@@ -98,7 +99,7 @@ db_read_labeled_int(istream &in)
     throw db_format_exception{"Unable to read labeled int"s + istream_line(in)};
   }
   chomp(in);
-  return {lbl, n};
+  return std::make_tuple(lbl, n);
 }
 
 std::tuple<std::string, std::uint32_t>
@@ -111,7 +112,7 @@ db_read_labeled_u32(istream &in)
                               istream_line(in)};
   }
   chomp(in);
-  return {lbl, n};
+  return std::make_tuple(lbl, n);
 }
 
 void
@@ -155,7 +156,7 @@ db_read_labeled_string(istream &in)
 {
   auto lbl = read_label(in);
   auto body = db_read_str(in);
-  return {lbl, body};
+  return std::make_tuple(lbl, body);
 }
 
 std::string
@@ -187,7 +188,7 @@ db_read_labeled_dbref(istream &in)
 
   chomp(in);
 
-  return {lbl, d};
+  return std::make_tuple(lbl, d);
 }
 
 dbref

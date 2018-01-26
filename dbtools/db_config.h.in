@@ -1,0 +1,4 @@
+#pragma once
+#cmakedefine ZLIB_FOUND
+#cmakedefine BZIP2_FOUND
+

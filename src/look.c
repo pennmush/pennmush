@@ -164,7 +164,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     mush_free(nbuf, "string");
     return;
   }
-
+  
   PUSE;
   tag_wrap("FONT", "SIZE=+1", exit_name);
   PEND;
@@ -181,7 +181,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
                     &p, NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {
-        if (SUPPORT_PUEBLO && !texits) {
+        if (SUPPORT_HTML && !texits) {
           texits = 1;
           notify_noenter_by(loc, player, open_tag("UL"));
         }
@@ -216,7 +216,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
       }
     }
   }
-  if (SUPPORT_PUEBLO && texits) {
+  if (SUPPORT_HTML && texits) {
     PUSE;
     tag_cancel("UL");
     PEND;
@@ -485,16 +485,18 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   /* don't give the unparse if looking through Transparent exit */
   if (!look_through_exit) {
     PUSE;
-    tag("XCH_PAGE CLEAR=\"LINKS PLUGINS\"");
-    if (SUPPORT_PUEBLO && (key & LOOK_AUTO)) {
-      a = atr_get(loc, "VRML_URL");
-      if (a) {
-        tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
-      } else {
-        tag("IMG XCH_GRAPH=HIDE");
+    if (SUPPORT_PUEBLO) {
+      tag("XCH_PAGE CLEAR=\"LINKS PLUGINS\"");
+      if (key & LOOK_AUTO) {
+        a = atr_get(loc, "VRML_URL");
+        if (a) {
+          tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
+        } else {
+          tag("IMG XCH_GRAPH=HIDE");
+        }
       }
+      tag("HR");
     }
-    tag("HR");
     tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc, pe_info));
     PEND;
     notify_by(loc, player, pbuff);
@@ -1137,13 +1139,13 @@ do_sweep(dbref player, const char *arg1)
     return;
 
   if (arg1 && *arg1) {
-    if (string_prefix(arg1, "connected"))
+    if (strcasecmp(arg1, "connected") == 0)
       connect_flag = 1;
-    else if (string_prefix(arg1, "here"))
+    else if (strcasecmp(arg1, "here") == 0)
       here_flag = 1;
-    else if (string_prefix(arg1, "inventory"))
+    else if (strcasecmp(arg1, "inventory") == 0)
       inven_flag = 1;
-    else if (string_prefix(arg1, "exits"))
+    else if (strcasecmp(arg1, "exits") == 0)
       exit_flag = 1;
     else {
       notify(player, T("Invalid parameter."));

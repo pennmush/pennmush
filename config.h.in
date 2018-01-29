@@ -324,6 +324,10 @@ typedef bool _Bool;
 
 #undef HAVE_EVENTFD
 
+#undef HAVE_PLEDGE
+
+#undef HAVE_PIPE2
+
 /* Variables and defines */
 
 #undef HAVE_SIGCHLD

@@ -233,6 +233,7 @@ set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(strchrnul "string.h" HAVE_STRCHRNUL)
 check_symbol_exists(fgets_unlocked "stdio.h" HAVE_FGETS_UNLOCKED)
 check_symbol_exists(fputs_unlocked "stdio.h" HAVE_FPUTS_UNLOCKED)
+check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
 check_symbol_exists(vasprintf "stdio.h" HAVE_VASPRINTF)
 set(CMAKE_REQUIRED_DEFINITIONS ${SAVED_CMAKE_REQUIRED_DEFINITIONS})
 
@@ -450,7 +451,7 @@ set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c
   services.c set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c
   strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c
-  version.c wait.c warnings.c wild.c wiz.c)
+  version.c wait.c warnings.c websock.c wild.c wiz.c)
 
 add_executable(netmush ${SRC_FILES})
 target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")
@@ -522,6 +523,10 @@ add_custom_command(OUTPUT "${PROJECT_BINARY_DIR}/game/restrict.cnf"
   COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/update-cnf.pl" game/restrict.cnf game/restrictcnf.dst
   DEPENDS "${PROJECT_BINARY_DIR}/game/restrictcnf.dst"
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating restrict.cnf" VERBATIM)
+
+add_custom_target(versions
+	COMMAND ${PERL} "${PROJECT_BINARY_DIR}/utils/mkvershlp.pl" game/txt/hlp/ CHANGES.*
+	WORKING_DIRECTORY "${PROJECT_BINARY_DIR}" COMMENT "Updating changelog help files.")
 
 add_custom_target(update
   DEPENDS "${PROJECT_BINARY_DIR}/game/mush.cnf" "${PROJECT_BINARY_DIR}/game/alias.cnf"

@@ -1,13 +1,14 @@
-Bugs that aren't our fault, but might bite people:
+% Bugs and Issues
 
-Modern: 
+Bugs that aren't our fault, but might bite people
+=================================================
 
 * You might experience crashes because the default executable stack
   size is too small. An 8 megabyte stack is more than ample. On unix,
-  it can be raised with 'ulimit -s 8192'. On Windows, you must use the
+  it can be raised with `ulimit -s 8192`. On Windows, you must use the
   editbin progam that comes with MS development environments to raise
-  the stack on a per-executable basis, via 'editbin /STACK:8388608
-  netmush.exe'
+  the stack on a per-executable basis, via `editbin /STACK:8388608
+  netmush.exe`
 
 * Some IPv6-enabled systems are not configured out of the box to
   tunnel IPv4 connection attempts on the same port to the IPv6 socket
@@ -20,20 +21,23 @@ Modern:
   If that's not practical, you can get an IPv4-only mush by doing
   the following:
   
-   % ./configure --disable-ipv6
-   % make
+        % ./configure --disable-ipv6
+        % make
    
-  Then do a full @shutdown of the game and run restart.
+  Then do a full `@shutdown` of the game and run restart.
 
 * The configure script sometimes detects functions that aren't seen
   when the mush itself is compiled. Some linux distributions seem to
   be very prone to this, probably due to customizations of their glibc
-  packages. For now, just comment out the relevant HAVE_FOO lines from
+  packages. For now, just comment out the relevant `HAVE\_FOO` lines from
   config.h. You'll have to redo this every time you re-run
   configure. If you can figure out how to make the relevant prototypes
   and macros visible to Penn, let us know! Some functions known to
-  cause this include posix_fadvise() and posix_fallocate().
+  cause this include `posix_fadvise()` and `posix_fallocate()`.
+
+Bugs that are our fault
+=======================
 
 You can browse the bug and suggestion database at
-https://github.com/pennmush/pennmush/issues to see more.
+<https://github.com/pennmush/pennmush/issues> to see the list.
 

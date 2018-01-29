@@ -802,9 +802,11 @@ See also: Connection Functions
   
   With two arguments, colors() returns information about specific colors. <colors> can be any string accepted by the ansi() function's first argument. <format> must be one of:
   
-   hex:      return a hexcode in the format #rrggbb.
-   xterm256: return the number of the xterm color closest to the given <color>.
-   16color:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
+   hex, x:      return a hexcode in the format #rrggbb.
+   rgb, r:      return the RGB components as a list (0 0 0 - 255 255 255)
+   xterm256, d: return the number of the xterm color closest to the given <color>.
+   xterm256x,h: return the number of the xterm color in base 16.
+   16color, c:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
    name:     return a list of names of all the colors exactly matching the given colors, or '#-1 NO MATCHING COLOR NAME' if there is no exact match with a named color.
    auto:     returns the colors in the same format(s) they were given in.
 

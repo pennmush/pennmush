@@ -523,6 +523,12 @@ main(int argc __attribute__((__unused__)),
 
   parent_pid = getppid();
 
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio rpath inet flock unix dns", NULL) < 0) {
+    perror("pledge");
+  }
+#endif
+
   if (!ssl_init(cf.private_key_file, cf.ca_file, cf.ca_dir,
                 cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");

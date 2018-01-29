@@ -620,15 +620,15 @@ cnf_add_command(char *name, char *opts)
   if (opts && *opts) {
     p = trim_space_sep(opts, ' ');
     while ((one = split_token(&p, ' '))) {
-      if (string_prefix("noparse", one)) {
+      if (strcasecmp("noparse", one) == 0) {
         flags |= CMD_T_NOPARSE;
-      } else if (string_prefix("rsargs", one)) {
+      } else if (strcasecmp("rsargs", one) == 0) {
         flags |= CMD_T_RS_ARGS;
-      } else if (string_prefix("lsargs", one)) {
+      } else if (strcasecmp("lsargs", one) == 0) {
         flags |= CMD_T_LS_ARGS;
-      } else if (string_prefix("eqsplit", one)) {
+      } else if (strcasecmp("eqsplit", one) == 0) {
         flags |= CMD_T_EQSPLIT;
-      } else if (string_prefix("rsnoparse", one)) {
+      } else if (strcasecmp("rsnoparse", one) == 0) {
         flags |= CMD_T_RS_NOPARSE;
       } else {
         return 0; /* unknown option */
@@ -2435,27 +2435,27 @@ cnf_hook_command(char *command, char *opts)
   if (!(one = split_token(&p, ' ')))
     return 0;
 
-  if (string_prefix("before", one)) {
+  if (strcasecmp("before", one) == 0) {
     flag = HOOK_BEFORE;
     h = &cmd->hooks.before;
-  } else if (string_prefix("after", one)) {
+  } else if (strcasecmp("after", one) == 0) {
     flag = HOOK_AFTER;
     h = &cmd->hooks.after;
-  } else if (string_prefix("override/inplace", one)) {
+  } else if (strcasecmp("override/inplace", one) == 0) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
     inplace = QUEUE_INPLACE;
-  } else if (string_prefix("override", one)) {
+  } else if (strcasecmp("override", one) == 0) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
-  } else if (string_prefix("ignore", one)) {
+  } else if (strcasecmp("ignore", one) == 0) {
     flag = HOOK_IGNORE;
     h = &cmd->hooks.ignore;
-  } else if (string_prefix("extend/inplace", one)) {
+  } else if (strcasecmp("extend/inplace", one) == 0) {
     flag = HOOK_EXTEND;
     h = &cmd->hooks.extend;
     inplace = QUEUE_INPLACE;
-  } else if (string_prefix("extend", one)) {
+  } else if (strcasecmp("extend", one) == 0) {
     flag = HOOK_EXTEND;
     h = &cmd->hooks.extend;
   } else {

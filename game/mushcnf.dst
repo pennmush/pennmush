@@ -238,6 +238,16 @@ ssl_require_client_cert no
 socket_file data/netmush.sock
 
 ###
+### Websocket support
+###
+
+# Enable websockets
+use_ws true
+
+# path used in HTTP requests for a websocket connection to the game.
+ws_url /wsclient
+
+###
 ### Limits, costs, and other constants
 ###
 

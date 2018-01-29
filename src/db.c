@@ -1087,6 +1087,21 @@ getstring_noalloc(PENNFILE *f)
   }
 }
 
+/** Read a boolexp from a file.
+ * This function reads a boolexp from a file. It expects the format that
+ * put_boolexp writes out.
+ * \param f file pointer to read from.
+ * \param type pointer to lock type being read.
+ * \return pointer to boolexp read.
+ */
+boolexp
+getboolexp(PENNFILE *f, const char *type)
+{
+  char *val;
+  db_read_this_labeled_string(f, "key", &val);
+  return parse_boolexp(GOD, val, type);
+}
+
 extern PRIV lock_privs[];
 
 /** Read locks for an object.

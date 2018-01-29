@@ -5,13 +5,23 @@
 #pragma once
 
 #include <stdexcept>
-#include <set>
-#include <map>
 #include <vector>
 #include <ctime>
-
 #include <boost/iostreams/filtering_stream.hpp>
 
+#include "db_config.h"
+
+#ifdef HAVE_BOOST_CONTAINERS
+#include <boost/container/flat_set.hpp>
+#include <boost/container/flat_map.hpp>
+using stringset = boost::container::flat_set<std::string>;
+#else
+#include <set>
+#include <map>
+using stringset = std::set<std::string>;
+#endif
+
+using stringvec = std::vector<std::string>;
 using istream = boost::iostreams::filtering_istream;
 
 struct db_format_exception : public std::runtime_error {
@@ -19,8 +29,6 @@ struct db_format_exception : public std::runtime_error {
 };
 
 std::string istream_line(const istream &);
-
-using stringset = std::set<std::string>;
 
 using dbref = int;
 #undef NOTHING
@@ -42,19 +50,33 @@ struct flag {
 
 struct attrib {
   std::string name;
-  dbref creator = -1;
-  stringset flags;
-  std::string data;
+  dbref creator = 0;
+  stringvec flags;
   int derefs = 0;
+  std::string data;
+  attrib() {}
+  attrib(std::string n, stringvec f) : name(std::move(n)), flags(std::move(f))
+  {
+  }
 };
 
 struct lock {
   std::string type;
-  dbref creator = -1;
-  stringset flags;
+  dbref creator = 0;
+  stringvec flags;
   int derefs = 0;
   std::string key;
 };
+
+#ifdef HAVE_BOOST_CONTAINERS
+using flagmap = boost::container::flat_map<std::string, flag>;
+using attrmap = boost::container::flat_map<std::string, attrib>;
+using lockmap = boost::container::flat_map<std::string, lock>;
+#else
+using flagmap = std::map<std::string, flag>;
+using attrmap = std::map<std::string, attrib>;
+using lockmap = std::map<std::string, lock>;
+#endif
 
 struct dbthing {
   dbref num;
@@ -70,19 +92,23 @@ struct dbthing {
   dbtype type = dbtype::GARBAGE;
   std::time_t created;
   std::time_t modified;
-  std::map<std::string, lock> locks;
+  lockmap locks;
   stringset flags;
   stringset powers;
-  stringset warnings;
-  std::map<std::string, attrib> attribs;
+  stringvec warnings;
+  attrmap attribs;
 };
 
 struct database {
+  int version = 1;
+  std::uint32_t dbflags = 0;
   std::string saved_time;
-  std::map<std::string, flag> flags;
-  std::map<std::string, flag> powers;
-  std::map<std::string, attrib> attribs;
+  bool spiffy_af_ansi = false;
+  flagmap flags;
+  flagmap powers;
+  attrmap attribs;
   std::vector<dbthing> objects;
+  void fix_up();
 };
 
 /* DB flag macros - these should be defined whether or not the
@@ -114,7 +140,7 @@ struct database {
 #define DBF_HEAR_CONNECT 0x400000
 #define DBF_NEW_VERSIONS 0x800000
 
-enum COMP { NONE, Z, GZ, BZ2 };
+enum COMP { NONE, GZ, BZ2 };
 
 extern bool verbose;
 

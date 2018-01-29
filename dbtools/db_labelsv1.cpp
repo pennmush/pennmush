@@ -5,22 +5,25 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <tuple>
 
 #include "database.h"
-#include "utils.h"
 #include "io_primitives.h"
+#include "utils.h"
 #include "bits.h"
 #include "db_common.h"
 
 using namespace std::literals::string_literals;
 
-std::map<std::string, flag>
+flagmap
 read_flags(istream &in)
 {
-  std::map<std::string, flag> flags;
+  flagmap flags;
 
   int count = db_read_this_labeled_int(in, "flagcount");
+
+#ifdef HAVE_BOOST_CONTAINERS
+  flags.reserve(count + 10);
+#endif
 
   for (int n = 0; n < count; n += 1) {
     flag f;
@@ -32,7 +35,7 @@ read_flags(istream &in)
     f.perms = split_words(db_read_this_labeled_string(in, "perms"));
     f.negate_perms =
       split_words(db_read_this_labeled_string(in, "negate_perms"));
-    flags.emplace(std::move(name), std::move(f));
+    flags.emplace_hint(flags.end(), std::move(name), std::move(f));
   }
 
   count = db_read_this_labeled_int(in, "flagaliascount");
@@ -42,27 +45,31 @@ read_flags(istream &in)
 
     auto orig = flags.find(name);
     if (orig != flags.end()) {
-      flags.insert({alias, orig->second});
+      flags.emplace(alias, orig->second);
     }
   }
 
   return flags;
 }
 
-std::map<std::string, attrib>
+attrmap
 read_db_attribs(istream &in)
 {
-  std::map<std::string, attrib> attribs;
+  attrmap attribs;
   int count = db_read_this_labeled_int(in, "attrcount");
+
+#ifdef HAVE_BOOST_CONTAINERS
+  attribs.reserve(count + 20);
+#endif
 
   for (int n = 0; n < count; n += 1) {
     attrib a;
     auto name = db_read_this_labeled_string(in, "name");
     a.name = name;
-    a.flags = split_words(db_read_this_labeled_string(in, "flags"));
+    a.flags = split_words_vec(db_read_this_labeled_string(in, "flags"));
     a.creator = db_read_this_labeled_dbref(in, "creator");
     a.data = db_read_this_labeled_string(in, "data");
-    attribs.emplace(std::move(name), std::move(a));
+    attribs.emplace_hint(attribs.end(), std::move(name), std::move(a));
   }
 
   count = db_read_this_labeled_int(in, "attraliascount");
@@ -72,71 +79,83 @@ read_db_attribs(istream &in)
 
     auto orig = attribs.find(name);
     if (orig != attribs.end()) {
-      attribs.insert({alias, orig->second});
+      attribs.emplace(alias, orig->second);
     }
   }
 
   return attribs;
 }
 
-std::map<std::string, attrib>
-read_obj_attribs(istream &in)
+attrmap
+read_obj_attribs(istream &in, std::uint32_t flags)
 {
-  std::map<std::string, attrib> attribs;
+  attrmap attribs;
   int count = db_read_this_labeled_int(in, "attrcount");
+
+#ifdef HAVE_BOOST_CONTAINERS
+  attribs.reserve(count);
+#endif
 
   for (int n = 0; n < count; n += 1) {
     attrib a;
     auto name = db_read_this_labeled_string(in, "name");
     a.name = name;
     a.creator = db_read_this_labeled_dbref(in, "owner");
-    a.flags = split_words(db_read_this_labeled_string(in, "flags"));
+    a.flags = split_words_vec(db_read_this_labeled_string(in, "flags"));
     a.derefs = db_read_this_labeled_int(in, "derefs");
     a.data = db_read_this_labeled_string(in, "value");
-    attribs.emplace(std::move(name), std::move(a));
+    if (!(flags & DBF_SPIFFY_AF_ANSI)) {
+      /* Reparses ANSI using ansi_string stuff. Ignore. */
+    }
+    attribs.emplace_hint(attribs.end(), std::move(name), std::move(a));
   }
 
   return attribs;
 }
 
 // Only works with DBF_SPIFFY_LOCKS
-std::map<std::string, lock>
+lockmap
 read_locks(istream &in, std::uint32_t flags)
 {
-  std::map<std::string, lock> locks;
-  constexpr std::uint32_t fullspiff = DBF_LABELS | DBF_SPIFFY_LOCKS;
-  
+  lockmap locks;
+  constexpr std::uint32_t fullspiff_flags = DBF_LABELS | DBF_SPIFFY_LOCKS;
+  bool fullspiff = ((flags & fullspiff_flags) == fullspiff_flags);
+
   int count = db_read_this_labeled_int(in, "lockcount");
 
+#ifdef HAVE_BOOST_CONTAINERS
+  locks.reserve(count);
+#endif
+
   for (int n = 0; n < count; n += 1) {
-    lock l;
+    lock l{};
     std::string type;
-    if ((flags & fullspiff) == fullspiff ) {
+    if (fullspiff) {
       type = db_read_this_labeled_string(in, "type");
-      l.type = type;     
+      l.type = type;
       l.creator = db_read_this_labeled_dbref(in, "creator");
-      l.flags = split_words(db_read_this_labeled_string(in, "flags"));
+      l.flags = split_words_vec(db_read_this_labeled_string(in, "flags"));
       l.derefs = db_read_this_labeled_int(in, "derefs");
       l.key = db_read_this_labeled_string(in, "key");
     } else if (flags & DBF_SPIFFY_LOCKS) {
       type = db_read_this_labeled_string(in, "type");
       l.type = type;
       l.creator = db_read_this_labeled_int(in, "creator");
-      l.flags = lockbits_to_set(db_read_this_labeled_int(in, "flags"));
+      l.flags = lockbits_to_vec(db_read_this_labeled_int(in, "flags"));
       l.key = db_read_this_labeled_string(in, "key");
     } else {
       throw db_format_exception{"Unsupported lock format."};
     }
-    locks.emplace(std::move(type), std::move(l));
+    locks.emplace_hint(locks.end(), std::move(type), std::move(l));
   }
 
   return locks;
 }
 
 dbthing
-read_object(istream &in, dbref num, int version, std::uint32_t flags)
+read_object(istream &in, dbref num, int, std::uint32_t flags)
 {
-  dbthing obj{};
+  dbthing obj;
   obj.num = num;
   obj.name = db_read_this_labeled_string(in, "name");
   obj.location = db_read_this_labeled_dbref(in, "location");
@@ -152,17 +171,17 @@ read_object(istream &in, dbref num, int version, std::uint32_t flags)
   obj.flags = split_words(db_read_this_labeled_string(in, "flags"));
   obj.powers = split_words(db_read_this_labeled_string(in, "powers"));
   if (flags & DBF_WARNINGS) {
-    obj.warnings = split_words(db_read_this_labeled_string(in, "warnings"));
+    obj.warnings = split_words_vec(db_read_this_labeled_string(in, "warnings"));
   }
   if (flags & DBF_CREATION_TIMES) {
     obj.created = db_read_this_labeled_u32(in, "created");
     obj.modified = db_read_this_labeled_u32(in, "modified");
   }
-  obj.attribs = read_obj_attribs(in);
+  obj.attribs = read_obj_attribs(in, flags);
   return obj;
 }
 
-std::tuple<database, int>
+database
 read_db_labelsv1(istream &in, std::uint32_t flags)
 {
   std::uint32_t minimum_flags = DBF_LABELS | DBF_SPIFFY_LOCKS;
@@ -173,10 +192,9 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
   }
 
   database db;
-  int dbversion = 1;
 
   if (flags & DBF_NEW_VERSIONS) {
-    dbversion = db_read_this_labeled_int(in, "dbversion");
+    db.version = db_read_this_labeled_int(in, "dbversion");
   }
   db.saved_time = db_read_this_labeled_string(in, "savedtime");
 
@@ -204,16 +222,14 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
       dbref d = db_getref(in);
       while (static_cast<std::size_t>(d) != db.objects.size()) {
         if (!(flags & DBF_LESS_GARBAGE)) {
-          std::cerr << "Missing object #"
-                    << db.objects.size()
-                    << istream_line(in)
-                    << '\n';
+          std::cerr << "Missing object #" << db.objects.size()
+                    << istream_line(in) << '\n';
         }
-        dbthing garbage{};
+        dbthing garbage;
         garbage.num = static_cast<dbref>(db.objects.size());
-        db.objects.push_back(std::move(garbage));
+        db.objects.emplace_back(std::move(garbage));
       }
-      db.objects.push_back(read_object(in, d, dbversion, flags));
+      db.objects.emplace_back(read_object(in, d, db.version, flags));
     } break;
     case '*': {
       std::string eod;
@@ -226,11 +242,15 @@ read_db_labelsv1(istream &in, std::uint32_t flags)
       throw db_format_exception{"Unexpected character: "s + c};
     }
   }
-  return std::make_tuple(db, dbversion);
+  if (flags & DBF_SPIFFY_AF_ANSI) {
+    db.spiffy_af_ansi = true;
+  }
+
+  return db;
 }
 
 void
-write_flags(std::ostream &out, const std::map<std::string, flag> &flags)
+write_flags(std::ostream &out, const flagmap &flags)
 {
   std::vector<std::string> canon;
   std::vector<std::string> aliases;
@@ -266,8 +286,7 @@ write_flags(std::ostream &out, const std::map<std::string, flag> &flags)
 }
 
 void
-write_db_attribs(std::ostream &out,
-                 const std::map<std::string, attrib> &attribs)
+write_db_attribs(std::ostream &out, const attrmap &attribs)
 {
   std::vector<std::string> canon;
   std::vector<std::string> aliases;
@@ -298,7 +317,7 @@ write_db_attribs(std::ostream &out,
 }
 
 void
-write_locks(std::ostream &out, const std::map<std::string, lock> &locks)
+write_locks(std::ostream &out, const lockmap &locks)
 {
   out << "lockcount " << locks.size() << '\n';
   for (const auto &l : locks) {
@@ -312,8 +331,7 @@ write_locks(std::ostream &out, const std::map<std::string, lock> &locks)
 }
 
 void
-write_obj_attribs(std::ostream &out,
-                  const std::map<std::string, attrib> &attribs)
+write_obj_attribs(std::ostream &out, const attrmap &attribs)
 {
   out << "attrcount " << attribs.size() << '\n';
   for (const auto &a : attribs) {
@@ -348,15 +366,17 @@ write_db_labelsv1(std::ostream &out, const database &db)
   dbflag += DBF_NEW_POWERS;
   dbflag += DBF_POWERS_LOGGED;
   dbflag += DBF_LABELS;
-  dbflag += DBF_SPIFFY_AF_ANSI;
   dbflag += DBF_HEAR_CONNECT;
   dbflag += DBF_NEW_VERSIONS;
+  if (db.spiffy_af_ansi) {
+    dbflag += DBF_SPIFFY_AF_ANSI;
+  }
 
   dbflag = dbflag * 256 + 2;
 
   out << "+V" << dbflag << '\n';
   out << "dbversion 6\n";
-  
+
   out << "savedtime \"" << get_time() << "\"\n";
 
   out << "+FLAGS LIST\n";

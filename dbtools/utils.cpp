@@ -1,29 +1,37 @@
 #include <sstream>
 #include <string>
-#include <set>
 #include <ctime>
-
+#include <algorithm>
 #include <boost/algorithm/string/split.hpp>
 
 #include "database.h"
+#include "io_primitives.h"
 #include "utils.h"
 
-std::vector<std::string>
-split_on(const std::string &words, char sep)
+stringvec
+split_on(string_view words, char sep)
 {
-  std::vector<std::string> res;
-  boost::algorithm::split(res, words, [sep](char c){ return c == sep; },
-                          boost::algorithm::token_compress_on);
+  using namespace boost::algorithm;
+  stringvec res;
+  split(res, words, [sep](char c) { return c == sep; }, token_compress_on);
   return res;
 }
 
 // Turn a space-seperated list of words into a set of words
 stringset
-split_words(const std::string &words)
+split_words(string_view words)
 {
   using namespace boost::algorithm;
   stringset res;
-  split(res, words, [](char c){ return c == ' '; }, token_compress_on);
+  split(res, words, [](char c) { return c == ' '; }, token_compress_on);
+  return res;
+}
+
+stringvec
+split_words_vec(string_view words)
+{
+  auto res = split_on(words, ' ');
+  std::sort(res.begin(), res.end());
   return res;
 }
 
@@ -43,6 +51,20 @@ join_words(const stringset &words)
     res.pop_back();
   }
 
+  return res;
+}
+
+std::string
+join_words(const stringvec &words)
+{
+  std::string res;
+
+  for (auto i = words.begin(); i != words.end(); ++i) {
+    if (i != words.begin()) {
+      res += ' ';
+    }
+    res += *i;
+  }
   return res;
 }
 

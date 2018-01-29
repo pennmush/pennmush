@@ -1087,21 +1087,6 @@ getstring_noalloc(PENNFILE *f)
   }
 }
 
-/** Read a boolexp from a file.
- * This function reads a boolexp from a file. It expects the format that
- * put_boolexp writes out.
- * \param f file pointer to read from.
- * \param type pointer to lock type being read.
- * \return pointer to boolexp read.
- */
-boolexp
-getboolexp(PENNFILE *f, const char *type)
-{
-  char *val;
-  db_read_this_labeled_string(f, "key", &val);
-  return parse_boolexp(GOD, val, type);
-}
-
 extern PRIV lock_privs[];
 
 /** Read locks for an object.
@@ -1167,42 +1152,6 @@ get_new_locks(dbref i, PENNFILE *f, int c)
       found, count);
 }
 
-/** Read locks for an object.
- * This function is used for DBF_NEW_LOCKS to read a whole list
- * of locks from an object and set them. DBF_NEW_LOCKS aren't really
- * new any more, and get_new_locks() is probably being used instead of
- * this function.
- * \param i dbref of the object.
- * \param f file pointer to read from.
- */
-void
-getlocks(dbref i, PENNFILE *f)
-{
-  /* Assumes it begins at the beginning of a line. */
-  int c;
-  boolexp b;
-  char buf[BUFFER_LEN], *p;
-  while ((c = penn_fgetc(f)), c != EOF && c == '_') {
-    p = buf;
-    while ((c = penn_fgetc(f)), c != EOF && c != '|') {
-      *p++ = c;
-    }
-    *p = '\0';
-    if (c == EOF || (p - buf == 0)) {
-      do_rawlog(LT_ERR, "ERROR: Invalid lock format on object #%d", i);
-      return;
-    }
-    b = getboolexp(f, buf); /* Which will clobber a '\n' */
-    if (b == TRUE_BOOLEXP) {
-      /* getboolexp() would already have complained. */
-      return;
-    } else {
-      add_lock_raw(Owner(i), i, buf, b, LF_DEFAULT);
-    }
-  }
-  penn_ungetc(c, f);
-  return;
-}
 
 /** Free the entire database.
  * This function frees the name, attributes, and locks on every object
@@ -1446,10 +1395,7 @@ db_read_oldstyle(PENNFILE *f)
       o->next = getref(f);
       o->parent = getref(f);
       o->locks = NULL;
-      if (globals.indb_flags & DBF_SPIFFY_LOCKS)
-        get_new_locks(i, f, -1);
-      else
-        getlocks(i, f);
+      get_new_locks(i, f, -1);
       o->owner = getref(f);
       o->zone = getref(f);
       s_Pennies(i, getref(f));

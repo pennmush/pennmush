@@ -5,18 +5,18 @@
 
 #pragma once
 
-std::map<std::string, attrib> standard_attribs();
-stringset attrflags_to_set(std::uint32_t);
+attrmap standard_attribs();
+stringvec attrflags_to_vec(std::uint32_t);
 
-std::map<std::string, flag> standard_flags();
+flagmap standard_flags();
 stringset flagbits_to_set(dbtype, std::uint32_t, std::uint32_t);
 
-std::map<std::string, flag> standard_powers();
+flagmap standard_powers();
 stringset powerbits_to_set(std::uint32_t);
 
-stringset warnbits_to_set(std::uint32_t);
+stringvec warnbits_to_vec(std::uint32_t);
 
-stringset lockbits_to_set(std::uint32_t);
-stringset default_lock_flags(const std::string &);
+stringvec lockbits_to_vec(std::uint32_t);
+stringvec default_lock_flags(string_view);
 
 dbtype dbtype_from_oldflags(std::uint32_t);

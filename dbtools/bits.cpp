@@ -1,7 +1,6 @@
-#include <map>
-#include <set>
 #include <string>
 #include <cstdint>
+#include <algorithm>
 
 #ifndef _MSC_VER
 #include "config.h"
@@ -24,6 +23,7 @@
 #include "hdrs/warn_tab.h"
 
 #include "database.h"
+#include "io_primitives.h"
 #include "bits.h"
 
 using namespace std::literals::string_literals;
@@ -38,7 +38,20 @@ privs_to_set(const PRIV *privs, std::uint32_t bits)
       flags.insert(privs[i].name);
     }
   }
+  return flags;
+}
 
+stringvec
+privs_to_vec(const PRIV *privs, std::uint32_t bits)
+{
+  stringvec flags;
+
+  for (int i = 0; privs[i].name; i += 1) {
+    if (bits & privs[i].bits_to_show) {
+      flags.push_back(privs[i].name);
+    }
+  }
+  std::sort(flags.begin(), flags.end());
   return flags;
 }
 
@@ -60,23 +73,24 @@ typebits_to_set(std::uint32_t bits)
   return types;
 }
 
-stringset
-attrflags_to_set(std::uint32_t bits)
+stringvec
+attrflags_to_vec(std::uint32_t bits)
 {
-  return privs_to_set(attr_privs_db, bits);
+  auto flags = privs_to_vec(attr_privs_db, bits);
+  return flags;
 }
 
-std::map<std::string, attrib>
+attrmap
 standard_attribs()
 {
-  std::map<std::string, attrib> attribs;
+  attrmap attribs;
 
   for (int i = 0; attr[i].name; i += 1) {
     attrib a{};
 
     a.name = attr[i].name;
     a.creator = attr[i].creator;
-    a.flags = attrflags_to_set(attr[i].flags);
+    a.flags = attrflags_to_vec(attr[i].flags);
     attribs.emplace(attr[i].name, std::move(a));
   }
 
@@ -90,13 +104,13 @@ standard_attribs()
   return attribs;
 }
 
-std::map<std::string, flag>
+flagmap
 build_standard_flags(const FLAG *flag_tab, const FLAG_ALIAS *alias_tab)
 {
-  std::map<std::string, flag> flags;
+  flagmap flags;
 
   for (int i = 0; flag_tab[i].name; i += 1) {
-    flag f{};
+    flag f;
     f.name = flag_tab[i].name;
     f.letter = flag_tab[i].letter;
     f.types = typebits_to_set(flag_tab[i].type);
@@ -111,11 +125,11 @@ build_standard_flags(const FLAG *flag_tab, const FLAG_ALIAS *alias_tab)
       flags.emplace(alias_tab[i].alias, f->second);
     }
   }
-  
+
   return flags;
 }
 
-std::map<std::string, flag>
+flagmap
 standard_flags()
 {
   return build_standard_flags(flag_table, flag_alias_tab);
@@ -140,18 +154,19 @@ flagbits_to_set(dbtype type, std::uint32_t bits, std::uint32_t toggles)
       flags.insert(hack_table[i].name);
     }
   }
-  
+
   return flags;
 }
 
-std::map<std::string, flag>
+flagmap
 standard_powers()
 {
   return build_standard_flags(power_table, power_alias_tab);
 }
 
 stringset
-powerbits_to_set(std::uint32_t bits) {
+powerbits_to_set(std::uint32_t bits)
+{
   stringset powers;
 
   for (int i = 0; power_table[i].name; i += 1) {
@@ -163,31 +178,32 @@ powerbits_to_set(std::uint32_t bits) {
   return powers;
 }
 
-stringset
-warnbits_to_set(std::uint32_t bits)
+stringvec
+warnbits_to_vec(std::uint32_t bits)
 {
-  stringset warnings;
+  stringvec warnings;
 
   for (int i = 0; checklist[i].name; i += 1) {
     if (checklist[i].flag & bits) {
-      warnings.insert(checklist[i].name);
+      warnings.push_back(checklist[i].name);
     }
   }
-
+  std::sort(warnings.begin(), warnings.end());
   return warnings;
 }
 
-stringset
-lockbits_to_set(std::uint32_t bits) {
-  return privs_to_set(lock_privs, bits);
+stringvec
+lockbits_to_vec(std::uint32_t bits)
+{
+  return privs_to_vec(lock_privs, bits);
 }
 
-stringset
-default_lock_flags(const std::string &name)
+stringvec
+default_lock_flags(string_view name)
 {
   for (int i = 0; lock_types[i].type; i += 1) {
     if (name == lock_types[i].type) {
-      return privs_to_set(lock_privs, lock_types[i].flags); 
+      return privs_to_vec(lock_privs, lock_types[i].flags);
     }
   }
   return {};
@@ -208,6 +224,7 @@ dbtype_from_oldflags(std::uint32_t bits)
   case OLD_TYPE_GARBAGE:
     return dbtype::GARBAGE;
   default:
-    throw db_format_exception{"Unknown type "s + std::to_string(bits & OLD_TYPE_MASK)};
+    throw db_format_exception{"Unknown type "s +
+                              std::to_string(bits & OLD_TYPE_MASK)};
   }
 }

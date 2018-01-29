@@ -5,20 +5,17 @@
 #pragma once
 
 #include <cstdint>
-#include <utility>
+#include <tuple>
 
 #if __cplusplus >= 201703L
 #include <string_view>
 using string_view = std::string_view;
-#else
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 106000
+#elif define(HAVE_BOOST_STRING_VIEW)
 #include <boost/utility/string_view.hpp>
 using string_view = boost::string_view;
 #else
 #include <boost/utility/string_ref.hpp>
 using string_view = boost::string_ref;
-#endif
 #endif
 
 long db_getref(istream &);
@@ -32,6 +29,7 @@ std::tuple<std::string, std::uint32_t> db_read_labeled_u32(istream &);
 std::uint32_t db_read_this_labeled_u32(istream &, string_view);
 
 std::string db_read_str(istream &);
+std::string db_unquoted_str(istream &);
 std::tuple<std::string, std::string> db_read_labeled_string(istream &);
 std::string db_read_this_labeled_string(istream &, string_view);
 

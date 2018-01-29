@@ -7,51 +7,85 @@
 #include "utils.h"
 #include "bits.h"
 
+constexpr std::uint32_t IMMORTAL = 0x100U;
+
 using namespace std::literals::string_literals;
 
-std::map<std::string, lock>
-read_old_locks(istream &in, dbref obj, std::uint32_t flags)
+bool quoted_strings = false;
+
+// Read a quoted or unquoted string depending on DBF_NEW_STRINGS
+std::string
+read_old_str(istream &in)
 {
-  // Penn 1.8.X has support for reading a lock format that appears to
-  // be: _NAME|key "boolexp". Not sure what versions produce it, if any.
-  // Some software archaeology is in order.
-  std::map<std::string, lock> locks;
-  
+  if (quoted_strings)
+    return db_read_str(in);
+  else
+    return db_unquoted_str(in);
+}
+
+// Reads DBF_NEW_LOCKS locks
+lockmap
+read_old_locks(istream &in, dbref obj, std::uint32_t)
+{
+  lockmap locks;
+
   while (in.peek() == '_') {
     lock l{};
     std::string name;
-    
+
     std::getline(in, name, '|');
     if (name[0] == '_') {
       name.erase(0, 1);
     } else {
-      throw db_format_exception{"Unable to read lock from #"s + std::to_string(obj)};
+      throw db_format_exception{"Unable to read lock from #"s +
+                                std::to_string(obj)};
     }
 
     l.type = name;
     l.creator = obj;
     l.flags = default_lock_flags(name);
-    if (flags & DBF_SPIFFY_LOCKS) {
-      l.key = db_read_this_labeled_string(in, "key");
-    } else {
-      l.key = read_boolexp(in);
-    }
+    l.key = read_boolexp(in);
+
     locks.emplace(name, std::move(l));
   }
   return locks;
 }
 
-std::map<std::string, attrib>
+// Pre DBF_NEW_LOCKS - three fixed locks.
+lockmap
+read_really_old_locks(istream &in, dbref obj, std::uint32_t)
+{
+  lockmap locks;
+  const char *names[] = {"Basic", "Use", "Enter"};
+
+  for (int i = 0; i < 3; i += 1) {
+    char c = in.get();
+    if (c == '\n') {
+      continue;
+    }
+    in.unget();
+    lock l{};
+    l.type = names[i];
+    l.creator = obj;
+    l.flags = default_lock_flags(names[i]);
+    l.key = read_boolexp(in);
+    locks.emplace(names[i], std::move(l));
+  }
+
+  return locks;
+}
+
+attrmap
 read_old_attrs(istream &in, uint32_t flags)
 {
-  std::map<std::string, attrib> attribs;
+  attrmap attribs;
   char c;
   std::string line;
 
   while (in.get(c)) {
     attrib a;
     std::uint32_t aflags;
-    
+
     switch (c) {
     case ']': {
       std::getline(in, line);
@@ -70,11 +104,11 @@ read_old_attrs(istream &in, uint32_t flags)
           aflags &= ~AF_ODARK;
         }
       }
-      a.flags = attrflags_to_set(flags);
+      a.flags = attrflags_to_vec(flags);
       if (elems.size() == 4) {
         a.derefs = std::stoi(elems[3]);
       }
-      a.data = db_read_str(in);
+      a.data = read_old_str(in);
       attribs.emplace(elems[0], std::move(a));
     } break;
     case '>':
@@ -94,9 +128,9 @@ read_old_attrs(istream &in, uint32_t flags)
 dbthing
 read_old_object(istream &in, dbref d, std::uint32_t flags)
 {
-  dbthing obj{};
+  dbthing obj;
   obj.num = d;
-  obj.name = db_read_str(in);
+  obj.name = read_old_str(in);
   obj.location = db_getref(in);
   obj.contents = db_getref(in);
   obj.exits = db_getref(in);
@@ -108,7 +142,7 @@ read_old_object(istream &in, dbref d, std::uint32_t flags)
     // There is a certain irony in my choice of function names
     obj.locks = read_old_locks(in, d, flags);
   } else {
-    throw db_format_exception{"Unsupported lock format."};
+    obj.locks = read_really_old_locks(in, d, flags);
   }
   obj.owner = db_getref(in);
   obj.zone = db_getref(in);
@@ -122,17 +156,26 @@ read_old_object(istream &in, dbref d, std::uint32_t flags)
     obj.type = dbtype_from_oldflags(oldflags);
     obj.flags = flagbits_to_set(obj.type, oldflags, oldtoggles);
   }
-  if (flags & DBF_NEW_POWERS) {
+  if (flags & DBF_NO_POWERS) {
+    // Empty powers
+  } else if (flags & DBF_NEW_POWERS) {
     obj.powers = split_words(db_read_str(in));
   } else {
-    obj.powers = powerbits_to_set(db_getref(in));
+    auto powers = db_getref(in);
+    obj.powers = powerbits_to_set(powers);
+    if (!(flags & DBF_SPLIT_IMMORTAL)) {
+      if (powers & IMMORTAL) {
+        obj.powers.insert("No_Pay");
+        obj.powers.insert("No_Quota");
+      }
+    }
   }
   if (!(flags & DBF_NO_CHAT_SYSTEM)) {
     // Discard really old chat field
     db_getref(in);
   }
   if (flags & DBF_WARNINGS) {
-    obj.warnings = warnbits_to_set(db_getref(in));
+    obj.warnings = warnbits_to_vec(db_getref(in));
   }
   if (flags & DBF_CREATION_TIMES) {
     obj.created = db_getref(in);
@@ -144,7 +187,13 @@ read_old_object(istream &in, dbref d, std::uint32_t flags)
     obj.modified = now;
   }
   obj.attribs = read_old_attrs(in, flags);
-  
+
+  if (!(flags & DBF_TYPE_GARBAGE)) {
+    if (obj.type == dbtype::THING && obj.flags.count("GOING")) {
+      obj.type = dbtype::GARBAGE;
+    }
+  }
+
   return obj;
 }
 
@@ -154,19 +203,20 @@ read_db_oldstyle(istream &in, std::uint32_t flags)
   database db{};
   char c;
   std::string line;
-  
+
+  quoted_strings = flags & DBF_NEW_STRINGS;
+
   db.saved_time = get_time();
   db.flags = standard_flags();
   db.powers = standard_powers();
   db.attribs = standard_attribs();
-  
+
   while (in.get(c)) {
     switch (c) {
     case '~': {
       long len = db_getref(in);
       db.objects.reserve(len);
-    }
-      break;
+    } break;
     case '+':
       std::getline(in, line);
       if (line == "FLAGS LIST") { // DBF_NEW_FLAGS ?
@@ -184,18 +234,16 @@ read_db_oldstyle(istream &in, std::uint32_t flags)
       dbref d = db_getref(in);
       while (static_cast<std::size_t>(d) != db.objects.size()) {
         if (!(flags & DBF_LESS_GARBAGE)) {
-          std::cerr << "Missing object #"
-                    << db.objects.size()
-                    << istream_line(in)
-                    << '\n';
+          std::cerr << "Missing object #" << db.objects.size()
+                    << istream_line(in) << '\n';
         }
-        dbthing garbage{};
+        dbthing garbage;
         garbage.num = static_cast<dbref>(db.objects.size());
         db.objects.push_back(std::move(garbage));
       }
       db.objects.push_back(read_old_object(in, d, flags));
     } break;
-    case '*': 
+    case '*':
       std::getline(in, line);
       if (line != "**END OF DUMP***") {
         throw db_format_exception{"Invalid end string "s + line};

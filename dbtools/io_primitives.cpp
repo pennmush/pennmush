@@ -52,6 +52,7 @@ db_getref_u64(istream &in)
   return db_read<std::uint64_t>(in);
 }
 
+// Read a quoted string
 std::string
 db_read_str(istream &in)
 {
@@ -76,6 +77,30 @@ db_read_str(istream &in)
     }
   }
   throw db_format_exception{"String without ending \""s + istream_line(in)};
+}
+
+// Read an old-school unquoted string. Embedded newlines are \r\n, end
+// of string is \n
+std::string
+db_unquoted_str(istream &in)
+{
+  char c;
+  std::string val;
+
+  while (in.get(c)) {
+    if (c == '\n') {
+      if (val.size() && val.back() == '\r') {
+        val.back() = '\n';
+      } else {
+        return val;
+      }
+    } else {
+      val.push_back(c);
+    }
+  }
+
+  throw db_format_exception{
+    "Unexpected end of file while trying to read unquoted string"};
 }
 
 std::string

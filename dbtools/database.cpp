@@ -1,8 +1,11 @@
 #include <iostream>
 #include <string>
 #include <tuple>
+#include <algorithm>
 
-#include "db_config.h"
+#include "database.h"
+#include "io_primitives.h"
+#include "utils.h"
 
 #include <boost/iostreams/device/file.hpp>
 #ifdef ZLIB_FOUND
@@ -14,22 +17,18 @@
 #endif
 #include <boost/iostreams/filter/counter.hpp>
 
-#include "database.h"
-#include "io_primitives.h"
-#include "utils.h"
-
 using namespace std::literals::string_literals;
 
 bool verbose = false;
 
-std::tuple<database, int> read_db_labelsv1(istream &, std::uint32_t);
+database read_db_labelsv1(istream &, std::uint32_t);
 database read_db_oldstyle(istream &, std::uint32_t);
 void write_db_labelsv1(std::ostream &, const database &);
 
 std::string
 istream_line(const istream &in)
 {
-  int line = in.component<0, boost::iostreams::counter>()->lines();
+  int line = in.component<boost::iostreams::counter>(0)->lines();
   return " at line "s + std::to_string(line);
 }
 
@@ -71,17 +70,19 @@ dbtype_to_num(dbtype t)
 }
 
 void
-fix_up_database(database &db, int dbversion, std::uint32_t flags)
+database::fix_up()
 {
   /* Flags that we don't have to do anything special about when
      upgrading:
 
+     DBF_NO_TEMPLE
      DBF_NO_STARTUP_FLAG
      DBF_PANIC
   */
 
   /* Flags handled in this function:
 
+     The absence of both DBF_NEW_LOCKS and DBF_SPIFFY_LOCKS
      DBF_VALUE_IS_COST
      DBF_LINK_ANYWHERE
      DBF_AF_NODUMP
@@ -94,81 +95,125 @@ fix_up_database(database &db, int dbversion, std::uint32_t flags)
      DBF_NO_CHAT_SYSTEM
      DBF_WARNINGS
      DBF_CREATION_TIMES
+     DBF_NO_POWERS
      DBF_NEW_LOCKS
+     DBF_NEW_STRINGS
+     DBF_TYPE_GARBAGE
+     DBF_SPLIT_IMMORTAL
      DBF_LESS_GARBAGE
-     DBF_AF_VISUAL 
+     DBF_AF_VISUAL
+     DBF_VALUE_IS_COST
      DBF_SPIFFY_LOCKS
      DBF_NEW_FLAGS
      DBF_NEW_POWERS
      DBF_LABELS
      DBF_NEW_VERSIONS
+     DBF_SPIFFY_AF_ANSI - Not set in outputed db unless already present
   */
 
-  if (!(flags & DBF_POWERS_LOGGED)) {
-    for (auto &p : db.powers) {
+  bool oldold_locks = (dbflags & (DBF_NEW_LOCKS | DBF_SPIFFY_LOCKS)) == 0;
+
+  if (!(dbflags & DBF_POWERS_LOGGED)) {
+    for (auto &p : powers) {
       p.second.perms.insert("log");
     }
   }
-  
-  if (dbversion < 2) {
-    db.attribs.insert(
-      {"MONIKER",
-       {"MONIKER", 0, split_words("no_command wizard visual locked"), "", 0}});
+
+  if (version < 2) {
+    attribs.emplace(
+      "MONIKER",
+      attrib("MONIKER", split_words_vec("no_command wizard visual locked")));
   }
 
-  if (dbversion < 4) {
-    db.flags["HAVEN"].types.erase("ROOM");
+  if (version < 4) {
+    flags["HAVEN"].types.erase("ROOM");
   }
 
-  if (dbversion < 5) {
-    db.attribs.insert(
-      {"MAILQUOTA",
-       {"MAILQUOTA", 0, split_words("no_command no_clone wizard locked"), "",
-        0}});
+  if (version < 5) {
+    attribs.emplace(
+      "MAILQUOTA", attrib("MAILQUOTA", split_words_vec(
+                                         "no_command no_clone wizard locked")));
   }
 
-  if (dbversion < 6) {
-    db.powers.erase("Cemit");
-    db.powers.erase("@cemit");
+  if (version < 6) {
+    powers.erase("Cemit");
+    powers.erase("@cemit");
   }
-  
-  for (auto &obj : db.objects) {
 
-    obj.flags.erase("GOING");
-    obj.flags.erase("GOING_TWICE");
+  for (auto &obj : objects) {
 
-    if (!(flags & DBF_AF_NODUMP)) {
-      obj.attribs.erase("QUEUE");
-      obj.attribs.erase("SEMAPHORE");
+    flags.erase("GOING");
+    flags.erase("GOING_TWICE");
+
+    if (!(dbflags & DBF_AF_NODUMP)) {
+      attribs.erase("QUEUE");
+      attribs.erase("SEMAPHORE");
     }
 
-    if (dbversion < 6) {
-      obj.powers.erase("Cemit");
+    if (version < 6) {
+      powers.erase("Cemit");
     }
-    
+
+    if (oldold_locks) {
+      // Pre NEW_LOCKS: Clone enter lock to zone lock on zone objects
+      if (obj.zone != NOTHING) {
+        auto zlock = objects[obj.zone].locks.find("Zone");
+        if (zlock == objects[obj.zone].locks.end()) {
+          auto elock = objects[obj.zone].locks.find("Enter");
+          if (elock != objects[obj.zone].locks.end()) {
+            objects[obj.zone].locks.emplace("Zone", elock->second);
+          }
+        }
+      }
+    }
+
     switch (obj.type) {
     case dbtype::THING:
-      if (!(flags & DBF_VALUE_IS_COST)) {
+      if (!(dbflags & DBF_VALUE_IS_COST)) {
         obj.pennies = (obj.pennies + 1) * 5;
       }
       break;
-      
+
     case dbtype::PLAYER:
       obj.flags.erase("CONNECTED");
-      if (!(flags & DBF_HEAR_CONNECT && obj.flags.count("MONITOR"))) {
+      if (!(dbflags & DBF_HEAR_CONNECT && obj.flags.count("MONITOR"))) {
         obj.flags.erase("MONITOR");
         obj.flags.insert("HEAR_CONNECT");
       }
-      break;
-      
-    case dbtype::ROOM:
-      if (dbversion < 4) {
-        obj.flags.erase("HAVEN");
+
+      if (oldold_locks) {
+        // Pre NEW_LOCKS: Clone Use lock to Page lock
+        auto ulock = obj.locks.find("Use");
+        if (ulock != obj.locks.end()) {
+          obj.locks.emplace("Page", ulock->second);
+        }
+        // And clone enter lock to zone on ZMPs
+        if (obj.flags.count("SHARED")) {
+          auto elock = obj.locks.find("Enter");
+          if (elock != obj.locks.end()) {
+            obj.locks.emplace("Zone", elock->second);
+          }
+        }
       }
       break;
-      
+
+    case dbtype::ROOM:
+      if (version < 4) {
+        obj.flags.erase("HAVEN");
+      }
+
+      if (oldold_locks) {
+        // Pre NEW_LOCKS: Move enter lock to teleport
+        auto elock = obj.locks.find("Enter");
+        if (elock != obj.locks.end()) {
+          obj.locks.emplace("Teleport", elock->second);
+          obj.locks.erase(elock);
+        }
+      }
+      break;
+
     case dbtype::EXIT:
-      if (obj.location == AMBIGUOUS && !(flags & DBF_LINK_ANYWHERE)) {
+      if (obj.location == AMBIGUOUS && !(dbflags & DBF_LINK_ANYWHERE)) {
         obj.powers.insert("LINK_ANYWHERE");
       }
       break;
@@ -177,6 +222,7 @@ fix_up_database(database &db, int dbversion, std::uint32_t flags)
       break;
     }
   }
+  version = CURRENT_DB_VERSION;
 }
 
 std::pair<std::uint32_t, const char *> dbflag_table[] = {
@@ -193,7 +239,7 @@ std::pair<std::uint32_t, const char *> dbflag_table[] = {
   {DBF_AF_VISUAL, "af_visual"},
   {DBF_VALUE_IS_COST, "value-is-cost"},
   {DBF_LINK_ANYWHERE, "link-anywhere"},
-  {DBF_NO_STARTUP_FLAG, "no-start-up-flag"},
+  {DBF_NO_STARTUP_FLAG, "no-startup-flag"},
   {DBF_PANIC, "PANIC"},
   {DBF_AF_NODUMP, "af_nodump"},
   {DBF_SPIFFY_LOCKS, "spiffy-locks"},
@@ -203,11 +249,11 @@ std::pair<std::uint32_t, const char *> dbflag_table[] = {
   {DBF_SPIFFY_AF_ANSI, "spiffy-af_ansi"},
   {DBF_HEAR_CONNECT, "hear_connect"},
   {DBF_NEW_VERSIONS, "new-versions"},
-  {0, nullptr}
-};
+  {0, nullptr}};
 
 std::string
-dbflags_to_str(std::uint32_t bits) {
+dbflags_to_str(std::uint32_t bits)
+{
   stringset flags;
   for (int i = 0; dbflag_table[i].second; i += 1) {
     if (dbflag_table[i].first & bits) {
@@ -230,27 +276,27 @@ operator>>(istream &in, database &db)
   }
 
   std::uint32_t flags = ((db_getref(in) - 2) / 256) - 5;
-  std::uint32_t minimum_flags =
-    DBF_NEW_STRINGS | DBF_TYPE_GARBAGE | DBF_SPLIT_IMMORTAL | DBF_NO_TEMPLE;
+  std::uint32_t minimum_flags = 0;
 
   if (verbose) {
     std::cerr << "Present database flags: " << dbflags_to_str(flags) << '\n';
   }
-  
+
   if ((flags & minimum_flags) != minimum_flags) {
-    throw db_format_exception{"Unable to read this database version. Minimum flags: "s + dbflags_to_str(minimum_flags)};
+    throw db_format_exception{
+      "Unable to read this database version. Minimum flags: "s +
+      dbflags_to_str(minimum_flags)};
   }
-  
-  int dbversion = 0;
+
   if (flags & DBF_LABELS) {
-    std::tie(db, dbversion) = read_db_labelsv1(in, flags);
+    db = read_db_labelsv1(in, flags);
     if (verbose) {
-      std::cerr << "Database version " << dbversion << '\n';
+      std::cerr << "Database version " << db.version << '\n';
     }
   } else {
     db = read_db_oldstyle(in, flags);
   }
-  fix_up_database(db, dbversion, flags);
+  db.dbflags = flags;
   return in;
 }
 
@@ -261,17 +307,14 @@ read_database(const std::string &name, COMP compress_type, bool vrbse)
   database db;
 
   verbose = vrbse;
-  
+
   istream dbin;
   dbin.push(io::counter{1});
-  
+
   switch (compress_type) {
   case COMP::NONE:
-  	break;
-#ifdef ZLIB_FOUND
-  case COMP::Z:
-    dbin.push(io::zlib_decompressor{});
     break;
+#ifdef ZLIB_FOUND
   case COMP::GZ:
     dbin.push(io::gzip_decompressor{});
     break;
@@ -282,20 +325,26 @@ read_database(const std::string &name, COMP compress_type, bool vrbse)
     break;
 #endif
   default:
-  	throw std::runtime_error{"Unsupported compression type!"};
+    throw std::runtime_error{"Unsupported compression type!"};
     break;
   }
-  
+
   if (name == "-") {
     dbin.push(std::cin);
   } else {
+    if (verbose) {
+      std::cerr << "Reading from " << name << '\n';
+    }
     dbin.push(io::file_source{name});
   }
 
+  dbin.exceptions(std::istream::badbit);
+
+  dbin.peek();
   if (!dbin) {
     throw std::runtime_error{"Unable to read database."};
   }
-  
+
   dbin >> db;
   if (dbin.good() || dbin.eof()) {
     return db;
@@ -312,11 +361,8 @@ write_database(const database &db, const std::string &name, COMP compress_type)
 
   switch (compress_type) {
   case COMP::NONE:
-  	break;
-#ifdef ZLIB_FOUND
-  case COMP::Z:
-    dbout.push(io::zlib_compressor{});
     break;
+#ifdef ZLIB_FOUND
   case COMP::GZ:
     dbout.push(io::gzip_compressor{});
     break;
@@ -327,10 +373,10 @@ write_database(const database &db, const std::string &name, COMP compress_type)
     break;
 #endif
   default:
-  	throw std::runtime_error{"Unsupported compression type!\n"};
-  	return;
+    throw std::runtime_error{"Unsupported compression type!\n"};
+    return;
   }
-  
+
   if (name == "-") {
     dbout.push(std::cout);
   } else {
@@ -340,7 +386,7 @@ write_database(const database &db, const std::string &name, COMP compress_type)
   if (!dbout) {
     throw std::runtime_error{"Unable to write database!"};
   }
-  
+
   dbout << db;
 }
 

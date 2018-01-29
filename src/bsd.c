@@ -2296,7 +2296,7 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    const char *latin1;
+    char *latin1;
     int len;
 
     if (!valid_utf8(command)) {

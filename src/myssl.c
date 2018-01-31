@@ -56,6 +56,10 @@ void shutdown_checkpoint(void);
 #endif
 #include <stdio.h>
 
+#ifdef __RDRND__
+#include <immintrin.h>
+#endif
+
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/dh.h>
@@ -104,7 +108,6 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
               using an old version of OpenSSL. Walker, this means you! */
   /* uint8_t context[128]; */
   unsigned int reps = 1;
-  pcg32_random_t rand_state;
 
   if (!bio_err) {
     if (!SSL_library_init())
@@ -114,7 +117,11 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
     bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
   }
 
+#ifndef __RDRND__
+  pcg32_random_t rand_state;
   pcg32_srandom_r(&rand_state, time(NULL), getpid() + 2);
+#endif
+  
   lock_file(stderr);
   fputs("Seeding OpenSSL random number pool.\n", stderr);
   unlock_file(stderr);
@@ -125,8 +132,13 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
     uint32_t gibberish[8];
     int n;
 
+#ifdef __RDRND__
+    for (n = 0; n < 8; n++)
+      _rdrand32_step(gibberish + n);
+#else
     for (n = 0; n < 8; n++)
       gibberish[n] = pcg32_random_r(&rand_state);
+#endif
 
     RAND_seed(gibberish, sizeof gibberish);
 

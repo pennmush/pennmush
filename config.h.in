@@ -328,6 +328,8 @@ typedef bool _Bool;
 
 #undef HAVE_PIPE2
 
+#undef HAVE_GETENTROPY
+
 /* Variables and defines */
 
 #undef HAVE_SIGCHLD

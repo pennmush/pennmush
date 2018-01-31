@@ -341,7 +341,7 @@ AC_CHECK_FUNCS([_vsnprintf_s vasprintf])
 AC_CHECK_FUNCS([strcasecmp strncasecmp _stricmp _strnicmp strdup])
 AC_FUNC_STRCOLL
 AC_CHECK_FUNCS([strxfrm _strncoll _stricoll _strnicoll strchrnul])
-AC_CHECK_FUNCS([sysconf waitpid prctl ffs])
+AC_CHECK_FUNCS([sysconf waitpid prctl ffs getentropy])
 
 if test $ac_cv_func_waitpid = no; then
 

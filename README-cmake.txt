@@ -1,13 +1,13 @@
-Raevnos is currently in the middle of converting the Penn build system from autoconf and hand
-written makefiles to using cmake to generate project files for arbitrary environments.
+Raevnos is currently in the middle of converting the Penn build system
+from autoconf and hand written makefiles to using cmake to generate
+project files for arbitrary environments.
 
 Currently, only the "Unix Makefiles" generator is being tested.
-
 
 Instructions for use (Subject to change):
 
 1. Configure the system and create build files:
-   % cmake src
+   % cmake -DCMAKE_BUILD_TYPE=Debug src
 
   Options that can be passed to cmake via -D NAME=1 include:
 
@@ -24,9 +24,12 @@ Instructions for use (Subject to change):
 Other targets:
 
 clean -- remove compiled files etc.
+versions -- rebuild help versions of changelogs.
 
-Extra optional targets created depending on what's found by cmake during the configuration step:
+Extra optional targets created depending on what's found by cmake
+during the configuration step:
 
 etags -- build an emacs TAGS file.
 ctags -- build a vi tags file.
 indent -- run clang-format over the source.
+

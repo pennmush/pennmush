@@ -141,28 +141,6 @@ atr_sub_branch(ATTR *branch)
   return NULL;
 }
 
-/** Find the first attribute that's NOT a child of the root attribute.
- * \param branch the attribute to look under
- */
-static ATTR *
-atr_next_branch(ATTR *branch)
-{
-  char const *name;
-  size_t len;
-
-  name = AL_NAME(branch);
-  len = strlen(name);
-  for (branch++; AL_NAME(branch); branch++) {
-    const char *n2 = AL_NAME(branch);
-    if (strlen(n2) <= len || n2[len] != '`')
-      return branch;
-    else if (strncoll(n2, name, len) != 0) {
-      return branch;
-    }
-  }
-  return branch;
-}
-
 /** Find the attr immediately before the first child of 'branch'. This is
  *  not necessarily 'branch' itself.
  * \param branch the attr to look for children of
@@ -195,6 +173,31 @@ atr_sub_branch_prev(ATTR *branch)
     prev = branch;
   }
   return NULL;
+}
+
+/** Test to see if an attribute name is the root of another
+ *
+ * \param root the string to test to see if it's aroot
+ * \param path the string to be tested.
+ * \return true or false
+ */
+static bool
+is_atree_root(const char *root, const char *path)
+{
+  size_t rootlen, pathlen;
+
+  rootlen = strlen(root);
+  pathlen = strlen(path);
+
+  if (rootlen >= pathlen) {
+    return 0;
+  }
+
+  if (path[rootlen] != '`') {
+    return 0;
+  }
+
+  return memcmp(root, path, rootlen) == 0;
 }
 
 /** Convert a string of attribute flags to a bitmask.
@@ -1614,7 +1617,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   NEW_PE_INFO *pe_info;
   dbref current = thing, next = NOTHING;
   int parent_count = 0;
-  StrTree seen, nocmd_roots;
+  StrTree seen, nocmd_roots, private_attrs;
 
   /* check for lots of easy ways out */
   if (type != '$' && type != '^')
@@ -1655,36 +1658,66 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
   st_init(&seen, "AttrsSeenTree");
   st_init(&nocmd_roots, "AttrsSeenTree");
-
+  st_init(&private_attrs, "AttrsSeenTree");
+  
   do {
     next =
       parent_depth ? next_parent(thing, current, &parent_count, NULL) : NOTHING;
 
+    st_flush(&private_attrs);
+    
     ATTR_FOR_EACH (current, ptr) {
       if (current == thing) {
+        if (st_find(AL_NAME(ptr), &nocmd_roots)) {
+          continue;
+        }
         st_insert(AL_NAME(ptr), &seen);
         if (AF_Noprog(ptr)) {
           /* No-command. This, and later trees with this path its root
              are skipped. */
           st_insert(AL_NAME(ptr), &nocmd_roots);
           if (AF_Root(ptr)) {
-            ptr = atr_next_branch(ptr) - 1;
+            ATTR *p2 = atr_sub_branch(ptr);
+            if (p2) {
+              for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
+                   p2++) {
+                st_insert(AL_NAME(p2), &nocmd_roots);
+              }        
+            }          
           }
           continue;
         }
       } else {
+        if (st_find(AL_NAME(ptr), &private_attrs)) {
+          /* Already decided to skip this attribute */
+          continue;
+        }
         if (st_find(AL_NAME(ptr), &nocmd_roots)) {
           /* Skip attributes that are masked by an earlier nocommand */
           if (AF_Root(ptr)) {
-            ptr = atr_next_branch(ptr) - 1;
+            ATTR *p2 = atr_sub_branch(ptr);
+            if (p2) {
+              for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
+                   p2++) {
+                st_insert(AL_NAME(p2), &nocmd_roots);
+                st_insert(AL_NAME(p2), &private_attrs);
+              }
+            }
           }
           continue;
         }
         if (AF_Private(ptr)) {
           /* No-inherit. This attribute is not visible, but later ones
              with the same name can be */
+          st_insert(AL_NAME(ptr), &private_attrs);
           if (AF_Root(ptr)) {
-            ptr = atr_next_branch(ptr) - 1;
+            ATTR *p2 = atr_sub_branch(ptr);
+            if (p2) {
+              for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
+                   p2++) {
+                st_insert(AL_NAME(p2), &private_attrs);
+              }              
+            }                        
           }
           continue;
         }
@@ -1693,7 +1726,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
              are skipped. */
           st_insert(AL_NAME(ptr), &nocmd_roots);
           if (AF_Root(ptr)) {
-            ptr = atr_next_branch(ptr) - 1;
+            ATTR *p2 = atr_sub_branch(ptr);
+            if (p2) {
+              for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
+                   p2++) {
+                st_insert(AL_NAME(p2), &nocmd_roots);
+              }              
+            }            
           }
           continue;
         }
@@ -1753,6 +1792,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
       }
       if (match_found) {
+        do_rawlog(LT_TRACE, "Found: %s/%s", Name(current), AL_NAME(ptr));
         /* We only want to do the lock check once, so that any side
          * effects in the lock are only performed once per utterance.
          * Thus, '$foo *r:' and '$foo b*:' on the same object will only
@@ -1832,6 +1872,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
   st_flush(&seen);
   st_flush(&nocmd_roots);
+  st_flush(&private_attrs);
 
   if (pe_regs)
     pe_regs_free(pe_regs);

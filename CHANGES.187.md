@@ -25,6 +25,11 @@ Major Changes
 * Support websocket connections. See <https://github.com/grapenut/websockclient> for a
   sample in-browser client. [Grapenut, 1007]
 
+Minor Changes
+-------------
+
+* Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
+
 Softcode
 --------
 

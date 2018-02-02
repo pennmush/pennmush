@@ -415,7 +415,7 @@ AC_DEFINE(FORCE_IPV4)
 fi
 
 AC_ARG_ENABLE(nls, AS_HELP_STRING([--disable-nls],
-  [Don't use message-translation]), enable_nls=$enableval, enable_nls=yes)
+  [Don't use message-translation]), enable_nls=$enableval, enable_nls=no)
 
 if test "$enable_nls" = "no"; then
 AC_DEFINE(DONT_TRANSLATE)

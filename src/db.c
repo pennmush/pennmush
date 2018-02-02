@@ -178,7 +178,6 @@ db_grow(dbref newtop)
     while (initialized < db_top) {
       o = db + initialized;
       o->name = 0;
-      o->list = 0;
       o->location = NOTHING;
       o->contents = NOTHING;
       o->exits = NOTHING;
@@ -194,6 +193,8 @@ db_grow(dbref newtop)
       o->warnings = 0;
       o->modification_time = o->creation_time = mudtime;
       o->attrcount = 0;
+      o->attrcap = 0;
+      o->list = NULL;
       initialized++;
     }
   }
@@ -679,14 +680,14 @@ db_write_object(PENNFILE *f, dbref i)
   /* write the attribute list */
 
   /* Don't trust AttrCount(thing) for number of attributes to write. */
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  ATTR_FOR_EACH(i, list) {
     if (AF_Nodump(list))
       continue;
     count++;
   }
   db_write_labeled_int(f, "attrcount", count);
 
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  ATTR_FOR_EACH(i, list) {
     if (AF_Nodump(list))
       continue;
     db_write_labeled_string(f, " name", AL_NAME(list));
@@ -805,21 +806,17 @@ int
 db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 {
   struct object *o;
-  ALIST *list, *next;
+  ALIST *list;
   char name[BUFFER_LEN];
   char tbuf1[BUFFER_LEN];
-  int err = 0;
   char *p;
-  dbref owner;
-  int fixmemdb = 0;
-  int count = 0;
   int attrcount = 0;
 
   o = db + i;
   db_write_obj_basic(f, i, o);
 
   /* write the attribute list, scanning */
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  ATTR_FOR_EACH(i, list) {
     if (AF_Nodump(list))
       continue;
     attrcount++;
@@ -827,25 +824,30 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 
   db_write_labeled_int(f, "attrcount", attrcount);
 
-  for (list = o->list; list; list = next) {
-    next = AL_NEXT(list);
+  list = o->list;
+  for (int seen = 0; seen < AttrCount(i); seen++, list++) {
+    bool fixmemdb = 0, err = 0;
+    bool fixname = 0, fixtext = 0;
+    dbref owner;
+
     if (AF_Nodump(list))
       continue;
-    fixmemdb = err = 0;
+
     /* smash unprintable characters in the name, replace with ! */
     strcpy(name, AL_NAME(list));
     for (p = name; *p; p++) {
       if (!isprint(*p) || isspace(*p)) {
         *p = '!';
-        fixmemdb = err = 1;
+        err = 1;
       }
     }
     if (err) {
+      fixname = fixmemdb = 1;
       /* If name already exists on this object, try adding a
        * number to the end. Give up if we can't find one < 10000
        */
       if (atr_get_noparent(i, name)) {
-        count = 0;
+        int count = 0;
         do {
           name[BUFFER_LEN - 6] = '\0';
           snprintf(tbuf1, BUFFER_LEN, "%s%d", name, count);
@@ -885,19 +887,40 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
       }
     }
     if (err) {
-      fixmemdb = 1;
+      fixtext = fixmemdb = 1;
       do_rawlog(LT_CHECK, " * Bad text in attribute %s on #%d. Changed to:\n",
                 name, i);
       do_rawlog(LT_CHECK, "%s\n", tbuf1);
     }
     db_write_labeled_string(f, "  value", tbuf1);
+
     if (flag && fixmemdb) {
-      /* Fix the db in memory */
-      privbits flags = AL_FLAGS(list);
-      atr_clr(i, AL_NAME(list), owner);
-      (void) atr_add(i, name, tbuf1, owner, flags);
-      list = atr_get_noparent(i, name);
-      AL_FLAGS(list) = flags;
+      /* Fix the db in memory. */
+      AL_CREATOR(list) = owner;
+
+      if (fixtext) {
+        char *t = compress(tbuf1);
+        if (!t)
+          return 0;
+
+        chunk_delete(list->data);
+        list->data = chunk_create(t, strlen(t), 0);
+        free(t);
+      }
+      if (fixname) {
+        /* Changing the name of the attribute means this can result in
+         * writing the attribute to disk several times, and likely has
+         * for many, many years. Shows how often this is used. Figure
+         * out something eventually.
+         */
+        /*
+          privbits flags = AL_FLAGS(list);
+          atr_clr(i, AL_NAME(list), owner);
+          (void) atr_add(i, name, tbuf1, owner, flags);
+          list = atr_get_noparent(i, name);
+          AL_FLAGS(list) = flags;
+        */
+      }
     }
   }
   return 0;
@@ -1209,7 +1232,6 @@ get_list(PENNFILE *f, dbref i)
   char tbuf2[BUFFER_LEN];
   char *tb2;
 
-  List(i) = NULL;
   tbuf1[0] = '\0';
   while (1)
     switch (c = penn_fgetc(f)) {
@@ -1314,8 +1336,8 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   int found = 0;
   ansi_string *as;
 
-  List(i) = NULL;
-
+  attr_reserve(i, count);
+  
   for (;;) {
     int c;
 

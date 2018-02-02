@@ -543,7 +543,7 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
                   AName(target, AN_SYS, NULL), AL_NAME(atr));
     return;
   }
-  if (AL_FLAGS(atr) & AF_ROOT)
+  if (AF_Root(atr))
     flags |= AF_ROOT;
   else
     flags &= ~AF_ROOT;

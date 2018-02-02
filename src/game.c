@@ -1498,7 +1498,7 @@ Hearer(dbref thing)
 
   if (Connected(thing) || Puppet(thing))
     return 1;
-  for (ptr = List(thing); ptr; ptr = AL_NEXT(ptr)) {
+  ATTR_FOR_EACH(thing, ptr) {
     if (Audible(thing) && (strcmp(AL_NAME(ptr), "FORWARDLIST") == 0))
       return 1;
     cmp = strcoll(AL_NAME(ptr), "LISTEN");
@@ -1523,11 +1523,11 @@ Commer(dbref thing)
 {
   ALIST *ptr;
 
-  for (ptr = List(thing); ptr; ptr = AL_NEXT(ptr)) {
+  ATTR_FOR_EACH(thing, ptr) {
     if (AF_Command(ptr) && !AF_Noprog(ptr))
-      return (1);
+      return 1;
   }
-  return (0);
+  return 0;
 }
 
 /** Is an object listening?

@@ -93,12 +93,15 @@ good_atr_name(char const *s)
     return 0;
   if (*s == '`')
     return 0;
-  if (strstr(s, "``"))
-    return 0;
-  for (a = s; *a; a++, len++)
-    if (!atr_name_table[*a])
+  for (a = s; *a; a++, len++) {
+    if (!atr_name_table[*a]) {
       return 0;
-  if (*(s + len - 1) == '`')
+    }
+    if (*a == '`' && *(a + 1) == '`') {
+      return 0;
+    }
+  }
+  if (*(a - 1) == '`')
     return 0;
   return len <= ATTRIBUTE_NAME_LIMIT;
 }
@@ -130,7 +133,7 @@ atr_sub_branch(ATTR *branch)
     if (strlen(n2) <= len)
       return NULL;
     if (n2[len] == '`') {
-      if (strncmp(n2, name, len) == 0) {
+      if (memcmp(n2, name, len) == 0) {
         do_rawlog(LT_TRACE, "Next is %s", n2);
         return branch;
       } else {
@@ -164,7 +167,7 @@ atr_sub_branch_prev(ATTR *branch)
       return NULL;
     }
     if (n2[len] == '`') {
-      if (strncmp(n2, name, len) == 0) {
+      if (memcmp(n2, name, len) == 0) {
         return prev;
       } else {
         return NULL;
@@ -177,7 +180,7 @@ atr_sub_branch_prev(ATTR *branch)
 
 /** Test to see if an attribute name is the root of another
  *
- * \param root the string to test to see if it's aroot
+ * \param root the string to test to see if it's a root
  * \param path the string to be tested.
  * \return true or false
  */
@@ -623,11 +626,15 @@ atr_check_capacity(dbref thing)
 {
   int oldcap = AttrCap(thing);
   if (oldcap == 0) {
-    return attr_reserve(thing, 10);
+    return attr_reserve(thing, 5);
   } else if (AttrCount(thing) < oldcap) {
     return true;
   } else {
-    return attr_reserve(thing, oldcap * GROWTH_FACTOR);
+    int newcap = oldcap * GROWTH_FACTOR;
+    if (newcap < 5) {
+      newcap = 5;
+    }
+    return attr_reserve(thing, newcap);
   }
 }
 
@@ -641,12 +648,22 @@ attr_shrink(dbref thing)
   ATTR *newattrs;
   int newcap;
 
-  if (AttrCount(thing) == 0 ||
+  if (AttrCount(thing) == 0) {
+    /* No attributes, but space; Free it */
+    if (AttrCap(thing)) {
+      mush_free(List(thing), "obj.attributes");
+      List(thing) = NULL;
+      AttrCap(thing) = 0;
+    }
+    return;
+  } else if (AttrCap(thing) <= 5 ||
       ((double) AttrCap(thing) / (double) AttrCount(thing)) < SHRINK_FACTOR) {
     return;
+  } else if (AttrCount(thing) == 1) {
+    newcap = 5;
+  } else {
+    newcap = round(AttrCount(thing) * GROWTH_FACTOR);
   }
-
-  newcap = AttrCount(thing) * GROWTH_FACTOR;
 
   newattrs =
     mush_realloc(List(thing), sizeof(ATTR) * (newcap + 1), "obj.attributes");
@@ -1682,8 +1699,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
                    p2++) {
                 st_insert(AL_NAME(p2), &nocmd_roots);
-              }        
-            }          
+              }
+            }
           }
           continue;
         }
@@ -1716,8 +1733,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
                    p2++) {
                 st_insert(AL_NAME(p2), &private_attrs);
-              }              
-            }                        
+              }
+            }
           }
           continue;
         }
@@ -1731,8 +1748,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               for (; AL_NAME(p2) && is_atree_root(AL_NAME(ptr), AL_NAME(p2));
                    p2++) {
                 st_insert(AL_NAME(p2), &nocmd_roots);
-              }              
-            }            
+              }
+            }
           }
           continue;
         }

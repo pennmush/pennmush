@@ -211,7 +211,7 @@ string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix || !*prefix)
     return 0;  
-  while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
+  while (*string && *prefix && tolower(*string) == tolower(*prefix))
     string++, prefix++;
   return *prefix == '\0';
 }

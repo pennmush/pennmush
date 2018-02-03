@@ -60,8 +60,8 @@ sub start {
     $target =~ s-../game-testgame-o;
     copy($file, $target);
   }
-  symlink("../../src/netmud", "testgame/netmush");
-  symlink("../../src/info_slave", "testgame/info_slave");
+  symlink("../../game/netmush", "testgame/netmush");
+  symlink("../../game/info_slave", "testgame/info_slave");
   my $child = fork();
   if ($child > 0) {
     my $j;

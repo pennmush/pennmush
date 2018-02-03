@@ -134,7 +134,6 @@ atr_sub_branch(ATTR *branch)
       return NULL;
     if (n2[len] == '`') {
       if (memcmp(n2, name, len) == 0) {
-        do_rawlog(LT_TRACE, "Next is %s", n2);
         return branch;
       } else {
         return NULL;
@@ -1809,7 +1808,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
       }
       if (match_found) {
-        do_rawlog(LT_TRACE, "Found: %s/%s", Name(current), AL_NAME(ptr));
         /* We only want to do the lock check once, so that any side
          * effects in the lock are only performed once per utterance.
          * Thus, '$foo *r:' and '$foo b*:' on the same object will only

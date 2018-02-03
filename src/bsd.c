@@ -2037,6 +2037,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2051,6 +2052,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2282,7 +2284,7 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    const char *latin1;
+    char *latin1;
     int len;
 
     if (!valid_utf8(command)) {
@@ -4266,7 +4268,7 @@ check_connect(DESC *d, const char *msg)
     queue_string_eol(d, T(connect_fail_limit_exceeded));
     return 1;
   }
-  if (string_prefix("connect", command)) {
+  if (string_prefixe("connect", command)) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4347,7 +4349,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (strcasecmp("create", command) == 0) {
+  } else if (string_prefixe("create", command)) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
@@ -4414,7 +4416,7 @@ check_connect(DESC *d, const char *msg)
       break;
     } /* successful player creation */
 
-  } else if (string_prefix("register", command)) {
+  } else if (string_prefixe("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&

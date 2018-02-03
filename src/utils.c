@@ -512,7 +512,7 @@ reverse(dbref list)
   return newlist;
 }
 
-pcg32_random_t rand_state1, rand_state2;
+pcg32_random_t rand_state;
 
 /** Initialize the random number generator used by the mush. Attempts to use a
  * seed value
@@ -522,49 +522,78 @@ pcg32_random_t rand_state1, rand_state2;
 void
 initialize_rng(void)
 {
-  uint64_t seeds[4];
-  bool seed_generated __attribute__((__unused__)) = false;
+  uint64_t seeds[2];
+  bool seed_generated = false;
 
-#ifdef HAVE_DEV_URANDOM
-  /* Seed from /dev/urandom if available */
-  int fd;
-
-  fd = open("/dev/urandom", O_RDONLY);
-  if (fd >= 0) {
-    int r = read(fd, (void *) seeds, sizeof seeds);
-    close(fd);
-    if (r <= 0) {
-      fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
-                      "seeding method.\n");
-    } else {
-      fprintf(stderr, "Seeding RNG with %d bytes from /dev/urandom\n", r);
+#ifdef __RDRND__
+  /* If hardware supports rdrand (Compile with -march=XXXX or -mrdrnd),
+     use that. */
+  {
+    unsigned long long pseeds[2];
+    if (_rdrand64_step(pseeds) &&
+        _rdrand64_step(pseeds + 1)) {
+      fprintf(stderr, "Seeded RNG with CPU generator.\n");
+      seeds[0] = pseeds[0];
+      seeds[1] = pseeds[1];
       seed_generated = true;
     }
-  } else
-    fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
-                    "generator. Resorting to normal seeding method.\n");
+  }
+#endif
+
+#ifdef HAVE_GETENTROPY
+  /* On OpenBSD and Linux, use getentropy() to avoid the
+     open/read/close sequence with /dev/urandom */
+  if (!seed_generated && getentropy(seeds, sizeof seeds) == 0) {
+    fprintf(stderr, "Seeded RNG with getentropy()\n");
+    seed_generated = true;
+  }
 #endif
 
 #ifdef WIN32
-  /* Use the Win32 bcrypto RNG interface */
-  if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
-                      BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
-    fprintf(stderr, "Seeding RNG with %I64u bytes from BCryptGenRandom()\n",
-            sizeof seeds);
-  } else {
-    seeds[0] = (uint64_t) time(NULL);
-    seeds[1] = (uint64_t) GetCurrentProcessId();
-  }
-#else
-  /* Default seeder. Pick a seed that's slightly random */
   if (!seed_generated) {
-    seeds[0] = (uint64_t) time(NULL);
-    seeds[1] = (uint64_t) getpid();
+    /* Use the Win32 bcrypto RNG interface */
+    if (BCryptGenRandom(NULL, (PUCHAR) seeds, sizeof seeds,
+                        BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
+      fprintf(stderr, "Seeding RNG with BCryptGenRandom()\n");
+      seed_generated = true;
+    }
+  }
+#endif
+  
+#ifdef HAVE_DEV_URANDOM
+  if (!seed_generated) {
+    /* Seed from /dev/urandom if available */
+    int fd;
+
+    fd = open("/dev/urandom", O_RDONLY);
+    if (fd >= 0) {
+      int r = read(fd, (void *) seeds, sizeof seeds);
+      close(fd);
+      if (r != sizeof seeds) {
+        fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
+                "seeding method.\n");
+      } else {
+        fprintf(stderr, "Seeding RNG with /dev/urandom\n");
+        seed_generated = true;
+      }
+    } else
+      fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
+              "generator. Resorting to normal seeding method.\n");
   }
 #endif
 
-  pcg32_srandom_r(&rand_state1, seeds[0], seeds[1]);
-  pcg32_srandom_r(&rand_state2, seeds[2], seeds[3]);
+  if (!seed_generated) {
+    /* Default seeder. Pick a seed that's slightly random */    
+#ifdef WIN32
+      seeds[0] = (uint64_t) time(NULL);
+      seeds[1] = (uint64_t) GetCurrentProcessId();
+#else
+      seeds[0] = (uint64_t) time(NULL);
+      seeds[1] = (uint64_t) getpid();
+#endif
+  }
+
+  pcg32_srandom_r(&rand_state, seeds[0], seeds[1]);
 }
 
 /** Get a uniform random long between low and high values, inclusive.
@@ -607,7 +636,7 @@ get_random_u32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = pcg32_random_r(&rand_state1);
+    n = pcg32_random_r(&rand_state);
   } while (n >= n_limit);
 
   return low + (n % x);
@@ -618,8 +647,8 @@ double
 get_random_d(void)
 {
   uint64_t a, b, c;
-  a = pcg32_random_r(&rand_state1);
-  b = pcg32_random_r(&rand_state2);
+  a = pcg32_random_r(&rand_state);
+  b = pcg32_random_r(&rand_state);
   c = (a << 32) | b;
   return ldexp((double) c, -64);
 }
@@ -629,8 +658,8 @@ double
 get_random_d2(void)
 {
   uint64_t a, b, c;
-  a = pcg32_random_r(&rand_state1);
-  b = pcg32_random_r(&rand_state2);
+  a = pcg32_random_r(&rand_state);
+  b = pcg32_random_r(&rand_state);
   c = (a << 32) | b;
   return ldexp(((double) c) + 0.5, -64);
 }

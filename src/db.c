@@ -1168,42 +1168,6 @@ get_new_locks(dbref i, PENNFILE *f, int c)
       found, count);
 }
 
-/** Read locks for an object.
- * This function is used for DBF_NEW_LOCKS to read a whole list
- * of locks from an object and set them. DBF_NEW_LOCKS aren't really
- * new any more, and get_new_locks() is probably being used instead of
- * this function.
- * \param i dbref of the object.
- * \param f file pointer to read from.
- */
-void
-getlocks(dbref i, PENNFILE *f)
-{
-  /* Assumes it begins at the beginning of a line. */
-  int c;
-  boolexp b;
-  char buf[BUFFER_LEN], *p;
-  while ((c = penn_fgetc(f)), c != EOF && c == '_') {
-    p = buf;
-    while ((c = penn_fgetc(f)), c != EOF && c != '|') {
-      *p++ = c;
-    }
-    *p = '\0';
-    if (c == EOF || (p - buf == 0)) {
-      do_rawlog(LT_ERR, "ERROR: Invalid lock format on object #%d", i);
-      return;
-    }
-    b = getboolexp(f, buf); /* Which will clobber a '\n' */
-    if (b == TRUE_BOOLEXP) {
-      /* getboolexp() would already have complained. */
-      return;
-    } else {
-      add_lock_raw(Owner(i), i, buf, b, LF_DEFAULT);
-    }
-  }
-  penn_ungetc(c, f);
-  return;
-}
 
 /** Free the entire database.
  * This function frees the name, attributes, and locks on every object

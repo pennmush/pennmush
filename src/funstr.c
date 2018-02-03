@@ -2339,7 +2339,7 @@ FUNCTION(fun_render)
         safe_str(T(e_perm), buff, bp);
         return;
       }
-    } else if (strcasecmp("noaccents", word) == 0)
+    } else if (string_prefix("noaccents", word))
       flags |= MSG_STRIPACCENTS;
     else if (strcasecmp("markup", word) == 0)
       flags |= MSG_MARKUP;

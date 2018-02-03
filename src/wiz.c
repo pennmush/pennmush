@@ -59,7 +59,7 @@ char *password_hash(const char *password, const char *algo);
 /** \@search data */
 struct search_spec {
   dbref owner;                /**< Limit to this owner, if specified */
-  int type;                   /**< Limit to this type */
+  uint32_t type;                   /**< Limit to this type */
   dbref parent;               /**< Limit to children of this parent */
   dbref zone;                 /**< Limit to those in this zone */
   dbref entrances;            /**< Objects linked here, for \@entrances */
@@ -2169,16 +2169,14 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
 
     if (strcasecmp("type", class) == 0) {
-      if (strcasecmp("things", restriction) == 0 ||
-          strcasecmp("objects", restriction) == 0) {
+      if (string_prefix("things", restriction) ||
+          string_prefix("objects", restriction)) {
         spec->type = TYPE_THING;
-      } else if (strcasecmp("rooms", restriction) == 0) {
+      } else if (string_prefix("rooms", restriction)) {
         spec->type = TYPE_ROOM;
-      } else if (strcasecmp("exits", restriction) == 0) {
+      } else if (string_prefix("exits", restriction)) {
         spec->type = TYPE_EXIT;
-      } else if (strcasecmp("rooms", restriction) == 0) {
-        spec->type = TYPE_ROOM;
-      } else if (strcasecmp("players", restriction) == 0) {
+      } else if (string_prefix("players", restriction)) {
         spec->type = TYPE_PLAYER;
       } else if (strcasecmp("garbage", restriction) == 0) {
         spec->type = TYPE_GARBAGE;
@@ -2186,17 +2184,17 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown type."));
         return -1;
       }
-    } else if (strcasecmp("things", class) == 0 ||
-               strcasecmp("objects", class) == 0) {
+    } else if (string_prefix("things", class) ||
+               string_prefix("objects", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_THING;
-    } else if (strcasecmp("exits", class) == 0) {
+    } else if (string_prefix("exits", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_EXIT;
-    } else if (strcasecmp("rooms", class) == 0) {
+    } else if (string_prefix("rooms", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_ROOM;
-    } else if (strcasecmp("players", class) == 0) {
+    } else if (string_prefix("players", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_PLAYER;
     } else if (strcasecmp("name", class) == 0) {
@@ -2253,34 +2251,34 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       strcpy(spec->cmdstring, restriction);
     } else if (strcasecmp("listen", class) == 0) {
       strcpy(spec->listenstring, restriction);
-    } else if (strcasecmp("ethings", class) == 0 ||
-               strcasecmp("eobjects", class) == 0) {
+    } else if (string_prefix("ethings", class) ||
+               string_prefix("eobjects", class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_THING;
-    } else if (strcasecmp("eexits", class) == 0) {
+    } else if (string_prefix("eexits", class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_EXIT;
-    } else if (strcasecmp("erooms", class) == 0) {
+    } else if (string_prefix("erooms", class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_ROOM;
-    } else if (strcasecmp("eplayers", class) == 0) {
+    } else if (string_prefix("eplayers", class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (strcasecmp("powers", class) == 0) {
+    } else if (string_prefix("powers", class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a list of power names."));
         return -1;
       }
       strcpy(spec->powers, restriction);
-    } else if (strcasecmp("flags", class) == 0) {
+    } else if (string_prefix("flags", class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a string of flag characters."));
         return -1;
       }
       strcpy(spec->flags, restriction);
-    } else if (strcasecmp("lflags", class) == 0) {
+    } else if (string_prefix("lflags", class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a list of flag names."));

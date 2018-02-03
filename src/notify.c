@@ -277,7 +277,7 @@ static enum na_type msg_to_na(int output_type);
 
 /** A place to store a single rendering of a message. */
 struct notify_strings {
-  const char *message; /**< The message text. */
+  char const *message; /**< The message text. */
   size_t len;          /**< Length of message. */
   int made;            /**< True if message has been rendered. */
 };
@@ -311,7 +311,7 @@ static void notify_internal(dbref target, dbref executor, dbref speaker,
                             struct notify_message_group *message,
                             struct notify_message *prefix, dbref loc,
                             struct format_msg *format);
-static const char *make_nospoof(dbref speaker, int paranoid);
+static char *make_nospoof(dbref speaker, int paranoid);
 static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
                             char *tbuf1);
 
@@ -738,7 +738,7 @@ msg_to_na(int output_type)
  * \param paranoid make a paranoid nospoof prefix, instead of regular nospoof?
  * \return pointer to nospoof prefix
  */
-static const char *
+static char *
 make_nospoof(dbref speaker, int paranoid)
 {
   char *dest, *bp;
@@ -1093,11 +1093,11 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (i && real_message.messages.strs[i].made)
-      mush_free(real_message.messages.strs[i].message, "notify_str");
+      mush_free((void *)real_message.messages.strs[i].message, "notify_str");
     if (real_message.nospoofs.strs[i].made)
-      mush_free(real_message.nospoofs.strs[i].message, "notify_str");
+      mush_free((void *)real_message.nospoofs.strs[i].message, "notify_str");
     if (real_message.paranoids.strs[i].made)
-      mush_free(real_message.paranoids.strs[i].message, "notify_str");
+      mush_free((void *)real_message.paranoids.strs[i].message, "notify_str");
   }
 }
 
@@ -1171,7 +1171,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
 
     for (i = 1; i < MESSAGE_TYPES; i++) {
       if (real_prefix->strs[i].made)
-        mush_free(real_prefix->strs[i].message, "notify_str");
+        mush_free((void *)real_prefix->strs[i].message, "notify_str");
     }
     mush_free(real_prefix, "notify_message");
   }
@@ -1946,7 +1946,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 {
   int space;
 
-  const char *utf8 = NULL;
+  char *utf8 = NULL;
 
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;

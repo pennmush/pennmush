@@ -65,6 +65,7 @@ enum conn_state {
 
 struct conn {
   enum conn_state state;
+  int remote_addrfam;
   socklen_t remote_addrlen;
   union sockaddr_u remote_addr;
   char *remote_host;
@@ -346,10 +347,9 @@ ssl_event_cb(struct bufferevent *bev, short e, void *data)
     }
   } else if (e & BEV_EVENT_TIMEOUT) {
     if (c->state == C_SSL_CONNECTING) {
-/* Handshake timed out. */
-#if SSL_DEBUG_LEVEL > 0
-      errprintf(stdout, "ssl_slave: SSL handshake timeout.\n");
-#endif
+      /* Handshake timed out. */
+      struct hostname_info *ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
+      errprintf(stdout, "ssl_slave: [%s] SSL handshake timed out \n", ipaddr->hostname);
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
       c->remote_bev = NULL;
@@ -384,11 +384,10 @@ ssl_event_cb(struct bufferevent *bev, short e, void *data)
       delete_conn(c);
     } else {
 /* Remote side of the connection went away. Flush mush buffer and shut down. */
-#if SSL_DEBUG_LEVEL > 0
+      struct hostname_info *ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
       errprintf(stdout,
-                "ssl_slave: Lost SSL connection. State: %d, reason 0x%hx.\n",
-                c->state, e);
-#endif
+                "ssl_slave: Lost SSL connection from %s. State: %d, reason 0x%hx.\n",
+                ipaddr->hostname, c->state, e);
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
       c->remote_bev = NULL;
@@ -411,12 +410,7 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
   int fd;
   struct timeval handshake_timeout = {.tv_sec = 60, .tv_usec = 0};
   SSL *ssl;
-
-/* Accept a connection and do SSL handshaking */
-
-#if SSL_DEBUG_LEVEL > 0
-  errputs(stdout, "Got new connection on SSL port.");
-#endif
+  struct hostname_info *ipaddr;
 
   c = alloc_conn();
 
@@ -434,6 +428,11 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
     delete_conn(c);
     return;
   }
+
+/* Accept a connection and do SSL handshaking */
+  ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
+  errprintf(stdout, "Got new connection on SSL port from %s.\n", ipaddr->hostname);
+
   set_keepalive(fd, keepalive_timeout);
   make_nonblocking(fd);
   ssl = ssl_alloc_struct();

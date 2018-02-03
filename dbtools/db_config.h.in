@@ -1,0 +1,6 @@
+#pragma once
+#cmakedefine ZLIB_FOUND
+#cmakedefine BZIP2_FOUND
+#cmakedefine HAVE_BOOST_CONTAINERS
+#cmakedefine HAVE_BOOST_STRING_VIEW
+

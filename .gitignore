@@ -1,5 +1,7 @@
 *.o
 *.obj
+*.a
+*.lib
 *.exe
 *.s
 *~
@@ -8,9 +10,12 @@
 *.patch
 *.patch.txt
 *.plist
+*.dot
 core
 *.core
 Makefile
+CMakeFiles
+CMakeCache.txt
 config.h
 config.log
 config.status
@@ -39,7 +44,6 @@ hdrs/buildinf.h
 hdrs/cmds.h
 hdrs/funs.h
 hdrs/gitinfo.h
-src/Makefile
 src/cmdlocal.c
 src/flaglocal.c
 src/funlocal.c
@@ -51,3 +55,8 @@ src/TAGS
 test/alltests.sh
 test/testgame
 third_party
+dbtools/db2dot
+dbtools/db_config.h
+dbtools/dbupgrade
+dbtools/grepdb
+dbtools/pwutil

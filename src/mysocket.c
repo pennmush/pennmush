@@ -312,7 +312,6 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof(opt)) <
         0) {
       penn_perror("setsockopt (Possibly ignorable)");
-      continue;
     }
 #ifdef IPV6_V6ONLY
     if (server->ai_family == AF_INET6 && host == NULL) {

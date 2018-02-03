@@ -3,10 +3,7 @@
  *
  * \brief Malloc wrapper file.
  *
- * Three things in this file:
- *
- * -# It includes the body of csrimalloc.c if using a MALLOC_PACKAGE
- *     of 2 or 3.
+ * Two things in this file:
  *
  * -# It has the mush_FOO() wrapper functions for
  *     malloc()/calloc()/realloc()/free(). These are used to keep
@@ -162,7 +159,7 @@ mush_realloc_where(void *restrict ptr, size_t newsize,
  * \param line line it called from
  */
 void
-mush_free_where(const void *restrict ptr, const char *restrict check,
+mush_free_where(void *restrict ptr, const char *restrict check,
                 const char *restrict filename, int line)
 {
 #ifdef DEBUG
@@ -173,7 +170,7 @@ mush_free_where(const void *restrict ptr, const char *restrict check,
   }
 #endif
   del_check(check, filename, line);
-  free((void *) ptr);
+  free(ptr);
   return;
 }
 

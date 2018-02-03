@@ -870,6 +870,10 @@ init_game_dbs(void)
     }
     do_rawlog(LT_ERR, "LOADING: %s (done)", infile);
 
+    if (globals.new_indb_version < 6) {
+      do_flag_delete("POWER", GOD, "Cemit");
+    }
+
     /* If there's stuff at the end of the db, we may have a panic
      * format db, with everything shoved together. In that case,
      * don't close the file

@@ -188,7 +188,7 @@ strncasecmp(const char *s1, const char *s2, size_t n)
  * \retval 1 string begins with prefix.
  * \retval 0 string does not begin with prefix.
  */
-int
+bool
 string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix)
@@ -197,6 +197,25 @@ string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
     string++, prefix++;
   return *prefix == '\0';
 }
+
+/** Does string begin with prefix?
+ * This comparison is case-insensitive. An empty prefix always
+ * fails.
+ * \param string to check.
+ * \param prefix to check against.
+ * \retval 1 string begins with prefix.
+ * \retval 0 string does not begin with prefix.
+ */
+bool
+string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
+{
+  if (!string || !prefix || !*prefix)
+    return 0;  
+  while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
+    string++, prefix++;
+  return *prefix == '\0';
+}
+
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.

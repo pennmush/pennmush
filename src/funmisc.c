@@ -705,16 +705,16 @@ FUNCTION(fun_r)
   const char *s;
 
   if (nargs >= 2 && args[1] && *args[1]) {
-    if (strcasecmp("qregisters", args[1]) == 0)
+    if (string_prefix("qregisters", args[1]))
       type = PE_REGS_Q;
-    else if (strcasecmp("regexp", args[1]) == 0)
+    else if (string_prefix("regexp", args[1]))
       type = PE_REGS_REGEXP;
-    else if (strcasecmp("switch", args[1]) == 0)
+    else if (string_prefix("switch", args[1]))
       type = PE_REGS_SWITCH;
-    else if (strcasecmp("iter", args[1]) == 0)
+    else if (string_prefix("iter", args[1]))
       type = PE_REGS_ITER;
-    else if (strcasecmp("args", args[1]) == 0 ||
-             strcasecmp("stack", args[1]) == 0)
+    else if (string_prefix("args", args[1]) ||
+             string_prefix("stack", args[1]))
       type = PE_REGS_ARG;
     else {
       safe_str("#-1", buff, bp);
@@ -1294,20 +1294,20 @@ FUNCTION(fun_list)
     safe_str(cf_downmotd_msg, buff, bp);
   else if (strcasecmp("fullmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_fullmotd_msg, buff, bp);
-  else if (strcasecmp("functions", args[0]) == 0)
+  else if (string_prefix("functions", args[0]))
     safe_str(list_functions(fwhich[which - 1]), buff, bp);
-  else if (strcasecmp("@functions", args[0]) == 0)
+  else if (string_prefix("@functions", args[0]))
     safe_str(list_functions("local"), buff, bp);
-  else if (strcasecmp("commands", args[0]) == 0)
+  else if (string_prefix("commands", args[0]))
     safe_str(list_commands(which), buff, bp);
-  else if (strcasecmp("attribs", args[0]) == 0)
+  else if (string_prefix("attribs", args[0]))
     safe_str(list_attribs(), buff, bp);
-  else if (strcasecmp("locks", args[0]) == 0)
+  else if (string_prefix("locks", args[0]))
     list_locks(buff, bp, NULL);
-  else if (strcasecmp("flags", args[0]) == 0)
+  else if (string_prefix("flags", args[0]))
     safe_str(list_all_flags("FLAG", "", executor, FLAG_LIST_NAMECHAR), buff,
              bp);
-  else if (strcasecmp("powers", args[0]) == 0)
+  else if (string_prefix("powers", args[0]))
     safe_str(list_all_flags("POWER", "", executor, FLAG_LIST_NAMECHAR), buff,
              bp);
   else

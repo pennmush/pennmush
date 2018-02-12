@@ -599,6 +599,14 @@ do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
         notify_format(player, T("I can't tell which %s."), what);
         return;
       }
+      if (box == player) {
+        notify(player, T("You already have that!"));
+        return;
+      }
+      if (thing == player) {
+        notify(player, T("You cannot get yourself!"));
+        return;
+      }
       /* to steal something, you have to be able to get it, and the
        * object must be ENTER_OK and not take-locked against you.
        */

@@ -5049,7 +5049,7 @@ do_page_port(dbref executor, const char *pc, const char *message)
   }
   *tbp = '\0';
   if (target != NOTHING)
-    page_return(executor, target, "Idle", "IDLE", NULL);
+    page_return(executor, target, "Idle", "IDLE", NULL, NULL);
   if (Typeof(executor) != TYPE_PLAYER && Nospoof(target))
     queue_string_eol(d, tprintf("[#%d] %s", executor, tbuf));
   else

@@ -1185,16 +1185,17 @@ parse_match_possessor(dbref player, char **str, int exits)
  * \param type type of message to return.
  * \param message name of attribute containing the message.
  * \param def default message to return.
+ * \param pe_info the pe_info to pass when evaluating the attribute
  */
 void
 page_return(dbref player, dbref target, const char *type, const char *message,
-            const char *def)
+            const char *def, NEW_PE_INFO *pe_info)
 {
   char buff[BUFFER_LEN];
   struct tm *ptr;
 
   if (message && *message) {
-    if (call_attrib(target, message, buff, player, NULL, NULL)) {
+    if (call_attrib(target, message, buff, player, pe_info, NULL)) {
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,

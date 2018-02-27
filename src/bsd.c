@@ -7645,11 +7645,13 @@ watch_files_in(void)
     WATCH(options.connect_file[n]);
     WATCH(options.motd_file[n]);
     WATCH(options.wizmotd_file[n]);
+    WATCH(options.newuser_file[n]);
     WATCH(options.register_file[n]);
     WATCH(options.quit_file[n]);
     WATCH(options.down_file[n]);
     WATCH(options.full_file[n]);
     WATCH(options.guest_file[n]);
+    WATCH(options.who_file[n]);
   }
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))

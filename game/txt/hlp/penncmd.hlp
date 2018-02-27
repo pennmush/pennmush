@@ -2389,9 +2389,15 @@ See also: QUOTAS, Quotas Power, No_Quota Power
 & @readcache
   @readcache
   
-  This wizard-only command reads special text files into a cache and rebuilds the help and news indices. This must be done every time the text files (connect text, help files, etc.) are changed while the game is running. It does not need to be used after changing the names.cnf file of bad player names.
- 
+  This wizard-only command reloads the cached text files (listed under '@config messages') and rebuilds the indexes for help, news and similar commands. 
+
+  On some systems (where '@config compile' shows 'Changed help files will be automatically reindexed.'), updates to these files are noticed and loaded automatically. Otherwise, @readcache must be used any time changes are made to one of these files while the game is running.
+
   A site admin can achieve the same effect by sending the MUSH process a kill -1 or kill -HUP.
+
+  @readcache does not load updates to the configuration files (mush.cnf, restrict.cnf, etc) - the game must be restarted with @shutdown/reboot to reload these.
+
+See also: @shutdown
 & @remit
   @remit[/switches] <object>=<message>
 
@@ -2569,7 +2575,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
 
   @shutdown/panic performs a panic shutdown of the game, using a seperate database file, not the normal one. It may only be used by God.
 
-  @shutdown/reboot restarts the game without disconnecting the users.
+  @shutdown/reboot restarts the game without disconnecting the users. This is necessary to load changes to the MUSH's configuration files (mush.cnf, restrict.cnf, etc), though not changes to names.cnf, which take effect without a reboot.
 
   If the /paranoid switch is added, the shutdown dump will be a paranoid dump (see @dump).
 & @sitelock

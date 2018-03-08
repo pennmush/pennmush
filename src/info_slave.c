@@ -231,7 +231,7 @@ main(void)
   parent_pid = getppid();
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio flock inet dns", NULL) < 0) {
+  if (pledge("stdio proc flock inet dns", NULL) < 0) {
     perror("pledge");
   }
 #endif

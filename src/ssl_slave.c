@@ -553,7 +553,7 @@ main(int argc __attribute__((__unused__)),
   parent_pid = getppid();
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath inet flock unix dns", NULL) < 0) {
+  if (pledge("stdio proc rpath inet flock unix dns", NULL) < 0) {
     perror("pledge");
   }
 #endif

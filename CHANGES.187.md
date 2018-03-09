@@ -54,6 +54,10 @@ Documentation
 OS Specific
 -----------
 
+### BSDs in general ###
+
+* info_slave and ssl_slave use kqueue() to efficiently be notified of parent mush crashes.
+
 ### OpenBSD ###
 
 * netmush and slave processes use pledge(2) to limit their privileges. [SW]

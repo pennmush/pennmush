@@ -425,6 +425,8 @@ typedef bool _Bool;
 
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #include <w32api.h>
+#undef _WIN32_WINNT
+#undef WINVER
 #define _WIN32_WINNT Windows7
 #define WINVER Windows7
 #endif

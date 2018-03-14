@@ -59,8 +59,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "SFMT.h"
 #include "conf.h"
+#include "externs.h"
 #include "dbdefs.h"
 #include "log.h"
 #include "mymalloc.h"
@@ -71,23 +71,23 @@ void memcheck_dump_struct(const char *filename);
 typedef struct mem_check_node MEM;
 
 enum {
-  P = 4, /**< 1/P is the probability that a node with N links will
-	    have N+1 links, up to... */
-  MAX_LINKS = 4, /**< Maximum number of links in a single skip list
-		   node. log(1/p)(N), where N is the expected maximum
-		   length (~180). p == 1/2 is 8, p == 1/4 is 4 */
+  P = 4,            /**< 1/P is the probability that a node with N links will
+                       have N+1 links, up to... */
+  MAX_LINKS = 4,    /**< Maximum number of links in a single skip list
+                      node. log(1/p)(N), where N is the expected maximum
+                      length (~180). p == 1/2 is 8, p == 1/4 is 4 */
   REF_NAME_LEN = 64 /**< Length of longest check name */
 };
 
 /** A skip list for storing memory allocation counts */
 struct mem_check_node {
-  int ref_count;                /**< Number of allocations of this type. */
-  int link_count;               /**< Number of forward links */
-  char ref_name[REF_NAME_LEN];  /**< Name of this allocation type. */
-  MEM *links[MAX_LINKS];        /**< Forward links to further nodes in skiplist. */
+  int ref_count;               /**< Number of allocations of this type. */
+  int link_count;              /**< Number of forward links */
+  char ref_name[REF_NAME_LEN]; /**< Name of this allocation type. */
+  MEM *links[MAX_LINKS]; /**< Forward links to further nodes in skiplist. */
 };
 
-static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
+static MEM memcheck_head_storage = {0, MAX_LINKS, {'\0'}, {NULL}};
 
 static MEM *memcheck_head = &memcheck_head_storage;
 
@@ -132,14 +132,14 @@ lookup_check(const char *ref)
     }
 
     cmp = strcmp(ref, chk->ref_name);
-    if (cmp == 0) {             /* Found it */
+    if (cmp == 0) { /* Found it */
       return chk;
-    } else if (cmp > 0) {       /* key is further down the chain, start over
-                                   with chk as the new head */
+    } else if (cmp > 0) { /* key is further down the chain, start over
+                             with chk as the new head */
       links = chk->links;
       n = chk->link_count - 1;
       prev = NULL;
-    } else if (cmp < 0) {       /* Went too far, try the next lowest link */
+    } else if (cmp < 0) { /* Went too far, try the next lowest link */
       n -= 1;
       prev = chk;
     }
@@ -148,14 +148,12 @@ lookup_check(const char *ref)
   return NULL;
 }
 
-extern sfmt_t rand_state;
-
 /* Return the number of links to use for a new node. Result's range is
    1..maxcount */
 static int
 pick_link_count(int maxcount)
 {
-  int lev = (int) floor(log(sfmt_genrand_real3(&rand_state)) / log(P));
+  int lev = (int) floor(log(get_random_d2()) / log(P));
   lev = -lev;
   if (lev > maxcount)
     return maxcount;
@@ -191,7 +189,7 @@ min(int a, int b)
 {
   if (a <= b)
     return a;
-  else                          /* a > b */
+  else /* a > b */
     return b;
 }
 
@@ -219,7 +217,8 @@ update_links(MEM *src, MEM *newnode)
   }
 }
 
-/* Insert a new entry in the skip list. Bad things happen if you try to insert a duplicate. */
+/* Insert a new entry in the skip list. Bad things happen if you try to insert a
+ * duplicate. */
 static void
 insert_check(const char *ref)
 {
@@ -254,7 +253,7 @@ insert_check(const char *ref)
       break;
     }
   }
-  if (!node)                    /* Insert at end of list */
+  if (!node) /* Insert at end of list */
     prev->links[0] = chk;
 
   /* Now adjust forward pointers */
@@ -301,8 +300,7 @@ del_check(const char *ref, const char *filename, int line)
                 "ERROR: Deleting a check with a negative count: %s (At %s:%d)",
                 ref, filename, line);
   } else {
-    do_rawlog(LT_TRACE,
-              "ERROR: Deleting a non-existant check: %s (At %s:%d)",
+    do_rawlog(LT_TRACE, "ERROR: Deleting a non-existant check: %s (At %s:%d)",
               ref, filename, line);
   }
 }
@@ -312,8 +310,9 @@ del_check(const char *ref, const char *filename, int line)
  * \param data Optional data that will be passed to the callback.
  */
 void
-list_mem_check(void (*callback)
-                (void *data, const char *const name, int ref_count), void *data)
+list_mem_check(void (*callback)(void *data, const char *const name,
+                                int ref_count),
+               void *data)
 {
   const MEM *chk;
 
@@ -341,8 +340,8 @@ log_mem_check(void)
   do_rawlog(LT_TRACE, "MEMCHECK dump ends");
 }
 
-
-/** Dump a representation of the memcheck skip list into a file, using the dot language.
+/** Dump a representation of the memcheck skip list into a file, using the dot
+ * language.
  * Use from a debugger:
  * \verbatim
  * (gdb) print memcheck_dump_struct("memcheck.dot")

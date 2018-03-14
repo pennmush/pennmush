@@ -42,7 +42,6 @@
  */
 
 #include "copyrite.h"
-#include "htab.h"
 
 #include <string.h>
 #include <math.h>
@@ -51,31 +50,26 @@
 #endif
 #include <openssl/bn.h>
 
+#include "conf.h"
+#include "externs.h"
 #include "hash_function.h"
+#include "htab.h"
 #include "mymalloc.h"
 
 /* Temporary prototypes to make the compiler happy. */
-char *
-mush_strdup(const char *s, const char *check)
-  __attribute_malloc__;
-    uint32_t get_random32(uint32_t low, uint32_t high);
+char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
 
-    struct hash_bucket {
-      const char *key;
-      void *data;
-      int keylen;
-    };
+struct hash_bucket {
+  const char *key;
+  void *data;
+  int keylen;
+};
 
-    static const uint64_t hash_seeds[] = {
-      0x28187BCC53900639ULL,
-      0x37FF1FD24D473811ULL,
-      0xDFBE49319032F8A0ULL,
-      0x511425D4D0A6E518ULL,
-      0xAC30C8C94941DE18ULL,
-      0xC61F7F133E0DCF02ULL,
-      0xA32C48FC8A34D36AULL,
-      0x6561992839F450CBULL,
-    };
+static const uint64_t hash_seeds[] = {
+  0x28187BCC53900639ULL, 0x37FF1FD24D473811ULL, 0xDFBE49319032F8A0ULL,
+  0x511425D4D0A6E518ULL, 0xAC30C8C94941DE18ULL, 0xC61F7F133E0DCF02ULL,
+  0xA32C48FC8A34D36AULL, 0x6561992839F450CBULL,
+};
 
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
 
@@ -101,7 +95,7 @@ next_prime_after(unsigned int val)
 
   while (1) {
     BN_set_word(p, val);
-    if (BN_is_prime(p, BN_prime_checks, NULL, ctx, NULL) > 0)
+    if (BN_is_prime_ex(p, BN_prime_checks, ctx, NULL) > 0)
       break;
     val += 2;
   }
@@ -112,10 +106,11 @@ next_prime_after(unsigned int val)
 /** Initialize a hashtable.
  * \param htab pointer to hash table to initialize.
  * \param size size of hashtable.
- * \param free_data void pointer to a function to call whenever a hash entry is deleted, or NULL
+ * \param free_data void pointer to a function to call whenever a hash entry is
+ * deleted, or NULL
  */
 void
-hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
+hash_init(HASHTAB *htab, int size, void (*free_data)(void *))
 {
   size = next_prime_after(size);
   htab->last_index = -1;
@@ -182,7 +177,7 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
       seed_index = (n + htab->hashseed_offset) % NHASH_MOD;
 
       hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
-        htab->hashsize;
+             htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
@@ -190,10 +185,10 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
     }
 
     /* None. Use a random seed and bump the existing element */
-    seed_index = htab->hashseed_offset + get_random32(0, NHASH_TRIES - 1);
+    seed_index = htab->hashseed_offset + get_random_u32(0, NHASH_TRIES - 1);
     seed_index %= NHASH_MOD;
-    hval = city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) %
-      htab->hashsize;
+    hval =
+      city_hash(bump.key, bump.keylen, hash_seeds[seed_index]) % htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -213,7 +208,6 @@ hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
   /* Never reached. */
   return false;
 }
-
 
 static int resize_calls = 0, first_offset = -1;
 
@@ -347,9 +341,8 @@ hash_flush(HASHTAB *htab, int size)
   }
   htab->entries = 0;
   size = next_prime_after(size);
-  resized =
-    mush_realloc(htab->buckets, sizeof(struct hash_bucket) * size,
-                 "hash.buckets");
+  resized = mush_realloc(htab->buckets, sizeof(struct hash_bucket) * size,
+                         "hash.buckets");
   if (resized) {
     htab->buckets = resized;
     htab->hashsize = size;
@@ -461,10 +454,9 @@ hash_stats(const HASHTAB *htab, struct hashstats *stats)
       stats->entries += 1;
       for (i = 0; i < 3; i++) {
         int seed_index = (i + htab->hashseed_offset) % NHASH_MOD;
-        if ((city_hash(htab->buckets[n].key,
-                       htab->buckets[n].keylen,
-                       hash_seeds[seed_index]) % htab->hashsize) ==
-            (uint32_t) n) {
+        if ((city_hash(htab->buckets[n].key, htab->buckets[n].keylen,
+                       hash_seeds[seed_index]) %
+             htab->hashsize) == (uint32_t) n) {
           stats->lookups[i] += 1;
           break;
         }

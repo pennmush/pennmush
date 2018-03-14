@@ -92,24 +92,22 @@ typedef struct a_acsflag acsflag;
  * This structure is used to build a table of access control flags.
  */
 struct a_acsflag {
-  const char *name;             /**< Name of the access flag */
-  bool toggle;                  /**< Is this a negatable flag? */
-  uint32_t flag;                /**< Bitmask of the flag */
+  const char *name; /**< Name of the access flag */
+  bool toggle;      /**< Is this a negatable flag? */
+  uint32_t flag;    /**< Bitmask of the flag */
 };
-static acsflag acslist[] = {
-  {"connect", 1, ACS_CONNECT},
-  {"create", 1, ACS_CREATE},
-  {"guest", 1, ACS_GUEST},
-  {"default", 0, ACS_DEFAULT},
-  {"register", 0, ACS_REGISTER},
-  {"suspect", 0, ACS_SUSPECT},
-  {"deny_silent", 0, ACS_DENY_SILENT},
-  {"regexp", 0, ACS_REGEXP},
-  {"god", 1, ACS_GOD},
-  {"wizard", 1, ACS_WIZARD},
-  {"admin", 1, ACS_ADMIN},
-  {NULL, 0, 0}
-};
+static acsflag acslist[] = {{"connect", 1, ACS_CONNECT},
+                            {"create", 1, ACS_CREATE},
+                            {"guest", 1, ACS_GUEST},
+                            {"default", 0, ACS_DEFAULT},
+                            {"register", 0, ACS_REGISTER},
+                            {"suspect", 0, ACS_SUSPECT},
+                            {"deny_silent", 0, ACS_DENY_SILENT},
+                            {"regexp", 0, ACS_REGEXP},
+                            {"god", 1, ACS_GOD},
+                            {"wizard", 1, ACS_WIZARD},
+                            {"admin", 1, ACS_ADMIN},
+                            {NULL, 0, 0}};
 
 static struct access *access_top;
 static void free_access_list(void);
@@ -135,16 +133,13 @@ sitelock_free(struct access *ap)
   mush_free(ap, "sitelock.rule");
 }
 
-static struct access *
-sitelock_alloc(const char *host, dbref who,
-               uint32_t can, uint32_t cant,
-               const char *comment, const char **errptr)
-  __attribute_malloc__;
+static struct access *sitelock_alloc(const char *host, dbref who, uint32_t can,
+                                     uint32_t cant, const char *comment,
+                                     const char **errptr) __attribute_malloc__;
 
-    static struct access *sitelock_alloc(const char *host, dbref who,
-                                         uint32_t can, uint32_t cant,
-                                         const char *comment,
-                                         const char **errptr)
+static struct access *
+sitelock_alloc(const char *host, dbref who, uint32_t can, uint32_t cant,
+               const char *comment, const char **errptr)
 {
   struct access *tmp;
   tmp = mush_malloc(sizeof(struct access), "sitelock.rule");
@@ -181,8 +176,8 @@ sitelock_alloc(const char *host, dbref who,
 }
 
 static bool
-add_access_node(const char *host, dbref who, uint32_t can,
-                uint32_t cant, const char *comment, const char **errptr)
+add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
+                const char *comment, const char **errptr)
 {
   struct access *end, *tmp;
 
@@ -201,7 +196,6 @@ add_access_node(const char *host, dbref who, uint32_t can,
   }
   return true;
 }
-
 
 /** Read the access.cnf file.
  * Initialize the access rules linked list and read in the access.cnf file.
@@ -358,20 +352,23 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
 {
   struct access *ap;
   acsflag *c;
+  size_t hlen;
 
   if (!hname || !*hname)
     return 0;
+
+  hlen = strlen(hname);
 
   for (ap = access_top; ap; ap = ap->next) {
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, ap->study, hname)
-         : quick_wild(ap->host, hname))
-        && (ap->who == AMBIGUOUS || ap->who == who)) {
+           ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
+           : quick_wild(ap->host, hname)) &&
+        (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       if (flag & ACS_CONNECT) {
-        if ((ap->cant & ACS_GOD) && God(who))   /* God can't connect from here */
+        if ((ap->cant & ACS_GOD) && God(who)) /* God can't connect from here */
           return 0;
         else if ((ap->cant & ACS_WIZARD) && Wizard(who))
           /* Wiz can't connect from here */
@@ -400,7 +397,6 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
   return 1;
 }
 
-
 /** Return the first access rule that matches a host.
  * \param hname a host or user+host pattern.
  * \param who the player attempting access.
@@ -411,19 +407,22 @@ struct access *
 site_check_access(const char *hname, dbref who, int *rulenum)
 {
   struct access *ap;
+  size_t hlen;
 
   *rulenum = 0;
   if (!hname || !*hname)
     return 0;
+
+  hlen = strlen(hname);
 
   for (ap = access_top; ap; ap = ap->next) {
     (*rulenum)++;
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, ap->study, hname)
-         : quick_wild(ap->host, hname))
-        && (ap->who == AMBIGUOUS || ap->who == who)) {
+           ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
+           : quick_wild(ap->host, hname)) &&
+        (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       return ap;
     }
@@ -442,7 +441,7 @@ site_check_access(const char *hname, dbref who, int *rulenum)
  */
 void
 format_access(struct access *ap, int rulenum,
-              dbref who __attribute__ ((__unused__)), char *buff, char **bp)
+              dbref who __attribute__((__unused__)), char *buff, char **bp)
 {
   if (ap) {
     safe_format(buff, bp, T("Matched line %d: %s %s"), rulenum, ap->host,
@@ -483,7 +482,6 @@ format_access(struct access *ap, int rulenum,
   }
 }
 
-
 /** Add an access rule to the linked list.
  * \param player enactor.
  * \param host host pattern to add.
@@ -507,7 +505,6 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
   struct access *tmp;
   const char *errptr = NULL;
 
-
   tmp = sitelock_alloc(host, who, can, cant, "", &errptr);
 
   if (!tmp) {
@@ -517,7 +514,8 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
 
   if (!access_top) {
     /* Add to the beginning, but first add a sitelock marker */
-    if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "", &errptr)) {
+    if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "",
+                         &errptr)) {
       notify_format(player, T("Unable to add @sitelock separator: %s"), errptr);
       return 0;
     }
@@ -576,7 +574,7 @@ remove_access_sitelock(const char *pattern)
     rulenum++;
     next = ap->next;
     if (deletethis == -1 ? (strcasecmp(pattern, ap->host) == 0)
-        : deletethis == rulenum) {
+                         : deletethis == rulenum) {
       n++;
       sitelock_free(ap);
       if (prev)
@@ -607,7 +605,6 @@ free_access_list(void)
   }
   access_top = NULL;
 }
-
 
 /** Display the access list.
  * \param player enactor.
@@ -640,16 +637,14 @@ do_list_access(dbref player)
         }
       }
       *bp = '\0';
-      notify_format(player,
-                    T("%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"), rulenum,
+      notify_format(player, T("%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"), rulenum,
                     ap->host, unparse_dbref(ap->who), flaglist);
       notify_format(player, T(" COMMENT: %s"), ap->comment ? ap->comment : "");
     } else {
-      notify(player,
-             T
-             ("---- @sitelock will add sites immediately below this line ----"));
+      notify(
+        player,
+        T("---- @sitelock will add sites immediately below this line ----"));
     }
-
   }
   if (rulenum == 0) {
     notify(player, T("There are no access rules."));
@@ -688,9 +683,9 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
   while ((w = split_token(&p, ' '))) {
     found = 0;
 
-    if (first && who) {         /* Check for a character */
+    if (first && who) { /* Check for a character */
       first = 0;
-      if (is_strict_integer(w)) {       /* We have a dbref */
+      if (is_strict_integer(w)) { /* We have a dbref */
         *who = parse_integer(w);
         if (*who != AMBIGUOUS && !GoodObject(*who))
           *who = AMBIGUOUS;

@@ -1,3 +1,8 @@
+Note: This is an old document and the steps in it have not been 
+tested for some time. The current reccomended ways to use Penn on Windows
+is MinGW installed through MSYS2 (See README-MSYS2.txt) or on the Windows 10
+Linux subsystem (README-Windows10.txt). Mike says Cygwin still works, though.
+
 How to compile PennMUSH 1.8.x under Windows (Cygwin 1.5.19-4)
 --------------------------------------------------------------
 by Alan Schwartz <javelin@pennmush.org>
@@ -17,7 +22,6 @@ the best location. C:\cygwin is the usual default.
 
    From Devel:
 	binutils
-	gcc
 	gcc-core
 	make
    From Libs:
@@ -25,18 +29,19 @@ the best location. C:\cygwin is the usual default.
 	openssl-devel
 	libpcre1
 	libpcre-devel
+	libcrypt-devel
    From Perl:
 	perl
    From Shells:
 	bash
    From Utils:
-	gnupg 		if you want to to verify signatures on penn dists
+	gnupg			if you want to to verify signatures on penn dists
 	patch
    From Text:
-    pcre
+	pcre
    From Devel:
-    gettext-devel   if you want to run a translated copy of Penn
-	git   if you want to get Penn from the GIT repo
+	gettext-devel	if you want to run a translated copy of Penn
+	git				if you want to get Penn from the GIT repo
 
    Accept all dependencies needed to install these packages.
 	

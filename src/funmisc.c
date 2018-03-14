@@ -11,7 +11,7 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "SFMT.h"
+
 #include "ansi.h"
 #include "attrib.h"
 #include "case.h"
@@ -38,7 +38,7 @@
 
 #ifdef WIN32
 #include <windows.h>
-#pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
+#pragma warning(disable : 4761) /* NJG: disable warning re conversion */
 #endif
 
 extern FUN flist[];
@@ -65,9 +65,8 @@ FUNCTION(fun_valid)
   else if (!strcasecmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
-      target =
-        noisy_match_result(executor, args[2], TYPE_PLAYER,
-                           MAT_PMATCH | MAT_TYPE | MAT_ME);
+      target = noisy_match_result(executor, args[2], TYPE_PLAYER,
+                                  MAT_PMATCH | MAT_TYPE | MAT_ME);
       if (target == NOTHING) {
         safe_str(e_match, buff, bp);
         return;
@@ -100,7 +99,8 @@ FUNCTION(fun_valid)
   } else if (!strcasecmp(args[0], "timezone")) {
     struct tz_result res;
     safe_boolean(parse_timezone_arg(args[1], mudtime, &res), buff, bp);
-  } else if (!strcasecmp(args[0], "boolexp") || !strcasecmp(args[0], "lockkey")) {
+  } else if (!strcasecmp(args[0], "boolexp") ||
+             !strcasecmp(args[0], "lockkey")) {
     boolexp key = parse_boolexp(executor, args[1], "Basic");
     if (key == TRUE_BOOLEXP)
       safe_boolean(0, buff, bp);
@@ -176,21 +176,20 @@ FUNCTION(fun_message)
       word = split_token(&list, ' ');
       if (!word || !*word)
         continue;
-      if (string_prefix("nospoof", word)) {
+      if (strcasecmp("nospoof", word) == 0) {
         if (Can_Nspemit(executor))
           flags |= PEMIT_SPOOF;
-      } else if (string_prefix("spoof", word)) {
+      } else if (strcasecmp("spoof", word) == 0) {
         speaker = SPOOF_NOSWITCH(executor, enactor);
-      } else if (string_prefix("remit", word))
+      } else if (strcasecmp("remit", word) == 0)
         type = EMIT_REMIT;
-      else if (string_prefix("oemit", word))
+      else if (strcasecmp("oemit", word) == 0)
         type = EMIT_OEMIT;
     } while (list);
   }
 
   do_message(executor, speaker, args[0], args[2], args[1], type, flags, i, argv,
              pe_info);
-
 }
 
 /* ARGSUSED */
@@ -357,8 +356,8 @@ FUNCTION(fun_letq)
   PE_REGS *pe_regs;
 
   if ((nargs % 2) != 1) {
-    safe_str(T("#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
-             buff, bp);
+    safe_str(T("#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"), buff,
+             bp);
     return;
   }
 
@@ -410,15 +409,15 @@ cleanup:
 
 /** Helper for listq() */
 struct st_qreg_data {
-  char *buff;  /** Buffer to write matching register names to */
-  char **bp;   /** Pointer into buff to write at */
-  char *wild;  /** Wildcard pattern of qregister names to list */
-  char *osep;  /** Output separator between register names */
-  int count;   /** Number of matched registers so far */
+  char *buff; /** Buffer to write matching register names to */
+  char **bp;  /** Pointer into buff to write at */
+  char *wild; /** Wildcard pattern of qregister names to list */
+  char *osep; /** Output separator between register names */
+  int count;  /** Number of matched registers so far */
 };
 
 static void
-listq_walk(const char *cur, int count __attribute__ ((__unused__)),
+listq_walk(const char *cur, int count __attribute__((__unused__)),
            void *userdata)
 {
   struct st_qreg_data *st_data = (struct st_qreg_data *) userdata;
@@ -467,16 +466,16 @@ FUNCTION(fun_listq)
     while ((item = split_token(&list, ' '))) {
       if (!*item)
         continue;
-      if (string_prefix("qregisters", item))
+      if (strcasecmp("qregisters", item) == 0)
         types |= PE_REGS_Q;
-      else if (string_prefix("regexp", item))
+      else if (strcasecmp("regexp", item) == 0)
         types |= PE_REGS_REGEXP;
-      else if (strlen(item) > 1 && string_prefix("switch", item))
+      else if (strcasecmp("switch", item) == 0)
         types |= PE_REGS_SWITCH;
-      else if (string_prefix("iter", item))
+      else if (strcasecmp("iter", item) == 0)
         types |= PE_REGS_ITER;
-      else if (string_prefix("args", item)
-               || (strlen(item) > 1 && string_prefix("stack", item)))
+      else if (strcasecmp("args", item) == 0 ||
+               strcasecmp("stack", item) == 0)
         types |= PE_REGS_ARG;
       else {
         safe_str("#-1", buff, bp);
@@ -504,7 +503,7 @@ FUNCTION(fun_listq)
     while (val) {
       if (!(val->type & types)) {
         val = val->next;
-        continue;               /* not the right type of register */
+        continue; /* not the right type of register */
       }
       rp = regname;
       switch (val->type & PE_REGS_TYPE) {
@@ -530,13 +529,13 @@ FUNCTION(fun_listq)
       *rp = '\0';
 
       if (val->type & PE_REGS_SWITCH) {
-        regname[0] = 'S';       /* to differentiate stext and itext */
+        regname[0] = 'S'; /* to differentiate stext and itext */
       }
 
       /* Insert it into the tree if it's non-blank. */
-      if ((val->type & PE_REGS_INT)
-          || ((val->type & PE_REGS_STR) && *(val->val.sval)
-              && !st_find(regname, &blanks))) {
+      if ((val->type & PE_REGS_INT) ||
+          ((val->type & PE_REGS_STR) && *(val->val.sval) &&
+           !st_find(regname, &blanks))) {
         st_insert(regname, &qregs);
       } else {
         st_insert(regname, &blanks);
@@ -557,7 +556,7 @@ FUNCTION(fun_listq)
       types &= ~PE_REGS_ARG;
     }
     if (!types)
-      break;                    /* nothing left */
+      break; /* nothing left */
     pe_regs = pe_regs->prev;
   }
   st_walk(&qregs, listq_walk, &st_data);
@@ -601,14 +600,14 @@ clear_allq(NEW_PE_INFO *pe_info)
 
 /** Helper function for unsetq() */
 struct st_unsetq_data {
-  char *buff;  /**< Unused */
-  char **bp;   /**< Unused */
-  char *wild;  /**< Wildcard pattern of register names to unset */
-  NEW_PE_INFO *pe_info;  /**< pe_info to clear registers from */
+  char *buff;           /**< Unused */
+  char **bp;            /**< Unused */
+  char *wild;           /**< Wildcard pattern of register names to unset */
+  NEW_PE_INFO *pe_info; /**< pe_info to clear registers from */
 };
 
 static void
-unsetq_walk(const char *cur, int count __attribute__ ((__unused__)),
+unsetq_walk(const char *cur, int count __attribute__((__unused__)),
             void *userdata)
 {
   struct st_unsetq_data *st_data = (struct st_unsetq_data *) userdata;
@@ -667,8 +666,8 @@ FUNCTION(fun_unsetq)
     val = pe_regs->vals;
     while (val) {
       /* Insert it into the tree if it's non-blank. */
-      if ((val->type & PE_REGS_STR) && *(val->val.sval)
-          && !st_find(val->name, &blanks)) {
+      if ((val->type & PE_REGS_STR) && *(val->val.sval) &&
+          !st_find(val->name, &blanks)) {
         st_insert(val->name, &qregs);
       } else {
         st_insert(val->name, &blanks);
@@ -710,12 +709,12 @@ FUNCTION(fun_r)
       type = PE_REGS_Q;
     else if (string_prefix("regexp", args[1]))
       type = PE_REGS_REGEXP;
-    else if (strlen(args[1]) > 1 && string_prefix("switch", args[1]))
+    else if (string_prefix("switch", args[1]))
       type = PE_REGS_SWITCH;
     else if (string_prefix("iter", args[1]))
       type = PE_REGS_ITER;
-    else if (string_prefix("args", args[1])
-             || (strlen(args[1]) > 1 && string_prefix("stack", args[1])))
+    else if (string_prefix("args", args[1]) ||
+             string_prefix("stack", args[1]))
       type = PE_REGS_ARG;
     else {
       safe_str("#-1", buff, bp);
@@ -736,33 +735,32 @@ FUNCTION(fun_r)
       safe_str(s, buff, bp);
     break;
   case PE_REGS_ITER:
-  case PE_REGS_SWITCH:
-    {
-      int level = 0, total = 0;
+  case PE_REGS_SWITCH: {
+    int level = 0, total = 0;
 
-      if (type == PE_REGS_ITER)
-        total = PE_Get_Ilev(pe_info);
-      else
-        total = PE_Get_Slev(pe_info);
+    if (type == PE_REGS_ITER)
+      total = PE_Get_Ilev(pe_info);
+    else
+      total = PE_Get_Slev(pe_info);
 
-      if ((*args[0] == 'l' || *args[0] == 'L') && !args[0][1])
-        level = total;
-      else if (!is_strict_number(args[0])) {
-        safe_str(T(e_badregname), buff, bp);
-        return;
-      } else {
-        level = parse_integer(args[0]);
-      }
-      if (level < 0 || level > total) {
-        safe_str(T(e_argrange), buff, bp);
-      } else {
-        if (type == PE_REGS_ITER)
-          safe_str(PE_Get_Itext(pe_info, level), buff, bp);
-        else
-          safe_str(PE_Get_Stext(pe_info, level), buff, bp);
-      }
-      break;
+    if ((*args[0] == 'l' || *args[0] == 'L') && !args[0][1])
+      level = total;
+    else if (!is_strict_number(args[0])) {
+      safe_str(T(e_badregname), buff, bp);
+      return;
+    } else {
+      level = parse_integer(args[0]);
     }
+    if (level < 0 || level > total) {
+      safe_str(T(e_argrange), buff, bp);
+    } else {
+      if (type == PE_REGS_ITER)
+        safe_str(PE_Get_Itext(pe_info, level), buff, bp);
+      else
+        safe_str(PE_Get_Stext(pe_info, level), buff, bp);
+    }
+    break;
+  }
   }
 }
 
@@ -770,8 +768,6 @@ FUNCTION(fun_r)
  * Utility functions: RAND, DIE, SECURE, SPACE, BEEP, SWITCH, EDIT,
  *      ESCAPE, SQUISH, ENCRYPT, DECRYPT, LIT
  */
-
-extern sfmt_t rand_state;
 
 /* ARGSUSED */
 FUNCTION(fun_rand)
@@ -781,7 +777,7 @@ FUNCTION(fun_rand)
 
   if (nargs == 0) {
     /* Floating pont number in the range [0,1) */
-    safe_number(sfmt_genrand_real2(&rand_state), buff, bp);
+    safe_number(get_random_d(), buff, bp);
     return;
   }
 
@@ -826,7 +822,7 @@ FUNCTION(fun_rand)
       high = highint;
     }
   }
-  rand = get_random32(low, high);
+  rand = get_random_u32(low, high);
   safe_integer((int) rand - offset, buff, bp);
 }
 
@@ -858,16 +854,15 @@ FUNCTION(fun_die)
         first = 0;
       else
         safe_chr(' ', buff, bp);
-      safe_uinteger(get_random32(1, die), buff, bp);
+      safe_uinteger(get_random_u32(1, die), buff, bp);
     }
   } else {
     for (count = 0; count < n; count++)
-      total += get_random32(1, die);
+      total += get_random_u32(1, die);
 
     safe_uinteger(total, buff, bp);
   }
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_switch)
@@ -894,24 +889,24 @@ FUNCTION(fun_switch)
 
   dp = mstr;
   sp = args[0];
-  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                         eflags, PT_DEFAULT, pe_info))
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
+                         PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
 
   if (exact)
     pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH, "fun_switch");
   else
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
-                               "fun_switch");
+    pe_regs =
+      pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE, "fun_switch");
   pe_regs_set(pe_regs, PE_REGS_NOCOPY | PE_REGS_SWITCH, "t0", mstr);
 
   /* try matching, return match immediately when found */
   for (j = 1; j < (nargs - 1); j += 2) {
     dp = pstr;
     sp = args[j];
-    if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info))
+    if (process_expression(pstr, &dp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info))
       goto exit_sequence;
     *dp = '\0';
 
@@ -933,9 +928,8 @@ FUNCTION(fun_switch)
 
       sp = tbuf1;
 
-      per = process_expression(buff, bp, &sp,
-                               executor, caller, enactor,
-                               eflags, PT_DEFAULT, pe_info);
+      per = process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                               PT_DEFAULT, pe_info);
       if (!exact)
         mush_free(tbuf1, "replace_string.buff");
       found = 1;
@@ -952,8 +946,8 @@ FUNCTION(fun_switch)
       sp = tbuf1;
     } else
       sp = args[nargs - 1];
-    process_expression(buff, bp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
     if (!exact)
       mush_free(tbuf1, "replace_string.buff");
   }
@@ -965,10 +959,7 @@ exit_sequence:
 }
 
 /* ARGSUSED */
-FUNCTION(fun_slev)
-{
-  safe_integer(PE_Get_Slev(pe_info), buff, bp);
-}
+FUNCTION(fun_slev) { safe_integer(PE_Get_Slev(pe_info), buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_stext)
@@ -1015,14 +1006,14 @@ FUNCTION(fun_reswitch)
   if (strstr(called_as, "ALL"))
     first = 0;
 
-  if (strcmp(called_as, "RESWITCHI") == 0
-      || strcmp(called_as, "RESWITCHALLI") == 0)
+  if (strcmp(called_as, "RESWITCHI") == 0 ||
+      strcmp(called_as, "RESWITCHALLI") == 0)
     flags = PCRE_CASELESS;
 
   dp = mstr;
   sp = args[0];
-  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                         eflags, PT_DEFAULT, pe_info))
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
+                         PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
   if (has_markup(mstr)) {
@@ -1034,8 +1025,8 @@ FUNCTION(fun_reswitch)
     haystacklen = dp - mstr;
   }
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP | PE_REGS_SWITCH,
-                             "fun_reswitch");
+  pe_regs =
+    pe_regs_localize(pe_info, PE_REGS_REGEXP | PE_REGS_SWITCH, "fun_reswitch");
   pe_regs_set(pe_regs, PE_REGS_SWITCH | PE_REGS_NOCOPY, "t0", mstr);
 
   /* try matching, return match immediately when found */
@@ -1043,14 +1034,13 @@ FUNCTION(fun_reswitch)
   for (j = 1; j < (nargs - 1); j += 2) {
     dp = pstr;
     sp = args[j];
-    if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info))
+    if (process_expression(pstr, &dp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info))
       goto exit_sequence;
     *dp = '\0';
 
-    if ((re =
-         pcre_compile(remove_markup(pstr, NULL), flags, &errptr, &erroffset,
-                      tables)) == NULL) {
+    if ((re = pcre_compile(remove_markup(pstr, NULL), flags, &errptr,
+                           &erroffset, tables)) == NULL) {
       /* Matching error. Ignore this one, move on. */
       continue;
     }
@@ -1073,8 +1063,7 @@ FUNCTION(fun_reswitch)
       } else {
         pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, mstr);
       }
-      per = process_expression(buff, bp, &sp,
-                               executor, caller, enactor,
+      per = process_expression(buff, bp, &sp, executor, caller, enactor,
                                eflags | PE_DOLLAR, PT_DEFAULT, pe_info);
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
@@ -1089,8 +1078,8 @@ FUNCTION(fun_reswitch)
     /* Default case */
     tbuf1 = replace_string("#$", mstr, args[nargs - 1]);
     sp = tbuf1;
-    process_expression(buff, bp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
 exit_sequence:
@@ -1123,14 +1112,14 @@ FUNCTION(fun_if)
   for (i = 0; i < nargs - 1; i += 2) {
     tp = tbuf;
     sp = args[i];
-    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info))
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if (parse_boolean(tbuf) == findtrue) {
       sp = args[i + 1];
-      if (process_expression(buff, bp, &sp, executor, caller, enactor,
-                             eflags, PT_DEFAULT, pe_info))
+      if (process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                             PT_DEFAULT, pe_info))
         return;
       if (!findall)
         return;
@@ -1140,38 +1129,29 @@ FUNCTION(fun_if)
   /* If we've found no true case, run the default if it exists. */
   if (!found && (nargs & 1)) {
     sp = args[nargs - 1];
-    process_expression(buff, bp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
   }
 }
 
 /* ARGSUSED */
-FUNCTION(fun_mudname)
-{
-  safe_str(MUDNAME, buff, bp);
-}
+FUNCTION(fun_mudname) { safe_str(MUDNAME, buff, bp); }
 
 /* ARGSUSED */
-FUNCTION(fun_mudurl)
-{
-  safe_str(MUDURL, buff, bp);
-}
+FUNCTION(fun_mudurl) { safe_str(MUDURL, buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_version)
 {
-  safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
-              VERSION, PATCHLEVEL, PATCHDATE);
+  safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s", VERSION,
+              PATCHLEVEL, PATCHDATE);
 #ifdef GIT_REVISION
   safe_format(buff, bp, " (rev %s)", GIT_REVISION);
 #endif
 }
 
 /* ARGSUSED */
-FUNCTION(fun_numversion)
-{
-  safe_integer(NUMVERSION, buff, bp);
-}
+FUNCTION(fun_numversion) { safe_integer(NUMVERSION, buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_starttime)
@@ -1186,10 +1166,7 @@ FUNCTION(fun_restarttime)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_restarts)
-{
-  safe_integer(globals.reboot_count, buff, bp);
-}
+FUNCTION(fun_restarts) { safe_integer(globals.reboot_count, buff, bp); }
 
 extern char soundex_val[UCHAR_MAX + 1];
 
@@ -1213,7 +1190,8 @@ soundex(char *str)
     str++;
   }
   p++;
-  /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
+  /* Convert letters to soundex values, squash duplicates, skip accents and
+   * other non-ascii characters */
   while (*str) {
     if (!isalpha(*str) || *str > 127) {
       str++;
@@ -1254,8 +1232,7 @@ FUNCTION(fun_soundex)
    * 5. Truncate to 4 characters or pad with 0's.
    * It's actually a bit messier than that to make it faster.
    */
-  if (!args[0] || !*args[0] || !isalpha(*args[0])
-      || strchr(args[0], ' ')) {
+  if (!args[0] || !*args[0] || !isalpha(*args[0]) || strchr(args[0], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"), buff,
              bp);
     return;
@@ -1272,9 +1249,8 @@ FUNCTION(fun_soundlike)
    * I deem the modularity to be more important. So there.
    */
   char tbuf1[5];
-  if (!*args[0] || !*args[1] || !isalpha(*args[0])
-      || !isalpha(*args[1]) || strchr(args[0], ' ')
-      || strchr(args[1], ' ')) {
+  if (!*args[0] || !*args[1] || !isalpha(*args[0]) || !isalpha(*args[1]) ||
+      strchr(args[0], ' ') || strchr(args[1], ' ')) {
     safe_str(T("#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"),
              buff, bp);
     return;
@@ -1291,16 +1267,13 @@ FUNCTION(fun_functions)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_null)
-{
-  return;
-}
+FUNCTION(fun_null) { return; }
 
 /* ARGSUSED */
 FUNCTION(fun_list)
 {
   int which = 3;
-  static const char *const fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = {"builtin", "local", "all"};
   if (nargs == 2) {
     if (!strcasecmp(args[1], "local"))
       which = 2;
@@ -1313,13 +1286,13 @@ FUNCTION(fun_list)
   }
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
-  else if (string_prefix("motd", args[0]))
+  else if (strcasecmp("motd", args[0]) == 0)
     safe_str(cf_motd_msg, buff, bp);
-  else if (string_prefix("wizmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("wizmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_wizmotd_msg, buff, bp);
-  else if (string_prefix("downmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("downmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_downmotd_msg, buff, bp);
-  else if (string_prefix("fullmotd", args[0]) && Hasprivs(executor))
+  else if (strcasecmp("fullmotd", args[0]) == 0 && Hasprivs(executor))
     safe_str(cf_fullmotd_msg, buff, bp);
   else if (string_prefix("functions", args[0]))
     safe_str(list_functions(fwhich[which - 1]), buff, bp);
@@ -1368,17 +1341,17 @@ FUNCTION(fun_scan)
   if (nargs == 3 && arglens[2]) {
     prefstr = trim_space_sep(args[2], ' ');
     while ((thispref = split_token(&prefstr, ' '))) {
-      if (string_prefix("room", thispref))
+      if (strcasecmp("room", thispref) == 0)
         scan_type |= CHECK_HERE | CHECK_NEIGHBORS;
-      else if (string_prefix("self", thispref))
+      else if (strcasecmp("self", thispref) == 0)
         scan_type |= CHECK_SELF | CHECK_INVENTORY;
-      else if (string_prefix("zone", thispref))
+      else if (strcasecmp("zone", thispref) == 0)
         scan_type |= CHECK_ZONE;
-      else if (string_prefix("globals", thispref))
+      else if (strcasecmp("globals", thispref) == 0)
         scan_type |= CHECK_GLOBAL;
-      else if (string_prefix("break", thispref))
+      else if (strcasecmp("break", thispref) == 0)
         scan_type |= CHECK_BREAK;
-      else if (string_prefix("all", thispref)) {
+      else if (strcasecmp("all", thispref) == 0) {
         scan_type |= CHECK_ALL;
       } else {
         notify(executor, T("Invalid type."));
@@ -1392,13 +1365,11 @@ FUNCTION(fun_scan)
   safe_str(scan_list(thing, cmdptr, scan_type), buff, bp);
 }
 
-
 enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
-do_whichof(char *args[], int nargs, enum whichof_t flag,
-           char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int eflags,
-           int isbool)
+do_whichof(char *args[], int nargs, enum whichof_t flag, char *buff, char **bp,
+           dbref executor, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
+           int eflags, int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
@@ -1414,8 +1385,8 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     /* The last arg is a delimiter. Parse it in place. */
     char *sp = sep;
     const char *arglast = args[nargs - 1];
-    if (process_expression(sep, &sp, &arglast, executor,
-                           caller, enactor, eflags, PT_DEFAULT, pe_info))
+    if (process_expression(sep, &sp, &arglast, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *sp = '\0';
     nargs--;
@@ -1425,8 +1396,8 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     ap = args[j];
-    if (process_expression(tbuf, &tp, &ap, executor, caller,
-                           enactor, eflags, PT_DEFAULT, pe_info))
+    if (process_expression(tbuf, &tp, &ap, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
@@ -1446,18 +1417,15 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 /* ARGSUSED */
 FUNCTION(fun_firstof)
 {
-  do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
-                                                             "STRFIRSTOF"));
+  do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor, caller, enactor,
+             pe_info, eflags, !!strcasecmp(called_as, "STRFIRSTOF"));
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_allof)
 {
-  do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
-                                                             "STRALLOF"));
+  do_whichof(args, nargs, DO_ALLOF, buff, bp, executor, caller, enactor,
+             pe_info, eflags, !!strcasecmp(called_as, "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */
@@ -1487,7 +1455,7 @@ tsc_diff_to_microseconds(uint64_t start, uint64_t end)
 #endif
 }
 
-extern int global_fun_invocations;      /* From parse.c */
+extern int global_fun_invocations; /* From parse.c */
 
 /* ARGSUSED */
 FUNCTION(fun_benchmark)
@@ -1515,8 +1483,8 @@ FUNCTION(fun_benchmark)
     /* Evaluate <sendto> argument */
     tp = tbuf;
     sp = args[2];
-    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info))
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
@@ -1537,8 +1505,8 @@ FUNCTION(fun_benchmark)
     sp = args[0];
     start = get_tsc();
     ++i;
-    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info)) {
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info)) {
       *tp = '\0';
       break;
     }
@@ -1555,20 +1523,19 @@ FUNCTION(fun_benchmark)
 
   if (thing != NOTHING) {
     safe_str(tbuf, buff, bp);
-    if (pe_info->fun_invocations >= FUNCTION_LIMIT
-        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
-      notify(thing,
-             T
-             ("Function invocation limit reached. Benchmark timings may not be reliable."));
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT ||
+        (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      notify(thing, T("Function invocation limit reached. Benchmark timings "
+                      "may not be reliable."));
     notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
                   ((double) total) / i, min, max);
   } else {
     safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
                 ((double) total) / i, min, max);
-    if (pe_info->fun_invocations >= FUNCTION_LIMIT
-        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
-      safe_str(T
-               (" Note: Function invocation limit reached. Benchmark timings may not be reliable."),
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT ||
+        (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      safe_str(T(" Note: Function invocation limit reached. Benchmark timings "
+                 "may not be reliable."),
                buff, bp);
   }
 

@@ -31,16 +31,15 @@
 #include "pueblo.h"
 #include "strutil.h"
 
-HASHTAB help_files;  /**< Help filenames hash table */
+HASHTAB help_files; /**< Help filenames hash table */
 
 static int help_init = 0;
 
 static void do_new_spitfile(dbref player, char *arg1, help_file *help_dat);
 static const char *string_spitfile(help_file *help_dat, char *arg1);
 static help_indx *help_find_entry(help_file *help_dat, const char *the_topic);
-static char **list_matching_entries(const char *pattern,
-                                    help_file *help_dat, int *len,
-                                    bool nospace);
+static char **list_matching_entries(const char *pattern, help_file *help_dat,
+                                    int *len, bool nospace);
 static void free_entry_list(char **);
 static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
@@ -51,15 +50,15 @@ static char *entries_from_offset(help_file *, int);
 
 /** Linked list of help topic names. */
 typedef struct TLIST {
-  char topic[TOPIC_NAME_LEN + 1];       /**< Name of topic */
-  struct TLIST *next;                   /**< Pointer to next list entry */
+  char topic[TOPIC_NAME_LEN + 1]; /**< Name of topic */
+  struct TLIST *next;             /**< Pointer to next list entry */
 } tlist;
 
-tlist *top = NULL;   /**< Pointer to top of linked list of topic names */
+tlist *top = NULL; /**< Pointer to top of linked list of topic names */
 
-help_indx *topics = NULL;  /**< Pointer to linked list of topic indexes */
-unsigned num_topics = 0;   /**< Number of topics loaded */
-unsigned top_topics = 0;   /**< Maximum number of topics loaded */
+help_indx *topics = NULL; /**< Pointer to linked list of topic indexes */
+unsigned num_topics = 0;  /**< Number of topics loaded */
+unsigned top_topics = 0;  /**< Maximum number of topics loaded */
 
 static void write_topic(long int p);
 
@@ -73,19 +72,16 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
 {
   static char results[BUFFER_LEN];
   char *rp;
-  char searchterm[BUFFER_LEN], *st;
-  char topic[TOPIC_NAME_LEN + 1];
-  char line[LINE_SIZE + 1], *l, cleanline[LINE_SIZE + 1], *cl;
-  char buff[BUFFER_LEN], *bp;
+  char searchterm[BUFFER_LEN] = {'\0'}, *st;
+  char topic[TOPIC_NAME_LEN + 1] = {'\0'};
+  char line[LINE_SIZE + 1] = {'\0'}, *l;
+  char cleanline[LINE_SIZE + 1] = {'\0'}, *cl;
+  char buff[BUFFER_LEN] = {'\0'}, *bp;
   int n;
   size_t i;
   help_indx *entry;
   FILE *fp;
 
-  memset(topic, 0, TOPIC_NAME_LEN + 1);
-  memset(line, 0, LINE_SIZE + 1);
-  memset(cleanline, 0, LINE_SIZE + 1);
-  memset(buff, 0, BUFFER_LEN);
   memset(results, 0, BUFFER_LEN);
 
   rp = results;
@@ -109,7 +105,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
     st++;
   }
   if (!*st) {
-    notify(executor, T("You may need to be a little more specific."));
+    notify(executor, T("You need to be more specific."));
     return NULL;
   }
 
@@ -190,7 +186,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
       }
     }
   }
-
+  fclose(fp);
   return results;
 }
 
@@ -226,14 +222,23 @@ COMMAND(cmd_helpcmd)
   strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
+    int aw = 0;
     char **entries;
     char *p;
 
     p = arg_left;
-    while (*p && (isspace(*p) || *p == '*' || *p == '?'))
+    while (*p && (isspace(*p) || *p == '*' || *p == '?')) {
+      if (*p == '*')
+        aw++;
       p++;
-    if (!*p) {
-      notify(executor, T("You may need to be a little more specific."));
+    }
+    if (!*p && aw) {
+      if ((*arg_left == '*') && *(arg_left + 1) == '\0') {
+        notify(executor,
+               T("You need to be more specific. Maybe you want 'help \\*'?"));
+      } else {
+        notify(executor, T("You need to be more specific."));
+      }
       return;
     }
 
@@ -266,7 +271,8 @@ COMMAND(cmd_helpcmd)
         notify_format(executor, T("No entry for '%s'."), strupper(arg_left));
         return;
       }
-      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left), ANSI_END);
+      notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
+                    ANSI_END);
       if (SUPPORT_PUEBLO)
         notify_noenter(executor, open_tag("SAMP"));
       notify(executor, entries);
@@ -278,7 +284,11 @@ COMMAND(cmd_helpcmd)
       char **entries;
       int len = 0;
       int type = 0;
+      static const char digits[16] __attribute__((__aligned__(16))) =
+        "0123456789";
+
       pp = pattern;
+
       for (sp = save; *sp; sp++) {
         if (isspace(*sp)) {
           if (type) {
@@ -290,7 +300,7 @@ COMMAND(cmd_helpcmd)
               return;
             }
           }
-        } else if (strchr("0123456789", *sp)) {
+        } else if (exists_in_ss(digits, 10, *sp)) {
           if (type == 1) {
             type = 2;
             *pp = '*';
@@ -402,8 +412,8 @@ help_reindex(dbref player)
 {
   help_file *curr;
 
-  for (curr = hash_firstentry(&help_files);
-       curr; curr = hash_nextentry(&help_files)) {
+  for (curr = hash_firstentry(&help_files); curr;
+       curr = hash_nextentry(&help_files)) {
     if (curr->indx) {
       mush_free(curr->indx, "help_index");
       curr->indx = NULL;
@@ -428,8 +438,8 @@ help_reindex_by_name(const char *filename)
   help_file *curr;
   bool retval = 0;
 
-  for (curr = hash_firstentry(&help_files);
-       curr; curr = hash_nextentry(&help_files)) {
+  for (curr = hash_firstentry(&help_files); curr;
+       curr = hash_nextentry(&help_files)) {
     if (strcmp(curr->file, filename) == 0) {
       if (curr->indx)
         mush_free(curr->indx, "help_index");
@@ -513,7 +523,6 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
     notify_format(player, T("%s output truncated."), help_dat->command);
 }
 
-
 static help_indx *
 help_find_entry(help_file *help_dat, const char *the_topic)
 {
@@ -527,7 +536,7 @@ help_find_entry(help_file *help_dat, const char *the_topic)
         break;
       }
     }
-  } else {                      /* Binary search of the index */
+  } else { /* Binary search of the index */
     int left = 0;
     int cmp;
     int right = help_dat->entries - 1;
@@ -557,7 +566,7 @@ help_find_entry(help_file *help_dat, const char *the_topic)
         if (left == right)
           break;
         right = n - 1;
-      } else {                  /* cmp > 0 */
+      } else { /* cmp > 0 */
         if (left == right)
           break;
         left = n + 1;
@@ -600,7 +609,6 @@ topic_cmp(const void *s1, const void *s2)
   const help_indx *b = s2;
 
   return strcasecmp(a->topic, b->topic);
-
 }
 
 static void
@@ -673,7 +681,8 @@ help_build_index(help_file *h, int restricted)
       /* parse out the topic */
       /* Get the beginning of the topic string */
       for (topic = &line[1];
-           (*topic == ' ' || *topic == '\t') && *topic != '\0'; topic++) ;
+           (*topic == ' ' || *topic == '\t') && *topic != '\0'; topic++)
+        ;
 
       /* Get the topic */
       strcpy(the_topic, "");
@@ -683,8 +692,8 @@ help_build_index(help_file *h, int restricted)
         if (*s != ' ' || the_topic[i] != ' ')
           the_topic[++i] = *s;
       }
-      if ((restricted && the_topic[0] == '&')
-          || (!restricted && the_topic[0] != '&')) {
+      if ((restricted && the_topic[0] == '&') ||
+          (!restricted && the_topic[0] != '&')) {
         the_topic[++i] = '\0';
         cur = (tlist *) malloc(sizeof(tlist));
         strcpy(cur->topic, the_topic);
@@ -870,7 +879,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len,
   size_t n;
 
   if (help_dat->admin)
-    offset = 1;                 /* To skip the leading & */
+    offset = 1; /* To skip the leading & */
   else
     offset = 0;
 
@@ -900,7 +909,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len,
 
   for (n = 0; n < help_dat->entries; n++)
     if ((nospace ? help_wild(pattern, help_dat->indx[n].topic + offset)
-         : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
+                 : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
       buff[*len] = help_dat->indx[n].topic + offset;
       *len += 1;
     }
@@ -915,7 +924,8 @@ free_entry_list(char **entries)
     mush_free(entries, "help.search");
 }
 
-/* Generate a page of the index of the help file (The old pre-generated 'help entries' tables), 0-indexed.
+/* Generate a page of the index of the help file (The old pre-generated 'help
+ * entries' tables), 0-indexed.
  */
 static char *
 entries_from_offset(help_file *h, int off)
@@ -1033,7 +1043,7 @@ is_index_entry(const char *topic, int *offset)
   static pcre_extra *extra = NULL;
   int ovec[33], ovecsize = 33;
   int r;
-  
+
   if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
     *offset = 0;
     return 1;
@@ -1042,15 +1052,13 @@ is_index_entry(const char *topic, int *offset)
   if (!entry_re) {
     const char *errptr = NULL;
     int erroffset = 0;
-    entry_re =
-      pcre_compile("^&?entries-([0-9]+)$", PCRE_CASELESS, &errptr, &erroffset,
-                   tables);
+    entry_re = pcre_compile("^&?entries-([0-9]+)$", PCRE_CASELESS, &errptr,
+                            &erroffset, tables);
     extra = pcre_study(entry_re, pcre_study_flags, &errptr);
   }
 
-  if ((r =
-       pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec,
-                 ovecsize)) == 2) {
+  if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec,
+                     ovecsize)) == 2) {
     char buff[BUFFER_LEN];
     pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
     *offset = parse_integer(buff) - 1;

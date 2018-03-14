@@ -6,7 +6,7 @@
  *
  */
 
-#define _GNU_SOURCE             /* For strchrnul, if applicable. */
+#define _GNU_SOURCE /* For strchrnul, if applicable. */
 
 #include "copyrite.h"
 #include "strutil.h"
@@ -58,7 +58,6 @@ mush_strndup(const char *src, size_t len, const char *check)
   return copy;
 }
 
-
 /** Our version of strdup, with memory leak checking.
  * This should be used in preference to strdup, and in assocation
  * with mush_free().
@@ -67,26 +66,18 @@ mush_strndup(const char *src, size_t len, const char *check)
  * \return newly allocated copy of s.
  */
 char *
-mush_strdup(const char *s, const char *check __attribute__ ((__unused__)))
+mush_strdup(const char *s, const char *check __attribute__((__unused__)))
 {
   char *x;
-
-#ifdef HAVE_STRDUP
-  x = strdup(s);
-  if (x)
-    add_check(check);
-#else
-
   size_t len = strlen(s) + 1;
-  x = mush_malloc(len, check);
+  x = mush_malloc_zero(len + SSE_OFFSET, check);
   if (x)
     memcpy(x, s, len);
-#endif
   return x;
 }
 
 /* Windows wrapper for snprintf */
-#if !defined (HAVE_SNPRINTF) && defined(HAVE__VSNPRINTF_S)
+#if !defined(HAVE_SNPRINTF) && defined(HAVE__VSNPRINTF_S)
 int
 sane_snprintf_s(char *str, size_t len, const char *fmt, ...)
 {
@@ -149,7 +140,6 @@ chopstr(const char *str, size_t lim)
   return tbuf1;
 }
 
-
 #if !defined(HAVE_STRCASECMP) && !defined(HAVE__STRICMP)
 /** strcasecmp for systems without it.
  * \param s1 one string to compare.
@@ -186,18 +176,18 @@ strncasecmp(const char *s1, const char *s2, size_t n)
     else if (*s1 == 0)
       return 0;
   return 0;
-
 }
 #endif
 
 /** Does string begin with prefix?
- * This comparison is case-insensitive.
+ * This comparison is case-insensitive. An empty prefix always
+ * matches.
  * \param string to check.
  * \param prefix to check against.
  * \retval 1 string begins with prefix.
  * \retval 0 string does not begin with prefix.
  */
-int
+bool
 string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix)
@@ -206,6 +196,25 @@ string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
     string++, prefix++;
   return *prefix == '\0';
 }
+
+/** Does string begin with prefix?
+ * This comparison is case-insensitive. An empty prefix always
+ * fails.
+ * \param string to check.
+ * \param prefix to check against.
+ * \retval 1 string begins with prefix.
+ * \retval 0 string does not begin with prefix.
+ */
+bool
+string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
+{
+  if (!string || !prefix || !*prefix)
+    return 0;  
+  while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
+    string++, prefix++;
+  return *prefix == '\0';
+}
+
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.
@@ -634,31 +643,29 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
   return 0;
 }
 
-
 /** Define the args used in APPEND_TO_BUF */
 #define APPEND_ARGS size_t len, blen, clen
 /** Append a string c to the end of buff, starting at *bp.
  * This macro is used by the safe_XXX functions.
  */
-#define APPEND_TO_BUF \
-  /* Trivial cases */  \
-  if (c[0] == '\0') \
-    return 0; \
-  /* The array is at least two characters long here */ \
-  if (c[1] == '\0') \
-    return safe_chr(c[0], buff, bp); \
-  len = strlen(c); \
-  blen = *bp - buff; \
-  if (blen > (BUFFER_LEN - 1)) \
-    return len; \
-  if ((len + blen) <= (BUFFER_LEN - 1)) \
-    clen = len; \
-  else \
-    clen = (BUFFER_LEN - 1) - blen; \
-  memcpy(*bp, c, clen); \
-  *bp += clen; \
+#define APPEND_TO_BUF                                                          \
+  /* Trivial cases */                                                          \
+  if (c[0] == '\0')                                                            \
+    return 0;                                                                  \
+  /* The array is at least two characters long here */                         \
+  if (c[1] == '\0')                                                            \
+    return safe_chr(c[0], buff, bp);                                           \
+  len = strlen(c);                                                             \
+  blen = *bp - buff;                                                           \
+  if (blen > (BUFFER_LEN - 1))                                                 \
+    return len;                                                                \
+  if ((len + blen) <= (BUFFER_LEN - 1))                                        \
+    clen = len;                                                                \
+  else                                                                         \
+    clen = (BUFFER_LEN - 1) - blen;                                            \
+  memcpy(*bp, c, clen);                                                        \
+  *bp += clen;                                                                 \
   return len - clen
-
 
 /** Safely store a formatted string into a buffer.
  * This is a better way to do safe_str(tprintf(fmt,...),buff,bp)
@@ -740,7 +747,6 @@ safe_dbref(dbref d, char *buff, char **bp)
   return 0;
 }
 
-
 /** Safely store a number into a buffer.
  * \param n number to store.
  * \param buff buffer to store into.
@@ -801,7 +807,6 @@ safe_str_space(const char *c, char *buff, char **bp)
   }
 }
 
-
 /** Safely store a string of known length into a buffer
  * This is an optimization of safe_str for when we know the string's length.
  * \param s string to store.
@@ -854,7 +859,7 @@ safe_fill(char x, size_t n, char *buff, char **bp)
 {
   int ret = 0;
 
-  if (n == 0)
+  if (n < 1)
     return 0;
   else if (n == 1)
     return safe_chr(x, buff, bp);
@@ -968,7 +973,7 @@ seek_char(const char *s, char c)
   while (*p && (*p != c))
     p++;
   return p;
-#endif                          /* HAVE_STRCHRNUL */
+#endif /* HAVE_STRCHRNUL */
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -985,7 +990,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  r = result = mush_malloc_zero(BUFFER_LEN + SSE_OFFSET, "replace_string.buff");
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
 
@@ -994,7 +999,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 
   while (*string) {
     char *s = strstr(string, old);
-    if (s) {                    /* Match found! */
+    if (s) { /* Match found! */
       safe_strl(string, s - string, result, &r);
       safe_strl(newbit, newlen, result, &r);
       string = s + len;
@@ -1008,7 +1013,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 }
 
 /** Standard replacer tokens for text and position */
-const char *const standard_tokens[2] = { "##", "#@" };
+const char *const standard_tokens[2] = {"##", "#@"};
 
 /* Replace two tokens in a string at once. All-around better than calling
  * replace_string() twice
@@ -1026,7 +1031,7 @@ replace_string2(const char *const old[2], const char *const newbits[2],
                 const char *restrict string)
 {
   char *result, *rp;
-  char firsts[3] = { '\0', '\0', '\0' };
+  char firsts[3] = {'\0', '\0', '\0'};
   size_t oldlens[2], newlens[2];
 
   if (!string)
@@ -1051,10 +1056,10 @@ replace_string2(const char *const old[2], const char *const newbits[2],
       string += skip;
     }
     if (*string) {
-      if (strncmp(string, old[0], oldlens[0]) == 0) {   /* Copy the first */
+      if (strncmp(string, old[0], oldlens[0]) == 0) { /* Copy the first */
         safe_strl(newbits[0], newlens[0], result, &rp);
         string += oldlens[0];
-      } else if (strncmp(string, old[1], oldlens[1]) == 0) {    /* The second */
+      } else if (strncmp(string, old[1], oldlens[1]) == 0) { /* The second */
         safe_strl(newbits[1], newlens[1], result, &rp);
         string += oldlens[1];
       } else {
@@ -1066,7 +1071,6 @@ replace_string2(const char *const old[2], const char *const newbits[2],
 
   *rp = '\0';
   return result;
-
 }
 
 /* Copy a string up until a specific character (Or end of string.)
@@ -1108,9 +1112,11 @@ trim_space_sep(char *str, char sep)
     return str;
   /* Skip leading spaces */
   str += strspn(str, " ");
-  for (p = str; *p; p++) ;
+  for (p = str; *p; p++)
+    ;
   /* And trailing */
-  for (p--; p > str && *p == ' '; p--) ;
+  for (p--; p > str && *p == ' '; p--)
+    ;
   p++;
   *p = '\0';
   return str;
@@ -1155,7 +1161,7 @@ next_token(char *str, char sep)
 
 /** Split out the next token from a string, destructively modifying it.
  * As usually, if the separator is a space, we skip multiple spaces.
- * The string's address is update to be past the token, and the token
+ * The string's address is updated to be past the token, and the token
  * is returned. This code from TinyMUSH 2.0.
  * \param sp pointer to string to split from.
  * \param sep token separator.
@@ -1213,7 +1219,8 @@ do_wordcount(char *str, char sep)
 
   if (!*str)
     return 0;
-  for (n = 0; str; str = next_token(str, sep), n++) ;
+  for (n = 0; str; str = next_token(str, sep), n++)
+    ;
   return n;
 }
 
@@ -1287,7 +1294,6 @@ next_in_list(const char **head)
 
   safe_chr('\0', buf, &p);
   return buf;
-
 }
 
 #ifndef HAVE_IMAXDIV_T
@@ -1310,7 +1316,7 @@ imaxdiv(intmax_t num, intmax_t denom)
   }
   return r;
 }
-#endif                          /* !HAVE_IMAXDIV */
+#endif /* !HAVE_IMAXDIV */
 
 /** Safely append an int to a string. Returns a true value on failure.
  * This will someday take extra arguments for use with our version
@@ -1327,9 +1333,9 @@ imaxdiv(intmax_t num, intmax_t denom)
 int
 format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
 {
-  char stack[128];              /* Even a negative 64 bit number will only be 21
-                                   digits or so max. This should be plenty of
-                                   buffer room. */
+  char stack[128]; /* Even a negative 64 bit number will only be 21
+                      digits or so max. This should be plenty of
+                      buffer room. */
   char *current;
   int size = 0, neg = 0;
   imaxdiv_t r;
@@ -1350,11 +1356,11 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
     neg = 1;
     val = -val;
     if (val < 0) {
-      /* -LONG_MIN == LONG_MIN on 2's complement systems. Take the
-         easy way out since this value is rarely encountered. */
+/* -LONG_MIN == LONG_MIN on 2's complement systems. Take the
+   easy way out since this value is rarely encountered. */
 
-      /* Most of these defaults are probably wrong on Win32. I hope it
-         has at least the headers from C99. */
+/* Most of these defaults are probably wrong on Win32. I hope it
+   has at least the headers from C99. */
 #ifndef PRIdMAX
 #define PRIdMAX "lld"
 #endif
@@ -1376,7 +1382,6 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
         return 0;
       }
     }
-
   }
 
   current = stack + sizeof(stack);
@@ -1408,20 +1413,28 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
     case 0:
       while (current < stack + sizeof(stack)) {
         *((*bp)++) = *(current++);
-    case 7:
+      /* Fall through */
+      case 7:
         *((*bp)++) = *(current++);
-    case 6:
+      /* Fall through */
+      case 6:
         *((*bp)++) = *(current++);
-    case 5:
+      /* Fall through */
+      case 5:
         *((*bp)++) = *(current++);
-    case 4:
+      /* Fall through */
+      case 4:
         *((*bp)++) = *(current++);
-    case 3:
+      /* Fall through */
+      case 3:
         *((*bp)++) = *(current++);
-    case 2:
+      /* Fall through */
+      case 2:
         *((*bp)++) = *(current++);
-    case 1:
+      /* Fall through */
+      case 1:
         *((*bp)++) = *(current++);
+        /* Fall through */
       }
     }
   } else {
@@ -1616,13 +1629,13 @@ safe_itemizer(int cur_num, int done, const char *delim, const char *conjoin,
   }
   /* And then we need another <space> */
   safe_str(space, buff, bp);
-
 }
 
 /** Return a stringified time in a static buffer
  * Just like ctime() except without the trailing newlines.
  * \param t the time to format.
- * \param utc true if the time should be displayed in UTC, 0 for local time zone.
+ * \param utc true if the time should be displayed in UTC, 0 for local time
+ * zone.
  * \return a pointer to a static buffer with the stringified time.
  */
 char *
@@ -1676,7 +1689,6 @@ default_match_limit(void)
   return &ex;
 }
 
-
 /** Set a low match-limit setting in an existing pcre_extra struct. */
 void
 set_match_limit(struct pcre_extra *ex)
@@ -1719,7 +1731,7 @@ safe_chr(char c, char *buff, char **bp)
 }
 
 /* keystr format:
- * 
+ *
  * Either a single word, which is returned for any keyword Or one or
  * more key:value pairs, in which case the matching value is
  * returned. If none are found, looks for a key named default.  If
@@ -1729,8 +1741,7 @@ safe_chr(char c, char *buff, char **bp)
 extern const unsigned char *tables;
 
 const char *
-keystr_find_full(const char *restrict map,
-                 const char *restrict key,
+keystr_find_full(const char *restrict map, const char *restrict key,
                  const char *restrict deflt, char delim)
 {
   pcre *re;

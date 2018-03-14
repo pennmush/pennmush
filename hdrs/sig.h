@@ -6,7 +6,7 @@
 #define __SIG_H
 
 /** Type definition for signal handlers */
-typedef void (*Sigfunc) (int);
+typedef void (*Sigfunc)(int);
 
 /* Set up a signal handler. Use instead of signal() */
 Sigfunc install_sig_handler(int signo, Sigfunc f);
@@ -27,4 +27,9 @@ void unblock_a_signal(int signo);
 /* Block all signals en masse. */
 void block_signals(void);
 
-#endif                          /* __SIG_H */
+extern int sigrecv_fd;
+void sigrecv_setup(void);
+void sigrecv_notify(void);
+void sigrecv_ack(void);
+
+#endif /* __SIG_H */

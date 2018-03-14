@@ -12,20 +12,17 @@
 #ifndef __PUEBLO_H
 #define __PUEBLO_H
 
-
 #include "conf.h"
 
-#define PUEBLOBUFF \
-       char pbuff[BUFFER_LEN]; \
-       char *pp
-#define PUSE \
-       pp=pbuff
-#define PEND \
-       *pp=0;
+#define PUEBLOBUFF                                                             \
+  char pbuff[BUFFER_LEN];                                                      \
+  char *pp
+#define PUSE pp = pbuff
+#define PEND *pp = 0;
 
-#define tag_wrap(a,b,c) safe_tag_wrap(a,b,c,pbuff,&pp,NOTHING)
-#define tag(a) safe_tag(a,pbuff,&pp)
-#define tag_cancel(a) safe_tag_cancel(a,pbuff,&pp)
+#define tag_wrap(a, b, c) safe_tag_wrap(a, b, c, pbuff, &pp, NOTHING)
+#define tag(a) safe_tag(a, pbuff, &pp)
+#define tag_cancel(a) safe_tag_cancel(a, pbuff, &pp)
 
 /* Please STAY SANE when modifying.
  * Making this something like 'x' and 'y' is a BAD IDEA

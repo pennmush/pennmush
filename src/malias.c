@@ -66,10 +66,10 @@
 #include "pueblo.h"
 #include "strutil.h"
 
-#define MA_INC 3        /**< How many maliases we malloc at a time */
+#define MA_INC 3 /**< How many maliases we malloc at a time */
 
-int ma_size = 0;   /**< Number of maliases */
-int ma_top = 0;    /**< Top of alias array */
+int ma_size = 0;           /**< Number of maliases */
+int ma_top = 0;            /**< Top of alias array */
 struct mail_alias *malias; /**< Pointer to linked list of aliases */
 
 /** Privilege table for maliases. */
@@ -77,16 +77,13 @@ static PRIV malias_priv_table[] = {
   {"Admin", 'A', ALIAS_ADMIN, ALIAS_ADMIN},
   {"Members", 'M', ALIAS_MEMBERS, ALIAS_MEMBERS},
   {"Owner", 'O', ALIAS_OWNER, ALIAS_OWNER},
-  {NULL, '\0', 0, 0}
-};
+  {NULL, '\0', 0, 0}};
 
 static const char *get_shortprivs(struct mail_alias *m);
-
 
 /***********************************************************
 ***** User-commands *****
 ***********************************************************/
-
 
 /** List or create a malias.
  * \verbatim
@@ -117,7 +114,6 @@ do_malias(dbref player, char *arg1, char *arg2)
   }
 }
 
-
 /** Create a malias.
  * \verbatim
  * This implements the @malias/create command.
@@ -146,8 +142,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
     return;
   }
   if (*alias != MALIAS_TOKEN) {
-    notify_format(player,
-                  T("MAIL: All Mail aliases must begin with '%c'."),
+    notify_format(player, T("MAIL: All Mail aliases must begin with '%c'."),
                   MALIAS_TOKEN);
     return;
   }
@@ -161,8 +156,8 @@ do_malias_create(dbref player, char *alias, char *tolist)
       return;
     }
   }
-  m = get_malias(GOD, alias);   /* GOD can see all aliases */
-  if (m) {                      /* Ensures no duplicates!  */
+  m = get_malias(GOD, alias); /* GOD can see all aliases */
+  if (m) {                    /* Ensures no duplicates!  */
     notify_format(player, T("MAIL: Mail Alias '%s' already exists."), alias);
     return;
   }
@@ -250,10 +245,8 @@ do_malias_create(dbref player, char *alias, char *tolist)
   m->mflags = ALIAS_OWNER;
   ma_top++;
 
-
   notify_format(player, T("MAIL: Alias set '%s' defined."), alias);
 }
-
 
 /** List maliases.
  * \verbatim
@@ -274,14 +267,13 @@ do_malias_list(dbref player)
         ((m->nflags & ALIAS_ADMIN) && Hasprivs(player)) ||
         ((m->nflags & ALIAS_MEMBERS) && ismember(m, player))) {
       if (!notified) {
-        notify_format(player, "%-13s %-35s %s %-15s",
-                      T("Name"), T("Alias Description"), T("Use See"),
-                      T("Owner"));
+        notify_format(player, "%-13s %-35s %s %-15s", T("Name"),
+                      T("Alias Description"), T("Use See"), T("Owner"));
         notified++;
       }
-      notify_format(player,
-                    "%c%-12.12s %-35.35s %s %-15.15s", MALIAS_TOKEN, m->name,
-                    uncompress(m->desc), get_shortprivs(m), Name(m->owner));
+      notify_format(player, "%c%-12.12s %-35.35s %s %-15.15s", MALIAS_TOKEN,
+                    m->name, uncompress(m->desc), get_shortprivs(m),
+                    Name(m->owner));
     }
   }
 
@@ -309,8 +301,7 @@ do_malias_members(dbref player, char *alias)
     notify_format(player, T("MAIL: Alias '%s' not found."), alias);
     return;
   }
-  if ((m->owner == player) || (m->mflags == 0) ||
-      (Hasprivs(player)) ||
+  if ((m->owner == player) || (m->mflags == 0) || (Hasprivs(player)) ||
       ((m->mflags & ALIAS_MEMBERS) && ismember(m, player))) {
     /* Dummy to avoid having to invert the "if" above ;-) */
   } else {
@@ -345,8 +336,7 @@ FUNCTION(fun_malias)
     if (m) {
       if (!delim_check(buff, bp, nargs, args, 2, &sep))
         return;
-      if ((m->owner == executor) || (m->mflags == 0) ||
-          (Hasprivs(executor)) ||
+      if ((m->owner == executor) || (m->mflags == 0) || (Hasprivs(executor)) ||
           ((m->mflags & ALIAS_MEMBERS) && ismember(m, executor))) {
         for (i = 0; i < m->size; i++) {
           if (count++)
@@ -366,9 +356,7 @@ FUNCTION(fun_malias)
       }
       if (!delim_check(buff, bp, nargs, args, 1, &sep))
         return;
-
     }
-
   }
   /* List maliases, possibly with a delimiter */
   for (i = 0; i < ma_top; i++) {
@@ -383,7 +371,6 @@ FUNCTION(fun_malias)
     }
   }
 }
-
 
 /** Describe a malias.
  * \verbatim
@@ -403,14 +390,13 @@ do_malias_desc(dbref player, char *alias, char *desc)
     return;
   } else if (Wizard(player) || (player == m->owner)) {
     if (m->desc)
-      free(m->desc);            /* No need to update MEM_CHECK records here */
+      free(m->desc); /* No need to update MEM_CHECK records here */
     m->desc = compress(desc);
     notify(player, T("MAIL: Description changed."));
   } else
     notify(player, T("MAIL: Permission denied."));
   return;
 }
-
 
 /** Change ownership of a malias.
  * \verbatim
@@ -444,8 +430,6 @@ do_malias_chown(dbref player, char *alias, char *owner)
   }
 }
 
-
-
 /** Change name of a malias.
  * \verbatim
  * This implements the @malias/rename command.
@@ -464,8 +448,7 @@ do_malias_rename(dbref player, char *alias, char *newname)
     return;
   }
   if (*newname != MALIAS_TOKEN) {
-    notify_format(player,
-                  T("MAIL: Bad alias. Aliases must start with '%c'."),
+    notify_format(player, T("MAIL: Bad alias. Aliases must start with '%c'."),
                   MALIAS_TOKEN);
     return;
   }
@@ -478,13 +461,11 @@ do_malias_rename(dbref player, char *alias, char *newname)
     return;
   }
 
-  free(m->name);                /* No need to update MEM_CHECK records here. */
+  free(m->name); /* No need to update MEM_CHECK records here. */
   m->name = strdup(newname + 1);
 
   notify(player, T("MAIL: Mail Alias renamed."));
 }
-
-
 
 /** Delete a malias.
  * \verbatim
@@ -499,10 +480,10 @@ do_malias_destroy(dbref player, char *alias)
   struct mail_alias *m;
   m = get_malias(player, alias);
   if (!m) {
-    notify_format(player,
-                  T
-                  ("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
-                  MALIAS_TOKEN);
+    notify_format(
+      player,
+      T("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
+      MALIAS_TOKEN);
     return;
   }
   if (Wizard(player) || (m->owner == player)) {
@@ -518,7 +499,6 @@ do_malias_destroy(dbref player, char *alias)
     notify(player, T("MAIL: Permission denied!"));
   }
 }
-
 
 /** Set the membership list for a malias.
  * \verbatim
@@ -540,10 +520,10 @@ do_malias_set(dbref player, char *alias, char *tolist)
 
   m = get_malias(player, alias);
   if (!m) {
-    notify_format(player,
-                  T
-                  ("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
-                  MALIAS_TOKEN);
+    notify_format(
+      player,
+      T("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
+      MALIAS_TOKEN);
     return;
   }
   if (!tolist || !*tolist) {
@@ -621,8 +601,6 @@ do_malias_set(dbref player, char *alias, char *tolist)
   notify(player, T("MAIL: Alias list set."));
 }
 
-
-
 /** List all maliases.
  * \verbatim
  * This implements the @malias/list command.
@@ -639,21 +617,18 @@ do_malias_all(dbref player)
     do_malias_list(player);
     return;
   }
-  notify(player,
-         "Num   Name       Description                              Owner       Count");
+  notify(player, "Num   Name       Description                              "
+                 "Owner       Count");
 
   for (i = 0; i < ma_top; i++) {
     m = &malias[i];
-    notify_format(player, "#%-4d %c%-10.10s %-40.40s %-11.11s (%3d)",
-                  i, MALIAS_TOKEN, m->name,
-                  uncompress(m->desc), Name(m->owner), m->size);
+    notify_format(player, "#%-4d %c%-10.10s %-40.40s %-11.11s (%3d)", i,
+                  MALIAS_TOKEN, m->name, uncompress(m->desc), Name(m->owner),
+                  m->size);
   }
 
   notify(player, T("***** End of Mail Aliases *****"));
 }
-
-
-
 
 /** Statistics on maliases.
  * \verbatim
@@ -667,8 +642,8 @@ do_malias_stats(dbref player)
   if (!Hasprivs(player))
     notify(player, T("MAIL: Permission denied."));
   else {
-    notify_format(player,
-                  T("MAIL: Number of mail aliases defined: %d"), ma_top);
+    notify_format(player, T("MAIL: Number of mail aliases defined: %d"),
+                  ma_top);
     notify_format(player, T("MAIL: Allocated slots %d"), ma_size);
   }
 }
@@ -689,7 +664,7 @@ do_malias_nuke(dbref player)
     notify(player, T("MAIL: Only god can do that!"));
     return;
   }
-  if (ma_size) {                /* aliases defined ? */
+  if (ma_size) { /* aliases defined ? */
     for (i = 0; i < ma_top; i++) {
       m = &malias[i];
       if (m->name)
@@ -704,7 +679,6 @@ do_malias_nuke(dbref player)
   ma_size = ma_top = 0;
   notify(player, T("MAIL: All mail aliases destroyed!"));
 }
-
 
 /** Set permisions on maliases.
  * \verbatim
@@ -735,7 +709,6 @@ do_malias_privs(dbref player, char *alias, char *privs, int type)
                 T("MAIL: Permission to see/use alias '%s' changed to %s"),
                 alias, privs_to_string(malias_priv_table, *p));
 }
-
 
 /** Add players to a malias.
  * \param player dbref of enactor.
@@ -801,8 +774,8 @@ do_malias_add(dbref player, char *alias, char *tolist)
     } else {
       if (ismember(m, target)) {
         notify_format(player,
-                      T("MAIL: player '%s' exists already in alias %s."),
-                      head, alias);
+                      T("MAIL: player '%s' exists already in alias %s."), head,
+                      alias);
       } else {
         buff = unparse_object(player, target, AN_SYS);
         notify_format(player, T("MAIL: %s added to alias %s"), buff, alias);
@@ -839,10 +812,6 @@ do_malias_add(dbref player, char *alias, char *tolist)
 
   notify_format(player, T("MAIL: Alias set '%s' redefined."), alias);
 }
-
-
-
-
 
 /** Remove players from a malias.
  * \param player dbref of enactor.
@@ -904,8 +873,8 @@ do_malias_remove(dbref player, char *alias, char *tolist)
       notify_format(player, T("MAIL: No such player '%s'."), head);
     } else {
       if (!(i = ismember(m, target))) {
-        notify_format(player, T("MAIL: player '%s' is not in alias %s."),
-                      head, alias);
+        notify_format(player, T("MAIL: player '%s' is not in alias %s."), head,
+                      alias);
       } else {
         buff = unparse_object(player, target, AN_SYS);
         m->members[i - 1] = m->members[--m->size];
@@ -923,11 +892,6 @@ do_malias_remove(dbref player, char *alias, char *tolist)
 
   notify_format(player, T("MAIL: Alias set '%s' redefined."), alias);
 }
-
-
-
-
-
 
 /***********************************************************
 ***** "Utility" functions *****
@@ -964,7 +928,6 @@ get_shortprivs(struct mail_alias *m)
   return privs;
 }
 
-
 /** Is a player a member of a malias?
  * \param m pointer to malias.
  * \param player dbref of player.
@@ -977,7 +940,7 @@ ismember(struct mail_alias *m, dbref player)
   int i;
   for (i = 0; i < m->size; i++) {
     if (player == m->members[i])
-      return (i + 1);           /* To avoid entry "0" */
+      return (i + 1); /* To avoid entry "0" */
   }
   return 0;
 }
@@ -1030,10 +993,6 @@ get_malias(dbref player, char *alias)
   }
   return NULL;
 }
-
-
-
-
 
 /***********************************************************
 ***** Loading and saving of mail-aliases *****

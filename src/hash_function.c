@@ -129,13 +129,13 @@ CITY_UNALIGNED_LOAD32(const char *p)
 #define city_bswap_32(x) OSSwapInt32(x)
 #define city_bswap_64(x) OSSwapInt64(x)
 
-#elif defined (__FreeBSD__)
+#elif defined(__FreeBSD__)
 
 #include <sys/endian.h>
 #define city_bswap_32(x) bswap32(x)
 #define city_bswap_64(x) bswap64(x)
 
-#elif defined (__OpenBSD__)
+#elif defined(__OpenBSD__)
 
 #include <sys/types.h>
 #define city_bswap_32(x) swap32(x)
@@ -158,8 +158,7 @@ CITY_UNALIGNED_LOAD32(const char *p)
 
 #else
 
-static inline uint16_t __attribute__ ((__const__))
-  city_bswap_16(uint16_t hword)
+static inline uint16_t __attribute__((__const__)) city_bswap_16(uint16_t hword)
 {
   uint16_t low, hi;
 
@@ -169,8 +168,7 @@ static inline uint16_t __attribute__ ((__const__))
   return hi + (low << 8);
 }
 
-static inline uint32_t __attribute__ ((__const__))
-  city_bswap_32(uint32_t word)
+static inline uint32_t __attribute__((__const__)) city_bswap_32(uint32_t word)
 {
   uint32_t low, hi;
 
@@ -180,8 +178,7 @@ static inline uint32_t __attribute__ ((__const__))
   return city_bswap_16(hi) + ((uint32_t) city_bswap_16(low) << 16);
 }
 
-static inline uint64_t __attribute__ ((__const__))
-  city_bswap_64(uint64_t dword)
+static inline uint64_t __attribute__((__const__)) city_bswap_64(uint64_t dword)
 {
   uint64_t low, hi;
 
@@ -244,7 +241,7 @@ city_ShiftMix(uint64_t val)
 static uint64_t
 city_HashLen16(uint64_t u, uint64_t v)
 {
-  struct city_uint128 x = { u, v };
+  struct city_uint128 x = {u, v};
   return city_Hash128to64(&x);
 }
 
@@ -286,8 +283,8 @@ city_HashLen0to16(const char *s, size_t len)
     a = s[0];
     b = s[len >> 1];
     c = s[len - 1];
-    y = (uint32_t) (a) + ((uint32_t) (b) << 8);
-    z = len + ((uint32_t) (c) << 2);
+    y = (uint32_t)(a) + ((uint32_t)(b) << 8);
+    z = len + ((uint32_t)(c) << 2);
     return city_ShiftMix(y * city_k2 ^ z * city_k0) * city_k2;
   }
   return city_k2;
@@ -331,10 +328,9 @@ static void
 city_WeakHashLen32WithSeeds(const char *s, uint64_t a, uint64_t b, uint64_t *h1,
                             uint64_t *h2)
 {
-  city_WeakHashLen32WithSeedsHelper(city_Fetch64(s),
-                                    city_Fetch64(s + 8),
-                                    city_Fetch64(s + 16),
-                                    city_Fetch64(s + 24), a, b, h1, h2);
+  city_WeakHashLen32WithSeedsHelper(city_Fetch64(s), city_Fetch64(s + 8),
+                                    city_Fetch64(s + 16), city_Fetch64(s + 24),
+                                    a, b, h1, h2);
 }
 
 /* Return an 8-byte hash for 33 to 64 bytes. */
@@ -380,15 +376,15 @@ city_CityHash64(const char *s, size_t len)
    * loop we keep 56 bytes of state: v, w, x, y, and z. */
   x = city_Fetch64(s + len - 40);
   y = city_Fetch64(s + len - 16) + city_Fetch64(s + len - 56);
-  z =
-    city_HashLen16(city_Fetch64(s + len - 48) + len,
-                   city_Fetch64(s + len - 24));
+  z = city_HashLen16(city_Fetch64(s + len - 48) + len,
+                     city_Fetch64(s + len - 24));
   city_WeakHashLen32WithSeeds(s + len - 64, len, z, &v1, &v2);
   city_WeakHashLen32WithSeeds(s + len - 32, y + city_k1, x, &w1, &w2);
   x = x * city_k1 + city_Fetch64(s);
 
-  /* Decrease len to the nearest multiple of 64, and operate on 64-byte chunks. */
-  len = (len - 1) & ~(size_t) (63);
+  /* Decrease len to the nearest multiple of 64, and operate on 64-byte chunks.
+   */
+  len = (len - 1) & ~(size_t)(63);
   do {
     uint64_t temp;
     x = city_Rotate(x + y + v1 + city_Fetch64(s + 8), 37) * city_k1;
@@ -410,8 +406,8 @@ city_CityHash64(const char *s, size_t len)
 }
 
 uint64_t
-city_CityHash64WithSeeds(const char *s, size_t len,
-                         uint64_t seed0, uint64_t seed1)
+city_CityHash64WithSeeds(const char *s, size_t len, uint64_t seed0,
+                         uint64_t seed1)
 {
   return city_HashLen16(city_CityHash64(s, len) - seed0, seed1);
 }

@@ -1,4 +1,5 @@
 & FUNCTIONS
+& FUNCTION
   Functions are specialized commands used to manipulate strings and other input. Functions take the general form: [FUNCTION(<input>)]
 
   The brackets are used to delimit and force evaluation of the function (or nested functions). The brackets can also be used to group functions for the purposes of string concatenation. In general, more than one pair of brackets is not required, but you can nest an arbitrary number of brackets.
@@ -18,8 +19,9 @@
   
   Built-in functions are written in the game hardcode, while @functions are written in softcode, and then made global with the "@function" command. Both are used in exactly the same manner. For more information on @functions, see 'help @function'.
 
-See also: MUSHCODE
+See also: MUSHCODE, FUNCTION LIST
 & FUNCTION LIST
+& FUNCTION TYPES
   Several major variants of functions are available. The help topics are listed below, together with a quick summary of the function type and some examples of that type of function.
 
   Attribute functions: attribute-related manipulations (GET, UFUN)
@@ -710,12 +712,6 @@ See also: lcstr(), ucstr()
     You say, "foo bar baz blech"
     > say strcat(foo bar, baz blech)
     You say, "foo barbaz blech"
-& CEIL()
-  ceil(<number>)
- 
-  Returns the least integral value greater than or equal to <number>.
-
-See also: floor(), bound(), round(), trunc()
 & CENTER()
   center(<string>, <width>[, <fill>[, <rightfill>]])
  
@@ -800,9 +796,11 @@ See also: Connection Functions
   
   With two arguments, colors() returns information about specific colors. <colors> can be any string accepted by the ansi() function's first argument. <format> must be one of:
   
-   hex:      return a hexcode in the format #rrggbb.
-   xterm256: return the number of the xterm color closest to the given <color>.
-   16color:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
+   hex, x:      return a hexcode in the format #rrggbb.
+   rgb, r:      return the RGB components as a list (0 0 0 - 255 255 255)
+   xterm256, d: return the number of the xterm color closest to the given <color>.
+   xterm256x,h: return the number of the xterm color in base 16.
+   16color, c:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
    name:     return a list of names of all the colors exactly matching the given colors, or '#-1 NO MATCHING COLOR NAME' if there is no exact match with a named color.
    auto:     returns the colors in the same format(s) they were given in.
 
@@ -835,9 +833,9 @@ See also: ansi(), valid(), colorstyle
     
     > think colors(iuB+red, hex styles)
     ui#ff0000/#0000ee
-	
-	> think colors(+blue huyG/+black, auto)
-	hy/+black
+
+    > think colors(+blue huyG/+black, auto)
+    hy/+black
 
 & COMP()
   comp(<value1>, <value2>[, <type>])
@@ -1112,7 +1110,7 @@ See also: @dig, open(), @open, create(), pcreate()
 
   Typically at least the following algorithms are supported:
 
-  md4 md5 ripemd160 sha sha1 sha224 sha256 sha384 sha512 whirlpool
+  md4 md5 ripemd160 sha1 sha224 sha256 sha384 sha512 whirlpool
 
   Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5 and the SHA family.
 
@@ -1201,7 +1199,7 @@ See also: get(), eval(), ufun(), default(), udefault(), hasattr()
 & EDIT()
   edit(<string>, <search>, <replace>[, ... , <searchN>, <replaceN>])
  
-  For each given <search> and <replace> pair, edit() replaces all occurances of <search> in <string> with the corresponding <replace>.
+  For each given <search> and <replace> pair, edit() replaces all occurrences of <search> in <string> with the corresponding <replace>.
   
   If <search> is a caret (^), <replace> is prepended.
   If <search> is a dollar sign ($), <replace> is appended.
@@ -1456,12 +1454,6 @@ See also: flags(), list()
     You say, "zab rab oof"
 
 See also: revwords()
-& FLOOR()
-  floor(<number>)
- 
-  Returns the greatest integral value less than or equal to <number>.
-
-See also: ceil(), bound(), round(), trunc(), floordiv()
 & FMOD()
   fmod(<number>, <divisor>)
 
@@ -1479,6 +1471,8 @@ See also: fdiv(), div(), mod(), lmath()
   If no <base case> is provided, fold() passes the first element of <list> as %0, and the second element of <list> as %1, to the user-defined function. The user-defined function is then called again, with the result of the first evaluation being %0, and the next (third) element of the list as %1. This is repeated until all the elements of the list have been used. The result of the last call of <obj>/<attr> is returned.
   
   If a base case is provided, it is passed as %0, and the first element of list is passed as %1, to the user-defined function. The process for the no-base-case fold() is then used.
+  
+  The number of times <attr> has been called is passed as %2, starting from 0.
   
   Note that it's not possible to pass a <delimiter> to fold without also giving a <base case>; see the examples for a way around this.
   
@@ -1522,7 +1516,7 @@ See also: followers(), follow, unfollow
  
   For each character in <string>, <object>/<attribute> is called, with the character passed as %0, and its position in the string as %1 (the first character has position 0). The results are concatenated.
   
-  If <start> is given, everything before the first occurance of <start> is copied as-is, without being passed to the <object>/<attribute>. If <end> is given, everything after the first occurance of <end> is copied as-is. The <start> and <end> characters themselves are not copied.
+  If <start> is given, everything before the first occurrence of <start> is copied as-is, without being passed to the <object>/<attribute>. If <end> is given, everything after the first occurrence of <end> is copied as-is. The <start> and <end> characters themselves are not copied.
  
   See 'help foreach2' for examples.
 & FOREACH2
@@ -1544,9 +1538,11 @@ See also: followers(), follow, unfollow
 
 See also: map(), anonymous attributes
 & FRACTION()
-  fraction(<number>)
+  fraction(<number>[, <whole>])
 
   This function returns a fraction representing the floating-point <number>. Since not all numbers can be expressed as a fraction, dividing the numerator by the denominator of the results will not always return the original <number>, but something close to it.
+
+  If <whole> is true, and <number> is greater than 1.0 (or less than -1.0), the return value will be a whole number followed by the fraction representation of the decimal.
 
   Examples:
     > think fraction(.75)
@@ -1557,6 +1553,12 @@ See also: map(), anonymous attributes
     
     > think fraction(2)
     2
+
+    > think fraction(2.75)
+    11/4
+
+    > think fraction(2.75, 1)
+    2 3/4
 & FULLNAME()
   fullname(<object>)
 
@@ -1630,12 +1632,14 @@ See also: match(), matchall(), grab(), regmatch()
 & GREPI()
 & REGREPI()
 & WILDGREPI()
+& PGREP()
   grep(<object>, <attrs>, <substring>)
   wildgrep(<object>, <attrs>, <pattern>)
   regrep(<object>, <attrs>, <regexp>)
   grepi(<object>, <attrs>, <substring>)
   regrepi(<object>, <attrs>, <regexp>)
   wildgrepi(<object>, <attrs>, <pattern>)
+  pgrep(<object>, <attrs>, <substring>)
   
   These functions return a list of attributes on <object> containing <substring>, matching the wildcard <pattern>, or matching the regular expression <regexp>. <attrs> is a wildcard pattern for attribute names to search.
 
@@ -1643,6 +1647,8 @@ See also: match(), matchall(), grab(), regmatch()
 
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
+  
+  pgrep() works like grep(), but also checks attributes inherited from parents.
   
 See also: @grep, lattr(), WILDCARDS
 & GT()
@@ -1672,7 +1678,7 @@ See also: gt(), lt(), lte(), eq(), neq(), lmath()
   
   hasattrp() also checks for <attribute> on <object>'s parent/ancestor.
 
-  hasattrval() only returns 1 if <attribute> exists and is non-empty.
+  hasattrval() only returns 1 if <attribute> exists and is non-empty. An "empty" attr is one containing a null value (if the empty_attrs config option is on), or one containing a single space (if the option is off).
   
   hasattrpval() is like hasattrval() but also checks parents.
   
@@ -2447,7 +2453,7 @@ See also: lvthings(), lcon()
     > say lpos(a-bc-def-g, -)
     You say, "1 4 8"
 
-See also: pos(), member(), match()
+See also: pos(), member(), match(), wordpos()
 & LSEARCH()
 & NLSEARCH()
 & SEARCH()
@@ -2562,7 +2568,7 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
 
   lwhoid() returns a list of objid's instead.
 
-See also: mwho(), nwho(), xwho()
+See also: mwho(), nwho(), xwho(), lports()
 & MAP()
   map([<object>/]<attribute>, <list>[, <delim>[, <osep>]])
   
@@ -2889,7 +2895,7 @@ See also: MONIKERS, @moniker, name(), MONIKER, iname(), accname()
     Bad name "bogus"
     You say, "#1 #7 #56 #-1"
 
-See also: namegrab(), name(), locate()
+See also: namegrab(), name(), locate(), num(), pmatch()
 & NAMEGRAB()
 & NAMEGRABALL()
   namegrab(<dbref list>, <name>)
@@ -2965,9 +2971,9 @@ See also: Boolean Functions, t(), and(), or(), nor(), xor()
 & NUM()
   num(<object>)
 
-  Returns the dbref number of <object>. <object> must be the name of an object which is near to the caller, or the name of a player prefixed with a '*'.
+  Returns the dbref number of <object>. <object> must reference a valid object, as per 'help matching'.
   
-See also: locate(), rnum()
+See also: locate(), rnum(), pmatch()
 & NVCON()
 & NCON()
   ncon(<object>)
@@ -3192,13 +3198,13 @@ See also: @ps, getpids(), pidinfo()
 
   These port numbers also appear in the wizard WHO, and can be used with @boot/port, page/port, and the functions that return information about a connection to make them use a specific connection rather than the least-idle one when a player has multiple connections open. Players can get information about their own connections. See_all is needed to use them to get information about other people's ports.
 
-See also: player(), Connection Functions
+See also: lwho(), player(), Connection Functions
 & POS()
   pos(<needle>, <haystack>)
 
   This function returns the position that <needle> begins in <haystack>. Unlike most other string functions, the first character of <haystack> is numbered 1, not 0. If <needle> is not present in <haystack>, pos() returns #-1.
   
-See also: member(), match(), lpos()
+See also: member(), match(), lpos(), wordpos()
 & POSS()
 & %p
   poss(<object>)
@@ -3275,7 +3281,28 @@ See also: randword()
   
   pickrand() is an alias for randword().
   
-See also: rand()
+See also: rand(), randextract()
+& RANDEXTRACT()
+  randextract(<list>[, <count>[, <delim>[, <type>[, <osep>]]]])
+  
+  Returns up to <count> random elements from the <delim>-separated <list>. The following <type>s are available:
+    R - Grab <count> elements from <list> at random, but don't duplicate any elements
+    L - Grab <count> elements from <list>, in order, starting at a random element
+    D - Grab <count> elements from <list> at random, with duplicates allowed
+
+  randextract() may return less than <count> elements for <type>s L and R, depending on the random element chosen and the length of <list>. Elements of the returned list are separated by <osep>, which defaults to <delim>. <delim> defaults to a single space, <count> defaults to 1, and <type> defaults to R.
+  
+  Examples:
+    > say randextract(this is a test,3)
+    You say "this test a"
+    > say randextract(this@is@a@test,3,@)
+    You say "this@a@test"
+    > say randextract(this is a test,3,,L,*)
+    You say "this*is*a"
+    > say randextract(this is a test,6,,D)
+    You say, "this test is this is is"
+
+See also: rand(), randword()
 & REGEDIT()
 & REGEDITALL()
 & REGEDITI()
@@ -3333,7 +3360,7 @@ See also: @remit, pemit(), lemit()
 & REMOVE()
   remove(<list>, <words>[, <delimiter>])
 
-  This function removes the first occurance of every word in the list <words> from <list>, and returns the resulting <list>. It is case sensitive.
+  This function removes the first occurrence of every word in the list <words> from <list>, and returns the resulting <list>. It is case sensitive.
   
   Elements of <list> and <words> are both separated by <delimiter>, which defaults to a space.
   
@@ -3470,17 +3497,27 @@ See also: loc(), rloc(), rnum(), where()
 
 See also: sqrt(), power()
 & ROUND()
+& CEIL()
+& FLOOR()
   round(<number>, <places>[, <pad>])
+  floor(<number>)
+  ceil(<number>)
  
-  Rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
+  round() rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
 
+  floor() rounds <number> down, and ceil() rounds <number> up, to 0 decimal places.
+  
   Examples:
     > think round(3.14159, 2)
     3.14
     > think round(3.5, 3, 1)
     3.500
+    > think ceil(3.14159)
+    4
+    > think floor(3.14159)
+    3
  
-See also: ceil(), floor(), bound(), trunc()
+See also: bound(), trunc()
 & FN()
   fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
@@ -3499,7 +3536,6 @@ See also: ceil(), floor(), bound(), trunc()
   
   Continued in 'help fn2'.
 & FN2
-
   If <obj> is specified, the built-in function will be executed as <obj>, rather than as the object which called fn(). This is useful when using fn() to replace a side-effect function, to ensure priviledge checks, etc, are done correctly. You must control <obj>, or (if function side effects are disabled) must be see_all.
   
   When an <obj> is given, debug information is automatically suppressed when evaluating the built-in function.
@@ -3715,7 +3751,7 @@ See also: setdiff(), setinter(), setsymdiff()
 & SHA0()
   sha0(<string>)
 
-  Returns the SHA-0 cryptographic hash of the string. See RFC 3174 for more information. Deprecated; use digest() and higher strength algorithms instead.
+  Returns the SHA-0 cryptographic hash of the string. See RFC 3174 for more information. Deprecated; use digest() and higher strength algorithms instead. On servers with newer versions of OpenSSL that no longer provide the algorithm, returns #-1 NOT SUPPORTED.
 
 See also: digest().
 & SHL()
@@ -3745,7 +3781,7 @@ See also: scramble(), pickrand()
 & SIGN()
   sign(<number>)
 
-  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivilent to bound(<number>, -1, 1).
+  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivalent to bound(<number>, -1, 1).
   
   Example:
     > say sign(-4)
@@ -4289,7 +4325,10 @@ See also: comp(), match(), setq(), r()
   
   strreplace() attempts to preserve ansi: if <text> contains ansi, it will be kept the same. If <text> contains no ansi, but <string> does, <text> will be inserted with the same ansi as the text it replaces. To force <text> to be inserted with no ansi, even if <string> has ansi, wrap it in ansi(n,....).
 
-  Example:
+  Examples:
+    > say strreplace(abcXYZgh, 3, 3, def)
+    You say, "abcdefgh"
+
     > think strreplace(Fix teh typo, 4, 3, the)
     Fix the typo
 
@@ -4454,7 +4493,9 @@ See also: pueblo(), width(), height(), ssl(), @sockset, oob()
 & GMCP
   oob(<player>, <package>[, <message>])
   
-  This wiz-only function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp). <package> is the name of the package/message type.
+  This function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp). <package> is the name of the package/message type.
+  
+  You must be a wizard or have the Send_OOB power to send messages to anyone but yourself.
   
   If specified, <message> is a JSON-formatted message to be sent. Use the JSON() function to construct valid JSON.
   
@@ -4479,7 +4520,7 @@ See also: json()
   When <type> is "array" or "object", it's recommended that subsequent JSON arguments are created with nested calls to JSON().
 
   See 'help json2' for examples.
-See also: oob(), json_map(), render()
+See also: oob(), json_query(), json_map(), render()
 & JSON2
   > think json(null)
   null
@@ -4510,7 +4551,7 @@ See also: oob(), json_map(), render()
   <osep> defaults to a space.
   
   See 'help json_map2' for examples.
-See also: json()
+See also: json(), json_query()
 & JSON_MAP2
   A very basic example:
   > &json me=We got [art(%0)] %0: %1
@@ -4548,6 +4589,49 @@ See also: json()
       ],
       7
   ]
+& JSON_QUERY()
+  json_query(<json>[, <action>[, <arg>]])
+  
+  This function returns information about JSON data. <json> should be a valid JSON string, as returned by the json() function. There are 5 possible <action>s:
+  
+  Action...    Returns...
+  type         The type of <json>, one of string, number, boolean, null, array or object. Default if no <action> is given.
+  size         The size of <json>; this is 0 for null objects, 1 for strings/numbers/booleans, the number of array elements, or the number of key/value pairs for objects.
+  exists       For arrays, returns 1 if there are at least <arg>th elements (0-indexed), 0 otherwise. For objects, returns 1 if there is an element with the key <arg>, and 0 otherwise. Returns #-1 for other types.
+  get          For arrays, returns the value of the <arg>th element (0-indexed). For objects, returns the value of the element with the key <arg>. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
+  unescape     Only valid for JSON strings; returns the unescaped form of <json>.
+  
+  See 'help json_query2' for examples.
+See also: json(), json_map()
+& JSON_QUERY2
+  Examples:
+    > say json_query(true)
+    You say, "boolean"
+
+    > @set me=json:[json(array, "abc", "def", "gh\\"i")]
+    > say v(json)
+    You say, "["abc", "def", "gh\"i"]"
+
+    > say json_query(v(json))
+    You say, "array"
+    > say json_query(v(json), size)
+    You say, "3"
+    > say json_query(v(json), get, 0)
+    You say, ""abc""
+    > say json_query(v(json), get, 2)
+    You say, ""gh\"i""
+    > say json_query(json_query(v(json), get, 2), unescape)
+    You say, "gh"i"
+
+    > @set me=json:[json(object, foo, "bar", baz, 12345)]
+    > say v(json)
+    You say, "{"foo": "bar", "baz": 12345}"
+    > say json_query(v(json), exists, foo)
+    You say, "1"
+    > say json_query(v(json), exists, bar)
+    You say, "0"
+    > say json_query(v(json), get, baz)
+    You say, "12345"
 & TESTLOCK()
   testlock(<key>, <victim>)
 
@@ -5083,7 +5167,7 @@ See also: merge(), splice()
   trimpenn(<string>[, <characters to trim>[, <trim style>]])
   trimtiny(<string>[, <trim style>[, <characters to trim>]])
  
-  trim() strips leading and/or trailing occurances of each of the <characters to trim> from <string>.
+  trim() strips leading and/or trailing occurrences of each of the <characters to trim> from <string>.
 
   <characters to trim> defaults to a space.
   

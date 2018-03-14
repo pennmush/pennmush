@@ -738,6 +738,7 @@ enable_ssl_slave
 enable_sse2
 enable_sse3
 enable_ssse3
+enable_sse42
 enable_altivec
 '
       ac_precious_vars='build_alias
@@ -1379,6 +1380,8 @@ Optional Features:
                           SSE3)
   --enable-ssse3          Use SSSE3 instructions (Requires a CPU that supports
                           SSSE3)
+  --enable-sse42          Use SSE4.2 instructions (Requires a CPU that
+                          supports SSE 4.2)
   --enable-altivec        Use PowerPC Altivec instructions (Requires a CPU
                           that supports Altivec)
 
@@ -2061,52 +2064,6 @@ $as_echo "$ac_res" >&6; }
 
 } # ac_fn_c_check_func
 
-# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
-# ---------------------------------------------
-# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
-# accordingly.
-ac_fn_c_check_decl ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  as_decl_name=`echo $2|sed 's/ *(.*//'`
-  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
-$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-#ifndef $as_decl_name
-#ifdef __cplusplus
-  (void) $as_decl_use;
-#else
-  (void) $as_decl_name;
-#endif
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$3=yes"
-else
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_decl
-
 # ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
 # ----------------------------------------------------
 # Tries to find if the field MEMBER exists in type AGGR, after including
@@ -2163,6 +2120,52 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_member
+
+# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
+# ---------------------------------------------
+# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
+# accordingly.
+ac_fn_c_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_decl
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -3885,8 +3888,8 @@ $as_echo "no" >&6; }
 fi
 
 
-# Extract the first word of "indent", so it can be a program name with args.
-set dummy indent; ac_word=$2
+# Extract the first word of "clang-format", so it can be a program name with args.
+set dummy clang-format; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_path_INDENT+:} false; then :
@@ -4121,14 +4124,14 @@ fi
 # CFLAGS for clang
 if test "${CC}" = "clang"; then
   if test "${DEFAULT_CFLAGS}" = yes; then
-    CFLAGS="$CFLAGS -W -Wall -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
+    CFLAGS="$CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
   else
     CFLAGS="-g $CFLAGS -W"
   fi
 elif test "${GCC}" = yes; then
   if test "${DEFAULT_CFLAGS}" = yes; then
     if test -n "${GDB}"; then
-      CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment -Wno-char-subscripts"
+      CFLAGS="-ggdb $CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-char-subscripts"
     else
       CFLAGS="-g $CFLAGS -W"
     fi
@@ -5461,7 +5464,7 @@ $as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
 
 fi
 
-for ac_header in sys/stat.h sys/time.h sys/types.h
+for ac_header in sys/stat.h sys/time.h sys/types.h sys/eventfd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5474,7 +5477,7 @@ fi
 
 done
 
-for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h
+for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5487,7 +5490,7 @@ fi
 
 done
 
-for ac_header in sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h
+for ac_header in netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5500,7 +5503,7 @@ fi
 
 done
 
-for ac_header in poll.h sys/select.h sys/inotify.h langinfo.h unistr.h
+for ac_header in poll.h sys/select.h sys/inotify.h langinfo.h crypt.h unistr.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5514,6 +5517,19 @@ fi
 done
 
 for ac_header in zlib.h event2/event.h event2/dns.h fenv.h sys/param.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/prctl.h byteswap.h endian.h sys/endian.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -6250,6 +6266,43 @@ _ACEOF
 fi
 
 
+
+  ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "$ac_includes_default"
+if test "x$ac_cv_type_uintptr_t" = xyes; then :
+
+$as_echo "#define HAVE_UINTPTR_T 1" >>confdefs.h
+
+else
+  for ac_type in 'unsigned int' 'unsigned long int' \
+	'unsigned long long int'; do
+       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+static int test_array [1 - 2 * !(sizeof (void *) <= sizeof ($ac_type))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define uintptr_t $ac_type
+_ACEOF
+
+	  ac_type=
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+       test -z "$ac_type" && break
+     done
+fi
+
+
 ac_fn_c_check_type "$LINENO" "imaxdiv_t" "ac_cv_type_imaxdiv_t" "$ac_includes_default"
 if test "x$ac_cv_type_imaxdiv_t" = xyes; then :
 
@@ -6737,7 +6790,7 @@ fi
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
      *msys* | *mingw32* | *mingw64*)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
 $as_echo_n "checking for WSAStartup in -lws2_32... " >&6; }
 if ${ac_cv_lib_ws2_32_WSAStartup+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -6781,7 +6834,55 @@ _ACEOF
   LIBS="-lws2_32 $LIBS"
 
 fi
-;;
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BCryptGenRandom in -lbcrypt" >&5
+$as_echo_n "checking for BCryptGenRandom in -lbcrypt... " >&6; }
+if ${ac_cv_lib_bcrypt_BCryptGenRandom+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbcrypt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char BCryptGenRandom ();
+int
+main ()
+{
+return BCryptGenRandom ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_bcrypt_BCryptGenRandom=yes
+else
+  ac_cv_lib_bcrypt_BCryptGenRandom=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bcrypt_BCryptGenRandom" >&5
+$as_echo "$ac_cv_lib_bcrypt_BCryptGenRandom" >&6; }
+if test "x$ac_cv_lib_bcrypt_BCryptGenRandom" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBBCRYPT 1
+_ACEOF
+
+  LIBS="-lbcrypt $LIBS"
+
+fi
+
+  # And silence a bunch of warnings about MSVC stuff.
+  CFLAGS="$CFLAGS -Wno-unknown-pragmas"
+  ;;
 esac
 
 # Check whether --enable-zlib was given.
@@ -6836,6 +6937,18 @@ _ACEOF
   LIBS="-lz $LIBS"
 
 fi
+
+ for ac_func in gzbuffer gzvprintf
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
 
 fi
 
@@ -6993,6 +7106,25 @@ rm -f core conftest.err conftest.$ac_objext \
 
 
 
+
+OLDLIBS="${LIBS}"
+OLDLDFLAGS="${LDFLAGS}"
+LIBS="${LIBS} ${OPENSSL_LIBS}"
+LDFLAGS="${LDFLAGS} ${OPENSSL_LDFLAGS}"
+for ac_func in SHA DH_set0_pqg EVP_MD_do_all
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+LIBS="${OLDLIBS}"
+LDFLAGS="${OLDLDFLAGS}"
 
 # system libpcre
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
@@ -7938,7 +8070,7 @@ $as_echo "#define SETPGRP_VOID 1" >>confdefs.h
 fi
 
 fi
-for ac_func in cbrt log2 lrint imaxdiv
+for ac_func in cbrt log2 lrint imaxdiv hypot
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -7986,7 +8118,7 @@ _ACEOF
 fi
 done
 
-for ac_func in pread pwrite
+for ac_func in pread pwrite eventfd pledge pipe2
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8271,7 +8403,7 @@ _ACEOF
 fi
 done
 
-for ac_func in sysconf waitpid
+for ac_func in sysconf waitpid prctl ffs getentropy
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8324,29 +8456,22 @@ fi
 
 fi
 
+for ac_func in getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+
 
 ### Variables, constants, defines and other misc. stuff
-
-ac_fn_c_check_decl "$LINENO" "h_errno" "ac_cv_have_decl_h_errno" "$ac_includes_default
-#ifdef HAVE_NETDB_H
-#include <netdb.h>
-#endif
-
-"
-if test "x$ac_cv_have_decl_h_errno" = xyes; then :
-  ac_have_decl=1
-else
-  ac_have_decl=0
-fi
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_H_ERRNO $ac_have_decl
-_ACEOF
-if test $ac_have_decl = 1; then :
-  $as_echo "#define HAVE_H_ERRNO 1" >>confdefs.h
-
-fi
-
 
 ac_fn_c_check_member "$LINENO" "struct sockaddr" "sa_len" "ac_cv_member_struct_sockaddr_sa_len" "
 #ifdef HAVE_NETINET_IN_H
@@ -8737,7 +8862,7 @@ fi
 if test "${enable_nls+set}" = set; then :
   enableval=$enable_nls; enable_nls=$enableval
 else
-  enable_nls=yes
+  enable_nls=no
 fi
 
 
@@ -8795,24 +8920,33 @@ if test "${enable_ssse3+set}" = set; then :
   enableval=$enable_ssse3;
 fi
 
+# Check whether --enable-sse42 was given.
+if test "${enable_sse42+set}" = set; then :
+  enableval=$enable_sse42;
+fi
+
 # Check whether --enable-altivec was given.
 if test "${enable_altivec+set}" = set; then :
   enableval=$enable_altivec;
 fi
 
 
+if test "$enable_sse42" = yes; then
+   $as_echo "#define HAVE_SSE42 1" >>confdefs.h
+
+   CFLAGS="$CFLAGS -msse4.2"
+fi
+
 if test "$enable_ssse3" = yes; then
    $as_echo "#define HAVE_SSSE3 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -mssse3"
-   enable_sse3=yes
 fi
 
 if test "$enable_sse3" = yes; then
    $as_echo "#define HAVE_SSE3 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -msse3"
-   enable_sse2=yes
 fi
 
 if test "$enable_sse2" = yes; then
@@ -8873,8 +9007,6 @@ if test "$enable_ipv6" = yes; then
 else
   echo "* Sockets are limited to IPv4"
 fi
-
-
 
 ac_config_files="$ac_config_files Makefile src/Makefile"
 

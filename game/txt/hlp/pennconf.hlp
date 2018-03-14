@@ -31,6 +31,8 @@
   max_player_chans=<number>: How many channels can each non-admin player create? If 0, mortals cannot create channels.
   noisy_cemit=<boolean>: Is @cemit/noisy the default?
   chan_title_len=<number>: How long can @channel/title's be?
+  use_muxcomm=<boolean>: Enable MUX-style channel aliases? See 'help muxcomsys'
+  chat_token_alias=<character>: A single character that can be used as well as + for talking on channels (+<chan> <msg>)
 & @config cmds
  These options affect command behavior.
 
@@ -50,7 +52,7 @@
   money_plural=<string>: What are many pennies called?
   player_name_spaces=<boolean>: Can player names have spaces in them?
   ansi_names=<boolean>: Are names in look hilighted?
-  monikers=<number>: Where should @monikers be displayed? See 'help monikers'
+  monikers=<list>: Where should @monikers be displayed? See 'help monikers'
   float_precision=<numbers>: How many digits after the decimal point in floating point numbers are kept when formatting the result of a floating point function?
   comma_exit_list=<boolean>: Do exits show up like North, East, and West or as North East West?
   count_all=<boolean>: Does the count of connected players in WHO include hidden connections for mortals?

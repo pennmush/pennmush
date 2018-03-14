@@ -53,8 +53,8 @@
 void do_poor(dbref player, char *arg1);
 void do_list_memstats(dbref player);
 
-#define DOL_NOTIFY 2            /**< dolist/notify bitflag */
-#define DOL_DELIM 4             /**< dolist/delim bitflag */
+#define DOL_NOTIFY 2 /**< dolist/notify bitflag */
+#define DOL_DELIM 4  /**< dolist/delim bitflag */
 
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
@@ -65,20 +65,14 @@ extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
 extern int rhs_present;
 
-COMMAND(cmd_allhalt)
-{
-  do_allhalt(executor);
-}
+COMMAND(cmd_allhalt) { do_allhalt(executor); }
 
 COMMAND(cmd_allquota)
 {
   do_allquota(executor, arg_left, SW_ISSET(sw, SWITCH_QUIET));
 }
 
-COMMAND(cmd_atrlock)
-{
-  do_atrlock(executor, arg_left, arg_right);
-}
+COMMAND(cmd_atrlock) { do_atrlock(executor, arg_left, arg_right); }
 
 COMMAND(cmd_attribute)
 {
@@ -153,10 +147,7 @@ COMMAND(cmd_sockset)
     notify(executor, T("Set what option?"));
 }
 
-COMMAND(cmd_atrchown)
-{
-  do_atrchown(executor, arg_left, arg_right);
-}
+COMMAND(cmd_atrchown) { do_atrchown(executor, arg_left, arg_right); }
 
 COMMAND(cmd_boot)
 {
@@ -168,7 +159,6 @@ COMMAND(cmd_boot)
     do_boot(executor, arg_left, BOOT_DESC, silent, queue_entry);
   else
     do_boot(executor, arg_left, BOOT_NAME, silent, queue_entry);
-
 }
 
 COMMAND(cmd_break)
@@ -276,13 +266,27 @@ COMMAND(cmd_retry)
 
 COMMAND(cmd_chownall)
 {
-  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));
+  int types = 0;
+  if (SW_ISSET(sw, SWITCH_THINGS))
+    types |= TYPE_THING;
+  if (SW_ISSET(sw, SWITCH_ROOMS))
+    types |= TYPE_ROOM;
+  if (SW_ISSET(sw, SWITCH_EXITS))
+    types |= TYPE_EXIT;
+  if (!types)
+    types = TYPE_THING | TYPE_ROOM | TYPE_EXIT;
+  do_chownall(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+              types);
 }
 
 COMMAND(cmd_chown)
 {
-  do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
-           queue_entry->pe_info);
+  if (strchr(arg_left, '/')) {
+    do_atrchown(executor, arg_left, arg_right);
+  } else {
+    do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+             queue_entry->pe_info);
+  }
 }
 
 COMMAND(cmd_chzoneall)
@@ -316,8 +320,8 @@ COMMAND(cmd_config)
           return;
         }
       }
-      if (!config_set(arg_left, arg_right, source, 0)
-          && !config_set(arg_left, arg_right, source, 1))
+      if (!config_set(arg_left, arg_right, source, 0) &&
+          !config_set(arg_left, arg_right, source, 1))
         notify(executor, T("Couldn't set that option."));
       else {
         if (source == 2) {
@@ -374,10 +378,7 @@ COMMAND(cmd_clone)
              queue_entry->pe_info);
 }
 
-COMMAND(cmd_dbck)
-{
-  do_dbck(executor);
-}
+COMMAND(cmd_dbck) { do_dbck(executor); }
 
 COMMAND(cmd_decompile)
 {
@@ -389,13 +390,13 @@ COMMAND(cmd_decompile)
   if (SW_ISSET(sw, SWITCH_TF)) {
     /* @dec/tf overrides =<prefix> */
     ATTR *a;
-    if (((a = atr_get_noparent(executor, "TFPREFIX")) != NULL) &&
-        AL_STR(a) && *AL_STR(a)) {
+    if (((a = atr_get_noparent(executor, "TFPREFIX")) != NULL) && AL_STR(a) &&
+        *AL_STR(a)) {
       strcpy(prefix, atr_value(a));
     } else {
       strcpy(prefix, "FugueEdit > ");
     }
-    flags |= DEC_TF;            /* Don't decompile attr flags */
+    flags |= DEC_TF; /* Don't decompile attr flags */
   } else {
     strcpy(prefix, arg_right);
   }
@@ -431,10 +432,7 @@ COMMAND(cmd_dig)
          queue_entry->pe_info);
 }
 
-COMMAND(cmd_disable)
-{
-  do_enable(executor, arg_left, 0);
-}
+COMMAND(cmd_disable) { do_enable(executor, arg_left, 0); }
 
 COMMAND(cmd_dolist)
 {
@@ -464,12 +462,15 @@ COMMAND(cmd_dolist)
 
 COMMAND(cmd_dump)
 {
+  enum dump_type flag = DUMP_NORMAL;
   if (SW_ISSET(sw, SWITCH_PARANOID))
-    do_dump(executor, arg_left, DUMP_PARANOID);
+    flag = DUMP_PARANOID;
   else if (SW_ISSET(sw, SWITCH_DEBUG))
-    do_dump(executor, arg_left, DUMP_DEBUG);
-  else
-    do_dump(executor, arg_left, DUMP_NORMAL);
+    flag = DUMP_DEBUG;
+  else if (SW_ISSET(sw, SWITCH_NOFORK))
+    flag = DUMP_NOFORK;
+
+  do_dump(executor, arg_left, flag);
 }
 
 COMMAND(cmd_edit)
@@ -496,24 +497,18 @@ COMMAND(cmd_edit)
     do_edit(executor, arg_left, args_right, type);
 }
 
-COMMAND(cmd_elock)
-{
-  do_lock(executor, arg_left, arg_right, Enter_Lock);
-}
+COMMAND(cmd_elock) { do_lock(executor, arg_left, arg_right, Enter_Lock); }
 
 COMMAND(cmd_emit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSEMIT")
-                 && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+  int spflags =
+    (!strcmp(cmd->name, "@NSEMIT") && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   int speaker = SPOOF(executor, enactor, sw);
 
   do_emit(executor, speaker, arg_left, spflags, queue_entry->pe_info);
 }
 
-COMMAND(cmd_enable)
-{
-  do_enable(executor, arg_left, 1);
-}
+COMMAND(cmd_enable) { do_enable(executor, arg_left, 1); }
 
 COMMAND(cmd_entrances)
 {
@@ -532,20 +527,11 @@ COMMAND(cmd_entrances)
   do_entrances(executor, arg_left, args_right, types);
 }
 
-COMMAND(cmd_eunlock)
-{
-  do_unlock(executor, arg_left, Enter_Lock);
-}
+COMMAND(cmd_eunlock) { do_unlock(executor, arg_left, Enter_Lock); }
 
-COMMAND(cmd_find)
-{
-  do_find(executor, arg_left, args_right);
-}
+COMMAND(cmd_find) { do_find(executor, arg_left, args_right); }
 
-COMMAND(cmd_firstexit)
-{
-  do_firstexit(executor, (const char **) args_left);
-}
+COMMAND(cmd_firstexit) { do_firstexit(executor, (const char **) args_left); }
 
 COMMAND(cmd_flag)
 {
@@ -647,14 +633,17 @@ COMMAND(cmd_grep)
   int flags = 0;
   int print = 0;
 
-  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST)
-      || SW_ISSET(sw, SWITCH_NOCASE))
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST) ||
+      SW_ISSET(sw, SWITCH_NOCASE))
     flags |= GREP_NOCASE;
 
   if (SW_ISSET(sw, SWITCH_REGEXP))
     flags |= GREP_REGEXP;
   else if (SW_ISSET(sw, SWITCH_WILD))
     flags |= GREP_WILD;
+
+  if (SW_ISSET(sw, SWITCH_PARENT))
+    flags |= GREP_PARENT;
 
   if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_PRINT))
     print = 1;
@@ -699,7 +688,6 @@ COMMAND(cmd_hook)
       queue_type |= QUEUE_PRESERVE_QREG;
   }
 
-
   if (SW_ISSET(sw, SWITCH_AFTER))
     flags = HOOK_AFTER;
   else if (SW_ISSET(sw, SWITCH_BEFORE))
@@ -719,9 +707,9 @@ COMMAND(cmd_hook)
   }
   if (queue_type != QUEUE_DEFAULT) {
     if (flags != HOOK_OVERRIDE && flags != HOOK_EXTEND) {
-      notify(executor,
-             T
-             ("You can only use /inplace and /inline with /override or /extend."));
+      notify(
+        executor,
+        T("You can only use /inplace and /inline with /override or /extend."));
       return;
     }
   }
@@ -740,10 +728,7 @@ COMMAND(cmd_home)
   do_move(executor, "home", MOVE_NORMAL, queue_entry->pe_info);
 }
 
-COMMAND(cmd_kick)
-{
-  do_kick(executor, arg_left);
-}
+COMMAND(cmd_kick) { do_kick(executor, arg_left); }
 
 COMMAND(cmd_lemit)
 {
@@ -815,8 +800,8 @@ do_list_allocations(dbref player)
     pe_reg_slab,
     pe_reg_val_slab,
     flagbucket_slab,
-    namelist_slab,              /* This used to be in a separate if check, so it may be
-                                   NULL. Be careful if making this static. */
+    namelist_slab, /* This used to be in a separate if check, so it may be
+                      NULL. Be careful if making this static. */
   };
   size_t i;
 
@@ -832,10 +817,9 @@ do_list_allocations(dbref player)
     notify_format(player,
                   "   object size (bytes): %-6d       objects per page: %-6d",
                   stats.item_size, stats.items_per_page);
-    notify_format(player,
-                  "       allocated pages: %-6d      objects added via: %s",
-                  stats.page_count,
-                  stats.fill_strategy ? "first fit" : "best fit");
+    notify_format(
+      player, "       allocated pages: %-6d      objects added via: %s",
+      stats.page_count, stats.fill_strategy ? "first fit" : "best fit");
     notify_format(player,
                   "     allocated objects: %-6d           free objects: %-6d",
                   stats.allocated, stats.freed);
@@ -846,12 +830,12 @@ do_list_allocations(dbref player)
       notify_format(player,
                     " fewest allocs in page: %-6d    most allocs in page: %-6d",
                     stats.min_fill, stats.max_fill);
-      notify_format(player,
-                    "    allocation average:%6.2f%%        pages 100%% full: %-6d",
-                    allocation_average, stats.full);
-      notify_format(player,
-                    "       pages >75%% full: %-6d        pages >50%% full: %-6d",
-                    stats.under100, stats.under75);
+      notify_format(
+        player, "    allocation average:%6.2f%%        pages 100%% full: %-6d",
+        allocation_average, stats.full);
+      notify_format(
+        player, "       pages >75%% full: %-6d        pages >50%% full: %-6d",
+        stats.under100, stats.under75);
       notify_format(player,
                     "       pages >25%% full: %-6d        pages <25%% full: %d",
                     stats.under50, stats.under25);
@@ -879,9 +863,9 @@ do_list(dbref player, char *arg, int lc, int which)
 {
   if (!arg || !*arg)
     notify(player, T("I don't understand what you want to @list."));
-  else if (string_prefix("commands", arg))
+  else if (string_prefixe("commands", arg))
     do_list_commands(player, lc, which);
-  else if (string_prefix("functions", arg)) {
+  else if (string_prefixe("functions", arg)) {
     switch (which) {
     case 1:
       do_list_functions(player, lc, "builtin");
@@ -894,21 +878,21 @@ do_list(dbref player, char *arg, int lc, int which)
       do_list_functions(player, lc, "all");
       break;
     }
-  } else if (string_prefix("motd", arg))
+  } else if (strcasecmp("motd", arg) == 0)
     do_motd(player, MOTD_LIST | MOTD_TYPE, "");
-  else if (string_prefix("attribs", arg))
+  else if (strcasecmp("attribs", arg) == 0)
     do_list_attribs(player, lc);
-  else if (string_prefix("flags", arg))
+  else if (strcasecmp("flags", arg) == 0)
     do_list_flags("FLAG", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Flags"));
-  else if (string_prefix("powers", arg))
+  else if (string_prefixe("powers", arg))
     do_list_flags("POWER", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Powers"));
-  else if (string_prefix("locks", arg))
+  else if (string_prefixe("locks", arg))
     do_list_locks(player, NULL, lc, T("Locks"));
-  else if (string_prefix("allocations", arg))
+  else if (string_prefixe("allocations", arg))
     do_list_allocations(player);
   else
     notify(player, T("I don't understand what you want to @list."));
@@ -918,7 +902,7 @@ COMMAND(cmd_list)
 {
   int lc;
   int which = 3;
-  static const char *const fwhich[3] = { "builtin", "local", "all" };
+  static const char *const fwhich[3] = {"builtin", "local", "all"};
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
   if (SW_ISSET(sw, SWITCH_ALL))
     which = 3;
@@ -1008,10 +992,7 @@ COMMAND(cmd_logwipe)
   do_logwipe(executor, type, arg_left, policy);
 }
 
-COMMAND(cmd_lset)
-{
-  do_lset(executor, arg_left, arg_right);
-}
+COMMAND(cmd_lset) { do_lset(executor, arg_left, arg_right); }
 
 COMMAND(cmd_mail)
 {
@@ -1059,8 +1040,8 @@ COMMAND(cmd_mail)
     do_mail_tag(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_UNTAG))
     do_mail_untag(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_FWD) || SW_ISSET(sw, SWITCH_FORWARD)
-           || SW_ISSET(sw, SWITCH_SEND) || silent || urgent || nosig) {
+  else if (SW_ISSET(sw, SWITCH_FWD) || SW_ISSET(sw, SWITCH_FORWARD) ||
+           SW_ISSET(sw, SWITCH_SEND) || silent || urgent || nosig) {
     /* These commands are not allowed to gagged players */
     if (Gagged(executor)) {
       notify(executor, T("You cannot do that while gagged."));
@@ -1071,12 +1052,11 @@ COMMAND(cmd_mail)
     else if (SW_ISSET(sw, SWITCH_FORWARD))
       do_mail_fwd(executor, arg_left, arg_right);
     else if (SW_ISSET(sw, SWITCH_SEND) || silent || urgent || nosig)
-      do_mail_send(executor, arg_left, arg_right,
-                   urgent ? M_URGENT : 0, silent, nosig);
+      do_mail_send(executor, arg_left, arg_right, urgent ? M_URGENT : 0, silent,
+                   nosig);
   } else
-    do_mail(executor, arg_left, arg_right);     /* Does its own gagged check */
+    do_mail(executor, arg_left, arg_right); /* Does its own gagged check */
 }
-
 
 COMMAND(cmd_malias)
 {
@@ -1125,7 +1105,8 @@ COMMAND(cmd_message)
   dbref speaker = SPOOF(executor, enactor, sw);
 
   for (numargs = 1; args_right[numargs] && numargs < (MAX_STACK_ARGS + 3);
-       numargs++) ;
+       numargs++)
+    ;
 
   switch (numargs) {
   case 1:
@@ -1190,7 +1171,6 @@ COMMAND(cmd_moniker)
       notify(executor, "Moniker set.");
     }
   }
-
 }
 
 COMMAND(cmd_motd)
@@ -1219,25 +1199,20 @@ COMMAND(cmd_mvattr)
   do_cpattr(executor, arg_left, args_right, 1, SW_ISSET(sw, SWITCH_NOFLAGCOPY));
 }
 
-COMMAND(cmd_name)
-{
-  do_name(executor, arg_left, arg_right);
-}
+COMMAND(cmd_name) { do_name(executor, arg_left, arg_right); }
 
 COMMAND(cmd_newpassword)
 {
-  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry, SW_ISSET(sw, SWITCH_GENERATE));
+  do_newpassword(executor, enactor, arg_left, arg_right, queue_entry,
+                 SW_ISSET(sw, SWITCH_GENERATE));
 }
 
-COMMAND(cmd_nuke)
-{
-  do_destroy(executor, arg_left, 1, queue_entry->pe_info);
-}
+COMMAND(cmd_nuke) { do_destroy(executor, arg_left, 1, queue_entry->pe_info); }
 
 COMMAND(cmd_oemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSOEMIT")
-                 && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+  int spflags =
+    (!strcmp(cmd->name, "@NSOEMIT") && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   dbref speaker = SPOOF(executor, enactor, sw);
 
   do_oemit_list(executor, speaker, arg_left, arg_right, spflags, NULL,
@@ -1286,7 +1261,6 @@ COMMAND(cmd_pemit)
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-
   if (SW_ISSET(sw, SWITCH_CONTENTS)) {
     do_remit(executor, speaker, arg_left, arg_right, flags, NULL,
              queue_entry->pe_info);
@@ -1313,15 +1287,9 @@ COMMAND(cmd_prompt)
            queue_entry->pe_info);
 }
 
-COMMAND(cmd_poll)
-{
-  do_poll(executor, arg_left, SW_ISSET(sw, SWITCH_CLEAR));
-}
+COMMAND(cmd_poll) { do_poll(executor, arg_left, SW_ISSET(sw, SWITCH_CLEAR)); }
 
-COMMAND(cmd_poor)
-{
-  do_poor(executor, arg_left);
-}
+COMMAND(cmd_poor) { do_poor(executor, arg_left); }
 
 COMMAND(cmd_power)
 {
@@ -1364,10 +1332,7 @@ COMMAND(cmd_ps)
     do_queue(executor, arg_left, QUEUE_NORMAL);
 }
 
-COMMAND(cmd_purge)
-{
-  do_purge(executor);
-}
+COMMAND(cmd_purge) { do_purge(executor); }
 
 COMMAND(cmd_quota)
 {
@@ -1379,10 +1344,7 @@ COMMAND(cmd_quota)
     do_quota(executor, arg_left, "", 0);
 }
 
-COMMAND(cmd_readcache)
-{
-  do_readcache(executor);
-}
+COMMAND(cmd_readcache) { do_readcache(executor); }
 
 COMMAND(cmd_remit)
 {
@@ -1411,7 +1373,6 @@ COMMAND(cmd_rwall)
   do_wall(executor, arg_left, WALL_RW, SW_ISSET(sw, SWITCH_EMIT));
 }
 
-
 COMMAND(cmd_scan)
 {
   int check = 0;
@@ -1425,15 +1386,12 @@ COMMAND(cmd_scan)
   if (SW_ISSET(sw, SWITCH_GLOBALS))
     check |= CHECK_GLOBAL;
   if (check == 0)
-    check = CHECK_INVENTORY | CHECK_NEIGHBORS |
-      CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL;
+    check = CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE |
+            CHECK_ZONE | CHECK_GLOBAL;
   do_scan(executor, arg_left, check);
 }
 
-COMMAND(cmd_search)
-{
-  do_search(executor, arg_left, args_right);
-}
+COMMAND(cmd_search) { do_search(executor, arg_left, args_right); }
 
 COMMAND(cmd_select)
 {
@@ -1456,13 +1414,9 @@ COMMAND(cmd_select)
   do_switch(executor, arg_left, args_right, enactor, 1,
             SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
             queue_type, queue_entry);
-
 }
 
-COMMAND(cmd_set)
-{
-  do_set(executor, arg_left, arg_right);
-}
+COMMAND(cmd_set) { do_set(executor, arg_left, arg_right); }
 
 COMMAND(cmd_shutdown)
 {
@@ -1524,7 +1478,6 @@ COMMAND(cmd_slave)
   }
 }
 
-
 COMMAND(cmd_stats)
 {
   if (SW_ISSET(sw, SWITCH_TABLES))
@@ -1582,11 +1535,7 @@ COMMAND(cmd_switch)
             queue_type, queue_entry);
 }
 
-COMMAND(cmd_squota)
-{
-  do_quota(executor, arg_left, arg_right, 1);
-}
-
+COMMAND(cmd_squota) { do_quota(executor, arg_left, arg_right, 1); }
 
 COMMAND(cmd_teleport)
 {
@@ -1633,20 +1582,11 @@ COMMAND(cmd_trigger)
   do_trigger(executor, enactor, arg_left, args_right, queue_entry, flags);
 }
 
-COMMAND(cmd_ulock)
-{
-  do_lock(executor, arg_left, arg_right, Use_Lock);
-}
+COMMAND(cmd_ulock) { do_lock(executor, arg_left, arg_right, Use_Lock); }
 
-COMMAND(cmd_undestroy)
-{
-  do_undestroy(executor, arg_left);
-}
+COMMAND(cmd_undestroy) { do_undestroy(executor, arg_left); }
 
-COMMAND(cmd_unlink)
-{
-  do_unlink(executor, arg_left);
-}
+COMMAND(cmd_unlink) { do_unlink(executor, arg_left); }
 
 COMMAND(cmd_unlock)
 {
@@ -1656,25 +1596,16 @@ COMMAND(cmd_unlock)
     do_unlock(executor, arg_left, Basic_Lock);
 }
 
-COMMAND(cmd_uptime)
-{
-  do_uptime(executor, SW_ISSET(sw, SWITCH_MORTAL));
-}
+COMMAND(cmd_uptime) { do_uptime(executor, SW_ISSET(sw, SWITCH_MORTAL)); }
 
-COMMAND(cmd_uunlock)
-{
-  do_unlock(executor, arg_left, Use_Lock);
-}
+COMMAND(cmd_uunlock) { do_unlock(executor, arg_left, Use_Lock); }
 
 COMMAND(cmd_verb)
 {
   do_verb(executor, enactor, arg_left, args_right, queue_entry);
 }
 
-COMMAND(cmd_version)
-{
-  do_version(executor);
-}
+COMMAND(cmd_version) { do_version(executor); }
 
 COMMAND(cmd_wait)
 {
@@ -1690,10 +1621,7 @@ COMMAND(cmd_wall)
   do_wall(executor, arg_left, WALL_ALL, SW_ISSET(sw, SWITCH_EMIT));
 }
 
-COMMAND(cmd_warnings)
-{
-  do_warnings(executor, arg_left, arg_right);
-}
+COMMAND(cmd_warnings) { do_warnings(executor, arg_left, arg_right); }
 
 COMMAND(cmd_wcheck)
 {
@@ -1705,15 +1633,9 @@ COMMAND(cmd_wcheck)
     do_wcheck(executor, arg_left);
 }
 
-COMMAND(cmd_whereis)
-{
-  do_whereis(executor, arg_left);
-}
+COMMAND(cmd_whereis) { do_whereis(executor, arg_left); }
 
-COMMAND(cmd_wipe)
-{
-  do_wipe(executor, arg_left);
-}
+COMMAND(cmd_wipe) { do_wipe(executor, arg_left); }
 
 COMMAND(cmd_wizwall)
 {
@@ -1733,10 +1655,7 @@ COMMAND(cmd_brief)
   do_examine(executor, arg_left, EXAM_BRIEF, 0, 0, SW_ISSET(sw, SWITCH_OPAQUE));
 }
 
-COMMAND(cmd_drop)
-{
-  do_drop(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_drop) { do_drop(executor, arg_left, queue_entry->pe_info); }
 
 COMMAND(cmd_examine)
 {
@@ -1753,40 +1672,19 @@ COMMAND(cmd_examine)
     do_examine(executor, arg_left, EXAM_NORMAL, all, parent, opaque);
 }
 
-COMMAND(cmd_empty)
-{
-  do_empty(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_empty) { do_empty(executor, arg_left, queue_entry->pe_info); }
 
-COMMAND(cmd_enter)
-{
-  do_enter(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_enter) { do_enter(executor, arg_left, queue_entry->pe_info); }
 
-COMMAND(cmd_dismiss)
-{
-  do_dismiss(executor, arg_left);
-}
+COMMAND(cmd_dismiss) { do_dismiss(executor, arg_left); }
 
-COMMAND(cmd_desert)
-{
-  do_desert(executor, arg_left);
-}
+COMMAND(cmd_desert) { do_desert(executor, arg_left); }
 
-COMMAND(cmd_follow)
-{
-  do_follow(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_follow) { do_follow(executor, arg_left, queue_entry->pe_info); }
 
-COMMAND(cmd_unfollow)
-{
-  do_unfollow(executor, arg_left);
-}
+COMMAND(cmd_unfollow) { do_unfollow(executor, arg_left); }
 
-COMMAND(cmd_get)
-{
-  do_get(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_get) { do_get(executor, arg_left, queue_entry->pe_info); }
 
 COMMAND(cmd_buy)
 {
@@ -1828,15 +1726,9 @@ COMMAND(cmd_give)
           queue_entry->pe_info);
 }
 
-COMMAND(cmd_goto)
-{
-  move_wrapper(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_goto) { move_wrapper(executor, arg_left, queue_entry->pe_info); }
 
-COMMAND(cmd_inventory)
-{
-  do_inventory(executor);
-}
+COMMAND(cmd_inventory) { do_inventory(executor); }
 
 COMMAND(cmd_look)
 {
@@ -1848,10 +1740,7 @@ COMMAND(cmd_look)
   do_look_at(executor, arg_left, key, queue_entry->pe_info);
 }
 
-COMMAND(cmd_leave)
-{
-  do_leave(executor, queue_entry->pe_info);
-}
+COMMAND(cmd_leave) { do_leave(executor, queue_entry->pe_info); }
 
 COMMAND(cmd_page)
 {
@@ -1868,38 +1757,23 @@ COMMAND(cmd_pose)
           queue_entry->pe_info);
 }
 
-COMMAND(cmd_say)
-{
-  do_say(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_say) { do_say(executor, arg_left, queue_entry->pe_info); }
 
-COMMAND(cmd_score)
-{
-  do_score(executor);
-}
+COMMAND(cmd_score) { do_score(executor); }
 
-COMMAND(cmd_semipose)
-{
-  do_pose(executor, arg_left, 1, queue_entry->pe_info);
-}
+COMMAND(cmd_semipose) { do_pose(executor, arg_left, 1, queue_entry->pe_info); }
 
-COMMAND(cmd_think)
-{
-  notify(executor, arg_left);
-}
+COMMAND(cmd_think) { notify(executor, arg_left); }
 
 COMMAND(cmd_whisper)
 {
   do_whisper(executor, arg_left, arg_right,
-             (SW_ISSET(sw, SWITCH_NOISY) || (!SW_ISSET(sw, SWITCH_SILENT)
-                                             && NOISY_WHISPER)),
+             (SW_ISSET(sw, SWITCH_NOISY) ||
+              (!SW_ISSET(sw, SWITCH_SILENT) && NOISY_WHISPER)),
              queue_entry->pe_info);
 }
 
-COMMAND(cmd_use)
-{
-  do_use(executor, arg_left, queue_entry->pe_info);
-}
+COMMAND(cmd_use) { do_use(executor, arg_left, queue_entry->pe_info); }
 
 COMMAND(command_atrset)
 {
@@ -1917,24 +1791,18 @@ COMMAND(command_atrset)
   }
 }
 
-COMMAND(cmd_null)
-{
-  return;
-}
+COMMAND(cmd_null) { return; }
 
 COMMAND(cmd_warn_on_missing)
 {
-  notify_format(Owner(executor),
-                T
-                ("No command found in code by %s - don't start code with functions."),
-                unparse_dbref(executor));
+  notify_format(
+    Owner(executor),
+    T("No command found in code by %s - don't start code with functions."),
+    unparse_dbref(executor));
   return;
 }
 
-COMMAND(cmd_who_doing)
-{
-  do_who_mortal(executor, arg_left);
-}
+COMMAND(cmd_who_doing) { do_who_mortal(executor, arg_left); }
 
 COMMAND(cmd_session)
 {

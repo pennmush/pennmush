@@ -12,23 +12,23 @@
 
 #define FN_REG 0x0
 /* Function arguments aren't parsed */
-#define FN_NOPARSE      0x1
-#define FN_LITERAL      0x2
-#define FN_ARG_MASK     0x3
+#define FN_NOPARSE 0x1
+#define FN_LITERAL 0x2
+#define FN_ARG_MASK 0x3
 /* Function is disabled */
-#define FN_DISABLED     0x4
+#define FN_DISABLED 0x4
 /* Function will fail if object is gagged */
-#define FN_NOGAGGED  0x8
+#define FN_NOGAGGED 0x8
 /* Function will fail if object is a guest */
-#define FN_NOGUEST   0x10
+#define FN_NOGUEST 0x10
 /* Function will fail if object is fixed */
-#define FN_NOFIXED   0x20
+#define FN_NOFIXED 0x20
 /* Function is wizard-only */
 #define FN_WIZARD 0x40
 /* Function is royalty or wizard */
-#define FN_ADMIN  0x80
+#define FN_ADMIN 0x80
 /* Function is god-only */
-#define FN_GOD    0x100
+#define FN_GOD 0x100
 /* Function is builtin */
 #define FN_BUILTIN 0x200
 /* Function can be overridden with a @function */
@@ -40,24 +40,24 @@
 /* Log function name and args */
 #define FN_LOGARGS 0x2000
 /* Localize function registers */
-#define FN_LOCALIZE     0x4000
+#define FN_LOCALIZE 0x4000
 /* Allowed in @function only */
-#define FN_USERFN     0x8000
+#define FN_USERFN 0x8000
 /* Strip ANSI/markup from function's arguments */
-#define FN_STRIPANSI  0x10000
+#define FN_STRIPANSI 0x10000
 /* Function is obsolete and code that uses it should be re-written */
 #define FN_DEPRECATED 0x20000
 /* Function is a clone of a built-in, via @function/clone */
-#define FN_CLONE      0x40000
+#define FN_CLONE 0x40000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;
 #define HAVE_FUN_DEFINED
 #endif
 
-typedef void (*function_func) (FUN *, char *, char **, int, char *[], int[],
-                               dbref, dbref, dbref, const char *,
-                               NEW_PE_INFO *, int);
+typedef void (*function_func)(FUN *, char *, char **, int, char *[], int[],
+                              dbref, dbref, dbref, const char *, NEW_PE_INFO *,
+                              int);
 
 typedef struct userfn_entry USERFN_ENTRY;
 
@@ -66,10 +66,9 @@ typedef struct userfn_entry USERFN_ENTRY;
  * the offset of the function in the user-defined function table.
  */
 union fun_call {
-  function_func fun;    /**< Pointer to compiled function code */
-  USERFN_ENTRY *ufun;   /**< Pointer to \@function location */
+  function_func fun;  /**< Pointer to compiled function code */
+  USERFN_ENTRY *ufun; /**< Pointer to \@function location */
 };
-
 
 /** A function.
  * This structure represents a mushcode function.
@@ -85,23 +84,20 @@ struct fun {
    * is the absolute value of this variable.
    */
   int maxargs;
-  uint32_t flags;   /**< Bitflags of function */
-  FUN *clone_template;    /**< Pointer to function this was cloned from */
+  uint32_t flags;      /**< Bitflags of function */
+  FUN *clone_template; /**< Pointer to function this was cloned from */
 };
-
 
 /** A user-defined function
  * This structure represents an entry in the user-defined function table.
  */
 struct userfn_entry {
-  dbref thing;          /**< Dbref of object where the function is defined */
-  char *name;           /**< Name of attribute where the function is defined */
+  dbref thing; /**< Dbref of object where the function is defined */
+  char *name;  /**< Name of attribute where the function is defined */
 };
 
-void do_userfn(char *buff, char **bp,
-               dbref obj, ATTR *attrib,
-               int nargs, char **args,
-               dbref executor, dbref caller, dbref enactor,
+void do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
+               char **args, dbref executor, dbref caller, dbref enactor,
                NEW_PE_INFO *pe_info, int extra_flags);
 
 FUN *func_hash_lookup(const char *name);
@@ -122,11 +118,11 @@ void do_function_clone(dbref player, const char *function, const char *clone);
 
 void function_init_postconfig(void);
 
-
-#define FUNCTION_PROTO(fun_name) \
-  extern void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
-                   int arglen[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, NEW_PE_INFO *pe_info, int eflags)
+#define FUNCTION_PROTO(fun_name)                                               \
+  extern void fun_name(FUN *fun, char *buff, char **bp, int nargs,             \
+                       char *args[], int arglen[], dbref executor,             \
+                       dbref caller, dbref enactor, char const *called_as,     \
+                       NEW_PE_INFO *pe_info, int eflags)
 extern FUN *function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 

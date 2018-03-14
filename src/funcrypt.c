@@ -9,9 +9,15 @@
 #include "copyrite.h"
 
 #include <ctype.h>
+#ifdef WIN32
+#include <Windows.h>
+#include <Wincrypt.h>
+#include <Bcrypt.h>
+#else
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#endif
 #include <string.h>
 #include <time.h>
 
@@ -41,6 +47,29 @@ bool decode_base64(char *encoded, int len, bool printonly, char *buff,
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
 {
+#ifdef WIN32
+	LPTSTR encoded;
+	DWORD encodedlen = 0;
+	
+	if (!CryptBinaryToString((const BYTE *)input, len,
+		CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, NULL, &encodedlen)) {
+		safe_str(T("#-1 ENCODING ERROR"), buff, bp);
+		return false;
+	}
+	
+	encoded = mush_malloc(encodedlen, "string");
+	if (!CryptBinaryToString((const BYTE *)input, len, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,
+		encoded, &encodedlen)) {
+		mush_free(encoded, "string");
+		safe_str(T("#-1 ENCODING ERROR"), buff, bp);
+		return false;
+	}
+		
+	safe_strl(encoded, encodedlen, buff, bp);
+	mush_free(encoded, "string");
+	
+	return true;
+#else
   BIO *bio, *b64, *bmem;
   char *membuf;
 
@@ -76,6 +105,7 @@ encode_base64(const char *input, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
+#endif
 }
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
@@ -83,6 +113,56 @@ extern char valid_ansi_codes[UCHAR_MAX + 1];
 bool
 decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
 {
+#ifdef WIN32
+	BYTE *decoded;
+	DWORD dlen = 0;
+	char *sbp = *bp;
+	
+	if (!CryptStringToBinary((LPCTSTR)encoded, len, CRYPT_STRING_BASE64, NULL,
+		&dlen, NULL, NULL)) {
+		safe_str(T("#-1 DECODING ERROR"), buff, bp);
+		return false;
+	}
+	
+	decoded = mush_malloc(dlen + 1, "string");
+	if (!CryptStringToBinary((LPCTSTR)encoded, len, CRYPT_STRING_BASE64, decoded,
+		&dlen, NULL, NULL)) {
+		mush_free(decoded, "string");
+		safe_str(T("#-1 DECODING ERROR"), buff, bp);
+		return false;
+	}
+	decoded[dlen] = '\0';	
+	
+	for (DWORD n = 0; n < dlen; n++) {
+		if (decoded[n] == TAG_START) {
+			DWORD end;
+     	n += 1;
+     	for (end = n; end < dlen; end++) { 
+     		if (decoded[end] == TAG_END)
+     			break;
+     	}
+     	if (end == dlen || decoded[n] != MARKUP_COLOR) {
+     		mush_free(decoded, "string");
+     		*bp = sbp;
+     		safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
+     		return false;
+     	}
+     	for (; n < end; n++) {
+     		if (!valid_ansi_codes[decoded[n]]) {
+     			mush_free(decoded, "string");
+     			*bp = sbp;
+     			safe_str(T("#-1 CONVERSION ERROR"), buff, bp);
+     			return false;
+     		}
+     	}
+     	n = end;
+    } else if (printonly && !isprint(decoded[n]))
+    	decoded[n] = '?';
+  }
+  safe_strl((const char *)decoded, dlen, buff, bp);
+	mush_free(decoded, "string");
+	return true;
+#else
   BIO *bio, *b64, *bmem;
   char *sbp;
 
@@ -99,7 +179,8 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
     BIO_free(b64);
     return false;
   }
-  /*  len = BIO_set_close(bmem, BIO_NOCLOSE); This makes valgrind report a memory leak. */
+  /*  len = BIO_set_close(bmem, BIO_NOCLOSE); This makes valgrind report a
+   * memory leak. */
 
   bio = BIO_push(b64, bmem);
 
@@ -151,19 +232,14 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
+#endif
 }
 
 /* Encode a string in base64 */
-FUNCTION(fun_encode64)
-{
-  encode_base64(args[0], arglens[0], buff, bp);
-}
+FUNCTION(fun_encode64) { encode_base64(args[0], arglens[0], buff, bp); }
 
 /* Decode a string from base64 */
-FUNCTION(fun_decode64)
-{
-  decode_base64(args[0], arglens[0], 1, buff, bp);
-}
+FUNCTION(fun_decode64) { decode_base64(args[0], arglens[0], 1, buff, bp); }
 
 /* Copy over only alphanumeric chars */
 char *
@@ -175,7 +251,8 @@ crunch_code(char *code)
 
   out = output;
   in = code;
-  WALK_ANSI_STRING(in) {
+  WALK_ANSI_STRING(in)
+  {
     if ((*in >= 32) && (*in <= 126)) {
       *out++ = *in;
     }
@@ -296,25 +373,28 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
+#ifdef HAVE_SHA
   uint8_t hash[SHA_DIGEST_LENGTH];
 
   SHA((uint8_t *) args[0], arglens[0], hash);
 
   safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
+#else
+  safe_str(T("#-1 NOT SUPPORTED"), buff, bp);
+#endif
 }
 
 /* From mycrypt.c */
 int safe_hash_byname(const char *algo, const char *plaintext, int len,
                      char *buff, char **bp, bool inplace_err);
 
-
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#ifdef HAVE_EVP_MD_DO_ALL
 #define CAN_LIST_DIGESTS
 
 static void
-list_dgst_populate(const EVP_MD *m, const char *from
-                   __attribute__ ((__unused__)), const char *to
-                   __attribute__ ((__unused__)), void *data)
+list_dgst_populate(const EVP_MD *m,
+                   const char *from __attribute__((__unused__)),
+                   const char *to __attribute__((__unused__)), void *data)
 {
   HASHTAB *digests = data;
   if (m)
@@ -326,7 +406,10 @@ list_dgst_populate(const EVP_MD *m, const char *from
 FUNCTION(fun_digest)
 {
   if (nargs == 1 && strcmp(args[0], "list") == 0) {
-#ifdef CAN_LIST_DIGESTS
+#ifdef WIN32
+	safe_str("MD2 MD4 MD5 SHA1 SHA256 SHA384 SHA512", buff, bp);
+	return;
+#elif defined(CAN_LIST_DIGESTS)
     HASHTAB digests_tab;
     const char **digests;
     const char *d;
@@ -336,8 +419,8 @@ FUNCTION(fun_digest)
     EVP_MD_do_all(list_dgst_populate, &digests_tab);
     digests = mush_calloc(digests_tab.entries, sizeof(char *), "digest.list");
 
-    for (n = 0, d = hash_firstentry_key(&digests_tab);
-         d; n += 1, d = hash_nextentry_key(&digests_tab))
+    for (n = 0, d = hash_firstentry_key(&digests_tab); d;
+         n += 1, d = hash_nextentry_key(&digests_tab))
       digests[n] = d;
 
     qsort(digests, n, sizeof(char *), stri_comp);

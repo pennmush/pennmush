@@ -21,25 +21,24 @@ echo=@ECHO@
 LC_ALL=C
 
 # What subdirectories should we be processing?
-dir=$1
-if $test ! -d $dir; then
+dir="$1"
+if $test ! -d "$dir"; then
   $echo "Usage: compose.sh <directory>"
   exit 0
 fi
 
-index_args=$2
-
 # Ok, let's do 'em:
-cd $dir
+(
+cd "$dir" &&
 
 # Remove the old index
-$rm -f index.$dir ../$dir.txt
+$rm -f "index.$dir" "../$dir.txt" &&
 
 # Build a new index, and tack it on.
-$echo Building master file for $dir
-$cat *.$dir > ../$dir.txt
- 
-cd ..
+$echo "Building master file for $dir" &&
+$cat ./*.$dir > "../$dir.txt"
+
+)
 
 $echo Done.
 $echo Remember to use @readcache if the mush is currently running.

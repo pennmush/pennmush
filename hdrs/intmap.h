@@ -9,7 +9,7 @@
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif                          /* HAVE_STDINT_H */
+#endif /* HAVE_STDINT_H */
 
 #include "mushtype.h"
 
@@ -32,4 +32,4 @@ void im_dump_graph(intmap *, const char *);
 /* TODO: Remove dependency on mushtype.h. */
 void im_stats_header(dbref);
 void im_stats(dbref, intmap *, const char *);
-#endif                          /* INTMAP_H */
+#endif /* INTMAP_H */

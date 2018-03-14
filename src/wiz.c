@@ -56,32 +56,33 @@ char *password_hash(const char *password, const char *algo);
 
 /** \@search data */
 struct search_spec {
-  dbref owner;  /**< Limit to this owner, if specified */
-  int type;     /**< Limit to this type */
-  dbref parent; /**< Limit to children of this parent */
-  dbref zone;   /**< Limit to those in this zone */
-  dbref entrances;           /**< Objects linked here, for \@entrances */
-  char flags[BUFFER_LEN];    /**< Limit to those with these flags */
+  dbref owner;                /**< Limit to this owner, if specified */
+  uint32_t type;                   /**< Limit to this type */
+  dbref parent;               /**< Limit to children of this parent */
+  dbref zone;                 /**< Limit to those in this zone */
+  dbref entrances;            /**< Objects linked here, for \@entrances */
+  char flags[BUFFER_LEN];     /**< Limit to those with these flags */
   char lflags[BUFFER_LEN];    /**< Limit to those with these flags */
-  char powers[BUFFER_LEN];   /**< Limit to those with these powers */
-  char eval[BUFFER_LEN];   /**< Limit to those where this evals true */
-  char name[BUFFER_LEN];  /**< Limit to those prefix-matching this name */
-  dbref low;    /**< Limit to dbrefs here or higher */
-  dbref high;   /**< Limit to dbrefs here or lower */
-  int start;  /**< Limited results: start at this one. */
-  int count;  /**< Limited results: return this many */
-  int end;    /**< Limited results: return until this one.*/
-  boolexp lock;  /**< Boolexp to check against the objects. */
+  char powers[BUFFER_LEN];    /**< Limit to those with these powers */
+  char eval[BUFFER_LEN];      /**< Limit to those where this evals true */
+  char name[BUFFER_LEN];      /**< Limit to those prefix-matching this name */
+  dbref low;                  /**< Limit to dbrefs here or higher */
+  dbref high;                 /**< Limit to dbrefs here or lower */
+  int start;                  /**< Limited results: start at this one. */
+  int count;                  /**< Limited results: return this many */
+  int end;                    /**< Limited results: return until this one.*/
+  boolexp lock;               /**< Boolexp to check against the objects. */
   char cmdstring[BUFFER_LEN]; /**< Find objects who respond to this $-command */
-  char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
+  char
+    listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
 static int tport_dest_ok(dbref player, dbref victim, dbref dest,
                          NEW_PE_INFO *pe_info);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
-static int raw_search(dbref player, struct search_spec *spec,
-                      dbref **result, NEW_PE_INFO *pe_info);
+static int raw_search(dbref player, struct search_spec *spec, dbref **result,
+                      NEW_PE_INFO *pe_info);
 static void init_search_spec(struct search_spec *spec);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
@@ -89,7 +90,6 @@ static void sitelock_player(dbref player, const char *name, dbref who,
                             uint32_t can, uint32_t cant);
 static void do_teleport_one(dbref player, const char *what, dbref destination,
                             int flags, NEW_PE_INFO *pe_info);
-
 
 #ifdef INFO_SLAVE
 void kill_info_slave(void);
@@ -143,8 +143,8 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
   do_log(LT_WIZ, creator, player, "Player creation");
-  queue_event(creator, "PLAYER`CREATE", "%s,%s,%s",
-              unparse_objid(player), Name(player), "pcreate");
+  queue_event(creator, "PLAYER`CREATE", "%s,%s,%s", unparse_objid(player),
+              Name(player), "pcreate");
   return player;
 }
 
@@ -184,8 +184,8 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     return;
   }
   /* count up all owned objects */
-  owned = -1;                   /* a player is never included in his own
-                                 * quota */
+  owned = -1; /* a player is never included in his own
+               * quota */
   for (thing = 0; thing < db_top; thing++) {
     if (Owner(thing) == who)
       if (!IsGarbage(thing))
@@ -218,14 +218,13 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     limit = owned + get_current_quota(who) + atoi(arg2);
   else
     limit = atoi(arg2);
-  if (limit < owned)            /* always have enough quota for your objects */
+  if (limit < owned) /* always have enough quota for your objects */
     limit = owned;
 
   (void) atr_add(Owner(who), "RQUOTA", tprintf("%d", limit - owned), GOD, 0);
 
   notify_format(player, T("Objects: %d   Limit: %d"), owned, limit);
 }
-
 
 /** Check or set quota globally.
  * \verbatim
@@ -263,8 +262,8 @@ do_allquota(dbref player, const char *arg1, int quiet)
       continue;
 
     /* count up all owned objects */
-    owned = -1;                 /* a player is never included in his own
-                                 * quota */
+    owned = -1; /* a player is never included in his own
+                 * quota */
     for (thing = 0; thing < db_top; thing++) {
       if (Owner(thing) == who)
         if (!IsGarbage(thing))
@@ -279,8 +278,8 @@ do_allquota(dbref player, const char *arg1, int quiet)
     }
     if (!quiet) {
       oldlimit = get_current_quota(who);
-      notify_format(player, T("%s: Objects: %d   Limit: %d"),
-                    Name(who), owned, oldlimit);
+      notify_format(player, T("%s: Objects: %d   Limit: %d"), Name(who), owned,
+                    oldlimit);
     }
     if (limit != -1) {
       if (limit <= owned)
@@ -360,7 +359,6 @@ do_teleport(dbref player, const char *what, const char *where, int flags,
   const char *list;
   char *onename;
 
-
   if (!strcasecmp(where, "home")) {
     destination = HOME;
   } else {
@@ -437,8 +435,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
     }
   }
 
-  if (recursive_member(destination, victim, 0)
-      || (victim == destination)) {
+  if (recursive_member(destination, victim, 0) || (victim == destination)) {
     notify(player, T("Bad destination."));
     return;
   }
@@ -483,8 +480,8 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
   /* if royal or wiz and destination is player, tel to location unless
    * using @tel/inside
    */
-  if (IsPlayer(destination) && Tel_Anywhere(player) && IsPlayer(victim)
-      && !inside) {
+  if (IsPlayer(destination) && Tel_Anywhere(player) && IsPlayer(victim) &&
+      !inside) {
     if (!silent && loc != Location(destination))
       did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                   player, NOTHING, NA_INTER_HEAR, AN_MOVE);
@@ -539,8 +536,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
      * player. */
 
     /* now check to see if the absolute room is set NO_TEL */
-    if (NoTel(absroom) && !controls(player, absroom)
-        && !Tel_Anywhere(player)) {
+    if (NoTel(absroom) && !controls(player, absroom) && !Tel_Anywhere(player)) {
       notify(player, T("Teleports are not allowed in this room."));
       return;
     }
@@ -558,9 +554,9 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
      * Zone Master Room, if any) is Z_TEL,
      * the destination must also be a room in the same zone
      */
-    if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
-        && !controls(player, absroom) && !Tel_Anywhere(player)
-        && (Zone(absroom) != Zone(destination))) {
+    if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom))) &&
+        !controls(player, absroom) && !Tel_Anywhere(player) &&
+        (Zone(absroom) != Zone(destination))) {
       notify(player, T("You may not teleport out of the zone from this room."));
       return;
     }
@@ -568,11 +564,10 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
 
   if (!IsExit(destination)) {
     if (tport_control_ok(player, victim, Location(victim)) &&
-        tport_dest_ok(player, victim, destination, pe_info)
-        && (Tel_Anything(player) ||
-            (Tel_Anywhere(player) && (player == victim)) ||
-            (destination == Owner(victim)) ||
-            (!Fixed(Owner(victim)) && !Fixed(player)))) {
+        tport_dest_ok(player, victim, destination, pe_info) &&
+        (Tel_Anything(player) || (Tel_Anywhere(player) && (player == victim)) ||
+         (destination == Owner(victim)) ||
+         (!Fixed(Owner(victim)) && !Fixed(player)))) {
       if (!silent && loc != destination)
         did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                     player, NOTHING, NA_INTER_HEAR, AN_MOVE);
@@ -580,8 +575,8 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       if (!silent && loc != destination)
         did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
                     destination, player, loc, NA_INTER_HEAR, AN_MOVE);
-      if ((victim != player) && !(Puppet(victim) &&
-                                  (Owner(victim) == Owner(player)))) {
+      if ((victim != player) &&
+          !(Puppet(victim) && (Owner(victim) == Owner(player)))) {
         if (!Quiet(player) && !(Quiet(victim) && (Owner(victim) == player)))
           notify(player, T("Teleported."));
       }
@@ -615,7 +610,6 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       do_move(victim, absdest, MOVE_TELEPORT, pe_info);
     }
   }
-
 }
 
 /** Force an object to run a command.
@@ -686,15 +680,14 @@ parse_force(char *command)
   s = command + 1;
   while (*s && !isspace(*s)) {
     if (!isdigit(*s))
-      return 0;                 /* #1a is no good */
+      return 0; /* #1a is no good */
     s++;
   }
   if (!*s)
-    return 0;                   /* dbref with no action is no good */
-  *s = '=';                     /* Replace the first space with = so we have #3= <action> */
+    return 0; /* dbref with no action is no good */
+  *s = '=';   /* Replace the first space with = so we have #3= <action> */
   return 1;
 }
-
 
 extern struct db_stat_info current_state;
 
@@ -777,19 +770,17 @@ do_stats(dbref player, const char *name)
   }
   si = get_stats(owner);
   if (owner == ANY_OWNER) {
-    notify_format(player,
-                  T
-                  ("%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."),
-                  si->total, si->rooms, si->exits, si->things, si->players,
-                  si->garbage);
+    notify_format(
+      player,
+      T("%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."),
+      si->total, si->rooms, si->exits, si->things, si->players, si->garbage);
     if (first_free != NOTHING)
       notify_format(player, T("The next object to be created will be #%d."),
                     first_free);
   } else {
-    notify_format(player,
-                  T("%d objects = %d rooms, %d exits, %d things, %d players."),
-                  si->total - si->garbage, si->rooms, si->exits, si->things,
-                  si->players);
+    notify_format(
+      player, T("%d objects = %d rooms, %d exits, %d things, %d players."),
+      si->total - si->garbage, si->rooms, si->exits, si->things, si->players);
   }
 }
 
@@ -804,25 +795,24 @@ do_stats(dbref player, const char *name)
  * \param queue_entry the queue entry the command was executed in
  */
 void
-do_newpassword(dbref executor, dbref enactor,
-               const char *name, const char *password, MQUE *queue_entry, bool generate )
+do_newpassword(dbref executor, dbref enactor, const char *name,
+               const char *password, MQUE *queue_entry, bool generate)
 {
   dbref victim;
   static char elems[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   char passwd[20];
- 
-  if (generate) { 
+
+  if (generate) {
     int i;
-    int len = get_random32(7, 12);
-   
+    int len = get_random_u32(7, 12);
+
     for (i = 0; i < len; i++)
-      passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
+      passwd[i] = elems[get_random_u32(0, sizeof(elems) - 2)];
     passwd[len] = '\0';
     password = passwd;
-  } else 
-  {
-    
+  } else {
+
     if (!queue_entry->port) {
       char pass_eval[BUFFER_LEN];
       char const *sp;
@@ -830,7 +820,7 @@ do_newpassword(dbref executor, dbref enactor,
       sp = password;
       bp = pass_eval;
       process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                         PE_DEFAULT, PT_DEFAULT, NULL);
       *bp = '\0';
       password = pass_eval;
     }
@@ -847,10 +837,10 @@ do_newpassword(dbref executor, dbref enactor,
     (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
     if (generate) // If we generate a PW, tell the executor what it is.
       notify_format(executor, T("Password for %s changed to %s."),
-                  AName(victim, AN_SYS, NULL), password);
-      else
+                    AName(victim, AN_SYS, NULL), password);
+    else
       notify_format(executor, T("Password for %s changed."),
-                  AName(victim, AN_SYS, NULL));
+                    AName(victim, AN_SYS, NULL));
     notify_format(victim, T("Your password has been changed by %s."),
                   AName(executor, AN_SYS, NULL));
     do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
@@ -948,13 +938,12 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
     }
   } else {
     if (flag == BOOT_SELF)
-      notify(player,
-             T
-             ("None of your connections are idle. If you want to quit, use QUIT."));
+      notify(
+        player,
+        T("None of your connections are idle. If you want to quit, use QUIT."));
     else
       notify(player, T("That player is not online."));
   }
-
 }
 
 /** Chown all of a player's objects.
@@ -965,9 +954,11 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
  * \param name name of player whose objects are to be chowned.
  * \param target name of new owner for objects.
  * \param preserve if 1, keep privileges and don't halt objects.
+ * \param types types of objects to chown
  */
 void
-do_chownall(dbref player, const char *name, const char *target, int preserve)
+do_chownall(dbref player, const char *name, const char *target, int preserve,
+            int types)
 {
   int i;
   dbref victim;
@@ -978,22 +969,20 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
     notify(player, T("Try asking them first!"));
     return;
   }
-  if ((victim =
-       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
-      == NOTHING)
+  if ((victim = noisy_match_result(player, name, TYPE_PLAYER,
+                                   MAT_LIMITED | MAT_TYPE)) == NOTHING)
     return;
 
   if (!target || !*target) {
     n_target = player;
   } else {
-    if ((n_target =
-         noisy_match_result(player, target, TYPE_PLAYER,
-                            MAT_LIMITED | MAT_TYPE)) == NOTHING)
+    if ((n_target = noisy_match_result(player, target, TYPE_PLAYER,
+                                       MAT_LIMITED | MAT_TYPE)) == NOTHING)
       return;
   }
 
   for (i = 0; i < db_top; i++) {
-    if ((Owner(i) == victim) && (!IsPlayer(i))) {
+    if ((Owner(i) == victim) && (Typeof(i) & types)) {
       chown_object(player, i, n_target, preserve);
       count++;
     }
@@ -1030,9 +1019,8 @@ do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
     notify(player, T("You do not have the power to change reality."));
     return;
   }
-  if ((victim =
-       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
-      == NOTHING)
+  if ((victim = noisy_match_result(player, name, TYPE_PLAYER,
+                                   MAT_LIMITED | MAT_TYPE)) == NOTHING)
     return;
 
   if (!target || !*target) {
@@ -1205,7 +1193,6 @@ do_power(dbref player, const char *name, const char *power)
     }
     set_power(player, thing, f, revoke_it);
   } while (p);
-
 }
 
 /*----------------------------------------------------------------------------
@@ -1235,7 +1222,8 @@ do_search(dbref player, const char *arg1, char **arg3)
 
   /* First argument is a player, so we could have a quoted name */
   if (*arg1 == '\"') {
-    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1)); arg1++) ;
+    for (; *arg1 && ((*arg1 == '\"') || isspace(*arg1)); arg1++)
+      ;
     strcpy(tbuf, arg1);
     while (*arg2 && (*arg2 != '\"')) {
       while (*arg2 && (*arg2 != '\"'))
@@ -1259,9 +1247,9 @@ do_search(dbref player, const char *arg1, char **arg3)
 
   if (!*arg2) {
     if (!arg3[1] || !*arg3[1])
-      arg2 = (char *) "";       /* arg1 */
+      arg2 = (char *) ""; /* arg1 */
     else {
-      arg2 = (char *) arg1;     /* arg2=arg3 */
+      arg2 = (char *) arg1; /* arg2=arg3 */
       tbuf[0] = '\0';
     }
   }
@@ -1289,7 +1277,6 @@ do_search(dbref player, const char *arg1, char **arg3)
 
     nresults = raw_search(player, &spec, &results, NULL);
   }
-
 
   if (nresults == 0) {
     notify(player, T("Nothing found."));
@@ -1385,8 +1372,7 @@ do_search(dbref player, const char *arg1, char **arg3)
         tbp = tbuf;
         safe_str(object_header(player, players[n]), tbuf, &tbp);
         if (is_wizard)
-          safe_format(tbuf, &tbp,
-                      T(" [location: %s]"),
+          safe_format(tbuf, &tbp, T(" [location: %s]"),
                       object_header(player, Location(players[n])));
         *tbp = '\0';
         notify(player, tbuf);
@@ -1407,15 +1393,13 @@ do_search(dbref player, const char *arg1, char **arg3)
 
     notify(player, T("----------  Search Done  ----------"));
     if (ngarbage)
-      notify_format(player,
-                    T
-                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"),
+      notify_format(player, T("Totals: Rooms...%d  Exits...%d  Things...%d  "
+                              "Players...%d  Garbage...%d"),
                     nrooms, nexits, nthings, nplayers, ngarbage);
     else
-      notify_format(player,
-                    T
-                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
-                    nrooms, nexits, nthings, nplayers);
+      notify_format(
+        player, T("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+        nrooms, nexits, nthings, nplayers);
     mush_free(rooms, "dbref_list");
     mush_free(exits, "dbref_list");
     mush_free(things, "dbref_list");
@@ -1549,9 +1533,8 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
     switch (Typeof(results[n])) {
     case TYPE_EXIT:
       strcpy(exit_source, object_header(player, Source(results[n])));
-      notify_format(player,
-                    T("%s [from: %s]"), object_header(player, results[n]),
-                    exit_source);
+      notify_format(player, T("%s [from: %s]"),
+                    object_header(player, results[n]), exit_source);
       exits++;
       break;
     case TYPE_ROOM:
@@ -1577,10 +1560,9 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
     notify(player, T("Nothing found."));
   else {
     notify(player, T("----------  Entrances Done  ----------"));
-    notify_format(player,
-                  T
-                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
-                  rooms, exits, things, players);
+    notify_format(
+      player, T("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+      rooms, exits, things, players);
   }
 }
 
@@ -1675,9 +1657,8 @@ FUNCTION(fun_entrances)
   if (!GoodObject(spec.high))
     spec.high = db_top - 1;
 
-  nresults =
-    raw_search(controls(executor, where) ? GOD : executor, &spec, &results,
-               pe_info);
+  nresults = raw_search(controls(executor, where) ? GOD : executor, &spec,
+                        &results, pe_info);
   for (n = 0; n < nresults; n++) {
     if (n) {
       if (safe_chr(' ', buff, bp))
@@ -1689,7 +1670,6 @@ FUNCTION(fun_entrances)
 
   if (results)
     mush_free(results, "search_results");
-
 }
 
 /* ARGSUSED */
@@ -1699,15 +1679,13 @@ FUNCTION(fun_quota)
   /* Tell us player's quota */
   dbref thing;
   dbref who;
-  who =
-    noisy_match_result(executor, args[0], TYPE_PLAYER,
-                       MAT_TYPE | MAT_PMATCH | MAT_ME);
+  who = noisy_match_result(executor, args[0], TYPE_PLAYER,
+                           MAT_TYPE | MAT_PMATCH | MAT_ME);
   if ((who == NOTHING) || !IsPlayer(who)) {
     safe_str("#-1", buff, bp);
     return;
   }
-  if (!(Do_Quotas(executor) || See_All(executor)
-        || controls(executor, who))) {
+  if (!(Do_Quotas(executor) || See_All(executor) || controls(executor, who))) {
     notify(executor, T("You can't see someone else's quota!"));
     safe_str("#-1", buff, bp);
     return;
@@ -1718,8 +1696,8 @@ FUNCTION(fun_quota)
     return;
   }
   /* count up all owned objects */
-  owned = -1;                   /* a player is never included in his own
-                                 * quota */
+  owned = -1; /* a player is never included in his own
+               * quota */
   for (thing = 0; thing < db_top; thing++) {
     if (Owner(thing) == who)
       if (!IsGarbage(thing))
@@ -1737,7 +1715,6 @@ sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
   dbref target;
   ATTR *a;
   int attrcount = 0;
-
 
   if ((target = noisy_match_result(player, name, TYPE_PLAYER,
                                    MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) ==
@@ -1762,7 +1739,6 @@ sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
     notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."),
                   AName(target, AN_SYS, NULL));
   }
-
 }
 
 /** Modify access rules for a site.
@@ -1797,7 +1773,7 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       notify(player, T("No valid options found."));
       return;
     }
-    if (who && *who) {          /* Specify a character */
+    if (who && *who) { /* Specify a character */
       whod = lookup_player(who);
       if (!GoodObject(whod)) {
         notify(player, T("Who do you want to lock?"));
@@ -1811,8 +1787,7 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
     if (add_access_sitelock(player, site, whod, can, cant)) {
       write_access_file();
       if (whod != AMBIGUOUS) {
-        notify_format(player,
-                      T("Site %s access options for %s(%s) set to %s"),
+        notify_format(player, T("Site %s access options for %s(%s) set to %s"),
                       site, AName(whod, AN_SYS, NULL), unparse_dbref(whod),
                       opts);
         do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s for %s(%s) --> %s",
@@ -1839,8 +1814,8 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         sitelock_player(player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE);
         return;
       }
-      if (add_access_sitelock
-          (player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
+      if (add_access_sitelock(player, site, AMBIGUOUS, ACS_REGISTER,
+                              ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
         do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
@@ -1868,42 +1843,42 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
       }
       break;
-    case SITELOCK_CHECK:{
-        struct access *ap;
-        char tbuf[BUFFER_LEN], *bp;
-        int rulenum;
-        if (!site || !*site) {
-          do_list_access(player);
-          return;
-        }
-        ap = site_check_access(site, AMBIGUOUS, &rulenum);
-        bp = tbuf;
-        format_access(ap, rulenum, AMBIGUOUS, tbuf, &bp);
-        *bp = '\0';
-        notify(player, tbuf);
-        break;
+    case SITELOCK_CHECK: {
+      struct access *ap;
+      char tbuf[BUFFER_LEN], *bp;
+      int rulenum;
+      if (!site || !*site) {
+        do_list_access(player);
+        return;
       }
-    case SITELOCK_REMOVE:{
-        int n = 0;
-        if (psw) {
-          ATTR *a;
-          dbref target;
-          if ((target = noisy_match_result(player, site, TYPE_PLAYER,
-                                           MAT_ABSOLUTE | MAT_PMATCH |
+      ap = site_check_access(site, AMBIGUOUS, &rulenum);
+      bp = tbuf;
+      format_access(ap, rulenum, AMBIGUOUS, tbuf, &bp);
+      *bp = '\0';
+      notify(player, tbuf);
+      break;
+    }
+    case SITELOCK_REMOVE: {
+      int n = 0;
+      if (psw) {
+        ATTR *a;
+        dbref target;
+        if ((target = noisy_match_result(player, site, TYPE_PLAYER,
+                                         MAT_ABSOLUTE | MAT_PMATCH |
                                            MAT_TYPE)) == NOTHING)
-            return;
-          if ((a = atr_get(target, "LASTIP")))
-            n += remove_access_sitelock(atr_value(a));
-          if ((a = atr_get(target, "LASTSITE")))
-            n += remove_access_sitelock(atr_value(a));
-        } else {
-          n = remove_access_sitelock(site);
-        }
-        if (n > 0)
-          write_access_file();
-        notify_format(player, T("%d sitelocks removed."), n);
-        break;
+          return;
+        if ((a = atr_get(target, "LASTIP")))
+          n += remove_access_sitelock(atr_value(a));
+        if ((a = atr_get(target, "LASTSITE")))
+          n += remove_access_sitelock(atr_value(a));
+      } else {
+        n = remove_access_sitelock(site);
       }
+      if (n > 0)
+        write_access_file();
+      notify_format(player, T("%d sitelocks removed."), n);
+      break;
+    }
     }
   }
 }
@@ -1944,7 +1919,7 @@ do_sitelock_name(dbref player, const char *name)
       }
       fclose(fp);
     }
-  } else if (name[0] == '!') {  /* Delete a name */
+  } else if (name[0] == '!') { /* Delete a name */
     if ((fp = fopen(NAMES_FILE, FOPEN_READ)) != NULL) {
       if ((fptmp = fopen("tmp.tmp", FOPEN_WRITE)) == NULL) {
         notify(player, T("Unable to delete name."));
@@ -1973,7 +1948,7 @@ do_sitelock_name(dbref player, const char *name)
       }
     } else
       notify(player, T("Unable to delete name."));
-  } else {                      /* Add a name */
+  } else { /* Add a name */
     if ((fp = fopen(NAMES_FILE, FOPEN_READ)) != NULL) {
       if ((fptmp = fopen("tmp.tmp", FOPEN_WRITE)) == NULL) {
         notify(player, T("Unable to lock name."));
@@ -2062,8 +2037,6 @@ FUNCTION(fun_objmem)
   safe_integer(mem_usage(thing), buff, bp);
 }
 
-
-
 /* ARGSUSED */
 FUNCTION(fun_playermem)
 {
@@ -2106,7 +2079,7 @@ init_search_spec(struct search_spec *spec)
   strcpy(spec->name, "");
   spec->low = 0;
   spec->high = INT_MAX;
-  spec->start = 1;              /* 1-indexed */
+  spec->start = 1; /* 1-indexed */
   spec->count = 0;
   spec->lock = TRUE_BOOLEXP;
   strcpy(spec->cmdstring, "");
@@ -2124,10 +2097,10 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
   /* set limits on who we search */
   if (!owner || !*owner)
-    spec->owner = (See_All(player)
-                   || Search_All(player)) ? ANY_OWNER : Owner(player);
+    spec->owner =
+      (See_All(player) || Search_All(player)) ? ANY_OWNER : Owner(player);
   else if (strcasecmp(owner, "all") == 0)
-    spec->owner = ANY_OWNER;    /* Will only show visual objects for mortals */
+    spec->owner = ANY_OWNER; /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)
     spec->owner = Owner(player);
   else
@@ -2147,9 +2120,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     restriction = args[n + 1];
     /* A special old-timey kludge */
     if (class && !*class && restriction && *restriction) {
-      if (isdigit(*restriction)
-          || ((*restriction == '#') && *(restriction + 1)
-              && isdigit(*(restriction + 1)))) {
+      if (isdigit(*restriction) ||
+          ((*restriction == '#') && *(restriction + 1) &&
+           isdigit(*(restriction + 1)))) {
         size_t offset = 0;
         if (*restriction == '#')
           offset = 1;
@@ -2165,9 +2138,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (*class == '#')
         offset = 1;
       spec->low = parse_integer(class + offset);
-      if (isdigit(*restriction)
-          || ((*restriction == '#') && *(restriction + 1)
-              && isdigit(*(restriction + 1)))) {
+      if (isdigit(*restriction) ||
+          ((*restriction == '#') && *(restriction + 1) &&
+           isdigit(*(restriction + 1)))) {
         offset = 0;
         if (*restriction == '#')
           offset = 1;
@@ -2177,15 +2150,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     /* Figure out the class */
     /* Old-fashioned way to select everything */
-    if (string_prefix("none", class))
+    if (strcasecmp("none", class) == 0)
       continue;
-    if (string_prefix("mindb", class)) {
+    if (strcasecmp("mindb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
       spec->low = parse_integer(restriction + offset);
       continue;
-    } else if (string_prefix("maxdb", class)) {
+    } else if (strcasecmp("maxdb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
@@ -2193,26 +2166,24 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       continue;
     }
 
-    if (string_prefix("type", class)) {
-      if (string_prefix("things", restriction)
-          || string_prefix("objects", restriction)) {
+    if (strcasecmp("type", class) == 0) {
+      if (string_prefix("things", restriction) ||
+          string_prefix("objects", restriction)) {
         spec->type = TYPE_THING;
       } else if (string_prefix("rooms", restriction)) {
         spec->type = TYPE_ROOM;
       } else if (string_prefix("exits", restriction)) {
         spec->type = TYPE_EXIT;
-      } else if (string_prefix("rooms", restriction)) {
-        spec->type = TYPE_ROOM;
       } else if (string_prefix("players", restriction)) {
         spec->type = TYPE_PLAYER;
-      } else if (string_prefix("garbage", restriction)) {
+      } else if (strcasecmp("garbage", restriction) == 0) {
         spec->type = TYPE_GARBAGE;
       } else {
         notify(player, T("Unknown type."));
         return -1;
       }
-    } else if (string_prefix("things", class)
-               || string_prefix("objects", class)) {
+    } else if (string_prefix("things", class) ||
+               string_prefix("objects", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_THING;
     } else if (string_prefix("exits", class)) {
@@ -2224,21 +2195,21 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     } else if (string_prefix("players", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (string_prefix("name", class)) {
+    } else if (strcasecmp("name", class) == 0) {
       strcpy(spec->name, restriction);
-    } else if (string_prefix("start", class)) {
+    } else if (strcasecmp("start", class) == 0) {
       spec->start = parse_integer(restriction);
       if (spec->start < 1) {
         notify(player, T("Invalid start index"));
         return -1;
       }
-    } else if (string_prefix("count", class)) {
+    } else if (strcasecmp("count", class) == 0) {
       spec->count = parse_integer(restriction);
       if (spec->count < 1) {
         notify(player, T("Invalid count index"));
         return -1;
       }
-    } else if (string_prefix("parent", class)) {
+    } else if (strcasecmp("parent", class) == 0) {
       if (!*restriction) {
         spec->parent = NOTHING;
         continue;
@@ -2252,7 +2223,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown parent."));
         return -1;
       }
-    } else if (string_prefix("zone", class)) {
+    } else if (strcasecmp("zone", class) == 0) {
       if (!*restriction) {
         spec->zone = NOTHING;
         continue;
@@ -2266,17 +2237,17 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown zone."));
         return -1;
       }
-    } else if (string_prefix("elock", class)) {
+    } else if (strcasecmp("elock", class) == 0) {
       spec->lock = parse_boolexp(player, restriction, "Search");
       if (spec->lock == TRUE_BOOLEXP) {
         notify(player, T("I don't understand that key."));
         return -1;
       }
-    } else if (string_prefix("eval", class)) {
+    } else if (strcasecmp("eval", class) == 0) {
       strcpy(spec->eval, restriction);
-    } else if (string_prefix("command", class)) {
+    } else if (strcasecmp("command", class) == 0) {
       strcpy(spec->cmdstring, restriction);
-    } else if (string_prefix("listen", class)) {
+    } else if (strcasecmp("listen", class) == 0) {
       strcpy(spec->listenstring, restriction);
     } else if (string_prefix("ethings", class) ||
                string_prefix("eobjects", class)) {
@@ -2323,8 +2294,8 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
 /* Does the actual searching */
 static int
-raw_search(dbref player, struct search_spec *spec,
-           dbref **result, NEW_PE_INFO *pe_info)
+raw_search(dbref player, struct search_spec *spec, dbref **result,
+           NEW_PE_INFO *pe_info)
 {
   size_t result_size;
   size_t nresults = 0;
@@ -2394,21 +2365,21 @@ raw_search(dbref player, struct search_spec *spec,
     }
     if (*spec->name && !string_match(Name(n), spec->name))
       continue;
-    if (*spec->flags
-        && (flaglist_check("FLAG", player, n, spec->flags, 1) != 1))
+    if (*spec->flags &&
+        (flaglist_check("FLAG", player, n, spec->flags, 1) != 1))
       continue;
-    if (*spec->lflags
-        && (flaglist_check_long("FLAG", player, n, spec->lflags, 1) != 1))
+    if (*spec->lflags &&
+        (flaglist_check_long("FLAG", player, n, spec->lflags, 1) != 1))
       continue;
-    if (*spec->powers
-        && (flaglist_check_long("POWER", player, n, spec->powers, 1) != 1))
+    if (*spec->powers &&
+        (flaglist_check_long("POWER", player, n, spec->powers, 1) != 1))
       continue;
-    if (spec->lock != TRUE_BOOLEXP
-        && !eval_boolexp(n, spec->lock, player, pe_info))
+    if (spec->lock != TRUE_BOOLEXP &&
+        !eval_boolexp(n, spec->lock, player, pe_info))
       continue;
     if (spec->cmdstring[0] &&
-        !atr_comm_match(n, player, '$', ':', spec->cmdstring, 1, 0,
-                        NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT, NULL))
+        !atr_comm_match(n, player, '$', ':', spec->cmdstring, 1, 0, NULL, NULL,
+                        0, NULL, NULL, QUEUE_DEFAULT, NULL))
       continue;
     if (spec->listenstring[0]) {
       ret = 0;
@@ -2417,14 +2388,14 @@ raw_search(dbref player, struct search_spec *spec,
       if (a) {
         strcpy(lbuff, atr_value(a));
         ret = AF_Regexp(a)
-          ? regexp_match_case_r(lbuff, spec->listenstring,
-                                AF_Case(a), NULL, 0, NULL, 0, NULL, 0)
-          : wild_match_case_r(lbuff, spec->listenstring,
-                              AF_Case(a), NULL, 0, NULL, 0, NULL, 0);
+                ? regexp_match_case_r(lbuff, spec->listenstring, AF_Case(a),
+                                      NULL, 0, NULL, 0, NULL, 0)
+                : wild_match_case_r(lbuff, spec->listenstring, AF_Case(a), NULL,
+                                    0, NULL, 0, NULL, 0);
       }
       if (!ret &&
-          !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0,
-                          NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT, NULL))
+          !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0, NULL,
+                          NULL, 0, NULL, NULL, QUEUE_DEFAULT, NULL))
         continue;
     }
     if (*spec->eval) {

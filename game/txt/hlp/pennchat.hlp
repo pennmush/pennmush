@@ -11,6 +11,8 @@
   You can list, join, and configure channels using the @channel command.
 
   To speak on channels, use the @chat command.
+  
+  There are some aliases in place for players more familiar with the MUX comsys - see 'help muxcomsys' for more details.
 
 See also: @channel, @chat, @cemit, channel functions, CHAN_USEFIRSTMATCH,
   @chatformat, @clock
@@ -517,3 +519,42 @@ See also: @channel/mogrifier, @chatformat, channel functions
   cwho()        nscemit()
 
 See also: CHAT, @channel, @cemit, @clock
+& MUXCOMSYS
+& MUXCOMM
+& ADDCOM
+& DELCOM
+& @CLIST
+& COMTITLE
+& COMLIST
+  PennMUSH offers some compatability commands for players more familiar with the MUX communication system. For help on PennMUSH's channel system, see 'help channels'. The following commands are available:
+  
+  addcom <alias>=<channel>
+    Join <channel> if you aren't already on it, and add <alias> as an alias for <channel>.
+  <alias> WHO
+    Alias for @channel/who <channel>
+  <alias> OFF
+    Alias for @channel/gag <channel>
+  <alias> ON
+    Alias for @channel/ungag <channel>
+  <alias> <message>
+    Say <message> on the channel matching <alias>. Does not evaluate <message>. Equivilent to +<channel> <message>.
+  delcom <alias>
+    Deletes the alias <alias> and, if it's the last alias you have for the matching channel, leave the channel.
+  @clist[/full]
+    List all channels. Alias of @channel/list. /full does nothing.
+  comtitle <alias>=<title>
+    Alias of @channel/title <channel>=<title>
+  comlist
+    Lists all aliases and their matching channels.
+
+  See 'help muxcomsys2' for how to enable MUX com aliases.
+  See also: CHANNELS, @channel, @chat
+& MUXCOMSYS2
+& MUXCOMM2
+  To enable the MUX comsys aliases, set use_muxcomm to yes in game/mush.cnf and @shutdown/reboot.
+  
+  Aliases are stored by "addcom" in attributes on the player, in the format
+  
+    &CHANALIAS`<alias> <player>=<channel-name>
+
+  Aliases are checked on parents, so you can add them to your ancestor player to have them usable by everyone.

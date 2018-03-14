@@ -5,7 +5,8 @@
  *
  * \verbatim
  * These are the PennMUSH name-matching routines, fully re-entrant.
- *  match_result_relative(who,where,name,type,flags) return match, AMBIGUOUS or NOTHING
+ *  match_result_relative(who,where,name,type,flags) return match, AMBIGUOUS or
+ * NOTHING
  *  match_result(who,name,type,flags) - return match, AMBIGUOUS, or NOTHING
  *  noisy_match_result(who,name,type,flags) - return match or NOTHING,
  *      and notify player on failures
@@ -15,7 +16,8 @@
  *  match_result_internal() does the legwork for all of the above.
  *
  * who = dbref of player to match for
- * where = dbref of object to match relative to. For all functions which don't take a 'where' arg, use 'who'.
+ * where = dbref of object to match relative to. For all functions which don't
+ * take a 'where' arg, use 'who'.
  * name = string to match on
  * type = preferred type(s) of match (TYPE_THING, etc.) or NOTYPE
  * flags = a set of bits indicating what kind of matching to do
@@ -72,12 +74,11 @@
 
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
-extern int check_alias(const char *command, const char *list);  /* game.c */
+extern int check_alias(const char *command, const char *list); /* game.c */
 static dbref choose_thing(const dbref who, const int preferred_type, long flags,
                           dbref thing1, dbref thing2);
 static dbref match_result_internal(dbref who, dbref where, const char *xname,
                                    int type, long flags);
-
 
 dbref
 noisy_match_result(const dbref who, const char *name, const int type,
@@ -104,7 +105,6 @@ match_controlled(dbref player, const char *name)
 {
   return noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
 }
-
 
 /* The real work. Here's the spec:
  * str  --> "me"
@@ -149,74 +149,76 @@ match_controlled(dbref player, const char *name)
  *  e. If we got no matches, complain
  */
 
-
 /* MATCHED() is called from inside the MATCH_LIST macro. full is 1 if the
   match was full/exact, and 0 if it was partial */
-#define MATCHED(full) \
-  { \
-    if (!MATCH_CONTROLS) { \
-      /* Found a matching object, but we lack necessary control */ \
-      nocontrol = 1; \
-      continue; \
-    } \
-    if (!final) { \
-      bestmatch = BEST_MATCH; \
-      if (bestmatch != match) { \
+#define MATCHED(full)                                                          \
+  {                                                                            \
+    if (!MATCH_CONTROLS) {                                                     \
+      /* Found a matching object, but we lack necessary control */             \
+      nocontrol = 1;                                                           \
+      continue;                                                                \
+    }                                                                          \
+    if (!final) {                                                              \
+      bestmatch = BEST_MATCH;                                                  \
+      if (bestmatch != match) {                                                \
         /* Previously matched item won over due to type, @lock, etc, checks */ \
-        continue; \
-      } \
-      if (full) { \
-        if (exact) { \
-          /* Another exact match */ \
-          curr++; \
-        } else { \
+        continue;                                                              \
+      }                                                                        \
+      if (full) {                                                              \
+        if (exact) {                                                           \
+          /* Another exact match */                                            \
+          curr++;                                                              \
+        } else {                                                               \
           /* Ignore any previous partial matches now we have an exact match */ \
-          exact = 1; \
-          curr = 1; \
-          right_type = 0; \
-        } \
-      } else { \
-        /* Another partial match */ \
-        curr++; \
-      } \
-      if (type != NOTYPE && (Typeof(bestmatch) & type)) \
-        right_type++; \
-    } else { \
-      curr++; \
-      if (curr == final) { \
-        /* we've successfully found the Nth item */ \
-        bestmatch = match; \
-        done = 1; \
-        break; \
-      } \
-    } \
+          exact = 1;                                                           \
+          curr = 1;                                                            \
+          right_type = 0;                                                      \
+        }                                                                      \
+      } else {                                                                 \
+        /* Another partial match */                                            \
+        curr++;                                                                \
+      }                                                                        \
+      if (type != NOTYPE && (Typeof(bestmatch) & type))                        \
+        right_type++;                                                          \
+    } else {                                                                   \
+      curr++;                                                                  \
+      if (curr == final) {                                                     \
+        /* we've successfully found the Nth item */                            \
+        bestmatch = match;                                                     \
+        done = 1;                                                              \
+        break;                                                                 \
+      }                                                                        \
+    }                                                                          \
   }
 
 /* MATCH_LIST is called from inside the match_result function. start is the
   dbref to begin matching at (we loop through using DOLIST()) */
-#define MATCH_LIST(start) \
-  { \
-    if (done) \
-      break; /* already found the Nth object we needed */ \
-    match = start; \
-    DOLIST(match, match) { \
-      if (!MATCH_TYPE) { \
-        /* Exact-type match required, but failed */ \
-        continue; \
-      } else if (match == abs) { \
-        /* absolute dbref match in list */ \
-        MATCHED(1); \
-      } else if (!can_interact(match, who, INTERACT_MATCH, NULL)) { \
-        /* Not allowed to match this object */ \
-        continue; \
-      } else if (match_aliases(match, name) || (!IsExit(match) && !strcasecmp(Name(match), name))) { \
-        /* exact name match */ \
-        MATCHED(1); \
-      } else if (!(flags & MAT_EXACT) && (!exact || !GoodObject(bestmatch)) && !IsExit(match) && string_match(Name(match), name)) { \
-        /* partial name match */ \
-        MATCHED(0); \
-      } \
-    } \
+#define MATCH_LIST(start)                                                      \
+  {                                                                            \
+    if (done)                                                                  \
+      break; /* already found the Nth object we needed */                      \
+    match = start;                                                             \
+    DOLIST(match, match)                                                       \
+    {                                                                          \
+      if (!MATCH_TYPE) {                                                       \
+        /* Exact-type match required, but failed */                            \
+        continue;                                                              \
+      } else if (match == abs) {                                               \
+        /* absolute dbref match in list */                                     \
+        MATCHED(1);                                                            \
+      } else if (!can_interact(match, who, INTERACT_MATCH, NULL)) {            \
+        /* Not allowed to match this object */                                 \
+        continue;                                                              \
+      } else if (match_aliases(match, name) ||                                 \
+                 (!IsExit(match) && !strcasecmp(Name(match), name))) {         \
+        /* exact name match */                                                 \
+        MATCHED(1);                                                            \
+      } else if (!(flags & MAT_EXACT) && (!exact || !GoodObject(bestmatch)) && \
+                 !IsExit(match) && string_match(Name(match), name)) {          \
+        /* partial name match */                                               \
+        MATCHED(0);                                                            \
+      }                                                                        \
+    }                                                                          \
   }
 
 #define MATCH_CONTROLS (!(flags & MAT_CONTROL) || controls(who, match))
@@ -233,7 +235,8 @@ choose_thing(const dbref who, const int preferred_type, long flags,
 {
   int key;
   /* If there's only one valid thing, return it */
-  /* Rather convoluted to ensure we always return AMBIGUOUS, not NOTHING, if we have one of each */
+  /* Rather convoluted to ensure we always return AMBIGUOUS, not NOTHING, if we
+   * have one of each */
   /* (Apologies to Theodor Geisel) */
   if (!GoodObject(thing1) && !GoodObject(thing2)) {
     if (thing1 == NOTHING)
@@ -322,24 +325,31 @@ match_result_relative(dbref who, dbref where, const char *xname, int type,
   return match_result_internal(who, where, xname, type, flags);
 }
 
-/* The object 'who' is trying to find something called 'xname' relative to the object 'where'.
+/* The object 'who' is trying to find something called 'xname' relative to the
+ * object 'where'.
  * In most cases, 'who' and 'where' will be the same object. */
 static dbref
 match_result_internal(dbref who, dbref where, const char *xname, int type,
                       long flags)
 {
-  dbref match;                  /* object we're currently checking for a match */
-  dbref loc;                    /* location of 'where' */
-  dbref bestmatch = NOTHING;    /* the best match we've found so bar */
-  dbref abs = parse_objid(xname);       /* try to match xname as a dbref/objid */
-  int final = 0;                /* the Xth object we want, with english matching (5th foo) */
-  int curr = 0;                 /* the number of matches found so far, when 'final' is used */
-  int nocontrol = 0;            /* set when we've matched an object, but don't control it and MAT_CONTROL is given */
-  int right_type = 0;           /* number of objects of preferred type found, when we have a type but MAT_TYPE isn't given */
-  int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
-  int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
+  dbref match;               /* object we're currently checking for a match */
+  dbref loc;                 /* location of 'where' */
+  dbref bestmatch = NOTHING; /* the best match we've found so bar */
+  dbref abs = parse_objid(xname); /* try to match xname as a dbref/objid */
+  int final = 0; /* the Xth object we want, with english matching (5th foo) */
+  int curr = 0;  /* the number of matches found so far, when 'final' is used */
+  int nocontrol = 0; /* set when we've matched an object, but don't control it
+                        and MAT_CONTROL is given */
+  int right_type =
+    0; /* number of objects of preferred type found, when we have a type but
+          MAT_TYPE isn't given */
+  int exact =
+    0; /* set to 1 when we've found an exact match, not just a partial one */
+  int done =
+    0; /* set to 1 when we're using final, and have found the Xth object */
   int goodwhere = RealGoodObject(where);
-  char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
+  char *name, *sname; /* name contains the object name searched for, after
+                         english matching tokens are stripped from xname */
 
   if (!goodwhere)
     loc = NOTHING;
@@ -350,8 +360,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   else
     loc = Location(where);
 
-  if (((flags & MAT_NEAR) && !goodwhere)
-      || ((flags & MAT_CONTENTS) && !goodwhere)) {
+  if (((flags & MAT_NEAR) && !goodwhere) ||
+      ((flags & MAT_CONTENTS) && !goodwhere)) {
     /* It can't be nearby/in where's contents if where is invalid */
     if ((flags & MAT_NOISY) && GoodObject(who)) {
       notify(who, T("I can't see that here."));
@@ -361,8 +371,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
 
   /* match "me" */
   match = where;
-  if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS)
-      && !strcasecmp(xname, "me")) {
+  if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS) &&
+      !strcasecmp(xname, "me")) {
     if (MATCH_CONTROLS)
       return match;
     else
@@ -371,9 +381,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
 
   /* match "here" */
   match = (goodwhere ? (IsRoom(where) ? NOTHING : Location(where)) : NOTHING);
-  if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS)
-      && !strcasecmp(xname, "here") && GoodObject(match)
-      && MATCH_TYPE) {
+  if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS) &&
+      !strcasecmp(xname, "here") && GoodObject(match) && MATCH_TYPE) {
     if (MATCH_CONTROLS) {
       return match;
     } else {
@@ -404,10 +413,10 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
 
   /* dbref match */
   match = abs;
-  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE
-      && MATCH_CONTENTS) {
-    if (!(flags & MAT_NEAR) || Long_Fingers(who)
-        || (nearby(who, match) || controls(who, match))) {
+  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE &&
+      MATCH_CONTENTS) {
+    if (!(flags & MAT_NEAR) || Long_Fingers(who) ||
+        (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */
       if (MATCH_CONTROLS) {
         return match;
@@ -427,14 +436,14 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
     if (goodwhere && ((flags & (MAT_POSSESSION | MAT_REMOTE_CONTENTS)))) {
       MATCH_LIST(Contents(where));
     }
-    if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS)
-        && loc != where) {
+    if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS) &&
+        loc != where) {
       MATCH_LIST(Contents(loc));
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
       if (GoodObject(loc) && IsRoom(loc) && (flags & MAT_EXIT)) {
-        if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS))
-            && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
+        if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS)) &&
+            GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
           MATCH_LIST(Exits(Zone(loc)));
         }
         if ((flags & MAT_GLOBAL) && !(flags & (MAT_NEAR | MAT_CONTENTS))) {
@@ -449,8 +458,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
       MATCH_LIST(loc);
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
-      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)
-          && ((loc != where) || !(flags & MAT_EXIT))) {
+      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where) &&
+          ((loc != where) || !(flags & MAT_EXIT))) {
         MATCH_LIST(Exits(where));
       }
     }
@@ -461,7 +470,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
     /* we never found the Nth item */
     bestmatch = NOTHING;
   } else if (!final && curr > 1) {
-    /* If we had a preferred type, and only found 1 of that type, give that, otherwise ambiguous */
+    /* If we had a preferred type, and only found 1 of that type, give that,
+     * otherwise ambiguous */
     if (right_type != 1 && !(flags & MAT_LAST)) {
       bestmatch = AMBIGUOUS;
     }
@@ -482,7 +492,6 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
 
   return bestmatch;
 }
-
 
 /*
  * adj-phrase --> adj
@@ -514,20 +523,20 @@ parse_english(char **name, long *flags)
     if (!strncasecmp(*name, "this here ", 10)) {
       *name += 10;
       *flags &= ~(MAT_POSSESSION | MAT_EXIT);
-    } else if (!strncasecmp(*name, "here ", 5)
-               || !strncasecmp(*name, "this ", 5)) {
+    } else if (!strncasecmp(*name, "here ", 5) ||
+               !strncasecmp(*name, "this ", 5)) {
       *name += 5;
       *flags &=
         ~(MAT_POSSESSION | MAT_EXIT | MAT_REMOTE_CONTENTS | MAT_CONTAINER);
     }
   }
-  if ((*flags & MAT_POSSESSION) && (!strncasecmp(*name, "my ", 3)
-                                    || !strncasecmp(*name, "me ", 3))) {
+  if ((*flags & MAT_POSSESSION) &&
+      (!strncasecmp(*name, "my ", 3) || !strncasecmp(*name, "me ", 3))) {
     *name += 3;
     *flags &= ~(MAT_NEIGHBOR | MAT_EXIT | MAT_CONTAINER | MAT_REMOTE_CONTENTS);
   }
-  if ((*flags & (MAT_EXIT | MAT_CARRIED_EXIT))
-      && (!strncasecmp(*name, "toward ", 7))) {
+  if ((*flags & (MAT_EXIT | MAT_CARRIED_EXIT)) &&
+      (!strncasecmp(*name, "toward ", 7))) {
     *name += 7;
     *flags &=
       ~(MAT_NEIGHBOR | MAT_POSSESSION | MAT_CONTAINER | MAT_REMOTE_CONTENTS);

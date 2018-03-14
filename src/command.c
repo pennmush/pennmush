@@ -39,27 +39,24 @@
 #include "strutil.h"
 #include "version.h"
 
-PTAB ptab_command;      /**< Prefix table for command names. */
-PTAB ptab_command_perms;        /**< Prefix table for command permissions */
+PTAB ptab_command;       /**< Prefix table for command names. */
+PTAB ptab_command_perms; /**< Prefix table for command permissions */
 
-HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
+HASHTAB htab_reserved_aliases; /**< Hash table for reserved command aliases */
 
 static const char *command_isattr(char *command);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
 static COMMAND_INFO *clone_command(char *original, char *clone);
 static int has_hook(struct hook_data *hook);
-extern int global_fun_invocations;       /**< Counter for function invocations */
-extern int global_fun_recursions;       /**< Counter for function recursion */
+extern int global_fun_invocations; /**< Counter for function invocations */
+extern int global_fun_recursions;  /**< Counter for function recursion */
 
 SWITCH_VALUE *dyn_switch_list = NULL;
 int switch_bytes = 0;
 size_t num_switches = 0;
 
-enum command_load_state { CMD_LOAD_BUILTIN,
-  CMD_LOAD_LOCAL,
-  CMD_LOAD_DONE
-};
+enum command_load_state { CMD_LOAD_BUILTIN, CMD_LOAD_LOCAL, CMD_LOAD_DONE };
 static enum command_load_state command_state = CMD_LOAD_BUILTIN;
 static StrTree switch_names;
 
@@ -72,48 +69,47 @@ void do_command_clone(dbref player, char *original, char *clone);
 
 static const char CommandLock[] = "CommandLock";
 
+char *parse_chat_alias(dbref player, char *command); /* from extchat.c */
+
 /** The list of standard commands. Additional commands can be added
  * at runtime with command_add().
  */
 COMLIST commands[] = {
 
-  {"@COMMAND",
-   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE RSNOPARSE",
-   cmd_command,
-   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@COMMAND", "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF "
+               "QUIET ENABLE DISABLE RESTRICT NOPARSE RSNOPARSE",
+   cmd_command, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"@ALLHALT", NULL, cmd_allhalt, CMD_T_ANY, "WIZARD", "HALT"},
   {"@ALLQUOTA", "QUIET", cmd_allquota, CMD_T_ANY, "WIZARD", "QUOTA"},
   {"@ASSERT", "INLINE QUEUED", cmd_assert,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
-   0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
   {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM DECOMPILE",
-   cmd_attribute,
-   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+   cmd_attribute, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
   {"@BREAK", "INLINE QUEUED", cmd_break,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
-   0},
-  {"@SKIP", "IFELSE", cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
-   0},
-  {"@IFELSE", NULL, cmd_ifelse, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
-   0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
+  {"@SKIP", "IFELSE", cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
+  {"@IFELSE", NULL, cmd_ifelse,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHANNEL",
-   "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET DECOMPILE DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT TITLE BRIEF RECALL BUFFER COMBINE UNCOMBINE ON JOIN OFF LEAVE WHO",
-   cmd_channel,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
-   0, 0},
-  {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHOWNALL", "PRESERVE", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
+  {"@CHANNEL", "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET DECOMPILE "
+               "DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT "
+               "TITLE BRIEF RECALL BUFFER COMBINE UNCOMBINE ON JOIN OFF LEAVE "
+               "WHO",
+   cmd_channel, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS, 0,
    0},
+  {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"@CHOWNALL", "PRESERVE THINGS ROOMS EXITS", cmd_chownall,
+   CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD", 0},
 
-  {"@CHOWN", "PRESERVE", cmd_chown,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"@CHOWN", "PRESERVE", cmd_chown, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+   0, 0},
   {"@CHZONEALL", "PRESERVE", cmd_chzoneall, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
   {"@CHZONE", "PRESERVE", cmd_chzone,
@@ -121,17 +117,14 @@ COMLIST commands[] = {
   {"@CONFIG", "SET SAVE LOWERCASE LIST", cmd_config, CMD_T_ANY | CMD_T_EQSPLIT,
    0, 0},
   {"@CPATTR", "CONVERT NOFLAGCOPY", cmd_cpattr,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@CREATE", NULL, cmd_create,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@CLONE", "PRESERVE", cmd_clone,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
-  {"@CLOCK", "JOIN SPEAK MOD SEE HIDE", cmd_clock,
-   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@CLOCK", "JOIN SPEAK MOD SEE HIDE", cmd_clock, CMD_T_ANY | CMD_T_EQSPLIT, 0,
+   0},
   {"@DBCK", NULL, cmd_dbck, CMD_T_ANY, "WIZARD", 0},
 
   {"@DECOMPILE", "DB NAME PREFIX TF FLAGS ATTRIBS SKIPDEFAULTS", cmd_decompile,
@@ -142,20 +135,19 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@DISABLE", NULL, cmd_disable, CMD_T_ANY, "WIZARD", 0},
   {"@DOLIST", "NOTIFY DELIMIT INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
-   cmd_dolist,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
+   cmd_dolist, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
+   0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
-  {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
+  {"@DUMP", "PARANOID DEBUG NOFORK", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
   {"@EDIT", "FIRST CHECK QUIET REGEXP NOCASE ALL", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
-   CMD_T_NOGAGGED, 0, 0},
-  {"@ELOCK", NULL, cmd_elock,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
+     CMD_T_NOGAGGED,
    0, 0},
-  {"@EMIT", "NOEVAL SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
-   0},
+  {"@ELOCK", NULL, cmd_elock,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
+  {"@EMIT", "NOEVAL SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@ENABLE", NULL, cmd_enable, CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
 
   {"@ENTRANCES", "EXITS THINGS PLAYERS ROOMS", cmd_entrances,
@@ -168,53 +160,48 @@ COMLIST commands[] = {
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
   {"@FLAG",
    "ADD TYPE LETTER LIST RESTRICT DELETE ALIAS DISABLE ENABLE DEBUG DECOMPILE",
-   cmd_flag,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
+   cmd_flag, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
   {"@FORCE", "NOEVAL INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_force,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_BRACE,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_BRACE, 0, 0},
   {"@FUNCTION",
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
-   cmd_function,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
-  {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
+   cmd_function, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0,
+   0},
+  {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE PARENT", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL NOEVAL PID", cmd_halt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_BRACE, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK",
-   "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
-   cmd_hook,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
-   "WIZARD", "hook"},
+  {"@HOOK", "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE "
+            "LOCALIZE CLEARREGS NOBREAK",
+   cmd_hook, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", "hook"},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
-  {"@LEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
-   CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@LEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit, CMD_T_ANY | CMD_T_NOGAGGED,
+   0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
   {"@LISTMOTD", NULL, cmd_motd, CMD_T_ANY, 0, 0},
 
-  {"@LIST",
-   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS ALL BUILTIN LOCAL",
-   cmd_list,
-   CMD_T_ANY, 0, 0},
+  {"@LIST", "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS "
+            "ALLOCATIONS ALL BUILTIN LOCAL",
+   cmd_list, CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_SWITCHES | CMD_T_NOGAGGED, 0, 0},
   {"@LOG", "CHECK CMD CONN ERR TRACE WIZ RECALL", cmd_log,
    CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
   {"@LOGWIPE", "CHECK CMD CONN ERR TRACE WIZ ROTATE TRIM WIPE", cmd_logwipe,
    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_GOD, 0, 0},
-  {"@LSET", NULL, cmd_lset,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@MAIL",
-   "NOEVAL NOSIG STATS CSTATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT REVIEW RETRACT",
+  {"@LSET", NULL, cmd_lset, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"@MAIL", "NOEVAL NOSIG STATS CSTATS DSTATS FSTATS DEBUG NUKE FOLDERS "
+            "UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG "
+            "UNTAG FWD FORWARD SEND SILENT URGENT REVIEW RETRACT",
    cmd_mail, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@MALIAS",
-   "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
+  {"@MALIAS", "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE "
+              "LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAPSQL", "NOTIFY COLNAMES SPOOF", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0,
    0},
@@ -224,31 +211,28 @@ COMLIST commands[] = {
   {"@MOTD", "CONNECT LIST WIZARD DOWN FULL CLEAR", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@MVATTR", "CONVERT NOFLAGCOPY", cmd_mvattr,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
-   0, 0},
-  {"@NAME", NULL, cmd_name, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED
-   | CMD_T_NOGUEST, 0, 0},
-  {"@NEWPASSWORD", "GENERATE", cmd_newpassword, CMD_T_ANY | CMD_T_EQSPLIT
-   | CMD_T_RS_NOPARSE, "WIZARD", 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+  {"@NAME", NULL, cmd_name,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
+  {"@NEWPASSWORD", "GENERATE", cmd_newpassword,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, "WIZARD", 0},
   {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@NSCEMIT", "NOEVAL NOISY SILENT", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSEMIT", "ROOM NOEVAL SILENT", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
-   0, 0},
+  {"@NSEMIT", "ROOM NOEVAL SILENT", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@NSLEMIT", "NOEVAL NOISY SILENT", cmd_lemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSOEMIT", "NOEVAL", cmd_oemit,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSPEMIT", "LIST SILENT NOISY NOEVAL", cmd_pemit,
-   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@NSPROMPT", "SILENT NOISY NOEVAL", cmd_prompt,
-   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@NSOEMIT", "NOEVAL", cmd_oemit, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+   0, 0},
+  {"@NSPEMIT", "LIST SILENT NOISY NOEVAL", cmd_pemit, CMD_T_ANY | CMD_T_EQSPLIT,
+   0, 0},
+  {"@NSPROMPT", "SILENT NOISY NOEVAL", cmd_prompt, CMD_T_ANY | CMD_T_EQSPLIT, 0,
+   0},
   {"@NSREMIT", "LIST NOEVAL NOISY SILENT", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSZEMIT", "NOISY SILENT", cmd_zemit,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NUKE", NULL, cmd_nuke, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {"@OEMIT", "NOEVAL SPOOF", cmd_oemit,
@@ -256,8 +240,10 @@ COMLIST commands[] = {
   {"@OPEN", NULL, cmd_open,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@PARENT", NULL, cmd_parent, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@PASSWORD", NULL, cmd_password, CMD_T_PLAYER | CMD_T_EQSPLIT
-   | CMD_T_NOPARSE | CMD_T_RS_NOPARSE | CMD_T_NOGUEST, 0, 0},
+  {"@PASSWORD", NULL, cmd_password,
+   CMD_T_PLAYER | CMD_T_EQSPLIT | CMD_T_NOPARSE | CMD_T_RS_NOPARSE |
+     CMD_T_NOGUEST,
+   0, 0},
   {"@PCREATE", NULL, cmd_pcreate, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0,
    0},
 
@@ -282,15 +268,16 @@ COMLIST commands[] = {
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
-   CMD_T_NOGAGGED, 0, 0},
+     CMD_T_NOGAGGED,
+   0, 0},
   {"@RWALL", "NOEVAL EMIT", cmd_rwall, CMD_T_ANY, "WIZARD ROYALTY", 0},
-  {"@SCAN", "ROOM SELF ZONE GLOBALS", cmd_scan,
-   CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@SCAN", "ROOM SELF ZONE GLOBALS", cmd_scan, CMD_T_ANY | CMD_T_NOGAGGED, 0,
+   0},
   {"@SEARCH", NULL, cmd_search,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SELECT", "NOTIFY REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
-   cmd_select,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
+   cmd_select, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0,
+   0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SOCKSET", NULL, cmd_sockset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS, 0, 0},
@@ -307,7 +294,8 @@ COMLIST commands[] = {
    "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
    cmd_switch,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
-   CMD_T_NOGAGGED, 0, 0},
+     CMD_T_NOGAGGED,
+   0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
   {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
@@ -315,8 +303,7 @@ COMLIST commands[] = {
   {"@TRIGGER", "CLEARREGS SPOOF", cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@ULOCK", NULL, cmd_ulock,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
   {"@UNDESTROY", NULL, cmd_undestroy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@UNLINK", NULL, cmd_unlink, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
@@ -329,8 +316,7 @@ COMLIST commands[] = {
   {"@VERB", NULL, cmd_verb, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@VERSION", NULL, cmd_version, CMD_T_ANY, 0, 0},
   {"@WAIT", "PID UNTIL", cmd_wait,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@WALL", "NOEVAL EMIT", cmd_wall, CMD_T_ANY, "WIZARD ROYALTY", "ANNOUNCE"},
 
   {"@WARNINGS", NULL, cmd_warnings, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -340,8 +326,7 @@ COMLIST commands[] = {
   {"@WIZWALL", "NOEVAL EMIT", cmd_wizwall, CMD_T_ANY, "WIZARD", 0},
   {"@WIZMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@ZEMIT", "NOISY SILENT", cmd_zemit,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
-   0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
 
   {"BUY", NULL, cmd_buy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"BRIEF", "OPAQUE", cmd_brief, CMD_T_ANY, 0, 0},
@@ -353,8 +338,8 @@ COMLIST commands[] = {
   {"EMPTY", NULL, cmd_empty, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
   {"ENTER", NULL, cmd_enter, CMD_T_ANY, 0, 0},
 
-  {"FOLLOW", NULL, cmd_follow,
-   CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
+  {"FOLLOW", NULL, cmd_follow, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0,
+   0},
 
   {"GET", NULL, cmd_get, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
   {"GIVE", "SILENT", cmd_give, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
@@ -376,8 +361,8 @@ COMLIST commands[] = {
   {"TEACH", "LIST", cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"THINK", "NOEVAL", cmd_think, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
-  {"UNFOLLOW", NULL, cmd_unfollow,
-   CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
+  {"UNFOLLOW", NULL, cmd_unfollow, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED,
+   0, 0},
   {"USE", NULL, cmd_use, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {"WHISPER", "LIST NOISY SILENT NOEVAL", cmd_whisper,
@@ -389,59 +374,61 @@ COMLIST commands[] = {
   {"DOING", NULL, cmd_who_doing, CMD_T_ANY, 0, 0},
   {"SESSION", NULL, cmd_session, CMD_T_ANY, 0, 0},
 
-/* ATTRIB_SET is an undocumented command - it's sugar to make it possible
- * to enable/disable attribute setting with &XX or @XX
- */
+  /* ATTRIB_SET is an undocumented command - it's sugar to make it possible
+   * to enable/disable attribute setting with &XX or @XX
+   */
   {"ATTRIB_SET", NULL, command_atrset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_INTERNAL, 0, 0},
 
-/* A way to stop people starting commands with functions */
+  /* A way to stop people starting commands with functions */
   {"WARN_ON_MISSING", NULL, cmd_warn_on_missing,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-/* A way to let people override the Huh? message */
+  /* A way to let people override the Huh? message */
   {"HUH_COMMAND", NULL, cmd_huh_command,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-/* A way to let people override the unimplemented message */
+  /* A way to let people override the unimplemented message */
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-  {NULL, NULL, NULL, 0, 0, 0}
-};
+  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"DELCOM", NULL, cmd_delcom, CMD_T_ANY, 0, 0},
+  {"@CLIST", "FULL", cmd_clist, CMD_T_ANY, 0, 0},
+  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
 
+  {NULL, NULL, NULL, 0, 0, 0}};
 
 /* switch_list is defined in switchinc.c */
 #include "switchinc.c"
 
 /** Table of command permissions/restrictions. */
-struct command_perms_t command_perms[] = {
-  {"player", CMD_T_PLAYER},
-  {"thing", CMD_T_THING},
-  {"exit", CMD_T_EXIT},
-  {"room", CMD_T_ROOM},
-  {"any", CMD_T_ANY},
-  {"god", CMD_T_GOD},
-  {"nobody", CMD_T_DISABLED},
-  {"nogagged", CMD_T_NOGAGGED},
-  {"noguest", CMD_T_NOGUEST},
-  {"nofixed", CMD_T_NOFIXED},
-  {"logargs", CMD_T_LOGARGS},
-  {"logname", CMD_T_LOGNAME},
+struct command_perms_t command_perms[] = {{"player", CMD_T_PLAYER},
+                                          {"thing", CMD_T_THING},
+                                          {"exit", CMD_T_EXIT},
+                                          {"room", CMD_T_ROOM},
+                                          {"any", CMD_T_ANY},
+                                          {"god", CMD_T_GOD},
+                                          {"nobody", CMD_T_DISABLED},
+                                          {"nogagged", CMD_T_NOGAGGED},
+                                          {"noguest", CMD_T_NOGUEST},
+                                          {"nofixed", CMD_T_NOFIXED},
+                                          {"logargs", CMD_T_LOGARGS},
+                                          {"logname", CMD_T_LOGNAME},
 #ifdef DANGEROUS
-  {"listed", CMD_T_LISTED},
-  {"switches", CMD_T_SWITCHES},
-  {"internal", CMD_T_INTERNAL},
-  {"ls_space", CMD_T_LS_SPACE},
-  {"ls_noparse", CMD_T_LS_NOPARSE},
-  {"rs_space", CMD_T_RS_SPACE},
-  {"rs_noparse", CMD_T_RS_NOPARSE},
-  {"eqsplit", CMD_T_EQSPLIT},
-  {"ls_args", CMD_T_LS_ARGS},
-  {"rs_args", CMD_T_RS_ARGS},
+                                          {"listed", CMD_T_LISTED},
+                                          {"switches", CMD_T_SWITCHES},
+                                          {"internal", CMD_T_INTERNAL},
+                                          {"ls_space", CMD_T_LS_SPACE},
+                                          {"ls_noparse", CMD_T_LS_NOPARSE},
+                                          {"rs_space", CMD_T_RS_SPACE},
+                                          {"rs_noparse", CMD_T_RS_NOPARSE},
+                                          {"eqsplit", CMD_T_EQSPLIT},
+                                          {"ls_args", CMD_T_LS_ARGS},
+                                          {"rs_args", CMD_T_RS_ARGS},
 #endif
-  {NULL, 0}
-};
+                                          {NULL, 0}};
 
 static void
 strccat(char *buff, char **bp, const char *from)
@@ -482,8 +469,8 @@ switch_find(COMMAND_INFO *cmd, const char *sw)
       return 0;
     sw_val = dyn_switch_list;
     while (sw_val->name) {
-      if (SW_ISSET(cmd->sw.mask, sw_val->value)
-          && (strncmp(sw_val->name, sw, len) == 0))
+      if (SW_ISSET(cmd->sw.mask, sw_val->value) &&
+          (strncmp(sw_val->name, sw, len) == 0))
         return sw_val->value;
       sw_val++;
     }
@@ -518,13 +505,11 @@ SW_BY_NAME(switch_mask sw, const char *name)
  * \return pointer to a newly allocated COMMAND_INFO structure.
  */
 COMMAND_INFO *
-make_command(const char *name, int type,
-             const char *flagstr, const char *powerstr,
-             const char *sw, command_func func)
+make_command(const char *name, int type, const char *flagstr,
+             const char *powerstr, const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
-  cmd = mush_malloc(sizeof *cmd, "command");
-  memset(cmd, 0, sizeof(COMMAND_INFO));
+  cmd = mush_malloc_zero(sizeof *cmd, "command");
   cmd->name = name;
   cmd->cmdlock = TRUE_BOOLEXP;
   cmd->restrict_message = NULL;
@@ -534,26 +519,26 @@ make_command(const char *name, int type,
   case CMD_LOAD_BUILTIN:
     cmd->sw.names = sw;
     break;
-  case CMD_LOAD_LOCAL:{
-      char sw_copy[BUFFER_LEN];
-      char *pos;
-      cmd->sw.names = sw;
-      mush_strncpy(sw_copy, sw, BUFFER_LEN);
-      pos = sw_copy;
-      while (pos) {
-        char *thisone = split_token(&pos, ' ');
-        st_insert(thisone, &switch_names);
-      }
-      break;
+  case CMD_LOAD_LOCAL: {
+    char sw_copy[BUFFER_LEN];
+    char *pos;
+    cmd->sw.names = sw;
+    mush_strncpy(sw_copy, sw, BUFFER_LEN);
+    pos = sw_copy;
+    while (pos) {
+      char *thisone = split_token(&pos, ' ');
+      st_insert(thisone, &switch_names);
     }
-  case CMD_LOAD_DONE:{
-      switch_mask mask = switchmask(sw);
-      if (mask) {
-        cmd->sw.mask = SW_ALLOC();
-        SW_COPY(cmd->sw.mask, mask);
-      } else
-        cmd->sw.mask = NULL;
-    }
+    break;
+  }
+  case CMD_LOAD_DONE: {
+    switch_mask mask = switchmask(sw);
+    if (mask) {
+      cmd->sw.mask = SW_ALLOC();
+      SW_COPY(cmd->sw.mask, mask);
+    } else
+      cmd->sw.mask = NULL;
+  }
   }
   cmd->hooks.before = NULL;
   cmd->hooks.after = NULL;
@@ -599,7 +584,6 @@ make_command(const char *name, int type,
     }
     *bp = '\0';
     cmd->cmdlock = parse_boolexp(NOTHING, buff, CommandLock);
-
   }
   return cmd;
 }
@@ -634,18 +618,18 @@ cnf_add_command(char *name, char *opts)
   if (opts && *opts) {
     p = trim_space_sep(opts, ' ');
     while ((one = split_token(&p, ' '))) {
-      if (string_prefix("noparse", one)) {
+      if (strcasecmp("noparse", one) == 0) {
         flags |= CMD_T_NOPARSE;
-      } else if (string_prefix("rsargs", one)) {
+      } else if (strcasecmp("rsargs", one) == 0) {
         flags |= CMD_T_RS_ARGS;
-      } else if (string_prefix("lsargs", one)) {
+      } else if (strcasecmp("lsargs", one) == 0) {
         flags |= CMD_T_LS_ARGS;
-      } else if (string_prefix("eqsplit", one)) {
+      } else if (strcasecmp("eqsplit", one) == 0) {
         flags |= CMD_T_EQSPLIT;
-      } else if (string_prefix("rsnoparse", one)) {
+      } else if (strcasecmp("rsnoparse", one) == 0) {
         flags |= CMD_T_RS_NOPARSE;
       } else {
-        return 0;               /* unknown option */
+        return 0; /* unknown option */
       }
     }
   }
@@ -797,8 +781,7 @@ command_init_preconfig(void)
       }
     }
     ptab_insert(&ptab_command, cmd->name,
-                make_command(cmd->name, cmd->type,
-                             cmd->flagstr, cmd->powers,
+                make_command(cmd->name, cmd->type, cmd->flagstr, cmd->powers,
                              cmd->switches, cmd->func));
   }
   ptab_end_inserts(&ptab_command);
@@ -820,7 +803,7 @@ struct bst_data {
 };
 
 static void
-build_switch_table(const char *sw, int count __attribute__ ((__unused__)),
+build_switch_table(const char *sw, int count __attribute__((__unused__)),
                    void *d)
 {
   SWITCH_VALUE *s;
@@ -859,13 +842,15 @@ command_init_postconfig(void)
   sw_data.n = 0;
   sw_data.start = sizeof switch_list / sizeof(SWITCH_VALUE);
   st_walk(&switch_names, build_switch_table, &sw_data);
-  num_switches = sw_data.start;
+  num_switches =
+    sw_data.start - 1; /* Don't count the trailing NULL-name switch */
   dyn_switch_list[sw_data.n].name = NULL;
   st_flush(&switch_names);
   switch_bytes = ceil((double) num_switches / 8.0);
 
   /* Then convert the list of switch names in all commands to masks */
-  for (c = ptab_firstentry(&ptab_command); c; c = ptab_nextentry(&ptab_command)) {
+  for (c = ptab_firstentry(&ptab_command); c;
+       c = ptab_nextentry(&ptab_command)) {
     const char *switchstr = c->sw.names;
     if (switchstr) {
       c->sw.mask = SW_ALLOC();
@@ -882,7 +867,6 @@ command_init_postconfig(void)
 
   return;
 }
-
 
 /** Alias a command.
  * Given a command name and an alias for it, install the alias.
@@ -989,9 +973,8 @@ command_argparse(dbref executor, dbref enactor, dbref caller,
     aold = t;
     while (*f == ' ')
       f++;
-    if (process_expression
-        (to, &t, (const char **) &f, executor, caller, enactor, parse,
-         (split | args), pe_info)) {
+    if (process_expression(to, &t, (const char **) &f, executor, caller,
+                           enactor, parse, (split | args), pe_info)) {
       done = 1;
     }
     /* If t is pointing at or past the last element, this is the last arg. */
@@ -1061,13 +1044,14 @@ command_isattr(char *command)
 }
 
 /** A handy macro to free up the command_parse-allocated variables */
-#define command_parse_free_args   \
-    mush_free(command, "string_command"); \
-    mush_free(swtch, "string_swtch"); \
-    mush_free(ls, "string_ls"); \
-    mush_free(rs, "string_rs"); \
-    mush_free(switches, "string_switches"); \
-    if (sw) SW_FREE(sw)
+#define command_parse_free_args                                                \
+  mush_free(command, "string_command");                                        \
+  mush_free(swtch, "string_swtch");                                            \
+  mush_free(ls, "string_ls");                                                  \
+  mush_free(rs, "string_rs");                                                  \
+  mush_free(switches, "string_switches");                                      \
+  if (sw)                                                                      \
+  SW_FREE(sw)
 
 /** Parse commands.
  * Parse the commands. This is the big one!
@@ -1092,8 +1076,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
    * make empty const, but if the value of empty were to ever change, things
    * would probably break... */
   static char *empty = "";
-  char *lsa[MAX_ARG] = { NULL };
-  char *rsa[MAX_ARG] = { NULL };
+  char *lsa[MAX_ARG] = {NULL};
+  char *rsa[MAX_ARG] = {NULL};
   char *lsp = empty;
   char *rsp = empty;
   char *ap, *swp;
@@ -1102,6 +1086,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *p, *t, *c, *c2;
   char command2[BUFFER_LEN];
   char b;
+  bool parse_switches = 1;
   int switchnum;
   switch_mask sw = NULL;
   char switch_err[BUFFER_LEN], *se;
@@ -1110,6 +1095,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *retval;
   NEW_PE_INFO *pe_info = queue_entry->pe_info;
   int pe_flags = 0;
+  int skip_char = 1;
+  bool is_chat = 0;
 
   rhs_present = 0;
 
@@ -1136,8 +1123,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   }
 
   if (*p == '[') {
-    if ((cmd = command_find("WARN_ON_MISSING"))
-        && !(cmd->type & CMD_T_DISABLED)) {
+    if ((cmd = command_find("WARN_ON_MISSING")) &&
+        !(cmd->type & CMD_T_DISABLED)) {
       run_command(cmd, player, queue_entry->enactor, "WARN_ON_MISSING", NULL,
                   NULL, string, NULL, string, string, NULL, NULL, NULL,
                   queue_entry);
@@ -1152,6 +1139,17 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     pe_flags = PE_NODEBUG;
   else if (queue_entry->queue_type & QUEUE_DEBUG)
     pe_flags = PE_DEBUG;
+
+  if (*p == CHAT_TOKEN || (CHAT_TOKEN_ALIAS && *p == CHAT_TOKEN_ALIAS)) {
+    /* parse_chat() destructively modifies the command to replace
+     * the first space with a '=' if the command is an actual
+     * chat command */
+    if (parse_chat(player, p + 1) &&
+        command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
+      *p = CHAT_TOKEN;
+      is_chat = 1;
+    }
+  }
 
   switch (*p) {
   case '\0':
@@ -1179,17 +1177,10 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     replacer = "@EMIT";
     break;
   case CHAT_TOKEN:
-#ifdef CHAT_TOKEN_ALIAS
-  case CHAT_TOKEN_ALIAS:
-#endif
-    /* parse_chat() destructively modifies the command to replace
-     * the first space with a '=' if the command is an actual
-     * chat command */
-    if (parse_chat(player, p + 1)
-        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
-      /* This is a "+chan foo" chat style
-       * We set noevtoken to keep its noeval way, and
-       * set the cmd to allow @hook. */
+    /* This is a "+chan foo" chat style
+     * We set noevtoken to keep its noeval way, and
+     * set the cmd to allow @hook. */
+    if (is_chat) {
       replacer = "@CHAT";
       noevtoken = 1;
     }
@@ -1204,12 +1195,36 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       replacer = "@FORCE";
       noevtoken = 1;
     }
+    skip_char = 0;
+  }
+
+  if (replacer)
+    parse_switches = 0;
+
+  if (USE_MUXCOMM) {
+    if (!replacer && (replacer = parse_chat_alias(player, p)) &&
+        command_check_byname(player, replacer, pe_info)) {
+      noevtoken = 1;
+      skip_char = 0;
+      if (!strcmp(replacer, "@CHAT")) {
+        /* Don't parse switches for @chat. Do for @channel. */
+        parse_switches = 0;
+      }
+    }
   }
 
   if (replacer) {
     cmd = command_find(replacer);
-    if (*p != NUMBER_TOKEN)
+    if (skip_char)
       p++;
+    strcpy(command, p);
+    if (parse_switches && *p == '/') {
+      while (*p && *p != ' ') {
+        p++;
+      }
+      while (*p == ' ')
+        p++;
+    }
   } else {
     /* At this point, we have not done a replacer, so we continue with the
      * usual processing. Exits have next priority.  We still pass them
@@ -1221,7 +1236,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       safe_str(p, exit_command, &ec);
       *ec = '\0';
       p = string = exit_command;
-      noevtoken = 1;            /* But don't parse the exit name! */
+      noevtoken = 1; /* But don't parse the exit name! */
     }
     c = command;
     while (*p == ' ')
@@ -1229,8 +1244,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     process_expression(command, &c, (const char **) &p, player,
                        queue_entry->caller, queue_entry->enactor,
                        noevtoken ? PE_NOTHING
-                       : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
-                          PE_COMMAND_BRACES), PT_SPACE, pe_info);
+                                 : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
+                                    pe_flags | PE_COMMAND_BRACES),
+                       PT_SPACE, pe_info);
     *c = '\0';
     strcpy(commandraw, command);
     upcasestr(command);
@@ -1268,8 +1284,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       process_expression(commandraw, &c2, (const char **) &p, player,
                          queue_entry->caller, queue_entry->enactor,
                          noevtoken ? PE_NOTHING
-                         : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
-                            PE_COMMAND_BRACES), PT_DEFAULT, pe_info);
+                                   : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
+                                      pe_flags | PE_COMMAND_BRACES),
+                         PT_DEFAULT, pe_info);
     }
     *c2 = '\0';
     command_parse_free_args;
@@ -1285,14 +1302,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
    * appended at the position pointed to by c2.
    */
   c2 = c;
-  if (replacer) {
-    /* These commands don't allow switches, and need a space
-     * added after their canonical name
-     */
-    c2 = commandraw;
-    safe_str(cmd->name, commandraw, &c2);
-    safe_chr(' ', commandraw, &c2);
-  } else if (*c2 == '/') {
+  if (parse_switches && *c2 == '/') {
     /* Oh... DAMN */
     c2 = commandraw;
     strcpy(switches, commandraw);
@@ -1302,6 +1312,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   } else {
     c2 = commandraw;
     safe_str(cmd->name, commandraw, &c2);
+    if (replacer)
+      safe_chr(' ', commandraw, &c2);
   }
 
   /* Parse out any switches */
@@ -1313,7 +1325,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   t = NULL;
 
   /* Don't parse switches for one-char commands */
-  if (!replacer) {
+  if (parse_switches) {
     while (*c == '/') {
       t = swtch;
       c++;
@@ -1328,8 +1340,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
           strcat(swp, swtch);
         } else {
           if (se == switch_err)
-            safe_format(switch_err, &se,
-                        T("%s doesn't know switch %s."), cmd->name, swtch);
+            safe_format(switch_err, &se, T("%s doesn't know switch %s."),
+                        cmd->name, swtch);
         }
       } else {
         SW_SET(sw, switchnum);
@@ -1363,13 +1375,14 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
    * Treat like noeval, except for #2. Eval arg if no =.
    */
 
-  if ((cmd->func == command_atrset) && (queue_entry->queue_type & QUEUE_NOLIST)) {
+  if ((cmd->func == command_atrset) &&
+      (queue_entry->queue_type & QUEUE_NOLIST)) {
     /* Special case: eqsplit, noeval of rhs only */
     command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
                      &p, ls, lsa, cmd, 0, 0, pe_flags);
     command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
                      &p, rs, rsa, cmd, 1, 1, pe_flags);
-    SW_SET(sw, SWITCH_NOEVAL);  /* Needed for ATTRIB_SET */
+    SW_SET(sw, SWITCH_NOEVAL); /* Needed for ATTRIB_SET */
   } else {
     noeval = SW_ISSET(sw, SWITCH_NOEVAL) || noevtoken;
     if (cmd->type & CMD_T_EQSPLIT) {
@@ -1404,7 +1417,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     int lsa_index;
     if (lsa[1]) {
       safe_str(lsa[1], commandraw, &c2);
-      for (lsa_index = 2; (lsa_index < MAX_ARG) && lsa[lsa_index]; lsa_index++) {
+      for (lsa_index = 2; (lsa_index < MAX_ARG) && lsa[lsa_index];
+           lsa_index++) {
         safe_chr(',', commandraw, &c2);
         safe_str(lsa[lsa_index], commandraw, &c2);
       }
@@ -1444,9 +1458,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     return NULL;
   } else {
     /* If we have a hook/ignore that returns false, we don't do the command */
-    if (run_command
-        (cmd, player, queue_entry->enactor, commandraw, sw, switch_err, string,
-         swp, ap, lsp, lsa, rsp, rsa, queue_entry)) {
+    if (run_command(cmd, player, queue_entry->enactor, commandraw, sw,
+                    switch_err, string, swp, ap, lsp, lsa, rsp, rsa,
+                    queue_entry)) {
       retval = NULL;
     } else {
       retval = commandraw;
@@ -1465,7 +1479,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
  * \param enactor Dbref of object which caused command to run
  * \param cmd_evaled The evaluated command, for %u
  * \param sw Switch mask
- * \param switch_err Error message if invalid switches were used, or NULL/'\0' if not
+ * \param switch_err Error message if invalid switches were used, or NULL/'\0'
+ * if not
  * \param cmd_raw The unevaluated command, for %c
  * \param swp Switches, as a char array (used for CMD_T_SWITCHES commands)
  * \param ap Entire arg string (lhs, =, rhs)
@@ -1509,24 +1524,24 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
     pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "switches",
                 swp);
 
-  if (cmd->type & CMD_T_EQSPLIT) {
-    /* ls, before the = */
-    if (cmd->type & CMD_T_LS_ARGS) {
-      char argname[10];
-      j = 0;
-      for (i = 1; i < MAX_ARG; i++) {
-        if (lsa[i] && *lsa[i]) {
-          mush_strncpy(argname, tprintf("lsa%d", i), 10);
-          pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
-                      lsa[i]);
-          j = i;
-        }
+  /* ls, before the = */
+  if (cmd->type & CMD_T_LS_ARGS) {
+    char argname[10];
+    j = 0;
+    for (i = 1; i < MAX_ARG; i++) {
+      if (lsa[i] && *lsa[i]) {
+        mush_strncpy(argname, tprintf("lsa%d", i), 10);
+        pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
+                    lsa[i]);
+        j = i;
       }
-      if (j)
-        pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
-    } else if (ls && *ls) {
-      pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
     }
+    if (j)
+      pe_regs_set_int(pe_info->regvals, PE_REGS_ARG, "lsac", j);
+  } else if (ls && *ls) {
+    pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "ls", ls);
+  }
+  if (cmd->type & CMD_T_EQSPLIT) {
     /* The = itself */
     if (rhs_present)
       pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, "equals",
@@ -1564,17 +1579,16 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_cmd_hook
-      (cmd->hooks.override, executor, cmd_evaled, queue_entry, pe_info->regvals)
-      && !((cmd->type & CMD_T_NOP) && *ap
-           && run_cmd_hook(cmd->hooks.override, executor, nop_arg, queue_entry,
-                           pe_info->regvals))) {
+  if (!run_cmd_hook(cmd->hooks.override, executor, cmd_evaled, queue_entry,
+                    pe_info->regvals) &&
+      !((cmd->type & CMD_T_NOP) && *ap &&
+        run_cmd_hook(cmd->hooks.override, executor, nop_arg, queue_entry,
+                     pe_info->regvals))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
-      if (run_cmd_hook
-          (cmd->hooks.extend, executor, cmd_evaled, queue_entry,
-           pe_info->regvals)) {
+      if (run_cmd_hook(cmd->hooks.extend, executor, cmd_evaled, queue_entry,
+                       pe_info->regvals)) {
         free_pe_info(pe_info);
         return 1;
       }
@@ -1589,8 +1603,8 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
-    if (cmd->func == cmd_password || cmd->func == cmd_newpassword
-        || cmd->func == cmd_pcreate)
+    if (cmd->func == cmd_password || cmd->func == cmd_newpassword ||
+        cmd->func == cmd_pcreate)
       do_log(LT_CMD, executor, enactor, "%s %s=***", cmd->name,
              (cmd->func == cmd_password ? "***" : ls));
     else
@@ -1600,7 +1614,6 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   free_pe_info(pe_info);
   return 1;
-
 }
 
 /** Execute the huh_command when no command is matched.
@@ -1621,10 +1634,10 @@ generic_command_failure(dbref executor, dbref enactor, char *string,
   }
 }
 
-#define add_restriction(r, j) \
-        if(lockstr != tp && j) \
-          safe_chr(j, lockstr, &tp); \
-        safe_str(r, lockstr, &tp)
+#define add_restriction(r, j)                                                  \
+  if (lockstr != tp && j)                                                      \
+    safe_chr(j, lockstr, &tp);                                                 \
+  safe_str(r, lockstr, &tp)
 
 /** Add a restriction to a command.
  * Given a command name and a restriction, apply the restriction to the
@@ -1644,9 +1657,11 @@ generic_command_failure(dbref executor, dbref enactor, char *string,
  *   logname    log just name when command is run
  * \endverbatim
  * Return 1 on success, 0 on failure.
- * \param player player attempting to restrict command, or NOTHING for restrictions set when cmds are loaded
+ * \param player player attempting to restrict command, or NOTHING for
+ * restrictions set when cmds are loaded
  * \param command the command being restricted
- * \param xrestriction either a space-separated string of restrictions, or an \@lock-style restriction
+ * \param xrestriction either a space-separated string of restrictions, or an
+ * \@lock-style restriction
  * \retval 1 successfully restricted command.
  * \retval 0 failure (unable to find command name).
  */
@@ -1666,7 +1681,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if (!command)
     return 0;
 
-  /* Allow empty restrictions when we first load commands, as we parse off the CMD_T_* flags */
+  /* Allow empty restrictions when we first load commands, as we parse off the
+   * CMD_T_* flags */
   if (GoodObject(player) && (!xrestriction || !*xrestriction))
     return 0;
 
@@ -1808,7 +1824,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if (command->type & CMD_T_NOFIXED) {
     add_restriction("!FLAG^FIXED", '&');
   }
-  /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not part of the boolexp */
+  /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not
+   * part of the boolexp */
   *tp = '\0';
 
   key = parse_boolexp(player, lockstr, CommandLock);
@@ -1834,7 +1851,8 @@ COMMAND(cmd_unimplemented)
                 NULL, args_raw, arg_left, args_left, arg_right, args_right,
                 queue_entry);
   } else {
-    /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
+    /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it
+     */
     notify(executor, T("This command has not been implemented."));
   }
 }
@@ -1868,8 +1886,8 @@ do_command_add(dbref player, char *name, int flags)
       if ((flags & (CMD_T_NOPARSE | CMD_T_RS_NOPARSE)) !=
           (CMD_T_NOPARSE | CMD_T_RS_NOPARSE))
         switches = "NOEVAL";
-      command_add(mush_strdup(name, "command_add"),
-                  flags, NULL, 0, switches, cmd_unimplemented);
+      command_add(mush_strdup(name, "command_add"), flags, NULL, 0, switches,
+                  cmd_unimplemented);
       notify_format(player, T("Command %s added."), name);
     }
   } else {
@@ -1909,7 +1927,6 @@ do_command_clone(dbref player, char *original, char *clone)
 
   clone_command(original, clone);
   notify(player, T("Command cloned."));
-
 }
 
 /** Create a new \@hook.
@@ -1955,9 +1972,8 @@ clone_command(char *original, char *clone)
   if (!c1 || c2)
     return NULL;
 
-  c2 =
-    make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL,
-                 c1->sw.names, c1->func);
+  c2 = make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL,
+                    c1->sw.names, c1->func);
   c2->sw.mask = c1->sw.mask;
   if (c1->restrict_message)
     c2->restrict_message =
@@ -1984,7 +2000,6 @@ clone_command(char *original, char *clone)
   ptab_insert_one(&ptab_command, clone, c2);
   return command_find(clone);
 }
-
 
 /** Deletes a user-added command
  * \verbatim
@@ -2014,11 +2029,11 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented
-        || !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
-      notify(player,
-             T
-             ("You can't delete built-in commands. @command/disable instead."));
+    if (command->func != cmd_unimplemented ||
+        !strcmp(command->name, "UNIMPLEMENTED_COMMAND")) {
+      notify(
+        player,
+        T("You can't delete built-in commands. @command/disable instead."));
       return;
     } else {
       acount = 0;
@@ -2071,8 +2086,8 @@ COMMAND(cmd_command)
     flags |= SW_ISSET(sw, SWITCH_RSNOPARSE) ? CMD_T_RS_NOPARSE : 0;
     if (SW_ISSET(sw, SWITCH_NOEVAL))
       notify(executor,
-             T
-             ("WARNING: /NOEVAL no longer creates a Noparse command.\n         Use /NOPARSE if that's what you meant."));
+             T("WARNING: /NOEVAL no longer creates a Noparse command.\n        "
+               " Use /NOPARSE if that's what you meant."));
     do_command_add(executor, arg_left, flags);
     return;
   }
@@ -2127,8 +2142,7 @@ COMMAND(cmd_command)
     }
   }
   if (!SW_ISSET(sw, SWITCH_QUIET)) {
-    notify_format(executor,
-                  T("Name       : %s (%s)"), command->name,
+    notify_format(executor, T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
     buff[0] = '\0';
     bp = buff;
@@ -2195,7 +2209,8 @@ COMMAND(cmd_command)
  * This function sends a player the list of commands.
  * \param player the enactor.
  * \param lc if true, list is in lowercase rather than uppercase.
- * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only
+ * built-in \@commands
  */
 void
 do_list_commands(dbref player, int lc, int type)
@@ -2206,7 +2221,8 @@ do_list_commands(dbref player, int lc, int type)
 
 /** Return a list of defined commands.
  * This function returns a space-separated list of commands as a string.
- * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only
+ * built-in \@commands
  */
 char *
 list_commands(int type)
@@ -2242,7 +2258,6 @@ list_commands(int type)
   *bp = '\0';
   return buff;
 }
-
 
 /** Check command permissions. Return 1 if player can use command,
  * 0 otherwise, and maybe be noisy about it.
@@ -2388,13 +2403,11 @@ run_cmd_hook(struct hook_data *hook, dbref executor, const char *commandraw,
     queue_type |= QUEUE_DEBUG_PRIVS;
 
   if (hook->attrname) {
-    return one_comm_match(hook->obj, executor,
-                          hook->attrname, commandraw, from_queue, queue_type,
-                          pe_regs);
+    return one_comm_match(hook->obj, executor, hook->attrname, commandraw,
+                          from_queue, queue_type, pe_regs);
   } else {
-    return atr_comm_match(hook->obj, executor, '$', ':',
-                          commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
-                          queue_type, pe_regs);
+    return atr_comm_match(hook->obj, executor, '$', ':', commandraw, 0, 1, NULL,
+                          NULL, 0, NULL, from_queue, queue_type, pe_regs);
   }
 }
 
@@ -2420,27 +2433,27 @@ cnf_hook_command(char *command, char *opts)
   if (!(one = split_token(&p, ' ')))
     return 0;
 
-  if (string_prefix("before", one)) {
+  if (strcasecmp("before", one) == 0) {
     flag = HOOK_BEFORE;
     h = &cmd->hooks.before;
-  } else if (string_prefix("after", one)) {
+  } else if (strcasecmp("after", one) == 0) {
     flag = HOOK_AFTER;
     h = &cmd->hooks.after;
-  } else if (string_prefix("override/inplace", one)) {
+  } else if (strcasecmp("override/inplace", one) == 0) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
     inplace = QUEUE_INPLACE;
-  } else if (string_prefix("override", one)) {
+  } else if (strcasecmp("override", one) == 0) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
-  } else if (string_prefix("ignore", one)) {
+  } else if (strcasecmp("ignore", one) == 0) {
     flag = HOOK_IGNORE;
     h = &cmd->hooks.ignore;
-  } else if (string_prefix("extend/inplace", one)) {
+  } else if (strcasecmp("extend/inplace", one) == 0) {
     flag = HOOK_EXTEND;
     h = &cmd->hooks.extend;
     inplace = QUEUE_INPLACE;
-  } else if (string_prefix("extend", one)) {
+  } else if (strcasecmp("extend", one) == 0) {
     flag = HOOK_EXTEND;
     h = &cmd->hooks.extend;
   } else {
@@ -2462,7 +2475,7 @@ cnf_hook_command(char *command, char *opts)
 
   if ((attrname = strchr(one, '/')) == NULL) {
     if (flag != HOOK_OVERRIDE) {
-      return 0;                 /* attribute required */
+      return 0; /* attribute required */
     }
   } else {
     *attrname++ = '\0';
@@ -2497,7 +2510,6 @@ cnf_hook_command(char *command, char *opts)
     (*h)->attrname = NULL;
   (*h)->inplace = inplace;
   return 1;
-
 }
 
 /** Set up or remove a command hook.
@@ -2510,7 +2522,8 @@ cnf_hook_command(char *command, char *opts)
  * \param obj name of object containing the hook attribute.
  * \param attrname of hook attribute on obj.
  * \param flag type of hook
- * \param queue_type If override hook, QUEUE_* flags telling whether/how to run it inplace
+ * \param queue_type If override hook, QUEUE_* flags telling whether/how to run
+ * it inplace
  */
 void
 do_hook(dbref player, char *command, char *obj, char *attrname,
@@ -2554,8 +2567,8 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
       mush_free(*h, "hook");
       *h = NULL;
     }
-  } else if (!obj || !*obj || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND)
-                               && (!attrname || !*attrname))) {
+  } else if (!obj || !*obj || ((flag != HOOK_OVERRIDE && flag != HOOK_EXTEND) &&
+                               (!attrname || !*attrname))) {
     if (flag == HOOK_OVERRIDE || flag == HOOK_EXTEND) {
       notify(player, T("You must give an object."));
     } else {
@@ -2606,8 +2619,8 @@ do_hook_list(dbref player, char *command, bool verbose)
 
     for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd;
          cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
-      if (has_hook(cmd->hooks.ignore) || has_hook(cmd->hooks.override)
-          || has_hook(cmd->hooks.before) || has_hook(cmd->hooks.after)) {
+      if (has_hook(cmd->hooks.ignore) || has_hook(cmd->hooks.override) ||
+          has_hook(cmd->hooks.before) || has_hook(cmd->hooks.after)) {
         ptrs[count] = (char *) cmd->name;
         count++;
       }
@@ -2641,9 +2654,10 @@ do_hook_list(dbref player, char *command, bool verbose)
       char extend_inplace[BUFFER_LEN], *ep;
       op = override_inplace;
       ep = extend_inplace;
-      if (cmd->hooks.override && (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
-        if ((cmd->hooks.override->
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+      if (cmd->hooks.override &&
+          (cmd->hooks.override->inplace & QUEUE_INPLACE)) {
+        if ((cmd->hooks.override->inplace &
+             (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", override_inplace, &op);
         else {
@@ -2676,8 +2690,8 @@ do_hook_list(dbref player, char *command, bool verbose)
 
       if (cmd->hooks.before && GoodObject(cmd->hooks.before->obj)) {
         count++;
-        notify_format(player, "@hook/before: #%d/%s",
-                      cmd->hooks.before->obj, cmd->hooks.before->attrname);
+        notify_format(player, "@hook/before: #%d/%s", cmd->hooks.before->obj,
+                      cmd->hooks.before->attrname);
       }
       if (cmd->hooks.after && GoodObject(cmd->hooks.after->obj)) {
         count++;
@@ -2686,19 +2700,17 @@ do_hook_list(dbref player, char *command, bool verbose)
       }
       if (cmd->hooks.ignore && GoodObject(cmd->hooks.ignore->obj)) {
         count++;
-        notify_format(player, "@hook/ignore: #%d/%s",
-                      cmd->hooks.ignore->obj, cmd->hooks.ignore->attrname);
+        notify_format(player, "@hook/ignore: #%d/%s", cmd->hooks.ignore->obj,
+                      cmd->hooks.ignore->attrname);
       }
       if (cmd->hooks.override && GoodObject(cmd->hooks.override->obj)) {
         count++;
-        notify_format(player, "@hook/override%s: #%d/%s",
-                      override_inplace,
+        notify_format(player, "@hook/override%s: #%d/%s", override_inplace,
                       cmd->hooks.override->obj, cmd->hooks.override->attrname);
       }
       if (cmd->hooks.extend && GoodObject(cmd->hooks.extend->obj)) {
         count++;
-        notify_format(player, "@hook/extend%s: #%d/%s",
-                      extend_inplace,
+        notify_format(player, "@hook/extend%s: #%d/%s", extend_inplace,
                       cmd->hooks.extend->obj, cmd->hooks.extend->attrname);
       }
       if (!count && verbose)

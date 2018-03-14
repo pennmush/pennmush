@@ -1,0 +1,17 @@
+# -nbad -bap -bbo -nbc -br -brs -c33 -cd33 -ncdb -ce --cp33 -d0 -di1 -nfc1 -nfca -hnl -lp -nsc -nsob -ci2 -ss -psl -cs -lc75 -nut
+
+Language: Cpp
+AlignAfterOpenBracket: Align
+AlignOperands: true
+AlignTrailingComments: true
+AlwaysBreakAfterReturnType: AllDefinitions
+BreakBeforeBraces: Linux
+ColumnLimit: 80
+ContinuationIndentWidth: 2
+ForEachMacros: ['DESC_ITER_CONN', 'DESC_ITER' ]
+IndentCaseLabels: false
+IndentWidth: 2
+KeepEmptyLinesAtTheStartOfBlocks: true
+SortIncludes: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements

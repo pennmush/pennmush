@@ -23,13 +23,13 @@
 
 /** Datagram sent to info_slave from the mush */
 struct request_dgram {
-  int fd; /**< The socket descriptor, used as an id number */
-  union sockaddr_u local; /**< The sockaddr struct for the local address */
+  int fd;                  /**< The socket descriptor, used as an id number */
+  union sockaddr_u local;  /**< The sockaddr struct for the local address */
   union sockaddr_u remote; /**< The sockaddr struct for the remote address */
-  socklen_t llen; /**< Length of local address */
-  socklen_t rlen; /**< Length of remote address */
-  int use_dns; /**< True to do hostname lookup */
-  int timeout; /**< Timeout in seconds for lookups */
+  socklen_t llen;          /**< Length of local address */
+  socklen_t rlen;          /**< Length of remote address */
+  int use_dns;             /**< True to do hostname lookup */
+  int timeout;             /**< Timeout in seconds for lookups */
 };
 
 #define IPADDR_LEN 128
@@ -38,10 +38,10 @@ struct request_dgram {
 
 /** Datagram sent by info_slave back to the mush */
 struct response_dgram {
-  int fd; /**< The socket descriptor, used as an id number */
+  int fd;                  /**< The socket descriptor, used as an id number */
   char ipaddr[IPADDR_LEN]; /**< The ip address of the connection */
   char hostname[HOSTNAME_LEN]; /**< The resolved hostname of the connection */
-  Port_t connected_to; /**< The port connected to. */
+  Port_t connected_to;         /**< The port connected to. */
 };
 
 extern pid_t info_slave_pid;
@@ -59,4 +59,4 @@ void update_pending_info_slaves(void);
 void reap_info_slave(void);
 void kill_info_slave(void);
 
-#endif                          /* LOOKUP_H */
+#endif /* LOOKUP_H */

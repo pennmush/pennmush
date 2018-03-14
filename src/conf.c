@@ -39,18 +39,19 @@
 #include "mushdb.h"
 #include "mymalloc.h"
 #include "parse.h"
+#include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
 
-time_t mudtime;                 /**< game time, in seconds */
+time_t mudtime; /**< game time, in seconds */
 
 static void show_compile_options(dbref player);
 static char *config_to_string(dbref player, PENNCONF *cp, int lc);
 int add_mssp(char *name, char *value);
 
-OPTTAB options;         /**< The table of configuration options */
-HASHTAB local_options;  /**< Hash table for local config options */
-MSSP *mssp;             /**< Linked list of MSSP values */
+OPTTAB options;        /**< The table of configuration options */
+HASHTAB local_options; /**< Hash table for local config options */
+MSSP *mssp;            /**< Linked list of MSSP values */
 
 int config_set(const char *opt, char *val, int source, int restrictions);
 void conf_default_set(void);
@@ -58,481 +59,283 @@ void conf_default_set(void);
 /** Table of all runtime configuration options. */
 PENNCONF conftable[] = {
   {"input_database", cf_str, options.input_db, sizeof options.input_db, 0,
-   "files"}
-  ,
+   "files"},
   {"output_database", cf_str, options.output_db, sizeof options.output_db, 0,
-   "files"}
-  ,
+   "files"},
   {"crash_database", cf_str, options.crash_db, sizeof options.crash_db, 0,
-   "files"}
-  ,
-  {"mail_database", cf_str, options.mail_db, sizeof options.mail_db, 0, "files"}
-  ,
-  {"chat_database", cf_str, options.chatdb, sizeof options.chatdb, 0, "files"}
-  ,
+   "files"},
+  {"mail_database", cf_str, options.mail_db, sizeof options.mail_db, 0,
+   "files"},
+  {"chat_database", cf_str, options.chatdb, sizeof options.chatdb, 0, "files"},
   {"compress_suffix", cf_str, options.compresssuff, sizeof options.compresssuff,
-   0,
-   "files"}
-  ,
+   0, "files"},
   {"compress_program", cf_str, options.compressprog,
-   sizeof options.compressprog, 0,
-   "files"}
-  ,
+   sizeof options.compressprog, 0, "files"},
   {"uncompress_program", cf_str, options.uncompressprog,
-   sizeof options.uncompressprog, 0,
-   "files"}
-  ,
+   sizeof options.uncompressprog, 0, "files"},
   {"access_file", cf_str, options.access_file, sizeof options.access_file, 0,
-   "files"}
-  ,
+   "files"},
   {"names_file", cf_str, options.names_file, sizeof options.access_file, 0,
-   "files"}
-  ,
+   "files"},
   {"connect_file", cf_str, options.connect_file[0],
-   sizeof options.connect_file[0], 0, "messages"}
-  ,
+   sizeof options.connect_file[0], 0, "messages"},
   {"motd_file", cf_str, options.motd_file[0], sizeof options.motd_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
   {"wizmotd_file", cf_str, options.wizmotd_file[0],
-   sizeof options.wizmotd_file[0], 0, "messages"}
-  ,
+   sizeof options.wizmotd_file[0], 0, "messages"},
   {"newuser_file", cf_str, options.newuser_file[0],
-   sizeof options.newuser_file[0], 0, "messages"}
-  ,
+   sizeof options.newuser_file[0], 0, "messages"},
 
   {"register_create_file", cf_str, options.register_file[0],
-   sizeof options.register_file[0],
-   0, "messages"}
-  ,
+   sizeof options.register_file[0], 0, "messages"},
   {"quit_file", cf_str, options.quit_file[0], sizeof options.quit_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
   {"down_file", cf_str, options.down_file[0], sizeof options.down_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
   {"full_file", cf_str, options.full_file[0], sizeof options.full_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
   {"guest_file", cf_str, options.guest_file[0], sizeof options.guest_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
   {"who_file", cf_str, options.who_file[0], sizeof options.who_file[0], 0,
-   "messages"}
-  ,
+   "messages"},
 
   {"connect_html_file", cf_str, options.connect_file[1],
-   sizeof options.connect_file[1], 0,
-   "messages"}
-  ,
-  {"motd_html_file", cf_str, options.motd_file[1],
-   sizeof options.motd_file[1], 0,
-   "messages"}
-  ,
+   sizeof options.connect_file[1], 0, "messages"},
+  {"motd_html_file", cf_str, options.motd_file[1], sizeof options.motd_file[1],
+   0, "messages"},
   {"wizmotd_html_file", cf_str, options.wizmotd_file[1],
-   sizeof options.wizmotd_file[1], 0,
-   "messages"}
-  ,
+   sizeof options.wizmotd_file[1], 0, "messages"},
   {"newuser_html_file", cf_str, options.newuser_file[1],
-   sizeof options.newuser_file[1], 0,
-   "messages"}
-  ,
+   sizeof options.newuser_file[1], 0, "messages"},
   {"register_create_html_file", cf_str, options.register_file[1],
-   sizeof options.register_file[1], 0, "messages"}
-  ,
+   sizeof options.register_file[1], 0, "messages"},
   {"quit_html_file", cf_str, options.quit_file[1], sizeof options.quit_file[1],
-   0,
-   "messages"}
-  ,
+   0, "messages"},
   {"down_html_file", cf_str, options.down_file[1], sizeof options.down_file[1],
-   0,
-   "messages"}
-  ,
+   0, "messages"},
   {"full_html_file", cf_str, options.full_file[1], sizeof options.full_file[1],
-   0,
-   "messages"}
-  ,
+   0, "messages"},
   {"guest_html_file", cf_str, options.guest_file[1],
-   sizeof options.guest_file[1], 0,
-   "messages"}
-  ,
+   sizeof options.guest_file[1], 0, "messages"},
   {"who_html_file", cf_str, options.who_file[1], sizeof options.who_file[1], 0,
-   "messages"}
-  ,
+   "messages"},
 
-
-  {"player_start", cf_dbref, &options.player_start, 100000, 0, "db"}
-  ,
-  {"master_room", cf_dbref, &options.master_room, 100000, 0, "db"}
-  ,
-  {"base_room", cf_dbref, &options.base_room, 100000, 0, "db"}
-  ,
-  {"default_home", cf_dbref, &options.default_home, 100000, 0, "db"}
-  ,
-  {"exits_connect_rooms", cf_bool, &options.exits_connect_rooms, 2, 0, "db"}
-  ,
-  {"zone_control_zmp_only", cf_bool, &options.zone_control, 2, 0, "db"}
-  ,
-  {"ancestor_room", cf_dbref, &options.ancestor_room, 100000, 0, "db"}
-  ,
-  {"ancestor_exit", cf_dbref, &options.ancestor_exit, 100000, 0, "db"}
-  ,
-  {"ancestor_thing", cf_dbref, &options.ancestor_thing, 100000, 0, "db"}
-  ,
-  {"ancestor_player", cf_dbref, &options.ancestor_player, 100000, 0, "db"}
-  ,
-  {"event_handler", cf_dbref, &options.event_handler, 100000, 0, "db"}
-  ,
-  {"mud_name", cf_str, options.mud_name, 128, 0, "net"}
-  ,
-  {"mud_url", cf_str, options.mud_url, 256, 0, "net"}
-  ,
-  {"ip_addr", cf_str, options.ip_addr, 64, 0, "net"}
-  ,
-  {"ssl_ip_addr", cf_str, options.ssl_ip_addr, 64, 0, "net"}
-  ,
-  {"port", cf_int, &options.port, 65535, 0, "net"}
-  ,
-  {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
-  ,
+  {"player_start", cf_dbref, &options.player_start, 100000, 0, "db"},
+  {"master_room", cf_dbref, &options.master_room, 100000, 0, "db"},
+  {"base_room", cf_dbref, &options.base_room, 100000, 0, "db"},
+  {"default_home", cf_dbref, &options.default_home, 100000, 0, "db"},
+  {"exits_connect_rooms", cf_bool, &options.exits_connect_rooms, 2, 0, "db"},
+  {"zone_control_zmp_only", cf_bool, &options.zone_control, 2, 0, "db"},
+  {"ancestor_room", cf_dbref, &options.ancestor_room, 100000, 0, "db"},
+  {"ancestor_exit", cf_dbref, &options.ancestor_exit, 100000, 0, "db"},
+  {"ancestor_thing", cf_dbref, &options.ancestor_thing, 100000, 0, "db"},
+  {"ancestor_player", cf_dbref, &options.ancestor_player, 100000, 0, "db"},
+  {"event_handler", cf_dbref, &options.event_handler, 100000, 0, "db"},
+  {"mud_name", cf_str, options.mud_name, 128, 0, "net"},
+  {"mud_url", cf_str, options.mud_url, 256, 0, "net"},
+  {"ip_addr", cf_str, options.ip_addr, 64, 0, "net"},
+  {"ssl_ip_addr", cf_str, options.ssl_ip_addr, 64, 0, "net"},
+  {"port", cf_int, &options.port, 65535, 0, "net"},
+  {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"},
   {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
-   "net"}
-  ,
-  {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
-  ,
-  {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
-  ,
-  {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"}
-  ,
-  {"guests", cf_bool, &options.guest_allow, 2, 0, "net"}
-  ,
-  {"pueblo", cf_bool, &options.support_pueblo, 2, 0, "net"}
-  ,
+   "net"},
+  {"use_ws", cf_bool, &options.use_ws, sizeof options.use_ws, 0, "net"},
+  {"ws_url", cf_str, options.ws_url, sizeof options.ws_url, 0, "net"},
+  {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"},
+  {"logins", cf_bool, &options.login_allow, 2, 0, "net"},
+  {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"},
+  {"guests", cf_bool, &options.guest_allow, 2, 0, "net"},
+  {"pueblo", cf_bool, &options.support_pueblo, 2, 0, "net"},
   {"sql_platform", cf_str, options.sql_platform, sizeof options.sql_platform, 0,
-   "net"}
-  ,
-  {"sql_host", cf_str, options.sql_host, sizeof options.sql_host, 0, "net"}
-  ,
+   "net"},
+  {"sql_host", cf_str, options.sql_host, sizeof options.sql_host, 0, "net"},
   {"sql_username", cf_str, options.sql_username, sizeof options.sql_username,
-   CP_GODONLY,
-   "net"}
-  ,
+   CP_GODONLY, "net"},
   {"sql_password", cf_str, options.sql_password, sizeof options.sql_password,
-   CP_GODONLY,
-   "net"}
-  ,
+   CP_GODONLY, "net"},
   {"sql_database", cf_str, options.sql_database, sizeof options.sql_database,
-   CP_GODONLY,
-   "net"}
-  ,
-  {"forking_dump", cf_bool, &options.forking_dump, 2, 0, "dump"}
-  ,
+   CP_GODONLY, "net"},
+  {"forking_dump", cf_bool, &options.forking_dump, 2, 0, "dump"},
   {"dump_message", cf_str, options.dump_message, sizeof options.dump_message,
-   CP_OPTIONAL,
-   "dump"}
-  ,
+   CP_OPTIONAL, "dump"},
   {"dump_complete", cf_str, options.dump_complete, sizeof options.dump_complete,
-   CP_OPTIONAL, "dump"}
-  ,
+   CP_OPTIONAL, "dump"},
   {"dump_warning_1min", cf_str, options.dump_warning_1min,
-   sizeof options.dump_warning_1min,
-   CP_OPTIONAL, "dump"}
-  ,
+   sizeof options.dump_warning_1min, CP_OPTIONAL, "dump"},
   {"dump_warning_5min", cf_str, options.dump_warning_5min,
-   sizeof options.dump_warning_5min, CP_OPTIONAL,
-   "dump"}
-  ,
-  {"dump_interval", cf_time, &options.dump_interval, 100000, 0, "dump"}
-  ,
-  {"warn_interval", cf_time, &options.warn_interval, 32000, 0, "dump"}
-  ,
-  {"purge_interval", cf_time, &options.purge_interval, 10000, 0, "dump"}
-  ,
-  {"dbck_interval", cf_time, &options.dbck_interval, 10000, 0, "dump"}
-  ,
+   sizeof options.dump_warning_5min, CP_OPTIONAL, "dump"},
+  {"dump_interval", cf_time, &options.dump_interval, 100000, 0, "dump"},
+  {"warn_interval", cf_time, &options.warn_interval, 32000, 0, "dump"},
+  {"purge_interval", cf_time, &options.purge_interval, 10000, 0, "dump"},
+  {"dbck_interval", cf_time, &options.dbck_interval, 10000, 0, "dump"},
 
   {"money_singular", cf_str, options.money_singular,
-   sizeof options.money_singular, CP_OPTIONAL,
-   "cosmetic"}
-  ,
+   sizeof options.money_singular, CP_OPTIONAL, "cosmetic"},
   {"money_plural", cf_str, options.money_plural, sizeof options.money_plural,
-   CP_OPTIONAL,
-   "cosmetic"}
-  ,
+   CP_OPTIONAL, "cosmetic"},
   {"player_name_spaces", cf_bool, &options.player_name_spaces, 2, 0,
-   "cosmetic"}
-  ,
-  {"max_aliases", cf_int, &options.max_aliases, -1, 0, "limits"}
-  ,
-  {"ansi_names", cf_bool, &options.ansi_names, 2, 0, "cosmetic"}
-  ,
-  {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
-  ,
-  {"monikers", cf_int, &options.monikers, INT_MAX, 0, "cosmetic"}
-  ,
+   "cosmetic"},
+  {"max_aliases", cf_int, &options.max_aliases, -1, 0, "limits"},
+  {"ansi_names", cf_bool, &options.ansi_names, 2, 0, "cosmetic"},
+  {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"},
+  {"monikers", cf_priv, &options.monikers, INT_MAX, 0, "cosmetic"},
   {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
-   "cosmetic"}
-  ,
-  {"comma_exit_list", cf_bool, &options.comma_exit_list, 2, 0, "cosmetic"}
-  ,
-  {"count_all", cf_bool, &options.count_all, 2, 0, "cosmetic"}
-  ,
-  {"page_aliases", cf_bool, &options.page_aliases, 2, 0, "cosmetic"}
-  ,
-  {"flags_on_examine", cf_bool, &options.flags_on_examine, 2, 0, "cosmetic"}
-  ,
-  {"ex_public_attribs", cf_bool, &options.ex_public_attribs, 2, 0,
-   "cosmetic"}
-  ,
+   "cosmetic"},
+  {"comma_exit_list", cf_bool, &options.comma_exit_list, 2, 0, "cosmetic"},
+  {"count_all", cf_bool, &options.count_all, 2, 0, "cosmetic"},
+  {"page_aliases", cf_bool, &options.page_aliases, 2, 0, "cosmetic"},
+  {"flags_on_examine", cf_bool, &options.flags_on_examine, 2, 0, "cosmetic"},
+  {"ex_public_attribs", cf_bool, &options.ex_public_attribs, 2, 0, "cosmetic"},
   {"wizwall_prefix", cf_str, options.wizwall_prefix,
-   sizeof options.wizwall_prefix, CP_OPTIONAL,
-   "cosmetic"}
-  ,
+   sizeof options.wizwall_prefix, CP_OPTIONAL, "cosmetic"},
   {"rwall_prefix", cf_str, options.rwall_prefix, sizeof options.rwall_prefix,
-   CP_OPTIONAL,
-   "cosmetic"}
-  ,
+   CP_OPTIONAL, "cosmetic"},
   {"wall_prefix", cf_str, options.wall_prefix, sizeof options.wall_prefix,
-   CP_OPTIONAL,
-   "cosmetic"}
-  ,
-  {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
-  ,
-  {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"}
-  ,
+   CP_OPTIONAL, "cosmetic"},
+  {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"},
+  {"chat_token_alias", cf_str, options.chat_token_alias,
+   sizeof options.chat_token_alias, CP_OPTIONAL, "chat"},
+  {"use_muxcomm", cf_bool, &options.use_muxcomm, 2, 0, "chat"},
+  {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"},
 
-  {"max_dbref", cf_dbref, &options.max_dbref, -1, 0, "limits"}
-  ,
-  {"max_attrs_per_obj", cf_int, &options.max_attrcount, 8192, 0, "limits"}
-  ,
-  {"max_logins", cf_int, &options.max_logins, 1024, 0, "limits"}
-  ,
-  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
-  ,
-  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"}
-  ,
-  {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
-  ,
-  {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
-  ,
+  {"max_dbref", cf_dbref, &options.max_dbref, -1, 0, "limits"},
+  {"max_attrs_per_obj", cf_int, &options.max_attrcount, 8192, 0, "limits"},
+  {"max_logins", cf_int, &options.max_logins, 1024, 0, "limits"},
+  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"},
+  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"},
+  {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"},
+  {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"},
   {"unconnected_idle_timeout", cf_time, &options.unconnected_idle_timeout,
-   100000, 0, "limits"}
-  ,
-  {"keepalive_timeout", cf_time, &options.keepalive_timeout, 10000, 0, "limits"}
-  ,
-  {"whisper_loudness", cf_int, &options.whisper_loudness, 100, 0, "limits"}
-  ,
-  {"starting_quota", cf_int, &options.starting_quota, 10000, 0, "limits"}
-  ,
-  {"starting_money", cf_int, &options.starting_money, 10000, 0, "limits"}
-  ,
-  {"paycheck", cf_int, &options.paycheck, 1000, 0, "limits"}
-  ,
-  {"guest_paycheck", cf_int, &options.guest_paycheck, 1000, 0, "limits"}
-  ,
-  {"max_pennies", cf_int, &options.max_pennies, 100000, 0, "limits"}
-  ,
+   100000, 0, "limits"},
+  {"keepalive_timeout", cf_time, &options.keepalive_timeout, 10000, 0,
+   "limits"},
+  {"whisper_loudness", cf_int, &options.whisper_loudness, 100, 0, "limits"},
+  {"starting_quota", cf_int, &options.starting_quota, 10000, 0, "limits"},
+  {"starting_money", cf_int, &options.starting_money, 10000, 0, "limits"},
+  {"paycheck", cf_int, &options.paycheck, 1000, 0, "limits"},
+  {"guest_paycheck", cf_int, &options.guest_paycheck, 1000, 0, "limits"},
+  {"max_pennies", cf_int, &options.max_pennies, 100000, 0, "limits"},
   {"max_guest_pennies", cf_int, &options.max_guest_pennies, 100000, 0,
-   "limits"}
-  ,
-  {"max_parents", cf_int, &options.max_parents, 10000, 0, "limits"}
-  ,
-  {"mail_limit", cf_int, &options.mail_limit, 5000, 0, "limits"}
-  ,
-  {"max_depth", cf_int, &options.max_depth, 10000, 0, "limits"}
-  ,
+   "limits"},
+  {"max_parents", cf_int, &options.max_parents, 10000, 0, "limits"},
+  {"mail_limit", cf_int, &options.mail_limit, 5000, 0, "limits"},
+  {"max_depth", cf_int, &options.max_depth, 10000, 0, "limits"},
   {"player_queue_limit", cf_int, &options.player_queue_limit, 100000, 0,
-   "limits"}
-  ,
-  {"queue_loss", cf_int, &options.queue_loss, 10000, 0, "limits"}
-  ,
-  {"queue_chunk", cf_int, &options.queue_chunk, 100000, 0, "limits"}
-  ,
-  {"active_queue_chunk", cf_int, &options.active_q_chunk, 100000, 0,
-   "limits"}
-  ,
+   "limits"},
+  {"queue_loss", cf_int, &options.queue_loss, 10000, 0, "limits"},
+  {"queue_chunk", cf_int, &options.queue_chunk, 100000, 0, "limits"},
+  {"active_queue_chunk", cf_int, &options.active_q_chunk, 100000, 0, "limits"},
   {"function_recursion_limit", cf_int, &options.func_nest_lim, 100000, 0,
-   "limits"}
-  ,
+   "limits"},
   {"function_invocation_limit", cf_int, &options.func_invk_lim, 100000, 0,
-   "limits"}
-  ,
-  {"call_limit", cf_int, &options.call_lim, 1000000, 0,
-   "limits"}
-  ,
+   "limits"},
+  {"call_limit", cf_int, &options.call_lim, 1000000, 0, "limits"},
   {"player_name_len", cf_int, &options.player_name_len, BUFFER_LEN - 1, 0,
-   "limits"}
-  ,
+   "limits"},
   {"queue_entry_cpu_time", cf_int, &options.queue_entry_cpu_time, 100000, 0,
-   "limits"}
-  ,
-  {"use_quota", cf_bool, &options.use_quota, 2, 0, "limits"}
-  ,
-  {"max_channels", cf_int, &options.max_channels, 1000, 0, "chat"}
-  ,
-  {"max_player_chans", cf_int, &options.max_player_chans, 100, 0, "chat"}
-  ,
-  {"chan_cost", cf_int, &options.chan_cost, 10000, 0, "chat"}
-  ,
-  {"noisy_cemit", cf_bool, &options.noisy_cemit, 2, 0, "chat"}
-  ,
-  {"chan_title_len", cf_int, &options.chan_title_len, 250, 0, "chat"}
-  ,
-  {"log_commands", cf_bool, &options.log_commands, 2, 0, "log"}
-  ,
-  {"log_forces", cf_bool, &options.log_forces, 2, 0, "log"}
-  ,
-  {"error_log", cf_str, options.error_log, sizeof options.error_log, 0,
-   "log"}
-  ,
+   "limits"},
+  {"use_quota", cf_bool, &options.use_quota, 2, 0, "limits"},
+  {"max_channels", cf_int, &options.max_channels, 1000, 0, "chat"},
+  {"max_player_chans", cf_int, &options.max_player_chans, 100, 0, "chat"},
+  {"chan_cost", cf_int, &options.chan_cost, 10000, 0, "chat"},
+  {"noisy_cemit", cf_bool, &options.noisy_cemit, 2, 0, "chat"},
+  {"chan_title_len", cf_int, &options.chan_title_len, 250, 0, "chat"},
+  {"log_commands", cf_bool, &options.log_commands, 2, 0, "log"},
+  {"log_forces", cf_bool, &options.log_forces, 2, 0, "log"},
+  {"error_log", cf_str, options.error_log, sizeof options.error_log, 0, "log"},
   {"command_log", cf_str, options.command_log, sizeof options.command_log, 0,
-   "log"}
-  ,
+   "log"},
   {"wizard_log", cf_str, options.wizard_log, sizeof options.wizard_log, 0,
-   "log"}
-  ,
+   "log"},
   {"checkpt_log", cf_str, options.checkpt_log, sizeof options.checkpt_log, 0,
-   "log"}
-  ,
-  {"trace_log", cf_str, options.trace_log, sizeof options.trace_log, 0,
-   "log"}
-  ,
+   "log"},
+  {"trace_log", cf_str, options.trace_log, sizeof options.trace_log, 0, "log"},
   {"connect_log", cf_str, options.connect_log, sizeof options.connect_log, 0,
-   "log"}
-  ,
+   "log"},
 
   {"player_flags", cf_flag, options.player_flags, sizeof options.player_flags,
-   0, "flags"}
-  ,
+   0, "flags"},
   {"room_flags", cf_flag, options.room_flags, sizeof options.room_flags, 0,
-   "flags"}
-  ,
+   "flags"},
   {"exit_flags", cf_flag, options.exit_flags, sizeof options.exit_flags, 0,
-   "flags"}
-  ,
+   "flags"},
   {"thing_flags", cf_flag, options.thing_flags, sizeof options.thing_flags, 0,
-   "flags"}
-  ,
+   "flags"},
   {"channel_flags", cf_flag, options.channel_flags,
-   sizeof options.channel_flags, 0,
-   "flags"}
-  ,
+   sizeof options.channel_flags, 0, "flags"},
 
-  {"safer_ufun", cf_bool, &options.safer_ufun, 2, 0, "funcs"}
-  ,
+  {"safer_ufun", cf_bool, &options.safer_ufun, 2, 0, "funcs"},
   {"function_side_effects", cf_bool, &options.function_side_effects, 2, 0,
-   "funcs"}
-  ,
+   "funcs"},
 
-  {"noisy_whisper", cf_bool, &options.noisy_whisper, 2, 0, "cmds"}
-  ,
-  {"possessive_get", cf_bool, &options.possessive_get, 2, 0, "cmds"}
-  ,
-  {"possessive_get_d", cf_bool, &options.possessive_get_d, 2, 0, "cmds"}
-  ,
-  {"link_to_object", cf_bool, &options.link_to_object, 2, 0, "cmds"}
-  ,
-  {"owner_queues", cf_bool, &options.owner_queues, 2, 0, "cmds"}
-  ,
-  {"full_invis", cf_bool, &options.full_invis, 2, 0, "cmds"}
-  ,
-  {"wiz_noaenter", cf_bool, &options.wiz_noaenter, 2, 0, "cmds"}
-  ,
-  {"really_safe", cf_bool, &options.really_safe, 2, 0, "cmds"}
-  ,
-  {"destroy_possessions", cf_bool, &options.destroy_possessions, 2, 0,
-   "cmds"}
-  ,
-  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"}
-  ,
+  {"noisy_whisper", cf_bool, &options.noisy_whisper, 2, 0, "cmds"},
+  {"possessive_get", cf_bool, &options.possessive_get, 2, 0, "cmds"},
+  {"possessive_get_d", cf_bool, &options.possessive_get_d, 2, 0, "cmds"},
+  {"link_to_object", cf_bool, &options.link_to_object, 2, 0, "cmds"},
+  {"owner_queues", cf_bool, &options.owner_queues, 2, 0, "cmds"},
+  {"full_invis", cf_bool, &options.full_invis, 2, 0, "cmds"},
+  {"wiz_noaenter", cf_bool, &options.wiz_noaenter, 2, 0, "cmds"},
+  {"really_safe", cf_bool, &options.really_safe, 2, 0, "cmds"},
+  {"destroy_possessions", cf_bool, &options.destroy_possessions, 2, 0, "cmds"},
+  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"},
 
-  {"null_eq_zero", cf_bool, &options.null_eq_zero, 2, 0, "tiny"}
-  ,
-  {"tiny_booleans", cf_bool, &options.tiny_booleans, 2, 0, "tiny"}
-  ,
-  {"tiny_trim_fun", cf_bool, &options.tiny_trim_fun, 2, 0, "tiny"}
-  ,
-  {"tiny_math", cf_bool, &options.tiny_math, 2, 0, "tiny"}
-  ,
-  {"silent_pemit", cf_bool, &options.silent_pemit, 2, 0, "tiny"}
-  ,
+  {"null_eq_zero", cf_bool, &options.null_eq_zero, 2, 0, "tiny"},
+  {"tiny_booleans", cf_bool, &options.tiny_booleans, 2, 0, "tiny"},
+  {"tiny_trim_fun", cf_bool, &options.tiny_trim_fun, 2, 0, "tiny"},
+  {"tiny_math", cf_bool, &options.tiny_math, 2, 0, "tiny"},
+  {"silent_pemit", cf_bool, &options.silent_pemit, 2, 0, "tiny"},
 
-  {"adestroy", cf_bool, &options.adestroy, 2, 0, "attribs"}
-  ,
-  {"amail", cf_bool, &options.amail, 2, 0, "attribs"}
-  ,
-  {"player_listen", cf_bool, &options.player_listen, 2, 0, "attribs"}
-  ,
-  {"player_ahear", cf_bool, &options.player_ahear, 2, 0, "attribs"}
-  ,
-  {"startups", cf_bool, &options.startups, 2, 0, "attribs"}
-  ,
-  {"read_remote_desc", cf_bool, &options.read_remote_desc, 2, 0, "attribs"}
-  ,
-  {"room_connects", cf_bool, &options.room_connects, 2, 0, "attribs"}
-  ,
-  {"reverse_shs", cf_bool, &options.reverse_shs, 2, 0, "attribs"}
-  ,
-  {"empty_attrs", cf_bool, &options.empty_attrs, 2, 0, "attribs"}
-  ,
-  {"object_cost", cf_int, &options.object_cost, 10000, 0, "costs"}
-  ,
-  {"exit_cost", cf_int, &options.exit_cost, 10000, 0, "costs"}
-  ,
-  {"link_cost", cf_int, &options.link_cost, 10000, 0, "costs"}
-  ,
-  {"room_cost", cf_int, &options.room_cost, 10000, 0, "costs"}
-  ,
-  {"queue_cost", cf_int, &options.queue_cost, 10000, 0, "costs"}
-  ,
-  {"quota_cost", cf_int, &options.quota_cost, 10000, 0, "costs"}
-  ,
-  {"find_cost", cf_int, &options.find_cost, 10000, 0, "costs"}
-  ,
+  {"adestroy", cf_bool, &options.adestroy, 2, 0, "attribs"},
+  {"amail", cf_bool, &options.amail, 2, 0, "attribs"},
+  {"player_listen", cf_bool, &options.player_listen, 2, 0, "attribs"},
+  {"player_ahear", cf_bool, &options.player_ahear, 2, 0, "attribs"},
+  {"startups", cf_bool, &options.startups, 2, 0, "attribs"},
+  {"read_remote_desc", cf_bool, &options.read_remote_desc, 2, 0, "attribs"},
+  {"room_connects", cf_bool, &options.room_connects, 2, 0, "attribs"},
+  {"reverse_shs", cf_bool, &options.reverse_shs, 2, 0, "attribs"},
+  {"empty_attrs", cf_bool, &options.empty_attrs, 2, 0, "attribs"},
+  {"object_cost", cf_int, &options.object_cost, 10000, 0, "costs"},
+  {"exit_cost", cf_int, &options.exit_cost, 10000, 0, "costs"},
+  {"link_cost", cf_int, &options.link_cost, 10000, 0, "costs"},
+  {"room_cost", cf_int, &options.room_cost, 10000, 0, "costs"},
+  {"queue_cost", cf_int, &options.queue_cost, 10000, 0, "costs"},
+  {"quota_cost", cf_int, &options.quota_cost, 10000, 0, "costs"},
+  {"find_cost", cf_int, &options.find_cost, 10000, 0, "costs"},
 
   {"log_wipe_passwd", cf_str, options.log_wipe_passwd,
-   sizeof options.log_wipe_passwd, 0,
-   NULL}
-  ,
+   sizeof options.log_wipe_passwd, 0, NULL},
 
+  {"use_chunk_system", cf_bool, &options.use_chunk, sizeof options.use_chunk, 0,
+   NULL},
   {"chunk_swap_file", cf_str, options.chunk_swap_file,
-   sizeof options.chunk_swap_file, 0, "files"}
-  ,
+   sizeof options.chunk_swap_file, 0, "files"},
   {"chunk_swap_initial_size", cf_int, &options.chunk_swap_initial, 1000000, 0,
-   "files"}
-  ,
-  {"chunk_cache_memory", cf_int, &options.chunk_cache_memory,
-   1000000000, 0, "files"}
-  ,
-  {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0,
-   "limits"}
-  ,
+   "files"},
+  {"chunk_cache_memory", cf_int, &options.chunk_cache_memory, 1000000000, 0,
+   "files"},
+  {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0, "limits"},
 
   {"attr_compression", cf_str, options.attr_compression,
-   sizeof options.attr_compression, 0, NULL}
-  ,
+   sizeof options.attr_compression, 0, NULL},
 
 #ifdef HAVE_SSL
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
-   sizeof options.ssl_private_key_file, 0, "files"}
-  ,
-  {"ssl_ca_file", cf_str, options.ssl_ca_file,
-   sizeof options.ssl_ca_file, 0, "files"}
-  ,
-  {"ssl_require_client_cert", cf_bool, &options.ssl_require_client_cert,
-   2, 0, "net"}
-  ,
+   sizeof options.ssl_private_key_file, 0, "files"},
+  {"ssl_ca_file", cf_str, options.ssl_ca_file, sizeof options.ssl_ca_file, 0,
+   "files"},
+  {"ssl_ca_dir", cf_str, options.ssl_ca_dir, sizeof options.ssl_ca_dir, 0,
+   "files"},
+  {"ssl_require_client_cert", cf_bool, &options.ssl_require_client_cert, 2, 0,
+   "net"},
 #endif
-  {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"}
-  ,
-  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL}
-  ,
+  {"mem_check", cf_bool, &options.mem_check, 2, 0, "log"},
+  {"log_max_size", cf_int, &options.log_max_size, 10000, 0, NULL},
   {"log_size_policy", cf_str, options.log_size_policy,
-   sizeof options.log_size_policy, 0, NULL}
-  ,
+   sizeof options.log_size_policy, 0, NULL},
+  {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
+   0, NULL},
 
-  {NULL, NULL, NULL, 0, 0, NULL}
-};
+  {NULL, NULL, NULL, 0, 0, NULL}};
 
 /** A runtime configuration group.
  * This struction represents the name and information about a group
@@ -540,9 +343,9 @@ PENNCONF conftable[] = {
  * the display of configuration options.
  */
 typedef struct confgroupparm {
-  const char *name;             /**< name of group */
-  const char *desc;             /**< description of group */
-  int viewperms;                /**< who can view this group */
+  const char *name; /**< name of group */
+  const char *desc; /**< description of group */
+  int viewperms;    /**< who can view this group */
 } PENNCONFGROUP;
 
 /** The table of all configuration groups. */
@@ -563,8 +366,7 @@ PENNCONFGROUP confgroups[] = {
   {"messages", "Message files sent by the MUSH", CGP_GOD},
   {"net", "Networking and connection-related options", 0},
   {"tiny", "TinyMUSH compatibility options", 0},
-  {NULL, NULL, 0}
-};
+  {NULL, NULL, 0}};
 
 #if 0
 /* Just to mark these strings for translation */
@@ -649,9 +451,7 @@ get_config(const char *name)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_bool(const char *opt, const char *val, void *loc,
-        int maxval __attribute__ ((__unused__)), int from_cmd)
+CONFIG_FUNC(cf_bool)
 {
   /* enter boolean parameter */
 
@@ -670,7 +470,6 @@ cf_bool(const char *opt, const char *val, void *loc,
   return 1;
 }
 
-
 /** Parse a string configuration option.
  * \param opt name of the configuration option.
  * \param val value of the option.
@@ -680,8 +479,7 @@ cf_bool(const char *opt, const char *val, void *loc,
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_str)
 {
   /* enter string parameter */
   size_t len = strlen(val);
@@ -712,9 +510,7 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_dbref(const char *opt, const char *val, void *loc,
-         int maxval __attribute__ ((__unused__)), int from_cmd)
+CONFIG_FUNC(cf_dbref)
 {
   /* enter dbref or integer parameter */
   int n;
@@ -732,9 +528,10 @@ cf_dbref(const char *opt, const char *val, void *loc,
       do_rawlog(LT_ERR, "CONFIG: option %s value limited to #%d", opt, maxval);
     }
   }
-  if (from_cmd && ((!GoodObject(n) && n != NOTHING) || (n > 0 && IsGarbage(n)))) {
-    do_rawlog(LT_ERR,
-              "CONFIG: attempt to set option %s to a bad dbref (#%d)", opt, n);
+  if (from_cmd &&
+      ((!GoodObject(n) && n != NOTHING) || (n > 0 && IsGarbage(n)))) {
+    do_rawlog(LT_ERR, "CONFIG: attempt to set option %s to a bad dbref (#%d)",
+              opt, n);
     return 0;
   }
   *((dbref *) loc) = n;
@@ -750,8 +547,7 @@ cf_dbref(const char *opt, const char *val, void *loc,
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_int)
 {
   /* enter integer parameter */
 
@@ -773,8 +569,91 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
   return 1;
 }
 
+/* Possible values for the "monikers" config option */
+PRIV cf_priv_monikers[] = {{"alltypes", '\0', AN_TYPES, AN_TYPES},
+                           {"players", '\0', AN_PLAYER, AN_PLAYER},
+                           {"things", '\0', AN_THING, AN_THING},
+                           {"rooms", '\0', AN_ROOM, AN_ROOM},
+                           {"exits", '\0', AN_EXIT, AN_EXIT},
 
-/** Parse an time configuration option with a default unit of seconds
+                           {"everywhere", '\0', AN_EVERYWHERE, AN_EVERYWHERE},
+                           {"chat", '\0', AN_CHAT, AN_CHAT},
+                           {"say", '\0', AN_SAY, AN_SAY},
+                           {"movement", '\0', AN_MOVE, AN_MOVE},
+                           {"look", '\0', AN_LOOK, AN_LOOK},
+                           {"unparse", '\0', AN_UNPARSE, AN_UNPARSE},
+                           {"who", '\0', AN_WHO, AN_WHO},
+                           {"system", '\0', AN_SYS, AN_SYS},
+                           {"announcements", '\0', AN_ANNOUNCE, AN_ANNOUNCE},
+                           {NULL, '\0', 0, 0}};
+
+/* Format for the list of cf_priv options */
+struct priv_option {
+  char *optname;
+  privbits *value;
+  PRIV *table;
+};
+
+/* List of cf_priv options, storing their names, location of value, and the
+ * priv table which holds their possible values */
+struct priv_option priv_options[] = {
+  {"monikers", &options.monikers, cf_priv_monikers}, {NULL, NULL, NULL}};
+
+/* Given a cf_priv option name, find its entry in the priv_options table. */
+struct priv_option *
+find_priv_option(const char *name)
+{
+  struct priv_option *po;
+
+  for (po = priv_options; po->optname; po++) {
+    if (!strcmp(po->optname, name)) {
+      return po;
+    }
+  }
+  return NULL;
+}
+
+/** Parse a priv tab option.
+ * This takes a list of string values, and uses a privtab to convert them to
+ * a bitflag.
+ * \param opt name of the configuration option.
+ * \param val value of the option.
+ * \param loc address to store the value.
+ * \param maxval maximum length of value.
+ * \param from_cmd 0 if read from config file; 1 if from command.
+ * \retval 0 failure (unable to parse val).
+ * \retval 1 success.
+ */
+CONFIG_FUNC(cf_priv)
+{
+  struct priv_option *po;
+  privbits result = 0;
+  if (!val || !*val)
+    return 1;
+
+  if (is_strict_integer(val)) {
+    if (!from_cmd) {
+      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update "
+                        "to a list of values.",
+                opt);
+    }
+    *((privbits *) loc) = parse_integer(val);
+    return 1;
+  }
+  do_rawlog(LT_ERR, "Chk 1");
+  po = find_priv_option(opt);
+
+  if (!po) {
+    do_rawlog(LT_ERR, "CONFIG: Unknown priv-type option '%s'", opt);
+    return 0;
+  }
+  result = string_to_privs(po->table, val, *((privbits *) loc));
+
+  *((privbits *) loc) = result;
+  return 1;
+}
+
+/** Parse a time configuration option
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.
@@ -783,48 +662,16 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_time(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_time)
 {
   /* enter time parameter */
-  char *end = NULL;
-  int in_minutes = 0;
-  int n, secs = 0;
-
-
-  if (strstr(opt, "idle"))
-    in_minutes = 1;
-
-  while (val && *val) {
-    n = parse_int(val, &end, 10);
-
-    switch (*end) {
-    case '\0':
-      if (in_minutes)
-        secs += n * 60;
-      else
-        secs += n;
-      goto done;                /* Sigh. What I wouldn't give for named loops in C */
-    case 's':
-    case 'S':
-      secs += n;
-      break;
-    case 'm':
-    case 'M':
-      secs += n * 60;
-      break;
-    case 'h':
-    case 'H':
-      secs += n * 3600;
-      break;
-    default:
-      if (from_cmd == 0)
-        do_rawlog(LT_ERR, "CONFIG: Unknown time interval in option %s", opt);
-      return 0;
-    }
-    val = end + 1;
+  int secs = 0;
+  if (!etime_to_secs((char *) val, &secs, (strstr(opt, "idle")))) {
+    if (from_cmd == 0)
+      do_rawlog(LT_ERR, "CONFIG: Unknown time interval in option %s", opt);
+    return 0;
   }
-done:
+
   /* enforce limits */
   if ((maxval >= 0) && (secs > maxval)) {
     secs = maxval;
@@ -847,8 +694,7 @@ done:
  * \retval 0 failure (unable to parse val).
  * \retval 1 success.
  */
-int
-cf_flag(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
+CONFIG_FUNC(cf_flag)
 {
   size_t len = strlen(val);
   size_t total = strlen((char *) loc);
@@ -876,11 +722,12 @@ void
 validate_config(void)
 {
 
-#define VALIDATE_ROOM(opt) do { \
-    if (!(GoodObject((opt)) && IsRoom((opt)))) { \
-      opt = 0; \
-      do_rawlog(LT_ERR, "CONFIG: option %s not a valid room!", #opt); \
-    } \
+#define VALIDATE_ROOM(opt)                                                     \
+  do {                                                                         \
+    if (!(GoodObject((opt)) && IsRoom((opt)))) {                               \
+      opt = 0;                                                                 \
+      do_rawlog(LT_ERR, "CONFIG: option %s not a valid room!", #opt);          \
+    }                                                                          \
   } while (0)
 
   VALIDATE_ROOM(PLAYER_START);
@@ -890,13 +737,13 @@ validate_config(void)
 
 #undef VALIDATE_ROOM
 
-#define VALIDATE(opt) do { \
-    if (!GoodObject((opt)) && (opt) != NOTHING) { \
-      opt = 0; \
-      do_rawlog(LT_ERR, "CONFIG: option %s not a valid dbref or -1!", \
-                #opt); \
-    } \
-   } while (0)
+#define VALIDATE(opt)                                                          \
+  do {                                                                         \
+    if (!GoodObject((opt)) && (opt) != NOTHING) {                              \
+      opt = 0;                                                                 \
+      do_rawlog(LT_ERR, "CONFIG: option %s not a valid dbref or -1!", #opt);   \
+    }                                                                          \
+  } while (0)
 
   VALIDATE(ANCESTOR_ROOM);
   VALIDATE(ANCESTOR_THING);
@@ -924,7 +771,7 @@ append_restriction(const char *r, const char *what, const char *opts)
    get changed -- but it'll catch most cases.
 */
 static void
-save_config_option(PENNCONF *cp __attribute__ ((__unused__)))
+save_config_option(PENNCONF *cp __attribute__((__unused__)))
 {
 #if defined(HAVE_ED)
   FILE *ed;
@@ -943,7 +790,6 @@ save_config_option(PENNCONF *cp __attribute__ ((__unused__)))
   fputs("wq\n", ed);
   pclose(ed);
 #endif
-
 }
 
 int
@@ -986,7 +832,8 @@ add_mssp(char *name, char *value)
  * that require having the flag table available.
  * \param opt name of the option.
  * \param val value to set the option to.
- * \param source 0 if being set from mush.cnf, 1 from softcode, 2 from softcode and saving.
+ * \param source 0 if being set from mush.cnf, 1 from softcode, 2 from softcode
+ * and saving.
  * \param restrictions 1 if we're setting restriction options, 0 for others.
  * \retval 1 success.
  * \retval 0 failure.
@@ -999,26 +846,27 @@ config_set(const char *opt, char *val, int source, int restrictions)
   char *p;
 
   if (!val)
-    return 0;                   /* NULL val is no good, but "" is ok */
+    return 0; /* NULL val is no good, but "" is ok */
 
   /* Was this "restrict_command <command> <restriction>"? If so, do it */
   if (!strcasecmp(opt, "restrict_command")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       command = command_find(val);
       if (!command) {
         if (source == 0) {
-          do_rawlog(LT_ERR,
-                    "CONFIG: Invalid command or restriction for %s.", val);
+          do_rawlog(LT_ERR, "CONFIG: Invalid command or restriction for %s.",
+                    val);
         }
         return 0;
       } else if (!restrict_command(NOTHING, command, p)) {
         if (source == 0) {
-          do_rawlog(LT_ERR,
-                    "CONFIG: Invalid command or restriction for %s.", val);
+          do_rawlog(LT_ERR, "CONFIG: Invalid command or restriction for %s.",
+                    val);
         }
         return 0;
       }
@@ -1036,13 +884,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_function")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!restrict_function(val, p)) {
         if (source == 0) {
-          do_rawlog(LT_ERR,
-                    "CONFIG: Invalid function or restriction for %s.", val);
+          do_rawlog(LT_ERR, "CONFIG: Invalid function or restriction for %s.",
+                    val);
         }
         return 0;
       }
@@ -1060,7 +909,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "restrict_attribute")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_attribute_access(val, p)) {
@@ -1069,8 +919,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
         return 0;
       }
     } else {
-      do_rawlog(LT_ERR,
-                "CONFIG: restrict_attribute %s requires a restriction (use 'none' for none)",
+      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction "
+                        "(use 'none' for none)",
                 val);
       return 0;
     }
@@ -1083,7 +933,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "command_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!alias_command(val, p)) {
@@ -1104,7 +955,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "hook_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       do_rawlog(LT_ERR, "CONFIG: Trying to hook command %s with options %s",
@@ -1122,7 +974,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_command")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_command(val, p)) {
@@ -1140,7 +993,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "add_function")) {
     if (!restrictions || source > 0)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_function(val, p)) {
@@ -1157,7 +1011,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (!restrictions)
       return 0;
     do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!alias_attribute(val, p)) {
@@ -1178,7 +1033,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
   } else if (!strcasecmp(opt, "function_alias")) {
     if (!restrictions)
       return 0;
-    for (p = val; *p && !isspace(*p); p++) ;
+    for (p = val; *p && !isspace(*p); p++)
+      ;
     if (*p) {
       *p++ = '\0';
       if (!alias_function(NOTHING, val, p)) {
@@ -1196,14 +1052,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("function_alias", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "help_command")
-             || !strcasecmp(opt, "ahelp_command")) {
+  } else if (!strcasecmp(opt, "help_command") ||
+             !strcasecmp(opt, "ahelp_command")) {
     char *comm, *file;
     int admin = !strcasecmp(opt, "ahelp_command");
     if (!restrictions)
       return 0;
     /* Add a new help-like command */
-    if (source >= 1)            /* Can't do this from @config/set */
+    if (source >= 1) /* Can't do this from @config/set */
       return 0;
     if (!val || !*val) {
       do_rawlog(LT_ERR,
@@ -1211,7 +1067,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     comm = val;
-    for (file = val; *file && !isspace(*file); file++) ;
+    for (file = val; *file && !isspace(*file); file++)
+      ;
     if (*file) {
       *file++ = '\0';
       add_help_file(comm, file, admin);
@@ -1240,10 +1097,10 @@ config_set(const char *opt, char *val, int source, int restrictions)
    * output_data=../../.bashrc? Ouch.), or options which only God can see.  */
   for (cp = conftable; cp->name; cp++) {
     int i = 0;
-    if ((!source || (cp->group && strcmp(cp->group, "files") != 0
-                     && strcmp(cp->group, "messages") != 0
-                     && !(cp->flags & CP_GODONLY)))
-        && !strcasecmp(cp->name, opt)) {
+    if ((!source ||
+         (cp->group && strcmp(cp->group, "files") != 0 &&
+          strcmp(cp->group, "messages") != 0 && !(cp->flags & CP_GODONLY))) &&
+        !strcasecmp(cp->name, opt)) {
       i = cp->handler(opt, val, cp->loc, cp->max, source);
       if (i) {
         if (source)
@@ -1259,9 +1116,9 @@ config_set(const char *opt, char *val, int source, int restrictions)
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     int i = 0;
-    if ((!source || (cp->group && strcmp(cp->group, "files") != 0
-                     && strcmp(cp->group, "messages") != 0))
-        && !strcasecmp(cp->name, opt)) {
+    if ((!source || (cp->group && strcmp(cp->group, "files") != 0 &&
+                     strcmp(cp->group, "messages") != 0)) &&
+        !strcasecmp(cp->name, opt)) {
       i = cp->handler(opt, val, cp->loc, cp->max, source);
       if (i) {
         if (source)
@@ -1293,6 +1150,8 @@ conf_default_set(void)
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.socket_file, "data/netmush.sock");
+  options.use_ws = 1;
+  strcpy(options.ws_url, "/wsclient");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");
   strcpy(options.crash_db, "data/PANIC.db");
@@ -1317,9 +1176,9 @@ conf_default_set(void)
   options.unconnected_idle_timeout = 300;
   options.keepalive_timeout = 300;
   options.dump_interval = 3601;
-  set_string_option(options.dump_message,
-                    T
-                    ("GAME: Saving database. Game may freeze for a few moments."));
+  set_string_option(
+    options.dump_message,
+    T("GAME: Saving database. Game may freeze for a few moments."));
   set_string_option(options.dump_complete, T("GAME: Save complete. "));
   options.max_logins = 128;
   options.max_guests = 0;
@@ -1350,7 +1209,7 @@ conf_default_set(void)
   strcpy(options.compressprog, "compress");
   strcpy(options.uncompressprog, "uncompress");
   strcpy(options.compresssuff, ".Z");
-#endif                          /* WIN32 */
+#endif /* WIN32 */
   strcpy(options.connect_file[0], "txt/connect.txt");
   strcpy(options.motd_file[0], "txt/motd.txt");
   strcpy(options.wizmotd_file[0], "txt/wizmotd.txt");
@@ -1423,6 +1282,9 @@ conf_default_set(void)
   options.full_invis = 0;
   options.silent_pemit = 0;
   options.max_dbref = 0;
+  options.chat_token_alias[0] = '\0';
+  options.chat_token_alias[1] = '\0';
+  options.use_muxcomm = 0;
   options.chat_strip_quote = 1;
   set_string_option(options.wizwall_prefix, T("Broadcast:"));
   set_string_option(options.rwall_prefix, T("Admin:"));
@@ -1449,6 +1311,7 @@ conf_default_set(void)
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
   options.call_lim = 10000;
+  options.use_chunk = 1;
   strcpy(options.chunk_swap_file, "data/chunkswap");
   options.chunk_swap_initial = 2048;
   options.chunk_cache_memory = 1000000;
@@ -1458,6 +1321,7 @@ conf_default_set(void)
 #ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");
   strcpy(options.ssl_ca_file, "");
+  strcpy(options.ssl_ca_dir, "");
   options.ssl_require_client_cert = 0;
 #endif
   /* Set this to 1 so that allocations made before reading the config file
@@ -1470,6 +1334,7 @@ conf_default_set(void)
   strcpy(options.sql_host, "127.0.0.1");
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
+  strcpy(options.sendmail_prog, "sendmail");
 }
 
 #undef set_string_option
@@ -1498,7 +1363,7 @@ config_file_startup(const char *conf, int restrictions)
   FILE *fp = NULL;
   char tbuf1[BUFFER_LEN];
   char *p, *q, *s;
-  static char cfile[BUFFER_LEN];        /* Remember the last one */
+  static char cfile[BUFFER_LEN]; /* Remember the last one */
 
   if (conf_recursion == 0) {
     if (conf && *conf)
@@ -1533,7 +1398,7 @@ config_file_startup(const char *conf, int restrictions)
       p++;
 
     if (*p == '\0' || *p == '#')
-      continue;                 /* comment or blank line */
+      continue; /* comment or blank line */
 
     /* this is a real line. Strip the end-of-line and characters following it.
      * Split the line into command and argument portions. If it exists,
@@ -1542,28 +1407,30 @@ config_file_startup(const char *conf, int restrictions)
      * This basically rules out embedded newlines as currently written
      */
 
-    for (p = tbuf1; *p && (*p != '\n') && (*p != '\r'); p++) ;
-    *p = '\0';                  /* strip the end of line char(s) */
-    for (p = tbuf1; *p && isspace(*p); p++)     /* strip spaces */
+    for (p = tbuf1; *p && (*p != '\n') && (*p != '\r'); p++)
       ;
-    for (q = p; *q && !isspace(*q); q++)        /* move over command */
+    *p = '\0';                              /* strip the end of line char(s) */
+    for (p = tbuf1; *p && isspace(*p); p++) /* strip spaces */
+      ;
+    for (q = p; *q && !isspace(*q); q++) /* move over command */
       ;
     if (*q)
-      *q++ = '\0';              /* split off command */
-    for (; *q && isspace(*q); q++)      /* skip spaces */
+      *q++ = '\0';                 /* split off command */
+    for (; *q && isspace(*q); q++) /* skip spaces */
       ;
     /* We define a comment as a # followed by something other than a
      * digit, so as no to be confused with dbrefs.
      * followed by a number, treat it as a dbref instead of a
      * comment. */
-    for (s = q; *s && ((*s != '#') || isdigit(*(s + 1))); s++) ;
+    for (s = q; *s && ((*s != '#') || isdigit(*(s + 1))); s++)
+      ;
 
-    if (*s)                     /* if found nuke it */
+    if (*s) /* if found nuke it */
       *s = '\0';
-    for (s = s - 1; (s >= q) && isspace(*s); s--)       /* smash trailing stuff */
+    for (s = s - 1; (s >= q) && isspace(*s); s--) /* smash trailing stuff */
       *s = '\0';
 
-    if (strlen(p) != 0) {       /* skip blank lines */
+    if (strlen(p) != 0) { /* skip blank lines */
       /* Handle include filename directives separetly */
       if (strcasecmp(p, "include") == 0) {
         conf_recursion++;
@@ -1585,23 +1452,25 @@ config_file_startup(const char *conf, int restrictions)
   return 1;
 }
 
-/** Warn about config options that weren't set in the files read, and about deprecated options. */
+/** Warn about config options that weren't set in the files read, and about
+ * deprecated options. */
 void
 config_file_checks(void)
 {
   PENNCONF *cp;
   for (cp = conftable; cp->name; cp++) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-      do_rawlog(LT_ERR,
-                "CONFIG: directive '%s' missing from cnf file, using default value.",
-                cp->name);
+      do_rawlog(
+        LT_ERR,
+        "CONFIG: directive '%s' missing from cnf file, using default value.",
+        cp->name);
     }
   }
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-      do_rawlog(LT_ERR,
-                "CONFIG: local directive '%s' missing from cnf file. Using default value.",
+      do_rawlog(LT_ERR, "CONFIG: local directive '%s' missing from cnf file. "
+                        "Using default value.",
                 cp->name);
     }
   }
@@ -1616,15 +1485,13 @@ config_file_checks(void)
 #ifdef WIN32
   /* if we're on Win32, complain about compression */
   if ((options.compressprog && *options.compressprog)) {
-    do_rawlog(LT_ERR,
-              "CONFIG: compression program is specified but not used in Win32, ignoring",
-              options.compressprog);
+    do_rawlog(LT_ERR, "CONFIG: compression program is specified but not used "
+                      "in Win32, ignoring.");
   }
 
   if (((options.compresssuff && *options.compresssuff))) {
-    do_rawlog(LT_ERR,
-              "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-              options.compresssuff);
+    do_rawlog(LT_ERR, "CONFIG: compression suffix is specified but not used in "
+                      "Win32, ignoring.");
   }
 
   /* Also remove the compression options */
@@ -1682,8 +1549,8 @@ do_config_list(dbref player, const char *type, int lc)
     /* Look up the type in the group table */
     int found = 0;
     for (cgp = confgroups; cgp->name; cgp++) {
-      if (string_prefix(T(cgp->name), type)
-          && Can_View_Config_Group(player, cgp)) {
+      if (string_prefixe(T(cgp->name), type) &&
+          Can_View_Config_Group(player, cgp)) {
         found = 1;
         break;
       }
@@ -1691,7 +1558,8 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (string_prefix(cp->name, type) && can_view_config_option(player, cp)) {
+        if (string_prefixe(cp->name, type) &&
+            can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
         }
@@ -1700,7 +1568,8 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (!strcasecmp(cp->name, type) && can_view_config_option(player, cp)) {
+          if (strcasecmp(cp->name, type) == 0 &&
+              can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
           }
@@ -1710,14 +1579,16 @@ do_config_list(dbref player, const char *type, int lc)
         /* Try a wildcard search of option names, including local options */
         char *wild = tprintf("*%s*", type);
         for (cp = conftable; cp->name; cp++) {
-          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
+          if (quick_wild(wild, cp->name) &&
+              can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
+          if (quick_wild(wild, cp->name) &&
+              can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
@@ -1734,19 +1605,19 @@ do_config_list(dbref player, const char *type, int lc)
     } else {
       /* Show all entries of that type */
       notify(player, cgp->desc);
-      if (string_prefix("compile", type))
+      if (strcasecmp("compile", type) == 0)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && !strcmp(cp->group, cgp->name)
-              && can_view_config_option(player, cp)) {
+          if (cp->group && !strcmp(cp->group, cgp->name) &&
+              can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->group, cgp->name)
-              && can_view_config_option(player, cp)) {
+          if (cp->group && strcasecmp(cp->group, cgp->name) == 0 &&
+              can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1768,57 +1639,28 @@ do_config_list(dbref player, const char *type, int lc)
 /** Lowercase a string if we've been asked to */
 #define MAYBE_LC(x) (lc ? strlower(x) : x)
 static char *
-config_to_string(dbref player
-                 __attribute__ ((__unused__)), PENNCONF *cp, int lc)
+config_to_string(dbref player __attribute__((__unused__)), PENNCONF *cp, int lc)
 {
   static char result[BUFFER_LEN];
   char *bp = result;
 
-  if ((cp->handler == cf_str) || (cp->handler == cf_flag))
-    safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name), (char *) cp->loc);
-  else if (cp->handler == cf_int)
-    safe_format(result, &bp, " %-40s %d", MAYBE_LC(cp->name),
-                *((int *) cp->loc));
-  else if (cp->handler == cf_time) {
-    div_t n;
-    int secs = *(int *) cp->loc;
-
-    safe_format(result, &bp, " %-40s ", MAYBE_LC(cp->name));
-
-    if (secs >= 3600) {
-      n = div(secs, 3600);
-      secs = n.rem;
-      safe_format(result, &bp, "%dh", n.quot);
-    }
-    if (secs >= 60) {
-      n = div(secs, 60);
-      secs = n.rem;
-      safe_format(result, &bp, "%dm", n.quot);
-    }
-    if (secs)
-      safe_format(result, &bp, "%ds", secs);
-  } else if (cp->handler == cf_bool)
-    safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name),
-                (*((int *) cp->loc) ? "Yes" : "No"));
-  else if (cp->handler == cf_dbref)
-    safe_format(result, &bp, " %-40s #%d", MAYBE_LC(cp->name),
-                *((dbref *) cp->loc));
+  safe_format(result, &bp, " %-40s %s", MAYBE_LC(cp->name),
+              display_config_value(cp));
   *bp = '\0';
   return result;
 }
 
-/* This one doesn't return the names */
-static char *
-config_to_string2(dbref player
-                  __attribute__ ((__unused__)), PENNCONF *cp, int lc
-                  __attribute__ ((__unused__)))
+/* Get the display value (showing Yes/No for bools, turning privbits
+ * to strings, etc) for a config option */
+char *
+display_config_value(PENNCONF *cp)
 {
   static char result[BUFFER_LEN];
   char *bp = result;
   if ((cp->handler == cf_str) || (cp->handler == cf_flag))
-    safe_format(result, &bp, "%s", (char *) cp->loc);
+    safe_str((char *) cp->loc, result, &bp);
   else if (cp->handler == cf_int)
-    safe_format(result, &bp, "%d", *((int *) cp->loc));
+    safe_integer(*((int *) cp->loc), result, &bp);
   else if (cp->handler == cf_time) {
     div_t n;
     int secs = *(int *) cp->loc;
@@ -1839,6 +1681,16 @@ config_to_string2(dbref player
     safe_format(result, &bp, "%s", (*((int *) cp->loc) ? "Yes" : "No"));
   else if (cp->handler == cf_dbref)
     safe_format(result, &bp, "#%d", *((dbref *) cp->loc));
+  else if (cp->handler == cf_priv) {
+    struct priv_option *po;
+
+    po = find_priv_option(cp->name);
+    if (po) {
+      safe_str(privs_to_string(po->table, *((privbits *) cp->loc)), result,
+               &bp);
+    }
+  }
+
   *bp = '\0';
   return result;
 }
@@ -1854,17 +1706,17 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (!strcasecmp(cp->name, args[0])
-          && can_view_config_option(executor, cp)) {
-        safe_str(config_to_string2(executor, cp, 0), buff, bp);
+      if (!strcasecmp(cp->name, args[0]) &&
+          can_view_config_option(executor, cp)) {
+        safe_str(display_config_value(cp), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (!strcasecmp(cp->name, args[0])
-          && can_view_config_option(executor, cp)) {
-        safe_str(config_to_string2(executor, cp, 0), buff, bp);
+      if (!strcasecmp(cp->name, args[0]) &&
+          can_view_config_option(executor, cp)) {
+        safe_str(display_config_value(cp), buff, bp);
         return;
       }
     }
@@ -1915,8 +1767,8 @@ do_enable(dbref player, const char *param, int state)
           notify(player, T("Disabled."));
         else
           notify(player, T("Enabled."));
-        do_log(LT_WIZ, player, NOTHING, "%s %s",
-               cp->name, (state) ? "ENABLED" : "DISABLED");
+        do_log(LT_WIZ, player, NOTHING, "%s %s", cp->name,
+               (state) ? "ENABLED" : "DISABLED");
       } else
         notify(player, T("That isn't an on/off option."));
       return;
@@ -1993,6 +1845,10 @@ show_compile_options(dbref player)
   notify(player, T(" SSSE3 instructions are being used."));
 #endif
 
+#ifdef HAVE_SSE42
+  notify(player, T(" SSE4.2 instructions are being used."));
+#endif
+
 #ifdef HAVE_ALTIVEC
   notify(player, T(" Altivec instructions are being used."));
 #endif
@@ -2003,11 +1859,10 @@ show_compile_options(dbref player)
   notify(player, T(" @config/save is disabled."));
 #endif
 
-#if ATTR_STORAGE == 0
-  notify(player, T(" Attribute contents are managed by malloc."));
-#elif ATTR_STORAGE == 1
-  notify(player, T(" Attribute contents are managed by the chunk system."));
-#endif
+  if (options.use_chunk)
+    notify(player, T(" Attribute contents are managed by the chunk system."));
+  else
+    notify(player, T(" Attribute contents are managed by malloc."));
 
 #ifdef HAVE_ZONEINFO
   notify(player, T(" IANA symbolic timezones can be used."));

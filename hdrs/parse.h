@@ -21,21 +21,21 @@
 #include "mushtype.h"
 
 /* These are some common error messages. */
-extern const char e_int[];      /* #-1 ARGUMENT MUST BE INTEGER */
-extern const char e_ints[];     /* #-1 ARGUMENTS MUST BE INTEGERS */
-extern const char e_uint[];     /* #-1 ARGUMENT MUST BE POSITIVE INTEGER */
-extern const char e_uints[];    /* #-1 ARGUMENTS MUST BE POSITIVE INTEGERS */
-extern const char e_num[];      /* #-1 ARGUMENT MUST BE NUMBER */
-extern const char e_nums[];     /* #-1 ARGUMENTS MUST BE NUMBERS */
-extern const char e_perm[];     /* #-1 PERMISSION DENIED */
-extern const char e_atrperm[];  /* #-1 NO PERMISSION TO GET ATTRIBUTE */
-extern const char e_match[];    /* #-1 NO MATCH */
-extern const char e_notvis[];   /* #-1 NO SUCH OBJECT VISIBLE */
-extern const char e_disabled[]; /* #-1 FUNCTION DISABLED */
-extern const char e_range[];    /* #-1 OUT OF RANGE */
-extern const char e_argrange[]; /* #-1 ARGUMENT OUT OF RANGE */
-extern const char e_badregname[];       /* #-1 REGISTER NAME INVALID */
-extern const char e_toomanyregs[];      /* #-1 TOO MANY REGISTERS */
+extern const char e_int[];         /* #-1 ARGUMENT MUST BE INTEGER */
+extern const char e_ints[];        /* #-1 ARGUMENTS MUST BE INTEGERS */
+extern const char e_uint[];        /* #-1 ARGUMENT MUST BE POSITIVE INTEGER */
+extern const char e_uints[];       /* #-1 ARGUMENTS MUST BE POSITIVE INTEGERS */
+extern const char e_num[];         /* #-1 ARGUMENT MUST BE NUMBER */
+extern const char e_nums[];        /* #-1 ARGUMENTS MUST BE NUMBERS */
+extern const char e_perm[];        /* #-1 PERMISSION DENIED */
+extern const char e_atrperm[];     /* #-1 NO PERMISSION TO GET ATTRIBUTE */
+extern const char e_match[];       /* #-1 NO MATCH */
+extern const char e_notvis[];      /* #-1 NO SUCH OBJECT VISIBLE */
+extern const char e_disabled[];    /* #-1 FUNCTION DISABLED */
+extern const char e_range[];       /* #-1 OUT OF RANGE */
+extern const char e_argrange[];    /* #-1 ARGUMENT OUT OF RANGE */
+extern const char e_badregname[];  /* #-1 REGISTER NAME INVALID */
+extern const char e_toomanyregs[]; /* #-1 TOO MANY REGISTERS */
 
 /* The following routines all take strings as arguments, and return
  * data of the appropriate types.
@@ -54,14 +54,13 @@ unsigned int parse_uint(const char *, char **, int);
 
 int32_t parse_int32(const char *, char **, int);
 uint32_t parse_uint32(const char *, char **, int);
+uint64_t parse_uint64(const char *, char **, int);
 
 /* TO-DO: Add parse_X/is_X/unparse_X and maybe safe_X as needed for
  * long, unsigned long, size_t, intmax_t, int32_t, uint32_t, int64_t
  * uint64_t, time_t */
 
 #define parse_number(str) strtod(str, NULL)
-
-
 
 /* The following routines all take various arguments, and return
  * string representations of same.  The string representations
@@ -104,23 +103,23 @@ typedef struct fun FUN;
 #define HAVE_FUN_DEFINED
 #endif
 /** Common declaration for softcode function implementations */
-#define FUNCTION(fun_name) \
-  /* ARGSUSED */ /* try to keep lint happy */ \
-  void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
-                   int arglens[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, NEW_PE_INFO *pe_info, int eflags); \
-  void fun_name(FUN *fun __attribute__ ((__unused__)), \
-                char *buff __attribute__ ((__unused__)), \
-                char **bp  __attribute__ ((__unused__)), \
-                int nargs  __attribute__ ((__unused__)), \
-                char *args[]  __attribute__ ((__unused__)), \
-                int arglens[] __attribute__ ((__unused__)), \
-                dbref executor  __attribute__ ((__unused__)), \
-                dbref caller  __attribute__ ((__unused__)), \
-                dbref enactor  __attribute__ ((__unused__)), \
-                char const *called_as  __attribute__ ((__unused__)), \
-                NEW_PE_INFO *pe_info  __attribute__ ((__unused__)), \
-                int eflags __attribute__ ((__unused__)))
+#define FUNCTION(fun_name)                                                     \
+  /* ARGSUSED */ /* try to keep lint happy */                                  \
+  void fun_name(FUN *fun, char *buff, char **bp, int nargs, char *args[],      \
+                int arglens[], dbref executor, dbref caller, dbref enactor,    \
+                char const *called_as, NEW_PE_INFO *pe_info, int eflags);      \
+  void fun_name(FUN *fun __attribute__((__unused__)),                          \
+                char *buff __attribute__((__unused__)),                        \
+                char **bp __attribute__((__unused__)),                         \
+                int nargs __attribute__((__unused__)),                         \
+                char *args[] __attribute__((__unused__)),                      \
+                int arglens[] __attribute__((__unused__)),                     \
+                dbref executor __attribute__((__unused__)),                    \
+                dbref caller __attribute__((__unused__)),                      \
+                dbref enactor __attribute__((__unused__)),                     \
+                char const *called_as __attribute__((__unused__)),             \
+                NEW_PE_INFO *pe_info __attribute__((__unused__)),              \
+                int eflags __attribute__((__unused__)))
 
 /* All results are returned in buff, at the point *bp.  *bp is likely
  * not equal to buff, so make no assumptions about writing at the
@@ -160,9 +159,9 @@ typedef struct fun FUN;
 
 /* process_expression() evaluates expressions.  What a concept. */
 
-int process_expression(char *buff, char **bp, char const **str,
-                       dbref executor, dbref caller, dbref enactor,
-                       int eflags, int tflags, NEW_PE_INFO *pe_info);
+int process_expression(char *buff, char **bp, char const **str, dbref executor,
+                       dbref caller, dbref enactor, int eflags, int tflags,
+                       NEW_PE_INFO *pe_info);
 
 void free_pe_info(NEW_PE_INFO *pe_info);
 NEW_PE_INFO *make_pe_info(char *name);
@@ -189,25 +188,26 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
  * eflags consists of one or more of the following evaluation flags:
  */
 
-#define PE_NOTHING              0
-#define PE_COMPRESS_SPACES      0x00000001
-#define PE_STRIP_BRACES         0x00000002
-#define PE_COMMAND_BRACES       0x00000004
-#define PE_EVALUATE             0x00000010
-#define PE_FUNCTION_CHECK       0x00000020
-#define PE_FUNCTION_MANDATORY   0x00000040
-#define PE_LITERAL              0x00000100
-#define PE_DOLLAR               0x00000200
-#define PE_DEBUG                0x00000400
-#define PE_BUILTINONLY          0x00000800
-#define PE_USERFN               0x00001000
-#define PE_NODEBUG              0x00002000
+#define PE_NOTHING 0
+#define PE_COMPRESS_SPACES 0x00000001
+#define PE_STRIP_BRACES 0x00000002
+#define PE_COMMAND_BRACES 0x00000004
+#define PE_EVALUATE 0x00000010
+#define PE_FUNCTION_CHECK 0x00000020
+#define PE_FUNCTION_MANDATORY 0x00000040
+#define PE_LITERAL 0x00000100
+#define PE_DOLLAR 0x00000200
+#define PE_DEBUG 0x00000400
+#define PE_BUILTINONLY 0x00000800
+#define PE_USERFN 0x00001000
+#define PE_NODEBUG 0x00002000
 
-#define PE_DEFAULT (PE_COMPRESS_SPACES | PE_STRIP_BRACES | \
-                    PE_DOLLAR | PE_EVALUATE | PE_FUNCTION_CHECK)
+#define PE_DEFAULT                                                             \
+  (PE_COMPRESS_SPACES | PE_STRIP_BRACES | PE_DOLLAR | PE_EVALUATE |            \
+   PE_FUNCTION_CHECK)
 
-#define PE_UDEFAULT (PE_COMPRESS_SPACES | PE_STRIP_BRACES | \
-                     PE_EVALUATE | PE_FUNCTION_CHECK)
+#define PE_UDEFAULT                                                            \
+  (PE_COMPRESS_SPACES | PE_STRIP_BRACES | PE_EVALUATE | PE_FUNCTION_CHECK)
 
 #define PE_PASS_ON (PE_DEBUG | PE_NODEBUG | PE_USERFN)
 /* PE_COMPRESS_SPACES strips leading and trailing spaces, and reduces sets
@@ -252,18 +252,19 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
  * tflags consists of one or more of the following termination flags:
  */
 
-#define PT_NOTHING      0
-#define PT_BRACE        0x00000001      /* '}' */
-#define PT_BRACKET      0x00000002      /* ']' */
-#define PT_PAREN        0x00000004      /* ')' */
-#define PT_COMMA        0x00000008      /* ',' */
-#define PT_SEMI         0x00000010      /* ';' */
-#define PT_EQUALS       0x00000020      /* '=' */
-#define PT_SPACE        0x00000040      /* ' ' */
-#define PT_GT           0x00000080      /* '>' */
-/* Part of r1628's deprecation of unescaped commas as the final arg of a function,
+#define PT_NOTHING 0
+#define PT_BRACE 0x00000001   /* '}' */
+#define PT_BRACKET 0x00000002 /* ']' */
+#define PT_PAREN 0x00000004   /* ')' */
+#define PT_COMMA 0x00000008   /* ',' */
+#define PT_SEMI 0x00000010    /* ';' */
+#define PT_EQUALS 0x00000020  /* '=' */
+#define PT_SPACE 0x00000040   /* ' ' */
+#define PT_GT 0x00000080      /* '>' */
+/* Part of r1628's deprecation of unescaped commas as the final arg of a
+ * function,
  * added 17 Sep 2012. Remove when this behaviour is removed. */
-#define PT_NOT_COMMA    0x00000100
+#define PT_NOT_COMMA 0x00000100
 /* End of r1628's deprecation */
 
 /* These represent '\0', '}', ']', ')', ',', ';', '=', and ' ', respectively.
@@ -287,4 +288,4 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 extern void start_cpu_timer(void);
 extern void reset_cpu_timer(void);
 
-#endif                          /* !_PARSE_H_ */
+#endif /* !_PARSE_H_ */

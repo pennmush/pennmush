@@ -48,6 +48,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#endif
 #include <errno.h>
 #include <signal.h>
 
@@ -62,7 +65,6 @@ void fputerr(const char *);
 const char *time_string(void);
 
 #ifdef HAVE_LIBEVENT_CORE
-
 
 /* Version using libevent's async dns routines. Much shorter because
  * we don't have our own event loop implementation. It also runs all
@@ -117,8 +119,7 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
 }
 
 static void
-send_resp(evutil_socket_t fd, short what
-          __attribute__ ((__unused__)), void *arg)
+send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *arg)
 {
   struct is_data *data = arg;
   ssize_t len;
@@ -133,8 +134,9 @@ send_resp(evutil_socket_t fd, short what
 }
 
 static void
-address_resolved(int result, char type, int count, int ttl
-                 __attribute__ ((__unused__)), void *addresses, void *arg)
+address_resolved(int result, char type, int count,
+                 int ttl __attribute__((__unused__)), void *addresses,
+                 void *arg)
 {
   struct is_data *data = arg;
 
@@ -150,9 +152,8 @@ address_resolved(int result, char type, int count, int ttl
 }
 
 static void
-got_request(evutil_socket_t fd,
-            short what __attribute__ ((__unused__)),
-            void *arg __attribute__ ((__unused__)))
+got_request(evutil_socket_t fd, short what __attribute__((__unused__)),
+            void *arg __attribute__((__unused__)))
 {
   struct request_dgram req;
   struct is_data *data;
@@ -165,7 +166,6 @@ got_request(evutil_socket_t fd,
     exit(EXIT_FAILURE);
   }
 
-
   data = malloc(sizeof *data);
   memset(data, 0, sizeof *data);
   data->resp.fd = req.fd;
@@ -177,31 +177,96 @@ got_request(evutil_socket_t fd,
   evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, data);
 }
 
+static pid_t parent_pid = 0;
+
 /** Called periodically to ensure the parent mush is still there. */
 static void
-check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
-             short what __attribute__ ((__unused__)),
-             void *arg __attribute__ ((__unused__)))
+check_parent(evutil_socket_t fd __attribute__((__unused__)),
+             short what __attribute__((__unused__)),
+             void *arg __attribute__((__unused__)))
 {
-  if (getppid() == 1) {
+  if (getppid() != parent_pid) {
     fputerr("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
 
+#ifdef HAVE_PRCTL
+static void
+check_parent_signal(evutil_socket_t fd __attribute__((__unused__)),
+                    short what __attribute__((__unused__)),
+                    void *arg __attribute__((__unused__)))
+{
+  fputerr("Parent mush process exited unexpectedly! Shutting down.");
+  event_base_loopbreak(main_loop);
+}
+#endif
+
+#ifdef HAVE_KQUEUE
+static void
+check_parent_kqueue(evutil_socket_t fd,
+		    short what __attribute__((__unused__)),
+		    void *args __attribute__((__unused__)))
+{
+  struct kevent event;
+  int r;
+  struct timespec timeout = { 0, 0 };
+
+  r = kevent(fd, NULL, 0, &event, 1, &timeout);
+  if (r == 1 && event.filter == EVFILT_PROC && event.fflags == NOTE_EXIT
+      && (pid_t)event.ident == parent_pid) {
+    fputerr("Parent mush process exited unexpectedly! Shutting down.");
+    event_base_loopbreak(main_loop);
+  }
+}
+#endif
+
 int
 main(void)
 {
   struct event *watch_parent, *watch_request;
-  struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
+  struct timeval parent_timeout = {.tv_sec = 5, .tv_usec = 0};
+  bool parent_watcher = false;
+
+  parent_pid = getppid();
+
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio proc flock inet dns", NULL) < 0) {
+    perror("pledge");
+  }
+#endif
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
-  /* Run every 5 seconds to see if the parent mush process is still around. */
-  watch_parent =
-    event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
-  event_add(watch_parent, &parent_timeout);
+#if defined(HAVE_PRCTL)
+  if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
+    watch_parent = evsignal_new(main_loop, SIGUSR1, check_parent_signal, NULL);
+    event_add(watch_parent, NULL);
+    parent_watcher = true;
+  }
+#elif defined(HAVE_KQUEUE)
+  int kfd = kqueue();
+  if (kfd >= 0) {
+    struct kevent event;
+    struct timespec timeout = { 0, 0 };
+    EV_SET(&event, parent_pid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT,
+	   NOTE_EXIT, 0, 0);
+    if (kevent(kfd, &event, 1, NULL, 0, &timeout) >= 0) {
+      watch_parent = event_new(main_loop, kfd, EV_READ, check_parent_kqueue,
+			       NULL);
+      event_add(watch_parent, NULL);
+      parent_watcher = true;
+    }
+  }
+#endif
+  
+  if (!parent_watcher) {
+    /* Run every 5 seconds to see if the parent mush process is still around. */
+    watch_parent =
+      event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+    event_add(watch_parent, &parent_timeout);
+  }
 
   /* Wait for an incoming request datagram from the mush */
   watch_request =
@@ -212,6 +277,7 @@ main(void)
   fprintf(stderr, "info_slave: starting event loop using %s.\n",
           event_base_get_method(main_loop));
   unlock_file(stderr);
+
   event_base_dispatch(main_loop);
   fputerr("shutting down.");
 
@@ -233,7 +299,7 @@ int eventwait_watch_parent_exit(void);
 int eventwait_watch_child_exit(void);
 int eventwait(void);
 
-enum methods { METHOD_KQUEUE, METHOD_POLL, METHOD_SELECT };
+enum methods { METHOD_KQUEUE, METHOD_POLL };
 
 enum methods method;
 
@@ -244,6 +310,7 @@ enum methods method;
 enum { MAX_SLAVES = 5 };
 sig_atomic_t children = 0;
 pid_t child_pids[MAX_SLAVES];
+pid_t parent_pid = 0;
 
 int
 main(void)
@@ -259,6 +326,12 @@ main(void)
 
 #ifdef HAVE_GETPPID
   netmush = getppid();
+#endif
+
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio flock dns proc", NULL) < 0) {
+    perror("pledge");
+  }
 #endif
 
   if (eventwait_init() < 0) {
@@ -298,7 +371,7 @@ main(void)
         return EXIT_FAILURE;
       } else
         continue;
-    } else                      /* ev == 0 */
+    } else /* ev == 0 */
       continue;
 
     if (len == -1 && errno == EINTR)
@@ -333,9 +406,8 @@ main(void)
     memset(&resp, 0, sizeof resp);
     resp.fd = req.fd;
 
-    if (getnameinfo(&req.remote.addr, req.rlen, resp.ipaddr,
-                    sizeof resp.ipaddr, NULL, 0,
-                    NI_NUMERICHOST | NI_NUMERICSERV) != 0)
+    if (getnameinfo(&req.remote.addr, req.rlen, resp.ipaddr, sizeof resp.ipaddr,
+                    NULL, 0, NI_NUMERICHOST | NI_NUMERICSERV) != 0)
       strcpy(resp.ipaddr, "An error occured");
 
     if (getnameinfo(&req.local.addr, req.llen, NULL, 0, localport,
@@ -385,17 +457,9 @@ reaper(int signo)
  * of waiting for a variety of events.  In particular, on BSD
  * (Including OS X) systems, it uses kqueue()/kevent() to wait for a
  * fd to be readable or a process to exit.  On others, it uses poll(2)
- * or select(2) with a timeout and periodic checking of getppid() to
- * see if the parent netmush process still exists.
+ * with a timeout and periodic checking of getppid() to see if the
+ * parent netmush process still exists.
  */
-
-#define HAVE_SELECT
-
-#ifdef HAVE_SELECT
-static fd_set readers;
-static int maxd = 0;
-static pid_t parent_pid = 0;
-#endif
 
 #ifdef HAVE_KQUEUE
 static int kqueue_id = -1;
@@ -405,7 +469,6 @@ static int kqueue_id = -1;
 static struct pollfd *poll_fds = NULL;
 static int pollfd_len = 0;
 #endif
-
 
 /** Initialize event loop
  * \return 0 on success, -1 on failure
@@ -431,17 +494,9 @@ eventwait_init(void)
   } else
 #endif
 #ifdef HAVE_POLL
-  if (1) {
+    if (1) {
     fputerr("trying poll event loop... ok. Using poll.");
     method = METHOD_POLL;
-    return 0;
-  } else
-#endif
-#ifdef HAVE_SELECT
-  if (1) {
-    fputerr("trying select event loop... ok. Using select.");
-    FD_ZERO(&readers);
-    method = METHOD_SELECT;
     return 0;
   } else
 #endif
@@ -462,19 +517,19 @@ eventwait_watch_fd_read(int fd)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
-      memset(&add, 0, sizeof add);
-      add.ident = fd;
-      add.flags = EV_ADD | EV_ENABLE;
-      add.filter = EVFILT_READ;
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    memset(&add, 0, sizeof add);
+    add.ident = fd;
+    add.flags = EV_ADD | EV_ENABLE;
+    add.filter = EVFILT_READ;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
 #ifdef HAVE_POLL
   case METHOD_POLL:
@@ -482,13 +537,6 @@ eventwait_watch_fd_read(int fd)
     poll_fds[pollfd_len].fd = fd;
     poll_fds[pollfd_len].events = POLLIN;
     pollfd_len += 1;
-    return 0;
-#endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT:
-    FD_SET(fd, &readers);
-    if (fd >= maxd)
-      maxd = fd + 1;
     return 0;
 #endif
   default:
@@ -502,8 +550,7 @@ eventwait_watch_fd_read(int fd)
 int
 eventwait_watch_parent_exit(void)
 {
-  pid_t parent;
-
+  pid_t parent = 0;
 
 #ifdef HAVE_GETPPID
   parent = getppid();
@@ -514,30 +561,29 @@ eventwait_watch_parent_exit(void)
 
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
-      memset(&add, 0, sizeof(add));
-      add.ident = parent;
-      add.flags = EV_ADD | EV_ENABLE;
-      add.filter = EVFILT_PROC;
-      add.fflags = NOTE_EXIT;
+    memset(&add, 0, sizeof(add));
+    add.ident = parent;
+    add.flags = EV_ADD | EV_ENABLE;
+    add.filter = EVFILT_PROC;
+    add.fflags = NOTE_EXIT;
 
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
+
 #ifdef HAVE_POLL
-  case METHOD_POLL:            /* Fall through */
-#endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT:
+  case METHOD_POLL:
     parent_pid = parent;
     return 0;
 #endif
+
   default:
     errno = ENOTSUP;
     return -1;
@@ -550,30 +596,30 @@ eventwait_watch_child_exit(void)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent add;
-      struct timespec timeout;
+  case METHOD_KQUEUE: {
+    struct kevent add;
+    struct timespec timeout;
 
 #ifdef HAVE_SIGPROCMASK
-      sigset_t chld_mask;
+    sigset_t chld_mask;
 
-      sigemptyset(&chld_mask);
-      sigaddset(&chld_mask, SIGCHLD);
+    sigemptyset(&chld_mask);
+    sigaddset(&chld_mask, SIGCHLD);
 #endif
 
-      memset(&add, 0, sizeof(add));
-      add.filter = EVFILT_SIGNAL;
-      add.ident = SIGCHLD;
-      add.flags = EV_ADD | EV_ENABLE;
+    memset(&add, 0, sizeof(add));
+    add.filter = EVFILT_SIGNAL;
+    add.ident = SIGCHLD;
+    add.flags = EV_ADD | EV_ENABLE;
 
-      timeout.tv_sec = 0;
-      timeout.tv_nsec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_nsec = 0;
 
-      if (sigprocmask(SIG_BLOCK, &chld_mask, NULL) < 0)
-        return -1;
+    if (sigprocmask(SIG_BLOCK, &chld_mask, NULL) < 0)
+      return -1;
 
-      return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
-    }
+    return kevent(kqueue_id, &add, 1, NULL, 0, &timeout);
+  }
 #endif
   default:
     install_sig_handler(SIGCHLD, reaper);
@@ -590,106 +636,62 @@ eventwait(void)
 {
   switch (method) {
 #ifdef HAVE_KQUEUE
-  case METHOD_KQUEUE:{
-      struct kevent triggered[2];
-      int res;
+  case METHOD_KQUEUE: {
+    struct kevent triggered[2];
+    int res;
 
-      while (1) {
-        res = kevent(kqueue_id, NULL, 0, triggered, 2, NULL);
-        if (res == 1) {
-          if (triggered[0].filter == EVFILT_SIGNAL) {
-            reap_children();
-            continue;
-          } else
-            return triggered[0].ident;
-        } else if (res == 2) {
-          if (triggered[0].filter == EVFILT_SIGNAL) {
-            reap_children();
-            return triggered[1].ident;
-          } else if (triggered[1].filter == EVFILT_SIGNAL) {
-            reap_children();
-            return triggered[0].ident;
-          }
-        } else if (res < 0)
-          return -1;
-      }
+    while (1) {
+      res = kevent(kqueue_id, NULL, 0, triggered, 2, NULL);
+      if (res == 1) {
+        if (triggered[0].filter == EVFILT_SIGNAL) {
+          reap_children();
+          continue;
+        } else
+          return triggered[0].ident;
+      } else if (res == 2) {
+        if (triggered[0].filter == EVFILT_SIGNAL) {
+          reap_children();
+          return triggered[1].ident;
+        } else if (triggered[1].filter == EVFILT_SIGNAL) {
+          reap_children();
+          return triggered[0].ident;
+        }
+      } else if (res < 0)
+        return -1;
     }
+  }
 #endif
 #if defined(HAVE_POLL)
-  case METHOD_POLL:{
-      /* It's more complex to use poll(), since it can only poll
-       * file descriptor events, not process events too. Wake up every
-       * 5 seconds to see if the given pid has turned into 1.
-       */
-      int timeout;
-      int res;
+  case METHOD_POLL: {
+    /* It's more complex to use poll(), since it can only poll
+     * file descriptor events, not process events too. Wake up every
+     * 5 seconds to see if the given pid has turned into 1.
+     */
+    int timeout;
+    int res;
 
-      if (parent_pid > 0)
-        timeout = 5000;
-      else
-        timeout = -1;
+    if (parent_pid > 0)
+      timeout = 5000;
+    else
+      timeout = -1;
 
-      while (1) {
-        res = poll(poll_fds, pollfd_len, timeout);
-        if (res > 0) {
-          int n;
-          for (n = 0; n < pollfd_len; n++)
-            if (poll_fds[n].revents & POLLIN)
-              return poll_fds[n].fd;
-        } else if (res == 0 && parent_pid) {
-#ifdef HAVE_GETPPID
-          if (getppid() == 1)
-            /* Parent rocess no longer exists; parent is now init */
-            return parent_pid;
-#endif
-        } else if (res < 0)
-          return -1;
-      }
-    }
-#endif
-#ifdef HAVE_SELECT
-  case METHOD_SELECT:{
-      /* It's more complex to use select(), since it can only poll
-       * file descriptor events, not process events too. Wake up every
-       * 5 seconds to see if the given pid has turned into 1.
-       */
-      struct timeval timeout, *tout;
-      int res;
-
-      if (parent_pid > 0)
-        tout = &timeout;
-      else
-        tout = NULL;
-
-      while (1) {
-        fd_set local_readers;
+    while (1) {
+      res = poll(poll_fds, pollfd_len, timeout);
+      if (res > 0) {
         int n;
-
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
-
-        FD_ZERO(&local_readers);
-
-        for (n = 0; n < maxd; n++)
-          if (FD_ISSET(n, &readers))
-            FD_SET(n, &local_readers);
-
-        res = select(maxd, &local_readers, NULL, NULL, tout);
-        if (res > 0) {
-          int n;
-          for (n = 0; n < maxd; n++)
-            if (FD_ISSET(n, &local_readers))
-              return n;
-        } else if (res == 0 && parent_pid) {
+        for (n = 0; n < pollfd_len; n++)
+          if (poll_fds[n].revents & POLLIN)
+            return poll_fds[n].fd;
+      } else if (res == 0 && parent_pid) {
 #ifdef HAVE_GETPPID
-          if (getppid() == 1)
-            /* Parent process no longer exists; parent is now init */
-            return parent_pid;
+        if (getppid() == 1)
+          /* Parent rocess no longer exists; parent is now init */
+          return parent_pid;
 #endif
-        } else if (res < 0)
-          return -1;
-      }
+      } else if (res < 0)
+        return -1;
     }
+  }
 #endif
   default:
     return -1;

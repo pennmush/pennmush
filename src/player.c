@@ -26,6 +26,9 @@
 #include <sys/types.h>
 #endif
 #include <fcntl.h>
+#ifdef HAVE_CRYPT_H
+#include <crypt.h>
+#endif
 
 #include "access.h"
 #include "attrib.h"
@@ -42,23 +45,14 @@
 #include "parse.h"
 #include "strutil.h"
 
-#ifdef HAVE_CRYPT
-#ifdef I_CRYPT
-#include <crypt.h>
-#else
-extern char *crypt(const char *, const char *);
-#endif
-#endif
-
 /* From mycrypt.c */
 char *mush_crypt_sha0(const char *key);
 char *password_hash(const char *key, const char *algo);
 bool password_comp(const char *saved, const char *pass);
 bool check_mux_password(const char *saved, const char *password);
 
-dbref email_register_player
-  (DESC *d, const char *name, const char *email, const char *host,
-   const char *ip);
+dbref email_register_player(DESC *d, const char *name, const char *email,
+                            const char *host, const char *ip);
 static dbref make_player(const char *name, const char *password,
                          const char *host, const char *ip);
 
@@ -78,8 +72,8 @@ extern struct db_stat_info current_state;
 
 /** For tracking failed login attempts by IPs */
 typedef struct _fail_info {
-  char ip[IP_LENGTH];     /**< The failed IP. Extra long, just for ipv6. */
-  time_t failTime;        /**< The time of the last failed login attempt */
+  char ip[IP_LENGTH]; /**< The failed IP. Extra long, just for ipv6. */
+  time_t failTime;    /**< The time of the last failed login attempt */
 } Fail_Info;
 
 /* This is a rotating buffer of the FAIL_COUNT most recent failures. */
@@ -161,7 +155,6 @@ mark_failed(const char *ipaddr)
   return count_failed(ipaddr);
 }
 
-
 /** Check a player's password against a given string.
  *
  *  First checks new-style formatted password strings
@@ -184,7 +177,7 @@ password_check(dbref player, const char *password)
 
   /* read the password and compare it */
   if (!(a = atr_get_noparent(player, pword_attr)))
-    return 1;                   /* No password attribute */
+    return 1; /* No password attribute */
 
   saved = strdup(atr_value(a));
 
@@ -195,11 +188,11 @@ password_check(dbref player, const char *password)
     /* Nope. Try SHA0. */
     char *passwd = mush_crypt_sha0(password);
     if (strcmp(saved, passwd) != 0) {
-      /* Not SHA0 either. Try old-school crypt(); */
+/* Not SHA0 either. Try old-school crypt(); */
 #ifdef HAVE_CRYPT
       if (strcmp(crypt(password, "XX"), saved) != 0) {
-        /* Nope */
-#endif                          /* HAVE_CRYPT */
+/* Nope */
+#endif /* HAVE_CRYPT */
         /* See if it's a MUX password */
         if (!check_mux_password(saved, password)) {
           /* As long as it's not obviously encrypted, check for a
@@ -269,21 +262,20 @@ connect_player(DESC *d, const char *name, const char *password,
     return NOTHING;
   }
   /* Check sitelock patterns */
-  if (Guest(player)
-      && (!Site_Can_Guest(host, player) || !Site_Can_Guest(ip, player))) {
-    if (!Deny_Silent_Site(host, AMBIGUOUS) && !Deny_Silent_Site(ip, AMBIGUOUS)) {
-      do_log(LT_CONN, 0, 0,
-             "Connection to %s (GUEST) not allowed from %s (%s)", name,
-             host, ip);
+  if (Guest(player) &&
+      (!Site_Can_Guest(host, player) || !Site_Can_Guest(ip, player))) {
+    if (!Deny_Silent_Site(host, AMBIGUOUS) &&
+        !Deny_Silent_Site(ip, AMBIGUOUS)) {
+      do_log(LT_CONN, 0, 0, "Connection to %s (GUEST) not allowed from %s (%s)",
+             name, host, ip);
       strcpy(errbuf, T("Guest connections not allowed."));
       count = mark_failed(ip);
       queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
                   d->descriptor, ip, count, "failed sitelock", player);
     }
     return NOTHING;
-  } else if (!Guest(player)
-             && (!Site_Can_Connect(host, player)
-                 || !Site_Can_Connect(ip, player))) {
+  } else if (!Guest(player) && (!Site_Can_Connect(host, player) ||
+                                !Site_Can_Connect(ip, player))) {
     if (!Deny_Silent_Site(host, player) && !Deny_Silent_Site(ip, player)) {
       do_log(LT_CONN, 0, 0,
              "Connection to %s (Non-GUEST) not allowed from %s (%s)", name,
@@ -333,7 +325,8 @@ connect_player(DESC *d, const char *name, const char *password,
 
 /** Attempt to create a new player object.
  * \param d DESC the creation attempt is being made on (if from connect screen)
- * \param executor dbref of the object attempting to create a player (if \@pcreate)
+ * \param executor dbref of the object attempting to create a player (if
+ * \@pcreate)
  * \param name name of player to create.
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
@@ -358,8 +351,8 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
     do_log(LT_CONN, 0, 0, "Failed creation (bad password) from %s", host);
     if (d) {
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                  d->descriptor, ip, mark_failed(ip),
-                  "create: bad password", name);
+                  d->descriptor, ip, mark_failed(ip), "create: bad password",
+                  name);
     }
     return HOME;
   }
@@ -376,19 +369,6 @@ create_player(DESC *d, dbref executor, const char *name, const char *password,
   /* else he doesn't already exist, create him */
   return make_player(name, password, host, ip);
 }
-
-/* The HAS_SENDMAIL ifdef is kept here as a hint to metaconfig */
-#ifdef MAILER
-#undef HAVE_SENDMAIL
-#define HAVE_SENDMAIL 1
-#undef SENDMAIL
-#define SENDMAIL MAILER
-#endif
-
-#ifdef HAVE_SENDMAIL
-
-/** Size of the elems array */
-#define NELEMS (sizeof(elems)-1)
 
 /** Attempt to register a new player at the connect screen.
  * If registration is allowed, a new player object is created with
@@ -411,10 +391,14 @@ email_register_player(DESC *d, const char *name, const char *email,
   bool resend = 0;
   dbref player = NOTHING;
   FILE *fp;
+  size_t NELEMS = sizeof(elems) - 1;
 
   if (!check_fails(ip)) {
     return NOTHING;
   }
+
+  if (strlen(options.sendmail_prog) == 0)
+    return NOTHING;
 
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     /* Check for re-registration request */
@@ -450,8 +434,8 @@ email_register_player(DESC *d, const char *name, const char *email,
       if (!Site_Can_Register(p)) {
         if (!Deny_Silent_Site(p, AMBIGUOUS)) {
           do_log(LT_CONN, 0, 0,
-                 "Failed registration (bad site in email: %s) from %s",
-                 email, host);
+                 "Failed registration (bad site in email: %s) from %s", email,
+                 host);
           queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                       d->descriptor, ip, mark_failed(ip),
                       "register: bad site in email", name);
@@ -480,9 +464,9 @@ email_register_player(DESC *d, const char *name, const char *email,
   }
 
   /* Come up with a random password of length 7-12 chars */
-  len = get_random32(7, 12);
+  len = get_random_u32(7, 12);
   for (i = 0; i < len; i++)
-    passwd[i] = elems[get_random32(0, NELEMS - 1)];
+    passwd[i] = elems[get_random_u32(0, NELEMS - 1)];
   passwd[len] = '\0';
 
   /* If we've made it here, we can send the email and create the
@@ -493,10 +477,10 @@ email_register_player(DESC *d, const char *name, const char *email,
    */
 
   release_fd();
-  if ((fp = popen(tprintf("%s -t", SENDMAIL), "w")) == NULL) {
+  if ((fp = popen(tprintf("%s -t", options.sendmail_prog), "w")) == NULL) {
     do_log(LT_CONN, 0, 0,
-           "Failed registration of %s by %s: unable to open sendmail",
-           name, email);
+           "Failed registration of %s by %s: unable to open sendmail", name,
+           email);
     queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s,%d",
                 d->descriptor, ip, count_failed(ip),
                 "register: Unable to open sendmail!", name, 1);
@@ -522,11 +506,12 @@ email_register_player(DESC *d, const char *name, const char *email,
 
   if (i != 0) {
     /* Mailer exited with an error code. Log it. */
-    do_rawlog(LT_CONN,
-              "When attempting to email a password to a newly registered player,\n"
-              "\tthe mailer exited with error code %d.\n"
-              "\t(Check /usr/include/sysexits.h if present for the meaning.)",
-              i);
+    do_rawlog(
+      LT_CONN,
+      "When attempting to email a password to a newly registered player,\n"
+      "\tthe mailer exited with error code %d.\n"
+      "\t(Check /usr/include/sysexits.h if present for the meaning.)",
+      i);
     queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s,%d",
                 d->descriptor, ip, count_failed(ip),
                 "register: Unable to send email", name, i);
@@ -544,19 +529,6 @@ email_register_player(DESC *d, const char *name, const char *email,
     return player;
   }
 }
-#else
-dbref
-email_register_player(DESC *d
-                      __attribute__ ((__unused__)), const char *name,
-                      const char *email, const char *host, const char *ip
-                      __attribute__ ((__unused__)))
-{
-  do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);
-  do_log(LT_CONN, 0, 0, "Requested character: '%s'. Email address: %s\n",
-         name, email);
-  return NOTHING;
-}
-#endif                          /* !HAVE_SENDMAIL */
 
 static dbref
 make_player(const char *name, const char *password, const char *host,
@@ -591,7 +563,7 @@ make_player(const char *name, const char *password, const char *host,
   /* Modtime tracks login failures */
   ModTime(player) = (time_t) 0;
   (void) atr_add(player, pword_attr, password_hash(password, NULL), GOD, 0);
-  giveto(player, START_BONUS);  /* starting bonus */
+  giveto(player, START_BONUS); /* starting bonus */
   (void) atr_add(player, "LAST", show_time(mudtime, 0), GOD, 0);
   (void) atr_add(player, "LASTSITE", host, GOD, 0);
   (void) atr_add(player, "LASTIP", ip, GOD, 0);
@@ -618,7 +590,6 @@ make_player(const char *name, const char *password, const char *host,
 
   return player;
 }
-
 
 /** Change a player's password.
  * \verbatim
@@ -694,8 +665,8 @@ check_last(dbref player, const char *host, const char *ip)
     if (h && a) {
       strcpy(last_place, atr_value(h));
       strcpy(last_time, atr_value(a));
-      notify_format(player, T("Last connect was from %s on %s."),
-                    last_place, last_time);
+      notify_format(player, T("Last connect was from %s on %s."), last_place,
+                    last_time);
     }
     /* How about last failed connection */
     h = atr_get_noparent(player, "LASTFAILED");
@@ -717,7 +688,6 @@ check_last(dbref player, const char *host, const char *ip)
   (void) atr_add(player, "LASTIP", ip, GOD, 0);
   (void) atr_add(player, "LASTFAILED", " ", GOD, 0);
 }
-
 
 /** Update the LASTFAILED attribute on a failed connection.
  * \param player dbref of player.

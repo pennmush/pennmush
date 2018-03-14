@@ -47,7 +47,8 @@
 #include "wait.h"
 
 #ifndef HAVE_SOCKETPAIR
-#error "no supported communication options for talking with info_slave are available."
+#error                                                                         \
+  "no supported communication options for talking with info_slave are available."
 #endif
 
 static bool make_info_slave(void);
@@ -55,17 +56,20 @@ static bool make_info_slave(void);
 static fd_set info_pending; /**< Keep track of fds pending a slave lookup */
 static int pending_max = 0;
 int info_slave = -1;
-pid_t info_slave_pid = -1;      /**< Process id of the info_slave process */
-enum is_state info_slave_state = INFO_SLAVE_DOWN;       /**< State of the info_slave process */
+pid_t info_slave_pid = -1; /**< Process id of the info_slave process */
+enum is_state info_slave_state =
+  INFO_SLAVE_DOWN;      /**< State of the info_slave process */
 time_t info_queue_time; /**< Time of last write to slave */
 
-static int startup_attempts = 0; /**< How many times has info_slave been started? */
+static int startup_attempts =
+  0; /**< How many times has info_slave been started? */
 static time_t startup_window;
-#define MAX_ATTEMPTS 5 /**< Error out after this many startup attempts in 60 seconds */
+#define MAX_ATTEMPTS                                                           \
+  5 /**< Error out after this many startup attempts in 60 seconds */
 
 bool info_slave_halted = false;
 
- /* From bsd.c */
+/* From bsd.c */
 extern int maxd;
 DESC *initializesock(int s, char *addr, char *ip, int use_ssl);
 
@@ -128,7 +132,7 @@ make_info_slave(void)
     }
   }
 #ifndef AF_LOCAL
-  /* Use Posix.1g names. */
+/* Use Posix.1g names. */
 #define AF_LOCAL AF_UNIX
 #endif
 
@@ -226,12 +230,11 @@ query_info_slave(int fd)
   if (info_slave_state == INFO_SLAVE_DOWN) {
     if (!make_info_slave()) {
       FD_CLR(fd, &info_pending);
-      closesocket(fd);          /* Just drop the connection if the slave gets halted.
-                                   A subsequent reconnect will work. */
+      closesocket(fd); /* Just drop the connection if the slave gets halted.
+                          A subsequent reconnect will work. */
     }
     return;
   }
-
 
   memset(&req, 0, sizeof req);
 
@@ -256,8 +259,8 @@ query_info_slave(int fd)
       penn_perror("getting remote port number");
     else {
       if (!Deny_Silent_Site(buf, AMBIGUOUS)) {
-        do_log(LT_CONN, 0, 0, "[%d/%s] Refused connection (remote port %s)",
-               fd, buf, port);
+        do_log(LT_CONN, 0, 0, "[%d/%s] Refused connection (remote port %s)", fd,
+               buf, port);
       }
     }
     closesocket(fd);
@@ -341,10 +344,10 @@ reap_info_slave(void)
   *hp = '\0';
 
   if (Forbidden_Site(resp.ipaddr) || Forbidden_Site(hostname)) {
-    if (!Deny_Silent_Site(resp.ipaddr, AMBIGUOUS)
-        || !Deny_Silent_Site(hostname, AMBIGUOUS)) {
-      do_log(LT_CONN, 0, 0, "[%d/%s/%s] Refused connection.", resp.fd,
-             hostname, resp.ipaddr);
+    if (!Deny_Silent_Site(resp.ipaddr, AMBIGUOUS) ||
+        !Deny_Silent_Site(hostname, AMBIGUOUS)) {
+      do_log(LT_CONN, 0, 0, "[%d/%s/%s] Refused connection.", resp.fd, hostname,
+             resp.ipaddr);
     }
     shutdown(resp.fd, 2);
     closesocket(resp.fd);
@@ -361,7 +364,6 @@ reap_info_slave(void)
   do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened from %s.", resp.fd,
          hostname, resp.ipaddr, source_to_s(source));
   set_keepalive(resp.fd, options.keepalive_timeout);
-
 
   initializesock(resp.fd, hostname, resp.ipaddr, source);
 }
@@ -388,5 +390,12 @@ kill_info_slave(void)
   }
 }
 
+#endif /* INFO_SLAVE */
 
-#endif                          /* INFO_SLAVE */
+#ifdef WIN32
+void
+dummy_function(void)
+{
+  /* Supress a warning about empty soure files. */
+}
+#endif

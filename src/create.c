@@ -44,7 +44,7 @@ parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info)
   if (!strcasecmp(room_name, "here")) {
     room = speech_loc(player);
   } else if (!strcasecmp(room_name, "home")) {
-    return HOME;                /* HOME is always linkable */
+    return HOME; /* HOME is always linkable */
   } else {
     room = parse_objid(room_name);
   }
@@ -83,7 +83,8 @@ check_var_link(const char *dest_name)
  * \param player the enactor.
  * \param direction the name of the exit.
  * \param linkto the room to link to, as a string.
- * \param pseudo a phony location for player if a back exit is needed. This is bpass by do_open() as the source room of the back exit.
+ * \param pseudo a phony location for player if a back exit is needed. This is
+ * bpass by do_open() as the source room of the back exit.
  * \param pe_info the pe_info to use for any lock checks
  * \return dbref of the new exit, or NOTHING.
  */
@@ -113,10 +114,8 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   if (!*direction) {
     notify(player, T("Open where?"));
     return NOTHING;
-  } else
-    if (ok_object_name
-        ((char *) direction, player, NOTHING, TYPE_EXIT, &name,
-         &alias) != OPAE_SUCCESS) {
+  } else if (ok_object_name((char *) direction, player, NOTHING, TYPE_EXIT,
+                            &name, &alias) != OPAE_SUCCESS) {
     notify(player, T("That's a strange name for an exit!"));
     if (name)
       mush_free(name, "name.newname");
@@ -194,7 +193,8 @@ do_real_open(dbref player, const char *direction, const char *linkto,
  * \endverbatim
  * \param player the enactor.
  * \param direction name of the exit forward.
- * \param links 1-based array, possibly containing name of destination, name of exit back,
+ * \param links 1-based array, possibly containing name of destination, name of
+ * exit back,
  * and room to open initial exit from.
  * \param pe_info the pe_info to use for any lock checks
  */
@@ -205,9 +205,8 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
   dbref source = NOTHING;
 
   if (links[3]) {
-    source =
-      match_result(player, links[3], TYPE_ROOM,
-                   MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    source = match_result(player, links[3], TYPE_ROOM,
+                          MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
     if (!GoodObject(source)) {
       notify(player, T("Open from where?"));
       return;
@@ -224,9 +223,9 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
   }
 
   forward = do_real_open(player, direction, links[1], source, pe_info);
-  if (links[2] && *links[2] && GoodObject(forward)
-      && GoodObject(Location(forward))) {
-    char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
+  if (links[2] && *links[2] && GoodObject(forward) &&
+      GoodObject(Location(forward))) {
+    char sourcestr[SBUF_LEN]; /* SBUF_LEN is the size used by unparse_dbref */
     if (!GoodObject(source)) {
       source = speech_loc(player);
     }
@@ -319,8 +318,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
     notify(player, T("You somehow wound up in a exit. No biscuit."));
     return;
   }
-  if ((thing = noisy_match_result(player, name, TYPE_EXIT, MAT_EVERYTHING))
-      != NOTHING) {
+  if ((thing = noisy_match_result(player, name, TYPE_EXIT, MAT_EVERYTHING)) !=
+      NOTHING) {
     switch (Typeof(thing)) {
     case TYPE_EXIT:
       if ((room = check_var_link(room_name)) == NOTHING)
@@ -334,9 +333,9 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
       /* We may link an exit if it's unlinked and we pass the link-lock
        * or if we control it.
        */
-      if (!(controls(player, thing)
-            || ((Location(thing) == NOTHING)
-                && eval_lock_with(player, thing, Link_Lock, pe_info)))) {
+      if (!(controls(player, thing) ||
+            ((Location(thing) == NOTHING) &&
+             eval_lock_with(player, thing, Link_Lock, pe_info)))) {
         notify(player, T("Permission denied."));
         return;
       }
@@ -377,9 +376,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
       break;
     case TYPE_PLAYER:
     case TYPE_THING:
-      if ((room =
-           noisy_match_result(player, room_name, NOTYPE,
-                              MAT_EVERYTHING)) == NOTHING) {
+      if ((room = noisy_match_result(player, room_name, NOTYPE,
+                                     MAT_EVERYTHING)) == NOTHING) {
         notify(player, T("No match."));
         return;
       }
@@ -402,7 +400,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
         notify(player, T("Can't set home to home."));
       } else {
         /* do the link */
-        Home(thing) = room;     /* home */
+        Home(thing) = room; /* home */
         if (!Quiet(player) && !(Quiet(thing) && (Owner(thing) == player)))
           notify(player, T("Home set."));
       }
@@ -424,8 +422,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
       break;
     default:
       notify(player, T("Internal error: weird object type."));
-      do_log(LT_ERR, NOTHING, NOTHING,
-             "Weird object! Type of #%d is %d", thing, Typeof(thing));
+      do_log(LT_ERR, NOTHING, NOTHING, "Weird object! Type of #%d is %d", thing,
+             Typeof(thing));
       break;
     }
   }
@@ -457,7 +455,8 @@ do_dig(dbref player, const char *name, char **argv, int tport,
   } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a room!"));
   } else if (can_pay_fees(player, ROOM_COST)) {
-    /* Push requested return exit, to exit and room dbrefs on the free list stack */
+    /* Push requested return exit, to exit and room dbrefs on the free list
+     * stack */
     if (argv[5] && *argv[5] && !make_first_free_wrapper(player, argv[5]))
       return NOTHING;
     if (argv[4] && *argv[4] && !make_first_free_wrapper(player, argv[4]))
@@ -498,7 +497,8 @@ do_dig(dbref player, const char *name, char **argv, int tport,
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
       sprintf(roomstr, "#%d", room);
-      do_teleport(player, "me", roomstr, TEL_DEFAULT, pe_info); /* if flag, move the player */
+      do_teleport(player, "me", roomstr, TEL_DEFAULT,
+                  pe_info); /* if flag, move the player */
     }
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;
@@ -513,7 +513,8 @@ do_dig(dbref player, const char *name, char **argv, int tport,
  * \param player the enactor.
  * \param name name of thing to create.
  * \param cost pennies spent in creation.
- * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param newdbref the (unparsed) dbref to give the object, or NULL to use the
+ * next free
  * \return dbref of new thing, or NOTHING.
  */
 dbref
@@ -544,7 +545,7 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 
     /* initialize everything */
     set_name(thing, name);
-    if (!IsExit(player))        /* Exits shouldn't have contents! */
+    if (!IsExit(player)) /* Exits shouldn't have contents! */
       Location(thing) = player;
     else
       Location(thing) = Source(player);
@@ -562,13 +563,12 @@ do_create(dbref player, char *name, int cost, char *newdbref)
       }
     }
 
-
     /* home is here (if we can link to it) or player's home */
     if ((loc = Location(player)) != NOTHING &&
         (controls(player, loc) || Abode(loc))) {
-      Home(thing) = loc;        /* home */
+      Home(thing) = loc; /* home */
     } else {
-      Home(thing) = Home(player);       /* home */
+      Home(thing) = Home(player); /* home */
     }
 
     /* link it in */
@@ -611,16 +611,15 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
   if (!preserve) {
     clear_flag_internal(clone, "WIZARD");
     clear_flag_internal(clone, "ROYALTY");
-    Warnings(clone) = 0;        /* zap warnings */
-    Powers(clone) = new_flag_bitmask("POWER");  /* zap powers */
+    Warnings(clone) = 0;                       /* zap warnings */
+    Powers(clone) = new_flag_bitmask("POWER"); /* zap powers */
   } else {
     Powers(clone) = clone_flag_bitmask("POWER", Powers(thing));
     Warnings(clone) = Warnings(thing);
     if (Wizard(clone) || Royalty(clone) || Warnings(clone) ||
         !null_flagmask("POWER", Powers(clone)))
-      notify(player,
-             T
-             ("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."));
+      notify(player, T("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, "
+                       "@powers, or @warnings."));
   }
   /* We give the clone the same modification time that its
    * other clone has, but update the creation time */
@@ -635,10 +634,9 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     Home(clone) = Home(thing);
   atr_cpy(clone, thing);
 
-  queue_event(player, "OBJECT`CREATE", "%s,%s",
-              unparse_objid(clone), unparse_objid(thing));
+  queue_event(player, "OBJECT`CREATE", "%s,%s", unparse_objid(clone),
+              unparse_objid(thing));
   return clone;
-
 }
 
 /** Clone an object.
@@ -650,7 +648,8 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param name the name of the object to clone.
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
- * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param newdbref the (unparsed) dbref to give the object, or NULL to use the
+ * next free
  * \param pe_info The pe_info to use for lock and \@command priv checks
  * \return dbref of the duplicate, or NOTHING.
  */
@@ -765,22 +764,20 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
       if (!preserve) {
         clear_flag_internal(clone, "WIZARD");
         clear_flag_internal(clone, "ROYALTY");
-        Warnings(clone) = 0;    /* zap warnings */
-        Powers(clone) = new_flag_bitmask("POWER");      /* zap powers */
+        Warnings(clone) = 0;                       /* zap warnings */
+        Powers(clone) = new_flag_bitmask("POWER"); /* zap powers */
       } else {
         Warnings(clone) = Warnings(thing);
         Powers(clone) = clone_flag_bitmask("POWER", Powers(thing));
       }
       if (Wizard(clone) || Royalty(clone) || Warnings(clone) ||
           !null_flagmask("POWER", Powers(clone)))
-        notify(player,
-               T
-               ("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."));
+        notify(player, T("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, "
+                         "@powers, or @warnings."));
       notify_format(player, T("Cloned: Exit #%d."), clone);
       local_data_clone(clone, thing, preserve);
       return clone;
     }
   }
   return NOTHING;
-
 }

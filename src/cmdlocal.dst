@@ -59,7 +59,6 @@ COMMAND(cmd_local_silly)
 }
 #endif
 
-
 /* Called during the command init sequence.
  * This is where you'd put calls to command_add to insert a local
  * command into the command hash table. Any command you add here

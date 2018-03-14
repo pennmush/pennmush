@@ -7,7 +7,7 @@
  * to a new distribution, so it's preferable to add new flags
  * here and leave flag.c alone.
  *
- * YOU ARE RESPONSIBLE FOR SEEING THAT YOU DO THIS RIGHT - 
+ * YOU ARE RESPONSIBLE FOR SEEING THAT YOU DO THIS RIGHT -
  * It's probably smarter to have God @flag/add rather than
  * do it here, as @flag/add does extensive checks for safety,
  * and add_flag() doesn't! Remember that flags are saved in the
@@ -30,7 +30,7 @@
 #include "flags.h"
 
 void
-local_flags(FLAGSPACE *flags __attribute__ ((__unused__)))
+local_flags(FLAGSPACE *flags __attribute__((__unused__)))
 {
 #ifdef EXAMPLE
   if (strcmp(flags->name, "FLAG") == 0) {

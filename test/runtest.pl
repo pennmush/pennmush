@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+# Needed in recent versions of perl
+use lib '.';
 use strict;
 use warnings;
 use Getopt::Long;

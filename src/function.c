@@ -30,6 +30,10 @@
 #include "sort.h"
 #include "strutil.h"
 
+#ifndef WITHOUT_WEBSOCKETS
+#include "websock.h"
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);
 static int apply_restrictions(uint32_t result, const char *restriction);
@@ -39,12 +43,11 @@ static FUN *any_func_hash_lookup(const char *name);
 
 HASHTAB htab_function;      /**< Function hash table */
 HASHTAB htab_user_function; /**< User-defined function hash table */
-slab *function_slab; /**< slab for 'struct fun' allocations */
+slab *function_slab;        /**< slab for 'struct fun' allocations */
 
 /* -------------------------------------------------------------------------*
  * Utilities.
  */
-
 
 /** Check for a delimiter in an argument of a function call.
  * This function checks a given argument of a function call and sees
@@ -114,7 +117,6 @@ int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
   return 1;
 }
 
-
 /* --------------------------------------------------------------------------
  * The actual function handlers
  */
@@ -123,42 +125,40 @@ int_check(char *buff, char **bp, int nfargs, char *fargs[], int check_arg,
  * This structure represents a function's entry in the function table.
  */
 typedef struct fun_tab {
-  const char *name;     /**< Name of the function, uppercase. */
-  function_func fun;    /**< Pointer to code to call for this function. */
-  int minargs;  /**< Minimum args required. */
-  int maxargs;  /**< Maximum args, or INT_MAX. If <0, last arg may have commas */
-  int flags;    /**< Flags to control how the function is parsed. */
+  const char *name;  /**< Name of the function, uppercase. */
+  function_func fun; /**< Pointer to code to call for this function. */
+  int minargs;       /**< Minimum args required. */
+  int maxargs; /**< Maximum args, or INT_MAX. If <0, last arg may have commas */
+  int flags;   /**< Flags to control how the function is parsed. */
 } FUNTAB;
 
 /** A hardcoded function alias.
- * These are functions which used to be duplicated, but are now properly aliased.
+ * These are functions which used to be duplicated, but are now properly
+ * aliased.
  * They're added here instead of alias.cnf to avoid breakage for people who
  * don't update their alias.cnf immediately. */
 typedef struct fun_alias {
-  const char *name;   /**< Name of function to alias */
-  const char *alias;  /**< Name of alias to create */
+  const char *name;  /**< Name of function to alias */
+  const char *alias; /**< Name of alias to create */
 } FUNALIAS;
 
 /* Table of hardcoded function aliases. Aliases can also be added with
  * @function/alias or a function_alias directive in alias.cnf, both of
  * which call the alias_function() function
  */
-FUNALIAS faliases[] = {
-  {"UFUN", "U"},
-  {"IDLE", "IDLESECS"},
-  {"HOST", "HOSTNAME"},
-  {"FLIP", "REVERSE"},
-  {"E", "EXP"},
-  {"STRDELETE", "DELETE"},
-  {"LREPLACE", "REPLACE"},
-  {"LINSERT", "INSERT"},
-  {"MONIKER", "CNAME"},         /* Rhost alias */
-  {"MEAN", "AVG"},              /* Rhost alias */
-  {"MATCH", "ELEMENT"},
-  {"SPEAK", "SPEAKPENN"},       /* Backwards compatability */
-  {NULL, NULL}
-};
-
+FUNALIAS faliases[] = {{"UFUN", "U"},
+                       {"IDLE", "IDLESECS"},
+                       {"HOST", "HOSTNAME"},
+                       {"FLIP", "REVERSE"},
+                       {"E", "EXP"},
+                       {"STRDELETE", "DELETE"},
+                       {"LREPLACE", "REPLACE"},
+                       {"LINSERT", "INSERT"},
+                       {"MONIKER", "CNAME"}, /* Rhost alias */
+                       {"MEAN", "AVG"},      /* Rhost alias */
+                       {"MATCH", "ELEMENT"},
+                       {"SPEAK", "SPEAKPENN"}, /* Backwards compatability */
+                       {NULL, NULL}};
 
 /** The function table. Functions can also be added at runtime with
  * add_function().
@@ -287,7 +287,7 @@ FUNTAB flist[] = {
   {"FOLLOWERS", fun_followers, 1, 1, FN_REG | FN_STRIPANSI},
   {"FOLLOWING", fun_following, 1, 1, FN_REG | FN_STRIPANSI},
   {"FOREACH", fun_foreach, 2, 4, FN_REG},
-  {"FRACTION", fun_fraction, 1, 1, FN_REG | FN_STRIPANSI},
+  {"FRACTION", fun_fraction, 1, 2, FN_REG | FN_STRIPANSI},
   {"FUNCTIONS", fun_functions, 0, 1, FN_REG | FN_STRIPANSI},
   {"FULLALIAS", fun_fullalias, 1, 1, FN_REG | FN_STRIPANSI},
   {"FULLNAME", fun_fullname, 1, 1, FN_REG | FN_STRIPANSI},
@@ -297,6 +297,7 @@ FUNTAB flist[] = {
   {"GRAB", fun_grab, 2, 3, FN_REG},
   {"GRABALL", fun_graball, 2, 4, FN_REG},
   {"GREP", fun_grep, 3, 3, FN_REG},
+  {"PGREP", fun_grep, 3, 3, FN_REG},
   {"GREPI", fun_grep, 3, 3, FN_REG},
   {"GT", fun_gt, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"GTE", fun_gte, 2, INT_MAX, FN_REG | FN_STRIPANSI},
@@ -335,6 +336,7 @@ FUNTAB flist[] = {
   {"ITEXT", fun_itext, 1, 1, FN_REG | FN_STRIPANSI},
   {"JSON", fun_json, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"JSON_MAP", fun_json_map, 2, MAX_STACK_ARGS + 1, FN_REG | FN_STRIPANSI},
+  {"JSON_QUERY", fun_json_query, 1, 3, FN_REG | FN_STRIPANSI},
   {"LAST", fun_last, 1, 2, FN_REG},
   {"LATTR", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
@@ -418,8 +420,8 @@ FUNTAB flist[] = {
   {"NAME", fun_name, 1, 2, FN_REG | FN_STRIPANSI},
   {"MONIKER", fun_moniker, 1, 1, FN_REG | FN_STRIPANSI},
   {"NAMELIST", fun_namelist, 1, 2, FN_REG},
-  {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG},
-  {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG},
+  {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG | FN_STRIPANSI},
+  {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG | FN_STRIPANSI},
   {"NAND", fun_nand, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"NATTR", fun_nattr, 1, 1, FN_REG | FN_STRIPANSI},
   {"NATTRP", fun_nattr, 1, 1, FN_REG | FN_STRIPANSI},
@@ -460,7 +462,7 @@ FUNTAB flist[] = {
   {"OBJID", fun_objid, 1, 1, FN_REG | FN_STRIPANSI},
   {"OBJMEM", fun_objmem, 1, 1, FN_REG | FN_STRIPANSI},
   {"OEMIT", fun_oemit, 2, -2, FN_REG},
-  {"OOB", fun_oob, 2, 3, FN_REG | FN_WIZARD | FN_STRIPANSI},
+  {"OOB", fun_oob, 2, 3, FN_REG | FN_STRIPANSI},
   {"OPEN", fun_open, 1, 4, FN_REG},
   {"OR", fun_or, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"ORD", fun_ord, 1, 1, FN_REG | FN_STRIPANSI},
@@ -486,6 +488,7 @@ FUNTAB flist[] = {
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
   {"R", fun_r, 1, 2, FN_REG | FN_STRIPANSI},
   {"RAND", fun_rand, 0, 2, FN_REG | FN_STRIPANSI},
+  {"RANDEXTRACT", fun_randword, 1, 5, FN_REG},
   {"RANDWORD", fun_randword, 1, 2, FN_REG},
   {"RECV", fun_recv, 1, 1, FN_REG | FN_STRIPANSI},
   {"REGEDIT", fun_regreplace, 3, INT_MAX, FN_NOPARSE},
@@ -679,34 +682,29 @@ FUNTAB flist[] = {
 #ifdef DEBUG_PENNMUSH
   {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
 #endif                          /* DEBUG_PENNMUSH */
+#ifndef WITHOUT_WEBSOCKETS
+  {"WSJSON", fun_websocket_json, 1, 2, FN_REG},
+  {"WSHTML", fun_websocket_html, 1, 2, FN_REG},
+#endif /* undef WITHOUT_WEBSOCKETS */
   {NULL, NULL, 0, 0, 0}
 };
 
 /** Map of function restriction bits to textual names */
 struct function_restrictions {
   const char *name; /**< Name of restriction */
-  uint32_t bit; /**< FN_* flag for restriction */
+  uint32_t bit;     /**< FN_* flag for restriction */
 };
 
 struct function_restrictions func_restrictions[] = {
-  {"Nobody", FN_DISABLED},      /* Should always be the first element */
-  {"NoGagged", FN_NOGAGGED},
-  {"NoFixed", FN_NOFIXED},
-  {"NoGuest", FN_NOGUEST},
-  {"Admin", FN_ADMIN},
-  {"Wizard", FN_WIZARD},
-  {"God", FN_GOD},
-  {"NoSideFX", FN_NOSIDEFX},
-  {"LogArgs", FN_LOGARGS},
-  {"LogName", FN_LOGNAME},
-  {"NoParse", FN_NOPARSE},
-  {"Localize", FN_LOCALIZE},
-  {"Userfn", FN_USERFN},
-  {"StripAnsi", FN_STRIPANSI},
-  {"Literal", FN_LITERAL},
-  {"Deprecated", FN_DEPRECATED},
-  {NULL, 0}
-};
+  {"Nobody", FN_DISABLED}, /* Should always be the first element */
+  {"NoGagged", FN_NOGAGGED},     {"NoFixed", FN_NOFIXED},
+  {"NoGuest", FN_NOGUEST},       {"Admin", FN_ADMIN},
+  {"Wizard", FN_WIZARD},         {"God", FN_GOD},
+  {"NoSideFX", FN_NOSIDEFX},     {"LogArgs", FN_LOGARGS},
+  {"LogName", FN_LOGNAME},       {"NoParse", FN_NOPARSE},
+  {"Localize", FN_LOCALIZE},     {"Userfn", FN_USERFN},
+  {"StripAnsi", FN_STRIPANSI},   {"Literal", FN_LITERAL},
+  {"Deprecated", FN_DEPRECATED}, {NULL, 0}};
 
 static uint32_t
 fn_restrict_to_bit(const char *r)
@@ -723,8 +721,7 @@ fn_restrict_to_bit(const char *r)
   return 0;
 }
 
-static const char *fn_restrict_to_str(uint32_t b) __attribute__ ((unused));
-
+static const char *fn_restrict_to_str(uint32_t b) __attribute__((unused));
 
 static const char *
 fn_restrict_to_str(uint32_t b)
@@ -737,14 +734,14 @@ fn_restrict_to_str(uint32_t b)
   return NULL;
 }
 
-
 /** List all functions.
  * \verbatim
  * This is the mail interface to @list functions.
  * \endverbatim
  * \param player the enactor.
  * \param lc if 1, return functions in lowercase.
- * \param type "local", "builtin", "all" or NULL, to limit which functions are shown
+ * \param type "local", "builtin", "all" or NULL, to limit which functions are
+ * shown
  */
 void
 do_list_functions(dbref player, int lc, const char *type)
@@ -784,14 +781,13 @@ list_functions(const char *type)
     return buff;
   }
 
-  ptrs =
-    mush_calloc(sizeof(char *),
-                htab_function.entries + htab_user_function.entries,
-                "function.list");
+  ptrs = mush_calloc(sizeof(char *),
+                     htab_function.entries + htab_user_function.entries,
+                     "function.list");
 
   if (which & 0x1) {
-    for (fp = hash_firstentry(&htab_function);
-         fp; fp = hash_nextentry(&htab_function)) {
+    for (fp = hash_firstentry(&htab_function); fp;
+         fp = hash_nextentry(&htab_function)) {
       if (fp->flags & FN_OVERRIDE)
         continue;
       ptrs[nptrs++] = fp->name;
@@ -799,8 +795,8 @@ list_functions(const char *type)
   }
 
   if (which & 0x2) {
-    for (fp = hash_firstentry(&htab_user_function);
-         fp; fp = hash_nextentry(&htab_user_function))
+    for (fp = hash_firstentry(&htab_user_function); fp;
+         fp = hash_nextentry(&htab_user_function))
       ptrs[nptrs++] = fp->name;
   }
 
@@ -825,7 +821,6 @@ list_functions(const char *type)
 /*---------------------------------------------------------------------------
  * Hashed function table stuff
  */
-
 
 /** Look up a function by name.
  * \param name name of function to look up.
@@ -971,9 +966,8 @@ do_function_clone(dbref player, const char *function, const char *clone)
     return;
   }
 
-  fpc = function_add(mush_strdup(realclone, "function.name"),
-                     fp->where.fun, fp->minargs, fp->maxargs,
-                     (fp->flags | FN_CLONE));
+  fpc = function_add(mush_strdup(realclone, "function.name"), fp->where.fun,
+                     fp->minargs, fp->maxargs, (fp->flags | FN_CLONE));
   fpc->clone_template = (fp->clone_template ? fp->clone_template : fp);
 
   notify(player, T("Function cloned."));
@@ -1082,7 +1076,7 @@ strip_braces(const char *str)
   buff = mush_malloc(BUFFER_LEN, "strip_braces.buff");
   bufc = buff;
 
-  while (isspace(*str))         /* eat spaces at the beginning */
+  while (isspace(*str)) /* eat spaces at the beginning */
     str++;
 
   switch (*str) {
@@ -1091,7 +1085,7 @@ strip_braces(const char *str)
     process_expression(buff, &bufc, &str, 0, 0, 0, PE_NOTHING, PT_BRACE, NULL);
     *bufc = '\0';
     return buff;
-    break;                      /* NOT REACHED */
+    break; /* NOT REACHED */
   default:
     strcpy(buff, str);
     return buff;
@@ -1130,7 +1124,6 @@ apply_restrictions(uint32_t result, const char *xres)
   mush_free(rsave, "ar.string");
   return result;
 }
-
 
 /** Given a function name and a restriction, apply the restriction to the
  * function in addition to whatever its usual restrictions are.
@@ -1208,8 +1201,8 @@ do_function_restrict(dbref player, const char *name, const char *restriction,
   if (fp->flags & FN_BUILTIN)
     safe_format(tbuf1, &bp, "%s %s - ", T("Builtin function"), fp->name);
   else
-    safe_format(tbuf1, &bp, "%s #%d/%s - ", "@function",
-                fp->where.ufun->thing, fp->where.ufun->name);
+    safe_format(tbuf1, &bp, "%s #%d/%s - ", "@function", fp->where.ufun->thing,
+                fp->where.ufun->name);
   if (fp->flags == flags)
     safe_str(T("Restrictions unchanged."), tbuf1, &bp);
   else
@@ -1218,23 +1211,22 @@ do_function_restrict(dbref player, const char *name, const char *restriction,
   notify(player, tbuf1);
 }
 
-
 /* Sort FUN*s by dbref and then function name */
 static int
 func_comp(const void *s1, const void *s2)
 {
   const FUN *a, *b;
-  dbref da, db;
+  dbref d1, d2;
 
   a = *(const FUN **) s1;
   b = *(const FUN **) s2;
 
-  da = a->where.ufun->thing;
-  db = b->where.ufun->thing;
+  d1 = a->where.ufun->thing;
+  d2 = b->where.ufun->thing;
 
-  if (da == db)
+  if (d1 == d2)
     return strcmp(a->name, b->name);
-  else if (da < db)
+  else if (d1 < d2)
     return -1;
   else
     return 1;
@@ -1246,8 +1238,8 @@ cnf_add_function(char *name, char *opts)
 {
   FUN *fp;
   dbref thing;
-  int minargs[2] = { 0, 0 };
-  int maxargs[2] = { 0, 0 };
+  int minargs[2] = {0, 0};
+  int maxargs[2] = {0, 0};
   char *attrname, *one, *list;
 
   name = trim_space_sep(name, ' ');
@@ -1327,9 +1319,7 @@ cnf_add_function(char *name, char *opts)
   if (maxargs[1])
     fp->maxargs = maxargs[0];
 
-
   return 1;
-
 }
 
 /** Add a user-defined function.
@@ -1372,16 +1362,15 @@ do_function(dbref player, char *name, char *argv[], int preserve)
 
       funclist = mush_calloc(userfn_count, sizeof(FUN *), "function.fp.list");
       notify(player, T("Function Name                   Dbref #    Attrib"));
-      for (fp = (FUN *) hash_firstentry(&htab_user_function);
-           fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
+      for (fp = (FUN *) hash_firstentry(&htab_user_function); fp;
+           fp = (FUN *) hash_nextentry(&htab_user_function)) {
         funclist[n] = fp;
         n++;
       }
       qsort(funclist, userfn_count, sizeof(FUN *), func_comp);
       for (n = 0; n < (int) userfn_count; n++) {
         fp = funclist[n];
-        notify_format(player,
-                      "%-32s %6d    %s", fp->name,
+        notify_format(player, "%-32s %6d    %s", fp->name,
                       fp->where.ufun->thing, fp->where.ufun->name);
       }
       mush_free(funclist, "function.fp.list");
@@ -1391,8 +1380,8 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       /* just print out the list of available functions */
       safe_str(T("User functions:"), tbuf1, &bp);
       funcnames = mush_calloc(userfn_count, sizeof(char *), "function.list");
-      for (fp = (FUN *) hash_firstentry(&htab_user_function);
-           fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
+      for (fp = (FUN *) hash_firstentry(&htab_user_function); fp;
+           fp = (FUN *) hash_nextentry(&htab_user_function)) {
         funcnames[n] = fp->name;
         n++;
       }
@@ -1430,8 +1419,8 @@ do_function(dbref player, char *name, char *argv[], int preserve)
   /* find the object. For some measure of security, the player must
    * be able to examine it.
    */
-  if ((thing = noisy_match_result(player, argv[1], NOTYPE, MAT_EVERYTHING))
-      == NOTHING)
+  if ((thing = noisy_match_result(player, argv[1], NOTYPE, MAT_EVERYTHING)) ==
+      NOTHING)
     return;
   if (SAFER_UFUN) {
     if (!controls(player, thing)) {
@@ -1751,8 +1740,8 @@ build_function_report(dbref player, FUN *fp)
   safe_chr('\n', buff, &bp);
 
   if (!(fp->flags & FN_BUILTIN) && Global_Funcs(player))
-    safe_format(buff, &bp, T("Location  : #%d/%s\n"),
-                fp->where.ufun->thing, fp->where.ufun->name);
+    safe_format(buff, &bp, T("Location  : #%d/%s\n"), fp->where.ufun->thing,
+                fp->where.ufun->name);
 
   maxargs = abs(fp->maxargs);
 
@@ -1769,8 +1758,8 @@ build_function_report(dbref player, FUN *fp)
   else if (fp->maxargs == INT_MAX)
     safe_format(buff, &bp, T("Arguments : At least %d %s"), fp->minargs, tbuf);
   else
-    safe_format(buff, &bp,
-                T("Arguments : %d to %d %s"), fp->minargs, maxargs, tbuf);
+    safe_format(buff, &bp, T("Arguments : %d to %d %s"), fp->minargs, maxargs,
+                tbuf);
   *bp = '\0';
   return buff;
 }

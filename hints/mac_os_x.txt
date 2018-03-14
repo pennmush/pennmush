@@ -1,8 +1,20 @@
 With the Xcode Developer Tools installed, configuring and building
-just works. OS X includes OpenSSL and Sqlite3. MySQL and gettext-style
-message translation isn't bundled with OS X, and must be installed
-seperately. The fink package manager is recommended. It can be
-downloaded at http://fink.sourceforge.net/
+just works. OS X includes OpenSSL and Sqlite3.
+
+If you run into problems after an OS upgrade, try running this command:
+
+sudo xcode-select --install
+
+and re-running configure.
+
+
+(For the below, I think macports is more popular these days, if
+anybody wants to chime in? At the very least, package names are likely
+way out of date.)
+
+MySQL and gettext-style message translation isn't bundled with OS X,
+and must be installed seperately. The fink package manager is
+recommended. It can be downloaded at http://fink.sourceforge.net/
 
 Once fink is installed, use the 'Fink Commander' application to
 install packages, or, from the command line as an administrator, 'sudo

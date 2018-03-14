@@ -17,41 +17,43 @@ struct _ufun_attrib;
 /* Sort and comparision functions */
 typedef const char *SortType;
 typedef struct sort_record s_rec;
-typedef int (*qsort_func) (const void *, const void *);
-typedef void (*makerecord) (s_rec *, dbref player, char *sortflags);
+typedef int (*qsort_func)(const void *, const void *);
+typedef void (*makerecord)(s_rec *, dbref player, char *sortflags);
 typedef struct _list_type_info_ ListTypeInfo;
 
 /** Sorting strings by different values. We store both the string and
  * its 'key' to sort by. Sort of a hardcode munge.
  */
 struct sort_record {
-  char *ptr;     /**< NULL except for sortkey */
-  char *val;     /**< The string this is */
-  dbref db;      /**< dbref (default 0, bad is -1) */
+  char *ptr; /**< NULL except for sortkey */
+  char *val; /**< The string this is */
+  dbref db;  /**< dbref (default 0, bad is -1) */
   union {
     struct {
-      char *s;        /**< string comparisons */
-      bool freestr;   /**< free str on completion */
+      char *s;      /**< string comparisons */
+      bool freestr; /**< free str on completion */
     } str;
-    int num;       /**< integer comparisons */
-    NVAL numval;   /**< float comparisons */
-    time_t tm;     /**< time comparisions */
+    int num;     /**< integer comparisons */
+    NVAL numval; /**< float comparisons */
+    time_t tm;   /**< time comparisions */
   } memo;
 };
 
 /** Different ways to sort a list in softcode */
 struct _list_type_info_ {
-  SortType name; /**< A *_LIST sort flag */
-  char *attrname; /**< Attrname to sort by, for attr:* sorts */
-  int sort_order; /**< Is sort ASCENDING or DESCENDING */
+  SortType name;          /**< A *_LIST sort flag */
+  char *attrname;         /**< Attrname to sort by, for attr:* sorts */
+  int sort_order;         /**< Is sort ASCENDING or DESCENDING */
   makerecord make_record; /**< gen_* function that builds sort info */
   qsort_func sorter; /**< Function that actually compares/sorts the records */
-  uint32_t flags; /**< Bitwise IS_* flags defined in sort.c */
+  uint32_t flags;    /**< Bitwise IS_* flags defined in sort.c */
 };
 
 ListTypeInfo *get_list_type_info(SortType type);
 
-#define MAX_SORTSIZE (BUFFER_LEN / 2)  /**< Maximum number of elements to sort */
+#define MAX_SORTSIZE                                                           \
+  (BUFFER_LEN / 2) /**< Maximum number of elements to sort                     \
+                      */
 
 SortType autodetect_list(char **ptrs, int nptrs);
 SortType autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2);
@@ -75,12 +77,11 @@ void do_gensort(dbref player, char *keys[], char *strs[], int n,
                 SortType sort_type);
 
 /** Type definition for a qsort comparison function */
-typedef int (*comp_func) (const void *, const void *, dbref, dbref,
-                          struct _ufun_attrib *, NEW_PE_INFO *);
+typedef int (*comp_func)(const void *, const void *, dbref, dbref,
+                         struct _ufun_attrib *, NEW_PE_INFO *);
 void sane_qsort(void **array, int left, int right, comp_func compare,
                 dbref executor, dbref enactor, struct _ufun_attrib *ufun,
                 NEW_PE_INFO *pe_info);
-
 
 /* Comparison functions for qsort() and other routines.  */
 int int_comp(const void *s1, const void *s2);
@@ -90,8 +91,9 @@ int str_comp(const void *s1, const void *s2);
 int stri_comp(const void *s1, const void *s2);
 int dbref_comp(const void *s1, const void *s2);
 int attr_comp(const void *s1, const void *s2);
-int u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, struct _ufun_attrib *ufun, NEW_PE_INFO *pe_info);     /* For sortby() */
+int u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
+           struct _ufun_attrib *ufun, NEW_PE_INFO *pe_info); /* For sortby() */
 
 int compare_attr_names(const char *attr1, const char *attr2);
 
-#endif                          /* __PENNSORT_H */
+#endif /* __PENNSORT_H */

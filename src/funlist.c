@@ -31,7 +31,6 @@
 #include "sort.h"
 #include "strutil.h"
 
-
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void freearr_member(char *p);
 extern const unsigned char *tables;
@@ -240,8 +239,7 @@ FUNCTION(fun_munge)
   char **ptrs3;
   int i, j, nptrs1, nptrs2, nresults;
   ufun_attrib ufun;
-  char sep, isep[2] = { '\0', '\0' }, *osep, osepd[2] = {
-  '\0', '\0'};
+  char sep, isep[2] = {'\0', '\0'}, *osep, osepd[2] = {'\0', '\0'};
   int first;
   PE_REGS *pe_regs;
 
@@ -341,10 +339,11 @@ FUNCTION(fun_elements)
    * A separator for the first list is allowed.
    */
   int nwords, cur;
+  int count = 0;
   char **ptrs;
   char *wordlist;
   char *s, *r, sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -370,16 +369,14 @@ FUNCTION(fun_elements)
   /* Go through the second list, grabbing the numbers and finding the
    * corresponding elements.
    */
-  r = split_token(&s, ' ');
-  cur = find_list_position(r, nwords, 0) - 1;
-  if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
-    safe_str(ptrs[cur], buff, bp);
-  }
+
   while (s) {
     r = split_token(&s, ' ');
     cur = find_list_position(r, nwords, 0) - 1;
     if ((cur >= 0) && (cur < nwords) && ptrs[cur]) {
-      safe_str(osep, buff, bp);
+      if (count)
+        safe_str(osep, buff, bp);
+      count++;
       safe_str(ptrs[cur], buff, bp);
     }
   }
@@ -397,7 +394,7 @@ FUNCTION(fun_matchall)
 
   int wcount;
   char *r, *s, *b, sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -432,7 +429,8 @@ FUNCTION(fun_graball)
    */
 
   char *r, *s, *b, sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
+  ansi_string *as = NULL;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -445,18 +443,26 @@ FUNCTION(fun_graball)
   }
 
   s = trim_space_sep(args[0], sep);
+  if (has_markup(s)) {
+    as = parse_ansi_string(s);
+    s = as->text;
+  }
   b = *bp;
   do {
     r = split_token(&s, sep);
     if (quick_wild(args[1], r)) {
       if (*bp != b)
         safe_str(osep, buff, bp);
-      safe_str(r, buff, bp);
+      if (as) {
+        safe_ansi_string(as, r - as->text, strlen(r), buff, bp);
+      } else {
+        safe_str(r, buff, bp);
+      }
     }
   } while (s);
+  if (as)
+    free_ansi_string(as);
 }
-
-
 
 /* ARGSUSED */
 FUNCTION(fun_fold)
@@ -470,12 +476,14 @@ FUNCTION(fun_fold)
    */
 
   ufun_attrib ufun;
-  char *cp;
   PE_REGS *pe_regs;
   char sep;
   int funccount, per;
   char base[BUFFER_LEN];
   char result[BUFFER_LEN];
+  char *list[MAX_SORTSIZE] = {NULL};
+  int n, j, i = 0;
+  const char *strtwo = pe_regs_intname(2);
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -483,18 +491,22 @@ FUNCTION(fun_fold)
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
-  cp = args[1];
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[1], sep, 1);
 
   /* If we have three or more arguments, the third one is the base case */
   if (nargs >= 3) {
     strncpy(base, args[2], BUFFER_LEN);
   } else {
-    strncpy(base, split_token(&cp, sep), BUFFER_LEN);
+    if (!n) {
+      base[0] = '\0';
+      i++;
+    } else
+      strncpy(base, list[i++], BUFFER_LEN);
   }
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
   pe_regs_setenv_nocopy(pe_regs, 0, base);
-  pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
-
+  pe_regs_setenv_nocopy(pe_regs, 1, list[i++]);
+  pe_regs_set_int(pe_regs, PE_REGS_ARG, strtwo, 0);
   call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
   strncpy(base, result, BUFFER_LEN);
@@ -502,8 +514,9 @@ FUNCTION(fun_fold)
   funccount = pe_info->fun_invocations;
 
   /* handle the rest of the cases */
-  while (cp && *cp) {
-    pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
+  for (j = 1; i < n; i++, j++) {
+    pe_regs_setenv_nocopy(pe_regs, 1, list[i]);
+    pe_regs_set_int(pe_regs, PE_REGS_ARG, strtwo, j);
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))
@@ -512,6 +525,7 @@ FUNCTION(fun_fold)
     strncpy(base, result, BUFFER_LEN);
   }
   pe_regs_free(pe_regs);
+  freearr(list, n);
   safe_str(base, buff, bp);
 }
 
@@ -569,16 +583,16 @@ FUNCTION(fun_filter)
    */
 
   ufun_attrib ufun;
+  char *list[MAX_SORTSIZE];
+  int n;
   char result[BUFFER_LEN];
-  char *cp;
   PE_REGS *pe_regs;
-  const char *cur;
   char sep;
   int first;
   int check_bool = 0;
   int funccount;
   int i;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -594,26 +608,24 @@ FUNCTION(fun_filter)
     return;
 
   /* Go through each argument */
-  cp = trim_space_sep(args[1], sep);
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[1], sep, 1);
   first = 1;
   funccount = pe_info->fun_invocations;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_filter");
   for (i = 4; i < nargs; i++) {
     pe_regs_setenv_nocopy(pe_regs, i - 3, args[i]);
   }
-  while (cp && *cp) {
-    cur = split_token(&cp, sep);
-    pe_regs_setenv_nocopy(pe_regs, 0, cur);
+  for (i = 0; i < n; i++) {
+    pe_regs_setenv_nocopy(pe_regs, 0, list[i]);
     if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
-    if ((check_bool == 0)
-        ? (*result == '1' && *(result + 1) == '\0')
-        : parse_boolean(result)) {
+    if ((check_bool == 0) ? (*result == '1' && *(result + 1) == '\0')
+                          : parse_boolean(result)) {
       if (first)
         first = 0;
       else
         safe_str(osep, buff, bp);
-      safe_str(cur, buff, bp);
+      safe_str(list[i], buff, bp);
     }
     /* Can't do *bp == oldbp like in all the others, because bp might not
      * move even when not full, if one of the list elements is null and
@@ -623,6 +635,7 @@ FUNCTION(fun_filter)
     funccount = pe_info->fun_invocations;
   }
   pe_regs_free(pe_regs);
+  freearr(list, n);
 }
 
 /* ARGSUSED */
@@ -640,7 +653,7 @@ FUNCTION(fun_shuffle)
   char *words[MAX_SORTSIZE];
   int n, i, j;
   char sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!delim_check(buff, bp, nargs, args, 2, &sep))
     return;
@@ -660,7 +673,7 @@ FUNCTION(fun_shuffle)
   /* shuffle it */
   for (i = 0; i < n; i++) {
     char *tmp;
-    j = get_random32(i, n - 1);
+    j = get_random_u32(i, n - 1);
     tmp = words[j];
     words[j] = words[i];
     words[i] = tmp;
@@ -670,7 +683,6 @@ FUNCTION(fun_shuffle)
   freearr(words, n);
 }
 
-
 /* ARGSUSED */
 FUNCTION(fun_sort)
 {
@@ -678,7 +690,7 @@ FUNCTION(fun_sort)
   int nptrs;
   SortType sort_type;
   char sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!nargs || !*args[0])
     return;
@@ -708,7 +720,7 @@ FUNCTION(fun_sortkey)
   SortType sort_type;
   PE_REGS *pe_regs;
   char sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   int i;
   char result[BUFFER_LEN];
   ufun_attrib ufun;
@@ -759,9 +771,8 @@ FUNCTION(fun_sortby)
   char *ptrs[MAX_SORTSIZE];
   char sep;
   int nptrs;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   ufun_attrib ufun;
-
 
   if (!nargs || !*args[0])
     return;
@@ -776,28 +787,28 @@ FUNCTION(fun_sortby)
     osep = osepd;
   }
 
-  if (!fetch_ufun_attrib
-      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun,
+                         UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
-  if (nptrs > 1)                /* pointless to sort less than 2 elements */
+  if (nptrs > 1) /* pointless to sort less than 2 elements */
     sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp, executor, enactor, &ufun,
                pe_info);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
-
 }
 
-#define OUTSEP() do { \
-    if (found) { \
-      safe_strl(osep, osepl, buff, bp); \
-    } else { \
-      found = 1; \
-    } \
-} while (0)
+#define OUTSEP()                                                               \
+  do {                                                                         \
+    if (found) {                                                               \
+      safe_strl(osep, osepl, buff, bp);                                        \
+    } else {                                                                   \
+      found = 1;                                                               \
+    }                                                                          \
+  } while (0)
 
 /* ARGSUSED */
 FUNCTION(fun_setmanip)
@@ -809,7 +820,7 @@ FUNCTION(fun_setmanip)
   int found = 0;
   SortType sort_type = UNKNOWN_LIST;
   int osepl = 0;
-  char *osep = NULL, osepd[2] = { '\0', '\0' };
+  char *osep = NULL, osepd[2] = {'\0', '\0'};
   s_rec *sp1, *sp2;
   ListTypeInfo *lti;
 
@@ -932,7 +943,7 @@ FUNCTION(fun_unique)
   char **ary;
   int orign, n, i;
   int osepl = 0;
-  char *osep = NULL, osepd[2] = { '\0', '\0' };
+  char *osep = NULL, osepd[2] = {'\0', '\0'};
   SortType sort_type = ALPHANUM_LIST;
   ListTypeInfo *lti;
   s_rec *sp;
@@ -981,7 +992,7 @@ FUNCTION(fun_unique)
   mush_free(ary, "ptrarray");
 }
 
-#define CACHE_SIZE 8  /**< Maximum size of the lnum cache */
+#define CACHE_SIZE 8 /**< Maximum size of the lnum cache */
 
 /* ARGSUSED */
 FUNCTION(fun_lnum)
@@ -1016,14 +1027,14 @@ FUNCTION(fun_lnum)
     start = end;
     end = parse_number(args[1]);
     if ((start == 0) && (end == 0)) {
-      safe_str("0", buff, bp);  /* Special case - lnum(0,0) -> 0 */
+      safe_str("0", buff, bp); /* Special case - lnum(0,0) -> 0 */
       return;
     }
   } else {
     if (end == 0.0)
-      return;                   /* Special case - lnum(0) -> blank string */
+      return; /* Special case - lnum(0) -> blank string */
     else if (end == 1.0) {
-      safe_str("0", buff, bp);  /* Special case - lnum(1) -> 0 */
+      safe_str("0", buff, bp); /* Special case - lnum(1) -> 0 */
       return;
     }
     end--;
@@ -1107,45 +1118,119 @@ FUNCTION(fun_first)
   if (!delim_check(buff, bp, nargs, args, 2, &sep))
     return;
 
-  p = trim_space_sep(args[0], sep);
-  safe_str(split_token(&p, sep), buff, bp);
+  if (has_markup(args[0])) {
+    ansi_string *as = NULL;
+    char *q;
+    as = parse_ansi_string(args[0]);
+    p = trim_space_sep(as->text, sep);
+    q = split_token(&p, sep);
+    if (p)
+      safe_ansi_string(as, q - as->text, p - q - 1, buff, bp);
+    else
+      safe_ansi_string(as, q - as->text, as->len, buff, bp);
+    free_ansi_string(as);
+  } else {
+    p = trim_space_sep(args[0], sep);
+    safe_str(split_token(&p, sep), buff, bp);
+  }
 }
 
+enum rand_types { RAND_LINEAR, RAND_NODUPLICATES, RAND_DUPLICATES };
 /* ARGSUSED */
 FUNCTION(fun_randword)
 {
-  char *s, *r;
+  char **ptrs;
+  int nptrs;
   char sep;
-  int word_count, word_index;
+  char *osep;
+  char osepd[2] = {'\0', '\0'};
+  int separg = 2;
+  int randcount = 1;
+  enum rand_types randtype = RAND_NODUPLICATES;
+  bool first = 1;
+  int word_index = -1;
 
-  if (!*args[0])
+  if (!*args[0]) {
     return;
-
-  if (!delim_check(buff, bp, nargs, args, 2, &sep))
-    return;
-
-  s = trim_space_sep(args[0], sep);
-  word_count = do_wordcount(s, sep);
-
-  if (word_count == 0)
-    return;
-
-  word_index = get_random32(0, word_count - 1);
-
-  /* Go to the start of the token we're interested in. */
-  while (word_index && s) {
-    s = next_token(s, sep);
-    word_index--;
+  }
+  if (!strcmp(called_as, "RANDEXTRACT")) {
+    separg = 3;
+    if (nargs > 1) {
+      if (args[1] && *args[1] && !is_strict_integer(args[1])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      randcount = parse_integer(args[1]);
+      if (randcount < 1) {
+        return;
+      }
+    }
   }
 
-  if (!s || !*s)                /* ran off the end of the string */
+  if (!delim_check(buff, bp, nargs, args, separg, &sep)) {
     return;
+  }
 
-  /* Chop off the end, and copy. No length checking needed. */
-  r = s;
-  if (s && *s)
-    (void) split_token(&s, sep);
-  safe_str(r, buff, bp);
+  if (nargs > 3 && args[3] && *args[3]) {
+    if (*args[3] == 'l' || *args[3] == 'L') {
+      randtype = RAND_LINEAR;
+    } else if (*args[3] == 'r' || *args[3] == 'R') {
+      randtype = RAND_NODUPLICATES;
+    } else if (*args[3] == 'd' || *args[3] == 'D') {
+      randtype = RAND_DUPLICATES;
+    } else {
+      safe_str(T("#-1 INVALID TYPE"), buff, bp);
+      return;
+    }
+  }
+
+  if (nargs > 4) {
+    osep = args[4];
+  } else {
+    osepd[0] = sep;
+    osep = osepd;
+  }
+
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep, 1);
+
+  if (!nptrs) {
+    return;
+  }
+  if (randcount > nptrs && randtype != RAND_DUPLICATES) {
+    randcount = nptrs;
+  }
+
+  for (; randcount; randcount--) {
+    if (word_index == -1 || randtype != RAND_LINEAR) {
+      word_index = get_random_u32(0, nptrs - 1);
+    } else {
+      word_index++;
+      if (word_index >= nptrs) {
+        break; /* End of string */
+      }
+    }
+    while (!ptrs[word_index]) {
+      /* Find an unused word - there will always be one */
+      word_index++;
+      if (word_index > nptrs) {
+        word_index = 0; /* Back to beginning */
+      }
+    }
+    if (first) {
+      first = 0;
+    } else {
+      safe_str(osep, buff, bp);
+    }
+    safe_str(ptrs[word_index], buff, bp);
+    if (randtype == RAND_NODUPLICATES) {
+      /* Don't pick this word again */
+      freearr_member(ptrs[word_index]);
+      ptrs[word_index] = NULL;
+    }
+  }
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -1153,6 +1238,7 @@ FUNCTION(fun_rest)
 {
   char *p;
   char sep;
+  ansi_string *as = NULL;
 
   if (!*args[0])
     return;
@@ -1161,8 +1247,19 @@ FUNCTION(fun_rest)
     return;
 
   p = trim_space_sep(args[0], sep);
+  if (has_markup(p)) {
+    as = parse_ansi_string(p);
+    p = as->text;
+  }
   (void) split_token(&p, sep);
-  safe_str(p, buff, bp);
+  if (!p || !*p)
+    return;
+  if (as) {
+    safe_ansi_string(as, p - as->text, as->len, buff, bp);
+    free_ansi_string(as);
+  } else {
+    safe_str(p, buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -1172,6 +1269,7 @@ FUNCTION(fun_last)
 
   char *p, *r;
   char sep;
+  ansi_string *as = NULL;
 
   if (!*args[0])
     return;
@@ -1180,34 +1278,61 @@ FUNCTION(fun_last)
     return;
 
   p = trim_space_sep(args[0], sep);
-  if (!(r = strrchr(p, sep)))
-    r = p;
-  else
+
+  if (has_markup(p)) {
+    as = parse_ansi_string(p);
+    p = as->text;
+  }
+
+  if (!(r = strrchr(p, sep))) {
+    if (as) {
+      safe_ansi_string(as, 0, as->len, buff, bp);
+    } else {
+      safe_str(p, buff, bp);
+    }
+  } else {
     r++;
-  safe_str(r, buff, bp);
+    if (as) {
+      safe_ansi_string(as, r - p, as->len, buff, bp);
+    } else {
+      safe_str(r, buff, bp);
+    }
+  }
+  if (as) {
+    free_ansi_string(as);
+  }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_grab)
 {
-  /* compares two strings with possible wildcards, returns the
-   * word matched. Based on the 2.2 version of this function.
-   */
-
   char *r, *s, sep;
+  ansi_string *as = NULL;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  /* Walk the wordstring, until we find the word we want. */
-  s = trim_space_sep(args[0], sep);
+  if (has_markup(args[0])) {
+    as = parse_ansi_string(args[0]);
+    s = trim_space_sep(as->text, sep);
+  } else {
+    s = trim_space_sep(args[0], sep);
+  }
+
   do {
     r = split_token(&s, sep);
-    if (quick_wild(args[1], r)) {
-      safe_str(r, buff, bp);
+    if (r && quick_wild(args[1], r)) {
+      if (as) {
+        safe_ansi_string(as, r - as->text, s - r - 1, buff, bp);
+        free_ansi_string(as);
+      } else {
+        safe_str(r, buff, bp);
+      }
       return;
     }
   } while (s);
+  if (as)
+    free_ansi_string(as);
 }
 
 /* ARGSUSED */
@@ -1236,7 +1361,7 @@ FUNCTION(fun_namegraball)
       r = split_token(&s, sep);
       victim = parse_objid(r);
       if (!RealGoodObject(victim))
-        continue;               /* Don't bother with garbage */
+        continue; /* Don't bother with garbage */
       if (!(string_match(Name(victim), args[1]) || (absolute == victim)))
         continue;
       if (!can_interact(victim, executor, INTERACT_MATCH, pe_info))
@@ -1254,7 +1379,7 @@ FUNCTION(fun_namegraball)
       r = split_token(&s, sep);
       victim = parse_objid(r);
       if (!RealGoodObject(victim))
-        continue;               /* Don't bother with garbage */
+        continue; /* Don't bother with garbage */
       if (!can_interact(victim, executor, INTERACT_MATCH, pe_info))
         continue;
       /* It's real, and is interact-able */
@@ -1293,10 +1418,10 @@ FUNCTION(fun_namegrab)
     r = split_token(&s, sep);
     victim = parse_objid(r);
     if (!RealGoodObject(victim))
-      continue;                 /* Don't bother with garbage */
+      continue; /* Don't bother with garbage */
     /* Dbref match has top priority */
-    if ((absolute == victim)
-        && can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
+    if ((absolute == victim) &&
+        can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
       safe_str(r, buff, bp);
       return;
     }
@@ -1332,7 +1457,10 @@ FUNCTION(fun_match)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  /* Walk the wordstring, until we find the word we want. */
+  /* Walk the wordstring, until we find the word we want.
+   * The ANSI in args[1] isn't properly preserved, but since we aren't
+   * returning the string anyway, we don't care
+   */
   s = trim_space_sep(args[0], sep);
   do {
     r = split_token(&s, sep);
@@ -1383,7 +1511,7 @@ FUNCTION(fun_extract)
   char **ptrs;
   char *wordlist;
   char sep;
-  int start = 1, len = 1, first = 1;
+  int start = 0, len = 1, first = 1;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -1438,7 +1566,6 @@ FUNCTION(fun_extract)
   freearr(ptrs, nwords);
   mush_free(ptrs, "ptrarray");
   mush_free(wordlist, "string");
-
 }
 
 /* ARGSUSED */
@@ -1459,9 +1586,8 @@ FUNCTION(fun_remove)
   char sep;
   char **list, **rem;
   int list_counter, rem_counter, list_total, rem_total;
-  int skip[MAX_SORTSIZE];
+  int skip[MAX_SORTSIZE] = {0};
   int first = 1;
-
 
   /* zap word from string */
 
@@ -1474,12 +1600,10 @@ FUNCTION(fun_remove)
   list_total = list2arr_ansi(list, MAX_SORTSIZE, args[0], sep, 1);
   rem_total = list2arr_ansi(rem, MAX_SORTSIZE, args[1], sep, 1);
 
-  memset(skip, 0, sizeof(int) * MAX_SORTSIZE);
-
   for (rem_counter = 0; rem_counter < rem_total; rem_counter++) {
     for (list_counter = 0; list_counter < list_total; list_counter++) {
-      if (!skip[list_counter]
-          && !ansi_strcmp(rem[rem_counter], list[list_counter])) {
+      if (!skip[list_counter] &&
+          !ansi_strcmp(rem[rem_counter], list[list_counter])) {
         skip[list_counter] = 1;
         break;
       }
@@ -1500,7 +1624,6 @@ FUNCTION(fun_remove)
   freearr(rem, rem_total);
   mush_free(list, "ptrarray");
   mush_free(rem, "ptrarray");
-
 }
 
 /* ARGSUSED */
@@ -1606,7 +1729,7 @@ FUNCTION(fun_ldelete)
   char *wordlist;
   int first = 0;
   char *s, *r, sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   int delimarg = 3;
   char *replace = NULL;
 
@@ -1722,7 +1845,6 @@ FUNCTION(fun_insert)
   freearr(ptrs, nwords);
   mush_free(ptrs, "ptrarray");
   mush_free(wordlist, "string");
-
 }
 
 /* ARGSUSED */
@@ -1752,7 +1874,7 @@ FUNCTION(fun_member)
     el++;
   } while (s);
 
-  safe_chr('0', buff, bp);      /* not found */
+  safe_chr('0', buff, bp); /* not found */
 }
 
 /* ARGSUSED */
@@ -1807,7 +1929,7 @@ FUNCTION(fun_revwords)
   char **words;
   int count, origcount;
   char sep;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
 
   if (!delim_check(buff, bp, nargs, args, 2, &sep))
     return;
@@ -1850,8 +1972,8 @@ FUNCTION(fun_words)
 FUNCTION(fun_splice)
 {
   /* like MERGE(), but does it for a word */
-  char **orig;
-  char **repl;
+  char *orig[MAX_SORTSIZE];
+  char *repl[MAX_SORTSIZE];
   char haystack[BUFFER_LEN];
   int ocount, rcount;
   int i;
@@ -1864,43 +1986,39 @@ FUNCTION(fun_splice)
   osep[0] = sep;
   osep[1] = '\0';
 
-  orig = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  repl = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  /* Turn them into lists */
-  ocount = list2arr(orig, MAX_SORTSIZE, args[0], sep, 1);
-  rcount = list2arr(repl, MAX_SORTSIZE, args[1], sep, 1);
-
   strncpy(haystack, remove_markup(args[2], NULL), BUFFER_LEN);
   if (!*haystack) {
     safe_str(T("#-1 NEED A WORD"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
     return;
   }
   if (do_wordcount(haystack, sep) != 1) {
     safe_str(T("#-1 TOO MANY WORDS"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
     return;
   }
 
+  /* Turn them into lists */
+  ocount = list2arr_ansi(orig, MAX_SORTSIZE, args[0], sep, 1);
+  rcount = list2arr_ansi(repl, MAX_SORTSIZE, args[1], sep, 1);
+
   if (ocount != rcount) {
     safe_str(T("#-1 NUMBER OF WORDS MUST BE EQUAL"), buff, bp);
-    mush_free(orig, "ptrarray");
-    mush_free(repl, "ptrarray");
+    freearr(orig, ocount);
+    freearr(repl, rcount);
     return;
   }
 
   for (i = 0; i < ocount; i++) {
-    if (!ansi_strcmp(orig[i], haystack)) {
+    if (!strcmp(remove_markup(orig[i], NULL), haystack)) {
+      char *tmp = orig[i];
       orig[i] = repl[i];
+      repl[i] = tmp;
     }
   }
 
   arr2list(orig, ocount, buff, bp, osep);
 
-  mush_free(orig, "ptrarray");
-  mush_free(repl, "ptrarray");
+  freearr(orig, ocount);
+  freearr(repl, rcount);
 }
 
 /* ARGSUSED */
@@ -1947,14 +2065,14 @@ FUNCTION(fun_iter)
   } else {
     const char *arg4 = args[3];
     char *osep = outsep;
-    process_expression(outsep, &osep, &arg4, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    process_expression(outsep, &osep, &arg4, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
     *osep = '\0';
   }
   lp = list;
   sp = args[0];
-  per = process_expression(list, &lp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info);
+  per = process_expression(list, &lp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info);
   *lp = '\0';
   lp = trim_space_sep(list, sep);
   if (per || !*lp) {
@@ -1981,12 +2099,13 @@ FUNCTION(fun_iter)
 
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
     sp = tbuf2;
-    if (process_expression(buff, bp, &sp, executor, caller, enactor,
-                           eflags, PT_DEFAULT, pe_info)) {
+    if (process_expression(buff, bp, &sp, executor, caller, enactor, eflags,
+                           PT_DEFAULT, pe_info)) {
       mush_free(tbuf2, "replace_string.buff");
       break;
     }
-    if (*bp == (buff + BUFFER_LEN - 1) && pe_info->fun_invocations == funccount) {
+    if (*bp == (buff + BUFFER_LEN - 1) &&
+        pe_info->fun_invocations == funccount) {
       mush_free(tbuf2, "replace_string.buff");
       break;
     }
@@ -2042,10 +2161,7 @@ FUNCTION(fun_ibreak)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_ilev)
-{
-  safe_integer(PE_Get_Ilev(pe_info), buff, bp);
-}
+FUNCTION(fun_ilev) { safe_integer(PE_Get_Ilev(pe_info), buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_itext)
@@ -2098,7 +2214,8 @@ FUNCTION(fun_inum)
 /* ARGSUSED */
 FUNCTION(fun_step)
 {
-  /* Like map, but passes up to MAX_STACK_ARGS elements from the list at a time in %0-%9
+  /* Like map, but passes up to MAX_STACK_ARGS elements from the list at a time
+   * in %0-%9
    * If the attribute is not found, null is returned, NOT an error.
    * This function takes delimiters.
    */
@@ -2107,7 +2224,7 @@ FUNCTION(fun_step)
   char sep;
   int n;
   int step;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   PE_REGS *pe_regs = NULL;
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
@@ -2188,7 +2305,7 @@ FUNCTION(fun_map)
   char sep;
   int funccount;
   char place[16];
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
   int nptrs, i;
@@ -2228,8 +2345,8 @@ FUNCTION(fun_map)
       safe_str(osep, buff, bp);
     }
     safe_str(rbuff, buff, bp);
-    if (*bp >= (buff + BUFFER_LEN - 1)
-        && pe_info->fun_invocations == funccount) {
+    if (*bp >= (buff + BUFFER_LEN - 1) &&
+        pe_info->fun_invocations == funccount) {
       break;
     }
   }
@@ -2237,7 +2354,6 @@ FUNCTION(fun_map)
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_mix)
@@ -2254,10 +2370,10 @@ FUNCTION(fun_mix)
   PE_REGS *pe_regs;
   int funccount;
   int n, lists;
-  char **ptrs[MAX_STACK_ARGS] = { NULL };
+  char **ptrs[MAX_STACK_ARGS] = {NULL};
   int nptrs[MAX_STACK_ARGS], i, maxi;
 
-  if (nargs > 3) {              /* Last arg must be the delimiter */
+  if (nargs > 3) { /* Last arg must be the delimiter */
     n = nargs;
     lists = nargs - 2;
   } else {
@@ -2304,8 +2420,8 @@ FUNCTION(fun_mix)
       safe_chr(sep, buff, bp);
     }
     safe_str(rbuff, buff, bp);
-    if (*bp == (buff + BUFFER_LEN - 1)
-        && pe_info->fun_invocations == funccount) {
+    if (*bp == (buff + BUFFER_LEN - 1) &&
+        pe_info->fun_invocations == funccount) {
       break;
     }
   }
@@ -2413,15 +2529,17 @@ FUNCTION(fun_table)
     }
     break;
   }
-  col = field_width + (osep != '\0');
+  col = field_width;
   while (cp) {
-    col += field_width + (osep != '\0');
+    col += field_width;
     if (col > line_length) {
       safe_chr('\n', buff, bp);
-      col = field_width + ! !osep;
+      col = field_width;
     } else {
-      if (osep)
+      if (osep) {
         safe_chr(osep, buff, bp);
+        col += 1;
+      }
     }
     t = split_token(&cp, sep);
     if (!t)
@@ -2529,14 +2647,14 @@ FUNCTION(fun_regreplace)
       goto exit_sequence;
     *tbp = '\0';
 
-    if ((re = pcre_compile(remove_markup(tbuf, &searchlen),
-                           flags, &errptr, &erroffset, tables)) == NULL) {
+    if ((re = pcre_compile(remove_markup(tbuf, &searchlen), flags, &errptr,
+                           &erroffset, tables)) == NULL) {
       /* Matching error. */
       safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
       safe_str(errptr, buff, bp);
       goto exit_sequence;
     }
-    ADD_CHECK("pcre");          /* re */
+    ADD_CHECK("pcre"); /* re */
     if (searchlen)
       searchlen--;
 
@@ -2612,8 +2730,8 @@ FUNCTION(fun_regreplace)
         }
         goto exit_sequence;
       }
-      if ((*bp == (buff + BUFFER_LEN - 1))
-          && (pe_info->fun_invocations == funccount))
+      if ((*bp == (buff + BUFFER_LEN - 1)) &&
+          (pe_info->fun_invocations == funccount))
         break;
 
       funccount = pe_info->fun_invocations;
@@ -2624,8 +2742,8 @@ FUNCTION(fun_regreplace)
       if (offsets[0] == match_offset)
         match_offset++;
     } while (all && match_offset < prelen &&
-             (subpatterns = pcre_exec(re, extra, prebuf, prelen,
-                                      match_offset, 0, offsets, 99)) >= 0);
+             (subpatterns = pcre_exec(re, extra, prebuf, prelen, match_offset,
+                                      0, offsets, 99)) >= 0);
 
     safe_str(start, postbuf, &postp);
     *postp = '\0';
@@ -2659,14 +2777,14 @@ FUNCTION(fun_regreplace)
 
       *tbp = '\0';
 
-      if ((re = pcre_compile(remove_markup(tbuf, &searchlen),
-                             flags, &errptr, &erroffset, tables)) == NULL) {
+      if ((re = pcre_compile(remove_markup(tbuf, &searchlen), flags, &errptr,
+                             &erroffset, tables)) == NULL) {
         /* Matching error. */
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
         goto exit_sequence;
       }
-      ADD_CHECK("pcre");        /* re */
+      ADD_CHECK("pcre"); /* re */
       if (searchlen)
         searchlen--;
 
@@ -2770,15 +2888,15 @@ exit_sequence:
 
 FUNCTION(fun_regmatch)
 {
-/* ---------------------------------------------------------------------------
- * fun_regmatch Return 0 or 1 depending on whether or not a regular
- * expression matches a string. If a third argument is specified, dump
- * the results of a regexp pattern match into a set of r()-registers.
- *
- * regmatch(string, pattern, list of registers)
- * Registers are by position (old way) or name:register (new way)
- *
- */
+  /* ---------------------------------------------------------------------------
+   * fun_regmatch Return 0 or 1 depending on whether or not a regular
+   * expression matches a string. If a third argument is specified, dump
+   * the results of a regexp pattern match into a set of r()-registers.
+   *
+   * regmatch(string, pattern, list of registers)
+   * Registers are by position (old way) or name:register (new way)
+   *
+   */
   int i, nqregs;
   char *qregs[NUMQ], *holder[NUMQ];
   pcre *re;
@@ -2801,7 +2919,7 @@ FUNCTION(fun_regmatch)
 
   as = parse_ansi_string(args[0]);
   txt = as->text;
-  if (nargs == 2) {             /* Don't care about saving sub expressions */
+  if (nargs == 2) { /* Don't care about saving sub expressions */
     bool match = quick_regexp_match(needle, txt, flags ? 0 : 1, &errptr);
     if (errptr == NULL) {
       safe_boolean(match, buff, bp);
@@ -2885,8 +3003,8 @@ FUNCTION(fun_regmatch)
       *(lbp) = '\0';
     } else {
       lbp = lbuff;
-      ansi_pcre_copy_substring(as, offsets, subpatterns, subpattern, 1,
-                               lbuff, &lbp);
+      ansi_pcre_copy_substring(as, offsets, subpatterns, subpattern, 1, lbuff,
+                               &lbp);
       *(lbp) = '\0';
     }
     PE_Setq(pe_info, regname, lbuff);
@@ -2912,7 +3030,7 @@ FUNCTION(fun_regrab)
   int erroffset;
   int offsets[99];
   int flags = 0;
-  char *osep, osepd[2] = { '\0', '\0' };
+  char *osep, osepd[2] = {'\0', '\0'};
   char **ptrs;
   int nptrs, i;
   bool all = 0, pos = 0;
@@ -2939,7 +3057,8 @@ FUNCTION(fun_regrab)
   if (strstr(called_as, "MATCH"))
     pos = 1;
 
-  if ((re = pcre_compile(args[1], flags, &errptr, &erroffset, tables)) == NULL) {
+  if ((re = pcre_compile(remove_markup(args[1], NULL), flags, &errptr,
+                         &erroffset, tables)) == NULL) {
     /* Matching error. */
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
     safe_str(errptr, buff, bp);
@@ -3000,7 +3119,7 @@ FUNCTION(fun_isregexp)
   const char *errptr;
   int erroffset;
 
-  if (! !(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
+  if (!!(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
     pcre_free(re);
     safe_chr('1', buff, bp);
     return;

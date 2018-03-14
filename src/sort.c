@@ -19,7 +19,7 @@
 #include "parse.h"
 #include "strutil.h"
 
-#define EPSILON 0.000000001  /**< limit of precision for float equality */
+#define EPSILON 0.000000001 /**< limit of precision for float equality */
 
 /** If sort_order is positive, sort forward. If negative, it sorts backward. */
 #define ASCENDING 1
@@ -43,7 +43,6 @@ int_comp(const void *s1, const void *s2)
     return 1 * sort_order;
 }
 
-
 /** qsort() comparision routine for unsigned int */
 int
 uint_comp(const void *s1, const void *s2)
@@ -61,7 +60,6 @@ uint_comp(const void *s1, const void *s2)
     return 1 * sort_order;
 }
 
-
 /** qsort() comparision routine for NVAL/double */
 int
 nval_comp(const void *a, const void *b)
@@ -71,7 +69,6 @@ nval_comp(const void *a, const void *b)
   int eq = (fabs(*x - *y) <= (epsilon * fabs(*x)));
   return eq ? 0 : ((*x > *y ? 1 : -1) * sort_order);
 }
-
 
 /** qsort() comparision routine for strings.
  * Uses strcmp()
@@ -151,8 +148,6 @@ u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
   return n;
 }
 
-
-
 /** Used with fun_sortby()
  *
  * Based on Andrew Molitor's qsort, which doesn't require transitivity
@@ -180,7 +175,7 @@ loop:
   /* Pick something at random at swap it into the leftmost slot   */
   /* This is the pivot, we'll put it back in the right spot later */
 
-  i = get_random32(left, right);
+  i = get_random_u32(left, right);
   tmp = array[i];
   array[i] = array[left];
   array[left] = tmp;
@@ -225,15 +220,12 @@ loop:
   }
 }
 
-
-
-
 /****************************** gensort ************/
 
-#define GENRECORD(x) void x(s_rec *rec,dbref player,char *sortflags); \
-  void x(s_rec *rec, \
-    dbref player __attribute__ ((__unused__)), \
-    char *sortflags __attribute__ ((__unused__)))
+#define GENRECORD(x)                                                           \
+  void x(s_rec *rec, dbref player, char *sortflags);                           \
+  void x(s_rec *rec, dbref player __attribute__((__unused__)),                 \
+         char *sortflags __attribute__((__unused__)))
 
 GENRECORD(gen_alphanum)
 {
@@ -263,13 +255,13 @@ GENRECORD(gen_magic)
       usedup = true;
       while (*s && *s != 'm')
         s++;
-      s++;                      /* Advance past m */
+      s++; /* Advance past m */
       break;
     case TAG_START:
       usedup = true;
       while (*s && *s != TAG_END)
         s++;
-      s++;                      /* Advance past tag_end */
+      s++; /* Advance past tag_end */
       break;
     case '0':
     case '1':
@@ -326,6 +318,7 @@ GENRECORD(gen_magic)
         }
         break;
       }
+    /* Fall through - nonnumeric after # */
     default:
       safe_chr(*s, buff, &bp);
       if (*s)
@@ -455,40 +448,34 @@ GENRECORD(gen_db_attr)
  * Instead, sort stuffs them into a jumble at the end. */
 
 /* Compare a single int, > == or < 0 */
-#define Compare(i,x,y) \
-  ((x->db < 0 || y->db < 0) ?                                    \
-   ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))         \
-   : ((i != 0) ? (i < 0 ? -2 : 2)                                \
-      : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))          \
-      )                                                          \
-   )
+#define Compare(i, x, y)                                                       \
+  ((x->db < 0 || y->db < 0)                                                    \
+     ? ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))                   \
+     : ((i != 0) ? (i < 0 ? -2 : 2)                                            \
+                 : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))))
 
 /* Compare a float, > == or < 0.0 */
-#define CompareF(f,x,y) \
-  ((x->db < 0 || y->db < 0) ?                                    \
-   ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))         \
-   : ((fabs(f) > EPSILON) ? (f < 0.0 ? -2 : 2)                          \
-      : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))          \
-      )                                                          \
-   )
+#define CompareF(f, x, y)                                                      \
+  ((x->db < 0 || y->db < 0)                                                    \
+     ? ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))                   \
+     : ((fabs(f) > EPSILON)                                                    \
+          ? (f < 0.0 ? -2 : 2)                                                 \
+          : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))))
 
 /* Compare two ints */
-#define Compare2(i1,i2,x,y)         \
-  ((x->db < 0 || y->db < 0) ?                                       \
-   ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))            \
-   : ((i1 != i2) ? (i1 < i2 ? -2 : 2)                               \
-      : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))             \
-      )                                                             \
-   )
+#define Compare2(i1, i2, x, y)                                                 \
+  ((x->db < 0 || y->db < 0)                                                    \
+     ? ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))                   \
+     : ((i1 != i2) ? (i1 < i2 ? -2 : 2)                                        \
+                   : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))))
 
 /* Compare two doubles */
-#define Compare2F(f1,f2,x,y)         \
-  ((x->db < 0 || y->db < 0) ?                                       \
-   ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))            \
-   : ((fabs(f1 - f2) > EPSILON) ? (f1 < f2 ? -2 : 2)                         \
-      : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))             \
-      )                                                             \
-   )
+#define Compare2F(f1, f2, x, y)                                                \
+  ((x->db < 0 || y->db < 0)                                                    \
+     ? ((x->db < 0 && y->db < 0) ? 0 : (x->db < 0 ? 2 : -2))                   \
+     : ((fabs(f1 - f2) > EPSILON)                                              \
+          ? (f1 < f2 ? -2 : 2)                                                 \
+          : (x->db == y->db ? 0 : (x->db < y->db ? -1 : 1))))
 
 static int
 s_comp(const void *s1, const void *s2)
@@ -534,7 +521,6 @@ attr_comp(const void *s1, const void *s2)
   const s_rec *sr2 = (const s_rec *) s2;
 
   return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s) * sort_order;
-
 }
 
 int
@@ -576,7 +562,6 @@ compare_attr_names(const char *attr1, const char *attr2)
   }
   /* All branches were the same */
   return 0;
-
 }
 
 static int
@@ -650,8 +635,7 @@ ListTypeInfo ltypelist[] = {
    IS_DB | IS_STRING | IS_CASE_INSENS},
   {ATTRNAME_LIST, NULL, 0, gen_alphanum, attr_comp, IS_STRING},
   /* This stops the loop, so is default */
-  {NULL, NULL, 0, gen_alphanum, s_comp, IS_STRING}
-};
+  {NULL, NULL, 0, gen_alphanum, s_comp, IS_STRING}};
 
 /**
  * Given a string description of a sort type, generate and return a
@@ -678,7 +662,8 @@ get_list_type_info(SortType sort_type)
   }
   if (!sort_type) {
     /* Advance i to the default */
-    for (i = 0; ltypelist[i].name; i++) ;
+    for (i = 0; ltypelist[i].name; i++)
+      ;
   } else if ((ptr = strchr(sort_type, ':'))) {
     len = ptr - sort_type;
     ptr += 1;
@@ -686,10 +671,12 @@ get_list_type_info(SortType sort_type)
       ptr = NULL;
     for (i = 0;
          ltypelist[i].name && strncasecmp(ltypelist[i].name, sort_type, len);
-         i++) ;
+         i++)
+      ;
   } else {
     for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, sort_type);
-         i++) ;
+         i++)
+      ;
   }
 
   lti->name = ltypelist[i].name;
@@ -746,8 +733,9 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
       } else {
         len = strlen(str);
       }
-      for (i = 0; ltypelist[i].name &&
-           strncasecmp(ltypelist[i].name, str, len); i++) ;
+      for (i = 0; ltypelist[i].name && strncasecmp(ltypelist[i].name, str, len);
+           i++)
+        ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
     }
@@ -781,8 +769,9 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
       } else {
         len = strlen(str);
       }
-      for (i = 0; ltypelist[i].name &&
-           strncasecmp(ltypelist[i].name, str, len); i++) ;
+      for (i = 0; ltypelist[i].name && strncasecmp(ltypelist[i].name, str, len);
+           i++)
+        ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
     }
@@ -820,7 +809,8 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
   ptr = NULL;
   if (!sort_type) {
     /* Advance i to the default */
-    for (i = 0; ltypelist[i].name; i++) ;
+    for (i = 0; ltypelist[i].name; i++)
+      ;
   } else if ((ptr = strchr(sort_type, ':'))) {
     len = ptr - sort_type;
     ptr += 1;
@@ -828,10 +818,12 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
       ptr = NULL;
     for (i = 0;
          ltypelist[i].name && strncasecmp(ltypelist[i].name, sort_type, len);
-         i++) ;
+         i++)
+      ;
   } else {
     for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, sort_type);
-         i++) ;
+         i++)
+      ;
   }
   lti = get_list_type_info(sort_type);
 
@@ -898,7 +890,6 @@ slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo *lti)
   }
   return sp;
 }
-
 
 /**
  * Given an array of s_rec items, sort them in-place using a specified
@@ -1032,12 +1023,7 @@ autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2)
   return MAGIC_LIST;
 }
 
-typedef enum {
-  L_NUMERIC,
-  L_FLOAT,
-  L_ALPHANUM,
-  L_DBREF
-} ltype;
+typedef enum { L_NUMERIC, L_FLOAT, L_ALPHANUM, L_DBREF } ltype;
 
 SortType
 autodetect_list(char *ptrs[], int nptrs)
@@ -1054,18 +1040,21 @@ autodetect_list(char *ptrs[], int nptrs)
       if (is_strict_integer(ptrs[i])) {
         break;
       }
+    /* Fallthrough */
     case L_FLOAT:
       if (is_strict_number(ptrs[i])) {
         lt = L_FLOAT;
         sort_type = FLOAT_LIST;
         break;
       }
+    /* Fallthrough */
     case L_DBREF:
       if (is_objid(ptrs[i]) && (i == 0 || lt == L_DBREF)) {
         lt = L_DBREF;
         sort_type = DBREF_LIST;
         break;
       }
+    /* Fallthrough */
     case L_ALPHANUM:
       return MAGIC_LIST;
     }

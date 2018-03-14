@@ -4,11 +4,11 @@
  * \brief Table of default attributes and their permissions
  */
 
-
 #ifndef __ATR_TAB_H
 #define __ATR_TAB_H
 
 #include "attrib.h"
+#include "privtab.h"
 
 /* attribute list */
 ATTR attr[] = {
@@ -50,17 +50,14 @@ ATTR attr[] = {
   {"CHARGES", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"CHATFORMAT", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"COMMENT", AF_NOPROG | AF_MDARK | AF_WIZARD | AF_PREFIXMATCH | AF_NOCOPY,
-   NULL_CHUNK_REFERENCE,
-   0, NULL},
+   NULL_CHUNK_REFERENCE, 0, NULL},
   {"CONFORMAT", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"COST", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"DEBUGFORWARDLIST", AF_NOPROG | AF_PRIVATE | AF_PREFIXMATCH,
-   NULL_CHUNK_REFERENCE,
-   0, NULL},
+   NULL_CHUNK_REFERENCE, 0, NULL},
   {"DESCFORMAT", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"DESCRIBE", AF_PUBLIC | AF_NEARBY | AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH,
-   NULL_CHUNK_REFERENCE, 0,
-   NULL},
+   NULL_CHUNK_REFERENCE, 0, NULL},
   {"DESTINATION", AF_NOPROG, NULL_CHUNK_REFERENCE, 0, NULL},
   {"DOING", AF_NOPROG | AF_PRIVATE | AF_VISUAL | AF_PUBLIC,
    NULL_CHUNK_REFERENCE, 0, NULL},
@@ -104,8 +101,7 @@ ATTR attr[] = {
   {"LEAVE", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"LFAIL", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"LISTEN", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
-  {"MAILCURF",
-   AF_WIZARD | AF_NOPROG | AF_LOCKED | AF_PREFIXMATCH | AF_NOCOPY,
+  {"MAILCURF", AF_WIZARD | AF_NOPROG | AF_LOCKED | AF_PREFIXMATCH | AF_NOCOPY,
    NULL_CHUNK_REFERENCE, 0, NULL},
   {"MAILFILTERS",
    AF_WIZARD | AF_NOPROG | AF_LOCKED | AF_PREFIXMATCH | AF_NOCOPY,
@@ -123,8 +119,7 @@ ATTR attr[] = {
    NULL_CHUNK_REFERENCE, 0, NULL},
   {"MOVE", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"NAMEACCENT", AF_NOPROG | AF_VISUAL | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE,
-   0,
-   NULL},
+   0, NULL},
   {"NAMEFORMAT", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"OBUY", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"ODESCRIBE", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
@@ -160,14 +155,12 @@ ATTR attr[] = {
   {"RECEIVE", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"QUEUE", AF_WIZARD | AF_PRIVATE | AF_NOCOPY | AF_NODUMP,
    NULL_CHUNK_REFERENCE, 0, NULL},
-  {"REGISTERED_EMAIL",
-   AF_WIZARD | AF_LOCKED | AF_PRIVATE | AF_NOCOPY, NULL_CHUNK_REFERENCE, 0,
-   NULL},
+  {"REGISTERED_EMAIL", AF_WIZARD | AF_LOCKED | AF_PRIVATE | AF_NOCOPY,
+   NULL_CHUNK_REFERENCE, 0, NULL},
   {"RQUOTA", AF_MDARK | AF_LOCKED, NULL_CHUNK_REFERENCE, 0, NULL},
   {"RUNOUT", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"SEMAPHORE", AF_LOCKED | AF_PRIVATE | AF_NOCOPY | AF_NODUMP,
-   NULL_CHUNK_REFERENCE,
-   0, NULL},
+   NULL_CHUNK_REFERENCE, 0, NULL},
   {"SEX", AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0,
    NULL},
   {"SPEECHMOD", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
@@ -263,19 +256,38 @@ ATTR attr[] = {
    NULL_CHUNK_REFERENCE, 0, NULL},
   {"ZENTER", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
   {"ZLEAVE", AF_NOPROG | AF_PREFIXMATCH, NULL_CHUNK_REFERENCE, 0, NULL},
-  {NULL, 0, NULL_CHUNK_REFERENCE, 0, NULL}
-};
+  {NULL, 0, NULL_CHUNK_REFERENCE, 0, NULL}};
 
 ATRALIAS attralias[] = {
-  {"DESC", "DESCRIBE"},
-  {"IDESC", "IDESCRIBE"},
-  {"SUCC", "SUCCESS"},
-  {"ASUCC", "ASUCCESS"},
-  {"OSUCC", "OSUCCESS"},
-  {"FAIL", "FAILURE"},
-  {"AFAIL", "AFAILURE"},
-  {"OFAIL", "OFAILURE"},
-  {NULL, NULL}
-};
+  {"DESC", "DESCRIBE"},  {"IDESC", "IDESCRIBE"}, {"SUCC", "SUCCESS"},
+  {"ASUCC", "ASUCCESS"}, {"OSUCC", "OSUCCESS"},  {"FAIL", "FAILURE"},
+  {"AFAIL", "AFAILURE"}, {"OFAIL", "OFAILURE"},  {NULL, NULL}};
 
-#endif                          /* __ATR_TAB_H */
+/** Attribute flags which may be present in the db */
+PRIV attr_privs_db[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
+                        {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
+                        {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
+                        {"wizard", 'w', AF_WIZARD, AF_WIZARD},
+                        {"visual", 'v', AF_VISUAL, AF_VISUAL},
+                        {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
+                        {"regexp", 'R', AF_REGEXP, AF_REGEXP},
+                        {"case", 'C', AF_CASE, AF_CASE},
+                        {"locked", '+', AF_LOCKED, AF_LOCKED},
+                        {"safe", 'S', AF_SAFE, AF_SAFE},
+                        {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
+                        {"veiled", 'V', AF_VEILED, AF_VEILED},
+                        {"debug", 'b', AF_DEBUG, AF_DEBUG},
+                        {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
+                        {"public", 'p', AF_PUBLIC, AF_PUBLIC},
+                        {"nearby", 'n', AF_NEARBY, AF_NEARBY},
+                        {"noname", 'N', AF_NONAME, AF_NONAME},
+                        {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
+                        {"amhear", 'M', AF_MHEAR, AF_MHEAR},
+                        {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+                        {"enum", '\0', AF_ENUM, AF_ENUM},
+                        {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
+                        {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
+                        {"quiet", 'Q', AF_QUIET, AF_QUIET},
+                        {NULL, '\0', 0, 0}};
+
+#endif /* __ATR_TAB_H */

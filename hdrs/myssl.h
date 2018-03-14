@@ -11,7 +11,8 @@
 
 #include <openssl/ssl.h>
 
-SSL_CTX *ssl_init(char *private_key_file, char *ca_file, int req_client_cert);
+SSL_CTX *ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
+                  int req_client_cert);
 SSL *ssl_setup_socket(int sock);
 void ssl_close_connection(SSL *ssl);
 SSL *ssl_alloc_struct(void);
@@ -26,9 +27,9 @@ int ssl_read(SSL *ssl, int state, int net_read_ready, int net_write_ready,
              char *buf, int bufsize, int *bytes_read);
 int ssl_write(SSL *ssl, int state, int net_read_ready, int net_write_ready,
               const char *buf, int bufsize, int *offset);
-void ssl_write_session(FILE * fp, SSL *ssl);
-void ssl_read_session(FILE * fp);
-void ssl_write_ssl(FILE * fp, SSL *ssl);
-SSL *ssl_read_ssl(FILE * fp, int sock);
+void ssl_write_session(FILE *fp, SSL *ssl);
+void ssl_read_session(FILE *fp);
+void ssl_write_ssl(FILE *fp, SSL *ssl);
+SSL *ssl_read_ssl(FILE *fp, int sock);
 
-#endif                          /* _MYSSL_H */
+#endif /* _MYSSL_H */

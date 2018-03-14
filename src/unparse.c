@@ -27,7 +27,6 @@
 #include "pueblo.h"
 #include "strutil.h"
 
-
 /** Format an object's name (and dbref and flags).
  * This is a wrapper for real_unparse() that conditionally applies
  * pueblo xch_cmd tags to make the object's name a hyperlink to examine
@@ -123,8 +122,8 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       /* show everything */
       bp = buf;
       if (ANSI_NAMES && !monikered)
-        safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
-                    ANSI_END, loc, unparse_flags(loc, player));
+        safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1, ANSI_END,
+                    loc, unparse_flags(loc, player));
       else
         safe_format(buf, &bp, "%s(#%d%s)", tbuf1, loc,
                     unparse_flags(loc, player));
@@ -147,7 +146,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
   else
     p = buf;
 
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     PUSE;
     tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), p);
     PEND;
@@ -235,7 +234,7 @@ unparse_uinteger(uintmax_t num)
 {
   static char str[128];
 #ifndef PRIuMAX
-  /* Probably not right */
+/* Probably not right */
 #define PRIuMAX "llu"
 #endif
   sprintf(str, "%" PRIuMAX, num);
@@ -250,7 +249,7 @@ char *
 unparse_number(NVAL num)
 {
   /* 100 is NOT large enough for even the huge floats */
-  static char str[1000];        /* Should be large enough for even the HUGE floats */
+  static char str[1000]; /* Should be large enough for even the HUGE floats */
   char *p;
   snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 

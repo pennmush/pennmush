@@ -29,15 +29,16 @@
 #include "log.h"
 
 /** Portable wait
- * \param child pid of specific child proccess to wait for. Only meaningful if HAVE_WAITPID is defined.
+ * \param child pid of specific child proccess to wait for. Only meaningful if
+ * HAVE_WAITPID is defined.
  * \param status pointer to store the child process's exit status in.
  * \param flags optional flags to pass to waitpid() or wait3().
  * \return pid of child process that exited, or -1.
  */
 pid_t
-mush_wait(pid_t child __attribute__ ((__unused__)),
-          WAIT_TYPE *status __attribute__ ((__unused__)),
-          int flags __attribute__ ((__unused__)))
+mush_wait(pid_t child __attribute__((__unused__)),
+          WAIT_TYPE *status __attribute__((__unused__)),
+          int flags __attribute__((__unused__)))
 {
 
 #if defined(HAVE_WAITPID)
@@ -62,8 +63,8 @@ mush_wait(pid_t child __attribute__ ((__unused__)),
  * \return 0 on success, -1 on failure.
  */
 int
-set_process_group(pid_t pid __attribute__ ((__unused__)),
-                  pid_t pgrp __attribute__ ((__unused__)))
+set_process_group(pid_t pid __attribute__((__unused__)),
+                  pid_t pgrp __attribute__((__unused__)))
 {
 #if defined(HAVE_SETPGID)
 
@@ -108,7 +109,6 @@ new_process_session(void)
 #endif
 }
 
-
 /**
  * Lowers the scheduling priority of a process by a given amount. Note that
  * on Unix, the higher the number, the lower the priority.
@@ -117,7 +117,7 @@ new_process_session(void)
  * \return 0 on success, -1 on error.
  */
 int
-lower_priority_by(pid_t pid, int prio)
+lower_priority_by(pid_t pid __attribute__((__unused__)), int prio)
 {
   int newprio = 0;
 
@@ -147,7 +147,8 @@ lower_priority_by(pid_t pid, int prio)
    will draw it too much stuff into info_slave */
 
 static int
-lock_fp(FILE * f, bool what)
+lock_fp(FILE *f __attribute__((__unused__)),
+        bool what __attribute__((__unused__)))
 {
 #if defined(HAVE_FCNTL) && !defined(WIN32)
   struct flock lock;
@@ -193,7 +194,7 @@ lock_fp(FILE * f, bool what)
  * \return 0 on success, -1 on failure.
  */
 int
-lock_file(FILE * f)
+lock_file(FILE *f)
 {
   return lock_fp(f, 1);
 }
@@ -203,7 +204,7 @@ lock_file(FILE * f)
  * \return 0 on success, -1 on failure.
  */
 int
-unlock_file(FILE * f)
+unlock_file(FILE *f)
 {
   return lock_fp(f, 0);
 }

@@ -13,8 +13,7 @@
 #include <stdint.h>
 #endif
 
-#define NUMQ    36
-
+#define NUMQ 36
 
 /** Math function floating-point number type */
 typedef double NVAL;
@@ -35,11 +34,10 @@ typedef uint32_t warn_type;
 typedef uint32_t privbits;
 
 /* special dbref's */
-#define NOTHING (-1)            /**< null dbref */
-#define AMBIGUOUS (-2)          /**< multiple possibilities, for matchers */
-#define HOME (-3)               /**< virtual room, represents mover's home */
-#define ANY_OWNER (-2)          /**< For lstats and \@stat */
-
+#define NOTHING (-1)   /**< null dbref */
+#define AMBIGUOUS (-2) /**< multiple possibilities, for matchers */
+#define HOME (-3)      /**< virtual room, represents mover's home */
+#define ANY_OWNER (-2) /**< For lstats and \@stat */
 
 #define INTERACT_SEE 0x1
 #define INTERACT_HEAR 0x2
@@ -57,67 +55,72 @@ typedef struct lock_list lock_list;
 
 /* max length of command argument to process_command */
 #define MAX_COMMAND_LEN 4096
-#define BUFFER_LEN ((MAX_COMMAND_LEN)*2)
+#define BUFFER_LEN ((MAX_COMMAND_LEN) *2)
 #define MAX_ARG 63
 
 typedef struct new_pe_info NEW_PE_INFO;
 typedef struct debug_info Debug_Info;
 /** process_expression() info */
 
-#define PE_KEY_LEN     64       /**< The maximum key length. */
+#define PE_KEY_LEN 64 /**< The maximum key length. */
 
 /* Types for _pe_regs_ _and_ _pe_reg_vals_ */
-#define PE_REGS_Q      0x01     /**< Q-registers. */
-#define PE_REGS_REGEXP 0x02     /**< Regexps. */
-#define PE_REGS_CAPTURE PE_REGS_REGEXP  /**< Alias for REGEXP */
-#define PE_REGS_SWITCH 0x04     /**< switch(), %$0. */
-#define PE_REGS_ITER   0x08     /**< iter() and \@dolist, %i0/etc */
-#define PE_REGS_ARG    0x10     /**< %0-%9 */
-#define PE_REGS_SYS    0x20     /**< %c, %z, %= */
+#define PE_REGS_Q 0x01                 /**< Q-registers. */
+#define PE_REGS_REGEXP 0x02            /**< Regexps. */
+#define PE_REGS_CAPTURE PE_REGS_REGEXP /**< Alias for REGEXP */
+#define PE_REGS_SWITCH 0x04            /**< switch(), %$0. */
+#define PE_REGS_ITER 0x08              /**< iter() and \@dolist, %i0/etc */
+#define PE_REGS_ARG 0x10               /**< %0-%9 */
+#define PE_REGS_SYS 0x20               /**< %c, %z, %= */
 
-#define PE_REGS_TYPE   0xFF     /**< The type mask, everything over is flags. */
-#define PE_REGS_QUEUE  0xFF     /**< Every type for a queue. */
+#define PE_REGS_TYPE 0xFF  /**< The type mask, everything over is flags. */
+#define PE_REGS_QUEUE 0xFF /**< Every type for a queue. */
 
 /* Flags for _pe_regs_: */
-#define PE_REGS_LET     0x100   /**< Used for let(): Only set qregs that already
-                                 **< exist otherwise pass them up. */
-#define PE_REGS_QSTOP   0x200   /**< Q-reg get()s don't travel past this. */
-#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch, and (unless PE_REGS_ARGPASS is included) %0-%9 */
-#define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
-#define PE_REGS_ARGPASS 0x1000  /**< When used with NEWATTR, don't block args (%0-%9) */
-#define PE_REGS_LOCALIZED 0x2000 /**< This pe_regs created due to localize() or similar */
+#define PE_REGS_LET                                                            \
+  0x100                     /**< Used for let(): Only set qregs that already   \
+                             **< exist otherwise pass them up. */
+#define PE_REGS_QSTOP 0x200 /**< Q-reg get()s don't travel past this. */
+#define PE_REGS_NEWATTR                                                        \
+  0x400 /**< This _blocks_ iter, arg, switch, and (unless PE_REGS_ARGPASS is   \
+           included) %0-%9 */
+#define PE_REGS_IBREAK 0x800 /**< This pe_reg has been ibreak()'d out */
+#define PE_REGS_ARGPASS                                                        \
+  0x1000 /**< When used with NEWATTR, don't block args (%0-%9) */
+#define PE_REGS_LOCALIZED                                                      \
+  0x2000 /**< This pe_regs created due to localize() or similar */
 #define PE_REGS_LOCALQ (PE_REGS_Q | PE_REGS_LOCALIZED)
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
 
 /* Typeflags for REG_VALs */
-#define PE_REGS_STR    0x100    /**< It's a string */
-#define PE_REGS_INT    0x200    /**< It's an integer */
-#define PE_REGS_NOCOPY 0x400    /**< Don't insert the value into a string */
+#define PE_REGS_STR 0x100    /**< It's a string */
+#define PE_REGS_INT 0x200    /**< It's an integer */
+#define PE_REGS_NOCOPY 0x400 /**< Don't insert the value into a string */
 
 /** A single value in a pe_regs structure */
 typedef struct _pe_reg_val {
-  int type;                     /**< The type of the value */
-  const char *name;             /**< The register name */
+  int type;         /**< The type of the value */
+  const char *name; /**< The register name */
   union {
-    const char *sval;           /**< Pointer to value for str-type registers */
-    int ival;                   /**< The value for int-type registers */
+    const char *sval; /**< Pointer to value for str-type registers */
+    int ival;         /**< The value for int-type registers */
   } val;
-  struct _pe_reg_val *next;     /**< Pointer to next value */
+  struct _pe_reg_val *next; /**< Pointer to next value */
 } PE_REG_VAL;
 
 /** pe_regs structs store environment (%0-%9), q-registers, itext(),
  * stext() and regexp ($0-$9) context, as well as a few %-sub values. */
 typedef struct _pe_regs_ {
-  struct _pe_regs_ *prev;       /**< Previous PE_REGS, for chaining up the stack */
-  int flags;                    /**< REG_* flags */
-  int count;                    /**< Total register count. This includes
-                                 * inherited registers. */
-  int qcount;                   /**< Q-register count, including inherited
-                                 * registers. */
-  PE_REG_VAL *vals;             /**< The register values */
-  const char *name;             /**< For debugging */
+  struct _pe_regs_ *prev; /**< Previous PE_REGS, for chaining up the stack */
+  int flags;              /**< REG_* flags */
+  int count;              /**< Total register count. This includes
+                           * inherited registers. */
+  int qcount;             /**< Q-register count, including inherited
+                           * registers. */
+  PE_REG_VAL *vals;       /**< The register values */
+  const char *name;       /**< For debugging */
 } PE_REGS;
 
 /* Initialize the pe_regs strtrees */
@@ -127,43 +130,43 @@ void free_pe_regs_trees();
 /* Functions used to create new pe_reg stacks */
 void pe_regs_dump(PE_REGS *pe_regs, dbref who);
 PE_REGS *pe_regs_create_real(int pr_flags, const char *name);
-#define pe_regs_create(x,y) pe_regs_create_real(x, "pe_regs-" y)
+#define pe_regs_create(x, y) pe_regs_create_real(x, "pe_regs-" y)
 void pe_reg_val_free(PE_REG_VAL *val);
 void pe_regs_clear(PE_REGS *pe_regs);
 void pe_regs_clear_type(PE_REGS *pe_regs, int type);
 void pe_regs_free(PE_REGS *pe_regs);
 PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags,
                                const char *name);
-#define pe_regs_localize(p,x,y) pe_regs_localize_real(p, x, "pe_regs-" y)
+#define pe_regs_localize(p, x, y) pe_regs_localize_real(p, x, "pe_regs-" y)
 void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
 
 /* Copy a stack of PE_REGS into a new one: For creating new queue entries.
  * This squashes all values in pe_regs to a single PE_REGS. The returned
  * pe_regs type has PE_REGS_QUEUE. */
-void pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
-                       int copytypes, int override);
+void pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
+                       int override);
 
 /* Manipulating PE_REGS directly */
-void pe_regs_set_if(PE_REGS *pe_regs, int type,
-                    const char *key, const char *val, int override);
-#define pe_regs_set(p,t,k,v) pe_regs_set_if(p,t,k,v,1)
-void pe_regs_set_int_if(PE_REGS *pe_regs, int type,
-                        const char *key, int val, int override);
-#define pe_regs_set_int(p,t,k,v) pe_regs_set_int_if(p,t,k,v,1)
+void pe_regs_set_if(PE_REGS *pe_regs, int type, const char *key,
+                    const char *val, int override);
+#define pe_regs_set(p, t, k, v) pe_regs_set_if(p, t, k, v, 1)
+void pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *key, int val,
+                        int override);
+#define pe_regs_set_int(p, t, k, v) pe_regs_set_int_if(p, t, k, v, 1)
 const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
 int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
 
 /* Helper functions: Mostly used in process_expression, r(), itext(), etc */
 int pi_regs_has_type(NEW_PE_INFO *pe_info, int type);
-#define PE_HAS_REGTYPE(p,t) pi_regs_has_type(p,t)
+#define PE_HAS_REGTYPE(p, t) pi_regs_has_type(p, t)
 
 /* PE_REGS_Q */
 int pi_regs_valid_key(const char *key);
 #define ValidQregName(x) pi_regs_valid_key(x)
 int pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val);
-#define PE_Setq(pi,k,v) pi_regs_setq(pi,k,v)
+#define PE_Setq(pi, k, v) pi_regs_setq(pi, k, v)
 const char *pi_regs_getq(NEW_PE_INFO *pe_info, const char *key);
-#define PE_Getq(pi,k) pi_regs_getq(pi,k)
+#define PE_Getq(pi, k) pi_regs_getq(pi, k)
 /* Copy all Q registers from src to dst PE_REGS. */
 void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 
@@ -171,16 +174,14 @@ void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 struct real_pcre;
 struct _ansi_string;
 void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
-                            struct real_pcre *re_code,
-                            int *re_offsets,
+                            struct real_pcre *re_code, int *re_offsets,
                             int re_subpatterns, const char *re_from);
 void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
-                                 struct real_pcre *re_code,
-                                 int *re_offsets,
+                                 struct real_pcre *re_code, int *re_offsets,
                                  int re_subpatterns,
                                  struct _ansi_string *re_from);
 const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
-#define PE_Get_re(pi,k) pi_regs_get_rx(pi,k)
+#define PE_Get_re(pi, k) pi_regs_get_rx(pi, k)
 
 void clear_allq(NEW_PE_INFO *pe_info);
 
@@ -208,11 +209,11 @@ int pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type);
 int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 
 /* Get iter info */
-#define PE_Get_Itext(pi,k) pi_regs_get_itext(pi, PE_REGS_ITER, k)
+#define PE_Get_Itext(pi, k) pi_regs_get_itext(pi, PE_REGS_ITER, k)
 #define PE_Get_Ilev(pi) pi_regs_get_ilev(pi, PE_REGS_ITER)
-#define PE_Get_Inum(pi,k) pi_regs_get_inum(pi, PE_REGS_ITER, k)
+#define PE_Get_Inum(pi, k) pi_regs_get_inum(pi, PE_REGS_ITER, k)
 /* Get switch info */
-#define PE_Get_Stext(pi,k) pi_regs_get_itext(pi, PE_REGS_SWITCH, k)
+#define PE_Get_Stext(pi, k) pi_regs_get_itext(pi, PE_REGS_SWITCH, k)
 #define PE_Get_Slev(pi) pi_regs_get_ilev(pi, PE_REGS_SWITCH)
 
 /* Get env (%0-%9) info */
@@ -222,31 +223,33 @@ void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
 const char *pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name);
 int pi_regs_get_envc(NEW_PE_INFO *pe_info);
-#define PE_Get_Env(pi,n) pi_regs_get_env(pi, pe_regs_intname(n))
+#define PE_Get_Env(pi, n) pi_regs_get_env(pi, pe_regs_intname(n))
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
 /** NEW_PE_INFO holds data about string evaluation via process_expression().  */
 struct new_pe_info {
-  int fun_invocations;          /**< The number of functions invoked (%?) */
-  int fun_recursions;           /**< Function recursion depth (%?) */
-  int call_depth;               /**< Number of times the parser (process_expression()) has recursed */
+  int fun_invocations; /**< The number of functions invoked (%?) */
+  int fun_recursions;  /**< Function recursion depth (%?) */
+  int call_depth; /**< Number of times the parser (process_expression()) has
+                     recursed */
 
-  Debug_Info *debug_strings;    /**< DEBUG information */
-  int nest_depth;               /**< Depth of function nesting, for DEBUG */
-  int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
+  Debug_Info *debug_strings; /**< DEBUG information */
+  int nest_depth;            /**< Depth of function nesting, for DEBUG */
+  int debugging; /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
 
-  PE_REGS *regvals;             /**< Saved register values. */
+  PE_REGS *regvals; /**< Saved register values. */
 
-  char cmd_raw[BUFFER_LEN];     /**< Unevaluated cmd executed (%c) */
-  char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
+  char cmd_raw[BUFFER_LEN + SSE_OFFSET]; /**< Unevaluated cmd executed (%c) */
+  char cmd_evaled[BUFFER_LEN];           /**< Evaluated cmd executed (%u) */
 
-  char attrname[BUFFER_LEN];    /**< The attr currently being evaluated */
+  char attrname[BUFFER_LEN]; /**< The attr currently being evaluated */
 #ifdef DEBUG
-  char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
+  char name[BUFFER_LEN]; /**< TEMP: Used for memory-leak checking. Remove me
+                            later!!!! */
 #endif
-  int refcount;                 /**< Number of times this pe_info is being used. > 1 when shared by sub-queues. free() when at 0 */
+  int refcount; /**< Number of times this pe_info is being used. > 1 when shared
+                   by sub-queues. free() when at 0 */
 };
-
 
 /** \struct mque
  ** \brief Contains data on queued action lists. Used in all queues (wait,
@@ -254,25 +257,33 @@ struct new_pe_info {
  */
 typedef struct mque MQUE;
 struct mque {
-  dbref executor;               /**< Dbref of the executor, who is running this code (%!) */
-  dbref enactor;                /**< Dbref of the enactor, who caused this code to run initially (%#) */
-  dbref caller;                 /**< Dbref of the caller, who called/triggered this attribute (%\@) */
+  dbref executor; /**< Dbref of the executor, who is running this code (%!) */
+  dbref enactor;  /**< Dbref of the enactor, who caused this code to run
+                     initially (%#) */
+  dbref caller;   /**< Dbref of the caller, who called/triggered this attribute
+                     (%\@) */
 
-  NEW_PE_INFO *pe_info;         /**< New pe_info struct used for this queue entry */
+  NEW_PE_INFO *pe_info; /**< New pe_info struct used for this queue entry */
 
-  PE_REGS *regvals;             /**< Queue-specific PE_REGS for inplace queues. */
+  PE_REGS *regvals; /**< Queue-specific PE_REGS for inplace queues. */
 
-  MQUE *inplace;                /**< Queue entry to run, either via \@include or \@break, \@foo/inplace, etc */
-  MQUE *next;                   /**< The next queue entry in the linked list */
+  MQUE *inplace; /**< Queue entry to run, either via \@include or \@break,
+                    \@foo/inplace, etc */
+  MQUE *next;    /**< The next queue entry in the linked list */
 
-  dbref semaphore_obj;          /**< Object this queue was \@wait'd on as a semaphore */
-  char *semaphore_attr;         /**< Attribute this queue was \@wait'd on as a semaphore */
-  time_t wait_until;            /**< Time (epoch in seconds) this \@wait'd queue entry runs */
-  uint32_t pid;                 /**< This queue's process id */
-  char *action_list;            /**< The action list of commands to run in this queue entry */
-  int queue_type;               /**< The type of queue entry, bitwise QUEUE_* values */
-  int port;                     /**< The port/descriptor the command came from, or 0 for queue entry not from a player's client */
-  char *save_attrname;          /**< A saved copy of pe_info->attrname, to be reset and freed at the end of the include que */
+  dbref semaphore_obj; /**< Object this queue was \@wait'd on as a semaphore */
+  char
+    *semaphore_attr; /**< Attribute this queue was \@wait'd on as a semaphore */
+  time_t
+    wait_until; /**< Time (epoch in seconds) this \@wait'd queue entry runs */
+  uint32_t pid; /**< This queue's process id */
+  char
+    *action_list; /**< The action list of commands to run in this queue entry */
+  int queue_type; /**< The type of queue entry, bitwise QUEUE_* values */
+  int port; /**< The port/descriptor the command came from, or 0 for queue entry
+               not from a player's client */
+  char *save_attrname; /**< A saved copy of pe_info->attrname, to be reset and
+                          freed at the end of the include que */
 };
 
 /* new attribute foo */
@@ -282,16 +293,16 @@ typedef ATTR ALIST;
 /** A text block
  */
 struct text_block {
-  int nchars;              /**< Number of characters in the block */
-  struct text_block *nxt;  /**< Pointer to next block in queue */
-  char *start;             /**< Start of text */
-  char *buf;               /**< Current position in text */
+  int nchars;             /**< Number of characters in the block */
+  struct text_block *nxt; /**< Pointer to next block in queue */
+  char *start;            /**< Start of text */
+  char *buf;              /**< Current position in text */
 };
 /** A queue of text blocks.
  */
 struct text_queue {
-  struct text_block *head;      /**< Pointer to the head of the queue */
-  struct text_block *tail;      /**< Pointer to pointer to tail of the queue */
+  struct text_block *head; /**< Pointer to the head of the queue */
+  struct text_block *tail; /**< Pointer to pointer to tail of the queue */
 };
 
 /* Descriptor foo */
@@ -320,17 +331,27 @@ struct text_queue {
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 /** Bits reserved for the color style */
 #define CONN_COLORSTYLE 0xF00
-#define CONN_PLAIN      0x100
-#define CONN_ANSI       0x200
-#define CONN_ANSICOLOR  0x300
-#define CONN_XTERM256   0x400
-#define CONN_RESERVED   0x800
+#define CONN_PLAIN 0x100
+#define CONN_ANSI 0x200
+#define CONN_ANSICOLOR 0x300
+#define CONN_XTERM256 0x400
+#define CONN_RESERVED 0x800
 
-/** An unrecoverable error happened when trying to read or write to the socket. Close when safe. */
+/** An unrecoverable error happened when trying to read or write to the socket.
+ * Close when safe. */
 #define CONN_SOCKET_ERROR 0x1000
 
 /** Negotiated GMCP via Telnet */
 #define CONN_GMCP 0x2000
+
+/** Sending and receiving UTF-8 */
+#define CONN_UTF8 0x4000
+
+#ifndef WITHOUT_WEBSOCKETS
+/* Flag for WebSocket client. */
+#define CONN_WEBSOCKETS_REQUEST 0x10000000
+#define CONN_WEBSOCKETS         0x20000000
+#endif /* undef WITHOUT_WEBSOCKETS */
 
 /** Maximum \@doing length */
 #define DOING_LEN 40
@@ -350,21 +371,20 @@ typedef enum conn_source {
 } conn_source;
 
 typedef enum conn_status {
-  CONN_SCREEN,                  /* not connected to a player */
-  CONN_PLAYER,                  /* connected */
-  CONN_DENIED                   /* connection denied due to login limits/sitelock */
+  CONN_SCREEN, /* not connected to a player */
+  CONN_PLAYER, /* connected */
+  CONN_DENIED  /* connection denied due to login limits/sitelock */
 } conn_status;
 
-typedef bool (*sq_func) (void *);
+typedef bool (*sq_func)(void *);
 /** System queue event */
 struct squeue {
-  sq_func fun; /** Function to run */
-  void *data; /** Data to pass to function, or NULL */
-  time_t when; /** When to run the function */
-  char *event; /** Softcode Event name to trigger, or NULL if none */
+  sq_func fun;         /** Function to run */
+  void *data;          /** Data to pass to function, or NULL */
+  time_t when;         /** When to run the function */
+  char *event;         /** Softcode Event name to trigger, or NULL if none */
   struct squeue *next; /** Pointer to next squeue event in linked list */
 };
-
 
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
@@ -372,60 +392,79 @@ typedef struct descriptor_data DESC;
  * with a lot of other relevant information.
  */
 struct descriptor_data {
-  int descriptor;       /**< Connection socket (fd) */
-  conn_status connected; /**< Connection status. */
+  int descriptor;            /**< Connection socket (fd) */
+  conn_status connected;     /**< Connection status. */
   struct squeue *conn_timer; /**< Timer event used during initial connection */
-  char addr[101];       /**< Hostname of connection source */
-  char ip[101];         /**< IP address of connection source */
-  dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */
-  char *output_prefix;  /**< Text to show before output */
-  char *output_suffix;  /**< Text to show after output */
+  char addr[101];            /**< Hostname of connection source */
+  char ip[101];              /**< IP address of connection source */
+  dbref player; /**< Dbref of player associated with connection, or NOTHING if
+                   not connected */
+  char *output_prefix;          /**< Text to show before output */
+  char *output_suffix;          /**< Text to show after output */
   int output_size;              /**< Size of output left to send */
   struct text_queue output;     /**< Output text queue */
   struct text_queue input;      /**< Input text queue */
-  char *raw_input;      /**< Pointer to start of next raw input */
-  char *raw_input_at;   /**< Pointer to position in raw input */
-  time_t connected_at;  /**< Time of connection */
-  time_t last_time;     /**< Time of last activity */
-  int quota;            /**< Quota of commands allowed */
-  int cmds;             /**< Number of commands sent */
-  int hide;             /**< Hide status */
+  char *raw_input;              /**< Pointer to start of next raw input */
+  char *raw_input_at;           /**< Pointer to position in raw input */
+  time_t connected_at;          /**< Time of connection */
+  time_t last_time;             /**< Time of last activity */
+  int quota;                    /**< Quota of commands allowed */
+  int cmds;                     /**< Number of commands sent */
+  int hide;                     /**< Hide status */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  int conn_flags;       /**< Flags of connection (telnet status, etc.) */
-  unsigned long input_chars;    /**< Characters received */
-  unsigned long output_chars;   /**< Characters sent */
-  int width;                    /**< Screen width */
-  int height;                   /**< Screen height */
-  char *ttype;                  /**< Terminal type */
-  SSL *ssl;                     /**< SSL object */
-  int ssl_state;                /**< Keep track of state of SSL object */
-  conn_source source;           /**< Where the connection came from. */
-  char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
+  uint32_t conn_flags;             /**< Flags of connection (telnet status, etc.) */
+  unsigned long input_chars;  /**< Characters received */
+  unsigned long output_chars; /**< Characters sent */
+  int width;                  /**< Screen width */
+  int height;                 /**< Screen height */
+  char *ttype;                /**< Terminal type */
+  SSL *ssl;                   /**< SSL object */
+  int ssl_state;              /**< Keep track of state of SSL object */
+  conn_source source;         /**< Where the connection came from. */
+  char checksum[PUEBLO_CHECKSUM_LEN + 1]; /**< Pueblo checksum */
+#ifndef WITHOUT_WEBSOCKETS
+  /* TODO: Need to add this state to reboot.db. */
+  uint64_t ws_frame_len;
+#endif /* undef WITHOUT_WEBSOCKETS */
 };
 
-
-enum json_type { JSON_NONE =
-    0, JSON_NUMBER, JSON_STR, JSON_BOOL, JSON_NULL, JSON_ARRAY, JSON_OBJECT };
+enum json_type {
+  JSON_NONE = 0,
+  JSON_NUMBER,
+  JSON_STR,
+  JSON_BOOL,
+  JSON_NULL,
+  JSON_ARRAY,
+  JSON_OBJECT
+};
 
 typedef struct json_data JSON;
 struct json_data {
-  enum json_type type;          /* The type of JSON data represented by 'data' */
-  void *data;                   /* A pointer to a char *, int * or json_data struct, depending on the value of 'type' */
-  struct json_data *next;       /* Pointer to the next json_data in the linked list, for arrays/objects */
+  enum json_type type; /* The type of JSON data represented by 'data' */
+  void *data; /* A pointer to a char *, int * or json_data struct, depending on
+                 the value of 'type' */
+  struct json_data *next; /* Pointer to the next json_data in the linked list,
+                             for arrays/objects */
 };
 
-typedef int (*gmcp_handler_func) (char *package, JSON *data, char *msg,
-                                  DESC *d);
-#define GMCP_HANDLER(x) \
-  int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__))); \
-  int x(char *package __attribute__ ((__unused__)), JSON *json __attribute__ ((__unused__)), char *msg __attribute__ ((__unused__)), DESC *d __attribute__ ((__unused__)))
+typedef int (*gmcp_handler_func)(char *package, JSON *data, char *msg, DESC *d);
+#define GMCP_HANDLER(x)                                                        \
+  int x(char *package __attribute__((__unused__)),                             \
+        JSON *json __attribute__((__unused__)),                                \
+        char *msg __attribute__((__unused__)),                                 \
+        DESC *d __attribute__((__unused__)));                                  \
+  int x(char *package __attribute__((__unused__)),                             \
+        JSON *json __attribute__((__unused__)),                                \
+        char *msg __attribute__((__unused__)),                                 \
+        DESC *d __attribute__((__unused__)))
 
 struct gmcp_handler {
-  char *package;                /* The name of the GMCP package this handler can handle, or the empty string to use as a default handler for all packages */
-  gmcp_handler_func func;       /* The function for this handler */
-  struct gmcp_handler *next;    /* A pointer to the next handler in the linked list */
+  char *package; /* The name of the GMCP package this handler can handle, or the
+                    empty string to use as a default handler for all packages */
+  gmcp_handler_func func; /* The function for this handler */
+  struct gmcp_handler
+    *next; /* A pointer to the next handler in the linked list */
 };
-
 
 #endif

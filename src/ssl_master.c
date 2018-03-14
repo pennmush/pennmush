@@ -34,7 +34,6 @@
 #include "ssl_slave.h"
 #include "wait.h"
 
-
 pid_t ssl_slave_pid = -1;
 enum ssl_slave_state ssl_slave_state = SSL_SLAVE_DOWN;
 
@@ -42,9 +41,9 @@ extern int maxd;
 
 bool ssl_slave_halted = false;
 enum {
-  MAX_ATTEMPTS = 5 /**< Error out after this many startup attempts in 60 seconds */
+  MAX_ATTEMPTS =
+    5 /**< Error out after this many startup attempts in 60 seconds */
 };
-
 
 #ifdef SSL_SLAVE
 static int startup_attempts = 0;
@@ -125,9 +124,9 @@ make_ssl_slave(void)
     if (lg)
       connfd = fileno(lg->fp);
 
-    dup2(fds[0], 0);            /* stdin */
-    dup2(connfd, 1);            /* stdout */
-    dup2(errfd, 2);             /* stderr */
+    dup2(fds[0], 0); /* stdin */
+    dup2(connfd, 1); /* stdout */
+    dup2(errfd, 2);  /* stderr */
 
     for (n = 3; n < maxd; n++)
       close(n);
@@ -152,6 +151,7 @@ make_ssl_slave(void)
     cf.ssl_port = options.ssl_port;
     strcpy(cf.private_key_file, options.ssl_private_key_file);
     strcpy(cf.ca_file, options.ssl_ca_file);
+    strcpy(cf.ca_dir, options.ssl_ca_dir);
     cf.require_client_cert = options.ssl_require_client_cert;
     cf.keepalive_timeout = options.keepalive_timeout;
 

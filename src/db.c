@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 #include "ansi.h"
 #include "attrib.h"
@@ -47,7 +50,7 @@
 #include "strutil.h"
 
 #ifdef WIN32
-#pragma warning( disable : 4761)        /* disable warning re conversion */
+#pragma warning(disable : 4761) /* disable warning re conversion */
 #endif
 
 #ifdef WIN32SERVICES
@@ -55,32 +58,30 @@ void shutdown_checkpoint(void);
 #endif
 
 /** Get a ref out of the database if a given db flag is set */
-#define MAYBE_GET(f,x) \
-        (globals.indb_flags & (x)) ? getref(f) : 0
+#define MAYBE_GET(f, x) (globals.indb_flags & (x)) ? getref(f) : 0
 
-
-int loading_db = 0;   /**< Are we loading the database? */
+int loading_db = 0; /**< Are we loading the database? */
 
 char db_timestamp[100]; /**< Time the read database was saved. */
 
 struct object *db = NULL; /**< The object db array */
 dbref db_top = 0;         /**< The number of objects in the db array */
 
-dbref errobj;             /**< Dbref of object on which an error has occurred */
+dbref errobj; /**< Dbref of object on which an error has occurred */
 
-int dbline = 0;           /**< Line of the database file being read */
+int dbline = 0; /**< Line of the database file being read */
 
 /** String that markes the end of dumps */
 const char EOD[] = "***END OF DUMP***\n";
 
 #ifndef DB_INITIAL_SIZE
-#define DB_INITIAL_SIZE 5000   /**< Initial size for db array */
-#endif                          /* DB_INITIAL_SIZE */
+#define DB_INITIAL_SIZE 5000 /**< Initial size for db array */
+#endif                       /* DB_INITIAL_SIZE */
 
-dbref db_size = DB_INITIAL_SIZE;  /**< Current size of db array */
+dbref db_size = DB_INITIAL_SIZE; /**< Current size of db array */
 
-HASHTAB htab_objdata;         /**< Object data hash table */
-HASHTAB htab_objdata_keys;    /**< Object data keys hash table */
+HASHTAB htab_objdata;      /**< Object data hash table */
+HASHTAB htab_objdata_keys; /**< Object data keys hash table */
 
 static void db_grow(dbref newtop);
 
@@ -93,12 +94,12 @@ void get_new_locks(dbref i, PENNFILE *f, int c);
 void db_read_attrs(PENNFILE *f, dbref i, int c);
 int get_list(PENNFILE *f, dbref i);
 void db_free(void);
-static void init_objdata_htab(int size, void (*free_data) (void *));
+static void init_objdata_htab(int size, void (*free_data)(void *));
 static void db_write_flags(PENNFILE *f);
 static void db_write_attrs(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
 
-StrTree object_names;       /**< String tree of object names */
+StrTree object_names; /**< String tree of object names */
 extern StrTree atr_names;
 
 void init_names(void);
@@ -137,7 +138,7 @@ set_name(dbref obj, const char *newname)
   return Name(obj);
 }
 
-int db_init = 0;  /**< Has the db array been initialized yet? */
+int db_init = 0; /**< Has the db array been initialized yet? */
 
 static void
 db_grow(dbref newtop)
@@ -156,8 +157,8 @@ db_grow(dbref newtop)
       db_size = (db_init) ? db_init : DB_INITIAL_SIZE;
       while (db_top > db_size)
         db_size *= 2;
-      if ((db = (struct object *)
-           malloc(db_size * sizeof(struct object))) == NULL) {
+      if ((db = (struct object *) malloc(db_size * sizeof(struct object))) ==
+          NULL) {
         do_rawlog(LT_ERR, "ERROR: out of memory while creating database!");
         abort();
       }
@@ -167,8 +168,8 @@ db_grow(dbref newtop)
       /* make sure it's big enough */
       while (db_top > db_size)
         db_size *= 2;
-      if ((newdb = (struct object *)
-           realloc(db, db_size * sizeof(struct object))) == NULL) {
+      if ((newdb = (struct object *) realloc(
+             db, db_size * sizeof(struct object))) == NULL) {
         do_rawlog(LT_ERR, "ERROR: out of memory while extending database!");
         abort();
       }
@@ -249,6 +250,31 @@ putref(PENNFILE *f, long int ref)
   penn_fprintf(f, "%ld\n", ref);
 }
 
+/** Output a uint32_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u32(PENNFILE *f, uint32_t ref)
+{
+  penn_fprintf(f, "%" PRIu32 "\n", ref);
+}
+
+/** Output a uint64_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u64(PENNFILE *f, uint64_t ref)
+{
+#ifdef WIN32
+  penn_fprintf(f, "%I64u\n", ref);
+#else
+  penn_fprintf(f, "%" PRIu64 "\n", ref);
+#endif
+}
+
+
 /** Output a string to a file.
  * This function writes a string to a file, double-quoted,
  * appropriately escaping quotes and backslashes (the escape character).
@@ -264,7 +290,7 @@ putstring(PENNFILE *f, const char *s)
     case '\\':
     case '"':
       penn_fputc('\\', f);
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     default:
       penn_fputc(*s, f);
     }
@@ -323,10 +349,11 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
 
   p = lbuf;
   do {
-    if (c != '_' && c != '-' && c != '!' && c != '.' && c != '>' && c != '<' && c != '#' &&     /* these really should only be first time */
+    if (c != '_' && c != '-' && c != '!' && c != '.' && c != '>' && c != '<' &&
+        c != '#' && /* these really should only be first time */
         !isalnum(c)) {
-      do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in label, line %d",
-                c, c, dbline);
+      do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in label, line %d", c,
+                c, dbline);
       longjmp(db_err, 1);
     }
     safe_chr(c, lbuf, &p);
@@ -385,10 +412,10 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
   } else {
     /* non-quoted value */
     do {
-      if (c != '_' && c != '-' && c != '!' && c != '.' &&
-          c != '#' && !isalnum(c) && !isspace(c)) {
-        do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in value, line %d",
-                  c, c, dbline);
+      if (c != '_' && c != '-' && c != '!' && c != '.' && c != '#' &&
+          !isalnum(c) && !isspace(c)) {
+        do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in value, line %d", c,
+                  c, dbline);
         longjmp(db_err, 1);
       }
       safe_chr(c, vbuf, &p);
@@ -469,7 +496,6 @@ db_read_labeled_int(PENNFILE *f, char **label, int *value)
   *value = parse_integer(readvalue);
 }
 
-
 /** Read a uint32_t with a given label.
  * If the label read is different than the one being checked, the
  * database load will abort with an error.
@@ -508,7 +534,6 @@ db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
   db_read_labeled_string(f, label, &readvalue);
   *value = parse_uint32(readvalue, NULL, 10);
 }
-
 
 /** Read a dbref with a given label.
  * If the label read is different than the one being checked, the
@@ -605,7 +630,6 @@ putlocks(PENNFILE *f, lock_list *l)
     /* putboolexp adds a '\n', so we won't. */
   }
 }
-
 
 /** Write out the basics of an object.
  * This function writes out the basic information associated with an
@@ -756,16 +780,16 @@ db_write(PENNFILE *f, int flag)
 static void
 db_write_flags(PENNFILE *f)
 {
-  penn_fprintf(f, "+FLAGS LIST\n");
+  penn_fputs("+FLAGS LIST\n", f);
   flag_write_all(f, "FLAG");
-  penn_fprintf(f, "+POWER LIST\n");
+  penn_fputs("+POWER LIST\n", f);
   flag_write_all(f, "POWER");
 }
 
 static void
 db_write_attrs(PENNFILE *f)
 {
-  penn_fprintf(f, "+ATTRIBUTES LIST\n");
+  penn_fputs("+ATTRIBUTES LIST\n", f);
   attr_write_all(f);
 }
 
@@ -793,7 +817,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 
   o = db + i;
   db_write_obj_basic(f, i, o);
-  /* fflush(f); */
 
   /* write the attribute list, scanning */
   for (list = o->list; list; list = AL_NEXT(list)) {
@@ -831,8 +854,8 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
         mush_strncpy(name, tbuf1, BUFFER_LEN);
       }
       do_rawlog(LT_CHECK,
-                " * Bad attribute name on #%d. Changing name to %s.\n",
-                i, name);
+                " * Bad attribute name on #%d. Changing name to %s.\n", i,
+                name);
       err = 0;
     }
     /* check the owner */
@@ -855,17 +878,16 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     strcpy(tbuf1, atr_value(list));
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!isprint(*p) && !isspace(*p) &&
-          *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
-          && *p != BEEP_CHAR) {
+      if (!isprint(*p) && !isspace(*p) && *p != TAG_START && *p != TAG_END &&
+          *p != ESC_CHAR && *p != BEEP_CHAR) {
         *p = '!';
         err = 1;
       }
     }
     if (err) {
       fixmemdb = 1;
-      do_rawlog(LT_CHECK,
-                " * Bad text in attribute %s on #%d. Changed to:\n", name, i);
+      do_rawlog(LT_CHECK, " * Bad text in attribute %s on #%d. Changed to:\n",
+                name, i);
       do_rawlog(LT_CHECK, "%s\n", tbuf1);
     }
     db_write_labeled_string(f, "  value", tbuf1);
@@ -880,8 +902,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
   }
   return 0;
 }
-
-
 
 /** Write out the object database to disk, in paranoid mode.
  * \verbatim
@@ -903,9 +923,9 @@ db_paranoid_write(PENNFILE *f, int flag)
   dbref i;
   int dbflag;
 
-/* print a header line to make a later conversion to 2.0 easier to do.
- * the odd choice of numbers is based on 256*x + 2 offset
- */
+  /* print a header line to make a later conversion to 2.0 easier to do.
+   * the odd choice of numbers is based on 256*x + 2 offset
+   */
   dbflag = 5;
   dbflag += DBF_NO_CHAT_SYSTEM;
   dbflag += DBF_WARNINGS;
@@ -927,11 +947,12 @@ db_paranoid_write(PENNFILE *f, int flag)
   dbflag += DBF_LABELS;
   dbflag += DBF_SPIFFY_AF_ANSI;
   dbflag += DBF_HEAR_CONNECT;
+  dbflag += DBF_NEW_VERSIONS;
 
   do_rawlog(LT_CHECK, "PARANOID WRITE BEGINNING...\n");
 
   penn_fprintf(f, "+V%d\n", dbflag * 256 + 2);
-
+  db_write_labeled_int(f, "dbversion", NDBF_VERSION);
   db_write_labeled_string(f, "savedtime", show_time(mudtime, 1));
   db_write_flags(f);
   penn_fprintf(f, "~%d\n", db_top);
@@ -957,7 +978,6 @@ db_paranoid_write(PENNFILE *f, int flag)
   return db_top;
 }
 
-
 /** Read in a long int.
  * \param f file pointer to read from.
  * \return long int read.
@@ -972,6 +992,38 @@ getref(PENNFILE *f)
   }
   dbline++;
   return parse_integer(buf);
+}
+
+/** Read in a uint32_t
+ * \param f file pointer to read from.
+ * \return uint32_t read.
+ */
+uint32_t
+getref_u32(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint32(buf, NULL, 10);
+}
+
+/** Read in a uint64_t
+ * \param f file pointer to read from.
+ * \return uint64_t read.
+ */
+uint64_t
+getref_u64(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint64(buf, NULL, 10);
 }
 
 
@@ -1102,56 +1154,19 @@ get_new_locks(dbref i, PENNFILE *f, int c)
     b = parse_boolexp_d(GOD, key, type, derefs);
     if (b == TRUE_BOOLEXP)
       /* Malformed lock key in the db! Oops. */
-      do_rawlog(LT_ERR, "WARNING: Invalid lock key '%s' for lock #%d/%s!",
-                key, i, type);
+      do_rawlog(LT_ERR, "WARNING: Invalid lock key '%s' for lock #%d/%s!", key,
+                i, type);
     else
       add_lock_raw(creator, i, type, b, flags);
   }
 
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual lock count (%d) different from expected count (%d).",
-              found, count);
-
+    do_rawlog(
+      LT_ERR,
+      "WARNING: Actual lock count (%d) different from expected count (%d).",
+      found, count);
 }
 
-
-/** Read locks for an object.
- * This function is used for DBF_NEW_LOCKS to read a whole list
- * of locks from an object and set them. DBF_NEW_LOCKS aren't really
- * new any more, and get_new_locks() is probably being used instead of
- * this function.
- * \param i dbref of the object.
- * \param f file pointer to read from.
- */
-void
-getlocks(dbref i, PENNFILE *f)
-{
-  /* Assumes it begins at the beginning of a line. */
-  int c;
-  boolexp b;
-  char buf[BUFFER_LEN], *p;
-  while ((c = penn_fgetc(f)), c != EOF && c == '_') {
-    p = buf;
-    while ((c = penn_fgetc(f)), c != EOF && c != '|') {
-      *p++ = c;
-    }
-    *p = '\0';
-    if (c == EOF || (p - buf == 0)) {
-      do_rawlog(LT_ERR, "ERROR: Invalid lock format on object #%d", i);
-      return;
-    }
-    b = getboolexp(f, buf);     /* Which will clobber a '\n' */
-    if (b == TRUE_BOOLEXP) {
-      /* getboolexp() would already have complained. */
-      return;
-    } else {
-      add_lock_raw(Owner(i), i, buf, b, LF_DEFAULT);
-    }
-  }
-  penn_ungetc(c, f);
-  return;
-}
 
 /** Free the entire database.
  * This function frees the name, attributes, and locks on every object
@@ -1198,7 +1213,7 @@ get_list(PENNFILE *f, dbref i)
   tbuf1[0] = '\0';
   while (1)
     switch (c = penn_fgetc(f)) {
-    case ']':                  /* new style attribs, read name then value */
+    case ']': /* new style attribs, read name then value */
       /* Using getstring_noalloc here will cause problems with attribute
          names starting with ". This is probably a better fix than just
          disallowing " in attribute names. */
@@ -1209,8 +1224,7 @@ get_list(PENNFILE *f, dbref i)
       }
       *p++ = '\0';
       if (!(q = strchr(p, '^'))) {
-        do_rawlog(LT_ERR,
-                  "ERROR: Bad format on new attribute %s. object #%d",
+        do_rawlog(LT_ERR, "ERROR: Bad format on new attribute %s. object #%d",
                   tbuf1, i);
         return -1;
       }
@@ -1253,11 +1267,11 @@ get_list(PENNFILE *f, dbref i)
        * attributes (which, if not built-in attrs, have a flag val of 0.)
        */
       break;
-    case '>':                  /* old style attribs, die noisily */
+    case '>': /* old style attribs, die noisily */
       do_rawlog(LT_ERR, "ERROR: old-style attribute format in object %d", i);
       return -1;
       break;
-    case '<':                  /* end of list */
+    case '<': /* end of list */
       if ('\n' != penn_fgetc(f)) {
         do_rawlog(LT_ERR, "ERROR: no line feed after < on object %d", i);
         return -1;
@@ -1334,10 +1348,9 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual attribute count (%d) different than expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual attribute count (%d) different than "
+                      "expected count (%d).",
               found, count);
-
 }
 
 /** Read a non-labeled database from a file.
@@ -1358,14 +1371,14 @@ db_read_oldstyle(PENNFILE *f)
     errobj = i;
     c = penn_fgetc(f);
     switch (c) {
-      /* make sure database is at least this big *1.5 */
+    /* make sure database is at least this big *1.5 */
     case '~':
       db_init = (getref(f) * 3) / 2;
       init_objdata_htab(db_init / 8, NULL);
       break;
-      /* Use the MUSH 2.0 header stuff to see what's in this db */
+    /* Use the MUSH 2.0 header stuff to see what's in this db */
     case '+':
-      c = penn_fgetc(f);        /* Skip the V */
+      c = penn_fgetc(f); /* Skip the V */
       if (c == 'F') {
         (void) getstring_noalloc(f);
         flag_read_all(f, "FLAG");
@@ -1377,14 +1390,14 @@ db_read_oldstyle(PENNFILE *f)
         return -1;
       }
       break;
-      /* old fashioned database */
+    /* old fashioned database */
     case '#':
-    case '&':                  /* zone oriented database */
+    case '&': /* zone oriented database */
       do_rawlog(LT_ERR, "ERROR: old style database.");
       return -1;
       break;
-      /* new database */
-    case '!':                  /* non-zone oriented database */
+    /* new database */
+    case '!': /* non-zone oriented database */
       /* make space */
       i = getref(f);
       db_grow(i + 1);
@@ -1439,14 +1452,14 @@ db_read_oldstyle(PENNFILE *f)
       }
 
       if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-        char buff[BUFFER_LEN];  /* The name plus a NUL */
+        char buff[BUFFER_LEN]; /* The name plus a NUL */
         mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
                   " * Name of #%d is longer than the maximum, truncating.\n",
                   i);
       } else if (!IsPlayer(i) && (strlen(o->name) > OBJECT_NAME_LIMIT)) {
-        char buff[OBJECT_NAME_LIMIT + 1];       /* The name plus a NUL */
+        char buff[OBJECT_NAME_LIMIT + 1]; /* The name plus a NUL */
         mush_strncpy(buff, o->name, OBJECT_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
@@ -1519,7 +1532,8 @@ db_read_oldstyle(PENNFILE *f)
       if (IsPlayer(i)) {
         add_player(i);
         clear_flag_internal(i, "CONNECTED");
-        /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
+        /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap
+         * them over */
         if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
             has_flag_by_name(i, "MONITOR", NOTYPE)) {
           clear_flag_internal(i, "MONITOR");
@@ -1534,25 +1548,25 @@ db_read_oldstyle(PENNFILE *f)
 
       break;
 
-    case '*':
-      {
-        char buff[80];
-        penn_ungetc('*', f);
-        penn_fgets(buff, sizeof buff, f);
-        if (strcmp(buff, EOD) != 0) {
-          do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
-          return -1;
-        } else {
-          /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER | ROOM. */
-          set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
-          do_rawlog(LT_ERR, "READING: done");
-          loading_db = 0;
-          fix_free_list();
-          dbck();
-          log_mem_check();
-          return db_top;
-        }
+    case '*': {
+      char buff[80];
+      penn_ungetc('*', f);
+      penn_fgets(buff, sizeof buff, f);
+      if (strcmp(buff, EOD) != 0) {
+        do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
+        return -1;
+      } else {
+        /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER |
+         * ROOM. */
+        set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
+        do_rawlog(LT_ERR, "READING: done");
+        loading_db = 0;
+        fix_free_list();
+        dbck();
+        log_mem_check();
+        return db_top;
       }
+    }
     default:
       do_rawlog(LT_ERR, "ERROR: failed object %d", i);
       return -1;
@@ -1573,9 +1587,8 @@ db_read(PENNFILE *f)
   dbref i = 0;
   char *tmp;
   struct object *o;
-  int minimum_flags =
-    DBF_NEW_STRINGS | DBF_TYPE_GARBAGE | DBF_SPLIT_IMMORTAL | DBF_NO_TEMPLE |
-    DBF_SPIFFY_LOCKS;
+  int minimum_flags = DBF_NEW_STRINGS | DBF_TYPE_GARBAGE | DBF_SPLIT_IMMORTAL |
+                      DBF_NO_TEMPLE | DBF_SPIFFY_LOCKS;
 
   log_mem_check();
 
@@ -1659,36 +1672,49 @@ db_read(PENNFILE *f)
            set in new_object() is used. Finding a label not listed
            below is an error. */
         enum known_labels {
-          LBL_NAME, LBL_LOCATION, LBL_CONTENTS, LBL_EXITS,
-          LBL_NEXT, LBL_PARENT, LBL_LOCKS, LBL_OWNER, LBL_ZONE,
-          LBL_PENNIES, LBL_TYPE, LBL_FLAGS, LBL_POWERS, LBL_WARNINGS,
-          LBL_CREATED, LBL_MODIFIED, LBL_ATTRS, LBL_ERROR
+          LBL_NAME,
+          LBL_LOCATION,
+          LBL_CONTENTS,
+          LBL_EXITS,
+          LBL_NEXT,
+          LBL_PARENT,
+          LBL_LOCKS,
+          LBL_OWNER,
+          LBL_ZONE,
+          LBL_PENNIES,
+          LBL_TYPE,
+          LBL_FLAGS,
+          LBL_POWERS,
+          LBL_WARNINGS,
+          LBL_CREATED,
+          LBL_MODIFIED,
+          LBL_ATTRS,
+          LBL_ERROR
         };
         struct label_table {
           const char *label;
           enum known_labels tag;
         };
-        struct label_table fields[] = {
-          {"name", LBL_NAME},
-          {"location", LBL_LOCATION},
-          {"contents", LBL_CONTENTS},
-          {"exits", LBL_EXITS},
-          {"next", LBL_NEXT},
-          {"parent", LBL_PARENT},
-          {"lockcount", LBL_LOCKS},
-          {"owner", LBL_OWNER},
-          {"zone", LBL_ZONE},
-          {"pennies", LBL_PENNIES},
-          {"type", LBL_TYPE},
-          {"flags", LBL_FLAGS},
-          {"powers", LBL_POWERS},
-          {"warnings", LBL_WARNINGS},
-          {"created", LBL_CREATED},
-          {"modified", LBL_MODIFIED},
-          {"attrcount", LBL_ATTRS},
-          /* Add new label types here. */
-          {NULL, LBL_ERROR}
-        }, *entry;
+        struct label_table fields[] = {{"name", LBL_NAME},
+                                       {"location", LBL_LOCATION},
+                                       {"contents", LBL_CONTENTS},
+                                       {"exits", LBL_EXITS},
+                                       {"next", LBL_NEXT},
+                                       {"parent", LBL_PARENT},
+                                       {"lockcount", LBL_LOCKS},
+                                       {"owner", LBL_OWNER},
+                                       {"zone", LBL_ZONE},
+                                       {"pennies", LBL_PENNIES},
+                                       {"type", LBL_TYPE},
+                                       {"flags", LBL_FLAGS},
+                                       {"powers", LBL_POWERS},
+                                       {"warnings", LBL_WARNINGS},
+                                       {"created", LBL_CREATED},
+                                       {"modified", LBL_MODIFIED},
+                                       {"attrcount", LBL_ATTRS},
+                                       /* Add new label types here. */
+                                       {NULL, LBL_ERROR}},
+                           *entry;
         enum known_labels the_label;
 
         i = getref(f);
@@ -1781,28 +1807,26 @@ db_read(PENNFILE *f)
           case LBL_MODIFIED:
             o->modification_time = (time_t) parse_integer(value);
             break;
-          case LBL_ATTRS:
-            {
-              int attrcount = parse_integer(value);
-              db_read_attrs(f, i, attrcount);
-            }
-            break;
+          case LBL_ATTRS: {
+            int attrcount = parse_integer(value);
+            db_read_attrs(f, i, attrcount);
+          } break;
           case LBL_ERROR:
           default:
-            do_rawlog(LT_ERR, "Unrecognized field '%s' in object #%d",
-                      label, i);
+            do_rawlog(LT_ERR, "Unrecognized field '%s' in object #%d", label,
+                      i);
             return -1;
           }
         }
         if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
-          char buff[BUFFER_LEN];        /* The name plus a NUL */
+          char buff[BUFFER_LEN]; /* The name plus a NUL */
           mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
           set_name(i, buff);
           do_rawlog(LT_CHECK,
                     " * Name of #%d is longer than the maximum, truncating.\n",
                     i);
         } else if (!IsPlayer(i) && (strlen(o->name) > OBJECT_NAME_LIMIT)) {
-          char buff[OBJECT_NAME_LIMIT + 1];     /* The name plus a NUL */
+          char buff[OBJECT_NAME_LIMIT + 1]; /* The name plus a NUL */
           mush_strncpy(buff, o->name, OBJECT_NAME_LIMIT);
           set_name(i, buff);
           do_rawlog(LT_CHECK,
@@ -1812,7 +1836,8 @@ db_read(PENNFILE *f)
         if (IsPlayer(i)) {
           add_player(i);
           clear_flag_internal(i, "CONNECTED");
-          /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
+          /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap
+           * them over */
           if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
               has_flag_by_name(i, "MONITOR", NOTYPE)) {
             clear_flag_internal(i, "MONITOR");
@@ -1820,34 +1845,34 @@ db_read(PENNFILE *f)
           }
         }
 
-        if (globals.new_indb_version < 4 && IsRoom(i)
-            && has_flag_by_name(i, "HAVEN", TYPE_ROOM)) {
+        if (globals.new_indb_version < 4 && IsRoom(i) &&
+            has_flag_by_name(i, "HAVEN", TYPE_ROOM)) {
           /* HAVEN flag is no longer settable on rooms. */
           clear_flag_internal(i, "HAVEN");
         }
       }
       break;
-    case '*':
-      {
-        char buff[80];
-        penn_ungetc('*', f);
-        penn_fgets(buff, sizeof buff, f);
-        if (strcmp(buff, EOD) != 0) {
-          do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
-          return -1;
-        } else {
-          if (globals.new_indb_version < 4) {
-            /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER | ROOM. */
-            set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
-          }
-          do_rawlog(LT_ERR, "READING: done");
-          loading_db = 0;
-          fix_free_list();
-          dbck();
-          log_mem_check();
-          return db_top;
+    case '*': {
+      char buff[80];
+      penn_ungetc('*', f);
+      penn_fgets(buff, sizeof buff, f);
+      if (strcmp(buff, EOD) != 0) {
+        do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
+        return -1;
+      } else {
+        if (globals.new_indb_version < 4) {
+          /** In newdb_version 4+, HAVEN defaults to PLAYER only, not PLAYER |
+           * ROOM. */
+          set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
         }
+        do_rawlog(LT_ERR, "READING: done");
+        loading_db = 0;
+        fix_free_list();
+        dbck();
+        log_mem_check();
+        return db_top;
       }
+    }
     default:
       do_rawlog(LT_ERR, "ERROR: failed object %d", i);
       return -1;
@@ -1857,7 +1882,7 @@ db_read(PENNFILE *f)
 }
 
 static void
-init_objdata_htab(int size, void (*free_data) (void *))
+init_objdata_htab(int size, void (*free_data)(void *))
 {
   if (size < 10)
     size = 10;
@@ -1917,8 +1942,8 @@ void
 clear_objdata(dbref thing)
 {
   char *p;
-  for (p = (char *) hash_firstentry(&htab_objdata_keys);
-       p; p = (char *) hash_nextentry(&htab_objdata_keys)) {
+  for (p = (char *) hash_firstentry(&htab_objdata_keys); p;
+       p = (char *) hash_nextentry(&htab_objdata_keys)) {
     set_objdata(thing, p, NULL);
   }
 }
@@ -1930,9 +1955,9 @@ create_minimal_db(void)
   dbref start_room, god, master_room;
   uint32_t desc_flags = AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH | AF_PUBLIC;
 
-  start_room = new_object();    /* #0 */
-  god = new_object();           /* #1 */
-  master_room = new_object();   /* #2 */
+  start_room = new_object();  /* #0 */
+  god = new_object();         /* #1 */
+  master_room = new_object(); /* #2 */
 
   init_objdata_htab(128, NULL);
 
@@ -1976,15 +2001,14 @@ create_minimal_db(void)
   Owner(master_room) = god;
   CreTime(master_room) = ModTime(master_room) = mudtime;
   atr_new_add(master_room, "DESCRIBE",
-              "This is the master room. Any exit in here is considered global. The same is true for objects with $-commands placed here.",
+              "This is the master room. Any exit in here is considered global. "
+              "The same is true for objects with $-commands placed here.",
               god, desc_flags, 1, 1);
   current_state.rooms++;
-
 
   init_chatdb();
   mail_init();
 }
-
 
 /** Run a function, and jump if error */
 /* Uncomment the below line to help with debugging if needed. */
@@ -2006,8 +2030,8 @@ penn_fopen(const char *filename, const char *mode)
   pf->type = PFT_FILE;
   pf->handle.f = fopen(filename, mode);
   if (!pf->handle.f) {
-    do_rawlog(LT_ERR, "Unable to open %s in mode '%s': %s",
-              filename, mode, strerror(errno));
+    do_rawlog(LT_ERR, "Unable to open %s in mode '%s': %s", filename, mode,
+              strerror(errno));
     mush_free(pf, "pennfile");
     return NULL;
   }
@@ -2036,14 +2060,17 @@ penn_fclose(PENNFILE *pf)
   mush_free(pf, "pennfile");
 }
 
-
 int
 penn_fgetc(PENNFILE *f)
 {
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
-    return fgetc(f->handle.f);
+#ifdef HAVE_GETC_UNLOCKED
+    return getc_unlocked(f->handle.f);
+#else
+    return getc(f->handle.f);
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2060,7 +2087,11 @@ penn_fgets(char *buf, int len, PENNFILE *pf)
   switch (pf->type) {
   case PFT_FILE:
   case PFT_PIPE:
+#ifdef HAVE_FGETS_UNLOCKED
+    return fgets_unlocked(buf, len, pf->handle.f);
+#else
     return fgets(buf, len, pf->handle.f);
+#endif
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
     return gzgets(pf->handle.g, buf, len);
@@ -2070,14 +2101,19 @@ penn_fgets(char *buf, int len, PENNFILE *pf)
   return NULL;
 }
 
-/* c should not be a negative value or it'll screw up gzputc return value testing */
+/* c should not be a negative value or it'll screw up gzputc return value
+ * testing */
 int
 penn_fputc(int c, PENNFILE *f)
 {
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
-    OUTPUT(fputc(c, f->handle.f));
+#ifdef HAVE_PUTC_UNLOCKED
+    OUTPUT(putc_unlocked(c, f->handle.f));
+#else
+    OUTPUT(putc(c, f->handle.f));
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2094,7 +2130,11 @@ penn_fputs(const char *s, PENNFILE *f)
   switch (f->type) {
   case PFT_FILE:
   case PFT_PIPE:
+#ifdef HAVE_FPUTS_UNLOCKED
+    OUTPUT(fputs_unlocked(s, f->handle.f));
+#else
     OUTPUT(fputs(s, f->handle.f));
+#endif
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
@@ -2122,31 +2162,37 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
     break;
   case PFT_GZFILE:
 #ifdef HAVE_LIBZ
-    /* No equivalent to vfprintf in zlib... */
-#ifdef HAVE_VASPRINTF
-    {                           /* Safe GNU/BSD way */
-      char *line = NULL;
-      va_start(ap, fmt);
-      r = vasprintf(&line, fmt, ap);
-      va_end(ap);
-      if (r > -1) {
-        OUTPUT(gzputs(f->handle.g, line));
-        free(line);
-      } else
-        longjmp(db_err, 1);
-    }
+#ifdef HAVE_GZVPRINTF
+    va_start(ap, fmt);
+    /* Total length of outputted string can't be more than 64K */
+    r = gzvprintf(f->handle.g, fmt, ap);
+    va_end(ap);
+    if (r <= 0)
+      longjmp(db_err, 1);
+#elif defined(HAVE_VASPRINTF)
+  { /* Safe GNU/BSD way */
+    char *line = NULL;
+    va_start(ap, fmt);
+    r = vasprintf(&line, fmt, ap);
+    va_end(ap);
+    if (r > -1) {
+      OUTPUT(gzputs(f->handle.g, line));
+      free(line);
+    } else
+      longjmp(db_err, 1);
+  }
 #else
-    {
-      char line[BUFFER_LEN * 2];
+  {
+    char line[BUFFER_LEN * 2];
 
-      va_start(ap, fmt);
-      r = mush_vsnprintf(line, sizeof line, fmt, ap);
-      va_end(ap, fmt);
-      if (r > -1)
-        OUTPUT(gzputs(f->handle.g, line));
-      else
-        longjmp(db_err, 1);
-    }
+    va_start(ap, fmt);
+    r = mush_vsnprintf(line, sizeof line, fmt, ap);
+    va_end(ap);
+    if (r > -1)
+      OUTPUT(gzputs(f->handle.g, line));
+    else
+      longjmp(db_err, 1);
+  }
 #endif
 #endif
     break;
@@ -2169,7 +2215,6 @@ penn_ungetc(int c, PENNFILE *f)
     break;
   }
   return c;
-
 }
 
 int

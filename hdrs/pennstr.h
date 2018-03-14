@@ -3,12 +3,6 @@
 #ifndef PENNSTR_H
 #define PENNSTR_H
 
-#ifndef HAVE_UNISTR_H
-#error "Requires libunistring to be installed."
-#endif
-
-#include <unitypes.h>
-
 #define PS_SSO_LEN 32
 struct pennstr {
   uint8_t *buf;

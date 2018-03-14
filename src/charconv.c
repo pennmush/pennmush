@@ -463,8 +463,44 @@ utf8_to_latin1(const char *utf8, size_t *outlen, bool telnet) {
  */
 bool
 valid_utf8(const char *utf8) {
+#ifdef HAVE_LIBUNISTRING
   size_t len = strlen(utf8);
   return u8_check((uint8_t *)utf8, len) == NULL;
+#else
+  // TODO: Valid character range checks?
+  const unsigned char *u = (const unsigned char *) utf8;
+
+  int nconts = 0;
+
+  while (*u) {
+    if (*u < 128) {
+      if (nconts)
+        return 0;
+    } else if ((*u & 0xF8) == 0xF0) {
+      if (nconts)
+        return 0;
+      nconts = 3;
+    } else if ((*u & 0xF0) == 0xE0) {
+      if (nconts)
+        return 0;
+      nconts = 2;
+    } else if ((*u & 0xE0) == 0xC0) {
+      if (nconts)
+        return 0;
+      nconts = 1;
+    } else if ((*u & 0xC0) == 0x80) {
+      if (nconts > 0)
+        nconts -= 1;
+      else
+        return 0;
+    } else {
+      return 0;
+    }
+    u += 1;
+  }
+
+  return nconts == 0;
+#endif
 }
 
 /**
@@ -476,8 +512,13 @@ valid_utf8(const char *utf8) {
  */
 char *
 normalized_utf8(const char *utf8, size_t len, size_t *outlen) {
+#ifdef HAVE_LIBUNISTRING
   uint8_t *normalized = u8_normalize(UNINORM_NFC, (uint8_t *)utf8, len,
 				     NULL, outlen);
   add_check("string");
   return (char*)normalized;
+#else
+  *outlen = len;
+  return mush_strdup(utf8, "string");
+#endif
 }

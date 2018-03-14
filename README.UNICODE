@@ -22,6 +22,12 @@ libicu as a possible alternative, though that uses utf-16 natively. I
 need. Another option, since people hate adding new dependencies, is
 using pcre and our own utf8 code.
 
+People REALLY don't like the idea of new mandatory dependencies, so
+try to make libunistring optional - fall back to slower/degraded
+support if absent. Might not have any way to work around lack of iconv
+in that case, but that's only going to affect Windows as iconv is part
+of unix standards.
+
 With utf-8 and utf-16, characters are multi-byte, but can be
 represented by a 32 bit character type. Complicating things are
 extended grapheme clusters, where a base character can have multiple
@@ -30,5 +36,4 @@ a EGC should be treated as a single character (Though this might have
 to wait till phase 2). Same in hardcode where it's needed -- reversing
 a string, for example. Thus, there will be functions that work with
 characters and with EGCs, themselves represented as penn_strs.
-
 

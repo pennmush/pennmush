@@ -1980,7 +1980,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
       d->output_chars += written;
       if (written == n) {
 	if (latin1)
-	  mush_free(latin1, "string");
+	  mush_free((char *)latin1, "string");
         return written;
       }
       n -= written;
@@ -1997,7 +1997,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
           written, strerror(errno), n, d->descriptor);
         d->conn_flags |= CONN_SOCKET_ERROR;
 	if (latin1)
-	  mush_free(latin1, "string");
+	  mush_free((char *)latin1, "string");
         return 0;
       }
     } else { /* written == 0 */
@@ -2026,7 +2026,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
   add_to_queue(&d->output, b, n);
   d->output_size += n;
   if (latin1)
-    mush_free(latin1, "string");
+    mush_free((char *)latin1, "string");
   return n;
 }
 

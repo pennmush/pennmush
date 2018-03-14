@@ -6,7 +6,7 @@
 #include "memcheck.h"
 #include "pennstr.h"
 
-/* TODO: Store strings as nul-terminated or not? */
+/* TODO: Store strings as nul-terminated or not? ANSWER: Yes. */
 
 /** Allocate a new empty pennstr */
 pennstr *
@@ -14,6 +14,7 @@ ps_new() {
   pennstr *ps;
   ps = mush_malloc(sizeof *ps, "pennstr");
   ps->buf = ps->bp = ps->sso;
+  ps->buf[0] = '\0';
   ps->capacity = PS_SSO_LEN;
   return ps;
 }
@@ -36,10 +37,11 @@ pennstr*
 ps_dup(pennstr *orig) {
   pennstr *ps = ps_new();
   if (orig->buf != orig->sso) {
-    ps->buf = u8_cpy_alloc(orig->buf, ps_nbytes(orig));
-    add_check("pennstr.buffer");
-    ps->bp = ps->buf;
-    ps->capacity = ps_nbytes(orig);
+    size_t len = ps_nbytes(orig);
+    ps->buf = mush_malloc(len + 1, "pennstr.buffer");
+    memcpy(ps->buf, orig->buf, len + 1);
+    ps->bp = ps->buf + len;
+    ps->capacity = len;
   } else {
     memcpy(ps->sso, orig->sso, PS_SSO_LEN);
   }
@@ -53,13 +55,13 @@ ps_dup(pennstr *orig) {
 pennstr*
 ps_from_utf8(const uint8_t *s) {
   pennstr *ps = ps_new();
-  size_t len = u8_strlen(s);
-  if (len < PS_SSO_LEN) {
-    u8_cpy(ps->sso, s, len);
+  size_t len = strlen((const char *)s);
+  if (len + 1 < PS_SSO_LEN) {
+    memcpy(ps->sso, s, len + 1);
     ps->bp = ps->buf + len;
   } else {
-    ps->buf = u8_cpy_alloc(s, len);
-    add_check("pennstr.buffer");
+    ps->buf = mush_malloc(len + 1, "pennstr.buffer");
+    memcpy(ps->buf, s, len + 1);
     ps->bp = ps->buf + len;
     ps->capacity = len;
   }

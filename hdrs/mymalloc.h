@@ -9,6 +9,7 @@
 #include "mushtype.h"
 
 void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;
+void *mush_malloc_zero(size_t bytes, const char *check) __attribute_malloc__;
 void *mush_calloc(size_t count, size_t size,
                   const char *check) __attribute_malloc__;
 #define mush_realloc(ptr, size, tag)                                           \
@@ -17,7 +18,7 @@ void *mush_realloc_where(void *restrict ptr, size_t newsize,
                          const char *restrict check,
                          const char *restrict filename, int line);
 #define mush_free(ptr, tag) mush_free_where((ptr), (tag), __FILE__, __LINE__)
-void mush_free_where(const void *restrict ptr, const char *restrict check,
+void mush_free_where(void *restrict ptr, const char *restrict check,
                      const char *restrict filename, int line);
 
 typedef struct slab slab;

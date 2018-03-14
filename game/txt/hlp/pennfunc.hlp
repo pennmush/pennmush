@@ -712,12 +712,6 @@ See also: lcstr(), ucstr()
     You say, "foo bar baz blech"
     > say strcat(foo bar, baz blech)
     You say, "foo barbaz blech"
-& CEIL()
-  ceil(<number>)
- 
-  Returns the least integral value greater than or equal to <number>.
-
-See also: floor(), bound(), round(), trunc()
 & CENTER()
   center(<string>, <width>[, <fill>[, <rightfill>]])
  
@@ -802,9 +796,11 @@ See also: Connection Functions
   
   With two arguments, colors() returns information about specific colors. <colors> can be any string accepted by the ansi() function's first argument. <format> must be one of:
   
-   hex:      return a hexcode in the format #rrggbb.
-   xterm256: return the number of the xterm color closest to the given <color>.
-   16color:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
+   hex, x:      return a hexcode in the format #rrggbb.
+   rgb, r:      return the RGB components as a list (0 0 0 - 255 255 255)
+   xterm256, d: return the number of the xterm color closest to the given <color>.
+   xterm256x,h: return the number of the xterm color in base 16.
+   16color, c:  return the letter of the closest ANSI color code (possibly including 'h' for highlight fg colors).
    name:     return a list of names of all the colors exactly matching the given colors, or '#-1 NO MATCHING COLOR NAME' if there is no exact match with a named color.
    auto:     returns the colors in the same format(s) they were given in.
 
@@ -1458,12 +1454,6 @@ See also: flags(), list()
     You say, "zab rab oof"
 
 See also: revwords()
-& FLOOR()
-  floor(<number>)
- 
-  Returns the greatest integral value less than or equal to <number>.
-
-See also: ceil(), bound(), round(), trunc(), floordiv()
 & FMOD()
   fmod(<number>, <divisor>)
 
@@ -2905,7 +2895,7 @@ See also: MONIKERS, @moniker, name(), MONIKER, iname(), accname()
     Bad name "bogus"
     You say, "#1 #7 #56 #-1"
 
-See also: namegrab(), name(), locate()
+See also: namegrab(), name(), locate(), num(), pmatch()
 & NAMEGRAB()
 & NAMEGRABALL()
   namegrab(<dbref list>, <name>)
@@ -2981,9 +2971,9 @@ See also: Boolean Functions, t(), and(), or(), nor(), xor()
 & NUM()
   num(<object>)
 
-  Returns the dbref number of <object>. <object> must be the name of an object which is near to the caller, or the name of a player prefixed with a '*'.
+  Returns the dbref number of <object>. <object> must reference a valid object, as per 'help matching'.
   
-See also: locate(), rnum()
+See also: locate(), rnum(), pmatch()
 & NVCON()
 & NCON()
   ncon(<object>)
@@ -3507,17 +3497,27 @@ See also: loc(), rloc(), rnum(), where()
 
 See also: sqrt(), power()
 & ROUND()
+& CEIL()
+& FLOOR()
   round(<number>, <places>[, <pad>])
+  floor(<number>)
+  ceil(<number>)
  
-  Rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
+  round() rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
 
+  floor() rounds <number> down, and ceil() rounds <number> up, to 0 decimal places.
+  
   Examples:
     > think round(3.14159, 2)
     3.14
     > think round(3.5, 3, 1)
     3.500
+    > think ceil(3.14159)
+    4
+    > think floor(3.14159)
+    3
  
-See also: ceil(), floor(), bound(), trunc()
+See also: bound(), trunc()
 & FN()
   fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
@@ -3536,7 +3536,6 @@ See also: ceil(), floor(), bound(), trunc()
   
   Continued in 'help fn2'.
 & FN2
-
   If <obj> is specified, the built-in function will be executed as <obj>, rather than as the object which called fn(). This is useful when using fn() to replace a side-effect function, to ensure priviledge checks, etc, are done correctly. You must control <obj>, or (if function side effects are disabled) must be see_all.
   
   When an <obj> is given, debug information is automatically suppressed when evaluating the built-in function.
@@ -3782,7 +3781,7 @@ See also: scramble(), pickrand()
 & SIGN()
   sign(<number>)
 
-  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivilent to bound(<number>, -1, 1).
+  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivalent to bound(<number>, -1, 1).
   
   Example:
     > say sign(-4)

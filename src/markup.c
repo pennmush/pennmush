@@ -97,7 +97,9 @@ build_rgb_map(void)
   rgb_to_name = im_new();
   namelist_slab = slab_create("rgb namelist", sizeof *node);
 
-  for (n = 256; allColors[n].name; n += 1) {
+  for (n = 0; allColors[n].name; n += 1) {
+    if (strncmp("xterm", allColors[n].name, 5) == 0)
+      continue;
     lst = im_find(rgb_to_name, allColors[n].hex);
     node = slab_malloc(namelist_slab, lst);
     node->name = allColors[n].name;
@@ -220,11 +222,13 @@ FUNCTION(fun_ansi)
 }
 
 enum color_styles {
-  CS_HEX = 1,
-  CS_16 = 2,
-  CS_256 = 3,
-  CS_NAME = 4,
-  CS_AUTO = 5
+  CS_HEX,
+  CS_16,
+  CS_256,
+  CS_256hex,
+  CS_RGB,
+  CS_NAME,
+  CS_AUTO
 };
 
 /* ARGSUSED */
@@ -235,9 +239,13 @@ FUNCTION(fun_colors)
     bool shown = 0;
     /* Return list of available color names, skipping over the 256 'xtermN'
      * colors */
-    for (i = 256; allColors[i].name; i++) {
-      if (args[0] && *args[0] && !quick_wild(args[0], allColors[i].name))
+    for (i = 0; allColors[i].name; i++) {
+      if (args[0] && *args[0]) {
+        if (!quick_wild(args[0], allColors[i].name))
+          continue;
+      } else if (strncmp("xterm", allColors[i].name, 5) == 0) {
         continue;
+      }
       if (shown)
         safe_chr(' ', buff, bp);
       else
@@ -268,12 +276,17 @@ FUNCTION(fun_colors)
     while ((curr = split_token(&list, ' ')) != NULL) {
       if (!*curr)
         continue;
-      if (!strcmp("hex", curr))
+      if (strcmp("hex", curr) == 0 || strcmp("x", curr) == 0)
         cs = CS_HEX;
-      else if (!strcmp("16color", curr))
+      else if (strcmp("16color", curr) == 0 || strcmp("c", curr) == 0)
         cs = CS_16;
-      else if (!strcmp("256color", curr) || !strcmp("xterm256", curr))
+      else if (strcmp("256color", curr) == 0 || strcmp("xterm256", curr) == 0
+               || strcmp("d", curr) == 0)
         cs = CS_256;
+      else if (strcmp("xterm256x", curr) == 0 || strcmp("h", curr) == 0)
+        cs = CS_256hex;
+      else if (strcmp("rgb", curr) == 0 || strcmp("r", curr) == 0)
+        cs = CS_RGB;
       else if (!strcmp("name", curr))
         cs = CS_NAME;
       else if (!strcmp("auto", curr))
@@ -324,6 +337,13 @@ FUNCTION(fun_colors)
         safe_format(buff, bp, "#%06x",
                     color_to_hex(color, (!i && (ad.bits & CBIT_HILITE))));
         break;
+      case CS_RGB:
+        {
+          uint32_t hex = color_to_hex(color, (!i && (ad.bits & CBIT_HILITE)));
+          safe_format(buff, bp, "%d %d %d", (hex >> 16) & 0xFF,
+                      (hex >> 8) & 0xFF, hex & 0xFF);
+          break;
+        }
       case CS_16:
         j = ansi_map_16(color, i, &hilite);
 
@@ -338,6 +358,9 @@ FUNCTION(fun_colors)
       case CS_256:
         safe_integer(ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0),
                      buff, bp);
+        break;
+      case CS_256hex:
+        safe_format(buff, bp, "%x", ansi_map_256(color, (!i && (ad.bits & CBIT_HILITE)), 0));
         break;
       case CS_NAME: {
         uint32_t hex;
@@ -861,9 +884,20 @@ ansi_map_256(const char *name, bool hilite, bool all)
   int best = 0;
   int i;
   struct rgb_namelist *color;
+  static int xtermi = -1;
+
+  if (xtermi == -1) {
+    int n;
+    for (n = 0; allColors[n].name; n += 1) {
+      if (strcmp(allColors[n].name, "xterm0") == 0) {
+        xtermi = n;
+        break;
+      }
+    }
+  }
 
   /* Is it an xterm color number? */
-  if (strncasecmp(name, "+xterm", 5) == 0) {
+  if (strncasecmp(name, "+xterm", 6) == 0) {
     unsigned int xnum;
     xnum = strtoul(name + 6, NULL, 10);
     if (xnum > 255)
@@ -881,14 +915,18 @@ ansi_map_256(const char *name, bool hilite, bool all)
   /* Now find the closest 256 color match. */
   best = 0;
 
-  for (i = (all ? 0 : 16); i < 256; i++) {
+  for (i = (all ? xtermi : xtermi + 16); i < xtermi + 256; i++) {
+    if (allColors[i].hex == hex) {
+      best = i;
+      break;
+    }
     cdiff = hex_difference(allColors[i].hex, hex);
     if (cdiff < diff) {
       best = i;
       diff = cdiff;
     }
   }
-  return best;
+  return best - xtermi;
 }
 
 typedef int (*writer_func)(ansi_data *old, ansi_data *cur, int ansi_format,
@@ -2345,7 +2383,7 @@ scramble_ansi_string(ansi_string *as)
   uint16_t idxtmp;
 
   for (i = 0; i < as->len; i++) {
-    j = get_random32(0, as->len - 1);
+    j = get_random_u32(0, as->len - 1);
     tmp = as->text[i];
     as->text[i] = as->text[j];
     as->text[j] = tmp;
@@ -2932,7 +2970,7 @@ safe_markup(char const *a_tag, char *buf, char **bp, char type)
 int
 safe_tag(char const *a_tag, char *buff, char **bp)
 {
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_HTML)
     return safe_markup(a_tag, buff, bp, MARKUP_HTML);
   return 0;
 }
@@ -2967,7 +3005,7 @@ safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type)
 int
 safe_tag_cancel(char const *a_tag, char *buf, char **bp)
 {
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_HTML)
     return safe_markup_cancel(a_tag, buf, bp, MARKUP_HTML);
   return 0;
 }
@@ -2989,7 +3027,7 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
 {
   int result = 0;
   char *save = *bp;
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     safe_chr(TAG_START, buf, bp);
     safe_chr(MARKUP_HTML, buf, bp);
     safe_str(a_tag, buf, bp);
@@ -3000,7 +3038,7 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
     safe_chr(TAG_END, buf, bp);
   }
   result = safe_str(data, buf, bp);
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     result = safe_tag_cancel(a_tag, buf, bp);
   }
   /* If it didn't all fit, rewind. */

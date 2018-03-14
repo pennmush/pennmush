@@ -47,9 +47,6 @@
 #include "sig.h"
 #include "strutil.h"
 
-static sig_atomic_t hup_triggered = 0;
-static sig_atomic_t usr1_triggered = 0;
-
 bool inactivity_check(void);
 static void migrate_stuff(int amount);
 
@@ -60,41 +57,11 @@ void usr1_handler(int);
 #endif
 void dispatch(void);
 
-#ifndef WIN32
-
-/** Handler for HUP signal.
- * Do the minimal work here - set a global variable and reload the handler.
- * \param x unused.
- */
-void
-hup_handler(int x __attribute__((__unused__)))
-{
-  hup_triggered = 1;
-  reload_sig_handler(SIGHUP, hup_handler);
-}
-
-/** Handler for USR1 signal.
- * Do the minimal work here - set a global variable and reload the handler.
- * \param x unused.
- */
-void
-usr1_handler(int x __attribute__((__unused__)))
-{
-  usr1_triggered = 1;
-  reload_sig_handler(SIGUSR1, usr1_handler);
-}
-
-#endif /* WIN32 */
-
 /** Set up signal handlers.
  */
 void
 init_timer(void)
 {
-#ifndef WIN32
-  install_sig_handler(SIGHUP, hup_handler);
-  install_sig_handler(SIGUSR1, usr1_handler);
-#endif
 #ifndef PROFILING
 #ifdef HAVE_SETITIMER
   install_sig_handler(SIGALRM, signal_cpu_limit);
@@ -279,45 +246,6 @@ migrate_event(void *data __attribute__((__unused__)))
   return false;
 }
 
-extern int file_watch_init(void);
-
-/** Handle events that may need handling.
- * This routine is polled from bsd.c. At any call, it can handle
- * the HUP and USR1 signals. At calls that are 'on the second',
- * it goes on to perform regular every-second processing and to
- * check whether it's time to do other periodic processes like
- * purge, dump, or inactivity checks.
- */
-static bool
-check_signals(void *data __attribute__((__unused__)))
-{
-
-  /* A HUP reloads configuration and reopens logs */
-  if (hup_triggered) {
-    do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
-    config_file_startup(NULL, 0);
-    config_file_startup(NULL, 1);
-    file_watch_init();
-    fcache_load(NOTHING);
-    help_reindex(NOTHING);
-    read_access_file();
-    reopen_logs();
-    hup_triggered = 0;
-  }
-  /* A USR1 does a shutdown/reboot */
-  if (usr1_triggered) {
-    if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
-      do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-      do_reboot(
-        NOTHING,
-        0); /* We don't return from this except in case of a failed db save */
-    }
-    usr1_triggered = 0; /* But just in case */
-  }
-
-  return false;
-}
-
 static bool
 on_every_second(void *data __attribute__((__unused__)))
 {
@@ -351,8 +279,7 @@ init_sys_events(void)
   }
   /* The chunk migration normally runs every 1 second. Slow it down a bit
      to see what affect it has on CPU time */
-  sq_register_loop(5, migrate_event, NULL, NULL);
-  sq_register_loop(2, check_signals, NULL, NULL);
+  sq_register_loop(20, migrate_event, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
@@ -378,7 +305,10 @@ signal_cpu_limit(int signo)
 #endif
 UINT_PTR timer_id;
 VOID CALLBACK
-win32_timer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+win32_timer(HWND hwnd __attribute__((__unused__)),
+            UINT uMsg __attribute__((__unused__)),
+            UINT_PTR idEvent __attribute__((__unused__)),
+            DWORD dwTime __attribute__((__unused__)))
 {
   cpu_time_limit_hit = 1;
 }
@@ -636,4 +566,17 @@ sq_run_all(void)
       any = true;
   } while (r);
   return any;
+}
+
+int
+sq_secs_till_next(void)
+{
+  time_t now = time(NULL);
+  for (struct squeue *s = sq_head; s; s = s->next) {
+    if (s->fun == sq_loop_fun &&
+        ((struct sq_loop *) s->data)->fun == on_every_second)
+      continue;
+    return difftime(s->when, now);
+  }
+  return 500;
 }

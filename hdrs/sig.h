@@ -27,4 +27,9 @@ void unblock_a_signal(int signo);
 /* Block all signals en masse. */
 void block_signals(void);
 
+extern int sigrecv_fd;
+void sigrecv_setup(void);
+void sigrecv_notify(void);
+void sigrecv_ack(void);
+
 #endif /* __SIG_H */

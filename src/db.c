@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 #include "ansi.h"
 #include "attrib.h"
@@ -247,6 +250,31 @@ putref(PENNFILE *f, long int ref)
 {
   penn_fprintf(f, "%ld\n", ref);
 }
+
+/** Output a uint32_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u32(PENNFILE *f, uint32_t ref)
+{
+  penn_fprintf(f, "%" PRIu32 "\n", ref);
+}
+
+/** Output a uint64_t to a file.
+ * \param f file pointer to write to.
+ * \param ref value to write.
+ */
+void
+putref_u64(PENNFILE *f, uint64_t ref)
+{
+#ifdef WIN32
+  penn_fprintf(f, "%I64u\n", ref);
+#else
+  penn_fprintf(f, "%" PRIu64 "\n", ref);
+#endif
+}
+
 
 /** Output a string to a file.
  * This function writes a string to a file, double-quoted,
@@ -967,6 +995,39 @@ getref(PENNFILE *f)
   return parse_integer(buf);
 }
 
+/** Read in a uint32_t
+ * \param f file pointer to read from.
+ * \return uint32_t read.
+ */
+uint32_t
+getref_u32(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint32(buf, NULL, 10);
+}
+
+/** Read in a uint64_t
+ * \param f file pointer to read from.
+ * \return uint64_t read.
+ */
+uint64_t
+getref_u64(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return parse_uint64(buf, NULL, 10);
+}
+
+
 /** Read in a string, into a static buffer.
  * This function reads a double-quoted escaped string of the form
  * written by putstring. The string is read into a static buffer
@@ -1126,42 +1187,6 @@ get_new_locks(dbref i, PENNFILE *f, int c)
       found, count);
 }
 
-/** Read locks for an object.
- * This function is used for DBF_NEW_LOCKS to read a whole list
- * of locks from an object and set them. DBF_NEW_LOCKS aren't really
- * new any more, and get_new_locks() is probably being used instead of
- * this function.
- * \param i dbref of the object.
- * \param f file pointer to read from.
- */
-void
-getlocks(dbref i, PENNFILE *f)
-{
-  /* Assumes it begins at the beginning of a line. */
-  int c;
-  boolexp b;
-  char buf[BUFFER_LEN], *p;
-  while ((c = penn_fgetc(f)), c != EOF && c == '_') {
-    p = buf;
-    while ((c = penn_fgetc(f)), c != EOF && c != '|') {
-      *p++ = c;
-    }
-    *p = '\0';
-    if (c == EOF || (p - buf == 0)) {
-      do_rawlog(LT_ERR, "ERROR: Invalid lock format on object #%d", i);
-      return;
-    }
-    b = getboolexp(f, buf); /* Which will clobber a '\n' */
-    if (b == TRUE_BOOLEXP) {
-      /* getboolexp() would already have complained. */
-      return;
-    } else {
-      add_lock_raw(Owner(i), i, buf, b, LF_DEFAULT);
-    }
-  }
-  penn_ungetc(c, f);
-  return;
-}
 
 /** Free the entire database.
  * This function frees the name, attributes, and locks on every object
@@ -2190,7 +2215,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
   }
 #endif
 #endif
-  break;
+    break;
   }
   return r;
 }

@@ -59,33 +59,6 @@ PRIV attr_privs_set[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
                          {"branch", '`', 0, 0},
                          {NULL, '\0', 0, 0}};
 
-/** Attribute flags which may be present in the db */
-PRIV attr_privs_db[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
-                        {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},
-                        {"no_clone", 'c', AF_NOCOPY, AF_NOCOPY},
-                        {"wizard", 'w', AF_WIZARD, AF_WIZARD},
-                        {"visual", 'v', AF_VISUAL, AF_VISUAL},
-                        {"mortal_dark", 'm', AF_MDARK, AF_MDARK},
-                        {"regexp", 'R', AF_REGEXP, AF_REGEXP},
-                        {"case", 'C', AF_CASE, AF_CASE},
-                        {"locked", '+', AF_LOCKED, AF_LOCKED},
-                        {"safe", 'S', AF_SAFE, AF_SAFE},
-                        {"prefixmatch", '\0', AF_PREFIXMATCH, AF_PREFIXMATCH},
-                        {"veiled", 'V', AF_VEILED, AF_VEILED},
-                        {"debug", 'b', AF_DEBUG, AF_DEBUG},
-                        {"no_debug", 'B', AF_NODEBUG, AF_NODEBUG},
-                        {"public", 'p', AF_PUBLIC, AF_PUBLIC},
-                        {"nearby", 'n', AF_NEARBY, AF_NEARBY},
-                        {"noname", 'N', AF_NONAME, AF_NONAME},
-                        {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
-                        {"amhear", 'M', AF_MHEAR, AF_MHEAR},
-                        {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-                        {"enum", '\0', AF_ENUM, AF_ENUM},
-                        {"limit", '\0', AF_RLIMIT, AF_RLIMIT},
-                        {"internal", '\0', AF_INTERNAL, AF_INTERNAL},
-                        {"quiet", 'Q', AF_QUIET, AF_QUIET},
-                        {NULL, '\0', 0, 0}};
-
 /** Attribute flags for viewing */
 PRIV attr_privs_view[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
                           {"no_inherit", 'i', AF_PRIVATE, AF_PRIVATE},

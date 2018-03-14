@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="" />
+  <title>PennMUSH 1.8.7 Changes</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="mushdoc.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">PennMUSH 1.8.7 Changes</h1>
+<p class="author"></p>
+<p class="date">Last release: ??? ?? 20??</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</a><ul>
+<li><a href="#major-changes">Major Changes</a></li>
+<li><a href="#softcode">Softcode</a></li>
+<li><a href="#fixes">Fixes</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#os-specific">OS Specific</a></li>
+</ul></li>
+</ul>
+</nav>
+<p>This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server. Changes are reported in reverse chronological order (most recent first)</p>
+<ul>
+<li>[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also responsible for most unattributed changes.</li>
+<li>[GM] is Greg Millam, a PennMUSH developer (aka Walker)</li>
+<li>[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)</li>
+<li>[TK] is Tim Krajcar, a PennMUSH developer (aka Rince)</li>
+<li>[3] refers to code by (or inspired by) TinyMUSH 3.0</li>
+<li>[MUX] refers to code by (or inspired by) TinyMUX 2.x</li>
+<li>[Rhost] refers to code by (or inspired by) RhostMUSH</li>
+</ul>
+<p>Numbers next to the developer credit refer to Github issue numbers.</p>
+<hr />
+<h1 id="version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</h1>
+<h2 id="major-changes">Major Changes</h2>
+<ul>
+<li>Support websocket connections. See <a href="http://grapenut.org/code/wsclient/index.html" class="uri">http://grapenut.org/code/wsclient/index.html</a> for a sample in-browser client. [Grapenut, 1007]</li>
+</ul>
+<h2 id="softcode">Softcode</h2>
+<ul>
+<li>Support all of Rhost's colors() key arguments (Except n). [SW, 1112]</li>
+</ul>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>A bunch of color names weren't mapping correctly to Xterm color codes. [SW]</li>
+<li><code>@grep/iprint</code> hilites the matching text in the same case it appears in the attribute body. [SW, 1120]</li>
+<li><code>@mail</code> wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li>Changelogs and other documentation use markup. [SW, 1140]</li>
+<li>Start trying to clean up and revise ancient documentation. [1095]</li>
+</ul>
+<h2 id="os-specific">OS Specific</h2>
+<h3 id="openbsd">OpenBSD</h3>
+<ul>
+<li>netmush and slave processes use pledge(2) to limit their privileges. [SW]</li>
+</ul>
+<h3 id="windows">Windows</h3>
+<ul>
+<li>Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL. [SW]</li>
+</ul>
+</body>
+</html>

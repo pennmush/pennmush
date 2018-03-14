@@ -1,3 +1,8 @@
+Note: This is an old document and the steps in it have not been 
+tested for some time. The current reccomended ways to use Penn on Windows
+is MinGW installed through MSYS2 (See README-MSYS2.txt) or on the Windows 10
+Linux subsystem (README-Windows10.txt). Mike says Cygwin still works, though.
+
 How to compile PennMUSH 1.8.x under Windows (Cygwin 1.5.19-4)
 --------------------------------------------------------------
 by Alan Schwartz <javelin@pennmush.org>

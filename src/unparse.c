@@ -146,7 +146,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
   else
     p = buf;
 
-  if (SUPPORT_PUEBLO) {
+  if (SUPPORT_HTML) {
     PUSE;
     tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), p);
     PEND;

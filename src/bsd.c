@@ -115,6 +115,10 @@
 #endif
 #endif /* !WIN32 */
 
+#ifndef WITHOUT_WEBSOCKETS
+#include "websock.h"
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
 #endif
@@ -302,7 +306,9 @@ int maxd = 0;
 extern const unsigned char *tables;
 
 sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
+sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
 sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
+sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -328,7 +334,12 @@ static void update_quotas(struct timeval last, struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
-static int test_connection(int newsock);
+
+#ifndef WIN32
+typedef int SOCKET;
+#endif
+
+static int test_connection(SOCKET newsock);
 static DESC *new_connection(int oldsock, int *result, conn_source source);
 
 static void clearstrings(DESC *d);
@@ -399,10 +410,14 @@ static void parse_connect(const char *msg, char *command, char *user,
 static void close_sockets(void);
 dbref find_player_by_desc(int port);
 DESC *lookup_desc(dbref executor, const char *name);
-void NORETURN bailout(int sig);
-void WIN32_CDECL signal_shutdown(int sig);
-void WIN32_CDECL signal_dump(int sig);
+void WIN32_CDECL bailout(int sig);
+#ifndef WIN32
+void signal_shutdown(int sig);
+void signal_dump(int sig);
+void hup_handler(int);
+void usr1_handler(int);
 void reaper(int sig);
+#endif
 #ifndef WIN32
 sig_atomic_t dump_error = 0;
 WAIT_TYPE dump_status = 0;
@@ -425,14 +440,12 @@ static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
 bool inactivity_check(void);
 void load_reboot_db(void);
 
-static bool in_suid_root_mode = 0;
+static bool in_suid_root_mode __attribute__((__unused__)) = 0;
 static char *pidfile = NULL;
 static char **saved_argv = NULL;
 
 int file_watch_init(void);
 void file_watch_event(int);
-
-void initialize_mt(void);
 
 static char *get_doing(dbref player, dbref caller, dbref enactor,
                        NEW_PE_INFO *pe_info, bool full);
@@ -457,7 +470,7 @@ main(int argc, char **argv)
 #endif /* WIN32SERVICES */
 {
   FILE *newerr;
-  bool detach_session = 1;
+  bool detach_session __attribute__((__unused__)) = 1;
 
 /* disallow running as root on unix.
  * This is done as early as possible, before translation is initialized.
@@ -489,6 +502,13 @@ main(int argc, char **argv)
   }
 #endif /* HAVE_GETEUID */
 #endif /* !WIN32 */
+
+#ifdef HAVE_PLEDGE
+  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ", NULL)
+      < 0) {
+    perror("pledge");
+  }
+#endif
 
   /* read the configuration file */
   if (argc < 2) {
@@ -581,7 +601,7 @@ main(int argc, char **argv)
   time(&mudtime);
 
   /* initialize random number generator */
-  initialize_mt();
+  initialize_rng();
 
   options.mem_check = 1;
 
@@ -748,10 +768,13 @@ set_signals(void)
 #ifndef WIN32
   /* we don't care about SIGPIPE, we notice it in select() and write() */
   ignore_signal(SIGPIPE);
+  install_sig_handler(SIGHUP, hup_handler);
+  install_sig_handler(SIGUSR1, usr1_handler);
   install_sig_handler(SIGUSR2, signal_dump);
   install_sig_handler(SIGINT, signal_shutdown);
   install_sig_handler(SIGTERM, bailout);
   install_sig_handler(SIGCHLD, reaper);
+  sigrecv_setup();
 #else
 /* Win32 stuff:
  *   No support for SIGUSR2 or SIGINT.
@@ -900,6 +923,20 @@ is_ssl_desc(DESC *d)
   return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SSL_SOCKET;
 }
 
+/** Is a descriptor using a websocket? */
+static inline bool
+is_ws_desc(DESC *d)
+{
+  if (!d)
+    return 0;
+#ifndef WITHOUT_WEBSOCKETS
+  return IsWebSocket(d);
+#else
+  return 0;
+#endif
+}
+
+
 static void
 setup_desc(int sockfd, conn_source source)
 {
@@ -963,27 +1000,26 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 static void
 shovechars(Port_t port, Port_t sslport)
 {
-  /* this is the main game loop */
+/* this is the main game loop */
 #ifdef INFO_SLAVE
   time_t now;
 #endif
-  struct timeval last_slice, current_time, then;
-  struct timeval next_slice;
+  struct timeval next_slice, last_slice, current_time;
   struct timeval timeout, slice_timeout;
   int found;
-  int queue_timeout;
+  int queue_timeout, sq_timeout;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
 #ifdef WIN32
-  WSAPOLLFD *fds;
+  WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
   nfds_t fd_size = 0, fds_used = 0;
 #endif
   int polltimeout;
-  
+
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1014,19 +1050,14 @@ shovechars(Port_t port, Port_t sslport)
 
   notify_fd = file_watch_init();
 
-  our_gettimeofday(&then);
-  last_slice = then;
+  our_gettimeofday(&current_time);
+  last_slice = current_time;
 
   while (shutdown_flag == 0) {
     our_gettimeofday(&current_time);
 
     update_quotas(last_slice, current_time);
     last_slice = current_time;
-
-    if (msec_diff(current_time, then) >= 1000) {
-      globals.on_second = 1;
-      then = current_time;
-    }
 
     process_commands();
 
@@ -1087,6 +1118,27 @@ shovechars(Port_t port, Port_t sslport)
       shutdown_flag = 1;
     }
 
+    if (hup_triggered) {
+      do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
+      config_file_startup(NULL, 0);
+      config_file_startup(NULL, 1);
+      file_watch_init();
+      fcache_load(NOTHING);
+      help_reindex(NOTHING);
+      read_access_file();
+      reopen_logs();
+      hup_triggered = 0;
+    }
+
+    if (usr1_triggered) {
+      if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+        do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+        do_reboot(
+          NOTHING,
+          0); /* We don't return from this except in case of a failed db save */
+      }
+    }
+
     if (usr2_triggered) {
       if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
         globals.paranoid_dump = 0;
@@ -1099,19 +1151,16 @@ shovechars(Port_t port, Port_t sslport)
     if (shutdown_flag)
       break;
 
-    /* test for events */
+    /* run pending events */
     sq_run_all();
 
-    /* any queued robot commands waiting? */
-    /* timeout.tv_sec used to be set to que_next(), the number of
-     * seconds before something on the queue needed to run, but this
-     * caused a problem with stuff that had to be triggered by alarm
-     * signal every second, so we're reduced to what's below:
-     */
+    /* any queued commands or events waiting? */
     queue_timeout = que_next();
-    /* timeout = { .tv_sec = queue_timeout ? 1 : 0, .tv_usec = 0 }; */
-    timeout.tv_sec = queue_timeout ? 1 : 0;
-    timeout.tv_usec = 0;
+    sq_timeout = sq_secs_till_next();
+    if (sq_timeout < queue_timeout)
+      queue_timeout = sq_timeout;
+    if (queue_timeout < 0)
+      queue_timeout = 0;
 
     next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
     slice_timeout = timeval_sub(next_slice, current_time);
@@ -1121,9 +1170,11 @@ shovechars(Port_t port, Port_t sslport)
       slice_timeout.tv_sec = 0;
     if (slice_timeout.tv_usec < 0)
       slice_timeout.tv_usec = 0;
-      
-    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 5)) {
-      fd_size = im_count(descs_by_fd) + 10;
+
+    timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
+
+    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
+      fd_size = im_count(descs_by_fd) + 16;
       fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
     }
     fds_used = 0;
@@ -1131,15 +1182,15 @@ shovechars(Port_t port, Port_t sslport)
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
       fds[fds_used++].events = POLLIN;
-      
+
       if (sslsock) {
-	fds[fds_used].fd = sslsock;
-	fds[fds_used++].events = POLLIN;
+        fds[fds_used].fd = sslsock;
+        fds[fds_used++].events = POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
-	fds[fds_used].fd = localsock;
-	fds[fds_used++].events = POLLIN;
+        fds[fds_used].fd = localsock;
+        fds[fds_used++].events = POLLIN;
       }
 #endif
     }
@@ -1153,7 +1204,13 @@ shovechars(Port_t port, Port_t sslport)
       fds[fds_used].fd = notify_fd;
       fds[fds_used++].events = POLLIN;
     }
-    
+#ifndef WIN32
+    if (sigrecv_fd >= 0) {
+      fds[fds_used].fd = sigrecv_fd;
+      fds[fds_used++].events = POLLIN;
+    }
+#endif
+
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
     recheck_d:
@@ -1167,18 +1224,19 @@ shovechars(Port_t port, Port_t sslport)
           goto recheck_d;
         }
       }
-
-      if (d->input.head) {
+      fds[fds_used].events = 0;
+      if (d
+            ->input.head) { /* Don't get more input while this desc has a
+                               command ready to eval. */
         timeout = slice_timeout;
       } else {
-	fds[fds_used].fd = d->descriptor;
-	fds[fds_used].events = POLLIN;
+        fds[fds_used].events = POLLIN;
       }
       if (d->output.head) {
-	fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= POLLOUT;
       }
       if (!d->input.head || d->output.head)
-	fds_used += 1;
+        fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
@@ -1211,22 +1269,31 @@ shovechars(Port_t port, Port_t sslport)
         do_top(options.active_q_chunk);
       }
 
-      fds_used = 1;
-      
+      fds_used = 0;
+
 #ifdef INFO_SLAVE
       now = mudtime;
 
-      if (fds[0].revents & POLLIN)
-        got_new_connection(sock, CS_IP_SOCKET);    
-      if (sslsock && fds[fds_used++].revents & POLLIN)
-        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+      if (ndescriptors < avail_descriptors) {
+        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          got_new_connection(sock, CS_IP_SOCKET);
+        }
+        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+        }
 #ifdef LOCAL_SOCKET
-      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
-        setup_desc(localsock, CS_LOCAL_SOCKET);
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(localsock, CS_LOCAL_SOCKET);
+        }
 #endif /* LOCAL_SOCKET */
+      }
 
-      if (info_slave_state == INFO_SLAVE_PENDING &&
+      if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
           fds[fds_used++].revents & POLLIN) {
+        found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
                  now > info_queue_time + 30) {
@@ -1234,47 +1301,66 @@ shovechars(Port_t port, Port_t sslport)
         update_pending_info_slaves();
       }
 
-#else  /* INFO_SLAVE */
-      if (fds[0].revents & POLLIN)
-        setup_desc(sock, CS_IP_SOCKET);
-      if (sslsock && fds[fds_used++].revents & POLLIN)
-        setup_desc(sslsock, CS_OPENSSL_SOCKET);
+#else /* INFO_SLAVE */
+      if (ndescriptors < avail_descriptors) {
+        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(sock, CS_IP_SOCKET);
+        }
+        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(sslsock, CS_OPENSSL_SOCKET);
+        }
 #ifdef LOCAL_SOCKET
-      if (localsock >= 0 && fds[fds_used++].revents & POLLIN)
-        setup_desc(localsock, CS_LOCAL_SOCKET);
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+          found -= 1;
+          setup_desc(localsock, CS_LOCAL_SOCKET);
+        }
 #endif /* LOCAL_SOCKET */
+      }
 #endif /* INFO_SLAVE */
 
-      if (notify_fd >= 0 && fds[fds_used++].revents & POLLIN)
+      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+        found -= 1;
         file_watch_event(notify_fd);
-      
-      for (d = descriptor_list; d; d = dnext) {
-	unsigned int input_ready, output_ready, errors;
-	
+      }
+
+#ifndef WIN32
+      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+        found -= 1;
+        sigrecv_ack();
+      }
+#endif
+
+      for (d = descriptor_list; d && found > 0; d = dnext) {
+        unsigned int input_ready, output_ready, errors;
+
         dnext = d->next;
 
-	if (d->descriptor != fds[fds_used].fd)
-	  continue;
-	
+        if ((SOCKET) d->descriptor != fds[fds_used].fd)
+          continue;
+
         input_ready = fds[fds_used].revents & POLLIN;
-	errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
         output_ready = fds[fds_used++].revents & POLLOUT;
-	if (errors) {
-	  /* Socket error; kill this connection. */
-	  shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);	 
-	} else {
-	  if (input_ready) {
-	    if (!process_input(d, output_ready)) {
-	      shutdownsock(d, "disconnect", d->player);
-	      continue;
-	    }
-	  }
-	  if (output_ready) {
-	    if (!process_output(d)) {
-	      shutdownsock(d, "disconnect", d->player);
-	    }
-	  }
-	}
+        if (input_ready || errors || output_ready)
+          found -= 1;
+        if (errors) {
+          /* Socket error; kill this connection. */
+          shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);
+        } else {
+          if (input_ready) {
+            if (!process_input(d, output_ready)) {
+              shutdownsock(d, "disconnect", d->player);
+              continue;
+            }
+          }
+          if (output_ready) {
+            if (!process_output(d)) {
+              shutdownsock(d, "disconnect", d->player);
+            }
+          }
+        }
       }
     }
   }
@@ -1283,7 +1369,7 @@ shovechars(Port_t port, Port_t sslport)
 }
 
 static int
-test_connection(int newsock)
+test_connection(SOCKET newsock)
 {
 #ifdef WIN32
   if (newsock == INVALID_SOCKET && WSAGetLastError() != WSAEINTR)
@@ -1966,6 +2052,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -1980,6 +2067,7 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2000,7 +2088,7 @@ network_send_ssl(DESC *d)
 #else
     struct pollfd p;
 #endif
-    
+
     p.fd = d->descriptor;
     p.events = POLLIN;
     p.revents = 0;
@@ -2211,8 +2299,7 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    const char *latin1;
-    int len;
+    int len = strlen(command);
 
     if (!valid_utf8(command)) {
       const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
@@ -2233,7 +2320,7 @@ save_command(DESC *d, const char *command)
     inlen = strlen(command);
     utf8 = latin1_to_utf8(command, inlen, &outlen, false);
     add_to_queue(&d->input, utf8, outlen + 1);
-    mush_free(utf8, "string");
+    mush_free((char *)utf8, "string");
   }
 }
 
@@ -2247,6 +2334,12 @@ test_telnet(DESC *d)
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
     static const char query[3] = {IAC, DO, TN_LINEMODE};
+#ifndef WITHOUT_WEBSOCKETS
+    if ((d->conn_flags & (CONN_WEBSOCKETS_REQUEST | CONN_WEBSOCKETS))) {
+      /* Don't bother testing for TELNET support. */
+      return;
+    }
+#endif /* undef WITHOUT_WEBSOCKETS */
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -3132,13 +3225,13 @@ FUNCTION(fun_json_query)
   int i;
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("size", args[1])) {
+    if (strcasecmp("size", args[1]) == 0) {
       query_type = JSON_QUERY_SIZE;
-    } else if (string_prefix("exists", args[1])) {
+    } else if (strcasecmp("exists", args[1]) == 0) {
       query_type = JSON_QUERY_EXISTS;
-    } else if (string_prefix("get", args[1])) {
+    } else if (strcasecmp("get", args[1]) == 0) {
       query_type = JSON_QUERY_GET;
-    } else if (string_prefix("unescape", args[1])) {
+    } else if (strcasecmp("unescape", args[1]) == 0) {
       query_type = JSON_QUERY_UNESCAPE;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
@@ -3420,17 +3513,17 @@ FUNCTION(fun_json)
 
   if (!*args[0])
     type = JSON_STR;
-  else if (string_prefix("string", args[0]))
+  else if (strcasecmp("string", args[0]) == 0)
     type = JSON_STR;
-  else if (string_prefix("boolean", args[0]))
+  else if (strcasecmp("boolean", args[0]) == 0)
     type = JSON_BOOL;
-  else if (string_prefix("array", args[0]))
+  else if (strcasecmp("array", args[0]) == 0)
     type = JSON_ARRAY;
-  else if (string_prefix("object", args[0]))
+  else if (strcasecmp("object", args[0]) == 0)
     type = JSON_OBJECT;
-  else if (string_prefix("null", args[0]) && arglens[0] > 2)
+  else if (strcasecmp("null", args[0]) == 0)
     type = JSON_NULL;
-  else if (string_prefix("number", args[0]) && arglens[0] > 2)
+  else if (strcasecmp("number", args[0]) == 0)
     type = JSON_NUMBER;
   else {
     safe_str(T("#-1 INVALID TYPE"), buff, bp);
@@ -3453,9 +3546,9 @@ FUNCTION(fun_json)
       safe_str(json_vals[2], buff, bp);
     return;
   case JSON_BOOL:
-    if (string_prefix(json_vals[0], args[1]) || !strcasecmp(args[1], "0"))
+    if (strcmp(json_vals[0], args[1]) == 0 || strcmp(args[1], "0") == 0)
       safe_str(json_vals[0], buff, bp);
-    else if (string_prefix(json_vals[1], args[1]) || !strcasecmp(args[1], "1"))
+    else if (strcmp(json_vals[1], args[1]) == 0 || strcmp(args[1], "1") == 0)
       safe_str(json_vals[1], buff, bp);
     else
       safe_str("#-1 INVALID VALUE", buff, bp);
@@ -3680,6 +3773,12 @@ process_input_helper(DESC *d, char *tbuf1, int got)
 {
   char *p, *pend, *q, *qend;
 
+#ifndef WITHOUT_WEBSOCKETS
+  if ((d->conn_flags & CONN_WEBSOCKETS)) {
+    /* Process using WebSockets framing. */
+    got = process_websocket_frame(d, tbuf1, got);
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
@@ -3695,14 +3794,20 @@ process_input_helper(DESC *d, char *tbuf1, int got)
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
+#ifdef WITHOUT_WEBSOCKETS
+      /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
+#endif /* WITHOUT_WEBSOCKETS */
         save_command(d, d->raw_input);
       p = d->raw_input;
       if (((q + 1) < qend) && (*(q + 1) == '\n'))
         q++; /* For clients that work */
     } else if (*q == '\n') {
       *p = '\0';
+#ifdef WITHOUT_WEBSOCKETS
+      /* WebSockets processing is interested in empty lines. */
       if (p > d->raw_input)
+#endif /* WITHOUT_WEBSOCKETS */
         save_command(d, d->raw_input);
       p = d->raw_input;
     } else if (*q == '\b') {
@@ -3897,6 +4002,17 @@ do_command(DESC *d, char *command)
 {
   int j;
 
+#ifndef WITHOUT_WEBSOCKETS
+  if (d->conn_flags & CONN_WEBSOCKETS_REQUEST) {
+    /* Parse WebSockets upgrade request. */
+    if (!process_websocket_request(d, command)) {
+      return CRES_HTTP;
+    }
+
+    return CRES_OK;
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
+
   if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
     j = strlen(IDLE_COMMAND);
     if ((int) strlen(command) > j) {
@@ -3909,27 +4025,44 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected &&
-      (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-       !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
+  if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+                        !strncmp(command, POST_COMMAND,
+                                 strlen(POST_COMMAND)))) {
+#ifndef WITHOUT_WEBSOCKETS
+    if (options.use_ws && is_websocket(command)) {
+      /* Continue processing as a WebSockets upgrade request. */
+      d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
+      return CRES_OK;
+    }
+#endif /* undef WITHOUT_WEBSOCKETS */
+
     char buf[BUFFER_LEN];
-    snprintf(buf, BUFFER_LEN,
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Type: text/html; charset:iso-8859-1\r\n"
-             "Pragma: no-cache\r\n"
-             "\r\n"
-             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
-             " \"http://www.w3.org/TR/html4/loose.dtd\">"
-             "<HTML><HEAD>"
-             "<TITLE>Welcome to %s!</TITLE>"
-             "<meta http-equiv=\"Content-Type\" content=\"text/html; "
-             "charset=iso-8859-1\">"
-             "</HEAD><BODY>"
-             "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-             "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-             "</BODY></HEAD></HTML>",
-             MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-    queue_write(d, buf, strlen(buf));
+    char *bp = buf;
+    bool has_url = strncmp(MUDURL, "http", 4) == 0;
+    safe_format(buf, &bp,
+		"HTTP/1.1 200 OK\r\n"
+		"Content-Type: text/html; charset:iso-8859-1\r\n"
+		"Pragma: no-cache\r\n"
+		"Connection: Close\r\n"
+		"\r\n"
+		"<!DOCTYPE html>\r\n"
+		"<HTML><HEAD>"
+		"<TITLE>Welcome to %s!</TITLE>",
+		MUDNAME);
+    if (has_url) {
+      safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">", MUDURL);
+    }
+    safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
+    if (has_url) {
+      safe_format(buf, &bp, "<p>You've come here by accident! Please click <a href=\"%s\">%s</a> to go to the website for %s if your browser doesn't redirect you in a few seconds.</p>",
+		  MUDURL, MUDURL, MUDNAME);
+    } else {
+      safe_format(buf, &bp, "<p>You've come here by accident! Try using a MUSH client, not a browser, to connect to %s.</p>",
+		  MUDNAME);
+    }
+    safe_str("</BODY></HTML>\r\n", buf, &bp);
+    *bp = '\0';
+    queue_write(d, buf, bp - buf);
     queue_eol(d);
     return CRES_HTTP;
   } else if (SUPPORT_PUEBLO &&
@@ -4147,12 +4280,15 @@ check_connect(DESC *d, const char *msg)
   dbref player;
 
   parse_connect(msg, command, user, password);
+  
+  /* fail quietly if command is an empty string */
+  if (strlen(command) < 1) return 1;
 
   if (!check_fails(d->ip)) {
     queue_string_eol(d, T(connect_fail_limit_exceeded));
     return 1;
   }
-  if (string_prefix("connect", command)) {
+  if (string_prefixe("connect", command)) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4168,7 +4304,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "cd")) {
+  } else if (strcasecmp(command, "cd") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4191,7 +4327,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "cv")) {
+  } else if (strcasecmp(command, "cv") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4211,7 +4347,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (!strcasecmp(command, "ch")) {
+  } else if (strcasecmp(command, "ch") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, errbuf);
@@ -4233,7 +4369,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (string_prefix("create", command)) {
+  } else if (string_prefixe("create", command)) {
     if (!Site_Can_Create(d->addr) || !Site_Can_Create(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
@@ -4300,7 +4436,7 @@ check_connect(DESC *d, const char *msg)
       break;
     } /* successful player creation */
 
-  } else if (string_prefix("register", command)) {
+  } else if (string_prefixe("register", command)) {
     if (!Site_Can_Register(d->addr) || !Site_Can_Register(d->ip)) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
@@ -4720,24 +4856,27 @@ sockset(DESC *d, char *name, char *val)
     return T("Terminal Type set.");
   }
 
-  if (!strcasecmp(name, "COLORSTYLE") || !strcasecmp(name, "COLOURSTYLE")) {
-    if (!strcasecmp(val, "auto")) {
+  if (strcasecmp(name, "COLORSTYLE") == 0 ||
+      strcasecmp(name, "COLOURSTYLE") == 0) {
+    if (strcasecmp(val, "auto") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
-    } else if (string_prefix("plain", val) || string_prefix("none", val)) {
+    } else if (strcasecmp("plain", val) == 0 ||
+               strcasecmp("none", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       return tprintf(T("Colorstyle set to '%s'"), "plain");
-    } else if (string_prefix("hilite", val) ||
-               string_prefix("highlight", val)) {
+    } else if (strcasecmp("hilite", val) == 0 ||
+               strcasecmp("highlight", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
       return tprintf(T("Colorstyle set to '%s'"), "hilite");
-    } else if (string_prefix("16color", val)) {
+    } else if (strcasecmp("16color", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
       return tprintf(T("Colorstyle set to '%s'"), "16color");
-    } else if (string_prefix("xterm256", val) || !strcmp(val, "256")) {
+    } else if (strcasecmp("xterm256", val) == 0 ||
+               strcmp(val, "256") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
       return tprintf(T("Colorstyle set to '%s'"), "xterm256");
@@ -4918,7 +5057,7 @@ do_page_port(dbref executor, const char *pc, const char *message)
   }
   *tbp = '\0';
   if (target != NOTHING)
-    page_return(executor, target, "Idle", "IDLE", NULL);
+    page_return(executor, target, "Idle", "IDLE", NULL, NULL);
   if (Typeof(executor) != TYPE_PLAYER && Nospoof(target))
     queue_string_eol(d, tprintf("[#%d] %s", executor, tbuf));
   else
@@ -4992,7 +5131,32 @@ void
 signal_shutdown(int sig __attribute__((__unused__)))
 {
   signal_shutdown_flag = 1;
+  sigrecv_notify();
   reload_sig_handler(SIGINT, signal_shutdown);
+}
+
+/** Handler for HUP signal.
+ * Do the minimal work here - set a global variable and reload the handler.
+ * \param x unused.
+ */
+void
+hup_handler(int x __attribute__((__unused__)))
+{
+  hup_triggered = 1;
+  sigrecv_notify();
+  reload_sig_handler(SIGHUP, hup_handler);
+}
+
+/** Handler for USR1 signal.
+ * Do the minimal work here - set a global variable and reload the handler.
+ * \param x unused.
+ */
+void
+usr1_handler(int x __attribute__((__unused__)))
+{
+  usr1_triggered = 1;
+  sigrecv_notify();
+  reload_sig_handler(SIGUSR1, usr1_handler);
 }
 
 /** Handler for SIGUSR2. Note that we've received it, and reinstall
@@ -5002,6 +5166,7 @@ void
 signal_dump(int sig __attribute__((__unused__)))
 {
   usr2_triggered = 1;
+  sigrecv_notify();
   reload_sig_handler(SIGUSR2, signal_dump);
 }
 #endif
@@ -5031,6 +5196,7 @@ reaper(int sig __attribute__((__unused__)))
       slave_error = info_slave_pid;
       info_slave_state = INFO_SLAVE_DOWN;
       info_slave_pid = -1;
+      sigrecv_notify();
     } else
 #endif
 #ifdef SSL_SLAVE
@@ -5038,12 +5204,14 @@ reaper(int sig __attribute__((__unused__)))
       ssl_slave_error = ssl_slave_pid;
       ssl_slave_state = SSL_SLAVE_DOWN;
       ssl_slave_pid = -1;
+      sigrecv_notify();
     } else
 #endif
       if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
       dump_status = error_code;
       forked_dump_pid = -1;
+      sigrecv_notify();
     }
   }
   reload_sig_handler(SIGCHLD, reaper);
@@ -5408,16 +5576,25 @@ do_who_admin(dbref player, char *name)
     if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
+      char conntype[3] = { '\0' };
+      int cti = 0;
       tp = tbuf;
       safe_str(AName(d->player, AN_WHO, NULL), tbuf, &tp);
       nlen = strlen(Name(d->player));
       if (nlen < 16)
         safe_fill(' ', 16 - nlen, tbuf, &tp);
-      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%c ",
+
+      if (is_ssl_desc(d))
+        conntype[cti++] = 'S';
+      else if (!is_remote_desc(d))
+        conntype[cti++] = 'L';
+      if (is_ws_desc(d))
+        conntype[cti] = 'W';
+      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
                   unparse_dbref(Location(d->player)),
                   onfor_time_fmt(d->connected_at, 9),
                   idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                  is_ssl_desc(d) ? 'S' : (is_remote_desc(d) ? ' ' : 'L'));
+                  conntype);
       strncpy(addr, d->addr, 28);
       if (Dark(d->player)) {
         addr[20] = '\0';
@@ -6204,15 +6381,12 @@ FUNCTION(fun_lwho)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("all", args[1])) {
+    if (strcasecmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strlen(args[1]) < 2) {
-      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-      return;
-    } else if (string_prefix("online", args[1])) {
+    } else if (strcasecmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (string_prefix("offline", args[1])) {
+    } else if (strcasecmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {
@@ -6676,6 +6850,8 @@ FUNCTION(fun_terminfo)
         safe_str(" prompt_newlines", buff, bp);
       if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
+      if (is_ws_desc(match))
+        safe_str(" websocket", buff, bp);
     }
     type = notify_type(match);
     if (type & MSG_STRIPACCENTS)
@@ -6747,15 +6923,12 @@ FUNCTION(fun_lports)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (string_prefix("all", args[1])) {
+    if (strcasecmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strlen(args[1]) < 2) {
-      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
-      return;
-    } else if (string_prefix("online", args[1])) {
+    } else if (strcasecmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (string_prefix("offline", args[1])) {
+    } else if (strcasecmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {
@@ -7040,6 +7213,10 @@ dump_reboot_db(void)
   flags |= RDBF_SSL_SLAVE | RDBF_SLAVE_FD;
 #endif
 
+#ifndef WITHOUT_WEBSOCKETS
+  flags |= RDBF_WEBSOCKET_FRAME;
+#endif
+  
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
@@ -7086,7 +7263,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putstring(f, d->addr);
       putstring(f, d->ip);
-      putref(f, d->conn_flags);
+      putref_u32(f, d->conn_flags);
       putref(f, d->width);
       putref(f, d->height);
       if (d->ttype)
@@ -7095,6 +7272,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
+      putref_u64(f, d->ws_frame_len);
     } /* for loop */
 
     putref(f, 0);
@@ -7183,7 +7361,7 @@ load_reboot_db(void)
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
       if (!(flags & RDBF_NO_DOING))
         (void) getstring_noalloc(f);
-      d->conn_flags = getref(f);
+      d->conn_flags = getref_u32(f);
       if (flags & RDBF_SCREENSIZE) {
         d->width = getref(f);
         d->height = getref(f);
@@ -7205,6 +7383,19 @@ load_reboot_db(void)
         strcpy(d->checksum, getstring_noalloc(f));
       else
         d->checksum[0] = '\0';
+      if (flags & RDBF_WEBSOCKET_FRAME) {
+#ifdef WITHOUT_WEBSOCKETS
+        (void)getref_u64(f);
+#else
+        d->ws_frame_len = getref_u64(f);
+#endif
+      }
+#ifndef WITHOUT_WEBSOCKETS
+      else {
+        d->ws_frame_len = 0;
+      }
+#endif
+  
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
@@ -7462,11 +7653,13 @@ watch_files_in(void)
     WATCH(options.connect_file[n]);
     WATCH(options.motd_file[n]);
     WATCH(options.wizmotd_file[n]);
+    WATCH(options.newuser_file[n]);
     WATCH(options.register_file[n]);
     WATCH(options.quit_file[n]);
     WATCH(options.down_file[n]);
     WATCH(options.full_file[n]);
     WATCH(options.guest_file[n]);
+    WATCH(options.who_file[n]);
   }
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))

@@ -216,20 +216,36 @@ ssl_ip_addr
 # will fail.
 ssl_private_key_file  server-key.crt
 
-# The file containing one or more certificates of certifying authorities
+# A file containing one or more certificates of certifying authorities
 # that the server should trust to certify clients who connect and
-# present certificates. A standard bundle of these is distributed
-# with openssl as 'ca-bundle.crt'. If commented out, the server will
-# not attempt client authentication.
-ssl_ca_file /usr/share/ssl/certs/ca-bundle.crt
+# present certificates.
+ssl_ca_file /etc/ssl/certs/ca-certificates.crt
+
+# A directory containing one or more certificates of certifying
+# authorities that the server should trust to certify clients who
+# connect and present certificates. If both this and ssl_ca_file are
+# commented out or blank, the server will not attempt client
+# authentication.
+ssl_ca_dir /etc/ssl/certs
+
 
 # Are clients *required* to present a valid certificate in order to
-# make an SSL connection?
+# make an SSL connection? If true, ssl_ca_file needs to be set too.
 ssl_require_client_cert no
 
 # Filename to use as a unix-domain socket for talking to the ssl
 # slave
 socket_file data/netmush.sock
+
+###
+### Websocket support
+###
+
+# Enable websockets
+use_ws true
+
+# path used in HTTP requests for a websocket connection to the game.
+ws_url /wsclient
 
 ###
 ### Limits, costs, and other constants

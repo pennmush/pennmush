@@ -337,7 +337,7 @@ See also: @lock, locktypes, lockkeys
     Controls what may be given to this object.
   
   @lock/take
-    Controls who can take this object.
+    Controls who can take from this container.
   
 See also: give, buy, @lock/basic, @lock/enter
 & @lock/filter

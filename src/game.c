@@ -82,10 +82,12 @@ void Win32MUSH_setup(void);
 #endif /* fix to HP-UX getrusage() braindamage */
 
 /* declarations */
-GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0, 0};
+GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
-static int reserved;            /**< Reserved file descriptor */
+#ifndef WIN32
+static int reserved; /**< Reserved file descriptor */
+#endif
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
 static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
 #define ERRDB_INITIAL_SIZE 5
@@ -544,7 +546,11 @@ bool
 fork_and_dump(int forking)
 {
   pid_t child;
-  bool nofork, status = true, split;
+  bool nofork, status = true;
+#ifndef WIN32
+  bool split = false;
+#endif
+
   epoch++;
 
 #ifdef LOG_CHUNK_STATS
@@ -560,7 +566,7 @@ fork_and_dump(int forking)
 #if defined(WIN32) || !defined(HAVE_FORK)
   nofork = 1;
 #endif
-  split = 0;
+
   if (!nofork && chunk_num_swapped()) {
 #ifndef WIN32
     /* Try to clone the chunk swapfile. */
@@ -780,7 +786,7 @@ init_game_postdb(const char *conf)
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
-                options.ssl_require_client_cert)) {
+                options.ssl_ca_dir, options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
     options.ssl_port = 0; /* Disable ssl */
   }
@@ -864,6 +870,10 @@ init_game_dbs(void)
       return -1;
     }
     do_rawlog(LT_ERR, "LOADING: %s (done)", infile);
+
+    if (globals.new_indb_version < 6) {
+      do_flag_delete("POWER", GOD, "Cemit");
+    }
 
     /* If there's stuff at the end of the db, we may have a panic
      * format db, with everything shoved together. In that case,
@@ -2210,19 +2220,19 @@ FUNCTION(fun_uptime)
   enum uptime_type which = UPTIME_UPSINCE;
 
   if (args[0] && *args[0]) {
-    if (string_prefix("upsince", args[0]))
+    if (strcasecmp("upsince", args[0]) == 0)
       which = UPTIME_UPSINCE;
-    else if (string_prefix("reboot", args[0]))
+    else if (strcasecmp("reboot", args[0]) == 0)
       which = UPTIME_REBOOT;
-    else if (string_prefix("save", args[0]))
+    else if (strcasecmp("save", args[0]) == 0)
       which = UPTIME_LAST_SAVE;
-    else if (string_prefix("nextsave", args[0]))
+    else if (strcasecmp("nextsave", args[0]) == 0)
       which = UPTIME_NEXT_SAVE;
-    else if (string_prefix("dbck", args[0]))
+    else if (strcasecmp("dbck", args[0]) == 0)
       which = UPTIME_DBCK;
-    else if (string_prefix("purge", args[0]))
+    else if (strcasecmp("purge", args[0]) == 0)
       which = UPTIME_PURGE;
-    else if (string_prefix("warnings", args[0]))
+    else if (strcasecmp("warnings", args[0]) == 0)
       which = UPTIME_WARNING;
     else {
       safe_str("#-1", buff, bp);
@@ -2376,7 +2386,10 @@ db_open(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
-    gzbuffer(pf->handle.g, 1024 * 64); /* Large buffer to speed up decompression */
+#ifdef HAVE_GZBUFFER
+    gzbuffer(pf->handle.g,
+             1024 * 64); /* Large buffer to speed up decompression */
+#endif
     return pf;
   }
 #endif
@@ -2462,7 +2475,9 @@ db_open_write(const char *fname)
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
+#ifdef HAVE_GZBUFFER
     gzbuffer(pf->handle.g, 1024 * 64);
+#endif
     return pf;
   }
 #endif

@@ -253,6 +253,7 @@ void sq_register_loop(int n, sq_func f, void *d, const char *ev);
 void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
+int sq_secs_till_next(void);
 
 void init_sys_events(void);
 

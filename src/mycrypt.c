@@ -10,15 +10,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#ifdef WIN32
+#include <Windows.h>
+#include <ntstatus.h>
+#include <Bcrypt.h>
+#else
 #include <openssl/sha.h>
 #include <openssl/evp.h>
-
+#endif
 #include "conf.h"
 #include "mypcre.h"
 #include "log.h"
 #include "notify.h"
 #include "strutil.h"
 #include "externs.h"
+#include "mymalloc.h"
 
 #define PASSWORD_HASH "sha512"
 
@@ -70,6 +76,31 @@ mush_crypt_sha0(const char *key __attribute__((__unused__)))
 #endif
 }
 
+#ifdef WIN32 
+static const wchar_t *
+lookup_bcrypt_algo(const char *name) {
+	const struct hashname_map {
+		const char *name;
+		const wchar_t *algo;
+	} names[] = {
+		{"MD2", BCRYPT_MD2_ALGORITHM },
+		{"MD4", BCRYPT_MD4_ALGORITHM },
+		{"MD5", BCRYPT_MD5_ALGORITHM },
+		{"SHA1", BCRYPT_SHA1_ALGORITHM },
+		{"SHA256", BCRYPT_SHA256_ALGORITHM },
+		{"SHA384", BCRYPT_SHA384_ALGORITHM },
+		{"SHA512", BCRYPT_SHA512_ALGORITHM },
+		{ NULL, NULL }
+	};
+	for (int n = 0; names[n].name; n += 1) {
+		if (_stricmp(name, names[n].name) == 0) {
+			return names[n].algo;
+		}
+	}
+	return NULL;
+}
+#endif
+
 /** Hash a string and store it base-16 encoded in a buffer.
  * \param algo the name of the hash algorithm (sha1, md5, etc.)
  * \param plaintext the text to hash.
@@ -83,6 +114,65 @@ int
 safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
                  char **bp, bool inplace_err)
 {
+#ifdef WIN32
+	const wchar_t *dgst;
+	BCRYPT_ALG_HANDLE balgo;
+	BCRYPT_HASH_HANDLE hfun;
+  PUCHAR hash;
+  DWORD hashlen = 0;
+  ULONG cbhash = 0;
+  int r;
+	
+  dgst = lookup_bcrypt_algo(algo);
+	if (!dgst) {
+    if (inplace_err)
+      safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
+    else
+      do_rawlog(LT_ERR, "safe_hash_byname: Unknown password hash function: %s",
+                algo);
+    return 1;
+  }	
+	
+  if (BCryptOpenAlgorithmProvider(&balgo, dgst, NULL, 0)
+  	!= STATUS_SUCCESS) {
+    if (inplace_err)
+      safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
+    else
+      do_rawlog(LT_ERR, "safe_hash_byname: Unknown password hash function: %s",
+                algo);
+    return 1;
+  }	
+  if (BCryptCreateHash(balgo, &hfun, NULL, 0, NULL, 0, 0)
+  	!= STATUS_SUCCESS) {
+    if (inplace_err)
+      safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
+    else
+      do_rawlog(LT_ERR, "safe_hash_byname: Unknown password hash function: %s",
+                algo);
+    BCryptCloseAlgorithmProvider(balgo, 0);
+    return 1;
+  }
+  if (BCryptGetProperty(balgo, BCRYPT_HASH_LENGTH, (PBYTE)&hashlen, sizeof(hashlen),
+  	&cbhash, 0) != STATUS_SUCCESS) {
+    if (inplace_err)
+      safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
+    else
+      do_rawlog(LT_ERR, "safe_hash_byname: Unknown password hash function: %s",
+                algo);
+    BCryptDestroyHash(hfun);
+    BCryptCloseAlgorithmProvider(balgo, 0);
+    return 1;  
+  }
+  BCryptHashData(hfun, (PUCHAR) plaintext, (ULONG) len, 0);
+  hash = mush_malloc(hashlen + 1, "string");
+  BCryptFinishHash(hfun, hash, hashlen, 0);
+  hash[hashlen] = '\0';
+  BCryptDestroyHash(hfun);
+  BCryptCloseAlgorithmProvider(balgo, 0);
+  r = safe_hexstr(hash, hashlen, buff, bp);
+  mush_free(hash, "string");
+  return r;
+#else
   EVP_MD_CTX *ctx;
   const EVP_MD *md;
   uint8_t hash[EVP_MAX_MD_SIZE];
@@ -104,18 +194,18 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
   EVP_MD_CTX_destroy(ctx);
 
   return safe_hexstr(hash, rlen, buff, bp);
+#endif
 }
 
 bool
 check_mux_password(const char *saved, const char *password)
 {
-  EVP_MD_CTX *ctx;
-  const EVP_MD *md;
-  uint8_t hash[EVP_MAX_MD_SIZE];
-  unsigned int rlen = EVP_MAX_MD_SIZE;
+  uint8_t hash[BUFFER_LEN];
+  unsigned int rlen = BUFFER_LEN;
   char decoded[BUFFER_LEN];
   char *dp;
   char *start, *end;
+  char *algo;
 
   start = (char *) saved;
 
@@ -128,13 +218,11 @@ check_mux_password(const char *saved, const char *password)
   end = strchr(start, '$');
   if (end == NULL)
     return 0;
-
+  
   *end++ = '\0';
 
-  md = EVP_get_digestbyname(start);
-  if (!md)
-    return 0;
-
+ 	algo = start;
+  
   start = end;
   /* Up until the next '$' is the salt. After that is the password */
   end = strchr(start, '$');
@@ -151,20 +239,66 @@ check_mux_password(const char *saved, const char *password)
   decode_base64(start, strlen(start), 0, decoded, &dp);
   *dp = '\0';
   /* Double-hash the password */
-  ctx = EVP_MD_CTX_create();
-  EVP_DigestInit(ctx, md);
-  EVP_DigestUpdate(ctx, start, strlen(start));
-  EVP_DigestUpdate(ctx, password, strlen(password));
-  EVP_DigestFinal(ctx, hash, &rlen);
-  EVP_MD_CTX_destroy(ctx);
+#ifdef WIN32
+	{
+		BCRYPT_ALG_HANDLE balgo;
+		BCRYPT_HASH_HANDLE hfun;
+		ULONG hashlen = 0, cbhash = 0;
 
+		const wchar_t *dgst = lookup_bcrypt_algo(algo);
+		if (!dgst) {
+			return 0;
+		}
+		if (BCryptOpenAlgorithmProvider(&balgo, dgst, NULL, 0)
+			!= STATUS_SUCCESS) {
+    return 0;
+    	}	
+    	if (BCryptCreateHash(balgo, &hfun, NULL, 0, NULL, 0, 0)
+    		!= STATUS_SUCCESS) {
+    		BCryptCloseAlgorithmProvider(balgo, 0);
+    	return 0;
+	  }
+	  if (BCryptGetProperty(balgo, BCRYPT_HASH_LENGTH, (PBYTE)&hashlen, sizeof(DWORD),
+	  	&cbhash, 0) != STATUS_SUCCESS) {
+		  BCryptDestroyHash(hfun);
+		  BCryptCloseAlgorithmProvider(balgo, 0);
+		  return 0;  
+	  }
+	  BCryptHashData(hfun, (PUCHAR) start, (ULONG) strlen(start), 0);
+	  BCryptHashData(hfun, (PUCHAR) password, (ULONG) strlen(password), 0);
+	  BCryptFinishHash(hfun, (PUCHAR) hash, hashlen, 0);
+	  hash[hashlen] = '\0';
+	  rlen = hashlen;
+	  BCryptDestroyHash(hfun);
+	  BCryptCloseAlgorithmProvider(balgo, 0);
+	}
+#else
+	{
+		EVP_MD_CTX *ctx;
+		const EVP_MD *md;
+		md = EVP_get_digestbyname(algo);
+		if (!md)
+			return 0;
+		ctx = EVP_MD_CTX_create();
+		EVP_DigestInit(ctx, md);
+		EVP_DigestUpdate(ctx, start, strlen(start));
+		EVP_DigestUpdate(ctx, password, strlen(password));
+		EVP_DigestFinal(ctx, hash, &rlen);
+		EVP_MD_CTX_destroy(ctx);
+	}
+#endif
+	
+  
   /* Decode the stored password */
   dp = decoded;
   decode_base64(end, strlen(end), 0, decoded, &dp);
   *dp = '\0';
 
+  if (rlen != (dp - decoded))
+  	return 0;
+  
   /* Compare stored to hashed */
-  return (memcmp(decoded, hash, rlen) == 0);
+  return memcmp(decoded, hash, rlen) == 0;
 }
 
 /** Encrypt a password and return the formatted password
@@ -200,8 +334,8 @@ password_hash(const char *key, const char *algo)
 
   len = strlen(key);
 
-  s1 = salts[get_random32(0, 61)];
-  s2 = salts[get_random32(0, 61)];
+  s1 = salts[get_random_u32(0, 61)];
+  s2 = salts[get_random_u32(0, 61)];
 
   bp = buff;
   safe_strl("2:", 2, buff, &bp);

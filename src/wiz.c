@@ -57,7 +57,7 @@ char *password_hash(const char *password, const char *algo);
 /** \@search data */
 struct search_spec {
   dbref owner;                /**< Limit to this owner, if specified */
-  int type;                   /**< Limit to this type */
+  uint32_t type;                   /**< Limit to this type */
   dbref parent;               /**< Limit to children of this parent */
   dbref zone;                 /**< Limit to those in this zone */
   dbref entrances;            /**< Objects linked here, for \@entrances */
@@ -805,10 +805,10 @@ do_newpassword(dbref executor, dbref enactor, const char *name,
 
   if (generate) {
     int i;
-    int len = get_random32(7, 12);
+    int len = get_random_u32(7, 12);
 
     for (i = 0; i < len; i++)
-      passwd[i] = elems[get_random32(0, sizeof(elems) - 2)];
+      passwd[i] = elems[get_random_u32(0, sizeof(elems) - 2)];
     passwd[len] = '\0';
     password = passwd;
   } else {
@@ -2150,15 +2150,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     /* Figure out the class */
     /* Old-fashioned way to select everything */
-    if (string_prefix("none", class))
+    if (strcasecmp("none", class) == 0)
       continue;
-    if (string_prefix("mindb", class)) {
+    if (strcasecmp("mindb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
       spec->low = parse_integer(restriction + offset);
       continue;
-    } else if (string_prefix("maxdb", class)) {
+    } else if (strcasecmp("maxdb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
@@ -2166,7 +2166,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       continue;
     }
 
-    if (string_prefix("type", class)) {
+    if (strcasecmp("type", class) == 0) {
       if (string_prefix("things", restriction) ||
           string_prefix("objects", restriction)) {
         spec->type = TYPE_THING;
@@ -2174,11 +2174,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         spec->type = TYPE_ROOM;
       } else if (string_prefix("exits", restriction)) {
         spec->type = TYPE_EXIT;
-      } else if (string_prefix("rooms", restriction)) {
-        spec->type = TYPE_ROOM;
       } else if (string_prefix("players", restriction)) {
         spec->type = TYPE_PLAYER;
-      } else if (string_prefix("garbage", restriction)) {
+      } else if (strcasecmp("garbage", restriction) == 0) {
         spec->type = TYPE_GARBAGE;
       } else {
         notify(player, T("Unknown type."));
@@ -2197,21 +2195,21 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     } else if (string_prefix("players", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (string_prefix("name", class)) {
+    } else if (strcasecmp("name", class) == 0) {
       strcpy(spec->name, restriction);
-    } else if (string_prefix("start", class)) {
+    } else if (strcasecmp("start", class) == 0) {
       spec->start = parse_integer(restriction);
       if (spec->start < 1) {
         notify(player, T("Invalid start index"));
         return -1;
       }
-    } else if (string_prefix("count", class)) {
+    } else if (strcasecmp("count", class) == 0) {
       spec->count = parse_integer(restriction);
       if (spec->count < 1) {
         notify(player, T("Invalid count index"));
         return -1;
       }
-    } else if (string_prefix("parent", class)) {
+    } else if (strcasecmp("parent", class) == 0) {
       if (!*restriction) {
         spec->parent = NOTHING;
         continue;
@@ -2225,7 +2223,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown parent."));
         return -1;
       }
-    } else if (string_prefix("zone", class)) {
+    } else if (strcasecmp("zone", class) == 0) {
       if (!*restriction) {
         spec->zone = NOTHING;
         continue;
@@ -2239,17 +2237,17 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown zone."));
         return -1;
       }
-    } else if (string_prefix("elock", class)) {
+    } else if (strcasecmp("elock", class) == 0) {
       spec->lock = parse_boolexp(player, restriction, "Search");
       if (spec->lock == TRUE_BOOLEXP) {
         notify(player, T("I don't understand that key."));
         return -1;
       }
-    } else if (string_prefix("eval", class)) {
+    } else if (strcasecmp("eval", class) == 0) {
       strcpy(spec->eval, restriction);
-    } else if (string_prefix("command", class)) {
+    } else if (strcasecmp("command", class) == 0) {
       strcpy(spec->cmdstring, restriction);
-    } else if (string_prefix("listen", class)) {
+    } else if (strcasecmp("listen", class) == 0) {
       strcpy(spec->listenstring, restriction);
     } else if (string_prefix("ethings", class) ||
                string_prefix("eobjects", class)) {

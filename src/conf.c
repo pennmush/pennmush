@@ -139,6 +139,8 @@ PENNCONF conftable[] = {
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"},
   {"socket_file", cf_str, &options.socket_file, sizeof options.socket_file, 0,
    "net"},
+  {"use_ws", cf_bool, &options.use_ws, sizeof options.use_ws, 0, "net"},
+  {"ws_url", cf_str, options.ws_url, sizeof options.ws_url, 0, "net"},
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"},
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"},
   {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"},
@@ -320,6 +322,8 @@ PENNCONF conftable[] = {
   {"ssl_private_key_file", cf_str, options.ssl_private_key_file,
    sizeof options.ssl_private_key_file, 0, "files"},
   {"ssl_ca_file", cf_str, options.ssl_ca_file, sizeof options.ssl_ca_file, 0,
+   "files"},
+  {"ssl_ca_dir", cf_str, options.ssl_ca_dir, sizeof options.ssl_ca_dir, 0,
    "files"},
   {"ssl_require_client_cert", cf_bool, &options.ssl_require_client_cert, 2, 0,
    "net"},
@@ -1146,6 +1150,8 @@ conf_default_set(void)
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.socket_file, "data/netmush.sock");
+  options.use_ws = 1;
+  strcpy(options.ws_url, "/wsclient");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");
   strcpy(options.crash_db, "data/PANIC.db");
@@ -1315,6 +1321,7 @@ conf_default_set(void)
 #ifdef HAVE_SSL
   strcpy(options.ssl_private_key_file, "");
   strcpy(options.ssl_ca_file, "");
+  strcpy(options.ssl_ca_dir, "");
   options.ssl_require_client_cert = 0;
 #endif
   /* Set this to 1 so that allocations made before reading the config file
@@ -1479,15 +1486,12 @@ config_file_checks(void)
   /* if we're on Win32, complain about compression */
   if ((options.compressprog && *options.compressprog)) {
     do_rawlog(LT_ERR, "CONFIG: compression program is specified but not used "
-                      "in Win32, ignoring",
-              options.compressprog);
+                      "in Win32, ignoring.");
   }
 
   if (((options.compresssuff && *options.compresssuff))) {
-    do_rawlog(
-      LT_ERR,
-      "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-      options.compresssuff);
+    do_rawlog(LT_ERR, "CONFIG: compression suffix is specified but not used in "
+                      "Win32, ignoring.");
   }
 
   /* Also remove the compression options */
@@ -1545,7 +1549,7 @@ do_config_list(dbref player, const char *type, int lc)
     /* Look up the type in the group table */
     int found = 0;
     for (cgp = confgroups; cgp->name; cgp++) {
-      if (string_prefix(T(cgp->name), type) &&
+      if (string_prefixe(T(cgp->name), type) &&
           Can_View_Config_Group(player, cgp)) {
         found = 1;
         break;
@@ -1554,7 +1558,7 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (string_prefix(cp->name, type) &&
+        if (string_prefixe(cp->name, type) &&
             can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
@@ -1564,7 +1568,7 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (!strcasecmp(cp->name, type) &&
+          if (strcasecmp(cp->name, type) == 0 &&
               can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
@@ -1601,7 +1605,7 @@ do_config_list(dbref player, const char *type, int lc)
     } else {
       /* Show all entries of that type */
       notify(player, cgp->desc);
-      if (string_prefix("compile", type))
+      if (strcasecmp("compile", type) == 0)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
@@ -1612,7 +1616,7 @@ do_config_list(dbref player, const char *type, int lc)
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->group, cgp->name) &&
+          if (cp->group && strcasecmp(cp->group, cgp->name) == 0 &&
               can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }

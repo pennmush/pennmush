@@ -3,10 +3,7 @@
  *
  * \brief Malloc wrapper file.
  *
- * Three things in this file:
- *
- * -# It includes the body of csrimalloc.c if using a MALLOC_PACKAGE
- *     of 2 or 3.
+ * Two things in this file:
  *
  * -# It has the mush_FOO() wrapper functions for
  *     malloc()/calloc()/realloc()/free(). These are used to keep
@@ -38,6 +35,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -48,6 +48,12 @@
 #include "log.h"
 #include "memcheck.h"
 #include "strutil.h"
+
+#ifdef WIN32
+#define SZT PRIu64
+#else
+#define SZT "zu"
+#endif
 
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
@@ -69,8 +75,27 @@ mush_malloc(size_t bytes, const char *check)
 
   ptr = malloc(bytes);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %lu bytes for %s",
-              (unsigned long) bytes, check);
+    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %" SZT " bytes for %s",
+              bytes, check);
+  add_check(check);
+  return ptr;
+}
+
+/** Like mush_malloc(), but ensures the returned memory is
+ * zero'ed out.
+ *
+ * \param bytes amount of memory to allocate.
+ * \param check string to label allocation with.
+ * \return allocated block of memory or NULL.
+ */
+void *
+mush_malloc_zero(size_t bytes, const char *check)
+{
+  void *ptr = calloc(bytes, 1);
+  if (!ptr)
+    do_rawlog(LT_TRACE,
+              "mush_malloc_zero failed to allocate %" SZT " bytes for %s",
+              bytes, check);
   add_check(check);
   return ptr;
 }
@@ -90,8 +115,8 @@ mush_calloc(size_t count, size_t size, const char *check)
 
   ptr = calloc(count, size);
   if (!ptr)
-    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %lu bytes for %s",
-              (unsigned long) (size * count), check);
+    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %" SZT " bytes for %s",
+              size * count, check);
   add_check(check);
   return ptr;
 }
@@ -131,7 +156,7 @@ mush_realloc_where(void *restrict ptr, size_t newsize,
  * \param line line it called from
  */
 void
-mush_free_where(const void *restrict ptr, const char *restrict check,
+mush_free_where(void *restrict ptr, const char *restrict check,
                 const char *restrict filename, int line)
 {
 #ifdef DEBUG
@@ -142,7 +167,7 @@ mush_free_where(const void *restrict ptr, const char *restrict check,
   }
 #endif
   del_check(check, filename, line);
-  free((void *) ptr);
+  free(ptr);
   return;
 }
 

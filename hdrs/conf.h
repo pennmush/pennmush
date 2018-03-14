@@ -153,6 +153,8 @@ struct options_table {
   int ssl_port;       /**< The port to listen for SSL connections */
   char
     socket_file[FILE_PATH_LEN]; /**< The socket filename to use for SSL slave */
+  int use_ws;             /**< True to enable websockets */
+  char ws_url[FILE_PATH_LEN];   /**< path to recognize as websocket one in HTTP requests. */
   char input_db[FILE_PATH_LEN]; /**< Name of the input database file */
   char output_db[FILE_PATH_LEN]; /**< Name of the output database file */
   char crash_db[FILE_PATH_LEN];  /**< Name of the panic database file */
@@ -332,6 +334,7 @@ struct options_table {
   char ssl_private_key_file
     [FILE_PATH_LEN];               /**< File to load the server's cert from */
   char ssl_ca_file[FILE_PATH_LEN]; /**< File to load the CA certs from */
+  char ssl_ca_dir[FILE_PATH_LEN];  /**< Directory to load the CA certs from */
   int ssl_require_client_cert;   /**< Are clients required to present certs? */
   int mem_check;                 /**< Turn on the memory allocation checker? */
   int use_quota;                 /**< Are quotas enabled? */
@@ -419,6 +422,8 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define START_QUOTA (options.starting_quota)
 #define LOG_WIPE_PASSWD (options.log_wipe_passwd)
 #define SUPPORT_PUEBLO (options.support_pueblo)
+#define SUPPORT_WEBSOCKETS (options.use_ws)
+#define SUPPORT_HTML (SUPPORT_PUEBLO || SUPPORT_WEBSOCKETS)
 
 #define QUEUE_QUOTA (options.player_queue_limit)
 
@@ -538,7 +543,6 @@ struct globals_table {
   int paranoid_checkpt;    /**< write out an okay message every x objs */
   long indb_flags;         /**< flags set in the input database */
   int new_indb_version;    /**< new (as of 1.8.5) version of the input db */
-  int on_second;           /**< is it time for per-second processes? */
 };
 
 extern GLOBALTAB globals;

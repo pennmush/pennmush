@@ -59,8 +59,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "SFMT.h"
 #include "conf.h"
+#include "externs.h"
 #include "dbdefs.h"
 #include "log.h"
 #include "mymalloc.h"
@@ -148,14 +148,12 @@ lookup_check(const char *ref)
   return NULL;
 }
 
-extern sfmt_t rand_state;
-
 /* Return the number of links to use for a new node. Result's range is
    1..maxcount */
 static int
 pick_link_count(int maxcount)
 {
-  int lev = (int) floor(log(sfmt_genrand_real3(&rand_state)) / log(P));
+  int lev = (int) floor(log(get_random_d2()) / log(P));
   lev = -lev;
   if (lev > maxcount)
     return maxcount;

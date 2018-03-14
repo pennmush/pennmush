@@ -3,7 +3,7 @@
 # - System configuration - #
 
 VERSION=1.8.6
-PATCHLEVEL=1
+PATCHLEVEL=2
 
 #
 # This section of the file should be automatically configured by the
@@ -70,9 +70,9 @@ hdrs/gitinfo.h: $(wildcard .git/HEAD .git/index)
 	@echo "/* Built at `date +%Y%m%d%H%M%S` */" >> hdrs/gitinfo.h
 
 install: localized all
-	-rm -f game/netmush
-	-rm -f game/info_slave
-	-rm -f game/ssl_slave
+	@if [ -f game/netmush ]; then rm -f game/netmush; fi	
+	@if [ -f game/info_slave ]; then rm -f game/info_slave; fi	
+	@if [ -f game/ssl_slave ]; then rm -f game/ssl_slave; fi	
 	(cd game; $(INSTALL_LINKS))
 	(cd game/txt; @MAKE@)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"
@@ -207,4 +207,8 @@ globalinstall: install
 	@echo "** Files installed in $(GLOBAL_INSTALL). Feel free to move them."
 	@echo "** You can run $(GLOBAL_INSTALL)/ln-dir.sh to create a user directory,"
 	@echo "** or symlink that to somewhere easier to run. You may wish to strip them."
+
+htmldoc:
+	cd htmldoc && make
+
 

@@ -702,7 +702,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -796,7 +795,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1049,15 +1047,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1195,7 +1184,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1348,7 +1337,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -5476,7 +5464,7 @@ $as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
 
 fi
 
-for ac_header in sys/stat.h sys/time.h sys/types.h
+for ac_header in sys/stat.h sys/time.h sys/types.h sys/eventfd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5489,7 +5477,7 @@ fi
 
 done
 
-for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h netinet/in.h
+for ac_header in sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5502,7 +5490,7 @@ fi
 
 done
 
-for ac_header in sys/un.h sys/resource.h sys/event.h sys/uio.h byteswap.h
+for ac_header in netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5528,7 +5516,20 @@ fi
 
 done
 
-for ac_header in zlib.h event2/event.h event2/dns.h fenv.h sys/param.h sys/prctl.h
+for ac_header in zlib.h event2/event.h event2/dns.h fenv.h sys/param.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/prctl.h byteswap.h endian.h sys/endian.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -6789,7 +6790,7 @@ fi
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
      *msys* | *mingw32* | *mingw64*)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for WSAStartup in -lws2_32" >&5
 $as_echo_n "checking for WSAStartup in -lws2_32... " >&6; }
 if ${ac_cv_lib_ws2_32_WSAStartup+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -6833,7 +6834,55 @@ _ACEOF
   LIBS="-lws2_32 $LIBS"
 
 fi
-;;
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BCryptGenRandom in -lbcrypt" >&5
+$as_echo_n "checking for BCryptGenRandom in -lbcrypt... " >&6; }
+if ${ac_cv_lib_bcrypt_BCryptGenRandom+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbcrypt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char BCryptGenRandom ();
+int
+main ()
+{
+return BCryptGenRandom ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_bcrypt_BCryptGenRandom=yes
+else
+  ac_cv_lib_bcrypt_BCryptGenRandom=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bcrypt_BCryptGenRandom" >&5
+$as_echo "$ac_cv_lib_bcrypt_BCryptGenRandom" >&6; }
+if test "x$ac_cv_lib_bcrypt_BCryptGenRandom" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBBCRYPT 1
+_ACEOF
+
+  LIBS="-lbcrypt $LIBS"
+
+fi
+
+  # And silence a bunch of warnings about MSVC stuff.
+  CFLAGS="$CFLAGS -Wno-unknown-pragmas"
+  ;;
 esac
 
 # Check whether --enable-zlib was given.
@@ -6889,12 +6938,13 @@ _ACEOF
 
 fi
 
- for ac_func in gzvprintf
+ for ac_func in gzbuffer gzvprintf
 do :
-  ac_fn_c_check_func "$LINENO" "gzvprintf" "ac_cv_func_gzvprintf"
-if test "x$ac_cv_func_gzvprintf" = xyes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_GZVPRINTF 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -8068,7 +8118,7 @@ _ACEOF
 fi
 done
 
-for ac_func in pread pwrite
+for ac_func in pread pwrite eventfd pledge pipe2
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8353,7 +8403,7 @@ _ACEOF
 fi
 done
 
-for ac_func in sysconf waitpid prctl
+for ac_func in sysconf waitpid prctl ffs getentropy
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8812,7 +8862,7 @@ fi
 if test "${enable_nls+set}" = set; then :
   enableval=$enable_nls; enable_nls=$enableval
 else
-  enable_nls=yes
+  enable_nls=no
 fi
 
 

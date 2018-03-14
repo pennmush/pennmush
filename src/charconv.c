@@ -6,27 +6,57 @@
 
 #include "copyrite.h"
 
+#ifdef HAVE_UNISTR_H
 #include <unistr.h>
 #include <uninorm.h>
+#endif
 
+#include "mysocket.h"
 #include "mymalloc.h"
 #include "memcheck.h"
 #include "charconv.h"
-#include "mysocket.h"
 #include "log.h"
 
 #ifdef HAVE_SSE2
 #include <string.h>
 #include <emmintrin.h>
+#ifdef WIN32
+#include <intrin.h>
+#endif
 #endif
 
 #ifdef HAVE_SSE42
 #include <nmmintrin.h>
 #endif
 
-/** Return the maximum number of bytes a latin-1 string
- * will take when encoded as utf-8. Actual size might be
- * smaller if it has telnet escape sequences embedded.
+#if defined(WIN32) && !defined(HAVE_FFS)
+
+/* Windows version of ffs() */
+
+int
+ffs(int i)
+{
+  unsigned long pos;
+
+  if (_BitScanForward(&pos, (unsigned long) i))
+    return (int) pos;
+  else
+    return 0;
+}
+
+#define HAVE_FFS
+#endif
+
+/**
+ * Convert a latin-1 encoded string to utf-8.
+ *
+ *
+ * \param s the latin-1 string.
+ * \param latin the length of the string.
+ * \param outlen the number of bytes of the returned string, NOT counting the
+ * trailing nul.
+ * \param telnet true if we should handle telnet escape sequences.
+ * \return a newly allocated utf-8 string.
  */
 size_t
 latin1_as_utf8_bytes(const char *latin, size_t len)
@@ -158,7 +188,7 @@ latin1_to_utf8(const char *latin1, size_t len, size_t *outlen, bool telnet) {
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((len - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (s + n));
@@ -351,7 +381,7 @@ utf8_to_latin1(const char *utf8, size_t *outlen, bool telnet) {
         break;
     }
 
-#elif defined(HAVE_SSE2)
+#elif defined(HAVE_SSE2) && defined(HAVE_FFS)
 
     if ((ulen - n) >= 16) {
       __m128i chunk = _mm_loadu_si128((__m128i *) (utf8 + n));

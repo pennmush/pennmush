@@ -47,6 +47,10 @@
 
 #undef HAVE_BYTESWAP_H
 
+#undef HAVE_ENDIAN_H
+
+#undef HAVE_SYS_ENDIAN_H
+
 #undef HAVE_LIBZ
 
 #undef HAVE_SYS_PARAM_H
@@ -58,6 +62,8 @@
 #undef HAVE_CRYPT_H
 
 #undef HAVE_SYS_PRCTL_H
+
+#undef HAVE_SYS_EVENTFD_H
 
 /* C99ish headers. The first two are really really nice to have. */
 
@@ -104,11 +110,6 @@
 #undef HAVE__BOOL
 
 #undef ssize_t
-
-/* Should be in <sys/socket.h> */
-#ifndef WIN32
-#undef socklen_t
-#endif
 
 #undef pid_t
 
@@ -310,6 +311,8 @@ typedef bool _Bool;
 
 #undef HAVE_HYPOT
 
+#undef HAVE_GZBUFFER
+
 #undef HAVE_GZVPRINTF
 
 #undef HAVE_GETC_UNLOCKED
@@ -319,6 +322,16 @@ typedef bool _Bool;
 #undef HAVE_PUTC_UNLOCKED
 
 #undef HAVE_FPUTS_UNLOCKED
+
+#undef HAVE_FFS
+
+#undef HAVE_EVENTFD
+
+#undef HAVE_PLEDGE
+
+#undef HAVE_PIPE2
+
+#undef HAVE_GETENTROPY
 
 /* Variables and defines */
 
@@ -403,11 +416,22 @@ typedef bool _Bool;
 #undef HAVE_SSE42
 #ifdef __SSE4_2__
 #define HAVE_SSE42
+#define SSE_OFFSET 16
+#else
+#define SSE_OFFSET 0
 #endif
 
 #undef HAVE_ALTIVEC
 
 /* TODO: Change in source */
 #define RESTRICT restrict
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#include <w32api.h>
+#undef _WIN32_WINNT
+#undef WINVER
+#define _WIN32_WINNT Windows7
+#define WINVER Windows7
+#endif
 
 #endif /* __CONFIG_H */ 

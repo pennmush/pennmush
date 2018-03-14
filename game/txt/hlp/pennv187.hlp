@@ -1,0 +1,51 @@
+& changes
+& 1.8.7p0
+Version 1.8.7 patchlevel 0 ??? ?? 20??
+
+This is a list of changes in this patchlevel which are probably of
+interest to players. More information about new commands and functions
+can probably be gotten via 'help <name of whatever>'. 'help credits'
+lists the [initials] of developers and porters that are used in the list 
+of changes.
+
+Information about changes in prior releases can be found under
+help topics named for each release (e.g. 'help 1.8.7p0').
+A list of the patchlevels associated with each release can
+be read in 'help patchlevels'.
+
+
+Major Changes:
+
+* Support websocket connections. See https://github.com/grapenut/websockclient for a
+sample in-browser client. [Grapenut, 1007]
+
+Softcode:
+
+* Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+
+Fixes:
+
+* A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
+* [1m@grep/iprint[0m hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
+* [1m@mail[0m wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
+* Connecting with a web browser to a mush without a mud_url config
+option set caused an infinite refresh loop. Reported by
+grapenut. [1149]
+* Make sure sigrecv_ack() won't hang the mush if it somehow gets
+called at the wrong time. Also fix a file descriptor leak in the
+signal handling code. [SW]
+
+Documentation:
+
+* Changelogs and other documentation use markup. [SW, 1140]
+* Start trying to clean up and revise ancient documentation. [1095]
+
+OS Specific:
+
+OpenBSD:
+
+* netmush and slave processes use pledge(2) to limit their privileges. [SW]
+
+Windows:
+
+* Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL. [SW]

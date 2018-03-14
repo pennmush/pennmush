@@ -69,18 +69,10 @@ char *
 mush_strdup(const char *s, const char *check __attribute__((__unused__)))
 {
   char *x;
-
-#ifdef HAVE_STRDUP
-  x = strdup(s);
-  if (x)
-    add_check(check);
-#else
-
   size_t len = strlen(s) + 1;
-  x = mush_malloc(len, check);
+  x = mush_malloc_zero(len + SSE_OFFSET, check);
   if (x)
     memcpy(x, s, len);
-#endif
   return x;
 }
 
@@ -188,13 +180,14 @@ strncasecmp(const char *s1, const char *s2, size_t n)
 #endif
 
 /** Does string begin with prefix?
- * This comparison is case-insensitive.
+ * This comparison is case-insensitive. An empty prefix always
+ * matches.
  * \param string to check.
  * \param prefix to check against.
  * \retval 1 string begins with prefix.
  * \retval 0 string does not begin with prefix.
  */
-int
+bool
 string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix)
@@ -203,6 +196,25 @@ string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
     string++, prefix++;
   return *prefix == '\0';
 }
+
+/** Does string begin with prefix?
+ * This comparison is case-insensitive. An empty prefix always
+ * fails.
+ * \param string to check.
+ * \param prefix to check against.
+ * \retval 1 string begins with prefix.
+ * \retval 0 string does not begin with prefix.
+ */
+bool
+string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
+{
+  if (!string || !prefix || !*prefix)
+    return 0;  
+  while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
+    string++, prefix++;
+  return *prefix == '\0';
+}
+
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.
@@ -978,7 +990,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  r = result = mush_malloc_zero(BUFFER_LEN + SSE_OFFSET, "replace_string.buff");
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
 

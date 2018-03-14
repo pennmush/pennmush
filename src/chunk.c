@@ -350,8 +350,6 @@ acm_chunk_new_period(void)
   return;
 }
 
-#ifndef WIN32
-
 static int
 acm_chunk_fork_file(void)
 {
@@ -375,8 +373,6 @@ acm_chunk_fork_done(void)
 {
   return;
 }
-
-#endif /* !WIN32 */
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
@@ -766,13 +762,12 @@ typedef struct region {
 #ifdef WIN32
 typedef HANDLE fd_type;
 static HANDLE swap_fd;
-static HANDLE swap_fd_child = INVALID_HANDLE_VALUE;
 #else
 typedef int fd_type;
 static int swap_fd;
 static int swap_fd_child = -1;
-#endif
 static char child_filename[300];
+#endif
 
 /** Deref scale control.
  * When the deref counts get too big, the current period is incremented
@@ -1457,7 +1452,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   int j;
   char *pos;
   size_t remaining;
-  ssize_t done;
+  ssize_t done = 0;
 
   debug_log("read_cache_region %04x", region);
 
@@ -1465,7 +1460,8 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   /* Try to seek up to 3 times... */
   for (j = 0; j < 3; j++)
 #ifdef WIN32
-    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) == file_offset)
+    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
+        INVALID_SET_FILE_POINTER)
       break;
 #else
     if (lseek(fd, file_offset, SEEK_SET) == file_offset)
@@ -1473,7 +1469,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #endif
   if (j >= 3)
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %d", GetLastError());
+    mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
 #else
     mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
 #endif
@@ -1483,10 +1479,12 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   for (j = 0; j < 10; j++) {
 #if defined(HAVE_PREAD)
     done = pread(fd, pos, remaining, file_offset);
-#elif defined(WIN32) && !defined(__MINGW32__)
-    if (!ReadFile(fd, pos, remaining, &done, NULL)) {
-      /* nothing */
-    }
+#elif defined(WIN32)
+    DWORD rfbytes;
+    if (ReadFile(fd, pos, remaining, &rfbytes, NULL))
+      done = (ssize_t) rfbytes;
+    else
+      done = -1;
 #else
     done = read(fd, pos, remaining);
 #endif
@@ -1499,7 +1497,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
     }
   }
 #ifdef WIN32
-  mush_panicf("chunk swap file read, %lu remaining, GetLastError %d",
+  mush_panicf("chunk swap file read, %lu remaining, GetLastError %lu",
               (unsigned long) remaining, GetLastError());
 #else
   mush_panicf("chunk swap file read, %lu remaining, errno %d: %s",
@@ -1527,7 +1525,8 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   /* Try to seek up to 3 times... */
   for (j = 0; j < 3; j++)
 #ifdef WIN32
-    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) == file_offset)
+    if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
+        INVALID_SET_FILE_POINTER)
       break;
 #else
     if (lseek(fd, file_offset, SEEK_SET) == file_offset)
@@ -1535,7 +1534,7 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #endif
   if (j >= 3)
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %d", GetLastError());
+    mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
 #else
     mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
 #endif
@@ -1551,10 +1550,12 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 
 #if defined(HAVE_PWRITE)
     done = pwrite(fd, pos, remaining, file_offset);
-#elif defined(WIN32) && !defined(__MINGW32__)
-    if (!WriteFile(fd, pos, remaining, &done, NULL)) {
-      /* nothing */
-    }
+#elif defined(WIN32)
+    DWORD wfbytes;
+    if (WriteFile(fd, pos, remaining, &wfbytes, NULL))
+      done = (ssize_t) wfbytes;
+    else
+      done = -1;
 #else
     done = write(fd, pos, remaining);
 #endif
@@ -1567,7 +1568,7 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
     }
   }
 #ifdef WIN32
-  mush_panicf("chunk swap file write, %lu remaining, GetLastError %d",
+  mush_panicf("chunk swap file write, %lu remaining, GetLastError %lu",
               (unsigned long) remaining, GetLastError());
 #else
   mush_panicf("chunk swap file write, %lu remaining, errno %d: %s",
@@ -2504,7 +2505,7 @@ acc_chunk_init(void)
   swap_fd = CreateFile(CHUNK_SWAP_FILE, GENERIC_READ | GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
   if (swap_fd == INVALID_HANDLE_VALUE)
-    mush_panicf("Cannot open swap file: %d", GetLastError());
+    mush_panicf("Cannot open swap file: %lu", GetLastError());
 #else
   swap_fd = open(CHUNK_SWAP_FILE, O_RDWR | O_TRUNC | O_CREAT, 0600);
   if (swap_fd < 0)
@@ -2711,6 +2712,33 @@ acc_chunk_fork_done(void)
   unlink(child_filename);
   swap_fd_child = -1;
 }
+
+#else
+
+static int
+acc_chunk_fork_file(void)
+{
+  return 1;
+}
+
+static void
+acc_chunk_fork_parent(void)
+{
+  return;
+}
+
+static void
+acc_chunk_fork_child(void)
+{
+  return;
+}
+
+static void
+acc_chunk_fork_done(void)
+{
+  return;
+}
+
 #endif /* !WIN32 */
 
 struct ac_funcs {

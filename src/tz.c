@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include "tz.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -25,6 +24,21 @@
 #endif
 #include <pcre.h>
 
+#if defined(HAVE_ENDIAN_H)
+#include <endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+#include <sys/endian.h>
+#elif defined(WIN32)
+/* For ntohl() */
+#include <Winsock2.h>
+#elif defined(HAVE_ARPA_INET_H)
+/* For ntohl() */
+#include <arpa/inet.h>
+#else
+#error "No endian conversion functions available!"
+#endif
+
+#include "tz.h"
 #include "attrib.h"
 #include "conf.h"
 #include "externs.h"
@@ -32,20 +46,6 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
-
-#if defined(__linux__)
-#include <endian.h>
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/endian.h>
-#else
-
-#ifdef WIN32
-#include <Winsock2.h>
-#else
-#include <arpa/inet.h>
-#endif
-
-#endif
 
 #ifndef be32toh
 #define be32toh(i) ntohl(i)
@@ -206,8 +206,7 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
       has_64bit_times = 1;
   }
 
-  tz = mush_malloc(sizeof *tz, "timezone");
-  memset(tz, 0, sizeof *tz);
+  tz = mush_malloc_zero(sizeof *tz, "timezone");
 
   {
     int32_t counts[6];
@@ -293,10 +292,10 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
 #define READ_LEAPSECS(type, decode)                                            \
   do {                                                                         \
     type *buf;                                                                 \
-    int m, lpsize = tz->leapcnt * (4 + time_size);                               \
+    int m, lpsize = tz->leapcnt * (4 + time_size);                             \
                                                                                \
-    buf = malloc(lpsize);                                                        \
-    READ_CHUNKF(buf, lpsize);                                                    \
+    buf = malloc(lpsize);                                                      \
+    READ_CHUNKF(buf, lpsize);                                                  \
                                                                                \
     tz->leapsecs = calloc(tz->leapcnt, sizeof(struct ttleapsecs));             \
                                                                                \

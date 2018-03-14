@@ -762,14 +762,13 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
   char *bon, *eon;
-  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN];
+  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN] = {'\0'};
   char *ap = abuff;
   int aliases = 0;
   int empty = 0;
 
   strncpy(nbuff, name, BUFFER_LEN - 1);
   nbuff[BUFFER_LEN - 1] = '\0';
-  memset(abuff, 0, BUFFER_LEN);
 
   /* First, check for a quoted player name */
   if (type == TYPE_PLAYER && *name == '"') {
@@ -922,6 +921,8 @@ ok_password(const char *password)
     if (!(isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
+    if (*scan == '=')
+      return 0;
   }
 
   return 1;
@@ -1184,16 +1185,17 @@ parse_match_possessor(dbref player, char **str, int exits)
  * \param type type of message to return.
  * \param message name of attribute containing the message.
  * \param def default message to return.
+ * \param pe_info the pe_info to pass when evaluating the attribute
  */
 void
 page_return(dbref player, dbref target, const char *type, const char *message,
-            const char *def)
+            const char *def, NEW_PE_INFO *pe_info)
 {
   char buff[BUFFER_LEN];
   struct tm *ptr;
 
   if (message && *message) {
-    if (call_attrib(target, message, buff, player, NULL, NULL)) {
+    if (call_attrib(target, message, buff, player, pe_info, NULL)) {
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
@@ -1390,7 +1392,7 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   char *bp = buff;
   int matched = 0;
   int cs;
-  ansi_string *aval = NULL, *repl = NULL;
+  ansi_string *aval = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
   s = atr_value(attrib);
@@ -1405,20 +1407,22 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   } else {
     aval = parse_ansi_string(s);
     s = aval->text;
-    repl =
-      parse_ansi_string(tprintf("%s%s%s", ANSI_HILITE, gd->findstr, ANSI_END));
     while (s && *s) {
       if (!(cs ? strncmp(s, gd->findstr, gd->findlen)
                : strncasecmp(s, gd->findstr, gd->findlen))) {
+        ansi_string *repl;
         matched = 1;
+        repl = parse_ansi_string(tprintf("%s%.*s%s",
+                                         ANSI_HILITE,
+                                         gd->findlen, s,
+                                         ANSI_END));
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
+        free_ansi_string(repl);
         s += gd->findlen;
       } else {
         s++;
       }
     }
-    free_ansi_string(repl);
-    repl = NULL;
   }
 
   if (aval) {

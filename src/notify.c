@@ -74,6 +74,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "charconv.h"
+#include "websock.h"
 
 extern CHAN *channels;
 
@@ -111,9 +112,6 @@ extern CHAN *channels;
 static const char flushed_message[] = "\r\n<Output Flushed>\x1B[0m\r\n";
 
 extern DESC *descriptor_list;
-#ifdef WIN32
-static WSADATA wsadata;
-#endif
 
 static struct text_block *make_text_block(const char *s, int n);
 void free_text_block(struct text_block *t);
@@ -226,6 +224,13 @@ static int na_depth =
   (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS |                                \
    MSG_XTERM256) /*    256        0         1          0    */
 
+#ifndef WITHOUT_WEBSOCKETS
+#define MSGTYPE_WEBSOCKETS	(MSG_PLAYER | MSG_WEBSOCKETS)
+#define MSGTYPE_WSANSI2		(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI2)
+#define MSGTYPE_WSANSI16	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
+#define MSGTYPE_WSXTERM256	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_XTERM256)
+#endif /* undef WITHOUT_WEBSOCKETS */
+
 /* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
  * See table of supported protocols for meanings */
 enum na_type {
@@ -254,6 +259,12 @@ enum na_type {
   NA_TNANSI2,
   NA_TNANSI16,
   NA_TNXTERM256,
+#ifndef WITHOUT_WEBSOCKETS
+  NA_WEBSOCKETS,
+  NA_WSANSI2,
+  NA_WSANSI16,
+  NA_WSXTERM256,
+#endif /* undef WITHOUT_WEBSOCKETS */
   NA_COUNT /* Total number of NA_* flags */
 };
 
@@ -264,7 +275,7 @@ static enum na_type msg_to_na(int output_type);
 
 /** A place to store a single rendering of a message. */
 struct notify_strings {
-  const char *message; /**< The message text. */
+  char const *message; /**< The message text. */
   size_t len;          /**< Length of message. */
   int made;            /**< True if message has been rendered. */
 };
@@ -298,7 +309,7 @@ static void notify_internal(dbref target, dbref executor, dbref speaker,
                             struct notify_message_group *message,
                             struct notify_message *prefix, dbref loc,
                             struct format_msg *format);
-static const char *make_nospoof(dbref speaker, int paranoid);
+static char *make_nospoof(dbref speaker, int paranoid);
 static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
                             char *tbuf1);
 
@@ -322,6 +333,9 @@ static int
 str_type(const char *str)
 {
   int type = MSG_ALL_PLAYER;
+#ifndef WITHOUT_WEBSOCKETS
+  int saw_start;
+#endif /* undef WITHOUT_WEBSOCKETS */
 #ifdef CHECK_FOR_HTML
   char *p;
 
@@ -352,7 +366,31 @@ str_type(const char *str)
   if (!(type & MSG_PUEBLO) && strstr(str, MARKUP_START "p") != NULL)
     type |= MSG_PUEBLO;
 
-#endif /* CHECK_FOR_HTML */
+#ifndef WITHOUT_WEBSOCKETS
+  saw_start = 0;
+  for (p = (char *) str; *p; ++p) {
+    if (saw_start) {
+      switch (*p) {
+      case MARKUP_HTML:
+      case MARKUP_WS:
+      case MARKUP_WS_ALT:
+      case MARKUP_WS_ALT_END:
+        type |= MSG_WEBSOCKETS;
+        break;
+      }
+
+      if (type & MSG_WEBSOCKETS) {
+        break;
+      }
+
+      saw_start = 0;
+    } else if (*p == TAG_START) {
+      saw_start = 1;
+    }
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
+
+#endif                          /* CHECK_FOR_HTML */
 
   if (strchr(str, IAC) == NULL) {
     /* No Telnet IAC chars to be escaped */
@@ -388,6 +426,12 @@ notify_type(DESC *d)
       type |= MSG_TELNET;
     return type;
   }
+
+#ifndef WITHOUT_WEBSOCKETS
+  if (IsWebSocket(d)) {
+    type |= MSGTYPE_WEBSOCKETS;
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
 
   /* At this point, we have a connected player on the descriptor */
   if (IS(d->player, TYPE_PLAYER, "NOACCENTS") ||
@@ -610,8 +654,7 @@ make_prefix_str(dbref thing, dbref enactor, const char *msg, char *tbuf1)
 static enum na_type
 msg_to_na(int output_type)
 {
-
-  if (output_type & MSG_PUEBLO)
+  if (output_type & (MSG_PUEBLO | MSG_WEBSOCKETS))
     output_type &= ~MSG_TELNET;
 
   if (output_type & MSG_XTERM256)
@@ -670,6 +713,16 @@ msg_to_na(int output_type)
     return NA_TNANSI16;
   case MSGTYPE_TNXTERM256:
     return NA_TNXTERM256;
+#ifndef WITHOUT_WEBSOCKETS
+  case MSGTYPE_WEBSOCKETS:
+    return NA_WEBSOCKETS;
+  case MSGTYPE_WSANSI2:
+    return NA_WSANSI2;
+  case MSGTYPE_WSANSI16:
+    return NA_WSANSI16;
+  case MSGTYPE_WSXTERM256:
+    return NA_WSXTERM256;
+#endif /* undef WITHOUT_WEBSOCKETS */
   }
 
   /* we should never get here. */
@@ -683,7 +736,7 @@ msg_to_na(int output_type)
  * \param paranoid make a paranoid nospoof prefix, instead of regular nospoof?
  * \return pointer to nospoof prefix
  */
-static const char *
+static char *
 make_nospoof(dbref speaker, int paranoid)
 {
   char *dest, *bp;
@@ -775,7 +828,11 @@ render_string(const char *message, int output_type)
             p++;
           }
           safe_chr('>', buff, &bp);
+#ifdef WITHOUT_WEBSOCKETS
         } else if (output_type & MSG_MARKUP) {
+#else /* undef WITHOUT_WEBSOCKETS */
+        } else if (output_type & MSG_MARKUP || output_type & MSG_WEBSOCKETS) {
+#endif /* undef WITHOUT_WEBSOCKETS */
           /* Preserve internal markup */
           while (*p && *p != TAG_END) {
             safe_chr(*p, buff, &bp);
@@ -787,6 +844,18 @@ render_string(const char *message, int output_type)
           while (*p && *p != TAG_END)
             p++;
         }
+#ifndef WITHOUT_WEBSOCKETS
+      } else if (output_type & MSG_WEBSOCKETS
+                 && (*(p + 1) == MARKUP_WS
+                     || *(p + 1) == MARKUP_WS_ALT
+                     || *(p + 1) == MARKUP_WS_ALT_END)) {
+        /* Preserve internal markup. */
+        while (*p && *p != TAG_END) {
+          safe_chr(*p, buff, &bp);
+          p++;
+        }
+        safe_chr(TAG_END, buff, &bp);
+#endif /* undef WITHOUT_WEBSOCKETS */
       } else {
         /* Unknown markup type; strip */
         while (*p && *p != TAG_END)
@@ -1022,11 +1091,11 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (i && real_message.messages.strs[i].made)
-      mush_free(real_message.messages.strs[i].message, "notify_str");
+      mush_free((void *)real_message.messages.strs[i].message, "notify_str");
     if (real_message.nospoofs.strs[i].made)
-      mush_free(real_message.nospoofs.strs[i].message, "notify_str");
+      mush_free((void *)real_message.nospoofs.strs[i].message, "notify_str");
     if (real_message.paranoids.strs[i].made)
-      mush_free(real_message.paranoids.strs[i].message, "notify_str");
+      mush_free((void *)real_message.paranoids.strs[i].message, "notify_str");
   }
 }
 
@@ -1100,7 +1169,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
 
     for (i = 1; i < MESSAGE_TYPES; i++) {
       if (real_prefix->strs[i].made)
-        mush_free(real_prefix->strs[i].message, "notify_str");
+        mush_free((void *)real_prefix->strs[i].message, "notify_str");
     }
     mush_free(real_prefix, "notify_message");
   }
@@ -1184,10 +1253,16 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if (!(flags & NA_PROMPT) || !IsPlayer(target))
       return;
     for (d = descriptor_list; d; d = d->next) {
-      if (!d->connected || d->player != target ||
-          !(d->conn_flags & CONN_TELNET))
+      if (!d->connected || d->player != target
+          || !(d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)))
         continue;
-      queue_newwrite(d, "\xFF\xF9", 2);
+      
+      if (d->conn_flags & (CONN_WEBSOCKETS))
+        queue_newwrite_channel(d, "\r\n", 2, WEBSOCKET_CHANNEL_PROMPT);
+      else
+        queue_newwrite(d, "\xFF\xF9", 2);
+
+      //queue_newwrite(d, "\xFF\xF9", 2);
 
       if ((d->conn_flags & CONN_PROMPT_NEWLINES)) {
         /* send lineending */
@@ -1303,8 +1378,9 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
           spooflen = 0;
         }
 
-        /* No point re-rendering this string if we're outputting to an identical
-         * client */
+        prompt = ((flags & NA_PROMPT) && (d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)));
+
+        /* No point re-rendering this string if we're outputting to an identical client */
         if (heard) {
           if (!msgstr || output_type != last_output_type) {
             if (cache) {
@@ -1323,17 +1399,22 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
               queue_newwrite(d, prefixstr, prefixlen);
             if (spooflen) /* send nospoof prefix */
               queue_newwrite(d, spoofstr, spooflen);
-            queue_newwrite(d, msgstr, msglen); /* send message */
+        
+            if (prompt) {           /* send prompt */
+              if (d->conn_flags & CONN_WEBSOCKETS) {
+                queue_newwrite_channel(d, msgstr, msglen, WEBSOCKET_CHANNEL_PROMPT);
+              } else {
+                queue_newwrite(d, msgstr, msglen);  /* send message */
+                queue_newwrite(d, "\xFF\xF9", 2);
+              }
+            } else {
+                queue_newwrite(d, msgstr, msglen);  /* send message */
+            }
           }
         }
 
-        prompt = ((flags & NA_PROMPT) && (d->conn_flags & CONN_TELNET));
-        if (prompt) { /* send prompt */
-          queue_newwrite(d, "\xFF\xF9", 2);
-        }
-
-        if ((!(flags & NA_NOENTER) && msglen && heard && !prompt) ||
-            (prompt && (d->conn_flags & CONN_PROMPT_NEWLINES))) {
+        if ((!(flags & NA_NOENTER) && msglen && heard && !prompt)
+            || (prompt && (d->conn_flags & CONN_PROMPT_NEWLINES))) {
           /* send lineending */
           if ((output_type & MSG_PUEBLO)) {
             if (flags & NA_NOPENTER)
@@ -1854,6 +1935,14 @@ queue_write(DESC *d, const char *b, int n)
  */
 int
 queue_newwrite(DESC *d, const char *b, int n)
+#ifndef WITHOUT_WEBSOCKETS
+{
+  return queue_newwrite_channel(d, b, n, WEBSOCKET_CHANNEL_AUTO);
+}
+
+int
+queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
+#endif /* undef WITHOUT_WEBSOCKETS */
 {
   int space;
 
@@ -1868,6 +1957,17 @@ queue_newwrite(DESC *d, const char *b, int n)
     b = latin1;
     n = latin1bytes;
   }
+  
+#ifndef WITHOUT_WEBSOCKETS
+  /*
+   * Not ideal, but other than rewriting a lot of Penn code, the best we can do
+   * is rewrite the buffer right before send().
+   */
+  if ((d->conn_flags & CONN_WEBSOCKETS)) {
+    /* TODO: Uses a static buffer; probably safe in this case. */
+    to_websocket_frame(&b, &n, ch);
+  }
+#endif /* undef WITHOUT_WEBSOCKETS */
 
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing

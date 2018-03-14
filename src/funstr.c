@@ -595,10 +595,8 @@ FUNCTION(fun_merge)
   int i, j;
   size_t len;
   char *ptr = args[0];
-  char matched[UCHAR_MAX + 1];
+  char matched[UCHAR_MAX + 1] = {'\0'};
   ansi_string *as;
-
-  memset(matched, 0, sizeof matched);
 
   /* find the characters to look for */
   if (!args[2] || !*args[2])
@@ -1230,9 +1228,7 @@ FUNCTION(fun_trim)
   ansi_string *as;
   int s, e;
   char *delims;
-  char totrim[0x100];
-
-  memset(totrim, 0, 0x100);
+  char totrim[0x100] = {'\0'};
 
   /* Alas, PennMUSH and TinyMUSH used different orders for the arguments.
    * We'll give the users an option about it
@@ -2045,7 +2041,7 @@ FUNCTION(fun_align)
       return;
     }
     if (nargs >= (ncols + 2)) {
-      if (!args[ncols + 1] || strlen(args[ncols + 1]) > 1) {
+      if (!args[ncols + 1] || arglens[ncols + 1] > 1) {
         safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
         return;
       }
@@ -2080,7 +2076,7 @@ FUNCTION(fun_align)
       return;
     }
     if (nargs > 3) {
-      if (!args[3] || strlen(args[3]) > 1) {
+      if (!args[3] || arglens[3] > 1) {
         safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
         return;
       }
@@ -2336,7 +2332,7 @@ FUNCTION(fun_render)
     word = split_token(&list, ' ');
     if (!word || !*word)
       continue;
-    if (string_prefix("ansi", word)) {
+    if (strcasecmp("ansi", word) == 0) {
       if (Can_Nspemit(executor)) {
         flags |= MSG_XTERM256;
       } else {
@@ -2345,9 +2341,9 @@ FUNCTION(fun_render)
       }
     } else if (string_prefix("noaccents", word))
       flags |= MSG_STRIPACCENTS;
-    else if (string_prefix("markup", word))
+    else if (strcasecmp("markup", word) == 0)
       flags |= MSG_MARKUP;
-    else if (string_prefix("html", word))
+    else if (strcasecmp("html", word) == 0)
       flags |= MSG_PUEBLO;
     else {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);

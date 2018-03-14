@@ -279,8 +279,9 @@ static int
 pay_queue(dbref player, const char *command)
 {
   int estcost;
-  estcost = QUEUE_COST +
-            (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
+  estcost =
+    QUEUE_COST +
+    (QUEUE_LOSS ? ((get_random_u32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
     notify_format(Owner(player),
                   T("Not enough money to queue command for %s(#%d)."),
@@ -1072,7 +1073,7 @@ static int
 do_entry(MQUE *entry, int include_recurses)
 {
   dbref executor;
-  char tbuf[BUFFER_LEN];
+  char tbuf[BUFFER_LEN + SSE_OFFSET] = {'\0'};
   int inplace_break_called = 0;
   char *r;
   char const *s;
@@ -1224,7 +1225,7 @@ que_next(void)
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
    */
-  min = 5;
+  min = 500;
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */
@@ -1750,7 +1751,8 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (string_prefix("player", r) || string_prefix("executor", r)) {
+    } else if (string_prefix("player", r) ||
+               string_prefix("executor", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
@@ -1802,10 +1804,10 @@ FUNCTION(fun_lpids)
   const char *list;
   char *elem;
 
-  if (string_prefix(called_as, "LPIDS")) {
+  if (strcasecmp(called_as, "LPIDS") == 0) {
     /* lpids(player[,type]) */
     if (args[0] && *args[0]) {
-      if (!strcasecmp(args[0], "all")) {
+      if (strcasecmp(args[0], "all") == 0) {
         if (LookQueue(executor))
           player = NOTHING;
         else
@@ -1829,11 +1831,11 @@ FUNCTION(fun_lpids)
       list = args[1];
       while (list && *list) {
         elem = next_in_list(&list);
-        if (string_prefix("wait", elem))
+        if (strcasecmp("wait", elem) == 0)
           qmask |= LPIDS_WAIT;
-        else if (string_prefix("semaphore", elem))
+        else if (strcasecmp("semaphore", elem) == 0)
           qmask |= LPIDS_SEMAPHORE;
-        else if (string_prefix("independent", elem))
+        else if (strcasecmp("independent", elem) == 0)
           qmask |= LPIDS_INDEPENDENT;
         else {
           safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);

@@ -363,7 +363,7 @@ int ok_password(const char *password);
 int ok_tag_attribute(dbref player, const char *params);
 dbref parse_match_possessor(dbref player, char **str, int exits);
 void page_return(dbref player, dbref target, const char *type,
-                 const char *message, const char *def);
+                 const char *message, const char *def, NEW_PE_INFO *pe_info);
 dbref where_is(dbref thing);
 int charge_action(dbref thing);
 dbref first_visible(dbref player, dbref thing);
@@ -448,8 +448,8 @@ void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
  * Prepared via fetch_ufun_attrib, used in call_ufun
  */
 typedef struct _ufun_attrib {
-  dbref thing;               /**< Object with attribute */
-  char contents[BUFFER_LEN]; /**< Attribute value */
+  dbref thing;                            /**< Object with attribute */
+  char contents[BUFFER_LEN + SSE_OFFSET]; /**< Attribute value */
   char attrname[ATTRIBUTE_NAME_LIMIT + 1];
   /**< Name of attribute */
   int pe_flags; /**< Flags to use when evaluating attr (for debug, no_debug) */
@@ -493,7 +493,10 @@ bool member(dbref thing, dbref list);
 bool recursive_member(dbref disallow, dbref from, int count);
 dbref remove_first(dbref first, dbref what);
 dbref reverse(dbref list);
-uint32_t get_random32(uint32_t low, uint32_t high);
+void initialize_rng(void);
+uint32_t get_random_u32(uint32_t low, uint32_t high);
+double get_random_d(void);
+double get_random_d2(void);
 char *fullalias(dbref it);
 char *shortalias(dbref it);
 char *shortname(dbref it);
@@ -532,7 +535,8 @@ bool regexp_match_case_r(const char *restrict s, const char *restrict d,
                          PE_REGS *pe_regs, int pe_reg_flags);
 bool quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
                         const char **report_err);
-bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s, size_t);
+bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s,
+                        size_t);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s, d, p) local_wild_match_case(s, d, 0, p)
 

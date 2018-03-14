@@ -117,7 +117,7 @@ new_process_session(void)
  * \return 0 on success, -1 on error.
  */
 int
-lower_priority_by(pid_t pid, int prio)
+lower_priority_by(pid_t pid __attribute__((__unused__)), int prio)
 {
   int newprio = 0;
 
@@ -147,7 +147,8 @@ lower_priority_by(pid_t pid, int prio)
    will draw it too much stuff into info_slave */
 
 static int
-lock_fp(FILE *f, bool what)
+lock_fp(FILE *f __attribute__((__unused__)),
+        bool what __attribute__((__unused__)))
 {
 #if defined(HAVE_FCNTL) && !defined(WIN32)
   struct flock lock;

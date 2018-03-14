@@ -11,7 +11,6 @@
  */
 
 #include "copyrite.h"
-#include "myssl.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -19,9 +18,8 @@
 #include <sys/types.h>
 #endif
 #ifdef WIN32
-#define FD_SETSIZE 256
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <io.h>
 void shutdown_checkpoint(void);
 #else /* !WIN32 */
@@ -58,15 +56,23 @@ void shutdown_checkpoint(void);
 #endif
 #include <stdio.h>
 
+#ifdef __RDRND__
+#include <immintrin.h>
+#endif
+
+#include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/dh.h>
+#include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#include "SFMT.h"
+#include "myssl.h"
+#include "pcg_basic.h"
 #include "conf.h"
 #include "parse.h"
 #include "wait.h"
+#include "confmagic.h"
 
 #define MYSSL_RB 0x1         /**< Read blocked (on read) */
 #define MYSSL_WB 0x2         /**< Write blocked (on write) */
@@ -85,24 +91,22 @@ void shutdown_checkpoint(void);
 
 static void ssl_errordump(const char *msg);
 static int client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
-static DH *get_dh1024(void);
+static DH *get_dh2048(void);
 
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
-
-extern sfmt_t rand_state;
 
 /** Initialize the SSL context.
  * \return pointer to SSL context object.
  */
 SSL_CTX *
-ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
+ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
+         int req_client_cert)
 {
   const SSL_METHOD
     *meth; /* If this const gives you a warning, you're
               using an old version of OpenSSL. Walker, this means you! */
   /* uint8_t context[128]; */
-  DH *dh;
   unsigned int reps = 1;
 
   if (!bio_err) {
@@ -113,20 +117,28 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
     bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
   }
 
+#ifndef __RDRND__
+  pcg32_random_t rand_state;
+  pcg32_srandom_r(&rand_state, time(NULL), getpid() + 2);
+#endif
+  
   lock_file(stderr);
   fputs("Seeding OpenSSL random number pool.\n", stderr);
   unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
        places will have enough entropy. Otherwise, be lazy and use random
-       numbers
-       until it's satisfied. */
-    uint32_t gibberish[4];
+       numbers until it's satisfied. */
+    uint32_t gibberish[8];
     int n;
 
-    /* sfmt_fill_array32 requires a much larger array. */
-    for (n = 0; n < 4; n++)
-      gibberish[n] = sfmt_genrand_uint32(&rand_state);
+#ifdef __RDRND__
+    for (n = 0; n < 8; n++)
+      _rdrand32_step(gibberish + n);
+#else
+    for (n = 0; n < 8; n++)
+      gibberish[n] = pcg32_random_r(&rand_state);
+#endif
 
     RAND_seed(gibberish, sizeof gibberish);
 
@@ -140,9 +152,13 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   /* Set up SIGPIPE handler here? */
 
   /* Create context */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  meth = TLS_server_method();
+#else
   meth = SSLv23_server_method();
+#endif
   ctx = SSL_CTX_new(meth);
-  SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
+  SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 
   /* Load keys/certs */
   if (private_key_file && *private_key_file) {
@@ -157,16 +173,25 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   }
 
   /* Load trusted CAs */
-  if (ca_file && *ca_file) {
-    if (!SSL_CTX_load_verify_locations(ctx, ca_file, NULL)) {
+  if ((ca_file && *ca_file) || (ca_dir && *ca_dir)) {
+    if (!SSL_CTX_load_verify_locations(ctx,
+                                       (ca_file && *ca_file) ? ca_file : NULL,
+                                       (ca_dir && *ca_dir) ? ca_dir : NULL)) {
       ssl_errordump("Unable to load CA certificates");
-    } else {
+    }
+    {
+      STACK_OF(X509_NAME) *certs = NULL;
+      if (ca_file && *ca_file)
+        certs = SSL_load_client_CA_file(ca_file);
+      if (certs)
+        SSL_CTX_set_client_CA_list(ctx, certs);
+
       if (req_client_cert)
         SSL_CTX_set_verify(ctx,
                            SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
                            client_verify_callback);
       else
-        SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, client_verify_callback);
+        SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, client_verify_callback);
 #if (OPENSSL_VERSION_NUMBER < 0x0090600fL)
       SSL_CTX_set_verify_depth(ctx, 1);
 #endif
@@ -177,16 +202,28 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   SSL_CTX_set_mode(
     ctx, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
-  /* Set up DH callback */
-  dh = get_dh1024();
-  SSL_CTX_set_tmp_dh(ctx, dh);
-  /* The above function makes a private copy of this */
-  DH_free(dh);
+  /* Set up DH key */
+  {
+    DH *dh;
+    dh = get_dh2048();
+    SSL_CTX_set_tmp_dh(ctx, dh);
+    DH_free(dh);
+  }
+
+#ifdef NID_X9_62_prime256v1
+  /* Set up ECDH key */
+  {
+    EC_KEY *ecdh = NULL;
+    ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    SSL_CTX_set_tmp_ecdh(ctx, ecdh);
+    EC_KEY_free(ecdh);
+  }
+#endif
 
   /* Set the cipher list to the usual default list, except that
    * we'll allow anonymous diffie-hellman, too.
    */
-  SSL_CTX_set_cipher_list(ctx, "ALL:ADH:RC4+RSA:+SSLv2:@STRENGTH");
+  SSL_CTX_set_cipher_list(ctx, "ALL:ECDH:ADH:!LOW:!MEDIUM:@STRENGTH");
 
   /* Set up session cache if we can */
   /*
@@ -229,22 +266,33 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
 }
 
 static DH *
-get_dh1024(void)
+get_dh2048(void)
 {
-  static const uint8_t dh1024_p[] = {
-    0xB6, 0xBC, 0x30, 0x5B, 0xB4, 0xE5, 0x96, 0x62, 0x3F, 0x85, 0x5B, 0x1F,
-    0x88, 0xD1, 0x12, 0xE1, 0x1D, 0x27, 0x69, 0x63, 0xAD, 0xB3, 0x4D, 0x23,
-    0xB8, 0x4B, 0x1A, 0x90, 0xA6, 0x89, 0xD8, 0x5D, 0xFA, 0xF5, 0x8F, 0xFF,
-    0xFF, 0xF4, 0x54, 0x3B, 0xCD, 0x5C, 0xAA, 0x79, 0x8B, 0x14, 0xBB, 0x84,
-    0xAC, 0xEE, 0x94, 0x47, 0x76, 0xEC, 0x46, 0x75, 0x26, 0x48, 0x8C, 0x06,
-    0x55, 0x27, 0x7F, 0xC0, 0xF1, 0xE8, 0x1F, 0xD2, 0xE4, 0x55, 0xAE, 0x78,
-    0x11, 0x6E, 0xF1, 0x3B, 0xCD, 0x55, 0xE8, 0x17, 0xE9, 0x15, 0x7B, 0x05,
-    0x91, 0x28, 0x9D, 0xD3, 0x40, 0x2E, 0x34, 0x03, 0x04, 0x2B, 0x2D, 0xC5,
-    0x5C, 0x67, 0xC5, 0xF4, 0x28, 0x8E, 0x16, 0xAC, 0xDD, 0x68, 0x43, 0x66,
-    0x51, 0xC1, 0x6F, 0x54, 0xB9, 0x22, 0xD8, 0x1A, 0x39, 0x6B, 0x0A, 0xC1,
-    0x20, 0x5A, 0x9D, 0x31, 0x30, 0xE4, 0x0B, 0xC3,
+  static const uint8_t dh2048_p[] = {
+    0x8C, 0x9A, 0x5A, 0x28, 0xBF, 0x13, 0x24, 0xC0, 0xD3, 0x7A, 0x73, 0xC3,
+    0x87, 0x5B, 0x80, 0x81, 0xE8, 0xF3, 0x7B, 0xF6, 0xF7, 0x18, 0x71, 0xF9,
+    0xBB, 0x5B, 0x88, 0x21, 0xAB, 0x63, 0xF6, 0x82, 0xA6, 0xEC, 0xD7, 0x04,
+    0x25, 0xDC, 0x64, 0x75, 0x00, 0x49, 0x2C, 0x13, 0x04, 0x4F, 0xCF, 0xF9,
+    0x06, 0xE0, 0x4D, 0x23, 0xB8, 0x7C, 0xD8, 0x29, 0x59, 0x6F, 0x69, 0xCC,
+    0x41, 0x1F, 0x45, 0xF8, 0x25, 0xC8, 0x72, 0xF4, 0xC8, 0x37, 0x3C, 0x30,
+    0xC2, 0x5A, 0xF3, 0x14, 0x43, 0x98, 0x4F, 0x99, 0x12, 0xBC, 0x68, 0x7E,
+    0x20, 0x24, 0xAA, 0x8B, 0xBA, 0x87, 0x32, 0xBC, 0x4B, 0xF3, 0x16, 0x25,
+    0xEE, 0xE5, 0xEB, 0x47, 0xED, 0xB2, 0x7D, 0x8F, 0x4F, 0xC8, 0xFB, 0x58,
+    0x3D, 0x2E, 0xF6, 0x54, 0xF4, 0xDA, 0xD1, 0x88, 0x6A, 0xD8, 0xBC, 0x32,
+    0xEC, 0xDA, 0xF1, 0xBC, 0xAF, 0x16, 0x90, 0xCD, 0xEE, 0x5F, 0x92, 0x0B,
+    0xCE, 0xB9, 0x26, 0xCF, 0x18, 0xAE, 0x8C, 0x9B, 0x06, 0x0B, 0x83, 0x4D,
+    0x99, 0x31, 0x98, 0x3B, 0x29, 0xE1, 0x16, 0x6A, 0xA4, 0x5E, 0xE8, 0x10,
+    0x5F, 0x5B, 0x72, 0x3A, 0xA1, 0xD9, 0x89, 0x70, 0x61, 0xD9, 0xC2, 0x25,
+    0x53, 0x5C, 0x44, 0x10, 0x27, 0xD7, 0xF2, 0x68, 0x75, 0x3F, 0xA3, 0xA7,
+    0xCF, 0x02, 0x03, 0x49, 0xB4, 0xE4, 0xAF, 0x08, 0xEA, 0xAE, 0x97, 0x07,
+    0x36, 0xC8, 0xD5, 0x24, 0xC6, 0x51, 0x8B, 0x91, 0x9A, 0x14, 0x91, 0x67,
+    0x6A, 0xC0, 0xC3, 0x0E, 0x7C, 0xD8, 0x1F, 0xD2, 0x31, 0x07, 0x59, 0x5D,
+    0x1D, 0xBD, 0x8E, 0xAE, 0xD7, 0x01, 0xBA, 0xDE, 0x0B, 0xDA, 0xA6, 0xBC,
+    0x9A, 0xD1, 0x39, 0x59, 0x8F, 0xE5, 0x72, 0x65, 0x0F, 0x2A, 0x2D, 0x90,
+    0x56, 0xE9, 0xDA, 0xF5, 0x4A, 0x26, 0xD3, 0xB3, 0x56, 0x19, 0x84, 0x00,
+    0x3A, 0x11, 0x78, 0x83,
   };
-  static const uint8_t dh1024_g[] = {
+  static const uint8_t dh2048_g[] = {
     0x02,
   };
   DH *dh;
@@ -254,7 +302,7 @@ get_dh1024(void)
 
 #ifdef HAVE_DH_SET0_PQG
   BIGNUM *p, *g;
-  p = BN_bin2bn(dh1024_p, sizeof(dh1024_p), NULL);
+  p = BN_bin2bn(dh2048_p, sizeof(dh2048_p), NULL);
   if (!p) {
     lock_file(stderr);
     fputs("Error in BN_bin2bn 1!\n", stderr);
@@ -263,7 +311,7 @@ get_dh1024(void)
     return NULL;
   }
 
-  g = BN_bin2bn(dh1024_g, sizeof(dh1024_g), NULL);
+  g = BN_bin2bn(dh2048_g, sizeof(dh2048_g), NULL);
   if (!g) {
     lock_file(stderr);
     fputs("Error in BN_bin2bn 2!\n", stderr);
@@ -275,16 +323,7 @@ get_dh1024(void)
 
   DH_set0_pqg(dh, p, NULL, g);
 #else
-  if (dh->p) {
-    BN_free(dh->p);
-    dh->p = NULL;
-  }
-  if (dh->g) {
-    BN_free(dh->g);
-    dh->g = NULL;
-  }
-
-  dh->p = BN_bin2bn(dh1024_p, sizeof(dh1024_p), NULL);
+  dh->p = BN_bin2bn(dh2048_p, sizeof(dh2048_p), NULL);
   if (!dh->p) {
     lock_file(stderr);
     fputs("Error in BN_bin2bn 1!\n", stderr);
@@ -293,7 +332,7 @@ get_dh1024(void)
     return NULL;
   }
 
-  dh->g = BN_bin2bn(dh1024_g, sizeof(dh1024_g), NULL);
+  dh->g = BN_bin2bn(dh2048_g, sizeof(dh2048_g), NULL);
   if (!dh->g) {
     lock_file(stderr);
     fputs("Error in BN_bin2bn 2!\n", stderr);

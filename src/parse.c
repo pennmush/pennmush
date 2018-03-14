@@ -656,6 +656,58 @@ parse_uint32(const char *s, char **end, int base)
 #endif
 }
 
+/** Convert a string containing an unsigned integer into an uint64_t.
+ * Does not do any format checking. Invalid strings will return 0.
+ * \param s The string to convert
+ * \param end pointer to store the end of the parsed part of the string in
+ * if not NULL.
+ * \param base the base to convert from.
+ * \return the number, or UINT64_MIN on underflow, UINT64_MAX on overflow,
+ * with errno set to ERANGE.
+ */
+uint64_t
+parse_uint64(const char *s, char **end, int base)
+{
+  const char *fmt = NULL;
+  uint64_t val;
+
+  if (sizeof(long) == 8)
+    return strtoul(s, end, base);
+
+#if defined(WIN32)
+  /* This won't do overflow checking, which is why it isn't first */
+
+  if (base == 10)
+    fmt = "%I64x";
+  else if (base == 8)
+    fmt = "%I64o";
+  else if (base == 16)
+    fmt = "%64x";
+  else
+    return 0;  
+#elif defined(SCNu64)
+  /* This won't do overflow checking, which is why it isn't first */
+
+  if (base == 10)
+    fmt = "%" SCNu64;
+  else if (base == 8)
+    fmt = "%" SCNo64;
+  else if (base == 16)
+    fmt = "%" SCNx64;
+  else
+    return 0;
+#endif
+
+  if (!fmt)
+    return 0;
+  
+  if (sscanf(s, fmt, &val) != 1)
+    return 0;
+  else
+    return val;
+}
+
+
 /** PE_REGS: Named Q-registers. We have two strtrees: One for names,
  * one for values.
  */
@@ -1668,7 +1720,7 @@ make_pe_info(char *name __attribute__((__unused__)))
 
   pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "make_pe_info");
 
-  *pe_info->cmd_raw = '\0';
+  memset(pe_info->cmd_raw, 0, sizeof pe_info->cmd_raw);
   *pe_info->cmd_evaled = '\0';
 
   pe_info->refcount = 1;
@@ -1963,20 +2015,27 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
       int len, len2;
 
 #ifdef HAVE_SSE42
-      /* Characters that the parser looks for. Same as active_table from tables.c */
-      static const char interesting[16] __attribute__((__aligned__(16))) = "%{[(\\ }>]),;=$\x1B";
+      /* Characters that the parser looks for. Same as active_table from
+       * tables.c */
+      static const char interesting[16] __attribute__((__aligned__(16))) =
+        "%{[(\\ }>]),;=$\x1B";
       __m128i a = _mm_load_si128((const __m128i *) interesting);
 
       while (1) {
-        __m128i b = _mm_loadu_si128((__m128i *)*str);
-        int z = _mm_cmpistrz(a, b, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT);
-        int i = _mm_cmpistri(a, b, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT);
+        __m128i b = _mm_loadu_si128((__m128i *) *str);
+        int z = _mm_cmpistrz(a, b,
+                             _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY |
+                               _SIDD_LEAST_SIGNIFICANT);
+        int i = _mm_cmpistri(a, b,
+                             _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY |
+                               _SIDD_LEAST_SIGNIFICANT);
         if (i != 16) {
           *str += i;
           break;
         }
         if (z) {
-          /* At end of the string with no interesting characters remaining. Find the 0 byte */
+          /* At end of the string with no interesting characters remaining. Find
+           * the 0 byte */
           while (**str)
             (*str)++;
           break;
@@ -1984,7 +2043,8 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         *str += 16;
       }
 
-      // fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos), pos, **str);
+// fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos), pos,
+// **str);
 
 #else
       /* Inlined strcspn() equivalent, to save on overhead and portability */
@@ -2670,8 +2730,8 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] =
-            mush_malloc(BUFFER_LEN, "process_expression.function_argument");
+          fargs[nfargs] = mush_malloc_zero(
+            BUFFER_LEN + SSE_OFFSET, "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str, executor, caller, enactor,
                                  temp_eflags, temp_tflags, pe_info)) {

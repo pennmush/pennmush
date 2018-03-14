@@ -163,7 +163,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     mush_free(nbuf, "string");
     return;
   }
-
+  
   PUSE;
   tag_wrap("FONT", "SIZE=+1", exit_name);
   PEND;
@@ -180,7 +180,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
                     &p, NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {
-        if (SUPPORT_PUEBLO && !texits) {
+        if (SUPPORT_HTML && !texits) {
           texits = 1;
           notify_noenter_by(loc, player, open_tag("UL"));
         }
@@ -215,7 +215,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
       }
     }
   }
-  if (SUPPORT_PUEBLO && texits) {
+  if (SUPPORT_HTML && texits) {
     PUSE;
     tag_cancel("UL");
     PEND;
@@ -484,16 +484,18 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   /* don't give the unparse if looking through Transparent exit */
   if (!look_through_exit) {
     PUSE;
-    tag("XCH_PAGE CLEAR=\"LINKS PLUGINS\"");
-    if (SUPPORT_PUEBLO && (key & LOOK_AUTO)) {
-      a = atr_get(loc, "VRML_URL");
-      if (a) {
-        tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
-      } else {
-        tag("IMG XCH_GRAPH=HIDE");
+    if (SUPPORT_PUEBLO) {
+      tag("XCH_PAGE CLEAR=\"LINKS PLUGINS\"");
+      if (key & LOOK_AUTO) {
+        a = atr_get(loc, "VRML_URL");
+        if (a) {
+          tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
+        } else {
+          tag("IMG XCH_GRAPH=HIDE");
+        }
       }
+      tag("HR");
     }
-    tag("HR");
     tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc, pe_info));
     PEND;
     notify_by(loc, player, pbuff);
@@ -551,7 +553,8 @@ look_description(dbref player, dbref thing, const char *def,
                  NEW_PE_INFO *pe_info)
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
-  char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
+  char buff[BUFFER_LEN];
+  char fbuff[BUFFER_LEN];
   ufun_attrib ufun;
   char *bp = buff;
 

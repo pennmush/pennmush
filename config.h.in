@@ -102,6 +102,8 @@
 
 #endif
 
+#undef HAVE_ICONV
+#undef ICONV_CONST
 #undef HAVE_UNISTR_H
 #undef HAVE_LIBUNISTRING
 

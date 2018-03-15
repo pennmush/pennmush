@@ -49,7 +49,7 @@
 #include "strutil.h"
 
 #ifdef WIN32
-#define SZT PRIu64
+#define SZT "I64u"
 #else
 #define SZT "zu"
 #endif
@@ -558,14 +558,14 @@ slab_describe(const slab *sl, struct slab_stats *stats)
 int
 mush_getpagesize(void)
 {
-#if defined(HAVE_GETPAGESIZE)
-	return getpagesize();
-#elif defined(HAVE_SYSCONF)
-	return sysconf(_SC_PAGESIZE);
-#elif defined(WIN32)
+#if defined(WIN32)
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return si.dwPageSize;
+#elif defined(HAVE_GETPAGESIZE)
+	return getpagesize();
+#elif defined(HAVE_SYSCONF)
+	return sysconf(_SC_PAGESIZE);
 #else	
 	return 4096;
 #endif

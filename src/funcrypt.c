@@ -391,6 +391,7 @@ int safe_hash_byname(const char *algo, const char *plaintext, int len,
 #ifdef HAVE_EVP_MD_DO_ALL
 #define CAN_LIST_DIGESTS
 
+#ifndef WIN32
 static void
 list_dgst_populate(const EVP_MD *m,
                    const char *from __attribute__((__unused__)),
@@ -400,6 +401,7 @@ list_dgst_populate(const EVP_MD *m,
   if (m)
     hash_add(digests, EVP_MD_name(m), "foo");
 }
+#endif
 
 #endif
 

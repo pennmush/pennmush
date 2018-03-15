@@ -8,7 +8,6 @@
 
 #include "copyrite.h"
 
-#define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
 #include "ansi.h"

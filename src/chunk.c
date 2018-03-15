@@ -217,7 +217,6 @@
 #include "copyrite.h"
 #include "chunk.h"
 
-#define _XOPEN_SOURCE 600
 #include <limits.h>
 #include <string.h>
 #include <stdarg.h>

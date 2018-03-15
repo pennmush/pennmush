@@ -1,5 +1,7 @@
-#define _GNU_SOURCE
-
+/** \file tz.c
+ *
+ * \brief Routines for reading tzinfo files
+ */
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>

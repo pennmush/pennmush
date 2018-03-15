@@ -234,6 +234,7 @@ atr_tab.o: ../hdrs/mushtype.h
 atr_tab.o: ../hdrs/copyrite.h
 atr_tab.o: ../hdrs/compile.h
 atr_tab.o: ../hdrs/dbio.h
+atr_tab.o: ../hdrs/privtab.h
 atr_tab.o: ../hdrs/ansi.h
 atr_tab.o: ../hdrs/mypcre.h
 atr_tab.o: ../hdrs/strtree.h
@@ -249,7 +250,6 @@ atr_tab.o: ../hdrs/bufferq.h
 atr_tab.o: ../hdrs/mymalloc.h
 atr_tab.o: ../hdrs/notify.h
 atr_tab.o: ../hdrs/parse.h
-atr_tab.o: ../hdrs/privtab.h
 atr_tab.o: ../hdrs/strutil.h
 attrib.o: ../config.h
 attrib.o: ../confmagic.h
@@ -355,6 +355,8 @@ bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
+bsd.o: ../hdrs/websock.h
+bsd.o: ../hdrs/function.h
 bufferq.o: ../config.h
 bufferq.o: ../confmagic.h
 bufferq.o: ../options.h
@@ -378,11 +380,11 @@ charconv.o: ../config.h
 charconv.o: ../confmagic.h
 charconv.o: ../options.h
 charconv.o: ../hdrs/copyrite.h
+charconv.o: ../hdrs/mysocket.h
 charconv.o: ../hdrs/mymalloc.h
 charconv.o: ../hdrs/compile.h
 charconv.o: ../hdrs/mushtype.h
 charconv.o: ../hdrs/charconv.h
-charconv.o: ../hdrs/mysocket.h
 charconv.o: ../hdrs/log.h
 charconv.o: ../hdrs/bufferq.h
 chunk.o: ../config.h
@@ -413,6 +415,7 @@ cmdlocal.o: ../config.h
 cmdlocal.o: ../confmagic.h
 cmdlocal.o: ../options.h
 cmdlocal.o: ../hdrs/copyrite.h
+cmdlocal.o: ../config.h
 cmdlocal.o: ../hdrs/cmds.h
 cmdlocal.o: ../hdrs/command.h
 cmdlocal.o: ../hdrs/boolexp.h
@@ -430,6 +433,7 @@ cmdlocal.o: ../hdrs/flags.h
 cmdlocal.o: ../hdrs/ptab.h
 cmdlocal.o: ../hdrs/mypcre.h
 cmdlocal.o: ../hdrs/parse.h
+cmdlocal.o: ../confmagic.h
 cmds.o: ../config.h
 cmds.o: ../confmagic.h
 cmds.o: ../options.h
@@ -778,6 +782,7 @@ flaglocal.o: ../config.h
 flaglocal.o: ../confmagic.h
 flaglocal.o: ../options.h
 flaglocal.o: ../hdrs/copyrite.h
+flaglocal.o: ../config.h
 flaglocal.o: ../hdrs/conf.h
 flaglocal.o: ../hdrs/htab.h
 flaglocal.o: ../hdrs/mushtype.h
@@ -790,6 +795,7 @@ flaglocal.o: ../hdrs/dbio.h
 flaglocal.o: ../hdrs/ptab.h
 flaglocal.o: ../hdrs/chunk.h
 flaglocal.o: ../hdrs/mypcre.h
+flaglocal.o: ../confmagic.h
 flags.o: ../config.h
 flags.o: ../confmagic.h
 flags.o: ../options.h
@@ -823,6 +829,7 @@ flags.o: ../hdrs/parse.h
 flags.o: ../hdrs/privtab.h
 flags.o: ../hdrs/sort.h
 flags.o: ../hdrs/strutil.h
+flags.o: ../hdrs/flag_tab.h
 funcrypt.o: ../config.h
 funcrypt.o: ../confmagic.h
 funcrypt.o: ../options.h
@@ -886,6 +893,7 @@ function.o: ../hdrs/mymalloc.h
 function.o: ../hdrs/parse.h
 function.o: ../hdrs/sort.h
 function.o: ../hdrs/strutil.h
+function.o: ../hdrs/websock.h
 fundb.o: ../config.h
 fundb.o: ../confmagic.h
 fundb.o: ../options.h
@@ -954,6 +962,7 @@ funlocal.o: ../config.h
 funlocal.o: ../confmagic.h
 funlocal.o: ../options.h
 funlocal.o: ../hdrs/copyrite.h
+funlocal.o: ../config.h
 funlocal.o: ../hdrs/conf.h
 funlocal.o: ../hdrs/htab.h
 funlocal.o: ../hdrs/mushtype.h
@@ -968,6 +977,7 @@ funlocal.o: ../hdrs/chunk.h
 funlocal.o: ../hdrs/mypcre.h
 funlocal.o: ../hdrs/function.h
 funlocal.o: ../hdrs/parse.h
+funlocal.o: ../confmagic.h
 funmath.o: ../config.h
 funmath.o: ../confmagic.h
 funmath.o: ../options.h
@@ -1134,7 +1144,6 @@ game.o: ../hdrs/bufferq.h
 game.o: ../hdrs/externs.h
 game.o: ../hdrs/extmail.h
 game.o: ../hdrs/function.h
-game.o: ../hdrs/getpgsiz.h
 game.o: ../hdrs/help.h
 game.o: ../hdrs/intmap.h
 game.o: ../hdrs/lock.h
@@ -1217,6 +1226,7 @@ local.o: ../config.h
 local.o: ../confmagic.h
 local.o: ../options.h
 local.o: ../hdrs/copyrite.h
+local.o: ../config.h
 local.o: ../hdrs/command.h
 local.o: ../hdrs/boolexp.h
 local.o: ../hdrs/chunk.h
@@ -1236,6 +1246,7 @@ local.o: ../hdrs/game.h
 local.o: ../hdrs/notify.h
 local.o: ../hdrs/lock.h
 local.o: ../hdrs/parse.h
+local.o: ../confmagic.h
 lock.o: ../config.h
 lock.o: ../confmagic.h
 lock.o: ../options.h
@@ -1264,6 +1275,7 @@ lock.o: ../hdrs/parse.h
 lock.o: ../hdrs/privtab.h
 lock.o: ../hdrs/strtree.h
 lock.o: ../hdrs/strutil.h
+lock.o: ../hdrs/lock_tab.h
 log.o: ../config.h
 log.o: ../confmagic.h
 log.o: ../options.h
@@ -1470,6 +1482,7 @@ mycrypt.o: ../hdrs/flags.h
 mycrypt.o: ../hdrs/dbio.h
 mycrypt.o: ../hdrs/ptab.h
 mycrypt.o: ../hdrs/chunk.h
+mycrypt.o: ../hdrs/mymalloc.h
 mymalloc.o: ../config.h
 mymalloc.o: ../confmagic.h
 mymalloc.o: ../options.h
@@ -1485,7 +1498,6 @@ mymalloc.o: ../hdrs/flags.h
 mymalloc.o: ../hdrs/dbio.h
 mymalloc.o: ../hdrs/ptab.h
 mymalloc.o: ../hdrs/chunk.h
-mymalloc.o: ../hdrs/getpgsiz.h
 mymalloc.o: ../hdrs/log.h
 mymalloc.o: ../hdrs/bufferq.h
 mymalloc.o: ../hdrs/memcheck.h
@@ -1523,6 +1535,7 @@ myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
 myssl.o: ../hdrs/parse.h
 myssl.o: ../hdrs/wait.h
+myssl.o: ../confmagic.h
 notify.o: ../config.h
 notify.o: ../confmagic.h
 notify.o: ../options.h
@@ -1559,6 +1572,8 @@ notify.o: ../hdrs/parse.h
 notify.o: ../hdrs/pueblo.h
 notify.o: ../hdrs/strutil.h
 notify.o: ../hdrs/charconv.h
+notify.o: ../hdrs/websock.h
+notify.o: ../hdrs/function.h
 parse.o: ../config.h
 parse.o: ../confmagic.h
 parse.o: ../options.h
@@ -1779,6 +1794,7 @@ sig.o: ../hdrs/conf.h
 sig.o: ../hdrs/copyrite.h
 sig.o: ../hdrs/htab.h
 sig.o: ../hdrs/mushtype.h
+sig.o: ../hdrs/mysocket.h
 sig.o: ../hdrs/sig.h
 sort.o: ../config.h
 sort.o: ../confmagic.h
@@ -2073,6 +2089,33 @@ warnings.o: ../hdrs/boolexp.h
 warnings.o: ../hdrs/match.h
 warnings.o: ../hdrs/notify.h
 warnings.o: ../hdrs/strutil.h
+warnings.o: ../hdrs/warn_tab.h
+websock.o: ../config.h
+websock.o: ../confmagic.h
+websock.o: ../options.h
+websock.o: ../hdrs/copyrite.h
+websock.o: ../config.h
+websock.o: ../hdrs/conf.h
+websock.o: ../hdrs/htab.h
+websock.o: ../hdrs/mushtype.h
+websock.o: ../hdrs/externs.h
+websock.o: ../hdrs/compile.h
+websock.o: ../hdrs/dbdefs.h
+websock.o: ../hdrs/mushdb.h
+websock.o: ../hdrs/flags.h
+websock.o: ../hdrs/dbio.h
+websock.o: ../hdrs/ptab.h
+websock.o: ../hdrs/chunk.h
+websock.o: ../hdrs/mypcre.h
+websock.o: ../hdrs/log.h
+websock.o: ../hdrs/bufferq.h
+websock.o: ../hdrs/ansi.h
+websock.o: ../hdrs/strtree.h
+websock.o: ../hdrs/parse.h
+websock.o: ../confmagic.h
+websock.o: ../hdrs/strutil.h
+websock.o: ../hdrs/websock.h
+websock.o: ../hdrs/function.h
 wild.o: ../config.h
 wild.o: ../confmagic.h
 wild.o: ../options.h

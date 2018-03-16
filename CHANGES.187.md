@@ -34,6 +34,7 @@ Softcode
 --------
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+* Functions that work on integers (Like div() or band()) now use 64-bit values instead of 32-bit. [SW]
 
 Fixes
 -----

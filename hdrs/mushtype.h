@@ -19,10 +19,10 @@
 typedef double NVAL;
 
 /* Math function integral type */
-typedef int32_t IVAL;
+typedef int64_t IVAL;
 
 /** Math function unsigned integral type */
-typedef uint32_t UIVAL;
+typedef uint64_t UIVAL;
 
 /** Dbref type */
 typedef int dbref;

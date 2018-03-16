@@ -1405,7 +1405,20 @@ FUNCTION(fun_fraction)
   }
 }
 
-FUNCTION(fun_isint) { safe_boolean(is_strict_integer(args[0]), buff, bp); }
+FUNCTION(fun_isint) {
+	bool valid = 1;
+	char *end;
+	if (arglens[0] == 0) {
+		valid = 0;
+	} else {
+		errno = 0;
+		parse_ival_full(args[0], &end, 10);
+		if (errno || *end != '\0') {
+			valid = 0;
+		}
+	}
+	safe_boolean(valid, buff, bp);
+}
 
 /* ARGSUSED */
 FUNCTION(fun_isnum) { safe_boolean(is_strict_number(args[0]), buff, bp); }

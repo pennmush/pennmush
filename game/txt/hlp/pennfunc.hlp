@@ -368,7 +368,7 @@ See also: before(), rest()
     ` When this column runs out of text, merge with the column to the left
     ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with merge-left, the column to its left inherits the 'nofill' when merged.
-    x Truncate each (%r-separated) row instead or wrapping at the colwidth
+    x Truncate each (%r-separated) row instead of wrapping at the colwidth
     X Truncate the entire column at the end of the first row instead of wrapping
     # Don't add a <colsep> after this column. If combined with merge-left, the column to its left inherits this when merged.
 

@@ -10,7 +10,7 @@
 #if __cplusplus >= 201703L
 #include <string_view>
 using string_view = std::string_view;
-#elif define(HAVE_BOOST_STRING_VIEW)
+#elif defined(HAVE_BOOST_STRING_VIEW)
 #include <boost/utility/string_view.hpp>
 using string_view = boost::string_view;
 #else

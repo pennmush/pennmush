@@ -34,6 +34,7 @@ Softcode
 --------
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+* Functions that work on integers (Like div() or band()) now use 64-bit values instead of 32-bit. [SW]
 
 Fixes
 -----
@@ -41,12 +42,10 @@ Fixes
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
 * `@grep/iprint` hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
 * `@mail` wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
-* Connecting with a web browser to a mush without a mud_url config
-  option set caused an infinite refresh loop. Reported by
-  grapenut. [1149]
-* Make sure sigrecv_ack() won't hang the mush if it somehow gets
-  called at the wrong time. Also fix a file descriptor leak in the
-  signal handling code. [SW]
+* Connecting with a web browser to a mush without a mud_url config option set caused an infinite refresh loop. Reported by grapenut. [1149]
+* Make sure sigrecv_ack() won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
+* Pass pe_info into IDLE and HAVEN attributes from the page command. [MG]
+* The x and X options to align() now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 
 Documentation
 -------------
@@ -56,6 +55,10 @@ Documentation
 
 OS Specific
 -----------
+
+### BSDs in general ###
+
+* info_slave and ssl_slave use kqueue() to efficiently be notified of parent mush crashes.
 
 ### OpenBSD ###
 

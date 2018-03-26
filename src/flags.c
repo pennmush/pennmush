@@ -34,6 +34,9 @@
 #include <string.h>
 #include <stdlib.h>
 #ifdef HAVE_INTTYPES_H
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef __USE_MINGW_ANSI_STDIO
+#endif
 #include <inttypes.h>
 #endif
 
@@ -3105,7 +3108,6 @@ do_flag_debug(const char *ns, dbref player)
 
   for (i = 0; i < n->flagbits; i += 1) {
     FLAG *f = n->flags[i];
-
     notify_format(player, "Flag %2d: %s. Bit position: %" PRIi64, i, f->name,
                   f->bitpos);
   }

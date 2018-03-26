@@ -569,24 +569,56 @@ parse_int(const char *s, char **end, int base)
 int32_t
 parse_int32(const char *s, char **end, int base)
 {
-
-  if (sizeof(int) == 4)
+	if (sizeof(int) == 4) {
     return parse_int(s, end, base);
+  } else {
+  	/* This block will probably never happen, but just in case somebody's
+  	* trying to use Penn on a really odd hardware... */
+  	long n = strtol(s, end, base);
+  	if (n < INT32_MIN) {
+  		errno = ERANGE;
+  		return INT32_MIN;
+  	} else if (n > INT32_MAX) {
+  		errno = ERANGE;
+  		return INT32_MAX;
+  	} else {
+  		return n;
+  	}
+  }
+}
 
-#if defined(SCNd32)
-  /* This won't do overflow checking, which is why it isn't first */
-  int32_t val;
-
-  /* Unsupported base in this mode */
-  if (base != 10)
-    return 0;
-
-  if (sscanf(s, "%" SCNd32, &val) != 1)
-    return 0;
-  else
-    return val;
+/** Convert a string containing an integer into an int64_t.
+ * Does not do any format checking. Invalid strings will return 0.
+ * \param s The string to convert
+ * \param end pointer to store the end of the parsed part of the string in
+ * if not NULL.
+ * \param base the base to convert from.
+ * \return the number, or INT64_MIN on underflow, INT64_MAX on overflow,
+ * with errno set to ERANGE.
+ */
+int64_t
+parse_int64(const char *s, char **end, int base)
+{
+#if defined(WIN32)
+	return _strtoi64(s, end, base);
 #else
-  return 0;
+ 	if (sizeof(long) == 8) {
+ 		return strtol(s, end, base);
+  } else if (sizeof(long long) == 8) {
+  	return strtoll(s, end, base);
+  } else {
+  	/* long long greater than 64 bits? */
+  	long long val = strtoll(s, end, base);
+  	if (val > INT64_MAX) {
+  		errno = ERANGE;
+  		return INT64_MAX;
+  	} else if (val < INT64_MIN) {
+  		errno = ERANGE;
+  		return INT64_MIN;
+  	} else {
+  		return val;
+  	}
+  }
 #endif
 }
 
@@ -597,8 +629,7 @@ parse_int32(const char *s, char **end, int base)
  * \param s The string to convert
  * \param end pointer to store the first invalid char at, or NULL
  * \param base base for conversion
- * \return the number, or UINT_MAX on overflow
- * with errno set to ERANGE.
+ * \return the number, or UINT_MAX on overflow with errno set to ERANGE.
  */
 unsigned int
 parse_uint(const char *s, char **end, int base)
@@ -607,9 +638,9 @@ parse_uint(const char *s, char **end, int base)
 
   x = strtoul(s, end, base);
 
-  if (sizeof(int) == sizeof(long))
+  if (sizeof(unsigned int) == sizeof(unsigned long)) {
     return x;
-  else {
+  } else {
     /* These checks are only meaningful on 64-bit systems */
     if (x > UINT_MAX) {
       errno = ERANGE;
@@ -625,37 +656,25 @@ parse_uint(const char *s, char **end, int base)
  * \param end pointer to store the end of the parsed part of the string in
  * if not NULL.
  * \param base the base to convert from.
- * \return the number, or UINT32_MIN on underflow, UINT32_MAX on overflow,
- * with errno set to ERANGE.
+ * \return the number, or UINT32_MAX on overflow, with errno set to ERANGE.
  */
 uint32_t
 parse_uint32(const char *s, char **end, int base)
 {
+  unsigned long x;
 
-  if (sizeof(int) == 4)
-    return parse_uint(s, end, base);
+  x = strtoul(s, end, base);
 
-#if defined(SCNu32)
-  /* This won't do overflow checking, which is why it isn't first */
-  const char *fmt;
-  uint32_t val;
-
-  if (base == 10)
-    fmt = "%" SCNu32;
-  else if (base == 8)
-    fmt = "%" SCNo32;
-  else if (base == 16)
-    fmt = "%" SCNx32;
-  else
-    return 0;
-
-  if (sscanf(s, fmt, &val) != 1)
-    return 0;
-  else
-    return val;
-#else
-  return 0;
-#endif
+  if (sizeof(unsigned long) == 4) {
+    return x;
+  } else {
+  	if (x > UINT32_MAX) {
+  		errno = ERANGE;
+  		return UINT32_MAX;
+  	} else {
+  		return x;
+  	}
+  }
 }
 
 /** Convert a string containing an unsigned integer into an uint64_t.
@@ -664,51 +683,30 @@ parse_uint32(const char *s, char **end, int base)
  * \param end pointer to store the end of the parsed part of the string in
  * if not NULL.
  * \param base the base to convert from.
- * \return the number, or UINT64_MIN on underflow, UINT64_MAX on overflow,
- * with errno set to ERANGE.
+ * \return the number, or UINT64_MAX on overflow, with errno set to ERANGE.
  */
 uint64_t
 parse_uint64(const char *s, char **end, int base)
 {
-  const char *fmt = NULL;
-  uint64_t val;
-
-  if (sizeof(long) == 8)
-    return strtoul(s, end, base);
-
 #if defined(WIN32)
-  /* This won't do overflow checking, which is why it isn't first */
-
-  if (base == 10)
-    fmt = "%I64x";
-  else if (base == 8)
-    fmt = "%I64o";
-  else if (base == 16)
-    fmt = "%64x";
-  else
-    return 0;  
-#elif defined(SCNu64)
-  /* This won't do overflow checking, which is why it isn't first */
-
-  if (base == 10)
-    fmt = "%" SCNu64;
-  else if (base == 8)
-    fmt = "%" SCNo64;
-  else if (base == 16)
-    fmt = "%" SCNx64;
-  else
-    return 0;
+	return _strtoui64(s, end, base);
+#else
+ 	if (sizeof(unsigned long) == 8) {
+ 		return strtoul(s, end, base);
+  } else if (sizeof(unsigned long long) == 8) {
+  	return strtoull(s, end, base);
+  } else {
+  	/* unsigned long long greater than 64 bits? */
+  	unsigned long long val = strtoull(s, end, base);
+  	if (val > UINT64_MAX) {
+  		errno = ERANGE;
+  		return UINT64_MAX;
+  	} else {
+  		return val;
+  	}
+  }
 #endif
-
-  if (!fmt)
-    return 0;
-  
-  if (sscanf(s, fmt, &val) != 1)
-    return 0;
-  else
-    return val;
 }
-
 
 /** PE_REGS: Named Q-registers. We have two strtrees: One for names,
  * one for values.

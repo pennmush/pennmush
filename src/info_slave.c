@@ -204,16 +204,36 @@ check_parent_signal(evutil_socket_t fd __attribute__((__unused__)),
 }
 #endif
 
+#ifdef HAVE_KQUEUE
+static void
+check_parent_kqueue(evutil_socket_t fd,
+		    short what __attribute__((__unused__)),
+		    void *args __attribute__((__unused__)))
+{
+  struct kevent event;
+  int r;
+  struct timespec timeout = { 0, 0 };
+
+  r = kevent(fd, NULL, 0, &event, 1, &timeout);
+  if (r == 1 && event.filter == EVFILT_PROC && event.fflags == NOTE_EXIT
+      && (pid_t)event.ident == parent_pid) {
+    fputerr("Parent mush process exited unexpectedly! Shutting down.");
+    event_base_loopbreak(main_loop);
+  }
+}
+#endif
+
 int
 main(void)
 {
   struct event *watch_parent, *watch_request;
   struct timeval parent_timeout = {.tv_sec = 5, .tv_usec = 0};
+  bool parent_watcher = false;
 
   parent_pid = getppid();
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio flock inet dns", NULL) < 0) {
+  if (pledge("stdio proc flock inet dns", NULL) < 0) {
     perror("pledge");
   }
 #endif
@@ -221,20 +241,34 @@ main(void)
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
-#ifdef HAVE_PRCTL
+#if defined(HAVE_PRCTL)
   if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
-    // fputerr("Using prctl() to track parent status.");
     watch_parent = evsignal_new(main_loop, SIGUSR1, check_parent_signal, NULL);
     event_add(watch_parent, NULL);
-  } else {
+    parent_watcher = true;
+  }
+#elif defined(HAVE_KQUEUE)
+  int kfd = kqueue();
+  if (kfd >= 0) {
+    struct kevent event;
+    struct timespec timeout = { 0, 0 };
+    EV_SET(&event, parent_pid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT,
+	   NOTE_EXIT, 0, 0);
+    if (kevent(kfd, &event, 1, NULL, 0, &timeout) >= 0) {
+      watch_parent = event_new(main_loop, kfd, EV_READ, check_parent_kqueue,
+			       NULL);
+      event_add(watch_parent, NULL);
+      parent_watcher = true;
+    }
+  }
 #endif
+  
+  if (!parent_watcher) {
     /* Run every 5 seconds to see if the parent mush process is still around. */
     watch_parent =
       event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
     event_add(watch_parent, &parent_timeout);
-#ifdef HAVE_PRCTL
   }
-#endif
 
   /* Wait for an incoming request datagram from the mush */
   watch_request =

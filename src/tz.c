@@ -1,11 +1,8 @@
-/**
- * \file tz.c
+/** \file tz.c
  *
- * \brief Time zone data file parsing.
+ * \brief Routines for reading tzinfo files
  */
 
-#define _GNU_SOURCE
-#include "copyrite.h"
 #include "config.h"
 
 #include <stdio.h>

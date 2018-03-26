@@ -1,61 +1,26 @@
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <ctime>
-#include <random>
 
-#include <openssl/sha.h>
 #include <boost/program_options.hpp>
 
 #include "database.h"
+#include "hasher.h"
 
 using namespace std::literals::string_literals;
 
-std::string
-make_password_string(const std::string &plain)
-{
-  static const unsigned char salts[] =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-  static std::random_device rd;
-  static std::ranlux48 rng{rd()};
-  std::uniform_int_distribution<int> pick(0, sizeof salts - 1);
-
-  unsigned char salt[2];
-  salt[0] = salts[pick(rng)];
-  salt[1] = salts[pick(rng)];
-
-  SHA512_CTX ctx;
-  SHA512_Init(&ctx);
-  SHA512_Update(&ctx, salt, 2);
-  SHA512_Update(&ctx, reinterpret_cast<const unsigned char *>(plain.c_str()),
-                plain.size());
-  unsigned char hashed[SHA512_DIGEST_LENGTH];
-  SHA512_Final(hashed, &ctx);
-
-  std::ostringstream sink;
-
-  sink << "2:sha512:" << salt[0] << salt[1] << std::hex;
-  for (auto byte : hashed) {
-    sink << static_cast<unsigned>(byte);
-  }
-  sink << std::dec << ':' << std::time(nullptr);
-
-  return sink.str();
-}
-
 void
-update_password(database &db, dbref who, const std::string &newpass)
+update_password(database &db, dbref who, const std::string &newpass,
+                password_hasher *hash)
 {
   auto xyxxy = db.objects[who].attribs.find("XYXXY");
   if (xyxxy != db.objects[who].attribs.end()) {
     // Update existing attribute
-    xyxxy->second.data = make_password_string(newpass);
+    xyxxy->second.data = hash->make_password(newpass);
   } else {
     // Add a new attribute if not already present
     attrib newxyxxy = db.attribs["XYXXY"];
     newxyxxy.creator = 1;
-    newxyxxy.data = make_password_string(newpass);
+    newxyxxy.data = hash->make_password(newpass);
     db.objects[who].attribs.emplace("XYXXY", std::move(newxyxxy));
   }
 }
@@ -76,7 +41,7 @@ main(int argc, char **argv)
     ",j", po::value<int>(&comp)->implicit_value(COMP::BZ2, "")->zero_tokens(),
     "compressed with bzip2")("inplace,i", po::bool_switch(&inplace),
                              "update database in place")(
-    "dbref,d", po::value<dbref>(&who)->default_value(-1),
+    "dbref,d", po::value<int>(&who)->default_value(-1),
     "Player to modify")("all,a", po::bool_switch(&all), "Modify all players")(
     "clear,c", po::bool_switch(&clear), "Erase password")(
     "password,p", po::value<std::string>(&newpass)->default_value("hunter2"),
@@ -112,11 +77,13 @@ main(int argc, char **argv)
     std::string input_db = "-";
 
     if (vm.count("input-file")) {
-      input_db = vm["input-file"].as<std::vector<std::string>>().front();
+      input_db = vm["input-file"].as<std::string>();
     }
 
     auto db = read_database(input_db, static_cast<COMP>(comp));
     db.fix_up();
+
+    auto hash = make_password_hasher();
 
     if (who >= 0) {
       if (static_cast<std::size_t>(who) >= db.objects.size()) {
@@ -130,7 +97,7 @@ main(int argc, char **argv)
       if (clear) {
         db.objects[who].attribs.erase("XYXXY");
       } else {
-        update_password(db, who, newpass);
+        update_password(db, who, newpass, hash.get());
       }
     } else if (all) {
       for (auto &obj : db.objects) {
@@ -138,7 +105,7 @@ main(int argc, char **argv)
           if (clear) {
             obj.attribs.erase("XYXXY");
           } else {
-            update_password(db, obj.num, newpass);
+            update_password(db, obj.num, newpass, hash.get());
           }
         }
       }

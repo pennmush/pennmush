@@ -51,7 +51,6 @@ void Win32MUSH_setup(void);
 #include "extmail.h"
 #include "flags.h"
 #include "function.h"
-#include "getpgsiz.h"
 #include "help.h"
 #include "htab.h"
 #include "intmap.h"
@@ -241,7 +240,7 @@ rusage_stats(void)
   struct rusage usage;
   int psize;
 
-  psize = getpagesize();
+  psize = mush_getpagesize();
   getrusage(RUSAGE_SELF, &usage);
 
   do_rawlog(LT_ERR, "Process statistics:");
@@ -2082,7 +2081,7 @@ linux_uptime(dbref player __attribute__((__unused__)))
 
   /* do process stats */
   pid = getpid();
-  psize = getpagesize();
+  psize = mush_getpagesize();
   notify_format(player, "\nProcess ID:  %10u        %10d bytes per page", pid,
                 psize);
 
@@ -2157,7 +2156,7 @@ unix_uptime(dbref player __attribute__((__unused__)))
   /* do process stats */
 
   pid = getpid();
-  psize = getpagesize();
+  psize = mush_getpagesize();
   notify_format(player, "\nProcess ID:  %10u        %10d bytes per page", pid,
                 psize);
 

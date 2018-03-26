@@ -6,8 +6,6 @@
  *
  */
 
-#define _GNU_SOURCE /* For strchrnul, if applicable. */
-
 #include "copyrite.h"
 #include "config.h"
 #include "strutil.h"
@@ -19,6 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_INTTYPES_H
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef __USE_MINGW_ANSI_STDIO
+#endif
 #include <inttypes.h>
 #endif
 
@@ -1363,14 +1364,29 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
 /* Most of these defaults are probably wrong on Win32. I hope it
    has at least the headers from C99. */
 #ifndef PRIdMAX
+#ifdef WIN32
+#define PRIdMAX "I64d"
+#else
 #define PRIdMAX "lld"
 #endif
+#endif
+
 #ifndef PRIxMAX
+#ifdef WIN32
+#define PRIxMAX "I64x"
+#else
 #define PRIxMAX "llx"
 #endif
+#endif
+
 #ifndef PRIoMAX
+#ifdef WIN32
+#define PRIoMAX "I64o"
+#else
 #define PRIoMAX "llo"
 #endif
+#endif
+
       switch (base) {
       case 10:
         return safe_format(buff, bp, "%" PRIdMAX, val);

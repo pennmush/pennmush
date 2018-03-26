@@ -335,7 +335,7 @@ read_database(const std::string &name, COMP compress_type, bool vrbse)
     if (verbose) {
       std::cerr << "Reading from " << name << '\n';
     }
-    dbin.push(io::file_source{name});
+    dbin.push(io::file_source{name, std::ios_base::in | std::ios_base::binary});
   }
 
   dbin.exceptions(std::istream::badbit);
@@ -380,7 +380,7 @@ write_database(const database &db, const std::string &name, COMP compress_type)
   if (name == "-") {
     dbout.push(std::cout);
   } else {
-    dbout.push(io::file_sink{name});
+    dbout.push(io::file_sink{name, std::ios_base::out | std::ios_base::binary});
   }
 
   if (!dbout) {

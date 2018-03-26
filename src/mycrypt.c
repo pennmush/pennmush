@@ -123,7 +123,8 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
 	BCRYPT_ALG_HANDLE balgo;
 	BCRYPT_HASH_HANDLE hfun;
   PUCHAR hash;
-  ULONG hashlen = 0, cbhash = 0;
+  DWORD hashlen = 0;
+  ULONG cbhash = 0;
   int r;
 	
   dgst = lookup_bcrypt_algo(algo);
@@ -155,7 +156,7 @@ safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
     BCryptCloseAlgorithmProvider(balgo, 0);
     return 1;
   }
-  if (BCryptGetProperty(balgo, BCRYPT_HASH_LENGTH, (PBYTE)&hashlen, sizeof(DWORD),
+  if (BCryptGetProperty(balgo, BCRYPT_HASH_LENGTH, (PBYTE)&hashlen, sizeof(hashlen),
   	&cbhash, 0) != STATUS_SUCCESS) {
     if (inplace_err)
       safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);

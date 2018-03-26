@@ -82,7 +82,7 @@ static void lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay,
 static IVAL
 parse_ival_full(const char *str, char **end, int base)
 {
-  return parse_int32(str, end, base);
+  return parse_int64(str, end, base);
 }
 
 static IVAL
@@ -94,7 +94,7 @@ parse_ival(const char *str)
 static UIVAL
 parse_uival_full(const char *str, char **end, int base)
 {
-  return parse_uint32(str, end, base);
+  return parse_uint64(str, end, base);
 }
 
 static UIVAL
@@ -1406,7 +1406,20 @@ FUNCTION(fun_fraction)
   }
 }
 
-FUNCTION(fun_isint) { safe_boolean(is_strict_integer(args[0]), buff, bp); }
+FUNCTION(fun_isint) {
+	bool valid = 1;
+	char *end;
+	if (arglens[0] == 0) {
+		valid = 0;
+	} else {
+		errno = 0;
+		parse_ival_full(args[0], &end, 10);
+		if (errno || *end != '\0') {
+			valid = 0;
+		}
+	}
+	safe_boolean(valid, buff, bp);
+}
 
 /* ARGSUSED */
 FUNCTION(fun_isnum) { safe_boolean(is_strict_number(args[0]), buff, bp); }
@@ -2118,7 +2131,7 @@ MATH_FUNC(math_div)
 
   for (n = 1; n < nptr; n++) {
     IVAL temp;
-    div_t q;
+    lldiv_t q;
 
     if (!is_ival(ptr[n])) {
       safe_str(T(e_ints), buff, bp);
@@ -2131,12 +2144,12 @@ MATH_FUNC(math_div)
       return;
     }
 
-    if (divresult == INT_MIN && temp == -1) {
+    if (divresult == INT64_MIN && temp == -1) {
       safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
       return;
     }
 
-    q = div(divresult, temp);
+    q = lldiv(divresult, temp);
     divresult = q.quot;
   }
   safe_integer(divresult, buff, bp);
@@ -2296,7 +2309,7 @@ MATH_FUNC(math_remainder)
 
   for (n = 1; n < nptr; n++) {
     IVAL temp;
-    div_t r;
+    lldiv_t r;
 
     if (!is_ival(ptr[n])) {
       safe_str(T(e_ints), buff, bp);
@@ -2314,7 +2327,7 @@ MATH_FUNC(math_remainder)
       return;
     }
 
-    r = div(divresult, temp);
+    r = lldiv(divresult, temp);
     divresult = r.rem;
   }
   safe_integer(divresult, buff, bp);

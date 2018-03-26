@@ -482,9 +482,8 @@ im_stats(dbref player, intmap *im, const char *name)
 
   size_t bytes = sizeof *im + (sizeof(patricia) * im->count);
 #ifdef WIN32
-#define PRIszt "Iu"
+  notify_format(player, "%-11s %7I64d %7I64u", name, im->count, bytes);
 #else
-#define PRIszt "zu"
+  notify_format(player, "%-11s %7" PRIi64 " %7zu", name, im->count, bytes);
 #endif
-  notify_format(player, "%-11s %7" PRIi64 " %7" PRIszt, name, im->count, bytes);
 }

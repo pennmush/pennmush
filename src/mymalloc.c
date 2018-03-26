@@ -46,14 +46,13 @@
 
 #include "conf.h"
 #include "dbdefs.h"
-#include "getpgsiz.h"
 #include "log.h"
 #include "memcheck.h"
 #include "strutil.h"
 #include "confmagic.h"
 
 #ifdef WIN32
-#define SZT PRIu64
+#define SZT "I64u"
 #else
 #define SZT "zu"
 #endif
@@ -224,7 +223,7 @@ slab_create(const char *name, size_t item_size)
   size_t pgsize, offset;
 
   sl = malloc(sizeof(struct slab));
-  pgsize = getpagesize();
+  pgsize = mush_getpagesize();
   offset = sizeof(struct slab_page);
   /* Start the objects 16-byte aligned */
   offset += sizeof(struct slab_page) % 16;
@@ -295,7 +294,7 @@ slab_alloc_page(struct slab *sl)
   int n;
   int pgsize;
 
-  pgsize = getpagesize();
+  pgsize = mush_getpagesize();
 
 #ifdef HAVE_POSIX_MEMALIGN
   /* Used to use valloc() here, but on some systems, memory returned by
@@ -558,13 +557,19 @@ slab_describe(const slab *sl, struct slab_stats *stats)
   }
 }
 
-#ifdef WIN32
-/** Windows version of getpagesize() */
-unsigned int
-getpagesize_win32(void)
+/** Return the memory page size */
+int
+mush_getpagesize(void)
 {
+#if defined(WIN32)
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return si.dwPageSize;
-}
+#elif defined(HAVE_GETPAGESIZE)
+	return getpagesize();
+#elif defined(HAVE_SYSCONF)
+	return sysconf(_SC_PAGESIZE);
+#else	
+	return 4096;
 #endif
+}

@@ -7,7 +7,6 @@
  */
 
 #include "copyrite.h"
-#define _GNU_SOURCE
 #include "config.h"
 #include <string.h>
 #include <ctype.h>

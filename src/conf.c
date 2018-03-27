@@ -1780,18 +1780,13 @@ do_enable(dbref player, const char *param, int state)
 static void
 show_compile_options(dbref player)
 {
-#if (COMPRESSION_TYPE == 0)
-  notify(player, T(" Attributes are not compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 1) || (COMPRESSION_TYPE == 2)
-  notify(player, T(" Attributes are Huffman compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 3)
-  notify(player, T(" Attributes are word compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 4)
-  notify(player, T(" Attributes are 8-bit word compressed in memory."));
-#endif
+  if (strcmp(options.attr_compression, "huffman") == 0) {
+    notify(player, T(" Attributes are Huffman compressed in memory."));
+  } else if (strcmp(options.attr_compression, "word") == 0) {
+    notify(player, T(" Attributes are word compressed in memory."));
+  } else {
+    notify(player, T(" Attributes are not compressed in memory."));
+  }
 
 #ifdef HAVE_SSL
   notify(player, T(" The MUSH was compiled with SSL support."));

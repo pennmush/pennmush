@@ -788,9 +788,7 @@ do_list_allocations(dbref player)
     chanuser_slab,
     flag_slab,
     function_slab,
-#if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
     huffman_slab,
-#endif
     lock_slab,
     mail_slab,
     memcheck_slab,
@@ -812,6 +810,9 @@ do_list_allocations(dbref player)
 
   for (i = 0; i < sizeof(slabs) / sizeof(slabs[0]); ++i) {
     struct slab_stats stats;
+    if (!slabs[i]) {
+      continue;
+    }
     slab_describe(slabs[i], &stats);
     notify_format(player, "Allocator for %s:", stats.name);
     notify_format(player,

@@ -2586,10 +2586,10 @@ do_list_memstats(dbref player)
   if (rgb_to_name)
     im_stats(player, rgb_to_name, "Colors");
 
-#if (COMPRESSION_TYPE >= 3) && defined(COMP_STATS)
-  if (Wizard(player)) {
+#ifdef COMP_STATS
+  if (Wizard(player) && strcmp(options.attr_compression, "word") == 0) {
     long items, used, total_comp, total_uncomp;
-    double percent;
+    float percent;
     compress_stats(&items, &used, &total_uncomp, &total_comp);
     notify(player, "---------- Internal attribute compression  ----------");
     notify_format(player, "%10ld compression table items used, "
@@ -2610,7 +2610,7 @@ do_list_memstats(dbref player)
                   percent);
     notify_format(player, "          (Includes table items, and table of words "
                           "pointers of %ld bytes)",
-                  32768L * sizeof(char *));
+                  (long)(32768 * sizeof(char *)));
     if (percent >= 100.0)
       notify(player, "          "
                      "(Compression ratio improves with larger database)");

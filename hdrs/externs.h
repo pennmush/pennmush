@@ -166,7 +166,6 @@ char *text_compress(char const *) __attribute_malloc__;
   0x010 /**< Copy values for %c and %u from the parent pe_info */
 
 struct _ansi_string;
-struct real_pcre;
 
 void do_second(void);
 int do_top(int ncom);

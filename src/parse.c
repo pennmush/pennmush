@@ -1337,7 +1337,7 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 /* REGEXPS */
 void
 pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
-                       struct real_pcre *re_code, int *re_offsets,
+                       pcre *re_code, int *re_offsets,
                        int re_subpatterns, const char *re_from)
 {
   int i;
@@ -1393,7 +1393,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
 
 void
 pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
-                            struct real_pcre *re_code, int *re_offsets,
+                            pcre *re_code, int *re_offsets,
                             int re_subpatterns, struct _ansi_string *re_from)
 {
   int i;

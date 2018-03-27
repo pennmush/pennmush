@@ -9,6 +9,7 @@
 
 #include "copyrite.h"
 #include <openssl/ssl.h>
+
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -122,109 +123,6 @@ typedef struct _pe_regs_ {
   PE_REG_VAL *vals;       /**< The register values */
   const char *name;       /**< For debugging */
 } PE_REGS;
-
-/* Initialize the pe_regs strtrees */
-void init_pe_regs_trees();
-void free_pe_regs_trees();
-
-/* Functions used to create new pe_reg stacks */
-void pe_regs_dump(PE_REGS *pe_regs, dbref who);
-PE_REGS *pe_regs_create_real(int pr_flags, const char *name);
-#define pe_regs_create(x, y) pe_regs_create_real(x, "pe_regs-" y)
-void pe_reg_val_free(PE_REG_VAL *val);
-void pe_regs_clear(PE_REGS *pe_regs);
-void pe_regs_clear_type(PE_REGS *pe_regs, int type);
-void pe_regs_free(PE_REGS *pe_regs);
-PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags,
-                               const char *name);
-#define pe_regs_localize(p, x, y) pe_regs_localize_real(p, x, "pe_regs-" y)
-void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
-
-/* Copy a stack of PE_REGS into a new one: For creating new queue entries.
- * This squashes all values in pe_regs to a single PE_REGS. The returned
- * pe_regs type has PE_REGS_QUEUE. */
-void pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
-                       int override);
-
-/* Manipulating PE_REGS directly */
-void pe_regs_set_if(PE_REGS *pe_regs, int type, const char *key,
-                    const char *val, int override);
-#define pe_regs_set(p, t, k, v) pe_regs_set_if(p, t, k, v, 1)
-void pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *key, int val,
-                        int override);
-#define pe_regs_set_int(p, t, k, v) pe_regs_set_int_if(p, t, k, v, 1)
-const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
-int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
-
-/* Helper functions: Mostly used in process_expression, r(), itext(), etc */
-int pi_regs_has_type(NEW_PE_INFO *pe_info, int type);
-#define PE_HAS_REGTYPE(p, t) pi_regs_has_type(p, t)
-
-/* PE_REGS_Q */
-int pi_regs_valid_key(const char *key);
-#define ValidQregName(x) pi_regs_valid_key(x)
-int pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val);
-#define PE_Setq(pi, k, v) pi_regs_setq(pi, k, v)
-const char *pi_regs_getq(NEW_PE_INFO *pe_info, const char *key);
-#define PE_Getq(pi, k) pi_regs_getq(pi, k)
-/* Copy all Q registers from src to dst PE_REGS. */
-void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
-
-/* PE_REGS_REGEXP */
-struct real_pcre;
-struct _ansi_string;
-void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
-                            struct real_pcre *re_code, int *re_offsets,
-                            int re_subpatterns, const char *re_from);
-void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
-                                 struct real_pcre *re_code, int *re_offsets,
-                                 int re_subpatterns,
-                                 struct _ansi_string *re_from);
-const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
-#define PE_Get_re(pi, k) pi_regs_get_rx(pi, k)
-
-void clear_allq(NEW_PE_INFO *pe_info);
-
-/* PE_REGS_SWITCH and PE_REGS_ITER
- *
- * Here is how SWITCH and ITER fetching works.
- *
- * + Only the topmost PE_REGS (the one associated with the pe_info directly)
- *   will ever have more than one switch or iter value.
- * + If a non-top PE_REGS_ITER is encountered, it is considered to have
- *   1 itext/stext
- * + ilev is caculated by counting the number of PE_REGS_ITER up to the top.
- *   Topmost queue entries will have an int "ilev" set with the appropriate
- *   PE_REGS_foo type.
- * + inum is saved as "n%d", itext as "t%d"
- * + Each non-top level saves as "i0" or "n0" for itext and inum,
- *    respectively.
- * + Copystack will rebuild the itext(0)-itext(MAX_ITERS) count, increasing
- *   them as needed.
- * + Switches are just iters without inums, so they're functionally the same.
- *   The only difference from above is the type of the value.
- */
-const char *pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev);
-int pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type);
-int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
-
-/* Get iter info */
-#define PE_Get_Itext(pi, k) pi_regs_get_itext(pi, PE_REGS_ITER, k)
-#define PE_Get_Ilev(pi) pi_regs_get_ilev(pi, PE_REGS_ITER)
-#define PE_Get_Inum(pi, k) pi_regs_get_inum(pi, PE_REGS_ITER, k)
-/* Get switch info */
-#define PE_Get_Stext(pi, k) pi_regs_get_itext(pi, PE_REGS_SWITCH, k)
-#define PE_Get_Slev(pi) pi_regs_get_ilev(pi, PE_REGS_SWITCH)
-
-/* Get env (%0-%9) info */
-
-const char *pe_regs_intname(int num);
-void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
-void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
-const char *pi_regs_get_env(NEW_PE_INFO *pe_info, const char *name);
-int pi_regs_get_envc(NEW_PE_INFO *pe_info);
-#define PE_Get_Env(pi, n) pi_regs_get_env(pi, pe_regs_intname(n))
-#define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
 /** NEW_PE_INFO holds data about string evaluation via process_expression().  */
 struct new_pe_info {

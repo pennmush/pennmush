@@ -293,7 +293,7 @@ query_info_slave(int fd)
   info_slave_state = INFO_SLAVE_PENDING;
 }
 
-extern const char *source_to_s(conn_source);
+const char *source_to_s(conn_source);
 
 void
 reap_info_slave(void)
@@ -426,6 +426,8 @@ kill_info_slave(void)
 
 /* From bsd.c */
 DESC *initializesock(int s, char *addr, char *ip, int use_ssl);
+const char *source_to_s(conn_source);
+
 
 struct resolv_arg {
   int sockfd;
@@ -464,16 +466,19 @@ lookup_func(void *arg)
     strcpy(hostname, ipaddr);
   }
 
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", s->sockfd,
+         hostname, ipaddr, source_to_s(s->source));
+  set_keepalive(s->sockfd, options.keepalive_timeout);
+
   initializesock(s->sockfd, hostname, ipaddr,
                  s->source == CS_OPENSSL_SOCKET || s->source == CS_LOCAL_SSL_SOCKET);
-  do_rawlog(LT_CONN, "Ending thread for resolving hostname of fd %d", s->sockfd);
+  
   free(s);
-
 #ifndef WIN32
   sigrecv_notify();
-#endif
-  
+#endif  
   atomic_decrement(&count);
+  
   THREAD_RETURN;
 }
 

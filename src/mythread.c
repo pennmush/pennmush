@@ -7,8 +7,8 @@
 #include "mythread.h"
 #include "confmagic.h"
 
-extern desc_mutex;
-extern queue_mutex;
+extern penn_mutex desc_mutex;
+extern penn_mutex queue_mutex;
 
 int
 thread_init(void)

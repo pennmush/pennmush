@@ -410,11 +410,18 @@ kill_info_slave(void)
 #include <netdb.h>
 #endif
 
+#ifdef WIN32
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
+#include <Windows.h>
+#endif
+
 #include "mushtype.h"
 #include "mythread.h"
 #include "lookup.h"
 #include "conf.h"
 #include "sig.h"
+#include "log.h"
 #include "confmagic.h"
 
 /* From bsd.c */
@@ -427,17 +434,28 @@ struct resolv_arg {
   socklen_t len;
 };
 
+volatile atomic_int count = 0;
+
+int
+outstanding_info_count(void) {
+  return atomic_load(&count);
+}
+
 THREAD_RETURN_TYPE WIN32_STDCALL
 lookup_func(void *arg)
 {
   struct resolv_arg *s = arg;
   char hostname[NI_MAXHOST];
   char ipaddr[NI_MAXHOST];
-
-  if (getnameinfo(&s->addr.addr, s->len, ipaddr, sizeof ipaddr, NULL, 0,
-                  NI_NUMERICHOST) != 0) {
+  int r;
+  
+  if ((r = getnameinfo(&s->addr.addr, s->len, ipaddr, sizeof ipaddr, NULL, 0,
+		       NI_NUMERICHOST)) != 0) {
+    do_rawlog(LT_ERR, "Unable to get IP address for socket fd %d: %s\n",
+	      s->sockfd, gai_strerror(r));
     closesocket(s->sockfd);
     free(s);
+    atomic_decrement(&count);
     THREAD_RETURN;
   }
 
@@ -448,8 +466,14 @@ lookup_func(void *arg)
 
   initializesock(s->sockfd, hostname, ipaddr,
                  s->source == CS_OPENSSL_SOCKET || s->source == CS_LOCAL_SSL_SOCKET);
+  do_rawlog(LT_CONN, "Ending thread for resolving hostname of fd %d", s->sockfd);
   free(s);
+
+#ifndef WIN32
   sigrecv_notify();
+#endif
+  
+  atomic_decrement(&count);
   THREAD_RETURN;
 }
 
@@ -465,6 +489,10 @@ start_info_thread(int sockfd, union sockaddr_u *addr, socklen_t len,
   arg->source = source;
   memcpy(arg->addr.data, addr->data, sizeof *addr);
   arg->len = len;
+
+  do_rawlog(LT_CONN, "Starting thread to resolve connection on fd %d", sockfd);
+
+  atomic_increment(&count);
   
   run_thread(&id, lookup_func, arg, true);  
 }
@@ -476,6 +504,6 @@ start_info_thread(int sockfd, union sockaddr_u *addr, socklen_t len,
 void
 dummy_function(void)
 {
-  /* Supress a warning about empty soure files. */
+  /* Supress a warning about empty source files. */
 }
 #endif

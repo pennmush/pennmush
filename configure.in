@@ -178,6 +178,8 @@ if test "$ax_cv___attribute__" = "yes"; then
  AX_GCC_MALLOC_CALL
 fi
 
+AX_PTHREAD(AC_DEFINE(HAVE_PTHREADS))
+
 ### Types
 # Again, no need to check for standard C89 types.
 

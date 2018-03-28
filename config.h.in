@@ -414,6 +414,8 @@ typedef bool _Bool;
 
 #undef GCC_MALLOC_CALL
 
+#undef HAVE_PTHREADS
+
 /* Turn on SSE2 stuff automatically if supported (IE, x86-64 or x86 with the right -march switch) */
 #undef HAVE_SSE2
 #ifdef __SSE2__

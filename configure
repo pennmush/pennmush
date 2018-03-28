@@ -1395,7 +1395,7 @@ Optional Features:
   --disable-sql           Don't use SQL support
   --disable-ipv6          Don't use IPv6 networking
   --disable-nls           Don't use message-translation
-  --enable-info-lookup=slave|thread|inline
+  --enable-async-hostnames=slave|thread|inline
                           Control how asyncronous hostname lookups are
                           performed: with a slave process (default), threads,
                           or done inline
@@ -9825,7 +9825,7 @@ case "$async_hostnames" in
          async_hostnames=slave
          INFO_SLAVE_TARGET=info_slave
 
-         $as_echo "#define INFO_SlAVE 1" >>confdefs.h
+         $as_echo "#define INFO_SLAVE 1" >>confdefs.h
 
          ;;
      thread)

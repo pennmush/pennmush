@@ -66,6 +66,7 @@ void kill_info_slave(void);
 #ifdef INFO_THREAD
 
 void start_info_thread(int, union sockaddr_u *, socklen_t, conn_source);
+int outstanding_info_count(void);
 
 #endif
 

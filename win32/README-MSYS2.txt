@@ -18,7 +18,7 @@ Setting up environment and prereqs:
 Building Penn:   
 1. Navigate to the PennMUSH folder (Or clone the repository with git).
 2. Run configure:
-   ./configure --disable-info_slave --disable-ssl_slave
+   ./configure --enable-async-hostnames=thread --disable-ssl_slave
 3. Build the game:
    make
    make install

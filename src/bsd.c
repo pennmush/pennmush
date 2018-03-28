@@ -934,7 +934,6 @@ is_ws_desc(DESC *d)
 #endif
 }
 
-
 static void
 setup_desc(int sockfd, conn_source source)
 {
@@ -987,6 +986,7 @@ got_new_connection(int sockfd, conn_source source)
   }
 
   ndescriptors++;
+
   start_info_thread(newsock, &addr, addr_len, source);
 }
 
@@ -1258,6 +1258,15 @@ shovechars(Port_t port, Port_t sslport)
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
 #ifdef WIN32
+#ifdef INFO_THREAD
+    /* If there's any pending hostname lookup threads, sleep a short
+       time so that if they complete the connection isn't left
+       hanging too long. Unix version doesn't need this; it gets alerted
+       through the signal notification pipe. */
+    if (outstanding_info_count() && polltimeout > 100) {
+	polltimeout = 100;
+    }
+#endif
     found = WSAPoll(fds, fds_used, polltimeout);
 #else
     found = poll(fds, fds_used, polltimeout);

@@ -209,6 +209,7 @@ AX_LIB_SOCKET_NSL
 AC_CHECK_LIB(event_core, event_base_loop)
 AC_CHECK_LIB(event_extra, evdns_base_new)
 AC_CHECK_LIB(event_openssl, bufferevent_openssl_socket_new)
+AC_CHECK_LIB(anl, getaddrinfo_a)
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
@@ -360,8 +361,6 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
 fi
 
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
-
-
 
 ### Variables, constants, defines and other misc. stuff
 

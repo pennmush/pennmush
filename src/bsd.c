@@ -101,6 +101,7 @@
 #include "strutil.h"
 #include "version.h"
 #include "charconv.h"
+#include "mythread.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -507,6 +508,8 @@ main(int argc, char **argv)
   }
 #endif
 
+  thread_init();
+  
   /* read the configuration file */
   if (argc < 2) {
     fprintf(
@@ -747,6 +750,9 @@ main(int argc, char **argv)
   end_all_logs();
 
   closesocket(sock);
+
+  thread_cleanup();
+  
 #ifdef WIN32
 #ifdef WIN32SERVICES
   shutdown_checkpoint();

@@ -5171,6 +5171,18 @@ fi
 
 done
 
+for ac_header in stdatomic.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "stdatomic.h" "ac_cv_header_stdatomic_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdatomic_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STDATOMIC_H 1
+_ACEOF
+
+fi
+
+done
+
 
 ### C language support
 # Only need to check C99 and GNU extensions

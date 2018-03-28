@@ -96,6 +96,10 @@
 
 #undef HAVE_FENV_H
 
+/* C11 headers */
+
+#undef HAVE_STDATOMIC_H
+
 /* Libraries */
 
 #undef HAVE_MYSQL
@@ -404,8 +408,10 @@ typedef bool _Bool;
 
 #ifdef _MSC_VER
 #define WIN32_CDECL __cdecl
+#define WIN32_STDCALL __stdcall
 #else
 #define WIN32_CDECL
+#define WIN32_STDCALL
 #endif
 
 #undef HAVE___ATTRIBUTE__

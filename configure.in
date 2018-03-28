@@ -166,6 +166,7 @@ AC_INCLUDES_DEFAULT
 #include <sys/param.h>
 #endif
 ])
+AC_CHECK_HEADERS([stdatomic.h])
 
 ### C language support
 # Only need to check C99 and GNU extensions

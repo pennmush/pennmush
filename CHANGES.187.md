@@ -24,6 +24,7 @@ Major Changes
 
 * Support websocket connections. See <https://github.com/grapenut/websockclient> for a
   sample in-browser client. [Grapenut, 1007]
+* Experimental support for resolving IP addresses to hostnames in threads instead of a subprocess. Run configure with `--enable-async-hostnames=thread` to turn it on. [SW]
 
 Minor Changes
 -------------

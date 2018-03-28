@@ -7,24 +7,35 @@
 #include "mythread.h"
 #include "confmagic.h"
 
-#ifdef HAVE_PTHREADS
-/* Pthreads wrappers */
+extern desc_mutex;
+extern queue_mutex;
 
 int
 thread_init(void)
 {
+  mutex_init(&desc_mutex);
+  mutex_init(&queue_mutex);
   return 0;
 }
 
 int
 thread_cleanup(void)
 {
+  mutex_destroy(&desc_mutex);
+  mutex_destroy(&queue_mutex);
   return 0;
 }
 
+#ifdef HAVE_PTHREADS
+/* Pthreads wrappers */
+
 int
-run_thread(thread_id *id, thread_func f, void *arg) {
-  return pthread_create(id, NULL, f, arg);
+run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
+  int r = pthread_create(id, NULL, f, arg);
+  if (r == 0 && detach) {
+    pthread_detach(*id);
+  }
+  return r;
 }
 
 void
@@ -42,7 +53,16 @@ join_thread(thread_id id, THREAD_RETURN_TYPE *retval)
 int
 mutex_init(penn_mutex *mut)
 {
-  return pthread_mutex_init(mut, NULL);
+  static pthread_mutexattr_t attr;
+  static bool init = false;
+
+  if (!init) {
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    init = true;
+  }
+  
+  return pthread_mutex_init(mut, &attr);
 }
 
 int
@@ -72,24 +92,15 @@ mutex_unlock(penn_mutex *mut)
 /* TODO: test */
 
 int
-thread_init(void)
-{
-  return 0;
-}
-
-int
-thread_cleanup(void)
-{
-  return 0;
-}
-
-int
-run_thread(thread_id *id, thread_func f, void *arg) {
+run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
   uintptr_t h = _beginthreadex(NULL, 0, f, arg, 0, NULL);
   if (h == 0) {
     return -1;
   } else {
     *id = (HANDLE) h;
+    if (detach) {
+      CloseHandle(*id);
+    }
     return 0;
   }
 }

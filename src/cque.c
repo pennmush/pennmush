@@ -53,6 +53,7 @@
 #include "ptab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "mythread.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;
@@ -102,6 +103,8 @@ extern dbref report_dbref;
  * as semaphores.
  */
 #define SEMAPHORE_FLAGS (AF_LOCKED | AF_PRIVATE | AF_NOCOPY | AF_NODUMP)
+
+penn_mutex queue_mutex;
 
 /** Queue initializtion function. Must be called before anything
  * is added to the queue.
@@ -266,13 +269,16 @@ free_qentry(MQUE *entry)
   if (entry->save_attrname)
     mush_free(entry->save_attrname, "mque.attrname");
 
-  if (entry->pid) /* INPLACE queue entries have no pid */
+  if (entry->pid) { /* INPLACE queue entries have no pid */
+    mutex_lock(&queue_mutex);
     im_delete(queue_map, entry->pid);
+    mutex_unlock(&queue_mutex);
+  }
 
   if (entry->regvals) /* Nested pe_regs */
     pe_regs_free(entry->regvals);
 
-  mush_free(entry, "mque");
+   mush_free(entry, "mque");
 }
 
 static int
@@ -312,13 +318,18 @@ pay_queue(dbref player, const char *command)
 static uint32_t
 next_pid(void)
 {
-  uint32_t pid = top_pid;
+  uint32_t pid;
+
+  mutex_lock(&queue_mutex);
+
+  pid = top_pid;
 
   if (im_count(queue_map) >= (int) MAX_PID) {
     do_rawlog(
       LT_ERR,
       "There are %ld queue entries! That's too many. Failing to add another.",
       (long) im_count(queue_map));
+    mutex_unlock(&queue_mutex);
     return 0;
   }
 
@@ -329,6 +340,7 @@ next_pid(void)
       pid++;
     else {
       top_pid = pid + 1;
+      mutex_unlock(&queue_mutex);
       return pid;
     }
   }
@@ -496,6 +508,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* Hmm, should events queue ahead of anything else?
    * For now, yes, but leaving code here anyway.
    */
+  mutex_lock(&queue_mutex);
   if (1) {
     if (qlast) {
       qlast->next = tmp;
@@ -515,6 +528,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* All good! */
   im_insert(queue_map, tmp->pid, tmp);
 
+  mutex_unlock(&queue_mutex);
+  
   return 1;
 }
 
@@ -559,6 +574,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     }
   }
 
+  mutex_lock(&queue_mutex);
   switch (
     (queue_entry->queue_type & (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
   case QUEUE_PLAYER:
@@ -592,11 +608,14 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     /* Oops. This shouldn't happen; make sure we don't leave
      * a queue entry in limbo... */
     do_rawlog(LT_ERR, "Queue entry with invalid type!");
+    mutex_unlock(&queue_mutex);
     free_qentry(queue_entry);
     return;
   }
-  if (queue_entry->pid)
+  if (queue_entry->pid) {
     im_insert(queue_map, queue_entry->pid, queue_entry);
+  }
+  mutex_unlock(&queue_mutex);
 }
 
 /** Replacement for parse_que and inplace_queue_actionlist - queue an action
@@ -911,6 +930,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
       tmp->wait_until = 0; /* semaphore wait without a timeout */
   }
   tmp->semaphore_obj = sem;
+  mutex_lock(&queue_mutex);
   if (sem == NOTHING) {
     /* No semaphore, put on normal wait queue, sorted by time */
     MQUE *point, *trail = NULL;
@@ -937,6 +957,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
     }
   }
   im_insert(queue_map, tmp->pid, tmp);
+  mutex_unlock(&queue_mutex);
 }
 
 /** Once-a-second check for queued commands.
@@ -955,6 +976,8 @@ do_second(void)
           sizeof(queue_load_record) - sizeof(int32_t));
   queue_load_record[0] = 0;
 
+  mutex_lock(&queue_mutex);
+  
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since
    * its effects on other objects happen only after one second
@@ -1021,6 +1044,8 @@ do_second(void)
         qllast = qlfirst = point;
     }
   }
+
+  mutex_unlock(&queue_mutex);
 }
 
 /** Execute some commands from the top of the queue.
@@ -1035,9 +1060,13 @@ do_top(int ncom)
   int i;
   MQUE *entry;
 
+  mutex_lock(&queue_mutex);
+  
   for (i = 0; i < ncom; i++) {
-    if (!qfirst)
+    if (!qfirst) {
+      mutex_unlock(&queue_mutex);
       return i;
+    }
 
     /* We must dequeue before execution, so that things like
      * queued @kick or @ps get a sane queue image.
@@ -1048,6 +1077,7 @@ do_top(int ncom)
     do_entry(entry, 0);
     free_qentry(entry);
   }
+  mutex_unlock(&queue_mutex);
   return i;
 }
 
@@ -1214,13 +1244,20 @@ que_next(void)
   /* If there are commands in the player queue, they should be run
    * immediately.
    */
-  if (qfirst != NULL)
+
+  mutex_lock(&queue_mutex);
+  
+  if (qfirst != NULL) {
+    mutex_unlock(&queue_mutex);
     return 0;
+  }
   /* If there are commands in the object queue, they should be run in
    * one second.
    */
-  if (qlfirst != NULL)
+  if (qlfirst != NULL) {
+    mutex_unlock(&queue_mutex);
     return 1;
+  }
   /* Check out the wait and semaphore queues, looking for the smallest
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
@@ -1231,23 +1268,29 @@ que_next(void)
      item on it. Anything else is wasted time. */
   if (qwait) {
     curr = (int) difftime(qwait->wait_until, mudtime);
-    if (curr <= 2)
+    if (curr <= 2) {
+      mutex_unlock(&queue_mutex);
       return 1;
-    if (curr < min)
-      min = curr;
-  }
-
-  for (point = qsemfirst; point; point = point->next) {
-    if (point->wait_until == 0) /* no timeout */
-      continue;
-    curr = (int) difftime(point->wait_until, mudtime);
-    if (curr <= 2)
-      return 1;
+    }
     if (curr < min) {
       min = curr;
     }
   }
 
+  for (point = qsemfirst; point; point = point->next) {
+    if (point->wait_until == 0) { /* no timeout */
+      continue;
+    }
+    curr = (int) difftime(point->wait_until, mudtime);
+    if (curr <= 2) {
+      mutex_unlock(&queue_mutex);
+      return 1;
+    } else if (curr < min) {
+      min = curr;
+    }
+  }
+
+  mutex_unlock(&queue_mutex);
   return (min - 1);
 }
 
@@ -1277,6 +1320,8 @@ execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs)
   MQUE **point;
   MQUE *entry;
 
+  mutex_lock(&queue_mutex);
+  
   /* Go through the semaphore queue and do it */
   point = &qsemfirst;
   while (*point) {
@@ -1323,8 +1368,10 @@ execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs)
         qllast = qlfirst = entry;
       }
     }
+    mutex_unlock(&queue_mutex);
     return 1;
   }
+  mutex_unlock(&queue_mutex);
   return 0;
 }
 
@@ -1348,6 +1395,8 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
   if (all)
     count = INT_MAX;
 
+  mutex_lock(&queue_mutex);
+  
   /* Go through the semaphore queue and do it */
   point = &qsemfirst;
   while (*point && count > 0) {
@@ -1408,6 +1457,8 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
    * @notify/any or @notify/all. */
   if (!drain && aname && !all && count > 0)
     add_to_sem(thing, -count, aname);
+
+  mutex_unlock(&queue_mutex);
 }
 
 COMMAND(cmd_notify_drain)
@@ -1615,7 +1666,9 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   }
 
   pid = parse_uint32(pidstr, NULL, 10);
+  mutex_lock(&queue_mutex);
   q = im_find(queue_map, pid);
+  mutex_unlock(&queue_mutex);
 
   if (!q) {
     notify(player, T("That is not a valid pid!"));
@@ -1666,6 +1719,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   /* Now adjust it in the wait queue. Not a clever approach, but I
      wrote it at 3 am and clever was not an option. */
   found = false;
+  mutex_lock(&queue_mutex);
   for (tmp = qwait, last = NULL; tmp; last = tmp, tmp = tmp->next) {
     if (tmp == q) {
       if (last)
@@ -1699,6 +1753,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
       q->next = NULL;
     }
   }
+  mutex_unlock(&queue_mutex);
 
   notify_format(player, T("Queue entry with pid %u updated."),
                 (unsigned int) pid);
@@ -1719,7 +1774,9 @@ FUNCTION(fun_pidinfo)
   }
 
   pid = parse_uint32(args[0], NULL, 10);
+  mutex_lock(&queue_mutex);
   q = im_find(queue_map, pid);
+  mutex_unlock(&queue_mutex);
 
   if (!q) {
     safe_str(T("#-1 INVALID PID"), buff, bp);
@@ -1861,6 +1918,7 @@ FUNCTION(fun_lpids)
       return;
     }
   }
+  mutex_lock(&queue_mutex);
   if (qmask & LPIDS_WAIT) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
       if (GoodObject(player) && GoodObject(tmp->executor) &&
@@ -1890,6 +1948,7 @@ FUNCTION(fun_lpids)
       first = false;
     }
   }
+  mutex_unlock(&queue_mutex);
 }
 
 static void
@@ -1897,6 +1956,7 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet, int q_all,
            MQUE *q_ptr, int *tot, int *self, int *del)
 {
   MQUE *tmp;
+  mutex_lock(&queue_mutex);
   for (tmp = q_ptr; tmp; tmp = tmp->next) {
     (*tot)++;
     if (!GoodObject(tmp->executor))
@@ -1909,6 +1969,7 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet, int q_all,
       }
     }
   }
+  mutex_unlock(&queue_mutex);
 }
 
 /* Show a single queue entry */
@@ -2107,7 +2168,9 @@ do_queue_single(dbref player, char *pidstr, bool debug)
   }
 
   pid = parse_uint32(pidstr, NULL, 10);
+  mutex_lock(&queue_mutex);
   q = im_find(queue_map, pid);
+  mutex_unlock(&queue_mutex);
   if (!q) {
     notify(player, T("That is not a valid pid!"));
     return;
@@ -2149,6 +2212,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   if (!Quiet(Owner(player)))
     notify_format(Owner(player), "%s: %s(#%d)", T("Halted"),
                   AName(player, AN_SYS, NULL), player);
+  mutex_lock(&queue_mutex);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor) &&
         ((tmp->executor == player) || (Owner(tmp->executor) == player))) {
@@ -2195,6 +2259,8 @@ do_halt(dbref owner, const char *ncom, dbref victim)
       next = (trail = point)->next;
   }
 
+  mutex_unlock(&queue_mutex);
+  
   add_to(player, num);
   if (ncom && *ncom) {
     new_queue_actionlist(player, player, player, (char *) ncom, NULL,
@@ -2274,7 +2340,9 @@ do_haltpid(dbref player, const char *arg1)
   }
 
   pid = parse_uint32(arg1, NULL, 10);
+  mutex_lock(&queue_mutex);
   q = im_find(queue_map, pid);
+  mutex_unlock(&queue_mutex);
   if (!q) {
     notify(player, T("That is not a valid pid!"));
     return;
@@ -2293,6 +2361,7 @@ do_haltpid(dbref player, const char *arg1)
   q->executor = NOTHING;
   if (q->semaphore_attr) {
     MQUE *last = NULL, *tmp;
+    mutex_lock(&queue_mutex);
     for (tmp = qsemfirst; tmp; last = tmp, tmp = tmp->next) {
       if (tmp == q) {
         if (last)
@@ -2304,7 +2373,7 @@ do_haltpid(dbref player, const char *arg1)
         break;
       }
     }
-
+    mutex_unlock(&queue_mutex);
     giveto(victim, QUEUE_COST);
     add_to_sem(q->semaphore_obj, -1, q->semaphore_attr);
     free_qentry(q);
@@ -2434,10 +2503,12 @@ do_restart_com(dbref player, const char *arg1)
 void
 shutdown_queues(void)
 {
+  mutex_lock(&queue_mutex);
   shutdown_a_queue(&qfirst, &qlast);
   shutdown_a_queue(&qlfirst, &qllast);
   shutdown_a_queue(&qsemfirst, &qsemlast);
   shutdown_a_queue(&qwait, NULL);
+  mutex_unlock(&queue_mutex);
 }
 
 static void

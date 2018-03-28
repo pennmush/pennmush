@@ -46,9 +46,12 @@
 #include "parse.h"
 #include "sig.h"
 #include "strutil.h"
+#include "mythread.h"
 
 bool inactivity_check(void);
 static void migrate_stuff(int amount);
+
+extern penn_mutex queue_mutex;
 
 #ifndef WIN32
 void hup_handler(int);
@@ -257,7 +260,7 @@ on_every_second(void *data __attribute__((__unused__)))
 void
 init_sys_events(void)
 {
-  time(&mudtime);
+  time(&mudtime);  
   sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
   if (DBCK_INTERVAL > 0) {
     sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
@@ -420,6 +423,8 @@ sq_register(time_t w, sq_func f, void *d, const char *ev)
     sq->event = NULL;
   sq->next = NULL;
 
+  mutex_lock(&queue_mutex);
+  
   if (!sq_head)
     sq_head = sq;
   else if (difftime(w, sq_head->when) <= 0) {
@@ -431,12 +436,13 @@ sq_register(time_t w, sq_func f, void *d, const char *ev)
       if (difftime(w, c->when) <= 0) {
         sq->next = c;
         prev->next = sq;
+        mutex_unlock(&queue_mutex);
         return sq;
       }
     }
     prev->next = sq;
   }
-
+  mutex_unlock(&queue_mutex);
   return sq;
 }
 
@@ -452,19 +458,24 @@ sq_cancel(struct squeue *sq)
     return;
 
   /* Remove from list */
+  mutex_lock(&queue_mutex);
   for (tmp = sq_head; tmp; tmp = tmp->next) {
     if (tmp == sq) {
-      if (prev)
+      if (prev) {
         prev->next = tmp->next;
-      else
+      } else {
         sq_head = tmp->next;
-      if (sq->event)
+      }
+      mutex_unlock(&queue_mutex);
+      if (sq->event) {
         mush_free(sq->event, "squeue.event");
+      }
       mush_free(sq, "squeue.node");
       return;
     }
     prev = tmp;
   }
+  mutex_unlock(&queue_mutex);
 }
 
 /** Register a callback function to be executed in N seconds.
@@ -535,20 +546,24 @@ sq_run_one(void)
   struct squeue *n;
 
   time(&now);
-
+  mutex_lock(&queue_mutex);
   if (sq_head) {
-    if (difftime(sq_head->when, now) <= 0) {
+  if (difftime(sq_head->when, now) <= 0) {
       bool r = sq_head->fun(sq_head->data);
-      if (r && sq_head->event)
+      if (r && sq_head->event) {
         queue_event(SYSEVENT, sq_head->event, "%s", "");
+}
       n = sq_head->next;
-      if (sq_head->event)
+      if (sq_head->event) {
         mush_free(sq_head->event, "squeue.event");
+}
       mush_free(sq_head, "squeue.node");
       sq_head = n;
+      mutex_unlock(&queue_mutex);
       return true;
     }
-  }
+}
+  mutex_unlock(&queue_mutex);
   return false;
 }
 
@@ -572,11 +587,15 @@ int
 sq_secs_till_next(void)
 {
   time_t now = time(NULL);
+  mutex_lock(&queue_mutex);
   for (struct squeue *s = sq_head; s; s = s->next) {
     if (s->fun == sq_loop_fun &&
-        ((struct sq_loop *) s->data)->fun == on_every_second)
+    ((struct sq_loop *) s->data)->fun == on_every_second) {
       continue;
+}
+    mutex_unlock(&queue_mutex);
     return difftime(s->when, now);
   }
+  mutex_unlock(&queue_mutex);
   return 500;
 }

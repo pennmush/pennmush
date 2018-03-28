@@ -17,6 +17,7 @@ typedef void * THREAD_RETURN_TYPE;
 typedef void *(*thread_func)(void *);
 typedef pthread_t thread_id;
 typedef pthread_mutex_t penn_mutex;
+#define THREAD_RETURN return NULL
 
 #elif defined(WIN32)
 
@@ -28,6 +29,7 @@ typedef unsigned THREAD_RETURN_TYPE;
 typedef unsigned (__stdcall *thread_func)(void *);
 typedef HANDLE thread_id;
 typedef CRITICAL_SECTION penn_mutex;
+#define THREAD_RETURN return 0
 
 #else
 
@@ -37,9 +39,11 @@ typedef CRITICAL_SECTION penn_mutex;
 
 int thread_init(void);
 int thread_cleanup(void);
-int run_thread(thread_id *, thread_func, void *);
+int run_thread(thread_id *, thread_func, void *, bool);
 void exit_thread(THREAD_RETURN_TYPE);
 int join_thread(thread_id, THREAD_RETURN_TYPE *);
+
+/* Mutexes are recursive */
 int mutex_init(penn_mutex *);
 int mutex_destroy(penn_mutex *);
 int mutex_lock(penn_mutex *);

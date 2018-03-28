@@ -392,6 +392,86 @@ kill_info_slave(void)
 
 #endif /* INFO_SLAVE */
 
+#ifdef INFO_THREAD
+
+/* Threaded hostname lookup routines */
+
+#include <stdlib.h>
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
+
+#include "mushtype.h"
+#include "mythread.h"
+#include "lookup.h"
+#include "conf.h"
+#include "sig.h"
+#include "confmagic.h"
+
+/* From bsd.c */
+DESC *initializesock(int s, char *addr, char *ip, int use_ssl);
+
+struct resolv_arg {
+  int sockfd;
+  conn_source source;
+  union sockaddr_u addr;
+  socklen_t len;
+};
+
+THREAD_RETURN_TYPE WIN32_STDCALL
+lookup_func(void *arg)
+{
+  struct resolv_arg *s = arg;
+  char hostname[NI_MAXHOST];
+  char ipaddr[NI_MAXHOST];
+
+  if (getnameinfo(&s->addr.addr, s->len, ipaddr, sizeof ipaddr, NULL, 0,
+                  NI_NUMERICHOST) != 0) {
+    closesocket(s->sockfd);
+    free(s);
+    THREAD_RETURN;
+  }
+
+  if (getnameinfo(&s->addr.addr, s->len, hostname, sizeof hostname, NULL, 0,
+                  USE_DNS ? 0 : NI_NUMERICHOST) != 0) {
+    strcpy(hostname, ipaddr);
+  }
+
+  initializesock(s->sockfd, hostname, ipaddr,
+                 s->source == CS_OPENSSL_SOCKET || s->source == CS_LOCAL_SSL_SOCKET);
+  free(s);
+  sigrecv_notify();
+  THREAD_RETURN;
+}
+
+void
+start_info_thread(int sockfd, union sockaddr_u *addr, socklen_t len,
+                  conn_source source)
+{
+  struct resolv_arg *arg;
+  thread_id id;
+  
+  arg = malloc(sizeof *arg);
+  arg->sockfd = sockfd;
+  arg->source = source;
+  memcpy(arg->addr.data, addr->data, sizeof *addr);
+  arg->len = len;
+  
+  run_thread(&id, lookup_func, arg, true);  
+}
+
+
+#endif
+
 #ifdef WIN32
 void
 dummy_function(void)

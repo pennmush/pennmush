@@ -75,6 +75,7 @@
 #include "strutil.h"
 #include "charconv.h"
 #include "websock.h"
+#include "mythread.h"
 
 extern CHAN *channels;
 
@@ -105,9 +106,14 @@ extern CHAN *channels;
 /** Iterate through a list of descriptors, and do something with those
  * that are connected.
  */
+extern penn_mutex desc_mutex;
+
 #define DESC_ITER_CONN(d)                                                      \
+  mutex_lock(&desc_mutex);                                              \
   for (d = descriptor_list; (d); d = (d)->next)                                \
     if ((d)->connected)
+
+#define DESC_END mutex_unlock(&desc_mutex)
 
 static const char flushed_message[] = "\r\n<Output Flushed>\x1B[0m\r\n";
 
@@ -1755,6 +1761,7 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
       process_output(d);
     }
   }
+  DESC_END;
 }
 
 slab *text_block_slab = NULL; /**< Slab for 'struct text_block' allocations */

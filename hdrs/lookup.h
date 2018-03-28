@@ -21,6 +21,8 @@
 #include "copyrite.h"
 #include "mysocket.h"
 
+#ifdef INFO_SLAVE
+
 /** Datagram sent to info_slave from the mush */
 struct request_dgram {
   int fd;                  /**< The socket descriptor, used as an id number */
@@ -58,5 +60,13 @@ void query_info_slave(int fd);
 void update_pending_info_slaves(void);
 void reap_info_slave(void);
 void kill_info_slave(void);
+
+#endif
+
+#ifdef INFO_THREAD
+
+void start_info_thread(int, union sockaddr_u *, socklen_t, conn_source);
+
+#endif
 
 #endif /* LOOKUP_H */

@@ -105,13 +105,14 @@
 
 #ifndef WIN32
 #include "wait.h"
-#ifdef INFO_SLAVE
-#include "lookup.h"
-#endif
 #ifdef SSL_SLAVE
 #include "ssl_slave.h"
 #endif
 #endif /* !WIN32 */
+
+#if defined(INFO_SLAVE) || defined(INFO_THREAD)
+#include "lookup.h"
+#endif
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -124,20 +125,6 @@
 #ifdef HAVE_GETRLIMIT
 void init_rlimit(void);
 #endif
-
-/* BSD 4.2 and maybe some others need these defined */
-#ifndef FD_ZERO
-/** An fd_set is 4 bytes */
-#define fd_set int
-/** Clear an fd_set */
-#define FD_ZERO(p) (*p = 0)
-/** Set a bit in an fd_set */
-#define FD_SET(n, p) (*p |= (1 << (n)))
-/** Clear a bit in an fd_set */
-#define FD_CLR(n, p) (*p &= ~(1 << (n)))
-/** Check a bit in an fd_set */
-#define FD_ISSET(n, p) (*p & (1 << (n)))
-#endif /* defines for BSD 4.2 */
 
 #ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
@@ -240,10 +227,15 @@ static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
  * that are connected.
  */
 #define DESC_ITER_CONN(d)                                                      \
+  mutex_lock(&desc_mutex);                                              \
   for (d = descriptor_list; (d); d = (d)->next)                                \
     if ((d)->connected)
 
-#define DESC_ITER(d) for (d = descriptor_list; (d); d = (d)->next)
+#define DESC_ITER(d)                            \
+  mutex_lock(&desc_mutex);                      \
+  for (d = descriptor_list; (d); d = (d)->next)
+
+#define DESC_END mutex_unlock(&desc_mutex)
 
 /** Is a descriptor hidden? */
 #define Hidden(d) ((d->hide == 1))
@@ -283,6 +275,7 @@ dummy_msgs()
 
 #endif
 
+penn_mutex desc_mutex;
 DESC *descriptor_list = NULL; /**< The linked list of descriptors */
 intmap *descs_by_fd = NULL;   /**< Map of ports to DESC* objects */
 
@@ -892,11 +885,13 @@ update_quotas(struct timeval last, struct timeval current)
   nslices = (int) msec_diff(current, last) / COMMAND_TIME_MSEC;
 
   if (nslices > 0) {
+    mutex_lock(&desc_mutex);
     for (d = descriptor_list; d; d = d->next) {
       d->quota += COMMANDS_PER_TIME * nslices;
       if (d->quota > COMMAND_BURST_SIZE)
         d->quota = COMMAND_BURST_SIZE;
     }
+    mutex_unlock(&desc_mutex);
   }
 }
 
@@ -961,23 +956,38 @@ setup_desc(int sockfd, conn_source source)
 static void
 got_new_connection(int sockfd, conn_source source)
 {
-  union sockaddr_u addr;
-  socklen_t addr_len;
-  int newsock;
-
   if (!info_slave_halted) {
-    addr_len = sizeof(addr);
-    newsock = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
+    union sockaddr_u addr;
+    socklen_t addr_len = sizeof(addr);
+    int newsock = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
+
     if (newsock < 0) {
-      if (test_connection(newsock) < 0)
         return;
     }
+
     ndescriptors++;
     query_info_slave(newsock);
-    if (newsock >= maxd)
-      maxd = newsock + 1;
-  } else
+  } else {
     setup_desc(sockfd, source);
+  }
+}
+
+#endif
+
+#ifdef INFO_THREAD
+static void
+got_new_connection(int sockfd, conn_source source)
+{
+  union sockaddr_u addr;
+  socklen_t addr_len = sizeof(addr);
+  int newsock = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
+
+  if (newsock < 0) {
+    return;
+  }
+
+  ndescriptors++;
+  start_info_thread(newsock, &addr, addr_len, source);
 }
 
 #endif
@@ -1022,7 +1032,7 @@ shovechars(Port_t port, Port_t sslport)
   nfds_t fd_size = 0, fds_used = 0;
 #endif
   int polltimeout;
-
+  
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1176,10 +1186,12 @@ shovechars(Port_t port, Port_t sslport)
 
     timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
 
+    mutex_lock(&desc_mutex);
     if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
       fd_size = im_count(descs_by_fd) + 16;
       fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
     }
+    mutex_unlock(&desc_mutex);
     fds_used = 0;
 
     if (ndescriptors < avail_descriptors) {
@@ -1214,6 +1226,7 @@ shovechars(Port_t port, Port_t sslport)
     }
 #endif
 
+    mutex_lock(&desc_mutex);
     for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
 
     recheck_d:
@@ -1241,6 +1254,7 @@ shovechars(Port_t port, Port_t sslport)
       if (!d->input.head || d->output.head)
         fds[fds_used++].fd = d->descriptor;
     }
+    mutex_unlock(&desc_mutex);
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
 #ifdef WIN32
@@ -1274,8 +1288,11 @@ shovechars(Port_t port, Port_t sslport)
 
       fds_used = 0;
 
+#if defined(INFO_SLAVE) || defined(INFO_THREAD)
+
 #ifdef INFO_SLAVE
       now = mudtime;
+#endif
 
       if (ndescriptors < avail_descriptors) {
         if (found > 0 && fds[fds_used++].revents & POLLIN) {
@@ -1294,6 +1311,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif /* LOCAL_SOCKET */
       }
 
+#ifdef INFO_SLAVE
       if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
           fds[fds_used++].revents & POLLIN) {
         found -= 1;
@@ -1303,8 +1321,9 @@ shovechars(Port_t port, Port_t sslport)
         /* rerun any pending queries that got lost */
         update_pending_info_slaves();
       }
-
-#else /* INFO_SLAVE */
+#endif
+      
+#else /* INFO_SLAVE/INFO_THREAD */
       if (ndescriptors < avail_descriptors) {
         if (found > 0 && fds[fds_used++].revents & POLLIN) {
           found -= 1;
@@ -1335,6 +1354,7 @@ shovechars(Port_t port, Port_t sslport)
       }
 #endif
 
+      mutex_lock(&desc_mutex);
       for (d = descriptor_list; d && found > 0; d = dnext) {
         unsigned int input_ready, output_ready, errors;
 
@@ -1365,6 +1385,7 @@ shovechars(Port_t port, Port_t sslport)
           }
         }
       }
+      mutex_unlock(&desc_mutex);
     }
   }
   if (fds)
@@ -1909,6 +1930,8 @@ static DESC *pc_dnext = NULL;
 /** Disconnect a descriptor.
  * This sends appropriate disconnection text, flushes output, and
  * then closes the associated socket.
+ * Should be called with a locked desc_mutex.
+ *
  * \param d pointer to descriptor to disconnect.
  * \param reason reason for the descriptor being disconnected, used for events
  * \param executor dbref of the object which caused the disconnect
@@ -1954,6 +1977,7 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
   }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
+  mutex_lock(&desc_mutex);
   if (pc_dnext == d)
     pc_dnext = d->next;
   if (d->prev)
@@ -1964,7 +1988,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     d->next->prev = d->prev;
 
   im_delete(descs_by_fd, d->descriptor);
-
+  mutex_unlock(&desc_mutex);
+  
   if (sslsock && d->ssl) {
     ssl_close_connection(d->ssl);
     d->ssl = NULL;
@@ -2020,6 +2045,10 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->ssl = NULL;
   d->ssl_state = 0;
   d->source = source;
+  mutex_lock(&desc_mutex);
+  if (s >= maxd) {
+    maxd = s + 1;
+  }
   if (descriptor_list)
     descriptor_list->prev = d;
   d->next = descriptor_list;
@@ -2035,6 +2064,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
+  mutex_unlock(&desc_mutex);
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -3204,6 +3234,7 @@ FUNCTION(fun_oob)
     send_oob(d, args[1], json);
     i++;
   }
+  DESC_END;
   safe_integer(i, buff, bp);
   json_free(json);
 }
@@ -3931,6 +3962,7 @@ process_commands(void)
     DESC *cdesc;
 
     nprocessed = 0;
+    mutex_lock(&desc_mutex);
     for (cdesc = descriptor_list; cdesc; cdesc = pc_dnext) {
       struct text_block *t;
 
@@ -3972,6 +4004,7 @@ process_commands(void)
         }
       }
     }
+    mutex_unlock(&desc_mutex);
     pc_dnext = NULL;
   } while (nprocessed > 0);
 }
@@ -4122,7 +4155,9 @@ do_command(DESC *d, char *command)
       run_user_input(d->player, d->descriptor, command);
       /* Check to make sure the descriptor hasn't been closed while
        * running the command, via @force/inline someobj=@boot %# */
+      mutex_lock(&desc_mutex);
       tmp = im_find(descs_by_fd, fd);
+      mutex_unlock(&desc_mutex);
       if (tmp) {
         send_suffix(d);
       } else {
@@ -4227,6 +4262,7 @@ dump_messages(DESC *d, dbref player, int isnew)
       num++;
     }
   }
+  DESC_END;
   /* give permanent text messages */
   if (isnew)
     fcache_dump(d, fcache.newuser_fcache, NULL, NULL);
@@ -4542,6 +4578,7 @@ close_sockets(void)
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
 
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = dnext) {
     dnext = d->next;
     if (!d->ssl) {
@@ -4572,6 +4609,7 @@ close_sockets(void)
     }
     closesocket(d->descriptor);
   }
+  mutex_unlock(&desc_mutex);
 }
 
 /** Give everyone the boot.
@@ -4617,6 +4655,7 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
       boot = d;
     }
   }
+  DESC_END;
 
   if (boot)
     boot_desc(boot, "boot", booter);
@@ -4919,11 +4958,14 @@ player_desc(dbref player)
 {
   DESC *d;
 
+  mutex_unlock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected && (d->player == player)) {
+      mutex_unlock(&desc_mutex);
       return d;
     }
   }
+  mutex_unlock(&desc_mutex);
   return (DESC *) NULL;
 }
 
@@ -5081,6 +5123,7 @@ inactive_desc(dbref player)
         in = d;
     }
   }
+  DESC_END;
   if (numd > 1)
     return in;
   else
@@ -5095,11 +5138,14 @@ DESC *
 port_desc(int port)
 {
   DESC *d;
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; (d); d = d->next) {
     if (d->descriptor == port) {
+      mutex_unlock(&desc_mutex);
       return d;
     }
   }
+  mutex_unlock(&desc_mutex);
   return (DESC *) NULL;
 }
 
@@ -5111,12 +5157,14 @@ dbref
 find_player_by_desc(int port)
 {
   DESC *d;
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; (d); d = d->next) {
     if (d->connected && (d->descriptor == port)) {
+      mutex_unlock(&desc_mutex);
       return d->player;
     }
   }
-
+  mutex_unlock(&desc_mutex);
   /* didn't find anything */
   return NOTHING;
 }
@@ -5225,6 +5273,7 @@ count_players(void)
   DESC *d;
 
   /* Count connected players */
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected) {
       if (!GoodObject(d->player))
@@ -5233,7 +5282,7 @@ count_players(void)
         count++;
     }
   }
-
+  mutex_unlock(&desc_mutex);
   return count;
 }
 
@@ -5346,6 +5395,7 @@ guest_to_connect(dbref player)
     if (Guest(d->player))
       desc_count++;
   }
+  DESC_END;
   if ((MAX_GUESTS > 0) && (desc_count >= MAX_GUESTS))
     return NOTHING; /* Limit already reached */
 
@@ -5390,6 +5440,7 @@ dump_users(DESC *call_by, char *match)
            T("On For"), T("Idle"), get_poll());
   queue_string_eol(call_by, tbuf);
 
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected || !GoodObject(d->player))
       continue;
@@ -5410,6 +5461,7 @@ dump_users(DESC *call_by, char *match)
             get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf);
   }
+  mutex_unlock(&desc_mutex);
   switch (count) {
   case 0:
     mush_strncpy(tbuf, T("There are no players connected."), BUFFER_LEN);
@@ -5501,6 +5553,7 @@ do_who_mortal(dbref player, char *name)
 
   notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
                 T("Idle"), get_poll());
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected)
       continue;
@@ -5522,6 +5575,7 @@ do_who_mortal(dbref player, char *name)
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' ')),
                   get_doing(d->player, player, player, NULL, 0));
   }
+  mutex_unlock(&desc_mutex);
   switch (count) {
   case 0:
     notify(player, T("There are no players connected."));
@@ -5568,6 +5622,7 @@ do_who_admin(dbref player, char *name)
   notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
                 T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"),
                 T("Host"));
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
@@ -5614,6 +5669,7 @@ do_who_admin(dbref player, char *name)
     }
     notify(player, tbuf);
   }
+  mutex_unlock(&desc_mutex);
 
   switch (count) {
   case 0:
@@ -5661,6 +5717,7 @@ do_who_session(dbref player, char *name)
                 T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"),
                 T("Des"), T("Sent"), T("Recv"), T("Pend"));
 
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
@@ -5689,6 +5746,7 @@ do_who_session(dbref player, char *name)
                     d->output_size);
     }
   }
+  mutex_unlock(&desc_mutex);
 
   switch (count) {
   case 0:
@@ -5875,9 +5933,13 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   if (!GoodObject(loc))
     return;
 
-  for (num = 0, d = descriptor_list; d; d = d->next)
-    if (d->connected && (d->player == player))
+  mutex_lock(&desc_mutex);
+  for (num = 0, d = descriptor_list; d; d = d->next) {
+    if (d->connected && (d->player == player)) {
       num += 1;
+    }
+  }
+  mutex_unlock(&desc_mutex);
 
   if (reboot)
     num += 1;
@@ -6215,6 +6277,7 @@ short_page(const char *match)
   if (!(match && *match))
     return NOTHING;
 
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected) {
       if (!string_prefix(Name(d->player), match))
@@ -6230,6 +6293,7 @@ short_page(const char *match)
       }
     }
   }
+  mutex_unlock(&desc_mutex);
 
   if (count > 1)
     return AMBIGUOUS;
@@ -6317,6 +6381,7 @@ FUNCTION(fun_xwho)
       }
     }
   }
+  DESC_END;
 }
 
 /* ARGSUSED */
@@ -6348,6 +6413,7 @@ FUNCTION(fun_nwho)
       count++;
     }
   }
+  DESC_END;
   safe_integer(count, buff, bp);
 }
 
@@ -6415,6 +6481,7 @@ FUNCTION(fun_lwho)
     } else
       safe_dbref(-1, buff, bp);
   }
+  DESC_END;
 }
 
 #ifdef WIN32
@@ -6465,7 +6532,9 @@ lookup_desc(dbref executor, const char *name)
   if (is_strict_integer(name)) {
     int fd = parse_integer(name);
 
+    mutex_lock(&desc_mutex);
     d = im_find(descs_by_fd, fd);
+    mutex_unlock(&desc_mutex);
     if (d && (Priv_Who(executor) || (d->connected && d->player == executor)))
       return d;
     else
@@ -6486,6 +6555,7 @@ lookup_desc(dbref executor, const char *name)
             (!match || (d->last_time > match->last_time)))
           match = d;
       }
+      DESC_END;
       return match;
     }
   }
@@ -6497,9 +6567,12 @@ can_see_connected(dbref player, dbref target)
   DESC *d;
 
   DESC_ITER_CONN (d) {
-    if ((d->player == target) && (!Hidden(d) || Priv_Who(player)))
+    if ((d->player == target) && (!Hidden(d) || Priv_Who(player))) {
+      DESC_END;
       return 1;
+    }
   }
+  DESC_END;
   return 0;
 }
 
@@ -6518,6 +6591,7 @@ least_idle_desc(dbref player, int priv)
         (!match || (d->last_time > match->last_time)))
       match = d;
   }
+  DESC_END;
 
   return match;
 }
@@ -6536,6 +6610,7 @@ most_conn_time(dbref player)
         (!match || (d->connected_at > match->connected_at)))
       match = d;
   }
+  DESC_END;
   if (match) {
     double result = difftime(mudtime, match->connected_at);
     return (int) result;
@@ -6557,6 +6632,7 @@ most_conn_time_priv(dbref player)
         (!match || (d->connected_at > match->connected_at)))
       match = d;
   }
+  DESC_END;
   if (match) {
     double result = difftime(mudtime, match->connected_at);
     return (int) result;
@@ -6690,6 +6766,7 @@ FUNCTION(fun_zwho)
       }
     }
   }
+  DESC_END;
 }
 
 /* ARGSUSED */
@@ -6950,6 +7027,7 @@ FUNCTION(fun_lports)
       safe_chr(' ', buff, bp);
     safe_integer(d->descriptor, buff, bp);
   }
+  DESC_END;
 }
 
 /* ARGSUSED */
@@ -6987,6 +7065,7 @@ FUNCTION(fun_ports)
       safe_integer(d->descriptor, buff, bp);
     }
   }
+  DESC_END;
 }
 
 /** Hide or unhide the specified descriptor/player.
@@ -7060,12 +7139,14 @@ hide_player(dbref player, int hide, char *victim)
         break;
       }
     }
+    DESC_END;
   }
 
   DESC_ITER_CONN (d) {
     if (d->player == thing)
       d->hide = hide;
   }
+  DESC_END;
   if (hide) {
     if (player == thing)
       notify(player, T("You no longer appear on the WHO list."));
@@ -7096,6 +7177,7 @@ inactivity_check(void)
   now = mudtime;
   idle = INACTIVITY_LIMIT ? INACTIVITY_LIMIT : INT_MAX;
   unconnected_idle = UNCONNECTED_LIMIT ? UNCONNECTED_LIMIT : INT_MAX;
+  mutex_lock(&desc_mutex);
   for (d = descriptor_list; d; d = nextd) {
     nextd = d->next;
     idle_for = (int) difftime(now, d->last_time);
@@ -7138,6 +7220,7 @@ inactivity_check(void)
       }
     }
   }
+  mutex_unlock(&desc_mutex);
   return booted;
 }
 
@@ -7153,12 +7236,15 @@ hidden(dbref player)
   int i = 0;
   DESC_ITER_CONN (d) {
     if (d->player == player) {
-      if (!Hidden(d))
+      if (!Hidden(d)) {
+        DESC_END;
         return 0;
-      else
+      } else {
         i++;
+      }
     }
   }
+  DESC_END;
   return (i > 0);
 }
 
@@ -7184,6 +7270,7 @@ close_ssl_connections(void)
       d->conn_flags |= CONN_CLOSE_READY;
     }
   }
+  DESC_END;
   /* Close server socket */
   ssl_close_connection(ssl_master_socket);
   shutdown(sslsock, 2);
@@ -7236,6 +7323,7 @@ dump_reboot_db(void)
     /* First, iterate through all descriptors to get to the end
      * we do this so the descriptor_list isn't reversed on reboot
      */
+    mutex_lock(&desc_mutex);
     for (d = descriptor_list; d && d->next; d = d->next)
       ;
     /* Second, we iterate backwards from the end of descriptor_list
@@ -7272,6 +7360,7 @@ dump_reboot_db(void)
       putstring(f, d->checksum);
       putref_u64(f, d->ws_frame_len);
     } /* for loop */
+    mutex_unlock(&desc_mutex);
 
     putref(f, 0);
     putstring(f, poll_msg);

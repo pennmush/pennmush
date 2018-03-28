@@ -6,6 +6,8 @@
  *
  */
 
+#define _GNU_SOURCE /* For strchrnul, if applicable. */
+
 #include "copyrite.h"
 #include "strutil.h"
 

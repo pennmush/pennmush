@@ -742,7 +742,7 @@ with_postgresql
 with_sqlite3
 enable_ipv6
 enable_nls
-enable_info_slave
+enable_async_hostnames
 enable_ssl_slave
 enable_sse2
 enable_sse3
@@ -1395,7 +1395,10 @@ Optional Features:
   --disable-sql           Don't use SQL support
   --disable-ipv6          Don't use IPv6 networking
   --disable-nls           Don't use message-translation
-  --disable-info_slave    Don't use a separate process for hostname lookups
+  --enable-info-lookup=slave|thread|inline
+                          Control how asyncronous hostname lookups are
+                          performed: with a slave process (default), threads,
+                          or done inline
   --disable-ssl_slave     Use a seperate process for SSL connections that will
                           persist across restarts. (Experimental. Unix-only.)
   --enable-sse2           Use SSE2 instructions (Requires a CPU that supports
@@ -9810,19 +9813,29 @@ $as_echo "#define DONT_TRANSLATE 1" >>confdefs.h
 
 fi
 
-# Check whether --enable-info_slave was given.
-if test "${enable_info_slave+set}" = set; then :
-  enableval=$enable_info_slave; enable_info_slave=$enableval
+# Check whether --enable-async-hostnames was given.
+if test "${enable_async_hostnames+set}" = set; then :
+  enableval=$enable_async_hostnames; async_hostnames=$enableval
 else
-  enable_info_slave=yes
+  async_hostnames=slave
 fi
 
-if test "$enable_info_slave" = yes; then
-   INFO_SLAVE_TARGET=info_slave
+case "$async_hostnames" in
+     yes | slave)
+         async_hostnames=slave
+         INFO_SLAVE_TARGET=info_slave
 
-   $as_echo "#define INFO_SLAVE 1" >>confdefs.h
+         $as_echo "#define INFO_SlAVE 1" >>confdefs.h
 
-fi
+         ;;
+     thread)
+        $as_echo "#define INFO_THREAD 1" >>confdefs.h
+
+        ;;
+     no | inline) ;;
+     * )
+       as_fn_error $? "Unknown argument to --enable-async-hostnames" "$LINENO" 5
+esac
 
 # Check whether --enable-ssl_slave was given.
 if test "${enable_ssl_slave+set}" = set; then :
@@ -9929,8 +9942,10 @@ else
    echo "* SSL connections will not persist across restarts."
 fi
 
-if test "$enable_info_slave" = yes; then
+if test "$async_hostnames" = slave; then
    echo "* Info slave will be used for hostname lookups."
+elif test "$async_hostnames" = thread; then
+   echo "* Threads will be used for hostname lookups."
 else
    echo "* Hostname lookups will be done by the mush process."
 fi

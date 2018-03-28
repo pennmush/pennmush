@@ -115,10 +115,18 @@ Here's the process in detail:
    
    :    Turn off translation support if you don't need it.
    
-   `--disable-info_slave`
+   `--enable-async-hostnames=slave`
+
+   :    Use a subprocess to resolve IP addresses into hostnames. Default.
+
+   `--enable-async-hostnames=thread`
    
-   :    Don't use an external process to do hostname lookups. This option
-        is required on Windows.
+   :    Use threads for resolving IP addresses to hostnames. Experimental.
+
+   `--disable-async-hostnames`
+   
+   :    Resolve IP addresses to hostnames inline. This option
+        is required on Windows. It might cause lag on your game.
 
    `--help`
    

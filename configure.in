@@ -423,13 +423,22 @@ if test "$enable_nls" = "no"; then
 AC_DEFINE(DONT_TRANSLATE)
 fi
 
-AC_ARG_ENABLE(info_slave, AS_HELP_STRING([--disable-info_slave],
-			  [Don't use a separate process for hostname lookups]),
-			  enable_info_slave=$enableval, enable_info_slave=yes)
-if test "$enable_info_slave" = yes; then
-   AC_SUBST(INFO_SLAVE_TARGET, info_slave)
-   AC_DEFINE(INFO_SLAVE)
-fi
+AC_ARG_ENABLE(async-hostnames, AS_HELP_STRING([--enable-async-hostnames=slave|thread|inline],
+			  [Control how asyncronous hostname lookups are performed: with a slave process (default), threads, or done inline]),
+			  async_hostnames=$enableval, async_hostnames=slave)
+case "$async_hostnames" in
+     yes | slave)
+         async_hostnames=slave
+         AC_SUBST(INFO_SLAVE_TARGET, info_slave)
+         AC_DEFINE(INFO_SLAVE)
+         ;;
+     thread)
+        AC_DEFINE(INFO_THREAD)
+        ;;
+     no | inline) ;;
+     * )
+       AC_MSG_ERROR([Unknown argument to --enable-async-hostnames])
+esac
 
 AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--disable-ssl_slave],
 			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]),
@@ -509,8 +518,10 @@ else
    echo "* SSL connections will not persist across restarts."
 fi
 
-if test "$enable_info_slave" = yes; then
+if test "$async_hostnames" = slave; then
    echo "* Info slave will be used for hostname lookups."
+elif test "$async_hostnames" = thread; then
+   echo "* Threads will be used for hostname lookups."
 else
    echo "* Hostname lookups will be done by the mush process."
 fi

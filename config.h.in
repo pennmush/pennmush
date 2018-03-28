@@ -362,6 +362,8 @@ typedef bool _Bool;
 
 #undef INFO_SLAVE
 
+#undef INFO_THREAD
+
 #undef SSL_SLAVE
 
 #undef HAVE_UPTIME

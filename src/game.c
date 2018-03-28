@@ -66,6 +66,7 @@ void Win32MUSH_setup(void);
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "mythread.h"
 
 #ifdef HAVE_SSL
 #include "myssl.h"
@@ -2530,6 +2531,8 @@ extern intmap *queue_map, *descs_by_fd, *rgb_to_name;
 extern intmap *watchtable;
 #endif
 
+extern penn_mutex desc_mutex, queue_mutex;
+ 
 /** Reports stats on various in-memory data structures.
  * \param player the enactor.
  */
@@ -2578,8 +2581,12 @@ do_list_memstats(dbref player)
   st_stats(player, &lock_names, "LockNames");
   notify(player, "Integer Maps:");
   im_stats_header(player);
+  mutex_lock(&queue_mutex);
   im_stats(player, queue_map, "Queue IDs");
+  mutex_unlock(&queue_mutex);
+  mutex_lock(&desc_mutex);
   im_stats(player, descs_by_fd, "Connections");
+  mutex_unlock(&desc_mutex);
 #ifdef HAVE_INOTIFY
   im_stats(player, watchtable, "Inotify");
 #endif

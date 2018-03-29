@@ -85,6 +85,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "mythread.h"
 
 /** An access flag. */
 typedef struct a_acsflag acsflag;
@@ -111,6 +112,8 @@ static acsflag acslist[] = {{"connect", 1, ACS_CONNECT},
 
 static struct access *access_top;
 static void free_access_list(void);
+
+penn_mutex site_mutex;
 
 /* from pcre */
 extern const unsigned char *tables;
@@ -185,6 +188,7 @@ add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
   if (!tmp)
     return false;
 
+  mutex_lock(&site_mutex);
   if (!access_top) {
     /* Add to the beginning */
     access_top = tmp;
@@ -194,6 +198,8 @@ add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
       end = end->next;
     end->next = tmp;
   }
+  mutex_unlock(&site_mutex);
+  
   return true;
 }
 
@@ -213,6 +219,7 @@ read_access_file(void)
   char *comment;
   const char *errptr = NULL;
 
+  mutex_lock(&site_mutex);
   if (access_top) {
     /* We're reloading the file, so we've got to delete any current
      * entries
@@ -268,6 +275,7 @@ read_access_file(void)
     retval = 1;
     fclose(fp);
   }
+  mutex_unlock(&site_mutex);
   reserve_fd();
   return retval;
 }
@@ -290,6 +298,7 @@ write_access_file(void)
   if (!fp) {
     do_log(LT_ERR, GOD, GOD, "Unable to open %s.", tmpf);
   } else {
+    mutex_lock(&site_mutex);
     for (ap = access_top; ap; ap = ap->next) {
       if (strcmp(ap->host, "@sitelock") == 0) {
         fprintf(fp, "@sitelock\n");
@@ -325,6 +334,7 @@ write_access_file(void)
     }
     fclose(fp);
     rename_file(tmpf, ACCESS_FILE);
+    mutex_unlock(&site_mutex);
   }
   reserve_fd();
   return;
@@ -358,7 +368,7 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
     return 0;
 
   hlen = strlen(hname);
-
+  mutex_lock(&site_mutex);
   for (ap = access_top; ap; ap = ap->next) {
     if (ap->can & ACS_SITELOCK)
       continue;
@@ -368,19 +378,27 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       if (flag & ACS_CONNECT) {
-        if ((ap->cant & ACS_GOD) && God(who)) /* God can't connect from here */
+        if ((ap->cant & ACS_GOD) && God(who)) { /* God can't connect from here */
+          mutex_unlock(&site_mutex);
           return 0;
-        else if ((ap->cant & ACS_WIZARD) && Wizard(who))
+        } else if ((ap->cant & ACS_WIZARD) && Wizard(who)) {
           /* Wiz can't connect from here */
+          mutex_unlock(&site_mutex);
           return 0;
-        else if ((ap->cant & ACS_ADMIN) && Hasprivs(who))
+        } else if ((ap->cant & ACS_ADMIN) && Hasprivs(who)) {
           /* Wiz and roy can't connect from here */
+          mutex_unlock(&site_mutex);
           return 0;
+        }
       }
-      if (ap->cant && ((ap->cant & flag) == flag))
+      if (ap->cant && ((ap->cant & flag) == flag)) {
+        mutex_unlock(&site_mutex);
         return 0;
-      if (ap->can && (ap->can & flag))
+      }
+      if (ap->can && (ap->can & flag)) {
+        mutex_unlock(&site_mutex);
         return 1;
+      }
 
       /* Hmm. We don't know if we can or not, so continue */
       break;
@@ -390,10 +408,13 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
   /* Flag was neither set nor unset. If the flag was a toggle,
    * then the host can do it. If not, the host can't */
   for (c = acslist; c->name; c++) {
-    if (flag & c->flag)
+    if (flag & c->flag) {
+      mutex_unlock(&site_mutex);
       return c->toggle ? 1 : 0;
+    }
   }
   /* Should never reach here, but just in case */
+  mutex_unlock(&site_mutex);
   return 1;
 }
 
@@ -415,18 +436,23 @@ site_check_access(const char *hname, dbref who, int *rulenum)
 
   hlen = strlen(hname);
 
+  mutex_lock(&site_mutex);
+  
   for (ap = access_top; ap; ap = ap->next) {
     (*rulenum)++;
-    if (ap->can & ACS_SITELOCK)
+    if (ap->can & ACS_SITELOCK) {
       continue;
+    }
     if (((ap->can & ACS_REGEXP)
            ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
            : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
+      mutex_unlock(&site_mutex);
       return ap;
     }
   }
+  mutex_unlock(&site_mutex);
   return NULL;
 }
 
@@ -511,12 +537,13 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
     notify_format(player, T("Unable to add sitelock entry: %s"), errptr);
     return false;
   }
-
+  mutex_lock(&site_mutex);
   if (!access_top) {
     /* Add to the beginning, but first add a sitelock marker */
     if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "",
                          &errptr)) {
       notify_format(player, T("Unable to add @sitelock separator: %s"), errptr);
+      mutex_unlock(&site_mutex);
       return 0;
     }
     access_top->next = tmp;
@@ -531,6 +558,7 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
                            &errptr)) {
         notify_format(player, T("Unable to add @sitelock separator: %s"),
                       errptr);
+        mutex_unlock(&site_mutex);
         return 0;
       }
       end = end->next;
@@ -540,6 +568,7 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
     }
     end->next = tmp;
   }
+  mutex_unlock(&site_mutex);
   return 1;
 }
 
@@ -561,6 +590,7 @@ remove_access_sitelock(const char *pattern)
     deletethis = parse_integer(pattern);
 
   /* We only want to be able to delete entries added with @sitelock */
+  mutex_lock(&site_mutex);
   for (ap = access_top; ap; ap = ap->next) {
     rulenum++;
     if (strcmp(ap->host, "@sitelock") == 0) {
@@ -588,11 +618,12 @@ remove_access_sitelock(const char *pattern)
     }
     ap = next;
   }
-
+  mutex_unlock(&site_mutex);
   return n;
 }
 
-/* Free the entire access list */
+/* Free the entire access list. site_mutex should already be locked
+ * before calling.  */
 static void
 free_access_list(void)
 {
@@ -619,6 +650,7 @@ do_list_access(dbref player)
   int rulenum = 0;
   char *bp;
 
+  mutex_lock(&site_mutex);
   for (ap = access_top; ap; ap = ap->next) {
     rulenum++;
     if (ap->can != ACS_SITELOCK) {
@@ -646,6 +678,7 @@ do_list_access(dbref player)
         T("---- @sitelock will add sites immediately below this line ----"));
     }
   }
+  mutex_unlock(&site_mutex);
   if (rulenum == 0) {
     notify(player, T("There are no access rules."));
   }

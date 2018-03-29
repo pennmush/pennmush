@@ -9,12 +9,22 @@
 
 extern penn_mutex desc_mutex;
 extern penn_mutex queue_mutex;
+extern penn_mutex site_mutex;
+
+#ifdef HAVE_PTHREADS
+static void init_pthreads(void);
+static void dest_pthreads(void);
+#endif
 
 int
 thread_init(void)
 {
+#ifdef HAVE_PTHREADS
+  init_pthreads();
+#endif
   mutex_init(&desc_mutex);
   mutex_init(&queue_mutex);
+  mutex_init(&site_mutex);
   return 0;
 }
 
@@ -23,19 +33,39 @@ thread_cleanup(void)
 {
   mutex_destroy(&desc_mutex);
   mutex_destroy(&queue_mutex);
+  mutex_destroy(&site_mutex);
+#ifdef HAVE_PTHREADS
+  dest_pthreads();
+#endif
   return 0;
 }
 
 #ifdef HAVE_PTHREADS
 /* Pthreads wrappers */
 
+static pthread_mutexattr_t recattr;
+static pthread_attr_t detached;
+
+static void
+init_pthreads(void)
+{
+  pthread_mutexattr_init(&recattr);
+  pthread_mutexattr_settype(&recattr, PTHREAD_MUTEX_RECURSIVE);
+  pthread_attr_init(&detached);
+  pthread_attr_setdetachstate(&detached, PTHREAD_CREATE_DETACHED);
+}
+
+static void
+dest_pthreads(void)
+{
+  pthread_mutexattr_destroy(&recattr);
+  pthread_attr_destroy(&detached);
+}
+
 int
 run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
-  int r = pthread_create(id, NULL, f, arg);
-  if (r == 0 && detach) {
-    pthread_detach(*id);
-  }
-  return r;
+  pthread_attr_t *attr = detach ? &detached : NULL;
+  return pthread_create(id, attr, f, arg);
 }
 
 void
@@ -53,16 +83,7 @@ join_thread(thread_id id, THREAD_RETURN_TYPE *retval)
 int
 mutex_init(penn_mutex *mut)
 {
-  static pthread_mutexattr_t attr;
-  static bool init = false;
-
-  if (!init) {
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    init = true;
-  }
-  
-  return pthread_mutex_init(mut, &attr);
+  return pthread_mutex_init(mut, &recattr);
 }
 
 int
@@ -130,7 +151,7 @@ join_thread(thread_id id, THREAD_RETURN_TYPE *retval)
 int
 mutex_init(penn_mutex *mut)
 {
-  InitializeCriticalSection(mut);
+  InitializeCriticalSectionAndSpinCount(mut, 50);
   return 0;
 }
 

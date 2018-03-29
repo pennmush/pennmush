@@ -422,6 +422,7 @@ kill_info_slave(void)
 #include "conf.h"
 #include "sig.h"
 #include "log.h"
+#include "access.h"
 #include "confmagic.h"
 
 /* From bsd.c */
@@ -436,7 +437,8 @@ struct resolv_arg {
   socklen_t len;
 };
 
-volatile atomic_int count = 0;
+atomic_int count = 0;
+extern atomic_int ndescriptors;
 
 int
 outstanding_info_count(void) {
@@ -458,6 +460,7 @@ lookup_func(void *arg)
     closesocket(s->sockfd);
     free(s);
     atomic_decrement(&count);
+    atomic_decrement(&ndescriptors);
     THREAD_RETURN;
   }
 
@@ -466,12 +469,22 @@ lookup_func(void *arg)
     strcpy(hostname, ipaddr);
   }
 
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", s->sockfd,
-         hostname, ipaddr, source_to_s(s->source));
-  set_keepalive(s->sockfd, options.keepalive_timeout);
-
-  initializesock(s->sockfd, hostname, ipaddr,
-                 s->source == CS_OPENSSL_SOCKET || s->source == CS_LOCAL_SSL_SOCKET);
+  if (Forbidden_Site(ipaddr) || Forbidden_Site(hostname)) {
+    if (!Deny_Silent_Site(ipaddr, AMBIGUOUS) ||
+        !Deny_Silent_Site(hostname, AMBIGUOUS)) {
+      do_log(LT_CONN, 0, 0, "[%d/%s/%s] Refused connection.", s->sockfd, hostname,
+             ipaddr);
+    }
+    shutdown(s->sockfd, 2);
+    closesocket(s->sockfd);
+  } else {
+    do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", s->sockfd,
+              hostname, ipaddr, source_to_s(s->source));
+    set_keepalive(s->sockfd, options.keepalive_timeout);
+    
+    initializesock(s->sockfd, hostname, ipaddr,
+                   s->source == CS_OPENSSL_SOCKET || s->source == CS_LOCAL_SSL_SOCKET);
+  }
   
   free(s);
 #ifndef WIN32

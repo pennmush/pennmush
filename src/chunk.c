@@ -218,6 +218,7 @@
 #include "config.h"
 #include "chunk.h"
 
+#define _XOPEN_SOURCE 600
 #include <limits.h>
 #include <string.h>
 #include <stdarg.h>
@@ -589,10 +590,10 @@ static int ignore; /**< Used to shut up compiler warnings when not asserting */
 static int
 LenToFullLen(int len)
 {
-  return (len + ((len > MAX_SHORT_CHUNK_LEN)
-                   ? (len > MAX_MEDIUM_CHUNK_LEN) ? CHUNK_LONG_DATA_OFFSET
-                                                  : CHUNK_MEDIUM_DATA_OFFSET
-                   : CHUNK_SHORT_DATA_OFFSET));
+  return (len + ((len > MAX_SHORT_CHUNK_LEN) ? (len > MAX_MEDIUM_CHUNK_LEN)
+                                                 ? CHUNK_LONG_DATA_OFFSET
+                                                 : CHUNK_MEDIUM_DATA_OFFSET
+                                             : CHUNK_SHORT_DATA_OFFSET));
 }
 
 static inline char *ChunkPointer(uint16_t, uint16_t);
@@ -1069,8 +1070,9 @@ region_is_valid(uint16_t region)
   for (offset = FIRST_CHUNK_OFFSET_IN_REGION; offset < REGION_SIZE;
        offset += len) {
     if (was_free && ChunkIsFree(region, offset)) {
-      do_rawlog(LT_ERR, "region 0x%04x is not valid: uncoalesced free chunk:"
-                        " 0x%04x (see map)",
+      do_rawlog(LT_ERR,
+                "region 0x%04x is not valid: uncoalesced free chunk:"
+                " 0x%04x (see map)",
                 region, offset);
       result = 0;
       dump = 1;
@@ -1083,8 +1085,9 @@ region_is_valid(uint16_t region)
       if (largest_free < len)
         largest_free = len;
       if (next_free != offset) {
-        do_rawlog(LT_ERR, "region 0x%04x is not valid: free chain broken:"
-                          " 0x%04x, expecting 0x%04x (see map)",
+        do_rawlog(LT_ERR,
+                  "region 0x%04x is not valid: free chain broken:"
+                  " 0x%04x, expecting 0x%04x (see map)",
                   region, offset, next_free);
         result = 0;
         dump = 1;
@@ -1095,16 +1098,18 @@ region_is_valid(uint16_t region)
       total_derefs += ChunkDerefs(region, offset);
       if (ChunkIsMedium(region, offset) &&
           ChunkLen(region, offset) <= MAX_SHORT_CHUNK_LEN) {
-        do_rawlog(LT_ERR, "region 0x%04x is not valid: medium chunk too small:"
-                          " 0x%04x (see map)",
+        do_rawlog(LT_ERR,
+                  "region 0x%04x is not valid: medium chunk too small:"
+                  " 0x%04x (see map)",
                   region, offset);
         result = 0;
         dump = 1;
       }
       if (ChunkIsLong(region, offset) &&
           ChunkLen(region, offset) <= MAX_MEDIUM_CHUNK_LEN) {
-        do_rawlog(LT_ERR, "region 0x%04x is not valid: long chunk too small:"
-                          " 0x%04x (see map)",
+        do_rawlog(LT_ERR,
+                  "region 0x%04x is not valid: long chunk too small:"
+                  " 0x%04x (see map)",
                   region, offset);
         result = 0;
         dump = 1;
@@ -1118,39 +1123,45 @@ region_is_valid(uint16_t region)
     result = 0;
   }
   if (next_free != 0) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: free chain unterminated:"
-                      " expecting 0x%04x (see map)",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: free chain unterminated:"
+              " expecting 0x%04x (see map)",
               region, next_free);
     result = 0;
     dump = 1;
   }
   if (rp->used_count != used_count) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: used count is wrong:"
-                      " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: used count is wrong:"
+              " 0x%04x should be 0x%04x",
               region, rp->used_count, used_count);
     result = 0;
   }
   if (rp->total_derefs != total_derefs) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: total derefs is wrong:"
-                      " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: total derefs is wrong:"
+              " 0x%04x should be 0x%04x",
               region, (unsigned int) rp->total_derefs, total_derefs);
     result = 0;
   }
   if (rp->free_count != free_count) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: free count is wrong:"
-                      " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: free count is wrong:"
+              " 0x%04x should be 0x%04x",
               region, rp->free_count, free_count);
     result = 0;
   }
   if (rp->free_bytes != free_bytes) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: free bytes is wrong:"
-                      " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: free bytes is wrong:"
+              " 0x%04x should be 0x%04x",
               region, rp->free_bytes, free_bytes);
     result = 0;
   }
   if (rp->largest_free_chunk != largest_free) {
-    do_rawlog(LT_ERR, "region 0x%04x is not valid: largest free is wrong:"
-                      " 0x%04x should be 0x%04x",
+    do_rawlog(LT_ERR,
+              "region 0x%04x is not valid: largest free is wrong:"
+              " 0x%04x should be 0x%04x",
               region, rp->largest_free_chunk, largest_free);
     result = 0;
   }

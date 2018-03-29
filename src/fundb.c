@@ -640,7 +640,7 @@ FUNCTION(fun_rnum)
 /*
  * fun_lcon, fun_lexits, fun_con, fun_exit, fun_next were all
  * re-coded by d'mike, 7/12/91.
-  *
+ *
  * The function behavior was changed by Amberyl, to remove what she saw
  * as a security problem, since mortals could get the contents of rooms
  * they didn't control, thus (if they were willing to go through the trouble)

@@ -1,8 +1,10 @@
+
 /** \file tz.c
  *
  * \brief Routines for reading tzinfo files
  */
 
+#define _GNU_SOURCE
 #include "config.h"
 
 #include <stdio.h>

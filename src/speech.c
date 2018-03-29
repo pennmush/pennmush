@@ -919,7 +919,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
         page_return(
           executor, target, "Away", "AWAY",
-          tprintf(T("%s is not connected."), AName(target, AN_SYS, NULL)), pe_info);
+          tprintf(T("%s is not connected."), AName(target, AN_SYS, NULL)),
+          pe_info);
         if (fails_lock)
           fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
@@ -927,13 +928,15 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       } else if (is_haven) {
         page_return(executor, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting any pages."),
-                            AName(target, AN_SYS, NULL)), pe_info);
+                            AName(target, AN_SYS, NULL)),
+                    pe_info);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (fails_lock) {
         page_return(executor, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting your pages."),
-                            AName(target, AN_SYS, NULL)), pe_info);
+                            AName(target, AN_SYS, NULL)),
+                    pe_info);
         fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);

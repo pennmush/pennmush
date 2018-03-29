@@ -1414,10 +1414,8 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
                : strncasecmp(s, gd->findstr, gd->findlen))) {
         ansi_string *repl;
         matched = 1;
-        repl = parse_ansi_string(tprintf("%s%.*s%s",
-                                         ANSI_HILITE,
-                                         gd->findlen, s,
-                                         ANSI_END));
+        repl = parse_ansi_string(
+          tprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, s, ANSI_END));
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         free_ansi_string(repl);
         s += gd->findlen;

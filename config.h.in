@@ -3,27 +3,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* Feature test macros */
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE 1
-#endif
-
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#endif
-
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700
-#endif
-
-#ifndef _ISOC99_SOURCE
-#define _ISOC99_SOURCE 1
-#endif
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
-
 /* Headers */
 
 #undef HAVE_ARPA_INET_H
@@ -413,6 +392,7 @@ typedef bool _Bool;
 #endif
 
 #undef GCC_MALLOC_CALL
+
 
 /* Turn on SSE2 stuff automatically if supported (IE, x86-64 or x86 with the right -march switch) */
 #undef HAVE_SSE2

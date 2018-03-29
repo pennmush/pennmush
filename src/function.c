@@ -683,13 +683,12 @@ FUNTAB flist[] = {
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},
 #ifdef DEBUG_PENNMUSH
   {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
-#endif                          /* DEBUG_PENNMUSH */
+#endif /* DEBUG_PENNMUSH */
 #ifndef WITHOUT_WEBSOCKETS
   {"WSJSON", fun_websocket_json, 1, 2, FN_REG},
   {"WSHTML", fun_websocket_html, 1, 2, FN_REG},
 #endif /* undef WITHOUT_WEBSOCKETS */
-  {NULL, NULL, 0, 0, 0}
-};
+  {NULL, NULL, 0, 0, 0}};
 
 /** Map of function restriction bits to textual names */
 struct function_restrictions {

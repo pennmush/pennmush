@@ -6,6 +6,8 @@
  *
  */
 
+#define _GNU_SOURCE
+
 #include "copyrite.h"
 #include "config.h"
 
@@ -329,8 +331,9 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
 #else
     if (errno == EADDRINUSE) {
 #endif
-      fprintf(stderr, "Another process (Possibly another copy of this mush?) "
-                      "appears to be using port %hu. Aborting.\n",
+      fprintf(stderr,
+              "Another process (Possibly another copy of this mush?) "
+              "appears to be using port %hu. Aborting.\n",
               port);
       exit(1);
     }

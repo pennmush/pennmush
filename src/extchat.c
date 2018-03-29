@@ -1936,24 +1936,20 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     silent = 1;
     switch (flag) {
     case CU_QUIET:
-      notify(player,
-             setting ? T("All channels have been muted.")
-                     : T("All channels have been unmuted."));
+      notify(player, setting ? T("All channels have been muted.")
+                             : T("All channels have been unmuted."));
       break;
     case CU_HIDE:
-      notify(player,
-             setting ? T("You hide on all the channels you can.")
-                     : T("You unhide on all channels."));
+      notify(player, setting ? T("You hide on all the channels you can.")
+                             : T("You unhide on all channels."));
       break;
     case CU_GAG:
-      notify(player,
-             setting ? T("All channels have been gagged.")
-                     : T("All channels have been ungagged."));
+      notify(player, setting ? T("All channels have been gagged.")
+                             : T("All channels have been ungagged."));
       break;
     case CU_COMBINE:
-      notify(player,
-             setting ? T("All channels have been combined.")
-                     : T("All channels have been uncombined."));
+      notify(player, setting ? T("All channels have been combined.")
+                             : T("All channels have been uncombined."));
       break;
     }
   } else {
@@ -2040,14 +2036,16 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
       if (setting) {
         CUtype(u) |= CU_COMBINE;
         if (!silent)
-          notify_format(player, T("Connect messages on channel <%s> will now "
-                                  "be combined with others."),
+          notify_format(player,
+                        T("Connect messages on channel <%s> will now "
+                          "be combined with others."),
                         ChanName(c));
       } else {
         CUtype(u) &= ~CU_COMBINE;
         if (!silent)
-          notify_format(player, T("Connect messages on channel <%s> will no "
-                                  "longer be combined with others."),
+          notify_format(player,
+                        T("Connect messages on channel <%s> will no "
+                          "longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -2179,9 +2177,10 @@ do_channel_list(dbref player, const char *partname, int types)
       continue;
     }
     if (SUPPORT_HTML)
-      snprintf(numusers, BUFFER_LEN, "%c%cA XCH_CMD=\"@channel/who %s\" "
-                                     "XCH_HINT=\"See who's on this channel "
-                                     "now\"%c%5d%c%c/A%c",
+      snprintf(numusers, BUFFER_LEN,
+               "%c%cA XCH_CMD=\"@channel/who %s\" "
+               "XCH_HINT=\"See who's on this channel "
+               "now\"%c%5d%c%c/A%c",
                TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
                TAG_START, MARKUP_HTML, TAG_END);
     else

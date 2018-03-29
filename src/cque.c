@@ -647,8 +647,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
        * I'm an idiot too, and it crashed when I did it as well. I'll fix it for
        * you; aren't
        * you lucky? */
-      do_rawlog(LT_ERR, "Attempt to create a non-inplace queue entry using a "
-                        "shared pe_info by #%d from %s",
+      do_rawlog(LT_ERR,
+                "Attempt to create a non-inplace queue entry using a "
+                "shared pe_info by #%d from %s",
                 executor,
                 (fromattr ? fromattr : "the socket, or an unknown attribute"));
       flags = PE_INFO_CLONE; /* The closest we can come to what you asked for */
@@ -1751,8 +1752,7 @@ FUNCTION(fun_pidinfo)
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
-    } else if (string_prefix("player", r) ||
-               string_prefix("executor", r)) {
+    } else if (string_prefix("player", r) || string_prefix("executor", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;

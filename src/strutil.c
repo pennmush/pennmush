@@ -6,6 +6,8 @@
  *
  */
 
+#define _GNU_SOURCE /* For strchrnul, if applicable. */
+
 #include "copyrite.h"
 #include "config.h"
 #include "strutil.h"
@@ -216,7 +218,6 @@ string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
     string++, prefix++;
   return *prefix == '\0';
 }
-
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.
@@ -1697,10 +1698,10 @@ show_tm(struct tm *when)
 /** Return a default pcre_extra pointer pointing to a static region
     set up to use a fairly low match-limit setting.
 */
-struct pcre_extra *
+pcre_extra *
 default_match_limit(void)
 {
-  static struct pcre_extra ex;
+  static pcre_extra ex;
   memset(&ex, 0, sizeof ex);
   set_match_limit(&ex);
   return &ex;
@@ -1708,7 +1709,7 @@ default_match_limit(void)
 
 /** Set a low match-limit setting in an existing pcre_extra struct. */
 void
-set_match_limit(struct pcre_extra *ex)
+set_match_limit(pcre_extra *ex)
 {
   if (!ex)
     return;

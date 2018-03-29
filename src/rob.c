@@ -438,9 +438,10 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       }
       if (!eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
-        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."),
-                                                 AName(who, AN_SYS, NULL)),
-                  NOTHING);
+        fail_lock(
+          player, who, Pay_Lock,
+          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
+          NOTHING);
         pe_regs_free(pe_regs);
         return;
       }
@@ -462,9 +463,10 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
        * a player */
       if (!Wizard(player) && !eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
-        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."),
-                                                 AName(who, AN_SYS, NULL)),
-                  NOTHING);
+        fail_lock(
+          player, who, Pay_Lock,
+          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
+          NOTHING);
         return;
       }
       if (amount > 0) {

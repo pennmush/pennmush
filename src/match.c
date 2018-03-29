@@ -339,11 +339,10 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   dbref abs = parse_objid(xname); /* try to match xname as a dbref/objid */
   int final = 0; /* the Xth object we want, with english matching (5th foo) */
   int curr = 0;  /* the number of matches found so far, when 'final' is used */
-  int nocontrol = 0; /* set when we've matched an object, but don't control it
-                        and MAT_CONTROL is given */
-  int right_type =
-    0; /* number of objects of preferred type found, when we have a type but
-          MAT_TYPE isn't given */
+  int nocontrol = 0;  /* set when we've matched an object, but don't control it
+                         and MAT_CONTROL is given */
+  int right_type = 0; /* number of objects of preferred type found, when we have
+                         a type but MAT_TYPE isn't given */
   int exact =
     0; /* set to 1 when we've found an exact match, not just a partial one */
   int done =

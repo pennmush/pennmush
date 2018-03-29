@@ -59,7 +59,7 @@ char *password_hash(const char *password, const char *algo);
 /** \@search data */
 struct search_spec {
   dbref owner;                /**< Limit to this owner, if specified */
-  uint32_t type;                   /**< Limit to this type */
+  uint32_t type;              /**< Limit to this type */
   dbref parent;               /**< Limit to children of this parent */
   dbref zone;                 /**< Limit to those in this zone */
   dbref entrances;            /**< Objects linked here, for \@entrances */
@@ -1395,8 +1395,9 @@ do_search(dbref player, const char *arg1, char **arg3)
 
     notify(player, T("----------  Search Done  ----------"));
     if (ngarbage)
-      notify_format(player, T("Totals: Rooms...%d  Exits...%d  Things...%d  "
-                              "Players...%d  Garbage...%d"),
+      notify_format(player,
+                    T("Totals: Rooms...%d  Exits...%d  Things...%d  "
+                      "Players...%d  Garbage...%d"),
                     nrooms, nexits, nthings, nplayers, ngarbage);
     else
       notify_format(

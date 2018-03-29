@@ -436,11 +436,9 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (strcasecmp("urgent", status) == 0 ||
-      strcasecmp("unurgent", status) == 0)
+  if (strcasecmp("urgent", status) == 0 || strcasecmp("unurgent", status) == 0)
     flag = M_URGENT;
-  else if (strcasecmp("read", status) == 0 ||
-           strcasecmp("unread", status) == 0)
+  else if (strcasecmp("read", status) == 0 || strcasecmp("unread", status) == 0)
     flag = M_MSGREAD;
   else if (strcasecmp("cleared", status) == 0 ||
            strcasecmp("uncleared", status) == 0)
@@ -531,13 +529,15 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
             }
           } else {
             if (Unread(mp) && !negate) {
-              notify_format(player, T("MAIL: Unread Msg #%d:%d cleared! Use "
-                                      "@mail/unclear %d:%d to recover."),
+              notify_format(player,
+                            T("MAIL: Unread Msg #%d:%d cleared! Use "
+                              "@mail/unclear %d:%d to recover."),
                             (int) Folder(mp), i[Folder(mp)], (int) Folder(mp),
                             i[Folder(mp)]);
             } else {
-              notify_format(player, (negate ? T("MAIL: Msg #%d:%d uncleared.")
-                                            : T("MAIL: Msg #%d:%d cleared.")),
+              notify_format(player,
+                            (negate ? T("MAIL: Msg #%d:%d uncleared.")
+                                    : T("MAIL: Msg #%d:%d cleared.")),
                             (int) Folder(mp), i[Folder(mp)]);
             }
           }
@@ -753,11 +753,13 @@ do_mail_list(dbref player, const char *msglist)
     return;
   }
   FA_Init(i);
-  folder = (AllInFolder(ms) || ms.player != 0) ? player_folder(player) : MSFolder(ms);
+  folder =
+    (AllInFolder(ms) || ms.player != 0) ? player_folder(player) : MSFolder(ms);
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
-  notify_format(player, T("---------------------------  MAIL (folder %2d)  "
-                          "------------------------------"),
+  notify_format(player,
+                T("---------------------------  MAIL (folder %2d)  "
+                  "------------------------------"),
                 (int) folder);
   for (mp = find_exact_starting_point(player); mp && (mp->to == player);
        mp = mp->next) {
@@ -986,10 +988,11 @@ do_mail_reviewlist(dbref player, dbref target)
       }
       isplayer = IsPlayer(mp->to);
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s", status_chars(mp),
-                    i, (isplayer && (Connected(mp->to) &&
-                                     (!hidden(mp->to) || Priv_Who(player)))
-                          ? '*'
-                          : ' '),
+                    i,
+                    (isplayer && (Connected(mp->to) &&
+                                  (!hidden(mp->to) || Priv_Who(player)))
+                       ? '*'
+                       : ' '),
                     nbuff, 30, subj, mail_list_time(show_time(mp->time, 0), 1));
       if (SUPPORT_HTML)
         notify_noenter(player,
@@ -1492,8 +1495,9 @@ send_mail(dbref player, dbref target, char *subject, char *message,
       notify_format(player, T("MAIL: You sent your message to %s."),
                     AName(target, AN_SYS, NULL));
     else
-      notify_format(player, T("MAIL: Your message was not sent to %s due to a "
-                              "mail forwarding problem."),
+      notify_format(player,
+                    T("MAIL: Your message was not sent to %s due to a "
+                      "mail forwarding problem."),
                     AName(target, AN_SYS, NULL));
   }
 }
@@ -1871,14 +1875,17 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
           tchars += strlen(get_message(mp));
         }
       }
-      notify_format(player, T("MAIL: There are %d old msgs in the mail spool, "
-                              "totalling %d characters."),
+      notify_format(player,
+                    T("MAIL: There are %d old msgs in the mail spool, "
+                      "totalling %d characters."),
                     fr, fchars);
-      notify_format(player, T("MAIL: There are %d new msgs in the mail spool, "
-                              "totalling %d characters."),
+      notify_format(player,
+                    T("MAIL: There are %d new msgs in the mail spool, "
+                      "totalling %d characters."),
                     fu, tchars);
-      notify_format(player, T("MAIL: There are %d cleared msgs in the mail "
-                              "spool, totalling %d characters."),
+      notify_format(player,
+                    T("MAIL: There are %d cleared msgs in the mail "
+                      "spool, totalling %d characters."),
                     fc, cchars);
       return;
     }
@@ -1938,8 +1945,9 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
       player,
       T("%d messages sent, %d unread, %d cleared, totalling %d characters."),
       fc + fr + fu, fu, fc, fchars);
-    notify_format(player, T("%d messages received, %d unread, %d cleared, "
-                            "totalling %d characters."),
+    notify_format(player,
+                  T("%d messages received, %d unread, %d cleared, "
+                    "totalling %d characters."),
                   tc + tr + tu, tu, tc, tchars);
   }
 
@@ -2533,10 +2541,9 @@ load_mail(PENNFILE *fp)
       char buff[20];
       if (!penn_fgets(buff, sizeof buff, fp))
         do_rawlog(LT_ERR, "MAIL: Missing end-of-dump marker in mail database.");
-      else if (strcmp(buff,
-                      (mail_flags & MDBF_NEW_EOD)
-                        ? "***END OF DUMP***\n"
-                        : "*** END OF DUMP ***\n") == 0)
+      else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
+                              ? "***END OF DUMP***\n"
+                              : "*** END OF DUMP ***\n") == 0)
         return 1;
       else
         do_rawlog(LT_ERR, "MAIL: Trailing garbage in the mail database.");
@@ -2649,9 +2656,9 @@ load_mail(PENNFILE *fp)
     char buff[20];
     if (!penn_fgets(buff, sizeof buff, fp))
       do_rawlog(LT_ERR, "MAIL: Missing end-of-dump marker in mail database.");
-    else if (strcmp(buff,
-                    (mail_flags & MDBF_NEW_EOD) ? EOD
-                                                : "*** END OF DUMP ***\n") != 0)
+    else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
+                            ? EOD
+                            : "*** END OF DUMP ***\n") != 0)
       /* There's still stuff. Icky. */
       do_rawlog(LT_ERR, "MAIL: Trailing garbage in the mail database.");
   }

@@ -6,6 +6,8 @@
  *
  */
 
+#define _GNU_SOURCE
+
 #include "copyrite.h"
 #include "config.h"
 #include <stdio.h>
@@ -272,7 +274,6 @@ putref_u64(PENNFILE *f, uint64_t ref)
   penn_fprintf(f, "%" PRIu64 "\n", ref);
 #endif
 }
-
 
 /** Output a string to a file.
  * This function writes a string to a file, double-quoted,
@@ -1025,7 +1026,6 @@ getref_u64(PENNFILE *f)
   return parse_uint64(buf, NULL, 10);
 }
 
-
 /** Read in a string, into a static buffer.
  * This function reads a double-quoted escaped string of the form
  * written by putstring. The string is read into a static buffer
@@ -1165,7 +1165,6 @@ get_new_locks(dbref i, PENNFILE *f, int c)
       "WARNING: Actual lock count (%d) different from expected count (%d).",
       found, count);
 }
-
 
 /** Free the entire database.
  * This function frees the name, attributes, and locks on every object
@@ -1347,8 +1346,9 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual attribute count (%d) different than "
-                      "expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual attribute count (%d) different than "
+              "expected count (%d).",
               found, count);
 }
 

@@ -123,8 +123,7 @@ extern int unparsing_boolexp;
 static int
 lock_compare(const void *a, const void *b)
 {
-  const lock_list *la = *(lock_list * const *) a,
-                  *lb = *(lock_list * const *) b;
+  const lock_list *la = *(lock_list *const *) a, *lb = *(lock_list *const *) b;
   return strcmp(la->type, lb->type);
 }
 
@@ -984,8 +983,9 @@ check_zone_lock(dbref player, dbref zone, int noisy)
                     unparse_object(player, zone, AN_UNPARSE));
     } else {
       /* Probably inexact zone lock */
-      notify_format(player, T("Warning: Zone %s may have loose zone lock. Lock "
-                              "zones to =player, not player"),
+      notify_format(player,
+                    T("Warning: Zone %s may have loose zone lock. Lock "
+                      "zones to =player, not player"),
                     unparse_object(player, zone, AN_UNPARSE));
     }
   }

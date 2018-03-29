@@ -60,4 +60,3 @@ static tcheck checklist[] = {{"none", W_NONE}, /* MUST BE FIRST! */
                              {"extra", W_EXTRA},
                              {"all", W_ALL},
                              {NULL, 0}};
-

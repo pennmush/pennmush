@@ -6,6 +6,7 @@
  *
  */
 
+#define _GNU_SOURCE
 #include "copyrite.h"
 #include "config.h"
 #include <string.h>

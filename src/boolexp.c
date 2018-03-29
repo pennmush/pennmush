@@ -1096,9 +1096,9 @@ parse_boolexp_R(void)
   p = tbuf1;
   escaped = 0;
 
-  while (*parsebuf && (escaped ||
-                       !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                         *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
+  while (*parsebuf &&
+         (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                       *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
     if (escaped || *parsebuf != '\\') {
       safe_chr(*parsebuf, tbuf1, &p);
       escaped = 0;
@@ -1186,9 +1186,9 @@ parse_boolexp_L(void)
     p = tbuf1;
     savebuf = parsebuf;
     escaped = 0;
-    while (*parsebuf && (escaped ||
-                         !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                           *parsebuf == ')'))) {
+    while (*parsebuf &&
+           (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                         *parsebuf == ')'))) {
       escaped = escaped ? 0 : (*parsebuf == '\\');
       *p++ = *parsebuf++;
     }
@@ -1325,9 +1325,9 @@ parse_boolexp_A(void)
       const char *m;
       parsebuf++;
       p = tbuf1;
-      while (*parsebuf && (escaped ||
-                           !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
-                             *parsebuf == ')'))) {
+      while (*parsebuf &&
+             (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                           *parsebuf == ')'))) {
         if (escaped || *parsebuf != '\\') {
           safe_chr((char) toupper(*parsebuf), tbuf1, &p);
           escaped = 0;

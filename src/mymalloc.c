@@ -241,9 +241,10 @@ slab_create(const char *name, size_t item_size)
   sl->items_per_page = (pgsize - offset) / item_size;
 
   if (item_size >= (pgsize - offset)) {
-    do_rawlog(LT_TRACE, "slab(%s): item_size of %lu bytes is too large for a "
-                        "pagesize of %lu bytes. Using malloc() for allocations "
-                        "from this slab.",
+    do_rawlog(LT_TRACE,
+              "slab(%s): item_size of %lu bytes is too large for a "
+              "pagesize of %lu bytes. Using malloc() for allocations "
+              "from this slab.",
               name, (unsigned long) item_size, (unsigned long) pgsize);
     sl->items_per_page = 0;
     return sl;
@@ -325,8 +326,9 @@ slab_alloc_page(struct slab *sl)
   sp->last_obj = sp->freelist;
   sp->next = NULL;
 #ifdef SLAB_DEBUG
-  do_rawlog(LT_TRACE, "Allocating page starting at %p for slab(%s).\n\tFirst "
-                      "object allocated at %p, last object at %p",
+  do_rawlog(LT_TRACE,
+            "Allocating page starting at %p for slab(%s).\n\tFirst "
+            "object allocated at %p, last object at %p",
             (void *) sp, sl->name, (void *) (sp + sl->data_offset),
             sp->last_obj);
 #endif
@@ -566,10 +568,10 @@ mush_getpagesize(void)
   GetSystemInfo(&si);
   return si.dwPageSize;
 #elif defined(HAVE_GETPAGESIZE)
-	return getpagesize();
+  return getpagesize();
 #elif defined(HAVE_SYSCONF)
-	return sysconf(_SC_PAGESIZE);
-#else	
-	return 4096;
+  return sysconf(_SC_PAGESIZE);
+#else
+  return 4096;
 #endif
 }

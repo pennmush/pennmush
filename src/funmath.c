@@ -1405,19 +1405,20 @@ FUNCTION(fun_fraction)
   }
 }
 
-FUNCTION(fun_isint) {
-	bool valid = 1;
-	char *end;
-	if (arglens[0] == 0) {
-		valid = 0;
-	} else {
-		errno = 0;
-		parse_ival_full(args[0], &end, 10);
-		if (errno || *end != '\0') {
-			valid = 0;
-		}
-	}
-	safe_boolean(valid, buff, bp);
+FUNCTION(fun_isint)
+{
+  bool valid = 1;
+  char *end;
+  if (arglens[0] == 0) {
+    valid = 0;
+  } else {
+    errno = 0;
+    parse_ival_full(args[0], &end, 10);
+    if (errno || *end != '\0') {
+      valid = 0;
+    }
+  }
+  safe_boolean(valid, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1781,14 +1782,14 @@ FUNCTION(fun_nor) { math_nor(args, nargs, buff, bp); }
 FUNCTION(fun_lmath)
 {
   /* lmath(<op>, <list>[, <sep>])
-  * is equivalant to
-  *
-  * &op me=<op>(%0, %1)
-  * fold(me/op, <list>, <sep>)
-  *
-  * but a lot more efficient. The Tiny l-OP functions
-  * can be simulated with @function if needed.
-  */
+   * is equivalant to
+   *
+   * &op me=<op>(%0, %1)
+   * fold(me/op, <list>, <sep>)
+   *
+   * but a lot more efficient. The Tiny l-OP functions
+   * can be simulated with @function if needed.
+   */
 
   int nptr;
   char sep;

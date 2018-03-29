@@ -153,8 +153,9 @@ struct options_table {
   int ssl_port;       /**< The port to listen for SSL connections */
   char
     socket_file[FILE_PATH_LEN]; /**< The socket filename to use for SSL slave */
-  int use_ws;             /**< True to enable websockets */
-  char ws_url[FILE_PATH_LEN];   /**< path to recognize as websocket one in HTTP requests. */
+  int use_ws;                   /**< True to enable websockets */
+  char ws_url[FILE_PATH_LEN];   /**< path to recognize as websocket one in HTTP
+                                   requests. */
   char input_db[FILE_PATH_LEN]; /**< Name of the input database file */
   char output_db[FILE_PATH_LEN]; /**< Name of the output database file */
   char crash_db[FILE_PATH_LEN];  /**< Name of the panic database file */
@@ -209,10 +210,10 @@ struct options_table {
   char motd_file[2][FILE_PATH_LEN];    /**< Names of text and html motd files */
   char wizmotd_file[2]
                    [FILE_PATH_LEN]; /**< Names of text and html wizmotd files */
-  char newuser_file[2][FILE_PATH_LEN]; /**< Names of text and html new user
-                                          files */
-  char register_file
-    [2][FILE_PATH_LEN]; /**< Names of text and html registration files */
+  char newuser_file[2][FILE_PATH_LEN];  /**< Names of text and html new user
+                                           files */
+  char register_file[2][FILE_PATH_LEN]; /**< Names of text and html registration
+                                           files */
   char quit_file[2][FILE_PATH_LEN];  /**< Names of text and html disconnection
                                         files */
   char down_file[2][FILE_PATH_LEN];  /**< Names of text and html server down
@@ -228,7 +229,7 @@ struct options_table {
   int guest_allow;                   /**< Are guests allowed to log in? */
   int create_allow;                  /**< Can new players be created? */
   int reverse_shs; /**< Should the SHS routines assume little-endian byte order?
-                      */
+                    */
   char player_flags[BUFFER_LEN];  /**< Space-separated list of flags to set on
                                      newly created players. */
   char room_flags[BUFFER_LEN];    /**< Space-separated list of flags to set on
@@ -250,13 +251,13 @@ struct options_table {
   int noisy_whisper;           /**< Does whisper default to whisper/noisy? */
   int possessive_get;          /**< Can possessive get be used? */
   int possessive_get_d; /**< Can possessive get be used on disconnected players?
-                           */
+                         */
   int really_safe;      /**< Does the SAFE flag protect objects from nuke */
   int destroy_possessions; /**< Are the possessions of a nuked player nuked? */
   dbref probate_judge;     /**< Who owns the possessions if they're not? */
   int null_eq_zero;  /**< Is null string treated as 0 in math functions? */
   int tiny_booleans; /**< Do strings and db#'s evaluate as false, like TinyMUSH?
-                        */
+                      */
   int tiny_trim_fun; /**< Does the trim function take arguments in TinyMUSH
                         order? */
   int tiny_math;  /**< Can you use strings in math functions, like TinyMUSH? */
@@ -331,8 +332,8 @@ struct options_table {
   int chunk_migrate_amount;   /**< Number of attrs to migrate each second */
   char attr_compression[256]; /**< How to compress attribute text in-memory */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
-  char ssl_private_key_file
-    [FILE_PATH_LEN];               /**< File to load the server's cert from */
+  char ssl_private_key_file[FILE_PATH_LEN]; /**< File to load the server's cert
+                                               from */
   char ssl_ca_file[FILE_PATH_LEN]; /**< File to load the CA certs from */
   char ssl_ca_dir[FILE_PATH_LEN];  /**< Directory to load the CA certs from */
   int ssl_require_client_cert;   /**< Are clients required to present certs? */

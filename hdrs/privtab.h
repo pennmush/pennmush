@@ -29,7 +29,7 @@ struct priv_info {
 #define PrivChar(x) ((x)->letter) /**< One-char abbreviation of priv */
 #define PrivSetBits(x)                                                         \
   ((x)->bits_to_set) /**< Bitflags required to set priv                        \
-                        */
+                      */
 #define PrivShowBits(x)                                                        \
   ((x)->bits_to_show) /**< Bitflags required to see priv */
 

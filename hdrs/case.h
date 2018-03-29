@@ -17,6 +17,6 @@
   (isupper(x) ? tolower(x) : (x)) /**< Returns 'x' lowercased */
 #define UPCASE(x)                                                              \
   (islower(x) ? toupper(x) : (x)) /**< Returns 'x' uppercased                  \
-                                     */
+                                   */
 #endif
 #endif /* CASE_H */

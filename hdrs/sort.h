@@ -53,7 +53,7 @@ ListTypeInfo *get_list_type_info(SortType type);
 
 #define MAX_SORTSIZE                                                           \
   (BUFFER_LEN / 2) /**< Maximum number of elements to sort                     \
-                      */
+                    */
 
 SortType autodetect_list(char **ptrs, int nptrs);
 SortType autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2);

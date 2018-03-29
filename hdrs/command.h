@@ -37,11 +37,11 @@ bool SW_BY_NAME(switch_mask, const char *);
 
 #define CMD_T_NOGAGGED                                                         \
   0x00800000 /**< Command will fail if object is gagged                        \
-                */
+              */
 
 #define CMD_T_NOGUEST                                                          \
   0x00400000 /**< Command will fail if object is a guest                       \
-                */
+              */
 
 #define CMD_T_NOFIXED 0x00200000 /**< Command will fail if object is fixed */
 
@@ -276,7 +276,8 @@ int cnf_hook_command(char *name, char *opts);
 #define SILENT_OR_NOISY(switches, default_silent)                              \
   (SW_ISSET(switches, SWITCH_SILENT)                                           \
      ? PEMIT_SILENT                                                            \
-     : (SW_ISSET(switches, SWITCH_NOISY) ? 0 : (default_silent ? PEMIT_SILENT  \
-                                                               : 0)))
+     : (SW_ISSET(switches, SWITCH_NOISY)                                       \
+          ? 0                                                                  \
+          : (default_silent ? PEMIT_SILENT : 0)))
 
 #endif /* __COMMAND_H */

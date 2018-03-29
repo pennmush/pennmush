@@ -121,7 +121,7 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   pcg32_random_t rand_state;
   pcg32_srandom_r(&rand_state, time(NULL), getpid() + 2);
 #endif
-  
+
   lock_file(stderr);
   fputs("Seeding OpenSSL random number pool.\n", stderr);
   unlock_file(stderr);
@@ -199,8 +199,8 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   }
 
   SSL_CTX_set_options(ctx, SSL_OP_SINGLE_DH_USE | SSL_OP_ALL);
-  SSL_CTX_set_mode(
-    ctx, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+  SSL_CTX_set_mode(ctx, SSL_MODE_ENABLE_PARTIAL_WRITE |
+                          SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
   /* Set up DH key */
   {

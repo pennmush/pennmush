@@ -20,7 +20,7 @@ struct flag_info {
   const char *name;      /**< Name of the flag */
   char letter;           /**< Flag character, which may be nul */
   uint32_t type;         /**< Bitflags of object types this flag applies to */
-  int64_t bitpos;       /**< Bit position assigned to this flag for now */
+  int64_t bitpos;        /**< Bit position assigned to this flag for now */
   uint32_t perms;        /**< Bitflags of who can set this flag */
   uint32_t negate_perms; /**< Bitflags of who can clear this flag */
 };

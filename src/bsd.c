@@ -287,7 +287,7 @@ static const char ssl_shutdown_message[] __attribute__((__unused__)) =
 #ifdef LOCAL_SOCKET
 static int localsock = -1;
 #endif
-static int ndescriptors = 0;
+atomic_int ndescriptors = 0;
 #ifdef WIN32
 static WSADATA wsadata;
 #endif
@@ -944,7 +944,7 @@ setup_desc(int sockfd, conn_source source)
     if (test_connection(result) < 0)
       return;
   } else {
-    ndescriptors++;
+    atomic_increment(&ndescriptors);
     if (newd->descriptor >= maxd)
       maxd = newd->descriptor + 1;
   }
@@ -963,8 +963,7 @@ got_new_connection(int sockfd, conn_source source)
     if (newsock < 0) {
         return;
     }
-
-    ndescriptors++;
+    atomic_increment(&ndescriptors);
     query_info_slave(newsock);
   } else {
     setup_desc(sockfd, source);
@@ -985,8 +984,7 @@ got_new_connection(int sockfd, conn_source source)
     return;
   }
 
-  ndescriptors++;
-
+  atomic_increment(&ndescriptors);
   start_info_thread(newsock, &addr, addr_len, source);
 }
 
@@ -1194,7 +1192,7 @@ shovechars(Port_t port, Port_t sslport)
     mutex_unlock(&desc_mutex);
     fds_used = 0;
 
-    if (ndescriptors < avail_descriptors) {
+    if (atomic_load(&ndescriptors) < avail_descriptors) {
       fds[fds_used].fd = sock;
       fds[fds_used++].events = POLLIN;
 
@@ -1303,7 +1301,7 @@ shovechars(Port_t port, Port_t sslport)
       now = mudtime;
 #endif
 
-      if (ndescriptors < avail_descriptors) {
+      if (atomic_load(&ndescriptors) < avail_descriptors) {
         if (found > 0 && fds[fds_used++].revents & POLLIN) {
           found -= 1;
           got_new_connection(sock, CS_IP_SOCKET);
@@ -1333,7 +1331,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif
       
 #else /* INFO_SLAVE/INFO_THREAD */
-      if (ndescriptors < avail_descriptors) {
+      if (atomic_load(&ndescriptors) < avail_descriptors) {
         if (found > 0 && fds[fds_used++].revents & POLLIN) {
           found -= 1;
           setup_desc(sock, CS_IP_SOCKET);
@@ -2012,7 +2010,7 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     mush_free(d, "descriptor");
   }
 
-  ndescriptors--;
+  atomic_decrement(&ndescriptors);
 }
 
 /* ARGSUSED */
@@ -7433,7 +7431,7 @@ load_reboot_db(void)
       maxd = val;
 
     while ((val = getref(f)) != 0) {
-      ndescriptors++;
+      atomic_increment(&ndescriptors);
       d = mush_malloc(sizeof(DESC), "descriptor");
       d->descriptor = val;
       d->connected_at = getref(f);

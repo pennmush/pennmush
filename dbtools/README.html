@@ -50,8 +50,8 @@
 <ol type="1">
 <li><p>Install a git client if not already present.</p></li>
 <li><p>Install <a href="https://github.com/Microsoft/vcpkg">vcpkg</a> if not already present, following the instuctions on that page.</p></li>
-<li><p>Install the following packages if needed (Via <code>.\vcpkg install</code>): <strong>openssl boost-iostreams boost-program-options boost-algorithm boost-container</strong> (This might take a while)</p>
-<p>vcpkg supports both 32-bit and 64-bit targets. You might need to explicitly request the one you want to use (64 bit is suggested), by <code>.\vcpkg install openssl:x64-windows</code> or <code>.\vcpkg install openssl:x86-windows</code>.</p></li>
+<li><p>Install the following packages if needed (Via <code>.\vcpkg install</code>): <strong>boost-iostreams boost-program-options boost-algorithm boost-container</strong> (This might take a while)</p>
+<p>vcpkg supports both 32-bit and 64-bit targets. You might need to explicitly request the one you want to use (64 bit is suggested), by <code>.\vcpkg install boost-iostreams:x64-windows</code> or <code>.\vcpkg install boost-iostreams:x86-windows</code>.</p></li>
 </ol>
 <h3 id="actually-building">Actually building</h3>
 <ol type="1">

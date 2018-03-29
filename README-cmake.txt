@@ -9,10 +9,13 @@ Instructions for use (Subject to change):
 1. Configure the system and create build files:
    % cmake -DCMAKE_BUILD_TYPE=Debug src
 
-  Options that can be passed to cmake via -D NAME=1 include:
+  Or use Release, RelWithDebInfo or MinSizeRel.
 
-  NO_INFO_SLAVE -- disable info_slave
-  NO_SSL_SLAVE  -- disable ssl_slave
+  Additional options that can be passed to cmake via -D NAME=1 include:
+
+  NO_INFO_SLAVE  -- disable info_slave
+  NO_SSL_SLAVE   -- disable ssl_slave
+  USE_CLANG_TIDY -- Lint using clang-tidy when compiling.
 
   You can undo the effects of these options by running
   % cmake -U NAME src

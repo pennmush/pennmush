@@ -18,6 +18,7 @@ typedef void *(*thread_func)(void *);
 typedef pthread_t thread_id;
 typedef pthread_mutex_t penn_mutex;
 #define THREAD_RETURN return NULL
+typedef pthread_key_t thread_local_id;
 
 #elif defined(WIN32)
 
@@ -30,6 +31,7 @@ typedef unsigned (__stdcall *thread_func)(void *);
 typedef HANDLE thread_id;
 typedef CRITICAL_SECTION penn_mutex;
 #define THREAD_RETURN return 0
+typedef DWORD thread_local_id;
 
 #else
 
@@ -49,6 +51,12 @@ int mutex_init(penn_mutex *, bool);
 int mutex_destroy(penn_mutex *);
 int mutex_lock(penn_mutex *);
 int mutex_unlock(penn_mutex *);
+
+/* Thread local storage */
+int tl_create(thread_local_id *, void (*)(void *));
+int tl_destroy(thread_local_id);
+void * tl_get(thread_local_id);
+int tl_set(thread_local_id, void *);
 
 /* Atomic ints */
 

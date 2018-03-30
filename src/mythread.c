@@ -153,6 +153,30 @@ mutex_unlock(penn_mutex *mut)
   return pthread_mutex_unlock(mut);
 }
 
+int
+tl_create(thread_local_id *key, void (*free_fun)(void *))
+{
+  return pthread_key_create(key, free_fun);
+}
+
+int
+tl_destroy(thread_local_id key)
+{
+  return pthread_key_delete(key);
+}
+
+void *
+tl_get(thread_local_id key)
+{
+  return pthread_getspecific(key);
+}
+
+int
+tl_set(thread_local_id key, void *data)
+{
+  return pthread_setspecific(key, data);
+}
+
 #elif defined(WIN32)
 
 #include <process.h>
@@ -225,5 +249,35 @@ mutex_unlock(penn_mutex *mut)
   LeaveCriticalSection(mut);
   return 0;
 }
+
+int
+tl_create(thread_local_id *key, void (*free_fun)(void *))
+{
+  *key = FlsAlloc(free_fun);
+  if (*key == FLS_OUT_OF_INDEXES) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+int
+tl_destroy(thread_local_id key)
+{
+  return !FlsFree(key);
+}
+
+void *
+tl_get(thread_local_id key)
+{
+  return FlsGetValue(key);
+}
+
+int
+tl_set(thread_local_id key, void *data)
+{
+  return !FlsSetValue(key, data);
+}
+
 
 #endif

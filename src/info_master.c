@@ -475,6 +475,7 @@ lookup_func(void *arg)
       do_log(LT_CONN, 0, 0, "[%d/%s/%s] Refused connection.", s->sockfd, hostname,
              ipaddr);
     }
+    atomic_decrement(&ndescriptors);
     shutdown(s->sockfd, 2);
     closesocket(s->sockfd);
   } else {

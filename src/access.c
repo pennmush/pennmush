@@ -113,6 +113,9 @@ static acsflag acslist[] = {{"connect", 1, ACS_CONNECT},
 static struct access *access_top;
 static void free_access_list(void);
 
+static struct access *site_check_access(const char *hname, dbref who, int *rulenum);
+static void format_access(struct access *ap, int rulenum, char *buff, char **bp);
+
 penn_mutex site_mutex;
 
 /* from pcre */
@@ -178,6 +181,7 @@ sitelock_alloc(const char *host, dbref who, uint32_t can, uint32_t cant,
   return tmp;
 }
 
+/* Only call when site_mutex is locked */
 static bool
 add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
                 const char *comment, const char **errptr)
@@ -188,7 +192,6 @@ add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
   if (!tmp)
     return false;
 
-  mutex_lock(&site_mutex);
   if (!access_top) {
     /* Add to the beginning */
     access_top = tmp;
@@ -198,7 +201,6 @@ add_access_node(const char *host, dbref who, uint32_t can, uint32_t cant,
       end = end->next;
     end->next = tmp;
   }
-  mutex_unlock(&site_mutex);
   
   return true;
 }
@@ -405,26 +407,28 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
     }
   }
 
+  mutex_unlock(&site_mutex);
+  
   /* Flag was neither set nor unset. If the flag was a toggle,
    * then the host can do it. If not, the host can't */
   for (c = acslist; c->name; c++) {
     if (flag & c->flag) {
-      mutex_unlock(&site_mutex);
       return c->toggle ? 1 : 0;
     }
   }
   /* Should never reach here, but just in case */
-  mutex_unlock(&site_mutex);
   return 1;
 }
 
-/** Return the first access rule that matches a host.
+/** Return the first access rule that matches a host. Call with
+ * site_mutex locked.
+ *
  * \param hname a host or user+host pattern.
  * \param who the player attempting access.
  * \param rulenum pointer to rule position.
  * \return pointer to first matching access rule or NULL.
  */
-struct access *
+static struct access *
 site_check_access(const char *hname, dbref who, int *rulenum)
 {
   struct access *ap;
@@ -435,8 +439,6 @@ site_check_access(const char *hname, dbref who, int *rulenum)
     return 0;
 
   hlen = strlen(hname);
-
-  mutex_lock(&site_mutex);
   
   for (ap = access_top; ap; ap = ap->next) {
     (*rulenum)++;
@@ -448,11 +450,9 @@ site_check_access(const char *hname, dbref who, int *rulenum)
            : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
-      mutex_unlock(&site_mutex);
       return ap;
     }
   }
-  mutex_unlock(&site_mutex);
   return NULL;
 }
 
@@ -465,9 +465,8 @@ site_check_access(const char *hname, dbref who, int *rulenum)
  * This function provides an appealing display of an access rule
  * in the list.
  */
-void
-format_access(struct access *ap, int rulenum,
-              dbref who __attribute__((__unused__)), char *buff, char **bp)
+static void
+format_access(struct access *ap, int rulenum, char *buff, char **bp)
 {
   if (ap) {
     safe_format(buff, bp, T("Matched line %d: %s %s"), rulenum, ap->host,
@@ -506,6 +505,17 @@ format_access(struct access *ap, int rulenum,
   } else {
     safe_str(T("No matching access rule"), buff, bp);
   }
+}
+
+void
+site_check_and_format(const char * RESTRICT site, char * buff, char **bp)
+{
+  int rulenum = -1;
+  struct access *ap;
+  mutex_lock(&site_mutex);
+  ap = site_check_access(site, AMBIGUOUS, &rulenum);
+  format_access(ap, rulenum, buff, bp);
+  mutex_unlock(&site_mutex);
 }
 
 /** Add an access rule to the linked list.

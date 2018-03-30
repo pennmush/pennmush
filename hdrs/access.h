@@ -63,15 +63,12 @@ struct access {
 bool read_access_file(void);
 void write_access_file(void);
 bool site_can_access(const char *hname, uint32_t flag, dbref who);
-struct access *site_check_access(const char *hname, dbref who, int *rulenum);
-void format_access(struct access *ap, int rulenum,
-                   dbref who __attribute__((__unused__)), char *buff,
-                   char **bp);
 bool add_access_sitelock(dbref player, const char *host, dbref who,
                          uint32_t can, uint32_t cant);
 int remove_access_sitelock(const char *pattern);
 void do_list_access(dbref player);
 int parse_access_options(const char *opts, dbref *who, uint32_t *can,
                          uint32_t *cant, dbref player);
+void site_check_and_format(const char * RESTRICT, char *, char **);
 
 #endif /* __ACCESS_H */

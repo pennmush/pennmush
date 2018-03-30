@@ -238,7 +238,7 @@ slab_create(const char *name, size_t item_size)
   item_size += item_size % sizeof(void *);
   sl->item_size = item_size;
   sl->items_per_page = (pgsize - offset) / item_size;
-  mutex_init(&sl->mut);
+  mutex_init(&sl->mut, 0);
   
   if (item_size >= (pgsize - offset)) {
     do_rawlog(LT_TRACE, "slab(%s): item_size of %lu bytes is too large for a "
@@ -285,7 +285,7 @@ slab_set_opt(slab *sl, enum slab_options opt,
   mutex_unlock(&sl->mut);
 }
 
-/** Allocate a new page.
+/** Allocate a new page. Call with the slab mutex already locked.
  * \param sl Allocator to create the page for.
  * \return new page, NOT linked into the allocator's list of pages
  */
@@ -313,8 +313,6 @@ slab_alloc_page(struct slab *sl)
   page = malloc(pgsize);
 #endif
   memset(page, 0, pgsize);
-
-  mutex_lock(&sl->mut);
   
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;
@@ -337,7 +335,6 @@ slab_alloc_page(struct slab *sl)
             sp->last_obj);
 #endif
   
-  mutex_unlock(&sl->mut);
   return sp;
 }
 
@@ -528,10 +525,10 @@ slab_free(slab *sl, void *obj)
     }
     last = page;
   }
-  mutex_unlock(&sl->mut);
   /* Ooops. An object not allocated by this allocator! */
   do_rawlog(LT_TRACE, "Attempt to free object %p not allocated by slab(%s)",
             obj, sl->name);
+  mutex_unlock(&sl->mut);
 }
 
 /** Destroy a slab and all objects allocated from it.

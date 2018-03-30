@@ -1844,16 +1844,13 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       }
       break;
     case SITELOCK_CHECK: {
-      struct access *ap;
       char tbuf[BUFFER_LEN], *bp;
-      int rulenum;
       if (!site || !*site) {
         do_list_access(player);
         return;
       }
-      ap = site_check_access(site, AMBIGUOUS, &rulenum);
       bp = tbuf;
-      format_access(ap, rulenum, AMBIGUOUS, tbuf, &bp);
+      site_check_and_format(site, tbuf, &bp);
       *bp = '\0';
       notify(player, tbuf);
       break;

@@ -1812,7 +1812,7 @@ init_text_queue(struct text_queue *q)
   if (!q)
     return;
   q->head = q->tail = NULL;
-  mutex_init(&q->mut);
+  mutex_init(&q->mut, 0);
   return;
 }
 

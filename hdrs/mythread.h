@@ -37,14 +37,15 @@ typedef CRITICAL_SECTION penn_mutex;
 
 #endif
 
-int thread_init(void);
-int thread_cleanup(void);
+void thread_init(void);
+void thread_cleanup(void);
 int run_thread(thread_id *, thread_func, void *, bool);
 void exit_thread(THREAD_RETURN_TYPE);
 int join_thread(thread_id, THREAD_RETURN_TYPE *);
 
-/* Mutexes are recursive */
-int mutex_init(penn_mutex *);
+/* Mutexes are recursive if second argument is true. (Win32 ones
+ * always are).  Try not to use them. */
+int mutex_init(penn_mutex *, bool);
 int mutex_destroy(penn_mutex *);
 int mutex_lock(penn_mutex *);
 int mutex_unlock(penn_mutex *);

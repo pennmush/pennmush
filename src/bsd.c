@@ -1985,7 +1985,6 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
   }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
-  mutex_lock(&desc_mutex);
   if (pc_dnext == d)
     pc_dnext = d->next;
   if (d->prev)
@@ -1996,7 +1995,6 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     d->next->prev = d->prev;
 
   im_delete(descs_by_fd, d->descriptor);
-  mutex_unlock(&desc_mutex);
   
   if (sslsock && d->ssl) {
     ssl_close_connection(d->ssl);
@@ -4670,7 +4668,7 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
 
   DESC_ITER_CONN (d) {
     if (boot) {
-      boot_desc(boot, "boot", booter);
+      shutdownsock(boot, "boot", booter);
       boot = NULL;
     }
     if (d->player == player &&
@@ -4705,7 +4703,9 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
 void
 boot_desc(DESC *d, const char *cause, dbref executor)
 {
+  mutex_lock(&desc_mutex);
   shutdownsock(d, cause, executor);
+  mutex_unlock(&desc_mutex);
 }
 
 /** For sockset: Parse an english bool ('yes', 'no', etc). Assume no,
@@ -7233,7 +7233,7 @@ inactivity_check(void)
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
         do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-        boot_desc(d, "idle", NOTHING);
+        shutdownsock(d, "idle", NOTHING);
         booted = true;
       } else if (Unfind(d->player)) {
 

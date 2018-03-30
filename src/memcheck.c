@@ -316,10 +316,11 @@ del_check(const char *ref, const char *filename, int line)
 
   if (chk) {
     chk->ref_count -= 1;
-    if (chk->ref_count < 0)
+    if (chk->ref_count < 0) {
       do_rawlog(LT_TRACE,
                 "ERROR: Deleting a check with a negative count: %s (At %s:%d)",
                 ref, filename, line);
+    }
   } else {
     do_rawlog(LT_TRACE, "ERROR: Deleting a non-existant check: %s (At %s:%d)",
               ref, filename, line);

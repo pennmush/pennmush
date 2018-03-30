@@ -1806,6 +1806,12 @@ show_compile_options(dbref player)
   notify(player, T(" The MUSH was compiled with Sqlite3 support."));
 #endif
 
+#ifdef ASYNC_SQL
+  notify(player, T(" Some SQL queries are run asynchronously."));
+#else
+  notify(player, T(" All SQL queries are run synchronously."))
+#endif
+  
 #ifdef INFO_SLAVE
   notify(player, T(" DNS lookups are handled by a slave process."));
 #else

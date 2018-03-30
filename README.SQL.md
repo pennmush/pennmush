@@ -32,6 +32,11 @@ happen in the game until a query finishes. Complex queries over large
 tables, or queries to a SQL server on a different host computer can
 lag the mush for everyone!
 
+The commands @mapsql and @sql/async, on the other hand, execute their
+queries in background threads. which can reduce lag in most
+cases. Running a synchronous query at the same time a slow async one
+is also running will still cause delays.
+
 Compiling with/without SQL
 ==========================
 

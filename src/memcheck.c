@@ -65,6 +65,7 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "strutil.h"
+#include "mythread.h"
 
 void memcheck_dump_struct(const char *filename);
 
@@ -87,6 +88,8 @@ struct mem_check_node {
   MEM *links[MAX_LINKS]; /**< Forward links to further nodes in skiplist. */
 };
 
+
+penn_mutex mem_mutex;
 static MEM memcheck_head_storage = {0, MAX_LINKS, {'\0'}, {NULL}};
 
 static MEM *memcheck_head = &memcheck_head_storage;
@@ -103,16 +106,19 @@ slab *memcheck_slab = NULL;
  *** AN INFINITE LOOP. DANGER, WILL ROBINSON!
  ***/
 
-/* Look up an entry in the skip list */
+/* Look up an entry in the skip list 
+ *
+ * Only call with mem_mutex locked. */
 static MEM *
 lookup_check(const char *ref)
 {
   MEM **links, *prev;
   int n;
-
+  
   /* Empty list */
-  if (!memcheck_head->links[0])
+  if (!memcheck_head->links[0]) {
     return NULL;
+  }
 
   links = memcheck_head->links;
   prev = NULL;
@@ -162,15 +168,18 @@ pick_link_count(int maxcount)
 }
 
 /* Allocate a new reference count struct. Consider moving away from
-   slabs; the struct size is pretty big with the skip list fields
-   added. But see comment for memcheck_slab's declaration. */
+ * slabs; the struct size is pretty big with the skip list fields
+ * added. But see comment for memcheck_slab's declaration. 
+ *
+ * Only call with mem_mutex locked. */
 static MEM *
 alloc_memcheck_node(const char *ref)
 {
   MEM *newcheck;
-
-  if (!memcheck_slab)
+  
+  if (!memcheck_slab) {
     memcheck_slab = slab_create("mem check references", sizeof(MEM));
+  }
 
   newcheck = slab_malloc(memcheck_slab, NULL);
   memset(newcheck, 0, sizeof *newcheck);
@@ -193,7 +202,10 @@ min(int a, int b)
     return b;
 }
 
-/* Update forward skip links for a new element of the list */
+/* Update forward skip links for a new element of the list.
+ *
+ * Only call with mem_mutex locked.
+ */
 static void
 update_links(MEM *src, MEM *newnode)
 {
@@ -218,19 +230,22 @@ update_links(MEM *src, MEM *newnode)
 }
 
 /* Insert a new entry in the skip list. Bad things happen if you try to insert a
- * duplicate. */
+ * duplicate.
+ *
+ * Only call with mem_mutex locked. */
 static void
 insert_check(const char *ref)
 {
   MEM *chk, *node, *prev;
   int n;
-
+  
   chk = alloc_memcheck_node(ref);
 
   /* Empty list */
   if (!memcheck_head->links[0]) {
-    for (n = 0; n < chk->link_count; n += 1)
+    for (n = 0; n < chk->link_count; n += 1) {
       memcheck_head->links[n] = chk;
+    }
     return;
   }
 
@@ -271,11 +286,15 @@ add_check(const char *ref)
   if (!options.mem_check)
     return;
 
+  mutex_lock(&mem_mutex);
+  
   chk = lookup_check(ref);
   if (chk)
     chk->ref_count += 1;
   else
     insert_check(ref);
+
+  mutex_unlock(&mem_mutex);
 }
 
 /** Remove an allocation check.
@@ -291,6 +310,8 @@ del_check(const char *ref, const char *filename, int line)
   if (!options.mem_check)
     return;
 
+  mutex_lock(&mem_mutex);
+  
   chk = lookup_check(ref);
 
   if (chk) {
@@ -303,6 +324,8 @@ del_check(const char *ref, const char *filename, int line)
     do_rawlog(LT_TRACE, "ERROR: Deleting a non-existant check: %s (At %s:%d)",
               ref, filename, line);
   }
+  
+  mutex_unlock(&mem_mutex);
 }
 
 /** List allocations in use.
@@ -318,10 +341,13 @@ list_mem_check(void (*callback)(void *data, const char *const name,
 
   if (!options.mem_check)
     return;
+  
+  mutex_lock(&mem_mutex);
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
     if (chk->ref_count != 0)
       callback(data, chk->ref_name, chk->ref_count);
   }
+  mutex_unlock(&mem_mutex);
 }
 
 /** Log all allocations.
@@ -334,9 +360,11 @@ log_mem_check(void)
   if (!options.mem_check)
     return;
   do_rawlog(LT_TRACE, "MEMCHECK dump starts");
+  mutex_lock(&mem_mutex);
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
     do_rawlog(LT_TRACE, "%s : %d", chk->ref_name, chk->ref_count);
   }
+  mutex_unlock(&mem_mutex);
   do_rawlog(LT_TRACE, "MEMCHECK dump ends");
 }
 
@@ -365,11 +393,12 @@ memcheck_dump_struct(const char *filename)
     penn_perror("fopen");
     return;
   }
-
+  
   fputs("digraph memcheck_skiplist {\n", fp);
   fputs("rankdir=LR;\n", fp);
   fputs("node [shape=record];\n", fp);
   fputs("head [label=\"<l0>HEAD", fp);
+  mutex_lock(&mem_mutex);
   for (n = 1; n < MAX_LINKS; n += 1) {
     fprintf(fp, "|<l%d>%d", n, n);
     if (!memcheck_head->links[n])
@@ -400,7 +429,7 @@ memcheck_dump_struct(const char *filename)
                 (void *) chk->links[n], n);
     }
   }
-
+  mutex_unlock(&mem_mutex);
   fputs("}\n", fp);
   fclose(fp);
 }

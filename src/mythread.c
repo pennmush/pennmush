@@ -9,7 +9,9 @@
 
 extern penn_mutex desc_mutex;
 extern penn_mutex queue_mutex;
+extern penn_mutex sql_mutex;
 extern penn_mutex site_mutex;
+extern penn_mutex mem_mutex;
 
 #ifdef HAVE_PTHREADS
 static void init_pthreads(void);
@@ -24,7 +26,9 @@ thread_init(void)
 #endif
   mutex_init(&desc_mutex);
   mutex_init(&queue_mutex);
+  mutex_init(&sql_mutex);
   mutex_init(&site_mutex);
+  mutex_init(&mem_mutex);
   return 0;
 }
 
@@ -33,7 +37,9 @@ thread_cleanup(void)
 {
   mutex_destroy(&desc_mutex);
   mutex_destroy(&queue_mutex);
+  mutex_destroy(&sql_mutex);
   mutex_destroy(&site_mutex);
+  mutex_destroy(&mem_mutex);
 #ifdef HAVE_PTHREADS
   dest_pthreads();
 #endif

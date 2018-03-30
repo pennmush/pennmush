@@ -69,6 +69,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "mythread.h"
 
 /* Supported platforms */
 typedef enum {
@@ -77,6 +78,8 @@ typedef enum {
   SQL_PLATFORM_POSTGRESQL,
   SQL_PLATFORM_SQLITE3
 } sqlplatform;
+
+penn_mutex sql_mutex;
 
 /* Number of times to try a connection */
 #define SQL_RETRY_TIMES 3
@@ -114,8 +117,10 @@ static sqlite3_stmt *penn_sqlite3_sql_query(const char *, int *);
 static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 #endif
 static sqlplatform sql_platform(void);
-static char *sql_sanitize(char *res);
-#define SANITIZE(s, n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
+static char *sql_sanitize(const char * RESTRICT, const char * RESTRICT)
+  __attribute_malloc__;
+static int safe_sql_sanitize(const char * RESTRICT, char *, char **);
+#define SANITIZE(s, n) ((s && *s) ? sql_sanitize(s, n) : NULL)
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -144,33 +149,42 @@ sql_platform(void)
   return platform;
 }
 
-static char *
-sql_sanitize(char *res)
+static int
+safe_sql_sanitize(const char * RESTRICT res, char *buff, char **bp)
 {
-  static char buff[BUFFER_LEN];
-  char *bp = buff, *rp = res;
+  char local[BUFFER_LEN];
+  char *lbp = local;
+  const char *rp = res;
 
   if (!res || !*res) {
-    buff[0] = '\0';
-    return buff;
+    return 0;
   }
 
   for (; *rp; rp++) {
     if (isprint(*rp) || *rp == '\n' || *rp == '\t' || *rp == ESC_CHAR ||
         *rp == TAG_START || *rp == TAG_END || *rp == BEEP_CHAR) {
-      *bp++ = *rp;
+      safe_chr(*rp, local, &lbp);
     }
   }
-  *bp = '\0';
+  *lbp = '\0';
 
-  if (has_markup(buff)) {
-    ansi_string *as = parse_ansi_string(buff);
-    bp = buff;
-    safe_ansi_string(as, 0, as->len, buff, &bp);
+  if (has_markup(local)) {
+    ansi_string *as = parse_ansi_string(local);
+    lbp = local;
+    safe_ansi_string(as, 0, as->len, local, &lbp);
     free_ansi_string(as);
-    *bp = '\0';
   }
 
+  return safe_strl(local, lbp - local, buff, bp);
+}
+
+char *
+sql_sanitize(const char * RESTRICT res, const char * RESTRICT name)
+{
+  char *buff = mush_malloc(BUFFER_LEN, name);
+  char *bp = buff;
+  safe_sql_sanitize(res, buff, &bp);
+  *bp = '\0';
   return buff;
 }
 
@@ -362,13 +376,50 @@ FUNCTION(fun_sql_escape)
   if (chars_written == 0)
     return;
   else if (chars_written < BUFFER_LEN)
-    safe_str(sql_sanitize(bigbuff), buff, bp);
+    safe_sql_sanitize(bigbuff, buff, bp);
   else
     safe_str(T("#-1 TOO LONG"), buff, bp);
 }
 
-COMMAND(cmd_mapsql)
+struct sql_args {
+  dbref executor;
+  dbref triggerer;
+  dbref thing;
+  int queue_type;
+  char *query;
+  char *attr;
+  PE_REGS *regvals;
+  bool async;
+  bool donotify;
+  bool dofieldnames;
+};
+
+static struct sql_args *
+new_sql_args(void)
 {
+  return calloc(1, sizeof(struct sql_args));  
+}
+
+static void
+free_sql_args(struct sql_args *a)
+{
+  if (a->query) {
+    free(a->query);
+  }
+  if (a->attr) {
+    free(a->attr);    
+  }
+  if (a->regvals) {
+    pe_regs_free(a->regvals);
+  }
+
+  free(a);
+}
+
+THREAD_RETURN_TYPE WIN32_STDCALL
+mapsql_cmd_fun(void *arg)
+{
+  struct sql_args *sargs = arg;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
 #endif
@@ -381,63 +432,19 @@ COMMAND(cmd_mapsql)
   PE_REGS *pe_regs = NULL;
   char *names[MAX_STACK_ARGS];
   char *cells[MAX_STACK_ARGS];
-  char tbuf[BUFFER_LEN];
   char strrownum[20];
-  char *s;
   int i, a;
-  dbref thing;
-  int dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
-  int donotify = SW_ISSET(sw, SWITCH_NOTIFY);
-  dbref triggerer = executor;
-  int spoof = SW_ISSET(sw, SWITCH_SPOOF);
-  int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
-
-  if (!arg_right || !*arg_right) {
-    notify(executor, T("What do you want to query?"));
-    return;
-  }
-
-  /* Find and fetch the attribute, first. */
-  strncpy(tbuf, arg_left, BUFFER_LEN);
-
-  s = strchr(tbuf, '/');
-  if (!s) {
-    notify(executor, T("I need to know what attribute to trigger."));
-    return;
-  }
-  *(s++) = '\0';
-  upcasestr(s);
-
-  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
-
-  if (thing == NOTHING) {
-    return;
-  }
-
-  if (!controls(executor, thing)) {
-    if (spoof || !(Owns(executor, thing) && LinkOk(thing))) {
-      notify(executor, T("Permission denied."));
-      return;
-    }
-  }
-
-  if (spoof)
-    triggerer = enactor;
-
-  if (God(thing) && !God(executor)) {
-    notify(executor, T("You can't trigger God!"));
-    return;
-  }
 
   for (a = 0; a < MAX_STACK_ARGS; a++) {
     cells[a] = NULL;
     names[a] = NULL;
   }
-
+  
   /* Do the query. */
-  qres = sql_query(arg_right, &affected_rows);
+  qres = sql_query(sargs->query, &affected_rows);
 
   if (!qres) {
+#if 0
     if (affected_rows >= 0) {
       notify_format(executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
@@ -445,17 +452,17 @@ COMMAND(cmd_mapsql)
     } else {
       notify_format(executor, T("SQL: Error: %s"), sql_error());
     }
-    return;
+#endif
+    free_sql_args(sargs);
+    THREAD_RETURN;
   }
 
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
   switch (sql_platform()) {
 #ifdef HAVE_MYSQL
   case SQL_PLATFORM_MYSQL:
-    affected_rows = mysql_affected_rows(mysql_connp);
+    numrows = mysql_num_rows(qres);
     numfields = mysql_num_fields(qres);
-    numrows = INT_MAX; /* Using mysql_use_result() doesn't know the number
-                          of rows ahead of time. */
     fields = mysql_fetch_fields(qres);
     break;
 #endif
@@ -497,7 +504,9 @@ COMMAND(cmd_mapsql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
+#if 0
         notify_format(executor, T("SQL: Error: %s"), sql_error());
+#endif
         break;
       }
     }
@@ -531,16 +540,17 @@ COMMAND(cmd_mapsql)
         }
       }
 
-      if ((rownum == 0) && dofieldnames) {
+      if ((rownum == 0) && sargs->dofieldnames) {
         /* Queue 0: <names> */
-        snprintf(strrownum, 20, "%d", 0);
+        snprintf(strrownum, sizeof strrownum, "%d", 0);
         names[0] = strrownum;
         for (i = 0; i < useable_fields + 1; i++) {
           pe_regs_setenv(pe_regs, i, names[i]);
         }
-        pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-        queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type,
-                                  executor);
+        pe_regs_qcopy(pe_regs, sargs->regvals);
+        queue_attribute_base_priv(sargs->thing, sargs->attr,
+                                  sargs->triggerer, 0, pe_regs,
+                                  sargs->queue_type, sargs->executor);
       }
 
       /* Queue the rest. */
@@ -552,9 +562,10 @@ COMMAND(cmd_mapsql)
         if (i && !is_strict_integer(names[i]))
           pe_regs_set(pe_regs, PE_REGS_ARG, names[i], cells[i]);
       }
-      pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-      queue_attribute_base_priv(thing, s, triggerer, 0, pe_regs, queue_type,
-                                executor);
+      pe_regs_qcopy(pe_regs, sargs->regvals);
+      queue_attribute_base_priv(sargs->thing, sargs->attr, sargs->triggerer,
+                                0, pe_regs, sargs->queue_type,
+                                sargs->executor);
       for (i = 0; i < useable_fields; i++) {
         if (cells[i + 1])
           mush_free(cells[i + 1], "sql_row");
@@ -566,18 +577,86 @@ COMMAND(cmd_mapsql)
       /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
     }
   }
-  if (donotify) {
-    parse_que(executor, executor, "@notify me", NULL);
+  if (sargs->donotify) {
+    parse_que(sargs->executor, sargs->executor, "@notify me", NULL);
   }
 
 finished:
   if (pe_regs)
     pe_regs_free(pe_regs);
   free_sql_query(qres);
+  free_sql_args(sargs);
+  THREAD_RETURN;
 }
 
-COMMAND(cmd_sql)
+COMMAND(cmd_mapsql)
 {
+  char tbuf[BUFFER_LEN];
+  char *s;
+  struct sql_args *sargs;
+  thread_id id;
+  dbref thing;
+  bool spoof = SW_ISSET(sw, SWITCH_SPOOF);
+  
+  if (!arg_right || !*arg_right) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+
+  /* Find and fetch the attribute, first. */
+  strncpy(tbuf, arg_left, BUFFER_LEN);
+
+  s = strchr(tbuf, '/');
+  if (!s) {
+    notify(executor, T("I need to know what attribute to trigger."));
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(executor, thing)) {
+    if (spoof || !(Owns(executor, thing) && LinkOk(thing))) {
+      notify(executor, T("Permission denied."));
+      return;
+    }
+  }
+
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't trigger God!"));
+    return;
+  }
+
+  sargs = new_sql_args();
+  
+  sargs->executor = executor;
+  if (spoof) {
+    sargs->triggerer = enactor;
+  } else {
+    sargs->triggerer = executor;
+  }
+  sargs->query = strdup(arg_right);
+  sargs->thing = thing;
+  sargs->attr = strdup(tbuf);
+  sargs->async = 1;
+  sargs->queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
+  sargs->regvals = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_mapsql");
+  pe_regs_qcopy(sargs->regvals, queue_entry->pe_info->regvals);
+  sargs->dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
+  sargs->donotify = SW_ISSET(sw, SWITCH_NOTIFY);
+
+  run_thread(&id, mapsql_cmd_fun, sargs, true);
+}
+
+THREAD_RETURN_TYPE WIN32_STDCALL
+sql_cmd_func(void *arg)
+{
+  struct sql_args *sargs = arg;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
 #endif
@@ -593,37 +672,29 @@ COMMAND(cmd_sql)
   ansi_string *as;
   int i;
 
-  if (sql_platform() == SQL_PLATFORM_DISABLED) {
-    notify(executor, T("No SQL database connection."));
-    return;
+  qres = sql_query(sargs->query, &affected_rows);
+
+  if (sargs->async) {
+    goto finished;
   }
-
-  if (!arg_left || !*arg_left) {
-    notify(executor, T("What do you want to query?"));
-    return;
-  }
-
-  qres = sql_query(arg_left, &affected_rows);
-
+  
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
+      notify_format(sargs->executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(executor, T("No SQL database connection."));
+      notify(sargs->executor, T("No SQL database connection."));
     } else {
-      notify_format(executor, T("SQL: Error: %s"), sql_error());
+      notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
     }
-    return;
+    goto finished;    
   }
 
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
   switch (sql_platform()) {
 #ifdef HAVE_MYSQL
   case SQL_PLATFORM_MYSQL:
-    affected_rows = mysql_affected_rows(mysql_connp);
+    numrows = mysql_num_rows(qres);
     numfields = mysql_num_fields(qres);
-    numrows = INT_MAX; /* Using mysql_use_result() doesn't know the number
-                          of rows ahead of time. */
     fields = mysql_fetch_fields(qres);
     break;
 #endif
@@ -658,7 +729,7 @@ COMMAND(cmd_sql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(executor, T("SQL: Error: %s"), sql_error());
+        notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -690,7 +761,10 @@ COMMAND(cmd_sql)
           break;
         }
         if (cell && *cell) {
-          cell = sql_sanitize(cell);
+          char cbuff[BUFFER_LEN];
+          char *cbp = cbuff;
+          safe_sql_sanitize(cell, cbuff, &cbp);
+          *cbp = '\0';
           if (strchr(cell, TAG_START) || strchr(cell, ESC_CHAR)) {
             /* Either old or new style ANSI string. */
             tbp = tbuf;
@@ -701,15 +775,47 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(executor, T("Row %d, Field %s: %s"), rownum + 1, name,
+        notify_format(sargs->executor, T("Row %d, Field %s: %s"), rownum + 1, name,
                       (cell && *cell) ? cell : "NULL");
       }
     } else
-      notify_format(executor, T("Row %d: NULL"), rownum + 1);
+      notify_format(sargs->executor, T("Row %d: NULL"), rownum + 1);
   }
 
 finished:
-  free_sql_query(qres);
+  if (qres) {
+    free_sql_query(qres);
+  }
+  free_sql_args(sargs);
+  THREAD_RETURN;
+}
+
+COMMAND(cmd_sql)
+{
+  thread_id id;
+  struct sql_args *sargs;
+  
+  if (sql_platform() == SQL_PLATFORM_DISABLED) {
+    notify(executor, T("No SQL database connection."));
+    return;
+  }
+
+  if (!arg_left || !*arg_left) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+
+  sargs = new_sql_args();
+  sargs->executor = executor;
+  sargs->query = strdup(arg_left);
+  
+  if (SW_ISSET(sw, SWITCH_ASYNC)) {
+    sargs->async = 1;
+    run_thread(&id, sql_cmd_func, sargs, true);
+  } else {
+    sql_cmd_func(sargs);
+    free_sql_args(sargs);
+  }
 }
 
 FUNCTION(fun_mapsql)
@@ -799,19 +905,19 @@ FUNCTION(fun_mapsql)
 #ifdef HAVE_MYSQL
     case SQL_PLATFORM_MYSQL:
       fieldnames[i] =
-        mush_strdup(sql_sanitize(fields[i].name), "sql_fieldname");
+        sql_sanitize(fields[i].name, "sql_fieldname");
       break;
 #endif
 #ifdef HAVE_POSTGRESQL
     case SQL_PLATFORM_POSTGRESQL:
       fieldnames[i] =
-        mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
+        sql_sanitize(PQfname(qres, i), "sql_fieldname");
       break;
 #endif
 #ifdef HAVE_SQLITE3
     case SQL_PLATFORM_SQLITE3:
-      fieldnames[i] = mush_strdup(
-        sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
+      fieldnames[i] =
+        sql_sanitize(sqlite3_column_name(qres, i), "sql_fieldname");
       break;
 #endif
     default:
@@ -871,12 +977,12 @@ FUNCTION(fun_mapsql)
         break;
       }
       if (cell && *cell) {
-        cell = sql_sanitize(cell);
-      }
-      if (cell && *cell) {
+        cell = sql_sanitize(cell, "sql_cell");
         pe_regs_setenv(pe_regs, i + 1, cell);
-        if (*fieldnames[i] && !is_strict_integer(fieldnames[i]))
+        if (*fieldnames[i] && !is_strict_integer(fieldnames[i])) {
           pe_regs_set(pe_regs, PE_REGS_ARG, fieldnames[i], cell);
+        }
+        mush_free(cell, "sql_cell");
       }
     }
     /* Now call the ufun. */
@@ -1016,8 +1122,11 @@ FUNCTION(fun_sql)
         break;
       }
       if (cell && *cell) {
-        cell = sql_sanitize(cell);
-        if (strchr(cell, TAG_START) || strchr(cell, ESC_CHAR)) {
+        char cbuff[BUFFER_LEN];
+        char *cbp = cbuff;
+        safe_sql_sanitize(cell, cbuff, &cbp);
+        *cbp = '\0';
+        if (strchr(cbuff, TAG_START) || strchr(cbuff, ESC_CHAR)) {
           /* Either old or new style ANSI string. */
           tbp = tbuf;
           as = parse_ansi_string(cell);
@@ -1038,19 +1147,27 @@ finished:
 /* MYSQL-specific functions */
 #ifdef HAVE_MYSQL
 
+/* MySQL thread safety: https://dev.mysql.com/doc/refman/5.7/en/c-api-threaded-clients.html */
+
 static void
 penn_mysql_sql_shutdown(void)
 {
-  if (!mysql_connp)
-    return;
-  mysql_close(mysql_connp);
-  mysql_connp = NULL;
+  mutex_lock(&sql_mutex);
+  if (mysql_connp) {
+    mysql_close(mysql_connp);
+    mysql_connp = NULL;
+  }
+  mutex_unlock(&sql_mutex);
 }
 
 static int
 penn_mysql_sql_connected(void)
 {
-  return mysql_connp ? 1 : 0;
+  int c;
+  mutex_lock(&sql_mutex);
+  c = mysql_connp ? 1 : 0;
+  mutex_unlock(&sql_mutex);
+  return c;
 }
 
 static int
@@ -1068,13 +1185,19 @@ penn_mysql_sql_init(void)
     return 0;
   last_retry = curtime;
 
+  if (!mysql_thread_safe()) {
+    do_rawlog(LT_ERR, "WARNING: MySQL library not thread safe. Do not use @mapsql or @sql/async!");
+  }
+  
+  mutex_lock(&sql_mutex);
+  
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
   if (penn_mysql_sql_connected()) {
     penn_mysql_sql_shutdown();
   }
-
+  
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
   if ((p = strchr(sql_host, ':'))) {
@@ -1101,13 +1224,16 @@ penn_mysql_sql_init(void)
     }
     retries--;
   }
-
+  
   if (penn_mysql_sql_connected()) {
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "mysql");
     last_retry = 0;
+    mutex_unlock(&sql_mutex);
+    return 1;
+  } else {
+    mutex_unlock(&sql_mutex);
+    return 0;
   }
-
-  return penn_mysql_sql_connected();
 }
 
 static MYSQL_RES *
@@ -1123,12 +1249,15 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   if (!q_string || !*q_string)
     return NULL;
 
+  mutex_lock(&sql_mutex);
+  
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
   if (!penn_mysql_sql_connected()) {
     penn_mysql_sql_init();
     if (!penn_mysql_sql_connected()) {
+      mutex_unlock(&sql_mutex);
       return NULL;
     }
   }
@@ -1149,62 +1278,61 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   }
   /* If we still fail, it's an error. */
   if (fail) {
+    mutex_unlock(&sql_mutex);
     return NULL;
   }
 
   /* Get the result */
-  qres = mysql_use_result(mysql_connp);
+  qres = mysql_store_result(mysql_connp);
   if (!qres) {
     if (mysql_field_count(mysql_connp) == 0) {
       /* We didn't expect data back, so see if we modified anything */
-      if (affected_rows)
+      if (affected_rows) {
         *affected_rows = mysql_affected_rows(mysql_connp);
+      }
+      mutex_unlock(&sql_mutex);
       return NULL;
     } else {
       /* Oops, we should have had data! */
+      mutex_unlock(&sql_mutex);
       return NULL;
     }
   }
+  mutex_unlock(&sql_mutex);
   return qres;
 }
 
 static void
 penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
-  while (mysql_fetch_row(qres))
-    ;
   mysql_free_result(qres);
-  while (mysql_more_results(mysql_connp)) {
-    int affected_rows = mysql_affected_rows(mysql_connp);
-    /*
-       We are assuming the first result is the only result we wanted. After all,
-       we do not support multi-query or multiple results.
-       As such, we're cleaning the rest up with empty strings - just so we can
-       free
-       the remaining results from the structure.
-    */
-    qres = sql_query("", &affected_rows);
-    mysql_free_result(qres);
-    mysql_next_result(mysql_connp);
-  }
 }
 
 #endif
 
 #ifdef HAVE_POSTGRESQL
+
+/* PostgreSQL thread safety: https://www.postgresql.org/docs/9.3/static/libpq-threading.html */
+
 static void
 penn_pg_sql_shutdown(void)
 {
-  if (!penn_pg_sql_connected())
-    return;
-  PQfinish(postgres_connp);
-  postgres_connp = NULL;
+  mutex_lock(&sql_mutex);
+  if (penn_pg_sql_connected()) {
+    PQfinish(postgres_connp);
+    postgres_connp = NULL;
+  }
+  mutex_unlock(&sql_mutex);
 }
 
 static int
 penn_pg_sql_connected(void)
 {
-  return postgres_connp ? 1 : 0;
+  int c;
+  mutex_lock(&sql_mutex);
+  c = postgres_connp ? 1 : 0;
+  mutex_unlock(&sql_mutex);
+  return c;
 }
 
 static int
@@ -1222,6 +1350,12 @@ penn_pg_sql_init(void)
     return 0;
   last_retry = curtime;
 
+  if (!PQisthreadsafe()) {
+    do_rawlog(LT_ERR, "WARNING: Postgres library is not thread safe! Do not use @mapsql or @sql/async!");
+  }
+  
+  mutex_lock(&sql_mutex);
+  
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
@@ -1259,9 +1393,12 @@ penn_pg_sql_init(void)
   if (penn_pg_sql_connected()) {
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "postgresql");
     last_retry = 0;
+    mutex_unlock(&sql_mutex);
+    return 1;
+  } else {
+    mutex_unlock(&sql_mutex);
+    return 0;
   }
-
-  return penn_pg_sql_connected();
 }
 
 static PGresult *
@@ -1277,6 +1414,8 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
   if (!q_string || !*q_string)
     return NULL;
 
+  mutex_lock(&sql_mutex);
+  
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
@@ -1301,9 +1440,11 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
       qres = PQexec(postgres_connp, q_string);
     if (!qres || (PQresultStatus(qres) != PGRES_COMMAND_OK &&
                   PQresultStatus(qres) != PGRES_TUPLES_OK)) {
+      mutex_unlock(&sql_mutex);
       return NULL;
     }
   }
+  mutex_unlock(&sql_mutex);
 
   if (PQresultStatus(qres) == PGRES_COMMAND_OK) {
     *affected_rows = atoi(PQcmdTuples(qres));
@@ -1322,20 +1463,34 @@ penn_pg_free_sql_query(PGresult *qres)
 
 #ifdef HAVE_SQLITE3
 
+/* Sqlite3 thread safety: https://sqlite.org/threadsafe.html
+ *
+ * Rely heavily on FULLMUTEX mode, but protect things that modify sqlite3_connp
+ */
+
 static int
 penn_sqlite3_sql_init(void)
-{
-
+{  
   sqlite3_connp = NULL;
-  if (sqlite3_open(SQL_DB, &sqlite3_connp) != SQLITE_OK) {
+
+  if (!sqlite3_threadsafe()) {
+        do_rawlog(LT_ERR, "WARNING: Sqlite3 library not thread safe. Do not use @mapsql or @sql/async!");
+  }
+
+  mutex_lock(&sql_mutex);
+  
+  if (sqlite3_open_v2(SQL_DB, &sqlite3_connp,
+                      SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
     do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sql_error());
     queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sql_error());
     if (sqlite3_connp) {
       sqlite3_close(sqlite3_connp);
       sqlite3_connp = NULL;
     }
+    mutex_unlock(&sql_mutex);
     return 0;
   } else {
+    mutex_unlock(&sql_mutex);
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
     return 1;
   }
@@ -1344,14 +1499,20 @@ penn_sqlite3_sql_init(void)
 static void
 penn_sqlite3_sql_shutdown(void)
 {
-  sqlite3_close(sqlite3_connp);
+  mutex_lock(&sql_mutex);
+  sqlite3_close_v2(sqlite3_connp);
   sqlite3_connp = NULL;
+  mutex_unlock(&sql_mutex);
 }
 
 static int
 penn_sqlite3_sql_connected(void)
 {
-  return sqlite3_connp ? 1 : 0;
+  int c;
+  mutex_lock(&sql_mutex);
+  c = sqlite3_connp ? 1 : 0;
+  mutex_unlock(&sql_mutex);
+  return c;
 }
 
 static sqlite3_stmt *
@@ -1361,10 +1522,14 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   const char *eoq = NULL;
   sqlite3_stmt *statement = NULL;
 
+  mutex_lock(&sql_mutex);
+  
   if (!penn_sqlite3_sql_connected()) {
     penn_sqlite3_sql_init();
-    if (!penn_sqlite3_sql_connected())
+    if (!penn_sqlite3_sql_connected()) {
+      mutex_unlock(&sql_mutex);
       return NULL;
+    }
   }
 
   q_len = strlen(query);
@@ -1374,6 +1539,8 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   retcode = sqlite3_prepare(sqlite3_connp, query, q_len, &statement, &eoq);
 #endif
 
+  mutex_unlock(&sql_mutex);
+  
   *affected_rows = -1; /* Can't find this out yet */
 
   if (retcode == SQLITE_OK)

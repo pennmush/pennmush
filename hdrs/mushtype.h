@@ -14,6 +14,8 @@
 #include <stdint.h>
 #endif
 
+#include "mythread.h"
+
 #define NUMQ 36
 
 /** Math function floating-point number type */
@@ -201,6 +203,7 @@ struct text_block {
 struct text_queue {
   struct text_block *head; /**< Pointer to the head of the queue */
   struct text_block *tail; /**< Pointer to pointer to tail of the queue */
+  penn_mutex mut; /**< Mutex to protect the queue */
 };
 
 /* Descriptor foo */

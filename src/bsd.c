@@ -369,6 +369,7 @@ int process_output(DESC *d);
 /* Notify.c */
 void free_text_block(struct text_block *t);
 void init_text_queue(struct text_queue *);
+void destroy_text_queue(struct text_queue *);
 void add_to_queue(struct text_queue *q, const char *b, int n);
 int queue_write(DESC *d, const char *b, int n);
 int queue_eol(DESC *d);
@@ -2006,7 +2007,6 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     freeqs(d);
     if (d->ttype && d->ttype != default_ttype)
       mush_free(d->ttype, "terminal description");
-    memset(d, 0xFF, sizeof *d);
     mush_free(d, "descriptor");
   }
 
@@ -7580,6 +7580,8 @@ load_reboot_db(void)
       mush_free(closed->output_prefix, "userstring");
     if (closed->output_suffix)
       mush_free(closed->output_suffix, "userstring");
+    destroy_text_queue(&closed->input);
+    destroy_text_queue(&closed->output);
     mush_free(closed, "descriptor");
     closed = nextclosed;
   }

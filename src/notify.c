@@ -131,6 +131,7 @@ int queue_eol(DESC *d);
 void freeqs(DESC *d);
 int process_output(DESC *d);
 void init_text_queue(struct text_queue *q);
+void destroy_text_queue(struct text_queue *q);
 
 static int str_type(const char *str);
 int notify_type(DESC *d);
@@ -1811,13 +1812,23 @@ init_text_queue(struct text_queue *q)
   if (!q)
     return;
   q->head = q->tail = NULL;
+  mutex_init(&q->mut);
   return;
+}
+
+/** Destroy a text_queue structure. */
+void
+destroy_text_queue(struct text_queue *q)
+{
+  mutex_destroy(&q->mut);
 }
 
 /** Add a new chunk of text to a player's output queue.
  * \param q pointer to text_queue to add the chunk to.
  * \param b text to add to the queue.
  * \param n length of text to add.
+ *
+ * Call with q->mut locked for output queues.
  */
 void
 add_to_queue(struct text_queue *q, const char *b, int n)
@@ -1837,6 +1848,10 @@ add_to_queue(struct text_queue *q, const char *b, int n)
   }
 }
 
+/** Erase n bytes of pending output.
+ *
+ * Call with q->mut locked.
+ */
 static int
 flush_queue(struct text_queue *q, int n)
 {
@@ -1845,7 +1860,7 @@ flush_queue(struct text_queue *q, int n)
 
   flen = strlen(flushed_message);
   n += flen;
-
+  
   while (n > 0 && (p = q->head)) {
     n -= p->nchars;
     really_flushed += p->nchars;
@@ -1886,7 +1901,8 @@ ssl_flush_queue(struct text_queue *q)
     if (q->head->nchars + n < MAX_OUTPUT)
       add_to_queue(q, flushed_message, n);
     /* Return the total size of the message */
-    return q->head->nchars + n;
+    n += q->head->nchars;
+    return n;
   }
   return 0;
 }
@@ -1976,6 +1992,8 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
 
+  mutex_lock(&d->output.mut);
+  
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing
        directly to the socket. Add whatever's left to the buffer to
@@ -1986,8 +2004,10 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
       /* do_rawlog(LT_TRACE, "Wrote %d bytes directly.", written); */
       d->output_chars += written;
       if (written == n) {
-        if (utf8)
+        if (utf8) {
           mush_free(utf8, "string");
+        }
+        mutex_unlock(&d->output.mut);
         return written;
       }
       n -= written;
@@ -2003,8 +2023,10 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
           "send() returned %d (error %s) trying to write %d bytes to %d",
           written, strerror(errno), n, d->descriptor);
         d->conn_flags |= CONN_SOCKET_ERROR;
-        if (utf8)
+        if (utf8) {
           mush_free(utf8, "string");
+        }
+        mutex_unlock(&d->output.mut);
         return 0;
       }
     } else { /* written == 0 */
@@ -2032,8 +2054,10 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
   }
   add_to_queue(&d->output, b, n);
   d->output_size += n;
-  if (utf8)
+  if (utf8) {
     mush_free(utf8, "string");
+  }
+  mutex_unlock(&d->output.mut);
   return n;
 }
 
@@ -2090,6 +2114,8 @@ freeqs(DESC *d)
 {
   struct text_block *cur, *next;
 
+  mutex_lock(&d->output.mut);
+  
   for (cur = d->output.head; cur; cur = next) {
     next = cur->nxt;
 #ifdef DEBUG
@@ -2098,6 +2124,7 @@ freeqs(DESC *d)
     free_text_block(cur);
   }
   d->output.head = d->output.tail = NULL;
+  mutex_unlock(&d->output.mut);
 
   for (cur = d->input.head; cur; cur = next) {
     next = cur->nxt;
@@ -2107,9 +2134,11 @@ freeqs(DESC *d)
     free_text_block(cur);
   }
   d->input.head = d->input.tail = NULL;
-
+  
   if (d->raw_input)
     mush_free(d->raw_input, "descriptor_raw_input");
   d->raw_input = 0;
   d->raw_input_at = 0;
+  destroy_text_queue(&d->input);
+  destroy_text_queue(&d->output);
 }

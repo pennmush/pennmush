@@ -444,14 +444,12 @@ mapsql_cmd_fun(void *arg)
   qres = sql_query(sargs->query, &affected_rows);
 
   if (!qres) {
-    if (!sargs->async) {
-      if (affected_rows >= 0) {
-        notify_format(sargs->executor, T("SQL: %d rows affected."), affected_rows);
-      } else if (!sql_connected()) {
-        notify(sargs->executor, T("No SQL database connection."));
-      } else {
-        notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
-      }
+    if (affected_rows >= 0) {
+      notify_format(sargs->executor, T("SQL: %d rows affected."), affected_rows);
+    } else if (!sql_connected()) {
+      notify(sargs->executor, T("No SQL database connection."));
+    } else {
+      notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
     }
     free_sql_args(sargs);
     THREAD_RETURN;
@@ -504,9 +502,7 @@ mapsql_cmd_fun(void *arg)
       if (retcode == SQLITE_DONE) {
         break;
       } else if (retcode != SQLITE_ROW) {
-        if (!sargs->async) {
-          notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
-        }
+        notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -678,10 +674,6 @@ sql_cmd_func(void *arg)
   int i;
 
   qres = sql_query(sargs->query, &affected_rows);
-
-  if (sargs->async) {
-    goto finished;
-  }
   
   if (!qres) {
     if (affected_rows >= 0) {

@@ -47,6 +47,7 @@
 #include "log.h"
 #include "memcheck.h"
 #include "strutil.h"
+#include "mythread.h"
 
 #ifdef WIN32
 #define SZT "I64u"
@@ -205,6 +206,7 @@ struct slab {
                               SLAB_HINTLESS_THRESHOLD option */
   struct slab_page *slabs; /**< Pointer to the head of the list of
                               allocated pages. */
+  penn_mutex mut; /**< Mutex to synchronize access to the slab */
 };
 
 /** Create a new slab allocator.
@@ -218,7 +220,7 @@ slab_create(const char *name, size_t item_size)
 {
   struct slab *sl;
   size_t pgsize, offset;
-
+  
   sl = malloc(sizeof(struct slab));
   pgsize = mush_getpagesize();
   offset = sizeof(struct slab_page);
@@ -236,7 +238,8 @@ slab_create(const char *name, size_t item_size)
   item_size += item_size % sizeof(void *);
   sl->item_size = item_size;
   sl->items_per_page = (pgsize - offset) / item_size;
-
+  mutex_init(&sl->mut);
+  
   if (item_size >= (pgsize - offset)) {
     do_rawlog(LT_TRACE, "slab(%s): item_size of %lu bytes is too large for a "
                         "pagesize of %lu bytes. Using malloc() for allocations "
@@ -260,6 +263,8 @@ slab_set_opt(slab *sl, enum slab_options opt,
 {
   if (!sl)
     return;
+
+  mutex_lock(&sl->mut);
   switch (opt) {
   case SLAB_ALLOC_FIRST_FIT:
     sl->fill_strategy = 1;
@@ -277,6 +282,7 @@ slab_set_opt(slab *sl, enum slab_options opt,
     /* Unknown option */
     break;
   }
+  mutex_unlock(&sl->mut);
 }
 
 /** Allocate a new page.
@@ -308,6 +314,8 @@ slab_alloc_page(struct slab *sl)
 #endif
   memset(page, 0, pgsize);
 
+  mutex_lock(&sl->mut);
+  
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;
   sp->nalloced = 0;
@@ -321,13 +329,15 @@ slab_alloc_page(struct slab *sl)
   }
   sp->last_obj = sp->freelist;
   sp->next = NULL;
+
 #ifdef SLAB_DEBUG
   do_rawlog(LT_TRACE, "Allocating page starting at %p for slab(%s).\n\tFirst "
                       "object allocated at %p, last object at %p",
             (void *) sp, sl->name, (void *) (sp + sl->data_offset),
             sp->last_obj);
 #endif
-
+  
+  mutex_unlock(&sl->mut);
   return sp;
 }
 
@@ -359,17 +369,24 @@ slab_alloc_obj(struct slab_page *where)
 void *
 slab_malloc(slab *sl, const void *hint)
 {
+  void *obj = NULL;
+  
   if (!sl)
     return NULL;
-
+  
   /* If objects are too big to fit in a single page, use plain malloc */
-  if (sl->items_per_page == 0)
+  if (sl->items_per_page == 0) {
     return malloc(sl->item_size);
+  }
 
+  mutex_lock(&sl->mut);
+  
   /* If no pages have been allocated, make one and use it. */
   if (!sl->slabs) {
     sl->slabs = slab_alloc_page(sl);
-    return slab_alloc_obj(sl->slabs);
+    obj = slab_alloc_obj(sl->slabs);
+    mutex_unlock(&sl->mut);
+    return obj;
   }
 
   if (!hint) {
@@ -377,10 +394,12 @@ slab_malloc(slab *sl, const void *hint)
     struct slab_page *page, *last = NULL, *best = NULL;
     int best_free = INT_MAX;
     for (page = sl->slabs; page; page = page->next) {
-      if (page->nfree > sl->hintless_threshold && sl->fill_strategy)
+      if (page->nfree > sl->hintless_threshold && sl->fill_strategy) {
         /* First fit */
-        return slab_alloc_obj(page);
-      else if (page->nfree > sl->hintless_threshold) {
+        obj = slab_alloc_obj(page);
+        mutex_unlock(&sl->mut);
+        return obj;
+      } else if (page->nfree > sl->hintless_threshold) {
         /* Best fit */
         if (page->nfree < best_free) {
           best_free = page->nfree;
@@ -392,12 +411,17 @@ slab_malloc(slab *sl, const void *hint)
       last = page;
     }
 
-    if (best)
-      return slab_alloc_obj(best);
+    if (best) {
+      obj = slab_alloc_obj(best);
+      mutex_unlock(&sl->mut);
+      return obj;
+    }
 
     /* All pages are full; allocate a new one */
     last->next = slab_alloc_page(sl);
-    return slab_alloc_obj(last->next);
+    obj = slab_alloc_obj(last->next);
+    mutex_unlock(&sl->mut);
+    return obj;
   } else {
     struct slab_page *page, *last = NULL;
     /* Okay. We have a hint for where to allocate the object. Find the
@@ -408,16 +432,21 @@ slab_malloc(slab *sl, const void *hint)
            first-fit, use the first page with room if using best-fit,
            see if the next or previous page has room, otherwise,
            normal best-fit match */
-        if (page->nfree > 0)
-          return slab_alloc_obj(page);
-        if (sl->fill_strategy)
+        if (page->nfree > 0) {
+          obj = slab_alloc_obj(page);
+        } else if (sl->fill_strategy) {
+          mutex_unlock(&sl->mut);
           return slab_malloc(sl, NULL);
-        else if (page->next && page->next->nfree > 0)
-          return slab_alloc_obj(page->next);
-        else if (last && last->nfree > 0)
-          return slab_alloc_obj(last);
-        else
+        } else if (page->next && page->next->nfree > 0) {
+          obj = slab_alloc_obj(page->next);
+        } else if (last && last->nfree > 0) {
+          obj = slab_alloc_obj(last);
+        } else {
+          mutex_unlock(&sl->mut);
           return slab_malloc(sl, NULL);
+        }
+        mutex_unlock(&sl->mut);
+        return obj;
       }
       last = page;
     }
@@ -427,8 +456,11 @@ slab_malloc(slab *sl, const void *hint)
               sl->name);
 #endif
     last->next = slab_alloc_page(sl);
-    return slab_alloc_obj(last->next);
+    obj = slab_alloc_obj(last->next);
+    mutex_unlock(&sl->mut);
+    return obj;
   }
+  mutex_unlock(&sl->mut);
   return NULL;
 }
 
@@ -447,6 +479,8 @@ slab_free(slab *sl, void *obj)
     return;
   }
 
+  mutex_lock(&sl->mut);
+  
   /* Find the page the object is on and push it into that page's free list */
   last = NULL;
   for (page = sl->slabs; page; page = page->next) {
@@ -473,8 +507,10 @@ slab_free(slab *sl, void *obj)
         /* Empty page. Free it. */
 
         /* Unless it's the only allocated page and we want to keep it */
-        if (sl->keep_last_empty && page == sl->slabs && !page->next)
+        if (sl->keep_last_empty && page == sl->slabs && !page->next) {
+          mutex_unlock(&sl->mut);
           return;
+        }
 
         if (last)
           last->next = page->next;
@@ -487,10 +523,12 @@ slab_free(slab *sl, void *obj)
 #endif
         free(page);
       }
+      mutex_unlock(&sl->mut);
       return;
     }
     last = page;
   }
+  mutex_unlock(&sl->mut);
   /* Ooops. An object not allocated by this allocator! */
   do_rawlog(LT_TRACE, "Attempt to free object %p not allocated by slab(%s)",
             obj, sl->name);
@@ -505,11 +543,16 @@ void
 slab_destroy(slab *sl)
 {
   struct slab_page *page, *next;
+  mutex_lock(&sl->mut);
   for (page = sl->slabs; page; page = next) {
     next = page->next;
     free(page);
   }
-  free(sl);
+  /* Race condition here. Figure out something even though it's
+  * extraordinarily unlikely to happen. */
+  mutex_unlock(&sl->mut);
+  mutex_destroy(&sl->mut);
+  free(sl);  
 }
 
 /** Retrieve interesting stats about a slab.
@@ -524,13 +567,15 @@ slab_describe(const slab *sl, struct slab_stats *stats)
     return;
 
   memset(stats, 0, sizeof(*stats));
+
+  mutex_lock((penn_mutex *)&sl->mut);
   stats->name = sl->name;
   stats->item_size = sl->item_size;
   stats->items_per_page = sl->items_per_page;
   stats->fill_strategy = sl->fill_strategy;
   stats->min_fill = INT_MAX;
   stats->max_fill = 0;
-
+  
   for (page = sl->slabs; page; page = page->next) {
     double p;
     stats->page_count++;
@@ -552,6 +597,7 @@ slab_describe(const slab *sl, struct slab_stats *stats)
     else
       stats->under25 += 1;
   }
+  mutex_unlock((penn_mutex *)&sl->mut);
 }
 
 /** Return the memory page size */

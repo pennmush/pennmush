@@ -1780,7 +1780,7 @@ align_one_line(char *buff, char **bp, int ncols, int cols[MAX_COLS],
         ptrs[i] = strchr(ptr, '\0');
       else
         ptrs[i] = ptr + 1;
-    } else if (lastspace) {
+    } else if (lastspace && !(calign[i] & (AL_TRUNC_ALL | AL_TRUNC_EACH))) {
       char *tptr;
 
       ptr = lastspace;
@@ -1791,16 +1791,7 @@ align_one_line(char *buff, char **bp, int ncols, int cols[MAX_COLS],
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }
-      if (calign[i] & AL_TRUNC_ALL)
-        ptrs[i] = strchr(ptr, '\0');
-      else if (calign[i] & AL_TRUNC_EACH) {
-        tptr = strchr(ptr, '\n');
-        if (tptr == NULL)
-          ptrs[i] = strchr(ptr, '\0');
-        else
-          ptrs[i] = tptr + 1;
-      } else
-        ptrs[i] = lastspace;
+      ptrs[i] = lastspace;
     } else {
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);

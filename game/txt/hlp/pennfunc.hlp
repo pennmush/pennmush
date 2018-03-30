@@ -368,7 +368,7 @@ See also: before(), rest()
     ` When this column runs out of text, merge with the column to the left
     ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with merge-left, the column to its left inherits the 'nofill' when merged.
-    x Truncate each (%r-separated) row instead or wrapping at the colwidth
+    x Truncate each (%r-separated) row instead of wrapping at the colwidth
     X Truncate the entire column at the end of the first row instead of wrapping
     # Don't add a <colsep> after this column. If combined with merge-left, the column to its left inherits this when merged.
 
@@ -2316,9 +2316,9 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     m - If <name> is "me", return <looker>'s dbref
     n - Match <name> against the names of objects in <looker>'s location
     p - If <name> begins with a *, match the rest against player names
-    y - Match <name> against player names whether it begins with a * or not
     z - English-style matching (my 2nd book) of <name> (see 'help matching')
     * - All of the above (try a complete match). Default when no match parameters are given.
+    y - Match <name> against player names whether it begins with a * or not
     x - Only match objects with the exact name <name>, no partial matches
     s - Only match objects which <looker> controls. You must control <looker> or have the See_All power.
 

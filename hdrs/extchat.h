@@ -158,7 +158,7 @@ struct chanlist {
 #define CHANNEL_NOCEMIT 0x400U  /* Disallow @cemit */
 #define CHANNEL_INTERACT                                                       \
   0x800U /* Filter channel output through interactions                         \
-            */
+          */
 #define CHANNEL_DEFAULT_FLAGS (CHANNEL_PLAYER)
 #define CHANNEL_COST (options.chan_cost)
 #define MAX_PLAYER_CHANS (options.max_player_chans)

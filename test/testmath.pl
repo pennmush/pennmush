@@ -70,3 +70,13 @@ test('round.6', $god, 'think round(-[pi()], 3)', '-3.142$');
 test('round.7', $god, 'think round(3.5, 3, 1)', '3.500$');
 test('round.8', $god, 'think round(1.2345, 2, 1)', '1.23$');
 
+test('div.1', $god, 'think div(13,4)', '3');
+test('div.2', $god, 'think div(-13,4)', '-3');
+test('div.3', $god, 'think div(13,-4)', '-3');
+test('div.4', $god, 'think div(-13,-4)', '3');
+
+test('floordiv.1', $god, 'think floordiv(13,4)', '3');
+test('floordiv.2', $god, 'think floordiv(-13,4)', '-4');
+test('floordiv.3', $god, 'think floordiv(13,-4)', '-4');
+test('floordiv.4', $god, 'think floordiv(-13,-4)', '3');
+

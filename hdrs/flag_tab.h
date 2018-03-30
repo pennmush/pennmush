@@ -6,7 +6,6 @@
 
 #pragma once
 
-
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
  * table in the db that counts, not this one.
@@ -190,4 +189,3 @@ static const PRIV flag_privs[] = {{"trusted", '\0', F_INHERIT, F_INHERIT},
                                   {"log", '\0', F_LOG, F_LOG},
                                   {"event", '\0', F_EVENT, F_EVENT},
                                   {NULL, '\0', 0, 0}};
-

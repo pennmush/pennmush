@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_INTTYPES_H
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef __USE_MINGW_ANSI_STDIO
+#endif
 #include <inttypes.h>
 #endif
 
@@ -209,12 +212,11 @@ bool
 string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix || !*prefix)
-    return 0;  
+    return 0;
   while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
     string++, prefix++;
   return *prefix == '\0';
 }
-
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.
@@ -1362,14 +1364,29 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
 /* Most of these defaults are probably wrong on Win32. I hope it
    has at least the headers from C99. */
 #ifndef PRIdMAX
+#ifdef WIN32
+#define PRIdMAX "I64d"
+#else
 #define PRIdMAX "lld"
 #endif
+#endif
+
 #ifndef PRIxMAX
+#ifdef WIN32
+#define PRIxMAX "I64x"
+#else
 #define PRIxMAX "llx"
 #endif
+#endif
+
 #ifndef PRIoMAX
+#ifdef WIN32
+#define PRIoMAX "I64o"
+#else
 #define PRIoMAX "llo"
 #endif
+#endif
+
       switch (base) {
       case 10:
         return safe_format(buff, bp, "%" PRIdMAX, val);
@@ -1680,10 +1697,10 @@ show_tm(struct tm *when)
 /** Return a default pcre_extra pointer pointing to a static region
     set up to use a fairly low match-limit setting.
 */
-struct pcre_extra *
+pcre_extra *
 default_match_limit(void)
 {
-  static struct pcre_extra ex;
+  static pcre_extra ex;
   memset(&ex, 0, sizeof ex);
   set_match_limit(&ex);
   return &ex;
@@ -1691,7 +1708,7 @@ default_match_limit(void)
 
 /** Set a low match-limit setting in an existing pcre_extra struct. */
 void
-set_match_limit(struct pcre_extra *ex)
+set_match_limit(pcre_extra *ex)
 {
   if (!ex)
     return;

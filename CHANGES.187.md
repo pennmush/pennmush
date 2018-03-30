@@ -34,6 +34,7 @@ Softcode
 --------
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+* Functions that work on integers (Like div() or band()) now use 64-bit values instead of 32-bit. [SW]
 
 Fixes
 -----
@@ -44,6 +45,7 @@ Fixes
 * Connecting with a web browser to a mush without a mud_url config option set caused an infinite refresh loop. Reported by grapenut. [1149]
 * Make sure sigrecv_ack() won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
 * Pass pe_info into IDLE and HAVEN attributes from the page command. [MG]
+* The x and X options to align() now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 
 Documentation
 -------------

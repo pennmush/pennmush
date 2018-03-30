@@ -474,8 +474,7 @@ FUNCTION(fun_listq)
         types |= PE_REGS_SWITCH;
       else if (strcasecmp("iter", item) == 0)
         types |= PE_REGS_ITER;
-      else if (strcasecmp("args", item) == 0 ||
-               strcasecmp("stack", item) == 0)
+      else if (strcasecmp("args", item) == 0 || strcasecmp("stack", item) == 0)
         types |= PE_REGS_ARG;
       else {
         safe_str("#-1", buff, bp);
@@ -713,8 +712,7 @@ FUNCTION(fun_r)
       type = PE_REGS_SWITCH;
     else if (string_prefix("iter", args[1]))
       type = PE_REGS_ITER;
-    else if (string_prefix("args", args[1]) ||
-             string_prefix("stack", args[1]))
+    else if (string_prefix("args", args[1]) || string_prefix("stack", args[1]))
       type = PE_REGS_ARG;
     else {
       safe_str("#-1", buff, bp);

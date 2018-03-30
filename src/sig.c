@@ -54,13 +54,13 @@ sigrecv_setup(void)
     perror("sigrecv_setup: pipe2");
     return;
   }
-  
+
   sigrecv_fd = fds[0];
   signotifier_fd = fds[1];
 
 #else
   int flags;
-  
+
   if (pipe(fds) < 0) {
     perror("sigrecv_setup: pipe");
     return;
@@ -81,7 +81,7 @@ sigrecv_setup(void)
   if (flags >= 0) {
     flags |= FD_CLOEXEC;
     if (fcntl(signotifier_fd, F_SETFD, flags) < 0)
-          perror("sigrecv_setup: fcntl F_SETFD");
+      perror("sigrecv_setup: fcntl F_SETFD");
   } else {
     perror("sigrecv_setup: fcntl F_GETFD");
   }
@@ -89,7 +89,7 @@ sigrecv_setup(void)
   if (flags >= 0) {
     flags |= O_NONBLOCK;
     if (fcntl(signotifier_fd, F_SETFL, flags) < 0)
-          perror("sigrecv_setup: fcntl F_SETFL");
+      perror("sigrecv_setup: fcntl F_SETFL");
   } else {
     perror("sigrecv_setup: fcntl F_GETFL");
   }

@@ -248,7 +248,7 @@ struct text_queue {
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
 #define CONN_WEBSOCKETS_REQUEST 0x10000000
-#define CONN_WEBSOCKETS         0x20000000
+#define CONN_WEBSOCKETS 0x20000000
 #endif /* undef WITHOUT_WEBSOCKETS */
 
 /** Maximum \@doing length */
@@ -311,7 +311,7 @@ struct descriptor_data {
   int hide;                     /**< Hide status */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  uint32_t conn_flags;             /**< Flags of connection (telnet status, etc.) */
+  uint32_t conn_flags;        /**< Flags of connection (telnet status, etc.) */
   unsigned long input_chars;  /**< Characters received */
   unsigned long output_chars; /**< Characters sent */
   int width;                  /**< Screen width */

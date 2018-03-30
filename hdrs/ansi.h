@@ -127,11 +127,11 @@ int write_raw_ansi_data(ansi_data *old, ansi_data *cur, int ansi_format,
   1 /**< Only show ANSI highlight, no colors/underline/etc */
 #define ANSI_FORMAT_16COLOR                                                    \
   2 /**< Show the full basic ANSI palette, including highlight, underline, etc \
-       */
+     */
 #define ANSI_FORMAT_XTERM256 3 /**< Use the 256 color XTERM palette */
 #define ANSI_FORMAT_HTML                                                       \
   4 /**< Show colors as HTML tags. Not currently used.                         \
-       */
+     */
 
 int define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);

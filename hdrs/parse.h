@@ -148,12 +148,11 @@ void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 
 /* PE_REGS_REGEXP */
 struct _ansi_string;
-void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags,
-                            pcre *re_code, int *re_offsets,
-                            int re_subpatterns, const char *re_from);
-void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags,
-                                 pcre *re_code, int *re_offsets,
-                                 int re_subpatterns,
+void pe_regs_set_rx_context(PE_REGS *regs, int pe_reg_flags, pcre *re_code,
+                            int *re_offsets, int re_subpatterns,
+                            const char *re_from);
+void pe_regs_set_rx_context_ansi(PE_REGS *regs, int pe_reg_flags, pcre *re_code,
+                                 int *re_offsets, int re_subpatterns,
                                  struct _ansi_string *re_from);
 const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Get_re(pi, k) pi_regs_get_rx(pi, k)

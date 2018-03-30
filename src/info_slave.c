@@ -204,17 +204,16 @@ check_parent_signal(evutil_socket_t fd __attribute__((__unused__)),
 
 #ifdef HAVE_KQUEUE
 static void
-check_parent_kqueue(evutil_socket_t fd,
-		    short what __attribute__((__unused__)),
-		    void *args __attribute__((__unused__)))
+check_parent_kqueue(evutil_socket_t fd, short what __attribute__((__unused__)),
+                    void *args __attribute__((__unused__)))
 {
   struct kevent event;
   int r;
-  struct timespec timeout = { 0, 0 };
+  struct timespec timeout = {0, 0};
 
   r = kevent(fd, NULL, 0, &event, 1, &timeout);
-  if (r == 1 && event.filter == EVFILT_PROC && event.fflags == NOTE_EXIT
-      && (pid_t)event.ident == parent_pid) {
+  if (r == 1 && event.filter == EVFILT_PROC && event.fflags == NOTE_EXIT &&
+      (pid_t) event.ident == parent_pid) {
     fputerr("Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
@@ -249,18 +248,18 @@ main(void)
   int kfd = kqueue();
   if (kfd >= 0) {
     struct kevent event;
-    struct timespec timeout = { 0, 0 };
+    struct timespec timeout = {0, 0};
     EV_SET(&event, parent_pid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT,
-	   NOTE_EXIT, 0, 0);
+           NOTE_EXIT, 0, 0);
     if (kevent(kfd, &event, 1, NULL, 0, &timeout) >= 0) {
-      watch_parent = event_new(main_loop, kfd, EV_READ, check_parent_kqueue,
-			       NULL);
+      watch_parent =
+        event_new(main_loop, kfd, EV_READ, check_parent_kqueue, NULL);
       event_add(watch_parent, NULL);
       parent_watcher = true;
     }
   }
 #endif
-  
+
   if (!parent_watcher) {
     /* Run every 5 seconds to see if the parent mush process is still around. */
     watch_parent =

@@ -444,15 +444,15 @@ mapsql_cmd_fun(void *arg)
   qres = sql_query(sargs->query, &affected_rows);
 
   if (!qres) {
-#if 0
-    if (affected_rows >= 0) {
-      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
-    } else if (!sql_connected()) {
-      notify(executor, T("No SQL database connection."));
-    } else {
-      notify_format(executor, T("SQL: Error: %s"), sql_error());
+    if (!sargs->async) {
+      if (affected_rows >= 0) {
+        notify_format(sargs->executor, T("SQL: %d rows affected."), affected_rows);
+      } else if (!sql_connected()) {
+        notify(sargs->executor, T("No SQL database connection."));
+      } else {
+        notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
+      }
     }
-#endif
     free_sql_args(sargs);
     THREAD_RETURN;
   }
@@ -501,12 +501,12 @@ mapsql_cmd_fun(void *arg)
 #ifdef HAVE_SQLITE3
     if (sql_platform() == SQL_PLATFORM_SQLITE3) {
       int retcode = sqlite3_step(qres);
-      if (retcode == SQLITE_DONE)
+      if (retcode == SQLITE_DONE) {
         break;
-      else if (retcode != SQLITE_ROW) {
-#if 0
-        notify_format(executor, T("SQL: Error: %s"), sql_error());
-#endif
+      } else if (retcode != SQLITE_ROW) {
+        if (!sargs->async) {
+          notify_format(sargs->executor, T("SQL: Error: %s"), sql_error());
+        }
         break;
       }
     }
@@ -643,14 +643,19 @@ COMMAND(cmd_mapsql)
   sargs->query = strdup(arg_right);
   sargs->thing = thing;
   sargs->attr = strdup(tbuf);
-  sargs->async = 1;
   sargs->queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   sargs->regvals = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_mapsql");
   pe_regs_qcopy(sargs->regvals, queue_entry->pe_info->regvals);
   sargs->dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
   sargs->donotify = SW_ISSET(sw, SWITCH_NOTIFY);
 
+#ifdef ASYNC_SQL
+  sargs->async = 1;
   run_thread(&id, mapsql_cmd_fun, sargs, true);
+#else
+  mapsql_cmd_fun(sargs);
+#endif
+
 }
 
 THREAD_RETURN_TYPE WIN32_STDCALL
@@ -808,14 +813,17 @@ COMMAND(cmd_sql)
   sargs = new_sql_args();
   sargs->executor = executor;
   sargs->query = strdup(arg_left);
-  
+
+#ifdef ASYNC_SQL
   if (SW_ISSET(sw, SWITCH_ASYNC)) {
     sargs->async = 1;
     run_thread(&id, sql_cmd_func, sargs, true);
   } else {
     sql_cmd_func(sargs);
-    free_sql_args(sargs);
   }
+#else
+  sql_cmd_func(sargs);
+#endif
 }
 
 FUNCTION(fun_mapsql)

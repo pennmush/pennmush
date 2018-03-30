@@ -710,6 +710,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -743,6 +744,7 @@ enable_ipv6
 enable_nls
 enable_async_hostnames
 enable_ssl_slave
+enable_async_sql
 enable_sse2
 enable_sse3
 enable_ssse3
@@ -806,6 +808,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1058,6 +1061,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1195,7 +1207,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1348,6 +1360,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1389,6 +1402,7 @@ Optional Features:
                           or done inline
   --disable-ssl_slave     Use a seperate process for SSL connections that will
                           persist across restarts. (Experimental. Unix-only.)
+  --enable-async-sql      Run some SQL queries in threads.
   --enable-sse2           Use SSE2 instructions (Requires a CPU that supports
                           SSE2)
   --enable-sse3           Use SSE3 instructions (Requires a CPU that supports
@@ -9845,6 +9859,16 @@ $as_echo "$as_me: WARNING: ssl_slave requested but OpenSSL and/or libevent2 were
    fi
 fi
 
+# Check whether --enable-async-sql was given.
+if test "${enable_async_sql+set}" = set; then :
+  enableval=$enable_async_sql;
+fi
+
+if test "$enable_async_sql" = yes; then
+   $as_echo "#define ASYNC_SQL 1" >>confdefs.h
+
+fi
+
 # Check whether --enable-sse2 was given.
 if test "${enable_sse2+set}" = set; then :
   enableval=$enable_sse2;
@@ -9922,6 +9946,10 @@ if test "$enable_sql" = yes; then
  echo "* SQL support: ${sql_servers:-No}"
 else
  echo "* SQL support: No"
+fi
+
+if test "$enable_async_sql" = yes; then
+   echo "* Some SQL queries will be run in threads."
 fi
 
 if test "$enable_ssl_slave" = yes; then

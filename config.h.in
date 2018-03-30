@@ -87,6 +87,8 @@
 
 #undef HAVE_SQLITE3
 
+#undef ASYNC_SQL
+
 #undef HAVE_SSL
 
 #undef HAVE_PCRE_H

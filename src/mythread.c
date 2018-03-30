@@ -27,7 +27,7 @@ thread_init(void)
 #ifdef HAVE_PTHREADS
   init_pthreads();
 #endif
-  mutex_init(&desc_mutex, 0);
+  mutex_init(&desc_mutex, 1);
   mutex_init(&queue_mutex, 1);
   mutex_init(&sql_mutex, 1);
   mutex_init(&site_mutex, 0);

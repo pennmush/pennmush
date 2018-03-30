@@ -70,6 +70,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "parse.h"
 #include "strutil.h"
 #include "mythread.h"
+#include "sig.h"
 
 /* Supported platforms */
 typedef enum {
@@ -439,7 +440,7 @@ mapsql_cmd_fun(void *arg)
     cells[a] = NULL;
     names[a] = NULL;
   }
-  
+ 
   /* Do the query. */
   qres = sql_query(sargs->query, &affected_rows);
 
@@ -550,7 +551,7 @@ mapsql_cmd_fun(void *arg)
       }
 
       /* Queue the rest. */
-      snprintf(strrownum, 20, "%d", rownum + 1);
+      snprintf(strrownum, sizeof strrownum, "%d", rownum + 1);
       cells[0] = strrownum;
       pe_regs_clear(pe_regs);
       for (i = 0; i < useable_fields + 1; i++) {
@@ -581,6 +582,11 @@ finished:
   if (pe_regs)
     pe_regs_free(pe_regs);
   free_sql_query(qres);
+#ifndef WIN32
+  if (sargs->async) {
+    sigrecv_notify();
+  }
+#endif
   free_sql_args(sargs);
   THREAD_RETURN;
 }
@@ -638,7 +644,7 @@ COMMAND(cmd_mapsql)
   }
   sargs->query = strdup(arg_right);
   sargs->thing = thing;
-  sargs->attr = strdup(tbuf);
+  sargs->attr = strdup(s);
   sargs->queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   sargs->regvals = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_mapsql");
   pe_regs_qcopy(sargs->regvals, queue_entry->pe_info->regvals);
@@ -673,6 +679,11 @@ sql_cmd_func(void *arg)
   ansi_string *as;
   int i;
 
+  if (sargs->async) {
+    do_rawlog(LT_TRACE, "@sql/async for #%d: %s\n",
+              sargs->executor, sargs->query);
+  }
+  
   qres = sql_query(sargs->query, &affected_rows);
   
   if (!qres) {
@@ -783,6 +794,11 @@ finished:
   if (qres) {
     free_sql_query(qres);
   }
+#ifndef WIN32
+  if (sargs->async) {
+    sigrecv_notify();
+  }
+#endif
   free_sql_args(sargs);
   THREAD_RETURN;
 }

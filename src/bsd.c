@@ -2145,6 +2145,8 @@ network_send_ssl(DESC *d)
     input_ready = 0;
   }
 
+  mutex_lock(&d->output.mut);
+  
   while ((cur = d->output.head) != NULL) {
     int cnt = 0;
     need_write = 0;
@@ -2166,8 +2168,10 @@ network_send_ssl(DESC *d)
     }
   }
 
-  if (!d->output.head)
+  if (!d->output.head) {
     d->output.tail = NULL;
+  }
+  mutex_unlock(&d->output.mut);
   d->output_size -= written;
   d->output_chars += written;
 
@@ -2233,24 +2237,37 @@ network_send(DESC *d)
   int written = 0;
   struct text_block *cur;
 
-  if (!d || !d->output.head)
+  if (!d) {
     return 1;
+  }
+
+  mutex_lock(&d->output.mut);
+  
+  if (!d->output.head) {
+    mutex_unlock(&d->output.mut);
+    return 1;
+  }
 
 #ifdef HAVE_WRITEV
   /* If there's multiple pending blocks of text to send, use writev() if
      possible. */
-  if (d->output.head->nxt)
-    return network_send_writev(d);
+  if (d->output.head->nxt) {
+    written = network_send_writev(d);
+    mutex_unlock(&d->output.mut);
+    return written;
+  }
 #endif
 
   while ((cur = d->output.head) != NULL) {
     int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
 
     if (cnt < 0) {
-      if (is_blocking_err(errno))
+      if (is_blocking_err(errno)) {
+        mutex_unlock(&d->output.mut);
         return 1;
-      else {
+      } else {
         d->conn_flags |= CONN_SOCKET_ERROR;
+        mutex_unlock(&d->output.mut);
         return 0;
       }
     }
@@ -2268,8 +2285,10 @@ network_send(DESC *d)
     }
   }
 
-  if (!d->output.head)
+  if (!d->output.head) {
     d->output.tail = NULL;
+  }
+  mutex_unlock(&d->output.mut);  
   d->output_size -= written;
   d->output_chars += written;
   return written;

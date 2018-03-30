@@ -633,8 +633,9 @@ CONFIG_FUNC(cf_priv)
 
   if (is_strict_integer(val)) {
     if (!from_cmd) {
-      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update "
-                        "to a list of values.",
+      do_rawlog(LT_ERR,
+                "CONFIG: Option '%s' set to an integer. Please update "
+                "to a list of values.",
                 opt);
     }
     *((privbits *) loc) = parse_integer(val);
@@ -919,8 +920,9 @@ config_set(const char *opt, char *val, int source, int restrictions)
         return 0;
       }
     } else {
-      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction "
-                        "(use 'none' for none)",
+      do_rawlog(LT_ERR,
+                "CONFIG: restrict_attribute %s requires a restriction "
+                "(use 'none' for none)",
                 val);
       return 0;
     }
@@ -1469,8 +1471,9 @@ config_file_checks(void)
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-      do_rawlog(LT_ERR, "CONFIG: local directive '%s' missing from cnf file. "
-                        "Using default value.",
+      do_rawlog(LT_ERR,
+                "CONFIG: local directive '%s' missing from cnf file. "
+                "Using default value.",
                 cp->name);
     }
   }
@@ -1780,18 +1783,13 @@ do_enable(dbref player, const char *param, int state)
 static void
 show_compile_options(dbref player)
 {
-#if (COMPRESSION_TYPE == 0)
-  notify(player, T(" Attributes are not compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 1) || (COMPRESSION_TYPE == 2)
-  notify(player, T(" Attributes are Huffman compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 3)
-  notify(player, T(" Attributes are word compressed in memory."));
-#endif
-#if (COMPRESSION_TYPE == 4)
-  notify(player, T(" Attributes are 8-bit word compressed in memory."));
-#endif
+  if (strcmp(options.attr_compression, "huffman") == 0) {
+    notify(player, T(" Attributes are Huffman compressed in memory."));
+  } else if (strcmp(options.attr_compression, "word") == 0) {
+    notify(player, T(" Attributes are word compressed in memory."));
+  } else {
+    notify(player, T(" Attributes are not compressed in memory."));
+  }
 
 #ifdef HAVE_SSL
   notify(player, T(" The MUSH was compiled with SSL support."));

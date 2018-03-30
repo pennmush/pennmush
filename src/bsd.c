@@ -501,8 +501,8 @@ main(int argc, char **argv)
 #endif /* !WIN32 */
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ", NULL)
-      < 0) {
+  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ",
+             NULL) < 0) {
     perror("pledge");
   }
 #endif
@@ -933,7 +933,6 @@ is_ws_desc(DESC *d)
 #endif
 }
 
-
 static void
 setup_desc(int sockfd, conn_source source)
 {
@@ -1058,7 +1057,7 @@ shovechars(Port_t port, Port_t sslport)
 
     process_commands();
 
-/* Check signal handler flags */
+    /* Check signal handler flags */
 
 #ifndef WIN32
 
@@ -1222,9 +1221,8 @@ shovechars(Port_t port, Port_t sslport)
         }
       }
       fds[fds_used].events = 0;
-      if (d
-            ->input.head) { /* Don't get more input while this desc has a
-                               command ready to eval. */
+      if (d->input.head) { /* Don't get more input while this desc has a
+                              command ready to eval. */
         timeout = slice_timeout;
       } else {
         fds[fds_used].events = POLLIN;
@@ -1432,13 +1430,13 @@ new_connection(int oldsock, int *result, conn_source source)
     int remote_uid = -1;
     bool good_to_read = 1;
 
-/* As soon as the SSL slave opens a new connection to the mush, it
-   writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-   not block unless somebody's being naughty. People obviously can
-   be. So we'll wait a short time for readable data, and use a
-   non-blocking socket read anyways. If the client doesn't send
-   the hostname string fast enough, oh well.
- */
+    /* As soon as the SSL slave opens a new connection to the mush, it
+       writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
+       not block unless somebody's being naughty. People obviously can
+       be. So we'll wait a short time for readable data, and use a
+       non-blocking socket read anyways. If the client doesn't send
+       the hostname string fast enough, oh well.
+     */
 
 #ifdef HAVE_POLL
     {
@@ -1834,9 +1832,10 @@ fcache_load(dbref player)
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
-      notify_format(player, T("%s sizes:  NewUser...%d  Connect...%d  "
-                              "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
-                              "Register...%d  Down...%d  Full...%d  Who...%d"),
+      notify_format(player,
+                    T("%s sizes:  NewUser...%d  Connect...%d  "
+                      "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
+                      "Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
                     reg, down, full, who);
     }
@@ -2049,7 +2048,8 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
-      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor, d->addr, d->ip);
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor,
+                d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2064,7 +2064,8 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
-      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor, d->addr, d->ip);
+      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor,
+                d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -4017,9 +4018,9 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                        !strncmp(command, POST_COMMAND,
-                                 strlen(POST_COMMAND)))) {
+  if (!d->connected &&
+      (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+       !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
 #ifndef WITHOUT_WEBSOCKETS
     if (options.use_ws && is_websocket(command)) {
       /* Continue processing as a WebSockets upgrade request. */
@@ -4032,25 +4033,32 @@ do_command(DESC *d, char *command)
     char *bp = buf;
     bool has_url = strncmp(MUDURL, "http", 4) == 0;
     safe_format(buf, &bp,
-		"HTTP/1.1 200 OK\r\n"
-		"Content-Type: text/html; charset:iso-8859-1\r\n"
-		"Pragma: no-cache\r\n"
-		"Connection: Close\r\n"
-		"\r\n"
-		"<!DOCTYPE html>\r\n"
-		"<HTML><HEAD>"
-		"<TITLE>Welcome to %s!</TITLE>",
-		MUDNAME);
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/html; charset:iso-8859-1\r\n"
+                "Pragma: no-cache\r\n"
+                "Connection: Close\r\n"
+                "\r\n"
+                "<!DOCTYPE html>\r\n"
+                "<HTML><HEAD>"
+                "<TITLE>Welcome to %s!</TITLE>",
+                MUDNAME);
     if (has_url) {
-      safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">", MUDURL);
+      safe_format(buf, &bp,
+                  "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
+                  MUDURL);
     }
     safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
     if (has_url) {
-      safe_format(buf, &bp, "<p>You've come here by accident! Please click <a href=\"%s\">%s</a> to go to the website for %s if your browser doesn't redirect you in a few seconds.</p>",
-		  MUDURL, MUDURL, MUDNAME);
+      safe_format(buf, &bp,
+                  "<p>You've come here by accident! Please click <a "
+                  "href=\"%s\">%s</a> to go to the website for %s if your "
+                  "browser doesn't redirect you in a few seconds.</p>",
+                  MUDURL, MUDURL, MUDNAME);
     } else {
-      safe_format(buf, &bp, "<p>You've come here by accident! Try using a MUSH client, not a browser, to connect to %s.</p>",
-		  MUDNAME);
+      safe_format(buf, &bp,
+                  "<p>You've come here by accident! Try using a MUSH client, "
+                  "not a browser, to connect to %s.</p>",
+                  MUDNAME);
     }
     safe_str("</BODY></HTML>\r\n", buf, &bp);
     *bp = '\0';
@@ -4272,9 +4280,10 @@ check_connect(DESC *d, const char *msg)
   dbref player;
 
   parse_connect(msg, command, user, password);
-  
+
   /* fail quietly if command is an empty string */
-  if (strlen(command) < 1) return 1;
+  if (strlen(command) < 1)
+    return 1;
 
   if (!check_fails(d->ip)) {
     queue_string_eol(d, T(connect_fail_limit_exceeded));
@@ -4444,8 +4453,9 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.create_allow) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN, "Refused registration (creation disabled) for %s from "
-                         "%s on descriptor %d.\n",
+      do_rawlog(LT_CONN,
+                "Refused registration (creation disabled) for %s from "
+                "%s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, mark_failed(d->ip),
@@ -4853,8 +4863,7 @@ sockset(DESC *d, char *name, char *val)
     if (strcasecmp(val, "auto") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       return tprintf(T("Colorstyle set to '%s'"), "auto");
-    } else if (strcasecmp("plain", val) == 0 ||
-               strcasecmp("none", val) == 0) {
+    } else if (strcasecmp("plain", val) == 0 || strcasecmp("none", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       return tprintf(T("Colorstyle set to '%s'"), "plain");
@@ -4867,8 +4876,7 @@ sockset(DESC *d, char *name, char *val)
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
       return tprintf(T("Colorstyle set to '%s'"), "16color");
-    } else if (strcasecmp("xterm256", val) == 0 ||
-               strcmp(val, "256") == 0) {
+    } else if (strcasecmp("xterm256", val) == 0 || strcmp(val, "256") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
       return tprintf(T("Colorstyle set to '%s'"), "xterm256");
@@ -5049,7 +5057,7 @@ do_page_port(dbref executor, const char *pc, const char *message)
   }
   *tbp = '\0';
   if (target != NOTHING)
-    page_return(executor, target, "Idle", "IDLE", NULL);
+    page_return(executor, target, "Idle", "IDLE", NULL, NULL);
   if (Typeof(executor) != TYPE_PLAYER && Nospoof(target))
     queue_string_eol(d, tprintf("[#%d] %s", executor, tbuf));
   else
@@ -5568,7 +5576,7 @@ do_who_admin(dbref player, char *name)
     if (!who_check_name(d, name, wild))
       continue;
     if (d->connected) {
-      char conntype[3] = { '\0' };
+      char conntype[3] = {'\0'};
       int cti = 0;
       tp = tbuf;
       safe_str(AName(d->player, AN_WHO, NULL), tbuf, &tp);
@@ -5582,11 +5590,10 @@ do_who_admin(dbref player, char *name)
         conntype[cti++] = 'L';
       if (is_ws_desc(d))
         conntype[cti] = 'W';
-      safe_format(tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
-                  unparse_dbref(Location(d->player)),
-                  onfor_time_fmt(d->connected_at, 9),
-                  idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-                  conntype);
+      safe_format(
+        tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
+        unparse_dbref(Location(d->player)), onfor_time_fmt(d->connected_at, 9),
+        idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor, conntype);
       strncpy(addr, d->addr, 28);
       if (Dark(d->player)) {
         addr[20] = '\0';
@@ -7208,7 +7215,7 @@ dump_reboot_db(void)
 #ifndef WITHOUT_WEBSOCKETS
   flags |= RDBF_WEBSOCKET_FRAME;
 #endif
-  
+
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
@@ -7377,7 +7384,7 @@ load_reboot_db(void)
         d->checksum[0] = '\0';
       if (flags & RDBF_WEBSOCKET_FRAME) {
 #ifdef WITHOUT_WEBSOCKETS
-        (void)getref_u64(f);
+        (void) getref_u64(f);
 #else
         d->ws_frame_len = getref_u64(f);
 #endif
@@ -7387,7 +7394,7 @@ load_reboot_db(void)
         d->ws_frame_len = 0;
       }
 #endif
-  
+
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
@@ -7645,11 +7652,13 @@ watch_files_in(void)
     WATCH(options.connect_file[n]);
     WATCH(options.motd_file[n]);
     WATCH(options.wizmotd_file[n]);
+    WATCH(options.newuser_file[n]);
     WATCH(options.register_file[n]);
     WATCH(options.quit_file[n]);
     WATCH(options.down_file[n]);
     WATCH(options.full_file[n]);
     WATCH(options.guest_file[n]);
+    WATCH(options.who_file[n]);
   }
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
@@ -7727,8 +7736,9 @@ file_watch_event_in(int fd)
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
-            do_rawlog(LT_ERR, "Got status change for file '%s' but I don't "
-                              "know what to do with it! Mask 0x%x",
+            do_rawlog(LT_ERR,
+                      "Got status change for file '%s' but I don't "
+                      "know what to do with it! Mask 0x%x",
                       file, ev->mask);
           }
           lastwd = ev->wd;

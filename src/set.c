@@ -341,15 +341,17 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
     do_halt(thing, "", thing);
   } else {
     if ((newowner != player) && Wizard(thing) && !God(player)) {
-      notify_format(player, T("Warning: WIZ flag reset on #%d because "
-                              "@CHOWN/PRESERVE is to a third party."),
+      notify_format(player,
+                    T("Warning: WIZ flag reset on #%d because "
+                      "@CHOWN/PRESERVE is to a third party."),
                     thing);
       clear_flag_internal(thing, "WIZARD");
     }
     if (!null_flagmask("POWER", Powers(thing)) || Wizard(thing) ||
         Royalty(thing) || Inherit(thing))
-      notify_format(player, T("Warning: @CHOWN/PRESERVE on an object (#%d) "
-                              "with WIZ, ROY, INHERIT, or @power privileges."),
+      notify_format(player,
+                    T("Warning: @CHOWN/PRESERVE on an object (#%d) "
+                      "with WIZ, ROY, INHERIT, or @power privileges."),
                     thing);
   }
 }
@@ -1140,9 +1142,8 @@ regedit_helper(dbref player, dbref thing,
     *tbufp = '\0';
     tbufp = tbuf1;
     tbufap = tbuf_ansi;
-    if (!ansi_long_flag &&
-        !safe_ansi_string(display_str, 0, display_str->len, tbuf_ansi,
-                          &tbufap)) {
+    if (!ansi_long_flag && !safe_ansi_string(display_str, 0, display_str->len,
+                                             tbuf_ansi, &tbufap)) {
       *tbufap = '\0';
       tbufp = tbuf_ansi;
     }
@@ -1496,8 +1497,9 @@ wipe_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
     notify_format(player, T("Unable to wipe attribute %s"), AL_NAME(atr));
     return 0;
   case AE_TREE:
-    notify_format(player, T("Attribute %s cannot be wiped because a child "
-                            "attribute cannot be wiped."),
+    notify_format(player,
+                  T("Attribute %s cannot be wiped because a child "
+                    "attribute cannot be wiped."),
                   AL_NAME(atr));
   /* Fall through */
   default:

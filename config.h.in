@@ -424,9 +424,7 @@ typedef bool _Bool;
 #define RESTRICT restrict
 
 #if defined(__MINGW32__) || defined(__MINGW64__)
-#include <w32api.h>
-#define _WIN32_WINNT Windows7
-#define WINVER Windows7
+#include "win32_vers.h"
 #endif
 
 #endif /* __CONFIG_H */ 

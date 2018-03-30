@@ -26,6 +26,12 @@
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_EVENT_H
+#include <sys/event.h>
+#endif
 
 #include <event2/event.h>
 #include <event2/dns.h>
@@ -274,8 +280,9 @@ address_resolved(int result, char type, int count,
   }
 
 #if SSL_DEBUG_LEVEL > 0
-  errprintf(stdout, "ssl_slave: resolved hostname as '%s(%s)'. Opening local "
-                    "connection to mush.\n",
+  errprintf(stdout,
+            "ssl_slave: resolved hostname as '%s(%s)'. Opening local "
+            "connection to mush.\n",
             c->remote_host, c->remote_ip);
 #endif
 
@@ -350,8 +357,10 @@ ssl_event_cb(struct bufferevent *bev, short e, void *data)
   } else if (e & BEV_EVENT_TIMEOUT) {
     if (c->state == C_SSL_CONNECTING) {
       /* Handshake timed out. */
-      struct hostname_info *ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
-      errprintf(stdout, "ssl_slave: [%s] SSL handshake timed out \n", ipaddr->hostname);
+      struct hostname_info *ipaddr =
+        ip_convert(&c->remote_addr.addr, c->remote_addrlen);
+      errprintf(stdout, "ssl_slave: [%s] SSL handshake timed out \n",
+                ipaddr->hostname);
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
       c->remote_bev = NULL;
@@ -385,11 +394,14 @@ ssl_event_cb(struct bufferevent *bev, short e, void *data)
       }
       delete_conn(c);
     } else {
-/* Remote side of the connection went away. Flush mush buffer and shut down. */
-      struct hostname_info *ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
-      errprintf(stdout,
-                "ssl_slave: Lost SSL connection from %s. State: %d, reason 0x%hx.\n",
-                ipaddr->hostname, c->state, e);
+      /* Remote side of the connection went away. Flush mush buffer and shut
+       * down. */
+      struct hostname_info *ipaddr =
+        ip_convert(&c->remote_addr.addr, c->remote_addrlen);
+      errprintf(
+        stdout,
+        "ssl_slave: Lost SSL connection from %s. State: %d, reason 0x%hx.\n",
+        ipaddr->hostname, c->state, e);
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
       c->remote_bev = NULL;
@@ -431,9 +443,10 @@ new_ssl_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)),
     return;
   }
 
-/* Accept a connection and do SSL handshaking */
+  /* Accept a connection and do SSL handshaking */
   ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
-  errprintf(stdout, "Got new connection on SSL port from %s.\n", ipaddr->hostname);
+  errprintf(stdout, "Got new connection on SSL port from %s.\n",
+            ipaddr->hostname);
 
   set_keepalive(fd, keepalive_timeout);
   make_nonblocking(fd);
@@ -502,6 +515,25 @@ shutdown_cb(evutil_socket_t fd __attribute__((__unused__)),
   event_base_loopexit(main_loop, NULL);
 }
 
+#ifdef HAVE_KQUEUE
+static void
+check_parent_kqueue(evutil_socket_t fd, short what __attribute__((__unused__)),
+                    void *args __attribute__((__unused__)))
+{
+  struct kevent event;
+  int r;
+  struct timespec timeout = {0, 0};
+
+  r = kevent(fd, NULL, 0, &event, 1, &timeout);
+  if (r == 1 && event.filter == EVFILT_PROC && event.fflags == NOTE_EXIT &&
+      (pid_t) event.ident == parent_pid) {
+    errputs(stderr, "Parent mush process exited unexpectedly! Shutting down.");
+    close_connections(0);
+    event_base_loopbreak(main_loop);
+  }
+}
+#endif
+
 int
 main(int argc __attribute__((__unused__)),
      char **argv __attribute__((__unused__)))
@@ -512,6 +544,7 @@ main(int argc __attribute__((__unused__)),
   struct event *ssl_listener;
   struct conn *c, *n;
   int len;
+  bool parent_watcher = false;
 
   len = read(0, &cf, sizeof cf);
   if (len < 0) {
@@ -525,7 +558,7 @@ main(int argc __attribute__((__unused__)),
   parent_pid = getppid();
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath inet flock unix dns", NULL) < 0) {
+  if (pledge("stdio proc rpath inet flock unix dns", NULL) < 0) {
     perror("pledge");
   }
 #endif
@@ -547,20 +580,35 @@ main(int argc __attribute__((__unused__)),
     event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_ssl_conn_cb, NULL);
   event_add(ssl_listener, NULL);
 
-#ifdef HAVE_PRCTL
+#if defined(HAVE_PRCTL)
   if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
     // fputerr("Using prctl() to track parent status.");
     watch_parent = evsignal_new(main_loop, SIGUSR1, shutdown_cb, NULL);
     event_add(watch_parent, NULL);
-  } else {
+    parent_watcher = true;
+  }
+#elif defined(HAVE_KQUEUE)
+  int kfd = kqueue();
+  if (kfd >= 0) {
+    struct kevent event;
+    struct timespec timeout = {0, 0};
+    EV_SET(&event, parent_pid, EVFILT_PROC, EV_ADD | EV_ENABLE | EV_ONESHOT,
+           NOTE_EXIT, 0, 0);
+    if (kevent(kfd, &event, 1, NULL, 0, &timeout) >= 0) {
+      watch_parent =
+        event_new(main_loop, kfd, EV_READ, check_parent_kqueue, NULL);
+      event_add(watch_parent, NULL);
+      parent_watcher = true;
+    }
+  }
 #endif
+
+  if (!parent_watcher) {
     /* Run every 5 seconds to see if the parent mush process is still around. */
     watch_parent =
       event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
     event_add(watch_parent, &parent_timeout);
-#ifdef HAVE_PRCTL
   }
-#endif
 
   /* Catch shutdown requests from the parent mush */
   sigterm_handler = evsignal_new(main_loop, SIGTERM, shutdown_cb, NULL);

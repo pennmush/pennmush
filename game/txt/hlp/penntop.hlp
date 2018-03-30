@@ -1586,7 +1586,7 @@ See also: SHARED, @lock, ZMO
 
 See also: @chzone, SHARED PLAYERS
 & MATCHING
-  Matching is the process the MUSH uses to determine which object you mean when you try to do something with an object. Different commands do matching in different ways, but most will allow you to specify an object as:
+  Matching is the process the MUSH uses to determine which object you mean when you try to do something with an object. Different commands and functions do matching in different ways, but most will allow you to specify an object as:
     * its dbref (#7) or objid (#7:123456789)
     * the string "me" (yourself)
     * the string "here" (the room you're in)

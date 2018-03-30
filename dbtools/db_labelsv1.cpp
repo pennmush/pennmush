@@ -268,7 +268,11 @@ write_flags(std::ostream &out, const flagmap &flags)
     const auto &flag = flags.find(name)->second;
     out << " name \"" << flag.name << "\"\n";
     if (flag.letter) {
-      out << "  letter \"" << flag.letter << "\"\n";
+      if (flag.letter == '"') {
+	out << R"(  letter "\"")" << '\n';
+      } else {
+	out << "  letter \"" << flag.letter << "\"\n";
+      }
     } else {
       out << "  letter \"\"\n";
     }

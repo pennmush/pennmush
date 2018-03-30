@@ -330,8 +330,9 @@ attr_read_all(PENNFILE *f)
   ptab_end_inserts(&ptab_attrib);
 
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual number of attrs (%d) different than "
-                      "expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of attrs (%d) different than "
+              "expected count (%d).",
               found, count);
 
   /* Assumes we'll always have at least one alias */
@@ -361,8 +362,9 @@ attr_read_all(PENNFILE *f)
     }
   }
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual number of attr aliases (%d) different "
-                      "than expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of attr aliases (%d) different "
+              "than expected count (%d).",
               found, count);
 
   return;
@@ -986,7 +988,7 @@ display_attr_info(dbref player, ATTR *ap)
  * \param player The enactor
  * \param pattern Wildcard pattern of attrnames to decompile
  * \param retroactive Include the /retroactive switch?
-*/
+ */
 void
 do_decompile_attribs(dbref player, char *pattern, int retroactive)
 {

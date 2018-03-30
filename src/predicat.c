@@ -1185,16 +1185,17 @@ parse_match_possessor(dbref player, char **str, int exits)
  * \param type type of message to return.
  * \param message name of attribute containing the message.
  * \param def default message to return.
+ * \param pe_info the pe_info to pass when evaluating the attribute
  */
 void
 page_return(dbref player, dbref target, const char *type, const char *message,
-            const char *def)
+            const char *def, NEW_PE_INFO *pe_info)
 {
   char buff[BUFFER_LEN];
   struct tm *ptr;
 
   if (message && *message) {
-    if (call_attrib(target, message, buff, player, NULL, NULL)) {
+    if (call_attrib(target, message, buff, player, pe_info, NULL)) {
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
@@ -1411,10 +1412,8 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
                : strncasecmp(s, gd->findstr, gd->findlen))) {
         ansi_string *repl;
         matched = 1;
-        repl = parse_ansi_string(tprintf("%s%.*s%s",
-                                         ANSI_HILITE,
-                                         gd->findlen, s,
-                                         ANSI_END));
+        repl = parse_ansi_string(
+          tprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, s, ANSI_END));
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         free_ansi_string(repl);
         s += gd->findlen;

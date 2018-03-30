@@ -782,22 +782,9 @@ do_list_allocations(dbref player)
        time. */
     bvm_asmnode_slab,
 #endif
-    chanlist_slab,
-    chanuser_slab,
-    flag_slab,
-    function_slab,
-#if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
-    huffman_slab,
-#endif
-    lock_slab,
-    mail_slab,
-    memcheck_slab,
-    text_block_slab,
-    player_dbref_slab,
-    intmap_slab,
-    pe_reg_slab,
-    pe_reg_val_slab,
-    flagbucket_slab,
+    chanlist_slab, chanuser_slab, flag_slab, function_slab, huffman_slab,
+    lock_slab, mail_slab, memcheck_slab, text_block_slab, player_dbref_slab,
+    intmap_slab, pe_reg_slab, pe_reg_val_slab, flagbucket_slab,
     namelist_slab, /* This used to be in a separate if check, so it may be
                       NULL. Be careful if making this static. */
   };
@@ -810,6 +797,9 @@ do_list_allocations(dbref player)
 
   for (i = 0; i < sizeof(slabs) / sizeof(slabs[0]); ++i) {
     struct slab_stats stats;
+    if (!slabs[i]) {
+      continue;
+    }
     slab_describe(slabs[i], &stats);
     notify_format(player, "Allocator for %s:", stats.name);
     notify_format(player,

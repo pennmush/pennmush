@@ -386,8 +386,9 @@ pat_list_nodes(patricia *node, FILE *fp)
   format_long(node->key, tmpbuf, &bp, 99, 2);
   *bp = '\0';
 
-  fprintf(fp, "node%u [label=\"{ <key> key = 0b%s (%u) | bit = %d | { <b0> 0 | "
-              "<b1> 1 } }\", ",
+  fprintf(fp,
+          "node%u [label=\"{ <key> key = 0b%s (%u) | bit = %d | { <b0> 0 | "
+          "<b1> 1 } }\", ",
           (unsigned int) node->key, tmpbuf, (unsigned int) node->key,
           node->bit);
   if (node->links[0]->bit > node->bit && node->links[1]->bit > node->bit)
@@ -478,9 +479,8 @@ im_stats(dbref player, intmap *im, const char *name)
 
   size_t bytes = sizeof *im + (sizeof(patricia) * im->count);
 #ifdef WIN32
-#define PRIszt "Iu"
+  notify_format(player, "%-11s %7I64d %7I64u", name, im->count, bytes);
 #else
-#define PRIszt "zu"
+  notify_format(player, "%-11s %7" PRIi64 " %7zu", name, im->count, bytes);
 #endif
-  notify_format(player, "%-11s %7" PRIi64 " %7" PRIszt, name, im->count, bytes);
 }

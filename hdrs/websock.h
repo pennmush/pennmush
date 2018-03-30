@@ -25,10 +25,8 @@ int process_websocket_request(DESC *d, const char *command);
 int process_websocket_frame(DESC *d, char *tbuf1, int got);
 void to_websocket_frame(const char **bp, int *np, char channel);
 
-int markup_websocket(
-  char *buff, char **bp, char *data, int datalen, char *alt, int altlen,
-  char channel
-);
+int markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
+                     int altlen, char channel);
 
 FUNCTION_PROTO(fun_websocket_json);
 FUNCTION_PROTO(fun_websocket_html);

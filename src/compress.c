@@ -75,6 +75,7 @@ init_compress(PENNFILE *f)
       do_rawlog(LT_ERR, "Unknown compression option '%s'. Defaulting to none.",
                 options.attr_compression);
       comp_ops = &nocompression_ops;
+      strcpy(options.attr_compression, "none");
     }
   }
 

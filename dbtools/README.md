@@ -47,13 +47,13 @@ Windows, using Visual Studio 2017
    on that page.
 
 3. Install the following packages if needed (Via `.\vcpkg install`):
-   **openssl boost-iostreams boost-program-options boost-algorithm
-   boost-container** (This might take a while)
+   **boost-iostreams boost-program-options boost-algorithm boost-container**
+   (This might take a while)
 
    vcpkg supports both 32-bit and 64-bit targets. You might need to
    explicitly request the one you want to use (64 bit is suggested),
-   by `.\vcpkg install openssl:x64-windows` or `.\vcpkg install
-   openssl:x86-windows`.
+   by `.\vcpkg install boost-iostreams:x64-windows` or `.\vcpkg install
+   boost-iostreams:x86-windows`.
 
 ### Actually building
 

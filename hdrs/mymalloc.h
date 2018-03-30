@@ -21,6 +21,8 @@ void *mush_realloc_where(void *restrict ptr, size_t newsize,
 void mush_free_where(void *restrict ptr, const char *restrict check,
                      const char *restrict filename, int line);
 
+int mush_getpagesize(void);
+
 typedef struct slab slab;
 slab *slab_create(const char *name, size_t item_size);
 void slab_destroy(slab *);

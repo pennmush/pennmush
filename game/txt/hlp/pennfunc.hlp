@@ -368,7 +368,7 @@ See also: before(), rest()
     ` When this column runs out of text, merge with the column to the left
     ' When this column runs out of text, merge with the column to the right
     $ nofill: Don't use filler after the text. If this is combined with merge-left, the column to its left inherits the 'nofill' when merged.
-    x Truncate each (%r-separated) row instead or wrapping at the colwidth
+    x Truncate each (%r-separated) row instead of wrapping at the colwidth
     X Truncate the entire column at the end of the first row instead of wrapping
     # Don't add a <colsep> after this column. If combined with merge-left, the column to its left inherits this when merged.
 
@@ -712,12 +712,6 @@ See also: lcstr(), ucstr()
     You say, "foo bar baz blech"
     > say strcat(foo bar, baz blech)
     You say, "foo barbaz blech"
-& CEIL()
-  ceil(<number>)
- 
-  Returns the least integral value greater than or equal to <number>.
-
-See also: floor(), bound(), round(), trunc()
 & CENTER()
   center(<string>, <width>[, <fill>[, <rightfill>]])
  
@@ -1460,12 +1454,6 @@ See also: flags(), list()
     You say, "zab rab oof"
 
 See also: revwords()
-& FLOOR()
-  floor(<number>)
- 
-  Returns the greatest integral value less than or equal to <number>.
-
-See also: ceil(), bound(), round(), trunc(), floordiv()
 & FMOD()
   fmod(<number>, <divisor>)
 
@@ -2328,9 +2316,9 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     m - If <name> is "me", return <looker>'s dbref
     n - Match <name> against the names of objects in <looker>'s location
     p - If <name> begins with a *, match the rest against player names
-    y - Match <name> against player names whether it begins with a * or not
     z - English-style matching (my 2nd book) of <name> (see 'help matching')
     * - All of the above (try a complete match). Default when no match parameters are given.
+    y - Match <name> against player names whether it begins with a * or not
     x - Only match objects with the exact name <name>, no partial matches
     s - Only match objects which <looker> controls. You must control <looker> or have the See_All power.
 
@@ -2907,7 +2895,7 @@ See also: MONIKERS, @moniker, name(), MONIKER, iname(), accname()
     Bad name "bogus"
     You say, "#1 #7 #56 #-1"
 
-See also: namegrab(), name(), locate()
+See also: namegrab(), name(), locate(), num(), pmatch()
 & NAMEGRAB()
 & NAMEGRABALL()
   namegrab(<dbref list>, <name>)
@@ -2983,9 +2971,9 @@ See also: Boolean Functions, t(), and(), or(), nor(), xor()
 & NUM()
   num(<object>)
 
-  Returns the dbref number of <object>. <object> must be the name of an object which is near to the caller, or the name of a player prefixed with a '*'.
+  Returns the dbref number of <object>. <object> must reference a valid object, as per 'help matching'.
   
-See also: locate(), rnum()
+See also: locate(), rnum(), pmatch()
 & NVCON()
 & NCON()
   ncon(<object>)
@@ -3509,17 +3497,27 @@ See also: loc(), rloc(), rnum(), where()
 
 See also: sqrt(), power()
 & ROUND()
+& CEIL()
+& FLOOR()
   round(<number>, <places>[, <pad>])
+  floor(<number>)
+  ceil(<number>)
  
-  Rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
+  round() rounds <number> to <places> decimal places. <places> must be between 0 and config(float_precision). If the optional <pad> argument is true, the result will be padded with 0s if it would otherwise have fewer than <places> digits after the decimal point.
 
+  floor() rounds <number> down, and ceil() rounds <number> up, to 0 decimal places.
+  
   Examples:
     > think round(3.14159, 2)
     3.14
     > think round(3.5, 3, 1)
     3.500
+    > think ceil(3.14159)
+    4
+    > think floor(3.14159)
+    3
  
-See also: ceil(), floor(), bound(), trunc()
+See also: bound(), trunc()
 & FN()
   fn([<obj>/]<function name>[, <arg0>[, ... , <argN>]])
 
@@ -3538,7 +3536,6 @@ See also: ceil(), floor(), bound(), trunc()
   
   Continued in 'help fn2'.
 & FN2
-
   If <obj> is specified, the built-in function will be executed as <obj>, rather than as the object which called fn(). This is useful when using fn() to replace a side-effect function, to ensure priviledge checks, etc, are done correctly. You must control <obj>, or (if function side effects are disabled) must be see_all.
   
   When an <obj> is given, debug information is automatically suppressed when evaluating the built-in function.
@@ -3784,7 +3781,7 @@ See also: scramble(), pickrand()
 & SIGN()
   sign(<number>)
 
-  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivilent to bound(<number>, -1, 1).
+  Essentially returns the sign of a number -- 0 if the number is 0, 1 if the number is positive, and -1 if the number is negative. This is equivalent to bound(<number>, -1, 1).
   
   Example:
     > say sign(-4)

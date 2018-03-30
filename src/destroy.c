@@ -1139,8 +1139,9 @@ check_fields(void)
            * Relink to our source
            */
           Destination(thing) = Source(thing);
-          do_rawlog(LT_ERR, "ERROR: Exit %s leading to invalid room #%d "
-                            "relinked to its source room.",
+          do_rawlog(LT_ERR,
+                    "ERROR: Exit %s leading to invalid room #%d "
+                    "relinked to its source room.",
                     unparse_object(GOD, thing, 0), home);
         } else if (GoodObject(loc) && IsGarbage(loc)) {
           /* If our destination is destroyed, then we relink to the
@@ -1150,8 +1151,9 @@ check_fields(void)
            * into nasty limbo exits.
            */
           Destination(thing) = Source(thing);
-          do_rawlog(LT_ERR, "ERROR: Exit %s leading to garbage room #%d "
-                            "relinked to its source room.",
+          do_rawlog(LT_ERR,
+                    "ERROR: Exit %s leading to garbage room #%d "
+                    "relinked to its source room.",
                     unparse_object(GOD, thing, 0), home);
         }
         /* This must come last */

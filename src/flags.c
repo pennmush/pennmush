@@ -31,6 +31,9 @@
 #include <string.h>
 #include <stdlib.h>
 #ifdef HAVE_INTTYPES_H
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef __USE_MINGW_ANSI_STDIO
+#endif
 #include <inttypes.h>
 #endif
 
@@ -590,8 +593,9 @@ flag_read_all(PENNFILE *in, const char *ns)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual number of flags (%d) different than "
-                      "expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of flags (%d) different than "
+              "expected count (%d).",
               found, count);
 
   /* Assumes we'll always have at least one alias */
@@ -611,8 +615,9 @@ flag_read_all(PENNFILE *in, const char *ns)
       flag_add(n, alias, f);
   }
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual number of flag aliases (%d) different "
-                      "than expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual number of flag aliases (%d) different "
+              "than expected count (%d).",
               found, count);
 
   flag_add_additional(n);
@@ -1158,11 +1163,13 @@ flag_stats(dbref player)
       if (len > maxlen)
         maxlen = len;
     }
-    notify_format(player, "  %d objects share the most common set of flags.\n  "
-                          "%d objects have unique flagsets.",
+    notify_format(player,
+                  "  %d objects share the most common set of flags.\n  "
+                  "%d objects have unique flagsets.",
                   maxref, uniques);
-    notify_format(player, "  Cache hashtable has %d buckets. Longest collision "
-                          "chain is %d elements.",
+    notify_format(player,
+                  "  Cache hashtable has %d buckets. Longest collision "
+                  "chain is %d elements.",
                   n->cache->size, maxlen);
   }
 }
@@ -2421,8 +2428,9 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
      */
     for (it = 0; it < db_top; it++) {
       if (!(type & Typeof(it)) && has_flag_ns(n, it, f)) {
-        notify_format(player, T("Objects of other types already have this %s "
-                                "set. Search for them and remove it first."),
+        notify_format(player,
+                      T("Objects of other types already have this %s "
+                        "set. Search for them and remove it first."),
                       strlower(ns));
         return;
       }
@@ -3101,7 +3109,6 @@ do_flag_debug(const char *ns, dbref player)
 
   for (i = 0; i < n->flagbits; i += 1) {
     FLAG *f = n->flags[i];
-
     notify_format(player, "Flag %2d: %s. Bit position: %" PRIi64, i, f->name,
                   f->bitpos);
   }

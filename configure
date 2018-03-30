@@ -8829,7 +8829,7 @@ fi
 if test "${enable_nls+set}" = set; then :
   enableval=$enable_nls; enable_nls=$enableval
 else
-  enable_nls=yes
+  enable_nls=no
 fi
 
 

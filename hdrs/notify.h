@@ -47,7 +47,7 @@ char *WIN32_CDECL tprintf(const char *fmt, ...)
 #define NA_SPOOF 0x8000          /**< \@ns* message, overrides NOSPOOF */
 #define NA_INTER_LOCK                                                          \
   0x10000 /**< Message subject to \@lock/interact even if not otherwise marked \
-             */
+           */
 #define NA_INTERACTION                                                         \
   (NA_INTER_HEAR | NA_INTER_SEE | NA_INTER_PRESENCE |                          \
    NA_INTER_LOCK)         /**< Message follows interaction rules */
@@ -71,12 +71,12 @@ char *WIN32_CDECL tprintf(const char *fmt, ...)
 
 #define MSG_MARKUP                                                             \
   0x10 /**< Leave markup in internal format, rather than stripping/converting  \
-          */
+        */
 #define MSG_ANSI2 0x20    /**< Ansi-highlight only */
 #define MSG_ANSI16 0x40   /**< 16 bit Color */
 #define MSG_XTERM256 0x80 /**< XTERM 256 Color */
 #ifndef WITHOUT_WEBSOCKETS
-#define MSG_WEBSOCKETS   0x10000000
+#define MSG_WEBSOCKETS 0x10000000
 #endif /* undef WITHOUT_WEBSOCKETS */
 
 /**

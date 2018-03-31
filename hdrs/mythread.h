@@ -70,23 +70,25 @@ int tl_set(thread_local_id, void *);
 
 /* Windows MSVC++ functions */
 typedef long atomic_int;
-typedef LONGLONG atomic_int_fast64_t;
+typedef long long atomic_int_fast64_t;
 #define atomic_fetch_add(lptr, num) InterlockedExchangeAdd(lptr, num)
 #define atomic_fetch_add64(llptr, num) InterlockedExchangeAdd64(llptr, num)
 #define atomic_increment(lptr) InterlockedIncrement(lptr)
 #define atomic_decrement(lptr) InterlockedDecrement(lptr)
+#define atomic_store(lptr, num) *(lptr) = (num)
 #define atomic_load(lptr) *(lptr)
 
 #elif defined(__GNUC__)
 
 /* Legacy GCC intrinsics */
-
+#include <stdint.h>
 typedef int atomic_int;
 typedef int_fast64_t atomic_int_fast64_t;
 #define atomic_fetch_add(lptr, num) __sync_fetch_and_add(lptr, num)
 #define atomic_fetch_add64(lptr, num) atomic_fetch_add(lptr, num)
 #define atomic_increment(lptr) __sync_fetch_and_add(lptr, 1)
 #define atomic_decrement(lptr) __sync_fetch_and_sub(lptr, 1)
+#define atomic_store(lptr, num) *(lptr) = (num)
 #define atomic_load(lptr) *(lptr)
 
 #else
@@ -105,12 +107,15 @@ typedef int_fast64_t atomic_int_fast64_t;
 
 /* Legacy GCC intrinsics */
 
+#include <stdint.h>
+
 typedef int atomic_int;
 typedef int_fast64_t atomic_int_fast64_t;
 #define atomic_fetch_add(lptr, num) __sync_fetch_and_add(lptr, num)
 #define atomic_fetch_add64(lptr, num) atomic_fetch_add(lptr, num)
 #define atomic_increment(lptr) __sync_fetch_and_add(lptr, 1)
 #define atomic_decrement(lptr) __sync_fetch_and_sub(lptr, 1)
+#define atomic_store(lptr, num) *(lptr) = (num)
 #define atomic_load(lptr) *(lptr)
 
 #else

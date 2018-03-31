@@ -7,11 +7,81 @@
 #include "mythread.h"
 #include "confmagic.h"
 
+struct thread_list {
+  thread_id id;
+  bool finished;
+  struct thread_list *next;
+};
+
+penn_mutex thread_mutex;
+/* List of non-joinable threads. They get joined anyways to keep helgrind happy. */
+struct thread_list *running_threads = NULL;
+
 extern penn_mutex desc_mutex;
 extern penn_mutex queue_mutex;
 extern penn_mutex sql_mutex;
 extern penn_mutex site_mutex;
 extern penn_mutex mem_mutex;
+extern penn_mutex od_mutex;
+
+extern thread_local_id su_id;
+extern thread_local_id tp_id;
+extern thread_local_id rng_id;
+
+static void add_to_list(thread_id id)
+{
+  struct thread_list *t = malloc(sizeof *t);
+  t->id = id;
+  t->finished = 0;
+  mutex_lock(&thread_mutex);
+  t->next = running_threads;
+  mutex_unlock(&thread_mutex);
+}
+
+/** Mark a thread as done and ready to be cleaned up. */
+void
+mark_finished(thread_id id)
+{
+  struct thread_list *t;
+  mutex_lock(&thread_mutex);
+  for (t = running_threads; t; t = t->next) {
+    if (t->id == id) {
+      t->finished = 1;
+      break;
+    }
+  }
+  mutex_unlock(&thread_mutex);
+}
+
+/** Clean up all pending finished threads */
+int
+reap_threads(void)
+{
+  struct thread_list *t, *n, *p = NULL;
+  int count = 0;
+  mutex_lock(&thread_mutex);
+  for (t = running_threads; t; t = n) {
+    n = t->next;
+    if (t->finished) {
+      THREAD_RETURN_TYPE r;
+      if (join_thread(t->id, &r) == 0) {
+        count += 1;
+        free(t);
+        if (p) {
+          p->next = n;
+        } else {
+          running_threads = n;
+        }
+      } else {
+        p = t;
+      }
+    } else {
+      p = t;
+    }
+  }
+  mutex_unlock(&thread_mutex);
+  return count;
+}
 
 #ifdef HAVE_PTHREADS
 static void init_pthreads(void);
@@ -27,11 +97,16 @@ thread_init(void)
 #ifdef HAVE_PTHREADS
   init_pthreads();
 #endif
+  mutex_init(&thread_mutex, 0);
   mutex_init(&desc_mutex, 1);
   mutex_init(&queue_mutex, 1);
   mutex_init(&sql_mutex, 1);
   mutex_init(&site_mutex, 0);
   mutex_init(&mem_mutex, 0);
+  mutex_init(&od_mutex, 0);
+  tl_create(&su_id, free);
+  tl_create(&tp_id, free);
+  tl_create(&rng_id, free);
 }
 
 /** Destroy global thread-related variables and deinitialize thread
@@ -40,11 +115,16 @@ thread_init(void)
 void
 thread_cleanup(void)
 {
+  mutex_destroy(&thread_mutex);
   mutex_destroy(&desc_mutex);
   mutex_destroy(&queue_mutex);
   mutex_destroy(&sql_mutex);
   mutex_destroy(&site_mutex);
   mutex_destroy(&mem_mutex);
+  mutex_destroy(&od_mutex);
+  tl_destroy(su_id);
+  tl_destroy(tp_id);
+  tl_destroy(rng_id);
 #ifdef HAVE_PTHREADS
   dest_pthreads();
 #endif
@@ -53,23 +133,19 @@ thread_cleanup(void)
 #ifdef HAVE_PTHREADS
 /* Pthreads wrappers */
 
-static pthread_mutexattr_t recattr; /**< mutex attr for recursive mutexes */
-static pthread_attr_t detached; /**< thread attr for starting detached */
+static pthread_mutexattr_t recattr; /**< mutex attr for recursive */
 
 static void
 init_pthreads(void)
 {
   pthread_mutexattr_init(&recattr);
   pthread_mutexattr_settype(&recattr, PTHREAD_MUTEX_RECURSIVE);
-  pthread_attr_init(&detached);
-  pthread_attr_setdetachstate(&detached, PTHREAD_CREATE_DETACHED);
 }
 
 static void
 dest_pthreads(void)
 {
   pthread_mutexattr_destroy(&recattr);
-  pthread_attr_destroy(&detached);
 }
 
 /** Launch a new thread.
@@ -82,8 +158,11 @@ dest_pthreads(void)
  */
 int
 run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
-  pthread_attr_t *attr = detach ? &detached : NULL;
-  return pthread_create(id, attr, f, arg);
+  int r = pthread_create(id, NULL, f, arg);
+  if (r == 0 && detach) {
+    add_to_list(*id);
+  }
+  return r;
 }
 
 /** Called by a thread function to exit the thread.
@@ -93,6 +172,7 @@ run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
 void
 exit_thread(THREAD_RETURN_TYPE retval)
 {
+  mark_finished(pthread_self());
   pthread_exit(retval);
 }
 
@@ -153,24 +233,47 @@ mutex_unlock(penn_mutex *mut)
   return pthread_mutex_unlock(mut);
 }
 
+/** Creat a new thread local storage key.
+ *
+ * \param key pointer to the key variable.
+ * \param free_fun function to call on stored value when thread exits.
+ * \return 0 on success, other on error.
+ */
 int
 tl_create(thread_local_id *key, void (*free_fun)(void *))
 {
   return pthread_key_create(key, free_fun);
 }
 
+/** Destroy a thread local storage key.
+ *
+ * \param key tls key to clean up.
+ * \return 0 on success, other on error.
+ */
 int
 tl_destroy(thread_local_id key)
 {
   return pthread_key_delete(key);
 }
 
+/** Return the value associated with the current thread's
+ * tls key.
+ *
+ * \param key to return value for.
+ * \return pointer to value, or NULL.
+ */
 void *
 tl_get(thread_local_id key)
 {
   return pthread_getspecific(key);
 }
 
+/** Associate a pointer with the current thread's tls key.
+ *
+ * \param key key to store value for.
+ * \param data pointer to store.
+ * \return 0 for success, other on error.
+ */
 int
 tl_set(thread_local_id key, void *data)
 {
@@ -193,7 +296,7 @@ run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
   } else {
     *id = (HANDLE) h;
     if (detach) {
-      CloseHandle(*id);
+      add_to_list(*id);
     }
     return 0;
   }
@@ -202,6 +305,7 @@ run_thread(thread_id *id, thread_func f, void *arg, bool detach) {
 void
 exit_thread(THREAD_RETURN_TYPE retval)
 {
+  mark_finished(GetCurrentThread());
   _endthreadex(retval);
 }
 

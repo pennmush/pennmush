@@ -182,10 +182,12 @@ static int
 add_to(dbref player, int am)
 {
   int *count;
-
+  int c;
+  
   if (QUEUE_PER_OWNER)
     player = Owner(player);
 
+  mutex_lock(Mutex(player));
   count = get_objdata(player, "QUEUE");
   if (!count) {
     count = mush_malloc(sizeof *count, "queue.count");
@@ -193,12 +195,15 @@ add_to(dbref player, int am)
     set_objdata(player, "QUEUE", count);
   }
   *count += am;
-  if (*count == 0) {
+  c = *count;
+  if (c == 0) {
     set_objdata(player, "QUEUE", NULL);
     mush_free(count, "queue.count");
+    mutex_unlock(Mutex(player));
     return 0;
   } else {
-    return *count;
+    mutex_unlock(Mutex(player));
+    return c;
   }
 }
 

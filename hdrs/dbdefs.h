@@ -59,6 +59,8 @@ extern dbref first_free; /* pointer to free list */
 #define Parent(x) (db[(x)].parent)
 #define Powers(x) (db[(x)].powers)
 
+#define Mutex(x) (&db[(x)].mut)
+
 /* Generic type check */
 #define Type(x) (db[(x)].type)
 #define Typeof(x) (Type(x) & ~TYPE_MARKED)
@@ -273,6 +275,7 @@ struct object {
   object_flag_type flags;  /**< Pointer to flag bit array */
   object_flag_type powers; /**< Pointer to power bit array */
   ALIST *list;             /**< list of attributes on the object */
+  penn_mutex mut; /**< Mutex to control access to the object */
 };
 
 /** A structure to hold database statistics.

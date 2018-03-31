@@ -543,26 +543,23 @@ bool
 sq_run_one(void)
 {
   time_t now;
-  struct squeue *n;
 
   time(&now);
   mutex_lock(&queue_mutex);
   if (sq_head) {
-  if (difftime(sq_head->when, now) <= 0) {
-      bool r = sq_head->fun(sq_head->data);
-      if (r && sq_head->event) {
-        queue_event(SYSEVENT, sq_head->event, "%s", "");
-}
-      n = sq_head->next;
-      if (sq_head->event) {
-        mush_free(sq_head->event, "squeue.event");
-}
-      mush_free(sq_head, "squeue.node");
-      sq_head = n;
+    if (difftime(sq_head->when, now) <= 0) {
+      struct squeue *q = sq_head;
+      sq_head = sq_head->next;
       mutex_unlock(&queue_mutex);
+      bool r = q->fun(q->data);
+      if (r && q->event) {
+        queue_event(SYSEVENT, q->event, "%s", "");
+        mush_free(q->event, "squeue.event");
+      }
+      mush_free(q, "squeue.node");
       return true;
     }
-}
+  }
   mutex_unlock(&queue_mutex);
   return false;
 }

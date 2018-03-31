@@ -237,6 +237,7 @@ new_object(void)
   o->powers = new_flag_bitmask("POWER");
   if (current_state.garbage)
     current_state.garbage--;
+  mutex_init(&o->mut, 0);
   return newobj;
 }
 
@@ -1881,6 +1882,8 @@ db_read(PENNFILE *f)
   return -1;
 }
 
+penn_mutex od_mutex;
+
 static void
 init_objdata_htab(int size, void (*free_data)(void *))
 {
@@ -1891,37 +1894,45 @@ init_objdata_htab(int size, void (*free_data)(void *))
 }
 
 /** Add data to the object data hashtable.
+ *
  * This hash table is typically used to store transient object data
- * that is built at database load and isn't saved to disk, but it
- * can be used for other purposes as well - it's a good general
- * tool for hackers who want to add their own data to objects.
- * This function adds data to the hashtable. NULL data cleared
- * that particular keybase/object entry. It does not free the
- * data pointer.
+ * that is built at database load and isn't saved to disk, but it can
+ * be used for other purposes as well - it's a good general tool for
+ * hackers who want to add their own data to objects without modifying
+ * the object struct or using attributes.
+ *
+ * This function adds data to the hashtable. NULL data clears that
+ * particular keybase/object entry. It does not free the data pointer.
+ *
  * \param thing dbref of object to associate the data with.
- * \param keybase base string for type of data.
+ * \param keybase base string for type of data. Maximum length is 1000 characters.
  * \param data pointer to the data to store.
  * \return data passed in.
  */
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  char keyname[BUFFER_LEN];
+  char keyname[1024];
 
-  mush_strncpy(keyname, tprintf("%s_#%d", keybase, thing), BUFFER_LEN);
+  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
+
+  mutex_lock(&od_mutex);
   hashdelete(keyname, &htab_objdata);
   if (data) {
-    if (!hashadd(keyname, data, &htab_objdata))
+    if (!hashadd(keyname, data, &htab_objdata)) {
+      mutex_unlock(&od_mutex);
       return NULL;
-    if (hash_find(&htab_objdata_keys, keybase) == NULL) {
+    } else if (hash_find(&htab_objdata_keys, keybase) == NULL) {
       char *newkey = mush_strdup(keyname, "objdata.key");
       hashadd(keybase, newkey, &htab_objdata_keys);
     }
   }
+  mutex_unlock(&od_mutex);
   return data;
 }
 
 /** Retrieve data from the object data hashtable.
+ *
  * \param thing dbref of object data is associated with.
  * \param keybase base string for type of data.
  * \return data stored for that object and keybase, or NULL.
@@ -1929,12 +1940,24 @@ set_objdata(dbref thing, const char *keybase, void *data)
 void *
 get_objdata(dbref thing, const char *keybase)
 {
-  return hashfind(tprintf("%s_#%d", keybase, thing), &htab_objdata);
+  char keyname[1024];
+  void *data;
+
+  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
+  
+  mutex_lock(&od_mutex);
+  data = hashfind(keyname, &htab_objdata);
+  mutex_unlock(&od_mutex);
+
+  return data;
 }
 
 /** Clear all of an object's data from the object data hashtable.
- * This function clears any data associated with a given object
- * that's in the object data hashtable (under any keybase).
+ *
+ * This function clears any data associated with a given object that's
+ * in the object data hashtable (under any keybase). It does NOT free
+ * any of that memory, making it of limited use.
+ *
  * It's used before we free the object.
  * \param thing dbref of object data is associated with.
  */
@@ -1942,10 +1965,14 @@ void
 clear_objdata(dbref thing)
 {
   char *p;
+  mutex_lock(&od_mutex);
   for (p = (char *) hash_firstentry(&htab_objdata_keys); p;
        p = (char *) hash_nextentry(&htab_objdata_keys)) {
-    set_objdata(thing, p, NULL);
+      char keyname[1024];
+      snprintf(keyname, sizeof keyname, "%s_#%d", p, thing);
+      hashdelete(keyname, &htab_objdata);
   }
+  mutex_unlock(&od_mutex);
 }
 
 /** Create a basic 3-object (Start Room, God, Master Room) database. */

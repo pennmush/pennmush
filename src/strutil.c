@@ -265,16 +265,27 @@ strinitial(const char *s)
   return buf1;
 }
 
-/** Return an uppercased version of a string in a static buffer.
+thread_local_id su_id;
+
+/** Return an uppercased version of a string in a tls buffer.
+ * 
+ * TODO: Hunt down uses of this and remove them.
+ *
  * \param s string to uppercase.
  * \return pointer to a static buffer containing the uppercased version.
  */
 char *
 strupper(const char *s)
 {
-  static char buf1[BUFFER_LEN];
+  char *buf1;
   char *p;
 
+  buf1 = tl_get(su_id);
+  if (!buf1) {
+    buf1 = malloc(BUFFER_LEN);
+    tl_set(su_id, buf1);
+  }
+  
   if (!s || !*s) {
     buf1[0] = '\0';
     return buf1;

@@ -42,6 +42,7 @@ struct strtree {
   const char *name; /**< For tracking memory use */
   size_t count;     /**< Number of nodes in the tree */
   size_t mem;       /**< Memory used by the tree */
+  penn_mutex mut;   /**< Mutex used by the tree */
 };
 
 void st_init(StrTree *root, const char *name);

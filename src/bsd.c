@@ -1066,8 +1066,10 @@ shovechars(Port_t port, Port_t sslport)
   last_slice = current_time;
 
   while (shutdown_flag == 0) {
+    reap_threads();
+    
     our_gettimeofday(&current_time);
-
+    
     update_quotas(last_slice, current_time);
     last_slice = current_time;
 
@@ -2022,7 +2024,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->descriptor = s;
   d->connected = CONN_SCREEN;
   d->conn_timer = NULL;
-  d->connected_at = mudtime;
+  d->connected_at = time(NULL);
   make_nonblocking(s);
   d->output_prefix = 0;
   d->output_suffix = 0;
@@ -2033,7 +2035,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->raw_input = 0;
   d->raw_input_at = 0;
   d->quota = COMMAND_BURST_SIZE;
-  d->last_time = mudtime;
+  d->last_time = time(NULL);
   d->cmds = 0;
   d->hide = 0;
   mush_strncpy(d->addr, addr, 100);

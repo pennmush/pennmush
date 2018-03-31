@@ -516,7 +516,9 @@ reverse(dbref list)
   return newlist;
 }
 
-pcg32_random_t rand_state;
+pcg32_random_t base_rand_state;
+atomic_int_fast64_t stream_counter;
+thread_local_id rng_id;
 
 /** Initialize the random number generator used by the mush. Attempts to use a
  * seed value
@@ -597,7 +599,23 @@ initialize_rng(void)
 #endif
   }
 
-  pcg32_srandom_r(&rand_state, seeds[0], seeds[1]);
+  pcg32_srandom_r(&base_rand_state, seeds[0], seeds[1]);
+  atomic_store(&stream_counter, 0);
+}
+
+static pcg32_random_t *
+get_rng_state(void)
+{
+  pcg32_random_t *rand_state = tl_get(rng_id);
+
+  if (!rand_state) {
+    rand_state = malloc(sizeof *rand_state);
+    *rand_state = base_rand_state;
+    rand_state->inc += (uint_fast64_t)atomic_fetch_add64(&stream_counter, 2);
+    tl_set(rng_id, rand_state);
+  }
+
+  return rand_state;
 }
 
 /** Get a uniform random long between low and high values, inclusive.
@@ -610,7 +628,8 @@ uint32_t
 get_random_u32(uint32_t low, uint32_t high)
 {
   uint32_t x, n, n_limit;
-
+  pcg32_random_t *rand_state = get_rng_state();
+  
   /* Validate parameters */
   if (high < low) {
     return 0;
@@ -640,7 +659,7 @@ get_random_u32(uint32_t low, uint32_t high)
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {
-    n = pcg32_random_r(&rand_state);
+    n = pcg32_random_r(rand_state);
   } while (n >= n_limit);
 
   return low + (n % x);
@@ -651,8 +670,9 @@ double
 get_random_d(void)
 {
   uint64_t a, b, c;
-  a = pcg32_random_r(&rand_state);
-  b = pcg32_random_r(&rand_state);
+  pcg32_random_t *rand_state = get_rng_state();
+  a = pcg32_random_r(rand_state);
+  b = pcg32_random_r(rand_state);
   c = (a << 32) | b;
   return ldexp((double) c, -64);
 }
@@ -662,8 +682,9 @@ double
 get_random_d2(void)
 {
   uint64_t a, b, c;
-  a = pcg32_random_r(&rand_state);
-  b = pcg32_random_r(&rand_state);
+  pcg32_random_t *rand_state = get_rng_state();
+  a = pcg32_random_r(rand_state);
+  b = pcg32_random_r(rand_state);
   c = (a << 32) | b;
   return ldexp(((double) c) + 0.5, -64);
 }

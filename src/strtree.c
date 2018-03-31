@@ -54,20 +54,10 @@
 #define ST_USE_STEP 2
 #define ST_USE_LIMIT (UINT32_MAX - ST_USE_STEP + 1)
 
-/* Here we have a global for the path info, just so we don't
- * eat tons of stack space.  (This code isn't reentrant no
- * matter where we put this, so might as well save stack.)
- * The fixed size of this array puts a limit on the maximum
- * size of the string table... but with ST_MAX_DEPTH == 64,
- * the tree can hold between 4 billion and 8 quintillion
- * strings.  I don't think capacity is a problem.
- */
-static StrNode *path[ST_MAX_DEPTH];
-
 unsigned long st_mem = 0; /**< Memory used by string trees */
 
-static void st_left_rotate(int tree_depth, StrNode **root);
-static void st_right_rotate(int tree_depth, StrNode **root);
+static void st_left_rotate(int tree_depth, StrNode **root, StrNode **path);
+static void st_right_rotate(int tree_depth, StrNode **root, StrNode **path);
 static void st_print_tree(StrNode *node, int tree_depth, int lead);
 static void st_traverse_stats(StrNode *node, int *maxdepth, int *mindepth,
                               int *avgdepth, int *leaves);
@@ -88,6 +78,7 @@ st_init(StrTree *root, const char *name)
   root->count = 0;
   root->mem = 0;
   root->name = name;
+  mutex_init(&root->mut, 0);
 }
 
 static void
@@ -106,12 +97,16 @@ delete_node(StrNode *node, const char *name)
 void
 st_flush(StrTree *root)
 {
-  if (!root->root)
+  mutex_lock(&root->mut);
+  if (!root->root) {
+    mutex_unlock(&root->mut);
     return;
+  }
   delete_node(root->root, root->name);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
+  mutex_unlock(&root->mut);
 }
 
 /** Header for string tree stats.
@@ -137,8 +132,10 @@ st_stats(dbref player, StrTree *root, const char *name)
   if (!root)
     return;
 
+  mutex_lock(&root->mut);
   bytes = (sizeof(StrNode) - BUFFER_LEN) * root->count + root->mem;
   st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves);
+  mutex_unlock(&root->mut);
   notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu", name,
                 (int) root->count, leaves, mindepth, maxdepth, avgdepth, bytes);
 }
@@ -147,11 +144,11 @@ st_stats(dbref player, StrTree *root, const char *name)
  * while modifying depth.
  */
 static void
-st_left_rotate(int tree_depth, StrNode **root)
+st_left_rotate(int tree_depth, StrNode **root, StrNode **path)
 {
   StrNode *x;
   StrNode *y;
-
+  
   x = path[tree_depth];
   assert(x);
   y = x->right;
@@ -167,11 +164,11 @@ st_left_rotate(int tree_depth, StrNode **root)
 }
 
 static void
-st_right_rotate(int tree_depth, StrNode **root)
+st_right_rotate(int tree_depth, StrNode **root, StrNode **path)
 {
   StrNode *y;
   StrNode *x;
-
+  
   y = path[tree_depth];
   assert(y);
   x = y->left;
@@ -197,15 +194,18 @@ st_right_rotate(int tree_depth, StrNode **root)
 char const *
 st_insert(char const *s, StrTree *root)
 {
-  int tree_depth;
+  int tree_depth = 0;
   StrNode *n;
   int cmp = 0;
   size_t keylen;
-
+  const char *r;
+  StrNode *path[ST_MAX_DEPTH];
+  
   assert(s);
 
+  mutex_lock(&root->mut);
+  
   /* Hunt for the string in the tree. */
-  tree_depth = 0;
   n = root->root;
   while (n && (cmp = strcmp(s, n->string))) {
     path[tree_depth] = n;
@@ -219,16 +219,20 @@ st_insert(char const *s, StrTree *root)
 
   if (n) {
     /* Found the string, so bump the usage and return. */
-    if (n->info < ST_USE_LIMIT)
+    if (n->info < ST_USE_LIMIT) {
       n->info += ST_USE_STEP;
+    }
+    mutex_unlock(&root->mut);
     return n->string;
   }
 
   /* Need a new node.  Allocate and initialize it. */
   keylen = strlen(s) + 1;
   n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, root->name);
-  if (!n)
+  if (!n) {
+    mutex_unlock(&root->mut);
     return NULL;
+  }
   memcpy(n->string, s, keylen);
   n->left = NULL;
   n->right = NULL;
@@ -237,6 +241,7 @@ st_insert(char const *s, StrTree *root)
      * and get out of here. */
     root->root = n;
     n->info = ST_BLACK + ST_USE_STEP;
+    mutex_unlock(&root->mut);
     return n->string;
   }
   n->info = ST_RED + ST_USE_STEP;
@@ -270,13 +275,13 @@ st_insert(char const *s, StrTree *root)
       } else {
         /* Okay, uncle is black.  We can fix everything, now. */
         if (path[tree_depth + 1] == path[tree_depth]->right) {
-          st_left_rotate(tree_depth, &root->root);
+          st_left_rotate(tree_depth, &root->root, path);
           path[tree_depth + 1]->info &= ~ST_RED;
         } else {
           path[tree_depth]->info &= ~ST_RED;
         }
         path[tree_depth - 1]->info |= ST_RED;
-        st_right_rotate(tree_depth - 1, &root->root);
+        st_right_rotate(tree_depth - 1, &root->root, path);
         break;
       }
     } else {
@@ -292,13 +297,13 @@ st_insert(char const *s, StrTree *root)
       } else {
         /* Okay, uncle is black.  We can fix everything, now. */
         if (path[tree_depth + 1] == path[tree_depth]->left) {
-          st_right_rotate(tree_depth, &root->root);
+          st_right_rotate(tree_depth, &root->root, path);
           path[tree_depth + 1]->info &= ~ST_RED;
         } else {
           path[tree_depth]->info &= ~ST_RED;
         }
         path[tree_depth - 1]->info |= ST_RED;
-        st_left_rotate(tree_depth - 1, &root->root);
+        st_left_rotate(tree_depth - 1, &root->root, path);
         break;
       }
     }
@@ -309,7 +314,9 @@ st_insert(char const *s, StrTree *root)
   root->root->info &= ~ST_RED;
   root->count++;
   root->mem += strlen(s) + 1;
-  return n->string;
+  r = n->string;
+  mutex_unlock(&root->mut);
+  return r;
 }
 
 /** Tree find.  Basically the first part of insert.
@@ -320,28 +327,28 @@ st_insert(char const *s, StrTree *root)
 char const *
 st_find(char const *s, StrTree *root)
 {
-  int tree_depth;
-  StrNode *n;
+  StrNode *n = NULL;
   int cmp;
 
   assert(s);
-
+  mutex_lock(&root->mut);
   /* Hunt for the string in the tree. */
-  tree_depth = 0;
   n = root->root;
   while (n && (cmp = strcmp(s, n->string))) {
-    path[tree_depth] = n;
-    tree_depth++;
-    assert(tree_depth < ST_MAX_DEPTH);
     if (cmp < 0)
       n = n->left;
     else
       n = n->right;
   }
 
-  if (n)
-    return n->string;
-  return NULL;
+  if (n) {
+    const char *r = n->string;
+    mutex_unlock(&root->mut);
+    return r;
+  } else {
+    mutex_unlock(&root->mut);
+    return NULL;
+  }
 }
 
 /** Tree delete.  Decrement the usage count of the string, unless the
@@ -352,15 +359,17 @@ st_find(char const *s, StrTree *root)
 void
 st_delete(char const *s, StrTree *root)
 {
-  int tree_depth;
+  int tree_depth = 0;
   StrNode *y;
   StrNode *x;
   int cmp;
+  StrNode *path[ST_MAX_DEPTH];
 
   assert(s);
 
+  mutex_lock(&root->mut);
+  
   /* Hunt for the string in the tree. */
-  tree_depth = 0;
   y = root->root;
   while (y && (cmp = strcmp(s, y->string))) {
     path[tree_depth] = y;
@@ -373,16 +382,16 @@ st_delete(char const *s, StrTree *root)
   }
 
   /* If it wasn't in the tree, we're done. */
-  if (!y)
-    return;
-
   /* If this node is permanent, then we're done. */
-  if (y->info >= ST_USE_LIMIT)
+  if (!y || y->info >= ST_USE_LIMIT) {
+    mutex_unlock(&root->mut);
     return;
+  }
 
   /* If this node has been used more than once, then decrement and exit. */
   if (y->info >= ST_USE_STEP * 2) {
     y->info -= ST_USE_STEP;
+    mutex_unlock(&root->mut);
     return;
   }
   if (y->left && y->right) {
@@ -448,7 +457,7 @@ st_delete(char const *s, StrTree *root)
         if (w && (w->info & ST_COLOR) == ST_RED) {
           w->info &= ~ST_RED;
           path[tree_depth - 1]->info |= ST_RED;
-          st_left_rotate(tree_depth - 1, &root->root);
+          st_left_rotate(tree_depth - 1, &root->root, path);
           path[tree_depth] = path[tree_depth - 1];
           path[tree_depth - 1] = w;
           tree_depth++;
@@ -466,7 +475,7 @@ st_delete(char const *s, StrTree *root)
             assert(w->left);
             w->left->info &= ~ST_RED;
             path[tree_depth] = w;
-            st_right_rotate(tree_depth, &root->root);
+            st_right_rotate(tree_depth, &root->root, path);
             w = path[tree_depth - 1]->right;
             assert(w);
           }
@@ -475,7 +484,7 @@ st_delete(char const *s, StrTree *root)
           path[tree_depth - 1]->info &= ~ST_RED;
           assert(w->right);
           w->right->info &= ~ST_RED;
-          st_left_rotate(tree_depth - 1, &root->root);
+          st_left_rotate(tree_depth - 1, &root->root, path);
           x = root->root;
         }
       } else {
@@ -484,7 +493,7 @@ st_delete(char const *s, StrTree *root)
         if (w && (w->info & ST_COLOR) == ST_RED) {
           w->info &= ~ST_RED;
           path[tree_depth - 1]->info |= ST_RED;
-          st_right_rotate(tree_depth - 1, &root->root);
+          st_right_rotate(tree_depth - 1, &root->root, path);
           path[tree_depth] = path[tree_depth - 1];
           path[tree_depth - 1] = w;
           tree_depth++;
@@ -502,7 +511,7 @@ st_delete(char const *s, StrTree *root)
             assert(w->right);
             w->right->info &= ~ST_RED;
             path[tree_depth] = w;
-            st_left_rotate(tree_depth, &root->root);
+            st_left_rotate(tree_depth, &root->root, path);
             w = path[tree_depth - 1]->left;
             assert(w);
           }
@@ -511,7 +520,7 @@ st_delete(char const *s, StrTree *root)
           path[tree_depth - 1]->info &= ~ST_RED;
           assert(w->left);
           w->left->info &= ~ST_RED;
-          st_right_rotate(tree_depth - 1, &root->root);
+          st_right_rotate(tree_depth - 1, &root->root, path);
           x = root->root;
         }
       }
@@ -522,6 +531,7 @@ st_delete(char const *s, StrTree *root)
   root->mem -= strlen(s) + 1;
   mush_free(y, root->name);
   root->count--;
+  mutex_unlock(&root->mut);
 }
 
 static void
@@ -540,7 +550,9 @@ st_walk(StrTree *tree, STFunc callback, void *data)
 {
   if (!tree || !tree->root)
     return;
+  mutex_lock(&tree->mut);
   st_node_walk(tree->root, callback, data);
+  mutex_unlock(&tree->mut);
 }
 
 /* Print the tree, for debugging purposes. */
@@ -582,8 +594,11 @@ void
 st_print(StrTree *root)
 {
   printf("---- print\n");
-  if (root->root)
+  mutex_lock(&root->mut);
+  if (root->root) {
     st_print_tree(root->root, 0, '-');
+  }
+  mutex_unlock(&root->mut);
   printf("----\n");
 }
 

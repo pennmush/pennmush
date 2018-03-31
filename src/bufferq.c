@@ -49,6 +49,7 @@ static void shift_bufferq(BUFFERQ *bq, int space_needed);
 void
 add_to_bufferq(BUFFERQ *bq, int type, dbref player, const char *msg)
 {
+  time_t now;
   int len = strlen(msg);
   int room = len + 1 + BUFFERQLINEOVERHEAD;
   if (!bq)
@@ -64,7 +65,8 @@ add_to_bufferq(BUFFERQ *bq, int type, dbref player, const char *msg)
   bq->buffer_end += sizeof(player);
   memcpy(bq->buffer_end, &type, sizeof(type));
   bq->buffer_end += sizeof(type);
-  memcpy(bq->buffer_end, &mudtime, sizeof(time_t));
+  time(&now);
+  memcpy(bq->buffer_end, &now, sizeof(time_t));
   bq->buffer_end += sizeof(time_t);
   memcpy(bq->buffer_end, msg, len + 1);
   bq->buffer_end += len + 1;

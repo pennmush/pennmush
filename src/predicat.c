@@ -47,8 +47,10 @@ static void grep_add_attr(char *buff, char **bp, dbref player, int count,
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
 
+thread_local_id tp_id;
+
 /** A generic function to generate a formatted string. The
- * return value is a statically allocated buffer.
+ * return value is a tls allocated buffer.
  *
  * \param fmt format string.
  * \return formatted string.
@@ -56,9 +58,15 @@ extern PRIV attr_privs_view[];
 char *WIN32_CDECL
 tprintf(const char *fmt, ...)
 {
-  static char buff[BUFFER_LEN];
+  char *buff;
   va_list args;
 
+  buff = tl_get(tp_id);
+  if (!buff) {
+    buff = malloc(BUFFER_LEN);
+    tl_set(tp_id, buff);
+  }
+  
   va_start(args, fmt);
   mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);

@@ -320,19 +320,14 @@ st_insert(char const *s, StrTree *root)
 char const *
 st_find(char const *s, StrTree *root)
 {
-  int tree_depth;
   StrNode *n;
   int cmp;
 
   assert(s);
 
   /* Hunt for the string in the tree. */
-  tree_depth = 0;
   n = root->root;
   while (n && (cmp = strcmp(s, n->string))) {
-    path[tree_depth] = n;
-    tree_depth++;
-    assert(tree_depth < ST_MAX_DEPTH);
     if (cmp < 0)
       n = n->left;
     else

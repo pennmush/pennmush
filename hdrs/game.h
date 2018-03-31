@@ -24,7 +24,7 @@
 #define CHECK_GLOBAL 0x200 /*<< Check for Master Room $-commands */
 #define CHECK_BREAK                                                            \
   0x400 /*<< Do no further checks after a round of $-command matching succeeds \
-           */
+         */
 /* Does NOT include CHECK_BREAK */
 #define CHECK_ALL                                                              \
   (CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE | CHECK_ZONE |  \
@@ -141,7 +141,7 @@ extern void do_cpattr(dbref player, char *oldpair, char **newpair, int move,
 #define EDIT_FIRST 1   /**< Only edit the first occurrence in each attribute. */
 #define EDIT_CHECK                                                             \
   2 /**< Don't actually edit the attr, just show what would happen if we did   \
-       */
+     */
 #define EDIT_QUIET 4 /**< Don't show new values, just report total changes */
 #define EDIT_CASE 8  /**< Perform regexp matching case-sensitively */
 

@@ -567,21 +567,21 @@ parse_int(const char *s, char **end, int base)
 int32_t
 parse_int32(const char *s, char **end, int base)
 {
-	if (sizeof(int) == 4) {
+  if (sizeof(int) == 4) {
     return parse_int(s, end, base);
   } else {
-  	/* This block will probably never happen, but just in case somebody's
-  	* trying to use Penn on a really odd hardware... */
-  	long n = strtol(s, end, base);
-  	if (n < INT32_MIN) {
-  		errno = ERANGE;
-  		return INT32_MIN;
-  	} else if (n > INT32_MAX) {
-  		errno = ERANGE;
-  		return INT32_MAX;
-  	} else {
-  		return n;
-  	}
+    /* This block will probably never happen, but just in case somebody's
+     * trying to use Penn on a really odd hardware... */
+    long n = strtol(s, end, base);
+    if (n < INT32_MIN) {
+      errno = ERANGE;
+      return INT32_MIN;
+    } else if (n > INT32_MAX) {
+      errno = ERANGE;
+      return INT32_MAX;
+    } else {
+      return n;
+    }
   }
 }
 
@@ -598,24 +598,24 @@ int64_t
 parse_int64(const char *s, char **end, int base)
 {
 #if defined(WIN32)
-	return _strtoi64(s, end, base);
+  return _strtoi64(s, end, base);
 #else
- 	if (sizeof(long) == 8) {
- 		return strtol(s, end, base);
+  if (sizeof(long) == 8) {
+    return strtol(s, end, base);
   } else if (sizeof(long long) == 8) {
-  	return strtoll(s, end, base);
+    return strtoll(s, end, base);
   } else {
-  	/* long long greater than 64 bits? */
-  	long long val = strtoll(s, end, base);
-  	if (val > INT64_MAX) {
-  		errno = ERANGE;
-  		return INT64_MAX;
-  	} else if (val < INT64_MIN) {
-  		errno = ERANGE;
-  		return INT64_MIN;
-  	} else {
-  		return val;
-  	}
+    /* long long greater than 64 bits? */
+    long long val = strtoll(s, end, base);
+    if (val > INT64_MAX) {
+      errno = ERANGE;
+      return INT64_MAX;
+    } else if (val < INT64_MIN) {
+      errno = ERANGE;
+      return INT64_MIN;
+    } else {
+      return val;
+    }
   }
 #endif
 }
@@ -666,12 +666,12 @@ parse_uint32(const char *s, char **end, int base)
   if (sizeof(unsigned long) == 4) {
     return x;
   } else {
-  	if (x > UINT32_MAX) {
-  		errno = ERANGE;
-  		return UINT32_MAX;
-  	} else {
-  		return x;
-  	}
+    if (x > UINT32_MAX) {
+      errno = ERANGE;
+      return UINT32_MAX;
+    } else {
+      return x;
+    }
   }
 }
 
@@ -687,21 +687,21 @@ uint64_t
 parse_uint64(const char *s, char **end, int base)
 {
 #if defined(WIN32)
-	return _strtoui64(s, end, base);
+  return _strtoui64(s, end, base);
 #else
- 	if (sizeof(unsigned long) == 8) {
- 		return strtoul(s, end, base);
+  if (sizeof(unsigned long) == 8) {
+    return strtoul(s, end, base);
   } else if (sizeof(unsigned long long) == 8) {
-  	return strtoull(s, end, base);
+    return strtoull(s, end, base);
   } else {
-  	/* unsigned long long greater than 64 bits? */
-  	unsigned long long val = strtoull(s, end, base);
-  	if (val > UINT64_MAX) {
-  		errno = ERANGE;
-  		return UINT64_MAX;
-  	} else {
-  		return val;
-  	}
+    /* unsigned long long greater than 64 bits? */
+    unsigned long long val = strtoull(s, end, base);
+    if (val > UINT64_MAX) {
+      errno = ERANGE;
+      return UINT64_MAX;
+    } else {
+      return val;
+    }
   }
 #endif
 }
@@ -1350,9 +1350,8 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 
 /* REGEXPS */
 void
-pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
-                       pcre *re_code, int *re_offsets,
-                       int re_subpatterns, const char *re_from)
+pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags, pcre *re_code,
+                       int *re_offsets, int re_subpatterns, const char *re_from)
 {
   int i;
   unsigned char *entry, *nametable;
@@ -1406,9 +1405,9 @@ pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags,
 }
 
 void
-pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
-                            pcre *re_code, int *re_offsets,
-                            int re_subpatterns, struct _ansi_string *re_from)
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags, pcre *re_code,
+                            int *re_offsets, int re_subpatterns,
+                            struct _ansi_string *re_from)
 {
   int i;
   unsigned char *entry, *nametable;
@@ -2055,8 +2054,9 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         *str += 16;
       }
 
-// fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos), pos,
-// **str);
+      // fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos),
+      // pos,
+      // **str);
 
 #else
       /* Inlined strcspn() equivalent, to save on overhead and portability */
@@ -2098,13 +2098,15 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
        * added 17 Sep 2012. Remove when this behaviour is removed. */
       else if (tflags & PT_NOT_COMMA) {
         if (pe_info && *pe_info->attrname)
-          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
-                                         "by #%d in %s. This behavior is "
-                                         "deprecated.",
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s "
+                        "by #%d in %s. This behavior is "
+                        "deprecated.",
                         lca_func_name, executor, pe_info->attrname);
         else
-          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
-                                         "by #%d. This behavior is deprecated.",
+          notify_format(Owner(executor),
+                        "Unescaped comma in final arg of %s "
+                        "by #%d. This behavior is deprecated.",
                         lca_func_name, executor);
         tflags &= ~PT_NOT_COMMA;
       }

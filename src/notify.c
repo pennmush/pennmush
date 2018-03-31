@@ -232,10 +232,10 @@ static int na_depth =
    MSG_XTERM256) /*    256        0         1          0    */
 
 #ifndef WITHOUT_WEBSOCKETS
-#define MSGTYPE_WEBSOCKETS	(MSG_PLAYER | MSG_WEBSOCKETS)
-#define MSGTYPE_WSANSI2		(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI2)
-#define MSGTYPE_WSANSI16	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
-#define MSGTYPE_WSXTERM256	(MSG_PLAYER | MSG_WEBSOCKETS | MSG_XTERM256)
+#define MSGTYPE_WEBSOCKETS (MSG_PLAYER | MSG_WEBSOCKETS)
+#define MSGTYPE_WSANSI2 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI2)
+#define MSGTYPE_WSANSI16 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
+#define MSGTYPE_WSXTERM256 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_XTERM256)
 #endif /* undef WITHOUT_WEBSOCKETS */
 
 /* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
@@ -271,7 +271,7 @@ enum na_type {
   NA_WSANSI2,
   NA_WSANSI16,
   NA_WSXTERM256,
-#endif /* undef WITHOUT_WEBSOCKETS */
+#endif     /* undef WITHOUT_WEBSOCKETS */
   NA_COUNT /* Total number of NA_* flags */
 };
 
@@ -397,7 +397,7 @@ str_type(const char *str)
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
 
-#endif                          /* CHECK_FOR_HTML */
+#endif /* CHECK_FOR_HTML */
 
   if (strchr(str, IAC) == NULL) {
     /* No Telnet IAC chars to be escaped */
@@ -837,7 +837,7 @@ render_string(const char *message, int output_type)
           safe_chr('>', buff, &bp);
 #ifdef WITHOUT_WEBSOCKETS
         } else if (output_type & MSG_MARKUP) {
-#else /* undef WITHOUT_WEBSOCKETS */
+#else  /* undef WITHOUT_WEBSOCKETS */
         } else if (output_type & MSG_MARKUP || output_type & MSG_WEBSOCKETS) {
 #endif /* undef WITHOUT_WEBSOCKETS */
           /* Preserve internal markup */
@@ -852,10 +852,9 @@ render_string(const char *message, int output_type)
             p++;
         }
 #ifndef WITHOUT_WEBSOCKETS
-      } else if (output_type & MSG_WEBSOCKETS
-                 && (*(p + 1) == MARKUP_WS
-                     || *(p + 1) == MARKUP_WS_ALT
-                     || *(p + 1) == MARKUP_WS_ALT_END)) {
+      } else if (output_type & MSG_WEBSOCKETS &&
+                 (*(p + 1) == MARKUP_WS || *(p + 1) == MARKUP_WS_ALT ||
+                  *(p + 1) == MARKUP_WS_ALT_END)) {
         /* Preserve internal markup. */
         while (*p && *p != TAG_END) {
           safe_chr(*p, buff, &bp);
@@ -1098,11 +1097,11 @@ notify_anything(dbref executor, dbref speaker, na_lookup func, void *fdata,
   /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (i && real_message.messages.strs[i].made)
-      mush_free((void *)real_message.messages.strs[i].message, "notify_str");
+      mush_free((void *) real_message.messages.strs[i].message, "notify_str");
     if (real_message.nospoofs.strs[i].made)
-      mush_free((void *)real_message.nospoofs.strs[i].message, "notify_str");
+      mush_free((void *) real_message.nospoofs.strs[i].message, "notify_str");
     if (real_message.paranoids.strs[i].made)
-      mush_free((void *)real_message.paranoids.strs[i].message, "notify_str");
+      mush_free((void *) real_message.paranoids.strs[i].message, "notify_str");
   }
 }
 
@@ -1176,7 +1175,7 @@ notify_anything_sub(dbref executor, dbref speaker, na_lookup func, void *fdata,
 
     for (i = 1; i < MESSAGE_TYPES; i++) {
       if (real_prefix->strs[i].made)
-        mush_free((void *)real_prefix->strs[i].message, "notify_str");
+        mush_free((void *) real_prefix->strs[i].message, "notify_str");
     }
     mush_free(real_prefix, "notify_message");
   }
@@ -1219,9 +1218,8 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 {
   int output_type = MSG_INTERNAL; /**< The way to render the message for the
                                      current target/descriptor */
-  int last_output_type =
-    -1; /**< For players, the way the msg was rendered for the previous
-           descriptor */
+  int last_output_type = -1; /**< For players, the way the msg was rendered for
+                                the previous descriptor */
   const char *spoofstr =
     NULL;           /**< Pointer to the rendered nospoof prefix to use */
   int spooflen = 0; /**< Length of the rendered nospoof prefix */
@@ -1260,16 +1258,16 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
     if (!(flags & NA_PROMPT) || !IsPlayer(target))
       return;
     for (d = descriptor_list; d; d = d->next) {
-      if (!d->connected || d->player != target
-          || !(d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)))
+      if (!d->connected || d->player != target ||
+          !(d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)))
         continue;
-      
+
       if (d->conn_flags & (CONN_WEBSOCKETS))
         queue_newwrite_channel(d, "\r\n", 2, WEBSOCKET_CHANNEL_PROMPT);
       else
         queue_newwrite(d, "\xFF\xF9", 2);
 
-      //queue_newwrite(d, "\xFF\xF9", 2);
+      // queue_newwrite(d, "\xFF\xF9", 2);
 
       if ((d->conn_flags & CONN_PROMPT_NEWLINES)) {
         /* send lineending */
@@ -1385,9 +1383,11 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
           spooflen = 0;
         }
 
-        prompt = ((flags & NA_PROMPT) && (d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)));
+        prompt = ((flags & NA_PROMPT) &&
+                  (d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)));
 
-        /* No point re-rendering this string if we're outputting to an identical client */
+        /* No point re-rendering this string if we're outputting to an identical
+         * client */
         if (heard) {
           if (!msgstr || output_type != last_output_type) {
             if (cache) {
@@ -1406,22 +1406,23 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
               queue_newwrite(d, prefixstr, prefixlen);
             if (spooflen) /* send nospoof prefix */
               queue_newwrite(d, spoofstr, spooflen);
-        
-            if (prompt) {           /* send prompt */
+
+            if (prompt) { /* send prompt */
               if (d->conn_flags & CONN_WEBSOCKETS) {
-                queue_newwrite_channel(d, msgstr, msglen, WEBSOCKET_CHANNEL_PROMPT);
+                queue_newwrite_channel(d, msgstr, msglen,
+                                       WEBSOCKET_CHANNEL_PROMPT);
               } else {
-                queue_newwrite(d, msgstr, msglen);  /* send message */
+                queue_newwrite(d, msgstr, msglen); /* send message */
                 queue_newwrite(d, "\xFF\xF9", 2);
               }
             } else {
-                queue_newwrite(d, msgstr, msglen);  /* send message */
+              queue_newwrite(d, msgstr, msglen); /* send message */
             }
           }
         }
 
-        if ((!(flags & NA_NOENTER) && msglen && heard && !prompt)
-            || (prompt && (d->conn_flags & CONN_PROMPT_NEWLINES))) {
+        if ((!(flags & NA_NOENTER) && msglen && heard && !prompt) ||
+            (prompt && (d->conn_flags & CONN_PROMPT_NEWLINES))) {
           /* send lineending */
           if ((output_type & MSG_PUEBLO)) {
             if (flags & NA_NOPENTER)
@@ -1622,7 +1623,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 
             if (!RealGoodObject(loc))
               continue; /* unlinked, variable dests that resolve to bad things
-                           */
+                         */
             if (filter_found(exit, speaker, fullmsg, 0))
               continue;
             /* Need to make the prefix for each exit */
@@ -1980,7 +1981,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
     b = utf8;
     n = utf8bytes;
   }
-  
+
 #ifndef WITHOUT_WEBSOCKETS
   /*
    * Not ideal, but other than rewriting a lot of Penn code, the best we can do

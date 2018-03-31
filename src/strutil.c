@@ -212,12 +212,11 @@ bool
 string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
 {
   if (!string || !prefix || !*prefix)
-    return 0;  
+    return 0;
   while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
     string++, prefix++;
   return *prefix == '\0';
 }
-
 
 /** Match a substring at the start of a word in a string, case-insensitively.
  * \param src a string of words to match against.

@@ -30,7 +30,7 @@ struct bufferq {
 #define BufferQLast(b) ((b)->last_string) /**< Last string inserted */
 #define BufferQLastType(b)                                                     \
   ((b)->last_type) /**< Type of last string inserted                           \
-                      */
+                    */
 
 BUFFERQ *allocate_bufferq(int lines);
 BUFFERQ *reallocate_bufferq(BUFFERQ *bq, int lines);

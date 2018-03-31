@@ -2015,9 +2015,10 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         }
       }
     }
-  } else if (s && *s && (!strcmp(name, "FORWARDLIST") ||
-                         !strcmp(name, "MAILFORWARDLIST") ||
-                         !strcmp(name, "DEBUGFORWARDLIST"))) {
+  } else if (s && *s &&
+             (!strcmp(name, "FORWARDLIST") ||
+              !strcmp(name, "MAILFORWARDLIST") ||
+              !strcmp(name, "DEBUGFORWARDLIST"))) {
     /* You can only set this to dbrefs of things you're allowed to
      * forward to. If you get one wrong, we puke.
      */
@@ -2076,8 +2077,9 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         name);
       return 0;
     } else {
-      notify_format(player, T("Unable to set '%s' because of a failure to "
-                              "create a needed parent attribute."),
+      notify_format(player,
+                    T("Unable to set '%s' because of a failure to "
+                      "create a needed parent attribute."),
                     name);
       return 0;
     }

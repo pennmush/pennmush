@@ -458,8 +458,9 @@ mush_panic(const char *message)
   static int already_panicking = 0;
 
   if (already_panicking) {
-    do_rawlog(LT_ERR, "PANIC: Attempted to panic because of '%s' while already "
-                      "panicking. Run in circles, scream and shout!",
+    do_rawlog(LT_ERR,
+              "PANIC: Attempted to panic because of '%s' while already "
+              "panicking. Run in circles, scream and shout!",
               message);
     abort();
   }
@@ -574,8 +575,9 @@ fork_and_dump(int forking)
       split = 1;
     } else {
       /* Ack, can't fork, 'cause we have stuff on disk... */
-      do_log(LT_ERR, 0, 0, "fork_and_dump: Data are swapped to disk, so "
-                           "nonforking dumps will be used.");
+      do_log(LT_ERR, 0, 0,
+             "fork_and_dump: Data are swapped to disk, so "
+             "nonforking dumps will be used.");
       flag_broadcast(
         "WIZARD", 0,
         T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
@@ -1006,10 +1008,10 @@ do_readcache(dbref player)
   } while (0)
 
 /** Attempt to tell if the command is a @password or @newpassword, so
-  * that the password isn't logged by Suspect or log_commands
-  * \param cmd The command to check
-  * \return A sanitized version of the command suitable for logging.
-  */
+ * that the password isn't logged by Suspect or log_commands
+ * \param cmd The command to check
+ * \return A sanitized version of the command suitable for logging.
+ */
 static char *
 passwd_filter(const char *cmd)
 {
@@ -1304,7 +1306,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     }
   }
 
-/* command has been executed. Free up memory. */
+  /* command has been executed. Free up memory. */
 
 done:
   if (errdblist) {
@@ -2599,8 +2601,9 @@ do_list_memstats(dbref player)
     float percent;
     compress_stats(&items, &used, &total_uncomp, &total_comp);
     notify(player, "---------- Internal attribute compression  ----------");
-    notify_format(player, "%10ld compression table items used, "
-                          "taking %ld bytes.",
+    notify_format(player,
+                  "%10ld compression table items used, "
+                  "taking %ld bytes.",
                   items, used);
     notify_format(player, "%10ld bytes in text before compression. ",
                   total_uncomp);
@@ -2615,9 +2618,10 @@ do_list_memstats(dbref player)
     notify_format(player,
                   "%10.0f %% OVERALL compression ratio (lower is better). ",
                   percent);
-    notify_format(player, "          (Includes table items, and table of words "
-                          "pointers of %ld bytes)",
-                  (long)(32768 * sizeof(char *)));
+    notify_format(player,
+                  "          (Includes table items, and table of words "
+                  "pointers of %ld bytes)",
+                  (long) (32768 * sizeof(char *)));
     if (percent >= 100.0)
       notify(player, "          "
                      "(Compression ratio improves with larger database)");

@@ -163,7 +163,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     mush_free(nbuf, "string");
     return;
   }
-  
+
   PUSE;
   tag_wrap("FONT", "SIZE=+1", exit_name);
   PEND;

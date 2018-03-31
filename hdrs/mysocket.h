@@ -104,7 +104,7 @@ extern BOOL GetErrorMessage(const DWORD dwError, LPTSTR lpszError,
 #define TN_TTYPE 24    /**< Ask for termial type information */
 #define TN_MSSP                                                                \
   70 /**< Send MSSP info (http://tintin.sourceforge.net/mssp/)                 \
-        */
+      */
 #define TN_CHARSET 42            /**< Negotiate Character Set (RFC 2066) */
 #define MSSP_VAR 1               /**< MSSP option name */
 #define MSSP_VAL 2               /**< MSSP option value */

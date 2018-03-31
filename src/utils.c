@@ -536,8 +536,7 @@ initialize_rng(void)
      use that. */
   {
     unsigned long long pseeds[2];
-    if (_rdrand64_step(pseeds) &&
-        _rdrand64_step(pseeds + 1)) {
+    if (_rdrand64_step(pseeds) && _rdrand64_step(pseeds + 1)) {
       fprintf(stderr, "Seeded RNG with CPU generator.\n");
       seeds[0] = pseeds[0];
       seeds[1] = pseeds[1];
@@ -565,7 +564,7 @@ initialize_rng(void)
     }
   }
 #endif
-  
+
 #ifdef HAVE_DEV_URANDOM
   if (!seed_generated) {
     /* Seed from /dev/urandom if available */
@@ -577,25 +576,25 @@ initialize_rng(void)
       close(fd);
       if (r != sizeof seeds) {
         fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
-                "seeding method.\n");
+                        "seeding method.\n");
       } else {
         fprintf(stderr, "Seeding RNG with /dev/urandom\n");
         seed_generated = true;
       }
     } else
       fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
-              "generator. Resorting to normal seeding method.\n");
+                      "generator. Resorting to normal seeding method.\n");
   }
 #endif
 
   if (!seed_generated) {
-    /* Default seeder. Pick a seed that's slightly random */    
+    /* Default seeder. Pick a seed that's slightly random */
 #ifdef WIN32
-      seeds[0] = (uint64_t) time(NULL);
-      seeds[1] = (uint64_t) GetCurrentProcessId();
+    seeds[0] = (uint64_t) time(NULL);
+    seeds[1] = (uint64_t) GetCurrentProcessId();
 #else
-      seeds[0] = (uint64_t) time(NULL);
-      seeds[1] = (uint64_t) getpid();
+    seeds[0] = (uint64_t) time(NULL);
+    seeds[1] = (uint64_t) getpid();
 #endif
   }
 

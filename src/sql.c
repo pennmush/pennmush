@@ -52,7 +52,7 @@ static PGconn *postgres_connp = NULL;
 #endif
 
 #ifdef HAVE_SQLITE3
-#include <sqlite3.h>
+#include "sqlite3.h"
 static sqlite3 *sqlite3_connp = NULL;
 #endif
 

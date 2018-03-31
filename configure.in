@@ -257,7 +257,6 @@ if test "$enable_sql" = "yes"; then
 AC_MSG_NOTICE([Looking for supported SQL servers])
 AX_LIB_MYSQL()
 AX_LIB_POSTGRESQL(,,AC_MSG_RESULT(PostgreSQL not found))
-AX_LIB_SQLITE3()
 else
 AC_MSG_NOTICE([Skipping SQL server checks])
 fi
@@ -359,7 +358,10 @@ fi
 
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
 
-
+# Headers and functions used by Sqlite3
+AC_CHECK_HEADERS([memory.h strings.h dlfcn.h])
+AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r gmtime_r])
+AC_FUNC_STRERROR_R
 
 ### Variables, constants, defines and other misc. stuff
 
@@ -486,19 +488,16 @@ echo "* Compiler: $CC"
 echo "* Compiler flags: $CFLAGS"
 
 if test "$enable_sql" = yes; then
- sql_servers=""
+ sql_servers="Sqlite3"
  if test "$found_mysql" = yes; then
-  sql_servers="MySQL"
+  sql_servers="${sql_servers} MySQL"
  fi
  if test "$found_postgresql" = yes; then
   sql_servers="${sql_servers} Postgres"
  fi
- if test -n "$SQLITE3_VERSION" ; then
-  sql_servers="${sql_servers} Sqlite3"
- fi
- echo "* SQL support: ${sql_servers:-No}"
+ echo "* SQL support: ${sql_servers}"
 else
- echo "* SQL support: No"
+ echo "* SQL support: Sqlite3"
 fi
 
 if test "$enable_ssl_slave" = yes; then

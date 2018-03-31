@@ -27,9 +27,9 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	memcheck.c move.c mycrypt.c mymalloc.c mysocket.c myrlimit.c	\
 	myssl.c notify.c parse.c pcg_basic.c player.c plyrlist.c	\
 	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
-	set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c		\
-	strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c	\
-	version.c wait.c warnings.c websock.c wild.c wiz.c
+	set.c sig.c sort.c speech.c sql.c sqlite3.c ssl_master.c	\
+	strdup.c strtree.c strutil.c tables.c timer.c tz.c unparse.c	\
+	utils.c version.c wait.c warnings.c websock.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -43,9 +43,9 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	memcheck.o move.o mycrypt.o mymalloc.o mysocket.o myrlimit.o	\
 	myssl.o notify.o parse.o pcg_basic.o player.o plyrlist.o	\
 	predicat.o privtab.o info_master.o ptab.o rob.o services.o	\
-	set.o sig.o sort.o speech.o sql.o ssl_master.o strdup.o		\
-	strtree.o strutil.o tables.o timer.o tz.o unparse.o utils.o	\
-	version.o wait.o warnings.o websock.o wild.o wiz.o
+	set.o sig.o sort.o speech.o sql.o sqlite3.o ssl_master.o	\
+	strdup.o strtree.o strutil.o tables.o timer.o tz.o unparse.o	\
+	utils.o version.o wait.o warnings.o websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -178,8 +178,8 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c tables.c, $(C_FILES)) \
-	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
+	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c sqlite3.c tables.c, $(C_FILES)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:

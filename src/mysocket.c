@@ -95,6 +95,11 @@
 #include "mymalloc.h"
 #include "wait.h"
 
+#ifdef __GLIBC__
+int __xpg_strerror_r(int, char *, size_t);
+#define strerror_r __xpg_strerror_r
+#endif
+
 /* TODO: Hack until we move mush_panic() somewhere more reasonable. */
 void mush_panic(const char *);
 
@@ -662,26 +667,49 @@ set_keepalive(int s __attribute__((__unused__)),
 {
 #ifdef SO_KEEPALIVE
   int keepalive = 1;
-
+  char *err;
+#ifdef HAVE_STRERROR_R
+  char errbuff[1024];
+#endif
+  
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (void *) &keepalive,
-                 sizeof(keepalive)) == -1)
-    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepalive)) == -1) {
+#ifdef HAVE_STRERROR_R
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s, err);
+  }
 
 /* And set the ping time to something reasonable instead of the
    default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
    this. OS X and possibly others use TCP_KEEPALIVE. */
 #if defined(TCP_KEEPIDLE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE, (void *) &keepidle,
-                 sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepidle)) == -1) {
+#ifdef HAVE_STRERROR_R
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s, err);
+  }
 #elif defined(TCP_KEEPALIVE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE, (void *) &keepidle,
-                 sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepidle)) == -1) {
+#ifdef HAVE_STRERROR_R
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s, err);
+
+  }
 #endif
 #endif
   return;

@@ -47,6 +47,11 @@
 #include "parse.h"
 #include "strutil.h"
 
+#ifdef __GLIBC__
+int __xpg_strerror_r(int, char *, size_t);
+#define strerror_r __xpg_strerror_r
+#endif
+
 #ifndef be32toh
 #define be32toh(i) ntohl(i)
 #endif
@@ -180,8 +185,16 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     char magic[5] = {'\0'};
 
     if (read(fd, magic, 4) != 4) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);        
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
       do_rawlog(LT_ERR, "tz: Unable to read header from %s: %s.\n", tzfile,
-                strerror(errno));
+                err);
       goto error;
     }
 
@@ -195,8 +208,16 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
   {
     char version[16];
     if (read(fd, version, 16) != 16) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);        
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
       do_rawlog(LT_ERR, "tz: Unable to read chunk from %s: %s\n", tzfile,
-                strerror(errno));
+                err);
       goto error;
     }
 
@@ -232,8 +253,16 @@ do_read_tzfile(int fd, const char *tzfile, int time_size)
     skip += isgmtcnt + isstdcnt;
 
     if (lseek(fd, skip, SEEK_SET) < 0) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);        
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
       do_rawlog(LT_ERR, "tz: Unable to seek to second section of %s: %s\n",
-                tzfile, strerror(errno));
+                tzfile, err);
       goto error;
     }
 
@@ -361,8 +390,17 @@ read_tzfile(const char *tzname)
   snprintf(tzfile, BUFFER_LEN, "%s/%s", TZDIR, tzname);
 
   if ((fd = open(tzfile, O_RDONLY)) < 0) {
-    if (errno != ENOENT)
-      do_rawlog(LT_ERR, "tz: Unable to open %s: %s\n", tzfile, strerror(errno));
+    if (errno != ENOENT) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);        
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      do_rawlog(LT_ERR, "tz: Unable to open %s: %s\n", tzfile, err);
+    }
     return NULL;
   }
 

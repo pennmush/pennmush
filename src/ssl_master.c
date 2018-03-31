@@ -92,8 +92,7 @@ make_ssl_slave(void)
   }
 
   if (pipe(fds) < 0) {
-    do_rawlog(LT_ERR, "Unable to create pipe to speak to ssl_slave: %s",
-              strerror(errno));
+    penn_perror("Unable to create pipe to speak to ssl_slave");
     return -1;
   }
 
@@ -135,7 +134,7 @@ make_ssl_slave(void)
     penn_perror("execing ssl slave");
     return EXIT_FAILURE;
   } else if (ssl_slave_pid < 0) {
-    do_rawlog(LT_ERR, "Failure to fork ssl_slave: %s", strerror(errno));
+    penn_perror("Failure to fork ssl_slave");
     return -1;
   } else {
     struct ssl_slave_config cf;
@@ -156,8 +155,7 @@ make_ssl_slave(void)
     cf.keepalive_timeout = options.keepalive_timeout;
 
     if (write(ssl_slave_ctl_fd, &cf, sizeof cf) < 0) {
-      do_rawlog(LT_ERR, "Unable to send ssl_slave config options: %s",
-                strerror(errno));
+      penn_perror("Unable to send ssl_slave config options");
       return -1;
     }
 

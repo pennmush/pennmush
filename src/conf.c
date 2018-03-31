@@ -781,7 +781,7 @@ save_config_option(PENNCONF *cp __attribute__((__unused__)))
 
   ed = popen(ED_PATH, "w");
   if (!ed) {
-    do_rawlog(LT_ERR, "Unable to open ed: %s", strerror(errno));
+    penn_perror("unable to open ed");
     return;
   }
 

@@ -130,8 +130,16 @@ start_log(struct log_stream *log)
     } else {
       log->fp = fopen(log->filename, "a+");
       if (log->fp == NULL) {
+        char *err;
+#ifdef HAVE_STRERROR_R
+        char errbuff[1024];
+        strerror_r(errno, errbuff, sizeof errbuff);
+        err = errbuff;
+#else
+        err = strerror(errno);
+#endif
         fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename,
-                strerror(errno));
+                err);
         log->fp = stderr;
       } else {
         hashadd(strupper(log->filename), log->fp, &htab_logfiles);

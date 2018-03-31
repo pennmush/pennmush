@@ -627,8 +627,15 @@ help_build_index(help_file *h, int restricted)
   if (!h || !h->file)
     return;
   if ((rfp = fopen(h->file, FOPEN_READ)) == NULL) {
-    do_rawlog(LT_ERR, "Can't open %s for reading: %s", h->file,
-              strerror(errno));
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    do_rawlog(LT_ERR, "Can't open %s for reading: %s", h->file, err);
     return;
   }
 

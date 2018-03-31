@@ -306,8 +306,16 @@ slab_alloc_page(struct slab *sl)
      posix_memalign. Deal.
    */
   if (posix_memalign((void **) &page, pgsize, pgsize) < 0) {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
     do_rawlog(LT_ERR, "Unable to allocate %d bytes via posix_memalign: %s",
-              pgsize, strerror(errno));
+              pgsize, err);
     page = malloc(pgsize);
   }
 #else

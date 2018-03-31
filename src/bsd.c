@@ -484,7 +484,15 @@ main(int argc, char **argv)
 #ifdef HAVE_SETEUID
     fprintf(stderr, "Changing effective user to %d.\n", (int) getuid());
     if (seteuid(getuid()) < 0) {
-      fprintf(stderr, "ERROR: seteuid() failed: %s\n", strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      fprintf(stderr, "ERROR: seteuid() failed: %s\n", err);
       fputs("PennMUSH will not run as root as a security measure. Exiting.\n",
             stderr);
       return EXIT_FAILURE;
@@ -7637,8 +7645,16 @@ do_reboot(dbref player, int flag)
      for various reasons, but if it does, it gets logged and you get an
      inadvertent full @shutdown. */
   if (access(saved_argv[0], R_OK | X_OK) < 0) {
+    char *err;    
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
     notify_format(player, T("Unable to reboot using executable '%s': %s"),
-                  saved_argv[0], strerror(errno));
+                  saved_argv[0], err);
     return;
   }
 #endif
@@ -7707,9 +7723,19 @@ do_reboot(dbref player, int flag)
 #else
   execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
-  /* Shouldn't ever get here, but just in case... */
-  fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
-          strerror(errno));
+  {
+    /* Shouldn't ever get here, but just in case... */
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    
+    fprintf(stderr, "Unable to restart game: exec: %s\nAborting.", err);
+  }
   exit(1);
 }
 
@@ -7752,11 +7778,20 @@ WATCH(const char *name)
 
   if (*name != NUMBER_TOKEN) {
     if ((wd = inotify_add_watch(watch_fd, name,
-                                IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
+                                IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
       do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", name,
-                strerror(errno));
-    else
+                err);
+    } else {
       im_insert(watchtable, wd, (void *) name);
+    }
   }
 }
 

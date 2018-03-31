@@ -1468,21 +1468,33 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 
 #ifndef HAVE_PREAD
   /* Try to seek up to 3 times... */
-  for (j = 0; j < 3; j++)
+  for (j = 0; j < 3; j++) {
 #ifdef WIN32
     if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
-        INVALID_SET_FILE_POINTER)
+        INVALID_SET_FILE_POINTER) {
       break;
+    }
 #else
-    if (lseek(fd, file_offset, SEEK_SET) == file_offset)
+    if (lseek(fd, file_offset, SEEK_SET) == file_offset) {
       break;
+    }
 #endif
-  if (j >= 3)
+    if (j >= 3) {
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
+      mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
 #else
-    mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
 #endif
+      mush_panicf("chunk swap file seek, errno %d: %s", errno, err);
+#endif
+    }
+  }
 #endif /* !HAVE_PREAD */
   pos = (char *) rhp;
   remaining = REGION_SIZE;
@@ -1510,8 +1522,18 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   mush_panicf("chunk swap file read, %lu remaining, GetLastError %lu",
               (unsigned long) remaining, GetLastError());
 #else
+  {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
   mush_panicf("chunk swap file read, %lu remaining, errno %d: %s",
-              (unsigned long) remaining, errno, strerror(errno));
+              (unsigned long) remaining, errno, err);
+  }
 #endif
 }
 
@@ -1533,21 +1555,33 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 
 #ifndef HAVE_PWRITE
   /* Try to seek up to 3 times... */
-  for (j = 0; j < 3; j++)
+  for (j = 0; j < 3; j++) {
 #ifdef WIN32
     if (SetFilePointer(fd, file_offset, NULL, FILE_BEGIN) !=
-        INVALID_SET_FILE_POINTER)
+        INVALID_SET_FILE_POINTER) {
       break;
+    }
 #else
-    if (lseek(fd, file_offset, SEEK_SET) == file_offset)
+    if (lseek(fd, file_offset, SEEK_SET) == file_offset) {
       break;
+    }
 #endif
-  if (j >= 3)
+    if (j >= 3) {
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
+      mush_panicf("chunk swap file seek, GetLastError %lu", GetLastError());
 #else
-    mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
 #endif
+      mush_panicf("chunk swap file seek, errno %d: %s", errno, err);
+#endif
+    }
+  }
 #endif /* !HAVE_PWRITE */
   pos = (char *) rhp;
   remaining = REGION_SIZE;
@@ -1581,8 +1615,19 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
   mush_panicf("chunk swap file write, %lu remaining, GetLastError %lu",
               (unsigned long) remaining, GetLastError());
 #else
+  {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    
   mush_panicf("chunk swap file write, %lu remaining, errno %d: %s",
-              (unsigned long) remaining, errno, strerror(errno));
+              (unsigned long) remaining, errno, err);
+  }
 #endif
 }
 
@@ -2514,12 +2559,22 @@ acc_chunk_init(void)
 #ifdef WIN32
   swap_fd = CreateFile(CHUNK_SWAP_FILE, GENERIC_READ | GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
-  if (swap_fd == INVALID_HANDLE_VALUE)
+  if (swap_fd == INVALID_HANDLE_VALUE) {
     mush_panicf("Cannot open swap file: %lu", GetLastError());
+  }
 #else
   swap_fd = open(CHUNK_SWAP_FILE, O_RDWR | O_TRUNC | O_CREAT, 0600);
-  if (swap_fd < 0)
-    mush_panicf("Cannot open swap file: %s", strerror(errno));
+  if (swap_fd < 0) {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+    mush_panicf("Cannot open swap file: %s", err);
+  }
 #endif
   curr_period = 0;
 

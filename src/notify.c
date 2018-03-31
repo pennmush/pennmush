@@ -2019,10 +2019,18 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
          * report
          * and fail on other errors.
          */
+        char *err;
+#ifdef HAVE_STRERROR_R
+        char errbuff[1024];
+        strerror_r(errno, errbuff, sizeof errbuff);
+        err = errbuff;
+#else
+        err = strerror(errno);
+#endif
         do_rawlog(
           LT_TRACE,
           "send() returned %d (error %s) trying to write %d bytes to %d",
-          written, strerror(errno), n, d->descriptor);
+          written, err, n, d->descriptor);
         d->conn_flags |= CONN_SOCKET_ERROR;
         if (utf8) {
           mush_free(utf8, "string");

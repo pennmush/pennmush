@@ -321,26 +321,46 @@ dump_database_internal(void)
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
     const char *errmsg = NULL;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+#endif
 
     if (f) {
       switch (f->type) {
       case PFT_FILE:
       case PFT_PIPE:
+#ifdef HAVE_STRERROR_R
+        strerror_r(errno, errbuff, sizeof errbuff);
+        errmsg = errbuff;
+#else
         errmsg = strerror(errno);
+#endif
         break;
       case PFT_GZFILE:
 #ifdef HAVE_LIBZ
       {
         int errnum = 0;
         errmsg = gzerror(f->handle.g, &errnum);
-        if (errnum == Z_ERRNO)
+        if (errnum == Z_ERRNO) {
+#ifdef HAVE_STRERROR_R
+          strerror_r(errno, errbuff, sizeof errbuff);
+          errmsg = errbuff;
+#else
           errmsg = strerror(errno);
+#endif
+        }
       }
 #endif
       break;
       }
-    } else
+    } else {
+#ifdef HAVE_STRERROR_R
+      strerror_r(errno, errbuff, sizeof errbuff);
+      errmsg = errbuff;
+#else
       errmsg = strerror(errno);
+#endif
+    }
 
     do_rawlog(LT_ERR, "ERROR! Database save failed: %s", errmsg);
     queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
@@ -2421,8 +2441,15 @@ db_open(const char *fname)
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
     if (!pf->handle.g) {
-      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
-                strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename, err);
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
@@ -2447,9 +2474,18 @@ db_open(const char *fname)
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
         setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
-      } else
+      } else {
+        char *err;
+#ifdef HAVE_STRERROR_R
+        char errbuff[1024];
+        strerror_r(errno, errbuff, sizeof errbuff);
+        err = errbuff;
+#else
+        err = strerror(errno);
+#endif
         do_rawlog(LT_ERR, "Unable to run '%s < %s': %s", options.uncompressprog,
-                  filename, strerror(errno));
+                  filename, err);
+      }
     } else {
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
@@ -2460,7 +2496,15 @@ db_open(const char *fname)
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, FOPEN_READ);
     if (!pf->handle.f) {
-      do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, err);
     } else {
       setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
 #ifdef HAVE_POSIX_FADVISE
@@ -2495,12 +2539,31 @@ db_open_write(const char *fname)
   if (getcwd(workdir, BUFFER_LEN)) {
     if (chdir(workdir) < 0)
 #endif
-      fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
-              workdir, errno, strerror(errno));
+      {
+        char *err;
+#ifdef HAVE_STRERROR_R
+        char errbuff[1024];
+        strerror_r(errno, errbuff, sizeof errbuff);
+        err = errbuff;
+#else
+        err = strerror(errno);
+#endif
+        fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
+                workdir, errno, err);
+      }
   } else {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
+
     /* If this fails, we probably can't write to a log, either, though */
     fprintf(stderr, "getcwd failed during db_open_write, errno %d (%s)\n",
-            errno, strerror(errno));
+            errno, err);
   }
 
   pf = mush_malloc(sizeof *pf, "pennfile");
@@ -2510,8 +2573,15 @@ db_open_write(const char *fname)
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "wb");
     if (!pf->handle.g) {
-      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
-                strerror(errno));
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename, err);
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
@@ -2530,17 +2600,35 @@ db_open_write(const char *fname)
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
       setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
-    } else
+    } else {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
       do_rawlog(LT_ERR, "Unable to run '%s > %s': %s", options.compressprog,
-                filename, strerror(errno));
+                filename, err);
+    }
 
   } else
 #endif /* WIN32 */
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, "wb");
-    if (!pf->handle.f)
-      do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
+    if (!pf->handle.f) {
+      char *err;
+#ifdef HAVE_STRERROR_R
+      char errbuff[1024];
+      strerror_r(errno, errbuff, sizeof errbuff);
+      err = errbuff;
+#else
+      err = strerror(errno);
+#endif
+      do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, err);
+    }
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");

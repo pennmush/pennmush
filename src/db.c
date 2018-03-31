@@ -49,6 +49,11 @@
 #include "strtree.h"
 #include "strutil.h"
 
+#ifdef __GLIBC__
+int __xpg_strerror_r(int, char *, size_t);
+#define strerror_r __xpg_strerror_r
+#endif
+
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
 #endif
@@ -2055,8 +2060,16 @@ penn_fopen(const char *filename, const char *mode)
   pf->type = PFT_FILE;
   pf->handle.f = fopen(filename, mode);
   if (!pf->handle.f) {
+    char *err;
+#ifdef HAVE_STRERROR_R
+    char errbuff[1024];
+    strerror_r(errno, errbuff, sizeof errbuff);
+    err = errbuff;
+#else
+    err = strerror(errno);
+#endif
     do_rawlog(LT_ERR, "Unable to open %s in mode '%s': %s", filename, mode,
-              strerror(errno));
+              err);
     mush_free(pf, "pennfile");
     return NULL;
   }

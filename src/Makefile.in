@@ -178,7 +178,8 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(C_FILES) ../hdrs/*.h \
+	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c tables.c, $(C_FILES)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:

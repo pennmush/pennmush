@@ -146,6 +146,8 @@ if test -n "${ED}"; then
    AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
 fi
 
+AX_PTHREAD
+
 ### Headers
 # Usually there's no need to check for standard C89 headers.
 
@@ -359,8 +361,8 @@ fi
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
 
 # Headers and functions used by Sqlite3
-AC_CHECK_HEADERS([memory.h strings.h dlfcn.h])
-AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r gmtime_r])
+AC_CHECK_HEADERS([memory.h strings.h])
+AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r gmtime_r isnan malloc_usable_size])
 AC_FUNC_STRERROR_R
 
 ### Variables, constants, defines and other misc. stuff

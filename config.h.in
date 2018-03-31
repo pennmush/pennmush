@@ -344,6 +344,10 @@ typedef bool _Bool;
 
 #undef HAVE_DECL_STRERROR_R
 
+#undef HAVE_ISNAN
+
+#undef HAVE_MALLOC_USABLE_SIZE
+
 #undef STDC_HEADERS
 
 #undef HAVE_STDLIB_H
@@ -354,8 +358,6 @@ typedef bool _Bool;
 
 #undef HAVE_STRINGS_H
 
-#undef HAVE_DLFCN_H
-
 #define HAVE_SQLITE3
 #define SQLITE_THREADSAFE 2
 #define SQLITE_ENABLE_FTS5 1
@@ -363,6 +365,10 @@ typedef bool _Bool;
 #define SQLITE_ENABLE_DBPAGE_VTAB 1
 #define SQLITE_ENABLE_STMTVTAB 1
 #define SQLITE_ENABLE_DBSTAT_VTAB 1
+#define SQLITE_OMIT_DEPRECATED 1
+#define SQLITE_OMIT_LOAD_EXTENSION 1
+#define SQLITE_OMIT_TCL_VARIABLE 1
+#define SQLITE_OMIT_UTF16 1
 #ifdef HAVE_LIBZ
 #define SQLITE_HAVE_ZLIB 1
 #endif

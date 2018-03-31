@@ -1809,7 +1809,7 @@ show_compile_options(dbref player)
 #ifdef ASYNC_SQL
   notify(player, T(" Some SQL queries are run asynchronously."));
 #else
-  notify(player, T(" All SQL queries are run synchronously."))
+  notify(player, T(" All SQL queries are run synchronously."));
 #endif
   
 #ifdef INFO_SLAVE

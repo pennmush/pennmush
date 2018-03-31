@@ -1205,7 +1205,12 @@ page_return(dbref player, dbref target, const char *type, const char *message,
   if (message && *message) {
     if (call_attrib(target, message, buff, player, pe_info, NULL)) {
       if (*buff) {
-        ptr = (struct tm *) localtime(&mudtime);
+#ifdef HAVE_LOCALTIME_R
+        struct tm real_tm;
+        ptr = localtime_r(&mudtime, &real_tm);
+#else
+        ptr = localtime(&mudtime);
+#endif
         notify_format(player, T("%s message from %s: %s"), type,
                       AName(target, AN_SYS, NULL), buff);
         if (!Haven(target))

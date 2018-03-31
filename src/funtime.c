@@ -41,7 +41,10 @@ FUNCTION(fun_timefmt)
   size_t len, n;
   struct tz_result res;
   bool need_tz_reset = 0, utc = 0;
-
+#if defined(HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
+  struct tm real_tm;
+#endif
+  
   if (!args[0] || !*args[0])
     return; /* No field? Bad user. */
 
@@ -65,8 +68,9 @@ FUNCTION(fun_timefmt)
       return;
     }
 #endif
-  } else
-    tt = mudtime;
+  } else {
+    time(&tt);
+  }
 
   len = arglens[0];
   for (n = 0; n < len; n++) {
@@ -104,10 +108,19 @@ FUNCTION(fun_timefmt)
     }
   }
 
-  if (utc)
+  if (utc) {
+#ifdef HAVE_GMTIME_R
+    ttm = gmtime_r(&tt, &real_tm);
+#else
     ttm = gmtime(&tt);
-  else
+#endif
+  } else {
+#ifdef HAVE_LOCALTIME_R
+    ttm = localtime_r(&tt, &real_tm);
+#else
     ttm = localtime(&tt);
+#endif
+  }
 
   len = strftime(s, BUFFER_LEN, args[0], ttm);
   if (len == 0) {
@@ -169,6 +182,9 @@ FUNCTION(fun_convsecs)
   time_t tt;
   struct tm *ttm;
   bool utc = 0;
+#if defined(HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
+  struct tm real_tm;
+#endif
 
   if (!is_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
@@ -203,10 +219,19 @@ FUNCTION(fun_convsecs)
     }
   }
 
-  if (utc)
+  if (utc) {
+#ifdef HAVE_GMTIME_R
+    ttm = gmtime_r(&tt, &real_tm);
+#else
     ttm = gmtime(&tt);
-  else
+#endif
+  } else {
+#ifdef HAVE_LOCALTIME_R
+    ttm = localtime_r(&tt, &real_tm);
+#else
     ttm = localtime(&tt);
+#endif
+  }
 
   safe_str(show_tm(ttm), buff, bp);
 }
@@ -691,7 +716,10 @@ FUNCTION(fun_isdaylight)
 {
   struct tm *ltime;
   time_t when = mudtime;
-
+#ifdef HAVE_LOCALTIME_R
+  struct tm real_tm;
+#endif
+  
   if (nargs >= 1 && args[0] && *args[0]) {
     if (!is_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
@@ -719,7 +747,11 @@ FUNCTION(fun_isdaylight)
     save_and_set_tz(res.tz_name);
   }
 
+#ifdef HAVE_LOCALTIME_R
+  ltime = localtime_r(&when, &real_tm);
+#else
   ltime = localtime(&when);
+#endif
   safe_boolean(ltime->tm_isdst > 0, buff, bp);
 
   if (nargs == 2)

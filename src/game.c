@@ -2033,7 +2033,12 @@ linux_uptime(dbref player __attribute__((__unused__)))
   /* Current time */
   {
     struct tm *t;
+#ifdef HAVE_LOCALTIME_R
+    struct tm real_tm;
+    t = localtime_r(&mudtime, &real_tm);
+#else
     t = localtime(&mudtime);
+#endif
     strftime(tbuf1, sizeof tbuf1, "Server uptime: %I:%M%p ", t);
     nl = tbuf1 + strlen(tbuf1);
   }
@@ -2286,48 +2291,81 @@ do_uptime(dbref player, int mortal)
   char tbuf1[BUFFER_LEN];
   struct tm *when;
   ldiv_t secs;
+#ifdef HAVE_LOCALTIME_R
+  struct tm real_tm;
+#endif
 
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&globals.first_start_time, &real_tm);
+#else
   when = localtime(&globals.first_start_time);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
   notify_format(player, "%13s: %s", T("Up since"), tbuf1);
 
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&globals.start_time, &real_tm);
+#else
   when = localtime(&globals.start_time);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
   notify_format(player, "%13s: %s", T("Last reboot"), tbuf1);
 
   notify_format(player, "%13s: %d", T("Total reboots"), globals.reboot_count);
 
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&mudtime, &real_tm);
+#else
   when = localtime(&mudtime);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
   notify_format(player, "%13s: %s", T("Time now"), tbuf1);
 
   if (globals.last_dump_time > 0) {
+#ifdef HAVE_LOCALTIME_R
+    when = localtime_r(&globals.last_dump_time, &real_tm);
+#else
     when = localtime(&globals.last_dump_time);
+#endif
     strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
     notify_format(player, "%29s: %s", T("Time of last database save"), tbuf1);
   }
 
   /* calculate times until various events */
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&options.dump_counter, &real_tm);
+#else
   when = localtime(&options.dump_counter);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dump_counter, mudtime), 60);
   notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next database save"), secs.quot, secs.rem, tbuf1);
-
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&options.dbck_counter, &real_tm);
+#else
   when = localtime(&options.dbck_counter);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dbck_counter, mudtime), 60);
   notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next dbck check"), secs.quot, secs.rem, tbuf1);
-
+#ifdef HAVE_LOCALTIME_R
+  when = localtime_r(&options.purge_counter, &real_tm);
+#else
   when = localtime(&options.purge_counter);
+#endif
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.purge_counter, mudtime), 60);
   notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),
                 T("Time until next purge"), secs.quot, secs.rem, tbuf1);
 
   if (options.warn_interval) {
+#ifdef HAVE_LOCALTIME_R
+    when = localtime_r(&options.warn_counter, &real_tm);
+#else
     when = localtime(&options.warn_counter);
+#endif
     strftime(tbuf1, sizeof tbuf1, "%X", when);
     secs = ldiv((long) difftime(options.warn_counter, mudtime), 60);
     notify_format(player, T("%29s: %ld minutes %ld seconds, at %s."),

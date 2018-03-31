@@ -338,6 +338,10 @@ typedef bool _Bool;
 
 #undef HAVE_LOCALTIME_R
 
+#undef HAVE_GMTIME_R
+
+#undef HAVE_ASCTIME_R
+
 #undef HAVE_STRERROR_R
 
 #undef HAVE_LIBANL

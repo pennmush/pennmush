@@ -1670,11 +1670,23 @@ char *
 show_time(time_t t, bool utc)
 {
   struct tm *when;
+#if defined(HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
+  struct tm real_tm;
+#endif
 
-  if (utc)
+  if (utc) {
+#ifdef HAVE_GMTIME_R
+    when = gmtime_r(&t, &real_tm);
+#else
     when = gmtime(&t);
-  else
+#endif
+  } else {
+#ifdef HAVE_LOCALTIME_R
+    when = localtime_r(&t, &real_tm);
+#else
     when = localtime(&t);
+#endif
+  }
 
   return show_tm(when);
 }
@@ -1687,20 +1699,24 @@ show_time(time_t t, bool utc)
 char *
 show_tm(struct tm *when)
 {
-  static char buffer[BUFFER_LEN];
-  int p;
-
-  if (!when)
+  static char buffer[26];
+  
+  if (!when) {
     return NULL;
-
+  }
+  
+  /* Use asctime() over strftime() because this is locale-independent and
+     having, say, French months might break something. */
+#ifdef HAVE_ASCTIME_R
+  asctime_r(when, buffer);
+#else
   strcpy(buffer, asctime(when));
+#endif
 
-  p = strlen(buffer) - 1;
-  if (buffer[p] == '\n')
-    buffer[p] = '\0';
-
-  if (buffer[8] == ' ')
+  buffer[24] = '\0';
+  if (buffer[8] == ' ') {
     buffer[8] = '0';
+  }
 
   return buffer;
 }

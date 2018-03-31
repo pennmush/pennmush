@@ -362,6 +362,8 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
 fi
 
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
+AC_CHECK_FUNCS([localtime_r])
+AC_FUNC_STRERROR_R
 
 ### Variables, constants, defines and other misc. stuff
 

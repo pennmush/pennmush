@@ -131,22 +131,26 @@ static sqlplatform
 sql_platform(void)
 {
   static sqlplatform platform = SQL_PLATFORM_DISABLED;
+  static bool init = 0;
+  if (!init) {
 #ifdef HAVE_MYSQL
-  if (!strcasecmp(SQL_PLATFORM, "mysql"))
-    platform = SQL_PLATFORM_MYSQL;
+    if (!strcasecmp(SQL_PLATFORM, "mysql"))
+      platform = SQL_PLATFORM_MYSQL;
 #endif
 #ifdef HAVE_POSTGRESQL
-  if (!strcasecmp(SQL_PLATFORM, "postgres"))
-    platform = SQL_PLATFORM_POSTGRESQL;
-  if (!strcasecmp(SQL_PLATFORM, "postgresql"))
-    platform = SQL_PLATFORM_POSTGRESQL;
+    if (!strcasecmp(SQL_PLATFORM, "postgres"))
+      platform = SQL_PLATFORM_POSTGRESQL;
+    if (!strcasecmp(SQL_PLATFORM, "postgresql"))
+      platform = SQL_PLATFORM_POSTGRESQL;
 #endif
 #ifdef HAVE_SQLITE3
-  if (!strcasecmp(SQL_PLATFORM, "sqlite"))
-    platform = SQL_PLATFORM_SQLITE3;
-  if (!strcasecmp(SQL_PLATFORM, "sqlite3"))
-    platform = SQL_PLATFORM_SQLITE3;
+    if (!strcasecmp(SQL_PLATFORM, "sqlite"))
+      platform = SQL_PLATFORM_SQLITE3;
+    if (!strcasecmp(SQL_PLATFORM, "sqlite3"))
+      platform = SQL_PLATFORM_SQLITE3;
 #endif
+    init = 1;
+  }
   return platform;
 }
 

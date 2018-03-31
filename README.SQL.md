@@ -1,6 +1,6 @@
 % Use SQL with PennMUSH
 %
-% Revised: 04 Jan 2018
+% Revised: 30 Mar 2018
 
 Introduction
 ============

@@ -69,6 +69,8 @@ struct log_stream logs[NLOGS] = {
   {LT_HUH, "huh", CMDLOG, NULL, NULL, "LOG`HUH"},
 };
 
+penn_mutex log_mutex;
+
 struct log_stream *
 lookup_log(enum log_type type)
 {
@@ -113,7 +115,7 @@ start_log(struct log_stream *log)
 {
   static int ht_initialized = 0;
   FILE *f;
-
+  
   if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
@@ -138,8 +140,9 @@ start_log(struct log_stream *log)
       }
     }
   }
-  if (!log->buffer)
+  if (!log->buffer) {
     log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
+  }
 }
 
 /** Open all logfiles.
@@ -181,15 +184,17 @@ void
 reopen_logs(void)
 {
   /* close up the log files */
+  mutex_lock(&log_mutex);
   end_all_logs();
   start_all_logs();
+  mutex_unlock(&log_mutex);
 }
 
 static void
 end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
-
+  
   if (!log->filename || !*log->filename || !log->fp)
     return;
   if ((fp = hashfind(strupper(log->filename), &htab_logfiles))) {
@@ -406,18 +411,28 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   char timebuf[18];
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
-
+  time_t now;
+#ifdef HAVE_LOCALTIME_R
+  struct tm real_tm;
+#endif
+  
   va_start(args, fmt);
   mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
-  time(&mudtime);
-  ttm = localtime(&mudtime);
+  time(&now);
+#ifdef HAVE_LOCALTIME_R
+  ttm = localtime_r(&now, &real_tm);
+#else
+  ttm = localtime(&now);
+#endif
 
   strftime(timebuf, sizeof timebuf, "[%m/%d %H:%M:%S]", ttm);
 
   log = lookup_log(logtype);
 
+  mutex_lock(&log_mutex);
+  
   if (!log->fp) {
     fprintf(stderr, "Attempt to write to %s log before it was started!\n",
             log->name);
@@ -429,8 +444,10 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   fflush(log->fp);
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
+  /* Can this ever cause a recursive call to do_rawlog()? */
   queue_event(-1, log->event, "%s", tbuf1);
   check_log_size(log);
+  mutex_unlock(&log_mutex);
 }
 
 /** Log a message, with useful information.
@@ -528,6 +545,8 @@ do_log_recall(dbref player, enum log_type type, int lines)
 
   log = lookup_log(type);
 
+  mutex_lock(&log_mutex);
+  
   if (lines != INT_MAX) {
     p = NULL;
     while (iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))
@@ -543,6 +562,7 @@ do_log_recall(dbref player, enum log_type type, int lines)
       notify(player, line);
     nlines -= 1;
   }
+  mutex_unlock(&log_mutex);
   notify(player, T("End log recall."));
 }
 
@@ -585,7 +605,9 @@ do_logwipe(dbref player, enum log_type logtype, const char *pass,
     }
     if (n == LW_SIZE)
       doit = lw_table[0].fun;
+    mutex_lock(&log_mutex);
     doit(logst);
+    mutex_lock(&log_mutex);
     do_log(LT_ERR, player, NOTHING, "%s log wiped.", logst->name);
   } break;
   default:
@@ -651,7 +673,7 @@ notify_activity(dbref player, int num_lines, int dump)
 
   if (!activity_bq)
     return;
-
+  
   if (dump || !num_lines)
     num_lines = BufferQNum(activity_bq);
   skip = BufferQNum(activity_bq) - num_lines;
@@ -698,5 +720,11 @@ notify_activity(dbref player, int num_lines, int dump)
 void
 penn_perror(const char *err)
 {
+#ifdef HAVE_STRERROR_R
+  char buf[1024];
+  strerror_r(errno, buf, sizeof buf);
+  do_rawlog(LT_ERR, "%s: %s", err, buf);
+#else  
   do_rawlog(LT_ERR, "%s: %s", err, strerror(errno));
+#endif
 }

@@ -336,6 +336,10 @@ typedef bool _Bool;
 
 #undef HAVE_GETENTROPY
 
+#undef HAVE_LOCALTIME_R
+
+#undef HAVE_STRERROR_R
+
 #undef HAVE_LIBANL
 
 /* Variables and defines */

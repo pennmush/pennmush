@@ -23,6 +23,7 @@ extern penn_mutex sql_mutex;
 extern penn_mutex site_mutex;
 extern penn_mutex mem_mutex;
 extern penn_mutex od_mutex;
+extern penn_mutex pe_mutex;
 
 extern thread_local_id su_id;
 extern thread_local_id tp_id;
@@ -105,6 +106,7 @@ thread_init(void)
   mutex_init(&site_mutex, 0);
   mutex_init(&mem_mutex, 0);
   mutex_init(&od_mutex, 0);
+  mutex_init(&pe_mutex, 0);
   tl_create(&su_id, free);
   tl_create(&tp_id, free);
   tl_create(&rng_id, free);
@@ -123,6 +125,7 @@ thread_cleanup(void)
   mutex_destroy(&site_mutex);
   mutex_destroy(&mem_mutex);
   mutex_destroy(&od_mutex);
+  mutex_destroy(&pe_mutex);
   tl_destroy(su_id);
   tl_destroy(tp_id);
   tl_destroy(rng_id);

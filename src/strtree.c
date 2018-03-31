@@ -78,7 +78,6 @@ st_init(StrTree *root, const char *name)
   root->count = 0;
   root->mem = 0;
   root->name = name;
-  mutex_init(&root->mut, 0);
 }
 
 static void
@@ -97,17 +96,13 @@ delete_node(StrNode *node, const char *name)
 void
 st_flush(StrTree *root)
 {
-  mutex_lock(&root->mut);
   if (!root->root) {
-    mutex_unlock(&root->mut);
     return;
   }
   delete_node(root->root, root->name);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
-  mutex_unlock(&root->mut);
-  mutex_destroy(&root->mut);
 }
 
 /** Header for string tree stats.
@@ -133,10 +128,8 @@ st_stats(dbref player, StrTree *root, const char *name)
   if (!root)
     return;
 
-  mutex_lock(&root->mut);
   bytes = (sizeof(StrNode) - BUFFER_LEN) * root->count + root->mem;
   st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves);
-  mutex_unlock(&root->mut);
   notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu", name,
                 (int) root->count, leaves, mindepth, maxdepth, avgdepth, bytes);
 }
@@ -203,8 +196,6 @@ st_insert(char const *s, StrTree *root)
   StrNode *path[ST_MAX_DEPTH];
   
   assert(s);
-
-  mutex_lock(&root->mut);
   
   /* Hunt for the string in the tree. */
   n = root->root;
@@ -223,7 +214,6 @@ st_insert(char const *s, StrTree *root)
     if (n->info < ST_USE_LIMIT) {
       n->info += ST_USE_STEP;
     }
-    mutex_unlock(&root->mut);
     return n->string;
   }
 
@@ -231,7 +221,6 @@ st_insert(char const *s, StrTree *root)
   keylen = strlen(s) + 1;
   n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, root->name);
   if (!n) {
-    mutex_unlock(&root->mut);
     return NULL;
   }
   memcpy(n->string, s, keylen);
@@ -242,7 +231,6 @@ st_insert(char const *s, StrTree *root)
      * and get out of here. */
     root->root = n;
     n->info = ST_BLACK + ST_USE_STEP;
-    mutex_unlock(&root->mut);
     return n->string;
   }
   n->info = ST_RED + ST_USE_STEP;
@@ -316,7 +304,6 @@ st_insert(char const *s, StrTree *root)
   root->count++;
   root->mem += strlen(s) + 1;
   r = n->string;
-  mutex_unlock(&root->mut);
   return r;
 }
 
@@ -332,7 +319,6 @@ st_find(char const *s, StrTree *root)
   int cmp;
 
   assert(s);
-  mutex_lock(&root->mut);
   /* Hunt for the string in the tree. */
   n = root->root;
   while (n && (cmp = strcmp(s, n->string))) {
@@ -344,10 +330,8 @@ st_find(char const *s, StrTree *root)
 
   if (n) {
     const char *r = n->string;
-    mutex_unlock(&root->mut);
     return r;
   } else {
-    mutex_unlock(&root->mut);
     return NULL;
   }
 }
@@ -367,8 +351,6 @@ st_delete(char const *s, StrTree *root)
   StrNode *path[ST_MAX_DEPTH];
 
   assert(s);
-
-  mutex_lock(&root->mut);
   
   /* Hunt for the string in the tree. */
   y = root->root;
@@ -385,14 +367,12 @@ st_delete(char const *s, StrTree *root)
   /* If it wasn't in the tree, we're done. */
   /* If this node is permanent, then we're done. */
   if (!y || y->info >= ST_USE_LIMIT) {
-    mutex_unlock(&root->mut);
     return;
   }
 
   /* If this node has been used more than once, then decrement and exit. */
   if (y->info >= ST_USE_STEP * 2) {
     y->info -= ST_USE_STEP;
-    mutex_unlock(&root->mut);
     return;
   }
   if (y->left && y->right) {
@@ -532,7 +512,6 @@ st_delete(char const *s, StrTree *root)
   root->mem -= strlen(s) + 1;
   mush_free(y, root->name);
   root->count--;
-  mutex_unlock(&root->mut);
 }
 
 static void
@@ -551,9 +530,7 @@ st_walk(StrTree *tree, STFunc callback, void *data)
 {
   if (!tree || !tree->root)
     return;
-  mutex_lock(&tree->mut);
   st_node_walk(tree->root, callback, data);
-  mutex_unlock(&tree->mut);
 }
 
 /* Print the tree, for debugging purposes. */
@@ -595,11 +572,9 @@ void
 st_print(StrTree *root)
 {
   printf("---- print\n");
-  mutex_lock(&root->mut);
   if (root->root) {
     st_print_tree(root->root, 0, '-');
   }
-  mutex_unlock(&root->mut);
   printf("----\n");
 }
 

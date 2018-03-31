@@ -712,6 +712,8 @@ parse_uint64(const char *s, char **end, int base)
 StrTree pe_reg_names;
 StrTree pe_reg_vals;
 
+penn_mutex pe_mutex;
+
 /* Slabs for PE_REGS and PE_REG_VALs */
 slab *pe_reg_slab;
 slab *pe_reg_val_slab;
@@ -729,6 +731,7 @@ init_pe_regs_trees()
   pe_reg_slab = slab_create("PE_REGS", sizeof(PE_REGS));
   pe_reg_val_slab = slab_create("PE_REG_VAL", sizeof(PE_REG_VAL));
 
+  mutex_lock(&pe_mutex);
   st_init(&pe_reg_names, "pe_reg_names");
   st_init(&pe_reg_vals, "pe_reg_vals");
 
@@ -744,13 +747,16 @@ init_pe_regs_trees()
     qv[0] = 'A' + i;
     st_insert(qv, &pe_reg_names);
   }
+  mutex_unlock(&pe_mutex);
 }
 
 void
 free_pe_regs_trees()
 {
+  mutex_lock(&pe_mutex);
   st_flush(&pe_reg_names);
   st_flush(&pe_reg_vals);
+  mutex_unlock(&pe_mutex);
 }
 
 #ifdef DEBUG_PENNMUSH
@@ -830,7 +836,9 @@ pe_reg_val_free_val(PE_REG_VAL *val)
     return;
 
   if (val->type & PE_REGS_STR) {
+    mutex_lock(&pe_mutex);
     st_delete(val->val.sval, &pe_reg_vals);
+    mutex_unlock(&pe_mutex);
     DEL_CHECK("pe_reg_val-val");
   }
 }
@@ -840,7 +848,9 @@ void
 pe_reg_val_free(PE_REG_VAL *val)
 {
   pe_reg_val_free_val(val);
+  mutex_lock(&pe_mutex);
   st_delete(val->name, &pe_reg_names);
+  mutex_unlock(&pe_mutex);
   DEL_CHECK("pe_reg_val-name");
   slab_free(pe_reg_val_slab, val);
   DEL_CHECK("pe_reg_val_slab");
@@ -982,7 +992,9 @@ pe_regs_set_if(PE_REGS *pe_regs, int type, const char *lckey, const char *val,
   } else {
     pval = slab_malloc(pe_reg_val_slab, NULL);
     ADD_CHECK("pe_reg_val_slab");
+    mutex_lock(&pe_mutex);
     pval->name = st_insert(key, &pe_reg_names);
+    mutex_unlock(&pe_mutex);
     ADD_CHECK("pe_reg_val-name");
     pval->next = pe_regs->vals;
     pe_regs->vals = pval;
@@ -1032,7 +1044,9 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *lckey, int val,
   } else {
     pval = slab_malloc(pe_reg_val_slab, NULL);
     ADD_CHECK("pe_reg_val_slab");
+    mutex_lock(&pe_mutex);
     pval->name = st_insert(key, &pe_reg_names);
+    mutex_unlock(&pe_mutex);
     ADD_CHECK("pe_reg_val-name");
     pval->next = pe_regs->vals;
     pe_regs->vals = pval;

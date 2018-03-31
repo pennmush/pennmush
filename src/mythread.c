@@ -35,6 +35,7 @@ static void add_to_list(thread_id id)
   t->finished = 0;
   mutex_lock(&thread_mutex);
   t->next = running_threads;
+  running_threads = t;
   mutex_unlock(&thread_mutex);
 }
 

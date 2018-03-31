@@ -107,6 +107,7 @@ st_flush(StrTree *root)
   root->count = 0;
   root->mem = 0;
   mutex_unlock(&root->mut);
+  mutex_destroy(&root->mut);
 }
 
 /** Header for string tree stats.

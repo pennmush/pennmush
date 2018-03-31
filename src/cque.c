@@ -178,24 +178,27 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
-  int *count;
+  int *countp;
 
-  if (QUEUE_PER_OWNER)
+  if (QUEUE_PER_OWNER) {
     player = Owner(player);
-
-  count = get_objdata(player, "QUEUE");
-  if (!count) {
-    count = mush_malloc(sizeof *count, "queue.count");
-    *count = 0;
-    set_objdata(player, "QUEUE", count);
   }
-  *count += am;
-  if (*count == 0) {
-    set_objdata(player, "QUEUE", NULL);
-    mush_free(count, "queue.count");
-    return 0;
+  
+  countp = get_objdata(player, "QUEUE");
+  if (!countp) {
+    intptr_t amt = am;
+    set_objdata(player, "QUEUE", (void *)amt);
+    return am;
   } else {
-    return *count;
+    intptr_t count = (intptr_t)countp;
+    count += am;
+    if (count == 0) {
+      delete_objdata(player, "QUEUE");
+      return 0;
+    } else {
+      set_objdata(player, "QUEUE", (void *)count);
+      return count;
+    }
   }
 }
 

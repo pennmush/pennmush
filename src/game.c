@@ -2517,8 +2517,6 @@ extern HASHTAB htab_user_function;
 extern HASHTAB htab_player_list;
 extern HASHTAB htab_reserved_aliases;
 extern HASHTAB help_files;
-extern HASHTAB htab_objdata;
-extern HASHTAB htab_objdata_keys;
 extern HASHTAB htab_locks;
 extern HASHTAB local_options;
 extern StrTree atr_names;
@@ -2544,8 +2542,7 @@ do_list_memstats(dbref player)
   } hash_tables[] = {
     {&htab_function, "Functions"},       {&htab_user_function, "@Functions"},
     {&htab_player_list, "Players"},      {&htab_reserved_aliases, "Aliases"},
-    {&help_files, "HelpFiles"},          {&htab_objdata, "ObjData"},
-    {&htab_objdata_keys, "ObjDataKeys"}, {&htab_locks, "@locks"},
+    {&help_files, "HelpFiles"},          {&htab_locks, "@locks"},
     {&local_options, "ConfigOpts"},
   };
   unsigned int i;

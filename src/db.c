@@ -48,6 +48,7 @@
 #include "privtab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "sqlite3.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
@@ -80,9 +81,6 @@ const char EOD[] = "***END OF DUMP***\n";
 
 dbref db_size = DB_INITIAL_SIZE; /**< Current size of db array */
 
-HASHTAB htab_objdata;      /**< Object data hash table */
-HASHTAB htab_objdata_keys; /**< Object data keys hash table */
-
 static void db_grow(dbref newtop);
 
 static void db_write_obj_basic(PENNFILE *f, dbref i, struct object *o);
@@ -94,7 +92,7 @@ void get_new_locks(dbref i, PENNFILE *f, int c);
 void db_read_attrs(PENNFILE *f, dbref i, int c);
 int get_list(PENNFILE *f, dbref i);
 void db_free(void);
-static void init_objdata_htab(int size, void (*free_data)(void *));
+static void init_objdata();
 static void db_write_flags(PENNFILE *f);
 static void db_write_attrs(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
@@ -1372,7 +1370,7 @@ db_read_oldstyle(PENNFILE *f)
     /* make sure database is at least this big *1.5 */
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
+      init_objdata();
       break;
     /* Use the MUSH 2.0 header stuff to see what's in this db */
     case '+':
@@ -1658,7 +1656,7 @@ db_read(PENNFILE *f)
       break;
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
+      init_objdata();
       break;
     case '!':
       /* Read an object */
@@ -1879,13 +1877,28 @@ db_read(PENNFILE *f)
   return -1;
 }
 
+static sqlite3 *objdata_db = NULL;
+
 static void
-init_objdata_htab(int size, void (*free_data)(void *))
+init_objdata()
 {
-  if (size < 10)
-    size = 10;
-  hash_init(&htab_objdata, size, free_data);
-  hashinit(&htab_objdata_keys, 8);
+  if (!objdata_db) {
+    const char *create_query =
+      "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key))";
+    char *errmsg = NULL;
+    
+    if (sqlite3_open_v2(":memory:", &objdata_db,
+                        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX,
+                        NULL) != SQLITE_OK) {
+      mush_panicf("Unable to create objdata database: %s",
+                sqlite3_errmsg(objdata_db));
+    }
+    if (sqlite3_exec(objdata_db, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to create table: %s", errmsg);
+      sqlite3_free(errmsg);
+      return;
+    }
+  }
 }
 
 /** Add data to the object data hashtable.
@@ -1904,18 +1917,38 @@ init_objdata_htab(int size, void (*free_data)(void *))
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  char keyname[BUFFER_LEN];
-
-  mush_strncpy(keyname, tprintf("%s_#%d", keybase, thing), BUFFER_LEN);
-  hashdelete(keyname, &htab_objdata);
-  if (data) {
-    if (!hashadd(keyname, data, &htab_objdata))
+  static sqlite3_stmt *setter = NULL;
+  int status;
+  
+  if (data == NULL) {
+    delete_objdata(thing, keybase);
+    return NULL;
+  }
+  
+  if (setter == NULL) {
+    const char set_query[] =
+      "INSERT OR REPLACE INTO objdata(dbref, key, ptr) VALUES(?, ?, ?)";
+    if (sqlite3_prepare_v2(objdata_db, set_query, sizeof set_query - 1,
+                           &setter, NULL) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare objdata set query for #%d/%s: %s",
+                thing, keybase, sqlite3_errmsg(objdata_db));
       return NULL;
-    if (hash_find(&htab_objdata_keys, keybase) == NULL) {
-      char *newkey = mush_strdup(keyname, "objdata.key");
-      hashadd(keybase, newkey, &htab_objdata_keys);
     }
   }
+
+  sqlite3_bind_int(setter, 1, thing);
+  sqlite3_bind_text(setter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+  sqlite3_bind_int64(setter, 3, (intptr_t) data);
+
+  while ((status = sqlite3_step(setter)) == SQLITE_BUSY) {}
+
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s (%d)",
+              thing, keybase, sqlite3_errmsg(objdata_db), status);
+  }
+  
+  sqlite3_reset(setter);
+  sqlite3_clear_bindings(setter);
   return data;
 }
 
@@ -1927,23 +1960,103 @@ set_objdata(dbref thing, const char *keybase, void *data)
 void *
 get_objdata(dbref thing, const char *keybase)
 {
-  return hashfind(tprintf("%s_#%d", keybase, thing), &htab_objdata);
+  static sqlite3_stmt *getter = NULL;
+  int status;
+  void *data = NULL;
+  
+  if (getter == NULL) {
+    const char get_query[] =
+      "SELECT ptr FROM objdata WHERE dbref = ? AND key = ?";
+    if (sqlite3_prepare_v2(objdata_db, get_query, sizeof get_query - 1,
+                           &getter, NULL) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare objdata get query for #%d/%s: %s",
+                thing, keybase, sqlite3_errmsg(objdata_db));
+      return NULL;
+    }
+  }
+
+  sqlite3_bind_int(getter, 1, thing);
+  sqlite3_bind_text(getter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+
+  while ((status = sqlite3_step(getter)) == SQLITE_BUSY) {}
+
+  if (status == SQLITE_ROW) {    
+    data = (void *) sqlite3_column_int64(getter, 0);
+  } else if (status != SQLITE_DONE) {
+    do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s (%d)",
+              thing, keybase, sqlite3_errmsg(objdata_db), status);
+  }
+  sqlite3_reset(getter);
+  sqlite3_clear_bindings(getter);
+  return data;
 }
 
-/** Clear all of an object's data from the object data hashtable.
+/** Clear an object's data for a specific key.
+ * \param thing dbref of object data is associated with.
+ * \param keybase the key to remove.
+ */
+void
+delete_objdata(dbref thing, const char *keybase)
+{
+  static sqlite3_stmt *deleter = NULL;
+  int status;
+
+  if (deleter == NULL) {
+    const char del_query[] =
+      "DELETE FROM objdata WHERE dbref = ? AND key = ?";
+    if (sqlite3_prepare_v2(objdata_db, del_query, sizeof del_query - 1,
+                           &deleter, NULL) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare objdata delete query for #%d: %s",
+                thing, sqlite3_errmsg(objdata_db));
+      return;
+    }
+  }
+  
+  sqlite3_bind_int(deleter, 1, thing);
+  sqlite3_bind_text(deleter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+  
+  while ((status = sqlite3_step(deleter)) == SQLITE_BUSY) {}
+  
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s (%d)",
+              thing, sqlite3_errmsg(objdata_db), status);
+  }
+  sqlite3_reset(deleter);
+  sqlite3_clear_bindings(deleter);
+}
+
+/** Clear all of an object's data from the object data table.
  * This function clears any data associated with a given object
- * that's in the object data hashtable (under any keybase).
+ * that's in the object data table (under any keybase).
  * It's used before we free the object.
  * \param thing dbref of object data is associated with.
  */
 void
 clear_objdata(dbref thing)
 {
-  char *p;
-  for (p = (char *) hash_firstentry(&htab_objdata_keys); p;
-       p = (char *) hash_nextentry(&htab_objdata_keys)) {
-    set_objdata(thing, p, NULL);
+  static sqlite3_stmt *eraser = NULL;
+  int status;
+
+  if (eraser == NULL) {
+    const char clear_query[] =
+      "DELETE FROM objdata WHERE dbref = ?";
+    if (sqlite3_prepare_v2(objdata_db, clear_query, sizeof clear_query - 1,
+                           &eraser, NULL) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare objdata clear query for #%d: %s",
+                thing, sqlite3_errmsg(objdata_db));
+      return;
+    }
   }
+  
+  sqlite3_bind_int(eraser, 1, thing);
+  while ((status = sqlite3_step(eraser)) == SQLITE_BUSY) {}
+  
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s (%d)",
+              thing, sqlite3_errmsg(objdata_db), status);
+  }
+  sqlite3_reset(eraser);
+  sqlite3_clear_bindings(eraser);
 }
 
 /** Create a basic 3-object (Start Room, God, Master Room) database. */
@@ -1957,7 +2070,7 @@ create_minimal_db(void)
   god = new_object();         /* #1 */
   master_room = new_object(); /* #2 */
 
-  init_objdata_htab(128, NULL);
+  init_objdata();
 
   if (!READ_REMOTE_DESC)
     desc_flags |= AF_NEARBY;

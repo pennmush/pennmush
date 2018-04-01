@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
@@ -48,7 +51,7 @@
 #include "privtab.h"
 #include "strtree.h"
 #include "strutil.h"
-#include "sqlite3.h"
+#include "mushsql.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
@@ -1876,10 +1879,17 @@ db_read(PENNFILE *f)
   return -1;
 }
 
-sqlite3 *penn_sqldb = NULL;
+static sqlite3 *penn_sqldb = NULL;
+static sqlite3 *statement_cache = NULL;
+static sqlite3_stmt *find_stmt = NULL;
+static sqlite3_stmt *insert_stmt = NULL;
+static sqlite3_stmt *delete_stmt = NULL;
+static sqlite3_stmt *delete_all_stmts = NULL;
+static sqlite3_stmt *find_all_stmts = NULL;
 
-void
-init_sqlite_db(void)
+/** Return a pointer to a global in-memory sql database. */
+sqlite3 *
+get_shared_db(void)
 {
 #if 1
   /* Normally use a ephemeral in-memory database */
@@ -1890,14 +1900,259 @@ init_sqlite_db(void)
   const char *sqldb_file = "mush.sqldb";
 #endif
 
-  sqlite3_enable_shared_cache(1);
+  /* When merging with threaded branch, database connections should be
+     handled by thread local storage - one connection per thread, all
+     to the same db. */
 
-  if (sqlite3_open_v2(sqldb_file, &penn_sqldb,
-                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_URI,
-                      NULL) != SQLITE_OK) {
-      mush_panicf("Unable to create objdata database: %s",
-                  sqlite3_errmsg(penn_sqldb));
+  if (!penn_sqldb) {
+    sqlite3_enable_shared_cache(1);
+    penn_sqldb = open_sql_db(sqldb_file);
+    if (!penn_sqldb) {
+      mush_panic("Unable to create sql database");
+    }
   }
+  return penn_sqldb;
+}
+
+/** Close the shared database connection. Use only when a mush process
+    or thread using a shared database connection exits. */
+void
+close_shared_db(void)
+{
+  /* When merging with threaded branch, this should instead be handled
+     by the tls finalizer callback. */
+  sqlite3 *db = get_shared_db();
+  if (db) {
+    close_sql_db(db);
+  }
+}
+
+/** Open a new connection to a sqlite3 database.
+ * If given a NULL file, returns a NEW in-memory database.
+ * A zero-length file, returns a new temporary-file based database.
+ * Otherwise opens the given file.
+ *
+ * The connection should only be used in a single thread.
+ */
+sqlite3 *
+open_sql_db(const char *name)
+{
+  sqlite3 *db;
+  int status;
+
+  if (!name) {
+    name = ":memory:";
+  }
+
+  if ((status = sqlite3_open_v2(name, &db,
+                                SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
+                                SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, NULL))
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
+              *name ? name : ":unamed:", sqlite3_errstr(status));
+    return NULL;
+  }
+  return db;
+}
+
+/** Returns true if the sqlite status code indicates an operation is
+    waiting on another process or thread to unlock a database. */
+bool
+is_busy_status(int s)
+{
+  return s == SQLITE_BUSY || s == SQLITE_LOCKED;
+}
+
+/** Close a currently-opened sqlite3 handle, cleaning up
+   any cached prepared statements first. */
+void
+close_sql_db(sqlite3 *db)
+{
+  int status;
+
+  /* Finalize any cached prepared statements associated with this
+     connection. */
+  if (statement_cache) {
+    if (!delete_all_stmts) {
+      const char query[] =
+        "DELETE FROM prepared_cache WHERE handle = ?";
+      if ((status = sqlite3_prepare_v2(statement_cache,
+                                       query, sizeof query,
+                                       &delete_all_stmts,
+                                       NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR, "Unable to prepare query statement_cache.delete_all: %s",
+                  sqlite3_errstr(status));
+        delete_all_stmts = NULL;
+      }
+    }
+    if (!find_all_stmts) {
+      const char query[] =
+        "SELECT statement FROM prepared_cache WHERE handle = ?";
+      if ((status = sqlite3_prepare_v2(statement_cache,
+                                       query, sizeof query,
+                                       &find_all_stmts,
+                                       NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR, "Unable to prepare query statement_cache.find_all: %s", sqlite3_errstr(status));
+        find_all_stmts = NULL;
+      }
+    }
+    
+    if (find_all_stmts) {
+      do {
+        sqlite3_bind_int64(find_all_stmts, 1, (intptr_t) db);
+        status = sqlite3_step(find_all_stmts);
+        if (status == SQLITE_ROW) {
+          sqlite3_stmt *stmt =
+            (sqlite3_stmt *)((intptr_t)sqlite3_column_int64(find_all_stmts, 0));
+          sqlite3_finalize(stmt);
+        }
+      } while (status == SQLITE_ROW || is_busy_status(status));
+      sqlite3_reset(find_all_stmts);
+    }
+    
+    if (delete_all_stmts) {
+      sqlite3_bind_int64(delete_all_stmts, 1, (intptr_t) db);
+      do {
+        status = sqlite3_step(delete_all_stmts);
+      } while (status != SQLITE_DONE && is_busy_status(status));
+      sqlite3_reset(delete_all_stmts);
+    }
+  }
+
+  sqlite3_close_v2(db);
+}
+
+/** Return a cached prepared statement, or create and cache it if not
+ * already present.
+ *
+ * \param db the sqlite3 database connection to use.
+ * \param query the SQL query to prepare.
+ * \param name the name of the query. (db,name) is the cache key, not the actual text of the query.
+ * \return the prepared statement, NULL on errors.
+ */
+sqlite3_stmt *
+prepare_statement(sqlite3 *db, const char *query, const char *name)
+{
+  sqlite3_stmt *stmt;
+  int status;
+
+  /* When merging with the threaded branch this probably needs a
+   * mutex. Also think about if the cache can be tables in the general
+   * shared db. */
+  
+  /* Set up prepared statement cache database */
+  if (!statement_cache) {
+    char *errmsg;
+    if ((status = sqlite3_open_v2(":memory:", &statement_cache,
+                                  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
+                                  SQLITE_OPEN_FULLMUTEX,
+                                  NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to create prepared statement cache: %s",
+                sqlite3_errstr(status));
+      statement_cache = NULL;
+      return NULL;
+    }
+
+    if (sqlite3_exec(statement_cache, "CREATE TABLE prepared_cache(handle INTEGER NOT NULL, name TEXT NOT NULL, statement INTEGER NOT NULL, PRIMARY KEY(handle, name))",
+                     NULL, NULL, &errmsg) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to build prepared statement cache table: %s",
+                errmsg);
+      sqlite3_free(errmsg);
+      sqlite3_close_v2(statement_cache);
+      statement_cache = NULL;
+      return NULL;
+    }
+  }
+
+  if (!find_stmt) {
+    const char fquery[] =
+      "SELECT statement FROM prepared_cache WHERE handle = ? AND name = ?";
+    if ((status = sqlite3_prepare_v2(statement_cache, fquery, sizeof fquery,
+                                     &find_stmt, NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare query statement_cache.find: %s",
+                sqlite3_errstr(status));
+      find_stmt = NULL;
+      return NULL;
+    }
+  }
+
+  if (!insert_stmt) {
+    const char iquery[] =
+      "INSERT INTO prepared_cache(handle, name, statement) VALUES (?,?,?)";
+    if ((status = sqlite3_prepare_v2(statement_cache, iquery, sizeof iquery,
+                                     &insert_stmt, NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare query statement_cache.insert: %s",
+                sqlite3_errstr(status));
+      insert_stmt = NULL;
+      return NULL;
+    }
+  }
+
+  /* See if the statement is cached and return it if so */
+  sqlite3_bind_int64(find_stmt, 1, (intptr_t)db);
+  sqlite3_bind_text(find_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(find_stmt);
+    if (status == SQLITE_ROW) {
+      stmt = (sqlite3_stmt *)((intptr_t)sqlite3_column_int64(find_stmt, 0));
+      sqlite3_reset(find_stmt);
+      return stmt;
+    }
+  } while (is_busy_status(status));
+  sqlite3_reset(find_stmt);
+
+  /* Prepare a new statement and cache it. */
+  if ((status = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL))
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to prepare query %s: %s",
+              name, sqlite3_errstr(status));
+    return NULL;
+  }
+  
+  sqlite3_bind_int64(insert_stmt, 1, (intptr_t)db);
+  sqlite3_bind_text(insert_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_bind_int64(insert_stmt, 3, (intptr_t)stmt);
+  do {
+    status = sqlite3_step(insert_stmt);
+  } while (is_busy_status(status));
+  sqlite3_reset(insert_stmt);
+
+  return stmt;
+}
+
+/** Finalize a cached prepared statement and clear it from the cache.
+ *
+ * \param db the statement to delete.
+ */
+void
+close_statement(sqlite3_stmt *stmt)
+{
+
+  /* When merging with the threaded branch this probably needs a mutex. */
+  
+  if (statement_cache) {
+    int status;
+    if (!delete_stmt) {
+      const char query[] =
+        "DELETE FROM prepared_cache WHERE statement = ?";
+
+      if ((status = sqlite3_prepare_v2(statement_cache, query, sizeof query,
+                                       &delete_stmt, NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR, "Unable to prepare query statement_cache.delete_one: %s",
+                  sqlite3_errstr(status));
+        delete_stmt = NULL;
+        return;
+      }
+    }
+
+    sqlite3_bind_int64(delete_stmt, 1, (intptr_t)stmt);
+    do {
+      status = sqlite3_step(delete_stmt);
+    } while (is_busy_status(status));
+    sqlite3_reset(delete_stmt);
+  }
+
+  sqlite3_finalize(stmt);
 }
 
 static void
@@ -1906,9 +2161,10 @@ init_objdata()
   const char *create_query =
     "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key))";
   char *errmsg = NULL;
-    
-  if (sqlite3_exec(penn_sqldb, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to create table: %s", errmsg);
+  sqlite3 *sqldb = get_shared_db();
+  
+  if (sqlite3_exec(sqldb, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create objdata table: %s", errmsg);
     sqlite3_free(errmsg);
     return;
   }
@@ -1930,36 +2186,37 @@ init_objdata()
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  static sqlite3_stmt *setter = NULL;
+  sqlite3_stmt *setter;
   int status;
+  sqlite3 *sqldb;
   
   if (data == NULL) {
     delete_objdata(thing, keybase);
     return NULL;
   }
-  
-  if (setter == NULL) {
-    const char set_query[] =
-      "INSERT OR REPLACE INTO objdata(dbref, key, ptr) VALUES(?, ?, ?)";
-    if (sqlite3_prepare_v2(penn_sqldb, set_query, sizeof set_query,
-                           &setter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata set query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return NULL;
-    }
+
+  sqldb = get_shared_db();
+  setter = prepare_statement(sqldb,
+                             "INSERT OR REPLACE INTO objdata(dbref, key, ptr) VALUES(?, ?, ?)",
+                             "objdata.set");
+  if (!setter) {
+    return NULL;
   }
 
   sqlite3_bind_int(setter, 1, thing);
   sqlite3_bind_text(setter, 2, keybase, strlen(keybase), SQLITE_STATIC);
   sqlite3_bind_int64(setter, 3, (intptr_t) data);
-  status = sqlite3_step(setter);
+
+  do {
+    status = sqlite3_step(setter);
+  } while (is_busy_status(status));
 
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s (%d)",
-              thing, keybase, sqlite3_errmsg(penn_sqldb), status);
+    do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s",
+              thing, keybase, sqlite3_errstr(status));
   }
-  
   sqlite3_reset(setter);
+  
   return data;
 }
 
@@ -1971,30 +2228,27 @@ set_objdata(dbref thing, const char *keybase, void *data)
 void *
 get_objdata(dbref thing, const char *keybase)
 {
-  static sqlite3_stmt *getter = NULL;
+  sqlite3_stmt *getter;
   int status;
   void *data = NULL;
-  
-  if (getter == NULL) {
-    const char get_query[] =
-      "SELECT ptr FROM objdata WHERE dbref = ? AND key = ?";
-    if (sqlite3_prepare_v2(penn_sqldb, get_query, sizeof get_query,
-                           &getter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata get query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return NULL;
-    }
+  sqlite3 *sqldb = get_shared_db();
+
+  getter = prepare_statement(sqldb,
+                             "SELECT ptr FROM objdata WHERE dbref = ? AND key = ?", "objdata.get");
+  if (!getter) {
+    return NULL;
   }
 
   sqlite3_bind_int(getter, 1, thing);
   sqlite3_bind_text(getter, 2, keybase, strlen(keybase), SQLITE_STATIC);
-  status = sqlite3_step(getter);
-
-  if (status == SQLITE_ROW) {    
-    data = (void *) sqlite3_column_int64(getter, 0);
+  do {
+    status = sqlite3_step(getter);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    data = (void *)((intptr_t)sqlite3_column_int64(getter, 0));
   } else if (status != SQLITE_DONE) {
-    do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s (%d)",
-              thing, keybase, sqlite3_errmsg(penn_sqldb), status);
+    do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s",
+              thing, keybase, sqlite3_errstr(status));
   }
   sqlite3_reset(getter);
   return data;
@@ -2007,27 +2261,26 @@ get_objdata(dbref thing, const char *keybase)
 void
 delete_objdata(dbref thing, const char *keybase)
 {
-  static sqlite3_stmt *deleter = NULL;
+  sqlite3_stmt *deleter;
   int status;
+  sqlite3 *sqldb = get_shared_db();
 
-  if (deleter == NULL) {
-    const char del_query[] =
-      "DELETE FROM objdata WHERE dbref = ? AND key = ?";
-    if (sqlite3_prepare_v2(penn_sqldb, del_query, sizeof del_query,
-                           &deleter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata delete query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return;
-    }
+  deleter = prepare_statement(sqldb,
+                              "DELETE FROM objdata WHERE dbref = ? AND key = ?",
+                              "objdata.delete");
+  if (!deleter) {
+    return;
   }
-  
+
   sqlite3_bind_int(deleter, 1, thing);
   sqlite3_bind_text(deleter, 2, keybase, strlen(keybase), SQLITE_STATIC);
-  status = sqlite3_step(deleter);
+  do {
+    status = sqlite3_step(deleter);
+  } while (is_busy_status(status));
   
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s (%d)",
-              thing, sqlite3_errmsg(penn_sqldb), status);
+    do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s",
+              thing, sqlite3_errstr(status));
   }
   sqlite3_reset(deleter);
 }
@@ -2041,26 +2294,25 @@ delete_objdata(dbref thing, const char *keybase)
 void
 clear_objdata(dbref thing)
 {
-  static sqlite3_stmt *eraser = NULL;
+  sqlite3_stmt *eraser;
   int status;
+  sqlite3 *sqldb = get_shared_db();
 
-  if (eraser == NULL) {
-    const char clear_query[] =
-      "DELETE FROM objdata WHERE dbref = ?";
-    if (sqlite3_prepare_v2(penn_sqldb, clear_query, sizeof clear_query,
-                           &eraser, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata clear query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return;
-    }
+  eraser = prepare_statement(sqldb,
+                             "DELETE FROM objdata WHERE dbref = ?",
+                             "objdata.clear");
+  if (!eraser) {
+    return;
   }
   
   sqlite3_bind_int(eraser, 1, thing);
-  status = sqlite3_step(eraser);
+  do {
+    status = sqlite3_step(eraser);
+  } while (is_busy_status(status));
   
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s (%d)",
-              thing, sqlite3_errmsg(penn_sqldb), status);
+    do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s",
+              thing, sqlite3_errstr(status));
   }
   sqlite3_reset(eraser);
 }

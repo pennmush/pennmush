@@ -39,6 +39,8 @@ void Win32MUSH_setup(void);
 #endif
 #include <errno.h>
 
+#include "sqlite3.h"
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -2545,7 +2547,8 @@ do_list_memstats(dbref player)
     {&local_options, "ConfigOpts"},
   };
   unsigned int i;
-
+  int64_t sqlmem;
+  
   notify(player, "Hash Tables:");
   notify(player,
          "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
@@ -2584,6 +2587,13 @@ do_list_memstats(dbref player)
   if (rgb_to_name)
     im_stats(player, rgb_to_name, "Colors");
 
+  notify(player, "Sqlite3 Databases:");
+  sqlmem = sqlite3_memory_used();
+  notify_format(player,
+                " Using %ld megabytes and %ld kilobytes of memory.",
+                (long)(sqlmem / (1024 * 1024)),
+                (long)((sqlmem % (1024 * 1024)) / 1024));
+  
 #ifdef COMP_STATS
   if (Wizard(player) && strcmp(options.attr_compression, "word") == 0) {
     long items, used, total_comp, total_uncomp;

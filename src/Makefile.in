@@ -353,6 +353,8 @@ bsd.o: ../hdrs/sig.h
 bsd.o: ../hdrs/strutil.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/charconv.h
+bsd.o: ../hdrs/mushsql.h
+bsd.o: ../hdrs/sqlite3.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
@@ -416,7 +418,6 @@ cmdlocal.o: ../config.h
 cmdlocal.o: ../confmagic.h
 cmdlocal.o: ../options.h
 cmdlocal.o: ../hdrs/copyrite.h
-cmdlocal.o: ../config.h
 cmdlocal.o: ../hdrs/cmds.h
 cmdlocal.o: ../hdrs/command.h
 cmdlocal.o: ../hdrs/boolexp.h
@@ -434,7 +435,6 @@ cmdlocal.o: ../hdrs/flags.h
 cmdlocal.o: ../hdrs/ptab.h
 cmdlocal.o: ../hdrs/mypcre.h
 cmdlocal.o: ../hdrs/parse.h
-cmdlocal.o: ../confmagic.h
 cmds.o: ../config.h
 cmds.o: ../confmagic.h
 cmds.o: ../options.h
@@ -661,6 +661,8 @@ db.o: ../hdrs/mymalloc.h
 db.o: ../hdrs/parse.h
 db.o: ../hdrs/privtab.h
 db.o: ../hdrs/strutil.h
+db.o: ../hdrs/mushsql.h
+db.o: ../hdrs/sqlite3.h
 destroy.o: ../config.h
 destroy.o: ../confmagic.h
 destroy.o: ../options.h
@@ -783,7 +785,6 @@ flaglocal.o: ../config.h
 flaglocal.o: ../confmagic.h
 flaglocal.o: ../options.h
 flaglocal.o: ../hdrs/copyrite.h
-flaglocal.o: ../config.h
 flaglocal.o: ../hdrs/conf.h
 flaglocal.o: ../hdrs/htab.h
 flaglocal.o: ../hdrs/mushtype.h
@@ -796,7 +797,6 @@ flaglocal.o: ../hdrs/dbio.h
 flaglocal.o: ../hdrs/ptab.h
 flaglocal.o: ../hdrs/chunk.h
 flaglocal.o: ../hdrs/mypcre.h
-flaglocal.o: ../confmagic.h
 flags.o: ../config.h
 flags.o: ../confmagic.h
 flags.o: ../options.h
@@ -963,7 +963,6 @@ funlocal.o: ../config.h
 funlocal.o: ../confmagic.h
 funlocal.o: ../options.h
 funlocal.o: ../hdrs/copyrite.h
-funlocal.o: ../config.h
 funlocal.o: ../hdrs/conf.h
 funlocal.o: ../hdrs/htab.h
 funlocal.o: ../hdrs/mushtype.h
@@ -978,7 +977,6 @@ funlocal.o: ../hdrs/chunk.h
 funlocal.o: ../hdrs/mypcre.h
 funlocal.o: ../hdrs/function.h
 funlocal.o: ../hdrs/parse.h
-funlocal.o: ../confmagic.h
 funmath.o: ../config.h
 funmath.o: ../confmagic.h
 funmath.o: ../options.h
@@ -1125,6 +1123,7 @@ game.o: ../hdrs/mushtype.h
 game.o: ../hdrs/notify.h
 game.o: ../hdrs/conf.h
 game.o: ../hdrs/htab.h
+game.o: ../hdrs/sqlite3.h
 game.o: ../hdrs/access.h
 game.o: ../hdrs/mypcre.h
 game.o: ../hdrs/ansi.h
@@ -1227,7 +1226,6 @@ local.o: ../config.h
 local.o: ../confmagic.h
 local.o: ../options.h
 local.o: ../hdrs/copyrite.h
-local.o: ../config.h
 local.o: ../hdrs/command.h
 local.o: ../hdrs/boolexp.h
 local.o: ../hdrs/chunk.h
@@ -1247,7 +1245,6 @@ local.o: ../hdrs/game.h
 local.o: ../hdrs/notify.h
 local.o: ../hdrs/lock.h
 local.o: ../hdrs/parse.h
-local.o: ../confmagic.h
 lock.o: ../config.h
 lock.o: ../confmagic.h
 lock.o: ../options.h
@@ -1535,6 +1532,7 @@ myssl.o: ../hdrs/conf.h
 myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
 myssl.o: ../hdrs/parse.h
+myssl.o: ../hdrs/mypcre.h
 myssl.o: ../hdrs/wait.h
 myssl.o: ../confmagic.h
 notify.o: ../config.h
@@ -1581,9 +1579,9 @@ parse.o: ../options.h
 parse.o: ../hdrs/copyrite.h
 parse.o: ../hdrs/parse.h
 parse.o: ../hdrs/mushtype.h
+parse.o: ../hdrs/mypcre.h
 parse.o: ../hdrs/ansi.h
 parse.o: ../hdrs/compile.h
-parse.o: ../hdrs/mypcre.h
 parse.o: ../hdrs/strtree.h
 parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/chunk.h
@@ -1653,9 +1651,12 @@ plyrlist.o: ../hdrs/flags.h
 plyrlist.o: ../hdrs/ptab.h
 plyrlist.o: ../hdrs/externs.h
 plyrlist.o: ../hdrs/mypcre.h
-plyrlist.o: ../hdrs/mymalloc.h
 plyrlist.o: ../hdrs/parse.h
 plyrlist.o: ../hdrs/strutil.h
+plyrlist.o: ../hdrs/mushsql.h
+plyrlist.o: ../hdrs/sqlite3.h
+plyrlist.o: ../hdrs/log.h
+plyrlist.o: ../hdrs/bufferq.h
 predicat.o: ../config.h
 predicat.o: ../confmagic.h
 predicat.o: ../options.h
@@ -1857,6 +1858,7 @@ sql.o: ../config.h
 sql.o: ../confmagic.h
 sql.o: ../options.h
 sql.o: ../hdrs/copyrite.h
+sql.o: ../hdrs/sqlite3.h
 sql.o: ../hdrs/ansi.h
 sql.o: ../hdrs/compile.h
 sql.o: ../hdrs/mushtype.h
@@ -1882,6 +1884,9 @@ sql.o: ../hdrs/mymalloc.h
 sql.o: ../hdrs/notify.h
 sql.o: ../hdrs/parse.h
 sql.o: ../hdrs/strutil.h
+sqlite3.o: ../config.h
+sqlite3.o: ../confmagic.h
+sqlite3.o: ../options.h
 ssl_master.o: ../config.h
 ssl_master.o: ../confmagic.h
 ssl_master.o: ../options.h
@@ -1893,6 +1898,7 @@ ssl_master.o: ../hdrs/log.h
 ssl_master.o: ../hdrs/bufferq.h
 ssl_master.o: ../hdrs/mysocket.h
 ssl_master.o: ../hdrs/parse.h
+ssl_master.o: ../hdrs/mypcre.h
 ssl_master.o: ../hdrs/sig.h
 ssl_master.o: ../hdrs/ssl_slave.h
 ssl_master.o: ../hdrs/wait.h

@@ -101,6 +101,7 @@
 #include "strutil.h"
 #include "version.h"
 #include "charconv.h"
+#include "mushsql.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -601,8 +602,6 @@ main(int argc, char **argv)
   initialize_rng();
 
   options.mem_check = 1;
-
-  init_sqlite_db();
   
   init_game_config(confname);
 
@@ -747,6 +746,8 @@ main(int argc, char **argv)
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   end_all_logs();
+
+  close_shared_db();
 
   closesocket(sock);
 #ifdef WIN32

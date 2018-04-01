@@ -1185,7 +1185,7 @@ do_mail_purge(dbref player)
       nextp = mp->next;
     }
   }
-  set_objdata(player, "MAIL", NULL);
+  delete_objdata(player, "MAIL");
   if (command_check_byname(player, "@MAIL", NULL))
     notify(player, T("MAIL: Mailbox purged."));
   return;

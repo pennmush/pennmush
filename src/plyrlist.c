@@ -18,20 +18,20 @@
 #include "mushdb.h"
 #include "parse.h"
 #include "strutil.h"
-#include "sqlite3.h"
+#include "mushsql.h"
 #include "log.h"
 
 static int hft_initialized = 0;
 static void init_hft(void);
 
-extern sqlite3 *penn_sqldb;
-
 static void
 init_hft(void)
 {
   if (!hft_initialized) {
-    char *errmsg = NULL;  
-    if (sqlite3_exec(penn_sqldb, "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL)", NULL, NULL, &errmsg) != SQLITE_OK) {
+    char *errmsg = NULL;
+    sqlite3 *sqldb = get_shared_db();
+ 
+    if (sqlite3_exec(sqldb, "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL)", NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create players table: %s", errmsg);
       sqlite3_free(errmsg);
     } else {
@@ -46,7 +46,9 @@ clear_players(void)
 {
   if (hft_initialized) {
     char *errmsg = NULL;
-    if (sqlite3_exec(penn_sqldb, "DELETE FROM players", NULL, NULL, &errmsg)
+    sqlite3 *sqldb = get_shared_db();
+
+    if (sqlite3_exec(sqldb, "DELETE FROM players", NULL, NULL, &errmsg)
         != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to wipe players table: %s", errmsg);
       sqlite3_free(errmsg);
@@ -57,21 +59,16 @@ clear_players(void)
 }
 
 static void
-add_player_name(const char *name, dbref player)
+add_player_name(sqlite3 *sqldb, const char *name, dbref player)
 {
-  static sqlite3_stmt *adder = NULL;
+  sqlite3_stmt *adder;
   int status;
   
+  adder = prepare_statement(sqldb,
+                            "INSERT INTO players(name, dbref) VALUES(UPPER(?), ?)",
+                            "plyrlist.add");
   if (!adder) {
-    const char add_query[] =
-      "INSERT INTO players(name, dbref) VALUES(UPPER(?), ?)";
-    init_hft();
-    if (sqlite3_prepare_v2(penn_sqldb, add_query, sizeof add_query,
-                           &adder, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare players add query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return;
-    }
+    return;
   }
 
   sqlite3_bind_text(adder, 1, name, strlen(name),
@@ -82,7 +79,7 @@ add_player_name(const char *name, dbref player)
 
   if (status != SQLITE_DONE && status != SQLITE_CONSTRAINT) {
     do_rawlog(LT_ERR, "Unable to execute players add query for #%d/%s: %s (%d)",
-                player, name, sqlite3_errmsg(penn_sqldb), status);
+                player, name, sqlite3_errmsg(sqldb), status);
   }
   
   sqlite3_reset(adder);
@@ -93,7 +90,7 @@ add_player_name(const char *name, dbref player)
  */
 void add_player(dbref player)
 {
-  add_player_name(Name(player), player);
+  add_player_name(get_shared_db(), Name(player), player);
 }
 
 /** Add a player's alias list to the player list htab.
@@ -107,11 +104,12 @@ add_player_alias(dbref player, const char *alias, bool intransaction)
   char tbuf1[BUFFER_LEN], *s, *sp;
   int status;
   char *errmsg;
+  sqlite3 *sqldb = get_shared_db();
   
   init_hft();
 
   if (!intransaction) {
-    status = sqlite3_exec(penn_sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
+    status = sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
     if (status != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to start players add alias transaction: %s",
                 errmsg);
@@ -127,12 +125,12 @@ add_player_alias(dbref player, const char *alias, bool intransaction)
     while (sp && *sp && *sp == ' ')
       sp++;
     if (sp && *sp) {
-      add_player_name(sp, player);
+      add_player_name(sqldb, sp, player);
     }
   }
 
   if (!intransaction) {
-    status = sqlite3_exec(penn_sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
+    status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
     if (status != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to commit players add alias transaction: %s",
                 errmsg);
@@ -172,23 +170,20 @@ lookup_player(const char *name)
 dbref
 lookup_player_name(const char *name)
 {
-  static sqlite3_stmt *looker = NULL;
+  sqlite3_stmt *looker;
   dbref d = NOTHING;
   int status;
+  sqlite3 *sqldb = get_shared_db();
   
   if (!hft_initialized) {
     return NOTHING;
   }
 
+  looker = prepare_statement(sqldb,
+                             "SELECT dbref FROM players WHERE name = UPPER(?)",
+                             "plyrlist.lookup");
   if (!looker) {
-    const char lookup_query[] =
-      "SELECT dbref FROM players WHERE name = UPPER(?)";
-    if (sqlite3_prepare_v2(penn_sqldb, lookup_query, sizeof lookup_query,
-                           &looker, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare players lookup query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return NOTHING;     
-    }
+    return NOTHING;
   }
     
   sqlite3_bind_text(looker, 1, name, strlen(name), SQLITE_TRANSIENT);
@@ -198,7 +193,7 @@ lookup_player_name(const char *name)
     d = sqlite3_column_int(looker, 0);
   } else if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to run players lookup query for %s: %s",
-              name, sqlite3_errmsg(penn_sqldb));
+              name, sqlite3_errstr(status));
   }
   sqlite3_reset(looker);
   return d;
@@ -211,27 +206,24 @@ lookup_player_name(const char *name)
 void
 delete_player(dbref player)
 {
-  static sqlite3_stmt *deleter = NULL;
+  sqlite3_stmt *deleter;
   int status;
+  sqlite3 *sqldb = get_shared_db();
   
   init_hft();
 
+  deleter = prepare_statement(sqldb,
+                              "DELETE FROM players WHERE dbref = ?",
+                              "plyrlist.delete");
   if (!deleter) {
-    const char deleter_query[] =
-      "DELETE FROM players WHERE dbref = ?";
-    if (sqlite3_prepare_v2(penn_sqldb, deleter_query, sizeof deleter_query,
-                           &deleter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare players delete query: %s",
-                sqlite3_errmsg(penn_sqldb));
-      return;
-    }
+    return;
   }
 
   sqlite3_bind_int(deleter, 1, player);
   status = sqlite3_step(deleter);
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute query to delete players names for #%d: %s",
-              player, sqlite3_errmsg(penn_sqldb));
+              player, sqlite3_errstr(status));
   }
   sqlite3_reset(deleter);
 }
@@ -250,6 +242,7 @@ reset_player_list(dbref player, const char *name, const char *alias)
   char tbuf[BUFFER_LEN];
   int status;
   char *errmsg;
+  sqlite3 *sqldb = get_shared_db();
   
   if (!name) {
     name = Name(player);
@@ -270,7 +263,7 @@ reset_player_list(dbref player, const char *name, const char *alias)
     }
   }
   
-  status = sqlite3_exec(penn_sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
+  status = sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
   if (status != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to start players replace transaction: %s",
               errmsg);
@@ -281,10 +274,10 @@ reset_player_list(dbref player, const char *name, const char *alias)
   /* Delete all the old stuff */
   delete_player(player);
   /* Add in the new stuff */
-  add_player_name(name, player);
+  add_player_name(sqldb, name, player);
   add_player_alias(player, tbuf, 1);
   
-  status = sqlite3_exec(penn_sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
+  status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
   if (status != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to commit players replace transaction: %s",
               errmsg);

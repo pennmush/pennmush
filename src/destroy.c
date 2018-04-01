@@ -830,8 +830,6 @@ static void
 clear_player(dbref thing)
 {
   dbref i;
-  ATTR *atemp;
-  char alias[BUFFER_LEN + 1];
   dbref probate;
 
   /* Clear out mail. */
@@ -852,11 +850,8 @@ clear_player(dbref thing)
   do_log(LT_WIZ, thing, NOTHING, "Player destroyed.");
 
   /* Clear out names from the player list */
-  delete_player(thing, NULL);
-  if ((atemp = atr_get_noparent(thing, "ALIAS")) != NULL) {
-    strcpy(alias, atr_value(atemp));
-    delete_player(thing, alias);
-  }
+  delete_player(thing);
+  
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 

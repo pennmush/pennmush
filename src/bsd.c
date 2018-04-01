@@ -602,6 +602,8 @@ main(int argc, char **argv)
 
   options.mem_check = 1;
 
+  init_sqlite_db();
+  
   init_game_config(confname);
 
   /* If we have setlocale, call it to set locale info

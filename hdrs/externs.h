@@ -313,10 +313,9 @@ bool is_good_number(NVAL val);
 /* From plyrlist.c */
 void clear_players(void);
 void add_player(dbref player);
-void add_player_alias(dbref player, const char *alias);
-void delete_player(dbref player, const char *alias);
-void reset_player_list(dbref player, const char *oldname, const char *oldalias,
-                       const char *name, const char *alias);
+void add_player_alias(dbref player, const char *alias, bool intransaction);
+void delete_player(dbref player);
+void reset_player_list(dbref player, const char *name, const char *alias);
 
 int could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 int did_it(dbref player, dbref thing, const char *what, const char *def,

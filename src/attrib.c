@@ -2108,7 +2108,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     break;
   }
   if (!strcmp(name, "ALIAS") && IsPlayer(thing)) {
-    reset_player_list(thing, NULL, tbuf1, NULL, s);
+    reset_player_list(thing, Name(thing), s);
     if (s && *s)
       notify(player, T("Alias set."));
     else

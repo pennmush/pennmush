@@ -668,7 +668,7 @@ do_restart(void)
         bp = buf;
         safe_str(atr_value(s), buf, &bp);
         *bp = '\0';
-        add_player_alias(thing, buf);
+        add_player_alias(thing, buf, 0);
       }
     }
   }
@@ -2514,7 +2514,6 @@ db_open_write(const char *fname)
 
 extern HASHTAB htab_function;
 extern HASHTAB htab_user_function;
-extern HASHTAB htab_player_list;
 extern HASHTAB htab_reserved_aliases;
 extern HASHTAB help_files;
 extern HASHTAB htab_locks;
@@ -2541,7 +2540,7 @@ do_list_memstats(dbref player)
     const char *name;
   } hash_tables[] = {
     {&htab_function, "Functions"},       {&htab_user_function, "@Functions"},
-    {&htab_player_list, "Players"},      {&htab_reserved_aliases, "Aliases"},
+    {&htab_reserved_aliases, "Aliases"},
     {&help_files, "HelpFiles"},          {&htab_locks, "@locks"},
     {&local_options, "ConfigOpts"},
   };

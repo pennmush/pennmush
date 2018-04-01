@@ -3226,6 +3226,8 @@ FUNCTION(fun_json_query)
       query_type = JSON_QUERY_GET;
     } else if (strcasecmp("unescape", args[1]) == 0) {
       query_type = JSON_QUERY_UNESCAPE;
+    } else if (strcasecmp("type", args[1]) == 0) {
+      query_type = JSON_QUERY_TYPE;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
       return;

@@ -1493,7 +1493,6 @@ db_read_oldstyle(PENNFILE *f)
        */
       clear_flag_internal(i, "GOING");
       clear_flag_internal(i, "GOING_TWICE");
-
       /* If there are channels in the db, read 'em in */
       /* We don't support this anymore, so we just discard them */
       if (!(globals.indb_flags & DBF_NO_CHAT_SYSTEM))
@@ -1877,27 +1876,41 @@ db_read(PENNFILE *f)
   return -1;
 }
 
-static sqlite3 *objdata_db = NULL;
+sqlite3 *penn_sqldb = NULL;
+
+void
+init_sqlite_db(void)
+{
+#if 1
+  /* Normally use a ephemeral in-memory database */
+  const char *sqldb_file = "file::memory:?cache=shared";
+#else
+  /* Use a file based one for testing. Not suitable for use with
+   * @shutdown/reboot. */
+  const char *sqldb_file = "mush.sqldb";
+#endif
+
+  sqlite3_enable_shared_cache(1);
+
+  if (sqlite3_open_v2(sqldb_file, &penn_sqldb,
+                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX,
+                      NULL) != SQLITE_OK) {
+      mush_panicf("Unable to create objdata database: %s",
+                  sqlite3_errmsg(penn_sqldb));
+  }
+}
 
 static void
 init_objdata()
 {
-  if (!objdata_db) {
-    const char *create_query =
-      "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key))";
-    char *errmsg = NULL;
+  const char *create_query =
+    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key))";
+  char *errmsg = NULL;
     
-    if (sqlite3_open_v2(":memory:", &objdata_db,
-                        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX,
-                        NULL) != SQLITE_OK) {
-      mush_panicf("Unable to create objdata database: %s",
-                sqlite3_errmsg(objdata_db));
-    }
-    if (sqlite3_exec(objdata_db, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to create table: %s", errmsg);
-      sqlite3_free(errmsg);
-      return;
-    }
+  if (sqlite3_exec(penn_sqldb, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create table: %s", errmsg);
+    sqlite3_free(errmsg);
+    return;
   }
 }
 
@@ -1928,10 +1941,10 @@ set_objdata(dbref thing, const char *keybase, void *data)
   if (setter == NULL) {
     const char set_query[] =
       "INSERT OR REPLACE INTO objdata(dbref, key, ptr) VALUES(?, ?, ?)";
-    if (sqlite3_prepare_v2(objdata_db, set_query, sizeof set_query - 1,
+    if (sqlite3_prepare_v2(penn_sqldb, set_query, sizeof set_query,
                            &setter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata set query for #%d/%s: %s",
-                thing, keybase, sqlite3_errmsg(objdata_db));
+      do_rawlog(LT_ERR, "Unable to prepare objdata set query: %s",
+                sqlite3_errmsg(penn_sqldb));
       return NULL;
     }
   }
@@ -1939,16 +1952,14 @@ set_objdata(dbref thing, const char *keybase, void *data)
   sqlite3_bind_int(setter, 1, thing);
   sqlite3_bind_text(setter, 2, keybase, strlen(keybase), SQLITE_STATIC);
   sqlite3_bind_int64(setter, 3, (intptr_t) data);
-
-  while ((status = sqlite3_step(setter)) == SQLITE_BUSY) {}
+  status = sqlite3_step(setter);
 
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s (%d)",
-              thing, keybase, sqlite3_errmsg(objdata_db), status);
+              thing, keybase, sqlite3_errmsg(penn_sqldb), status);
   }
   
   sqlite3_reset(setter);
-  sqlite3_clear_bindings(setter);
   return data;
 }
 
@@ -1967,27 +1978,25 @@ get_objdata(dbref thing, const char *keybase)
   if (getter == NULL) {
     const char get_query[] =
       "SELECT ptr FROM objdata WHERE dbref = ? AND key = ?";
-    if (sqlite3_prepare_v2(objdata_db, get_query, sizeof get_query - 1,
+    if (sqlite3_prepare_v2(penn_sqldb, get_query, sizeof get_query,
                            &getter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata get query for #%d/%s: %s",
-                thing, keybase, sqlite3_errmsg(objdata_db));
+      do_rawlog(LT_ERR, "Unable to prepare objdata get query: %s",
+                sqlite3_errmsg(penn_sqldb));
       return NULL;
     }
   }
 
   sqlite3_bind_int(getter, 1, thing);
   sqlite3_bind_text(getter, 2, keybase, strlen(keybase), SQLITE_STATIC);
-
-  while ((status = sqlite3_step(getter)) == SQLITE_BUSY) {}
+  status = sqlite3_step(getter);
 
   if (status == SQLITE_ROW) {    
     data = (void *) sqlite3_column_int64(getter, 0);
   } else if (status != SQLITE_DONE) {
     do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s (%d)",
-              thing, keybase, sqlite3_errmsg(objdata_db), status);
+              thing, keybase, sqlite3_errmsg(penn_sqldb), status);
   }
   sqlite3_reset(getter);
-  sqlite3_clear_bindings(getter);
   return data;
 }
 
@@ -2004,25 +2013,23 @@ delete_objdata(dbref thing, const char *keybase)
   if (deleter == NULL) {
     const char del_query[] =
       "DELETE FROM objdata WHERE dbref = ? AND key = ?";
-    if (sqlite3_prepare_v2(objdata_db, del_query, sizeof del_query - 1,
+    if (sqlite3_prepare_v2(penn_sqldb, del_query, sizeof del_query,
                            &deleter, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata delete query for #%d: %s",
-                thing, sqlite3_errmsg(objdata_db));
+      do_rawlog(LT_ERR, "Unable to prepare objdata delete query: %s",
+                sqlite3_errmsg(penn_sqldb));
       return;
     }
   }
   
   sqlite3_bind_int(deleter, 1, thing);
   sqlite3_bind_text(deleter, 2, keybase, strlen(keybase), SQLITE_STATIC);
-  
-  while ((status = sqlite3_step(deleter)) == SQLITE_BUSY) {}
+  status = sqlite3_step(deleter);
   
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s (%d)",
-              thing, sqlite3_errmsg(objdata_db), status);
+              thing, sqlite3_errmsg(penn_sqldb), status);
   }
   sqlite3_reset(deleter);
-  sqlite3_clear_bindings(deleter);
 }
 
 /** Clear all of an object's data from the object data table.
@@ -2040,23 +2047,22 @@ clear_objdata(dbref thing)
   if (eraser == NULL) {
     const char clear_query[] =
       "DELETE FROM objdata WHERE dbref = ?";
-    if (sqlite3_prepare_v2(objdata_db, clear_query, sizeof clear_query - 1,
+    if (sqlite3_prepare_v2(penn_sqldb, clear_query, sizeof clear_query,
                            &eraser, NULL) != SQLITE_OK) {
-      do_rawlog(LT_ERR, "Unable to prepare objdata clear query for #%d: %s",
-                thing, sqlite3_errmsg(objdata_db));
+      do_rawlog(LT_ERR, "Unable to prepare objdata clear query: %s",
+                sqlite3_errmsg(penn_sqldb));
       return;
     }
   }
   
   sqlite3_bind_int(eraser, 1, thing);
-  while ((status = sqlite3_step(eraser)) == SQLITE_BUSY) {}
+  status = sqlite3_step(eraser);
   
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s (%d)",
-              thing, sqlite3_errmsg(objdata_db), status);
+              thing, sqlite3_errmsg(penn_sqldb), status);
   }
   sqlite3_reset(eraser);
-  sqlite3_clear_bindings(eraser);
 }
 
 /** Create a basic 3-object (Start Room, God, Master Room) database. */

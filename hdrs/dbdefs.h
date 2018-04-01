@@ -291,6 +291,8 @@ struct db_stat_info {
 extern struct object *db;
 extern dbref db_top;
 
+void init_sqlite_db();
+
 void *get_objdata(dbref thing, const char *keybase);
 void *set_objdata(dbref thing, const char *keybase, void *data);
 void delete_objdata(dbref thing, const char *keybase);

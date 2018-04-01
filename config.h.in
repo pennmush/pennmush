@@ -360,6 +360,7 @@ typedef bool _Bool;
 
 #define HAVE_SQLITE3
 #define SQLITE_THREADSAFE 2
+#define SQLITE_USE_URI 1
 #define SQLITE_ENABLE_FTS5 1
 #define SQLITE_ENABLE_JSON1 1
 #define SQLITE_ENABLE_DBPAGE_VTAB 1

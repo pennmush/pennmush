@@ -1893,7 +1893,7 @@ init_sqlite_db(void)
   sqlite3_enable_shared_cache(1);
 
   if (sqlite3_open_v2(sqldb_file, &penn_sqldb,
-                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX,
+                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_URI,
                       NULL) != SQLITE_OK) {
       mush_panicf("Unable to create objdata database: %s",
                   sqlite3_errmsg(penn_sqldb));

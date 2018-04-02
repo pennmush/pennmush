@@ -128,7 +128,7 @@ latin1_to_utf8(const char * RESTRICT latin1, int len, int *outlen, const char * 
   }
   return utf8;
 #else
-  return latin1_to_utf8_n(latin1, len, outlen, 0, name);
+  return latin1_to_utf8_tn(latin1, len, outlen, 0, name);
 #endif
 }
 

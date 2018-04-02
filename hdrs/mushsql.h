@@ -7,7 +7,7 @@
 
 #include "sqlite3.h"
 
-sqlite3 *open_sql_db(const char *);
+sqlite3 *open_sql_db(const char *, bool);
 void close_sql_db(sqlite3 *);
 sqlite3 *get_shared_db(void);
 void close_shared_db(void);

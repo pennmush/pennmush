@@ -1978,7 +1978,7 @@ get_shared_db(void)
 
   if (!penn_sqldb) {
     sqlite3_enable_shared_cache(1);
-    penn_sqldb = open_sql_db(sqldb_file);
+    penn_sqldb = open_sql_db(sqldb_file, 0);
     if (!penn_sqldb) {
       mush_panic("Unable to create sql database");
     }
@@ -2005,21 +2005,27 @@ close_shared_db(void)
  * Otherwise opens the given file.
  *
  * The connection should only be used in a single thread.
+ *
+ * \param name the database filename to open URI names are supported.
+ * \param nocreate true if the database should not be created if not already present.
+ * \return a handle to the database connection or NULL.
  */
 sqlite3 *
-open_sql_db(const char *name)
+open_sql_db(const char *name, bool nocreate)
 {
   sqlite3 *db;
   int status;
-
+  int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX;
+  
   if (!name) {
     name = ":memory:";
   }
 
-  if ((status = sqlite3_open_v2(name, &db,
-                                SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
-                                SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, NULL))
-      != SQLITE_OK) {
+  if (!nocreate) {
+    flags |= SQLITE_OPEN_CREATE;
+  }
+  
+  if ((status = sqlite3_open_v2(name, &db, flags, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
               *name ? name : ":unnamed:", sqlite3_errstr(status));
     return NULL;

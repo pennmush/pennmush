@@ -2526,7 +2526,7 @@ extern StrTree object_names;
 extern PTAB ptab_command;
 extern PTAB ptab_attrib;
 extern PTAB ptab_flag;
-extern intmap *queue_map, *descs_by_fd, *rgb_to_name;
+extern intmap *queue_map, *descs_by_fd;
 #ifdef HAVE_INOTIFY
 extern intmap *watchtable;
 #endif
@@ -2584,8 +2584,6 @@ do_list_memstats(dbref player)
 #ifdef HAVE_INOTIFY
   im_stats(player, watchtable, "Inotify");
 #endif
-  if (rgb_to_name)
-    im_stats(player, rgb_to_name, "Colors");
 
   notify(player, "Sqlite3 Databases:");
   sqlmem = sqlite3_memory_used();

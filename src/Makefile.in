@@ -157,14 +157,6 @@ lmathtab.c: lmathtab.gperf
 		echo "*** NOTE ***: src/lmathtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/lmathtab.c to suppress this message."; \
 	fi
 
-rgbtab.c: rgbtab.gperf
-	@if [ -n "@GPERF@" ]; then \
-		echo "Rebuilding rgbtab.c from rgbtab.gperf"; \
-		@GPERF@ -C --output-file rgbtab.c rgbtab.gperf; \
-	else \
-		echo "*** NOTE ***: src/rgbtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/rgbtab.c to suppress this message."; \
-	fi
-
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h
 
@@ -1385,7 +1377,6 @@ markup.o: ../hdrs/parse.h
 markup.o: ../hdrs/pueblo.h
 markup.o: ../hdrs/rgb.h
 markup.o: ../hdrs/strutil.h
-markup.o: rgbtab.c
 markup.o: htmltab.c
 match.o: ../config.h
 match.o: ../confmagic.h

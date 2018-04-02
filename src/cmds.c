@@ -759,7 +759,6 @@ extern slab *intmap_slab;
 extern slab *lock_slab;
 extern slab *mail_slab;
 extern slab *memcheck_slab;
-extern slab *namelist_slab;
 extern slab *pe_reg_slab;
 extern slab *pe_reg_val_slab;
 extern slab *text_block_slab;
@@ -785,9 +784,7 @@ do_list_allocations(dbref player)
 #endif
     chanlist_slab, chanuser_slab, flag_slab, function_slab, huffman_slab,
     lock_slab, mail_slab, memcheck_slab, text_block_slab,
-    intmap_slab, pe_reg_slab, pe_reg_val_slab, flagbucket_slab,
-    namelist_slab, /* This used to be in a separate if check, so it may be
-                      NULL. Be careful if making this static. */
+    intmap_slab, pe_reg_slab, pe_reg_val_slab, flagbucket_slab
   };
   size_t i;
 

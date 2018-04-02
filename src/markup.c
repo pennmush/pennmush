@@ -82,7 +82,7 @@ build_rgb_map(void)
   int status;
   int n;
   const char query[] = 
-    "INSERT OR IGNORE INTO colors(name, rgb, xterm, ansi) SELECT json_extract(json_each.value, '$.name'), json_extract(json_each.value, '$.rgb'), json_extract(json_each.value, '$.xterm'), json_extract(json_each.value, '$.ansi') FROM json_each(?)";
+    "INSERT INTO colors(name, rgb, xterm, ansi) SELECT json_extract(json_each.value, '$.name'), json_extract(json_each.value, '$.rgb'), json_extract(json_each.value, '$.xterm'), json_extract(json_each.value, '$.ansi') FROM json_each(?)";
   
   sqldb = get_shared_db();
 
@@ -90,7 +90,7 @@ build_rgb_map(void)
     return;
   }
 
-  if (sqlite3_exec(sqldb, "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL); CREATE INDEX rgb_idx ON colors(rgb)",
+  if (sqlite3_exec(sqldb, "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL); CREATE INDEX rgb_idx ON colors(rgb); CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
 		   NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
     sqlite3_free(errmsg);
@@ -228,7 +228,7 @@ FUNCTION(fun_colors)
 
     if (args[0] && *args[0]) {
       /* List colors matching a wildcard. */
-      lister = prepare_statement(sqldb, "SELECT NAME from COLORS WHERE name LIKE LOWER(?) ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
+      lister = prepare_statement(sqldb, "SELECT NAME FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
 				 "colors.list.names_pattern");
       if (lister) {
 	int len;
@@ -237,7 +237,7 @@ FUNCTION(fun_colors)
       }
     } else {
       /* List all colors but xtermXX ones */
-      lister = prepare_statement(sqldb, "SELECT name FROM colors WHERE name NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC",
+      lister = prepare_statement(sqldb, "SELECT name FROM named_colors ORDER BY name COLLATE TRAILNUMBERS ASC",
 				 "colors.list.names_all");
     }
     if (!lister) {
@@ -382,7 +382,7 @@ FUNCTION(fun_colors)
 	  return;
 	}
 
-	finder = prepare_statement(sqldb, "SELECT name FROM colors WHERE rgb = ? AND NAME NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.rgb");
+	finder = prepare_statement(sqldb, "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.rgb");
 	if (!finder) {
 	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
 	  return;

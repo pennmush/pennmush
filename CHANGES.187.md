@@ -24,6 +24,13 @@ Major Changes
 
 * Support websocket connections. See <https://github.com/grapenut/websockclient> for a
   sample in-browser client. [Grapenut, 1007]
+* Penn now comes with the Sqlite3 database engine bundled with it, and
+  uses it internally in a few ways:
+    * 3 different tables for looking up color names are combined into
+      a single table.
+    * Per-object auxilliary data keys (objdata) are handled in sql.
+	* Player names and aliases are handled in sql, making some
+      operations on them simpler.
 
 Minor Changes
 -------------

@@ -85,6 +85,10 @@ build_rgb_map(void)
   
   sqldb = get_shared_db();
 
+  if (!sqldb) {
+    return;
+  }
+
   if (sqlite3_exec(sqldb, "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL); CREATE INDEX rgb_idx ON colors(rgb)",
 		   NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
@@ -219,7 +223,7 @@ FUNCTION(fun_colors)
       return;
     }
 
-    lister = prepare_statement(sqldb, "SELECT name FROM colors ORDER BY name ASC", "colors.list.names_all");
+    lister = prepare_statement(sqldb, "SELECT name FROM colors ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.names_all");
     if (!lister) {
       safe_str(T("#-1 SQLITE ERROR"), buff, bp);
       return;
@@ -369,7 +373,7 @@ FUNCTION(fun_colors)
 	  return;
 	}
 
-	finder = prepare_statement(sqldb, "SELECT name FROM colors WHERE rgb = ? AND NAME NOT LIKE 'xterm%' ORDER BY name ASC", "colors.lookup.by_rgb");
+	finder = prepare_statement(sqldb, "SELECT name FROM colors WHERE rgb = ? AND NAME NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.lookup.by_rgb");
 	if (!finder) {
 	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
 	  return;

@@ -1887,6 +1887,71 @@ static sqlite3_stmt *delete_stmt = NULL;
 static sqlite3_stmt *delete_all_stmts = NULL;
 static sqlite3_stmt *find_all_stmts = NULL;
 
+static int
+comp_helper(const char *a, int lena, const char *b, int lenb)
+{
+  int i = 0;
+  while (lena && lenb) {
+    int d;
+    lena -= 1;
+    lenb -= 1;
+    d = (int)a[i] - (int)b[i];
+    if (d) {
+      return d;
+    }
+    i += 1;
+  }
+  return lena - lenb;
+}
+
+/* sqlite3 collator function that sorts strings like foo100, foo1 in the order foo1, foo100 */
+static int
+comp_trailing_numbers(void *data __attribute__((__unused__)), int lena, const void *va, int lenb, const void *vb)
+{
+  const char *a = va;
+  const char *b = vb;
+
+  if (lena == 0 && lenb == 0) {
+    return 0;
+  } else if (lena == 0) {
+    return -1;
+  } else if (lenb == 0) {
+    return 1;
+  } else if (isdigit(a[lena - 1]) && isdigit(b[lenb - 1])) {
+    int traila = lena - 1;
+    int trailb = lenb - 1;
+    int d;
+    int na = 0, nb = 0;
+    int place;
+
+    place = 1;
+    while (traila > 0 && isdigit(a[traila])) {
+      na += place * (a[traila] - '0');
+      place *= 10;
+      traila -= 1;
+    }
+    traila += 1;
+
+    place = 1;
+    while (trailb > 0 && isdigit(b[trailb])) {
+      nb += place * (b[trailb] - '0');
+      place *= 10;
+      trailb -= 1;
+    }
+    trailb += 1;
+
+    d = comp_helper(a, traila, b, trailb);
+    if (d) {
+      return d;
+    } else {
+      return na - nb;
+    }
+
+  } else {
+    return comp_helper(a, lena, b, lenb);
+  }
+}
+
 /** Return a pointer to a global in-memory sql database. */
 sqlite3 *
 get_shared_db(void)
@@ -1949,8 +2014,14 @@ open_sql_db(const char *name)
                                 SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, NULL))
       != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
-              *name ? name : ":unamed:", sqlite3_errstr(status));
+              *name ? name : ":unnamed:", sqlite3_errstr(status));
     return NULL;
+  }
+  if ((status = sqlite3_create_collation(db, "TRAILNUMBERS", SQLITE_UTF8, NULL,
+					 comp_trailing_numbers))
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to attach TRAILNUMBERS collator to database %s: %s",
+	      *name ? name : ":unnamed:", sqlite3_errstr(status));
   }
   return db;
 }

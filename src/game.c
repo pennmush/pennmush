@@ -39,8 +39,6 @@ void Win32MUSH_setup(void);
 #endif
 #include <errno.h>
 
-#include "sqlite3.h"
-
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -68,6 +66,7 @@ void Win32MUSH_setup(void);
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "mushsql.h"
 
 #ifdef HAVE_SSL
 #include "myssl.h"
@@ -2592,6 +2591,43 @@ do_list_memstats(dbref player)
                 (long)(sqlmem / (1024 * 1024)),
                 (long)((sqlmem % (1024 * 1024)) / 1024));
   
+
+#ifdef SQLITE_ENABLE_STMTVTAB
+  if (Wizard(player)) {
+    sqlite3_stmt *statter;
+    sqlite3 *sqldb = get_shared_db();
+    statter = prepare_statement(sqldb, "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt", "list.memstats");
+    if (statter) {
+      int status;
+      notify(player, "Prepared query stats");
+      notify_format(player, "%-30s %-7s %-7s %-7s %-7s %-7s %-7s %s",
+                    "SQL", "nscan", "nsort", "naidx", "nstep", "reprep", "run", "memory");
+      do {
+        status = sqlite3_step(statter);
+        if (status == SQLITE_ROW) {
+          int nscan, nsort, naidx, nstep, reprep, run, mem;
+          const char *query;
+          query = (const char *)sqlite3_column_text(statter, 0);
+          if (strstr(query, "sqlite_stmt")) {
+            continue;
+          }
+          nscan = sqlite3_column_int(statter, 1);
+          nsort = sqlite3_column_int(statter, 2);
+          naidx = sqlite3_column_int(statter, 3);
+          nstep = sqlite3_column_int(statter, 4);
+          reprep = sqlite3_column_int(statter, 5);
+          run = sqlite3_column_int(statter, 6);
+          mem = sqlite3_column_int(statter, 7);
+
+          notify_format(player, "%-.27s... %-7d %-7d %-7d %-7d %-7d %-7d %d",
+                        query, nscan, nsort, naidx, nstep, reprep, run, mem);
+        }
+      } while (status == SQLITE_ROW || is_busy_status(status));
+      sqlite3_reset(statter);
+    }
+  }
+#endif
+
 #ifdef COMP_STATS
   if (Wizard(player) && strcmp(options.attr_compression, "word") == 0) {
     long items, used, total_comp, total_uncomp;

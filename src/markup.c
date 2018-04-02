@@ -80,6 +80,7 @@ build_rgb_map(void)
   sqlite3_stmt *creator;
   char *errmsg;
   int status;
+  int n;
   const char query[] = 
     "INSERT OR IGNORE INTO colors(name, rgb, xterm, ansi) SELECT json_extract(json_each.value, '$.name'), json_extract(json_each.value, '$.rgb'), json_extract(json_each.value, '$.xterm'), json_extract(json_each.value, '$.ansi') FROM json_each(?)";
   
@@ -101,17 +102,19 @@ build_rgb_map(void)
     return;
   }
 
-  /* Consider reading from a file instead of a json string compiled in? */
-  sqlite3_bind_text(creator, 1, colors_json, sizeof colors_json, SQLITE_STATIC);
-  do {
-    status = sqlite3_step(creator);
-  } while (is_busy_status(status));
-  sqlite3_reset(creator);
-  close_statement(creator);
-
-  if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to populate colors table: %s", sqlite3_errstr(status));
+  for (n = 0; colors_json[n]; n += 1) {
+    /* Consider reading from a file instead of compiled in json strings? */
+    sqlite3_bind_text(creator, 1, colors_json[n], strlen(colors_json[n]), SQLITE_STATIC);
+    do {
+      status = sqlite3_step(creator);
+    } while (is_busy_status(status));
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR, "Unable to populate colors table: %s", sqlite3_errstr(status));
+      break;
+    }
+    sqlite3_reset(creator);
   }
+  close_statement(creator);
 }
 
 /* ARGSUSED */

@@ -6,12 +6,11 @@
 # Gets xterm color data from utils/xterm256.json and other color
 # schemes from Graphics::ColorNames
 #
-# Requires a fairly modern perl and the File::Sluper, Sort::Versions
+# Requires a fairly modern perl and the File::Slurper,
 # Graphics::ColorNames and JSON::XS packages. Install off of CPAN or
-# your package manager (lib-file-slurper-perl, libsort-versions-perl,
+# your package manager (lib-file-slurper-perl,
 # libgraphics-colornames-perl, libjson-xs-perl on Debian/Ubuntu/etc.,
-# perl-file-slurper, perl-sort-versions, perl-graphics-colornames,
-# perl-json-xs on arch)
+# perl-file-slurper, perl-graphics-colornames, perl-json-xs on arch)
 #
 
 use strict;
@@ -22,7 +21,6 @@ use integer;
 use Graphics::ColorNames 2.0, qw/all_schemes/;
 use File::Slurper qw/read_binary/;
 use JSON::XS;
-use Sort::Versions;
 
 # spork's color map
 my @map_16 = qw/
@@ -130,7 +128,7 @@ foreach my $color (@$xterm256colors) {
     $counter += 1;
     $seen{"xterm$num"} = hex $rgb;
     $xterm256_rgb{$rgb} = $num;
-    push @allcolors, {name => "xterm$num", rgb => hex $rgb, xterm => int $num, ansi => $ansi};
+    push @allcolors, {name => "xterm$num", rgb => hex $rgb, xterm => int $num, ansi => int $ansi};
 }
 
 
@@ -142,7 +140,7 @@ while (my ($name, $rgb) = each %x11colors) {
     $seen{$name} = hex $rgb;
     my $xnum = map_to_256 $rgb;
     my $ansi = $map_16[$xnum];
-    push @allcolors, {name => $name, rgb => hex $rgb, xterm => $xnum, ansi => $ansi};
+    push @allcolors, {name => $name, rgb => hex $rgb, xterm => int $xnum, ansi => int $ansi};
 }
 
 foreach my $color (@$xterm256colors) {
@@ -156,9 +154,8 @@ foreach my $color (@$xterm256colors) {
     next if exists $seen{$name};
     $counter += 1;
     $seen{$name} = hex $rgb;
-    push @allcolors, {name => $name, rgb => hex $rgb, xterm => int $num, ansi => $ansi};
+    push @allcolors, {name => $name, rgb => hex $rgb, xterm => int $num, ansi => int $ansi};
 }
-
 
 open OUTPUT, ">", "hdrs/rgb.h";
 print OUTPUT <<EOT;
@@ -168,19 +165,21 @@ print OUTPUT <<EOT;
  * Should only be used by markup.c.
  */
 
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Woverlength-strings"
-#endif
-    
 EOT
 
-print OUTPUT 'const char colors_json[] = "';
+say OUTPUT 'const char *colors_json[] = {';
 
-my $output = JSON::XS->new->ascii->pretty(0)->encode(\@allcolors);
-$output =~ s/"/\\"/g;
-print OUTPUT $output, "\";\n\n";
+my $printer = JSON::XS->new->ascii->pretty(0)->canonical;
+while (scalar @allcolors) {
+    my @chunk = splice @allcolors, 0, 70;
+    my $output = $printer->encode(\@chunk);
+    $output =~ s/"/\\"/g;
+    say OUTPUT "    \"$output\",";
+}
 
-print OUTPUT <<EOC;
+say OUTPUT "    NULL\n};\n";
+
+say OUTPUT <<EOC;
 /** Info on a color from the 16-color ANSI palette */
 struct COLORMAP_16 {
   int id; /**< Code for this color (0-7) */
@@ -213,7 +212,6 @@ struct COLORMAP_16 colormap_16[] = {
 
   {-1, 0, 0, 0}
 };
-
 EOC
 
 close OUTPUT;

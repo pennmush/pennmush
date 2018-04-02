@@ -1952,6 +1952,13 @@ comp_trailing_numbers(void *data __attribute__((__unused__)), int lena, const vo
   }
 }
 
+/** Callback function for sqlite3_bind_text to free a mush_malloc-allocated "string" */
+void
+free_string(void *s)
+{
+  mush_free(s, "string");
+}
+
 /** Return a pointer to a global in-memory sql database. */
 sqlite3 *
 get_shared_db(void)

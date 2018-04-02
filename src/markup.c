@@ -226,7 +226,20 @@ FUNCTION(fun_colors)
       return;
     }
 
-    lister = prepare_statement(sqldb, "SELECT name FROM colors ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.names_all");
+    if (args[0] && *args[0]) {
+      /* List colors matching a wildcard. */
+      lister = prepare_statement(sqldb, "SELECT NAME from COLORS WHERE name LIKE LOWER(?) ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
+				 "colors.list.names_pattern");
+      if (lister) {
+	int len;
+	char *converted = glob_to_like(args[0], '$', &len);
+	sqlite3_bind_text(lister, 1, converted, len, free_string);
+      }
+    } else {
+      /* List all colors but xtermXX ones */
+      lister = prepare_statement(sqldb, "SELECT name FROM colors WHERE name NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC",
+				 "colors.list.names_all");
+    }
     if (!lister) {
       safe_str(T("#-1 SQLITE ERROR"), buff, bp);
       return;
@@ -236,13 +249,6 @@ FUNCTION(fun_colors)
       status = sqlite3_step(lister);
       if (status == SQLITE_ROW) {
 	const char *name = (const char *)sqlite3_column_text(lister, 0);
-	if (args[0] && *args[0]) {
-	  if (!quick_wild(args[0], name)) {
-	    continue;
-	  }
-	} else if (strncmp("xterm", name, 5) == 0) {
-	  continue;
-	}
 	if (shown)
 	  safe_chr(' ', buff, bp);
 	else
@@ -376,7 +382,7 @@ FUNCTION(fun_colors)
 	  return;
 	}
 
-	finder = prepare_statement(sqldb, "SELECT name FROM colors WHERE rgb = ? AND NAME NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.lookup.by_rgb");
+	finder = prepare_statement(sqldb, "SELECT name FROM colors WHERE rgb = ? AND NAME NOT LIKE 'xterm%' ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.rgb");
 	if (!finder) {
 	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
 	  return;
@@ -801,7 +807,7 @@ rgb_lookup(int rgb, int *ansi, int *xnum)
     return 0;
   }
 
-  finder = prepare_statement(sqldb, "SELECT ansi, xterm FROM colors WHERE name = ?", "colors.lookup.rgb");
+  finder = prepare_statement(sqldb, "SELECT ansi, xterm FROM colors WHERE rgb = ?", "colors.lookup.rgb");
   if (!finder) {
     return 0;
   }

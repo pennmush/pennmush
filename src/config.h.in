@@ -66,7 +66,6 @@
 #cmakedefine HAVE_GZVPRINTF
 #cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV
-#cmakedefine HAVE_INOTIFY_INIT
 #cmakedefine HAVE_INOTIFY_INIT1
 #cmakedefine HAVE_ISNORMAL
 #cmakedefine HAVE_KQUEUE
@@ -123,10 +122,6 @@
 #cmakedefine HAVE_ZONEINFO
 #define TZDIR "@TZDIR@"
 #cmakedefine WORDS_BIGENDIAN
-
-#if defined(HAVE_INOTIFY_INIT) || defined(HAVE_INOTIFY_INIT1)
-#define HAVE_INOTIFY 1
-#endif
 
 /* Programs */
 #cmakedefine HAVE_ED

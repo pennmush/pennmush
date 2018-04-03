@@ -1824,7 +1824,7 @@ show_compile_options(dbref player)
   notify(player, T(" CPU usage limiting is NOT supported."));
 #endif
 
-#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
   notify(player, T(" Changed help files will be automatically reindexed."));
 #endif
 

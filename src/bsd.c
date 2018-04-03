@@ -6849,8 +6849,8 @@ reload_files(void)
   help_reindex(NOTHING);
 }
 
-#ifdef HAVE_INOTIFY
-/* Linux 2.6 and greater inotify() file monitoring interface */
+#ifdef HAVE_INOTIFY_INIT1
+/* Linux 2.6.27 and greater inotify file monitoring interface */
 
 intmap *watchtable = NULL;
 int watch_fd = -1;
@@ -6912,23 +6912,8 @@ file_watch_init_in(void)
     im_destroy(watchtable);
     watchtable = NULL;
   }
-#ifdef HAVE_INOTIFY_INIT1
-  watch_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
-#else
-  if ((watch_fd = inotify_init()) >= 0) {
-    int flags;
 
-    make_nonblocking(watch_fd);
-    flags = fcntl(watch_fd, F_GETFD);
-    if (flags < 0)
-      penn_perror("file_watch_init_in: fcntl F_GETFD");
-    else {
-      flags |= FD_CLOEXEC;
-      if (fcntl(watch_fd, F_SETFD, flags) < 0)
-        penn_perror("file_watch_init_in: fcntl F_SETFD");
-    }
-  }
-#endif
+  watch_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 
   if (watch_fd < 0) {
     penn_perror("file_watch_init: inotify_init1");
@@ -6994,7 +6979,7 @@ file_watch_event_in(int fd)
 int
 file_watch_init(void)
 {
-#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
   return file_watch_init_in();
 #else
   return -1;
@@ -7007,7 +6992,7 @@ file_watch_init(void)
 void
 file_watch_event(int fd __attribute__((__unused__)))
 {
-#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
   file_watch_event_in(fd);
 #endif
   return;

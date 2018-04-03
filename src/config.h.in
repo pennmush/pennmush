@@ -9,12 +9,14 @@
 #cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_LANGINFO_H
 #cmakedefine HAVE_LIBINTL_H
+#cmakedefine HAVE_MEMORY_H
 #cmakedefine HAVE_NETDB_H
 #cmakedefine HAVE_NETINET_IN_H
 #cmakedefine HAVE_NETINET_TCP_H
 #cmakedefine HAVE_POLL_H
 #cmakedefine HAVE_STDBOOL_H
 #cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_STRINGS_H
 #cmakedefine HAVE_SYS_ENDIAN_H
 #cmakedefine HAVE_SYS_EVENT_H
 #cmakedefine HAVE_SYS_EVENTFD_H
@@ -44,6 +46,7 @@
 #cmakedefine HAVE_EVENTFD
 #cmakedefine HAVE_EVP_MD_DO_ALL
 #cmakedefine HAVE_FCNTL
+#cmakedefine HAVE_FDATASYNC
 #cmakedefine HAVE_FECLEAREXCEPT
 #cmakedefine HAVE_FGETS_UNLOCKED
 #cmakedefine HAVE_FPUTS_UNLOCKED
@@ -62,15 +65,20 @@
 #cmakedefine HAVE_GETRUSAGE
 #cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
+#cmakedefine HAVE_GMTIME_R
 #cmakedefine HAVE_GZBUFFER
 #cmakedefine HAVE_GZVPRINTF
 #cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV
 #cmakedefine HAVE_INOTIFY_INIT1
+#cmakedefine HAVE_ISNAN
 #cmakedefine HAVE_ISNORMAL
 #cmakedefine HAVE_KQUEUE
+#cmakedefine HAVE_LOCALTIME_R
+#cmakedefine HAVE_LOCALTIME_S
 #cmakedefine HAVE_LOG2
 #cmakedefine HAVE_LRINT
+#cmakedefine HAVE_MALLOC_USABLE_SIZE
 #cmakedefine HAVE_NL_LANGINFO
 #cmakedefine HAVE_PIPE2
 #cmakedefine HAVE_PLEDGE
@@ -94,10 +102,12 @@
 #cmakedefine HAVE_STRCASECMP
 #cmakedefine HAVE_STRCHRNUL
 #cmakedefine HAVE_STRDUP
+#cmakedefine HAVE_STRERROR_R
 #cmakedefine HAVE_STRNCASECMP
 #cmakedefine HAVE_STRXFRM
 #cmakedefine HAVE_SYSCONF
 #cmakedefine HAVE_TEXTDOMAIN
+#cmakedefine HAVE_USLEEP
 #cmakedefine HAVE_VASPRINTF
 #cmakedefine HAVE_WAIT
 #cmakedefine HAVE_WAITPID
@@ -135,6 +145,7 @@
 #cmakedefine HAVE_LIBZ
 #cmakedefine HAVE_POSTGRESQL
 #cmakedefine HAVE_SQLITE3
+#cmakedefine HAVE_ICU
 
 #cmakedefine SSL_SLAVE
 #cmakedefine INFO_SLAVE

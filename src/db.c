@@ -1926,9 +1926,9 @@ init_objdata_htab(int size, void (*free_data)(void *))
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  char keyname[BUFFER_LEN];
+  char keyname[1024];
 
-  mush_strncpy(keyname, tprintf("%s_#%d", keybase, thing), BUFFER_LEN);
+  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
   hashdelete(keyname, &htab_objdata);
   if (data) {
     if (!hashadd(keyname, data, &htab_objdata))
@@ -1949,7 +1949,9 @@ set_objdata(dbref thing, const char *keybase, void *data)
 void *
 get_objdata(dbref thing, const char *keybase)
 {
-  return hashfind(tprintf("%s_#%d", keybase, thing), &htab_objdata);
+  char keyname[1024];
+  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
+  return hashfind(keyname, &htab_objdata);
 }
 
 /** Clear all of an object's data from the object data hashtable.

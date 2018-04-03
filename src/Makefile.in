@@ -21,15 +21,15 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c	\
 	conf.c cque.c create.c db.c destroy.c extchat.c extmail.c	\
 	filecopy.c flaglocal.c flags.c funcrypt.c function.c fundb.c	\
-	funlist.c funlocal.c funmath.c funmisc.c funstr.c funtime.c	\
-	funufun.c game.c hash_function.c help.c htab.c intmap.c		\
-	local.c lock.c log.c look.c malias.c markup.c match.c		\
-	memcheck.c move.c mycrypt.c mymalloc.c mysocket.c myrlimit.c	\
-	myssl.c notify.c parse.c pcg_basic.c player.c plyrlist.c	\
-	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
-	set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c		\
-	strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c	\
-	version.c wait.c warnings.c websock.c wild.c wiz.c
+	funlist.c funjson.c funlocal.c funmath.c funmisc.c funstr.c	\
+	funtime.c funufun.c game.c hash_function.c help.c htab.c	\
+	intmap.c local.c lock.c log.c look.c malias.c markup.c		\
+	match.c memcheck.c move.c mycrypt.c mymalloc.c mysocket.c	\
+	myrlimit.c myssl.c notify.c parse.c pcg_basic.c player.c	\
+	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
+	services.c set.c sig.c sort.c speech.c sql.c ssl_master.c	\
+	strdup.c strtree.c strutil.c tables.c timer.c tz.c unparse.c	\
+	utils.c version.c wait.c warnings.c websock.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -37,15 +37,15 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	charconv.o chunk.o cmdlocal.o cmds.o command.o compress.o	\
 	conf.o cque.o create.o db.o destroy.o extchat.o extmail.o	\
 	filecopy.o flaglocal.o flags.o funcrypt.o function.o fundb.o	\
-	funlist.o funlocal.o funmath.o funmisc.o funstr.o funtime.o	\
-	funufun.o game.o hash_function.o help.o htab.o intmap.o		\
-	local.o lock.o log.o look.o malias.o markup.o match.o		\
-	memcheck.o move.o mycrypt.o mymalloc.o mysocket.o myrlimit.o	\
-	myssl.o notify.o parse.o pcg_basic.o player.o plyrlist.o	\
-	predicat.o privtab.o info_master.o ptab.o rob.o services.o	\
-	set.o sig.o sort.o speech.o sql.o ssl_master.o strdup.o		\
-	strtree.o strutil.o tables.o timer.o tz.o unparse.o utils.o	\
-	version.o wait.o warnings.o websock.o wild.o wiz.o
+	funlist.o funjson.o funlocal.o funmath.o funmisc.o funstr.o	\
+	funtime.o funufun.o game.o hash_function.o help.o htab.o	\
+	intmap.o local.o lock.o log.o look.o malias.o markup.o		\
+	match.o memcheck.o move.o mycrypt.o mymalloc.o mysocket.o	\
+	myrlimit.o myssl.o notify.o parse.o pcg_basic.o player.o	\
+	plyrlist.o predicat.o privtab.o info_master.o ptab.o rob.o	\
+	services.o set.o sig.o sort.o speech.o sql.o ssl_master.o	\
+	strdup.o strtree.o strutil.o tables.o timer.o tz.o unparse.o	\
+	utils.o version.o wait.o warnings.o websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -178,7 +178,8 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(C_FILES) ../hdrs/*.h \
+	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c tables.c, $(C_FILES)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
@@ -958,6 +959,26 @@ funlist.o: ../hdrs/notify.h
 funlist.o: ../hdrs/parse.h
 funlist.o: ../hdrs/sort.h
 funlist.o: ../hdrs/strutil.h
+funjson.o: ../config.h
+funjson.o: ../confmagic.h
+funjson.o: ../options.h
+funjson.o: ../hdrs/copyrite.h
+funjson.o: ../hdrs/conf.h
+funjson.o: ../hdrs/htab.h
+funjson.o: ../hdrs/mushtype.h
+funjson.o: ../hdrs/externs.h
+funjson.o: ../hdrs/compile.h
+funjson.o: ../hdrs/dbdefs.h
+funjson.o: ../hdrs/mushdb.h
+funjson.o: ../hdrs/flags.h
+funjson.o: ../hdrs/dbio.h
+funjson.o: ../hdrs/ptab.h
+funjson.o: ../hdrs/chunk.h
+funjson.o: ../hdrs/mypcre.h
+funjson.o: ../hdrs/mymalloc.h
+funjson.o: ../hdrs/strutil.h
+funjson.o: ../hdrs/parse.h
+funjson.o: ../hdrs/notify.h
 funlocal.o: ../config.h
 funlocal.o: ../confmagic.h
 funlocal.o: ../options.h
@@ -1534,6 +1555,7 @@ myssl.o: ../hdrs/conf.h
 myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
 myssl.o: ../hdrs/parse.h
+myssl.o: ../hdrs/mypcre.h
 myssl.o: ../hdrs/wait.h
 myssl.o: ../confmagic.h
 notify.o: ../config.h
@@ -1580,9 +1602,9 @@ parse.o: ../options.h
 parse.o: ../hdrs/copyrite.h
 parse.o: ../hdrs/parse.h
 parse.o: ../hdrs/mushtype.h
+parse.o: ../hdrs/mypcre.h
 parse.o: ../hdrs/ansi.h
 parse.o: ../hdrs/compile.h
-parse.o: ../hdrs/mypcre.h
 parse.o: ../hdrs/strtree.h
 parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/chunk.h
@@ -1892,6 +1914,7 @@ ssl_master.o: ../hdrs/log.h
 ssl_master.o: ../hdrs/bufferq.h
 ssl_master.o: ../hdrs/mysocket.h
 ssl_master.o: ../hdrs/parse.h
+ssl_master.o: ../hdrs/mypcre.h
 ssl_master.o: ../hdrs/sig.h
 ssl_master.o: ../hdrs/ssl_slave.h
 ssl_master.o: ../hdrs/wait.h

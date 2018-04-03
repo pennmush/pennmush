@@ -111,10 +111,10 @@ fi
 AX_GCC_OPTION([-fstack-protector], [], [], [
    CFLAGS="$CFLAGS -fstack-protector"
 ], [])
-AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
+AX_CHECK_LINK_FLAG([-Wl,-z,noexecstack], [
 	LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
 ], [])
-AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
+AX_CHECK_LINK_FLAG([-Wa,--noexecstack], [
    CFLAGS="$CFLAGS -Wa,--noexecstack"
    ], [])
 
@@ -256,7 +256,7 @@ AC_ARG_ENABLE(sql, AS_HELP_STRING([--disable-sql],
 if test "$enable_sql" = "yes"; then
 AC_MSG_NOTICE([Looking for supported SQL servers])
 AX_LIB_MYSQL()
-AX_LIB_POSTGRESQL()
+AX_LIB_POSTGRESQL(,,AC_MSG_RESULT(PostgreSQL not found))
 AX_LIB_SQLITE3()
 else
 AC_MSG_NOTICE([Skipping SQL server checks])
@@ -287,7 +287,7 @@ fi
 AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
-AC_CHECK_FUNCS([fcntl poll kqueue inotify_init inotify_init1])
+AC_CHECK_FUNCS([fcntl poll kqueue inotify_init1])
 AC_CHECK_FUNCS([pread pwrite eventfd pledge pipe2])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
 

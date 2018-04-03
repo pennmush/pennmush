@@ -2310,7 +2310,7 @@ save_command(DESC *d, const char *command)
       do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
       return;
     }
-    latin1 = utf8_to_latin1(command, &len);
+    latin1 = utf8_to_latin1(command, &len, "string");
     if (latin1) {
       add_to_queue(&d->input, latin1, len);
       mush_free(latin1, "string");

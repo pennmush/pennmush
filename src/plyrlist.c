@@ -20,6 +20,7 @@
 #include "strutil.h"
 #include "mushsql.h"
 #include "log.h"
+#include "charconv.h"
 
 static int hft_initialized = 0;
 static void init_hft(void);
@@ -62,6 +63,7 @@ static void
 add_player_name(sqlite3 *sqldb, const char *name, dbref player)
 {
   sqlite3_stmt *adder;
+  
   int status;
   
   adder = prepare_statement(sqldb,
@@ -71,8 +73,15 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
     return;
   }
 
-  sqlite3_bind_text(adder, 1, name, strlen(name),
-                    SQLITE_TRANSIENT);
+  if (ONLY_ASCII_NAMES) {
+    sqlite3_bind_text(adder, 1, name, strlen(name),
+		      SQLITE_TRANSIENT);
+  } else {
+    int ulen;
+    char *q_utf8 = latin1_to_utf8(name, strlen(name), &ulen, "string");
+    sqlite3_bind_text(adder, 1, q_utf8, ulen, free_string);
+  }
+ 
   sqlite3_bind_int(adder, 2, player);
 
   status = sqlite3_step(adder);

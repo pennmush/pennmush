@@ -69,6 +69,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "charconv.h"
 
 /* Supported platforms */
 typedef enum {
@@ -116,6 +117,7 @@ static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 static sqlplatform sql_platform(void);
 static char *sql_sanitize(char *res);
 #define SANITIZE(s, n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
+#define SANITIZEUTF8(s, n) ((s && *s) ? utf8_to_latin1(sql_sanitize(s), NULL, n) : NULL)
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -465,12 +467,10 @@ COMMAND(cmd_mapsql)
     numrows = PQntuples(qres);
     break;
 #endif
-#ifdef HAVE_SQLITE3
   case SQL_PLATFORM_SQLITE3:
     numfields = sqlite3_column_count(qres);
     numrows = INT_MAX;
     break;
-#endif
   default:
     goto finished;
   }
@@ -491,17 +491,16 @@ COMMAND(cmd_mapsql)
         break;
     }
 #endif
-#ifdef HAVE_SQLITE3
     if (sql_platform() == SQL_PLATFORM_SQLITE3) {
       int retcode = sqlite3_step(qres);
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(executor, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sqlite3_errstr(retcode));
         break;
       }
     }
-#endif
+
     if (numfields > 0) {
       for (i = 0; i < useable_fields; i++) {
         switch (sql_platform()) {
@@ -517,14 +516,12 @@ COMMAND(cmd_mapsql)
           names[i + 1] = SANITIZE(PQfname(qres, i), "sql_fieldname");
           break;
 #endif
-#ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
           cells[i + 1] =
-            SANITIZE((char *) sqlite3_column_text(qres, i), "sql_row");
+            SANITIZEUTF8((char *) sqlite3_column_text(qres, i), "sql_row");
           names[i + 1] =
-            SANITIZE((char *) sqlite3_column_name(qres, i), "sql_fieldname");
+            SANITIZEUTF8((char *) sqlite3_column_name(qres, i), "sql_fieldname");
           break;
-#endif
         default:
           /* Not reached, shuts up compiler */
           break;
@@ -586,13 +583,14 @@ COMMAND(cmd_sql)
   int rownum;
   int numfields;
   int numrows;
+  bool free_cell = 0;
   char *cell = NULL;
   char *name = NULL;
   char tbuf[BUFFER_LEN];
   char *tbp;
   ansi_string *as;
   int i;
-
+  
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     notify(executor, T("No SQL database connection."));
     return;
@@ -633,12 +631,10 @@ COMMAND(cmd_sql)
     numrows = PQntuples(qres);
     break;
 #endif
-#ifdef HAVE_SQLITE3
   case SQL_PLATFORM_SQLITE3:
     numfields = sqlite3_column_count(qres);
     numrows = INT_MAX;
     break;
-#endif
   default:
     goto finished;
   }
@@ -652,17 +648,15 @@ COMMAND(cmd_sql)
         break;
     }
 #endif
-#ifdef HAVE_SQLITE3
     if (sql_platform() == SQL_PLATFORM_SQLITE3) {
       int retcode = sqlite3_step(qres);
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(executor, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sqlite3_errstr(retcode));
         break;
       }
     }
-#endif
 
     if (numfields > 0) {
       for (i = 0; i < numfields; i++) {
@@ -679,36 +673,47 @@ COMMAND(cmd_sql)
           name = PQfname(qres, i);
           break;
 #endif
-#ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
-          cell = (char *) sqlite3_column_text(qres, i);
+          cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
           name = (char *) sqlite3_column_name(qres, i);
+	  free_cell = 1;
           break;
-#endif
         default:
           /* Not reached, shuts up compiler */
           break;
         }
         if (cell && *cell) {
-          cell = sql_sanitize(cell);
-          if (strchr(cell, TAG_START) || strchr(cell, ESC_CHAR)) {
+          char *newcell = sql_sanitize(cell);
+          if (strchr(newcell, TAG_START) || strchr(newcell, ESC_CHAR)) {
             /* Either old or new style ANSI string. */
             tbp = tbuf;
-            as = parse_ansi_string(cell);
+            as = parse_ansi_string(newcell);
             safe_ansi_string(as, 0, as->len, tbuf, &tbp);
             *tbp = '\0';
             free_ansi_string(as);
+	    if (free_cell) {
+	      mush_free(cell, "string");
+	      free_cell = 0;
+	    }
             cell = tbuf;
           }
         }
         notify_format(executor, T("Row %d, Field %s: %s"), rownum + 1, name,
                       (cell && *cell) ? cell : "NULL");
+	if (free_cell) {
+	  mush_free(cell, "string");
+	  free_cell = 0;
+	}
       }
-    } else
+    } else {
       notify_format(executor, T("Row %d: NULL"), rownum + 1);
+    }
   }
 
 finished:
+  if (free_cell) {
+    mush_free(cell, "string");
+  }
   free_sql_query(qres);
 }
 
@@ -727,6 +732,7 @@ FUNCTION(fun_mapsql)
   int useable_fields = 0;
   char **fieldnames = NULL;
   char *cell = NULL;
+  bool free_cell = 0;
   PE_REGS *pe_regs = NULL;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
@@ -772,12 +778,10 @@ FUNCTION(fun_mapsql)
     numrows = PQntuples(qres);
     break;
 #endif
-#ifdef HAVE_SQLITE3
   case SQL_PLATFORM_SQLITE3:
     numfields = sqlite3_column_count(qres);
     numrows = INT_MAX;
     break;
-#endif
   default:
     goto finished;
   }
@@ -808,12 +812,10 @@ FUNCTION(fun_mapsql)
         mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
       break;
 #endif
-#ifdef HAVE_SQLITE3
     case SQL_PLATFORM_SQLITE3:
-      fieldnames[i] = mush_strdup(
-        sql_sanitize((char *) sqlite3_column_name(qres, i)), "sql_fieldname");
+      fieldnames[i] =
+	utf8_to_latin1(sql_sanitize((char *) sqlite3_column_name(qres, i)), NULL, "sql_fieldname");
       break;
-#endif
     default:
       break;
     }
@@ -836,7 +838,6 @@ FUNCTION(fun_mapsql)
         break;
     }
 #endif
-#ifdef HAVE_SQLITE3
     if (sql_platform() == SQL_PLATFORM_SQLITE3) {
       int retcode = sqlite3_step(qres);
       if (retcode == SQLITE_DONE)
@@ -844,7 +845,6 @@ FUNCTION(fun_mapsql)
       else if (retcode != SQLITE_ROW)
         goto finished;
     }
-#endif
     if (rownum > 0 || do_fieldnames) {
       safe_str(osep, buff, bp);
     }
@@ -862,16 +862,21 @@ FUNCTION(fun_mapsql)
         cell = PQgetvalue(qres, rownum, i);
         break;
 #endif
-#ifdef HAVE_SQLITE3
       case SQL_PLATFORM_SQLITE3:
-        cell = (char *) sqlite3_column_text(qres, i);
+        cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
+	free_cell = 1;
         break;
-#endif
       default:
         break;
       }
       if (cell && *cell) {
-        cell = sql_sanitize(cell);
+	/* TODO: Fix this mess */
+	char *newcell = sql_sanitize(cell);
+	if (free_cell) {
+	  mush_free(cell, "string");
+	  free_cell = 0;
+	  cell = newcell;
+	}
       }
       if (cell && *cell) {
         pe_regs_setenv(pe_regs, i + 1, cell);
@@ -887,11 +892,16 @@ FUNCTION(fun_mapsql)
     funccount = pe_info->fun_invocations;
   }
 finished:
-  if (pe_regs)
+  if (free_cell) {
+    mush_free(cell, "string");
+  } 
+  if (pe_regs) {
     pe_regs_free(pe_regs);
+  }
   if (fieldnames) {
-    for (i = 0; i < useable_fields; i++)
+    for (i = 0; i < useable_fields; i++) {
       mush_free(fieldnames[i], "sql_fieldname");
+    }
     mush_free(fieldnames, "sql_fieldnames");
   }
   free_sql_query(qres);
@@ -910,7 +920,8 @@ FUNCTION(fun_sql)
   int numfields, numrows;
   ansi_string *as;
   char *qreg_save = NULL;
-
+  bool free_cell = 0;
+  
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -961,12 +972,10 @@ FUNCTION(fun_sql)
     numrows = PQntuples(qres);
     break;
 #endif
-#ifdef HAVE_SQLITE3
   case SQL_PLATFORM_SQLITE3:
     numfields = sqlite3_column_count(qres);
     numrows = INT_MAX;
     break;
-#endif
   default:
     goto finished;
   }
@@ -980,7 +989,6 @@ FUNCTION(fun_sql)
         break;
     }
 #endif
-#ifdef HAVE_SQLITE3
     if (sql_platform() == SQL_PLATFORM_SQLITE3) {
       int retcode = sqlite3_step(qres);
       if (retcode == SQLITE_DONE)
@@ -988,7 +996,6 @@ FUNCTION(fun_sql)
       else if (retcode != SQLITE_ROW)
         break;
     }
-#endif
     if (rownum > 0)
       safe_str(rowsep, buff, bp);
     for (i = 0; i < numfields; i++) {
@@ -1007,11 +1014,10 @@ FUNCTION(fun_sql)
         cell = PQgetvalue(qres, rownum, i);
         break;
 #endif
-#ifdef HAVE_SQLITE3
       case SQL_PLATFORM_SQLITE3:
-        cell = (char *) sqlite3_column_text(qres, i);
+        cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
+	free_cell = 1;
         break;
-#endif
       default:
         break;
       }
@@ -1026,12 +1032,20 @@ FUNCTION(fun_sql)
           free_ansi_string(as);
           cell = tbuf;
         }
-        if (safe_str(cell, buff, bp))
+        if (safe_str(cell, buff, bp)) {
           goto finished; /* We filled the buffer, best stop */
+	}
+      }
+      if (free_cell) {
+	mush_free(cell, "string");
+	free_cell = 0;
       }
     }
   }
 finished:
+  if (free_cell) {
+    mush_free(cell, "string");
+  }
   free_sql_query(qres);
 }
 
@@ -1320,20 +1334,16 @@ penn_pg_free_sql_query(PGresult *qres)
 }
 #endif /* HAVE_POSTGRESQL */
 
-#ifdef HAVE_SQLITE3
-
 static int
 penn_sqlite3_sql_init(void)
 {
-
+  int status;
   sqlite3_connp = NULL;
-  if (sqlite3_open(SQL_DB, &sqlite3_connp) != SQLITE_OK) {
-    do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sql_error());
-    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sql_error());
-    if (sqlite3_connp) {
-      sqlite3_close(sqlite3_connp);
-      sqlite3_connp = NULL;
-    }
+  if ((status = sqlite3_open_v2(SQL_DB, &sqlite3_connp, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sqlite3_errstr(status));
+    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sqlite3_errstr(status));
+    sqlite3_connp = NULL;
     return 0;
   } else {
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
@@ -1357,10 +1367,10 @@ penn_sqlite3_sql_connected(void)
 static sqlite3_stmt *
 penn_sqlite3_sql_query(const char *query, int *affected_rows)
 {
-  int q_len, retcode;
-  const char *eoq = NULL;
+  int q_len, u_len, retcode;
   sqlite3_stmt *statement = NULL;
-
+  char *q_utf8;
+  
   if (!penn_sqlite3_sql_connected()) {
     penn_sqlite3_sql_init();
     if (!penn_sqlite3_sql_connected())
@@ -1368,11 +1378,9 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   }
 
   q_len = strlen(query);
-#if SQLITE3_VERSION_NUMBER >= 30003010
-  retcode = sqlite3_prepare_v2(sqlite3_connp, query, q_len, &statement, &eoq);
-#else
-  retcode = sqlite3_prepare(sqlite3_connp, query, q_len, &statement, &eoq);
-#endif
+  q_utf8 = latin1_to_utf8(query, q_len, &u_len, "string");
+  retcode = sqlite3_prepare_v2(sqlite3_connp, q_utf8, u_len, &statement, NULL);
+  mush_free(q_utf8, "string");
 
   *affected_rows = -1; /* Can't find this out yet */
 
@@ -1387,4 +1395,4 @@ penn_sqlite3_free_sql_query(sqlite3_stmt *stmt)
 {
   sqlite3_finalize(stmt);
 }
-#endif /* HAVE_SQLITE3 */
+

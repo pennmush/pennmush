@@ -27,6 +27,7 @@
 #include "rgb.h"
 #include "strutil.h"
 #include "mushsql.h"
+#include "charconv.h"
 
 #define ANSI_BEGIN "\x1B["
 #define ANSI_FINISH "m"
@@ -231,9 +232,12 @@ FUNCTION(fun_colors)
       lister = prepare_statement(sqldb, "SELECT NAME FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
 				 "colors.list.names_pattern");
       if (lister) {
-	int len;
+	int len, ulen;
+	char *as_utf8;
 	char *converted = glob_to_like(args[0], '$', &len);
-	sqlite3_bind_text(lister, 1, converted, len, free_string);
+	as_utf8 = latin1_to_utf8(converted, len, &ulen, "string");
+	mush_free(converted, "string");
+	sqlite3_bind_text(lister, 1, as_utf8, ulen, free_string);
       }
     } else {
       /* List all colors but xtermXX ones */

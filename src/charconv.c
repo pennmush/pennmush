@@ -6,6 +6,10 @@
 
 #include "copyrite.h"
 
+#ifdef HAVE_ICU
+#include <unicode/ucnv.h>
+#endif
+
 #include "mysocket.h"
 #include "mymalloc.h"
 #include "charconv.h"
@@ -21,6 +25,44 @@
 
 #ifdef HAVE_SSE42
 #include <nmmintrin.h>
+#endif
+
+#ifdef HAVE_ICU
+static UConverter *loc_latin1_cnv = NULL;
+
+static UConverter *
+make_converter(const char *charset)
+{
+  UConverter *cnv;
+  UErrorCode uerr = 0;
+  cnv = ucnv_open(charset, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Unable to open ICU %s converter: %s\n",
+	      charset, u_errorName(uerr));
+    return NULL;
+  }
+
+  uerr = 0;
+  ucnv_setSubstChars(cnv, "?", 1, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Unable to set ICU %s substitution character: %s\n",
+	      charset, u_errorName(uerr));
+    ucnv_close(cnv);
+    return NULL;
+  }
+  return cnv;
+}
+
+static UConverter *
+get_latin1_cnv(void)
+{
+  /* thread local when merging into threaded */
+  if (!loc_latin1_cnv) {
+    loc_latin1_cnv = make_converter("LATIN-1");
+  }
+  return loc_latin1_cnv;
+}
+
 #endif
 
 #if defined(WIN32) && !defined(HAVE_FFS)
@@ -52,8 +94,58 @@ ffs(int i)
  * \param telnet true if we should handle telnet escape sequences.
  * \return a newly allocated utf-8 string.
  */
+char*
+latin1_to_utf8(const char * RESTRICT latin1, int len, int *outlen, const char * RESTRICT name)
+{
+#ifdef HAVE_ICU
+  UErrorCode uerr = 0;
+  int32_t destlen;
+  char *utf8;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  destlen = ucnv_toAlgorithmic(UCNV_UTF8, latin1_cnv, NULL, 0, latin1, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf8 failed (preflight): %s\n",
+	      u_errorName(uerr));
+  }
+
+  utf8 = mush_malloc(destlen + 1, name);
+  uerr = 0;
+  ucnv_toAlgorithmic(UCNV_UTF8, latin1_cnv, utf8, destlen, latin1, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf8 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(utf8, name);
+    return NULL;
+  }
+  utf8[destlen] = '\0';
+  if (outlen) {
+    *outlen = destlen;
+  }
+  return utf8;
+#else
+  return latin1_to_utf8_tn(latin1, len, outlen, 0, name);
+#endif
+}
+
+/**
+ * Convert a latin-1 encoded string to utf-8.
+ *
+ *
+ * \param s the latin-1 string.
+ * \param latin the length of the string.
+ * \param outlen the number of bytes of the returned string, NOT counting the
+ * trailing nul.
+ * \param telnet true if we should handle telnet escape sequences.
+ * \return a newly allocated utf-8 string.
+ */
 char *
-latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet)
+latin1_to_utf8_tn(const char * RESTRICT latin, int len, int *outlen, bool telnet,
+		  const char * RESTRICT name)
 {
   int bytes = 1;
   int outbytes = 0;
@@ -106,7 +198,7 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet)
 #endif
   }
 
-  unsigned char *utf8 = mush_malloc(bytes, "string");
+  unsigned char *utf8 = mush_malloc(bytes, name);
 
   unsigned char *u = utf8;
 
@@ -247,8 +339,42 @@ latin1_to_utf8(const char *latin, int len, int *outlen, bool telnet)
  * \return a newly allocated latin-1 string
  */
 char *
-utf8_to_latin1(const char *utf8, int *outlen)
+utf8_to_latin1(const char * RESTRICT utf8, int *outlen, const char *name)
 {
+#ifdef HAVE_ICU
+  int32_t destlen, len;
+  char *latin1;
+  UErrorCode uerr = 0;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  len = strlen(utf8);
+  destlen = ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, NULL, 0, utf8, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed (preflight): %s\n",
+	      u_errorName(uerr));
+  }
+
+  latin1 = mush_malloc(destlen + 1, name);
+  uerr = 0;
+  ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, latin1, destlen, utf8, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(latin1, name);
+    return NULL;
+  }
+  latin1[destlen] = '\0';
+  if (outlen) {
+    *outlen = destlen;
+  }
+  return latin1;
+  
+#else
+  
   const unsigned char *u = (const unsigned char *) utf8;
   int bytes = 1;
   int ulen = 0;
@@ -298,7 +424,7 @@ utf8_to_latin1(const char *utf8, int *outlen)
   if (outlen)
     *outlen = bytes;
 
-  char *s = mush_malloc(bytes, "string");
+  char *s = mush_malloc(bytes, name);
   unsigned char *p = (unsigned char *) s;
 
 #ifdef HAVE_SSE42
@@ -392,6 +518,7 @@ utf8_to_latin1(const char *utf8, int *outlen)
 
   *p = '\0';
   return s;
+#endif
 }
 
 /**
@@ -403,32 +530,62 @@ bool
 valid_utf8(const char *utf8)
 {
   const unsigned char *u = (const unsigned char *) utf8;
-
-  int nconts = 0;
+  int32_t cp = 0;
+  int nconts = 0, bytes = 0;
 
   while (*u) {
     if (*u < 128) {
-      if (nconts)
+      if (nconts) {
         return 0;
+      }
+      bytes = 1;
+      cp = *u;
     } else if ((*u & 0xF8) == 0xF0) {
-      if (nconts)
+      if (nconts) {
         return 0;
+      }
+      bytes = 4;
+      cp = *u & 0x7;
       nconts = 3;
     } else if ((*u & 0xF0) == 0xE0) {
-      if (nconts)
+      if (nconts) {
         return 0;
+      }
+      bytes = 3;
+      cp = *u & 0xF;
       nconts = 2;
     } else if ((*u & 0xE0) == 0xC0) {
-      if (nconts)
+      if (nconts) {
         return 0;
+      }
+      cp = *u & 0x1F;
+      bytes = 2;
       nconts = 1;
     } else if ((*u & 0xC0) == 0x80) {
-      if (nconts > 0)
+      if (nconts > 0) {
         nconts -= 1;
-      else
+	cp = (cp << 6) | (*u & 0x3F);
+      } else {
         return 0;
+      }
     } else {
       return 0;
+    }
+    if (nconts == 0) {
+      if (cp >= 0xD800 && cp <= 0xDFFF) {
+	/* UTF-16 surrogate pair characters are invalid in UTF-8 */
+	return 0;
+	/* Now catch overlong byte sequences. */
+      } else if (bytes == 2 && !(cp >= 0x80 && cp <= 0x07FF)) {
+	return 0;
+      } else if (bytes == 3 && !(cp >= 0x0800 && cp <= 0xFFFF)) {
+	return 0;
+      } else if (bytes == 4 && !(cp >= 0x10000 && cp <= 0x10FFFF)) {
+	return 0;
+      } else if (cp > 0x10FFFF) {
+	/* Too large for unicode */
+	return 0;
+      }
     }
     u += 1;
   }

@@ -32,7 +32,7 @@ typedef unsigned (__stdcall *thread_func)(void *);
 typedef HANDLE thread_id;
 typedef CRITICAL_SECTION penn_mutex;
 #define THREAD_RETURN                                                   \
-  do { mark_finished(GetCurrentThread())); return 0; } while (0)
+  do { mark_finished(GetCurrentThread()); return 0; } while (0)
 typedef DWORD thread_local_id;
 
 #else
@@ -64,9 +64,9 @@ int tl_set(thread_local_id, void *);
 
 /* Atomic ints */
 
-#if defined(__STDC_NO_ATOMICS__) || defined(_MSC_VER)
+#if defined(__STDC_NO_ATOMICS__) || defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 
 /* Windows MSVC++ functions */
 typedef long atomic_int;

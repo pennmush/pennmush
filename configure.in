@@ -263,6 +263,8 @@ else
 AC_MSG_NOTICE([Skipping SQL server checks])
 fi
 
+AX_CHECK_ICU(50, AC_DEFINE(HAVE_ICU), AC_MSG_RESULT(ICU not found))
+
 ### Functions
 AC_CHECK_FUNCS([textdomain bindtextdomain crypt])
 AC_MSG_CHECKING([for isnormal])
@@ -355,14 +357,13 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
  #include <sys/wait.h>
  #endif
  ])
-
 fi
 
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
 
 # Headers and functions used by Sqlite3
 AC_CHECK_HEADERS([memory.h strings.h])
-AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r gmtime_r isnan malloc_usable_size])
+AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r localtime_s gmtime_r isnan malloc_usable_size])
 AC_FUNC_STRERROR_R
 
 ### Variables, constants, defines and other misc. stuff

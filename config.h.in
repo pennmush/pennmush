@@ -100,6 +100,8 @@
 
 #endif
 
+#undef HAVE_ICU
+
 /* Types */
 
 #undef HAVE__BOOL
@@ -338,6 +340,8 @@ typedef bool _Bool;
 
 #undef HAVE_LOCALTIME_R
 
+#undef HAVE_LOCALTIME_S
+
 #undef HAVE_GMTIME_R
 
 #undef HAVE_STRERROR_R
@@ -366,9 +370,11 @@ typedef bool _Bool;
 #define SQLITE_ENABLE_DBPAGE_VTAB 1
 #define SQLITE_OMIT_DEPRECATED 1
 #define SQLITE_OMIT_LOAD_EXTENSION 1
-#define SQLITE_OMIT_UTF16 1
 #ifdef HAVE_LIBZ
 #define SQLITE_HAVE_ZLIB 1
+#endif
+#ifdef HAVE_ICU
+#define SQLITE_ENABLE_ICU 1
 #endif
 
 /* Variables and defines */

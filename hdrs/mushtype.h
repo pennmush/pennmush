@@ -130,23 +130,17 @@ struct new_pe_info {
   int fun_recursions;  /**< Function recursion depth (%?) */
   int call_depth; /**< Number of times the parser (process_expression()) has
                      recursed */
-
-  Debug_Info *debug_strings; /**< DEBUG information */
   int nest_depth;            /**< Depth of function nesting, for DEBUG */
   int debugging; /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
-
+  int refcount; /**< Number of times this pe_info is being used. > 1 when shared
+                   by sub-queues. free() when at 0 */
+  Debug_Info *debug_strings; /**< DEBUG information */
   PE_REGS *regvals; /**< Saved register values. */
 
   char *cmd_raw; /**< Unevaluated cmd executed (%c) */
   char *cmd_evaled;           /**< Evaluated cmd executed (%u) */
 
   char *attrname; /**< The attr currently being evaluated */
-#ifdef DEBUG
-  char name[BUFFER_LEN]; /**< TEMP: Used for memory-leak checking. Remove me
-                            later!!!! */
-#endif
-  int refcount; /**< Number of times this pe_info is being used. > 1 when shared
-                   by sub-queues. free() when at 0 */
 };
 
 /** \struct mque
@@ -160,6 +154,10 @@ struct mque {
                      initially (%#) */
   dbref caller;   /**< Dbref of the caller, who called/triggered this attribute
                      (%\@) */
+  dbref semaphore_obj; /**< Object this queue was \@wait'd on as a semaphore */
+
+  char
+  *semaphore_attr; /**< Attribute this queue was \@wait'd on as a semaphore */
 
   NEW_PE_INFO *pe_info; /**< New pe_info struct used for this queue entry */
 
@@ -169,14 +167,12 @@ struct mque {
                     \@foo/inplace, etc */
   MQUE *next;    /**< The next queue entry in the linked list */
 
-  dbref semaphore_obj; /**< Object this queue was \@wait'd on as a semaphore */
   char
-    *semaphore_attr; /**< Attribute this queue was \@wait'd on as a semaphore */
+    *action_list; /**< The action list of commands to run in this queue entry */
   time_t
     wait_until; /**< Time (epoch in seconds) this \@wait'd queue entry runs */
   uint32_t pid; /**< This queue's process id */
-  char
-    *action_list; /**< The action list of commands to run in this queue entry */
+
   int queue_type; /**< The type of queue entry, bitwise QUEUE_* values */
   int port; /**< The port/descriptor the command came from, or 0 for queue entry
                not from a player's client */
@@ -297,9 +293,9 @@ struct descriptor_data {
   char ip[101];              /**< IP address of connection source */
   dbref player; /**< Dbref of player associated with connection, or NOTHING if
                    not connected */
+  int output_size;              /**< Size of output left to send */
   char *output_prefix;          /**< Text to show before output */
   char *output_suffix;          /**< Text to show after output */
-  int output_size;              /**< Size of output left to send */
   struct text_queue output;     /**< Output text queue */
   struct text_queue input;      /**< Input text queue */
   char *raw_input;              /**< Pointer to start of next raw input */
@@ -309,9 +305,9 @@ struct descriptor_data {
   int quota;                    /**< Quota of commands allowed */
   int cmds;                     /**< Number of commands sent */
   int hide;                     /**< Hide status */
+  uint32_t conn_flags;        /**< Flags of connection (telnet status, etc.) */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  uint32_t conn_flags;        /**< Flags of connection (telnet status, etc.) */
   unsigned long input_chars;  /**< Characters received */
   unsigned long output_chars; /**< Characters sent */
   int width;                  /**< Screen width */

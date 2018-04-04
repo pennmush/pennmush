@@ -1334,6 +1334,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   ATTR *ptr;
   int result = 0;
   size_t len;
+  extern bool in_wipe;
 
   if (!name || !*name) {
     if (regexp) {
@@ -1359,7 +1360,11 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
                   : Can_Read_Attr(player, thing, ptr)) &&
           (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
                   : atr_wild(name, AL_NAME(ptr)))) {
-        result += func(player, thing, NOTHING, name, ptr, args);
+        int r = func(player, thing, NOTHING, name, ptr, args);
+        result += r;
+        if (r && in_wipe) {
+          ptr -= 1;
+        }
       }
     }
   }

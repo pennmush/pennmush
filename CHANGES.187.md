@@ -32,6 +32,7 @@ Minor Changes
 -------------
 
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
+* Shrink the size of several structs, for memory savings, especially in softcode that queues lots of commands. [SW]
 
 Softcode
 --------

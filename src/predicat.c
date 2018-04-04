@@ -1405,20 +1405,21 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
       strcpy(buff, s);
     }
   } else {
+    int p = 0;
     aval = parse_ansi_string(s);
-    s = aval->text;
-    while (s && *s) {
-      if (!(cs ? strncmp(s, gd->findstr, gd->findlen)
-               : strncasecmp(s, gd->findstr, gd->findlen))) {
+    while (p < aval->len) {
+      if (!(cs ? strncmp(aval->text + p, gd->findstr, gd->findlen)
+               : strncasecmp(aval->text + p, gd->findstr, gd->findlen))) {
         ansi_string *repl;
         matched = 1;
         repl = parse_ansi_string(
-          tprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, s, ANSI_END));
-        ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
+          tprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, aval->text + p,
+                  ANSI_END));
+        ansi_string_replace(&aval, p, gd->findlen, repl);
         free_ansi_string(repl);
-        s += gd->findlen;
+        p += gd->findlen;
       } else {
-        s++;
+        p += 1;
       }
     }
   }
@@ -1467,7 +1468,7 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
       repl = parse_ansi_string(rbuff);
 
       /* Do the replacement */
-      ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0], repl);
+      ansi_string_replace(&orig, offsets[0], offsets[1] - offsets[0], repl);
 
       /* Advance search */
       if (search == offsets[1]) {

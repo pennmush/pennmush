@@ -1125,7 +1125,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     noevtoken = 1;
     p = string + 1;
     string = p;
-    memmove(pe_info->cmd_raw, (char *) pe_info->cmd_raw + 1, BUFFER_LEN - 1);
+    memmove(pe_info->cmd_raw, (char *) pe_info->cmd_raw + 1,
+            strlen(pe_info->cmd_raw));
   }
 
   if (*p == '[') {
@@ -1455,7 +1456,10 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
   }
   *c2 = '\0';
-  mush_strncpy(queue_entry->pe_info->cmd_evaled, commandraw, BUFFER_LEN);
+  if (queue_entry->pe_info->cmd_evaled) {
+    mush_free(queue_entry->pe_info->cmd_evaled, "string");
+  }
+  queue_entry->pe_info->cmd_evaled = mush_strdup(commandraw, "string");
 
   retval = NULL;
   if (cmd->func == NULL) {
@@ -1519,8 +1523,8 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   /* Create a pe_info for the hooks, which share q-registers */
   pe_info = make_pe_info("pe_info-run_command");
-  strcpy(pe_info->cmd_evaled, cmd_evaled);
-  strcpy(pe_info->cmd_raw, cmd_raw);
+  pe_info->cmd_evaled = mush_strdup(cmd_evaled, "string");
+  pe_info->cmd_raw = mush_strdup(cmd_raw, "string");
 
   /* Set each command arg into a named stack variable, for use in hooks */
   if (ap && *ap)
@@ -1950,10 +1954,11 @@ new_hook(struct hook_data *from)
 
   if (from) {
     newhook->obj = from->obj;
-    if (from->attrname)
+    if (from->attrname) {
       newhook->attrname = mush_strdup(from->attrname, "hook.attr");
-    else
+    } else {
       newhook->attrname = NULL;
+    }
     newhook->inplace = from->inplace;
   } else {
     newhook->obj = NOTHING;

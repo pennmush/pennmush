@@ -253,7 +253,7 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
   char *rp, *np = NULL;
   int pe_ret;
   char const *ap;
-  char old_attr[BUFFER_LEN];
+  char *old_attr = NULL;
   int made_pe_info = 0;
   PE_REGS *pe_regs;
   PE_REGS *pe_regs_old;
@@ -266,7 +266,8 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
     pe_info = make_pe_info("pe_info.call_ufun");
     made_pe_info = 1;
   } else {
-    strcpy(old_attr, pe_info->attrname);
+    old_attr = pe_info->attrname;
+    pe_info->attrname = NULL;
   }
 
   pe_regs_old = pe_info->regvals;
@@ -281,17 +282,15 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
 
   pe_regs = pe_regs_localize(pe_info, pe_reg_flags, "call_ufun");
 
-  rp = pe_info->attrname;
   if (*ufun->attrname == '\0') {
-    safe_str("#LAMBDA", pe_info->attrname, &rp);
-    safe_chr('/', pe_info->attrname, &rp);
-    safe_str(ufun->contents, pe_info->attrname, &rp);
+    /* TODO: sprintf_new()? */
+    snprintf(rbuff, sizeof rbuff, "#LAMBDA/%s", ufun->contents);
+    pe_info->attrname = mush_strdup(rbuff, "string");
   } else {
-    safe_dbref(ufun->thing, pe_info->attrname, &rp);
-    safe_chr('/', pe_info->attrname, &rp);
-    safe_str(ufun->attrname, pe_info->attrname, &rp);
+    snprintf(rbuff, sizeof rbuff, "#%d/%s", ufun->thing,
+             ufun->attrname);
+    pe_info->attrname = mush_strdup(rbuff, "string");
   }
-  *rp = '\0';
 
   /* If the user doesn't care about the return of the expression,
    * then use our own rbuff.  */
@@ -339,7 +338,8 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
 
   if (!made_pe_info) {
     /* Restore the old attrname. */
-    strcpy(pe_info->attrname, old_attr);
+    mush_free(pe_info->attrname, "string");
+    pe_info->attrname = old_attr;
   } else {
     free_pe_info(pe_info);
   }

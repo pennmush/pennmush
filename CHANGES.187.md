@@ -29,7 +29,7 @@ Minor Changes
 -------------
 
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
-* Shrink the NEW_PE_INFO struct, for signficant memory savings in softcode that queues lots of commands. [SW]
+* Shrink the size of several structs, for memory savings, especially in softcode that queues lots of commands. [SW]
 
 Softcode
 --------

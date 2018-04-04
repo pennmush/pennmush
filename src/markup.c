@@ -1771,22 +1771,23 @@ parse_ansi_string(const char *source)
   }
 
   /* Allocate and zero it out. */
-  as = mush_calloc(1, sizeof(ansi_string), "ansi_string");
+  len = strlen(source);
+  as = mush_calloc(1, sizeof(ansi_string) + len + 1, "ansi_string");
 
   /* Quick check for no markup */
   if (!has_markup(source)) {
-    as->len = strlen(source);
+    as->len = len;
     if (as->len >= BUFFER_LEN - 1) {
       as->len = BUFFER_LEN - 1;
     }
-    strncpy(as->text, source, as->len);
+    memcpy(as->text, source, len + 1);
     return as;
   }
   as->source = mush_strdup(source, "ansi_string.source");
 
   /* The string has markup. Nuts. */
   as->flags |= AS_HAS_MARKUP;
-  as->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
+  as->markup = mush_calloc(len + 1, sizeof(int16_t), "ansi_string.markup");
 
   c = 0;
   for (s = as->source; *s;) {
@@ -2072,7 +2073,7 @@ flip_ansi_string(ansi_string *as)
   int s;
   int e;
   char tmp;
-  uint16_t mitmp;
+  int16_t mitmp;
 
   for (s = 0, e = as->len - 1; s < e; s++, e--) {
     tmp = as->text[s];
@@ -2114,7 +2115,7 @@ ansi_string_delete(ansi_string *as, int start, int count)
   memmove(as->text + s, as->text + c, l);
   /* Move markup left. */
   if (as->markup) {
-    l *= sizeof(uint16_t);
+    l *= sizeof(int16_t);
     memmove(as->markup + s, as->markup + c, l);
   }
   if (as->flags & AS_HAS_STANDALONE) {
@@ -2139,7 +2140,7 @@ ansi_string_delete(ansi_string *as, int start, int count)
  * \retval 1 failure.
  */
 int
-ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
+ansi_string_insert(ansi_string **dst, int loc, ansi_string *src)
 {
   return ansi_string_replace(dst, loc, 0, src);
 }
@@ -2147,7 +2148,7 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
 /** Replace a portion of an ansi string with
  *  another ansi string, keeping markups as
  *  straight as possible.
- * \param dst ansi_string to insert into.
+ * \param dst Pointer to the ansi_string to insert into.
  * \param loc Location to  insert into, 0-indexed
  * \param count Length of string inside dst to replace
  * \param src ansi_string to insert
@@ -2155,95 +2156,97 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
  * \retval 1 failure.
  */
 int
-ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
+ansi_string_replace(ansi_string **dst, int loc, int count, ansi_string *src)
 {
   int len, oldlen, srclen, srcend, dstleft;
   int idx, sidx, baseidx;
   int i, j;
   int truncated = 0;
   new_markup_information *basemi, *mis, *mi, *mie;
-
-  oldlen = dst->len;
+  
+  oldlen = (*dst)->len;
   srclen = src->len;
 
+  if (loc < 0) {
+    loc = 0;
+  }
+
   if (loc > oldlen) {
-    /* If the dst string isn't long enough, we don't replace, we just
-     * insert at the end of the existing string */
     loc = oldlen;
     count = 0;
+  } else if (loc + count > oldlen) {
+    count = oldlen - loc;
   }
 
-  if (loc + count > oldlen)
-    count = oldlen - loc;
-
-  srcend = loc + srclen;
-  len = oldlen + srclen;
-
+  len = oldlen + srclen - count;
+  srcend = loc + srclen;  
   dstleft = oldlen - (loc + count);
-  len -= count;
 
-  if (len >= BUFFER_LEN) {
-    if (loc >= BUFFER_LEN - 1) {
+  if (len >= oldlen) {
+    ansi_string *bigger = realloc(*dst, sizeof **dst + len + 1);
+    if (!bigger) {
       return 1;
     }
-    len = BUFFER_LEN - 1;
-    truncated = 1;
-    if (srcend >= BUFFER_LEN) {
-      srcend = BUFFER_LEN - 1;
-      srclen = len - loc;
-      dstleft = 0;
-    } else {
-      dstleft = len - srcend;
+    *dst = bigger;
+    if (bigger->markup) {
+      int16_t *newmarkup = realloc(bigger->markup,
+                                   sizeof(int16_t) * (len + 1));
+      if (!newmarkup) {
+        return 1;
+      }
+      bigger->markup = newmarkup;
     }
   }
-
+  
   /* Nothing to copy? */
   if (src->len < 1) {
     if (count > 0) {
-      ansi_string_delete(dst, loc, count);
+      ansi_string_delete(*dst, loc, count);
     }
     if (src->markup && src->flags & AS_HAS_STANDALONE) {
-      dst->flags |= AS_HAS_STANDALONE;
+      (*dst)->flags |= AS_HAS_STANDALONE;
       /* Special case: src has only standalone tags. */
-      if (!dst->markup) {
-        dst->markup =
-          mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
-        for (i = 0; i < dst->len; i++) {
-          dst->markup[i] = NOMARKUP;
+      if (!(*dst)->markup) {
+        (*dst)->markup =
+          mush_calloc(len + 1, sizeof(int16_t), "ansi_string.markup");
+        for (i = 0; i < len; i++) {
+          (*dst)->markup[i] = NOMARKUP;
         }
-        dst->flags |= AS_HAS_MARKUP;
+        (*dst)->flags |= AS_HAS_MARKUP;
       }
       /* Add the incoming markup, but only the standalone. */
       baseidx = NOMARKUP;
       idx = NOMARKUP;
       for (sidx = 0; sidx < src->micount; sidx++) {
-        if (!src->mi[sidx].standalone)
+        if (!src->mi[sidx].standalone) {
           continue;
-        mi = grow_mi(dst, src->mi[sidx].type);
-        mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
-        mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
+        }
+        mi = grow_mi(*dst, src->mi[sidx].type);
+        mi->start_code = as_get_tag(*dst, src->mi[sidx].start_code);
+        mi->end_code = as_get_tag(*dst, src->mi[sidx].end_code);
         mi->standalone = 1;
         mi->start = loc;
 
         mi->parentIdx = idx;
-        if (baseidx < 0)
+        if (baseidx < 0) {
           baseidx = mi->idx;
+        }
         idx = mi->idx;
       }
       /* Now integrate them into the proper location */
       if (baseidx >= 0) {
-        if (loc <= (dst->len - 1)) {
+        if (loc <= (*dst)->len - 1) {
           /* Add the incoming markup to the character at dst->markup[loc] */
-          dst->mi[baseidx].parentIdx = dst->markup[loc];
-          dst->markup[loc] = idx;
-        } else if (dst->len > 0) {
-          dst->mi[baseidx].parentIdx = dst->markup[dst->len - 1];
-          dst->markup[dst->len - 1] = idx;
+          (*dst)->mi[baseidx].parentIdx = (*dst)->markup[loc];
+          (*dst)->markup[loc] = idx;
+        } else if ((*dst)->len > 0) {
+          (*dst)->mi[baseidx].parentIdx = (*dst)->markup[(*dst)->len - 1];
+          (*dst)->markup[(*dst)->len - 1] = idx;
           /* Now ensure all start tags are end tags */
           while (baseidx <= idx) {
-            if (dst->mi[baseidx].start_code) {
-              dst->mi[baseidx].end_code = dst->mi[baseidx].start_code;
-              dst->mi[baseidx].start_code = NULL;
+            if ((*dst)->mi[baseidx].start_code) {
+              (*dst)->mi[baseidx].end_code = (*dst)->mi[baseidx].start_code;
+              (*dst)->mi[baseidx].start_code = NULL;
             }
             baseidx++;
           }
@@ -2260,57 +2263,57 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 
   /* Move the text over. */
   if (dstleft > 0) {
-    memmove(dst->text + srcend, dst->text + loc + count, dstleft);
+    memmove((*dst)->text + srcend, (*dst)->text + loc + count, dstleft);
   }
 
   /* Copy src over */
-  memcpy(dst->text + loc, src->text, srclen);
-  dst->len = len;
-  dst->text[len] = '\0';
+  memcpy((*dst)->text + loc, src->text, srclen);
+  (*dst)->len = len;
+  (*dst)->text[len] = '\0';
 
   /* If there's no markup, we're done. */
-  if (!(src->markup || dst->markup)) {
+  if (!(src->markup || (*dst)->markup)) {
     return truncated;
   }
 
   /* In case of copying from marked up string to non-marked-up. */
-  if (!dst->markup) {
-    dst->markup =
-      mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
+  if (!(*dst)->markup) {
+    (*dst)->markup =
+      mush_calloc(len + 1, sizeof(int16_t), "ansi_string.markup");
     for (i = 0; i < len; i++) {
-      dst->markup[i] = NOMARKUP;
+      (*dst)->markup[i] = NOMARKUP;
     }
-    dst->flags |= AS_HAS_MARKUP;
+    (*dst)->flags |= AS_HAS_MARKUP;
   }
 
   /* Save the markup info pointers for loc and loc-1 */
   mis = NULL;
   mie = NULL;
   if (count == 0) {
-    if (loc > 0 && dst->markup[loc - 1] >= 0) {
-      if (dst->markup[loc] >= 0)
-        mis = &dst->mi[dst->markup[loc - 1]];
+    if (loc > 0 && (*dst)->markup[loc - 1] >= 0) {
+      if ((*dst)->markup[loc] >= 0)
+        mis = &(*dst)->mi[(*dst)->markup[loc - 1]];
     }
-    if (dst->markup[loc] >= 0) {
-      if (dst->markup[loc] >= 0)
-        mie = &dst->mi[dst->markup[loc]];
+    if ((*dst)->markup[loc] >= 0) {
+      if ((*dst)->markup[loc] >= 0)
+        mie = &(*dst)->mi[(*dst)->markup[loc]];
     }
   } else {
     i = loc;
     if (i <= oldlen) {
-      if (dst->markup[i] >= 0)
-        mis = &dst->mi[dst->markup[i]];
+      if ((*dst)->markup[i] >= 0)
+        mis = &(*dst)->mi[(*dst)->markup[i]];
     }
     i = loc + count - 1;
     if (i <= oldlen) {
-      if (dst->markup[i] >= 0)
-        mie = &dst->mi[dst->markup[i]];
+      if ((*dst)->markup[i] >= 0)
+        mie = &(*dst)->mi[(*dst)->markup[i]];
     }
   }
 
   /* Move markup as necessary. */
   if (dstleft > 0) {
-    memmove(dst->markup + srcend, dst->markup + (loc + count),
+    memmove((*dst)->markup + srcend, (*dst)->markup + (loc + count),
             dstleft * sizeof(int16_t));
   }
 
@@ -2324,11 +2327,11 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
         if (basemi->idx == mie->idx) {
           break;
         }
-        basemi = MI_FOR(dst, basemi->parentIdx);
+        basemi = MI_FOR(*dst, basemi->parentIdx);
       }
       if (basemi)
         break;
-      mie = MI_FOR(dst, mie->parentIdx);
+      mie = MI_FOR(*dst, mie->parentIdx);
     }
     /* basemi is either NULL or set at this point. */
   }
@@ -2338,12 +2341,12 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   }
 
   /* Copy the markup info of src over. */
-  idx = dst->micount;
+  idx = (*dst)->micount;
   if (src->markup) {
     for (sidx = 0; sidx < src->micount; sidx++) {
-      mi = grow_mi(dst, src->mi[sidx].type);
-      mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
-      mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
+      mi = grow_mi(*dst, src->mi[sidx].type);
+      mi->start_code = as_get_tag(*dst, src->mi[sidx].start_code);
+      mi->end_code = as_get_tag(*dst, src->mi[sidx].end_code);
       mi->standalone = src->mi[sidx].standalone;
       mi->start = src->mi[sidx].start + loc;
       if (src->mi[sidx].parentIdx >= 0) {
@@ -2354,19 +2357,19 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
 
     /* Copy src's markup over, updating to new idx. */
-    memcpy(dst->markup + loc, src->markup, srclen * sizeof(uint16_t));
+    memcpy((*dst)->markup + loc, src->markup, srclen * sizeof(int16_t));
     for (i = loc, j = 0; i < srcend; i++, j++) {
       if (src->markup[j] >= 0) {
-        dst->markup[i] = src->markup[j] + idx;
+        (*dst)->markup[i] = src->markup[j] + idx;
       } else {
-        dst->markup[i] = baseidx;
+        (*dst)->markup[i] = baseidx;
       }
     }
   } else {
     for (i = loc; i < srcend; i++) {
       if ((i - loc) > (count - 1))
-        dst->markup[i] = (count || (loc > 0 && loc < oldlen))
-                           ? dst->markup[loc + count - 1]
+        (*dst)->markup[i] = (count || (loc > 0 && loc < oldlen))
+          ? (*dst)->markup[loc + count - 1]
                            : NOMARKUP;
     }
   }
@@ -2380,7 +2383,7 @@ scramble_ansi_string(ansi_string *as)
 {
   int i, j;
   char tmp;
-  uint16_t idxtmp;
+  int16_t idxtmp;
 
   for (i = 0; i < as->len; i++) {
     j = get_random_u32(0, as->len - 1);

@@ -2840,7 +2840,7 @@ FUNCTION(fun_regreplace)
             repl = parse_ansi_string(tbuf);
 
             /* Do the replacement */
-            ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0],
+            ansi_string_replace(&orig, offsets[0], offsets[1] - offsets[0],
                                 repl);
 
             /* Advance search */

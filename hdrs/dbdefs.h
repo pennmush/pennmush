@@ -259,7 +259,6 @@ struct object {
   dbref exits;
   dbref next;              /**< pointer to next in contents/exits chain */
   dbref parent;            /**< pointer to parent object */
-  struct lock_list *locks; /**< list of locks set on the object */
   dbref owner;             /**< who controls this object */
   dbref zone;              /**< zone master object number */
   int penn;                /**< number of pennies object contains */
@@ -275,7 +274,8 @@ struct object {
   int type;                /**< Object's type */
   object_flag_type flags;  /**< Pointer to flag bit array */
   object_flag_type powers; /**< Pointer to power bit array */
-  ALIST *list;             /**< Array of attributes on the object */
+  struct lock_list *locks; /**< list of locks set on the object */
+  ALIST *list;             /**< list of attributes on the object */
 };
 
 /** A structure to hold database statistics.
@@ -320,10 +320,10 @@ struct mail {
   dbref to;                /**< Recipient dbref */
   dbref from;              /**< Sender's dbref */
   time_t from_ctime;       /**< Sender's creation time */
-  chunk_reference_t msgid; /**< Message text, compressed */
   time_t time;             /**< Message date/time */
   char *subject;           /**< Message subject, compressed */
   mail_flag read;          /**< Bitflags of message status */
+  chunk_reference_t msgid; /**< Message text, compressed */
 };
 
 typedef struct mail MAIL;

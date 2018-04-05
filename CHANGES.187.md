@@ -48,6 +48,7 @@ Fixes
 * Pass pe_info into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to align() now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 * json_query() didn't understand an action of 'type' as documented. [SW]
+* Assorted help file fixes. [SW]
 
 Documentation
 -------------

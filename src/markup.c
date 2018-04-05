@@ -91,7 +91,11 @@ build_rgb_map(void)
     return;
   }
 
-  if (sqlite3_exec(sqldb, "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL); CREATE INDEX rgb_idx ON colors(rgb); CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
+  if (sqlite3_exec(sqldb,
+                   "BEGIN TRANSACTION;"
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL);"
+                   "CREATE INDEX rgb_idx ON colors(rgb);"
+                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
 		   NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
     sqlite3_free(errmsg);
@@ -110,10 +114,16 @@ build_rgb_map(void)
       status = sqlite3_step(creator);
     } while (is_busy_status(status));
     if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to populate colors table: %s", sqlite3_errstr(status));
+      do_rawlog(LT_ERR, "Unable to populate colors table: %s",
+                sqlite3_errstr(status));
       break;
     }
     sqlite3_reset(creator);
+  }
+  if (status == SQLITE_DONE) {
+    sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
+  } else {
+    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
   close_statement(creator);
 }

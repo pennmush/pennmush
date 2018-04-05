@@ -422,7 +422,7 @@ FUNCTION(fun_str_rep_or_ins)
 
   src = parse_ansi_string(args[srcarg]);
 
-  ansi_string_replace(&dst, start, len, src);
+  ansi_string_replace(dst, start, len, src);
 
   safe_ansi_string(dst, 0, dst->len, buff, bp);
   free_ansi_string(dst);
@@ -1465,14 +1465,14 @@ FUNCTION(fun_edit)
     nlen--;
     repl = parse_ansi_string(args[i + 1]);
     if (strcmp(needle, "$") == 0) {
-      ansi_string_insert(&orig, orig->len, repl);
+      ansi_string_insert(orig, orig->len, repl);
     } else if (strcmp(needle, "^") == 0) {
-      ansi_string_insert(&orig, 0, repl);
+      ansi_string_insert(orig, 0, repl);
     } else if (nlen == 0) {
       /* Annoying. Stick repl between each character */
       /* Since this is inserts, we're working *backwards* */
       for (j = orig->len - 1; j > 0; j--) {
-        ansi_string_insert(&orig, j, repl);
+        ansi_string_insert(orig, j, repl);
       }
     } else {
       search = orig->text;
@@ -1481,7 +1481,7 @@ FUNCTION(fun_edit)
         if ((ptr - orig->text) > orig->len)
           break;
         /* Perform the replacement */
-        if (ansi_string_replace(&orig, ptr - orig->text, nlen, repl))
+        if (ansi_string_replace(orig, ptr - orig->text, nlen, repl))
           break;
         search = ptr + repl->len;
       }
@@ -1621,7 +1621,7 @@ FUNCTION(fun_wrap)
       /* word doesn't fit on one line, so cut it */
       if (hyphen == NULL)
         hyphen = parse_ansi_string("-");
-      if (!ansi_string_insert(&as, pstr - as->text + linewidth - 1, hyphen))
+      if (!ansi_string_insert(as, pstr - as->text + linewidth - 1, hyphen))
         pend++;
       safe_ansi_string(as, pstr - as->text, linewidth, buff, bp);
       pstr += linewidth; /* move to start of next line */

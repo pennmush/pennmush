@@ -728,7 +728,7 @@ ansi_name(dbref thing, bool accents, bool *had_moniker, int maxlen)
   }
   as = parse_ansi_string(format);
   aname = parse_ansi_string(name);
-  ansi_string_replace(&as, 0, BUFFER_LEN, aname);
+  ansi_string_replace(as, 0, BUFFER_LEN, aname);
   np = name;
   safe_ansi_string(as, 0, (maxlen > 0 ? maxlen : as->len), name, &np);
   *np = '\0';

@@ -1075,7 +1075,7 @@ regedit_helper(dbref player, dbref thing,
         repl = parse_ansi_string(tbuf);
 
         /* Do the replacement */
-        ansi_string_replace(&haystack, offsets[0], offsets[1] - offsets[0],
+        ansi_string_replace(haystack, offsets[0], offsets[1] - offsets[0],
                             repl);
         if (!ansi_long_flag) {
           if (repl->len) {
@@ -1085,13 +1085,13 @@ regedit_helper(dbref player, dbref thing,
             safe_str(ANSI_END, tbuf1, &tbufp);
             *tbufp = '\0';
             hilite = parse_ansi_string(tbuf1);
-            if (ansi_string_replace(&display_str, offsets[0],
+            if (ansi_string_replace(display_str, offsets[0],
                                     offsets[1] - offsets[0], hilite)) {
               ansi_long_flag = 1;
             }
             free_ansi_string(hilite);
           } else {
-            if (ansi_string_replace(&display_str, offsets[0],
+            if (ansi_string_replace(display_str, offsets[0],
                                     offsets[1] - offsets[0], repl)) {
               ansi_long_flag = 1;
             }

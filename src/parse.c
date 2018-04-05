@@ -1694,6 +1694,16 @@ free_pe_info(NEW_PE_INFO *pe_info)
     pe_regs_free(pe_regs);
   }
 
+  if(pe_info->cmd_raw) {
+    mush_free(pe_info->cmd_raw, "string");
+  }
+  if (pe_info->cmd_evaled) {
+    mush_free(pe_info->cmd_evaled, "string");
+  }
+  if (pe_info->attrname) {
+    mush_free(pe_info->attrname, "string");
+  }
+  
 #ifdef DEBUG
   mush_free(pe_info, pe_info->name);
 #else
@@ -1727,12 +1737,12 @@ make_pe_info(char *name __attribute__((__unused__)))
   pe_info->debugging = 0;
   pe_info->nest_depth = 0;
 
-  *pe_info->attrname = '\0';
+  pe_info->attrname = NULL;
 
   pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "make_pe_info");
 
-  memset(pe_info->cmd_raw, 0, sizeof pe_info->cmd_raw);
-  *pe_info->cmd_evaled = '\0';
+  pe_info->cmd_raw = NULL;
+  pe_info->cmd_evaled = NULL;
 
   pe_info->refcount = 1;
 #ifdef DEBUG
@@ -1819,8 +1829,12 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
       pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
     }
     if (flags & PE_INFO_COPY_CMDS) {
-      strcpy(pe_info->cmd_raw, old_pe_info->cmd_raw);
-      strcpy(pe_info->cmd_evaled, old_pe_info->cmd_evaled);
+      if (old_pe_info->cmd_raw) {
+        pe_info->cmd_raw = mush_strdup(old_pe_info->cmd_raw, "string");
+      }
+      if (old_pe_info->cmd_evaled) {
+        pe_info->cmd_evaled = mush_strdup(old_pe_info->cmd_evaled, "string");
+      }
     }
   }
 
@@ -2097,7 +2111,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
        * function,
        * added 17 Sep 2012. Remove when this behaviour is removed. */
       else if (tflags & PT_NOT_COMMA) {
-        if (pe_info && *pe_info->attrname)
+        if (pe_info && pe_info->attrname)
           notify_format(Owner(executor),
                         "Unescaped comma in final arg of %s "
                         "by #%d in %s. This behavior is "

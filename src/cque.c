@@ -271,8 +271,9 @@ free_qentry(MQUE *entry)
   free_pe_info(entry->pe_info);
 
   /* Shouldn't happen, but to be safe... */
-  if (entry->save_attrname)
-    mush_free(entry->save_attrname, "mque.attrname");
+  if (entry->save_attrname) {
+    mush_free(entry->save_attrname, "string");
+  }
 
   if (entry->pid) { /* INPLACE queue entries have no pid */
     mutex_lock(&queue_mutex);
@@ -280,8 +281,9 @@ free_qentry(MQUE *entry)
     mutex_unlock(&queue_mutex);
   }
 
-  if (entry->regvals) /* Nested pe_regs */
+  if (entry->regvals) { /* Nested pe_regs */
     pe_regs_free(entry->regvals);
+  }
 
    mush_free(entry, "mque");
 }
@@ -700,10 +702,14 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   }
 
   if (fromattr) {
-    if (queue_type & QUEUE_INPLACE)
+    if (queue_type & QUEUE_INPLACE && pe_info->attrname) {
       queue_entry->save_attrname =
-        mush_strdup(pe_info->attrname, "mque.attrname");
-    strcpy(queue_entry->pe_info->attrname, fromattr);
+        mush_strdup(pe_info->attrname, "string");
+    } 
+    if (queue_entry->pe_info->attrname) {
+      mush_free(queue_entry->pe_info->attrname, "string");
+    }
+    queue_entry->pe_info->attrname = mush_strdup(fromattr, "string");
   }
 
   if (parent_queue && (parent_queue->queue_type & QUEUE_EVENT))
@@ -1139,15 +1145,25 @@ do_entry(MQUE *entry, int include_recurses)
     start_cpu_timer();
     /* These vars are used in report() if mush_panic() is called, to print
      * useful debug info */
-    strcpy(report_cmd, entry->pe_info->cmd_raw);
+    if (entry->pe_info->cmd_raw) {
+      strcpy(report_cmd, entry->pe_info->cmd_raw);
+    } else {
+      report_cmd[0] = '\0';
+    }
     report_dbref = executor;
   }
 
   while (!cpu_time_limit_hit && *s) {
-    r = entry->pe_info->cmd_raw;
-    process_expression(entry->pe_info->cmd_raw, &r, &s, executor, entry->caller,
+    char rbuff[BUFFER_LEN];
+    r = rbuff;
+    process_expression(rbuff, &r, &s, executor, entry->caller,
                        entry->enactor, PE_NOTHING, pt_flag, entry->pe_info);
     *r = '\0';
+    if (entry->pe_info->cmd_raw) {
+      mush_free(entry->pe_info->cmd_raw, "string");
+    }
+    entry->pe_info->cmd_raw = mush_strdup(rbuff, "string");
+
     if (*s == ';')
       s++;
     /* process_command() destructively modifies the cmd, so we need to copy it
@@ -1159,6 +1175,7 @@ do_entry(MQUE *entry, int include_recurses)
     } else {
       strcpy(tbuf, entry->pe_info->cmd_raw);
     }
+
     process_command(executor, tbuf, entry);
     while (entry->inplace) {
       tmp = entry->inplace;
@@ -1209,8 +1226,10 @@ do_entry(MQUE *entry, int include_recurses)
           }
         }
         if (tmp->save_attrname) {
-          strcpy(tmp->pe_info->attrname, tmp->save_attrname);
-          mush_free(tmp->save_attrname, "mque.attrname");
+          if (tmp->pe_info->attrname) {
+            mush_free(tmp->pe_info->attrname, "string");
+          }
+          tmp->pe_info->attrname = tmp->save_attrname;
           tmp->save_attrname = NULL;
         }
       }

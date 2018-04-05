@@ -2565,7 +2565,8 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
       }
     }
   }
-  if ((start >= as->len) || (start < 0) || (len < 1)) {
+  if (start >= as->len || start < 0 || len < 1) {
+    return 0;
   }
 
   if (start + len >= as->len) {

@@ -1204,7 +1204,10 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
 
   cptr = command_parse(executor, command, queue_entry);
   if (cptr) {
-    mush_strncpy(queue_entry->pe_info->cmd_evaled, cptr, BUFFER_LEN);
+    if (queue_entry->pe_info->cmd_evaled) {
+      mush_free(queue_entry->pe_info->cmd_evaled, "string");
+    }
+    queue_entry->pe_info->cmd_evaled = mush_strdup(cptr, "string");
     a = 0;
     if (!Gagged(executor)) {
 
@@ -2655,7 +2658,7 @@ extern PTAB ptab_command;
 extern PTAB ptab_attrib;
 extern PTAB ptab_flag;
 extern intmap *queue_map, *descs_by_fd, *rgb_to_name;
-#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
 extern intmap *watchtable;
 #endif
 
@@ -2715,7 +2718,7 @@ do_list_memstats(dbref player)
   mutex_lock(&desc_mutex);
   im_stats(player, descs_by_fd, "Connections");
   mutex_unlock(&desc_mutex);
-#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
   im_stats(player, watchtable, "Inotify");
 #endif
   if (rgb_to_name)

@@ -39,6 +39,7 @@
 #cmakedefine TIME_WITH_SYS_TIME
 
 /* Functions */
+#cmakedefine HAVE_ARC4RANDOM_BUF
 #cmakedefine HAVE_BINDTEXTDOMAIN
 #cmakedefine HAVE_CBRT
 #cmakedefine HAVE_CRYPT

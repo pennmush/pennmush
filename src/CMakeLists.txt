@@ -169,6 +169,7 @@ endif()
 
 # Functions
 message(STATUS "Checking for available system functions.")
+check_symbol_exists(arc4random_buf, "stdlib.h", HAVE_ARC4RANDOM_BUF)
 check_symbol_exists(bindtextdomain "libintl.h" HAVE_BINDTEXTDOMAIN)
 check_symbol_exists(cbrt "math.h" HAVE_CBRT)
 check_symbol_exists(crypt "unistd.h;crypt.h" HAVE_CRYPT)

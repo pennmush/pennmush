@@ -189,6 +189,7 @@ typedef struct _new_markup_information {
 
 /** A string, with ansi attributes broken out from the text */
 typedef struct _ansi_string {
+  char text[BUFFER_LEN];      /**< Text of the string */
   int len;                    /**< Length of the string */
   char *source;               /**< Original source of string */
   uint32_t flags;             /**< Bitwise or of AS_<foo> flags */
@@ -197,7 +198,6 @@ typedef struct _ansi_string {
   StrTree *tags;              /**< Tags. */
   int micount;                /**< # of used markup information in ->mi */
   int misize;                 /**< Size of the malloc in ->mi */
-  char text[];      /**< Text of the string */
 } ansi_string;
 
 #define AS_Text(as) (as->text) /**< Raw text in an ansi_string */
@@ -228,8 +228,8 @@ int safe_ansi_string(ansi_string *as, int start, int len, char *buff,
 /* Modifying ansi strings */
 ansi_string *real_parse_ansi_string(const char *src) __attribute_malloc__;
 int ansi_string_delete(ansi_string *as, int start, int count);
-int ansi_string_insert(ansi_string **dst, int loc, ansi_string *src);
-int ansi_string_replace(ansi_string **dst, int loc, int size, ansi_string *src);
+int ansi_string_insert(ansi_string *dst, int loc, ansi_string *src);
+int ansi_string_replace(ansi_string *dst, int loc, int size, ansi_string *src);
 void scramble_ansi_string(ansi_string *as);
 void optimize_ansi_string(ansi_string *as);
 

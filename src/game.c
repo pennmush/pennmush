@@ -1182,7 +1182,10 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
 
   cptr = command_parse(executor, command, queue_entry);
   if (cptr) {
-    mush_strncpy(queue_entry->pe_info->cmd_evaled, cptr, BUFFER_LEN);
+    if (queue_entry->pe_info->cmd_evaled) {
+      mush_free(queue_entry->pe_info->cmd_evaled, "string");
+    }
+    queue_entry->pe_info->cmd_evaled = mush_strdup(cptr, "string");
     a = 0;
     if (!Gagged(executor)) {
 

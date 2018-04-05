@@ -1584,15 +1584,18 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   prev = &used_list;
 
   pe_info = make_pe_info("pe_info-atr_comm_match");
-  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw)
-    strcpy(pe_info->cmd_raw, from_queue->pe_info->cmd_raw);
-  else
-    strcpy(pe_info->cmd_raw, str);
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw) {
+    pe_info->cmd_raw = mush_strdup(from_queue->pe_info->cmd_raw, "string");
+  } else {
+    pe_info->cmd_raw = mush_strdup(str, "string");
+  }
 
-  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled)
-    strcpy(pe_info->cmd_evaled, from_queue->pe_info->cmd_evaled);
-  else
-    strcpy(pe_info->cmd_evaled, str);
+  if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled) {
+    pe_info->cmd_evaled = mush_strdup(from_queue->pe_info->cmd_evaled,
+                                      "string");
+  } else {
+    pe_info->cmd_evaled = mush_strdup(str, "string");
+  }
 
   skipcount = 0;
 
@@ -1852,26 +1855,30 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
         : wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
                             match_space, match_space_len, pe_regs,
                             PE_REGS_ARG)) {
-    char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
+    char *save_cmd_raw = NULL, *save_cmd_evaled = NULL;
     NEW_PE_INFO *pe_info;
 
     if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       pe_info = from_queue->pe_info;
       /* Save and reset %c/%u */
-      strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
-      strcpy(save_cmd_evaled, from_queue->pe_info->cmd_evaled);
+      save_cmd_raw = pe_info->cmd_raw;
+      pe_info->cmd_raw = NULL;
+      save_cmd_evaled =  pe_info->cmd_evaled;
+      pe_info->cmd_evaled = NULL;
     } else {
       pe_info = make_pe_info("pe_info-one_comm_match");
     }
-    strcpy(pe_info->cmd_raw, str);
-    strcpy(pe_info->cmd_evaled, str);
+    pe_info->cmd_raw = mush_strdup(str, "string");
+    pe_info->cmd_evaled = mush_strdup(str, "string");
     if (eval_lock_clear(player, thing, Command_Lock, pe_info) &&
         eval_lock_clear(player, thing, Use_Lock, pe_info))
       success = 1;
     if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       /* Restore */
-      strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
-      strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
+      mush_free(pe_info->cmd_raw, "string");
+      mush_free(pe_info->cmd_evaled, "string");
+      pe_info->cmd_raw = save_cmd_raw;
+      pe_info->cmd_evaled = save_cmd_evaled;
     } else {
       free_pe_info(pe_info);
     }

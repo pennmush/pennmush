@@ -30,6 +30,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "mushsql.h"
 
 HASHTAB help_files; /**< Help filenames hash table */
 
@@ -60,7 +61,7 @@ help_indx *topics = NULL; /**< Pointer to linked list of topic indexes */
 unsigned num_topics = 0;  /**< Number of topics loaded */
 unsigned top_topics = 0;  /**< Maximum number of topics loaded */
 
-static void write_topic(long int p);
+static void write_topic(long int p, help_file *);
 
 extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
@@ -262,13 +263,15 @@ COMMAND(cmd_helpcmd)
   } else {
     help_indx *entry = NULL;
     int offset = 0;
+
     entry = help_find_entry(h, arg_left);
     if (entry) {
       do_new_spitfile(executor, arg_left, h);
     } else if (is_index_entry(arg_left, &offset)) {
       char *entries = entries_from_offset(h, offset);
       if (!entries) {
-        notify_format(executor, T("No entry for '%s'."), strupper(arg_left));
+          notify_format(executor, T("No entry for '%s'."),
+                        strupper(arg_left));
         return;
       }
       notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
@@ -322,11 +325,18 @@ COMMAND(cmd_helpcmd)
       }
       *pp = '\0';
       entries = list_matching_entries(pattern, h, &len, 1);
-      if (len == 0)
-        notify_format(executor, T("No entry for '%s'"), arg_left);
-      else if (len == 1)
+      if (len == 0) {
+        char *suggestion = suggest_name(arg_left, h->command);
+        if (suggestion) {
+          notify_format(executor, "No %s entry for '%s'. Did you mean '%s'?",
+                        h->command, arg_left, suggestion);
+          mush_free(suggestion, "string");
+        } else {
+          notify_format(executor, T("No entry for '%s'"), arg_left);
+        }
+      } else if (len == 1) {
         do_new_spitfile(executor, *entries, h);
-      else {
+      } else {
         char buff[BUFFER_LEN];
         char *bp;
         bp = buff;
@@ -345,6 +355,7 @@ COMMAND(cmd_helpcmd)
 void
 init_help_files(void)
 {
+  init_vocab();
   hashinit(&help_files, 8);
   help_init = 1;
 }
@@ -577,7 +588,7 @@ help_find_entry(help_file *help_dat, const char *the_topic)
 }
 
 static void
-write_topic(long int p)
+write_topic(long int p, help_file *h)
 {
   tlist *cur, *nextptr;
   help_indx *temp;
@@ -596,6 +607,7 @@ write_topic(long int p)
     temp = &topics[num_topics++];
     temp->pos = p;
     strcpy(temp->topic, cur->topic);
+    add_vocab(temp->topic, h->command);
     free(cur);
   }
   top = NULL;
@@ -622,7 +634,8 @@ help_build_index(help_file *h, int restricted)
   char line[LINE_SIZE + 1];
   FILE *rfp;
   tlist *cur;
-
+  sqlite3 *sqldb;
+  
   /* Quietly ignore null values for the file */
   if (!h || !h->file)
     return;
@@ -642,9 +655,12 @@ help_build_index(help_file *h, int restricted)
   bigpos = 0L;
   lineno = 0;
   ntopics = 0;
-
   in_topic = 0;
 
+  sqldb = get_shared_db();
+  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
+  delete_vocab_cat(h->command);
+  
 #ifdef HAVE_POSIX_FADVISE
   posix_fadvise(fileno(rfp), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
@@ -658,6 +674,7 @@ help_build_index(help_file *h, int restricted)
         do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",
                   h->file);
         fclose(rfp);
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return;
       }
       if (isspace(line[0]))
@@ -666,6 +683,7 @@ help_build_index(help_file *h, int restricted)
         do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",
                   h->file);
         fclose(rfp);
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return;
       }
     }
@@ -674,7 +692,7 @@ help_build_index(help_file *h, int restricted)
       if (!in_topic) {
         /* Finish up last entry */
         if (ntopics > 1) {
-          write_topic(pos);
+          write_topic(pos, h);
         }
         in_topic = true;
       }
@@ -710,7 +728,7 @@ help_build_index(help_file *h, int restricted)
   }
 
   /* Handle last topic */
-  write_topic(pos);
+  write_topic(pos, h);
   if (topics)
     qsort(topics, num_topics, sizeof(help_indx), topic_cmp);
   h->entries = num_topics;
@@ -718,6 +736,7 @@ help_build_index(help_file *h, int restricted)
   add_check("help_index");
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
+  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
   return;
 }
 

@@ -2626,10 +2626,15 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         eflags &= ~PE_BUILTINONLY; /* Only applies to the outermost call */
         if (!fp) {
           if (eflags & PE_FUNCTION_MANDATORY) {
+            char *suggestion;
             *bp = startpos;
             safe_str(T("#-1 FUNCTION ("), buff, bp);
             safe_str(name, buff, bp);
             safe_str(T(") NOT FOUND"), buff, bp);
+            suggestion = suggest_name(name);
+            if (suggestion) {
+              safe_format(buff, bp, " DID YOU MEAN '%s'", suggestion);
+            }
             if (process_expression(name, &tp, str, executor, caller, enactor,
                                    PE_NOTHING, PT_PAREN, pe_info))
               retval = 1;

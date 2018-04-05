@@ -29,6 +29,8 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "mushsql.h"
+#include "log.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -44,6 +46,87 @@ static FUN *any_func_hash_lookup(const char *name);
 HASHTAB htab_function;      /**< Function hash table */
 HASHTAB htab_user_function; /**< User-defined function hash table */
 slab *function_slab;        /**< slab for 'struct fun' allocations */
+static bool functable = 0;
+
+static void
+insert_functable(const char *name)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *inserter;
+
+  if (!functable) {
+    return;
+  }
+  sqldb = get_shared_db();
+  inserter = prepare_statement(sqldb, "INSERT INTO functions VALUES (UPPER(?))",
+                               "function.insert");
+  if (inserter) {
+    int status;
+    sqlite3_bind_text(inserter, 1, name, strlen(name), SQLITE_TRANSIENT);
+    do {
+      status = sqlite3_step(inserter);
+    } while (is_busy_status(status));
+    sqlite3_reset(inserter);
+  }
+}
+
+
+static void
+delete_functable(const char *name)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *deleter;
+
+  if (!functable) {
+    return;
+  }
+  sqldb = get_shared_db();
+  deleter = prepare_statement(sqldb,
+                              "DELETE FROM functions WHERE name = UPPER(?)",
+                              "function.delete");
+  if (deleter) {
+    int status;
+    sqlite3_bind_text(deleter, 1, name, strlen(name), SQLITE_TRANSIENT);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    sqlite3_reset(deleter);
+  }
+}
+
+char *
+suggest_name(const char *badname)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+  int status;
+  char *suggestion = NULL;
+
+  if (!functable) {
+    return NULL;
+  }
+
+  sqldb = get_shared_db();
+  finder = prepare_statement(sqldb,
+                             "SELECT word FROM funcsuggest WHERE word MATCH UPPER(?) AND top=1",
+                             "function.suggest");
+  if (!finder) {
+    return NULL;
+  }
+
+  sqlite3_bind_text(finder, 1, badname, strlen(badname), SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      suggestion = mush_strdup((const char *)sqlite3_column_text(finder, 0),
+                               "string");
+      break;
+    }
+  } while (is_busy_status(status));
+  sqlite3_reset(finder);
+
+  return suggestion;
+}
 
 /* -------------------------------------------------------------------------*
  * Utilities.
@@ -869,6 +952,7 @@ builtin_func_hash_lookup(const char *name)
 static void
 func_hash_insert(const char *name, FUN *func)
 {
+  insert_functable(name);
   hashadd(name, (void *) func, &htab_function);
 }
 
@@ -881,6 +965,23 @@ init_func_hashtab(void)
 {
   FUNTAB *ftp;
   FUNALIAS *fa;
+  sqlite3 *sqldb;
+  char *errmsg;
+
+  sqldb = get_shared_db();
+  if (sqldb) {
+    if (sqlite3_exec(sqldb,
+                     "BEGIN TRANSACTION;"
+                     "CREATE TABLE functions(name TEXT NOT NULL PRIMARY KEY);"
+                     "CREATE VIRTUAL TABLE funcsuggest USING spellfix1",
+                     NULL, NULL, &errmsg) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to create function table: %s", errmsg);
+      sqlite3_free(errmsg);
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, &errmsg);
+    } else {
+      functable = 1;
+    }
+  }
 
   hashinit(&htab_function, 512);
   hash_init(&htab_user_function, 32, delete_function);
@@ -892,6 +993,20 @@ init_func_hashtab(void)
     alias_function(NOTHING, fa->name, fa->alias);
   }
   local_functions();
+
+  if (functable) {
+    if (sqlite3_exec(sqldb,
+                     "INSERT INTO funcsuggest(word) SELECT name FROM functions;"
+                     "CREATE TRIGGER tr_func_i AFTER INSERT ON functions BEGIN INSERT INTO funcsuggest(word) VALUES (new.name); END;"
+                     "CREATE TRIGGER tr_func_d AFTER DELETE ON functions BEGIN DELETE FROM funcsuggest WHERE word = old.name; END;"
+                     "COMMIT TRANSACTION",
+                     NULL, NULL, &errmsg) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to populate funcsuggest table: %s", errmsg);
+      sqlite3_free(errmsg);
+      functable = 0;
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    }
+  }
 }
 
 /** Function initization to perform after reading the config file.
@@ -1052,6 +1167,7 @@ function_add(const char *name, function_func fun, int minargs, int maxargs,
   fp->maxargs = maxargs;
   fp->flags = FN_BUILTIN | ftype;
   func_hash_insert(name, fp);
+
   return fp;
 }
 
@@ -1605,6 +1721,7 @@ do_function_delete(dbref player, char *name)
     if (strcasecmp(name, fp->name)) {
       /* Function alias */
       hashdelete(strupper(name), &htab_function);
+      delete_functable(fp->name);
       notify(player, T("Function alias deleted."));
       return;
     } else if (fp->flags & FN_CLONE) {
@@ -1613,6 +1730,7 @@ do_function_delete(dbref player, char *name)
       mush_free((char *) fp->name, "function.name");
       slab_free(function_slab, fp);
       hashdelete(safename, &htab_function);
+      delete_functable(safename);
       notify(player, T("Function clone deleted."));
       return;
     }
@@ -1631,6 +1749,7 @@ do_function_delete(dbref player, char *name)
   }
   /* Remove it from the hash table */
   hashdelete(fp->name, &htab_user_function);
+  delete_functable(fp->name);
   notify(player, T("Function deleted."));
 }
 

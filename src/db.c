@@ -1999,6 +1999,9 @@ close_shared_db(void)
   }
 }
 
+int sqlite3_spellfix_init(sqlite3 *db, char **pzErrMsg,
+                          const sqlite3_api_routines *pApi);
+
 /** Open a new connection to a sqlite3 database.
  * If given a NULL file, returns a NEW in-memory database.
  * A zero-length file, returns a new temporary-file based database.
@@ -2036,6 +2039,9 @@ open_sql_db(const char *name, bool nocreate)
     do_rawlog(LT_ERR, "Unable to attach TRAILNUMBERS collator to database %s: %s",
 	      *name ? name : ":unnamed:", sqlite3_errstr(status));
   }
+
+  sqlite3_spellfix_init(db, NULL, NULL);
+
   return db;
 }
 

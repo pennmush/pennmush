@@ -96,7 +96,7 @@ add_vocab(const char *name, const char *category)
     return;
   }
 
-  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT UPPER(?), suggest_keys.id FROM suggest_keys where suggest_keys.cat = ?",
+  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT LOWER(?), suggest_keys.id FROM suggest_keys where suggest_keys.cat = ?",
                                "suggest.insert");
   if (inserter) {
     int status;
@@ -155,7 +155,7 @@ delete_vocab(const char *name, const char *category)
   }
 
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM suggest WHERE word = UPPER(?) AND langid = ?",
+                              "DELETE FROM suggest WHERE word = LOWER(?) AND langid = ?",
                               "suggest.delete");
   if (deleter) {
     int status;
@@ -219,7 +219,7 @@ suggest_name(const char *badname, const char *category)
   }
 
   finder = prepare_statement(sqldb,
-                             "SELECT word FROM suggest WHERE word MATCH ? AND langid = ? AND top = 1",
+                             "SELECT UPPER(word) FROM suggest WHERE word MATCH ? AND langid = ? AND top = 1",
                              "suggest.find1");
   if (!finder) {
     return NULL;
@@ -767,7 +767,7 @@ FUNTAB flist[] = {
   {"STRCAT", fun_strcat, 1, INT_MAX, FN_REG},
   {"STRINGSECS", fun_stringsecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"STRINSERT", fun_str_rep_or_ins, 3, -3, FN_REG},
-  {"STRIPACCENTS", fun_stripaccents, 1, 1, FN_REG},
+  {"STRIPACCENTS", fun_stripaccents, 1, 2, FN_REG},
   {"STRIPANSI", fun_stripansi, 1, -1, FN_REG | FN_STRIPANSI},
   {"STRLEN", fun_strlen, 1, -1, FN_REG},
   {"STRMATCH", fun_strmatch, 2, 3, FN_REG},

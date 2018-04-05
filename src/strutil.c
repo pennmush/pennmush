@@ -1812,6 +1812,8 @@ glob_to_like(const char *orig, char esc, int *len)
       safe_chr(*orig, like, &lbp);
     } else if (*orig == '*') {
       safe_chr('%', like, &lbp);
+    } else if (*orig == '?') {
+      safe_chr('_', like, &lbp);
     } else {
       safe_chr(*orig, like, &lbp);
     }

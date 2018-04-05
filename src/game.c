@@ -2603,8 +2603,9 @@ do_list_memstats(dbref player)
     if (statter) {
       int status;
       notify(player, "Prepared query stats");
-      notify_format(player, "%-30s %-7s %-7s %-7s %-7s %-7s %-7s %s",
-                    "SQL", "nscan", "nsort", "naidx", "nstep", "reprep", "run", "memory");
+      notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s",
+                    "SQL", "nscan", "nsort", "naidx", "nstep",
+                    "reprep", "run", "memory");
       do {
         status = sqlite3_step(statter);
         if (status == SQLITE_ROW) {
@@ -2622,7 +2623,7 @@ do_list_memstats(dbref player)
           run = sqlite3_column_int(statter, 6);
           mem = sqlite3_column_int(statter, 7);
 
-          notify_format(player, "%-.27s... %-7d %-7d %-7d %-7d %-7d %-7d %d",
+          notify_format(player, "%-.27s... %6d %5d %5d %9d %6d %7d %6d",
                         query, nscan, nsort, naidx, nstep, reprep, run, mem);
         }
       } while (status == SQLITE_ROW || is_busy_status(status));

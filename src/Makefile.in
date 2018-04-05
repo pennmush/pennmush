@@ -44,7 +44,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	match.o memcheck.o move.o mycrypt.o mymalloc.o mysocket.o	\
 	myrlimit.o myssl.o notify.o parse.o pcg_basic.o player.o	\
 	plyrlist.o predicat.o privtab.o info_master.o ptab.o rob.o	\
-	services.o set.o sig.o sort.o speech.o spellfix.c sql.o		\
+	services.o set.o sig.o sort.o speech.o spellfix.o sql.o		\
 	sqlite3.o ssl_master.o strdup.o strtree.o strutil.o tables.o	\
 	timer.o tz.o unparse.o utils.o version.o wait.o warnings.o	\
 	websock.o wild.o wiz.o
@@ -888,6 +888,10 @@ function.o: ../hdrs/mymalloc.h
 function.o: ../hdrs/parse.h
 function.o: ../hdrs/sort.h
 function.o: ../hdrs/strutil.h
+function.o: ../hdrs/mushsql.h
+function.o: ../hdrs/sqlite3.h
+function.o: ../hdrs/log.h
+function.o: ../hdrs/bufferq.h
 function.o: ../hdrs/websock.h
 fundb.o: ../config.h
 fundb.o: ../confmagic.h
@@ -921,6 +925,26 @@ fundb.o: ../hdrs/mymalloc.h
 fundb.o: ../hdrs/parse.h
 fundb.o: ../hdrs/privtab.h
 fundb.o: ../hdrs/strutil.h
+funjson.o: ../config.h
+funjson.o: ../confmagic.h
+funjson.o: ../options.h
+funjson.o: ../hdrs/copyrite.h
+funjson.o: ../hdrs/conf.h
+funjson.o: ../hdrs/htab.h
+funjson.o: ../hdrs/mushtype.h
+funjson.o: ../hdrs/externs.h
+funjson.o: ../hdrs/compile.h
+funjson.o: ../hdrs/dbdefs.h
+funjson.o: ../hdrs/mushdb.h
+funjson.o: ../hdrs/flags.h
+funjson.o: ../hdrs/dbio.h
+funjson.o: ../hdrs/ptab.h
+funjson.o: ../hdrs/chunk.h
+funjson.o: ../hdrs/mypcre.h
+funjson.o: ../hdrs/mymalloc.h
+funjson.o: ../hdrs/strutil.h
+funjson.o: ../hdrs/parse.h
+funjson.o: ../hdrs/notify.h
 funlist.o: ../config.h
 funlist.o: ../confmagic.h
 funlist.o: ../options.h
@@ -953,26 +977,6 @@ funlist.o: ../hdrs/notify.h
 funlist.o: ../hdrs/parse.h
 funlist.o: ../hdrs/sort.h
 funlist.o: ../hdrs/strutil.h
-funjson.o: ../config.h
-funjson.o: ../confmagic.h
-funjson.o: ../options.h
-funjson.o: ../hdrs/copyrite.h
-funjson.o: ../hdrs/conf.h
-funjson.o: ../hdrs/htab.h
-funjson.o: ../hdrs/mushtype.h
-funjson.o: ../hdrs/externs.h
-funjson.o: ../hdrs/compile.h
-funjson.o: ../hdrs/dbdefs.h
-funjson.o: ../hdrs/mushdb.h
-funjson.o: ../hdrs/flags.h
-funjson.o: ../hdrs/dbio.h
-funjson.o: ../hdrs/ptab.h
-funjson.o: ../hdrs/chunk.h
-funjson.o: ../hdrs/mypcre.h
-funjson.o: ../hdrs/mymalloc.h
-funjson.o: ../hdrs/strutil.h
-funjson.o: ../hdrs/parse.h
-funjson.o: ../hdrs/notify.h
 funlocal.o: ../config.h
 funlocal.o: ../confmagic.h
 funlocal.o: ../options.h
@@ -1137,7 +1141,6 @@ game.o: ../hdrs/mushtype.h
 game.o: ../hdrs/notify.h
 game.o: ../hdrs/conf.h
 game.o: ../hdrs/htab.h
-game.o: ../hdrs/sqlite3.h
 game.o: ../hdrs/access.h
 game.o: ../hdrs/mypcre.h
 game.o: ../hdrs/ansi.h
@@ -1168,6 +1171,8 @@ game.o: ../hdrs/parse.h
 game.o: ../hdrs/sig.h
 game.o: ../hdrs/strutil.h
 game.o: ../hdrs/version.h
+game.o: ../hdrs/mushsql.h
+game.o: ../hdrs/sqlite3.h
 game.o: ../hdrs/myssl.h
 game.o: ../hdrs/wait.h
 hash_function.o: ../config.h
@@ -1391,7 +1396,6 @@ markup.o: ../hdrs/ptab.h
 markup.o: ../hdrs/chunk.h
 markup.o: ../hdrs/game.h
 markup.o: ../hdrs/notify.h
-markup.o: ../hdrs/intmap.h
 markup.o: ../hdrs/log.h
 markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/mymalloc.h
@@ -1399,6 +1403,9 @@ markup.o: ../hdrs/parse.h
 markup.o: ../hdrs/pueblo.h
 markup.o: ../hdrs/rgb.h
 markup.o: ../hdrs/strutil.h
+markup.o: ../hdrs/mushsql.h
+markup.o: ../hdrs/sqlite3.h
+markup.o: ../hdrs/charconv.h
 markup.o: htmltab.c
 match.o: ../config.h
 match.o: ../confmagic.h
@@ -1670,6 +1677,7 @@ plyrlist.o: ../hdrs/mushsql.h
 plyrlist.o: ../hdrs/sqlite3.h
 plyrlist.o: ../hdrs/log.h
 plyrlist.o: ../hdrs/bufferq.h
+plyrlist.o: ../hdrs/charconv.h
 predicat.o: ../config.h
 predicat.o: ../confmagic.h
 predicat.o: ../options.h
@@ -1867,6 +1875,11 @@ speech.o: ../hdrs/mymalloc.h
 speech.o: ../hdrs/parse.h
 speech.o: ../hdrs/sort.h
 speech.o: ../hdrs/strutil.h
+spellfix.o: ../config.h
+spellfix.o: ../confmagic.h
+spellfix.o: ../options.h
+spellfix.o: ../hdrs/sqlite3ext.h
+spellfix.o: ../hdrs/sqlite3.h
 sql.o: ../config.h
 sql.o: ../confmagic.h
 sql.o: ../options.h
@@ -1897,6 +1910,7 @@ sql.o: ../hdrs/mymalloc.h
 sql.o: ../hdrs/notify.h
 sql.o: ../hdrs/parse.h
 sql.o: ../hdrs/strutil.h
+sql.o: ../hdrs/charconv.h
 sqlite3.o: ../config.h
 sqlite3.o: ../confmagic.h
 sqlite3.o: ../options.h

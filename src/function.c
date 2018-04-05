@@ -58,7 +58,7 @@ insert_functable(const char *name)
     return;
   }
   sqldb = get_shared_db();
-  inserter = prepare_statement(sqldb, "INSERT INTO functions VALUES (UPPER(?))",
+  inserter = prepare_statement(sqldb, "INSERT INTO funcsuggest(word) VALUES (UPPER(?))",
                                "function.insert");
   if (inserter) {
     int status;
@@ -82,7 +82,7 @@ delete_functable(const char *name)
   }
   sqldb = get_shared_db();
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM functions WHERE name = UPPER(?)",
+                              "DELETE FROM funcsuggest WHERE word = UPPER(?)",
                               "function.delete");
   if (deleter) {
     int status;
@@ -972,7 +972,6 @@ init_func_hashtab(void)
   if (sqldb) {
     if (sqlite3_exec(sqldb,
                      "BEGIN TRANSACTION;"
-                     "CREATE TABLE functions(name TEXT NOT NULL PRIMARY KEY);"
                      "CREATE VIRTUAL TABLE funcsuggest USING spellfix1",
                      NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create function table: %s", errmsg);
@@ -995,11 +994,7 @@ init_func_hashtab(void)
   local_functions();
 
   if (functable) {
-    if (sqlite3_exec(sqldb,
-                     "INSERT INTO funcsuggest(word) SELECT name FROM functions;"
-                     "CREATE TRIGGER tr_func_i AFTER INSERT ON functions BEGIN INSERT INTO funcsuggest(word) VALUES (new.name); END;"
-                     "CREATE TRIGGER tr_func_d AFTER DELETE ON functions BEGIN DELETE FROM funcsuggest WHERE word = old.name; END;"
-                     "COMMIT TRANSACTION",
+    if (sqlite3_exec(sqldb, "COMMIT TRANSACTION",
                      NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to populate funcsuggest table: %s", errmsg);
       sqlite3_free(errmsg);
@@ -1425,6 +1420,7 @@ cnf_add_function(char *name, char *opts)
     fp->minargs = 0;
     fp->maxargs = MAX_STACK_ARGS;
     hashadd(name, fp, &htab_user_function);
+    insert_functable(name);
   }
 
   fp->where.ufun->thing = thing;
@@ -1587,6 +1583,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     if (preserve)
       fp->flags |= FN_LOCALIZE;
     hashadd(name, fp, &htab_user_function);
+    insert_functable(name);
 
     /* now add it to the user function table */
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");

@@ -610,4 +610,11 @@ int local_can_interact_last(dbref from, dbref to, int type);
 /* flaglocal.c */
 void local_flags(FLAGSPACE *flags);
 
+/* Functions for suggesting alternatives to misspelled names */
+void init_vocab(void);
+char *suggest_name(const char *name, const char *category);
+void add_vocab(const char *name, const char *category);
+void delete_vocab(const char *name, const char *category);
+void delete_vocab_cat(const char *category);
+
 #endif /* __EXTERNS_H */

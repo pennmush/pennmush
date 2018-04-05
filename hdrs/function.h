@@ -102,7 +102,6 @@ void do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
 
 FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
-char *suggest_name(const char *name);
 int check_func(dbref player, FUN *fp);
 int restrict_function(const char *name, const char *restriction);
 int alias_function(dbref player, const char *function, const char *alias);

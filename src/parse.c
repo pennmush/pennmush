@@ -2631,9 +2631,10 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
             safe_str(T("#-1 FUNCTION ("), buff, bp);
             safe_str(name, buff, bp);
             safe_str(T(") NOT FOUND"), buff, bp);
-            suggestion = suggest_name(name);
+            suggestion = suggest_name(name, "FUNCTIONS");
             if (suggestion) {
               safe_format(buff, bp, " DID YOU MEAN '%s'", suggestion);
+              mush_free(suggestion, "string");
             }
             if (process_expression(name, &tp, str, executor, caller, enactor,
                                    PE_NOTHING, PT_PAREN, pe_info))

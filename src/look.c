@@ -478,8 +478,8 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
   if (!pe_info) {
     made_pe_info = 1;
     pe_info = make_pe_info("look_room");
-    strcpy(pe_info->cmd_raw, "LOOK");
-    strcpy(pe_info->cmd_evaled, "LOOK");
+    pe_info->cmd_raw = mush_strdup("LOOK", "string");
+    pe_info->cmd_evaled = mush_strdup("LOOK", "string");
   }
   /* don't give the unparse if looking through Transparent exit */
   if (!look_through_exit) {

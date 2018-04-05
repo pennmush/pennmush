@@ -278,13 +278,7 @@ typedef bool _Bool;
 
 #undef HAVE_FCNTL
 
-#undef HAVE_INOTIFY_INIT
-
 #undef HAVE_INOTIFY_INIT1
-
-#ifdef HAVE_INOTIFY_INIT
-#define HAVE_INOTIFY
-#endif
 
 #undef HAVE_PREAD
 
@@ -329,6 +323,8 @@ typedef bool _Bool;
 #undef HAVE_PIPE2
 
 #undef HAVE_GETENTROPY
+
+#undef HAVE_ARC4RANDOM_BUF
 
 /* Bunch of sqlite3 stuff */
 

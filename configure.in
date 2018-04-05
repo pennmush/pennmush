@@ -290,7 +290,7 @@ fi
 AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
-AC_CHECK_FUNCS([fcntl poll kqueue inotify_init inotify_init1])
+AC_CHECK_FUNCS([fcntl poll kqueue inotify_init1])
 AC_CHECK_FUNCS([pread pwrite eventfd pledge pipe2])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
 
@@ -344,7 +344,7 @@ AC_CHECK_FUNCS([_vsnprintf_s vasprintf])
 AC_CHECK_FUNCS([strcasecmp strncasecmp _stricmp _strnicmp strdup])
 AC_FUNC_STRCOLL
 AC_CHECK_FUNCS([strxfrm _strncoll _stricoll _strnicoll strchrnul])
-AC_CHECK_FUNCS([sysconf waitpid prctl ffs getentropy])
+AC_CHECK_FUNCS([sysconf waitpid prctl ffs getentropy arc4random_buf])
 
 if test $ac_cv_func_waitpid = no; then
 

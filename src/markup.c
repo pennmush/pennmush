@@ -239,7 +239,8 @@ FUNCTION(fun_colors)
 
     if (args[0] && *args[0]) {
       /* List colors matching a wildcard. */
-      lister = prepare_statement(sqldb, "SELECT NAME FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
+      lister = prepare_statement(sqldb,
+                                 "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
 				 "colors.list.names_pattern");
       if (lister) {
 	int len, ulen;
@@ -251,7 +252,8 @@ FUNCTION(fun_colors)
       }
     } else {
       /* List all colors but xtermXX ones */
-      lister = prepare_statement(sqldb, "SELECT name FROM named_colors ORDER BY name COLLATE TRAILNUMBERS ASC",
+      lister = prepare_statement(sqldb,
+                                 "SELECT name FROM named_colors ORDER BY name COLLATE TRAILNUMBERS ASC",
 				 "colors.list.names_all");
     }
     if (!lister) {
@@ -396,7 +398,9 @@ FUNCTION(fun_colors)
 	  return;
 	}
 
-	finder = prepare_statement(sqldb, "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name COLLATE TRAILNUMBERS ASC", "colors.list.rgb");
+	finder = prepare_statement(sqldb,
+                                   "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name COLLATE TRAILNUMBERS ASC",
+                                   "colors.list.rgb");
 	if (!finder) {
 	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
 	  return;
@@ -779,18 +783,23 @@ colorname_lookup(const char *name, int len, int *rgb, int *ansi, int *xnum)
   sqlite3 *sqldb;
   sqlite3_stmt *finder;
   int status;
+  int ulen;
+  char *utf8;
   
   sqldb = get_shared_db();
   if (!sqldb) {
     return 0;
   }
 
-  finder = prepare_statement(sqldb, "SELECT rgb, ansi, xterm FROM colors WHERE name = ?", "colors.lookup.name");
+  finder = prepare_statement(sqldb,
+                             "SELECT rgb, ansi, xterm FROM colors WHERE name = ?",
+                             "colors.lookup.name");
   if (!finder) {
     return 0;
   }
 
-  sqlite3_bind_text(finder, 1, name, len, SQLITE_TRANSIENT);
+  utf8 = latin1_to_utf8(name, len, &ulen, "string");
+  sqlite3_bind_text(finder, 1, utf8, ulen, free_string);
   do {
     status = sqlite3_step(finder);
   } while (is_busy_status(status));
@@ -821,7 +830,9 @@ rgb_lookup(int rgb, int *ansi, int *xnum)
     return 0;
   }
 
-  finder = prepare_statement(sqldb, "SELECT ansi, xterm FROM colors WHERE rgb = ?", "colors.lookup.rgb");
+  finder = prepare_statement(sqldb,
+                             "SELECT ansi, xterm FROM colors WHERE rgb = ?",
+                             "colors.lookup.rgb");
   if (!finder) {
     return 0;
   }
@@ -1027,7 +1038,9 @@ ansi_map_256(const char *name, bool hilite, bool all)
     return -1;
   }
 
-  finder = prepare_statement(sqldb, "SELECT rgb, xterm FROM colors WHERE name LIKE 'xterm%'", "colors.list.xterm");
+  finder = prepare_statement(sqldb,
+                             "SELECT rgb, xterm FROM colors WHERE name LIKE 'xterm%'",
+                             "colors.list.xterm");
   if (!finder) {
     return -1;
   }

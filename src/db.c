@@ -1952,7 +1952,8 @@ comp_trailing_numbers(void *data __attribute__((__unused__)), int lena, const vo
   }
 }
 
-/** Callback function for sqlite3_bind_text to free a mush_malloc-allocated "string" */
+/** Callback function for sqlite3_bind_text to free a
+    mush_malloc-allocated "string" */
 void
 free_string(void *s)
 {
@@ -2116,8 +2117,8 @@ close_sql_db(sqlite3 *db)
  * already present.
  *
  * \param db the sqlite3 database connection to use.
- * \param query the SQL query to prepare.
- * \param name the name of the query. (db,name) is the cache key, not the actual text of the query.
+ * \param query the SQL query to prepare, in UTF-8.
+ * \param name the name of the query. (db,name) is the cache key, not the actual text of the query, in UTF-8.
  * \return the prepared statement, NULL on errors.
  */
 sqlite3_stmt *
@@ -2269,7 +2270,7 @@ init_objdata()
  * that particular keybase/object entry. It does not free the
  * data pointer.
  * \param thing dbref of object to associate the data with.
- * \param keybase base string for type of data.
+ * \param keybase base string for type of data, in UTF-8.
  * \param data pointer to the data to store.
  * \return data passed in.
  */
@@ -2312,7 +2313,7 @@ set_objdata(dbref thing, const char *keybase, void *data)
 
 /** Retrieve data from the object data hashtable.
  * \param thing dbref of object data is associated with.
- * \param keybase base string for type of data.
+ * \param keybase base string for type of data, in UTF-8.
  * \return data stored for that object and keybase, or NULL.
  */
 void *
@@ -2346,7 +2347,7 @@ get_objdata(dbref thing, const char *keybase)
 
 /** Clear an object's data for a specific key.
  * \param thing dbref of object data is associated with.
- * \param keybase the key to remove.
+ * \param keybase the key to remove, in UTF-8.
  */
 void
 delete_objdata(dbref thing, const char *keybase)

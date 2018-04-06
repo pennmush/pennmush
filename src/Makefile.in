@@ -892,6 +892,7 @@ function.o: ../hdrs/mushsql.h
 function.o: ../hdrs/sqlite3.h
 function.o: ../hdrs/log.h
 function.o: ../hdrs/bufferq.h
+function.o: ../hdrs/charconv.h
 function.o: ../hdrs/websock.h
 fundb.o: ../config.h
 fundb.o: ../confmagic.h
@@ -1083,6 +1084,9 @@ funstr.o: ../hdrs/parse.h
 funstr.o: ../hdrs/pueblo.h
 funstr.o: ../hdrs/sort.h
 funstr.o: ../hdrs/strutil.h
+funstr.o: ../hdrs/mushsql.h
+funstr.o: ../hdrs/sqlite3.h
+funstr.o: ../hdrs/charconv.h
 funtime.o: ../config.h
 funtime.o: ../confmagic.h
 funtime.o: ../options.h
@@ -1210,6 +1214,8 @@ help.o: ../hdrs/notify.h
 help.o: ../hdrs/parse.h
 help.o: ../hdrs/pueblo.h
 help.o: ../hdrs/strutil.h
+help.o: ../hdrs/mushsql.h
+help.o: ../hdrs/sqlite3.h
 htab.o: ../config.h
 htab.o: ../confmagic.h
 htab.o: ../options.h

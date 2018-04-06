@@ -31,6 +31,7 @@
 #include "strutil.h"
 #include "mushsql.h"
 #include "log.h"
+#include "charconv.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -48,6 +49,7 @@ HASHTAB htab_user_function; /**< User-defined function hash table */
 slab *function_slab;        /**< slab for 'struct fun' allocations */
 static bool functable = 0;
 
+/** Builds the tables used for giving spelling suggestions. */
 void
 init_vocab(void)
 {
@@ -71,6 +73,11 @@ init_vocab(void)
   }
 }
 
+/** Add a word to the vocabulary list for a given category.
+ *
+ * \param name The word to add, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
 void
 add_vocab(const char *name, const char *category)
 {
@@ -96,7 +103,7 @@ add_vocab(const char *name, const char *category)
     return;
   }
 
-  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT LOWER(?), suggest_keys.id FROM suggest_keys where suggest_keys.cat = ?",
+  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT LOWER(?), id FROM suggest_keys where cat = ?",
                                "suggest.insert");
   if (inserter) {
     int status;
@@ -109,58 +116,29 @@ add_vocab(const char *name, const char *category)
   }
 }
 
-static int
-lookup_id(sqlite3 *sqldb, const char *category)
-{
-  sqlite3_stmt *finder;
-  int status;
-  int id = -1;
-
-  finder = prepare_statement(sqldb,
-                             "SELECT id FROM suggest_keys WHERE cat = ?",
-                             "suggest.lookup_cat");
-  if (!finder) {
-    return -1;
-  }
-
-  sqlite3_bind_text(finder, 1, category, strlen(category), SQLITE_TRANSIENT);
-  do {
-    status = sqlite3_step(finder);
-    if (status == SQLITE_ROW) {
-      id = sqlite3_column_int(finder, 0);
-      break;
-    } else if (status == SQLITE_DONE) {
-      break;
-    }
-  } while (is_busy_status(status));
-  sqlite3_reset(finder);
-  return id;
-}
-
+/* Delete a word from the given category's vocabulary list.
+ *
+ * \param name The word to delete, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
 void
 delete_vocab(const char *name, const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *deleter;
-  int langid;
 
   if (!functable) {
     return;
   }
   sqldb = get_shared_db();
-  langid = lookup_id(sqldb, category);
-
-  if (langid == -1) {
-    return;
-  }
 
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM suggest WHERE word = LOWER(?) AND langid = ?",
+                              "DELETE FROM suggest WHERE word = LOWER(?) AND langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
                               "suggest.delete");
   if (deleter) {
     int status;
     sqlite3_bind_text(deleter, 1, name, strlen(name), SQLITE_TRANSIENT);
-    sqlite3_bind_int(deleter, 2, langid);
+    sqlite3_bind_text(deleter, 2, category, strlen(category), SQLITE_STATIC);
     do {
       status = sqlite3_step(deleter);
     } while (is_busy_status(status));
@@ -168,28 +146,27 @@ delete_vocab(const char *name, const char *category)
   }
 }
 
+/** Delete all vocabulary entries for a given category.
+ *
+ * \param category The category to delete, in UTF-8.
+ */
 void
 delete_vocab_cat(const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *deleter;
-  int langid;
 
   if (!functable) {
     return;
   }
   sqldb = get_shared_db();
-  langid = lookup_id(sqldb, category);
-  if (langid == -1) {
-    return;
-  }
 
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM suggest WHERE langid = ?",
+                              "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
                               "suggest.delete_all");
   if (deleter) {
     int status;
-    sqlite3_bind_int(deleter, 1, langid);
+    sqlite3_bind_text(deleter, 1, category, strlen(category), SQLITE_STATIC);
     do {
       status = sqlite3_step(deleter);
     } while (is_busy_status(status));
@@ -197,15 +174,21 @@ delete_vocab_cat(const char *category)
   }
 }
 
-
+/** Return a suggestion for a misspelled name.
+ *
+ * \param badname The name to give a suggestion for, in LATIN-1.
+ * \param category The category of the name, in UTF-8.
+ * \return A suggestion, or NULL.
+ */
 char *
 suggest_name(const char *badname, const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *finder;
   int status;
+  int ulen;
+  char *utf8;
   char *suggestion = NULL;
-  int langid;
 
   if (!functable) {
     return NULL;
@@ -213,20 +196,16 @@ suggest_name(const char *badname, const char *category)
 
   sqldb = get_shared_db();
 
-  langid = lookup_id(sqldb, category);
-  if (langid == -1) {
-    return NULL;
-  }
-
   finder = prepare_statement(sqldb,
-                             "SELECT UPPER(word) FROM suggest WHERE word MATCH ? AND langid = ? AND top = 1",
+                             "SELECT UPPER(word) FROM suggest WHERE word MATCH ? AND top = 1 AND langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
                              "suggest.find1");
   if (!finder) {
     return NULL;
   }
 
-  sqlite3_bind_text(finder, 1, badname, strlen(badname), SQLITE_TRANSIENT);
-  sqlite3_bind_int(finder, 2, langid);
+  utf8 = latin1_to_utf8(badname, strlen(badname), &ulen, "string");
+  sqlite3_bind_text(finder, 1, utf8, ulen, free_string);
+  sqlite3_bind_text(finder, 2, category, strlen(category), SQLITE_STATIC);
   do {
     status = sqlite3_step(finder);
     if (status == SQLITE_ROW) {

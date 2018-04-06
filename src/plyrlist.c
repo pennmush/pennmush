@@ -61,11 +61,13 @@ clear_players(void)
   }
 }
 
+/* name is assumed to be latin-1 */
 static void
 add_player_name(sqlite3 *sqldb, const char *name, dbref player)
 {
   sqlite3_stmt *adder;
-  
+  int ulen;
+  char *utf8;
   int status;
   
   adder = prepare_statement(sqldb,
@@ -75,18 +77,13 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
     return;
   }
 
-  if (ONLY_ASCII_NAMES) {
-    sqlite3_bind_text(adder, 1, name, strlen(name),
-		      SQLITE_TRANSIENT);
-  } else {
-    int ulen;
-    char *q_utf8 = latin1_to_utf8(name, strlen(name), &ulen, "string");
-    sqlite3_bind_text(adder, 1, q_utf8, ulen, free_string);
-  }
- 
+  utf8 = latin1_to_utf8(name, strlen(name), &ulen, "string");
+  sqlite3_bind_text(adder, 1, utf8, ulen, free_string);
   sqlite3_bind_int(adder, 2, player);
 
-  status = sqlite3_step(adder);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
 
   if (status != SQLITE_DONE && status != SQLITE_CONSTRAINT) {
     do_rawlog(LT_ERR, "Unable to execute players add query for #%d/%s: %s (%d)",
@@ -146,6 +143,7 @@ add_player_alias(dbref player, const char *alias, bool intransaction)
       do_rawlog(LT_ERR, "Unable to commit players add alias transaction: %s",
                 errmsg);
       sqlite3_free(errmsg);
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       return;
     }
   }
@@ -183,6 +181,8 @@ lookup_player_name(const char *name)
 {
   sqlite3_stmt *looker;
   dbref d = NOTHING;
+  char *utf8;
+  int ulen;
   int status;
   sqlite3 *sqldb = get_shared_db();
   
@@ -196,9 +196,13 @@ lookup_player_name(const char *name)
   if (!looker) {
     return NOTHING;
   }
-    
-  sqlite3_bind_text(looker, 1, name, strlen(name), SQLITE_TRANSIENT);
-  status = sqlite3_step(looker);
+
+  utf8 = latin1_to_utf8(name, strlen(name), &ulen, "string");
+  sqlite3_bind_text(looker, 1, utf8, ulen, free_string);
+
+  do {
+    status = sqlite3_step(looker);
+  } while (is_busy_status(status));
 
   if (status == SQLITE_ROW) {
     d = sqlite3_column_int(looker, 0);
@@ -293,5 +297,6 @@ reset_player_list(dbref player, const char *name, const char *alias)
     do_rawlog(LT_ERR, "Unable to commit players replace transaction: %s",
               errmsg);
     sqlite3_free(errmsg);
+    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
 }

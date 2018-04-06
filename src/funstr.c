@@ -2353,7 +2353,7 @@ FUNCTION(fun_render)
     safe_str(render_string(args[0], flags), buff, bp);
 }
 
-FUNCTION(fun_urlescape)
+FUNCTION(fun_urlencode)
 {
 #ifdef HAVE_LIBCURL
   char *escaped;

@@ -156,7 +156,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-  {"@FETCH", NULL, cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@FETCH", "POST", cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS
+   | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},

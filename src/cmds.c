@@ -52,6 +52,7 @@
 #include "ssl_slave.h"
 #include "strutil.h"
 #include "version.h"
+#include "charconv.h"
 
 /* External Stuff */
 void do_poor(dbref player, char *arg1);
@@ -1832,6 +1833,7 @@ req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 
 COMMAND(cmd_fetch)
 {
+  /* Move this to a more appropriate file? */
 #ifdef HAVE_LIBCURL
   extern CURLM *curl_handle;
   extern int ncurl_queries;
@@ -1840,14 +1842,25 @@ COMMAND(cmd_fetch)
   struct curl_slist *headers = NULL;
   dbref thing;
   char *s;
+  const char *userpass;
   char tbuf[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
+  bool post = false;
 
-  if (!arg_right || !*arg_right) {
+  if (!args_right[1] || !*args_right[1]) {
     notify(executor, T("What do you want to query?"));
     return;
   }
-    
+
+  if (SW_ISSET(sw, SWITCH_POST)) {
+    post = true;
+  }
+
+  if (post && (!args_right[2] || !*args_right[2])) {
+    notify(executor, T("No data in a post request?"));
+    return;
+  }
+  
   mush_strncpy(tbuf, arg_left, sizeof tbuf);
   s = strchr(tbuf, '/');
   if (!s) {
@@ -1879,16 +1892,50 @@ COMMAND(cmd_fetch)
   pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
 
   handle = curl_easy_init();
-  curl_easy_setopt(handle, CURLOPT_URL, arg_right);
+  curl_easy_setopt(handle, CURLOPT_URL, args_right[1]);
   curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
+  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 30);
   curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
   curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);
+  curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5);
+  
+  userpass = pe_regs_get(req->pe_regs, PE_REGS_Q, "userpass");
+  if (userpass) {
+    curl_easy_setopt(handle, CURLOPT_USERPWD, userpass);
+    curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+  }
+
+  if (post) {
+    const char *contenttype;
+
+    curl_easy_setopt(handle, CURLOPT_POST, 1);
+
+    contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q,
+                                          "content-type");
+    if (contenttype) {
+      headers = curl_slist_append(headers, contenttype);
+    }    
+    if (contenttype && (strstr(contenttype, "charset=utf-8")
+                        || strstr(contenttype, "charset=UTF-8"))) {
+      int ulen;
+      char *utf8 = latin1_to_utf8(args_right[2], strlen(args_right[2]),
+                                  &ulen, 0);
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
+      mush_free(utf8, "string");
+    } else {
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args_right[2]);
+    }
+  }
+  
   curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
 
-  headers = curl_slist_append(headers, "Accept-Charset: utf-8, iso-8859-1, us-ascii");
+  headers = curl_slist_append(headers,
+                              "Accept-Charset: iso-8859-1, utf-8, us-ascii");
   req->header_slist = headers;
   curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
   

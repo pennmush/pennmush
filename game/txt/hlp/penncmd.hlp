@@ -1252,10 +1252,16 @@ See also: @link, @search, entrances()
 
 See also: TRANSPARENT, @conformat, @nameformat, @descformat
 & @fetch
-  @fetch <obj>/<attr>=<URL>
+  @fetch      <obj>/<attr>=<URL>
+  @fetch/post <obj>/<att>=<URL>,<data>
 
-  Attempts to retrieve URL, and upon doing so, queues the action list in <obj>/<attr>. The body of the reply from the remote web server is passed as %0, with the HTTP status in %q<status> and the Content-Type header in %q<content-type>.
+  Attempts to retrieve URL, and upon doing so, queues the action list in <obj>/<attr>. The body of the reply from the remote web server is passed as %0, with the HTTP status in %q<status> and the Content-Type header in %q<content-type>. Any commas in the URL need to be escaped.
 
+  The POST switch makes it do a HTTP POST request instead of the default GET. The 'content-type' q-register controls the type of data; it defaults to 'application/x-www-form-urlencoded'.` If it contains the string "charset=utf-8", <data> will be converted to UTF-8, otherwise it is assumed to be Latin-1.
+
+  If the q-register 'userpass' is set when running @fetch, it should hold a string of the form user:password and will be used if needed for HTTP authentication.
+
+See also: urlescape(), urldecode()
 & @firstexit
   @firstexit <exit1>[, ... , <exitN>]
   

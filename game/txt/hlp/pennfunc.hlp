@@ -194,7 +194,7 @@ See also: string functions, regexp
   strdelete()      strfirstof()     strinsert()      stripaccents()   
   stripansi()      strlen()         strmatch()       strreplace()     
   switch()         tr()             trim()           ucstr()          
-  wrap()
+  urldecode()      urlescape()      wrap()
 
 See also: STRINGS
 & Time functions
@@ -5757,3 +5757,15 @@ See also: @chzone, zfun(), zwho(), zemit() ZONES
     warnings  - The time of the next automatic warnings check, or -1 if automated warnings are disabled.
                  
 See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), restarts(), @dbck, @purge, @warnings, @config, @dump, @shutdown
+& URLESCAPE()
+  URLESCAPE(<string>)
+
+  This function converts its argument to a URL-encoded string where everything but a-z, A-Z, 0-9, -, ., _, and ~ are converted into %NN where NN is a hex code for their character value.
+
+See also: urldecode(), @fetch
+& URLDECODE()
+  URLDECODE(<string>)
+
+  This function takes a URL-encoded string and returns it in its decoded form. Unprintable characters are converted to question marks.
+
+See also: urlescape(), @fetch

@@ -267,7 +267,8 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
 
   /* Insert the flag in the ptab by the given name (maybe an alias) */
   ptab_insert_one(n->tab, name, f);
-
+  add_vocab(name, n->name);
+  
   /* Is this a canonical flag (as opposed to an alias?)
    * If it's an alias, we're done.
    * A canonical flag has either been given a new bitpos
@@ -1778,7 +1779,14 @@ set_flag(dbref player, dbref thing, const char *flag, int negate, int hear,
     return;
   }
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
-    notify_format(player, T("%s - I don't recognize that flag."), flag);
+    char *suggestion = suggest_name(flag, n->name);
+    if (suggestion) {
+      notify_format(player, "%s - I don't recognize that flag. Did you mean '%s'?",
+                    flag, suggestion);
+      mush_free(suggestion, "string");
+    } else {
+      notify_format(player, T("%s - I don't recognize that flag."), flag);
+    }
     return;
   }
 
@@ -1943,7 +1951,14 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   }
 
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
-    notify_format(player, T("%s - I don't recognize that power."), flag);
+    char *suggestion = suggest_name(flag, n->name);
+    if (suggestion) {
+      notify_format(player, "%s - I don't recognize that power. Did you mean '%s'?",
+                    flag, suggestion);
+      mush_free(suggestion, "string");
+    } else {
+      notify_format(player, T("%s - I don't recognize that power."), flag);
+    }
     return;
   }
 
@@ -2831,6 +2846,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
       if (!strcmp(tmpf->name, f->name) &&
           strcmp(n->flags[f->bitpos]->name, flagname)) {
         ptab_delete(n->tab, flagname);
+        delete_vocab(flagname, n->name);
         got_one = 1;
         break;
       }
@@ -2848,6 +2864,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   n->flags[f->bitpos] = NULL;
   /* Remove the flag from the ptab */
   ptab_delete(n->tab, f->name);
+  delete_vocab(f->name, n->name);
   notify_format(player, T("%s %s deleted."), strinitial(ns), f->name);
   /* Free the flag. */
   mush_free((void *) f->name, "flag.name");

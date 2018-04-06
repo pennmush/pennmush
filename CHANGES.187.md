@@ -31,7 +31,8 @@ Major Changes
     * Per-object auxilliary data keys (objdata) are handled in sql.
 	* Player names and aliases are handled in sql, making some
       operations on them simpler.
-    * Suggests alternatives for unknown function names.
+    * Suggests alternatives for unknown function names, flags, powers
+      and help entries.
 
 Minor Changes
 -------------

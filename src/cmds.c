@@ -1855,11 +1855,6 @@ COMMAND(cmd_fetch)
   if (SW_ISSET(sw, SWITCH_POST)) {
     post = true;
   }
-
-  if (post && (!args_right[2] || !*args_right[2])) {
-    notify(executor, T("No data in a post request?"));
-    return;
-  }
   
   mush_strncpy(tbuf, arg_left, sizeof tbuf);
   s = strchr(tbuf, '/');
@@ -1911,23 +1906,28 @@ COMMAND(cmd_fetch)
   }
 
   if (post) {
+    bool postdata;
     const char *contenttype;
 
     curl_easy_setopt(handle, CURLOPT_POST, 1);
-
+    postdata = args_right[2] && *args_right[2];
+    
     contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q,
                                           "content-type");
     if (contenttype) {
-      headers = curl_slist_append(headers, contenttype);
-    }    
-    if (contenttype && (strstr(contenttype, "charset=utf-8")
-                        || strstr(contenttype, "charset=UTF-8"))) {
+      char ct_header[BUFFER_LEN];
+      snprintf(ct_header, sizeof ct_header, "Content-Type: %s",
+               contenttype);
+      headers = curl_slist_append(headers, ct_header);
+    }
+    if (contenttype && postdata && (strstr(contenttype, "charset=utf-8")
+                                    || strstr(contenttype, "charset=UTF-8"))) {
       int ulen;
       char *utf8 = latin1_to_utf8(args_right[2], strlen(args_right[2]),
                                   &ulen, 0);
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
       mush_free(utf8, "string");
-    } else {
+    } else if (postdata) {
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args_right[2]);
     }
   }

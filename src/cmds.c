@@ -24,6 +24,10 @@
 #include <ws2tcpip.h>
 #endif
 
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -1808,4 +1812,91 @@ COMMAND(cmd_who)
     do_who_admin(executor, arg_left);
   else
     do_who_mortal(executor, arg_left);
+}
+
+#ifdef HAVE_LIBCURL
+static size_t
+req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  struct urlreq *req = userp;
+  size_t realsize = size * nmemb;
+  req->body = mush_realloc(req->body, req->body_size + realsize + 1,
+                           "urlreq.body");
+  memcpy(req->body + req->body_size, contents, realsize);
+  req->body_size += realsize;
+  req->body[req->body_size] = '\0';
+  return realsize;
+}
+
+#endif
+
+COMMAND(cmd_fetch)
+{
+#ifdef HAVE_LIBCURL
+  extern CURLM *curl_handle;
+  extern int ncurl_queries;
+  struct urlreq *req;
+  CURL *handle;
+  struct curl_slist *headers = NULL;
+  dbref thing;
+  char *s;
+  char tbuf[BUFFER_LEN];
+  int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
+
+  if (!arg_right || !*arg_right) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+    
+  mush_strncpy(tbuf, arg_left, sizeof tbuf);
+  s = strchr(tbuf, '/');
+  if (!s) {
+    notify(executor, T("I need to know what attribute to trigger."));
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(executor, thing)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
+  req = mush_malloc(sizeof *req, "urlreq");
+  req->executor = executor;
+  req->thing = thing;
+  req->queue_type = queue_type;
+  req->attrname = mush_strdup(s, "urlreq.attrname");
+  req->body = NULL;
+  req->body_size = 0;
+  req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_fetch");
+  pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
+
+  handle = curl_easy_init();
+  curl_easy_setopt(handle, CURLOPT_URL, arg_right);
+  curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
+  curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
+  curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+  curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);
+  curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
+
+  headers = curl_slist_append(headers, "Accept-Charset: utf-8, iso-8859-1, us-ascii");
+  req->header_slist = headers;
+  curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+  
+  ncurl_queries += 1;
+  
+  curl_multi_add_handle(curl_handle, handle);
+#else
+  notify(executor, T("Command disabled."));
+#endif
+
 }

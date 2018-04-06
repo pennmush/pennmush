@@ -12,11 +12,13 @@ names are. Some common ones have dependencies described below.
   required.  If you want to use SQL, you'll also need the appropriate
   -dev package, like libsqlite3-dev.
 
+   libcurl4-dev-openssl is another useful one.
+
 * For arch, the mandatory packages are:
    | pcre openssl
 
-   and highly recommended libevent. Some or all of these might already
-   be present as part of a base install.
+   and highly recommended libevent and libcurl-gnutls. Some or all of
+   these might already be present as part of a base install.
 
 
 

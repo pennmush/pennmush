@@ -70,6 +70,10 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -592,6 +596,10 @@ main(int argc, char **argv)
 
   time(&mudtime);
 
+#ifdef HAVE_LIBCURL
+  curl_global_init(CURL_GLOBAL_ALL);
+#endif
+  
   /* initialize random number generator */
   initialize_rng();
 
@@ -725,6 +733,10 @@ main(int argc, char **argv)
 
   local_shutdown();
 
+#ifdef HAVE_LIBCURL
+  curl_global_cleanup();
+#endif
+  
   if (pidfile)
     remove(pidfile);
 
@@ -988,6 +1000,87 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 }
 #endif
 
+#ifdef HAVE_LIBCURL
+int ncurl_queries = 0;
+CURLM *curl_handle = NULL;
+
+static void
+free_urlreq(struct urlreq *req)
+{
+  pe_regs_free(req->pe_regs);
+  if (req->body) {
+    mush_free(req->body, "urlreq.body");
+  }
+  mush_free(req->attrname, "urlreq.attrname");
+  curl_slist_free_all(req->header_slist);
+  mush_free(req, "urlreq");
+}
+
+static void
+handle_curl_msg(CURLMsg *msg)
+{
+  if (!msg) {
+    return;
+  }
+
+  ncurl_queries -= 1;
+  
+  if (msg->msg == CURLMSG_DONE) {
+    long respcode;
+    char *contenttype;
+    struct urlreq *resp;   
+    CURL *handle = msg->easy_handle;
+    bool is_utf8 = 0;
+    
+    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
+    
+    if (msg->data.result == CURLE_OK) {
+      if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode)
+          == CURLE_OK) {
+        pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+      }
+      if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype)
+          == CURLE_OK) {     
+        pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+        if (strstr(contenttype, "charset=utf-8")
+            || strstr(contenttype, "charset=UTF-8")) {
+          is_utf8 = 1;
+        }
+      }
+      if (resp->body) {
+        char *latin1;
+        int len;
+        if (is_utf8) {
+          latin1 = utf8_to_latin1(resp->body, &len);        
+          if (len > BUFFER_LEN) {
+            latin1[BUFFER_LEN - 1] = '\0';
+          }
+        } else {
+          latin1 = resp->body;
+          if (resp->body_size > BUFFER_LEN) {
+            resp->body[BUFFER_LEN - 1] = '\0';
+          }
+        }
+        pe_regs_setenv(resp->pe_regs, 0, latin1);
+        if (is_utf8) {
+          mush_free(latin1, "string");
+        }
+      }
+      queue_attribute_base_priv(resp->thing, resp->attrname,
+                                resp->executor, 0, resp->pe_regs,
+                                resp->queue_type, resp->executor);
+    } else {
+      notify_format(resp->executor, "Request failed: %s",
+                    curl_easy_strerror(msg->data.result));
+    }
+    curl_multi_remove_handle(curl_handle, handle);
+    curl_easy_cleanup(handle);
+    free_urlreq(resp);
+  }
+}
+
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1002,12 +1095,22 @@ shovechars(Port_t port, Port_t sslport)
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
+#ifdef HAVE_LIBCURL
+  struct curl_waitfd *fds = NULL;
+  unsigned int fd_size = 0, fds_used = 0;
+  CURLMcode curl_status;
+#define PENN_POLLIN CURL_WAIT_POLLIN
+#define PENN_POLLOUT CURL_WAIT_POLLOUT
+#else
 #ifdef WIN32
   WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
   nfds_t fd_size = 0, fds_used = 0;
+#endif
+#define PENN_POLLIN POLLIN
+#define PENN_POLLOUT POLLOU
 #endif
   int polltimeout;
 
@@ -1029,7 +1132,11 @@ shovechars(Port_t port, Port_t sslport)
 #endif
     }
   }
-
+  
+#ifdef HAVE_LIBCURL
+  curl_handle = curl_multi_init();
+#endif
+  
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
   avail_descriptors -= 2; /* reserve some more for setting up the slave */
@@ -1051,7 +1158,7 @@ shovechars(Port_t port, Port_t sslport)
     last_slice = current_time;
 
     process_commands();
-
+    
     /* Check signal handler flags */
 
 #ifndef WIN32
@@ -1144,7 +1251,7 @@ shovechars(Port_t port, Port_t sslport)
 
     /* run pending events */
     sq_run_all();
-
+    
     /* any queued commands or events waiting? */
     queue_timeout = que_next();
     sq_timeout = sq_secs_till_next();
@@ -1172,33 +1279,33 @@ shovechars(Port_t port, Port_t sslport)
 
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
 
       if (sslsock) {
         fds[fds_used].fd = sslsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
         fds[fds_used].fd = localsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #endif
     }
 #ifdef INFO_SLAVE
     if (info_slave_state == INFO_SLAVE_PENDING) {
       fds[fds_used].fd = info_slave;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
     if (notify_fd >= 0) {
       fds[fds_used].fd = notify_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #ifndef WIN32
     if (sigrecv_fd >= 0) {
       fds[fds_used].fd = sigrecv_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
 
@@ -1220,16 +1327,40 @@ shovechars(Port_t port, Port_t sslport)
                               command ready to eval. */
         timeout = slice_timeout;
       } else {
-        fds[fds_used].events = POLLIN;
+        fds[fds_used].events = PENN_POLLIN;
       }
       if (d->output.head) {
-        fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= PENN_POLLOUT;
       }
       if (!d->input.head || d->output.head)
         fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
+
+#ifdef HAVE_LIBCURL
+    curl_status =
+      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+
+    if (curl_status != CURLM_OK) {
+      do_rawlog(LT_ERR, "curl_multi_wait: %s", curl_multi_strerror(curl_status));
+      return;
+    }
+
+    if (ncurl_queries > 0) {
+      int running = 0;
+      curl_status = curl_multi_perform(curl_handle, &running);
+      if (curl_status == CURLM_OK) {
+        CURLMsg *msg;
+        while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
+          handle_curl_msg(msg);
+          found -= 1;
+        }
+      }
+    }
+    
+#else
+
 #ifdef WIN32
     found = WSAPoll(fds, fds_used, polltimeout);
 #else
@@ -1245,36 +1376,40 @@ shovechars(Port_t port, Port_t sslport)
         penn_perror("poll");
         return;
       }
-#ifdef INFO_SLAVE
-      if (info_slave_state == INFO_SLAVE_PENDING)
-        update_pending_info_slaves();
 #endif
-    } else {
-      /* if !found then time for robot commands */
 
+#ifdef INFO_SLAVE
+    if (info_slave_state == INFO_SLAVE_PENDING) {
+        update_pending_info_slaves();
+    }
+#endif
+
+    if (found >= 0) {
+    
+      /* if !found then time for robot commands */
       if (!found) {
         do_top(options.queue_chunk);
         continue;
       } else {
         do_top(options.active_q_chunk);
       }
-
+      
       fds_used = 0;
-
+      
 #ifdef INFO_SLAVE
       now = mudtime;
 
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1282,7 +1417,7 @@ shovechars(Port_t port, Port_t sslport)
       }
 
       if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
-          fds[fds_used++].revents & POLLIN) {
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
@@ -1293,16 +1428,16 @@ shovechars(Port_t port, Port_t sslport)
 
 #else /* INFO_SLAVE */
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1310,13 +1445,13 @@ shovechars(Port_t port, Port_t sslport)
       }
 #endif /* INFO_SLAVE */
 
-      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
       }
 
 #ifndef WIN32
-      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         sigrecv_ack();
       }
@@ -1331,8 +1466,12 @@ shovechars(Port_t port, Port_t sslport)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
+#ifdef HAVE_LIBCURL
+        errors = 0;
+#else
         errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
-        output_ready = fds[fds_used++].revents & POLLOUT;
+#endif
+        output_ready = fds[fds_used++].revents & PENN_POLLOUT;
         if (input_ready || errors || output_ready)
           found -= 1;
         if (errors) {
@@ -1354,8 +1493,14 @@ shovechars(Port_t port, Port_t sslport)
       }
     }
   }
+
   if (fds)
     mush_free(fds, "pollfds");
+
+#ifdef HAVE_LIBCURL
+  curl_multi_cleanup(curl_handle);
+#endif
+
 }
 
 static int

@@ -1847,6 +1847,7 @@ COMMAND(cmd_fetch)
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   bool post = false;
   bool del = false;
+  bool put = false;
 
   if (!args_right[1] || !*args_right[1]) {
     notify(executor, T("What do you want to query?"));
@@ -1857,12 +1858,16 @@ COMMAND(cmd_fetch)
     post = true;
   }
 
+  if (SW_ISSET(sw, SWITCH_PUT)) {
+    put = true;
+  }
+
   if (SW_ISSET(sw, SWITCH_DELETE)) {
     del = true;
   }
 
-  if (post && del) {
-    notify(executor, "You can't POST and DELETE at the same time!");
+  if ((post && put) || (post && del) || (put && del)) {
+    notify(executor, "You can't make multiple requests at the same time!");
     return;
   }
   
@@ -1917,12 +1922,14 @@ COMMAND(cmd_fetch)
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
 
-  if (post || del) {
+  if (post || put || del) {
     bool postdata;
     const char *contenttype;
 
     if (post) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
+    } else if (put) {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
     } else {
       curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
     }

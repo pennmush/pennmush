@@ -1846,6 +1846,7 @@ COMMAND(cmd_fetch)
   char tbuf[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   bool post = false;
+  bool del = false;
 
   if (!args_right[1] || !*args_right[1]) {
     notify(executor, T("What do you want to query?"));
@@ -1854,6 +1855,15 @@ COMMAND(cmd_fetch)
 
   if (SW_ISSET(sw, SWITCH_POST)) {
     post = true;
+  }
+
+  if (SW_ISSET(sw, SWITCH_DELETE)) {
+    del = true;
+  }
+
+  if (post && del) {
+    notify(executor, "You can't POST and DELETE at the same time!");
+    return;
   }
   
   mush_strncpy(tbuf, arg_left, sizeof tbuf);
@@ -1907,13 +1917,18 @@ COMMAND(cmd_fetch)
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
 
-  if (post) {
+  if (post || del) {
     bool postdata;
     const char *contenttype;
 
-    curl_easy_setopt(handle, CURLOPT_POST, 1);
+    if (post) {
+      curl_easy_setopt(handle, CURLOPT_POST, 1);
+    } else {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+    }
+
     postdata = args_right[2] && *args_right[2];
-    
+
     contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q,
                                           "content-type");
     if (contenttype) {
@@ -1933,7 +1948,7 @@ COMMAND(cmd_fetch)
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args_right[2]);
     }
   }
-  
+
   curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
 
   headers = curl_slist_append(headers,

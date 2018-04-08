@@ -1171,21 +1171,22 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 static void
 penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
-  while (mysql_fetch_row(qres))
-    ;
+  /* "When using mysql_use_result(), you must execute
+     mysql_fetch_row() until a NULL value is returned, otherwise, the
+     unfetched rows are returned as part of the result set for you
+     next query." Ewww. */
+  while (mysql_fetch_row(qres)) {}
   mysql_free_result(qres);
+  /* A single query can return multiple result sets; read and discard
+     any that are remaining. */
   while (mysql_more_results(mysql_connp)) {
-    int affected_rows = mysql_affected_rows(mysql_connp);
-    /*
-       We are assuming the first result is the only result we wanted. After all,
-       we do not support multi-query or multiple results.
-       As such, we're cleaning the rest up with empty strings - just so we can
-       free
-       the remaining results from the structure.
-    */
-    qres = sql_query("", &affected_rows);
-    mysql_free_result(qres);
-    mysql_next_result(mysql_connp);
+    if (mysql_next_result(mysql_connp) == 0) {
+      qres = mysql_use_result(mysql_connp);
+      if (qres) {
+	while (mysql_fetch_row(qres)) {}
+	mysql_free_result(qres);
+      }
+    }
   }
 }
 

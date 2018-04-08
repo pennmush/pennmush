@@ -36,6 +36,7 @@ Softcode
 
 * Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
 * Functions that work on integers (Like div() or band()) now use 64-bit values instead of 32-bit. [SW]
+* json_query() get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
 
 Fixes
 -----

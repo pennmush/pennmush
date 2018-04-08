@@ -1849,6 +1849,12 @@ COMMAND(cmd_fetch)
   bool del = false;
   bool put = false;
 
+  if (!Wizard(executor) && !has_power_by_name(executor,
+                                              "Can_HTTP", NOTYPE)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
   if (!args_right[1] || !*args_right[1]) {
     notify(executor, T("What do you want to query?"));
     return;

@@ -862,6 +862,7 @@ flag_add_additional(FLAGSPACE *n)
     add_power("hook", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Can_dark", '\0', TYPE_PLAYER, F_WIZARD | F_LOG, F_ANY);
     add_power("Pick_Dbrefs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
+    add_power("Can_HTTP", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     /* Aliases for other servers */
     if ((f = match_power("tport_anything")) && !match_power("tel_anything"))
       flag_add(flags, "tel_anything", f);

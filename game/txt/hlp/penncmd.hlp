@@ -1263,6 +1263,8 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
 
   If the q-register 'userpass' is set when running @http, it should hold a string of the form user:password and will be used if needed for HTTP authentication.
 
+  Restricted to objects set Wizard or with the Can_HTTP @Power.
+
 See also: urlencode(), urldecode()
 & @firstexit
   @firstexit <exit1>[, ... , <exitN>]

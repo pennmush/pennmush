@@ -759,6 +759,8 @@ init_game_config(const char *conf)
             show_time(globals.start_time, 0));
 }
 
+void build_linked_table(void);
+
 /** Post-db-load configuration.
  * This function contains code that should be run after dbs are loaded
  * (usually because we need to have the flag table loaded, or because they
@@ -782,6 +784,8 @@ init_game_postdb(const char *conf)
   config_file_startup(conf, 1);
   validate_config();
 
+  build_linked_table();
+  
   /* Build color/RGB mappings */
   build_rgb_map();
 

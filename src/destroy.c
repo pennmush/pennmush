@@ -587,6 +587,8 @@ undestroy(dbref player, dbref thing)
   return 1;
 }
 
+void delete_all_linked_to(dbref);
+
 /* Does the real work of freeing all the memory and unlinking an object.
  * This is going to have to be very tightly coupled with the implementation;
  * if the database format changes, this will likely have to change too.
@@ -621,6 +623,9 @@ free_object(dbref thing)
            thing);
     return;
   }
+
+  delete_all_linked_to(thing);
+  
   /* We queue the object-destroy event. Since the event will deal with an
    * object that doesn't exist anymore, we pass it what information we can,
    * but as strings.

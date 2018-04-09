@@ -33,6 +33,7 @@ Major Changes
       operations on them simpler.
     * Suggests alternatives for unknown function names, flags, powers
       and help entries.
+    * @entrances and entrances() no longer scan the entire database.
 
 Minor Changes
 -------------

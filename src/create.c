@@ -34,6 +34,8 @@ static dbref clone_object(dbref player, dbref thing, const char *newname,
 
 struct db_stat_info current_state; /**< Current stats for database */
 
+void add_link(dbref, dbref);
+
 /* utility for open and link */
 static dbref
 parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info)
@@ -169,6 +171,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
         } else {
           /* it's ok, link it */
           Location(new_exit) = loc;
+          add_link(new_exit, loc);
           notify_format(player, T("Linked exit #%d to #%d"), new_exit, loc);
         }
       }
@@ -234,6 +237,8 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
   }
 }
 
+void delete_link_from(dbref);
+
 /** Unlink an exit or room.
  * \verbatim
  * This is the top-level function for @unlink, which can unlink an exit
@@ -266,11 +271,13 @@ do_unlink(dbref player, const char *name)
       case TYPE_EXIT:
         old_loc = Location(exit_l);
         Location(exit_l) = NOTHING;
+        delete_link_from(exit_l);
         notify_format(player, T("Unlinked exit #%d (Used to lead to %s)."),
                       exit_l, unparse_object(player, old_loc, AN_UNPARSE));
         break;
       case TYPE_ROOM:
         Location(exit_l) = NOTHING;
+        delete_link_from(exit_l);
         notify(player, T("Dropto removed."));
         break;
       default:
@@ -368,7 +375,9 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
         Owner(thing) = Owner(player);
         Zone(thing) = Zone(player);
       }
+      delete_link_from(thing);
       Location(thing) = room;
+      add_link(thing, room);
 
       /* notify the player */
       notify_format(player, T("Linked exit #%d to %s"), thing,
@@ -400,7 +409,9 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
         notify(player, T("Can't set home to home."));
       } else {
         /* do the link */
+        delete_link_from(thing);
         Home(thing) = room; /* home */
+        add_link(thing, room);
         if (!Quiet(player) && !(Quiet(thing) && (Owner(thing) == player)))
           notify(player, T("Home set."));
       }
@@ -416,7 +427,9 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
         notify(player, T("Permission denied."));
       } else {
         /* do the link, in location */
+        delete_link_from(thing);
         Location(thing) = room; /* dropto */
+        add_link(thing, room);
         notify(player, T("Dropto set."));
       }
       break;
@@ -545,10 +558,11 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 
     /* initialize everything */
     set_name(thing, name);
-    if (!IsExit(player)) /* Exits shouldn't have contents! */
+    if (!IsExit(player)) { /* Exits shouldn't have contents! */
       Location(thing) = player;
-    else
+    } else {
       Location(thing) = Source(player);
+    }
     Owner(thing) = Owner(player);
     Zone(thing) = Zone(player);
     s_Pennies(thing, cost);
@@ -567,8 +581,10 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     if ((loc = Location(player)) != NOTHING &&
         (controls(player, loc) || Abode(loc))) {
       Home(thing) = loc; /* home */
+      add_link(thing, loc);
     } else {
       Home(thing) = Home(player); /* home */
+      add_link(thing, Home(player));
     }
 
     /* link it in */
@@ -628,10 +644,12 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
   Type(clone) = Type(thing);
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
-  if (IsRoom(thing))
+  if (IsRoom(thing)) {
     Exits(clone) = NOTHING;
-  else
+  } else {
     Home(clone) = Home(thing);
+    add_link(clone, Home(thing));
+  }
   atr_cpy(clone, thing);
 
   queue_event(player, "OBJECT`CREATE", "%s,%s", unparse_objid(clone),

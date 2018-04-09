@@ -1037,14 +1037,18 @@ handle_curl_msg(CURLMsg *msg)
     if (msg->data.result == CURLE_OK) {
       if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode)
           == CURLE_OK) {
-        pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        if (respcode) {
+          pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        }
       }
       if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype)
-          == CURLE_OK) {     
-        pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+          == CURLE_OK) {
+        if (contenttype) {
+          pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
         if (strstr(contenttype, "charset=utf-8")
             || strstr(contenttype, "charset=UTF-8")) {
           is_utf8 = 1;
+        }
         }
       }
       if (resp->body) {

@@ -1493,13 +1493,6 @@ build_linked_table(void)
   sqlite3 *sqldb = get_shared_db();
   sqlite3_stmt *adder;
   int n;
-  
-  if (sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg)
-      != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to build entrances table: %s", errmsg);
-    sqlite3_free(errmsg);
-    return;
-  }
 
   if (sqlite3_exec(sqldb,
                    "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT NULL PRIMARY KEY, from_type INTEGER NOT NULL);"
@@ -1515,7 +1508,6 @@ build_linked_table(void)
                             "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
                             "linked.insert");
   if (!adder) {
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return;
   }
   
@@ -1549,14 +1541,11 @@ build_linked_table(void)
     } while (is_busy_status(status));
     sqlite3_reset(adder);
     if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to insert (%d,%d,%d) into entrances table: %s",
-                to, n, type, sqlite3_errstr(status));
-      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
-      return;
+      do_rawlog(LT_ERR,
+                "Unable to insert (#%d <- #%d) into entrances table: %s",
+                to, n, sqlite3_errstr(status));
     }
   }
-
-  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
 }
 
 /** Remove all references to an object from the linked table; both
@@ -1639,7 +1628,7 @@ find_linked(struct search_spec *spec)
 
   sqldb = get_shared_db();
   finder = prepare_statement(sqldb,
-                             "SELECT from_obj FROM linked WHERE to_obj = ? AND from_obj >= ? AND from_obj <= ? AND from_type & ? ORDER BY from_obj",
+                             "SELECT from_obj FROM linked WHERE to_obj = ? AND from_obj BETWEEN ? AND ? AND from_type & ? ORDER BY from_obj",
                              "linked.find");
   if (!finder) {
     return NULL;
@@ -1690,14 +1679,18 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
   spec.entrances = place;
 
   /* determine range */
-  if (argv[1] && *argv[1])
+  if (argv[1] && *argv[1]) {
     spec.low = atoi(argv[1]);
-  if (spec.low < 0)
+  }
+  if (spec.low < 0) {
     spec.low = 0;
-  if (argv[2] && *argv[2])
-    spec.high = atoi(argv[2]) + 1;
-  if (spec.high > db_top)
+  }
+  if (argv[2] && *argv[2]) {
+    spec.high = atoi(argv[2]);
+  }
+  if (spec.high > db_top) {
     spec.high = db_top;
+  }
 
   spec.type = types;
 
@@ -1766,12 +1759,13 @@ FUNCTION(fun_entrances)
   int  status;
   char *p;
   sqlite3_stmt *finder;
+  bool prived;
   
   if (!command_check_byname(executor, "@entrances", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
-
+  
   init_search_spec(&spec);
 
   if (nargs > 0)
@@ -1782,6 +1776,10 @@ FUNCTION(fun_entrances)
     safe_str(T("#-1 INVALID LOCATION"), buff, bp);
     return;
   }
+
+  prived = controls(executor, where) || See_All(executor)
+    || Search_All(executor);
+
   spec.entrances = where;
   spec.type = 0;
   if (nargs > 1 && args[1] && *args[1]) {
@@ -1838,14 +1836,19 @@ FUNCTION(fun_entrances)
       return;
     }
   }
-  if (!GoodObject(spec.low))
+  if (!GoodObject(spec.low)) {
     spec.low = 0;
-  if (!GoodObject(spec.high))
-    spec.high = db_top - 1;
-
-
+  }
+  if (!GoodObject(spec.high)) {
+    spec.high = db_top;
+  }
 
   finder = find_linked(&spec);
+  if (!finder) {
+    safe_str("#-1 SQLITE ERROR", buff, bp);
+    return;
+  }
+
   n = 0;
   do {
     do {
@@ -1853,6 +1856,9 @@ FUNCTION(fun_entrances)
     } while (is_busy_status(status));
     if (status == SQLITE_ROW) {
       dbref obj = sqlite3_column_int(finder, 0);
+      if (!(prived || Can_Examine(executor, obj))) {
+        continue;
+      }
       if (n) {
         if (safe_chr(' ', buff, bp)) {
           break;

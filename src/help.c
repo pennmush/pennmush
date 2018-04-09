@@ -430,6 +430,7 @@ help_reindex(dbref player)
       curr->indx = NULL;
       curr->entries = 0;
     }
+    delete_vocab_cat(curr->command);
     help_build_index(curr, curr->admin);
   }
   if (player != NOTHING) {
@@ -456,6 +457,7 @@ help_reindex_by_name(const char *filename)
         mush_free(curr->indx, "help_index");
       curr->indx = NULL;
       curr->entries = 0;
+      delete_vocab_cat(curr->command);
       help_build_index(curr, curr->admin);
       retval = 1;
     }
@@ -635,6 +637,7 @@ help_build_index(help_file *h, int restricted)
   FILE *rfp;
   tlist *cur;
   sqlite3 *sqldb;
+  char *errmsg;
   
   /* Quietly ignore null values for the file */
   if (!h || !h->file)
@@ -658,9 +661,14 @@ help_build_index(help_file *h, int restricted)
   in_topic = 0;
 
   sqldb = get_shared_db();
-  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
-  delete_vocab_cat(h->command);
-  
+  if (sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg)
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to begin help transaction: %s", errmsg);
+    sqlite3_free(errmsg);
+    fclose(rfp);
+    return;
+  }
+
 #ifdef HAVE_POSIX_FADVISE
   posix_fadvise(fileno(rfp), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
@@ -736,8 +744,20 @@ help_build_index(help_file *h, int restricted)
   add_check("help_index");
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
-  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
-  return;
+  while (1) {
+    int status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
+    if (status == SQLITE_OK) {
+      break;
+    } else if (is_busy_status(status)) {
+      sqlite3_free(errmsg);
+    } else {
+      do_rawlog(LT_ERR, "Unable to commit help vocab transaction: %s",
+                errmsg);
+      sqlite3_free(errmsg);
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      break;
+    }
+  }
 }
 
 /* ARGSUSED */

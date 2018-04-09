@@ -2627,7 +2627,7 @@ do_list_memstats(dbref player)
           run = sqlite3_column_int(statter, 6);
           mem = sqlite3_column_int(statter, 7);
 
-          notify_format(player, "%-.27s... %6d %5d %5d %9d %6d %7d %6d",
+          notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d",
                         query, nscan, nsort, naidx, nstep, reprep, run, mem);
         }
       } while (status == SQLITE_ROW || is_busy_status(status));

@@ -1057,19 +1057,9 @@ init_func_hashtab(void)
 {
   FUNTAB *ftp;
   FUNALIAS *fa;
-  sqlite3 *sqldb;
-  char *errmsg;
 
   init_vocab();
   
-  sqldb = get_shared_db();
-  if (sqlite3_exec(sqldb,
-                   "BEGIN TRANSACTION",
-                   NULL, NULL, &errmsg) != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to start function transaction: %s", errmsg);
-    sqlite3_free(errmsg);
-  }
-
   hashinit(&htab_function, 512);
   hash_init(&htab_user_function, 32, delete_function);
   function_slab = slab_create("functions", sizeof(FUN));
@@ -1080,13 +1070,6 @@ init_func_hashtab(void)
     alias_function(NOTHING, fa->name, fa->alias);
   }
   local_functions();
-
-  if (sqlite3_exec(sqldb, "COMMIT TRANSACTION",
-                   NULL, NULL, &errmsg) != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to commit function transaction: %s", errmsg);
-    sqlite3_free(errmsg);
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
-  }
 }
 
 /** Function initization to perform after reading the config file.

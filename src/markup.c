@@ -79,7 +79,6 @@ build_rgb_map(void)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *creator;
-  char *errmsg;
   int status;
   int n;
   const char query[] = 
@@ -88,17 +87,6 @@ build_rgb_map(void)
   sqldb = get_shared_db();
 
   if (!sqldb) {
-    return;
-  }
-
-  if (sqlite3_exec(sqldb,
-                   "BEGIN TRANSACTION;"
-                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL);"
-                   "CREATE INDEX rgb_idx ON colors(rgb);"
-                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
-		   NULL, NULL, &errmsg) != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
-    sqlite3_free(errmsg);
     return;
   }
 
@@ -119,11 +107,6 @@ build_rgb_map(void)
       break;
     }
     sqlite3_reset(creator);
-  }
-  if (status == SQLITE_DONE) {
-    sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
-  } else {
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
   close_statement(creator);
 }

@@ -4592,15 +4592,15 @@ See also: json(), json_query()
       7
   ]
 & JSON_QUERY()
-  json_query(<json>[, <action>[, <arg>]])
+  json_query(<json>[, <action>[, <arg>, ...<argN>]])
   
   This function returns information about JSON data. <json> should be a valid JSON string, as returned by the json() function. There are 5 possible <action>s:
   
   Action...    Returns...
   type         The type of <json>, one of string, number, boolean, null, array or object. Default if no <action> is given.
   size         The size of <json>; this is 0 for null objects, 1 for strings/numbers/booleans, the number of array elements, or the number of key/value pairs for objects.
-  exists       For arrays, returns 1 if there are at least <arg>th elements (0-indexed), 0 otherwise. For objects, returns 1 if there is an element with the key <arg>, and 0 otherwise. Returns #-1 for other types.
-  get          For arrays, returns the value of the <arg>th element (0-indexed). For objects, returns the value of the element with the key <arg>. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
+  exists       For arrays and objects, returns 1 if there is an object found by following the path specified in <arg>... and 0 if not. If the current arg is an integer and the current json element is an array, uses the <arg>th index of the array (Starting at 0) as the new current element. Otherwise, if the current json element is an object, treats the current <arg> as a key into the object and its value as the new current element.  Returns #-1 for other types.
+  get          For arrays and objects, returns the json element found by following the path laid out in <args>... as described above. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
   unescape     Only valid for JSON strings; returns the unescaped form of <json>.
   
   See 'help json_query2' for examples.
@@ -4625,15 +4625,17 @@ See also: json(), json_map()
     > say json_query(json_query(v(json), get, 2), unescape)
     You say, "gh"i"
 
-    > @set me=json:[json(object, foo, "bar", baz, 12345)]
+    > @set me=json:[json(object, foo, "bar", baz, 12345, "fnord", json(array, 1, 2, 3))]
     > say v(json)
-    You say, "{"foo": "bar", "baz": 12345}"
+    You say, "{"foo": "bar", "baz": 12345, "fnord": [1,2,3]}"
     > say json_query(v(json), exists, foo)
     You say, "1"
     > say json_query(v(json), exists, bar)
     You say, "0"
     > say json_query(v(json), get, baz)
     You say, "12345"
+    > say json_query(v(json), get, fnord, 1)
+    You say, "2"
 & TESTLOCK()
   testlock(<key>, <victim>)
 

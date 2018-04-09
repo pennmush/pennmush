@@ -1909,7 +1909,7 @@ COMMAND(cmd_fetch)
 
   handle = curl_easy_init();
   curl_easy_setopt(handle, CURLOPT_PROTOCOLS,
-                   CURLPROTO_HTTP | CURLPROTO_HTTPS);
+                   CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_DICT);
   curl_easy_setopt(handle, CURLOPT_URL, args_right[1]);
   curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);

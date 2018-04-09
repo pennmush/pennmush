@@ -401,9 +401,9 @@ enum json_query {
 
 FUNCTION(fun_json_query)
 {
-  JSON *json, *next;
+  JSON *json, *next, *curr;
   enum json_query query_type = JSON_QUERY_TYPE;
-  int i;
+  int i, path;
 
   if (nargs > 1 && args[1] && *args[1]) {
     if (strcasecmp("size", args[1]) == 0) {
@@ -496,64 +496,76 @@ FUNCTION(fun_json_query)
     break;
   case JSON_QUERY_EXISTS:
   case JSON_QUERY_GET:
-    switch (json->type) {
-    case JSON_NONE:
-      break;
-    case JSON_STR:
-    case JSON_BOOL:
-    case JSON_NUMBER:
-    case JSON_NULL:
-      safe_str("#-1", buff, bp);
-      break;
-    case JSON_ARRAY:
-      if (!is_strict_integer(args[2])) {
-        safe_str(T(e_int), buff, bp);
+    path = 2;
+    curr = json;
+    do {
+      switch (curr->type) {
+      case JSON_NONE:
+        curr = NULL;
         break;
-      }
-      i = parse_integer(args[2]);
-      for (next = json->data; i > 0 && next; next = next->next, i--)
-        ;
+      case JSON_STR:
+      case JSON_BOOL:
+      case JSON_NUMBER:
+      case JSON_NULL:
+        safe_str("#-1", buff, bp);
+        curr = NULL;
+        break;
+      case JSON_ARRAY:
+        if (!is_strict_integer(args[path])) {
+          safe_str(T(e_int), buff, bp);
+          curr = NULL;
+          break;
+        }
+        i = parse_integer(args[path]);
+        for (next = curr->data; i > 0 && next; next = next->next, i--)
+          ;
 
-      if (query_type == JSON_QUERY_EXISTS) {
-        safe_chr((next) ? '1' : '0', buff, bp);
-      } else if (next) {
-        char *s = json_to_string(next, 0);
-        if (s) {
-          safe_str(s, buff, bp);
-          mush_free(s, "json_str");
-        }
-      }
-      break;
-    case JSON_OBJECT:
-      next = (JSON *) json->data;
-      while (next) {
-        if (next->type != JSON_STR) {
-          /* We should have a string label */
-          next = NULL;
-          break;
-        }
-        if (!strcasecmp((char *) next->data, args[2])) {
-          /* Success! */
-          next = next->next;
-          break;
-        } else {
-          /* Skip */
-          next = next->next; /* Move to this entry's value */
-          if (next) {
-            next = next->next; /* Move to next entry's name */
+        if (query_type == JSON_QUERY_EXISTS) {
+          if (path == nargs -1 || !next) {
+              safe_chr((next) ? '1' : '0', buff, bp);
+              curr = NULL;
+              break;
           }
         }
-      }
-      if (query_type == JSON_QUERY_EXISTS) {
-        safe_chr((next) ? '1' : '0', buff, bp);
-      } else if (next) {
-        char *s = json_to_string(next, 0);
-        if (s) {
-          safe_str(s, buff, bp);
-          mush_free(s, "json_str");
-        }
-      }
+        curr = next;
       break;
+      case JSON_OBJECT:
+        next = (JSON *) curr->data;
+        while (next) {
+          if (next->type != JSON_STR) {
+            /* We should have a string label */
+            next = NULL;
+            break;
+          }
+          if (!strcasecmp((char *) next->data, args[path])) {
+            /* Success! */
+            next = next->next;
+            break;
+          } else {
+            /* Skip */
+            next = next->next; /* Move to this entry's value */
+            if (next) {
+              next = next->next; /* Move to next entry's name */
+            }
+          }
+        }
+        if (query_type == JSON_QUERY_EXISTS) {
+          if (path == nargs - 1 || !next) {
+            safe_chr((next) ? '1' : '0', buff, bp);
+            curr = NULL;
+            break;
+          }
+        }
+        curr = next;
+        break;
+      }
+    } while (curr && ++path < nargs);
+    if (curr) {
+      char *s = json_to_string(curr, 0);
+      if (s) {
+        safe_str(s, buff, bp);
+        mush_free(s, "json_str");
+      }
     }
     break;
   }

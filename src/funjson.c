@@ -16,6 +16,8 @@
 #include "strutil.h"
 #include "parse.h"
 #include "notify.h"
+#include "mushsql.h"
+#include "charconv.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -781,4 +783,31 @@ FUNCTION(fun_json)
   case JSON_NONE:
     break;
   }
+}
+
+FUNCTION(fun_isjson)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *verify;
+  char *utf8;
+  int ulen, status;
+
+  sqldb = get_shared_db();
+  verify = prepare_statement(sqldb,
+                             "SELECT json_valid(?)", "isjson");
+  if (!verify) {
+    safe_str("#-1 SQLITE ERROR", buff, bp);
+    return;
+  }
+
+  utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+  sqlite3_bind_text(verify, 1, utf8, ulen, free_string);
+
+  status = sqlite3_step(verify);
+  if (status == SQLITE_ROW) {
+    safe_boolean(sqlite3_column_int(verify, 0), buff, bp);
+  } else {
+    safe_boolean(0, buff, bp);
+  }
+  sqlite3_reset(verify);
 }

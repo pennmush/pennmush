@@ -4506,6 +4506,22 @@ See also: pueblo(), width(), height(), ssl(), @sockset, oob()
   Returns the number of descriptors the message was sent to on success, or a string starting with #-1 on error.
   
 See also: json()
+& ISJSON()
+  isjson(<text>)
+
+  Return 1 if its argument is valid JSON, 0 if not.
+
+  Examples:
+  > think isjson(1)
+  1
+  > think isjson(true)
+  1
+  > think isjson(unquoted)
+  0
+  > think isjson("quoted")
+  1
+
+See also: json()
 & JSON()
   json(<type>[, <data>[, ..., <dataN>])
   
@@ -4524,7 +4540,7 @@ See also: json()
   When <type> is "array" or "object", it's recommended that subsequent JSON arguments are created with nested calls to JSON().
 
   See 'help json2' for examples.
-See also: oob(), json_query(), json_map(), render()
+See also: oob(), isjson(), json_query(), json_map(), render()
 & JSON2
   > think json(null)
   null

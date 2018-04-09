@@ -500,6 +500,7 @@ FUNTAB flist[] = {
   {"ISDAYLIGHT", fun_isdaylight, 0, 2, FN_REG},
   {"ISDBREF", fun_isdbref, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISJSON", fun_isjson, 1, -1, FN_REG},
   {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISOBJID", fun_isobjid, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISREGEXP", fun_isregexp, 1, 1, FN_REG | FN_STRIPANSI},

@@ -4620,6 +4620,7 @@ See also: json(), json_query()
   exists       For arrays and objects, returns 1 if there is an object found by following the path specified in <arg>... and 0 if not. If the current arg is an integer and the current json element is an array, uses the <arg>th index of the array (Starting at 0) as the new current element. Otherwise, if the current json element is an object, treats the current <arg> as a key into the object and its value as the new current element.  Returns #-1 for other types.
   get          For arrays and objects, returns the json element found by following the path laid out in <args>... as described above. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
   unescape     Only valid for JSON strings; returns the unescaped form of <json>.
+  patch        Applies a merge patch (See https://tools.ietf.org/html/rfc7396) to <json> from <arg>, both of which must be valid JSON.
   
   See 'help json_query2' for examples.
 See also: json(), json_map()
@@ -4654,6 +4655,8 @@ See also: json(), json_map()
     You say, "12345"
     > say json_query(v(json), get, fnord, 1)
     You say, "2"
+    > say json_query(json(object, a,1,b,2), patch, json(object, a,42))
+    You say, "{"a":43,"b":2}"
 & TESTLOCK()
   testlock(<key>, <victim>)
 

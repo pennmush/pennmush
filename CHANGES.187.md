@@ -22,8 +22,11 @@ Version 1.8.7 patchlevel 0 ??? ?? 20??
 Major Changes
 -------------
 
-* Support websocket connections. See <https://github.com/grapenut/websockclient> for a
-  sample in-browser client. [Grapenut, 1007]
+* Support websocket connections. See
+  <https://github.com/grapenut/websockclient> for a sample in-browser
+  client. [Grapenut, 1007]
+* Change attributes from being stored in sorted linked lists to sorted
+  arrays; results in faster lookups and less memory usage. [SW]
 
 Minor Changes
 -------------

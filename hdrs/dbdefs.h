@@ -50,6 +50,7 @@ extern dbref first_free; /* pointer to free list */
 #define ModTime(x) (db[(x)].modification_time)
 
 #define AttrCount(x) (db[(x)].attrcount)
+#define AttrCap(x) (db[(x)].attrcap)
 
 /* Moved from warnings.c because create.c needs it. */
 #define Warnings(x) (db[(x)].warnings)
@@ -189,6 +190,7 @@ extern dbref first_free; /* pointer to free list */
 #define AF_Mhear(a) ((a)->flags & AF_MHEAR)
 #define AF_Ahear(a) ((a)->flags & AF_AHEAR)
 #define AF_Quiet(a) ((a)->flags & AF_QUIET)
+#define AF_Root(a)  ((a)->flags & AF_ROOT)
 
 /* Non-mortal checks */
 #define God(x) ((x) == GOD)
@@ -268,6 +270,7 @@ struct object {
    */
   time_t modification_time;
   int attrcount;           /**< Number of attribs on the object */
+  int attrcap;             /**< Size of the attribute array */
   int type;                /**< Object's type */
   object_flag_type flags;  /**< Pointer to flag bit array */
   object_flag_type powers; /**< Pointer to power bit array */

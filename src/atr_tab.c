@@ -218,7 +218,6 @@ attr_read(PENNFILE *f)
   a->data = NULL_CHUNK_REFERENCE;
   AL_FLAGS(a) = 0;
   AL_CREATOR(a) = GOD;
-  a->next = NULL;
 
   db_read_this_labeled_string(f, "name", &tmp);
 
@@ -803,7 +802,7 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
   if (retroactive) {
     for (i = 0; i < db_top; i++) {
       if ((ap2 = atr_get_noparent(i, name))) {
-        if (AL_FLAGS(ap2) & AF_ROOT)
+        if (AF_Root(ap2))
           AL_FLAGS(ap2) = flags | AF_ROOT;
         else
           AL_FLAGS(ap2) = flags;

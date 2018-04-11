@@ -94,9 +94,10 @@ migrate_stuff(int amount)
   end_obj = start_obj;
   actual = 0;
   do {
-    for (aptr = List(end_obj); aptr; aptr = AL_NEXT(aptr))
+    ATTR_FOR_EACH(end_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE)
         actual++;
+    }
     for (lptr = Locks(end_obj); lptr; lptr = L_NEXT(lptr))
       if (L_KEY(lptr) != NULL_CHUNK_REFERENCE)
         actual++;
@@ -127,11 +128,12 @@ migrate_stuff(int amount)
 
   actual = 0;
   do {
-    for (aptr = List(start_obj); aptr; aptr = AL_NEXT(aptr))
+    ATTR_FOR_EACH(start_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE) {
         refs[actual] = &(aptr->data);
         actual++;
       }
+    }
     for (lptr = Locks(start_obj); lptr; lptr = L_NEXT(lptr))
       if (L_KEY(lptr) != NULL_CHUNK_REFERENCE) {
         refs[actual] = &(lptr->key);

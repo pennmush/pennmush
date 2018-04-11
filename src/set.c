@@ -545,7 +545,7 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
                   AName(target, AN_SYS, NULL), AL_NAME(atr));
     return;
   }
-  if (AL_FLAGS(atr) & AF_ROOT)
+  if (AF_Root(atr))
     flags |= AF_ROOT;
   else
     flags &= ~AF_ROOT;
@@ -1507,6 +1507,8 @@ wipe_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
   }
 }
 
+bool in_wipe = false;
+
 /** Clear an attribute.
  * \verbatim
  * This implements @wipe.
@@ -1545,8 +1547,9 @@ do_wipe(dbref player, char *name)
     notify(player, T("That object is protected."));
     return;
   }
-
+  in_wipe = true;
   wiped = atr_iter_get(player, thing, pattern, 0, 0, wipe_helper, NULL);
+  in_wipe = false;
   switch (wiped) {
   case 0:
     notify(player, T("No attributes wiped."));

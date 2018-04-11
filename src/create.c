@@ -602,6 +602,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     set_name(clone, Name(thing));
   s_Pennies(clone, Pennies(thing));
   AttrCount(clone) = 0;
+  AttrCap(clone) = 0;
   List(clone) = NULL;
   Locks(clone) = NULL;
   clone_locks(player, thing, clone);

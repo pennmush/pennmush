@@ -81,12 +81,23 @@ build_rgb_map(void)
   sqlite3_stmt *creator;
   int status;
   int n;
+  char *errmsg;
   const char query[] = 
     "INSERT INTO colors(name, rgb, xterm, ansi) SELECT json_extract(json_each.value, '$.name'), json_extract(json_each.value, '$.rgb'), json_extract(json_each.value, '$.xterm'), json_extract(json_each.value, '$.ansi') FROM json_each(?)";
   
   sqldb = get_shared_db();
 
   if (!sqldb) {
+    return;
+  }
+
+  if (sqlite3_exec(sqldb,
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL);"
+                   "CREATE INDEX rgb_idx ON colors(rgb);"
+                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
+                   NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
+    sqlite3_free(errmsg);
     return;
   }
 

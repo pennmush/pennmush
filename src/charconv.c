@@ -335,7 +335,7 @@ latin1_to_utf8_tn(const char * RESTRICT latin, int len, int *outlen, bool telnet
  * Convert a UTF-8 encoded string to Latin-1
  *
  * \param utf8 a valid utf-8 string
- * \param outlen the length of the returned string including trailing nul
+ * \param outlen the length of the returned string NOT including trailing nul
  * \return a newly allocated latin-1 string
  */
 char *
@@ -422,7 +422,7 @@ utf8_to_latin1(const char * RESTRICT utf8, int *outlen, const char *name)
 #endif
 
   if (outlen)
-    *outlen = bytes;
+    *outlen = bytes - 1;
 
   char *s = mush_malloc(bytes, name);
   unsigned char *p = (unsigned char *) s;

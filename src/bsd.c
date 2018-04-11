@@ -2307,7 +2307,7 @@ save_command(DESC *d, const char *command)
     }
     latin1 = utf8_to_latin1(command, &len, "string");
     if (latin1) {
-      add_to_queue(&d->input, latin1, len);
+      add_to_queue(&d->input, latin1, len + 1);
       mush_free(latin1, "string");
     }
   } else {

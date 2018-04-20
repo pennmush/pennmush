@@ -307,7 +307,7 @@ enum methods method;
  *  slave processes does them sequentially until some of the subslaves
  *  exit. */
 enum { MAX_SLAVES = 5 };
-sig_atomic_t children = 0;
+volatile sig_atomic_t children = 0;
 pid_t child_pids[MAX_SLAVES];
 pid_t parent_pid = 0;
 

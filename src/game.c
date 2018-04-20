@@ -301,10 +301,7 @@ jmp_buf db_err;
 static bool
 dump_database_internal(void)
 {
-  char realdumpfile[2048];
-  char realtmpfl[2048];
-  char tmpfl[2048];
-  volatile PENNFILE *f = NULL;
+  PENNFILE * volatile f = NULL;
 
 #ifndef PROFILING
 #ifndef WIN32
@@ -338,16 +335,18 @@ dump_database_internal(void)
 #endif
       break;
       }
-    } else
+    } else {
       errmsg = strerror(errno);
+    }
 
     do_rawlog(LT_ERR, "ERROR! Database save failed: %s", errmsg);
     queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
                 T("GAME: ERROR! Database save failed!"), 0, errmsg);
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
-    if (f)
-      penn_fclose((PENNFILE *) f);
+    if (f) {
+      penn_fclose(f);
+    }
 #ifndef PROFILING
 #ifdef HAVE_SETITIMER
 #ifdef __CYGWIN__
@@ -359,12 +358,17 @@ dump_database_internal(void)
 #endif /* PROFILING */
     return false;
   } else {
+    char realdumpfile[2048];
+    char realtmpfl[2048];
+    char tmpfl[2048];
+
     local_dump_database();
 
 #ifdef ALWAYS_PARANOID
     globals.paranoid_checkpt = db_top / 5;
-    if (globals.paranoid_checkpt < 1)
+    if (globals.paranoid_checkpt < 1) {
       globals.paranoid_checkpt = 1;
+    }
 #endif
 
     sprintf(realdumpfile, "%s%s", globals.dumpfile, options.compresssuff);
@@ -375,19 +379,19 @@ dump_database_internal(void)
       switch (globals.paranoid_dump) {
       case 0:
 #ifdef ALWAYS_PARANOID
-        db_paranoid_write((PENNFILE *) f, 0);
+        db_paranoid_write(f, 0);
 #else
-        db_write((PENNFILE *) f, 0);
+        db_write(f, 0);
 #endif
         break;
       case 1:
-        db_paranoid_write((PENNFILE *) f, 0);
+        db_paranoid_write(f, 0);
         break;
       case 2:
-        db_paranoid_write((PENNFILE *) f, 1);
+        db_paranoid_write(f, 1);
         break;
       }
-      penn_fclose((PENNFILE *) f);
+      penn_fclose(f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -401,8 +405,8 @@ dump_database_internal(void)
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if (mdb_top >= 0) {
       if ((f = db_open_write(tmpfl)) != NULL) {
-        dump_mail((PENNFILE *) f);
-        penn_fclose((PENNFILE *) f);
+        dump_mail(f);
+        penn_fclose(f);
         if (rename_file(realtmpfl, realdumpfile) < 0) {
           penn_perror(realtmpfl);
           longjmp(db_err, 1);
@@ -416,8 +420,8 @@ dump_database_internal(void)
     strcpy(tmpfl, make_new_epoch_file(options.chatdb, epoch));
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if ((f = db_open_write(tmpfl)) != NULL) {
-      save_chatdb((PENNFILE *) f);
-      penn_fclose((PENNFILE *) f);
+      save_chatdb(f);
+      penn_fclose(f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -806,9 +810,8 @@ extern int dbline;
 int
 init_game_dbs(void)
 {
-  PENNFILE *f;
-  int c;
-  const char *volatile infile;
+  PENNFILE * volatile f = NULL;
+  const char *infile;
   const char *outfile;
   const char *mailfile;
   volatile int panicdb;
@@ -827,14 +830,21 @@ init_game_dbs(void)
 
   if (setjmp(db_err) == 1) {
     do_rawlog(LT_ERR, "Couldn't open %s! Creating minimal world.", infile);
+    if (f) {
+      penn_fclose(f);
+    }
     init_compress(NULL);
     create_minimal_db();
     return 0;
   } else {
+    int c;
     f = db_open(infile);
     c = penn_fgetc(f);
     if (c == EOF) {
       do_rawlog(LT_ERR, "Couldn't read %s! Creating minimal world.", infile);
+      if (f) {
+        penn_fclose(f);
+      }
       init_compress(NULL);
       create_minimal_db();
       return 0;
@@ -845,6 +855,9 @@ init_game_dbs(void)
 
   if (setjmp(db_err) == 1) {
     do_rawlog(LT_ERR, "ERROR: Unable to read %s. Giving up.\n", infile);
+    if (f) {
+      penn_fclose(f);
+    }
     return -1;
   } else {
     /* ok, read it in */
@@ -859,8 +872,9 @@ init_game_dbs(void)
     penn_fclose(f);
 
     f = db_open(infile);
-    if (!f)
+    if (!f) {
       return -1;
+    }
 
     /* ok, read it in */
     do_rawlog(LT_ERR, "LOADING: %s", infile);
@@ -882,23 +896,29 @@ init_game_dbs(void)
      */
     panicdb = ((globals.indb_flags & DBF_PANIC) && !penn_feof(f));
 
-    if (!panicdb)
+    if (!panicdb) {
       penn_fclose(f);
+    }
 
     /* complain about bad config options */
-    if (!GoodObject(PLAYER_START) || (!IsRoom(PLAYER_START)))
+    if (!GoodObject(PLAYER_START) || (!IsRoom(PLAYER_START))) {
       do_rawlog(LT_ERR, "WARNING: Player_start (#%d) is NOT a room.",
                 PLAYER_START);
-    if (!GoodObject(MASTER_ROOM) || (!IsRoom(MASTER_ROOM)))
+    }
+    if (!GoodObject(MASTER_ROOM) || (!IsRoom(MASTER_ROOM))) {
       do_rawlog(LT_ERR, "WARNING: Master room (#%d) is NOT a room.",
                 MASTER_ROOM);
-    if (!GoodObject(BASE_ROOM) || (!IsRoom(BASE_ROOM)))
+    }
+    if (!GoodObject(BASE_ROOM) || (!IsRoom(BASE_ROOM))) {
       do_rawlog(LT_ERR, "WARNING: Base room (#%d) is NOT a room.", BASE_ROOM);
-    if (!GoodObject(DEFAULT_HOME) || (!IsRoom(DEFAULT_HOME)))
+    }
+    if (!GoodObject(DEFAULT_HOME) || (!IsRoom(DEFAULT_HOME))) {
       do_rawlog(LT_ERR, "WARNING: Default home (#%d) is NOT a room.",
                 DEFAULT_HOME);
-    if (!GoodObject(GOD) || (!IsPlayer(GOD)))
+    }
+    if (!GoodObject(GOD) || (!IsPlayer(GOD))) {
       do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
+    }
   }
 
   /* read mail database */

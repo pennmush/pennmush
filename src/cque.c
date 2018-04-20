@@ -92,7 +92,7 @@ int32_t queue_load_record[QUEUE_LOAD_SECS]
 
 double average32(const int32_t *arr, int count);
 
-extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
+extern volatile sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
 /* From game.c, for report() */
 extern char report_cmd[BUFFER_LEN];

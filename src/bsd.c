@@ -297,10 +297,10 @@ int maxd = 0;
 
 extern const unsigned char *tables;
 
-sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
-sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
-sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
-sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
+volatile sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
+volatile sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
+volatile sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
+volatile sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -411,13 +411,13 @@ void usr1_handler(int);
 void reaper(int sig);
 #endif
 #ifndef WIN32
-sig_atomic_t dump_error = 0;
+volatile sig_atomic_t dump_error = 0;
 WAIT_TYPE dump_status = 0;
 #ifdef INFO_SLAVE
-sig_atomic_t slave_error = 0;
+volatile sig_atomic_t slave_error = 0;
 #endif
 #ifdef SSL_SLAVE
-sig_atomic_t ssl_slave_error = 0;
+volatile sig_atomic_t ssl_slave_error = 0;
 extern bool ssl_slave_halted;
 #endif
 WAIT_TYPE error_code = 0;

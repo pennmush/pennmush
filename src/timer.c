@@ -285,7 +285,7 @@ init_sys_events(void)
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
-sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
+volatile sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
 int cpu_limit_warning_sent = 0;      /** Have we issued a cpu limit warning? */
 
 #ifndef PROFILING

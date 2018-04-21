@@ -237,7 +237,7 @@ unparse_uinteger(uintmax_t num)
 /* Probably not right */
 #define PRIuMAX "llu"
 #endif
-  sprintf(str, "%" PRIuMAX, num);
+  snprintf(str, sizeof str, "%" PRIuMAX, num);
   return str;
 }
 

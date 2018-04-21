@@ -2173,15 +2173,16 @@ do_channel_list(dbref player, const char *partname, int types)
       safe_str(ChanName(c), shortoutput, &sp);
       continue;
     }
-    if (SUPPORT_HTML)
-      snprintf(numusers, BUFFER_LEN,
+    if (SUPPORT_HTML) {
+      snprintf(numusers, sizeof numusers,
                "%c%cA XCH_CMD=\"@channel/who %s\" "
                "XCH_HINT=\"See who's on this channel "
                "now\"%c%5d%c%c/A%c",
                TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
                TAG_START, MARKUP_HTML, TAG_END);
-    else
-      sprintf(numusers, "%5d", ChanNumUsers(c));
+    } else {
+      snprintf(numusers, sizeof numusers, "%5d", ChanNumUsers(c));
+    }
     /* Display length is strlen(cleanname), but actual length is
      * strlen(ChanName(c)). There are two different cases:
      * 1. actual length <= 30. No problems.

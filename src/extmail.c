@@ -2698,7 +2698,7 @@ get_folder_name(dbref player, int fld)
   ATTR *a;
 
   /* Get the name of the folder, or "nameless" */
-  sprintf(pat, "%d:", fld);
+  snprintf(pat, sizeof pat, "%d:", fld);
   old = NULL;
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
   if (!a) {
@@ -2746,7 +2746,7 @@ add_folder_name(dbref player, int fld, const char *name)
     snprintf(new, BUFFER_LEN, "%d:%s:%d ", fld, strupper(name), fld);
   else
     strcpy(new, " ");
-  sprintf(pat, "%d:", fld);
+  snprintf(pat, BUFFER_LEN, "%d:", fld);
   /* get the attrib and the old string, if any */
   old = NULL;
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
@@ -2802,9 +2802,9 @@ set_player_folder(dbref player, int fnum)
 {
   /* Set a player's folder to fnum */
   ATTR *a;
-  char tbuf1[BUFFER_LEN];
+  char tbuf1[50];
 
-  sprintf(tbuf1, "%d", fnum);
+  snprintf(tbuf1, sizeof tbuf1, "%d", fnum);
   a = (ATTR *) atr_match("MAILCURF");
   if (a)
     (void) atr_add(player, a->name, tbuf1, GOD, a->flags);
@@ -3296,7 +3296,7 @@ filter_mail(dbref from, dbref player, char *subject, char *message,
   pe_regs_free(pe_regs);
 
   if (*buff) {
-    sprintf(buf, "0:%d", mailnumber);
+    snprintf(buf, sizeof buf, "0:%d", mailnumber);
     do_mail_file(player, buf, buff);
   }
 }

@@ -371,9 +371,9 @@ dump_database_internal(void)
     }
 #endif
 
-    sprintf(realdumpfile, "%s%s", globals.dumpfile, options.compresssuff);
+    snprintf(realdumpfile, sizeof realdumpfile, "%s%s", globals.dumpfile, options.compresssuff);
     strcpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch));
-    sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
+    snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
 
     if ((f = db_open_write(tmpfl)) != NULL) {
       switch (globals.paranoid_dump) {
@@ -400,9 +400,9 @@ dump_database_internal(void)
       penn_perror(realtmpfl);
       longjmp(db_err, 1);
     }
-    sprintf(realdumpfile, "%s%s", options.mail_db, options.compresssuff);
+    snprintf(realdumpfile, sizeof realdumpfile, "%s%s", options.mail_db, options.compresssuff);
     strcpy(tmpfl, make_new_epoch_file(options.mail_db, epoch));
-    sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
+    snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if (mdb_top >= 0) {
       if ((f = db_open_write(tmpfl)) != NULL) {
         dump_mail(f);
@@ -416,9 +416,9 @@ dump_database_internal(void)
         longjmp(db_err, 1);
       }
     }
-    sprintf(realdumpfile, "%s%s", options.chatdb, options.compresssuff);
+    snprintf(realdumpfile, sizeof realdumpfile, "%s%s", options.chatdb, options.compresssuff);
     strcpy(tmpfl, make_new_epoch_file(options.chatdb, epoch));
-    sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
+    snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if ((f = db_open_write(tmpfl)) != NULL) {
       save_chatdb(f);
       penn_fclose(f);
@@ -1219,8 +1219,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
               NOTHING) {
           if (command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
             char upd[SBUF_LEN];
-            sprintf(temp, "ENTER #%d", i);
-            sprintf(upd, "#%d", i);
+            snprintf(temp, sizeof temp, "ENTER #%d", i);
+            snprintf(upd, sizeof upd, "#%d", i);
             run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
                         temp, NULL, NULL, upd, NULL, NULL, NULL, queue_entry);
           }
@@ -1266,7 +1266,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
                 !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
               goto done;
             } else {
-              sprintf(temp, "GOTO %s", cptr);
+              snprintf(temp, sizeof temp, "GOTO %s", cptr);
               run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
                           temp, NULL, NULL, cptr, NULL, NULL, NULL,
                           queue_entry);
@@ -1304,7 +1304,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
               !command_check_with(executor, cmd, 1, queue_entry->pe_info))
             goto done;
           else {
-            sprintf(temp, "GOTO %s", cptr);
+            snprintf(temp, sizeof temp, "GOTO %s", cptr);
             run_command(cmd, executor, queue_entry->enactor, temp, NULL, NULL,
                         temp, NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
@@ -2650,9 +2650,9 @@ make_new_epoch_file(const char *basename, int the_epoch)
 {
   static char result[BUFFER_LEN]; /* STATIC! */
   /* Unlink the last the_epoch and create a new one */
-  sprintf(result, "%s.#%d#", basename, the_epoch - 1);
+  snprintf(result, sizeof result, "%s.#%d#", basename, the_epoch - 1);
   unlink(result);
-  sprintf(result, "%s.#%d#", basename, the_epoch);
+  snprintf(result, sizeof result, "%s.#%d#", basename, the_epoch);
   return result;
 }
 

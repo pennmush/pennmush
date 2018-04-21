@@ -4657,7 +4657,7 @@ dump_users(DESC *call_by, char *match)
     if (nlen < 16)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
-    sprintf(tbuf, "%s %10s   %4s%c %s", nbuff,
+    snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
             onfor_time_fmt(d->connected_at, 10), idle_time_fmt(d->last_time, 4),
             (Dark(d->player) ? 'D' : ' '),
             get_doing(d->player, NOTHING, NOTHING, NULL, 0));
@@ -4858,7 +4858,7 @@ do_who_admin(dbref player, char *name)
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
     } else {
-      sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s", T("Connecting..."),
               "#-1", onfor_time_fmt(d->connected_at, 9),
               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : ' ', d->addr);

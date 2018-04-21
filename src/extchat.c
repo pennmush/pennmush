@@ -4309,7 +4309,7 @@ COMMAND(cmd_delcom)
 
   atr_clr(executor, buff, GOD);
   matches =
-    atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, delcom_helper, channame);
+    atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, delcom_helper, channame);
   if (!matches) {
     channel_leave_self(executor, channame);
   } else {
@@ -4373,7 +4373,7 @@ COMMAND(cmd_comlist)
 
   notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
                 T("Status"), T("Title"));
-  atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
+  atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, comlist_helper, NULL);
   notify(executor, T("-- End of comlist --"));
 }
 

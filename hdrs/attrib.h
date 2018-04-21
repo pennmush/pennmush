@@ -75,13 +75,19 @@ atr_err atr_clr(dbref thing, char const *atr, dbref player);
 atr_err wipe_atr(dbref thing, char const *atr, dbref player);
 ATTR *atr_get(dbref thing, char const *atr);
 ATTR *atr_get_noparent(dbref thing, char const *atr);
+
+/** Flags for atr_iter_get() and friends. */
+enum { AIG_NONE = 0, /**< No special flags */
+       AIG_MORTAL = 0x1, /**< Only look at mortal-visible attributes */
+       AIG_REGEX = 0x2, /**< Use a regular expression instead of glob */
+};
 typedef int (*aig_func)(dbref, dbref, dbref, const char *, ATTR *, void *);
-int atr_iter_get(dbref player, dbref thing, char const *name, int mortal,
-                 int regexp, aig_func func, void *args);
-int atr_iter_get_parent(dbref player, dbref thing, char const *name, int mortal,
-                        int regexp, aig_func func, void *args);
+int atr_iter_get(dbref player, dbref thing, char const *name, unsigned flags,
+                 aig_func func, void *args);
+int atr_iter_get_parent(dbref player, dbref thing, char const *name,
+                        unsigned flags, aig_func func, void *args);
 int atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
-                      int mortal, int regexp);
+                      unsigned flags);
 ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
 void atr_free_all(dbref thing);
 void atr_cpy(dbref dest, dbref source);

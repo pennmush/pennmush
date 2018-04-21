@@ -1181,7 +1181,7 @@ check_fields(void)
        * an invalid dbref, change its ownership to God.
        */
       if (!IsGarbage(thing))
-        atr_iter_get(GOD, thing, "**", 0, 0, attribute_owner_helper, NULL);
+        atr_iter_get(GOD, thing, "**", AIG_NONE, attribute_owner_helper, NULL);
     }
   }
 }

@@ -1321,15 +1321,14 @@ atr_get_noparent(dbref thing, char const *atr)
  * \param player the enactor.
  * \param thing the object containing the attribute.
  * \param name the pattern to match against the attribute name.
- * \param mortal only fetch mortal-visible attributes?
- * \param regexp is name a regexp, rather than a glob pattern?
+ * \param flags flags to control matching and ordering.
  * \param func the function to call for each matching attribute.
  * \param args additional arguments to pass to the function.
  * \return the sum of the return values of the functions called.
  */
 int
-atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
-             int regexp, aig_func func, void *args)
+atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
+             aig_func func, void *args)
 {
   ATTR *ptr;
   int result = 0;
@@ -1337,8 +1336,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   extern bool in_wipe;
 
   if (!name || !*name) {
-    if (regexp) {
-      regexp = 0;
+    if (flags & AIG_REGEX) {
+      flags &= ~AIG_REGEX;
       name = "**";
     } else {
       name = "*";
@@ -1348,17 +1347,17 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
 
   /* Must check name[len-1] first as wildcard_count() can destructively modify
    * name */
-  if (!regexp && name[len - 1] != '`' &&
+  if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_noparent(thing, strupper(name));
-    if (ptr && (mortal ? Is_Visible_Attr(thing, ptr)
+    if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                        : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
   } else if (AttrCount(thing)) {
     ATTR_FOR_EACH (thing, ptr) {
-      if ((mortal ? Is_Visible_Attr(thing, ptr)
+      if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                   : Can_Read_Attr(player, thing, ptr)) &&
-          (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+          ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
                   : atr_wild(name, AL_NAME(ptr)))) {
         int r = func(player, thing, NOTHING, name, ptr, args);
         result += r;
@@ -1393,20 +1392,22 @@ atr_count_helper(dbref player __attribute__((__unused__)),
  * \param thing the object containing the attribute.
  * \param name the pattern to match against the attribute name.
  * \param doparent count parent attrbutes as well?
+ * \param flags atr_iter_get flags.
  * \param mortal only fetch mortal-visible attributes?
  * \param regexp is name a regexp, rather than a glob pattern?
  * \return the count of matching attributes
  */
 int
 atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
-                  int mortal, int regexp)
+                  unsigned flags)
 {
-  if (doparent)
-    return atr_iter_get_parent(player, thing, name, mortal, regexp,
-                               atr_count_helper, NULL);
-  else
-    return atr_iter_get(player, thing, name, mortal, regexp, atr_count_helper,
+  if (doparent) {
+    return atr_iter_get_parent(player, thing, name, flags,
+                               atr_count_helper, NULL);    
+  } else {
+    return atr_iter_get(player, thing, name, flags, atr_count_helper,
                         NULL);
+  }
 }
 
 /** Apply a function to a set of attributes, including inherited ones.
@@ -1416,8 +1417,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
  * \param player the enactor.
  * \param thing the object containing the attribute.
  * \param name the pattern to match against the attribute name.
- * \param mortal only fetch mortal-visible attributes?
- * \param regexp is name a regexp pattern, rather than a glob pattern?
+ * \param flags flags to control matching.
  * \param func the function to call for each matching attribute, with
  *  a pointer to the dbref of the object the attribute is really on passed
  *  as the function's args argument.
@@ -1425,8 +1425,8 @@ atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
  * \return the sum of the return values of the functions called.
  */
 int
-atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
-                    int regexp, aig_func func, void *args)
+atr_iter_get_parent(dbref player, dbref thing, const char *name,
+                    unsigned flags, aig_func func, void *args)
 {
   ATTR *ptr;
   int result;
@@ -1435,8 +1435,8 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
 
   result = 0;
   if (!name || !*name) {
-    if (regexp) {
-      regexp = 0;
+    if (flags & AIG_REGEX) {
+      flags &= ~AIG_REGEX;
       name = "**";
     } else {
       name = "*";
@@ -1446,10 +1446,10 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
 
   /* Must check name[len-1] first as wildcard_count() can destructively modify
    * name */
-  if (!regexp && name[len - 1] != '`' &&
+  if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
-    if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
+    if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                        : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
   } else {
@@ -1485,9 +1485,9 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
                 continue;
             }
           }
-          if ((mortal ? Is_Visible_Attr(parent, ptr)
+          if (((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                       : Can_Read_Attr(player, parent, ptr)) &&
-              (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+              ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
                       : atr_wild(name, AL_NAME(ptr))))
             result += func(player, thing, parent, name, ptr, args);
         }

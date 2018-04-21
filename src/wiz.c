@@ -606,7 +606,7 @@ do_teleport_one(dbref player, const char *what, dbref destination, int flags,
       return;
     } else {
       char absdest[SBUF_LEN];
-      strcpy(absdest, tprintf("#%d", destination));
+      snprintf(absdest, sizeof absdest, "#%d", destination);
       do_move(victim, absdest, MOVE_TELEPORT, pe_info);
     }
   }

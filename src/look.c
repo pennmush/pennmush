@@ -395,7 +395,10 @@ static void
 examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
              int parent)
 {
-  unsigned flags = mortal ? AIG_MORTAL : AIG_NONE;
+  unsigned flags = AIG_NONE;
+  if (mortal) {
+    flags |= AIG_MORTAL;
+  }
   if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
       if (!atr_iter_get_parent(player, thing, mstr, flags, examine_helper,
@@ -1405,8 +1408,10 @@ decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
   dh.name = name;
   dh.skipdef = skipdef;
   /* Comment complaints if none are found */
-  if (!atr_iter_get(player, thing, pattern, AIG_NONE, decompile_helper, &dh))
+  if (!atr_iter_get(player, thing, pattern, AIG_NONE, decompile_helper,
+                    &dh)) {
     notify_format(player, T("@@ No attributes match '%s'. @@"), pattern);
+  }
 }
 
 /** Decompile locks on an object.

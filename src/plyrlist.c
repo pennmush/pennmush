@@ -69,6 +69,8 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
   int ulen;
   char *utf8;
   int status;
+
+  init_hft();
   
   adder = prepare_statement(sqldb,
                             "INSERT INTO players(name, dbref) VALUES(UPPER(?), ?)",
@@ -258,6 +260,8 @@ reset_player_list(dbref player, const char *name, const char *alias)
   int status;
   char *errmsg;
   sqlite3 *sqldb = get_shared_db();
+
+  init_hft();
   
   if (!name) {
     name = Name(player);

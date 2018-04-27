@@ -395,28 +395,36 @@ static void
 examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
              int parent)
 {
+  unsigned flags = AIG_NONE;
+  if (mortal) {
+    flags |= AIG_MORTAL;
+  }
   if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
-      if (!atr_iter_get_parent(player, thing, mstr, mortal, 0, examine_helper,
+      if (!atr_iter_get_parent(player, thing, mstr, flags, examine_helper,
                                NULL) &&
-          mstr)
+          mstr) {
         notify(player, T("No matching attributes."));
+      }
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, examine_helper, NULL) &&
-          mstr)
+      if (!atr_iter_get(player, thing, mstr, flags, examine_helper, NULL) &&
+          mstr) {
         notify(player, T("No matching attributes."));
+      }
     }
   } else {
     if (parent) {
-      if (!atr_iter_get_parent(player, thing, mstr, mortal, 0,
+      if (!atr_iter_get_parent(player, thing, mstr, flags,
                                examine_helper_veiled, NULL) &&
-          mstr)
+          mstr) {
         notify(player, T("No matching attributes."));
+      }
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, examine_helper_veiled,
+      if (!atr_iter_get(player, thing, mstr, flags, examine_helper_veiled,
                         NULL) &&
-          mstr)
+          mstr) {
         notify(player, T("No matching attributes."));
+      }
     }
   }
 }
@@ -1400,8 +1408,10 @@ decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
   dh.name = name;
   dh.skipdef = skipdef;
   /* Comment complaints if none are found */
-  if (!atr_iter_get(player, thing, pattern, 0, 0, decompile_helper, &dh))
+  if (!atr_iter_get(player, thing, pattern, AIG_NONE, decompile_helper,
+                    &dh)) {
     notify_format(player, T("@@ No attributes match '%s'. @@"), pattern);
+  }
 }
 
 /** Decompile locks on an object.

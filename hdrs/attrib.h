@@ -19,9 +19,8 @@
 struct attr {
   char const *name;       /**< Name of attribute */
   uint32_t flags;         /**< Attribute flags */
-  chunk_reference_t data; /**< The attribute's value, compressed */
   dbref creator;          /**< The attribute's creator's dbref */
-  ATTR *next;             /**< Pointer to next attribute in list */
+  chunk_reference_t data; /**< The attribute's value, compressed */
 };
 
 /** An alias for an attribute.
@@ -48,6 +47,9 @@ const char *check_attr_value(dbref player, const char *name, const char *value);
 int cnf_attribute_access(char *attrname, char *opts);
 
 void add_new_attr(char *name, uint32_t flags);
+bool attr_reserve(dbref, int);
+void attr_shrink(dbref);
+
 /* From attrib.c */
 
 /** atr_add(), atr_clr() error codes */
@@ -73,13 +75,19 @@ atr_err atr_clr(dbref thing, char const *atr, dbref player);
 atr_err wipe_atr(dbref thing, char const *atr, dbref player);
 ATTR *atr_get(dbref thing, char const *atr);
 ATTR *atr_get_noparent(dbref thing, char const *atr);
+
+/** Flags for atr_iter_get() and friends. */
+enum { AIG_NONE = 0, /**< No special flags */
+       AIG_MORTAL = 0x1, /**< Only look at mortal-visible attributes */
+       AIG_REGEX = 0x2, /**< Use a regular expression instead of glob */
+};
 typedef int (*aig_func)(dbref, dbref, dbref, const char *, ATTR *, void *);
-int atr_iter_get(dbref player, dbref thing, char const *name, int mortal,
-                 int regexp, aig_func func, void *args);
-int atr_iter_get_parent(dbref player, dbref thing, char const *name, int mortal,
-                        int regexp, aig_func func, void *args);
+int atr_iter_get(dbref player, dbref thing, char const *name, unsigned flags,
+                 aig_func func, void *args);
+int atr_iter_get_parent(dbref player, dbref thing, char const *name,
+                        unsigned flags, aig_func func, void *args);
 int atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
-                      int mortal, int regexp);
+                      unsigned flags);
 ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
 void atr_free_all(dbref thing);
 void atr_cpy(dbref dest, dbref source);
@@ -169,9 +177,12 @@ extern ATTR attr[]; /**< external predefined attributes. */
 #define AL_STR(alist) (atr_get_compressed_data((alist)))
 /** The raw length of the (possibly compressed) attribute text. */
 #define AL_STRLEN(alist) ((alist)->data ? chunk_len((alist)->data) : 0)
-#define AL_NEXT(alist) ((alist)->next)
 #define AL_CREATOR(alist) ((alist)->creator)
 #define AL_FLAGS(alist) ((alist)->flags)
 #define AL_DEREFS(alist) ((alist)->data ? chunk_derefs((alist)->data) : 0)
+
+#define ATTR_FOR_EACH(obj, var)                                         \
+  if (List(obj))                                                        \
+    for (var = List(obj); AL_NAME(var); var++)
 
 #endif /* __ATTRIB_H */

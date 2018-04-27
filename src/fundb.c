@@ -111,10 +111,11 @@ FUNCTION(fun_nattr)
   dbref thing;
   int doparent;
   const char *pattern;
-  int regexp = 0;
+  unsigned flags = AIG_NONE;
 
-  if (*called_as == 'R')
-    regexp = 1;
+  if (*called_as == 'R') {
+    flags |= AIG_REGEX;
+  }
   doparent = strchr(called_as, 'P') ? 1 : 0;
 
   pattern = strchr(args[0], '/');
@@ -122,10 +123,10 @@ FUNCTION(fun_nattr)
     args[0][pattern - args[0]] = '\0';
     pattern++;
   } else {
-    pattern = (regexp ? "**" : "*");
+    pattern = ((flags & AIG_REGEX) ? "**" : "*");
   }
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
-    regexp = 0;
+    flags &= ~AIG_REGEX;
   }
 
   thing = match_thing(executor, args[0]);
@@ -134,8 +135,11 @@ FUNCTION(fun_nattr)
     return;
   }
 
-  safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
-                                 !Can_Examine(executor, thing), regexp),
+  if (!Can_Examine(executor, thing)) {
+    flags |= AIG_MORTAL;
+  }
+  
+  safe_integer(atr_pattern_count(executor, thing, pattern, doparent, flags),
                buff, bp);
 }
 
@@ -146,7 +150,7 @@ FUNCTION(fun_lattr)
   char *pattern;
   struct lh_args lh;
   char delim;
-  int regexp = 0;
+  unsigned flags = AIG_NONE;
 
   lh.nattr = lh.start = lh.count = 0;
 
@@ -171,14 +175,15 @@ FUNCTION(fun_lattr)
     if (!delim_check(buff, bp, nargs, args, 2, &delim))
       return;
   }
-  if (*called_as == 'R')
-    regexp = 1;
+  if (*called_as == 'R') {
+    flags |= AIG_REGEX;
+  }
 
   pattern = strchr(args[0], '/');
-  if (pattern)
+  if (pattern) {
     *pattern++ = '\0';
-  else if (regexp) {
-    regexp = 0;
+  } else if (flags & AIG_REGEX) {
+    flags &= ~AIG_REGEX;
     pattern = (char *) "**";
   } else
     pattern = (char *) "*";
@@ -193,13 +198,16 @@ FUNCTION(fun_lattr)
   lh.bp = bp;
   lh.delim = delim;
 
+  if (!Can_Examine(executor, thing)) {
+    flags |= AIG_MORTAL;
+  }
+
   if (strchr(called_as, 'P')) {
-    (void) atr_iter_get_parent(executor, thing, pattern,
-                               !Can_Examine(executor, thing), regexp,
+    (void) atr_iter_get_parent(executor, thing, pattern, flags,
                                lattr_helper, &lh);
   } else {
-    (void) atr_iter_get(executor, thing, pattern, !Can_Examine(executor, thing),
-                        regexp, lattr_helper, &lh);
+    (void) atr_iter_get(executor, thing, pattern, flags,
+                        lattr_helper, &lh);
   }
 }
 

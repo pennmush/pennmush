@@ -568,7 +568,7 @@ make_player(const char *name, const char *password, const char *host,
   (void) atr_add(player, "LASTSITE", host, GOD, 0);
   (void) atr_add(player, "LASTIP", ip, GOD, 0);
   (void) atr_add(player, "LASTFAILED", " ", GOD, 0);
-  sprintf(temp, "%d", START_QUOTA);
+  snprintf(temp, sizeof temp, "%d", START_QUOTA);
   (void) atr_add(player, "RQUOTA", temp, GOD, 0);
   (void) atr_add(player, "MAILCURF", "0", GOD,
                  AF_LOCKED | AF_NOPROG | AF_WIZARD);

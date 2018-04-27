@@ -249,7 +249,7 @@ bool
 call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
               NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
 {
-  char rbuff[BUFFER_LEN];
+  char rbuff[BUFFER_LEN + 40];
   char *rp, *np = NULL;
   int pe_ret;
   char const *ap;

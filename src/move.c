@@ -405,7 +405,7 @@ do_move(dbref player, const char *direction, enum move_type type,
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
       char msg[BUFFER_LEN];
-      sprintf(msg, T("%s goes home."), AName(player, AN_MOVE, NULL));
+      snprintf(msg, sizeof msg, T("%s goes home."), AName(player, AN_MOVE, NULL));
       /* tell everybody else */
       notify_except(player, loc, player, msg, NA_INTER_SEE);
     }
@@ -1462,10 +1462,11 @@ follower_command(dbref leader, dbref loc, const char *com, dbref toward)
   char combuf[BUFFER_LEN];
   if (!com || !*com)
     return;
-  if (toward != NOTHING)
-    sprintf(combuf, "%s #%d", com, toward);
-  else
+  if (toward != NOTHING) {
+    snprintf(combuf, sizeof combuf, "%s #%d", com, toward);
+  } else {
     strcpy(combuf, com);
+  }
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
     return; /* No followers */

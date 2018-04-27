@@ -76,6 +76,8 @@ json_escape_string(char *input)
       // Nothing
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
+    } else if (*p > 127 || *p <= 0x1F) {
+      safe_format(buff, &bp, "\\u%.4X", (unsigned)*p);
     } else {
       if (*p == '"' || *p == '\\')
         safe_chr('\\', buff, &bp);
@@ -109,6 +111,18 @@ json_unescape_string(char *input)
       case 't':
         safe_chr('\t', buff, &bp);
         break;
+      case 'u': {
+        unsigned int uchar;
+        char *end;
+        uchar = strtoul(p + 1, &end, 16);
+        if (end - p != 5 || uchar > 255 || !isprint(uchar)) {
+          safe_chr('?', buff, &bp);
+        } else {
+          safe_chr(uchar, buff, &bp);
+        }
+        p = end - 1;
+        break;
+      }
       case '"':
       case '\\':
         safe_chr(*p, buff, &bp);

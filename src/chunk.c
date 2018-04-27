@@ -247,6 +247,7 @@
 #include "log.h"
 #include "mymalloc.h"
 #include "notify.h"
+#include "strutil.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
@@ -868,7 +869,8 @@ debug_log(char const *format, ...)
   va_list args;
 
   va_start(args, format);
-  vsprintf(rolling_log[rolling_pos], format, args);
+  mush_vsnprintf(rolling_log[rolling_pos], ROLLING_LOG_ENTRY_LEN,
+                 format, args);
   va_end(args);
 
   rolling_log[rolling_pos][ROLLING_LOG_ENTRY_LEN - 1] = '\0';
@@ -2118,7 +2120,7 @@ chunk_histogram(dbref player, int const *histogram, char const *legend)
     k = histogram[j * 4 + 0] + histogram[j * 4 + 1] + histogram[j * 4 + 2] +
         histogram[j * 4 + 3];
     if (k > max) {
-      sprintf(num, "(%d)", k);
+      snprintf(num, sizeof num, "(%d)", k);
       if (j < 32) {
         if (j < pen)
           ante = 18;
@@ -2641,7 +2643,7 @@ acc_chunk_fork_file(void)
 
   j = 0;
   for (;;) {
-    sprintf(child_filename, "%s.%d", CHUNK_SWAP_FILE, j);
+    snprintf(child_filename, sizeof child_filename, "%s.%d", CHUNK_SWAP_FILE, j);
     swap_fd_child = open(child_filename, O_RDWR | O_EXCL | O_CREAT, 0600);
     if (swap_fd_child >= 0)
       break;

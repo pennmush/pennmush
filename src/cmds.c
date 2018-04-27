@@ -747,7 +747,6 @@ COMMAND(cmd_link)
           queue_entry->pe_info);
 }
 
-extern slab *attrib_slab;
 extern slab *bvm_asmnode_slab;
 extern slab *chanlist_slab;
 extern slab *chanuser_slab;
@@ -776,7 +775,6 @@ do_list_allocations(dbref player)
      to verify that each slab is never recreated. To be safe, just make it
      non-static for now. */
   const slab *const slabs[] = {
-    attrib_slab,
 #ifdef DEBUG
     /* This should always be 0. No need to display it most of the
        time. */

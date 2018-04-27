@@ -545,7 +545,7 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
                   AName(target, AN_SYS, NULL), AL_NAME(atr));
     return;
   }
-  if (AL_FLAGS(atr) & AF_ROOT)
+  if (AF_Root(atr))
     flags |= AF_ROOT;
   else
     flags &= ~AF_ROOT;
@@ -591,7 +591,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
 
   af.clrflags = mush_strdup(atrflag_to_string(af.clrf), "af_flag list");
   af.setflags = mush_strdup(atrflag_to_string(af.setf), "af_flag list");
-  if (!atr_iter_get(player, thing, atrname, 0, 0, af_helper, &af))
+  if (!atr_iter_get(player, thing, atrname, AIG_NONE, af_helper, &af))
     notify(player, T("No attribute found to change."));
   mush_free(af.clrflags, "af_flag list");
   mush_free(af.setflags, "af_flag list");
@@ -986,7 +986,7 @@ do_edit(dbref player, char *it, char **argv, int flags)
   args.skipped = 0;
   args.edited = 0;
 
-  if (!atr_iter_get(player, thing, q, 0, 0, edit_helper, &args))
+  if (!atr_iter_get(player, thing, q, AIG_NONE, edit_helper, &args))
     notify(player, T("No matching attributes."));
   else if (flags & EDIT_QUIET)
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
@@ -1242,7 +1242,7 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   args.pe_info = pe_info;
   args.call_limit_hit = 0;
 
-  if (!atr_iter_get(player, thing, q, 0, 0, regedit_helper, &args))
+  if (!atr_iter_get(player, thing, q, AIG_NONE, regedit_helper, &args))
     notify(player, T("No matching attributes."));
   else if (flags & EDIT_QUIET)
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
@@ -1507,6 +1507,8 @@ wipe_helper(dbref player, dbref thing, dbref parent __attribute__((__unused__)),
   }
 }
 
+bool in_wipe = false;
+
 /** Clear an attribute.
  * \verbatim
  * This implements @wipe.
@@ -1545,8 +1547,9 @@ do_wipe(dbref player, char *name)
     notify(player, T("That object is protected."));
     return;
   }
-
-  wiped = atr_iter_get(player, thing, pattern, 0, 0, wipe_helper, NULL);
+  in_wipe = true;
+  wiped = atr_iter_get(player, thing, pattern, AIG_NONE, wipe_helper, NULL);
+  in_wipe = false;
   switch (wiped) {
   case 0:
     notify(player, T("No attributes wiped."));

@@ -94,9 +94,10 @@ migrate_stuff(int amount)
   end_obj = start_obj;
   actual = 0;
   do {
-    for (aptr = List(end_obj); aptr; aptr = AL_NEXT(aptr))
+    ATTR_FOR_EACH(end_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE)
         actual++;
+    }
     for (lptr = Locks(end_obj); lptr; lptr = L_NEXT(lptr))
       if (L_KEY(lptr) != NULL_CHUNK_REFERENCE)
         actual++;
@@ -127,11 +128,12 @@ migrate_stuff(int amount)
 
   actual = 0;
   do {
-    for (aptr = List(start_obj); aptr; aptr = AL_NEXT(aptr))
+    ATTR_FOR_EACH(start_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE) {
         refs[actual] = &(aptr->data);
         actual++;
       }
+    }
     for (lptr = Locks(start_obj); lptr; lptr = L_NEXT(lptr))
       if (L_KEY(lptr) != NULL_CHUNK_REFERENCE) {
         refs[actual] = &(lptr->key);
@@ -283,7 +285,7 @@ init_sys_events(void)
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
-sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
+volatile sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
 int cpu_limit_warning_sent = 0;      /** Have we issued a cpu limit warning? */
 
 #ifndef PROFILING

@@ -309,7 +309,7 @@ StopService(LPTSTR lpszMsg)
   /*  Use event logging to log the error. */
   hEventSource = RegisterEventSource(NULL, THIS_SERVICE);
 
-  sprintf(chMsg, "%s error: %s", THIS_SERVICE, convert_error(dwGlobalErr));
+  snprintf(chMsg, sizeof chMsg, "%s error: %s", THIS_SERVICE, convert_error(dwGlobalErr));
   lpszStrings[0] = chMsg;
   lpszStrings[1] = lpszMsg;
 
@@ -793,7 +793,7 @@ convert_error(DWORD error)
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |
           FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL, error, LANG_NEUTRAL, (LPTSTR) &formattedmsg, 0, NULL)) {
-    sprintf(buff, "<Error code: %ld>", error);
+    snprintf(buff, sizeof buff, "<Error code: %ld>", error);
     return buff;
   } else
     return formattedmsg;

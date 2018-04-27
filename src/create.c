@@ -497,7 +497,7 @@ do_dig(dbref player, const char *name, char **argv, int tport,
     notify_format(player, T("%s created with room number %d."), name, room);
     if (argv[1] && *argv[1]) {
       char nbuff[MAX_COMMAND_LEN];
-      sprintf(nbuff, "#%d", room);
+      snprintf(nbuff, sizeof nbuff, "#%d", room);
       do_real_open(player, argv[1], nbuff, NOTHING, pe_info);
     }
     if (argv[2] && *argv[2]) {
@@ -509,7 +509,7 @@ do_dig(dbref player, const char *name, char **argv, int tport,
       /* We need to use the full command, because we need NO_TEL
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
-      sprintf(roomstr, "#%d", room);
+      snprintf(roomstr, sizeof roomstr, "#%d", room);
       do_teleport(player, "me", roomstr, TEL_DEFAULT,
                   pe_info); /* if flag, move the player */
     }
@@ -618,6 +618,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     set_name(clone, Name(thing));
   s_Pennies(clone, Pennies(thing));
   AttrCount(clone) = 0;
+  AttrCap(clone) = 0;
   List(clone) = NULL;
   Locks(clone) = NULL;
   clone_locks(player, thing, clone);

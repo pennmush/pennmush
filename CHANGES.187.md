@@ -22,8 +22,12 @@ Version 1.8.7 patchlevel 0 ??? ?? 20??
 Major Changes
 -------------
 
-* Support websocket connections. See <https://github.com/grapenut/websockclient> for a
-  sample in-browser client. [Grapenut, 1007]
+
+* Support websocket connections. See
+  <https://github.com/grapenut/websockclient> for a sample in-browser
+  client. [Grapenut, 1007]
+* Change attributes from being stored in sorted linked lists to sorted
+  arrays; results in faster lookups and less memory usage. [SW]
 * Penn now comes with the Sqlite3 database engine bundled with it, and
   uses it internally in a few ways:
     * 3 different tables for looking up color names are combined into
@@ -49,6 +53,8 @@ Softcode
 * json_query() get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
 * json_query() can apply merge patches to json objects per <https://tools.ietf.org/html/rfc7396>
 * Added isjson()
+* json_query(str, unescape) handles unicode escape sequences.
+* json(string, foo) escapes non-ascii characters.
 
 Fixes
 -----

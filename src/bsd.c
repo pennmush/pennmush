@@ -298,10 +298,10 @@ int maxd = 0;
 
 extern const unsigned char *tables;
 
-sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
-sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
-sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
-sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
+volatile sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
+volatile sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
+volatile sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
+volatile sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -412,13 +412,13 @@ void usr1_handler(int);
 void reaper(int sig);
 #endif
 #ifndef WIN32
-sig_atomic_t dump_error = 0;
+volatile sig_atomic_t dump_error = 0;
 WAIT_TYPE dump_status = 0;
 #ifdef INFO_SLAVE
-sig_atomic_t slave_error = 0;
+volatile sig_atomic_t slave_error = 0;
 #endif
 #ifdef SSL_SLAVE
-sig_atomic_t ssl_slave_error = 0;
+volatile sig_atomic_t ssl_slave_error = 0;
 extern bool ssl_slave_halted;
 #endif
 WAIT_TYPE error_code = 0;
@@ -4660,7 +4660,7 @@ dump_users(DESC *call_by, char *match)
     if (nlen < 16)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
-    sprintf(tbuf, "%s %10s   %4s%c %s", nbuff,
+    snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
             onfor_time_fmt(d->connected_at, 10), idle_time_fmt(d->last_time, 4),
             (Dark(d->player) ? 'D' : ' '),
             get_doing(d->player, NOTHING, NOTHING, NULL, 0));
@@ -4861,7 +4861,7 @@ do_who_admin(dbref player, char *name)
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
     } else {
-      sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s", T("Connecting..."),
               "#-1", onfor_time_fmt(d->connected_at, 9),
               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
               is_ssl_desc(d) ? 'S' : ' ', d->addr);

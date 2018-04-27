@@ -705,7 +705,7 @@ free_object(dbref thing)
 
   /* chomp chomp */
   atr_free_all(thing);
-  List(thing) = NULL;
+
   /* don't eat name otherwise examine will crash */
 
   free_locks(Locks(thing));
@@ -1031,6 +1031,7 @@ purge(void)
         set_flag_internal(thing, "GOING_TWICE");
       }
     } else {
+      attr_shrink(thing);
       continue;
     }
   }
@@ -1180,7 +1181,7 @@ check_fields(void)
        * an invalid dbref, change its ownership to God.
        */
       if (!IsGarbage(thing))
-        atr_iter_get(GOD, thing, "**", 0, 0, attribute_owner_helper, NULL);
+        atr_iter_get(GOD, thing, "**", AIG_NONE, attribute_owner_helper, NULL);
     }
   }
 }

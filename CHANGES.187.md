@@ -32,16 +32,17 @@ Minor Changes
 -------------
 
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
-* Shrink the NEW_PE_INFO struct, for signficant memory savings in softcode that queues lots of commands. [SW]
+* Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 
 Softcode
 --------
 
-* Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
-* Functions that work on integers (Like div() or band()) now use 64-bit values instead of 32-bit. [SW]
-* json_query() get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
-* json_query(str, unescape) handles unicode escape sequences.
-* json(string, foo) escapes non-ascii characters.
+* Support all of Rhost's `colors()` key arguments (Except n). [SW, 1112]
+* Functions that work on integers (Like `div()` or `band()`) now use 64-bit values instead of 32-bit. [SW]
+* `json_query()` get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
+* `json_query(str, unescape)` handles unicode escape sequences.
+* `json(string, foo)` escapes non-ascii characters.
+* `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
 
 Fixes
 -----
@@ -49,12 +50,13 @@ Fixes
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
 * `@grep/iprint` hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
 * `@mail` wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
-* Connecting with a web browser to a mush without a mud_url config option set caused an infinite refresh loop. Reported by grapenut. [1149]
-* Make sure sigrecv_ack() won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
-* Pass pe_info into IDLE and HAVEN attributes from the page command. [MG]
-* The x and X options to align() now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
-* json_query() didn't understand an action of 'type' as documented. [SW]
+* Connecting with a web browser to a mush without a `mud_url` config option set caused an infinite refresh loop. Reported by grapenut. [1149]
+* Make sure `sigrecv_ack()` won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
+* Pass `pe_info` into IDLE and HAVEN attributes from the page command. [MG]
+* The x and X options to `align()` now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
+* `json_query()` didn't understand an action of 'type' as documented. [SW]
 * Assorted help file fixes. [SW]
+* `@clone` without /preserve wasn't stripping privleged flags and such. [1190,SW]
 
 Documentation
 -------------
@@ -67,11 +69,11 @@ OS Specific
 
 ### BSDs in general ###
 
-* info_slave and ssl_slave use kqueue() to efficiently be notified of parent mush crashes.
+* `info_slave` and `ssl_slave` use `kqueue()` to efficiently be notified of parent mush crashes.
 
 ### OpenBSD ###
 
-* netmush and slave processes use pledge(2) to limit their privileges. [SW]
+* netmush and slave processes use `pledge(2)` to limit their privileges. [SW]
 
 ### Windows ###
 

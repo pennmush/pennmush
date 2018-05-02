@@ -22,17 +22,15 @@ Version 1.8.7 patchlevel 0 ??? ?? 20??
 Major Changes
 -------------
 
-* Support websocket connections. See
-  <https://github.com/grapenut/websockclient> for a sample in-browser
-  client. [Grapenut, 1007]
-* Change attributes from being stored in sorted linked lists to sorted
-  arrays; results in faster lookups and less memory usage. [SW]
+* Support websocket connections. See <https://github.com/grapenut/websockclient> for a sample in-browser client. [Grapenut, 1007]
+* Change attributes from being stored in sorted linked lists to sorted arrays; results in faster lookups and less memory usage. [SW]
 
 Minor Changes
 -------------
 
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
+* Add more test cases to the softcode test suite. [SW]
 
 Softcode
 --------
@@ -56,7 +54,7 @@ Fixes
 * The x and X options to `align()` now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 * `json_query()` didn't understand an action of 'type' as documented. [SW]
 * Assorted help file fixes. [SW]
-* `@clone` without /preserve wasn't stripping privleged flags and such. [1190,SW]
+* `@clone` without /preserve wasn't stripping privileged flags and such. [1190,SW]
 
 Documentation
 -------------

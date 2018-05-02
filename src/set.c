@@ -340,7 +340,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
     Powers(thing) = new_flag_bitmask("POWER");
     do_halt(thing, "", thing);
   } else {
-   if ((newowner != player) && Wizard(thing) && !Wizard(newowner)) {
+   if (preserve == 1 && (newowner != player) && Wizard(thing) && !Wizard(newowner)) {
       notify_format(player,
                   T("Warning: WIZ flag reset on #%d because "
                   "@CHOWN/PRESERVE is to a non-WIZ flagged third-party."),

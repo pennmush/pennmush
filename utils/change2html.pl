@@ -4,25 +4,27 @@
 # c.p.o release announcements, etc.
 
 # Usage:
-# utils/change2html.pl [-r VERSION] [-f] CHANGES.184 ... > output.html
+# utils/change2html.pl [-r VERSION] [-t TITLE] [-f] CHANGES.184 ... > output.html
 
 # If a specific version isn't given, converts all entries in all files
 # given on command line. Versions look like 1.8.4p6
 
 # -f produces a complete html document.
+# -t TITLE is used as the title of the document. Only meaningful with -f.
 
 use warnings;
 use strict;
 use Getopt::Std;
 use version 0.77;
-use CGI ':html';
+use HTML::Entities;
 use subs qw/parse_version reset_list print_line/;
 
-our ($opt_r, $opt_f);
+our ($opt_r, $opt_f, $opt_t);
 
 $opt_r = undef;
+$opt_t = "PennMUSH Changes";
 
-die "Usage: $0 [-r VERSION] [-f] FILE ...\n" unless getopts("fr:");
+die "Usage: $0 [-r VERSION] [-f] FILE ...\n" unless getopts("fr:t:");
 
 my $display = 0;
 
@@ -42,9 +44,9 @@ my $in_elem = 0;
 my $line = "";
 
 if ($opt_f) {
-    print start_html("PennMUSH Changes");
-    print h1({-style => "text-align:center"},
-	     $opt_r ? "Changes in this version" : "PennMUSH Changes"), "\n";
+    print_header("$opt_t");
+    print '<h1 style="text-align:center">Changes in this version</h1>', "\n"
+        if $opt_r;
 }
 
 while (<>) {
@@ -67,16 +69,16 @@ while (<>) {
 	}
 	
 	if ($display) {
-	    $_ =~ m/^(Version \d+\.\d+\.\d+ patchlevel \d+)\s+(\S\S\S\s+\S\S,\s+\S\S\S\S)/;
+	    $_ =~ m/^(Version \d+\.\d+\.\d+ patchlevel \d+)\s+(\S+\s+\d+,\s+\d+)/;
 	    reset_list;
-	    print hr(), "\n";
-	    print h2("$1 ($2)"), "\n\n";
+	    print "<hr>\n";
+	    print "<h2>$1 ($2)</h2>\n\n";
 	}
 
     } elsif (/^([\w\s]+):/) {
 	if ($display) {
 	    reset_list;
-	    print h3($1), "\n\n <ul>\n";
+	    print "<h3>$1</h3>\n\n <ul>\n";
 	    $in_list = 1;
 	}
     } elsif (/^\s+\* (.*)/) {
@@ -95,7 +97,7 @@ while (<>) {
 
 reset_list;
 
-print end_html(), "\n" if $opt_f;
+print "</body>\n</html>\n" if $opt_f;
 
 sub parse_version {
     my $vers = shift;
@@ -115,7 +117,7 @@ sub reset_list {
 
 sub print_line { 
     
-    $line = escapeHTML $line;
+    $line = encode_entities($line);
 
     ## Pretty printing
     # Things that look like commands and functions
@@ -128,12 +130,26 @@ sub print_line {
     # And credits
     $line =~ s#(Suggested|Reported) by ([^.,]+)#$1 by <em>$2</em>#;
 
-    print "  ", li($line), "\n";
+    print "  <li>", $line, "</li>\n";
     $line = "";
     $in_elem = 0;
 }
 
-
+sub print_header {
+    my $title = shift;
+    print <<EOH;
+<!DOCTYPE html>
+<html>
+<head>
+ <title>$title</title>
+ <link rel="stylesheet" href="mushdoc.css">
+</head>
+<body>
+<header>
+<h1 class="title">$title</h1>
+</header>
+EOH
+}
 
 
 

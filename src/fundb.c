@@ -2152,6 +2152,8 @@ FUNCTION(fun_dig)
 /* ARGSUSED */
 FUNCTION(fun_clone)
 {
+  bool preserve = false;
+
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -2161,8 +2163,13 @@ FUNCTION(fun_clone)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_clone(executor, args[0], args[1], 0, args[2], pe_info), buff,
-             bp);
+
+  if (nargs == 4 && strcasecmp(args[3], "preserve") == 0) {
+    preserve = true;
+  }
+
+  safe_dbref(do_clone(executor, args[0], args[1], preserve, args[2], pe_info),
+             buff, bp);
 }
 
 /* --------------------------------------------------------------------------

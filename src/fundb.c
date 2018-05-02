@@ -1701,24 +1701,71 @@ FUNCTION(fun_money)
 FUNCTION(fun_owner)
 {
   dbref thing;
+  dbref owner;
   ATTR *attrib;
-
-  if (strchr(args[0], '/')) {
-    parse_attrib(executor, args[0], &thing, &attrib);
-    if (!GoodObject(thing) || !attrib ||
-        !Can_Read_Attr(executor, thing, attrib))
-      safe_str("#-1", buff, bp);
-    else
-      safe_dbref(attrib->creator, buff, bp);
+  
+  if (nargs == 1) {
+    if (strchr(args[0], '/')) {
+      parse_attrib(executor, args[0], &thing, &attrib);
+      if (!GoodObject(thing) || !attrib ||
+          !Can_Read_Attr(executor, thing, attrib))
+        safe_str("#-1", buff, bp);
+      else
+        safe_dbref(attrib->creator, buff, bp);
+    } else { 
+      thing = match_thing(executor, args[0]);
+      if (!GoodObject(thing))
+        safe_str(T(e_notvis), buff, bp);
+      else 
+        safe_dbref(Owner(thing), buff, bp);
+    }
   } else {
-    thing = match_thing(executor, args[0]);
-    if (!GoodObject(thing))
-      safe_str(T(e_notvis), buff, bp);
-    else
-      safe_dbref(Owner(thing), buff, bp);
+    /* Support changing ownership if side effect functions are enabled. */
+    
+    if(!FUNCTION_SIDE_EFFECTS) {
+      safe_str(T(e_disabled),buff, bp);
+      return;
+    }
+    if (!command_check_byname(executor, "@chown", pe_info) || fun->flags & FN_NOSIDEFX) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    if (strchr(args[0], '/')) {
+      parse_attrib(executor, args[0], &thing, &attrib);
+      if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
+        safe_str("#-1", buff, bp);
+        return;
+      }
+      owner = attrib->creator;
+      do_atrchown(executor, args[0], args[1]);
+      parse_attrib(executor, args[0], &thing, &attrib);
+      if (attrib->creator == owner) 
+        safe_integer(0, buff, bp);
+      else
+        safe_integer(1, buff, bp);
+    } else {
+      int match_flags = MAT_POSSESSION | MAT_HERE | MAT_EXIT | MAT_ABSOLUTE;
+
+      if (Wizard(executor))
+        match_flags |= MAT_PLAYER;  
+     // Look up the thing now, and store it's owner. We'll check owner again after so we can report success/failure.
+      thing = noisy_match_result(executor, args[0], TYPE_THING, match_flags);
+      if(!GoodObject(thing)) {
+        safe_str(T(e_notvis), buff, bp);
+        return;
+      }
+      owner = Owner(thing);
+      if (nargs == 3 && args[2] && string_prefix("preserve", args[2]))
+        do_chown(executor, args[0], args[1], 1, pe_info);
+      else
+        do_chown(executor, args[0], args[1], 0, pe_info);
+      if (Owner(thing) == owner) // Owner hasn't changed, send 0
+        safe_integer(0, buff, bp);
+      else
+        safe_integer(1, buff, bp);
+    }
   }
 }
-
 /* ARGSUSED */
 FUNCTION(fun_alias)
 {

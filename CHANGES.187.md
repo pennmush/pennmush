@@ -42,6 +42,7 @@ Softcode
 * json_query() get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
 * json_query(str, unescape) handles unicode escape sequences.
 * json(string, foo) escapes non-ascii characters.
+* owner() now accepts two optional arguments for changing ownership as in @chown and @atrchown. PR by Qon. 
 
 Fixes
 -----

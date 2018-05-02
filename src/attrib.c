@@ -1588,7 +1588,7 @@ atr_cpy(dbref dest, dbref source)
   attr_reserve(dest, AttrCount(source));
 
   ATTR_FOR_EACH (source, ptr) {
-    if (AttrCount(dest) < max_attrs) {
+    if (AttrCount(dest) > max_attrs) {
       break;
     }
     if (!AF_Nocopy(ptr)) {

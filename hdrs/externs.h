@@ -222,7 +222,7 @@ void do_open(dbref player, const char *direction, char **links,
 void do_link(dbref player, const char *name, const char *room_name,
              int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
-dbref do_clone(dbref player, char *name, char *newname, int preserve,
+dbref do_clone(dbref player, char *name, char *newname, bool preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */

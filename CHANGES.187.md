@@ -57,6 +57,7 @@ Fixes
 * `json_query()` didn't understand an action of 'type' as documented. [SW]
 * Assorted help file fixes. [SW]
 * `@clone` without /preserve wasn't stripping privleged flags and such. [1190,SW]
+* `@chown/preserve` was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
 
 Documentation
 -------------

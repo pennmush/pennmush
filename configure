@@ -6682,6 +6682,19 @@ fi
 
 
 
+for ac_header
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+(curl/curl.h)
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
@@ -9435,6 +9448,12 @@ if test "$enable_ipv6" = yes; then
   echo "* IPv6 sockets will be used if possible."
 else
   echo "* Sockets are limited to IPv4"
+fi
+
+if test "x$CURL_CONFIG" != "x"; then
+   echo "* libcurl will be used for @HTTP"
+else
+   echo "* No libcurl. @HTTP disabled."
 fi
 
 ac_config_files="$ac_config_files Makefile src/Makefile"

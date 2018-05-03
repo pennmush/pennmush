@@ -527,6 +527,12 @@ else
   echo "* Sockets are limited to IPv4"
 fi
 
+if test "x$CURL_CONFIG" != "x"; then
+   echo "* libcurl will be used for @HTTP"
+else
+   echo "* No libcurl. @HTTP disabled."
+fi
+
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_FILES([game/txt/compose.sh], [chmod +x game/txt/compose.sh])
 AC_CONFIG_FILES([test/alltests.sh], [chmod +x test/alltests.sh])

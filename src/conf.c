@@ -1874,4 +1874,9 @@ show_compile_options(dbref player)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
 #endif
+
+#ifdef HAVE_LIBCURL
+  notify(player, T(" @HTTP is supported."));
+#endif
+
 }

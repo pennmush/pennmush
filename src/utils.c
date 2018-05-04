@@ -104,6 +104,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   char *thingname, *attrname;
   char astring[BUFFER_LEN];
   ATTR *attrib;
+  char *stripped = remove_markup(attrstring, NULL);
 
   if (!ufun)
     return 0;
@@ -117,9 +118,9 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-  if (!attrstring)
+  if (!stripped)
     return 0;
-  strncpy(astring, attrstring, BUFFER_LEN);
+  strncpy(astring, stripped, BUFFER_LEN);
 
   /* Split obj/attr */
   if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {

@@ -41,6 +41,7 @@ Softcode
 * `json_query(str, unescape)` handles unicode escape sequences.
 * `json(string, foo)` escapes non-ascii characters.
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
+* New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
 
 Fixes
@@ -57,12 +58,15 @@ Fixes
 * Assorted help file fixes. [SW]
 * `@clone` without /preserve wasn't stripping privileged flags and such. [1190,SW]
 * `@chown/preserve` was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
+* `scan()` now determines if objects will be included based on whether the caller can examine them, rather than if `scan()`'s `<looker>` can examine them. [MG]
+* Fixed some bugs regarding when `setq()` will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
 
 Documentation
 -------------
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
+* Minor help fixes. [MG]
 
 OS Specific
 -----------

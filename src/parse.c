@@ -944,6 +944,24 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
     pval = pval->next;                                                         \
   } while (pval)
 
+/** Is the given key a named register (not A-Z or 0-9)?
+ */
+bool
+is_named_register(const char *key)
+{
+  if (!key || !*key)
+    return 1;
+
+  if (key[1] != '\0')
+    return 1;
+
+  if ((key[0] >= 'a' && key[0] <= 'z') || (key[0] >= 'A' && key[0] <= 'Z') ||
+      (key[0] >= '0' && key[0] <= '9'))
+    return 0;
+
+  return 1;
+}  
+
 /** Set a string value in a PE_REGS structure.
  *
  * pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
@@ -988,8 +1006,7 @@ pe_regs_set_if(PE_REGS *pe_regs, int type, const char *lckey, const char *val,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
-                                 (key[0] >= '0' && key[0] <= '9')))) {
+      if (is_named_register(key)) {
         pe_regs->qcount++;
       }
     }
@@ -1038,8 +1055,7 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *lckey, int val,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
-                                 (key[0] >= '0' && key[0] <= '9')))) {
+      if (is_named_register(key)) {
         pe_regs->qcount++;
       }
     }
@@ -1284,7 +1300,7 @@ pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val)
     pe_regs = pe_regs->prev;
   }
   /* Single-character keys ignore attrcount. */
-  if ((count >= MAX_NAMED_QREGS) && key[1]) {
+  if ((count >= MAX_NAMED_QREGS) && is_named_register(key) && !PE_Getq(pe_info, key)) {
     return 0;
   }
   /* Find the p_regs to setq() in. */

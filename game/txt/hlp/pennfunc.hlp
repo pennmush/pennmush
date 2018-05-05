@@ -474,9 +474,9 @@ See also: BOOLEAN VALUES, nand(), or(), xor(), not(), lmath()
   andlflags(<object>, <list of flag names>)
   
   These functions return 1 if <object> has all of the given flags, and 0 if it does not. andflags() takes a string of single flag letters, while andlflags() takes a space-separated list of flag names. In both cases, a ! before the flag means "not flag".
-  
-  If any of the flags given are invalid, both functions return "#-1 INVALID FLAG".
-  
+
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID FLAG' is returned. Unknown flags are treated as being not set.
+
   Example: Check to see if %# is set Wizard and Dark, but not Ansi.
     > say andflags(%#, WD!A)
     > say andlflags(%#, wizard dark !ansi)
@@ -489,7 +489,7 @@ See also: orflags(), flags(), lflags()
 
   Thus, ANDLPOWERS(me, no_quota no_pay) would return 1 if I was powered no_quota and no_pay. ANDLPOWERS(me, poll !guest) would return 1 if I had the poll power but not the guest power.
 
-  If a name does not correspond to any power, andlpowers() returns "#-1 INVALID POWER".
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID POWER' is returned. Unknown powers are treated as being not set.
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
@@ -3087,7 +3087,7 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof(), lmath()
 
   These functions return 1 if <object> has any of the given flags, and 0 if it does not. orflags() takes a string of single flag letters, while orlflags() takes a space-separated list of flag names. In both cases, a ! before the flag means "not flag".
   
-  If any of the flags given are invalid, both functions return "#-1 INVALID FLAG".
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID FLAG' is returned. Unknown flags are treated as being not set.
   
   Examples: Check to see if %# is set Wizard, Dark, or not set Ansi.
     > say orflags(%#, WD!A)
@@ -3101,7 +3101,7 @@ See also: andflags(), flags(), lflags(), orlpowers()
 
   Thus, ORLPOWERS(me, poll login) would return 1 if I have the poll and login powers. ORLFLAGS(me, functions !guest) would return 1 if I have the functions power or are not a guest.
 
-  If a name does not correspond to any power, orlpowers() returns "#-1 INVALID POWER".
+  If there is a syntax error like a ! without a following power, '#-1 INVALID POWER' is returned. Unknown powers are treated as being not set.
   
 See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()

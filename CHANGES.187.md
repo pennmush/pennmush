@@ -41,6 +41,7 @@ Softcode
 * `json_query(str, unescape)` handles unicode escape sequences.
 * `json(string, foo)` escapes non-ascii characters.
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
+* `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
 
 Fixes
 -----

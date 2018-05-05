@@ -1378,7 +1378,11 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
                : Can_Read_Attr(player, thing, ptr)) &&
               ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
                : atr_wild(name, AL_NAME(ptr)))) {
-            result += func(player, thing, NOTHING, name, ptr, args);
+            int r = func(player, thing, NOTHING, name, ptr, args);
+            result += r;
+            if (r && in_wipe) {
+              ptr -= 1;
+            }
           }
         }
         ptr = prev;

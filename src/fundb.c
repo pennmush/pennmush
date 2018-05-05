@@ -1772,6 +1772,7 @@ FUNCTION(fun_name)
       safe_str(shortname(it), buff, bp);
     else
       safe_str(T(e_notvis), buff, bp);
+    return;
   }
 
   /* Rename object */

@@ -31,6 +31,7 @@ Minor Changes
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
+* log_forces in mushcnf.dost now defaults to no. You probably only want this on if you're debugging. [MG]
 
 Softcode
 --------

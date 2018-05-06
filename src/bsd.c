@@ -1645,15 +1645,11 @@ fcache_dump(DESC *d, FBLOCK fb[2], const char *prefix, char *arg)
 /** Read in a single cached text file
  * \param fb block to store text in
  * \param filename file to read
+ * \return -1 on error, or number of bytes read from filename
  */
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
-  char objname[BUFFER_LEN];
-  char *attrib;
-  dbref thing;
-  size_t len;
-
   if (!fb || !filename)
     return -1;
 
@@ -1662,24 +1658,28 @@ fcache_read(FBLOCK *fb, const char *filename)
     mush_free(fb->buff, "fcache_data");
   }
 
+  if (!*filename) {
+    return -1;
+  }
+  
   fb->buff = NULL;
   fb->len = 0;
   fb->thing = NOTHING;
   /* Check for #dbref/attr */
   if (*filename == NUMBER_TOKEN) {
+    char objname[BUFFER_LEN];
+    char *attrib;
+    dbref thing;
+
     strcpy(objname, filename);
     if ((attrib = strchr(objname, '/')) != NULL) {
       *attrib++ = '\0';
       if ((thing = qparse_dbref(objname)) != NOTHING) {
         /* we have #dbref/attr */
-        if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
-          return -1;
-        }
-        len = strlen(attrib);
+        fb->buff = mush_strdup(attrib, "fcache_data");
+        upcasestr(fb->buff);
+        fb->len = strlen(fb->buff);
         fb->thing = thing;
-        fb->len = len;
-        memcpy(fb->buff, upcasestr(attrib), len);
-        *((char *) fb->buff + len) = '\0';
         return fb->len;
       }
     }

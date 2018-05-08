@@ -118,7 +118,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
           safe_str(delim, results, &rp);
         }
         topic = (char *)sqlite3_column_text(searcher, 0);
-        topiclen = sqlite3_column_bytes(searcher, 1);
+        topiclen = sqlite3_column_bytes(searcher, 0);
         safe_strl(topic, topiclen, results, &rp);
       } else {
         topic = (char *)sqlite3_column_text(searcher, 0);
@@ -428,7 +428,9 @@ help_rebuild(dbref player)
     help_delete_entries(curr);
     help_populate_entries(curr);
   }
-  sqlite3_exec(help_db, "VACUUM", NULL, NULL, NULL);
+  sqlite3_exec(help_db, "INSERT INTO helpfts(helpfts) VALUES ('optimize');"
+               "VACUUM",
+               NULL, NULL, NULL);
   if (player != NOTHING) {
     notify(player, T("Help files reindexed."));
     do_rawlog(LT_WIZ, "Help files reindexed by %s(#%d)", Name(player), player);
@@ -890,7 +892,7 @@ string_spitfile(help_file *help_dat, char *arg1)
   struct help_entry *entry = NULL;
   char the_topic[LINE_SIZE + 2];
   static char buff[BUFFER_LEN];
-  char *bp;
+  char *bp = buff;
   int offset = 0;
 
   strcpy(the_topic, normalize_entry(help_dat, arg1));
@@ -909,6 +911,7 @@ string_spitfile(help_file *help_dat, char *arg1)
     return T("#-1 NO ENTRY");
   }
   safe_strl(entry->body, entry->bodylen, buff, &bp);
+  help_free_entry(entry);
   *bp = '\0';
   return buff;
 }

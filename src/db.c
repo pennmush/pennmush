@@ -2066,6 +2066,8 @@ open_sql_db(const char *name, bool nocreate)
   sqlite3_spellfix_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);
 
+  sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
   return db;
 }
 

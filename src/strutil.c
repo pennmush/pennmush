@@ -1827,3 +1827,36 @@ glob_to_like(const char *orig, char esc, int *len)
   
   return like;
 }
+
+/** Escape SQL like wildcards from a string.
+ *
+ * \param orig the string to escape.
+ * \param esc the character to escape special ones (_%) with.
+ * \param len the length of the returned string, not counting the trailing nul.
+ * \return a newly allocated string.
+ */
+char *
+escape_like(const char *orig, char esc, int *len)
+{
+  char *like;
+  char *lbp;
+
+  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
+
+  while (*orig) {
+    if (*orig == '%' || *orig == '_' || *orig == esc) {
+      safe_chr(esc, like, &lbp);
+      safe_chr(*orig, like, &lbp);
+    } else {
+      safe_chr(*orig, like, &lbp);
+    }
+    orig++;
+  }
+  *lbp = '\0';
+
+  if (len) {
+    *len = lbp - like;
+  }
+  
+  return like;
+}

@@ -1007,7 +1007,7 @@ do_readcache(dbref player)
     return;
   }
   fcache_load(player);
-  help_reindex(player);
+  help_rebuild(player);
   file_watch_init();
 }
 
@@ -2557,6 +2557,43 @@ extern intmap *queue_map, *descs_by_fd;
 extern intmap *watchtable;
 #endif
 
+static void list_sqlite3_stats(dbref player, const char *name, sqlite3 *db)
+{
+#ifdef SQLITE_ENABLE_STMTVTAB
+  sqlite3_stmt *statter;
+  statter = prepare_statement(db, "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt", "list.memstats");
+  if (statter) {
+    int status;
+    notify_format(player, "Prepared query stats for %s database", name);
+    notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s",
+                  "SQL", "nscan", "nsort", "naidx", "nstep",
+                  "reprep", "run", "memory");
+    do {
+      status = sqlite3_step(statter);
+      if (status == SQLITE_ROW) {
+        int nscan, nsort, naidx, nstep, reprep, run, mem;
+        const char *query;
+        query = (const char *)sqlite3_column_text(statter, 0);
+        if (strstr(query, "sqlite_stmt")) {
+          continue;
+        }
+        nscan = sqlite3_column_int(statter, 1);
+        nsort = sqlite3_column_int(statter, 2);
+        naidx = sqlite3_column_int(statter, 3);
+        nstep = sqlite3_column_int(statter, 4);
+        reprep = sqlite3_column_int(statter, 5);
+        run = sqlite3_column_int(statter, 6);
+        mem = sqlite3_column_int(statter, 7);
+
+        notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d",
+                      query, nscan, nsort, naidx, nstep, reprep, run, mem);
+      }
+    } while (status == SQLITE_ROW || is_busy_status(status));
+    sqlite3_reset(statter);
+  }
+#endif
+}
+
 /** Reports stats on various in-memory data structures.
  * \param player the enactor.
  */
@@ -2617,44 +2654,11 @@ do_list_memstats(dbref player)
                 " Using %ld megabytes and %ld kilobytes of memory.",
                 (long)(sqlmem / (1024 * 1024)),
                 (long)((sqlmem % (1024 * 1024)) / 1024));
-  
-
-#ifdef SQLITE_ENABLE_STMTVTAB
   if (Wizard(player)) {
-    sqlite3_stmt *statter;
-    sqlite3 *sqldb = get_shared_db();
-    statter = prepare_statement(sqldb, "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt", "list.memstats");
-    if (statter) {
-      int status;
-      notify(player, "Prepared query stats");
-      notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s",
-                    "SQL", "nscan", "nsort", "naidx", "nstep",
-                    "reprep", "run", "memory");
-      do {
-        status = sqlite3_step(statter);
-        if (status == SQLITE_ROW) {
-          int nscan, nsort, naidx, nstep, reprep, run, mem;
-          const char *query;
-          query = (const char *)sqlite3_column_text(statter, 0);
-          if (strstr(query, "sqlite_stmt")) {
-            continue;
-          }
-          nscan = sqlite3_column_int(statter, 1);
-          nsort = sqlite3_column_int(statter, 2);
-          naidx = sqlite3_column_int(statter, 3);
-          nstep = sqlite3_column_int(statter, 4);
-          reprep = sqlite3_column_int(statter, 5);
-          run = sqlite3_column_int(statter, 6);
-          mem = sqlite3_column_int(statter, 7);
-
-          notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d",
-                        query, nscan, nsort, naidx, nstep, reprep, run, mem);
-        }
-      } while (status == SQLITE_ROW || is_busy_status(status));
-      sqlite3_reset(statter);
-    }
+    extern sqlite3 *help_db;
+    list_sqlite3_stats(player, "temporary", get_shared_db());
+    list_sqlite3_stats(player, "help", help_db);
   }
-#endif
 
 #ifdef COMP_STATS
   if (Wizard(player) && strcmp(options.attr_compression, "word") == 0) {

@@ -16,6 +16,7 @@ sqlite3_stmt* prepare_statement(sqlite3 *, const char *, const char *);
 void close_statement(sqlite3_stmt *);
 
 char *glob_to_like(const char *orig, char esc, int *len) __attribute_malloc__;
+char *escape_like(const char *orig, char esc, int *len) __attribute_malloc__;
 
 bool is_busy_status(int);
 void free_string(void *);

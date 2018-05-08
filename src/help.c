@@ -31,20 +31,38 @@
 #include "pueblo.h"
 #include "strutil.h"
 #include "mushsql.h"
+#include "charconv.h"
+
+#define LINE_SIZE 90
+#define TOPIC_NAME_LEN 30
+
+struct help_entry {
+  char *name;
+  char *body;
+  int bodylen;
+};
 
 HASHTAB help_files; /**< Help filenames hash table */
 
+sqlite3 *help_db = NULL;
+
 static int help_init = 0;
 
-static void do_new_spitfile(dbref player, char *arg1, help_file *help_dat);
+static void do_new_spitfile(dbref, const char *, help_file *);
 static const char *string_spitfile(help_file *help_dat, char *arg1);
-static help_indx *help_find_entry(help_file *help_dat, const char *the_topic);
+
+static bool help_entry_exists(help_file *, const char *);
+static struct help_entry *help_find_entry(help_file *help_dat,
+                                          const char *the_topic);
+static void help_free_entry(struct help_entry *);
 static char **list_matching_entries(const char *pattern, help_file *help_dat,
-                                    int *len, bool nospace);
-static void free_entry_list(char **);
+                                    int *len);
+static void free_entry_list(char **, int len);
+
 static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
-static void help_build_index(help_file *h, int restricted);
+static void help_delete_entries(help_file *h);
+static void help_populate_entries(help_file *h);
 
 static bool is_index_entry(const char *, int *);
 static char *entries_from_offset(help_file *, int);
@@ -57,138 +75,72 @@ typedef struct TLIST {
 
 tlist *top = NULL; /**< Pointer to top of linked list of topic names */
 
-help_indx *topics = NULL; /**< Pointer to linked list of topic indexes */
-unsigned num_topics = 0;  /**< Number of topics loaded */
-unsigned top_topics = 0;  /**< Maximum number of topics loaded */
-
-static void write_topic(long int p, help_file *);
-
 extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
-static char *help_search(dbref executor, help_file *h, char *_term,
-                         char *delim);
-
 static char *
-help_search(dbref executor, help_file *h, char *_term, char *delim)
+help_search(dbref executor, help_file *h, char *_term, char *delim,
+            int *matches)
 {
-  static char results[BUFFER_LEN];
+  char results[BUFFER_LEN];
   char *rp;
-  char searchterm[BUFFER_LEN] = {'\0'}, *st;
-  char topic[TOPIC_NAME_LEN + 1] = {'\0'};
-  char line[LINE_SIZE + 1] = {'\0'}, *l;
-  char cleanline[LINE_SIZE + 1] = {'\0'}, *cl;
-  char buff[BUFFER_LEN] = {'\0'}, *bp;
-  int n;
-  size_t i;
-  help_indx *entry;
-  FILE *fp;
-
-  memset(results, 0, BUFFER_LEN);
-
-  rp = results;
-
-  if (!delim || !*delim)
-    delim = " ";
-
+  sqlite3_stmt *searcher;
+  int status;
+  bool first = 1;
+  int count = 0;
+  char *utf8;
+  int ulen;
+  
   if (!_term || !*_term) {
     notify(executor, T("What do you want to search for?"));
     return NULL;
   }
 
-  if (!h->indx || h->entries == 0) {
-    notify(executor, T("Sorry, that command is temporarily unvailable."));
-    do_rawlog(LT_ERR, "No index for %s.", h->command);
-    return NULL;
-  }
+  rp = results;
+  
+  searcher = prepare_statement(help_db,
+                               "SELECT name, snippet(helpfts, 0, '" ANSI_UNDERSCORE "', '" ANSI_END "', '...', 10) FROM helpfts JOIN topics ON topics.bodyid = helpfts.rowid WHERE helpfts MATCH ? AND topics.catid = (SELECT id FROM categories WHERE name = ?) AND main = 1 ORDER BY name",
+                               "help.search");
 
-  st = _term;
-  while (*st && (isspace(*st) || *st == '*' || *st == '?')) {
-    st++;
-  }
-  if (!*st) {
-    notify(executor, T("You need to be more specific."));
-    return NULL;
-  }
+  utf8 = latin1_to_utf8(_term, strlen(_term), &ulen, "string");
+  sqlite3_bind_text(searcher, 1, utf8, ulen, free_string);
+  sqlite3_bind_text(searcher, 2, h->command, strlen(h->command), SQLITE_TRANSIENT);
 
-  st = searchterm;
-  safe_chr('*', searchterm, &st);
-  safe_str(_term, searchterm, &st);
-  safe_chr('*', searchterm, &st);
-  *st = '\0';
-
-  if (strchr(searchterm, '\n') || strchr(searchterm, '\r')) {
-    notify(executor, T("You can't search for mulitple lines."));
-    return NULL;
-  }
-
-  if ((fp = fopen(h->file, FOPEN_READ)) == NULL) {
-    notify(executor, T("Sorry, that command is temporarily unavailable."));
-    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", h->file);
-    return NULL;
-  }
-  for (i = 0; i < h->entries; i++) {
-    entry = &h->indx[i];
-    bp = buff;
-    if (fseek(fp, entry->pos, 0) < 0L) {
-      notify(executor, T("Sorry, that command is temporarily unavailable."));
-      do_rawlog(LT_ERR, "Seek error in file %s", h->file);
-      fclose(fp);
-      return NULL;
-    }
-    strcpy(topic, strupper(entry->topic + (*entry->topic == '&')));
-    for (n = 0; n < BUFFER_LEN; n++) {
-      if (fgets(line, LINE_SIZE, fp) == NULL)
-        break;
-      if (line[0] == '&' || line[0] == '\n') {
-        if (i && bp > buff) {
-          *bp = '\0';
-          if (quick_wild(searchterm, buff)) {
-            /* Match */
-            if (rp != results)
-              safe_str(delim, results, &rp);
-            safe_str(topic, results, &rp);
-            break;
-          }
-        }
-        if (line[0] == '\n') {
-          bp = buff;
-          continue;
+  do {
+    status = sqlite3_step(searcher);
+    if (status == SQLITE_ROW) {
+      char *topic, *snippet;
+      int topiclen, snippetlen;
+      count += 1;
+      if (delim) {
+        if (first) {
+          first = 0;
         } else {
-          break;
+          safe_str(delim, results, &rp);
         }
+        topic = (char *)sqlite3_column_text(searcher, 0);
+        topiclen = sqlite3_column_bytes(searcher, 1);
+        safe_strl(topic, topiclen, results, &rp);
       } else {
-        l = line;
-        while (*l && isspace(*l))
-          l++;
-        for (cl = cleanline; *l; cl++) {
-          if (!isspace(*l)) {
-            *cl = *l++;
-          } else {
-            *cl = ' ';
-            while (*l && isspace(*l))
-              l++;
-          }
-        }
-        *cl = '\0';
-        if (bp > buff && !isspace(*(bp - 1)))
-          safe_chr(' ', buff, &bp);
-        if (safe_str(cleanline, buff, &bp)) {
-          *bp = '\0';
-          if (quick_wild(searchterm, buff)) {
-            /* Match */
-            if (rp != results)
-              safe_str(delim, results, &rp);
-            safe_str(topic, results, &rp);
-            break;
-          }
-          bp = buff;
-          safe_str(cleanline, buff, &bp);
-        }
+        topic = (char *)sqlite3_column_text(searcher, 0);
+        snippet = (char *)sqlite3_column_text(searcher, 1);
+        snippet = utf8_to_latin1(snippet, &snippetlen, "help.search.results");
+        notify_format(executor, "%s%s%s: %s", ANSI_HILITE, topic, ANSI_END, snippet);
+        mush_free(snippet, "help.search.results");
       }
     }
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(searcher);
+
+  if (matches) {
+    *matches = count;
   }
-  fclose(fp);
-  return results;
+  
+  if (delim) {
+    *rp = '\0';
+    return mush_strdup(results, "help.search.results");
+  } else {
+    return NULL;
+  }
 }
 
 COMMAND(cmd_helpcmd)
@@ -209,14 +161,11 @@ COMMAND(cmd_helpcmd)
   }
 
   if (SW_ISSET(sw, SWITCH_SEARCH)) {
-    char *r = help_search(executor, h, arg_left, ", ");
-    if (!r)
-      return;
-    if (*r)
-      notify_format(executor, T("Here are the entries which match '%s':\n%s"),
-                    arg_left, r);
-    else
+    int matches;
+    help_search(executor, h, arg_left, NULL, &matches);
+    if (matches == 0) {
       notify(executor, T("No matches."));
+    }
     return;
   }
 
@@ -243,13 +192,13 @@ COMMAND(cmd_helpcmd)
       return;
     }
 
-    entries = list_matching_entries(arg_left, h, &len, 0);
-    if (len == 0)
+    entries = list_matching_entries(arg_left, h, &len);
+    if (len == 0) {
       notify_format(executor, T("No entries matching '%s' were found."),
                     arg_left);
-    else if (len == 1)
+    } else if (len == 1) {
       do_new_spitfile(executor, *entries, h);
-    else {
+    } else {
       char buff[BUFFER_LEN];
       char *bp;
 
@@ -259,13 +208,12 @@ COMMAND(cmd_helpcmd)
       notify_format(executor, T("Here are the entries which match '%s':\n%s"),
                     arg_left, buff);
     }
-    free_entry_list(entries);
+    if (entries) {
+      free_entry_list(entries, len);
+    }
   } else {
-    help_indx *entry = NULL;
-    int offset = 0;
-
-    entry = help_find_entry(h, arg_left);
-    if (entry) {
+    int offset;
+    if (help_entry_exists(h, arg_left)) {
       do_new_spitfile(executor, arg_left, h);
     } else if (is_index_entry(arg_left, &offset)) {
       char *entries = entries_from_offset(h, offset);
@@ -324,7 +272,7 @@ COMMAND(cmd_helpcmd)
         }
       }
       *pp = '\0';
-      entries = list_matching_entries(pattern, h, &len, 1);
+      entries = list_matching_entries(pattern, h, &len);
       if (len == 0) {
         char *suggestion = suggest_name(arg_left, h->command);
         if (suggestion) {
@@ -345,6 +293,9 @@ COMMAND(cmd_helpcmd)
         notify_format(executor, T("Here are the entries which match '%s':\n%s"),
                       arg_left, buff);
       }
+      if (entries) {
+        free_entry_list(entries, len);
+      }
     }
   }
 }
@@ -355,6 +306,31 @@ COMMAND(cmd_helpcmd)
 void
 init_help_files(void)
 {
+  char *errstr = NULL;
+  int r;
+
+  help_db = open_sql_db(options.help_db, 0);
+  if (!help_db) {
+    return;
+  }
+  r = sqlite3_exec(help_db,
+                   "DROP TABLE IF EXISTS helpfts;"
+                   "DROP TABLE IF EXISTS topics;"
+                   "DROP TABLE IF EXISTS entries;"
+                   "DROP TABLE IF EXISTS categories;"
+                   "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT NULL UNIQUE);"
+                   "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
+                   "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
+                   "CREATE INDEX topics_body_idx ON topics(bodyid);"
+                   "CREATE VIRTUAL TABLE helpfts USING fts5(body, content=entries, content_rowid=id);"
+                   "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO helpfts(rowid, body) VALUES (new.id, new.body); END;"
+                   "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END",
+                   NULL, NULL, &errstr);
+  if (r != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create help database: %s\n", errstr);
+    sqlite3_free(errstr);
+    return;
+  }
   init_vocab();
   hashinit(&help_files, 8);
   help_init = 1;
@@ -372,7 +348,9 @@ void
 add_help_file(const char *command_name, const char *filename, int admin)
 {
   help_file *h;
-
+  sqlite3_stmt *add_cat;
+  int status;
+  
   if (help_init == 0)
     init_help_files();
 
@@ -396,48 +374,67 @@ add_help_file(const char *command_name, const char *filename, int admin)
   h = mush_malloc(sizeof *h, "help_file.entry");
   h->command = mush_strdup(strupper(command_name), "help_file.command");
   h->file = mush_strdup(filename, "help_file.filename");
-  h->entries = 0;
-  h->indx = NULL;
   h->admin = admin;
-  help_build_index(h, h->admin);
-  if (!h->indx) {
-    do_rawlog(LT_ERR, "Missing index for help_command %s", command_name);
-    mush_free(h->command, "help_file.command");
-    mush_free(h->file, "help_file.filename");
-    mush_free(h, "help_file.entry");
-    return;
-  }
+
+  add_cat = prepare_statement(help_db,
+                              "INSERT OR IGNORE INTO categories(name) VALUES (?)",
+                              "help.add.category");
+  sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command),
+                    SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(add_cat);
+  } while (is_busy_status(status));
+  sqlite3_reset(add_cat);
+  help_populate_entries(h);
   (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0, "SEARCH",
                      cmd_helpcmd);
   hashadd(h->command, h, &help_files);
 }
 
-/** Rebuild a help file index.
+/** Remove existing entries from a help file.
+ */
+static void
+help_delete_entries(help_file *h)
+{
+  sqlite3_stmt *deleter;
+  int status;
+
+  deleter = prepare_statement(help_db,
+                              "WITH all_entries(id) AS (SELECT bodyid FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?)) DELETE FROM entries WHERE id IN all_entries",
+                              "help.delete.index");
+
+  sqlite3_bind_text(deleter, 1, h->command, strlen(h->command),
+                    SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(deleter);
+  } while (is_busy_status(status));
+  sqlite3_reset(deleter);
+}
+
+/** Rebuild a help file table.
  * \verbatim
  * This command implements @readcache.
  * \endverbatim
  * \param player the enactor.
  */
 void
-help_reindex(dbref player)
+help_rebuild(dbref player)
 {
   help_file *curr;
 
   for (curr = hash_firstentry(&help_files); curr;
        curr = hash_nextentry(&help_files)) {
-    if (curr->indx) {
-      mush_free(curr->indx, "help_index");
-      curr->indx = NULL;
-      curr->entries = 0;
-    }
     delete_vocab_cat(curr->command);
-    help_build_index(curr, curr->admin);
+    help_delete_entries(curr);
+    help_populate_entries(curr);
   }
+  sqlite3_exec(help_db, "VACUUM", NULL, NULL, NULL);
   if (player != NOTHING) {
     notify(player, T("Help files reindexed."));
     do_rawlog(LT_WIZ, "Help files reindexed by %s(#%d)", Name(player), player);
-  } else
+  } else {
     do_rawlog(LT_WIZ, "Help files reindexed.");
+  }
 }
 
 /** Rebuild a single help file index. Used in inotify reindexing.
@@ -445,7 +442,7 @@ help_reindex(dbref player)
  * \return true if a help file was reindexed, false otherwise.
  */
 bool
-help_reindex_by_name(const char *filename)
+help_rebuild_by_name(const char *filename)
 {
   help_file *curr;
   bool retval = 0;
@@ -453,12 +450,9 @@ help_reindex_by_name(const char *filename)
   for (curr = hash_firstentry(&help_files); curr;
        curr = hash_nextentry(&help_files)) {
     if (strcmp(curr->file, filename) == 0) {
-      if (curr->indx)
-        mush_free(curr->indx, "help_index");
-      curr->indx = NULL;
-      curr->entries = 0;
       delete_vocab_cat(curr->command);
-      help_build_index(curr, curr->admin);
+      help_delete_entries(curr);
+      help_populate_entries(curr);
       retval = 1;
     }
   }
@@ -466,171 +460,175 @@ help_reindex_by_name(const char *filename)
 }
 
 static void
-do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
+do_new_spitfile(dbref player, const char *the_topic, help_file *help_dat)
 {
-  help_indx *entry = NULL;
-  FILE *fp;
-  char line[LINE_SIZE + 1];
-  char the_topic[LINE_SIZE + 2];
+  struct help_entry *entry = NULL;
   int default_topic = 0;
-  size_t n;
 
-  if (*arg1 == '\0') {
+  if (*the_topic == '\0') {
     default_topic = 1;
-    arg1 = (char *) help_dat->command;
-  } else if (*arg1 == '&') {
-    notify(player, T("Help topics don't start with '&'."));
-    return;
-  }
-  if (strlen(arg1) > LINE_SIZE)
-    *(arg1 + LINE_SIZE) = '\0';
-
-  if (help_dat->admin) {
-    snprintf(the_topic, sizeof the_topic, "&%s", arg1);
-  } else
-    strcpy(the_topic, arg1);
-
-  if (!help_dat->indx || help_dat->entries == 0) {
-    notify(player, T("Sorry, that command is temporarily unvailable."));
-    do_rawlog(LT_ERR, "No index for %s.", help_dat->command);
-    return;
+    the_topic = help_dat->command;
   }
 
   entry = help_find_entry(help_dat, the_topic);
-  if (!entry && default_topic)
-    entry = help_find_entry(help_dat, (help_dat->admin ? "&help" : "help"));
+  if (!entry && default_topic) {
+    entry = help_find_entry(help_dat, "help");
+  }
 
   if (!entry) {
-    notify_format(player, T("No entry for '%s'."), arg1);
+    notify_format(player, T("No entry for '%s'."), the_topic);
     return;
   }
 
-  if ((fp = fopen(help_dat->file, FOPEN_READ)) == NULL) {
-    notify(player, T("Sorry, that function is temporarily unavailable."));
-    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", help_dat->file);
-    return;
-  }
-  if (fseek(fp, entry->pos, 0) < 0L) {
-    notify(player, T("Sorry, that function is temporarily unavailable."));
-    do_rawlog(LT_ERR, "Seek error in file %s", help_dat->file);
-    fclose(fp);
-    return;
-  }
-  strcpy(the_topic, strupper(entry->topic + (*entry->topic == '&')));
   /* ANSI topics */
-  notify_format(player, "%s%s%s", ANSI_HILITE, the_topic, ANSI_END);
+  notify_format(player, "%s%s%s", ANSI_HILITE, entry->name, ANSI_END);
 
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_PUEBLO) {
     notify_noenter(player, open_tag("SAMP"));
-  for (n = 0; n < BUFFER_LEN; n++) {
-    if (fgets(line, LINE_SIZE, fp) == NULL)
-      break;
-    if (line[0] == '&')
-      break;
-    notify_noenter(player, line);
   }
-  if (SUPPORT_PUEBLO)
+  notify_noenter(player, entry->body);
+  if (SUPPORT_PUEBLO) {
     notify(player, close_tag("SAMP"));
-  fclose(fp);
-  if (n >= BUFFER_LEN)
-    notify_format(player, T("%s output truncated."), help_dat->command);
+  }
+  help_free_entry(entry);
 }
 
-static help_indx *
+static bool
+help_entry_exists(help_file *help_dat, const char *the_topic)
+{
+  char name[BUFFER_LEN];
+  sqlite3_stmt *finder;
+  int status;
+  char *like;
+  int namelen;
+  
+  finder = prepare_statement(help_db,
+                             "SELECT rowid FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+                             "help.entry.exists");
+
+  like = escape_like(the_topic, '$', NULL);
+  namelen = snprintf(name, sizeof name, "%s%%", like);
+  free_string(like);
+
+  sqlite3_bind_text(finder, 1, help_dat->command, strlen(help_dat->command),
+                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(finder, 2, name, namelen, SQLITE_TRANSIENT);
+
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      sqlite3_reset(finder);
+      return 1;
+    }
+  } while (is_busy_status(status));
+  sqlite3_reset(finder);
+  return 0;
+}
+
+static struct help_entry *
 help_find_entry(help_file *help_dat, const char *the_topic)
 {
-  help_indx *entry = NULL;
+  char name[BUFFER_LEN];
+  sqlite3_stmt *finder;
+  int status;
+  char *like;
+  int namelen;
+  
+  finder = prepare_statement(help_db,
+                             "SELECT name, body FROM topics JOIN entries ON topics.bodyid = entries.id WHERE topics.catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+                             "help.find.entry");
 
-  if (help_dat->entries < 10) { /* Just do a linear search for small files */
-    size_t n;
-    for (n = 0; n < help_dat->entries; n++) {
-      if (string_prefix(help_dat->indx[n].topic, the_topic)) {
-        entry = &help_dat->indx[n];
-        break;
-      }
+  like = escape_like(the_topic, '$', NULL);
+  namelen = snprintf(name, sizeof name, "%s%%", like);
+  free_string(like);
+  
+  sqlite3_bind_text(finder, 1, help_dat->command, strlen(help_dat->command),
+                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(finder, 2, name, namelen, SQLITE_TRANSIENT);
+
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      struct help_entry *entry = mush_malloc(sizeof *entry, "help.entry");
+      entry->name = mush_strdup((const char *)sqlite3_column_text(finder, 0),
+                                "help.entry.name");
+      entry->body = utf8_to_latin1((const char *)sqlite3_column_text(finder, 1),
+                                   &entry->bodylen, "help.entry.body");
+      sqlite3_reset(finder);
+      return entry;
     }
-  } else { /* Binary search of the index */
-    int left = 0;
-    int cmp;
-    int right = help_dat->entries - 1;
-
-    while (1) {
-      int n = (left + right) / 2;
-
-      if (left > right)
-        break;
-
-      cmp = strcasecmp(the_topic, help_dat->indx[n].topic);
-
-      if (cmp == 0) {
-        entry = &help_dat->indx[n];
-        break;
-      } else if (cmp < 0) {
-        /* We need to catch the first prefix */
-        if (string_prefix(help_dat->indx[n].topic, the_topic)) {
-          int m;
-          for (m = n - 1; m >= 0; m--) {
-            if (!string_prefix(help_dat->indx[m].topic, the_topic))
-              break;
-          }
-          entry = &help_dat->indx[m + 1];
-          break;
-        }
-        if (left == right)
-          break;
-        right = n - 1;
-      } else { /* cmp > 0 */
-        if (left == right)
-          break;
-        left = n + 1;
-      }
-    }
-  }
-  return entry;
+  } while (is_busy_status(status));
+  sqlite3_reset(finder);
+  return NULL;
 }
 
 static void
-write_topic(long int p, help_file *h)
+help_free_entry(struct help_entry *h)
 {
-  tlist *cur, *nextptr;
-  help_indx *temp;
-  for (cur = top; cur; cur = nextptr) {
+  mush_free(h->name, "help.entry.name");
+  mush_free(h->body, "help.entry.body");
+  mush_free(h, "help.entry");
+}
+
+static void
+write_topic(help_file *h, const char *body)
+{
+  int64_t entryid = 0;
+  sqlite3_stmt *query;
+  int status;
+
+  if (!top) {
+    return;
+  }
+  
+  query = prepare_statement(help_db, "INSERT INTO entries(body) VALUES (?)",
+                                  "help.insert.body");
+  sqlite3_bind_text(query, 1, body, strlen(body), SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(query);
+  } while (is_busy_status(status));
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to insert help entry body: %s\n",
+              sqlite3_errstr(status));
+    sqlite3_reset(query);
+    return;
+  }
+  entryid = sqlite3_last_insert_rowid(help_db);
+  sqlite3_reset(query);
+
+  query = prepare_statement(help_db,
+                            "INSERT INTO topics(catid, name, bodyid, main) VALUES ((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
+                            "help.insert.topic");
+  sqlite3_bind_text(query, 1, h->command, strlen(h->command),
+                    SQLITE_TRANSIENT);
+  sqlite3_bind_int64(query, 3, entryid);
+  
+  for (tlist *cur = top, *nextptr; cur; cur = nextptr) {
+    int status;
+    int primary = (cur->next == NULL);
     nextptr = cur->next;
-    if (num_topics >= top_topics) {
-      top_topics += top_topics / 2 + 20;
-      if (topics)
-        topics = (help_indx *) realloc(topics, top_topics * sizeof(help_indx));
-      else
-        topics = (help_indx *) malloc(top_topics * sizeof(help_indx));
-      if (!topics) {
-        mush_panic("Out of memory");
-      }
+    add_vocab(cur->topic, h->command);
+    sqlite3_bind_text(query, 2, cur->topic, strlen(cur->topic),
+                      SQLITE_TRANSIENT);
+    sqlite3_bind_int(query, 4, primary);
+    do {
+      status = sqlite3_step(query);
+    } while (is_busy_status(status));
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR, "Unable to insert help topic %s: %s",
+                cur->topic, sqlite3_errstr(status));
     }
-    temp = &topics[num_topics++];
-    temp->pos = p;
-    strcpy(temp->topic, cur->topic);
-    add_vocab(temp->topic, h->command);
+    sqlite3_reset(query);   
     free(cur);
   }
   top = NULL;
 }
 
-static int WIN32_CDECL topic_cmp(const void *s1, const void *s2);
-static int WIN32_CDECL
-topic_cmp(const void *s1, const void *s2)
-{
-  const help_indx *a = s1;
-  const help_indx *b = s2;
-
-  return strcasecmp(a->topic, b->topic);
-}
-
 static void
-help_build_index(help_file *h, int restricted)
+help_populate_entries(help_file *h)
 {
-  long bigpos, pos = 0;
   bool in_topic;
-  int i, lineno, ntopics;
+  int i, ntopics;
   char *s, *topic;
   char the_topic[TOPIC_NAME_LEN + 1];
   char line[LINE_SIZE + 1];
@@ -638,6 +636,9 @@ help_build_index(help_file *h, int restricted)
   tlist *cur;
   sqlite3 *sqldb;
   char *errmsg;
+  char *body = NULL;
+  int bodylen = 0;
+  int num_topics = 0;
   
   /* Quietly ignore null values for the file */
   if (!h || !h->file)
@@ -648,15 +649,11 @@ help_build_index(help_file *h, int restricted)
     return;
   }
 
-  if (restricted)
+  if (h->admin) {
     do_rawlog(LT_WIZ, "Indexing file %s (admin topics)", h->file);
-  else
+  } else {
     do_rawlog(LT_WIZ, "Indexing file %s", h->file);
-  topics = NULL;
-  num_topics = 0;
-  top_topics = 0;
-  bigpos = 0L;
-  lineno = 0;
+  }
   ntopics = 0;
   in_topic = 0;
 
@@ -669,12 +666,20 @@ help_build_index(help_file *h, int restricted)
     return;
   }
 
+  if (sqlite3_exec(help_db, "BEGIN TRANSACTION", NULL, NULL, &errmsg)
+      != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to begin help transaction: %s", errmsg);
+    sqlite3_free(errmsg);
+    fclose(rfp);
+    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+  
 #ifdef HAVE_POSIX_FADVISE
   posix_fadvise(fileno(rfp), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
 
   while (fgets(line, LINE_SIZE, rfp) != NULL) {
-    ++lineno;
     if (ntopics == 0) {
       /* Looking for the first topic, but we'll ignore blank lines */
       if (!line[0]) {
@@ -683,6 +688,7 @@ help_build_index(help_file *h, int restricted)
                   h->file);
         fclose(rfp);
         sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return;
       }
       if (isspace(line[0]))
@@ -692,6 +698,7 @@ help_build_index(help_file *h, int restricted)
                   h->file);
         fclose(rfp);
         sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return;
       }
     }
@@ -700,8 +707,11 @@ help_build_index(help_file *h, int restricted)
       if (!in_topic) {
         /* Finish up last entry */
         if (ntopics > 1) {
-          write_topic(pos, h);
+          write_topic(h, body);
         }
+        bodylen = 0;
+        mush_free(body, "help.entry.body");
+        body = NULL;
         in_topic = true;
       }
       /* parse out the topic */
@@ -718,32 +728,31 @@ help_build_index(help_file *h, int restricted)
         if (*s != ' ' || the_topic[i] != ' ')
           the_topic[++i] = *s;
       }
-      if ((restricted && the_topic[0] == '&') ||
-          (!restricted && the_topic[0] != '&')) {
+      if ((h->admin && the_topic[0] == '&') ||
+          (!h->admin && the_topic[0] != '&')) {
         the_topic[++i] = '\0';
         cur = (tlist *) malloc(sizeof(tlist));
-        strcpy(cur->topic, the_topic);
+        strcpy(cur->topic, the_topic + (the_topic[0] == '&' ? 1 : 0));
         cur->next = top;
         top = cur;
+        num_topics += 1;
       }
     } else {
-      if (in_topic) {
-        pos = bigpos;
-      }
+      int oldlen = bodylen;
       in_topic = false;
+      bodylen += strlen(line);
+      body = mush_realloc(body, bodylen + 1, "help.entry.body");
+      strcpy(body + oldlen, line);
     }
-    bigpos = ftell(rfp);
   }
 
   /* Handle last topic */
-  write_topic(pos, h);
-  if (topics)
-    qsort(topics, num_topics, sizeof(help_indx), topic_cmp);
-  h->entries = num_topics;
-  h->indx = topics;
-  add_check("help_index");
+  write_topic(h, body);
+  mush_free(body, "help.entry.body");
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
+  h->entries = num_topics;
+  
   while (1) {
     int status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
     if (status == SQLITE_OK) {
@@ -755,6 +764,20 @@ help_build_index(help_file *h, int restricted)
                 errmsg);
       sqlite3_free(errmsg);
       sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      break;
+    }
+  }
+  while (1) {
+    int status = sqlite3_exec(help_db, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
+    if (status == SQLITE_OK) {
+      break;
+    } else if (is_busy_status(status)) {
+      sqlite3_free(errmsg);
+    } else {
+      do_rawlog(LT_ERR, "Unable to commit help table transaction: %s",
+                errmsg);
+      sqlite3_free(errmsg);
+      sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       break;
     }
   }
@@ -778,14 +801,18 @@ FUNCTION(fun_textfile)
   if (wildcard_count(args[1], 1) == -1) {
     char **entries;
     int len = 0;
-    entries = list_matching_entries(args[1], h, &len, 0);
-    if (len == 0)
+    entries = list_matching_entries(args[1], h, &len);
+    if (len == 0) {
       safe_str(T("No matching help topics."), buff, bp);
-    else
+    } else {
       arr2list(entries, len, buff, bp, ", ");
-    free_entry_list(entries);
-  } else
+    }
+    if (entries) {
+      free_entry_list(entries, len);
+    }
+  } else {
     safe_str(string_spitfile(h, args[1]), buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -808,10 +835,10 @@ FUNCTION(fun_textentries)
   if (nargs > 2)
     sep = args[2];
 
-  entries = list_matching_entries(args[1], h, &len, 0);
+  entries = list_matching_entries(args[1], h, &len);
   if (entries) {
     arr2list(entries, len, buff, bp, sep);
-    free_entry_list(entries);
+    free_entry_list(entries, len);
   }
 }
 
@@ -834,7 +861,7 @@ FUNCTION(fun_textsearch)
   if (nargs > 2)
     sep = args[2];
 
-  entries = help_search(executor, h, args[1], sep);
+  entries = help_search(executor, h, args[1], sep, NULL);
   if (entries)
     safe_str(entries, buff, bp);
   else
@@ -860,19 +887,13 @@ normalize_entry(help_file *help_dat, const char *arg1)
 static const char *
 string_spitfile(help_file *help_dat, char *arg1)
 {
-  help_indx *entry = NULL;
-  FILE *fp;
-  char line[LINE_SIZE + 1];
+  struct help_entry *entry = NULL;
   char the_topic[LINE_SIZE + 2];
-  size_t n;
   static char buff[BUFFER_LEN];
   char *bp;
   int offset = 0;
 
   strcpy(the_topic, normalize_entry(help_dat, arg1));
-
-  if (!help_dat->indx || help_dat->entries == 0)
-    return T("#-1 NO INDEX FOR FILE");
 
   if (is_index_entry(the_topic, &offset)) {
     char *entries = entries_from_offset(help_dat, offset);
@@ -887,80 +908,71 @@ string_spitfile(help_file *help_dat, char *arg1)
   if (!entry) {
     return T("#-1 NO ENTRY");
   }
-
-  if ((fp = fopen(help_dat->file, FOPEN_READ)) == NULL) {
-    return T("#-1 UNAVAILABLE");
-  }
-  if (fseek(fp, entry->pos, 0) < 0L) {
-    fclose(fp);
-    return T("#-1 UNAVAILABLE");
-  }
-  bp = buff;
-  for (n = 0; n < BUFFER_LEN; n++) {
-    if (fgets(line, LINE_SIZE, fp) == NULL)
-      break;
-    if (line[0] == '&')
-      break;
-    safe_str(line, buff, &bp);
-  }
+  safe_strl(entry->body, entry->bodylen, buff, &bp);
   *bp = '\0';
-  fclose(fp);
   return buff;
 }
 
 /** Return a string with all help entries that match a pattern */
 static char **
-list_matching_entries(const char *pattern, help_file *help_dat, int *len,
-                      bool nospace)
+list_matching_entries(const char *pattern, help_file *help_dat, int *len)
 {
   char **buff;
-  int offset;
-  size_t n;
-
-  if (help_dat->admin)
-    offset = 1; /* To skip the leading & */
-  else
-    offset = 0;
-
-  if (wildcard_count((char *) pattern, 1) >= 0) {
+  sqlite3_stmt *lister;
+  int status;
+  char *patcopy = mush_strdup(pattern, "string");
+  char *like;
+  int likelen;
+  int matches = 0;
+  
+  if (wildcard_count(patcopy, 1) >= 0) {
     /* Quick way out, use the other kind of matching */
     char the_topic[LINE_SIZE + 2];
-    help_indx *entry = NULL;
-    strcpy(the_topic, normalize_entry(help_dat, pattern));
-    if (!help_dat->indx || help_dat->entries == 0) {
-      *len = 0;
-      return NULL;
-    }
+    struct help_entry *entry = NULL;
+    strcpy(the_topic, normalize_entry(help_dat, patcopy));
+    mush_free(patcopy, "string");
     entry = help_find_entry(help_dat, the_topic);
     if (!entry) {
       *len = 0;
       return NULL;
     } else {
       *len = 1;
-      buff = mush_malloc(sizeof(char **), "help.search");
-      *buff = entry->topic + offset;
+      buff = mush_calloc(1, sizeof(char *), "help.search");
+      buff[0] = mush_strdup(entry->name, "help.entry.name");
       return buff;
     }
   }
 
   buff = mush_calloc(help_dat->entries, sizeof(char *), "help.search");
-  *len = 0;
 
-  for (n = 0; n < help_dat->entries; n++)
-    if ((nospace ? help_wild(pattern, help_dat->indx[n].topic + offset)
-                 : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
-      buff[*len] = help_dat->indx[n].topic + offset;
-      *len += 1;
+  lister = prepare_statement(help_db,
+                             "SELECT name FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+                             "help.list.entries");
+  sqlite3_bind_text(lister, 1, help_dat->command, strlen(help_dat->command),
+                    SQLITE_TRANSIENT);
+  like = glob_to_like(patcopy, '$', &likelen);
+  sqlite3_bind_text(lister, 2, like, likelen, free_string);
+  mush_free(patcopy, "string");
+
+  do {
+    status = sqlite3_step(lister);
+    if (status == SQLITE_ROW) {
+      buff[matches++] = mush_strdup((const char *)sqlite3_column_text(lister, 0),
+                               "help.entry.name");
     }
-
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(lister);
+  *len = matches;
   return buff;
 }
 
 static void
-free_entry_list(char **entries)
+free_entry_list(char **entries, int len)
 {
-  if (entries)
-    mush_free(entries, "help.search");
+  for (int n = 0; n < len; n += 1) {
+    mush_free(entries[n], "help.entry.name");
+  }
+  mush_free(entries, "help.search");
 }
 
 /* Generate a page of the index of the help file (The old pre-generated 'help
@@ -974,9 +986,11 @@ entries_from_offset(help_file *h, int off)
   char *bp;
   int count = 0;
   char *entry1, *entry2, *entry3;
-  size_t n = 0;
+  int n = 0;
   int page = 0;
-
+  char **entries;
+  int nentries;
+  
   bp = buff;
 
   /* Not all pages contain the same number of entries (due to topics with
@@ -985,19 +999,21 @@ entries_from_offset(help_file *h, int off)
    * point for each page, and the total number of pages used, is totally
    * accurate. Sigh.
    */
-  for (page = 0; n < h->entries; page++) {
+  entries = list_matching_entries("*", h, &nentries);
+  
+  for (page = 0; n < nentries; page++) {
     count = 0;
     while (count <= ENTRIES_PER_PAGE && n < h->entries) {
 
-      if (n >= h->entries)
+      if (n >= nentries)
         break;
-      entry1 = h->indx[n].topic;
+      entry1 = entries[n];
       n += 1;
 
       if (entry1[0] == '&')
         entry1 += 1;
 
-      if (n >= h->entries) {
+      if (n >= nentries) {
         /* Last record */
         if (page == off) {
           safe_chr(' ', buff, &bp);
@@ -1007,7 +1023,7 @@ entries_from_offset(help_file *h, int off)
         }
         break;
       }
-      entry2 = h->indx[n].topic;
+      entry2 = entries[n];
       n += 1;
 
       if (entry2[0] == '&')
@@ -1030,8 +1046,8 @@ entries_from_offset(help_file *h, int off)
             safe_format(buff, &bp, " %-25.25s %-51.51s\n", entry1, entry2);
           count += 2;
         } else {
-          if (n < h->entries) {
-            entry3 = h->indx[n].topic;
+          if (n < nentries) {
+            entry3 = entries[n];
             if (entry3[0] == '&')
               entry3 += 1;
           } else
@@ -1067,6 +1083,10 @@ entries_from_offset(help_file *h, int off)
 
   *bp = '\0';
 
+  if (entries) {
+    free_entry_list(entries, nentries);
+  }
+  
   if (bp == buff)
     return NULL;
 

@@ -1118,7 +1118,7 @@ shovechars(Port_t port, Port_t sslport)
       config_file_startup(NULL, 1);
       file_watch_init();
       fcache_load(NOTHING);
-      help_reindex(NOTHING);
+      help_rebuild(NOTHING);
       read_access_file();
       reopen_logs();
       hup_triggered = 0;
@@ -6861,7 +6861,7 @@ reload_files(void)
     LT_TRACE,
     "Reloading help indexes and cached files after detecting a change.");
   fcache_load(NOTHING);
-  help_reindex(NOTHING);
+  help_rebuild(NOTHING);
 }
 
 #ifdef HAVE_INOTIFY_INIT1
@@ -6971,7 +6971,7 @@ file_watch_event_in(int fd)
           if (fcache_read_one(file)) {
             do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
             WATCH(file);
-          } else if (help_reindex_by_name(file)) {
+          } else if (help_rebuild_by_name(file)) {
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {

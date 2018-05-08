@@ -334,6 +334,7 @@ PENNCONF conftable[] = {
    sizeof options.log_size_policy, 0, NULL},
   {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
    0, NULL},
+  {"help_db", cf_str, options.help_db, sizeof options.help_db, 0, NULL},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1337,6 +1338,7 @@ conf_default_set(void)
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
+  strcpy(options.help_db, "data/help.sqldb");
 }
 
 #undef set_string_option

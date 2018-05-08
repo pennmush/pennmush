@@ -250,7 +250,7 @@ See also: sign()
 
   The accent() function will return <string>, with characters in it possibly changed to accented ones according to <template>. Both arguments must be the same size.
 
-  Whether or not the resulting string is actually displayed correctly is client-dependent. Some OSes uses different character sets than the one assumed (ISO 8859-1), and some clients strip these 8-bit characters.
+  Whether or not the resulting string is actually displayed correctly is client-dependent. Some OSes uses different character sets than the one assumed (Unicode and ISO 8859-1), and some clients strip these 8-bit characters.
 
   For each character in <string>, the corresponding character of <template> is checked according to the table in 'help accents', and a replacement done. If either the current <string> or <template> characters aren't in the table, the <string> character is passed through unchanged.
 
@@ -264,19 +264,19 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
   Name       Description         Character  Character
   --------------------------------------------------------------
   grave      Backward slant      `          A,E,I,O,U,a,e,i,o,u
-             above letter
+             above letter (À)
   acute      Forward slant       '          A,E,I,O,U,Y,a,e,i,o,u,y
-             above letter
+             above letter (Á)
   tilde      Wavy line above     ~          A,N,O,a,n,o
-             letter
+             letter (Ñ)
   circumflex carat above         ^          A,E,I,O,U,a,e,i,o,u
-             letter
+             letter (Â)
   umlaut     Two dots above      :          A,E,I,O,U,,a,e,i,o,u,y
-  diaeresis  letter
+  diaeresis  letter (Ä)
   ring       Small circle above  o          A,a
-             letter
+             letter (Å)
   cedilla    Small tail below    ,          C,c
-             letter
+             letter (Ç)
 
   Continued in 'HELP ACCENTS2'
 & ACCENTS2
@@ -285,15 +285,15 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
                       Template   String
   Description         Character  Character
   --------------------------------------------------------------
-  Upside-down ?       u          ?
-  Upside-down !       u          !
-  << quote mark       "          <
-  >> quote mark       "          >
-  German sharp s      B          s
-  Capital thorn       |          P
-  Lower-case thorn    |          p
-  Capital eth         -          D
-  Lower-case eth      &          o
+  Upside-down ? (¿)       u          ?
+  Upside-down ! (¡)       u          !
+  << quote mark («)       "          <
+  >> quote mark (»)       "          >
+  German sharp s (ß)      B          s
+  Capital thorn (Þ)       |          P
+  Lower-case thorn (Þ)    |          p
+  Capital eth (Ð)         -          D
+  Lower-case eth (ð)      &          o
   
   See 'HELP ACCENTS3' for examples
 & ACCENT2
@@ -302,12 +302,15 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
 
     > think accent(Aule, ---:)
     Aul(e-with-diaeresis)
+    Aulë
 
     > think accent(The Nina was a ship, The Ni~a was a ship) 
     The Ni(n-with-~)a was a ship
+    The Niña was a ship
 
     > think accent(Khazad ai-menu!, Khaz^d ai-m^nu!)
     Khaz(a-with-^)d ai-m(e-with-^)nu!
+    Khazâd ai-mênu
 & ACCNAME()
   accname(<object>)
 

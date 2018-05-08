@@ -30,14 +30,12 @@ Major Changes
   arrays; results in faster lookups and less memory usage. [SW]
 * Penn now comes with the Sqlite3 database engine bundled with it, and
   uses it internally in a few ways:
-    * 3 different tables for looking up color names are combined into
-      a single table.
+    * 3 different tables for looking up color names are combined into a single table.
     * Per-object auxilliary data keys (objdata) are handled in sql.
-	* Player names and aliases are handled in sql, making some
-      operations on them simpler.
-    * Suggests alternatives for unknown function names, flags, powers
-      and help entries.
+	* Player names and aliases are handled in sql, making some operations on them simpler.
+    * Suggests alternatives for unknown function names, flags, powers and help entries.
     * @entrances and entrances() no longer scan the entire database.
+    * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP HELP SEARCH` for details.
 
 Minor Changes
 -------------

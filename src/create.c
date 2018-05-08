@@ -30,7 +30,7 @@ static dbref parse_linkable_room(dbref player, const char *room_name,
                                  NEW_PE_INFO *pe_info);
 static dbref check_var_link(const char *dest_name);
 static dbref clone_object(dbref player, dbref thing, const char *newname,
-                          int preserve);
+                          bool preserve);
 
 struct db_stat_info current_state; /**< Current stats for database */
 
@@ -604,12 +604,13 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 
 /* Clone an object. The new object is owned by the cloning player */
 static dbref
-clone_object(dbref player, dbref thing, const char *newname, int preserve)
+clone_object(dbref player, dbref thing, const char *newname, bool preserve)
 {
   dbref clone;
 
   clone = new_object();
 
+  Type(clone) = Type(thing);
   Owner(clone) = Owner(player);
   Name(clone) = NULL;
   if (newname && *newname)
@@ -642,7 +643,6 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
    * other clone has, but update the creation time */
   ModTime(clone) = ModTime(thing);
   CreTime(clone) = mudtime;
-  Type(clone) = Type(thing);
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
   if (IsRoom(thing)) {
@@ -673,7 +673,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
+do_clone(dbref player, char *name, char *newname, bool preserve, char *newdbref,
          NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;

@@ -209,8 +209,7 @@ maybe_dropto(dbref loc, dbref dropto)
   if (!IsRoom(loc))
     return;
   /* check for players */
-  DOLIST(thing, Contents(loc))
-  {
+  DOLIST (thing, Contents(loc)) {
     if (Dropper(thing))
       return;
   }
@@ -307,7 +306,9 @@ safe_tel(dbref player, dbref dest, int nomovemsgs, dbref enactor,
   Contents(player) = NOTHING;
 
   /* blast locations of everything in list */
-  DOLIST(rest, first) { Location(rest) = NOTHING; }
+  DOLIST (rest, first) {
+    Location(rest) = NOTHING;
+  }
 
   while (first != NOTHING) {
     rest = Next(first);
@@ -405,7 +406,8 @@ do_move(dbref player, const char *direction, enum move_type type,
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
       char msg[BUFFER_LEN];
-      snprintf(msg, sizeof msg, T("%s goes home."), AName(player, AN_MOVE, NULL));
+      snprintf(msg, sizeof msg, T("%s goes home."),
+               AName(player, AN_MOVE, NULL));
       /* tell everybody else */
       notify_except(player, loc, player, msg, NA_INTER_SEE);
     }

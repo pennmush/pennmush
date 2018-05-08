@@ -309,7 +309,8 @@ StopService(LPTSTR lpszMsg)
   /*  Use event logging to log the error. */
   hEventSource = RegisterEventSource(NULL, THIS_SERVICE);
 
-  snprintf(chMsg, sizeof chMsg, "%s error: %s", THIS_SERVICE, convert_error(dwGlobalErr));
+  snprintf(chMsg, sizeof chMsg, "%s error: %s", THIS_SERVICE,
+           convert_error(dwGlobalErr));
   lpszStrings[0] = chMsg;
   lpszStrings[1] = lpszMsg;
 

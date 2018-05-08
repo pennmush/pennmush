@@ -130,15 +130,15 @@ struct new_pe_info {
   int fun_recursions;  /**< Function recursion depth (%?) */
   int call_depth; /**< Number of times the parser (process_expression()) has
                      recursed */
-  int nest_depth;            /**< Depth of function nesting, for DEBUG */
-  int debugging; /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
+  int nest_depth; /**< Depth of function nesting, for DEBUG */
+  int debugging;  /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
   int refcount; /**< Number of times this pe_info is being used. > 1 when shared
                    by sub-queues. free() when at 0 */
   Debug_Info *debug_strings; /**< DEBUG information */
-  PE_REGS *regvals; /**< Saved register values. */
+  PE_REGS *regvals;          /**< Saved register values. */
 
-  char *cmd_raw; /**< Unevaluated cmd executed (%c) */
-  char *cmd_evaled;           /**< Evaluated cmd executed (%u) */
+  char *cmd_raw;    /**< Unevaluated cmd executed (%c) */
+  char *cmd_evaled; /**< Evaluated cmd executed (%u) */
 
   char *attrname; /**< The attr currently being evaluated */
 };
@@ -157,7 +157,7 @@ struct mque {
   dbref semaphore_obj; /**< Object this queue was \@wait'd on as a semaphore */
 
   char
-  *semaphore_attr; /**< Attribute this queue was \@wait'd on as a semaphore */
+    *semaphore_attr; /**< Attribute this queue was \@wait'd on as a semaphore */
 
   NEW_PE_INFO *pe_info; /**< New pe_info struct used for this queue entry */
 
@@ -293,29 +293,29 @@ struct descriptor_data {
   char ip[101];              /**< IP address of connection source */
   dbref player; /**< Dbref of player associated with connection, or NOTHING if
                    not connected */
-  int output_size;              /**< Size of output left to send */
-  char *output_prefix;          /**< Text to show before output */
-  char *output_suffix;          /**< Text to show after output */
-  struct text_queue output;     /**< Output text queue */
-  struct text_queue input;      /**< Input text queue */
-  char *raw_input;              /**< Pointer to start of next raw input */
-  char *raw_input_at;           /**< Pointer to position in raw input */
-  time_t connected_at;          /**< Time of connection */
-  time_t last_time;             /**< Time of last activity */
-  int quota;                    /**< Quota of commands allowed */
-  int cmds;                     /**< Number of commands sent */
-  int hide;                     /**< Hide status */
-  uint32_t conn_flags;        /**< Flags of connection (telnet status, etc.) */
+  int output_size;          /**< Size of output left to send */
+  char *output_prefix;      /**< Text to show before output */
+  char *output_suffix;      /**< Text to show after output */
+  struct text_queue output; /**< Output text queue */
+  struct text_queue input;  /**< Input text queue */
+  char *raw_input;          /**< Pointer to start of next raw input */
+  char *raw_input_at;       /**< Pointer to position in raw input */
+  time_t connected_at;      /**< Time of connection */
+  time_t last_time;         /**< Time of last activity */
+  int quota;                /**< Quota of commands allowed */
+  int cmds;                 /**< Number of commands sent */
+  int hide;                 /**< Hide status */
+  uint32_t conn_flags;      /**< Flags of connection (telnet status, etc.) */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
-  unsigned long input_chars;  /**< Characters received */
-  unsigned long output_chars; /**< Characters sent */
-  int width;                  /**< Screen width */
-  int height;                 /**< Screen height */
-  char *ttype;                /**< Terminal type */
-  SSL *ssl;                   /**< SSL object */
-  int ssl_state;              /**< Keep track of state of SSL object */
-  conn_source source;         /**< Where the connection came from. */
+  unsigned long input_chars;    /**< Characters received */
+  unsigned long output_chars;   /**< Characters sent */
+  int width;                    /**< Screen width */
+  int height;                   /**< Screen height */
+  char *ttype;                  /**< Terminal type */
+  SSL *ssl;                     /**< SSL object */
+  int ssl_state;                /**< Keep track of state of SSL object */
+  conn_source source;           /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1]; /**< Pueblo checksum */
 #ifndef WITHOUT_WEBSOCKETS
   /* TODO: Need to add this state to reboot.db. */

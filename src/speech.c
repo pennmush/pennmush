@@ -454,8 +454,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     if (!GoodObject(first))
       return;
     p = tprintf(T("%s whispers%s."), sname, tbuf);
-    DOLIST(first, first)
-    {
+    DOLIST (first, first) {
       overheard = 1;
       for (who = 0; who < gcount; who++) {
         if ((first == player) || (first == good[who])) {

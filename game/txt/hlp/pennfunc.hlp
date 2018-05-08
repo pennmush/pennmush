@@ -477,9 +477,9 @@ See also: BOOLEAN VALUES, nand(), or(), xor(), not(), lmath()
   andlflags(<object>, <list of flag names>)
   
   These functions return 1 if <object> has all of the given flags, and 0 if it does not. andflags() takes a string of single flag letters, while andlflags() takes a space-separated list of flag names. In both cases, a ! before the flag means "not flag".
-  
-  If any of the flags given are invalid, both functions return "#-1 INVALID FLAG".
-  
+
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID FLAG' is returned. Unknown flags are treated as being not set.
+
   Example: Check to see if %# is set Wizard and Dark, but not Ansi.
     > say andflags(%#, WD!A)
     > say andlflags(%#, wizard dark !ansi)
@@ -492,7 +492,7 @@ See also: orflags(), flags(), lflags()
 
   Thus, ANDLPOWERS(me, no_quota no_pay) would return 1 if I was powered no_quota and no_pay. ANDLPOWERS(me, poll !guest) would return 1 if I had the poll power but not the guest power.
 
-  If a name does not correspond to any power, andlpowers() returns "#-1 INVALID POWER".
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID POWER' is returned. Unknown powers are treated as being not set.
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
@@ -757,11 +757,13 @@ See also: @password, @newpassword
     > say chr(65)
     You say, "A"
 & CLONE()
-  clone(<object>[, <new name>[, <dbref>]])
+  clone(<object>[, <new name>[, <dbref>[, preserve]]])
  
   This function clones <object>, as per @clone, and returns the dbref number of the clone, or #-1 if the object could not be cloned.
 
   The clone will have the same name as the original object unless you give a <new name> for it. Normally, the clone will be created with the first available dbref, but wizards and objects with the pick_dbref power may give the <dbref> of a garbage object to use instead.
+
+  If the optional fourth argument is the string preserve, acts as @clone/preserve.
 
 See also: @clone, create(), dig(), open()
 & CMDS()
@@ -2346,7 +2348,7 @@ See also: num(), rnum(), pmatch(), room(), where(), rloc(), findable()
 
   lock() returns the text string equivalent of the @lock on <object>. <locktype> can be any valid switch for @lock ("Enter", "user:foo", etc) and defaults to "Basic". You must be able to examine the lock.
   
-  If a <new value> is given, lock() attempts to change the lock as @lock would. You must control the object..
+  If a <new value> is given, lock() attempts to change the lock as @lock would first. You must control the object.
  
 See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(), llocks(), lockowner(), lockfilter()
 & LLOCKS()
@@ -3088,7 +3090,7 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof(), lmath()
 
   These functions return 1 if <object> has any of the given flags, and 0 if it does not. orflags() takes a string of single flag letters, while orlflags() takes a space-separated list of flag names. In both cases, a ! before the flag means "not flag".
   
-  If any of the flags given are invalid, both functions return "#-1 INVALID FLAG".
+  If there is a syntax error like a ! without a following flag, '#-1 INVALID FLAG' is returned. Unknown flags are treated as being not set.
   
   Examples: Check to see if %# is set Wizard, Dark, or not set Ansi.
     > say orflags(%#, WD!A)
@@ -3102,7 +3104,7 @@ See also: andflags(), flags(), lflags(), orlpowers()
 
   Thus, ORLPOWERS(me, poll login) would return 1 if I have the poll and login powers. ORLFLAGS(me, functions !guest) would return 1 if I have the functions power or are not a guest.
 
-  If a name does not correspond to any power, orlpowers() returns "#-1 INVALID POWER".
+  If there is a syntax error like a ! without a following power, '#-1 INVALID POWER' is returned. Unknown powers are treated as being not set.
   
 See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()
@@ -3571,20 +3573,22 @@ See also: @function, RESTRICT, attribute flags
   
 See also: objeval(), decompose()
 & SCAN()
-  scan(<object>, <command>[, <switches>])
+  scan(<looker>, <command>[, <switches>])
   scan(<command>)
 
-  This function works like @scan, and returns a space-separated list of dbref/attribute pairs containing $-commands that would be triggered if <command> were run by <object>. You must control <object> or be See_All to use this function. Only objects you can examine are included in the output.
+  This function works like @scan, and returns a space-separated list of dbref/attribute pairs containing $-commands that would be triggered if <command> were run by <looker>. You must control <looker> or be See_All to use this function. Only objects you can examine are included in the output.
 
-  If no <object> is specified, this function works like @scan run by the function's executor.
+  If no <looker> is specified, it defaults to the executor.
   
   <switches> is a space-separated list of strings to limit which objects are checked for $-commands. Valid switches are:
-    room     --  match your location and its contents
-    self     --  match yourself and your inventory
-    zone     --  match your zone and your location's zone
-    globals  --  match objects in the Master Room
-    all      --  all of the above (the default)
-    break    --  once a match is found, don't check in other locations 
+    room      --  check <looker>'s location and its contents
+    me        --  check <looker>
+    inventory --  check objects in <looker>'s inventory
+    self      --  check <looker> and objects in <looker>'s inventory
+    zone      --  check <looker>'s location's zone, and <looker>'s own zone
+    globals   --  check objects in the Master Room
+    all       --  all of the above (the default)
+    break     --  once a match is found, don't check in other locations 
     
   The order of searching for the "break" switch is the same as the order for normal $-command matching, as described in 'help evaluation order'.
   
@@ -5651,12 +5655,12 @@ See also: strlen(), items()
   regxattr(<object>[/<regexp>], <start>, <count>[, <osep>])
   regxattrp(<object>[/<regexp>], <start>, <count>[, <osep>])
 
-  xattr() fetches <count> or fewer attribute names from <object> starting at position <start>. It is useful when the number of attributes on an object causes lattr() to exceed the buffer limit. The resulting list is separated by <osep>, if given, and spaces otherwise.
+  xattr() fetches <count> or fewer attribute names from <object> starting at position <start>. It is useful when the number of attributes on an object causes lattr() to exceed the buffer limit. The resulting list is separated by <osep>, which defaults to a space. <start> begins at 1.
 
   It is equivalent to
     extract(lattr(<object>[/<attribute pattern>]), <start>, <count>, <osep>)
 
-  <attribute pattern> is a wilddcard pattern which defaults to "*". regxattr() matches attributes against the regular expression <regexp>.
+  <attribute pattern> is a wildcard pattern which defaults to "*"; use "**" to get all attributes, including leaf attributes in trees. regxattr() matches attributes against the regular expression <regexp>.
 
   xattrp() and regxattrp() will include attributes from parents. Do note that parent attributes are listed _after_ child attributes, not sorted alphabetically.
 

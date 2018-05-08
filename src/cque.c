@@ -92,7 +92,8 @@ int32_t queue_load_record[QUEUE_LOAD_SECS]
 
 double average32(const int32_t *arr, int count);
 
-extern volatile sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
+extern volatile sig_atomic_t
+  cpu_time_limit_hit; /**< Have we used too much CPU? */
 
 /* From game.c, for report() */
 extern char report_cmd[BUFFER_LEN];
@@ -683,9 +684,8 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
   if (fromattr) {
     if (queue_type & QUEUE_INPLACE && pe_info->attrname) {
-      queue_entry->save_attrname =
-        mush_strdup(pe_info->attrname, "string");
-    } 
+      queue_entry->save_attrname = mush_strdup(pe_info->attrname, "string");
+    }
     if (queue_entry->pe_info->attrname) {
       mush_free(queue_entry->pe_info->attrname, "string");
     }
@@ -1125,8 +1125,8 @@ do_entry(MQUE *entry, int include_recurses)
   while (!cpu_time_limit_hit && *s) {
     char rbuff[BUFFER_LEN];
     r = rbuff;
-    process_expression(rbuff, &r, &s, executor, entry->caller,
-                       entry->enactor, PE_NOTHING, pt_flag, entry->pe_info);
+    process_expression(rbuff, &r, &s, executor, entry->caller, entry->enactor,
+                       PE_NOTHING, pt_flag, entry->pe_info);
     *r = '\0';
     if (entry->pe_info->cmd_raw) {
       mush_free(entry->pe_info->cmd_raw, "string");

@@ -495,13 +495,14 @@ FUNCTION(fun_fold)
 
   /* If we have three or more arguments, the third one is the base case */
   if (nargs >= 3) {
-    strncpy(base, args[2], BUFFER_LEN);
+    mush_strncpy(base, args[2], sizeof base);
   } else {
     if (!n) {
       base[0] = '\0';
       i++;
-    } else
-      strncpy(base, list[i++], BUFFER_LEN);
+    } else {
+      mush_strncpy(base, list[i++], sizeof base);
+    }
   }
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
   pe_regs_setenv_nocopy(pe_regs, 0, base);
@@ -509,7 +510,7 @@ FUNCTION(fun_fold)
   pe_regs_set_int(pe_regs, PE_REGS_ARG, strtwo, 0);
   call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
-  strncpy(base, result, BUFFER_LEN);
+  mush_strncpy(base, result, sizeof base);
 
   funccount = pe_info->fun_invocations;
 
@@ -522,7 +523,7 @@ FUNCTION(fun_fold)
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))
       break;
     funccount = pe_info->fun_invocations;
-    strncpy(base, result, BUFFER_LEN);
+    mush_strncpy(base, result, sizeof base);
   }
   pe_regs_free(pe_regs);
   freearr(list, n);
@@ -1986,7 +1987,7 @@ FUNCTION(fun_splice)
   osep[0] = sep;
   osep[1] = '\0';
 
-  strncpy(haystack, remove_markup(args[2], NULL), BUFFER_LEN);
+  mush_strncpy(haystack, remove_markup(args[2], NULL), sizeof haystack);
   if (!*haystack) {
     safe_str(T("#-1 NEED A WORD"), buff, bp);
     return;

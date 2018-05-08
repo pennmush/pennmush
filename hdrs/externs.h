@@ -51,7 +51,7 @@ void dump_database(void);
 void NORETURN mush_panic(const char *message);
 void NORETURN mush_panicf(const char *fmt, ...)
   __attribute__((__format__(__printf__, 1, 2)));
-char *scan_list(dbref player, char *command, int flag);
+char *scan_list(dbref executor, dbref looker, char *command, int flag);
 
 #ifdef WIN32
 /* From timer.c */
@@ -222,7 +222,7 @@ void do_open(dbref player, const char *direction, char **links,
 void do_link(dbref player, const char *name, const char *room_name,
              int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
-dbref do_clone(dbref player, char *name, char *newname, int preserve,
+dbref do_clone(dbref player, char *name, char *newname, bool preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */

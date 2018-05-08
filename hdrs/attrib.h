@@ -77,9 +77,10 @@ ATTR *atr_get(dbref thing, char const *atr);
 ATTR *atr_get_noparent(dbref thing, char const *atr);
 
 /** Flags for atr_iter_get() and friends. */
-enum { AIG_NONE = 0, /**< No special flags */
-       AIG_MORTAL = 0x1, /**< Only look at mortal-visible attributes */
-       AIG_REGEX = 0x2, /**< Use a regular expression instead of glob */
+enum {
+  AIG_NONE = 0,     /**< No special flags */
+  AIG_MORTAL = 0x1, /**< Only look at mortal-visible attributes */
+  AIG_REGEX = 0x2,  /**< Use a regular expression instead of glob */
 };
 typedef int (*aig_func)(dbref, dbref, dbref, const char *, ATTR *, void *);
 int atr_iter_get(dbref player, dbref thing, char const *name, unsigned flags,
@@ -181,8 +182,8 @@ extern ATTR attr[]; /**< external predefined attributes. */
 #define AL_FLAGS(alist) ((alist)->flags)
 #define AL_DEREFS(alist) ((alist)->data ? chunk_derefs((alist)->data) : 0)
 
-#define ATTR_FOR_EACH(obj, var)                                         \
-  if (List(obj))                                                        \
+#define ATTR_FOR_EACH(obj, var)                                                \
+  if (List(obj))                                                               \
     for (var = List(obj); AL_NAME(var); var++)
 
 #endif /* __ATTRIB_H */

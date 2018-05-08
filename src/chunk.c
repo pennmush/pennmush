@@ -869,8 +869,7 @@ debug_log(char const *format, ...)
   va_list args;
 
   va_start(args, format);
-  mush_vsnprintf(rolling_log[rolling_pos], ROLLING_LOG_ENTRY_LEN,
-                 format, args);
+  mush_vsnprintf(rolling_log[rolling_pos], ROLLING_LOG_ENTRY_LEN, format, args);
   va_end(args);
 
   rolling_log[rolling_pos][ROLLING_LOG_ENTRY_LEN - 1] = '\0';
@@ -2643,7 +2642,8 @@ acc_chunk_fork_file(void)
 
   j = 0;
   for (;;) {
-    snprintf(child_filename, sizeof child_filename, "%s.%d", CHUNK_SWAP_FILE, j);
+    snprintf(child_filename, sizeof child_filename, "%s.%d", CHUNK_SWAP_FILE,
+             j);
     swap_fd_child = open(child_filename, O_RDWR | O_EXCL | O_CREAT, 0600);
     if (swap_fd_child >= 0)
       break;

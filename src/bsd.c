@@ -298,10 +298,11 @@ int maxd = 0;
 
 extern const unsigned char *tables;
 
-volatile sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
-volatile sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
-volatile sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
-volatile sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
+volatile sig_atomic_t signal_shutdown_flag =
+  0; /**< Have we caught a shutdown signal? */
+volatile sig_atomic_t usr1_triggered = 0; /**< Have we caught a USR1 signal? */
+volatile sig_atomic_t usr2_triggered = 0; /**< Have we caught a USR2 signal? */
+volatile sig_atomic_t hup_triggered = 0;  /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -1648,15 +1649,11 @@ fcache_dump(DESC *d, FBLOCK fb[2], const char *prefix, char *arg)
 /** Read in a single cached text file
  * \param fb block to store text in
  * \param filename file to read
+ * \return -1 on error, or number of bytes read from filename
  */
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
-  char objname[BUFFER_LEN];
-  char *attrib;
-  dbref thing;
-  size_t len;
-
   if (!fb || !filename)
     return -1;
 
@@ -1665,24 +1662,28 @@ fcache_read(FBLOCK *fb, const char *filename)
     mush_free(fb->buff, "fcache_data");
   }
 
+  if (!*filename) {
+    return -1;
+  }
+
   fb->buff = NULL;
   fb->len = 0;
   fb->thing = NOTHING;
   /* Check for #dbref/attr */
   if (*filename == NUMBER_TOKEN) {
+    char objname[BUFFER_LEN];
+    char *attrib;
+    dbref thing;
+
     strcpy(objname, filename);
     if ((attrib = strchr(objname, '/')) != NULL) {
       *attrib++ = '\0';
       if ((thing = qparse_dbref(objname)) != NOTHING) {
         /* we have #dbref/attr */
-        if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
-          return -1;
-        }
-        len = strlen(attrib);
+        fb->buff = mush_strdup(attrib, "fcache_data");
+        upcasestr(fb->buff);
+        fb->len = strlen(fb->buff);
         fb->thing = thing;
-        fb->len = len;
-        memcpy(fb->buff, upcasestr(attrib), len);
-        *((char *) fb->buff + len) = '\0';
         return fb->len;
       }
     }
@@ -4661,9 +4662,9 @@ dump_users(DESC *call_by, char *match)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
     snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
-            onfor_time_fmt(d->connected_at, 10), idle_time_fmt(d->last_time, 4),
-            (Dark(d->player) ? 'D' : ' '),
-            get_doing(d->player, NOTHING, NOTHING, NULL, 0));
+             onfor_time_fmt(d->connected_at, 10),
+             idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
+             get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf);
   }
   switch (count) {
@@ -4848,7 +4849,7 @@ do_who_admin(dbref player, char *name)
         tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
         unparse_dbref(Location(d->player)), onfor_time_fmt(d->connected_at, 9),
         idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor, conntype);
-      strncpy(addr, d->addr, 28);
+      mush_strncpy(addr, d->addr, sizeof addr);
       if (Dark(d->player)) {
         addr[20] = '\0';
         strcat(addr, " (Dark)");
@@ -4861,10 +4862,10 @@ do_who_admin(dbref player, char *name)
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
     } else {
-      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s", T("Connecting..."),
-              "#-1", onfor_time_fmt(d->connected_at, 9),
-              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-              is_ssl_desc(d) ? 'S' : ' ', d->addr);
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
+               T("Connecting..."), "#-1", onfor_time_fmt(d->connected_at, 9),
+               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+               is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
     notify(player, tbuf);
@@ -5093,8 +5094,7 @@ announce_connect(DESC *d, int isnew, int num)
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone))
-      {
+      DOLIST (obj, Contents(zone)) {
         (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
       }
       break;
@@ -5104,8 +5104,7 @@ announce_connect(DESC *d, int isnew, int num)
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM))
-  {
+  DOLIST (obj, Contents(MASTER_ROOM)) {
     (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
   }
   pe_regs_free(pe_regs);
@@ -5189,8 +5188,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone))
-      {
+      DOLIST (obj, Contents(zone)) {
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5207,8 +5205,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM))
-  {
+  DOLIST (obj, Contents(MASTER_ROOM)) {
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5273,7 +5270,7 @@ do_motd(dbref player, int key, const char *message)
   if ((key & MOTD_ACTION) == MOTD_LIST ||
       ((key & MOTD_ACTION) == MOTD_SET && (!message || !*message))) {
     notify_format(player, T("MOTD: %s"), cf_motd_msg);
-    if (Hasprivs(player) && (key & MOTD_ACTION) != MOTD_MOTD) {
+    if (Hasprivs(player) && (key & MOTD_ACTION) == MOTD_LIST) {
       notify_format(player, T("Wiz MOTD: %s"), cf_wizmotd_msg);
       notify_format(player, T("Down MOTD: %s"), cf_downmotd_msg);
       notify_format(player, T("Full MOTD: %s"), cf_fullmotd_msg);
@@ -5398,16 +5395,19 @@ set_poll(const char *message)
   size_t len = 0;
 
   if (message && *message) {
-    strncpy(poll_msg, remove_markup(message, &len), DOING_LEN - 1);
+    mush_strncpy(poll_msg, remove_markup(message, &len), sizeof poll_msg);
     len--; /* Length includes trailing null */
-  } else
-    strncpy(poll_msg, T("Doing"), DOING_LEN - 1);
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
-        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
-      poll_msg[i] = ' ';
+  } else {
+    mush_strncpy(poll_msg, T("Doing"), sizeof poll_msg);
   }
-  poll_msg[DOING_LEN - 1] = '\0';
+  for (i = 0; i < DOING_LEN; i++) {
+    if (poll_msg[i] == '\0') {
+      break;
+    } else if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
+               (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR)) {
+      poll_msg[i] = ' ';
+    }
+  }
 
   if ((int) len >= DOING_LEN)
     return ((int) len - DOING_LEN);
@@ -6545,13 +6545,8 @@ dump_reboot_db(void)
 void
 load_reboot_db(void)
 {
-  PENNFILE *f;
-  DESC *d = NULL;
-  DESC *closed = NULL, *nextclosed;
-  volatile int val = 0;
-  const char *temp;
-  char c;
-  volatile uint32_t flags = 0;
+  PENNFILE *volatile f;
+  DESC *volatile closed = NULL;
 
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
@@ -6562,8 +6557,15 @@ load_reboot_db(void)
 
   if (setjmp(db_err)) {
     do_rawlog(LT_ERR, "GAME: Unable to read reboot database!");
+    penn_fclose(f);
     return;
   } else {
+    DESC *d = NULL;
+    int val = 0;
+    const char *temp;
+    char c;
+    uint32_t flags = 0;
+
     /* Get the first line and see if it's a set of reboot db flags.
      * Those start with V<number>
      * If not, assume we're using the original format, in which the
@@ -6730,7 +6732,7 @@ load_reboot_db(void)
 
   /* Now announce disconnects of everyone who's not really here */
   while (closed) {
-    nextclosed = closed->next;
+    DESC *nextclosed = closed->next;
     announce_disconnect(closed, "disconnect", 1, NOTHING);
     if (closed->ttype && closed->ttype != default_ttype)
       mush_free(closed->ttype, "terminal description");

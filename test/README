@@ -1,12 +1,16 @@
 Regression tests for Penn functions and commands.
 
 Usage:
-        perl runtest.pl testFOO.pl ...
+        perl runtest.pl [--valgrind] testFOO.pl ...
 
 or     
-        ./alltests.sh
+        ./alltests.sh [--valgrind]
 
-The test*.pl files are frameworks for tests, not actual perl scripts.
+The test*.pl files are frameworks for tests, not actual perl
+scripts. The choice of extension was unfortunate.
+
+The --valgrind option runs the test game under valgrind to help detect
+memory issues.
 
 Their format:
 

@@ -588,7 +588,7 @@ command_log log/command.log
 log_commands no
 
 # log forces done by wizards
-log_forces yes
+log_forces no
 
 # The password that must be given to do an @logwipe. You must also
 # be God, of course. CHANGE THIS.

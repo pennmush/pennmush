@@ -92,6 +92,35 @@ struct is_data {
   struct event *ev;
 };
 
+/** Safe version of strncpy() that always nul-terminates the
+ * destination string. The only reason it's not called
+ * safe_strncpy() is to avoid confusion with the unrelated
+ * safe_*() pennstr functions.
+ * \param dst the destination string to copy to
+ * \param src the source string to copy from
+ * \param len the length of dst. At most len-1 bytes will be copied from src
+ * \return dst
+ */
+char *
+mush_strncpy(char *restrict dst, const char *restrict src, size_t len)
+{
+  size_t n = 0;
+  char *start = dst;
+
+  if (!src || !dst || len == 0)
+    return dst;
+
+  len--;
+
+  while (*src && n < len) {
+    *dst++ = *src++;
+    n++;
+  }
+
+  *dst = '\0';
+  return start;
+}
+
 /** Address to hostname lookup wrapper */
 static struct evdns_request *
 evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
@@ -143,7 +172,8 @@ address_resolved(int result, char type, int count,
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     strcpy(data->resp.hostname, data->resp.ipaddr);
   } else {
-    strncpy(data->resp.hostname, ((const char **) addresses)[0], HOSTNAME_LEN);
+    mush_strncpy(data->resp.hostname, ((const char **) addresses)[0],
+                 HOSTNAME_LEN);
   }
 
   /* One-shot event to write the response packet */
@@ -170,7 +200,7 @@ got_request(evutil_socket_t fd, short what __attribute__((__unused__)),
   memset(data, 0, sizeof *data);
   data->resp.fd = req.fd;
   hi = ip_convert(&req.remote.addr, req.rlen);
-  strncpy(data->resp.ipaddr, hi->hostname, IPADDR_LEN);
+  mush_strncpy(data->resp.ipaddr, hi->hostname, IPADDR_LEN);
   hi = ip_convert(&req.local.addr, req.llen);
   data->resp.connected_to = strtol(hi->port, NULL, 10);
 

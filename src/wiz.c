@@ -2204,7 +2204,7 @@ mem_usage(dbref thing)
   lock_list *l;
   k = sizeof(struct object);    /* overhead */
   k += strlen(Name(thing)) + 1; /* The name */
-  ATTR_FOR_EACH(thing, m) {
+  ATTR_FOR_EACH (thing, m) {
     k += sizeof(ATTR);
     k += AL_STRLEN(m);
   }

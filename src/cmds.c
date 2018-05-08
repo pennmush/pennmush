@@ -370,12 +370,8 @@ COMMAND(cmd_create)
 
 COMMAND(cmd_clone)
 {
-  if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2],
-             queue_entry->pe_info);
-  else
-    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2],
-             queue_entry->pe_info);
+  do_clone(executor, arg_left, args_right[1], SW_ISSET(sw, SWITCH_PRESERVE),
+           args_right[2], queue_entry->pe_info);
 }
 
 COMMAND(cmd_dbck) { do_dbck(executor); }
@@ -780,9 +776,10 @@ do_list_allocations(dbref player)
        time. */
     bvm_asmnode_slab,
 #endif
-    chanlist_slab, chanuser_slab, flag_slab, function_slab, huffman_slab,
-    lock_slab, mail_slab, memcheck_slab, text_block_slab,
-    intmap_slab, pe_reg_slab, pe_reg_val_slab, flagbucket_slab
+    chanlist_slab,    chanuser_slab,     flag_slab,     function_slab,
+    huffman_slab,     lock_slab,         mail_slab,     memcheck_slab,
+    text_block_slab,  intmap_slab,       pe_reg_slab,   pe_reg_val_slab,
+    flagbucket_slab
   };
   size_t i;
 

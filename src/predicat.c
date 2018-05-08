@@ -1562,7 +1562,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
       atr_iter_get_parent(player, thing, attrs, AIG_NONE, regrep_helper,
                           (void *) &rgd);
     } else {
-      atr_iter_get(player, thing, attrs, AIG_NONE, regrep_helper, (void *) &rgd);
+      atr_iter_get(player, thing, attrs, AIG_NONE, regrep_helper,
+                   (void *) &rgd);
     }
     if (free_study) {
 #ifdef PCRE_CONFIG_JIT

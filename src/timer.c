@@ -94,7 +94,7 @@ migrate_stuff(int amount)
   end_obj = start_obj;
   actual = 0;
   do {
-    ATTR_FOR_EACH(end_obj, aptr) {
+    ATTR_FOR_EACH (end_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE)
         actual++;
     }
@@ -128,7 +128,7 @@ migrate_stuff(int amount)
 
   actual = 0;
   do {
-    ATTR_FOR_EACH(start_obj, aptr) {
+    ATTR_FOR_EACH (start_obj, aptr) {
       if (aptr->data != NULL_CHUNK_REFERENCE) {
         refs[actual] = &(aptr->data);
         actual++;
@@ -286,7 +286,7 @@ init_sys_events(void)
 }
 
 volatile sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */
-int cpu_limit_warning_sent = 0;      /** Have we issued a cpu limit warning? */
+int cpu_limit_warning_sent = 0; /** Have we issued a cpu limit warning? */
 
 #ifndef PROFILING
 #if defined(HAVE_SETITIMER)

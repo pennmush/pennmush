@@ -4308,8 +4308,8 @@ COMMAND(cmd_delcom)
   channame = safe_atr_value(a, "delcom");
 
   atr_clr(executor, buff, GOD);
-  matches =
-    atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, delcom_helper, channame);
+  matches = atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, delcom_helper,
+                         channame);
   if (!matches) {
     channel_leave_self(executor, channame);
   } else {

@@ -497,7 +497,7 @@ can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
   return AE_OKAY;
 }
 
-  /*======================================================================*/
+/*======================================================================*/
 
 #define GROWTH_FACTOR 1.5 /**< Amount to increase capacity when growing. */
 #define SHRINK_FACTOR                                                          \
@@ -656,7 +656,8 @@ attr_shrink(dbref thing)
     }
     return;
   } else if (AttrCap(thing) <= 5 ||
-      ((double) AttrCap(thing) / (double) AttrCount(thing)) < SHRINK_FACTOR) {
+             ((double) AttrCap(thing) / (double) AttrCount(thing)) <
+               SHRINK_FACTOR) {
     return;
   } else if (AttrCount(thing) == 1) {
     newcap = 5;
@@ -1351,7 +1352,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
       wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_noparent(thing, strupper(name));
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
-                       : Can_Read_Attr(player, thing, ptr)))
+                                     : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
   } else if (AttrCount(thing)) {
     ATTR_FOR_EACH (thing, ptr) {
@@ -1359,9 +1360,9 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
         continue;
       }
       if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
-                  : Can_Read_Attr(player, thing, ptr)) &&
+                                : Can_Read_Attr(player, thing, ptr)) &&
           ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-                  : atr_wild(name, AL_NAME(ptr)))) {
+                               : atr_wild(name, AL_NAME(ptr)))) {
         int r = func(player, thing, NOTHING, name, ptr, args);
         result += r;
         if (r && in_wipe) {
@@ -1370,14 +1371,15 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
         }
       }
       if (AL_FLAGS(ptr) & AF_ROOT) {
-        ATTR *prev = ptr;                
+        ATTR *prev = ptr;
         for (ptr = atr_sub_branch(ptr);
              AL_NAME(ptr) && is_atree_root(AL_NAME(prev), AL_NAME(ptr));
              ptr++) {
           if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
-               : Can_Read_Attr(player, thing, ptr)) &&
-              ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-               : atr_wild(name, AL_NAME(ptr)))) {
+                                    : Can_Read_Attr(player, thing, ptr)) &&
+              ((flags & AIG_REGEX)
+                 ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                 : atr_wild(name, AL_NAME(ptr)))) {
             int r = func(player, thing, NOTHING, name, ptr, args);
             result += r;
             if (r && in_wipe) {
@@ -1424,11 +1426,10 @@ atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
                   unsigned flags)
 {
   if (doparent) {
-    return atr_iter_get_parent(player, thing, name, flags,
-                               atr_count_helper, NULL);    
+    return atr_iter_get_parent(player, thing, name, flags, atr_count_helper,
+                               NULL);
   } else {
-    return atr_iter_get(player, thing, name, flags, atr_count_helper,
-                        NULL);
+    return atr_iter_get(player, thing, name, flags, atr_count_helper, NULL);
   }
 }
 
@@ -1447,8 +1448,8 @@ atr_pattern_count(dbref player, dbref thing, const char *name, int doparent,
  * \return the sum of the return values of the functions called.
  */
 int
-atr_iter_get_parent(dbref player, dbref thing, const char *name,
-                    unsigned flags, aig_func func, void *args)
+atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
+                    aig_func func, void *args)
 {
   ATTR *ptr;
   int result;
@@ -1472,7 +1473,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name,
       wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
-                       : Can_Read_Attr(player, parent, ptr)))
+                                     : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
   } else {
     StrTree seen;
@@ -1491,26 +1492,28 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name,
             continue;
           }
           if (((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
-                      : Can_Read_Attr(player, parent, ptr)) &&
-              ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-               : atr_wild(name, AL_NAME(ptr)))) {
+                                    : Can_Read_Attr(player, parent, ptr)) &&
+              ((flags & AIG_REGEX)
+                 ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                 : atr_wild(name, AL_NAME(ptr)))) {
             result += func(player, thing, parent, name, ptr, args);
           }
           if (AL_FLAGS(ptr) & AF_ROOT) {
             ATTR *prev = ptr;
             for (ptr = atr_sub_branch(ptr);
-                 AL_NAME(ptr) &&  is_atree_root(AL_NAME(prev), AL_NAME(ptr));
+                 AL_NAME(ptr) && is_atree_root(AL_NAME(prev), AL_NAME(ptr));
                  ptr++) {
               if (AF_Private(ptr) && thing != parent) {
                 continue;
               }
               if (strchr(AL_NAME(ptr), '`')) {
-                /* We need to check all the branches of the tree for no_inherit */
+                /* We need to check all the branches of the tree for no_inherit
+                 */
                 char bname[BUFFER_LEN];
                 char *p;
                 ATTR *branch;
                 bool skip = 0;
-                
+
                 strcpy(bname, AL_NAME(ptr));
                 for (p = strchr(bname, '`'); p; p = strchr(p + 1, '`')) {
                   *p = '\0';
@@ -1526,9 +1529,10 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name,
               }
 
               if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
-                   : Can_Read_Attr(player, thing, ptr)) &&
-                  ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-                   : atr_wild(name, AL_NAME(ptr)))) {
+                                        : Can_Read_Attr(player, thing, ptr)) &&
+                  ((flags & AIG_REGEX)
+                     ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                     : atr_wild(name, AL_NAME(ptr)))) {
                 result += func(player, thing, parent, name, ptr, args);
               }
             }
@@ -1713,8 +1717,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   }
 
   if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_evaled) {
-    pe_info->cmd_evaled = mush_strdup(from_queue->pe_info->cmd_evaled,
-                                      "string");
+    pe_info->cmd_evaled =
+      mush_strdup(from_queue->pe_info->cmd_evaled, "string");
   } else {
     pe_info->cmd_evaled = mush_strdup(str, "string");
   }
@@ -1727,13 +1731,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   st_init(&seen, "AttrsSeenTree");
   st_init(&nocmd_roots, "AttrsSeenTree");
   st_init(&private_attrs, "AttrsSeenTree");
-  
+
   do {
     next =
       parent_depth ? next_parent(thing, current, &parent_count, NULL) : NOTHING;
 
     st_flush(&private_attrs);
-    
+
     ATTR_FOR_EACH (current, ptr) {
       if (current == thing) {
         if (st_find(AL_NAME(ptr), &nocmd_roots)) {
@@ -2024,7 +2028,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       /* Save and reset %c/%u */
       save_cmd_raw = pe_info->cmd_raw;
       pe_info->cmd_raw = NULL;
-      save_cmd_evaled =  pe_info->cmd_evaled;
+      save_cmd_evaled = pe_info->cmd_evaled;
       pe_info->cmd_evaled = NULL;
     } else {
       pe_info = make_pe_info("pe_info-one_comm_match");

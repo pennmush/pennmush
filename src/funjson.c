@@ -24,7 +24,6 @@ static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
                           NEW_PE_INFO *pe_info, JSON *json, dbref executor,
                           dbref enactor);
 
-
 /** Free all memory used by a JSON struct */
 void
 json_free(JSON *json)
@@ -75,7 +74,7 @@ json_escape_string(char *input)
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
     } else if (*p > 127 || *p <= 0x1F) {
-      safe_format(buff, &bp, "\\u%.4X", (unsigned)*p);
+      safe_format(buff, &bp, "\\u%.4X", (unsigned) *p);
     } else {
       if (*p == '"' || *p == '\\')
         safe_chr('\\', buff, &bp);
@@ -535,14 +534,14 @@ FUNCTION(fun_json_query)
           ;
 
         if (query_type == JSON_QUERY_EXISTS) {
-          if (path == nargs -1 || !next) {
-              safe_chr((next) ? '1' : '0', buff, bp);
-              curr = NULL;
-              break;
+          if (path == nargs - 1 || !next) {
+            safe_chr((next) ? '1' : '0', buff, bp);
+            curr = NULL;
+            break;
           }
         }
         curr = next;
-      break;
+        break;
       case JSON_OBJECT:
         next = (JSON *) curr->data;
         while (next) {

@@ -138,7 +138,7 @@ FUNCTION(fun_nattr)
   if (!Can_Examine(executor, thing)) {
     flags |= AIG_MORTAL;
   }
-  
+
   safe_integer(atr_pattern_count(executor, thing, pattern, doparent, flags),
                buff, bp);
 }
@@ -203,11 +203,10 @@ FUNCTION(fun_lattr)
   }
 
   if (strchr(called_as, 'P')) {
-    (void) atr_iter_get_parent(executor, thing, pattern, flags,
-                               lattr_helper, &lh);
+    (void) atr_iter_get_parent(executor, thing, pattern, flags, lattr_helper,
+                               &lh);
   } else {
-    (void) atr_iter_get(executor, thing, pattern, flags,
-                        lattr_helper, &lh);
+    (void) atr_iter_get(executor, thing, pattern, flags, lattr_helper, &lh);
   }
 }
 
@@ -603,7 +602,7 @@ FUNCTION(fun_powers)
       safe_str(T(e_perm), buff, bp);
       return;
     }
-    
+
     do_power(executor, args[0], args[1]);
     return;
   }
@@ -710,8 +709,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor, int type,
       (Can_Examine(executor, loc) || (Location(executor) == loc) ||
        (enactor == loc))) {
     first = 1;
-    DOLIST_VISIBLE(thing, startdb, executor)
-    {
+    DOLIST_VISIBLE (thing, startdb, executor) {
       /* Skip if:
        * - We're not checking this type
        * - We can't interact with this thing
@@ -1319,10 +1317,10 @@ FUNCTION(fun_lock)
     }
     do_lock(executor, args[0], args[1], ltype);
   }
-  
+
   real_ltype = get_locktype(ltype);
   it = match_thing(executor, args[0]);
-  
+
   if (GoodObject(it) && (real_ltype != NULL) &&
       Can_Read_Lock(executor, it, real_ltype)) {
     safe_str(unparse_boolexp(executor, getlock(it, real_ltype), UB_DBREF), buff,
@@ -1590,7 +1588,7 @@ FUNCTION(fun_zone)
     }
     (void) do_chzone(executor, args[0], args[1], 1, 0, pe_info);
   }
-  
+
   it = match_thing(executor, args[0]);
   if (!GoodObject(it))
     safe_str(T(e_notvis), buff, bp);
@@ -1729,7 +1727,7 @@ FUNCTION(fun_alias)
     safe_str(T(e_notvis), buff, bp);
     return;
   }
-  
+
   if (nargs == 1) {
     safe_str(shortalias(it), buff, bp);
     return;
@@ -1744,7 +1742,7 @@ FUNCTION(fun_alias)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-    
+
   if (arglens[1])
     do_set_atr(it, "ALIAS", args[1], executor, 0);
   else

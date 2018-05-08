@@ -468,7 +468,9 @@ pre_destroy(dbref player, dbref thing)
   /* Present informative messages, and do recursive destruction. */
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-    DOLIST(tmp, Exits(thing)) { pre_destroy(player, tmp); }
+    DOLIST (tmp, Exits(thing)) {
+      pre_destroy(player, tmp);
+    }
     break;
   case TYPE_PLAYER:
     if (DESTROY_POSSESSIONS) {
@@ -573,8 +575,7 @@ undestroy(dbref player, dbref thing)
     /* undestroy exits in this room, except exits that are going to be
      * destroyed anyway due to a GOING player.
      */
-    DOLIST(tmp, Exits(thing))
-    {
+    DOLIST (tmp, Exits(thing)) {
       if (DESTROY_POSSESSIONS ? (!Going(Owner(tmp)) || Safe(tmp)) : 1) {
         (void) undestroy(player, tmp);
       }
@@ -773,7 +774,9 @@ empty_contents(dbref thing)
   first = Contents(thing);
   Contents(thing) = NOTHING;
   /* send all objects to nowhere */
-  DOLIST(rest, first) { Location(rest) = NOTHING; }
+  DOLIST (rest, first) {
+    Location(rest) = NOTHING;
+  }
   /* now send them home */
   while (first != NOTHING) {
     rest = Next(first);
@@ -884,7 +887,9 @@ clear_room(dbref thing)
   first = Exits(thing);
   Source(thing) = NOTHING;
   /* set destination of all exits to nothing */
-  DOLIST(rest, first) { Destination(rest) = NOTHING; }
+  DOLIST (rest, first) {
+    Destination(rest) = NOTHING;
+  }
   /* Clear all exits out of exit list */
   while (first != NOTHING) {
     rest = Next(first);

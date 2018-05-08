@@ -679,14 +679,14 @@ db_write_object(PENNFILE *f, dbref i)
   /* write the attribute list */
 
   /* Don't trust AttrCount(thing) for number of attributes to write. */
-  ATTR_FOR_EACH(i, list) {
+  ATTR_FOR_EACH (i, list) {
     if (AF_Nodump(list))
       continue;
     count++;
   }
   db_write_labeled_int(f, "attrcount", count);
 
-  ATTR_FOR_EACH(i, list) {
+  ATTR_FOR_EACH (i, list) {
     if (AF_Nodump(list))
       continue;
     db_write_labeled_string(f, " name", AL_NAME(list));
@@ -815,7 +815,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
   db_write_obj_basic(f, i, o);
 
   /* write the attribute list, scanning */
-  ATTR_FOR_EACH(i, list) {
+  ATTR_FOR_EACH (i, list) {
     if (AF_Nodump(list))
       continue;
     attrcount++;
@@ -847,7 +847,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
        */
       if (atr_get_noparent(i, name)) {
         int count = 0;
-	char newname[ATTRIBUTE_NAME_LIMIT + 1];
+        char newname[ATTRIBUTE_NAME_LIMIT + 1];
         do {
           snprintf(newname, sizeof newname, "%.1018s%d", name, count);
           count++;
@@ -1334,7 +1334,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   ansi_string *as;
 
   attr_reserve(i, count);
-  
+
   for (;;) {
     int c;
 

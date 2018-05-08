@@ -347,8 +347,8 @@ etime_fmt(char *buf, int secs, int len)
     secs = r.rem;
   }
 
-  snprintf(buf, BUFFER_LEN, "%2dy %2dw %2dd %2dh %2dm %2ds", years,
-           weeks, days, hours, mins, secs);
+  snprintf(buf, BUFFER_LEN, "%2dy %2dw %2dd %2dh %2dm %2ds", years, weeks, days,
+           hours, mins, secs);
 
   return squish_time(buf, len);
 }

@@ -101,7 +101,7 @@ generate_seed(uint64_t seeds[])
   bool seed_generated = false;
   static int stream_count = 0;
   int len = sizeof(uint64_t) * 2;
-  
+
 #ifdef HAVE_GETENTROPY
   /* On OpenBSD and up to date Linux, use getentropy() to avoid the
      open/read/close sequence with /dev/urandom */
@@ -121,7 +121,7 @@ generate_seed(uint64_t seeds[])
     seed_generated = true;
   }
 #endif
-  
+
 #ifdef WIN32
   if (!seed_generated) {
     /* Use the Win32 bcrypto RNG interface */
@@ -184,7 +184,7 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   pcg32_random_t rand_state;
   uint64_t seeds[2];
   bool seeded = false;
-  
+
   if (!bio_err) {
     if (!SSL_library_init())
       return NULL;

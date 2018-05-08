@@ -1331,7 +1331,7 @@ FUNCTION(fun_scan)
       }
     }
   }
-  
+
   if (!See_All(executor) && !controls(executor, thing)) {
     notify(executor, T("Permission denied."));
     safe_str("#-1", buff, bp);

@@ -297,10 +297,11 @@ int maxd = 0;
 
 extern const unsigned char *tables;
 
-volatile sig_atomic_t signal_shutdown_flag = 0; /**< Have we caught a shutdown signal? */
-volatile sig_atomic_t usr1_triggered = 0;       /**< Have we caught a USR1 signal? */
-volatile sig_atomic_t usr2_triggered = 0;       /**< Have we caught a USR2 signal? */
-volatile sig_atomic_t hup_triggered = 0;        /**< Have we caught a HUP signal? */
+volatile sig_atomic_t signal_shutdown_flag =
+  0; /**< Have we caught a shutdown signal? */
+volatile sig_atomic_t usr1_triggered = 0; /**< Have we caught a USR1 signal? */
+volatile sig_atomic_t usr2_triggered = 0; /**< Have we caught a USR2 signal? */
+volatile sig_atomic_t hup_triggered = 0;  /**< Have we caught a HUP signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -1661,7 +1662,7 @@ fcache_read(FBLOCK *fb, const char *filename)
   if (!*filename) {
     return -1;
   }
-  
+
   fb->buff = NULL;
   fb->len = 0;
   fb->thing = NOTHING;
@@ -4658,9 +4659,9 @@ dump_users(DESC *call_by, char *match)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
     snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
-            onfor_time_fmt(d->connected_at, 10), idle_time_fmt(d->last_time, 4),
-            (Dark(d->player) ? 'D' : ' '),
-            get_doing(d->player, NOTHING, NOTHING, NULL, 0));
+             onfor_time_fmt(d->connected_at, 10),
+             idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
+             get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf);
   }
   switch (count) {
@@ -4858,10 +4859,10 @@ do_who_admin(dbref player, char *name)
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
     } else {
-      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s", T("Connecting..."),
-              "#-1", onfor_time_fmt(d->connected_at, 9),
-              idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
-              is_ssl_desc(d) ? 'S' : ' ', d->addr);
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
+               T("Connecting..."), "#-1", onfor_time_fmt(d->connected_at, 9),
+               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+               is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
     notify(player, tbuf);
@@ -5090,8 +5091,7 @@ announce_connect(DESC *d, int isnew, int num)
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone))
-      {
+      DOLIST (obj, Contents(zone)) {
         (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
       }
       break;
@@ -5101,8 +5101,7 @@ announce_connect(DESC *d, int isnew, int num)
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM))
-  {
+  DOLIST (obj, Contents(MASTER_ROOM)) {
     (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
   }
   pe_regs_free(pe_regs);
@@ -5186,8 +5185,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
-      DOLIST(obj, Contents(zone))
-      {
+      DOLIST (obj, Contents(zone)) {
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5204,8 +5202,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     }
   }
   /* now try the master room */
-  DOLIST(obj, Contents(MASTER_ROOM))
-  {
+  DOLIST (obj, Contents(MASTER_ROOM)) {
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
@@ -5404,7 +5401,7 @@ set_poll(const char *message)
     if (poll_msg[i] == '\0') {
       break;
     } else if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
-        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR)) {
+               (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR)) {
       poll_msg[i] = ' ';
     }
   }
@@ -6545,9 +6542,9 @@ dump_reboot_db(void)
 void
 load_reboot_db(void)
 {
-  PENNFILE * volatile f;
-  DESC * volatile closed = NULL;
-  
+  PENNFILE *volatile f;
+  DESC *volatile closed = NULL;
+
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
     restarting = 0;

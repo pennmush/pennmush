@@ -172,7 +172,8 @@ address_resolved(int result, char type, int count,
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     strcpy(data->resp.hostname, data->resp.ipaddr);
   } else {
-    mush_strncpy(data->resp.hostname, ((const char **) addresses)[0], HOSTNAME_LEN);
+    mush_strncpy(data->resp.hostname, ((const char **) addresses)[0],
+                 HOSTNAME_LEN);
   }
 
   /* One-shot event to write the response packet */

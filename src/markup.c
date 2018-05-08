@@ -1342,7 +1342,7 @@ define_ansi_data(ansi_data *store, const char *str)
 
         if (!valid_color_name(buff)) {
           return 1;
-	}
+        }
 
         if (strncasecmp("xterm", buff, 5) ==
             0) { /* xterm color ids are stored directly. */
@@ -1352,7 +1352,7 @@ define_ansi_data(ansi_data *store, const char *str)
                    color_to_hex(tprintf("+%s", buff), 0));
         } else /* len <= 6 */ {
           snprintf(ptr, COLOR_NAME_LEN, "+%.6s", buff);
-	}
+        }
 
         break;
       case '#':
@@ -1381,7 +1381,7 @@ define_ansi_data(ansi_data *store, const char *str)
           if (valid_angle_hex(name, len)) {
             /* < #RRGGBB > */
             char *st = strchr(name, '#');
-	    mush_strncpy(ptr, st, 8);
+            mush_strncpy(ptr, st, 8);
           } else if (valid_angle_triple(name, len, rgbs)) {
             /* < R G B > */
             snprintf(ptr, COLOR_NAME_LEN, "#%s", rgbs);

@@ -960,7 +960,7 @@ is_named_register(const char *key)
     return 0;
 
   return 1;
-}  
+}
 
 /** Set a string value in a PE_REGS structure.
  *
@@ -1173,27 +1173,27 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
         if (val->type & (PE_REGS_SWITCH | PE_REGS_ITER)) {
           /* It is t<num> or n<num>. Bump it up as necessary. */
           if (sscanf(val->name, "%c%d", &itype, &inum) == 2) {
-	    inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
-	    if (*(val->name) == 'T') {
-	      if (val->type & PE_REGS_SWITCH) {
-		if (inum >= scount)
-		  scount = inum + 1;
-	      } else {
-		if (inum >= icount)
-		  icount = inum + 1;
-	      }
-	    }
-	    if (inum >= 0 && inum < MAX_ITERS) {
-	      snprintf(numbuff, sizeof numbuff, "%c%d", itype, inum);
-	      if (val->type & PE_REGS_STR) {
-		pe_regs_set(new_regs, val->type & andflags, numbuff,
-			    val->val.sval);
-	      } else {
-		pe_regs_set_int(new_regs, val->type & andflags, numbuff,
-				val->val.ival);
-	      }
-	    }
-	  }
+            inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
+            if (*(val->name) == 'T') {
+              if (val->type & PE_REGS_SWITCH) {
+                if (inum >= scount)
+                  scount = inum + 1;
+              } else {
+                if (inum >= icount)
+                  icount = inum + 1;
+              }
+            }
+            if (inum >= 0 && inum < MAX_ITERS) {
+              snprintf(numbuff, sizeof numbuff, "%c%d", itype, inum);
+              if (val->type & PE_REGS_STR) {
+                pe_regs_set(new_regs, val->type & andflags, numbuff,
+                            val->val.sval);
+              } else {
+                pe_regs_set_int(new_regs, val->type & andflags, numbuff,
+                                val->val.ival);
+              }
+            }
+          }
         } else {
           /* Set, but maybe don't override. */
           if (val->type & PE_REGS_STR) {
@@ -1301,7 +1301,8 @@ pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val)
     pe_regs = pe_regs->prev;
   }
   /* Single-character keys ignore attrcount. */
-  if ((count >= MAX_NAMED_QREGS) && is_named_register(key) && !PE_Getq(pe_info, key)) {
+  if ((count >= MAX_NAMED_QREGS) && is_named_register(key) &&
+      !PE_Getq(pe_info, key)) {
     return 0;
   }
   /* Find the p_regs to setq() in. */
@@ -1697,7 +1698,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
     pe_regs_free(pe_regs);
   }
 
-  if(pe_info->cmd_raw) {
+  if (pe_info->cmd_raw) {
     mush_free(pe_info->cmd_raw, "string");
   }
   if (pe_info->cmd_evaled) {
@@ -1706,7 +1707,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
   if (pe_info->attrname) {
     mush_free(pe_info->attrname, "string");
   }
-  
+
 #ifdef DEBUG
   mush_free(pe_info, pe_info->name);
 #else

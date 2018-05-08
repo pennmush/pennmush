@@ -374,9 +374,9 @@ void init_text_queue(struct text_queue *);
 void add_to_queue(struct text_queue *q, const char *b, int n);
 int queue_write(DESC *d, const char *b, int n);
 int queue_eol(DESC *d);
-int queue_newwrite(DESC *d, const char *b, int n);
 int queue_string(DESC *d, const char *s);
-int queue_string_eol(DESC *d, const char *s);
+int WIN32_CDECL queue_string_eol(DESC *d, const char *s, ...)
+  __attribute__((__format__(__printf__, 2, 3)));
 void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
@@ -3538,13 +3538,13 @@ check_connect(DESC *d, const char *msg)
     return 1;
 
   if (!check_fails(d->ip)) {
-    queue_string_eol(d, T(connect_fail_limit_exceeded));
+    queue_string_eol(d, "%s", T(connect_fail_limit_exceeded));
     return 1;
   }
   if (string_prefixe("connect", command)) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
-      queue_string_eol(d, errbuf);
+      queue_string_eol(d, "%s", errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
                 d->addr, d->ip, user);
     } else {
@@ -3560,7 +3560,7 @@ check_connect(DESC *d, const char *msg)
   } else if (strcasecmp(command, "cd") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
-      queue_string_eol(d, errbuf);
+      queue_string_eol(d, "%s", errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
                 d->addr, d->ip, user);
     } else {
@@ -3583,7 +3583,7 @@ check_connect(DESC *d, const char *msg)
   } else if (strcasecmp(command, "cv") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
-      queue_string_eol(d, errbuf);
+      queue_string_eol(d, "%s", errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
                 d->addr, d->ip, user);
     } else {
@@ -3603,7 +3603,7 @@ check_connect(DESC *d, const char *msg)
   } else if (strcasecmp(command, "ch") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
-      queue_string_eol(d, errbuf);
+      queue_string_eol(d, "%s", errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
                 d->addr, d->ip, user);
     } else {
@@ -3667,13 +3667,13 @@ check_connect(DESC *d, const char *msg)
     switch (player) {
     case NOTHING:
     case AMBIGUOUS:
-      queue_string_eol(
-        d, T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
+      queue_string_eol(d, "%s",
+                       T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
                 d->descriptor, d->addr, d->ip, user);
       break;
     case HOME:
-      queue_string_eol(d, T(password_fail));
+      queue_string_eol(d, "%s", T(password_fail));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad password).",
                 d->descriptor, d->addr, d->ip, user);
       break;
@@ -3716,11 +3716,11 @@ check_connect(DESC *d, const char *msg)
     }
     if ((player = email_register_player(d, user, password, d->addr, d->ip)) ==
         NOTHING) {
-      queue_string_eol(d, T(register_fail));
+      queue_string_eol(d, "%s", T(register_fail));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed registration for '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
-      queue_string_eol(d, T(register_success));
+      queue_string_eol(d, "%s", T(register_success));
       do_rawlog(LT_CONN, "[%d/%s/%s] Registered %s(#%d) to %s", d->descriptor,
                 d->addr, d->ip, Name(player), player, password);
     }
@@ -4114,27 +4114,34 @@ sockset(DESC *d, char *name, char *val)
       strcasecmp(name, "COLOURSTYLE") == 0) {
     if (strcasecmp(val, "auto") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
-      return tprintf(T("Colorstyle set to '%s'"), "auto");
+      snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "auto");
+      return retval;
     } else if (strcasecmp("plain", val) == 0 || strcasecmp("none", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
-      return tprintf(T("Colorstyle set to '%s'"), "plain");
+      snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "plain");
+      return retval;
     } else if (strcasecmp("hilite", val) == 0 ||
                strcasecmp("highlight", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
-      return tprintf(T("Colorstyle set to '%s'"), "hilite");
+      snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "hilite");
+      return retval;
     } else if (strcasecmp("16color", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
-      return tprintf(T("Colorstyle set to '%s'"), "16color");
+      snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "16color");
+      return retval;
     } else if (strcasecmp("xterm256", val) == 0 || strcmp(val, "256") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
-      return tprintf(T("Colorstyle set to '%s'"), "xterm256");
+      snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "xterm256");
+      return retval;
     }
-    return tprintf(T("Unknown color style. Valid color styles: %s"),
-                   "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+    snprintf(retval, sizeof retval,
+             T("Unknown color style. Valid color styles: %s"),
+             "'auto', 'plain', 'hilite', '16color', 'xterm256'.");
+    return retval;
   }
 
   if (!strcasecmp(name, "PROMPT_NEWLINES")) {
@@ -4216,7 +4223,7 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
       if (!d) {
         notify(player, T("That port is not active."));
       } else {
-        queue_string_eol(d, message);
+        queue_string_eol(d, "%s", message);
         total++;
         last = d;
       }
@@ -4311,9 +4318,9 @@ do_page_port(dbref executor, const char *pc, const char *message)
   if (target != NOTHING)
     page_return(executor, target, "Idle", "IDLE", NULL, NULL);
   if (Typeof(executor) != TYPE_PLAYER && Nospoof(target))
-    queue_string_eol(d, tprintf("[#%d] %s", executor, tbuf));
+    queue_string_eol(d, "[#%d] %s", executor, tbuf);
   else
-    queue_string_eol(d, tbuf);
+    queue_string_eol(d, "%s", tbuf);
 }
 
 /** Return an inactive descriptor, as long as there's more than
@@ -4496,16 +4503,15 @@ static void
 dump_info(DESC *call_by)
 {
 
-  queue_string_eol(call_by, tprintf("### Begin INFO %s", INFO_VERSION));
+  queue_string_eol(call_by, "### Begin INFO %s", INFO_VERSION);
 
-  queue_string_eol(call_by, tprintf("Name: %s", options.mud_name));
-  queue_string_eol(call_by, tprintf("Address: %s", options.mud_url));
-  queue_string_eol(
-    call_by, tprintf("Uptime: %s", show_time(globals.first_start_time, 0)));
-  queue_string_eol(call_by, tprintf("Connected: %d", count_players()));
-  queue_string_eol(call_by, tprintf("Size: %d", db_top));
-  queue_string_eol(call_by,
-                   tprintf("Version: PennMUSH %sp%s", VERSION, PATCHLEVEL));
+  queue_string_eol(call_by, "Name: %s", options.mud_name);
+  queue_string_eol(call_by, "Address: %s", options.mud_url);
+  queue_string_eol(call_by, "Uptime: %s",
+                   show_time(globals.first_start_time, 0));
+  queue_string_eol(call_by, "Connected: %d", count_players());
+  queue_string_eol(call_by, "Size: %d", db_top);
+  queue_string_eol(call_by, "Version: PennMUSH %sp%s", VERSION, PATCHLEVEL);
   queue_string_eol(call_by, "### End INFO");
 }
 
@@ -4518,20 +4524,21 @@ report_mssp(DESC *d, char *buff, char **bp)
   if (d) {
     queue_string_eol(d, "\r\nMSSP-REPLY-START");
     /* Required by current spec, as of 2010-08-15 */
-    queue_string_eol(d, tprintf("%s\t%s", "NAME", options.mud_name));
-    queue_string_eol(d, tprintf("%s\t%d", "PLAYERS", count_players()));
-    queue_string_eol(
-      d, tprintf("%s\t%ld", "UPTIME", (long) globals.first_start_time));
+    queue_string_eol(d, "%s\t%s", "NAME", options.mud_name);
+    queue_string_eol(d, "%s\t%d", "PLAYERS", count_players());
+    queue_string_eol(d, "%s\t%ld", "UPTIME", (long) globals.first_start_time);
     /* Not required, but we know anyway */
-    queue_string_eol(d, tprintf("%s\t%d", "PORT", options.port));
-    if (options.ssl_port)
-      queue_string_eol(d, tprintf("%s\t%d", "SSL", options.ssl_port));
-    queue_string_eol(d, tprintf("%s\t%d", "PUEBLO", options.support_pueblo));
-    queue_string_eol(
-      d, tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION, PATCHLEVEL));
-    queue_string_eol(d, tprintf("%s\t%s", "FAMILY", "TinyMUD"));
-    if (strlen(options.mud_url))
-      queue_string_eol(d, tprintf("%s\t%s", "WEBSITE", options.mud_url));
+    queue_string_eol(d, "%s\t%d", "PORT", options.port);
+    if (options.ssl_port) {
+      queue_string_eol(d, "%s\t%d", "SSL", options.ssl_port);
+    }
+    queue_string_eol(d, "%s\t%d", "PUEBLO", options.support_pueblo);
+    queue_string_eol(d, "%s\t%s %sp%s", "CODEBASE", "PennMUSH",
+                     VERSION, PATCHLEVEL);
+    queue_string_eol(d, "%s\t%s", "FAMILY", "TinyMUD");
+    if (strlen(options.mud_url)) {
+      queue_string_eol(d, "%s\t%s", "WEBSITE", options.mud_url);
+    }
   } else {
     safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "NAME", MSSP_VAL,
                 options.mud_name);
@@ -4558,7 +4565,7 @@ report_mssp(DESC *d, char *buff, char **bp)
     opt = mssp;
     if (d) {
       while (opt) {
-        queue_string_eol(d, tprintf("%s\t%s", opt->name, opt->value));
+        queue_string_eol(d, "%s\t%s", opt->name, opt->value);
         opt = opt->next;
       }
       queue_string_eol(d, "MSSP-REPLY-END");
@@ -4642,7 +4649,7 @@ dump_users(DESC *call_by, char *match)
 
   snprintf(tbuf, BUFFER_LEN, "%-16s %10s %6s  %s", T("Player Name"),
            T("On For"), T("Idle"), get_poll());
-  queue_string_eol(call_by, tbuf);
+  queue_string_eol(call_by, "%s", tbuf);
 
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected || !GoodObject(d->player))
@@ -4662,7 +4669,7 @@ dump_users(DESC *call_by, char *match)
              onfor_time_fmt(d->connected_at, 10),
              idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
              get_doing(d->player, NOTHING, NOTHING, NULL, 0));
-    queue_string_eol(call_by, tbuf);
+    queue_string_eol(call_by, "%s", tbuf);
   }
   switch (count) {
   case 0:
@@ -4675,7 +4682,7 @@ dump_users(DESC *call_by, char *match)
     snprintf(tbuf, BUFFER_LEN, T("There are %d players connected."), count);
     break;
   }
-  queue_string_eol(call_by, tbuf);
+  queue_string_eol(call_by, "%s", tbuf);
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML))
     queue_newwrite(call_by, "</PRE>", 6);
 }
@@ -6429,7 +6436,7 @@ close_ssl_connections(void)
   /* Close clients */
   DESC_ITER (d) {
     if (d->ssl) {
-      queue_string_eol(d, T(ssl_shutdown_message));
+      queue_string_eol(d, "%s", T(ssl_shutdown_message));
       process_output(d);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;

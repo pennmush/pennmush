@@ -354,7 +354,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   char *current;
   const char **start;
   char sname[BUFFER_LEN];
-
+  char pbuff[BUFFER_LEN];
+  
   if (!arg1 || !*arg1) {
     notify(player, T("Whisper to whom?"));
     return;
@@ -436,11 +437,15 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     notify_format(player,
                   (gcount > 1) ? T("%s sense: %s%s%s") : T("%s senses: %s%s%s"),
                   tbuf + 4, AName(player, AN_SAY, NULL), gap, arg2);
-    p = tprintf("You sense: %s%s%s", AName(player, AN_SAY, NULL), gap, arg2);
+    
+    snprintf(pbuff, sizeof pbuff, "You sense: %s%s%s",
+             AName(player, AN_SAY, NULL), gap, arg2);
+    p = pbuff;
   } else {
     notify_format(player, T("You whisper, \"%s\"%s."), arg2, tbuf);
-    p = tprintf(T("%s whispers%s: %s"), AName(player, AN_SAY, NULL),
-                gcount > 1 ? tbuf : "", arg2);
+    snprintf(pbuff, sizeof pbuff, T("%s whispers%s: %s"),
+             AName(player, AN_SAY, NULL), gcount > 1 ? tbuf : "", arg2);
+    p = pbuff;
   }
 
   strcpy(sname, AName(player, AN_SAY, NULL));
@@ -453,7 +458,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     dbref first = Contents(Location(player));
     if (!GoodObject(first))
       return;
-    p = tprintf(T("%s whispers%s."), sname, tbuf);
+    snprintf(pbuff, sizeof pbuff, T("%s whispers%s."), sname, tbuf);
+    p = pbuff;
     DOLIST (first, first) {
       overheard = 1;
       for (who = 0; who < gcount; who++) {
@@ -813,7 +819,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   int is_haven;
   ATTR *a;
   char alias[BUFFER_LEN], *ap;
-
+  char msg[BUFFER_LEN];
+  
   if (*arg1 && has_eq) {
     /* page to=[msg] */
     head = (char *) arg1;
@@ -908,32 +915,31 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
     } else {
+      char msg[BUFFER_LEN];
       fails_lock =
         !(override || eval_lock_with(executor, target, Page_Lock, pe_info));
       is_haven = !override && Haven(target);
       if (!Connected(target) || (Dark(target) && (is_haven || fails_lock))) {
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
-        page_return(
-          executor, target, "Away", "AWAY",
-          tprintf(T("%s is not connected."), AName(target, AN_SYS, NULL)),
-          pe_info);
-        if (fails_lock)
+        snprintf(msg, sizeof msg, T("%s is not connected."),
+                 AName(target, AN_SYS, NULL));
+        page_return(executor, target, "Away", "AWAY", msg, pe_info);
+        if (fails_lock) {
           fail_lock(executor, target, Page_Lock, NULL, NOTHING);
+        }
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (is_haven) {
-        page_return(executor, target, "Haven", "HAVEN",
-                    tprintf(T("%s is not accepting any pages."),
-                            AName(target, AN_SYS, NULL)),
-                    pe_info);
+        snprintf(msg, sizeof msg, T("%s is not accepting any pages."),
+                 AName(target, AN_SYS, NULL));
+        page_return(executor, target, "Haven", "HAVEN", msg, pe_info);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
       } else if (fails_lock) {
-        page_return(executor, target, "Haven", "HAVEN",
-                    tprintf(T("%s is not accepting your pages."),
-                            AName(target, AN_SYS, NULL)),
-                    pe_info);
+        snprintf(msg, sizeof msg, T("%s is not accepting your pages."),
+                 AName(target, AN_SYS, NULL));
+        page_return(executor, target, "Haven", "HAVEN", msg, pe_info);
         fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(AName(target, AN_SYS, NULL), tbuf, &tp);
@@ -1028,10 +1034,12 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   /* Figure out the 'name' of the player */
   if ((ap = shortalias(executor)) && *ap) {
     strcpy(alias, ap);
-    if (PAGE_ALIASES && strcasecmp(ap, Name(executor)))
-      current = tprintf("%s (%s)", AName(executor, AN_SAY, NULL), alias);
-    else
+    if (PAGE_ALIASES && strcasecmp(ap, Name(executor))) {
+      snprintf(msg, sizeof msg, "%s (%s)", AName(executor, AN_SAY, NULL), alias);
+      current = msg;
+    } else {
       current = (char *) AName(executor, AN_SAY, NULL);
+    }
   } else {
     alias[0] = '\0';
     current = (char *) AName(executor, AN_SAY, NULL);

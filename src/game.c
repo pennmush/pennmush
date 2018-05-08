@@ -1196,10 +1196,14 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
 
     log_activity(LA_CMD, executor, msg);
     if (!(queue_entry->queue_type & QUEUE_EVENT) &&
-        (options.log_commands || Suspect(executor)))
+        (options.log_commands || Suspect(executor))) {
       do_log(LT_CMD, executor, NOTHING, "%s", msg);
-    if (Verbose(executor))
-      raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
+    }
+    if (Verbose(executor)) {
+      char tmp[BUFFER_LEN + 20];
+      snprintf(tmp, sizeof tmp, "#%d] %s", executor, msg);
+      raw_notify(Owner(executor), tmp);
+    }
   }
 
   strcpy(unp, command);
@@ -2421,14 +2425,17 @@ db_open(const char *fname)
      */
 
     if (access(filename, R_OK) == 0) {
-      pf->handle.f =
-        popen(tprintf("%s < '%s'", options.uncompressprog, filename), "r");
+      char prog[1024];
+      snprintf(prog, sizeof prog, "%s < '%s'", options.uncompressprog,
+               filename);
+      pf->handle.f = popen(prog, "r");
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
         setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
-      } else
+      } else {
         do_rawlog(LT_ERR, "Unable to run '%s < %s': %s", options.uncompressprog,
                   filename, strerror(errno));
+      }
     } else {
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
@@ -2503,15 +2510,17 @@ db_open_write(const char *fname)
 
 #ifndef WIN32
   if (*options.compressprog) {
+    char prog[1024];
     pf->type = PFT_PIPE;
-    pf->handle.f =
-      popen(tprintf("%s > '%s'", options.compressprog, filename), "w");
+    snprintf(prog, sizeof prog, "%s > '%s'", options.compressprog, filename);
+    pf->handle.f = popen(prog, "w");
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
       setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
-    } else
+    } else {
       do_rawlog(LT_ERR, "Unable to run '%s > %s': %s", options.compressprog,
                 filename, strerror(errno));
+    }
 
   } else
 #endif /* WIN32 */

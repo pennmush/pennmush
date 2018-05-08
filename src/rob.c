@@ -228,10 +228,10 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
 
   if (failvendor != NOTHING) {
     /* Found someone selling, but they wouldn't take our money */
-    fail_lock(player, failvendor, Pay_Lock,
-              tprintf(T("%s doesn't want your money."),
-                      AName(failvendor, AN_SYS, NULL)),
-              NOTHING);
+    char msg[BUFFER_LEN];
+    snprintf(msg, sizeof msg, T("%s doesn't want your money."),
+             AName(failvendor, AN_SYS, NULL));
+    fail_lock(player, failvendor, Pay_Lock, msg, NOTHING);
   } else if (price >= 0) {
     /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
@@ -437,11 +437,11 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
         return;
       }
       if (!eval_lock_with(player, who, Pay_Lock, pe_info)) {
+        char msg[BUFFER_LEN];
         giveto(player, amount);
-        fail_lock(
-          player, who, Pay_Lock,
-          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
-          NOTHING);
+        snprintf(msg, sizeof msg, T("%s refuses your money."),
+                 AName(who, AN_SYS, NULL));
+        fail_lock(player, who, Pay_Lock, msg, NOTHING);
         pe_regs_free(pe_regs);
         return;
       }
@@ -462,11 +462,11 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       /* give pennies to a player with no @cost, or "give" a negative amount to
        * a player */
       if (!Wizard(player) && !eval_lock_with(player, who, Pay_Lock, pe_info)) {
+        char msg[BUFFER_LEN];
         giveto(player, amount);
-        fail_lock(
-          player, who, Pay_Lock,
-          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
-          NOTHING);
+        snprintf(msg, sizeof msg, T("%s refuses your money."),
+                 AName(who, AN_SYS, NULL));
+        fail_lock(player, who, Pay_Lock, msg, NOTHING);
         return;
       }
       if (amount > 0) {

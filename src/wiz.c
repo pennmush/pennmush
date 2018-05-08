@@ -162,7 +162,8 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
 {
   dbref who, thing;
   int owned, limit, adjust;
-
+  char tmp[50];
+  
   /* determine the victim */
   if (!arg1 || !*arg1 || !strcmp(arg1, "me"))
     who = Owner(player);
@@ -214,14 +215,17 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     return;
   }
   adjust = ((*arg2 == '+') || (*arg2 == '-'));
-  if (adjust)
+  if (adjust) {
     limit = owned + get_current_quota(who) + atoi(arg2);
-  else
+  } else {
     limit = atoi(arg2);
-  if (limit < owned) /* always have enough quota for your objects */
+  }
+  if (limit < owned) { /* always have enough quota for your objects */
     limit = owned;
+  }
 
-  (void) atr_add(Owner(who), "RQUOTA", tprintf("%d", limit - owned), GOD, 0);
+  snprintf(tmp, sizeof tmp, "%d", limit - owned);
+  (void) atr_add(Owner(who), "RQUOTA", tmp, GOD, 0);
 
   notify_format(player, T("Objects: %d   Limit: %d"), owned, limit);
 }
@@ -282,10 +286,13 @@ do_allquota(dbref player, const char *arg1, int quiet)
                     oldlimit);
     }
     if (limit != -1) {
-      if (limit <= owned)
+      if (limit <= owned) {
         (void) atr_add(who, "RQUOTA", "0", GOD, 0);
-      else
-        (void) atr_add(who, "RQUOTA", tprintf("%d", limit - owned), GOD, 0);
+      } else {
+        char tmp[100];
+        snprintf(tmp, sizeof tmp, "%d", limit - owned);
+        (void) atr_add(who, "RQUOTA", tmp, GOD, 0);
+      }
     }
   }
   if (limit == -1)

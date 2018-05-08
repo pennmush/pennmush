@@ -765,13 +765,15 @@ do_mail_list(dbref player, const char *msglist)
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
         /* list it */
-        if (SUPPORT_HTML)
-          notify_noenter(player,
-                         tprintf("%c%cA XCH_CMD=\"@mail/read %d:%d\" "
-                                 "XCH_HINT=\"Read message %d in folder %d\"%c",
-                                 TAG_START, MARKUP_HTML, (int) Folder(mp),
-                                 i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
-                                 TAG_END));
+        if (SUPPORT_HTML) {
+          char buff[BUFFER_LEN];
+          snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/read %d:%d\" "
+                   "XCH_HINT=\"Read message %d in folder %d\"%c",
+                   TAG_START, MARKUP_HTML, (int) Folder(mp),
+                   i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
+                   TAG_END);
+          notify_noenter(player, buff);
+        }
         strcpy(subj, chopstr(get_subject(mp), 28));
         strcpy(sender, get_sender(mp, 0, 12, &isplayer));
         safe_fill_to(' ', 12, sender);
@@ -783,15 +785,19 @@ do_mail_list(dbref player, const char *msglist)
                          : ' '),
                       sender, 30, subj,
                       mail_list_time(show_time(mp->time, 0), 1));
-        if (SUPPORT_HTML)
-          notify_noenter(player,
-                         tprintf("%c%c/A%c", TAG_START, MARKUP_HTML, TAG_END));
+        if (SUPPORT_HTML) {
+          char buff[10];
+          snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START,
+                   MARKUP_HTML, TAG_END);
+          notify_noenter(player, buff);
+        }
       }
     }
   }
   notify(player, DASH_LINE);
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_PUEBLO) {
     notify(player, close_tag("SAMP"));
+  }
   return;
 }
 
@@ -895,14 +901,16 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
           show_time(mp->time, 0), i, status_string(mp));
         notify_format(player, T("Subject: %s"), get_subject(mp));
         notify(player, DASH_LINE);
-        if (SUPPORT_PUEBLO)
+        if (SUPPORT_PUEBLO) {
           notify_noenter(player, close_tag("SAMP"));
+        }
         strcpy(tbuf1, get_message(mp));
         notify(player, tbuf1);
-        if (SUPPORT_PUEBLO)
+        if (SUPPORT_PUEBLO) {
           notify(player, wrap_tag("SAMP", DASH_LINE));
-        else
+        } else {
           notify(player, DASH_LINE);
+        }
       }
     }
   }
@@ -910,7 +918,6 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
     /* ran off the end of the list without finding anything */
     notify(player, T("MAIL: No matching messages."));
   }
-  return;
 }
 
 /** List the flags, number, sender, subject, and date of another
@@ -968,12 +975,14 @@ do_mail_reviewlist(dbref player, dbref target)
     if (mail_match(player, mp, ms, i)) {
       /* list it */
       i++;
-      if (SUPPORT_HTML)
-        notify_noenter(player,
-                       tprintf("%c%cA XCH_CMD=\"@mail/review %s=%d\" "
-                               "XCH_HINT=\"Read message %d sent to %s\"%c",
-                               TAG_START, MARKUP_HTML, Name(mp->to), i, i,
-                               Name(mp->to), TAG_END));
+      if (SUPPORT_HTML) {
+        char buff[BUFFER_LEN];
+        snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/review %s=%d\" "
+                 "XCH_HINT=\"Read message %d sent to %s\"%c",
+                 TAG_START, MARKUP_HTML, Name(mp->to), i, i,
+                 Name(mp->to), TAG_END);
+        notify_noenter(player, buff);
+      }
       strcpy(subj, chopstr(get_subject(mp), 28));
       if (!nbuff[0]) {
         np = nbuff;
@@ -992,15 +1001,18 @@ do_mail_reviewlist(dbref player, dbref target)
                        ? '*'
                        : ' '),
                     nbuff, 30, subj, mail_list_time(show_time(mp->time, 0), 1));
-      if (SUPPORT_HTML)
-        notify_noenter(player,
-                       tprintf("%c%c/A%c", TAG_START, MARKUP_HTML, TAG_END));
+      if (SUPPORT_HTML) {
+        char buff[10];
+        snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START, MARKUP_HTML,
+                 TAG_END);
+        notify_noenter(player, buff);
+      }
     }
   }
   notify(player, DASH_LINE);
-  if (SUPPORT_PUEBLO)
+  if (SUPPORT_PUEBLO) {
     notify(player, close_tag("SAMP"));
-  return;
+  }
 }
 
 /** Review mail.
@@ -1595,19 +1607,25 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
 
   /* Deal with the subject */
   cp = remove_markup(subject, NULL);
-  if (subject && cp && *cp)
+  if (subject && cp && *cp) {
     strcpy(sbuf, cp);
-  else
+  } else {
     strcpy(sbuf, T("(no subject)"));
-  if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:"))
-    newp->subject = compress(chopstr(tprintf("Fwd: %s", sbuf), SUBJECT_LEN));
-  else if ((flags & M_REPLY) && !string_prefix(sbuf, "Re:"))
-    newp->subject = compress(chopstr(tprintf("Re: %s", sbuf), SUBJECT_LEN));
-  else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL)
+  }
+  if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:")) {
+    char buff[BUFFER_LEN];
+    snprintf(buff, sizeof buff, "Fwd: %s", sbuf);
+    newp->subject = compress(chopstr(buff, SUBJECT_LEN));
+  } else if ((flags & M_REPLY) && !string_prefix(sbuf, "Re:")) {
+    char buff[BUFFER_LEN];
+    snprintf(buff, sizeof buff, "Re: %s", sbuf);
+    newp->subject = compress(chopstr(buff, SUBJECT_LEN));
+  } else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL) {
     /* Don't bother to uncompress a->value */
     newp->subject = strdup(AL_STR(a));
-  else
+  } else {
     newp->subject = compress(sbuf);
+  }
   if (flags & M_FORWARD) {
     /* Forwarding passes the message already compressed */
     size_t len = strlen(message) + 1;

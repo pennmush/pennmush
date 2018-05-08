@@ -1823,7 +1823,9 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       safe_chr(')', lockstr, &tp);
   }
   if (command->type & CMD_T_GOD) {
-    add_restriction(tprintf("=#%d", GOD), '&');
+    char tmp[20];
+    snprintf(tmp, sizeof tmp, "=#%d", GOD);
+    add_restriction(tmp, '&');
   }
   if (command->type & CMD_T_NOGUEST) {
     add_restriction("!POWER^GUEST", '&');

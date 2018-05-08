@@ -1683,7 +1683,8 @@ do_chan_admin(dbref player, char *name, const char *perms,
   boolexp key;
   char old[BUFFER_LEN];
   char announcebuff[BUFFER_LEN];
-
+  char bbuff[20];
+  
   if (!name || !*name) {
     notify(player, T("You must specify a channel."));
     return;
@@ -1748,7 +1749,8 @@ do_chan_admin(dbref player, char *name, const char *perms,
       giveto(Owner(player), CHANNEL_COST);
       return;
     }
-    key = parse_boolexp(player, tprintf("=#%d", player), chan_mod_lock);
+    snprintf(bbuff, sizeof bbuff, "=#%d", player);
+    key = parse_boolexp(player, bbuff, chan_mod_lock);
     if (!key) {
       mush_free(chan, "channel");
       notify(player, T("CHAT: No more memory for channels!"));
@@ -4155,7 +4157,8 @@ parse_chat_alias(dbref player, char *command)
   ATTR *a;
   CHAN *c;
   bool chat = 0;
-
+  char abuff[BUFFER_LEN + 10];
+  
   alias = bp = command;
   while (*bp && !isspace((unsigned char) *bp))
     bp++;
@@ -4171,7 +4174,8 @@ parse_chat_alias(dbref player, char *command)
 
   strcpy(channame, alias);
   upcasestr(channame);
-  a = atr_get(player, tprintf("CHANALIAS`%s", channame));
+  snprintf(abuff, sizeof abuff, "CHANALIAS`%s", channame);
+  a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */
     *bp = save;

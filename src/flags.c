@@ -627,8 +627,10 @@ flag_read_all(PENNFILE *in, const char *ns)
 static void
 flag_write(PENNFILE *out, FLAG *f, const char *name)
 {
+  char tmp[2] = { '\0', '\0' };
   db_write_labeled_string(out, " name", name);
-  db_write_labeled_string(out, "  letter", tprintf("%c", f->letter));
+  tmp[0] = f->letter;
+  db_write_labeled_string(out, "  letter", tmp);
   db_write_labeled_string(out, "  type", privs_to_string(type_privs, f->type));
   db_write_labeled_string(out, "  perms",
                           privs_to_string(flag_privs, F_REF_NOT & f->perms));
@@ -3009,10 +3011,12 @@ flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
   FLAGSPACE *n;
   FLAG *f;
   int i, first = 1;
-  char buff[BUFFER_LEN];
+  static char buff[BUFFER_LEN];
   char *bp;
 
   bp = buff;
+  safe_chr('(', buff, &bp);
+  
   if (flags) {
     Flagspace_Lookup(n, "FLAG");
     for (i = 0; i < n->flagbits; i++) {
@@ -3041,8 +3045,9 @@ flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
     return "";
   }
 
+  safe_chr(')', buff, &bp);
   *bp = '\0';
-  return tprintf("(%s)", buff);
+  return buff;
 }
 
 /*--------------------------------------------------------------------------

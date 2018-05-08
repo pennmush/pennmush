@@ -319,9 +319,11 @@ password_hash(const char *key, const char *algo)
   char s1, s2;
   char *bp;
   int len;
-
-  if (!algo)
+  char hbuff[BUFFER_LEN + 2];
+  
+  if (!algo) {
     algo = PASSWORD_HASH;
+  }
 
   len = strlen(key);
 
@@ -334,7 +336,8 @@ password_hash(const char *key, const char *algo)
   safe_chr(':', buff, &bp);
   safe_chr(s1, buff, &bp);
   safe_chr(s2, buff, &bp);
-  safe_hash_byname(algo, tprintf("%c%c%s", s1, s2, key), len + 2, buff, &bp, 0);
+  snprintf(hbuff, sizeof hbuff, "%c%c%s", s1, s2, key);
+  safe_hash_byname(algo, hbuff, len + 2, buff, &bp, 0);
   safe_chr(':', buff, &bp);
   safe_time_t(time(NULL), buff, &bp);
   *bp = '\0';
@@ -393,10 +396,11 @@ password_comp(const char *saved, const char *pass)
     r = safe_hash_byname(algo, pass, len, buff, &bp, 0);
   } else if (strcmp(version, "2") == 0) {
     /* Salted password */
+    char hbuff[BUFFER_LEN + 2];
     safe_chr(shash[0], buff, &bp);
     safe_chr(shash[1], buff, &bp);
-    r = safe_hash_byname(algo, tprintf("%c%c%s", shash[0], shash[1], pass),
-                         len + 2, buff, &bp, 0);
+    snprintf(hbuff, sizeof hbuff, "%c%c%s", shash[0], shash[1], pass);
+    r = safe_hash_byname(algo, hbuff, len + 2, buff, &bp, 0);
   } else {
     /* Unknown password format version */
     retval = 0;

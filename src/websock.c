@@ -18,6 +18,7 @@
 #include "parse.h"
 #include "confmagic.h"
 #include "strutil.h"
+#include "notify.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -47,8 +48,6 @@ enum WebSocketOp {
   WS_OP_PONG = 0xA
   /* 0xB - 0xF reserved for control frames */
 };
-
-int queue_newwrite(DESC *d, const unsigned char *b, int n);
 
 /* Base64 encoder. PennMUSH's version uses the heavyweight OpenSSL API. */
 static void
@@ -123,7 +122,7 @@ abort_handshake(DESC *d)
     RESPONSE_LEN = strlen(RESPONSE);
   }
 
-  queue_newwrite(d, (unsigned char *) RESPONSE, RESPONSE_LEN);
+  queue_newwrite(d, RESPONSE, RESPONSE_LEN);
 }
 
 static void
@@ -152,7 +151,7 @@ complete_handshake(DESC *d)
   memcpy(bp, "\r\n\r\n", 4);
   bp += 4;
 
-  queue_newwrite(d, (unsigned char *) buf, bp - buf);
+  queue_newwrite(d, buf, bp - buf);
 
   /*
    * Switch on WebSockets frame processing.

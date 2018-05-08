@@ -477,7 +477,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
     *(arg1 + LINE_SIZE) = '\0';
 
   if (help_dat->admin) {
-    sprintf(the_topic, "&%s", arg1);
+    snprintf(the_topic, sizeof the_topic, "&%s", arg1);
   } else
     strcpy(the_topic, arg1);
 

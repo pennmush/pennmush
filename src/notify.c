@@ -1594,8 +1594,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
         dbref exit;
         int i, skip = 0;
 
-        DOLIST(exit, Exits(target))
-        {
+        DOLIST (exit, Exits(target)) {
           skip = 0;
           if (Audible(exit)) {
             if (skips != NULL) {

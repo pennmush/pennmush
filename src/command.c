@@ -1542,7 +1542,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
     j = 0;
     for (i = 1; i < MAX_ARG; i++) {
       if (lsa[i] && *lsa[i]) {
-        mush_strncpy(argname, tprintf("lsa%d", i), 10);
+        snprintf(argname, sizeof argname, "lsa%d", i);
         pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
                     lsa[i]);
         j = i;
@@ -1564,7 +1564,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
       j = 0;
       for (i = 1; i < MAX_ARG; i++) {
         if (rsa[i] && *rsa[i]) {
-          mush_strncpy(argname, tprintf("rsa%d", i), 10);
+          snprintf(argname, sizeof argname, "rsa%d", i);
           pe_regs_set(pe_info->regvals, PE_REGS_ARG | PE_REGS_NOCOPY, argname,
                       rsa[i]);
           j = i;
@@ -1580,7 +1580,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   if ((cmd->type & CMD_T_NOP) && ap && *ap) {
     /* Done this way because another call to tprintf during
      * run_cmd_hook will blitz the string */
-    mush_strncpy(nop_arg, tprintf("%s %s", cmd->name, ap), BUFFER_LEN);
+    snprintf(nop_arg, sizeof nop_arg, "%s %s", cmd->name, ap);
   } else {
     nop_arg[0] = '\0';
   }

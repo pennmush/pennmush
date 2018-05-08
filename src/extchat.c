@@ -2176,15 +2176,16 @@ do_channel_list(dbref player, const char *partname, int types)
       safe_str(ChanName(c), shortoutput, &sp);
       continue;
     }
-    if (SUPPORT_HTML)
-      snprintf(numusers, BUFFER_LEN,
+    if (SUPPORT_HTML) {
+      snprintf(numusers, sizeof numusers,
                "%c%cA XCH_CMD=\"@channel/who %s\" "
                "XCH_HINT=\"See who's on this channel "
                "now\"%c%5d%c%c/A%c",
                TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
                TAG_START, MARKUP_HTML, TAG_END);
-    else
-      sprintf(numusers, "%5d", ChanNumUsers(c));
+    } else {
+      snprintf(numusers, sizeof numusers, "%5d", ChanNumUsers(c));
+    }
     /* Display length is strlen(cleanname), but actual length is
      * strlen(ChanName(c)). There are two different cases:
      * 1. actual length <= 30. No problems.
@@ -4310,8 +4311,8 @@ COMMAND(cmd_delcom)
   channame = safe_atr_value(a, "delcom");
 
   atr_clr(executor, buff, GOD);
-  matches =
-    atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, delcom_helper, channame);
+  matches = atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, delcom_helper,
+                         channame);
   if (!matches) {
     channel_leave_self(executor, channame);
   } else {
@@ -4375,7 +4376,7 @@ COMMAND(cmd_comlist)
 
   notify_format(executor, "%-18s %-30s %-8s %s", T("Alias"), T("Channel"),
                 T("Status"), T("Title"));
-  atr_iter_get(GOD, executor, "CHANALIAS`*", 0, 0, comlist_helper, NULL);
+  atr_iter_get(GOD, executor, "CHANALIAS`*", AIG_NONE, comlist_helper, NULL);
   notify(executor, T("-- End of comlist --"));
 }
 

@@ -119,7 +119,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
 
   if (!attrstring)
     return 0;
-  strncpy(astring, attrstring, BUFFER_LEN);
+  mush_strncpy(astring, attrstring, sizeof astring);
 
   /* Split obj/attr */
   if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {
@@ -249,7 +249,7 @@ bool
 call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
               NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
 {
-  char rbuff[BUFFER_LEN];
+  char rbuff[BUFFER_LEN + 40];
   char *rp, *np = NULL;
   int pe_ret;
   char const *ap;
@@ -287,8 +287,7 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
     snprintf(rbuff, sizeof rbuff, "#LAMBDA/%s", ufun->contents);
     pe_info->attrname = mush_strdup(rbuff, "string");
   } else {
-    snprintf(rbuff, sizeof rbuff, "#%d/%s", ufun->thing,
-             ufun->attrname);
+    snprintf(rbuff, sizeof rbuff, "#%d/%s", ufun->thing, ufun->attrname);
     pe_info->attrname = mush_strdup(rbuff, "string");
   }
 
@@ -414,8 +413,7 @@ remove_first(dbref first, dbref what)
     return Next(first);
   } else {
     /* have to find it */
-    DOLIST(prev, first)
-    {
+    DOLIST (prev, first) {
       if (Next(prev) == what) {
         Next(prev) = Next(what);
         return first;
@@ -434,8 +432,7 @@ remove_first(dbref first, dbref what)
 bool
 member(dbref thing, dbref list)
 {
-  DOLIST(list, list)
-  {
+  DOLIST (list, list) {
     if (list == thing)
       return 1;
   }

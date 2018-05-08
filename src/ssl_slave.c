@@ -235,7 +235,7 @@ local_connected(struct conn *c)
    */
   len = strlen(c->remote_host) + strlen(c->remote_ip) + 3;
   hostid = malloc(len + 1);
-  sprintf(hostid, "%s^%s\r\n", c->remote_ip, c->remote_host);
+  snprintf(hostid, len + 1, "%s^%s\r\n", c->remote_ip, c->remote_host);
 
   if (send_with_creds(bufferevent_getfd(c->local_bev), hostid, len) < 0) {
     penn_perror("send_with_creds");

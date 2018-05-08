@@ -2006,7 +2006,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
  * \param type 0=orflags, 1=andflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
- * \retval -1 invalid flag specified
+ * \retval -1 invalid flag specification (Like a ! at the end)
  */
 int
 flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
@@ -2022,7 +2022,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
-    return 0;
+    return -1;
   }
   for (s = (char *) fstr; *s; s++) {
     /* Check for a negation sign. If we find it, we note it and
@@ -2046,29 +2046,26 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
         /* Maybe *s is a type specifier (P, T, E, R). These aren't really
          * flags, but we grandfather them in to preserve old code
          */
-        if ((*s == 'T') || (*s == 'R') || (*s == 'E') || (*s == 'P')) {
+        if (strchr("TREP", *s)) {
           temp =
             (*s == 'T')
               ? (Typeof(it) == TYPE_THING)
               : ((*s == 'R') ? (Typeof(it) == TYPE_ROOM)
                              : ((*s == 'E') ? (Typeof(it) == TYPE_EXIT)
                                             : (Typeof(it) == TYPE_PLAYER)));
-          if ((type == 1) && ((negate && temp) || (!negate && !temp)))
+          if (type == 1 && ((negate && temp) || (!negate && !temp))) {
             return 0;
-          else if ((type == 0) && ((!negate && temp) || (negate && !temp)))
-            ret |= 1;
-        } else {
-          /* Either we got a '!' that wasn't followed by a letter, or
-           * we couldn't find that flag. For AND, since we've failed
-           * a check, we can return false. Otherwise we just go on.
-           */
-          return -1;
-        }
-      } else {
-        if (type == 1)
-          return 0;
-        else
+          } else if (type == 0 && ((!negate && temp) || (negate && !temp))) {
+            return 1;
+          }
           continue;
+        }
+      }
+
+      if (type == 1 && !negate) {
+        return 0;
+      } else if (type == 0 && negate) {
+        return 1;
       }
     } else {
       /* does the object have this flag? */
@@ -2079,12 +2076,12 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
          * it, or we don't have a flag and we want it. Since it's
          * AND, we return false.
          */
-        ret = 0;
+        return 0;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
         /* We've found something we want, in an OR. We OR a
          * true with the current value.
          */
-        ret |= 1;
+        return 1;
       }
       /* Otherwise, we don't need to do anything. */
     }
@@ -2103,7 +2100,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
  * \param type 0=orlflags, 1=andlflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
- * \retval -1 invalid flag specified
+ * \retval -1 invalid flag specification
  */
 int
 flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
@@ -2119,7 +2116,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
-    return 0;
+    return -1;
   }
   copy = mush_strdup(fstr, "flaglistlong");
   sp = trim_space_sep(copy, ' ');
@@ -2143,12 +2140,14 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
     }
     /* Find the flag. */
     if (!(fp = flag_hash_lookup(n, s, Typeof(it)))) {
-      /* Either we got a '!' that wasn't followed by a letter, or
-       * we couldn't find that flag. For AND, since we've failed
-       * a check, we can return false. Otherwise we just go on.
-       */
-      ret = -1;
-      break;
+      /* We couldn't find that flag. */
+      if (type == 1 && !negate) {
+        ret = 0;
+        break;
+      } else if (type == 0 && negate) {
+        ret = 1;
+        break;
+      }
     } else {
       /* does the object have this flag? There's a special case
        * here, as we want (for consistency with flaglist_check)
@@ -2172,11 +2171,12 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
          * AND, we return false.
          */
         ret = 0;
+        break;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
-        /* We've found something we want, in an OR. We OR a
-         * true with the current value.
+        /* We've found something we want, in an OR. We return true.
          */
-        ret |= 1;
+        ret = 1;
+        break;
       }
       /* Otherwise, we don't need to do anything. */
     }

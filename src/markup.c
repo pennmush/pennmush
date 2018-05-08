@@ -1340,17 +1340,20 @@ define_ansi_data(ansi_data *store, const char *str)
         memcpy(buff, name, len);
         buff[len] = '\0';
         len = remove_trailing_whitespace(buff, len);
-        if (!valid_color_name(buff))
+
+        if (!valid_color_name(buff)) {
           return 1;
+        }
 
         if (strncasecmp("xterm", buff, 5) ==
-            0) /* xterm color ids are stored directly. */
-          snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
-        else if (len > 6) /* Use hex code to save on buffer space */
+            0) { /* xterm color ids are stored directly. */
+          snprintf(ptr, COLOR_NAME_LEN, "+%.8s", buff);
+        } else if (len > 6) { /* Use hex code to save on buffer space */
           snprintf(ptr, COLOR_NAME_LEN, "#%06x",
                    color_to_hex(tprintf("+%s", buff), 0));
-        else
-          snprintf(ptr, COLOR_NAME_LEN, "+%s", buff);
+        } else /* len <= 6 */ {
+          snprintf(ptr, COLOR_NAME_LEN, "+%.6s", buff);
+        }
 
         break;
       case '#':
@@ -1366,7 +1369,7 @@ define_ansi_data(ansi_data *store, const char *str)
           return 1;
         if (!valid_hex_digits(buff, len))
           return 1;
-        snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+        snprintf(ptr, COLOR_NAME_LEN, "#%.6s", buff);
         break;
       case '<':
         /* <#RRGGBB> or <R G B> */
@@ -1379,9 +1382,7 @@ define_ansi_data(ansi_data *store, const char *str)
           if (valid_angle_hex(name, len)) {
             /* < #RRGGBB > */
             char *st = strchr(name, '#');
-            memcpy(buff, st + 1, 6);
-            buff[6] = '\0';
-            snprintf(ptr, COLOR_NAME_LEN, "#%s", buff);
+            mush_strncpy(ptr, st, 8);
           } else if (valid_angle_triple(name, len, rgbs)) {
             /* < R G B > */
             snprintf(ptr, COLOR_NAME_LEN, "#%s", rgbs);

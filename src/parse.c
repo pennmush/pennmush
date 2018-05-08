@@ -48,7 +48,7 @@ int global_fun_recursions;
 /* extern int re_subpatterns; */
 /* extern int *re_offsets; */
 /* extern ansi_string *re_from; */
-extern sig_atomic_t cpu_time_limit_hit;
+extern volatile sig_atomic_t cpu_time_limit_hit;
 extern int cpu_limit_warning_sent;
 
 /** Structure for storing DEBUG output in a linked list */
@@ -946,6 +946,24 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
     pval = pval->next;                                                         \
   } while (pval)
 
+/** Is the given key a named register (not A-Z or 0-9)?
+ */
+bool
+is_named_register(const char *key)
+{
+  if (!key || !*key)
+    return 1;
+
+  if (key[1] != '\0')
+    return 1;
+
+  if ((key[0] >= 'a' && key[0] <= 'z') || (key[0] >= 'A' && key[0] <= 'Z') ||
+      (key[0] >= '0' && key[0] <= '9'))
+    return 0;
+
+  return 1;
+}
+
 /** Set a string value in a PE_REGS structure.
  *
  * pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
@@ -990,8 +1008,7 @@ pe_regs_set_if(PE_REGS *pe_regs, int type, const char *lckey, const char *val,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
-                                 (key[0] >= '0' && key[0] <= '9')))) {
+      if (is_named_register(key)) {
         pe_regs->qcount++;
       }
     }
@@ -1040,8 +1057,7 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type, const char *lckey, int val,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      if (!((key[1] == '\0') && ((key[0] >= 'A' && key[0] <= 'Z') ||
-                                 (key[0] >= '0' && key[0] <= '9')))) {
+      if (is_named_register(key)) {
         pe_regs->qcount++;
       }
     }
@@ -1158,25 +1174,26 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
       if (val->type & copytypes) {
         if (val->type & (PE_REGS_SWITCH | PE_REGS_ITER)) {
           /* It is t<num> or n<num>. Bump it up as necessary. */
-          sscanf(val->name, "%c%d", &itype, &inum);
-          inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
-          if (*(val->name) == 'T') {
-            if (val->type & PE_REGS_SWITCH) {
-              if (inum >= scount)
-                scount = inum + 1;
-            } else {
-              if (inum >= icount)
-                icount = inum + 1;
+          if (sscanf(val->name, "%c%d", &itype, &inum) == 2) {
+            inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
+            if (*(val->name) == 'T') {
+              if (val->type & PE_REGS_SWITCH) {
+                if (inum >= scount)
+                  scount = inum + 1;
+              } else {
+                if (inum >= icount)
+                  icount = inum + 1;
+              }
             }
-          }
-          if (inum < MAX_ITERS) {
-            snprintf(numbuff, 10, "%c%d", itype, inum);
-            if (val->type & PE_REGS_STR) {
-              pe_regs_set(new_regs, val->type & andflags, numbuff,
-                          val->val.sval);
-            } else {
-              pe_regs_set_int(new_regs, val->type & andflags, numbuff,
-                              val->val.ival);
+            if (inum >= 0 && inum < MAX_ITERS) {
+              snprintf(numbuff, sizeof numbuff, "%c%d", itype, inum);
+              if (val->type & PE_REGS_STR) {
+                pe_regs_set(new_regs, val->type & andflags, numbuff,
+                            val->val.sval);
+              } else {
+                pe_regs_set_int(new_regs, val->type & andflags, numbuff,
+                                val->val.ival);
+              }
             }
           }
         } else {
@@ -1286,7 +1303,8 @@ pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val)
     pe_regs = pe_regs->prev;
   }
   /* Single-character keys ignore attrcount. */
-  if ((count >= MAX_NAMED_QREGS) && key[1]) {
+  if ((count >= MAX_NAMED_QREGS) && is_named_register(key) &&
+      !PE_Getq(pe_info, key)) {
     return 0;
   }
   /* Find the p_regs to setq() in. */
@@ -1682,7 +1700,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
     pe_regs_free(pe_regs);
   }
 
-  if(pe_info->cmd_raw) {
+  if (pe_info->cmd_raw) {
     mush_free(pe_info->cmd_raw, "string");
   }
   if (pe_info->cmd_evaled) {
@@ -1691,7 +1709,7 @@ free_pe_info(NEW_PE_INFO *pe_info)
   if (pe_info->attrname) {
     mush_free(pe_info->attrname, "string");
   }
-  
+
 #ifdef DEBUG
   mush_free(pe_info, pe_info->name);
 #else

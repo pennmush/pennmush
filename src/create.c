@@ -32,7 +32,7 @@ static dbref parse_linkable_room(dbref player, const char *room_name,
                                  NEW_PE_INFO *pe_info);
 static dbref check_var_link(const char *dest_name);
 static dbref clone_object(dbref player, dbref thing, const char *newname,
-                          int preserve);
+                          bool preserve);
 
 struct db_stat_info current_state; /**< Current stats for database */
 
@@ -486,7 +486,7 @@ do_dig(dbref player, const char *name, char **argv, int tport,
     notify_format(player, T("%s created with room number %d."), name, room);
     if (argv[1] && *argv[1]) {
       char nbuff[MAX_COMMAND_LEN];
-      sprintf(nbuff, "#%d", room);
+      snprintf(nbuff, sizeof nbuff, "#%d", room);
       do_real_open(player, argv[1], nbuff, NOTHING, pe_info);
     }
     if (argv[2] && *argv[2]) {
@@ -498,7 +498,7 @@ do_dig(dbref player, const char *name, char **argv, int tport,
       /* We need to use the full command, because we need NO_TEL
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
-      sprintf(roomstr, "#%d", room);
+      snprintf(roomstr, sizeof roomstr, "#%d", room);
       do_teleport(player, "me", roomstr, TEL_DEFAULT,
                   pe_info); /* if flag, move the player */
     }
@@ -590,12 +590,13 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 
 /* Clone an object. The new object is owned by the cloning player */
 static dbref
-clone_object(dbref player, dbref thing, const char *newname, int preserve)
+clone_object(dbref player, dbref thing, const char *newname, bool preserve)
 {
   dbref clone;
 
   clone = new_object();
 
+  Type(clone) = Type(thing);
   Owner(clone) = Owner(player);
   Name(clone) = NULL;
   if (newname && *newname)
@@ -604,6 +605,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
     set_name(clone, Name(thing));
   s_Pennies(clone, Pennies(thing));
   AttrCount(clone) = 0;
+  AttrCap(clone) = 0;
   List(clone) = NULL;
   Locks(clone) = NULL;
   clone_locks(player, thing, clone);
@@ -627,7 +629,6 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
    * other clone has, but update the creation time */
   ModTime(clone) = ModTime(thing);
   CreTime(clone) = mudtime;
-  Type(clone) = Type(thing);
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
   if (IsRoom(thing))
@@ -656,7 +657,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
+do_clone(dbref player, char *name, char *newname, bool preserve, char *newdbref,
          NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;

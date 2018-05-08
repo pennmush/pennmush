@@ -72,7 +72,7 @@ mush_crypt_sha0(const char *key __attribute__((__unused__)))
    * delimiters, this matches far more than it should. For example, suppose
    * a= 23 and b=456. Anything which hashed to a=1, b=23456 or a=12, b=3456
    * would also erroneously match! */
-  sprintf(crypt_buff, "XX%u%u", a, b);
+  snprintf(crypt_buff, sizeof crypt_buff, "XX%u%u", a, b);
 
   return crypt_buff;
 #else

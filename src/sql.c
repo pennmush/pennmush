@@ -400,7 +400,7 @@ COMMAND(cmd_mapsql)
   }
 
   /* Find and fetch the attribute, first. */
-  strncpy(tbuf, arg_left, BUFFER_LEN);
+  mush_strncpy(tbuf, arg_left, sizeof tbuf);
 
   s = strchr(tbuf, '/');
   if (!s) {
@@ -1214,8 +1214,8 @@ penn_pg_sql_init(void)
 {
   int retries = SQL_RETRY_TIMES;
   static time_t last_retry = 0;
-  char sql_host[BUFFER_LEN], *p;
-  char sql_port[BUFFER_LEN];
+  char sql_host[256], *p;
+  char sql_port[256];
   time_t curtime;
 
   /* Only retry at most once per minute. */
@@ -1232,18 +1232,19 @@ penn_pg_sql_init(void)
   }
 
   /* Parse SQL_HOST into sql_host and sql_port */
-  mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
+  mush_strncpy(sql_host, SQL_HOST, sizeof sql_host);
   strcpy(sql_port, "5432");
   if ((p = strchr(sql_host, ':'))) {
     *p++ = '\0';
-    if (*p)
+    if (*p) {
       strcpy(sql_port, p);
+    }
   }
 
   while (retries && !postgres_connp) {
     /* Try to connect to the database host. */
     char conninfo[BUFFER_LEN];
-    snprintf(conninfo, BUFFER_LEN,
+    snprintf(conninfo, sizeof conninfo,
              "host=%s port=%s dbname=%s user=%s password=%s", sql_host,
              sql_port, SQL_DB, SQL_USER, SQL_PASS);
     postgres_connp = PQconnectdb(conninfo);

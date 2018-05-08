@@ -16,24 +16,38 @@ be read in 'help patchlevels'.
 
 Major Changes:
 
-* Support websocket connections. See https://github.com/grapenut/websockclient for a
-sample in-browser client. [Grapenut, 1007]
+* Support websocket connections. See
+https://github.com/grapenut/websockclient for a sample in-browser
+client. [Grapenut, 1007]
+* Change attributes from being stored in sorted linked lists to sorted
+arrays; results in faster lookups and less memory usage. [SW]
+
+Minor Changes:
+
+* Message translation support now defaults to off. Run configure with [1m--enable-nls[0m to turn it on if needed. [SW]
+* Shrink the [1mNEW_PE_INFO[0m struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 
 Softcode:
 
-* Support all of Rhost's colors() key arguments (Except n). [SW, 1112]
+* Support all of Rhost's [1mcolors()[0m key arguments (Except n). [SW, 1112]
+* Functions that work on integers (Like [1mdiv()[0m or [1mband()[0m) now use 64-bit values instead of 32-bit. [SW]
+* [1mjson_query()[0m get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
+* [1mjson_query(str, unescape)[0m handles unicode escape sequences.
+* [1mjson(string, foo)[0m escapes non-ascii characters.
+* [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
 
 Fixes:
 
 * A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
 * [1m@grep/iprint[0m hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
 * [1m@mail[0m wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
-* Connecting with a web browser to a mush without a mud_url config
-option set caused an infinite refresh loop. Reported by
-grapenut. [1149]
-* Make sure sigrecv_ack() won't hang the mush if it somehow gets
-called at the wrong time. Also fix a file descriptor leak in the
-signal handling code. [SW]
+* Connecting with a web browser to a mush without a [1mmud_url[0m config option set caused an infinite refresh loop. Reported by grapenut. [1149]
+* Make sure [1msigrecv_ack()[0m won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
+* Pass [1mpe_info[0m into IDLE and HAVEN attributes from the page command. [MG]
+* The x and X options to [1malign()[0m now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
+* [1mjson_query()[0m didn't understand an action of 'type' as documented. [SW]
+* Assorted help file fixes. [SW]
+* [1m@clone[0m without /preserve wasn't stripping privleged flags and such. [1190,SW]
 
 Documentation:
 
@@ -42,9 +56,13 @@ Documentation:
 
 OS Specific:
 
+BSDs in general:
+
+* [1minfo_slave[0m and [1mssl_slave[0m use [1mkqueue()[0m to efficiently be notified of parent mush crashes.
+
 OpenBSD:
 
-* netmush and slave processes use pledge(2) to limit their privileges. [SW]
+* netmush and slave processes use [1mpledge(2)[0m to limit their privileges. [SW]
 
 Windows:
 

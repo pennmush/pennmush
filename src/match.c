@@ -199,8 +199,7 @@ match_controlled(dbref player, const char *name)
     if (done)                                                                  \
       break; /* already found the Nth object we needed */                      \
     match = start;                                                             \
-    DOLIST(match, match)                                                       \
-    {                                                                          \
+    DOLIST (match, match) {                                                    \
       if (!MATCH_TYPE) {                                                       \
         /* Exact-type match required, but failed */                            \
         continue;                                                              \

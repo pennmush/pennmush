@@ -112,10 +112,11 @@ FUNCTION(fun_nattr)
   dbref thing;
   int doparent;
   const char *pattern;
-  int regexp = 0;
+  unsigned flags = AIG_NONE;
 
-  if (*called_as == 'R')
-    regexp = 1;
+  if (*called_as == 'R') {
+    flags |= AIG_REGEX;
+  }
   doparent = strchr(called_as, 'P') ? 1 : 0;
 
   pattern = strchr(args[0], '/');
@@ -123,10 +124,10 @@ FUNCTION(fun_nattr)
     args[0][pattern - args[0]] = '\0';
     pattern++;
   } else {
-    pattern = (regexp ? "**" : "*");
+    pattern = ((flags & AIG_REGEX) ? "**" : "*");
   }
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
-    regexp = 0;
+    flags &= ~AIG_REGEX;
   }
 
   thing = match_thing(executor, args[0]);
@@ -135,8 +136,11 @@ FUNCTION(fun_nattr)
     return;
   }
 
-  safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
-                                 !Can_Examine(executor, thing), regexp),
+  if (!Can_Examine(executor, thing)) {
+    flags |= AIG_MORTAL;
+  }
+
+  safe_integer(atr_pattern_count(executor, thing, pattern, doparent, flags),
                buff, bp);
 }
 
@@ -147,7 +151,7 @@ FUNCTION(fun_lattr)
   char *pattern;
   struct lh_args lh;
   char delim;
-  int regexp = 0;
+  unsigned flags = AIG_NONE;
 
   lh.nattr = lh.start = lh.count = 0;
 
@@ -172,14 +176,15 @@ FUNCTION(fun_lattr)
     if (!delim_check(buff, bp, nargs, args, 2, &delim))
       return;
   }
-  if (*called_as == 'R')
-    regexp = 1;
+  if (*called_as == 'R') {
+    flags |= AIG_REGEX;
+  }
 
   pattern = strchr(args[0], '/');
-  if (pattern)
+  if (pattern) {
     *pattern++ = '\0';
-  else if (regexp) {
-    regexp = 0;
+  } else if (flags & AIG_REGEX) {
+    flags &= ~AIG_REGEX;
     pattern = (char *) "**";
   } else
     pattern = (char *) "*";
@@ -194,13 +199,15 @@ FUNCTION(fun_lattr)
   lh.bp = bp;
   lh.delim = delim;
 
+  if (!Can_Examine(executor, thing)) {
+    flags |= AIG_MORTAL;
+  }
+
   if (strchr(called_as, 'P')) {
-    (void) atr_iter_get_parent(executor, thing, pattern,
-                               !Can_Examine(executor, thing), regexp,
-                               lattr_helper, &lh);
+    (void) atr_iter_get_parent(executor, thing, pattern, flags, lattr_helper,
+                               &lh);
   } else {
-    (void) atr_iter_get(executor, thing, pattern, !Can_Examine(executor, thing),
-                        regexp, lattr_helper, &lh);
+    (void) atr_iter_get(executor, thing, pattern, flags, lattr_helper, &lh);
   }
 }
 
@@ -587,15 +594,17 @@ FUNCTION(fun_powers)
   }
 
   if (nargs == 2) {
-    if (!command_check_byname(executor, "@power", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
+    if (!FUNCTION_SIDE_EFFECTS) {
+      safe_str(T(e_disabled), buff, bp);
+      return;
+    }
+    if (fun->flags & FN_NOSIDEFX ||
+        !command_check_byname(executor, "@power", pe_info)) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
-    if (FUNCTION_SIDE_EFFECTS)
-      do_power(executor, args[0], args[1]);
-    else
-      safe_str(T(e_disabled), buff, bp);
+
+    do_power(executor, args[0], args[1]);
     return;
   }
   it = match_thing(executor, args[0]);
@@ -701,8 +710,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor, int type,
       (Can_Examine(executor, loc) || (Location(executor) == loc) ||
        (enactor == loc))) {
     first = 1;
-    DOLIST_VISIBLE(thing, startdb, executor)
-    {
+    DOLIST_VISIBLE (thing, startdb, executor) {
       /* Skip if:
        * - We're not checking this type
        * - We can't interact with this thing
@@ -1278,8 +1286,8 @@ FUNCTION(fun_lset)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@lset", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@lset", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -1298,23 +1306,22 @@ FUNCTION(fun_lock)
     upcasestr(ltype);
   }
 
-  real_ltype = get_locktype(ltype);
-
-  it = match_thing(executor, args[0]);
-
   if (nargs == 2) {
-    if (!command_check_byname(executor, "@lock", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (FUNCTION_SIDE_EFFECTS)
-      do_lock(executor, args[0], args[1], ltype);
-    else {
+    if (!FUNCTION_SIDE_EFFECTS) {
       safe_str(T(e_disabled), buff, bp);
       return;
     }
+    if (fun->flags & FN_NOSIDEFX ||
+        !command_check_byname(executor, "@lock", pe_info)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    do_lock(executor, args[0], args[1], ltype);
   }
+
+  real_ltype = get_locktype(ltype);
+  it = match_thing(executor, args[0]);
+
   if (GoodObject(it) && (real_ltype != NULL) &&
       Can_Read_Lock(executor, it, real_ltype)) {
     safe_str(unparse_boolexp(executor, getlock(it, real_ltype), UB_DBREF), buff,
@@ -1571,18 +1578,18 @@ FUNCTION(fun_zone)
   dbref it;
 
   if (nargs == 2) {
-    if (!command_check_byname(executor, "@chzone", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (FUNCTION_SIDE_EFFECTS)
-      (void) do_chzone(executor, args[0], args[1], 1, 0, pe_info);
-    else {
+    if (!FUNCTION_SIDE_EFFECTS) {
       safe_str(T(e_disabled), buff, bp);
       return;
     }
+    if (fun->flags & FN_NOSIDEFX ||
+        !command_check_byname(executor, "@chzone", pe_info)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    (void) do_chzone(executor, args[0], args[1], 1, 0, pe_info);
   }
+
   it = match_thing(executor, args[0]);
   if (!GoodObject(it))
     safe_str(T(e_notvis), buff, bp);
@@ -1598,17 +1605,16 @@ FUNCTION(fun_parent)
   dbref it;
 
   if (nargs == 2) {
-    if (!command_check_byname(executor, "@parent", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (FUNCTION_SIDE_EFFECTS)
-      do_parent(executor, args[0], args[1], pe_info);
-    else {
+    if (!FUNCTION_SIDE_EFFECTS) {
       safe_str(T(e_disabled), buff, bp);
       return;
     }
+    if (fun->flags & FN_NOSIDEFX ||
+        !command_check_byname(executor, "@parent", pe_info)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    do_parent(executor, args[0], args[1], pe_info);
   }
   it = match_thing(executor, args[0]);
   if (!GoodObject(it))
@@ -1723,23 +1729,25 @@ FUNCTION(fun_alias)
     return;
   }
 
-  /* Support changing alias via function if side-effects are enabled */
-  if (nargs == 2) {
-    if (!command_check_byname(executor, "ATTRIB_SET", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (!FUNCTION_SIDE_EFFECTS)
-      safe_str(T(e_disabled), buff, bp);
-    else if (arglens[1])
-      do_set_atr(it, "ALIAS", args[1], executor, 0);
-    else
-      do_set_atr(it, "ALIAS", NULL, executor, 0);
-    return;
-  } else {
+  if (nargs == 1) {
     safe_str(shortalias(it), buff, bp);
+    return;
   }
+
+  /* Support changing alias via function if side-effects are enabled */
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+  }
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "ATTRIB_SET", pe_info)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+
+  if (arglens[1])
+    do_set_atr(it, "ALIAS", args[1], executor, 0);
+  else
+    do_set_atr(it, "ALIAS", NULL, executor, 0);
 }
 
 /* ARGSUSED */
@@ -1757,23 +1765,25 @@ FUNCTION(fun_name)
 {
   dbref it;
 
-  if (nargs == 2) {
-    if (!command_check_byname(executor, "@name", pe_info) ||
-        fun->flags & FN_NOSIDEFX) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (FUNCTION_SIDE_EFFECTS)
-      do_name(executor, args[0], args[1]);
+  if (nargs == 1) {
+    it = match_thing(executor, args[0]);
+    if (GoodObject(it))
+      safe_str(shortname(it), buff, bp);
     else
-      safe_str(T(e_disabled), buff, bp);
+      safe_str(T(e_notvis), buff, bp);
     return;
   }
-  it = match_thing(executor, args[0]);
-  if (GoodObject(it))
-    safe_str(shortname(it), buff, bp);
-  else
-    safe_str(T(e_notvis), buff, bp);
+
+  /* Rename object */
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+  }
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@name", pe_info)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+  do_name(executor, args[0], args[1]);
 }
 
 /* ARGSUSED */
@@ -2067,8 +2077,8 @@ FUNCTION(fun_create)
     return;
   }
 
-  if (!command_check_byname(executor, "@create", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@create", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2086,8 +2096,8 @@ FUNCTION(fun_pcreate)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@pcreate", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@pcreate", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2102,8 +2112,8 @@ FUNCTION(fun_open)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@open", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@open", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2134,8 +2144,8 @@ FUNCTION(fun_dig)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@dig", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@dig", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2145,17 +2155,24 @@ FUNCTION(fun_dig)
 /* ARGSUSED */
 FUNCTION(fun_clone)
 {
+  bool preserve = false;
+
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@clone", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@clone", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_clone(executor, args[0], args[1], 0, args[2], pe_info), buff,
-             bp);
+
+  if (nargs == 4 && strcasecmp(args[3], "preserve") == 0) {
+    preserve = true;
+  }
+
+  safe_dbref(do_clone(executor, args[0], args[1], preserve, args[2], pe_info),
+             buff, bp);
 }
 
 /* --------------------------------------------------------------------------
@@ -2171,8 +2188,8 @@ FUNCTION(fun_link)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@link", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@link", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2189,8 +2206,8 @@ FUNCTION(fun_set)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@set", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@set", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2204,8 +2221,8 @@ FUNCTION(fun_wipe)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@wipe", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@wipe", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2222,8 +2239,8 @@ FUNCTION(fun_attrib_set)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "ATTRIB_SET", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "ATTRIB_SET", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2259,8 +2276,8 @@ FUNCTION(fun_tel)
     safe_str(T(e_disabled), buff, bp);
     return;
   }
-  if (!command_check_byname(executor, "@tel", pe_info) ||
-      fun->flags & FN_NOSIDEFX) {
+  if (fun->flags & FN_NOSIDEFX ||
+      !command_check_byname(executor, "@tel", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2357,24 +2374,24 @@ FUNCTION(fun_atrlock)
   dbref thing;
   char *p;
   ATTR *ptr;
-  int status;
+  int change;
 
   if (nargs == 1)
-    status = 0;
+    change = 0;
   else
-    status = 1;
+    change = 1;
 
-  if (status == 1) {
-    if (FUNCTION_SIDE_EFFECTS) {
-      if (!command_check_byname(executor, "@atrlock", pe_info) ||
-          fun->flags & FN_NOSIDEFX) {
-        safe_str(T(e_perm), buff, bp);
-        return;
-      }
-      do_atrlock(executor, args[0], args[1]);
-      return;
-    } else
+  if (change == 1) {
+    if (!FUNCTION_SIDE_EFFECTS) {
       safe_str(T(e_disabled), buff, bp);
+      return;
+    }
+    if (fun->flags & FN_NOSIDEFX ||
+        !command_check_byname(executor, "@atrlock", pe_info)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    do_atrlock(executor, args[0], args[1]);
     return;
   }
 

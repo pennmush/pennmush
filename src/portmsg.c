@@ -95,7 +95,7 @@ lostconn(int sig)
   NORETURN;
 
     enum { MAX_CONNECTIONS = 15 };
-    sig_atomic_t connections = 0;
+    volatile sig_atomic_t connections = 0;
 
     static void
      wait_on_child(int sig)

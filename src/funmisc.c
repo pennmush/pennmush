@@ -1329,18 +1329,24 @@ FUNCTION(fun_scan)
         safe_str(T(e_notvis), buff, bp);
         return;
       }
-      if (!See_All(executor) && !controls(executor, thing)) {
-        notify(executor, T("Permission denied."));
-        safe_str("#-1", buff, bp);
-        return;
-      }
     }
   }
+
+  if (!See_All(executor) && !controls(executor, thing)) {
+    notify(executor, T("Permission denied."));
+    safe_str("#-1", buff, bp);
+    return;
+  }
+
   if (nargs == 3 && arglens[2]) {
     prefstr = trim_space_sep(args[2], ' ');
     while ((thispref = split_token(&prefstr, ' '))) {
       if (strcasecmp("room", thispref) == 0)
         scan_type |= CHECK_HERE | CHECK_NEIGHBORS;
+      else if (strcasecmp("me", thispref) == 0)
+        scan_type |= CHECK_SELF;
+      else if (strcasecmp("inventory", thispref) == 0)
+        scan_type |= CHECK_INVENTORY;
       else if (strcasecmp("self", thispref) == 0)
         scan_type |= CHECK_SELF | CHECK_INVENTORY;
       else if (strcasecmp("zone", thispref) == 0)
@@ -1360,7 +1366,7 @@ FUNCTION(fun_scan)
   }
   if ((scan_type & ~CHECK_BREAK) == 0)
     scan_type |= CHECK_ALL;
-  safe_str(scan_list(thing, cmdptr, scan_type), buff, bp);
+  safe_str(scan_list(executor, thing, cmdptr, scan_type), buff, bp);
 }
 
 enum whichof_t { DO_FIRSTOF, DO_ALLOF };

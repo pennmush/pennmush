@@ -190,7 +190,7 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   hints.ai_family = AF_UNSPEC; /* Try to use IPv6 if available */
   hints.ai_socktype = socktype;
 
-  sprintf(cport, "%hu", port);
+  snprintf(cport, sizeof cport, "%hu", port);
 
   if ((res = getaddrinfo(host, cport, &hints, &server)) != 0) {
     lock_file(stderr);
@@ -282,7 +282,7 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
   hints.ai_socktype = socktype;
 
   if (port > 0) {
-    sprintf(portbuf, "%hu", port);
+    snprintf(portbuf, sizeof portbuf, "%hu", port);
     cport = portbuf;
   } else
     cport = NULL;

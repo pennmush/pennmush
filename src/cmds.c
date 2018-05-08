@@ -372,12 +372,8 @@ COMMAND(cmd_create)
 
 COMMAND(cmd_clone)
 {
-  if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2],
-             queue_entry->pe_info);
-  else
-    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2],
-             queue_entry->pe_info);
+  do_clone(executor, arg_left, args_right[1], SW_ISSET(sw, SWITCH_PRESERVE),
+           args_right[2], queue_entry->pe_info);
 }
 
 COMMAND(cmd_dbck) { do_dbck(executor); }
@@ -749,7 +745,6 @@ COMMAND(cmd_link)
           queue_entry->pe_info);
 }
 
-extern slab *attrib_slab;
 extern slab *bvm_asmnode_slab;
 extern slab *chanlist_slab;
 extern slab *chanuser_slab;
@@ -780,17 +775,19 @@ do_list_allocations(dbref player)
      to verify that each slab is never recreated. To be safe, just make it
      non-static for now. */
   const slab *const slabs[] = {
-    attrib_slab,
 #ifdef DEBUG
     /* This should always be 0. No need to display it most of the
        time. */
     bvm_asmnode_slab,
 #endif
-    chanlist_slab, chanuser_slab, flag_slab, function_slab, huffman_slab,
-    lock_slab, mail_slab, memcheck_slab, text_block_slab, player_dbref_slab,
-    intmap_slab, pe_reg_slab, pe_reg_val_slab, flagbucket_slab,
-    namelist_slab, /* This used to be in a separate if check, so it may be
-                      NULL. Be careful if making this static. */
+    chanlist_slab,    chanuser_slab,     flag_slab,     function_slab,
+    huffman_slab,     lock_slab,         mail_slab,     memcheck_slab,
+    text_block_slab,  player_dbref_slab, intmap_slab,   pe_reg_slab,
+    pe_reg_val_slab,  flagbucket_slab,   namelist_slab, /* This used to be in a
+                                                           separate if check, so
+                                                           it may be NULL. Be
+                                                           careful if making
+                                                           this static. */
   };
   size_t i;
 

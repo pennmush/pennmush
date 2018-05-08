@@ -24,7 +24,6 @@ static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
                           NEW_PE_INFO *pe_info, JSON *json, dbref executor,
                           dbref enactor);
 
-
 /** Free all memory used by a JSON struct */
 void
 json_free(JSON *json)
@@ -74,6 +73,8 @@ json_escape_string(char *input)
       // Nothing
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
+    } else if (*p > 127 || *p <= 0x1F) {
+      safe_format(buff, &bp, "\\u%.4X", (unsigned) *p);
     } else {
       if (*p == '"' || *p == '\\')
         safe_chr('\\', buff, &bp);
@@ -107,6 +108,18 @@ json_unescape_string(char *input)
       case 't':
         safe_chr('\t', buff, &bp);
         break;
+      case 'u': {
+        unsigned int uchar;
+        char *end;
+        uchar = strtoul(p + 1, &end, 16);
+        if (end - p != 5 || uchar > 255 || !isprint(uchar)) {
+          safe_chr('?', buff, &bp);
+        } else {
+          safe_chr(uchar, buff, &bp);
+        }
+        p = end - 1;
+        break;
+      }
       case '"':
       case '\\':
         safe_chr(*p, buff, &bp);
@@ -401,9 +414,9 @@ enum json_query {
 
 FUNCTION(fun_json_query)
 {
-  JSON *json, *next;
+  JSON *json, *next, *curr;
   enum json_query query_type = JSON_QUERY_TYPE;
-  int i;
+  int i, path;
 
   if (nargs > 1 && args[1] && *args[1]) {
     if (strcasecmp("size", args[1]) == 0) {
@@ -496,64 +509,76 @@ FUNCTION(fun_json_query)
     break;
   case JSON_QUERY_EXISTS:
   case JSON_QUERY_GET:
-    switch (json->type) {
-    case JSON_NONE:
-      break;
-    case JSON_STR:
-    case JSON_BOOL:
-    case JSON_NUMBER:
-    case JSON_NULL:
-      safe_str("#-1", buff, bp);
-      break;
-    case JSON_ARRAY:
-      if (!is_strict_integer(args[2])) {
-        safe_str(T(e_int), buff, bp);
+    path = 2;
+    curr = json;
+    do {
+      switch (curr->type) {
+      case JSON_NONE:
+        curr = NULL;
         break;
-      }
-      i = parse_integer(args[2]);
-      for (next = json->data; i > 0 && next; next = next->next, i--)
-        ;
+      case JSON_STR:
+      case JSON_BOOL:
+      case JSON_NUMBER:
+      case JSON_NULL:
+        safe_str("#-1", buff, bp);
+        curr = NULL;
+        break;
+      case JSON_ARRAY:
+        if (!is_strict_integer(args[path])) {
+          safe_str(T(e_int), buff, bp);
+          curr = NULL;
+          break;
+        }
+        i = parse_integer(args[path]);
+        for (next = curr->data; i > 0 && next; next = next->next, i--)
+          ;
 
-      if (query_type == JSON_QUERY_EXISTS) {
-        safe_chr((next) ? '1' : '0', buff, bp);
-      } else if (next) {
-        char *s = json_to_string(next, 0);
-        if (s) {
-          safe_str(s, buff, bp);
-          mush_free(s, "json_str");
-        }
-      }
-      break;
-    case JSON_OBJECT:
-      next = (JSON *) json->data;
-      while (next) {
-        if (next->type != JSON_STR) {
-          /* We should have a string label */
-          next = NULL;
-          break;
-        }
-        if (!strcasecmp((char *) next->data, args[2])) {
-          /* Success! */
-          next = next->next;
-          break;
-        } else {
-          /* Skip */
-          next = next->next; /* Move to this entry's value */
-          if (next) {
-            next = next->next; /* Move to next entry's name */
+        if (query_type == JSON_QUERY_EXISTS) {
+          if (path == nargs - 1 || !next) {
+            safe_chr((next) ? '1' : '0', buff, bp);
+            curr = NULL;
+            break;
           }
         }
-      }
-      if (query_type == JSON_QUERY_EXISTS) {
-        safe_chr((next) ? '1' : '0', buff, bp);
-      } else if (next) {
-        char *s = json_to_string(next, 0);
-        if (s) {
-          safe_str(s, buff, bp);
-          mush_free(s, "json_str");
+        curr = next;
+        break;
+      case JSON_OBJECT:
+        next = (JSON *) curr->data;
+        while (next) {
+          if (next->type != JSON_STR) {
+            /* We should have a string label */
+            next = NULL;
+            break;
+          }
+          if (!strcasecmp((char *) next->data, args[path])) {
+            /* Success! */
+            next = next->next;
+            break;
+          } else {
+            /* Skip */
+            next = next->next; /* Move to this entry's value */
+            if (next) {
+              next = next->next; /* Move to next entry's name */
+            }
+          }
         }
+        if (query_type == JSON_QUERY_EXISTS) {
+          if (path == nargs - 1 || !next) {
+            safe_chr((next) ? '1' : '0', buff, bp);
+            curr = NULL;
+            break;
+          }
+        }
+        curr = next;
+        break;
       }
-      break;
+    } while (curr && ++path < nargs);
+    if (curr) {
+      char *s = json_to_string(curr, 0);
+      if (s) {
+        safe_str(s, buff, bp);
+        mush_free(s, "json_str");
+      }
     }
     break;
   }

@@ -2602,7 +2602,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     if (!attrname || !*attrname) {
       (*h)->attrname = NULL;
     } else {
-      (*h)->attrname = mush_strdup(strupper(attrname), "hook.attr");
+      (*h)->attrname = strupper_a(attrname, "hook.attr");
     }
     (*h)->inplace = queue_type;
     notify_format(player, T("Hook set for %s."), cmd->name);

@@ -350,7 +350,7 @@ attr_read_all(PENNFILE *f)
       upcasestr(alias);
       if (!good_atr_name(alias)) {
         do_rawlog(LT_ERR, "Bad attribute name on alias '%s' in db.", alias);
-      } else if (aname_find_exact(strupper(alias))) {
+      } else if (aname_find_exact(alias)) {
         do_rawlog(
           LT_ERR,
           "Unable to alias attribute '%s' to '%s' in db: alias already in use.",
@@ -1025,8 +1025,11 @@ do_decompile_attribs(dbref player, char *pattern, int retroactive)
 void
 do_list_attribs(dbref player, int lc)
 {
+  char tmp[BUFFER_LEN];
   char *b = list_attribs();
-  notify_format(player, T("Attribs: %s"), lc ? strlower(b) : b);
+  notify_format(player, T("Attribs: %s"), lc
+                ? strlower_r(b, tmp, sizeof tmp)
+                : b);
 }
 
 /** Return a list of standard attributes.

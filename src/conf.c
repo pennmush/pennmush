@@ -419,7 +419,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
     return cnf;
   if ((cnf = new_config()) == NULL)
     return NULL;
-  cnf->name = mush_strdup(strupper(name), "config name");
+  cnf->name = strupper_a(name, "config name");
   cnf->handler = handler;
   cnf->loc = loc;
   cnf->max = max;

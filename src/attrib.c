@@ -1350,7 +1350,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
    * name */
   if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
-    ptr = atr_get_noparent(thing, strupper(name));
+    char abuff[BUFFER_LEN];
+    ptr = atr_get_noparent(thing, strupper_r(name, abuff, sizeof abuff));
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                      : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
@@ -1471,7 +1472,9 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
    * name */
   if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
-    ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
+    char abuff[BUFFER_LEN];
+    ptr = atr_get_with_parent(thing, strupper_r(name, abuff, sizeof abuff),
+                              &parent, 0);
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                                      : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
@@ -2340,7 +2343,8 @@ do_atrlock(dbref player, const char *src, const char *action)
   char *target, *attrib;
   ATTR *ptr;
   enum atrlock_status status = ATRLOCK_CHECK;
-
+  char abuff[BUFFER_LEN];
+  
   if (action && *action) {
     if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") ||
         !strcasecmp(action, "1"))
@@ -2379,7 +2383,7 @@ do_atrlock(dbref player, const char *src, const char *action)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(attrib));
+  ptr = atr_get_noparent(thing, strupper_r(attrib, abuff, sizeof abuff));
   mush_free(target, "atrlock.string");
   if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));
@@ -2425,7 +2429,8 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
   dbref thing, new_owner;
   char *p, *arg1;
   ATTR *ptr;
-
+  char abuff[BUFFER_LEN];
+  
   if (!xarg1 || !*xarg1) {
     notify(player, T("You need to give an object/attribute pair."));
     return;
@@ -2456,7 +2461,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     goto cleanup;
   }
 
-  ptr = atr_get_noparent(thing, strupper(p));
+  ptr = atr_get_noparent(thing, strupper_r(p, abuff, sizeof abuff));
   if (ptr && Can_Read_Attr(player, thing, ptr)) {
     if (Can_Write_Attr(player, thing, ptr)) {
       if (new_owner != Owner(player) && !Wizard(player)) {

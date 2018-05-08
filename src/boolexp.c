@@ -862,10 +862,11 @@ alloc_atr(const char *name, const char *s, bool upcase_s)
   char buf[BUFFER_LEN];
 
   if (s) {
-    if (upcase_s)
-      mush_strncpy(buf, strupper(s), sizeof buf);
-    else
+    if (upcase_s) {
+      strupper_r(s, buf, sizeof buf);
+    } else {
       mush_strncpy(buf, s, sizeof buf);
+    }
     len = strlen(buf) + 1;
   } else {
     buf[0] = '\0';

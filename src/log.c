@@ -113,7 +113,8 @@ start_log(struct log_stream *log)
 {
   static int ht_initialized = 0;
   FILE *f;
-
+  char logbuff[BUFFER_LEN];
+  
   if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
@@ -121,7 +122,8 @@ start_log(struct log_stream *log)
       hashinit(&htab_logfiles, 8);
       ht_initialized = 1;
     }
-    if ((f = hashfind(strupper(log->filename), &htab_logfiles))) {
+    if ((f = hashfind(strupper_r(log->filename, logbuff, sizeof logbuff),
+                      &htab_logfiles))) {
       /* We've already opened this file for another log, so just use that
        * pointer */
       log->fp = f;
@@ -132,7 +134,8 @@ start_log(struct log_stream *log)
                 strerror(errno));
         log->fp = stderr;
       } else {
-        hashadd(strupper(log->filename), log->fp, &htab_logfiles);
+        hashadd(strupper_r(log->filename, logbuff, sizeof logbuff),
+                log->fp, &htab_logfiles);
         fputs("START OF LOG.\n", log->fp);
         fflush(log->fp);
       }
@@ -189,10 +192,12 @@ static void
 end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
-
+  char logbuff[BUFFER_LEN];
+  
   if (!log->filename || !*log->filename || !log->fp)
     return;
-  if ((fp = hashfind(strupper(log->filename), &htab_logfiles))) {
+  if ((fp = hashfind(strupper_r(log->filename, logbuff, sizeof logbuff),
+                     &htab_logfiles))) {
     int n;
 
     lock_file(fp);
@@ -207,7 +212,8 @@ end_log(struct log_stream *log, bool keep_buffer)
       free_bufferq(log->buffer);
       log->buffer = NULL;
     }
-    hashdelete(strupper(log->filename), &htab_logfiles);
+    hashdelete(strupper_r(log->filename, logbuff, sizeof logbuff),
+               &htab_logfiles);
   }
 }
 

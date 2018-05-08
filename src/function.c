@@ -942,7 +942,8 @@ do_function_clone(dbref player, const char *function, const char *clone)
 {
   FUN *fp, *fpc;
   char realclone[BUFFER_LEN];
-  strcpy(realclone, strupper(clone));
+
+  strupper_r(clone, realclone, sizeof realclone);
 
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
@@ -985,7 +986,8 @@ alias_function(dbref player, const char *function, const char *alias)
 {
   FUN *fp;
   char realalias[BUFFER_LEN];
-  strcpy(realalias, strupper(alias));
+
+  strupper_r(alias, realalias, sizeof realalias);
 
   /* Make sure the alias doesn't exist already */
   if (any_func_hash_lookup(realalias)) {

@@ -47,8 +47,9 @@ do_get_attrib(dbref executor, dbref thing, const char *attrib)
 {
   ATTR *a;
   char const *value;
-
-  a = atr_get(thing, strupper(attrib));
+  char abuff[BUFFER_LEN];
+  
+  a = atr_get(thing, strupper_r(attrib, abuff, sizeof abuff));
   if (a) {
     if (Can_Read_Attr(executor, thing, a)) {
       if (strlen(value = atr_value(a)) < BUFFER_LEN)
@@ -2374,7 +2375,8 @@ FUNCTION(fun_atrlock)
   char *p;
   ATTR *ptr;
   int change;
-
+  char abuff[BUFFER_LEN];
+  
   if (nargs == 1)
     change = 0;
   else
@@ -2410,7 +2412,7 @@ FUNCTION(fun_atrlock)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(p));
+  ptr = atr_get_noparent(thing, strupper_r(p, abuff, sizeof abuff));
   if (ptr && Can_Read_Attr(executor, thing, ptr))
     safe_boolean(AF_Locked(ptr), buff, bp);
   else

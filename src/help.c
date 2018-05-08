@@ -134,7 +134,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim)
       fclose(fp);
       return NULL;
     }
-    strcpy(topic, strupper(entry->topic + (*entry->topic == '&')));
+    strupper_r(entry->topic + (*entry->topic == '&'), topic, sizeof topic);
     for (n = 0; n < BUFFER_LEN; n++) {
       if (fgets(line, LINE_SIZE, fp) == NULL)
         break;
@@ -383,7 +383,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   }
 
   h = mush_malloc(sizeof *h, "help_file.entry");
-  h->command = mush_strdup(strupper(command_name), "help_file.command");
+  h->command = strupper_a(command_name, "help_file.command");
   h->file = mush_strdup(filename, "help_file.filename");
   h->entries = 0;
   h->indx = NULL;
@@ -503,7 +503,8 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
     fclose(fp);
     return;
   }
-  strcpy(the_topic, strupper(entry->topic + (*entry->topic == '&')));
+  strupper_r(entry->topic + (*entry->topic == '&'), the_topic,
+             sizeof the_topic);
   /* ANSI topics */
   notify_format(player, "%s%s%s", ANSI_HILITE, the_topic, ANSI_END);
 

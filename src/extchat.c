@@ -4348,7 +4348,7 @@ comlist_helper(dbref player __attribute__((__unused__)), dbref thing,
   if (!(cu = onchannel(thing, c)))
     return 0;
 
-  mush_strncpy(buff, strlower(AL_NAME(atr)), BUFFER_LEN);
+  strlower_r(AL_NAME(atr), buff, sizeof buff);
   bp = strchr(buff, '`');
   if (!bp)
     return 0;

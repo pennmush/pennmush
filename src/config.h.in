@@ -64,6 +64,7 @@
 #cmakedefine HAVE_GETPRIORITY
 #cmakedefine HAVE_GETRLIMIT
 #cmakedefine HAVE_GETRUSAGE
+#cmakedefine HAVE_GETSERVBYNAME
 #cmakedefine HAVE_GETTEXT
 #cmakedefine HAVE_GETUID
 #cmakedefine HAVE_GMTIME_R

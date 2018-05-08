@@ -4845,7 +4845,7 @@ do_who_admin(dbref player, char *name)
         tbuf, &tp, " %6s %9s %5s  %4d %3d%s ",
         unparse_dbref(Location(d->player)), onfor_time_fmt(d->connected_at, 9),
         idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor, conntype);
-      strncpy(addr, d->addr, 28);
+      mush_strncpy(addr, d->addr, sizeof addr);
       if (Dark(d->player)) {
         addr[20] = '\0';
         strcat(addr, " (Dark)");
@@ -5270,7 +5270,7 @@ do_motd(dbref player, int key, const char *message)
   if ((key & MOTD_ACTION) == MOTD_LIST ||
       ((key & MOTD_ACTION) == MOTD_SET && (!message || !*message))) {
     notify_format(player, T("MOTD: %s"), cf_motd_msg);
-    if (Hasprivs(player) && (key & MOTD_ACTION) != MOTD_MOTD) {
+    if (Hasprivs(player) && (key & MOTD_ACTION) == MOTD_LIST) {
       notify_format(player, T("Wiz MOTD: %s"), cf_wizmotd_msg);
       notify_format(player, T("Down MOTD: %s"), cf_downmotd_msg);
       notify_format(player, T("Full MOTD: %s"), cf_fullmotd_msg);
@@ -5395,16 +5395,19 @@ set_poll(const char *message)
   size_t len = 0;
 
   if (message && *message) {
-    strncpy(poll_msg, remove_markup(message, &len), DOING_LEN - 1);
+    mush_strncpy(poll_msg, remove_markup(message, &len), sizeof poll_msg);
     len--; /* Length includes trailing null */
-  } else
-    strncpy(poll_msg, T("Doing"), DOING_LEN - 1);
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
-        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR))
-      poll_msg[i] = ' ';
+  } else {
+    mush_strncpy(poll_msg, T("Doing"), sizeof poll_msg);
   }
-  poll_msg[DOING_LEN - 1] = '\0';
+  for (i = 0; i < DOING_LEN; i++) {
+    if (poll_msg[i] == '\0') {
+      break;
+    } else if ((poll_msg[i] == '\r') || (poll_msg[i] == '\n') ||
+        (poll_msg[i] == '\t') || (poll_msg[i] == BEEP_CHAR)) {
+      poll_msg[i] = ' ';
+    }
+  }
 
   if ((int) len >= DOING_LEN)
     return ((int) len - DOING_LEN);
@@ -6542,14 +6545,9 @@ dump_reboot_db(void)
 void
 load_reboot_db(void)
 {
-  PENNFILE *f;
-  DESC *d = NULL;
-  DESC *closed = NULL, *nextclosed;
-  volatile int val = 0;
-  const char *temp;
-  char c;
-  volatile uint32_t flags = 0;
-
+  PENNFILE * volatile f;
+  DESC * volatile closed = NULL;
+  
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
     restarting = 0;
@@ -6559,8 +6557,15 @@ load_reboot_db(void)
 
   if (setjmp(db_err)) {
     do_rawlog(LT_ERR, "GAME: Unable to read reboot database!");
+    penn_fclose(f);
     return;
   } else {
+    DESC *d = NULL;
+    int val = 0;
+    const char *temp;
+    char c;
+    uint32_t flags = 0;
+
     /* Get the first line and see if it's a set of reboot db flags.
      * Those start with V<number>
      * If not, assume we're using the original format, in which the
@@ -6727,7 +6732,7 @@ load_reboot_db(void)
 
   /* Now announce disconnects of everyone who's not really here */
   while (closed) {
-    nextclosed = closed->next;
+    DESC *nextclosed = closed->next;
     announce_disconnect(closed, "disconnect", 1, NOTHING);
     if (closed->ttype && closed->ttype != default_ttype)
       mush_free(closed->ttype, "terminal description");

@@ -699,7 +699,8 @@ CONFIG_FUNC(cf_flag)
 {
   size_t len = strlen(val);
   size_t total = strlen((char *) loc);
-
+  char temp[BUFFER_LEN];
+  
   /* truncate if necessary */
   if (len + total + 1 >= (size_t) maxval) {
     len = maxval - total - 1;
@@ -711,7 +712,8 @@ CONFIG_FUNC(cf_flag)
     if (from_cmd == 0)
       do_rawlog(LT_ERR, "CONFIG: option %s value truncated", opt);
   }
-  snprintf(loc, maxval, "%s %s", (char *) loc, val);
+  snprintf(temp, sizeof temp, "%s %s", (char *)loc, val);
+  mush_strncpy(loc, temp, maxval);
   return 1;
 }
 

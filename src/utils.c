@@ -119,7 +119,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
 
   if (!attrstring)
     return 0;
-  strncpy(astring, attrstring, BUFFER_LEN);
+  mush_strncpy(astring, attrstring, sizeof astring);
 
   /* Split obj/attr */
   if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {

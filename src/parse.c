@@ -1172,27 +1172,28 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs, int copytypes,
       if (val->type & copytypes) {
         if (val->type & (PE_REGS_SWITCH | PE_REGS_ITER)) {
           /* It is t<num> or n<num>. Bump it up as necessary. */
-          sscanf(val->name, "%c%d", &itype, &inum);
-          inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
-          if (*(val->name) == 'T') {
-            if (val->type & PE_REGS_SWITCH) {
-              if (inum >= scount)
-                scount = inum + 1;
-            } else {
-              if (inum >= icount)
-                icount = inum + 1;
-            }
-          }
-          if (inum < MAX_ITERS) {
-            snprintf(numbuff, 10, "%c%d", itype, inum);
-            if (val->type & PE_REGS_STR) {
-              pe_regs_set(new_regs, val->type & andflags, numbuff,
-                          val->val.sval);
-            } else {
-              pe_regs_set_int(new_regs, val->type & andflags, numbuff,
-                              val->val.ival);
-            }
-          }
+          if (sscanf(val->name, "%c%d", &itype, &inum) == 2) {
+	    inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
+	    if (*(val->name) == 'T') {
+	      if (val->type & PE_REGS_SWITCH) {
+		if (inum >= scount)
+		  scount = inum + 1;
+	      } else {
+		if (inum >= icount)
+		  icount = inum + 1;
+	      }
+	    }
+	    if (inum >= 0 && inum < MAX_ITERS) {
+	      snprintf(numbuff, sizeof numbuff, "%c%d", itype, inum);
+	      if (val->type & PE_REGS_STR) {
+		pe_regs_set(new_regs, val->type & andflags, numbuff,
+			    val->val.sval);
+	      } else {
+		pe_regs_set_int(new_regs, val->type & andflags, numbuff,
+				val->val.ival);
+	      }
+	    }
+	  }
         } else {
           /* Set, but maybe don't override. */
           if (val->type & PE_REGS_STR) {

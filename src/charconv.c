@@ -375,7 +375,7 @@ utf8_to_latin1(const char * RESTRICT utf8, int len, int *outlen, const char *nam
   destlen += 1;
   latin1 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, latin1, destlen, utf8, len, &uerr);
+  destlen = ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, latin1, destlen, utf8, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed: %s\n",
 	      u_errorName(uerr));
@@ -705,7 +705,7 @@ utf8_to_utf32(const char * restrict utf8, int len, int *outlen, const char * res
   destlen += sizeof(UChar32);
   utf32 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_fromAlgorithmic(utf32_cnv, UCNV_UTF8, (char *)utf32, destlen, utf8, len, &uerr);
+  destlen = ucnv_fromAlgorithmic(utf32_cnv, UCNV_UTF8, (char *)utf32, destlen, utf8, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed: %s\n",
 	      u_errorName(uerr));
@@ -713,7 +713,7 @@ utf8_to_utf32(const char * restrict utf8, int len, int *outlen, const char * res
     return NULL;
   }
   if (outlen) {
-    *outlen = (destlen / sizeof(UChar32)) - 1;
+    *outlen = destlen / sizeof(UChar32);
   }
   return utf32;
 }
@@ -749,7 +749,7 @@ utf32_to_utf8(const UChar32 *utf32, int len, int *outlen, const char * name)
   destlen += 1;
   utf8 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_toAlgorithmic(UCNV_UTF8, utf32_cnv, utf8, destlen, (char *)utf32, len, &uerr);
+  destlen = ucnv_toAlgorithmic(UCNV_UTF8, utf32_cnv, utf8, destlen, (char *)utf32, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from utf32 to utf8 failed: %s\n",
 	      u_errorName(uerr));
@@ -757,7 +757,7 @@ utf32_to_utf8(const UChar32 *utf32, int len, int *outlen, const char * name)
     return NULL;
   }
   if (outlen) {
-    *outlen = destlen - 1; 
+    *outlen = destlen; 
   }
   return utf8;
 }
@@ -792,7 +792,7 @@ latin1_to_utf32(const char * restrict latin1, int len, int *outlen, const char *
   destlen += sizeof(UChar32);
   utf32 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_toAlgorithmic(UCNV_UTF32, latin1_cnv, (char *)utf32, destlen, latin1, len, &uerr);
+  destlen = ucnv_toAlgorithmic(UCNV_UTF32, latin1_cnv, (char *)utf32, destlen, latin1, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from latin1 to utf32 failed: %s\n",
 	      u_errorName(uerr));
@@ -800,7 +800,7 @@ latin1_to_utf32(const char * restrict latin1, int len, int *outlen, const char *
     return NULL;
   }
   if (outlen) {
-    *outlen = (destlen / sizeof(UChar32)) - 1;
+    *outlen = destlen / sizeof(UChar32);
   }
   return utf32;
 }
@@ -836,7 +836,7 @@ utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, const char * name)
   destlen += 1;
   latin1 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF32, latin1, destlen, (char *)utf32, len, &uerr);
+  destlen = ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF32, latin1, destlen, (char *)utf32, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from utf32 to latin1 failed: %s\n",
 	      u_errorName(uerr));
@@ -844,7 +844,7 @@ utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, const char * name)
     return NULL;
   }
   if (outlen) {
-    *outlen = destlen - 1; 
+    *outlen = destlen; 
   }
   return latin1;
 }

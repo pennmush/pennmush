@@ -73,6 +73,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "parse.h"
 #include "strutil.h"
 #include "charconv.h"
+#include "mushsql.h"
 
 /* Supported platforms */
 typedef enum {
@@ -364,13 +365,42 @@ FUNCTION(fun_sql_escape)
       PQescapeStringConn(postgres_connp, bigbuff, args[0], arglens[0], NULL);
     break;
 #endif
-#if defined(HAVE_SQLITE3) && defined(HAVE_MYSQL)
   case SQL_PLATFORM_SQLITE3:
-    /* sqlite3 doesn't have a escape function. Use one of my MySQL's
-     * if we can. */
-    chars_written = mysql_escape_string(bigbuff, args[0], arglens[0]);
+    {
+      sqlite3_stmt *escaper;
+      char *utf8;
+      int status, ulen;
+      
+      escaper = prepare_statement(sqlite3_connp,
+                                  "SELECT quote(?)", "fun.sqlescape");
+      utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+      if (!utf8) {
+        safe_str("#-1 ENCODING ERROR", buff, bp);
+        return;
+      }
+      sqlite3_bind_text(escaper, 1, utf8, ulen, free_string);
+      do {
+        status = sqlite3_step(escaper);
+        if (status == SQLITE_ROW) {
+          const char *escaped;
+          char *latin1;
+          int elen;
+          escaped = (const char *)sqlite3_column_text(escaper, 0);
+          elen = sqlite3_column_bytes(escaper, 0);
+          latin1 = utf8_to_latin1(escaped, elen, &chars_written, "string");
+          latin1[chars_written - 1] = '\0';
+          chars_written -= 2;
+          mush_strncpy(bigbuff, latin1 + 1, sizeof bigbuff);
+          mush_free(latin1, "string");
+        }
+      } while (is_busy_status(status));
+      sqlite3_reset(escaper);
+      if (status != SQLITE_ROW) {
+        safe_str("#-1 ENCODING ERROR", buff, bp);
+        return;
+      }
+    }
     break;
-#endif
   default:
     safe_str(T(e_disabled), buff, bp);
     return;

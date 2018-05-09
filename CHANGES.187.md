@@ -53,6 +53,7 @@ Softcode
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
 * New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
+* `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 
 Fixes
 -----

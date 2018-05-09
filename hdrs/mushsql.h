@@ -12,6 +12,8 @@ void close_sql_db(sqlite3 *);
 sqlite3 *get_shared_db(void);
 void close_shared_db(void);
 
+int get_sql_db_id(sqlite3 *, int *app_id, int *version);
+
 sqlite3_stmt* prepare_statement(sqlite3 *, const char *, const char *);
 void close_statement(sqlite3_stmt *);
 

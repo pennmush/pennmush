@@ -2071,6 +2071,52 @@ open_sql_db(const char *name, bool nocreate)
   return db;
 }
 
+/* Returns the application_id and user_version fields from a sqlite3 database.
+ *
+ * \param db the database connection
+ * \param app_id filled with the application_id value.
+ * \param version filled with the user_version value.
+ * \return 0 on success, -1 on error.
+ */
+int
+get_sql_db_id(sqlite3 *db, int *app_id, int *version)
+{
+  sqlite3_stmt *vers;
+  int status;
+  vers = prepare_statement(db, "PRAGMA application_id", "app.id");
+  if (!vers) {
+    return -1;
+  }
+  do {
+    status = sqlite3_step(vers);
+    if (status == SQLITE_ROW) {
+      *app_id = sqlite3_column_int(vers, 0);
+    }
+  } while (is_busy_status(status));  
+  close_statement(vers);
+  if (status != SQLITE_ROW) {
+    return -1;
+  }
+  
+  vers = prepare_statement(db, "PRAGMA user_version", "user.version");
+  if (!vers) {
+    return -1;
+  }
+  do {
+    status = sqlite3_step(vers);
+    if (status == SQLITE_ROW) {
+      *version = sqlite3_column_int(vers, 0);
+    }
+  } while (is_busy_status(status));
+  close_statement(vers);
+  if (status != SQLITE_ROW) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+
 /** Returns true if the sqlite status code indicates an operation is
     waiting on another process or thread to unlock a database. */
 bool

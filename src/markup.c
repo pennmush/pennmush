@@ -1002,7 +1002,7 @@ ansi_map_256(const char *name, bool hilite, bool all)
 {
   uint32_t hex, diff, cdiff;
   int best = 0;
-  int i;
+  int i = 0;
   int num = 0;
   sqlite3 *sqldb;
   sqlite3_stmt *finder;

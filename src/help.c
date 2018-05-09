@@ -5,7 +5,6 @@
  *
  *
  */
-#include "help.h"
 
 /* This might have to be uncommented on some linux distros... */
 /* #define _XOPEN_SOURCE 600 */
@@ -16,6 +15,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pcre.h>
+
+#include "help.h"
 #include "ansi.h"
 #include "command.h"
 #include "conf.h"
@@ -32,6 +33,9 @@
 #include "strutil.h"
 #include "mushsql.h"
 #include "charconv.h"
+
+#define HELPDB_APP_ID 0x42010FF1
+#define HELPDB_VERSION 1
 
 #define LINE_SIZE 90
 #define TOPIC_NAME_LEN 30
@@ -307,29 +311,55 @@ void
 init_help_files(void)
 {
   char *errstr = NULL;
-  int r;
+  int status;
+  int id = 0, version = 0;
 
   help_db = open_sql_db(options.help_db, 0);
   if (!help_db) {
     return;
   }
-  r = sqlite3_exec(help_db,
-                   "DROP TABLE IF EXISTS helpfts;"
-                   "DROP TABLE IF EXISTS topics;"
-                   "DROP TABLE IF EXISTS entries;"
-                   "DROP TABLE IF EXISTS categories;"
-                   "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT NULL UNIQUE);"
-                   "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
-                   "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
-                   "CREATE INDEX topics_body_idx ON topics(bodyid);"
-                   "CREATE VIRTUAL TABLE helpfts USING fts5(body, content=entries, content_rowid=id);"
-                   "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO helpfts(rowid, body) VALUES (new.id, new.body); END;"
-                   "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END",
-                   NULL, NULL, &errstr);
-  if (r != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to create help database: %s\n", errstr);
-    sqlite3_free(errstr);
+  if (get_sql_db_id(help_db, &id, &version) != 0) {
+    do_rawlog(LT_ERR,
+              "Unable to read application_id and user_version from help_db");
+  }
+  if (id != 0 && id != HELPDB_APP_ID) {
+    do_rawlog(LT_ERR,
+              "Help database used for something else, application id 0x%x.",
+              (unsigned) id);
     return;
+  }
+
+  if (id == 0 || version != HELPDB_VERSION) {
+    do_rawlog(LT_ERR, "Creating help_db tables");
+    status = sqlite3_exec(help_db,
+                          "DROP TABLE IF EXISTS helpfts;"
+                          "DROP TABLE IF EXISTS topics;"
+                          "DROP TABLE IF EXISTS entries;"
+                          "DROP TABLE IF EXISTS categories;"
+                          "PRAGMA application_id = 0x42010FF1;"
+                          "PRAGMA user_version = 1;"
+                          "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT NULL UNIQUE);"
+                          "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
+                          "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
+                          "CREATE INDEX topics_body_idx ON topics(bodyid);"
+                          "CREATE VIRTUAL TABLE helpfts USING fts5(body, content=entries, content_rowid=id);"
+                          "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO helpfts(rowid, body) VALUES (new.id, new.body); END;"
+                          "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END",
+                          NULL, NULL, &errstr);
+    if (status != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to create help database: %s\n", errstr);
+      sqlite3_free(errstr);
+      return;
+    }
+  } else {
+    do_rawlog(LT_ERR, "Deleting current help_db records.");
+    status = sqlite3_exec(help_db, "DELETE FROM entries",
+                          NULL, NULL, &errstr);
+    if (status != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to reset help database: %s\n", errstr);
+      sqlite3_free(errstr);
+      return;
+    }
   }
   init_vocab();
   hashinit(&help_files, 8);

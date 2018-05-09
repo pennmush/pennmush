@@ -1879,4 +1879,9 @@ show_compile_options(dbref player)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
 #endif
+
+#ifdef HAVE_ICU
+  notify(player, T(" (Very limited) Unicode support is enabled."));
+#endif
+
 }

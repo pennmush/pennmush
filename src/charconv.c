@@ -8,6 +8,8 @@
 
 #ifdef HAVE_ICU
 #include <unicode/ucnv.h>
+#include <unicode/ustring.h>
+#include <unicode/unorm2.h>
 #endif
 
 #include "mysocket.h"
@@ -29,6 +31,7 @@
 
 #ifdef HAVE_ICU
 static UConverter *loc_latin1_cnv = NULL;
+static UConverter *loc_utf32_cnv = NULL;
 
 static UConverter *
 make_converter(const char *charset)
@@ -63,6 +66,16 @@ get_latin1_cnv(void)
   return loc_latin1_cnv;
 }
 
+static UConverter *
+get_utf32_cnv(void)
+{
+  /* thread local when merging into threaded */
+  if (!loc_utf32_cnv) {
+    loc_utf32_cnv = make_converter("UTF-32");
+  }
+  return loc_utf32_cnv;
+}
+
 #endif
 
 #if defined(WIN32) && !defined(HAVE_FFS)
@@ -86,16 +99,14 @@ ffs(int i)
 /**
  * Convert a latin-1 encoded string to utf-8.
  *
- *
  * \param s the latin-1 string.
- * \param latin the length of the string.
- * \param outlen the number of bytes of the returned string, NOT counting the
- * trailing nul.
- * \param telnet true if we should handle telnet escape sequences.
+ * \param len the length of the string.
+ * \param outlen set to the number of bytes of the returned string, NOT counting the trailing nul.
+ * \param name memcheck tag
  * \return a newly allocated utf-8 string.
  */
 char*
-latin1_to_utf8(const char * RESTRICT latin1, int len, int *outlen, const char * RESTRICT name)
+latin1_to_utf8(const char * restrict latin1, int len, int *outlen, const char * restrict name)
 {
 #ifdef HAVE_ICU
   UErrorCode uerr = 0;
@@ -111,18 +122,19 @@ latin1_to_utf8(const char * RESTRICT latin1, int len, int *outlen, const char * 
   if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
     do_rawlog(LT_ERR, "Conversion from latin1 to utf8 failed (preflight): %s\n",
 	      u_errorName(uerr));
+    return NULL;
   }
 
-  utf8 = mush_malloc(destlen + 1, name);
+  destlen += 1;
+  utf8 = mush_calloc(destlen, 1, name);
   uerr = 0;
-  ucnv_toAlgorithmic(UCNV_UTF8, latin1_cnv, utf8, destlen, latin1, len, &uerr);
+  destlen = ucnv_toAlgorithmic(UCNV_UTF8, latin1_cnv, utf8, destlen, latin1, len, &uerr);
   if (U_FAILURE(uerr)) {
     do_rawlog(LT_ERR, "Conversion from latin1 to utf8 failed: %s\n",
 	      u_errorName(uerr));
     mush_free(utf8, name);
     return NULL;
   }
-  utf8[destlen] = '\0';
   if (outlen) {
     *outlen = destlen;
   }
@@ -138,9 +150,9 @@ latin1_to_utf8(const char * RESTRICT latin1, int len, int *outlen, const char * 
  *
  * \param s the latin-1 string.
  * \param latin the length of the string.
- * \param outlen the number of bytes of the returned string, NOT counting the
- * trailing nul.
+ * \param outlen the number of bytes of the returned string, NOT counting the trailing nul.
  * \param telnet true if we should handle telnet escape sequences.
+ * \param name memcheck tag.
  * \return a newly allocated utf-8 string.
  */
 char *
@@ -335,14 +347,16 @@ latin1_to_utf8_tn(const char * RESTRICT latin, int len, int *outlen, bool telnet
  * Convert a UTF-8 encoded string to Latin-1
  *
  * \param utf8 a valid utf-8 string
- * \param outlen the length of the returned string NOT including trailing nul
+ * \param len the length of the string in bytes
+ * \param outlen set to the length of the returned string NOT including trailing nul
+ * \param name memcheck tag
  * \return a newly allocated latin-1 string
  */
 char *
-utf8_to_latin1(const char * RESTRICT utf8, int *outlen, const char *name)
+utf8_to_latin1(const char * RESTRICT utf8, int len, int *outlen, const char *name)
 {
 #ifdef HAVE_ICU
-  int32_t destlen, len;
+  int32_t destlen;
   char *latin1;
   UErrorCode uerr = 0;
   UConverter *latin1_cnv = get_latin1_cnv();
@@ -350,15 +364,16 @@ utf8_to_latin1(const char * RESTRICT utf8, int *outlen, const char *name)
   if (!latin1_cnv) {
     return NULL;
   }
-
-  len = strlen(utf8);
+  
   destlen = ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, NULL, 0, utf8, len, &uerr);
   if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
     do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed (preflight): %s\n",
 	      u_errorName(uerr));
+    return NULL;
   }
 
-  latin1 = mush_malloc(destlen + 1, name);
+  destlen += 1;
+  latin1 = mush_calloc(destlen, 1, name);
   uerr = 0;
   ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF8, latin1, destlen, utf8, len, &uerr);
   if (U_FAILURE(uerr)) {
@@ -367,7 +382,6 @@ utf8_to_latin1(const char * RESTRICT utf8, int *outlen, const char *name)
     mush_free(latin1, name);
     return NULL;
   }
-  latin1[destlen] = '\0';
   if (outlen) {
     *outlen = destlen;
   }
@@ -591,4 +605,595 @@ valid_utf8(const char *utf8)
   }
 
   return nconts == 0;
+}
+
+#ifdef HAVE_ICU
+
+/** Convert a UTF-16 encoded string to UTF-8.
+ *
+ * \parm utf16 the UTF-16 string
+ * \param len the length of the string. -1 to use 0-terminated length
+ * \param outlen pointer to store the length of the UTF-8 string
+ * \param name memcheck tag for new string
+ * \return newly allocated UTF-8 string
+ */
+char *
+utf16_to_utf8(const UChar *utf16, int len, int *outlen, const char *name)
+{
+  char *utf8;
+  int32_t destlen, destwritten;
+  UErrorCode uerr = 0;
+
+  u_strToUTF8(NULL, 0, &destwritten, utf16, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    return NULL;
+  }
+
+  destlen = destwritten + 1;
+  utf8 = mush_calloc(destlen, 1, name);
+
+  uerr = 0;
+  u_strToUTF8(utf8, destlen, outlen, utf16, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    mush_free(utf8, name);
+    return NULL;
+  }
+  
+  return utf8;
+}
+
+/** Convert a UTF-8 encoded string to UTF-16.
+ *
+ * \parm utf8 the UTF-8 string
+ * \param len the length of the string in bytes. -1 to use 0-terminated length
+ * \param outlen pointer to store the length of the UTF-16 string
+ * \param name memcheck tag for new string
+ * \return newly allocated UTF-16 string
+ */
+UChar *
+utf8_to_utf16(const char * restrict utf8, int len, int *outlen, const char * restrict name)
+{
+  UChar *utf16;
+  int32_t destlen, destwritten;
+  UErrorCode uerr = 0;
+
+  u_strFromUTF8(NULL, 0, &destwritten, utf8, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    return NULL;
+  }
+
+  destlen = destwritten + 1;
+  utf16 = mush_calloc(destlen, sizeof(UChar), name);
+
+  uerr = 0;
+  u_strFromUTF8(utf16, destlen, outlen, utf8, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    mush_free(utf16, name);
+    return NULL;
+  }
+  
+  return utf16;
+}
+
+/** Convert a UTF-8 encoded string to UTF-32
+ *
+ * \parm utf8 the UTF-8 string
+ * \param len the length of the string in bytes.
+ * \param outlen pointer to store the length of the UTF-32 string
+ * \param name memcheck tag for new string
+ * \return newly allocated UTF-32 string
+ */
+UChar32 *
+utf8_to_utf32(const char * restrict utf8, int len, int *outlen, const char * restrict name)
+{
+  int32_t destlen;
+  UChar32 *utf32;
+  UErrorCode uerr = 0;
+  UConverter *utf32_cnv = get_utf32_cnv();
+  
+  if (!utf32_cnv) {
+    return NULL;
+  }
+
+  destlen = ucnv_fromAlgorithmic(utf32_cnv, UCNV_UTF8, NULL, 0, utf8, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from utf8 to utf32 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += sizeof(UChar32);
+  utf32 = mush_calloc(destlen, 1, name);
+  uerr = 0;
+  ucnv_fromAlgorithmic(utf32_cnv, UCNV_UTF8, (char *)utf32, destlen, utf8, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from utf8 to latin1 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(utf32, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = (destlen / sizeof(UChar32)) - 1;
+  }
+  return utf32;
+}
+
+/** Convert a UTF-32 encoded string to UTF-8
+ *
+ * \parm utf32 the UTF-32 string
+ * \param len the length of the string.
+ * \param outlen pointer to store the length of the UTF-8 string
+ * \param name memcheck tag for new string
+ * \return newly allocated UTF-8 string
+ */
+char *
+utf32_to_utf8(const UChar32 *utf32, int len, int *outlen, const char * name)
+{
+  int32_t destlen;
+  char *utf8;
+  UErrorCode uerr = 0;
+  UConverter *utf32_cnv = get_utf32_cnv();
+  
+  if (!utf32_cnv) {
+    return NULL;
+  }
+
+  len *= sizeof(UChar32);
+  destlen = ucnv_toAlgorithmic(UCNV_UTF8, utf32_cnv, NULL, 0, (char *)utf32, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from utf32 to utf8 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += 1;
+  utf8 = mush_calloc(destlen, 1, name);
+  uerr = 0;
+  ucnv_toAlgorithmic(UCNV_UTF8, utf32_cnv, utf8, destlen, (char *)utf32, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from utf32 to utf8 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(utf8, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = destlen - 1; 
+  }
+  return utf8;
+}
+
+/** Convert a latin-1 encoded string to UTF-32
+ *
+ * \parm latin1 the latin-1 string
+ * \param len the length of the string in bytes.
+ * \param outlen pointer to store the length of the UTF-32 string
+ * \param name memcheck tag for new string
+ * \return newly allocated UTF-32 string
+ */
+UChar32 *
+latin1_to_utf32(const char * restrict latin1, int len, int *outlen, const char * restrict name)
+{
+  int32_t destlen;
+  UChar32 *utf32;
+  UErrorCode uerr = 0;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  destlen = ucnv_toAlgorithmic(UCNV_UTF32, latin1_cnv, NULL, 0, latin1, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf32 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += sizeof(UChar32);
+  utf32 = mush_calloc(destlen, 1, name);
+  uerr = 0;
+  ucnv_toAlgorithmic(UCNV_UTF32, latin1_cnv, (char *)utf32, destlen, latin1, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf32 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(utf32, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = (destlen / sizeof(UChar32)) - 1;
+  }
+  return utf32;
+}
+
+/** Convert a UTF-32 encoded string to latin-1
+ *
+ * \parm utf32 the UTF-32 string
+ * \param len the length of the string.
+ * \param outlen pointer to store the length of the latin-1 string
+ * \param name memcheck tag for new string
+ * \return newly allocated latin-1 string
+ */
+char *
+utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, const char * name)
+{
+  int32_t destlen;
+  char *latin1;
+  UErrorCode uerr = 0;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  len *= sizeof(UChar32);
+  destlen = ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF32, NULL, 0, (char *)utf32, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from utf32 to latin1 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += 1;
+  latin1 = mush_calloc(destlen, 1, name);
+  uerr = 0;
+  ucnv_fromAlgorithmic(latin1_cnv, UCNV_UTF32, latin1, destlen, (char *)utf32, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from utf32 to latin1 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(latin1, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = destlen - 1; 
+  }
+  return latin1;
+}
+
+/**
+ * Convert a latin-1 encoded string to utf-16.
+ *
+ * \param s the latin-1 string.
+ * \param len the length of the string.
+ * \param outlen set to the length of the returned string, NOT counting the trailing nul.
+ * \param name memcheck tag
+ * \return a newly allocated utf-16 string.
+ */
+UChar *
+latin1_to_utf16(const char * restrict latin1, int len, int *outlen, const char * restrict name)
+{
+  UErrorCode uerr = 0;
+  int32_t destlen;
+  UChar *utf16;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  destlen = ucnv_toUChars(latin1_cnv, NULL, 0, latin1, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf16 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += 1;
+  utf16 = mush_calloc(destlen, sizeof(UChar), name);
+  uerr = 0;
+  destlen = ucnv_toUChars(latin1_cnv, utf16, destlen, latin1, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf16 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(utf16, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = destlen;
+  }
+  
+  return utf16;
+}
+
+/**
+ * Convert a utf-16 encoded string to latin-1.
+ *
+ * \param s the utf-16 string.
+ * \param len the length of the string.
+ * \param outlen set to the length of the returned string, NOT counting the trailing nul.
+ * \param name memcheck tag
+ * \return a newly allocated latin-1 string.
+ */
+char *
+utf16_to_latin1(const UChar * restrict utf16, int len, int *outlen, const char * restrict name)
+{
+  UErrorCode uerr = 0;
+  int32_t destlen;
+  char *latin1;
+  UConverter *latin1_cnv = get_latin1_cnv();
+  
+  if (!latin1_cnv) {
+    return NULL;
+  }
+
+  destlen = ucnv_fromUChars(latin1_cnv, NULL, 0, utf16, len, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf16 failed (preflight): %s\n",
+	      u_errorName(uerr));
+    return NULL;
+  }
+
+  destlen += 1;
+  latin1 = mush_calloc(destlen, 1, name);
+  uerr = 0;
+  destlen = ucnv_fromUChars(latin1_cnv, latin1, destlen, utf16, len, &uerr);
+  if (U_FAILURE(uerr)) {
+    do_rawlog(LT_ERR, "Conversion from latin1 to utf16 failed: %s\n",
+	      u_errorName(uerr));
+    mush_free(latin1, name);
+    return NULL;
+  }
+  if (outlen) {
+    *outlen = destlen;
+  }
+
+  return latin1;
+}
+
+/** Return a smart lower-cased latin1 string.
+ * 
+ * \param s the string to lower case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+latin1_to_lower(const char * restrict s, int len, int *outlen, const char * restrict name)
+{
+  UChar *utf16 = NULL, *lower16 = NULL;
+  char *lower = NULL;
+  int ulen, llen;
+  UErrorCode uerr = 0;
+  
+  utf16 = latin1_to_utf16(s, len, &ulen, "temp.utf16");
+  
+  llen = u_strToLower(NULL, 0, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    mush_free(utf16, "temp.utf16");
+    return NULL;
+  }
+
+  llen += 1;
+  lower16 = mush_calloc(llen, sizeof(UChar), "temp.utf16");
+
+  uerr = 0;
+  llen = u_strToLower(lower16, llen, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr)) {
+    goto cleanup;
+  }
+
+  lower = utf16_to_latin1(lower16, llen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(lower16, "temp.utf16");
+  return lower;
+}
+
+/** Return a smart upper-cased latin1 string.
+ * 
+ * \param s the string to upper case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+latin1_to_upper(const char * restrict s, int len, int *outlen, const char * restrict name)
+{
+  UChar *utf16 = NULL, *upper16 = NULL;
+  char *upper = NULL;
+  int ulen, llen;
+  UErrorCode uerr = 0;
+  
+  utf16 = latin1_to_utf16(s, len, &ulen, "temp.utf16");
+  
+  llen = u_strToUpper(NULL, 0, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    mush_free(utf16, "temp.utf16");
+    return NULL;
+  }
+
+  llen += 1;
+  upper16 = mush_calloc(llen, sizeof(UChar), "temp.utf16");
+
+  uerr = 0;
+  llen = u_strToUpper(upper16, llen, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr)) {
+    goto cleanup;
+  }
+
+  upper = utf16_to_latin1(upper16, llen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(upper16, "temp.utf16");
+  return upper;
+}
+
+/** Return a smart lower-cased utf-8 string.
+ * 
+ * \param s the string to lower case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+utf8_to_lower(const char * restrict s, int len, int *outlen, const char * restrict name)
+{
+  UChar *utf16 = NULL, *lower16 = NULL;
+  char *lower8 = NULL;
+  int ulen, llen;
+  UErrorCode uerr = 0;
+  
+  utf16 = utf8_to_utf16(s, len, &ulen, "temp.utf16");
+  
+  llen = u_strToLower(NULL, 0, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    mush_free(utf16, "temp.utf16");
+    return NULL;
+  }
+
+  llen += 1;
+  lower16 = mush_calloc(llen, sizeof(UChar), "temp.utf16");
+
+  uerr = 0;
+  llen = u_strToLower(lower16, llen, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr)) {
+    goto cleanup;
+  }
+
+  lower8 = utf16_to_utf8(lower16, llen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(lower16, "temp.utf16");
+  return lower8;
+}
+
+/** Return a smart upper-cased utf-8 string.
+ * 
+ * \param s the string to upper case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+utf8_to_upper(const char * restrict s, int len, int *outlen, const char * restrict name)
+{
+  UChar *utf16 = NULL, *upper16 = NULL;
+  char *upper8 = NULL;
+  int ulen, llen;
+  UErrorCode uerr = 0;
+  
+  utf16 = utf8_to_utf16(s, len, &ulen, "temp.utf16");
+  
+  llen = u_strToUpper(NULL, 0, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    mush_free(utf16, "temp.utf16");
+    return NULL;
+  }
+
+  llen += 1;
+  upper16 = mush_calloc(llen, sizeof(UChar), "temp.utf16");
+
+  uerr = 0;
+  llen = u_strToUpper(upper16, llen, utf16, ulen, NULL, &uerr);
+  if (U_FAILURE(uerr)) {
+    goto cleanup;
+  }
+
+  upper8 = utf16_to_utf8(upper16, llen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(upper16, "temp.utf16");
+  return upper8;
+}
+
+#endif
+
+#ifdef HAVE_ICU
+
+static const UNormalizer2 *
+get_normalizer(enum normalization_type n, UErrorCode *uerr)
+{
+  switch (n) {
+  case NORM_NFC:
+    return unorm2_getNFCInstance(uerr);
+  case NORM_NFD:
+    return unorm2_getNFDInstance(uerr);
+  case NORM_NFKC:
+    return unorm2_getNFKCInstance(uerr);
+  case NORM_NFKD:
+    return unorm2_getNFKDInstance(uerr);
+  }
+}
+
+#endif
+
+/** Normalize a UTF-8 string.
+ * If ICU is not present, just returns a fresh copy of its string. 
+ * 
+ * \param utf8 the string to normalize
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen the length of the returned string.
+ * \param name memcheck tag
+ * \param type The normalization form.
+ * \return newly allocated string.
+ */
+char *
+normalize_utf8(const char * restrict utf8, int len, int *outlen,
+               const char * restrict name, enum normalization_type type)
+{
+#ifdef HAVE_ICU
+
+  UChar *utf16 = NULL, *norm16 = NULL;
+  char *norm8 = NULL;
+  int ulen, nlen;
+  const UNormalizer2 *mode;
+  UErrorCode uerr = 0;
+
+  mode = get_normalizer(type, &uerr);
+  if (U_FAILURE(uerr)) {
+    return NULL;
+  }
+     
+  utf16 = utf8_to_utf16(utf8, len, &ulen, "temp.utf16");
+  if (!utf16) {
+    return NULL;
+  }
+
+  /* Check to see if string is already in normalized form */
+  uerr = 0;
+  if (unorm2_quickCheck(mode, utf16, ulen, &uerr) == UNORM_YES
+      && U_SUCCESS(uerr)) {
+    norm8 = utf16_to_utf8(utf16, ulen, outlen, name);
+    mush_free(utf16, "temp.utf16");
+    return norm8;
+  }
+    
+  uerr = 0;
+  nlen = unorm2_normalize(mode, utf16, ulen, NULL, 0, &uerr);
+  if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    mush_free(utf16, "temp.utf16");
+    return NULL;
+  }
+
+  nlen += 1;
+  norm16 = mush_calloc(nlen, sizeof(UChar), "temp.utf16");
+  uerr = 0;
+  nlen = unorm2_normalize(mode, utf16, ulen, norm16, nlen, &uerr);
+
+  if (U_FAILURE(uerr)) {
+    goto cleanup;
+  }
+  
+  norm8 = utf16_to_utf8(norm16, nlen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(norm16, "temp.utf16");
+  return norm8;
+
+#else
+
+  if (outlen) {
+    *outlen = len == -1 ? strlen(utf8) : len;
+  }
+  return mush_strdup(utf8, name);
+
+#endif
 }

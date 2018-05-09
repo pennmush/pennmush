@@ -32,6 +32,7 @@
 #include "strutil.h"
 #include "mushsql.h"
 #include "charconv.h"
+#include "mymalloc.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* NJG: disable warning re conversion */
@@ -801,6 +802,34 @@ FUNCTION(fun_ucstr)
   safe_str(args[0], buff, bp);
   return;
 }
+
+#ifdef HAVE_ICU
+
+FUNCTION(fun_lcstr2)
+{
+  int llen;
+  char *low = latin1_to_lower(args[0], arglens[0], &llen, "string");
+  if (low) {
+    safe_strl(low, llen, buff, bp);
+    mush_free(low, "string");
+  } else {
+    safe_str("#-1 ENCODING ERROR", buff, bp);
+  }
+}
+
+FUNCTION(fun_ucstr2)
+{
+  int ulen;
+  char *up = latin1_to_upper(args[0], arglens[0], &ulen, "string");
+  if (up) {
+    safe_strl(up, ulen, buff, bp);
+    mush_free(up, "string");
+  } else {
+    safe_str("#-1 ENCODING ERROR", buff, bp);
+  }
+}
+
+#endif
 
 /* ARGSUSED */
 FUNCTION(fun_repeat)

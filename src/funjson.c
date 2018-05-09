@@ -614,8 +614,9 @@ FUNCTION(fun_json_query)
       if (status == SQLITE_ROW) {
         char *latin1;
         int len;
-        latin1 = utf8_to_latin1((const char *)sqlite3_column_text(patch, 0),
-                                &len, "string");
+        const char *p = (const char *)sqlite3_column_text(patch, 0);
+        int plen = sqlite3_column_bytes(patch, 0);
+        latin1 = utf8_to_latin1(p, plen, &len, "string");
         safe_strl(latin1, len, buff, bp);
         mush_free(latin1, "string");
       } else {

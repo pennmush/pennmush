@@ -118,9 +118,19 @@ static sqlite3_stmt *penn_sqlite3_sql_query(const char *, int *);
 static void penn_sqlite3_free_sql_query(sqlite3_stmt *);
 #endif
 static sqlplatform sql_platform(void);
-static char *sql_sanitize(char *res);
+static char *sql_sanitize(const char *res);
 #define SANITIZE(s, n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
-#define SANITIZEUTF8(s, n) ((s && *s) ? utf8_to_latin1(sql_sanitize(s), NULL, n) : NULL)
+
+static char *
+SANITIZEUTF8(const char * restrict s, const char * restrict n)
+{
+  if (s && *s) {
+    const char *san = sql_sanitize(s);
+    return utf8_to_latin1(san, strlen(san), NULL, n);    
+  } else {
+    return NULL;
+  }
+}
 
 /* A helper function to translate SQL_PLATFORM into one of our
  * supported platform codes. We remember this value, so a reboot
@@ -150,10 +160,11 @@ sql_platform(void)
 }
 
 static char *
-sql_sanitize(char *res)
+sql_sanitize(const char *res)
 {
   static char buff[BUFFER_LEN];
-  char *bp = buff, *rp = res;
+  char *bp = buff;
+  const char *rp = res;
 
   if (!res || !*res) {
     buff[0] = '\0';
@@ -677,9 +688,15 @@ COMMAND(cmd_sql)
           break;
 #endif
         case SQL_PLATFORM_SQLITE3:
-          cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
-          name = (char *) sqlite3_column_name(qres, i);
-	  free_cell = 1;
+          {
+            const char *c;
+            int clen;
+            c = (const char *)sqlite3_column_text(qres, i);
+            clen = sqlite3_column_bytes(qres, i);
+            cell = utf8_to_latin1(c, clen, NULL, "string");
+            name = (char *) sqlite3_column_name(qres, i);
+            free_cell = 1;
+          }
           break;
         default:
           /* Not reached, shuts up compiler */
@@ -816,8 +833,11 @@ FUNCTION(fun_mapsql)
       break;
 #endif
     case SQL_PLATFORM_SQLITE3:
+      {
+        const char *s = sql_sanitize((const char *)sqlite3_column_name(qres, i));
       fieldnames[i] =
-	utf8_to_latin1(sql_sanitize((char *) sqlite3_column_name(qres, i)), NULL, "sql_fieldname");
+	utf8_to_latin1(s, strlen(s), NULL, "sql_fieldname");
+      }
       break;
     default:
       break;
@@ -866,8 +886,12 @@ FUNCTION(fun_mapsql)
         break;
 #endif
       case SQL_PLATFORM_SQLITE3:
-        cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
-	free_cell = 1;
+        {
+          const char *c = (const char *)sqlite3_column_text(qres, i);
+          int clen = sqlite3_column_bytes(qres, i);          
+          cell = utf8_to_latin1(c, clen, NULL, "string");
+          free_cell = 1;
+        }
         break;
       default:
         break;
@@ -1018,8 +1042,12 @@ FUNCTION(fun_sql)
         break;
 #endif
       case SQL_PLATFORM_SQLITE3:
-        cell = utf8_to_latin1((char *) sqlite3_column_text(qres, i), NULL, "string");
-	free_cell = 1;
+        {
+          const char *c = (const char *)sqlite3_column_text(qres, i);
+          int clen = sqlite3_column_bytes(qres, i);
+          cell = utf8_to_latin1(c, clen, NULL, "string");
+          free_cell = 1;
+        }
         break;
       default:
         break;

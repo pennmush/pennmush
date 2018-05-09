@@ -2295,8 +2295,8 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    char *latin1;
-    int len;
+    char *normalized;
+    int nlen;
 
     if (!valid_utf8(command)) {
       const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
@@ -2305,10 +2305,15 @@ save_command(DESC *d, const char *command)
       do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
       return;
     }
-    latin1 = utf8_to_latin1(command, &len, "string");
-    if (latin1) {
-      add_to_queue(&d->input, latin1, len + 1);
-      mush_free(latin1, "string");
+    normalized = normalize_utf8(command, -1, &nlen, "string", NORM_NFKC);
+    if (normalized) {
+      int len;
+      char *latin1 = utf8_to_latin1(normalized, nlen, &len, "string");
+      mush_free(normalized, "string");
+      if (latin1) {
+        add_to_queue(&d->input, latin1, len + 1);
+        mush_free(latin1, "string");
+      }
     }
   } else {
     add_to_queue(&d->input, command, strlen(command) + 1);

@@ -517,6 +517,11 @@ FUNTAB flist[] = {
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCON", fun_dbwalker, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCSTR", fun_lcstr, 1, -1, FN_REG},
+#ifdef HAVE_ICU
+  {"LCSTR2", fun_lcstr2, 1, 1, FN_REG | FN_STRIPANSI },
+#else
+  {"LCSTR2", fun_lcstr, 1, 1, FN_REG | FN_STRIPANSI},
+#endif
   {"LDELETE", fun_ldelete, 2, 4, FN_REG},
   {"LEFT", fun_left, 2, 2, FN_REG},
   {"LEMIT", fun_lemit, 1, -1, FN_REG},
@@ -776,6 +781,11 @@ FUNTAB flist[] = {
   {"TRUNC", fun_trunc, 1, 1, FN_REG | FN_STRIPANSI},
   {"TYPE", fun_type, 1, 1, FN_REG | FN_STRIPANSI},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
+#ifdef HAVE_ICU
+  {"UCSTR2", fun_ucstr2, 1, 1, FN_REG | FN_STRIPANSI},
+#else
+  {"UCSTR2", fun_ucstr, 1, 1, FN_REG | FN_STRIPANSI},
+#endif
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},
   {"PFUN", fun_pfun, 1, (MAX_STACK_ARGS + 1), FN_REG},

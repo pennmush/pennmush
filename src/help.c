@@ -127,7 +127,8 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
       } else {
         topic = (char *)sqlite3_column_text(searcher, 0);
         snippet = (char *)sqlite3_column_text(searcher, 1);
-        snippet = utf8_to_latin1(snippet, &snippetlen, "help.search.results");
+        snippetlen = sqlite3_column_bytes(searcher, 1);
+        snippet = utf8_to_latin1(snippet, snippetlen, NULL, "help.search.results");
         notify_format(executor, "%s%s%s: %s", ANSI_HILITE, topic, ANSI_END, snippet);
         mush_free(snippet, "help.search.results");
       }
@@ -581,11 +582,15 @@ help_find_entry(help_file *help_dat, const char *the_topic)
   do {
     status = sqlite3_step(finder);
     if (status == SQLITE_ROW) {
+      const char *body;
+      int bodylen;
       struct help_entry *entry = mush_malloc(sizeof *entry, "help.entry");
       entry->name = mush_strdup((const char *)sqlite3_column_text(finder, 0),
                                 "help.entry.name");
-      entry->body = utf8_to_latin1((const char *)sqlite3_column_text(finder, 1),
-                                   &entry->bodylen, "help.entry.body");
+      body = (const char *)sqlite3_column_text(finder, 1);
+      bodylen = sqlite3_column_bytes(finder, 1);
+      entry->body = utf8_to_latin1(body, bodylen, &entry->bodylen,
+                                   "help.entry.body");
       sqlite3_reset(finder);
       return entry;
     }

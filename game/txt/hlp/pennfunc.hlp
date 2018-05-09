@@ -2094,9 +2094,13 @@ See also: lattr(), hasattr(), xattr(), wildcards
 
 See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 & LCSTR()
+& LCSTR2()
   lcstr(<string>)
+  lcstr2(<string>)
 
   Returns <string> with all letters converted to lowercase.
+
+  If the MUSH is compiled with ICU Unicode support, lcstr2() does the same thing except the returned string might be a different length, and ansi colors and other markup are stripped.
   
   Example:
     > say lcstr(Foo BAR bAz)
@@ -5331,13 +5335,19 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
 
 See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(), pfun(), attribute flags, @include
 & UCSTR()
+& UCSTR2()
   ucstr(<string>)
+  ucstr2(<string>)
 
   Returns <string> with all letters converted to uppercase.
+
+  If the MUSH is compiled with ICU Unicode support, ucstr2() does the same thing except the returned string might be a different length, and ansi colors and other markup are stripped.
   
   Example:
     > say ucstr(Foo BAR baz)
     You say, "FOO BAR BAZ"
+    > say ucstr2(grüßen)
+    You say, "GRÜSSEN
 
 See also: lcstr(), capstr()
 & UDEFAULT()

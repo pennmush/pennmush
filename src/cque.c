@@ -703,17 +703,19 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist,
                PE_REGS *pe_regs, ATTR *a, bool force_debug)
 {
   int flags = QUEUE_DEFAULT;
-
-  if (force_debug)
+  char abuff[2048];
+  
+  if (force_debug) {
     flags |= QUEUE_DEBUG;
-  else if (AF_NoDebug(a))
+  } else if (AF_NoDebug(a)) {
     flags |= QUEUE_NODEBUG;
-  else if (AF_Debug(a))
+  } else if (AF_Debug(a)) {
     flags |= QUEUE_DEBUG;
+  }
 
+  snprintf(abuff, sizeof abuff, "#%d/%s", executor, AL_NAME(a));
   new_queue_actionlist_int(executor, enactor, enactor, actionlist, NULL,
-                           PE_INFO_DEFAULT, flags, pe_regs,
-                           tprintf("#%d/%s", executor, AL_NAME(a)));
+                           PE_INFO_DEFAULT, flags, pe_regs, abuff);
 }
 
 int
@@ -726,7 +728,8 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
   int noparent = 0;
   PE_REGS *pe_regs = NULL;
   int i;
-
+  char abuff[2048];
+  
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
     return 0;
@@ -755,23 +758,25 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
         pe_regs_setenv(pe_regs, i, args[i]);
       }
     }
-  } else
+  } else {
     pe_regs->flags |= PE_REGS_ARGPASS;
+  }
 
-  if (AF_NoDebug(a))
+  if (AF_NoDebug(a)) {
     queue_type |= QUEUE_NODEBUG;
-  else if (AF_Debug(a))
+  } else if (AF_Debug(a)) {
     queue_type |= QUEUE_DEBUG;
-  else {
+  } else {
     /* Inherit debug style from parent queue */
     queue_type |= (parent_queue->queue_type & (QUEUE_DEBUG | QUEUE_NODEBUG));
   }
-  if (parent_queue->queue_type & QUEUE_EVENT)
+  if (parent_queue->queue_type & QUEUE_EVENT) {
     queue_type |= QUEUE_EVENT;
+  }
 
+  snprintf(abuff, sizeof abuff, "#%d/%s", thing, atrname);
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
-                           PE_INFO_SHARE, queue_type, pe_regs,
-                           tprintf("#%d/%s", thing, atrname));
+                           PE_INFO_SHARE, queue_type, pe_regs, abuff);
 
   /* pe_regs is freed later when the new queue is freed */
   mush_free(start, "atrval.queue-attr");
@@ -835,7 +840,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
 {
   char *start, *command;
   int queue_type = QUEUE_DEFAULT | flags;
-
+  char abuff[2048];
+  
   start = safe_atr_value(a, "atrval.queue-attr");
   command = start;
   /* Trim off $-command or ^-command prefix */
@@ -843,22 +849,24 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
     do {
       command = strchr(command + 1, ':');
     } while (command && command[-1] == '\\');
-    if (!command)
+    if (!command) {
       /* Oops, had '$' or '^', but no ':' */
       command = start;
-    else
+    } else {
       /* Skip the ':' */
       command++;
+    }
   }
 
-  if (AF_NoDebug(a))
+  if (AF_NoDebug(a)) {
     queue_type |= QUEUE_NODEBUG;
-  else if (AF_Debug(a))
+  } else if (AF_Debug(a)) {
     queue_type |= QUEUE_DEBUG;
+  }
 
+  snprintf(abuff, sizeof abuff, "#%d/%s", executor, AL_NAME(a));
   new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
-                           PE_INFO_DEFAULT, queue_type, pe_regs,
-                           tprintf("#%d/%s", executor, AL_NAME(a)));
+                           PE_INFO_DEFAULT, queue_type, pe_regs, abuff);
   mush_free(start, "atrval.queue-attr");
   return 1;
 }

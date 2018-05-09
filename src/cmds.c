@@ -1672,11 +1672,12 @@ COMMAND(cmd_buy)
   char *from = NULL;
   char *forwhat = NULL;
   int price = -1;
+  char ibuff[BUFFER_LEN];
 
-  upcasestr(arg_left);
+  strupper_r(arg_left, ibuff, sizeof ibuff);
 
-  from = strstr(arg_left, " FROM ");
-  forwhat = strstr(arg_left, " FOR ");
+  from = strstr(ibuff, " FROM ");
+  forwhat = strstr(ibuff, " FOR ");
   if (from) {
     *from = '\0';
     from += 6;
@@ -1696,9 +1697,10 @@ COMMAND(cmd_buy)
     }
   }
 
-  if (from)
+  if (from) {
     from = trim_space_sep(from, ' ');
-  do_buy(executor, arg_left, from, price, queue_entry->pe_info);
+  }
+  do_buy(executor, ibuff, from, price, queue_entry->pe_info);
 }
 
 COMMAND(cmd_give)

@@ -29,7 +29,7 @@
 #include "parse.h"
 #include "strutil.h"
 
-static void do_give_to(dbref player, char *arg, int silent,
+static void do_give_to(dbref player, const char *arg, int silent,
                        NEW_PE_INFO *pe_info);
 
 /** Set an object's money value, with limit-checking.
@@ -122,17 +122,19 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
   boughtit = -1;
   affordable = 1;
   do {
-    if (vendor == player)
+    if (vendor == player) {
       continue; /* Can't buy from yourself. Only occurs with no "from <vendor>"
                    arg */
+    }
     a = atr_get(vendor, "PRICELIST");
-    if (!a)
+    if (!a) {
       continue;
-    mush_strncpy(prices, atr_value(a), BUFFER_LEN);
-    upcasestr(prices);
-    count = list2arr(r, BUFFER_LEN / 2, prices, ' ', 0);
-    if (!count)
+    }
+    count = list2arr(r, BUFFER_LEN / 2,
+                     strupper_r(atr_value(a), prices, sizeof prices), ' ', 0);
+    if (!count) {
       continue;
+    }
     for (i = 0; i < count; i++) {
       if (!strncasecmp(finditem, r[i], len)) {
         /* Check cost */
@@ -228,10 +230,10 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
 
   if (failvendor != NOTHING) {
     /* Found someone selling, but they wouldn't take our money */
-    fail_lock(player, failvendor, Pay_Lock,
-              tprintf(T("%s doesn't want your money."),
-                      AName(failvendor, AN_SYS, NULL)),
-              NOTHING);
+    char msg[BUFFER_LEN];
+    snprintf(msg, sizeof msg, T("%s doesn't want your money."),
+             AName(failvendor, AN_SYS, NULL));
+    fail_lock(player, failvendor, Pay_Lock, msg, NOTHING);
   } else if (price >= 0) {
     /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
@@ -262,7 +264,7 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
  * \param pe_info the pe_info to use for lock checks
  */
 void
-do_give(dbref player, char *recipient, char *amnt, int silent,
+do_give(dbref player, const char *recipient, const char *amnt, int silent,
         NEW_PE_INFO *pe_info)
 {
   dbref who;
@@ -437,11 +439,11 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
         return;
       }
       if (!eval_lock_with(player, who, Pay_Lock, pe_info)) {
+        char msg[BUFFER_LEN];
         giveto(player, amount);
-        fail_lock(
-          player, who, Pay_Lock,
-          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
-          NOTHING);
+        snprintf(msg, sizeof msg, T("%s refuses your money."),
+                 AName(who, AN_SYS, NULL));
+        fail_lock(player, who, Pay_Lock, msg, NOTHING);
         pe_regs_free(pe_regs);
         return;
       }
@@ -462,11 +464,11 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
       /* give pennies to a player with no @cost, or "give" a negative amount to
        * a player */
       if (!Wizard(player) && !eval_lock_with(player, who, Pay_Lock, pe_info)) {
+        char msg[BUFFER_LEN];
         giveto(player, amount);
-        fail_lock(
-          player, who, Pay_Lock,
-          tprintf(T("%s refuses your money."), AName(who, AN_SYS, NULL)),
-          NOTHING);
+        snprintf(msg, sizeof msg, T("%s refuses your money."),
+                 AName(who, AN_SYS, NULL));
+        fail_lock(player, who, Pay_Lock, msg, NOTHING);
         return;
       }
       if (amount > 0) {
@@ -508,12 +510,13 @@ do_give(dbref player, char *recipient, char *amnt, int silent,
  * \param silent if 1, hush the usual messages.
  */
 static void
-do_give_to(dbref player, char *arg, int silent, NEW_PE_INFO *pe_info)
+do_give_to(dbref player, const char *arg, int silent, NEW_PE_INFO *pe_info)
 {
   char *s;
-
+  char buff[BUFFER_LEN];
+  
   /* Parse out the object and recipient */
-  upcasestr(arg);
+  arg = strupper_r(arg, buff, sizeof buff);
   s = (char *) string_match(arg, "TO ");
   if (!s) {
     notify(player, T("Did you want to give something *to* someone?"));

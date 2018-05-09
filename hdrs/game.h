@@ -117,13 +117,13 @@ extern void do_password(dbref executor, dbref enactor, const char *old,
 extern void do_switch(dbref executor, char *expression, char **argv,
                       dbref enactor, int first, int notifyme, int regexp,
                       int queue_type, MQUE *queue_entry);
-extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
-                    MQUE *queue_entry);
+void do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
+             MQUE *queue_entry);
 extern void do_grep(dbref player, char *obj, char *lookfor, int flag,
                     int insensitive);
 
 /* From rob.c */
-extern void do_give(dbref player, char *recipient, char *amnt, int silent,
+void do_give(dbref player, const char *recipient, const char *amnt, int silent,
                     NEW_PE_INFO *pe_info);
 extern void do_buy(dbref player, char *item, char *from, int price,
                    NEW_PE_INFO *pe_info);

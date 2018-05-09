@@ -103,9 +103,10 @@ charge_action(dbref thing)
     strcpy(tbuf2, atr_value(b));
     num = atoi(tbuf2);
     if (num > 0) {
+      char tmp[100];
       /* charges left, decrement and execute */
-      (void) atr_add(thing, "CHARGES", tprintf("%d", num - 1),
-                     Owner(b->creator), 0);
+      snprintf(tmp, sizeof tmp, "%d", num - 1);
+      (void) atr_add(thing, "CHARGES", tmp, Owner(b->creator), 0);
       return 1;
     } else {
       /* no charges left, try to execute runout */
@@ -548,11 +549,13 @@ get_current_quota(dbref who)
   int i;
   int limit;
   int owned = 0;
-
+  char tmp[100];
+  
   /* if he's got an RQUOTA attribute, his remaining quota is that */
   a = atr_get_noparent(Owner(who), "RQUOTA");
-  if (a)
+  if (a) {
     return parse_integer(atr_value(a));
+  }
 
   /* else, count up his objects. If he has less than the START_QUOTA,
    * then his remaining quota is that minus his number of current objects.
@@ -560,17 +563,21 @@ get_current_quota(dbref who)
    * if he doesn't have it.
    */
 
-  for (i = 0; i < db_top; i++)
-    if (Owner(i) == Owner(who))
+  for (i = 0; i < db_top; i++) {
+    if (Owner(i) == Owner(who)) {
       owned++;
+    }
+  }
   owned--; /* don't count the player himself */
 
-  if (owned <= START_QUOTA)
+  if (owned <= START_QUOTA) {
     limit = START_QUOTA - owned;
-  else
+  } else {
     limit = owned;
+  }
 
-  (void) atr_add(Owner(who), "RQUOTA", tprintf("%d", limit), GOD, 0);
+  snprintf(tmp, sizeof tmp, "%d", limit);
+  (void) atr_add(Owner(who), "RQUOTA", tmp, GOD, 0);
 
   return limit;
 }
@@ -582,8 +589,9 @@ get_current_quota(dbref who)
 void
 change_quota(dbref who, int payment)
 {
-  (void) atr_add(Owner(who), "RQUOTA",
-                 tprintf("%d", get_current_quota(who) + payment), GOD, 0);
+  char tmp[100];
+  snprintf(tmp, sizeof tmp, "%d", get_current_quota(who) + payment);
+  (void) atr_add(Owner(who), "RQUOTA", tmp, GOD, 0);
 }
 
 /** Debit a player's quota, if they can afford it.
@@ -1271,14 +1279,15 @@ nearby(dbref obj1, dbref obj2)
  * \param queue_entry The queue entry \@verb is running in
  */
 void
-do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
+do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
         MQUE *queue_entry)
 {
   dbref victim;
   dbref actor;
   int i;
   PE_REGS *pe_regs = NULL;
-
+  char tmp1[BUFFER_LEN], tmp2[BUFFER_LEN];
+  
   /* find the object that we want to read the attributes off
    * (the object that was the victim of the command)
    */
@@ -1328,14 +1337,17 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  real_did_it(actor, victim, upcasestr(argv[2]), argv[3], upcasestr(argv[4]),
+  real_did_it(actor, victim, strupper_r(argv[2], tmp1, sizeof tmp1),
+              argv[3], strupper_r(argv[4], tmp2, sizeof tmp2),
               argv[5], NULL, Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
 
   /* Now we copy our args into the stack, and do the command. */
 
-  if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs,
+  if (argv[6] && *argv[6]) {
+    queue_attribute_base(victim, strupper_r(argv[6], tmp1, sizeof tmp1),
+                         actor, 0, pe_regs,
                          (queue_entry->queue_type & QUEUE_EVENT));
+  }
 
   pe_regs_free(pe_regs);
 }
@@ -1411,9 +1423,11 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
       if (!(cs ? strncmp(s, gd->findstr, gd->findlen)
                : strncasecmp(s, gd->findstr, gd->findlen))) {
         ansi_string *repl;
+        char abuff[BUFFER_LEN];
         matched = 1;
-        repl = parse_ansi_string(
-          tprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, s, ANSI_END));
+        snprintf(abuff, sizeof abuff, "%s%.*s%s", ANSI_HILITE, gd->findlen,
+                 s, ANSI_END);
+        repl = parse_ansi_string(abuff);
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         free_ansi_string(repl);
         s += gd->findlen;

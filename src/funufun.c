@@ -251,7 +251,8 @@ FUNCTION(fun_pfun)
   dbref parent;
   ufun_attrib ufun;
   PE_REGS *pe_regs;
-
+  char tmp[BUFFER_LEN];
+  
   parent = Parent(executor);
 
   if (!GoodObject(parent))
@@ -260,7 +261,7 @@ FUNCTION(fun_pfun)
   /* This is a stripped down version of fetch_ufun_attrib that gets
      the atr value directly from the parent */
 
-  a = atr_get(parent, upcasestr(args[0]));
+  a = atr_get(parent, strupper_r(args[0], tmp, sizeof tmp));
   if (!a)
     return; /* no attr */
 

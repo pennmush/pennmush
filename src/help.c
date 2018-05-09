@@ -402,7 +402,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   }
 
   h = mush_malloc(sizeof *h, "help_file.entry");
-  h->command = mush_strdup(strupper(command_name), "help_file.command");
+  h->command = strupper_a(command_name, "help_file.command");
   h->file = mush_strdup(filename, "help_file.filename");
   h->admin = admin;
 

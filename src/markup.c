@@ -1486,8 +1486,9 @@ define_ansi_data(ansi_data *store, const char *str)
             0) { /* xterm color ids are stored directly. */
           snprintf(ptr, COLOR_NAME_LEN, "+%.8s", buff);
         } else if (len > 6) { /* Use hex code to save on buffer space */
-          snprintf(ptr, COLOR_NAME_LEN, "#%06x",
-                   color_to_hex(tprintf("+%s", buff), 0));
+          char cbuff[BUFFER_LEN + 1];
+          snprintf(cbuff, sizeof cbuff, "+%s", buff);
+          snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(cbuff, 0));
         } else /* len <= 6 */ {
           snprintf(ptr, COLOR_NAME_LEN, "+%.6s", buff);
         }
@@ -3185,4 +3186,30 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
   if (result)
     memset(save, '\0', *bp - save);
   return result;
+}
+
+char *
+open_tag(const char *x)
+{
+  static char buff[BUFFER_LEN + 3];
+  snprintf(buff, sizeof buff, "%c%c%s%c", TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
+}
+
+char *
+close_tag(const char *x)
+{
+  static char buff[BUFFER_LEN + 4];
+  snprintf(buff, sizeof buff, "%c%c/%s%c", TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
+}
+
+char *
+wrap_tag(const char *x, const char *y)
+{
+  static char buff[(BUFFER_LEN * 2) + 8];
+  snprintf(buff, sizeof buff, "%c%c%s%c%s%c%c/%s%c",
+           TAG_START, MARKUP_HTML, x, TAG_END, y,
+           TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
 }

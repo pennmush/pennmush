@@ -716,10 +716,9 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
   if (!GoodObject(oldobj))
     return;
 
-  strcpy(tbuf2, p);
-  p = tbuf2;
+  p = strupper_r(p, tbuf2, sizeof tbuf2);
   /* find the old attribute */
-  a = atr_get_noparent(oldobj, strupper(p));
+  a = atr_get_noparent(oldobj, p);
   if (!a) {
     notify(player, T("No such attribute to copy from."));
     return;
@@ -750,9 +749,13 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
           (do_set_atr(newobj, q, text, player, 1) == 1)) {
         copies++;
         /* copy the attribute flags too */
-        if (!noflagcopy)
+        if (!noflagcopy) {
+          char tmp[BUFFER_LEN];
           copy_attrib_flags(player, newobj,
-                            atr_get_noparent(newobj, strupper(q)), a->flags);
+                            atr_get_noparent(newobj,
+                                             strupper_r(q, tmp, sizeof tmp)),
+                            a->flags);
+        }
       }
     }
   }

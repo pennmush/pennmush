@@ -392,7 +392,8 @@ email_register_player(DESC *d, const char *name, const char *email,
   dbref player = NOTHING;
   FILE *fp;
   size_t NELEMS = sizeof(elems) - 1;
-
+  char sbuff[260];
+  
   if (!check_fails(ip)) {
     return NOTHING;
   }
@@ -477,7 +478,8 @@ email_register_player(DESC *d, const char *name, const char *email,
    */
 
   release_fd();
-  if ((fp = popen(tprintf("%s -t", options.sendmail_prog), "w")) == NULL) {
+  snprintf(sbuff, sizeof sbuff, "%s -t", options.sendmail_prog);
+  if ((fp = popen(sbuff, "w")) == NULL) {
     do_log(LT_CONN, 0, 0,
            "Failed registration of %s by %s: unable to open sendmail", name,
            email);

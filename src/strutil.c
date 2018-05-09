@@ -264,6 +264,35 @@ strinitial(const char *s)
   return buf1;
 }
 
+/** Return an initial-cased version of a string in a caller supplied buffer.
+ * \param s string to initial-case.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a static buffer containing the initial-cased version.
+ */
+char *
+strinitial_r(const char * restrict s, char * restrict d, size_t len)
+{
+  size_t p;
+
+  if (len == 1) {
+    d[0] = '\0';
+    return d;
+  }
+  
+  if (*s) {
+    d[0] = toupper(*s);
+    s += 1;
+  }
+  
+  for (p = 1; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = tolower(*s);
+  }
+  d[p] = '\0';
+
+  return d;
+}
+
 /** Return an uppercased version of a string in a static buffer.
  * \param s string to uppercase.
  * \return pointer to a static buffer containing the uppercased version.
@@ -302,6 +331,86 @@ strlower(const char *s)
   for (p = buf1; *p; p++)
     *p = DOWNCASE(*p);
   return buf1;
+}
+
+/** Return an uppercased version of a string in a newly allocated buffer.
+ * \param s string to uppercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+strupper_a(const char *s, const char *name)
+{
+  size_t len;
+  char *out, *o;
+
+  len = strlen(s);
+  o = out = mush_malloc(len + 1, name);
+  for (; *s; s++) {
+    *o++ = toupper(*s);
+  }
+  *o = '\0';
+
+  return out;
+}
+
+/** Return a lowercased version of a string in a newly allocated buffer.
+ * \param s string to lowercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the lowercased version.
+ */
+char *
+strlower_a(const char *s, const char *name)
+{
+  size_t len;
+  char *out, *o;
+
+  len = strlen(s);
+  o = out = mush_malloc(len + 1, name);
+  for (; *s; s++) {
+    *o++ = tolower(*s);
+  }
+  *o = '\0';
+
+  return out;
+}
+
+/** Return an uppercased version of a string in a caller-supplied buffer.
+ * \param s string to uppercase.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+strupper_r(const char * restrict s, char * restrict d, size_t len)
+{
+  size_t p;
+
+  for (p = 0; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = toupper(*s);
+  }
+  d[p] = '\0';
+
+  return d;
+}
+
+/** Return a lowercased version of a string in a newly allocated buffer.
+ * \param s string to lowercase.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a string containing the lowercased version.
+ */
+char *
+strlower_r(const char * restrict s, char * restrict d, size_t len)
+{
+  size_t p;
+
+  for (p = 0; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = tolower(*s);
+  }
+  d[p] = '\0';
+
+  return d;
 }
 
 /** Modify a string in-place to uppercase.

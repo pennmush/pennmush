@@ -55,14 +55,16 @@ FUNCTION(fun_valid)
   /* Checks to see if a given <something> is valid as a parameter of a
    * given type (such as an object name.)
    */
+  char tmp[BUFFER_LEN];
 
-  if (!args[0] || !*args[0])
+  if (!args[0] || !*args[0]) {
     safe_str("#-1", buff, bp);
-  else if (!strcasecmp(args[0], "name"))
+  } else if (!strcasecmp(args[0], "name")) {
     safe_boolean(ok_name(args[1], 0), buff, bp);
-  else if (!strcasecmp(args[0], "attrname"))
-    safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "playername")) {
+  } else if (!strcasecmp(args[0], "attrname")) {
+    safe_boolean(good_atr_name(strupper_r(args[1], tmp, sizeof tmp)),
+                 buff, bp);
+  } else if (!strcasecmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
       target = noisy_match_result(executor, args[2], TYPE_PLAYER,
@@ -73,19 +75,22 @@ FUNCTION(fun_valid)
       }
     }
     safe_boolean(ok_player_name(args[1], target, target), buff, bp);
-  } else if (!strcasecmp(args[0], "password"))
+  } else if (!strcasecmp(args[0], "password")) {
     safe_boolean(ok_password(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "command"))
-    safe_boolean(ok_command_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "function"))
-    safe_boolean(ok_function_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "flag"))
-    safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "qreg"))
+  } else if (!strcasecmp(args[0], "command")) {
+    safe_boolean(ok_command_name(strupper_r(args[1], tmp, sizeof tmp)),
+                 buff, bp);
+  } else if (!strcasecmp(args[0], "function")) {
+    safe_boolean(ok_function_name(strupper_r(args[1], tmp, sizeof tmp)),
+                 buff, bp);
+  } else if (!strcasecmp(args[0], "flag")) {
+    safe_boolean(good_flag_name(strupper_r(args[1], tmp, sizeof tmp)),
+                 buff, bp);
+  } else if (!strcasecmp(args[0], "qreg")){
     safe_boolean(ValidQregName(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "colorname"))
+  } else if (!strcasecmp(args[0], "colorname")) {
     safe_boolean(valid_color_name(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "ansicodes")) {
+  } else if (!strcasecmp(args[0], "ansicodes")) {
     ansi_data colors;
     safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
   } else if (!strcasecmp(args[0], "channel")) {
@@ -123,8 +128,9 @@ FUNCTION(fun_valid)
     }
     lt = check_lock_type(executor, target, args[1], 1);
     safe_boolean((lt != NULL), buff, bp);
-  } else
+  } else {
     safe_str("#-1", buff, bp);
+  }
 }
 
 /* ARGSUSED */

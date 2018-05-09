@@ -33,7 +33,7 @@ typedef struct atr_alias {
 /* Stuff that's actually in atr_tab.c */
 ATTR *aname_hash_lookup(const char *name);
 int alias_attribute(const char *atr, const char *alias);
-void do_attribute_limit(dbref player, char *name, int type, char *pattern);
+void do_attribute_limit(dbref player, const char *name, int type, const char *pattern);
 void do_attribute_access(dbref player, char *name, char *perms,
                          int retroactive);
 void do_attribute_delete(dbref player, char *name);

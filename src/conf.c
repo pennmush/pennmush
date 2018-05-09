@@ -420,7 +420,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
     return cnf;
   if ((cnf = new_config()) == NULL)
     return NULL;
-  cnf->name = mush_strdup(strupper(name), "config name");
+  cnf->name = strupper_a(name, "config name");
   cnf->handler = handler;
   cnf->loc = loc;
   cnf->max = max;
@@ -1584,7 +1584,8 @@ do_config_list(dbref player, const char *type, int lc)
       }
       if (!found) {
         /* Try a wildcard search of option names, including local options */
-        char *wild = tprintf("*%s*", type);
+        char wild[BUFFER_LEN + 2];
+        snprintf(wild, sizeof wild, "*%s*", type);
         for (cp = conftable; cp->name; cp++) {
           if (quick_wild(wild, cp->name) &&
               can_view_config_option(player, cp)) {

@@ -246,11 +246,9 @@ int ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
                                    char *buffer, char **bp);
 
 /* Pueblo stuff */
-#define open_tag(x) tprintf("%c%c%s%c", TAG_START, MARKUP_HTML, x, TAG_END)
-#define close_tag(x) tprintf("%c%c/%s%c", TAG_START, MARKUP_HTML, x, TAG_END)
-#define wrap_tag(x, y)                                                         \
-  tprintf("%c%c%s%c%s%c%c/%s%c", TAG_START, MARKUP_HTML, x, TAG_END, y,        \
-          TAG_START, MARKUP_HTML, x, TAG_END)
+char *open_tag(const char *x);
+char *close_tag(const char *x);
+char *wrap_tag(const char *x, const char *y);
 
 int safe_tag(char const *a_tag, char *buf, char **bp);
 int safe_tag_cancel(char const *a_tag, char *buf, char **bp);

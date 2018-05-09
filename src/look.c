@@ -171,12 +171,14 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
   for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
     if ((Light(loc) || Light(thing) || (!DarkLegal(thing) && !Dark(loc))) &&
         can_interact(thing, player, INTERACT_SEE, pe_info)) {
+      char tmp[50];
       strcpy(pbuff, AaName(thing, AN_LOOK, NULL));
-      if ((p = strchr(pbuff, ';')))
+      if ((p = strchr(pbuff, ';'))) {
         *p = '\0';
+      }
       p = nbuf;
-      safe_tag_wrap("A", tprintf("XCH_CMD=\"goto #%d\"", thing), pbuff, nbuf,
-                    &p, NOTHING);
+      snprintf(tmp, sizeof tmp, "XCH_CMD=\"goto #%d\"", thing);
+      safe_tag_wrap("A", tmp, pbuff, nbuf, &p, NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {
         if (SUPPORT_HTML && !texits) {
@@ -297,10 +299,12 @@ look_contents(dbref player, dbref loc, const char *contents_name,
       PEND;
       notify_nopenter_by(loc, player, pbuff);
       DOLIST (thing, Contents(loc)) {
+        char tmp[50];
         if (can_see(player, thing, can_see_loc)) {
           PUSE;
           tag("LI");
-          tag_wrap("A", tprintf("XCH_CMD=\"look #%d\"", thing),
+          snprintf(tmp, sizeof tmp, "XCH_CMD=\"look #%d\"", thing);
+          tag_wrap("A", tmp,
                    unparse_object_myopic(player, thing, AN_LOOK));
           tag_cancel("LI");
           PEND;
@@ -493,7 +497,10 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
       if (key & LOOK_AUTO) {
         a = atr_get(loc, "VRML_URL");
         if (a) {
-          tag(tprintf("IMG XCH_GRAPH=LOAD HREF=\"%s\"", atr_value(a)));
+          char tmp[BUFFER_LEN + 30];
+          snprintf(tmp, sizeof tmp, "IMG XCH_GRAPH=LOAD HREF=\"%s\"",
+                   atr_value(a));
+          tag(tmp);
         } else {
           tag("IMG XCH_GRAPH=HIDE");
         }

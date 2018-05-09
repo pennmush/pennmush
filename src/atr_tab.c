@@ -513,16 +513,20 @@ check_attr_value(dbref player, const char *name, const char *value)
   int len;
   static char buff[BUFFER_LEN];
   char vbuff[BUFFER_LEN];
+  char ucname[BUFFER_LEN];
 
-  if (!name || !*name)
+  if (!name || !*name) {
     return value;
-  if (!value)
+  }
+  if (!value) {
     return value;
+  }
 
-  upcasestr((char *) name);
+  name = strupper_r(name, ucname, sizeof ucname);
   ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
-  if (!ap)
+  if (!ap) {
     return value;
+  }
 
   attrval = atr_value(ap);
   if (!attrval) {
@@ -532,8 +536,9 @@ check_attr_value(dbref player, const char *name, const char *value)
   if (ap->flags & AF_RLIMIT) {
     re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS, &errptr,
                       &erroffset, tables);
-    if (!re)
+    if (!re) {
       return value;
+    }
 
     subpatterns =
       pcre_exec(re, default_match_limit(), value, strlen(value), 0, 0, NULL, 0);
@@ -560,9 +565,8 @@ check_attr_value(dbref player, const char *name, const char *value)
     /* We match the enum case-insensitively, BUT we use the case
      * that is defined in the enum, so we copy the attr value
      * to buff and use that. */
-    snprintf(buff, BUFFER_LEN, "%s", attrval);
-    upcasestr(buff);
-
+    strupper_r(attrval, buff, sizeof buff);
+    
     len = strlen(value);
     snprintf(vbuff, BUFFER_LEN, "%c%s%c", delim, value, delim);
     upcasestr(vbuff);
@@ -616,17 +620,18 @@ check_attr_value(dbref player, const char *name, const char *value)
  * \param pattern The allowed pattern for the attribute.
  */
 void
-do_attribute_limit(dbref player, char *name, int type, char *pattern)
+do_attribute_limit(dbref player, const char *name, int type, const char *pattern)
 {
   ATTR *ap;
   char buff[BUFFER_LEN];
-  char *ptr, *bp;
+  char *bp;
   char delim = ' ';
   pcre *re;
   const char *errptr;
   int erroffset;
   int unset = 0;
-
+  char ucname[BUFFER_LEN];
+  
   if (pattern && *pattern) {
     if (type == AF_RLIMIT) {
       /* Compile to regexp. */
@@ -640,19 +645,19 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
       pcre_free(re);
 
       /* Copy it to buff to be placed into ap->data. */
-      snprintf(buff, BUFFER_LEN, "%s", pattern);
+      mush_strncpy(buff, pattern, sizeof buff);
     } else if (type == AF_ENUM) {
-      ptr = name;
+      const char *ptr;
+      
       /* Check for a delimiter: @attr/enum | attrname=foo */
-      if ((name = strchr(ptr, ' ')) != NULL) {
-        *(name++) = '\0';
-        if (strlen(ptr) > 1) {
+      if ((ptr = strchr(name, ' ')) != NULL) {
+        if (ptr != (name + 1)) {
           notify(player, T("Delimiter must be one character."));
           return;
         }
-        delim = *ptr;
+        delim = *name;
+        name = ptr + 1;
       } else {
-        name = ptr;
         delim = ' ';
       }
 
@@ -684,7 +689,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
     notify(player, T("Which attribute do you mean?"));
     return;
   }
-  upcasestr(name);
+  name = strupper_r(name, ucname, sizeof ucname);
   if (*name == '@')
     name++;
 

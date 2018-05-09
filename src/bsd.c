@@ -1677,8 +1677,7 @@ fcache_read(FBLOCK *fb, const char *filename)
       *attrib++ = '\0';
       if ((thing = qparse_dbref(objname)) != NOTHING) {
         /* we have #dbref/attr */
-        fb->buff = mush_strdup(attrib, "fcache_data");
-        upcasestr(fb->buff);
+        fb->buff = strupper_a(attrib, "fcache_data");
         fb->len = strlen(fb->buff);
         fb->thing = thing;
         return fb->len;

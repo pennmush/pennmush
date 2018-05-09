@@ -2137,8 +2137,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   }
   if (!controls(player, thing))
     return 0;
-  strcpy(name, atr);
-  upcasestr(name);
+  strupper_r(atr, name, sizeof name);
   if (strcmp(name, "ALIAS") == 0) {
     if (IsPlayer(thing)) {
       old = atr_get_noparent(thing, "ALIAS");

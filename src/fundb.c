@@ -33,7 +33,7 @@
 #endif
 
 extern PRIV attr_privs_view[];
-static lock_type get_locktype(char *str);
+static lock_type get_locktype(const char *str);
 extern struct db_stat_info *get_stats(dbref owner);
 static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
@@ -217,7 +217,8 @@ FUNCTION(fun_hasattr)
   dbref thing;
   char *attrib;
   ATTR *a;
-
+  char tmp[BUFFER_LEN];
+  
   if (nargs == 1) {
     attrib = strchr(args[0], '/');
     if (!attrib) {
@@ -234,10 +235,11 @@ FUNCTION(fun_hasattr)
     safe_str(T(e_notvis), buff, bp);
     return;
   }
-  if (strchr(called_as, 'P'))
-    a = atr_get(thing, upcasestr(attrib));
-  else
-    a = atr_get_noparent(thing, upcasestr(attrib));
+  if (strchr(called_as, 'P')) {
+    a = atr_get(thing, strupper_r(attrib, tmp, sizeof tmp));
+  } else{
+    a = atr_get_noparent(thing, strupper_r(attrib, tmp, sizeof tmp));
+  }
   if (a && Can_Read_Attr(executor, thing, a)) {
     if (strchr(called_as, 'V')) {
       if (!*AL_STR(a))
@@ -337,13 +339,14 @@ FUNCTION(fun_eval)
   char *tbuf;
   char const *tp;
   ATTR *a;
-
+  char tmp[BUFFER_LEN];
+  
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
     safe_str(T(e_notvis), buff, bp);
     return;
   }
-  a = atr_get(thing, upcasestr(args[1]));
+  a = atr_get(thing, strupper_r(args[1], tmp, sizeof tmp));
   if (a && Can_Read_Attr(executor, thing, a)) {
     if (!CanEvalAttr(executor, thing, a)) {
       safe_str(T(e_perm), buff, bp);
@@ -370,7 +373,8 @@ FUNCTION(fun_get_eval)
   char *tbuf, *s;
   char const *tp;
   ATTR *a;
-
+  char tmp[BUFFER_LEN];
+  
   s = strchr(args[0], '/');
   if (!s) {
     safe_str(T("#-1 BAD ARGUMENT FORMAT TO GET_EVAL"), buff, bp);
@@ -382,7 +386,7 @@ FUNCTION(fun_get_eval)
     safe_str(T(e_notvis), buff, bp);
     return;
   }
-  a = atr_get(thing, upcasestr(s));
+  a = atr_get(thing, strupper_r(s, tmp, sizeof tmp));
   if (a && Can_Read_Attr(executor, thing, a)) {
     if (!CanEvalAttr(executor, thing, a)) {
       safe_str(T(e_perm), buff, bp);
@@ -523,8 +527,9 @@ FUNCTION(fun_flags)
     return;
   }
   if (p) {
+    char tmp[BUFFER_LEN];
     /* Attribute flags, you must be able to read the attribute */
-    a = atr_get_noparent(thing, upcasestr(p));
+    a = atr_get_noparent(thing, strupper_r(p, tmp, sizeof tmp));
     if (!a || !Can_Read_Attr(executor, thing, a)) {
       safe_str("#-1", buff, bp);
       return;
@@ -554,8 +559,9 @@ FUNCTION(fun_lflags)
     return;
   }
   if (p) {
+    char tmp[BUFFER_LEN];
     /* Attribute flags, you must be able to read the attribute */
-    a = atr_get_noparent(thing, upcasestr(p));
+    a = atr_get_noparent(thing, strupper_r(p, tmp, sizeof tmp));
     if (!a || !Can_Read_Attr(executor, thing, a)) {
       safe_str("#-1", buff, bp);
       return;
@@ -925,19 +931,22 @@ FUNCTION(fun_controls)
     return;
   }
   if (!(controls(executor, it) || controls(executor, thing) ||
-        See_All(executor)))
+        See_All(executor))) {
     safe_str(T(e_perm), buff, bp);
-  else if (attrname) {
-    if (!good_atr_name(upcasestr(attrname))) {
+  } else if (attrname) {
+    char tmp[BUFFER_LEN];
+    if (!good_atr_name(strupper_r(attrname, tmp, sizeof tmp))) {
       safe_str(T("#-1 BAD ATTR NAME"), buff, bp);
       return;
     }
-    if (controls(it, thing) && can_edit_attr(it, thing, attrname))
+    if (controls(it, thing) && can_edit_attr(it, thing, attrname)) {
       safe_chr('1', buff, bp);
-    else
+    } else {
       safe_chr('0', buff, bp);
-  } else
+    }
+  } else {
     safe_chr(controls(it, thing) ? '1' : '0', buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -968,7 +977,8 @@ FUNCTION(fun_visible)
     return;
   }
   if (name) {
-    a = atr_get(thing, upcasestr(name));
+    char tmp[BUFFER_LEN];
+    a = atr_get(thing, strupper_r(name, tmp, sizeof tmp));
     safe_chr((a && Can_Read_Attr(it, thing, a)) ? '1' : '0', buff, bp);
   } else {
     safe_boolean(Can_Examine(it, thing), buff, bp);
@@ -1152,15 +1162,18 @@ FUNCTION(fun_andlflags)
 }
 
 static lock_type
-get_locktype(char *str)
+get_locktype(const char *str)
 {
   /* figure out a lock type */
-
-  if (!str || !*str)
+  static char buff[BUFFER_LEN];
+  
+  if (!str || !*str) {
     return Basic_Lock;
-  if (!strncasecmp(str, "USER:", 5))
+  }
+  if (!strncasecmp(str, "USER:", 5)) {
     str += 5;
-  return upcasestr(str);
+  }
+  return strupper_r(str, buff, sizeof buff);
 }
 
 extern lock_list lock_types[];
@@ -1300,10 +1313,11 @@ FUNCTION(fun_lock)
   dbref it;
   char *ltype = NULL;
   lock_type real_ltype;
-
+  char tmp[BUFFER_LEN];
+  
   if ((ltype = strchr(args[0], '/'))) {
     *ltype++ = '\0';
-    upcasestr(ltype);
+    ltype = strupper_r(ltype, tmp, sizeof tmp);
   }
 
   if (nargs == 2) {
@@ -2427,7 +2441,7 @@ FUNCTION(fun_followers)
   char *s;
   char *res;
 
-  thing = match_controlled(executor, args[0]);
+   thing = match_controlled(executor, args[0]);
   if (!GoodObject(thing)) {
     safe_str(T("#-1 INVALID OBJECT"), buff, bp);
     return;

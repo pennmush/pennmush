@@ -1279,14 +1279,15 @@ nearby(dbref obj1, dbref obj2)
  * \param queue_entry The queue entry \@verb is running in
  */
 void
-do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
+do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
         MQUE *queue_entry)
 {
   dbref victim;
   dbref actor;
   int i;
   PE_REGS *pe_regs = NULL;
-
+  char tmp1[BUFFER_LEN], tmp2[BUFFER_LEN];
+  
   /* find the object that we want to read the attributes off
    * (the object that was the victim of the command)
    */
@@ -1336,14 +1337,17 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  real_did_it(actor, victim, upcasestr(argv[2]), argv[3], upcasestr(argv[4]),
+  real_did_it(actor, victim, strupper_r(argv[2], tmp1, sizeof tmp1),
+              argv[3], strupper_r(argv[4], tmp2, sizeof tmp2),
               argv[5], NULL, Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
 
   /* Now we copy our args into the stack, and do the command. */
 
-  if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs,
+  if (argv[6] && *argv[6]) {
+    queue_attribute_base(victim, strupper_r(argv[6], tmp1, sizeof tmp1),
+                         actor, 0, pe_regs,
                          (queue_entry->queue_type & QUEUE_EVENT));
+  }
 
   pe_regs_free(pe_regs);
 }

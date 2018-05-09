@@ -1235,29 +1235,33 @@ func_comp(const void *s1, const void *s2)
 
 /* Add a user-defined function from cnf file */
 int
-cnf_add_function(char *name, char *opts)
+cnf_add_function(const char *name, const char *opts)
 {
   FUN *fp;
   dbref thing;
   int minargs[2] = {0, 0};
   int maxargs[2] = {0, 0};
   char *attrname, *one, *list;
+  char ucnameb[BUFFER_LEN], *ucname;
+  char ucoptsb[BUFFER_LEN], *ucopts;
+  
+  ucname = strupper_r(name, ucnameb, sizeof ucnameb);
+  ucname = trim_space_sep(ucname, ' ');
 
-  name = trim_space_sep(name, ' ');
-  upcasestr(name);
-
-  if (!ok_function_name(name))
+  if (!ok_function_name(ucname)) {
     return 0;
+  }
 
   /* Validate arguments */
-  list = trim_space_sep(opts, ' ');
+  ucopts = strupper_r(opts, ucoptsb, sizeof ucoptsb);
+  list = trim_space_sep(ucopts, ' ');
   if (!list)
     return 0;
   one = split_token(&list, ' ');
   if ((attrname = strchr(one, '/')) == NULL)
     return 0;
   *attrname++ = '\0';
-  upcasestr(attrname);
+
   /* Account for #dbref/foo */
   if (*one == '#')
     one++;
@@ -1314,11 +1318,13 @@ cnf_add_function(char *name, char *opts)
   }
 
   fp->where.ufun->thing = thing;
-  fp->where.ufun->name = mush_strdup(upcasestr(attrname), "userfn.name");
-  if (minargs[1])
+  fp->where.ufun->name = mush_strdup(attrname, "userfn.name");
+  if (minargs[1]) {
     fp->minargs = minargs[0];
-  if (maxargs[1])
+  }
+  if (maxargs[1]) {
     fp->maxargs = maxargs[0];
+  }
 
   return 1;
 }
@@ -1336,14 +1342,16 @@ cnf_add_function(char *name, char *opts)
  *  of u().
  */
 void
-do_function(dbref player, char *name, char *argv[], int preserve)
+do_function(dbref player, const char *name, char ** argv,
+            int preserve)
 {
   char tbuf1[BUFFER_LEN];
   char *bp = tbuf1;
   dbref thing;
   FUN *fp;
   size_t userfn_count = htab_user_function.entries;
-
+  char ucnameb[BUFFER_LEN], *ucname;
+  
   /* if no arguments, just give the list of user functions, by walking
    * the function hash table, and looking up all functions marked
    * as user-defined.
@@ -1412,8 +1420,8 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     return;
   }
   /* make sure the function name length is okay */
-  upcasestr(name);
-  if (!ok_function_name(name)) {
+  ucname = strupper_r(name, ucnameb, sizeof ucnameb);
+  if (!ok_function_name(ucname)) {
     notify(player, T("Invalid function name."));
     return;
   }
@@ -1440,7 +1448,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
    * to replace a built-in function.
    */
 
-  fp = func_hash_lookup(name);
+  fp = func_hash_lookup(ucname);
   if (!fp) {
     if (argv[6] && *argv[6]) {
       notify(player, T("Expected between 1 and 5 arguments."));
@@ -1448,7 +1456,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     }
     /* a completely new entry. First, insert it into general hash table */
     fp = slab_malloc(function_slab, NULL);
-    fp->name = mush_strdup(name, "func_hash.name");
+    fp->name = mush_strdup(ucname, "func_hash.name");
     if (argv[3] && *argv[3]) {
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)
@@ -1472,12 +1480,12 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       fp->flags = 0;
     if (preserve)
       fp->flags |= FN_LOCALIZE;
-    hashadd(name, fp, &htab_user_function);
+    hashadd(ucname, fp, &htab_user_function);
 
     /* now add it to the user function table */
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
     fp->where.ufun->thing = thing;
-    fp->where.ufun->name = mush_strdup(upcasestr(argv[2]), "userfn.name");
+    fp->where.ufun->name = strupper_a(argv[2], "userfn.name");
 
     notify(player, T("Function added."));
     return;
@@ -1490,7 +1498,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     fp->where.ufun->thing = thing;
     if (fp->where.ufun->name)
       mush_free(fp->where.ufun->name, "userfn.name");
-    fp->where.ufun->name = mush_strdup(upcasestr(argv[2]), "userfn.name");
+    fp->where.ufun->name = strupper_a(argv[2], "userfn.name");
     if (argv[3] && *argv[3]) {
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)

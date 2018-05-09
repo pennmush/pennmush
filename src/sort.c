@@ -496,18 +496,18 @@ m_comp(const void *s1, const void *s2)
   res = strcoll(sr1->memo.str.s, sr2->memo.str.s);
   ret = Compare(res, sr1, sr2);
   if (ret == 0) {
-    char v1[BUFFER_LEN];
-    char v2[BUFFER_LEN];
-    if (has_markup(sr1->val))
-      strcpy(v1, remove_markup(sr1->val, NULL));
-    else
-      strcpy(v1, sr1->val);
-    if (has_markup(sr2->val))
-      strcpy(v2, remove_markup(sr2->val, NULL));
-    else
-      strcpy(v2, sr2->val);
-    upcasestr(v1);
-    upcasestr(v2);
+    char v1b[BUFFER_LEN], *v1;
+    char v2b[BUFFER_LEN], *v2;
+    if (has_markup(sr1->val)) {
+      v1 = strupper_r(remove_markup(sr1->val, NULL), v1b, sizeof v1b);
+    } else {
+      v1 = strupper_r(sr1->val, v1b, sizeof v1b);
+    }
+    if (has_markup(sr2->val)) {
+      v2 = strupper_r(remove_markup(sr2->val, NULL), v2b, sizeof v2b);
+    } else {
+      v2 = strupper_r(sr2->val, v2b, sizeof v2b);
+    }
     res = strcoll(v1, v2);
     ret = Compare(res, sr1, sr2);
   }

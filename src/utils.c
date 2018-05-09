@@ -105,8 +105,9 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   char astring[BUFFER_LEN];
   ATTR *attrib;
 
-  if (!ufun)
+  if (!ufun) {
     return 0;
+  }
 
   memset(ufun->contents, 0, sizeof ufun->contents);
   ufun->errmess = (char *) "";
@@ -117,8 +118,10 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-  if (!attrstring)
+  if (!attrstring) {
     return 0;
+  }
+  
   mush_strncpy(astring, attrstring, sizeof astring);
 
   /* Split obj/attr */

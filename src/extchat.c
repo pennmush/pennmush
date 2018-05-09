@@ -4172,9 +4172,9 @@ parse_chat_alias(dbref player, char *command)
   while (*message && isspace((unsigned char) *message))
     message++;
 
-  strcpy(channame, alias);
-  upcasestr(channame);
-  snprintf(abuff, sizeof abuff, "CHANALIAS`%s", channame);
+  
+  snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
+           strupper_r(alias, channame, sizeof channame));
   a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */

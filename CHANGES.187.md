@@ -31,6 +31,7 @@ Major Changes
     * Suggests alternatives for unknown function names, flags, powers and help entries.
     * @entrances and entrances() no longer scan the entire database.
     * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP HELP SEARCH` for details.
+    * A number of new softcode functions and expanded functions, listed below.
 
 Minor Changes
 -------------
@@ -54,6 +55,7 @@ Softcode
 * New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
 * `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
+* `timecalc()` and `secscalc()` for adding/subtracting intervals from times.
 
 Fixes
 -----

@@ -26,6 +26,7 @@ Major Changes:
 * Suggests alternatives for unknown function names, flags, powers and help entries.
 * @entrances and entrances() no longer scan the entire database.
 * Help files are stored in a database, with an expanded help/search that supports full text search. See [1mHELP HELP SEARCH[0m for details.
+* A number of new softcode functions and expanded functions, listed below.
 
 Minor Changes:
 
@@ -46,6 +47,8 @@ Softcode:
 * [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
 * New 'me' and 'inventory' flags for [1mscan()[0m give finer control of what to scan. [MG]
 * [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
+* [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
+* [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
 
 Fixes:
 

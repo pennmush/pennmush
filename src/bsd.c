@@ -1256,6 +1256,8 @@ shovechars(Port_t port, Port_t sslport)
     } else {
       /* if !found then time for robot commands */
 
+      time(&mudtime);
+
       if (!found) {
         do_top(options.queue_chunk);
         continue;

@@ -31,6 +31,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1062,6 +1065,15 @@ penn_mysql_sql_init(void)
   int sql_port = 3306;
   time_t curtime;
 
+#ifdef HAVE_GETSERVBYNAME
+  /* Get port from /etc/services if present just in case it's been
+     changed from the usual default. */
+  struct servent *s = getservbyname("mysql", "tcp");
+  if (s) {
+    sql_port = s->s_port;
+  }
+#endif
+  
   /* Only retry at most once per minute. */
   curtime = time(NULL);
   if (curtime < (last_retry + 60))
@@ -1232,6 +1244,18 @@ penn_pg_sql_init(void)
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, sizeof sql_host);
   strcpy(sql_port, "5432");
+
+#ifdef HAVE_GETSERVBYNAME
+  {
+    /* Get port from /etc/services if present just in case it's been
+       changed from the usual default. */
+    struct servent *s = getservbyname("postgresql", "tcp");
+    if (s) {
+      snprintf(sql_port, sizeof sql_port, "%d", s->s_port);
+    }
+  }
+#endif
+
   if ((p = strchr(sql_host, ':'))) {
     *p++ = '\0';
     if (*p) {

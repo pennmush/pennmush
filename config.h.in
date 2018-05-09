@@ -182,6 +182,8 @@ typedef bool _Bool;
 
 #undef HAVE_GETRUSAGE
 
+#undef HAVE_GETSERVBYNAME
+
 #undef HAVE_GETTEXT
 
 #undef HAVE_SETITIMER

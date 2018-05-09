@@ -37,7 +37,7 @@
 #define HELPDB_APP_ID 0x42010FF1
 #define HELPDB_VERSION 1
 
-#define LINE_SIZE 90
+#define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
 
 struct help_entry {

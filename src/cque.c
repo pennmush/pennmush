@@ -53,6 +53,7 @@
 #include "ptab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "mushsql.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;
@@ -179,28 +180,47 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
-  int *countp;
-
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
+  
   if (QUEUE_PER_OWNER) {
     player = Owner(player);
   }
-  
-  countp = get_objdata(player, "QUEUE");
-  if (!countp) {
-    intptr_t amt = am;
-    set_objdata(player, "QUEUE", (void *)amt);
-    return am;
-  } else {
-    intptr_t count = (intptr_t)countp;
-    count += am;
-    if (count == 0) {
-      delete_objdata(player, "QUEUE");
-      return 0;
-    } else {
-      set_objdata(player, "QUEUE", (void *)count);
-      return count;
-    }
+
+  sqldb = get_shared_db();
+  adder = prepare_statement(sqldb,
+                            "INSERT OR REPLACE INTO queue(dbref, qcount) VALUES (?, ifnull((SELECT qcount FROM queue WHERE dbref = ?), 0) + ?)",
+                            "queue.add");
+  sqlite3_bind_int(adder, 1, player);
+  sqlite3_bind_int(adder, 2, player);
+  sqlite3_bind_int(adder, 3, am);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+  sqlite3_reset(adder);
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s", player,
+              sqlite3_errstr(status));
+    return -1;
   }
+
+  adder = prepare_statement(sqldb,
+                            "SELECT qcount FROM queue WHERE dbref = ?",
+                            "queue.find");
+  sqlite3_bind_int(adder, 1, player);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    am = sqlite3_column_int(adder, 0);
+  } else {
+    do_rawlog(LT_ERR, "Unable to retrieve queue for #%d: %s",
+              player, sqlite3_errstr(status));
+    am = -1;
+  }
+  sqlite3_reset(adder);
+  return am;
 }
 
 /** Wrapper for add_to_generic() to incrememnt an attribute when a

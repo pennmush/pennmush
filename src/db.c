@@ -2321,7 +2321,8 @@ static void
 init_objdata()
 {
   const char *create_query =
-    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key))";
+    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key));"
+    "CREATE TABLE queue(dbref INTEGER NOT NULL PRIMARY KEY, qcount INTEGER)";
   char *errmsg = NULL;
   sqlite3 *sqldb = get_shared_db();
   
@@ -2474,6 +2475,24 @@ clear_objdata(dbref thing)
   
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s",
+              thing, sqlite3_errstr(status));
+  }
+  sqlite3_reset(eraser);
+
+  eraser = prepare_statement(sqldb,
+                             "DELETE FROM queue WHERE dbref = ?",
+                             "queue.clear");
+  if (!eraser) {
+    return;
+  }
+  
+  sqlite3_bind_int(eraser, 1, thing);
+  do {
+    status = sqlite3_step(eraser);
+  } while (is_busy_status(status));
+  
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute queue clear query for #%d: %s",
               thing, sqlite3_errstr(status));
   }
   sqlite3_reset(eraser);

@@ -218,9 +218,10 @@ See also: TIMEZONES
   lnum()        lset()        null()        numversion()  objeval()
   open()        pcreate()     r()           rand()        s()
   scan()        set()         setq()        setr()        slev()
-  soundex()     soundslike()  speak()       stext()       tag()
-  tagwrap()     tel()         testlock()    textentries() textfile()
-  unsetq()      valid()       wipe()        @@()          uptime()
+  soundex()     soundslike()  speak()       stext()       suggest()
+  tag()         tagwrap()     tel()         testlock()    textentries()
+  textfile()    unsetq()      valid()       wipe()        @@()
+  uptime()
 
 & @@()
 & NULL()
@@ -5845,3 +5846,11 @@ See also: @chzone, zfun(), zwho(), zemit() ZONES
     warnings  - The time of the next automatic warnings check, or -1 if automated warnings are disabled.
                  
 See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), restarts(), @dbck, @purge, @warnings, @config, @dump, @shutdown
+& SUGGEST()
+  SUGGEST(<category>, <word>[, <seperator>])
+
+  Returns a list of suggested alternatives to <word> from vocabulary words known in the given <category>. <seperator> defaults to space.
+
+ This is the same mechanism used to suggest help entries, function names, etc. when an unknown one is encountered.
+
+See also: @suggest

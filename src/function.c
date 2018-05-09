@@ -90,7 +90,7 @@ add_vocab(const char *name, const char *category)
 
   sqldb = get_shared_db();
 
-  inserter = prepare_statement(sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (?)", "suggest.addcat");
+  inserter = prepare_statement(sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))", "suggest.addcat");
   if (inserter) {
     int status;
     sqlite3_bind_text(inserter, 1, category, strlen(category),
@@ -103,7 +103,7 @@ add_vocab(const char *name, const char *category)
     return;
   }
 
-  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT LOWER(?), id FROM suggest_keys where cat = ?",
+  inserter = prepare_statement(sqldb, "INSERT INTO suggest(word, langid) SELECT lower(?), id FROM suggest_keys where cat = upper(?)",
                                "suggest.insert");
   if (inserter) {
     int status;
@@ -133,7 +133,7 @@ delete_vocab(const char *name, const char *category)
   sqldb = get_shared_db();
 
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM suggest WHERE word = LOWER(?) AND langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
+                              "DELETE FROM suggest WHERE word = lower(?) AND langid = (SELECT id FROM suggest_keys WHERE cat = upper(?))",
                               "suggest.delete");
   if (deleter) {
     int status;
@@ -162,7 +162,7 @@ delete_vocab_cat(const char *category)
   sqldb = get_shared_db();
 
   deleter = prepare_statement(sqldb,
-                              "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
+                              "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat = upper(?))",
                               "suggest.delete_all");
   if (deleter) {
     int status;
@@ -197,7 +197,7 @@ suggest_name(const char *badname, const char *category)
   sqldb = get_shared_db();
 
   finder = prepare_statement(sqldb,
-                             "SELECT UPPER(word) FROM suggest WHERE word MATCH ? AND top = 1 AND langid = (SELECT id FROM suggest_keys WHERE cat = ?)",
+                             "SELECT upper(word) FROM suggest WHERE word MATCH ? AND top = 1 AND langid = (SELECT id FROM suggest_keys WHERE cat = upper(?))",
                              "suggest.find1");
   if (!finder) {
     return NULL;
@@ -217,6 +217,48 @@ suggest_name(const char *badname, const char *category)
   sqlite3_reset(finder);
 
   return suggestion;
+}
+
+FUNCTION(fun_suggest) {
+  const char *sep = " ";
+  sqlite3 *sqldb;
+  sqlite3_stmt *words;
+  char *cat8, *word8;
+  int catlen, wordlen;
+  int status;
+  bool first = 1;
+  
+  cat8 = latin1_to_utf8(args[0], arglens[0], &catlen, "string");
+  word8 = latin1_to_utf8(args[1], arglens[1], &wordlen, "string");
+  if (nargs == 3) {
+    sep = args[2];
+  }
+
+  sqldb = get_shared_db();
+  words = prepare_statement(sqldb,
+                            "SELECT upper(word) FROM suggest WHERE word MATCH ? AND langid = (SELECT id FROM suggest_keys WHERE cat = upper(?))",
+                            "suggest.find.all");
+  
+  sqlite3_bind_text(words, 1, word8, wordlen, free_string);
+  sqlite3_bind_text(words, 2, cat8, catlen, free_string);
+
+  do {
+    status = sqlite3_step(words);
+    if (status == SQLITE_ROW) {
+      const char *word = (const char *)sqlite3_column_text(words, 0);
+      wordlen = sqlite3_column_bytes(words, 0);
+      int word1len;
+      char *word1 = utf8_to_latin1(word, wordlen, &word1len, "string");
+      if (first) {
+        first = 0;
+      } else {
+        safe_str(sep, buff, bp);
+      }
+      safe_strl(word1, word1len, buff, bp);
+      mush_free(word1, "string");
+    }
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(words);
 }
 
 /* -------------------------------------------------------------------------*
@@ -760,6 +802,7 @@ FUNTAB flist[] = {
   {"STRREPLACE", fun_str_rep_or_ins, 4, 4, FN_REG},
   {"SUB", fun_sub, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"SUBJ", fun_subj, 1, 1, FN_REG | FN_STRIPANSI},
+  {"SUGGEST", fun_suggest, 2, 3, FN_REG | FN_STRIPANSI },
   {"SWITCH", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SWITCHALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SLEV", fun_slev, 0, 0, FN_REG},

@@ -23,7 +23,7 @@ Major Changes:
 * 3 different tables for looking up color names are combined into a single table.
 * Per-object auxilliary data keys (objdata) are handled in sql.
 * Player names and aliases are handled in sql, making some operations on them simpler.
-* Suggests alternatives for unknown function names, flags, powers and help entries.
+* Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
 * @entrances and entrances() no longer scan the entire database.
 * Help files are stored in a database, with an expanded help/search that supports full text search. See [1mHELP HELP SEARCH[0m for details.
 * A number of new softcode functions and expanded functions, listed below.
@@ -49,6 +49,7 @@ Softcode:
 * [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
 * [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
 * [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
+* [1m@suggest[0m and [1msuggest()[0m for user-defined word suggestion dictionaries.
 
 Fixes:
 

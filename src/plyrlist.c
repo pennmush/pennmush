@@ -33,7 +33,7 @@ init_hft(void)
     sqlite3 *sqldb = get_shared_db();
  
     if (sqlite3_exec(sqldb,
-                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL);"
+                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL) WITHOUT ROWID;"
                      "CREATE INDEX plyr_dbref_idx ON players(dbref)", NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create players table: %s", errmsg);
       sqlite3_free(errmsg);

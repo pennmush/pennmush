@@ -92,7 +92,7 @@ build_rgb_map(void)
   }
 
   if (sqlite3_exec(sqldb,
-                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL);"
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL) WITHOUT ROWID;"
                    "CREATE INDEX rgb_idx ON colors(rgb);"
                    "CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
                    NULL, NULL, &errmsg) != SQLITE_OK) {
@@ -234,7 +234,7 @@ FUNCTION(fun_colors)
     if (args[0] && *args[0]) {
       /* List colors matching a wildcard. */
       lister = prepare_statement(sqldb,
-                                 "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name COLLATE TRAILNUMBERS ASC",
+                                 "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name",
 				 "colors.list.names_pattern");
       if (lister) {
 	int len, ulen;
@@ -247,7 +247,7 @@ FUNCTION(fun_colors)
     } else {
       /* List all colors but xtermXX ones */
       lister = prepare_statement(sqldb,
-                                 "SELECT name FROM named_colors ORDER BY name COLLATE TRAILNUMBERS ASC",
+                                 "SELECT name FROM named_colors ORDER BY name",
 				 "colors.list.names_all");
     }
     if (!lister) {
@@ -393,7 +393,7 @@ FUNCTION(fun_colors)
 	}
 
 	finder = prepare_statement(sqldb,
-                                   "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name COLLATE TRAILNUMBERS ASC",
+                                   "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name",
                                    "colors.list.rgb");
 	if (!finder) {
 	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
@@ -1001,8 +1001,7 @@ int
 ansi_map_256(const char *name, bool hilite, bool all)
 {
   uint32_t hex, diff, cdiff;
-  int best = 0;
-  int i = 0;
+  int best = -1;
   int num = 0;
   sqlite3 *sqldb;
   sqlite3_stmt *finder;
@@ -1025,7 +1024,6 @@ ansi_map_256(const char *name, bool hilite, bool all)
 
   diff = 0x0FFFFFFF;
   /* Now find the closest 256 color match. */
-  best = 0;
 
   sqldb = get_shared_db();
   if (!sqldb) {
@@ -1039,7 +1037,6 @@ ansi_map_256(const char *name, bool hilite, bool all)
     return -1;
   }
 
-  best = -1;
   do {
     status = sqlite3_step(finder);
     if (status == SQLITE_ROW) {
@@ -1057,7 +1054,7 @@ ansi_map_256(const char *name, bool hilite, bool all)
 
       cdiff = hex_difference(rgb, hex);
       if (cdiff < diff) {
-	best = i;
+	best = num;
 	diff = cdiff;
       }
     }

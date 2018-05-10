@@ -63,8 +63,7 @@ init_vocab(void)
   sqldb = get_shared_db();
   if (sqlite3_exec(sqldb,
                    "CREATE VIRTUAL TABLE suggest USING spellfix1;"
-                   "CREATE TABLE suggest_keys(id INTEGER NOT NULL PRIMARY KEY, cat TEXT NOT NULL UNIQUE);"
-                   "CREATE INDEX sk_idx ON suggest_keys(cat)",
+                   "CREATE TABLE suggest_keys(id INTEGER NOT NULL PRIMARY KEY, cat TEXT NOT NULL UNIQUE);",
                    NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create spellfix1 table: %s", errmsg);
     sqlite3_free(errmsg);

@@ -1666,7 +1666,7 @@ db_read(PENNFILE *f)
 
   sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
   adder = prepare_statement(sqldb,
-                            "INSERT INTO objects VALUES (?)",
+                            "INSERT INTO objects(dbref) VALUES (?)",
                             "objects.add");
 
   while ((c = penn_fgetc(f)) != EOF) {
@@ -2057,6 +2057,8 @@ close_shared_db(void)
 
 int sqlite3_spellfix_init(sqlite3 *db, char **pzErrMsg,
                           const sqlite3_api_routines *pApi);
+int sqlite3_remember_init(sqlite3 *db, char **pzErrMsg,
+                          const sqlite3_api_routines *pApi);
 
 /** Open a new connection to a sqlite3 database.
  * If given a NULL file, returns a NEW in-memory database.
@@ -2097,6 +2099,7 @@ open_sql_db(const char *name, bool nocreate)
   }
 
   sqlite3_spellfix_init(db, NULL, NULL);
+  sqlite3_remember_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);
 
   sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
@@ -2193,8 +2196,8 @@ close_sql_db(sqlite3 *db)
     }
     
     if (find_all_stmts) {
+      sqlite3_bind_int64(find_all_stmts, 1, (intptr_t) db);
       do {
-        sqlite3_bind_int64(find_all_stmts, 1, (intptr_t) db);
         status = sqlite3_step(find_all_stmts);
         if (status == SQLITE_ROW) {
           sqlite3_stmt *stmt =
@@ -2354,10 +2357,8 @@ static void
 init_objdata()
 {
   const char *create_query =
-    "CREATE TABLE objects(dbref INTEGER NOT NULL PRIMARY KEY);"
-    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key), FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE);"
-    "CREATE TABLE queue(dbref INTEGER NOT NULL PRIMARY KEY, qcount INTEGER, FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE);"
-    "CREATE TRIGGER queue_zero AFTER INSERT ON queue WHEN new.qcount = 0 BEGIN DELETE FROM queue WHERE dbref=new.dbref; END";
+    "CREATE TABLE objects(dbref INTEGER NOT NULL PRIMARY KEY, queue INTEGER NOT NULL DEFAULT 0);"
+    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key), FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE);";
   char *errmsg = NULL;
   sqlite3 *sqldb = get_shared_db();
   
@@ -2483,56 +2484,6 @@ delete_objdata(dbref thing, const char *keybase)
   sqlite3_reset(deleter);
 }
 
-/** Clear all of an object's data from the object data table.
- * This function clears any data associated with a given object
- * that's in the object data table (under any keybase).
- * It's used before we free the object.
- * \param thing dbref of object data is associated with.
- */
-void
-clear_objdata(dbref thing)
-{
-  sqlite3_stmt *eraser;
-  int status;
-  sqlite3 *sqldb = get_shared_db();
-
-  eraser = prepare_statement(sqldb,
-                             "DELETE FROM objdata WHERE dbref = ?",
-                             "objdata.clear");
-  if (!eraser) {
-    return;
-  }
-  
-  sqlite3_bind_int(eraser, 1, thing);
-  do {
-    status = sqlite3_step(eraser);
-  } while (is_busy_status(status));
-  
-  if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute objdata clear query for #%d: %s",
-              thing, sqlite3_errstr(status));
-  }
-  sqlite3_reset(eraser);
-
-  eraser = prepare_statement(sqldb,
-                             "DELETE FROM queue WHERE dbref = ?",
-                             "queue.clear");
-  if (!eraser) {
-    return;
-  }
-  
-  sqlite3_bind_int(eraser, 1, thing);
-  do {
-    status = sqlite3_step(eraser);
-  } while (is_busy_status(status));
-  
-  if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute queue clear query for #%d: %s",
-              thing, sqlite3_errstr(status));
-  }
-  sqlite3_reset(eraser);
-}
-
 static void
 add_object_table(dbref obj)
 {
@@ -2542,7 +2493,7 @@ add_object_table(dbref obj)
 
   sqldb = get_shared_db();
   adder = prepare_statement(sqldb,
-                            "INSERT INTO objects VALUES (?)",
+                            "INSERT INTO objects(dbref) VALUES (?)",
                             "objects.add");
   sqlite3_bind_int(adder, 1, obj);
   do {

@@ -183,6 +183,7 @@ add_to(dbref player, int am)
   sqlite3 *sqldb;
   sqlite3_stmt *adder;
   int status;
+  sqlite3_int64 newam;
   
   if (QUEUE_PER_OWNER) {
     player = Owner(player);
@@ -190,40 +191,22 @@ add_to(dbref player, int am)
 
   sqldb = get_shared_db();
   adder = prepare_statement(sqldb,
-                            "INSERT OR REPLACE INTO queue(dbref, qcount) VALUES (?, ifnull((SELECT qcount FROM queue WHERE dbref = ?), 0) + ?)",
+                            "UPDATE objects SET queue = remember(queue + ?, ?) WHERE dbref = ?",
                             "queue.add");
-  sqlite3_bind_int(adder, 1, player);
-  sqlite3_bind_int(adder, 2, player);
-  sqlite3_bind_int(adder, 3, am);
+  sqlite3_bind_int(adder, 1, am);
+  sqlite3_bind_pointer(adder, 2, &newam, "carray", NULL);
+  sqlite3_bind_int(adder, 3, player);
+
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
-  sqlite3_reset(adder);
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s", player,
-              sqlite3_errstr(status));
-    return -1;
-  }
-
-  adder = prepare_statement(sqldb,
-                            "SELECT qcount FROM queue WHERE dbref = ?",
-                            "queue.find");
-  sqlite3_bind_int(adder, 1, player);
-  do {
-    status = sqlite3_step(adder);
-  } while (is_busy_status(status));
-  if (status == SQLITE_ROW) {
-    am = sqlite3_column_int(adder, 0);
-  } else if (status == SQLITE_DONE) {
-    am = 0;
-  } else {
-    do_rawlog(LT_ERR, "Unable to retrieve queue for #%d: %s",
+    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s",
               player, sqlite3_errstr(status));
-    am = -1;
+    newam = -1;
   }
-
   sqlite3_reset(adder);
-  return am;
+  return newam;
 }
 
 /** Wrapper for add_to_generic() to incrememnt an attribute when a

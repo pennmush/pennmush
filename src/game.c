@@ -666,20 +666,24 @@ do_restart(void)
   ATTR *s;
   char buf[BUFFER_LEN];
   char *bp;
-
+  sqlite3 *sqldb = get_shared_db();
+  
   /* Do stuff that needs to be done for players only: add stuff to the
    * alias table, and refund money from queued commands at shutdown.
    */
+
+  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
   for (thing = 0; thing < db_top; thing++) {
     if (IsPlayer(thing)) {
       if ((s = atr_get_noparent(thing, "ALIAS")) != NULL) {
         bp = buf;
         safe_str(atr_value(s), buf, &bp);
         *bp = '\0';
-        add_player_alias(thing, buf, 0);
+        add_player_alias(thing, buf, 1);
       }
     }
   }
+  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
 
   /* Once we load all that, then we can trigger the startups and
    * begin queueing commands. Also, let's make sure that we get

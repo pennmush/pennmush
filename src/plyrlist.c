@@ -33,7 +33,7 @@ init_hft(void)
     sqlite3 *sqldb = get_shared_db();
  
     if (sqlite3_exec(sqldb,
-                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL) WITHOUT ROWID;"
+                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL, FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE) WITHOUT ROWID;"
                      "CREATE INDEX plyr_dbref_idx ON players(dbref)", NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create players table: %s", errmsg);
       sqlite3_free(errmsg);
@@ -73,7 +73,7 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
   init_hft();
   
   adder = prepare_statement(sqldb,
-                            "INSERT INTO players(name, dbref) VALUES(UPPER(?), ?)",
+                            "INSERT INTO players(name, dbref) VALUES(upper(?), ?)",
                             "plyrlist.add");
   if (!adder) {
     return;
@@ -193,7 +193,7 @@ lookup_player_name(const char *name)
   }
 
   looker = prepare_statement(sqldb,
-                             "SELECT dbref FROM players WHERE name = UPPER(?)",
+                             "SELECT dbref FROM players WHERE name = upper(?)",
                              "plyrlist.lookup");
   if (!looker) {
     return NOTHING;

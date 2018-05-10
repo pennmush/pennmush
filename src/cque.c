@@ -214,11 +214,14 @@ add_to(dbref player, int am)
   } while (is_busy_status(status));
   if (status == SQLITE_ROW) {
     am = sqlite3_column_int(adder, 0);
+  } else if (status == SQLITE_DONE) {
+    am = 0;
   } else {
     do_rawlog(LT_ERR, "Unable to retrieve queue for #%d: %s",
               player, sqlite3_errstr(status));
     am = -1;
   }
+
   sqlite3_reset(adder);
   return am;
 }

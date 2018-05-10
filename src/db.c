@@ -99,6 +99,7 @@ static void init_objdata();
 static void db_write_flags(PENNFILE *f);
 static void db_write_attrs(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
+static void add_object_table(dbref);
 
 StrTree object_names; /**< String tree of object names */
 extern StrTree atr_names;
@@ -237,8 +238,12 @@ new_object(void)
   o->attrcount = 0;
   /* Flags are set by the functions that call this */
   o->powers = new_flag_bitmask("POWER");
-  if (current_state.garbage)
+  if (current_state.garbage) {
     current_state.garbage--;
+  }
+
+  add_object_table(newobj);
+
   return newobj;
 }
 
@@ -1387,6 +1392,8 @@ db_read_oldstyle(PENNFILE *f)
   int temp = 0;
   time_t temp_time = 0;
 
+  init_objdata();
+
   for (i = 0;; i++) {
     /* Loop invariant: we always begin at the beginning of a line. */
     errobj = i;
@@ -1395,7 +1402,6 @@ db_read_oldstyle(PENNFILE *f)
     /* make sure database is at least this big *1.5 */
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata();
       break;
     /* Use the MUSH 2.0 header stuff to see what's in this db */
     case '+':
@@ -1449,6 +1455,8 @@ db_read_oldstyle(PENNFILE *f)
         o->flags =
           flags_from_old_flags("FLAG", old_flags, old_toggles, o->type);
       }
+
+      add_object_table(i);
 
       /* We need to have flags in order to do this right, which is why
        * we waited until now
@@ -1603,6 +1611,9 @@ db_read_oldstyle(PENNFILE *f)
 dbref
 db_read(PENNFILE *f)
 {
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
   int c;
   dbref i = 0;
   char *tmp;
@@ -1614,6 +1625,8 @@ db_read(PENNFILE *f)
 
   loading_db = 1;
 
+  sqldb = get_shared_db();
+  init_objdata();
   clear_players();
   db_free();
   globals.indb_flags = 1;
@@ -1651,6 +1664,11 @@ db_read(PENNFILE *f)
 
   do_rawlog(LT_ERR, "Loading database saved on %s UTC", db_timestamp);
 
+  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
+  adder = prepare_statement(sqldb,
+                            "INSERT INTO objects VALUES (?)",
+                            "objects.add");
+
   while ((c = penn_fgetc(f)) != EOF) {
     switch (c) {
     case '+':
@@ -1675,12 +1693,12 @@ db_read(PENNFILE *f)
         }
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return -1;
       }
       break;
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata();
       break;
     case '!':
       /* Read an object */
@@ -1835,9 +1853,20 @@ db_read(PENNFILE *f)
           default:
             do_rawlog(LT_ERR, "Unrecognized field '%s' in object #%d", label,
                       i);
+            sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
             return -1;
           }
         }
+        sqlite3_bind_int(adder, 1, i);
+        do {
+          status = sqlite3_step(adder);
+        } while (is_busy_status(status));
+        if (status != SQLITE_DONE) {
+          do_rawlog(LT_ERR, "Unable to add #%d to objects table: %s",
+                    i, sqlite3_errstr(status));
+        }
+        sqlite3_reset(adder);
+
         if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
           char buff[BUFFER_LEN]; /* The name plus a NUL */
           mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
@@ -1878,6 +1907,7 @@ db_read(PENNFILE *f)
       penn_fgets(buff, sizeof buff, f);
       if (strcmp(buff, EOD) != 0) {
         do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return -1;
       } else {
         if (globals.new_indb_version < 4) {
@@ -1886,6 +1916,7 @@ db_read(PENNFILE *f)
           set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
         }
         do_rawlog(LT_ERR, "READING: done");
+        sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
         loading_db = 0;
         fix_free_list();
         dbck();
@@ -1895,9 +1926,11 @@ db_read(PENNFILE *f)
     }
     default:
       do_rawlog(LT_ERR, "ERROR: failed object %d", i);
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       return -1;
     }
   }
+  sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   return -1;
 }
 
@@ -2071,7 +2104,7 @@ open_sql_db(const char *name, bool nocreate)
   return db;
 }
 
-/* Returns the application_id and user_version fields from a sqlite3 database.
+/** Returns the application_id and user_version fields from a sqlite3 database.
  *
  * \param db the database connection
  * \param app_id filled with the application_id value.
@@ -2321,8 +2354,10 @@ static void
 init_objdata()
 {
   const char *create_query =
-    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key));"
-    "CREATE TABLE queue(dbref INTEGER NOT NULL PRIMARY KEY, qcount INTEGER)";
+    "CREATE TABLE objects(dbref INTEGER NOT NULL PRIMARY KEY);"
+    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr INTEGER, PRIMARY KEY (dbref, key), FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE);"
+    "CREATE TABLE queue(dbref INTEGER NOT NULL PRIMARY KEY, qcount INTEGER, FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE);"
+    "CREATE TRIGGER queue_zero AFTER INSERT ON queue WHEN new.qcount = 0 BEGIN DELETE FROM queue WHERE dbref=new.dbref; END";
   char *errmsg = NULL;
   sqlite3 *sqldb = get_shared_db();
   
@@ -2498,6 +2533,28 @@ clear_objdata(dbref thing)
   sqlite3_reset(eraser);
 }
 
+static void
+add_object_table(dbref obj)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
+
+  sqldb = get_shared_db();
+  adder = prepare_statement(sqldb,
+                            "INSERT INTO objects VALUES (?)",
+                            "objects.add");
+  sqlite3_bind_int(adder, 1, obj);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to add #%d to objects table: %s",
+              obj, sqlite3_errstr(status));
+  }
+  sqlite3_reset(adder);
+}
+
 /** Create a basic 3-object (Start Room, God, Master Room) database. */
 void
 create_minimal_db(void)
@@ -2505,11 +2562,11 @@ create_minimal_db(void)
   dbref start_room, god, master_room;
   uint32_t desc_flags = AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH | AF_PUBLIC;
 
+  init_objdata();
+
   start_room = new_object();  /* #0 */
   god = new_object();         /* #1 */
   master_room = new_object(); /* #2 */
-
-  init_objdata();
 
   if (!READ_REMOTE_DESC)
     desc_flags |= AF_NEARBY;

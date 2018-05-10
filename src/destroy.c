@@ -71,6 +71,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "parse.h"
+#include "mushsql.h"
 
 dbref first_free = NOTHING; /**< Object at top of free list */
 
@@ -624,8 +625,6 @@ free_object(dbref thing)
            thing);
     return;
   }
-
-  delete_all_linked_to(thing);
   
   /* We queue the object-destroy event. Since the event will deal with an
    * object that doesn't exist anymore, we pass it what information we can,
@@ -758,7 +757,25 @@ free_object(dbref thing)
   Home(thing) = NOTHING;
   CreTime(thing) = 0; /* Prevents it from matching objids */
 
-  clear_objdata(thing);
+  {
+    sqlite3 *sqldb;
+    sqlite3_stmt *deleter;
+    int status;
+
+    sqldb = get_shared_db();
+    deleter = prepare_statement(sqldb,
+                                "DELETE FROM objects WHERE dbref = ?",
+                                "objects.delete");
+    sqlite3_bind_int(deleter, 1, thing);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR, "Unable to delete #%d from objects table: %s",
+                thing, sqlite3_errstr(status));
+    }
+    sqlite3_reset(deleter);
+  }
 
   Next(thing) = first_free;
   first_free = thing;
@@ -856,9 +873,6 @@ clear_player(dbref thing)
   chan_chownall(thing, probate);
 
   do_log(LT_WIZ, thing, NOTHING, "Player destroyed.");
-
-  /* Clear out names from the player list */
-  delete_player(thing);
   
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);

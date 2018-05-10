@@ -1502,8 +1502,9 @@ build_linked_table(void)
   int n;
 
   if (sqlite3_exec(sqldb,
-                   "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT NULL PRIMARY KEY, from_type INTEGER NOT NULL);"
-                   "CREATE INDEX linked_to_idx ON linked(to_obj)",
+                   "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT NULL PRIMARY KEY, from_type INTEGER NOT NULL, FOREIGN KEY(to_obj) REFERENCES objects(dbref) ON DELETE CASCADE, FOREIGN KEY(from_obj) REFERENCES objects(dbref) ON DELETE CASCADE);"
+                   "CREATE INDEX linked_to_idx ON linked(to_obj);"
+                   "BEGIN TRANSACTION",
                    NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create entrances table: %s", errmsg);
     sqlite3_free(errmsg);
@@ -1553,29 +1554,7 @@ build_linked_table(void)
                 to, n, sqlite3_errstr(status));
     }
   }
-}
-
-/** Remove all references to an object from the linked table; both
-    what it links to and what links to it. */
-void
-delete_all_linked_to(dbref obj)
-{
-  sqlite3 *sqldb;
-  sqlite3_stmt *deleter;
-
-  sqldb = get_shared_db();
-  deleter = prepare_statement(sqldb,
-                              "DELETE FROM linked WHERE to_obj = ? OR from_obj = ?",
-                              "linked.delete_all");
-  if (deleter) {
-    int status;
-    sqlite3_bind_int(deleter, 1, obj);
-    sqlite3_bind_int(deleter, 2, obj);
-    do {
-      status = sqlite3_step(deleter);
-    } while (is_busy_status(status));
-    sqlite3_reset(deleter);
-  }
+  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
 }
 
 /** Remove the reference of what a given object links to from the

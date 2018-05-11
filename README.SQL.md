@@ -99,6 +99,11 @@ PennMUSH comes with Sqlite3 3.23.1 as part of its source. It is the
 suggested SQL engine for use with softcode unless you need the
 capabilities of one of the others.
 
+Sqlite3 is compiled with support for the RTree, FTS5 and JSON1
+modules, and optionally has Unicode support if ICU is present (Though
+text in the results of a query is turned into Latin-1 by the MUSH,
+this still affects functions like UPPER()).
+
 MUSH configuration overview
 ===========================
 

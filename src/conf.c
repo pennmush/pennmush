@@ -335,6 +335,8 @@ PENNCONF conftable[] = {
   {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
    0, NULL},
   {"help_db", cf_str, options.help_db, sizeof options.help_db, 0, NULL},
+  {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0, "log"},
+  {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1341,6 +1343,8 @@ conf_default_set(void)
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
   strcpy(options.help_db, "data/help.sqldb");
+  options.use_connlog = 1;
+  strcpy(options.connlog_db, "log/connlog.sqldb");
 }
 
 #undef set_string_option

@@ -88,12 +88,13 @@ See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open on a game, or about specific connections.
 
-  cmds()        conn()        doing()       height()      host()
-  hidden()      idle()        ipaddr()      lports()      lwho()
-  lwhoid()      mwho()        mwhoid()      nmwho()       nwho()
-  player()      ports()       pueblo()      recv()        sent()
-  ssl()         terminfo()    width()       xmwho()       xmwhoid()
-  xwho()        xwhoid()      zmwho()       zwho()
+  cmds()        conn()        connlog()     connrecord()  doing()
+  height()      host()        hidden()      idle()        ipaddr()
+  lports()      lwho()        lwhoid()      mwho()        mwhoid()
+  nmwho()       nwho()        player()      ports()       pueblo()
+  recv()        sent()        ssl()         terminfo()    width()
+  xmwho()       xmwhoid()     xwho()        xwhoid()      zmwho()
+  zwho()
 & Dbref functions
   Dbref functions return a dbref or list of dbrefs related to some value on an object.
 
@@ -5854,3 +5855,38 @@ See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), resta
  This is the same mechanism used to suggest help entries, function names, etc. when an unknown one is encountered.
 
 See also: @suggest
+& CONNLOG()
+  CONNLOG(all|[not] logged in|<name>, <spec>...[, <sep>])
+
+  If connection tracking is enabled, returns a list of connections that match the given <spec>. The format of the list elements is '<dbref> <unique-id>', with elements seperated by <sep> (Defaulting to |). <unique-id> is an identifier that can be used to get more information from the connection with connrecord().
+
+  If the first argument is 'all', all connections are returned. If it's 'logged in', all connections that logged in are returned. 'not logged in' shows connections that never logged in. Otherwise, only connections for the given player are returned. If a connection that never logged in is returned, the dbref is #-1 for that record.
+
+  <spec> is one of the following:
+
+  * between, <startsecs>, <endsecs> - connections that were present during the given range.
+  * at, <secs> - connections that existed at the given time.
+  * before, <secs> - connections that existed before the given time.
+  * after, <secs> - connections that existed after the given time.
+
+ Times are the number of seconds since the epoch, like what secs() returns.
+
+ This function is Wizard only.
+
+ Example:
+ > think connlog(logged in, after, secscalc(now, -15 minute))
+ shows all connections that were present during the last 15 minutes
+
+See also: connrecord()
+& CONNRECORD()
+ CONNRECORD(<id>[, <sep>])
+
+  This Wizard-only function returns information about a connection if enhanced logging is enabled.
+
+  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON. If the optional <sep> argument is given, it is used instead of space to seperate fields.
+
+ If a single connection had multiple logins and logouts, only the last one is used. If a connection was never logged in, the DBREF field is #-1 and the NAME field is -. If the connection is still active, the DISCONNECTION-TIME is -1 and DISCONNECTION-REASON is -.
+
+  Times are in seconds since the epoch, like what secs() returns.
+
+See also: connlog()

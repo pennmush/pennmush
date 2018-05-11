@@ -2663,9 +2663,12 @@ do_list_memstats(dbref player)
                 (long)(sqlmem / (1024 * 1024)),
                 (long)((sqlmem % (1024 * 1024)) / 1024));
   if (Wizard(player)) {
-    extern sqlite3 *help_db;
+    extern sqlite3 *help_db, *connlog_db;
     list_sqlite3_stats(player, "temporary", get_shared_db());
     list_sqlite3_stats(player, "help", help_db);
+    if (options.use_connlog) {
+      list_sqlite3_stats(player, "connlog", connlog_db);
+    }
   }
 
 #ifdef COMP_STATS

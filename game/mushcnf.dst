@@ -571,6 +571,12 @@ error_log  log/netmush.log
 # Filename to log connections to
 connect_log log/connect.log
 
+# Also log connections in a sqlite3 database. See CONNLOG.md for details.
+use_connlog yes
+
+# The database file to use for the connlog.
+connlog_db log/connlog.sqldb
+
 # Filename to log wizard commands to
 wizard_log log/wizard.log
 

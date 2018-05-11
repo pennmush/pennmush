@@ -356,6 +356,8 @@ struct options_table {
   char log_size_policy[256];       /**< What to do when a log file is big. */
   char sendmail_prog[256];         /**< Program used to send email. */
   char help_db[FILE_PATH_LEN];     /**< Sqlite3 file to use for help db. */
+  int use_connlog;                 /**< Enable connlog record keeping. */
+  char connlog_db[FILE_PATH_LEN];  /**< Sqlite3 file to use for connection logs. */
 };
 
 typedef struct mssp MSSP;

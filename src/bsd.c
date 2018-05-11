@@ -102,6 +102,7 @@
 #include "version.h"
 #include "charconv.h"
 #include "mushsql.h"
+#include "connlog.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -657,6 +658,11 @@ main(int argc, char **argv)
   }
 #endif
 
+  if (!init_conndb(restarting)) {
+    do_rawlog(LT_ERR, "ERROR: Couldn't initialize connlog! Exiting.");
+    exit(2);
+  }
+
   if (init_game_dbs() < 0) {
     do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
     exit(2);
@@ -702,6 +708,7 @@ main(int argc, char **argv)
 #endif
 
   close_sockets();
+
   sql_shutdown();
 
 #ifdef INFO_SLAVE
@@ -1963,6 +1970,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     d->ssl = NULL;
   }
 
+  connlog_disconnection(d->connlog_id, reason);
+
   {
     freeqs(d);
     if (d->ttype && d->ttype != default_ttype)
@@ -2028,6 +2037,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
+  d->connlog_id = connlog_connection(ip, addr);
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -3450,6 +3460,8 @@ dump_messages(DESC *d, dbref player, int isnew)
   d->connected_at = mudtime;
   d->player = player;
 
+  connlog_login(d->connlog_id, player);
+
   login_number++;
   if (MAX_LOGINS) {
     /* check for exceeding max player limit */
@@ -3837,6 +3849,7 @@ close_sockets(void)
     }
     closesocket(d->descriptor);
   }
+  shutdown_conndb(0);
 }
 
 /** Give everyone the boot.
@@ -6469,7 +6482,7 @@ dump_reboot_db(void)
   PENNFILE *f;
   DESC *d;
   uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM |
-                   RDBF_SOCKET_SRC | RDBF_NO_DOING;
+                   RDBF_SOCKET_SRC | RDBF_NO_DOING | RDBF_CONNLOG_ID;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -6538,7 +6551,10 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
+#ifndef WITHOUT_WEBSOCKETS
       putref_u64(f, d->ws_frame_len);
+#endif
+      putref_u64(f, d->connlog_id);
     } /* for loop */
 
     putref(f, 0);
@@ -6663,6 +6679,12 @@ load_reboot_db(void)
         d->ws_frame_len = 0;
       }
 #endif
+
+      if (flags & RDBF_CONNLOG_ID) {
+        d->connlog_id = getref_u64(f);
+      } else {
+        d->connlog_id = -1;
+      }
 
       d->input_chars = 0;
       d->output_chars = 0;
@@ -6830,6 +6852,7 @@ do_reboot(dbref player, int flag)
   kill_info_slave();
 #endif
   local_shutdown();
+  shutdown_conndb(1);
   end_all_logs();
 #ifndef WIN32
   {

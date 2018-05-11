@@ -449,6 +449,8 @@ FUNTAB flist[] = {
   {"CONDALL", fun_if, 2, INT_MAX, FN_NOPARSE},
   {"CONFIG", fun_config, 1, 1, FN_REG | FN_STRIPANSI},
   {"CONN", fun_conn, 1, 1, FN_REG | FN_STRIPANSI},
+  {"CONNLOG", fun_connlog, 3, INT_MAX, FN_REG | FN_WIZARD},
+  {"CONNRECORD", fun_connrecord, 1, 2, FN_REG | FN_WIZARD},
   {"CONTROLS", fun_controls, 2, 2, FN_REG | FN_STRIPANSI},
   {"CONVSECS", fun_convsecs, 1, 2, FN_REG | FN_STRIPANSI},
   {"CONVUTCSECS", fun_convsecs, 1, 1, FN_REG | FN_STRIPANSI},

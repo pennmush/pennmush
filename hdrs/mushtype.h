@@ -321,6 +321,7 @@ struct descriptor_data {
   /* TODO: Need to add this state to reboot.db. */
   uint64_t ws_frame_len;
 #endif /* undef WITHOUT_WEBSOCKETS */
+  int64_t connlog_id; /**< ID for this connection's connlog entry */
 };
 
 enum json_type {

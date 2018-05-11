@@ -1289,6 +1289,71 @@ sanitize_utf8(const char * restrict orig, int len, int *outlen,
   return (char *)san8;
 }
 
+/** Normalize a UTF-8 string and convert to latin-1.
+ *
+ * \param utf8 the string to normalize
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen the length of the returned string.
+ * \param name memcheck tag
+ * \param type The normalization form.
+ * \return newly allocated string in latin-1.
+ */
+char *
+normalize_utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
+                         const char * restrict name,
+                         enum normalization_type type)
+{
+  UChar *utf16 = NULL, *norm16 = NULL;
+  char *norm = NULL;
+  int ulen, nlen;
+  const UNormalizer2 *mode;
+  UErrorCode uerr = U_ZERO_ERROR;
+
+  mode = get_normalizer(type, &uerr);
+  if (U_FAILURE(uerr)) {
+    return NULL;
+  }
+
+  utf16 = utf8_to_utf16(utf8, len, &ulen, "temp.utf16");
+  if (!utf16) {
+    return NULL;
+  }
+
+  /* Check to see if string is already in normalized form */
+  uerr = U_ZERO_ERROR;
+  if (unorm2_quickCheck(mode, utf16, ulen, &uerr) == UNORM_YES
+      && U_SUCCESS(uerr)) {
+    norm = utf16_to_latin1(utf16, ulen, outlen, name);
+    mush_free(utf16, "temp.utf16");
+    return norm;
+  }
+
+  norm16 = mush_calloc(ulen + 1, sizeof(UChar), "temp.utf16");
+  nlen = ulen + 1;
+
+  uerr = U_ZERO_ERROR;
+  nlen = unorm2_normalize(mode, utf16, ulen, norm16, nlen, &uerr);
+  if (U_SUCCESS(uerr)) {
+  } else if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    goto cleanup;
+  } else {
+    nlen += 1;
+    norm16 = mush_realloc(norm16, nlen * sizeof(UChar), "temp.utf16");
+    uerr = U_ZERO_ERROR;
+    nlen = unorm2_normalize(mode, utf16, ulen, norm16, nlen, &uerr);
+    if (U_FAILURE(uerr)) {
+      goto cleanup;
+    }
+  }
+
+  norm = utf16_to_latin1(norm16, nlen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(norm16, "temp.utf16");
+  return norm;
+}
+
 #endif
 
 /** Normalize a UTF-8 string.

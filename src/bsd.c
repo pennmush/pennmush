@@ -2312,17 +2312,16 @@ save_command(DESC *d, const char *command)
     int nlen, slen;
     sanitized = sanitize_utf8(command, -1, &slen, "temp.utf8");
     /* Change to NFC when we have actual Unicode support */
-    normalized = normalize_utf8(sanitized, slen, &nlen, "temp.utf8",
-                                NORM_NFKC);
+    normalized = normalize_utf8_to_latin1(sanitized, slen, &nlen, "string",
+                                          NORM_NFKC);
     mush_free(sanitized, "temp.utf8");
     if (normalized) {
-      int len;
-      char *latin1 = utf8_to_latin1(normalized, nlen, &len, "string");
-      mush_free(normalized, "temp.utf8");
-      if (latin1) {
-        add_to_queue(&d->input, latin1, len + 1);
-        mush_free(latin1, "string");
-      }
+      add_to_queue(&d->input, normalized, nlen + 1);
+      mush_free(normalized, "string");
+    } else {
+      const char errmsg[] = "ERROR: Unicode normalization failed.\r\n";
+      queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
+      do_rawlog(LT_ERR, "Unable to normalize input '%s'", command);
     }
 #else
     char *latin1;

@@ -24,6 +24,10 @@ char* normalize_utf8(const char * restrict, int, int *, const char * restrict,
 char *sanitize_utf8(const char * restrict orig, int len, int *outlen,
                    const char * restrict name) __attribute_malloc__;
 
+char* normalize_utf8_to_latin1(const char * restrict, int, int *,
+                               const char * restrict,
+                               enum normalization_type) __attribute_malloc__;
+
 /* Additional character set conversion functions. */
 
 char *utf16_to_utf8(const UChar *, int, int *, const char *) __attribute_malloc__;

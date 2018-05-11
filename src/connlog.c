@@ -22,6 +22,8 @@
 #include "mushsql.h"
 #include "function.h"
 #include "strutil.h"
+#include "mymalloc.h"
+#include "charconv.h"
 
 #define CONNLOG_APPID 0x42010FF2
 #define CONNLOG_VERSION 1
@@ -291,6 +293,11 @@ FUNCTION(fun_connlog) {
   bool first = 1;
   int64_t id;
   char *sbp = *bp;
+  bool time_constraint = 0;
+  int idx = 1;
+  char *ip = NULL, *host = NULL;
+  int iplen, hostlen;
+  bool first_constraint = 1;
   
   if (!options.use_connlog) {
     safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
@@ -314,98 +321,168 @@ FUNCTION(fun_connlog) {
                                 
   safe_str("SELECT dbref, timestamps.id FROM timestamps JOIN connections ON timestamps.id = connections.id WHERE", query, &qp);
   if (player >= 0) {
-    safe_format(query, &qp, " dbref = %d AND", player);
+    safe_format(query, &qp, " dbref = %d", player);
+    first_constraint = 0;
   } else if (player == -2) {
-    safe_str(" dbref != -1 AND", query, &qp);
+    safe_str(" dbref != -1", query, &qp);
+    first_constraint = 0;
   } else if (player == -3) {
-    safe_str(" dbref = -1 AND", query, &qp);
+    safe_str(" dbref = -1", query, &qp);
+    first_constraint = 0;
   }
-  
-  if (strcmp(args[1], "between") == 0) {
-    int starttime, endtime;
-    
-    if (nargs < 4) {
+
+  while (idx < nargs - 1) {
+    if (strcmp(args[idx], "between") == 0) {
+      int starttime, endtime;
+
+      if (time_constraint) {
+        safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
+        return;
+      } else if (nargs <= idx + 2) {
       safe_str("#-1 BETWEEN MISSING RANGE", buff, bp);
       return;
-    } else if (nargs > 5) {
-      safe_str("#-1 TOO MANY ARGUMENTS", buff, bp);
-      return;
-    } else if (!is_strict_integer(args[2]) || !is_strict_integer(args[3])) {
-      safe_str(T(e_ints), buff, bp);
-      return;
-    }
+      } else if (!is_strict_integer(args[idx + 1])
+                 || !is_strict_integer(args[idx + 2])) {
+        safe_str(T(e_ints), buff, bp);
+        return;
+      }
 
-    starttime = parse_integer(args[2]);
-    endtime = parse_integer(args[3]);
-    
-    safe_format(query, &qp, " conn <= %d AND disconn >= %d",
-                endtime, starttime);
+      starttime = parse_integer(args[idx + 1]);
+      endtime = parse_integer(args[idx + 2]);
 
-    if (nargs == 5) {
-      sep = args[4];
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_format(query, &qp, " conn <= %d AND disconn >= %d",
+                  endtime, starttime);
+      time_constraint = 1;
+      idx += 3;
+    } else if (strcmp(args[idx], "at") == 0) {
+      int when;
+
+      if (time_constraint) {
+        safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
+        return;
+      } else if (nargs <= idx + 1) {
+        safe_str("#-1 AT MISSING TIME", buff, bp);
+        return;
+      } else if (!is_strict_integer(args[idx + 1])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      when = parse_integer(args[idx + 1]);
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_format(query, &qp, " conn <= %d AND disconn >= %d", when, when);
+      time_constraint = 1;
+      idx += 2;
+    } else if (strcasecmp(args[idx], "before") == 0) {
+      int when;
+      if (time_constraint) {
+        safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
+        return;
+      } else if (nargs <= idx + 1) {
+        safe_str("#-1 BEFORE MISSING TIME", buff, bp);
+        return;
+      } else if (!is_strict_integer(args[idx + 1])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      when = parse_integer(args[idx + 1]);
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_format(query, &qp, " conn < %d", when);
+      time_constraint = 1;
+      idx += 2;
+    } else if (strcasecmp(args[idx], "after") == 0) {
+      int when;
+      if (time_constraint) {
+        safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
+        return;
+      } else if (nargs <= idx + 1) {
+        safe_str("#-1 AFTER MISSING TIME", buff, bp);
+        return;
+      } else if (!is_strict_integer(args[idx + 1])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      when = parse_integer(args[idx + 1]);
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_format(query, &qp, " conn > %d OR (conn <= %d AND disconn >= %d)",
+                  when, when, when);
+      time_constraint = 1;
+      idx += 2;
+    } else if (strcasecmp(args[idx], "ip") == 0) {
+      char *escaped;
+      int len;
+      if (nargs <= idx + 1) {
+        safe_str("#-1 IP MISSING PATTERN", buff, bp);
+        return;
+      } else if (ip) {
+        safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
+        mush_free(ip, "string");
+        if (host) {
+          mush_free(host, "string");
+        }
+        return;
+      }
+      escaped = glob_to_like(args[idx + 1], '$', &len);
+      ip = latin1_to_utf8(escaped, len, &iplen, "string");
+      mush_free(escaped, "string");
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_str(" ipaddr LIKE @ipaddr ESCAPE '$'", query, &qp);
+      idx += 2;
+    } else if (strcasecmp(args[idx], "hostname") == 0) {
+      char *escaped;
+      int len;
+      if (nargs <= idx + 1) {
+        safe_str("#-1 HOSTNAME MISSING PATTERN", buff, bp);
+        return;
+      } else if (host) {
+        safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
+        mush_free(host, "string");
+        if (ip) {
+          mush_free(ip, "string");
+        }
+        return;
+      }
+      escaped = glob_to_like(args[idx + 1], '$', &len);
+      host = latin1_to_utf8(escaped, len, &hostlen, "string");
+      mush_free(escaped, "string");
+      if (first_constraint) {
+        first_constraint = 0;
+      } else {
+        safe_str(" AND", query, &qp);
+      }
+      safe_str(" hostname LIKE @hostname ESCAPE '$'", query, &qp);
+      idx += 2;
+    } else {
+      safe_str("#-1 INVALID TIME SPEC", buff, bp);
+      return;
     }
-  } else if (strcmp(args[1], "at") == 0) {
-    int when;
-    
-    if (nargs < 3) {
-      safe_str("#-1 AT MISSING TIME", buff, bp);
-      return;
-    } else if (nargs > 4) {
-      safe_str("#-1 TOO MANY ARGUMENTS", buff, bp);
-      return;
-    } else if (!is_strict_integer(args[2])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    when = parse_integer(args[2]);
-    safe_format(query, &qp, " conn <= %d AND disconn >= %d", when, when);
-    if (nargs == 4) {
-      sep = args[3];
-    }
-  } else if (strcasecmp(args[1], "before") == 0) {
-    int when;
-    
-    if (nargs < 3) {
-      safe_str("#-1 BEFORE MISSING TIME", buff, bp);
-      return;
-    } else if (nargs > 4) {
-      safe_str("#-1 TOO MANY ARGUMENTS", buff, bp);
-      return;
-    } else if (!is_strict_integer(args[2])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    when = parse_integer(args[2]);
-    safe_format(query, &qp, " conn < %d", when);
-    if (nargs == 4) {
-      sep = args[3];
-    }
-  } else if (strcasecmp(args[1], "after") == 0) {
-    int when;
-    
-    if (nargs < 3) {
-      safe_str("#-1 AFTER MISSING TIME", buff, bp);
-      return;
-    } else if (nargs > 4) {
-      safe_str("#-1 TOO MANY ARGUMENTS", buff, bp);
-      return;
-    } else if (!is_strict_integer(args[2])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    when = parse_integer(args[2]);
-    safe_format(query, &qp, " conn > %d OR (conn <= %d AND disconn >= %d)",
-                when, when, when);
-    if (nargs == 4) {
-      sep = args[3];
-    }
-  } else {
-    safe_str("#-1 INVALID TIME SPEC", buff, bp);
-    return;
   }
 
-  safe_str(" ORDER BY timestamps.id", query, &qp);
+  if (idx == nargs - 1) {
+    sep = args[idx];
+  }
   
+  safe_str(" ORDER BY connections.id", query, &qp);
   *qp = '\0';
 
   search = prepare_statement(connlog_db, query, "connlog.fun.list");
@@ -413,6 +490,16 @@ FUNCTION(fun_connlog) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     do_rawlog(LT_ERR, "Failed to compile query: %s", query);
     return;
+  }
+
+  if (ip) {
+    idx = sqlite3_bind_parameter_index(search, "@ipaddr");
+    sqlite3_bind_text(search, idx, ip, iplen, free_string);
+  }
+
+  if (host) {
+    idx = sqlite3_bind_parameter_index(search, "@hostname");
+    sqlite3_bind_text(search, idx, host, hostlen, free_string);
   }
 
   do {
@@ -446,7 +533,7 @@ FUNCTION(fun_connrecord)
   sqlite3_stmt *rec;
   int status;
   
-  if (!is_strict_integer(args[0])) {
+  if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
   }
   

@@ -31,6 +31,7 @@ Major Changes
     * Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
     * @entrances and entrances() no longer scan the entire database.
     * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP HELP SEARCH` for details.
+    * Optional enhanced connection logging. See the file *game/CONNLOG.md* for details.
     * A number of new softcode functions and expanded functions, listed below.
 
 Minor Changes
@@ -57,6 +58,7 @@ Softcode
 * `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 * `timecalc()` and `secscalc()` for adding/subtracting intervals from times.
 * `@suggest` and `suggest()` for user-defined word suggestion dictionaries.
+* `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
 
 Fixes
 -----

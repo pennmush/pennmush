@@ -591,6 +591,8 @@ connlog.o: ../hdrs/mushsql.h
 connlog.o: ../hdrs/sqlite3.h
 connlog.o: ../hdrs/function.h
 connlog.o: ../hdrs/strutil.h
+connlog.o: ../hdrs/mymalloc.h
+connlog.o: ../hdrs/charconv.h
 cque.o: ../config.h
 cque.o: ../confmagic.h
 cque.o: ../options.h

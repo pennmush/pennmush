@@ -473,6 +473,26 @@ is_strict_integer(char const *str)
   return end > str;
 }
 
+/** Is string an int64_t by the strict definition?
+ * A strict integer is a non-null string that passes parse_int64.
+ * \param str string to check.
+ * \retval 1 string is a strict integer.
+ * \retval 0 string is not a strict integer.
+ */
+bool
+is_strict_int64(char const *str)
+{
+  char *end;
+  if (!str)
+    return 0;
+  errno = 0;
+  parse_int64(str, &end, 10);
+  if (errno == ERANGE || *end != '\0') {
+    return 0;
+  }
+  return end > str;
+}
+
 /** Does a string contain a list of space-separated valid signed integers?
  * Must contain at least one int. For internal use; ignores TINY_MATH.
  * \param str string to check

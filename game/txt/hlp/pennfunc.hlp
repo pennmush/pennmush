@@ -5862,20 +5862,31 @@ See also: @suggest
 
   If the first argument is 'all', all connections are returned. If it's 'logged in', all connections that logged in are returned. 'not logged in' shows connections that never logged in. Otherwise, only connections for the given player are returned. If a connection that never logged in is returned, the dbref is #-1 for that record.
 
-  <spec> is one of the following:
+  <spec> is one or more of the following:
 
+ + Time-based constraints
   * between, <startsecs>, <endsecs> - connections that were present during the given range.
   * at, <secs> - connections that existed at the given time.
   * before, <secs> - connections that existed before the given time.
   * after, <secs> - connections that existed after the given time.
+
+See CONNLOG2 for more.
+& CONNLOG2
++ Source-based constraits
+  * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
+  * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
+
+ Only one time-based constraint can be used in a query.
 
  Times are the number of seconds since the epoch, like what secs() returns.
 
  This function is Wizard only.
 
  Example:
- > think connlog(logged in, after, secscalc(now, -15 minute))
+ > think connlog(logged in, after, secscalc(now, -15 minutes))
  shows all connections that were present during the last 15 minutes
+ > think connlog(all, ip, 127.0.0.1)
+ shows all connections ever made from localhost.
 
 See also: connrecord()
 & CONNRECORD()

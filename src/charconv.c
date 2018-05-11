@@ -10,6 +10,7 @@
 #include <unicode/ucnv.h>
 #include <unicode/ustring.h>
 #include <unicode/unorm2.h>
+#include <unicode/utf8.h>
 #endif
 
 #include "mysocket.h"
@@ -1253,6 +1254,41 @@ get_normalizer(enum normalization_type n, UErrorCode *uerr)
   }
 }
 
+/** Sanitize a UTF-8 string.
+ *
+ * Returns a newly allocated string with invalid byte sequences in the
+ * orignal replaced by U+FFFD.
+ *
+ * \param orig the orignal utf-8 string.
+ * \parma len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string not counting the trailing 0.
+ * \param name memcheck tag
+ * \return new string.
+ */
+char *
+sanitize_utf8(const char * restrict orig, int len, int *outlen,
+              const char * restrict name)
+{
+  uint8_t *san8;
+  int32_t i, o;
+
+  if (len == -1) {
+    len = strlen(orig);
+  }
+  /* Allocate enough space for the worst case: every byte in orig is
+     invalid. */
+  san8 = mush_calloc(len + 1, 3, name);
+  for (i = 0, o = 0; i < len; ) {
+    UChar32 c;
+    U8_NEXT_OR_FFFD(orig, i, len, c);
+    U8_APPEND_UNSAFE(san8, o, c);
+  }
+  if (outlen) {
+    *outlen = o;
+  }
+  return (char *)san8;
+}
+
 #endif
 
 /** Normalize a UTF-8 string.
@@ -1270,7 +1306,6 @@ normalize_utf8(const char * restrict utf8, int len, int *outlen,
                const char * restrict name, enum normalization_type type)
 {
 #ifdef HAVE_ICU
-
   UChar *utf16 = NULL, *norm16 = NULL;
   char *norm8 = NULL;
   int ulen, nlen;
@@ -1281,7 +1316,7 @@ normalize_utf8(const char * restrict utf8, int len, int *outlen,
   if (U_FAILURE(uerr)) {
     return NULL;
   }
-     
+
   utf16 = utf8_to_utf16(utf8, len, &ulen, "temp.utf16");
   if (!utf16) {
     return NULL;

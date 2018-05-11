@@ -2307,9 +2307,26 @@ static void
 save_command(DESC *d, const char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
-    char *normalized;
-    int nlen;
-
+#ifdef HAVE_ICU
+    char *normalized, *sanitized;
+    int nlen, slen;
+    sanitized = sanitize_utf8(command, -1, &slen, "temp.utf8");
+    /* Change to NFC when we have actual Unicode support */
+    normalized = normalize_utf8(sanitized, slen, &nlen, "temp.utf8",
+                                NORM_NFKC);
+    mush_free(sanitized, "temp.utf8");
+    if (normalized) {
+      int len;
+      char *latin1 = utf8_to_latin1(normalized, nlen, &len, "string");
+      mush_free(normalized, "temp.utf8");
+      if (latin1) {
+        add_to_queue(&d->input, latin1, len + 1);
+        mush_free(latin1, "string");
+      }
+    }
+#else
+    char *latin1;
+    int len;
     if (!valid_utf8(command)) {
       const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
       // Expecting UTF-8, got something else!
@@ -2317,16 +2334,12 @@ save_command(DESC *d, const char *command)
       do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
       return;
     }
-    normalized = normalize_utf8(command, -1, &nlen, "string", NORM_NFKC);
-    if (normalized) {
-      int len;
-      char *latin1 = utf8_to_latin1(normalized, nlen, &len, "string");
-      mush_free(normalized, "string");
-      if (latin1) {
-        add_to_queue(&d->input, latin1, len + 1);
-        mush_free(latin1, "string");
-      }
+    latin1 = utf8_to_latin1(command, strlen(command), &len, "string");
+    if (latin1) {
+      add_to_queue(&d->input, latin1, len + 1);
+      mush_free(latin1, "string");
     }
+#endif
   } else {
     add_to_queue(&d->input, command, strlen(command) + 1);
   }

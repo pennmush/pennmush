@@ -1479,7 +1479,7 @@ FUNCTION(fun_stripaccents)
 
     sqldb = get_shared_db();
     converter = prepare_statement(sqldb,
-                                  "SELECT spellfix1_translit(?)",
+                                  "VALUES (spellfix1_translit(?))",
                                   "utf8_to_ascii");
     if (converter) {
       int len;

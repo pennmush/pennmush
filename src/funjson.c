@@ -599,7 +599,7 @@ FUNCTION(fun_json_query)
 
       sqldb = get_shared_db();
       patch = prepare_statement(sqldb,
-                                "SELECT json_patch(?, ?)",
+                                "VALUES (json_patch(?, ?))",
                                 "json_query.patch");
       if (!patch) {
         safe_str("#-1 SQLITE ERROR", buff, bp);
@@ -850,7 +850,7 @@ FUNCTION(fun_isjson)
 
   sqldb = get_shared_db();
   verify = prepare_statement(sqldb,
-                             "SELECT json_valid(?)", "isjson");
+                             "VALUES (json_valid(?))", "isjson");
   if (!verify) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     return;

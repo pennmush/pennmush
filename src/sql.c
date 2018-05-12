@@ -372,7 +372,7 @@ FUNCTION(fun_sql_escape)
       int status, ulen;
       
       escaper = prepare_statement(sqlite3_connp,
-                                  "SELECT quote(?)", "fun.sqlescape");
+                                  "VALUES (quote(?))", "fun.sqlescape");
       utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
       if (!utf8) {
         safe_str("#-1 ENCODING ERROR", buff, bp);

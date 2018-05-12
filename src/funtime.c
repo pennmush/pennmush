@@ -915,10 +915,11 @@ FUNCTION(fun_timecalc)
   sqlite3_stmt *timer;
   int status;
 
-  safe_str("SELECT strftime('%w %m %d %H %M %S %Y'", query, &qp);
+  safe_str("VALUES (strftime('%w %m %d %H %M %S %Y'", query, &qp);
   for (n = 0; n < nargs; n += 1) {
     safe_str(",?", query, &qp);
   }
+  safe_chr(')', query, &qp);
   safe_chr(')', query, &qp);
   *qp = '\0';
 
@@ -964,10 +965,11 @@ FUNCTION(fun_secscalc)
   sqlite3_stmt *timer;
   int status;
 
-  safe_str("SELECT strftime('%s'", query, &qp);
+  safe_str("VALUES (strftime('%s'", query, &qp);
   for (n = 0; n < nargs; n += 1) {
     safe_str(",?", query, &qp);
   }
+  safe_chr(')', query, &qp);
   safe_chr(')', query, &qp);
   *qp = '\0';
 

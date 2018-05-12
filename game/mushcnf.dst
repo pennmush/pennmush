@@ -545,7 +545,7 @@ ahelp_command anews txt/news.txt
 restrict_command anews admin
 
 # Name of a Sqlite3 file to use to store help data.
-help_db data/help.sqldb
+help_db data/help.db
 
 # If you're using the email registration feature, but want to use a
 # mailer other than sendmail, put the full path to the mailer program
@@ -575,7 +575,7 @@ connect_log log/connect.log
 use_connlog yes
 
 # The database file to use for the connlog.
-connlog_db log/connlog.sqldb
+connlog_db log/connlog.db
 
 # Filename to log wizard commands to
 wizard_log log/wizard.log

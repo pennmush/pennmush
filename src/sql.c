@@ -387,7 +387,7 @@ FUNCTION(fun_sql_escape)
           int elen;
           escaped = (const char *)sqlite3_column_text(escaper, 0);
           elen = sqlite3_column_bytes(escaper, 0);
-          latin1 = utf8_to_latin1(escaped, elen, &chars_written, "string");
+          latin1 = utf8_to_latin1_us(escaped, elen, &chars_written, "string");
           latin1[chars_written - 1] = '\0';
           chars_written -= 2;
           mush_strncpy(bigbuff, latin1 + 1, sizeof bigbuff);

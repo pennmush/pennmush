@@ -945,7 +945,9 @@ ismember(struct mail_alias *m, dbref player)
   return 0;
 }
 
-/** Remove a destroyed player from all maliases.
+/** Remove a destroyed player from all maliases and chown any they own
+ * to probate_judge.
+ *
  * \param player player to remove from maliases.
  */
 void
@@ -956,8 +958,17 @@ malias_cleanup(dbref player)
 
   for (n = 0; n < ma_top; n++) {
     m = &malias[n];
+    if (m->owner == player) {
+      dbref newowner = options.probate_judge;
+      if (!GoodObject(newowner) || !IsPlayer(newowner)) {
+	newowner = GOD;
+      }
+      m->owner = newowner;
+      do_rawlog(LT_TRACE, "Changing ownership of malias %s to #%d",
+		m->name, newowner);
+    }
     if ((i = ismember(m, player)) != 0) {
-      do_rawlog(LT_ERR, "Removing #%d from malias %s", player, m->name);
+      do_rawlog(LT_TRACE, "Removing #%d from malias %s", player, m->name);
       m->members[i - 1] = m->members[--m->size];
     }
   }
@@ -1022,6 +1033,16 @@ load_malias(PENNFILE *fp)
     m = &malias[i];
 
     m->owner = getref(fp);
+
+    if (!GoodObject(m->owner) || !IsPlayer(m->owner)) {
+      do_rawlog(LT_TRACE, "malias %s is owned by invalid object #%d.",
+		m->name, m->owner);
+      m->owner = options.probate_judge;
+      if (!GoodObject(m->owner) || !IsPlayer(m->owner)) {
+	m->owner = GOD;
+      }
+    }
+ 
     m->name = mush_strdup(getstring_noalloc(fp), "malias_name");
     m->desc = compress(getstring_noalloc(fp));
     add_check("malias_desc");
@@ -1033,7 +1054,16 @@ load_malias(PENNFILE *fp)
     if (m->size > 0) {
       m->members = mush_calloc(m->size, sizeof(dbref), "malias_members");
       for (j = 0; j < m->size; j++) {
-        m->members[j] = getref(fp);
+	dbref obj = getref(fp);
+	if (!GoodObject(obj) || !IsPlayer(obj)) {
+	  m->size -= 1;
+	  j -= 1;
+	  do_rawlog(LT_TRACE,
+		    "malias %s has non-player object #%d subscribed! Removing.",
+		    m->name, obj);
+	} else {
+	  m->members[j] = obj;
+	}
       }
     } else {
       m->members = NULL;

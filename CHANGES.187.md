@@ -59,6 +59,7 @@ Softcode
 * `timecalc()` and `secscalc()` for adding/subtracting intervals from times.
 * `@suggest` and `suggest()` for user-defined word suggestion dictionaries.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
+* `soundex()` and `soundslike()` now support a second phonetic hash besides soundex.
 
 Fixes
 -----

@@ -3891,7 +3891,7 @@ See also: anonymous attributes, sorting, sortby()
 
 See also: sort(), sortby(), sortkey(), setunion(), setinter(), setdiff()
 & SOUNDEX()
-  soundex(<word>)
+  soundex(<word>[, <hash type>])
 
   The soundex function returns the soundex pattern for a word. A soundex pattern represents the sound of the word, and similar sounding words should have the same soundex pattern. Soundex patterns consist of an uppercase letter and 3 digits.
  
@@ -3917,17 +3917,19 @@ See also: soundslike()
   4. All 0's are removed, because vowels are much less important than consonants in distinguishing words. "F16"
   5. The string is padded with 0's or truncated to 4 characters. "F160"
   That's it. It's not foolproof (enough = "E520", enuf = "E510") but it works pretty well. :)
+
+ The optional second argument can be 'soundex' (The default), for the transformation described above, or 'phone', for a different phonetic hash algorithm.
 & SOUNDLIKE()
 & SOUNDSLIKE()
-  soundslike(<word>, <word>)
-  soundlike(<word>, <word>)
+  soundslike(<word>, <word>[, <hash type>])
+  soundlike(<word>, <word>[, <hash type>])
 
-  The soundslike function returns 1 if the two words have the same soundex code (see 'help soundex()' for information), which means, in general, if they sound alike. 
-  
+  The soundslike function returns 1 if the two words have the same hash code (see 'help soundex()' for information), which means, in general, if they sound alike. The hash type can be 'soundex' (Default) or 'phone' for a different algorithm that might give better results with some words.
+
   Examples:
     > think soundslike(robin,robbyn)
     1
-    > think soundslike(robin,roebuck)
+    > think soundslike(robin,roebuck, phone)
     0
 
 See also: soundex()

@@ -813,8 +813,8 @@ extern int dbline;
 int
 init_game_dbs(void)
 {
-  PENNFILE *volatile f = NULL;
-  const char *infile;
+  PENNFILE * volatile f = NULL;
+  const char * volatile infile;
   const char *outfile;
   const char *mailfile;
   volatile int panicdb;

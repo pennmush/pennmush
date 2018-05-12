@@ -1851,7 +1851,7 @@ COMMAND(cmd_suggest)
       if (status == SQLITE_ROW) {
         const char *name = (const char *)sqlite3_column_text(cats, 0);
         int nlen = sqlite3_column_bytes(cats, 0);
-        char *cat1 = utf8_to_latin1(name, nlen, NULL, "string");
+        char *cat1 = utf8_to_latin1_us(name, nlen, NULL, "string");
         count += 1;
         notify_format(executor, "\t%s", cat1);
         mush_free(cat1, "string");

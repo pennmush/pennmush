@@ -616,7 +616,7 @@ FUNCTION(fun_json_query)
         int len;
         const char *p = (const char *)sqlite3_column_text(patch, 0);
         int plen = sqlite3_column_bytes(patch, 0);
-        latin1 = utf8_to_latin1(p, plen, &len, "string");
+        latin1 = utf8_to_latin1_us(p, plen, &len, "string");
         safe_strl(latin1, len, buff, bp);
         mush_free(latin1, "string");
       } else {

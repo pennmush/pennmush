@@ -2408,6 +2408,7 @@ See also: @shutdown
   (Without /silent or /noisy, the silent_pemit config option is used to determine noisiness.)
   The /list switch will send the message to the contents of multiple objects at the same time. The <object> argument is treated as a space-separated list of targets.
   The /spoof switch causes nospoof notifications to show the enactor's dbref instead of the executor's dbref, and requires control over the enactor or the Can_spoof power.
+  The /noeval switch causes <message> to not be evaluated.
 
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 & @retry

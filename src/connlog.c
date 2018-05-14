@@ -105,6 +105,8 @@ init_conndb(bool rebooting)
     /* Clean up connections without a logged disconnection time. */
     if (sqlite3_exec(connlog_db,
                      "BEGIN TRANSACTION;"
+                     "DELETE FROM connections WHERE id IN (SELECT id FROM timestamps WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1));"
+                     "DELETE FROM timestamps WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1);"
                      "UPDATE connections SET reason = 'unexpected shutdown' WHERE id IN (SELECT id FROM timestamps WHERE disconn = 2147483647);"
                      "UPDATE timestamps SET disconn = (SELECT timestamp FROM checkpoint WHERE id = 1) WHERE disconn = 2147483647;"
                      "COMMIT TRANSACTION",

@@ -514,7 +514,7 @@ do_give_to(dbref player, const char *arg, int silent, NEW_PE_INFO *pe_info)
 {
   char *s;
   char buff[BUFFER_LEN];
-  
+
   /* Parse out the object and recipient */
   arg = strupper_r(arg, buff, sizeof buff);
   s = (char *) string_match(arg, "TO ");

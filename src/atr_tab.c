@@ -566,7 +566,7 @@ check_attr_value(dbref player, const char *name, const char *value)
      * that is defined in the enum, so we copy the attr value
      * to buff and use that. */
     strupper_r(attrval, buff, sizeof buff);
-    
+
     len = strlen(value);
     snprintf(vbuff, BUFFER_LEN, "%c%s%c", delim, value, delim);
     upcasestr(vbuff);
@@ -620,7 +620,8 @@ check_attr_value(dbref player, const char *name, const char *value)
  * \param pattern The allowed pattern for the attribute.
  */
 void
-do_attribute_limit(dbref player, const char *name, int type, const char *pattern)
+do_attribute_limit(dbref player, const char *name, int type,
+                   const char *pattern)
 {
   ATTR *ap;
   char buff[BUFFER_LEN];
@@ -631,7 +632,7 @@ do_attribute_limit(dbref player, const char *name, int type, const char *pattern
   int erroffset;
   int unset = 0;
   char ucname[BUFFER_LEN];
-  
+
   if (pattern && *pattern) {
     if (type == AF_RLIMIT) {
       /* Compile to regexp. */
@@ -648,7 +649,7 @@ do_attribute_limit(dbref player, const char *name, int type, const char *pattern
       mush_strncpy(buff, pattern, sizeof buff);
     } else if (type == AF_ENUM) {
       const char *ptr;
-      
+
       /* Check for a delimiter: @attr/enum | attrname=foo */
       if ((ptr = strchr(name, ' ')) != NULL) {
         if (ptr != (name + 1)) {
@@ -1032,9 +1033,8 @@ do_list_attribs(dbref player, int lc)
 {
   char tmp[BUFFER_LEN];
   char *b = list_attribs();
-  notify_format(player, T("Attribs: %s"), lc
-                ? strlower_r(b, tmp, sizeof tmp)
-                : b);
+  notify_format(player, T("Attribs: %s"),
+                lc ? strlower_r(b, tmp, sizeof tmp) : b);
 }
 
 /** Return a list of standard attributes.

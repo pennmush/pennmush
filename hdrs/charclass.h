@@ -12,7 +12,6 @@
 #include "punicode/utypes.h"
 #endif
 
-
 /* Latin-1 overlaps the first 256 Unicode code points, so use Unicode
    tests if available instead of relying on server locale. */
 
@@ -20,7 +19,7 @@ static inline bool
 char_isprint(char c)
 {
 #ifdef HAVE_ICU
-  return u_isprint((UChar32)c);
+  return u_isprint((UChar32) c);
 #else
   return isprint(c);
 #endif

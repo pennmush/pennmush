@@ -320,7 +320,7 @@ password_hash(const char *key, const char *algo)
   char *bp;
   int len;
   char hbuff[BUFFER_LEN + 2];
-  
+
   if (!algo) {
     algo = PASSWORD_HASH;
   }

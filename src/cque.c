@@ -184,15 +184,15 @@ add_to(dbref player, int am)
   sqlite3_stmt *adder;
   int status;
   sqlite3_int64 newam;
-  
+
   if (QUEUE_PER_OWNER) {
     player = Owner(player);
   }
 
   sqldb = get_shared_db();
-  adder = prepare_statement(sqldb,
-                            "UPDATE objects SET queue = remember(queue + ?, ?) WHERE dbref = ?",
-                            "queue.add");
+  adder = prepare_statement(
+    sqldb, "UPDATE objects SET queue = remember(queue + ?, ?) WHERE dbref = ?",
+    "queue.add");
   sqlite3_bind_int(adder, 1, am);
   sqlite3_bind_pointer(adder, 2, &newam, "carray", NULL);
   sqlite3_bind_int(adder, 3, player);
@@ -201,8 +201,8 @@ add_to(dbref player, int am)
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s",
-              player, sqlite3_errstr(status));
+    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s", player,
+              sqlite3_errstr(status));
     newam = -1;
   }
   sqlite3_reset(adder);
@@ -710,7 +710,7 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist,
 {
   int flags = QUEUE_DEFAULT;
   char abuff[2048];
-  
+
   if (force_debug) {
     flags |= QUEUE_DEBUG;
   } else if (AF_NoDebug(a)) {
@@ -735,7 +735,7 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
   PE_REGS *pe_regs = NULL;
   int i;
   char abuff[2048];
-  
+
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
     return 0;
@@ -847,7 +847,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   char *start, *command;
   int queue_type = QUEUE_DEFAULT | flags;
   char abuff[2048];
-  
+
   start = safe_atr_value(a, "atrval.queue-attr");
   command = start;
   /* Trim off $-command or ^-command prefix */

@@ -70,7 +70,8 @@ int safe_markup_codes(new_markup_information *mi, int end, char *buff,
 
 static ansi_data ansi_null = NULL_ANSI;
 
-bool colorname_lookup(const char *name, int len, int *rgb, int *ansi, int *xnum);
+bool colorname_lookup(const char *name, int len, int *rgb, int *ansi,
+                      int *xnum);
 bool rgb_lookup(int rgb, int *ansi, int *xnum);
 
 /* Populate the RGB color to name mapping */
@@ -82,9 +83,12 @@ build_rgb_map(void)
   int status;
   int n;
   char *errmsg;
-  const char query[] = 
-    "INSERT INTO colors(name, rgb, xterm, ansi) SELECT json_extract(json_each.value, '$.name'), json_extract(json_each.value, '$.rgb'), json_extract(json_each.value, '$.xterm'), json_extract(json_each.value, '$.ansi') FROM json_each(?)";
-  
+  const char query[] =
+    "INSERT INTO colors(name, rgb, xterm, ansi) SELECT "
+    "json_extract(json_each.value, '$.name'), json_extract(json_each.value, "
+    "'$.rgb'), json_extract(json_each.value, '$.xterm'), "
+    "json_extract(json_each.value, '$.ansi') FROM json_each(?)";
+
   sqldb = get_shared_db();
 
   if (!sqldb) {
@@ -92,9 +96,12 @@ build_rgb_map(void)
   }
 
   if (sqlite3_exec(sqldb,
-                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT NULL, ansi INTEGER NOT NULL) WITHOUT ROWID;"
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE "
+                   "TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT "
+                   "NULL, ansi INTEGER NOT NULL) WITHOUT ROWID;"
                    "CREATE INDEX rgb_idx ON colors(rgb);"
-                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE name NOT LIKE 'xterm%'",
+                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE "
+                   "name NOT LIKE 'xterm%'",
                    NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
     sqlite3_free(errmsg);
@@ -108,7 +115,8 @@ build_rgb_map(void)
 
   for (n = 0; colors_json[n]; n += 1) {
     /* Consider reading from a file instead of compiled in json strings? */
-    sqlite3_bind_text(creator, 1, colors_json[n], strlen(colors_json[n]), SQLITE_STATIC);
+    sqlite3_bind_text(creator, 1, colors_json[n], strlen(colors_json[n]),
+                      SQLITE_STATIC);
     do {
       status = sqlite3_step(creator);
     } while (is_busy_status(status));
@@ -221,7 +229,7 @@ FUNCTION(fun_colors)
     sqlite3 *sqldb;
     sqlite3_stmt *lister;
     int status;
-    
+
     /* Return list of available color names, skipping over the 256 'xtermN'
      * colors */
 
@@ -233,37 +241,38 @@ FUNCTION(fun_colors)
 
     if (args[0] && *args[0]) {
       /* List colors matching a wildcard. */
-      lister = prepare_statement(sqldb,
-                                 "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name",
-				 "colors.list.names_pattern");
+      lister = prepare_statement(
+        sqldb,
+        "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name",
+        "colors.list.names_pattern");
       if (lister) {
-	int len, ulen;
-	char *as_utf8;
-	char *converted = glob_to_like(args[0], '$', &len);
-	as_utf8 = latin1_to_utf8(converted, len, &ulen, "string");
-	mush_free(converted, "string");
-	sqlite3_bind_text(lister, 1, as_utf8, ulen, free_string);
+        int len, ulen;
+        char *as_utf8;
+        char *converted = glob_to_like(args[0], '$', &len);
+        as_utf8 = latin1_to_utf8(converted, len, &ulen, "string");
+        mush_free(converted, "string");
+        sqlite3_bind_text(lister, 1, as_utf8, ulen, free_string);
       }
     } else {
       /* List all colors but xtermXX ones */
-      lister = prepare_statement(sqldb,
-                                 "SELECT name FROM named_colors ORDER BY name",
-				 "colors.list.names_all");
+      lister =
+        prepare_statement(sqldb, "SELECT name FROM named_colors ORDER BY name",
+                          "colors.list.names_all");
     }
     if (!lister) {
       safe_str(T("#-1 SQLITE ERROR"), buff, bp);
       return;
     }
-    
+
     do {
       status = sqlite3_step(lister);
       if (status == SQLITE_ROW) {
-	const char *name = (const char *)sqlite3_column_text(lister, 0);
-	if (shown)
-	  safe_chr(' ', buff, bp);
-	else
-	  shown = 1;
-	safe_strl(name, sqlite3_column_bytes(lister, 0), buff, bp);
+        const char *name = (const char *) sqlite3_column_text(lister, 0);
+        if (shown)
+          safe_chr(' ', buff, bp);
+        else
+          shown = 1;
+        safe_strl(name, sqlite3_column_bytes(lister, 0), buff, bp);
       }
     } while (status == SQLITE_ROW || is_busy_status(status));
     sqlite3_reset(lister);
@@ -380,39 +389,39 @@ FUNCTION(fun_colors)
       case CS_NAME: {
         uint32_t hex;
         bool shown = 0;
-	sqlite3 *sqldb;
-	sqlite3_stmt *finder;
-	int status;
-	
-        hex = color_to_hex(color, 0);	
+        sqlite3 *sqldb;
+        sqlite3_stmt *finder;
+        int status;
 
-	sqldb = get_shared_db();
-	if (!sqldb) {
-	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
-	  return;
-	}
+        hex = color_to_hex(color, 0);
 
-	finder = prepare_statement(sqldb,
-                                   "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name",
-                                   "colors.list.rgb");
-	if (!finder) {
-	  safe_str(T("#-1 SQLITE ERROR"), buff, bp);
-	  return;
-	}
+        sqldb = get_shared_db();
+        if (!sqldb) {
+          safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+          return;
+        }
 
-	sqlite3_bind_int(finder, 1, (int)hex);
-	do {
-	  status = sqlite3_step(finder);
-	  if (status == SQLITE_ROW) {
-	    const char *name = (const char *)sqlite3_column_text(finder, 0);
-	    if (shown) {
-	      safe_chr(' ', buff, bp);
-	    }
-	    safe_strl(name, sqlite3_column_bytes(finder, 0), buff, bp);
-	    shown = 1;
-	  }
-	} while (status == SQLITE_ROW || is_busy_status(status));
-	sqlite3_reset(finder);
+        finder = prepare_statement(
+          sqldb, "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name",
+          "colors.list.rgb");
+        if (!finder) {
+          safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+          return;
+        }
+
+        sqlite3_bind_int(finder, 1, (int) hex);
+        do {
+          status = sqlite3_step(finder);
+          if (status == SQLITE_ROW) {
+            const char *name = (const char *) sqlite3_column_text(finder, 0);
+            if (shown) {
+              safe_chr(' ', buff, bp);
+            }
+            safe_strl(name, sqlite3_column_bytes(finder, 0), buff, bp);
+            shown = 1;
+          }
+        } while (status == SQLITE_ROW || is_busy_status(status));
+        sqlite3_reset(finder);
 
         if (!shown)
           safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
@@ -779,15 +788,15 @@ colorname_lookup(const char *name, int len, int *rgb, int *ansi, int *xnum)
   int status;
   int ulen;
   char *utf8;
-  
+
   sqldb = get_shared_db();
   if (!sqldb) {
     return 0;
   }
 
-  finder = prepare_statement(sqldb,
-                             "SELECT rgb, ansi, xterm FROM colors WHERE name = ?",
-                             "colors.lookup.name");
+  finder = prepare_statement(
+    sqldb, "SELECT rgb, ansi, xterm FROM colors WHERE name = ?",
+    "colors.lookup.name");
   if (!finder) {
     return 0;
   }
@@ -818,15 +827,14 @@ rgb_lookup(int rgb, int *ansi, int *xnum)
   sqlite3 *sqldb;
   sqlite3_stmt *finder;
   int status;
-  
+
   sqldb = get_shared_db();
   if (!sqldb) {
     return 0;
   }
 
-  finder = prepare_statement(sqldb,
-                             "SELECT ansi, xterm FROM colors WHERE rgb = ?",
-                             "colors.lookup.rgb");
+  finder = prepare_statement(
+    sqldb, "SELECT ansi, xterm FROM colors WHERE rgb = ?", "colors.lookup.rgb");
   if (!finder) {
     return 0;
   }
@@ -855,7 +863,7 @@ color_to_hex(const char *name, bool hilite)
   const char *q;
   char n;
   char buf[BUFFER_LEN] = {'\0'}, *p;
-  
+
   /* This should've been checked before it ever got here. */
 
   if (!name || !name[0]) {
@@ -934,7 +942,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   int i;
   int max;
   int ansi = 0;
-  
+
   *hilite = 0;
 
   /* Shortcut: If it's a single character color code, it's using the 16 color
@@ -947,7 +955,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   if (strncasecmp(name, "+xterm", 5) == 0) {
     unsigned int xnum;
     char xname[16];
-    int len;    
+    int len;
 
     xnum = strtoul(name + 6, NULL, 10);
     if (xnum > 255)
@@ -955,25 +963,24 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
 
     len = snprintf(xname, sizeof xname, "xterm%u", xnum);
     colorname_lookup(xname, len, NULL, &ansi, NULL);
-    
+
     if (!bg && ansi & 0x0100) {
       *hilite = 1;
     }
     return (ansi & 0xFF) + (bg ? 40 : 30);
   }
 
-  
   /* Otherwise it's a name or RGB sequence. Map it to hex. */
   hex = color_to_hex(name, 0);
-  
+
   /* Predefined color names have their downgrades cached */
   if (rgb_lookup(hex, &ansi, NULL)) {
     if (!bg && ansi & 0x0100) {
       *hilite = 1;
     }
-    return (ansi & 0xFF) + (bg ? 40 : 30);    
+    return (ansi & 0xFF) + (bg ? 40 : 30);
   }
-  
+
   diff = 0x0FFFFFFF;
   /* Now find the closest 16 color match. */
   best = 0;
@@ -1006,7 +1013,7 @@ ansi_map_256(const char *name, bool hilite, bool all)
   sqlite3 *sqldb;
   sqlite3_stmt *finder;
   int status;
-  
+
   /* Is it an xterm color number? */
   if (strncasecmp(name, "+xterm", 6) == 0) {
     unsigned int xnum;
@@ -1030,9 +1037,9 @@ ansi_map_256(const char *name, bool hilite, bool all)
     return -1;
   }
 
-  finder = prepare_statement(sqldb,
-                             "SELECT rgb, xterm FROM colors WHERE name LIKE 'xterm%'",
-                             "colors.list.xterm");
+  finder = prepare_statement(
+    sqldb, "SELECT rgb, xterm FROM colors WHERE name LIKE 'xterm%'",
+    "colors.list.xterm");
   if (!finder) {
     return -1;
   }
@@ -1044,18 +1051,18 @@ ansi_map_256(const char *name, bool hilite, bool all)
       num = sqlite3_column_int(finder, 1);
 
       if (all && num < 16) {
-	continue;
+        continue;
       }
-      
+
       if (hex == rgb) {
-	best = num;
-	break;
+        best = num;
+        break;
       }
 
       cdiff = hex_difference(rgb, hex);
       if (cdiff < diff) {
-	best = num;
-	diff = cdiff;
+        best = num;
+        diff = cdiff;
       }
     }
   } while (status == SQLITE_ROW || is_busy_status(status));
@@ -3205,8 +3212,7 @@ char *
 wrap_tag(const char *x, const char *y)
 {
   static char buff[(BUFFER_LEN * 2) + 8];
-  snprintf(buff, sizeof buff, "%c%c%s%c%s%c%c/%s%c",
-           TAG_START, MARKUP_HTML, x, TAG_END, y,
-           TAG_START, MARKUP_HTML, x, TAG_END);
+  snprintf(buff, sizeof buff, "%c%c%s%c%s%c%c/%s%c", TAG_START, MARKUP_HTML, x,
+           TAG_END, y, TAG_START, MARKUP_HTML, x, TAG_END);
   return buff;
 }

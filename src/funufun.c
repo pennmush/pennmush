@@ -252,7 +252,7 @@ FUNCTION(fun_pfun)
   ufun_attrib ufun;
   PE_REGS *pe_regs;
   char tmp[BUFFER_LEN];
-  
+
   parent = Parent(executor);
 
   if (!GoodObject(parent))

@@ -93,21 +93,26 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
   int count = 0;
   char *utf8;
   int ulen;
-  
+
   if (!_term || !*_term) {
     notify(executor, T("What do you want to search for?"));
     return NULL;
   }
 
   rp = results;
-  
-  searcher = prepare_statement(help_db,
-                               "SELECT name, snippet(helpfts, 0, '" ANSI_UNDERSCORE "', '" ANSI_END "', '...', 10) FROM helpfts JOIN topics ON topics.bodyid = helpfts.rowid WHERE helpfts MATCH ? AND topics.catid = (SELECT id FROM categories WHERE name = ?) AND main = 1 ORDER BY name",
-                               "help.search");
+
+  searcher = prepare_statement(
+    help_db,
+    "SELECT name, snippet(helpfts, 0, '" ANSI_UNDERSCORE "', '" ANSI_END
+    "', '...', 10) FROM helpfts JOIN topics ON topics.bodyid = helpfts.rowid "
+    "WHERE helpfts MATCH ? AND topics.catid = (SELECT id FROM categories WHERE "
+    "name = ?) AND main = 1 ORDER BY name",
+    "help.search");
 
   utf8 = latin1_to_utf8(_term, strlen(_term), &ulen, "string");
   sqlite3_bind_text(searcher, 1, utf8, ulen, free_string);
-  sqlite3_bind_text(searcher, 2, h->command, strlen(h->command), SQLITE_TRANSIENT);
+  sqlite3_bind_text(searcher, 2, h->command, strlen(h->command),
+                    SQLITE_TRANSIENT);
 
   do {
     status = sqlite3_step(searcher);
@@ -121,15 +126,17 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
         } else {
           safe_str(delim, results, &rp);
         }
-        topic = (char *)sqlite3_column_text(searcher, 0);
+        topic = (char *) sqlite3_column_text(searcher, 0);
         topiclen = sqlite3_column_bytes(searcher, 0);
         safe_strl(topic, topiclen, results, &rp);
       } else {
-        topic = (char *)sqlite3_column_text(searcher, 0);
-        snippet = (char *)sqlite3_column_text(searcher, 1);
+        topic = (char *) sqlite3_column_text(searcher, 0);
+        snippet = (char *) sqlite3_column_text(searcher, 1);
         snippetlen = sqlite3_column_bytes(searcher, 1);
-        snippet = utf8_to_latin1(snippet, snippetlen, NULL, 1, "help.search.results");
-        notify_format(executor, "%s%s%s: %s", ANSI_HILITE, topic, ANSI_END, snippet);
+        snippet =
+          utf8_to_latin1(snippet, snippetlen, NULL, 1, "help.search.results");
+        notify_format(executor, "%s%s%s: %s", ANSI_HILITE, topic, ANSI_END,
+                      snippet);
         mush_free(snippet, "help.search.results");
       }
     }
@@ -139,7 +146,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
   if (matches) {
     *matches = count;
   }
-  
+
   if (delim) {
     *rp = '\0';
     return mush_strdup(results, "help.search.results");
@@ -223,8 +230,7 @@ COMMAND(cmd_helpcmd)
     } else if (is_index_entry(arg_left, &offset)) {
       char *entries = entries_from_offset(h, offset);
       if (!entries) {
-          notify_format(executor, T("No entry for '%s'."),
-                        strupper(arg_left));
+        notify_format(executor, T("No entry for '%s'."), strupper(arg_left));
         return;
       }
       notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
@@ -332,21 +338,29 @@ init_help_files(void)
 
   if (id == 0 || version != HELPDB_VERSION) {
     do_rawlog(LT_ERR, "Creating help_db tables");
-    status = sqlite3_exec(help_db,
-                          "DROP TABLE IF EXISTS helpfts;"
-                          "DROP TABLE IF EXISTS topics;"
-                          "DROP TABLE IF EXISTS entries;"
-                          "DROP TABLE IF EXISTS categories;"
-                          "PRAGMA application_id = 0x42010FF1;"
-                          "PRAGMA user_version = 1;"
-                          "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT NULL UNIQUE);"
-                          "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
-                          "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
-                          "CREATE INDEX topics_body_idx ON topics(bodyid);"
-                          "CREATE VIRTUAL TABLE helpfts USING fts5(body, content=entries, content_rowid=id);"
-                          "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO helpfts(rowid, body) VALUES (new.id, new.body); END;"
-                          "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END",
-                          NULL, NULL, &errstr);
+    status = sqlite3_exec(
+      help_db,
+      "DROP TABLE IF EXISTS helpfts;"
+      "DROP TABLE IF EXISTS topics;"
+      "DROP TABLE IF EXISTS entries;"
+      "DROP TABLE IF EXISTS categories;"
+      "PRAGMA application_id = 0x42010FF1;"
+      "PRAGMA user_version = 1;"
+      "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT "
+      "NULL UNIQUE);"
+      "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
+      "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE "
+      "NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY "
+      "KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN "
+      "KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
+      "CREATE INDEX topics_body_idx ON topics(bodyid);"
+      "CREATE VIRTUAL TABLE helpfts USING fts5(body, content=entries, "
+      "content_rowid=id);"
+      "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO "
+      "helpfts(rowid, body) VALUES (new.id, new.body); END;"
+      "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO "
+      "helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END",
+      NULL, NULL, &errstr);
     if (status != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create help database: %s\n", errstr);
       sqlite3_free(errstr);
@@ -354,8 +368,7 @@ init_help_files(void)
     }
   } else {
     do_rawlog(LT_ERR, "Deleting current help_db records.");
-    status = sqlite3_exec(help_db, "DELETE FROM entries",
-                          NULL, NULL, &errstr);
+    status = sqlite3_exec(help_db, "DELETE FROM entries", NULL, NULL, &errstr);
     if (status != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to reset help database: %s\n", errstr);
       sqlite3_free(errstr);
@@ -381,7 +394,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   help_file *h;
   sqlite3_stmt *add_cat;
   int status;
-  
+
   if (help_init == 0)
     init_help_files();
 
@@ -407,9 +420,9 @@ add_help_file(const char *command_name, const char *filename, int admin)
   h->file = mush_strdup(filename, "help_file.filename");
   h->admin = admin;
 
-  add_cat = prepare_statement(help_db,
-                              "INSERT OR IGNORE INTO categories(name) VALUES (?)",
-                              "help.add.category");
+  add_cat = prepare_statement(
+    help_db, "INSERT OR IGNORE INTO categories(name) VALUES (?)",
+    "help.add.category");
   sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command),
                     SQLITE_TRANSIENT);
   do {
@@ -430,9 +443,12 @@ help_delete_entries(help_file *h)
   sqlite3_stmt *deleter;
   int status;
 
-  deleter = prepare_statement(help_db,
-                              "WITH all_entries(id) AS (SELECT bodyid FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?)) DELETE FROM entries WHERE id IN all_entries",
-                              "help.delete.index");
+  deleter =
+    prepare_statement(help_db,
+                      "WITH all_entries(id) AS (SELECT bodyid FROM topics "
+                      "WHERE catid = (SELECT id FROM categories WHERE name = "
+                      "?)) DELETE FROM entries WHERE id IN all_entries",
+                      "help.delete.index");
 
   sqlite3_bind_text(deleter, 1, h->command, strlen(h->command),
                     SQLITE_TRANSIENT);
@@ -459,7 +475,8 @@ help_rebuild(dbref player)
     help_delete_entries(curr);
     help_populate_entries(curr);
   }
-  sqlite3_exec(help_db, "INSERT INTO helpfts(helpfts) VALUES ('optimize');"
+  sqlite3_exec(help_db,
+               "INSERT INTO helpfts(helpfts) VALUES ('optimize');"
                "VACUUM",
                NULL, NULL, NULL);
   if (player != NOTHING) {
@@ -534,10 +551,12 @@ help_entry_exists(help_file *help_dat, const char *the_topic)
   int status;
   char *like;
   int namelen;
-  
-  finder = prepare_statement(help_db,
-                             "SELECT rowid FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
-                             "help.entry.exists");
+
+  finder = prepare_statement(
+    help_db,
+    "SELECT rowid FROM topics WHERE catid = (SELECT id FROM categories WHERE "
+    "name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+    "help.entry.exists");
 
   like = escape_like(the_topic, '$', NULL);
   namelen = snprintf(name, sizeof name, "%s%%", like);
@@ -566,15 +585,18 @@ help_find_entry(help_file *help_dat, const char *the_topic)
   int status;
   char *like;
   int namelen;
-  
-  finder = prepare_statement(help_db,
-                             "SELECT name, body FROM topics JOIN entries ON topics.bodyid = entries.id WHERE topics.catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
-                             "help.find.entry");
+
+  finder = prepare_statement(
+    help_db,
+    "SELECT name, body FROM topics JOIN entries ON topics.bodyid = entries.id "
+    "WHERE topics.catid = (SELECT id FROM categories WHERE name = ?) AND name "
+    "LIKE ? ESCAPE '$' ORDER BY name",
+    "help.find.entry");
 
   like = escape_like(the_topic, '$', NULL);
   namelen = snprintf(name, sizeof name, "%s%%", like);
   free_string(like);
-  
+
   sqlite3_bind_text(finder, 1, help_dat->command, strlen(help_dat->command),
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(finder, 2, name, namelen, SQLITE_TRANSIENT);
@@ -585,12 +607,12 @@ help_find_entry(help_file *help_dat, const char *the_topic)
       const char *body;
       int bodylen;
       struct help_entry *entry = mush_malloc(sizeof *entry, "help.entry");
-      entry->name = mush_strdup((const char *)sqlite3_column_text(finder, 0),
+      entry->name = mush_strdup((const char *) sqlite3_column_text(finder, 0),
                                 "help.entry.name");
-      body = (const char *)sqlite3_column_text(finder, 1);
+      body = (const char *) sqlite3_column_text(finder, 1);
       bodylen = sqlite3_column_bytes(finder, 1);
-      entry->body = utf8_to_latin1(body, bodylen, &entry->bodylen, 1,
-                                   "help.entry.body");
+      entry->body =
+        utf8_to_latin1(body, bodylen, &entry->bodylen, 1, "help.entry.body");
       sqlite3_reset(finder);
       return entry;
     }
@@ -617,9 +639,9 @@ write_topic(help_file *h, const char *body)
   if (!top) {
     return;
   }
-  
+
   query = prepare_statement(help_db, "INSERT INTO entries(body) VALUES (?)",
-                                  "help.insert.body");
+                            "help.insert.body");
   sqlite3_bind_text(query, 1, body, strlen(body), SQLITE_TRANSIENT);
   do {
     status = sqlite3_step(query);
@@ -633,13 +655,14 @@ write_topic(help_file *h, const char *body)
   entryid = sqlite3_last_insert_rowid(help_db);
   sqlite3_reset(query);
 
-  query = prepare_statement(help_db,
-                            "INSERT INTO topics(catid, name, bodyid, main) VALUES ((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
-                            "help.insert.topic");
-  sqlite3_bind_text(query, 1, h->command, strlen(h->command),
-                    SQLITE_TRANSIENT);
+  query =
+    prepare_statement(help_db,
+                      "INSERT INTO topics(catid, name, bodyid, main) VALUES "
+                      "((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
+                      "help.insert.topic");
+  sqlite3_bind_text(query, 1, h->command, strlen(h->command), SQLITE_TRANSIENT);
   sqlite3_bind_int64(query, 3, entryid);
-  
+
   for (tlist *cur = top, *nextptr; cur; cur = nextptr) {
     int status;
     int primary = (cur->next == NULL);
@@ -652,10 +675,10 @@ write_topic(help_file *h, const char *body)
       status = sqlite3_step(query);
     } while (is_busy_status(status));
     if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to insert help topic %s: %s",
-                cur->topic, sqlite3_errstr(status));
+      do_rawlog(LT_ERR, "Unable to insert help topic %s: %s", cur->topic,
+                sqlite3_errstr(status));
     }
-    sqlite3_reset(query);   
+    sqlite3_reset(query);
     free(cur);
   }
   top = NULL;
@@ -676,7 +699,7 @@ help_populate_entries(help_file *h)
   char *body = NULL;
   int bodylen = 0;
   int num_topics = 0;
-  
+
   /* Quietly ignore null values for the file */
   if (!h || !h->file)
     return;
@@ -695,23 +718,23 @@ help_populate_entries(help_file *h)
   in_topic = 0;
 
   sqldb = get_shared_db();
-  if (sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg)
-      != SQLITE_OK) {
+  if (sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg) !=
+      SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to begin help transaction: %s", errmsg);
     sqlite3_free(errmsg);
     fclose(rfp);
     return;
   }
 
-  if (sqlite3_exec(help_db, "BEGIN TRANSACTION", NULL, NULL, &errmsg)
-      != SQLITE_OK) {
+  if (sqlite3_exec(help_db, "BEGIN TRANSACTION", NULL, NULL, &errmsg) !=
+      SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to begin help transaction: %s", errmsg);
     sqlite3_free(errmsg);
     fclose(rfp);
     sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return;
   }
-  
+
 #ifdef HAVE_POSIX_FADVISE
   posix_fadvise(fileno(rfp), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
@@ -793,7 +816,7 @@ help_populate_entries(help_file *h)
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
   h->entries = num_topics;
-  
+
   while (1) {
     int status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
     if (status == SQLITE_OK) {
@@ -801,22 +824,21 @@ help_populate_entries(help_file *h)
     } else if (is_busy_status(status)) {
       sqlite3_free(errmsg);
     } else {
-      do_rawlog(LT_ERR, "Unable to commit help vocab transaction: %s",
-                errmsg);
+      do_rawlog(LT_ERR, "Unable to commit help vocab transaction: %s", errmsg);
       sqlite3_free(errmsg);
       sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       break;
     }
   }
   while (1) {
-    int status = sqlite3_exec(help_db, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
+    int status =
+      sqlite3_exec(help_db, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
     if (status == SQLITE_OK) {
       break;
     } else if (is_busy_status(status)) {
       sqlite3_free(errmsg);
     } else {
-      do_rawlog(LT_ERR, "Unable to commit help table transaction: %s",
-                errmsg);
+      do_rawlog(LT_ERR, "Unable to commit help table transaction: %s", errmsg);
       sqlite3_free(errmsg);
       sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       break;
@@ -966,7 +988,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   char *like;
   int likelen;
   int matches = 0;
-  
+
   if (wildcard_count(patcopy, 1) >= 0) {
     /* Quick way out, use the other kind of matching */
     char the_topic[LINE_SIZE + 2];
@@ -987,9 +1009,11 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
 
   buff = mush_calloc(help_dat->entries, sizeof(char *), "help.search");
 
-  lister = prepare_statement(help_db,
-                             "SELECT name FROM topics WHERE catid = (SELECT id FROM categories WHERE name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
-                             "help.list.entries");
+  lister = prepare_statement(
+    help_db,
+    "SELECT name FROM topics WHERE catid = (SELECT id FROM categories WHERE "
+    "name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+    "help.list.entries");
   sqlite3_bind_text(lister, 1, help_dat->command, strlen(help_dat->command),
                     SQLITE_TRANSIENT);
   like = glob_to_like(patcopy, '$', &likelen);
@@ -999,8 +1023,8 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   do {
     status = sqlite3_step(lister);
     if (status == SQLITE_ROW) {
-      buff[matches++] = mush_strdup((const char *)sqlite3_column_text(lister, 0),
-                               "help.entry.name");
+      buff[matches++] = mush_strdup(
+        (const char *) sqlite3_column_text(lister, 0), "help.entry.name");
     }
   } while (status == SQLITE_ROW || is_busy_status(status));
   sqlite3_reset(lister);
@@ -1032,7 +1056,7 @@ entries_from_offset(help_file *h, int off)
   int page = 0;
   char **entries;
   int nentries;
-  
+
   bp = buff;
 
   /* Not all pages contain the same number of entries (due to topics with
@@ -1042,7 +1066,7 @@ entries_from_offset(help_file *h, int off)
    * accurate. Sigh.
    */
   entries = list_matching_entries("*", h, &nentries);
-  
+
   for (page = 0; n < nentries; page++) {
     count = 0;
     while (count <= ENTRIES_PER_PAGE && n < h->entries) {
@@ -1128,7 +1152,7 @@ entries_from_offset(help_file *h, int off)
   if (entries) {
     free_entry_list(entries, nentries);
   }
-  
+
   if (bp == buff)
     return NULL;
 

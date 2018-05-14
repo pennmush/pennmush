@@ -15,10 +15,10 @@
  * file and an in-memory index.
  */
 typedef struct {
-  char *command;   /**< The name of the help command */
-  char *file;      /**< The file of help text */
-  int admin;       /**< Is this an admin-only help command? */
-  int entries;     /**< Number of topics */
+  char *command; /**< The name of the help command */
+  char *file;    /**< The file of help text */
+  int admin;     /**< Is this an admin-only help command? */
+  int entries;   /**< Number of topics */
 } help_file;
 
 void init_help_files(void);

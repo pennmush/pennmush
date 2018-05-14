@@ -13,39 +13,39 @@
 
 bool valid_utf8(const char *);
 
-char *sanitize_utf8(const char * restrict orig, int len, int *outlen,
-                   const char *name) __attribute_malloc__;
+char *sanitize_utf8(const char *restrict orig, int len, int *outlen,
+                    const char *name) __attribute_malloc__;
 
-char *latin1_to_utf8(const char * restrict, int, int *,
+char *latin1_to_utf8(const char *restrict, int, int *,
                      const char *) __attribute_malloc__;
-char *latin1_to_utf8_tn(const char * restrict, int, int *, bool,
+char *latin1_to_utf8_tn(const char *restrict, int, int *, bool,
                         const char *) __attribute_malloc__;
 
-char *utf8_to_latin1(const char * restrict, int, int *, bool,
+char *utf8_to_latin1(const char *restrict, int, int *, bool,
                      const char *) __attribute_malloc__;
-char *utf8_to_latin1_us(const char * restrict, int, int *, bool,
-                     const char *) __attribute_malloc__;
+char *utf8_to_latin1_us(const char *restrict, int, int *, bool,
+                        const char *) __attribute_malloc__;
 
-char *utf16_to_utf8(const UChar *, int, int *, const char *)
-  __attribute_malloc__;
-UChar *utf8_to_utf16(const char * restrict, int, int *,
+char *utf16_to_utf8(const UChar *, int, int *,
+                    const char *) __attribute_malloc__;
+UChar *utf8_to_utf16(const char *restrict, int, int *,
                      const char *) __attribute_malloc__;
-UChar *utf8_to_utf16_us(const char * restrict, int, int *,
+UChar *utf8_to_utf16_us(const char *restrict, int, int *,
                         const char *) __attribute_malloc__;
 
 char *utf32_to_utf8(const UChar32 *, int, int *,
                     const char *) __attribute_malloc__;
-UChar32 *utf8_to_utf32(const char * restrict, int, int *,
+UChar32 *utf8_to_utf32(const char *restrict, int, int *,
                        const char *) __attribute_malloc__;
-UChar32 *utf8_to_utf32_us(const char * restrict, int, int *,
+UChar32 *utf8_to_utf32_us(const char *restrict, int, int *,
                           const char *) __attribute_malloc__;
 
-UChar *latin1_to_utf16(const char * restrict, int, int *,
+UChar *latin1_to_utf16(const char *restrict, int, int *,
                        const char *) __attribute_malloc__;
 char *utf16_to_latin1(const UChar *, int, int *, bool,
                       const char *) __attribute_malloc__;
 
-UChar32 *latin1_to_utf32(const char * restrict, int, int *,
+UChar32 *latin1_to_utf32(const char *restrict, int, int *,
                          const char *) __attribute_malloc__;
 char *utf32_to_latin1(const UChar32 *, int, int *, bool,
                       const char *) __attribute_malloc__;
@@ -56,32 +56,30 @@ char* translate_latin1_to_ascii(const char * restrict,
 #ifdef HAVE_ICU
 
 /* Unicode normalization */
-enum normalization_type {
-  NORM_NFC, NORM_NFD, NORM_NFKC, NORM_NFKD
-};
+enum normalization_type { NORM_NFC, NORM_NFD, NORM_NFKC, NORM_NFKD };
 UChar *normalize_utf16(enum normalization_type, const UChar *, int, int *,
                        const char *) __attribute_malloc__;
-char* normalize_utf8(enum normalization_type, const char * restrict, int,
-                     int *, const char *) __attribute_malloc__;
+char *normalize_utf8(enum normalization_type, const char *restrict, int, int *,
+                     const char *) __attribute_malloc__;
 
-char* translate_utf8_to_latin1(const char * restrict,
-                               int, int *, const char *) __attribute_malloc__;
+char *translate_utf8_to_latin1(const char *restrict, int, int *,
+                               const char *) __attribute_malloc__;
 
-char* translate_utf8_to_ascii(const char * restrict,
+char* translate_utf8_to_ascii(const char *restrict,
                               int, int *, const char *) __attribute_malloc__;
 
 /* Case conversions */
-char *latin1_to_lower(const char * restrict, int, int *,
+char *latin1_to_lower(const char *restrict, int, int *,
                       const char *) __attribute_malloc__;
-char *latin1_to_upper(const char * restrict, int, int *,
+char *latin1_to_upper(const char *restrict, int, int *,
                       const char *) __attribute_malloc__;
-char *latin1_to_title(const char * restrict, int, int *,
+char *latin1_to_title(const char *restrict, int, int *,
                       const char *) __attribute_malloc__;
-char *utf8_to_lower(const char * restrict, int, int *,
+char *utf8_to_lower(const char *restrict, int, int *,
                     const char *) __attribute_malloc__;
-char *utf8_to_upper(const char * restrict, int, int *,
+char *utf8_to_upper(const char *restrict, int, int *,
                     const char *) __attribute_malloc__;
-char *utf8_to_title(const char * restrict, int, int *,
+char *utf8_to_title(const char *restrict, int, int *,
                     const char *) __attribute_malloc__;
 
 #endif

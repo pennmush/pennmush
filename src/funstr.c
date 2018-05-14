@@ -1489,7 +1489,7 @@ FUNCTION(fun_accent)
 FUNCTION(fun_stripaccents)
 {
   int n;
-  
+
   if (nargs == 2 && parse_boolean(args[1])) {
 #if 1
     int alen;

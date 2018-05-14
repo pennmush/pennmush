@@ -1954,7 +1954,8 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 
   if (d->conn_flags & CONN_UTF8) {
     int utf8bytes = 0;
-    utf8 = latin1_to_utf8_tn(b, n, &utf8bytes, d->conn_flags & CONN_TELNET, "string");
+    utf8 = latin1_to_utf8_tn(b, n, &utf8bytes, d->conn_flags & CONN_TELNET,
+                             "string");
     b = utf8;
     n = utf8bytes;
   }
@@ -2055,7 +2056,7 @@ queue_string_eol(DESC *d, const char *fmt, ...)
   int num = 0;
   char buff[BUFFER_LEN * 2];
   va_list args;
-  
+
   va_start(args, fmt);
   mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);

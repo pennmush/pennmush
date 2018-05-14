@@ -667,7 +667,7 @@ do_restart(void)
   char buf[BUFFER_LEN];
   char *bp;
   sqlite3 *sqldb = get_shared_db();
-  
+
   /* Do stuff that needs to be done for players only: add stuff to the
    * alias table, and refund money from queued commands at shutdown.
    */
@@ -796,7 +796,7 @@ init_game_postdb(const char *conf)
   validate_config();
 
   build_linked_table();
-  
+
   /* Build color/RGB mappings */
   build_rgb_map();
 
@@ -822,8 +822,8 @@ extern int dbline;
 int
 init_game_dbs(void)
 {
-  PENNFILE * volatile f = NULL;
-  const char * volatile infile;
+  PENNFILE *volatile f = NULL;
+  const char *volatile infile;
   const char *outfile;
   const char *mailfile;
   volatile int panicdb;
@@ -2565,23 +2565,26 @@ extern intmap *queue_map, *descs_by_fd;
 extern intmap *watchtable;
 #endif
 
-static void list_sqlite3_stats(dbref player, const char *name, sqlite3 *db)
+static void
+list_sqlite3_stats(dbref player, const char *name, sqlite3 *db)
 {
 #ifdef SQLITE_ENABLE_STMTVTAB
   sqlite3_stmt *statter;
-  statter = prepare_statement(db, "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt", "list.memstats");
+  statter = prepare_statement(
+    db,
+    "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt",
+    "list.memstats");
   if (statter) {
     int status;
     notify_format(player, "Prepared query stats for %s database", name);
-    notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s",
-                  "SQL", "nscan", "nsort", "naidx", "nstep",
-                  "reprep", "run", "memory");
+    notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s", "SQL", "nscan",
+                  "nsort", "naidx", "nstep", "reprep", "run", "memory");
     do {
       status = sqlite3_step(statter);
       if (status == SQLITE_ROW) {
         int nscan, nsort, naidx, nstep, reprep, run, mem;
         const char *query;
-        query = (const char *)sqlite3_column_text(statter, 0);
+        query = (const char *) sqlite3_column_text(statter, 0);
         if (strstr(query, "sqlite_stmt")) {
           continue;
         }
@@ -2593,8 +2596,8 @@ static void list_sqlite3_stats(dbref player, const char *name, sqlite3 *db)
         run = sqlite3_column_int(statter, 6);
         mem = sqlite3_column_int(statter, 7);
 
-        notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d",
-                      query, nscan, nsort, naidx, nstep, reprep, run, mem);
+        notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d", query,
+                      nscan, nsort, naidx, nstep, reprep, run, mem);
       }
     } while (status == SQLITE_ROW || is_busy_status(status));
     sqlite3_reset(statter);
@@ -2612,14 +2615,16 @@ do_list_memstats(dbref player)
     const HASHTAB *const table;
     const char *name;
   } hash_tables[] = {
-    {&htab_function, "Functions"},       {&htab_user_function, "@Functions"},
+    {&htab_function, "Functions"},
+    {&htab_user_function, "@Functions"},
     {&htab_reserved_aliases, "Aliases"},
-    {&help_files, "HelpFiles"},          {&htab_locks, "@locks"},
+    {&help_files, "HelpFiles"},
+    {&htab_locks, "@locks"},
     {&local_options, "ConfigOpts"},
   };
   unsigned int i;
   int64_t sqlmem;
-  
+
   notify(player, "Hash Tables:");
   notify(player,
          "Table       Buckets Entries 1Lookup 2Lookup 3Lookup ~Memory KeySize");
@@ -2658,10 +2663,9 @@ do_list_memstats(dbref player)
 
   notify(player, "Sqlite3 Databases:");
   sqlmem = sqlite3_memory_used();
-  notify_format(player,
-                " Using %ld megabytes and %ld kilobytes of memory.",
-                (long)(sqlmem / (1024 * 1024)),
-                (long)((sqlmem % (1024 * 1024)) / 1024));
+  notify_format(player, " Using %ld megabytes and %ld kilobytes of memory.",
+                (long) (sqlmem / (1024 * 1024)),
+                (long) ((sqlmem % (1024 * 1024)) / 1024));
   if (Wizard(player)) {
     extern sqlite3 *help_db, *connlog_db;
     list_sqlite3_stats(player, "temporary", get_shared_db());

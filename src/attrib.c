@@ -2343,7 +2343,7 @@ do_atrlock(dbref player, const char *src, const char *action)
   ATTR *ptr;
   enum atrlock_status status = ATRLOCK_CHECK;
   char abuff[BUFFER_LEN];
-  
+
   if (action && *action) {
     if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") ||
         !strcasecmp(action, "1"))
@@ -2429,7 +2429,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
   char *p, *arg1;
   ATTR *ptr;
   char abuff[BUFFER_LEN];
-  
+
   if (!xarg1 || !*xarg1) {
     notify(player, T("You need to give an object/attribute pair."));
     return;

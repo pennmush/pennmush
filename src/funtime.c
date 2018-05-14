@@ -566,9 +566,8 @@ do_convtime_gd(const char *str __attribute__((__unused__)),
 
 /* do_convtime for systems without getdate(). Will probably break if in
          a non en_US locale */
-static const char *week_table[] = {
-  "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-};
+static const char *week_table[] = {"Sun", "Mon", "Tue", "Wed",
+                                   "Thu", "Fri", "Sat"};
 static const char *month_table[] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -939,13 +938,11 @@ FUNCTION(fun_timecalc)
   } while (is_busy_status(status));
   if (status == SQLITE_ROW) {
     int week, month, day, hour, min, sec, year;
-    const char *datetime = (const char *)sqlite3_column_text(timer, 0);
-    if (datetime && sscanf(datetime, "%d %d %d %d %d %d %d",
-                           &week, &month, &day, &hour, &min, &sec,
-                           &year) == 7) {
-      safe_format(buff, bp, "%s %s %02d %02d:%02d:%02d %04d",
-                  week_table[week], month_table[month-1], day,
-                  hour, min, sec, year);
+    const char *datetime = (const char *) sqlite3_column_text(timer, 0);
+    if (datetime && sscanf(datetime, "%d %d %d %d %d %d %d", &week, &month,
+                           &day, &hour, &min, &sec, &year) == 7) {
+      safe_format(buff, bp, "%s %s %02d %02d:%02d:%02d %04d", week_table[week],
+                  month_table[month - 1], day, hour, min, sec, year);
     } else {
       safe_str("#-1 DATE ERROR", buff, bp);
     }
@@ -988,7 +985,7 @@ FUNCTION(fun_secscalc)
     status = sqlite3_step(timer);
   } while (is_busy_status(status));
   if (status == SQLITE_ROW) {
-    const char *datetime = (const char *)sqlite3_column_text(timer, 0);
+    const char *datetime = (const char *) sqlite3_column_text(timer, 0);
     if (datetime) {
       safe_str(datetime, buff, bp);
     } else {
@@ -997,10 +994,9 @@ FUNCTION(fun_secscalc)
   } else {
     safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
   }
-  
+
   close_statement(timer);
 }
-
 
 #ifdef WIN32
 #pragma warning(default : 4761) /* NJG: enable warning re conversion */

@@ -31,10 +31,13 @@ init_hft(void)
   if (!hft_initialized) {
     char *errmsg = NULL;
     sqlite3 *sqldb = get_shared_db();
- 
+
     if (sqlite3_exec(sqldb,
-                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL, FOREIGN KEY(dbref) REFERENCES objects(dbref) ON DELETE CASCADE) WITHOUT ROWID;"
-                     "CREATE INDEX plyr_dbref_idx ON players(dbref)", NULL, NULL, &errmsg) != SQLITE_OK) {
+                     "CREATE TABLE players(name TEXT NOT NULL PRIMARY KEY, "
+                     "dbref INTEGER NOT NULL, FOREIGN KEY(dbref) REFERENCES "
+                     "objects(dbref) ON DELETE CASCADE) WITHOUT ROWID;"
+                     "CREATE INDEX plyr_dbref_idx ON players(dbref)",
+                     NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create players table: %s", errmsg);
       sqlite3_free(errmsg);
     } else {
@@ -51,8 +54,8 @@ clear_players(void)
     char *errmsg = NULL;
     sqlite3 *sqldb = get_shared_db();
 
-    if (sqlite3_exec(sqldb, "DELETE FROM players", NULL, NULL, &errmsg)
-        != SQLITE_OK) {
+    if (sqlite3_exec(sqldb, "DELETE FROM players", NULL, NULL, &errmsg) !=
+        SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to wipe players table: %s", errmsg);
       sqlite3_free(errmsg);
     }
@@ -71,10 +74,10 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
   int status;
 
   init_hft();
-  
-  adder = prepare_statement(sqldb,
-                            "INSERT INTO players(name, dbref) VALUES(upper(?), ?)",
-                            "plyrlist.add");
+
+  adder = prepare_statement(
+    sqldb, "INSERT INTO players(name, dbref) VALUES(upper(?), ?)",
+    "plyrlist.add");
   if (!adder) {
     return;
   }
@@ -89,16 +92,17 @@ add_player_name(sqlite3 *sqldb, const char *name, dbref player)
 
   if (status != SQLITE_DONE && status != SQLITE_CONSTRAINT) {
     do_rawlog(LT_ERR, "Unable to execute players add query for #%d/%s: %s (%d)",
-                player, name, sqlite3_errmsg(sqldb), status);
+              player, name, sqlite3_errmsg(sqldb), status);
   }
-  
+
   sqlite3_reset(adder);
 }
 
 /** Add a player to the player list htab.
  * \param player dbref of player to add.
  */
-void add_player(dbref player)
+void
+add_player(dbref player)
 {
   add_player_name(get_shared_db(), Name(player), player);
 }
@@ -115,7 +119,7 @@ add_player_alias(dbref player, const char *alias, bool intransaction)
   int status;
   char *errmsg;
   sqlite3 *sqldb = get_shared_db();
-  
+
   init_hft();
 
   if (!intransaction) {
@@ -127,7 +131,7 @@ add_player_alias(dbref player, const char *alias, bool intransaction)
       return;
     }
   }
-  
+
   mush_strncpy(tbuf1, alias, BUFFER_LEN);
   s = trim_space_sep(tbuf1, ALIAS_DELIMITER);
   while (s) {
@@ -187,14 +191,14 @@ lookup_player_name(const char *name)
   int ulen;
   int status;
   sqlite3 *sqldb = get_shared_db();
-  
+
   if (!hft_initialized) {
     return NOTHING;
   }
 
-  looker = prepare_statement(sqldb,
-                             "SELECT dbref FROM players WHERE name = upper(?)",
-                             "plyrlist.lookup");
+  looker =
+    prepare_statement(sqldb, "SELECT dbref FROM players WHERE name = upper(?)",
+                      "plyrlist.lookup");
   if (!looker) {
     return NOTHING;
   }
@@ -209,8 +213,8 @@ lookup_player_name(const char *name)
   if (status == SQLITE_ROW) {
     d = sqlite3_column_int(looker, 0);
   } else if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to run players lookup query for %s: %s",
-              name, sqlite3_errstr(status));
+    do_rawlog(LT_ERR, "Unable to run players lookup query for %s: %s", name,
+              sqlite3_errstr(status));
   }
   sqlite3_reset(looker);
   return d;
@@ -226,11 +230,10 @@ delete_player(dbref player)
   sqlite3_stmt *deleter;
   int status;
   sqlite3 *sqldb = get_shared_db();
-  
+
   init_hft();
 
-  deleter = prepare_statement(sqldb,
-                              "DELETE FROM players WHERE dbref = ?",
+  deleter = prepare_statement(sqldb, "DELETE FROM players WHERE dbref = ?",
                               "plyrlist.delete");
   if (!deleter) {
     return;
@@ -239,12 +242,12 @@ delete_player(dbref player)
   sqlite3_bind_int(deleter, 1, player);
   status = sqlite3_step(deleter);
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Unable to execute query to delete players names for #%d: %s",
+    do_rawlog(LT_ERR,
+              "Unable to execute query to delete players names for #%d: %s",
               player, sqlite3_errstr(status));
   }
   sqlite3_reset(deleter);
 }
-
 
 /** Reset all of a player's player list entries (names/aliases).
  * This is called when a player changes name or alias.
@@ -262,7 +265,7 @@ reset_player_list(dbref player, const char *name, const char *alias)
   sqlite3 *sqldb = get_shared_db();
 
   init_hft();
-  
+
   if (!name) {
     name = Name(player);
   }
@@ -281,7 +284,7 @@ reset_player_list(dbref player, const char *name, const char *alias)
       tbuf[0] = '\0';
     }
   }
-  
+
   status = sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
   if (status != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to start players replace transaction: %s",
@@ -295,7 +298,7 @@ reset_player_list(dbref player, const char *name, const char *alias)
   /* Add in the new stuff */
   add_player_name(sqldb, name, player);
   add_player_alias(player, tbuf, 1);
-  
+
   status = sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, &errmsg);
   if (status != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to commit players replace transaction: %s",

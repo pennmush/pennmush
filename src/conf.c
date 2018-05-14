@@ -335,7 +335,8 @@ PENNCONF conftable[] = {
   {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
    0, NULL},
   {"help_db", cf_str, options.help_db, sizeof options.help_db, 0, NULL},
-  {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0, "log"},
+  {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0,
+   "log"},
   {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
@@ -1887,5 +1888,4 @@ show_compile_options(dbref player)
 #ifdef HAVE_ICU
   notify(player, T(" (Very limited) Unicode support is enabled."));
 #endif
-
 }

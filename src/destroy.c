@@ -625,7 +625,7 @@ free_object(dbref thing)
            thing);
     return;
   }
-  
+
   /* We queue the object-destroy event. Since the event will deal with an
    * object that doesn't exist anymore, we pass it what information we can,
    * but as strings.
@@ -763,16 +763,15 @@ free_object(dbref thing)
     int status;
 
     sqldb = get_shared_db();
-    deleter = prepare_statement(sqldb,
-                                "DELETE FROM objects WHERE dbref = ?",
+    deleter = prepare_statement(sqldb, "DELETE FROM objects WHERE dbref = ?",
                                 "objects.delete");
     sqlite3_bind_int(deleter, 1, thing);
     do {
       status = sqlite3_step(deleter);
     } while (is_busy_status(status));
     if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to delete #%d from objects table: %s",
-                thing, sqlite3_errstr(status));
+      do_rawlog(LT_ERR, "Unable to delete #%d from objects table: %s", thing,
+                sqlite3_errstr(status));
     }
     sqlite3_reset(deleter);
   }
@@ -873,7 +872,7 @@ clear_player(dbref thing)
   chan_chownall(thing, probate);
 
   do_log(LT_WIZ, thing, NOTHING, "Player destroyed.");
-  
+
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 

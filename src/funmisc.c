@@ -63,8 +63,7 @@ FUNCTION(fun_valid)
   } else if (!strcasecmp(args[0], "name")) {
     safe_boolean(ok_name(args[1], 0), buff, bp);
   } else if (!strcasecmp(args[0], "attrname")) {
-    safe_boolean(good_atr_name(strupper_r(args[1], tmp, sizeof tmp)),
-                 buff, bp);
+    safe_boolean(good_atr_name(strupper_r(args[1], tmp, sizeof tmp)), buff, bp);
   } else if (!strcasecmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
@@ -79,15 +78,15 @@ FUNCTION(fun_valid)
   } else if (!strcasecmp(args[0], "password")) {
     safe_boolean(ok_password(args[1]), buff, bp);
   } else if (!strcasecmp(args[0], "command")) {
-    safe_boolean(ok_command_name(strupper_r(args[1], tmp, sizeof tmp)),
-                 buff, bp);
+    safe_boolean(ok_command_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
   } else if (!strcasecmp(args[0], "function")) {
-    safe_boolean(ok_function_name(strupper_r(args[1], tmp, sizeof tmp)),
-                 buff, bp);
+    safe_boolean(ok_function_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
   } else if (!strcasecmp(args[0], "flag")) {
-    safe_boolean(good_flag_name(strupper_r(args[1], tmp, sizeof tmp)),
-                 buff, bp);
-  } else if (!strcasecmp(args[0], "qreg")){
+    safe_boolean(good_flag_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
+  } else if (!strcasecmp(args[0], "qreg")) {
     safe_boolean(ValidQregName(args[1]), buff, bp);
   } else if (!strcasecmp(args[0], "colorname")) {
     safe_boolean(valid_color_name(args[1]), buff, bp);
@@ -1178,22 +1177,26 @@ extern char soundex_val[UCHAR_MAX + 1];
 enum sound_hash_type { HASH_SOUNDEX, HASH_PHONE };
 
 char *
-sound_hash(const char *str, int len, enum sound_hash_type type) {
+sound_hash(const char *str, int len, enum sound_hash_type type)
+{
   sqlite3 *sqldb = get_shared_db();
   sqlite3_stmt *hasher;
   char *utf8, *result = NULL;
   int ulen;
   int status;
-  
+
   switch (type) {
   case HASH_SOUNDEX:
     /* Classic Penn soundex turns a leading ph into f. This makes
        sense but isn't typical. */
-    hasher = prepare_statement(sqldb, "VALUES (soundex(CASE WHEN ?1 LIKE 'ph%' THEN printf('f%s', substr(?1, 3)) ELSE ?1 END))", "hash.soundex");
+    hasher = prepare_statement(sqldb,
+                               "VALUES (soundex(CASE WHEN ?1 LIKE 'ph%' THEN "
+                               "printf('f%s', substr(?1, 3)) ELSE ?1 END))",
+                               "hash.soundex");
     break;
   case HASH_PHONE:
-    hasher = prepare_statement(sqldb, "VALUES (spellfix1_phonehash(?))",
-                               "hash.phone");
+    hasher =
+      prepare_statement(sqldb, "VALUES (spellfix1_phonehash(?))", "hash.phone");
     break;
   default:
     return NULL;
@@ -1203,8 +1206,8 @@ sound_hash(const char *str, int len, enum sound_hash_type type) {
   sqlite3_bind_text(hasher, 1, utf8, ulen, free_string);
   status = sqlite3_step(hasher);
   if (status == SQLITE_ROW) {
-    result = mush_strdup((const char *)sqlite3_column_text(hasher, 0),
-                         "string");
+    result =
+      mush_strdup((const char *) sqlite3_column_text(hasher, 0), "string");
   }
   sqlite3_reset(hasher);
   return result;
@@ -1215,7 +1218,7 @@ FUNCTION(fun_soundex)
 {
   enum sound_hash_type type = HASH_SOUNDEX;
   char *hashed;
-  
+
   if (nargs == 2) {
     if (strcasecmp(args[1], "soundex") == 0) {
       type = HASH_SOUNDEX;
@@ -1242,29 +1245,29 @@ FUNCTION(fun_soundlike)
    * This can be optimized to go character-by-character, but
    * I deem the modularity to be more important. So there.
    */
-    enum sound_hash_type type = HASH_SOUNDEX;
-    char *hash1, *hash2;
+  enum sound_hash_type type = HASH_SOUNDEX;
+  char *hash1, *hash2;
 
-    if (nargs == 3) {
-      if (strcasecmp(args[2], "soundex") == 0) {
-        type = HASH_SOUNDEX;
-      } else if (strcasecmp(args[2], "phone") == 0) {
-        type = HASH_PHONE;
-      } else {
-        safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
-        return;
-      }
-    }
-
-    hash1 = sound_hash(args[0], arglens[0], type);
-    hash2 = sound_hash(args[1], arglens[1], type);
-    if (!hash1 || !hash2) {
-      safe_str("#-1 HASH ERROR", buff, bp);
+  if (nargs == 3) {
+    if (strcasecmp(args[2], "soundex") == 0) {
+      type = HASH_SOUNDEX;
+    } else if (strcasecmp(args[2], "phone") == 0) {
+      type = HASH_PHONE;
     } else {
-      safe_boolean(strcmp(hash1, hash2) == 0, buff, bp);
+      safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
+      return;
     }
-    mush_free(hash1, "string");
-    mush_free(hash2, "string");
+  }
+
+  hash1 = sound_hash(args[0], arglens[0], type);
+  hash2 = sound_hash(args[1], arglens[1], type);
+  if (!hash1 || !hash2) {
+    safe_str("#-1 HASH ERROR", buff, bp);
+  } else {
+    safe_boolean(strcmp(hash1, hash2) == 0, buff, bp);
+  }
+  mush_free(hash1, "string");
+  mush_free(hash2, "string");
 }
 
 /* ARGSUSED */

@@ -39,9 +39,10 @@ update_checkpoint(void)
   sqlite3_stmt *ts;
   int status;
 
-  ts = prepare_statement(connlog_db,
-                         "UPDATE checkpoint SET timestamp = strftime('%s', 'now') WHERE id = 1",
-                         "connlog.timestamp");
+  ts = prepare_statement(
+    connlog_db,
+    "UPDATE checkpoint SET timestamp = strftime('%s', 'now') WHERE id = 1",
+    "connlog.timestamp");
   do {
     status = sqlite3_step(ts);
   } while (is_busy_status(status));
@@ -49,7 +50,8 @@ update_checkpoint(void)
 }
 
 static bool
-checkpoint_event(void *arg __attribute__((__unused__))) {
+checkpoint_event(void *arg __attribute__((__unused__)))
+{
   update_checkpoint();
   return 1;
 }
@@ -64,7 +66,7 @@ init_conndb(bool rebooting)
 {
   int app_id, version;
   char *err;
-  
+
   connlog_db = open_sql_db(options.connlog_db, 0);
 
   if (!connlog_db) {
@@ -83,34 +85,44 @@ init_conndb(bool rebooting)
   }
 
   if (app_id == 0 || version != CONNLOG_VERSION) {
-    do_rawlog(LT_ERR, "Building connlog database. Existing entries will be deleted.");
-    if (sqlite3_exec(connlog_db,
-                     "PRAGMA journal_mode = WAL;"
-                     "PRAGMA application_id = 0x42010FF2;"
-                     "PRAGMA user_version = 1;"
-                     "DROP TABLE IF EXISTS connections;"
-                     "DROP TABLE IF EXISTS timestamps;"
-                     "DROP TABLE IF EXISTS checkpoint;"
-                     "CREATE VIRTUAL TABLE timestamps USING rtree_i32(id, conn, disconn);"
-                     "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref INTEGER NOT NULL DEFAULT -1, name TEXT, ipaddr TEXT NOT NULL, hostname TEXT NOT NULL, reason TEXT);"
-                     "CREATE INDEX conn_dbref_idx ON connections(dbref);"
-                     "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp INTEGER NOT NULL);"
-                     "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'))",
-                     NULL, NULL, &err) != SQLITE_OK) {
+    do_rawlog(LT_ERR,
+              "Building connlog database. Existing entries will be deleted.");
+    if (sqlite3_exec(
+          connlog_db,
+          "PRAGMA journal_mode = WAL;"
+          "PRAGMA application_id = 0x42010FF2;"
+          "PRAGMA user_version = 1;"
+          "DROP TABLE IF EXISTS connections;"
+          "DROP TABLE IF EXISTS timestamps;"
+          "DROP TABLE IF EXISTS checkpoint;"
+          "CREATE VIRTUAL TABLE timestamps USING rtree_i32(id, conn, disconn);"
+          "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref "
+          "INTEGER NOT NULL DEFAULT -1, name TEXT, ipaddr TEXT NOT NULL, "
+          "hostname TEXT NOT NULL, reason TEXT);"
+          "CREATE INDEX conn_dbref_idx ON connections(dbref);"
+          "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp "
+          "INTEGER NOT NULL);"
+          "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'))",
+          NULL, NULL, &err) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to build connlog database: %s", err);
       sqlite3_free(err);
       goto error_cleanup;
     }
   } else if (!rebooting) {
     /* Clean up connections without a logged disconnection time. */
-    if (sqlite3_exec(connlog_db,
-                     "BEGIN TRANSACTION;"
-                     "DELETE FROM connections WHERE id IN (SELECT id FROM timestamps WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1));"
-                     "DELETE FROM timestamps WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1);"
-                     "UPDATE connections SET reason = 'unexpected shutdown' WHERE id IN (SELECT id FROM timestamps WHERE disconn = 2147483647);"
-                     "UPDATE timestamps SET disconn = (SELECT timestamp FROM checkpoint WHERE id = 1) WHERE disconn = 2147483647;"
-                     "COMMIT TRANSACTION",
-                     NULL, NULL, &err) != SQLITE_OK) {
+    if (sqlite3_exec(
+          connlog_db,
+          "BEGIN TRANSACTION;"
+          "DELETE FROM connections WHERE id IN (SELECT id FROM timestamps "
+          "WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1));"
+          "DELETE FROM timestamps WHERE conn > (SELECT timestamp FROM "
+          "checkpoint WHERE id = 1);"
+          "UPDATE connections SET reason = 'unexpected shutdown' WHERE id IN "
+          "(SELECT id FROM timestamps WHERE disconn = 2147483647);"
+          "UPDATE timestamps SET disconn = (SELECT timestamp FROM checkpoint "
+          "WHERE id = 1) WHERE disconn = 2147483647;"
+          "COMMIT TRANSACTION",
+          NULL, NULL, &err) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to update past logins: %s", err);
       sqlite3_free(err);
       goto error_cleanup;
@@ -121,7 +133,7 @@ init_conndb(bool rebooting)
 
   return 1;
 
- error_cleanup:
+error_cleanup:
   close_sql_db(connlog_db);
   connlog_db = NULL;
   return 0;
@@ -139,12 +151,14 @@ shutdown_conndb(bool rebooting)
   if (!connlog_db) {
     return;
   }
-  
+
   if (!rebooting) {
     if (sqlite3_exec(connlog_db,
                      "BEGIN TRANSACTION;"
-                     "UPDATE connections SET reason = 'shutdown' WHERE id IN (SELECT id FROM timestamps WHERE disconn = 2147483647);"
-                     "UPDATE timestamps SET disconn = strftime('%s', 'now') WHERE disconn = 2147483647;"
+                     "UPDATE connections SET reason = 'shutdown' WHERE id IN "
+                     "(SELECT id FROM timestamps WHERE disconn = 2147483647);"
+                     "UPDATE timestamps SET disconn = strftime('%s', 'now') "
+                     "WHERE disconn = 2147483647;"
                      "COMMIT TRANSACTION",
                      NULL, NULL, &err) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to update connlog database: %s", err);
@@ -156,7 +170,7 @@ shutdown_conndb(bool rebooting)
 }
 
 /** Register a new connection in the connlog
- * 
+ *
  * \param ip the ip address of the connection
  * \param host the hostname of the connection
  * \return a unique id for the connection.
@@ -171,13 +185,15 @@ connlog_connection(const char *ip, const char *host)
   if (!options.use_connlog) {
     return -1;
   }
-  
-  if (sqlite3_exec(connlog_db, "BEGIN TRANSACTION",
-                   NULL, NULL, NULL) != SQLITE_OK) {
+
+  if (sqlite3_exec(connlog_db, "BEGIN TRANSACTION", NULL, NULL, NULL) !=
+      SQLITE_OK) {
     return -1;
   }
   adder = prepare_statement(connlog_db,
-                            "INSERT INTO timestamps(conn, disconn) VALUES (strftime('%s', 'now'), 2147483647)", "connlog.connection.1");
+                            "INSERT INTO timestamps(conn, disconn) VALUES "
+                            "(strftime('%s', 'now'), 2147483647)",
+                            "connlog.connection.1");
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
@@ -185,15 +201,16 @@ connlog_connection(const char *ip, const char *host)
   if (status == SQLITE_DONE) {
     id = sqlite3_last_insert_rowid(connlog_db);
   } else {
-    do_rawlog(LT_ERR, "Failed to record connection timestamp from %s: %s",
-              ip, sqlite3_errstr(status));
+    do_rawlog(LT_ERR, "Failed to record connection timestamp from %s: %s", ip,
+              sqlite3_errstr(status));
     sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return -1;
   }
- 
-  adder = prepare_statement(connlog_db,
-                            "INSERT INTO connections(id, ipaddr, hostname) VALUES (?, ?, ?)",
-                            "connlog.connection.2");
+
+  adder = prepare_statement(
+    connlog_db,
+    "INSERT INTO connections(id, ipaddr, hostname) VALUES (?, ?, ?)",
+    "connlog.connection.2");
   sqlite3_bind_int64(adder, 1, id);
   sqlite3_bind_text(adder, 2, ip, strlen(ip), SQLITE_TRANSIENT);
   sqlite3_bind_text(adder, 3, host, strlen(host), SQLITE_TRANSIENT);
@@ -202,8 +219,8 @@ connlog_connection(const char *ip, const char *host)
   } while (is_busy_status(status));
   sqlite3_reset(adder);
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Failed to record connection from %s: %s",
-              ip, sqlite3_errstr(status));
+    do_rawlog(LT_ERR, "Failed to record connection from %s: %s", ip,
+              sqlite3_errstr(status));
     sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return -1;
   }
@@ -225,20 +242,21 @@ connlog_login(int64_t id, dbref player)
   if (id == -1) {
     return;
   }
-  
-  login = prepare_statement(connlog_db,
-                            "UPDATE connections SET dbref = ?, name = ? WHERE id = ?",
-                            "connlog.login");
+
+  login = prepare_statement(
+    connlog_db, "UPDATE connections SET dbref = ?, name = ? WHERE id = ?",
+    "connlog.login");
   sqlite3_bind_int(login, 1, player);
-  sqlite3_bind_text(login, 2, Name(player), strlen(Name(player)), SQLITE_TRANSIENT);
+  sqlite3_bind_text(login, 2, Name(player), strlen(Name(player)),
+                    SQLITE_TRANSIENT);
   sqlite3_bind_int64(login, 3, id);
   do {
     status = sqlite3_step(login);
   } while (is_busy_status(status));
   sqlite3_reset(login);
   if (status != SQLITE_DONE) {
-    do_rawlog(LT_ERR, "Failed to record login to #%d: %s",
-              player, sqlite3_errstr(status));
+    do_rawlog(LT_ERR, "Failed to record login to #%d: %s", player,
+              sqlite3_errstr(status));
   }
 }
 
@@ -252,21 +270,22 @@ connlog_disconnection(int64_t id, const char *reason)
 {
   sqlite3_stmt *disco_c, *disco_t;
   int status;
-  
+
   if (id == -1) {
     return;
   }
-  
-  disco_t = prepare_statement(connlog_db,
-                              "UPDATE timestamps SET disconn = strftime('%s', 'now') WHERE id = ?",
-                              "connlog.disconn.1");
+
+  disco_t = prepare_statement(
+    connlog_db,
+    "UPDATE timestamps SET disconn = strftime('%s', 'now') WHERE id = ?",
+    "connlog.disconn.1");
   disco_c = prepare_statement(connlog_db,
                               "UPDATE connections SET reason = ? WHERE id = ?",
                               "connlog.disconn.2");
   sqlite3_bind_int64(disco_t, 1, id);
   sqlite3_bind_text(disco_c, 1, reason, strlen(reason), SQLITE_TRANSIENT);
   sqlite3_bind_int64(disco_c, 2, id);
-  
+
   sqlite3_exec(connlog_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
   do {
     status = sqlite3_step(disco_t);
@@ -285,7 +304,8 @@ connlog_disconnection(int64_t id, const char *reason)
   sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
 }
 
-FUNCTION(fun_connlog) {
+FUNCTION(fun_connlog)
+{
   char query[BUFFER_LEN];
   char *qp = query;
   sqlite3_stmt *search;
@@ -300,7 +320,7 @@ FUNCTION(fun_connlog) {
   char *ip = NULL, *host = NULL;
   int iplen, hostlen;
   bool first_constraint = 1;
-  
+
   if (!options.use_connlog) {
     safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
     return;
@@ -320,8 +340,10 @@ FUNCTION(fun_connlog) {
       return;
     }
   }
-                                
-  safe_str("SELECT dbref, timestamps.id FROM timestamps JOIN connections ON timestamps.id = connections.id WHERE", query, &qp);
+
+  safe_str("SELECT dbref, timestamps.id FROM timestamps JOIN connections ON "
+           "timestamps.id = connections.id WHERE",
+           query, &qp);
   if (player >= 0) {
     safe_format(query, &qp, " dbref = %d", player);
     first_constraint = 0;
@@ -341,10 +363,10 @@ FUNCTION(fun_connlog) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
         return;
       } else if (nargs <= idx + 2) {
-      safe_str("#-1 BETWEEN MISSING RANGE", buff, bp);
-      return;
-      } else if (!is_strict_integer(args[idx + 1])
-                 || !is_strict_integer(args[idx + 2])) {
+        safe_str("#-1 BETWEEN MISSING RANGE", buff, bp);
+        return;
+      } else if (!is_strict_integer(args[idx + 1]) ||
+                 !is_strict_integer(args[idx + 2])) {
         safe_str(T(e_ints), buff, bp);
         return;
       }
@@ -357,8 +379,8 @@ FUNCTION(fun_connlog) {
       } else {
         safe_str(" AND", query, &qp);
       }
-      safe_format(query, &qp, " conn <= %d AND disconn >= %d",
-                  endtime, starttime);
+      safe_format(query, &qp, " conn <= %d AND disconn >= %d", endtime,
+                  starttime);
       time_constraint = 1;
       idx += 3;
     } else if (strcmp(args[idx], "at") == 0) {
@@ -483,7 +505,7 @@ FUNCTION(fun_connlog) {
   if (idx == nargs - 1) {
     sep = args[idx];
   }
-  
+
   safe_str(" ORDER BY connections.id", query, &qp);
   *qp = '\0';
 
@@ -534,20 +556,23 @@ FUNCTION(fun_connrecord)
   const char *sep = " ";
   sqlite3_stmt *rec;
   int status;
-  
+
   if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
   }
-  
+
   id = parse_int64(args[0], NULL, 10);
 
   if (nargs == 2) {
     sep = args[1];
   }
 
-  rec = prepare_statement(connlog_db,
-                          "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, ifnull(reason, '-') FROM timestamps JOIN connections ON timestamps.id = connections.id WHERE timestamps.id = ?",
-                          "connlog.fun.record");
+  rec = prepare_statement(
+    connlog_db,
+    "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, "
+    "ifnull(reason, '-') FROM timestamps JOIN connections ON timestamps.id = "
+    "connections.id WHERE timestamps.id = ?",
+    "connlog.fun.record");
   if (!rec) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     return;
@@ -561,11 +586,11 @@ FUNCTION(fun_connrecord)
     int32_t disco;
     safe_dbref(sqlite3_column_int(rec, 0), buff, bp);
     safe_str(sep, buff, bp);
-    safe_str((const char *)sqlite3_column_text(rec, 1), buff, bp);
+    safe_str((const char *) sqlite3_column_text(rec, 1), buff, bp);
     safe_str(sep, buff, bp);
-    safe_str((const char *)sqlite3_column_text(rec, 2), buff, bp);
+    safe_str((const char *) sqlite3_column_text(rec, 2), buff, bp);
     safe_str(sep, buff, bp);
-    safe_str((const char *)sqlite3_column_text(rec, 3), buff, bp);
+    safe_str((const char *) sqlite3_column_text(rec, 3), buff, bp);
     safe_str(sep, buff, bp);
     safe_integer(sqlite3_column_int(rec, 4), buff, bp);
     disco = sqlite3_column_int(rec, 5);
@@ -576,7 +601,7 @@ FUNCTION(fun_connrecord)
       safe_integer(disco, buff, bp);
     }
     safe_str(sep, buff, bp);
-    safe_str((const char *)sqlite3_column_text(rec, 6), buff, bp);
+    safe_str((const char *) sqlite3_column_text(rec, 6), buff, bp);
   } else if (status != SQLITE_DONE) {
     safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
   } else {

@@ -160,6 +160,22 @@ FUNCTION(fun_capstr)
   safe_strl(args[0], arglens[0], buff, bp);
 }
 
+FUNCTION(fun_capstr2)
+{
+#ifdef HAVE_ICU
+  int ulen;
+  char *up = latin1_to_title(args[0], arglens[0], &ulen, "string");
+  if (up) {
+    safe_strl(up, ulen, buff, bp);
+    mush_free(up, "string");
+  } else {
+    safe_str("#-1 ENCODING ERROR", buff, bp);
+  }
+#else
+  safe_str("#-1 FUNCTION DISABLED", buff, bp);
+#endif
+}
+
 /* ARGSUSED */
 FUNCTION(fun_art)
 {

@@ -1134,6 +1134,50 @@ latin1_to_upper(const char * restrict s, int len, int *outlen,
   return upper;
 }
 
+/** Return a smart title-cased latin1 string.
+ * 
+ * \param s the string to upper case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+latin1_to_title(const char * restrict s, int len, int *outlen,
+                const char *name)
+{
+  UChar *utf16 = NULL, *title16 = NULL;
+  char *title = NULL;
+  int ulen, llen;
+  UErrorCode uerr = U_ZERO_ERROR;
+  
+  utf16 = latin1_to_utf16(s, len, &ulen, "temp.utf16");
+  title16 = mush_calloc(ulen + 1, sizeof(UChar), "temp.utf16");
+  llen = ulen + 1;
+  
+  llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
+  if (U_SUCCESS(uerr)) {
+  } else if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    goto cleanup;
+  } else {
+    llen += 1;
+    title16 = mush_realloc(title16, llen * sizeof(UChar), "temp.utf16");
+
+    uerr = U_ZERO_ERROR;
+    llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
+    if (U_FAILURE(uerr)) {
+      goto cleanup;
+    }
+  }
+
+  title = utf16_to_latin1(title16, llen, outlen, 0, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(title16, "temp.utf16");
+  return title;
+}
+
 /** Return a smart lower-cased utf-8 string.
  * 
  * Invalid byte sequences are replaced with U+FFFD
@@ -1224,6 +1268,53 @@ utf8_to_upper(const char * restrict s, int len, int *outlen,
   mush_free(upper16, "temp.utf16");
   return upper8;
 }
+
+/** Return a smart title-cased utf-8 string.
+ *
+ * Invalid byte sequences are replaced with U+FFFD
+ *
+ * \param s the string to upper case
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen set to the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string.
+ */
+char *
+utf8_to_title(const char * restrict s, int len, int *outlen,
+              const char *name)
+{
+  UChar *utf16 = NULL, *title16 = NULL;
+  char *title8 = NULL;
+  int ulen, llen;
+  UErrorCode uerr = U_ZERO_ERROR;
+  
+  utf16 = utf8_to_utf16(s, len, &ulen, "temp.utf16");
+  title16 = mush_calloc(ulen + 1, sizeof(UChar), "temp.utf16");
+  llen = ulen + 1;
+  
+  llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
+  if (U_SUCCESS(uerr)) {
+  } else if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
+    goto cleanup;
+  } else {
+    llen += 1;
+    title16 = mush_realloc(title16, llen * sizeof(UChar), "temp.utf16");
+
+    uerr = U_ZERO_ERROR;
+    llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
+    if (U_FAILURE(uerr)) {
+      goto cleanup;
+    }
+  }
+
+  title8 = utf16_to_utf8(title16, llen, outlen, name);
+
+ cleanup:
+  mush_free(utf16, "temp.utf16");
+  mush_free(title16, "temp.utf16");
+  return title8;
+}
+
 
 static const UNormalizer2 *
 get_normalizer(enum normalization_type n, UErrorCode *uerr)

@@ -696,13 +696,18 @@ See also: ceil(), floor(), round(), trunc()
   
 See also: BITWISE FUNCTIONS, lmath()
 & CAPSTR()
+& CAPSTR2()
   capstr(<string>)
-  
-  Returns <string> with the first character capitalized.
+  capstr2(<string>)
+
+  capstr() returns <string> with the first character capitalized.
+  capstr2(), if enabled, returns <string> titlecased according to Unicode rules - the string is lowercased, and the first character of each word is title cased. The result might be shorter or longer than the original.
 
   Example:
     > think capstr(foo bar baz)
     Foo bar baz
+    > think capstr2(foo BAR baz)
+    Foo Bar Baz
 
 See also: lcstr(), ucstr()
 & CAT()

@@ -601,7 +601,7 @@ main(int argc, char **argv)
   initialize_rng();
 
   options.mem_check = 1;
-  
+
   init_game_config(confname);
 
   /* If we have setlocale, call it to set locale info
@@ -2326,16 +2326,17 @@ save_command(DESC *d, char *command)
       add_to_queue(&d->input, latin1, llen + 1);
       mush_free(latin1, "string");
     } else {
-      const char errmsg[] = "ERROR: Unicode sanitization+normalization failed.\r\n";
+      const char errmsg[] =
+        "ERROR: Unicode sanitization+normalization failed.\r\n";
       queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
       do_rawlog(LT_ERR, "Unable to sanitize+normalize input '%s'", command);
     }
   } else {
     char *c;
     for (c = command; *c; c += 1) {
-        if (!char_isprint(*c)) {
-          *c = '?';
-        }
+      if (!char_isprint(*c)) {
+        *c = '?';
+      }
     }
     add_to_queue(&d->input, command, strlen(command) + 1);
   }
@@ -3697,8 +3698,9 @@ check_connect(DESC *d, const char *msg)
     switch (player) {
     case NOTHING:
     case AMBIGUOUS:
-      queue_string_eol(d, "%s",
-                       T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
+      queue_string_eol(
+        d, "%s",
+        T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
                 d->descriptor, d->addr, d->ip, user);
       break;
@@ -4564,8 +4566,8 @@ report_mssp(DESC *d, char *buff, char **bp)
       queue_string_eol(d, "%s\t%d", "SSL", options.ssl_port);
     }
     queue_string_eol(d, "%s\t%d", "PUEBLO", options.support_pueblo);
-    queue_string_eol(d, "%s\t%s %sp%s", "CODEBASE", "PennMUSH",
-                     VERSION, PATCHLEVEL);
+    queue_string_eol(d, "%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION,
+                     PATCHLEVEL);
     queue_string_eol(d, "%s\t%s", "FAMILY", "TinyMUD");
     if (strlen(options.mud_url)) {
       queue_string_eol(d, "%s\t%s", "WEBSITE", options.mud_url);

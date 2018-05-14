@@ -294,8 +294,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
    CMD_T_ANY, 0, 0},
-  {"@SUGGEST", "ADD DELETE LIST", cmd_suggest, CMD_T_ANY | CMD_T_EQSPLIT,
-   0, 0},
+  {"@SUGGEST", "ADD DELETE LIST", cmd_suggest, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
   {"@SWITCH",
    "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
@@ -1256,7 +1255,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     *c = '\0';
     mush_strncpy(commandraw, command, sizeof commandraw);
     upcasestr(command);
-
 
     /* Catch &XX and @XX attribute pairs. If that's what we've got,
      * use the magical ATTRIB_SET command

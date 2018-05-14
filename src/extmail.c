@@ -768,11 +768,11 @@ do_mail_list(dbref player, const char *msglist)
         /* list it */
         if (SUPPORT_HTML) {
           char buff[BUFFER_LEN];
-          snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/read %d:%d\" "
+          snprintf(buff, sizeof buff,
+                   "%c%cA XCH_CMD=\"@mail/read %d:%d\" "
                    "XCH_HINT=\"Read message %d in folder %d\"%c",
-                   TAG_START, MARKUP_HTML, (int) Folder(mp),
-                   i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
-                   TAG_END);
+                   TAG_START, MARKUP_HTML, (int) Folder(mp), i[Folder(mp)],
+                   i[Folder(mp)], (int) Folder(mp), TAG_END);
           notify_noenter(player, buff);
         }
         strcpy(subj, chopstr(get_subject(mp), 28));
@@ -788,8 +788,8 @@ do_mail_list(dbref player, const char *msglist)
                       mail_list_time(show_time(mp->time, 0), 1));
         if (SUPPORT_HTML) {
           char buff[10];
-          snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START,
-                   MARKUP_HTML, TAG_END);
+          snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START, MARKUP_HTML,
+                   TAG_END);
           notify_noenter(player, buff);
         }
       }
@@ -978,10 +978,11 @@ do_mail_reviewlist(dbref player, dbref target)
       i++;
       if (SUPPORT_HTML) {
         char buff[BUFFER_LEN];
-        snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/review %s=%d\" "
+        snprintf(buff, sizeof buff,
+                 "%c%cA XCH_CMD=\"@mail/review %s=%d\" "
                  "XCH_HINT=\"Read message %d sent to %s\"%c",
-                 TAG_START, MARKUP_HTML, Name(mp->to), i, i,
-                 Name(mp->to), TAG_END);
+                 TAG_START, MARKUP_HTML, Name(mp->to), i, i, Name(mp->to),
+                 TAG_END);
         notify_noenter(player, buff);
       }
       strcpy(subj, chopstr(get_subject(mp), 28));

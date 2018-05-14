@@ -124,11 +124,11 @@ static char *sql_sanitize(const char *res);
 #define SANITIZE(s, n) ((s && *s) ? mush_strdup(sql_sanitize(s), n) : NULL)
 
 static char *
-SANITIZEUTF8(const char * restrict s, const char * restrict n)
+SANITIZEUTF8(const char *restrict s, const char *restrict n)
 {
   if (s && *s) {
     const char *san = sql_sanitize(s);
-    return utf8_to_latin1(san, strlen(san), NULL, 0, n);    
+    return utf8_to_latin1(san, strlen(san), NULL, 0, n);
   } else {
     return NULL;
   }
@@ -366,42 +366,40 @@ FUNCTION(fun_sql_escape)
       PQescapeStringConn(postgres_connp, bigbuff, args[0], arglens[0], NULL);
     break;
 #endif
-  case SQL_PLATFORM_SQLITE3:
-    {
-      sqlite3_stmt *escaper;
-      char *utf8;
-      int status, ulen;
-      
-      escaper = prepare_statement(sqlite3_connp,
-                                  "VALUES (quote(?))", "fun.sqlescape");
-      utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
-      if (!utf8) {
-        safe_str("#-1 ENCODING ERROR", buff, bp);
-        return;
-      }
-      sqlite3_bind_text(escaper, 1, utf8, ulen, free_string);
-      do {
-        status = sqlite3_step(escaper);
-        if (status == SQLITE_ROW) {
-          const char *escaped;
-          char *latin1;
-          int elen;
-          escaped = (const char *)sqlite3_column_text(escaper, 0);
-          elen = sqlite3_column_bytes(escaper, 0);
-          latin1 = utf8_to_latin1_us(escaped, elen, &chars_written, 0, "string");
-          latin1[chars_written - 1] = '\0';
-          chars_written -= 2;
-          mush_strncpy(bigbuff, latin1 + 1, sizeof bigbuff);
-          mush_free(latin1, "string");
-        }
-      } while (is_busy_status(status));
-      sqlite3_reset(escaper);
-      if (status != SQLITE_ROW) {
-        safe_str("#-1 ENCODING ERROR", buff, bp);
-        return;
-      }
+  case SQL_PLATFORM_SQLITE3: {
+    sqlite3_stmt *escaper;
+    char *utf8;
+    int status, ulen;
+
+    escaper =
+      prepare_statement(sqlite3_connp, "VALUES (quote(?))", "fun.sqlescape");
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    if (!utf8) {
+      safe_str("#-1 ENCODING ERROR", buff, bp);
+      return;
     }
-    break;
+    sqlite3_bind_text(escaper, 1, utf8, ulen, free_string);
+    do {
+      status = sqlite3_step(escaper);
+      if (status == SQLITE_ROW) {
+        const char *escaped;
+        char *latin1;
+        int elen;
+        escaped = (const char *) sqlite3_column_text(escaper, 0);
+        elen = sqlite3_column_bytes(escaper, 0);
+        latin1 = utf8_to_latin1_us(escaped, elen, &chars_written, 0, "string");
+        latin1[chars_written - 1] = '\0';
+        chars_written -= 2;
+        mush_strncpy(bigbuff, latin1 + 1, sizeof bigbuff);
+        mush_free(latin1, "string");
+      }
+    } while (is_busy_status(status));
+    sqlite3_reset(escaper);
+    if (status != SQLITE_ROW) {
+      safe_str("#-1 ENCODING ERROR", buff, bp);
+      return;
+    }
+  } break;
   default:
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -564,8 +562,8 @@ COMMAND(cmd_mapsql)
         case SQL_PLATFORM_SQLITE3:
           cells[i + 1] =
             SANITIZEUTF8((char *) sqlite3_column_text(qres, i), "sql_row");
-          names[i + 1] =
-            SANITIZEUTF8((char *) sqlite3_column_name(qres, i), "sql_fieldname");
+          names[i + 1] = SANITIZEUTF8((char *) sqlite3_column_name(qres, i),
+                                      "sql_fieldname");
           break;
         default:
           /* Not reached, shuts up compiler */
@@ -635,7 +633,7 @@ COMMAND(cmd_sql)
   char *tbp;
   ansi_string *as;
   int i;
-  
+
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     notify(executor, T("No SQL database connection."));
     return;
@@ -718,17 +716,15 @@ COMMAND(cmd_sql)
           name = PQfname(qres, i);
           break;
 #endif
-        case SQL_PLATFORM_SQLITE3:
-          {
-            const char *c;
-            int clen;
-            c = (const char *)sqlite3_column_text(qres, i);
-            clen = sqlite3_column_bytes(qres, i);
-            cell = utf8_to_latin1(c, clen, NULL, 0, "string");
-            name = (char *) sqlite3_column_name(qres, i);
-            free_cell = 1;
-          }
-          break;
+        case SQL_PLATFORM_SQLITE3: {
+          const char *c;
+          int clen;
+          c = (const char *) sqlite3_column_text(qres, i);
+          clen = sqlite3_column_bytes(qres, i);
+          cell = utf8_to_latin1(c, clen, NULL, 0, "string");
+          name = (char *) sqlite3_column_name(qres, i);
+          free_cell = 1;
+        } break;
         default:
           /* Not reached, shuts up compiler */
           break;
@@ -742,19 +738,19 @@ COMMAND(cmd_sql)
             safe_ansi_string(as, 0, as->len, tbuf, &tbp);
             *tbp = '\0';
             free_ansi_string(as);
-	    if (free_cell) {
-	      mush_free(cell, "string");
-	      free_cell = 0;
-	    }
+            if (free_cell) {
+              mush_free(cell, "string");
+              free_cell = 0;
+            }
             cell = tbuf;
           }
         }
         notify_format(executor, T("Row %d, Field %s: %s"), rownum + 1, name,
                       (cell && *cell) ? cell : "NULL");
-	if (free_cell) {
-	  mush_free(cell, "string");
-	  free_cell = 0;
-	}
+        if (free_cell) {
+          mush_free(cell, "string");
+          free_cell = 0;
+        }
       }
     } else {
       notify_format(executor, T("Row %d: NULL"), rownum + 1);
@@ -863,13 +859,10 @@ FUNCTION(fun_mapsql)
         mush_strdup(sql_sanitize(PQfname(qres, i)), "sql_fieldname");
       break;
 #endif
-    case SQL_PLATFORM_SQLITE3:
-      {
-        const char *s = sql_sanitize((const char *)sqlite3_column_name(qres, i));
-      fieldnames[i] =
-	utf8_to_latin1(s, strlen(s), NULL, 0, "sql_fieldname");
-      }
-      break;
+    case SQL_PLATFORM_SQLITE3: {
+      const char *s = sql_sanitize((const char *) sqlite3_column_name(qres, i));
+      fieldnames[i] = utf8_to_latin1(s, strlen(s), NULL, 0, "sql_fieldname");
+    } break;
     default:
       break;
     }
@@ -916,25 +909,23 @@ FUNCTION(fun_mapsql)
         cell = PQgetvalue(qres, rownum, i);
         break;
 #endif
-      case SQL_PLATFORM_SQLITE3:
-        {
-          const char *c = (const char *)sqlite3_column_text(qres, i);
-          int clen = sqlite3_column_bytes(qres, i);          
-          cell = utf8_to_latin1(c, clen, NULL, 0, "string");
-          free_cell = 1;
-        }
-        break;
+      case SQL_PLATFORM_SQLITE3: {
+        const char *c = (const char *) sqlite3_column_text(qres, i);
+        int clen = sqlite3_column_bytes(qres, i);
+        cell = utf8_to_latin1(c, clen, NULL, 0, "string");
+        free_cell = 1;
+      } break;
       default:
         break;
       }
       if (cell && *cell) {
-	/* TODO: Fix this mess */
-	char *newcell = sql_sanitize(cell);
-	if (free_cell) {
-	  mush_free(cell, "string");
-	  free_cell = 0;
-	  cell = newcell;
-	}
+        /* TODO: Fix this mess */
+        char *newcell = sql_sanitize(cell);
+        if (free_cell) {
+          mush_free(cell, "string");
+          free_cell = 0;
+          cell = newcell;
+        }
       }
       if (cell && *cell) {
         pe_regs_setenv(pe_regs, i + 1, cell);
@@ -952,7 +943,7 @@ FUNCTION(fun_mapsql)
 finished:
   if (free_cell) {
     mush_free(cell, "string");
-  } 
+  }
   if (pe_regs) {
     pe_regs_free(pe_regs);
   }
@@ -979,7 +970,7 @@ FUNCTION(fun_sql)
   ansi_string *as;
   char *qreg_save = NULL;
   bool free_cell = 0;
-  
+
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -1072,14 +1063,12 @@ FUNCTION(fun_sql)
         cell = PQgetvalue(qres, rownum, i);
         break;
 #endif
-      case SQL_PLATFORM_SQLITE3:
-        {
-          const char *c = (const char *)sqlite3_column_text(qres, i);
-          int clen = sqlite3_column_bytes(qres, i);
-          cell = utf8_to_latin1(c, clen, NULL, 0, "string");
-          free_cell = 1;
-        }
-        break;
+      case SQL_PLATFORM_SQLITE3: {
+        const char *c = (const char *) sqlite3_column_text(qres, i);
+        int clen = sqlite3_column_bytes(qres, i);
+        cell = utf8_to_latin1(c, clen, NULL, 0, "string");
+        free_cell = 1;
+      } break;
       default:
         break;
       }
@@ -1096,11 +1085,11 @@ FUNCTION(fun_sql)
         }
         if (safe_str(cell, buff, bp)) {
           goto finished; /* We filled the buffer, best stop */
-	}
+        }
       }
       if (free_cell) {
-	mush_free(cell, "string");
-	free_cell = 0;
+        mush_free(cell, "string");
+        free_cell = 0;
       }
     }
   }
@@ -1146,7 +1135,7 @@ penn_mysql_sql_init(void)
     sql_port = s->s_port;
   }
 #endif
-  
+
   /* Only retry at most once per minute. */
   curtime = time(NULL);
   if (curtime < (last_retry + 60))
@@ -1423,10 +1412,13 @@ penn_sqlite3_sql_init(void)
 {
   int status;
   sqlite3_connp = NULL;
-  if ((status = sqlite3_open_v2(SQL_DB, &sqlite3_connp, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL))
-      != SQLITE_OK) {
-    do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sqlite3_errstr(status));
-    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sqlite3_errstr(status));
+  if ((status = sqlite3_open_v2(SQL_DB, &sqlite3_connp,
+                                SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                                NULL)) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB,
+              sqlite3_errstr(status));
+    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3",
+                sqlite3_errstr(status));
     sqlite3_connp = NULL;
     return 0;
   } else {
@@ -1454,7 +1446,7 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   int q_len, u_len, retcode;
   sqlite3_stmt *statement = NULL;
   char *q_utf8;
-  
+
   if (!penn_sqlite3_sql_connected()) {
     penn_sqlite3_sql_init();
     if (!penn_sqlite3_sql_connected())
@@ -1479,4 +1471,3 @@ penn_sqlite3_free_sql_query(sqlite3_stmt *stmt)
 {
   sqlite3_finalize(stmt);
 }
-

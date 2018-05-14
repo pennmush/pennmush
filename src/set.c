@@ -751,10 +751,9 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
         /* copy the attribute flags too */
         if (!noflagcopy) {
           char tmp[BUFFER_LEN];
-          copy_attrib_flags(player, newobj,
-                            atr_get_noparent(newobj,
-                                             strupper_r(q, tmp, sizeof tmp)),
-                            a->flags);
+          copy_attrib_flags(
+            player, newobj,
+            atr_get_noparent(newobj, strupper_r(q, tmp, sizeof tmp)), a->flags);
         }
       }
     }

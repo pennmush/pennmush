@@ -1473,26 +1473,25 @@ FUNCTION(fun_accent)
 FUNCTION(fun_stripaccents)
 {
   int n;
-  
+
   if (nargs == 2 && parse_boolean(args[1])) {
     sqlite3 *sqldb;
     sqlite3_stmt *converter;
 
     sqldb = get_shared_db();
-    converter = prepare_statement(sqldb,
-                                  "VALUES (spellfix1_translit(?))",
+    converter = prepare_statement(sqldb, "VALUES (spellfix1_translit(?))",
                                   "utf8_to_ascii");
     if (converter) {
       int len;
       int status;
       char *utf8;
-    
+
       utf8 = latin1_to_utf8(args[0], arglens[0], &len, "string");
       sqlite3_bind_text(converter, 1, utf8, len, free_string);
       do {
         status = sqlite3_step(converter);
         if (status == SQLITE_ROW) {
-          const char *ascii = (const char *)sqlite3_column_text(converter, 0);
+          const char *ascii = (const char *) sqlite3_column_text(converter, 0);
           len = sqlite3_column_bytes(converter, 0);
           safe_strl(ascii, len, buff, bp);
           break;

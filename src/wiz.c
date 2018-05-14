@@ -164,7 +164,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
   dbref who, thing;
   int owned, limit, adjust;
   char tmp[50];
-  
+
   /* determine the victim */
   if (!arg1 || !*arg1 || !strcmp(arg1, "me"))
     who = Owner(player);
@@ -1501,31 +1501,35 @@ build_linked_table(void)
   sqlite3_stmt *adder;
   int n;
 
-  if (sqlite3_exec(sqldb,
-                   "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT NULL PRIMARY KEY, from_type INTEGER NOT NULL, FOREIGN KEY(to_obj) REFERENCES objects(dbref) ON DELETE CASCADE, FOREIGN KEY(from_obj) REFERENCES objects(dbref) ON DELETE CASCADE);"
-                   "CREATE INDEX linked_to_idx ON linked(to_obj);"
-                   "BEGIN TRANSACTION",
-                   NULL, NULL, &errmsg) != SQLITE_OK) {
+  if (sqlite3_exec(
+        sqldb,
+        "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT "
+        "NULL PRIMARY KEY, from_type INTEGER NOT NULL, FOREIGN KEY(to_obj) "
+        "REFERENCES objects(dbref) ON DELETE CASCADE, FOREIGN KEY(from_obj) "
+        "REFERENCES objects(dbref) ON DELETE CASCADE);"
+        "CREATE INDEX linked_to_idx ON linked(to_obj);"
+        "BEGIN TRANSACTION",
+        NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create entrances table: %s", errmsg);
     sqlite3_free(errmsg);
     sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return;
   }
 
-  adder = prepare_statement(sqldb,
-                            "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
-                            "linked.insert");
+  adder = prepare_statement(
+    sqldb, "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
+    "linked.insert");
   if (!adder) {
     return;
   }
-  
+
   for (n = 0; n < db_top; n += 1) {
     dbref to = NOTHING;
     int type = 0;
     int status;
 
     if (IsGarbage(n)) {
-      continue;    
+      continue;
     } else if (IsPlayer(n) || IsThing(n)) {
       to = Home(n);
       type = IsPlayer(n) ? TYPE_PLAYER : TYPE_THING;
@@ -1550,8 +1554,8 @@ build_linked_table(void)
     sqlite3_reset(adder);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR,
-                "Unable to insert (#%d <- #%d) into entrances table: %s",
-                to, n, sqlite3_errstr(status));
+                "Unable to insert (#%d <- #%d) into entrances table: %s", to, n,
+                sqlite3_errstr(status));
     }
   }
   sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
@@ -1566,8 +1570,7 @@ delete_link_from(dbref obj)
   sqlite3_stmt *deleter;
 
   sqldb = get_shared_db();
-  deleter = prepare_statement(sqldb,
-                              "DELETE FROM linked WHERE from_obj = ?",
+  deleter = prepare_statement(sqldb, "DELETE FROM linked WHERE from_obj = ?",
                               "linked.delete_one");
   if (deleter) {
     int status;
@@ -1589,11 +1592,11 @@ add_link(dbref from, dbref to)
   if (!GoodObject(from) || !GoodObject(to)) {
     return;
   }
-  
+
   sqldb = get_shared_db();
-  adder = prepare_statement(sqldb,
-                            "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
-                            "linked.insert");
+  adder = prepare_statement(
+    sqldb, "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
+    "linked.insert");
   if (adder) {
     int status;
     sqlite3_bind_int(adder, 1, to);
@@ -1613,9 +1616,11 @@ find_linked(struct search_spec *spec)
   sqlite3_stmt *finder;
 
   sqldb = get_shared_db();
-  finder = prepare_statement(sqldb,
-                             "SELECT from_obj FROM linked WHERE to_obj = ? AND from_obj BETWEEN ? AND ? AND from_type & ? ORDER BY from_obj",
-                             "linked.find");
+  finder = prepare_statement(
+    sqldb,
+    "SELECT from_obj FROM linked WHERE to_obj = ? AND from_obj BETWEEN ? AND ? "
+    "AND from_type & ? ORDER BY from_obj",
+    "linked.find");
   if (!finder) {
     return NULL;
   }
@@ -1648,7 +1653,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
   char exit_source[BUFFER_LEN];
   sqlite3_stmt *linked;
   bool prived;
-  
+
   rooms = things = exits = players = 0;
 
   if (!where || !*where) {
@@ -1660,7 +1665,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
     return;
 
   prived = controls(player, place) || See_All(player) || Search_All(player);
-  
+
   init_search_spec(&spec);
   spec.entrances = place;
 
@@ -1695,19 +1700,17 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
         switch (Typeof(obj)) {
         case TYPE_EXIT:
           strcpy(exit_source, object_header(player, Source(obj)));
-          notify_format(player, T("%s [from: %s]"),
-                        object_header(player, obj), exit_source);
+          notify_format(player, T("%s [from: %s]"), object_header(player, obj),
+                        exit_source);
           exits++;
           break;
         case TYPE_ROOM:
-          notify_format(player, T("%s [dropto]"),
-                        object_header(player, obj));
+          notify_format(player, T("%s [dropto]"), object_header(player, obj));
           rooms++;
           break;
         case TYPE_THING:
         case TYPE_PLAYER:
-          notify_format(player, T("%s [home]"),
-                        object_header(player, obj));
+          notify_format(player, T("%s [home]"), object_header(player, obj));
           if (IsThing(obj)) {
             things++;
           } else {
@@ -1719,7 +1722,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
     } while (status == SQLITE_ROW || is_busy_status(status));
     sqlite3_reset(linked);
   }
- 
+
   if (!nresults)
     notify(player, T("Nothing found."));
   else {
@@ -1742,16 +1745,16 @@ FUNCTION(fun_entrances)
   dbref where;
   struct search_spec spec;
   bool n;
-  int  status;
+  int status;
   char *p;
   sqlite3_stmt *finder;
   bool prived;
-  
+
   if (!command_check_byname(executor, "@entrances", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  
+
   init_search_spec(&spec);
 
   if (nargs > 0)
@@ -1763,8 +1766,8 @@ FUNCTION(fun_entrances)
     return;
   }
 
-  prived = controls(executor, where) || See_All(executor)
-    || Search_All(executor);
+  prived =
+    controls(executor, where) || See_All(executor) || Search_All(executor);
 
   spec.entrances = where;
   spec.type = 0;

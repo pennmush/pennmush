@@ -121,7 +121,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   if (!attrstring) {
     return 0;
   }
-  
+
   mush_strncpy(astring, attrstring, sizeof astring);
 
   /* Split obj/attr */

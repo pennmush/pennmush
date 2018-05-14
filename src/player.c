@@ -393,7 +393,7 @@ email_register_player(DESC *d, const char *name, const char *email,
   FILE *fp;
   size_t NELEMS = sizeof(elems) - 1;
   char sbuff[260];
-  
+
   if (!check_fails(ip)) {
     return NOTHING;
   }

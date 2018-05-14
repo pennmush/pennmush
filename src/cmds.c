@@ -778,11 +778,10 @@ do_list_allocations(dbref player)
        time. */
     bvm_asmnode_slab,
 #endif
-    chanlist_slab,    chanuser_slab,     flag_slab,     function_slab,
-    huffman_slab,     lock_slab,         mail_slab,     memcheck_slab,
-    text_block_slab,  intmap_slab,       pe_reg_slab,   pe_reg_val_slab,
-    flagbucket_slab
-  };
+    chanlist_slab,    chanuser_slab, flag_slab,   function_slab,
+    huffman_slab,     lock_slab,     mail_slab,   memcheck_slab,
+    text_block_slab,  intmap_slab,   pe_reg_slab, pe_reg_val_slab,
+    flagbucket_slab};
   size_t i;
 
   if (!Hasprivs(player)) {
@@ -1808,7 +1807,7 @@ COMMAND(cmd_who)
 COMMAND(cmd_suggest)
 {
   char *cat8, *word8;
-  
+
   if (SW_ISSET(sw, SWITCH_ADD)) {
     if (!Wizard(executor)) {
       notify(executor, "Your suggestion is not welcome.");
@@ -1840,16 +1839,15 @@ COMMAND(cmd_suggest)
     sqlite3_stmt *cats;
     int status;
     int count = 0;
-    
+
     sqldb = get_shared_db();
-    cats = prepare_statement(sqldb,
-                             "SELECT cat FROM suggest_keys ORDER BY cat",
+    cats = prepare_statement(sqldb, "SELECT cat FROM suggest_keys ORDER BY cat",
                              "suggest.list");
     notify(executor, "Vocabulary suggestion categories:");
     do {
       status = sqlite3_step(cats);
       if (status == SQLITE_ROW) {
-        const char *name = (const char *)sqlite3_column_text(cats, 0);
+        const char *name = (const char *) sqlite3_column_text(cats, 0);
         int nlen = sqlite3_column_bytes(cats, 0);
         char *cat1 = utf8_to_latin1_us(name, nlen, NULL, 0, "string");
         count += 1;

@@ -272,7 +272,7 @@ strinitial(const char *s)
  * \return pointer to a static buffer containing the initial-cased version.
  */
 char *
-strinitial_r(const char * restrict s, char * restrict d, size_t len)
+strinitial_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -280,12 +280,12 @@ strinitial_r(const char * restrict s, char * restrict d, size_t len)
     d[0] = '\0';
     return d;
   }
-  
+
   if (*s) {
     d[0] = toupper(*s);
     s += 1;
   }
-  
+
   for (p = 1; *s && p < len - 1; p += 1, s += 1) {
     d[p] = tolower(*s);
   }
@@ -383,7 +383,7 @@ strlower_a(const char *s, const char *name)
  * \return pointer to a string containing the uppercased version.
  */
 char *
-strupper_r(const char * restrict s, char * restrict d, size_t len)
+strupper_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -402,7 +402,7 @@ strupper_r(const char * restrict s, char * restrict d, size_t len)
  * \return pointer to a string containing the lowercased version.
  */
 char *
-strlower_r(const char * restrict s, char * restrict d, size_t len)
+strlower_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -1901,7 +1901,8 @@ keystr_find_full(const char *restrict map, const char *restrict key,
     return keystr_find_full(map, "default", deflt, delim);
 }
 
-/** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern using %.
+/** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern
+ * using %.
  *
  * \param orig the string to convert.
  * \param esc the character to escape special ones (_%) with.
@@ -1934,7 +1935,7 @@ glob_to_like(const char *orig, char esc, int *len)
   if (len) {
     *len = lbp - like;
   }
-  
+
   return like;
 }
 
@@ -1967,6 +1968,6 @@ escape_like(const char *orig, char esc, int *len)
   if (len) {
     *len = lbp - like;
   }
-  
+
   return like;
 }

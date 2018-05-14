@@ -2312,7 +2312,6 @@ save_command(DESC *d, char *command)
     char *latin1;
     int llen;
 #ifdef HAVE_ICU
-    /* Change to NFC when we have actual Unicode support */
     latin1 = translate_utf8_to_latin1(command, -1, &llen, "string");
 #else
     latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");

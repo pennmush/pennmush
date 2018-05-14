@@ -40,6 +40,7 @@
 #include "parse.h"
 #include "privtab.h"
 #include "strutil.h"
+#include "charclass.h"
 
 int forbidden_name(const char *name);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
@@ -673,7 +674,7 @@ ok_name(const char *n, int is_exit)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint(*p))
+    if (!char_isprint(*p))
       return 0;
     if (ONLY_ASCII_NAMES && *p > 127)
       return 0;
@@ -926,7 +927,7 @@ ok_password(const char *password)
     return 0;
 
   for (scan = password; *scan; scan++) {
-    if (!(isprint(*scan) && !isspace(*scan))) {
+    if (!(char_isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
     if (*scan == '=')
@@ -1010,7 +1011,7 @@ ok_function_name(const char *name)
    * to find at least one uppercase alpha
    */
   for (p = name; p && *p; p++) {
-    if (isspace(*p) || !isprint(*p))
+    if (isspace(*p) || !ascii_isprint(*p))
       return 0;
     if (isupper(*p))
       cnt++;

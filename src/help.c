@@ -128,7 +128,7 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
         topic = (char *)sqlite3_column_text(searcher, 0);
         snippet = (char *)sqlite3_column_text(searcher, 1);
         snippetlen = sqlite3_column_bytes(searcher, 1);
-        snippet = utf8_to_latin1(snippet, snippetlen, NULL, "help.search.results");
+        snippet = utf8_to_latin1(snippet, snippetlen, NULL, 1, "help.search.results");
         notify_format(executor, "%s%s%s: %s", ANSI_HILITE, topic, ANSI_END, snippet);
         mush_free(snippet, "help.search.results");
       }
@@ -589,7 +589,7 @@ help_find_entry(help_file *help_dat, const char *the_topic)
                                 "help.entry.name");
       body = (const char *)sqlite3_column_text(finder, 1);
       bodylen = sqlite3_column_bytes(finder, 1);
-      entry->body = utf8_to_latin1(body, bodylen, &entry->bodylen,
+      entry->body = utf8_to_latin1(body, bodylen, &entry->bodylen, 1,
                                    "help.entry.body");
       sqlite3_reset(finder);
       return entry;
@@ -745,10 +745,12 @@ help_populate_entries(help_file *h)
         /* Finish up last entry */
         if (ntopics > 1) {
           write_topic(h, body);
+          bodylen = 0;
+          if (body) {
+            mush_free(body, "help.entry.body");
+            body = NULL;
+          }
         }
-        bodylen = 0;
-        mush_free(body, "help.entry.body");
-        body = NULL;
         in_topic = true;
       }
       /* parse out the topic */
@@ -784,8 +786,10 @@ help_populate_entries(help_file *h)
   }
 
   /* Handle last topic */
-  write_topic(h, body);
-  mush_free(body, "help.entry.body");
+  if (body) {
+    write_topic(h, body);
+    mush_free(body, "help.entry.body");
+  }
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
   h->entries = num_topics;

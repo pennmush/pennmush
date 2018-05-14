@@ -52,6 +52,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "mushsql.h"
+#include "charclass.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* disable warning re conversion */
@@ -841,7 +842,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* smash unprintable characters in the name, replace with ! */
     mush_strncpy(name, AL_NAME(list), sizeof name);
     for (p = name; *p; p++) {
-      if (!isprint(*p) || isspace(*p)) {
+      if (!ascii_isprint(*p) || isspace(*p)) {
         *p = '!';
         err = 1;
       }
@@ -885,7 +886,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     mush_strncpy(tbuf1, atr_value(list), sizeof tbuf1);
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!isprint(*p) && !isspace(*p) && *p != TAG_START && *p != TAG_END &&
+      if (!char_isprint(*p) && !isspace(*p) && *p != TAG_START && *p != TAG_END &&
           *p != ESC_CHAR && *p != BEEP_CHAR) {
         *p = '!';
         err = 1;

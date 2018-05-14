@@ -8,6 +8,7 @@ This is the most current changes file for PennMUSH. Please look it over; each ve
 * [GM] is Greg Millam, a PennMUSH developer (aka Walker)
 * [MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
 * [TK] is Tim Krajcar, a PennMUSH developer (aka Rince)
+* [MT] is Mike Taylor, a PennMUSH developer (aka Qon or Zenithar)
 * [3] refers to code by (or inspired by) TinyMUSH 3.0
 * [MUX] refers to code by (or inspired by) TinyMUX 2.x
 * [Rhost] refers to code by (or inspired by) RhostMUSH
@@ -84,6 +85,7 @@ Documentation
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
 * Minor help fixes. [MG]
+* More minor help fixes. [MT]
 
 OS Specific
 -----------

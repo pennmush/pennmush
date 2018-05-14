@@ -247,7 +247,7 @@ FUNCTION(fun_suggest) {
       const char *word = (const char *)sqlite3_column_text(words, 0);
       wordlen = sqlite3_column_bytes(words, 0);
       int word1len;
-      char *word1 = utf8_to_latin1_us(word, wordlen, &word1len, "string");
+      char *word1 = utf8_to_latin1_us(word, wordlen, &word1len, 0, "string");
       if (first) {
         first = 0;
       } else {

@@ -40,6 +40,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 
 static CHAN *new_channel(void);
 static CHANLIST *new_chanlist(const void *hint);
@@ -1872,7 +1873,7 @@ ok_channel_name(const char *n, CHAN *unique)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint(*p) || *p == '|')
+    if (!char_isprint(*p) || *p == '|')
       return NAME_INVALID;
   }
 

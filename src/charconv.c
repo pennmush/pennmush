@@ -7,6 +7,7 @@
 #include "copyrite.h"
 
 #include <ctype.h>
+#include <string.h>
 
 #ifdef HAVE_ICU
 #include <unicode/ustring.h>

@@ -21,6 +21,7 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <io.h>
+#include <ntstatus.h>
 void shutdown_checkpoint(void);
 #else /* !WIN32 */
 #ifdef HAVE_SYS_TIME_H

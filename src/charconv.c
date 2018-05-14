@@ -26,6 +26,7 @@
 #include "charconv.h"
 #include "log.h"
 #include "strutil.h"
+#include "mushsql.h"
 
 /**
  * Convert a latin-1 encoded string to utf-8.
@@ -1460,6 +1461,70 @@ translate_utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
   return norm8;
 }
 
+/** Normalize a UTF-8 string and convert to ascii.
+ *
+ * Invalid byte sequences get turned into question marks. Tries to
+ * gracefully downgrade Unicode characters to ASCII characters.
+ * Characters that can't are replaced by question marks.
+ *
+ * \param utf8 the string to normalize
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string in ascii.
+ */
+char *
+translate_utf8_to_ascii(const char * restrict utf8, int len, int *outlen,
+                         const char *name)
+{
+  UChar *utf16, *norm16;
+  char *ascii = NULL;
+  int ulen, nlen;
+  int i, o;
+  sqlite3 *sqldb;
+  sqlite3_stmt *converter;
+  int status;
+  
+  utf16 = utf8_to_utf16(utf8, len, &ulen, "temp.utf16");
+  if (!utf16) {
+    return NULL;
+  }
+
+  norm16 = normalize_utf16(NORM_NFC, utf16, ulen, &nlen, "temp.utf16");
+  mush_free(utf16, "temp.utf16");
+  if (!norm16) {
+    return NULL;
+  }
+
+  utf16 = mush_calloc(nlen + 1, sizeof(UChar), "string");
+  
+  for (i = 0, o = 0; i < nlen;) {
+    UChar32 c;
+    U16_NEXT_UNSAFE(norm16, i, c);
+    if (u_charType(c) != U_NON_SPACING_MARK) {
+      U16_APPEND_UNSAFE(utf16, o, c);
+    }
+  }
+
+  mush_free(norm16, "temp.utf16");
+
+  sqldb = get_shared_db();
+  converter = prepare_statement(sqldb,
+                                "VALUES (spellfix1_translit(?))",
+                                "unicode_to_ascii");
+  sqlite3_bind_text16(converter, 1, utf16, o, free_string);
+  status = sqlite3_step(converter);
+  if (status == SQLITE_ROW) {
+    ascii = mush_strdup((const char *)sqlite3_column_text(converter, 0),
+                        name);
+    if (outlen) {
+      *outlen = sqlite3_column_bytes(converter, 0);
+    }
+  }
+  sqlite3_reset(converter);
+  return ascii;
+}
+
 /** Normalize a UTF-8 string.
  * 
  * Invalid byte sequences get turned into U+FFFD.
@@ -1496,6 +1561,49 @@ normalize_utf8(enum normalization_type type, const char * restrict utf8,
   return norm8;
 }
 #endif
+
+/** Convert a latin-1 string to ascii.
+ *
+ * Tries to gracefully downgrade accented latin-1 characters to ASCII
+ * characters. Characters that can't are replaced by question marks.
+ *
+ * \param latin1 the string to convert
+ * \param len the length of the string or -1 for 0-terminated length.
+ * \param outlen the length of the returned string.
+ * \param name memcheck tag
+ * \return newly allocated string in ascii.
+ */
+char *
+translate_latin1_to_ascii(const char * restrict latin1, int len, int *outlen,
+                         const char *name)
+{
+  char *utf8, *ascii = NULL;
+  int ulen;
+  sqlite3 *sqldb;
+  sqlite3_stmt *converter;
+  int status;
+  
+  utf8 = latin1_to_utf8(latin1, len, &ulen, "string");
+  if (!utf8) {
+    return NULL;
+  }
+
+  sqldb = get_shared_db();
+  converter = prepare_statement(sqldb,
+                                "VALUES (spellfix1_translit(?))",
+                                "unicode_to_ascii");
+  sqlite3_bind_text(converter, 1, utf8, ulen, free_string);
+  status = sqlite3_step(converter);
+  if (status == SQLITE_ROW) {
+    ascii = mush_strdup((const char *)sqlite3_column_text(converter, 0),
+                        name);
+    if (outlen) {
+      *outlen = sqlite3_column_bytes(converter, 0);
+    }
+  }
+  sqlite3_reset(converter);
+  return ascii;
+}
 
 /** Sanitize a UTF-8 string.
  *

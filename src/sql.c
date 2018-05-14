@@ -74,6 +74,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "strutil.h"
 #include "charconv.h"
 #include "mushsql.h"
+#include "charclass.h"
 
 /* Supported platforms */
 typedef enum {
@@ -127,7 +128,7 @@ SANITIZEUTF8(const char * restrict s, const char * restrict n)
 {
   if (s && *s) {
     const char *san = sql_sanitize(s);
-    return utf8_to_latin1(san, strlen(san), NULL, n);    
+    return utf8_to_latin1(san, strlen(san), NULL, 0, n);    
   } else {
     return NULL;
   }
@@ -173,7 +174,7 @@ sql_sanitize(const char *res)
   }
 
   for (; *rp; rp++) {
-    if (isprint(*rp) || *rp == '\n' || *rp == '\t' || *rp == ESC_CHAR ||
+    if (char_isprint(*rp) || *rp == '\n' || *rp == '\t' || *rp == ESC_CHAR ||
         *rp == TAG_START || *rp == TAG_END || *rp == BEEP_CHAR) {
       *bp++ = *rp;
     }
@@ -387,7 +388,7 @@ FUNCTION(fun_sql_escape)
           int elen;
           escaped = (const char *)sqlite3_column_text(escaper, 0);
           elen = sqlite3_column_bytes(escaper, 0);
-          latin1 = utf8_to_latin1_us(escaped, elen, &chars_written, "string");
+          latin1 = utf8_to_latin1_us(escaped, elen, &chars_written, 0, "string");
           latin1[chars_written - 1] = '\0';
           chars_written -= 2;
           mush_strncpy(bigbuff, latin1 + 1, sizeof bigbuff);
@@ -723,7 +724,7 @@ COMMAND(cmd_sql)
             int clen;
             c = (const char *)sqlite3_column_text(qres, i);
             clen = sqlite3_column_bytes(qres, i);
-            cell = utf8_to_latin1(c, clen, NULL, "string");
+            cell = utf8_to_latin1(c, clen, NULL, 0, "string");
             name = (char *) sqlite3_column_name(qres, i);
             free_cell = 1;
           }
@@ -866,7 +867,7 @@ FUNCTION(fun_mapsql)
       {
         const char *s = sql_sanitize((const char *)sqlite3_column_name(qres, i));
       fieldnames[i] =
-	utf8_to_latin1(s, strlen(s), NULL, "sql_fieldname");
+	utf8_to_latin1(s, strlen(s), NULL, 0, "sql_fieldname");
       }
       break;
     default:
@@ -919,7 +920,7 @@ FUNCTION(fun_mapsql)
         {
           const char *c = (const char *)sqlite3_column_text(qres, i);
           int clen = sqlite3_column_bytes(qres, i);          
-          cell = utf8_to_latin1(c, clen, NULL, "string");
+          cell = utf8_to_latin1(c, clen, NULL, 0, "string");
           free_cell = 1;
         }
         break;
@@ -1075,7 +1076,7 @@ FUNCTION(fun_sql)
         {
           const char *c = (const char *)sqlite3_column_text(qres, i);
           int clen = sqlite3_column_bytes(qres, i);
-          cell = utf8_to_latin1(c, clen, NULL, "string");
+          cell = utf8_to_latin1(c, clen, NULL, 0, "string");
           free_cell = 1;
         }
         break;

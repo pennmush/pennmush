@@ -6,11 +6,14 @@
 
 #include "copyrite.h"
 
+#include <ctype.h>
+
 #ifdef HAVE_ICU
 #include <unicode/ustring.h>
 #include <unicode/unorm2.h>
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
+#include <unicode/uchar.h>
 #else
 #include "myutf8.h"
 #include "punicode/utf16.h"
@@ -122,6 +125,45 @@ latin1_to_utf8_tn(const char * restrict latin1, int len, int *outlen,
   return utf8;
 }
 
+
+enum translit_action { TRANS_KEEP, TRANS_SKIP, TRANS_REPLACE };
+
+static enum translit_action
+translit_to_latin1(UChar32 c, char *rep)
+{
+  if (c <= 0xFF) {
+    *rep = c;
+    return TRANS_KEEP;
+  }
+#ifdef HAVE_ICU
+  if (u_charType(c) == U_NON_SPACING_MARK) {
+    return TRANS_SKIP;
+  }
+#endif
+  switch (c) {
+    /* Single quotes */
+  case 0x2018:
+  case 0x2019:
+  case 0x201A:
+  case 0x201B:
+  case 0x2039:
+  case 0x203A:
+    *rep = '\'';
+    return TRANS_REPLACE;
+    /* Double quotes */
+  case 0x201C:
+  case 0x201D:
+  case 0x201E:
+  case 0x201F:
+  case 0x2E42:
+    *rep = '"';
+    return TRANS_REPLACE;
+  default:
+    *rep = '?';
+    return TRANS_REPLACE;
+  }
+}
+
 /**
  * Convert a UTF-8 encoded string to Latin-1
  *
@@ -131,11 +173,12 @@ latin1_to_utf8_tn(const char * restrict latin1, int len, int *outlen,
  * \param utf8 a utf-8 string. It should be normalized in NFC/NFKC for best results.
  * \param len the length of the string in bytes
  * \param outlen set to the length of the returned string NOT including trailing nul
+ * \bool translit true to try to transliterate characters to latin-1 equivalents.
  * \param name memcheck tag
  * \return a newly allocated latin-1 string
  */
 char *
-utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
+utf8_to_latin1(const char * restrict utf8, int len, int *outlen, bool translit,
                const char *name)
 {
   char *latin1;
@@ -146,13 +189,24 @@ utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
   }
 
   latin1 = mush_calloc(len + 1, 1, name);
-  for (i = 0, o = 0; i < len; o += 1) {
+  for (i = 0, o = 0; i < len; ) {
     UChar32 c;
     U8_NEXT_OR_FFFD(utf8, i, len, c);
-    if (c <= 255) {
-      latin1[o] = c;
+    if (translit) {
+      char rep;
+      switch (translit_to_latin1(c, &rep)) {
+      case TRANS_KEEP:
+      case TRANS_REPLACE:
+        latin1[o++] = rep;
+        break;
+      case TRANS_SKIP:
+      default:
+        break;
+      }
+    } else if (c <= 0xFF) {
+      latin1[o++] = c;
     } else {
-      latin1[o] = '?';
+      latin1[o++] = '?';
     }
   }
   if (outlen) {
@@ -169,12 +223,13 @@ utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
  * \param utf8 a utf-8 string. It should be normalized in NFC/NFKC for best results.
  * \param len the length of the string in bytes
  * \param outlen set to the length of the returned string NOT including trailing nul
+ * \bool translit true to try to transliterate characters to latin-1 equivalents.
  * \param name memcheck tag
  * \return a newly allocated latin-1 string
  */
 char *
 utf8_to_latin1_us(const char * restrict utf8, int len, int *outlen,
-                  const char *name)
+                  bool translit, const char *name)
 {
   char *latin1;
   int i, o;
@@ -184,13 +239,24 @@ utf8_to_latin1_us(const char * restrict utf8, int len, int *outlen,
   }
 
   latin1 = mush_calloc(len + 1, 1, name);
-  for (i = 0, o = 0; i < len; o += 1) {
+  for (i = 0, o = 0; i < len; ) {
     UChar32 c;
     U8_NEXT_UNSAFE(utf8, i, c);
-    if (c <= 255) {
-      latin1[o] = c;
+    if (translit) {
+      char rep;
+      switch (translit_to_latin1(c, &rep)) {
+      case TRANS_KEEP:
+      case TRANS_REPLACE:
+        latin1[o++] = c;
+        break;
+      case TRANS_SKIP:
+      default:
+        break;
+      }
+    } else if (c <= 0xFF) {
+      latin1[o++] = c;
     } else {
-      latin1[o] = '?';
+      latin1[o++] = '?';
     }
   }
   if (outlen) {
@@ -456,11 +522,13 @@ latin1_to_utf32(const char * restrict latin1, int len, int *outlen,
  * \parm utf32 the UTF-32 string. Should be normalized in NFC or NFKC for best results.
  * \param len the length of the string.
  * \param outlen pointer to store the length of the latin-1 string
+ * \bool translit true to try to transliterate characters to latin-1 equivalents.
  * \param name memcheck tag for new string
  * \return newly allocated latin-1 string
  */
 char *
-utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, const char * name)
+utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, bool translit,
+                const char * name)
 {
   char *latin1;
   int i, o;
@@ -473,12 +541,23 @@ utf32_to_latin1(const UChar32 *utf32, int len, int *outlen, const char * name)
     }
   }
   latin1 = mush_calloc(len + 1, 1, name);
-  for (i = 0, o = 0; i < len; i += 1, o += 1) {
+  for (i = 0, o = 0; i < len; i += 1) {
     UChar32 c = utf32[i];
-    if (c <= 255) {
-      latin1[o] = c;
+    if (translit) {
+      char rep;
+      switch (translit_to_latin1(c, &rep)) {
+      case TRANS_KEEP:
+      case TRANS_REPLACE:
+        latin1[o++] = rep;
+        break;
+      case TRANS_SKIP:
+      default:
+        break;
+      }
+    } else if (c <= 0xFF) {
+      latin1[o++] = c;
     } else {
-      latin1[o] = '?';
+      latin1[o++] = '?';
     }
   }
   if (outlen) {
@@ -523,11 +602,12 @@ latin1_to_utf16(const char * restrict latin1, int len, int *outlen,
  * \param s the utf-16 string. Should be normalized in NFC or NFKC for best results.
  * \param len the length of the string.
  * \param outlen set to the length of the returned string, NOT counting the trailing nul.
+ * \bool translit true to try to transliterate characters to latin-1 equivalents.
  * \param name memcheck tag
  * \return a newly allocated latin-1 string.
  */
 char *
-utf16_to_latin1(const UChar * utf16, int len, int *outlen,
+utf16_to_latin1(const UChar * utf16, int len, int *outlen, bool translit,
                 const char * name)
 {
   char *latin1;
@@ -541,13 +621,24 @@ utf16_to_latin1(const UChar * utf16, int len, int *outlen,
     }
   }
   latin1 = mush_calloc(len + 1, 1, name);
-  for (i = 0, o = 0; i < len; o += 1) {
+  for (i = 0, o = 0; i < len; ) {
     UChar32 c;
     U16_NEXT_UNSAFE(utf16, i, c);
-    if (c <= 255) {
-      latin1[o] = c;
+    if (translit) {
+      char rep;
+      switch (translit_to_latin1(c, &rep)) {
+      case TRANS_KEEP:
+      case TRANS_REPLACE:
+        latin1[o++] = rep;
+        break;
+      case TRANS_SKIP:
+      default:
+        break;
+      }
+    } else if (c <= 0xFF) {
+      latin1[o++] = c;
     } else {
-      latin1[o] = '?';
+      latin1[o++] = '?';
     }
   }
   if (outlen) {
@@ -593,7 +684,7 @@ latin1_to_lower(const char * restrict s, int len, int *outlen,
     }
   }
 
-  lower = utf16_to_latin1(lower16, llen, outlen, name);
+  lower = utf16_to_latin1(lower16, llen, outlen, 0, name);
 
  cleanup:
   mush_free(utf16, "temp.utf16");
@@ -637,7 +728,7 @@ latin1_to_upper(const char * restrict s, int len, int *outlen,
     }
   }
 
-  upper = utf16_to_latin1(upper16, llen, outlen, name);
+  upper = utf16_to_latin1(upper16, llen, outlen, 0, name);
 
  cleanup:
   mush_free(utf16, "temp.utf16");
@@ -824,8 +915,8 @@ normalize_utf16(enum normalization_type type, const UChar *utf16,
 /** Normalize a UTF-8 string and convert to latin-1.
  *
  * Invalid byte sequences get turned into question marks.
+ * Tries to downgrade Unicode characters to Latin-1 characters.
  *
- * \param type The normalization form. Should be NFC or NFKC for best results.
  * \param utf8 the string to normalize
  * \param len the length of the string or -1 for 0-terminated length.
  * \param outlen the length of the returned string.
@@ -833,8 +924,7 @@ normalize_utf16(enum normalization_type type, const UChar *utf16,
  * \return newly allocated string in latin-1.
  */
 char *
-normalize_utf8_to_latin1(enum normalization_type type,
-                         const char * restrict utf8, int len, int *outlen,
+translate_utf8_to_latin1(const char * restrict utf8, int len, int *outlen,
                          const char *name)
 {
   UChar *utf16, *norm16;
@@ -846,16 +936,17 @@ normalize_utf8_to_latin1(enum normalization_type type,
     return NULL;
   }
 
-  norm16 = normalize_utf16(type, utf16, ulen, &nlen, "temp.utf16");
+  norm16 = normalize_utf16(NORM_NFKC, utf16, ulen, &nlen, "temp.utf16");
 
   if (!norm16) {
     mush_free(utf16, "temp.utf16");
     return NULL;
   }
 
-  norm8 = utf16_to_latin1(norm16, nlen, outlen, name);
-
   mush_free(utf16, "temp.utf16");
+
+  norm8 = utf16_to_latin1(norm16, nlen, outlen, 1, name);
+
   mush_free(norm16, "temp.utf16");
   
   return norm8;

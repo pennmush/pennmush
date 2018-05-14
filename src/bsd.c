@@ -70,6 +70,7 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -103,6 +104,7 @@
 #include "charconv.h"
 #include "mushsql.h"
 #include "connlog.h"
+#include "charclass.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -383,7 +385,7 @@ void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
 static void dump_info(DESC *call_by);
-static void save_command(DESC *d, const char *command);
+static void save_command(DESC *d, char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(char **userstring, const char *command);
@@ -2304,18 +2306,24 @@ welcome_user(DESC *d, int telnet)
 }
 
 static void
-save_command(DESC *d, const char *command)
+save_command(DESC *d, char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
     char *latin1;
     int llen;
 #ifdef HAVE_ICU
     /* Change to NFC when we have actual Unicode support */
-    latin1 = normalize_utf8_to_latin1(NORM_NFKC, command, -1, &llen, "string");
+    latin1 = translate_utf8_to_latin1(command, -1, &llen, "string");
 #else
-    latin1 = utf8_to_latin1(command, -1, &llen, "string");
+    latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
 #endif
     if (latin1) {
+      char *c;
+      for (c = latin1; *c; c += 1) {
+        if (!char_isprint(*c)) {
+          *c = '?';
+        }
+      }
       add_to_queue(&d->input, latin1, llen + 1);
       mush_free(latin1, "string");
     } else {
@@ -2324,6 +2332,12 @@ save_command(DESC *d, const char *command)
       do_rawlog(LT_ERR, "Unable to sanitize+normalize input '%s'", command);
     }
   } else {
+    char *c;
+    for (c = command; *c; c += 1) {
+        if (!char_isprint(*c)) {
+          *c = '?';
+        }
+    }
     add_to_queue(&d->input, command, strlen(command) + 1);
   }
 }
@@ -3079,10 +3093,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
       q++; /* Skip over IAC */
 
       if (!MAYBE_TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
-        if (p < pend && isprint(*q))
+        if (p < pend)
           *p++ = *q;
       }
-    } else if (p < pend && isprint(*q)) {
+    } else if (p < pend) {
       *p++ = *q;
     }
   }
@@ -5385,7 +5399,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
   dp = doing;
   WALK_ANSI_STRING(dp)
   {
-    if (!isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
+    if (!char_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';
     }

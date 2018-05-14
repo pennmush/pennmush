@@ -21,9 +21,9 @@ char *latin1_to_utf8(const char * restrict, int, int *,
 char *latin1_to_utf8_tn(const char * restrict, int, int *, bool,
                         const char *) __attribute_malloc__;
 
-char *utf8_to_latin1(const char * restrict, int, int *,
+char *utf8_to_latin1(const char * restrict, int, int *, bool,
                      const char *) __attribute_malloc__;
-char *utf8_to_latin1_us(const char * restrict, int, int *,
+char *utf8_to_latin1_us(const char * restrict, int, int *, bool,
                      const char *) __attribute_malloc__;
 
 char *utf16_to_utf8(const UChar *, int, int *, const char *)
@@ -42,13 +42,13 @@ UChar32 *utf8_to_utf32_us(const char * restrict, int, int *,
 
 UChar *latin1_to_utf16(const char * restrict, int, int *,
                        const char *) __attribute_malloc__;
-char *utf16_to_latin1(const UChar *, int, int *,
+char *utf16_to_latin1(const UChar *, int, int *, bool,
                       const char *) __attribute_malloc__;
 
 
 UChar32 *latin1_to_utf32(const char * restrict, int, int *,
                          const char *) __attribute_malloc__;
-char *utf32_to_latin1(const UChar32 *, int, int *,
+char *utf32_to_latin1(const UChar32 *, int, int *, bool,
                       const char *) __attribute_malloc__;
 
 #ifdef HAVE_ICU
@@ -62,7 +62,7 @@ UChar *normalize_utf16(enum normalization_type, const UChar *, int, int *,
 char* normalize_utf8(enum normalization_type, const char * restrict, int,
                      int *, const char *) __attribute_malloc__;
 
-char* normalize_utf8_to_latin1(enum normalization_type, const char * restrict,
+char* translate_utf8_to_latin1(const char * restrict,
                                int, int *, const char *) __attribute_malloc__;
 
 /* Case conversions */

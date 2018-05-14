@@ -34,6 +34,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "charclass.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -743,7 +744,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
     default:
       c = base[n];
     }
-    if (isprint(c)) {
+    if (char_isprint(c)) {
       if (safe_chr((char) c, buff, bp))
         return 1;
     } else {

@@ -33,6 +33,7 @@
 #include "mushsql.h"
 #include "charconv.h"
 #include "mymalloc.h"
+#include "charclass.h"
 
 #ifdef WIN32
 #pragma warning(disable : 4761) /* NJG: disable warning re conversion */
@@ -677,7 +678,7 @@ FUNCTION(fun_tr)
     charmap[i] = (char) i;
   }
 
-#define goodchr(x) (isprint(x) || (x == '\n'))
+#define goodchr(x) (char_isprint(x) || (x == '\n'))
   /* Convert ranges in input string, and check that
    * we don't receive a nonprinting char such as
    * beep() */
@@ -1436,7 +1437,7 @@ FUNCTION(fun_ord)
 
   c = args[0][0];
 
-  if (isprint(c)) {
+  if (char_isprint(c)) {
     safe_integer(c, buff, bp);
   } else {
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
@@ -1454,7 +1455,7 @@ FUNCTION(fun_chr)
   c = parse_integer(args[0]);
   if (c < 0 || c > UCHAR_MAX)
     safe_str(T("#-1 THIS ISN'T UNICODE"), buff, bp);
-  else if (isprint(c))
+  else if (char_isprint(c))
     safe_chr(c, buff, bp);
   else
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);

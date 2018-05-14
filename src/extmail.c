@@ -97,6 +97,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 
 extern int do_convtime(const char *str, struct tm *ttm); /* funtime.c */
 
@@ -216,7 +217,7 @@ get_subject(MAIL *mp)
         *p = '\0';
         break;
       }
-      if (!isprint(*p)) {
+      if (!char_isprint(*p)) {
         *p = ' ';
       }
     }

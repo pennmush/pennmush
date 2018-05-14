@@ -18,6 +18,7 @@
 #include "notify.h"
 #include "mushsql.h"
 #include "charconv.h"
+#include "charclass.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -114,7 +115,7 @@ json_unescape_string(char *input)
         unsigned int uchar;
         char *end;
         uchar = strtoul(p + 1, &end, 16);
-        if (end - p != 5 || uchar > 255 || !isprint(uchar)) {
+        if (end - p != 5 || uchar > 255 || !char_isprint(uchar)) {
           safe_chr('?', buff, &bp);
         } else {
           safe_chr(uchar, buff, &bp);
@@ -616,7 +617,7 @@ FUNCTION(fun_json_query)
         int len;
         const char *p = (const char *)sqlite3_column_text(patch, 0);
         int plen = sqlite3_column_bytes(patch, 0);
-        latin1 = utf8_to_latin1_us(p, plen, &len, "string");
+        latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
         safe_strl(latin1, len, buff, bp);
         mush_free(latin1, "string");
       } else {

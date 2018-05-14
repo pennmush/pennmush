@@ -1254,7 +1254,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
                        PT_SPACE, pe_info);
     *c = '\0';
     mush_strncpy(commandraw, command, sizeof commandraw);
-    strupper_r(commandraw, command, sizeof command);
+    upcasestr(command);
+
 
     /* Catch &XX and @XX attribute pairs. If that's what we've got,
      * use the magical ATTRIB_SET command

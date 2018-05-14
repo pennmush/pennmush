@@ -745,10 +745,12 @@ help_populate_entries(help_file *h)
         /* Finish up last entry */
         if (ntopics > 1) {
           write_topic(h, body);
+          bodylen = 0;
+          if (body) {
+            mush_free(body, "help.entry.body");
+            body = NULL;
+          }
         }
-        bodylen = 0;
-        mush_free(body, "help.entry.body");
-        body = NULL;
         in_topic = true;
       }
       /* parse out the topic */
@@ -784,8 +786,10 @@ help_populate_entries(help_file *h)
   }
 
   /* Handle last topic */
-  write_topic(h, body);
-  mush_free(body, "help.entry.body");
+  if (body) {
+    write_topic(h, body);
+    mush_free(body, "help.entry.body");
+  }
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
   h->entries = num_topics;

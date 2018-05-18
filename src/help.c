@@ -667,7 +667,7 @@ write_topic(help_file *h, const char *body)
     int status;
     int primary = (cur->next == NULL);
     nextptr = cur->next;
-    add_vocab(cur->topic, h->command);
+    add_vocab(cur->topic, h->command, 1);
     sqlite3_bind_text(query, 2, cur->topic, strlen(cur->topic),
                       SQLITE_TRANSIENT);
     sqlite3_bind_int(query, 4, primary);

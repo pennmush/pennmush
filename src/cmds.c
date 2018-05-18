@@ -1814,7 +1814,7 @@ COMMAND(cmd_suggest)
     } else if (*arg_left && *arg_right) {
       cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
       word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
-      add_vocab(word8, cat8);
+      add_vocab(word8, cat8, 0);
       mush_free(cat8, "string");
       mush_free(word8, "string");
       notify(executor, "Suggestion vocabulary word added.");
@@ -1827,7 +1827,7 @@ COMMAND(cmd_suggest)
     } else if (*arg_left && *arg_right) {
       cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
       word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
-      delete_vocab(word8, cat8);
+      delete_vocab(word8, cat8, 0);
       mush_free(cat8, "string");
       mush_free(word8, "string");
       notify(executor, "Suggestion vocabulary word deleted.");
@@ -1841,8 +1841,9 @@ COMMAND(cmd_suggest)
     int count = 0;
 
     sqldb = get_shared_db();
-    cats = prepare_statement(sqldb, "SELECT cat FROM suggest_keys ORDER BY cat",
-                             "suggest.list");
+    cats = prepare_statement(
+      sqldb, "SELECT cat FROM suggest_keys WHERE internal = 0 ORDER BY cat",
+      "suggest.list");
     notify(executor, "Vocabulary suggestion categories:");
     do {
       status = sqlite3_step(cats);

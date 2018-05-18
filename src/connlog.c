@@ -26,7 +26,8 @@
 #include "charconv.h"
 
 #define CONNLOG_APPID 0x42010FF2
-#define CONNLOG_VERSION 1
+#define CONNLOG_VERSION 2
+#define CONNLOG_VERSIONS "2"
 
 sqlite3 *connlog_db;
 
@@ -84,21 +85,23 @@ init_conndb(bool rebooting)
     goto error_cleanup;
   }
 
-  if (app_id == 0 || version != CONNLOG_VERSION) {
-    do_rawlog(LT_ERR,
-              "Building connlog database. Existing entries will be deleted.");
+  if (app_id == 0) {
+    do_rawlog(LT_ERR, "Building connlog database.");
     if (sqlite3_exec(
           connlog_db,
           "PRAGMA journal_mode = WAL;"
           "PRAGMA application_id = 0x42010FF2;"
-          "PRAGMA user_version = 1;"
+          "PRAGMA user_version = " CONNLOG_VERSIONS ";"
           "DROP TABLE IF EXISTS connections;"
           "DROP TABLE IF EXISTS timestamps;"
           "DROP TABLE IF EXISTS checkpoint;"
+          "DROP TABLE IF EXISTS addrs;"
           "CREATE VIRTUAL TABLE timestamps USING rtree_i32(id, conn, disconn);"
+          "CREATE TABLE addrs(id INTEGER NOT NULL PRIMARY KEY, ipaddr TEXT NOT "
+          "NULL UNIQUE, hostname TEXT NOT NULL);"
           "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref "
-          "INTEGER NOT NULL DEFAULT -1, name TEXT, ipaddr TEXT NOT NULL, "
-          "hostname TEXT NOT NULL, reason TEXT);"
+          "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
+          "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
           "CREATE INDEX conn_dbref_idx ON connections(dbref);"
           "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp "
           "INTEGER NOT NULL);"
@@ -108,7 +111,40 @@ init_conndb(bool rebooting)
       sqlite3_free(err);
       goto error_cleanup;
     }
-  } else if (!rebooting) {
+  } else if (version == 1) {
+    do_rawlog(LT_ERR, "Upgrading connlog db from 1 to 2");
+    if (sqlite3_exec(
+          connlog_db,
+          "BEGIN TRANSACTION;"
+          "CREATE TABLE backup AS SELECT * FROM connections;"
+          "DROP TABLE connections;"
+          "CREATE TABLE addrs(id INTEGER NOT NULL PRIMARY KEY, ipaddr TEXT NOT "
+          "NULL UNIQUE, hostname TEXT NOT NULL);"
+          "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref "
+          "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
+          "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
+          "CREATE INDEX conn_dbref_idx ON connections(dbref);"
+          "INSERT OR REPLACE INTO addrs(ipaddr, hostname) SELECT ipaddr, "
+          "hostname FROM backup;"
+          "INSERT INTO connections(id, dbref, name, reason, addrid) SELECT id, "
+          "dbref, name, reason, (SELECT id FROM addrs WHERE addrs.ipaddr = "
+          "backup.ipaddr) FROM backup;"
+          "DROP TABLE backup;"
+          "PRAGMA user_version = " CONNLOG_VERSIONS ";"
+          "COMMIT TRANSACTION;"
+          "VACUUM",
+          NULL, NULL, &err) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Upgrade failed: %s", err);
+      sqlite3_free(err);
+      sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      goto error_cleanup;
+    }
+  } else if (version > CONNLOG_VERSION) {
+    do_rawlog(LT_ERR, "connlog db has an incompatible version!");
+    goto error_cleanup;
+  }
+
+  if (!rebooting) {
     /* Clean up connections without a logged disconnection time. */
     if (sqlite3_exec(
           connlog_db,
@@ -193,7 +229,7 @@ connlog_connection(const char *ip, const char *host)
   adder = prepare_statement(connlog_db,
                             "INSERT INTO timestamps(conn, disconn) VALUES "
                             "(strftime('%s', 'now'), 2147483647)",
-                            "connlog.connection.1");
+                            "connlog.connection.time");
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
@@ -208,12 +244,20 @@ connlog_connection(const char *ip, const char *host)
   }
 
   adder = prepare_statement(
-    connlog_db,
-    "INSERT INTO connections(id, ipaddr, hostname) VALUES (?, ?, ?)",
-    "connlog.connection.2");
+    connlog_db, "INSERT OR REPLACE INTO addrs(ipaddr, hostname) VALUES (?, ?)",
+    "connlog.connection.addr");
+  sqlite3_bind_text(adder, 1, ip, strlen(ip), SQLITE_TRANSIENT);
+  sqlite3_bind_text(adder, 2, host, strlen(host), SQLITE_TRANSIENT);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+
+  adder = prepare_statement(connlog_db,
+                            "INSERT INTO connections(id, addrid) VALUES (?, "
+                            "(SELECT id FROM addrs WHERE ipaddr = ?))",
+                            "connlog.connection.connection");
   sqlite3_bind_int64(adder, 1, id);
   sqlite3_bind_text(adder, 2, ip, strlen(ip), SQLITE_TRANSIENT);
-  sqlite3_bind_text(adder, 3, host, strlen(host), SQLITE_TRANSIENT);
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
@@ -341,8 +385,9 @@ FUNCTION(fun_connlog)
     }
   }
 
-  safe_str("SELECT dbref, timestamps.id FROM timestamps JOIN connections ON "
-           "timestamps.id = connections.id WHERE",
+  safe_str("SELECT dbref, connections.id FROM timestamps JOIN connections ON "
+           "timestamps.id = connections.id JOIN addrs ON addrs.id = "
+           "connections.addrid WHERE",
            query, &qp);
   if (player >= 0) {
     safe_format(query, &qp, " dbref = %d", player);
@@ -379,7 +424,7 @@ FUNCTION(fun_connlog)
       } else {
         safe_str(" AND", query, &qp);
       }
-      safe_format(query, &qp, " conn <= %d AND disconn >= %d", endtime,
+      safe_format(query, &qp, " (conn <= %d AND disconn >= %d)", endtime,
                   starttime);
       time_constraint = 1;
       idx += 3;
@@ -402,7 +447,7 @@ FUNCTION(fun_connlog)
       } else {
         safe_str(" AND", query, &qp);
       }
-      safe_format(query, &qp, " conn <= %d AND disconn >= %d", when, when);
+      safe_format(query, &qp, " (conn <= %d AND disconn >= %d)", when, when);
       time_constraint = 1;
       idx += 2;
     } else if (strcasecmp(args[idx], "before") == 0) {
@@ -444,7 +489,7 @@ FUNCTION(fun_connlog)
       } else {
         safe_str(" AND", query, &qp);
       }
-      safe_format(query, &qp, " conn > %d OR (conn <= %d AND disconn >= %d)",
+      safe_format(query, &qp, " (conn > %d OR (conn <= %d AND disconn >= %d))",
                   when, when, when);
       time_constraint = 1;
       idx += 2;
@@ -570,7 +615,8 @@ FUNCTION(fun_connrecord)
     connlog_db,
     "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, "
     "ifnull(reason, '-') FROM timestamps JOIN connections ON timestamps.id = "
-    "connections.id WHERE timestamps.id = ?",
+    "connections.id JOIN addrs ON connections.addrid = "
+    "addrs.id WHERE timestamps.id = ?",
     "connlog.fun.record");
   if (!rec) {
     safe_str("#-1 SQLITE ERROR", buff, bp);

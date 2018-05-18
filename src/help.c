@@ -36,6 +36,7 @@
 
 #define HELPDB_APP_ID 0x42010FF1
 #define HELPDB_VERSION 1
+#define HELPDB_VERSIONS "1"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -345,7 +346,7 @@ init_help_files(void)
       "DROP TABLE IF EXISTS entries;"
       "DROP TABLE IF EXISTS categories;"
       "PRAGMA application_id = 0x42010FF1;"
-      "PRAGMA user_version = 1;"
+      "PRAGMA user_version = " HELPDB_VERSIONS ";"
       "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT "
       "NULL UNIQUE);"
       "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"

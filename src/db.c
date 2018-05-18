@@ -2121,7 +2121,7 @@ get_sql_db_id(sqlite3 *db, int *app_id, int *version)
 {
   sqlite3_stmt *vers;
   int status;
-  vers = prepare_statement(db, "PRAGMA application_id", "app.id");
+  vers = prepare_statement_cache(db, "PRAGMA application_id", "app.id", 0);
   if (!vers) {
     return -1;
   }
@@ -2131,12 +2131,12 @@ get_sql_db_id(sqlite3 *db, int *app_id, int *version)
       *app_id = sqlite3_column_int(vers, 0);
     }
   } while (is_busy_status(status));
-  close_statement(vers);
+  sqlite3_finalize(vers);
   if (status != SQLITE_ROW) {
     return -1;
   }
 
-  vers = prepare_statement(db, "PRAGMA user_version", "user.version");
+  vers = prepare_statement_cache(db, "PRAGMA user_version", "user.version", 0);
   if (!vers) {
     return -1;
   }
@@ -2146,7 +2146,7 @@ get_sql_db_id(sqlite3 *db, int *app_id, int *version)
       *version = sqlite3_column_int(vers, 0);
     }
   } while (is_busy_status(status));
-  close_statement(vers);
+  sqlite3_finalize(vers);
   if (status != SQLITE_ROW) {
     return -1;
   } else {
@@ -2225,10 +2225,14 @@ close_sql_db(sqlite3 *db)
  * \param db the sqlite3 database connection to use.
  * \param query the SQL query to prepare, in UTF-8.
  * \param name the name of the query. (db,name) is the cache key, not the actual
- * text of the query, in UTF-8. \return the prepared statement, NULL on errors.
+ * text of the query, in UTF-8.
+ * \param cache if true, cache the query, if false not and it needs to be
+ * cleaned up with sqlite3_finalize(). \return the prepared statement, NULL on
+ * errors.
  */
 sqlite3_stmt *
-prepare_statement(sqlite3 *db, const char *query, const char *name)
+prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
+                        bool cache)
 {
   sqlite3_stmt *stmt;
   int status;
@@ -2288,18 +2292,20 @@ prepare_statement(sqlite3 *db, const char *query, const char *name)
     }
   }
 
-  /* See if the statement is cached and return it if so */
-  sqlite3_bind_int64(find_stmt, 1, (intptr_t) db);
-  sqlite3_bind_text(find_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
-  do {
-    status = sqlite3_step(find_stmt);
-    if (status == SQLITE_ROW) {
-      stmt = (sqlite3_stmt *) ((intptr_t) sqlite3_column_int64(find_stmt, 0));
-      sqlite3_reset(find_stmt);
-      return stmt;
-    }
-  } while (is_busy_status(status));
-  sqlite3_reset(find_stmt);
+  if (cache) {
+    /* See if the statement is cached and return it if so */
+    sqlite3_bind_int64(find_stmt, 1, (intptr_t) db);
+    sqlite3_bind_text(find_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+    do {
+      status = sqlite3_step(find_stmt);
+      if (status == SQLITE_ROW) {
+        stmt = (sqlite3_stmt *) ((intptr_t) sqlite3_column_int64(find_stmt, 0));
+        sqlite3_reset(find_stmt);
+        return stmt;
+      }
+    } while (is_busy_status(status));
+    sqlite3_reset(find_stmt);
+  }
 
   /* Prepare a new statement and cache it. */
   if ((status = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL)) !=
@@ -2309,13 +2315,15 @@ prepare_statement(sqlite3 *db, const char *query, const char *name)
     return NULL;
   }
 
-  sqlite3_bind_int64(insert_stmt, 1, (intptr_t) db);
-  sqlite3_bind_text(insert_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
-  sqlite3_bind_int64(insert_stmt, 3, (intptr_t) stmt);
-  do {
-    status = sqlite3_step(insert_stmt);
-  } while (is_busy_status(status));
-  sqlite3_reset(insert_stmt);
+  if (cache) {
+    sqlite3_bind_int64(insert_stmt, 1, (intptr_t) db);
+    sqlite3_bind_text(insert_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+    sqlite3_bind_int64(insert_stmt, 3, (intptr_t) stmt);
+    do {
+      status = sqlite3_step(insert_stmt);
+    } while (is_busy_status(status));
+    sqlite3_reset(insert_stmt);
+  }
 
   return stmt;
 }

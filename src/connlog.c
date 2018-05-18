@@ -509,7 +509,7 @@ FUNCTION(fun_connlog)
   safe_str(" ORDER BY connections.id", query, &qp);
   *qp = '\0';
 
-  search = prepare_statement(connlog_db, query, "connlog.fun.list");
+  search = prepare_statement_cache(connlog_db, query, "connlog.fun.list", 0);
   if (!search) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     do_rawlog(LT_ERR, "Failed to compile query: %s", query);
@@ -546,8 +546,7 @@ FUNCTION(fun_connlog)
     *bp = sbp;
     safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
   }
-
-  close_statement(search);
+  sqlite3_finalize(search);
 }
 
 FUNCTION(fun_connrecord)

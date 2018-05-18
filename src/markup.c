@@ -108,7 +108,7 @@ build_rgb_map(void)
     return;
   }
 
-  creator = prepare_statement(sqldb, query, "colors.insert");
+  creator = prepare_statement_cache(sqldb, query, "colors.insert", 0);
   if (!creator) {
     return;
   }
@@ -127,7 +127,7 @@ build_rgb_map(void)
     }
     sqlite3_reset(creator);
   }
-  close_statement(creator);
+  sqlite3_finalize(creator);
 }
 
 /* ARGSUSED */

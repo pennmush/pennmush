@@ -14,7 +14,14 @@ void close_shared_db(void);
 
 int get_sql_db_id(sqlite3 *, int *app_id, int *version);
 
-sqlite3_stmt *prepare_statement(sqlite3 *, const char *, const char *);
+sqlite3_stmt *prepare_statement_cache(sqlite3 *, const char *, const char *,
+                                      bool);
+static inline sqlite3_stmt *
+prepare_statement(sqlite3 *db, const char *query, const char *name)
+{
+  return prepare_statement_cache(db, query, name, 1);
+}
+
 void close_statement(sqlite3_stmt *);
 
 char *glob_to_like(const char *orig, char esc, int *len) __attribute_malloc__;

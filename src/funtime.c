@@ -923,7 +923,7 @@ FUNCTION(fun_timecalc)
   *qp = '\0';
 
   db = get_shared_db();
-  timer = prepare_statement(db, query, "fun.timecalc");
+  timer = prepare_statement_cache(db, query, "fun.timecalc", 0);
   if (!timer) {
     safe_str("#-1 SQL ERROR", buff, bp);
     return;
@@ -949,8 +949,7 @@ FUNCTION(fun_timecalc)
   } else {
     safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
   }
-
-  close_statement(timer);
+  sqlite3_finalize(timer);
 }
 
 FUNCTION(fun_secscalc)
@@ -971,7 +970,7 @@ FUNCTION(fun_secscalc)
   *qp = '\0';
 
   db = get_shared_db();
-  timer = prepare_statement(db, query, "fun.timecalc");
+  timer = prepare_statement_cache(db, query, "fun.timecalc", 0);
   if (!timer) {
     safe_str("#-1 SQL ERROR", buff, bp);
     return;
@@ -994,8 +993,7 @@ FUNCTION(fun_secscalc)
   } else {
     safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
   }
-
-  close_statement(timer);
+  sqlite3_finalize(timer);
 }
 
 #ifdef WIN32

@@ -253,6 +253,7 @@ connlog_connection(const char *ip, const char *host)
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
+  sqlite3_reset(adder);
 
   adder = prepare_statement(connlog_db,
                             "INSERT INTO connections(id, addrid) VALUES (?, "
@@ -408,14 +409,14 @@ FUNCTION(fun_connlog)
 
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (nargs <= idx + 2) {
         safe_str("#-1 BETWEEN MISSING RANGE", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (!is_strict_integer(args[idx + 1]) ||
                  !is_strict_integer(args[idx + 2])) {
         safe_str(T(e_ints), buff, bp);
-        return;
+        goto error_cleanup;
       }
 
       starttime = parse_integer(args[idx + 1]);
@@ -435,13 +436,13 @@ FUNCTION(fun_connlog)
 
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (nargs <= idx + 1) {
         safe_str("#-1 AT MISSING TIME", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (!is_strict_integer(args[idx + 1])) {
         safe_str(T(e_int), buff, bp);
-        return;
+        goto error_cleanup;
       }
       when = parse_integer(args[idx + 1]);
       if (first_constraint) {
@@ -456,13 +457,13 @@ FUNCTION(fun_connlog)
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (nargs <= idx + 1) {
         safe_str("#-1 BEFORE MISSING TIME", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (!is_strict_integer(args[idx + 1])) {
         safe_str(T(e_int), buff, bp);
-        return;
+        goto error_cleanup;
       }
       when = parse_integer(args[idx + 1]);
       if (first_constraint) {
@@ -477,13 +478,13 @@ FUNCTION(fun_connlog)
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (nargs <= idx + 1) {
         safe_str("#-1 AFTER MISSING TIME", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (!is_strict_integer(args[idx + 1])) {
         safe_str(T(e_int), buff, bp);
-        return;
+        goto error_cleanup;
       }
       when = parse_integer(args[idx + 1]);
       if (first_constraint) {
@@ -500,14 +501,10 @@ FUNCTION(fun_connlog)
       int len;
       if (nargs <= idx + 1) {
         safe_str("#-1 IP MISSING PATTERN", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (ip) {
         safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
-        mush_free(ip, "string");
-        if (host) {
-          mush_free(host, "string");
-        }
-        return;
+        goto error_cleanup;
       }
       escaped = glob_to_like(args[idx + 1], '$', &len);
       ip = latin1_to_utf8(escaped, len, &iplen, "string");
@@ -524,14 +521,10 @@ FUNCTION(fun_connlog)
       int len;
       if (nargs <= idx + 1) {
         safe_str("#-1 HOSTNAME MISSING PATTERN", buff, bp);
-        return;
+        goto error_cleanup;
       } else if (host) {
         safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
-        mush_free(host, "string");
-        if (ip) {
-          mush_free(ip, "string");
-        }
-        return;
+        goto error_cleanup;
       }
       escaped = glob_to_like(args[idx + 1], '$', &len);
       host = latin1_to_utf8(escaped, len, &hostlen, "string");
@@ -545,7 +538,7 @@ FUNCTION(fun_connlog)
       idx += 2;
     } else {
       safe_str("#-1 INVALID TIME SPEC", buff, bp);
-      return;
+      goto error_cleanup;
     }
   }
 
@@ -560,7 +553,7 @@ FUNCTION(fun_connlog)
   if (!search) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     do_rawlog(LT_ERR, "Failed to compile query: %s", query);
-    return;
+    goto error_cleanup;
   }
 
   if (ip) {
@@ -594,6 +587,15 @@ FUNCTION(fun_connlog)
     safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
   }
   sqlite3_finalize(search);
+  return;
+
+error_cleanup:
+  if (ip) {
+    mush_free(ip, "string");
+  }
+  if (host) {
+    mush_free(host, "string");
+  }
 }
 
 FUNCTION(fun_connrecord)
@@ -605,6 +607,7 @@ FUNCTION(fun_connrecord)
 
   if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
+    return;
   }
 
   id = parse_int64(args[0], NULL, 10);
@@ -618,7 +621,7 @@ FUNCTION(fun_connrecord)
     "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, "
     "ifnull(reason, '-') FROM timestamps JOIN connections ON timestamps.id = "
     "connections.id JOIN addrs ON connections.addrid = "
-    "addrs.id WHERE timestamps.id = ?",
+    "addrs.id WHERE connections.id = ?",
     "connlog.fun.record");
   if (!rec) {
     safe_str("#-1 SQLITE ERROR", buff, bp);

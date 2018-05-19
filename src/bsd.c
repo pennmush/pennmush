@@ -748,6 +748,8 @@ main(int argc, char **argv)
   rusage_stats();
 #endif /* HAVE_GETRUSAGE */
 
+  close_help_files();
+
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   end_all_logs();

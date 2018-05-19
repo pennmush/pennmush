@@ -381,6 +381,16 @@ init_help_files(void)
   help_init = 1;
 }
 
+/** Clean up help files on exit */
+void
+close_help_files(void)
+{
+  if (help_db) {
+    close_sql_db(help_db);
+    help_db = NULL;
+  }
+}
+
 /** Add new help command. This function is
  * the basis for the help_command directive in mush.cnf. It creates
  * a new help entry for the hash table, builds a help index,

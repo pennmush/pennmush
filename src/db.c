@@ -2215,7 +2215,7 @@ close_sql_db(sqlite3 *db)
       sqlite3_reset(delete_all_stmts);
     }
   }
-
+  sqlite3_exec(db, "PRAGMA optimize", NULL, NULL, NULL);
   sqlite3_close_v2(db);
 }
 

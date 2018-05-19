@@ -102,7 +102,7 @@ int one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
 int do_set_atr(dbref thing, char const *RESTRICT atr, char const *RESTRICT s,
                dbref player, uint32_t flags);
 void do_atrlock(dbref player, char const *src, char const *action);
-void do_atrchown(dbref player, char const *arg1, char const *arg2);
+int do_atrchown(dbref player, char const *arg1, char const *arg2);
 int string_to_atrflag(dbref player, const char *p, privbits *bits);
 int string_to_atrflagsets(dbref player, const char *p, privbits *setbits,
                           privbits *clrbits);

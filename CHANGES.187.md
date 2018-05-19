@@ -45,6 +45,8 @@ Softcode
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
 * New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
+* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
+* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
 
 Fixes
 -----

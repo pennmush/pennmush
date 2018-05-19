@@ -147,7 +147,7 @@ COMMAND(cmd_sockset)
     notify(executor, T("Set what option?"));
 }
 
-COMMAND(cmd_atrchown) { do_atrchown(executor, arg_left, arg_right); }
+COMMAND(cmd_atrchown) { (void)do_atrchown(executor, arg_left, arg_right); }
 
 COMMAND(cmd_boot)
 {
@@ -282,9 +282,9 @@ COMMAND(cmd_chownall)
 COMMAND(cmd_chown)
 {
   if (strchr(arg_left, '/')) {
-    do_atrchown(executor, arg_left, arg_right);
+    (void)do_atrchown(executor, arg_left, arg_right);
   } else {
-    do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+    (void)do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
              queue_entry->pe_info);
   }
 }
@@ -739,7 +739,7 @@ COMMAND(cmd_lemit)
 
 COMMAND(cmd_link)
 {
-  do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+  (void)do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
           queue_entry->pe_info);
 }
 

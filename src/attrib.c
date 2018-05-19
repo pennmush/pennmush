@@ -2421,33 +2421,39 @@ do_atrlock(dbref player, const char *src, const char *action)
  * \param player the enactor, for permission checking.
  * \param xarg1 the object/attribute to change, as a string.
  * \param arg2 the name of the new owner (or "me").
+ * \retval 0 failed to change owner.
+ * \retval 1 successfully changed owner.
  */
-void
+int
 do_atrchown(dbref player, const char *xarg1, const char *arg2)
 {
   dbref thing, new_owner;
   char *p, *arg1;
   ATTR *ptr;
   char abuff[BUFFER_LEN];
+  int retval = 0;
   
   if (!xarg1 || !*xarg1) {
     notify(player, T("You need to give an object/attribute pair."));
-    return;
+    return 0;
   }
 
   arg1 = mush_strdup(xarg1, "atrchown.string");
 
   if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
+    retval = 0;
     goto cleanup;
   }
   *p++ = '\0';
   if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
+    retval = 0;
     goto cleanup;
   }
   if (!controls(player, thing)) {
     notify(player, T("Permission denied."));
+    retval = 0;
     goto cleanup;
   }
 
@@ -2457,6 +2463,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     new_owner = lookup_player(arg2);
   if (new_owner == NOTHING) {
     notify(player, T("I can't find that player"));
+    retval = 0;
     goto cleanup;
   }
 
@@ -2465,20 +2472,25 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     if (Can_Write_Attr(player, thing, ptr)) {
       if (new_owner != Owner(player) && !Wizard(player)) {
         notify(player, T("You can only chown an attribute to yourself."));
+        retval = 0;
         goto cleanup;
       }
       AL_CREATOR(ptr) = Owner(new_owner);
       notify(player, T("Attribute owner changed."));
+      retval = 1;
       goto cleanup;
     } else {
       notify(player, T("You don't have the permission to chown that."));
+      retval = 0;
       goto cleanup;
     }
   } else {
     notify(player, T("No such attribute."));
+    retval = 0;
   }
 cleanup:
   mush_free(arg1, "atrchown.string");
+  return retval;
 }
 
 /** Delete one attribute, deallocating its name and data.

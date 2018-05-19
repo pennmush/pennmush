@@ -295,8 +295,10 @@ do_unlink(dbref player, const char *name)
  * \param room_name the name of the link destination.
  * \param preserve if 1, preserve ownership and zone data on exit relink.
  * \param pe_info the pe_info to use for any lock checks
+ * \retval 0 failed to link.
+ * \retval 1 successfully linked.
  */
-void
+int
 do_link(dbref player, const char *name, const char *room_name, int preserve,
         NEW_PE_INFO *pe_info)
 {
@@ -311,12 +313,12 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
 
   if (!room_name || !*room_name) {
     do_unlink(player, name);
-    return;
+    return 0;
   }
   if (!IsRoom(player) && GoodObject(Location(player)) &&
       IsExit(Location(player))) {
     notify(player, T("You somehow wound up in a exit. No biscuit."));
-    return;
+    return 0;
   }
   if ((thing = noisy_match_result(player, name, TYPE_EXIT, MAT_EVERYTHING)) !=
       NOTHING) {
@@ -325,10 +327,10 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
       if ((room = check_var_link(room_name)) == NOTHING)
         room = parse_linkable_room(player, room_name, pe_info);
       if (room == NOTHING)
-        return;
+        return 0;
       if (GoodObject(room) && !can_link_to(player, room, pe_info)) {
         notify(player, T("Permission denied."));
-        break;
+        return 0;
       }
       /* We may link an exit if it's unlinked and we pass the link-lock
        * or if we control it.
@@ -337,25 +339,25 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
             ((Location(thing) == NOTHING) &&
              eval_lock_with(player, thing, Link_Lock, pe_info)))) {
         notify(player, T("Permission denied."));
-        return;
+        return 0;
       }
       if (preserve && !Wizard(player)) {
         notify(player, T("Permission denied."));
-        return;
+        return 0;
       }
       /* handle costs */
       if (Owner(thing) == Owner(player)) {
         if (!payfor(player, LINK_COST)) {
           notify_format(player, T("It costs %d %s to link this exit."),
                         LINK_COST, ((LINK_COST == 1) ? MONEY : MONIES));
-          return;
+          return 0;
         }
       } else {
         if (!payfor(player, LINK_COST + EXIT_COST)) {
           int a = LINK_COST + EXIT_COST;
           notify_format(player, T("It costs %d %s to link this exit."), a,
                         ((a == 1) ? MONEY : MONIES));
-          return;
+          return 0;
         } else if (!preserve) {
           /* pay the owner for his loss */
           giveto(Owner(thing), EXIT_COST);
@@ -379,54 +381,62 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
       if ((room = noisy_match_result(player, room_name, NOTYPE,
                                      MAT_EVERYTHING)) == NOTHING) {
         notify(player, T("No match."));
-        return;
+        return 0;
       }
       if (IsExit(room)) {
         notify(player, T("That is an exit."));
-        return;
+        return 0;
       }
       if (thing == room) {
         notify(player, T("You may not link something to itself."));
-        return;
+        return 0;
       }
       /* abode */
       if (!controls(player, room) && !Abode(room)) {
         notify(player, T("Permission denied."));
-        break;
+        return 0;
       }
       if (!controls(player, thing)) {
         notify(player, T("Permission denied."));
+        return 0;
       } else if (room == HOME) {
         notify(player, T("Can't set home to home."));
+        return 0;
       } else {
         /* do the link */
         Home(thing) = room; /* home */
         if (!Quiet(player) && !(Quiet(thing) && (Owner(thing) == player)))
           notify(player, T("Home set."));
+        return 1;
       }
       break;
     case TYPE_ROOM:
       if ((room = parse_linkable_room(player, room_name, pe_info)) == NOTHING)
-        return;
+        return 0;
       if ((room != HOME) && (!IsRoom(room))) {
         notify(player, T("That is not a room!"));
-        return;
+        return 0;
       }
       if (!controls(player, thing)) {
         notify(player, T("Permission denied."));
+        return 0;
       } else {
         /* do the link, in location */
         Location(thing) = room; /* dropto */
         notify(player, T("Dropto set."));
+        return 1;
       }
       break;
     default:
       notify(player, T("Internal error: weird object type."));
       do_log(LT_ERR, NOTHING, NOTHING, "Weird object! Type of #%d is %d", thing,
              Typeof(thing));
+      return 0;
       break;
     }
   }
+  // Should never get here. But just incase.
+  return 0;
 }
 
 /** Create a room.

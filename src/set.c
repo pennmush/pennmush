@@ -174,8 +174,10 @@ do_name(dbref player, const char *name, char *newname_)
  * \param newobj name of new owner for object.
  * \param preserve if 1, preserve privileges and don't halt the object.
  * \param pe_info the pe_info for lock checks
+ * \retval 0 failed to change owner.
+ * \retval 1 successfully changed owner.
  */
-void
+int
 do_chown(dbref player, const char *name, const char *newobj, int preserve,
          NEW_PE_INFO *pe_info)
 {
@@ -185,42 +187,42 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
 
   /* check for '@chown <object>/<atr>=<player>'  */
   if (strchr(name, '/')) {
-    do_atrchown(player, name, newobj);
-    return;
+    int retval = do_atrchown(player, name, newobj);
+    return retval;
   }
   if (Wizard(player))
     match_flags |= MAT_PLAYER;
 
   if ((thing = noisy_match_result(player, name, TYPE_THING, match_flags)) ==
       NOTHING)
-    return;
+    return 0;
 
   if (!*newobj || !strcasecmp(newobj, "me")) {
     newowner = player;
   } else {
     if ((newowner = lookup_player(newobj)) == NOTHING) {
       notify(player, T("I couldn't find that player."));
-      return;
+      return 0;
     }
   }
 
   if (IsPlayer(thing) && !God(player)) {
     notify(player, T("Players always own themselves."));
-    return;
+    return 0;
   }
   /* Permissions checking */
   if (!chown_ok(player, thing, newowner, pe_info)) {
     notify(player, T("Permission denied."));
-    return;
+    return 0;
   }
   if (IsThing(thing) && !Hasprivs(player) &&
       !(GoodObject(Location(thing)) && (Location(thing) == player))) {
     notify(player, T("You must carry the object to @chown it."));
-    return;
+    return 0;
   }
   if (preserve && !Wizard(player)) {
     notify(player, T("You cannot @CHOWN/PRESERVE. Use normal @CHOWN."));
-    return;
+    return 0;
   }
   /* chowns to the zone master don't count towards fees */
   if (!ZMaster(newowner)) {
@@ -230,7 +232,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
       if (newowner != player)
         notify(player, T("That player doesn't have enough money or quota to "
                          "receive that object."));
-      return;
+      return 0;
     }
     /* Credit the current owner */
     giveto(Owner(thing), Pennies(thing));
@@ -238,6 +240,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
   }
   chown_object(player, thing, newowner, preserve);
   notify(player, T("Owner changed."));
+  return 1;
 }
 
 static int

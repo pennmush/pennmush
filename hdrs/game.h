@@ -130,7 +130,7 @@ extern void do_buy(dbref player, char *item, char *from, int price,
 
 /* From set.c */
 extern void do_name(dbref player, const char *name, char *newname);
-extern void do_chown(dbref player, const char *name, const char *newobj,
+extern int do_chown(dbref player, const char *name, const char *newobj,
                      int preserve, NEW_PE_INFO *pe_info);
 extern int do_chzone(dbref player, const char *name, const char *newobj,
                      bool noisy, bool preserve, NEW_PE_INFO *pe_info);

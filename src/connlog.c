@@ -103,6 +103,7 @@ init_conndb(bool rebooting)
           "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
           "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
           "CREATE INDEX conn_dbref_idx ON connections(dbref);"
+          "CREATE INDEX conn_addr_idx ON connections(addrid);"
           "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp "
           "INTEGER NOT NULL);"
           "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'))",
@@ -124,6 +125,7 @@ init_conndb(bool rebooting)
           "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
           "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
           "CREATE INDEX conn_dbref_idx ON connections(dbref);"
+          "CREATE INDEX conn_addr_idx ON connections(addrid);"
           "INSERT OR REPLACE INTO addrs(ipaddr, hostname) SELECT ipaddr, "
           "hostname FROM backup;"
           "INSERT INTO connections(id, dbref, name, reason, addrid) SELECT id, "

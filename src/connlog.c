@@ -244,7 +244,7 @@ connlog_connection(const char *ip, const char *host)
   }
 
   adder = prepare_statement(
-    connlog_db, "INSERT OR REPLACE INTO addrs(ipaddr, hostname) VALUES (?, ?)",
+    connlog_db, "INSERT OR IGNORE INTO addrs(ipaddr, hostname) VALUES (?, ?)",
     "connlog.connection.addr");
   sqlite3_bind_text(adder, 1, ip, strlen(ip), SQLITE_TRANSIENT);
   sqlite3_bind_text(adder, 2, host, strlen(host), SQLITE_TRANSIENT);

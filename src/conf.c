@@ -1343,9 +1343,9 @@ conf_default_set(void)
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
-  strcpy(options.help_db, "data/help.sqldb");
+  strcpy(options.help_db, "data/help.db");
   options.use_connlog = 1;
-  strcpy(options.connlog_db, "log/connlog.sqldb");
+  strcpy(options.connlog_db, "log/connlog.db");
 }
 
 #undef set_string_option

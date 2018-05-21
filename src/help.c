@@ -407,7 +407,7 @@ static bool
 build_help_file(help_file *h)
 {
   sqlite3 *sqldb = get_shared_db();
-  sqlite3_int64 currmodts;
+  sqlite3_int64 currmodts = 0;
   int status;
 
   if (needs_rebuild(h, &currmodts)) {

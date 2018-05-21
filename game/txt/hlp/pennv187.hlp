@@ -25,7 +25,8 @@ Major Changes:
 * Player names and aliases are handled in sql, making some operations on them simpler.
 * Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
 * @entrances and entrances() no longer scan the entire database.
-* Help files are stored in a database, with an expanded help/search that supports full text search. See [1mHELP HELP SEARCH[0m for details.
+* Help files are stored in a database, with an expanded help/search that supports full text search. See [1mHELP SEARCHING[0m for details.
+* Optional enhanced connection logging. See the file [1mgame/CONNLOG.md[0m for details.
 * A number of new softcode functions and expanded functions, listed below.
 
 Minor Changes:
@@ -33,45 +34,48 @@ Minor Changes:
 * Message translation support now defaults to off. Run configure with [1m--enable-nls[0m to turn it on if needed. [SW]
 * Shrink the [1mNEW_PE_INFO[0m struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
-* log_forces in mushcnf.dost now defaults to no. You probably only want this on if you're debugging. [MG]
+* log_forces in mushcnf.dst now defaults to no. You probably only want this on if you’re debugging. [MG]
 
 Softcode:
 
-* Support all of Rhost's [1mcolors()[0m key arguments (Except n). [SW, 1112]
+* Support all of Rhost’s [1mcolors()[0m key arguments (Except n). [SW, 1112]
 * Functions that work on integers (Like [1mdiv()[0m or [1mband()[0m) now use 64-bit values instead of 32-bit. [SW]
 * Added [1misjson()[0m
-* [1mjson_query()[0m get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
+* [1mjson_query()[0m get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa’toq. [SW]
 * [1mjson_query()[0m can apply merge patches to json objects per https://tools.ietf.org/html/rfc7396
 * [1mjson_query(str, unescape)[0m handles unicode escape sequences.
 * [1mjson(string, foo)[0m escapes non-ascii characters.
 * [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
-* New 'me' and 'inventory' flags for [1mscan()[0m give finer control of what to scan. [MG]
-* [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
+* New  and  flags for [1mscan()[0m give finer control of what to scan. [MG]
+* [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn’t set. Suggested by Qon. [1180].
 * [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
 * [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
 * [1m@suggest[0m and [1msuggest()[0m for user-defined word suggestion dictionaries.
+* [1mconnlog()[0m and [1mconnrecord()[0m for interfacing with enhanced connection logs.
+* [1msoundex()[0m and [1msoundslike()[0m now support a second phonetic hash besides soundex.
 
 Fixes:
 
-* A bunch of color names weren't mapping correctly to Xterm color codes. [SW]
+* A bunch of color names weren’t mapping correctly to Xterm color codes. [SW]
 * [1m@grep/iprint[0m hilites the matching text in the same case it appears in the attribute body. [SW, 1120]
-* [1m@mail[0m wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]
+* [1m@mail[0m wasn’t updating a player’s MAILCURF attribute correctly. [CLDawes, 1131]
 * Connecting with a web browser to a mush without a [1mmud_url[0m config option set caused an infinite refresh loop. Reported by grapenut. [1149]
-* Make sure [1msigrecv_ack()[0m won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
+* Make sure [1msigrecv_ack()[0m won’t hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
 * Pass [1mpe_info[0m into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to [1malign()[0m now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
-* [1mjson_query()[0m didn't understand an action of 'type' as documented. [SW]
+* [1mjson_query()[0m didn’t understand an action of  as documented. [SW]
 * Assorted help file fixes. [SW]
-* [1m@clone[0m without /preserve wasn't stripping privileged flags and such. [1190,SW]
-* [1m@chown/preserve[0m was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
-* [1mscan()[0m now determines if objects will be included based on whether the caller can examine them, rather than if [1mscan()[0m's [1m<looker>[0m can examine them. [MG]
-* Fixed some bugs regarding when [1msetq()[0m will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
+* [1m@clone[0m without /preserve wasn’t stripping privileged flags and such. [1190,SW]
+* [1m@chown/preserve[0m was resetting wiz-bit despite it’s help file indicating otherwise. [1187] PR by Qon.
+* [1mscan()[0m now determines if objects will be included based on whether the caller can examine them, rather than if [1mscan()[0m’s [1m<looker>[0m can examine them. [MG]
+* Fixed some bugs regarding when [1msetq()[0m will and won’t let you set the values of named registers when you’ve hit the limit. [MG, 1179]
 
 Documentation:
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
 * Minor help fixes. [MG]
+* More minor help fixes. [MT]
 
 OS Specific:
 

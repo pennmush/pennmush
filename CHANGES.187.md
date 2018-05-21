@@ -31,7 +31,7 @@ Major Changes
     * Player names and aliases are handled in sql, making some operations on them simpler.
     * Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
     * @entrances and entrances() no longer scan the entire database.
-    * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP HELP SEARCH` for details.
+    * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP SEARCHING` for details.
     * Optional enhanced connection logging. See the file *game/CONNLOG.md* for details.
     * A number of new softcode functions and expanded functions, listed below.
 
@@ -41,7 +41,7 @@ Minor Changes
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
-* log_forces in mushcnf.dost now defaults to no. You probably only want this on if you're debugging. [MG]
+* log_forces in mushcnf.dst now defaults to no. You probably only want this on if you're debugging. [MG]
 
 Softcode
 --------

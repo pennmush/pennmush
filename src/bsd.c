@@ -6866,6 +6866,7 @@ do_reboot(dbref player, int flag)
 #endif
   local_shutdown();
   shutdown_conndb(1);
+  close_help_files();
   end_all_logs();
 #ifndef WIN32
   {
@@ -6902,18 +6903,6 @@ do_reboot(dbref player, int flag)
  */
 
 extern HASHTAB help_files;
-
-static void reload_files(void) __attribute__((__unused__));
-
-static void
-reload_files(void)
-{
-  do_rawlog(
-    LT_TRACE,
-    "Reloading help indexes and cached files after detecting a change.");
-  fcache_load(NOTHING);
-  help_rebuild(NOTHING);
-}
 
 #ifdef HAVE_INOTIFY_INIT1
 /* Linux 2.6.27 and greater inotify file monitoring interface */

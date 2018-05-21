@@ -132,7 +132,7 @@ add_vocab(const char *name, const char *category, bool internal)
   inserter =
     prepare_statement(sqldb,
                       "INSERT INTO suggest(word, langid) SELECT lower(?), id "
-                      "FROM suggest_keys where cat = upper(?)",
+                      "FROM suggest_keys WHERE cat = upper(?)",
                       "suggest.insert");
   if (inserter) {
     sqlite3_bind_text(inserter, 1, name, strlen(name), SQLITE_TRANSIENT);

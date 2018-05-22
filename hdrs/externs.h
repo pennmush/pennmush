@@ -219,7 +219,7 @@ dbref do_real_open(dbref player, const char *direction, const char *linkto,
                    dbref pseudo, NEW_PE_INFO *pe_info);
 void do_open(dbref player, const char *direction, char **links,
              NEW_PE_INFO *pe_info);
-void do_link(dbref player, const char *name, const char *room_name,
+int do_link(dbref player, const char *name, const char *room_name,
              int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
 dbref do_clone(dbref player, char *name, char *newname, bool preserve,

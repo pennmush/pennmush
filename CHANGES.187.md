@@ -61,6 +61,8 @@ Softcode
 * `@suggest` and `suggest()` for user-defined word suggestion dictionaries.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
 * `soundex()` and `soundslike()` now support a second phonetic hash besides soundex.
+* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
+* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
 
 Fixes
 -----

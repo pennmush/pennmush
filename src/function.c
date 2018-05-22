@@ -731,7 +731,7 @@ FUNTAB flist[] = {
   {"ORFLAGS", fun_orflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ORLFLAGS", fun_orlflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ORLPOWERS", fun_orlflags, 2, 2, FN_REG | FN_STRIPANSI},
-  {"OWNER", fun_owner, 1, 1, FN_REG | FN_STRIPANSI},
+  {"OWNER", fun_owner, 1, 3, FN_REG | FN_STRIPANSI},
   {"PARENT", fun_parent, 1, 2, FN_REG | FN_STRIPANSI},
   {"PCREATE", fun_pcreate, 2, 3, FN_REG},
   {"PEMIT", fun_pemit, 2, -2, FN_REG},

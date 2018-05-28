@@ -2174,7 +2174,8 @@ close_sql_db(sqlite3 *db)
   if (statement_cache) {
     if (!delete_all_stmts) {
       const char query[] = "DELETE FROM prepared_cache WHERE handle = ?";
-      if ((status = sqlite3_prepare_v2(statement_cache, query, sizeof query,
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT,
                                        &delete_all_stmts, NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.delete_all: %s",
@@ -2185,7 +2186,8 @@ close_sql_db(sqlite3 *db)
     if (!find_all_stmts) {
       const char query[] =
         "SELECT statement FROM prepared_cache WHERE handle = ?";
-      if ((status = sqlite3_prepare_v2(statement_cache, query, sizeof query,
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT,
                                        &find_all_stmts, NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.find_all: %s",
@@ -2236,6 +2238,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
 {
   sqlite3_stmt *stmt;
   int status;
+  int flags = cache ? SQLITE_PREPARE_PERSISTENT : 0;
 
   /* When merging with the threaded branch this probably needs a
    * mutex. Also think about if the cache can be tables in the general
@@ -2271,8 +2274,9 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
   if (!find_stmt) {
     const char fquery[] =
       "SELECT statement FROM prepared_cache WHERE handle = ? AND name = ?";
-    if ((status = sqlite3_prepare_v2(statement_cache, fquery, sizeof fquery,
-                                     &find_stmt, NULL)) != SQLITE_OK) {
+    if ((status = sqlite3_prepare_v3(statement_cache, fquery, sizeof fquery,
+                                     SQLITE_PREPARE_PERSISTENT, &find_stmt,
+                                     NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to prepare query statement_cache.find: %s",
                 sqlite3_errstr(status));
       find_stmt = NULL;
@@ -2283,8 +2287,9 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
   if (!insert_stmt) {
     const char iquery[] =
       "INSERT INTO prepared_cache(handle, name, statement) VALUES (?,?,?)";
-    if ((status = sqlite3_prepare_v2(statement_cache, iquery, sizeof iquery,
-                                     &insert_stmt, NULL)) != SQLITE_OK) {
+    if ((status = sqlite3_prepare_v3(statement_cache, iquery, sizeof iquery,
+                                     SQLITE_PREPARE_PERSISTENT, &insert_stmt,
+                                     NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to prepare query statement_cache.insert: %s",
                 sqlite3_errstr(status));
       insert_stmt = NULL;
@@ -2308,7 +2313,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
   }
 
   /* Prepare a new statement and cache it. */
-  if ((status = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL)) !=
+  if ((status = sqlite3_prepare_v3(db, query, -1, flags, &stmt, NULL)) !=
       SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to prepare query %s: %s", name,
               sqlite3_errstr(status));
@@ -2343,8 +2348,9 @@ close_statement(sqlite3_stmt *stmt)
     if (!delete_stmt) {
       const char query[] = "DELETE FROM prepared_cache WHERE statement = ?";
 
-      if ((status = sqlite3_prepare_v2(statement_cache, query, sizeof query,
-                                       &delete_stmt, NULL)) != SQLITE_OK) {
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT, &delete_stmt,
+                                       NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.delete_one: %s",
                   sqlite3_errstr(status));

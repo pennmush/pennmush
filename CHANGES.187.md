@@ -47,6 +47,7 @@ Softcode
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
 * Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
 * owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* `@chatformat` now receives a new arg, `%6`, which defaults to "says" but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
 
 Fixes
 -----

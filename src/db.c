@@ -2027,7 +2027,7 @@ get_shared_db(void)
 #else
   /* Use a file based one for testing. Not suitable for use with
    * @shutdown/reboot. */
-  const char *sqldb_file = "mush.sqldb";
+  const char *sqldb_file = "mushsql.db";
 #endif
 
   /* When merging with threaded branch, database connections should be

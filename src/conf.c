@@ -338,6 +338,7 @@ PENNCONF conftable[] = {
   {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0,
    "log"},
   {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
+  {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0, "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1346,6 +1347,7 @@ conf_default_set(void)
   strcpy(options.help_db, "data/help.db");
   options.use_connlog = 1;
   strcpy(options.connlog_db, "log/connlog.db");
+  strcpy(options.dict_file, "");
 }
 
 #undef set_string_option

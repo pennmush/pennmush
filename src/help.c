@@ -44,8 +44,8 @@
 #include "charconv.h"
 
 #define HELPDB_APP_ID 0x42010FF1
-#define HELPDB_VERSION 2
-#define HELPDB_VERSIONS "2"
+#define HELPDB_VERSION 3
+#define HELPDB_VERSIONS "3"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -358,6 +358,8 @@ init_help_files(void)
       "DROP TABLE IF EXISTS entries;"
       "DROP TABLE IF EXISTS files;"
       "DROP TABLE IF EXISTS categories;"
+      "DROP TABLE IF EXISTS suggest;"
+      "DROP TABLE IF EXISTS suggest_keys;"
       "DROP TABLE IF EXISTS sqlite_stat1;"
       "DROP TABLE IF EXISTS sqlite_stat4;"
       "PRAGMA application_id = 0x42010FF1;"
@@ -365,8 +367,7 @@ init_help_files(void)
       "CREATE TABLE categories(id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT "
       "NULL UNIQUE);"
       "CREATE TABLE files(id INTEGER NOT NULL PRIMARY KEY, filename TEXT NOT "
-      "NULL, modified INTEGER NOT NULL, FOREIGN KEY(id) REFERENCES "
-      "categories(id));"
+      "NULL, modified INTEGER NOT NULL);"
       "CREATE TABLE entries(id INTEGER NOT NULL PRIMARY KEY, body TEXT);"
       "CREATE TABLE topics(catid INTEGER NOT NULL, name TEXT NOT NULL COLLATE "
       "NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY "
@@ -379,6 +380,9 @@ init_help_files(void)
       "helpfts(rowid, body) VALUES (new.id, new.body); END;"
       "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO "
       "helpfts(helpfts, rowid, body) VALUES ('delete', old.id, old.body); END;"
+      "CREATE VIRTUAL TABLE suggest USING spellfix1;"
+      "CREATE TABLE suggest_keys(id INTEGER NOT NULL PRIMARY KEY, "
+      "cat TEXT NOT NULL UNIQUE);"
       "COMMIT TRANSACTION",
       NULL, NULL, &errstr);
     if (status != SQLITE_OK) {
@@ -388,7 +392,7 @@ init_help_files(void)
       return;
     }
   }
-  init_vocab();
+  init_private_vocab();
   hashinit(&help_files, 8);
   help_init = 1;
 }
@@ -416,16 +420,14 @@ build_help_file(help_file *h)
     sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
     sqlite3_exec(help_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
-    delete_vocab_cat(h->command);
+    delete_private_vocab_cat(h->command);
 
-    add_cat = prepare_statement_cache(
-      sqldb,
-      "INSERT OR IGNORE INTO suggest_keys(cat, internal) VALUES (upper(?), 1)",
-      "help.add.suggestcat", 0);
+    add_cat = prepare_statement(
+      sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+      "suggest.addcat");
     sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command),
                       SQLITE_STATIC);
     status = sqlite3_step(add_cat);
-    sqlite3_finalize(add_cat);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to add %s to suggestions: %s", h->command,
                 sqlite3_errstr(status));
@@ -496,7 +498,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   add_cat = prepare_statement_cache(
     help_db, "INSERT OR IGNORE INTO categories(name) VALUES (?)",
     "help.add.category", 0);
-  sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command), SQLITE_STATIC);
+  sqlite3_bind_text(add_cat, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_step(add_cat);
   sqlite3_finalize(add_cat);
 
@@ -511,16 +513,13 @@ add_help_file(const char *command_name, const char *filename, int admin)
                               "SELECT name FROM topics WHERE catid = (SELECT "
                               "id FROM categories WHERE name = ?)",
                               "help.add.vocab", 0);
-    sqlite3_bind_text(topics, 1, h->command, strlen(h->command), SQLITE_STATIC);
+    sqlite3_bind_text(topics, 1, h->command, -1, SQLITE_STATIC);
 
-    add_suggest = prepare_statement_cache(
-      sqldb,
-      "INSERT OR IGNORE INTO suggest_keys(cat, internal) VALUES (upper(?), 1)",
-      "help.add.suggestkey", 0);
-    sqlite3_bind_text(add_suggest, 1, h->command, strlen(h->command),
-                      SQLITE_STATIC);
+    add_suggest = prepare_statement(
+      sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+      "suggest.addcat");
+    sqlite3_bind_text(add_suggest, 1, h->command, -1, SQLITE_STATIC);
     sqlite3_step(add_suggest);
-    sqlite3_finalize(add_suggest);
 
     add_suggest =
       prepare_statement_cache(sqldb,
@@ -1324,4 +1323,354 @@ is_index_entry(const char *topic, int *offset)
     return 1;
   } else
     return 0;
+}
+
+#define MAX_SUGGESTIONS 400000
+
+/** Add a word to the vocabulary list for a given category.
+ *
+ * \param name The word to add, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
+bool
+add_vocab(const char *name, const char *category)
+{
+  sqlite3_stmt *inserter;
+  int status;
+
+  inserter = prepare_statement(
+    help_db, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+    "suggest.user.addcat");
+  if (inserter) {
+    int status;
+    sqlite3_bind_text(inserter, 1, category, -1, SQLITE_STATIC);
+    do {
+      status = sqlite3_step(inserter);
+    } while (is_busy_status(status));
+    sqlite3_reset(inserter);
+  } else {
+    return 0;
+  }
+
+  inserter = prepare_statement(
+    help_db,
+    "SELECT count(*) FROM suggest_vocab WHERE word = lower(?) AND langid = "
+    "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+    "suggest.user.duplicate");
+  if (!inserter) {
+    return 0;
+  }
+  sqlite3_bind_text(inserter, 1, name, -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(inserter, 2, category, -1, SQLITE_TRANSIENT);
+  status = sqlite3_step(inserter);
+  if (status == SQLITE_ROW) {
+    int c = sqlite3_column_int(inserter, 0);
+    sqlite3_reset(inserter);
+    if (c > 0) {
+      return 0;
+    }
+  } else {
+    sqlite3_reset(inserter);
+    return 0;
+  }
+
+  inserter = prepare_statement(help_db, "SELECT count(*) FROM suggest_vocab",
+                               "suggest.user.count");
+  if (!inserter) {
+    return 0;
+  }
+  status = sqlite3_step(inserter);
+  if (status == SQLITE_ROW) {
+    int c = sqlite3_column_int(inserter, 0);
+    sqlite3_reset(inserter);
+    if (c > MAX_SUGGESTIONS) {
+      return 0;
+    }
+  } else {
+    sqlite3_reset(inserter);
+    return 0;
+  }
+
+  inserter =
+    prepare_statement(help_db,
+                      "INSERT INTO suggest(word, langid) SELECT lower(?), id "
+                      "FROM suggest_keys WHERE cat = upper(?)",
+                      "suggest.user.insert");
+  if (inserter) {
+    sqlite3_bind_text(inserter, 1, name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(inserter, 2, category, -1, SQLITE_TRANSIENT);
+    status = sqlite3_step(inserter);
+    sqlite3_reset(inserter);
+    return status == SQLITE_DONE;
+  }
+
+  return 0;
+}
+
+/* Delete a word from the given category's vocabulary list.
+ *
+ * \param name The word to delete, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
+bool
+delete_vocab(const char *name, const char *category)
+{
+  sqlite3_stmt *deleter;
+
+  deleter =
+    prepare_statement(help_db,
+                      "DELETE FROM suggest WHERE word = lower(?) AND langid = "
+                      "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+                      "suggest.user.delete");
+  if (deleter) {
+    int status;
+    sqlite3_bind_text(deleter, 1, name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(deleter, 2, category, -1, SQLITE_STATIC);
+    status = sqlite3_step(deleter);
+    sqlite3_reset(deleter);
+    return status == SQLITE_DONE;
+  }
+  return 0;
+}
+
+void
+add_dict_words(void)
+{
+  int r;
+  FILE *words;
+  char line[BUFFER_LEN];
+  char *errmsg;
+  sqlite3_stmt *adder, *timestamp;
+  struct stat s;
+  sqlite3_int64 savedmodts = 0, currmodts;
+
+  if (options.dict_file[0] == '\0') {
+    return;
+  }
+
+  if (stat(options.dict_file, &s) < 0) {
+    do_rawlog(LT_ERR, "Unable to stat word list %s: %s", options.dict_file,
+              strerror(errno));
+    return;
+  }
+  currmodts = s.st_mtime;
+
+  timestamp = prepare_statement_cache(
+    help_db, "SELECT modified FROM files WHERE filename = ?",
+    "words.needs.rebuild", 0);
+  if (!timestamp) {
+    return;
+  }
+
+  sqlite3_bind_text(timestamp, 1, options.dict_file, -1, SQLITE_STATIC);
+  r = sqlite3_step(timestamp);
+  if (r == SQLITE_ROW) {
+    savedmodts = sqlite3_column_int64(timestamp, 0);
+  }
+  sqlite3_finalize(timestamp);
+
+  if (r == SQLITE_ROW && currmodts == savedmodts) {
+    do_rawlog(LT_ERR, "Using cached copy of dict_file words.");
+    return;
+  }
+
+  r = sqlite3_exec(
+    help_db,
+    "BEGIN TRANSACTION;"
+    "INSERT OR IGNORE INTO suggest_keys(cat) VALUES ('WORDS');"
+    "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat "
+    "= 'WORDS');"
+    "CREATE TEMP TABLE wordslist(word TEXT NOT NULL PRIMARY KEY, id);",
+    NULL, NULL, &errmsg);
+  if (r != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to populate words suggestions: %s\n", errmsg);
+    sqlite3_free(errmsg);
+    return;
+  }
+
+  if (savedmodts == 0) {
+    timestamp = prepare_statement_cache(
+      help_db, "INSERT INTO files(modified, filename) VALUES (?, ?)",
+      "update.words.timestamp", 0);
+  } else {
+    timestamp = prepare_statement_cache(
+      help_db, "UPDATE files SET modified = ? WHERE filename = ?",
+      "update.words.timestamp", 0);
+  }
+  if (!timestamp) {
+    sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+  sqlite3_bind_int64(timestamp, 1, currmodts);
+  sqlite3_bind_text(timestamp, 2, options.dict_file, -1, SQLITE_STATIC);
+  sqlite3_step(timestamp);
+  sqlite3_finalize(timestamp);
+
+  adder = prepare_statement_cache(help_db,
+                                  "INSERT OR IGNORE INTO wordslist(word,id) "
+                                  "VALUES (lower(?), (SELECT id FROM "
+                                  "suggest_keys WHERE cat = 'WORDS'))",
+                                  "suggest.init.words", 0);
+  if (!adder) {
+    sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+
+  words = fopen(options.dict_file, "r");
+  if (!words) {
+    do_rawlog(LT_ERR, "Unable to open words file %s\n", options.dict_file);
+    sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    sqlite3_finalize(adder);
+    return;
+  }
+
+  do_rawlog(LT_ERR, "Reading word list from %s", options.dict_file);
+
+  while (fgets(line, BUFFER_LEN, words)) {
+    char *nl = strchr(line, '\n');
+    if (nl) {
+      *nl = '\0';
+      sqlite3_bind_text(adder, 1, line, -1, SQLITE_TRANSIENT);
+      sqlite3_step(adder);
+      sqlite3_reset(adder);
+    } else {
+      /* Really long line in a words file? Ignore it. */
+      while (fgets(line, BUFFER_LEN, words)) {
+        if (strchr(line, '\n')) {
+          break;
+        }
+      }
+    }
+  }
+  fclose(words);
+  sqlite3_finalize(adder);
+  r = sqlite3_exec(
+    help_db,
+    "INSERT INTO suggest(word, langid) SELECT word, id FROM wordslist;"
+    "DROP TABLE wordslist;"
+    "COMMIT TRANSACTION",
+    NULL, NULL, &errmsg);
+  if (r != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to populate word suggestions: %s", errmsg);
+    sqlite3_free(errmsg);
+    sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+  do_rawlog(LT_ERR, "Done reading words.");
+}
+
+FUNCTION(fun_suggest)
+{
+  const char *sep = " ";
+  sqlite3_stmt *words;
+  char *cat8, *word8;
+  int catlen, wordlen;
+  int status;
+  bool first = 1;
+  int top = 20;
+
+  if (nargs >= 3) {
+    sep = args[2];
+  }
+
+  if (nargs == 4) {
+    if (!is_integer(args[3])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    top = parse_integer(args[3]);
+  }
+
+  cat8 = latin1_to_utf8(args[0], arglens[0], &catlen, "string");
+  word8 = latin1_to_utf8(args[1], arglens[1], &wordlen, "string");
+
+  words = prepare_statement(
+    help_db,
+    "SELECT upper(word) FROM suggest WHERE word MATCH ? AND langid = (SELECT "
+    "id FROM suggest_keys WHERE cat = upper(?)) AND top=?",
+    "suggest.find.all");
+
+  sqlite3_bind_text(words, 1, word8, wordlen, free_string);
+  sqlite3_bind_text(words, 2, cat8, catlen, free_string);
+  sqlite3_bind_int(words, 3, top);
+
+  do {
+    status = sqlite3_step(words);
+    if (status == SQLITE_ROW) {
+      const char *word = (const char *) sqlite3_column_text(words, 0);
+      wordlen = sqlite3_column_bytes(words, 0);
+      int word1len;
+      char *word1 = utf8_to_latin1_us(word, wordlen, &word1len, 0, "string");
+      if (first) {
+        first = 0;
+      } else {
+        safe_str(sep, buff, bp);
+      }
+      safe_strl(word1, word1len, buff, bp);
+      mush_free(word1, "string");
+    }
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(words);
+}
+
+COMMAND(cmd_suggest)
+{
+  char *cat8, *word8;
+
+  if (SW_ISSET(sw, SWITCH_ADD)) {
+    if (!Wizard(executor)) {
+      notify(executor, "Your suggestion is not welcome.");
+    } else if (*arg_left && *arg_right) {
+      cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
+      word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
+      if (add_vocab(word8, cat8)) {
+        notify(executor, "Suggestion vocabulary word added.");
+      } else {
+        notify(executor, "Unable to add word.");
+      }
+      mush_free(cat8, "string");
+      mush_free(word8, "string");
+    } else {
+      notify(executor, "What did you want to add?");
+    }
+  } else if (SW_ISSET(sw, SWITCH_DELETE)) {
+    if (!Wizard(executor)) {
+      notify(executor, "Permission denied.");
+    } else if (*arg_left && *arg_right) {
+      cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
+      word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
+      if (delete_vocab(word8, cat8)) {
+        notify(executor, "Suggestion vocabulary word deleted.");
+      } else {
+        notify(executor, "Unable to delete word.");
+      }
+      mush_free(cat8, "string");
+      mush_free(word8, "string");
+    } else {
+      notify(executor, "What did you want to delete?");
+    }
+  } else {
+    sqlite3_stmt *cats;
+    int status;
+    int count = 0;
+
+    cats = prepare_statement(
+      help_db, "SELECT cat FROM suggest_keys ORDER BY cat", "suggest.list");
+    notify(executor, "Vocabulary suggestion categories:");
+    do {
+      status = sqlite3_step(cats);
+      if (status == SQLITE_ROW) {
+        const char *name = (const char *) sqlite3_column_text(cats, 0);
+        int nlen = sqlite3_column_bytes(cats, 0);
+        char *cat1 = utf8_to_latin1_us(name, nlen, NULL, 0, "string");
+        count += 1;
+        notify_format(executor, "\t%s", cat1);
+        mush_free(cat1, "string");
+      }
+    } while (status == SQLITE_ROW || is_busy_status(status));
+    sqlite3_reset(cats);
+    if (count == 0) {
+      notify(executor, "None found.");
+    }
+  }
 }

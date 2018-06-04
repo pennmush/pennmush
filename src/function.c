@@ -51,7 +51,7 @@ static bool functable = 0;
 
 /** Builds the tables used for giving spelling suggestions. */
 void
-init_vocab(void)
+init_private_vocab(void)
 {
   sqlite3 *sqldb;
   char *errmsg;
@@ -64,7 +64,7 @@ init_vocab(void)
   if (sqlite3_exec(sqldb,
                    "CREATE VIRTUAL TABLE suggest USING spellfix1;"
                    "CREATE TABLE suggest_keys(id INTEGER NOT NULL PRIMARY KEY, "
-                   "cat TEXT NOT NULL UNIQUE, internal INTEGER NOT NULL);",
+                   "cat TEXT NOT NULL UNIQUE);",
                    NULL, NULL, &errmsg) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to create spellfix1 table: %s", errmsg);
     sqlite3_free(errmsg);
@@ -73,95 +73,13 @@ init_vocab(void)
   }
 }
 
-void
-add_word_suggestions(void)
-{
-  int r;
-  FILE *words;
-  char line[BUFFER_LEN];
-  char *errmsg;
-  sqlite3_stmt *adder;
-  sqlite3 *sqldb;
-
-  if (!functable || strlen(options.dict_file) == 0) {
-    return;
-  }
-
-  sqldb = get_shared_db();
-
-  r = sqlite3_exec(
-    sqldb,
-    "BEGIN TRANSACTION;"
-    "INSERT OR IGNORE INTO suggest_keys(cat, internal) VALUES ('WORDS', 0);"
-    "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat "
-    "= 'WORDS');"
-    "CREATE TEMP TABLE wordslist(word TEXT NOT NULL PRIMARY KEY, id);",
-    NULL, NULL, &errmsg);
-  if (r != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to populate words suggestions: %s\n", errmsg);
-    sqlite3_free(errmsg);
-    return;
-  }
-
-  adder = prepare_statement_cache(sqldb,
-                                  "INSERT OR IGNORE INTO wordslist(word,id) "
-                                  "VALUES (lower(?), (SELECT id FROM "
-                                  "suggest_keys WHERE cat = 'WORDS'))",
-                                  "suggest.init.words", 0);
-  if (!adder) {
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
-    return;
-  }
-
-  words = fopen(options.dict_file, "r");
-  if (!words) {
-    do_rawlog(LT_ERR, "Unable to open words file %s\n", options.dict_file);
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
-    sqlite3_finalize(adder);
-    return;
-  }
-
-  while (fgets(line, BUFFER_LEN, words)) {
-    char *nl = strchr(line, '\n');
-    if (nl) {
-      *nl = '\0';
-      sqlite3_bind_text(adder, 1, line, -1, SQLITE_TRANSIENT);
-      sqlite3_step(adder);
-      sqlite3_reset(adder);
-    } else {
-      /* Really long line in a words file? Ignore it. */
-      while (fgets(line, BUFFER_LEN, words)) {
-        if (strchr(line, '\n')) {
-          break;
-        }
-      }
-    }
-  }
-  fclose(words);
-  sqlite3_finalize(adder);
-  r = sqlite3_exec(
-    sqldb,
-    "INSERT INTO suggest(word, langid) SELECT word, id FROM wordslist;"
-    "DROP TABLE wordslist;"
-    "COMMIT TRANSACTION",
-    NULL, NULL, &errmsg);
-  if (r != SQLITE_OK) {
-    do_rawlog(LT_ERR, "Unable to populate word suggestions: %s", errmsg);
-    sqlite3_free(errmsg);
-    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
-    return;
-  }
-}
-
-#define MAX_SUGGESTIONS 200000
-
 /** Add a word to the vocabulary list for a given category.
  *
  * \param name The word to add, in UTF-8.
  * \param category The category of the word, in UTF-8.
  */
 void
-add_vocab(const char *name, const char *category, bool internal)
+add_private_vocab(const char *name, const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *inserter;
@@ -174,40 +92,17 @@ add_vocab(const char *name, const char *category, bool internal)
   sqldb = get_shared_db();
 
   inserter = prepare_statement(
-    sqldb,
-    "INSERT OR IGNORE INTO suggest_keys(cat, internal) VALUES (upper(?), ?)",
+    sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
     "suggest.addcat");
   if (inserter) {
     int status;
     sqlite3_bind_text(inserter, 1, category, -1, SQLITE_STATIC);
-    sqlite3_bind_int(inserter, 2, internal);
     do {
       status = sqlite3_step(inserter);
     } while (is_busy_status(status));
     sqlite3_reset(inserter);
   } else {
     return;
-  }
-
-  if (!internal) {
-    inserter = prepare_statement(sqldb, "SELECT count(*) FROM suggest_vocab",
-                                 "suggest.count");
-    if (!inserter) {
-      return;
-    }
-    do {
-      status = sqlite3_step(inserter);
-    } while (is_busy_status(status));
-    if (status == SQLITE_ROW) {
-      int c = sqlite3_column_int(inserter, 0);
-      sqlite3_reset(inserter);
-      if (c > MAX_SUGGESTIONS) {
-        return;
-      }
-    } else {
-      sqlite3_reset(inserter);
-      return;
-    }
   }
 
   inserter =
@@ -231,7 +126,7 @@ add_vocab(const char *name, const char *category, bool internal)
  * \param category The category of the word, in UTF-8.
  */
 void
-delete_vocab(const char *name, const char *category, bool internal)
+delete_private_vocab(const char *name, const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *deleter;
@@ -241,16 +136,15 @@ delete_vocab(const char *name, const char *category, bool internal)
   }
   sqldb = get_shared_db();
 
-  deleter = prepare_statement(
-    sqldb,
-    "DELETE FROM suggest WHERE word = lower(?) AND langid = "
-    "(SELECT id FROM suggest_keys WHERE cat = upper(?) AND internal = ?)",
-    "suggest.delete");
+  deleter =
+    prepare_statement(sqldb,
+                      "DELETE FROM suggest WHERE word = lower(?) AND langid = "
+                      "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+                      "suggest.delete");
   if (deleter) {
     int status;
     sqlite3_bind_text(deleter, 1, name, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(deleter, 2, category, -1, SQLITE_STATIC);
-    sqlite3_bind_int(deleter, 3, internal);
     do {
       status = sqlite3_step(deleter);
     } while (is_busy_status(status));
@@ -263,7 +157,7 @@ delete_vocab(const char *name, const char *category, bool internal)
  * \param category The category to delete, in UTF-8.
  */
 void
-delete_vocab_cat(const char *category)
+delete_private_vocab_cat(const char *category)
 {
   sqlite3 *sqldb;
   sqlite3_stmt *deleter;
@@ -332,62 +226,6 @@ suggest_name(const char *badname, const char *category)
   sqlite3_reset(finder);
 
   return suggestion;
-}
-
-FUNCTION(fun_suggest)
-{
-  const char *sep = " ";
-  sqlite3 *sqldb;
-  sqlite3_stmt *words;
-  char *cat8, *word8;
-  int catlen, wordlen;
-  int status;
-  bool first = 1;
-  int top = 20;
-
-  if (nargs >= 3) {
-    sep = args[2];
-  }
-
-  if (nargs == 4) {
-    if (!is_integer(args[3])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    top = parse_integer(args[3]);
-  }
-
-  cat8 = latin1_to_utf8(args[0], arglens[0], &catlen, "string");
-  word8 = latin1_to_utf8(args[1], arglens[1], &wordlen, "string");
-
-  sqldb = get_shared_db();
-  words = prepare_statement(
-    sqldb,
-    "SELECT upper(word) FROM suggest WHERE word MATCH ? AND langid = (SELECT "
-    "id FROM suggest_keys WHERE cat = upper(?) AND internal=0) AND top=?",
-    "suggest.find.all");
-
-  sqlite3_bind_text(words, 1, word8, wordlen, free_string);
-  sqlite3_bind_text(words, 2, cat8, catlen, free_string);
-  sqlite3_bind_int(words, 3, top);
-
-  do {
-    status = sqlite3_step(words);
-    if (status == SQLITE_ROW) {
-      const char *word = (const char *) sqlite3_column_text(words, 0);
-      wordlen = sqlite3_column_bytes(words, 0);
-      int word1len;
-      char *word1 = utf8_to_latin1_us(word, wordlen, &word1len, 0, "string");
-      if (first) {
-        first = 0;
-      } else {
-        safe_str(sep, buff, bp);
-      }
-      safe_strl(word1, word1len, buff, bp);
-      mush_free(word1, "string");
-    }
-  } while (status == SQLITE_ROW || is_busy_status(status));
-  sqlite3_reset(words);
 }
 
 /* -------------------------------------------------------------------------*
@@ -1230,7 +1068,7 @@ builtin_func_hash_lookup(const char *name)
 static void
 func_hash_insert(const char *name, FUN *func)
 {
-  add_vocab(name, "FUNCTIONS", 1);
+  add_private_vocab(name, "FUNCTIONS");
   hashadd(name, (void *) func, &htab_function);
 }
 
@@ -1244,7 +1082,7 @@ init_func_hashtab(void)
   FUNTAB *ftp;
   FUNALIAS *fa;
 
-  init_vocab();
+  init_private_vocab();
 
   hashinit(&htab_function, 512);
   hash_init(&htab_user_function, 32, delete_function);
@@ -1680,7 +1518,7 @@ cnf_add_function(const char *name, const char *opts)
     fp->minargs = 0;
     fp->maxargs = MAX_STACK_ARGS;
     hashadd(name, fp, &htab_user_function);
-    add_vocab(name, "FUNCTIONS", 1);
+    add_private_vocab(name, "FUNCTIONS");
   }
 
   fp->where.ufun->thing = thing;
@@ -1846,7 +1684,7 @@ do_function(dbref player, const char *name, char **argv, int preserve)
     if (preserve)
       fp->flags |= FN_LOCALIZE;
     hashadd(ucname, fp, &htab_user_function);
-    add_vocab(ucname, "FUNCTIONS", 1);
+    add_private_vocab(ucname, "FUNCTIONS");
 
     /* now add it to the user function table */
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
@@ -1981,7 +1819,7 @@ do_function_delete(dbref player, char *name)
     if (strcasecmp(name, fp->name)) {
       /* Function alias */
       hashdelete(strupper(name), &htab_function);
-      delete_vocab(fp->name, "FUNCTIONS", 1);
+      delete_private_vocab(fp->name, "FUNCTIONS");
       notify(player, T("Function alias deleted."));
       return;
     } else if (fp->flags & FN_CLONE) {
@@ -1990,7 +1828,7 @@ do_function_delete(dbref player, char *name)
       mush_free((char *) fp->name, "function.name");
       slab_free(function_slab, fp);
       hashdelete(safename, &htab_function);
-      delete_vocab(safename, "FUNCTIONS", 1);
+      delete_private_vocab(safename, "FUNCTIONS");
       notify(player, T("Function clone deleted."));
       return;
     }
@@ -2009,7 +1847,7 @@ do_function_delete(dbref player, char *name)
   }
   /* Remove it from the hash table */
   hashdelete(fp->name, &htab_user_function);
-  delete_vocab(fp->name, "FUNCTIONS", 1);
+  delete_private_vocab(fp->name, "FUNCTIONS");
   notify(player, T("Function deleted."));
 }
 

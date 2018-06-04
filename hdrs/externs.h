@@ -612,11 +612,13 @@ int local_can_interact_last(dbref from, dbref to, int type);
 void local_flags(FLAGSPACE *flags);
 
 /* Functions for suggesting alternatives to misspelled names */
-void init_vocab(void);
-void add_word_suggestions(void);
+void init_private_vocab(void);
 char *suggest_name(const char *name, const char *category);
-void add_vocab(const char *name, const char *category, bool internal);
-void delete_vocab(const char *name, const char *category, bool internal);
-void delete_vocab_cat(const char *category);
+void add_private_vocab(const char *name, const char *category);
+void delete_private_vocab(const char *name, const char *category);
+void delete_private_vocab_cat(const char *category);
+
+char *suggest_word(const char *name, const char *category);
+void add_dict_words(void);
 
 #endif /* __EXTERNS_H */

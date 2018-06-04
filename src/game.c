@@ -765,8 +765,6 @@ init_game_config(const char *conf)
   mypid = getpid();
 #endif
 
-  add_word_suggestions();
-
   do_rawlog(LT_ERR, "%s", VERSION);
   do_rawlog(LT_ERR, "MUSH restarted, PID %d, at %s", (int) mypid,
             show_time(globals.start_time, 0));
@@ -802,6 +800,8 @@ init_game_postdb(const char *conf)
   /* Build color/RGB mappings */
   build_rgb_map();
 
+  add_dict_words();
+  
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,

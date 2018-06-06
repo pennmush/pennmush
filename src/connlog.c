@@ -26,8 +26,8 @@
 #include "charconv.h"
 
 #define CONNLOG_APPID 0x42010FF2
-#define CONNLOG_VERSION 2
-#define CONNLOG_VERSIONS "2"
+#define CONNLOG_VERSION 3
+#define CONNLOG_VERSIONS "3"
 
 sqlite3 *connlog_db;
 
@@ -86,6 +86,9 @@ init_conndb(bool rebooting)
   }
 
   if (app_id == 0) {
+    /* Sqlite 3.24 added the ability to have auxilary columns in RTree
+       virtual tables. Consider folding the connections table into it
+       to avoid a join? */
     do_rawlog(LT_ERR, "Building connlog database.");
     if (sqlite3_exec(
           connlog_db,
@@ -106,7 +109,17 @@ init_conndb(bool rebooting)
           "CREATE INDEX conn_addr_idx ON connections(addrid);"
           "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp "
           "INTEGER NOT NULL);"
-          "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'))",
+          "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'));"
+          "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
+          "disconn, reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
+          "a.hostname, ts.conn, ts.disconn, c.reason FROM connections AS c "
+          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a on c.addrid = "
+          "a.id"
+          "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
+          "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
+          "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = "
+          "NEW.id; "
+          "END;",
           NULL, NULL, &err) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to build connlog database: %s", err);
       sqlite3_free(err);
@@ -132,6 +145,16 @@ init_conndb(bool rebooting)
           "dbref, name, reason, (SELECT id FROM addrs WHERE addrs.ipaddr = "
           "backup.ipaddr) FROM backup;"
           "DROP TABLE backup;"
+          "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
+          "disconn, reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
+          "a.hostname, ts.conn, ts.disconn, c.reason FROM connections AS c "
+          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a on c.addrid = "
+          "a.id;"
+          "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
+          "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
+          "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = "
+          "NEW.id; "
+          "END;"
           "PRAGMA user_version = " CONNLOG_VERSIONS ";"
           "COMMIT TRANSACTION;"
           "VACUUM",
@@ -141,6 +164,19 @@ init_conndb(bool rebooting)
       sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       goto error_cleanup;
     }
+  } else if (version == 2) {
+    sqlite3_exec(
+      connlog_db,
+      "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, disconn, "
+      "reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, a.hostname, ts.conn, "
+      "ts.disconn, c.reason FROM connections AS c JOIN timestamps AS ts ON "
+      "c.id = ts.id JOIN addrs AS a on c.addrid = a.id;"
+      "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
+      "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
+      "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = NEW.id; "
+      "END;"
+      "PRAGMA user_version = " CONNLOG_VERSIONS,
+      NULL, NULL, &err);
   } else if (version > CONNLOG_VERSION) {
     do_rawlog(LT_ERR, "connlog db has an incompatible version!");
     goto error_cleanup;
@@ -155,9 +191,8 @@ init_conndb(bool rebooting)
           "WHERE conn > (SELECT timestamp FROM checkpoint WHERE id = 1));"
           "DELETE FROM timestamps WHERE conn > (SELECT timestamp FROM "
           "checkpoint WHERE id = 1);"
-          "UPDATE connections SET reason = 'unexpected shutdown' WHERE id IN "
-          "(SELECT id FROM timestamps WHERE disconn = 2147483647);"
-          "UPDATE timestamps SET disconn = (SELECT timestamp FROM checkpoint "
+          "UPDATE connlog SET reason = 'unexpected shutdown', "
+          "disconn = (SELECT timestamp FROM checkpoint "
           "WHERE id = 1) WHERE disconn = 2147483647;"
           "COMMIT TRANSACTION",
           NULL, NULL, &err) != SQLITE_OK) {
@@ -193,9 +228,8 @@ shutdown_conndb(bool rebooting)
   if (!rebooting) {
     if (sqlite3_exec(connlog_db,
                      "BEGIN TRANSACTION;"
-                     "UPDATE connections SET reason = 'shutdown' WHERE id IN "
-                     "(SELECT id FROM timestamps WHERE disconn = 2147483647);"
-                     "UPDATE timestamps SET disconn = strftime('%s', 'now') "
+                     "UPDATE connlog SET reason = 'shutdown', disconn = "
+                     "strftime('%s', 'now') "
                      "WHERE disconn = 2147483647;"
                      "COMMIT TRANSACTION",
                      NULL, NULL, &err) != SQLITE_OK) {
@@ -315,40 +349,24 @@ connlog_login(int64_t id, dbref player)
 void
 connlog_disconnection(int64_t id, const char *reason)
 {
-  sqlite3_stmt *disco_c, *disco_t;
+  sqlite3_stmt *disco;
   int status;
 
   if (id == -1) {
     return;
   }
 
-  disco_t = prepare_statement(
-    connlog_db,
-    "UPDATE timestamps SET disconn = strftime('%s', 'now') WHERE id = ?",
-    "connlog.disconn.1");
-  disco_c = prepare_statement(connlog_db,
-                              "UPDATE connections SET reason = ? WHERE id = ?",
-                              "connlog.disconn.2");
-  sqlite3_bind_int64(disco_t, 1, id);
-  sqlite3_bind_text(disco_c, 1, reason, strlen(reason), SQLITE_TRANSIENT);
-  sqlite3_bind_int64(disco_c, 2, id);
+  disco = prepare_statement(connlog_db,
+                            "UPDATE connlog SET disconn = strftime('%s', "
+                            "'now'), reason = ? WHERE id = ?",
+                            "connlog.disconn");
+  sqlite3_bind_text(disco, 1, reason, -1, SQLITE_TRANSIENT);
+  sqlite3_bind_int64(disco, 2, id);
 
-  sqlite3_exec(connlog_db, "BEGIN TRANSACTION", NULL, NULL, NULL);
   do {
-    status = sqlite3_step(disco_t);
+    status = sqlite3_step(disco);
   } while (is_busy_status(status));
-  sqlite3_reset(disco_t);
-  if (status == SQLITE_DONE) {
-    do {
-      status = sqlite3_step(disco_c);
-    } while (is_busy_status(status));
-    sqlite3_reset(disco_c);
-    if (status == SQLITE_DONE) {
-      sqlite3_exec(connlog_db, "COMMIT TRANSACTION", NULL, NULL, NULL);
-      return;
-    }
-  }
-  sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+  sqlite3_reset(disco);
 }
 
 FUNCTION(fun_connlog)
@@ -388,10 +406,7 @@ FUNCTION(fun_connlog)
     }
   }
 
-  safe_str("SELECT dbref, connections.id FROM timestamps JOIN connections ON "
-           "timestamps.id = connections.id JOIN addrs ON addrs.id = "
-           "connections.addrid WHERE",
-           query, &qp);
+  safe_str("SELECT dbref, id FROM connlog WHERE", query, &qp);
   if (player >= 0) {
     safe_format(query, &qp, " dbref = %d", player);
     first_constraint = 0;
@@ -546,7 +561,7 @@ FUNCTION(fun_connlog)
     sep = args[idx];
   }
 
-  safe_str(" ORDER BY connections.id", query, &qp);
+  safe_str(" ORDER BY id", query, &qp);
   *qp = '\0';
 
   search = prepare_statement_cache(connlog_db, query, "connlog.fun.list", 0);
@@ -619,9 +634,7 @@ FUNCTION(fun_connrecord)
   rec = prepare_statement(
     connlog_db,
     "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, "
-    "ifnull(reason, '-') FROM timestamps JOIN connections ON timestamps.id = "
-    "connections.id JOIN addrs ON connections.addrid = "
-    "addrs.id WHERE connections.id = ?",
+    "ifnull(reason, '-') FROM connlog WHERE id = ?",
     "connlog.fun.record");
   if (!rec) {
     safe_str("#-1 SQLITE ERROR", buff, bp);

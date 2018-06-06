@@ -40,7 +40,9 @@ There are four tables in the database:
   connection - where it came from, who was logged in, and why they
   disconnected. Its **id** column pairs up with *timestamps.id*, and
   **addrid** with *addrs.id*. Most queries will join the tables on
-  these keys.
+  these keys, or just use...
+* *connlog*, a view that joins all related connections, timestamps and
+  addrs together into one comprehensive record.
 
 plus assorted indexes to speed up queries. The *application_id* of the
 database is `0x42010FF2`.
@@ -57,6 +59,18 @@ connects from:
          GROUP BY addrid)
     SELECT name, ipaddr, max(c) AS count FROM addrcounts
       GROUP BY name ORDER BY name COLLATE NOCASE;
+
+To show all information about connections made in the last 24 hours:
+
+    SELECT * from connlog WHERE conn >= strftime('%s', 'now', '-1 day');
+
+To count the number of times a particular player has connected:
+
+    SELECT count(*) FROM connections WHERE dbref='1234';
+    
+To show connections that never logged in:
+
+    SELECT * from connlog WHERE dbref IS NULL;
 
 Caveats
 -------

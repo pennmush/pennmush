@@ -29,3 +29,5 @@ char *escape_like(const char *orig, char esc, int *len) __attribute_malloc__;
 
 bool is_busy_status(int);
 void free_string(void *);
+
+bool optimize_db(void *);

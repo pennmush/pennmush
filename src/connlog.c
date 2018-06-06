@@ -203,6 +203,7 @@ init_conndb(bool rebooting)
   }
 
   sq_register_loop(90, checkpoint_event, NULL, NULL);
+  sq_register_loop(25 * 60 * 60 + 300, optimize_db, connlog_db, NULL);
 
   return 1;
 

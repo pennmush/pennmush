@@ -42,6 +42,7 @@
 #include "strutil.h"
 #include "mushsql.h"
 #include "charconv.h"
+#include "game.h"
 
 #define HELPDB_APP_ID 0x42010FF1
 #define HELPDB_VERSION 3
@@ -392,6 +393,7 @@ init_help_files(void)
       return;
     }
   }
+  sq_register_loop(26 * 60 * 60 + 300, optimize_db, help_db, NULL);
   init_private_vocab();
   hashinit(&help_files, 8);
   help_init = 1;

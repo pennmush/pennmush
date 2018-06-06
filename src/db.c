@@ -2017,6 +2017,16 @@ free_string(void *s)
   mush_free(s, "string");
 }
 
+static bool
+optimize_shared_db(void *data __attribute__((__unused__)))
+{
+  if (penn_sqldb) {
+    return optimize_db(penn_sqldb);
+  } else {
+    return false;
+  }
+}
+
 /** Return a pointer to a global in-memory sql database. */
 sqlite3 *
 get_shared_db(void)
@@ -2040,6 +2050,7 @@ get_shared_db(void)
     if (!penn_sqldb) {
       mush_panic("Unable to create sql database");
     }
+    sq_register_loop(24 * 60 * 60 + 300, optimize_shared_db, NULL, NULL);
   }
   return penn_sqldb;
 }
@@ -2051,9 +2062,9 @@ close_shared_db(void)
 {
   /* When merging with threaded branch, this should instead be handled
      by the tls finalizer callback. */
-  sqlite3 *db = get_shared_db();
-  if (db) {
-    close_sql_db(db);
+  if (penn_sqldb) {
+    close_sql_db(penn_sqldb);
+    penn_sqldb = NULL;
   }
 }
 
@@ -2151,6 +2162,21 @@ get_sql_db_id(sqlite3 *db, int *app_id, int *version)
     return -1;
   } else {
     return 0;
+  }
+}
+
+/** Run PRAGMA optmize on a sqlite3 database */
+bool
+optimize_db(void *vdb)
+{
+  sqlite3 *db = vdb;
+  char *err;
+  if (sqlite3_exec(db, "PRAGMA optimize", NULL, NULL, &err) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to optimize database: %s", err);
+    sqlite3_free(err);
+    return false;
+  } else {
+    return true;
   }
 }
 

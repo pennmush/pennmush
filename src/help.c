@@ -63,12 +63,12 @@ sqlite3 *help_db = NULL;
 
 static int help_init = 0;
 
-static void do_new_spitfile(dbref, const char *, help_file *);
+static void do_new_spitfile(dbref, const char *, sqlite3_int64, help_file *);
 static const char *string_spitfile(help_file *help_dat, char *arg1);
 
-static bool help_entry_exists(help_file *, const char *);
-static struct help_entry *help_find_entry(help_file *help_dat,
-                                          const char *the_topic);
+static bool help_entry_exists(help_file *, const char *, sqlite3_int64 *);
+static struct help_entry *help_find_entry(help_file *help_dat, const char *,
+                                          sqlite3_int64);
 static void help_free_entry(struct help_entry *);
 static char **list_matching_entries(const char *pattern, help_file *help_dat,
                                     int *len);
@@ -222,7 +222,7 @@ COMMAND(cmd_helpcmd)
       notify_format(executor, T("No entries matching '%s' were found."),
                     arg_left);
     } else if (len == 1) {
-      do_new_spitfile(executor, *entries, h);
+      do_new_spitfile(executor, *entries, -1, h);
     } else {
       char buff[BUFFER_LEN];
       char *bp;
@@ -238,8 +238,10 @@ COMMAND(cmd_helpcmd)
     }
   } else {
     int offset;
-    if (help_entry_exists(h, arg_left)) {
-      do_new_spitfile(executor, arg_left, h);
+    sqlite3_int64 topicid = -1;
+    if (*arg_left == '\0' || help_entry_exists(h, arg_left, &topicid)) {
+      do_new_spitfile(executor, *arg_left == '\0' ? "" : NULL, topicid,
+                      h);
     } else if (is_index_entry(arg_left, &offset)) {
       char *entries = entries_from_offset(h, offset);
       if (!entries) {
@@ -307,7 +309,7 @@ COMMAND(cmd_helpcmd)
           notify_format(executor, T("No entry for '%s'"), arg_left);
         }
       } else if (len == 1) {
-        do_new_spitfile(executor, *entries, h);
+        do_new_spitfile(executor, *entries, -1, h);
       } else {
         char buff[BUFFER_LEN];
         char *bp;
@@ -692,19 +694,21 @@ help_rebuild_by_name(const char *filename)
 }
 
 static void
-do_new_spitfile(dbref player, const char *the_topic, help_file *help_dat)
+do_new_spitfile(dbref player, const char *the_topic, sqlite3_int64 topicid,
+                help_file *help_dat)
 {
   struct help_entry *entry = NULL;
   int default_topic = 0;
 
-  if (*the_topic == '\0') {
+  if (the_topic && *the_topic == '\0') {
     default_topic = 1;
     the_topic = help_dat->command;
+    topicid = -1;
   }
 
-  entry = help_find_entry(help_dat, the_topic);
+  entry = help_find_entry(help_dat, the_topic, topicid);
   if (!entry && default_topic) {
-    entry = help_find_entry(help_dat, "help");
+    entry = help_find_entry(help_dat, "help", -1);
   }
 
   if (!entry) {
@@ -726,7 +730,8 @@ do_new_spitfile(dbref player, const char *the_topic, help_file *help_dat)
 }
 
 static bool
-help_entry_exists(help_file *help_dat, const char *the_topic)
+help_entry_exists(help_file *help_dat, const char *the_topic,
+                  sqlite3_int64 *topicid)
 {
   char *name;
   sqlite3_stmt *finder;
@@ -736,43 +741,59 @@ help_entry_exists(help_file *help_dat, const char *the_topic)
   finder = prepare_statement(
     help_db,
     "SELECT rowid FROM topics WHERE catid = (SELECT id FROM categories WHERE "
-    "name = ?) AND name LIKE ? ESCAPE '$'",
+    "name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name LIMIT 1",
     "help.entry.exists");
 
   like = escape_like(the_topic, '$', NULL);
   name = sqlite3_mprintf("%s%%", like);
   free_string(like);
 
-  sqlite3_bind_text(finder, 1, help_dat->command, strlen(help_dat->command),
-                    SQLITE_STATIC);
-  sqlite3_bind_text(finder, 2, name, strlen(name), sqlite3_free);
+  sqlite3_bind_text(finder, 1, help_dat->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(finder, 2, name, -1, sqlite3_free);
   status = sqlite3_step(finder);
+  if (status == SQLITE_ROW && topicid) {
+    *topicid = sqlite3_column_int64(finder, 0);
+  }
   sqlite3_reset(finder);
   return status == SQLITE_ROW;
 }
 
 static struct help_entry *
-help_find_entry(help_file *help_dat, const char *the_topic)
+help_find_entry(help_file *help_dat, const char *the_topic,
+                sqlite3_int64 topicid)
 {
   char *name;
   sqlite3_stmt *finder;
   int status;
-  char *like;
 
-  finder = prepare_statement(
-    help_db,
-    "SELECT name, body FROM topics JOIN entries ON topics.bodyid = entries.id "
-    "WHERE topics.catid = (SELECT id FROM categories WHERE name = ?) AND name "
-    "LIKE ? ESCAPE '$' ORDER BY name LIMIT 1",
-    "help.find.entry");
+  if (!the_topic && topicid == -1) {
+    return NULL;
+  }
 
-  like = escape_like(the_topic, '$', NULL);
-  name = sqlite3_mprintf("%s%%", like);
-  free_string(like);
+  if (topicid == -1) {
+    char *like;
 
-  sqlite3_bind_text(finder, 1, help_dat->command, strlen(help_dat->command),
-                    SQLITE_STATIC);
-  sqlite3_bind_text(finder, 2, name, strlen(name), sqlite3_free);
+    finder = prepare_statement(help_db,
+                               "SELECT name, body FROM topics JOIN entries ON "
+                               "topics.bodyid = entries.id "
+                               "WHERE topics.catid = (SELECT id FROM "
+                               "categories WHERE name = ?) AND name "
+                               "LIKE ? ESCAPE '$' ORDER BY name LIMIT 1",
+                               "help.find.entry.by_name");
+    like = escape_like(the_topic, '$', NULL);
+    name = sqlite3_mprintf("%s%%", like);
+    free_string(like);
+
+    sqlite3_bind_text(finder, 1, help_dat->command, -1, SQLITE_STATIC);
+    sqlite3_bind_text(finder, 2, name, -1, sqlite3_free);
+  } else {
+    finder = prepare_statement(help_db,
+                               "SELECT name, body FROM topics JOIN entries ON "
+                               "topics.bodyid = entries.id "
+                               "WHERE topics.rowid = ?",
+                               "help.find.entry.by_id");
+    sqlite3_bind_int64(finder, 1, topicid);
+  }
 
   status = sqlite3_step(finder);
   if (status == SQLITE_ROW) {
@@ -1120,7 +1141,7 @@ string_spitfile(help_file *help_dat, char *arg1)
       return entries;
   }
 
-  entry = help_find_entry(help_dat, the_topic);
+  entry = help_find_entry(help_dat, the_topic, -1);
   if (!entry) {
     return T("#-1 NO ENTRY");
   }
@@ -1148,7 +1169,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
     struct help_entry *entry = NULL;
     strcpy(the_topic, normalize_entry(help_dat, patcopy));
     mush_free(patcopy, "string");
-    entry = help_find_entry(help_dat, the_topic);
+    entry = help_find_entry(help_dat, the_topic, -1);
     if (!entry) {
       *len = 0;
       return NULL;

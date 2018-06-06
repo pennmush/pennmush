@@ -95,7 +95,7 @@ location (`where pg_config` if the program works for you, `find /
 Sqlite
 ------
 
-PennMUSH comes with Sqlite3 3.23.1 as part of its source. It is the
+PennMUSH comes with Sqlite3 3.24.0 as part of its source. It is the
 suggested SQL engine for use with softcode unless you need the
 capabilities of one of the others.
 

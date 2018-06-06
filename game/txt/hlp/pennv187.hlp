@@ -22,7 +22,7 @@ Major Changes:
 
 * 3 different tables for looking up color names are combined into a single table.
 * Per-object auxilliary data keys (objdata) are handled in sql.
-* Player names and aliases are handled in sql, making some operations on them simpler.
+* Player names and alias lists are handled in sql, making some operations on them simpler.
 * Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
 * @entrances and entrances() no longer scan the entire database.
 * Help files are stored in a database, with an expanded help/search that supports full text search. See [1mHELP SEARCHING[0m for details.
@@ -46,13 +46,15 @@ Softcode:
 * [1mjson_query(str, unescape)[0m handles unicode escape sequences.
 * [1mjson(string, foo)[0m escapes non-ascii characters.
 * [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
-* New  and  flags for [1mscan()[0m give finer control of what to scan. [MG]
+* New ‘me’ and ‘inventory’ flags for [1mscan()[0m give finer control of what to scan. [MG]
 * [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn’t set. Suggested by Qon. [1180].
 * [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
 * [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
-* [1m@suggest[0m and [1msuggest()[0m for user-defined word suggestion dictionaries.
+* [1m@suggest[0m and [1msuggest()[0m for user-defined spellchecking. Loads [1m/usr/share/dict/words[0m or another configurable wordlist by default.
 * [1mconnlog()[0m and [1mconnrecord()[0m for interfacing with enhanced connection logs.
 * [1msoundex()[0m and [1msoundslike()[0m now support a second phonetic hash besides soundex.
+* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
+* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
 
 Fixes:
 
@@ -63,7 +65,7 @@ Fixes:
 * Make sure [1msigrecv_ack()[0m won’t hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]
 * Pass [1mpe_info[0m into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to [1malign()[0m now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
-* [1mjson_query()[0m didn’t understand an action of  as documented. [SW]
+* [1mjson_query()[0m didn’t understand an action of ‘type’ as documented. [SW]
 * Assorted help file fixes. [SW]
 * [1m@clone[0m without /preserve wasn’t stripping privileged flags and such. [1190,SW]
 * [1m@chown/preserve[0m was resetting wiz-bit despite it’s help file indicating otherwise. [1187] PR by Qon.

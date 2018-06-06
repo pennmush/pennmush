@@ -2440,9 +2440,11 @@ set_objdata(dbref thing, const char *keybase, void *data)
   }
 
   sqldb = get_shared_db();
-  setter = prepare_statement(
-    sqldb, "INSERT OR REPLACE INTO objdata(dbref, key, ptr) VALUES(?, ?, ?)",
-    "objdata.set");
+  setter =
+    prepare_statement(sqldb,
+                      "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
+                      "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
+                      "objdata.set");
   if (!setter) {
     return NULL;
   }

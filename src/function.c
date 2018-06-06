@@ -92,7 +92,8 @@ add_private_vocab(const char *name, const char *category)
   sqldb = get_shared_db();
 
   inserter = prepare_statement(
-    sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+    sqldb,
+    "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
     "suggest.addcat");
   if (inserter) {
     int status;

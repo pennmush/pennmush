@@ -425,7 +425,8 @@ build_help_file(help_file *h)
     delete_private_vocab_cat(h->command);
 
     add_cat = prepare_statement(
-      sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+      sqldb,
+      "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
       "suggest.addcat");
     sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command),
                       SQLITE_STATIC);
@@ -498,7 +499,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   h->admin = admin;
 
   add_cat = prepare_statement_cache(
-    help_db, "INSERT OR IGNORE INTO categories(name) VALUES (?)",
+    help_db, "INSERT INTO categories(name) VALUES (?) ON CONFLICT DO NOTHING",
     "help.add.category", 0);
   sqlite3_bind_text(add_cat, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_step(add_cat);
@@ -518,7 +519,8 @@ add_help_file(const char *command_name, const char *filename, int admin)
     sqlite3_bind_text(topics, 1, h->command, -1, SQLITE_STATIC);
 
     add_suggest = prepare_statement(
-      sqldb, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+      sqldb,
+      "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
       "suggest.addcat");
     sqlite3_bind_text(add_suggest, 1, h->command, -1, SQLITE_STATIC);
     sqlite3_step(add_suggest);
@@ -625,8 +627,9 @@ update_timestamp(help_file *h, sqlite3_int64 currmodts)
 
   updater = prepare_statement_cache(
     help_db,
-    "INSERT OR REPLACE INTO files(id, filename, modified) VALUES "
-    "((SELECT id FROM categories WHERE name = ?), ?, ?)",
+    "INSERT INTO files(id, filename, modified) VALUES "
+    "((SELECT id FROM categories WHERE name = ?), ?, ?) ON CONFLICT (id) DO "
+    "UPDATE SET filename=excluded.filename, modified=excluded.modified",
     "help.update.ts", 0);
 
   sqlite3_bind_text(updater, 1, h->command, strlen(h->command), SQLITE_STATIC);
@@ -812,7 +815,7 @@ write_topic(help_file *h, const char *body)
 
   query = prepare_statement(help_db, "INSERT INTO entries(body) VALUES (?)",
                             "help.insert.body");
-  sqlite3_bind_text(query, 1, body, strlen(body), SQLITE_STATIC);
+  sqlite3_bind_text(query, 1, body, -1, SQLITE_STATIC);
   do {
     status = sqlite3_step(query);
   } while (is_busy_status(status));
@@ -830,7 +833,7 @@ write_topic(help_file *h, const char *body)
                       "INSERT INTO topics(catid, name, bodyid, main) VALUES "
                       "((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
                       "help.insert.topic");
-  sqlite3_bind_text(query, 1, h->command, strlen(h->command), SQLITE_STATIC);
+  sqlite3_bind_text(query, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_bind_int64(query, 3, entryid);
 
   add_suggest = prepare_statement(sqldb,
@@ -838,25 +841,25 @@ write_topic(help_file *h, const char *body)
                                   "(lower(?), (SELECT id FROM suggest_keys "
                                   "WHERE cat = upper(?)))",
                                   "help.suggest.insert");
-  sqlite3_bind_text(add_suggest, 2, h->command, strlen(h->command),
-                    SQLITE_STATIC);
+  sqlite3_bind_text(add_suggest, 2, h->command, -1, SQLITE_STATIC);
 
   for (tlist *cur = top, *nextptr; cur; cur = nextptr) {
     int status;
     int primary = (cur->next == NULL);
     nextptr = cur->next;
 
-    sqlite3_bind_text(add_suggest, 1, cur->topic, strlen(cur->topic),
-                      SQLITE_STATIC);
-    sqlite3_step(add_suggest);
-    sqlite3_reset(add_suggest);
-
-    sqlite3_bind_text(query, 2, cur->topic, strlen(cur->topic), SQLITE_STATIC);
+    sqlite3_bind_text(query, 2, cur->topic, -1, SQLITE_STATIC);
     sqlite3_bind_int(query, 4, primary);
     status = sqlite3_step(query);
     if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to insert help topic %s: %s", cur->topic,
-                sqlite3_errstr(status));
+      do_rawlog(
+        LT_ERR,
+        "Unable to insert help topic %s: %s (Possible duplicate entry?)",
+        cur->topic, sqlite3_errstr(status));
+    } else {
+      sqlite3_bind_text(add_suggest, 1, cur->topic, -1, SQLITE_STATIC);
+      sqlite3_step(add_suggest);
+      sqlite3_reset(add_suggest);
     }
     sqlite3_reset(query);
 
@@ -975,6 +978,23 @@ help_populate_entries(help_file *h)
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
   h->entries = num_topics;
+
+  {
+    sqlite3_stmt *clear;
+    clear = prepare_statement(help_db, "INSERT INTO entries(body) VALUES (?)",
+                              "help.insert.body");
+    if (clear) {
+      close_statement(clear);
+    }
+    clear =
+      prepare_statement(help_db,
+                        "INSERT INTO topics(catid, name, bodyid, main) VALUES "
+                        "((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
+                        "help.insert.topic");
+    if (clear) {
+      close_statement(clear);
+    }
+  }
 
   return 1;
 }
@@ -1341,7 +1361,8 @@ add_vocab(const char *name, const char *category)
   int status;
 
   inserter = prepare_statement(
-    help_db, "INSERT OR IGNORE INTO suggest_keys(cat) VALUES (upper(?))",
+    help_db,
+    "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
     "suggest.user.addcat");
   if (inserter) {
     int status;
@@ -1479,7 +1500,7 @@ add_dict_words(void)
   r = sqlite3_exec(
     help_db,
     "BEGIN TRANSACTION;"
-    "INSERT OR IGNORE INTO suggest_keys(cat) VALUES ('WORDS');"
+    "INSERT INTO suggest_keys(cat) VALUES ('WORDS') ON CONFLICT DO NOTHING;"
     "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat "
     "= 'WORDS');"
     "CREATE TEMP TABLE wordslist(word TEXT NOT NULL PRIMARY KEY, id);",
@@ -1508,11 +1529,12 @@ add_dict_words(void)
   sqlite3_step(timestamp);
   sqlite3_finalize(timestamp);
 
-  adder = prepare_statement_cache(help_db,
-                                  "INSERT OR IGNORE INTO wordslist(word,id) "
-                                  "VALUES (lower(?), (SELECT id FROM "
-                                  "suggest_keys WHERE cat = 'WORDS'))",
-                                  "suggest.init.words", 0);
+  adder = prepare_statement_cache(
+    help_db,
+    "INSERT INTO wordslist(word,id) "
+    "VALUES (lower(?), (SELECT id FROM "
+    "suggest_keys WHERE cat = 'WORDS')) ON CONFLICT DO NOTHING",
+    "suggest.init.words", 0);
   if (!adder) {
     sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return;

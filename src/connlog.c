@@ -374,9 +374,9 @@ connlog_disconnection(int64_t id, const char *reason)
 
 FUNCTION(fun_connlog)
 {
-  char query[BUFFER_LEN];
-  char *qp = query;
+  sqlite3_str *query = NULL;
   sqlite3_stmt *search;
+  char *q = NULL;
   int status;
   const char *sep = "|";
   dbref player;
@@ -409,15 +409,16 @@ FUNCTION(fun_connlog)
     }
   }
 
-  safe_str("SELECT dbref, id FROM connlog WHERE", query, &qp);
+  query = sqlite3_str_new(connlog_db);
+  sqlite3_str_appendall(query, "SELECT dbref, id FROM connlog WHERE");
   if (player >= 0) {
-    safe_format(query, &qp, " dbref = %d", player);
+    sqlite3_str_appendf(query, " dbref = %d", player);
     first_constraint = 0;
   } else if (player == -2) {
-    safe_str(" dbref != -1", query, &qp);
+    sqlite3_str_appendall(query, " dbref != -1");
     first_constraint = 0;
   } else if (player == -3) {
-    safe_str(" dbref = -1", query, &qp);
+    sqlite3_str_appendall(query, " dbref = -1");
     first_constraint = 0;
   }
 
@@ -443,10 +444,10 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_format(query, &qp, " (conn <= %d AND disconn >= %d)", endtime,
-                  starttime);
+      sqlite3_str_appendf(query, " (conn <= %d AND disconn >= %d)", endtime,
+                          starttime);
       time_constraint = 1;
       idx += 3;
     } else if (strcmp(args[idx], "at") == 0) {
@@ -466,9 +467,9 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_format(query, &qp, " (conn <= %d AND disconn >= %d)", when, when);
+      sqlite3_str_appendf(query, " (conn <= %d AND disconn >= %d)", when, when);
       time_constraint = 1;
       idx += 2;
     } else if (strcasecmp(args[idx], "before") == 0) {
@@ -487,9 +488,9 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_format(query, &qp, " conn < %d", when);
+      sqlite3_str_appendf(query, " conn < %d", when);
       time_constraint = 1;
       idx += 2;
     } else if (strcasecmp(args[idx], "after") == 0) {
@@ -508,10 +509,11 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_format(query, &qp, " (conn > %d OR (conn <= %d AND disconn >= %d))",
-                  when, when, when);
+      sqlite3_str_appendf(query,
+                          " (conn > %d OR (conn <= %d AND disconn >= %d))",
+                          when, when, when);
       time_constraint = 1;
       idx += 2;
     } else if (strcasecmp(args[idx], "ip") == 0) {
@@ -530,9 +532,9 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_str(" ipaddr LIKE @ipaddr ESCAPE '$'", query, &qp);
+      sqlite3_str_appendall(query, " ipaddr LIKE @ipaddr ESCAPE '$'");
       idx += 2;
     } else if (strcasecmp(args[idx], "hostname") == 0) {
       char *escaped;
@@ -550,9 +552,9 @@ FUNCTION(fun_connlog)
       if (first_constraint) {
         first_constraint = 0;
       } else {
-        safe_str(" AND", query, &qp);
+        sqlite3_str_appendall(query, " AND");
       }
-      safe_str(" hostname LIKE @hostname ESCAPE '$'", query, &qp);
+      sqlite3_str_appendall(query, " hostname LIKE @hostname ESCAPE '$'");
       idx += 2;
     } else {
       safe_str("#-1 INVALID TIME SPEC", buff, bp);
@@ -564,15 +566,20 @@ FUNCTION(fun_connlog)
     sep = args[idx];
   }
 
-  safe_str(" ORDER BY id", query, &qp);
-  *qp = '\0';
+  sqlite3_str_appendall(query, " ORDER BY id");
+  q = sqlite3_str_finish(query);
+  query = NULL;
 
-  search = prepare_statement_cache(connlog_db, query, "connlog.fun.list", 0);
+  search = prepare_statement_cache(connlog_db, q, "connlog.fun.list", 0);
+
   if (!search) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
-    do_rawlog(LT_ERR, "Failed to compile query: %s", query);
+    do_rawlog(LT_ERR, "Failed to compile query: %s", q);
+    sqlite3_free(q);
     goto error_cleanup;
   }
+
+  sqlite3_free(q);
 
   if (ip) {
     idx = sqlite3_bind_parameter_index(search, "@ipaddr");
@@ -608,6 +615,10 @@ FUNCTION(fun_connlog)
   return;
 
 error_cleanup:
+  if (query) {
+    sqlite3_str_reset(query);
+    sqlite3_str_finish(query);
+  }
   if (ip) {
     mush_free(ip, "string");
   }

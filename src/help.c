@@ -45,8 +45,8 @@
 #include "game.h"
 
 #define HELPDB_APP_ID 0x42010FF1
-#define HELPDB_VERSION 3
-#define HELPDB_VERSIONS "3"
+#define HELPDB_VERSION 4
+#define HELPDB_VERSIONS "4"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -78,6 +78,7 @@ static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
 static bool help_delete_entries(help_file *h);
 static bool help_populate_entries(help_file *h);
+static bool help_build_index(help_file *h);
 
 static bool is_index_entry(const char *, int *);
 static char *entries_from_offset(help_file *, int);
@@ -119,13 +120,13 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
     help_db,
     "SELECT name, snippet(helpfts, 0, '" ANSI_UNDERSCORE "', '" ANSI_END
     "', '...', 10) FROM helpfts JOIN topics ON topics.bodyid = helpfts.rowid "
-    "WHERE helpfts MATCH ? AND topics.catid = (SELECT id FROM categories WHERE "
-    "name = ?) AND main = 1 ORDER BY name",
+    "WHERE helpfts MATCH ?1 AND topics.catid = (SELECT id FROM categories "
+    "WHERE name = ?2) AND main = 1 ORDER BY name",
     "help.search");
 
   utf8 = latin1_to_utf8(_term, strlen(_term), &ulen, "string");
   sqlite3_bind_text(searcher, 1, utf8, ulen, free_string);
-  sqlite3_bind_text(searcher, 2, h->command, strlen(h->command), SQLITE_STATIC);
+  sqlite3_bind_text(searcher, 2, h->command, -1, SQLITE_STATIC);
 
   do {
     status = sqlite3_step(searcher);
@@ -240,8 +241,7 @@ COMMAND(cmd_helpcmd)
     int offset;
     sqlite3_int64 topicid = -1;
     if (*arg_left == '\0' || help_entry_exists(h, arg_left, &topicid)) {
-      do_new_spitfile(executor, *arg_left == '\0' ? "" : NULL, topicid,
-                      h);
+      do_new_spitfile(executor, *arg_left == '\0' ? "" : NULL, topicid, h);
     } else if (is_index_entry(arg_left, &offset)) {
       char *entries = entries_from_offset(h, offset);
       if (!entries) {
@@ -250,11 +250,14 @@ COMMAND(cmd_helpcmd)
       }
       notify_format(executor, "%s%s%s", ANSI_HILITE, strupper(arg_left),
                     ANSI_END);
-      if (SUPPORT_PUEBLO)
+      if (SUPPORT_PUEBLO) {
         notify_noenter(executor, open_tag("SAMP"));
+      }
       notify(executor, entries);
-      if (SUPPORT_PUEBLO)
+      if (SUPPORT_PUEBLO) {
         notify(executor, close_tag("SAMP"));
+      }
+      sqlite3_free(entries);
       return;
     } else {
       char pattern[BUFFER_LEN], *pp, *sp;
@@ -357,6 +360,7 @@ init_help_files(void)
       help_db,
       "BEGIN TRANSACTION;"
       "DROP TABLE IF EXISTS helpfts;"
+      "DROP TABLE IF EXISTS index_starts;"
       "DROP TABLE IF EXISTS topics;"
       "DROP TABLE IF EXISTS entries;"
       "DROP TABLE IF EXISTS files;"
@@ -376,7 +380,12 @@ init_help_files(void)
       "NOCASE, bodyid INTEGER NOT NULL, main INTEGER DEFAULT 0, PRIMARY "
       "KEY(catid, name), FOREIGN KEY(catid) REFERENCES categories(id), FOREIGN "
       "KEY(bodyid) REFERENCES entries(id) ON DELETE CASCADE);"
-      "CREATE INDEX topics_body_idx ON topics(bodyid);"
+      "CREATE INDEX topics_idx_bodyid ON topics(bodyid);"
+      "CREATE TABLE index_starts(catid INTEGER NOT NULL, pageno INTEGER NOT "
+      "NULL, topic TEXT NOT NULL COLLATE NOCASE, PRIMARY KEY(catid, pageno), "
+      "FOREIGN KEY(catid, topic) REFERENCES topics(catid, name) ON DELETE "
+      "CASCADE) WITHOUT ROWID;"
+      "CREATE INDEX index_starts_idx_catid_topic ON index_starts(catid, topic);"
       "CREATE VIRTUAL TABLE helpfts USING fts5(body, content='entries', "
       "content_rowid='id');"
       "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO "
@@ -430,7 +439,7 @@ build_help_file(help_file *h)
       sqldb,
       "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
       "suggest.addcat");
-    sqlite3_bind_text(add_cat, 1, h->command, strlen(h->command),
+    sqlite3_bind_text(add_cat, 1, h->command, -1,
                       SQLITE_STATIC);
     status = sqlite3_step(add_cat);
     if (status != SQLITE_DONE) {
@@ -442,7 +451,7 @@ build_help_file(help_file *h)
     }
 
     if (help_delete_entries(h) && help_populate_entries(h) &&
-        update_timestamp(h, currmodts)) {
+        help_build_index(h) && update_timestamp(h, currmodts)) {
       sqlite3_exec(help_db,
                    "INSERT INTO helpfts(helpfts) VALUES ('optimize');"
                    "COMMIT TRANSACTION",
@@ -530,11 +539,10 @@ add_help_file(const char *command_name, const char *filename, int admin)
     add_suggest =
       prepare_statement_cache(sqldb,
                               "INSERT INTO suggest(word, langid) VALUES "
-                              "(lower(?), (SELECT id FROM suggest_keys "
-                              "WHERE cat = upper(?)))",
+                              "(lower(?1), (SELECT id FROM suggest_keys "
+                              "WHERE cat = upper(?2)))",
                               "help.suggest.insert", 0);
-    sqlite3_bind_text(add_suggest, 2, h->command, strlen(h->command),
-                      SQLITE_STATIC);
+    sqlite3_bind_text(add_suggest, 2, h->command, -1, SQLITE_STATIC);
 
     do {
       status = sqlite3_step(topics);
@@ -571,7 +579,7 @@ help_delete_entries(help_file *h)
     "?)) DELETE FROM entries WHERE id IN all_entries",
     "help.delete.index", 0);
 
-  sqlite3_bind_text(deleter, 1, h->command, strlen(h->command), SQLITE_STATIC);
+  sqlite3_bind_text(deleter, 1, h->command, -1, SQLITE_STATIC);
   status = sqlite3_step(deleter);
   sqlite3_finalize(deleter);
   return status == SQLITE_DONE;
@@ -600,8 +608,7 @@ needs_rebuild(help_file *h, sqlite3_int64 *pcurrmodts)
                             "SELECT filename, modified FROM files WHERE id = "
                             "(SELECT id FROM categories WHERE name = ?)",
                             "needs.rebuild.ts", 0);
-  sqlite3_bind_text(timestamp, 1, h->command, strlen(h->command),
-                    SQLITE_STATIC);
+  sqlite3_bind_text(timestamp, 1, h->command, -1, SQLITE_STATIC);
   status = sqlite3_step(timestamp);
   if (status != SQLITE_ROW) {
     goto cleanup;
@@ -630,12 +637,12 @@ update_timestamp(help_file *h, sqlite3_int64 currmodts)
   updater = prepare_statement_cache(
     help_db,
     "INSERT INTO files(id, filename, modified) VALUES "
-    "((SELECT id FROM categories WHERE name = ?), ?, ?) ON CONFLICT (id) DO "
+    "((SELECT id FROM categories WHERE name = ?1), ?2, ?3) ON CONFLICT (id) DO "
     "UPDATE SET filename=excluded.filename, modified=excluded.modified",
     "help.update.ts", 0);
 
-  sqlite3_bind_text(updater, 1, h->command, strlen(h->command), SQLITE_STATIC);
-  sqlite3_bind_text(updater, 2, h->file, strlen(h->file), SQLITE_STATIC);
+  sqlite3_bind_text(updater, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(updater, 2, h->file, -1, SQLITE_STATIC);
   sqlite3_bind_int64(updater, 3, currmodts);
   status = sqlite3_step(updater);
   sqlite3_finalize(updater);
@@ -741,7 +748,7 @@ help_entry_exists(help_file *help_dat, const char *the_topic,
   finder = prepare_statement(
     help_db,
     "SELECT rowid FROM topics WHERE catid = (SELECT id FROM categories WHERE "
-    "name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name LIMIT 1",
+    "name = ?1) AND name LIKE ?2 ESCAPE '$' ORDER BY name LIMIT 1",
     "help.entry.exists");
 
   like = escape_like(the_topic, '$', NULL);
@@ -777,8 +784,8 @@ help_find_entry(help_file *help_dat, const char *the_topic,
                                "SELECT name, body FROM topics JOIN entries ON "
                                "topics.bodyid = entries.id "
                                "WHERE topics.catid = (SELECT id FROM "
-                               "categories WHERE name = ?) AND name "
-                               "LIKE ? ESCAPE '$' ORDER BY name LIMIT 1",
+                               "categories WHERE name = ?1) AND name "
+                               "LIKE ?2 ESCAPE '$' ORDER BY name LIMIT 1",
                                "help.find.entry.by_name");
     like = escape_like(the_topic, '$', NULL);
     name = sqlite3_mprintf("%s%%", like);
@@ -849,18 +856,18 @@ write_topic(help_file *h, const char *body)
   entryid = sqlite3_last_insert_rowid(help_db);
   sqlite3_reset(query);
 
-  query =
-    prepare_statement(help_db,
-                      "INSERT INTO topics(catid, name, bodyid, main) VALUES "
-                      "((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
-                      "help.insert.topic");
+  query = prepare_statement(
+    help_db,
+    "INSERT INTO topics(catid, name, bodyid, main) VALUES "
+    "((SELECT id FROM categories WHERE name = ?1), ?2, ?3, ?4)",
+    "help.insert.topic");
   sqlite3_bind_text(query, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_bind_int64(query, 3, entryid);
 
   add_suggest = prepare_statement(sqldb,
                                   "INSERT INTO suggest(word, langid) VALUES "
-                                  "(lower(?), (SELECT id FROM suggest_keys "
-                                  "WHERE cat = upper(?)))",
+                                  "(lower(?1), (SELECT id FROM suggest_keys "
+                                  "WHERE cat = upper(?2)))",
                                   "help.suggest.insert");
   sqlite3_bind_text(add_suggest, 2, h->command, -1, SQLITE_STATIC);
 
@@ -1007,11 +1014,11 @@ help_populate_entries(help_file *h)
     if (clear) {
       close_statement(clear);
     }
-    clear =
-      prepare_statement(help_db,
-                        "INSERT INTO topics(catid, name, bodyid, main) VALUES "
-                        "((SELECT id FROM categories WHERE name = ?), ?, ?, ?)",
-                        "help.insert.topic");
+    clear = prepare_statement(
+      help_db,
+      "INSERT INTO topics(catid, name, bodyid, main) VALUES "
+      "((SELECT id FROM categories WHERE name = ?1), ?2, ?3, ?4)",
+      "help.insert.topic");
     if (clear) {
       close_statement(clear);
     }
@@ -1186,10 +1193,9 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   lister = prepare_statement(
     help_db,
     "SELECT name FROM topics WHERE catid = (SELECT id FROM categories WHERE "
-    "name = ?) AND name LIKE ? ESCAPE '$' ORDER BY name",
+    "name = ?1) AND name LIKE ?2 ESCAPE '$' ORDER BY name",
     "help.list.entries");
-  sqlite3_bind_text(lister, 1, help_dat->command, strlen(help_dat->command),
-                    SQLITE_STATIC);
+  sqlite3_bind_text(lister, 1, help_dat->command, -1, SQLITE_STATIC);
   like = glob_to_like(patcopy, '$', &likelen);
   sqlite3_bind_text(lister, 2, like, likelen, free_string);
   mush_free(patcopy, "string");
@@ -1215,122 +1221,213 @@ free_entry_list(char **entries, int len)
   mush_free(entries, "help.search");
 }
 
+enum { ENTRIES_PER_PAGE = 48, LONG_TOPIC = 25 };
+
+static bool
+help_build_index(help_file *h)
+{
+  sqlite3_stmt *lister, *adder;
+  int status;
+  int page = 1;
+  int count = ENTRIES_PER_PAGE - 1;
+
+  lister = prepare_statement_cache(
+    help_db,
+    "SELECT name FROM topics WHERE catid = (SELECT id FROM "
+    "categories WHERE name = ?) ORDER BY name",
+    "help.entries.build.index", 0);
+  if (!lister) {
+    return 0;
+  }
+  adder = prepare_statement_cache(
+    help_db,
+    "INSERT INTO index_starts(catid, pageno, topic) VALUES ((SELECT id FROM "
+    "categories WHERE name = ?1),?2,?3)",
+    "help.entries.insert", 0);
+  if (!adder) {
+    sqlite3_finalize(lister);
+    return 0;
+  }
+
+  sqlite3_bind_text(lister, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(adder, 1, h->command, -1, SQLITE_STATIC);
+
+  do {
+    status = sqlite3_step(lister);
+    if (status == SQLITE_ROW) {
+      if (++count == ENTRIES_PER_PAGE) {
+        const char *t = (const char *) sqlite3_column_text(lister, 0);
+        sqlite3_bind_int(adder, 2, page);
+        sqlite3_bind_text(adder, 3, t, -1, SQLITE_TRANSIENT);
+        status = sqlite3_step(adder);
+        sqlite3_reset(adder);
+        if (status != SQLITE_DONE) {
+          do_rawlog(LT_ERR, "While building entries database for %s: %s",
+                    h->command, sqlite3_errstr(status));
+          break;
+        }
+        page += 1;
+        count = 0;
+      }
+      status = SQLITE_ROW;
+    }
+  } while (status == SQLITE_ROW);
+  sqlite3_finalize(lister);
+  sqlite3_finalize(adder);
+  return status == SQLITE_DONE;
+}
+
 /* Generate a page of the index of the help file (The old pre-generated 'help
- * entries' tables), 0-indexed.
+ * entries' tables), 1-indexed.
  */
 static char *
 entries_from_offset(help_file *h, int off)
 {
-  enum { ENTRIES_PER_PAGE = 48, LONG_TOPIC = 25 };
-  static char buff[BUFFER_LEN];
-  char *bp;
-  int count = 0;
-  char *entry1, *entry2, *entry3;
-  int n = 0;
-  int page = 0;
-  char **entries;
-  int nentries;
 
-  bp = buff;
+  sqlite3_stmt *indexer;
+  sqlite3_str *res;
+  char *entries[3] = {NULL, NULL, NULL};
+  int lens[3] = {0, 0, 0};
+  int col = 0, status;
+  bool need_col0 = 1;
+  int pages = 0;
+  
+  indexer = prepare_statement(help_db,
+                              "SELECT count(*) FROM index_starts WHERE catid = "
+                              "(SELECT id FROM categories WHERE name = ?)",
+                              "help.entries.count");
+  sqlite3_bind_text(indexer, 1, h->command, -1, SQLITE_STATIC);
 
-  /* Not all pages contain the same number of entries (due to topics with
-   * long names taking up more than one spot in the list), so we have to
-   * calculate the entire thing, from start to finish, to ensure the starting
-   * point for each page, and the total number of pages used, is totally
-   * accurate. Sigh.
-   */
-  entries = list_matching_entries("*", h, &nentries);
-
-  for (page = 0; n < nentries; page++) {
-    count = 0;
-    while (count <= ENTRIES_PER_PAGE && n < h->entries) {
-
-      if (n >= nentries)
-        break;
-      entry1 = entries[n];
-      n += 1;
-
-      if (entry1[0] == '&')
-        entry1 += 1;
-
-      if (n >= nentries) {
-        /* Last record */
-        if (page == off) {
-          safe_chr(' ', buff, &bp);
-          safe_str(entry1, buff, &bp);
-          safe_chr('\n', buff, &bp);
-          count += 1;
-        }
-        break;
-      }
-      entry2 = entries[n];
-      n += 1;
-
-      if (entry2[0] == '&')
-        entry2 += 1;
-
-      if (strlen(entry1) > LONG_TOPIC) {
-        if (strlen(entry2) > LONG_TOPIC) {
-          if (page == off)
-            safe_format(buff, &bp, " %-76.76s\n", entry1);
-          n -= 1;
-          count += 1;
-        } else {
-          if (page == off)
-            safe_format(buff, &bp, " %-51.51s %-25.25s\n", entry1, entry2);
-          count += 2;
-        }
-      } else {
-        if (strlen(entry2) > LONG_TOPIC) {
-          if (page == off)
-            safe_format(buff, &bp, " %-25.25s %-51.51s\n", entry1, entry2);
-          count += 2;
-        } else {
-          if (n < nentries) {
-            entry3 = entries[n];
-            if (entry3[0] == '&')
-              entry3 += 1;
-          } else
-            entry3 = "";
-
-          if (!*entry3 || strlen(entry3) > LONG_TOPIC) {
-            if (page == off)
-              safe_format(buff, &bp, " %-25.25s %-25.25s\n", entry1, entry2);
-            count += 2;
-          } else {
-            if (page == off)
-              safe_format(buff, &bp, " %-25.25s %-25.25s %-25.25s\n", entry1,
-                          entry2, entry3);
-            n += 1;
-            count += 3;
-          }
-        }
-      }
-    }
-    if (page == off)
-      safe_chr('\n', buff, &bp);
+  status = sqlite3_step(indexer);
+  if (status == SQLITE_ROW) {
+    pages = sqlite3_column_int(indexer, 0);
   }
+  sqlite3_reset(indexer);
 
-  /* There are 'page' pages in total */
-  if (off < (page - 1)) {
-    if (page == (off + 2)) {
-      safe_format(buff, &bp, "For more, see ENTRIES-%d\n", off + 2);
-    } else if (page > (off + 2)) {
-      safe_format(buff, &bp, "For more, see ENTRIES-%d through %d\n", off + 2,
-                  page);
-    }
-  }
-
-  *bp = '\0';
-
-  if (entries) {
-    free_entry_list(entries, nentries);
-  }
-
-  if (bp == buff)
+  if (pages == 0 || off > pages) {
     return NULL;
+  }
 
-  return buff;
+  /* Window functions would be useful here */
+  indexer = prepare_statement(
+    help_db,
+    "WITH cat(id) AS (SELECT id FROM categories WHERE name = ?1) "
+    "SELECT name FROM topics,cat WHERE catid = cat.id AND name >= (SELECT "
+    "topic FROM index_starts WHERE catid = cat.id AND pageno = ?2) ORDER BY "
+    "name LIMIT ?3",
+    "help.entries.page");
+  sqlite3_bind_text(indexer, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_int(indexer, 2, off);
+  sqlite3_bind_int(indexer, 3, ENTRIES_PER_PAGE);
+
+  res = sqlite3_str_new(help_db);
+
+  while (1) {
+    if (need_col0) {
+      status = sqlite3_step(indexer);
+      if (status != SQLITE_ROW) {
+        break;
+      }
+      entries[0] =
+        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
+      if (entries[0][0] == '&') {
+        entries[0] += 1;
+        lens[0] -= 1;
+      }
+    }
+
+    status = sqlite3_step(indexer);
+    if (status != SQLITE_ROW) {
+      if (col == 0) {
+        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
+      } else if (col == 1) {
+        sqlite3_str_appendf(res, " %-51.51s\n", entries[0]);
+      }
+      break;
+    }
+    entries[1] =
+      mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
+    lens[1] = sqlite3_column_bytes(indexer, 0);
+    if (entries[1][0] == '&') {
+      entries[1] += 1;
+      lens[1] -= 1;
+    }
+
+    if (lens[0] > LONG_TOPIC) {
+      if (lens[1] > LONG_TOPIC) {
+        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
+        mush_free(entries[0], "string");
+        entries[0] = entries[1];
+        lens[0] = lens[1];
+        entries[1] = NULL;
+        col = 1;
+        need_col0 = 0;
+      } else {
+        sqlite3_str_appendf(res, " %-51.51s %-25.25s\n", entries[0],
+                            entries[1]);
+        mush_free(entries[0], "string");
+        mush_free(entries[1], "string");
+        entries[0] = entries[1] = NULL;
+        col = 0;
+        need_col0 = 1;
+      }
+    } else if (lens[1] > LONG_TOPIC) {
+      sqlite3_str_appendf(res, " %-25.25s %-51.51s\n", entries[0], entries[1]);
+      mush_free(entries[0], "string");
+      mush_free(entries[1], "string");
+      entries[0] = entries[1] = NULL;
+      col = 0;
+      need_col0 = 1;
+    } else {
+      status = sqlite3_step(indexer);
+      if (status != SQLITE_ROW) {
+        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
+                            entries[1]);
+        mush_free(entries[0], "string");
+        mush_free(entries[1], "string");
+        entries[0] = entries[1] = NULL;
+        break;
+      }
+      entries[2] =
+        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
+      lens[2] = sqlite3_column_bytes(indexer, 0);
+      if (entries[2][0] == '&') {
+        entries[2] += 1;
+        lens[2] -= 1;
+      }
+      if (lens[2] > LONG_TOPIC) {
+        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
+                            entries[1]);
+        mush_free(entries[0], "string");
+        mush_free(entries[1], "string");
+        entries[0] = entries[2];
+        lens[0] = lens[2];
+        col = 1;
+        need_col0 = 0;
+      } else {
+        sqlite3_str_appendf(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
+                            entries[1], entries[2]);
+        mush_free(entries[0], "string");
+        mush_free(entries[1], "string");
+        mush_free(entries[2], "string");
+        col = 0;
+        need_col0 = 1;
+      }
+    }
+  }
+  sqlite3_reset(indexer);
+
+  /* There are 'pages' pages in total */
+  if (off < pages) {
+    if (pages == (off + 1)) {
+      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d", pages);
+    } else if (pages > (off + 1)) {
+      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d through %d",
+                          off + 1, pages);
+    }
+  }
+
+  return sqlite3_str_finish(res);
 }
 
 extern const unsigned char *tables;
@@ -1344,7 +1441,7 @@ is_index_entry(const char *topic, int *offset)
   int r;
 
   if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
-    *offset = 0;
+    *offset = 1;
     return 1;
   }
 
@@ -1360,15 +1457,15 @@ is_index_entry(const char *topic, int *offset)
                      ovecsize)) == 2) {
     char buff[BUFFER_LEN];
     pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
-    *offset = parse_integer(buff) - 1;
-    if (*offset < 0)
-      *offset = 0;
+    *offset = parse_integer(buff);
+    if (*offset <= 0)
+      *offset = 1;
     return 1;
   } else
     return 0;
 }
 
-#define MAX_SUGGESTIONS 400000
+#define MAX_SUGGESTIONS 500000
 
 /** Add a word to the vocabulary list for a given category.
  *
@@ -1398,8 +1495,8 @@ add_vocab(const char *name, const char *category)
 
   inserter = prepare_statement(
     help_db,
-    "SELECT count(*) FROM suggest_vocab WHERE word = lower(?) AND langid = "
-    "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+    "SELECT count(*) FROM suggest_vocab WHERE word = lower(?1) AND langid = "
+    "(SELECT id FROM suggest_keys WHERE cat = upper(?2))",
     "suggest.user.duplicate");
   if (!inserter) {
     return 0;
@@ -1437,8 +1534,8 @@ add_vocab(const char *name, const char *category)
 
   inserter =
     prepare_statement(help_db,
-                      "INSERT INTO suggest(word, langid) SELECT lower(?), id "
-                      "FROM suggest_keys WHERE cat = upper(?)",
+                      "INSERT INTO suggest(word, langid) SELECT lower(?1), id "
+                      "FROM suggest_keys WHERE cat = upper(?2)",
                       "suggest.user.insert");
   if (inserter) {
     sqlite3_bind_text(inserter, 1, name, -1, SQLITE_TRANSIENT);
@@ -1463,8 +1560,8 @@ delete_vocab(const char *name, const char *category)
 
   deleter =
     prepare_statement(help_db,
-                      "DELETE FROM suggest WHERE word = lower(?) AND langid = "
-                      "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+                      "DELETE FROM suggest WHERE word = lower(?1) AND langid = "
+                      "(SELECT id FROM suggest_keys WHERE cat = upper(?2))",
                       "suggest.user.delete");
   if (deleter) {
     int status;
@@ -1522,7 +1619,8 @@ add_dict_words(void)
     help_db,
     "BEGIN TRANSACTION;"
     "INSERT INTO suggest_keys(cat) VALUES ('WORDS') ON CONFLICT DO NOTHING;"
-    "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE cat "
+    "DELETE FROM suggest WHERE langid = (SELECT id FROM suggest_keys WHERE "
+    "cat "
     "= 'WORDS');"
     "CREATE TEMP TABLE wordslist(word TEXT NOT NULL PRIMARY KEY, id);",
     NULL, NULL, &errmsg);
@@ -1534,11 +1632,11 @@ add_dict_words(void)
 
   if (savedmodts == 0) {
     timestamp = prepare_statement_cache(
-      help_db, "INSERT INTO files(modified, filename) VALUES (?, ?)",
+      help_db, "INSERT INTO files(modified, filename) VALUES (?1, ?2)",
       "update.words.timestamp", 0);
   } else {
     timestamp = prepare_statement_cache(
-      help_db, "UPDATE files SET modified = ? WHERE filename = ?",
+      help_db, "UPDATE files SET modified = ?1 WHERE filename = ?2",
       "update.words.timestamp", 0);
   }
   if (!timestamp) {
@@ -1631,8 +1729,8 @@ FUNCTION(fun_suggest)
 
   words = prepare_statement(
     help_db,
-    "SELECT upper(word) FROM suggest WHERE word MATCH ? AND langid = (SELECT "
-    "id FROM suggest_keys WHERE cat = upper(?)) AND top=?",
+    "SELECT upper(word) FROM suggest WHERE word MATCH ?1 AND langid = (SELECT "
+    "id FROM suggest_keys WHERE cat = upper(?2)) AND top=?3",
     "suggest.find.all");
 
   sqlite3_bind_text(words, 1, word8, wordlen, free_string);

@@ -2286,7 +2286,8 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
     if (sqlite3_exec(
           statement_cache,
           "CREATE TABLE prepared_cache(handle INTEGER NOT NULL, name TEXT NOT "
-          "NULL, statement INTEGER NOT NULL, PRIMARY KEY(handle, name))",
+          "NULL, statement INTEGER NOT NULL, PRIMARY KEY(handle, name)) "
+          "WITHOUT ROWID",
           NULL, NULL, &errmsg) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to build prepared statement cache table: %s",
                 errmsg);
@@ -2403,7 +2404,7 @@ init_objdata()
     "NOT NULL DEFAULT 0);"
     "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr "
     "INTEGER, PRIMARY KEY (dbref, key), FOREIGN KEY(dbref) REFERENCES "
-    "objects(dbref) ON DELETE CASCADE);";
+    "objects(dbref) ON DELETE CASCADE) WITHOUT ROWID;";
   char *errmsg = NULL;
   sqlite3 *sqldb = get_shared_db();
 

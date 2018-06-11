@@ -439,8 +439,7 @@ build_help_file(help_file *h)
       sqldb,
       "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
       "suggest.addcat");
-    sqlite3_bind_text(add_cat, 1, h->command, -1,
-                      SQLITE_STATIC);
+    sqlite3_bind_text(add_cat, 1, h->command, -1, SQLITE_STATIC);
     status = sqlite3_step(add_cat);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to add %s to suggestions: %s", h->command,
@@ -1005,7 +1004,6 @@ help_populate_entries(help_file *h)
   }
   fclose(rfp);
   do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
-  h->entries = num_topics;
 
   {
     sqlite3_stmt *clear;
@@ -1158,6 +1156,27 @@ string_spitfile(help_file *help_dat, char *arg1)
   return buff;
 }
 
+static int
+get_help_nentries(help_file *h)
+{
+  int count = 0;
+  sqlite3_stmt *total;
+  total = prepare_statement(help_db,
+                            "SELECT count(*) FROM topics WHERE catid = (SELECT "
+                            "id FROM categories WHERE name = ?)",
+                            "help.topics.count");
+  if (!total) {
+    return 0;
+  }
+  sqlite3_bind_text(total, 1, h->command, -1, SQLITE_STATIC);
+  int status = sqlite3_step(total);
+  if (status == SQLITE_ROW) {
+    count = sqlite3_column_int(total, 0);
+  }
+  sqlite3_reset(total);
+  return count;
+}
+
 /** Return a string with all help entries that match a pattern */
 static char **
 list_matching_entries(const char *pattern, help_file *help_dat, int *len)
@@ -1188,7 +1207,8 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
     }
   }
 
-  buff = mush_calloc(help_dat->entries, sizeof(char *), "help.search");
+  buff =
+    mush_calloc(get_help_nentries(help_dat), sizeof(char *), "help.search");
 
   lister = prepare_statement(
     help_db,
@@ -1291,7 +1311,7 @@ entries_from_offset(help_file *h, int off)
   int col = 0, status;
   bool need_col0 = 1;
   int pages = 0;
-  
+
   indexer = prepare_statement(help_db,
                               "SELECT count(*) FROM index_starts WHERE catid = "
                               "(SELECT id FROM categories WHERE name = ?)",
@@ -1422,8 +1442,8 @@ entries_from_offset(help_file *h, int off)
     if (pages == (off + 1)) {
       sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d", pages);
     } else if (pages > (off + 1)) {
-      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d through %d",
-                          off + 1, pages);
+      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d through %d", off + 1,
+                          pages);
     }
   }
 

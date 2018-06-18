@@ -20,6 +20,7 @@
 #include <math.h>
 #include "mushtype.h"
 #include "mypcre.h"
+#include "mushsql.h"
 
 /* These are some common error messages. */
 extern const char e_int[];         /* #-1 ARGUMENT MUST BE INTEGER */
@@ -400,9 +401,8 @@ struct urlreq {
   int queue_type;
   PE_REGS *pe_regs;
   char *attrname;
-  char *body;
+  sqlite3_str *body;
   void *header_slist;
-  size_t body_size;
 };
 #endif
 

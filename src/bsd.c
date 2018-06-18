@@ -1023,7 +1023,8 @@ free_urlreq(struct urlreq *req)
 {
   pe_regs_free(req->pe_regs);
   if (req->body) {
-    mush_free(req->body, "urlreq.body");
+    sqlite3_str_reset(req->body);
+    sqlite3_str_finish(req->body);
   }
   mush_free(req->attrname, "urlreq.attrname");
   curl_slist_free_all(req->header_slist);
@@ -1065,29 +1066,34 @@ handle_curl_msg(CURLMsg *msg)
           }
         }
       }
-      if (resp->body) {
-        char *latin1;
+      if (resp->body && sqlite3_str_length(resp->body) > 0) {
+        char *body = NULL;
+        char *latin1 = NULL;
         int len;
+        int body_size = sqlite3_str_length(resp->body);
+        body = sqlite3_str_finish(resp->body);
+        resp->body = NULL;
         if (is_utf8) {
-          latin1 =
-            utf8_to_latin1(resp->body, resp->body_size, &len, 1, "string");
-          if (len > BUFFER_LEN) {
+          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
+          if (len >= BUFFER_LEN) {
             latin1[BUFFER_LEN - 1] = '\0';
           }
         } else {
-          latin1 = resp->body;
-          if (resp->body_size > BUFFER_LEN) {
-            resp->body[BUFFER_LEN - 1] = '\0';
+          latin1 = body;
+          if (body_size >= BUFFER_LEN) {
+            body[BUFFER_LEN - 1] = '\0';
           }
         }
         pe_regs_setenv(resp->pe_regs, 0, latin1);
         if (is_utf8) {
           mush_free(latin1, "string");
         }
+        if (body) {
+          sqlite3_free(body);
+        }
       }
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
-                                resp->pe_regs, resp->queue_type,
-                                resp->thing);
+                                resp->pe_regs, resp->queue_type, resp->thing);
     } else {
       notify_format(resp->thing, "Request failed: %s",
                     curl_easy_strerror(msg->data.result));

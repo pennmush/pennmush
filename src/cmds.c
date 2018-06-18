@@ -1814,11 +1814,7 @@ req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   struct urlreq *req = userp;
   size_t realsize = size * nmemb;
-  req->body =
-    mush_realloc(req->body, req->body_size + realsize + 1, "urlreq.body");
-  memcpy(req->body + req->body_size, contents, realsize);
-  req->body_size += realsize;
-  req->body[req->body_size] = '\0';
+  sqlite3_str_append(req->body, contents, realsize);
   return realsize;
 }
 
@@ -1894,8 +1890,7 @@ COMMAND(cmd_fetch)
   req->thing = thing;
   req->queue_type = queue_type;
   req->attrname = mush_strdup(s, "urlreq.attrname");
-  req->body = NULL;
-  req->body_size = 0;
+  req->body = sqlite3_str_new(NULL);
   req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_fetch");
   pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
 

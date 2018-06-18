@@ -48,13 +48,13 @@ Softcode:
 * [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
 * New ‘me’ and ‘inventory’ flags for [1mscan()[0m give finer control of what to scan. [MG]
 * [1morflags()[0m, [1morlflags()[0m, [1mandflags()[0m, [1mandlflags()[0m, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn’t set. Suggested by Qon. [1180].
-* [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
 * [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
 * [1m@suggest[0m and [1msuggest()[0m for user-defined spellchecking. Loads [1m/usr/share/dict/words[0m or another configurable wordlist by default.
 * [1mconnlog()[0m and [1mconnrecord()[0m for interfacing with enhanced connection logs.
 * [1msoundex()[0m and [1msoundslike()[0m now support a second phonetic hash besides soundex.
 * Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
 * owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* If compiled with libcurl support, adds [1m@http[0m for interacting with RESTFul web APIs. [SW]
 
 Fixes:
 
@@ -71,6 +71,7 @@ Fixes:
 * [1m@chown/preserve[0m was resetting wiz-bit despite it’s help file indicating otherwise. [1187] PR by Qon.
 * [1mscan()[0m now determines if objects will be included based on whether the caller can examine them, rather than if [1mscan()[0m’s [1m<looker>[0m can examine them. [MG]
 * Fixed some bugs regarding when [1msetq()[0m will and won’t let you set the values of named registers when you’ve hit the limit. [MG, 1179]
+* [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
 
 Documentation:
 

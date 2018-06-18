@@ -64,7 +64,7 @@
 <p>If you installed PostgresQL from a binary package (e.g. rpm or apt), you should be sure that your system also has the development package (usually postgresql-dev, or libpq or similar)</p>
 <p>If you think you have PostgresQL libraries and header files but configure isn't finding them, they may be in an unusual location on your system, with <code>pg_config</code> not in your default path. Find its location (<code>where pg_config</code> if the program works for you, <code>find / -name pg_config</code> otherwise), and call configure with <code>--with-postgresql=/path/to/pg_config</code></p>
 <h2 id="sqlite">Sqlite</h2>
-<p>PennMUSH comes with Sqlite3 3.23.1 as part of its source. It is the suggested SQL engine for use with softcode unless you need the capabilities of one of the others.</p>
+<p>PennMUSH comes with Sqlite3 3.24.0 as part of its source. It is the suggested SQL engine for use with softcode unless you need the capabilities of one of the others.</p>
 <p>Sqlite3 is compiled with support for the RTree, FTS5 and JSON1 modules, and optionally has Unicode support if ICU is present (Though text in the results of a query is turned into Latin-1 by the MUSH, this still affects functions like UPPER()).</p>
 <h1 id="mush-configuration-overview">MUSH configuration overview</h1>
 <p>mush.cnf includes these directives that configure the SQL support:</p>

@@ -56,13 +56,15 @@ Softcode
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
 * New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
-* `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 * `timecalc()` and `secscalc()` for adding/subtracting intervals from times.
 * `@suggest` and `suggest()` for user-defined spellchecking. Loads */usr/share/dict/words* or another configurable wordlist by default.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
-* `soundex()` and `soundslike()` now support a second phonetic hash besides soundex.
+* `soundex()` and `soundslike()` now support a second phonetic hash algorithm besides soundex.
 * Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
 * owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* If compiled with libcurl support, adds `@http` for interacting with RESTFul web APIs. [SW]
+* `stripaccents()` supports a second, smarter, transliteration algorithm.
+* If compiled with ICU support, adds `lcstr2()` and `ucstr2()` with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
 
 Fixes
 -----
@@ -75,19 +77,20 @@ Fixes
 * Pass `pe_info` into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to `align()` now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 * `json_query()` didn't understand an action of 'type' as documented. [SW]
-* Assorted help file fixes. [SW]
 * `@clone` without /preserve wasn't stripping privileged flags and such. [1190,SW]
 * `@chown/preserve` was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
 * `scan()` now determines if objects will be included based on whether the caller can examine them, rather than if `scan()`'s `<looker>` can examine them. [MG]
 * Fixed some bugs regarding when `setq()` will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
+* `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
+* A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
 
 Documentation
 -------------
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
-* Minor help fixes. [MG]
-* More minor help fixes. [MT]
+* Help fixes and improvements. [MG, SW, MT]
+* Help files are now in UTF-8.
 
 OS Specific
 -----------
@@ -103,4 +106,3 @@ OS Specific
 ### Windows ###
 
 * Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL. [SW]
-

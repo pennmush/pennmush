@@ -88,9 +88,10 @@ The quickstart version of the installation is:
     it out of the box, but some might require a development package as
     well (libssl-dev, openssl-dev or some such name).
 5. Development versions of a number of optional libraries are nice to have:
-    * A sql client library for Sqlite3, MySQL/MariaDB or Postgresql.
-    * libevent
-    * libcurl
+    * A sql client library for MySQL/MariaDB or Postgresql.
+    * ICU (For enhanced Unicode support)
+    * libevent (For ssl_slave)
+    * libcurl (For `@http`)
 5. Run ./configure with any desired options (See ./configure --help or
    read below)
 6. make update

@@ -338,7 +338,8 @@ PENNCONF conftable[] = {
   {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0,
    "log"},
   {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
-  {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0, "files"},
+  {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0,
+   "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1889,5 +1890,9 @@ show_compile_options(dbref player)
 
 #ifdef HAVE_ICU
   notify(player, T(" (Very limited) Unicode support is enabled."));
+#endif
+
+#ifdef HAVE_LIBCURL
+  notify(player, T(" @HTTP is supported."));
 #endif
 }

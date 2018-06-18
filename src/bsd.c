@@ -70,6 +70,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
 
 #include "access.h"
 #include "ansi.h"
@@ -597,6 +600,10 @@ main(int argc, char **argv)
 
   time(&mudtime);
 
+#ifdef HAVE_LIBCURL
+  curl_global_init(CURL_GLOBAL_ALL);
+#endif
+
   /* initialize random number generator */
   initialize_rng();
 
@@ -735,6 +742,10 @@ main(int argc, char **argv)
   dump_database();
 
   local_shutdown();
+
+#ifdef HAVE_LIBCURL
+  curl_global_cleanup();
+#endif
 
   if (pidfile)
     remove(pidfile);
@@ -1003,6 +1014,92 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 }
 #endif
 
+#ifdef HAVE_LIBCURL
+int ncurl_queries = 0;
+CURLM *curl_handle = NULL;
+
+static void
+free_urlreq(struct urlreq *req)
+{
+  pe_regs_free(req->pe_regs);
+  if (req->body) {
+    mush_free(req->body, "urlreq.body");
+  }
+  mush_free(req->attrname, "urlreq.attrname");
+  curl_slist_free_all(req->header_slist);
+  mush_free(req, "urlreq");
+}
+
+static void
+handle_curl_msg(CURLMsg *msg)
+{
+  if (!msg) {
+    return;
+  }
+
+  ncurl_queries -= 1;
+
+  if (msg->msg == CURLMSG_DONE) {
+    long respcode;
+    char *contenttype;
+    struct urlreq *resp;
+    CURL *handle = msg->easy_handle;
+    bool is_utf8 = 0;
+
+    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
+
+    if (msg->data.result == CURLE_OK) {
+      if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode) ==
+          CURLE_OK) {
+        if (respcode) {
+          pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        }
+      }
+      if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype) ==
+          CURLE_OK) {
+        if (contenttype) {
+          pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+          if (strstr(contenttype, "charset=utf-8") ||
+              strstr(contenttype, "charset=UTF-8")) {
+            is_utf8 = 1;
+          }
+        }
+      }
+      if (resp->body) {
+        char *latin1;
+        int len;
+        if (is_utf8) {
+          latin1 =
+            utf8_to_latin1(resp->body, resp->body_size, &len, 1, "string");
+          if (len > BUFFER_LEN) {
+            latin1[BUFFER_LEN - 1] = '\0';
+          }
+        } else {
+          latin1 = resp->body;
+          if (resp->body_size > BUFFER_LEN) {
+            resp->body[BUFFER_LEN - 1] = '\0';
+          }
+        }
+        pe_regs_setenv(resp->pe_regs, 0, latin1);
+        if (is_utf8) {
+          mush_free(latin1, "string");
+        }
+      }
+      queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
+                                resp->pe_regs, resp->queue_type,
+                                resp->thing);
+    } else {
+      notify_format(resp->thing, "Request failed: %s",
+                    curl_easy_strerror(msg->data.result));
+    }
+    curl_multi_remove_handle(curl_handle, handle);
+    curl_easy_cleanup(handle);
+    free_urlreq(resp);
+  }
+}
+
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1017,12 +1114,22 @@ shovechars(Port_t port, Port_t sslport)
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
+#ifdef HAVE_LIBCURL
+  struct curl_waitfd *fds = NULL;
+  unsigned int fd_size = 0, fds_used = 0;
+  CURLMcode curl_status;
+#define PENN_POLLIN CURL_WAIT_POLLIN
+#define PENN_POLLOUT CURL_WAIT_POLLOUT
+#else
 #ifdef WIN32
   WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
   nfds_t fd_size = 0, fds_used = 0;
+#endif
+#define PENN_POLLIN POLLIN
+#define PENN_POLLOUT POLLOU
 #endif
   int polltimeout;
 
@@ -1044,6 +1151,13 @@ shovechars(Port_t port, Port_t sslport)
 #endif
     }
   }
+
+#ifdef HAVE_LIBCURL
+  curl_handle = curl_multi_init();
+  curl_multi_setopt(curl_handle, CURLMOPT_MAXCONNECTS, 500);
+  curl_multi_setopt(curl_handle, CURLMOPT_PIPELINING,
+                    CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
+#endif
 
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
@@ -1187,33 +1301,33 @@ shovechars(Port_t port, Port_t sslport)
 
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
 
       if (sslsock) {
         fds[fds_used].fd = sslsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
         fds[fds_used].fd = localsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #endif
     }
 #ifdef INFO_SLAVE
     if (info_slave_state == INFO_SLAVE_PENDING) {
       fds[fds_used].fd = info_slave;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
     if (notify_fd >= 0) {
       fds[fds_used].fd = notify_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #ifndef WIN32
     if (sigrecv_fd >= 0) {
       fds[fds_used].fd = sigrecv_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
 
@@ -1235,16 +1349,41 @@ shovechars(Port_t port, Port_t sslport)
                               command ready to eval. */
         timeout = slice_timeout;
       } else {
-        fds[fds_used].events = POLLIN;
+        fds[fds_used].events = PENN_POLLIN;
       }
       if (d->output.head) {
-        fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= PENN_POLLOUT;
       }
       if (!d->input.head || d->output.head)
         fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
+
+#ifdef HAVE_LIBCURL
+    curl_status =
+      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+
+    if (curl_status != CURLM_OK) {
+      do_rawlog(LT_ERR, "curl_multi_wait: %s",
+                curl_multi_strerror(curl_status));
+      return;
+    }
+
+    if (ncurl_queries > 0) {
+      int running = 0;
+      curl_status = curl_multi_perform(curl_handle, &running);
+      if (curl_status == CURLM_OK) {
+        CURLMsg *msg;
+        while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
+          handle_curl_msg(msg);
+          found -= 1;
+        }
+      }
+    }
+
+#else
+
 #ifdef WIN32
     found = WSAPoll(fds, fds_used, polltimeout);
 #else
@@ -1260,15 +1399,19 @@ shovechars(Port_t port, Port_t sslport)
         penn_perror("poll");
         return;
       }
-#ifdef INFO_SLAVE
-      if (info_slave_state == INFO_SLAVE_PENDING)
-        update_pending_info_slaves();
 #endif
-    } else {
+
+#ifdef INFO_SLAVE
+    if (info_slave_state == INFO_SLAVE_PENDING) {
+      update_pending_info_slaves();
+    }
+#endif
+
+    time(&mudtime);
+
+    if (found >= 0) {
+
       /* if !found then time for robot commands */
-
-      time(&mudtime);
-
       if (!found) {
         do_top(options.queue_chunk);
         continue;
@@ -1282,16 +1425,17 @@ shovechars(Port_t port, Port_t sslport)
       now = mudtime;
 
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 &&
+            fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1299,7 +1443,7 @@ shovechars(Port_t port, Port_t sslport)
       }
 
       if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
-          fds[fds_used++].revents & POLLIN) {
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
@@ -1309,31 +1453,34 @@ shovechars(Port_t port, Port_t sslport)
       }
 
 #else /* INFO_SLAVE */
-      if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(sock, CS_IP_SOCKET);
-        }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(sslsock, CS_OPENSSL_SOCKET);
-        }
+        if (ndescriptors < avail_descriptors) {
+          if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(sock, CS_IP_SOCKET);
+          }
+          if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(sslsock, CS_OPENSSL_SOCKET);
+          }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(localsock, CS_LOCAL_SOCKET);
-        }
+          if (found > 0 && localsock >= 0 &&
+              fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(localsock, CS_LOCAL_SOCKET);
+          }
 #endif /* LOCAL_SOCKET */
-      }
+        }
 #endif /* INFO_SLAVE */
 
-      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && notify_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
       }
 
 #ifndef WIN32
-      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && sigrecv_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         sigrecv_ack();
       }
@@ -1348,8 +1495,12 @@ shovechars(Port_t port, Port_t sslport)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
-        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
-        output_ready = fds[fds_used++].revents & POLLOUT;
+#ifdef HAVE_LIBCURL
+        errors = 0;
+#else
+          errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+#endif
+        output_ready = fds[fds_used++].revents & PENN_POLLOUT;
         if (input_ready || errors || output_ready)
           found -= 1;
         if (errors) {
@@ -1371,8 +1522,13 @@ shovechars(Port_t port, Port_t sslport)
       }
     }
   }
+
   if (fds)
     mush_free(fds, "pollfds");
+
+#ifdef HAVE_LIBCURL
+  curl_multi_cleanup(curl_handle);
+#endif
 }
 
 static int
@@ -1381,7 +1537,7 @@ test_connection(SOCKET newsock)
 #ifdef WIN32
   if (newsock == INVALID_SOCKET && WSAGetLastError() != WSAEINTR)
 #else
-  if (errno && errno != EINTR)
+    if (errno && errno != EINTR)
 #endif
   {
     penn_perror("test_connection");
@@ -1528,7 +1684,7 @@ new_connection(int oldsock, int *result, conn_source source)
       source = CS_LOCAL_SSL_SOCKET;
     }
 #else
-    source = CS_LOCAL_SSL_SOCKET;
+      source = CS_LOCAL_SSL_SOCKET;
 #endif
   }
 
@@ -1736,46 +1892,46 @@ fcache_read(FBLOCK *fb, const char *filename)
     return (int) fb->len;
   }
 #else
-  /* Posix read code here */
-  {
-    int fd;
-    struct stat sb;
+    /* Posix read code here */
+    {
+      int fd;
+      struct stat sb;
 
-    release_fd();
-    if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
-      reserve_fd();
-      return -1;
-    }
+      release_fd();
+      if ((fd = open(filename, O_RDONLY, 0)) < 0) {
+        do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
+        reserve_fd();
+        return -1;
+      }
 
-    if (fstat(fd, &sb) < 0) {
-      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
+      if (fstat(fd, &sb) < 0) {
+        do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
+        close(fd);
+        reserve_fd();
+        return -1;
+      }
+
+      if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
+        do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
+                  (int) sb.st_size, filename);
+        close(fd);
+        reserve_fd();
+        return -1;
+      }
+
+      if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
+        do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
+        close(fd);
+        mush_free(fb->buff, "fcache_data");
+        fb->buff = NULL;
+        reserve_fd();
+        return -1;
+      }
+
       close(fd);
       reserve_fd();
-      return -1;
+      fb->len = sb.st_size;
     }
-
-    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
-                (int) sb.st_size, filename);
-      close(fd);
-      reserve_fd();
-      return -1;
-    }
-
-    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
-      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
-      close(fd);
-      mush_free(fb->buff, "fcache_data");
-      fb->buff = NULL;
-      reserve_fd();
-      return -1;
-    }
-
-    close(fd);
-    reserve_fd();
-    fb->len = sb.st_size;
-  }
 #endif /* Posix read code */
 
   return fb->len;
@@ -2098,7 +2254,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     WSAPOLLFD p;
 #else
-    struct pollfd p;
+      struct pollfd p;
 #endif
 
     p.fd = d->descriptor;
@@ -2107,7 +2263,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     input_ready = WSAPoll(&p, 1, 0);
 #else
-    input_ready = poll(&p, 1, 0);
+      input_ready = poll(&p, 1, 0);
 #endif
   }
 
@@ -2316,7 +2472,7 @@ save_command(DESC *d, char *command)
 #ifdef HAVE_ICU
     latin1 = translate_utf8_to_latin1(command, -1, &llen, "string");
 #else
-    latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
+      latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
 #endif
     if (latin1) {
       char *c;
@@ -2528,20 +2684,20 @@ TELNET_HANDLER(telnet_charset)
 
   queue_newwrite(d, reply_suffix, 2);
 #else  /* _MSC_VER */
-  /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
-   * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
-   * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
-   * but it's unlikely to contain a valid charset name, so probably
-   * wouldn't help anyway.) */
+    /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+     * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+     * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+     * but it's unlikely to contain a valid charset name, so probably
+     * wouldn't help anyway.) */
 
-  if (*cmd != DO)
-    return;
+    if (*cmd != DO)
+      return;
 
-  queue_newwrite(d, reply_prefix, 4);
-  queue_newwrite(d, ";UTF-8", 6);
-  queue_newwrite(d, ";ISO-8859-1", 11);
-  queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
-  queue_newwrite(d, reply_suffix, 2);
+    queue_newwrite(d, reply_prefix, 4);
+    queue_newwrite(d, ";UTF-8", 6);
+    queue_newwrite(d, ";ISO-8859-1", 11);
+    queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
+    queue_newwrite(d, reply_suffix, 2);
 #endif /* _MSC_VER */
 }
 
@@ -3843,8 +3999,8 @@ close_sockets(void)
       byebye[1].iov_len = 2;
       ignoreme = writev(d->descriptor, byebye, 2);
 #else
-      send(d->descriptor, shutmsg, shutlen, 0);
-      send(d->descriptor, (char *) "\r\n", 2, 0);
+        send(d->descriptor, shutmsg, shutlen, 0);
+        send(d->descriptor, (char *) "\r\n", 2, 0);
 #endif
     } else {
       int offset;
@@ -6684,7 +6840,7 @@ load_reboot_db(void)
 #ifdef WITHOUT_WEBSOCKETS
         (void) getref_u64(f);
 #else
-        d->ws_frame_len = getref_u64(f);
+          d->ws_frame_len = getref_u64(f);
 #endif
       }
 #ifndef WITHOUT_WEBSOCKETS
@@ -6885,7 +7041,7 @@ do_reboot(dbref player, int flag)
     execv(saved_argv[0], (char **) args);
   }
 #else
-  execl("pennmush.exe", "pennmush.exe", "/run", NULL);
+    execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
   fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
@@ -7037,7 +7193,7 @@ file_watch_init(void)
 #ifdef HAVE_INOTIFY_INIT1
   return file_watch_init_in();
 #else
-  return -1;
+    return -1;
 #endif
 }
 

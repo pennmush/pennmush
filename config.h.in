@@ -102,6 +102,8 @@
 
 #undef HAVE_ICU
 
+#undef HAVE_LIBCURL
+
 /* Types */
 
 #undef HAVE__BOOL

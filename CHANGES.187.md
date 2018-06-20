@@ -65,6 +65,7 @@ Softcode
 * If compiled with libcurl support, adds `@http` for interacting with RESTFul web APIs. [SW]
 * `stripaccents()` supports a second, smarter, transliteration algorithm.
 * If compiled with ICU support, adds `lcstr2()` and `ucstr2()` with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
+* `@chatformat` now receives a new arg, `%6`, which defaults to "says" but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
 
 Fixes
 -----

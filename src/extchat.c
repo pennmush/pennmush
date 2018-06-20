@@ -3185,13 +3185,14 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 6;
+  format.numargs = 7;
   format.targetarg = -1;
   format.args[0] = "@";
   format.args[1] = buff2;
   /* args[2] and args[5] are set in the for loop below */
   format.args[3] = accname;
   format.args[4] = "";
+  format.args[6] = "";
 
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
@@ -3870,8 +3871,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     argv[3] = playername;
     argv[4] = title;
     argv[5] = buff;
+    argv[6] = speechtext;
     snprintf(buff, BUFFER_LEN, "%s",
-             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 6, argv, buff));
+             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 7, argv, buff));
   }
 
   if (Channel_Interact(channel)) {
@@ -3885,7 +3887,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 6;
+  format.numargs = 7;
   format.targetarg = -1;
   format.args[0] = (char *) ctype;
   format.args[1] = ChanName(channel);
@@ -3893,6 +3895,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.args[3] = playername;
   format.args[4] = title;
   format.args[5] = buff;
+  format.args[6] = speechtext;
 
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);

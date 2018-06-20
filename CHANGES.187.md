@@ -84,6 +84,7 @@ Fixes
 * Fixed some bugs regarding when `setq()` will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
 * `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 * A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
+* Fix an off-by-one error in command switch initialization code. [SW]
 
 Documentation
 -------------

@@ -851,7 +851,7 @@ command_init_postconfig(void)
     sw_data.start - 1; /* Don't count the trailing NULL-name switch */
   dyn_switch_list[sw_data.n].name = NULL;
   st_flush(&switch_names);
-  switch_bytes = ceil((double) num_switches / 8.0);
+  switch_bytes = ceil((double) (num_switches + 1) / 8.0);
 
   /* Then convert the list of switch names in all commands to masks */
   for (c = ptab_firstentry(&ptab_command); c;

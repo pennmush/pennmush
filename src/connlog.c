@@ -114,7 +114,7 @@ init_conndb(bool rebooting)
           "disconn, reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
           "a.hostname, ts.conn, ts.disconn, c.reason FROM connections AS c "
           "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a on c.addrid = "
-          "a.id"
+          "a.id;"
           "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
           "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
           "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = "

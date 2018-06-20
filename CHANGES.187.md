@@ -65,6 +65,7 @@ Fixes
 * `@chown/preserve` was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
 * `scan()` now determines if objects will be included based on whether the caller can examine them, rather than if `scan()`'s `<looker>` can examine them. [MG]
 * Fixed some bugs regarding when `setq()` will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
+* Fix an off-by-one error in command switch initialization code. [SW]
 
 Documentation
 -------------

@@ -11,7 +11,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <link rel="stylesheet" href="mushdoc.css">
+  <link rel="stylesheet" href="mushdoc.css" />
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -36,7 +36,7 @@
 </ol>
 <p>If you are upgrading from a previous PennMUSH release, this is probably not the file you want to start with. Read the <a href="UPGRADING.html">UPGRADING.md</a> file first.</p>
 <p><strong>DISCLAIMER</strong>: Before attempting to run a MUD of any sort, you should have some reasonable knowledge of UNIX and C. If you do not, it is <em>strongly</em> suggested that you learn UNIX and C to some reasonable level of competency before attempting to set up a MUSH. (Note that even people using the Windows ports are encouraged to know UNIX, because that's the paradigm that PennMUSH was built with, and most resources will be written with UNIX is mind.)</p>
-<p>You may also want to take a look at the Managing PennMUSH book at <a href="http://community.pennmush.org" class="uri">http://community.pennmush.org</a> and at Javelin's Guide for PennMUSH Gods, at <a href="http://download.pennmush.org/Guide/guide-single.html" class="uri">http://download.pennmush.org/Guide/guide-single.html</a></p>
+<p>You may also want to take a look at the Managing PennMUSH book at <a href="http://community.pennmush.org" class="uri">http://community.pennmush.org</a> and at Javelin's Guide for PennMUSH Gods, at <a href="https://download.pennmush.org/Guide/guide-single.html" class="uri">https://download.pennmush.org/Guide/guide-single.html</a></p>
 <h1 id="important-background">Important background</h1>
 <p>Here's a quick picture of the organization of the MUSH directory tree. The &quot;src&quot; directory contains C source code. The &quot;hdrs&quot; directory contains header files for the source code. The files used by a running MUSH are in the &quot;game&quot; directory, which includes subdirectories &quot;data&quot; (current databases), &quot;txt&quot; (text files and directories for building them), &quot;log&quot; (log files), and &quot;save&quot; (backup databases). Finally, the &quot;hints&quot; directory is used during the installation process, the &quot;test&quot; directory contains an automated regression testing suite, and the &quot;po&quot; directory holds translation message files.</p>
 <pre><code>pennmush--+-&gt; src

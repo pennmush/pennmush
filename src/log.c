@@ -157,23 +157,26 @@ start_all_logs(void)
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
 
-  fprintf(stderr, "Redirecting stderr to %s\n", ERRLOG);
+  fprintf(stderr, "Redirecting stdout and stderr to %s\n", ERRLOG);
   fp = fopen(ERRLOG, "a");
   if (!fp) {
     fprintf(stderr, "Unable to open %s. Error output to stderr.\n", ERRLOG);
   } else {
     fclose(fp);
     if (!freopen(ERRLOG, "a", stderr)) {
-      printf(T("Ack!  Failed reopening stderr!"));
+      puts(T("Ack!  Failed reopening stderr!"));
       exit(1);
     }
     setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
+    if (!freopen(ERRLOG, "a", stdout)) {
+      fputs(T("Ack!  Failed reopening stdout!"), stderr);
+      fputc('\n', stderr);
+      exit(1);
+    }
+    setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
   }
 
   if (once) {
-#ifndef DEBUG_BYTECODE
-    fclose(stdout);
-#endif
     fclose(stdin);
     once = 0;
   }

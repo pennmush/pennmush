@@ -12,7 +12,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <link rel="stylesheet" href="mushdoc.css">
+  <link rel="stylesheet" href="mushdoc.css" />
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -27,6 +27,7 @@
 <ul>
 <li><a href="#version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</a><ul>
 <li><a href="#major-changes">Major Changes</a></li>
+<li><a href="#minor-changes">Minor Changes</a></li>
 <li><a href="#softcode">Softcode</a></li>
 <li><a href="#fixes">Fixes</a></li>
 <li><a href="#documentation">Documentation</a></li>
@@ -40,6 +41,7 @@
 <li>[GM] is Greg Millam, a PennMUSH developer (aka Walker)</li>
 <li>[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)</li>
 <li>[TK] is Tim Krajcar, a PennMUSH developer (aka Rince)</li>
+<li>[MT] is Mike Taylor, a PennMUSH developer (aka Qon or Zenithar)</li>
 <li>[3] refers to code by (or inspired by) TinyMUSH 3.0</li>
 <li>[MUX] refers to code by (or inspired by) TinyMUX 2.x</li>
 <li>[Rhost] refers to code by (or inspired by) RhostMUSH</li>
@@ -49,27 +51,62 @@
 <h1 id="version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</h1>
 <h2 id="major-changes">Major Changes</h2>
 <ul>
-<li>Support websocket connections. See <a href="http://grapenut.org/code/wsclient/index.html" class="uri">http://grapenut.org/code/wsclient/index.html</a> for a sample in-browser client. [Grapenut, 1007]</li>
+<li>Support websocket connections. See <a href="https://github.com/grapenut/websockclient" class="uri">https://github.com/grapenut/websockclient</a> for a sample in-browser client. [Grapenut, 1007]</li>
+<li>Change attributes from being stored in sorted linked lists to sorted arrays; results in faster lookups and less memory usage. [SW]</li>
+</ul>
+<h2 id="minor-changes">Minor Changes</h2>
+<ul>
+<li>Message translation support now defaults to off. Run configure with <code>--enable-nls</code> to turn it on if needed. [SW]</li>
+<li>Shrink the <code>NEW_PE_INFO</code> struct, for signficant memory savings in softcode that queues lots of commands. [SW]</li>
+<li>Add more test cases to the softcode test suite. [SW]</li>
+<li>log_forces in mushcnf.dost now defaults to no. You probably only want this on if you're debugging. [MG]</li>
 </ul>
 <h2 id="softcode">Softcode</h2>
 <ul>
-<li>Support all of Rhost's colors() key arguments (Except n). [SW, 1112]</li>
+<li>Support all of Rhost's <code>colors()</code> key arguments (Except n). [SW, 1112]</li>
+<li>Functions that work on integers (Like <code>div()</code> or <code>band()</code>) now use 64-bit values instead of 32-bit. [SW]</li>
+<li><code>json_query()</code> get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]</li>
+<li><code>json_query(str, unescape)</code> handles unicode escape sequences.</li>
+<li><code>json(string, foo)</code> escapes non-ascii characters.</li>
+<li><code>clone()</code> now takes an optional fourth argument to act like <code>@clone/preserve</code> [797]</li>
+<li>New 'me' and 'inventory' flags for <code>scan()</code> give finer control of what to scan. [MG]</li>
+<li><code>orflags()</code>, <code>orlflags()</code>, <code>andflags()</code>, <code>andlflags()</code>, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].</li>
+<li>Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]</li>
+<li>owner() now accepts two optional arguments, allowing ownership to be changed as in <span class="citation" data-cites="chown">@chown</span> and <span class="citation" data-cites="atrchown">@atrchown</span>. [MT]</li>
+<li><code>@chatformat</code> now receives a new arg, <code>%6</code>, which defaults to &quot;says&quot; but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]</li>
 </ul>
 <h2 id="fixes">Fixes</h2>
 <ul>
 <li>A bunch of color names weren't mapping correctly to Xterm color codes. [SW]</li>
 <li><code>@grep/iprint</code> hilites the matching text in the same case it appears in the attribute body. [SW, 1120]</li>
 <li><code>@mail</code> wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]</li>
+<li>Connecting with a web browser to a mush without a <code>mud_url</code> config option set caused an infinite refresh loop. Reported by grapenut. [1149]</li>
+<li>Make sure <code>sigrecv_ack()</code> won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]</li>
+<li>Pass <code>pe_info</code> into IDLE and HAVEN attributes from the page command. [MG]</li>
+<li>The x and X options to <code>align()</code> now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]</li>
+<li><code>json_query()</code> didn't understand an action of 'type' as documented. [SW]</li>
+<li>Assorted help file fixes. [SW]</li>
+<li><code>@clone</code> without /preserve wasn't stripping privileged flags and such. [1190,SW]</li>
+<li><code>@chown/preserve</code> was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.</li>
+<li><code>scan()</code> now determines if objects will be included based on whether the caller can examine them, rather than if <code>scan()</code>'s <code>&lt;looker&gt;</code> can examine them. [MG]</li>
+<li>Fixed some bugs regarding when <code>setq()</code> will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]</li>
+<li>Fix an off-by-one error in command switch initialization code. [SW]</li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>
 <li>Changelogs and other documentation use markup. [SW, 1140]</li>
 <li>Start trying to clean up and revise ancient documentation. [1095]</li>
+<li>Minor help fixes. [MG]</li>
+<li>More minor help fixes. [MT]</li>
 </ul>
 <h2 id="os-specific">OS Specific</h2>
+<h3 id="bsds-in-general">BSDs in general</h3>
+<ul>
+<li><code>info_slave</code> and <code>ssl_slave</code> use <code>kqueue()</code> to efficiently be notified of parent mush crashes.</li>
+</ul>
 <h3 id="openbsd">OpenBSD</h3>
 <ul>
-<li>netmush and slave processes use pledge(2) to limit their privileges. [SW]</li>
+<li>netmush and slave processes use <code>pledge(2)</code> to limit their privileges. [SW]</li>
 </ul>
 <h3 id="windows">Windows</h3>
 <ul>

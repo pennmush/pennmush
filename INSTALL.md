@@ -23,7 +23,7 @@ resources will be written with UNIX is mind.)
 
 You may also want to take a look at the Managing PennMUSH book at
 <http://community.pennmush.org> and at Javelin's Guide for PennMUSH
-Gods, at <http://download.pennmush.org/Guide/guide-single.html>
+Gods, at <https://download.pennmush.org/Guide/guide-single.html>
  
 Important background
 ====================

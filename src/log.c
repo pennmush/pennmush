@@ -114,7 +114,7 @@ start_log(struct log_stream *log)
   static int ht_initialized = 0;
   FILE *f;
   char logbuff[BUFFER_LEN];
-  
+
   if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
@@ -134,8 +134,8 @@ start_log(struct log_stream *log)
                 strerror(errno));
         log->fp = stderr;
       } else {
-        hashadd(strupper_r(log->filename, logbuff, sizeof logbuff),
-                log->fp, &htab_logfiles);
+        hashadd(strupper_r(log->filename, logbuff, sizeof logbuff), log->fp,
+                &htab_logfiles);
         fputs("START OF LOG.\n", log->fp);
         fflush(log->fp);
       }
@@ -196,7 +196,7 @@ end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
   char logbuff[BUFFER_LEN];
-  
+
   if (!log->filename || !*log->filename || !log->fp)
     return;
   if ((fp = hashfind(strupper_r(log->filename, logbuff, sizeof logbuff),

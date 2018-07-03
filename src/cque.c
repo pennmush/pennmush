@@ -53,6 +53,7 @@
 #include "ptab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "mushsql.h"
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;
@@ -179,25 +180,33 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
-  int *count;
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
+  sqlite3_int64 newam;
 
-  if (QUEUE_PER_OWNER)
+  if (QUEUE_PER_OWNER) {
     player = Owner(player);
+  }
 
-  count = get_objdata(player, "QUEUE");
-  if (!count) {
-    count = mush_malloc(sizeof *count, "queue.count");
-    *count = 0;
-    set_objdata(player, "QUEUE", count);
+  sqldb = get_shared_db();
+  adder = prepare_statement(
+    sqldb, "UPDATE objects SET queue = remember(queue + ?, ?) WHERE dbref = ?",
+    "queue.add");
+  sqlite3_bind_int(adder, 1, am);
+  sqlite3_bind_pointer(adder, 2, &newam, "carray", NULL);
+  sqlite3_bind_int(adder, 3, player);
+
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to update queue for #%d: %s", player,
+              sqlite3_errstr(status));
+    newam = -1;
   }
-  *count += am;
-  if (*count == 0) {
-    set_objdata(player, "QUEUE", NULL);
-    mush_free(count, "queue.count");
-    return 0;
-  } else {
-    return *count;
-  }
+  sqlite3_reset(adder);
+  return newam;
 }
 
 /** Wrapper for add_to_generic() to incrememnt an attribute when a
@@ -701,7 +710,7 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist,
 {
   int flags = QUEUE_DEFAULT;
   char abuff[2048];
-  
+
   if (force_debug) {
     flags |= QUEUE_DEBUG;
   } else if (AF_NoDebug(a)) {
@@ -726,7 +735,7 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
   PE_REGS *pe_regs = NULL;
   int i;
   char abuff[2048];
-  
+
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
     return 0;
@@ -838,7 +847,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   char *start, *command;
   int queue_type = QUEUE_DEFAULT | flags;
   char abuff[2048];
-  
+
   start = safe_atr_value(a, "atrval.queue-attr");
   command = start;
   /* Trim off $-command or ^-command prefix */

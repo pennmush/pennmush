@@ -355,7 +355,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   const char **start;
   char sname[BUFFER_LEN];
   char pbuff[BUFFER_LEN];
-  
+
   if (!arg1 || !*arg1) {
     notify(player, T("Whisper to whom?"));
     return;
@@ -437,7 +437,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     notify_format(player,
                   (gcount > 1) ? T("%s sense: %s%s%s") : T("%s senses: %s%s%s"),
                   tbuf + 4, AName(player, AN_SAY, NULL), gap, arg2);
-    
+
     snprintf(pbuff, sizeof pbuff, "You sense: %s%s%s",
              AName(player, AN_SAY, NULL), gap, arg2);
     p = pbuff;
@@ -820,7 +820,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   ATTR *a;
   char alias[BUFFER_LEN], *ap;
   char msg[BUFFER_LEN];
-  
+
   if (*arg1 && has_eq) {
     /* page to=[msg] */
     head = (char *) arg1;
@@ -1035,7 +1035,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   if ((ap = shortalias(executor)) && *ap) {
     strcpy(alias, ap);
     if (PAGE_ALIASES && strcasecmp(ap, Name(executor))) {
-      snprintf(msg, sizeof msg, "%s (%s)", AName(executor, AN_SAY, NULL), alias);
+      snprintf(msg, sizeof msg, "%s (%s)", AName(executor, AN_SAY, NULL),
+               alias);
       current = msg;
     } else {
       current = (char *) AName(executor, AN_SAY, NULL);

@@ -156,7 +156,6 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
@@ -179,6 +178,8 @@ COMLIST commands[] = {
    "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE "
    "LOCALIZE CLEARREGS NOBREAK",
    cmd_hook, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", "hook"},
+  {"@HTTP", "DELETE POST PUT", cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS
+   | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
@@ -294,7 +295,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
    CMD_T_ANY, 0, 0},
-
+  {"@SUGGEST", "ADD DELETE LIST", cmd_suggest, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
   {"@SWITCH",
    "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
@@ -1255,7 +1256,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     *c = '\0';
     mush_strncpy(commandraw, command, sizeof commandraw);
     upcasestr(command);
-
 
     /* Catch &XX and @XX attribute pairs. If that's what we've got,
      * use the magical ATTRIB_SET command

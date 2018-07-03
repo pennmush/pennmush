@@ -29,6 +29,9 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "mushsql.h"
+#include "log.h"
+#include "charconv.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -44,6 +47,187 @@ static FUN *any_func_hash_lookup(const char *name);
 HASHTAB htab_function;      /**< Function hash table */
 HASHTAB htab_user_function; /**< User-defined function hash table */
 slab *function_slab;        /**< slab for 'struct fun' allocations */
+static bool functable = 0;
+
+/** Builds the tables used for giving spelling suggestions. */
+void
+init_private_vocab(void)
+{
+  sqlite3 *sqldb;
+  char *errmsg;
+
+  if (functable) {
+    return;
+  }
+
+  sqldb = get_shared_db();
+  if (sqlite3_exec(sqldb,
+                   "CREATE VIRTUAL TABLE suggest USING spellfix1;"
+                   "CREATE TABLE suggest_keys(id INTEGER NOT NULL PRIMARY KEY, "
+                   "cat TEXT NOT NULL UNIQUE);",
+                   NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create spellfix1 table: %s", errmsg);
+    sqlite3_free(errmsg);
+  } else {
+    functable = 1;
+  }
+}
+
+/** Add a word to the vocabulary list for a given category.
+ *
+ * \param name The word to add, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
+void
+add_private_vocab(const char *name, const char *category)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *inserter;
+  int status;
+
+  if (!functable) {
+    return;
+  }
+
+  sqldb = get_shared_db();
+
+  inserter = prepare_statement(
+    sqldb,
+    "INSERT INTO suggest_keys(cat) VALUES (upper(?)) ON CONFLICT DO NOTHING",
+    "suggest.addcat");
+  if (inserter) {
+    int status;
+    sqlite3_bind_text(inserter, 1, category, -1, SQLITE_STATIC);
+    do {
+      status = sqlite3_step(inserter);
+    } while (is_busy_status(status));
+    sqlite3_reset(inserter);
+  } else {
+    return;
+  }
+
+  inserter =
+    prepare_statement(sqldb,
+                      "INSERT INTO suggest(word, langid) SELECT lower(?), id "
+                      "FROM suggest_keys WHERE cat = upper(?)",
+                      "suggest.insert");
+  if (inserter) {
+    sqlite3_bind_text(inserter, 1, name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(inserter, 2, category, -1, SQLITE_STATIC);
+    do {
+      status = sqlite3_step(inserter);
+    } while (is_busy_status(status));
+    sqlite3_reset(inserter);
+  }
+}
+
+/* Delete a word from the given category's vocabulary list.
+ *
+ * \param name The word to delete, in UTF-8.
+ * \param category The category of the word, in UTF-8.
+ */
+void
+delete_private_vocab(const char *name, const char *category)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *deleter;
+
+  if (!functable) {
+    return;
+  }
+  sqldb = get_shared_db();
+
+  deleter =
+    prepare_statement(sqldb,
+                      "DELETE FROM suggest WHERE word = lower(?) AND langid = "
+                      "(SELECT id FROM suggest_keys WHERE cat = upper(?))",
+                      "suggest.delete");
+  if (deleter) {
+    int status;
+    sqlite3_bind_text(deleter, 1, name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(deleter, 2, category, -1, SQLITE_STATIC);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    sqlite3_reset(deleter);
+  }
+}
+
+/** Delete all vocabulary entries for a given category.
+ *
+ * \param category The category to delete, in UTF-8.
+ */
+void
+delete_private_vocab_cat(const char *category)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *deleter;
+
+  if (!functable) {
+    return;
+  }
+  sqldb = get_shared_db();
+
+  deleter = prepare_statement(sqldb,
+                              "DELETE FROM suggest WHERE langid = (SELECT id "
+                              "FROM suggest_keys WHERE cat = upper(?))",
+                              "suggest.delete_all");
+  if (deleter) {
+    int status;
+    sqlite3_bind_text(deleter, 1, category, -1, SQLITE_STATIC);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    sqlite3_reset(deleter);
+  }
+}
+
+/** Return a suggestion for a misspelled name.
+ *
+ * \param badname The name to give a suggestion for, in LATIN-1.
+ * \param category The category of the name, in UTF-8.
+ * \return A suggestion, or NULL.
+ */
+char *
+suggest_name(const char *badname, const char *category)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+  int status;
+  int ulen;
+  char *utf8;
+  char *suggestion = NULL;
+
+  if (!functable) {
+    return NULL;
+  }
+
+  sqldb = get_shared_db();
+
+  finder = prepare_statement(
+    sqldb,
+    "SELECT upper(word) FROM suggest WHERE word MATCH ? AND top = 1 AND langid "
+    "= (SELECT id FROM suggest_keys WHERE cat = upper(?))",
+    "suggest.find1");
+  if (!finder) {
+    return NULL;
+  }
+
+  utf8 = latin1_to_utf8(badname, strlen(badname), &ulen, "string");
+  sqlite3_bind_text(finder, 1, utf8, ulen, free_string);
+  sqlite3_bind_text(finder, 2, category, -1, SQLITE_STATIC);
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      suggestion =
+        mush_strdup((const char *) sqlite3_column_text(finder, 0), "string");
+      break;
+    }
+  } while (is_busy_status(status));
+  sqlite3_reset(finder);
+
+  return suggestion;
+}
 
 /* -------------------------------------------------------------------------*
  * Utilities.
@@ -234,6 +418,8 @@ FUNTAB flist[] = {
   {"CONDALL", fun_if, 2, INT_MAX, FN_NOPARSE},
   {"CONFIG", fun_config, 1, 1, FN_REG | FN_STRIPANSI},
   {"CONN", fun_conn, 1, 1, FN_REG | FN_STRIPANSI},
+  {"CONNLOG", fun_connlog, 3, INT_MAX, FN_REG | FN_WIZARD},
+  {"CONNRECORD", fun_connrecord, 1, 2, FN_REG | FN_WIZARD},
   {"CONTROLS", fun_controls, 2, 2, FN_REG | FN_STRIPANSI},
   {"CONVSECS", fun_convsecs, 1, 2, FN_REG | FN_STRIPANSI},
   {"CONVUTCSECS", fun_convsecs, 1, 1, FN_REG | FN_STRIPANSI},
@@ -326,6 +512,7 @@ FUNTAB flist[] = {
   {"ISDAYLIGHT", fun_isdaylight, 0, 2, FN_REG},
   {"ISDBREF", fun_isdbref, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISJSON", fun_isjson, 1, -1, FN_REG},
   {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISOBJID", fun_isobjid, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISREGEXP", fun_isregexp, 1, 1, FN_REG | FN_STRIPANSI},
@@ -342,6 +529,11 @@ FUNTAB flist[] = {
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCON", fun_dbwalker, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCSTR", fun_lcstr, 1, -1, FN_REG},
+#ifdef HAVE_ICU
+  {"LCSTR2", fun_lcstr2, 1, 1, FN_REG | FN_STRIPANSI},
+#else
+  {"LCSTR2", fun_lcstr, 1, 1, FN_REG | FN_STRIPANSI},
+#endif
   {"LDELETE", fun_ldelete, 2, 4, FN_REG},
   {"LEFT", fun_left, 2, 2, FN_REG},
   {"LEMIT", fun_lemit, 1, -1, FN_REG},
@@ -538,6 +730,7 @@ FUNTAB flist[] = {
   {"SCAN", fun_scan, 1, 3, FN_REG | FN_STRIPANSI},
   {"SCRAMBLE", fun_scramble, 1, -1, FN_REG},
   {"SECS", fun_secs, 0, 0, FN_REG},
+  {"SECSCALC", fun_secscalc, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"SECURE", fun_secure, 1, -1, FN_REG},
   {"SENT", fun_sent, 1, 1, FN_REG | FN_STRIPANSI},
   {"SET", fun_set, 2, 2, FN_REG},
@@ -555,8 +748,8 @@ FUNTAB flist[] = {
   {"SORT", fun_sort, 1, 4, FN_REG},
   {"SORTBY", fun_sortby, 2, 4, FN_REG},
   {"SORTKEY", fun_sortkey, 2, 5, FN_REG},
-  {"SOUNDEX", fun_soundex, 1, 1, FN_REG | FN_STRIPANSI},
-  {"SOUNDSLIKE", fun_soundlike, 2, 2, FN_REG | FN_STRIPANSI},
+  {"SOUNDEX", fun_soundex, 1, 2, FN_REG | FN_STRIPANSI},
+  {"SOUNDSLIKE", fun_soundlike, 2, 3, FN_REG | FN_STRIPANSI},
   {"SPACE", fun_space, 1, 1, FN_REG | FN_STRIPANSI},
   {"SPEAK", fun_speak, 2, 7, FN_REG},
   {"SPELLNUM", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},
@@ -572,13 +765,14 @@ FUNTAB flist[] = {
   {"STRCAT", fun_strcat, 1, INT_MAX, FN_REG},
   {"STRINGSECS", fun_stringsecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"STRINSERT", fun_str_rep_or_ins, 3, -3, FN_REG},
-  {"STRIPACCENTS", fun_stripaccents, 1, 1, FN_REG},
+  {"STRIPACCENTS", fun_stripaccents, 1, 2, FN_REG},
   {"STRIPANSI", fun_stripansi, 1, -1, FN_REG | FN_STRIPANSI},
   {"STRLEN", fun_strlen, 1, -1, FN_REG},
   {"STRMATCH", fun_strmatch, 2, 3, FN_REG},
   {"STRREPLACE", fun_str_rep_or_ins, 4, 4, FN_REG},
   {"SUB", fun_sub, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"SUBJ", fun_subj, 1, 1, FN_REG | FN_STRIPANSI},
+  {"SUGGEST", fun_suggest, 2, 4, FN_REG | FN_STRIPANSI},
   {"SWITCH", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SWITCHALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SLEV", fun_slev, 0, 0, FN_REG},
@@ -592,6 +786,7 @@ FUNTAB flist[] = {
   {"TEXTFILE", fun_textfile, 2, 2, FN_REG | FN_STRIPANSI},
   {"TEXTSEARCH", fun_textsearch, 2, 3, FN_REG | FN_STRIPANSI},
   {"TIME", fun_time, 0, 1, FN_REG | FN_STRIPANSI},
+  {"TIMECALC", fun_timecalc, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"TIMEFMT", fun_timefmt, 1, 3, FN_REG},
   {"TIMESTRING", fun_timestring, 1, 2, FN_REG | FN_STRIPANSI},
   {"TR", fun_tr, 3, 3, FN_REG},
@@ -601,6 +796,11 @@ FUNTAB flist[] = {
   {"TRUNC", fun_trunc, 1, 1, FN_REG | FN_STRIPANSI},
   {"TYPE", fun_type, 1, 1, FN_REG | FN_STRIPANSI},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
+#ifdef HAVE_ICU
+  {"UCSTR2", fun_ucstr2, 1, 1, FN_REG | FN_STRIPANSI},
+#else
+  {"UCSTR2", fun_ucstr, 1, 1, FN_REG | FN_STRIPANSI},
+#endif
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},
   {"PFUN", fun_pfun, 1, (MAX_STACK_ARGS + 1), FN_REG},
@@ -611,6 +811,8 @@ FUNTAB flist[] = {
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
   {"UNSETQ", fun_unsetq, 0, 1, FN_REG},
   {"UPTIME", fun_uptime, 0, 1, FN_STRIPANSI},
+  {"URLDECODE", fun_urldecode, 1, -1, FN_REG | FN_STRIPANSI},
+  {"URLENCODE", fun_urlencode, 1, -1, FN_REG | FN_STRIPANSI},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"V", fun_v, 1, 1, FN_REG | FN_STRIPANSI},
   {"VALID", fun_valid, 2, 3, FN_REG},
@@ -869,6 +1071,7 @@ builtin_func_hash_lookup(const char *name)
 static void
 func_hash_insert(const char *name, FUN *func)
 {
+  add_private_vocab(name, "FUNCTIONS");
   hashadd(name, (void *) func, &htab_function);
 }
 
@@ -881,6 +1084,8 @@ init_func_hashtab(void)
 {
   FUNTAB *ftp;
   FUNALIAS *fa;
+
+  init_private_vocab();
 
   hashinit(&htab_function, 512);
   hash_init(&htab_user_function, 32, delete_function);
@@ -1054,6 +1259,7 @@ function_add(const char *name, function_func fun, int minargs, int maxargs,
   fp->maxargs = maxargs;
   fp->flags = FN_BUILTIN | ftype;
   func_hash_insert(name, fp);
+
   return fp;
 }
 
@@ -1244,7 +1450,7 @@ cnf_add_function(const char *name, const char *opts)
   char *attrname, *one, *list;
   char ucnameb[BUFFER_LEN], *ucname;
   char ucoptsb[BUFFER_LEN], *ucopts;
-  
+
   ucname = strupper_r(name, ucnameb, sizeof ucnameb);
   ucname = trim_space_sep(ucname, ' ');
 
@@ -1315,6 +1521,7 @@ cnf_add_function(const char *name, const char *opts)
     fp->minargs = 0;
     fp->maxargs = MAX_STACK_ARGS;
     hashadd(name, fp, &htab_user_function);
+    add_private_vocab(name, "FUNCTIONS");
   }
 
   fp->where.ufun->thing = thing;
@@ -1342,8 +1549,7 @@ cnf_add_function(const char *name, const char *opts)
  *  of u().
  */
 void
-do_function(dbref player, const char *name, char ** argv,
-            int preserve)
+do_function(dbref player, const char *name, char **argv, int preserve)
 {
   char tbuf1[BUFFER_LEN];
   char *bp = tbuf1;
@@ -1351,7 +1557,7 @@ do_function(dbref player, const char *name, char ** argv,
   FUN *fp;
   size_t userfn_count = htab_user_function.entries;
   char ucnameb[BUFFER_LEN], *ucname;
-  
+
   /* if no arguments, just give the list of user functions, by walking
    * the function hash table, and looking up all functions marked
    * as user-defined.
@@ -1481,6 +1687,7 @@ do_function(dbref player, const char *name, char ** argv,
     if (preserve)
       fp->flags |= FN_LOCALIZE;
     hashadd(ucname, fp, &htab_user_function);
+    add_private_vocab(ucname, "FUNCTIONS");
 
     /* now add it to the user function table */
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
@@ -1615,6 +1822,7 @@ do_function_delete(dbref player, char *name)
     if (strcasecmp(name, fp->name)) {
       /* Function alias */
       hashdelete(strupper(name), &htab_function);
+      delete_private_vocab(fp->name, "FUNCTIONS");
       notify(player, T("Function alias deleted."));
       return;
     } else if (fp->flags & FN_CLONE) {
@@ -1623,6 +1831,7 @@ do_function_delete(dbref player, char *name)
       mush_free((char *) fp->name, "function.name");
       slab_free(function_slab, fp);
       hashdelete(safename, &htab_function);
+      delete_private_vocab(safename, "FUNCTIONS");
       notify(player, T("Function clone deleted."));
       return;
     }
@@ -1641,6 +1850,7 @@ do_function_delete(dbref player, char *name)
   }
   /* Remove it from the hash table */
   hashdelete(fp->name, &htab_user_function);
+  delete_private_vocab(fp->name, "FUNCTIONS");
   notify(player, T("Function deleted."));
 }
 

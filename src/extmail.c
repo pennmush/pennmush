@@ -97,6 +97,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 
 extern int do_convtime(const char *str, struct tm *ttm); /* funtime.c */
 
@@ -216,7 +217,7 @@ get_subject(MAIL *mp)
         *p = '\0';
         break;
       }
-      if (!isprint(*p)) {
+      if (!char_isprint(*p)) {
         *p = ' ';
       }
     }
@@ -767,11 +768,11 @@ do_mail_list(dbref player, const char *msglist)
         /* list it */
         if (SUPPORT_HTML) {
           char buff[BUFFER_LEN];
-          snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/read %d:%d\" "
+          snprintf(buff, sizeof buff,
+                   "%c%cA XCH_CMD=\"@mail/read %d:%d\" "
                    "XCH_HINT=\"Read message %d in folder %d\"%c",
-                   TAG_START, MARKUP_HTML, (int) Folder(mp),
-                   i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
-                   TAG_END);
+                   TAG_START, MARKUP_HTML, (int) Folder(mp), i[Folder(mp)],
+                   i[Folder(mp)], (int) Folder(mp), TAG_END);
           notify_noenter(player, buff);
         }
         strcpy(subj, chopstr(get_subject(mp), 28));
@@ -787,8 +788,8 @@ do_mail_list(dbref player, const char *msglist)
                       mail_list_time(show_time(mp->time, 0), 1));
         if (SUPPORT_HTML) {
           char buff[10];
-          snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START,
-                   MARKUP_HTML, TAG_END);
+          snprintf(buff, sizeof buff, "%c%c/A%c", TAG_START, MARKUP_HTML,
+                   TAG_END);
           notify_noenter(player, buff);
         }
       }
@@ -977,10 +978,11 @@ do_mail_reviewlist(dbref player, dbref target)
       i++;
       if (SUPPORT_HTML) {
         char buff[BUFFER_LEN];
-        snprintf(buff, sizeof buff, "%c%cA XCH_CMD=\"@mail/review %s=%d\" "
+        snprintf(buff, sizeof buff,
+                 "%c%cA XCH_CMD=\"@mail/review %s=%d\" "
                  "XCH_HINT=\"Read message %d sent to %s\"%c",
-                 TAG_START, MARKUP_HTML, Name(mp->to), i, i,
-                 Name(mp->to), TAG_END);
+                 TAG_START, MARKUP_HTML, Name(mp->to), i, i, Name(mp->to),
+                 TAG_END);
         notify_noenter(player, buff);
       }
       strcpy(subj, chopstr(get_subject(mp), 28));
@@ -1197,7 +1199,7 @@ do_mail_purge(dbref player)
       nextp = mp->next;
     }
   }
-  set_objdata(player, "MAIL", NULL);
+  delete_objdata(player, "MAIL");
   if (command_check_byname(player, "@MAIL", NULL))
     notify(player, T("MAIL: Mailbox purged."));
   return;

@@ -34,6 +34,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "charclass.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -271,7 +272,7 @@ strinitial(const char *s)
  * \return pointer to a static buffer containing the initial-cased version.
  */
 char *
-strinitial_r(const char * restrict s, char * restrict d, size_t len)
+strinitial_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -279,12 +280,12 @@ strinitial_r(const char * restrict s, char * restrict d, size_t len)
     d[0] = '\0';
     return d;
   }
-  
+
   if (*s) {
     d[0] = toupper(*s);
     s += 1;
   }
-  
+
   for (p = 1; *s && p < len - 1; p += 1, s += 1) {
     d[p] = tolower(*s);
   }
@@ -382,7 +383,7 @@ strlower_a(const char *s, const char *name)
  * \return pointer to a string containing the uppercased version.
  */
 char *
-strupper_r(const char * restrict s, char * restrict d, size_t len)
+strupper_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -401,7 +402,7 @@ strupper_r(const char * restrict s, char * restrict d, size_t len)
  * \return pointer to a string containing the lowercased version.
  */
 char *
-strlower_r(const char * restrict s, char * restrict d, size_t len)
+strlower_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
@@ -743,7 +744,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
     default:
       c = base[n];
     }
-    if (isprint(c)) {
+    if (char_isprint(c)) {
       if (safe_chr((char) c, buff, bp))
         return 1;
     } else {
@@ -1898,4 +1899,75 @@ keystr_find_full(const char *restrict map, const char *restrict key,
     return deflt;
   else
     return keystr_find_full(map, "default", deflt, delim);
+}
+
+/** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern
+ * using %.
+ *
+ * \param orig the string to convert.
+ * \param esc the character to escape special ones (_%) with.
+ * \param len the length of the returned string, not counting the trailing nul.
+ * \return a newly allocated string.
+ */
+char *
+glob_to_like(const char *orig, char esc, int *len)
+{
+  char *like;
+  char *lbp;
+
+  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
+
+  while (*orig) {
+    if (*orig == '%' || *orig == '_' || *orig == esc) {
+      safe_chr(esc, like, &lbp);
+      safe_chr(*orig, like, &lbp);
+    } else if (*orig == '*') {
+      safe_chr('%', like, &lbp);
+    } else if (*orig == '?') {
+      safe_chr('_', like, &lbp);
+    } else {
+      safe_chr(*orig, like, &lbp);
+    }
+    orig++;
+  }
+  *lbp = '\0';
+
+  if (len) {
+    *len = lbp - like;
+  }
+
+  return like;
+}
+
+/** Escape SQL like wildcards from a string.
+ *
+ * \param orig the string to escape.
+ * \param esc the character to escape special ones (_%) with.
+ * \param len the length of the returned string, not counting the trailing nul.
+ * \return a newly allocated string.
+ */
+char *
+escape_like(const char *orig, char esc, int *len)
+{
+  char *like;
+  char *lbp;
+
+  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
+
+  while (*orig) {
+    if (*orig == '%' || *orig == '_' || *orig == esc) {
+      safe_chr(esc, like, &lbp);
+      safe_chr(*orig, like, &lbp);
+    } else {
+      safe_chr(*orig, like, &lbp);
+    }
+    orig++;
+  }
+  *lbp = '\0';
+
+  if (len) {
+    *len = lbp - like;
+  }
+
+  return like;
 }

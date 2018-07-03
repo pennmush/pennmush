@@ -16,6 +16,9 @@
 #include "strutil.h"
 #include "parse.h"
 #include "notify.h"
+#include "mushsql.h"
+#include "charconv.h"
+#include "charclass.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -112,7 +115,7 @@ json_unescape_string(char *input)
         unsigned int uchar;
         char *end;
         uchar = strtoul(p + 1, &end, 16);
-        if (end - p != 5 || uchar > 255 || !isprint(uchar)) {
+        if (end - p != 5 || uchar > 255 || !char_isprint(uchar)) {
           safe_chr('?', buff, &bp);
         } else {
           safe_chr(uchar, buff, &bp);
@@ -409,12 +412,13 @@ enum json_query {
   JSON_QUERY_SIZE,
   JSON_QUERY_EXISTS,
   JSON_QUERY_GET,
-  JSON_QUERY_UNESCAPE
+  JSON_QUERY_UNESCAPE,
+  JSON_QUERY_PATCH
 };
 
 FUNCTION(fun_json_query)
 {
-  JSON *json, *next, *curr;
+  JSON *json = NULL, *next, *curr;
   enum json_query query_type = JSON_QUERY_TYPE;
   int i, path;
 
@@ -429,22 +433,27 @@ FUNCTION(fun_json_query)
       query_type = JSON_QUERY_UNESCAPE;
     } else if (strcasecmp("type", args[1]) == 0) {
       query_type = JSON_QUERY_TYPE;
+    } else if (strcasecmp("patch", args[1]) == 0) {
+      query_type = JSON_QUERY_PATCH;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
       return;
     }
   }
 
-  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS) &&
+  if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS ||
+       query_type == JSON_QUERY_PATCH) &&
       (nargs < 3 || !args[2] || !*args[2])) {
     safe_str(T("#-1 MISSING VALUE"), buff, bp);
     return;
   }
 
-  json = string_to_json(args[0]);
-  if (!json) {
-    safe_str(T("#-1 INVALID JSON"), buff, bp);
-    return;
+  if (query_type != JSON_QUERY_PATCH) {
+    json = string_to_json(args[0]);
+    if (!json) {
+      safe_str(T("#-1 INVALID JSON"), buff, bp);
+      return;
+    }
   }
 
   switch (query_type) {
@@ -581,8 +590,43 @@ FUNCTION(fun_json_query)
       }
     }
     break;
+  case JSON_QUERY_PATCH: {
+    sqlite3 *sqldb;
+    sqlite3_stmt *patch;
+    char *utf8;
+    int status;
+    int ulen;
+
+    sqldb = get_shared_db();
+    patch =
+      prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_query.patch");
+    if (!patch) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(patch, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(patch, 2, utf8, ulen, free_string);
+    status = sqlite3_step(patch);
+    if (status == SQLITE_ROW) {
+      char *latin1;
+      int len;
+      const char *p = (const char *) sqlite3_column_text(patch, 0);
+      int plen = sqlite3_column_bytes(patch, 0);
+      latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
+      safe_strl(latin1, len, buff, bp);
+      mush_free(latin1, "string");
+    } else {
+      safe_format(buff, bp, "#-1 JSON ERROR %s", sqlite3_errstr(status));
+    }
+    sqlite3_reset(patch);
   }
-  json_free(json);
+  }
+  if (json) {
+    json_free(json);
+  }
 }
 
 FUNCTION(fun_json_map)
@@ -794,4 +838,30 @@ FUNCTION(fun_json)
   case JSON_NONE:
     break;
   }
+}
+
+FUNCTION(fun_isjson)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *verify;
+  char *utf8;
+  int ulen, status;
+
+  sqldb = get_shared_db();
+  verify = prepare_statement(sqldb, "VALUES (json_valid(?))", "isjson");
+  if (!verify) {
+    safe_str("#-1 SQLITE ERROR", buff, bp);
+    return;
+  }
+
+  utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+  sqlite3_bind_text(verify, 1, utf8, ulen, free_string);
+
+  status = sqlite3_step(verify);
+  if (status == SQLITE_ROW) {
+    safe_boolean(sqlite3_column_int(verify, 0), buff, bp);
+  } else {
+    safe_boolean(0, buff, bp);
+  }
+  sqlite3_reset(verify);
 }

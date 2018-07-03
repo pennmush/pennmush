@@ -25,6 +25,7 @@
 #include "parse.h"
 #include "strutil.h"
 #include "tz.h"
+#include "mushsql.h"
 
 int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,
@@ -137,11 +138,11 @@ FUNCTION(fun_time)
   time_t mytime;
   int utc = 0;
 
-  mytime = mudtime;
+  time(&mytime);
 
   if (nargs == 1) {
     struct tz_result res;
-    if (!parse_timezone_arg(args[0], mudtime, &res)) {
+    if (!parse_timezone_arg(args[0], mytime, &res)) {
       safe_str(T("#-1 INVALID TIME ZONE"), buff, bp);
       return;
     }
@@ -565,6 +566,8 @@ do_convtime_gd(const char *str __attribute__((__unused__)),
 
 /* do_convtime for systems without getdate(). Will probably break if in
          a non en_US locale */
+static const char *week_table[] = {"Sun", "Mon", "Tue", "Wed",
+                                   "Thu", "Fri", "Sat"};
 static const char *month_table[] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -900,6 +903,97 @@ do_timestring(char *buff, char **bp, const char *format, unsigned long secs)
     } else
       safe_chr(*c, buff, bp);
   }
+}
+
+FUNCTION(fun_timecalc)
+{
+  char query[BUFFER_LEN];
+  char *qp = query;
+  int n;
+  sqlite3 *db;
+  sqlite3_stmt *timer;
+  int status;
+
+  safe_str("VALUES (strftime('%w %m %d %H %M %S %Y'", query, &qp);
+  for (n = 0; n < nargs; n += 1) {
+    safe_str(",?", query, &qp);
+  }
+  safe_chr(')', query, &qp);
+  safe_chr(')', query, &qp);
+  *qp = '\0';
+
+  db = get_shared_db();
+  timer = prepare_statement_cache(db, query, "fun.timecalc", 0);
+  if (!timer) {
+    safe_str("#-1 SQL ERROR", buff, bp);
+    return;
+  }
+
+  for (n = 0; n < nargs; n += 1) {
+    sqlite3_bind_text(timer, n + 1, args[n], arglens[n], SQLITE_TRANSIENT);
+  }
+
+  do {
+    status = sqlite3_step(timer);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    int week, month, day, hour, min, sec, year;
+    const char *datetime = (const char *) sqlite3_column_text(timer, 0);
+    if (datetime && sscanf(datetime, "%d %d %d %d %d %d %d", &week, &month,
+                           &day, &hour, &min, &sec, &year) == 7) {
+      safe_format(buff, bp, "%s %s %02d %02d:%02d:%02d %04d", week_table[week],
+                  month_table[month - 1], day, hour, min, sec, year);
+    } else {
+      safe_str("#-1 DATE ERROR", buff, bp);
+    }
+  } else {
+    safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
+  }
+  sqlite3_finalize(timer);
+}
+
+FUNCTION(fun_secscalc)
+{
+  char query[BUFFER_LEN];
+  char *qp = query;
+  int n;
+  sqlite3 *db;
+  sqlite3_stmt *timer;
+  int status;
+
+  safe_str("VALUES (strftime('%s'", query, &qp);
+  for (n = 0; n < nargs; n += 1) {
+    safe_str(",?", query, &qp);
+  }
+  safe_chr(')', query, &qp);
+  safe_chr(')', query, &qp);
+  *qp = '\0';
+
+  db = get_shared_db();
+  timer = prepare_statement_cache(db, query, "fun.timecalc", 0);
+  if (!timer) {
+    safe_str("#-1 SQL ERROR", buff, bp);
+    return;
+  }
+
+  for (n = 0; n < nargs; n += 1) {
+    sqlite3_bind_text(timer, n + 1, args[n], arglens[n], SQLITE_TRANSIENT);
+  }
+
+  do {
+    status = sqlite3_step(timer);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    const char *datetime = (const char *) sqlite3_column_text(timer, 0);
+    if (datetime) {
+      safe_str(datetime, buff, bp);
+    } else {
+      safe_str("#-1 DATE ERROR", buff, bp);
+    }
+  } else {
+    safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
+  }
+  sqlite3_finalize(timer);
 }
 
 #ifdef WIN32

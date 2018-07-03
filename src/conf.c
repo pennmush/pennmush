@@ -334,6 +334,12 @@ PENNCONF conftable[] = {
    sizeof options.log_size_policy, 0, NULL},
   {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
    0, NULL},
+  {"help_db", cf_str, options.help_db, sizeof options.help_db, 0, NULL},
+  {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0,
+   "log"},
+  {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
+  {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0,
+   "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1339,6 +1345,10 @@ conf_default_set(void)
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
+  strcpy(options.help_db, "data/help.db");
+  options.use_connlog = 1;
+  strcpy(options.connlog_db, "log/connlog.db");
+  strcpy(options.dict_file, "");
 }
 
 #undef set_string_option
@@ -1876,5 +1886,13 @@ show_compile_options(dbref player)
     if (jit)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
+#endif
+
+#ifdef HAVE_ICU
+  notify(player, T(" (Very limited) Unicode support is enabled."));
+#endif
+
+#ifdef HAVE_LIBCURL
+  notify(player, T(" @HTTP is supported."));
 #endif
 }

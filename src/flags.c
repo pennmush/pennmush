@@ -267,6 +267,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
 
   /* Insert the flag in the ptab by the given name (maybe an alias) */
   ptab_insert_one(n->tab, name, f);
+  add_private_vocab(name, n->name);
 
   /* Is this a canonical flag (as opposed to an alias?)
    * If it's an alias, we're done.
@@ -627,7 +628,7 @@ flag_read_all(PENNFILE *in, const char *ns)
 static void
 flag_write(PENNFILE *out, FLAG *f, const char *name)
 {
-  char tmp[2] = { '\0', '\0' };
+  char tmp[2] = {'\0', '\0'};
   db_write_labeled_string(out, " name", name);
   tmp[0] = f->letter;
   db_write_labeled_string(out, "  letter", tmp);
@@ -864,6 +865,7 @@ flag_add_additional(FLAGSPACE *n)
     add_power("hook", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Can_dark", '\0', TYPE_PLAYER, F_WIZARD | F_LOG, F_ANY);
     add_power("Pick_Dbrefs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
+    add_power("Can_HTTP", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     /* Aliases for other servers */
     if ((f = match_power("tport_anything")) && !match_power("tel_anything"))
       flag_add(flags, "tel_anything", f);
@@ -1780,7 +1782,15 @@ set_flag(dbref player, dbref thing, const char *flag, int negate, int hear,
     return;
   }
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
-    notify_format(player, T("%s - I don't recognize that flag."), flag);
+    char *suggestion = suggest_name(flag, n->name);
+    if (suggestion) {
+      notify_format(player,
+                    "%s - I don't recognize that flag. Did you mean '%s'?",
+                    flag, suggestion);
+      mush_free(suggestion, "string");
+    } else {
+      notify_format(player, T("%s - I don't recognize that flag."), flag);
+    }
     return;
   }
 
@@ -1945,7 +1955,15 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   }
 
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
-    notify_format(player, T("%s - I don't recognize that power."), flag);
+    char *suggestion = suggest_name(flag, n->name);
+    if (suggestion) {
+      notify_format(player,
+                    "%s - I don't recognize that power. Did you mean '%s'?",
+                    flag, suggestion);
+      mush_free(suggestion, "string");
+    } else {
+      notify_format(player, T("%s - I don't recognize that power."), flag);
+    }
     return;
   }
 
@@ -2228,7 +2246,7 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
   Flagspace_Lookup(n, ns);
   char tmp[BUFFER_LEN];
   char *ucname;
-  
+
   if (fp) {
     *fp = NULL;
   }
@@ -2288,9 +2306,8 @@ do_list_flags(const char *ns, dbref player, const char *arg, int style,
   char tmp[BUFFER_LEN];
   char *b = list_all_flags(ns, arg, player, style);
   notify_format(player, "%s: %s", label,
-                (style & FLAG_LIST_LOWERCASE)
-                ? strlower_r(b, tmp, sizeof tmp)
-                : b);
+                (style & FLAG_LIST_LOWERCASE) ? strlower_r(b, tmp, sizeof tmp)
+                                              : b);
 }
 
 /** User interface to show flag detail.
@@ -2318,8 +2335,7 @@ do_flag_info(const char *ns, dbref player, const char *name)
     f = match_flag_ns(n, name);
   if (!f) {
     char tmp[BUFFER_LEN];
-    notify_format(player, T("No such %s."),
-                  strlower_r(ns, tmp, sizeof tmp));
+    notify_format(player, T("No such %s."), strlower_r(ns, tmp, sizeof tmp));
     return;
   }
   notify_format(player, "%9s: %s", T("Name"), f->name);
@@ -2354,15 +2370,14 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
   FLAGSPACE *n;
   int perms, negate_perms;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't have enough magic for that."));
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
   if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
-    notify_format(player, T("No such %s."),
-                  strlower_r(ns, tmp, sizeof tmp));
+    notify_format(player, T("No such %s."), strlower_r(ns, tmp, sizeof tmp));
     return;
   }
   if (!args_right[1] || !*args_right[1]) {
@@ -2420,15 +2435,14 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
   int type;
   dbref it;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't have enough magic for that."));
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
   if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
-    notify_format(player, T("No such %s."),
-                  strlower_r(ns, tmp, sizeof tmp));
+    notify_format(player, T("No such %s."), strlower_r(ns, tmp, sizeof tmp));
     return;
   }
   if (!type_string || !*type_string) {
@@ -2502,7 +2516,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   FLAGSPACE *n;
   enum flag_res newflag;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't have enough magic for that."));
     return;
@@ -2626,7 +2640,7 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
   FLAGSPACE *n;
   int delete = 0;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2713,7 +2727,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
   FLAG *f;
   FLAGSPACE *n;
   char tmp[BUFFER_LEN];
-  
+
   Flagspace_Lookup(n, ns);
 
   f = match_flag_ns(n, name);
@@ -2722,7 +2736,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
   }
 
   alias = strupper_r(alias, tmp, sizeof tmp);
-  
+
   if (ptab_find_exact(n->tab, alias)) {
     return 0; /* a flag called 'alias' already exists */
   }
@@ -2750,7 +2764,7 @@ do_flag_letter(const char *ns, dbref player, const char *name,
   FLAG *f;
   FLAGSPACE *n;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2779,13 +2793,11 @@ do_flag_letter(const char *ns, dbref player, const char *name,
 
     f->letter = *letter;
     notify_format(player, T("Letter for %s %s set to '%c'."),
-                  strlower_r(ns, tmp, sizeof tmp),
-                  f->name, *letter);
+                  strlower_r(ns, tmp, sizeof tmp), f->name, *letter);
   } else { /* Clear a flag */
     f->letter = '\0';
     notify_format(player, T("Letter for %s %s cleared."),
-                  strlower_r(ns, tmp, sizeof tmp),
-                  f->name);
+                  strlower_r(ns, tmp, sizeof tmp), f->name);
   }
 }
 
@@ -2806,7 +2818,7 @@ do_flag_disable(const char *ns, dbref player, const char *name)
   FLAG *f;
   FLAGSPACE *n;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2825,8 +2837,8 @@ do_flag_disable(const char *ns, dbref player, const char *name)
   }
   /* Do it. */
   f->perms |= F_DISABLED;
-  notify_format(player, T("%s %s disabled."),
-                strinitial_r(ns, tmp, sizeof tmp), f->name);
+  notify_format(player, T("%s %s disabled."), strinitial_r(ns, tmp, sizeof tmp),
+                f->name);
 }
 
 /** Delete a flag.
@@ -2849,7 +2861,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   int got_one;
   FLAGSPACE *n;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2879,6 +2891,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
       if (!strcmp(tmpf->name, f->name) &&
           strcmp(n->flags[f->bitpos]->name, flagname)) {
         ptab_delete(n->tab, flagname);
+        delete_private_vocab(flagname, n->name);
         got_one = 1;
         break;
       }
@@ -2896,8 +2909,9 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   n->flags[f->bitpos] = NULL;
   /* Remove the flag from the ptab */
   ptab_delete(n->tab, f->name);
-  notify_format(player, T("%s %s deleted."),
-                strinitial_r(ns, tmp, sizeof tmp), f->name);
+  delete_private_vocab(f->name, n->name);
+  notify_format(player, T("%s %s deleted."), strinitial_r(ns, tmp, sizeof tmp),
+                f->name);
   /* Free the flag. */
   mush_free((void *) f->name, "flag.name");
   slab_free(flag_slab, f);
@@ -2918,7 +2932,7 @@ do_flag_enable(const char *ns, dbref player, const char *name)
   FLAG *f;
   FLAGSPACE *n;
   char tmp[BUFFER_LEN];
-  
+
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2937,8 +2951,8 @@ do_flag_enable(const char *ns, dbref player, const char *name)
   }
   /* Do it. */
   f->perms &= ~F_DISABLED;
-  notify_format(player, T("%s %s enabled."),
-                strinitial_r(ns, tmp, sizeof tmp), f->name);
+  notify_format(player, T("%s %s enabled."), strinitial_r(ns, tmp, sizeof tmp),
+                f->name);
 }
 
 static char *
@@ -3068,7 +3082,7 @@ flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
 
   bp = buff;
   safe_chr('(', buff, &bp);
-  
+
   if (flags) {
     Flagspace_Lookup(n, "FLAG");
     for (i = 0; i < n->flagbits; i++) {

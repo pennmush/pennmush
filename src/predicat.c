@@ -40,6 +40,7 @@
 #include "parse.h"
 #include "privtab.h"
 #include "strutil.h"
+#include "charclass.h"
 
 int forbidden_name(const char *name);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
@@ -550,7 +551,7 @@ get_current_quota(dbref who)
   int limit;
   int owned = 0;
   char tmp[100];
-  
+
   /* if he's got an RQUOTA attribute, his remaining quota is that */
   a = atr_get_noparent(Owner(who), "RQUOTA");
   if (a) {
@@ -673,7 +674,7 @@ ok_name(const char *n, int is_exit)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint(*p))
+    if (!char_isprint(*p))
       return 0;
     if (ONLY_ASCII_NAMES && *p > 127)
       return 0;
@@ -926,7 +927,7 @@ ok_password(const char *password)
     return 0;
 
   for (scan = password; *scan; scan++) {
-    if (!(isprint(*scan) && !isspace(*scan))) {
+    if (!(char_isprint(*scan) && !isspace(*scan))) {
       return 0;
     }
     if (*scan == '=')
@@ -1010,7 +1011,7 @@ ok_function_name(const char *name)
    * to find at least one uppercase alpha
    */
   for (p = name; p && *p; p++) {
-    if (isspace(*p) || !isprint(*p))
+    if (isspace(*p) || !ascii_isprint(*p))
       return 0;
     if (isupper(*p))
       cnt++;
@@ -1287,7 +1288,7 @@ do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
   int i;
   PE_REGS *pe_regs = NULL;
   char tmp1[BUFFER_LEN], tmp2[BUFFER_LEN];
-  
+
   /* find the object that we want to read the attributes off
    * (the object that was the victim of the command)
    */
@@ -1337,16 +1338,15 @@ do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  real_did_it(actor, victim, strupper_r(argv[2], tmp1, sizeof tmp1),
-              argv[3], strupper_r(argv[4], tmp2, sizeof tmp2),
-              argv[5], NULL, Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
+  real_did_it(actor, victim, strupper_r(argv[2], tmp1, sizeof tmp1), argv[3],
+              strupper_r(argv[4], tmp2, sizeof tmp2), argv[5], NULL,
+              Location(actor), pe_regs, NA_INTER_HEAR, AN_SYS);
 
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6]) {
-    queue_attribute_base(victim, strupper_r(argv[6], tmp1, sizeof tmp1),
-                         actor, 0, pe_regs,
-                         (queue_entry->queue_type & QUEUE_EVENT));
+    queue_attribute_base(victim, strupper_r(argv[6], tmp1, sizeof tmp1), actor,
+                         0, pe_regs, (queue_entry->queue_type & QUEUE_EVENT));
   }
 
   pe_regs_free(pe_regs);
@@ -1425,8 +1425,8 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
         ansi_string *repl;
         char abuff[BUFFER_LEN];
         matched = 1;
-        snprintf(abuff, sizeof abuff, "%s%.*s%s", ANSI_HILITE, gd->findlen,
-                 s, ANSI_END);
+        snprintf(abuff, sizeof abuff, "%s%.*s%s", ANSI_HILITE, gd->findlen, s,
+                 ANSI_END);
         repl = parse_ansi_string(abuff);
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         free_ansi_string(repl);

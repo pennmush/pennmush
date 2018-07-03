@@ -71,6 +71,7 @@
 #include "match.h"
 #include "mushdb.h"
 #include "parse.h"
+#include "mushsql.h"
 
 dbref first_free = NOTHING; /**< Object at top of free list */
 
@@ -588,6 +589,8 @@ undestroy(dbref player, dbref thing)
   return 1;
 }
 
+void delete_all_linked_to(dbref);
+
 /* Does the real work of freeing all the memory and unlinking an object.
  * This is going to have to be very tightly coupled with the implementation;
  * if the database format changes, this will likely have to change too.
@@ -622,6 +625,7 @@ free_object(dbref thing)
            thing);
     return;
   }
+
   /* We queue the object-destroy event. Since the event will deal with an
    * object that doesn't exist anymore, we pass it what information we can,
    * but as strings.
@@ -753,7 +757,24 @@ free_object(dbref thing)
   Home(thing) = NOTHING;
   CreTime(thing) = 0; /* Prevents it from matching objids */
 
-  clear_objdata(thing);
+  {
+    sqlite3 *sqldb;
+    sqlite3_stmt *deleter;
+    int status;
+
+    sqldb = get_shared_db();
+    deleter = prepare_statement(sqldb, "DELETE FROM objects WHERE dbref = ?",
+                                "objects.delete");
+    sqlite3_bind_int(deleter, 1, thing);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR, "Unable to delete #%d from objects table: %s", thing,
+                sqlite3_errstr(status));
+    }
+    sqlite3_reset(deleter);
+  }
 
   Next(thing) = first_free;
   first_free = thing;
@@ -833,8 +854,6 @@ static void
 clear_player(dbref thing)
 {
   dbref i;
-  ATTR *atemp;
-  char alias[BUFFER_LEN + 1];
   dbref probate;
 
   /* Clear out mail. */
@@ -854,12 +873,6 @@ clear_player(dbref thing)
 
   do_log(LT_WIZ, thing, NOTHING, "Player destroyed.");
 
-  /* Clear out names from the player list */
-  delete_player(thing, NULL);
-  if ((atemp = atr_get_noparent(thing, "ALIAS")) != NULL) {
-    strcpy(alias, atr_value(atemp));
-    delete_player(thing, alias);
-  }
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 

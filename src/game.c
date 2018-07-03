@@ -66,6 +66,7 @@ void Win32MUSH_setup(void);
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "mushsql.h"
 
 #ifdef HAVE_SSL
 #include "myssl.h"
@@ -665,20 +666,24 @@ do_restart(void)
   ATTR *s;
   char buf[BUFFER_LEN];
   char *bp;
+  sqlite3 *sqldb = get_shared_db();
 
   /* Do stuff that needs to be done for players only: add stuff to the
    * alias table, and refund money from queued commands at shutdown.
    */
+
+  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
   for (thing = 0; thing < db_top; thing++) {
     if (IsPlayer(thing)) {
       if ((s = atr_get_noparent(thing, "ALIAS")) != NULL) {
         bp = buf;
         safe_str(atr_value(s), buf, &bp);
         *bp = '\0';
-        add_player_alias(thing, buf);
+        add_player_alias(thing, buf, 1);
       }
     }
   }
+  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
 
   /* Once we load all that, then we can trigger the startups and
    * begin queueing commands. Also, let's make sure that we get
@@ -765,6 +770,8 @@ init_game_config(const char *conf)
             show_time(globals.start_time, 0));
 }
 
+void build_linked_table(void);
+
 /** Post-db-load configuration.
  * This function contains code that should be run after dbs are loaded
  * (usually because we need to have the flag table loaded, or because they
@@ -788,9 +795,13 @@ init_game_postdb(const char *conf)
   config_file_startup(conf, 1);
   validate_config();
 
+  build_linked_table();
+
   /* Build color/RGB mappings */
   build_rgb_map();
 
+  add_dict_words();
+  
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
@@ -813,8 +824,8 @@ extern int dbline;
 int
 init_game_dbs(void)
 {
-  PENNFILE * volatile f = NULL;
-  const char * volatile infile;
+  PENNFILE *volatile f = NULL;
+  const char *volatile infile;
   const char *outfile;
   const char *mailfile;
   volatile int panicdb;
@@ -1005,7 +1016,7 @@ do_readcache(dbref player)
     return;
   }
   fcache_load(player);
-  help_reindex(player);
+  help_rebuild(player);
   file_watch_init();
 }
 
@@ -2541,11 +2552,8 @@ db_open_write(const char *fname)
 
 extern HASHTAB htab_function;
 extern HASHTAB htab_user_function;
-extern HASHTAB htab_player_list;
 extern HASHTAB htab_reserved_aliases;
 extern HASHTAB help_files;
-extern HASHTAB htab_objdata;
-extern HASHTAB htab_objdata_keys;
 extern HASHTAB htab_locks;
 extern HASHTAB local_options;
 extern StrTree atr_names;
@@ -2554,10 +2562,50 @@ extern StrTree object_names;
 extern PTAB ptab_command;
 extern PTAB ptab_attrib;
 extern PTAB ptab_flag;
-extern intmap *queue_map, *descs_by_fd, *rgb_to_name;
+extern intmap *queue_map, *descs_by_fd;
 #ifdef HAVE_INOTIFY_INIT1
 extern intmap *watchtable;
 #endif
+
+static void
+list_sqlite3_stats(dbref player, const char *name, sqlite3 *db)
+{
+#ifdef SQLITE_ENABLE_STMTVTAB
+  sqlite3_stmt *statter;
+  statter = prepare_statement(
+    db,
+    "SELECT sql, nscan, nsort, naidx, nstep, reprep, run, mem FROM sqlite_stmt",
+    "list.memstats");
+  if (statter) {
+    int status;
+    notify_format(player, "Prepared query stats for %s database", name);
+    notify_format(player, "%-30s %6s %5s %5s %9s %6s %7s %6s", "SQL", "nscan",
+                  "nsort", "naidx", "nstep", "reprep", "run", "memory");
+    do {
+      status = sqlite3_step(statter);
+      if (status == SQLITE_ROW) {
+        int nscan, nsort, naidx, nstep, reprep, run, mem;
+        const char *query;
+        query = (const char *) sqlite3_column_text(statter, 0);
+        if (strstr(query, "sqlite_stmt")) {
+          continue;
+        }
+        nscan = sqlite3_column_int(statter, 1);
+        nsort = sqlite3_column_int(statter, 2);
+        naidx = sqlite3_column_int(statter, 3);
+        nstep = sqlite3_column_int(statter, 4);
+        reprep = sqlite3_column_int(statter, 5);
+        run = sqlite3_column_int(statter, 6);
+        mem = sqlite3_column_int(statter, 7);
+
+        notify_format(player, "%-30.30s %6d %5d %5d %9d %6d %7d %6d", query,
+                      nscan, nsort, naidx, nstep, reprep, run, mem);
+      }
+    } while (status == SQLITE_ROW || is_busy_status(status));
+    sqlite3_reset(statter);
+  }
+#endif
+}
 
 /** Reports stats on various in-memory data structures.
  * \param player the enactor.
@@ -2569,13 +2617,15 @@ do_list_memstats(dbref player)
     const HASHTAB *const table;
     const char *name;
   } hash_tables[] = {
-    {&htab_function, "Functions"},       {&htab_user_function, "@Functions"},
-    {&htab_player_list, "Players"},      {&htab_reserved_aliases, "Aliases"},
-    {&help_files, "HelpFiles"},          {&htab_objdata, "ObjData"},
-    {&htab_objdata_keys, "ObjDataKeys"}, {&htab_locks, "@locks"},
+    {&htab_function, "Functions"},
+    {&htab_user_function, "@Functions"},
+    {&htab_reserved_aliases, "Aliases"},
+    {&help_files, "HelpFiles"},
+    {&htab_locks, "@locks"},
     {&local_options, "ConfigOpts"},
   };
   unsigned int i;
+  int64_t sqlmem;
 
   notify(player, "Hash Tables:");
   notify(player,
@@ -2612,8 +2662,20 @@ do_list_memstats(dbref player)
 #ifdef HAVE_INOTIFY_INIT1
   im_stats(player, watchtable, "Inotify");
 #endif
-  if (rgb_to_name)
-    im_stats(player, rgb_to_name, "Colors");
+
+  notify(player, "Sqlite3 Databases:");
+  sqlmem = sqlite3_memory_used();
+  notify_format(player, " Using %ld megabytes and %ld kilobytes of memory.",
+                (long) (sqlmem / (1024 * 1024)),
+                (long) ((sqlmem % (1024 * 1024)) / 1024));
+  if (Wizard(player)) {
+    extern sqlite3 *help_db, *connlog_db;
+    list_sqlite3_stats(player, "temporary", get_shared_db());
+    list_sqlite3_stats(player, "help", help_db);
+    if (options.use_connlog) {
+      list_sqlite3_stats(player, "connlog", connlog_db);
+    }
+  }
 
 #ifdef COMP_STATS
   if (Wizard(player) && strcmp(options.attr_compression, "word") == 0) {

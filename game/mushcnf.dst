@@ -544,6 +544,9 @@ restrict_command ahelp admin
 ahelp_command anews txt/news.txt
 restrict_command anews admin
 
+# Name of a Sqlite3 file to use to store help data.
+help_db data/help.db
+
 # If you're using the email registration feature, but want to use a
 # mailer other than sendmail, put the full path to the mailer program
 # here. The mailer must accept the -t command-line argument ("get the
@@ -551,6 +554,11 @@ restrict_command anews admin
 # could probably write a wrapper for it.
 # Example: #define MAILER "/full/path/to/other/mailer"
 sendmail_prog sendmail
+
+# A UTF-8 encoded file of words, one word per line, used with
+# suggest(words, X). Leave empty to disable.
+#dict_file /usr/dict/words
+dict_file /usr/share/dict/words
 
 ###
 ### Logging
@@ -567,6 +575,12 @@ error_log  log/netmush.log
 
 # Filename to log connections to
 connect_log log/connect.log
+
+# Also log connections in a sqlite3 database. See CONNLOG.md for details.
+use_connlog yes
+
+# The database file to use for the connlog.
+connlog_db log/connlog.db
 
 # Filename to log wizard commands to
 wizard_log log/wizard.log

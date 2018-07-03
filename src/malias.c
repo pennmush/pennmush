@@ -961,11 +961,11 @@ malias_cleanup(dbref player)
     if (m->owner == player) {
       dbref newowner = options.probate_judge;
       if (!GoodObject(newowner) || !IsPlayer(newowner)) {
-	newowner = GOD;
+        newowner = GOD;
       }
       m->owner = newowner;
-      do_rawlog(LT_TRACE, "Changing ownership of malias %s to #%d",
-		m->name, newowner);
+      do_rawlog(LT_TRACE, "Changing ownership of malias %s to #%d", m->name,
+                newowner);
     }
     if ((i = ismember(m, player)) != 0) {
       do_rawlog(LT_TRACE, "Removing #%d from malias %s", player, m->name);
@@ -1035,14 +1035,14 @@ load_malias(PENNFILE *fp)
     m->owner = getref(fp);
 
     if (!GoodObject(m->owner) || !IsPlayer(m->owner)) {
-      do_rawlog(LT_TRACE, "malias %s is owned by invalid object #%d.",
-		m->name, m->owner);
+      do_rawlog(LT_TRACE, "malias %s is owned by invalid object #%d.", m->name,
+                m->owner);
       m->owner = options.probate_judge;
       if (!GoodObject(m->owner) || !IsPlayer(m->owner)) {
-	m->owner = GOD;
+        m->owner = GOD;
       }
     }
- 
+
     m->name = mush_strdup(getstring_noalloc(fp), "malias_name");
     m->desc = compress(getstring_noalloc(fp));
     add_check("malias_desc");
@@ -1054,16 +1054,16 @@ load_malias(PENNFILE *fp)
     if (m->size > 0) {
       m->members = mush_calloc(m->size, sizeof(dbref), "malias_members");
       for (j = 0; j < m->size; j++) {
-	dbref obj = getref(fp);
-	if (!GoodObject(obj) || !IsPlayer(obj)) {
-	  m->size -= 1;
-	  j -= 1;
-	  do_rawlog(LT_TRACE,
-		    "malias %s has non-player object #%d subscribed! Removing.",
-		    m->name, obj);
-	} else {
-	  m->members[j] = obj;
-	}
+        dbref obj = getref(fp);
+        if (!GoodObject(obj) || !IsPlayer(obj)) {
+          m->size -= 1;
+          j -= 1;
+          do_rawlog(LT_TRACE,
+                    "malias %s has non-player object #%d subscribed! Removing.",
+                    m->name, obj);
+        } else {
+          m->members[j] = obj;
+        }
       }
     } else {
       m->members = NULL;

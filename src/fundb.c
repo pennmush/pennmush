@@ -48,7 +48,7 @@ do_get_attrib(dbref executor, dbref thing, const char *attrib)
   ATTR *a;
   char const *value;
   char abuff[BUFFER_LEN];
-  
+
   a = atr_get(thing, strupper_r(attrib, abuff, sizeof abuff));
   if (a) {
     if (Can_Read_Attr(executor, thing, a)) {
@@ -218,7 +218,7 @@ FUNCTION(fun_hasattr)
   char *attrib;
   ATTR *a;
   char tmp[BUFFER_LEN];
-  
+
   if (nargs == 1) {
     attrib = strchr(args[0], '/');
     if (!attrib) {
@@ -237,7 +237,7 @@ FUNCTION(fun_hasattr)
   }
   if (strchr(called_as, 'P')) {
     a = atr_get(thing, strupper_r(attrib, tmp, sizeof tmp));
-  } else{
+  } else {
     a = atr_get_noparent(thing, strupper_r(attrib, tmp, sizeof tmp));
   }
   if (a && Can_Read_Attr(executor, thing, a)) {
@@ -340,7 +340,7 @@ FUNCTION(fun_eval)
   char const *tp;
   ATTR *a;
   char tmp[BUFFER_LEN];
-  
+
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
     safe_str(T(e_notvis), buff, bp);
@@ -374,7 +374,7 @@ FUNCTION(fun_get_eval)
   char const *tp;
   ATTR *a;
   char tmp[BUFFER_LEN];
-  
+
   s = strchr(args[0], '/');
   if (!s) {
     safe_str(T("#-1 BAD ARGUMENT FORMAT TO GET_EVAL"), buff, bp);
@@ -1166,7 +1166,7 @@ get_locktype(const char *str)
 {
   /* figure out a lock type */
   static char buff[BUFFER_LEN];
-  
+
   if (!str || !*str) {
     return Basic_Lock;
   }
@@ -1314,7 +1314,7 @@ FUNCTION(fun_lock)
   char *ltype = NULL;
   lock_type real_ltype;
   char tmp[BUFFER_LEN];
-  
+
   if ((ltype = strchr(args[0], '/'))) {
     *ltype++ = '\0';
     ltype = strupper_r(ltype, tmp, sizeof tmp);
@@ -2409,7 +2409,7 @@ FUNCTION(fun_atrlock)
   ATTR *ptr;
   int change;
   char abuff[BUFFER_LEN];
-  
+
   if (nargs == 1)
     change = 0;
   else
@@ -2460,7 +2460,7 @@ FUNCTION(fun_followers)
   char *s;
   char *res;
 
-   thing = match_controlled(executor, args[0]);
+  thing = match_controlled(executor, args[0]);
   if (!GoodObject(thing)) {
     safe_str(T("#-1 INVALID OBJECT"), buff, bp);
     return;

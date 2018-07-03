@@ -303,6 +303,7 @@ void check_lastfailed(dbref player, const char *host);
 bool is_number(const char *str);
 bool is_strict_number(const char *str);
 bool is_strict_integer(const char *str);
+bool is_strict_int64(const char *str);
 bool is_integer_list(const char *str);
 #ifdef HAVE_ISNORMAL
 #define is_good_number(n) isnormal((n))
@@ -313,10 +314,9 @@ bool is_good_number(NVAL val);
 /* From plyrlist.c */
 void clear_players(void);
 void add_player(dbref player);
-void add_player_alias(dbref player, const char *alias);
-void delete_player(dbref player, const char *alias);
-void reset_player_list(dbref player, const char *oldname, const char *oldalias,
-                       const char *name, const char *alias);
+void add_player_alias(dbref player, const char *alias, bool intransaction);
+void delete_player(dbref player);
+void reset_player_list(dbref player, const char *name, const char *alias);
 
 int could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 int did_it(dbref player, dbref thing, const char *what, const char *def,
@@ -610,5 +610,15 @@ int local_can_interact_last(dbref from, dbref to, int type);
 
 /* flaglocal.c */
 void local_flags(FLAGSPACE *flags);
+
+/* Functions for suggesting alternatives to misspelled names */
+void init_private_vocab(void);
+char *suggest_name(const char *name, const char *category);
+void add_private_vocab(const char *name, const char *category);
+void delete_private_vocab(const char *name, const char *category);
+void delete_private_vocab_cat(const char *category);
+
+char *suggest_word(const char *name, const char *category);
+void add_dict_words(void);
 
 #endif /* __EXTERNS_H */

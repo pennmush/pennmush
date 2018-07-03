@@ -40,6 +40,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 
 static CHAN *new_channel(void);
 static CHANLIST *new_chanlist(const void *hint);
@@ -1684,7 +1685,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
   char old[BUFFER_LEN];
   char announcebuff[BUFFER_LEN];
   char bbuff[20];
-  
+
   if (!name || !*name) {
     notify(player, T("You must specify a channel."));
     return;
@@ -1872,7 +1873,7 @@ ok_channel_name(const char *n, CHAN *unique)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint(*p) || *p == '|')
+    if (!char_isprint(*p) || *p == '|')
       return NAME_INVALID;
   }
 
@@ -4161,7 +4162,7 @@ parse_chat_alias(dbref player, char *command)
   CHAN *c;
   bool chat = 0;
   char abuff[BUFFER_LEN + 10];
-  
+
   alias = bp = command;
   while (*bp && !isspace((unsigned char) *bp))
     bp++;
@@ -4175,7 +4176,6 @@ parse_chat_alias(dbref player, char *command)
   while (*message && isspace((unsigned char) *message))
     message++;
 
-  
   snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
            strupper_r(alias, channame, sizeof channame));
   a = atr_get(player, abuff);

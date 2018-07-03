@@ -72,6 +72,13 @@
 <li>On Unix systems, you need: A C compiler, perl, the minimum development packages required to compile programs (Linux distributions that don't come with gcc in the base install often need a package named glibc-dev).</li>
 <li>A version of the PCRE regular expression library and any related development packages. (Debian and Ubuntu call them libpcre3 and libpcre3-dev).</li>
 <li>A version of the OpenSSL library; most OSes these days come with it out of the box, but some might require a development package as well (libssl-dev, openssl-dev or some such name).</li>
+<li>Development versions of a number of optional libraries are nice to have:
+<ul>
+<li>A sql client library for MySQL/MariaDB or Postgresql.</li>
+<li>ICU (For enhanced Unicode support)</li>
+<li>libevent (For ssl_slave)</li>
+<li>libcurl (For <code>@http</code>)</li>
+</ul></li>
 <li>Run ./configure with any desired options (See ./configure --help or read below)</li>
 <li>make update</li>
 <li>make install</li>

@@ -1,0 +1,8 @@
+@@ Code for a +define command using @http
+@@ Quote in as a wizard, put in #2
+@create define
+@lock define==me
+@power define=can_http
+&+define_cmd define=$+define *:@http me/format_definition[setq(W, %0)]=dict://dict.org/d:%0
+&format_definition define=@pemit %#=+DEFINE: [if(regmatch(%0, (?m)^552 no match), No definitions for %qW., [regeditall(%0, (?m)^(?:220|221|250|150) .*$, , (?m)^151 "\[^"\]+" \\w+ "(\[^"\]+)"\\s*$, $1:, (?m)^\\.\\s*$, %r, \\R\{3\,\}, %r)])]
+@set define=!no_command

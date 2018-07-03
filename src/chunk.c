@@ -1995,16 +1995,17 @@ chunk_statistics(dbref player)
              stat_used_medium_count * CHUNK_MEDIUM_DATA_OFFSET +
              stat_used_long_count * CHUNK_LONG_DATA_OFFSET;
   STAT_OUT(player,
-    "Chunks:    %10d allocated (%10d bytes, %10d (%2d%%) overhead)", used_count,
-    used_bytes, overhead, used_bytes ? overhead * 100 / used_bytes : 0);
+           "Chunks:    %10d allocated (%10d bytes, %10d (%2d%%) overhead)",
+           used_count, used_bytes, overhead,
+           used_bytes ? overhead * 100 / used_bytes : 0);
   overhead = stat_used_short_count * CHUNK_SHORT_DATA_OFFSET;
   STAT_OUT(player,
-    "             %10d short     (%10d bytes, %10d (%2d%%) overhead)",
-    stat_used_short_count, stat_used_short_bytes, overhead,
-    stat_used_short_bytes ? overhead * 100 / stat_used_short_bytes : 0);
+           "             %10d short     (%10d bytes, %10d (%2d%%) overhead)",
+           stat_used_short_count, stat_used_short_bytes, overhead,
+           stat_used_short_bytes ? overhead * 100 / stat_used_short_bytes : 0);
   overhead = stat_used_medium_count * CHUNK_MEDIUM_DATA_OFFSET;
-  STAT_OUT(player,
-    "             %10d medium    (%10d bytes, %10d (%2d%%) overhead)",
+  STAT_OUT(
+    player, "             %10d medium    (%10d bytes, %10d (%2d%%) overhead)",
     stat_used_medium_count, stat_used_medium_bytes, overhead,
     stat_used_medium_bytes ? overhead * 100 / stat_used_medium_bytes : 0);
   overhead = stat_used_long_count * CHUNK_LONG_DATA_OFFSET;
@@ -2021,11 +2022,10 @@ chunk_statistics(dbref player)
            used_bytes * 100 / overhead);
   STAT_OUT(player, "Regions:   %10d total, %8d cached", (int) region_count,
            (int) cached_region_count);
-  STAT_OUT(player,
-           "Paging:    %10d out, %10d in", stat_page_out, stat_page_in);
+  STAT_OUT(player, "Paging:    %10d out, %10d in", stat_page_out, stat_page_in);
   STAT_OUT(player, " ");
   STAT_OUT(player, "Period:    %10d (%10d accesses so far, %10d chunks at max)",
-                   (int) curr_period, stat_deref_count, stat_deref_maxxed);
+           (int) curr_period, stat_deref_count, stat_deref_maxxed);
   STAT_OUT(player, "Activity:  %10d creates, %10d deletes this period",
            stat_create, stat_delete);
   STAT_OUT(player, "Migration: %10d moves this period",
@@ -2043,8 +2043,7 @@ chunk_statistics(dbref player)
 static void
 chunk_page_stats(dbref player)
 {
-  STAT_OUT(player,
-    "Paging:    %10d out, %10d in", stat_page_out, stat_page_in);
+  STAT_OUT(player, "Paging:    %10d out, %10d in", stat_page_out, stat_page_in);
 }
 
 /** Display the per-region stats.
@@ -2059,7 +2058,8 @@ chunk_region_statistics(dbref player)
     do_rawlog(LT_TRACE, "---- Region statistics");
   }
   for (rid = 0; rid < region_count; rid++) {
-    STAT_OUT(player, "region:%4d  #used:%5d  #free:%5d  "
+    STAT_OUT(player,
+             "region:%4d  #used:%5d  #free:%5d  "
              "fbytes:%04x  largest:%04x  deref:%3d",
              rid, regions[rid].used_count, regions[rid].free_count,
              regions[rid].free_bytes, regions[rid].largest_free_chunk,

@@ -70,6 +70,10 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -101,6 +105,9 @@
 #include "strutil.h"
 #include "version.h"
 #include "charconv.h"
+#include "mushsql.h"
+#include "connlog.h"
+#include "charclass.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -381,7 +388,7 @@ void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
 static void dump_info(DESC *call_by);
-static void save_command(DESC *d, const char *command);
+static void save_command(DESC *d, char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(char **userstring, const char *command);
@@ -593,6 +600,10 @@ main(int argc, char **argv)
 
   time(&mudtime);
 
+#ifdef HAVE_LIBCURL
+  curl_global_init(CURL_GLOBAL_ALL);
+#endif
+
   /* initialize random number generator */
   initialize_rng();
 
@@ -656,6 +667,11 @@ main(int argc, char **argv)
   }
 #endif
 
+  if (!init_conndb(restarting)) {
+    do_rawlog(LT_ERR, "ERROR: Couldn't initialize connlog! Exiting.");
+    exit(2);
+  }
+
   if (init_game_dbs() < 0) {
     do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
     exit(2);
@@ -701,6 +717,7 @@ main(int argc, char **argv)
 #endif
 
   close_sockets();
+
   sql_shutdown();
 
 #ifdef INFO_SLAVE
@@ -726,6 +743,10 @@ main(int argc, char **argv)
 
   local_shutdown();
 
+#ifdef HAVE_LIBCURL
+  curl_global_cleanup();
+#endif
+
   if (pidfile)
     remove(pidfile);
 
@@ -738,9 +759,13 @@ main(int argc, char **argv)
   rusage_stats();
 #endif /* HAVE_GETRUSAGE */
 
+  close_help_files();
+
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   end_all_logs();
+
+  close_shared_db();
 
   closesocket(sock);
 #ifdef WIN32
@@ -989,6 +1014,98 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 }
 #endif
 
+#ifdef HAVE_LIBCURL
+int ncurl_queries = 0;
+CURLM *curl_handle = NULL;
+
+static void
+free_urlreq(struct urlreq *req)
+{
+  pe_regs_free(req->pe_regs);
+  if (req->body) {
+    sqlite3_str_reset(req->body);
+    sqlite3_str_finish(req->body);
+  }
+  mush_free(req->attrname, "urlreq.attrname");
+  curl_slist_free_all(req->header_slist);
+  mush_free(req, "urlreq");
+}
+
+static void
+handle_curl_msg(CURLMsg *msg)
+{
+  if (!msg) {
+    return;
+  }
+
+  ncurl_queries -= 1;
+
+  if (msg->msg == CURLMSG_DONE) {
+    long respcode;
+    char *contenttype;
+    struct urlreq *resp;
+    CURL *handle = msg->easy_handle;
+    bool is_utf8 = 0;
+
+    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
+
+    if (msg->data.result == CURLE_OK) {
+      if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode) ==
+          CURLE_OK) {
+        if (respcode) {
+          pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        }
+      }
+      if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype) ==
+          CURLE_OK) {
+        if (contenttype) {
+          pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+          if (strstr(contenttype, "charset=utf-8") ||
+              strstr(contenttype, "charset=UTF-8")) {
+            is_utf8 = 1;
+          }
+        }
+      }
+      if (resp->body && sqlite3_str_length(resp->body) > 0) {
+        char *body = NULL;
+        char *latin1 = NULL;
+        int len;
+        int body_size = sqlite3_str_length(resp->body);
+        body = sqlite3_str_finish(resp->body);
+        resp->body = NULL;
+        if (is_utf8) {
+          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
+          if (len >= BUFFER_LEN) {
+            latin1[BUFFER_LEN - 1] = '\0';
+          }
+        } else {
+          latin1 = body;
+          if (body_size >= BUFFER_LEN) {
+            body[BUFFER_LEN - 1] = '\0';
+          }
+        }
+        pe_regs_setenv(resp->pe_regs, 0, latin1);
+        if (is_utf8) {
+          mush_free(latin1, "string");
+        }
+        if (body) {
+          sqlite3_free(body);
+        }
+      }
+      queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
+                                resp->pe_regs, resp->queue_type, resp->thing);
+    } else {
+      notify_format(resp->thing, "Request failed: %s",
+                    curl_easy_strerror(msg->data.result));
+    }
+    curl_multi_remove_handle(curl_handle, handle);
+    curl_easy_cleanup(handle);
+    free_urlreq(resp);
+  }
+}
+
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1003,12 +1120,22 @@ shovechars(Port_t port, Port_t sslport)
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
+#ifdef HAVE_LIBCURL
+  struct curl_waitfd *fds = NULL;
+  unsigned int fd_size = 0, fds_used = 0;
+  CURLMcode curl_status;
+#define PENN_POLLIN CURL_WAIT_POLLIN
+#define PENN_POLLOUT CURL_WAIT_POLLOUT
+#else
 #ifdef WIN32
   WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
   nfds_t fd_size = 0, fds_used = 0;
+#endif
+#define PENN_POLLIN POLLIN
+#define PENN_POLLOUT POLLOU
 #endif
   int polltimeout;
 
@@ -1030,6 +1157,13 @@ shovechars(Port_t port, Port_t sslport)
 #endif
     }
   }
+
+#ifdef HAVE_LIBCURL
+  curl_handle = curl_multi_init();
+  curl_multi_setopt(curl_handle, CURLMOPT_MAXCONNECTS, 500);
+  curl_multi_setopt(curl_handle, CURLMOPT_PIPELINING,
+                    CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
+#endif
 
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
@@ -1116,7 +1250,7 @@ shovechars(Port_t port, Port_t sslport)
       config_file_startup(NULL, 1);
       file_watch_init();
       fcache_load(NOTHING);
-      help_reindex(NOTHING);
+      help_rebuild(NOTHING);
       read_access_file();
       reopen_logs();
       hup_triggered = 0;
@@ -1173,33 +1307,33 @@ shovechars(Port_t port, Port_t sslport)
 
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
 
       if (sslsock) {
         fds[fds_used].fd = sslsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
         fds[fds_used].fd = localsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #endif
     }
 #ifdef INFO_SLAVE
     if (info_slave_state == INFO_SLAVE_PENDING) {
       fds[fds_used].fd = info_slave;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
     if (notify_fd >= 0) {
       fds[fds_used].fd = notify_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #ifndef WIN32
     if (sigrecv_fd >= 0) {
       fds[fds_used].fd = sigrecv_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
 
@@ -1221,16 +1355,41 @@ shovechars(Port_t port, Port_t sslport)
                               command ready to eval. */
         timeout = slice_timeout;
       } else {
-        fds[fds_used].events = POLLIN;
+        fds[fds_used].events = PENN_POLLIN;
       }
       if (d->output.head) {
-        fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= PENN_POLLOUT;
       }
       if (!d->input.head || d->output.head)
         fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
+
+#ifdef HAVE_LIBCURL
+    curl_status =
+      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+
+    if (curl_status != CURLM_OK) {
+      do_rawlog(LT_ERR, "curl_multi_wait: %s",
+                curl_multi_strerror(curl_status));
+      return;
+    }
+
+    if (ncurl_queries > 0) {
+      int running = 0;
+      curl_status = curl_multi_perform(curl_handle, &running);
+      if (curl_status == CURLM_OK) {
+        CURLMsg *msg;
+        while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
+          handle_curl_msg(msg);
+          found -= 1;
+        }
+      }
+    }
+
+#else
+
 #ifdef WIN32
     found = WSAPoll(fds, fds_used, polltimeout);
 #else
@@ -1246,13 +1405,19 @@ shovechars(Port_t port, Port_t sslport)
         penn_perror("poll");
         return;
       }
-#ifdef INFO_SLAVE
-      if (info_slave_state == INFO_SLAVE_PENDING)
-        update_pending_info_slaves();
 #endif
-    } else {
-      /* if !found then time for robot commands */
 
+#ifdef INFO_SLAVE
+    if (info_slave_state == INFO_SLAVE_PENDING) {
+      update_pending_info_slaves();
+    }
+#endif
+
+    time(&mudtime);
+
+    if (found >= 0) {
+
+      /* if !found then time for robot commands */
       if (!found) {
         do_top(options.queue_chunk);
         continue;
@@ -1266,16 +1431,17 @@ shovechars(Port_t port, Port_t sslport)
       now = mudtime;
 
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 &&
+            fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1283,7 +1449,7 @@ shovechars(Port_t port, Port_t sslport)
       }
 
       if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
-          fds[fds_used++].revents & POLLIN) {
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
@@ -1293,31 +1459,34 @@ shovechars(Port_t port, Port_t sslport)
       }
 
 #else /* INFO_SLAVE */
-      if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(sock, CS_IP_SOCKET);
-        }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(sslsock, CS_OPENSSL_SOCKET);
-        }
+        if (ndescriptors < avail_descriptors) {
+          if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(sock, CS_IP_SOCKET);
+          }
+          if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(sslsock, CS_OPENSSL_SOCKET);
+          }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
-          found -= 1;
-          setup_desc(localsock, CS_LOCAL_SOCKET);
-        }
+          if (found > 0 && localsock >= 0 &&
+              fds[fds_used++].revents & PENN_POLLIN) {
+            found -= 1;
+            setup_desc(localsock, CS_LOCAL_SOCKET);
+          }
 #endif /* LOCAL_SOCKET */
-      }
+        }
 #endif /* INFO_SLAVE */
 
-      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && notify_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
       }
 
 #ifndef WIN32
-      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && sigrecv_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         sigrecv_ack();
       }
@@ -1332,8 +1501,12 @@ shovechars(Port_t port, Port_t sslport)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
-        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
-        output_ready = fds[fds_used++].revents & POLLOUT;
+#ifdef HAVE_LIBCURL
+        errors = 0;
+#else
+          errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+#endif
+        output_ready = fds[fds_used++].revents & PENN_POLLOUT;
         if (input_ready || errors || output_ready)
           found -= 1;
         if (errors) {
@@ -1355,8 +1528,13 @@ shovechars(Port_t port, Port_t sslport)
       }
     }
   }
+
   if (fds)
     mush_free(fds, "pollfds");
+
+#ifdef HAVE_LIBCURL
+  curl_multi_cleanup(curl_handle);
+#endif
 }
 
 static int
@@ -1365,7 +1543,7 @@ test_connection(SOCKET newsock)
 #ifdef WIN32
   if (newsock == INVALID_SOCKET && WSAGetLastError() != WSAEINTR)
 #else
-  if (errno && errno != EINTR)
+    if (errno && errno != EINTR)
 #endif
   {
     penn_perror("test_connection");
@@ -1512,7 +1690,7 @@ new_connection(int oldsock, int *result, conn_source source)
       source = CS_LOCAL_SSL_SOCKET;
     }
 #else
-    source = CS_LOCAL_SSL_SOCKET;
+      source = CS_LOCAL_SSL_SOCKET;
 #endif
   }
 
@@ -1720,46 +1898,46 @@ fcache_read(FBLOCK *fb, const char *filename)
     return (int) fb->len;
   }
 #else
-  /* Posix read code here */
-  {
-    int fd;
-    struct stat sb;
+    /* Posix read code here */
+    {
+      int fd;
+      struct stat sb;
 
-    release_fd();
-    if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
-      reserve_fd();
-      return -1;
-    }
+      release_fd();
+      if ((fd = open(filename, O_RDONLY, 0)) < 0) {
+        do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
+        reserve_fd();
+        return -1;
+      }
 
-    if (fstat(fd, &sb) < 0) {
-      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
+      if (fstat(fd, &sb) < 0) {
+        do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
+        close(fd);
+        reserve_fd();
+        return -1;
+      }
+
+      if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
+        do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
+                  (int) sb.st_size, filename);
+        close(fd);
+        reserve_fd();
+        return -1;
+      }
+
+      if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
+        do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
+        close(fd);
+        mush_free(fb->buff, "fcache_data");
+        fb->buff = NULL;
+        reserve_fd();
+        return -1;
+      }
+
       close(fd);
       reserve_fd();
-      return -1;
+      fb->len = sb.st_size;
     }
-
-    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
-                (int) sb.st_size, filename);
-      close(fd);
-      reserve_fd();
-      return -1;
-    }
-
-    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
-      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
-      close(fd);
-      mush_free(fb->buff, "fcache_data");
-      fb->buff = NULL;
-      reserve_fd();
-      return -1;
-    }
-
-    close(fd);
-    reserve_fd();
-    fb->len = sb.st_size;
-  }
 #endif /* Posix read code */
 
   return fb->len;
@@ -1958,6 +2136,8 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     d->ssl = NULL;
   }
 
+  connlog_disconnection(d->connlog_id, reason);
+
   {
     freeqs(d);
     if (d->ttype && d->ttype != default_ttype)
@@ -2023,6 +2203,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
+  d->connlog_id = connlog_connection(ip, addr);
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -2079,7 +2260,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     WSAPOLLFD p;
 #else
-    struct pollfd p;
+      struct pollfd p;
 #endif
 
     p.fd = d->descriptor;
@@ -2088,7 +2269,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     input_ready = WSAPoll(&p, 1, 0);
 #else
-    input_ready = poll(&p, 1, 0);
+      input_ready = poll(&p, 1, 0);
 #endif
   }
 
@@ -2289,25 +2470,38 @@ welcome_user(DESC *d, int telnet)
 }
 
 static void
-save_command(DESC *d, const char *command)
+save_command(DESC *d, char *command)
 {
   if (d->conn_flags & CONN_UTF8) {
     char *latin1;
-    int len;
-
-    if (!valid_utf8(command)) {
-      const char errmsg[] = "ERROR: Invalid UTF-8 sequence.\r\n";
-      // Expecting UTF-8, got something else!
-      queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
-      do_rawlog(LT_CONN, "Invalid utf-8 sequence '%s'", command);
-      return;
-    }
-    latin1 = utf8_to_latin1(command, &len);
+    int llen;
+#ifdef HAVE_ICU
+    latin1 = translate_utf8_to_latin1(command, -1, &llen, "string");
+#else
+      latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
+#endif
     if (latin1) {
-      add_to_queue(&d->input, latin1, len);
+      char *c;
+      for (c = latin1; *c; c += 1) {
+        if (!char_isprint(*c)) {
+          *c = '?';
+        }
+      }
+      add_to_queue(&d->input, latin1, llen + 1);
       mush_free(latin1, "string");
+    } else {
+      const char errmsg[] =
+        "ERROR: Unicode sanitization+normalization failed.\r\n";
+      queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
+      do_rawlog(LT_ERR, "Unable to sanitize+normalize input '%s'", command);
     }
   } else {
+    char *c;
+    for (c = command; *c; c += 1) {
+      if (!char_isprint(*c)) {
+        *c = '?';
+      }
+    }
     add_to_queue(&d->input, command, strlen(command) + 1);
   }
 }
@@ -2496,20 +2690,20 @@ TELNET_HANDLER(telnet_charset)
 
   queue_newwrite(d, reply_suffix, 2);
 #else  /* _MSC_VER */
-  /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
-   * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
-   * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
-   * but it's unlikely to contain a valid charset name, so probably
-   * wouldn't help anyway.) */
+    /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+     * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+     * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+     * but it's unlikely to contain a valid charset name, so probably
+     * wouldn't help anyway.) */
 
-  if (*cmd != DO)
-    return;
+    if (*cmd != DO)
+      return;
 
-  queue_newwrite(d, reply_prefix, 4);
-  queue_newwrite(d, ";UTF-8", 6);
-  queue_newwrite(d, ";ISO-8859-1", 11);
-  queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
-  queue_newwrite(d, reply_suffix, 2);
+    queue_newwrite(d, reply_prefix, 4);
+    queue_newwrite(d, ";UTF-8", 6);
+    queue_newwrite(d, ";ISO-8859-1", 11);
+    queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
+    queue_newwrite(d, reply_suffix, 2);
 #endif /* _MSC_VER */
 }
 
@@ -3063,10 +3257,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
       q++; /* Skip over IAC */
 
       if (!MAYBE_TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
-        if (p < pend && isprint(*q))
+        if (p < pend)
           *p++ = *q;
       }
-    } else if (p < pend && isprint(*q)) {
+    } else if (p < pend) {
       *p++ = *q;
     }
   }
@@ -3440,6 +3634,8 @@ dump_messages(DESC *d, dbref player, int isnew)
   d->connected_at = mudtime;
   d->player = player;
 
+  connlog_login(d->connlog_id, player);
+
   login_number++;
   if (MAX_LOGINS) {
     /* check for exceeding max player limit */
@@ -3666,8 +3862,9 @@ check_connect(DESC *d, const char *msg)
     switch (player) {
     case NOTHING:
     case AMBIGUOUS:
-      queue_string_eol(d, "%s",
-                       T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
+      queue_string_eol(
+        d, "%s",
+        T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
                 d->descriptor, d->addr, d->ip, user);
       break;
@@ -3808,8 +4005,8 @@ close_sockets(void)
       byebye[1].iov_len = 2;
       ignoreme = writev(d->descriptor, byebye, 2);
 #else
-      send(d->descriptor, shutmsg, shutlen, 0);
-      send(d->descriptor, (char *) "\r\n", 2, 0);
+        send(d->descriptor, shutmsg, shutlen, 0);
+        send(d->descriptor, (char *) "\r\n", 2, 0);
 #endif
     } else {
       int offset;
@@ -3827,6 +4024,7 @@ close_sockets(void)
     }
     closesocket(d->descriptor);
   }
+  shutdown_conndb(0);
 }
 
 /** Give everyone the boot.
@@ -4532,8 +4730,8 @@ report_mssp(DESC *d, char *buff, char **bp)
       queue_string_eol(d, "%s\t%d", "SSL", options.ssl_port);
     }
     queue_string_eol(d, "%s\t%d", "PUEBLO", options.support_pueblo);
-    queue_string_eol(d, "%s\t%s %sp%s", "CODEBASE", "PennMUSH",
-                     VERSION, PATCHLEVEL);
+    queue_string_eol(d, "%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION,
+                     PATCHLEVEL);
     queue_string_eol(d, "%s\t%s", "FAMILY", "TinyMUD");
     if (strlen(options.mud_url)) {
       queue_string_eol(d, "%s\t%s", "WEBSITE", options.mud_url);
@@ -5366,7 +5564,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
   dp = doing;
   WALK_ANSI_STRING(dp)
   {
-    if (!isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
+    if (!char_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';
     }
@@ -6459,7 +6657,7 @@ dump_reboot_db(void)
   PENNFILE *f;
   DESC *d;
   uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM |
-                   RDBF_SOCKET_SRC | RDBF_NO_DOING;
+                   RDBF_SOCKET_SRC | RDBF_NO_DOING | RDBF_CONNLOG_ID;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -6528,7 +6726,10 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
+#ifndef WITHOUT_WEBSOCKETS
       putref_u64(f, d->ws_frame_len);
+#endif
+      putref_u64(f, d->connlog_id);
     } /* for loop */
 
     putref(f, 0);
@@ -6645,7 +6846,7 @@ load_reboot_db(void)
 #ifdef WITHOUT_WEBSOCKETS
         (void) getref_u64(f);
 #else
-        d->ws_frame_len = getref_u64(f);
+          d->ws_frame_len = getref_u64(f);
 #endif
       }
 #ifndef WITHOUT_WEBSOCKETS
@@ -6653,6 +6854,12 @@ load_reboot_db(void)
         d->ws_frame_len = 0;
       }
 #endif
+
+      if (flags & RDBF_CONNLOG_ID) {
+        d->connlog_id = getref_u64(f);
+      } else {
+        d->connlog_id = -1;
+      }
 
       d->input_chars = 0;
       d->output_chars = 0;
@@ -6820,6 +7027,8 @@ do_reboot(dbref player, int flag)
   kill_info_slave();
 #endif
   local_shutdown();
+  shutdown_conndb(1);
+  close_help_files();
   end_all_logs();
 #ifndef WIN32
   {
@@ -6838,7 +7047,7 @@ do_reboot(dbref player, int flag)
     execv(saved_argv[0], (char **) args);
   }
 #else
-  execl("pennmush.exe", "pennmush.exe", "/run", NULL);
+    execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
   fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
@@ -6856,18 +7065,6 @@ do_reboot(dbref player, int flag)
  */
 
 extern HASHTAB help_files;
-
-static void reload_files(void) __attribute__((__unused__));
-
-static void
-reload_files(void)
-{
-  do_rawlog(
-    LT_TRACE,
-    "Reloading help indexes and cached files after detecting a change.");
-  fcache_load(NOTHING);
-  help_reindex(NOTHING);
-}
 
 #ifdef HAVE_INOTIFY_INIT1
 /* Linux 2.6.27 and greater inotify file monitoring interface */
@@ -6976,7 +7173,7 @@ file_watch_event_in(int fd)
           if (fcache_read_one(file)) {
             do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
             WATCH(file);
-          } else if (help_reindex_by_name(file)) {
+          } else if (help_rebuild_by_name(file)) {
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
@@ -7002,7 +7199,7 @@ file_watch_init(void)
 #ifdef HAVE_INOTIFY_INIT1
   return file_watch_init_in();
 #else
-  return -1;
+    return -1;
 #endif
 }
 

@@ -138,7 +138,7 @@ do_name(dbref player, const char *name, char *newname_)
       flag_broadcast("WIZARD", 0,
                      T("Broadcast: Suspect %s changed name to %s."),
                      Name(thing), newname);
-    reset_player_list(thing, Name(thing), NULL, newname, NULL);
+    reset_player_list(thing, newname, alias);
   }
   set_name(thing, newname);
   if (alias) {
@@ -754,10 +754,9 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
         /* copy the attribute flags too */
         if (!noflagcopy) {
           char tmp[BUFFER_LEN];
-          copy_attrib_flags(player, newobj,
-                            atr_get_noparent(newobj,
-                                             strupper_r(q, tmp, sizeof tmp)),
-                            a->flags);
+          copy_attrib_flags(
+            player, newobj,
+            atr_get_noparent(newobj, strupper_r(q, tmp, sizeof tmp)), a->flags);
         }
       }
     }

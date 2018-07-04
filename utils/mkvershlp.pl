@@ -88,7 +88,7 @@ sub process_markdown {
     my ($IN, $OUT) = @_;
     my ($MDIN, $MDOUT);
 
-    my $pid = open2 $MDOUT, $MDIN, "pandoc", "-f", "markdown-smart", "-t", "utils/change2hlp.lua";
+    my $pid = open2 $MDOUT, $MDIN, "pandoc", "-f", "markdown", "-t", "utils/change2hlp.lua";
 
     my $started = 0;
     my $n = 0;

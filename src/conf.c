@@ -335,6 +335,12 @@ PENNCONF conftable[] = {
    sizeof options.log_size_policy, 0, NULL},
   {"sendmail_prog", cf_str, options.sendmail_prog, sizeof options.sendmail_prog,
    0, NULL},
+  {"help_db", cf_str, options.help_db, sizeof options.help_db, 0, NULL},
+  {"use_connlog", cf_bool, &options.use_connlog, sizeof options.use_connlog, 0,
+   "log"},
+  {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
+  {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0,
+   "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -420,7 +426,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
     return cnf;
   if ((cnf = new_config()) == NULL)
     return NULL;
-  cnf->name = mush_strdup(strupper(name), "config name");
+  cnf->name = strupper_a(name, "config name");
   cnf->handler = handler;
   cnf->loc = loc;
   cnf->max = max;
@@ -1338,6 +1344,10 @@ conf_default_set(void)
   options.log_max_size = 100;
   strcpy(options.log_size_policy, "trim");
   strcpy(options.sendmail_prog, "sendmail");
+  strcpy(options.help_db, "data/help.db");
+  options.use_connlog = 1;
+  strcpy(options.connlog_db, "log/connlog.db");
+  strcpy(options.dict_file, "");
 }
 
 #undef set_string_option
@@ -1581,7 +1591,8 @@ do_config_list(dbref player, const char *type, int lc)
       }
       if (!found) {
         /* Try a wildcard search of option names, including local options */
-        char *wild = tprintf("*%s*", type);
+        char wild[BUFFER_LEN + 2];
+        snprintf(wild, sizeof wild, "*%s*", type);
         for (cp = conftable; cp->name; cp++) {
           if (quick_wild(wild, cp->name) &&
               can_view_config_option(player, cp)) {
@@ -1872,5 +1883,13 @@ show_compile_options(dbref player)
     if (jit)
       notify(player, T(" Internal regular expressions are JIT-compiled."));
   }
+#endif
+
+#ifdef HAVE_ICU
+  notify(player, T(" (Very limited) Unicode support is enabled."));
+#endif
+
+#ifdef HAVE_LIBCURL
+  notify(player, T(" @HTTP is supported."));
 #endif
 }

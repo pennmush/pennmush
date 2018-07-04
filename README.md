@@ -8,7 +8,7 @@ depending on whether it's a new install or an upgrade.  The file
 [I18N](I18N.html) discusses internationalization.
 
 You may also want to take a look at Javelin's Guide for PennMUSH Gods,
-at <http://download.pennmush.org/Guide/>
+at <https://download.pennmush.org/Guide/>
 
 Introduction and history
 ========================
@@ -74,7 +74,7 @@ codebase that it is today.
 If you are planning on modifying the source code to PennMUSH, you'll
 probably want Javelin's Guide for PennMUSH Gods, which should be
 available where you got this code, or, in hypertext, as
-<http://download.pennmush.org/Guide/guide-single.html>. More recent
+<https://download.pennmush.org/Guide/guide-single.html>. More recent
 versions may be available at <http://community.pennmush.org>.
 
 Enjoy!

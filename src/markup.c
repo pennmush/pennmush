@@ -20,13 +20,14 @@
 #include "conf.h"
 #include "externs.h"
 #include "game.h"
-#include "intmap.h"
 #include "log.h"
 #include "mymalloc.h"
 #include "parse.h"
 #include "pueblo.h"
 #include "rgb.h"
 #include "strutil.h"
+#include "mushsql.h"
+#include "charconv.h"
 #include "confmagic.h"
 
 #define ANSI_BEGIN "\x1B["
@@ -63,7 +64,6 @@ static int safe_markup_cancel(char const *a_tag, char *buf, char **bp,
 static int escape_marked_str(char **str, char *buff, char **bp);
 static bool valid_hex_digits(const char *, int);
 
-void build_rgb_map(void);
 int ansi_equal(const ansi_data *a, const ansi_data *b);
 int ansi_isnull(const ansi_data a);
 int safe_markup_codes(new_markup_information *mi, int end, char *buff,
@@ -71,74 +71,64 @@ int safe_markup_codes(new_markup_information *mi, int end, char *buff,
 
 static ansi_data ansi_null = NULL_ANSI;
 
-/** Linked list of colornames with appropriate color maps */
-struct rgb_namelist {
-  const char *name; /**< Name of color */
-  int as_xterm;     /**< xterm color code (0-255) */
-  int as_ansi; /**< ANSI color code. Basic 8 ansi colors are 0-7, highlight are
-                  (256 | (0-7)) */
-  struct rgb_namelist *next;
-};
-slab *namelist_slab = NULL;
-intmap *rgb_to_name = NULL;
-
-/* Name to RGB color mapping */
-#include "rgbtab.c"
+bool colorname_lookup(const char *name, int len, int *rgb, int *ansi,
+                      int *xnum);
+bool rgb_lookup(int rgb, int *ansi, int *xnum);
 
 /* Populate the RGB color to name mapping */
 void
 build_rgb_map(void)
 {
+  sqlite3 *sqldb;
+  sqlite3_stmt *creator;
+  int status;
   int n;
-  struct rgb_namelist *node, *lst;
+  char *errmsg;
+  const char query[] =
+    "INSERT INTO colors(name, rgb, xterm, ansi) SELECT "
+    "json_extract(json_each.value, '$.name'), json_extract(json_each.value, "
+    "'$.rgb'), json_extract(json_each.value, '$.xterm'), "
+    "json_extract(json_each.value, '$.ansi') FROM json_each(?)";
 
-  if (rgb_to_name)
+  sqldb = get_shared_db();
+
+  if (!sqldb) {
     return;
-
-  rgb_to_name = im_new();
-  namelist_slab = slab_create("rgb namelist", sizeof *node);
-
-  for (n = 0; allColors[n].name; n += 1) {
-    if (strncmp("xterm", allColors[n].name, 5) == 0)
-      continue;
-    lst = im_find(rgb_to_name, allColors[n].hex);
-    node = slab_malloc(namelist_slab, lst);
-    node->name = allColors[n].name;
-    node->as_xterm = allColors[n].as_xterm;
-    node->as_ansi = allColors[n].as_ansi;
-    node->next = NULL;
-    if (!lst)
-      im_insert(rgb_to_name, allColors[n].hex, node);
-    else {
-      struct rgb_namelist *curr;
-
-      /* Find where to insert current color name into sorted list of
-         names for this RGB tuple. */
-      if (strcmp(node->name, lst->name) < 0) {
-        /* Insert at head of list */
-        const char *tname;
-        int trgb;
-        node->next = lst->next;
-        lst->next = node;
-        tname = lst->name;
-        lst->name = node->name;
-        node->name = tname;
-        trgb = lst->as_xterm;
-        lst->as_xterm = node->as_xterm;
-        node->as_xterm = trgb;
-        trgb = lst->as_ansi;
-        lst->as_ansi = node->as_ansi;
-        node->as_ansi = trgb;
-      } else {
-        for (curr = lst; curr->next; curr = curr->next) {
-          if (strcmp(node->name, curr->name) < 0)
-            break;
-        }
-        node->next = curr->next;
-        curr->next = node;
-      }
-    }
   }
+
+  if (sqlite3_exec(sqldb,
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE "
+                   "TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT "
+                   "NULL, ansi INTEGER NOT NULL) WITHOUT ROWID;"
+                   "CREATE INDEX rgb_idx ON colors(rgb);"
+                   "CREATE VIEW named_colors AS SELECT * FROM colors WHERE "
+                   "name NOT LIKE 'xterm%'",
+                   NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create colors table: %s", errmsg);
+    sqlite3_free(errmsg);
+    return;
+  }
+
+  creator = prepare_statement_cache(sqldb, query, "colors.insert", 0);
+  if (!creator) {
+    return;
+  }
+
+  for (n = 0; colors_json[n]; n += 1) {
+    /* Consider reading from a file instead of compiled in json strings? */
+    sqlite3_bind_text(creator, 1, colors_json[n], strlen(colors_json[n]),
+                      SQLITE_STATIC);
+    do {
+      status = sqlite3_step(creator);
+    } while (is_busy_status(status));
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR, "Unable to populate colors table: %s",
+                sqlite3_errstr(status));
+      break;
+    }
+    sqlite3_reset(creator);
+  }
+  sqlite3_finalize(creator);
 }
 
 /* ARGSUSED */
@@ -236,23 +226,57 @@ enum color_styles {
 FUNCTION(fun_colors)
 {
   if (nargs <= 1) {
-    int i;
     bool shown = 0;
+    sqlite3 *sqldb;
+    sqlite3_stmt *lister;
+    int status;
+
     /* Return list of available color names, skipping over the 256 'xtermN'
      * colors */
-    for (i = 0; allColors[i].name; i++) {
-      if (args[0] && *args[0]) {
-        if (!quick_wild(args[0], allColors[i].name))
-          continue;
-      } else if (strncmp("xterm", allColors[i].name, 5) == 0) {
-        continue;
-      }
-      if (shown)
-        safe_chr(' ', buff, bp);
-      else
-        shown = 1;
-      safe_str(allColors[i].name, buff, bp);
+
+    sqldb = get_shared_db();
+    if (!sqldb) {
+      safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+      return;
     }
+
+    if (args[0] && *args[0]) {
+      /* List colors matching a wildcard. */
+      lister = prepare_statement(
+        sqldb,
+        "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name",
+        "colors.list.names_pattern");
+      if (lister) {
+        int len, ulen;
+        char *as_utf8;
+        char *converted = glob_to_like(args[0], '$', &len);
+        as_utf8 = latin1_to_utf8(converted, len, &ulen, "string");
+        mush_free(converted, "string");
+        sqlite3_bind_text(lister, 1, as_utf8, ulen, free_string);
+      }
+    } else {
+      /* List all colors but xtermXX ones */
+      lister =
+        prepare_statement(sqldb, "SELECT name FROM named_colors ORDER BY name",
+                          "colors.list.names_all");
+    }
+    if (!lister) {
+      safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+      return;
+    }
+
+    do {
+      status = sqlite3_step(lister);
+      if (status == SQLITE_ROW) {
+        const char *name = (const char *) sqlite3_column_text(lister, 0);
+        if (shown)
+          safe_chr(' ', buff, bp);
+        else
+          shown = 1;
+        safe_strl(name, sqlite3_column_bytes(lister, 0), buff, bp);
+      }
+    } while (status == SQLITE_ROW || is_busy_status(status));
+    sqlite3_reset(lister);
   } else if (nargs == 2) {
     /* Return color info for a specific color */
     ansi_data ad;
@@ -365,17 +389,40 @@ FUNCTION(fun_colors)
         break;
       case CS_NAME: {
         uint32_t hex;
-        struct rgb_namelist *names;
         bool shown = 0;
+        sqlite3 *sqldb;
+        sqlite3_stmt *finder;
+        int status;
 
         hex = color_to_hex(color, 0);
 
-        for (names = im_find(rgb_to_name, hex); names; names = names->next) {
-          if (shown)
-            safe_chr(' ', buff, bp);
-          safe_str(names->name, buff, bp);
-          shown = 1;
+        sqldb = get_shared_db();
+        if (!sqldb) {
+          safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+          return;
         }
+
+        finder = prepare_statement(
+          sqldb, "SELECT name FROM named_colors WHERE rgb = ? ORDER BY name",
+          "colors.list.rgb");
+        if (!finder) {
+          safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+          return;
+        }
+
+        sqlite3_bind_int(finder, 1, (int) hex);
+        do {
+          status = sqlite3_step(finder);
+          if (status == SQLITE_ROW) {
+            const char *name = (const char *) sqlite3_column_text(finder, 0);
+            if (shown) {
+              safe_chr(' ', buff, bp);
+            }
+            safe_strl(name, sqlite3_column_bytes(finder, 0), buff, bp);
+            shown = 1;
+          }
+        } while (status == SQLITE_ROW || is_busy_status(status));
+        sqlite3_reset(finder);
 
         if (!shown)
           safe_str(T("#-1 NO MATCHING COLOR NAME"), buff, bp);
@@ -734,6 +781,81 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
 
 #define ERROR_COLOR 0xff69b4 /* Hot Pink. */
 
+bool
+colorname_lookup(const char *name, int len, int *rgb, int *ansi, int *xnum)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+  int status;
+  int ulen;
+  char *utf8;
+
+  sqldb = get_shared_db();
+  if (!sqldb) {
+    return 0;
+  }
+
+  finder = prepare_statement(
+    sqldb, "SELECT rgb, ansi, xterm FROM colors WHERE name = ?",
+    "colors.lookup.name");
+  if (!finder) {
+    return 0;
+  }
+
+  utf8 = latin1_to_utf8(name, len, &ulen, "string");
+  sqlite3_bind_text(finder, 1, utf8, ulen, free_string);
+  do {
+    status = sqlite3_step(finder);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    if (rgb) {
+      *rgb = sqlite3_column_int(finder, 0);
+    }
+    if (ansi) {
+      *ansi = sqlite3_column_int(finder, 1);
+    }
+    if (xnum) {
+      *xnum = sqlite3_column_int(finder, 2);
+    }
+  }
+  sqlite3_reset(finder);
+  return status == SQLITE_ROW;
+}
+
+bool
+rgb_lookup(int rgb, int *ansi, int *xnum)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+  int status;
+
+  sqldb = get_shared_db();
+  if (!sqldb) {
+    return 0;
+  }
+
+  finder = prepare_statement(
+    sqldb, "SELECT ansi, xterm FROM colors WHERE rgb = ?", "colors.lookup.rgb");
+  if (!finder) {
+    return 0;
+  }
+
+  sqlite3_bind_int(finder, 1, rgb);
+  do {
+    status = sqlite3_step(finder);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    if (ansi) {
+      *ansi = sqlite3_column_int(finder, 0);
+    }
+    if (xnum) {
+      *xnum = sqlite3_column_int(finder, 1);
+    }
+  }
+  sqlite3_reset(finder);
+  return status == SQLITE_ROW;
+}
+
 /** Return the hex code for a given ANSI color */
 uint32_t
 color_to_hex(const char *name, bool hilite)
@@ -744,6 +866,7 @@ color_to_hex(const char *name, bool hilite)
   char buf[BUFFER_LEN] = {'\0'}, *p;
 
   /* This should've been checked before it ever got here. */
+
   if (!name || !name[0]) {
     return 0;
   }
@@ -752,7 +875,7 @@ color_to_hex(const char *name, bool hilite)
     return strtol(name + 1, NULL, 16);
   }
   if (name[0] == '+') {
-    const struct RGB_COLORMAP *c;
+    int hex = 0;
     int len = 0;
 
     name++;
@@ -766,9 +889,9 @@ color_to_hex(const char *name, bool hilite)
     }
     *p = '\0';
 
-    c = colorname_lookup(buf, len);
-    if (c)
-      return c->hex;
+    if (colorname_lookup(buf, len, &hex, NULL, NULL)) {
+      return hex;
+    }
 
     /* It's an invalid color. Return hot pink since we shouldn't have gotten
      * here? */
@@ -819,7 +942,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   int best = 0;
   int i;
   int max;
-  struct rgb_namelist *color;
+  int ansi = 0;
 
   *hilite = 0;
 
@@ -832,27 +955,31 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   /* Is it an xterm color number? */
   if (strncasecmp(name, "+xterm", 5) == 0) {
     unsigned int xnum;
-    struct RGB_COLORMAP *xcolor;
+    char xname[16];
+    int len;
 
     xnum = strtoul(name + 6, NULL, 10);
     if (xnum > 255)
       xnum = 255;
 
-    xcolor = &allColors[xnum];
-    if (!bg && xcolor->as_ansi & 0x0100)
+    len = snprintf(xname, sizeof xname, "xterm%u", xnum);
+    colorname_lookup(xname, len, NULL, &ansi, NULL);
+
+    if (!bg && ansi & 0x0100) {
       *hilite = 1;
-    return (xcolor->as_ansi & 0xFF) + (bg ? 40 : 30);
+    }
+    return (ansi & 0xFF) + (bg ? 40 : 30);
   }
 
   /* Otherwise it's a name or RGB sequence. Map it to hex. */
   hex = color_to_hex(name, 0);
 
   /* Predefined color names have their downgrades cached */
-  color = im_find(rgb_to_name, hex);
-  if (color) {
-    if (!bg && color->as_ansi & 0x0100)
+  if (rgb_lookup(hex, &ansi, NULL)) {
+    if (!bg && ansi & 0x0100) {
       *hilite = 1;
-    return (color->as_ansi & 0xFF) + (bg ? 40 : 30);
+    }
+    return (ansi & 0xFF) + (bg ? 40 : 30);
   }
 
   diff = 0x0FFFFFFF;
@@ -882,20 +1009,11 @@ int
 ansi_map_256(const char *name, bool hilite, bool all)
 {
   uint32_t hex, diff, cdiff;
-  int best = 0;
-  int i;
-  struct rgb_namelist *color;
-  static int xtermi = -1;
-
-  if (xtermi == -1) {
-    int n;
-    for (n = 0; allColors[n].name; n += 1) {
-      if (strcmp(allColors[n].name, "xterm0") == 0) {
-        xtermi = n;
-        break;
-      }
-    }
-  }
+  int best = -1;
+  int num = 0;
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+  int status;
 
   /* Is it an xterm color number? */
   if (strncasecmp(name, "+xterm", 6) == 0) {
@@ -908,26 +1026,50 @@ ansi_map_256(const char *name, bool hilite, bool all)
 
   /* Predefined color names have their downgrades cached */
   hex = color_to_hex(name, hilite);
-  color = im_find(rgb_to_name, hex);
-  if (color)
-    return color->as_xterm;
+  if (rgb_lookup(hex, NULL, &num)) {
+    return num;
+  }
 
   diff = 0x0FFFFFFF;
   /* Now find the closest 256 color match. */
-  best = 0;
 
-  for (i = (all ? xtermi : xtermi + 16); i < xtermi + 256; i++) {
-    if (allColors[i].hex == hex) {
-      best = i;
-      break;
-    }
-    cdiff = hex_difference(allColors[i].hex, hex);
-    if (cdiff < diff) {
-      best = i;
-      diff = cdiff;
-    }
+  sqldb = get_shared_db();
+  if (!sqldb) {
+    return -1;
   }
-  return best - xtermi;
+
+  finder = prepare_statement(
+    sqldb, "SELECT rgb, xterm FROM colors WHERE name LIKE 'xterm%'",
+    "colors.list.xterm");
+  if (!finder) {
+    return -1;
+  }
+
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      uint32_t rgb = sqlite3_column_int(finder, 0);
+      num = sqlite3_column_int(finder, 1);
+
+      if (all && num < 16) {
+        continue;
+      }
+
+      if (hex == rgb) {
+        best = num;
+        break;
+      }
+
+      cdiff = hex_difference(rgb, hex);
+      if (cdiff < diff) {
+        best = num;
+        diff = cdiff;
+      }
+    }
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(finder);
+
+  return best;
 }
 
 typedef int (*writer_func)(ansi_data *old, ansi_data *cur, int ansi_format,
@@ -1186,7 +1328,7 @@ valid_color_name(const char *name)
   }
   *p = '\0';
 
-  return colorname_lookup(buff, len) != NULL;
+  return colorname_lookup(buff, len, NULL, NULL, NULL);
 }
 
 extern const unsigned char *tables;
@@ -1349,8 +1491,9 @@ define_ansi_data(ansi_data *store, const char *str)
             0) { /* xterm color ids are stored directly. */
           snprintf(ptr, COLOR_NAME_LEN, "+%.8s", buff);
         } else if (len > 6) { /* Use hex code to save on buffer space */
-          snprintf(ptr, COLOR_NAME_LEN, "#%06x",
-                   color_to_hex(tprintf("+%s", buff), 0));
+          char cbuff[BUFFER_LEN + 1];
+          snprintf(cbuff, sizeof cbuff, "+%s", buff);
+          snprintf(ptr, COLOR_NAME_LEN, "#%06x", color_to_hex(cbuff, 0));
         } else /* len <= 6 */ {
           snprintf(ptr, COLOR_NAME_LEN, "+%.6s", buff);
         }
@@ -3048,4 +3191,29 @@ safe_tag_wrap(char const *a_tag, char const *params, char const *data,
   if (result)
     memset(save, '\0', *bp - save);
   return result;
+}
+
+char *
+open_tag(const char *x)
+{
+  static char buff[BUFFER_LEN + 3];
+  snprintf(buff, sizeof buff, "%c%c%s%c", TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
+}
+
+char *
+close_tag(const char *x)
+{
+  static char buff[BUFFER_LEN + 4];
+  snprintf(buff, sizeof buff, "%c%c/%s%c", TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
+}
+
+char *
+wrap_tag(const char *x, const char *y)
+{
+  static char buff[(BUFFER_LEN * 2) + 8];
+  snprintf(buff, sizeof buff, "%c%c%s%c%s%c%c/%s%c", TAG_START, MARKUP_HTML, x,
+           TAG_END, y, TAG_START, MARKUP_HTML, x, TAG_END);
+  return buff;
 }

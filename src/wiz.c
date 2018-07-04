@@ -49,6 +49,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "mushsql.h"
 #include "confmagic.h"
 
 dbref find_entrance(dbref door);
@@ -164,6 +165,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
 {
   dbref who, thing;
   int owned, limit, adjust;
+  char tmp[50];
 
   /* determine the victim */
   if (!arg1 || !*arg1 || !strcmp(arg1, "me"))
@@ -216,14 +218,17 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     return;
   }
   adjust = ((*arg2 == '+') || (*arg2 == '-'));
-  if (adjust)
+  if (adjust) {
     limit = owned + get_current_quota(who) + atoi(arg2);
-  else
+  } else {
     limit = atoi(arg2);
-  if (limit < owned) /* always have enough quota for your objects */
+  }
+  if (limit < owned) { /* always have enough quota for your objects */
     limit = owned;
+  }
 
-  (void) atr_add(Owner(who), "RQUOTA", tprintf("%d", limit - owned), GOD, 0);
+  snprintf(tmp, sizeof tmp, "%d", limit - owned);
+  (void) atr_add(Owner(who), "RQUOTA", tmp, GOD, 0);
 
   notify_format(player, T("Objects: %d   Limit: %d"), owned, limit);
 }
@@ -284,10 +289,13 @@ do_allquota(dbref player, const char *arg1, int quiet)
                     oldlimit);
     }
     if (limit != -1) {
-      if (limit <= owned)
+      if (limit <= owned) {
         (void) atr_add(who, "RQUOTA", "0", GOD, 0);
-      else
-        (void) atr_add(who, "RQUOTA", tprintf("%d", limit - owned), GOD, 0);
+      } else {
+        char tmp[100];
+        snprintf(tmp, sizeof tmp, "%d", limit - owned);
+        (void) atr_add(who, "RQUOTA", tmp, GOD, 0);
+      }
     }
   }
   if (limit == -1)
@@ -1485,6 +1493,148 @@ FUNCTION(fun_lsearch)
     mush_free(results, "search_results");
 }
 
+/** Build a table of what objects are linked to which,
+ * for use with entrances() and @entrances */
+void
+build_linked_table(void)
+{
+  char *errmsg;
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *adder;
+  int n;
+
+  if (sqlite3_exec(
+        sqldb,
+        "CREATE TABLE linked(to_obj INTEGER NOT NULL, from_obj INTEGER NOT "
+        "NULL PRIMARY KEY, from_type INTEGER NOT NULL, FOREIGN KEY(to_obj) "
+        "REFERENCES objects(dbref) ON DELETE CASCADE, FOREIGN KEY(from_obj) "
+        "REFERENCES objects(dbref) ON DELETE CASCADE);"
+        "CREATE INDEX linked_to_idx ON linked(to_obj);"
+        "BEGIN TRANSACTION",
+        NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create entrances table: %s", errmsg);
+    sqlite3_free(errmsg);
+    sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+
+  adder = prepare_statement(
+    sqldb, "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
+    "linked.insert");
+  if (!adder) {
+    return;
+  }
+
+  for (n = 0; n < db_top; n += 1) {
+    dbref to = NOTHING;
+    int type = 0;
+    int status;
+
+    if (IsGarbage(n)) {
+      continue;
+    } else if (IsPlayer(n) || IsThing(n)) {
+      to = Home(n);
+      type = IsPlayer(n) ? TYPE_PLAYER : TYPE_THING;
+    } else if (IsRoom(n)) {
+      to = Location(n);
+      type = TYPE_ROOM;
+    } else if (IsExit(n)) {
+      to = Destination(n);
+      type = TYPE_EXIT;
+    }
+    if (!GoodObject(to)) {
+      continue;
+    }
+
+    sqlite3_bind_int(adder, 1, to);
+    sqlite3_bind_int(adder, 2, n);
+    sqlite3_bind_int(adder, 3, type);
+
+    do {
+      status = sqlite3_step(adder);
+    } while (is_busy_status(status));
+    sqlite3_reset(adder);
+    if (status != SQLITE_DONE) {
+      do_rawlog(LT_ERR,
+                "Unable to insert (#%d <- #%d) into entrances table: %s", to, n,
+                sqlite3_errstr(status));
+    }
+  }
+  sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
+}
+
+/** Remove the reference of what a given object links to from the
+    linked table */
+void
+delete_link_from(dbref obj)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *deleter;
+
+  sqldb = get_shared_db();
+  deleter = prepare_statement(sqldb, "DELETE FROM linked WHERE from_obj = ?",
+                              "linked.delete_one");
+  if (deleter) {
+    int status;
+    sqlite3_bind_int(deleter, 1, obj);
+    do {
+      status = sqlite3_step(deleter);
+    } while (is_busy_status(status));
+    sqlite3_reset(deleter);
+  }
+}
+
+/** Add a link reference between two objects to the linked table. */
+void
+add_link(dbref from, dbref to)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+
+  if (!GoodObject(from) || !GoodObject(to)) {
+    return;
+  }
+
+  sqldb = get_shared_db();
+  adder = prepare_statement(
+    sqldb, "INSERT INTO linked(to_obj, from_obj, from_type) VALUES (?, ?, ?)",
+    "linked.insert");
+  if (adder) {
+    int status;
+    sqlite3_bind_int(adder, 1, to);
+    sqlite3_bind_int(adder, 2, from);
+    sqlite3_bind_int(adder, 3, Typeof(from));
+    do {
+      status = sqlite3_step(adder);
+    } while (is_busy_status(status));
+    sqlite3_reset(adder);
+  }
+}
+
+static sqlite3_stmt *
+find_linked(struct search_spec *spec)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *finder;
+
+  sqldb = get_shared_db();
+  finder = prepare_statement(
+    sqldb,
+    "SELECT from_obj FROM linked WHERE to_obj = ? AND from_obj BETWEEN ? AND ? "
+    "AND from_type & ? ORDER BY from_obj",
+    "linked.find");
+  if (!finder) {
+    return NULL;
+  }
+
+  sqlite3_bind_int(finder, 1, spec->entrances);
+  sqlite3_bind_int(finder, 2, spec->low);
+  sqlite3_bind_int(finder, 3, spec->high);
+  sqlite3_bind_int(finder, 4, spec->type);
+
+  return finder;
+}
+
 /** Find the entrances to a room.
  * \verbatim
  * This implements @entrances, which finds things linked to an object
@@ -1498,12 +1648,13 @@ FUNCTION(fun_lsearch)
 void
 do_entrances(dbref player, const char *where, char *argv[], int types)
 {
-  dbref place;
+  dbref place, obj;
   struct search_spec spec;
   int rooms, things, exits, players;
-  int nresults, n;
-  dbref *results = NULL;
+  int nresults = 0;
   char exit_source[BUFFER_LEN];
+  sqlite3_stmt *linked;
+  bool prived;
 
   rooms = things = exits = players = 0;
 
@@ -1515,49 +1666,64 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
   if (!GoodObject(place))
     return;
 
+  prived = controls(player, place) || See_All(player) || Search_All(player);
+
   init_search_spec(&spec);
   spec.entrances = place;
 
   /* determine range */
-  if (argv[1] && *argv[1])
+  if (argv[1] && *argv[1]) {
     spec.low = atoi(argv[1]);
-  if (spec.low < 0)
+  }
+  if (spec.low < 0) {
     spec.low = 0;
-  if (argv[2] && *argv[2])
-    spec.high = atoi(argv[2]) + 1;
-  if (spec.high > db_top)
+  }
+  if (argv[2] && *argv[2]) {
+    spec.high = atoi(argv[2]);
+  }
+  if (spec.high > db_top) {
     spec.high = db_top;
+  }
 
   spec.type = types;
 
-  nresults =
-    raw_search(controls(player, place) ? GOD : player, &spec, &results, NULL);
-  for (n = 0; n < nresults; n++) {
-    switch (Typeof(results[n])) {
-    case TYPE_EXIT:
-      strcpy(exit_source, object_header(player, Source(results[n])));
-      notify_format(player, T("%s [from: %s]"),
-                    object_header(player, results[n]), exit_source);
-      exits++;
-      break;
-    case TYPE_ROOM:
-      notify_format(player, T("%s [dropto]"),
-                    object_header(player, results[n]));
-      rooms++;
-      break;
-    case TYPE_THING:
-    case TYPE_PLAYER:
-      notify_format(player, T("%s [home]"), object_header(player, results[n]));
-      if (IsThing(results[n]))
-        things++;
-      else
-        players++;
-      break;
-    }
-  }
+  linked = find_linked(&spec);
 
-  if (results)
-    mush_free(results, "search_results");
+  if (linked) {
+    int status;
+    do {
+      status = sqlite3_step(linked);
+      if (status == SQLITE_ROW) {
+        obj = sqlite3_column_int(linked, 0);
+        if (!(prived || Can_Examine(player, obj))) {
+          continue;
+        }
+        nresults += 1;
+        switch (Typeof(obj)) {
+        case TYPE_EXIT:
+          strcpy(exit_source, object_header(player, Source(obj)));
+          notify_format(player, T("%s [from: %s]"), object_header(player, obj),
+                        exit_source);
+          exits++;
+          break;
+        case TYPE_ROOM:
+          notify_format(player, T("%s [dropto]"), object_header(player, obj));
+          rooms++;
+          break;
+        case TYPE_THING:
+        case TYPE_PLAYER:
+          notify_format(player, T("%s [home]"), object_header(player, obj));
+          if (IsThing(obj)) {
+            things++;
+          } else {
+            players++;
+          }
+          break;
+        }
+      }
+    } while (status == SQLITE_ROW || is_busy_status(status));
+    sqlite3_reset(linked);
+  }
 
   if (!nresults)
     notify(player, T("Nothing found."));
@@ -1580,9 +1746,11 @@ FUNCTION(fun_entrances)
    */
   dbref where;
   struct search_spec spec;
-  int nresults, n;
-  dbref *results = NULL;
+  bool n;
+  int status;
   char *p;
+  sqlite3_stmt *finder;
+  bool prived;
 
   if (!command_check_byname(executor, "@entrances", pe_info)) {
     safe_str(T(e_perm), buff, bp);
@@ -1599,6 +1767,10 @@ FUNCTION(fun_entrances)
     safe_str(T("#-1 INVALID LOCATION"), buff, bp);
     return;
   }
+
+  prived =
+    controls(executor, where) || See_All(executor) || Search_All(executor);
+
   spec.entrances = where;
   spec.type = 0;
   if (nargs > 1 && args[1] && *args[1]) {
@@ -1655,24 +1827,39 @@ FUNCTION(fun_entrances)
       return;
     }
   }
-  if (!GoodObject(spec.low))
+  if (!GoodObject(spec.low)) {
     spec.low = 0;
-  if (!GoodObject(spec.high))
-    spec.high = db_top - 1;
-
-  nresults = raw_search(controls(executor, where) ? GOD : executor, &spec,
-                        &results, pe_info);
-  for (n = 0; n < nresults; n++) {
-    if (n) {
-      if (safe_chr(' ', buff, bp))
-        break;
-    }
-    if (safe_dbref(results[n], buff, bp))
-      break;
+  }
+  if (!GoodObject(spec.high)) {
+    spec.high = db_top;
   }
 
-  if (results)
-    mush_free(results, "search_results");
+  finder = find_linked(&spec);
+  if (!finder) {
+    safe_str("#-1 SQLITE ERROR", buff, bp);
+    return;
+  }
+
+  n = 0;
+  do {
+    status = sqlite3_step(finder);
+    if (status == SQLITE_ROW) {
+      dbref obj = sqlite3_column_int(finder, 0);
+      if (!(prived || Can_Examine(executor, obj))) {
+        continue;
+      }
+      if (n) {
+        if (safe_chr(' ', buff, bp)) {
+          break;
+        }
+      }
+      if (safe_dbref(obj, buff, bp)) {
+        break;
+      }
+      n = 1;
+    }
+  } while (status == SQLITE_ROW || is_busy_status(status));
+  sqlite3_reset(finder);
 }
 
 /* ARGSUSED */

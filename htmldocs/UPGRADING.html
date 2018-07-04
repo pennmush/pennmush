@@ -11,7 +11,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <link rel="stylesheet" href="mushdoc.css">
+  <link rel="stylesheet" href="mushdoc.css" />
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -48,7 +48,7 @@
 <h2 id="upgrading-with-patch-files">Upgrading with patch files</h2>
 <p>This is the easiest way to upgrade your source code if you're keeping up with patches as they come out, or if you're upgrading patchlevels within a release (e.g., within 1.8.0).</p>
 <p>To upgrade with patch files, get all the patch files for higher patchlevels than your current version. For example, if you're running 1.8.0p0 and the latest version is 1.8.0p4, you need patches 1-4.</p>
-<p>Patchfiles can be downloaded via <a href="http://download.pennmush.org/Source/" class="uri">http://download.pennmush.org/Source/</a> and are usually named things like 1.8.0-patch02 (the patch from 1.8.0p1 to 1.8.0p2) or, in some cases, 1.7.6p16-1.8.0p0.patch (the patch from 1.7.6p16 to 1.8.0p0).</p>
+<p>Patchfiles can be downloaded via <a href="https://download.pennmush.org/Source/" class="uri">https://download.pennmush.org/Source/</a> and are usually named things like 1.8.0-patch02 (the patch from 1.8.0p1 to 1.8.0p2) or, in some cases, 1.7.6p16-1.8.0p0.patch (the patch from 1.7.6p16 to 1.8.0p0).</p>
 <p>Each patch file contains instructions at the top explaining how to apply it. <strong>FOLLOW THESE!</strong> Don't assume they're all the same. The options to use with the patch program change, and sometimes further steps are required.</p>
 <p>After you've applied all the patches and followed all the instructions, you should be good to go. In most cases, you can simply <code>@shutdown/reboot</code> after the final successful compile. If <code>@shutdown/reboot</code> crashes, you'll have to restart again.</p>
 <h2 id="using-git">Using git</h2>

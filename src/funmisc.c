@@ -34,6 +34,8 @@
 #include "gitinfo.h"
 #include "tz.h"
 #include "version.h"
+#include "mushsql.h"
+#include "charconv.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -42,7 +44,6 @@
 #endif
 
 extern FUN flist[];
-static char *soundex(char *str);
 extern char cf_motd_msg[BUFFER_LEN], cf_wizmotd_msg[BUFFER_LEN],
   cf_downmotd_msg[BUFFER_LEN], cf_fullmotd_msg[BUFFER_LEN];
 extern HASHTAB htab_function;
@@ -55,14 +56,15 @@ FUNCTION(fun_valid)
   /* Checks to see if a given <something> is valid as a parameter of a
    * given type (such as an object name.)
    */
+  char tmp[BUFFER_LEN];
 
-  if (!args[0] || !*args[0])
+  if (!args[0] || !*args[0]) {
     safe_str("#-1", buff, bp);
-  else if (!strcasecmp(args[0], "name"))
+  } else if (!strcasecmp(args[0], "name")) {
     safe_boolean(ok_name(args[1], 0), buff, bp);
-  else if (!strcasecmp(args[0], "attrname"))
-    safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "playername")) {
+  } else if (!strcasecmp(args[0], "attrname")) {
+    safe_boolean(good_atr_name(strupper_r(args[1], tmp, sizeof tmp)), buff, bp);
+  } else if (!strcasecmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
       target = noisy_match_result(executor, args[2], TYPE_PLAYER,
@@ -73,19 +75,22 @@ FUNCTION(fun_valid)
       }
     }
     safe_boolean(ok_player_name(args[1], target, target), buff, bp);
-  } else if (!strcasecmp(args[0], "password"))
+  } else if (!strcasecmp(args[0], "password")) {
     safe_boolean(ok_password(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "command"))
-    safe_boolean(ok_command_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "function"))
-    safe_boolean(ok_function_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "flag"))
-    safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
-  else if (!strcasecmp(args[0], "qreg"))
+  } else if (!strcasecmp(args[0], "command")) {
+    safe_boolean(ok_command_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
+  } else if (!strcasecmp(args[0], "function")) {
+    safe_boolean(ok_function_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
+  } else if (!strcasecmp(args[0], "flag")) {
+    safe_boolean(good_flag_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
+                 bp);
+  } else if (!strcasecmp(args[0], "qreg")) {
     safe_boolean(ValidQregName(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "colorname"))
+  } else if (!strcasecmp(args[0], "colorname")) {
     safe_boolean(valid_color_name(args[1]), buff, bp);
-  else if (!strcasecmp(args[0], "ansicodes")) {
+  } else if (!strcasecmp(args[0], "ansicodes")) {
     ansi_data colors;
     safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
   } else if (!strcasecmp(args[0], "channel")) {
@@ -123,8 +128,9 @@ FUNCTION(fun_valid)
     }
     lt = check_lock_type(executor, target, args[1], 1);
     safe_boolean((lt != NULL), buff, bp);
-  } else
+  } else {
     safe_str("#-1", buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -1168,75 +1174,68 @@ FUNCTION(fun_restarts) { safe_integer(globals.reboot_count, buff, bp); }
 
 extern char soundex_val[UCHAR_MAX + 1];
 
-/* The actual soundex routine */
-static char *
-soundex(char *str)
+enum sound_hash_type { HASH_SOUNDEX, HASH_PHONE };
+
+char *
+sound_hash(const char *str, int len, enum sound_hash_type type)
 {
-  static char tbuf1[BUFFER_LEN];
-  char *p;
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *hasher;
+  char *utf8, *result = NULL;
+  int ulen;
+  int status;
 
-  memset(tbuf1, '\0', 4);
+  switch (type) {
+  case HASH_SOUNDEX:
+    /* Classic Penn soundex turns a leading ph into f. This makes
+       sense but isn't typical. */
+    hasher = prepare_statement(sqldb,
+                               "VALUES (soundex(CASE WHEN ?1 LIKE 'ph%' THEN "
+                               "printf('f%s', substr(?1, 3)) ELSE ?1 END))",
+                               "hash.soundex");
+    break;
+  case HASH_PHONE:
+    hasher =
+      prepare_statement(sqldb, "VALUES (spellfix1_phonehash(?))", "hash.phone");
+    break;
+  default:
+    return NULL;
+  }
 
-  p = tbuf1;
-
-  /* First character is just copied */
-  *p = toupper(*str);
-  str++;
-  /* Special case for PH->F */
-  if ((toupper(*p) == 'P') && *str && (toupper(*str) == 'H')) {
-    *p = 'F';
-    str++;
+  utf8 = latin1_to_utf8(str, len, &ulen, "string");
+  sqlite3_bind_text(hasher, 1, utf8, ulen, free_string);
+  status = sqlite3_step(hasher);
+  if (status == SQLITE_ROW) {
+    result =
+      mush_strdup((const char *) sqlite3_column_text(hasher, 0), "string");
   }
-  p++;
-  /* Convert letters to soundex values, squash duplicates, skip accents and
-   * other non-ascii characters */
-  while (*str) {
-    if (!isalpha(*str) || *str > 127) {
-      str++;
-      continue;
-    }
-    *p = soundex_val[*str++];
-    if (*p != *(p - 1))
-      p++;
-  }
-  *p = '\0';
-  /* Remove zeros */
-  p = str = tbuf1;
-  while (*str) {
-    if (*str != '0')
-      *p++ = *str;
-    str++;
-  }
-  *p = '\0';
-  /* Pad/truncate to 4 chars */
-  if (tbuf1[1] == '\0')
-    tbuf1[1] = '0';
-  if (tbuf1[2] == '\0')
-    tbuf1[2] = '0';
-  if (tbuf1[3] == '\0')
-    tbuf1[3] = '0';
-  tbuf1[4] = '\0';
-  return tbuf1;
+  sqlite3_reset(hasher);
+  return result;
 }
 
 /* ARGSUSED */
 FUNCTION(fun_soundex)
 {
-  /* Returns the soundex code for a word. This 4-letter code is:
-   * 1. The first letter of the word (exception: ph -> f)
-   * 2. Replace each letter with a numeric code from the soundex table
-   * 3. Remove consecutive numbers that are the same
-   * 4. Remove 0's
-   * 5. Truncate to 4 characters or pad with 0's.
-   * It's actually a bit messier than that to make it faster.
-   */
-  if (!args[0] || !*args[0] || !isalpha(*args[0]) || strchr(args[0], ' ')) {
-    safe_str(T("#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"), buff,
-             bp);
-    return;
+  enum sound_hash_type type = HASH_SOUNDEX;
+  char *hashed;
+
+  if (nargs == 2) {
+    if (strcasecmp(args[1], "soundex") == 0) {
+      type = HASH_SOUNDEX;
+    } else if (strcasecmp(args[1], "phone") == 0) {
+      type = HASH_PHONE;
+    } else {
+      safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
+      return;
+    }
   }
-  safe_str(soundex(args[0]), buff, bp);
-  return;
+  hashed = sound_hash(args[0], arglens[0], type);
+  if (hashed) {
+    safe_str(hashed, buff, bp);
+    mush_free(hashed, "string");
+  } else {
+    safe_str("#-1 HASH ERROR", buff, bp);
+  }
 }
 
 /* ARGSUSED */
@@ -1246,16 +1245,29 @@ FUNCTION(fun_soundlike)
    * This can be optimized to go character-by-character, but
    * I deem the modularity to be more important. So there.
    */
-  char tbuf1[5];
-  if (!*args[0] || !*args[1] || !isalpha(*args[0]) || !isalpha(*args[1]) ||
-      strchr(args[0], ' ') || strchr(args[1], ' ')) {
-    safe_str(T("#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"),
-             buff, bp);
-    return;
+  enum sound_hash_type type = HASH_SOUNDEX;
+  char *hash1, *hash2;
+
+  if (nargs == 3) {
+    if (strcasecmp(args[2], "soundex") == 0) {
+      type = HASH_SOUNDEX;
+    } else if (strcasecmp(args[2], "phone") == 0) {
+      type = HASH_PHONE;
+    } else {
+      safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
+      return;
+    }
   }
-  /* soundex uses a static buffer, so we need to save it */
-  strcpy(tbuf1, soundex(args[0]));
-  safe_boolean(!strcmp(tbuf1, soundex(args[1])), buff, bp);
+
+  hash1 = sound_hash(args[0], arglens[0], type);
+  hash2 = sound_hash(args[1], arglens[1], type);
+  if (!hash1 || !hash2) {
+    safe_str("#-1 HASH ERROR", buff, bp);
+  } else {
+    safe_boolean(strcmp(hash1, hash2) == 0, buff, bp);
+  }
+  mush_free(hash1, "string");
+  mush_free(hash2, "string");
 }
 
 /* ARGSUSED */

@@ -62,6 +62,7 @@ sub scan_files_for_pattern {
     my @idents;
 
     foreach my $file (glob $filepattern) {
+	next if $file =~ /sqlite3/;
         open my $FILE, "<", $file
             or die "Cannot open ${file} for reading: $!\n";
         while (<$FILE>) {

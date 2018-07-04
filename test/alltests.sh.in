@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export LC_COLLATE=C
+export LC_CTYPE=en_US.iso88591
 
 exec @PERL@ runtest.pl $@ test*.pl
 

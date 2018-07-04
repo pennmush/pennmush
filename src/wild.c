@@ -257,12 +257,8 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
     matches[i * 2 + 1] = 0;
   }
 
-  strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
-  pbuff[BUFFER_LEN - 1] = '\0';
-  strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
-  tbuff[BUFFER_LEN - 1] = '\0';
-  pat = pbuff;
-  str = tbuff;
+  pat = mush_strncpy(pbuff, remove_markup(pat, NULL), sizeof pbuff);
+  str = mush_strncpy(tbuff, remove_markup(str, NULL), sizeof tbuff);
   slen = strlen(str);
 
   if (!cs) {

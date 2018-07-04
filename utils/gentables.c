@@ -118,17 +118,6 @@ char ansi_codes[UCHAR_MAX + 1] = {
   ['/'] = 1, ['a'] = 1
 };
 
-/* Values used in soundex hashing */
-char soundex_codes[UCHAR_MAX + 1] = {
-  ['B'] = 1, ['P'] = 1, ['F'] = 1, ['V'] = 1, ['b'] = 1, ['p'] = 1, ['f'] = 1, ['v'] = 1,
-  ['C'] = 2, ['G'] = 2, ['J'] = 2, ['K'] = 2, ['Q'] = 2, ['S'] = 2, ['X'] = 2, ['Z'] = 2,
-  ['c'] = 2, ['g'] = 2, ['j'] = 2, ['k'] = 2, ['q'] = 2, ['s'] = 2, ['x'] = 2, ['z'] = 2,
-  ['D'] = 3, ['T'] = 3, ['d'] = 3, ['t'] = 3,
-  ['L'] = 4, ['l'] = 4,
-  ['M'] = 5, ['N'] = 5, ['m'] = 5, ['n'] = 5,
-  ['R'] = 6, ['r'] = 6
-};
-
 /** Accented characters 
  *
  * The table is for ISO 8859-1 character set.
@@ -289,7 +278,6 @@ int main(int argc, char *argv[]) {
   print_table_bool("char", "valid_timefmt_codes", valid_timefmt_codes, 0);
   print_table_bool("char", "escaped_chars", escaped_chars, 0);
   print_table_bool("char", "valid_ansi_codes", ansi_codes, 0);
-  print_table_bool("char", "soundex_val", soundex_codes, '0');
   print_entity_table("accent_table", entity_table);
   return EXIT_SUCCESS;
 }

@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
@@ -48,6 +51,8 @@
 #include "privtab.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "mushsql.h"
+#include "charclass.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -81,9 +86,6 @@ const char EOD[] = "***END OF DUMP***\n";
 
 dbref db_size = DB_INITIAL_SIZE; /**< Current size of db array */
 
-HASHTAB htab_objdata;      /**< Object data hash table */
-HASHTAB htab_objdata_keys; /**< Object data keys hash table */
-
 static void db_grow(dbref newtop);
 
 static void db_write_obj_basic(PENNFILE *f, dbref i, struct object *o);
@@ -95,10 +97,11 @@ void get_new_locks(dbref i, PENNFILE *f, int c);
 void db_read_attrs(PENNFILE *f, dbref i, int c);
 int get_list(PENNFILE *f, dbref i);
 void db_free(void);
-static void init_objdata_htab(int size, void (*free_data)(void *));
+static void init_objdata();
 static void db_write_flags(PENNFILE *f);
 static void db_write_attrs(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
+static void add_object_table(dbref);
 
 StrTree object_names; /**< String tree of object names */
 extern StrTree atr_names;
@@ -237,8 +240,12 @@ new_object(void)
   o->attrcount = 0;
   /* Flags are set by the functions that call this */
   o->powers = new_flag_bitmask("POWER");
-  if (current_state.garbage)
+  if (current_state.garbage) {
     current_state.garbage--;
+  }
+
+  add_object_table(newobj);
+
   return newobj;
 }
 
@@ -836,7 +843,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* smash unprintable characters in the name, replace with ! */
     mush_strncpy(name, AL_NAME(list), sizeof name);
     for (p = name; *p; p++) {
-      if (!isprint(*p) || isspace(*p)) {
+      if (!ascii_isprint(*p) || isspace(*p)) {
         *p = '!';
         err = 1;
       }
@@ -880,8 +887,8 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     mush_strncpy(tbuf1, atr_value(list), sizeof tbuf1);
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!isprint(*p) && !isspace(*p) && *p != TAG_START && *p != TAG_END &&
-          *p != ESC_CHAR && *p != BEEP_CHAR) {
+      if (!char_isprint(*p) && !isspace(*p) && *p != TAG_START &&
+          *p != TAG_END && *p != ESC_CHAR && *p != BEEP_CHAR) {
         *p = '!';
         err = 1;
       }
@@ -1387,6 +1394,8 @@ db_read_oldstyle(PENNFILE *f)
   int temp = 0;
   time_t temp_time = 0;
 
+  init_objdata();
+
   for (i = 0;; i++) {
     /* Loop invariant: we always begin at the beginning of a line. */
     errobj = i;
@@ -1395,7 +1404,6 @@ db_read_oldstyle(PENNFILE *f)
     /* make sure database is at least this big *1.5 */
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
       break;
     /* Use the MUSH 2.0 header stuff to see what's in this db */
     case '+':
@@ -1449,6 +1457,8 @@ db_read_oldstyle(PENNFILE *f)
         o->flags =
           flags_from_old_flags("FLAG", old_flags, old_toggles, o->type);
       }
+
+      add_object_table(i);
 
       /* We need to have flags in order to do this right, which is why
        * we waited until now
@@ -1518,7 +1528,6 @@ db_read_oldstyle(PENNFILE *f)
        */
       clear_flag_internal(i, "GOING");
       clear_flag_internal(i, "GOING_TWICE");
-
       /* If there are channels in the db, read 'em in */
       /* We don't support this anymore, so we just discard them */
       if (!(globals.indb_flags & DBF_NO_CHAT_SYSTEM))
@@ -1604,6 +1613,9 @@ db_read_oldstyle(PENNFILE *f)
 dbref
 db_read(PENNFILE *f)
 {
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
   int c;
   dbref i = 0;
   char *tmp;
@@ -1615,6 +1627,8 @@ db_read(PENNFILE *f)
 
   loading_db = 1;
 
+  sqldb = get_shared_db();
+  init_objdata();
   clear_players();
   db_free();
   globals.indb_flags = 1;
@@ -1652,6 +1666,10 @@ db_read(PENNFILE *f)
 
   do_rawlog(LT_ERR, "Loading database saved on %s UTC", db_timestamp);
 
+  sqlite3_exec(sqldb, "BEGIN TRANSACTION", NULL, NULL, NULL);
+  adder = prepare_statement(sqldb, "INSERT INTO objects(dbref) VALUES (?)",
+                            "objects.add");
+
   while ((c = penn_fgetc(f)) != EOF) {
     switch (c) {
     case '+':
@@ -1676,12 +1694,12 @@ db_read(PENNFILE *f)
         }
       } else {
         do_rawlog(LT_ERR, "Unrecognized database format!");
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return -1;
       }
       break;
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
       break;
     case '!':
       /* Read an object */
@@ -1836,9 +1854,20 @@ db_read(PENNFILE *f)
           default:
             do_rawlog(LT_ERR, "Unrecognized field '%s' in object #%d", label,
                       i);
+            sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
             return -1;
           }
         }
+        sqlite3_bind_int(adder, 1, i);
+        do {
+          status = sqlite3_step(adder);
+        } while (is_busy_status(status));
+        if (status != SQLITE_DONE) {
+          do_rawlog(LT_ERR, "Unable to add #%d to objects table: %s", i,
+                    sqlite3_errstr(status));
+        }
+        sqlite3_reset(adder);
+
         if (IsPlayer(i) && (strlen(o->name) > (size_t) PLAYER_NAME_LIMIT)) {
           char buff[BUFFER_LEN]; /* The name plus a NUL */
           mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
@@ -1879,6 +1908,7 @@ db_read(PENNFILE *f)
       penn_fgets(buff, sizeof buff, f);
       if (strcmp(buff, EOD) != 0) {
         do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
+        sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
         return -1;
       } else {
         if (globals.new_indb_version < 4) {
@@ -1887,6 +1917,7 @@ db_read(PENNFILE *f)
           set_flag_type_by_name("FLAG", "HAVEN", TYPE_PLAYER);
         }
         do_rawlog(LT_ERR, "READING: done");
+        sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
         loading_db = 0;
         fix_free_list();
         dbck();
@@ -1896,19 +1927,493 @@ db_read(PENNFILE *f)
     }
     default:
       do_rawlog(LT_ERR, "ERROR: failed object %d", i);
+      sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       return -1;
     }
   }
+  sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   return -1;
 }
 
-static void
-init_objdata_htab(int size, void (*free_data)(void *))
+static sqlite3 *penn_sqldb = NULL;
+static sqlite3 *statement_cache = NULL;
+static sqlite3_stmt *find_stmt = NULL;
+static sqlite3_stmt *insert_stmt = NULL;
+static sqlite3_stmt *delete_stmt = NULL;
+static sqlite3_stmt *delete_all_stmts = NULL;
+static sqlite3_stmt *find_all_stmts = NULL;
+
+static int
+comp_helper(const char *a, int lena, const char *b, int lenb)
 {
-  if (size < 10)
-    size = 10;
-  hash_init(&htab_objdata, size, free_data);
-  hashinit(&htab_objdata_keys, 8);
+  int i = 0;
+  while (lena && lenb) {
+    int d;
+    lena -= 1;
+    lenb -= 1;
+    d = (int) a[i] - (int) b[i];
+    if (d) {
+      return d;
+    }
+    i += 1;
+  }
+  return lena - lenb;
+}
+
+/* sqlite3 collator function that sorts strings like foo100, foo1 in the order
+ * foo1, foo100 */
+static int
+comp_trailing_numbers(void *data __attribute__((__unused__)), int lena,
+                      const void *va, int lenb, const void *vb)
+{
+  const char *a = va;
+  const char *b = vb;
+
+  if (lena == 0 && lenb == 0) {
+    return 0;
+  } else if (lena == 0) {
+    return -1;
+  } else if (lenb == 0) {
+    return 1;
+  } else if (isdigit(a[lena - 1]) && isdigit(b[lenb - 1])) {
+    int traila = lena - 1;
+    int trailb = lenb - 1;
+    int d;
+    int na = 0, nb = 0;
+    int place;
+
+    place = 1;
+    while (traila > 0 && isdigit(a[traila])) {
+      na += place * (a[traila] - '0');
+      place *= 10;
+      traila -= 1;
+    }
+    traila += 1;
+
+    place = 1;
+    while (trailb > 0 && isdigit(b[trailb])) {
+      nb += place * (b[trailb] - '0');
+      place *= 10;
+      trailb -= 1;
+    }
+    trailb += 1;
+
+    d = comp_helper(a, traila, b, trailb);
+    if (d) {
+      return d;
+    } else {
+      return na - nb;
+    }
+
+  } else {
+    return comp_helper(a, lena, b, lenb);
+  }
+}
+
+/** Callback function for sqlite3_bind_text to free a
+    mush_malloc-allocated "string" */
+void
+free_string(void *s)
+{
+  mush_free(s, "string");
+}
+
+static bool
+optimize_shared_db(void *data __attribute__((__unused__)))
+{
+  if (penn_sqldb) {
+    return optimize_db(penn_sqldb);
+  } else {
+    return false;
+  }
+}
+
+/** Return a pointer to a global in-memory sql database. */
+sqlite3 *
+get_shared_db(void)
+{
+#if 1
+  /* Normally use a ephemeral in-memory database */
+  const char *sqldb_file = "file::memory:?cache=shared";
+#else
+  /* Use a file based one for testing. Not suitable for use with
+   * @shutdown/reboot. */
+  const char *sqldb_file = "mushsql.db";
+#endif
+
+  /* When merging with threaded branch, database connections should be
+     handled by thread local storage - one connection per thread, all
+     to the same db. */
+
+  if (!penn_sqldb) {
+    sqlite3_enable_shared_cache(1);
+    penn_sqldb = open_sql_db(sqldb_file, 0);
+    if (!penn_sqldb) {
+      mush_panic("Unable to create sql database");
+    }
+    sq_register_loop(24 * 60 * 60 + 300, optimize_shared_db, NULL, NULL);
+  }
+  return penn_sqldb;
+}
+
+/** Close the shared database connection. Use only when a mush process
+    or thread using a shared database connection exits. */
+void
+close_shared_db(void)
+{
+  /* When merging with threaded branch, this should instead be handled
+     by the tls finalizer callback. */
+  if (penn_sqldb) {
+    close_sql_db(penn_sqldb);
+    penn_sqldb = NULL;
+  }
+}
+
+int sqlite3_spellfix_init(sqlite3 *db, char **pzErrMsg,
+                          const sqlite3_api_routines *pApi);
+int sqlite3_remember_init(sqlite3 *db, char **pzErrMsg,
+                          const sqlite3_api_routines *pApi);
+
+/** Open a new connection to a sqlite3 database.
+ * If given a NULL file, returns a NEW in-memory database.
+ * A zero-length file, returns a new temporary-file based database.
+ * Otherwise opens the given file.
+ *
+ * The connection should only be used in a single thread.
+ *
+ * \param name the database filename to open URI names are supported.
+ * \param nocreate true if the database should not be created if not already
+ * present. \return a handle to the database connection or NULL.
+ */
+sqlite3 *
+open_sql_db(const char *name, bool nocreate)
+{
+  sqlite3 *db;
+  int status;
+  int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX;
+
+  if (!name) {
+    name = ":memory:";
+  }
+
+  if (!nocreate) {
+    flags |= SQLITE_OPEN_CREATE;
+  }
+
+  if ((status = sqlite3_open_v2(name, &db, flags, NULL)) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
+              *name ? name : ":unnamed:", sqlite3_errstr(status));
+    return NULL;
+  }
+  if ((status = sqlite3_create_collation(db, "TRAILNUMBERS", SQLITE_UTF8, NULL,
+                                         comp_trailing_numbers)) != SQLITE_OK) {
+    do_rawlog(LT_ERR,
+              "Unable to attach TRAILNUMBERS collator to database %s: %s",
+              *name ? name : ":unnamed:", sqlite3_errstr(status));
+  }
+
+  sqlite3_spellfix_init(db, NULL, NULL);
+  sqlite3_remember_init(db, NULL, NULL);
+  sqlite3_busy_timeout(db, 250);
+
+  sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+  return db;
+}
+
+/** Returns the application_id and user_version fields from a sqlite3 database.
+ *
+ * \param db the database connection
+ * \param app_id filled with the application_id value.
+ * \param version filled with the user_version value.
+ * \return 0 on success, -1 on error.
+ */
+int
+get_sql_db_id(sqlite3 *db, int *app_id, int *version)
+{
+  sqlite3_stmt *vers;
+  int status;
+  vers = prepare_statement_cache(db, "PRAGMA application_id", "app.id", 0);
+  if (!vers) {
+    return -1;
+  }
+  do {
+    status = sqlite3_step(vers);
+    if (status == SQLITE_ROW) {
+      *app_id = sqlite3_column_int(vers, 0);
+    }
+  } while (is_busy_status(status));
+  sqlite3_finalize(vers);
+  if (status != SQLITE_ROW) {
+    return -1;
+  }
+
+  vers = prepare_statement_cache(db, "PRAGMA user_version", "user.version", 0);
+  if (!vers) {
+    return -1;
+  }
+  do {
+    status = sqlite3_step(vers);
+    if (status == SQLITE_ROW) {
+      *version = sqlite3_column_int(vers, 0);
+    }
+  } while (is_busy_status(status));
+  sqlite3_finalize(vers);
+  if (status != SQLITE_ROW) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+/** Run PRAGMA optmize on a sqlite3 database */
+bool
+optimize_db(void *vdb)
+{
+  sqlite3 *db = vdb;
+  char *err;
+  if (sqlite3_exec(db, "PRAGMA optimize", NULL, NULL, &err) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to optimize database: %s", err);
+    sqlite3_free(err);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+/** Returns true if the sqlite status code indicates an operation is
+    waiting on another process or thread to unlock a database. */
+bool
+is_busy_status(int s)
+{
+  return s == SQLITE_BUSY || s == SQLITE_LOCKED;
+}
+
+/** Close a currently-opened sqlite3 handle, cleaning up
+   any cached prepared statements first. */
+void
+close_sql_db(sqlite3 *db)
+{
+  int status;
+
+  /* Finalize any cached prepared statements associated with this
+     connection. */
+  if (statement_cache) {
+    if (!delete_all_stmts) {
+      const char query[] = "DELETE FROM prepared_cache WHERE handle = ?";
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT,
+                                       &delete_all_stmts, NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR,
+                  "Unable to prepare query statement_cache.delete_all: %s",
+                  sqlite3_errstr(status));
+        delete_all_stmts = NULL;
+      }
+    }
+    if (!find_all_stmts) {
+      const char query[] =
+        "SELECT statement FROM prepared_cache WHERE handle = ?";
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT,
+                                       &find_all_stmts, NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR,
+                  "Unable to prepare query statement_cache.find_all: %s",
+                  sqlite3_errstr(status));
+        find_all_stmts = NULL;
+      }
+    }
+
+    if (find_all_stmts) {
+      sqlite3_bind_int64(find_all_stmts, 1, (intptr_t) db);
+      do {
+        status = sqlite3_step(find_all_stmts);
+        if (status == SQLITE_ROW) {
+          sqlite3_stmt *stmt = (sqlite3_stmt *) ((
+            intptr_t) sqlite3_column_int64(find_all_stmts, 0));
+          sqlite3_finalize(stmt);
+        }
+      } while (status == SQLITE_ROW || is_busy_status(status));
+      sqlite3_reset(find_all_stmts);
+    }
+
+    if (delete_all_stmts) {
+      sqlite3_bind_int64(delete_all_stmts, 1, (intptr_t) db);
+      do {
+        status = sqlite3_step(delete_all_stmts);
+      } while (status != SQLITE_DONE && is_busy_status(status));
+      sqlite3_reset(delete_all_stmts);
+    }
+  }
+  sqlite3_exec(db, "PRAGMA optimize", NULL, NULL, NULL);
+  sqlite3_close_v2(db);
+}
+
+/** Return a cached prepared statement, or create and cache it if not
+ * already present.
+ *
+ * \param db the sqlite3 database connection to use.
+ * \param query the SQL query to prepare, in UTF-8.
+ * \param name the name of the query. (db,name) is the cache key, not the actual
+ * text of the query, in UTF-8.
+ * \param cache if true, cache the query, if false not and it needs to be
+ * cleaned up with sqlite3_finalize(). \return the prepared statement, NULL on
+ * errors.
+ */
+sqlite3_stmt *
+prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
+                        bool cache)
+{
+  sqlite3_stmt *stmt;
+  int status;
+  int flags = cache ? SQLITE_PREPARE_PERSISTENT : 0;
+
+  /* When merging with the threaded branch this probably needs a
+   * mutex. Also think about if the cache can be tables in the general
+   * shared db. */
+
+  /* Set up prepared statement cache database */
+  if (!statement_cache) {
+    char *errmsg;
+    if ((status = sqlite3_open_v2(":memory:", &statement_cache,
+                                  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
+                                    SQLITE_OPEN_FULLMUTEX,
+                                  NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to create prepared statement cache: %s",
+                sqlite3_errstr(status));
+      statement_cache = NULL;
+      return NULL;
+    }
+
+    if (sqlite3_exec(
+          statement_cache,
+          "CREATE TABLE prepared_cache(handle INTEGER NOT NULL, name TEXT NOT "
+          "NULL, statement INTEGER NOT NULL, PRIMARY KEY(handle, name)) "
+          "WITHOUT ROWID",
+          NULL, NULL, &errmsg) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to build prepared statement cache table: %s",
+                errmsg);
+      sqlite3_free(errmsg);
+      sqlite3_close_v2(statement_cache);
+      statement_cache = NULL;
+      return NULL;
+    }
+  }
+
+  if (!find_stmt) {
+    const char fquery[] =
+      "SELECT statement FROM prepared_cache WHERE handle = ? AND name = ?";
+    if ((status = sqlite3_prepare_v3(statement_cache, fquery, sizeof fquery,
+                                     SQLITE_PREPARE_PERSISTENT, &find_stmt,
+                                     NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare query statement_cache.find: %s",
+                sqlite3_errstr(status));
+      find_stmt = NULL;
+      return NULL;
+    }
+  }
+
+  if (!insert_stmt) {
+    const char iquery[] =
+      "INSERT INTO prepared_cache(handle, name, statement) VALUES (?,?,?)";
+    if ((status = sqlite3_prepare_v3(statement_cache, iquery, sizeof iquery,
+                                     SQLITE_PREPARE_PERSISTENT, &insert_stmt,
+                                     NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to prepare query statement_cache.insert: %s",
+                sqlite3_errstr(status));
+      insert_stmt = NULL;
+      return NULL;
+    }
+  }
+
+  if (cache) {
+    /* See if the statement is cached and return it if so */
+    sqlite3_bind_int64(find_stmt, 1, (intptr_t) db);
+    sqlite3_bind_text(find_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+    do {
+      status = sqlite3_step(find_stmt);
+      if (status == SQLITE_ROW) {
+        stmt = (sqlite3_stmt *) ((intptr_t) sqlite3_column_int64(find_stmt, 0));
+        sqlite3_reset(find_stmt);
+        return stmt;
+      }
+    } while (is_busy_status(status));
+    sqlite3_reset(find_stmt);
+  }
+
+  /* Prepare a new statement and cache it. */
+  if ((status = sqlite3_prepare_v3(db, query, -1, flags, &stmt, NULL)) !=
+      SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to prepare query %s: %s", name,
+              sqlite3_errstr(status));
+    return NULL;
+  }
+
+  if (cache) {
+    sqlite3_bind_int64(insert_stmt, 1, (intptr_t) db);
+    sqlite3_bind_text(insert_stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+    sqlite3_bind_int64(insert_stmt, 3, (intptr_t) stmt);
+    do {
+      status = sqlite3_step(insert_stmt);
+    } while (is_busy_status(status));
+    sqlite3_reset(insert_stmt);
+  }
+
+  return stmt;
+}
+
+/** Finalize a cached prepared statement and clear it from the cache.
+ *
+ * \param db the statement to delete.
+ */
+void
+close_statement(sqlite3_stmt *stmt)
+{
+
+  /* When merging with the threaded branch this probably needs a mutex. */
+
+  if (statement_cache) {
+    int status;
+    if (!delete_stmt) {
+      const char query[] = "DELETE FROM prepared_cache WHERE statement = ?";
+
+      if ((status = sqlite3_prepare_v3(statement_cache, query, sizeof query,
+                                       SQLITE_PREPARE_PERSISTENT, &delete_stmt,
+                                       NULL)) != SQLITE_OK) {
+        do_rawlog(LT_ERR,
+                  "Unable to prepare query statement_cache.delete_one: %s",
+                  sqlite3_errstr(status));
+        delete_stmt = NULL;
+        return;
+      }
+    }
+
+    sqlite3_bind_int64(delete_stmt, 1, (intptr_t) stmt);
+    do {
+      status = sqlite3_step(delete_stmt);
+    } while (is_busy_status(status));
+    sqlite3_reset(delete_stmt);
+  }
+
+  sqlite3_finalize(stmt);
+}
+
+static void
+init_objdata()
+{
+  const char *create_query =
+    "CREATE TABLE objects(dbref INTEGER NOT NULL PRIMARY KEY, queue INTEGER "
+    "NOT NULL DEFAULT 0);"
+    "CREATE TABLE objdata(dbref INTEGER NOT NULL, key TEXT NOT NULL, ptr "
+    "INTEGER, PRIMARY KEY (dbref, key), FOREIGN KEY(dbref) REFERENCES "
+    "objects(dbref) ON DELETE CASCADE) WITHOUT ROWID;";
+  char *errmsg = NULL;
+  sqlite3 *sqldb = get_shared_db();
+
+  if (sqlite3_exec(sqldb, create_query, NULL, NULL, &errmsg) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to create objdata table: %s", errmsg);
+    sqlite3_free(errmsg);
+    return;
+  }
 }
 
 /** Add data to the object data hashtable.
@@ -1920,55 +2425,133 @@ init_objdata_htab(int size, void (*free_data)(void *))
  * that particular keybase/object entry. It does not free the
  * data pointer.
  * \param thing dbref of object to associate the data with.
- * \param keybase base string for type of data.
+ * \param keybase base string for type of data, in UTF-8.
  * \param data pointer to the data to store.
  * \return data passed in.
  */
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  char keyname[1024];
+  sqlite3_stmt *setter;
+  int status;
+  sqlite3 *sqldb;
 
-  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
-  hashdelete(keyname, &htab_objdata);
-  if (data) {
-    if (!hashadd(keyname, data, &htab_objdata))
-      return NULL;
-    if (hash_find(&htab_objdata_keys, keybase) == NULL) {
-      char *newkey = mush_strdup(keyname, "objdata.key");
-      hashadd(keybase, newkey, &htab_objdata_keys);
-    }
+  if (data == NULL) {
+    delete_objdata(thing, keybase);
+    return NULL;
   }
+
+  sqldb = get_shared_db();
+  setter =
+    prepare_statement(sqldb,
+                      "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
+                      "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
+                      "objdata.set");
+  if (!setter) {
+    return NULL;
+  }
+
+  sqlite3_bind_int(setter, 1, thing);
+  sqlite3_bind_text(setter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+  sqlite3_bind_int64(setter, 3, (intptr_t) data);
+
+  do {
+    status = sqlite3_step(setter);
+  } while (is_busy_status(status));
+
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s",
+              thing, keybase, sqlite3_errstr(status));
+  }
+  sqlite3_reset(setter);
+
   return data;
 }
 
 /** Retrieve data from the object data hashtable.
  * \param thing dbref of object data is associated with.
- * \param keybase base string for type of data.
+ * \param keybase base string for type of data, in UTF-8.
  * \return data stored for that object and keybase, or NULL.
  */
 void *
 get_objdata(dbref thing, const char *keybase)
 {
-  char keyname[1024];
-  snprintf(keyname, sizeof keyname, "%s_#%d", keybase, thing);
-  return hashfind(keyname, &htab_objdata);
+  sqlite3_stmt *getter;
+  int status;
+  void *data = NULL;
+  sqlite3 *sqldb = get_shared_db();
+
+  getter = prepare_statement(
+    sqldb, "SELECT ptr FROM objdata WHERE dbref = ? AND key = ?",
+    "objdata.get");
+  if (!getter) {
+    return NULL;
+  }
+
+  sqlite3_bind_int(getter, 1, thing);
+  sqlite3_bind_text(getter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+  do {
+    status = sqlite3_step(getter);
+  } while (is_busy_status(status));
+  if (status == SQLITE_ROW) {
+    data = (void *) ((intptr_t) sqlite3_column_int64(getter, 0));
+  } else if (status != SQLITE_DONE) {
+    do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s",
+              thing, keybase, sqlite3_errstr(status));
+  }
+  sqlite3_reset(getter);
+  return data;
 }
 
-/** Clear all of an object's data from the object data hashtable.
- * This function clears any data associated with a given object
- * that's in the object data hashtable (under any keybase).
- * It's used before we free the object.
+/** Clear an object's data for a specific key.
  * \param thing dbref of object data is associated with.
+ * \param keybase the key to remove, in UTF-8.
  */
 void
-clear_objdata(dbref thing)
+delete_objdata(dbref thing, const char *keybase)
 {
-  char *p;
-  for (p = (char *) hash_firstentry(&htab_objdata_keys); p;
-       p = (char *) hash_nextentry(&htab_objdata_keys)) {
-    set_objdata(thing, p, NULL);
+  sqlite3_stmt *deleter;
+  int status;
+  sqlite3 *sqldb = get_shared_db();
+
+  deleter = prepare_statement(
+    sqldb, "DELETE FROM objdata WHERE dbref = ? AND key = ?", "objdata.delete");
+  if (!deleter) {
+    return;
   }
+
+  sqlite3_bind_int(deleter, 1, thing);
+  sqlite3_bind_text(deleter, 2, keybase, strlen(keybase), SQLITE_STATIC);
+  do {
+    status = sqlite3_step(deleter);
+  } while (is_busy_status(status));
+
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s",
+              thing, sqlite3_errstr(status));
+  }
+  sqlite3_reset(deleter);
+}
+
+static void
+add_object_table(dbref obj)
+{
+  sqlite3 *sqldb;
+  sqlite3_stmt *adder;
+  int status;
+
+  sqldb = get_shared_db();
+  adder = prepare_statement(sqldb, "INSERT INTO objects(dbref) VALUES (?)",
+                            "objects.add");
+  sqlite3_bind_int(adder, 1, obj);
+  do {
+    status = sqlite3_step(adder);
+  } while (is_busy_status(status));
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to add #%d to objects table: %s", obj,
+              sqlite3_errstr(status));
+  }
+  sqlite3_reset(adder);
 }
 
 /** Create a basic 3-object (Start Room, God, Master Room) database. */
@@ -1978,11 +2561,11 @@ create_minimal_db(void)
   dbref start_room, god, master_room;
   uint32_t desc_flags = AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH | AF_PUBLIC;
 
+  init_objdata();
+
   start_room = new_object();  /* #0 */
   god = new_object();         /* #1 */
   master_room = new_object(); /* #2 */
-
-  init_objdata_htab(128, NULL);
 
   if (!READ_REMOTE_DESC)
     desc_flags |= AF_NEARBY;

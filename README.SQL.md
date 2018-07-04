@@ -19,13 +19,13 @@ covers the following issues:
 How SQL can be used
 ===================
  
-Penn doesn't use SQL for any storage internally. It just allows access
-to a database via softcode functions (See `help @sql` and `help sql
-functions` from in a game.) People have used it to hold information
-that can be accessed from a game and from other programs -- for
-example, a mail or bulletin board system with an in-game and a web
-interface. Another common use is to hold data that can be queried via
-SQL more convienently than in softcode.
+Penn doesn't use SQL for any persistant storage internally. It just
+allows access to a database via softcode functions (See `help @sql`
+and `help sql functions` from in a game.) People have used it to hold
+information that can be accessed from a game and from other programs
+-- for example, a mail or bulletin board system with an in-game and a
+web interface. Another common use is to hold data that can be queried
+via SQL more convienently than in softcode.
 
 A word of caution: The sql functions are synchronous: Nothing else can
 happen in the game until a query finishes. Complex queries over large
@@ -42,10 +42,11 @@ prevent linking with client libraries that are present on your system,
 by passing configure a `--without-FOO` option. `--disable-sql` turns
 off all checks for SQL servers.
 
-For example, if your host has MySQL and Sqlite and you only want to
-use the latter, you can invoke configure like so:
+For example, if your host has MySQL but you only want to build with
+support for the always present SQLite3, you can invoke configure like
+so:
 
-    % ./configure --without-mysql --with-sqlite3
+    % ./configure --without-mysql
 
 MySQL
 -----
@@ -94,16 +95,14 @@ location (`where pg_config` if the program works for you, `find /
 Sqlite
 ------
 
-The configure script distributed with PennMUSH looks for sqlite3
-headers and libraries in /usr, /usr/local and /opt. If it's somewhere
-else on your system, call configure with
-`--with-sqlite3=/path/to/sqlite3`
- 
-If you want to avoid linking with sqlite on systems where it is
-present, pass the `--without-sqlite3` switch to configure.
+PennMUSH comes with Sqlite3 3.24.0 as part of its source. It is the
+suggested SQL engine for use with softcode unless you need the
+capabilities of one of the others.
 
-The path is the directory that contains the hdrs/ and lib/ directories
-that hold the sqlite3 headers and library respectively.
+Sqlite3 is compiled with support for the RTree, FTS5 and JSON1
+modules, and optionally has Unicode support if ICU is present (Though
+text in the results of a query is turned into Latin-1 by the MUSH,
+this still affects functions like UPPER()).
 
 MUSH configuration overview
 ===========================

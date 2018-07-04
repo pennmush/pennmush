@@ -23,7 +23,7 @@ resources will be written with UNIX is mind.)
 
 You may also want to take a look at the Managing PennMUSH book at
 <http://community.pennmush.org> and at Javelin's Guide for PennMUSH
-Gods, at <http://download.pennmush.org/Guide/guide-single.html>
+Gods, at <https://download.pennmush.org/Guide/guide-single.html>
  
 Important background
 ====================
@@ -87,6 +87,11 @@ The quickstart version of the installation is:
 4. A version of the OpenSSL library; most OSes these days come with
     it out of the box, but some might require a development package as
     well (libssl-dev, openssl-dev or some such name).
+5. Development versions of a number of optional libraries are nice to have:
+    * A sql client library for MySQL/MariaDB or Postgresql.
+    * ICU (For enhanced Unicode support)
+    * libevent (For ssl_slave)
+    * libcurl (For `@http`)
 5. Run ./configure with any desired options (See ./configure --help or
    read below)
 6. make update

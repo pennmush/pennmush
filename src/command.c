@@ -158,7 +158,6 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
@@ -181,6 +180,8 @@ COMLIST commands[] = {
    "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE "
    "LOCALIZE CLEARREGS NOBREAK",
    cmd_hook, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", "hook"},
+  {"@HTTP", "DELETE POST PUT", cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS
+   | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
@@ -296,7 +297,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
    CMD_T_ANY, 0, 0},
-
+  {"@SUGGEST", "ADD DELETE LIST", cmd_suggest, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
   {"@SWITCH",
    "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
@@ -665,8 +666,7 @@ command_find(const char *name)
 {
 
   char cmdname[BUFFER_LEN];
-  strcpy(cmdname, name);
-  upcasestr(cmdname);
+  strupper_r(name, cmdname, sizeof cmdname);
   if (hash_find(&htab_reserved_aliases, cmdname))
     return NULL;
   return (COMMAND_INFO *) ptab_find(&ptab_command, cmdname);
@@ -685,8 +685,7 @@ command_find_exact(const char *name)
 {
 
   char cmdname[BUFFER_LEN];
-  strcpy(cmdname, name);
-  upcasestr(cmdname);
+  strupper_r(name, cmdname, sizeof cmdname);
   if (hash_find(&htab_reserved_aliases, cmdname))
     return NULL;
   return (COMMAND_INFO *) ptab_find_exact(&ptab_command, cmdname);
@@ -854,7 +853,7 @@ command_init_postconfig(void)
     sw_data.start - 1; /* Don't count the trailing NULL-name switch */
   dyn_switch_list[sw_data.n].name = NULL;
   st_flush(&switch_names);
-  switch_bytes = ceil((double) num_switches / 8.0);
+  switch_bytes = ceil((double) (num_switches + 1) / 8.0);
 
   /* Then convert the list of switch names in all commands to masks */
   for (c = ptab_firstentry(&ptab_command); c;
@@ -1257,7 +1256,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
                                     pe_flags | PE_COMMAND_BRACES),
                        PT_SPACE, pe_info);
     *c = '\0';
-    strcpy(commandraw, command);
+    mush_strncpy(commandraw, command, sizeof commandraw);
     upcasestr(command);
 
     /* Catch &XX and @XX attribute pairs. If that's what we've got,
@@ -1336,21 +1335,25 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   /* Don't parse switches for one-char commands */
   if (parse_switches) {
     while (*c == '/') {
+      char tmp[BUFFER_LEN];
       t = swtch;
       c++;
-      while ((*c) && (*c != ' ') && (*c != '/'))
+      while ((*c) && (*c != ' ') && (*c != '/')) {
         *t++ = *c++;
+      }
       *t = '\0';
-      switchnum = switch_find(cmd, upcasestr(swtch));
+      switchnum = switch_find(cmd, strupper_r(swtch, tmp, sizeof tmp));
       if (!switchnum) {
         if (cmd->type & CMD_T_SWITCHES) {
-          if (*swp)
+          if (*swp) {
             strcat(swp, " ");
+          }
           strcat(swp, swtch);
         } else {
-          if (se == switch_err)
+          if (se == switch_err) {
             safe_format(switch_err, &se, T("%s doesn't know switch %s."),
                         cmd->name, swtch);
+          }
         }
       } else {
         SW_SET(sw, switchnum);
@@ -1825,7 +1828,9 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       safe_chr(')', lockstr, &tp);
   }
   if (command->type & CMD_T_GOD) {
-    add_restriction(tprintf("=#%d", GOD), '&');
+    char tmp[20];
+    snprintf(tmp, sizeof tmp, "=#%d", GOD);
+    add_restriction(tmp, '&');
   }
   if (command->type & CMD_T_NOGUEST) {
     add_restriction("!POWER^GUEST", '&');
@@ -2602,7 +2607,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     if (!attrname || !*attrname) {
       (*h)->attrname = NULL;
     } else {
-      (*h)->attrname = mush_strdup(strupper(attrname), "hook.attr");
+      (*h)->attrname = strupper_a(attrname, "hook.attr");
     }
     (*h)->inplace = queue_type;
     notify_format(player, T("Hook set for %s."), cmd->name);

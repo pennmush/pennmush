@@ -34,6 +34,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "charclass.h"
 #include "confmagic.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
@@ -265,6 +266,35 @@ strinitial(const char *s)
   return buf1;
 }
 
+/** Return an initial-cased version of a string in a caller supplied buffer.
+ * \param s string to initial-case.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a static buffer containing the initial-cased version.
+ */
+char *
+strinitial_r(const char *restrict s, char *restrict d, size_t len)
+{
+  size_t p;
+
+  if (len == 1) {
+    d[0] = '\0';
+    return d;
+  }
+
+  if (*s) {
+    d[0] = toupper(*s);
+    s += 1;
+  }
+
+  for (p = 1; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = tolower(*s);
+  }
+  d[p] = '\0';
+
+  return d;
+}
+
 /** Return an uppercased version of a string in a static buffer.
  * \param s string to uppercase.
  * \return pointer to a static buffer containing the uppercased version.
@@ -303,6 +333,86 @@ strlower(const char *s)
   for (p = buf1; *p; p++)
     *p = tolower(*p);
   return buf1;
+}
+
+/** Return an uppercased version of a string in a newly allocated buffer.
+ * \param s string to uppercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+strupper_a(const char *s, const char *name)
+{
+  size_t len;
+  char *out, *o;
+
+  len = strlen(s);
+  o = out = mush_malloc(len + 1, name);
+  for (; *s; s++) {
+    *o++ = toupper(*s);
+  }
+  *o = '\0';
+
+  return out;
+}
+
+/** Return a lowercased version of a string in a newly allocated buffer.
+ * \param s string to lowercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the lowercased version.
+ */
+char *
+strlower_a(const char *s, const char *name)
+{
+  size_t len;
+  char *out, *o;
+
+  len = strlen(s);
+  o = out = mush_malloc(len + 1, name);
+  for (; *s; s++) {
+    *o++ = tolower(*s);
+  }
+  *o = '\0';
+
+  return out;
+}
+
+/** Return an uppercased version of a string in a caller-supplied buffer.
+ * \param s string to uppercase.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+strupper_r(const char *restrict s, char *restrict d, size_t len)
+{
+  size_t p;
+
+  for (p = 0; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = toupper(*s);
+  }
+  d[p] = '\0';
+
+  return d;
+}
+
+/** Return a lowercased version of a string in a newly allocated buffer.
+ * \param s string to lowercase.
+ * \param d destination buffer.
+ * \parem len length of buffer.
+ * \return pointer to a string containing the lowercased version.
+ */
+char *
+strlower_r(const char *restrict s, char *restrict d, size_t len)
+{
+  size_t p;
+
+  for (p = 0; *s && p < len - 1; p += 1, s += 1) {
+    d[p] = tolower(*s);
+  }
+  d[p] = '\0';
+
+  return d;
 }
 
 /** Modify a string in-place to uppercase.
@@ -635,7 +745,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
     default:
       c = base[n];
     }
-    if (isprint(c)) {
+    if (char_isprint(c)) {
       if (safe_chr((char) c, buff, bp))
         return 1;
     } else {
@@ -1790,4 +1900,75 @@ keystr_find_full(const char *restrict map, const char *restrict key,
     return deflt;
   else
     return keystr_find_full(map, "default", deflt, delim);
+}
+
+/** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern
+ * using %.
+ *
+ * \param orig the string to convert.
+ * \param esc the character to escape special ones (_%) with.
+ * \param len the length of the returned string, not counting the trailing nul.
+ * \return a newly allocated string.
+ */
+char *
+glob_to_like(const char *orig, char esc, int *len)
+{
+  char *like;
+  char *lbp;
+
+  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
+
+  while (*orig) {
+    if (*orig == '%' || *orig == '_' || *orig == esc) {
+      safe_chr(esc, like, &lbp);
+      safe_chr(*orig, like, &lbp);
+    } else if (*orig == '*') {
+      safe_chr('%', like, &lbp);
+    } else if (*orig == '?') {
+      safe_chr('_', like, &lbp);
+    } else {
+      safe_chr(*orig, like, &lbp);
+    }
+    orig++;
+  }
+  *lbp = '\0';
+
+  if (len) {
+    *len = lbp - like;
+  }
+
+  return like;
+}
+
+/** Escape SQL like wildcards from a string.
+ *
+ * \param orig the string to escape.
+ * \param esc the character to escape special ones (_%) with.
+ * \param len the length of the returned string, not counting the trailing nul.
+ * \return a newly allocated string.
+ */
+char *
+escape_like(const char *orig, char esc, int *len)
+{
+  char *like;
+  char *lbp;
+
+  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
+
+  while (*orig) {
+    if (*orig == '%' || *orig == '_' || *orig == esc) {
+      safe_chr(esc, like, &lbp);
+      safe_chr(*orig, like, &lbp);
+    } else {
+      safe_chr(*orig, like, &lbp);
+    }
+    orig++;
+  }
+  *lbp = '\0';
+
+  if (len) {
+    *len = lbp - like;
+  }
+
+  return like;
 }

@@ -88,12 +88,13 @@ See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open on a game, or about specific connections.
 
-  cmds()        conn()        doing()       height()      host()
-  hidden()      idle()        ipaddr()      lports()      lwho()
-  lwhoid()      mwho()        mwhoid()      nmwho()       nwho()
-  player()      ports()       pueblo()      recv()        sent()
-  ssl()         terminfo()    width()       xmwho()       xmwhoid()
-  xwho()        xwhoid()      zmwho()       zwho()
+  cmds()        conn()        connlog()     connrecord()  doing()
+  height()      host()        hidden()      idle()        ipaddr()
+  lports()      lwho()        lwhoid()      mwho()        mwhoid()
+  nmwho()       nwho()        player()      ports()       pueblo()
+  recv()        sent()        ssl()         terminfo()    width()
+  xmwho()       xmwhoid()     xwho()        xwhoid()      zmwho()
+  zwho()
 & Dbref functions
   Dbref functions return a dbref or list of dbrefs related to some value on an object.
 
@@ -194,7 +195,7 @@ See also: string functions, regexp
   strdelete()      strfirstof()     strinsert()      stripaccents()   
   stripansi()      strlen()         strmatch()       strreplace()     
   switch()         tr()             trim()           ucstr()          
-  wrap()
+  urldecode()      urlencode()      wrap()
 
 See also: STRINGS
 & Time functions
@@ -202,8 +203,8 @@ See also: STRINGS
 
   convsecs()    convutcsecs() convtime()    convutctime() ctime()
   etime()       etimefmt()    isdaylight()  mtime()       restarttime()
-  secs()        starttime()   stringsecs()  time()        timefmt()     
-  timestring()  utctime()     uptime()
+  secs()        starttime()   stringsecs()  time()        timecalc()
+  timefmt()     timestring()  utctime()     uptime()
 
 See also: TIMEZONES
 & Utility functions
@@ -218,9 +219,10 @@ See also: TIMEZONES
   lnum()        lset()        null()        numversion()  objeval()
   open()        pcreate()     r()           rand()        s()
   scan()        set()         setq()        setr()        slev()
-  soundex()     soundslike()  speak()       stext()       tag()
-  tagwrap()     tel()         testlock()    textentries() textfile()
-  unsetq()      valid()       wipe()        @@()          uptime()
+  soundex()     soundslike()  speak()       stext()       suggest()
+  tag()         tagwrap()     tel()         testlock()    textentries()
+  textfile()    unsetq()      valid()       wipe()        @@()
+  uptime()
 
 & @@()
 & NULL()
@@ -250,7 +252,7 @@ See also: sign()
 
   The accent() function will return <string>, with characters in it possibly changed to accented ones according to <template>. Both arguments must be the same size.
 
-  Whether or not the resulting string is actually displayed correctly is client-dependent. Some OSes uses different character sets than the one assumed (ISO 8859-1), and some clients strip these 8-bit characters.
+  Whether or not the resulting string is actually displayed correctly is client-dependent. Some OSes uses different character sets than the one assumed (Unicode and ISO 8859-1), and some clients strip these 8-bit characters.
 
   For each character in <string>, the corresponding character of <template> is checked according to the table in 'help accents', and a replacement done. If either the current <string> or <template> characters aren't in the table, the <string> character is passed through unchanged.
 
@@ -264,19 +266,19 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
   Name       Description         Character  Character
   --------------------------------------------------------------
   grave      Backward slant      `          A,E,I,O,U,a,e,i,o,u
-             above letter
+             above letter (À)
   acute      Forward slant       '          A,E,I,O,U,Y,a,e,i,o,u,y
-             above letter
+             above letter (Á)
   tilde      Wavy line above     ~          A,N,O,a,n,o
-             letter
+             letter (Ñ)
   circumflex carat above         ^          A,E,I,O,U,a,e,i,o,u
-             letter
+             letter (Â)
   umlaut     Two dots above      :          A,E,I,O,U,,a,e,i,o,u,y
-  diaeresis  letter
+  diaeresis  letter (Ä)
   ring       Small circle above  o          A,a
-             letter
+             letter (Å)
   cedilla    Small tail below    ,          C,c
-             letter
+             letter (Ç)
 
   Continued in 'HELP ACCENTS2'
 & ACCENTS2
@@ -285,15 +287,15 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
                       Template   String
   Description         Character  Character
   --------------------------------------------------------------
-  Upside-down ?       u          ?
-  Upside-down !       u          !
-  << quote mark       "          <
-  >> quote mark       "          >
-  German sharp s      B          s
-  Capital thorn       |          P
-  Lower-case thorn    |          p
-  Capital eth         -          D
-  Lower-case eth      &          o
+  Upside-down ? (¿)       u          ?
+  Upside-down ! (¡)       u          !
+  << quote mark («)       "          <
+  >> quote mark (»)       "          >
+  German sharp s (ß)      B          s
+  Capital thorn (Þ)       |          P
+  Lower-case thorn (Þ)    |          p
+  Capital eth (Ð)         -          D
+  Lower-case eth (ð)      &          o
   
   See 'HELP ACCENTS3' for examples
 & ACCENT2
@@ -302,12 +304,15 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
 
     > think accent(Aule, ---:)
     Aul(e-with-diaeresis)
+    Aulë
 
     > think accent(The Nina was a ship, The Ni~a was a ship) 
     The Ni(n-with-~)a was a ship
+    The Niña was a ship
 
     > think accent(Khazad ai-menu!, Khaz^d ai-m^nu!)
     Khaz(a-with-^)d ai-m(e-with-^)nu!
+    Khazâd ai-mênu
 & ACCNAME()
   accname(<object>)
 
@@ -2022,7 +2027,7 @@ See also: iter(), @dolist
 & IPADDR()
   ipaddr(<player|descriptor>)
 
-  Returns the IP address of the connected player or descriptor. This may be more reliable that get(<player>/lastip) if the player has multple connections from different locations, and the function is called with a descriptor argument.
+  Returns the IP address of the connected player or descriptor. This may be more reliable than get(<player>/lastip) if the player has multple connections from different locations, and the function is called with a descriptor argument.
 
   The caller can use the function on himself, but using on any other player requires privileged power such as Wizard, Royalty or SEE_ALL.
 
@@ -2091,9 +2096,13 @@ See also: lattr(), hasattr(), xattr(), wildcards
 
 See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 & LCSTR()
+& LCSTR2()
   lcstr(<string>)
+  lcstr2(<string>)
 
   Returns <string> with all letters converted to lowercase.
+
+  If the MUSH is compiled with ICU Unicode support, lcstr2() does the same thing except the returned string might be a different length, and ansi colors and other markup are stripped.
   
   Example:
     > say lcstr(Foo BAR bAz)
@@ -2182,7 +2191,7 @@ See also: align(), center(), rjust(), left()
 & LINK()
   link(<object>, <destination>[, <preserve>])
  
-  This function links <object> to <destination>. While normally used on exits, it has all of the other capabilities of @link as well. It returns nothing. If the optional third argument is true, acts like @link/preserve.
+  This function links <object> to <destination>. While normally used on exits, it has all of the other capabilities of @link as well. It returns #-1 or 0 on failure, 1 on success. If the optional third argument is true, acts like @link/preserve.
 
 See also: @link, open()
 & LIST()
@@ -3105,11 +3114,15 @@ See also: andflags(), flags(), lflags(), orlpowers()
   
 See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()
-  owner(<object>[/<attribute>])
+ owner(<object>[/<attribute>])
+ owner(<object>[/<attribute>], <new owner>[, preserve])
  
   Given just an object, it returns the owner of the object. Given an object/attribute pair, it returns the owner of that attribute.
   
-See also: lockowner()
+  If <new owner> is specified, the ownership is changed, as in @chown or @atrchown. If the optional third argument is "preserve", privileged flags and powers will be preserved ala @chown/preserve.
+  If changing ownership, #-1 or 0 is returned on failure, 1 on success.
+  
+See also: lockowner(), @chown, @atrchown
 & PARENT()
   parent(<object>[, <new parent>])
  
@@ -3882,7 +3895,7 @@ See also: anonymous attributes, sorting, sortby()
 
 See also: sort(), sortby(), sortkey(), setunion(), setinter(), setdiff()
 & SOUNDEX()
-  soundex(<word>)
+  soundex(<word>[, <hash type>])
 
   The soundex function returns the soundex pattern for a word. A soundex pattern represents the sound of the word, and similar sounding words should have the same soundex pattern. Soundex patterns consist of an uppercase letter and 3 digits.
  
@@ -3908,17 +3921,19 @@ See also: soundslike()
   4. All 0's are removed, because vowels are much less important than consonants in distinguishing words. "F16"
   5. The string is padded with 0's or truncated to 4 characters. "F160"
   That's it. It's not foolproof (enough = "E520", enuf = "E510") but it works pretty well. :)
+
+ The optional second argument can be 'soundex' (The default), for the transformation described above, or 'phone', for a different phonetic hash algorithm.
 & SOUNDLIKE()
 & SOUNDSLIKE()
-  soundslike(<word>, <word>)
-  soundlike(<word>, <word>)
+  soundslike(<word>, <word>[, <hash type>])
+  soundlike(<word>, <word>[, <hash type>])
 
-  The soundslike function returns 1 if the two words have the same soundex code (see 'help soundex()' for information), which means, in general, if they sound alike. 
-  
+  The soundslike function returns 1 if the two words have the same hash code (see 'help soundex()' for information), which means, in general, if they sound alike. The hash type can be 'soundex' (Default) or 'phone' for a different algorithm that might give better results with some words.
+
   Examples:
     > think soundslike(robin,robbyn)
     1
-    > think soundslike(robin,roebuck)
+    > think soundslike(robin,roebuck, phone)
     0
 
 See also: soundex()
@@ -4159,11 +4174,14 @@ See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
 
   This function performs SQL-server-implemented escaping of <string>. It's important to escape arbitrary data before passing it to the sql() and mapsql() functions, or @sql command, to prevent SQL injection attacks.
 
-  If using a Sqlite3 database, the game must also have MySQL support compiled into the mush to use this function, since Sqlite3 does not provide a way to do this.
-
   Example:
     > think sqlescape(You don't say)
     You don\'t say
+
+    OR
+
+    You don''t say
+
 
   When used in an SQL query, the results of an sqlescape() function should be enclosed in single quotes.
 
@@ -4277,10 +4295,12 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
 
 See also: strdelete(), linsert(), strreplace()
 & STRIPACCENTS()
-  stripaccents(<string>)
+  stripaccents(<string>[, <smart>])
 
   Returns the string with accented characters converted to non-accented. As with the accent() function, this assumes the ISO 8859-1 character set.
   
+ If the second argument is true, it does more a intelligent conversion that might result in one character being turned into several. When it's false, or not given, one character in the input string corresponds to one character in the result.
+
 See also: accent(), @nameaccent, accname(), stripansi(), render()
 & STRIPANSI()
   stripansi(<string>)
@@ -4508,6 +4528,22 @@ See also: pueblo(), width(), height(), ssl(), @sockset, oob()
   Returns the number of descriptors the message was sent to on success, or a string starting with #-1 on error.
   
 See also: json()
+& ISJSON()
+  isjson(<text>)
+
+  Return 1 if its argument is valid JSON, 0 if not.
+
+  Examples:
+  > think isjson(1)
+  1
+  > think isjson(true)
+  1
+  > think isjson(unquoted)
+  0
+  > think isjson("quoted")
+  1
+
+See also: json()
 & JSON()
   json(<type>[, <data>[, ..., <dataN>])
   
@@ -4526,7 +4562,7 @@ See also: json()
   When <type> is "array" or "object", it's recommended that subsequent JSON arguments are created with nested calls to JSON().
 
   See 'help json2' for examples.
-See also: oob(), json_query(), json_map(), render()
+See also: oob(), isjson(), json_query(), json_map(), render()
 & JSON2
   > think json(null)
   null
@@ -4606,6 +4642,7 @@ See also: json(), json_query()
   exists       For arrays and objects, returns 1 if there is an object found by following the path specified in <arg>... and 0 if not. If the current arg is an integer and the current json element is an array, uses the <arg>th index of the array (Starting at 0) as the new current element. Otherwise, if the current json element is an object, treats the current <arg> as a key into the object and its value as the new current element.  Returns #-1 for other types.
   get          For arrays and objects, returns the json element found by following the path laid out in <args>... as described above. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
   unescape     Only valid for JSON strings; returns the unescaped form of <json>.
+  patch        Applies a merge patch (See https://tools.ietf.org/html/rfc7396) to <json> from <arg>, both of which must be valid JSON.
   
   See 'help json_query2' for examples.
 See also: json(), json_map()
@@ -4640,6 +4677,8 @@ See also: json(), json_map()
     You say, "12345"
     > say json_query(v(json), get, fnord, 1)
     You say, "2"
+    > say json_query(json(object, a,1,b,2), patch, json(object, a,42))
+    You say, "{"a":43,"b":2}"
 & TESTLOCK()
   testlock(<key>, <victim>)
 
@@ -4710,6 +4749,51 @@ Continued in HELP TIME2
     Thu Mar 01 19:20:25 2012
 
 See also: timefmt(), timestring(), convsecs(), convtime(), TIMEZONES
+& TIMECALC()
+& SECSCALC()
+ timecalc(<timestring>, <modifier>, ...)
+ secscalc(<timestring>, <modifier>, ...)
+
+
+ Takes a time and returns the resulting time after applying any modifiers. timecalc() returns a time is the same format as time(), and secscalc() as the seconds since the epoch. These functions can deal with a much broader range of times than the other time functions.
+
+ <timestring> can be in the following formats:
+
+  YYYY-MM-DD
+  YYYY-MM-DD HH:MM
+  YYYY-MM-DD HH:MM:SS
+  YYYY-MM-DD HH:MM:SS.SSS
+  HH:MM
+  HH:MM:SS
+  HH:MM:SS.SSS
+  now (Current time in UTC)
+  DDDDDDDDDD (Julian day, or seconds if followed by a unixepoch modifier)
+
+Continued in HELP TIMECALC2
+& TIMECALC2
+ <modifier>s can be in the following formats:
+
+  NNN days
+  NNN hours
+  NNN minutes
+  NNN.NNNN seconds
+  NNN months
+  NNN years
+  start of month
+  start of year
+  start of day
+  weekday N
+  unixepoch
+  localtime (Converts a UTC time to local time)
+  utc (Converts a local time to UTC)
+
+  For details about what these formats and modifers mean, see https://www.sqlite.org/lang_datefunc.html
+
+ Examples:
+ > think timecalc(now, +100 years, localtime)
+ Mon May 09 03:57:31 2118
+ > think timecalc(secs(), unixepoch)
+ Wed May 09 12:19:21 2018
 & TIMEZONES
 & @TZ
 
@@ -5307,13 +5391,19 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
 
 See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(), pfun(), attribute flags, @include
 & UCSTR()
+& UCSTR2()
   ucstr(<string>)
+  ucstr2(<string>)
 
   Returns <string> with all letters converted to uppercase.
+
+  If the MUSH is compiled with ICU Unicode support, ucstr2() does the same thing except the returned string might be a different length, and ansi colors and other markup are stripped.
   
   Example:
     > say ucstr(Foo BAR baz)
     You say, "FOO BAR BAZ"
+    > say ucstr2(grüßen)
+    You say, "GRÜSSEN
 
 See also: lcstr(), capstr()
 & UDEFAULT()
@@ -5763,3 +5853,75 @@ See also: @chzone, zfun(), zwho(), zemit() ZONES
     warnings  - The time of the next automatic warnings check, or -1 if automated warnings are disabled.
                  
 See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), restarts(), @dbck, @purge, @warnings, @config, @dump, @shutdown
+& SUGGEST()
+  SUGGEST(<category>, <word>[, <seperator>[, <limit>]])
+
+  Returns a list of suggested alternatives to <word> from vocabulary words known in the given <category>. <seperator> defaults to space. <limit> controls how many suggestions are returned, and defaults to 20.
+
+ This is the same mechanism used to suggest help entries, function names, etc. when an unknown one is encountered.
+
+ If the dict_file @config option is set, loads that file into the 'words' category.
+
+ Example:
+   > think suggest(words, ardvark)
+   AARDVARK AARDVARKS AARDVARK'S etc...
+
+See also: @suggest
+& CONNLOG()
+  CONNLOG(all|[not] logged in|<name>, <spec>...[, <sep>])
+
+  If connection tracking is enabled, returns a list of connections that match the given <spec>. The format of the list elements is '<dbref> <unique-id>', with elements seperated by <sep> (Defaulting to |). <unique-id> is an identifier that can be used to get more information from the connection with connrecord().
+
+  If the first argument is 'all', all connections are returned. If it's 'logged in', all connections that logged in are returned. 'not logged in' shows connections that never logged in. Otherwise, only connections for the given player are returned. If a connection that never logged in is returned, the dbref is #-1 for that record.
+
+  <spec> is one or more of the following:
+
+ + Time-based constraints
+  * between, <startsecs>, <endsecs> - connections that were present during the given range.
+  * at, <secs> - connections that existed at the given time.
+  * before, <secs> - connections that existed before the given time.
+  * after, <secs> - connections that existed after the given time.
+
+See CONNLOG2 for more.
+& CONNLOG2
++ Source-based constraits
+  * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
+  * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
+
+ Only one time-based constraint can be used in a query.
+
+ Times are the number of seconds since the epoch, like what secs() returns.
+
+ This function is Wizard only.
+
+ Example:
+ > think connlog(logged in, after, secscalc(now, -15 minutes))
+ shows all connections that were present during the last 15 minutes
+ > think connlog(all, ip, 127.0.0.1)
+ shows all connections ever made from localhost.
+
+See also: connrecord()
+& CONNRECORD()
+ CONNRECORD(<id>[, <sep>])
+
+  This Wizard-only function returns information about a connection if enhanced logging is enabled.
+
+  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON. If the optional <sep> argument is given, it is used instead of space to seperate fields.
+
+ If a single connection had multiple logins and logouts, only the last one is used. If a connection was never logged in, the DBREF field is #-1 and the NAME field is -. If the connection is still active, the DISCONNECTION-TIME is -1 and DISCONNECTION-REASON is -.
+
+  Times are in seconds since the epoch, like what secs() returns.
+
+See also: connlog()
+& URLENCODE()
+  URLENCODE(<string>)
+
+  This function converts its argument to a URL-encoded string where everything but a-z, A-Z, 0-9, -, ., _, and ~ are converted into %NN where NN is a hex code for their character value.
+
+See also: urldecode(), @http
+& URLDECODE()
+  URLDECODE(<string>)
+
+  This function takes a URL-encoded string and returns it in its decoded form. Unprintable characters are converted to question marks.
+
+See also: urlencode(), @http

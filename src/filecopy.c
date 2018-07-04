@@ -300,11 +300,15 @@ Win32MUSH_setup(void)
 int
 rename_file(const char *origname, const char *newname)
 {
-/* Windows can't rename over an existing file */
 #ifdef WIN32
-  unlink(newname);
-#endif
+  if (ReplaceFile(origname, newname, NULL, 0, NULL, NULL)) {
+    return 0;
+  } else {
+    return -1;
+  }
+#else
   return rename(origname, newname);
+#endif
 }
 
 /** Truncate a file to 0 bytes without deleting it.

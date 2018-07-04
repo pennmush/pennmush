@@ -146,13 +146,6 @@ if(MYSQL_FOUND)
   set(HAVE_MYSQL 1)
 endif()
   
-find_library(SQLITE3_LIBRARY sqlite3)
-find_package_handle_standard_args(LibSqlite3 REQUIRED_VARS SQLITE3_LIBRARY HAVE_SQLITE3_H)
-if(LibSqlite3_FOUND)
-  list(APPEND MUSHLIBS ${SQLITE3_LIBRARY})
-  set(HAVE_SQLITE3 1)
-endif()
-
 find_package(PostgreSQL)
 if(PostgreSQL_FOUND)
   include_directories(${PostgreSQL_INCLUDE_DIRS})
@@ -167,9 +160,11 @@ if(ICU_FOUND)
   set(HAVE_ICU 1)
 endif()
 
+find_package(Threads)
+
 # Functions
 message(STATUS "Checking for available system functions.")
-check_symbol_exists(arc4random_buf, "stdlib.h", HAVE_ARC4RANDOM_BUF)
+check_symbol_exists(arc4random_buf "stdlib.h" HAVE_ARC4RANDOM_BUF)
 check_symbol_exists(bindtextdomain "libintl.h" HAVE_BINDTEXTDOMAIN)
 check_symbol_exists(cbrt "math.h" HAVE_CBRT)
 check_symbol_exists(crypt "unistd.h;crypt.h" HAVE_CRYPT)
@@ -391,7 +386,7 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/game/names.cnf")
 endif()
 
 set_source_files_properties(boolexp.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/bflags.c")
-set_source_files_properties(markup.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/htmltab.c;${PROJECT_SOURCE_DIR}/rgbtab.c")
+set_source_files_properties(markup.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/htmltab.c")
 set_source_files_properties(funmath.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOURCE_DIR}/lmathtab.c")
 
 if(EXISTS ${GPERF})
@@ -408,17 +403,12 @@ if(EXISTS ${GPERF})
     COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf
     MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/lmathtab.gperf"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding lmathtab.c" VERBATIM)
-  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/rgbtab.c"
-    COMMAND ${GPERF} -C --output-file rgbtab.c rgbtab.gperf
-    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/rgbtab.gperf"
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding rgbtab.c" VERBATIM)
 
 else()
 
   if("${PROJECT_SOURCE_DIR}/bflags.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/bflags.c" OR
       "${PROJECT_SOURCE_DIR}/htmltab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/htmltab.c" OR
-      "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c" OR
-      "${PROJECT_SOURCE_DIR}/rgbtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/rgbtab.c")
+      "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c")
     message(WARNING "gperf not installed and hash tables need to be updated.")
   endif()
 endif()
@@ -453,20 +443,22 @@ add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h"
 
 set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c conf.c
-  cque.c create.c db.c destroy.c extchat.c extmail.c filecopy.c
-  flaglocal.c flags.c funcrypt.c function.c fundb.c funlist.c
-  funlocal.c funmath.c funmisc.c funstr.c funtime.c funufun.c game.c
-  hash_function.c help.c htab.c intmap.c local.c lock.c log.c look.c
-  malias.c markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c
-  mysocket.c myrlimit.c myssl.c notify.c parse.c pcg_basic.c player.c
-  plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c
-  services.c set.c sig.c sort.c speech.c sql.c ssl_master.c strdup.c
-  strtree.c strutil.c tables.c timer.c tz.c unparse.c utils.c
-  version.c wait.c warnings.c websock.c wild.c wiz.c)
+  connlog.c cque.c create.c db.c destroy.c extchat.c extmail.c
+  filecopy.c flaglocal.c flags.c funcrypt.c function.c fundb.c
+  funjson.c funlist.c funlocal.c funmath.c funmisc.c funstr.c
+  funtime.c funufun.c game.c hash_function.c help.c htab.c intmap.c
+  local.c lock.c log.c look.c malias.c markup.c match.c memcheck.c
+  move.c mycrypt.c mymalloc.c mysocket.c myrlimit.c myssl.c notify.c
+  parse.c pcg_basic.c player.c plyrlist.c predicat.c privtab.c
+  info_master.c ptab.c remember.c rob.c services.c set.c sig.c sort.c
+  speech.c spellfix.c sql.c sqlite3.c ssl_master.c strdup.c strtree.c
+  strutil.c tables.c timer.c tz.c unparse.c utils.c version.c wait.c
+  warnings.c websock.c wild.c wiz.c)
 
 add_executable(netmush ${SRC_FILES})
+target_compile_definitions(netmush PRIVATE _HAVE_SQLITE_CONFIG_H)
 target_include_directories(netmush PUBLIC "${PROJECT_SOURCE_DIR}/../hdrs" "${PROJECT_BINARY_DIR}")
-target_link_libraries(netmush ${LIBS} ${MUSHLIBS})
+target_link_libraries(netmush ${LIBS} ${MUSHLIBS} ${CMAKE_DL_LIBS} Threads::Threads)
 set_target_properties(netmush PROPERTIES C_STANDARD 99)
 target_compile_features(netmush PUBLIC c_restrict)
 target_compile_options(netmush PUBLIC ${CMAKE_REQUIRED_DEFINITIONS})

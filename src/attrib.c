@@ -1352,7 +1352,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
    * name */
   if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
-    ptr = atr_get_noparent(thing, strupper(name));
+    char abuff[BUFFER_LEN];
+    ptr = atr_get_noparent(thing, strupper_r(name, abuff, sizeof abuff));
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                      : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
@@ -1473,7 +1474,9 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
    * name */
   if (!(flags & AIG_REGEX) && name[len - 1] != '`' &&
       wildcard_count((char *) name, 1) != -1) {
-    ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
+    char abuff[BUFFER_LEN];
+    ptr = atr_get_with_parent(thing, strupper_r(name, abuff, sizeof abuff),
+                              &parent, 0);
     if (ptr && ((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                                      : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
@@ -1897,6 +1900,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
+          char tmp[BUFFER_LEN];
+
           if (from_queue &&
               (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
             int pe_flags = PE_INFO_DEFAULT;
@@ -1920,15 +1925,16 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                  q-registers - we'll be altering different copies anyway */
               queue_type &= ~QUEUE_PRESERVE_QREG;
             }
-            if (AF_NoDebug(ptr))
+            if (AF_NoDebug(ptr)) {
               queue_type |= QUEUE_NODEBUG;
-            else if (AF_Debug(ptr))
+            } else if (AF_Debug(ptr)) {
               queue_type |= QUEUE_DEBUG;
+            }
 
             /* inplace queue */
+            snprintf(tmp, sizeof tmp, "#%d/%s", thing, AL_NAME(ptr));
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                     pe_flags, queue_type, pe_regs,
-                                     tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                     pe_flags, queue_type, pe_regs, tmp);
           } else {
             /* Normal queue */
             parse_que_attr(
@@ -2050,6 +2056,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       free_pe_info(pe_info);
     }
     if (success) {
+      char tmp[BUFFER_LEN];
       if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
         /* inplace queue */
         int pe_flags = PE_INFO_DEFAULT;
@@ -2072,15 +2079,16 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
              q-registers - we'll be altering different copies anyway */
           queue_type &= ~QUEUE_PRESERVE_QREG;
         }
-        if (AF_NoDebug(ptr))
+        if (AF_NoDebug(ptr)) {
           queue_type |= QUEUE_NODEBUG;
-        else if (AF_Debug(ptr))
+        } else if (AF_Debug(ptr)) {
           queue_type |= QUEUE_DEBUG;
+        }
 
         /* inplace queue */
+        snprintf(tmp, sizeof tmp, "#%d/%s", thing, AL_NAME(ptr));
         new_queue_actionlist_int(thing, player, player, s, from_queue, pe_flags,
-                                 queue_type, pe_regs,
-                                 tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                 queue_type, pe_regs, tmp);
       } else {
         /* Normal queue */
         parse_que_attr(
@@ -2131,8 +2139,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   }
   if (!controls(player, thing))
     return 0;
-  strcpy(name, atr);
-  upcasestr(name);
+  strupper_r(atr, name, sizeof name);
   if (strcmp(name, "ALIAS") == 0) {
     if (IsPlayer(thing)) {
       old = atr_get_noparent(thing, "ALIAS");
@@ -2284,7 +2291,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     break;
   }
   if (!strcmp(name, "ALIAS") && IsPlayer(thing)) {
-    reset_player_list(thing, NULL, tbuf1, NULL, s);
+    reset_player_list(thing, Name(thing), s);
     if (s && *s)
       notify(player, T("Alias set."));
     else
@@ -2337,6 +2344,7 @@ do_atrlock(dbref player, const char *src, const char *action)
   char *target, *attrib;
   ATTR *ptr;
   enum atrlock_status status = ATRLOCK_CHECK;
+  char abuff[BUFFER_LEN];
 
   if (action && *action) {
     if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") ||
@@ -2376,7 +2384,7 @@ do_atrlock(dbref player, const char *src, const char *action)
     return;
   }
 
-  ptr = atr_get_noparent(thing, strupper(attrib));
+  ptr = atr_get_noparent(thing, strupper_r(attrib, abuff, sizeof abuff));
   mush_free(target, "atrlock.string");
   if (!ptr || !Can_Read_Attr(player, thing, ptr)) {
     notify(player, T("No such attribute."));
@@ -2415,32 +2423,39 @@ do_atrlock(dbref player, const char *src, const char *action)
  * \param player the enactor, for permission checking.
  * \param xarg1 the object/attribute to change, as a string.
  * \param arg2 the name of the new owner (or "me").
+ * \retval 0 failed to change owner.
+ * \retval 1 successfully changed owner.
  */
-void
+int
 do_atrchown(dbref player, const char *xarg1, const char *arg2)
 {
   dbref thing, new_owner;
   char *p, *arg1;
   ATTR *ptr;
+  char abuff[BUFFER_LEN];
+  int retval = 0;
 
   if (!xarg1 || !*xarg1) {
     notify(player, T("You need to give an object/attribute pair."));
-    return;
+    return 0;
   }
 
   arg1 = mush_strdup(xarg1, "atrchown.string");
 
   if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
+    retval = 0;
     goto cleanup;
   }
   *p++ = '\0';
   if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
+    retval = 0;
     goto cleanup;
   }
   if (!controls(player, thing)) {
     notify(player, T("Permission denied."));
+    retval = 0;
     goto cleanup;
   }
 
@@ -2450,28 +2465,34 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     new_owner = lookup_player(arg2);
   if (new_owner == NOTHING) {
     notify(player, T("I can't find that player"));
+    retval = 0;
     goto cleanup;
   }
 
-  ptr = atr_get_noparent(thing, strupper(p));
+  ptr = atr_get_noparent(thing, strupper_r(p, abuff, sizeof abuff));
   if (ptr && Can_Read_Attr(player, thing, ptr)) {
     if (Can_Write_Attr(player, thing, ptr)) {
       if (new_owner != Owner(player) && !Wizard(player)) {
         notify(player, T("You can only chown an attribute to yourself."));
+        retval = 0;
         goto cleanup;
       }
       AL_CREATOR(ptr) = Owner(new_owner);
       notify(player, T("Attribute owner changed."));
+      retval = 1;
       goto cleanup;
     } else {
       notify(player, T("You don't have the permission to chown that."));
+      retval = 0;
       goto cleanup;
     }
   } else {
     notify(player, T("No such attribute."));
+    retval = 0;
   }
 cleanup:
   mush_free(arg1, "atrchown.string");
+  return retval;
 }
 
 /** Delete one attribute, deallocating its name and data.

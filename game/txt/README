@@ -26,6 +26,11 @@ directly or those changes will be lost.
 Files distributed with PennMUSH always begin with "penn", so don't
 start your files with that.
 
+All files should contain Unicode text. If all you use is ASCII
+characters, that's already the case and nothing special needs to be
+done. Otherwise, just make sure your editor is saving files using
+UTF-8 character encoding.
+
 To add a new "help"-style command, follow these steps. For this example,
 we'll add a command called "+foobar".
 

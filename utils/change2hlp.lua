@@ -198,6 +198,14 @@ function Div(s, attr)
   return s
 end
 
+function SingleQuoted(str)
+   return "\u{2018}" .. str .. "\u{2019}"
+end
+
+function DoubleQuoted(str)
+   return "\u{201C}" .. str .. "\u{201D}"
+end
+
 -- The following code will produce runtime warnings when you haven't defined
 -- all of the functions you need for the custom writer, so it's useful
 -- to include when you're working on a writer.

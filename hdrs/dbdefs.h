@@ -294,9 +294,12 @@ struct db_stat_info {
 extern struct object *db;
 extern dbref db_top;
 
-extern void *get_objdata(dbref thing, const char *keybase);
-extern void *set_objdata(dbref thing, const char *keybase, void *data);
-extern void clear_objdata(dbref thing);
+void init_sqlite_db();
+
+void *get_objdata(dbref thing, const char *keybase);
+void *set_objdata(dbref thing, const char *keybase, void *data);
+void delete_objdata(dbref thing, const char *keybase);
+void clear_objdata(dbref thing);
 
 #define DOLIST(var, first)                                                     \
   for ((var) = (first); GoodObject((var)); (var) = Next(var))

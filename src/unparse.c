@@ -149,8 +149,10 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
     p = buf;
 
   if (SUPPORT_HTML) {
+    char tmp[100];
     PUSE;
-    tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), p);
+    snprintf(tmp, sizeof tmp, "XCH_CMD=\"examine #%d\"", loc);
+    tag_wrap("A", tmp, p);
     PEND;
     return pbuff;
   } else {

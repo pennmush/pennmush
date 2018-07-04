@@ -68,14 +68,15 @@ sub start {
     my $line;
     push(@pids, $child);
     $self->{PID} = $child;
-    foreach $j (1..20) {
-      sleep(1);
+    sleep 5;
+    foreach $j (1..10) {
       next unless open my $LOG, "<", "testgame/log/netmush.log";
       while ($line = <$LOG>) {
         return $port if $line =~ /^Listening on port $port /;
       }
+      close $LOG;
     } continue {
-      sleep(1);
+      sleep 5;
     }
     die "Could not start game process properly; pid $child!\n";
   } elsif (defined($child)) {

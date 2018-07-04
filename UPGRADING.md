@@ -40,7 +40,7 @@ To upgrade with patch files, get all the patch files for higher
 patchlevels than your current version. For example, if you're running
 1.8.0p0 and the latest version is 1.8.0p4, you need patches 1-4.
 
-Patchfiles can be downloaded via <http://download.pennmush.org/Source/>
+Patchfiles can be downloaded via <https://download.pennmush.org/Source/>
 and are usually named things like 1.8.0-patch02 (the patch from 1.8.0p1
 to 1.8.0p2) or, in some cases, 1.7.6p16-1.8.0p0.patch (the patch from
 1.7.6p16 to 1.8.0p0).

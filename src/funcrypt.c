@@ -37,6 +37,7 @@
 #include "parse.h"
 #include "sort.h"
 #include "strutil.h"
+#include "charclass.h"
 #include "confmagic.h"
 
 char *crunch_code(char *code);
@@ -158,7 +159,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
         }
       }
       n = end;
-    } else if (printonly && !isprint(decoded[n]))
+    } else if (printonly && !char_isprint(decoded[n]))
       decoded[n] = '?';
   }
   safe_strl((const char *) decoded, dlen, buff, bp);
@@ -217,7 +218,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
             }
           }
           n = end;
-        } else if (printonly && !isprint(decoded[n]))
+        } else if (printonly && !char_isprint(decoded[n]))
           decoded[n] = '?';
       }
       safe_strl(decoded, dlen, buff, bp);

@@ -625,12 +625,13 @@ INFO_SLAVE_TARGET
 TZDIR
 TZSELECT
 LIBOBJS
-SQLITE3_VERSION
-SQLITE3_LDFLAGS
-SQLITE3_CFLAGS
+ICU_LIBS
+ICU_CXXFLAGS
+ICU_CFLAGS
+ICU_CPPFLAGS
+ICU_CONFIG
 POSTGRESQL_LIBS
 POSTGRESQL_VERSION
-AWK
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 POSTGRESQL_LDFLAGS
@@ -646,9 +647,22 @@ OPENSSL_LDFLAGS
 OPENSSL_LIBS
 OPENSSL_INCLUDES
 PKG_CONFIG
+AWK
+CURL_LIBS
+CURL_CFLAGS
+CURL_CONFIG
+PTHREAD_CFLAGS
+PTHREAD_LIBS
+PTHREAD_CC
+ax_pthread_config
 EGREP
 GREP
 CPP
+SED
+host_os
+host_vendor
+host_cpu
+host
 ED
 SENDMAIL
 UPTIME
@@ -724,13 +738,14 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_curl_prefix
+with_curl_exec_prefix
 enable_zlib
 with_openssl
 with_pcre
 enable_sql
 with_mysql
 with_postgresql
-with_sqlite3
 enable_ipv6
 enable_nls
 enable_info_slave
@@ -752,6 +767,9 @@ CPPFLAGS
 SENDMAIL
 ED
 CPP
+CURL_CONFIG
+CURL_CFLAGS
+CURL_LIBS
 MYSQL_CONFIG
 POSTGRESQL_CPPFLAGS
 POSTGRESQL_LIBFLAGS
@@ -1370,6 +1388,7 @@ _ACEOF
 
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
 _ACEOF
 fi
 
@@ -1402,14 +1421,16 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-curl-prefix=PREFIX
+                          Prefix where curl is installed (optional)
+  --with-curl-exec-prefix=EPREFIX
+                          Exec prefix where curl is installed (optional)
   --with-openssl=DIR      root of the OpenSSL directory
   --with-pcre[=prefix]    compile xmlpcre part (via libpcre check)
   --with-mysql=[ARG]      use MySQL client library [default=yes], optionally
                           specify path to mysql_config
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
                           specify path to pg_config
-  --with-sqlite3=[ARG]    use SQLite 3 library [default=yes], optionally
-                          specify the prefix for sqlite3 library
 
 Some influential environment variables:
   CC          C compiler command
@@ -1422,6 +1443,9 @@ Some influential environment variables:
   SENDMAIL    Path to sendmail
   ED          Path to ed
   CPP         C preprocessor
+  CURL_CONFIG config script used for curl
+  CURL_CFLAGS CFLAGS used for curl
+  CURL_LIBS   LIBS used for curl
   MYSQL_CONFIG
               Full path to mysql_config program
   POSTGRESQL_CPPFLAGS
@@ -2049,6 +2073,52 @@ $as_echo "$ac_res" >&6; }
 
 } # ac_fn_c_check_func
 
+# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
+# ---------------------------------------------
+# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
+# accordingly.
+ac_fn_c_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_decl
+
 # ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
 # ----------------------------------------------------
 # Tries to find if the field MEMBER exists in type AGGR, after including
@@ -2105,52 +2175,6 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_member
-
-# ac_fn_c_check_decl LINENO SYMBOL VAR INCLUDES
-# ---------------------------------------------
-# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
-# accordingly.
-ac_fn_c_check_decl ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  as_decl_name=`echo $2|sed 's/ *(.*//'`
-  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
-$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-#ifndef $as_decl_name
-#ifdef __cplusplus
-  (void) $as_decl_use;
-#else
-  (void) $as_decl_name;
-#endif
-#endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$3=yes"
-else
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_decl
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -4495,10 +4519,108 @@ _ACEOF
 
 fi
 
-### Headers
-# Usually there's no need to check for standard C89 headers.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+$as_echo_n "checking host system type... " >&6; }
+if ${ac_cv_host+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $host_alias failed" "$LINENO" 5
+fi
 
-# <stdint.h> is checked by this.
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+$as_echo "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
+$as_echo_n "checking for a sed that does not truncate output... " >&6; }
+if ${ac_cv_path_SED+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+            ac_script=s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/
+     for ac_i in 1 2 3 4 5 6 7; do
+       ac_script="$ac_script$as_nl$ac_script"
+     done
+     echo "$ac_script" 2>/dev/null | sed 99q >conftest.sed
+     { ac_script=; unset ac_script;}
+     if test -z "$SED"; then
+  ac_path_SED_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in sed gsed; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_SED="$as_dir/$ac_prog$ac_exec_ext"
+      as_fn_executable_p "$ac_path_SED" || continue
+# Check for GNU ac_path_SED and select it if it is found.
+  # Check for GNU $ac_path_SED
+case `"$ac_path_SED" --version 2>&1` in
+*GNU*)
+  ac_cv_path_SED="$ac_path_SED" ac_path_SED_found=:;;
+*)
+  ac_count=0
+  $as_echo_n 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    $as_echo '' >> "conftest.nl"
+    "$ac_path_SED" -f conftest.sed < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_SED_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_SED="$ac_path_SED"
+      ac_path_SED_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_SED_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_SED"; then
+    as_fn_error $? "no acceptable sed could be found in \$PATH" "$LINENO" 5
+  fi
+else
+  ac_cv_path_SED=$SED
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_SED" >&5
+$as_echo "$ac_cv_path_SED" >&6; }
+ SED="$ac_cv_path_SED"
+  rm -f conftest.sed
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4767,6 +4889,652 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
  EGREP="$ac_cv_path_EGREP"
 
 
+
+
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+ax_pthread_ok=no
+
+# We used to check for pthread.h first, but this fails if pthread.h
+# requires special compiler flags (e.g. on Tru64 or Sequent).
+# It gets checked for in the link test anyway.
+
+# First of all, check if the user has set any of the PTHREAD_LIBS,
+# etcetera environment variables, and if threads linking works using
+# them:
+if test "x$PTHREAD_CFLAGS$PTHREAD_LIBS" != "x"; then
+        ax_pthread_save_CC="$CC"
+        ax_pthread_save_CFLAGS="$CFLAGS"
+        ax_pthread_save_LIBS="$LIBS"
+        if test "x$PTHREAD_CC" != "x"; then :
+  CC="$PTHREAD_CC"
+fi
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_join using $CC $PTHREAD_CFLAGS $PTHREAD_LIBS" >&5
+$as_echo_n "checking for pthread_join using $CC $PTHREAD_CFLAGS $PTHREAD_LIBS... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pthread_join ();
+int
+main ()
+{
+return pthread_join ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_pthread_ok=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_pthread_ok" >&5
+$as_echo "$ax_pthread_ok" >&6; }
+        if test "x$ax_pthread_ok" = "xno"; then
+                PTHREAD_LIBS=""
+                PTHREAD_CFLAGS=""
+        fi
+        CC="$ax_pthread_save_CC"
+        CFLAGS="$ax_pthread_save_CFLAGS"
+        LIBS="$ax_pthread_save_LIBS"
+fi
+
+# We must check for the threads library under a number of different
+# names; the ordering is very important because some systems
+# (e.g. DEC) have both -lpthread and -lpthreads, where one of the
+# libraries is broken (non-POSIX).
+
+# Create a list of thread flags to try.  Items starting with a "-" are
+# C compiler flags, and other items are library names, except for "none"
+# which indicates that we try without any flags at all, and "pthread-config"
+# which is a program returning the flags for the Pth emulation library.
+
+ax_pthread_flags="pthreads none -Kthread -pthread -pthreads -mthreads pthread --thread-safe -mt pthread-config"
+
+# The ordering *is* (sometimes) important.  Some notes on the
+# individual items follow:
+
+# pthreads: AIX (must check this before -lpthread)
+# none: in case threads are in libc; should be tried before -Kthread and
+#       other compiler flags to prevent continual compiler warnings
+# -Kthread: Sequent (threads in libc, but -Kthread needed for pthread.h)
+# -pthread: Linux/gcc (kernel threads), BSD/gcc (userland threads), Tru64
+#           (Note: HP C rejects this with "bad form for `-t' option")
+# -pthreads: Solaris/gcc (Note: HP C also rejects)
+# -mt: Sun Workshop C (may only link SunOS threads [-lthread], but it
+#      doesn't hurt to check since this sometimes defines pthreads and
+#      -D_REENTRANT too), HP C (must be checked before -lpthread, which
+#      is present but should not be used directly; and before -mthreads,
+#      because the compiler interprets this as "-mt" + "-hreads")
+# -mthreads: Mingw32/gcc, Lynx/gcc
+# pthread: Linux, etcetera
+# --thread-safe: KAI C++
+# pthread-config: use pthread-config program (for GNU Pth library)
+
+case $host_os in
+
+        freebsd*)
+
+        # -kthread: FreeBSD kernel threads (preferred to -pthread since SMP-able)
+        # lthread: LinuxThreads port on FreeBSD (also preferred to -pthread)
+
+        ax_pthread_flags="-kthread lthread $ax_pthread_flags"
+        ;;
+
+        hpux*)
+
+        # From the cc(1) man page: "[-mt] Sets various -D flags to enable
+        # multi-threading and also sets -lpthread."
+
+        ax_pthread_flags="-mt -pthread pthread $ax_pthread_flags"
+        ;;
+
+        openedition*)
+
+        # IBM z/OS requires a feature-test macro to be defined in order to
+        # enable POSIX threads at all, so give the user a hint if this is
+        # not set. (We don't define these ourselves, as they can affect
+        # other portions of the system API in unpredictable ways.)
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#            if !defined(_OPEN_THREADS) && !defined(_UNIX03_THREADS)
+             AX_PTHREAD_ZOS_MISSING
+#            endif
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "AX_PTHREAD_ZOS_MISSING" >/dev/null 2>&1; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IBM z/OS requires -D_OPEN_THREADS or -D_UNIX03_THREADS to enable pthreads support." >&5
+$as_echo "$as_me: WARNING: IBM z/OS requires -D_OPEN_THREADS or -D_UNIX03_THREADS to enable pthreads support." >&2;}
+fi
+rm -f conftest*
+
+        ;;
+
+        solaris*)
+
+        # On Solaris (at least, for some versions), libc contains stubbed
+        # (non-functional) versions of the pthreads routines, so link-based
+        # tests will erroneously succeed. (N.B.: The stubs are missing
+        # pthread_cleanup_push, or rather a function called by this macro,
+        # so we could check for that, but who knows whether they'll stub
+        # that too in a future libc.)  So we'll check first for the
+        # standard Solaris way of linking pthreads (-mt -lpthread).
+
+        ax_pthread_flags="-mt,pthread pthread $ax_pthread_flags"
+        ;;
+esac
+
+# GCC generally uses -pthread, or -pthreads on some platforms (e.g. SPARC)
+
+if test "x$GCC" = "xyes"; then :
+  ax_pthread_flags="-pthread -pthreads $ax_pthread_flags"
+fi
+
+# The presence of a feature test macro requesting re-entrant function
+# definitions is, on some systems, a strong hint that pthreads support is
+# correctly enabled
+
+case $host_os in
+        darwin* | hpux* | linux* | osf* | solaris*)
+        ax_pthread_check_macro="_REENTRANT"
+        ;;
+
+        aix*)
+        ax_pthread_check_macro="_THREAD_SAFE"
+        ;;
+
+        *)
+        ax_pthread_check_macro="--"
+        ;;
+esac
+if test "x$ax_pthread_check_macro" = "x--"; then :
+  ax_pthread_check_cond=0
+else
+  ax_pthread_check_cond="!defined($ax_pthread_check_macro)"
+fi
+
+# Are we compiling with Clang?
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC is Clang" >&5
+$as_echo_n "checking whether $CC is Clang... " >&6; }
+if ${ax_cv_PTHREAD_CLANG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ax_cv_PTHREAD_CLANG=no
+     # Note that Autoconf sets GCC=yes for Clang as well as GCC
+     if test "x$GCC" = "xyes"; then
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+/* Note: Clang 2.7 lacks __clang_[a-z]+__ */
+#            if defined(__clang__) && defined(__llvm__)
+             AX_PTHREAD_CC_IS_CLANG
+#            endif
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "AX_PTHREAD_CC_IS_CLANG" >/dev/null 2>&1; then :
+  ax_cv_PTHREAD_CLANG=yes
+fi
+rm -f conftest*
+
+     fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_PTHREAD_CLANG" >&5
+$as_echo "$ax_cv_PTHREAD_CLANG" >&6; }
+ax_pthread_clang="$ax_cv_PTHREAD_CLANG"
+
+ax_pthread_clang_warning=no
+
+# Clang needs special handling, because older versions handle the -pthread
+# option in a rather... idiosyncratic way
+
+if test "x$ax_pthread_clang" = "xyes"; then
+
+        # Clang takes -pthread; it has never supported any other flag
+
+        # (Note 1: This will need to be revisited if a system that Clang
+        # supports has POSIX threads in a separate library.  This tends not
+        # to be the way of modern systems, but it's conceivable.)
+
+        # (Note 2: On some systems, notably Darwin, -pthread is not needed
+        # to get POSIX threads support; the API is always present and
+        # active.  We could reasonably leave PTHREAD_CFLAGS empty.  But
+        # -pthread does define _REENTRANT, and while the Darwin headers
+        # ignore this macro, third-party headers might not.)
+
+        PTHREAD_CFLAGS="-pthread"
+        PTHREAD_LIBS=
+
+        ax_pthread_ok=yes
+
+        # However, older versions of Clang make a point of warning the user
+        # that, in an invocation where only linking and no compilation is
+        # taking place, the -pthread option has no effect ("argument unused
+        # during compilation").  They expect -pthread to be passed in only
+        # when source code is being compiled.
+        #
+        # Problem is, this is at odds with the way Automake and most other
+        # C build frameworks function, which is that the same flags used in
+        # compilation (CFLAGS) are also used in linking.  Many systems
+        # supported by AX_PTHREAD require exactly this for POSIX threads
+        # support, and in fact it is often not straightforward to specify a
+        # flag that is used only in the compilation phase and not in
+        # linking.  Such a scenario is extremely rare in practice.
+        #
+        # Even though use of the -pthread flag in linking would only print
+        # a warning, this can be a nuisance for well-run software projects
+        # that build with -Werror.  So if the active version of Clang has
+        # this misfeature, we search for an option to squash it.
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Clang needs flag to prevent \"argument unused\" warning when linking with -pthread" >&5
+$as_echo_n "checking whether Clang needs flag to prevent \"argument unused\" warning when linking with -pthread... " >&6; }
+if ${ax_cv_PTHREAD_CLANG_NO_WARN_FLAG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ax_cv_PTHREAD_CLANG_NO_WARN_FLAG=unknown
+             # Create an alternate version of $ac_link that compiles and
+             # links in two steps (.c -> .o, .o -> exe) instead of one
+             # (.c -> exe), because the warning occurs only in the second
+             # step
+             ax_pthread_save_ac_link="$ac_link"
+             ax_pthread_sed='s/conftest\.\$ac_ext/conftest.$ac_objext/g'
+             ax_pthread_link_step=`$as_echo "$ac_link" | sed "$ax_pthread_sed"`
+             ax_pthread_2step_ac_link="($ac_compile) && (echo ==== >&5) && ($ax_pthread_link_step)"
+             ax_pthread_save_CFLAGS="$CFLAGS"
+             for ax_pthread_try in '' -Qunused-arguments -Wno-unused-command-line-argument unknown; do
+                if test "x$ax_pthread_try" = "xunknown"; then :
+  break
+fi
+                CFLAGS="-Werror -Wunknown-warning-option $ax_pthread_try -pthread $ax_pthread_save_CFLAGS"
+                ac_link="$ax_pthread_save_ac_link"
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int main(void){return 0;}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_link="$ax_pthread_2step_ac_link"
+                     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int main(void){return 0;}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+             done
+             ac_link="$ax_pthread_save_ac_link"
+             CFLAGS="$ax_pthread_save_CFLAGS"
+             if test "x$ax_pthread_try" = "x"; then :
+  ax_pthread_try=no
+fi
+             ax_cv_PTHREAD_CLANG_NO_WARN_FLAG="$ax_pthread_try"
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_PTHREAD_CLANG_NO_WARN_FLAG" >&5
+$as_echo "$ax_cv_PTHREAD_CLANG_NO_WARN_FLAG" >&6; }
+
+        case "$ax_cv_PTHREAD_CLANG_NO_WARN_FLAG" in
+                no | unknown) ;;
+                *) PTHREAD_CFLAGS="$ax_cv_PTHREAD_CLANG_NO_WARN_FLAG $PTHREAD_CFLAGS" ;;
+        esac
+
+fi # $ax_pthread_clang = yes
+
+if test "x$ax_pthread_ok" = "xno"; then
+for ax_pthread_try_flag in $ax_pthread_flags; do
+
+        case $ax_pthread_try_flag in
+                none)
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether pthreads work without any flags" >&5
+$as_echo_n "checking whether pthreads work without any flags... " >&6; }
+                ;;
+
+                -mt,pthread)
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether pthreads work with -mt -lpthread" >&5
+$as_echo_n "checking whether pthreads work with -mt -lpthread... " >&6; }
+                PTHREAD_CFLAGS="-mt"
+                PTHREAD_LIBS="-lpthread"
+                ;;
+
+                -*)
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether pthreads work with $ax_pthread_try_flag" >&5
+$as_echo_n "checking whether pthreads work with $ax_pthread_try_flag... " >&6; }
+                PTHREAD_CFLAGS="$ax_pthread_try_flag"
+                ;;
+
+                pthread-config)
+                # Extract the first word of "pthread-config", so it can be a program name with args.
+set dummy pthread-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ax_pthread_config+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ax_pthread_config"; then
+  ac_cv_prog_ax_pthread_config="$ax_pthread_config" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ax_pthread_config="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_ax_pthread_config" && ac_cv_prog_ax_pthread_config="no"
+fi
+fi
+ax_pthread_config=$ac_cv_prog_ax_pthread_config
+if test -n "$ax_pthread_config"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_pthread_config" >&5
+$as_echo "$ax_pthread_config" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+                if test "x$ax_pthread_config" = "xno"; then :
+  continue
+fi
+                PTHREAD_CFLAGS="`pthread-config --cflags`"
+                PTHREAD_LIBS="`pthread-config --ldflags` `pthread-config --libs`"
+                ;;
+
+                *)
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the pthreads library -l$ax_pthread_try_flag" >&5
+$as_echo_n "checking for the pthreads library -l$ax_pthread_try_flag... " >&6; }
+                PTHREAD_LIBS="-l$ax_pthread_try_flag"
+                ;;
+        esac
+
+        ax_pthread_save_CFLAGS="$CFLAGS"
+        ax_pthread_save_LIBS="$LIBS"
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+
+        # Check for various functions.  We must include pthread.h,
+        # since some functions may be macros.  (On the Sequent, we
+        # need a special flag -Kthread to make this header compile.)
+        # We check for pthread_join because it is in -lpthread on IRIX
+        # while pthread_create is in libc.  We check for pthread_attr_init
+        # due to DEC craziness with -lpthreads.  We check for
+        # pthread_cleanup_push because it is one of the few pthread
+        # functions on Solaris that doesn't have a non-functional libc stub.
+        # We try pthread_create on general principles.
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+#                       if $ax_pthread_check_cond
+#                        error "$ax_pthread_check_macro must be defined"
+#                       endif
+                        static void routine(void *a) { a = 0; }
+                        static void *start_routine(void *a) { return a; }
+int
+main ()
+{
+pthread_t th; pthread_attr_t attr;
+                        pthread_create(&th, 0, start_routine, 0);
+                        pthread_join(th, 0);
+                        pthread_attr_init(&attr);
+                        pthread_cleanup_push(routine, 0);
+                        pthread_cleanup_pop(0) /* ; */
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_pthread_ok=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+        CFLAGS="$ax_pthread_save_CFLAGS"
+        LIBS="$ax_pthread_save_LIBS"
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_pthread_ok" >&5
+$as_echo "$ax_pthread_ok" >&6; }
+        if test "x$ax_pthread_ok" = "xyes"; then :
+  break
+fi
+
+        PTHREAD_LIBS=""
+        PTHREAD_CFLAGS=""
+done
+fi
+
+# Various other checks:
+if test "x$ax_pthread_ok" = "xyes"; then
+        ax_pthread_save_CFLAGS="$CFLAGS"
+        ax_pthread_save_LIBS="$LIBS"
+        CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+        LIBS="$PTHREAD_LIBS $LIBS"
+
+        # Detect AIX lossage: JOINABLE attribute is called UNDETACHED.
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for joinable pthread attribute" >&5
+$as_echo_n "checking for joinable pthread attribute... " >&6; }
+if ${ax_cv_PTHREAD_JOINABLE_ATTR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ax_cv_PTHREAD_JOINABLE_ATTR=unknown
+             for ax_pthread_attr in PTHREAD_CREATE_JOINABLE PTHREAD_CREATE_UNDETACHED; do
+                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+int
+main ()
+{
+int attr = $ax_pthread_attr; return attr /* ; */
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_cv_PTHREAD_JOINABLE_ATTR=$ax_pthread_attr; break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+             done
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_PTHREAD_JOINABLE_ATTR" >&5
+$as_echo "$ax_cv_PTHREAD_JOINABLE_ATTR" >&6; }
+        if test "x$ax_cv_PTHREAD_JOINABLE_ATTR" != "xunknown" && \
+               test "x$ax_cv_PTHREAD_JOINABLE_ATTR" != "xPTHREAD_CREATE_JOINABLE" && \
+               test "x$ax_pthread_joinable_attr_defined" != "xyes"; then :
+
+cat >>confdefs.h <<_ACEOF
+#define PTHREAD_CREATE_JOINABLE $ax_cv_PTHREAD_JOINABLE_ATTR
+_ACEOF
+
+               ax_pthread_joinable_attr_defined=yes
+
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether more special flags are required for pthreads" >&5
+$as_echo_n "checking whether more special flags are required for pthreads... " >&6; }
+if ${ax_cv_PTHREAD_SPECIAL_FLAGS+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ax_cv_PTHREAD_SPECIAL_FLAGS=no
+             case $host_os in
+             solaris*)
+             ax_cv_PTHREAD_SPECIAL_FLAGS="-D_POSIX_PTHREAD_SEMANTICS"
+             ;;
+             esac
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_PTHREAD_SPECIAL_FLAGS" >&5
+$as_echo "$ax_cv_PTHREAD_SPECIAL_FLAGS" >&6; }
+        if test "x$ax_cv_PTHREAD_SPECIAL_FLAGS" != "xno" && \
+               test "x$ax_pthread_special_flags_added" != "xyes"; then :
+  PTHREAD_CFLAGS="$ax_cv_PTHREAD_SPECIAL_FLAGS $PTHREAD_CFLAGS"
+               ax_pthread_special_flags_added=yes
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PTHREAD_PRIO_INHERIT" >&5
+$as_echo_n "checking for PTHREAD_PRIO_INHERIT... " >&6; }
+if ${ax_cv_PTHREAD_PRIO_INHERIT+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pthread.h>
+int
+main ()
+{
+int i = PTHREAD_PRIO_INHERIT;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_cv_PTHREAD_PRIO_INHERIT=yes
+else
+  ax_cv_PTHREAD_PRIO_INHERIT=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_PTHREAD_PRIO_INHERIT" >&5
+$as_echo "$ax_cv_PTHREAD_PRIO_INHERIT" >&6; }
+        if test "x$ax_cv_PTHREAD_PRIO_INHERIT" = "xyes" && \
+               test "x$ax_pthread_prio_inherit_defined" != "xyes"; then :
+
+$as_echo "#define HAVE_PTHREAD_PRIO_INHERIT 1" >>confdefs.h
+
+               ax_pthread_prio_inherit_defined=yes
+
+fi
+
+        CFLAGS="$ax_pthread_save_CFLAGS"
+        LIBS="$ax_pthread_save_LIBS"
+
+        # More AIX lossage: compile with *_r variant
+        if test "x$GCC" != "xyes"; then
+            case $host_os in
+                aix*)
+                case "x/$CC" in #(
+  x*/c89|x*/c89_128|x*/c99|x*/c99_128|x*/cc|x*/cc128|x*/xlc|x*/xlc_v6|x*/xlc128|x*/xlc128_v6) :
+    #handle absolute path differently from PATH based program lookup
+                     case "x$CC" in #(
+  x/*) :
+    if as_fn_executable_p ${CC}_r; then :
+  PTHREAD_CC="${CC}_r"
+fi ;; #(
+  *) :
+    for ac_prog in ${CC}_r
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_PTHREAD_CC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$PTHREAD_CC"; then
+  ac_cv_prog_PTHREAD_CC="$PTHREAD_CC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PTHREAD_CC="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PTHREAD_CC=$ac_cv_prog_PTHREAD_CC
+if test -n "$PTHREAD_CC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PTHREAD_CC" >&5
+$as_echo "$PTHREAD_CC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$PTHREAD_CC" && break
+done
+test -n "$PTHREAD_CC" || PTHREAD_CC="$CC"
+ ;;
+esac ;; #(
+  *) :
+     ;;
+esac
+                ;;
+            esac
+        fi
+fi
+
+test -n "$PTHREAD_CC" || PTHREAD_CC="$CC"
+
+
+
+
+
+# Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
+if test "x$ax_pthread_ok" = "xyes"; then
+
+$as_echo "#define HAVE_PTHREAD 1" >>confdefs.h
+
+        :
+else
+        ax_pthread_ok=no
+
+fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+### Headers
+# Usually there's no need to check for standard C89 headers.
+
+# <stdint.h> is checked by this.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
@@ -6342,6 +7110,274 @@ _ACEOF
 
 fi
 
+for ac_prog in gawk mawk nawk awk
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_AWK+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$AWK"; then
+  ac_cv_prog_AWK="$AWK" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AWK="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+AWK=$ac_cv_prog_AWK
+if test -n "$AWK"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
+$as_echo "$AWK" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$AWK" && break
+done
+
+
+
+
+
+
+
+# Check whether --with-curl-prefix was given.
+if test "${with_curl_prefix+set}" = set; then :
+  withval=$with_curl_prefix; curl_config_prefix="$withval"
+else
+  curl_config_prefix=""
+fi
+
+
+# Check whether --with-curl-exec-prefix was given.
+if test "${with_curl_exec_prefix+set}" = set; then :
+  withval=$with_curl_exec_prefix; curl_config_exec_prefix="$withval"
+else
+  curl_config_exec_prefix=""
+fi
+
+
+
+
+
+
+  if test x"$CURL_CFLAGS" != x -o x"$CURL_LIBS" != x; then :
+
+
+
+    :
+    $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+else
+
+    if test x$curl_config_exec_prefix != x; then :
+
+      curl_config_args="$curl_config_args --exec-prefix=$curl_config_exec_prefix"
+      if test x${CURL_CONFIG+set} != xset; then :
+
+	CURL_CONFIG=$curl_config_exec_prefix/bin/curl-config
+
+fi
+
+fi
+    if test x$curl_config_prefix != x; then :
+
+      curl_config_args="$curl_config_args --prefix=$curl_config_prefix"
+      if test x${CURL_CONFIG+set} != xset; then :
+
+	CURL_CONFIG=$curl_config_prefix/bin/curl-config
+
+fi
+
+fi
+
+    for ac_prog in  curl-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_CURL_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $CURL_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CURL_CONFIG="$CURL_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CURL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+CURL_CONFIG=$ac_cv_path_CURL_CONFIG
+if test -n "$CURL_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CURL_CONFIG" >&5
+$as_echo "$CURL_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$CURL_CONFIG" && break
+done
+test -n "$CURL_CONFIG" || CURL_CONFIG="no"
+
+    if test "$CURL_CONFIG" = "no"; then :
+
+      :
+
+
+else
+
+            if test x"" = x; then :
+
+	CURL_CFLAGS="`$CURL_CONFIG $curl_config_args --cflags`"
+
+else
+
+	CURL_CFLAGS="`$CURL_CONFIG $curl_config_args `"
+
+fi
+
+            if test x"" = x; then :
+
+	CURL_LIBS="`$CURL_CONFIG $curl_config_args --libs`"
+
+else
+
+	CURL_LIBS="`$CURL_CONFIG $curl_config_args `"
+
+fi
+
+      if test x"7.28.0" != x; then :
+
+		if test x"'s/^libcurl\ \+//'" != x; then :
+
+	  	  curl_version="`$CURL_CONFIG $curl_config_args --version | $SED -e 's/^libcurl\ \+//'`"
+
+else
+
+	  curl_version="`$CURL_CONFIG $curl_config_args --version | $SED -e 's/^\ *\(.*\)\ *$/\1/'`"
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl ($curl_version) >= 7.28.0" >&5
+$as_echo_n "checking for curl ($curl_version) >= 7.28.0... " >&6; }
+
+
+
+  # Used to indicate true or false condition
+  ax_compare_version=false
+
+  # Convert the two version strings to be compared into a format that
+  # allows a simple string comparison.  The end result is that a version
+  # string of the form 1.12.5-r617 will be converted to the form
+  # 0001001200050617.  In other words, each number is zero padded to four
+  # digits, and non digits are removed.
+
+  ax_compare_version_A=`echo "$curl_version" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
+                     -e 's/Z\([0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/[^0-9]//g'`
+
+
+  ax_compare_version_B=`echo "7.28.0" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
+                     -e 's/Z\([0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/[^0-9]//g'`
+
+
+    ax_compare_version=`echo "x$ax_compare_version_A
+x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version_A}/true/;s/x${ax_compare_version_B}/false/;1q"`
+
+
+
+    if test "$ax_compare_version" = "true" ; then
+
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+
+
+	  :
+	  $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+    else
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	  :
+
+
+  fi
+
+
+else
+
+
+
+	:
+	$as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+fi
+
+fi
+
+fi
+
+
+
+
+
+for ac_header
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+(curl/curl.h)
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
@@ -7168,48 +8204,6 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-for ac_prog in gawk mawk nawk awk
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_AWK+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$AWK"; then
-  ac_cv_prog_AWK="$AWK" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AWK="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-AWK=$ac_cv_prog_AWK
-if test -n "$AWK"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
-$as_echo "$AWK" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$AWK" && break
-done
-
 
 
 # Check whether --with-postgresql was given.
@@ -7724,153 +8718,119 @@ $as_echo "PostgreSQL not found" >&6; }
 fi
 
 
-
-
-# Check whether --with-sqlite3 was given.
-if test "${with_sqlite3+set}" = set; then :
-  withval=$with_sqlite3;
-        if test "$withval" = "no"; then
-            WANT_SQLITE3="no"
-        elif test "$withval" = "yes"; then
-            WANT_SQLITE3="yes"
-            ac_sqlite3_path=""
-        else
-            WANT_SQLITE3="yes"
-            ac_sqlite3_path="$withval"
-        fi
-
-else
-  WANT_SQLITE3="yes"
-
-fi
-
-
-    SQLITE3_CFLAGS=""
-    SQLITE3_LDFLAGS=""
-    SQLITE3_VERSION=""
-
-    if test "x$WANT_SQLITE3" = "xyes"; then
-
-        ac_sqlite3_header="sqlite3.h"
-
-        sqlite3_version_req=3.0.0
-        sqlite3_version_req_shorten=`expr $sqlite3_version_req : '\([0-9]*\.[0-9]*\)'`
-        sqlite3_version_req_major=`expr $sqlite3_version_req : '\([0-9]*\)'`
-        sqlite3_version_req_minor=`expr $sqlite3_version_req : '[0-9]*\.\([0-9]*\)'`
-        sqlite3_version_req_micro=`expr $sqlite3_version_req : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
-        if test "x$sqlite3_version_req_micro" = "x" ; then
-            sqlite3_version_req_micro="0"
-        fi
-
-        sqlite3_version_req_number=`expr $sqlite3_version_req_major \* 1000000 \
-                                   \+ $sqlite3_version_req_minor \* 1000 \
-                                   \+ $sqlite3_version_req_micro`
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SQLite3 library >= $sqlite3_version_req" >&5
-$as_echo_n "checking for SQLite3 library >= $sqlite3_version_req... " >&6; }
-
-        if test "$ac_sqlite3_path" != ""; then
-            ac_sqlite3_ldflags="-L$ac_sqlite3_path/lib"
-            ac_sqlite3_cppflags="-I$ac_sqlite3_path/include"
-        else
-            for ac_sqlite3_path_tmp in /usr /usr/local /opt ; do
-                if test -f "$ac_sqlite3_path_tmp/include/$ac_sqlite3_header" \
-                    && test -r "$ac_sqlite3_path_tmp/include/$ac_sqlite3_header"; then
-                    ac_sqlite3_path=$ac_sqlite3_path_tmp
-                    ac_sqlite3_cppflags="-I$ac_sqlite3_path_tmp/include"
-                    ac_sqlite3_ldflags="-L$ac_sqlite3_path_tmp/lib"
-                    break;
-                fi
-            done
-        fi
-
-        ac_sqlite3_ldflags="$ac_sqlite3_ldflags -lsqlite3"
-
-        saved_CPPFLAGS="$CPPFLAGS"
-        CPPFLAGS="$CPPFLAGS $ac_sqlite3_cppflags"
-
-        ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-            #include <sqlite3.h>
-int
-main ()
-{
-
-#if (SQLITE_VERSION_NUMBER >= $sqlite3_version_req_number)
-/* Everything is okay */
-#else
-#  error SQLite version is too old
-#endif
-
-
-  ;
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-            success="yes"
-
-else
-
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-$as_echo "not found" >&6; }
-            success="no"
-
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-        CPPFLAGS="$saved_CPPFLAGS"
-
-        if test "$success" = "yes"; then
-
-            SQLITE3_CFLAGS="$ac_sqlite3_cppflags"
-            SQLITE3_LDFLAGS="$ac_sqlite3_ldflags"
-
-            ac_sqlite3_header_path="$ac_sqlite3_path/include/$ac_sqlite3_header"
-
-                        if test "x$ac_sqlite3_header_path" != "x"; then
-                ac_sqlite3_version=`cat $ac_sqlite3_header_path \
-                    | grep '#define.*SQLITE_VERSION.*\"' | sed -e 's/.* "//' \
-                        | sed -e 's/"//'`
-                if test $ac_sqlite3_version != ""; then
-                    SQLITE3_VERSION=$ac_sqlite3_version
-                else
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&5
-$as_echo "$as_me: WARNING: Cannot find SQLITE_VERSION macro in sqlite3.h header to retrieve SQLite version!" >&2;}
-                fi
-            fi
-
-
-
-
-
-$as_echo "#define HAVE_SQLITE3 /**/" >>confdefs.h
-
-        fi
-    fi
-
 else
 { $as_echo "$as_me:${as_lineno-$LINENO}: Skipping SQL server checks" >&5
 $as_echo "$as_me: Skipping SQL server checks" >&6;}
 fi
+
+
+  succeeded=no
+
+  if test -z "$ICU_CONFIG"; then
+    # Extract the first word of "icu-config", so it can be a program name with args.
+set dummy icu-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ICU_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ICU_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ICU_CONFIG="$ICU_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ICU_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_ICU_CONFIG" && ac_cv_path_ICU_CONFIG="no"
+  ;;
+esac
+fi
+ICU_CONFIG=$ac_cv_path_ICU_CONFIG
+if test -n "$ICU_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ICU_CONFIG" >&5
+$as_echo "$ICU_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+
+  if test "$ICU_CONFIG" = "no" ; then
+    echo "*** The icu-config script could not be found. Make sure it is"
+    echo "*** in your path, and that taglib is properly installed."
+    echo "*** Or see http://ibm.com/software/globalization/icu/"
+  else
+    ICU_VERSION=`$ICU_CONFIG --version`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ICU >= 50" >&5
+$as_echo_n "checking for ICU >= 50... " >&6; }
+        VERSION_CHECK=`expr $ICU_VERSION \>\= 50`
+        if test "$VERSION_CHECK" = "1" ; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+            succeeded=yes
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking ICU_CPPFLAGS" >&5
+$as_echo_n "checking ICU_CPPFLAGS... " >&6; }
+            ICU_CPPFLAGS=`$ICU_CONFIG --cppflags`
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ICU_CPPFLAGS" >&5
+$as_echo "$ICU_CPPFLAGS" >&6; }
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking ICU_CFLAGS" >&5
+$as_echo_n "checking ICU_CFLAGS... " >&6; }
+            ICU_CFLAGS=`$ICU_CONFIG --cflags`
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ICU_CFLAGS" >&5
+$as_echo "$ICU_CFLAGS" >&6; }
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking ICU_CXXFLAGS" >&5
+$as_echo_n "checking ICU_CXXFLAGS... " >&6; }
+            ICU_CXXFLAGS=`$ICU_CONFIG --cxxflags`
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ICU_CXXFLAGS" >&5
+$as_echo "$ICU_CXXFLAGS" >&6; }
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking ICU_LIBS" >&5
+$as_echo_n "checking ICU_LIBS... " >&6; }
+            ICU_LIBS=`$ICU_CONFIG --ldflags`
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ICU_LIBS" >&5
+$as_echo "$ICU_LIBS" >&6; }
+        else
+            ICU_CPPFLAGS=""
+            ICU_CFLAGS=""
+            ICU_CXXFLAGS=""
+            ICU_LIBS=""
+            ## If we have a custom action on failure, don't print errors, but
+            ## do set a variable so people can do so.
+
+        fi
+
+
+
+
+
+  fi
+
+  if test $succeeded = yes; then
+     $as_echo "#define HAVE_ICU 1" >>confdefs.h
+
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: ICU not found" >&5
+$as_echo "ICU not found" >&6; }
+  fi
+
 
 ### Functions
 for ac_func in textdomain bindtextdomain crypt
@@ -7910,7 +8870,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
-for ac_func in getdate getpagesize getrlimit getrusage
+for ac_func in getdate getpagesize getrlimit getrusage getservbyname
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8584,7 +9544,6 @@ else
 $as_echo "no" >&6; }
 fi
 
-
 fi
 
 for ac_func in getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked
@@ -8600,6 +9559,123 @@ fi
 done
 
 
+# Headers and functions used by Sqlite3
+for ac_header in memory.h strings.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_func in fdatasync usleep fullfsync localtime_r localtime_s gmtime_r isnan malloc_usable_size
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+ac_fn_c_check_decl "$LINENO" "strerror_r" "ac_cv_have_decl_strerror_r" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strerror_r" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRERROR_R $ac_have_decl
+_ACEOF
+
+for ac_func in strerror_r
+do :
+  ac_fn_c_check_func "$LINENO" "strerror_r" "ac_cv_func_strerror_r"
+if test "x$ac_cv_func_strerror_r" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STRERROR_R 1
+_ACEOF
+
+fi
+done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether strerror_r returns char *" >&5
+$as_echo_n "checking whether strerror_r returns char *... " >&6; }
+if ${ac_cv_func_strerror_r_char_p+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    ac_cv_func_strerror_r_char_p=no
+    if test $ac_cv_have_decl_strerror_r = yes; then
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+
+	  char buf[100];
+	  char x = *strerror_r (0, buf, sizeof buf);
+	  char *p = strerror_r (0, buf, sizeof buf);
+	  return !p || x;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_func_strerror_r_char_p=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    else
+      # strerror_r is not declared.  Choose between
+      # systems that have relatively inaccessible declarations for the
+      # function.  BeOS and DEC UNIX 4.0 fall in this category, but the
+      # former has a strerror_r that returns char*, while the latter
+      # has a strerror_r that returns `int'.
+      # This test should segfault on the DEC system.
+      if test "$cross_compiling" = yes; then :
+  :
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+	extern char *strerror_r ();
+int
+main ()
+{
+char buf[100];
+	  char x = *strerror_r (0, buf, sizeof buf);
+	  return ! isalpha (x);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_func_strerror_r_char_p=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_strerror_r_char_p" >&5
+$as_echo "$ac_cv_func_strerror_r_char_p" >&6; }
+if test $ac_cv_func_strerror_r_char_p = yes; then
+
+$as_echo "#define STRERROR_R_CHAR_P 1" >>confdefs.h
+
+fi
 
 
 ### Variables, constants, defines and other misc. stuff
@@ -9100,19 +10176,16 @@ echo "* Compiler: $CC"
 echo "* Compiler flags: $CFLAGS"
 
 if test "$enable_sql" = yes; then
- sql_servers=""
+ sql_servers="Sqlite3"
  if test "$found_mysql" = yes; then
-  sql_servers="MySQL"
+  sql_servers="${sql_servers} MySQL"
  fi
  if test "$found_postgresql" = yes; then
   sql_servers="${sql_servers} Postgres"
  fi
- if test -n "$SQLITE3_VERSION" ; then
-  sql_servers="${sql_servers} Sqlite3"
- fi
- echo "* SQL support: ${sql_servers:-No}"
+ echo "* SQL support: ${sql_servers}"
 else
- echo "* SQL support: No"
+ echo "* SQL support: Sqlite3"
 fi
 
 if test "$enable_ssl_slave" = yes; then
@@ -9137,6 +10210,12 @@ if test "$enable_ipv6" = yes; then
   echo "* IPv6 sockets will be used if possible."
 else
   echo "* Sockets are limited to IPv4"
+fi
+
+if test "x$CURL_CONFIG" != "x"; then
+   echo "* libcurl will be used for @HTTP"
+else
+   echo "* No libcurl. @HTTP disabled."
 fi
 
 ac_config_files="$ac_config_files Makefile src/Makefile"

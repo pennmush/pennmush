@@ -146,6 +146,8 @@ if test -n "${ED}"; then
    AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
 fi
 
+AX_PTHREAD
+
 ### Headers
 # Usually there's no need to check for standard C89 headers.
 
@@ -207,6 +209,8 @@ AX_LIB_SOCKET_NSL
 AC_CHECK_LIB(event_core, event_base_loop)
 AC_CHECK_LIB(event_extra, evdns_base_new)
 AC_CHECK_LIB(event_openssl, bufferevent_openssl_socket_new)
+AX_LIB_CURL([7.28.0], [AC_DEFINE(HAVE_LIBCURL)],)
+AC_CHECK_HEADERS[(curl/curl.h])
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
@@ -257,10 +261,11 @@ if test "$enable_sql" = "yes"; then
 AC_MSG_NOTICE([Looking for supported SQL servers])
 AX_LIB_MYSQL()
 AX_LIB_POSTGRESQL(,,AC_MSG_RESULT(PostgreSQL not found))
-AX_LIB_SQLITE3()
 else
 AC_MSG_NOTICE([Skipping SQL server checks])
 fi
+
+AX_CHECK_ICU(50, AC_DEFINE(HAVE_ICU), AC_MSG_RESULT(ICU not found))
 
 ### Functions
 AC_CHECK_FUNCS([textdomain bindtextdomain crypt])
@@ -277,7 +282,7 @@ int main(void) {
 [AC_DEFINE(HAVE_ISNORMAL)],
 AC_MSG_RESULT(no))
 
-AC_CHECK_FUNCS([getdate getpagesize getrlimit getrusage])
+AC_CHECK_FUNCS([getdate getpagesize getrlimit getrusage getservbyname])
 AC_CHECK_FUNCS([gettext getpid getppid setitimer nl_langinfo])
 AC_FUNC_FORK
 AC_CHECK_FUNCS([setsid setpgid setpgrp])
@@ -354,12 +359,14 @@ AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
  #include <sys/wait.h>
  #endif
  ])
-
 fi
 
 AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
 
-
+# Headers and functions used by Sqlite3
+AC_CHECK_HEADERS([memory.h strings.h])
+AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r localtime_s gmtime_r isnan malloc_usable_size])
+AC_FUNC_STRERROR_R
 
 ### Variables, constants, defines and other misc. stuff
 
@@ -486,19 +493,16 @@ echo "* Compiler: $CC"
 echo "* Compiler flags: $CFLAGS"
 
 if test "$enable_sql" = yes; then
- sql_servers=""
+ sql_servers="Sqlite3"
  if test "$found_mysql" = yes; then
-  sql_servers="MySQL"
+  sql_servers="${sql_servers} MySQL"
  fi
  if test "$found_postgresql" = yes; then
   sql_servers="${sql_servers} Postgres"
  fi
- if test -n "$SQLITE3_VERSION" ; then
-  sql_servers="${sql_servers} Sqlite3"
- fi
- echo "* SQL support: ${sql_servers:-No}"
+ echo "* SQL support: ${sql_servers}"
 else
- echo "* SQL support: No"
+ echo "* SQL support: Sqlite3"
 fi
 
 if test "$enable_ssl_slave" = yes; then
@@ -523,6 +527,12 @@ if test "$enable_ipv6" = yes; then
   echo "* IPv6 sockets will be used if possible."
 else
   echo "* Sockets are limited to IPv4"
+fi
+
+if test "x$CURL_CONFIG" != "x"; then
+   echo "* libcurl will be used for @HTTP"
+else
+   echo "* No libcurl. @HTTP disabled."
 fi
 
 AC_CONFIG_FILES([Makefile src/Makefile])

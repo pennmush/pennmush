@@ -418,7 +418,7 @@ sq_register(time_t w, sq_func f, void *d, const char *ev)
   sq->fun = f;
   sq->data = d;
   if (ev)
-    sq->event = mush_strdup(strupper(ev), "squeue.event");
+    sq->event = strupper_a(ev, "squeue.event");
   else
     sq->event = NULL;
   sq->next = NULL;
@@ -520,7 +520,7 @@ sq_register_loop(int n, sq_func f, void *d, const char *ev)
   loop->fun = f;
   loop->data = d;
   if (ev)
-    loop->event = mush_strdup(strupper(ev), "squeue.event");
+    loop->event = strupper_a(ev, "squeue.event");
   else
     loop->event = NULL;
   loop->secs = n;

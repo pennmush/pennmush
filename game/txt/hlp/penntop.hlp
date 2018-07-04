@@ -14,12 +14,25 @@ This is the index to the MUSH online help files.
   For a list of attributes:                       help attribute list
   To see the configuration of this MUSH:          @config
 
-  Use 'help <pattern>' to search for topic names that match the wildcard pattern <pattern>, or 'help/search <pattern>' for a list of topics whose text matches the wildcard pattern <pattern>.
+  Use 'help <pattern>' to search for topic names that match the wildcard pattern <pattern>, or 'help/search <pattern>' for a list of topics whose text matches <pattern> (See HELP SEARCHING for details on the format of the pattern).
   
   On many MUSHes, list local commands with:       +help
 
   If there are any errors in the help text, please notify a wizard in the game, or file an issue at https://github.com/pennmush/pennmush/issues, which is the bug-tracking site for PennMUSH (and its distributed help files) but probably has no relation to this MUSH in particular.
+& searching
+help/search <pattern>
 
+Displays help entries that match <pattern>
+
+The pattern is one or more 'phrases', where each phrase is one or more words, optionally enclosed with quote marks, and combined with +. A * at the end treats the phrase as a prefix. Phrases can be combined with AND, OR and NOT. The function NEAR(phrase phrase...) matches entries where two or more phrases are near each other. An optional second argument controls how close the matching is. All these operators must appear in upper case. For full details, see https://www.sqlite.org/fts5.html#full_text_query_syntax
+
+Examples:
+
+  help/search cosine OR tangent
+  help/search "treated as"
+  help/search NEAR(player wizard, 20)
+
+This switch works with help, news, ahelp, and other help like commands.
 & newbie
   If you are new to MUSHing, the help files may seem confusing. Most of them are written in a specific style, however, and once you understand it the files are extremely helpful.
 
@@ -1670,3 +1683,16 @@ See also: @command, @function, @attribute, @lock
   Several commands and functions take a descriptor as an argument, or return the descriptor(s) associated with a player's connection.
   
 See also: WHO, ports(), lports(), player(), @boot, CONNECTION FUNCTIONS
+& UNICODE
+
+At the moment, PennMUSH has very minimal support for Unicode. Almost all text is treated internally as being in the Latin-1 character set. Clients that support telnet character set negotiation can send and receive UTF-8, but only characters in the Basic Latin and Latin-1 Supplement blocks are accepted (Others are replaced with question marks).
+
+A few functions support Unicode-aware text transformations:
+
+    stripaccents()
+
+When the MUSH is compiled with the ICU library (See @config compile), additional functions support Unicode-aware text transformations:
+
+    lcstr2()     ucstr2()
+
+When using these functions, do not assume that they return the same number of characters as their argument.

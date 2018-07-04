@@ -1253,8 +1253,8 @@ add_follow(dbref leader, dbref follower, int noisy)
   add_follower(leader, follower);
   add_following(follower, leader);
   if (noisy) {
-    strcpy(msg,
-           tprintf(T("You begin following %s."), AName(leader, AN_SYS, NULL)));
+    snprintf(msg, sizeof msg, T("You begin following %s."),
+             AName(leader, AN_SYS, NULL));
     notify_format(leader, T("%s begins following you."),
                   AName(follower, AN_SYS, NULL));
     did_it(follower, leader, "FOLLOW", msg, "OFOLLOW", NULL, "AFOLLOW", NOTHING,
@@ -1301,8 +1301,8 @@ del_follow(dbref leader, dbref follower, int noisy)
   del_follower(leader, follower);
   del_following(follower, leader);
   if (noisy) {
-    strcpy(msg,
-           tprintf(T("You stop following %s."), AName(leader, AN_SYS, NULL)));
+    snprintf(msg, sizeof msg, T("You stop following %s."),
+             AName(leader, AN_SYS, NULL));
     notify_format(leader, T("%s stops following you."),
                   AName(follower, AN_SYS, NULL));
     did_it(follower, leader, "UNFOLLOW", msg, "OUNFOLLOW", NULL, "AUNFOLLOW",

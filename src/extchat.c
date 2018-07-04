@@ -42,6 +42,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 #include "confmagic.h"
 
 static CHAN *new_channel(void);
@@ -1686,6 +1687,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
   boolexp key;
   char old[BUFFER_LEN];
   char announcebuff[BUFFER_LEN];
+  char bbuff[20];
 
   if (!name || !*name) {
     notify(player, T("You must specify a channel."));
@@ -1751,7 +1753,8 @@ do_chan_admin(dbref player, char *name, const char *perms,
       giveto(Owner(player), CHANNEL_COST);
       return;
     }
-    key = parse_boolexp(player, tprintf("=#%d", player), chan_mod_lock);
+    snprintf(bbuff, sizeof bbuff, "=#%d", player);
+    key = parse_boolexp(player, bbuff, chan_mod_lock);
     if (!key) {
       mush_free(chan, "channel");
       notify(player, T("CHAT: No more memory for channels!"));
@@ -1873,7 +1876,7 @@ ok_channel_name(const char *n, CHAN *unique)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint(*p) || *p == '|')
+    if (!char_isprint(*p) || *p == '|')
       return NAME_INVALID;
   }
 
@@ -3185,13 +3188,14 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 6;
+  format.numargs = 7;
   format.targetarg = -1;
   format.args[0] = "@";
   format.args[1] = buff2;
   /* args[2] and args[5] are set in the for loop below */
   format.args[3] = accname;
   format.args[4] = "";
+  format.args[6] = "";
 
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
@@ -3870,8 +3874,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     argv[3] = playername;
     argv[4] = title;
     argv[5] = buff;
+    argv[6] = speechtext;
     snprintf(buff, BUFFER_LEN, "%s",
-             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 6, argv, buff));
+             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 7, argv, buff));
   }
 
   if (Channel_Interact(channel)) {
@@ -3885,7 +3890,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 6;
+  format.numargs = 7;
   format.targetarg = -1;
   format.args[0] = (char *) ctype;
   format.args[1] = ChanName(channel);
@@ -3893,6 +3898,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.args[3] = playername;
   format.args[4] = title;
   format.args[5] = buff;
+  format.args[6] = speechtext;
 
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
@@ -4158,6 +4164,7 @@ parse_chat_alias(dbref player, char *command)
   ATTR *a;
   CHAN *c;
   bool chat = 0;
+  char abuff[BUFFER_LEN + 10];
 
   alias = bp = command;
   while (*bp && !isspace((unsigned char) *bp))
@@ -4172,9 +4179,9 @@ parse_chat_alias(dbref player, char *command)
   while (*message && isspace((unsigned char) *message))
     message++;
 
-  strcpy(channame, alias);
-  upcasestr(channame);
-  a = atr_get(player, tprintf("CHANALIAS`%s", channame));
+  snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
+           strupper_r(alias, channame, sizeof channame));
+  a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */
     *bp = save;
@@ -4347,7 +4354,7 @@ comlist_helper(dbref player __attribute__((__unused__)), dbref thing,
   if (!(cu = onchannel(thing, c)))
     return 0;
 
-  mush_strncpy(buff, strlower(AL_NAME(atr)), BUFFER_LEN);
+  strlower_r(AL_NAME(atr), buff, sizeof buff);
   bp = strchr(buff, '`');
   if (!bp)
     return 0;

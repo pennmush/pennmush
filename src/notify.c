@@ -122,7 +122,8 @@ static int flush_queue(struct text_queue *q, int n);
 int queue_write(DESC *d, const char *b, int n);
 int queue_newwrite(DESC *d, const char *b, int n);
 int queue_string(DESC *d, const char *s);
-int queue_string_eol(DESC *d, const char *s);
+int WIN32_CDECL queue_string_eol(DESC *d, const char *s, ...)
+  __attribute__((__format__(__printf__, 2, 3)));
 int queue_eol(DESC *d);
 void freeqs(DESC *d);
 int process_output(DESC *d);
@@ -1753,7 +1754,7 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
     if (flag2)
       ok = ok && (flaglist_check_long("FLAG", GOD, d->player, flag2, 0) == 1);
     if (ok) {
-      queue_string_eol(d, tbuf1);
+      queue_string_eol(d, "%s", tbuf1);
       process_output(d);
     }
   }
@@ -1953,7 +1954,8 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 
   if (d->conn_flags & CONN_UTF8) {
     int utf8bytes = 0;
-    utf8 = latin1_to_utf8(b, n, &utf8bytes, d->conn_flags & CONN_TELNET);
+    utf8 = latin1_to_utf8_tn(b, n, &utf8bytes, d->conn_flags & CONN_TELNET,
+                             "string");
     b = utf8;
     n = utf8bytes;
   }
@@ -2047,10 +2049,16 @@ queue_eol(DESC *d)
  * \return number of characters queued.
  */
 int
-queue_string_eol(DESC *d, const char *s)
+queue_string_eol(DESC *d, const char *fmt, ...)
 {
   int num = 0;
-  num = queue_string(d, s);
+  char buff[BUFFER_LEN * 2];
+  va_list args;
+
+  va_start(args, fmt);
+  mush_vsnprintf(buff, sizeof buff, fmt, args);
+  va_end(args);
+  num = queue_string(d, buff);
   return num + queue_eol(d);
 }
 

@@ -47,7 +47,7 @@
 #cmakedefine HAVE_EVENTFD
 #cmakedefine HAVE_EVP_MD_DO_ALL
 #cmakedefine HAVE_FCNTL
-#cmakedefine HAVE_FDATASYNC 1
+#cmakedefine01 HAVE_FDATASYNC
 #cmakedefine HAVE_FECLEAREXCEPT
 #cmakedefine HAVE_FGETS_UNLOCKED
 #cmakedefine HAVE_FPUTS_UNLOCKED
@@ -73,20 +73,20 @@
 #cmakedefine HAVE_HYPOT
 #cmakedefine HAVE_IMAXDIV
 #cmakedefine HAVE_INOTIFY_INIT1
-#cmakedefine HAVE_ISNAN 1
+#cmakedefine01 HAVE_ISNAN
 #cmakedefine HAVE_ISNORMAL
 #cmakedefine HAVE_KQUEUE
-#cmakedefine HAVE_LOCALTIME_R 1
-#cmakedefine HAVE_LOCALTIME_S 1
+#cmakedefine01 HAVE_LOCALTIME_R
+#cmakedefine01 HAVE_LOCALTIME_S
 #cmakedefine HAVE_LOG2
 #cmakedefine HAVE_LRINT
-#cmakedefine HAVE_MALLOC_USABLE_SIZE 1
+#cmakedefine01 HAVE_MALLOC_USABLE_SIZE
 #cmakedefine HAVE_NL_LANGINFO
 #cmakedefine HAVE_PIPE2
 #cmakedefine HAVE_PLEDGE
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_POSIX_FADVISE
-#cmakedefine HAVE_POSIX_FALLOCATE 1
+#cmakedefine01 HAVE_POSIX_FALLOCATE
 #cmakedefine HAVE_POSIX_MEMALIGN
 #cmakedefine HAVE_PRCTL
 #cmakedefine HAVE_PREAD
@@ -102,14 +102,14 @@
 #cmakedefine HAVE_SIGPROCMASK
 #cmakedefine HAVE_SOCKETPAIR
 #cmakedefine HAVE_STRCASECMP
-#cmakedefine HAVE_STRCHRNUL 1
+#cmakedefine01 HAVE_STRCHRNUL
 #cmakedefine HAVE_STRDUP
 #cmakedefine HAVE_STRERROR_R
 #cmakedefine HAVE_STRNCASECMP
 #cmakedefine HAVE_STRXFRM
 #cmakedefine HAVE_SYSCONF
 #cmakedefine HAVE_TEXTDOMAIN
-#cmakedefine HAVE_USLEEP 1
+#cmakedefine01 HAVE_USLEEP
 #cmakedefine HAVE_VASPRINTF
 #cmakedefine HAVE_WAIT
 #cmakedefine HAVE_WAITPID
@@ -146,8 +146,8 @@
 #cmakedefine HAVE_LIBEVENT_CORE
 #cmakedefine HAVE_LIBZ
 #cmakedefine HAVE_POSTGRESQL
-#cmakedefine HAVE_SQLITE3
 #cmakedefine HAVE_ICU
+#cmakedefine HAVE_LIBCURL
 
 #cmakedefine SSL_SLAVE
 #cmakedefine INFO_SLAVE
@@ -158,7 +158,7 @@
 #define SQLITE_ENABLE_FTS5 1
 #define SQLITE_ENABLE_JSON1 1
 #define SQLITE_ENABLE_RTREE 1
-#define SQLITE_ENABLE_STMTVTAB  1
+#define SQLITE_ENABLE_STMTVTAB 1
 #define SQLITE_ENABLE_STAT4 1
 #define SQLITE_OMIT_DEPRECATED 1
 #define SQLITE_OMIT_DECLTYPE 1
@@ -170,6 +170,8 @@
 #ifdef HAVE_ICU
 #define SQLITE_ENABLE_ICU 1
 #endif
+#cmakedefine SQLITE_MAX_WORKER_THREADS @SQLITE_MAX_WORKER_THREADS@
+#cmakedefine SQLITE_DEFAULT_WORKER_THREADS @SQLITE_DEFAULT_WORKER_THREADS@
 
 /* Taken from autoconf manual */
 #ifdef HAVE_STDBOOL_H

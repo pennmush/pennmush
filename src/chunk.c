@@ -2535,7 +2535,7 @@ acc_chunk_init(void)
   cache_head = NULL;
   cache_tail = NULL;
 
-#ifdef HAVE_POSIX_FALLOCATE
+#if HAVE_POSIX_FALLOCATE
   /* Reserve some space for the swap file to start with. */
   if (options.chunk_swap_initial > 0)
     posix_fallocate(swap_fd, 0, (options.chunk_swap_initial * 1024));
@@ -2659,7 +2659,7 @@ acc_chunk_fork_file(void)
     j++;
   }
 
-#ifdef HAVE_POSIX_FALLOCATE
+#if HAVE_POSIX_FALLOCATE
   /* Try to reserve all the space needed for the child's copy of the chunk file
    * all at once. */
   {

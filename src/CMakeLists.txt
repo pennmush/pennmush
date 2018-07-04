@@ -11,6 +11,7 @@ include(FindPackageHandleStandardArgs)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
 include(CheckCCompilerFlag)
+include(ProcessorCount)
 
 message(STATUS "Checking for installed programs.")
 find_package(UnixCommands)
@@ -160,7 +161,17 @@ if(ICU_FOUND)
   set(HAVE_ICU 1)
 endif()
 
-find_package(Threads)
+find_package(Threads REQUIRED)
+ProcessorCount(NPROCS)
+set(SQLITE_DEFAULT_WORKER_THREADS ${NPROCS})
+set(SQLITE_MAX_WORKER_THREADS ${NPROCS})
+
+find_package(CURL)
+if(CURL_FOUND)
+  include_directories(${CURL_INCLUDE_DIRS})
+  list(APPEND MUSHLIBS ${CURL_LIBRARIES})
+  set(HAVE_LIBCURL 1)
+endif()
 
 # Functions
 message(STATUS "Checking for available system functions.")

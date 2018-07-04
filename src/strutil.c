@@ -1077,7 +1077,7 @@ skip_space(const char *s)
 char *
 seek_char(const char *s, char c)
 {
-#ifdef HAVE_STRCHRNUL
+#if HAVE_STRCHRNUL
   return strchrnul(s, c);
 #else
   char *p = (char *) s;

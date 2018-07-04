@@ -1135,7 +1135,7 @@ shovechars(Port_t port, Port_t sslport)
   nfds_t fd_size = 0, fds_used = 0;
 #endif
 #define PENN_POLLIN POLLIN
-#define PENN_POLLOUT POLLOU
+#define PENN_POLLOUT POLLOUT
 #endif
   int polltimeout;
 
@@ -1405,6 +1405,7 @@ shovechars(Port_t port, Port_t sslport)
         penn_perror("poll");
         return;
       }
+    }
 #endif
 
 #ifdef INFO_SLAVE

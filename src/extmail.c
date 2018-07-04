@@ -1616,11 +1616,11 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   }
   if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:")) {
     char buff[BUFFER_LEN];
-    snprintf(buff, sizeof buff, "Fwd: %s", sbuf);
+    snprintf(buff, sizeof buff, "Fwd: %.*s", SUBJECT_LEN, sbuf);
     newp->subject = compress(chopstr(buff, SUBJECT_LEN));
   } else if ((flags & M_REPLY) && !string_prefix(sbuf, "Re:")) {
     char buff[BUFFER_LEN];
-    snprintf(buff, sizeof buff, "Re: %s", sbuf);
+    snprintf(buff, sizeof buff, "Re: %.*s", SUBJECT_LEN, sbuf);
     newp->subject = compress(chopstr(buff, SUBJECT_LEN));
   } else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL) {
     /* Don't bother to uncompress a->value */

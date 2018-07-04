@@ -1813,8 +1813,8 @@ do_chan_admin(dbref player, char *name, const char *perms,
       mush_free(ChanName(chan), "channel.name");
     ChanName(chan) = mush_strdup(perms, "channel.name");
     insert_channel(&chan);
-    snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."), old,
-             ChanName(chan));
+    snprintf(announcebuff, BUFFER_LEN, T("has renamed %.*s to %.*s."),
+             CHAN_NAME_LEN, old, CHAN_NAME_LEN, ChanName(chan));
     channel_send(chan, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
                  announcebuff);
     notify(player, T("Channel renamed."));

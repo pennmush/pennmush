@@ -4863,7 +4863,7 @@ dump_users(DESC *call_by, char *match)
     if (nlen < 16)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
-    snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
+    snprintf(tbuf, sizeof tbuf, "%16.16s %10.10s %6.6s%c %s", nbuff,
              onfor_time_fmt(d->connected_at, 10),
              idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
              get_doing(d->player, NOTHING, NOTHING, NULL, 0));

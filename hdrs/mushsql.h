@@ -6,6 +6,7 @@
  */
 
 #include "sqlite3.h"
+#include "compile.h"
 
 sqlite3 *open_sql_db(const char *, bool);
 void close_sql_db(sqlite3 *);

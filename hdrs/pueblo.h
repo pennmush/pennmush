@@ -20,8 +20,6 @@
 #define PUSE pp = pbuff
 #define PEND *pp = 0;
 
-#define pueblo_tag_wrap(a, b, c) if (SUPPORT_PUEBLO) { safe_tag_wrap(a, b, c, pbuff, &pp, NOTHING); } \
-                                 else { safe_str(c, pbuff, &pp); }
 #define tag_wrap(a, b, c) safe_tag_wrap(a, b, c, pbuff, &pp, NOTHING)
 #define tag(a) safe_tag(a, pbuff, &pp)
 #define tag_cancel(a) safe_tag_cancel(a, pbuff, &pp)

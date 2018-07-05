@@ -36,6 +36,10 @@ GLOBAL_INSTALL=@libexecdir@
 
 all: config.h autogen game/mush.cnf
 	@echo "Making all in src."
+	@echo "ICU_CFLAGS: " @ICU_CFLAGS@
+	@echo "PCRE_CFLAGS: " @PCRE_CFLAGS@
+	@echo "CURL_CFLAGS: " @CURL_CFLAGS@
+	@echo "SQL_CFLAGS: " @SQL_CFLAGS@
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)" "SQL_CFLAGS=$(SQL_CFLAGS)" \

@@ -1161,8 +1161,10 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef HAVE_LIBCURL
   curl_handle = curl_multi_init();
   curl_multi_setopt(curl_handle, CURLMOPT_MAXCONNECTS, 500);
+#if CURL_VERSION_NUM >= 0x072B00 /* 7.43.0 */
   curl_multi_setopt(curl_handle, CURLMOPT_PIPELINING,
                     CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
+#endif
 #endif
 
   avail_descriptors = how_many_fds() - 5;

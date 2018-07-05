@@ -209,7 +209,7 @@ AX_LIB_SOCKET_NSL
 AC_CHECK_LIB(event_core, event_base_loop)
 AC_CHECK_LIB(event_extra, evdns_base_new)
 AC_CHECK_LIB(event_openssl, bufferevent_openssl_socket_new)
-AX_LIB_CURL([7.28.0], [AC_DEFINE(HAVE_LIBCURL)],)
+AX_LIB_CURL([7.43.0], [AC_DEFINE(HAVE_LIBCURL)],)
 AC_CHECK_HEADERS[(curl/curl.h])
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin

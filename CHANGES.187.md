@@ -42,6 +42,7 @@ Minor Changes
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
 * log_forces in mushcnf.dst now defaults to no. You probably only want this on if you're debugging. [MG]
+* The connect screen now respects SOCKSET options. [MG]
 
 Softcode
 --------

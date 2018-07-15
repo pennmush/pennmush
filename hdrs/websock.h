@@ -18,6 +18,8 @@
 
 /* notify.c */
 int queue_newwrite_channel(DESC *d, const char *b, int n, char ch);
+int queue_newwrite(DESC *d, const char *b, int n);
+int process_output(DESC *d);
 
 /* websock.c */
 int is_websocket(const char *command);
@@ -27,6 +29,7 @@ void to_websocket_frame(const char **bp, int *np, char channel);
 
 int markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
                      int altlen, char channel);
+void send_websocket_object(DESC *d, JSON *data);
 
 FUNCTION_PROTO(fun_websocket_json);
 FUNCTION_PROTO(fun_websocket_html);

@@ -3020,10 +3020,16 @@ FUNCTION(fun_oob)
   }
 
   DESC_ITER_CONN (d) {
-    if (d->player != who || !(d->conn_flags & CONN_GMCP))
+    if (d->player != who)
       continue;
-    send_oob(d, args[1], json);
-    i++;
+    if (d->conn_flags & CONN_WEBSOCKETS) {
+      send_websocket_object(d, json);
+      i++;
+    }
+    if (d->conn_flags & CONN_GMCP) {
+      send_oob(d, args[1], json);
+      i++;
+    }
   }
   safe_integer(i, buff, bp);
   json_free(json);

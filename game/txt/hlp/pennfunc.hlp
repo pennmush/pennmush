@@ -4641,13 +4641,14 @@ See also: json(), json_query()
   size         The size of <json>; this is 0 for null objects, 1 for strings/numbers/booleans, the number of array elements, or the number of key/value pairs for objects.
   exists       For arrays and objects, returns 1 if there is an object found by following the path specified in <arg>... and 0 if not. If the current arg is an integer and the current json element is an array, uses the <arg>th index of the array (Starting at 0) as the new current element. Otherwise, if the current json element is an object, treats the current <arg> as a key into the object and its value as the new current element.  Returns #-1 for other types.
   get          For arrays and objects, returns the json element found by following the path laid out in <args>... as described above. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
+  extract      Like get, but takes a single combined path arg as described in 'help json paths'.
   unescape     Only valid for JSON strings; returns the unescaped form of <json>.
-  patch        Applies a merge patch (See https://tools.ietf.org/html/rfc7396) to <json> from <arg>, both of which must be valid JSON.
   
   See 'help json_query2' for examples.
 See also: json(), json_map()
 & JSON_QUERY2
   Examples:
+
     > say json_query(true)
     You say, "boolean"
 
@@ -4661,12 +4662,16 @@ See also: json(), json_map()
     You say, "3"
     > say json_query(v(json), get, 0)
     You say, ""abc""
-    > say json_query(v(json), get, 2)
+    > say json_query(v(json), extract, $.\[2\])
     You say, ""gh\"i""
     > say json_query(json_query(v(json), get, 2), unescape)
     You say, "gh"i"
 
-    > @set me=json:[json(object, foo, "bar", baz, 12345, "fnord", json(array, 1, 2, 3))]
+ See 'help json_query3' for more examples.
+& JSON_QUERY3
+ Examples:
+
+    > @set me=json:[json(object, foo, "bar", baz, 12345, fnord, json(array, 1, 2, 3))]
     > say v(json)
     You say, "{"foo": "bar", "baz": 12345, "fnord": [1,2,3]}"
     > say json_query(v(json), exists, foo)
@@ -4677,8 +4682,45 @@ See also: json(), json_map()
     You say, "12345"
     > say json_query(v(json), get, fnord, 1)
     You say, "2"
-    > say json_query(json(object, a,1,b,2), patch, json(object, a,42))
+    > say json_query(v(json), extract, $.fnord\[1\])
+    You say, "2"
+& JSON PATHS
+
+  json_mod() and the extract argument for json_query() take a path string that describes what part of a JSON object or array to act on. All paths start with a $ to indicate the base JSON value, and 0 or more specifiers in the following formats:
+
+  .FIELD - the name of a field in a JSON object.
+  [N]    - the Nth element of a JSON array. Note that the brackets need to be escaped.
+
+ See also: json_mod(), json_query()
+& JSON_MOD()
+  json_mod(<json>, <action>, <path>[, <json2>])
+
+  Return a new JSON value based on applying <action> to <json>.
+
+  insert - adds a new value <json2> at the given <path> if the data described by <path> doesn't exist.
+  replace - replaces an existing value at the given <path> with <json2>.
+  set     - Add or replace <json2> at the given <path>.
+  patch   - Applies a merge patch (See https://tools.ietf.org/html/rfc7396) to <json> from <path>, which must be valid JSON.
+  remove  - Removes the element from <json> pointed to by <path>
+
+  See 'HELP JSON_MOD2' for examples.
+& JSON_MOD2
+ Examples:
+
+    > say json_mod(json(object, a,1,b,2), patch, json(object, a,42))
     You say, "{"a":43,"b":2}"
+
+    > @set me=json:[json(object, foo, "bar", baz, 12345, fnord, json(array, 1, 2, 3))]
+    > say v(json)
+    You say, "{"foo": "bar", "baz": 12345, "fnord": [1,2,3]}"
+    > say json_mod(v(json), set, $.foo, false)
+    You say, "{"foo:false,"baz":12345,"fnord":[1,2,3]}"
+    > say json_mod(v(json), insert, $.quux, 1)
+    You say, "{"foo:"bar","baz":12345,"fnord":[1,2,3],"quux":1}"
+    > say json_mod(v(json), replace, $.quux, 1)
+    You say, "{"foo:"bar","baz":12345,"fnord":[1,2,3]}"
+    > say json_mod(v(json), remove, $.fnord)
+    You say, "{"foo":"bar","baz":12345}"
 & TESTLOCK()
   testlock(<key>, <victim>)
 

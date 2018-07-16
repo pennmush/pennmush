@@ -51,7 +51,7 @@ Softcode
 * Functions that work on integers (Like `div()` or `band()`) now use 64-bit values instead of 32-bit. [SW]
 * Added `isjson()`
 * `json_query()` get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
-* `json_query()` can apply merge patches to json objects per <https://tools.ietf.org/html/rfc7396>
+* `json_mod()` for modifying complex JSON objects. [SW]
 * `json_query(str, unescape)` handles unicode escape sequences.
 * `json(string, foo)` escapes non-ascii characters.
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]

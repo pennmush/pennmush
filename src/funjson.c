@@ -2,6 +2,14 @@
  * \file funjson.c
  *
  * json softcode functions and related.
+ *
+ * TODO: Consider using cJSON or another embeddable JSON parser
+ * instead of the current one. And/Or use Sqlite3 JSON1 functions for
+ * more stuff. Probably more robust and standards-compliant that way,
+ * and it means somebody else fixes any bugs in the parser.
+ *
+ * One example: json(array, ...) doesn't actually ensure its arguments
+ * are valid JSON texts.
  */
 
 #include "copyrite.h"
@@ -412,8 +420,8 @@ enum json_query {
   JSON_QUERY_SIZE,
   JSON_QUERY_EXISTS,
   JSON_QUERY_GET,
-  JSON_QUERY_UNESCAPE,
-  JSON_QUERY_PATCH
+  JSON_QUERY_EXTRACT,
+  JSON_QUERY_UNESCAPE
 };
 
 FUNCTION(fun_json_query)
@@ -433,8 +441,8 @@ FUNCTION(fun_json_query)
       query_type = JSON_QUERY_UNESCAPE;
     } else if (strcasecmp("type", args[1]) == 0) {
       query_type = JSON_QUERY_TYPE;
-    } else if (strcasecmp("patch", args[1]) == 0) {
-      query_type = JSON_QUERY_PATCH;
+    } else if (strcasecmp("extract", args[1]) == 0) {
+      query_type = JSON_QUERY_EXTRACT;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
       return;
@@ -442,13 +450,13 @@ FUNCTION(fun_json_query)
   }
 
   if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS ||
-       query_type == JSON_QUERY_PATCH) &&
+       query_type == JSON_QUERY_EXTRACT) &&
       (nargs < 3 || !args[2] || !*args[2])) {
     safe_str(T("#-1 MISSING VALUE"), buff, bp);
     return;
   }
 
-  if (query_type != JSON_QUERY_PATCH) {
+  if (query_type != JSON_QUERY_EXTRACT) {
     json = string_to_json(args[0]);
     if (!json) {
       safe_str(T("#-1 INVALID JSON"), buff, bp);
@@ -590,43 +598,154 @@ FUNCTION(fun_json_query)
       }
     }
     break;
-  case JSON_QUERY_PATCH: {
-    sqlite3 *sqldb;
-    sqlite3_stmt *patch;
+  case JSON_QUERY_EXTRACT: {
+    sqlite3 *sqldb = get_shared_db();
+    sqlite3_stmt *op;
     char *utf8;
-    int status;
-    int ulen;
+    int ulen, status;
 
-    sqldb = get_shared_db();
-    patch =
-      prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_query.patch");
-    if (!patch) {
+    op = prepare_statement_cache(sqldb, "VALUES (json_extract(?, ?))",
+                                 "json_query", 0);
+    if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
     }
 
     utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
-    sqlite3_bind_text(patch, 1, utf8, ulen, free_string);
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
-    sqlite3_bind_text(patch, 2, utf8, ulen, free_string);
-    status = sqlite3_step(patch);
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    status = sqlite3_step(op);
+
     if (status == SQLITE_ROW) {
       char *latin1;
       int len;
-      const char *p = (const char *) sqlite3_column_text(patch, 0);
-      int plen = sqlite3_column_bytes(patch, 0);
+      const char *p = (const char *) sqlite3_column_text(op, 0);
+      int plen = sqlite3_column_bytes(op, 0);
       latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
       safe_strl(latin1, len, buff, bp);
       mush_free(latin1, "string");
     } else {
       safe_format(buff, bp, "#-1 JSON ERROR %s", sqlite3_errstr(status));
     }
-    sqlite3_reset(patch);
+
+    sqlite3_finalize(op);
+    break;
   }
   }
   if (json) {
     json_free(json);
   }
+}
+
+FUNCTION(fun_json_mod)
+{
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *op = NULL;
+  char *utf8;
+  int status;
+  int ulen;
+
+  if (strcasecmp(args[1], "patch") == 0) {
+    op = prepare_statement_cache(sqldb, "VALUES (json_patch(?, ?))",
+                                 "json_query.patch", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "insert") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement_cache(sqldb, "VALUES (json_insert(?, ?, json(?)))",
+                                 "json_mod", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "replace") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement_cache(sqldb, "VALUES (json_replace(?, ?, json(?)))",
+                                 "json_mod", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "set") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement_cache(sqldb, "VALUES (json_set(?, ?, json(?)))",
+                                 "json_mod", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "remove") == 0) {
+    op = prepare_statement_cache(sqldb, "VALUES (json_remove(?, ?))",
+                                 "json_mod", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else {
+    safe_str("#-1 INVALID OPERATION", buff, bp);
+    return;
+  }
+
+  status = sqlite3_step(op);
+  if (status == SQLITE_ROW) {
+    char *latin1;
+    int len;
+    const char *p = (const char *) sqlite3_column_text(op, 0);
+    int plen = sqlite3_column_bytes(op, 0);
+    latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
+    safe_strl(latin1, len, buff, bp);
+    mush_free(latin1, "string");
+  } else {
+    safe_format(buff, bp, "#-1 JSON ERROR %s", sqlite3_errstr(status));
+  }
+
+  sqlite3_finalize(op);
 }
 
 FUNCTION(fun_json_map)

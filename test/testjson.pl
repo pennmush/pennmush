@@ -28,9 +28,9 @@ test('json.array.2', $mortal, 'think json(array, "foo", 5, json(array, "bar", 10
 test('json.object.1', $mortal, 'think json(object, foo, 1, bar, "baz", boing, true)', '^{"foo": 1, "bar": "baz", "boing": true}$');
 test('json.object.2', $mortal, 'think json(object, foo, 1, bar, "baz", boing, json(array, "nested", "test", 1)))', '^{"foo": 1, "bar": "baz", "boing": \["nested", "test", 1\]}');
 
-test('json.patch.1', $mortal, "think json_query(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^{"a":1,"b":2,"c":3,"d":4}');
-test('json.patch.2', $mortal, "think json_query(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^{"a":9,"b":2}');
-test('json.patch.3', $mortal, 'think json_query(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^{"b":2}');
-test('json.patch.4', $mortal, 'think json_query(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^{"a":9,"c":8}');
-test('json.patch.5', $mortal, 'think json_query(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^{"a":\{"x":1,"y":9\},"b":3,"c":8}');
+test('json.patch.1', $mortal, "think json_mod(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^{"a":1,"b":2,"c":3,"d":4}');
+test('json.patch.2', $mortal, "think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^{"a":9,"b":2}');
+test('json.patch.3', $mortal, 'think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^{"b":2}');
+test('json.patch.4', $mortal, 'think json_mod(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^{"a":9,"c":8}');
+test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^{"a":\{"x":1,"y":9\},"b":3,"c":8}');
 

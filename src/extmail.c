@@ -2896,7 +2896,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Initialize the mail selector - this matches all messages */
   ms->low = 0;
   ms->high = 0;
-  ms->flags = 0x00FF | M_MSUNREAD | M_FOLDER;
+  ms->flags = 0x00FF | M_MSUNREAD | FolderBit(player_folder(player));
   ms->player = 0;
   ms->days = -1;
   ms->day_comp = 0;
@@ -2919,7 +2919,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
       return 0;
     }
     /* remove current folder when other folder specified */
-    ms->flags &= ~M_FOLDER;
+    ms->flags &= ~FolderBit(player_folder(player));
     ms->flags |= FolderBit(folder);
   } else if (*p == '~') {
     /* exact # of days old */

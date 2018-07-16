@@ -88,6 +88,7 @@ Fixes
 * Fix an off-by-one error in command switch initialization code. [SW]
 * `@mail` without a message list respects the current folder instead of using folder 0. [77]
 * ufun(), ulocal(), etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
+* Fix bug related to the '@mail without message list change'.
 
 Documentation
 -------------

@@ -10,6 +10,10 @@
  *
  * One example: json(array, ...) doesn't actually ensure its arguments
  * are valid JSON texts.
+ *
+ * Tried converting json_query(..., type) over, which is kind of messy
+ * due to differences between how sqlite3 and penn report types. Save
+ * the rest for 1.8.8 or later.
  */
 
 #include "copyrite.h"
@@ -415,6 +419,8 @@ string_to_json_real(char *input, char **ip, int recurse)
   }
 }
 
+#include "jsontypes.c"
+
 enum json_query {
   JSON_QUERY_TYPE,
   JSON_QUERY_SIZE,
@@ -456,7 +462,7 @@ FUNCTION(fun_json_query)
     return;
   }
 
-  if (query_type != JSON_QUERY_EXTRACT) {
+  if (query_type != JSON_QUERY_EXTRACT && query_type != JSON_QUERY_TYPE) {
     json = string_to_json(args[0]);
     if (!json) {
       safe_str(T("#-1 INVALID JSON"), buff, bp);
@@ -465,30 +471,38 @@ FUNCTION(fun_json_query)
   }
 
   switch (query_type) {
-  case JSON_QUERY_TYPE:
-    switch (json->type) {
-    case JSON_NONE:
-      break; /* Should never happen */
-    case JSON_STR:
-      safe_str("string", buff, bp);
-      break;
-    case JSON_BOOL:
-      safe_str("boolean", buff, bp);
-      break;
-    case JSON_NULL:
-      safe_str("null", buff, bp);
-      break;
-    case JSON_NUMBER:
-      safe_str("number", buff, bp);
-      break;
-    case JSON_ARRAY:
-      safe_str("array", buff, bp);
-      break;
-    case JSON_OBJECT:
-      safe_str("object", buff, bp);
-      break;
+  case JSON_QUERY_TYPE: {
+    sqlite3 *sqldb = get_shared_db();
+    sqlite3_stmt *op;
+    char *utf8;
+    int ulen, status;
+    op =
+      prepare_statement_cache(sqldb, "VALUES (json_type(?))", "json_query", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
     }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    status = sqlite3_step(op);
+    if (status == SQLITE_ROW) {
+      const char *t = (const char *) sqlite3_column_text(op, 0);
+      size_t tlen = sqlite3_column_bytes(op, 0);
+      /* Use a perfect hash table to map sqlite json1 type names to penn names
+       */
+      const struct json_type_map *type = json_type_lookup(t, tlen);
+      if (type) {
+        safe_str(type->pname, buff, bp);
+      } else {
+        safe_str("#-1 UNKNOWN TYPE", buff, bp);
+      }
+    } else {
+      safe_format(buff, bp, "#-1 JSON ERROR %s", sqlite3_errstr(status));
+    }
+    sqlite3_finalize(op);
     break;
+  }
   case JSON_QUERY_SIZE:
     switch (json->type) {
     case JSON_NONE:

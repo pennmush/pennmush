@@ -35,9 +35,9 @@
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
 
-static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
-                          NEW_PE_INFO *pe_info, JSON *json, dbref executor,
-                          dbref enactor);
+static bool json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff,
+                          PE_REGS *pe_regs, NEW_PE_INFO *pe_info,
+                          sqlite3_stmt *json, dbref executor, dbref enactor);
 
 /** Free all memory used by a JSON struct */
 void
@@ -766,66 +766,56 @@ FUNCTION(fun_json_map)
 {
   ufun_attrib ufun;
   PE_REGS *pe_regs;
-  int funccount;
   char *osep, osepd[2] = {' ', '\0'};
-  JSON *json, *next;
-  int i;
-  char rbuff[BUFFER_LEN];
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *mapper;
+  sqlite3_str *rbuff;
+  char *utf8;
+  int ulen;
+  int status, i;
+  int rows = 0;
 
   osep = (nargs >= 3) ? args[2] : osepd;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
-    return;
-
-  json = string_to_json(args[1]);
-  if (!json) {
-    safe_str(T("#-1 INVALID JSON"), buff, bp);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT)) {
     return;
   }
+
+  mapper = prepare_statement(sqldb, "SELECT type, value, key FROM json_each(?)",
+                             "json_map");
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_json_map");
   for (i = 3; i <= nargs; i++) {
     pe_regs_setenv_nocopy(pe_regs, i, args[i]);
   }
 
-  switch (json->type) {
-  case JSON_NONE:
-    break;
-  case JSON_STR:
-  case JSON_BOOL:
-  case JSON_NULL:
-  case JSON_NUMBER:
-    /* Basic data types */
-    json_map_call(&ufun, rbuff, pe_regs, pe_info, json, executor, enactor);
-    safe_str(rbuff, buff, bp);
-    break;
-  case JSON_ARRAY:
-  case JSON_OBJECT:
-    /* Complex types */
-    for (next = json->data, i = 0; next; next = next->next, i++) {
-      funccount = pe_info->fun_invocations;
-      if (json->type == JSON_ARRAY) {
-        pe_regs_setenv(pe_regs, 2, pe_regs_intname(i));
-      } else {
-        pe_regs_setenv_nocopy(pe_regs, 2, (char *) next->data);
-        next = next->next;
-        if (!next)
-          break;
-      }
-      if (json_map_call(&ufun, rbuff, pe_regs, pe_info, next, executor,
-                        enactor))
-        break;
-      if (i > 0)
-        safe_str(osep, buff, bp);
-      safe_str(rbuff, buff, bp);
-      if (*bp >= (buff + BUFFER_LEN - 1) &&
-          pe_info->fun_invocations == funccount)
-        break;
-    }
-    break;
-  }
+  utf8 = latin1_to_utf8(args[1], arglens[1], &ulen, "string");
+  sqlite3_bind_text(mapper, 1, utf8, ulen, free_string);
+  rbuff = sqlite3_str_new(sqldb);
 
-  json_free(json);
+  do {
+    status = sqlite3_step(mapper);
+    if (status == SQLITE_ROW) {
+      if (rows++ > 0) {
+        sqlite3_str_appendall(rbuff, osep);
+      }
+      if (json_map_call(&ufun, rbuff, pe_regs, pe_info, mapper, executor,
+                        enactor)) {
+        status = SQLITE_DONE;
+        break;
+      }
+    }
+  } while (status == SQLITE_ROW);
+  if (status == SQLITE_DONE) {
+    char *res = sqlite3_str_finish(rbuff);
+    safe_str(res, buff, bp);
+    sqlite3_free(res);
+  } else {
+    safe_str("#-1 INVALID JSON", buff, bp);
+    sqlite3_str_reset(rbuff);
+    sqlite3_str_finish(rbuff);
+  }
+  sqlite3_reset(mapper);
   pe_regs_free(pe_regs);
 }
 
@@ -842,53 +832,55 @@ FUNCTION(fun_json_map)
  * \retval 1 function invocation limit exceeded
  */
 static bool
-json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
-              NEW_PE_INFO *pe_info, JSON *json, dbref executor, dbref enactor)
+json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
+              NEW_PE_INFO *pe_info, sqlite3_stmt *json, dbref executor,
+              dbref enactor)
 {
-  char *jstr = NULL;
+  const char *jtype;
+  const struct json_type_map *ptype;
+  char buff[BUFFER_LEN] = {'\0'};
+  bool status;
 
-  switch (json->type) {
-  case JSON_NONE:
-    return 0;
-  case JSON_STR:
-    pe_regs_setenv_nocopy(pe_regs, 0, "string");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_BOOL:
-    pe_regs_setenv_nocopy(pe_regs, 0, "boolean");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_NULL:
-    pe_regs_setenv_nocopy(pe_regs, 0, "null");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_NUMBER:
-    pe_regs_setenv_nocopy(pe_regs, 0, "number");
-    {
-      char buff[BUFFER_LEN];
-      char *bp = buff;
-      safe_number(*(NVAL *) json->data, buff, &bp);
-      *bp = '\0';
-      pe_regs_setenv(pe_regs, 1, buff);
-    }
-    break;
-  case JSON_ARRAY:
-    pe_regs_setenv_nocopy(pe_regs, 0, "array");
-    jstr = json_to_string(json, 0);
-    pe_regs_setenv(pe_regs, 1, jstr);
-    if (jstr)
-      mush_free(jstr, "json_str");
-    break;
-  case JSON_OBJECT:
-    pe_regs_setenv_nocopy(pe_regs, 0, "object");
-    jstr = json_to_string(json, 0);
-    pe_regs_setenv(pe_regs, 1, jstr);
-    if (jstr)
-      mush_free(jstr, "json_str");
-    break;
+  jtype = (const char *) sqlite3_column_text(json, 0);
+  ptype = json_type_lookup(jtype, sqlite3_column_bytes(json, 0));
+
+  pe_regs_setenv_nocopy(pe_regs, 0, ptype->pname);
+
+  if (strcmp(jtype, "true") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "true");
+  } else if (strcmp(jtype, "false") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "false");
+  } else if (strcmp(jtype, "null") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "null");
+  } else if (strcmp(jtype, "integer") == 0) {
+    pe_regs_setenv(pe_regs, 1, pe_regs_intname(sqlite3_column_int(json, 1)));
+  } else if (strcmp(jtype, "real") == 0) {
+    pe_regs_setenv(pe_regs, 1, (const char *) sqlite3_column_text(json, 1));
+  } else {
+    const char *utf8;
+    char *latin1;
+    int ulen, len;
+
+    utf8 = (const char *) sqlite3_column_text(json, 1);
+    ulen = sqlite3_column_bytes(json, 1);
+    latin1 = utf8_to_latin1_us(utf8, ulen, &len, 0, "string");
+    pe_regs_setenv(pe_regs, 1, latin1);
+    mush_free(latin1, "string");
+  }
+  if (sqlite3_column_type(json, 2) == SQLITE_INTEGER) {
+    pe_regs_setenv(pe_regs, 2, pe_regs_intname(sqlite3_column_int(json, 2)));
+  } else if (sqlite3_column_type(json, 2) == SQLITE_TEXT) {
+    const char *utf8 = (const char *) sqlite3_column_text(json, 2);
+    int ulen = sqlite3_column_bytes(json, 2);
+    int len;
+    char *latin1 = utf8_to_latin1_us(utf8, ulen, &len, 0, "string");
+    pe_regs_setenv(pe_regs, 2, latin1);
+    mush_free(latin1, "string");
   }
 
-  return call_ufun(ufun, rbuff, executor, enactor, pe_info, pe_regs);
+  status = call_ufun(ufun, buff, executor, enactor, pe_info, pe_regs);
+  sqlite3_str_appendall(rbuff, buff);
+  return status;
 }
 
 FUNCTION(fun_json)

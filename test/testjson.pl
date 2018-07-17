@@ -112,10 +112,11 @@ test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2)
 # json_map
 
 test('json.2', $mortal, '&json_fn me=We got [art(%0)] %0: %1', 'Set');
+test('json.3', $mortal, '&json2_fn me=%0:%1:%2', 'Set');
 
-test('json.map.1', $mortal, 'think json_map(me/json_fn, "foo")', 'We got a string: foo');
-test('json.map.2', $mortal, 'think json_map(me/json_fn, \["foo"\, 5\], @)', 'We got a string: foo@We got a number: 5');
-test('json.map.3', $mortal, 'think json_map(me/json_fn, \["foo"\, \["bar"\, 10\]\], @)', 'We got a string: foo@We got an array: \["bar",10\]');
-
+test('json.map.1', $mortal, 'think json_map(me/json_fn, "foo")', '^We got a string: foo$');
+test('json.map.2', $mortal, 'think json_map(me/json_fn, \["foo"\, 5\], @)', '^We got a string: foo@We got a number: 5$');
+test('json.map.3', $mortal, 'think json_map(me/json_fn, \["foo"\, \["bar"\, 10\]\], @)', '^We got a string: foo@We got an array: \["bar",10\]$');
+test('json.map.4', $mortal, 'think json_map(me/json2_fn, json(object, a, 1, b, true, c, null), @)', '^number:1:a@boolean:true:b@null:null:c$');
 
 

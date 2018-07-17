@@ -1557,3 +1557,393 @@ FUNCTION(fun_benchmark)
 
   return;
 }
+
+// Helper function for fun_parenmatch
+
+char *
+strip_escapes(char *atext)
+{
+    char *retbuff, *atextptr, *retbuffptr;
+    int esc_val;
+
+    atextptr = atext;
+    esc_val = 0;
+    retbuffptr = retbuff = (char *)mush_malloc(BUFFER_LEN, "strip_escapes");
+    memset(retbuff, '\0', BUFFER_LEN);
+
+    while ( *atextptr ) {
+       if ( *atextptr == '\\' || *atextptr == '%' )
+          esc_val = !esc_val;
+       if ( !esc_val ) {
+          if (*atextptr == '\\' || *atextptr == '%')
+             safe_chr('X', retbuff, &retbuffptr);
+          else
+             safe_chr(*atextptr, retbuff, &retbuffptr);
+       } else {
+          safe_chr('X', retbuff, &retbuffptr);
+       }
+       if ( *atextptr != '\\' && *atextptr != '%' )
+          esc_val = 0;
+       atextptr++;
+    }
+
+    return retbuff;
+}
+// Helper function for fun_parenmatch
+int
+paren_match2(char *atext)
+{
+    char *atextptr;
+    int tcnt, i_err, i_pos;
+    static int iarr[BUFFER_LEN];
+
+    atextptr = atext;
+    tcnt = i_err = i_pos = 0;
+    while ( *atextptr ) {
+          switch(*atextptr) {
+             case ']' : iarr[tcnt] = 1;
+                        tcnt++;
+                        break;
+             case ')' : iarr[tcnt] = 2;
+                        tcnt++;
+                        break;
+             case '}' : iarr[tcnt] = 3;
+                        tcnt++;
+                        break;
+             case '[' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 1)
+                           i_err = 1;
+                        tcnt--;
+                        break;
+             case '(' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 2)
+                           i_err = 1;
+                        tcnt--;
+                        break;
+             case '{' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 3)
+                           i_err = 1;
+                        tcnt--;
+                        break;
+       }
+       if ( i_err || (tcnt < 0 ) ) {
+          i_pos++;
+          return i_pos;
+       } else {
+          atextptr++;
+       }
+       i_pos++;
+    }
+    return (tcnt > 0 ? i_pos : 0);
+}
+
+// This is the main function for fun_parenmatch
+
+int
+paren_match(char *atext, char *buff, char **bptr, int key, int i_type, int i_indent, int i_extra)
+{
+    char *atextptr;
+    int oldtcnt, tcnt, i_clr, i_err, esc_val, i_pos, i_indentnow, i_close, i_lastclose, i_space;
+    static int iarr[BUFFER_LEN];
+    static char *s_clrs[] = {ANSI_MAGENTA, ANSI_GREEN, ANSI_YELLOW, ANSI_CYAN, ANSI_BLUE};
+
+    i_indentnow = i_pos = i_err = i_clr = tcnt = oldtcnt = esc_val = i_close = i_lastclose = 0;
+    atextptr = atext;
+    while ( *atextptr ) {
+       i_lastclose = i_close;
+       i_close = i_space = 0;
+       if ( (*atextptr == '%') || (*atextptr == '\\') )
+          esc_val = !esc_val;
+       if (!esc_val) {
+          switch(*atextptr) {
+             case ',' :
+             case ';' :
+                        if ( i_extra & 1 ) {
+                           i_space = 1;
+                        }
+                        break;
+             case '=' :
+                        if ( i_extra & 1 ) {
+                           safe_chr(' ', buff, bptr);
+                           i_space = 1;
+                        }
+                        break;
+             case '[' : iarr[tcnt] = 1;
+                        tcnt++;
+                        i_clr = tcnt;
+                        if ( i_extra & 4 ) {
+                           i_space = 1;
+                        }
+                        break;
+             case '(' : iarr[tcnt] = 2;
+                        tcnt++;
+                        i_clr = tcnt;
+                        if ( i_extra & 2 ) {
+                           i_space = 1;
+                        }
+                        break;
+             case '{' : iarr[tcnt] = 3;
+                        tcnt++;
+                        i_clr = tcnt;
+                        if ( i_extra & 8 ) {
+                           i_space = 1;
+                        }
+                        break;
+             case ']' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 1)
+                           i_err = 1;
+                        i_clr = tcnt;
+                        tcnt--;
+                        i_close = 1;
+                        if ( i_extra & 4 ) {
+                           safe_chr(' ', buff, bptr);
+                        }
+                        break;
+             case ')' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 2)
+                           i_err = 1;
+                        i_clr = tcnt;
+                        tcnt--;
+                        i_close = 1;
+                        if ( i_extra & 2 ) {
+                           safe_chr(' ', buff, bptr);
+                        }
+                        break;
+             case '}' : if (tcnt == 0)
+                           i_err = 1;
+                        else if (iarr[tcnt-1] != 3)
+                           i_err = 1;
+                        i_clr = tcnt;
+                        tcnt--;
+                        i_close = 1;
+                        if ( i_extra & 8 ) {
+                           safe_chr(' ', buff, bptr);
+                        }
+                        break;
+          }
+       }
+       if ( (*atextptr != '%') && (*atextptr != '\\') )
+          esc_val = 0;
+       if ( i_err || (tcnt < 0) || (key == i_pos) ) {
+          if ( i_type == 0 ) {
+             safe_str(ANSI_RED, buff, bptr);
+             safe_str(ANSI_HILITE, buff, bptr);
+             safe_chr(*atextptr, buff, bptr);
+             safe_str(ANSI_NORMAL, buff, bptr);
+             if ( i_space ) {
+                safe_chr(' ', buff, bptr);
+             }
+             atextptr++;
+             safe_str(atextptr, buff, bptr);
+             return 0;
+          } else {
+             atextptr = atext;
+             *bptr = buff;
+             tcnt = 0;
+             while ( *atextptr && tcnt < i_pos ) {
+                safe_chr(*atextptr, buff, bptr);
+                atextptr++;
+                tcnt++;
+             }
+             safe_str(ANSI_RED, buff, bptr);
+             safe_str(ANSI_HILITE, buff, bptr);
+             safe_chr(*atextptr, buff, bptr);
+             safe_str(ANSI_NORMAL, buff, bptr);
+             if ( i_space ) {
+                safe_chr(' ', buff, bptr);
+             }
+             atextptr++;
+             safe_str(atextptr, buff, bptr);
+             return 0;
+          }
+       } else {
+          if ( tcnt != oldtcnt ) {
+             if ( i_indent ) {
+                if ( i_close ) {
+                   safe_str("\r\n", buff, bptr);
+                   for ( i_indentnow = 0; i_indentnow < (i_clr-1); i_indentnow++ ) {
+                      safe_str("   ", buff, bptr);
+                   }
+                }
+             }
+             safe_str(s_clrs[i_clr % 5], buff, bptr);
+             safe_chr(*atextptr, buff, bptr);
+             if ( i_space ) {
+                safe_chr(' ', buff, bptr);
+             }
+             safe_str(ANSI_NORMAL, buff, bptr);
+             if ( i_indent ) {
+                if ( !i_close ) {
+                   safe_str("\r\n", buff, bptr);
+                   for ( i_indentnow = 0; i_indentnow < i_clr; i_indentnow++ ) {
+                      safe_str("   ", buff, bptr);
+                   }
+                }
+             }
+          } else {
+             safe_chr(*atextptr, buff, bptr);
+             if ( i_space ) {
+                safe_chr(' ', buff, bptr);
+             }
+          }
+          oldtcnt = tcnt;
+          atextptr++;
+       }
+       i_pos++;
+    }
+    return (tcnt > 0 ? i_pos : 0);
+}
+
+// Heper function for fun_parenmatch
+static void
+do_reverse(char *from, char *to, char **tocx, int i_transpose)
+{
+    char *fp;
+
+    fp = from + strlen(from) - 1;
+    while( fp >= from ) {
+       if ( i_transpose ) {
+          switch(*fp) {
+             case '[': safe_chr(']', to, tocx);
+                       break;
+             case ']': safe_chr('[', to, tocx);
+                       break;
+             case '<': safe_chr('>', to, tocx);
+                       break;
+             case '>': safe_chr('<', to, tocx);
+                       break;
+             case '{': safe_chr('}', to, tocx);
+                       break;
+             case '}': safe_chr('{', to, tocx);
+                       break;
+             case '(': safe_chr(')', to, tocx);
+                       break;
+             case ')': safe_chr('(', to, tocx);
+                       break;
+             case '/': safe_chr('\\', to, tocx);
+                       break;
+             case '\\': safe_chr('/', to, tocx);
+                       break;
+             default: safe_chr(*fp, to, tocx);
+                       break;
+          }
+          fp--;
+       } else {
+          safe_chr( *fp--, to, tocx);
+       }
+    }
+   *tocx = '\0';
+}
+
+/* ARGSUSED */
+
+FUNCTION(fun_parenmatch)
+{
+    dbref thing;
+    int tcnt, i_type, i_indent, i_extra;
+    ATTR *ap;
+    char *atext, *atextptr, *revatext, *revatextptr;
+    char *tbuff, *tbuffptr, *p_extra;
+    char tmp[BUFFER_LEN];
+
+    if (nargs == 2) {
+       i_type = atoi(args[1]);
+    } else
+       i_type = 0;
+    if ( i_type < 0 || i_type > 1)
+       i_type = 0;
+
+     // We got an 'obj/attrib' combo.
+    if(strchr(args[0], '/')) {
+      parse_attrib(executor, args[0], &thing, &ap);
+      if (!GoodObject(thing) || !ap || !Can_Read_Attr(executor, thing, ap)) {
+        safe_str(T(e_notvis), buff, bp);
+        return;
+      }
+    } else { // Just 'attrib'
+      thing = executor;
+      ap = atr_get(thing, strupper_r(args[0], tmp, sizeof tmp));
+      if (!ap) {
+        safe_str(T(e_notvis), buff, bp);
+        return;
+      }
+      if (!Can_Read_Attr(executor, thing, ap))  {
+        safe_str(T(e_atrperm), buff, bp);
+      return;
+      }
+    }
+    atext = safe_atr_value(ap, "fun_paren_match_text");
+
+    if (!atext) {
+       return;
+    }
+    if (!*atext) {
+       mush_free(atext, "fun_paren_match_text");
+       return;
+    }
+    /* String is too long to do anything with anwyay.  Just return it */
+    if ( strlen(atext) >= (BUFFER_LEN) ) {
+        safe_str(atext, buff, bp);
+        mush_free(atext, "fun_paren_match_text");
+        return;
+    }
+    i_indent = 0;
+    if ( (nargs > 2) && *args[2] ) {
+       i_indent = ((atoi(args[2]) > 0) ? 1 : 0);
+    }
+
+    i_extra = 0;
+    if ( (nargs > 3) && *args[3] ) {
+       p_extra = args[3];
+       while ( p_extra && *p_extra ) {
+          switch(*p_extra) {
+             case 's': /* Spaces after commas and semi-colons */
+                i_extra |= 1;
+                break;
+             case 'p': /* Spaces before/after Parenthesis */
+                i_extra |= 2;
+                break;
+             case 'b': /* Spaces before/after Brackets */
+                i_extra |= 4;
+                break;
+             case 'B': /* Spaces before/after Braces */
+                i_extra |= 8;
+                break;
+          }
+          p_extra++;
+       }
+    }
+
+    tcnt = 0;
+    tbuff = (char *)mush_malloc(BUFFER_LEN, "fun_parenmatch_tbuff");
+    memset(tbuff, 0, BUFFER_LEN);
+    tbuffptr = tbuff;
+
+    tcnt = paren_match(atext, tbuff, &tbuffptr, -1, i_type, i_indent, i_extra);
+
+    if ( tcnt > 0 ) {
+       revatext = (char *)mush_malloc(BUFFER_LEN, "fun_parentmatch_rev");
+       memset(revatext, 0, BUFFER_LEN);
+       revatextptr = revatext;
+       atextptr = strip_escapes(atext);
+       do_reverse(atextptr, revatext, &revatextptr, 0);
+       mush_free(atextptr, "strip_escapes");
+       memset(tbuff, 0, BUFFER_LEN);
+       tbuffptr = tbuff;
+       tcnt = paren_match2(revatext);
+       mush_free(revatext, "fun_parenmatch_rev");
+       tcnt = paren_match(atext, tbuff, &tbuffptr, (tcnt > 0 ? ((int)strlen(atext)-tcnt) : (int)-1), i_type, i_indent, i_extra);
+       mush_free(atext, "fun_paren_match_text");
+       safe_str(tbuff, buff, bp);
+       mush_free(tbuff, "fun_parentmatch_tbuff");
+    } else {
+       mush_free(atext, "fun_parenmatch_text");
+       safe_str(tbuff, buff, bp);
+       mush_free(tbuff, "fun_parenmatch_tbuff");
+    }
+}

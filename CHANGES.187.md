@@ -61,12 +61,13 @@ Softcode
 * `@suggest` and `suggest()` for user-defined spellchecking. Loads */usr/share/dict/words* or another configurable wordlist by default.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
 * `soundex()` and `soundslike()` now support a second phonetic hash algorithm besides soundex.
-* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
-* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* Side-effect version of `link()` now returns 1 on success, 0 or #-1 on failure. [MT]
+* `owner()` now accepts two optional arguments, allowing ownership to be changed as in `@chown` and `@atrchown`. [MT]
 * If compiled with libcurl support, adds `@http` for interacting with RESTFul web APIs. [SW]
 * `stripaccents()` supports a second, smarter, transliteration algorithm.
 * If compiled with ICU support, adds `lcstr2()` and `ucstr2()` with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
 * `@chatformat` now receives a new arg, `%6`, which defaults to "says" but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
+* `etimefmt()` supports `$w` and `$y` formats for weeks and years. [SW, 804]
 
 Fixes
 -----
@@ -87,7 +88,7 @@ Fixes
 * A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
 * Fix an off-by-one error in command switch initialization code. [SW]
 * `@mail` without a message list respects the current folder instead of using folder 0. [77]
-* ufun(), ulocal(), etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
+* `ufun()`, `ulocal()`, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
 
 Documentation
 -------------

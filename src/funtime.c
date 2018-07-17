@@ -732,10 +732,12 @@ FUNCTION(fun_isdaylight)
 /** Convert seconds to a formatted time string.
  * \verbatim
  * Format codes:
- *       $s, $S - Seconds
- *       $m, $M - Minutes
+ *       $s, $S - Seconds.
+ *       $m, $M - Minutes.
  *       $h, $H - Hours.
  *       $d, $D - Days.
+ *       $w, $W - Weeks.
+ *       $y, $Y - Years.
  *       $$ - Literal $.
  *   All of the above can be given as $Nx to pad to N characters wide.
  *   $Nx are padded with spaces. $NX are padded with 0's.
@@ -748,36 +750,77 @@ FUNCTION(fun_isdaylight)
 void
 do_timestring(char *buff, char **bp, const char *format, unsigned long secs)
 {
-  unsigned long days, hours, mins;
+  unsigned long years, weeks, rdays, days, hours, mins, tval, osecs = secs;
   int pad = 0;
   int width;
   const char *c;
   char *w;
-  bool include_suffix, in_format_flags, even_if_0;
+  bool include_suffix, in_format_flags, even_if_0, total_time;
 
-  days = secs / 86400;
-  secs %= 86400;
-  hours = secs / 3600;
-  secs %= 3600;
+  if (!format || !*format) {
+    return;
+  }
+
+  days = secs / (60 * 60 * 24);
+  years = secs / (60 * 60 * 24 * 365);
+  secs %= 60 * 60 * 24 * 365;
+  weeks = secs / (60 * 60 * 24 * 7);
+  secs %= 60 * 60 * 24 * 7;
+  rdays = secs / (60 * 60 * 24);
+  secs %= 60 * 60 * 24;
+  hours = secs / (60 * 60);
+  secs %= 60 * 60;
   mins = secs / 60;
   secs %= 60;
 
-  for (c = format; c && *c; c++) {
+  for (c = format; *c;) {
+    if (*c++ == '$') {
+      bool in_seq = 1;
+      while (*c && in_seq) {
+        switch (*c) {
+        case 'W':
+        case 'w':
+        case 'Y':
+        case 'y':
+          days = rdays;
+          goto done;
+        case 'd':
+        case 'D':
+        case 'h':
+        case 'H':
+        case 'm':
+        case 'M':
+        case 's':
+        case 'S':
+        case '$':
+          in_seq = 0;
+          break;
+        default:
+          c += 1;
+        }
+      }
+    }
+  }
+done:
+
+  for (c = format; *c; c++) {
     if (*c == '$') {
       c++;
       width = parse_int(c, &w, 10);
-      if (c == w)
-        pad = 0;
-      else
-        pad = 1;
-      if (width < 0)
+      pad = c != w;
+      if (width < 0) {
         width = 0;
-      else if (width >= BUFFER_LEN)
+      } else if (width >= BUFFER_LEN) {
         width = BUFFER_LEN - 1;
+      }
       even_if_0 = in_format_flags = 1;
-      include_suffix = 0;
+      total_time = include_suffix = 0;
       while (in_format_flags) {
         switch (*w) {
+        case 't':
+          total_time = 1;
+          w++;
+          break;
         case 'x':
         case 'X':
           include_suffix = 1;
@@ -797,100 +840,237 @@ do_timestring(char *buff, char **bp, const char *format, unsigned long secs)
           break;
         case 's':
           in_format_flags = 0;
-          if (secs || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%*lu", width, secs);
-            else
-              safe_uinteger(secs, buff, bp);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs;
+          } else {
+            tval = secs;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
               safe_chr('s', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'S':
           in_format_flags = 0;
-          if (secs || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%0*lu", width, secs);
-            else
-              safe_format(buff, bp, "%0lu", secs);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs;
+          } else {
+            tval = secs;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
               safe_chr('s', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'm':
           in_format_flags = 0;
-          if (mins || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%*lu", width, mins);
-            else
-              safe_uinteger(mins, buff, bp);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 60;
+          } else {
+            tval = mins;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
               safe_chr('m', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'M':
           in_format_flags = 0;
-          if (mins || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%0*lu", width, mins);
-            else
-              safe_format(buff, bp, "%0lu", mins);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 60;
+          } else {
+            tval = mins;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
               safe_chr('m', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'h':
           in_format_flags = 0;
-          if (hours || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%*lu", width, hours);
-            else
-              safe_uinteger(hours, buff, bp);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 3600;
+          } else {
+            tval = hours;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
               safe_chr('h', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'H':
           in_format_flags = 0;
-          if (hours || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%0*lu", width, hours);
-            else
-              safe_format(buff, bp, "%0lu", hours);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 3600;
+          } else {
+            tval = hours;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
               safe_chr('h', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'd':
           in_format_flags = 0;
-          if (days || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%*lu", width, days);
-            else
-              safe_uinteger(days, buff, bp);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 86400;
+          } else {
+            tval = days;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
               safe_chr('d', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
         case 'D':
           in_format_flags = 0;
-          if (days || even_if_0) {
-            if (pad)
-              safe_format(buff, bp, "%0*lu", width, days);
-            else
-              safe_format(buff, bp, "%0lu", days);
-            if (include_suffix)
+          if (total_time) {
+            tval = osecs / 86400;
+          } else {
+            tval = days;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
               safe_chr('d', buff, bp);
-          } else if (pad)
+            }
+          } else if (pad) {
             safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
           break;
+        case 'w':
+          in_format_flags = 0;
+          if (total_time) {
+            tval = osecs / 604800;
+          } else {
+            tval = weeks;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
+              safe_chr('w', buff, bp);
+            }
+          } else if (pad) {
+            safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
+          break;
+        case 'W':
+          in_format_flags = 0;
+          if (total_time) {
+            tval = osecs / 604800;
+          } else {
+            tval = weeks;
+          }
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
+              safe_chr('w', buff, bp);
+            }
+          } else if (pad) {
+            safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
+          break;
+        case 'y':
+          in_format_flags = 0;
+          tval = years;
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%*lu", width, tval);
+            } else {
+              safe_uinteger(tval, buff, bp);
+            }
+            if (include_suffix) {
+              safe_chr('y', buff, bp);
+            }
+          } else if (pad) {
+            safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
+          break;
+        case 'Y':
+          in_format_flags = 0;
+          tval = years;
+          if (tval || even_if_0) {
+            if (pad) {
+              safe_format(buff, bp, "%0*lu", width, tval);
+            } else {
+              safe_format(buff, bp, "%0lu", tval);
+            }
+            if (include_suffix) {
+              safe_chr('y', buff, bp);
+            }
+          } else if (pad) {
+            safe_fill(' ', width + (include_suffix ? 1 : 0), buff, bp);
+          }
+          break;
+
         default:
           in_format_flags = 0;
           safe_chr('$', buff, bp);

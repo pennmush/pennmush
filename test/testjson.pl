@@ -30,11 +30,11 @@ test('json.number.1', $mortal, 'think json(number, 5)', '5');
 test('json.number.2', $mortal, 'think json(number, 5.555)', '5.555');
 test('json.number.3', $mortal, 'think json(number, foo)', '#-1');
 
-test('json.array.1', $mortal, 'think json(array, "foo", 5, true)', '^\["foo", 5, true\]$');
-test('json.array.2', $mortal, 'think json(array, "foo", 5, json(array, "bar", 10))', '^\["foo", 5, \["bar", 10\]\]$');
+test('json.array.1', $mortal, 'think json(array, "foo", 5, true)', '^\["foo",\s*5,\s*true\]$');
+test('json.array.2', $mortal, 'think json(array, "foo", 5, json(array, "bar", 10))', '^\["foo",\s*5,\s*\["bar",\s*10\]\]$');
 
-test('json.object.1', $mortal, 'think json(object, foo, 1, bar, "baz", boing, true)', '^{"foo": 1, "bar": "baz", "boing": true}$');
-test('json.object.2', $mortal, 'think json(object, foo, 1, bar, "baz", boing, json(array, "nested", "test", 1)))', '^{"foo": 1, "bar": "baz", "boing": \["nested", "test", 1\]}');
+test('json.object.1', $mortal, 'think json(object, foo, 1, bar, "baz", boing, true)', '^{"foo":\s*1,\s*"bar":\s*"baz",\s*"boing":\s*true}$');
+test('json.object.2', $mortal, 'think json(object, foo, 1, bar, "baz", boing, json(array, "nested", "test", 1)))', '^{"foo":\s*1,\s*"bar":\s*"baz",\s*"boing":\s*\["nested",\s*"test",\s*1\]}');
 
 # json_query tests
 

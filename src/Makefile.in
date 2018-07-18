@@ -18,9 +18,9 @@ CXXFLAGS=$(CFLAGS)
 
 # List of C files, used for make depend:
 C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
-	charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c	\
-	conf.c connlog.c cque.c create.c db.c destroy.c extchat.c	\
-	extmail.c filecopy.c flaglocal.c flags.c funcrypt.c		\
+	charconv.c chunk.c cJSON.c cmdlocal.c cmds.c command.c		\
+	compress.c conf.c connlog.c cque.c create.c db.c destroy.c	\
+	extchat.c extmail.c filecopy.c flaglocal.c flags.c funcrypt.c	\
 	function.c fundb.c funjson.c funlist.c funlocal.c funmath.c	\
 	funmisc.c funstr.c funtime.c funufun.c game.c hash_function.c	\
 	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
@@ -35,9 +35,9 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 
 # .o versions of above - these are used in the build
 O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
-	charconv.o chunk.o cmdlocal.o cmds.o command.o compress.o	\
-	conf.o connlog.o cque.o create.o db.o destroy.o extchat.o	\
-	extmail.o filecopy.o flaglocal.o flags.o funcrypt.o		\
+	charconv.o chunk.o cJSON.o cmdlocal.o cmds.o command.o		\
+	compress.o conf.o connlog.o cque.o create.o db.o destroy.o	\
+	extchat.o extmail.o filecopy.o flaglocal.o flags.o funcrypt.o	\
 	function.o fundb.o funjson.o funlist.o funlocal.o funmath.o	\
 	funmisc.o funstr.o funtime.o funufun.o game.o hash_function.o	\
 	help.o htab.o intmap.o local.o lock.o log.o look.o malias.o	\
@@ -180,8 +180,8 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
-	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
+	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
@@ -1033,6 +1033,7 @@ funjson.o: ../hdrs/notify.h
 funjson.o: ../hdrs/charconv.h
 funjson.o: ../hdrs/myutf8.h
 funjson.o: ../hdrs/charclass.h
+funjson.o: ../hdrs/cJSON.h
 funjson.o: jsontypes.c
 funlist.o: ../config.h
 funlist.o: ../confmagic.h

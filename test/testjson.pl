@@ -30,11 +30,11 @@ test('json.number.1', $mortal, 'think json(number, 5)', '5');
 test('json.number.2', $mortal, 'think json(number, 5.555)', '5.555');
 test('json.number.3', $mortal, 'think json(number, foo)', '#-1');
 
-test('json.array.1', $mortal, 'think json(array, "foo", 5, true)', '^\["foo", 5, true\]$');
-test('json.array.2', $mortal, 'think json(array, "foo", 5, json(array, "bar", 10))', '^\["foo", 5, \["bar", 10\]\]$');
+test('json.array.1', $mortal, 'think json(array, "foo", 5, true)', '^\["foo",\s*5,\s*true\]$');
+test('json.array.2', $mortal, 'think json(array, "foo", 5, json(array, "bar", 10))', '^\["foo",\s*5,\s*\["bar",\s*10\]\]$');
 
-test('json.object.1', $mortal, 'think json(object, foo, 1, bar, "baz", boing, true)', '^{"foo": 1, "bar": "baz", "boing": true}$');
-test('json.object.2', $mortal, 'think json(object, foo, 1, bar, "baz", boing, json(array, "nested", "test", 1)))', '^{"foo": 1, "bar": "baz", "boing": \["nested", "test", 1\]}');
+test('json.object.1', $mortal, 'think json(object, foo, 1, bar, "baz", boing, true)', '^{"foo":\s*1,\s*"bar":\s*"baz",\s*"boing":\s*true}$');
+test('json.object.2', $mortal, 'think json(object, foo, 1, bar, "baz", boing, json(array, "nested", "test", 1)))', '^{"foo":\s*1,\s*"bar":\s*"baz",\s*"boing":\s*\["nested",\s*"test",\s*1\]}');
 
 # json_query tests
 
@@ -103,19 +103,25 @@ test('json.remove.1', $mortal, 'think json_mod(v(json), remove, $.c)', '\{"a":1,
 test('json.remove.2', $mortal, 'think json_mod(v(json), remove, $.d)', '\{"a":1,"b":2,"c":\[1,2,3\]\}');
 
 # patch
-test('json.patch.1', $mortal, "think json_mod(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^{"a":1,"b":2,"c":3,"d":4}');
-test('json.patch.2', $mortal, "think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^{"a":9,"b":2}');
-test('json.patch.3', $mortal, 'think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^{"b":2}');
-test('json.patch.4', $mortal, 'think json_mod(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^{"a":9,"c":8}');
-test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^{"a":\{"x":1,"y":9\},"b":3,"c":8}');
+test('json.patch.1', $mortal, "think json_mod(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^\{"a":1,"b":2,"c":3,"d":4\}');
+test('json.patch.2', $mortal, "think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^\{"a":9,"b":2\}');
+test('json.patch.3', $mortal, 'think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^\{"b":2\}');
+test('json.patch.4', $mortal, 'think json_mod(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^\{"a":9,"c":8\}');
+test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^\{"a":\{"x":1,"y":9\},"b":3,"c":8\}');
+
+# sort
+test('json.sort.1', $mortal, 'think json_mod(json(array, json(object, id, 5), json(object, id, 4)), sort, $.id)', '^\[\{"id":4\},\{"id":5\}\]$');
+test('json.sort.2', $mortal, 'think json_mod(json(array, json(object, id, "dog"), json(object, id, "cat")), sort, $.id)', '^\[\{"id":"cat"\},\{"id":"dog"\}\]$');
+test('json.sort.3', $mortal, 'think json_mod(json(array, 5, 3, 1, 2), sort, $)', '^\[1,2,3,5\]$');
 
 # json_map
 
 test('json.2', $mortal, '&json_fn me=We got [art(%0)] %0: %1', 'Set');
+test('json.3', $mortal, '&json2_fn me=%0:%1:%2', 'Set');
 
-test('json.map.1', $mortal, 'think json_map(me/json_fn, "foo")', 'We got a string: foo');
-test('json.map.2', $mortal, 'think json_map(me/json_fn, \["foo"\, 5\], @)', 'We got a string: foo@We got a number: 5');
-test('json.map.3', $mortal, 'think json_map(me/json_fn, \["foo"\, \["bar"\, 10\]\], @)', 'We got a string: foo@We got an array: \["bar",10\]');
-
+test('json.map.1', $mortal, 'think json_map(me/json_fn, "foo")', '^We got a string: foo$');
+test('json.map.2', $mortal, 'think json_map(me/json_fn, \["foo"\, 5\], @)', '^We got a string: foo@We got a number: 5$');
+test('json.map.3', $mortal, 'think json_map(me/json_fn, \["foo"\, \["bar"\, 10\]\], @)', '^We got a string: foo@We got an array: \["bar",10\]$');
+test('json.map.4', $mortal, 'think json_map(me/json2_fn, json(object, a, 1, b, true, c, null), @)', '^number:1:a@boolean:true:b@null:null:c$');
 
 

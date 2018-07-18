@@ -283,7 +283,7 @@ FUNCTION(fun_json_mod)
 
   if (strcasecmp(args[1], "patch") == 0) {
     op = prepare_statement_cache(sqldb, "VALUES (json_patch(?, ?))",
-                                 "json_query.patch", 0);
+                                 "json_mod.patch", 0);
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -300,7 +300,7 @@ FUNCTION(fun_json_mod)
     }
 
     op = prepare_statement_cache(sqldb, "VALUES (json_insert(?, ?, json(?)))",
-                                 "json_mod", 0);
+                                 "json_mod.insert", 0);
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -319,7 +319,7 @@ FUNCTION(fun_json_mod)
     }
 
     op = prepare_statement_cache(sqldb, "VALUES (json_replace(?, ?, json(?)))",
-                                 "json_mod", 0);
+                                 "json_mod.replace", 0);
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -338,7 +338,7 @@ FUNCTION(fun_json_mod)
     }
 
     op = prepare_statement_cache(sqldb, "VALUES (json_set(?, ?, json(?)))",
-                                 "json_mod", 0);
+                                 "json_mod.set", 0);
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -352,7 +352,23 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 3, utf8, ulen, free_string);
   } else if (strcasecmp(args[1], "remove") == 0) {
     op = prepare_statement_cache(sqldb, "VALUES (json_remove(?, ?))",
-                                 "json_mod", 0);
+                                 "json_mod.remove", 0);
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "sort") == 0) {
+    op = prepare_statement_cache(
+      sqldb,
+      "WITH ordered AS (SELECT value FROM json_each(?) ORDER BY "
+      "json_extract(CASE WHEN type = 'text' THEN json_quote(value) ELSE value "
+      "END, ?)) SELECT json_group_array(json(value)) FROM ordered",
+      "json_mod.sort", 0);
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;

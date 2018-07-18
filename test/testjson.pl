@@ -103,11 +103,16 @@ test('json.remove.1', $mortal, 'think json_mod(v(json), remove, $.c)', '\{"a":1,
 test('json.remove.2', $mortal, 'think json_mod(v(json), remove, $.d)', '\{"a":1,"b":2,"c":\[1,2,3\]\}');
 
 # patch
-test('json.patch.1', $mortal, "think json_mod(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^{"a":1,"b":2,"c":3,"d":4}');
-test('json.patch.2', $mortal, "think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^{"a":9,"b":2}');
-test('json.patch.3', $mortal, 'think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^{"b":2}');
-test('json.patch.4', $mortal, 'think json_mod(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^{"a":9,"c":8}');
-test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^{"a":\{"x":1,"y":9\},"b":3,"c":8}');
+test('json.patch.1', $mortal, "think json_mod(json(object,a,1,b,2),patch,json(object,c,3,d,4))", '^\{"a":1,"b":2,"c":3,"d":4\}');
+test('json.patch.2', $mortal, "think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object,a,9))", '^\{"a":9,"b":2\}');
+test('json.patch.3', $mortal, 'think json_mod(json(object,a,json(array,1,2),b,2), patch, json(object, a, null))', '^\{"b":2\}');
+test('json.patch.4', $mortal, 'think json_mod(json(object,a,1,b,2), patch, json(object,a,9,b,null,c,8))', '^\{"a":9,"c":8\}');
+test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2),b,3), patch, json(object,a,json(object,y,9),c,8))', '^\{"a":\{"x":1,"y":9\},"b":3,"c":8\}');
+
+# sort
+test('json.sort.1', $mortal, 'think json_mod(json(array, json(object, id, 5), json(object, id, 4)), sort, $.id)', '^\[\{"id":4\},\{"id":5\}\]$');
+test('json.sort.2', $mortal, 'think json_mod(json(array, json(object, id, "dog"), json(object, id, "cat")), sort, $.id)', '^\[\{"id":"cat"\},\{"id":"dog"\}\]$');
+test('json.sort.3', $mortal, 'think json_mod(json(array, 5, 3, 1, 2), sort, $)', '^\[1,2,3,5\]$');
 
 # json_map
 

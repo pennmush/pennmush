@@ -4702,6 +4702,7 @@ See also: json(), json_map()
   set     - Add or replace <json2> at the given <path>.
   patch   - Applies a merge patch (See https://tools.ietf.org/html/rfc7396) to <json> from <path>, which must be valid JSON.
   remove  - Removes the element from <json> pointed to by <path>
+  sort    - Given a JSON array, sorts it based on the element at <path>.
 
   See 'HELP JSON_MOD2' for examples.
 & JSON_MOD2
@@ -4721,6 +4722,8 @@ See also: json(), json_map()
     You say, "{"foo:"bar","baz":12345,"fnord":[1,2,3]}"
     > say json_mod(v(json), remove, $.fnord)
     You say, "{"foo":"bar","baz":12345}"
+    > say json_mod(json(array, json(object, id, 2), json(object, id, 1), sort, $.id)
+    You say, "[{"id":1},{"id":2}]
 & TESTLOCK()
   testlock(<key>, <victim>)
 

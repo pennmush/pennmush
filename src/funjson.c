@@ -32,6 +32,8 @@
 #include "charconv.h"
 #include "charclass.h"
 
+#include "cJSON.h"
+
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
 

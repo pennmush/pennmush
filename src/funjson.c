@@ -123,8 +123,7 @@ FUNCTION(fun_json_query)
     sqlite3_stmt *op;
     char *utf8;
     int ulen, status;
-    op =
-      prepare_statement_cache(sqldb, "VALUES (json_type(?))", "json_query", 0);
+    op = prepare_statement(sqldb, "VALUES (json_type(?))", "json_query.type");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -145,9 +144,9 @@ FUNCTION(fun_json_query)
         safe_str("#-1 UNKNOWN TYPE", buff, bp);
       }
     } else {
-      safe_str("#-1 JSON ERROR %s", buff, bp);
+      safe_str("#-1 JSON ERROR", buff, bp);
     }
-    sqlite3_finalize(op);
+    sqlite3_reset(op);
     break;
   }
   case JSON_QUERY_SIZE:
@@ -230,8 +229,8 @@ FUNCTION(fun_json_query)
     char *utf8;
     int ulen, status;
 
-    op = prepare_statement_cache(sqldb, "VALUES (json_extract(?, ?))",
-                                 "json_query", 0);
+    op = prepare_statement(sqldb, "VALUES (json_extract(?, ?))",
+                           "json_query.extract");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -264,7 +263,7 @@ FUNCTION(fun_json_query)
       safe_str("#-1 JSON ERROR", buff, bp);
     }
 
-    sqlite3_finalize(op);
+    sqlite3_reset(op);
     break;
   }
   }
@@ -282,8 +281,8 @@ FUNCTION(fun_json_mod)
   int ulen;
 
   if (strcasecmp(args[1], "patch") == 0) {
-    op = prepare_statement_cache(sqldb, "VALUES (json_patch(?, ?))",
-                                 "json_mod.patch", 0);
+    op =
+      prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_mod.patch");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -299,8 +298,8 @@ FUNCTION(fun_json_mod)
       return;
     }
 
-    op = prepare_statement_cache(sqldb, "VALUES (json_insert(?, ?, json(?)))",
-                                 "json_mod.insert", 0);
+    op = prepare_statement(sqldb, "VALUES (json_insert(?, ?, json(?)))",
+                           "json_mod.insert");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -318,8 +317,8 @@ FUNCTION(fun_json_mod)
       return;
     }
 
-    op = prepare_statement_cache(sqldb, "VALUES (json_replace(?, ?, json(?)))",
-                                 "json_mod.replace", 0);
+    op = prepare_statement(sqldb, "VALUES (json_replace(?, ?, json(?)))",
+                           "json_mod.replace");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -337,8 +336,8 @@ FUNCTION(fun_json_mod)
       return;
     }
 
-    op = prepare_statement_cache(sqldb, "VALUES (json_set(?, ?, json(?)))",
-                                 "json_mod.set", 0);
+    op = prepare_statement(sqldb, "VALUES (json_set(?, ?, json(?)))",
+                           "json_mod.set");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -351,8 +350,8 @@ FUNCTION(fun_json_mod)
     utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
     sqlite3_bind_text(op, 3, utf8, ulen, free_string);
   } else if (strcasecmp(args[1], "remove") == 0) {
-    op = prepare_statement_cache(sqldb, "VALUES (json_remove(?, ?))",
-                                 "json_mod.remove", 0);
+    op =
+      prepare_statement(sqldb, "VALUES (json_remove(?, ?))", "json_mod.remove");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -363,12 +362,13 @@ FUNCTION(fun_json_mod)
     utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
   } else if (strcasecmp(args[1], "sort") == 0) {
-    op = prepare_statement_cache(
+    op = prepare_statement(
       sqldb,
-      "WITH ordered AS (SELECT value FROM json_each(?) ORDER BY "
+      "WITH ordered(value) AS (SELECT CASE WHEN type='text' THEN "
+      "json_quote(value) ELSE value END FROM json_each(?1) ORDER BY "
       "json_extract(CASE WHEN type = 'text' THEN json_quote(value) ELSE value "
-      "END, ?)) SELECT json_group_array(json(value)) FROM ordered",
-      "json_mod.sort", 0);
+      "END, ?2)) SELECT json_group_array(json(value)) FROM ordered",
+      "json_mod.sort");
     if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
@@ -404,7 +404,7 @@ FUNCTION(fun_json_mod)
     safe_str("#-1 JSON ERROR", buff, bp);
   }
 
-  sqlite3_finalize(op);
+  sqlite3_reset(op);
 }
 
 FUNCTION(fun_json_map)
@@ -677,8 +677,7 @@ FUNCTION(fun_isjson)
   int ulen, status;
 
   sqldb = get_shared_db();
-  verify =
-    prepare_statement_cache(sqldb, "VALUES (json_valid(?))", "isjson", 0);
+  verify = prepare_statement(sqldb, "VALUES (json_valid(?))", "isjson");
   if (!verify) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
     return;
@@ -693,5 +692,5 @@ FUNCTION(fun_isjson)
   } else {
     safe_boolean(0, buff, bp);
   }
-  sqlite3_finalize(verify);
+  sqlite3_reset(verify);
 }

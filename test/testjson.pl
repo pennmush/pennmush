@@ -113,6 +113,7 @@ test('json.patch.5', $mortal, 'think json_mod(json(object,a,json(object,x,1,y,2)
 test('json.sort.1', $mortal, 'think json_mod(json(array, json(object, id, 5), json(object, id, 4)), sort, $.id)', '^\[\{"id":4\},\{"id":5\}\]$');
 test('json.sort.2', $mortal, 'think json_mod(json(array, json(object, id, "dog"), json(object, id, "cat")), sort, $.id)', '^\[\{"id":"cat"\},\{"id":"dog"\}\]$');
 test('json.sort.3', $mortal, 'think json_mod(json(array, 5, 3, 1, 2), sort, $)', '^\[1,2,3,5\]$');
+test('json.sort.4', $mortal, 'think json_mod(json(array, "e","m","a","z"), sort, $)', '^\["a","e","m","z"\]$');
 
 # json_map
 

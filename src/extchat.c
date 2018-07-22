@@ -2907,8 +2907,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname)) {
-      if (!(See_All(player) || Chan_Can_Modify(c, player) ||
-            (ChanCreator(c) == player))) {
+      if (!Chan_Can_Decomp(c, player)) {
         if (Chan_Can_See(c, player)) {
           found++;
           notify_format(player,

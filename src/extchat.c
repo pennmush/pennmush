@@ -2854,24 +2854,28 @@ do_chan_what(dbref player, const char *partname)
           T("Recall buffer: %db (%d full lines), with %d lines stored."),
           BufferQSize(ChanBufferQ(c)), bufferq_blocks(ChanBufferQ(c)),
           bufferq_lines(ChanBufferQ(c)));
-      if (ChanModLock(c) != TRUE_BOOLEXP)
-        safe_format(locks, &lp, "\n    mod: %s",
-            unparse_boolexp(player, ChanModLock(c), UB_MEREF));
-      if (ChanHideLock(c) != TRUE_BOOLEXP)
-        safe_format(locks, &lp, "\n   hide: %s",
-            unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
-      if (ChanJoinLock(c) != TRUE_BOOLEXP)
-        safe_format(locks, &lp, "\n   join: %s",
-            unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
-      if (ChanSpeakLock(c) != TRUE_BOOLEXP)
-        safe_format(locks, &lp, "\n  speak: %s",
-            unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
-      if (ChanSeeLock(c) != TRUE_BOOLEXP)
-        safe_format(locks, &lp, "\n    see: %s",
-            unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
-      *lp = '\0';
-      if (strlen(locks) > 1)
-        notify_format(player, T("Locks:%s"), locks);
+
+      // If we have privs, we can see the locks.
+      if (Chan_Can_Decomp(c, player)) {
+        if (ChanModLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n    mod: %s",
+              unparse_boolexp(player, ChanModLock(c), UB_MEREF));
+        if (ChanHideLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n   hide: %s",
+              unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
+        if (ChanJoinLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n   join: %s",
+              unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
+        if (ChanSpeakLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n  speak: %s",
+              unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
+        if (ChanSeeLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n    see: %s",
+              unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
+        *lp = '\0';
+        if (strlen(locks) > 1)
+          notify_format(player, T("Locks:%s"), locks);
+        } // if(Chan_Can_Decomp())
       found++;
     }
   }

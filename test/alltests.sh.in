@@ -1,7 +1,17 @@
 #!/bin/sh
 
+
+locale -a
+
+CTYPE=$(locale -a | grep en_US.iso8859 | head -1)
+
+if [ -z "${CTYPE}" ]; then
+    echo "Unable to find an en_US.iso8859 locale. Some tests will fail."
+fi
+
+
 export LC_COLLATE=C
-export LC_CTYPE=en_US.iso88591
+export LC_CTYPE=${CTYPE}
 
 exec @PERL@ runtest.pl $@ test*.pl
 

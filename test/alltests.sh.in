@@ -1,17 +1,17 @@
 #!/bin/sh
 
-CTYPE=$(locale -a | grep en_US.iso8859 | head -1)
+LOC=$(locale -a | grep en_US.iso8859 | head -1)
 
-if [ -z "${CTYPE}" ]; then
+if [ -z "${LOC}" ]; then
     echo "Unable to find an en_US.iso8859 locale. Some tests will fail."
-    CTYPE=C
+    LOC=C
 fi
 
 
+export LC_ALL="${LOC}"
 export LC_COLLATE=C
-export LC_CTYPE=${CTYPE}
 
-echo "Using LC_CTYPE=${LC_CTYPE}"
+echo "Using LC_ALL=${LC_ALL}"
 
 perl -E 'use locale; say "Able to set locales"'
 

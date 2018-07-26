@@ -11,5 +11,7 @@ fi
 export LC_COLLATE=C
 export LC_CTYPE=${CTYPE}
 
+echo "Using LC_CTYPE=${LC_CTYPE}"
+
 exec @PERL@ runtest.pl $@ test*.pl
 

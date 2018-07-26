@@ -7,7 +7,7 @@ before_script:
   - yes "" | make update
   - make
   - curl -L https://cpanmin.us/ -o cpanm && chmod +x cpanm
-  - ./cpanm IO::Socket::IP
+  - sudo ./cpanm IO::Socket::IP
 script: make test
 env:
   global:

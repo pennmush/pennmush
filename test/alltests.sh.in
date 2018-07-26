@@ -13,5 +13,7 @@ export LC_CTYPE=${CTYPE}
 
 echo "Using LC_CTYPE=${LC_CTYPE}"
 
+perl -E 'use locale; say "Able to set locales"
+
 exec @PERL@ runtest.pl $@ test*.pl
 

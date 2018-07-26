@@ -18,9 +18,9 @@ CXXFLAGS=$(CFLAGS)
 
 # List of C files, used for make depend:
 C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
-	charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c	\
-	conf.c connlog.c cque.c create.c db.c destroy.c extchat.c	\
-	extmail.c filecopy.c flaglocal.c flags.c funcrypt.c		\
+	charconv.c chunk.c cJSON.c cmdlocal.c cmds.c command.c		\
+	compress.c conf.c connlog.c cque.c create.c db.c destroy.c	\
+	extchat.c extmail.c filecopy.c flaglocal.c flags.c funcrypt.c	\
 	function.c fundb.c funjson.c funlist.c funlocal.c funmath.c	\
 	funmisc.c funstr.c funtime.c funufun.c game.c hash_function.c	\
 	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
@@ -35,9 +35,9 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 
 # .o versions of above - these are used in the build
 O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
-	charconv.o chunk.o cmdlocal.o cmds.o command.o compress.o	\
-	conf.o connlog.o cque.o create.o db.o destroy.o extchat.o	\
-	extmail.o filecopy.o flaglocal.o flags.o funcrypt.o		\
+	charconv.o chunk.o cJSON.o cmdlocal.o cmds.o command.o		\
+	compress.o conf.o connlog.o cque.o create.o db.o destroy.o	\
+	extchat.o extmail.o filecopy.o flaglocal.o flags.o funcrypt.o	\
 	function.o fundb.o funjson.o funlist.o funlocal.o funmath.o	\
 	funmisc.o funstr.o funtime.o funufun.o game.o hash_function.o	\
 	help.o htab.o intmap.o local.o lock.o log.o look.o malias.o	\
@@ -159,6 +159,14 @@ lmathtab.c: lmathtab.gperf
 		echo "*** NOTE ***: src/lmathtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/lmathtab.c to suppress this message."; \
 	fi
 
+jsontypes.c: jsontypes.gperf
+	@if [ -n "@GPERF@" ]; then \
+		echo "Rebuilding jsontypes.c from jsontypes.gperf"; \
+		@GPERF@ -C --output-file jsontypes.c jsontypes.gperf; \
+	else \
+		echo "*** NOTE ***: src/jsontypes.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/jsontypes.c to suppress this message."; \
+	fi
+
 etags: 
 	@ETAGS@ *.c ../hdrs/*.h
 
@@ -172,8 +180,8 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(filter-out cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
-	$(filter-out ../hdrs/buildinf.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
+	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
@@ -218,6 +226,8 @@ access.o: ../hdrs/match.h
 access.o: ../hdrs/mymalloc.h
 access.o: ../hdrs/notify.h
 access.o: ../hdrs/parse.h
+access.o: ../hdrs/mushsql.h
+access.o: ../hdrs/sqlite3.h
 access.o: ../hdrs/strutil.h
 atr_tab.o: ../config.h
 atr_tab.o: ../confmagic.h
@@ -245,6 +255,8 @@ atr_tab.o: ../hdrs/bufferq.h
 atr_tab.o: ../hdrs/mymalloc.h
 atr_tab.o: ../hdrs/notify.h
 atr_tab.o: ../hdrs/parse.h
+atr_tab.o: ../hdrs/mushsql.h
+atr_tab.o: ../hdrs/sqlite3.h
 atr_tab.o: ../hdrs/strutil.h
 attrib.o: ../config.h
 attrib.o: ../confmagic.h
@@ -272,6 +284,8 @@ attrib.o: ../hdrs/memcheck.h
 attrib.o: ../hdrs/mymalloc.h
 attrib.o: ../hdrs/notify.h
 attrib.o: ../hdrs/parse.h
+attrib.o: ../hdrs/mushsql.h
+attrib.o: ../hdrs/sqlite3.h
 attrib.o: ../hdrs/privtab.h
 attrib.o: ../hdrs/sort.h
 attrib.o: ../hdrs/strtree.h
@@ -303,6 +317,8 @@ boolexp.o: ../hdrs/match.h
 boolexp.o: ../hdrs/mymalloc.h
 boolexp.o: ../hdrs/notify.h
 boolexp.o: ../hdrs/parse.h
+boolexp.o: ../hdrs/mushsql.h
+boolexp.o: ../hdrs/sqlite3.h
 boolexp.o: ../hdrs/strtree.h
 boolexp.o: ../hdrs/strutil.h
 boolexp.o: bflags.c
@@ -342,14 +358,14 @@ bsd.o: ../hdrs/mymalloc.h
 bsd.o: ../hdrs/mysocket.h
 bsd.o: ../hdrs/myssl.h
 bsd.o: ../hdrs/parse.h
+bsd.o: ../hdrs/mushsql.h
+bsd.o: ../hdrs/sqlite3.h
 bsd.o: ../hdrs/pueblo.h
 bsd.o: ../hdrs/sig.h
 bsd.o: ../hdrs/strutil.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/myutf8.h
-bsd.o: ../hdrs/mushsql.h
-bsd.o: ../hdrs/sqlite3.h
 bsd.o: ../hdrs/connlog.h
 bsd.o: ../hdrs/charclass.h
 bsd.o: ../hdrs/wait.h
@@ -435,6 +451,8 @@ cmdlocal.o: ../hdrs/flags.h
 cmdlocal.o: ../hdrs/ptab.h
 cmdlocal.o: ../hdrs/mypcre.h
 cmdlocal.o: ../hdrs/parse.h
+cmdlocal.o: ../hdrs/mushsql.h
+cmdlocal.o: ../hdrs/sqlite3.h
 cmds.o: ../config.h
 cmds.o: ../confmagic.h
 cmds.o: ../options.h
@@ -472,11 +490,11 @@ cmds.o: ../hdrs/match.h
 cmds.o: ../hdrs/memcheck.h
 cmds.o: ../hdrs/mymalloc.h
 cmds.o: ../hdrs/parse.h
+cmds.o: ../hdrs/mushsql.h
+cmds.o: ../hdrs/sqlite3.h
 cmds.o: ../hdrs/ssl_slave.h
 cmds.o: ../hdrs/strutil.h
 cmds.o: ../hdrs/version.h
-cmds.o: ../hdrs/mushsql.h
-cmds.o: ../hdrs/sqlite3.h
 cmds.o: ../hdrs/charconv.h
 cmds.o: ../hdrs/myutf8.h
 command.o: ../config.h
@@ -511,6 +529,8 @@ command.o: ../hdrs/match.h
 command.o: ../hdrs/memcheck.h
 command.o: ../hdrs/mymalloc.h
 command.o: ../hdrs/parse.h
+command.o: ../hdrs/mushsql.h
+command.o: ../hdrs/sqlite3.h
 command.o: ../hdrs/sort.h
 command.o: ../hdrs/strtree.h
 command.o: ../hdrs/strutil.h
@@ -567,6 +587,8 @@ conf.o: ../hdrs/log.h
 conf.o: ../hdrs/bufferq.h
 conf.o: ../hdrs/mymalloc.h
 conf.o: ../hdrs/parse.h
+conf.o: ../hdrs/mushsql.h
+conf.o: ../hdrs/sqlite3.h
 conf.o: ../hdrs/privtab.h
 conf.o: ../hdrs/pueblo.h
 conf.o: ../hdrs/strutil.h
@@ -589,11 +611,11 @@ connlog.o: ../hdrs/mypcre.h
 connlog.o: ../hdrs/game.h
 connlog.o: ../hdrs/notify.h
 connlog.o: ../hdrs/parse.h
+connlog.o: ../hdrs/mushsql.h
+connlog.o: ../hdrs/sqlite3.h
 connlog.o: ../hdrs/match.h
 connlog.o: ../hdrs/log.h
 connlog.o: ../hdrs/bufferq.h
-connlog.o: ../hdrs/mushsql.h
-connlog.o: ../hdrs/sqlite3.h
 connlog.o: ../hdrs/function.h
 connlog.o: ../hdrs/strutil.h
 connlog.o: ../hdrs/mymalloc.h
@@ -631,9 +653,9 @@ cque.o: ../hdrs/bufferq.h
 cque.o: ../hdrs/match.h
 cque.o: ../hdrs/mymalloc.h
 cque.o: ../hdrs/parse.h
-cque.o: ../hdrs/strutil.h
 cque.o: ../hdrs/mushsql.h
 cque.o: ../hdrs/sqlite3.h
+cque.o: ../hdrs/strutil.h
 create.o: ../config.h
 create.o: ../confmagic.h
 create.o: ../options.h
@@ -663,6 +685,8 @@ create.o: ../hdrs/log.h
 create.o: ../hdrs/match.h
 create.o: ../hdrs/mymalloc.h
 create.o: ../hdrs/parse.h
+create.o: ../hdrs/mushsql.h
+create.o: ../hdrs/sqlite3.h
 create.o: ../hdrs/strutil.h
 db.o: ../config.h
 db.o: ../confmagic.h
@@ -694,10 +718,10 @@ db.o: ../hdrs/log.h
 db.o: ../hdrs/memcheck.h
 db.o: ../hdrs/mymalloc.h
 db.o: ../hdrs/parse.h
-db.o: ../hdrs/privtab.h
-db.o: ../hdrs/strutil.h
 db.o: ../hdrs/mushsql.h
 db.o: ../hdrs/sqlite3.h
+db.o: ../hdrs/privtab.h
+db.o: ../hdrs/strutil.h
 db.o: ../hdrs/charclass.h
 destroy.o: ../config.h
 destroy.o: ../confmagic.h
@@ -762,6 +786,8 @@ extchat.o: ../hdrs/markup.h
 extchat.o: ../hdrs/match.h
 extchat.o: ../hdrs/mymalloc.h
 extchat.o: ../hdrs/parse.h
+extchat.o: ../hdrs/mushsql.h
+extchat.o: ../hdrs/sqlite3.h
 extchat.o: ../hdrs/privtab.h
 extchat.o: ../hdrs/pueblo.h
 extchat.o: ../hdrs/strutil.h
@@ -798,6 +824,8 @@ extmail.o: ../hdrs/match.h
 extmail.o: ../hdrs/mymalloc.h
 extmail.o: ../hdrs/notify.h
 extmail.o: ../hdrs/parse.h
+extmail.o: ../hdrs/mushsql.h
+extmail.o: ../hdrs/sqlite3.h
 extmail.o: ../hdrs/pueblo.h
 extmail.o: ../hdrs/strutil.h
 extmail.o: ../hdrs/charclass.h
@@ -867,6 +895,8 @@ flags.o: ../hdrs/match.h
 flags.o: ../hdrs/mymalloc.h
 flags.o: ../hdrs/oldflags.h
 flags.o: ../hdrs/parse.h
+flags.o: ../hdrs/mushsql.h
+flags.o: ../hdrs/sqlite3.h
 flags.o: ../hdrs/privtab.h
 flags.o: ../hdrs/sort.h
 flags.o: ../hdrs/strutil.h
@@ -902,6 +932,8 @@ funcrypt.o: ../hdrs/notify.h
 funcrypt.o: ../hdrs/match.h
 funcrypt.o: ../hdrs/mymalloc.h
 funcrypt.o: ../hdrs/parse.h
+funcrypt.o: ../hdrs/mushsql.h
+funcrypt.o: ../hdrs/sqlite3.h
 funcrypt.o: ../hdrs/sort.h
 funcrypt.o: ../hdrs/strutil.h
 funcrypt.o: ../hdrs/charclass.h
@@ -933,10 +965,10 @@ function.o: ../hdrs/boolexp.h
 function.o: ../hdrs/match.h
 function.o: ../hdrs/mymalloc.h
 function.o: ../hdrs/parse.h
-function.o: ../hdrs/sort.h
-function.o: ../hdrs/strutil.h
 function.o: ../hdrs/mushsql.h
 function.o: ../hdrs/sqlite3.h
+function.o: ../hdrs/sort.h
+function.o: ../hdrs/strutil.h
 function.o: ../hdrs/log.h
 function.o: ../hdrs/bufferq.h
 function.o: ../hdrs/charconv.h
@@ -972,6 +1004,8 @@ fundb.o: ../hdrs/match.h
 fundb.o: ../hdrs/memcheck.h
 fundb.o: ../hdrs/mymalloc.h
 fundb.o: ../hdrs/parse.h
+fundb.o: ../hdrs/mushsql.h
+fundb.o: ../hdrs/sqlite3.h
 fundb.o: ../hdrs/privtab.h
 fundb.o: ../hdrs/strutil.h
 funjson.o: ../config.h
@@ -993,12 +1027,14 @@ funjson.o: ../hdrs/mypcre.h
 funjson.o: ../hdrs/mymalloc.h
 funjson.o: ../hdrs/strutil.h
 funjson.o: ../hdrs/parse.h
-funjson.o: ../hdrs/notify.h
 funjson.o: ../hdrs/mushsql.h
 funjson.o: ../hdrs/sqlite3.h
+funjson.o: ../hdrs/notify.h
 funjson.o: ../hdrs/charconv.h
 funjson.o: ../hdrs/myutf8.h
 funjson.o: ../hdrs/charclass.h
+funjson.o: ../hdrs/cJSON.h
+funjson.o: jsontypes.c
 funlist.o: ../config.h
 funlist.o: ../confmagic.h
 funlist.o: ../options.h
@@ -1029,6 +1065,8 @@ funlist.o: ../hdrs/memcheck.h
 funlist.o: ../hdrs/mymalloc.h
 funlist.o: ../hdrs/notify.h
 funlist.o: ../hdrs/parse.h
+funlist.o: ../hdrs/mushsql.h
+funlist.o: ../hdrs/sqlite3.h
 funlist.o: ../hdrs/sort.h
 funlist.o: ../hdrs/strutil.h
 funlocal.o: ../config.h
@@ -1049,6 +1087,8 @@ funlocal.o: ../hdrs/chunk.h
 funlocal.o: ../hdrs/mypcre.h
 funlocal.o: ../hdrs/function.h
 funlocal.o: ../hdrs/parse.h
+funlocal.o: ../hdrs/mushsql.h
+funlocal.o: ../hdrs/sqlite3.h
 funmath.o: ../config.h
 funmath.o: ../confmagic.h
 funmath.o: ../options.h
@@ -1068,6 +1108,8 @@ funmath.o: ../hdrs/mypcre.h
 funmath.o: ../hdrs/mymalloc.h
 funmath.o: ../hdrs/notify.h
 funmath.o: ../hdrs/parse.h
+funmath.o: ../hdrs/mushsql.h
+funmath.o: ../hdrs/sqlite3.h
 funmath.o: ../hdrs/sort.h
 funmath.o: ../hdrs/strutil.h
 funmath.o: lmathtab.c
@@ -1104,12 +1146,12 @@ funmisc.o: ../hdrs/match.h
 funmisc.o: ../hdrs/memcheck.h
 funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/parse.h
+funmisc.o: ../hdrs/mushsql.h
+funmisc.o: ../hdrs/sqlite3.h
 funmisc.o: ../hdrs/strutil.h
 funmisc.o: ../hdrs/gitinfo.h
 funmisc.o: ../hdrs/tz.h
 funmisc.o: ../hdrs/version.h
-funmisc.o: ../hdrs/mushsql.h
-funmisc.o: ../hdrs/sqlite3.h
 funmisc.o: ../hdrs/charconv.h
 funmisc.o: ../hdrs/myutf8.h
 funstr.o: ../config.h
@@ -1138,11 +1180,11 @@ funstr.o: ../hdrs/markup.h
 funstr.o: ../hdrs/match.h
 funstr.o: ../hdrs/notify.h
 funstr.o: ../hdrs/parse.h
+funstr.o: ../hdrs/mushsql.h
+funstr.o: ../hdrs/sqlite3.h
 funstr.o: ../hdrs/pueblo.h
 funstr.o: ../hdrs/sort.h
 funstr.o: ../hdrs/strutil.h
-funstr.o: ../hdrs/mushsql.h
-funstr.o: ../hdrs/sqlite3.h
 funstr.o: ../hdrs/charconv.h
 funstr.o: ../hdrs/myutf8.h
 funstr.o: ../hdrs/mymalloc.h
@@ -1168,10 +1210,10 @@ funtime.o: ../hdrs/bufferq.h
 funtime.o: ../hdrs/match.h
 funtime.o: ../hdrs/notify.h
 funtime.o: ../hdrs/parse.h
-funtime.o: ../hdrs/strutil.h
-funtime.o: ../hdrs/tz.h
 funtime.o: ../hdrs/mushsql.h
 funtime.o: ../hdrs/sqlite3.h
+funtime.o: ../hdrs/strutil.h
+funtime.o: ../hdrs/tz.h
 funufun.o: ../config.h
 funufun.o: ../confmagic.h
 funufun.o: ../options.h
@@ -1196,6 +1238,8 @@ funufun.o: ../hdrs/match.h
 funufun.o: ../hdrs/mymalloc.h
 funufun.o: ../hdrs/notify.h
 funufun.o: ../hdrs/parse.h
+funufun.o: ../hdrs/mushsql.h
+funufun.o: ../hdrs/sqlite3.h
 funufun.o: ../hdrs/strutil.h
 game.o: ../config.h
 game.o: ../confmagic.h
@@ -1234,11 +1278,11 @@ game.o: ../hdrs/log.h
 game.o: ../hdrs/match.h
 game.o: ../hdrs/mymalloc.h
 game.o: ../hdrs/parse.h
+game.o: ../hdrs/mushsql.h
+game.o: ../hdrs/sqlite3.h
 game.o: ../hdrs/sig.h
 game.o: ../hdrs/strutil.h
 game.o: ../hdrs/version.h
-game.o: ../hdrs/mushsql.h
-game.o: ../hdrs/sqlite3.h
 game.o: ../hdrs/myssl.h
 game.o: ../hdrs/wait.h
 hash_function.o: ../config.h
@@ -1274,12 +1318,13 @@ help.o: ../hdrs/memcheck.h
 help.o: ../hdrs/mymalloc.h
 help.o: ../hdrs/notify.h
 help.o: ../hdrs/parse.h
-help.o: ../hdrs/pueblo.h
-help.o: ../hdrs/strutil.h
 help.o: ../hdrs/mushsql.h
 help.o: ../hdrs/sqlite3.h
+help.o: ../hdrs/pueblo.h
+help.o: ../hdrs/strutil.h
 help.o: ../hdrs/charconv.h
 help.o: ../hdrs/myutf8.h
+help.o: ../hdrs/game.h
 htab.o: ../config.h
 htab.o: ../confmagic.h
 htab.o: ../options.h
@@ -1334,6 +1379,8 @@ local.o: ../hdrs/game.h
 local.o: ../hdrs/notify.h
 local.o: ../hdrs/lock.h
 local.o: ../hdrs/parse.h
+local.o: ../hdrs/mushsql.h
+local.o: ../hdrs/sqlite3.h
 lock.o: ../config.h
 lock.o: ../confmagic.h
 lock.o: ../options.h
@@ -1359,6 +1406,8 @@ lock.o: ../hdrs/match.h
 lock.o: ../hdrs/mymalloc.h
 lock.o: ../hdrs/notify.h
 lock.o: ../hdrs/parse.h
+lock.o: ../hdrs/mushsql.h
+lock.o: ../hdrs/sqlite3.h
 lock.o: ../hdrs/privtab.h
 lock.o: ../hdrs/strtree.h
 lock.o: ../hdrs/strutil.h
@@ -1414,6 +1463,8 @@ look.o: ../hdrs/log.h
 look.o: ../hdrs/match.h
 look.o: ../hdrs/mymalloc.h
 look.o: ../hdrs/parse.h
+look.o: ../hdrs/mushsql.h
+look.o: ../hdrs/sqlite3.h
 look.o: ../hdrs/privtab.h
 look.o: ../hdrs/pueblo.h
 look.o: ../hdrs/strutil.h
@@ -1441,6 +1492,8 @@ malias.o: ../hdrs/memcheck.h
 malias.o: ../hdrs/mymalloc.h
 malias.o: ../hdrs/notify.h
 malias.o: ../hdrs/parse.h
+malias.o: ../hdrs/mushsql.h
+malias.o: ../hdrs/sqlite3.h
 malias.o: ../hdrs/privtab.h
 malias.o: ../hdrs/pueblo.h
 malias.o: ../hdrs/strutil.h
@@ -1470,11 +1523,11 @@ markup.o: ../hdrs/log.h
 markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/mymalloc.h
 markup.o: ../hdrs/parse.h
+markup.o: ../hdrs/mushsql.h
+markup.o: ../hdrs/sqlite3.h
 markup.o: ../hdrs/pueblo.h
 markup.o: ../hdrs/rgb.h
 markup.o: ../hdrs/strutil.h
-markup.o: ../hdrs/mushsql.h
-markup.o: ../hdrs/sqlite3.h
 markup.o: ../hdrs/charconv.h
 markup.o: ../hdrs/myutf8.h
 markup.o: htmltab.c
@@ -1500,6 +1553,8 @@ match.o: ../hdrs/mypcre.h
 match.o: ../hdrs/mymalloc.h
 match.o: ../hdrs/notify.h
 match.o: ../hdrs/parse.h
+match.o: ../hdrs/mushsql.h
+match.o: ../hdrs/sqlite3.h
 match.o: ../hdrs/strutil.h
 memcheck.o: ../config.h
 memcheck.o: ../confmagic.h
@@ -1550,6 +1605,8 @@ move.o: ../hdrs/log.h
 move.o: ../hdrs/bufferq.h
 move.o: ../hdrs/match.h
 move.o: ../hdrs/parse.h
+move.o: ../hdrs/mushsql.h
+move.o: ../hdrs/sqlite3.h
 move.o: ../hdrs/strutil.h
 mycrypt.o: ../config.h
 mycrypt.o: ../confmagic.h
@@ -1624,6 +1681,9 @@ myssl.o: ../hdrs/htab.h
 myssl.o: ../hdrs/mushtype.h
 myssl.o: ../hdrs/parse.h
 myssl.o: ../hdrs/mypcre.h
+myssl.o: ../hdrs/mushsql.h
+myssl.o: ../hdrs/sqlite3.h
+myssl.o: ../hdrs/compile.h
 myssl.o: ../hdrs/wait.h
 myssl.o: ../confmagic.h
 notify.o: ../config.h
@@ -1659,6 +1719,8 @@ notify.o: ../hdrs/match.h
 notify.o: ../hdrs/mymalloc.h
 notify.o: ../hdrs/mysocket.h
 notify.o: ../hdrs/parse.h
+notify.o: ../hdrs/mushsql.h
+notify.o: ../hdrs/sqlite3.h
 notify.o: ../hdrs/pueblo.h
 notify.o: ../hdrs/strutil.h
 notify.o: ../hdrs/charconv.h
@@ -1672,8 +1734,10 @@ parse.o: ../hdrs/copyrite.h
 parse.o: ../hdrs/parse.h
 parse.o: ../hdrs/mushtype.h
 parse.o: ../hdrs/mypcre.h
-parse.o: ../hdrs/ansi.h
+parse.o: ../hdrs/mushsql.h
+parse.o: ../hdrs/sqlite3.h
 parse.o: ../hdrs/compile.h
+parse.o: ../hdrs/ansi.h
 parse.o: ../hdrs/strtree.h
 parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/chunk.h
@@ -1725,6 +1789,8 @@ player.o: ../hdrs/log.h
 player.o: ../hdrs/bufferq.h
 player.o: ../hdrs/mymalloc.h
 player.o: ../hdrs/parse.h
+player.o: ../hdrs/mushsql.h
+player.o: ../hdrs/sqlite3.h
 player.o: ../hdrs/strutil.h
 plyrlist.o: ../config.h
 plyrlist.o: ../confmagic.h
@@ -1744,9 +1810,9 @@ plyrlist.o: ../hdrs/ptab.h
 plyrlist.o: ../hdrs/externs.h
 plyrlist.o: ../hdrs/mypcre.h
 plyrlist.o: ../hdrs/parse.h
-plyrlist.o: ../hdrs/strutil.h
 plyrlist.o: ../hdrs/mushsql.h
 plyrlist.o: ../hdrs/sqlite3.h
+plyrlist.o: ../hdrs/strutil.h
 plyrlist.o: ../hdrs/log.h
 plyrlist.o: ../hdrs/bufferq.h
 plyrlist.o: ../hdrs/charconv.h
@@ -1778,6 +1844,8 @@ predicat.o: ../hdrs/match.h
 predicat.o: ../hdrs/memcheck.h
 predicat.o: ../hdrs/mymalloc.h
 predicat.o: ../hdrs/parse.h
+predicat.o: ../hdrs/mushsql.h
+predicat.o: ../hdrs/sqlite3.h
 predicat.o: ../hdrs/privtab.h
 predicat.o: ../hdrs/strutil.h
 predicat.o: ../hdrs/charclass.h
@@ -1852,6 +1920,8 @@ rob.o: ../hdrs/log.h
 rob.o: ../hdrs/bufferq.h
 rob.o: ../hdrs/match.h
 rob.o: ../hdrs/parse.h
+rob.o: ../hdrs/mushsql.h
+rob.o: ../hdrs/sqlite3.h
 rob.o: ../hdrs/strutil.h
 services.o: ../config.h
 services.o: ../confmagic.h
@@ -1888,6 +1958,8 @@ set.o: ../hdrs/match.h
 set.o: ../hdrs/memcheck.h
 set.o: ../hdrs/mymalloc.h
 set.o: ../hdrs/parse.h
+set.o: ../hdrs/mushsql.h
+set.o: ../hdrs/sqlite3.h
 set.o: ../hdrs/strutil.h
 sig.o: ../config.h
 sig.o: ../confmagic.h
@@ -1923,6 +1995,8 @@ sort.o: ../hdrs/ptab.h
 sort.o: ../hdrs/mymalloc.h
 sort.o: ../hdrs/notify.h
 sort.o: ../hdrs/parse.h
+sort.o: ../hdrs/mushsql.h
+sort.o: ../hdrs/sqlite3.h
 sort.o: ../hdrs/strutil.h
 speech.o: ../config.h
 speech.o: ../confmagic.h
@@ -1952,6 +2026,8 @@ speech.o: ../hdrs/bufferq.h
 speech.o: ../hdrs/match.h
 speech.o: ../hdrs/mymalloc.h
 speech.o: ../hdrs/parse.h
+speech.o: ../hdrs/mushsql.h
+speech.o: ../hdrs/sqlite3.h
 speech.o: ../hdrs/sort.h
 speech.o: ../hdrs/strutil.h
 spellfix.o: ../config.h
@@ -1988,10 +2064,10 @@ sql.o: ../hdrs/match.h
 sql.o: ../hdrs/mymalloc.h
 sql.o: ../hdrs/notify.h
 sql.o: ../hdrs/parse.h
+sql.o: ../hdrs/mushsql.h
 sql.o: ../hdrs/strutil.h
 sql.o: ../hdrs/charconv.h
 sql.o: ../hdrs/myutf8.h
-sql.o: ../hdrs/mushsql.h
 sql.o: ../hdrs/charclass.h
 sqlite3.o: ../config.h
 sqlite3.o: ../confmagic.h
@@ -2008,6 +2084,9 @@ ssl_master.o: ../hdrs/bufferq.h
 ssl_master.o: ../hdrs/mysocket.h
 ssl_master.o: ../hdrs/parse.h
 ssl_master.o: ../hdrs/mypcre.h
+ssl_master.o: ../hdrs/mushsql.h
+ssl_master.o: ../hdrs/sqlite3.h
+ssl_master.o: ../hdrs/compile.h
 ssl_master.o: ../hdrs/sig.h
 ssl_master.o: ../hdrs/ssl_slave.h
 ssl_master.o: ../hdrs/wait.h
@@ -2050,6 +2129,8 @@ strutil.o: ../hdrs/markup.h
 strutil.o: ../hdrs/memcheck.h
 strutil.o: ../hdrs/mymalloc.h
 strutil.o: ../hdrs/parse.h
+strutil.o: ../hdrs/mushsql.h
+strutil.o: ../hdrs/sqlite3.h
 strutil.o: ../hdrs/pueblo.h
 strutil.o: ../hdrs/charclass.h
 tables.o: ../config.h
@@ -2085,6 +2166,8 @@ timer.o: ../hdrs/match.h
 timer.o: ../hdrs/memcheck.h
 timer.o: ../hdrs/mymalloc.h
 timer.o: ../hdrs/parse.h
+timer.o: ../hdrs/mushsql.h
+timer.o: ../hdrs/sqlite3.h
 timer.o: ../hdrs/sig.h
 timer.o: ../hdrs/strutil.h
 tz.o: ../config.h
@@ -2109,6 +2192,8 @@ tz.o: ../hdrs/log.h
 tz.o: ../hdrs/bufferq.h
 tz.o: ../hdrs/mymalloc.h
 tz.o: ../hdrs/parse.h
+tz.o: ../hdrs/mushsql.h
+tz.o: ../hdrs/sqlite3.h
 tz.o: ../hdrs/strutil.h
 unparse.o: ../config.h
 unparse.o: ../confmagic.h
@@ -2133,8 +2218,13 @@ unparse.o: ../hdrs/lock.h
 unparse.o: ../hdrs/boolexp.h
 unparse.o: ../hdrs/notify.h
 unparse.o: ../hdrs/parse.h
+unparse.o: ../hdrs/mushsql.h
+unparse.o: ../hdrs/sqlite3.h
 unparse.o: ../hdrs/pueblo.h
 unparse.o: ../hdrs/strutil.h
+utf_impl.o: ../config.h
+utf_impl.o: ../confmagic.h
+utf_impl.o: ../options.h
 utils.o: ../config.h
 utils.o: ../confmagic.h
 utils.o: ../options.h
@@ -2161,11 +2251,10 @@ utils.o: ../hdrs/bufferq.h
 utils.o: ../hdrs/match.h
 utils.o: ../hdrs/mymalloc.h
 utils.o: ../hdrs/parse.h
+utils.o: ../hdrs/mushsql.h
+utils.o: ../hdrs/sqlite3.h
 utils.o: ../hdrs/strutil.h
 utils.o: ../hdrs/pcg_basic.h
-utf_impl.o: ../config.h
-utf_impl.o: ../confmagic.h
-utf_impl.o: ../options.h
 version.o: ../config.h
 version.o: ../confmagic.h
 version.o: ../options.h
@@ -2232,6 +2321,8 @@ websock.o: ../hdrs/bufferq.h
 websock.o: ../hdrs/ansi.h
 websock.o: ../hdrs/strtree.h
 websock.o: ../hdrs/parse.h
+websock.o: ../hdrs/mushsql.h
+websock.o: ../hdrs/sqlite3.h
 websock.o: ../confmagic.h
 websock.o: ../hdrs/strutil.h
 websock.o: ../hdrs/notify.h
@@ -2259,6 +2350,8 @@ wild.o: ../hdrs/chunk.h
 wild.o: ../hdrs/memcheck.h
 wild.o: ../hdrs/mymalloc.h
 wild.o: ../hdrs/parse.h
+wild.o: ../hdrs/mushsql.h
+wild.o: ../hdrs/sqlite3.h
 wild.o: ../hdrs/strutil.h
 wiz.o: ../config.h
 wiz.o: ../confmagic.h
@@ -2292,9 +2385,9 @@ wiz.o: ../hdrs/bufferq.h
 wiz.o: ../hdrs/match.h
 wiz.o: ../hdrs/mymalloc.h
 wiz.o: ../hdrs/parse.h
-wiz.o: ../hdrs/strutil.h
 wiz.o: ../hdrs/mushsql.h
 wiz.o: ../hdrs/sqlite3.h
+wiz.o: ../hdrs/strutil.h
 info_slave.o: ../config.h
 info_slave.o: ../confmagic.h
 info_slave.o: ../options.h

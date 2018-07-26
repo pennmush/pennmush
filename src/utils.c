@@ -104,10 +104,18 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   char *thingname, *attrname;
   char astring[BUFFER_LEN];
   ATTR *attrib;
+  char *stripped;
+
 
   if (!ufun) {
     return 0;
   }
+  
+  if(!attrstring) {
+    return 0;
+  }
+  
+  stripped = remove_markup(attrstring, NULL);
 
   memset(ufun->contents, 0, sizeof ufun->contents);
   ufun->errmess = (char *) "";
@@ -118,11 +126,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-  if (!attrstring) {
-    return 0;
-  }
-
-  mush_strncpy(astring, attrstring, sizeof astring);
+   mush_strncpy(astring, stripped, sizeof astring);
 
   /* Split obj/attr */
   if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {

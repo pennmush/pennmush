@@ -218,7 +218,7 @@ struct chanlist {
   (Can_Hide(p) || (Channel_CanHide(c) && Chan_Can_Access(c, p) &&              \
                    (eval_chan_lock(c, p, CLOCK_HIDE))))
 #define Chan_Can_Nuke(c, p) (Wizard(p) || (ChanCreator(c) == (p)))
-#define Chan_Can_Decomp(c, p) (See_All(p) || (ChanCreator(c) == (p)))
+#define Chan_Can_Decomp(c, p) (See_All(p) || (ChanCreator(c) == (p)) || (Chan_Can_Modify(c, p)))
 
 /* For use in channel matching */
 enum cmatch_type { CMATCH_NONE, CMATCH_EXACT, CMATCH_PARTIAL, CMATCH_AMBIG };

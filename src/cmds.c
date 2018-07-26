@@ -586,22 +586,22 @@ COMMAND(cmd_force)
 
 COMMAND(cmd_function)
 {
-  if (SW_ISSET(sw, SWITCH_DELETE))
+  if (SW_ISSET(sw, SWITCH_DELETE)) {
     do_function_delete(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_ENABLE))
+  } else if (SW_ISSET(sw, SWITCH_ENABLE)) {
     do_function_toggle(executor, arg_left, 1);
-  else if (SW_ISSET(sw, SWITCH_DISABLE))
+  } else if (SW_ISSET(sw, SWITCH_DISABLE)) {
     do_function_toggle(executor, arg_left, 0);
-  else if (SW_ISSET(sw, SWITCH_RESTRICT))
+  } else if (SW_ISSET(sw, SWITCH_RESTRICT)) {
     do_function_restrict(executor, arg_left, args_right[1],
                          SW_ISSET(sw, SWITCH_BUILTIN));
-  else if (SW_ISSET(sw, SWITCH_RESTORE))
+  } else if (SW_ISSET(sw, SWITCH_RESTORE)) {
     do_function_restore(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_ALIAS))
-    alias_function(executor, arg_left, args_right[1]);
-  else if (SW_ISSET(sw, SWITCH_CLONE))
+  } else if (SW_ISSET(sw, SWITCH_ALIAS)) {
+    do_function_alias(executor, arg_left, args_right[1]);
+  } else if (SW_ISSET(sw, SWITCH_CLONE)) {
     do_function_clone(executor, arg_left, args_right[1]);
-  else {
+  } else {
     int split;
     char *saved;
     split = 0;

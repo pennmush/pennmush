@@ -2830,11 +2830,14 @@ do_chan_what(dbref player, const char *partname)
   int found = 0;
   char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
+  char locks[BUFFER_LEN];
+  char *lp;
 
   strcpy(cleanname, normalize_channel_name(partname));
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
+      lp = locks;
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanDesc(c));
       notify_format(player, T("Owner: %s"),
@@ -2851,6 +2854,28 @@ do_chan_what(dbref player, const char *partname)
           T("Recall buffer: %db (%d full lines), with %d lines stored."),
           BufferQSize(ChanBufferQ(c)), bufferq_blocks(ChanBufferQ(c)),
           bufferq_lines(ChanBufferQ(c)));
+
+      // If we have privs, we can see the locks.
+      if (Chan_Can_Decomp(c, player)) {
+        if (ChanModLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n    mod: %s",
+              unparse_boolexp(player, ChanModLock(c), UB_MEREF));
+        if (ChanHideLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n   hide: %s",
+              unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
+        if (ChanJoinLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n   join: %s",
+              unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
+        if (ChanSpeakLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n  speak: %s",
+              unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
+        if (ChanSeeLock(c) != TRUE_BOOLEXP)
+          safe_format(locks, &lp, "\n    see: %s",
+              unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
+        *lp = '\0';
+        if (strlen(locks) > 1)
+          notify_format(player, T("Locks:%s"), locks);
+        } // if(Chan_Can_Decomp())
       found++;
     }
   }
@@ -2882,8 +2907,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
     if (string_prefix(cleanp, cleanname)) {
-      if (!(See_All(player) || Chan_Can_Modify(c, player) ||
-            (ChanCreator(c) == player))) {
+      if (!Chan_Can_Decomp(c, player)) {
         if (Chan_Can_See(c, player)) {
           found++;
           notify_format(player,

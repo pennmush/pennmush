@@ -193,7 +193,7 @@ FUNCTION(fun_json_query)
 
       if (cJSON_IsArray(curr)) {
         i = parse_integer(args[path]);
-        curr = cJSON_GetArrayItem(json, i);
+        curr = cJSON_GetArrayItem(curr, i);
       } else if (cJSON_IsObject(curr)) {
         int ulen;
         char *utf8 =

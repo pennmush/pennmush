@@ -10,14 +10,14 @@ names are. Some common ones have dependencies described below.
 
   Installing libevent-openssl-2.0 is highly recommended as well, but not
   required.  If you want to use SQL, you'll also need the appropriate
-  -dev package, like libsqlite3-dev.
+  dev package, like libmariadbclient-dev.
 
-   libcurl4-dev-openssl is another useful one.
+   libcurl4-openssl-dev is another useful one, as is libicu-dev.
 
 * For arch, the mandatory packages are:
    | pcre openssl
 
-   and highly recommended libevent and libcurl-gnutls. Some or all of
+   and highly recommended icu, libevent and libcurl. Some or all of
    these might already be present as part of a base install.
 
 

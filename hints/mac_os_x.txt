@@ -1,5 +1,5 @@
 With the Xcode Developer Tools installed, configuring and building
-just works. OS X includes OpenSSL and Sqlite3.
+just works. OS X includes OpenSSL.
 
 If you run into problems after an OS upgrade, try running this command:
 
@@ -8,7 +8,7 @@ sudo xcode-select --install
 and re-running configure.
 
 
-(For the below, I think macports is more popular these days, if
+(For the below, I think homebrew is more popular these days, if
 anybody wants to chime in? At the very least, package names are likely
 way out of date.)
 

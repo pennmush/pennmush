@@ -95,7 +95,7 @@ PRIV attr_privs_view[] = {{"no_command", '$', AF_NOPROG, AF_NOPROG},
 
 static ATTR *aname_find_exact(const char *name);
 static ATTR *attr_read(PENNFILE *f);
-static ATTR *attr_alias_read(PENNFILE *f, char *alias);
+static ATTR *attr_alias_read(PENNFILE *f, sqlite3_str *alias);
 
 static int free_standard_attr(ATTR *a, bool inserted);
 static int free_standard_attr_aliases(ATTR *a);
@@ -281,7 +281,7 @@ attr_read(PENNFILE *f)
 }
 
 static ATTR *
-attr_alias_read(PENNFILE *f, char *alias)
+attr_alias_read(PENNFILE *f, sqlite3_str *alias)
 {
   char *tmp;
   ATTR *a;
@@ -295,8 +295,7 @@ attr_alias_read(PENNFILE *f, char *alias)
     return NULL;
   }
   db_read_this_labeled_string(f, "alias", &tmp);
-  strcpy(alias, tmp);
-
+  sqlite3_str_appendall(alias, tmp);
   return a;
 }
 
@@ -305,7 +304,6 @@ attr_read_all(PENNFILE *f)
 {
   ATTR *a;
   int c, found, count = 0;
-  char alias[BUFFER_LEN];
 
   /* Clear existing attributes */
   ptab_free(&ptab_attrib);
@@ -323,30 +321,37 @@ attr_read_all(PENNFILE *f)
 
     found++;
 
-    if ((a = attr_read(f)))
+    if ((a = attr_read(f))) {
       ptab_insert(&ptab_attrib, a->name, a);
+    }
   }
 
   ptab_end_inserts(&ptab_attrib);
 
-  if (found != count)
+  if (found != count) {
     do_rawlog(LT_ERR,
               "WARNING: Actual number of attrs (%d) different than "
               "expected count (%d).",
               found, count);
+  }
 
   /* Assumes we'll always have at least one alias */
   db_read_this_labeled_int(f, "attraliascount", &count);
   for (found = 0;;) {
+    sqlite3_str *aliasbuf = NULL;
     c = penn_fgetc(f);
     penn_ungetc(c, f);
 
-    if (c != ' ')
+    if (c != ' ') {
       break;
+    }
 
     found++;
+    aliasbuf = sqlite3_str_new(NULL);
 
-    if ((a = attr_alias_read(f, alias))) {
+    if ((a = attr_alias_read(f, aliasbuf))) {
+      char *alias = sqlite3_str_finish(aliasbuf);
+      aliasbuf = NULL;
       upcasestr(alias);
       if (!good_atr_name(alias)) {
         do_rawlog(LT_ERR, "Bad attribute name on alias '%s' in db.", alias);
@@ -359,15 +364,19 @@ attr_read_all(PENNFILE *f)
         do_rawlog(LT_ERR, "Unable to alias attribute '%s' to '%s' in db.",
                   AL_NAME(a), alias);
       }
+      sqlite3_free(alias);
+    }
+    if (aliasbuf) {
+      sqlite3_str_reset(aliasbuf);
+      sqlite3_str_finish(aliasbuf);
     }
   }
-  if (found != count)
+  if (found != count) {
     do_rawlog(LT_ERR,
               "WARNING: Actual number of attr aliases (%d) different "
               "than expected count (%d).",
               found, count);
-
-  return;
+  }
 }
 
 void
@@ -432,10 +441,10 @@ alias_attribute(const char *atr, const char *alias)
 static ATTR *
 aname_find_exact(const char *name)
 {
-  char atrname[BUFFER_LEN];
-  strcpy(atrname, name);
-  upcasestr(atrname);
-  return (ATTR *) ptab_find_exact(&ptab_attrib, atrname);
+  char *attrname = strupper_a(name, "aname");
+  ATTR *a = ptab_find_exact(&ptab_attrib, attrname);
+  mush_free(attrname, "aname");
+  return a;
 }
 
 /* Add a new, or restrict an existing, standard attribute from cnf file */
@@ -504,7 +513,6 @@ check_attr_value(dbref player, const char *name, const char *value)
   /* Check for attribute limits and enums. */
   ATTR *ap;
   char *attrval;
-  pcre *re;
   int subpatterns;
   const char *errptr;
   int erroffset;
@@ -512,8 +520,7 @@ check_attr_value(dbref player, const char *name, const char *value)
   char delim;
   int len;
   static char buff[BUFFER_LEN];
-  char vbuff[BUFFER_LEN];
-  char ucname[BUFFER_LEN];
+  char *ucname = NULL;
 
   if (!name || !*name) {
     return value;
@@ -522,10 +529,11 @@ check_attr_value(dbref player, const char *name, const char *value)
     return value;
   }
 
-  name = strupper_r(name, ucname, sizeof ucname);
+  ucname = strupper_a(name, "string");
+  name = ucname;
   ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
   if (!ap) {
-    return value;
+    goto cleanup;
   }
 
   attrval = atr_value(ap);
@@ -534,10 +542,10 @@ check_attr_value(dbref player, const char *name, const char *value)
   }
 
   if (ap->flags & AF_RLIMIT) {
-    re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS, &errptr,
-                      &erroffset, tables);
+    pcre *re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS,
+                            &errptr, &erroffset, tables);
     if (!re) {
-      return value;
+      goto cleanup;
     }
 
     subpatterns =
@@ -545,21 +553,26 @@ check_attr_value(dbref player, const char *name, const char *value)
     pcre_free(re);
 
     if (subpatterns >= 0) {
-      return value;
+      goto cleanup;
     } else {
-      if (player != NOTHING)
+      if (player != NOTHING) {
         notify(player, T("Attribute value does not match the /limit regexp."));
-      return NULL;
+      }
+      value = NULL;
+      goto cleanup;
     }
   } else if (ap->flags & AF_ENUM) {
+    char *vbuff;
     /* Delimiter is always the first character of the enum string.
      * and the value cannot have the delimiter in it. */
     delim = *attrval;
     if (!*value || strchr(value, delim)) {
-      if (player != NOTHING)
+      if (player != NOTHING) {
         notify_format(player, T("Value for %s needs to be one of: %s"),
                       ap->name, display_attr_limit(ap));
-      return NULL;
+      }
+      value = NULL;
+      goto cleanup;
     }
 
     /* We match the enum case-insensitively, BUT we use the case
@@ -568,7 +581,7 @@ check_attr_value(dbref player, const char *name, const char *value)
     strupper_r(attrval, buff, sizeof buff);
 
     len = strlen(value);
-    snprintf(vbuff, BUFFER_LEN, "%c%s%c", delim, value, delim);
+    vbuff = sqlite3_mprintf("%c%s%c", delim, value, delim);
     upcasestr(vbuff);
 
     ptr = strstr(buff, vbuff);
@@ -576,26 +589,35 @@ check_attr_value(dbref player, const char *name, const char *value)
       *(vbuff + len + 1) = '\0'; /* Remove the second delim */
       ptr = strstr(buff, vbuff);
     }
-
+    sqlite3_free(vbuff);
     /* Do we have a match? */
     if (ptr) {
       /* ptr is pointing at the delim before the value. */
       ptr++;
       ptr2 = strchr(ptr, delim);
-      if (!ptr2)
-        return NULL; /* Shouldn't happen, but sanity check. */
+      if (!ptr2) {
+        value = NULL; /* Shouldn't happen, but sanity check. */
+        goto cleanup;
+      }
 
       /* Now we need to copy over the _original case_ version of the
        * enumerated string. Nasty pointer arithmetic. */
       strncpy(buff, attrval + (ptr - buff), (int) (ptr2 - ptr));
       buff[ptr2 - ptr] = '\0';
-      return buff;
+      value = buff;
+      goto cleanup;
     } else {
-      if (player != NOTHING)
+      if (player != NOTHING) {
         notify_format(player, T("Value for %s needs to be one of: %s"),
                       ap->name, display_attr_limit(ap));
-      return NULL;
+      }
+      value = NULL;
+      goto cleanup;
     }
+  }
+cleanup:
+  if (ucname) {
+    mush_free(ucname, "string");
   }
   return value;
 }
@@ -1031,41 +1053,43 @@ do_decompile_attribs(dbref player, char *pattern, int retroactive)
 void
 do_list_attribs(dbref player, int lc)
 {
-  char tmp[BUFFER_LEN];
+  char *tmp;
   char *b = list_attribs();
-  notify_format(player, T("Attribs: %s"),
-                lc ? strlower_r(b, tmp, sizeof tmp) : b);
+  if (lc) {
+    tmp = strlower_a(b, "string");
+  } else {
+    tmp = b;
+  }
+  notify_format(player, T("Attribs: %s"), tmp);
+  if (lc) {
+    mush_free(tmp, "string");
+  }
+  sqlite3_free(b);
 }
 
 /** Return a list of standard attributes.
  * This functions returns the list of standard attributes, separated by
- * spaces, in a statically allocated buffer.
+ * spaces, in a dynamically allocated buffer.
  */
 char *
 list_attribs(void)
 {
   ATTR *ap;
-  const char *ptrs[BUFFER_LEN / 2];
-  static char buff[BUFFER_LEN];
-  char *bp;
   const char *name;
-  int nptrs = -1, i;
+  int nattrs = 0;
+  sqlite3_str *buff = sqlite3_str_new(NULL);
 
   for (ap = ptab_firstentry_new(&ptab_attrib, &name); ap;
        ap = ptab_nextentry_new(&ptab_attrib, &name)) {
-    if (strcmp(name, AL_NAME(ap)))
+    if (strcmp(name, AL_NAME(ap))) {
       continue;
-    ptrs[++nptrs] = AL_NAME(ap);
+    }
+    if (nattrs++ > 0) {
+      sqlite3_str_appendchar(buff, 1, ' ');
+    }
+    sqlite3_str_appendall(buff, AL_NAME(ap));
   }
-  bp = buff;
-  if (nptrs >= 0)
-    safe_str(ptrs[0], buff, &bp);
-  for (i = 1; i < nptrs; i++) {
-    safe_chr(' ', buff, &bp);
-    safe_str(ptrs[i], buff, &bp);
-  }
-  *bp = '\0';
-  return buff;
+  return sqlite3_str_finish(buff);
 }
 
 /** Attr things to be done after the config file is loaded but before

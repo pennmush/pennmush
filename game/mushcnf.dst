@@ -20,6 +20,17 @@ mud_name PennMUSH
 # mud_url http://www.pennmush.org
 mud_url
 
+# If you want GET/POST/etc support for your MUSH, set http_handler to the
+# dbref of a Player object.
+#
+# When the MUSH receives an HTTP request, it checks the player object for
+# an HTTP`<METHODNAME>, and if it exists, runs it as an inline command.
+# Be warned - if HTTP`?? queues anything, it will NOT be sent to the client -
+# everything should be run via /inline
+#
+# See also, "help http_handler" and "help @respond".
+http_handler
+
 # The port it's running on. See also ssl_port, later.
 port 4201
 

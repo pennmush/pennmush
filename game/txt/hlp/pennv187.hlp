@@ -1,6 +1,6 @@
 & changes
 & 1.8.7p0
-Version 1.8.7 patchlevel 0 ??? ?? 20??
+Version 1.8.7 patchlevel 0 Aug 10 2018
 
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -35,6 +35,8 @@ Minor Changes:
 * Shrink the [1mNEW_PE_INFO[0m struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
 * log_forces in mushcnf.dst now defaults to no. You probably only want this on if you’re debugging. [MG]
+* The connect screen now respects SOCKSET options. [MG]
+* @chan/what now displays channel locks. [MT, 1208]
 
 Softcode:
 
@@ -42,7 +44,7 @@ Softcode:
 * Functions that work on integers (Like [1mdiv()[0m or [1mband()[0m) now use 64-bit values instead of 32-bit. [SW]
 * Added [1misjson()[0m
 * [1mjson_query()[0m get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa’toq. [SW]
-* [1mjson_query()[0m can apply merge patches to json objects per https://tools.ietf.org/html/rfc7396
+* [1mjson_mod()[0m for modifying complex JSON objects. [SW]
 * [1mjson_query(str, unescape)[0m handles unicode escape sequences.
 * [1mjson(string, foo)[0m escapes non-ascii characters.
 * [1mclone()[0m now takes an optional fourth argument to act like [1m@clone/preserve[0m [797]
@@ -51,10 +53,15 @@ Softcode:
 * [1mtimecalc()[0m and [1msecscalc()[0m for adding/subtracting intervals from times.
 * [1m@suggest[0m and [1msuggest()[0m for user-defined spellchecking. Loads [1m/usr/share/dict/words[0m or another configurable wordlist by default.
 * [1mconnlog()[0m and [1mconnrecord()[0m for interfacing with enhanced connection logs.
-* [1msoundex()[0m and [1msoundslike()[0m now support a second phonetic hash besides soundex.
-* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
-* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* [1msoundex()[0m and [1msoundslike()[0m now support a second phonetic hash algorithm besides soundex.
+* Side-effect version of [1mlink()[0m now returns 1 on success, 0 or #-1 on failure. [MT]
+* [1mowner()[0m now accepts two optional arguments, allowing ownership to be changed as in [1m@chown[0m and [1m@atrchown[0m. [MT]
 * If compiled with libcurl support, adds [1m@http[0m for interacting with RESTFul web APIs. [SW]
+* [1mstripaccents()[0m supports a second, smarter, transliteration algorithm.
+* If compiled with ICU support, adds [1mlcstr2()[0m and [1mucstr2()[0m with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
+* [1m@chatformat[0m now receives a new arg, [1m%6[0m, which defaults to “says” but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
+* [1metimefmt()[0m supports [1m$w[0m and [1m$y[0m formats for weeks and years. [SW, 804]
+* Ported parenmatch() from Rhost. [MT, 1024]
 
 Fixes:
 
@@ -66,19 +73,22 @@ Fixes:
 * Pass [1mpe_info[0m into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to [1malign()[0m now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 * [1mjson_query()[0m didn’t understand an action of ‘type’ as documented. [SW]
-* Assorted help file fixes. [SW]
 * [1m@clone[0m without /preserve wasn’t stripping privileged flags and such. [1190,SW]
 * [1m@chown/preserve[0m was resetting wiz-bit despite it’s help file indicating otherwise. [1187] PR by Qon.
 * [1mscan()[0m now determines if objects will be included based on whether the caller can examine them, rather than if [1mscan()[0m’s [1m<looker>[0m can examine them. [MG]
 * Fixed some bugs regarding when [1msetq()[0m will and won’t let you set the values of named registers when you’ve hit the limit. [MG, 1179]
 * [1msqlescape()[0m when using a sqlite3 connection no longer also requires MySQL.
+* A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
+* Fix an off-by-one error in command switch initialization code. [SW]
+* [1m@mail[0m without a message list respects the current folder instead of using folder 0. [77]
+* [1mufun()[0m, [1mulocal()[0m, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
 
 Documentation:
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
-* Minor help fixes. [MG]
-* More minor help fixes. [MT]
+* Help fixes and improvements. [MG, SW, MT]
+* Help files are now in UTF-8.
 
 OS Specific:
 

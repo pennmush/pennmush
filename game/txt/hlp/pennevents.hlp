@@ -160,3 +160,144 @@ No arguments are passed to these events.
       Triggered when a player create attempt fails. <count> is the # of fails caused by this ip. If the failure is from an attempt to register a player via email, the error code of the mailer program is provided as <error>.
 
     A sitelock rule with deny_silent will not trigger socket`createfail or socket`createfail.
+& HTTP
+  PennMUSH now supports HTTP requests reaching its mush port. It is very low level,
+  and a little tricky to understand.
+
+  When an HTTP request hits the PennMUSH port, PennMUSH invisibly logs in to
+  the HTTP Handler player (@config http_handler), and executes an
+  @include me/<method>. e.g: @include me/get.
+
+  %0 will be the pathname, e.g: "/", "/rest/path", etc.
+
+  %1 will be the body of the request. If it's json, use json_query to deal with it.
+     If it's form-encoded, look at help formdecode()
+
+  Anything sent to the HTTP Handler player during evaluation of this code is
+  included in the body sent to the HTTP Client. There is a maximum size of
+  BUFFER_LEN for the body of the response.
+
+  To modify the response headers, use the command "@respond"
+
+  Continued in: "help http2"
+& HTTP2
+  To use PennMUSH HTTP Handler:
+
+  > @pcreate HTTPHandler
+  > @config/set http_handler=[num(*HTTPHandler)]
+  > &GET *HTTPHandler=say Somebody tried to HTTP GET %0!
+
+  You will very likely want to set the http_handler option in your mush.cnf
+  file to ensure it survives over reboots and is actively receiving events even
+  during startup.
+
+  By default, PennMUSH will respond with a 404 NOT FOUND. You will need to
+  use @respond to control what is sent to the client.
+
+  For some examples of using events, see 'help http examples'.
+
+  See also: @respond, formdecode(), json_query(), urlencode(), urldecode(),
+            urlunpack()
+& @RESPOND
+  @respond <code> <text>
+  @respond/type <content-type>
+  @respond/header <name>: <value>
+
+  Within the context of an HTTP Player connection, @respond is used to modify
+  the headers sent back to the HTTP client.
+
+  If an HTTP Handler isn't set, or a given method attribute doesn't exist on the
+  http handler object, Penn will default to responding as if only mud_url is
+  set.
+
+  If an attribute exists, Penn defaults to 200 OK, and Content-Type "text/plain"
+
+  @respond <code> <text> changes the 1st line sent to the client (200 OK)
+  @respond/type <text> replaces the current Content-Type header. (text/plain)
+  @respond/header <name>: <value> adds a new Header.
+
+  @respond commands are _not_ required to be run before any output is sent to
+  the player. For Content-Length purposes, Penn buffers all output before the
+  @include finishes.
+
+  See examples in "help @respond2". HTTP limitations in "help @respond3"
+
+& @RESPOND2
+  @respond examples:
+
+  To modify the response code:
+
+  > @respond 200 OK
+  > @respond 404 Not Found
+
+  To change the Content Type:
+
+  > @respond/type application/json
+  > @respond/type text/html
+
+  Note that @respond/type is not syntactic sugar for "@respond/header Content-Type".
+  An HTTP @respond typically should only have one content-type, and
+  @respond/type overrides it. Using @respond/header to add Content-Type will
+  create a second header named Content-Type.
+
+  Add Headers:
+  > @respond/header X-Powered-By=MUSHCode
+  > @respond/header {Set-Cookie: name=Bob; Max-Age=3600; Version=1}
+
+  Adding a Content-Length header is not allowed - PennMUSH calculates it from
+  the output before sending.
+& @RESPOND3
+  To vaguely comply with most HTTP requirements:
+
+  @respond <code> <text>
+      <code> must be 3 digits, followed by a space, then printable ascii text.
+             Total length must be < 40 characters.
+             This will be prepended by HTTP/1.1 when sent back to
+             the client.
+
+  @respond/header <name>: <value>
+      <name> must be printable ascii characters (No accents, no %r)
+      <value> must be printable, but accents allowed (No %r)
+
+  @respond/type <ctype>
+      <ctype> should be alphanumeric, +, ., /, -. HTTP/1.1 does allow for
+              parameters (text/plain; content-encoding=...), so we don't
+              enforce anything at present except printability().
+
+& HTTP EXAMPLES
+  There are a number of HTTP Examples.
+
+  Example HTTP Handlers all assume the following:
+
+  > @pcreate HTTPHandler=digest(md5,rand())
+  > @config/set http_handler=pmatch(HTTPHandler)
+
+  For the basic lowest level examples: "help http simple"
+
+  For using urls and url parameters: "help http get"
+
+  For handling POSTs and POST data: "help http post"
+
+  For a basic, programmable REST interface: "help http REST"
+
+  For an expandable http router: "help http router"
+& HTTP SIMPLE
+  The examples on this page are all simple, single-result handlers.
+
+  Return the output of WHO to any GET request:
+
+  > &GET *HTTPHandler=WHO
+
+  Return a JSON array of users to any GET request
+
+  > &LIST_TO_JSON`FOLD *HTTPHandler=json_mod(%0,insert,$\[[json_query(%0,size)]\],json(string,%1))
+  > &LIST_TO_JSON *HTTPHandler=fold(list_to_json`fold,%0,\[\],%1)
+  > &NAMES *HTTPHandler=u(list_to_json,map(#apply/name,mwho(),%b,^),^)
+  > &GET *HTTPHandler=@respond/type application/json ; think u(names)
+
+  Whenever a POST is performed, say the path and body.
+
+  > &POST *HTTPHandler=say POST attempted at %0: %1
+
+& HTTP GET
+  These examples cover blah blah UPDATE ME

@@ -3285,7 +3285,9 @@ process_input_helper(DESC *d, char *tbuf1, int got)
 #endif /* undef WITHOUT_WEBSOCKETS */
         {
           if (process_http_start(d, d->raw_input)) {
-            process_http_input(d, q, qend - q);
+            if ((qend - q) > 0) {
+              process_http_input(d, q, qend - q);
+            }
           }
           return;
         }
@@ -3544,7 +3546,7 @@ process_http_start(DESC *d, char *line)
   if (strlen(path) >= MAX_COMMAND_LEN) goto bad_connection;
 
   version = c;
-  if (strcmp(version, "HTTP/1.1")) goto bad_connection;
+  if (strncmp(version, "HTTP/1.1", 8)) goto bad_connection;
 
   req = mush_malloc(sizeof(struct http_request), "http_request");
   memset(req, 0, sizeof *req);
@@ -3552,17 +3554,21 @@ process_http_start(DESC *d, char *line)
   d->http_request = req;
   req->state = HTTP_HEADER;
   req->content_length = -1;
+
+  /* req->buff for input */
   req->bp = req->buff;
 
+  /* req->headers and response for output */
   req->hp = req->headers;
-  req->response_len = 0;
+  req->rp = req->response;
 
   strncpy(req->method, method, HTTP_METHOD_LEN - 1);
   strncpy(req->path, path, MAX_COMMAND_LEN - 1);
 
-  d->conn_flags |= CONN_HTTP_REQUEST;
+  d->conn_flags |= CONN_HTTP_REQUEST | CONN_HTTP_BUFFER;
   /* Default for HTTP response */
-  strncpy(req->code, "200 OK", HTTP_CODE_LEN);
+  strncpy(req->code, "HTTP/1.1 200 OK", HTTP_CODE_LEN);
+  strncpy(req->ctype, "Content-Type: text/plain", MAX_COMMAND_LEN);
 
   return 1;
 
@@ -3579,16 +3585,22 @@ process_http_input(DESC *d, char *buf, int len)
 }
 
 static void
-do_http_command(DESC *d) {
+do_http_command(DESC *d)
+{
   NEW_PE_INFO *pe_info;
   struct http_request *req;
+  char buff[MAX_COMMAND_LEN];
+  uint32_t clen;
 
   if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
       (d->conn_flags & CONN_HTTP_CLOSE) ||
       !(d->http_request)) {
     d->conn_flags |= CONN_HTTP_CLOSE;
+    http_bounce_mud_url(d);
+    goto finished;
   }
 
+  /* 'invisibly' connect. */
   d->player = HTTP_HANDLER;
   d->connected = CONN_PLAYER;
   d->connected_at = mudtime;
@@ -3601,13 +3613,33 @@ do_http_command(DESC *d) {
   pe_regs_setenv(pe_info->regvals, 0, req->path);
   pe_regs_setenv(pe_info->regvals, 1, req->buff);
 
+  active_http_request = req;
   run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
+  active_http_request = NULL;
 
   d->player = NOTHING;
   d->connected = CONN_SCREEN;
 
-  http_bounce_mud_url(d);
+  /* Clear the buffer flag so we stop hijacking output */
+  d->conn_flags &= ~CONN_HTTP_BUFFER;
 
+  /* If 'html' is in our content type, then let's run our output through
+   * the HTML renderer. */
+  if (strstr(req->ctype, "html")) {
+    d->conn_flags &= ~CONN_HTML;
+  }
+
+  /* Now write out our response header, populated by @respond, then body. */
+  queue_newwrite(d, req->code, strlen(req->code));
+  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", clen);
+  queue_newwrite(d, req->headers, strlen(req->headers));
+
+  /* Finish off the headers with Content-Length */
+  clen = req->rp - req->response;
+  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", clen);
+  queue_newwrite(d, buff, strlen(buff));
+
+  queue_newwrite(d, req->response, clen);
   /* Fall through */
 finished:
   d->conn_flags |= CONN_HTTP_CLOSE;
@@ -6035,6 +6067,8 @@ FUNCTION(fun_lwho)
 
   DESC_ITER (d) {
     if ((d->connected && !online) || (!d->connected && !offline))
+      continue;
+    if (d->conn_flags & CONN_HTTP_REQUEST)
       continue;
     if (!powered && (d->connected && Hidden(d)))
       continue;

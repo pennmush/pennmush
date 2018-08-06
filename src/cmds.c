@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 
+#include <ctype.h>
 #include <string.h>
 
 #ifdef HAVE_SYS_TYPES_H
@@ -66,6 +67,10 @@ void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
+
+extern struct http_request *active_http_request;
+extern void do_http_respond_code(const char *code);
+extern void do_http_respond_header(const char *name, const char *value);
 
 extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
@@ -1961,4 +1966,97 @@ COMMAND(cmd_fetch)
 #else
   notify(executor, T("Command disabled."));
 #endif
+}
+
+COMMAND(cmd_respond)
+{
+  const char *p, *t;
+  struct http_request *req;
+  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
+    notify(executor, T("Invalid http_handler object."));
+    return;
+  }
+
+  if (active_http_request == NULL) {
+    notify(executor, T("Player is not in HTTP Context."));
+    return;
+  }
+
+  req = active_http_request;
+
+  if (!arg_left || !*arg_left) {
+    notify(executor, T("Invalid use of @respond, please check help @respond."));
+    return;
+  }
+
+  /* Ensure only isprint()-able characters. */
+  for (p = arg_left; p && *p; p++) {
+    if (!isprint(*p)) {
+      notify(executor, T("No nonprintable characters allowed in @respond"));
+      return;
+    }
+  }
+
+  if (SW_ISSET(sw, SWITCH_TYPE) && SW_ISSET(sw, SWITCH_HEADER)) {
+    notify(executor, T("Invalid @respond - You can't use more than one switch!"));
+    return;
+  }
+ 
+  /* @respond/type */
+  if (SW_ISSET(sw, SWITCH_TYPE)) {
+    snprintf(req->ctype, MAX_COMMAND_LEN,
+             "Content-Type: %s", arg_left);
+    return;
+  }
+
+  /* @respond/header */
+  if (SW_ISSET(sw, SWITCH_HEADER)) {
+    /* Sanity checking on header name. */
+    p = strstr(arg_left, ": ");
+    if (!p || (p - arg_left) < 1) {
+      notify(executor, T("Invalid format, use HeaderName: Value."));
+      return;
+    }
+    if (!strncasecmp(arg_left, "content-length", p - arg_left)) {
+      notify(executor, T("You cannot set Content-Length header."));
+      return;
+    }
+    /* Only printable ascii allowed in header names. */
+    for (t = arg_left; t < p; t++) {
+      if (!isascii(*p)) {
+        notify(executor, T("Invalid HTTP Header name."));
+        return;
+      }
+    }
+    safe_str(arg_left, req->headers, &(req->hp));
+    safe_str("\r\n", req->headers, &(req->hp));
+    return;
+  }
+
+  /* Now we're to @respond code
+   *
+   * This format must follow \d\d\d <text>
+   */
+  if (!isdigit(arg_left[0]) ||
+      !isdigit(arg_left[1]) ||
+      !isdigit(arg_left[2]) ||
+      arg_left[3] != ' ' ||
+      !isalnum(arg_left[4])) {
+    notify(executor, T("@respond must be 3 digits, space, then text ."));
+    return;
+  }
+
+  for (p = arg_left; *p; p++) {
+    if (!isascii(*p)) {
+      notify(executor, T("@respond must be 3 digits, space, then text ."));
+      return;
+    }
+  }
+
+  if (strlen(arg_left) >= 40) {
+      notify(executor, T("@respond status code too long."));
+      return;
+  }
+
+  snprintf(req->code, HTTP_CODE_LEN, "HTTP/1.1 %s", arg_left);
 }

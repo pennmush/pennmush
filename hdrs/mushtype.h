@@ -245,8 +245,10 @@ struct text_queue {
 
 /* HTTP connection, pass input straight to process_http_input */
 #define CONN_HTTP_REQUEST 0x10000
+/* An active HTTP command: Pemits and the like should be buffered in active_http_request */
+#define CONN_HTTP_BUFFER  0x20000
 /* An HTTP Request that should be closed. */
-#define CONN_HTTP_CLOSE   0x20000
+#define CONN_HTTP_CLOSE   0x40000
 
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
@@ -288,8 +290,7 @@ struct squeue {
 };
 
 #define HTTP_METHOD_LEN 16
-#define HTTP_CODE_LEN 0x100
-#define HTTP_BODY_LEN (BUFFER_LEN * 4)
+#define HTTP_CODE_LEN   64
 
 struct http_request {
   char method[HTTP_METHOD_LEN];  /**< GET/POST/PUT/DELETE/HEAD/etc */
@@ -300,10 +301,11 @@ struct http_request {
   int32_t content_length;        /**< Content-Length value. */
 
   char code[HTTP_CODE_LEN];      /**< 200 OK, etc */
+  char ctype[MAX_COMMAND_LEN];   /**< Content-Type: text/plain */
   char headers[BUFFER_LEN];      /**< Response headers */
-  char *hp;                      /**< bp for headers */
-  char response[HTTP_BODY_LEN];  /**< Response body. @pemits, etc. */
-  uint32_t response_len;         /**< Length of response. */
+  char *hp;                      /**< ptr for headers */
+  char response[BUFFER_LEN];     /**< Response body. @pemits, etc. */
+  char *rp;                      /**< bp for response */
 };
 
 typedef struct descriptor_data DESC;

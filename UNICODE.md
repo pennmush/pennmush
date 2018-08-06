@@ -77,7 +77,7 @@ String Builders
 
 Good old `BUFFER_LEN` long strings, manipulated by `safe_foo()`
 functions. `safe_chr()`, `safe_str()` and `safe_strl()` should only be
-used with ASCII strings. TODO: New `safe_uchar()` and `safe_ustr()`
+used with ASCII strings. TODO: New `safe_uchar()` and `safe_utf8()`
 functions for adding Unicode characters and UTF-8 strings
 respectively. Used in old code.
 

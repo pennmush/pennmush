@@ -7,6 +7,7 @@
 
 #include "sqlite3.h"
 #include "compile.h"
+#include "myutf8.h"
 
 sqlite3 *open_sql_db(const char *, bool);
 void close_sql_db(sqlite3 *);
@@ -25,8 +26,9 @@ prepare_statement(sqlite3 *db, const char *query, const char *name)
 
 void close_statement(sqlite3_stmt *);
 
-char *glob_to_like(const char *orig, char esc, int *len) __attribute_malloc__;
-char *escape_like(const char *orig, char esc, int *len) __attribute_malloc__;
+char *glob_to_like(const char *orig, UChar32 esc,
+                   int *len) __attribute_malloc__;
+char *escape_like(const char *orig, UChar32 esc, int *len) __attribute_malloc__;
 
 bool is_busy_status(int);
 void free_string(void *);

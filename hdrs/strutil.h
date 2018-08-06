@@ -10,17 +10,18 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <time.h>
-#include "compile.h"
-#include "mushtype.h"
-
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif /* HAVE_STDINT_H */
-
 #ifdef HAVE_SSE42
 #include <emmintrin.h>
 #include <nmmintrin.h>
 #endif
+
+#include "compile.h"
+#include "mushtype.h"
+#include "myutf8.h"
+#include "sqlite3.h"
 
 extern const char *const standard_tokens[2]; /* ## and #@ */
 
@@ -41,7 +42,9 @@ int strncasecmp(const char *s1, const char *s2, size_t n);
 #endif
 
 char *next_token(char *str, char sep);
+char *next_utoken(char *str, UChar32 sep);
 char *split_token(char **sp, char sep);
+char *split_utoken(char **sp, UChar32 sep);
 char *chopstr(const char *str, size_t lim);
 bool string_prefix(const char *restrict string, const char *restrict prefix);
 bool string_prefixe(const char *restrict string, const char *restrict prefix);
@@ -57,8 +60,11 @@ char *strinitial_r(const char *restrict s, char *restrict d, size_t len);
 char *upcasestr(char *s);
 char *skip_space(const char *s);
 char *seek_char(const char *s, char c);
+char *seek_uchar(const char *s, UChar32 c);
 char *mush_strndup(const char *src, size_t len,
                    const char *check) __attribute_malloc__;
+char *mush_strndup_cp(const char *src, size_t len,
+                      const char *check) __attribute_malloc__;
 int mush_vsnprintf(char *, size_t, const char *, va_list);
 
 #ifndef HAVE_STRDUP
@@ -86,8 +92,10 @@ int strncasecoll(const char *s1, const char *s2, size_t t);
 
 size_t remove_trailing_whitespace(char *, size_t);
 
-/** Append a character to the end of a BUFFER_LEN long string. */
+/* Append an ASCII character to the end of a BUFFER_LEN long string. */
 int safe_chr(char c, char *buff, char **bp);
+/* Append a Unicode character to the end of a BUFFER_LEN long string. */
+int safe_uchar(UChar32 c, char *buff, char **bp);
 
 /* Like sprintf */
 int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
@@ -104,6 +112,8 @@ int safe_number(NVAL n, char *buff, char **bp);
 int safe_dbref(dbref d, char *buff, char **bp);
 /* Append a string to a buffer */
 int safe_str(const char *s, char *buff, char **bp);
+/* Append a Unicode string to a UTF-8 buffer */
+int safe_utf8(const char *s, char *buff, char **bp);
 /* Append a string to a buffer, sticking it in quotes if there's a space */
 int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
@@ -122,6 +132,9 @@ int safe_fill_to(char x, size_t n, char *buff);
 int safe_accent(const char *restrict base, const char *restrict tmplate,
                 size_t len, char *buff, char **bp);
 
+/* Append a UChar32 to a sqlite3_str object */
+void sqlite3_str_appenduchar(sqlite3_str *str, UChar32 c);
+
 char *mush_strncpy(char *restrict, const char *, size_t);
 
 char *replace_string(const char *restrict old, const char *restrict newbit,
@@ -133,7 +146,9 @@ char *replace_string2(const char *const old[2], const char *const newbits[2],
 char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);
 char *trim_space_sep(char *str, char sep);
 int do_wordcount(char *str, char sep);
+int do_uwordcount(char *str, UChar32 sep);
 char *remove_word(char *list, char *word, char sep);
+char *remove_uword(char *list, char *word, UChar32 sep) __attribute_malloc__;
 char *next_in_list(const char **head);
 void safe_itemizer(int cur_num, int done, const char *delim,
                    const char *conjoin, const char *space, char *buff,

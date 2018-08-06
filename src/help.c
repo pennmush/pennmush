@@ -74,7 +74,7 @@ static char **list_matching_entries(const char *pattern, help_file *help_dat,
                                     int *len);
 static void free_entry_list(char **, int len);
 
-static const char *normalize_entry(help_file *help_dat, const char *arg1);
+static char *normalize_entry(help_file *help_dat, const char *arg1) __attribute_malloc__;
 
 static bool help_delete_entries(help_file *h);
 static bool help_populate_entries(help_file *h);
@@ -751,8 +751,7 @@ help_entry_exists(help_file *help_dat, const char *the_topic,
     "help.entry.exists");
 
   like = escape_like(the_topic, '$', NULL);
-  name = sqlite3_mprintf("%s%%", like);
-  free_string(like);
+  name = sqlite3_mprintf("%z%%", like);
 
   sqlite3_bind_text(finder, 1, help_dat->command, -1, SQLITE_STATIC);
   sqlite3_bind_text(finder, 2, name, -1, sqlite3_free);
@@ -787,8 +786,7 @@ help_find_entry(help_file *help_dat, const char *the_topic,
                                "LIKE ?2 ESCAPE '$' ORDER BY name LIMIT 1",
                                "help.find.entry.by_name");
     like = escape_like(the_topic, '$', NULL);
-    name = sqlite3_mprintf("%s%%", like);
-    free_string(like);
+    name = sqlite3_mprintf("%z%%", like);
 
     sqlite3_bind_text(finder, 1, help_dat->command, -1, SQLITE_STATIC);
     sqlite3_bind_text(finder, 2, name, -1, sqlite3_free);
@@ -1110,43 +1108,47 @@ FUNCTION(fun_textsearch)
     safe_str("#-1", buff, bp);
 }
 
-static const char *
+static char *
 normalize_entry(help_file *help_dat, const char *arg1)
 {
-  static char the_topic[LINE_SIZE + 2];
-
-  if (*arg1 == '\0')
+  if (*arg1 == '\0') {
     arg1 = (char *) "help";
-  else if (*arg1 == '&')
-    return T("#-1 INVALID ENTRY");
-  if (help_dat->admin)
-    snprintf(the_topic, LINE_SIZE, "&%s", arg1);
-  else
-    mush_strncpy(the_topic, arg1, LINE_SIZE);
-  return the_topic;
+  } else if (*arg1 == '&') {
+    return sqlite3_mprintf("%s", T("#-1 INVALID ENTRY"));
+  }
+  if (help_dat->admin) {
+    return sqlite3_mprintf("&%s", arg1);
+  } else {
+    return sqlite3_mprintf("%s", arg1);
+  }
 }
 
+/* arg1 is assumed to be latin-1 */
 static const char *
 string_spitfile(help_file *help_dat, char *arg1)
 {
   struct help_entry *entry = NULL;
-  char the_topic[LINE_SIZE + 2];
+  char *the_topic, *as_utf8;
   static char buff[BUFFER_LEN];
   char *bp = buff;
   int offset = 0;
 
-  strcpy(the_topic, normalize_entry(help_dat, arg1));
+  as_utf8 = latin1_to_utf8(arg1, -1, NULL, "utf8.string");
+  the_topic = normalize_entry(help_dat, as_utf8);
+  mush_free(as_utf8, "utf8.string");
 
   if (is_index_entry(the_topic, &offset)) {
     char *entries = entries_from_offset(help_dat, offset);
-
-    if (!entries)
+    sqlite3_free(the_topic);
+    if (!entries) {
       return T("#-1 NO ENTRY");
-    else
+    } else {
       return entries;
+    }
   }
 
   entry = help_find_entry(help_dat, the_topic, -1);
+  sqlite3_free(the_topic);
   if (!entry) {
     return T("#-1 NO ENTRY");
   }
@@ -1184,18 +1186,19 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   char **buff;
   sqlite3_stmt *lister;
   int status;
-  char *patcopy = mush_strdup(pattern, "string");
+  char *patcopy = latin1_to_utf8(pattern, -1, NULL, "utf8.string");
   char *like;
   int likelen;
   int matches = 0;
 
   if (wildcard_count(patcopy, 1) >= 0) {
     /* Quick way out, use the other kind of matching */
-    char the_topic[LINE_SIZE + 2];
+    char *the_topic;
     struct help_entry *entry = NULL;
-    strcpy(the_topic, normalize_entry(help_dat, patcopy));
-    mush_free(patcopy, "string");
+    the_topic = normalize_entry(help_dat, patcopy);
+    mush_free(patcopy, "utf8.string");
     entry = help_find_entry(help_dat, the_topic, -1);
+    sqlite3_free(the_topic);
     if (!entry) {
       *len = 0;
       return NULL;
@@ -1217,8 +1220,8 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
     "help.list.entries");
   sqlite3_bind_text(lister, 1, help_dat->command, -1, SQLITE_STATIC);
   like = glob_to_like(patcopy, '$', &likelen);
-  sqlite3_bind_text(lister, 2, like, likelen, free_string);
-  mush_free(patcopy, "string");
+  sqlite3_bind_text(lister, 2, like, likelen, sqlite3_free);
+  mush_free(patcopy, "utf8.string");
 
   do {
     status = sqlite3_step(lister);

@@ -517,8 +517,8 @@ FUNCTION(fun_connlog)
       time_constraint = 1;
       idx += 2;
     } else if (strcasecmp(args[idx], "ip") == 0) {
-      char *escaped;
-      int len;
+      char *as_utf8;
+
       if (nargs <= idx + 1) {
         safe_str("#-1 IP MISSING PATTERN", buff, bp);
         goto error_cleanup;
@@ -526,9 +526,10 @@ FUNCTION(fun_connlog)
         safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
         goto error_cleanup;
       }
-      escaped = glob_to_like(args[idx + 1], '$', &len);
-      ip = latin1_to_utf8(escaped, len, &iplen, "string");
-      mush_free(escaped, "string");
+      as_utf8 =
+        latin1_to_utf8(args[idx + 1], arglens[idx + 1], NULL, "utf8.string");
+      ip = glob_to_like(as_utf8, '$', &iplen);
+      mush_free(as_utf8, "utf8.string");
       if (first_constraint) {
         first_constraint = 0;
       } else {
@@ -537,8 +538,7 @@ FUNCTION(fun_connlog)
       sqlite3_str_appendall(query, " ipaddr LIKE @ipaddr ESCAPE '$'");
       idx += 2;
     } else if (strcasecmp(args[idx], "hostname") == 0) {
-      char *escaped;
-      int len;
+      char *as_utf8;
       if (nargs <= idx + 1) {
         safe_str("#-1 HOSTNAME MISSING PATTERN", buff, bp);
         goto error_cleanup;
@@ -546,9 +546,10 @@ FUNCTION(fun_connlog)
         safe_str("#-1 DUPLICATE CONSTRAINT", buff, bp);
         goto error_cleanup;
       }
-      escaped = glob_to_like(args[idx + 1], '$', &len);
-      host = latin1_to_utf8(escaped, len, &hostlen, "string");
-      mush_free(escaped, "string");
+      as_utf8 =
+        latin1_to_utf8(args[idx + 1], arglens[idx + 1], NULL, "utf8.string");
+      host = glob_to_like(as_utf8, '$', &hostlen);
+      mush_free(as_utf8, "utf8.string");
       if (first_constraint) {
         first_constraint = 0;
       } else {
@@ -583,12 +584,14 @@ FUNCTION(fun_connlog)
 
   if (ip) {
     idx = sqlite3_bind_parameter_index(search, "@ipaddr");
-    sqlite3_bind_text(search, idx, ip, iplen, free_string);
+    sqlite3_bind_text(search, idx, ip, iplen, sqlite3_free);
+    ip = NULL;
   }
 
   if (host) {
     idx = sqlite3_bind_parameter_index(search, "@hostname");
-    sqlite3_bind_text(search, idx, host, hostlen, free_string);
+    sqlite3_bind_text(search, idx, host, hostlen, sqlite3_free);
+    host = NULL;
   }
 
   do {
@@ -620,10 +623,10 @@ error_cleanup:
     sqlite3_str_finish(query);
   }
   if (ip) {
-    mush_free(ip, "string");
+    sqlite3_free(ip);
   }
   if (host) {
-    mush_free(host, "string");
+    sqlite3_free(host);
   }
 }
 

@@ -35,6 +35,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "charclass.h"
+#include "myutf8.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -43,7 +44,12 @@ void mush_panic(const char *);
 /* TODO: Move this prototype elsewhere since this function is shared. */
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
-/* Duplicate the first len characters of s */
+/** Copy the first len bytes of a string
+ * \param str the source string
+ * \parma len the number of bytes to copy.
+ * \param check memcheck id
+ * \return newly allocated string
+ */
 char *
 mush_strndup(const char *src, size_t len, const char *check)
 {
@@ -53,10 +59,41 @@ mush_strndup(const char *src, size_t len, const char *check)
   if (rlen < len)
     len = rlen;
 
-  copy = mush_malloc(len + 1, check);
+  copy = mush_malloc(len + 1 + SSE_OFFSET, check);
   if (copy) {
     memcpy(copy, src, len);
     copy[len] = '\0';
+  }
+
+  return copy;
+}
+
+/** Copy the first len codepoints of a UTF-8 string
+ * \param str the source string in UTF-8
+ * \parma len the number of Unicode codepoints to copy.
+ * \param check memcheck id
+ * \return newly allocated string or NULL on error like malformed UTF-8
+ */
+char *
+mush_strndup_cp(const char *src, size_t len, const char *check)
+{
+  char *copy;
+  int offset = 0;
+  UChar32 c;
+
+  U8_NEXT(src, offset, -1, c);
+  while (c > 0 && --len) {
+    U8_NEXT(src, offset, -1, c);
+  }
+
+  if (c < 0) {
+    return NULL;
+  }
+
+  copy = mush_malloc(offset + 1 + SSE_OFFSET, check);
+  if (copy) {
+    memcpy(copy, src, offset);
+    copy[offset] = '\0';
   }
 
   return copy;
@@ -128,6 +165,7 @@ mush_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
 
 /** Return the string chopped at lim characters.
  * lim must be <= BUFFER_LEN
+ * For UTF-8 strings, use mush_strndup_cp() instead.
  * \param str string to chop.
  * \param lim character at which to chop the string.
  * \return statically allocated buffer with chopped string.
@@ -905,6 +943,39 @@ safe_str(const char *c, char *buff, char **bp)
   APPEND_TO_BUF;
 }
 
+/** Safely store a Unicode string into a buffer.
+ * Actually... is this even needed? I think safe_str() will work.
+ *
+ * \param s string to store, in UTF-8.
+ * \param buff buffer to store into.
+ * \param bp pointer to pointer to insertion point in buff.
+ * \retval 0 success.
+ * \retval 1 failure.
+ */
+int
+safe_utf8(const char *s, char *buff, char **bp)
+{
+  UBool err = FALSE;
+  UChar32 c;
+  int offset = *bp - buff;
+  int savedoffset = offset;
+  int capacity = BUFFER_LEN - 1;
+  int soffset = 0;
+
+  U8_NEXT(s, soffset, -1, c);
+  while (c > 0) {
+    U8_APPEND((uint8_t *) buff, offset, capacity, c, err);
+    if (err == TRUE) {
+      break;
+    }
+    U8_NEXT(s, soffset, -1, c);
+  }
+  if (err == FALSE) {
+    *bp += offset - savedoffset;
+  }
+  return err == TRUE;
+}
+
 /** Safely store a string into a buffer, quoting it if it contains a space.
  * \param c string to store.
  * \param buff buffer to store into.
@@ -1102,6 +1173,28 @@ seek_char(const char *s, char c)
 #endif /* HAVE_STRCHRNUL */
 }
 
+/** Return a pointer to next char in s which matches c, or to the terminating
+ * nul at the end of s.
+ * \param s UTF-8 string to search.
+ * \param c Unicode character to search for.
+ * \return pointer to next occurence of c or to the end of s.
+ */
+char *
+seek_uchar(const char *s, UChar32 c)
+{
+  int offset = 0;
+  UChar32 curr;
+
+  U8_NEXT((const uint8_t *) s, offset, -1, curr);
+  while (curr) {
+    if (curr == c) {
+      return (char *) s + offset;
+    }
+    U8_NEXT((const uint8_t *) s, offset, -1, curr);
+  }
+  return (char *) s + offset;
+}
+
 /** Search for all copies of old in string, and replace each with newbit.
  * The replaced string is returned, newly allocated.
  * \param old string to find.
@@ -1285,6 +1378,49 @@ next_token(char *str, char sep)
   return str;
 }
 
+/** Find the start of the next token in a string.
+ * If the separator is a space, we magically skip multiple spaces.
+ * \param str the UTF-8 string.
+ * \param sep the Unicode token separator character.
+ * \return pointer to start of next token in string.
+ */
+char *
+next_utoken(char *str, UChar32 sep)
+{
+  /* move pointer to start of the next token */
+  int offset = 0;
+  UChar32 c;
+
+  U8_NEXT(str, offset, -1, c);
+  while (c) {
+    if (c == sep) {
+      break;
+    }
+    switch (c) {
+    case TAG_START:
+      while (str[offset] && str[offset] != TAG_END) {
+        offset += 1;
+      }
+      break;
+    case ESC_CHAR:
+      while (str[offset] && str[offset] != 'm') {
+        offset += 1;
+      }
+      break;
+    }
+    U8_NEXT(str, offset, -1, c);
+  }
+  if (!c) {
+    return NULL;
+  }
+  if (sep == ' ') {
+    while (c == sep) {
+      U8_NEXT(str, offset, -1, c);
+    }
+  }
+  return str + offset;
+}
+
 /** Split out the next token from a string, destructively modifying it.
  * As usually, if the separator is a space, we skip multiple spaces.
  * The string's address is updated to be past the token, and the token
@@ -1333,6 +1469,63 @@ split_token(char **sp, char sep)
   return save;
 }
 
+/** Split out the next token from a string, destructively modifying it.
+ * As usually, if the separator is a space, we skip multiple spaces.
+ * The string's address is updated to be past the token, and the token
+ * is returned.
+ * \param sp pointer to UTF-8 string to split from.
+ * \param sep Unicode token separator.
+ * \return pointer to token, now null-terminated.
+ */
+char *
+split_utoken(char **sp, UChar32 sep)
+{
+  char *str, *save;
+  UChar32 c;
+  int offset = 0;
+
+  save = str = *sp;
+  if (!str) {
+    *sp = NULL;
+    return NULL;
+  }
+  U8_NEXT(str, offset, -1, c);
+  while (c) {
+    if (c == sep) {
+      break;
+    }
+    switch (c) {
+    case TAG_START:
+      while (str[offset] && str[offset] != TAG_END) {
+        offset += 1;
+      }
+      break;
+    case ESC_CHAR:
+      while (str[offset] && str[offset] != 'm') {
+        offset += 1;
+      }
+      break;
+    }
+    U8_NEXT(str, offset, -1, c);
+  }
+  if (!c) {
+    str = NULL;
+  } else {
+    int endoffset = offset;
+    U8_PREV(str, 0, endoffset, c);
+    str[endoffset] = '\0';
+    if (sep == ' ') {
+      c = ' ';
+      while (c == sep) {
+        U8_NEXT(str, offset, -1, c);
+      }
+    }
+  }
+
+  *sp = str + offset;
+  return save;
+}
+
 /** Count the number of tokens in a string.
  * \param str string to count.
  * \param sep token separator.
@@ -1343,10 +1536,30 @@ do_wordcount(char *str, char sep)
 {
   int n;
 
-  if (!*str)
+  if (!*str) {
     return 0;
-  for (n = 0; str; str = next_token(str, sep), n++)
-    ;
+  }
+  for (n = 0; str; str = next_token(str, sep), n++) {
+  }
+  return n;
+}
+
+/** Count the number of tokens in a string.
+ * \param str UTF-8 string to count.
+ * \param sep Unicode token separator.
+ * \return number of tokens in str.
+ */
+int
+do_uwordcount(char *str, UChar32 sep)
+{
+  int n;
+
+  if (!*str) {
+    return 0;
+  }
+
+  for (n = 0; str; str = next_utoken(str, sep), n++) {
+  }
   return n;
 }
 
@@ -1384,6 +1597,47 @@ remove_word(char *list, char *word, char sep)
   }
   *bp = '\0';
   return buff;
+}
+
+/** Given a string, a word, and a separator, remove first occurence
+ * of the word from the string. Destructive.
+ * \param list a UTF-8 string containing a separated list.
+ * \param word a word to remove from the list in UTF-8.
+ * \param sep the Unicode separator between list items.
+ * \return pointer to newly allocated buffer containing list without first
+ * occurence of word. Should be freed with sqlite_free().
+ */
+char *
+remove_uword(char *list, char *word, UChar32 sep)
+{
+  char *sp;
+  char sepstr[5] = {'\0'};
+  UBool err = FALSE;
+  int seplen = 0;
+  sqlite3_str *out = sqlite3_str_new(NULL);
+
+  U8_APPEND((uint8_t *) sepstr, seplen, 5, sep, err);
+  if (err == TRUE) {
+    return NULL;
+  }
+
+  sp = split_utoken(&list, sep);
+  if (!strcmp(sp, word)) {
+    sp = split_utoken(&list, sep);
+    sqlite3_str_appendall(out, sp);
+  } else {
+    sqlite3_str_appendall(out, sp);
+    while (list && strcmp(sp = split_utoken(&list, sep), word)) {
+      sqlite3_str_append(out, sepstr, seplen);
+      sqlite3_str_appendall(out, sp);
+    }
+  }
+  while (list) {
+    sp = split_utoken(&list, sep);
+    sqlite3_str_append(out, sepstr, seplen);
+    sqlite3_str_appendall(out, sp);
+  }
+  return sqlite3_str_finish(out);
 }
 
 /** Return the next name in a list. A name may be a single word, or
@@ -1860,6 +2114,13 @@ remove_trailing_whitespace(char *buff, size_t len)
   return len;
 }
 
+/** Append an ASCII character to the end of a BUFFER_LEN long string.
+ *
+ * \param c the character to append.
+ * \param buff the start of the buffer
+ * \param bp pointer to the current location in the buffer
+ * \return 0 on success, 1 on failure
+ */
 int
 safe_chr(char c, char *buff, char **bp)
 {
@@ -1869,6 +2130,27 @@ safe_chr(char c, char *buff, char **bp)
     *(*bp)++ = c;
     return 0;
   }
+}
+
+/** Append a Unicode character to the end of a BUFFER_LEN long UTF-8
+ * string.
+ *
+ * \param c the character to append.
+ * \param buff the start of the buffer
+ * \param bp pointer to the current location in the buffer
+ * \return 0 on success, 1 on failure
+ */
+int
+safe_uchar(UChar32 c, char *buff, char **bp)
+{
+  UBool err = FALSE;
+  int capacity = BUFFER_LEN - 1;
+  int offset = *bp - buff;
+  int savedoffset = offset;
+
+  U8_APPEND((uint8_t *) buff, offset, capacity, c, err);
+  *bp += offset - savedoffset;
+  return err == TRUE;
 }
 
 /* keystr format:
@@ -1918,70 +2200,102 @@ keystr_find_full(const char *restrict map, const char *restrict key,
 /** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern
  * using %.
  *
- * \param orig the string to convert.
+ * \param orig the string to convert in UTF-8.
  * \param esc the character to escape special ones (_%) with.
  * \param len the length of the returned string, not counting the trailing nul.
- * \return a newly allocated string.
+ * \return a newly allocated string that should be freed with sqlite3_free()
  */
 char *
-glob_to_like(const char *orig, char esc, int *len)
+glob_to_like(const char *orig, UChar32 esc, int *len)
 {
-  char *like;
-  char *lbp;
+  char escbuf[5] = {'\0'};
+  char esclen = 0;
+  UChar32 c;
+  int offset = 0;
+  sqlite3_str *out = sqlite3_str_new(NULL);
 
-  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
-
-  while (*orig) {
-    if (*orig == '%' || *orig == '_' || *orig == esc) {
-      safe_chr(esc, like, &lbp);
-      safe_chr(*orig, like, &lbp);
-    } else if (*orig == '*') {
-      safe_chr('%', like, &lbp);
-    } else if (*orig == '?') {
-      safe_chr('_', like, &lbp);
+  U8_APPEND_UNSAFE(escbuf, esclen, esc);
+  U8_NEXT(orig, offset, -1, c);
+  while (c) {
+    if (c == '%' || c == '_' || c == esc) {
+      sqlite3_str_append(out, escbuf, esclen);
+      sqlite3_str_appenduchar(out, c);
+    } else if (c == '\\') {
+      U8_NEXT(orig, offset, -1, c);
+      if (out) {
+        sqlite3_str_append(out, escbuf, esclen);
+        sqlite3_str_appenduchar(out, c);
+      } else {
+        break;
+      }
+    } else if (c == '*') {
+      sqlite3_str_appendchar(out, 1, '%');
+    } else if (c == '?') {
+      sqlite3_str_appendchar(out, 1, '_');
     } else {
-      safe_chr(*orig, like, &lbp);
+      sqlite3_str_appenduchar(out, c);
     }
-    orig++;
+    U8_NEXT(orig, offset, -1, c);
   }
-  *lbp = '\0';
-
   if (len) {
-    *len = lbp - like;
+    *len = sqlite3_str_length(out);
   }
-
-  return like;
+  return sqlite3_str_finish(out);
 }
 
 /** Escape SQL like wildcards from a string.
  *
- * \param orig the string to escape.
- * \param esc the character to escape special ones (_%) with.
+ * \param orig the string to escape, in UTF-8.
+ * \param esc the Unicode character to escape special ones (_%) with.
  * \param len the length of the returned string, not counting the trailing nul.
- * \return a newly allocated string.
+ * \return a newly allocated string that should be freed with sqlite3_free().
  */
 char *
-escape_like(const char *orig, char esc, int *len)
+escape_like(const char *orig, UChar32 esc, int *len)
 {
-  char *like;
-  char *lbp;
+  char escbuf[5] = {'\0'};
+  int esclen = 0, offset = 0;
+  sqlite3_str *out = sqlite3_str_new(NULL);
+  UChar32 c;
 
-  like = lbp = mush_malloc(strlen(orig) * 2 + 1, "string");
-
-  while (*orig) {
-    if (*orig == '%' || *orig == '_' || *orig == esc) {
-      safe_chr(esc, like, &lbp);
-      safe_chr(*orig, like, &lbp);
+  U8_APPEND_UNSAFE(escbuf, esclen, esc);
+  U8_NEXT(orig, offset, -1, c);
+  while (c) {
+    if (c == '%' || c == '_' || c == esc) {
+      sqlite3_str_append(out, escbuf, esclen);
+      sqlite3_str_appenduchar(out, c);
+    } else if (c == '\\') {
+      U8_NEXT(orig, offset, -1, c);
+      if (out) {
+        sqlite3_str_append(out, escbuf, esclen);
+        sqlite3_str_appenduchar(out, c);
+      } else {
+        break;
+      }
     } else {
-      safe_chr(*orig, like, &lbp);
+      sqlite3_str_appenduchar(out, c);
     }
-    orig++;
+    U8_NEXT(orig, offset, -1, c);
   }
-  *lbp = '\0';
 
   if (len) {
-    *len = lbp - like;
+    *len = sqlite3_str_length(out);
   }
 
-  return like;
+  return sqlite3_str_finish(out);
+}
+
+/** Append a Unicode character to a sqlite3 string builder
+ *
+ * \param str the string builder
+ * \param c the Unicode character to append.
+ */
+void
+sqlite3_str_appenduchar(sqlite3_str *str, UChar32 c)
+{
+  char cbuf[5] = {'\0'};
+  int clen = 0;
+
+  U8_APPEND_UNSAFE(cbuf, clen, c);
+  sqlite3_str_append(str, cbuf, clen);
 }

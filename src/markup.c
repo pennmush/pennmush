@@ -246,12 +246,12 @@ FUNCTION(fun_colors)
         "SELECT name FROM colors WHERE name LIKE ? ESCAPE '$' ORDER BY name",
         "colors.list.names_pattern");
       if (lister) {
-        int len, ulen;
-        char *as_utf8;
-        char *converted = glob_to_like(args[0], '$', &len);
-        as_utf8 = latin1_to_utf8(converted, len, &ulen, "string");
-        mush_free(converted, "string");
-        sqlite3_bind_text(lister, 1, as_utf8, ulen, free_string);
+        int ulen;
+        char *as_utf8, *converted;
+        as_utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "utf8.string");
+        converted = glob_to_like(as_utf8, '$', &ulen);
+        mush_free(as_utf8, "utf8.string");
+        sqlite3_bind_text(lister, 1, converted, ulen, sqlite3_free);
       }
     } else {
       /* List all colors but xtermXX ones */

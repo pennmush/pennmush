@@ -28,10 +28,10 @@ Major Changes
 * Penn now comes with the Sqlite3 database engine bundled with it, and uses it internally in a few ways:
     * 3 different tables for looking up color names are combined into a single table.
     * Per-object auxilliary data keys (objdata) are handled in sql.
-    * Player names and aliases are handled in sql, making some operations on them simpler.
+    * Player names and alias lists are handled in sql, making some operations on them simpler.
     * Suggests alternatives for unknown function names, flags, powers and help entries, and a softcode interface to the suggestion engine.
     * @entrances and entrances() no longer scan the entire database.
-    * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP HELP SEARCH` for details.
+    * Help files are stored in a database, with an expanded help/search that supports full text search. See `HELP SEARCHING` for details.
     * Optional enhanced connection logging. See the file *game/CONNLOG.md* for details.
     * A number of new softcode functions and expanded functions, listed below.
 
@@ -41,7 +41,9 @@ Minor Changes
 * Message translation support now defaults to off. Run configure with `--enable-nls` to turn it on if needed. [SW]
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
-* log_forces in mushcnf.dost now defaults to no. You probably only want this on if you're debugging. [MG]
+* log_forces in mushcnf.dst now defaults to no. You probably only want this on if you're debugging. [MG]
+* The connect screen now respects SOCKSET options. [MG]
+* @chan/what now displays channel locks. [MT, 1208]
 
 Softcode
 --------
@@ -50,17 +52,24 @@ Softcode
 * Functions that work on integers (Like `div()` or `band()`) now use 64-bit values instead of 32-bit. [SW]
 * Added `isjson()`
 * `json_query()` get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
-* `json_query()` can apply merge patches to json objects per <https://tools.ietf.org/html/rfc7396>
+* `json_mod()` for modifying complex JSON objects. [SW]
 * `json_query(str, unescape)` handles unicode escape sequences.
 * `json(string, foo)` escapes non-ascii characters.
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
 * New 'me' and 'inventory' flags for `scan()` give finer control of what to scan. [MG]
 * `orflags()`, `orlflags()`, `andflags()`, `andlflags()`, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].
-* `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 * `timecalc()` and `secscalc()` for adding/subtracting intervals from times.
-* `@suggest` and `suggest()` for user-defined word suggestion dictionaries.
+* `@suggest` and `suggest()` for user-defined spellchecking. Loads */usr/share/dict/words* or another configurable wordlist by default.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
-* `soundex()` and `soundslike()` now support a second phonetic hash besides soundex.
+* `soundex()` and `soundslike()` now support a second phonetic hash algorithm besides soundex.
+* Side-effect version of `link()` now returns 1 on success, 0 or #-1 on failure. [MT]
+* `owner()` now accepts two optional arguments, allowing ownership to be changed as in `@chown` and `@atrchown`. [MT]
+* If compiled with libcurl support, adds `@http` for interacting with RESTFul web APIs. [SW]
+* `stripaccents()` supports a second, smarter, transliteration algorithm.
+* If compiled with ICU support, adds `lcstr2()` and `ucstr2()` with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
+* `@chatformat` now receives a new arg, `%6`, which defaults to "says" but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
+* `etimefmt()` supports `$w` and `$y` formats for weeks and years. [SW, 804]
+* Ported parenmatch() from Rhost. [MT, 1024]
 
 Fixes
 -----
@@ -73,19 +82,23 @@ Fixes
 * Pass `pe_info` into IDLE and HAVEN attributes from the page command. [MG]
 * The x and X options to `align()` now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]
 * `json_query()` didn't understand an action of 'type' as documented. [SW]
-* Assorted help file fixes. [SW]
 * `@clone` without /preserve wasn't stripping privileged flags and such. [1190,SW]
 * `@chown/preserve` was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.
 * `scan()` now determines if objects will be included based on whether the caller can examine them, rather than if `scan()`'s `<looker>` can examine them. [MG]
 * Fixed some bugs regarding when `setq()` will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]
+* `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
+* A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
+* Fix an off-by-one error in command switch initialization code. [SW]
+* `@mail` without a message list respects the current folder instead of using folder 0. [77]
+* `ufun()`, `ulocal()`, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
 
 Documentation
 -------------
 
 * Changelogs and other documentation use markup. [SW, 1140]
 * Start trying to clean up and revise ancient documentation. [1095]
-* Minor help fixes. [MG]
-* More minor help fixes. [MT]
+* Help fixes and improvements. [MG, SW, MT]
+* Help files are now in UTF-8.
 
 OS Specific
 -----------
@@ -101,4 +114,3 @@ OS Specific
 ### Windows ###
 
 * Use Windows crypto library functions for base64 conversion and digest hashing instead of OpenSSL. [SW]
-

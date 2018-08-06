@@ -24,6 +24,10 @@
 #include <ws2tcpip.h>
 #endif
 
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
 #include "access.h"
 #include "ansi.h"
 #include "attrib.h"
@@ -149,7 +153,7 @@ COMMAND(cmd_sockset)
     notify(executor, T("Set what option?"));
 }
 
-COMMAND(cmd_atrchown) { do_atrchown(executor, arg_left, arg_right); }
+COMMAND(cmd_atrchown) { (void) do_atrchown(executor, arg_left, arg_right); }
 
 COMMAND(cmd_boot)
 {
@@ -284,10 +288,10 @@ COMMAND(cmd_chownall)
 COMMAND(cmd_chown)
 {
   if (strchr(arg_left, '/')) {
-    do_atrchown(executor, arg_left, arg_right);
+    (void) do_atrchown(executor, arg_left, arg_right);
   } else {
-    do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
-             queue_entry->pe_info);
+    (void) do_chown(executor, arg_left, arg_right,
+                    SW_ISSET(sw, SWITCH_PRESERVE), queue_entry->pe_info);
   }
 }
 
@@ -582,22 +586,22 @@ COMMAND(cmd_force)
 
 COMMAND(cmd_function)
 {
-  if (SW_ISSET(sw, SWITCH_DELETE))
+  if (SW_ISSET(sw, SWITCH_DELETE)) {
     do_function_delete(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_ENABLE))
+  } else if (SW_ISSET(sw, SWITCH_ENABLE)) {
     do_function_toggle(executor, arg_left, 1);
-  else if (SW_ISSET(sw, SWITCH_DISABLE))
+  } else if (SW_ISSET(sw, SWITCH_DISABLE)) {
     do_function_toggle(executor, arg_left, 0);
-  else if (SW_ISSET(sw, SWITCH_RESTRICT))
+  } else if (SW_ISSET(sw, SWITCH_RESTRICT)) {
     do_function_restrict(executor, arg_left, args_right[1],
                          SW_ISSET(sw, SWITCH_BUILTIN));
-  else if (SW_ISSET(sw, SWITCH_RESTORE))
+  } else if (SW_ISSET(sw, SWITCH_RESTORE)) {
     do_function_restore(executor, arg_left);
-  else if (SW_ISSET(sw, SWITCH_ALIAS))
-    alias_function(executor, arg_left, args_right[1]);
-  else if (SW_ISSET(sw, SWITCH_CLONE))
+  } else if (SW_ISSET(sw, SWITCH_ALIAS)) {
+    do_function_alias(executor, arg_left, args_right[1]);
+  } else if (SW_ISSET(sw, SWITCH_CLONE)) {
     do_function_clone(executor, arg_left, args_right[1]);
-  else {
+  } else {
     int split;
     char *saved;
     split = 0;
@@ -741,8 +745,8 @@ COMMAND(cmd_lemit)
 
 COMMAND(cmd_link)
 {
-  do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
-          queue_entry->pe_info);
+  (void) do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+                 queue_entry->pe_info);
 }
 
 extern slab *bvm_asmnode_slab;
@@ -1804,60 +1808,157 @@ COMMAND(cmd_who)
     do_who_mortal(executor, arg_left);
 }
 
-COMMAND(cmd_suggest)
+#ifdef HAVE_LIBCURL
+static size_t
+req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  char *cat8, *word8;
+  struct urlreq *req = userp;
+  size_t realsize = size * nmemb;
+  sqlite3_str_append(req->body, contents, realsize);
+  return realsize;
+}
 
-  if (SW_ISSET(sw, SWITCH_ADD)) {
-    if (!Wizard(executor)) {
-      notify(executor, "Your suggestion is not welcome.");
-    } else if (*arg_left && *arg_right) {
-      cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
-      word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
-      add_vocab(word8, cat8);
-      mush_free(cat8, "string");
-      mush_free(word8, "string");
-      notify(executor, "Suggestion vocabulary word added.");
-    } else {
-      notify(executor, "What did you want to add?");
-    }
-  } else if (SW_ISSET(sw, SWITCH_DELETE)) {
-    if (!Wizard(executor)) {
-      notify(executor, "Permission denied.");
-    } else if (*arg_left && *arg_right) {
-      cat8 = latin1_to_utf8(arg_left, strlen(arg_left), NULL, "string");
-      word8 = latin1_to_utf8(arg_right, strlen(arg_right), NULL, "string");
-      delete_vocab(word8, cat8);
-      mush_free(cat8, "string");
-      mush_free(word8, "string");
-      notify(executor, "Suggestion vocabulary word deleted.");
-    } else {
-      notify(executor, "What did you want to delete?");
-    }
-  } else {
-    sqlite3 *sqldb;
-    sqlite3_stmt *cats;
-    int status;
-    int count = 0;
+#endif
 
-    sqldb = get_shared_db();
-    cats = prepare_statement(sqldb, "SELECT cat FROM suggest_keys ORDER BY cat",
-                             "suggest.list");
-    notify(executor, "Vocabulary suggestion categories:");
-    do {
-      status = sqlite3_step(cats);
-      if (status == SQLITE_ROW) {
-        const char *name = (const char *) sqlite3_column_text(cats, 0);
-        int nlen = sqlite3_column_bytes(cats, 0);
-        char *cat1 = utf8_to_latin1_us(name, nlen, NULL, 0, "string");
-        count += 1;
-        notify_format(executor, "\t%s", cat1);
-        mush_free(cat1, "string");
-      }
-    } while (status == SQLITE_ROW || is_busy_status(status));
-    sqlite3_reset(cats);
-    if (count == 0) {
-      notify(executor, "None found.");
+COMMAND(cmd_fetch)
+{
+  /* Move this to a more appropriate file? */
+#ifdef HAVE_LIBCURL
+  extern CURLM *curl_handle;
+  extern int ncurl_queries;
+  struct urlreq *req;
+  CURL *handle;
+  struct curl_slist *headers = NULL;
+  dbref thing;
+  char *s;
+  const char *userpass;
+  char tbuf[BUFFER_LEN];
+  int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
+  bool post = false;
+  bool del = false;
+  bool put = false;
+
+  if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
+  if (!args_right[1] || !*args_right[1]) {
+    notify(executor, T("What do you want to query?"));
+    return;
+  }
+
+  if (SW_ISSET(sw, SWITCH_POST)) {
+    post = true;
+  }
+
+  if (SW_ISSET(sw, SWITCH_PUT)) {
+    put = true;
+  }
+
+  if (SW_ISSET(sw, SWITCH_DELETE)) {
+    del = true;
+  }
+
+  if ((post && put) || (post && del) || (put && del)) {
+    notify(executor, "You can't make multiple requests at the same time!");
+    return;
+  }
+
+  mush_strncpy(tbuf, arg_left, sizeof tbuf);
+  s = strchr(tbuf, '/');
+  if (!s) {
+    notify(executor, T("I need to know what attribute to trigger."));
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(executor, thing)) {
+    notify(executor, T("Permission denied."));
+    return;
+  }
+
+  req = mush_malloc(sizeof *req, "urlreq");
+  req->enactor = enactor;
+  req->thing = thing;
+  req->queue_type = queue_type;
+  req->attrname = mush_strdup(s, "urlreq.attrname");
+  req->body = sqlite3_str_new(NULL);
+  req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_fetch");
+  pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
+
+  handle = curl_easy_init();
+  curl_easy_setopt(handle, CURLOPT_PROTOCOLS,
+                   CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_DICT);
+  curl_easy_setopt(handle, CURLOPT_URL, args_right[1]);
+  curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
+  curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
+  curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
+  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 30);
+  curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);
+  curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5);
+
+  userpass = pe_regs_get(req->pe_regs, PE_REGS_Q, "userpass");
+  if (userpass) {
+    curl_easy_setopt(handle, CURLOPT_USERPWD, userpass);
+    curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+  }
+
+  if (post || put || del) {
+    bool postdata;
+    const char *contenttype;
+
+    if (post) {
+      curl_easy_setopt(handle, CURLOPT_POST, 1);
+    } else if (put) {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
+    } else {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+    }
+
+    postdata = args_right[2] && *args_right[2];
+
+    contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q, "content-type");
+    if (contenttype) {
+      char ct_header[BUFFER_LEN];
+      snprintf(ct_header, sizeof ct_header, "Content-Type: %s", contenttype);
+      headers = curl_slist_append(headers, ct_header);
+    }
+    if (contenttype && postdata &&
+        (strstr(contenttype, "charset=utf-8") ||
+         strstr(contenttype, "charset=UTF-8"))) {
+      int ulen;
+      char *utf8 =
+        latin1_to_utf8(args_right[2], strlen(args_right[2]), &ulen, 0);
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
+      mush_free(utf8, "string");
+    } else if (postdata) {
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args_right[2]);
     }
   }
+
+  curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
+
+  headers =
+    curl_slist_append(headers, "Accept-Charset: iso-8859-1, utf-8, us-ascii");
+  req->header_slist = headers;
+  curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+
+  ncurl_queries += 1;
+
+  curl_multi_add_handle(curl_handle, handle);
+#else
+  notify(executor, T("Command disabled."));
+#endif
 }

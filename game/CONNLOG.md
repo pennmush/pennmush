@@ -24,7 +24,7 @@ usage of the tables in the database. They're defined in
 Internals
 ---------
 
-There are three tables in the database:
+There are four tables in the database:
 
 * *checkpoint*, which only holds a single row - the time, which the
   mush updates every few minutes. This time is used when recovering
@@ -34,10 +34,43 @@ There are three tables in the database:
 * *timestamps*, which holds the connection and disconnection times of
   a connection. This is a virtual table using the Sqlite3 RTree
   extension, which allows for efficent queries of time intervals.
+* *addrs* which holds unique IP addresses and the hostnames they
+  resolve to.
 * *connections*, which holds all other information about a
   connection - where it came from, who was logged in, and why they
-  disconnected. It's **id** column pairs up with the **id** column of
-  *timestamps*. Most queries will join the two tables on these keys.
+  disconnected. Its **id** column pairs up with *timestamps.id*, and
+  **addrid** with *addrs.id*. Most queries will join the tables on
+  these keys, or just use...
+* *connlog*, a view that joins all related connections, timestamps and
+  addrs together into one comprehensive record.
+
+plus assorted indexes to speed up queries. The *application_id* of the
+database is `0x42010FF2`.
+
+Examples
+--------
+
+To generate a table of the most common IP address each player
+connects from:
+
+    WITH addrcounts(name, ipaddr, c) AS
+      (SELECT name, ipaddr, count(addrid) FROM
+          connections JOIN addrs ON connections.addrid = addrs.id
+         GROUP BY addrid)
+    SELECT name, ipaddr, max(c) AS count FROM addrcounts
+      GROUP BY name ORDER BY name COLLATE NOCASE;
+
+To show all information about connections made in the last 24 hours:
+
+    SELECT * from connlog WHERE conn >= strftime('%s', 'now', '-1 day');
+
+To count the number of times a particular player has connected:
+
+    SELECT count(*) FROM connections WHERE dbref='1234';
+    
+To show connections that never logged in:
+
+    SELECT * from connlog WHERE dbref IS NULL;
 
 Caveats
 -------

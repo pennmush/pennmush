@@ -35,10 +35,10 @@
 <li>Installation of precompiled binaries (only for Windows platforms)</li>
 </ol>
 <p>If you are upgrading from a previous PennMUSH release, this is probably not the file you want to start with. Read the <a href="UPGRADING.html">UPGRADING.md</a> file first.</p>
-<p><strong>DISCLAIMER</strong>: Before attempting to run a MUD of any sort, you should have some reasonable knowledge of UNIX and C. If you do not, it is <em>strongly</em> suggested that you learn UNIX and C to some reasonable level of competency before attempting to set up a MUSH. (Note that even people using the Windows ports are encouraged to know UNIX, because that's the paradigm that PennMUSH was built with, and most resources will be written with UNIX is mind.)</p>
-<p>You may also want to take a look at the Managing PennMUSH book at <a href="http://community.pennmush.org" class="uri">http://community.pennmush.org</a> and at Javelin's Guide for PennMUSH Gods, at <a href="http://download.pennmush.org/Guide/guide-single.html" class="uri">http://download.pennmush.org/Guide/guide-single.html</a></p>
+<p><strong>DISCLAIMER</strong>: Before attempting to run a MUD of any sort, you should have some reasonable knowledge of UNIX and C. If you do not, it is <em>strongly</em> suggested that you learn UNIX and C to some reasonable level of competency before attempting to set up a MUSH. (Note that even people using the Windows ports are encouraged to know UNIX, because that’s the paradigm that PennMUSH was built with, and most resources will be written with UNIX is mind.)</p>
+<p>You may also want to take a look at the Managing PennMUSH book at <a href="http://community.pennmush.org" class="uri">http://community.pennmush.org</a> and at Javelin’s Guide for PennMUSH Gods, at <a href="https://download.pennmush.org/Guide/guide-single.html" class="uri">https://download.pennmush.org/Guide/guide-single.html</a></p>
 <h1 id="important-background">Important background</h1>
-<p>Here's a quick picture of the organization of the MUSH directory tree. The &quot;src&quot; directory contains C source code. The &quot;hdrs&quot; directory contains header files for the source code. The files used by a running MUSH are in the &quot;game&quot; directory, which includes subdirectories &quot;data&quot; (current databases), &quot;txt&quot; (text files and directories for building them), &quot;log&quot; (log files), and &quot;save&quot; (backup databases). Finally, the &quot;hints&quot; directory is used during the installation process, the &quot;test&quot; directory contains an automated regression testing suite, and the &quot;po&quot; directory holds translation message files.</p>
+<p>Here’s a quick picture of the organization of the MUSH directory tree. The “src” directory contains C source code. The “hdrs” directory contains header files for the source code. The files used by a running MUSH are in the “game” directory, which includes subdirectories “data” (current databases), “txt” (text files and directories for building them), “log” (log files), and “save” (backup databases). Finally, the “hints” directory is used during the installation process, the “test” directory contains an automated regression testing suite, and the “po” directory holds translation message files.</p>
 <pre><code>pennmush--+-&gt; src
            +-&gt; hdrs 
            +-&gt; game ------+-&gt; data 
@@ -63,37 +63,44 @@
 <li>Mac OS X</li>
 <li>Microsoft Windows</li>
 </ul>
-<p>There's no real reason why PennMUSH shouldn't compile on any 32-bit or better BSD, System V, or POSIX operating system. Development is primarily done on GNU/Linux and NetBSD systems.</p>
-<p>Mac OS 9 and earlier (&quot;Classic&quot;), and OS/2 are not supported.</p>
+<p>There’s no real reason why PennMUSH shouldn’t compile on any 32-bit or better BSD, System V, or POSIX operating system. Development is primarily done on GNU/Linux and NetBSD systems.</p>
+<p>Mac OS 9 and earlier (“Classic”), and OS/2 are not supported.</p>
 <h1 id="installation-from-source">Installation from source</h1>
 <p>The quickstart version of the installation is:</p>
 <ol type="1">
 <li>On win32 only, install proper tools or read win32/README*.</li>
-<li>On Unix systems, you need: A C compiler, perl, the minimum development packages required to compile programs (Linux distributions that don't come with gcc in the base install often need a package named glibc-dev).</li>
+<li>On Unix systems, you need: A C compiler, perl, the minimum development packages required to compile programs (Linux distributions that don’t come with gcc in the base install often need a package named glibc-dev).</li>
 <li>A version of the PCRE regular expression library and any related development packages. (Debian and Ubuntu call them libpcre3 and libpcre3-dev).</li>
 <li>A version of the OpenSSL library; most OSes these days come with it out of the box, but some might require a development package as well (libssl-dev, openssl-dev or some such name).</li>
-<li>Run ./configure with any desired options (See ./configure --help or read below)</li>
+<li>Development versions of a number of optional libraries are nice to have:
+<ul>
+<li>A sql client library for MySQL/MariaDB or Postgresql.</li>
+<li>ICU (For enhanced Unicode support)</li>
+<li>libevent (For ssl_slave)</li>
+<li>libcurl (For <code>@http</code>)</li>
+</ul></li>
+<li>Run ./configure with any desired options (See ./configure –help or read below)</li>
 <li>make update</li>
 <li>make install</li>
 <li>possibly make customize</li>
 <li>Read game/README and follow those instructions</li>
 </ol>
-<p>Here's the process in detail:</p>
+<p>Here’s the process in detail:</p>
 <ol type="1">
-<li><p>If you're running on win32, read one of the win32/README* files for information on how to compile with various compilers.</p></li>
+<li><p>If you’re running on win32, read one of the win32/README* files for information on how to compile with various compilers.</p></li>
 <li><p>On Unix systems, unpack the code and:</p>
 <pre><code> % cd pennmush
  % ./configure </code></pre>
 <p>Useful arguments to configure:</p>
 <dl>
 <dt><code>--disable-sql</code></dt>
-<dd><p>Don't compile in SQL support. See <a href="README.SQL.html">README.SQL</a> for more sql-related config options.</p>
+<dd><p>Don’t compile in SQL support. See <a href="README.SQL.html">README.SQL</a> for more sql-related config options.</p>
 </dd>
 <dt><code>--disable-nls</code></dt>
-<dd><p>Turn off translation support if you don't need it.</p>
+<dd><p>Turn off translation support if you don’t need it.</p>
 </dd>
 <dt><code>--disable-info_slave</code></dt>
-<dd><p>Don't use an external process to do hostname lookups. This option is required on Windows.</p>
+<dd><p>Don’t use an external process to do hostname lookups. This option is required on Windows.</p>
 </dd>
 <dt><code>--help</code></dt>
 <dd><p>See all options.</p>
@@ -106,9 +113,9 @@
 <li>CFLAGS=-Optimization and -Warning options.</li>
 </ul>
 <p>See hints/your-os.txt and hints/your-processor if present for more details and system-specific help, and <a href="README.SQL.html">README.SQL</a> for help with detecting a SQL server.</p></li>
-<li><p>Run <code>make update</code>, and answer all the questions about which MUSH options you want. This will also create several config files in game/ which you may wish to edit, particularly game/mush.cnf, and will create the game/restart script that's used to start your MUSH.</p></li>
+<li><p>Run <code>make update</code>, and answer all the questions about which MUSH options you want. This will also create several config files in game/ which you may wish to edit, particularly game/mush.cnf, and will create the game/restart script that’s used to start your MUSH.</p></li>
 <li><p>Do a <code>make install</code>. This will build all the necessary files, and set up some symbolic links for the restart script. You will probably receive a few compilation warnings, which can generally be ignored.</p></li>
-<li><p>If you plan to run multiple MUSHes, you may want to do a &quot;make customize&quot; which will run a script to help set up a separate customized game subdirectory for each MUSH (run it once per MUSH you plan to run). Files in these subdirectories will already be customized in many ways, so what follows may be slightly different. :) This is probably broken.</p></li>
+<li><p>If you plan to run multiple MUSHes, you may want to do a “make customize” which will run a script to help set up a separate customized game subdirectory for each MUSH (run it once per MUSH you plan to run). Files in these subdirectories will already be customized in many ways, so what follows may be slightly different. :) This is probably broken.</p></li>
 <li><p>Read game/README and follow those instructions.</p></li>
 </ol>
 <p>A final thing you may want to think about is compiling portmsg.c (<code>make portmsg</code>). This is a port announcer; if your MUSH ever goes down, you can set one up, and a message will be given to a person attempting to connect to that port. Read the comments in src/portmsg.c for details. It is not an official MUSH piece of code; rather, it is a freely distributable program available via anonymous FTP that is included in this code because it happens to be fairly useful.</p>

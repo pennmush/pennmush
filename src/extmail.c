@@ -1616,11 +1616,11 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   }
   if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:")) {
     char buff[BUFFER_LEN];
-    snprintf(buff, sizeof buff, "Fwd: %s", sbuf);
+    snprintf(buff, sizeof buff, "Fwd: %.*s", SUBJECT_LEN, sbuf);
     newp->subject = compress(chopstr(buff, SUBJECT_LEN));
   } else if ((flags & M_REPLY) && !string_prefix(sbuf, "Re:")) {
     char buff[BUFFER_LEN];
-    snprintf(buff, sizeof buff, "Re: %s", sbuf);
+    snprintf(buff, sizeof buff, "Re: %.*s", SUBJECT_LEN, sbuf);
     newp->subject = compress(chopstr(buff, SUBJECT_LEN));
   } else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL) {
     /* Don't bother to uncompress a->value */
@@ -2896,7 +2896,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Initialize the mail selector - this matches all messages */
   ms->low = 0;
   ms->high = 0;
-  ms->flags = 0x00FF | M_MSUNREAD;
+  ms->flags = 0x00FF | M_MSUNREAD | FolderBit(player_folder(player));
   ms->player = 0;
   ms->days = -1;
   ms->day_comp = 0;
@@ -2906,12 +2906,11 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
     return 1;
   }
   /* Don't mess with msglist itself */
-  strncpy(tbuf1, msglist, BUFFER_LEN - 1);
+  mush_strncpy(tbuf1, msglist, BUFFER_LEN);
   p = tbuf1;
   while (p && *p && isspace(*p))
     p++;
   if (!p || !*p) {
-    ms->flags |= M_FOLDER;
     return 1; /* all messages in current folder */
   }
   if (isdigit(*p) || *p == '-') {
@@ -2920,6 +2919,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
       return 0;
     }
     /* remove current folder when other folder specified */
+    ms->flags &= ~FolderBit(player_folder(player));
     ms->flags |= FolderBit(folder);
   } else if (*p == '~') {
     /* exact # of days old */
@@ -3008,7 +3008,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   } else if (!strcasecmp(p, "clear") || !strcasecmp(p, "cleared")) {
     ms->flags = M_CLEARED | M_FOLDER;
   } else if (!strcasecmp(p, "tag") || !strcasecmp(p, "tagged")) {
-    ms->flags = M_TAG;
+    ms->flags = M_TAG | M_FOLDER;
   } else if (!strcasecmp(p, "mass")) {
     ms->flags = M_MASS;
   } else if (!strcasecmp(p, "me")) {

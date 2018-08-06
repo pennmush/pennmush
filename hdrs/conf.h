@@ -359,6 +359,7 @@ struct options_table {
   int use_connlog;                 /**< Enable connlog record keeping. */
   char
     connlog_db[FILE_PATH_LEN]; /**< Sqlite3 file to use for connection logs. */
+  char dict_file[FILE_PATH_LEN]; /**< List of words to load into suggest() db */
 };
 
 typedef struct mssp MSSP;

@@ -174,8 +174,10 @@ do_name(dbref player, const char *name, char *newname_)
  * \param newobj name of new owner for object.
  * \param preserve if 1, preserve privileges and don't halt the object.
  * \param pe_info the pe_info for lock checks
+ * \retval 0 failed to change owner.
+ * \retval 1 successfully changed owner.
  */
-void
+int
 do_chown(dbref player, const char *name, const char *newobj, int preserve,
          NEW_PE_INFO *pe_info)
 {
@@ -185,42 +187,42 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
 
   /* check for '@chown <object>/<atr>=<player>'  */
   if (strchr(name, '/')) {
-    do_atrchown(player, name, newobj);
-    return;
+    int retval = do_atrchown(player, name, newobj);
+    return retval;
   }
   if (Wizard(player))
     match_flags |= MAT_PLAYER;
 
   if ((thing = noisy_match_result(player, name, TYPE_THING, match_flags)) ==
       NOTHING)
-    return;
+    return 0;
 
   if (!*newobj || !strcasecmp(newobj, "me")) {
     newowner = player;
   } else {
     if ((newowner = lookup_player(newobj)) == NOTHING) {
       notify(player, T("I couldn't find that player."));
-      return;
+      return 0;
     }
   }
 
   if (IsPlayer(thing) && !God(player)) {
     notify(player, T("Players always own themselves."));
-    return;
+    return 0;
   }
   /* Permissions checking */
   if (!chown_ok(player, thing, newowner, pe_info)) {
     notify(player, T("Permission denied."));
-    return;
+    return 0;
   }
   if (IsThing(thing) && !Hasprivs(player) &&
       !(GoodObject(Location(thing)) && (Location(thing) == player))) {
     notify(player, T("You must carry the object to @chown it."));
-    return;
+    return 0;
   }
   if (preserve && !Wizard(player)) {
     notify(player, T("You cannot @CHOWN/PRESERVE. Use normal @CHOWN."));
-    return;
+    return 0;
   }
   /* chowns to the zone master don't count towards fees */
   if (!ZMaster(newowner)) {
@@ -230,7 +232,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
       if (newowner != player)
         notify(player, T("That player doesn't have enough money or quota to "
                          "receive that object."));
-      return;
+      return 0;
     }
     /* Credit the current owner */
     giveto(Owner(thing), Pennies(thing));
@@ -238,6 +240,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
   }
   chown_object(player, thing, newowner, preserve);
   notify(player, T("Owner changed."));
+  return 1;
 }
 
 static int
@@ -693,6 +696,8 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
 {
   dbref oldobj, newobj;
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN];
+  char origname[ATTRIBUTE_NAME_LIMIT];
+  uint32_t origflags = 0;
   int i;
   char *p, *q;
   ATTR *a;
@@ -705,7 +710,7 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     return;
   }
   /* find the old object */
-  strcpy(tbuf1, oldpair);
+  mush_strncpy(tbuf1, oldpair, sizeof tbuf1);
   p = strchr(tbuf1, '/');
   if (!p || !*p) {
     notify(player, T("What object do you want to copy the attribute from?"));
@@ -713,8 +718,9 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
   }
   *p++ = '\0';
   oldobj = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
-  if (!GoodObject(oldobj))
+  if (!GoodObject(oldobj)) {
     return;
+  }
 
   p = strupper_r(p, tbuf2, sizeof tbuf2);
   /* find the old attribute */
@@ -729,23 +735,25 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     return;
   }
   /* we can read it. Copy the value. */
+  mush_strncpy(origname, AL_NAME(a), sizeof origname);
   text = safe_atr_value(a, "atrval.cpattr");
+  origflags = AL_FLAGS(a);
 
   /* now we loop through our new object pairs and copy, calling @set. */
   for (i = 1; i < MAX_ARG && (newpair[i] != NULL); i++) {
     if (!*newpair[i]) {
       notify(player, T("What do you want to copy to?"));
     } else {
-      strcpy(tbuf1, newpair[i]);
+      mush_strncpy(tbuf1, newpair[i], sizeof tbuf1);
       q = strchr(tbuf1, '/');
       if (!q || !*q) {
-        q = (char *) AL_NAME(a);
+        q = origname;
       } else {
         *q++ = '\0';
       }
       newobj = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
       if (GoodObject(newobj) &&
-          ((newobj != oldobj) || strcasecmp(AL_NAME(a), q)) &&
+          ((newobj != oldobj) || strcasecmp(origname, q) != 0) &&
           (do_set_atr(newobj, q, text, player, 1) == 1)) {
         copies++;
         /* copy the attribute flags too */
@@ -753,7 +761,8 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
           char tmp[BUFFER_LEN];
           copy_attrib_flags(
             player, newobj,
-            atr_get_noparent(newobj, strupper_r(q, tmp, sizeof tmp)), a->flags);
+            atr_get_noparent(newobj, strupper_r(q, tmp, sizeof tmp)),
+            origflags);
         }
       }
     }
@@ -763,8 +772,9 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
   if (copies) {
     notify_format(player, T("Attribute %s (%d copies)"),
                   (move ? T("moved") : T("copied")), copies);
-    if (move)
-      do_set_atr(oldobj, AL_NAME(a), NULL, player, 1);
+    if (move) {
+      do_set_atr(oldobj, origname, NULL, player, 1);
+    }
   } else {
     notify_format(player, T("Unable to %s attribute."),
                   (move ? T("move") : T("copy")));

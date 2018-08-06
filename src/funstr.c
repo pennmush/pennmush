@@ -13,6 +13,11 @@
 #include <limits.h>
 #include <locale.h>
 #include <stddef.h>
+
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
+
 #include "ansi.h"
 #include "attrib.h"
 #include "case.h"
@@ -2415,4 +2420,41 @@ FUNCTION(fun_render)
     safe_str(remove_markup(args[0], NULL), buff, bp);
   else
     safe_str(render_string(args[0], flags), buff, bp);
+}
+
+FUNCTION(fun_urlencode)
+{
+#ifdef HAVE_LIBCURL
+  char *escaped;
+  CURL *handle = curl_easy_init();
+  escaped = curl_easy_escape(handle, args[0], arglens[0]);
+  safe_str(escaped, buff, bp);
+  curl_free(escaped);
+  curl_easy_cleanup(handle);
+#else
+  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+#endif
+}
+
+FUNCTION(fun_urldecode)
+{
+#ifdef HAVE_LIBCURL
+  char *decoded;
+  int outlen;
+  int n;
+  CURL *handle = curl_easy_init();
+  decoded = curl_easy_unescape(handle, args[0], arglens[0], &outlen);
+
+  for (n = 0; n < outlen; n += 1) {
+    if (!isprint(decoded[n])) {
+      decoded[n] = '?';
+    }
+  }
+
+  safe_strl(decoded, outlen, buff, bp);
+  curl_free(decoded);
+  curl_easy_cleanup(handle);
+#else
+  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+#endif
 }

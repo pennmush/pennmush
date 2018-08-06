@@ -63,7 +63,7 @@ Where can I get more information about admin'ing and hacking MUSH?
 ==================================================================
 
 Read
-[Javelin's God for PennMUSH Gods](http://download.pennmush.org/Guide/),
+[Javelin's God for PennMUSH Gods](https://download.pennmush.org/Guide/),
 loads of info about setting up a MUSH, hacking source code, daily
 maintenance, and many tips from other Gods! It's a bit dated in some
 respects but still very useful.
@@ -73,7 +73,7 @@ and reference material for working with mush hardcode that are
 slightly less out of date.
 
 The source code has
-[doxygen documentation](http://doxygen.pennmush.org) that can be
+[doxygen documentation](https://doxygen.pennmush.org) that can be
 browsed.
 
 Where can I hear about new releases?

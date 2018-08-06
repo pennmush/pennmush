@@ -79,15 +79,10 @@ char *least_idle_hostname(dbref player);
 void do_who_mortal(dbref player, char *name);
 void do_who_admin(dbref player, char *name);
 void do_who_session(dbref player, char *name);
-char *json_to_string_real(JSON *json, int verbose, int recurse);
-#define json_to_string(j, v) json_to_string_real(j, v, 0)
-JSON *string_to_json_real(char *input, char **ip, int recurse);
-#define string_to_json(in) string_to_json_real(in, NULL, 0)
 char *json_unescape_string(char *input);
 char *json_escape_string(char *input);
-void json_free(JSON *json);
 void register_gmcp_handler(char *package, gmcp_handler_func func);
-void send_oob(DESC *d, char *package, JSON *data);
+void send_oob(DESC *d, char *package, cJSON *data);
 
 /* sql.c */
 void sql_shutdown(void);
@@ -219,8 +214,8 @@ dbref do_real_open(dbref player, const char *direction, const char *linkto,
                    dbref pseudo, NEW_PE_INFO *pe_info);
 void do_open(dbref player, const char *direction, char **links,
              NEW_PE_INFO *pe_info);
-void do_link(dbref player, const char *name, const char *room_name,
-             int preserve, NEW_PE_INFO *pe_info);
+int do_link(dbref player, const char *name, const char *room_name, int preserve,
+            NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
 dbref do_clone(dbref player, char *name, char *newname, bool preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
@@ -612,10 +607,13 @@ int local_can_interact_last(dbref from, dbref to, int type);
 void local_flags(FLAGSPACE *flags);
 
 /* Functions for suggesting alternatives to misspelled names */
-void init_vocab(void);
+void init_private_vocab(void);
 char *suggest_name(const char *name, const char *category);
-void add_vocab(const char *name, const char *category);
-void delete_vocab(const char *name, const char *category);
-void delete_vocab_cat(const char *category);
+void add_private_vocab(const char *name, const char *category);
+void delete_private_vocab(const char *name, const char *category);
+void delete_private_vocab_cat(const char *category);
+
+char *suggest_word(const char *name, const char *category);
+void add_dict_words(void);
 
 #endif /* __EXTERNS_H */

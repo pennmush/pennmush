@@ -156,7 +156,6 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
-
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@FIRSTEXIT", NULL, cmd_firstexit, CMD_T_ANY | CMD_T_ARGS, 0, 0},
@@ -179,6 +178,8 @@ COMLIST commands[] = {
    "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE "
    "LOCALIZE CLEARREGS NOBREAK",
    cmd_hook, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", "hook"},
+  {"@HTTP", "DELETE POST PUT", cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS
+   | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
@@ -850,7 +851,7 @@ command_init_postconfig(void)
     sw_data.start - 1; /* Don't count the trailing NULL-name switch */
   dyn_switch_list[sw_data.n].name = NULL;
   st_flush(&switch_names);
-  switch_bytes = ceil((double) num_switches / 8.0);
+  switch_bytes = ceil((double) (num_switches + 1) / 8.0);
 
   /* Then convert the list of switch names in all commands to masks */
   for (c = ptab_firstentry(&ptab_command); c;
@@ -1538,7 +1539,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   /* ls, before the = */
   if (cmd->type & CMD_T_LS_ARGS) {
-    char argname[10];
+    char argname[20];
     j = 0;
     for (i = 1; i < MAX_ARG; i++) {
       if (lsa[i] && *lsa[i]) {
@@ -1560,7 +1561,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
                   "=");
     /* rs, after the = */
     if (cmd->type & CMD_T_RS_ARGS) {
-      char argname[10];
+      char argname[20];
       j = 0;
       for (i = 1; i < MAX_ARG; i++) {
         if (rsa[i] && *rsa[i]) {

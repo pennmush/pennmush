@@ -267,7 +267,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
 
   /* Insert the flag in the ptab by the given name (maybe an alias) */
   ptab_insert_one(n->tab, name, f);
-  add_vocab(name, n->name);
+  add_private_vocab(name, n->name);
 
   /* Is this a canonical flag (as opposed to an alias?)
    * If it's an alias, we're done.
@@ -865,6 +865,7 @@ flag_add_additional(FLAGSPACE *n)
     add_power("hook", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Can_dark", '\0', TYPE_PLAYER, F_WIZARD | F_LOG, F_ANY);
     add_power("Pick_Dbrefs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
+    add_power("Can_HTTP", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     /* Aliases for other servers */
     if ((f = match_power("tport_anything")) && !match_power("tel_anything"))
       flag_add(flags, "tel_anything", f);
@@ -2890,7 +2891,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
       if (!strcmp(tmpf->name, f->name) &&
           strcmp(n->flags[f->bitpos]->name, flagname)) {
         ptab_delete(n->tab, flagname);
-        delete_vocab(flagname, n->name);
+        delete_private_vocab(flagname, n->name);
         got_one = 1;
         break;
       }
@@ -2908,7 +2909,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   n->flags[f->bitpos] = NULL;
   /* Remove the flag from the ptab */
   ptab_delete(n->tab, f->name);
-  delete_vocab(f->name, n->name);
+  delete_private_vocab(f->name, n->name);
   notify_format(player, T("%s %s deleted."), strinitial_r(ns, tmp, sizeof tmp),
                 f->name);
   /* Free the flag. */

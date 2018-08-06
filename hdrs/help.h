@@ -18,10 +18,10 @@ typedef struct {
   char *command; /**< The name of the help command */
   char *file;    /**< The file of help text */
   int admin;     /**< Is this an admin-only help command? */
-  int entries;   /**< Number of topics */
 } help_file;
 
 void init_help_files(void);
+void close_help_files(void);
 void add_help_file(const char *command_name, const char *filename, int admin);
 void help_rebuild(dbref player);
 bool help_rebuild_by_name(const char *filename);

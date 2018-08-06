@@ -632,7 +632,6 @@ ICU_CPPFLAGS
 ICU_CONFIG
 POSTGRESQL_LIBS
 POSTGRESQL_VERSION
-AWK
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 POSTGRESQL_LDFLAGS
@@ -648,6 +647,10 @@ OPENSSL_LDFLAGS
 OPENSSL_LIBS
 OPENSSL_INCLUDES
 PKG_CONFIG
+AWK
+CURL_LIBS
+CURL_CFLAGS
+CURL_CONFIG
 PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
@@ -712,6 +715,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -734,6 +738,8 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_curl_prefix
+with_curl_exec_prefix
 enable_zlib
 with_openssl
 with_pcre
@@ -761,6 +767,9 @@ CPPFLAGS
 SENDMAIL
 ED
 CPP
+CURL_CONFIG
+CURL_CFLAGS
+CURL_LIBS
 MYSQL_CONFIG
 POSTGRESQL_CPPFLAGS
 POSTGRESQL_LIBFLAGS
@@ -807,6 +816,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1059,6 +1069,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1196,7 +1215,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1349,6 +1368,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1401,6 +1421,10 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-curl-prefix=PREFIX
+                          Prefix where curl is installed (optional)
+  --with-curl-exec-prefix=EPREFIX
+                          Exec prefix where curl is installed (optional)
   --with-openssl=DIR      root of the OpenSSL directory
   --with-pcre[=prefix]    compile xmlpcre part (via libpcre check)
   --with-mysql=[ARG]      use MySQL client library [default=yes], optionally
@@ -1419,6 +1443,9 @@ Some influential environment variables:
   SENDMAIL    Path to sendmail
   ED          Path to ed
   CPP         C preprocessor
+  CURL_CONFIG config script used for curl
+  CURL_CFLAGS CFLAGS used for curl
+  CURL_LIBS   LIBS used for curl
   MYSQL_CONFIG
               Full path to mysql_config program
   POSTGRESQL_CPPFLAGS
@@ -7083,6 +7110,274 @@ _ACEOF
 
 fi
 
+for ac_prog in gawk mawk nawk awk
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_AWK+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$AWK"; then
+  ac_cv_prog_AWK="$AWK" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AWK="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+AWK=$ac_cv_prog_AWK
+if test -n "$AWK"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
+$as_echo "$AWK" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$AWK" && break
+done
+
+
+
+
+
+
+
+# Check whether --with-curl-prefix was given.
+if test "${with_curl_prefix+set}" = set; then :
+  withval=$with_curl_prefix; curl_config_prefix="$withval"
+else
+  curl_config_prefix=""
+fi
+
+
+# Check whether --with-curl-exec-prefix was given.
+if test "${with_curl_exec_prefix+set}" = set; then :
+  withval=$with_curl_exec_prefix; curl_config_exec_prefix="$withval"
+else
+  curl_config_exec_prefix=""
+fi
+
+
+
+
+
+
+  if test x"$CURL_CFLAGS" != x -o x"$CURL_LIBS" != x; then :
+
+
+
+    :
+    $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+else
+
+    if test x$curl_config_exec_prefix != x; then :
+
+      curl_config_args="$curl_config_args --exec-prefix=$curl_config_exec_prefix"
+      if test x${CURL_CONFIG+set} != xset; then :
+
+	CURL_CONFIG=$curl_config_exec_prefix/bin/curl-config
+
+fi
+
+fi
+    if test x$curl_config_prefix != x; then :
+
+      curl_config_args="$curl_config_args --prefix=$curl_config_prefix"
+      if test x${CURL_CONFIG+set} != xset; then :
+
+	CURL_CONFIG=$curl_config_prefix/bin/curl-config
+
+fi
+
+fi
+
+    for ac_prog in  curl-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_CURL_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $CURL_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CURL_CONFIG="$CURL_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CURL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+CURL_CONFIG=$ac_cv_path_CURL_CONFIG
+if test -n "$CURL_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CURL_CONFIG" >&5
+$as_echo "$CURL_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$CURL_CONFIG" && break
+done
+test -n "$CURL_CONFIG" || CURL_CONFIG="no"
+
+    if test "$CURL_CONFIG" = "no"; then :
+
+      :
+
+
+else
+
+            if test x"" = x; then :
+
+	CURL_CFLAGS="`$CURL_CONFIG $curl_config_args --cflags`"
+
+else
+
+	CURL_CFLAGS="`$CURL_CONFIG $curl_config_args `"
+
+fi
+
+            if test x"" = x; then :
+
+	CURL_LIBS="`$CURL_CONFIG $curl_config_args --libs`"
+
+else
+
+	CURL_LIBS="`$CURL_CONFIG $curl_config_args `"
+
+fi
+
+      if test x"7.28.0" != x; then :
+
+		if test x"'s/^libcurl\ \+//'" != x; then :
+
+	  	  curl_version="`$CURL_CONFIG $curl_config_args --version | $SED -e 's/^libcurl\ \+//'`"
+
+else
+
+	  curl_version="`$CURL_CONFIG $curl_config_args --version | $SED -e 's/^\ *\(.*\)\ *$/\1/'`"
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl ($curl_version) >= 7.28.0" >&5
+$as_echo_n "checking for curl ($curl_version) >= 7.28.0... " >&6; }
+
+
+
+  # Used to indicate true or false condition
+  ax_compare_version=false
+
+  # Convert the two version strings to be compared into a format that
+  # allows a simple string comparison.  The end result is that a version
+  # string of the form 1.12.5-r617 will be converted to the form
+  # 0001001200050617.  In other words, each number is zero padded to four
+  # digits, and non digits are removed.
+
+  ax_compare_version_A=`echo "$curl_version" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
+                     -e 's/Z\([0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/[^0-9]//g'`
+
+
+  ax_compare_version_B=`echo "7.28.0" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
+                     -e 's/Z\([0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/Z\([0-9][0-9][0-9]\)Z/Z0\1Z/g' \
+                     -e 's/[^0-9]//g'`
+
+
+    ax_compare_version=`echo "x$ax_compare_version_A
+x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version_A}/true/;s/x${ax_compare_version_B}/false/;1q"`
+
+
+
+    if test "$ax_compare_version" = "true" ; then
+
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+
+
+	  :
+	  $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+    else
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	  :
+
+
+  fi
+
+
+else
+
+
+
+	:
+	$as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
+
+
+fi
+
+fi
+
+fi
+
+
+
+
+
+for ac_header
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+(curl/curl.h)
 
 # Include Winsock2 library in MinGW and MSYS builds, but not Cygwin
 case "$build_os" in
@@ -7909,48 +8204,6 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-for ac_prog in gawk mawk nawk awk
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_AWK+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$AWK"; then
-  ac_cv_prog_AWK="$AWK" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AWK="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-AWK=$ac_cv_prog_AWK
-if test -n "$AWK"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
-$as_echo "$AWK" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$AWK" && break
-done
-
 
 
 # Check whether --with-postgresql was given.
@@ -9957,6 +10210,12 @@ if test "$enable_ipv6" = yes; then
   echo "* IPv6 sockets will be used if possible."
 else
   echo "* Sockets are limited to IPv4"
+fi
+
+if test "x$CURL_CONFIG" != "x"; then
+   echo "* libcurl will be used for @HTTP"
+else
+   echo "* No libcurl. @HTTP disabled."
 fi
 
 ac_config_files="$ac_config_files Makefile src/Makefile"

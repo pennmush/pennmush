@@ -448,7 +448,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     p = pbuff;
   }
 
-  strcpy(sname, AName(player, AN_SAY, NULL));
+  mush_strncpy(sname, AName(player, AN_SAY, NULL), sizeof sname);
   for (who = 0; who < gcount; who++) {
     notify_must_puppet(good[who], p);
     if (Location(good[who]) != Location(player))
@@ -1033,7 +1033,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
 
   /* Figure out the 'name' of the player */
   if ((ap = shortalias(executor)) && *ap) {
-    strcpy(alias, ap);
+    mush_strncpy(alias, ap, sizeof alias);
     if (PAGE_ALIASES && strcasecmp(ap, Name(executor))) {
       snprintf(msg, sizeof msg, "%s (%s)", AName(executor, AN_SAY, NULL),
                alias);

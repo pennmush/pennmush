@@ -1,0 +1,23 @@
+/* GPerf data file for mapping sqlite3 json type names to penn names */
+%language=ANSI-C
+%define hash-function-name json_type_hash
+%define lookup-function-name json_type_lookup
+%enum
+%compare-lengths
+%struct-type
+%define initializer-suffix ,NULL
+
+struct json_type_map {
+       const char *name;
+       const char *pname;
+};
+%%
+array, "array"
+false, "boolean"
+integer, "number"
+null, "null"
+object, "object"
+real, "number"
+text, "string"
+true, "boolean"
+%%

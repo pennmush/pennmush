@@ -70,6 +70,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_LIBCURL
+#include <curl/curl.h>
+#endif
 
 #include "access.h"
 #include "ansi.h"
@@ -105,6 +108,7 @@
 #include "mushsql.h"
 #include "connlog.h"
 #include "charclass.h"
+#include "cJSON.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -597,6 +601,10 @@ main(int argc, char **argv)
 
   time(&mudtime);
 
+#ifdef HAVE_LIBCURL
+  curl_global_init(CURL_GLOBAL_ALL);
+#endif
+
   /* initialize random number generator */
   initialize_rng();
 
@@ -736,6 +744,10 @@ main(int argc, char **argv)
 
   local_shutdown();
 
+#ifdef HAVE_LIBCURL
+  curl_global_cleanup();
+#endif
+
   if (pidfile)
     remove(pidfile);
 
@@ -747,6 +759,8 @@ main(int argc, char **argv)
 #ifdef HAVE_GETRUSAGE
   rusage_stats();
 #endif /* HAVE_GETRUSAGE */
+
+  close_help_files();
 
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
@@ -1001,6 +1015,98 @@ exit_report(const char *prog, pid_t pid, WAIT_TYPE code)
 }
 #endif
 
+#ifdef HAVE_LIBCURL
+int ncurl_queries = 0;
+CURLM *curl_handle = NULL;
+
+static void
+free_urlreq(struct urlreq *req)
+{
+  pe_regs_free(req->pe_regs);
+  if (req->body) {
+    sqlite3_str_reset(req->body);
+    sqlite3_str_finish(req->body);
+  }
+  mush_free(req->attrname, "urlreq.attrname");
+  curl_slist_free_all(req->header_slist);
+  mush_free(req, "urlreq");
+}
+
+static void
+handle_curl_msg(CURLMsg *msg)
+{
+  if (!msg) {
+    return;
+  }
+
+  ncurl_queries -= 1;
+
+  if (msg->msg == CURLMSG_DONE) {
+    long respcode;
+    char *contenttype;
+    struct urlreq *resp;
+    CURL *handle = msg->easy_handle;
+    bool is_utf8 = 0;
+
+    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
+
+    if (msg->data.result == CURLE_OK) {
+      if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode) ==
+          CURLE_OK) {
+        if (respcode) {
+          pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        }
+      }
+      if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype) ==
+          CURLE_OK) {
+        if (contenttype) {
+          pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+          if (strstr(contenttype, "charset=utf-8") ||
+              strstr(contenttype, "charset=UTF-8")) {
+            is_utf8 = 1;
+          }
+        }
+      }
+      if (resp->body && sqlite3_str_length(resp->body) > 0) {
+        char *body = NULL;
+        char *latin1 = NULL;
+        int len;
+        int body_size = sqlite3_str_length(resp->body);
+        body = sqlite3_str_finish(resp->body);
+        resp->body = NULL;
+        if (is_utf8) {
+          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
+          if (len >= BUFFER_LEN) {
+            latin1[BUFFER_LEN - 1] = '\0';
+          }
+        } else {
+          latin1 = body;
+          if (body_size >= BUFFER_LEN) {
+            body[BUFFER_LEN - 1] = '\0';
+          }
+        }
+        pe_regs_setenv(resp->pe_regs, 0, latin1);
+        if (is_utf8) {
+          mush_free(latin1, "string");
+        }
+        if (body) {
+          sqlite3_free(body);
+        }
+      }
+      queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
+                                resp->pe_regs, resp->queue_type, resp->thing);
+    } else {
+      notify_format(resp->thing, "Request failed: %s",
+                    curl_easy_strerror(msg->data.result));
+    }
+    curl_multi_remove_handle(curl_handle, handle);
+    curl_easy_cleanup(handle);
+    free_urlreq(resp);
+  }
+}
+
+#endif
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1015,12 +1121,22 @@ shovechars(Port_t port, Port_t sslport)
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
+#ifdef HAVE_LIBCURL
+  struct curl_waitfd *fds = NULL;
+  unsigned int fd_size = 0, fds_used = 0;
+  CURLMcode curl_status;
+#define PENN_POLLIN CURL_WAIT_POLLIN
+#define PENN_POLLOUT CURL_WAIT_POLLOUT
+#else
 #ifdef WIN32
   WSAPOLLFD *fds = NULL;
   ULONG fd_size = 0, fds_used = 0;
 #else
   struct pollfd *fds = NULL;
   nfds_t fd_size = 0, fds_used = 0;
+#endif
+#define PENN_POLLIN POLLIN
+#define PENN_POLLOUT POLLOUT
 #endif
   int polltimeout;
 
@@ -1042,6 +1158,15 @@ shovechars(Port_t port, Port_t sslport)
 #endif
     }
   }
+
+#ifdef HAVE_LIBCURL
+  curl_handle = curl_multi_init();
+  curl_multi_setopt(curl_handle, CURLMOPT_MAXCONNECTS, 500);
+#if CURL_VERSION_NUM >= 0x072B00 /* 7.43.0 */
+  curl_multi_setopt(curl_handle, CURLMOPT_PIPELINING,
+                    CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
+#endif
+#endif
 
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
@@ -1185,33 +1310,33 @@ shovechars(Port_t port, Port_t sslport)
 
     if (ndescriptors < avail_descriptors) {
       fds[fds_used].fd = sock;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
 
       if (sslsock) {
         fds[fds_used].fd = sslsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #ifdef LOCAL_SOCKET
       if (localsock >= 0) {
         fds[fds_used].fd = localsock;
-        fds[fds_used++].events = POLLIN;
+        fds[fds_used++].events = PENN_POLLIN;
       }
 #endif
     }
 #ifdef INFO_SLAVE
     if (info_slave_state == INFO_SLAVE_PENDING) {
       fds[fds_used].fd = info_slave;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
     if (notify_fd >= 0) {
       fds[fds_used].fd = notify_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #ifndef WIN32
     if (sigrecv_fd >= 0) {
       fds[fds_used].fd = sigrecv_fd;
-      fds[fds_used++].events = POLLIN;
+      fds[fds_used++].events = PENN_POLLIN;
     }
 #endif
 
@@ -1233,16 +1358,41 @@ shovechars(Port_t port, Port_t sslport)
                               command ready to eval. */
         timeout = slice_timeout;
       } else {
-        fds[fds_used].events = POLLIN;
+        fds[fds_used].events = PENN_POLLIN;
       }
       if (d->output.head) {
-        fds[fds_used].events |= POLLOUT;
+        fds[fds_used].events |= PENN_POLLOUT;
       }
       if (!d->input.head || d->output.head)
         fds[fds_used++].fd = d->descriptor;
     }
 
     polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
+
+#ifdef HAVE_LIBCURL
+    curl_status =
+      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+
+    if (curl_status != CURLM_OK) {
+      do_rawlog(LT_ERR, "curl_multi_wait: %s",
+                curl_multi_strerror(curl_status));
+      return;
+    }
+
+    if (ncurl_queries > 0) {
+      int running = 0;
+      curl_status = curl_multi_perform(curl_handle, &running);
+      if (curl_status == CURLM_OK) {
+        CURLMsg *msg;
+        while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
+          handle_curl_msg(msg);
+          found -= 1;
+        }
+      }
+    }
+
+#else
+
 #ifdef WIN32
     found = WSAPoll(fds, fds_used, polltimeout);
 #else
@@ -1258,15 +1408,20 @@ shovechars(Port_t port, Port_t sslport)
         penn_perror("poll");
         return;
       }
-#ifdef INFO_SLAVE
-      if (info_slave_state == INFO_SLAVE_PENDING)
-        update_pending_info_slaves();
+    }
 #endif
-    } else {
+
+#ifdef INFO_SLAVE
+    if (info_slave_state == INFO_SLAVE_PENDING) {
+      update_pending_info_slaves();
+    }
+#endif
+
+    time(&mudtime);
+
+    if (found >= 0) {
+
       /* if !found then time for robot commands */
-
-      time(&mudtime);
-
       if (!found) {
         do_top(options.queue_chunk);
         continue;
@@ -1280,16 +1435,17 @@ shovechars(Port_t port, Port_t sslport)
       now = mudtime;
 
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           got_new_connection(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 &&
+            fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1297,7 +1453,7 @@ shovechars(Port_t port, Port_t sslport)
       }
 
       if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
-          fds[fds_used++].revents & POLLIN) {
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         reap_info_slave();
       } else if (info_slave_state == INFO_SLAVE_PENDING &&
@@ -1308,16 +1464,17 @@ shovechars(Port_t port, Port_t sslport)
 
 #else /* INFO_SLAVE */
       if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(sock, CS_IP_SOCKET);
         }
-        if (found > 0 && sslsock && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(sslsock, CS_OPENSSL_SOCKET);
         }
 #ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 && fds[fds_used++].revents & POLLIN) {
+        if (found > 0 && localsock >= 0 &&
+            fds[fds_used++].revents & PENN_POLLIN) {
           found -= 1;
           setup_desc(localsock, CS_LOCAL_SOCKET);
         }
@@ -1325,13 +1482,15 @@ shovechars(Port_t port, Port_t sslport)
       }
 #endif /* INFO_SLAVE */
 
-      if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && notify_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         file_watch_event(notify_fd);
       }
 
 #ifndef WIN32
-      if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & POLLIN) {
+      if (found > 0 && sigrecv_fd >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
         found -= 1;
         sigrecv_ack();
       }
@@ -1346,8 +1505,12 @@ shovechars(Port_t port, Port_t sslport)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
+#ifdef HAVE_LIBCURL
+        errors = 0;
+#else
         errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
-        output_ready = fds[fds_used++].revents & POLLOUT;
+#endif
+        output_ready = fds[fds_used++].revents & PENN_POLLOUT;
         if (input_ready || errors || output_ready)
           found -= 1;
         if (errors) {
@@ -1369,8 +1532,13 @@ shovechars(Port_t port, Port_t sslport)
       }
     }
   }
+
   if (fds)
     mush_free(fds, "pollfds");
+
+#ifdef HAVE_LIBCURL
+  curl_multi_cleanup(curl_handle);
+#endif
 }
 
 static int
@@ -2604,7 +2772,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   struct gmcp_handler *g;
   char fullpackage[BUFFER_LEN], package[BUFFER_LEN], fullmsg[BUFFER_LEN];
   char *p, *msg;
-  JSON *json = NULL;
+  cJSON *json = NULL;
   int match = 0, i = 50;
 
   if (!gmcp_handlers)
@@ -2624,7 +2792,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   if (msg && *msg) {
     /* string_to_json destructively modifies msg, so make a copy */
     mush_strncpy(fullmsg, msg, BUFFER_LEN);
-    json = string_to_json(msg);
+    json = cJSON_Parse(msg);
     if (!json)
       return; /* Invalid json */
   } else
@@ -2653,7 +2821,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
       }
     }
   }
-  json_free(json);
+  cJSON_Delete(json);
 }
 
 /** Escape a string so it can be sent as a telnet SB (IAC -> IAC IAC). Returns
@@ -2715,30 +2883,19 @@ register_gmcp_handler(char *package, gmcp_handler_func func)
 /* Handler for Core.Hello messages */
 GMCP_HANDLER(gmcp_core_hello)
 {
-  JSON *j;
+  cJSON *j;
 
   if (strcasecmp(package, "Core.Hello")) {
     return 0; /* Package was Core.Hello.something, and we don't handle that */
   }
 
-  if (json->type != JSON_OBJECT) {
+  if (!cJSON_IsObject(json)) {
     return 0; /* We're expecting an object */
   }
 
-  j = (JSON *) json->data;
-  while (j) {
-    if (j->type == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
-      if ((j = j->next) && j->type == JSON_STR && j->data &&
-          *((char *) j->data)) {
-        /* We have the client name. */
-        set_ttype(d, (char *) j->data);
-      }
-      break; /* This is all we care about */
-    } else {
-      j = j->next; /* Move to value */
-      if (j)
-        j = j->next; /* Move to next label */
-    }
+  j = cJSON_GetObjectItemCaseSensitive(json, "client");
+  if (j && cJSON_IsString(j)) {
+    set_ttype(d, cJSON_GetStringValue(j));
   }
 
   return 1;
@@ -2793,7 +2950,7 @@ GMCP_HANDLER(gmcp_softcode_example)
  * \param data a JSON object, or NULL for no message
  */
 void
-send_oob(DESC *d, char *package, JSON *data)
+send_oob(DESC *d, char *package, cJSON *data)
 {
   char buff[BUFFER_LEN];
   char *bp = buff;
@@ -2803,12 +2960,11 @@ send_oob(DESC *d, char *package, JSON *data)
   if (!d || !(d->conn_flags & CONN_GMCP) || !package || !*package)
     return;
 
-  if (data && data->type != JSON_NONE) {
-    char *str = json_to_string(data, 0);
+  if (data && !cJSON_IsInvalid(data)) {
+    char *str = cJSON_PrintUnformatted(data);
     safe_str(str, buff, &bp);
     *bp = '\0';
-    if (str)
-      mush_free(str, "json_str");
+    free(str);
     escmsg = telnet_escape(buff);
     bp = buff;
   }
@@ -2832,7 +2988,7 @@ FUNCTION(fun_oob)
 {
   dbref who;
   DESC *d;
-  JSON *json;
+  cJSON *json;
   int i = 0;
 
   who = lookup_player(args[0]);
@@ -2846,7 +3002,7 @@ FUNCTION(fun_oob)
     return;
   }
 
-  json = string_to_json(args[2]);
+  json = cJSON_Parse(args[2]);
   if (!json) {
     safe_str(T("#-1 INVALID JSON"), buff, bp);
     return;
@@ -2859,7 +3015,7 @@ FUNCTION(fun_oob)
     i++;
   }
   safe_integer(i, buff, bp);
-  json_free(json);
+  cJSON_Delete(json);
 }
 
 void
@@ -4698,7 +4854,7 @@ dump_users(DESC *call_by, char *match)
     if (nlen < 16)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
-    snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
+    snprintf(tbuf, sizeof tbuf, "%16.16s %10.10s %6.6s%c %s", nbuff,
              onfor_time_fmt(d->connected_at, 10),
              idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
              get_doing(d->player, NOTHING, NOTHING, NULL, 0));
@@ -6864,6 +7020,7 @@ do_reboot(dbref player, int flag)
 #endif
   local_shutdown();
   shutdown_conndb(1);
+  close_help_files();
   end_all_logs();
 #ifndef WIN32
   {
@@ -6900,18 +7057,6 @@ do_reboot(dbref player, int flag)
  */
 
 extern HASHTAB help_files;
-
-static void reload_files(void) __attribute__((__unused__));
-
-static void
-reload_files(void)
-{
-  do_rawlog(
-    LT_TRACE,
-    "Reloading help indexes and cached files after detecting a change.");
-  fcache_load(NOTHING);
-  help_rebuild(NOTHING);
-}
 
 #ifdef HAVE_INOTIFY_INIT1
 /* Linux 2.6.27 and greater inotify file monitoring interface */

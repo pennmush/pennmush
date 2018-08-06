@@ -102,6 +102,8 @@
 
 #undef HAVE_ICU
 
+#undef HAVE_LIBCURL
+
 /* Types */
 
 #undef HAVE__BOOL
@@ -367,6 +369,7 @@ typedef bool _Bool;
 #define SQLITE_ENABLE_JSON1 1
 #define SQLITE_ENABLE_RTREE 1
 #define SQLITE_ENABLE_STMTVTAB  1
+#define SQLITE_ENABLE_STAT4 1
 #define SQLITE_OMIT_DEPRECATED 1
 #define SQLITE_OMIT_DECLTYPE 1
 #define SQLITE_OMIT_LOAD_EXTENSION 1

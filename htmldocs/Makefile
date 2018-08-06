@@ -6,4 +6,4 @@ index.html: index.md
 	pandoc -t html5 -c mushdoc.css -o index.html -s index.md
 
 %.html: ../%.md
-	pandoc -f markdown-smart -t html5 -c mushdoc.css -o $@ -s --toc --toc-depth=2 $<
+	pandoc -f markdown -t html5 -c mushdoc.css -o $@ -s --toc --toc-depth=2 $<

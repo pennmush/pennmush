@@ -20,6 +20,7 @@
 #include <math.h>
 #include "mushtype.h"
 #include "mypcre.h"
+#include "mushsql.h"
 
 /* These are some common error messages. */
 extern const char e_int[];         /* #-1 ARGUMENT MUST BE INTEGER */
@@ -390,5 +391,19 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 /* For the cpu time limiting. From timer.c */
 extern void start_cpu_timer(void);
 extern void reset_cpu_timer(void);
+
+
+#ifdef HAVE_LIBCURL
+/* Data for successfull @fetch commands */
+struct urlreq {
+  dbref thing;
+  dbref enactor;
+  int queue_type;
+  PE_REGS *pe_regs;
+  char *attrname;
+  sqlite3_str *body;
+  void *header_slist;
+};
+#endif
 
 #endif /* !_PARSE_H_ */

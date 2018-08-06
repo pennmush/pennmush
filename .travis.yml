@@ -1,7 +1,7 @@
 language: c
 compiler: gcc
 before_install:
-  - locale
+  - sudo localedef -f ISO-8859-1 -i en_US en_US.ISO88591
 before_script:
   - ./configure
   - yes "" | make update

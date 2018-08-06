@@ -555,6 +555,11 @@ help_db data/help.db
 # Example: #define MAILER "/full/path/to/other/mailer"
 sendmail_prog sendmail
 
+# A UTF-8 encoded file of words, one word per line, used with
+# suggest(words, X). Leave empty to disable.
+#dict_file /usr/dict/words
+dict_file /usr/share/dict/words
+
 ###
 ### Logging
 ###

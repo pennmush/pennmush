@@ -1840,9 +1840,7 @@ FUNCTION(fun_entrances)
 
   n = 0;
   do {
-    do {
-      status = sqlite3_step(finder);
-    } while (is_busy_status(status));
+    status = sqlite3_step(finder);
     if (status == SQLITE_ROW) {
       dbref obj = sqlite3_column_int(finder, 0);
       if (!(prived || Can_Examine(executor, obj))) {
@@ -1858,7 +1856,7 @@ FUNCTION(fun_entrances)
       }
       n = 1;
     }
-  } while (status == SQLITE_ROW);
+  } while (status == SQLITE_ROW || is_busy_status(status));
   sqlite3_reset(finder);
 }
 

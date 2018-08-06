@@ -302,12 +302,16 @@ match_aliases(dbref match, const char *name)
   if (IsExit(match) && check_alias(name, Name(match)))
     return 1;
   else {
-    char tbuf1[BUFFER_LEN];
+    char *tbuf1;
+    int r;
     ATTR *a = atr_get_noparent(match, "ALIAS");
-    if (!a)
+    if (!a) {
       return 0;
-    mush_strncpy(tbuf1, atr_value(a), BUFFER_LEN);
-    return check_alias(name, tbuf1);
+    }
+    tbuf1 = safe_atr_value(a, "alias.list");
+    r = check_alias(name, tbuf1);
+    mush_free(tbuf1, "alias.list");
+    return r;
   }
 }
 

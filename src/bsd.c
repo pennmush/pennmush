@@ -396,8 +396,9 @@ static void save_command(DESC *d, char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static bool is_http_request(char *command);
-static void process_http_start(DESC *d, char *command);
+static int process_http_start(DESC *d, char *command);
 static void process_http_input(DESC *d, char *buf, int len);
+static void do_http_command(DESC *d);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
 enum comm_res {
@@ -1514,7 +1515,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif
 
       for (d = descriptor_list; d && found > 0; d = dnext) {
-        unsigned int input_ready, output_ready, errors;
+        unsigned int input_ready, output_ready, errors, full_events;
 
         dnext = d->next;
 
@@ -1522,6 +1523,7 @@ shovechars(Port_t port, Port_t sslport)
           continue;
 
         input_ready = fds[fds_used].revents & POLLIN;
+        full_events = fds[fds_used].revents;
 #ifdef HAVE_LIBCURL
         errors = 0;
 #else
@@ -1545,6 +1547,9 @@ shovechars(Port_t port, Port_t sslport)
               shutdownsock(d, "disconnect", d->player);
             }
           }
+        }
+        if (full_events & POLLHUP) {
+          do_http_command(d);
         }
       }
     }
@@ -2461,6 +2466,11 @@ test_telnet_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
 
+  if ((d->conn_flags & CONN_HTTP_REQUEST)) {
+    do_http_command(d);
+    return false;
+  }
+
   test_telnet(d);
   d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *) d, NULL);
   return false;
@@ -2548,6 +2558,10 @@ test_telnet(DESC *d)
       return;
     }
 #endif /* undef WITHOUT_WEBSOCKETS */
+    if ((d->conn_flags & (CONN_HTTP_REQUEST))) {
+      /* Don't bother testing for TELNET support. */
+      return;
+    }
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -3270,9 +3284,9 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         } else
 #endif /* undef WITHOUT_WEBSOCKETS */
         {
-          d->conn_flags |= CONN_HTTP_REQUEST;
-          process_http_start(d, d->raw_input);
-          process_http_input(d, q, qend - q);
+          if (process_http_start(d, d->raw_input)) {
+            process_http_input(d, q, qend - q);
+          }
           return;
         }
         is_first = false;
@@ -3488,14 +3502,16 @@ http_bounce_mud_url(DESC *d)
   queue_eol(d);
 }
 
-#define HTTP_HEADER           0x0001
-#define HTTP_BODY             0x0001
+#define HTTP_HEADER           1
+#define HTTP_BODY             2
+#define HTTP_RESPONSE         3
+#define HTTP_RESPONSE_BODY    4
 
-static void
-process_http_start(DESC *d, char *command)
+static int
+process_http_start(DESC *d, char *line)
 {
   struct http_request *req;
-  char *c, *path, *version;
+  char *c, *method, *path, *version;
 
   if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
     goto bad_connection;
@@ -3507,21 +3523,15 @@ process_http_start(DESC *d, char *command)
    * METHOD /path/request HTTP/1.1
    */
 
-  req = mush_malloc(sizeof(struct http_request), "http_request");
-  d->http_request = req;
-  req->state = HTTP_HEADER;
-  req->content_length = -1;
-  req->bp = req->buff;
-
   /* Get METHOD, PATH, and VERSION */
-  for (c = command; *c && !isspace(*c); c++);
+  method = line;
+  for (c = line; *c && !isspace(*c); c++);
 
   if (!*c) goto bad_connection;
 
   *(c++) = '\0';
 
-  if (strlen(command) >= HTTP_METHOD_LEN) goto bad_connection;
-  strncpy(req->method, command, HTTP_METHOD_LEN);
+  if (strlen(method) >= HTTP_METHOD_LEN) goto bad_connection;
 
   /* Skip ahead to the path. */
   for (path = c; *path && isspace(*path); path++);
@@ -3533,16 +3543,33 @@ process_http_start(DESC *d, char *command)
   *(c++) = '\0';
   if (strlen(path) >= MAX_COMMAND_LEN) goto bad_connection;
 
-  strncpy(req->path, path, MAX_COMMAND_LEN);
-
   version = c;
   if (strcmp(version, "HTTP/1.1")) goto bad_connection;
 
-  return;
+  req = mush_malloc(sizeof(struct http_request), "http_request");
+  memset(req, 0, sizeof *req);
+
+  d->http_request = req;
+  req->state = HTTP_HEADER;
+  req->content_length = -1;
+  req->bp = req->buff;
+
+  req->hp = req->headers;
+  req->response_len = 0;
+
+  strncpy(req->method, method, HTTP_METHOD_LEN - 1);
+  strncpy(req->path, path, MAX_COMMAND_LEN - 1);
+
+  d->conn_flags |= CONN_HTTP_REQUEST;
+  /* Default for HTTP response */
+  strncpy(req->code, "200 OK", HTTP_CODE_LEN);
+
+  return 1;
 
 bad_connection:
   http_bounce_mud_url(d);
   d->conn_flags |= CONN_HTTP_CLOSE;
+  return 0;
 }
 
 static void
@@ -3553,7 +3580,37 @@ process_http_input(DESC *d, char *buf, int len)
 
 static void
 do_http_command(DESC *d) {
+  NEW_PE_INFO *pe_info;
+  struct http_request *req;
+
+  if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
+      (d->conn_flags & CONN_HTTP_CLOSE) ||
+      !(d->http_request)) {
     d->conn_flags |= CONN_HTTP_CLOSE;
+  }
+
+  d->player = HTTP_HANDLER;
+  d->connected = CONN_PLAYER;
+  d->connected_at = mudtime;
+
+  req = d->http_request;
+
+  pe_info = make_pe_info("pe_info-http");
+
+  *(req->bp) = '\0';
+  pe_regs_setenv(pe_info->regvals, 0, req->path);
+  pe_regs_setenv(pe_info->regvals, 1, req->buff);
+
+  run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
+
+  d->player = NOTHING;
+  d->connected = CONN_SCREEN;
+
+  http_bounce_mud_url(d);
+
+  /* Fall through */
+finished:
+  d->conn_flags |= CONN_HTTP_CLOSE;
 }
 
 static bool

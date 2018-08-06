@@ -288,14 +288,22 @@ struct squeue {
 };
 
 #define HTTP_METHOD_LEN 16
+#define HTTP_CODE_LEN 0x100
+#define HTTP_BODY_LEN (BUFFER_LEN * 4)
 
 struct http_request {
   char method[HTTP_METHOD_LEN];  /**< GET/POST/PUT/DELETE/HEAD/etc */
-  char path[MAX_COMMAND_LEN]; /**< Varies by browser, but 2048 is IE max */
-  char buff[BUFFER_LEN];      /**< Headers + Body */
-  char *bp;                   /**< How much of fullbody has been read */
-  uint32_t state;             /**< Current state of request. */
-  int32_t content_length;     /**< Content-Length value. */
+  char path[MAX_COMMAND_LEN];    /**< Varies by browser, but 2048 is IE max */
+  char buff[BUFFER_LEN];         /**< Headers + Body */
+  char *bp;                      /**< bp for buff */
+  uint32_t state;                /**< Current state of request. */
+  int32_t content_length;        /**< Content-Length value. */
+
+  char code[HTTP_CODE_LEN];      /**< 200 OK, etc */
+  char headers[BUFFER_LEN];      /**< Response headers */
+  char *hp;                      /**< bp for headers */
+  char response[HTTP_BODY_LEN];  /**< Response body. @pemits, etc. */
+  uint32_t response_len;         /**< Length of response. */
 };
 
 typedef struct descriptor_data DESC;

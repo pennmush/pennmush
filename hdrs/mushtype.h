@@ -14,6 +14,8 @@
 #include <stdint.h>
 #endif
 
+#include "cJSON.h"
+
 #define NUMQ 36
 
 /** Math function floating-point number type */
@@ -334,7 +336,6 @@ enum json_type {
   JSON_OBJECT
 };
 
-typedef struct cJSON cJSON;
 typedef int (*gmcp_handler_func)(char *package, cJSON *data, char *msg,
                                  DESC *d);
 

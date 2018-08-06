@@ -279,11 +279,11 @@ void
 write_access_file(void)
 {
   FILE *fp;
-  char tmpf[BUFFER_LEN];
+  char *tmpf;
   struct access *ap;
   acsflag *c;
 
-  snprintf(tmpf, BUFFER_LEN, "%s.tmp", ACCESS_FILE);
+  tmpf = sqlite3_mprintf("%s.tmp", ACCESS_FILE);
   /* Be sure we have a file descriptor */
   release_fd();
   fp = fopen(tmpf, FOPEN_WRITE);
@@ -326,6 +326,7 @@ write_access_file(void)
     fclose(fp);
     rename_file(tmpf, ACCESS_FILE);
   }
+  sqlite3_free(tmpf);
   reserve_fd();
   return;
 }
@@ -615,30 +616,28 @@ do_list_access(dbref player)
 {
   struct access *ap;
   acsflag *c;
-  char flaglist[BUFFER_LEN];
   int rulenum = 0;
-  char *bp;
 
   for (ap = access_top; ap; ap = ap->next) {
     rulenum++;
     if (ap->can != ACS_SITELOCK) {
-      bp = flaglist;
+      char *line;
+      sqlite3_str *out = sqlite3_str_new(NULL);
       for (c = acslist; c->name; c++) {
-        if (c->flag == ACS_DEFAULT)
+        if (c->flag == ACS_DEFAULT) {
           continue;
+        }
         if (ap->can & c->flag) {
-          safe_chr(' ', flaglist, &bp);
-          safe_str(c->name, flaglist, &bp);
+          sqlite3_str_appendf(out, " %s", c->name);
         }
         if (c->toggle && (ap->cant & c->flag)) {
-          safe_chr(' ', flaglist, &bp);
-          safe_chr('!', flaglist, &bp);
-          safe_str(c->name, flaglist, &bp);
+          sqlite3_str_appendf(out, " !%s", c->name);
         }
       }
-      *bp = '\0';
+      line = sqlite3_str_finish(out);
       notify_format(player, T("%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"), rulenum,
-                    ap->host, unparse_dbref(ap->who), flaglist);
+                    ap->host, unparse_dbref(ap->who), line);
+      sqlite3_free(line);
       notify_format(player, T(" COMMENT: %s"), ap->comment ? ap->comment : "");
     } else {
       notify(
@@ -666,19 +665,21 @@ int
 parse_access_options(const char *opts, dbref *who, uint32_t *can,
                      uint32_t *cant, dbref player)
 {
-  char myopts[BUFFER_LEN];
+  char *myopts, *savedopts;
   char *p;
   char *w;
   acsflag *c;
   int found, totalfound, first;
 
-  if (!opts || !*opts)
+  if (!opts || !*opts) {
     return 0;
-  strcpy(myopts, opts);
+  }
+  savedopts = myopts = mush_strdup(opts, "string");
   totalfound = 0;
   first = 1;
-  if (who)
+  if (who) {
     *who = AMBIGUOUS;
+  }
   p = trim_space_sep(myopts, ' ');
   while ((w = split_token(&p, ' '))) {
     found = 0;
@@ -687,8 +688,9 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
       first = 0;
       if (is_strict_integer(w)) { /* We have a dbref */
         *who = parse_integer(w);
-        if (*who != AMBIGUOUS && !GoodObject(*who))
+        if (*who != AMBIGUOUS && !GoodObject(*who)) {
           *who = AMBIGUOUS;
+        }
         continue;
       }
     }
@@ -716,12 +718,14 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
         }
       }
     }
+    mush_free(savedopts, "string");
     /* At this point, we haven't matched any warnings. */
     if (!found) {
-      if (GoodObject(player))
+      if (GoodObject(player)) {
         notify_format(player, T("Unknown access option: %s"), w);
-      else
+      } else {
         do_log(LT_ERR, GOD, GOD, "Unknown access flag: %s", w);
+      }
     } else {
       totalfound += found;
     }

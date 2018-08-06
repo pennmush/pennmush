@@ -397,15 +397,15 @@ new_queue_entry(NEW_PE_INFO *pe_info)
 bool
 queue_event(dbref enactor, const char *event, const char *fmt, ...)
 {
-  char myfmt[BUFFER_LEN];
-  char buff[BUFFER_LEN * 4];
+  char *buff = NULL;
+  char *myfmt = NULL;
   va_list args;
-  char *s, *snext;
+  char *s;
   ATTR *a;
   PE_REGS *pe_regs;
   int argcount = 0;
   char *wenv[MAX_STACK_ARGS];
-  int i, len;
+  int i;
   MQUE *tmp;
   int pid;
 
@@ -441,39 +441,41 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   }
 
   /* We have an event to call. Yay! */
-  for (i = 0; i < MAX_STACK_ARGS; i++)
+  for (i = 0; i < MAX_STACK_ARGS; i++) {
     wenv[i] = NULL;
+  }
 
   /* Prep myfmt: Replace all commas with delim chars. */
-  snprintf(myfmt, BUFFER_LEN, "%s", fmt);
-  s = myfmt;
+  s = myfmt = mush_strdup(fmt, "string");
 
-  if (*s)
+  if (*s) {
     argcount++; /* At least one arg. */
+  }
   while ((s = strchr(s, ',')) != NULL) {
     *(s++) = EVENT_DELIM_CHAR;
     argcount++;
   }
 
   /* Maximum number of args available (%0-%9 stack) */
-  if (argcount > MAX_STACK_ARGS)
+  if (argcount > MAX_STACK_ARGS) {
     argcount = MAX_STACK_ARGS;
+  }
 
   if (argcount > 0) {
+    char *snext;
     /* Build the arguments. */
     va_start(args, fmt);
-    mush_vsnprintf(buff, sizeof buff, myfmt, args);
-    buff[(BUFFER_LEN * 4) - 1] = '\0';
+    buff = sqlite3_vmprintf(myfmt, args);
     va_end(args);
-
-    len = strlen(buff);
     for (i = 0, s = buff; i < argcount && s; i++, s = snext) {
       snext = strchr(s, EVENT_DELIM_CHAR);
+#if 0
       if ((snext ? (snext - s) : (len - (s - buff))) > BUFFER_LEN) {
         /* It's theoretically possible to have an arg that's longer than
          * BUFFER_LEN */
         s[BUFFER_LEN - 1] = '\0';
       }
+#endif
       if (snext) {
         *(snext++) = '\0';
       }
@@ -527,6 +529,11 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
   /* All good! */
   im_insert(queue_map, tmp->pid, tmp);
+
+  if (myfmt) {
+    mush_free(myfmt, "string");
+  }
+  sqlite3_free(buff);
 
   return 1;
 }
@@ -2280,14 +2287,15 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
       }
     } else {
       if (Owner(victim) != player) {
-        char owner[BUFFER_LEN];
-        char obj[BUFFER_LEN];
-        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
-        strcpy(obj, AName(victim, AN_SYS, NULL));
+        char *owner, *obj;
+        owner = mush_strdup(AName(Owner(victim), AN_SYS, NULL), "string");
+        obj = mush_strdup(AName(victim, AN_SYS, NULL), "string");
         notify_format(player, "%s: %s's %s(%s)", T("Halted"), owner, obj,
                       unparse_dbref(victim));
         notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"), obj,
                       unparse_dbref(victim), AName(player, AN_SYS, NULL));
+        mush_free(owner, "string");
+        mush_free(obj, "string");
       }
       if (arg2 && *arg2 == '\0')
         set_flag_internal(victim, "HALT");
@@ -2443,21 +2451,23 @@ do_restart_com(dbref player, const char *arg1)
                       T("All of your objects are being restarted by %s."),
                       AName(player, AN_SYS, NULL));
       } else {
-        char owner[BUFFER_LEN];
-        char obj[BUFFER_LEN];
-        strcpy(owner, AName(Owner(victim), AN_SYS, NULL));
-        strcpy(obj, AName(victim, AN_SYS, NULL));
+        char *owner, *obj;
+        owner = mush_strdup(AName(Owner(victim), AN_SYS, NULL), "string");
+        obj = mush_strdup(AName(victim, AN_SYS, NULL), "string");
         notify_format(player, T("Restarting: %s's %s(%s)"), owner, obj,
                       unparse_dbref(victim));
         notify_format(Owner(victim), T("Restarting: %s(%s), by %s"), obj,
                       unparse_dbref(victim), AName(player, AN_SYS, NULL));
+        mush_free(owner, "string");
+        mush_free(obj, "string");
       }
     } else {
-      if (victim == player)
+      if (victim == player) {
         notify(player, T("All of your objects are being restarted."));
-      else
+      } else {
         notify_format(player, T("Restarting: %s(%s)"),
                       AName(victim, AN_SYS, NULL), unparse_dbref(victim));
+      }
     }
     do_halt(player, "", victim);
     do_raw_restart(victim);

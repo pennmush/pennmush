@@ -1898,7 +1898,7 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_PROTOCOLS,
                    CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_DICT);
   curl_easy_setopt(handle, CURLOPT_URL, args_right[1]);
-  curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
+  curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
   curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);

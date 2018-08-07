@@ -213,6 +213,7 @@ bool test_telnet_wrapper(void *data);
 bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, char **q, char *qend);
 static void set_ttype(DESC *d, char *value);
+bool http_finished_wrapper(void *data);
 
 typedef void (*telnet_handler)(DESC *d, char *cmd, int len);
 #define TELNET_HANDLER(x)                                                      \
@@ -307,6 +308,7 @@ int restarting = 0; /**< Are we restarting the server after a reboot? */
 int maxd = 0;
 
 extern const unsigned char *tables;
+extern void pi_regs_normalize_key(char *lckey);
 
 volatile sig_atomic_t signal_shutdown_flag =
   0; /**< Have we caught a shutdown signal? */
@@ -2466,11 +2468,6 @@ test_telnet_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
 
-  if ((d->conn_flags & CONN_HTTP_REQUEST)) {
-    do_http_command(d);
-    return false;
-  }
-
   test_telnet(d);
   d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *) d, NULL);
   return false;
@@ -3251,6 +3248,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   /* Is it an HTTP connection? */
   if (d->conn_flags & CONN_HTTP_REQUEST) {
     process_http_input(d, tbuf1, got);
+    return;
   }
 
 #ifndef WITHOUT_WEBSOCKETS
@@ -3286,16 +3284,17 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         {
           if (process_http_start(d, d->raw_input)) {
             if ((qend - q) > 0) {
+              if (*q == '\r') q++;
+              if (*q == '\n') q++;
               process_http_input(d, q, qend - q);
             }
           }
+          d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
           return;
         }
-        is_first = false;
       } else {
         save_command(d, d->raw_input);
       }
-      is_first = false;
       p = d->raw_input;
       if (*q == '\r' && ((q + 1) < qend) && (*(q + 1) == '\n'))
         q++; /* For clients that work */
@@ -3570,6 +3569,9 @@ process_http_start(DESC *d, char *line)
   strncpy(req->code, "HTTP/1.1 200 OK", HTTP_CODE_LEN);
   strncpy(req->ctype, "Content-Type: text/plain", MAX_COMMAND_LEN);
 
+  if (d->conn_timer) sq_cancel(d->conn_timer);
+  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+
   return 1;
 
 bad_connection:
@@ -3578,27 +3580,45 @@ bad_connection:
   return 0;
 }
 
+bool
+http_finished_wrapper(void *data)
+{
+  DESC *d = (DESC *) data;
+  do_http_command(d);
+  return false;
+}
+
 static void
 process_http_input(DESC *d, char *buf, int len)
 {
   safe_strl(buf, len, d->http_request->buff, &(d->http_request->bp));
+
+  /* Reset the timer */
+  if (d->conn_timer) sq_cancel(d->conn_timer);
+  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
 }
 
 static void
 do_http_command(DESC *d)
 {
-  NEW_PE_INFO *pe_info;
+  NEW_PE_INFO *pe_info = NULL;
   struct http_request *req;
   char buff[MAX_COMMAND_LEN];
-  uint32_t clen;
+  char *bp;
+  uint32_t content_len;
+  char *body, *p, *line;
+  char *headername, *headerval;
 
   if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
       (d->conn_flags & CONN_HTTP_CLOSE) ||
       !(d->http_request)) {
-    d->conn_flags |= CONN_HTTP_CLOSE;
-    http_bounce_mud_url(d);
-    goto finished;
+    goto bad_connection;
   }
+
+  if (d->conn_timer) sq_cancel(d->conn_timer);
+  d->conn_timer = NULL;
+
+  /* Split headers and body. */
 
   /* 'invisibly' connect. */
   d->player = HTTP_HANDLER;
@@ -3610,11 +3630,52 @@ do_http_command(DESC *d)
   pe_info = make_pe_info("pe_info-http");
 
   *(req->bp) = '\0';
+
+  p = req->buff;
+  bp = buff;
+  while (*p && *p != '\r' && *p != '\n') {
+    line = p;
+    while (*p && *p != '\r' && *p != '\n') p++;
+    /* Chomp, \r, \n, or \r\n (should be \r\n). */
+    if (*p == '\r') *(p++) = '\0';
+    if (*p == '\n') *(p++) = '\0';
+    headername = line;
+    headerval = strstr(line, ": ");
+    if (!headerval) {
+      goto bad_connection;
+    }
+    *(headerval) = '\0';
+    headerval += 2; /* skip past ": " */
+    /* Normalize the header name into Q-reg acceptable name */
+    pi_regs_normalize_key(headername);
+    if (!PE_Setq(pe_info, headername, headerval)) {
+      /* Too many headers? Ignore */
+      continue;
+    }
+    if (bp > buff) {
+      safe_chr(' ', buff, &bp);
+    }
+    safe_str(headername, buff, &bp);
+  }
+
+  *bp = '\0';
+  PE_Setq(pe_info, "HEADERS", buff);
+  while (*p && isspace(*p)) p++;
+
+  if (*p) {
+    body = p;
+  } else {
+    body = "";
+  }
+
   pe_regs_setenv(pe_info->regvals, 0, req->path);
-  pe_regs_setenv(pe_info->regvals, 1, req->buff);
+  pe_regs_setenv(pe_info->regvals, 1, body);
 
   active_http_request = req;
   run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
+
+  /* pe_info is freed by the parser */
+  pe_info = NULL;
   active_http_request = NULL;
 
   d->player = NOTHING;
@@ -3629,19 +3690,21 @@ do_http_command(DESC *d)
     d->conn_flags &= ~CONN_HTML;
   }
 
+  content_len = req->rp - req->response;
+
   /* Now write out our response header, populated by @respond, then body. */
   queue_newwrite(d, req->code, strlen(req->code));
-  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", clen);
   queue_newwrite(d, req->headers, strlen(req->headers));
-
-  /* Finish off the headers with Content-Length */
-  clen = req->rp - req->response;
-  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", clen);
+  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", content_len);
   queue_newwrite(d, buff, strlen(buff));
 
-  queue_newwrite(d, req->response, clen);
-  /* Fall through */
-finished:
+  queue_newwrite(d, req->response, content_len);
+
+  d->conn_flags |= CONN_HTTP_CLOSE;
+  return;
+bad_connection:
+  http_bounce_mud_url(d);
+  if (pe_info) free_pe_info(pe_info);
   d->conn_flags |= CONN_HTTP_CLOSE;
 }
 

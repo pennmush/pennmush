@@ -24,12 +24,12 @@ static int WIN32_CDECL ptab_cmp(const void *, const void *);
 
 /** A ptab entry. */
 typedef struct ptab_entry {
-  void *data;           /**< pointer to data */
-  char key[BUFFER_LEN]; /**< the index key */
+  void *data; /**< pointer to data */
+  char key[]; /**< the index key */
 } ptab_entry;
 
 /** The memory usage of a ptab entry, not including data. */
-#define PTAB_SIZE (sizeof(struct ptab_entry) - BUFFER_LEN)
+#define PTAB_SIZE sizeof(struct ptab_entry)
 
 /** Initialize a ptab.
  * \param tab pointer to a ptab.
@@ -37,8 +37,9 @@ typedef struct ptab_entry {
 void
 ptab_init(PTAB *tab)
 {
-  if (!tab)
+  if (!tab) {
     return;
+  }
   tab->state = 0;
   tab->maxlen = tab->len = tab->current = 0;
   tab->tab = NULL;
@@ -50,12 +51,14 @@ ptab_init(PTAB *tab)
 void
 ptab_free(PTAB *tab)
 {
-  if (!tab)
+  if (!tab) {
     return;
+  }
   if (tab->tab) {
     size_t n;
-    for (n = 0; n < tab->len; n++)
+    for (n = 0; n < tab->len; n++) {
       mush_free(tab->tab[n], "ptab.entry");
+    }
     mush_free(tab->tab, "ptab");
   }
   tab->tab = NULL;
@@ -73,17 +76,19 @@ ptab_free(PTAB *tab)
 void *
 ptab_find(PTAB *tab, const char *key)
 {
-  if (!tab || !key || !*key || tab->state)
+  if (!tab || !key || !*key || tab->state) {
     return NULL;
+  }
 
   if (tab->len < 10) { /* Just do a linear search for small tables */
     size_t n;
     for (n = 0; n < tab->len; n++) {
       if (string_prefix(tab->tab[n]->key, key)) {
-        if (n + 1 < tab->len && string_prefix(tab->tab[n + 1]->key, key))
+        if (n + 1 < tab->len && string_prefix(tab->tab[n + 1]->key, key)) {
           return NULL;
-        else
+        } else {
           return tab->tab[n]->data;
+        }
       }
     }
   } else { /* Binary search of the index */
@@ -94,8 +99,9 @@ ptab_find(PTAB *tab, const char *key)
     while (1) {
       size_t n = (left + right) / 2;
 
-      if (left > right)
+      if (left > right) {
         break;
+      }
 
       cmp = strcasecmp(key, tab->tab[n]->key);
 
@@ -108,33 +114,42 @@ ptab_find(PTAB *tab, const char *key)
         if (string_prefix(tab->tab[n]->key, key)) {
           for (m = (int) n - 1; m >= 0; m--) {
             if (string_prefix(tab->tab[m]->key, key)) {
-              if (strcasecmp(tab->tab[m]->key, key) == 0)
+              if (strcasecmp(tab->tab[m]->key, key) == 0) {
                 return tab->tab[m]->data;
-            } else
+              }
+            } else {
               break;
+            }
           }
           /* Non-unique prefix */
-          if (m != (int) n - 1)
+          if (m != (int) n - 1) {
             return NULL;
+          }
           for (i = n + 1; i < tab->len; i++) {
             if (string_prefix(tab->tab[i]->key, key)) {
-              if (strcasecmp(tab->tab[i]->key, key) == 0)
+              if (strcasecmp(tab->tab[i]->key, key) == 0) {
                 return tab->tab[i]->data;
-            } else
+              }
+            } else {
               break;
+            }
           }
-          if (i != n + 1)
+          if (i != n + 1) {
             return NULL;
+          }
           return tab->tab[n]->data;
         }
-        if (left == right)
+        if (left == right) {
           break;
-        if (n == 0)
+        }
+        if (n == 0) {
           break;
+        }
         right = n - 1;
       } else { /* cmp > 0 */
-        if (left == right)
+        if (left == right) {
           break;
+        }
         left = n + 1;
       }
     }
@@ -153,10 +168,11 @@ void *
 ptab_find_exact(PTAB *tab, const char *key)
 {
   int n = ptab_find_exact_nun(tab, key);
-  if (n < 0)
+  if (n < 0) {
     return NULL;
-  else
+  } else {
     return tab->tab[n]->data;
+  }
 }
 
 static int
@@ -164,17 +180,19 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
 {
   size_t n;
 
-  if (!tab || !key || tab->state)
+  if (!tab || !key || tab->state) {
     return -1;
+  }
 
   if (tab->len < 10) { /* Just do a linear search for small tables */
     int cmp;
     for (n = 0; n < tab->len; n++) {
       cmp = strcasecmp(tab->tab[n]->key, key);
-      if (cmp == 0)
+      if (cmp == 0) {
         return (int) n;
-      else if (cmp > 0)
+      } else if (cmp > 0) {
         return -1;
+      }
     }
   } else { /* Binary search of the index */
     size_t left = 0;
@@ -184,21 +202,26 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
     while (1) {
       n = (left + right) / 2;
 
-      if (left > right)
+      if (left > right) {
         break;
+      }
 
       cmp = strcasecmp(key, tab->tab[n]->key);
 
-      if (cmp == 0)
+      if (cmp == 0) {
         return (int) n;
-      if (left == right)
+      }
+      if (left == right) {
         break;
+      }
       if (cmp < 0) {
-        if (n == 0)
+        if (n == 0) {
           break;
+        }
         right = n - 1;
-      } else /* cmp > 0 */
+      } else { /* cmp > 0 */
         left = n + 1;
+      }
     }
   }
   return -1;
@@ -208,16 +231,18 @@ static void
 delete_entry(PTAB *tab, size_t n)
 {
   mush_free(tab->tab[n], "ptab.entry");
-  if (tab->len == 0)
+  if (tab->len == 0) {
     return;
+  }
 
   /* If we're deleting the last item in the list, just decrement the length.
    *  Otherwise, we have to fill in the hole
    */
   if (n < tab->len - 1) {
     size_t i;
-    for (i = n + 1; i < tab->len; i++)
+    for (i = n + 1; i < tab->len; i++) {
       tab->tab[i - 1] = tab->tab[i];
+    }
   }
   tab->len--;
 }
@@ -230,8 +255,9 @@ void
 ptab_delete(PTAB *tab, const char *key)
 {
   int n = ptab_find_exact_nun(tab, key);
-  if (n >= 0)
+  if (n >= 0) {
     delete_entry(tab, (size_t) n);
+  }
   return;
 }
 
@@ -241,8 +267,9 @@ ptab_delete(PTAB *tab, const char *key)
 void
 ptab_start_inserts(PTAB *tab)
 {
-  if (!tab)
+  if (!tab) {
     return;
+  }
   tab->state = 1;
 }
 
@@ -262,14 +289,16 @@ void
 ptab_end_inserts(PTAB *tab)
 {
   struct ptab_entry **tmp;
-  if (!tab)
+  if (!tab) {
     return;
+  }
   tab->state = 0;
   qsort(tab->tab, tab->len, sizeof(struct ptab_entry *), ptab_cmp);
 
   tmp = realloc(tab->tab, (tab->len + 10) * sizeof(struct ptab_entry *));
-  if (!tmp)
+  if (!tmp) {
     return;
+  }
   tab->tab = tmp;
   tab->maxlen = tab->len + 10;
 }
@@ -281,18 +310,21 @@ ptab_grow(PTAB *tab)
   struct ptab_entry **tmp;
   size_t oldmaxlen;
 
-  if (!tab)
+  if (!tab) {
     return;
+  }
 
   oldmaxlen = tab->maxlen;
 
-  if (tab->maxlen == 0)
+  if (tab->maxlen == 0) {
     tab->maxlen = 200;
-  else
+  } else {
     tab->maxlen *= 2;
+  }
   tmp = realloc(tab->tab, tab->maxlen * sizeof(struct ptab_entry **));
-  if (tab->tab == NULL)
+  if (tab->tab == NULL) {
     add_check("ptab");
+  }
   if (!tmp) {
     tab->maxlen = oldmaxlen;
     return;
@@ -314,11 +346,13 @@ ptab_insert(PTAB *tab, const char *key, void *data)
 {
   size_t klen;
 
-  if (!tab || tab->state != 1)
+  if (!tab || tab->state != 1) {
     return;
+  }
 
-  if (tab->len >= tab->maxlen)
+  if (tab->len >= tab->maxlen) {
     ptab_grow(tab);
+  }
 
   klen = strlen(key) + 1;
 
@@ -340,8 +374,9 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
 {
   size_t len, n;
 
-  if (!tab)
+  if (!tab) {
     return;
+  }
 
   if (tab->state) {
     /* In the middle of a ptab_start_inserts()/ptab_end_inserts() block */
@@ -349,16 +384,18 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
     return;
   }
 
-  if (tab->len + 1 >= tab->maxlen)
+  if (tab->len + 1 >= tab->maxlen) {
     ptab_grow(tab);
+  }
 
   /* Figure out where to insert at */
   for (n = 0; n < tab->len; n++) {
     int m = strcasecmp(tab->tab[n]->key, key);
-    if (m == 0) /* Duplicate entry. */
+    if (m == 0) { /* Duplicate entry. */
       return;
-    else if (m > 0)
+    } else if (m > 0) {
       break;
+    }
   }
 
   /* Move everything after the location down one */
@@ -366,8 +403,9 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
     size_t m;
     for (m = tab->len - 1; m >= n; m--) {
       tab->tab[m + 1] = tab->tab[m];
-      if (m == 0)
+      if (m == 0) {
         break;
+      }
     }
   }
 
@@ -389,11 +427,13 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
 void *
 ptab_firstentry_new(PTAB *tab, const char **key)
 {
-  if (!tab || tab->len == 0)
+  if (!tab || tab->len == 0) {
     return NULL;
+  }
   tab->current = 1;
-  if (key)
+  if (key) {
     *key = tab->tab[0]->key;
+  }
   return tab->tab[0]->data;
 }
 
@@ -406,10 +446,12 @@ ptab_firstentry_new(PTAB *tab, const char **key)
 void *
 ptab_nextentry_new(PTAB *tab, const char **key)
 {
-  if (!tab || tab->current >= tab->len)
+  if (!tab || tab->current >= tab->len) {
     return NULL;
-  if (key)
+  }
+  if (key) {
     *key = tab->tab[tab->current]->key;
+  }
   return tab->tab[tab->current++]->data;
 }
 
@@ -437,8 +479,9 @@ ptab_stats(dbref player, PTAB *tab, const char *pname)
 
   m = sizeof(struct ptab_entry *) * tab->maxlen;
 
-  for (n = 0; n < tab->len; n++)
+  for (n = 0; n < tab->len; n++) {
     m += PTAB_SIZE + strlen(tab->tab[n]->key) + 1;
+  }
 
   notify_format(player, "%-10s %7d %14.3f %39d", pname, (int) tab->len,
                 log((double) tab->len), (int) m);

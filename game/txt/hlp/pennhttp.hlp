@@ -6,7 +6,7 @@
   the HTTP Handler player (@config http_handler), and executes an
   @include me/<method>. e.g: @include me/get.
 
-  %0 will be the pathname, e.g: "/", "/rest/path", etc.
+  %0 will be the pathname, e.g: "/", "/path/to", "/foo?bar=baz", etc.
 
   %1 will be the body of the request. If it's json, use json_query to deal with it.
      If it's form-encoded, look at help formdecode()
@@ -40,11 +40,12 @@
   HTTP connections to PennMUSH are limited to BUFFER_LEN in header and body size.
 
   Incoming headers will be set in Q-registers: %q<headers> contains a list of all
-  headers by name. Individual headers will be set in %q<hdr.[name]>, such as
-  %q<hdr.host> to obtain the value to the Host: header. Or %q<hdr.Cookie> for
-  %Cookies.
+  headers by name. Individual headers will be set in %q<hdr.[name]>, prefixed with hdr.
+  e.g: %q<hdr.host> to obtain the value to the Host: header. Or %q<hdr.Cookie>
+  for Cookies.
 
-  Multpile header lines will use the same q-register name, but %r-delimited.
+  Multpile header lines will be added to the same q-register name, but %r-delimited.
+  So two "Cookie:" lines becomes %q<Cookies> with two %r-delimited lines.
 
   HTTP Responses are limited to BUFFER_LEN in response size. Anything sent to
   the HTTPHandler player, whether it uses think or is @pemitted, is added to
@@ -68,7 +69,9 @@
 
   @respond <code> <text> changes the 1st line sent to the client (200 OK)
   @respond/type <text> replaces the current Content-Type header. (text/plain)
-  @respond/header <name>: <value> adds a new Header.
+  @respond/header <name>: <value> adds a new Header. This can't be undone, as
+                                  it's appended to a buffer. So you can add
+                                  multiple headers w/ same name.
 
   @respond commands are _not_ required to be run before any output is sent to
   the player. For Content-Length purposes, Penn buffers all output before the
@@ -119,7 +122,7 @@
               enforce anything at present except printability().
 
 & FORMDECODE()
-  formdecode(<string>, <paramname>[, <osep>])
+  formdecode(<string>[, <paramname>[, <osep>]])
 
   formdecode() is intended for use with the HTTP Handler. See "help http" for more.
 
@@ -127,9 +130,11 @@
   the contents of POST with form-urlencoded data. It searches for the parameter
   named <paramname> and returns with its decoded value.
 
+  If <paramname> is not given, formdecode() returns a list of parameter names.
+
   If there are multiple values, they will be separated by <osep> (default %b)
 
-  formdecode() requires libcurl (@HTTP) to be enabled.
+  formdecode() requires libcurl (@http) to be enabled.
 
   Examples:
 
@@ -142,27 +147,36 @@
 
   > say formdecode(v(formdata),like,^)
   You say, "potato^cheese"
+
+  > say formdecode(v(formdata),,,)
+  You say, "name,hobby,like,like"
 & HTTP EXAMPLES
   There are a number of HTTP Examples.
 
-  Example HTTP Handlers all assume the following:
+  Examples all assume the following:
 
   > @pcreate HTTPHandler=digest(md5,rand())
   > @config/set http_handler=pmatch(HTTPHandler)
 
-  For the basic lowest level examples: "help http simple"
+  For the basic examples: "help http simple"
 
   For using urls and url parameters: "help http get"
 
   For handling POSTs and POST data: "help http post"
-
-  For a basic, programmable REST interface: "help http REST"
 & HTTP SIMPLE
   The examples on this page are all simple, single-result handlers.
 
   Return the output of WHO to any GET request:
 
   > &GET *HTTPHandler=WHO
+
+  Whenever a POST is performed, say the path and body.
+
+  > &POST *HTTPHandler=say POST attempted at %0: %1
+
+& HTTP GET
+  GET requests are the simplest: There's no form data, and the path can be split
+  into the path (before(%0,?)) and parameters (after(%0,?))
 
   Return a JSON array of users to any GET request
 
@@ -171,13 +185,42 @@
   > &NAMES *HTTPHandler=u(list_to_json,map(#apply/name,mwho(),%b,^),^)
   > &GET *HTTPHandler=@respond/type application/json ; think u(names)
 
-  Whenever a POST is performed, say the path and body.
+  Check: http://yourmush:port/dbrefs
 
-  > &POST *HTTPHandler=say POST attempted at %0: %1
+  As above, but if path is "who". If it's "dbrefs", no names.
 
-& HTTP GET
-  These examples cover blah blah UPDATE ME
-& HTTP REST
-  Blah, HTTP REST implementation for mushcode TODO
+  > &GET`WHO *HTTPHandler=@respond/type application/json ; think u(names)
+  > &GET`DBREFS *HTTPHandler=@respond/type application/json ; think u(list_to_json,mwho(),%b)
+  > &GET *HTTPHandler=@break strmatch(%0,/who)=@include me/get`who ; @break strmatch(%0,/dbrefs)=@include me/get`dbrefs
+
+  Check: http://yourmush:port/dbrefs
+  Check: http://yourmush:port/who
+
+  Look at something, whose name is passed by ?name=... value
+
+  > &GET *HTTPHandler=look [formdecode(after(%0,?),name)]
+
+  Check: http://yourmush:port/look?name=here
+
 & HTTP POST
-  Blah, some examples of dealing with POST data for hooks (github, etc?)
+  Suppose you want a web hook for notifications from an extermal system.
+  HTTP via POST is ideal for that:
+
+  > &POST *HTTPHandler=@chat [formdecode(%1,channel)]=[formdecode(%1,msg)]
+
+  Check: Use a language or form to POST to http://yourmush:port/ with
+  values "channel" and "msg"
+
+  POST is often a good way to get a JSON blob as well.
+
+  > &POST *HTTPHandler=@chat [json_query(%1,extract,$.channel)]=[json_query(%1,extract,$.msg)]
+
+  Check: Same thing, but passing JSON as data.
+
+  Maybe you want to do either, depending on if the client is using JSON or not?
+
+  > &POST`JSON *HTTPHandler=@chat [json_query(%1,extract,$.channel)]=[json_query(%1,extract,$.msg)]
+  > &POST`FORM *HTTPHandler=@chat [formdecode(%1,channel)]=[formdecode(%1,msg)]
+  > &POST *HTTPHandler=@break strmatch(%q<hdr.content-type>,*json*)=@include me/post`json ; @include me/post`form
+
+  Check: Post with either form data OR json data!

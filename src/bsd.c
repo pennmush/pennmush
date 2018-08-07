@@ -3610,11 +3610,14 @@ do_http_command(DESC *d)
 {
   NEW_PE_INFO *pe_info = NULL;
   struct http_request *req;
-  char buff[MAX_COMMAND_LEN];
-  char *bp;
+  char headers[BUFFER_LEN];
+  char *hp;
+  char tmp[BUFFER_LEN];
+  char vals[BUFFER_LEN];
   uint32_t content_len;
   char *body, *p, *line;
   char *headername, *headerval;
+  const char *rval;
 
   if (d->conn_timer) sq_cancel(d->conn_timer);
   d->conn_timer = NULL;
@@ -3627,11 +3630,6 @@ do_http_command(DESC *d)
 
   /* Split headers and body. */
 
-  /* 'invisibly' connect. */
-  d->player = HTTP_HANDLER;
-  d->connected = CONN_PLAYER;
-  d->connected_at = mudtime;
-
   req = d->http_request;
 
   pe_info = make_pe_info("pe_info-http");
@@ -3639,7 +3637,7 @@ do_http_command(DESC *d)
   *(req->bp) = '\0';
 
   p = req->buff;
-  bp = buff;
+  hp = headers;
   while (*p && *p != '\r' && *p != '\n') {
     line = p;
     while (*p && *p != '\r' && *p != '\n') p++;
@@ -3655,18 +3653,28 @@ do_http_command(DESC *d)
     headerval += 2; /* skip past ": " */
     /* Normalize the header name into Q-reg acceptable name */
     pi_regs_normalize_key(headername);
-    if (!PE_Setq(pe_info, headername, headerval)) {
-      /* Too many headers? Ignore */
-      continue;
+    snprintf(tmp, BUFFER_LEN, "HDR.%s", headername);
+    rval = PE_Getq(pe_info, tmp);
+    if (rval && *rval) {
+      snprintf(vals, BUFFER_LEN, "%s\n%s", rval, headerval);
+      if (!PE_Setq(pe_info, tmp, vals)) {
+        /* Too many headers? Ignore */
+        continue;
+      }
+    } else {
+      if (!PE_Setq(pe_info, tmp, headerval)) {
+        /* Too many headers? Ignore */
+        continue;
+      }
+      if (hp > headers) {
+        safe_chr(' ', headers, &hp);
+      }
+      safe_str(headername, headers, &hp);
     }
-    if (bp > buff) {
-      safe_chr(' ', buff, &bp);
-    }
-    safe_str(headername, buff, &bp);
   }
 
-  *bp = '\0';
-  PE_Setq(pe_info, "HEADERS", buff);
+  *hp = '\0';
+  PE_Setq(pe_info, "HEADERS", headers);
   while (*p && isspace(*p)) p++;
 
   if (*p) {
@@ -3677,6 +3685,11 @@ do_http_command(DESC *d)
 
   pe_regs_setenv(pe_info->regvals, 0, req->path);
   pe_regs_setenv(pe_info->regvals, 1, body);
+
+  /* 'invisibly' connect. */
+  d->player = HTTP_HANDLER;
+  d->connected = CONN_PLAYER;
+  d->connected_at = mudtime;
 
   active_http_request = req;
   run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
@@ -3699,8 +3712,8 @@ do_http_command(DESC *d)
   queue_newwrite(d, req->ctype, strlen(req->ctype));
   queue_newwrite(d, "\r\n", 2);
   queue_newwrite(d, req->headers, strlen(req->headers));
-  snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", content_len);
-  queue_newwrite(d, buff, strlen(buff));
+  snprintf(tmp, BUFFER_LEN, "Content-Length: %d\r\n\r\n", content_len);
+  queue_newwrite(d, tmp, strlen(tmp));
 
   queue_newwrite(d, req->response, content_len);
 

@@ -2460,11 +2460,13 @@ FUNCTION(fun_formdecode)
   char *cur, *ptr;
   char pbuff[MAX_COMMAND_LEN];
   char *osep;
+  char *x;
   int plen;
   int outlen;
   int n;
   int count;
   CURL *handle = curl_easy_init();
+  bool list = false;
 
   count = 0;
   ptr = args[0];
@@ -2474,6 +2476,9 @@ FUNCTION(fun_formdecode)
     osep = args[2];
   } else {
     osep = " ";
+  }
+  if (nargs == 1 || (!args[1] || !*args[1])) {
+    list = true;
   }
   while (ptr && *ptr) {
     cur = ptr;
@@ -2489,12 +2494,24 @@ FUNCTION(fun_formdecode)
       }
     }
 
-    if (!strncmp(decoded, pbuff, plen)) {
+    if (list) {
+      x = strchr(decoded, '=');
+      if (x) {
+        *x = '\0';
+      }
       if (count) {
         safe_str(osep, buff, bp);
       }
-      safe_strl(decoded + plen, outlen - plen, buff, bp);
+      safe_str(decoded, buff, bp);
       count++;
+    } else {
+      if (!strncmp(decoded, pbuff, plen)) {
+        if (count) {
+          safe_str(osep, buff, bp);
+        }
+        safe_strl(decoded + plen, outlen - plen, buff, bp);
+        count++;
+      }
     }
     curl_free(decoded);
   }

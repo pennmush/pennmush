@@ -435,13 +435,7 @@ FUNCTION(fun_colors)
 #include "htmltab.c"
 
 /* ARGSUSED */
-FUNCTION(fun_html) {
-  if (!Wizard(executor) && !has_power_by_name(executor, "HTML", NOTYPE)) {
-    safe_str(e_perm, buff, bp);
-  } else {
-    safe_tag(args[0], buff, bp);
-  }
-}
+FUNCTION(fun_html) { safe_tag(args[0], buff, bp); }
 
 /* ARGSUSED */
 FUNCTION(fun_tag)

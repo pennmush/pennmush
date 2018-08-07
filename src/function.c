@@ -879,7 +879,7 @@ FUNTAB flist[] = {
   {"SQRT", fun_sqrt, 1, 1, FN_REG | FN_STRIPANSI},
   {"STDDEV", fun_stddev, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"TAN", fun_tan, 1, 2, FN_REG | FN_STRIPANSI},
-  {"HTML", fun_html, 1, 1, FN_REG | FN_WIZARD},
+  {"HTML", fun_html, 1, 1, FN_REG },
   {"TAG", fun_tag, 1, INT_MAX, FN_REG},
   {"ENDTAG", fun_endtag, 1, 1, FN_REG},
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},

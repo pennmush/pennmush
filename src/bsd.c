@@ -3289,7 +3289,6 @@ process_input_helper(DESC *d, char *tbuf1, int got)
               process_http_input(d, q, qend - q);
             }
           }
-          d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
           return;
         }
       } else {
@@ -3514,6 +3513,11 @@ process_http_start(DESC *d, char *line)
   struct http_request *req;
   char *c, *method, *path, *version;
 
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+
   if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
     goto bad_connection;
   }
@@ -3565,11 +3569,11 @@ process_http_start(DESC *d, char *line)
   strncpy(req->path, path, MAX_COMMAND_LEN - 1);
 
   d->conn_flags |= CONN_HTTP_REQUEST | CONN_HTTP_BUFFER;
+  d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
   /* Default for HTTP response */
   strncpy(req->code, "HTTP/1.1 200 OK", HTTP_CODE_LEN);
   strncpy(req->ctype, "Content-Type: text/plain", MAX_COMMAND_LEN);
 
-  if (d->conn_timer) sq_cancel(d->conn_timer);
   d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
 
   return 1;
@@ -3584,6 +3588,7 @@ bool
 http_finished_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
+  d->conn_timer = NULL;
   do_http_command(d);
   return false;
 }
@@ -3593,9 +3598,11 @@ process_http_input(DESC *d, char *buf, int len)
 {
   safe_strl(buf, len, d->http_request->buff, &(d->http_request->bp));
 
-  /* Reset the timer */
-  if (d->conn_timer) sq_cancel(d->conn_timer);
-  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+  /* Reset the timer, but only if there is one. */
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+  }
 }
 
 static void
@@ -3609,14 +3616,14 @@ do_http_command(DESC *d)
   char *body, *p, *line;
   char *headername, *headerval;
 
+  if (d->conn_timer) sq_cancel(d->conn_timer);
+  d->conn_timer = NULL;
+
   if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
       (d->conn_flags & CONN_HTTP_CLOSE) ||
       !(d->http_request)) {
     goto bad_connection;
   }
-
-  if (d->conn_timer) sq_cancel(d->conn_timer);
-  d->conn_timer = NULL;
 
   /* Split headers and body. */
 
@@ -3674,26 +3681,23 @@ do_http_command(DESC *d)
   active_http_request = req;
   run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
 
+  d->player = NOTHING;
+  d->connected = CONN_SCREEN;
+
   /* pe_info is freed by the parser */
   pe_info = NULL;
   active_http_request = NULL;
 
-  d->player = NOTHING;
-  d->connected = CONN_SCREEN;
-
   /* Clear the buffer flag so we stop hijacking output */
   d->conn_flags &= ~CONN_HTTP_BUFFER;
-
-  /* If 'html' is in our content type, then let's run our output through
-   * the HTML renderer. */
-  if (strstr(req->ctype, "html")) {
-    d->conn_flags &= ~CONN_HTML;
-  }
 
   content_len = req->rp - req->response;
 
   /* Now write out our response header, populated by @respond, then body. */
   queue_newwrite(d, req->code, strlen(req->code));
+  queue_newwrite(d, "\r\n", 2);
+  queue_newwrite(d, req->ctype, strlen(req->ctype));
+  queue_newwrite(d, "\r\n", 2);
   queue_newwrite(d, req->headers, strlen(req->headers));
   snprintf(buff, MAX_COMMAND_LEN, "Content-Length: %d\r\n\r\n", content_len);
   queue_newwrite(d, buff, strlen(buff));

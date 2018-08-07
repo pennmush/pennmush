@@ -35,7 +35,23 @@
   For some examples of using events, see 'help http examples'.
   For limiting HTTP using @sitelock, see 'help http sitelock'
 
+  Continued in: "help http3"
+& HTTP3
+  HTTP connections to PennMUSH are limited to BUFFER_LEN in header and body size.
+
+  Incoming headers will be set in Q-registers: %q<headers> contains a list of all
+  headers by name. Individual headers will be set in %q<hdr.[name]>, such as
+  %q<hdr.host> to obtain the value to the Host: header. Or %q<hdr.Cookie> for
+  %Cookies.
+
+  Multpile header lines will use the same q-register name, but %r-delimited.
+
+  HTTP Responses are limited to BUFFER_LEN in response size. Anything sent to
+  the HTTPHandler player, whether it uses think or is @pemitted, is added to
+  the response buffer.
+
   See also: @respond, formdecode(), json_query(), urlencode(), urldecode()
+
 & @RESPOND
   @respond <code> <text>
   @respond/type <content-type>
@@ -141,8 +157,6 @@
   For handling POSTs and POST data: "help http post"
 
   For a basic, programmable REST interface: "help http REST"
-
-  For an expandable http router: "help http router"
 & HTTP SIMPLE
   The examples on this page are all simple, single-result handlers.
 
@@ -163,4 +177,7 @@
 
 & HTTP GET
   These examples cover blah blah UPDATE ME
-
+& HTTP REST
+  Blah, HTTP REST implementation for mushcode TODO
+& HTTP POST
+  Blah, some examples of dealing with POST data for hooks (github, etc?)

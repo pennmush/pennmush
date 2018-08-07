@@ -12,6 +12,7 @@
 #include "mushtype.h"
 #include "conf.h"
 #include "boolexp.h"
+#include "sqlite3.h"
 
 /* I'm using a string for a lock type instead of a magic-cookie int for
  * several reasons:
@@ -85,7 +86,7 @@ void init_locks(void);
 void clone_locks(dbref player, dbref orig, dbref clone);
 void do_lset(dbref player, char *what, char *flags);
 void do_list_locks(dbref player, const char *arg, int lc, const char *label);
-void list_locks(char *buff, char **bp, const char *name);
+void list_locks(sqlite3_str *buff, const char *name);
 const char *lock_flags(lock_list *ll);
 const char *lock_flags_long(lock_list *ll);
 void list_lock_flags(char *buff, char **bp);

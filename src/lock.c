@@ -126,12 +126,11 @@ lock_compare(const void *a, const void *b)
 }
 
 /** Return a list of all available locks
- * \param buff the buffer
- * \param bp a pointer to the current position in the buffer.
+ * \param buff the string builder
  * \param name if not NULL, only show locks with this prefix
  */
 void
-list_locks(char *buff, char **bp, const char *name)
+list_locks(sqlite3_str *buff, const char *name)
 {
   lock_list **locks, *lk;
   bool first = 1;
@@ -153,9 +152,9 @@ list_locks(char *buff, char **bp, const char *name)
     if (first) {
       first = 0;
     } else {
-      safe_chr(' ', buff, bp);
+      sqlite3_str_appendchar(buff, 1, ' ');
     }
-    safe_str(strupper(locks[n]->type), buff, bp);
+    sqlite3_str_appendall(buff, strupper(locks[n]->type));
   }
 
   mush_free(locks, "lock.list");
@@ -173,11 +172,18 @@ list_locks(char *buff, char **bp, const char *name)
 void
 do_list_locks(dbref player, const char *arg, int lc, const char *label)
 {
-  char buff[BUFFER_LEN];
-  char *bp = buff;
-  list_locks(buff, &bp, arg);
-  *bp = '\0';
-  notify_format(player, "%s: %s", label, lc ? strlower(buff) : buff);
+  sqlite3_str *buff = sqlite3_str_new(NULL);
+  char *locks, *tmp;
+  list_locks(buff, arg);
+  locks = tmp = sqlite3_str_finish(buff);
+  if (lc) {
+    locks = strlower_a(tmp, "string");
+  }
+  notify_format(player, "%s: %s", label, locks);
+  if (lc) {
+    mush_free(locks, "string");
+  }
+  sqlite3_free(tmp);
 }
 
 /** Return a list of lock flag characters.
@@ -833,48 +839,44 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
           dbref loc)
 {
   const LOCKMSGINFO *lm;
-  char atr[BUFFER_LEN];
-  char oatr[BUFFER_LEN];
-  char aatr[BUFFER_LEN];
-  char realdef[BUFFER_LEN];
-  char *bp;
+  char *atr, *oatr, *aatr, *realdef;
+  int r;
 
-  if (def)
-    strcpy(realdef, def); /* Because a lot of default msgs use tprintf */
-  else
-    realdef[0] = '\0';
+  if (def) {
+    realdef = mush_strdup(def, "fail.message");
+  } else {
+    realdef = mush_malloc(1, "fail.message");
+    *realdef = '\0';
+  }
 
   /* Find the lock's failure attribute, if it's there */
   for (lm = lock_msgs; lm->type; lm++) {
-    if (!strcmp(lm->type, ltype))
+    if (!strcmp(lm->type, ltype)) {
       break;
+    }
   }
   if (lm->type) {
-    strcpy(atr, lm->failbase);
-    bp = oatr;
-    safe_format(oatr, &bp, "O%s", lm->failbase);
-    *bp = '\0';
-    strcpy(aatr, oatr);
-    aatr[0] = 'A';
+    atr = sqlite3_mprintf("%s", lm->failbase);
+    oatr = sqlite3_mprintf("O%s", lm->failbase);
+    aatr = sqlite3_mprintf("A%s", lm->failbase);
   } else {
     /* Oops, it's not in the table. So we construct them on these lines:
      * <LOCKNAME>_LOCK`<type>FAILURE
      */
-    bp = atr;
-    safe_format(atr, &bp, "%s_LOCK`FAILURE", ltype);
-    *bp = '\0';
-    bp = oatr;
-    safe_format(oatr, &bp, "%s_LOCK`OFAILURE", ltype);
-    *bp = '\0';
-    bp = aatr;
-    safe_format(aatr, &bp, "%s_LOCK`AFAILURE", ltype);
-    *bp = '\0';
+    atr = sqlite3_mprintf("%s_LOCK`FAILURE", ltype);
+    oatr = sqlite3_mprintf("%s_LOCK`OFAILURE", ltype);
+    aatr = sqlite3_mprintf("%s_LOCK`AFAILURE", ltype);
   }
   /* Now do the work */
   upcasestr(atr);
   upcasestr(oatr);
   upcasestr(aatr);
-  return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc, AN_SYS);
+  r = did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc, AN_SYS);
+  mush_free(realdef, "fail.message");
+  sqlite3_free(atr);
+  sqlite3_free(oatr);
+  sqlite3_free(aatr);
+  return r;
 }
 
 /** Determine if a lock is visual.

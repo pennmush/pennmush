@@ -43,12 +43,14 @@
 #include "htab.h"
 #include "notify.h"
 #include "strutil.h"
+#include "mymalloc.h"
+#include "charconv.h"
 
 struct log_stream;
 
 #define LOG_BUFFER_SIZE 1
 
-static char *quick_unparse(dbref object);
+static char *quick_unparse(dbref object) __attribute_malloc__;
 static void start_log(struct log_stream *);
 static void end_log(struct log_stream *, bool);
 static void check_log_size(struct log_stream *);
@@ -86,23 +88,20 @@ int unlock_file(FILE *);
 static char *
 quick_unparse(dbref object)
 {
-  static char buff[BUFFER_LEN], *bp;
-
+  char *buff = NULL;
   switch (object) {
   case NOTHING:
-    strcpy(buff, T("*NOTHING*"));
+    buff = sqlite3_mprintf("%s", T("*NOTHING*"));
     break;
   case AMBIGUOUS:
-    strcpy(buff, T("*VARIABLE*"));
+    buff = sqlite3_mprintf("%s", T("*VARIABLE*"));
     break;
   case HOME:
-    strcpy(buff, T("*HOME*"));
+    buff = sqlite3_mprintf("%s", T("*HOME*"));
     break;
   default:
-    bp = buff;
-    safe_format(buff, &bp, "%s(#%d%s)", Name(object), object,
-                unparse_flags(object, GOD));
-    *bp = '\0';
+    buff = sqlite3_mprintf("%s(#%d%s)", Name(object), object,
+                           unparse_flags(object, GOD));
   }
 
   return buff;
@@ -113,17 +112,17 @@ start_log(struct log_stream *log)
 {
   static int ht_initialized = 0;
   FILE *f;
-  char logbuff[BUFFER_LEN];
 
   if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
+    char *logbuff;
     if (!ht_initialized) {
       hashinit(&htab_logfiles, 8);
       ht_initialized = 1;
     }
-    if ((f = hashfind(strupper_r(log->filename, logbuff, sizeof logbuff),
-                      &htab_logfiles))) {
+    logbuff = strupper_a(log->filename, "log.name");
+    if ((f = hashfind(logbuff, &htab_logfiles))) {
       /* We've already opened this file for another log, so just use that
        * pointer */
       log->fp = f;
@@ -134,15 +133,16 @@ start_log(struct log_stream *log)
                 strerror(errno));
         log->fp = stderr;
       } else {
-        hashadd(strupper_r(log->filename, logbuff, sizeof logbuff), log->fp,
-                &htab_logfiles);
+        hashadd(logbuff, log->fp, &htab_logfiles);
         fputs("START OF LOG.\n", log->fp);
         fflush(log->fp);
       }
     }
+    mush_free(logbuff, "log.name");
   }
-  if (!log->buffer)
+  if (!log->buffer) {
     log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
+  }
 }
 
 /** Open all logfiles.
@@ -195,12 +195,13 @@ static void
 end_log(struct log_stream *log, bool keep_buffer)
 {
   FILE *fp;
-  char logbuff[BUFFER_LEN];
+  char *logbuff;
 
-  if (!log->filename || !*log->filename || !log->fp)
+  if (!log->filename || !*log->filename || !log->fp) {
     return;
-  if ((fp = hashfind(strupper_r(log->filename, logbuff, sizeof logbuff),
-                     &htab_logfiles))) {
+  }
+  logbuff = strupper_a(log->filename, "log.name");
+  if ((fp = hashfind(logbuff, &htab_logfiles))) {
     int n;
 
     lock_file(fp);
@@ -215,9 +216,9 @@ end_log(struct log_stream *log, bool keep_buffer)
       free_bufferq(log->buffer);
       log->buffer = NULL;
     }
-    hashdelete(strupper_r(log->filename, logbuff, sizeof logbuff),
-               &htab_logfiles);
+    hashdelete(logbuff, &htab_logfiles);
   }
+  mush_free(logbuff, "log.name");
 }
 
 /** Close all logfiles.
@@ -230,15 +231,14 @@ end_all_logs(void)
     end_log(logs + n, 0);
 }
 
-static void
-format_log_name(char *restrict buff, const char *restrict fname, int n,
-                bool comp)
+static char *
+format_log_name(const char *fname, int n, bool comp)
 {
-  char *bp = buff;
-  safe_format(buff, &bp, "%s.%d", fname, n);
-  if (comp && options.compresssuff[0])
-    safe_str(options.compresssuff, buff, &bp);
-  *bp = '\0';
+  char *name = sqlite3_mprintf("%s.%d", fname, n);
+  if (comp && options.compresssuff[0]) {
+    name = sqlite3_mprintf("%z%s", name, options.compresssuff);
+  }
+  return name;
 }
 
 static void
@@ -256,24 +256,25 @@ resize_log_trim(struct log_stream *log)
   struct stat s;
   long trim_at;
   int c;
-  char copyname[BUFFER_LEN];
-  char *bp;
+  char *copyname;
 
-  if (fstat(fileno(log->fp), &s) < 0)
+  if (fstat(fileno(log->fp), &s) < 0) {
     return; /* Oops */
+  }
 
   trim_at = floor(s.st_size * 0.9);
 
-  if (fseek(log->fp, trim_at, SEEK_SET) < 0)
+  if (fseek(log->fp, trim_at, SEEK_SET) < 0) {
     return;
+  }
 
-  while ((c = fgetc(log->fp)) != EOF)
-    if (c == '\n')
+  while ((c = fgetc(log->fp)) != EOF) {
+    if (c == '\n') {
       break;
+    }
+  }
 
-  bp = copyname;
-  safe_format(copyname, &bp, "%s.tmp", log->filename);
-  *bp = '\0';
+  copyname = sqlite3_mprintf("%s.tmp", log->filename);
 
   copy_file(log->fp, copyname, 0);
   trunc_file(log->fp);
@@ -281,6 +282,7 @@ resize_log_trim(struct log_stream *log)
   copy_to_file(copyname, log->fp);
   unlink(copyname);
   fflush(log->fp);
+  sqlite3_free(copyname);
 }
 
 static void
@@ -288,43 +290,48 @@ resize_log_rotate(struct log_stream *log)
 {
   /* Save current file as a copy, start new one. */
   int n;
-  char namea[BUFFER_LEN], nameb[BUFFER_LEN];
+  char *namea = NULL, *nameb = NULL;
 
   for (n = 1; 1; n += 1) {
-    format_log_name(namea, log->filename, n, 1);
+    namea = format_log_name(log->filename, n, 1);
     if (!file_exists(namea)) {
-      format_log_name(namea, log->filename, n, 0);
-      if (!file_exists(namea))
+      sqlite3_free(namea);
+      namea = format_log_name(log->filename, n, 0);
+      if (!file_exists(namea)) {
+        sqlite3_free(namea);
         break;
+      }
     }
+    sqlite3_free(namea);
   }
   for (; n > 1; n -= 1) {
     bool comp = 1;
-    format_log_name(namea, log->filename, n - 1, 1);
+    namea = format_log_name(log->filename, n - 1, 1);
     if (!file_exists(namea)) {
       comp = 0;
-      format_log_name(namea, log->filename, n - 1, 0);
+      sqlite3_free(namea);
+      namea = format_log_name(log->filename, n - 1, 0);
     }
-    format_log_name(nameb, log->filename, n, comp);
+    nameb = format_log_name(log->filename, n, comp);
     rename_file(namea, nameb);
   }
-
-  format_log_name(namea, log->filename, 1, 1);
+  sqlite3_free(namea);
+  namea = format_log_name(log->filename, 1, 1);
 
 #ifndef WIN32
   if (options.compressprog[0]) {
     /* This can be done better. */
     pid_t res;
-    char *np = nameb;
-    safe_format(nameb, &np, "%s < \"%s\" > \"%s\"", options.compressprog,
-                log->filename, namea);
-    *np = '\0';
+    sqlite3_free(nameb);
+    nameb = sqlite3_mprintf("%s < \"%s\" > \"%s\"", options.compressprog,
+                            log->filename, namea);
     res = system(nameb);
     if (res == -1 || (WIFEXITED(res) && WEXITSTATUS(res) != 0)) {
       /* Error with the compression attempt; try an uncompressed copy. */
       fprintf(stderr, "Unable to make compressed copy of \"%s\"\n",
               log->filename);
-      format_log_name(namea, log->filename, 1, 0);
+      sqlite3_free(namea);
+      namea = format_log_name(log->filename, 1, 0);
       if (copy_file(log->fp, namea, 1) < 0) {
         fprintf(stderr, "Unable to copy log file \"%s\" to \"%s\"\n",
                 log->filename, namea);
@@ -341,6 +348,8 @@ resize_log_rotate(struct log_stream *log)
   trunc_file(log->fp);
   fputs("*** LOG WAS ROTATED AFTER GROWING TOO LARGE ***\n", log->fp);
   fflush(log->fp);
+  sqlite3_free(namea);
+  sqlite3_free(nameb);
 }
 
 typedef void (*logwipe_fun)(struct log_stream *);
@@ -413,12 +422,13 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   struct log_stream *log;
   struct tm *ttm;
   char timebuf[18];
-  char tbuf1[BUFFER_LEN + 50];
+  char *tbuf1, *utf8;
   va_list args;
 
   va_start(args, fmt);
-  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  tbuf1 = sqlite3_vmprintf(fmt, args);
   va_end(args);
+  utf8 = latin1_to_utf8(tbuf1, -1, NULL, "utf8.string");
 
   time(&mudtime);
   ttm = localtime(&mudtime);
@@ -434,12 +444,14 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   }
 
   lock_file(log->fp);
-  fprintf(log->fp, "%s %s\n", timebuf, tbuf1);
+  fprintf(log->fp, "%s %s\n", timebuf, utf8);
   fflush(log->fp);
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
   queue_event(-1, log->event, "%s", tbuf1);
   check_log_size(log);
+  sqlite3_free(tbuf1);
+  mush_free(utf8, "utf8.string");
 }
 
 /** Log a message, with useful information.
@@ -454,16 +466,12 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
 void WIN32_CDECL
 do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
 {
-  /* tbuf1 had 50 extra chars because we might pass this function
-   * both a label string and a command which could be up to BUFFER_LEN
-   * in length - for example, when logging @forces
-   */
-  char tbuf1[BUFFER_LEN + 50];
+  char *tbuf1;
   va_list args;
-  char unp1[BUFFER_LEN], unp2[BUFFER_LEN];
+  char *unp1 = NULL, *unp2 = NULL;
 
   va_start(args, fmt);
-  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  tbuf1 = sqlite3_vmprintf(fmt, args);
   va_end(args);
 
   switch (logtype) {
@@ -472,22 +480,22 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
     break;
   case LT_CMD:
     if (!has_flag_by_name(player, "NO_LOG", NOTYPE)) {
-      strcpy(unp1, quick_unparse(player));
+      unp1 = quick_unparse(player);
       if (GoodObject(object)) {
-        strcpy(unp2, quick_unparse(object));
+        unp2 = quick_unparse(object);
         do_rawlog(logtype, "CMD: %s %s / %s: %s",
                   (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       } else {
-        strcpy(unp2, quick_unparse(Location(player)));
+        unp2 = quick_unparse(Location(player));
         do_rawlog(logtype, "CMD: %s %s in %s: %s",
                   (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       }
     }
     break;
   case LT_WIZ:
-    strcpy(unp1, quick_unparse(player));
+    unp1 = quick_unparse(player);
     if (GoodObject(object)) {
-      strcpy(unp2, quick_unparse(object));
+      unp2 = quick_unparse(object);
       do_rawlog(logtype, "WIZ: %s --> %s: %s", unp1, unp2, tbuf1);
     } else {
       do_rawlog(logtype, "WIZ: %s: %s", unp1, tbuf1);
@@ -504,8 +512,8 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
     break;
   case LT_HUH:
     if (!controls(player, Location(player))) {
-      strcpy(unp1, quick_unparse(player));
-      strcpy(unp2, quick_unparse(Location(player)));
+      unp1 = quick_unparse(player);
+      unp2 = quick_unparse(Location(player));
       do_rawlog(logtype, "HUH: %s in %s [%s]: %s", unp1, unp2,
                 (GoodObject(Location(player))) ? Name(Owner(Location(player)))
                                                : T("bad object"),
@@ -515,6 +523,9 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   default:
     do_rawlog(LT_ERR, "ERR: %s", tbuf1);
   }
+  sqlite3_free(unp1);
+  sqlite3_free(unp2);
+  sqlite3_free(tbuf1);
 }
 
 /** Recall lines from a log.

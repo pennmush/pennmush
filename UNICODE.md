@@ -107,10 +107,11 @@ a mandatory dependency, and the ICU one lacks a lot of PCRE features.
 UTF-8 Files
 ===========
 
-The following files are treated like they're encoded in UTF-8:
+The following files are encoded in UTF-8:
 
 * help files
 * names.cnf
+* log files
 
 The following will be:
 
@@ -124,6 +125,8 @@ done.
 
 Note: Many of these shouldn't require anything special to be done
 mush-side.
+
+All filenames should be ASCII on Windows.
 
 Converting files to UTF-8
 -------------------------

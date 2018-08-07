@@ -1,6 +1,6 @@
 % PennMUSH 1.8.7 Changes
 %
-% Last release: ??? ?? 20??
+% Last release: Aug 10 2018
 
 This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server.  Changes are reported in reverse chronological order (most recent first)
 
@@ -17,7 +17,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.7 patchlevel 0 ??? ?? 20??
+Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================
 
 Major Changes

@@ -50,6 +50,8 @@ sub start {
              "compress_program" => "",
              "uncompress_program" => "",
              "compress_suffix" => "",
+	     "mem_check" => "yes",
+	     "dict_file" => "",
              @_);
   copy("../game/alias.cnf", "testgame/alias.cnf");
   copy("../game/names.cnf", "testgame/names.cnf");

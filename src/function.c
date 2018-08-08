@@ -770,7 +770,7 @@ FUNTAB flist[] = {
   {"STRINSERT", fun_str_rep_or_ins, 3, -3, FN_REG},
   {"STRIPACCENTS", fun_stripaccents, 1, 2, FN_REG},
   {"STRIPANSI", fun_stripansi, 1, -1, FN_REG | FN_STRIPANSI},
-  {"STRLEN", fun_strlen, 1, -1, FN_REG},
+  {"STRLEN", fun_strlen, 1, -1, FN_REG | FN_STRIPANSI},
   {"STRMATCH", fun_strmatch, 2, 3, FN_REG},
   {"STRREPLACE", fun_str_rep_or_ins, 4, 4, FN_REG},
   {"SUB", fun_sub, 2, INT_MAX, FN_REG | FN_STRIPANSI},

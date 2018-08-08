@@ -277,7 +277,13 @@ FUNCTION(fun_alphamin)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_strlen) { safe_integer(ansi_strlen(args[0]), buff, bp); }
+FUNCTION(fun_strlen)
+{
+  /* TODO: Revise to use EGCs, not CPs, when support for them is added. */
+  char *utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  safe_integer(strlen_cp(utf8), buff, bp);
+  mush_free(utf8, "utf8.string");
+}
 
 /* ARGSUSED */
 FUNCTION(fun_mid)
@@ -535,23 +541,55 @@ FUNCTION(fun_pos)
     safe_str("#-1", buff, bp);
 }
 
+/* TODO: Revise to use EGCs, not CPs, when support for them is added. */
+struct lpos_data {
+  pennstr *buff;
+  UChar32 what;
+  bool first;
+  int count;
+};
+
+bool
+lpos_cb(UChar32 c, const char *s __attribute__((__unused__)),
+        int offset __attribute__((__unused__)),
+        int len __attribute__((__unused__)), void *vd)
+{
+  struct lpos_data *data = vd;
+
+  if (c == data->what) {
+    if (data->first) {
+      data->first = 0;
+    } else {
+      ps_safe_chr(data->buff, ' ');
+    }
+    ps_safe_integer(data->buff, data->count);
+  }
+  data->count += 1;
+  return 1;
+}
+
 /* ARGSUSED */
 FUNCTION(fun_lpos)
 {
-  char c = ' ';
-  int first = 1, n;
+  struct lpos_data data;
+  char *utf8;
 
-  if (args[1][0])
-    c = args[1][0];
+  data.buff = ps_new();
+  if (arglens[1] == 0) {
+    data.what = ' ';
+  } else {
+    utf8 = latin1_to_utf8(args[1], arglens[1], NULL, "utf8.string");
+    data.what = first_cp(utf8, NULL);
+    mush_free(utf8, "utf8.string");
+  }
+  data.first = 1;
+  data.count = 0;
 
-  for (n = 0; n < arglens[0]; n++)
-    if (args[0][n] == c) {
-      if (first)
-        first = 0;
-      else
-        safe_chr(' ', buff, bp);
-      safe_integer(n, buff, bp);
-    }
+  utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  for_each_cp(utf8, lpos_cb, &data);
+  mush_free(utf8, "utf8.string");
+  safe_pennstr(data.buff, buff, bp);
+  ps_free(data.buff);
 }
 
 /* ARGSUSED */
@@ -1498,8 +1536,8 @@ FUNCTION(fun_stripaccents)
   if (nargs == 2 && parse_boolean(args[1])) {
 #if 1
     int alen;
-    char *ascii = translate_latin1_to_ascii(args[0], arglens[0], &alen,
-                                            "string");
+    char *ascii =
+      translate_latin1_to_ascii(args[0], arglens[0], &alen, "string");
     safe_strl(ascii, alen, buff, bp);
     mush_free(ascii, "string");
 #else

@@ -13,3 +13,6 @@
 #include "punicode/utypes.h"
 #include "punicode/utf8.h"
 #endif
+
+int strlen_cp(const char *);
+UChar32 first_cp(const char *, int *);

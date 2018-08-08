@@ -67,6 +67,22 @@ char *mush_strndup_cp(const char *src, size_t len,
                       const char *check) __attribute_malloc__;
 int mush_vsnprintf(char *, size_t, const char *, va_list);
 
+/* UTF-8 aware utilty functions. */
+
+/** Callback function for use with for_each_cp.
+ *
+ * \param c the current Unicode codepoint. Negative if an invalid byte sequence.
+ * \param s the UTF-8 string being iterated
+ * \param offset the offset into s where the current codepoint is
+ * \param len the number of bytes of the current codepoint in s
+ * \param data user-supplied data pointer
+ * \return true to continue iteration, false to stop.
+ */
+typedef bool (*cp_callback)(UChar32 c, const char *s, int offset, int len,
+                            void *data);
+
+bool for_each_cp(const char *, cp_callback, void *);
+
 #ifndef HAVE_STRDUP
 char *strdup(const char *s) __attribute_malloc__;
 #endif

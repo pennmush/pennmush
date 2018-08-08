@@ -2387,3 +2387,59 @@ ps_free_str(char *s)
     sqlite3_free(s);
   }
 }
+
+/** Iterate over a UTF-8 string calling a function for each codepoint.
+ *
+ * \param s the UTF-8 string to walk.
+ * \param fun the callback function
+ * \param data user-supplied data pointer.
+ * \return true if the entire string was iterated, false if it quit early.
+ */
+bool
+for_each_cp(const char *s, cp_callback fun, void *data)
+{
+  UChar32 c;
+  int offset = 0, prev_offset = 0;
+
+  U8_NEXT(s, offset, -1, c);
+  while (c) {
+    if (!fun(c, s, prev_offset, offset - prev_offset, data)) {
+      return 0;
+    }
+    prev_offset = offset;
+    U8_NEXT(s, offset, -1, c);
+  }
+  return 1;
+}
+
+/** Return the number of codepoints in a UTF-8 string */
+int
+strlen_cp(const char *s)
+{
+  int n = 0;
+  int offset = 0;
+  while (s[offset]) {
+    n += 1;
+    U8_FWD_1(s, offset, -1);
+  }
+  return n;
+}
+
+/** Return the first codepoint in a UTF-8 string
+ *
+ * \param s the UTF-8 string
+ * \param len If non-NULL, set to the number of bytes taken up by the codepoint.
+ * \return the codepoint, negative on an invalid byte sequence.
+ */
+UChar32
+first_cp(const char *s, int *len)
+{
+  UChar32 c;
+  int offset = 0;
+
+  U8_NEXT(s, offset, -1, c);
+  if (len) {
+    *len = offset;
+  }
+  return c;
+}

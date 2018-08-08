@@ -1759,6 +1759,7 @@ paren_match(char *atext, char *buff, char **bptr, int key, int i_type,
         return 0;
       } else {
         atextptr = atext;
+        memset(buff, '\0', BUFFER_LEN);
         *bptr = buff;
         tcnt = 0;
         while (*atextptr && tcnt < i_pos) {

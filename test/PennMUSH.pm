@@ -78,7 +78,7 @@ sub start {
       }
       close $LOG;
     } continue {
-      sleep 5;
+      sleep ($self->{VALGRIND} ? 10 : 5);
     }
     die "Could not start game process properly; pid $child!\n";
   } elsif (defined($child)) {

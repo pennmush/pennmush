@@ -19,6 +19,7 @@
 #include "confmagic.h"
 #include "strutil.h"
 #include "notify.h"
+#include "mymalloc.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -165,6 +166,7 @@ complete_handshake(DESC *d)
    * response back from the server before switching, so we're probably OK.
    */
   d->conn_flags &= ~CONN_WEBSOCKETS_REQUEST;
+  d->conn_flags &= ~CONN_PROMPT_NEWLINES;
   d->conn_flags |= CONN_WEBSOCKETS | CONN_UTF8;
 
   d->checksum[0] = 4;
@@ -576,6 +578,33 @@ markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
   }
 
   return 0;
+}
+
+void
+send_websocket_object(DESC *d, cJSON *data)
+{
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  int error = 0;
+  
+  if (!d || !(d->conn_flags & CONN_WEBSOCKETS) || !data) {
+    return;
+  }
+  
+  if (cJSON_IsObject(data)) {
+    char *str = cJSON_PrintUnformatted(data);
+    error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0, WEBSOCKET_CHANNEL_JSON);
+    *bp = '\0';
+    if (str) {
+      free(str);
+    }
+  }
+  
+  if (!error) {
+    queue_newwrite(d, buff, strlen(buff));
+    process_output(d);
+    return;
+  }
 }
 
 static void

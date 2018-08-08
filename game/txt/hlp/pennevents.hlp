@@ -60,6 +60,7 @@
   signal: signal`usr1, signal`usr2
   player: player`create, player`connect, player`disconnect, player`inactivity
   socket: socket`connect, socket`disconnect, socket`loginfail, socket`createfail
+  http: http`blocked http`fail http`command
 & EVENT DB
   db`dbck: Run after the regular database consistency check.
   db`purge: Run after the regular purging of destroyed objects.
@@ -160,3 +161,14 @@ No arguments are passed to these events.
       Triggered when a player create attempt fails. <count> is the # of fails caused by this ip. If the failure is from an attempt to register a player via email, the error code of the mailer program is provided as <error>.
 
     A sitelock rule with deny_silent will not trigger socket`createfail or socket`createfail.
+& EVENT HTTP
+  http`blocked (former descriptor, ip, method, path, reason)
+      Triggered when an HTTP request is sitelocked !connect, by IP or path, 'reason' will describe if it's IP or path.
+
+  http`fail (former descriptor, ip, reason)
+      Triggered when an HTTP connection fails for poor formatting, malformed requests, or similar parsing errors. This can occur before method, path, etc are obtained, so is limited in information.
+
+  http`command (IP, method, path, resp_code, resp_content_type, resp_content_len)
+      Triggered after an HTTP command is executed.
+
+    A sitelock rule with deny_silent will not trigger http`blocked

@@ -3512,6 +3512,7 @@ process_http_start(DESC *d, char *line)
 {
   struct http_request *req;
   char *c, *method, *path, *version;
+  const char *reason = "Malformed Request";
 
   if (d->conn_timer) {
     sq_cancel(d->conn_timer);
@@ -3519,6 +3520,7 @@ process_http_start(DESC *d, char *line)
   }
 
   if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
+    reason = "No HTTPHandler";
     goto bad_connection;
   }
 
@@ -3546,10 +3548,16 @@ process_http_start(DESC *d, char *line)
   if (!*c) goto bad_connection;
 
   *(c++) = '\0';
-  if (strlen(path) >= MAX_COMMAND_LEN) goto bad_connection;
+  if (strlen(path) >= MAX_COMMAND_LEN) {
+    reason = "Path too long";
+    goto bad_connection;
+  }
 
   version = c;
-  if (strncmp(version, "HTTP/1.1", 8)) goto bad_connection;
+  if (strncmp(version, "HTTP/1.1", 8)) {
+    reason = "Invalid HTTP Version";
+    goto bad_connection;
+  }
 
   req = mush_malloc(sizeof(struct http_request), "http_request");
   memset(req, 0, sizeof *req);
@@ -3568,11 +3576,39 @@ process_http_start(DESC *d, char *line)
   strncpy(req->method, method, HTTP_METHOD_LEN - 1);
   strncpy(req->path, path, MAX_COMMAND_LEN - 1);
 
-  d->conn_flags |= CONN_HTTP_REQUEST | CONN_HTTP_BUFFER;
+  d->conn_flags |= CONN_HTTP_REQUEST;
   d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
   /* Default for HTTP response */
   strncpy(req->code, "HTTP/1.1 200 OK", HTTP_CODE_LEN);
   strncpy(req->ctype, "Content-Type: text/plain", MAX_COMMAND_LEN);
+
+  /* Check @sitelock for HTTP_Handler to see if this host is allowed to
+   * use HTTP. It is unlikely we'll have a Hostname by this point,
+   * so I'm declaring we'll just work with IPs.
+   */
+  if (!Site_Can_Connect(d->ip, HTTP_HANDLER)) {
+    if (!Deny_Silent_Site(d->ip, HTTP_HANDLER)) {
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
+                  d->descriptor, d->ip, req->method, req->path,
+                  "http: IP sitelocked !connect");
+    }
+    reason = NULL;
+    goto bad_connection;
+  }
+
+
+  /* Now that we have the path, let's check it for sitelock.
+   * Yes, I'm pretending path is a hostname! It works!
+   */
+  if (!Site_Can_Connect(req->path, HTTP_HANDLER)) {
+    if (!Deny_Silent_Site(req->path, HTTP_HANDLER)) {
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
+                  d->descriptor, d->ip, req->method, req->path,
+                  "http: path sitelocked !connect");
+    }
+    reason = NULL;
+    goto bad_connection;
+  }
 
   d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
 
@@ -3580,6 +3616,10 @@ process_http_start(DESC *d, char *line)
 
 bad_connection:
   http_bounce_mud_url(d);
+  if (reason) {
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
+                d->descriptor, d->ip, reason);
+  }
   d->conn_flags |= CONN_HTTP_CLOSE;
   return 0;
 }
@@ -3618,6 +3658,7 @@ do_http_command(DESC *d)
   char *body, *p, *line;
   char *headername, *headerval;
   const char *rval;
+  const char *reason = "Malformed Request";
 
   if (d->conn_timer) sq_cancel(d->conn_timer);
   d->conn_timer = NULL;
@@ -3625,6 +3666,7 @@ do_http_command(DESC *d)
   if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
       (d->conn_flags & CONN_HTTP_CLOSE) ||
       !(d->http_request)) {
+    reason = "Unknown Error";
     goto bad_connection;
   }
 
@@ -3647,6 +3689,7 @@ do_http_command(DESC *d)
     headername = line;
     headerval = strstr(line, ": ");
     if (!headerval) {
+      reason = "Malformed header";
       goto bad_connection;
     }
     *(headerval) = '\0';
@@ -3691,6 +3734,9 @@ do_http_command(DESC *d)
   d->connected = CONN_PLAYER;
   d->connected_at = mudtime;
 
+  /* Buffer all output that HTTP_HANDLER receives */
+  d->conn_flags |= CONN_HTTP_BUFFER;
+
   active_http_request = req;
   run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
 
@@ -3705,6 +3751,10 @@ do_http_command(DESC *d)
   d->conn_flags &= ~CONN_HTTP_BUFFER;
 
   content_len = req->rp - req->response;
+
+  queue_event(SYSEVENT, "HTTP`COMMAND", "%s,%s,%s,%s,%s,%ld,%d",
+              d->ip, req->method, req->path, req->code, req->ctype,
+              strlen(body), content_len);
 
   /* Now write out our response header, populated by @respond, then body. */
   queue_newwrite(d, req->code, strlen(req->code));
@@ -3721,6 +3771,10 @@ do_http_command(DESC *d)
   return;
 bad_connection:
   http_bounce_mud_url(d);
+  if (reason) {
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
+                d->descriptor, d->ip, reason);
+  }
   if (pe_info) free_pe_info(pe_info);
   d->conn_flags |= CONN_HTTP_CLOSE;
 }

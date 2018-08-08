@@ -135,6 +135,103 @@ int safe_accent(const char *restrict base, const char *restrict tmplate,
 /* Append a UChar32 to a sqlite3_str object */
 void sqlite3_str_appenduchar(sqlite3_str *str, UChar32 c);
 
+/* pennstr growable string builder. Currently a thin wrapper over
+   the sqlite3_str API */
+
+typedef sqlite3_str pennstr;
+
+pennstr *ps_new(void) __attribute_malloc__;
+void ps_free(pennstr *);
+char *ps_finish(pennstr *);
+void ps_free_str(char *);
+void ps_safe_number(pennstr *, NVAL);
+void ps_safe_format(pennstr *, const char *fmt, ...)
+  __attribute__((__format__(__printf__, 2, 3)));
+void ps_safe_strl_cp(pennstr *, const char *, int);
+
+/** Append a single ASCII character to a pennstr */
+static inline void
+ps_safe_chr(pennstr *ps, char c)
+{
+  sqlite3_str_appendchar(ps, 1, c);
+}
+
+/** Append N copies of an ASCII character to a pennstr */
+static inline void
+ps_safe_fill(pennstr *ps, char c, int n)
+{
+  sqlite3_str_appendchar(ps, n, c);
+}
+
+/** Append a single Unicode character to a pennstr */
+static inline void
+ps_safe_uchar(pennstr *ps, UChar32 c)
+{
+  sqlite3_str_appenduchar(ps, c);
+}
+
+/** Append a UTF-8 string to a pennstr */
+static inline void
+ps_safe_str(pennstr *ps, const char *s)
+{
+  /* Utf-8 string */
+  sqlite3_str_appendall(ps, s);
+}
+
+/** Append an integer to a pennstr */
+static inline void
+ps_safe_integer(pennstr *ps, sqlite3_int64 i)
+{
+  sqlite3_str_appendf(ps, "%lld", i);
+}
+
+/** Append an unsigned integer to a pennstr */
+static inline void
+ps_safe_uinteger(pennstr *ps, sqlite3_uint64 i)
+{
+  sqlite3_str_appendf(ps, "%llu", i);
+}
+
+/** Append a dbref to a pennstr */
+static inline void
+ps_safe_dbref(pennstr *ps, dbref d)
+{
+  sqlite3_str_appendf(ps, "#%d", d);
+}
+
+/** Return the current UTF-8 string managed by the pennstr. Any
+ * further ps_safe-XXX() functions called on this pennstr invalidate
+ * the pointer. */
+static inline const char *
+ps_str(pennstr *ps)
+{
+  return sqlite3_str_value(ps);
+}
+
+/** Return the current length of the pennstr string in bytes */
+static inline int
+ps_len(pennstr *ps)
+{
+  return sqlite3_str_length(ps);
+}
+
+/** Append a pennstr buffer to a UTF-8 BUFFER_LEN string.
+ *
+ * \return 0 on success, 1 on failure
+ */
+static inline int
+safe_pennstr(pennstr *ps, char *buff, char **bp)
+{
+  return safe_strl(ps_str(ps), ps_len(ps), buff, bp);
+}
+
+/** Reset the pennstr to an empty string */
+static inline void
+ps_reset(pennstr *ps)
+{
+  sqlite3_str_reset(ps);
+}
+
 char *mush_strncpy(char *restrict, const char *, size_t);
 
 char *replace_string(const char *restrict old, const char *restrict newbit,

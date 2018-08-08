@@ -1315,12 +1315,10 @@ FUNCTION(fun_list)
     safe_str(attribs, buff, bp);
     sqlite3_free(attribs);
   } else if (string_prefix("locks", args[0])) {
-    char *locks;
-    sqlite3_str *builder = sqlite3_str_new(NULL);
+    pennstr *builder = ps_new();
     list_locks(builder, NULL);
-    locks = sqlite3_str_finish(builder);
-    safe_str(locks, buff, bp);
-    sqlite3_free(locks);
+    safe_pennstr(builder, buff, bp);
+    ps_free(builder);
   } else if (string_prefix("flags", args[0])) {
     safe_str(list_all_flags("FLAG", "", executor, FLAG_LIST_NAMECHAR), buff,
              bp);

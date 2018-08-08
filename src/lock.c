@@ -130,7 +130,7 @@ lock_compare(const void *a, const void *b)
  * \param name if not NULL, only show locks with this prefix
  */
 void
-list_locks(sqlite3_str *buff, const char *name)
+list_locks(pennstr *buff, const char *name)
 {
   lock_list **locks, *lk;
   bool first = 1;
@@ -152,9 +152,9 @@ list_locks(sqlite3_str *buff, const char *name)
     if (first) {
       first = 0;
     } else {
-      sqlite3_str_appendchar(buff, 1, ' ');
+      ps_safe_chr(buff, ' ');
     }
-    sqlite3_str_appendall(buff, strupper(locks[n]->type));
+    ps_safe_str(buff, strupper(locks[n]->type));
   }
 
   mush_free(locks, "lock.list");
@@ -172,10 +172,10 @@ list_locks(sqlite3_str *buff, const char *name)
 void
 do_list_locks(dbref player, const char *arg, int lc, const char *label)
 {
-  sqlite3_str *buff = sqlite3_str_new(NULL);
+  pennstr *buff = ps_new();
   char *locks, *tmp;
   list_locks(buff, arg);
-  locks = tmp = sqlite3_str_finish(buff);
+  locks = tmp = ps_finish(buff);
   if (lc) {
     locks = strlower_a(tmp, "string");
   }
@@ -183,7 +183,7 @@ do_list_locks(dbref player, const char *arg, int lc, const char *label)
   if (lc) {
     mush_free(locks, "string");
   }
-  sqlite3_free(tmp);
+  ps_free_str(tmp);
 }
 
 /** Return a list of lock flag characters.

@@ -257,7 +257,7 @@ COMMAND(cmd_helpcmd)
       if (SUPPORT_PUEBLO) {
         notify(executor, close_tag("SAMP"));
       }
-      sqlite3_free(entries);
+      ps_free_str(entries);
       return;
     } else {
       char pattern[BUFFER_LEN], *pp, *sp;
@@ -1308,7 +1308,7 @@ entries_from_offset(help_file *h, int off)
 {
 
   sqlite3_stmt *indexer;
-  sqlite3_str *res;
+  pennstr *res;
   char *entries[3] = {NULL, NULL, NULL};
   int lens[3] = {0, 0, 0};
   int col = 0, status;
@@ -1343,7 +1343,7 @@ entries_from_offset(help_file *h, int off)
   sqlite3_bind_int(indexer, 2, off);
   sqlite3_bind_int(indexer, 3, ENTRIES_PER_PAGE);
 
-  res = sqlite3_str_new(help_db);
+  res = ps_new();
 
   while (1) {
     if (need_col0) {
@@ -1362,9 +1362,9 @@ entries_from_offset(help_file *h, int off)
     status = sqlite3_step(indexer);
     if (status != SQLITE_ROW) {
       if (col == 0) {
-        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
+        ps_safe_format(res, " %-76.76s\n", entries[0]);
       } else if (col == 1) {
-        sqlite3_str_appendf(res, " %-51.51s\n", entries[0]);
+        ps_safe_format(res, " %-51.51s\n", entries[0]);
       }
       break;
     }
@@ -1378,7 +1378,7 @@ entries_from_offset(help_file *h, int off)
 
     if (lens[0] > LONG_TOPIC) {
       if (lens[1] > LONG_TOPIC) {
-        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
+        ps_safe_format(res, " %-76.76s\n", entries[0]);
         mush_free(entries[0], "string");
         entries[0] = entries[1];
         lens[0] = lens[1];
@@ -1386,7 +1386,7 @@ entries_from_offset(help_file *h, int off)
         col = 1;
         need_col0 = 0;
       } else {
-        sqlite3_str_appendf(res, " %-51.51s %-25.25s\n", entries[0],
+        ps_safe_format(res, " %-51.51s %-25.25s\n", entries[0],
                             entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
@@ -1395,7 +1395,7 @@ entries_from_offset(help_file *h, int off)
         need_col0 = 1;
       }
     } else if (lens[1] > LONG_TOPIC) {
-      sqlite3_str_appendf(res, " %-25.25s %-51.51s\n", entries[0], entries[1]);
+      ps_safe_format(res, " %-25.25s %-51.51s\n", entries[0], entries[1]);
       mush_free(entries[0], "string");
       mush_free(entries[1], "string");
       entries[0] = entries[1] = NULL;
@@ -1404,7 +1404,7 @@ entries_from_offset(help_file *h, int off)
     } else {
       status = sqlite3_step(indexer);
       if (status != SQLITE_ROW) {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
+        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0],
                             entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
@@ -1419,7 +1419,7 @@ entries_from_offset(help_file *h, int off)
         lens[2] -= 1;
       }
       if (lens[2] > LONG_TOPIC) {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
+        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0],
                             entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
@@ -1428,7 +1428,7 @@ entries_from_offset(help_file *h, int off)
         col = 1;
         need_col0 = 0;
       } else {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
+        ps_safe_format(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
                             entries[1], entries[2]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
@@ -1443,14 +1443,14 @@ entries_from_offset(help_file *h, int off)
   /* There are 'pages' pages in total */
   if (off < pages) {
     if (pages == (off + 1)) {
-      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d", pages);
+      ps_safe_format(res, "\nFor more, see ENTRIES-%d", pages);
     } else if (pages > (off + 1)) {
-      sqlite3_str_appendf(res, "\nFor more, see ENTRIES-%d through %d", off + 1,
+      ps_safe_format(res, "\nFor more, see ENTRIES-%d through %d", off + 1,
                           pages);
     }
   }
 
-  return sqlite3_str_finish(res);
+  return ps_finish(res);
 }
 
 extern const unsigned char *tables;

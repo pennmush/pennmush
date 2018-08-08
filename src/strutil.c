@@ -36,6 +36,7 @@
 #include "pueblo.h"
 #include "charclass.h"
 #include "myutf8.h"
+#include "memcheck.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -2298,4 +2299,91 @@ sqlite3_str_appenduchar(sqlite3_str *str, UChar32 c)
 
   U8_APPEND_UNSAFE(cbuf, clen, c);
   sqlite3_str_append(str, cbuf, clen);
+}
+
+/* Exists solely for giving a maximum length to pennstr buffers */
+static sqlite3 *ps_db = NULL;
+
+/** Return a newly allocated pennstr */
+pennstr *
+ps_new(void)
+{
+  if (!ps_db) {
+    if (sqlite3_open_v2(":memory:", &ps_db,
+                        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                        NULL) == SQLITE_OK) {
+      /* Increase this later and/or make it a configure option */
+      sqlite3_limit(ps_db, SQLITE_LIMIT_LENGTH, BUFFER_LEN);
+    }
+  }
+
+  return sqlite3_str_new(ps_db);
+}
+
+/** Append a floating point number to a pennstr */
+void
+ps_safe_number(pennstr *ps, NVAL n)
+{
+  /* TODO: Improve me */
+  sqlite3_str_appendf(ps, "%s", unparse_number(n));
+}
+
+/** Applies printf-like formatting to its arguments and appends the
+ * result to a pennstr. The accepted format is slightly different from
+ * normal - see https://www.sqlite.org/printf.html for details. */
+void
+ps_safe_format(pennstr *ps, const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  sqlite3_str_vappendf(ps, fmt, args);
+  va_end(args);
+}
+
+/** Appends up to N codepoints from a valid UTF-8 string to the pennstr */
+void
+ps_safe_strl_cp(pennstr *ps, const char *s, int n)
+{
+  UChar32 c;
+  int offset = 0;
+
+  if (n <= 0) {
+    return;
+  }
+
+  do {
+    U8_NEXT(s, offset, -1, c);
+  } while (c && --n > 0);
+
+  sqlite3_str_append(ps, s, offset);
+}
+
+/** Free a pennstr */
+void
+ps_free(pennstr *ps)
+{
+  char *s = sqlite3_str_finish(ps);
+  sqlite3_free(s);
+}
+
+/** Free the pennstr and return its string. This string must be freed with
+ * ps_free_str() when done. */
+char *
+ps_finish(pennstr *ps)
+{
+  char *s = sqlite3_str_finish(ps);
+  if (s) {
+    ADD_CHECK("pennstring");
+  }
+  return s;
+}
+
+/** Free a string returned by ps_finish() */
+void
+ps_free_str(char *s)
+{
+  if (s) {
+    DEL_CHECK("pennstring");
+    sqlite3_free(s);
+  }
 }

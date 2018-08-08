@@ -109,6 +109,7 @@
 #include "connlog.h"
 #include "charclass.h"
 #include "cJSON.h"
+#include "memcheck.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -761,6 +762,8 @@ main(int argc, char **argv)
 #endif /* HAVE_GETRUSAGE */
 
   close_help_files();
+
+  log_mem_check();
 
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 

@@ -34,6 +34,7 @@
 #include "mypcre.h"
 #include "parse.h"
 #include "pueblo.h"
+#include "charconv.h"
 #include "charclass.h"
 #include "myutf8.h"
 #include "memcheck.h"
@@ -283,7 +284,7 @@ string_match(const char *src, const char *sub)
   return NULL;
 }
 
-/** Return an initial-cased version of a string in a static buffer.
+/** Return an initial-cased version of an ASCII/Latin-1 string in a static buffer.
  * \param s string to initial-case.
  * \return pointer to a static buffer containing the initial-cased version.
  */
@@ -299,12 +300,12 @@ strinitial(const char *s)
   }
   strcpy(buf1, s);
   for (p = buf1; *p; p++)
-    *p = DOWNCASE(*p);
-  buf1[0] = UPCASE(buf1[0]);
+    *p = uni_tolower(*p);
+  buf1[0] = uni_toupper(buf1[0]);
   return buf1;
 }
 
-/** Return an initial-cased version of a string in a caller supplied buffer.
+/** Return an initial-cased version of an ASCII/Latin-1 string in a caller supplied buffer.
  * \param s string to initial-case.
  * \param d destination buffer.
  * \parem len length of buffer.
@@ -321,19 +322,19 @@ strinitial_r(const char *restrict s, char *restrict d, size_t len)
   }
 
   if (*s) {
-    d[0] = toupper(*s);
+    d[0] = uni_toupper(*s);
     s += 1;
   }
 
   for (p = 1; *s && p < len - 1; p += 1, s += 1) {
-    d[p] = tolower(*s);
+    d[p] = uni_tolower(*s);
   }
   d[p] = '\0';
 
   return d;
 }
 
-/** Return an uppercased version of a string in a static buffer.
+/** Return an uppercased version of an ASCII/Latin1 string in a static buffer.
  * \param s string to uppercase.
  * \return pointer to a static buffer containing the uppercased version.
  */
@@ -349,11 +350,11 @@ strupper(const char *s)
   }
   mush_strncpy(buf1, s, BUFFER_LEN);
   for (p = buf1; *p; p++)
-    *p = UPCASE(*p);
+    *p = uni_toupper(*p);
   return buf1;
 }
 
-/** Return a lowercased version of a string in a static buffer.
+/** Return a lowercased version of an ASCII/Latin1 string in a static buffer.
  * \param s string to lowercase.
  * \return pointer to a static buffer containing the lowercased version.
  */
@@ -369,11 +370,11 @@ strlower(const char *s)
   }
   mush_strncpy(buf1, s, BUFFER_LEN);
   for (p = buf1; *p; p++)
-    *p = DOWNCASE(*p);
+    *p = uni_tolower(*p);
   return buf1;
 }
 
-/** Return an uppercased version of a string in a newly allocated buffer.
+/** Return an uppercased version of an ASCII/Latin1 string in a newly allocated buffer.
  * \param s string to uppercase.
  * \param name memcheck name.
  * \return pointer to a string containing the uppercased version.
@@ -387,14 +388,31 @@ strupper_a(const char *s, const char *name)
   len = strlen(s);
   o = out = mush_malloc(len + 1, name);
   for (; *s; s++) {
-    *o++ = toupper(*s);
+    *o++ = uni_toupper(*s);
   }
   *o = '\0';
 
   return out;
 }
 
-/** Return a lowercased version of a string in a newly allocated buffer.
+/** Return an uppercased version of a UTF-8 string in a newly allocated buffer.
+ * \param s string to uppercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+ustrupper_a(const char *s, const char *name)
+{
+#ifdef HAVE_ICU
+  return utf8_to_upper(s, -1, NULL, name);
+#else
+  char *out = mush_strdup(s, name);
+  uupcasestr(out);
+  return out;
+#endif
+}
+
+/** Return a lowercased version of an ASCII/UTF-8 string in a newly allocated buffer.
  * \param s string to lowercase.
  * \param name memcheck name.
  * \return pointer to a string containing the lowercased version.
@@ -408,14 +426,31 @@ strlower_a(const char *s, const char *name)
   len = strlen(s);
   o = out = mush_malloc(len + 1, name);
   for (; *s; s++) {
-    *o++ = tolower(*s);
+    *o++ = uni_tolower(*s);
   }
   *o = '\0';
 
   return out;
 }
 
-/** Return an uppercased version of a string in a caller-supplied buffer.
+/** Return an lowercased version of a UTF-8 string in a newly allocated buffer.
+ * \param s string to lowercase.
+ * \param name memcheck name.
+ * \return pointer to a string containing the uppercased version.
+ */
+char *
+ustrlower_a(const char *s, const char *name)
+{
+#ifdef HAVE_ICU
+  return utf8_to_lower(s, -1, NULL, name);
+#else
+  char *out = mush_strdup(s, name);
+  udowncasestr(out);
+  return out;
+#endif
+}
+
+/** Return an uppercased version of an ASCII/Latin1 string in a caller-supplied buffer.
  * \param s string to uppercase.
  * \param d destination buffer.
  * \parem len length of buffer.
@@ -434,14 +469,14 @@ strupper_r(const char *restrict s, char *restrict d, size_t len)
   }
 
   for (p = 0; *s && p < len - 1; p += 1, s += 1) {
-    d[p] = toupper(*s);
+    d[p] = uni_toupper(*s);
   }
   d[p] = '\0';
 
   return d;
 }
 
-/** Return a lowercased version of a string in a newly allocated buffer.
+/** Return a lowercased version of an ASCII/Latin1 string in a caller-supplied buffer.
  * \param s string to lowercase.
  * \param d destination buffer.
  * \parem len length of buffer.
@@ -467,7 +502,7 @@ strlower_r(const char *restrict s, char *restrict d, size_t len)
   return d;
 }
 
-/** Modify a string in-place to uppercase.
+/** Modify an ASCII/latin1 string in-place to uppercase.
  * \param s string to uppercase.
  * \return s, now modified to be all uppercase.
  */
@@ -476,9 +511,60 @@ upcasestr(char *s)
 {
   char *p;
   for (p = s; p && *p; p++)
-    *p = UPCASE(*p);
+    *p = uni_toupper(*p);
   return s;
 }
+
+static bool
+uupcasestr_cb(UChar32 c, char *s, int offset, int len,
+              void *data __attribute__((__unused__)))
+{
+  UChar32 u = uni_toupper(c);
+  if (U8_LENGTH(u) == len) {
+    U8_APPEND_UNSAFE(s, offset, u);
+  }
+  return 1;
+}
+
+/** Modify a UTF-8 string in-place to uppercase with straight CP-to-CP mapping.
+ * If the number of bytes of the uppercased CP is different than the one present
+ * in the string, skips it.
+ *
+ * \param s string to uppercase.
+ * \return s, now modified to be all uppercase.
+ */
+char *
+uupcasestr(char *s)
+{
+  for_each_cp(s, uupcasestr_cb, NULL);
+  return s;
+}
+
+static bool
+udowncasestr_cb(UChar32 c, char *s, int offset, int len,
+              void *data __attribute__((__unused__)))
+{
+  UChar32 u = uni_tolower(c);
+  if (U8_LENGTH(u) == len) {
+    U8_APPEND_UNSAFE(s, offset, u);
+  }
+  return 1;
+}
+
+/** Modify a UTF-8 string in-place to lowercase with straight CP-to-CP mapping.
+ * If the number of bytes of the lowercased CP is different than the one present
+ * in the string, skips it.
+ *
+ * \param s string to uppercase.
+ * \return s, now modified to be all uppercase.
+ */
+char *
+udowncasestr(char *s)
+{
+  for_each_cp(s, udowncasestr_cb, NULL);
+  return s;
+}
+
 
 /** Safely add an accented string to a buffer.
  * \param base base string to which accents are applied.
@@ -2396,7 +2482,7 @@ ps_free_str(char *s)
  * \return true if the entire string was iterated, false if it quit early.
  */
 bool
-for_each_cp(const char *s, cp_callback fun, void *data)
+for_each_cp(char *s, cp_callback fun, void *data)
 {
   UChar32 c;
   int offset = 0, prev_offset = 0;

@@ -51,13 +51,17 @@ bool string_prefixe(const char *restrict string, const char *restrict prefix);
 const char *string_match(const char *src, const char *sub);
 char *strupper(const char *s);
 char *strupper_a(const char *s, const char *name) __attribute_malloc__;
+char *ustrupper_a(const char *s, const char *name) __attribute_malloc__;
 char *strupper_r(const char *restrict s, char *restrict d, size_t len);
 char *strlower(const char *s);
 char *strlower_a(const char *s, const char *name) __attribute_malloc__;
+char *ustrlower_a(const char *s, const char *name) __attribute_malloc__;
 char *strlower_r(const char *restrict s, char *restrict d, size_t len);
 char *strinitial(const char *s) __attribute__((__deprecated__));
 char *strinitial_r(const char *restrict s, char *restrict d, size_t len);
 char *upcasestr(char *s);
+char *uupcasestr(char *s);
+char *udowncasestr(char *s);
 char *skip_space(const char *s);
 char *seek_char(const char *s, char c);
 char *seek_uchar(const char *s, UChar32 c);
@@ -78,10 +82,10 @@ int mush_vsnprintf(char *, size_t, const char *, va_list);
  * \param data user-supplied data pointer
  * \return true to continue iteration, false to stop.
  */
-typedef bool (*cp_callback)(UChar32 c, const char *s, int offset, int len,
+typedef bool (*cp_callback)(UChar32 c, char *s, int offset, int len,
                             void *data);
 
-bool for_each_cp(const char *, cp_callback, void *);
+bool for_each_cp(char *, cp_callback, void *);
 
 #ifndef HAVE_STRDUP
 char *strdup(const char *s) __attribute_malloc__;

@@ -550,7 +550,7 @@ struct lpos_data {
 };
 
 bool
-lpos_cb(UChar32 c, const char *s __attribute__((__unused__)),
+lpos_cb(UChar32 c, char *s __attribute__((__unused__)),
         int offset __attribute__((__unused__)),
         int len __attribute__((__unused__)), void *vd)
 {

@@ -797,7 +797,7 @@ safe_accent(const char *RESTRICT base, const char *RESTRICT tmplate, size_t len,
     default:
       c = base[n];
     }
-    if (char_isprint(c)) {
+    if (uni_isprint(c)) {
       if (safe_chr((char) c, buff, bp))
         return 1;
     } else {

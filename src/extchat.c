@@ -1873,7 +1873,7 @@ ok_channel_name(const char *n, CHAN *unique)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!char_isprint(*p) || *p == '|')
+    if (!uni_isprint(*p) || *p == '|')
       return NAME_INVALID;
   }
 

@@ -217,7 +217,7 @@ get_subject(MAIL *mp)
         *p = '\0';
         break;
       }
-      if (!char_isprint(*p)) {
+      if (!uni_isprint(*p)) {
         *p = ' ';
       }
     }

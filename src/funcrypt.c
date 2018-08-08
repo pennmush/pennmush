@@ -159,7 +159,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
         }
       }
       n = end;
-    } else if (printonly && !char_isprint(decoded[n]))
+    } else if (printonly && !uni_isprint(decoded[n]))
       decoded[n] = '?';
   }
   safe_strl((const char *) decoded, dlen, buff, bp);
@@ -218,7 +218,7 @@ decode_base64(char *encoded, int len, bool printonly, char *buff, char **bp)
             }
           }
           n = end;
-        } else if (printonly && !char_isprint(decoded[n]))
+        } else if (printonly && !uni_isprint(decoded[n]))
           decoded[n] = '?';
       }
       safe_strl(decoded, dlen, buff, bp);

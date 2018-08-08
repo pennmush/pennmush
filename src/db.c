@@ -886,7 +886,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     mush_strncpy(tbuf1, atr_value(list), sizeof tbuf1);
     /* get rid of unprintables and hard newlines */
     for (p = tbuf1; *p; p++) {
-      if (!char_isprint(*p) && !isspace(*p) && *p != TAG_START &&
+      if (!uni_isprint(*p) && !uni_isspace(*p) && *p != TAG_START &&
           *p != TAG_END && *p != ESC_CHAR && *p != BEEP_CHAR) {
         *p = '!';
         err = 1;

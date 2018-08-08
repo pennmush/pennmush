@@ -674,7 +674,7 @@ ok_name(const char *n, int is_exit)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!char_isprint(*p))
+    if (!uni_isprint(*p))
       return 0;
     if (ONLY_ASCII_NAMES && *p > 127)
       return 0;
@@ -927,7 +927,7 @@ ok_password(const char *password)
     return 0;
 
   for (scan = password; *scan; scan++) {
-    if (!(char_isprint(*scan) && !isspace(*scan))) {
+    if (!(uni_isprint(*scan) && !uni_isspace(*scan))) {
       return 0;
     }
     if (*scan == '=')

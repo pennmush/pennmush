@@ -511,6 +511,24 @@ main(int argc, char **argv)
   }
 #endif
 
+  {
+    int val = 0;
+    pcre_config(PCRE_CONFIG_UTF8, &val);
+    if (!val) {
+      fputs(
+        "PCRE was not compiled with mandatory UTF-8 support. Unable to run.\n",
+        stderr);
+      return 1;
+    }
+    pcre_config(PCRE_CONFIG_UNICODE_PROPERTIES, &val);
+    if (!val) {
+      fputs(
+        "PCRE was not compiled with mandatory UCP support. Unable to run.\n",
+        stderr);
+      return 1;
+    }
+  }
+
   /* read the configuration file */
   if (argc < 2) {
     fprintf(
@@ -2487,7 +2505,7 @@ save_command(DESC *d, char *command)
     if (latin1) {
       char *c;
       for (c = latin1; *c; c += 1) {
-        if (!char_isprint(*c)) {
+        if (!uni_isprint(*c)) {
           *c = '?';
         }
       }
@@ -2502,7 +2520,7 @@ save_command(DESC *d, char *command)
   } else {
     char *c;
     for (c = command; *c; c += 1) {
-      if (!char_isprint(*c)) {
+      if (!uni_isprint(*c)) {
         *c = '?';
       }
     }
@@ -5556,7 +5574,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
   dp = doing;
   WALK_ANSI_STRING(dp)
   {
-    if (!char_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
+    if (!uni_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';
     }

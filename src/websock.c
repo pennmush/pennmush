@@ -581,21 +581,23 @@ markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
 }
 
 void
-send_websocket_object(DESC *d, JSON *data)
+send_websocket_object(DESC *d, cJSON *data)
 {
   char buff[BUFFER_LEN];
   char *bp = buff;
   int error = 0;
   
-  if (!d || !(d->conn_flags & CONN_WEBSOCKETS) || !data)
+  if (!d || !(d->conn_flags & CONN_WEBSOCKETS) || !data) {
     return;
+  }
   
-  if (data->type == JSON_OBJECT) {
-    char *str = json_to_string(data, 0);
+  if (cJSON_IsObject(data)) {
+    char *str = cJSON_PrintUnformatted(data);
     error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0, WEBSOCKET_CHANNEL_JSON);
     *bp = '\0';
-    if (str)
-      mush_free(str, "json_str");
+    if (str) {
+      free(str);
+    }
   }
   
   if (!error) {

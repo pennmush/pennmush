@@ -38,7 +38,9 @@ The tools
 =========
 
 * PCRE. Usually comes with support for UTF-8 and Unicode character
-  classes. Mandatory dependency for Penn already.
+  classes. Mandatory dependency for Penn already. Now also mandatory
+  is UTF-8 and UCP support. As far as I know all OSes already do this
+  for their PCRE versions.
 * Sqlite3. Uses UTF-8 internally, has some functions for dealing with
   Unicode. Bundled with Penn already.
 * ICU. See below.
@@ -67,8 +69,8 @@ it's not really reliable. Lots of stuff in the standard library
 depends on locales too, and I'd like to be as consistent across
 different hosts and environments as possible.
 
-Penn Functions
-==============
+Penn Functions for UTF-8
+========================
 
 String Builders
 ---------------
@@ -76,33 +78,78 @@ String Builders
 ### Fixed-size strings ###
 
 Good old `BUFFER_LEN` long strings, manipulated by `safe_foo()`
-functions. `safe_chr()`, `safe_str()` and `safe_strl()` should only be
-used with ASCII strings. TODO: New `safe_uchar()` and `safe_utf8()`
-functions for adding Unicode characters and UTF-8 strings
-respectively. Used in old code.
+functions. `safe_uchar()` appends a Unicode codepoint in UTF-8 format.
 
 ### PennStrs ###
 
-TODO:
-
 Wrapper functions for Sqlite3 string builder functions, for making
 arbitrary-length strings. Similar set of functions as the current
-`safe_foo()` functions. Used in new code.
+`safe_foo()` functions. Use in new code over `BUFFER_LEN` strings.
 
 Character Classifications
 -------------------------
 
-* Ascii-only `isalpha()` etc.
+* `uni_isXXX()` functions are Unicode-aware versions of the ctype
+  `isXXX()` functions. Uses ICU classification routines, falling back
+  on PCRE regular expressions if not present.
+* `ascii_isXXX()` functions take any Unicode codepoint but only return
+  true for ones in ASCII range.
 
-* TODO: `uni_isalpha()` etc that are Unicode aware. Implementation
-wise, prefer ICU versions if available, if not fall back on PCRE
-regular expressions.
+Case Mapping
+------------
+
+Complicated by how in Unicode a differently cased codepoint can
+actually be turned into multiple codepoints from the original.
+
+* `uni_tolower()` and `uni_toupper()` do simple codepoint to codepoint
+  case mapping. Without ICU, they only work on ASCII letters.
+* `ascii_tolower()` and `ascii_toupper()` only work on ASCII,
+  returnining others unchanged.
+* `strupper_a()` and `strlower_a()` do full Unicode case mapping with
+  ICU. Without ICU, they only transform ASCII letters.
+* `uupcasestr()` and `udowncasestr()` do simple in-place mapping of
+  UTF-8 strings. Without ICU, they only transform ASCII letters. If a
+  mapped character takes more bytes to encode (Or fewer) than the
+  original, it's skipped.
+
+String comparison
+-----------------
+
+For case-sensitive comparision, `strcmp()` should work with UTF-8.
+
+For case-insensitive comparision:
+
+* `sqlite3_stricmp()` only does case folding of ASCII letters.
+* TODO: Generic Unicode-aware case insensitive comparision using ICU. Fall back on the sqlite3 function otherwise.
 
 Regular Expressions
 -------------------
 
 ICU has a regular expression package, but stick with PCRE as ICU isn't
 a mandatory dependency, and the ICU one lacks a lot of PCRE features.
+
+Iteration
+---------
+
+* `for_each_cp()` calls a function for each codepoint in the string.
+
+Miscellaneous
+-------------
+
+* `first_cp()` returns the first codepoint in a string.
+* `strlen_cp()` returns the number of codepoints in a string.
+
+UTF-8 aware versions of assorted other functions in
+*strutils.h*. Usually prefixed with a `u` over the ascii versions.
+
+Extended Grapheme Clusters
+--------------------------
+
+A single rendered character can be composed of multiple codepoints. It
+would be nice to make softcode functions treat a single EGC as a
+single character, instead of one codepoint as one character, for most
+cases.
+
 
 UTF-8 Files
 ===========

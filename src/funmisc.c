@@ -1905,19 +1905,19 @@ FUNCTION(fun_parenmatch)
       return;
     }
   }
-  atext = safe_atr_value(ap, "fun_paren_match_text");
+  atext = safe_atr_value(ap, "fun_parenmatch_atext");
 
   if (!atext) {
     return;
   }
   if (!*atext) {
-    mush_free(atext, "fun_paren_match_text");
+    mush_free(atext, "fun_parenmatch_atext");
     return;
   }
   /* String is too long to do anything with anwyay.  Just return it */
   if (strlen(atext) >= (BUFFER_LEN)) {
     safe_str(atext, buff, bp);
-    mush_free(atext, "fun_paren_match_text");
+    mush_free(atext, "fun_parenmatch_atext");
     return;
   }
   i_indent = 0;
@@ -1955,7 +1955,7 @@ FUNCTION(fun_parenmatch)
   tcnt = paren_match(atext, tbuff, &tbuffptr, -1, i_type, i_indent, i_extra);
 
   if (tcnt > 0) {
-    revatext = (char *) mush_malloc(BUFFER_LEN, "fun_parentmatch_rev");
+    revatext = (char *) mush_malloc(BUFFER_LEN, "fun_parenmatch_rev");
     memset(revatext, 0, BUFFER_LEN);
     revatextptr = revatext;
     atextptr = strip_escapes(atext);
@@ -1968,11 +1968,11 @@ FUNCTION(fun_parenmatch)
     tcnt = paren_match(atext, tbuff, &tbuffptr,
                        (tcnt > 0 ? ((int) strlen(atext) - tcnt) : (int) -1),
                        i_type, i_indent, i_extra);
-    mush_free(atext, "fun_paren_match_text");
+    mush_free(atext, "fun_parenmatch_atext");
     safe_str(tbuff, buff, bp);
-    mush_free(tbuff, "fun_parentmatch_tbuff");
+    mush_free(tbuff, "fun_parenmatch_tbuff");
   } else {
-    mush_free(atext, "fun_parenmatch_text");
+    mush_free(atext, "fun_parenmatch_atext");
     safe_str(tbuff, buff, bp);
     mush_free(tbuff, "fun_parenmatch_tbuff");
   }

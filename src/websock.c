@@ -581,23 +581,46 @@ markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
 }
 
 void
-send_websocket_object(DESC *d, cJSON *data)
+send_websocket_object(DESC *d, const char *header, cJSON *data)
 {
   char buff[BUFFER_LEN];
   char *bp = buff;
   int error = 0;
+  cJSON *hdr;
+  cJSON *ptr;
   
   if (!d || !(d->conn_flags & CONN_WEBSOCKETS) || !data) {
     return;
   }
   
   if (cJSON_IsObject(data)) {
-    char *str = cJSON_PrintUnformatted(data);
-    error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0, WEBSOCKET_CHANNEL_JSON);
-    *bp = '\0';
-    if (str) {
-      free(str);
+    ptr = data;
+  } else {
+    ptr = cJSON_CreateObject();
+
+    /* if json is valid, but not an object, we need to add it to the tmp object */
+    if (!cJSON_IsInvalid(data) && !cJSON_IsNull(data)) {
+
+      /* default to using header as the label, or "data" otherwise */
+      if (header && *header) {
+        cJSON_AddItemToObject(ptr, header, data);
+      } else {
+        cJSON_AddItemToObject(ptr, "data", data);
+      }
     }
+  }
+
+  /* if header is present, add it using the "gmcp" label */
+  if (header && *header) {
+    hdr = cJSON_CreateString(header);
+    cJSON_AddItemToObject(ptr, "gmcp", hdr);
+  }
+
+  char *str = cJSON_PrintUnformatted(ptr);
+  error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0, WEBSOCKET_CHANNEL_JSON);
+  *bp = '\0';
+  if (str) {
+    free(str);
   }
   
   if (!error) {

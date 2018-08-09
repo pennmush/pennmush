@@ -3015,7 +3015,7 @@ FUNCTION(fun_oob)
     if (d->player != who)
       continue;
     if (d->conn_flags & CONN_WEBSOCKETS) {
-      send_websocket_object(d, json);
+      send_websocket_object(d, args[1], json);
       i++;
     }
     if (d->conn_flags & CONN_GMCP) {

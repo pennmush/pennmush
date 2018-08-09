@@ -168,7 +168,7 @@ FUNCTION(fun_json_query)
     latin1 =
       utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
+      if (!uni_isprint(*c) && !uni_isspace(*c)) {
         *c = '?';
       }
     }
@@ -211,7 +211,7 @@ FUNCTION(fun_json_query)
         char *jstr = cJSON_PrintUnformatted(curr);
         char *latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
         for (c = latin1; *c; c += 1) {
-          if (!isprint(*c) && !isspace(*c)) {
+          if (!uni_isprint(*c) && !uni_isspace(*c)) {
             *c = '?';
           }
         }
@@ -251,7 +251,7 @@ FUNCTION(fun_json_query)
         int plen = sqlite3_column_bytes(op, 0);
         latin1 = utf8_to_latin1_us(p, plen, &len, 0, "json.string");
         for (c = latin1; *c; c += 1) {
-          if (!isprint(*c) && !isspace(*c)) {
+          if (!uni_isprint(*c) && !uni_isspace(*c)) {
             *c = '?';
           }
         }
@@ -392,7 +392,7 @@ FUNCTION(fun_json_mod)
       int plen = sqlite3_column_bytes(op, 0);
       latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
       for (c = latin1; *c; c += 1) {
-        if (!isprint(*c) && !isspace(*c)) {
+        if (!uni_isprint(*c) && !uni_isspace(*c)) {
           *c = '?';
         }
       }
@@ -510,7 +510,7 @@ json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
     ulen = sqlite3_column_bytes(json, 1);
     latin1 = utf8_to_latin1_us(utf8, ulen, &len, 0, "string");
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
+      if (!uni_isprint(*c) && !uni_isspace(*c)) {
         *c = '?';
       }
     }
@@ -528,7 +528,7 @@ json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
     char *latin1 = utf8_to_latin1(utf8, ulen, &len, 0, "string");
 
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
+      if (!uni_isprint(*c) && !uni_isspace(*c)) {
         *c = '?';
       }
     }
@@ -623,7 +623,7 @@ FUNCTION(fun_json)
     cJSON_Delete(arr);
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
+      if (!uni_isprint(*c) && !uni_isspace(*c)) {
         *c = '?';
       }
     }
@@ -655,7 +655,7 @@ FUNCTION(fun_json)
     cJSON_Delete(obj);
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
+      if (!uni_isprint(*c) && !uni_isspace(*c)) {
         *c = '?';
       }
     }

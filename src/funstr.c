@@ -135,22 +135,28 @@ init_pronouns(void)
 
 #undef SET_PRONOUN
 
+static bool
+isword_cb(UChar32 c, char *s __attribute__((__unused__)),
+          int offset __attribute__((__unused__)),
+          int len __attribute__((__unused__)),
+          void *data __attribute__((__unused__)))
+{
+  return uni_isalpha(c);
+}
+
 /* ARGSUSED */
 FUNCTION(fun_isword)
 {
   /* is every character a letter? */
-  char *p;
+  char *utf8;
+
   if (!args[0] || !*args[0]) {
     safe_chr('0', buff, bp);
     return;
   }
-  for (p = args[0]; *p; p++) {
-    if (!isalpha(*p)) {
-      safe_chr('0', buff, bp);
-      return;
-    }
-  }
-  safe_chr('1', buff, bp);
+  utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  safe_boolean(for_each_cp(utf8, isword_cb, NULL), buff, bp);
+  mush_free(utf8, "utf8.string");
 }
 
 /* ARGSUSED */
@@ -549,7 +555,7 @@ struct lpos_data {
   int count;
 };
 
-bool
+static bool
 lpos_cb(UChar32 c, char *s __attribute__((__unused__)),
         int offset __attribute__((__unused__)),
         int len __attribute__((__unused__)), void *vd)
@@ -1496,7 +1502,7 @@ FUNCTION(fun_ord)
 
   c = args[0][0];
 
-  if (u_isprint(c)) {
+  if (uni_isprint(c)) {
     safe_integer(c, buff, bp);
   } else {
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
@@ -1514,7 +1520,7 @@ FUNCTION(fun_chr)
   c = parse_integer(args[0]);
   if (c < 0 || c > UCHAR_MAX)
     safe_str(T("#-1 THIS ISN'T UNICODE"), buff, bp);
-  else if (u_isprint(c))
+  else if (uni_isprint(c))
     safe_chr(c, buff, bp);
   else
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
@@ -2484,7 +2490,7 @@ FUNCTION(fun_urldecode)
   decoded = curl_easy_unescape(handle, args[0], arglens[0], &outlen);
 
   for (n = 0; n < outlen; n += 1) {
-    if (!isprint(decoded[n])) {
+    if (!uni_isprint(decoded[n])) {
       decoded[n] = '?';
     }
   }

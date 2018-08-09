@@ -104,3 +104,13 @@ re_isalpha(UChar32 c)
   }
   return check_re(re, c);
 }
+
+bool
+re_ispunct(UChar32 c)
+{
+  static pcre *re = NULL;
+  if (!re) {
+    re = build_re("[[:punct:]]");
+  }
+  return check_re(re, c);
+}

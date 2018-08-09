@@ -15,7 +15,7 @@
    tests if available instead of relying on server locale. */
 
 /* Define for testing */
-#define USE_PCRE_CLASS
+// #define USE_PCRE_CLASS
 
 /* Unicode-aware character classification functions with a PCRE backend */
 bool re_isprint(UChar32 c);
@@ -25,9 +25,12 @@ bool re_isupper(UChar32 c);
 bool re_isdigit(UChar32 c);
 bool re_isalnum(UChar32 c);
 bool re_isalpha(UChar32 c);
+bool re_ispunct(UChar32 c);
 
 /* Unicode-aware character classification functions that use ICU and
    fall back to PCRE */
+
+// All converted
 static inline bool
 uni_isprint(UChar32 c)
 {
@@ -48,6 +51,7 @@ uni_isspace(UChar32 c)
 #endif
 }
 
+// Unused?
 static inline bool
 uni_islower(UChar32 c)
 {
@@ -58,6 +62,7 @@ uni_islower(UChar32 c)
 #endif
 }
 
+// All converted, some to ascii_
 static inline bool
 uni_isupper(UChar32 c)
 {
@@ -88,6 +93,7 @@ uni_isalnum(UChar32 c)
 #endif
 }
 
+// All converted
 static inline bool
 uni_isalpha(UChar32 c)
 {
@@ -95,6 +101,17 @@ uni_isalpha(UChar32 c)
   return re_isalpha(c);
 #else
   return u_hasBinaryProperty(c, UCHAR_ALPHABETIC);
+#endif
+}
+
+// All converted
+static inline bool
+uni_ispunct(UChar32 c)
+{
+#if !defined(HAVE_ICU) || defined(USE_PCRE_CLASS)
+  return re_ispunct(c);
+#else
+  return u_ispunct(c);
 #endif
 }
 
@@ -140,4 +157,10 @@ static inline bool
 ascii_isalpha(UChar32 c)
 {
   return c < 128 && isalpha(c);
+}
+
+static inline bool
+ascii_ispunct(UChar32 c)
+{
+  return c < 128 && ispunct(c);
 }

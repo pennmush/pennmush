@@ -329,7 +329,7 @@ do_mail_change_folder(dbref player, char *fld, char *newname)
       return;
     }
     for (p = newname; p && *p; p++) {
-      if (!isalnum(*p)) {
+      if (!uni_isalnum(*p)) {
         notify(player, T("MAIL: Illegal folder name"));
         return;
       }

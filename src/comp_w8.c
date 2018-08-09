@@ -241,7 +241,7 @@ word_text_compress(char const *s)
 
 /* break up input into words */
   while (*p) {
-    if (!isalnum(*p) || wordpos >= MAXWORDS) {
+    if (!ascii_isalnum(*p) || wordpos >= MAXWORDS) {
       if (wordpos) {
         word[wordpos++] = *p;   /* add trailing punctuation */
         output_previous_word();

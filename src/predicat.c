@@ -665,12 +665,14 @@ ok_name(const char *n, int is_exit)
 {
   const char *p, *name = n;
 
-  if (!name || !*name)
+  if (!name || !*name) {
     return 0;
+  }
 
   /* No leading spaces */
-  if (isspace(*name))
+  if (uni_isspace(*name)) {
     return 0;
+  }
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
@@ -684,12 +686,14 @@ ok_name(const char *n, int is_exit)
 
   /* No trailing spaces */
   p--;
-  if (isspace(*p))
+  if (uni_isspace(*p)) {
     return 0;
+  }
 
   /* Not too long */
-  if (strlen(name) >= OBJECT_NAME_LIMIT)
+  if (strlen(name) >= OBJECT_NAME_LIMIT) {
     return 0;
+  }
 
   /* No magic cookies */
   return (name && *name && *name != LOOKUP_TOKEN && *name != NUMBER_TOKEN &&
@@ -722,7 +726,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
 
   /* Make sure that the name contains legal characters only */
   for (scan = name; scan && *scan; scan++) {
-    if (isalnum(*scan))
+    if (uni_isalnum(*scan))
       continue;
     if (!strchr(good, *scan))
       return 0;
@@ -963,16 +967,16 @@ ok_command_name(const char *name)
   case '[':
     return 0;
   default:
-    if (!isupper(*name) && !isdigit(*name) && !ispunct(*name))
+    if (!ascii_isupper(*name) && !ascii_isdigit(*name) && !ascii_ispunct(*name))
       return 0;
   }
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
    */
   for (p = name; p && *p; p++) {
-    if (isspace(*p))
+    if (ascii_isspace(*p))
       return 0;
-    if (isupper(*p))
+    if (ascii_isupper(*p))
       cnt++;
   }
   if (!cnt)
@@ -1011,9 +1015,9 @@ ok_function_name(const char *name)
    * to find at least one uppercase alpha
    */
   for (p = name; p && *p; p++) {
-    if (isspace(*p) || !ascii_isprint(*p))
+    if (ascii_isspace(*p) || !ascii_isprint(*p))
       return 0;
-    if (isupper(*p))
+    if (ascii_isupper(*p))
       cnt++;
   }
   if (!cnt)
@@ -1052,7 +1056,8 @@ ok_tag_attribute(dbref player, const char *params)
       size_t n = q - p;
       /* Invalid params for non-priv'd. Turn to a hashtable if we ever
          get more? */
-      if (sqlite3_strnicmp(p, "SEND", n) == 0 || sqlite3_strnicmp(p, "XCH_CMD", n) == 0)
+      if (sqlite3_strnicmp(p, "SEND", n) == 0 ||
+          sqlite3_strnicmp(p, "XCH_CMD", n) == 0)
         return 0;
       while (*q && isspace(*q))
         q++;

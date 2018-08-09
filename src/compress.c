@@ -22,6 +22,7 @@
 #include "externs.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "charclass.h"
 
 typedef bool (*init_fn)(PENNFILE *);
 typedef char *(*comp_fn)(char const *);

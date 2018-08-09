@@ -3952,42 +3952,42 @@ parse_connect(const char *msg1, char *command, char *user, char *pass)
   char *p;
   const char *msg = msg1;
 
-  while (*msg && isspace(*msg))
+  while (*msg && uni_isspace(*msg))
     msg++;
   p = command;
-  while (*msg && isprint(*msg) && !isspace(*msg))
+  while (*msg && uni_isprint(*msg) && !uni_isspace(*msg))
     *p++ = *msg++;
   *p = '\0';
-  while (*msg && isspace(*msg))
+  while (*msg && uni_isspace(*msg))
     msg++;
   p = user;
 
   if (*msg == '\"') {
-    for (; *msg && ((*msg == '\"') || isspace(*msg)); msg++)
+    for (; *msg && ((*msg == '\"') || uni_isspace(*msg)); msg++)
       ;
     while (*msg && (*msg != '\"')) {
-      while (*msg && !isspace(*msg) && (*msg != '\"'))
+      while (*msg && !uni_isspace(*msg) && (*msg != '\"'))
         *p++ = *msg++;
       if (*msg == '\"') {
         msg++;
-        while (*msg && isspace(*msg))
+        while (*msg && uni_isspace(*msg))
           msg++;
         break;
       }
-      while (*msg && isspace(*msg))
+      while (*msg && uni_isspace(*msg))
         msg++;
       if (*msg && (*msg != '\"'))
         *p++ = ' ';
     }
   } else
-    while (*msg && isprint(*msg) && !isspace(*msg))
+    while (*msg && uni_isprint(*msg) && !uni_isspace(*msg))
       *p++ = *msg++;
 
   *p = '\0';
-  while (*msg && isspace(*msg))
+  while (*msg && uni_isspace(*msg))
     msg++;
   p = pass;
-  while (*msg && isprint(*msg) && !isspace(*msg))
+  while (*msg && uni_isprint(*msg) && !uni_isspace(*msg))
     *p++ = *msg++;
   *p = '\0';
 }

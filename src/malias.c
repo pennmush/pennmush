@@ -65,6 +65,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "charclass.h"
 
 #define MA_INC 3 /**< How many maliases we malloc at a time */
 
@@ -149,8 +150,9 @@ do_malias_create(dbref player, char *alias, char *tolist)
   good = "`$_-.'";
   /* Make sure that the name contains legal characters only */
   for (scan = alias + 1; scan && *scan; scan++) {
-    if (isalnum(*scan))
+    if (uni_isalnum(*scan)) {
       continue;
+    }
     if (!strchr(good, *scan)) {
       notify(player, T("MAIL: Invalid character in mail alias."));
       return;

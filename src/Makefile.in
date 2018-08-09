@@ -591,6 +591,7 @@ compress.o: ../hdrs/ptab.h
 compress.o: ../hdrs/chunk.h
 compress.o: ../hdrs/mypcre.h
 compress.o: ../hdrs/mymalloc.h
+compress.o: ../hdrs/charclass.h
 compress.o: comp_h.c
 compress.o: comp_w8.c
 conf.o: ../config.h
@@ -1557,6 +1558,7 @@ malias.o: ../hdrs/myutf8.h
 malias.o: ../hdrs/privtab.h
 malias.o: ../hdrs/pueblo.h
 malias.o: ../hdrs/strutil.h
+malias.o: ../hdrs/charclass.h
 markup.o: ../config.h
 markup.o: ../confmagic.h
 markup.o: ../options.h
@@ -1828,6 +1830,7 @@ parse.o: ../hdrs/memcheck.h
 parse.o: ../hdrs/mymalloc.h
 parse.o: ../hdrs/notify.h
 parse.o: ../hdrs/strutil.h
+parse.o: ../hdrs/charclass.h
 pcg_basic.o: ../config.h
 pcg_basic.o: ../confmagic.h
 pcg_basic.o: ../options.h
@@ -2216,6 +2219,7 @@ strutil.o: ../hdrs/mymalloc.h
 strutil.o: ../hdrs/parse.h
 strutil.o: ../hdrs/mushsql.h
 strutil.o: ../hdrs/pueblo.h
+strutil.o: ../hdrs/charconv.h
 strutil.o: ../hdrs/charclass.h
 tables.o: ../config.h
 tables.o: ../confmagic.h

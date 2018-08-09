@@ -39,6 +39,7 @@
 #include "notify.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "charclass.h"
 
 extern char *absp[], *obj[], *poss[], *subj[]; /* fundb.c */
 int global_fun_invocations;
@@ -2539,7 +2540,7 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
           safe_chr(savec, buff, bp);
         }
 
-        if (isupper(savec)) {
+        if (uni_isupper(savec)) {
           savepos = skip_leading_ansi(savepos, *bp);
           if (savepos) {
             *savepos = UPCASE(*savepos);

@@ -358,7 +358,7 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
   do {
     if (c != '_' && c != '-' && c != '!' && c != '.' && c != '>' && c != '<' &&
         c != '#' && /* these really should only be first time */
-        !isalnum(c)) {
+        !uni_isalnum(c)) {
       do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in label, line %d", c,
                 c, dbline);
       longjmp(db_err, 1);
@@ -420,7 +420,7 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
     /* non-quoted value */
     do {
       if (c != '_' && c != '-' && c != '!' && c != '.' && c != '#' &&
-          !isalnum(c) && !isspace(c)) {
+          !uni_isalnum(c) && !ascii_isspace(c)) {
         do_rawlog(LT_ERR, "DB: Illegal character '%c'(%d) in value, line %d", c,
                   c, dbline);
         longjmp(db_err, 1);

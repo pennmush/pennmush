@@ -1,6 +1,9 @@
 & HTTP
-  PennMUSH now supports HTTP requests reaching its mush port. It is very low level,
-  and a little tricky to understand.
+& http_handler
+& @config http_handler
+  If http_handler @config is a dbref of a valid player, PennMUSH will support
+  HTTP requests reaching its mush port. It is very low level, and a little
+  tricky to understand.
 
   When an HTTP request hits the PennMUSH port, PennMUSH invisibly logs in to
   the HTTP Handler player (@config http_handler), and executes an @include

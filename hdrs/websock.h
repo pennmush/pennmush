@@ -29,7 +29,7 @@ void to_websocket_frame(const char **bp, int *np, char channel);
 
 int markup_websocket(char *buff, char **bp, char *data, int datalen, char *alt,
                      int altlen, char channel);
-void send_websocket_object(DESC *d, cJSON *data);
+void send_websocket_object(DESC *d, const char *header, cJSON *data);
 
 FUNCTION_PROTO(fun_websocket_json);
 FUNCTION_PROTO(fun_websocket_html);

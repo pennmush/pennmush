@@ -3,8 +3,13 @@
   and a little tricky to understand.
 
   When an HTTP request hits the PennMUSH port, PennMUSH invisibly logs in to
-  the HTTP Handler player (@config http_handler), and executes an
-  @include me/<method>. e.g: @include me/get.
+  the HTTP Handler player (@config http_handler), and executes an @include
+  me/<method>. e.g: @include me/get.
+  
+  Immediately when the @include finishes, the http request is complete. Any
+  queued entries (such as @wait, $-commands, etc) are not going to be sent to
+  the HTTP client - you'll need to code using @include, /inline switches, and
+  the like.
 
   %0 will be the pathname, e.g: "/", "/path/to", "/foo?bar=baz", etc.
 

@@ -3513,6 +3513,7 @@ process_http_start(DESC *d, char *line)
   struct http_request *req;
   char *c, *method, *path, *version;
   const char *reason = "Malformed Request";
+  char buff[BUFFER_LEN];
 
   if (d->conn_timer) {
     sq_cancel(d->conn_timer);
@@ -3600,8 +3601,9 @@ process_http_start(DESC *d, char *line)
   /* Now that we have the path, let's check it for sitelock.
    * Yes, I'm pretending path is a hostname! It works!
    */
-  if (!Site_Can_Connect(req->path, HTTP_HANDLER)) {
-    if (!Deny_Silent_Site(req->path, HTTP_HANDLER)) {
+  snprintf(buff, BUFFER_LEN, "%s`%s`%s", d->ip, req->method, req->path);
+  if (!Site_Can_Connect(buff, HTTP_HANDLER)) {
+    if (!Deny_Silent_Site(buff, HTTP_HANDLER)) {
       queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
                   d->descriptor, d->ip, req->method, req->path,
                   "http: path sitelocked !connect");

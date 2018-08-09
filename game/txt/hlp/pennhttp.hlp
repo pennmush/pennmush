@@ -32,8 +32,9 @@
   By default, PennMUSH will respond with a 404 NOT FOUND. You will need to
   use @respond to control what is sent to the client.
 
-  For some examples of using events, see 'help http examples'.
+  For some examples of using HTTP, see 'help http examples'.
   For limiting HTTP using @sitelock, see 'help http sitelock'
+  For HTTP events sent to Event Handler for monitoring, see 'help event http'
 
   Continued in: "help http3"
 & HTTP3
@@ -228,11 +229,13 @@
   You can configure what paths and IPs you want to limit access to via @sitelock.
 
   HTTP Requests will check @sitelock for IP restrictions and path restrictions
-  for The config(http_handler) player. Right now, we don't resolve hosts before
+  for the config(http_handler) player. Right now, we don't resolve hosts before
   HTTP connections are handled due to the time delay, but that may be an option
   in the future.
 
-  Both paths and IPs check for "connect" option.
+  For path restrictions, @sitelock checks the pattern "<IP>`<METHOD>`<PATH"
+
+  Both IP and the "IP`Method`Path" approach check for "connect" option.
 
   Examples:
 
@@ -242,6 +245,12 @@
   Permit 12.34.56.78 to access ALL of HTTP, but block everybody else from
   accessing /admin/ and its subpages
   > @sitelock 12.34.56.78=connect,[config(http_handler)]
-  > @sitelock /admin/*=!connect,[config(http_handler)]
+  > @sitelock *`*`/admin/*=!connect,[config(http_handler)]
+
+  Allow 12.34.56.78 to POST to /admin/*, allow POSTs to /do/* from anywhere,
+  but prevent all other POSTs.
+  > @sitelock 12.34.56.78`POST`/admin/*=connect,[config(http_handler)]
+  > @sitelock *`POST`/do/*=connect,[config(http_handler)]
+  > @sitelock *`POST`*=!connect,[config(http_handler)]
 
   Like all @sitelock commands - earlier rules take precedence over later rules

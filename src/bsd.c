@@ -2225,7 +2225,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
-  d->connlog_id = connlog_connection(ip, addr);
+  d->connlog_id = connlog_connection(ip, addr, is_ssl_desc(d));
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;

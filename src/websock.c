@@ -20,6 +20,7 @@
 #include "strutil.h"
 #include "notify.h"
 #include "mymalloc.h"
+#include "connlog.h"
 
 #ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
@@ -170,6 +171,8 @@ complete_handshake(DESC *d)
   d->conn_flags |= CONN_WEBSOCKETS | CONN_UTF8;
 
   d->checksum[0] = 4;
+
+  connlog_set_websocket(d->connlog_id);
 
   do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Websocket mode.", d->descriptor,
             d->addr, d->ip);
@@ -589,11 +592,11 @@ send_websocket_object(DESC *d, const char *header, cJSON *data)
   int must_free_ptr = 0;
   cJSON *hdr = NULL;
   cJSON *ptr;
-  
+
   if (!d || !(d->conn_flags & CONN_WEBSOCKETS) || !data) {
     return;
   }
-  
+
   if (cJSON_IsObject(data)) {
     ptr = data;
   } else {
@@ -604,7 +607,8 @@ send_websocket_object(DESC *d, const char *header, cJSON *data)
     }
     must_free_ptr = 1;
 
-    /* if json is valid, but not an object, we need to add it to the tmp object */
+    /* if json is valid, but not an object, we need to add it to the tmp object
+     */
     if (!cJSON_IsInvalid(data) && !cJSON_IsNull(data)) {
 
       /* default to using header as the label, or "data" otherwise */
@@ -623,18 +627,19 @@ send_websocket_object(DESC *d, const char *header, cJSON *data)
   }
 
   char *str = cJSON_PrintUnformatted(ptr);
-  
+
   /* check to see if we need to delete the tmp object */
   if (must_free_ptr) {
     cJSON_Delete(ptr);
   }
-  
-  error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0, WEBSOCKET_CHANNEL_JSON);
+
+  error = markup_websocket(buff, &bp, str, strlen(str), NULL, 0,
+                           WEBSOCKET_CHANNEL_JSON);
   *bp = '\0';
   if (str) {
     free(str);
   }
-  
+
   if (!error) {
     queue_newwrite(d, buff, strlen(buff));
     process_output(d);

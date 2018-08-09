@@ -2345,11 +2345,11 @@ do_atrlock(dbref player, const char *src, const char *action)
   char abuff[BUFFER_LEN];
 
   if (action && *action) {
-    if (!strcasecmp(action, "on") || !strcasecmp(action, "yes") ||
-        !strcasecmp(action, "1"))
+    if (!sqlite3_stricmp(action, "on") || !sqlite3_stricmp(action, "yes") ||
+        !sqlite3_stricmp(action, "1"))
       status = ATRLOCK_LOCK;
-    else if (!strcasecmp(action, "off") || !strcasecmp(action, "no") ||
-             !strcasecmp(action, "0"))
+    else if (!sqlite3_stricmp(action, "off") ||
+             !sqlite3_stricmp(action, "no") || !sqlite3_stricmp(action, "0"))
       status = ATRLOCK_UNLOCK;
     else {
       notify(player, T("Invalid argument."));
@@ -2457,7 +2457,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     goto cleanup;
   }
 
-  if (!(arg2 && *arg2) || !strcasecmp(arg2, "me"))
+  if (!(arg2 && *arg2) || !sqlite3_stricmp(arg2, "me"))
     new_owner = player;
   else
     new_owner = lookup_player(arg2);

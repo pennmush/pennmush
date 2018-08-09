@@ -211,7 +211,7 @@ process_websocket_request(DESC *d, const char *command)
     return 1;
   }
 
-  if (strncasecmp(command, KEY_HEADER, KEY_HEADER_LEN) == 0) {
+  if (sqlite3_strnicmp(command, KEY_HEADER, KEY_HEADER_LEN) == 0) {
     /* Re-using Pueblo checksum field for storing WebSockets key. */
     char *value = skip_space(command + KEY_HEADER_LEN);
     if (value && strlen(value) == WEBSOCKET_KEY_LEN) {

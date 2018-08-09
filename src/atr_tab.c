@@ -232,7 +232,7 @@ attr_read(PENNFILE *f)
 
   AL_NAME(a) = strdup(tmp);
   db_read_this_labeled_string(f, "flags", &tmp);
-  if (tmp && *tmp && strcasecmp(tmp, "none")) {
+  if (tmp && *tmp && sqlite3_stricmp(tmp, "none")) {
     flags = list_to_privs(attr_privs_db, tmp, 0);
     if (!flags) {
       do_rawlog(LT_ERR, "Invalid attribute flags for '%s' in db.", AL_NAME(a));
@@ -458,7 +458,7 @@ cnf_attribute_access(char *attrname, char *opts)
   if (!good_atr_name(attrname))
     return 0;
 
-  if (strcasecmp(opts, "none")) {
+  if (sqlite3_stricmp(opts, "none")) {
     flags = list_to_privs(attr_privs_set, opts, 0);
     if (!flags)
       return 0;
@@ -781,7 +781,7 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
     notify(player, T("Which attribute do you mean?"));
     return;
   }
-  if (strcasecmp(perms, "none")) {
+  if (sqlite3_stricmp(perms, "none")) {
     flags = list_to_privs(attr_privs_set, perms, 0);
     if (!flags) {
       notify(player, T("I don't understand those permissions."));

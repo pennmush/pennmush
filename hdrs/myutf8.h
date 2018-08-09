@@ -16,3 +16,5 @@
 
 int strlen_cp(const char *);
 UChar32 first_cp(const char *, int *);
+
+

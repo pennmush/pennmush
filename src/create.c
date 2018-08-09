@@ -43,9 +43,9 @@ parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info)
   dbref room;
 
   /* parse room */
-  if (!strcasecmp(room_name, "here")) {
+  if (!sqlite3_stricmp(room_name, "here")) {
     room = speech_loc(player);
-  } else if (!strcasecmp(room_name, "home")) {
+  } else if (!sqlite3_stricmp(room_name, "home")) {
     return HOME; /* HOME is always linkable */
   } else {
     room = parse_objid(room_name);
@@ -74,7 +74,7 @@ check_var_link(const char *dest_name)
    * to link to the destination is checked when it's computed.
    */
 
-  if (!strcasecmp("VARIABLE", dest_name))
+  if (!sqlite3_stricmp("VARIABLE", dest_name))
     return AMBIGUOUS;
   else
     return NOTHING;

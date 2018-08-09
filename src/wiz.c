@@ -367,7 +367,7 @@ do_teleport(dbref player, const char *what, const char *where, int flags,
   const char *list;
   char *onename;
 
-  if (!strcasecmp(where, "home")) {
+  if (!sqlite3_stricmp(where, "home")) {
     destination = HOME;
   } else {
     destination = match_result(player, where, NOTYPE, MAT_EVERYTHING);
@@ -762,7 +762,7 @@ do_stats(dbref player, const char *name)
       owner = NOTHING;
     else if (!IsPlayer(owner))
       owner = NOTHING;
-  } else if (strcasecmp(name, "me") == 0)
+  } else if (sqlite3_stricmp(name, "me") == 0)
     owner = player;
   else
     owner = lookup_player(name);
@@ -1035,7 +1035,7 @@ do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
     notify(player, T("No zone specified."));
     return;
   }
-  if (!strcasecmp(target, "none"))
+  if (!sqlite3_stricmp(target, "none"))
     zone = NOTHING;
   else {
     switch (zone = match_result(player, target, NOTYPE, MAT_EVERYTHING)) {
@@ -2118,7 +2118,7 @@ do_sitelock_name(dbref player, const char *name)
             *p = '\0';
           else if ((p = strchr(buffer, '\n')) != NULL)
             *p = '\0';
-          if (strcasecmp(buffer, name + 1) == 0)
+          if (sqlite3_stricmp(buffer, name + 1) == 0)
             /* Replace the name with #NAME, to allow things like
                keeping track of unlocked feature names. */
             fprintf(fptmp, "#%s\n", buffer);
@@ -2153,12 +2153,12 @@ do_sitelock_name(dbref player, const char *name)
             *p = '\0';
           else if ((p = strchr(buffer, '\n')) != NULL)
             *p = '\0';
-          if (strcasecmp(commented, buffer) == 0) {
+          if (sqlite3_stricmp(commented, buffer) == 0) {
             fprintf(fptmp, "%s\n", buffer + 1);
             found = 1;
           } else {
             fprintf(fptmp, "%s\n", buffer);
-            if (strcasecmp(name, buffer) == 0)
+            if (sqlite3_stricmp(name, buffer) == 0)
               found = 1;
           }
         }
@@ -2207,9 +2207,9 @@ FUNCTION(fun_objmem)
 {
   dbref thing;
 
-  if (!strcasecmp(args[0], "me"))
+  if (!sqlite3_stricmp(args[0], "me"))
     thing = executor;
-  else if (!strcasecmp(args[0], "here"))
+  else if (!sqlite3_stricmp(args[0], "here"))
     thing = Location(executor);
   else {
     thing = noisy_match_result(executor, args[0], NOTYPE, MAT_OBJECTS);
@@ -2232,7 +2232,7 @@ FUNCTION(fun_playermem)
   dbref thing;
   dbref j;
 
-  if (!strcasecmp(args[0], "me") && IsPlayer(executor))
+  if (!sqlite3_stricmp(args[0], "me") && IsPlayer(executor))
     thing = executor;
   else if (*args[0] && *args[0] == '*')
     thing = lookup_player(args[0] + 1);
@@ -2287,9 +2287,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   if (!owner || !*owner)
     spec->owner =
       (See_All(player) || Search_All(player)) ? ANY_OWNER : Owner(player);
-  else if (strcasecmp(owner, "all") == 0)
+  else if (sqlite3_stricmp(owner, "all") == 0)
     spec->owner = ANY_OWNER; /* Will only show visual objects for mortals */
-  else if (strcasecmp(owner, "me") == 0)
+  else if (sqlite3_stricmp(owner, "me") == 0)
     spec->owner = Owner(player);
   else
     spec->owner = lookup_player(owner);
@@ -2338,15 +2338,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     /* Figure out the class */
     /* Old-fashioned way to select everything */
-    if (strcasecmp("none", class) == 0)
+    if (sqlite3_stricmp("none", class) == 0)
       continue;
-    if (strcasecmp("mindb", class) == 0) {
+    if (sqlite3_stricmp("mindb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
       spec->low = parse_integer(restriction + offset);
       continue;
-    } else if (strcasecmp("maxdb", class) == 0) {
+    } else if (sqlite3_stricmp("maxdb", class) == 0) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
@@ -2354,7 +2354,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       continue;
     }
 
-    if (strcasecmp("type", class) == 0) {
+    if (sqlite3_stricmp("type", class) == 0) {
       if (string_prefix("things", restriction) ||
           string_prefix("objects", restriction)) {
         spec->type = TYPE_THING;
@@ -2364,7 +2364,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         spec->type = TYPE_EXIT;
       } else if (string_prefix("players", restriction)) {
         spec->type = TYPE_PLAYER;
-      } else if (strcasecmp("garbage", restriction) == 0) {
+      } else if (sqlite3_stricmp("garbage", restriction) == 0) {
         spec->type = TYPE_GARBAGE;
       } else {
         notify(player, T("Unknown type."));
@@ -2383,21 +2383,21 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     } else if (string_prefix("players", class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (strcasecmp("name", class) == 0) {
+    } else if (sqlite3_stricmp("name", class) == 0) {
       strcpy(spec->name, restriction);
-    } else if (strcasecmp("start", class) == 0) {
+    } else if (sqlite3_stricmp("start", class) == 0) {
       spec->start = parse_integer(restriction);
       if (spec->start < 1) {
         notify(player, T("Invalid start index"));
         return -1;
       }
-    } else if (strcasecmp("count", class) == 0) {
+    } else if (sqlite3_stricmp("count", class) == 0) {
       spec->count = parse_integer(restriction);
       if (spec->count < 1) {
         notify(player, T("Invalid count index"));
         return -1;
       }
-    } else if (strcasecmp("parent", class) == 0) {
+    } else if (sqlite3_stricmp("parent", class) == 0) {
       if (!*restriction) {
         spec->parent = NOTHING;
         continue;
@@ -2411,7 +2411,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown parent."));
         return -1;
       }
-    } else if (strcasecmp("zone", class) == 0) {
+    } else if (sqlite3_stricmp("zone", class) == 0) {
       if (!*restriction) {
         spec->zone = NOTHING;
         continue;
@@ -2425,17 +2425,17 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown zone."));
         return -1;
       }
-    } else if (strcasecmp("elock", class) == 0) {
+    } else if (sqlite3_stricmp("elock", class) == 0) {
       spec->lock = parse_boolexp(player, restriction, "Search");
       if (spec->lock == TRUE_BOOLEXP) {
         notify(player, T("I don't understand that key."));
         return -1;
       }
-    } else if (strcasecmp("eval", class) == 0) {
+    } else if (sqlite3_stricmp("eval", class) == 0) {
       strcpy(spec->eval, restriction);
-    } else if (strcasecmp("command", class) == 0) {
+    } else if (sqlite3_stricmp("command", class) == 0) {
       strcpy(spec->cmdstring, restriction);
-    } else if (strcasecmp("listen", class) == 0) {
+    } else if (sqlite3_stricmp("listen", class) == 0) {
       strcpy(spec->listenstring, restriction);
     } else if (string_prefix("ethings", class) ||
                string_prefix("eobjects", class)) {

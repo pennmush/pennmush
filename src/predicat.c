@@ -693,8 +693,8 @@ ok_name(const char *n, int is_exit)
 
   /* No magic cookies */
   return (name && *name && *name != LOOKUP_TOKEN && *name != NUMBER_TOKEN &&
-          *name != NOT_TOKEN && (is_exit || strcasecmp(name, "me")) &&
-          strcasecmp(name, "home") && strcasecmp(name, "here"));
+          *name != NOT_TOKEN && (is_exit || sqlite3_stricmp(name, "me")) &&
+          sqlite3_stricmp(name, "home") && sqlite3_stricmp(name, "here"));
 }
 
 /** Is a name a valid player name when applied by player to thing?
@@ -1052,7 +1052,7 @@ ok_tag_attribute(dbref player, const char *params)
       size_t n = q - p;
       /* Invalid params for non-priv'd. Turn to a hashtable if we ever
          get more? */
-      if (strncasecmp(p, "SEND", n) == 0 || strncasecmp(p, "XCH_CMD", n) == 0)
+      if (sqlite3_strnicmp(p, "SEND", n) == 0 || sqlite3_strnicmp(p, "XCH_CMD", n) == 0)
         return 0;
       while (*q && isspace(*q))
         q++;

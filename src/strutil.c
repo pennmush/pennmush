@@ -23,6 +23,10 @@
 #endif
 #include <inttypes.h>
 #endif
+#ifdef HAVE_ICU
+#include <unicode/ustring.h>
+#include <unicode/ucol.h>
+#endif
 
 #include "ansi.h"
 #include "case.h"
@@ -284,7 +288,9 @@ string_match(const char *src, const char *sub)
   return NULL;
 }
 
-/** Return an initial-cased version of an ASCII/Latin-1 string in a static buffer.
+/** Return an initial-cased version of an ASCII/Latin-1 string in a static
+ * buffer.
+ *
  * \param s string to initial-case.
  * \return pointer to a static buffer containing the initial-cased version.
  */
@@ -305,11 +311,13 @@ strinitial(const char *s)
   return buf1;
 }
 
-/** Return an initial-cased version of an ASCII/Latin-1 string in a caller supplied buffer.
+/** Return an initial-cased version of an ASCII/Latin-1 string in a caller
+ * supplied buffer.
+ *
  * \param s string to initial-case.
  * \param d destination buffer.
- * \parem len length of buffer.
- * \return pointer to a static buffer containing the initial-cased version.
+ * \param len length of buffer.
+ * \return pointer to the buffer containing the initial-cased version.
  */
 char *
 strinitial_r(const char *restrict s, char *restrict d, size_t len)
@@ -374,7 +382,9 @@ strlower(const char *s)
   return buf1;
 }
 
-/** Return an uppercased version of an ASCII/Latin1 string in a newly allocated buffer.
+/** Return an uppercased version of an ASCII/Latin1 string in a newly allocated
+ * buffer.
+ *
  * \param s string to uppercase.
  * \param name memcheck name.
  * \return pointer to a string containing the uppercased version.
@@ -412,7 +422,9 @@ ustrupper_a(const char *s, const char *name)
 #endif
 }
 
-/** Return a lowercased version of an ASCII/UTF-8 string in a newly allocated buffer.
+/** Return a lowercased version of an ASCII/UTF-8 string in a newly allocated
+ * buffer.
+ *
  * \param s string to lowercase.
  * \param name memcheck name.
  * \return pointer to a string containing the lowercased version.
@@ -450,10 +462,12 @@ ustrlower_a(const char *s, const char *name)
 #endif
 }
 
-/** Return an uppercased version of an ASCII/Latin1 string in a caller-supplied buffer.
+/** Return an uppercased version of an ASCII/Latin1 string in a caller-supplied
+ * buffer.
+ *
  * \param s string to uppercase.
  * \param d destination buffer.
- * \parem len length of buffer.
+ * \param len length of buffer.
  * \return pointer to a string containing the uppercased version.
  */
 char *
@@ -476,10 +490,12 @@ strupper_r(const char *restrict s, char *restrict d, size_t len)
   return d;
 }
 
-/** Return a lowercased version of an ASCII/Latin1 string in a caller-supplied buffer.
+/** Return a lowercased version of an ASCII/Latin1 string in a caller-supplied
+ * buffer.
+ *
  * \param s string to lowercase.
  * \param d destination buffer.
- * \parem len length of buffer.
+ * \param len length of buffer.
  * \return pointer to a string containing the lowercased version.
  */
 char *
@@ -542,7 +558,7 @@ uupcasestr(char *s)
 
 static bool
 udowncasestr_cb(UChar32 c, char *s, int offset, int len,
-              void *data __attribute__((__unused__)))
+                void *data __attribute__((__unused__)))
 {
   UChar32 u = uni_tolower(c);
   if (U8_LENGTH(u) == len) {
@@ -564,7 +580,6 @@ udowncasestr(char *s)
   for_each_cp(s, udowncasestr_cb, NULL);
   return s;
 }
-
 
 /** Safely add an accented string to a buffer.
  * \param base base string to which accents are applied.
@@ -1931,123 +1946,6 @@ format_long(intmax_t val, char *buff, char **bp, int maxlen, int base)
   return 0;
 }
 
-#ifndef HAVE__STRNCOLL
-/** A locale-sensitive strncmp.
- * \param s1 first string to compare.
- * \param s2 second string to compare.
- * \param t number of characters to compare.
- * \retval -1 s1 collates before s2.
- * \retval 0 s1 collates the same as s2.
- * \retval 1 s1 collates after s2.
- */
-int
-strncoll(const char *s1, const char *s2, size_t t)
-{
-#ifdef HAVE_STRXFRM
-  char *d1, *d2, *ns1, *ns2;
-  int result;
-  size_t s1_len, s2_len;
-
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
-  memcpy(ns1, s1, t);
-  ns1[t] = '\0';
-  memcpy(ns2, s2, t);
-  ns2[t] = '\0';
-  s1_len = strxfrm(NULL, ns1, 0) + 1;
-  s2_len = strxfrm(NULL, ns2, 0) + 1;
-
-  d1 = mush_malloc(s1_len + 1, "string");
-  d2 = mush_malloc(s2_len + 1, "string");
-  (void) strxfrm(d1, ns1, s1_len);
-  (void) strxfrm(d2, ns2, s2_len);
-  result = strcmp(d1, d2);
-  mush_free(ns1, "string");
-  mush_free(ns2, "string");
-  mush_free(d1, "string");
-  mush_free(d2, "string");
-  return result;
-#else
-  return strncmp(s1, s2, t);
-#endif
-}
-#endif
-
-#ifndef HAVE__STRICOLL
-/** A locale-sensitive strcasecmp.
- * \param s1 first string to compare.
- * \param s2 second string to compare.
- * \retval -1 s1 collates before s2.
- * \retval 0 s1 collates the same as s2.
- * \retval 1 s1 collates after s2.
- */
-int
-strcasecoll(const char *s1, const char *s2)
-{
-#ifdef HAVE_STRXFRM
-  char *d1, *d2;
-  int result;
-  size_t s1_len, s2_len;
-
-  s1_len = strxfrm(NULL, s1, 0) + 1;
-  s2_len = strxfrm(NULL, s2, 0) + 1;
-
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
-  (void) strxfrm(d1, strupper(s1), s1_len);
-  (void) strxfrm(d2, strupper(s2), s2_len);
-  result = strcmp(d1, d2);
-  mush_free(d1, "string");
-  mush_free(d2, "string");
-  return result;
-#else
-  return strcasecmp(s1, s2);
-#endif
-}
-#endif
-
-#ifndef HAVE__STRNICOLL
-/** A locale-sensitive strncasecmp.
- * \param s1 first string to compare.
- * \param s2 second string to compare.
- * \param t number of characters to compare.
- * \retval -1 s1 collates before s2.
- * \retval 0 s1 collates the same as s2.
- * \retval 1 s1 collates after s2.
- */
-int
-strncasecoll(const char *s1, const char *s2, size_t t)
-{
-#ifdef HAVE_STRXFRM
-  char *d1, *d2, *ns1, *ns2;
-  int result;
-  size_t s1_len, s2_len;
-
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
-  memcpy(ns1, s1, t);
-  ns1[t] = '\0';
-  memcpy(ns2, s2, t);
-  ns2[t] = '\0';
-  s1_len = strxfrm(NULL, ns1, 0) + 1;
-  s2_len = strxfrm(NULL, ns2, 0) + 1;
-
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
-  (void) strxfrm(d1, strupper(ns1), s1_len);
-  (void) strxfrm(d2, strupper(ns2), s2_len);
-  result = strcmp(d1, d2);
-  mush_free(ns1, "string");
-  mush_free(ns2, "string");
-  mush_free(d1, "string");
-  mush_free(d2, "string");
-  return result;
-#else
-  return strncasecmp(s1, s2, t);
-#endif
-}
-#endif
-
 /** Safe version of strncpy() that always nul-terminates the
  * destination string. The only reason it's not called
  * safe_strncpy() is to avoid confusion with the unrelated
@@ -2528,4 +2426,118 @@ first_cp(const char *s, int *len)
     *len = offset;
   }
   return c;
+}
+
+/** Case-insensitive UTF-8 string comparison. If ICU is not being
+ * used, only compares ASCII characters case-insensitively.
+ *
+ * \param a string to compare
+ * \param b string to compare
+ * \return a value less than, equal to, or greater than 0.
+ */
+int
+uni_strcasecmp(const char *a, const char *b)
+{
+#ifdef HAVE_ICU
+  UChar *a16, *b16;
+  int cmp;
+
+  a16 = utf8_to_utf16(a, -1, NULL, "utf16.string");
+  b16 = utf8_to_utf16(b, -1, NULL, "utf16.string");
+
+  cmp = u_strcasecmp(
+    a16, b16, U_COMPARE_CODE_POINT_ORDER | U_FOLD_CASE_EXCLUDE_SPECIAL_I);
+
+  mush_free(a16, "utf16.string");
+  mush_free(b16, "utf16.string");
+
+  return cmp;
+#else
+  return sqlite3_stricmp(a, b);
+#endif
+}
+
+/** Case-insensitive UTF-8 string comparison. If ICU is not being
+ * used, only compares ASCII characters case-insensitively.
+ *
+ * \param a string to compare
+ * \param b string to compare
+ * \param n the number of codepoints to compare.
+ * \return a value less than, equal to, or greater than 0.
+ */
+int
+uni_strncasecmp(const char *a, const char *b, int n)
+{
+#ifdef HAVE_ICU
+  UChar *a16, *b16;
+  int cmp;
+
+  a16 = utf8_to_utf16(a, -1, NULL, "utf16.string");
+  b16 = utf8_to_utf16(b, -1, NULL, "utf16.string");
+
+  cmp = u_strncasecmp(
+    a16, b16, n, U_COMPARE_CODE_POINT_ORDER | U_FOLD_CASE_EXCLUDE_SPECIAL_I);
+
+  mush_free(a16, "utf16.string");
+  mush_free(b16, "utf16.string");
+
+  return cmp;
+#else
+  return sqlite3_strnicmp(a, b, n);
+#endif
+}
+
+#ifdef HAVE_ICU
+static UCollator *master_collator = NULL;
+
+static UCollator *
+get_collator(void)
+{
+  UCollator *c;
+  UErrorCode err = U_ZERO_ERROR;
+  if (!master_collator) {
+    master_collator = ucol_open(NULL, &err);
+    if (U_FAILURE(err)) {
+      do_rawlog(LT_ERR, "Unable to open ICU collator: %s", u_errorName(err));
+      return NULL;
+    }
+  }
+
+  c = ucol_safeClone(master_collator, NULL, NULL, &err);
+  if (U_FAILURE(err)) {
+    do_rawlog(LT_ERR, "Unable to clone ICU collator: %s", u_errorName(err));
+    return NULL;
+  }
+  return c;
+}
+#endif
+
+/** Locale-sensitive UTF-8 string comparison. Falls back to strcmp()
+    without ICU. */
+int
+uni_strcoll(const char *a, const char *b)
+{
+#ifdef HAVE_ICU
+  UErrorCode err = U_ZERO_ERROR;
+  UCollationResult cmp;
+  UCollator *coll = get_collator();
+
+  cmp = ucol_strcollUTF8(coll, a, -1, b, -1, &err);
+  ucol_close(coll);
+  if (U_FAILURE(err)) {
+    do_rawlog(LT_ERR, "ucol_strcollUTF8 failed: %s", u_errorName(err));
+    return 0;
+  }
+  switch (cmp) {
+  case UCOL_EQUAL:
+  default:
+    return 0;
+  case UCOL_LESS:
+    return -1;
+  case UCOL_GREATER:
+    return 1;
+  }
+#else
+  return strcmp(a, b);
+#endif
 }

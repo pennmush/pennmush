@@ -590,7 +590,7 @@ insert_channel(CHAN **ch)
   /* First channel? */
   strcpy(cleanp, remove_markup(ChanName(p), NULL));
   strcpy(cleanname, remove_markup(ChanName(*ch), NULL));
-  if (strcasecoll(cleanp, cleanname) > 0) {
+  if (strcoll(cleanp, cleanname) > 0) {
     channels = *ch;
     channels->next = p;
     return;
@@ -598,7 +598,7 @@ insert_channel(CHAN **ch)
   /* Otherwise, find which user this user should be inserted after */
   while (p->next) {
     strcpy(cleanp, remove_markup(ChanName(p->next), NULL));
-    if (strcasecoll(cleanp, cleanname) > 0)
+    if (strcoll(cleanp, cleanname) > 0)
       break;
     p = p->next;
   }
@@ -662,7 +662,7 @@ insert_obj_chan(dbref who, CHAN **ch)
   p = Chanlist(who);
   /* First channel? */
   strcpy(cleanp, remove_markup(ChanName(p->chan), NULL));
-  if (strcasecoll(cleanp, cleanname) > 0) {
+  if (strcoll(cleanp, cleanname) > 0) {
     tmp->next = p;
     s_Chanlist(who, tmp);
     return;
@@ -673,7 +673,7 @@ insert_obj_chan(dbref who, CHAN **ch)
     /* Otherwise, find which channel this channel should be inserted after */
     while (p->next) {
       strcpy(cleanp, remove_markup(ChanName(p->next->chan), NULL));
-      if (strcasecoll(cleanp, cleanname) >= 0)
+      if (strcoll(cleanp, cleanname) >= 0)
         break;
       p = p->next;
     }
@@ -764,13 +764,13 @@ insert_user(CHANUSER *user, CHAN *ch)
   /* If there's no users on the list, or if the first user is already
    * alphabetically greater, user should be the first entry on the list */
   p = ChanUsers(ch);
-  if (!p || (strcasecoll(Name(CUdbref(p)), Name(CUdbref(user))) > 0)) {
+  if (!p || (strcoll(Name(CUdbref(p)), Name(CUdbref(user))) > 0)) {
     user->next = ChanUsers(ch);
     ChanUsers(ch) = user;
   } else {
     /* Otherwise, find which user this user should be inserted after */
-    for (; p->next &&
-           (strcasecoll(Name(CUdbref(p->next)), Name(CUdbref(user))) <= 0);
+    for (;
+         p->next && (strcoll(Name(CUdbref(p->next)), Name(CUdbref(user))) <= 0);
          p = p->next)
       ;
     if (CUdbref(p) == CUdbref(user)) {
@@ -1197,10 +1197,10 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
 
   /* Quickly catch two common cases and handle separately */
   if (!target || !*target) {
-    if (!strcasecmp(com, "on") || !strcasecmp(com, "join")) {
+    if (!sqlite3_stricmp(com, "on") || !sqlite3_stricmp(com, "join")) {
       channel_join_self(player, name);
       return;
-    } else if (!strcasecmp(com, "off") || !strcasecmp(com, "leave")) {
+    } else if (!sqlite3_stricmp(com, "off") || !sqlite3_stricmp(com, "leave")) {
       channel_leave_self(player, name);
       return;
     }
@@ -1215,7 +1215,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       notify(player, T("CHAT: I don't recognize that channel."));
     return;
   }
-  if (!strcasecmp(com, "who")) {
+  if (!sqlite3_stricmp(com, "who")) {
     do_channel_who(player, chan);
     return;
   }
@@ -1237,7 +1237,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     notify(player, T("Invalid target."));
     return;
   }
-  if (!strcasecmp("on", com) || !strcasecmp("join", com)) {
+  if (!sqlite3_stricmp("on", com) || !sqlite3_stricmp("join", com)) {
     if (!Chan_Ok_Type(chan, victim)) {
       notify_format(player, T("Sorry, wrong type of thing for channel <%s>."),
                     ChanName(chan));
@@ -1284,7 +1284,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
                     AName(victim, AN_SYS, NULL), ChanName(chan));
     }
     return;
-  } else if (!strcasecmp("off", com) || !strcasecmp("leave", com)) {
+  } else if (!sqlite3_stricmp("off", com) || !sqlite3_stricmp("leave", com)) {
     /* You must control either the victim or the channel */
     if (!controls(player, victim) && !Chan_Can_Modify(chan, player)) {
       notify(player, T("Invalid target."));
@@ -2859,23 +2859,23 @@ do_chan_what(dbref player, const char *partname)
       if (Chan_Can_Decomp(c, player)) {
         if (ChanModLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n    mod: %s",
-              unparse_boolexp(player, ChanModLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanModLock(c), UB_MEREF));
         if (ChanHideLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n   hide: %s",
-              unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
         if (ChanJoinLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n   join: %s",
-              unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
         if (ChanSpeakLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n  speak: %s",
-              unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
         if (ChanSeeLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n    see: %s",
-              unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
         *lp = '\0';
         if (strlen(locks) > 1)
           notify_format(player, T("Locks:%s"), locks);
-        } // if(Chan_Can_Decomp())
+      } // if(Chan_Can_Decomp())
       found++;
     }
   }
@@ -3023,11 +3023,11 @@ FUNCTION(fun_cwho)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (!strcasecmp(args[1], "on"))
+    if (!sqlite3_stricmp(args[1], "on"))
       matchcond = 0;
-    else if (!strcasecmp(args[1], "off"))
+    else if (!sqlite3_stricmp(args[1], "off"))
       matchcond = 1;
-    else if (!strcasecmp(args[1], "all"))
+    else if (!sqlite3_stricmp(args[1], "all"))
       matchcond = 2;
     else {
       safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
@@ -3396,19 +3396,19 @@ FUNCTION(fun_clock)
     break;
   }
 
-  if (!strcasecmp(p, "JOIN")) {
+  if (!sqlite3_stricmp(p, "JOIN")) {
     which_lock = CLOCK_JOIN;
     lock_ptr = ChanJoinLock(c);
-  } else if (!strcasecmp(p, "SPEAK")) {
+  } else if (!sqlite3_stricmp(p, "SPEAK")) {
     which_lock = CLOCK_SPEAK;
     lock_ptr = ChanSpeakLock(c);
-  } else if (!strcasecmp(p, "MOD")) {
+  } else if (!sqlite3_stricmp(p, "MOD")) {
     which_lock = CLOCK_MOD;
     lock_ptr = ChanModLock(c);
-  } else if (!strcasecmp(p, "SEE")) {
+  } else if (!sqlite3_stricmp(p, "SEE")) {
     which_lock = CLOCK_SEE;
     lock_ptr = ChanSeeLock(c);
-  } else if (!strcasecmp(p, "HIDE")) {
+  } else if (!sqlite3_stricmp(p, "HIDE")) {
     which_lock = CLOCK_HIDE;
     lock_ptr = ChanHideLock(c);
   } else {
@@ -4214,11 +4214,11 @@ parse_chat_alias(dbref player, char *command)
     bp = command;
     /* If message is "on", "off", or "who", it's not speech, it's @chan/ungag,
      * @chan/gag, or @chan/who, respectively */
-    if (!strcasecmp("on", message)) {
+    if (!sqlite3_stricmp("on", message)) {
       safe_format(command, &bp, "/ungag %s", av);
-    } else if (!strcasecmp("off", message)) {
+    } else if (!sqlite3_stricmp("off", message)) {
       safe_format(command, &bp, "/gag %s", av);
-    } else if (!strcasecmp("who", message)) {
+    } else if (!sqlite3_stricmp("who", message)) {
       safe_format(command, &bp, "/who %s", av);
     } else {
       safe_format(command, &bp, "%s=%s", av, message);

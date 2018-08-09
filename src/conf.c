@@ -461,11 +461,11 @@ CONFIG_FUNC(cf_bool)
 {
   /* enter boolean parameter */
 
-  if (!strcasecmp(val, "yes") || !strcasecmp(val, "true") ||
-      !strcasecmp(val, "1"))
+  if (!sqlite3_stricmp(val, "yes") || !sqlite3_stricmp(val, "true") ||
+      !sqlite3_stricmp(val, "1"))
     *((int *) loc) = 1;
-  else if (!strcasecmp(val, "no") || !strcasecmp(val, "false") ||
-           !strcasecmp(val, "0"))
+  else if (!sqlite3_stricmp(val, "no") || !sqlite3_stricmp(val, "false") ||
+           !sqlite3_stricmp(val, "0"))
     *((int *) loc) = 0;
   else {
     if (from_cmd == 0) {
@@ -858,7 +858,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     return 0; /* NULL val is no good, but "" is ok */
 
   /* Was this "restrict_command <command> <restriction>"? If so, do it */
-  if (!strcasecmp(opt, "restrict_command")) {
+  if (!sqlite3_stricmp(opt, "restrict_command")) {
     if (!restrictions)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -890,7 +890,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("restrict_command", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "restrict_function")) {
+  } else if (!sqlite3_stricmp(opt, "restrict_function")) {
     if (!restrictions)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -915,7 +915,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("restrict_function", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "restrict_attribute")) {
+  } else if (!sqlite3_stricmp(opt, "restrict_attribute")) {
     if (!restrictions || source > 0)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -935,12 +935,12 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     return 1;
-  } else if (!strcasecmp(opt, "reserve_alias")) {
+  } else if (!sqlite3_stricmp(opt, "reserve_alias")) {
     if (!restrictions)
       return 0;
     reserve_alias(val);
     return 1;
-  } else if (!strcasecmp(opt, "command_alias")) {
+  } else if (!sqlite3_stricmp(opt, "command_alias")) {
     if (!restrictions)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -962,7 +962,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("reserve_alias", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "hook_command")) {
+  } else if (!sqlite3_stricmp(opt, "hook_command")) {
     if (!restrictions || source > 0)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -981,7 +981,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     return 1;
-  } else if (!strcasecmp(opt, "add_command")) {
+  } else if (!sqlite3_stricmp(opt, "add_command")) {
     if (!restrictions || source > 0)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -1000,7 +1000,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       }
     }
     return 1;
-  } else if (!strcasecmp(opt, "add_function")) {
+  } else if (!sqlite3_stricmp(opt, "add_function")) {
     if (!restrictions || source > 0)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -1017,7 +1017,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     }
     return 1;
-  } else if (!strcasecmp(opt, "attribute_alias")) {
+  } else if (!sqlite3_stricmp(opt, "attribute_alias")) {
     if (!restrictions)
       return 0;
     do_rawlog(LT_ERR, "CONFIG: deprecated statement attribute_alias used");
@@ -1040,7 +1040,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("attribute_alias", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "function_alias")) {
+  } else if (!sqlite3_stricmp(opt, "function_alias")) {
     if (!restrictions)
       return 0;
     for (p = val; *p && !isspace(*p); p++)
@@ -1062,10 +1062,10 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("function_alias", val, p);
     return 1;
-  } else if (!strcasecmp(opt, "help_command") ||
-             !strcasecmp(opt, "ahelp_command")) {
+  } else if (!sqlite3_stricmp(opt, "help_command") ||
+             !sqlite3_stricmp(opt, "ahelp_command")) {
     char *comm, *file;
-    int admin = !strcasecmp(opt, "ahelp_command");
+    int admin = !sqlite3_stricmp(opt, "ahelp_command");
     if (!restrictions)
       return 0;
     /* Add a new help-like command */
@@ -1088,7 +1088,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
                 "CONFIG: help_command requires a command name and file name.");
       return 0;
     }
-  } else if (!strcasecmp(opt, "mssp")) {
+  } else if (!sqlite3_stricmp(opt, "mssp")) {
     if (restrictions)
       return 0;
     if ((p = strchr(val, '/')) != NULL) {
@@ -1446,7 +1446,7 @@ config_file_startup(const char *conf, int restrictions)
 
     if (strlen(p) != 0) { /* skip blank lines */
       /* Handle include filename directives separetly */
-      if (strcasecmp(p, "include") == 0) {
+      if (sqlite3_stricmp(p, "include") == 0) {
         conf_recursion++;
         if (conf_recursion > 10) {
           do_rawlog(LT_ERR, "CONFIG: include depth too deep in file %s", conf);
@@ -1621,7 +1621,7 @@ do_config_list(dbref player, const char *type, int lc)
     } else {
       /* Show all entries of that type */
       notify(player, cgp->desc);
-      if (strcasecmp("compile", type) == 0)
+      if (sqlite3_stricmp("compile", type) == 0)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {

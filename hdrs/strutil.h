@@ -41,6 +41,10 @@ int strncasecmp(const char *s1, const char *s2, size_t n);
 #endif
 #endif
 
+int uni_strcasecmp(const char *, const char *);
+int uni_strncasecmp(const char *, const char *, int);
+int uni_strcoll(const char *, const char *);
+
 char *next_token(char *str, char sep);
 char *next_utoken(char *str, UChar32 sep);
 char *split_token(char **sp, char sep);
@@ -91,24 +95,6 @@ bool for_each_cp(char *, cp_callback, void *);
 char *strdup(const char *s) __attribute_malloc__;
 #endif
 char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
-
-#ifdef HAVE__STRNCOLL
-#define strncoll(s1, s2, n) _strncoll((s1), (s2), (n))
-#else
-int strncoll(const char *s1, const char *s2, size_t t);
-#endif
-
-#ifdef HAVE__STRICOLL
-#define strcasecoll(s1, s2) _stricoll((s1), (s2))
-#else
-int strcasecoll(const char *s1, const char *s2);
-#endif
-
-#ifdef HAVE__STRNICOLL
-#define strncasecoll(s1, s2, n) _strnicoll((s1), (s2), (n))
-#else
-int strncasecoll(const char *s1, const char *s2, size_t t);
-#endif
 
 size_t remove_trailing_whitespace(char *, size_t);
 

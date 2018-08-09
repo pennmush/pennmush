@@ -2685,7 +2685,7 @@ TELNET_HANDLER(telnet_charset)
 #ifdef HAVE_NL_LANGINFO
   curr_locale = nl_langinfo(CODESET);
   if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
-      strncasecmp(curr_locale, "UTF-", 4)) {
+      sqlite3_strnicmp(curr_locale, "UTF-", 4)) {
     for (delim_curr = delim_list; *delim_curr; delim_curr++) {
       if (strchr(curr_locale, *delim_curr) == NULL)
         break;
@@ -2743,12 +2743,12 @@ TELNET_HANDLER(telnet_charset_sb)
     /* This is the only thing we support */
     return;
   }
-  if (!strcasecmp(cmd, "US-ASCII") || !strcasecmp(cmd, "ASCII")) {
+  if (!sqlite3_stricmp(cmd, "US-ASCII") || !sqlite3_stricmp(cmd, "ASCII")) {
     /* ascii requested; strip accents for the connection */
     do_rawlog(LT_CONN, "Descriptor %d using charset ASCII.", d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
   }
-  if (strcasecmp(cmd, "UTF-8") == 0) {
+  if (sqlite3_stricmp(cmd, "UTF-8") == 0) {
     /* Send and receive UTF-8, translate to latin-1 */
     do_rawlog(LT_CONN, "Descriptor %d using charset UTF-8.", d->descriptor);
     d->conn_flags |= CONN_UTF8;
@@ -2903,7 +2903,7 @@ GMCP_HANDLER(gmcp_core_hello)
 {
   cJSON *j;
 
-  if (strcasecmp(package, "Core.Hello")) {
+  if (sqlite3_stricmp(package, "Core.Hello")) {
     return 0; /* Package was Core.Hello.something, and we don't handle that */
   }
 
@@ -2923,9 +2923,9 @@ GMCP_HANDLER(gmcp_core_hello)
 GMCP_HANDLER(gmcp_core_ping)
 {
 
-  if (!strcasecmp(package, "Core.KeepAlive"))
+  if (!sqlite3_stricmp(package, "Core.KeepAlive"))
     return 1;
-  else if (!strcasecmp(package, "Core.Ping")) {
+  else if (!sqlite3_stricmp(package, "Core.Ping")) {
     send_oob(d, "Core.Ping", NULL);
     return 1;
   }
@@ -3762,7 +3762,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (strcasecmp(command, "cd") == 0) {
+  } else if (sqlite3_stricmp(command, "cd") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
@@ -3785,7 +3785,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (strcasecmp(command, "cv") == 0) {
+  } else if (sqlite3_stricmp(command, "cv") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
@@ -3805,7 +3805,7 @@ check_connect(DESC *d, const char *msg)
       }
     }
 
-  } else if (strcasecmp(command, "ch") == 0) {
+  } else if (sqlite3_stricmp(command, "ch") == 0) {
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
@@ -4117,15 +4117,15 @@ isyes(char *str)
 {
   if (!str)
     return 0;
-  if (!strcasecmp(str, "yes"))
+  if (!sqlite3_stricmp(str, "yes"))
     return 1;
-  if (!strcasecmp(str, "y"))
+  if (!sqlite3_stricmp(str, "y"))
     return 1;
-  if (!strcasecmp(str, "true"))
+  if (!sqlite3_stricmp(str, "true"))
     return 1;
-  if (!strcasecmp(str, "1"))
+  if (!sqlite3_stricmp(str, "1"))
     return 1;
-  if (!strcasecmp(str, "on"))
+  if (!sqlite3_stricmp(str, "on"))
     return 1;
   return 0;
 }
@@ -4239,7 +4239,7 @@ sockset(DESC *d, char *name, char *val)
     return T("Set what option?");
   }
 
-  if (!strcasecmp(name, PREFIX_COMMAND)) {
+  if (!sqlite3_stricmp(name, PREFIX_COMMAND)) {
     set_userstring(&d->output_prefix, val);
     if (val && *val) {
       return T("OUTPUTPREFIX set.");
@@ -4249,7 +4249,7 @@ sockset(DESC *d, char *name, char *val)
     return retval;
   }
 
-  if (!strcasecmp(name, SUFFIX_COMMAND)) {
+  if (!sqlite3_stricmp(name, SUFFIX_COMMAND)) {
     set_userstring(&d->output_suffix, val);
     if (val && *val) {
       return T("OUTPUTSUFFIX set.");
@@ -4259,7 +4259,7 @@ sockset(DESC *d, char *name, char *val)
     return retval;
   }
 
-  if (!strcasecmp(name, "PUEBLO")) {
+  if (!sqlite3_stricmp(name, "PUEBLO")) {
     if (val && *val) {
       parse_puebloclient(d, val);
       if (!(d->conn_flags & CONN_HTML)) {
@@ -4277,7 +4277,7 @@ sockset(DESC *d, char *name, char *val)
     }
   }
 
-  if (!strcasecmp(name, "TELNET")) {
+  if (!sqlite3_stricmp(name, "TELNET")) {
     ival = isyes(val);
     if (ival) {
       d->conn_flags |= CONN_TELNET;
@@ -4288,7 +4288,7 @@ sockset(DESC *d, char *name, char *val)
     }
   }
 
-  if (!strcasecmp(name, "WIDTH")) {
+  if (!sqlite3_stricmp(name, "WIDTH")) {
     if (!is_strict_integer(val)) {
       return T("Width expects a positive integer.");
     }
@@ -4300,7 +4300,7 @@ sockset(DESC *d, char *name, char *val)
     return T("Width set.");
   }
 
-  if (!strcasecmp(name, "HEIGHT")) {
+  if (!sqlite3_stricmp(name, "HEIGHT")) {
     if (!is_strict_integer(val)) {
       return T("Height expects a positive integer.");
     }
@@ -4312,34 +4312,36 @@ sockset(DESC *d, char *name, char *val)
     return T("Height set.");
   }
 
-  if (!strcasecmp(name, "TERMINALTYPE")) {
+  if (!sqlite3_stricmp(name, "TERMINALTYPE")) {
     set_ttype(d, val);
     return T("Terminal Type set.");
   }
 
-  if (strcasecmp(name, "COLORSTYLE") == 0 ||
-      strcasecmp(name, "COLOURSTYLE") == 0) {
-    if (strcasecmp(val, "auto") == 0) {
+  if (sqlite3_stricmp(name, "COLORSTYLE") == 0 ||
+      sqlite3_stricmp(name, "COLOURSTYLE") == 0) {
+    if (sqlite3_stricmp(val, "auto") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "auto");
       return retval;
-    } else if (strcasecmp("plain", val) == 0 || strcasecmp("none", val) == 0) {
+    } else if (sqlite3_stricmp("plain", val) == 0 ||
+               sqlite3_stricmp("none", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_PLAIN;
       snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "plain");
       return retval;
-    } else if (strcasecmp("hilite", val) == 0 ||
-               strcasecmp("highlight", val) == 0) {
+    } else if (sqlite3_stricmp("hilite", val) == 0 ||
+               sqlite3_stricmp("highlight", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSI;
       snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "hilite");
       return retval;
-    } else if (strcasecmp("16color", val) == 0) {
+    } else if (sqlite3_stricmp("16color", val) == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_ANSICOLOR;
       snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "16color");
       return retval;
-    } else if (strcasecmp("xterm256", val) == 0 || strcmp(val, "256") == 0) {
+    } else if (sqlite3_stricmp("xterm256", val) == 0 ||
+               strcmp(val, "256") == 0) {
       d->conn_flags &= ~CONN_COLORSTYLE;
       d->conn_flags |= CONN_XTERM256;
       snprintf(retval, sizeof retval, T("Colorstyle set to '%s'"), "xterm256");
@@ -4351,7 +4353,7 @@ sockset(DESC *d, char *name, char *val)
     return retval;
   }
 
-  if (!strcasecmp(name, "PROMPT_NEWLINES")) {
+  if (!sqlite3_stricmp(name, "PROMPT_NEWLINES")) {
     ival = isyes(val);
     if (ival) {
       d->conn_flags |= CONN_PROMPT_NEWLINES;
@@ -4362,7 +4364,8 @@ sockset(DESC *d, char *name, char *val)
     }
   }
 
-  if (!strcasecmp(name, "STRIPACCENTS") || !strcasecmp(name, "NOACCENTS")) {
+  if (!sqlite3_stricmp(name, "STRIPACCENTS") ||
+      !sqlite3_stricmp(name, "NOACCENTS")) {
     ival = isyes(val);
     if (ival) {
       d->conn_flags |= CONN_STRIPACCENTS;
@@ -5845,12 +5848,12 @@ FUNCTION(fun_lwho)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (strcasecmp("all", args[1]) == 0) {
+    if (sqlite3_stricmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strcasecmp("online", args[1]) == 0) {
+    } else if (sqlite3_stricmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (strcasecmp("offline", args[1]) == 0) {
+    } else if (sqlite3_stricmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {
@@ -6387,12 +6390,12 @@ FUNCTION(fun_lports)
   }
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (strcasecmp("all", args[1]) == 0) {
+    if (sqlite3_stricmp("all", args[1]) == 0) {
       offline = online = 1;
-    } else if (strcasecmp("online", args[1]) == 0) {
+    } else if (sqlite3_stricmp("online", args[1]) == 0) {
       online = 1;
       offline = 0;
-    } else if (strcasecmp("offline", args[1]) == 0) {
+    } else if (sqlite3_stricmp("offline", args[1]) == 0) {
       online = 0;
       offline = 1;
     } else {

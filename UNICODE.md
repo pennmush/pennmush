@@ -119,8 +119,14 @@ For case-sensitive comparision, `strcmp()` should work with UTF-8.
 
 For case-insensitive comparision:
 
-* `sqlite3_stricmp()` only does case folding of ASCII letters.
-* TODO: Generic Unicode-aware case insensitive comparision using ICU. Fall back on the sqlite3 function otherwise.
+* `sqlite3_stricmp()`, `sqlite3_strnicmp()` only does case folding of
+  ASCII letters. Use when comparing against literal ASCII-only
+  strings.
+* `uni_strcasecmp()` and `uni_strncasecmp()` when ICU is used, does
+  full case-insensitive comparison. Falls back to the sqlite3 routines
+  otherwise.
+* `uni_strcoll()` does a locale-dependant comparison with ICU,
+  `strcmp()` without..
 
 Regular Expressions
 -------------------
@@ -136,7 +142,8 @@ Iteration
 Miscellaneous
 -------------
 
-* `first_cp()` returns the first codepoint in a string.
+* `first_cp()` returns the first codepoint in a string. Wrapper for
+  when the `U8_NEXT()` macro is awkward to use.
 * `strlen_cp()` returns the number of codepoints in a string.
 
 UTF-8 aware versions of assorted other functions in

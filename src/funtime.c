@@ -664,7 +664,7 @@ FUNCTION(fun_convtime)
     save_tz = 1;
   } else if (nargs == 2) {
     struct tz_result res;
-    if (strcasecmp(args[1], "utc") == 0) {
+    if (sqlite3_stricmp(args[1], "utc") == 0) {
       save_tz = 1;
     } else if (parse_timezone_arg(args[1], mudtime, &res)) {
       tz = res.tz_name;

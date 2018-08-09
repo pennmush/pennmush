@@ -435,15 +435,17 @@ do_mail_status(dbref player, const char *msglist, const char *status)
     return;
   }
 
-  if (strcasecmp("urgent", status) == 0 || strcasecmp("unurgent", status) == 0)
+  if (sqlite3_stricmp("urgent", status) == 0 ||
+      sqlite3_stricmp("unurgent", status) == 0)
     flag = M_URGENT;
-  else if (strcasecmp("read", status) == 0 || strcasecmp("unread", status) == 0)
+  else if (sqlite3_stricmp("read", status) == 0 ||
+           sqlite3_stricmp("unread", status) == 0)
     flag = M_MSGREAD;
-  else if (strcasecmp("cleared", status) == 0 ||
-           strcasecmp("uncleared", status) == 0)
+  else if (sqlite3_stricmp("cleared", status) == 0 ||
+           sqlite3_stricmp("uncleared", status) == 0)
     flag = M_CLEARED;
-  else if (strcasecmp("tagged", status) == 0 ||
-           strcasecmp("untagged", status) == 0)
+  else if (sqlite3_stricmp("tagged", status) == 0 ||
+           sqlite3_stricmp("untagged", status) == 0)
     flag = M_TAG;
   else {
     notify(player, T("MAIL: Unknown status."));
@@ -1568,7 +1570,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
       notify(player, T("MAIL: You cannot send mail to non-existent people."));
     return 0;
   }
-  if (!strcasecmp(message, "clear")) {
+  if (!sqlite3_stricmp(message, "clear")) {
     notify(player,
            T("MAIL: You probably don't wanna send mail saying 'clear'."));
     return 0;
@@ -1748,7 +1750,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     notify(player, T("Go get some bugspray."));
     return;
   }
-  if (strcasecmp("clear", action) == 0) {
+  if (sqlite3_stricmp("clear", action) == 0) {
     target =
       match_result(player, victim, TYPE_PLAYER, MAT_PMATCH | MAT_ABSOLUTE);
     if (target == NOTHING) {
@@ -1760,7 +1762,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     notify_format(player, T("Mail cleared for %s(#%d)."),
                   AName(target, AN_SYS, NULL), target);
     return;
-  } else if (strcasecmp("sanity", action) == 0) {
+  } else if (sqlite3_stricmp("sanity", action) == 0) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = mp->next) {
       if (!GoodObject(mp->to))
         notify_format(player, T("Bad object #%d has mail."), mp->to);
@@ -1776,7 +1778,7 @@ do_mail_debug(dbref player, const char *action, const char *victim)
       mdb_top = i;
     }
     notify(player, T("Mail sanity check completed."));
-  } else if (strcasecmp("fix", action) == 0) {
+  } else if (sqlite3_stricmp("fix", action) == 0) {
     for (i = 0, mp = HEAD; mp != NULL; i++, mp = nextp) {
       if (!GoodObject(mp->to) || !IsPlayer(mp->to)) {
         notify_format(player, T("Fixing mail for #%d."), mp->to);
@@ -2002,16 +2004,16 @@ do_mail(dbref player, char *arg1, char *arg2)
     return;
   }
   /* purge a player's mailbox */
-  if (!strcasecmp(arg1, "purge")) {
+  if (!sqlite3_stricmp(arg1, "purge")) {
     do_mail_purge(player);
     return;
   }
   /* clear message */
-  if (!strcasecmp(arg1, "clear")) {
+  if (!sqlite3_stricmp(arg1, "clear")) {
     do_mail_clear(player, arg2);
     return;
   }
-  if (!strcasecmp(arg1, "unclear")) {
+  if (!sqlite3_stricmp(arg1, "unclear")) {
     do_mail_unclear(player, arg2);
     return;
   }
@@ -2995,23 +2997,23 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
       notify(player, T("MAIL: Invalid player"));
       return 0;
     }
-  } else if (!strcasecmp(p, "all")) {
+  } else if (!sqlite3_stricmp(p, "all")) {
     ms->flags = M_ALL;
-  } else if (!strcasecmp(p, "folder")) {
+  } else if (!sqlite3_stricmp(p, "folder")) {
     ms->flags |= M_FOLDER;
-  } else if (!strcasecmp(p, "urgent")) {
+  } else if (!sqlite3_stricmp(p, "urgent")) {
     ms->flags = M_URGENT | M_FOLDER;
-  } else if (!strcasecmp(p, "unread")) {
+  } else if (!sqlite3_stricmp(p, "unread")) {
     ms->flags = M_MSUNREAD | M_FOLDER;
-  } else if (!strcasecmp(p, "read")) {
+  } else if (!sqlite3_stricmp(p, "read")) {
     ms->flags = M_MSGREAD | M_FOLDER;
-  } else if (!strcasecmp(p, "clear") || !strcasecmp(p, "cleared")) {
+  } else if (!sqlite3_stricmp(p, "clear") || !sqlite3_stricmp(p, "cleared")) {
     ms->flags = M_CLEARED | M_FOLDER;
-  } else if (!strcasecmp(p, "tag") || !strcasecmp(p, "tagged")) {
+  } else if (!sqlite3_stricmp(p, "tag") || !sqlite3_stricmp(p, "tagged")) {
     ms->flags = M_TAG | M_FOLDER;
-  } else if (!strcasecmp(p, "mass")) {
+  } else if (!sqlite3_stricmp(p, "mass")) {
     ms->flags = M_MASS;
-  } else if (!strcasecmp(p, "me")) {
+  } else if (!sqlite3_stricmp(p, "me")) {
     ms->player = player;
   } else {
     notify(player, T("MAIL: Invalid message specification"));

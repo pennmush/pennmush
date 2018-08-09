@@ -1503,7 +1503,7 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
   else {
     switch (Typeof(thing)) {
     case TYPE_PLAYER:
-      if (!strcasecmp(name, "me"))
+      if (!sqlite3_stricmp(name, "me"))
         safe_str("me", object, &objp);
       else {
         safe_chr('*', object, &objp);

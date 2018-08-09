@@ -374,7 +374,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   /* match "me" */
   match = where;
   if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS) &&
-      !strcasecmp(xname, "me")) {
+      !sqlite3_stricmp(xname, "me")) {
     if (MATCH_CONTROLS)
       return match;
     else
@@ -384,7 +384,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   /* match "here" */
   match = (goodwhere ? (IsRoom(where) ? NOTHING : Location(where)) : NOTHING);
   if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS) &&
-      !strcasecmp(xname, "here") && GoodObject(match) && MATCH_TYPE) {
+      !sqlite3_stricmp(xname, "here") && GoodObject(match) && MATCH_TYPE) {
     if (MATCH_CONTROLS) {
       return match;
     } else {
@@ -522,23 +522,23 @@ parse_english(char **name, long *flags)
 
   /* Handle restriction adjectives first */
   if (*flags & MAT_NEIGHBOR) {
-    if (!strncasecmp(*name, "this here ", 10)) {
+    if (!sqlite3_strnicmp(*name, "this here ", 10)) {
       *name += 10;
       *flags &= ~(MAT_POSSESSION | MAT_EXIT);
-    } else if (!strncasecmp(*name, "here ", 5) ||
-               !strncasecmp(*name, "this ", 5)) {
+    } else if (!sqlite3_strnicmp(*name, "here ", 5) ||
+               !sqlite3_strnicmp(*name, "this ", 5)) {
       *name += 5;
       *flags &=
         ~(MAT_POSSESSION | MAT_EXIT | MAT_REMOTE_CONTENTS | MAT_CONTAINER);
     }
   }
   if ((*flags & MAT_POSSESSION) &&
-      (!strncasecmp(*name, "my ", 3) || !strncasecmp(*name, "me ", 3))) {
+      (!sqlite3_strnicmp(*name, "my ", 3) || !sqlite3_strnicmp(*name, "me ", 3))) {
     *name += 3;
     *flags &= ~(MAT_NEIGHBOR | MAT_EXIT | MAT_CONTAINER | MAT_REMOTE_CONTENTS);
   }
   if ((*flags & (MAT_EXIT | MAT_CARRIED_EXIT)) &&
-      (!strncasecmp(*name, "toward ", 7))) {
+      (!sqlite3_strnicmp(*name, "toward ", 7))) {
     *name += 7;
     *flags &=
       ~(MAT_NEIGHBOR | MAT_POSSESSION | MAT_CONTAINER | MAT_REMOTE_CONTENTS);
@@ -574,18 +574,18 @@ parse_english(char **name, long *flags)
     if (count < 1) {
       count = -1;
     } else if ((count > 10) && (count < 14)) {
-      if (strcasecmp(e, "th"))
+      if (sqlite3_stricmp(e, "th"))
         count = -1;
     } else if ((count % 10) == 1) {
-      if (strcasecmp(e, "st"))
+      if (sqlite3_stricmp(e, "st"))
         count = -1;
     } else if ((count % 10) == 2) {
-      if (strcasecmp(e, "nd"))
+      if (sqlite3_stricmp(e, "nd"))
         count = -1;
     } else if ((count % 10) == 3) {
-      if (strcasecmp(e, "rd"))
+      if (sqlite3_stricmp(e, "rd"))
         count = -1;
-    } else if (strcasecmp(e, "th")) {
+    } else if (sqlite3_stricmp(e, "th")) {
       count = -1;
     }
   } else

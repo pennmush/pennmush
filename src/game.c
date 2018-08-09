@@ -374,7 +374,8 @@ dump_database_internal(void)
 
     snprintf(realdumpfile, sizeof realdumpfile, "%s%s", globals.dumpfile,
              options.compresssuff);
-    mush_strncpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch), sizeof tmpfl);
+    mush_strncpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch),
+                 sizeof tmpfl);
     snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
 
     if ((f = db_open_write(tmpfl)) != NULL) {
@@ -2254,19 +2255,19 @@ FUNCTION(fun_uptime)
   enum uptime_type which = UPTIME_UPSINCE;
 
   if (args[0] && *args[0]) {
-    if (strcasecmp("upsince", args[0]) == 0)
+    if (sqlite3_stricmp("upsince", args[0]) == 0)
       which = UPTIME_UPSINCE;
-    else if (strcasecmp("reboot", args[0]) == 0)
+    else if (sqlite3_stricmp("reboot", args[0]) == 0)
       which = UPTIME_REBOOT;
-    else if (strcasecmp("save", args[0]) == 0)
+    else if (sqlite3_stricmp("save", args[0]) == 0)
       which = UPTIME_LAST_SAVE;
-    else if (strcasecmp("nextsave", args[0]) == 0)
+    else if (sqlite3_stricmp("nextsave", args[0]) == 0)
       which = UPTIME_NEXT_SAVE;
-    else if (strcasecmp("dbck", args[0]) == 0)
+    else if (sqlite3_stricmp("dbck", args[0]) == 0)
       which = UPTIME_DBCK;
-    else if (strcasecmp("purge", args[0]) == 0)
+    else if (sqlite3_stricmp("purge", args[0]) == 0)
       which = UPTIME_PURGE;
-    else if (strcasecmp("warnings", args[0]) == 0)
+    else if (sqlite3_stricmp("warnings", args[0]) == 0)
       which = UPTIME_WARNING;
     else {
       safe_str("#-1", buff, bp);

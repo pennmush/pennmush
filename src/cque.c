@@ -1848,10 +1848,10 @@ FUNCTION(fun_lpids)
   const char *list;
   char *elem;
 
-  if (strcasecmp(called_as, "LPIDS") == 0) {
+  if (sqlite3_stricmp(called_as, "LPIDS") == 0) {
     /* lpids(player[,type]) */
     if (args[0] && *args[0]) {
-      if (strcasecmp(args[0], "all") == 0) {
+      if (sqlite3_stricmp(args[0], "all") == 0) {
         if (LookQueue(executor))
           player = NOTHING;
         else
@@ -1875,11 +1875,11 @@ FUNCTION(fun_lpids)
       list = args[1];
       while (list && *list) {
         elem = next_in_list(&list);
-        if (strcasecmp("wait", elem) == 0)
+        if (sqlite3_stricmp("wait", elem) == 0)
           qmask |= LPIDS_WAIT;
-        else if (strcasecmp("semaphore", elem) == 0)
+        else if (sqlite3_stricmp("semaphore", elem) == 0)
           qmask |= LPIDS_SEMAPHORE;
-        else if (strcasecmp("independent", elem) == 0)
+        else if (sqlite3_stricmp("independent", elem) == 0)
           qmask |= LPIDS_INDEPENDENT;
         else {
           safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);

@@ -394,11 +394,11 @@ FUNCTION(fun_connlog)
     return;
   }
 
-  if (strcasecmp(args[0], "all") == 0) {
+  if (sqlite3_stricmp(args[0], "all") == 0) {
     player = -1;
-  } else if (strcasecmp(args[0], "logged in") == 0) {
+  } else if (sqlite3_stricmp(args[0], "logged in") == 0) {
     player = -2;
-  } else if (strcasecmp(args[0], "not logged in") == 0) {
+  } else if (sqlite3_stricmp(args[0], "not logged in") == 0) {
     player = -3;
   } else {
     player = noisy_match_result(executor, args[0], TYPE_PLAYER,
@@ -472,7 +472,7 @@ FUNCTION(fun_connlog)
       sqlite3_str_appendf(query, " (conn <= %d AND disconn >= %d)", when, when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "before") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "before") == 0) {
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
@@ -493,7 +493,7 @@ FUNCTION(fun_connlog)
       sqlite3_str_appendf(query, " conn < %d", when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "after") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "after") == 0) {
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
@@ -516,7 +516,7 @@ FUNCTION(fun_connlog)
                           when, when, when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "ip") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "ip") == 0) {
       char *as_utf8;
 
       if (nargs <= idx + 1) {
@@ -537,7 +537,7 @@ FUNCTION(fun_connlog)
       }
       sqlite3_str_appendall(query, " ipaddr LIKE @ipaddr ESCAPE '$'");
       idx += 2;
-    } else if (strcasecmp(args[idx], "hostname") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "hostname") == 0) {
       char *as_utf8;
       if (nargs <= idx + 1) {
         safe_str("#-1 HOSTNAME MISSING PATTERN", buff, bp);

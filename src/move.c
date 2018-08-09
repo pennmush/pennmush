@@ -339,7 +339,7 @@ int
 can_move(dbref player, const char *direction)
 {
   int ok;
-  if (!strcasecmp(direction, "home")) {
+  if (!sqlite3_stricmp(direction, "home")) {
     ok = command_check_byname(player, "HOME", NULL);
   } else {
     /* otherwise match on exits - don't use GoodObject here! */
@@ -396,7 +396,7 @@ do_move(dbref player, const char *direction, enum move_type type,
         NEW_PE_INFO *pe_info)
 {
   dbref exit_m, loc, var_dest;
-  if (!strcasecmp(direction, "home") && can_move(player, "home")) {
+  if (!sqlite3_stricmp(direction, "home") && can_move(player, "home")) {
     /* send him home */
     /* but steal all his possessions */
     if (!Mobile(player) || !GoodObject(Home(player)) ||

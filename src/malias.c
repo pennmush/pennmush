@@ -199,7 +199,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
     /*
      * Now locate a target
      */
-    if (!strcasecmp(head, "me"))
+    if (!sqlite3_stricmp(head, "me"))
       target = player;
     else if (*head == '#') {
       target = atoi(head + 1);
@@ -561,7 +561,7 @@ do_malias_set(dbref player, char *alias, char *tolist)
     /*
      * Now locate a target
      */
-    if (!strcasecmp(head, "me"))
+    if (!sqlite3_stricmp(head, "me"))
       target = player;
     else if (*head == '#') {
       target = atoi(head + 1);
@@ -763,7 +763,7 @@ do_malias_add(dbref player, char *alias, char *tolist)
     /*
      * Now locate a target
      */
-    if (!strcasecmp(head, "me"))
+    if (!sqlite3_stricmp(head, "me"))
       target = player;
     else if (*head == '#') {
       target = atoi(head + 1);
@@ -863,7 +863,7 @@ do_malias_remove(dbref player, char *alias, char *tolist)
     /*
      * Now locate a target
      */
-    if (!strcasecmp(head, "me"))
+    if (!sqlite3_stricmp(head, "me"))
       target = player;
     else if (*head == '#') {
       target = atoi(head + 1);

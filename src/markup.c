@@ -952,7 +952,7 @@ ansi_map_16(const char *name, bool bg, bool *hilite)
   }
 
   /* Is it an xterm color number? */
-  if (strncasecmp(name, "+xterm", 5) == 0) {
+  if (sqlite3_strnicmp(name, "+xterm", 5) == 0) {
     unsigned int xnum;
     char xname[16];
     int len;
@@ -1015,7 +1015,7 @@ ansi_map_256(const char *name, bool hilite, bool all)
   int status;
 
   /* Is it an xterm color number? */
-  if (strncasecmp(name, "+xterm", 6) == 0) {
+  if (sqlite3_strnicmp(name, "+xterm", 6) == 0) {
     unsigned int xnum;
     xnum = strtoul(name + 6, NULL, 10);
     if (xnum > 255)
@@ -1186,7 +1186,7 @@ ANSI_WRITER(ansi_xterm256)
 
   if (cur->fg[0] && strcmp(old->fg, cur->fg)) {
     if (is_new_ansi(cur->fg)) {
-      if (!strncasecmp(cur->fg, "+xterm", 6))
+      if (!sqlite3_strnicmp(cur->fg, "+xterm", 6))
         fg = atoi(cur->fg + 6);
       else
         fg = ansi_map_256(cur->fg, hilite, 0);
@@ -1203,7 +1203,7 @@ ANSI_WRITER(ansi_xterm256)
 
   if (cur->bg[0] && strcmp(old->bg, cur->bg)) {
     if (is_new_ansi(cur->bg)) {
-      if (!strncasecmp(cur->bg, "+xterm", 6))
+      if (!sqlite3_strnicmp(cur->bg, "+xterm", 6))
         bg = atoi(cur->bg + 6);
       else
         bg = ansi_map_256(cur->bg, hilite, 0);
@@ -1486,7 +1486,7 @@ define_ansi_data(ansi_data *store, const char *str)
           return 1;
         }
 
-        if (strncasecmp("xterm", buff, 5) ==
+        if (sqlite3_strnicmp("xterm", buff, 5) ==
             0) { /* xterm color ids are stored directly. */
           snprintf(ptr, COLOR_NAME_LEN, "+%.8s", buff);
         } else if (len > 6) { /* Use hex code to save on buffer space */

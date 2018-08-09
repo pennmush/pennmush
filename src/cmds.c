@@ -864,11 +864,11 @@ do_list(dbref player, char *arg, int lc, int which)
       do_list_functions(player, lc, "all");
       break;
     }
-  } else if (strcasecmp("motd", arg) == 0)
+  } else if (sqlite3_stricmp("motd", arg) == 0)
     do_motd(player, MOTD_LIST | MOTD_TYPE, "");
-  else if (strcasecmp("attribs", arg) == 0)
+  else if (sqlite3_stricmp("attribs", arg) == 0)
     do_list_attribs(player, lc);
-  else if (strcasecmp("flags", arg) == 0)
+  else if (sqlite3_stricmp("flags", arg) == 0)
     do_list_flags("FLAG", player, "",
                   FLAG_LIST_NAMECHAR | (lc ? FLAG_LIST_LOWERCASE : 0),
                   T("Flags"));
@@ -1440,7 +1440,7 @@ COMMAND(cmd_slave)
 {
   if (SW_ISSET(sw, SWITCH_RESTART)) {
 #ifdef INFO_SLAVE
-    if (strcasecmp(arg_left, "info") == 0) {
+    if (sqlite3_stricmp(arg_left, "info") == 0) {
       kill_info_slave();
       notify(executor, T("Restarting info_slave daemon."));
       do_rawlog(LT_WIZ, "%s(#%d) restarted info_slave.", Name(executor),
@@ -1449,7 +1449,7 @@ COMMAND(cmd_slave)
     }
 #endif
 #ifdef SSL_SLAVE
-    if (strcasecmp(arg_left, "ssl") == 0) {
+    if (sqlite3_stricmp(arg_left, "ssl") == 0) {
       kill_ssl_slave();
       make_ssl_slave();
       notify(executor, T("Restarting ssl_slave daemon."));

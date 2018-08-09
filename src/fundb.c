@@ -1170,7 +1170,7 @@ get_locktype(const char *str)
   if (!str || !*str) {
     return Basic_Lock;
   }
-  if (!strncasecmp(str, "USER:", 5)) {
+  if (!sqlite3_strnicmp(str, "USER:", 5)) {
     str += 5;
   }
   return strupper_r(str, buff, sizeof buff);
@@ -1713,7 +1713,7 @@ FUNCTION(fun_owner)
 {
   dbref thing;
   ATTR *attrib;
-  
+
   if (nargs == 1) {
     if (strchr(args[0], '/')) {
       parse_attrib(executor, args[0], &thing, &attrib);
@@ -1722,21 +1722,22 @@ FUNCTION(fun_owner)
         safe_str("#-1", buff, bp);
       else
         safe_dbref(attrib->creator, buff, bp);
-    } else { 
+    } else {
       thing = match_thing(executor, args[0]);
       if (!GoodObject(thing))
         safe_str(T(e_notvis), buff, bp);
-      else 
+      else
         safe_dbref(Owner(thing), buff, bp);
     }
   } else {
     /* Support changing ownership if side effect functions are enabled. */
-    
-    if(!FUNCTION_SIDE_EFFECTS) {
-      safe_str(T(e_disabled),buff, bp);
+
+    if (!FUNCTION_SIDE_EFFECTS) {
+      safe_str(T(e_disabled), buff, bp);
       return;
     }
-    if (!command_check_byname(executor, "@chown", pe_info) || fun->flags & FN_NOSIDEFX) {
+    if (!command_check_byname(executor, "@chown", pe_info) ||
+        fun->flags & FN_NOSIDEFX) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
@@ -1744,9 +1745,11 @@ FUNCTION(fun_owner)
       safe_integer(do_atrchown(executor, args[0], args[1]), buff, bp);
     } else {
       if (nargs == 3 && args[2] && string_prefix("preserve", args[2]))
-        safe_integer(do_chown(executor, args[0], args[1], 1, pe_info), buff, bp);
+        safe_integer(do_chown(executor, args[0], args[1], 1, pe_info), buff,
+                     bp);
       else
-        safe_integer(do_chown(executor, args[0], args[1], 0, pe_info), buff, bp);
+        safe_integer(do_chown(executor, args[0], args[1], 0, pe_info), buff,
+                     bp);
     }
   }
 }
@@ -2200,7 +2203,7 @@ FUNCTION(fun_clone)
     return;
   }
 
-  if (nargs == 4 && strcasecmp(args[3], "preserve") == 0) {
+  if (nargs == 4 && sqlite3_stricmp(args[3], "preserve") == 0) {
     preserve = true;
   }
 
@@ -2229,7 +2232,8 @@ FUNCTION(fun_link)
   if (nargs > 2)
     preserve = parse_boolean(args[2]);
 
-  safe_integer(do_link(executor, args[0], args[1], preserve, pe_info), buff, bp);
+  safe_integer(do_link(executor, args[0], args[1], preserve, pe_info), buff,
+               bp);
 }
 
 /* ARGSUSED */
@@ -2374,9 +2378,9 @@ FUNCTION(fun_lstats)
   dbref who;
   struct db_stat_info *si;
 
-  if ((!args[0]) || !*args[0] || !strcasecmp(args[0], "all")) {
+  if ((!args[0]) || !*args[0] || !sqlite3_stricmp(args[0], "all")) {
     who = ANY_OWNER;
-  } else if (!strcasecmp(args[0], "me")) {
+  } else if (!sqlite3_stricmp(args[0], "me")) {
     who = executor;
   } else {
     who = lookup_player(args[0]);

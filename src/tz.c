@@ -445,7 +445,7 @@ parse_timezone_arg(const char *arg, time_t when, struct tz_result *res)
   memset(res, 0, sizeof *res);
   res->tz_when = when;
 
-  if (strcasecmp(arg, "UTC") == 0) {
+  if (sqlite3_stricmp(arg, "UTC") == 0) {
     res->tz_utc = 1;
     return 1;
   } else if (is_objid(arg)) {

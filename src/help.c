@@ -74,7 +74,8 @@ static char **list_matching_entries(const char *pattern, help_file *help_dat,
                                     int *len);
 static void free_entry_list(char **, int len);
 
-static char *normalize_entry(help_file *help_dat, const char *arg1) __attribute_malloc__;
+static char *normalize_entry(help_file *help_dat,
+                             const char *arg1) __attribute_malloc__;
 
 static bool help_delete_entries(help_file *h);
 static bool help_populate_entries(help_file *h);
@@ -1386,8 +1387,7 @@ entries_from_offset(help_file *h, int off)
         col = 1;
         need_col0 = 0;
       } else {
-        ps_safe_format(res, " %-51.51s %-25.25s\n", entries[0],
-                            entries[1]);
+        ps_safe_format(res, " %-51.51s %-25.25s\n", entries[0], entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
         entries[0] = entries[1] = NULL;
@@ -1404,8 +1404,7 @@ entries_from_offset(help_file *h, int off)
     } else {
       status = sqlite3_step(indexer);
       if (status != SQLITE_ROW) {
-        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0],
-                            entries[1]);
+        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0], entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
         entries[0] = entries[1] = NULL;
@@ -1419,8 +1418,7 @@ entries_from_offset(help_file *h, int off)
         lens[2] -= 1;
       }
       if (lens[2] > LONG_TOPIC) {
-        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0],
-                            entries[1]);
+        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0], entries[1]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
         entries[0] = entries[2];
@@ -1429,7 +1427,7 @@ entries_from_offset(help_file *h, int off)
         need_col0 = 0;
       } else {
         ps_safe_format(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
-                            entries[1], entries[2]);
+                       entries[1], entries[2]);
         mush_free(entries[0], "string");
         mush_free(entries[1], "string");
         mush_free(entries[2], "string");
@@ -1446,7 +1444,7 @@ entries_from_offset(help_file *h, int off)
       ps_safe_format(res, "\nFor more, see ENTRIES-%d", pages);
     } else if (pages > (off + 1)) {
       ps_safe_format(res, "\nFor more, see ENTRIES-%d through %d", off + 1,
-                          pages);
+                     pages);
     }
   }
 
@@ -1463,7 +1461,8 @@ is_index_entry(const char *topic, int *offset)
   int ovec[33], ovecsize = 33;
   int r;
 
-  if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
+  if (sqlite3_stricmp(topic, "entries") == 0 ||
+      sqlite3_stricmp(topic, "&entries") == 0) {
     *offset = 1;
     return 1;
   }

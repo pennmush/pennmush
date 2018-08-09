@@ -60,11 +60,11 @@ FUNCTION(fun_valid)
 
   if (!args[0] || !*args[0]) {
     safe_str("#-1", buff, bp);
-  } else if (!strcasecmp(args[0], "name")) {
+  } else if (!sqlite3_stricmp(args[0], "name")) {
     safe_boolean(ok_name(args[1], 0), buff, bp);
-  } else if (!strcasecmp(args[0], "attrname")) {
+  } else if (!sqlite3_stricmp(args[0], "attrname")) {
     safe_boolean(good_atr_name(strupper_r(args[1], tmp, sizeof tmp)), buff, bp);
-  } else if (!strcasecmp(args[0], "playername")) {
+  } else if (!sqlite3_stricmp(args[0], "playername")) {
     dbref target = executor;
     if (nargs >= 3) {
       target = noisy_match_result(executor, args[2], TYPE_PLAYER,
@@ -75,37 +75,37 @@ FUNCTION(fun_valid)
       }
     }
     safe_boolean(ok_player_name(args[1], target, target), buff, bp);
-  } else if (!strcasecmp(args[0], "password")) {
+  } else if (!sqlite3_stricmp(args[0], "password")) {
     safe_boolean(ok_password(args[1]), buff, bp);
-  } else if (!strcasecmp(args[0], "command")) {
+  } else if (!sqlite3_stricmp(args[0], "command")) {
     safe_boolean(ok_command_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
                  bp);
-  } else if (!strcasecmp(args[0], "function")) {
+  } else if (!sqlite3_stricmp(args[0], "function")) {
     safe_boolean(ok_function_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
                  bp);
-  } else if (!strcasecmp(args[0], "flag")) {
+  } else if (!sqlite3_stricmp(args[0], "flag")) {
     safe_boolean(good_flag_name(strupper_r(args[1], tmp, sizeof tmp)), buff,
                  bp);
-  } else if (!strcasecmp(args[0], "qreg")) {
+  } else if (!sqlite3_stricmp(args[0], "qreg")) {
     safe_boolean(ValidQregName(args[1]), buff, bp);
-  } else if (!strcasecmp(args[0], "colorname")) {
+  } else if (!sqlite3_stricmp(args[0], "colorname")) {
     safe_boolean(valid_color_name(args[1]), buff, bp);
-  } else if (!strcasecmp(args[0], "ansicodes")) {
+  } else if (!sqlite3_stricmp(args[0], "ansicodes")) {
     ansi_data colors;
     safe_boolean(!define_ansi_data(&colors, args[1]), buff, bp);
-  } else if (!strcasecmp(args[0], "channel")) {
+  } else if (!sqlite3_stricmp(args[0], "channel")) {
     CHAN *target = NULL;
     if (nargs >= 3) {
       find_channel(args[2], &target, executor);
     }
     safe_boolean((ok_channel_name(args[1], target) == NAME_OK), buff, bp);
-  } else if (!strcasecmp(args[0], "attrvalue")) {
+  } else if (!sqlite3_stricmp(args[0], "attrvalue")) {
     safe_boolean(check_attr_value(NOTHING, args[2], args[1]) != NULL, buff, bp);
-  } else if (!strcasecmp(args[0], "timezone")) {
+  } else if (!sqlite3_stricmp(args[0], "timezone")) {
     struct tz_result res;
     safe_boolean(parse_timezone_arg(args[1], mudtime, &res), buff, bp);
-  } else if (!strcasecmp(args[0], "boolexp") ||
-             !strcasecmp(args[0], "lockkey")) {
+  } else if (!sqlite3_stricmp(args[0], "boolexp") ||
+             !sqlite3_stricmp(args[0], "lockkey")) {
     boolexp key = parse_boolexp(executor, args[1], "Basic");
     if (key == TRUE_BOOLEXP)
       safe_boolean(0, buff, bp);
@@ -113,7 +113,7 @@ FUNCTION(fun_valid)
       safe_boolean(1, buff, bp);
       free_boolexp(key);
     }
-  } else if (!strcasecmp(args[0], "locktype")) {
+  } else if (!sqlite3_stricmp(args[0], "locktype")) {
     dbref target = executor;
     lock_type lt;
     if (nargs >= 3) {
@@ -182,14 +182,14 @@ FUNCTION(fun_message)
       word = split_token(&list, ' ');
       if (!word || !*word)
         continue;
-      if (strcasecmp("nospoof", word) == 0) {
+      if (sqlite3_stricmp("nospoof", word) == 0) {
         if (Can_Nspemit(executor))
           flags |= PEMIT_SPOOF;
-      } else if (strcasecmp("spoof", word) == 0) {
+      } else if (sqlite3_stricmp("spoof", word) == 0) {
         speaker = SPOOF_NOSWITCH(executor, enactor);
-      } else if (strcasecmp("remit", word) == 0)
+      } else if (sqlite3_stricmp("remit", word) == 0)
         type = EMIT_REMIT;
-      else if (strcasecmp("oemit", word) == 0)
+      else if (sqlite3_stricmp("oemit", word) == 0)
         type = EMIT_OEMIT;
     } while (list);
   }
@@ -472,15 +472,16 @@ FUNCTION(fun_listq)
     while ((item = split_token(&list, ' '))) {
       if (!*item)
         continue;
-      if (strcasecmp("qregisters", item) == 0)
+      if (sqlite3_stricmp("qregisters", item) == 0)
         types |= PE_REGS_Q;
-      else if (strcasecmp("regexp", item) == 0)
+      else if (sqlite3_stricmp("regexp", item) == 0)
         types |= PE_REGS_REGEXP;
-      else if (strcasecmp("switch", item) == 0)
+      else if (sqlite3_stricmp("switch", item) == 0)
         types |= PE_REGS_SWITCH;
-      else if (strcasecmp("iter", item) == 0)
+      else if (sqlite3_stricmp("iter", item) == 0)
         types |= PE_REGS_ITER;
-      else if (strcasecmp("args", item) == 0 || strcasecmp("stack", item) == 0)
+      else if (sqlite3_stricmp("args", item) == 0 ||
+               sqlite3_stricmp("stack", item) == 0)
         types |= PE_REGS_ARG;
       else {
         safe_str("#-1", buff, bp);
@@ -971,7 +972,7 @@ FUNCTION(fun_stext)
   int i;
   int maxlev = PE_Get_Slev(pe_info);
 
-  if (!strcasecmp(args[0], "l")) {
+  if (!sqlite3_stricmp(args[0], "l")) {
     i = maxlev;
   } else if (is_strict_integer(args[0])) {
     i = parse_integer(args[0]);
@@ -1220,9 +1221,9 @@ FUNCTION(fun_soundex)
   char *hashed;
 
   if (nargs == 2) {
-    if (strcasecmp(args[1], "soundex") == 0) {
+    if (sqlite3_stricmp(args[1], "soundex") == 0) {
       type = HASH_SOUNDEX;
-    } else if (strcasecmp(args[1], "phone") == 0) {
+    } else if (sqlite3_stricmp(args[1], "phone") == 0) {
       type = HASH_PHONE;
     } else {
       safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
@@ -1249,9 +1250,9 @@ FUNCTION(fun_soundlike)
   char *hash1, *hash2;
 
   if (nargs == 3) {
-    if (strcasecmp(args[2], "soundex") == 0) {
+    if (sqlite3_stricmp(args[2], "soundex") == 0) {
       type = HASH_SOUNDEX;
-    } else if (strcasecmp(args[2], "phone") == 0) {
+    } else if (sqlite3_stricmp(args[2], "phone") == 0) {
       type = HASH_PHONE;
     } else {
       safe_str("#-1 UNKNOWN HASH TYPE", buff, bp);
@@ -1285,24 +1286,24 @@ FUNCTION(fun_list)
   int which = 3;
   static const char *const fwhich[3] = {"builtin", "local", "all"};
   if (nargs == 2) {
-    if (!strcasecmp(args[1], "local")) {
+    if (!sqlite3_stricmp(args[1], "local")) {
       which = 2;
-    } else if (!strcasecmp(args[1], "builtin")) {
+    } else if (!sqlite3_stricmp(args[1], "builtin")) {
       which = 1;
-    } else if (strcasecmp(args[1], "all")) {
+    } else if (sqlite3_stricmp(args[1], "all")) {
       safe_str("#-1", buff, bp);
       return;
     }
   }
   if (!args[0] || !*args[0]) {
     safe_str("#-1", buff, bp);
-  } else if (strcasecmp("motd", args[0]) == 0) {
+  } else if (sqlite3_stricmp("motd", args[0]) == 0) {
     safe_str(cf_motd_msg, buff, bp);
-  } else if (strcasecmp("wizmotd", args[0]) == 0 && Hasprivs(executor)) {
+  } else if (sqlite3_stricmp("wizmotd", args[0]) == 0 && Hasprivs(executor)) {
     safe_str(cf_wizmotd_msg, buff, bp);
-  } else if (strcasecmp("downmotd", args[0]) == 0 && Hasprivs(executor)) {
+  } else if (sqlite3_stricmp("downmotd", args[0]) == 0 && Hasprivs(executor)) {
     safe_str(cf_downmotd_msg, buff, bp);
-  } else if (strcasecmp("fullmotd", args[0]) == 0 && Hasprivs(executor)) {
+  } else if (sqlite3_stricmp("fullmotd", args[0]) == 0 && Hasprivs(executor)) {
     safe_str(cf_fullmotd_msg, buff, bp);
   } else if (string_prefix("functions", args[0])) {
     safe_str(list_functions(fwhich[which - 1]), buff, bp);
@@ -1359,21 +1360,21 @@ FUNCTION(fun_scan)
   if (nargs == 3 && arglens[2]) {
     prefstr = trim_space_sep(args[2], ' ');
     while ((thispref = split_token(&prefstr, ' '))) {
-      if (strcasecmp("room", thispref) == 0)
+      if (sqlite3_stricmp("room", thispref) == 0)
         scan_type |= CHECK_HERE | CHECK_NEIGHBORS;
-      else if (strcasecmp("me", thispref) == 0)
+      else if (sqlite3_stricmp("me", thispref) == 0)
         scan_type |= CHECK_SELF;
-      else if (strcasecmp("inventory", thispref) == 0)
+      else if (sqlite3_stricmp("inventory", thispref) == 0)
         scan_type |= CHECK_INVENTORY;
-      else if (strcasecmp("self", thispref) == 0)
+      else if (sqlite3_stricmp("self", thispref) == 0)
         scan_type |= CHECK_SELF | CHECK_INVENTORY;
-      else if (strcasecmp("zone", thispref) == 0)
+      else if (sqlite3_stricmp("zone", thispref) == 0)
         scan_type |= CHECK_ZONE;
-      else if (strcasecmp("globals", thispref) == 0)
+      else if (sqlite3_stricmp("globals", thispref) == 0)
         scan_type |= CHECK_GLOBAL;
-      else if (strcasecmp("break", thispref) == 0)
+      else if (sqlite3_stricmp("break", thispref) == 0)
         scan_type |= CHECK_BREAK;
-      else if (strcasecmp("all", thispref) == 0) {
+      else if (sqlite3_stricmp("all", thispref) == 0) {
         scan_type |= CHECK_ALL;
       } else {
         notify(executor, T("Invalid type."));
@@ -1440,14 +1441,14 @@ do_whichof(char *args[], int nargs, enum whichof_t flag, char *buff, char **bp,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor, caller, enactor,
-             pe_info, eflags, !!strcasecmp(called_as, "STRFIRSTOF"));
+             pe_info, eflags, !!sqlite3_stricmp(called_as, "STRFIRSTOF"));
 }
 
 /* ARGSUSED */
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor, caller, enactor,
-             pe_info, eflags, !!strcasecmp(called_as, "STRALLOF"));
+             pe_info, eflags, !!sqlite3_stricmp(called_as, "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */

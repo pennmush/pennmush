@@ -228,12 +228,6 @@ typedef bool _Bool;
 
 #undef HAVE__STRNICMP
 
-#undef HAVE__STRICOLL
-
-#undef HAVE__STRNCOLL
-
-#undef HAVE__STRNICOLL
-
 #undef HAVE__SNPRINTF
 
 #undef HAVE__VSNPRINTF
@@ -247,8 +241,6 @@ typedef bool _Bool;
 #undef HAVE_STRDUP
 
 #undef HAVE_STRCOLL
-
-#undef HAVE_STRXFRM
 
 #undef HAVE_SYSCONF
 

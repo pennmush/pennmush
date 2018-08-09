@@ -242,7 +242,7 @@ read_access_file(void)
         can = cant = 0;
         comment = NULL;
         /* Is this the @sitelock entry? */
-        if (!strncasecmp(p, "@sitelock", 9)) {
+        if (!sqlite3_strnicmp(p, "@sitelock", 9)) {
           if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "",
                                &errptr))
             do_log(LT_ERR, GOD, GOD, "Failed to add sitelock node: %s", errptr);
@@ -706,7 +706,7 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
       }
     } else {
       /* None is special */
-      if (!strncasecmp(w, "NONE", 4)) {
+      if (!sqlite3_strnicmp(w, "NONE", 4)) {
         *cant = ACS_DEFAULT;
         found++;
       } else {

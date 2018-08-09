@@ -2170,7 +2170,7 @@ FUNCTION(fun_itext)
   int i;
   int maxlev = PE_Get_Ilev(pe_info);
 
-  if (!strcasecmp(args[0], "l")) {
+  if (!sqlite3_stricmp(args[0], "l")) {
     i = maxlev;
   } else {
     if (!is_strict_integer(args[0])) {
@@ -2194,7 +2194,7 @@ FUNCTION(fun_inum)
   int i;
   int maxlev = PE_Get_Ilev(pe_info);
 
-  if (!strcasecmp(args[0], "l")) {
+  if (!sqlite3_stricmp(args[0], "l")) {
     i = maxlev;
   } else {
     if (!is_strict_integer(args[0])) {

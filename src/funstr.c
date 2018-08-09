@@ -2435,7 +2435,7 @@ FUNCTION(fun_render)
     word = split_token(&list, ' ');
     if (!word || !*word)
       continue;
-    if (strcasecmp("ansi", word) == 0) {
+    if (sqlite3_stricmp("ansi", word) == 0) {
       if (Can_Nspemit(executor)) {
         flags |= MSG_XTERM256;
       } else {
@@ -2444,9 +2444,9 @@ FUNCTION(fun_render)
       }
     } else if (string_prefix("noaccents", word))
       flags |= MSG_STRIPACCENTS;
-    else if (strcasecmp("markup", word) == 0)
+    else if (sqlite3_stricmp("markup", word) == 0)
       flags |= MSG_MARKUP;
-    else if (strcasecmp("html", word) == 0)
+    else if (sqlite3_stricmp("html", word) == 0)
       flags |= MSG_PUEBLO;
     else {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);

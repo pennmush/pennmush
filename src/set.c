@@ -197,7 +197,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve,
       NOTHING)
     return 0;
 
-  if (!*newobj || !strcasecmp(newobj, "me")) {
+  if (!*newobj || !sqlite3_stricmp(newobj, "me")) {
     newowner = player;
   } else {
     if ((newowner = lookup_player(newobj)) == NOTHING) {
@@ -384,7 +384,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING)
     return 0;
 
-  if (!newobj || !*newobj || !strcasecmp(newobj, "none"))
+  if (!newobj || !*newobj || !sqlite3_stricmp(newobj, "none"))
     zone = NOTHING;
   else {
     if ((zone = noisy_match_result(player, newobj, NOTYPE, MAT_EVERYTHING)) ==
@@ -1438,7 +1438,7 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
       NOTHING)
     return;
 
-  if (!parent_name || !*parent_name || !strcasecmp(parent_name, "none"))
+  if (!parent_name || !*parent_name || !sqlite3_stricmp(parent_name, "none"))
     parent = NOTHING;
   else if ((parent = noisy_match_result(player, parent_name, NOTYPE,
                                         MAT_EVERYTHING)) == NOTHING)

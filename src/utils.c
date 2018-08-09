@@ -137,13 +137,13 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   }
 
   if (thingname && (flags & UFUN_LAMBDA) &&
-      (strcasecmp(thingname, "#lambda") == 0 ||
-       strncasecmp(thingname, "#apply", 6) == 0)) {
+      (sqlite3_stricmp(thingname, "#lambda") == 0 ||
+       sqlite3_strnicmp(thingname, "#apply", 6) == 0)) {
     /* It's a lambda. */
 
     ufun->ufun_flags &= ~UFUN_NAME;
     ufun->thing = executor;
-    if (strcasecmp(thingname, "#lambda") == 0)
+    if (sqlite3_stricmp(thingname, "#lambda") == 0)
       mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
     else { /* #apply */
       char *ucb = ufun->contents;

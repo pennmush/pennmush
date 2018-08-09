@@ -2385,7 +2385,7 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
                   strlower_r(ns, tmp, sizeof tmp));
     return;
   }
-  if (!strcasecmp(args_right[1], "any")) {
+  if (!sqlite3_stricmp(args_right[1], "any")) {
     perms = F_ANY;
   } else {
     perms = string_to_privs(flag_privs, args_right[1], 0);
@@ -2395,7 +2395,7 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
     }
   }
   if (args_right[2] && *args_right[2]) {
-    if (!strcasecmp(args_right[2], "any")) {
+    if (!sqlite3_stricmp(args_right[2], "any")) {
       negate_perms = F_ANY;
     } else {
       negate_perms = string_to_privs(flag_privs, args_right[2], 0);
@@ -2450,7 +2450,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
                   strlower_r(ns, tmp, sizeof tmp));
     return;
   }
-  if (!strcasecmp(type_string, "any")) {
+  if (!sqlite3_stricmp(type_string, "any")) {
     type = NOTYPE;
   } else {
     type = string_to_privs(type_privs, type_string, 0);
@@ -2559,7 +2559,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
     letter = *args_right[1];
     /* Do we have a type? */
     if (args_right[2]) {
-      if (*args_right[2] && strcasecmp(args_right[2], "any"))
+      if (*args_right[2] && sqlite3_stricmp(args_right[2], "any"))
         type = string_to_privs(type_privs, args_right[2], 0);
       if (!type) {
         notify(player, T("I don't understand the list of types."));
@@ -2576,7 +2576,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
     }
     /* Do we have perms? */
     if (args_right[3] && *args_right[3]) {
-      if (!strcasecmp(args_right[3], "any")) {
+      if (!sqlite3_stricmp(args_right[3], "any")) {
         perms = F_ANY;
       } else {
         perms = string_to_privs(flag_privs, args_right[3], 0);
@@ -2587,7 +2587,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
       }
     }
     if (args_right[4] && *args_right[4]) {
-      if (!strcasecmp(args_right[4], "any")) {
+      if (!sqlite3_stricmp(args_right[4], "any")) {
         negate_perms = F_ANY;
       } else {
         negate_perms = string_to_privs(flag_privs, args_right[4], 0);

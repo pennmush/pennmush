@@ -81,17 +81,17 @@ FUNCTION(fun_json_query)
   int i, path;
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (strcasecmp("size", args[1]) == 0) {
+    if (sqlite3_stricmp("size", args[1]) == 0) {
       query_type = JSON_QUERY_SIZE;
-    } else if (strcasecmp("exists", args[1]) == 0) {
+    } else if (sqlite3_stricmp("exists", args[1]) == 0) {
       query_type = JSON_QUERY_EXISTS;
-    } else if (strcasecmp("get", args[1]) == 0) {
+    } else if (sqlite3_stricmp("get", args[1]) == 0) {
       query_type = JSON_QUERY_GET;
-    } else if (strcasecmp("unescape", args[1]) == 0) {
+    } else if (sqlite3_stricmp("unescape", args[1]) == 0) {
       query_type = JSON_QUERY_UNESCAPE;
-    } else if (strcasecmp("type", args[1]) == 0) {
+    } else if (sqlite3_stricmp("type", args[1]) == 0) {
       query_type = JSON_QUERY_TYPE;
-    } else if (strcasecmp("extract", args[1]) == 0) {
+    } else if (sqlite3_stricmp("extract", args[1]) == 0) {
       query_type = JSON_QUERY_EXTRACT;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
@@ -280,7 +280,7 @@ FUNCTION(fun_json_mod)
   int status;
   int ulen;
 
-  if (strcasecmp(args[1], "patch") == 0) {
+  if (sqlite3_stricmp(args[1], "patch") == 0) {
     op =
       prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_mod.patch");
     if (!op) {
@@ -292,7 +292,7 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 1, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
-  } else if (strcasecmp(args[1], "insert") == 0) {
+  } else if (sqlite3_stricmp(args[1], "insert") == 0) {
     if (nargs != 4) {
       safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
       return;
@@ -311,7 +311,7 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
     sqlite3_bind_text(op, 3, utf8, ulen, free_string);
-  } else if (strcasecmp(args[1], "replace") == 0) {
+  } else if (sqlite3_stricmp(args[1], "replace") == 0) {
     if (nargs != 4) {
       safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
       return;
@@ -330,7 +330,7 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
     sqlite3_bind_text(op, 3, utf8, ulen, free_string);
-  } else if (strcasecmp(args[1], "set") == 0) {
+  } else if (sqlite3_stricmp(args[1], "set") == 0) {
     if (nargs != 4) {
       safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
       return;
@@ -349,7 +349,7 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
     sqlite3_bind_text(op, 3, utf8, ulen, free_string);
-  } else if (strcasecmp(args[1], "remove") == 0) {
+  } else if (sqlite3_stricmp(args[1], "remove") == 0) {
     op =
       prepare_statement(sqldb, "VALUES (json_remove(?, ?))", "json_mod.remove");
     if (!op) {
@@ -361,7 +361,7 @@ FUNCTION(fun_json_mod)
     sqlite3_bind_text(op, 1, utf8, ulen, free_string);
     utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
     sqlite3_bind_text(op, 2, utf8, ulen, free_string);
-  } else if (strcasecmp(args[1], "sort") == 0) {
+  } else if (sqlite3_stricmp(args[1], "sort") == 0) {
     op = prepare_statement(
       sqldb,
       "WITH ordered(value) AS (SELECT CASE WHEN type='text' THEN "
@@ -549,17 +549,17 @@ FUNCTION(fun_json)
 
   if (!*args[0]) {
     type = JSON_STR;
-  } else if (strcasecmp("string", args[0]) == 0) {
+  } else if (sqlite3_stricmp("string", args[0]) == 0) {
     type = JSON_STR;
-  } else if (strcasecmp("boolean", args[0]) == 0) {
+  } else if (sqlite3_stricmp("boolean", args[0]) == 0) {
     type = JSON_BOOL;
-  } else if (strcasecmp("array", args[0]) == 0) {
+  } else if (sqlite3_stricmp("array", args[0]) == 0) {
     type = JSON_ARRAY;
-  } else if (strcasecmp("object", args[0]) == 0) {
+  } else if (sqlite3_stricmp("object", args[0]) == 0) {
     type = JSON_OBJECT;
-  } else if (strcasecmp("null", args[0]) == 0) {
+  } else if (sqlite3_stricmp("null", args[0]) == 0) {
     type = JSON_NULL;
-  } else if (strcasecmp("number", args[0]) == 0) {
+  } else if (sqlite3_stricmp("number", args[0]) == 0) {
     type = JSON_NUMBER;
   } else {
     safe_str(T("#-1 INVALID TYPE"), buff, bp);

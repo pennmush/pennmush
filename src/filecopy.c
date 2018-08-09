@@ -208,7 +208,7 @@ Win32MUSH_setup(void)
 #ifndef _DEBUG
   char FileName[256];
   if (GetModuleFileName(NULL, FileName, 256) != 0) {
-    if (!strcasecmp(strrchr(FileName, '\\') + 1, "pennmush.exe")) {
+    if (!_stricmp(strrchr(FileName, '\\') + 1, "pennmush.exe")) {
       if (CopyFile("pennmush.exe", "pennmush_run.exe", FALSE)) {
         do_rawlog(LT_ERR, "Successfully copied executable, starting copy.");
 #ifdef WIN32SERVICES

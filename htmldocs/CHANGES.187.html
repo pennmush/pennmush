@@ -12,7 +12,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
-  <link rel="stylesheet" href="mushdoc.css" />
+  <link rel="stylesheet" href="mushdoc.css">
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -97,7 +97,6 @@
 <li>If compiled with ICU support, adds <code>lcstr2()</code> and <code>ucstr2()</code> with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.</li>
 <li><code>@chatformat</code> now receives a new arg, <code>%6</code>, which defaults to “says” but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]</li>
 <li><code>etimefmt()</code> supports <code>$w</code> and <code>$y</code> formats for weeks and years. [SW, 804]</li>
-<li>Ported parenmatch() from Rhost. [MT, 1024]</li>
 </ul>
 <h2 id="fixes">Fixes</h2>
 <ul>
@@ -118,6 +117,7 @@
 <li>Fix an off-by-one error in command switch initialization code. [SW]</li>
 <li><code>@mail</code> without a message list respects the current folder instead of using folder 0. [77]</li>
 <li><code>ufun()</code>, <code>ulocal()</code>, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]</li>
+<li>Fix a long-standing bug where input sent right after a SSL connection could get lost. [SW]</li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>

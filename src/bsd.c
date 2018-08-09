@@ -1507,7 +1507,7 @@ shovechars(Port_t port, Port_t sslport)
         if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
-        input_ready = fds[fds_used].revents & POLLIN;
+        input_ready = fds[fds_used].revents & PENN_POLLIN;
 #ifdef HAVE_LIBCURL
         errors = 0;
 #else
@@ -1586,7 +1586,8 @@ new_connection(int oldsock, int *result, conn_source source)
   socklen_t addr_len;
   char ipbuf[BUFFER_LEN];
   char hostbuf[BUFFER_LEN];
-  char *bp;
+  char *bp, *extra = NULL;
+  DESC *d;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1626,17 +1627,18 @@ new_connection(int oldsock, int *result, conn_source source)
       pfd.events = POLLIN;
       pfd.revents = 0;
       poll(&pfd, 1, 100);
-      if (pfd.revents & POLLIN)
+      if (pfd.revents & POLLIN) {
         good_to_read = 1;
-      else
+      } else {
         good_to_read = 0;
+      }
     }
 #endif
 
-    if (good_to_read)
-      len =
-        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
-    else {
+    if (good_to_read) {
+      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf - 1, &remote_pid,
+                            &remote_uid);
+    } else {
       len = -1;
       errno = EWOULDBLOCK;
     }
@@ -1657,8 +1659,15 @@ new_connection(int oldsock, int *result, conn_source source)
         *split++ = '\0';
         strcpy(hostbuf, split);
         split = strchr(hostbuf, '\r');
-        if (split)
-          *split = '\0';
+        if (split) {
+          *(split++) = '\0';
+          if (*split == '\n') {
+            split++;
+          }
+          if (*split) {
+            extra = split;
+          }
+        }
       } else {
         /* Again, shouldn't happen! */
         strcpy(ipbuf, "(Unknown)");
@@ -1707,8 +1716,9 @@ new_connection(int oldsock, int *result, conn_source source)
       do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
                 newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
-    if (is_remote_source(source))
+    if (is_remote_source(source)) {
       shutdown(newsock, 2);
+    }
     closesocket(newsock);
 #ifndef WIN32
     errno = 0;
@@ -1717,9 +1727,14 @@ new_connection(int oldsock, int *result, conn_source source)
   }
   do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
             ipbuf, source_to_s(source));
-  if (is_remote_source(source))
+  if (is_remote_source(source)) {
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, hostbuf, ipbuf, source);
+  }
+  d = initializesock(newsock, hostbuf, ipbuf, source);
+  if (d && extra) {
+    process_input_helper(d, extra, strlen(extra));
+  }
+  return d;
 }
 
 /** Free the OUTPUTPREFIX and OUTPUTSUFFIX for a descriptor. */

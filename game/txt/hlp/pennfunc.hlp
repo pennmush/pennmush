@@ -3123,41 +3123,11 @@ See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
   If changing ownership, #-1 or 0 is returned on failure, 1 on success.
 
 See also: lockowner(), @chown, @atrchown
-& PARENMATCH()
-  parenmatch([<object>/]<attrib>, [<type>], [<prettyprint>], [<flags>])
-
-  This functions returns a colorized match of braces, brackets, and parenthesis, and highlights in red any mis-matching pairs. This comparison is always left-to-right. If the attribute is BUFFER_LEN, it will be returned unmodified.
-
-  If there are a large number of braces/brackets/parenthesis, the string may get cut off due to the ansi codes taking up extra space in the string. If this happens, <type> can be specified as '1' in order to only show mismatches rather than colorizing the entire attribute.
-  Optionally, the attribute can be pretty-printed for easier reading, however this will not work with larger attributes due to hitting the maximum buffer length.
-
-  <type> can be:
-  0 - Color the string and highlight red the first missmatch found (default)
-  1 - If there is a missmatch, ONLY return that, else ansify the string.
-
-  <prettyprint> defaults to '0', but if set to '1', this function will attempt to pretty print the entirety of the attribute. Please note that this will be cut off in larger attributes due to the aforementioned buffer length limit.
-
-  <flags> controlls extra whitespace for readability:
-  s - put spaces after every , and ; character and before and after =
-  p - put spaces before ) and after (
-  b - put spaces before ] and after [
-  B - put spaces before } and after {
-
-Examples:
-  > @va me=[add(1,1)]
-  > @vb me=[add(1,2))]
-  > say parenmatch(vb)
-  You say "[add(1,2))]"       (The second ')' would be hilighted red)
-  > say parenmatch(vb,1)
-  You say "[add(1,2))]"       (Just the second ')' would be colorized)
-  > say parenmatch(vb,,,bps)
-  You say "[ add( 1, 2 ) )]"  (it stops adding spaces on an error)
 
 & PARENT()
   parent(<object>[, <new parent>])
 
   This function returns the dbref number of an object's parent. You must be able to examine the object to do this. If you specify a second argument, parent() attempts to change the parent first. You must control <object>, and be allowed to @parent to <new parent>.
-
 See also: @parent, ancestors, pfun()
 & PEMIT()
 & NSPEMIT()

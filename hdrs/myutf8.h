@@ -14,7 +14,9 @@
 #include "punicode/utf8.h"
 #endif
 
+int gcbytes(const char *);
+int strlen_gc(const char *);
+int cpbytes(const char *);
 int strlen_cp(const char *);
+
 UChar32 first_cp(const char *, int *);
-
-

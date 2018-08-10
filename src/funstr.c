@@ -136,12 +136,12 @@ init_pronouns(void)
 #undef SET_PRONOUN
 
 static bool
-isword_cb(UChar32 c, char *s __attribute__((__unused__)),
+isword_cb(const char *gc, char *s __attribute__((__unused__)),
           int offset __attribute__((__unused__)),
           int len __attribute__((__unused__)),
           void *data __attribute__((__unused__)))
 {
-  return uni_isalpha(c);
+  return uni_isalpha(first_cp(gc, NULL));
 }
 
 /* ARGSUSED */
@@ -155,7 +155,7 @@ FUNCTION(fun_isword)
     return;
   }
   utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
-  safe_boolean(for_each_cp(utf8, isword_cb, NULL), buff, bp);
+  safe_boolean(for_each_gc(utf8, isword_cb, NULL), buff, bp);
   mush_free(utf8, "utf8.string");
 }
 
@@ -287,7 +287,7 @@ FUNCTION(fun_strlen)
 {
   /* TODO: Revise to use EGCs, not CPs, when support for them is added. */
   char *utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
-  safe_integer(strlen_cp(utf8), buff, bp);
+  safe_integer(strlen_gc(utf8), buff, bp);
   mush_free(utf8, "utf8.string");
 }
 
@@ -550,19 +550,19 @@ FUNCTION(fun_pos)
 /* TODO: Revise to use EGCs, not CPs, when support for them is added. */
 struct lpos_data {
   pennstr *buff;
-  UChar32 what;
+  char *what;
   bool first;
   int count;
 };
 
 static bool
-lpos_cb(UChar32 c, char *s __attribute__((__unused__)),
+lpos_cb(const char *c, char *s __attribute__((__unused__)),
         int offset __attribute__((__unused__)),
         int len __attribute__((__unused__)), void *vd)
 {
   struct lpos_data *data = vd;
 
-  if (c == data->what) {
+  if (strcmp(c, data->what) == 0) {
     if (data->first) {
       data->first = 0;
     } else {
@@ -582,18 +582,23 @@ FUNCTION(fun_lpos)
 
   data.buff = ps_new();
   if (arglens[1] == 0) {
-    data.what = ' ';
+    data.what = " ";
   } else {
     utf8 = latin1_to_utf8(args[1], arglens[1], NULL, "utf8.string");
-    data.what = first_cp(utf8, NULL);
-    mush_free(utf8, "utf8.string");
+    if (strlen_gc(utf8) != 1) {
+      safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+      mush_free(utf8, "utf8.string");
+      return;
+    }
+    data.what = utf8;
   }
   data.first = 1;
   data.count = 0;
 
   utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
-  for_each_cp(utf8, lpos_cb, &data);
+  for_each_gc(utf8, lpos_cb, &data);
   mush_free(utf8, "utf8.string");
+  mush_free(data.what, "utf8.string");
   safe_pennstr(data.buff, buff, bp);
   ps_free(data.buff);
 }

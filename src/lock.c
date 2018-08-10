@@ -154,7 +154,8 @@ list_locks(pennstr *buff, const char *name)
     } else {
       ps_safe_chr(buff, ' ');
     }
-    ps_safe_str(buff, strupper(locks[n]->type));
+    ps_safe_str_free(buff, strupper_a(locks[n]->type, "lock.upper"),
+                     "lock.upper");
   }
 
   mush_free(locks, "lock.list");

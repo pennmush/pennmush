@@ -1282,17 +1282,17 @@ seek_char(const char *s, char c)
  * \return pointer to next occurence of c or to the end of s.
  */
 char *
-seek_uchar(const char *s, UChar32 c)
+seek_cp(const char *s, UChar32 c)
 {
   int offset = 0;
   UChar32 curr;
 
-  U8_NEXT((const uint8_t *) s, offset, -1, curr);
+  U8_NEXT(s, offset, -1, curr);
   while (curr) {
     if (curr == c) {
       return (char *) s + offset;
     }
-    U8_NEXT((const uint8_t *) s, offset, -1, curr);
+    U8_NEXT(s, offset, -1, curr);
   }
   return (char *) s + offset;
 }
@@ -1487,7 +1487,7 @@ next_token(char *str, char sep)
  * \return pointer to start of next token in string.
  */
 char *
-next_utoken(char *str, UChar32 sep)
+next_token_cp(char *str, UChar32 sep)
 {
   /* move pointer to start of the next token */
   int offset = 0;
@@ -1580,7 +1580,7 @@ split_token(char **sp, char sep)
  * \return pointer to token, now null-terminated.
  */
 char *
-split_utoken(char **sp, UChar32 sep)
+split_token_cp(char **sp, UChar32 sep)
 {
   char *str, *save;
   UChar32 c;
@@ -1660,7 +1660,7 @@ do_uwordcount(char *str, UChar32 sep)
     return 0;
   }
 
-  for (n = 0; str; str = next_utoken(str, sep), n++) {
+  for (n = 0; str; str = next_token_cp(str, sep), n++) {
   }
   return n;
 }
@@ -1723,19 +1723,19 @@ remove_uword(char *list, char *word, UChar32 sep)
     return NULL;
   }
 
-  sp = split_utoken(&list, sep);
+  sp = split_token_cp(&list, sep);
   if (!strcmp(sp, word)) {
-    sp = split_utoken(&list, sep);
+    sp = split_token_cp(&list, sep);
     sqlite3_str_appendall(out, sp);
   } else {
     sqlite3_str_appendall(out, sp);
-    while (list && strcmp(sp = split_utoken(&list, sep), word)) {
+    while (list && strcmp(sp = split_token_cp(&list, sep), word)) {
       sqlite3_str_append(out, sepstr, seplen);
       sqlite3_str_appendall(out, sp);
     }
   }
   while (list) {
-    sp = split_utoken(&list, sep);
+    sp = split_token_cp(&list, sep);
     sqlite3_str_append(out, sepstr, seplen);
     sqlite3_str_appendall(out, sp);
   }
@@ -2342,6 +2342,41 @@ ps_safe_strl_cp(pennstr *ps, const char *s, int n)
   sqlite3_str_append(ps, s, offset);
 }
 
+/** Appends up to N extended grapheme clusters from a valid UTF-8
+    string to the pennstr */
+void
+ps_safe_strl_gc(pennstr *ps, const char *s, int n)
+{
+  int len = 0;
+  const char *s2 = s;
+
+  while (*s2 && n-- > 0) {
+    int len1 = gcbytes(s2);
+    s2 += len1;
+    len += len1;
+  }
+
+  sqlite3_str_append(ps, s, len);
+}
+
+/** Append a UTF-8 string to a pennstr and then free it.
+ *
+ * \param ps the pennstr to append to
+ * \param s the string to append
+ * \param name memcheck name. If NULL, frees using sqlite3_free
+ * instead of mush_free
+ */
+void
+ps_safe_str_free(pennstr *ps, char *s, const char *name)
+{
+  sqlite3_str_appendall(ps, s);
+  if (name) {
+    mush_free(s, name);
+  } else {
+    sqlite3_free(s);
+  }
+}
+
 /** Free a pennstr */
 void
 ps_free(pennstr *ps)
@@ -2396,6 +2431,47 @@ for_each_cp(char *s, cp_callback fun, void *data)
   return 1;
 }
 
+/** Iterate over a UTF-8 string calling a function for each extended
+ * grapheme cluster.
+ *
+ * \param s the UTF-8 string to walk.
+ * \param fun the callback function
+ * \param data user-supplied data pointer.
+ * \return true if the entire string was iterated, false if it quit early.
+ */
+bool
+for_each_gc(char *s, gc_callback fun, void *data)
+{
+  size_t prev_offset = 0;
+  char *s2 = s;
+
+  while (*s2) {
+    char *gc;
+    char sso[33] = {'\0'};
+    size_t len = gcbytes(s2);
+    if (len < sizeof sso) {
+      memcpy(sso, s2, len);
+      sso[len] = '\0';
+      gc = sso;
+    } else {
+      gc = mush_strndup(s, len, "utf8.string");
+    }
+
+    if (!fun(gc, s, prev_offset, len, data)) {
+      if (len >= sizeof sso) {
+        mush_free(gc, "utf8.string");
+      }
+      return 0;
+    }
+    if (len >= sizeof sso) {
+      mush_free(gc, "utf8.string");
+    }
+    prev_offset += len;
+    s2 += len;
+  }
+  return 1;
+}
+
 /** Return the number of codepoints in a UTF-8 string */
 int
 strlen_cp(const char *s)
@@ -2409,7 +2485,22 @@ strlen_cp(const char *s)
   return n;
 }
 
-/** Return the first codepoint in a UTF-8 string
+/** Return the number of extended grapheme clusters in a UTF-8 string */
+int
+strlen_gc(const char *s)
+{
+  int n = 0;
+
+  while (*s) {
+    s += gcbytes(s);
+    n += 1;
+  }
+  return n;
+}
+
+/** Return the first codepoint in a UTF-8 string. Usually you'll want
+ * to use U8_NEXT() directly, but sometimes it's handy to have as a
+ * function instead of a macro.
  *
  * \param s the UTF-8 string
  * \param len If non-NULL, set to the number of bytes taken up by the codepoint.
@@ -2512,8 +2603,8 @@ get_collator(void)
 }
 #endif
 
-/** Locale-sensitive UTF-8 string comparison. Falls back to strcmp()
-    without ICU. */
+/** Locale-sensitive UTF-8 string comparison. Falls back to strcoll()
+    without ICU, so make sure LC_COLLATE is a UTF-8 locale. */
 int
 uni_strcoll(const char *a, const char *b)
 {
@@ -2538,6 +2629,6 @@ uni_strcoll(const char *a, const char *b)
     return 1;
   }
 #else
-  return strcmp(a, b);
+  return strcoll(a, b);
 #endif
 }

@@ -46,9 +46,9 @@ int uni_strncasecmp(const char *, const char *, int);
 int uni_strcoll(const char *, const char *);
 
 char *next_token(char *str, char sep);
-char *next_utoken(char *str, UChar32 sep);
+char *next_token_cp(char *str, UChar32 sep);
 char *split_token(char **sp, char sep);
-char *split_utoken(char **sp, UChar32 sep);
+char *split_token_cp(char **sp, UChar32 sep);
 char *chopstr(const char *str, size_t lim);
 bool string_prefix(const char *restrict string, const char *restrict prefix);
 bool string_prefixe(const char *restrict string, const char *restrict prefix);
@@ -68,7 +68,7 @@ char *uupcasestr(char *s);
 char *udowncasestr(char *s);
 char *skip_space(const char *s);
 char *seek_char(const char *s, char c);
-char *seek_uchar(const char *s, UChar32 c);
+char *seek_cp(const char *s, UChar32 c);
 char *mush_strndup(const char *src, size_t len,
                    const char *check) __attribute_malloc__;
 char *mush_strndup_cp(const char *src, size_t len,
@@ -90,6 +90,20 @@ typedef bool (*cp_callback)(UChar32 c, char *s, int offset, int len,
                             void *data);
 
 bool for_each_cp(char *, cp_callback, void *);
+
+/** Callback function for use with for_each_gc.
+ *
+ * \param gc the current Extended Grapheme Cluster.
+ * \param s the UTF-8 string being iterated
+ * \param offset the offset into s where the current cluster starts at
+ * \param len the number of bytes of the current cluster in s
+ * \param data user-supplied data pointer
+ * \return true to continue iteration, false to stop.
+ */
+typedef bool (*gc_callback)(const char *gc, char *s, int offset, int len,
+                            void *data);
+
+bool for_each_gc(char *, gc_callback, void *);
 
 #ifndef HAVE_STRDUP
 char *strdup(const char *s) __attribute_malloc__;
@@ -154,6 +168,8 @@ void ps_safe_number(pennstr *, NVAL);
 void ps_safe_format(pennstr *, const char *fmt, ...)
   __attribute__((__format__(__printf__, 2, 3)));
 void ps_safe_strl_cp(pennstr *, const char *, int);
+void ps_safe_strl_gc(pennstr *, const char *, int);
+void ps_safe_str_free(pennstr *ps, char *s, const char *name);
 
 /** Append a single ASCII character to a pennstr */
 static inline void
@@ -180,7 +196,6 @@ ps_safe_uchar(pennstr *ps, UChar32 c)
 static inline void
 ps_safe_str(pennstr *ps, const char *s)
 {
-  /* Utf-8 string */
   sqlite3_str_appendall(ps, s);
 }
 

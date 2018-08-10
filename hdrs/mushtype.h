@@ -243,11 +243,47 @@ struct text_queue {
 /** Sending and receiving UTF-8 */
 #define CONN_UTF8 0x4000
 
+/** HTTP server request */
+#define CONN_HTTP_REQUEST 0x10000
+
+/** Terminate HTTP response */ 
+#define CONN_HTTP_CLOSE   0x40000
+
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
 #define CONN_WEBSOCKETS_REQUEST 0x10000000
 #define CONN_WEBSOCKETS 0x20000000
 #endif /* undef WITHOUT_WEBSOCKETS */
+
+#define HTTP_METHOD_LEN 16
+#define HTTP_CODE_LEN   64
+#define HTTP_PATH_LEN	2048
+typedef enum HTTP_METHOD {
+  HTTP_METHOD_UNKNOWN,
+  HTTP_METHOD_GET,
+  HTTP_METHOD_POST,
+  HTTP_METHOD_PUT,
+  HTTP_METHOD_PATCH,
+  HTTP_METHOD_DELETE,
+  HTTP_NUM_METHODS
+} http_method;
+
+typedef struct HTTP_REQUEST {
+  http_method method;			/* GET/POST/etc */
+  char path[HTTP_PATH_LEN];		/* route path */
+  char query[HTTP_PATH_LEN];		/* query string */
+  char route[HTTP_PATH_LEN];	/* route attribute name */
+  char headers[BUFFER_LEN];		/* request headers */
+  char *hp;				/* headers pointer */
+  char content[BUFFER_LEN];		/* request content */
+  char *cp;				/* content pointer */
+  uint32_t state;			/* request state */
+  int32_t length;			/* Content-Length */
+  int32_t recv;				/* number of content bytes read so far */
+  char type[HTTP_PATH_LEN];		/* Content-Type */
+  char res_code[HTTP_CODE_LEN];		/* response code */
+  char res_type[HTTP_PATH_LEN];		/* response Content-Type */
+} http_request;
 
 /** Maximum \@doing length */
 #define DOING_LEN 40
@@ -324,6 +360,7 @@ struct descriptor_data {
   uint64_t ws_frame_len;
 #endif                /* undef WITHOUT_WEBSOCKETS */
   int64_t connlog_id; /**< ID for this connection's connlog entry */
+  http_request *http;
 };
 
 enum json_type {

@@ -125,6 +125,8 @@
 #include "websock.h"
 #endif /* undef WITHOUT_WEBSOCKETS */
 
+#include "http.h"
+
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
 #endif
@@ -1356,6 +1358,16 @@ shovechars(Port_t port, Port_t sslport)
           goto recheck_d;
         }
       }
+      if (d->conn_flags & CONN_HTTP_CLOSE) {
+        shutdownsock(d, "http close", GOD);
+        d = dprev;
+        if (d) {
+          continue;
+        } else {
+          d = descriptor_list;
+          goto recheck_d;
+        }
+      }
       fds[fds_used].events = 0;
       if (d->input.head) { /* Don't get more input while this desc has a
                               command ready to eval. */
@@ -2160,6 +2172,10 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
 
   connlog_disconnection(d->connlog_id, reason);
 
+  if (d->http) {
+    mush_free(d->http, "http_request");
+  }
+
   {
     freeqs(d);
     if (d->ttype && d->ttype != default_ttype)
@@ -2209,6 +2225,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->checksum[0] = '\0';
   d->ssl = NULL;
   d->ssl_state = 0;
+  d->http = NULL;
   d->source = source;
   if (descriptor_list)
     descriptor_list->prev = d;
@@ -2484,10 +2501,13 @@ welcome_user_wrapper(void *data)
 static void
 welcome_user(DESC *d, int telnet)
 {
-  if (telnet == 1)
+  if (d->conn_flags & CONN_HTTP_REQUEST) {
+    return;
+  } else if (telnet == 1) {
     test_telnet(d);
-  else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
+  } else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML)) {
     queue_newwrite(d, PUEBLO_HELLO, strlen(PUEBLO_HELLO));
+  }
   fcache_dump(d, fcache.connect_fcache, NULL, NULL);
 }
 
@@ -2544,6 +2564,10 @@ test_telnet(DESC *d)
       return;
     }
 #endif /* undef WITHOUT_WEBSOCKETS */
+    if (d->conn_flags & CONN_HTTP_REQUEST) {
+      /* Don't bother testing for TELNET support. */
+      return;
+    }
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -3467,6 +3491,14 @@ do_command(DESC *d, char *command)
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
 
+  /* parse HTTP request headers and data */
+  if (d->conn_flags & CONN_HTTP_REQUEST) {
+    if (!process_http_request(d, command)) {
+      return CRES_HTTP;
+    }
+    return CRES_OK;
+  }
+
   if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
     j = strlen(IDLE_COMMAND);
     if ((int) strlen(command) > j) {
@@ -3479,9 +3511,7 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected &&
-      (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-       !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
+  if (!d->connected && is_http_request(command)) {
 #ifndef WITHOUT_WEBSOCKETS
     if (options.use_ws && is_websocket(command)) {
       /* Continue processing as a WebSockets upgrade request. */
@@ -3489,43 +3519,14 @@ do_command(DESC *d, char *command)
       return CRES_OK;
     }
 #endif /* undef WITHOUT_WEBSOCKETS */
-
-    char buf[BUFFER_LEN];
-    char *bp = buf;
-    bool has_url = strncmp(MUDURL, "http", 4) == 0;
-    safe_format(buf, &bp,
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html; charset:iso-8859-1\r\n"
-                "Pragma: no-cache\r\n"
-                "Connection: Close\r\n"
-                "\r\n"
-                "<!DOCTYPE html>\r\n"
-                "<HTML><HEAD>"
-                "<TITLE>Welcome to %s!</TITLE>",
-                MUDNAME);
-    if (has_url) {
-      safe_format(buf, &bp,
-                  "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
-                  MUDURL);
+    
+    /* parse the command as a HTTP request */
+    d->conn_flags |= CONN_HTTP_REQUEST;
+    if (do_http_command(d, command)) {
+      return CRES_OK;
     }
-    safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
-    if (has_url) {
-      safe_format(buf, &bp,
-                  "<p>You've come here by accident! Please click <a "
-                  "href=\"%s\">%s</a> to go to the website for %s if your "
-                  "browser doesn't redirect you in a few seconds.</p>",
-                  MUDURL, MUDURL, MUDNAME);
-    } else {
-      safe_format(buf, &bp,
-                  "<p>You've come here by accident! Try using a MUSH client, "
-                  "not a browser, to connect to %s.</p>",
-                  MUDNAME);
-    }
-    safe_str("</BODY></HTML>\r\n", buf, &bp);
-    *bp = '\0';
-    queue_write(d, buf, bp - buf);
-    queue_eol(d);
     return CRES_HTTP;
+    
   } else if (SUPPORT_PUEBLO &&
              !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
@@ -6817,6 +6818,7 @@ load_reboot_db(void)
       d->descriptor = val;
       d->connected_at = getref(f);
       d->conn_timer = NULL;
+      d->http = NULL;
       d->hide = getref(f);
       d->cmds = getref(f);
       d->player = getref(f);
@@ -6967,6 +6969,8 @@ load_reboot_db(void)
       mush_free(closed->output_prefix, "userstring");
     if (closed->output_suffix)
       mush_free(closed->output_suffix, "userstring");
+    if (closed->http)
+      mush_free(closed->http, "http_request");
     mush_free(closed, "descriptor");
     closed = nextclosed;
   }

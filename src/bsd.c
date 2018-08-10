@@ -291,6 +291,15 @@ DESC *descriptor_list = NULL; /**< The linked list of descriptors */
 intmap *descs_by_fd = NULL;   /**< Map of ports to DESC* objects */
 
 struct http_request *active_http_request = NULL; /**< Active HTTP Request */
+/* To roughly average HTTP_SECOND_LIMIT per second, we actually define
+ * an http request as COMMAND_TIME_MSEC http_quota, and every millisecond "adds"
+ * HTTP_SECOND_LIMIT.
+ *
+ * So after 83 milliseconds, if HTTP_SECOND_LIMIT is 50, then we add 4150 to
+ * the quota - essentially 4 additional requests. But it caps at
+ * HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC
+ */
+static int http_quota = 0;
 
 static int sock;
 static int sslsock = 0;
@@ -400,6 +409,7 @@ static void process_input_helper(DESC *d, char *tbuf1, int got);
 static bool is_http_request(char *command);
 static int process_http_start(DESC *d, char *command);
 static void process_http_input(DESC *d, char *buf, int len);
+static void queue_http_command(DESC *d);
 static void do_http_command(DESC *d);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
@@ -915,7 +925,8 @@ update_quotas(struct timeval last, struct timeval current)
 {
   int nslices;
   DESC *d;
-  nslices = (int) msec_diff(current, last) / COMMAND_TIME_MSEC;
+  uint32_t msecs = msec_diff(current, last);
+  nslices = (int) msecs / COMMAND_TIME_MSEC;
 
   if (nslices > 0) {
     for (d = descriptor_list; d; d = d->next) {
@@ -923,6 +934,12 @@ update_quotas(struct timeval last, struct timeval current)
       if (d->quota > COMMAND_BURST_SIZE)
         d->quota = COMMAND_BURST_SIZE;
     }
+  }
+
+  /* And the HTTP quota */
+  http_quota += (msecs * HTTP_SECOND_LIMIT);
+  if (http_quota > (HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC)) {
+    http_quota = HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC;
   }
 }
 
@@ -1524,7 +1541,7 @@ shovechars(Port_t port, Port_t sslport)
         if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
-        input_ready = fds[fds_used].revents & POLLIN;
+        input_ready = fds[fds_used].revents & PENN_POLLIN;
         full_events = fds[fds_used].revents;
 #ifdef HAVE_LIBCURL
         errors = 0;
@@ -1551,7 +1568,7 @@ shovechars(Port_t port, Port_t sslport)
           }
         }
         if (full_events & POLLHUP) {
-          do_http_command(d);
+          queue_http_command(d);
         }
       }
     }
@@ -1607,7 +1624,8 @@ new_connection(int oldsock, int *result, conn_source source)
   socklen_t addr_len;
   char ipbuf[BUFFER_LEN];
   char hostbuf[BUFFER_LEN];
-  char *bp;
+  char *bp, *extra = NULL;
+  DESC *d;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1647,17 +1665,18 @@ new_connection(int oldsock, int *result, conn_source source)
       pfd.events = POLLIN;
       pfd.revents = 0;
       poll(&pfd, 1, 100);
-      if (pfd.revents & POLLIN)
+      if (pfd.revents & POLLIN) {
         good_to_read = 1;
-      else
+      } else {
         good_to_read = 0;
+      }
     }
 #endif
 
-    if (good_to_read)
-      len =
-        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
-    else {
+    if (good_to_read) {
+      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf - 1, &remote_pid,
+                            &remote_uid);
+    } else {
       len = -1;
       errno = EWOULDBLOCK;
     }
@@ -1678,8 +1697,15 @@ new_connection(int oldsock, int *result, conn_source source)
         *split++ = '\0';
         strcpy(hostbuf, split);
         split = strchr(hostbuf, '\r');
-        if (split)
-          *split = '\0';
+        if (split) {
+          *(split++) = '\0';
+          if (*split == '\n') {
+            split++;
+          }
+          if (*split) {
+            extra = split;
+          }
+        }
       } else {
         /* Again, shouldn't happen! */
         strcpy(ipbuf, "(Unknown)");
@@ -1728,8 +1754,9 @@ new_connection(int oldsock, int *result, conn_source source)
       do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
                 newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
-    if (is_remote_source(source))
+    if (is_remote_source(source)) {
       shutdown(newsock, 2);
+    }
     closesocket(newsock);
 #ifndef WIN32
     errno = 0;
@@ -1738,9 +1765,14 @@ new_connection(int oldsock, int *result, conn_source source)
   }
   do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
             ipbuf, source_to_s(source));
-  if (is_remote_source(source))
+  if (is_remote_source(source)) {
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, hostbuf, ipbuf, source);
+  }
+  d = initializesock(newsock, hostbuf, ipbuf, source);
+  if (d && extra) {
+    process_input_helper(d, extra, strlen(extra));
+  }
+  return d;
 }
 
 /** Free the OUTPUTPREFIX and OUTPUTSUFFIX for a descriptor. */
@@ -2236,7 +2268,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
-  d->connlog_id = connlog_connection(ip, addr);
+  d->connlog_id = connlog_connection(ip, addr, is_ssl_desc(d));
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -3045,7 +3077,7 @@ FUNCTION(fun_oob)
     if (d->player != who)
       continue;
     if (d->conn_flags & CONN_WEBSOCKETS) {
-      send_websocket_object(d, json);
+      send_websocket_object(d, args[1], json);
       i++;
     }
     if (d->conn_flags & CONN_GMCP) {
@@ -3456,6 +3488,18 @@ process_commands(void)
         case CRES_BOOTED:
           break;
         }
+      } else if (cdesc->conn_flags & CONN_HTTP_READY) {
+        if (http_quota >= COMMAND_TIME_MSEC) {
+          http_quota -= COMMAND_TIME_MSEC;
+          do_http_command(cdesc);
+        } else if (HTTP_SECOND_LIMIT < 1) {
+          /* This should only happen if we're being hammered, and somebody does
+           * @config/set http_per_second=0 to stop it. New requests get bounced
+           * via mud_url handler, but active open ones end up here. We'll just
+           * close it, rather than juggle it with mud_url.
+           */
+          cdesc->conn_flags |= CONN_HTTP_CLOSE;
+        }
       }
     }
     pc_dnext = NULL;
@@ -3520,7 +3564,8 @@ process_http_start(DESC *d, char *line)
     d->conn_timer = NULL;
   }
 
-  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
+  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER) ||
+      (HTTP_SECOND_LIMIT < 1)) {
     reason = "No HTTPHandler";
     goto bad_connection;
   }
@@ -3631,7 +3676,7 @@ http_finished_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
   d->conn_timer = NULL;
-  do_http_command(d);
+  queue_http_command(d);
   return false;
 }
 
@@ -3645,6 +3690,19 @@ process_http_input(DESC *d, char *buf, int len)
     sq_cancel(d->conn_timer);
     d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
   }
+}
+
+static void
+queue_http_command(DESC *d)
+{
+  /* All we really do is clear the timer, and mark the socket
+   * ready for running at the next queue cycle.
+   */
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+  d->conn_flags |= CONN_HTTP_READY;
 }
 
 static void

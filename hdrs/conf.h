@@ -165,6 +165,7 @@ struct options_table {
   dbref ancestor_player;  /**< The ultimate parent player (help ancestors) */
   dbref event_handler;    /**< The Event Handler (help events). */
   dbref http_handler;     /**< The HTTP Handler (GET, POST, etc) */
+  int   http_per_second;  /**< Maximum number of commands run from http every second */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;       /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without
@@ -417,6 +418,7 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define ANCESTOR_PLAYER (options.ancestor_player)
 #define EVENT_HANDLER (options.event_handler)
 #define HTTP_HANDLER (options.http_handler)
+#define HTTP_SECOND_LIMIT (options.http_per_second)
 #define MONEY (options.money_singular)
 #define MONIES (options.money_plural)
 #define WHISPER_LOUDNESS (options.whisper_loudness)

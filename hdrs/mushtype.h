@@ -248,7 +248,8 @@ struct text_queue {
 /* An active HTTP command: Pemits and the like should be buffered in active_http_request */
 #define CONN_HTTP_BUFFER  0x20000
 /* An HTTP Request that should be closed. */
-#define CONN_HTTP_CLOSE   0x40000
+#define CONN_HTTP_READY   0x40000
+#define CONN_HTTP_CLOSE   0x80000
 
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */

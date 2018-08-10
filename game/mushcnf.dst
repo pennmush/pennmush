@@ -31,6 +31,11 @@ mud_url
 # See also, "help http_handler" and "help @respond".
 http_handler
 
+# How many HTTP requests do you want to handle every second?
+# Setting this to 0 (or negative) disables HTTP. Defaults to 3,
+# as HTTP is also disabled unless http_handler is set.
+http_per_second 3
+
 # The port it's running on. See also ssl_port, later.
 port 4201
 

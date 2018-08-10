@@ -316,7 +316,7 @@ do_http_command(DESC *d, char *command)
    */
   a = atr_get_noparent(EVENT_HANDLER, "HTTP");
   if (!a) {
-    send_http_code(d, "301 Moved Permanently", "Moved to MUDURL.");
+    send_mudurl(d);
     return 0;
   }
 

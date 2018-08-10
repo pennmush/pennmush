@@ -3488,10 +3488,12 @@ process_commands(void)
         case CRES_BOOTED:
           break;
         }
-      } else if (cdesc->conn_flags & CONN_HTTP_READY) {
+      } else if ((cdesc->conn_flags & CONN_HTTP_READY) &&
+                 !(cdesc->conn_flags & CONN_HTTP_CLOSE)) {
         if (http_quota >= COMMAND_TIME_MSEC) {
           http_quota -= COMMAND_TIME_MSEC;
           do_http_command(cdesc);
+          nprocessed++;
         } else if (HTTP_SECOND_LIMIT < 1) {
           /* This should only happen if we're being hammered, and somebody does
            * @config/set http_per_second=0 to stop it. New requests get bounced
@@ -3600,7 +3602,8 @@ process_http_start(DESC *d, char *line)
   }
 
   version = c;
-  if (strncmp(version, "HTTP/1.1", 8)) {
+  /* HTTP/1.0  is sent by apache bench, HTTP/1.1 by most other users. */
+  if (strncmp(version, "HTTP/1", 6)) {
     reason = "Invalid HTTP Version";
     goto bad_connection;
   }
@@ -3702,6 +3705,8 @@ queue_http_command(DESC *d)
     sq_cancel(d->conn_timer);
     d->conn_timer = NULL;
   }
+  /* Don't run twice - from close_write _and_ timer */
+  if (d->conn_flags & CONN_HTTP_READY) return;
   d->conn_flags |= CONN_HTTP_READY;
 }
 
@@ -3723,10 +3728,16 @@ do_http_command(DESC *d)
   if (d->conn_timer) sq_cancel(d->conn_timer);
   d->conn_timer = NULL;
 
-  if (!(d->conn_flags & CONN_HTTP_REQUEST) ||
-      (d->conn_flags & CONN_HTTP_CLOSE) ||
-      !(d->http_request)) {
-    reason = "Unknown Error";
+  if (!(d->conn_flags & CONN_HTTP_REQUEST)) {
+    reason = "not a request";
+    goto bad_connection;
+  }
+  if (d->conn_flags & CONN_HTTP_CLOSE) {
+    reason = "closed";
+    goto bad_connection;
+  }
+  if (!(d->http_request)) {
+    reason = "no request struct";
     goto bad_connection;
   }
 
@@ -5468,6 +5479,12 @@ do_who_admin(dbref player, char *name)
       }
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
+    } else if (d->conn_flags & CONN_HTTP_REQUEST) {
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
+               T("HTTP Request"), "#-1", onfor_time_fmt(d->connected_at, 9),
+               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+               is_ssl_desc(d) ? 'S' : ' ', d->addr);
+      tbuf[78] = '\0';
     } else {
       snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
                T("Connecting..."), "#-1", onfor_time_fmt(d->connected_at, 9),

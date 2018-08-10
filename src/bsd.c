@@ -6677,7 +6677,7 @@ dump_reboot_db(void)
 #ifndef WITHOUT_WEBSOCKETS
   flags |= RDBF_WEBSOCKET_FRAME;
 #endif
-
+  
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
@@ -6808,7 +6808,6 @@ load_reboot_db(void)
       d->descriptor = val;
       d->connected_at = getref(f);
       d->conn_timer = NULL;
-      d->http = NULL;
       d->hide = getref(f);
       d->cmds = getref(f);
       d->player = getref(f);
@@ -6868,7 +6867,7 @@ load_reboot_db(void)
       } else {
         d->connlog_id = -1;
       }
-
+      
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
@@ -6879,6 +6878,7 @@ load_reboot_db(void)
       d->quota = options.starting_quota;
       d->ssl = NULL;
       d->ssl_state = 0;
+      d->http = NULL;
 
       if (d->conn_flags & CONN_CLOSE_READY) {
         /* This isn't really an open descriptor, we're just tracking

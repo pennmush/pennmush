@@ -1358,16 +1358,6 @@ shovechars(Port_t port, Port_t sslport)
           goto recheck_d;
         }
       }
-      if (d->conn_flags & CONN_HTTP_CLOSE) {
-        shutdownsock(d, "http close", GOD);
-        d = dprev;
-        if (d) {
-          continue;
-        } else {
-          d = descriptor_list;
-          goto recheck_d;
-        }
-      }
       fds[fds_used].events = 0;
       if (d->input.head) { /* Don't get more input while this desc has a
                               command ready to eval. */

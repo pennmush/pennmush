@@ -246,9 +246,6 @@ struct text_queue {
 /** HTTP server request */
 #define CONN_HTTP_REQUEST 0x10000
 
-/** Terminate HTTP response */ 
-#define CONN_HTTP_CLOSE   0x40000
-
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
 #define CONN_WEBSOCKETS_REQUEST 0x10000000

@@ -383,7 +383,7 @@ http_timeout_wrapper(void *data)
   
   send_http_code(d, "408 Request Timeout", "Unable to complete request.");
   
-  d->conn_flags |= CONN_HTTP_CLOSE;
+  boot_desc(d, "http close", GOD);
   return false;
 }
 

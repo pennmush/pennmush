@@ -283,8 +283,6 @@ process_http_request(DESC *d, char *command)
     d->conn_timer = NULL;
   }
   
-  notify_format((dbref) 5, "PROCESS: %s", command);
-  
   if (req->state == HTTP_REQUEST_HEADERS) {
     /* a blank line ends the headers */
     if (*command == '\0') {

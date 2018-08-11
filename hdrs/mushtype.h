@@ -252,9 +252,8 @@ struct text_queue {
 #define CONN_WEBSOCKETS 0x20000000
 #endif /* undef WITHOUT_WEBSOCKETS */
 
-#define HTTP_METHOD_LEN 16
-#define HTTP_CODE_LEN   64
-#define HTTP_PATH_LEN	2048
+#define HTTP_STR_LEN	2048
+
 typedef enum HTTP_METHOD {
   HTTP_METHOD_UNKNOWN,
   HTTP_METHOD_GET,
@@ -265,21 +264,40 @@ typedef enum HTTP_METHOD {
   HTTP_NUM_METHODS
 } http_method;
 
+typedef enum HTTP_STATUS {
+  HTTP_STATUS_200 = 200,
+  HTTP_STATUS_400 = 400,
+  HTTP_STATUS_404 = 404,
+  HTTP_STATUS_408 = 408,
+  HTTP_STATUS_500 = 500,
+  HTTP_NUM_STATUS = 5
+} http_status;
+
+struct HTTP_STATUS_CODE {
+  http_status code;
+  const char *str;
+};
+
 typedef struct HTTP_REQUEST {
+  /* request data */
   http_method method;			/* GET/POST/etc */
-  char path[HTTP_PATH_LEN];		/* route path */
-  char query[HTTP_PATH_LEN];		/* query string */
-  char route[HTTP_PATH_LEN];	/* route attribute name */
+  char path[HTTP_STR_LEN];		/* route path */
+  char query[HTTP_STR_LEN];		/* query string */
+  char route[HTTP_STR_LEN];	/* route attribute name */
   char headers[BUFFER_LEN];		/* request headers */
   char *hp;				/* headers pointer */
+  char type[HTTP_STR_LEN];		/* Content-Type */
   char content[BUFFER_LEN];		/* request content */
   char *cp;				/* content pointer */
   uint32_t state;			/* request state */
   int32_t length;			/* Content-Length */
   int32_t recv;				/* number of content bytes read so far */
-  char type[HTTP_PATH_LEN];		/* Content-Type */
-  char res_code[HTTP_CODE_LEN];		/* response code */
-  char res_type[HTTP_PATH_LEN];		/* response Content-Type */
+
+  /* response data */
+  http_status status;			/* response status */
+  char res_type[HTTP_STR_LEN];		/* response Content-Type */
+  char response[BUFFER_LEN];		/* other response headers */
+  char *rp;				/* reponse header pointer */
 } http_request;
 
 /** Maximum \@doing length */

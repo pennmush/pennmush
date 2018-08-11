@@ -38,6 +38,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "http.h"
 
 PTAB ptab_command;       /**< Prefix table for command names. */
 PTAB ptab_command_perms; /**< Prefix table for command permissions */
@@ -272,6 +273,7 @@ COMLIST commands[] = {
   {"@REMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
+  {"@RESPOND", "TEXT JSON HTML TYPE HEADER STATUS", cmd_respond, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD", "SEND_OOB"},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |

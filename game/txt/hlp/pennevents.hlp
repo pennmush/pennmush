@@ -60,6 +60,8 @@
   signal: signal`usr1, signal`usr2
   player: player`create, player`connect, player`disconnect, player`inactivity
   socket: socket`connect, socket`disconnect, socket`loginfail, socket`createfail
+  http: http`index, http`*
+
 & EVENT DB
   db`dbck: Run after the regular database consistency check.
   db`purge: Run after the regular purging of destroyed objects.
@@ -80,6 +82,34 @@
       In nonforking: exit_status is "PERROR <string>" - string being the error message returned by strerror(errno). If you are seeing errors on dbsave, we recommend setting forking_dump to 0, as nonforking dumps have more verbose error messages.
 
   The standard messages shown on dumps are still displayed when these events are set. To disable the standard message, set them to empty strings via @config or in mush.cnf.
+& EVENT HTTP
+& HTTP
+  PennMUSH can respond to HTTP requests, for example from a web browser directed at the game's port.
+  
+  URI paths are routed to http`* attributes on the event handler. The default route "/" is passed to http`index.
+  
+  For example, the URI /object/name would be routed to http`object`name.
+  
+  The following arguments are passed to the event handler attribute:
+  %0	Socket descriptor making the request
+  %1	IP address of the requestor
+  %2	HTTP request method (e.g. GET/POST/etc.)
+  %3	URI path (e.g. /public/forums)
+  %4	Query string attached to the URI (e.g. /index?query_string)
+  %5	HTTP request headers, separated by newlines
+  %6	Content of the request (e.g. for POST/PUT)
+  
+  You can use @pemit/port to send a response to descriptor %0. When you are done with the response you can terminate the connection with @boot/port. If you do not send any data, or do not manually close the connection, it will automatically timeout after 2 seconds of inactivity.
+  
+  You may also use the @respond command to assist with crafting your response. Using @respond takes the place of @pemit/port and @boot/port. See HELP @RESPOND for more information.
+  
+  Examples:
+  
+  &HTTP`INDEX Event Handler=@pemit/port %0=HTTP/1.1 200 OK%rContent-Type: text/plain%r%rIP: %1%r%2%3?%4%r%5%r%r%6;@boot/port %0
+  &HTTP`INDEX Event Handler=@respond %0=IP: %1%r%2%3?%4%r%5%r%r%6
+  &HTTP`INDEX Event Handler=@respond/json %0=json(object,key,json(string,value))
+  
+  See also: help event, help @respond
 & EVENT LOG
   Events in the log tree get triggered whenever the game logs any information to a log file (Either because of @log, or something else happening.) They all get passed a single argument, the message being logged.
 

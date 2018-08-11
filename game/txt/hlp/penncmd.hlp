@@ -3608,3 +3608,29 @@ Example:
     BIRD
 
 See also: suggest()
+& @RESPOND
+@respond <descriptor>=<content>
+@respond/type <descriptor>=<content type>
+@respond/header <descriptor>=<Header-Name>:<value>
+@respond/status <descriptor>=<status>
+  With no switches, @respond sends a formatted HTTP response to <descriptor>. The response automatically includes the necessary headers and status codes. The default Content-Type is "text/plain" and the default status code is "200 Ok".
+  
+  Headers can be set using @respond/header, though the Content-Type header must be set using @respond/type, or one of the switches below.
+  
+  The HTTP status code is set using @respond/status. This should be the numerical value only. Valid codes are 200, 400, 404, 408, and 500.
+
+@respond/html <descriptor>[=<content>]
+@respond/json <descriptor>[=<content>]
+@respond/text <descriptor>[=<content>]
+  These are shortcuts that set the Content-Type of the response to text/html, application/json, or text/plain respectively.
+  If <content> is supplied then the response is sent and connection closed, as if called with no switches.
+
+  Examples:
+    @respond %0=This is some text.
+    @respond/text %0=This is some other text that explicitly sets Content-Type: text/plain.
+    @respond/html %0=<html><head><title>Hello World!</title></head><body><p>Hello World!</p></body></html>
+    @respond/json %0=json(object,key,json(string,value))
+    @respond/header %0=Header-Name: value ; @respond %0=This text includes a custom header.
+
+  This command is meant to be used from within HTTP events.
+  See also: help event http

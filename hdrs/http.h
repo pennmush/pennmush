@@ -25,5 +25,7 @@ extern int do_http_command(DESC *d, char *command);
 
 extern const char *http_method_str[];
 
+COMMAND_PROTO(cmd_respond);
+
 #endif /* _HTTP_H */
 

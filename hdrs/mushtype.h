@@ -273,11 +273,6 @@ typedef enum HTTP_STATUS {
   HTTP_NUM_STATUS = 5
 } http_status;
 
-struct HTTP_STATUS_CODE {
-  http_status code;
-  const char *str;
-};
-
 typedef struct HTTP_REQUEST {
   /* request data */
   http_method method;			/* GET/POST/etc */

@@ -96,8 +96,10 @@
   %2	HTTP request method (e.g. GET/POST/etc.)
   %3	URI path (e.g. /public/forums)
   %4	Query string attached to the URI (e.g. /index?query_string)
-  %5	HTTP request headers, separated by newlines
-  %6	Content of the request (e.g. for POST/PUT)
+  %5	Content-Type (e.g. application/x-www-form-urlencoded)
+  %6	Content-Length in bytes
+  %7	HTTP request headers, separated by newlines
+  %8	Content of the request (e.g. for POST/PUT)
   
   You can use @pemit/port to send a response to descriptor %0. When you are done with the response you can terminate the connection with @boot/port. If you do not send any data, or do not manually close the connection, it will automatically timeout after 2 seconds of inactivity.
   

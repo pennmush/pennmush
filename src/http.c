@@ -19,6 +19,8 @@ static int parse_http_query(http_request *req, char *line);
 static void parse_http_header(http_request *req, char *line);
 static int parse_http_content(http_request *req, char *line);
 
+static int process_http_helper(DESC *d, char *command);
+
 static bool run_http_request(DESC *d);
 
 bool http_timeout_wrapper(void *data);
@@ -39,6 +41,12 @@ const char *http_method_str[] = {
   "DELETE ",
   NULL
 };
+
+struct HTTP_STATUS_CODE {
+  http_status code;
+  const char *str;
+};
+
 
 struct HTTP_STATUS_CODE http_status_codes[] = {
   {200, "200 Ok"},
@@ -264,9 +272,58 @@ parse_http_content(http_request *req, char *line)
 /** Process HTTP request headers and data
  * \param d descriptor of http request
  * \param command command string to buffer
+ * \param got number of bytes to read from command
  */
 int
-process_http_request(DESC *d, char *command)
+process_http_request(DESC *d, char *command, int got)
+{
+  char cbuf[MAX_COMMAND_LEN];
+  char *q, *head, *end;
+  
+  /* cancel the http_timeout_wrapper */
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+  
+  strncpy(cbuf, command, got);
+  
+  /* split multi-line input and process one line at a time */
+  head = cbuf;
+  for (q = cbuf, end = cbuf + got; q < end; q++) {
+    if (*q == '\r' || *q == '\n') {
+      *q = '\0';
+      if (!process_http_helper(d, head)) {
+        return 0;
+      }
+      
+      if (((q + 1) < end) && (*(q + 1) == '\n')) {
+        q++;
+      }
+      head = q+1;
+    }
+  }
+  
+  /* handle single line, or the last line of multi-line */
+  if (q > head) {
+    if (!process_http_helper(d, head)) {
+      return 0;
+    }
+  }
+
+  /* setup a timer to end the connection if no
+   * data is sent with a few seconds
+   */
+  d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
+  return 1;
+}
+
+/** Process one line of the HTTP request
+ * \param d descriptor of http request
+ * \param command string to parse
+ */
+int
+process_http_helper(DESC *d, char *command)
 {
   char buff[BUFFER_LEN];
   char *bp;
@@ -278,11 +335,6 @@ process_http_request(DESC *d, char *command)
     return 0;
   }
 
-  if (d->conn_timer) {
-    sq_cancel(d->conn_timer);
-    d->conn_timer = NULL;
-  }
-  
   if (req->state == HTTP_REQUEST_HEADERS) {
     /* a blank line ends the headers */
     if (*command == '\0') {
@@ -316,11 +368,6 @@ process_http_request(DESC *d, char *command)
       }
     }
   }
-
-  /* setup a timer to end the connection if no
-   * data is sent with a few seconds
-   */
-  d->conn_timer = sq_register_in(2, http_timeout_wrapper, (void *) d, NULL);
 
   return 1;
 }
@@ -367,11 +414,14 @@ do_http_command(DESC *d, char *command)
   /* setup a timer to end the connection if no
    * data is sent with a few seconds
    */
-  d->conn_timer = sq_register_in(2, http_timeout_wrapper, (void *) d, NULL);
+  d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
   
   return 1;
 }
 
+/** Queue the HTTP request on the event queue.
+ * \param d descriptor of the http request
+ */
 static bool
 run_http_request(DESC *d)
 {
@@ -382,17 +432,21 @@ run_http_request(DESC *d)
   }
 
   return queue_event(EVENT_HANDLER, req->route,
-                     "%d,%s,%s,%s,%s,%s,%s",
+                     "%d,%s,%s,%s,%s,%s,%d,%s,%s",
                      d->descriptor,
                      d->ip,
                      http_method_str[req->method],
                      req->path,
                      req->query,
+                     req->type,
+                     req->length,
                      req->headers,
                      req->content);
 }
 
-
+/** HTTP connection timeout wrapper
+ * \param void descriptor of the http request
+ */
 bool
 http_timeout_wrapper(void *data)
 {
@@ -400,20 +454,27 @@ http_timeout_wrapper(void *data)
   http_request *req = d->http;
 
   /* we didn't finish parsing content, but call the route event anyway */
-  if (req && req->state != HTTP_REQUEST_DONE) {
+  if (req && req->state < HTTP_REQUEST_DONE) {
     req->state = HTTP_REQUEST_DONE;
     if (!run_http_request(d)) {
       send_http_status(d, "404 Not Found", "File not found.");
+      boot_desc(d, "http close", GOD);
       return false;
     }
     
-    d->conn_timer = sq_register_in(2, http_timeout_wrapper, (void *) d, NULL);
+    /* we started executing the request, restart the timeout */
+    d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
     return false;
   }
   
-  send_http_status(d, "408 Request Timeout", "Unable to complete request.");
+  /* send a timeout message if we haven't already started a response */
+  if (req->state != HTTP_REQUEST_STARTED) {
+    send_http_status(d, "408 Request Timeout", "Unable to complete request.");
+  }
   
+  /* we made it all the way through to here, guess we should shutdown the socket */
   boot_desc(d, "http close", GOD);
+  
   return false;
 }
 
@@ -522,7 +583,6 @@ COMMAND(cmd_respond)
   http_request *req;
   int code;
   DESC *d;
-  int set_type = 0;
   
   if (!arg_left || !*arg_left) {
     notify(executor, T("Invalid arguments."));
@@ -540,20 +600,26 @@ COMMAND(cmd_respond)
     return;
   }
   
+  /* cancel the old timer so we can reset it */
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
+  }
+    
   req = d->http;
   
   /* if /html, /text, or /json are set change the Content-Type */
   if (SW_ISSET(sw, SWITCH_HTML)) {
     strncpy(req->res_type, "Content-Type: text/html\r\n", HTTP_STR_LEN);
-    set_type = 1;
+    notify(executor, T("Content-Type set to text/html."));
   } else if (SW_ISSET(sw, SWITCH_JSON)) {
     strncpy(req->res_type, "Content-Type: application/json\r\n", HTTP_STR_LEN);
-    set_type = 1;
+    notify(executor, T("Content-Type set to application/json."));
   } else if (SW_ISSET(sw, SWITCH_TEXT)) {
     strncpy(req->res_type, "Content-Type: text/plain\r\n", HTTP_STR_LEN);
-    set_type = 1;
+    notify(executor, T("Content-Type set to text/plain."));
   }
-
+  
   if (SW_ISSET(sw, SWITCH_TYPE)) {
     /* @respond/type set the content-type header, defaults to text/plain */
     
@@ -563,6 +629,8 @@ COMMAND(cmd_respond)
     }
     
     snprintf(req->res_type, HTTP_STR_LEN, "Content-Type: %s\r\n", arg_right);
+    
+    notify_format(executor, T("Content-Type set to %s."), arg_right);
     return;
   
   } else if (SW_ISSET(sw, SWITCH_HEADER)) {
@@ -593,6 +661,8 @@ COMMAND(cmd_respond)
     safe_str(arg_right, req->response, &(req->rp));
     safe_str("\r\n", req->response, &(req->rp));
     *(req->hp) = '\0';
+
+    notify_format(executor, T("Header added, %s."), arg_right);
     return;
   } else if (SW_ISSET(sw, SWITCH_STATUS)) {
     /* @respond/status set the response status code, default 200 Ok */
@@ -610,36 +680,42 @@ COMMAND(cmd_respond)
     }
     
     req->status = code;
+
+    notify_format(executor, T("Status code set to %s."), p);
     return;
-  } else {
-    /* @respond send the given response with headers and close the request */
-    
-    if (!arg_right || !*arg_right) {
-      if (!set_type) {
-        /* only send an error if we didn't set /text, /html, or /json */
-        notify(executor, T("Invalid arguments."));
-      }
-      return;
-    }
-    
-    p = get_http_status(req->status);
-    
+  } else if ((arg_right && *arg_right) || (SW_ISSET(sw, SWITCH_SEND))) {
+    /* @respond[/send] send the given response with headers and close the request */
+
     /* build the response buffer */
     bp = buff;
-    safe_format(buff, &bp, "HTTP/1.1 %s\r\n", p);
-    safe_str(req->response, buff, &bp);
-    safe_str(req->res_type, buff, &bp);
-    safe_format(buff, &bp, "Content-Length: %lu\r\n", strlen(arg_right));
-    safe_str("\r\n", buff, &bp);
-    safe_str(arg_right, buff, &bp);
+    
+    /* only send the headers the first call */
+    if (req->state != HTTP_REQUEST_STARTED) {
+      req->state = HTTP_REQUEST_STARTED;
+      p = get_http_status(req->status);
+      safe_format(buff, &bp, "HTTP/1.1 %s\r\n", p);
+      safe_str(req->response, buff, &bp);
+      safe_str(req->res_type, buff, &bp);
+      //safe_format(buff, &bp, "Content-Length: %lu\r\n", strlen(arg_right));
+      safe_str("\r\n", buff, &bp);
+    }
+    
+    /* response content, if present */
+    if (arg_right && *arg_right) {
+      safe_str(arg_right, buff, &bp);
+    } 
+      
     *bp = '\0';
     
-    /* send the response and close the connection */
+    /* send the response */
     queue_write(d, buff, bp - buff);
     queue_eol(d);
-    boot_desc(d, "http response", GOD);
+    
+    /* close the socket unless /send is set */
+    if (!(SW_ISSET(sw, SWITCH_SEND))) {
+      boot_desc(d, "http response", GOD);
+    }
   }
-  
   return;
 }
 

@@ -3609,11 +3609,11 @@ Example:
 
 See also: suggest()
 & @RESPOND
-@respond <descriptor>=<content>
+@respond[/send] <descriptor>=[<content>]
 @respond/type <descriptor>=<content type>
 @respond/header <descriptor>=<Header-Name>:<value>
 @respond/status <descriptor>=<status>
-  With no switches, @respond sends a formatted HTTP response to <descriptor>. The response automatically includes the necessary headers and status codes. The default Content-Type is "text/plain" and the default status code is "200 Ok".
+  With no switches, @respond sends a formatted HTTP response to <descriptor> and closes the socket. The response automatically includes the necessary headers and status codes. The default Content-Type is "text/plain" and the default status code is "200 Ok". Using @respond/send prevents the socket from being closed immediately, allowing multiple output commands to be chained together. A final @respond with no switches will send the <content> and close the socket. Using @respond with no <content> will just send headers.
   
   Headers can be set using @respond/header, though the Content-Type header must be set using @respond/type, or one of the switches below.
   
@@ -3631,6 +3631,8 @@ See also: suggest()
     @respond/html %0=<html><head><title>Hello World!</title></head><body><p>Hello World!</p></body></html>
     @respond/json %0=json(object,key,json(string,value))
     @respond/header %0=Header-Name: value ; @respond %0=This text includes a custom header.
+    @respond/send %0=Hello ; @respond %0= World!
+    @respond/send/json %0 ; @respond %0=json(object,key,json(string,value))
 
-  This command is meant to be used from within HTTP events.
+  This command is meant to be used from within HTTP events, and only works on <descriptor> if it has made an HTTP request. Requires Wizard or Send_OOB powers.
   See also: help event http

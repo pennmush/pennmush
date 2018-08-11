@@ -402,7 +402,6 @@ enum comm_res {
   CRES_LOGOUT,
   CRES_QUIT,
   CRES_SITELOCK,
-  CRES_HTTP,
   CRES_BOOTED
 };
 static enum comm_res do_command(DESC *d, char *command);
@@ -3247,6 +3246,14 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     got = process_websocket_frame(d, tbuf1, got);
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
+
+  if ((d->conn_flags & CONN_HTTP_REQUEST)) {
+    if (!process_http_request(d, tbuf1, got)) {
+      d->conn_flags |= CONN_SOCKET_ERROR;
+    }
+    return;
+  }
+  
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
@@ -3257,27 +3264,42 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   d->input_chars += got;
   pend = d->raw_input + MAX_COMMAND_LEN - 1;
   for (q = tbuf1, qend = tbuf1 + got; q < qend; q++) {
-    if (*q == '\r') {
+    if (*q == '\r' || *q == '\n') {
       /* A broken client (read: WinXP telnet) might send only CR, and not CRLF
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS
-      /* WebSockets processing is interested in empty lines. */
-      if (p > d->raw_input)
-#endif /* WITHOUT_WEBSOCKETS */
+      if ((d->conn_flags & CONN_AWAITING_FIRST_DATA) &&
+          is_http_request(d->raw_input)) {
+#ifndef WITHOUT_WEBSOCKETS
+        if (options.use_ws && is_websocket(d->raw_input)) {
+          /* Continue processing as a WebSockets upgrade request. */
+          d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
+        } else
+#endif /* undef WITHOUT_WEBSOCKETS */
+        {
+          /* parse the command as an HTTP request */
+          d->conn_flags |= CONN_HTTP_REQUEST;
+          if (do_http_command(d, d->raw_input)) {
+            if ((qend - q) > 0) {
+              if (*q == '\r' || *q == '\n') q++;
+              if (*q == '\r' || *q == '\n') q++;
+              if (!process_http_request(d, q, qend - q)) {
+                d->conn_flags |= CONN_SOCKET_ERROR;
+              }
+            }
+          } else {
+            /* the http command was invalid, close the connection softly */
+            d->conn_flags |= CONN_SOCKET_ERROR;
+            return;
+          }
+        }
+      } else {
         save_command(d, d->raw_input);
+      }
       p = d->raw_input;
-      if (((q + 1) < qend) && (*(q + 1) == '\n'))
+      if (*q == '\r' && ((q + 1) < qend) && (*(q + 1) == '\n'))
         q++; /* For clients that work */
-    } else if (*q == '\n') {
-      *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS
-      /* WebSockets processing is interested in empty lines. */
-      if (p > d->raw_input)
-#endif /* WITHOUT_WEBSOCKETS */
-        save_command(d, d->raw_input);
-      p = d->raw_input;
     } else if (*q == '\b') {
       if (p > d->raw_input)
         p--;
@@ -3296,6 +3318,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   }
   if (p > d->raw_input) {
     d->raw_input_at = p;
+    if (d->conn_flags & CONN_HTTP_REQUEST) {
+      *p = '\0';
+      save_command(d, d->raw_input);
+    }
   } else {
     mush_free(d->raw_input, "descriptor_raw_input");
     d->raw_input = 0;
@@ -3419,9 +3445,6 @@ process_commands(void)
         case CRES_QUIT:
           shutdownsock(cdesc, "quit", cdesc->player);
           break;
-        case CRES_HTTP:
-          shutdownsock(cdesc, "http disconnect", NOTHING);
-          break;
         case CRES_SITELOCK:
           shutdownsock(cdesc, "sitelocked", NOTHING);
           break;
@@ -3474,18 +3497,17 @@ do_command(DESC *d, char *command)
   if (d->conn_flags & CONN_WEBSOCKETS_REQUEST) {
     /* Parse WebSockets upgrade request. */
     if (!process_websocket_request(d, command)) {
-      return CRES_HTTP;
+      return CRES_QUIT;
     }
 
     return CRES_OK;
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
 
-  /* parse HTTP request headers and data */
-  if (d->conn_flags & CONN_HTTP_REQUEST) {
-    if (!process_http_request(d, command)) {
-      return CRES_HTTP;
-    }
+  if (!*command) {
+    /* Blank lines are ignored by Penn, only used by
+     * websockets and HTTP requests.
+     */
     return CRES_OK;
   }
 
@@ -3501,23 +3523,7 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected && is_http_request(command)) {
-#ifndef WITHOUT_WEBSOCKETS
-    if (options.use_ws && is_websocket(command)) {
-      /* Continue processing as a WebSockets upgrade request. */
-      d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
-      return CRES_OK;
-    }
-#endif /* undef WITHOUT_WEBSOCKETS */
-    
-    /* parse the command as a HTTP request */
-    d->conn_flags |= CONN_HTTP_REQUEST;
-    if (do_http_command(d, command)) {
-      return CRES_OK;
-    }
-    return CRES_HTTP;
-    
-  } else if (SUPPORT_PUEBLO &&
+  if (SUPPORT_PUEBLO &&
              !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
     if (!(d->conn_flags & CONN_HTML)) {

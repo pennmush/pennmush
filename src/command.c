@@ -1541,7 +1541,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   /* ls, before the = */
   if (cmd->type & CMD_T_LS_ARGS) {
-    char argname[10];
+    char argname[20];
     j = 0;
     for (i = 1; i < MAX_ARG; i++) {
       if (lsa[i] && *lsa[i]) {
@@ -1563,7 +1563,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
                   "=");
     /* rs, after the = */
     if (cmd->type & CMD_T_RS_ARGS) {
-      char argname[10];
+      char argname[20];
       j = 0;
       for (i = 1; i < MAX_ARG; i++) {
         if (rsa[i] && *rsa[i]) {

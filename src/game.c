@@ -361,7 +361,7 @@ dump_database_internal(void)
     return false;
   } else {
     char realdumpfile[2048];
-    char realtmpfl[2048];
+    char realtmpfl[2304];
     char tmpfl[2048];
 
     local_dump_database();
@@ -375,7 +375,7 @@ dump_database_internal(void)
 
     snprintf(realdumpfile, sizeof realdumpfile, "%s%s", globals.dumpfile,
              options.compresssuff);
-    strcpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch));
+    mush_strncpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch), sizeof tmpfl);
     snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
 
     if ((f = db_open_write(tmpfl)) != NULL) {
@@ -802,7 +802,7 @@ init_game_postdb(const char *conf)
   build_rgb_map();
 
   add_dict_words();
-  
+
 /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
@@ -2404,9 +2404,13 @@ static PENNFILE *
 db_open(const char *fname)
 {
   PENNFILE *pf;
-  char filename[BUFFER_LEN];
+  sqlite3_str *fstr;
+  char *filename;
 
-  snprintf(filename, sizeof filename, "%s%s", fname, options.compresssuff);
+  fstr = sqlite3_str_new(NULL);
+  sqlite3_str_appendall(fstr, fname);
+  sqlite3_str_appendall(fstr, options.compresssuff);
+  filename = sqlite3_str_finish(fstr);
 
   pf = mush_malloc(sizeof *pf, "pennfile");
 
@@ -2415,6 +2419,7 @@ db_open(const char *fname)
       strcmp(options.uncompressprog, "gunzip") == 0) {
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
+    sqlite3_free(filename);
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
@@ -2437,10 +2442,13 @@ db_open(const char *fname)
      */
 
     if (access(filename, R_OK) == 0) {
-      char prog[1024];
-      snprintf(prog, sizeof prog, "%s < '%s'", options.uncompressprog,
-               filename);
+      char *prog;
+      fstr = sqlite3_str_new(NULL);
+      sqlite3_str_appendf(fstr, "%s < '%s'", options.uncompressprog, filename);
+      prog = sqlite3_str_finish(fstr);
       pf->handle.f = popen(prog, "r");
+      sqlite3_free(prog);
+      sqlite3_free(filename);
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
         setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
@@ -2465,6 +2473,7 @@ db_open(const char *fname)
       posix_fadvise(fileno(pf->handle.f), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
     }
+    sqlite3_free(filename);
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");
@@ -2478,10 +2487,13 @@ static PENNFILE *
 db_open_write(const char *fname)
 {
   PENNFILE *pf;
-  char workdir[BUFFER_LEN];
-  char filename[BUFFER_LEN];
+  sqlite3_str *fstr;
+  char workdir[BUFFER_LEN], *filename;
 
-  snprintf(filename, sizeof filename, "%s%s", fname, options.compresssuff);
+  fstr = sqlite3_str_new(NULL);
+  sqlite3_str_appendall(fstr, fname);
+  sqlite3_str_appendall(fstr, options.compresssuff);
+  filename = sqlite3_str_finish(fstr);
 
 /* Be safe in case our game directory was removed and restored,
  * in which case our inode is screwy
@@ -2507,6 +2519,7 @@ db_open_write(const char *fname)
   if (*options.compressprog && strcmp(options.compressprog, "gzip") == 0) {
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "wb");
+    sqlite3_free(filename);
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
@@ -2522,10 +2535,14 @@ db_open_write(const char *fname)
 
 #ifndef WIN32
   if (*options.compressprog) {
-    char prog[1024];
+    char *prog;
     pf->type = PFT_PIPE;
-    snprintf(prog, sizeof prog, "%s > '%s'", options.compressprog, filename);
+    fstr = sqlite3_str_new(NULL);
+    sqlite3_str_appendf(fstr, "%s > '%s'", options.compressprog, filename);
+    prog = sqlite3_str_finish(fstr);
     pf->handle.f = popen(prog, "w");
+    sqlite3_free(filename);
+    sqlite3_free(prog);
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
       setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
@@ -2539,6 +2556,7 @@ db_open_write(const char *fname)
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, "wb");
+    sqlite3_free(filename);
     if (!pf->handle.f)
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
   }

@@ -30,8 +30,8 @@
 #include "confmagic.h"
 
 #define CONNLOG_APPID 0x42010FF2
-#define CONNLOG_VERSION 3
-#define CONNLOG_VERSIONS "3"
+#define CONNLOG_VERSION 4
+#define CONNLOG_VERSIONS "4"
 
 sqlite3 *connlog_db;
 
@@ -108,16 +108,19 @@ init_conndb(bool rebooting)
           "NULL UNIQUE, hostname TEXT NOT NULL);"
           "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref "
           "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
-          "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
+          "reason TEXT, ssl INTEGER, websocket INTEGER, FOREIGN KEY(addrid) "
+          "REFERENCES addrs(id));"
           "CREATE INDEX conn_dbref_idx ON connections(dbref);"
           "CREATE INDEX conn_addr_idx ON connections(addrid);"
           "CREATE TABLE checkpoint(id INTEGER NOT NULL PRIMARY KEY, timestamp "
           "INTEGER NOT NULL);"
           "INSERT INTO checkpoint VALUES (1, strftime('%s', 'now'));"
           "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
-          "disconn, reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
-          "a.hostname, ts.conn, ts.disconn, c.reason FROM connections AS c "
-          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a on c.addrid = "
+          "disconn, reason, ssl, websocket) AS SELECT c.id, c.dbref, c.name, "
+          "a.ipaddr, a.hostname, ts.conn, ts.disconn, c.reason, c.ssl, "
+          "c.websocket FROM "
+          "connections AS c "
+          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a ON c.addrid = "
           "a.id;"
           "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
           "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
@@ -130,7 +133,7 @@ init_conndb(bool rebooting)
       goto error_cleanup;
     }
   } else if (version == 1) {
-    do_rawlog(LT_ERR, "Upgrading connlog db from 1 to 2");
+    do_rawlog(LT_ERR, "Upgrading connlog db from 1 to %d", CONNLOG_VERSION);
     if (sqlite3_exec(
           connlog_db,
           "BEGIN TRANSACTION;"
@@ -140,7 +143,8 @@ init_conndb(bool rebooting)
           "NULL UNIQUE, hostname TEXT NOT NULL);"
           "CREATE TABLE connections(id INTEGER NOT NULL PRIMARY KEY, dbref "
           "INTEGER NOT NULL DEFAULT -1, name TEXT, addrid INTEGER NOT NULL,"
-          "reason TEXT, FOREIGN KEY(addrid) REFERENCES addrs(id));"
+          "reason TEXT, ssl INTEGER, websocket INTEGER, FOREIGN KEY(addrid) "
+          "REFERENCES addrs(id));"
           "CREATE INDEX conn_dbref_idx ON connections(dbref);"
           "CREATE INDEX conn_addr_idx ON connections(addrid);"
           "INSERT OR REPLACE INTO addrs(ipaddr, hostname) SELECT ipaddr, "
@@ -150,9 +154,11 @@ init_conndb(bool rebooting)
           "backup.ipaddr) FROM backup;"
           "DROP TABLE backup;"
           "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
-          "disconn, reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
-          "a.hostname, ts.conn, ts.disconn, c.reason FROM connections AS c "
-          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a on c.addrid = "
+          "disconn, reason, ssl, websocket) AS SELECT c.id, c.dbref, c.name, "
+          "a.ipaddr, "
+          "a.hostname, ts.conn, ts.disconn, c.reason, c.ssl, c.websocket FROM "
+          "connections AS c "
+          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a ON c.addrid = "
           "a.id;"
           "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
           "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
@@ -160,8 +166,7 @@ init_conndb(bool rebooting)
           "NEW.id; "
           "END;"
           "PRAGMA user_version = " CONNLOG_VERSIONS ";"
-          "COMMIT TRANSACTION;"
-          "VACUUM",
+          "COMMIT TRANSACTION",
           NULL, NULL, &err) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Upgrade failed: %s", err);
       sqlite3_free(err);
@@ -169,18 +174,60 @@ init_conndb(bool rebooting)
       goto error_cleanup;
     }
   } else if (version == 2) {
-    sqlite3_exec(
-      connlog_db,
-      "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, disconn, "
-      "reason) AS SELECT c.id, c.dbref, c.name, a.ipaddr, a.hostname, ts.conn, "
-      "ts.disconn, c.reason FROM connections AS c JOIN timestamps AS ts ON "
-      "c.id = ts.id JOIN addrs AS a on c.addrid = a.id;"
-      "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
-      "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
-      "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = NEW.id; "
-      "END;"
-      "PRAGMA user_version = " CONNLOG_VERSIONS,
-      NULL, NULL, &err);
+    do_rawlog(LT_ERR, "Upgrading connlog db from 2 to %d", CONNLOG_VERSION);
+    if (sqlite3_exec(
+          connlog_db,
+          "BEGIN TRANSACTION;"
+          "ALTER TABLE connections ADD COLUMN ssl INTEGER;"
+          "ALTER TABLE connections ADD COLUMN websocket INTEGER;"
+          "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
+          "disconn, "
+          "reason, ssl, websocket) AS SELECT c.id, c.dbref, c.name, a.ipaddr, "
+          "a.hostname, ts.conn, "
+          "ts.disconn, c.reason, c.ssl, c.websocket FROM connections AS c JOIN "
+          "timestamps AS ts ON "
+          "c.id = ts.id JOIN addrs AS a ON c.addrid = a.id;"
+          "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
+          "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
+          "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = "
+          "NEW.id; "
+          "END;"
+          "PRAGMA user_version = " CONNLOG_VERSIONS ";"
+          "COMMIT TRANSACTION",
+          NULL, NULL, &err) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Upgrade failed: %s", err);
+      sqlite3_free(err);
+      sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      goto error_cleanup;
+    }
+  } else if (version == 3) {
+    do_rawlog(LT_ERR, "Upgrading connlog db from 3 to %d", CONNLOG_VERSION);
+    if (sqlite3_exec(
+          connlog_db,
+          "BEGIN TRANSACTION;"
+          "ALTER TABLE connections ADD COLUMN ssl INTEGER;"
+          "ALTER TABLE connections ADD COLUMN websocket INTEGER;"
+          "DROP VIEW connlog;"
+          "CREATE VIEW connlog(id, dbref, name, ipaddr, hostname, conn, "
+          "disconn, reason, ssl, websocket) AS SELECT c.id, c.dbref, c.name, "
+          "a.ipaddr, "
+          "a.hostname, ts.conn, ts.disconn, c.reason, c.ssl, c.websocket FROM "
+          "connections AS c "
+          "JOIN timestamps AS ts ON c.id = ts.id JOIN addrs AS a ON c.addrid = "
+          "a.id;"
+          "CREATE TRIGGER conn_logout INSTEAD OF UPDATE OF disconn,reason ON "
+          "connlog BEGIN UPDATE connections SET reason = NEW.reason WHERE id = "
+          "NEW.id; UPDATE timestamps SET disconn = NEW.disconn WHERE id = "
+          "NEW.id; "
+          "END;"
+          "PRAGMA user_version = " CONNLOG_VERSIONS ";"
+          "COMMIT TRANSACTION",
+          NULL, NULL, &err) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Upgrade failed: %s", err);
+      sqlite3_free(err);
+      sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      goto error_cleanup;
+    }
   } else if (version > CONNLOG_VERSION) {
     do_rawlog(LT_ERR, "connlog db has an incompatible version!");
     goto error_cleanup;
@@ -250,10 +297,11 @@ shutdown_conndb(bool rebooting)
  *
  * \param ip the ip address of the connection
  * \param host the hostname of the connection
+ * \param ssl true if a SSL connection
  * \return a unique id for the connection.
  */
 int64_t
-connlog_connection(const char *ip, const char *host)
+connlog_connection(const char *ip, const char *host, bool ssl)
 {
   sqlite3_stmt *adder;
   int status;
@@ -296,12 +344,15 @@ connlog_connection(const char *ip, const char *host)
   } while (is_busy_status(status));
   sqlite3_reset(adder);
 
-  adder = prepare_statement(connlog_db,
-                            "INSERT INTO connections(id, addrid) VALUES (?, "
-                            "(SELECT id FROM addrs WHERE ipaddr = ?))",
-                            "connlog.connection.connection");
+  adder = prepare_statement(
+    connlog_db,
+    "INSERT INTO connections(id, addrid, ssl, websocket) VALUES (?, "
+    "(SELECT id FROM addrs WHERE ipaddr = ?), ?, 0)",
+    "connlog.connection.connection");
   sqlite3_bind_int64(adder, 1, id);
   sqlite3_bind_text(adder, 2, ip, strlen(ip), SQLITE_TRANSIENT);
+  sqlite3_bind_int(adder, 3, ssl);
+
   do {
     status = sqlite3_step(adder);
   } while (is_busy_status(status));
@@ -345,6 +396,31 @@ connlog_login(int64_t id, dbref player)
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Failed to record login to #%d: %s", player,
               sqlite3_errstr(status));
+  }
+}
+
+/** Mark that a connection is using websockets */
+void
+connlog_set_websocket(int64_t id)
+{
+  sqlite3_stmt *ws;
+  int status;
+
+  if (id == -1) {
+    return;
+  }
+
+  ws = prepare_statement(connlog_db,
+                         "UPDATE connections SET websocket = 1 WHERE id = ?",
+                         "connlog.websocket");
+  sqlite3_bind_int64(ws, 1, id);
+  do {
+    status = sqlite3_step(ws);
+  } while (is_busy_status(status));
+  sqlite3_reset(ws);
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Failed to record websocket for connlog id %lld: %s",
+              (long long) id, sqlite3_errstr(status));
   }
 }
 
@@ -652,7 +728,8 @@ FUNCTION(fun_connrecord)
   rec = prepare_statement(
     connlog_db,
     "SELECT dbref, ifnull(name, '-'), ipaddr, hostname, conn, disconn, "
-    "ifnull(reason, '-') FROM connlog WHERE id = ?",
+    "ifnull(reason, '-'), ifnull(ssl, 0), ifnull(websocket, 0) FROM connlog "
+    "WHERE id = ?",
     "connlog.fun.record");
   if (!rec) {
     safe_str("#-1 SQLITE ERROR", buff, bp);
@@ -683,6 +760,10 @@ FUNCTION(fun_connrecord)
     }
     safe_str(sep, buff, bp);
     safe_str((const char *) sqlite3_column_text(rec, 6), buff, bp);
+    safe_str(sep, buff, bp);
+    safe_integer(sqlite3_column_int(rec, 7), buff, bp);
+    safe_str(sep, buff, bp);
+    safe_integer(sqlite3_column_int(rec, 8), buff, bp);
   } else if (status != SQLITE_DONE) {
     safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
   } else {

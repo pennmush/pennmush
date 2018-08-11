@@ -388,6 +388,13 @@ strupper_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
 
+  if (!s) {
+    if (len) {
+      *d = '\0';
+    }
+    return d;
+  }
+
   for (p = 0; *s && p < len - 1; p += 1, s += 1) {
     d[p] = toupper(*s);
   }
@@ -406,6 +413,13 @@ char *
 strlower_r(const char *restrict s, char *restrict d, size_t len)
 {
   size_t p;
+
+  if (!s) {
+    if (len) {
+      *d = '\0';
+    }
+    return d;
+  }
 
   for (p = 0; *s && p < len - 1; p += 1, s += 1) {
     d[p] = tolower(*s);

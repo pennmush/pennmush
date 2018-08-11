@@ -1,6 +1,6 @@
 % PennMUSH 1.8.7 Changes
 %
-% Last release: ??? ?? 20??
+% Last release: Aug 10 2018
 
 This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server.  Changes are reported in reverse chronological order (most recent first)
 
@@ -17,7 +17,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.7 patchlevel 0 ??? ?? 20??
+Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================
 
 Major Changes
@@ -42,6 +42,8 @@ Minor Changes
 * Shrink the `NEW_PE_INFO` struct, for signficant memory savings in softcode that queues lots of commands. [SW]
 * Add more test cases to the softcode test suite. [SW]
 * log_forces in mushcnf.dst now defaults to no. You probably only want this on if you're debugging. [MG]
+* The connect screen now respects SOCKSET options. [MG]
+* @chan/what now displays channel locks. [MT, 1208]
 
 Softcode
 --------
@@ -50,7 +52,7 @@ Softcode
 * Functions that work on integers (Like `div()` or `band()`) now use 64-bit values instead of 32-bit. [SW]
 * Added `isjson()`
 * `json_query()` get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]
-* `json_query()` can apply merge patches to json objects per <https://tools.ietf.org/html/rfc7396>
+* `json_mod()` for modifying complex JSON objects. [SW]
 * `json_query(str, unescape)` handles unicode escape sequences.
 * `json(string, foo)` escapes non-ascii characters.
 * `clone()` now takes an optional fourth argument to act like `@clone/preserve` [797]
@@ -60,12 +62,13 @@ Softcode
 * `@suggest` and `suggest()` for user-defined spellchecking. Loads */usr/share/dict/words* or another configurable wordlist by default.
 * `connlog()` and `connrecord()` for interfacing with enhanced connection logs.
 * `soundex()` and `soundslike()` now support a second phonetic hash algorithm besides soundex.
-* Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]
-* owner() now accepts two optional arguments, allowing ownership to be changed as in @chown and @atrchown. [MT]
+* Side-effect version of `link()` now returns 1 on success, 0 or #-1 on failure. [MT]
+* `owner()` now accepts two optional arguments, allowing ownership to be changed as in `@chown` and `@atrchown`. [MT]
 * If compiled with libcurl support, adds `@http` for interacting with RESTFul web APIs. [SW]
 * `stripaccents()` supports a second, smarter, transliteration algorithm.
 * If compiled with ICU support, adds `lcstr2()` and `ucstr2()` with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
 * `@chatformat` now receives a new arg, `%6`, which defaults to "says" but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
+* `etimefmt()` supports `$w` and `$y` formats for weeks and years. [SW, 804]
 
 Fixes
 -----
@@ -85,6 +88,9 @@ Fixes
 * `sqlescape()` when using a sqlite3 connection no longer also requires MySQL.
 * A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]
 * Fix an off-by-one error in command switch initialization code. [SW]
+* `@mail` without a message list respects the current folder instead of using folder 0. [77]
+* `ufun()`, `ulocal()`, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
+* Fix a long-standing bug where input sent right after a SSL connection could get lost. [SW]
 
 Documentation
 -------------

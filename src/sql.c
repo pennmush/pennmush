@@ -1075,7 +1075,12 @@ FUNCTION(fun_sql)
         break;
       }
       if (cell && *cell) {
-        cell = sql_sanitize(cell);
+        char *newcell = sql_sanitize(cell);
+        if (free_cell) {
+          free_cell = 0;
+          mush_free(cell, "string");
+        }
+        cell = newcell;
         if (strchr(cell, TAG_START) || strchr(cell, ESC_CHAR)) {
           /* Either old or new style ANSI string. */
           tbp = tbuf;

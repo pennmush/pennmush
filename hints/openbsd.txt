@@ -7,7 +7,8 @@ as OpenBSD's gcc is a very old version.
 Some packages need to be installed via pkg_add or from source if not
 already present on the server:
 
-  pcre, libevent, optional desired SQL database.
+  Required: pcre
+  Optional: libevent, mariadb-client, postgresql-client, curl, icu4c.
 
 * OpenBSD will not forward IPv4 connections to a listening IPv6
   port. Specify a generic IPv4 address (0.0.0.0) or specific one in

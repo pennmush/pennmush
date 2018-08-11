@@ -165,7 +165,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
   }
 
   PUSE;
-  tag_wrap("FONT", "SIZE=+1", exit_name);
+  safe_str(exit_name, pbuff, &pp);
   PEND;
   notify_by(loc, player, pbuff);
 
@@ -295,7 +295,7 @@ look_contents(dbref player, dbref loc, const char *contents_name,
     if (can_see(player, thing, can_see_loc)) {
       /* something exists!  show him everything */
       PUSE;
-      tag_wrap("FONT", "SIZE=+1", contents_name);
+      safe_str(contents_name, pbuff, &pp);
       tag("UL");
       PEND;
       notify_nopenter_by(loc, player, pbuff);
@@ -443,7 +443,7 @@ look_simple(dbref player, dbref thing, int key, NEW_PE_INFO *pe_info)
   PUEBLOBUFF;
 
   PUSE;
-  tag_wrap("FONT", "SIZE=+2", unparse_object_myopic(player, thing, AN_LOOK));
+  safe_str(unparse_object_myopic(player, thing, AN_LOOK), pbuff, &pp);
   PEND;
   notify_by(thing, player, pbuff);
   look_description(player, thing, T("You see nothing special."), "DESCRIBE",
@@ -507,7 +507,7 @@ look_room(dbref player, dbref loc, int key, NEW_PE_INFO *pe_info)
       }
       tag("HR");
     }
-    tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc, pe_info));
+    safe_str(unparse_room(player, loc, pe_info), pbuff, &pp);
     PEND;
     notify_by(loc, player, pbuff);
   }
@@ -846,7 +846,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   }
   if (ok) {
     PUSE;
-    tag_wrap("FONT", "SIZE=+2", object_header(player, thing));
+    safe_str(object_header(player, thing), pbuff, &pp);
     PEND;
     notify(player, pbuff);
     if (FLAGS_ON_EXAMINE)

@@ -2,6 +2,11 @@
  * \file funjson.c
  *
  * json softcode functions and related.
+ *
+ * Mostly uses sqlite3 JSON1 functions for manipulating JSON, with
+ * some use of cJSON when that's not feasible. Having multiple JSON
+ * APIs is non-optimal, but some things are just easier to do with one
+ * than they are the other.
  */
 
 #include "copyrite.h"
@@ -21,48 +26,16 @@
 #include "mushsql.h"
 #include "charconv.h"
 #include "charclass.h"
+
+#include "cJSON.h"
 #include "confmagic.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
 
-static bool json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
-                          NEW_PE_INFO *pe_info, JSON *json, dbref executor,
-                          dbref enactor);
-
-/** Free all memory used by a JSON struct */
-void
-json_free(JSON *json)
-{
-  if (!json)
-    return;
-
-  if (json->next) {
-    json_free(json->next);
-    json->next = NULL;
-  }
-
-  if (json->data) {
-    switch (json->type) {
-    case JSON_NONE:
-      break; /* Included for completeness; never has data */
-    case JSON_NULL:
-    case JSON_BOOL:
-      break; /* pointers to static args */
-    case JSON_OBJECT:
-    case JSON_ARRAY:
-      json_free(json->data); /* Nested JSON structs */
-      break;
-    case JSON_STR:
-    case JSON_NUMBER:
-      mush_free(json->data, "json.data"); /* Plain, malloc'd value */
-      break;
-    }
-    json->data = NULL;
-  }
-
-  mush_free(json, "json");
-}
+static bool json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff,
+                          PE_REGS *pe_regs, NEW_PE_INFO *pe_info,
+                          sqlite3_stmt *json, dbref executor, dbref enactor);
 
 /** Escape a string for use as a JSON string. Returns a STATIC buffer. */
 char *
@@ -80,10 +53,11 @@ json_escape_string(char *input)
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
     } else if (*p > 127 || *p <= 0x1F) {
-      safe_format(buff, &bp, "\\u%.4X", (unsigned) *p);
+      safe_format(buff, &bp, "\\u%04X", (unsigned) *p);
     } else {
-      if (*p == '"' || *p == '\\')
+      if (*p == '"' || *p == '\\') {
         safe_chr('\\', buff, &bp);
+      }
       safe_chr(*p, buff, &bp);
     }
   }
@@ -93,335 +67,20 @@ json_escape_string(char *input)
   return buff;
 }
 
-/** Unescape a JSON string. Returns a STATIC buffer. */
-char *
-json_unescape_string(char *input)
-{
-  static char buff[BUFFER_LEN];
-  char *bp = buff;
-  char *p;
-  int escape = 0;
-
-  for (p = input; *p; p++) {
-    if (escape) {
-      switch (*p) {
-      case 'n':
-        safe_chr('\n', buff, &bp);
-        break;
-      case 'r':
-        /* Nothing */
-        break;
-      case 't':
-        safe_chr('\t', buff, &bp);
-        break;
-      case 'u': {
-        unsigned int uchar;
-        char *end;
-        uchar = strtoul(p + 1, &end, 16);
-        if (end - p != 5 || uchar > 255 || !char_isprint(uchar)) {
-          safe_chr('?', buff, &bp);
-        } else {
-          safe_chr(uchar, buff, &bp);
-        }
-        p = end - 1;
-        break;
-      }
-      case '"':
-      case '\\':
-        safe_chr(*p, buff, &bp);
-        break;
-      }
-      escape = 0;
-    } else if (*p == '\\') {
-      escape = 1;
-    } else {
-      safe_chr(*p, buff, &bp);
-    }
-  }
-
-  *bp = '\0';
-
-  return buff;
-}
-
-/** Convert a JSON struct into a string representation of the JSON
- * \param json The JSON struct to convert
- * \param verbose Add spaces, carriage returns, etc, to make the JSON
- * human-readable?
- * \param recurse Number of recursions; always call with this set to 0
- * \retval NULL error occurred
- * \retval result string representation of the JSON struct, malloc'd as
- * "json_str"
- */
-char *
-json_to_string_real(JSON *json, int verbose, int recurse)
-{
-  char buff[BUFFER_LEN];
-  char *bp = buff;
-  JSON *next;
-  int i = 0;
-  char *sub;
-  int error = 0;
-  double *np;
-
-  if (!json)
-    return NULL;
-
-  switch (json->type) {
-  case JSON_NONE:
-    break;
-  case JSON_NUMBER:
-    np = (NVAL *) json->data;
-    error = safe_number(*np, buff, &bp);
-    break;
-  case JSON_STR:
-    error =
-      safe_format(buff, &bp, "\"%s\"", json_escape_string((char *) json->data));
-    break;
-  case JSON_BOOL:
-    error = safe_str((char *) json->data, buff, &bp);
-    break;
-  case JSON_NULL:
-    error = safe_str((char *) json->data, buff, &bp);
-    break;
-  case JSON_ARRAY:
-    error = safe_chr('[', buff, &bp);
-    next = (JSON *) json->data;
-    i = 0;
-    for (next = (JSON *) json->data, i = 0; next; next = next->next, i++) {
-      sub = json_to_string_real(next, verbose, recurse + 1);
-      if (i)
-        error = safe_chr(',', buff, &bp);
-      if (sub != NULL) {
-        if (verbose) {
-          error = safe_chr('\n', buff, &bp);
-          error = safe_fill(' ', (recurse + 1) * 4, buff, &bp);
-        }
-        error = safe_str(sub, buff, &bp);
-        mush_free(sub, "json_str");
-      }
-    }
-    if (verbose) {
-      error = safe_chr('\n', buff, &bp);
-      error = safe_fill(' ', recurse * 4, buff, &bp);
-    }
-    error = safe_chr(']', buff, &bp);
-    break;
-  case JSON_OBJECT:
-    error = safe_chr('{', buff, &bp);
-    next = (JSON *) json->data;
-    i = 0;
-    while (next && !error) {
-      if (!(i % 2) && next->type != JSON_STR) {
-        error = 1;
-        break;
-      }
-      if (i > 0) {
-        error = safe_chr((i % 2) ? ':' : ',', buff, &bp);
-        if (verbose)
-          error = safe_chr(' ', buff, &bp);
-      }
-      if (verbose && !(i % 2)) {
-        error = safe_chr('\n', buff, &bp);
-        error = safe_fill(' ', (recurse + 1) * 4, buff, &bp);
-      }
-      sub = json_to_string_real(next, verbose, recurse + 1);
-      if (sub != NULL) {
-        error = safe_str(sub, buff, &bp);
-        mush_free(sub, "json_str");
-      } else {
-        error = 1;
-        break;
-      }
-      next = next->next;
-      i++;
-    }
-    if (verbose) {
-      error = safe_chr('\n', buff, &bp);
-      error = safe_fill(' ', recurse * 4, buff, &bp);
-    }
-    error = safe_chr('}', buff, &bp);
-    break;
-  }
-
-  if (error) {
-    return NULL;
-  } else {
-    *bp = '\0';
-    return mush_strdup(buff, "json_str");
-  }
-}
-
-/** Convert a string representation to a JSON struct.
- *  Destructively modifies input.
- * \param input The string to parse
- * \param ip A pointer to the position we're at in "input", for recursive calls.
- *           Set to NULL for initial call.
- * \param recurse Recursion level. Set to 0 for initial call.
- * \retval NULL string did not contain valid JSON
- * \retval json a JSON struct representing the json from input
- */
-JSON *
-string_to_json_real(char *input, char **ip, int recurse)
-{
-  JSON *result = NULL, *last = NULL, *next = NULL;
-  char *p;
-  double d;
-
-  if (ip == NULL) {
-    ip = &input;
-  }
-
-  result = mush_malloc(sizeof(JSON), "json");
-  result->type = JSON_NONE;
-  result->data = NULL;
-  result->next = NULL;
-
-  if (!input || !*input) {
-    return result;
-  }
-
-  /* Skip over leading spaces */
-  while (**ip && isspace(**ip))
-    (*ip)++;
-
-  if (!**ip) {
-    return result;
-  }
-
-  if (!strncmp(*ip, json_vals[0], json_val_lens[0])) {
-    result->type = JSON_BOOL;
-    result->data = json_vals[0];
-    *ip += json_val_lens[0];
-  } else if (!strncmp(*ip, json_vals[1], json_val_lens[1])) {
-    result->type = JSON_BOOL;
-    result->data = json_vals[1];
-    *ip += json_val_lens[1];
-  } else if (!strncmp(*ip, json_vals[2], json_val_lens[2])) {
-    result->type = JSON_NULL;
-    result->data = json_vals[2];
-    *ip += json_val_lens[2];
-  } else if (**ip == '"') {
-    /* Validate string */
-    for (p = ++(*ip); **ip; (*ip)++) {
-      if (**ip == '\\') {
-        (*ip)++;
-      } else if (**ip == '"') {
-        break;
-      }
-    }
-    if (**ip == '"') {
-      result->type = JSON_STR;
-      *(*ip)++ = '\0';
-      result->data = mush_strdup(json_unescape_string(p), "json.data");
-    }
-  } else if (**ip == '[') {
-    int i = 0;
-    (*ip)++; /* Skip over the opening [ */
-    while (**ip) {
-      while (**ip && isspace(**ip))
-        (*ip)++; /* Skip over leading spaces */
-      if (**ip == ']')
-        break;
-      next = string_to_json_real(input, ip, recurse + 1);
-      if (next == NULL)
-        break; /* Error in the array contents */
-      if (i == 0) {
-        result->data = next;
-      } else {
-        last->next = next;
-      }
-      last = next;
-      while (**ip && isspace(**ip))
-        (*ip)++;
-      if (**ip == ',') {
-        (*ip)++;
-      } else {
-        break;
-      }
-      i++;
-    }
-    if (**ip == ']') {
-      (*ip)++;
-      result->type = JSON_ARRAY;
-    }
-  } else if (**ip == '{') {
-    int i = 0;
-    (*ip)++;
-    while (**ip) {
-      while (**ip && isspace(**ip))
-        (*ip)++;
-      if (**ip == '}')
-        break;
-      next = string_to_json_real(input, ip, recurse + 1);
-      if (next == NULL)
-        break; /* Error */
-      if (i == 0)
-        result->data = next;
-      else
-        last->next = next;
-      last = next;
-      if (!(i % 2) && next->type != JSON_STR) {
-        /* It should have been a label, but it's not */
-        break;
-      }
-      while (**ip && isspace(**ip))
-        (*ip)++;
-      if (**ip == ',' && (i % 2))
-        (*ip)++;
-      else if (**ip == ':' && !(i % 2))
-        (*ip)++;
-      else {
-        break; /* error */
-      }
-      i++;
-    }
-    if ((i == 0 || (i % 2)) && **ip == '}') {
-      (*ip)++;
-      result->type = JSON_OBJECT;
-    }
-  } else {
-    d = strtod(*ip, &p);
-    if (p != *ip) {
-      /* We have a number */
-      NVAL *data = mush_malloc(sizeof(NVAL), "json.data");
-      result->type = JSON_NUMBER;
-      *data = d;
-      result->data = data;
-      *ip = p;
-    } else {
-      result->type = JSON_NONE;
-    }
-  }
-
-  if (result->type == JSON_NONE) {
-    /* If it's set to JSON_NONE at this point, we had an error */
-    json_free(result);
-    return NULL;
-  }
-  while (**ip && isspace(**ip))
-    (*ip)++;
-  if (!recurse && **ip != '\0') {
-    /* Text left after we finished parsing; invalid JSON */
-    json_free(result);
-    return NULL;
-  } else {
-    return result;
-  }
-}
+#include "jsontypes.c"
 
 enum json_query {
   JSON_QUERY_TYPE,
   JSON_QUERY_SIZE,
   JSON_QUERY_EXISTS,
   JSON_QUERY_GET,
-  JSON_QUERY_UNESCAPE,
-  JSON_QUERY_PATCH
+  JSON_QUERY_EXTRACT,
+  JSON_QUERY_UNESCAPE
 };
 
 FUNCTION(fun_json_query)
 {
-  JSON *json = NULL, *next, *curr;
+  cJSON *json = NULL, *curr = NULL;
   enum json_query query_type = JSON_QUERY_TYPE;
   int i, path;
 
@@ -436,8 +95,8 @@ FUNCTION(fun_json_query)
       query_type = JSON_QUERY_UNESCAPE;
     } else if (strcasecmp("type", args[1]) == 0) {
       query_type = JSON_QUERY_TYPE;
-    } else if (strcasecmp("patch", args[1]) == 0) {
-      query_type = JSON_QUERY_PATCH;
+    } else if (strcasecmp("extract", args[1]) == 0) {
+      query_type = JSON_QUERY_EXTRACT;
     } else {
       safe_str(T("#-1 INVALID OPERATION"), buff, bp);
       return;
@@ -445,14 +104,17 @@ FUNCTION(fun_json_query)
   }
 
   if ((query_type == JSON_QUERY_GET || query_type == JSON_QUERY_EXISTS ||
-       query_type == JSON_QUERY_PATCH) &&
+       query_type == JSON_QUERY_EXTRACT) &&
       (nargs < 3 || !args[2] || !*args[2])) {
     safe_str(T("#-1 MISSING VALUE"), buff, bp);
     return;
   }
 
-  if (query_type != JSON_QUERY_PATCH) {
-    json = string_to_json(args[0]);
+  if (query_type != JSON_QUERY_EXTRACT && query_type != JSON_QUERY_TYPE) {
+    int ulen;
+    char *utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "json.string");
+    json = cJSON_Parse(utf8);
+    mush_free(utf8, "json.string");
     if (!json) {
       safe_str(T("#-1 INVALID JSON"), buff, bp);
       return;
@@ -460,242 +122,349 @@ FUNCTION(fun_json_query)
   }
 
   switch (query_type) {
-  case JSON_QUERY_TYPE:
-    switch (json->type) {
-    case JSON_NONE:
-      break; /* Should never happen */
-    case JSON_STR:
-      safe_str("string", buff, bp);
-      break;
-    case JSON_BOOL:
-      safe_str("boolean", buff, bp);
-      break;
-    case JSON_NULL:
-      safe_str("null", buff, bp);
-      break;
-    case JSON_NUMBER:
-      safe_str("number", buff, bp);
-      break;
-    case JSON_ARRAY:
-      safe_str("array", buff, bp);
-      break;
-    case JSON_OBJECT:
-      safe_str("object", buff, bp);
-      break;
-    }
-    break;
-  case JSON_QUERY_SIZE:
-    switch (json->type) {
-    case JSON_NONE:
-      break;
-    case JSON_STR:
-    case JSON_BOOL:
-    case JSON_NUMBER:
-      safe_chr('1', buff, bp);
-      break;
-    case JSON_NULL:
-      safe_chr('0', buff, bp);
-      break;
-    case JSON_ARRAY:
-    case JSON_OBJECT:
-      next = (JSON *) json->data;
-      if (!next) {
-        safe_chr('0', buff, bp);
-        break;
-      }
-      for (i = 1; next->next; i++, next = next->next)
-        ;
-      if (json->type == JSON_OBJECT) {
-        i = i / 2; /* Key/value pairs, so we have half as many */
-      }
-      safe_integer(i, buff, bp);
-      break;
-    }
-    break;
-  case JSON_QUERY_UNESCAPE:
-    if (json->type != JSON_STR) {
-      safe_str("#-1", buff, bp);
-      break;
-    }
-    safe_str(json_unescape_string((char *) json->data), buff, bp);
-    break;
-  case JSON_QUERY_EXISTS:
-  case JSON_QUERY_GET:
-    path = 2;
-    curr = json;
-    do {
-      switch (curr->type) {
-      case JSON_NONE:
-        curr = NULL;
-        break;
-      case JSON_STR:
-      case JSON_BOOL:
-      case JSON_NUMBER:
-      case JSON_NULL:
-        safe_str("#-1", buff, bp);
-        curr = NULL;
-        break;
-      case JSON_ARRAY:
-        if (!is_strict_integer(args[path])) {
-          safe_str(T(e_int), buff, bp);
-          curr = NULL;
-          break;
-        }
-        i = parse_integer(args[path]);
-        for (next = curr->data; i > 0 && next; next = next->next, i--)
-          ;
-
-        if (query_type == JSON_QUERY_EXISTS) {
-          if (path == nargs - 1 || !next) {
-            safe_chr((next) ? '1' : '0', buff, bp);
-            curr = NULL;
-            break;
-          }
-        }
-        curr = next;
-        break;
-      case JSON_OBJECT:
-        next = (JSON *) curr->data;
-        while (next) {
-          if (next->type != JSON_STR) {
-            /* We should have a string label */
-            next = NULL;
-            break;
-          }
-          if (!strcasecmp((char *) next->data, args[path])) {
-            /* Success! */
-            next = next->next;
-            break;
-          } else {
-            /* Skip */
-            next = next->next; /* Move to this entry's value */
-            if (next) {
-              next = next->next; /* Move to next entry's name */
-            }
-          }
-        }
-        if (query_type == JSON_QUERY_EXISTS) {
-          if (path == nargs - 1 || !next) {
-            safe_chr((next) ? '1' : '0', buff, bp);
-            curr = NULL;
-            break;
-          }
-        }
-        curr = next;
-        break;
-      }
-    } while (curr && ++path < nargs);
-    if (curr) {
-      char *s = json_to_string(curr, 0);
-      if (s) {
-        safe_str(s, buff, bp);
-        mush_free(s, "json_str");
-      }
-    }
-    break;
-  case JSON_QUERY_PATCH: {
-    sqlite3 *sqldb;
-    sqlite3_stmt *patch;
+  case JSON_QUERY_TYPE: {
+    sqlite3 *sqldb = get_shared_db();
+    sqlite3_stmt *op;
     char *utf8;
-    int status;
-    int ulen;
-
-    sqldb = get_shared_db();
-    patch =
-      prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_query.patch");
-    if (!patch) {
+    int ulen, status;
+    op = prepare_statement(sqldb, "VALUES (json_type(?))", "json_query.type");
+    if (!op) {
       safe_str("#-1 SQLITE ERROR", buff, bp);
       return;
     }
 
     utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
-    sqlite3_bind_text(patch, 1, utf8, ulen, free_string);
-    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
-    sqlite3_bind_text(patch, 2, utf8, ulen, free_string);
-    status = sqlite3_step(patch);
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    status = sqlite3_step(op);
     if (status == SQLITE_ROW) {
-      char *latin1;
-      int len;
-      const char *p = (const char *) sqlite3_column_text(patch, 0);
-      int plen = sqlite3_column_bytes(patch, 0);
-      latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
-      safe_strl(latin1, len, buff, bp);
-      mush_free(latin1, "string");
+      const char *t = (const char *) sqlite3_column_text(op, 0);
+      size_t tlen = sqlite3_column_bytes(op, 0);
+      /* Use a perfect hash table to map sqlite json1 type names to penn names
+       */
+      const struct json_type_map *type = json_type_lookup(t, tlen);
+      if (type) {
+        safe_str(type->pname, buff, bp);
+      } else {
+        safe_str("#-1 UNKNOWN TYPE", buff, bp);
+      }
     } else {
-      safe_format(buff, bp, "#-1 JSON ERROR %s", sqlite3_errstr(status));
+      safe_str("#-1 JSON ERROR", buff, bp);
     }
-    sqlite3_reset(patch);
+    sqlite3_reset(op);
+    break;
+  }
+  case JSON_QUERY_SIZE:
+    if (cJSON_IsBool(json) || cJSON_IsNumber(json) || cJSON_IsString(json)) {
+      safe_chr('1', buff, bp);
+    } else if (cJSON_IsNull(json) || cJSON_IsInvalid(json)) {
+      safe_chr('0', buff, bp);
+    } else if (cJSON_IsArray(json) || cJSON_IsObject(json)) {
+      safe_integer(cJSON_GetArraySize(json), buff, bp);
+    }
+    break;
+  case JSON_QUERY_UNESCAPE: {
+    char *latin1, *c;
+    int len;
+    if (!cJSON_IsString(json)) {
+      safe_str("#-1", buff, bp);
+      break;
+    }
+    latin1 =
+      utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
+    for (c = latin1; *c; c += 1) {
+      if (!isprint(*c) && !isspace(*c)) {
+        *c = '?';
+      }
+    }
+    safe_strl(latin1, len, buff, bp);
+    mush_free(latin1, "json.string");
+  } break;
+  case JSON_QUERY_EXISTS:
+  case JSON_QUERY_GET:
+    curr = json;
+    for (path = 2; path < nargs; path += 1) {
+      if (!curr || cJSON_IsInvalid(curr) || cJSON_IsBool(curr) ||
+          cJSON_IsNull(curr) || cJSON_IsNumber(curr) || cJSON_IsString(curr)) {
+        safe_str("#-1", buff, bp);
+        curr = NULL;
+        goto err;
+      }
+      if (cJSON_IsArray(curr) && !is_strict_integer(args[path])) {
+        safe_str(T(e_int), buff, bp);
+        curr = NULL;
+        goto err;
+      }
+
+      if (cJSON_IsArray(curr)) {
+        i = parse_integer(args[path]);
+        curr = cJSON_GetArrayItem(curr, i);
+      } else if (cJSON_IsObject(curr)) {
+        int ulen;
+        char *utf8 =
+          latin1_to_utf8(args[path], arglens[path], &ulen, "json.string");
+        curr = cJSON_GetObjectItemCaseSensitive(curr, utf8);
+        mush_free(utf8, "json.string");
+      }
+    }
+    if (query_type == JSON_QUERY_EXISTS) {
+      safe_boolean(curr != NULL, buff, bp);
+    } else {
+      if (curr) {
+        int len;
+        char *c;
+        char *jstr = cJSON_PrintUnformatted(curr);
+        char *latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
+        for (c = latin1; *c; c += 1) {
+          if (!isprint(*c) && !isspace(*c)) {
+            *c = '?';
+          }
+        }
+
+        safe_strl(latin1, len, buff, bp);
+        mush_free(latin1, "json.string");
+        free(jstr);
+      }
+    }
+  err:
+    break;
+  case JSON_QUERY_EXTRACT: {
+    sqlite3 *sqldb = get_shared_db();
+    sqlite3_stmt *op;
+    char *utf8;
+    int ulen, status;
+
+    op = prepare_statement(sqldb, "VALUES (json_extract(?, ?))",
+                           "json_query.extract");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    status = sqlite3_step(op);
+
+    if (status == SQLITE_ROW) {
+      if (sqlite3_column_type(op, 0) != SQLITE_NULL) {
+        char *latin1;
+        int len;
+        char *c;
+        const char *p = (const char *) sqlite3_column_text(op, 0);
+        int plen = sqlite3_column_bytes(op, 0);
+        latin1 = utf8_to_latin1_us(p, plen, &len, 0, "json.string");
+        for (c = latin1; *c; c += 1) {
+          if (!isprint(*c) && !isspace(*c)) {
+            *c = '?';
+          }
+        }
+
+        safe_strl(latin1, len, buff, bp);
+        mush_free(latin1, "json.string");
+      }
+    } else {
+      safe_str("#-1 JSON ERROR", buff, bp);
+    }
+
+    sqlite3_reset(op);
+    break;
   }
   }
   if (json) {
-    json_free(json);
+    cJSON_Delete(json);
   }
+}
+
+FUNCTION(fun_json_mod)
+{
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *op = NULL;
+  char *utf8;
+  int status;
+  int ulen;
+
+  if (strcasecmp(args[1], "patch") == 0) {
+    op =
+      prepare_statement(sqldb, "VALUES (json_patch(?, ?))", "json_mod.patch");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "insert") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement(sqldb, "VALUES (json_insert(?, ?, json(?)))",
+                           "json_mod.insert");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "replace") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement(sqldb, "VALUES (json_replace(?, ?, json(?)))",
+                           "json_mod.replace");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "set") == 0) {
+    if (nargs != 4) {
+      safe_str("#-1 FUNCTION EXPECTS 4 ARGUMENTS", buff, bp);
+      return;
+    }
+
+    op = prepare_statement(sqldb, "VALUES (json_set(?, ?, json(?)))",
+                           "json_mod.set");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[3], arglens[3], &ulen, "string");
+    sqlite3_bind_text(op, 3, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "remove") == 0) {
+    op =
+      prepare_statement(sqldb, "VALUES (json_remove(?, ?))", "json_mod.remove");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else if (strcasecmp(args[1], "sort") == 0) {
+    op = prepare_statement(
+      sqldb,
+      "WITH ordered(value) AS (SELECT CASE WHEN type='text' THEN "
+      "json_quote(value) ELSE value END FROM json_each(?1) ORDER BY "
+      "json_extract(CASE WHEN type = 'text' THEN json_quote(value) ELSE value "
+      "END, ?2)) SELECT json_group_array(json(value)) FROM ordered",
+      "json_mod.sort");
+    if (!op) {
+      safe_str("#-1 SQLITE ERROR", buff, bp);
+      return;
+    }
+
+    utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "string");
+    sqlite3_bind_text(op, 1, utf8, ulen, free_string);
+    utf8 = latin1_to_utf8(args[2], arglens[2], &ulen, "string");
+    sqlite3_bind_text(op, 2, utf8, ulen, free_string);
+  } else {
+    safe_str("#-1 INVALID OPERATION", buff, bp);
+    return;
+  }
+
+  status = sqlite3_step(op);
+  if (status == SQLITE_ROW) {
+    if (sqlite3_column_type(op, 0) != SQLITE_NULL) {
+      char *latin1, *c;
+      int len;
+      const char *p = (const char *) sqlite3_column_text(op, 0);
+      int plen = sqlite3_column_bytes(op, 0);
+      latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
+      for (c = latin1; *c; c += 1) {
+        if (!isprint(*c) && !isspace(*c)) {
+          *c = '?';
+        }
+      }
+
+      safe_strl(latin1, len, buff, bp);
+      mush_free(latin1, "string");
+    }
+  } else {
+    safe_str("#-1 JSON ERROR", buff, bp);
+  }
+
+  sqlite3_reset(op);
 }
 
 FUNCTION(fun_json_map)
 {
   ufun_attrib ufun;
   PE_REGS *pe_regs;
-  int funccount;
   char *osep, osepd[2] = {' ', '\0'};
-  JSON *json, *next;
-  int i;
-  char rbuff[BUFFER_LEN];
+  sqlite3 *sqldb = get_shared_db();
+  sqlite3_stmt *mapper;
+  sqlite3_str *rbuff;
+  char *utf8;
+  int ulen;
+  int status, i;
+  int rows = 0;
 
   osep = (nargs >= 3) ? args[2] : osepd;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
-    return;
-
-  json = string_to_json(args[1]);
-  if (!json) {
-    safe_str(T("#-1 INVALID JSON"), buff, bp);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT)) {
     return;
   }
+
+  mapper = prepare_statement(sqldb, "SELECT type, value, key FROM json_each(?)",
+                             "json_map");
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_json_map");
   for (i = 3; i <= nargs; i++) {
     pe_regs_setenv_nocopy(pe_regs, i, args[i]);
   }
 
-  switch (json->type) {
-  case JSON_NONE:
-    break;
-  case JSON_STR:
-  case JSON_BOOL:
-  case JSON_NULL:
-  case JSON_NUMBER:
-    /* Basic data types */
-    json_map_call(&ufun, rbuff, pe_regs, pe_info, json, executor, enactor);
-    safe_str(rbuff, buff, bp);
-    break;
-  case JSON_ARRAY:
-  case JSON_OBJECT:
-    /* Complex types */
-    for (next = json->data, i = 0; next; next = next->next, i++) {
-      funccount = pe_info->fun_invocations;
-      if (json->type == JSON_ARRAY) {
-        pe_regs_setenv(pe_regs, 2, pe_regs_intname(i));
-      } else {
-        pe_regs_setenv_nocopy(pe_regs, 2, (char *) next->data);
-        next = next->next;
-        if (!next)
-          break;
-      }
-      if (json_map_call(&ufun, rbuff, pe_regs, pe_info, next, executor,
-                        enactor))
-        break;
-      if (i > 0)
-        safe_str(osep, buff, bp);
-      safe_str(rbuff, buff, bp);
-      if (*bp >= (buff + BUFFER_LEN - 1) &&
-          pe_info->fun_invocations == funccount)
-        break;
-    }
-    break;
-  }
+  utf8 = latin1_to_utf8(args[1], arglens[1], &ulen, "string");
+  sqlite3_bind_text(mapper, 1, utf8, ulen, free_string);
+  rbuff = sqlite3_str_new(sqldb);
 
-  json_free(json);
+  do {
+    status = sqlite3_step(mapper);
+    if (status == SQLITE_ROW) {
+      if (rows++ > 0) {
+        sqlite3_str_appendall(rbuff, osep);
+      }
+      if (json_map_call(&ufun, rbuff, pe_regs, pe_info, mapper, executor,
+                        enactor)) {
+        status = SQLITE_DONE;
+        break;
+      }
+    }
+  } while (status == SQLITE_ROW);
+  if (status == SQLITE_DONE) {
+    char *res = sqlite3_str_finish(rbuff);
+    safe_str(res, buff, bp);
+    sqlite3_free(res);
+  } else {
+    safe_str("#-1 INVALID JSON", buff, bp);
+    sqlite3_str_reset(rbuff);
+    sqlite3_str_finish(rbuff);
+  }
+  sqlite3_reset(mapper);
   pe_regs_free(pe_regs);
 }
 
@@ -712,53 +481,69 @@ FUNCTION(fun_json_map)
  * \retval 1 function invocation limit exceeded
  */
 static bool
-json_map_call(ufun_attrib *ufun, char *rbuff, PE_REGS *pe_regs,
-              NEW_PE_INFO *pe_info, JSON *json, dbref executor, dbref enactor)
+json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
+              NEW_PE_INFO *pe_info, sqlite3_stmt *json, dbref executor,
+              dbref enactor)
 {
-  char *jstr = NULL;
+  const char *jtype;
+  const struct json_type_map *ptype;
+  char buff[BUFFER_LEN] = {'\0'};
+  bool status;
 
-  switch (json->type) {
-  case JSON_NONE:
-    return 0;
-  case JSON_STR:
-    pe_regs_setenv_nocopy(pe_regs, 0, "string");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_BOOL:
-    pe_regs_setenv_nocopy(pe_regs, 0, "boolean");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_NULL:
-    pe_regs_setenv_nocopy(pe_regs, 0, "null");
-    pe_regs_setenv_nocopy(pe_regs, 1, (char *) json->data);
-    break;
-  case JSON_NUMBER:
-    pe_regs_setenv_nocopy(pe_regs, 0, "number");
-    {
-      char buff[BUFFER_LEN];
-      char *bp = buff;
-      safe_number(*(NVAL *) json->data, buff, &bp);
-      *bp = '\0';
-      pe_regs_setenv(pe_regs, 1, buff);
+  jtype = (const char *) sqlite3_column_text(json, 0);
+  ptype = json_type_lookup(jtype, sqlite3_column_bytes(json, 0));
+
+  pe_regs_setenv_nocopy(pe_regs, 0, ptype->pname);
+
+  if (strcmp(jtype, "true") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "true");
+  } else if (strcmp(jtype, "false") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "false");
+  } else if (strcmp(jtype, "null") == 0) {
+    pe_regs_setenv_nocopy(pe_regs, 1, "null");
+  } else if (strcmp(jtype, "integer") == 0) {
+    pe_regs_setenv(pe_regs, 1, (const char *) sqlite3_column_text(json, 1));
+  } else if (strcmp(jtype, "real") == 0) {
+    pe_regs_setenv(pe_regs, 1, (const char *) sqlite3_column_text(json, 1));
+  } else {
+    const char *utf8;
+    char *latin1, *c;
+    int ulen, len;
+
+    utf8 = (const char *) sqlite3_column_text(json, 1);
+    ulen = sqlite3_column_bytes(json, 1);
+    latin1 = utf8_to_latin1_us(utf8, ulen, &len, 0, "string");
+    for (c = latin1; *c; c += 1) {
+      if (!isprint(*c) && !isspace(*c)) {
+        *c = '?';
+      }
     }
-    break;
-  case JSON_ARRAY:
-    pe_regs_setenv_nocopy(pe_regs, 0, "array");
-    jstr = json_to_string(json, 0);
-    pe_regs_setenv(pe_regs, 1, jstr);
-    if (jstr)
-      mush_free(jstr, "json_str");
-    break;
-  case JSON_OBJECT:
-    pe_regs_setenv_nocopy(pe_regs, 0, "object");
-    jstr = json_to_string(json, 0);
-    pe_regs_setenv(pe_regs, 1, jstr);
-    if (jstr)
-      mush_free(jstr, "json_str");
-    break;
+
+    pe_regs_setenv(pe_regs, 1, latin1);
+    mush_free(latin1, "string");
+  }
+  if (sqlite3_column_type(json, 2) == SQLITE_INTEGER) {
+    pe_regs_setenv(pe_regs, 2, pe_regs_intname(sqlite3_column_int(json, 2)));
+  } else if (sqlite3_column_type(json, 2) == SQLITE_TEXT) {
+    const char *utf8 = (const char *) sqlite3_column_text(json, 2);
+    int ulen = sqlite3_column_bytes(json, 2);
+    int len;
+    char *c;
+    char *latin1 = utf8_to_latin1(utf8, ulen, &len, 0, "string");
+
+    for (c = latin1; *c; c += 1) {
+      if (!isprint(*c) && !isspace(*c)) {
+        *c = '?';
+      }
+    }
+
+    pe_regs_setenv(pe_regs, 2, latin1);
+    mush_free(latin1, "string");
   }
 
-  return call_ufun(ufun, rbuff, executor, enactor, pe_info, pe_regs);
+  status = call_ufun(ufun, buff, executor, enactor, pe_info, pe_regs);
+  sqlite3_str_appendall(rbuff, buff);
+  return status;
 }
 
 FUNCTION(fun_json)
@@ -766,21 +551,21 @@ FUNCTION(fun_json)
   enum json_type type;
   int i;
 
-  if (!*args[0])
+  if (!*args[0]) {
     type = JSON_STR;
-  else if (strcasecmp("string", args[0]) == 0)
+  } else if (strcasecmp("string", args[0]) == 0) {
     type = JSON_STR;
-  else if (strcasecmp("boolean", args[0]) == 0)
+  } else if (strcasecmp("boolean", args[0]) == 0) {
     type = JSON_BOOL;
-  else if (strcasecmp("array", args[0]) == 0)
+  } else if (strcasecmp("array", args[0]) == 0) {
     type = JSON_ARRAY;
-  else if (strcasecmp("object", args[0]) == 0)
+  } else if (strcasecmp("object", args[0]) == 0) {
     type = JSON_OBJECT;
-  else if (strcasecmp("null", args[0]) == 0)
+  } else if (strcasecmp("null", args[0]) == 0) {
     type = JSON_NULL;
-  else if (strcasecmp("number", args[0]) == 0)
+  } else if (strcasecmp("number", args[0]) == 0) {
     type = JSON_NUMBER;
-  else {
+  } else {
     safe_str(T("#-1 INVALID TYPE"), buff, bp);
     return;
   }
@@ -795,18 +580,21 @@ FUNCTION(fun_json)
 
   switch (type) {
   case JSON_NULL:
-    if (nargs == 2 && strcmp(args[1], json_vals[2]))
+    if (nargs == 2 && strcmp(args[1], json_vals[2])) {
       safe_str("#-1", buff, bp);
-    else
+    } else {
       safe_str(json_vals[2], buff, bp);
+    }
     return;
   case JSON_BOOL:
-    if (strcmp(json_vals[0], args[1]) == 0 || strcmp(args[1], "0") == 0)
+    if (strcmp(json_vals[0], args[1]) == 0 || strcmp(args[1], "0") == 0) {
       safe_str(json_vals[0], buff, bp);
-    else if (strcmp(json_vals[1], args[1]) == 0 || strcmp(args[1], "1") == 0)
+    } else if (strcmp(json_vals[1], args[1]) == 0 ||
+               strcmp(args[1], "1") == 0) {
       safe_str(json_vals[1], buff, bp);
-    else
+    } else {
       safe_str("#-1 INVALID VALUE", buff, bp);
+    }
     return;
   case JSON_NUMBER:
     if (!is_number(args[1])) {
@@ -818,26 +606,68 @@ FUNCTION(fun_json)
   case JSON_STR:
     safe_format(buff, bp, "\"%s\"", json_escape_string(args[1]));
     return;
-  case JSON_ARRAY:
-    safe_chr('[', buff, bp);
+  case JSON_ARRAY: {
+    char *jstr, *latin1, *c;
+    int len;
+    cJSON *arr = cJSON_CreateArray();
     for (i = 1; i < nargs; i++) {
-      if (i > 1) {
-        safe_strl(", ", 2, buff, bp);
+      char *utf8;
+      int ulen;
+      utf8 = latin1_to_utf8(args[i], arglens[i], &ulen, "json.string");
+      cJSON *elem = cJSON_Parse(utf8);
+      mush_free(utf8, "json.string");
+      if (!elem) {
+        safe_str("#-1 INVALID VALUE", buff, bp);
+        cJSON_Delete(arr);
+        return;
       }
-      safe_str(args[i], buff, bp);
+      cJSON_AddItemToArray(arr, elem);
     }
-    safe_chr(']', buff, bp);
-    return;
-  case JSON_OBJECT:
-    safe_chr('{', buff, bp);
+    jstr = cJSON_PrintUnformatted(arr);
+    cJSON_Delete(arr);
+    latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
+    for (c = latin1; *c; c += 1) {
+      if (!isprint(*c) && !isspace(*c)) {
+        *c = '?';
+      }
+    }
+
+    safe_strl(latin1, len, buff, bp);
+    mush_free(latin1, "json.string");
+    free(jstr);
+  } break;
+  case JSON_OBJECT: {
+    char *jstr, *latin1, *c;
+    int len;
+    cJSON *obj = cJSON_CreateObject();
     for (i = 1; i < nargs; i += 2) {
-      if (i > 1)
-        safe_strl(", ", 2, buff, bp);
-      safe_format(buff, bp, "\"%s\": %s", json_escape_string(args[i]),
-                  args[i + 1]);
+      int ulen;
+      char *utf8 =
+        latin1_to_utf8(args[i + 1], arglens[i + 1], &ulen, "json.string");
+      cJSON *elem = cJSON_Parse(utf8);
+      mush_free(utf8, "json.string");
+      if (!elem || !args[i][0]) {
+        safe_str("#-1 INVALID VALUE", buff, bp);
+        cJSON_Delete(obj);
+        return;
+      }
+      utf8 = latin1_to_utf8(args[i], arglens[i], &ulen, "json.string");
+      cJSON_AddItemToObject(obj, utf8, elem);
+      mush_free(utf8, "json.string");
     }
-    safe_chr('}', buff, bp);
-    return;
+    jstr = cJSON_PrintUnformatted(obj);
+    cJSON_Delete(obj);
+    latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
+    for (c = latin1; *c; c += 1) {
+      if (!isprint(*c) && !isspace(*c)) {
+        *c = '?';
+      }
+    }
+
+    safe_strl(latin1, len, buff, bp);
+    mush_free(latin1, "json.string");
+    free(jstr);
+  } break;
   case JSON_NONE:
     break;
   }

@@ -14,6 +14,8 @@
 #include <stdint.h>
 #endif
 
+#include "cJSON.h"
+
 #define NUMQ 36
 
 /** Math function floating-point number type */
@@ -334,23 +336,16 @@ enum json_type {
   JSON_OBJECT
 };
 
-typedef struct json_data JSON;
-struct json_data {
-  enum json_type type; /* The type of JSON data represented by 'data' */
-  void *data; /* A pointer to a char *, int * or json_data struct, depending on
-                 the value of 'type' */
-  struct json_data *next; /* Pointer to the next json_data in the linked list,
-                             for arrays/objects */
-};
+typedef int (*gmcp_handler_func)(char *package, cJSON *data, char *msg,
+                                 DESC *d);
 
-typedef int (*gmcp_handler_func)(char *package, JSON *data, char *msg, DESC *d);
 #define GMCP_HANDLER(x)                                                        \
   int x(char *package __attribute__((__unused__)),                             \
-        JSON *json __attribute__((__unused__)),                                \
+        cJSON *json __attribute__((__unused__)),                               \
         char *msg __attribute__((__unused__)),                                 \
         DESC *d __attribute__((__unused__)));                                  \
   int x(char *package __attribute__((__unused__)),                             \
-        JSON *json __attribute__((__unused__)),                                \
+        cJSON *json __attribute__((__unused__)),                               \
         char *msg __attribute__((__unused__)),                                 \
         DESC *d __attribute__((__unused__)))
 

@@ -12,7 +12,10 @@
         A sender (ex: *paul)
         An age of mail in days (ex: ~3 (exactly 3), <2, >1)
            "days" here means 24-hour periods from the current time.
-        One of the following: "read", "unread", "cleared", "tagged", "urgent", "all" (all messages in all folders), "folder" (all messages in current folder)
+        One of the following: "read", "unread", "cleared", "tagged", "urgent", "folder" (all messages in the current folder), "all" (all messages in all folders).
+
+  Unless a folder is explicitly specified, or all is used, only messages in the current folder will be counted.
+
   A <player-list> is a space-separated list of recipients, which may be:
         Player names
         Player dbref #'s

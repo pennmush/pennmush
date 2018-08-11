@@ -109,6 +109,8 @@
 #include "mushsql.h"
 #include "connlog.h"
 #include "charclass.h"
+#include "cJSON.h"
+#include "memcheck.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -750,6 +752,8 @@ main(int argc, char **argv)
 
   close_help_files();
 
+  log_mem_check();
+
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   end_all_logs();
@@ -1150,8 +1154,10 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef HAVE_LIBCURL
   curl_handle = curl_multi_init();
   curl_multi_setopt(curl_handle, CURLMOPT_MAXCONNECTS, 500);
+#if CURL_VERSION_NUM >= 0x072B00 /* 7.43.0 */
   curl_multi_setopt(curl_handle, CURLMOPT_PIPELINING,
                     CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX);
+#endif
 #endif
 
   avail_descriptors = how_many_fds() - 5;
@@ -1449,23 +1455,23 @@ shovechars(Port_t port, Port_t sslport)
       }
 
 #else /* INFO_SLAVE */
-        if (ndescriptors < avail_descriptors) {
-          if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
-            found -= 1;
-            setup_desc(sock, CS_IP_SOCKET);
-          }
-          if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
-            found -= 1;
-            setup_desc(sslsock, CS_OPENSSL_SOCKET);
-          }
-#ifdef LOCAL_SOCKET
-          if (found > 0 && localsock >= 0 &&
-              fds[fds_used++].revents & PENN_POLLIN) {
-            found -= 1;
-            setup_desc(localsock, CS_LOCAL_SOCKET);
-          }
-#endif /* LOCAL_SOCKET */
+      if (ndescriptors < avail_descriptors) {
+        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
+          found -= 1;
+          setup_desc(sock, CS_IP_SOCKET);
         }
+        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
+          found -= 1;
+          setup_desc(sslsock, CS_OPENSSL_SOCKET);
+        }
+#ifdef LOCAL_SOCKET
+        if (found > 0 && localsock >= 0 &&
+            fds[fds_used++].revents & PENN_POLLIN) {
+          found -= 1;
+          setup_desc(localsock, CS_LOCAL_SOCKET);
+        }
+#endif /* LOCAL_SOCKET */
+      }
 #endif /* INFO_SLAVE */
 
       if (found > 0 && notify_fd >= 0 &&
@@ -1490,11 +1496,11 @@ shovechars(Port_t port, Port_t sslport)
         if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
-        input_ready = fds[fds_used].revents & POLLIN;
+        input_ready = fds[fds_used].revents & PENN_POLLIN;
 #ifdef HAVE_LIBCURL
         errors = 0;
 #else
-          errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
 #endif
         output_ready = fds[fds_used++].revents & PENN_POLLOUT;
         if (input_ready || errors || output_ready)
@@ -1533,7 +1539,7 @@ test_connection(SOCKET newsock)
 #ifdef WIN32
   if (newsock == INVALID_SOCKET && WSAGetLastError() != WSAEINTR)
 #else
-    if (errno && errno != EINTR)
+  if (errno && errno != EINTR)
 #endif
   {
     penn_perror("test_connection");
@@ -1569,7 +1575,8 @@ new_connection(int oldsock, int *result, conn_source source)
   socklen_t addr_len;
   char ipbuf[BUFFER_LEN];
   char hostbuf[BUFFER_LEN];
-  char *bp;
+  char *bp, *extra = NULL;
+  DESC *d;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1609,17 +1616,18 @@ new_connection(int oldsock, int *result, conn_source source)
       pfd.events = POLLIN;
       pfd.revents = 0;
       poll(&pfd, 1, 100);
-      if (pfd.revents & POLLIN)
+      if (pfd.revents & POLLIN) {
         good_to_read = 1;
-      else
+      } else {
         good_to_read = 0;
+      }
     }
 #endif
 
-    if (good_to_read)
-      len =
-        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
-    else {
+    if (good_to_read) {
+      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf - 1, &remote_pid,
+                            &remote_uid);
+    } else {
       len = -1;
       errno = EWOULDBLOCK;
     }
@@ -1640,8 +1648,15 @@ new_connection(int oldsock, int *result, conn_source source)
         *split++ = '\0';
         strcpy(hostbuf, split);
         split = strchr(hostbuf, '\r');
-        if (split)
-          *split = '\0';
+        if (split) {
+          *(split++) = '\0';
+          if (*split == '\n') {
+            split++;
+          }
+          if (*split) {
+            extra = split;
+          }
+        }
       } else {
         /* Again, shouldn't happen! */
         strcpy(ipbuf, "(Unknown)");
@@ -1680,7 +1695,7 @@ new_connection(int oldsock, int *result, conn_source source)
       source = CS_LOCAL_SSL_SOCKET;
     }
 #else
-      source = CS_LOCAL_SSL_SOCKET;
+    source = CS_LOCAL_SSL_SOCKET;
 #endif
   }
 
@@ -1690,8 +1705,9 @@ new_connection(int oldsock, int *result, conn_source source)
       do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
                 newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
-    if (is_remote_source(source))
+    if (is_remote_source(source)) {
       shutdown(newsock, 2);
+    }
     closesocket(newsock);
 #ifndef WIN32
     errno = 0;
@@ -1700,9 +1716,14 @@ new_connection(int oldsock, int *result, conn_source source)
   }
   do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
             ipbuf, source_to_s(source));
-  if (is_remote_source(source))
+  if (is_remote_source(source)) {
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, hostbuf, ipbuf, source);
+  }
+  d = initializesock(newsock, hostbuf, ipbuf, source);
+  if (d && extra) {
+    process_input_helper(d, extra, strlen(extra));
+  }
+  return d;
 }
 
 /** Free the OUTPUTPREFIX and OUTPUTSUFFIX for a descriptor. */
@@ -1888,46 +1909,46 @@ fcache_read(FBLOCK *fb, const char *filename)
     return (int) fb->len;
   }
 #else
-    /* Posix read code here */
-    {
-      int fd;
-      struct stat sb;
+  /* Posix read code here */
+  {
+    int fd;
+    struct stat sb;
 
-      release_fd();
-      if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-        do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
-        reserve_fd();
-        return -1;
-      }
+    release_fd();
+    if ((fd = open(filename, O_RDONLY, 0)) < 0) {
+      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
+      reserve_fd();
+      return -1;
+    }
 
-      if (fstat(fd, &sb) < 0) {
-        do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
-        close(fd);
-        reserve_fd();
-        return -1;
-      }
-
-      if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-        do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
-                  (int) sb.st_size, filename);
-        close(fd);
-        reserve_fd();
-        return -1;
-      }
-
-      if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
-        do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
-        close(fd);
-        mush_free(fb->buff, "fcache_data");
-        fb->buff = NULL;
-        reserve_fd();
-        return -1;
-      }
-
+    if (fstat(fd, &sb) < 0) {
+      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
       close(fd);
       reserve_fd();
-      fb->len = sb.st_size;
+      return -1;
     }
+
+    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
+      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
+                (int) sb.st_size, filename);
+      close(fd);
+      reserve_fd();
+      return -1;
+    }
+
+    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
+      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
+      close(fd);
+      mush_free(fb->buff, "fcache_data");
+      fb->buff = NULL;
+      reserve_fd();
+      return -1;
+    }
+
+    close(fd);
+    reserve_fd();
+    fb->len = sb.st_size;
+  }
 #endif /* Posix read code */
 
   return fb->len;
@@ -2193,7 +2214,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
-  d->connlog_id = connlog_connection(ip, addr);
+  d->connlog_id = connlog_connection(ip, addr, is_ssl_desc(d));
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -2250,7 +2271,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     WSAPOLLFD p;
 #else
-      struct pollfd p;
+    struct pollfd p;
 #endif
 
     p.fd = d->descriptor;
@@ -2259,7 +2280,7 @@ network_send_ssl(DESC *d)
 #ifdef WIN32
     input_ready = WSAPoll(&p, 1, 0);
 #else
-      input_ready = poll(&p, 1, 0);
+    input_ready = poll(&p, 1, 0);
 #endif
   }
 
@@ -2468,7 +2489,7 @@ save_command(DESC *d, char *command)
 #ifdef HAVE_ICU
     latin1 = translate_utf8_to_latin1(command, -1, &llen, "string");
 #else
-      latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
+    latin1 = utf8_to_latin1(command, -1, &llen, 1, "string");
 #endif
     if (latin1) {
       char *c;
@@ -2680,20 +2701,20 @@ TELNET_HANDLER(telnet_charset)
 
   queue_newwrite(d, reply_suffix, 2);
 #else  /* _MSC_VER */
-    /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
-     * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
-     * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
-     * but it's unlikely to contain a valid charset name, so probably
-     * wouldn't help anyway.) */
+  /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
+   * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
+   * in this case. (We could use setlocale(LC_ALL, NULL) as a replacement
+   * but it's unlikely to contain a valid charset name, so probably
+   * wouldn't help anyway.) */
 
-    if (*cmd != DO)
-      return;
+  if (*cmd != DO)
+    return;
 
-    queue_newwrite(d, reply_prefix, 4);
-    queue_newwrite(d, ";UTF-8", 6);
-    queue_newwrite(d, ";ISO-8859-1", 11);
-    queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
-    queue_newwrite(d, reply_suffix, 2);
+  queue_newwrite(d, reply_prefix, 4);
+  queue_newwrite(d, ";UTF-8", 6);
+  queue_newwrite(d, ";ISO-8859-1", 11);
+  queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
+  queue_newwrite(d, reply_suffix, 2);
 #endif /* _MSC_VER */
 }
 
@@ -2758,7 +2779,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   struct gmcp_handler *g;
   char fullpackage[BUFFER_LEN], package[BUFFER_LEN], fullmsg[BUFFER_LEN];
   char *p, *msg;
-  JSON *json = NULL;
+  cJSON *json = NULL;
   int match = 0, i = 50;
 
   if (!gmcp_handlers)
@@ -2778,7 +2799,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
   if (msg && *msg) {
     /* string_to_json destructively modifies msg, so make a copy */
     mush_strncpy(fullmsg, msg, BUFFER_LEN);
-    json = string_to_json(msg);
+    json = cJSON_Parse(msg);
     if (!json)
       return; /* Invalid json */
   } else
@@ -2807,7 +2828,7 @@ TELNET_HANDLER(telnet_gmcp_sb)
       }
     }
   }
-  json_free(json);
+  cJSON_Delete(json);
 }
 
 /** Escape a string so it can be sent as a telnet SB (IAC -> IAC IAC). Returns
@@ -2869,30 +2890,19 @@ register_gmcp_handler(char *package, gmcp_handler_func func)
 /* Handler for Core.Hello messages */
 GMCP_HANDLER(gmcp_core_hello)
 {
-  JSON *j;
+  cJSON *j;
 
   if (strcasecmp(package, "Core.Hello")) {
     return 0; /* Package was Core.Hello.something, and we don't handle that */
   }
 
-  if (json->type != JSON_OBJECT) {
+  if (!cJSON_IsObject(json)) {
     return 0; /* We're expecting an object */
   }
 
-  j = (JSON *) json->data;
-  while (j) {
-    if (j->type == JSON_STR && j->data && !strcmp((char *) j->data, "client")) {
-      if ((j = j->next) && j->type == JSON_STR && j->data &&
-          *((char *) j->data)) {
-        /* We have the client name. */
-        set_ttype(d, (char *) j->data);
-      }
-      break; /* This is all we care about */
-    } else {
-      j = j->next; /* Move to value */
-      if (j)
-        j = j->next; /* Move to next label */
-    }
+  j = cJSON_GetObjectItemCaseSensitive(json, "client");
+  if (j && cJSON_IsString(j)) {
+    set_ttype(d, cJSON_GetStringValue(j));
   }
 
   return 1;
@@ -2947,7 +2957,7 @@ GMCP_HANDLER(gmcp_softcode_example)
  * \param data a JSON object, or NULL for no message
  */
 void
-send_oob(DESC *d, char *package, JSON *data)
+send_oob(DESC *d, char *package, cJSON *data)
 {
   char buff[BUFFER_LEN];
   char *bp = buff;
@@ -2957,12 +2967,11 @@ send_oob(DESC *d, char *package, JSON *data)
   if (!d || !(d->conn_flags & CONN_GMCP) || !package || !*package)
     return;
 
-  if (data && data->type != JSON_NONE) {
-    char *str = json_to_string(data, 0);
+  if (data && !cJSON_IsInvalid(data)) {
+    char *str = cJSON_PrintUnformatted(data);
     safe_str(str, buff, &bp);
     *bp = '\0';
-    if (str)
-      mush_free(str, "json_str");
+    free(str);
     escmsg = telnet_escape(buff);
     bp = buff;
   }
@@ -2986,7 +2995,7 @@ FUNCTION(fun_oob)
 {
   dbref who;
   DESC *d;
-  JSON *json;
+  cJSON *json;
   int i = 0;
 
   who = lookup_player(args[0]);
@@ -3000,20 +3009,26 @@ FUNCTION(fun_oob)
     return;
   }
 
-  json = string_to_json(args[2]);
+  json = cJSON_Parse(args[2]);
   if (!json) {
     safe_str(T("#-1 INVALID JSON"), buff, bp);
     return;
   }
 
   DESC_ITER_CONN (d) {
-    if (d->player != who || !(d->conn_flags & CONN_GMCP))
+    if (d->player != who)
       continue;
-    send_oob(d, args[1], json);
-    i++;
+    if (d->conn_flags & CONN_WEBSOCKETS) {
+      send_websocket_object(d, args[1], json);
+      i++;
+    }
+    if (d->conn_flags & CONN_GMCP) {
+      send_oob(d, args[1], json);
+      i++;
+    }
   }
   safe_integer(i, buff, bp);
-  json_free(json);
+  cJSON_Delete(json);
 }
 
 void
@@ -3995,8 +4010,8 @@ close_sockets(void)
       byebye[1].iov_len = 2;
       ignoreme = writev(d->descriptor, byebye, 2);
 #else
-        send(d->descriptor, shutmsg, shutlen, 0);
-        send(d->descriptor, (char *) "\r\n", 2, 0);
+      send(d->descriptor, shutmsg, shutlen, 0);
+      send(d->descriptor, (char *) "\r\n", 2, 0);
 #endif
     } else {
       int offset;
@@ -4852,7 +4867,7 @@ dump_users(DESC *call_by, char *match)
     if (nlen < 16)
       safe_fill(' ', 16 - nlen, nbuff, &np);
     *np = '\0';
-    snprintf(tbuf, sizeof tbuf, "%s %10s   %4s%c %s", nbuff,
+    snprintf(tbuf, sizeof tbuf, "%16.16s %10.10s %6.6s%c %s", nbuff,
              onfor_time_fmt(d->connected_at, 10),
              idle_time_fmt(d->last_time, 4), (Dark(d->player) ? 'D' : ' '),
              get_doing(d->player, NOTHING, NOTHING, NULL, 0));
@@ -6836,7 +6851,7 @@ load_reboot_db(void)
 #ifdef WITHOUT_WEBSOCKETS
         (void) getref_u64(f);
 #else
-          d->ws_frame_len = getref_u64(f);
+        d->ws_frame_len = getref_u64(f);
 #endif
       }
 #ifndef WITHOUT_WEBSOCKETS
@@ -7037,7 +7052,7 @@ do_reboot(dbref player, int flag)
     execv(saved_argv[0], (char **) args);
   }
 #else
-    execl("pennmush.exe", "pennmush.exe", "/run", NULL);
+  execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
   fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
@@ -7189,7 +7204,7 @@ file_watch_init(void)
 #ifdef HAVE_INOTIFY_INIT1
   return file_watch_init_in();
 #else
-    return -1;
+  return -1;
 #endif
 }
 

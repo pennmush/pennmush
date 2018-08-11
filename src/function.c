@@ -525,6 +525,7 @@ FUNTAB flist[] = {
   {"ITEXT", fun_itext, 1, 1, FN_REG | FN_STRIPANSI},
   {"JSON", fun_json, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"JSON_MAP", fun_json_map, 2, MAX_STACK_ARGS + 1, FN_REG | FN_STRIPANSI},
+  {"JSON_MOD", fun_json_mod, 3, 4, FN_REG | FN_STRIPANSI},
   {"JSON_QUERY", fun_json_query, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"LAST", fun_last, 1, 2, FN_REG},
   {"LATTR", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
@@ -1150,12 +1151,22 @@ do_function_clone(dbref player, const char *function, const char *clone)
   FUN *fp, *fpc;
   char realclone[BUFFER_LEN];
 
-  strupper_r(clone, realclone, sizeof realclone);
-
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
     return;
   }
+
+  if (!function || !*function) {
+    notify(player, T("What function did you want to clone?"));
+    return;
+  }
+
+  if (!clone || !*clone) {
+    notify(player, T("What did you want the cloned function to be called?"));
+    return;
+  }
+
+  strupper_r(clone, realclone, sizeof realclone);
 
   if (any_func_hash_lookup(realclone)) {
     notify(player, T("There's already a function with that name."));
@@ -1235,6 +1246,35 @@ alias_function(dbref player, const char *function, const char *alias)
     notify(player, T("Alias added."));
 
   return 1;
+}
+
+/** @function/alias implementation.
+ *
+ * \param player dbref of player adding the alias.
+ * \param function name of function to alias.
+ * \param alias name of the alias to add.
+ * \retval 0 failure (alias exists, or function doesn't, or is a user fun).
+ * \retval 1 success.
+ */
+int
+do_function_alias(dbref player, const char *function, const char *alias)
+{
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return 0;
+  }
+
+  if (!function || !*function) {
+    notify(player, T("What function do you want to alias?"));
+    return 0;
+  }
+
+  if (!alias || !*alias) {
+    notify(player, T("What do you want to alias the function as?"));
+    return 0;
+  }
+
+  return alias_function(player, function, alias);
 }
 
 /** Add a function.

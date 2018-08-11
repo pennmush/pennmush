@@ -1601,11 +1601,11 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
 const char *
 pe_regs_intname(int num)
 {
-  static char buff[8];
+  static char buff[32];
   if (num < 10 && num >= 0) {
     return envid[num];
   } else {
-    snprintf(buff, 8, "%d", num);
+    snprintf(buff, sizeof buff, "%d", num);
     return buff;
   }
 }

@@ -418,43 +418,19 @@ notify_type(DESC *d)
   int type = MSG_PLAYER;
   int colorstyle;
 
-  if (!d->connected) {
-    /* These are the settings used at, e.g., the connect screen,
-     * when there's no connected player yet.
-     */
-    type |= MSG_ANSI16;
-    if (d->conn_flags & CONN_HTML)
-      type |= MSG_PUEBLO;
-    else if (d->conn_flags & CONN_TELNET)
-      type |= MSG_TELNET;
-    return type;
-  }
-
-#ifndef WITHOUT_WEBSOCKETS
+  /* Connnection type checks */
+  #ifndef WITHOUT_WEBSOCKETS
   if (IsWebSocket(d)) {
     type |= MSGTYPE_WEBSOCKETS;
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
-
-  /* At this point, we have a connected player on the descriptor */
-  if (IS(d->player, TYPE_PLAYER, "NOACCENTS") ||
-      (d->conn_flags & CONN_STRIPACCENTS))
-    type |= MSG_STRIPACCENTS;
-
   if (d->conn_flags & CONN_HTML) {
     type |= MSG_PUEBLO;
   } else if (d->conn_flags & CONN_TELNET) {
     type |= MSG_TELNET;
   }
 
-  if (IS(d->player, TYPE_PLAYER, "XTERM256"))
-    type |= MSG_XTERM256;
-  else if (IS(d->player, TYPE_PLAYER, "COLOR"))
-    type |= MSG_ANSI16;
-  else if (IS(d->player, TYPE_PLAYER, "ANSI"))
-    type |= MSG_ANSI2;
-
-  /* Colorstyle overrides */
+  /* Colour checks */
   colorstyle = d->conn_flags & CONN_COLORSTYLE;
   if (colorstyle) {
     /* If a colorstyle is set, then override type */
@@ -470,6 +446,19 @@ notify_type(DESC *d)
       type |= MSG_XTERM256;
       break;
     }
+  } else if (!d->connected) {
+    type |= MSG_ANSI16;
+  } else if (IS(d->player, TYPE_PLAYER, "XTERM256")) {
+    type |= MSG_XTERM256;
+  } else if (IS(d->player, TYPE_PLAYER, "COLOR")) {
+    type |= MSG_ANSI16;
+  } else if (IS(d->player, TYPE_PLAYER, "ANSI")) {
+    type |= MSG_ANSI2;
+  }
+
+  if ((d->conn_flags & CONN_STRIPACCENTS) || (d->connected && 
+      IS(d->player, TYPE_PLAYER, "NOACCENTS"))) {
+    type |= MSG_STRIPACCENTS;
   }
 
   return type;

@@ -265,7 +265,7 @@ else
 AC_MSG_NOTICE([Skipping SQL server checks])
 fi
 
-AX_CHECK_ICU(50, AC_DEFINE(HAVE_ICU), AC_MSG_RESULT(ICU not found))
+AX_CHECK_ICU(51, AC_DEFINE(HAVE_ICU), AC_MSG_RESULT(ICU not found))
 
 ### Functions
 AC_CHECK_FUNCS([textdomain bindtextdomain crypt])

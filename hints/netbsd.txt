@@ -4,15 +4,15 @@ support, with the caveats below. Tested with NetBSD 7.
 Some packages need to be installed via pkgsrc if not already present
 on the server:
 
-   perl, pcre, libevent (Optional but strongly suggested), desired SQL
-   database if any (Note: NetBSD comes with sqlite3 in the base
-   system).
+   Required: perl5, pcre.
+   Optional:  libevent, MariaDB or PostgresSQL, curl and icu.
 
 If set up to install binary packages, pkg_add them. Otherwise, go to
-/usr/pkgsrc and install from source. Locations are:
+/usr/pkgsrc and install from source. Packages are:
+  databases/mysqlXX-client
+  databases/postgresqlXX-client
   devel/pcre
-  devel/libevent	
+  devel/libevent
   lang/perl5
-
-
-
+  textproc/icu
+  www/curl

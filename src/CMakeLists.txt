@@ -414,12 +414,18 @@ if(EXISTS ${GPERF})
     COMMAND ${GPERF} -C --output-file lmathtab.c lmathtab.gperf
     MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/lmathtab.gperf"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding lmathtab.c" VERBATIM)
+  add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/jsontypes.c"
+    COMMAND ${GPERF} -C --output-file jsontypes.c jsontypes.gperf
+    MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/jsontypes.gperf"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMENT "Rebuilding jsontypes.c" VERBATIM)
 
 else()
 
   if("${PROJECT_SOURCE_DIR}/bflags.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/bflags.c" OR
       "${PROJECT_SOURCE_DIR}/htmltab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/htmltab.c" OR
-      "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c")
+      "${PROJECT_SOURCE_DIR}/lmathtab.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/lmathtab.c"
+      "${PROJECT_SOURCE_DIR}/jsontypes.gperf" IS_NEWER_THAN "${PROJECT_SOURCE_DIR}/jsontypes.c"
+      )
     message(WARNING "gperf not installed and hash tables need to be updated.")
   endif()
 endif()
@@ -445,7 +451,7 @@ set_source_files_properties(function.c PROPERTIES OBJECT_DEPENDS "${PROJECT_SOUR
 add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h"
   COMMAND ${PERL} utils/mkcmds.pl functions VERBATIM WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   DEPENDS "${PROJECT_SOURCE_DIR}/funcrypt.c" "${PROJECT_SOURCE_DIR}/function.c"
-  "${PROJECT_SOURCE_DIR}/fundb.c" "${PROJECT_SOURCE_DIR}/funlist.c" "${PROJECT_SOURCE_DIR}/funlocal.c"
+  "${PROJECT_SOURCE_DIR}/fundb.c" "${PROJECT_SOURCE_DIR}/funjson.c" "${PROJECT_SOURCE_DIR}/funlist.c" "${PROJECT_SOURCE_DIR}/funlocal.c"
   "${PROJECT_SOURCE_DIR}/funmath.c" "${PROJECT_SOURCE_DIR}/funmisc.c" "${PROJECT_SOURCE_DIR}/funstr.c"
   "${PROJECT_SOURCE_DIR}/funtime.c" "${PROJECT_SOURCE_DIR}/funufun.c" "${PROJECT_SOURCE_DIR}/bsd.c"
   "${PROJECT_SOURCE_DIR}/conf.c" "${PROJECT_SOURCE_DIR}/extmail.c" "${PROJECT_SOURCE_DIR}/help.c"
@@ -454,7 +460,7 @@ add_custom_command(OUTPUT "${PROJECT_SOURCE_DIR}/../hdrs/funs.h"
 
 set(SRC_FILES access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c
   charconv.c chunk.c cmdlocal.c cmds.c command.c compress.c conf.c
-  connlog.c cque.c create.c db.c destroy.c extchat.c extmail.c
+  connlog.c cque.c create.c cJSON.c db.c destroy.c extchat.c extmail.c
   filecopy.c flaglocal.c flags.c funcrypt.c function.c fundb.c
   funjson.c funlist.c funlocal.c funmath.c funmisc.c funstr.c
   funtime.c funufun.c game.c hash_function.c help.c htab.c intmap.c

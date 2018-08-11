@@ -21,11 +21,11 @@
 <header>
 <h1 class="title">PennMUSH 1.8.7 Changes</h1>
 <p class="author"></p>
-<p class="date">Last release: ??? ?? 20??</p>
+<p class="date">Last release: Aug 10 2018</p>
 </header>
 <nav id="TOC">
 <ul>
-<li><a href="#version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</a><ul>
+<li><a href="#version-1.8.7-patchlevel-0-aug-10-2018">Version 1.8.7 patchlevel 0 Aug 10 2018</a><ul>
 <li><a href="#major-changes">Major Changes</a></li>
 <li><a href="#minor-changes">Minor Changes</a></li>
 <li><a href="#softcode">Softcode</a></li>
@@ -48,7 +48,7 @@
 </ul>
 <p>Numbers next to the developer credit refer to Github issue numbers.</p>
 <hr />
-<h1 id="version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</h1>
+<h1 id="version-1.8.7-patchlevel-0-aug-10-2018">Version 1.8.7 patchlevel 0 Aug 10 2018</h1>
 <h2 id="major-changes">Major Changes</h2>
 <ul>
 <li>Support websocket connections. See <a href="https://github.com/grapenut/websockclient" class="uri">https://github.com/grapenut/websockclient</a> for a sample in-browser client. [Grapenut, 1007]</li>
@@ -70,48 +70,54 @@
 <li>Message translation support now defaults to off. Run configure with <code>--enable-nls</code> to turn it on if needed. [SW]</li>
 <li>Shrink the <code>NEW_PE_INFO</code> struct, for signficant memory savings in softcode that queues lots of commands. [SW]</li>
 <li>Add more test cases to the softcode test suite. [SW]</li>
-<li>log_forces in mushcnf.dst now defaults to no. You probably only want this on if you're debugging. [MG]</li>
+<li>log_forces in mushcnf.dst now defaults to no. You probably only want this on if you’re debugging. [MG]</li>
+<li>The connect screen now respects SOCKSET options. [MG]</li>
+<li><span class="citation" data-cites="chan/what">@chan/what</span> now displays channel locks. [MT, 1208]</li>
 </ul>
 <h2 id="softcode">Softcode</h2>
 <ul>
-<li>Support all of Rhost's <code>colors()</code> key arguments (Except n). [SW, 1112]</li>
+<li>Support all of Rhost’s <code>colors()</code> key arguments (Except n). [SW, 1112]</li>
 <li>Functions that work on integers (Like <code>div()</code> or <code>band()</code>) now use 64-bit values instead of 32-bit. [SW]</li>
 <li>Added <code>isjson()</code></li>
-<li><code>json_query()</code> get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa'toq. [SW]</li>
-<li><code>json_query()</code> can apply merge patches to json objects per <a href="https://tools.ietf.org/html/rfc7396" class="uri">https://tools.ietf.org/html/rfc7396</a></li>
+<li><code>json_query()</code> get and exists can follow paths into objects instead of taking a single key/index. Suggested by qa’toq. [SW]</li>
+<li><code>json_mod()</code> for modifying complex JSON objects. [SW]</li>
 <li><code>json_query(str, unescape)</code> handles unicode escape sequences.</li>
 <li><code>json(string, foo)</code> escapes non-ascii characters.</li>
 <li><code>clone()</code> now takes an optional fourth argument to act like <code>@clone/preserve</code> [797]</li>
-<li>New 'me' and 'inventory' flags for <code>scan()</code> give finer control of what to scan. [MG]</li>
-<li><code>orflags()</code>, <code>orlflags()</code>, <code>andflags()</code>, <code>andlflags()</code>, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn't set. Suggested by Qon. [1180].</li>
+<li>New ‘me’ and ‘inventory’ flags for <code>scan()</code> give finer control of what to scan. [MG]</li>
+<li><code>orflags()</code>, <code>orlflags()</code>, <code>andflags()</code>, <code>andlflags()</code>, and the power versions no longer return errors on unknown flags/powers. They instead treat the unknown one as if it wasn’t set. Suggested by Qon. [1180].</li>
 <li><code>timecalc()</code> and <code>secscalc()</code> for adding/subtracting intervals from times.</li>
 <li><code>@suggest</code> and <code>suggest()</code> for user-defined spellchecking. Loads <em>/usr/share/dict/words</em> or another configurable wordlist by default.</li>
 <li><code>connlog()</code> and <code>connrecord()</code> for interfacing with enhanced connection logs.</li>
 <li><code>soundex()</code> and <code>soundslike()</code> now support a second phonetic hash algorithm besides soundex.</li>
-<li>Side-effect version of link() now returns 1 on success, 0 or #-1 on failure. [MT]</li>
-<li>owner() now accepts two optional arguments, allowing ownership to be changed as in <span class="citation" data-cites="chown">@chown</span> and <span class="citation" data-cites="atrchown">@atrchown</span>. [MT]</li>
+<li>Side-effect version of <code>link()</code> now returns 1 on success, 0 or #-1 on failure. [MT]</li>
+<li><code>owner()</code> now accepts two optional arguments, allowing ownership to be changed as in <code>@chown</code> and <code>@atrchown</code>. [MT]</li>
 <li>If compiled with libcurl support, adds <code>@http</code> for interacting with RESTFul web APIs. [SW]</li>
 <li><code>stripaccents()</code> supports a second, smarter, transliteration algorithm.</li>
 <li>If compiled with ICU support, adds <code>lcstr2()</code> and <code>ucstr2()</code> with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.</li>
-<li><code>@chatformat</code> now receives a new arg, <code>%6</code>, which defaults to &quot;says&quot; but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]</li>
+<li><code>@chatformat</code> now receives a new arg, <code>%6</code>, which defaults to “says” but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]</li>
+<li><code>etimefmt()</code> supports <code>$w</code> and <code>$y</code> formats for weeks and years. [SW, 804]</li>
 </ul>
 <h2 id="fixes">Fixes</h2>
 <ul>
-<li>A bunch of color names weren't mapping correctly to Xterm color codes. [SW]</li>
+<li>A bunch of color names weren’t mapping correctly to Xterm color codes. [SW]</li>
 <li><code>@grep/iprint</code> hilites the matching text in the same case it appears in the attribute body. [SW, 1120]</li>
-<li><code>@mail</code> wasn't updating a player's MAILCURF attribute correctly. [CLDawes, 1131]</li>
+<li><code>@mail</code> wasn’t updating a player’s MAILCURF attribute correctly. [CLDawes, 1131]</li>
 <li>Connecting with a web browser to a mush without a <code>mud_url</code> config option set caused an infinite refresh loop. Reported by grapenut. [1149]</li>
-<li>Make sure <code>sigrecv_ack()</code> won't hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]</li>
+<li>Make sure <code>sigrecv_ack()</code> won’t hang the mush if it somehow gets called at the wrong time. Also fix a file descriptor leak in the signal handling code. [SW]</li>
 <li>Pass <code>pe_info</code> into IDLE and HAVEN attributes from the page command. [MG]</li>
 <li>The x and X options to <code>align()</code> now always truncate to the column width, rather than incorrectly truncating at a space. Reported by Qon. [MG, 1178]</li>
-<li><code>json_query()</code> didn't understand an action of 'type' as documented. [SW]</li>
-<li><code>@clone</code> without /preserve wasn't stripping privileged flags and such. [1190,SW]</li>
-<li><code>@chown/preserve</code> was resetting wiz-bit despite it's help file indicating otherwise. [1187] PR by Qon.</li>
-<li><code>scan()</code> now determines if objects will be included based on whether the caller can examine them, rather than if <code>scan()</code>'s <code>&lt;looker&gt;</code> can examine them. [MG]</li>
-<li>Fixed some bugs regarding when <code>setq()</code> will and won't let you set the values of named registers when you've hit the limit. [MG, 1179]</li>
+<li><code>json_query()</code> didn’t understand an action of ‘type’ as documented. [SW]</li>
+<li><code>@clone</code> without /preserve wasn’t stripping privileged flags and such. [1190,SW]</li>
+<li><code>@chown/preserve</code> was resetting wiz-bit despite it’s help file indicating otherwise. [1187] PR by Qon.</li>
+<li><code>scan()</code> now determines if objects will be included based on whether the caller can examine them, rather than if <code>scan()</code>’s <code>&lt;looker&gt;</code> can examine them. [MG]</li>
+<li>Fixed some bugs regarding when <code>setq()</code> will and won’t let you set the values of named registers when you’ve hit the limit. [MG, 1179]</li>
 <li><code>sqlescape()</code> when using a sqlite3 connection no longer also requires MySQL.</li>
 <li>A number of issues in the handling UTF-8 text sent by clients have been fixed, as well as improvements in UTF-8 handling in general. [SW]</li>
 <li>Fix an off-by-one error in command switch initialization code. [SW]</li>
+<li><code>@mail</code> without a message list respects the current folder instead of using folder 0. [77]</li>
+<li><code>ufun()</code>, <code>ulocal()</code>, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]</li>
+<li>Fix a long-standing bug where input sent right after a SSL connection could get lost. [SW]</li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>

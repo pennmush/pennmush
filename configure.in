@@ -21,7 +21,6 @@ AC_LANG(C)
 AC_PATH_PROG(CAT, cat)
 AC_PROG_CC([gcc clang])
 AC_PROG_CC_C99([gcc clang])
-AC_PATH_PROG(GDB, gdb)
 AC_PATH_PROG(CHMOD, chmod)
 AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(ECHO, echo)
@@ -37,10 +36,20 @@ fi
 AC_PATH_PROG(TEST, test)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
-AC_PATH_PROG(INDENT, clang-format)
+AC_PATH_PROGS(INDENT, [clang-format clang-format-6.0 clang-format-5.0 clang-format 4.0])
+
 AC_PATH_PROG(CTAGS, ctags)
 AC_PATH_PROG(ETAGS, etags)
 AC_PATH_PROG(EXCTAGS, exctags)
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
+	CTAGS=$EXCTAGS
+fi
+
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
+	ETAGS="$EXCTAGS -e"
+fi
+
+
 AC_PATH_PROG(GPERF, gperf)
 
 # Detects FreeBSD
@@ -71,60 +80,17 @@ if test "${USING_OPENBSD}" = yes; then
    LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
-# Set good debug and warning options if using gcc or clang
-# and custom CFLAGS aren't being used.
-# Todo: Look into the warnings setting macros in the autoconf archive,
-# maybe use them instead?
-# CFLAGS for clang
-if test "${CC}" = "clang"; then
-  if test "${DEFAULT_CFLAGS}" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-format -Wno-char-subscripts -Wno-static-in-inline"
-  else
-    CFLAGS="-g $CFLAGS -W"
-  fi
-elif test "${GCC}" = yes; then
-  if test "${DEFAULT_CFLAGS}" = yes; then
-    if test -n "${GDB}"; then
-      CFLAGS="-ggdb $CFLAGS -Wall -Wextra -pedantic -Wno-comment -Wno-char-subscripts"
-    else
-      CFLAGS="-g $CFLAGS -W"
-    fi
-  else
-    CFLAGS="-g $CFLAGS -W"
-  fi
-fi
-
-# The next two tests should only be run if we're using gcc
-# This is done as a precaution
-if test "${GNU}" = yes; then
-	# Reduce the size of the binary on PowerPC OS X 
-	case "${build_cpu}-${build_os}" in
-	  powerpc*-darwin*) 
-	   AX_GCC_OPTION([-mdynamic-no-pic], [], [], [
-		  CFLAGS="$CFLAGS -mdynamic-no-pic"
-	   ], [])
-	  ;;   
-	esac
-fi
-
-# Some useful security-related compiler, assembler and linker options
-AX_GCC_OPTION([-fstack-protector], [], [], [
-   CFLAGS="$CFLAGS -fstack-protector"
-], [])
-AX_CHECK_LINK_FLAG([-Wl,-z,noexecstack], [
-	LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
-], [])
-AX_CHECK_LINK_FLAG([-Wa,--noexecstack], [
-   CFLAGS="$CFLAGS -Wa,--noexecstack"
-   ], [])
-
-if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
-	CTAGS=$EXCTAGS
-fi
-
-if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
-	ETAGS="$EXCTAGS -e"
-fi
+# Set debug, optimizer, warnings and security options
+AX_IS_RELEASE([always])
+# Hack to make clang error on unknown flags when testing.
+AX_APPEND_COMPILE_FLAGS([-Werror=unknown-warning-option], [CLANGFLAGS])
+AX_APPEND_COMPILE_FLAGS([-pipe -Og -march=native], [CFLAGS], [$CLANGFLAGS])
+AX_APPEND_COMPILE_FLAGS([-Wall -Wextra -Wpedantic -Wno-comment -Wno-char-subscripts], [CFLAGS], [$CLANGFLAGS])
+AX_APPEND_COMPILE_FLAGS([-funsigned-char -fstack-protector -Wa,--noexecstack], [CFLAGS], [$CLANGFLAGS])
+m4_define(AM_LDFLAGS)
+AX_COMPILER_FLAGS_LDFLAGS()
+LDFLAGS="$LDFLAGS $WARN_LDFLAGS"
+AX_ADD_FORTIFY_SOURCE
 
 AC_PATH_PROG(UPTIME, uptime)
 if test -n "${UPTIME}"; then
@@ -146,7 +112,10 @@ if test -n "${ED}"; then
    AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
 fi
 
-AX_PTHREAD
+AX_PTHREAD()
+AX_COUNT_CPUS()
+AC_DEFINE_UNQUOTED([SQLITE_MAX_WORKER_THREADS], $CPU_COUNT)
+AC_DEFINE_UNQUOTED([SQLITE_DEFAULT_WORKER_THREADS], $CPU_COUNT)
 
 ### Headers
 # Usually there's no need to check for standard C89 headers.
@@ -160,7 +129,7 @@ AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h sys/eventfd.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h])
 AC_CHECK_HEADERS([netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h])
-AC_CHECK_HEADERS([zlib.h event2/event.h event2/dns.h fenv.h sys/param.h])
+AC_CHECK_HEADERS([event2/event.h event2/dns.h fenv.h sys/param.h])
 AC_CHECK_HEADERS([sys/prctl.h byteswap.h endian.h sys/endian.h])
 AC_CHECK_HEADERS([sys/ucred.h], [], [], [
 AC_INCLUDES_DEFAULT
@@ -222,12 +191,8 @@ case "$build_os" in
   ;;
 esac
 
-AC_ARG_ENABLE(zlib, AS_HELP_STRING([--disable-zlib], [Don't use zlib for database compression.]),
-		    enable_zlib=$enableval, enable_zlib=yes)
-if test "$enable_zlib" = "yes"; then
- AC_CHECK_LIB(z, gzungetc)
- AC_CHECK_FUNCS([gzbuffer gzvprintf])
-fi
+AX_CHECK_ZLIB()
+AC_CHECK_FUNCS([gzbuffer gzvprintf])
 
 # with_ssl=set
 AX_CHECK_OPENSSL(
@@ -291,10 +256,11 @@ AC_FUNC_SETPGRP
 fi
 AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
-AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
+AC_CHECK_FUNCS([socketpair sigaction sigprocmask writev])
 AC_CHECK_FUNCS([fcntl poll kqueue inotify_init1])
 AC_CHECK_FUNCS([pread pwrite eventfd pledge pipe2])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
+AX_FUNC_POSIX_MEMALIGN
 
 # Some linux OSes (Old redhat, others?) will see these functions
 # through an AC_CHECK_FUNCS but not when it comes time to actually use

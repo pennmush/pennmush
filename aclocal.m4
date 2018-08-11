@@ -198,7 +198,7 @@ AC_DEFUN([AX_LIB_MYSQL],
 #   and this notice are preserved. This file is offered as-is, without any
 #   warranty.
 
-#serial 21
+#serial 22
 
 AC_DEFUN([_AX_LIB_POSTGRESQL_OLD],[
 	found_postgresql="no"
@@ -359,11 +359,11 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
 		  [
 		   #include <libpq-fe.h>
 		  ],
-		  [
+		  [[
 		    char conninfo[]="dbname = postgres";
 		    PGconn     *conn;
 		    conn = PQconnectdb(conninfo);
-		  ]
+		  ]]
 		 )
 		],[ac_cv_postgresql_found=yes],
 		  [ac_cv_postgresql_found=no])
@@ -542,33 +542,12 @@ AC_DEFUN([AX_CHECK_OPENSSL], [
 #
 #   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
 #
-#   This program is free software; you can redistribute it and/or modify it
-#   under the terms of the GNU General Public License as published by the
-#   Free Software Foundation; either version 3 of the License, or (at your
-#   option) any later version.
-#
-#   This program is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#   Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License along
-#   with this program. If not, see <https://www.gnu.org/licenses/>.
-#
-#   As a special exception, the respective Autoconf Macro's copyright owner
-#   gives unlimited permission to copy, distribute and modify the configure
-#   scripts that are the output of Autoconf when processing the Macro. You
-#   need not follow the terms of the GNU General Public License when using
-#   or distributing such scripts, even though portions of the text of the
-#   Macro appear in them. The GNU General Public License (GPL) does govern
-#   all other use of the material that constitutes the Autoconf Macro.
-#
-#   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Archive. When you make and distribute a
-#   modified version of the Autoconf Macro, you may extend this special
-#   exception to the GPL to apply to your modified version as well.
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
 
-#serial 8
+#serial 9
 
 AC_DEFUN([AX_PATH_LIB_PCRE],[dnl
 AC_MSG_CHECKING([lib pcre])
@@ -654,18 +633,16 @@ AC_SUBST([PCRE_CFLAGS])
 #   modified version of the Autoconf Macro, you may extend this special
 #   exception to the GPL to apply to your modified version as well.
 
-#serial 7
+#serial 8
 
 AU_ALIAS([TYPE_SOCKLEN_T], [AX_TYPE_SOCKLEN_T])
 AC_DEFUN([AX_TYPE_SOCKLEN_T],
-[AC_CACHE_CHECK([for socklen_t], ac_cv_ax_type_socklen_t,
-[
-  AC_TRY_COMPILE(
-  [#include <sys/types.h>
-   #include <sys/socket.h>],
-  [socklen_t len = (socklen_t) 42; return (!len);],
-  ac_cv_ax_type_socklen_t=yes,
-  ac_cv_ax_type_socklen_t=no)
+[AC_CACHE_CHECK([for socklen_t], [ac_cv_ax_type_socklen_t],
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+  #include <sys/socket.h>]],
+  [[socklen_t len = (socklen_t) 42; return (!len);]])],
+  [ac_cv_ax_type_socklen_t=yes],
+  [ac_cv_ax_type_socklen_t=no])
 ])
   if test $ac_cv_ax_type_socklen_t != yes; then
     AC_DEFINE(socklen_t, int, [Substitute for socklen_t])
@@ -739,15 +716,14 @@ AC_DEFUN([AX_LIB_SOCKET_NSL],
 #   and this notice are preserved. This file is offered as-is, without any
 #   warranty.
 
-#serial 6
+#serial 7
 
 AU_ALIAS([AC_FUNC_SNPRINTF], [AX_FUNC_SNPRINTF])
 AC_DEFUN([AX_FUNC_SNPRINTF],
 [AC_CHECK_FUNCS(snprintf vsnprintf)
 AC_MSG_CHECKING(for working snprintf)
 AC_CACHE_VAL(ac_cv_have_working_snprintf,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
 
 int main(void)
 {
@@ -761,12 +737,11 @@ int main(void)
     if (strcmp (bufd, "1")) exit (1);
     if (i != 3) exit (1);
     exit(0);
-}], ac_cv_have_working_snprintf=yes, ac_cv_have_working_snprintf=no, ac_cv_have_working_snprintf=cross)])
+}]])],[ac_cv_have_working_snprintf=yes],[ac_cv_have_working_snprintf=no],[ac_cv_have_working_snprintf=cross])])
 AC_MSG_RESULT([$ac_cv_have_working_snprintf])
 AC_MSG_CHECKING(for working vsnprintf)
 AC_CACHE_VAL(ac_cv_have_working_vsnprintf,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdarg.h>
 
 int my_vsnprintf (char *buf, const char *tmpl, ...)
@@ -791,7 +766,7 @@ int main(void)
     if (strcmp (bufd, "1")) exit (1);
     if (i != 3) exit (1);
     exit(0);
-}], ac_cv_have_working_vsnprintf=yes, ac_cv_have_working_vsnprintf=no, ac_cv_have_working_vsnprintf=cross)])
+}]])],[ac_cv_have_working_vsnprintf=yes],[ac_cv_have_working_vsnprintf=no],[ac_cv_have_working_vsnprintf=cross])])
 AC_MSG_RESULT([$ac_cv_have_working_vsnprintf])
 if test x$ac_cv_have_working_snprintf$ac_cv_have_working_vsnprintf != "xyesyes"; then
   AC_LIBOBJ(snprintf)
@@ -883,42 +858,21 @@ AC_DEFUN([AX_C___ATTRIBUTE__], [
 #
 #   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
 #
-#   This program is free software; you can redistribute it and/or modify it
-#   under the terms of the GNU General Public License as published by the
-#   Free Software Foundation; either version 3 of the License, or (at your
-#   option) any later version.
-#
-#   This program is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#   Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License along
-#   with this program. If not, see <https://www.gnu.org/licenses/>.
-#
-#   As a special exception, the respective Autoconf Macro's copyright owner
-#   gives unlimited permission to copy, distribute and modify the configure
-#   scripts that are the output of Autoconf when processing the Macro. You
-#   need not follow the terms of the GNU General Public License when using
-#   or distributing such scripts, even though portions of the text of the
-#   Macro appear in them. The GNU General Public License (GPL) does govern
-#   all other use of the material that constitutes the Autoconf Macro.
-#
-#   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Archive. When you make and distribute a
-#   modified version of the Autoconf Macro, you may extend this special
-#   exception to the GPL to apply to your modified version as well.
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
 
-#serial 8
+#serial 10
 
 AC_DEFUN([AX_GCC_MALLOC_CALL],[dnl
 AC_CACHE_CHECK(
  [whether the compiler supports function __attribute__((__malloc__))],
  ax_cv_gcc_malloc_call,[
- AC_TRY_COMPILE([__attribute__((__malloc__))
- int f(int i) { return i; }],
- [],
- ax_cv_gcc_malloc_call=yes, ax_cv_gcc_malloc_call=no)])
+ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[__attribute__((__malloc__))
+ int f(int i) { return i; }]],
+ [])],
+ [ax_cv_gcc_malloc_call=yes], [ax_cv_gcc_malloc_call=no])])
  if test "$ax_cv_gcc_malloc_call" = yes; then
    AC_DEFINE([GCC_MALLOC_CALL],[__attribute__((__malloc__))],
     [most gcc compilers know a function __attribute__((__malloc__))])
@@ -1231,33 +1185,12 @@ dnl ax_zoneinfo.m4 ends here
 #   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
 #   Copyright (c) 2011 Maarten Bosmans <mkbosmans@gmail.com>
 #
-#   This program is free software: you can redistribute it and/or modify it
-#   under the terms of the GNU General Public License as published by the
-#   Free Software Foundation, either version 3 of the License, or (at your
-#   option) any later version.
-#
-#   This program is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#   Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License along
-#   with this program. If not, see <https://www.gnu.org/licenses/>.
-#
-#   As a special exception, the respective Autoconf Macro's copyright owner
-#   gives unlimited permission to copy, distribute and modify the configure
-#   scripts that are the output of Autoconf when processing the Macro. You
-#   need not follow the terms of the GNU General Public License when using
-#   or distributing such scripts, even though portions of the text of the
-#   Macro appear in them. The GNU General Public License (GPL) does govern
-#   all other use of the material that constitutes the Autoconf Macro.
-#
-#   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Archive. When you make and distribute a
-#   modified version of the Autoconf Macro, you may extend this special
-#   exception to the GPL to apply to your modified version as well.
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
 
-#serial 5
+#serial 6
 
 AC_DEFUN([AX_CHECK_LINK_FLAG],
 [AC_PREREQ(2.64)dnl for _AC_LANG_PREFIX and AS_VAR_IF
@@ -1865,6 +1798,7 @@ AS_VAR_COPY([$1], [pkg_cv_][$1])
 
 AS_VAR_IF([$1], [""], [$5], [$4])dnl
 ])dnl PKG_CHECK_VAR
+
 # ===========================================================================
 #        https://www.gnu.org/software/autoconf-archive/ax_pthread.html
 # ===========================================================================
@@ -2350,6 +2284,7 @@ else
 fi
 AC_LANG_POP
 ])dnl AX_PTHREAD
+
 # ===========================================================================
 #     https://www.gnu.org/software/autoconf-archive/ax_path_generic.html
 # ===========================================================================
@@ -2514,6 +2449,7 @@ AC_DEFUN([AX_PATH_GENERIC],[
   popdef([UP])
   popdef([DOWN])
 ])
+
 # ===========================================================================
 #       https://www.gnu.org/software/autoconf-archive/ax_check_icu.html
 # ===========================================================================
@@ -2594,6 +2530,7 @@ AC_DEFUN([AX_CHECK_ICU], [
      ifelse([$3], , AC_MSG_ERROR([Library requirements (ICU) not met.]), [$3])
   fi
 ])
+
 # ===========================================================================
 #       https://www.gnu.org/software/autoconf-archive/ax_lib_curl.html
 # ===========================================================================
@@ -2631,4 +2568,783 @@ AC_DEFUN([AX_CHECK_ICU], [
 AU_ALIAS([AC_CHECK_CURL], [AX_LIB_CURL])
 AC_DEFUN([AX_LIB_CURL], [
   AX_PATH_GENERIC([curl],[$1],'s/^libcurl\ \+//',[$2],[$3])
+])
+
+# ===========================================================================
+#      https://www.gnu.org/software/autoconf-archive/ax_check_zlib.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_ZLIB([action-if-found], [action-if-not-found])
+#
+# DESCRIPTION
+#
+#   This macro searches for an installed zlib library. If nothing was
+#   specified when calling configure, it searches first in /usr/local and
+#   then in /usr, /opt/local and /sw. If the --with-zlib=DIR is specified,
+#   it will try to find it in DIR/include/zlib.h and DIR/lib/libz.a. If
+#   --without-zlib is specified, the library is not searched at all.
+#
+#   If either the header file (zlib.h) or the library (libz) is not found,
+#   shell commands 'action-if-not-found' is run. If 'action-if-not-found' is
+#   not specified, the configuration exits on error, asking for a valid zlib
+#   installation directory or --without-zlib.
+#
+#   If both header file and library are found, shell commands
+#   'action-if-found' is run. If 'action-if-found' is not specified, the
+#   default action appends '-I${ZLIB_HOME}/include' to CPFLAGS, appends
+#   '-L$ZLIB_HOME}/lib' to LDFLAGS, prepends '-lz' to LIBS, and calls
+#   AC_DEFINE(HAVE_LIBZ). You should use autoheader to include a definition
+#   for this symbol in a config.h file. Sample usage in a C/C++ source is as
+#   follows:
+#
+#     #ifdef HAVE_LIBZ
+#     #include <zlib.h>
+#     #endif /* HAVE_LIBZ */
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Loic Dachary <loic@senga.org>
+#   Copyright (c) 2010 Bastien Chevreux <bach@chevreux.org>
+#
+#   This program is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation; either version 2 of the License, or (at your
+#   option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#   Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#   As a special exception, the respective Autoconf Macro's copyright owner
+#   gives unlimited permission to copy, distribute and modify the configure
+#   scripts that are the output of Autoconf when processing the Macro. You
+#   need not follow the terms of the GNU General Public License when using
+#   or distributing such scripts, even though portions of the text of the
+#   Macro appear in them. The GNU General Public License (GPL) does govern
+#   all other use of the material that constitutes the Autoconf Macro.
+#
+#   This special exception to the GPL applies to versions of the Autoconf
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+#serial 16
+
+AU_ALIAS([CHECK_ZLIB], [AX_CHECK_ZLIB])
+AC_DEFUN([AX_CHECK_ZLIB],
+#
+# Handle user hints
+#
+[AC_MSG_CHECKING(if zlib is wanted)
+zlib_places="/usr/local /usr /opt/local /sw"
+AC_ARG_WITH([zlib],
+[  --with-zlib=DIR         root directory path of zlib installation @<:@defaults to
+                          /usr/local or /usr if not found in /usr/local@:>@
+  --without-zlib          to disable zlib usage completely],
+[if test "$withval" != no ; then
+  AC_MSG_RESULT(yes)
+  if test -d "$withval"
+  then
+    zlib_places="$withval $zlib_places"
+  else
+    AC_MSG_WARN([Sorry, $withval does not exist, checking usual places])
+  fi
+else
+  zlib_places=
+  AC_MSG_RESULT(no)
+fi],
+[AC_MSG_RESULT(yes)])
+
+#
+# Locate zlib, if wanted
+#
+if test -n "${zlib_places}"
+then
+	# check the user supplied or any other more or less 'standard' place:
+	#   Most UNIX systems      : /usr/local and /usr
+	#   MacPorts / Fink on OSX : /opt/local respectively /sw
+	for ZLIB_HOME in ${zlib_places} ; do
+	  if test -f "${ZLIB_HOME}/include/zlib.h"; then break; fi
+	  ZLIB_HOME=""
+	done
+
+  ZLIB_OLD_LDFLAGS=$LDFLAGS
+  ZLIB_OLD_CPPFLAGS=$CPPFLAGS
+  if test -n "${ZLIB_HOME}"; then
+        LDFLAGS="$LDFLAGS -L${ZLIB_HOME}/lib"
+        CPPFLAGS="$CPPFLAGS -I${ZLIB_HOME}/include"
+  fi
+  AC_LANG_PUSH([C])
+  AC_CHECK_LIB([z], [inflateEnd], [zlib_cv_libz=yes], [zlib_cv_libz=no])
+  AC_CHECK_HEADER([zlib.h], [zlib_cv_zlib_h=yes], [zlib_cv_zlib_h=no])
+  AC_LANG_POP([C])
+  if test "$zlib_cv_libz" = "yes" && test "$zlib_cv_zlib_h" = "yes"
+  then
+    #
+    # If both library and header were found, action-if-found
+    #
+    m4_ifblank([$1],[
+                CPPFLAGS="$CPPFLAGS -I${ZLIB_HOME}/include"
+                LDFLAGS="$LDFLAGS -L${ZLIB_HOME}/lib"
+                LIBS="-lz $LIBS"
+                AC_DEFINE([HAVE_LIBZ], [1],
+                          [Define to 1 if you have `z' library (-lz)])
+               ],[
+                # Restore variables
+                LDFLAGS="$ZLIB_OLD_LDFLAGS"
+                CPPFLAGS="$ZLIB_OLD_CPPFLAGS"
+                $1
+               ])
+  else
+    #
+    # If either header or library was not found, action-if-not-found
+    #
+    m4_default([$2],[
+                AC_MSG_ERROR([either specify a valid zlib installation with --with-zlib=DIR or disable zlib usage with --without-zlib])
+                ])
+  fi
+fi
+])
+
+# ===========================================================================
+#      https://www.gnu.org/software/autoconf-archive/ax_count_cpus.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_COUNT_CPUS([ACTION-IF-DETECTED],[ACTION-IF-NOT-DETECTED])
+#
+# DESCRIPTION
+#
+#   Attempt to count the number of logical processor cores (including
+#   virtual and HT cores) currently available to use on the machine and
+#   place detected value in CPU_COUNT variable.
+#
+#   On successful detection, ACTION-IF-DETECTED is executed if present. If
+#   the detection fails, then ACTION-IF-NOT-DETECTED is triggered. The
+#   default ACTION-IF-NOT-DETECTED is to set CPU_COUNT to 1.
+#
+# LICENSE
+#
+#   Copyright (c) 2014,2016 Karlson2k (Evgeny Grin) <k2k@narod.ru>
+#   Copyright (c) 2012 Brian Aker <brian@tangent.org>
+#   Copyright (c) 2008 Michael Paul Bailey <jinxidoru@byu.net>
+#   Copyright (c) 2008 Christophe Tournayre <turn3r@users.sourceforge.net>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 22
+
+  AC_DEFUN([AX_COUNT_CPUS],[dnl
+      AC_REQUIRE([AC_CANONICAL_HOST])dnl
+      AC_REQUIRE([AC_PROG_EGREP])dnl
+      AC_MSG_CHECKING([the number of available CPUs])
+      CPU_COUNT="0"
+
+      # Try generic methods
+
+      # 'getconf' is POSIX utility, but '_NPROCESSORS_ONLN' and
+      # 'NPROCESSORS_ONLN' are platform-specific
+      command -v getconf >/dev/null 2>&1 && \
+        CPU_COUNT=`getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null` || CPU_COUNT="0"
+      AS_IF([[test "$CPU_COUNT" -gt "0" 2>/dev/null || ! command -v nproc >/dev/null 2>&1]],[[: # empty]],[dnl
+        # 'nproc' is part of GNU Coreutils and is widely available
+        CPU_COUNT=`OMP_NUM_THREADS='' nproc 2>/dev/null` || CPU_COUNT=`nproc 2>/dev/null` || CPU_COUNT="0"
+      ])dnl
+
+      AS_IF([[test "$CPU_COUNT" -gt "0" 2>/dev/null]],[[: # empty]],[dnl
+        # Try platform-specific preferred methods
+        AS_CASE([[$host_os]],dnl
+          [[*linux*]],[[CPU_COUNT=`lscpu -p 2>/dev/null | $EGREP -e '^@<:@0-9@:>@+,' -c` || CPU_COUNT="0"]],dnl
+          [[*darwin*]],[[CPU_COUNT=`sysctl -n hw.logicalcpu 2>/dev/null` || CPU_COUNT="0"]],dnl
+          [[freebsd*]],[[command -v sysctl >/dev/null 2>&1 && CPU_COUNT=`sysctl -n kern.smp.cpus 2>/dev/null` || CPU_COUNT="0"]],dnl
+          [[netbsd*]], [[command -v sysctl >/dev/null 2>&1 && CPU_COUNT=`sysctl -n hw.ncpuonline 2>/dev/null` || CPU_COUNT="0"]],dnl
+          [[solaris*]],[[command -v psrinfo >/dev/null 2>&1 && CPU_COUNT=`psrinfo 2>/dev/null | $EGREP -e '^@<:@0-9@:>@.*on-line' -c 2>/dev/null` || CPU_COUNT="0"]],dnl
+          [[mingw*]],[[CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^@<:@0-9@:>@+/' -c` || CPU_COUNT="0"]],dnl
+          [[msys*]],[[CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^@<:@0-9@:>@+/' -c` || CPU_COUNT="0"]],dnl
+          [[cygwin*]],[[CPU_COUNT=`ls -qpU1 /proc/registry/HKEY_LOCAL_MACHINE/HARDWARE/DESCRIPTION/System/CentralProcessor/ 2>/dev/null | $EGREP -e '^@<:@0-9@:>@+/' -c` || CPU_COUNT="0"]]dnl
+        )dnl
+      ])dnl
+
+      AS_IF([[test "$CPU_COUNT" -gt "0" 2>/dev/null || ! command -v sysctl >/dev/null 2>&1]],[[: # empty]],[dnl
+        # Try less preferred generic method
+        # 'hw.ncpu' exist on many platforms, but not on GNU/Linux
+        CPU_COUNT=`sysctl -n hw.ncpu 2>/dev/null` || CPU_COUNT="0"
+      ])dnl
+
+      AS_IF([[test "$CPU_COUNT" -gt "0" 2>/dev/null]],[[: # empty]],[dnl
+      # Try platform-specific fallback methods
+      # They can be less accurate and slower then preferred methods
+        AS_CASE([[$host_os]],dnl
+          [[*linux*]],[[CPU_COUNT=`$EGREP -e '^processor' -c /proc/cpuinfo 2>/dev/null` || CPU_COUNT="0"]],dnl
+          [[*darwin*]],[[CPU_COUNT=`system_profiler SPHardwareDataType 2>/dev/null | $EGREP -i -e 'number of cores:'|cut -d : -f 2 -s|tr -d ' '` || CPU_COUNT="0"]],dnl
+          [[freebsd*]],[[CPU_COUNT=`dmesg 2>/dev/null| $EGREP -e '^cpu@<:@0-9@:>@+: '|sort -u|$EGREP -e '^' -c` || CPU_COUNT="0"]],dnl
+          [[netbsd*]], [[CPU_COUNT=`command -v cpuctl >/dev/null 2>&1 && cpuctl list 2>/dev/null| $EGREP -e '^@<:@0-9@:>@+ .* online ' -c` || \
+                           CPU_COUNT=`dmesg 2>/dev/null| $EGREP -e '^cpu@<:@0-9@:>@+ at'|sort -u|$EGREP -e '^' -c` || CPU_COUNT="0"]],dnl
+          [[solaris*]],[[command -v kstat >/dev/null 2>&1 && CPU_COUNT=`kstat -m cpu_info -s state -p 2>/dev/null | $EGREP -c -e 'on-line'` || \
+                           CPU_COUNT=`kstat -m cpu_info 2>/dev/null | $EGREP -c -e 'module: cpu_info'` || CPU_COUNT="0"]],dnl
+          [[mingw*]],[AS_IF([[CPU_COUNT=`reg query 'HKLM\\Hardware\\Description\\System\\CentralProcessor' 2>/dev/null | $EGREP -e '\\\\@<:@0-9@:>@+$' -c`]],dnl
+                        [[: # empty]],[[test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS"]])],dnl
+          [[msys*]],[[test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS"]],dnl
+          [[cygwin*]],[[test "$NUMBER_OF_PROCESSORS" -gt "0" 2>/dev/null && CPU_COUNT="$NUMBER_OF_PROCESSORS"]]dnl
+        )dnl
+      ])dnl
+
+      AS_IF([[test "x$CPU_COUNT" != "x0" && test "$CPU_COUNT" -gt 0 2>/dev/null]],[dnl
+          AC_MSG_RESULT([[$CPU_COUNT]])
+          m4_ifvaln([$1],[$1],)dnl
+        ],[dnl
+          m4_ifval([$2],[dnl
+            AS_UNSET([[CPU_COUNT]])
+            AC_MSG_RESULT([[unable to detect]])
+            $2
+          ], [dnl
+            CPU_COUNT="1"
+            AC_MSG_RESULT([[unable to detect (assuming 1)]])
+          ])dnl
+        ])dnl
+      ])dnl
+
+# ===========================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_func_posix_memalign.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_FUNC_POSIX_MEMALIGN
+#
+# DESCRIPTION
+#
+#   Some versions of posix_memalign (notably glibc 2.2.5) incorrectly apply
+#   their power-of-two check to the size argument, not the alignment
+#   argument. AX_FUNC_POSIX_MEMALIGN defines HAVE_POSIX_MEMALIGN if the
+#   power-of-two check is correctly applied to the alignment argument.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Scott Pakin <pakin@uiuc.edu>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 9
+
+AC_DEFUN([AX_FUNC_POSIX_MEMALIGN],
+[AC_CACHE_CHECK([for working posix_memalign],
+  [ax_cv_func_posix_memalign_works],
+  [AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include <stdlib.h>
+
+int
+main ()
+{
+  void *buffer;
+
+  /* Some versions of glibc incorrectly perform the alignment check on
+   * the size word. */
+  exit (posix_memalign (&buffer, sizeof(void *), 123) != 0);
+}
+    ]])],
+    [ax_cv_func_posix_memalign_works=yes],
+    [ax_cv_func_posix_memalign_works=no],
+    [ax_cv_func_posix_memalign_works=no])])
+if test "$ax_cv_func_posix_memalign_works" = "yes" ; then
+  AC_DEFINE([HAVE_POSIX_MEMALIGN], [1],
+    [Define to 1 if `posix_memalign' works.])
+fi
+])
+
+# ===========================================================================
+#      https://www.gnu.org/software/autoconf-archive/ax_is_release.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_IS_RELEASE(POLICY)
+#
+# DESCRIPTION
+#
+#   Determine whether the code is being configured as a release, or from
+#   git. Set the ax_is_release variable to 'yes' or 'no'.
+#
+#   If building a release version, it is recommended that the configure
+#   script disable compiler errors and debug features, by conditionalising
+#   them on the ax_is_release variable.  If building from git, these
+#   features should be enabled.
+#
+#   The POLICY parameter specifies how ax_is_release is determined. It can
+#   take the following values:
+#
+#    * git-directory:  ax_is_release will be 'no' if a '.git' directory exists
+#    * minor-version:  ax_is_release will be 'no' if the minor version number
+#                      in $PACKAGE_VERSION is odd; this assumes
+#                      $PACKAGE_VERSION follows the 'major.minor.micro' scheme
+#    * micro-version:  ax_is_release will be 'no' if the micro version number
+#                      in $PACKAGE_VERSION is odd; this assumes
+#                      $PACKAGE_VERSION follows the 'major.minor.micro' scheme
+#    * dash-version:   ax_is_release will be 'no' if there is a dash '-'
+#                      in $PACKAGE_VERSION, for example 1.2-pre3, 1.2.42-a8b9
+#                      or 2.0-dirty (in particular this is suitable for use
+#                      with git-version-gen)
+#    * always:         ax_is_release will always be 'yes'
+#    * never:          ax_is_release will always be 'no'
+#
+#   Other policies may be added in future.
+#
+# LICENSE
+#
+#   Copyright (c) 2015 Philip Withnall <philip@tecnocode.co.uk>
+#   Copyright (c) 2016 Collabora Ltd.
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.
+
+#serial 7
+
+AC_DEFUN([AX_IS_RELEASE],[
+    AC_BEFORE([AC_INIT],[$0])
+
+    m4_case([$1],
+      [git-directory],[
+        # $is_release = (.git directory does not exist)
+        AS_IF([test -d ${srcdir}/.git],[ax_is_release=no],[ax_is_release=yes])
+      ],
+      [minor-version],[
+        # $is_release = ($minor_version is even)
+        minor_version=`echo "$PACKAGE_VERSION" | sed 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\1/'`
+        AS_IF([test "$(( $minor_version % 2 ))" -ne 0],
+              [ax_is_release=no],[ax_is_release=yes])
+      ],
+      [micro-version],[
+        # $is_release = ($micro_version is even)
+        micro_version=`echo "$PACKAGE_VERSION" | sed 's/[[^.]]*\.[[^.]]*\.\([[^.]]*\).*/\1/'`
+        AS_IF([test "$(( $micro_version % 2 ))" -ne 0],
+              [ax_is_release=no],[ax_is_release=yes])
+      ],
+      [dash-version],[
+        # $is_release = ($PACKAGE_VERSION has a dash)
+        AS_CASE([$PACKAGE_VERSION],
+                [*-*], [ax_is_release=no],
+                [*], [ax_is_release=yes])
+      ],
+      [always],[ax_is_release=yes],
+      [never],[ax_is_release=no],
+      [
+        AC_MSG_ERROR([Invalid policy. Valid policies: git-directory, minor-version, micro-version, dash-version, always, never.])
+      ])
+])
+
+# ===========================================================================
+#      https://www.gnu.org/software/autoconf-archive/ax_append_flag.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_APPEND_FLAG(FLAG, [FLAGS-VARIABLE])
+#
+# DESCRIPTION
+#
+#   FLAG is appended to the FLAGS-VARIABLE shell variable, with a space
+#   added in between.
+#
+#   If FLAGS-VARIABLE is not specified, the current language's flags (e.g.
+#   CFLAGS) is used.  FLAGS-VARIABLE is not changed if it already contains
+#   FLAG.  If FLAGS-VARIABLE is unset in the shell, it is set to exactly
+#   FLAG.
+#
+#   NOTE: Implementation based on AX_CFLAGS_GCC_OPTION.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
+#   Copyright (c) 2011 Maarten Bosmans <mkbosmans@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 8
+
+AC_DEFUN([AX_APPEND_FLAG],
+[dnl
+AC_PREREQ(2.64)dnl for _AC_LANG_PREFIX and AS_VAR_SET_IF
+AS_VAR_PUSHDEF([FLAGS], [m4_default($2,_AC_LANG_PREFIX[FLAGS])])
+AS_VAR_SET_IF(FLAGS,[
+  AS_CASE([" AS_VAR_GET(FLAGS) "],
+    [*" $1 "*], [AC_RUN_LOG([: FLAGS already contains $1])],
+    [
+     AS_VAR_APPEND(FLAGS,[" $1"])
+     AC_RUN_LOG([: FLAGS="$FLAGS"])
+    ])
+  ],
+  [
+  AS_VAR_SET(FLAGS,[$1])
+  AC_RUN_LOG([: FLAGS="$FLAGS"])
+  ])
+AS_VAR_POPDEF([FLAGS])dnl
+])dnl AX_APPEND_FLAG
+
+# ============================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_append_compile_flags.html
+# ============================================================================
+#
+# SYNOPSIS
+#
+#   AX_APPEND_COMPILE_FLAGS([FLAG1 FLAG2 ...], [FLAGS-VARIABLE], [EXTRA-FLAGS], [INPUT])
+#
+# DESCRIPTION
+#
+#   For every FLAG1, FLAG2 it is checked whether the compiler works with the
+#   flag.  If it does, the flag is added FLAGS-VARIABLE
+#
+#   If FLAGS-VARIABLE is not specified, the current language's flags (e.g.
+#   CFLAGS) is used.  During the check the flag is always added to the
+#   current language's flags.
+#
+#   If EXTRA-FLAGS is defined, it is added to the current language's default
+#   flags (e.g. CFLAGS) when the check is done.  The check is thus made with
+#   the flags: "CFLAGS EXTRA-FLAGS FLAG".  This can for example be used to
+#   force the compiler to issue an error when a bad flag is given.
+#
+#   INPUT gives an alternative input source to AC_COMPILE_IFELSE.
+#
+#   NOTE: This macro depends on the AX_APPEND_FLAG and
+#   AX_CHECK_COMPILE_FLAG. Please keep this macro in sync with
+#   AX_APPEND_LINK_FLAGS.
+#
+# LICENSE
+#
+#   Copyright (c) 2011 Maarten Bosmans <mkbosmans@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 7
+
+AC_DEFUN([AX_APPEND_COMPILE_FLAGS],
+[AX_REQUIRE_DEFINED([AX_CHECK_COMPILE_FLAG])
+AX_REQUIRE_DEFINED([AX_APPEND_FLAG])
+for flag in $1; do
+  AX_CHECK_COMPILE_FLAG([$flag], [AX_APPEND_FLAG([$flag], [$2])], [], [$3], [$4])
+done
+])dnl AX_APPEND_COMPILE_FLAGS
+
+# ===========================================================================
+#    https://www.gnu.org/software/autoconf-archive/ax_require_defined.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_REQUIRE_DEFINED(MACRO)
+#
+# DESCRIPTION
+#
+#   AX_REQUIRE_DEFINED is a simple helper for making sure other macros have
+#   been defined and thus are available for use.  This avoids random issues
+#   where a macro isn't expanded.  Instead the configure script emits a
+#   non-fatal:
+#
+#     ./configure: line 1673: AX_CFLAGS_WARN_ALL: command not found
+#
+#   It's like AC_REQUIRE except it doesn't expand the required macro.
+#
+#   Here's an example:
+#
+#     AX_REQUIRE_DEFINED([AX_CHECK_LINK_FLAG])
+#
+# LICENSE
+#
+#   Copyright (c) 2014 Mike Frysinger <vapier@gentoo.org>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 2
+
+AC_DEFUN([AX_REQUIRE_DEFINED], [dnl
+  m4_ifndef([$1], [m4_fatal([macro ]$1[ is not defined; is a m4 file missing?])])
+])dnl AX_REQUIRE_DEFINED
+
+# ===========================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_check_compile_flag.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_COMPILE_FLAG(FLAG, [ACTION-SUCCESS], [ACTION-FAILURE], [EXTRA-FLAGS], [INPUT])
+#
+# DESCRIPTION
+#
+#   Check whether the given FLAG works with the current language's compiler
+#   or gives an error.  (Warnings, however, are ignored)
+#
+#   ACTION-SUCCESS/ACTION-FAILURE are shell commands to execute on
+#   success/failure.
+#
+#   If EXTRA-FLAGS is defined, it is added to the current language's default
+#   flags (e.g. CFLAGS) when the check is done.  The check is thus made with
+#   the flags: "CFLAGS EXTRA-FLAGS FLAG".  This can for example be used to
+#   force the compiler to issue an error when a bad flag is given.
+#
+#   INPUT gives an alternative input source to AC_COMPILE_IFELSE.
+#
+#   NOTE: Implementation based on AX_CFLAGS_GCC_OPTION. Please keep this
+#   macro in sync with AX_CHECK_{PREPROC,LINK}_FLAG.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
+#   Copyright (c) 2011 Maarten Bosmans <mkbosmans@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 6
+
+AC_DEFUN([AX_CHECK_COMPILE_FLAG],
+[AC_PREREQ(2.64)dnl for _AC_LANG_PREFIX and AS_VAR_IF
+AS_VAR_PUSHDEF([CACHEVAR],[ax_cv_check_[]_AC_LANG_ABBREV[]flags_$4_$1])dnl
+AC_CACHE_CHECK([whether _AC_LANG compiler accepts $1], CACHEVAR, [
+  ax_check_save_flags=$[]_AC_LANG_PREFIX[]FLAGS
+  _AC_LANG_PREFIX[]FLAGS="$[]_AC_LANG_PREFIX[]FLAGS $4 $1"
+  AC_COMPILE_IFELSE([m4_default([$5],[AC_LANG_PROGRAM()])],
+    [AS_VAR_SET(CACHEVAR,[yes])],
+    [AS_VAR_SET(CACHEVAR,[no])])
+  _AC_LANG_PREFIX[]FLAGS=$ax_check_save_flags])
+AS_VAR_IF(CACHEVAR,yes,
+  [m4_default([$2], :)],
+  [m4_default([$3], :)])
+AS_VAR_POPDEF([CACHEVAR])dnl
+])dnl AX_CHECK_COMPILE_FLAGS
+
+# ===========================================================================
+#   https://www.gnu.org/software/autoconf-archive/ax_append_link_flags.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_APPEND_LINK_FLAGS([FLAG1 FLAG2 ...], [FLAGS-VARIABLE], [EXTRA-FLAGS], [INPUT])
+#
+# DESCRIPTION
+#
+#   For every FLAG1, FLAG2 it is checked whether the linker works with the
+#   flag.  If it does, the flag is added FLAGS-VARIABLE
+#
+#   If FLAGS-VARIABLE is not specified, the linker's flags (LDFLAGS) is
+#   used. During the check the flag is always added to the linker's flags.
+#
+#   If EXTRA-FLAGS is defined, it is added to the linker's default flags
+#   when the check is done.  The check is thus made with the flags: "LDFLAGS
+#   EXTRA-FLAGS FLAG".  This can for example be used to force the linker to
+#   issue an error when a bad flag is given.
+#
+#   INPUT gives an alternative input source to AC_COMPILE_IFELSE.
+#
+#   NOTE: This macro depends on the AX_APPEND_FLAG and AX_CHECK_LINK_FLAG.
+#   Please keep this macro in sync with AX_APPEND_COMPILE_FLAGS.
+#
+# LICENSE
+#
+#   Copyright (c) 2011 Maarten Bosmans <mkbosmans@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 7
+
+AC_DEFUN([AX_APPEND_LINK_FLAGS],
+[AX_REQUIRE_DEFINED([AX_CHECK_LINK_FLAG])
+AX_REQUIRE_DEFINED([AX_APPEND_FLAG])
+for flag in $1; do
+  AX_CHECK_LINK_FLAG([$flag], [AX_APPEND_FLAG([$flag], [m4_default([$2], [LDFLAGS])])], [], [$3], [$4])
+done
+])dnl AX_APPEND_LINK_FLAGS
+
+
+# ==============================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_compiler_flags_ldflags.html
+# ==============================================================================
+#
+# SYNOPSIS
+#
+#   AX_COMPILER_FLAGS_LDFLAGS([VARIABLE], [IS-RELEASE], [EXTRA-BASE-FLAGS], [EXTRA-YES-FLAGS])
+#
+# DESCRIPTION
+#
+#   Add warning flags for the linker to VARIABLE, which defaults to
+#   WARN_LDFLAGS.  VARIABLE is AC_SUBST-ed by this macro, but must be
+#   manually added to the LDFLAGS variable for each target in the code base.
+#
+#   This macro depends on the environment set up by AX_COMPILER_FLAGS.
+#   Specifically, it uses the value of $ax_enable_compile_warnings to decide
+#   which flags to enable.
+#
+# LICENSE
+#
+#   Copyright (c) 2014, 2015 Philip Withnall <philip@tecnocode.co.uk>
+#   Copyright (c) 2017, 2018 Reini Urban <rurban@cpan.org>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 9
+
+AC_DEFUN([AX_COMPILER_FLAGS_LDFLAGS],[
+    AX_REQUIRE_DEFINED([AX_APPEND_LINK_FLAGS])
+    AX_REQUIRE_DEFINED([AX_APPEND_FLAG])
+    AX_REQUIRE_DEFINED([AX_CHECK_COMPILE_FLAG])
+    AX_REQUIRE_DEFINED([AX_CHECK_LINK_FLAG])
+
+    # Variable names
+    m4_define([ax_warn_ldflags_variable],
+              [m4_normalize(ifelse([$1],,[WARN_LDFLAGS],[$1]))])
+
+    # Always pass -Werror=unknown-warning-option to get Clang to fail on bad
+    # flags, otherwise they are always appended to the warn_ldflags variable,
+    # and Clang warns on them for every compilation unit.
+    # If this is passed to GCC, it will explode, so the flag must be enabled
+    # conditionally.
+    AX_CHECK_COMPILE_FLAG([-Werror=unknown-warning-option],[
+        ax_compiler_flags_test="-Werror=unknown-warning-option"
+    ],[
+        ax_compiler_flags_test=""
+    ])
+
+    AX_CHECK_LINK_FLAG([-Wl,--as-needed], [
+        AX_APPEND_LINK_FLAGS([-Wl,--as-needed],
+          [AM_LDFLAGS],[$ax_compiler_flags_test])
+    ])
+    AX_CHECK_LINK_FLAG([-Wl,-z,relro], [
+        AX_APPEND_LINK_FLAGS([-Wl,-z,relro],
+          [AM_LDFLAGS],[$ax_compiler_flags_test])
+    ])
+    AX_CHECK_LINK_FLAG([-Wl,-z,now], [
+        AX_APPEND_LINK_FLAGS([-Wl,-z,now],
+          [AM_LDFLAGS],[$ax_compiler_flags_test])
+    ])
+    AX_CHECK_LINK_FLAG([-Wl,-z,noexecstack], [
+        AX_APPEND_LINK_FLAGS([-Wl,-z,noexecstack],
+          [AM_LDFLAGS],[$ax_compiler_flags_test])
+    ])
+    # textonly, retpolineplt not yet
+
+    # macOS and cygwin linker do not have --as-needed
+    AX_CHECK_LINK_FLAG([-Wl,--no-as-needed], [
+        ax_compiler_flags_as_needed_option="-Wl,--no-as-needed"
+    ], [
+        ax_compiler_flags_as_needed_option=""
+    ])
+
+    # macOS linker speaks with a different accent
+    ax_compiler_flags_fatal_warnings_option=""
+    AX_CHECK_LINK_FLAG([-Wl,--fatal-warnings], [
+        ax_compiler_flags_fatal_warnings_option="-Wl,--fatal-warnings"
+    ])
+    AX_CHECK_LINK_FLAG([-Wl,-fatal_warnings], [
+        ax_compiler_flags_fatal_warnings_option="-Wl,-fatal_warnings"
+    ])
+
+    # Base flags
+    AX_APPEND_LINK_FLAGS([ dnl
+        $ax_compiler_flags_as_needed_option dnl
+        $3 dnl
+    ],ax_warn_ldflags_variable,[$ax_compiler_flags_test])
+
+    AS_IF([test "$ax_enable_compile_warnings" != "no"],[
+        # "yes" flags
+        AX_APPEND_LINK_FLAGS([$4 $5 $6 $7],
+                                ax_warn_ldflags_variable,
+                                [$ax_compiler_flags_test])
+    ])
+    AS_IF([test "$ax_enable_compile_warnings" = "error"],[
+        # "error" flags; -Werror has to be appended unconditionally because
+        # it's not possible to test for
+        #
+        # suggest-attribute=format is disabled because it gives too many false
+        # positives
+        AX_APPEND_LINK_FLAGS([ dnl
+            $ax_compiler_flags_fatal_warnings_option dnl
+        ],ax_warn_ldflags_variable,[$ax_compiler_flags_test])
+    ])
+
+    # Substitute the variables
+    AC_SUBST(ax_warn_ldflags_variable)
+])dnl AX_COMPILER_FLAGS
+
+
+# ===========================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_add_fortify_source.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_ADD_FORTIFY_SOURCE
+#
+# DESCRIPTION
+#
+#   Check whether -D_FORTIFY_SOURCE=2 can be added to CPPFLAGS without macro
+#   redefinition warnings. Some distributions (such as Gentoo Linux) enable
+#   _FORTIFY_SOURCE globally in their compilers, leading to unnecessary
+#   warnings in the form of
+#
+#     <command-line>:0:0: error: "_FORTIFY_SOURCE" redefined [-Werror]
+#     <built-in>: note: this is the location of the previous definition
+#
+#   which is a problem if -Werror is enabled. This macro checks whether
+#   _FORTIFY_SOURCE is already defined, and if not, adds -D_FORTIFY_SOURCE=2
+#   to CPPFLAGS.
+#
+# LICENSE
+#
+#   Copyright (c) 2017 David Seifert <soap@gentoo.org>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved.  This file is offered as-is, without any
+#   warranty.
+
+#serial 2
+
+AC_DEFUN([AX_ADD_FORTIFY_SOURCE],[
+    AC_MSG_CHECKING([whether to add -D_FORTIFY_SOURCE=2 to CPPFLAGS])
+    AC_LINK_IFELSE([
+        AC_LANG_SOURCE(
+            [[
+                int main() {
+                #ifndef _FORTIFY_SOURCE
+                    return 0;
+                #else
+                    this_is_an_error;
+                #endif
+                }
+            ]]
+        )], [
+            AC_MSG_RESULT([yes])
+            CPPFLAGS="$CPPFLAGS -D_FORTIFY_SOURCE=2"
+        ], [
+            AC_MSG_RESULT([no])
+    ])
 ])

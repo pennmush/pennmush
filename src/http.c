@@ -517,15 +517,8 @@ send_http_status(DESC *d, char *code, char *content)
               "<HTML><HEAD>"
               "<TITLE>%s</TITLE>"
               "</HEAD><BODY><p>%s</p>\r\n"
-              "<PRE>"
-              "%s: %s\r\n"
-              "%s %s?%s\r\n"
-              "%s\r\n\r\n"
-              "%s\r\n"
-              "</PRE></BODY></HTML>\r\n",
-              code, code, content, req->route, bp2,
-              http_method_str[req->method], req->path, req->query,
-              req->headers, req->content);
+              "</BODY></HTML>\r\n",
+              code, code, content);
   *bp = '\0';
   
   if (a) {

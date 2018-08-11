@@ -23,6 +23,7 @@ static int process_http_helper(DESC *d, char *command);
 
 static bool run_http_request(DESC *d);
 
+static void reset_http_timeout(DESC *d, int time);
 bool http_timeout_wrapper(void *data);
 
 static void send_http_status(DESC *d, char *status, char *content);
@@ -280,12 +281,7 @@ process_http_request(DESC *d, char *command, int got)
   char cbuf[MAX_COMMAND_LEN];
   char *q, *head, *end;
   
-  /* cancel the http_timeout_wrapper */
-  if (d->conn_timer) {
-    sq_cancel(d->conn_timer);
-    d->conn_timer = NULL;
-  }
-  
+  /* local copy of the command buffer */
   strncpy(cbuf, command, got);
   
   /* split multi-line input and process one line at a time */
@@ -312,9 +308,9 @@ process_http_request(DESC *d, char *command, int got)
   }
 
   /* setup a timer to end the connection if no
-   * data is sent with a few seconds
+   * more data is sent with a few seconds
    */
-  d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
+  reset_http_timeout(d, HTTP_TIMEOUT);
   return 1;
 }
 
@@ -382,12 +378,6 @@ do_http_command(DESC *d, char *command)
   http_request *req;
   ATTR *a;
   
-  /* cancel any test_telnet or welcome_user timers */
-  if (d->conn_timer) {
-    sq_cancel(d->conn_timer);
-    d->conn_timer = NULL;
-  }
-
   /* if the route handler doesn't exist we can
    * close the connection early without parsing
    */
@@ -412,10 +402,9 @@ do_http_command(DESC *d, char *command)
   }
   
   /* setup a timer to end the connection if no
-   * data is sent with a few seconds
+   * more data is sent with a few seconds
    */
-  d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
-  
+  reset_http_timeout(d, HTTP_TIMEOUT);
   return 1;
 }
 
@@ -444,8 +433,23 @@ run_http_request(DESC *d)
                      req->content);
 }
 
+/** Reset the HTTP timeout
+ * \param d descript of the http request
+ * \param time the timeout length in cycles
+ */
+static void
+reset_http_timeout(DESC *d, int time)
+{
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+  
+  d->conn_timer = sq_register_in(time, http_timeout_wrapper, (void *) d, NULL);
+}
+
 /** HTTP connection timeout wrapper
- * \param void descriptor of the http request
+ * \param data descriptor of the http request
  */
 bool
 http_timeout_wrapper(void *data)
@@ -462,8 +466,10 @@ http_timeout_wrapper(void *data)
       return false;
     }
     
-    /* we started executing the request, restart the timeout */
-    d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
+    /* we have a slow connection that already timed out once
+     * but we have enough info to start executing the request
+     * let's reset the timeout on a short fuse */
+    reset_http_timeout(d, 1);
     return false;
   }
   
@@ -600,11 +606,8 @@ COMMAND(cmd_respond)
     return;
   }
   
-  /* cancel the old timer so we can reset it */
-  if (d->conn_timer) {
-    sq_cancel(d->conn_timer);
-    d->conn_timer = sq_register_in(HTTP_TIMEOUT, http_timeout_wrapper, (void *) d, NULL);
-  }
+  /* reset the timeout since we set some data */
+  reset_http_timeout(d, HTTP_TIMEOUT);
     
   req = d->http;
   

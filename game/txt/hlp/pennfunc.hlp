@@ -5975,3 +5975,27 @@ See also: urldecode(), @http
   This function takes a URL-encoded string and returns it in its decoded form. Unprintable characters are converted to question marks.
 
 See also: urlencode(), @http
+& FORMDECODE()
+  formdecode(<string>[, <paramname>[, <osep>]])
+
+  formdecode() is intended for use with HTTP events. See "help http" for more.
+
+  formdecode() converts form-encoded data, such as HTTP queries (after the ?) or the contents of POST with form-urlencoded data. It searches for the parameter named <paramname> and returns with its decoded value.
+
+  If <paramname> is not given, formdecode() returns a list of parameter names.
+
+  If there are multiple values, they will be separated by <osep> (default %b). formdecode() requires libcurl (@http) to be enabled.
+
+  Examples:
+    > &FORMDATA me=name=Joe&hobby=o%2F%60%20singing%20o%2F%60&like=potato&like=cheese
+    > say formdecode(v(formdata),name)
+     You say, "Joe"
+
+    > say formdecode(v(formdata),hobby)
+     You say, "o/` singing o/`"
+
+    > say formdecode(v(formdata),like,^)
+     You say, "potato^cheese"
+
+    > say formdecode(v(formdata),,,)
+     You say, "name,hobby,like,like"

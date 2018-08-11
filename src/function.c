@@ -473,6 +473,7 @@ FUNTAB flist[] = {
   {"FOLLOWERS", fun_followers, 1, 1, FN_REG | FN_STRIPANSI},
   {"FOLLOWING", fun_following, 1, 1, FN_REG | FN_STRIPANSI},
   {"FOREACH", fun_foreach, 2, 4, FN_REG},
+  {"FORMDECODE", fun_formdecode, 1, 3, FN_REG | FN_STRIPANSI},
   {"FRACTION", fun_fraction, 1, 2, FN_REG | FN_STRIPANSI},
   {"FUNCTIONS", fun_functions, 0, 1, FN_REG | FN_STRIPANSI},
   {"FULLALIAS", fun_fullalias, 1, 1, FN_REG | FN_STRIPANSI},

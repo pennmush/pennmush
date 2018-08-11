@@ -302,6 +302,7 @@ process_http_request(DESC *d, char *command, int got)
   
   /* handle single line, or the last line of multi-line */
   if (q > head) {
+    *q = '\0';
     if (!process_http_helper(d, head)) {
       return 0;
     }

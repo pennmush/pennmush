@@ -3271,13 +3271,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
       *p = '\0';
       if ((d->conn_flags & CONN_AWAITING_FIRST_DATA) &&
           is_http_request(d->raw_input)) {
-#ifndef WITHOUT_WEBSOCKETS
         if (options.use_ws && is_websocket(d->raw_input)) {
           /* Continue processing as a WebSockets upgrade request. */
           d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
-        } else
-#endif /* undef WITHOUT_WEBSOCKETS */
-        {
+        } else {
           /* parse the command as an HTTP request */
           d->conn_flags |= CONN_HTTP_REQUEST;
           if (do_http_command(d, d->raw_input)) {
@@ -3291,7 +3288,6 @@ process_input_helper(DESC *d, char *tbuf1, int got)
           } else {
             /* the http command was invalid, close the connection softly */
             d->conn_flags |= CONN_SOCKET_ERROR;
-            return;
           }
         }
       } else {
@@ -6319,6 +6315,8 @@ FUNCTION(fun_terminfo)
         safe_str(" ssl", buff, bp);
       if (is_ws_desc(match))
         safe_str(" websocket", buff, bp);
+      if (match->conn_flags & CONN_HTTP_REQUEST)
+        safe_str(" http_request", buff, bp);
     }
     type = notify_type(match);
     if (type & MSG_STRIPACCENTS)

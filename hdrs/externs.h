@@ -193,6 +193,7 @@ int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
+void run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info);
 
 #define queue_attribute_base(ex, at, en, nop, pereg, flag)                     \
   queue_attribute_base_priv(ex, at, en, nop, pereg, flag, NOTHING)

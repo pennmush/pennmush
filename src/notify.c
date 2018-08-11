@@ -1242,7 +1242,7 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
       return;
     for (d = descriptor_list; d; d = d->next) {
       if (!d->connected || d->player != target ||
-          !(d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS)))
+          !(d->conn_flags & (CONN_TELNET | CONN_WEBSOCKETS | CONN_HTTP_BUFFER)))
         continue;
 
       if (d->conn_flags & (CONN_WEBSOCKETS))
@@ -1318,7 +1318,8 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 
   if (IsPlayer(target)) {
     /* Make sure the player is connected, and we have something to show him */
-    if (Connected(target) && (heard || (flags & NA_PROMPT))) {
+    if ((Connected(target) || (USABLE(HTTP_HANDLER) && target == HTTP_HANDLER)) &&
+        (heard || (flags & NA_PROMPT))) {
       /* Send text to the player's descriptors */
       for (d = descriptor_list; d; d = d->next) {
         if (!d->connected || d->player != target)
@@ -1940,6 +1941,12 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 
   if (d->conn_flags & CONN_SOCKET_ERROR)
     return 0;
+
+  if (d->conn_flags & CONN_HTTP_BUFFER) {
+    /* Buffer the response for HTTP */
+    safe_strl(b, n, d->http_request->response, &(d->http_request->rp));
+    return 0;
+  }
 
   if (d->conn_flags & CONN_UTF8) {
     int utf8bytes = 0;

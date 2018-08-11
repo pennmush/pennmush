@@ -243,6 +243,14 @@ struct text_queue {
 /** Sending and receiving UTF-8 */
 #define CONN_UTF8 0x4000
 
+/* HTTP connection, pass input straight to process_http_input */
+#define CONN_HTTP_REQUEST 0x10000
+/* An active HTTP command: Pemits and the like should be buffered in active_http_request */
+#define CONN_HTTP_BUFFER  0x20000
+/* An HTTP Request that should be closed. */
+#define CONN_HTTP_READY   0x40000
+#define CONN_HTTP_CLOSE   0x80000
+
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
 #define CONN_WEBSOCKETS_REQUEST 0x10000000
@@ -282,11 +290,31 @@ struct squeue {
   struct squeue *next; /** Pointer to next squeue event in linked list */
 };
 
+#define HTTP_METHOD_LEN 16
+#define HTTP_CODE_LEN   64
+
+struct http_request {
+  char method[HTTP_METHOD_LEN];  /**< GET/POST/PUT/DELETE/HEAD/etc */
+  char path[MAX_COMMAND_LEN];    /**< Varies by browser, but 2048 is IE max */
+  char buff[BUFFER_LEN];         /**< Headers + Body */
+  char *bp;                      /**< bp for buff */
+  uint32_t state;                /**< Current state of request. */
+  int32_t content_length;        /**< Content-Length value. */
+
+  char code[HTTP_CODE_LEN];      /**< 200 OK, etc */
+  char ctype[MAX_COMMAND_LEN];   /**< Content-Type: text/plain */
+  char headers[BUFFER_LEN];      /**< Response headers */
+  char *hp;                      /**< ptr for headers */
+  char response[BUFFER_LEN];     /**< Response body. @pemits, etc. */
+  char *rp;                      /**< bp for response */
+};
+
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
  * This structure associates a connection's socket (file descriptor)
  * with a lot of other relevant information.
  */
+
 struct descriptor_data {
   int descriptor;            /**< Connection socket (fd) */
   conn_status connected;     /**< Connection status. */
@@ -324,6 +352,8 @@ struct descriptor_data {
   uint64_t ws_frame_len;
 #endif                /* undef WITHOUT_WEBSOCKETS */
   int64_t connlog_id; /**< ID for this connection's connlog entry */
+
+  struct http_request *http_request;
 };
 
 enum json_type {

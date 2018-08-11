@@ -1092,6 +1092,25 @@ run_user_input(dbref player, int port, char *input)
   free_qentry(entry);
 }
 
+void
+run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info)
+{
+  MQUE *entry;
+  char include_cmd[MAX_COMMAND_LEN];
+
+  snprintf(include_cmd, MAX_COMMAND_LEN, "@include #%d/%s", player, method);
+
+  entry = new_queue_entry(pe_info);
+  entry->action_list = mush_strdup(include_cmd, "mque.action_list");
+  entry->enactor = player;
+  entry->executor = player;
+  entry->caller = player;
+  entry->port = port;
+  entry->queue_type = QUEUE_SOCKET | QUEUE_NOLIST;
+  do_entry(entry, 0);
+  free_qentry(entry);
+}
+
 /* Return 1 if an @break needs to propagate up to the calling q entry, 0
  * otherwise */
 static int

@@ -66,9 +66,6 @@
 #define IDLE_COMMAND "IDLE"       /**< The IDLE command */
 #define MSSPREQUEST_COMMAND "MSSP-REQUEST" /**< The MSSP-REQUEST command */
 
-#define GET_COMMAND "GET"   /**< The GET command, for recognising browsers */
-#define POST_COMMAND "POST" /**< The POST command, for recognising browsers */
-
 #define PREFIX_COMMAND "OUTPUTPREFIX" /**< The OUTPUTPREFIX command */
 #define SUFFIX_COMMAND "OUTPUTSUFFIX" /**< The OUTPUTSUFFIX command */
 /** The PUEBLOCLIENT command, sent by a client to signifiy its support of Pueblo
@@ -167,6 +164,8 @@ struct options_table {
   dbref ancestor_thing;   /**< The ultimate parent thing (help ancestors) */
   dbref ancestor_player;  /**< The ultimate parent player (help ancestors) */
   dbref event_handler;    /**< The Event Handler (help events). */
+  dbref http_handler;     /**< The HTTP Handler (GET, POST, etc) */
+  int   http_per_second;  /**< Maximum number of commands run from http every second */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;       /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without
@@ -407,6 +406,7 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define MAX_NAMED_QREGS (options.max_named_qregs)
 
 /* dbrefs are in the conf file */
+#define USABLE(X) (GoodObject(X) && !IsGarbage(X) && !Halted(X))
 
 #define TINYPORT (options.port)
 #define SSLPORT (options.ssl_port)
@@ -417,6 +417,8 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define ANCESTOR_THING (options.ancestor_thing)
 #define ANCESTOR_PLAYER (options.ancestor_player)
 #define EVENT_HANDLER (options.event_handler)
+#define HTTP_HANDLER (options.http_handler)
+#define HTTP_SECOND_LIMIT (options.http_per_second)
 #define MONEY (options.money_singular)
 #define MONIES (options.money_plural)
 #define WHISPER_LOUDNESS (options.whisper_loudness)

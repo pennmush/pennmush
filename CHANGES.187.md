@@ -17,6 +17,14 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
+Version 1.8.7 patchlevel 1 ??? ?? 20??
+======================================
+
+Fixes
+-----
+
+* `connrecord()` returns an error if extended connection logging is disabled. [SW]
+
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================
 

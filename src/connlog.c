@@ -710,6 +710,11 @@ FUNCTION(fun_connrecord)
   sqlite3_stmt *rec;
   int status;
 
+  if (!options.use_connlog) {
+    safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+    return;
+  }
+
   if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
     return;

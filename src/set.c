@@ -1279,13 +1279,13 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
  * \param enactor the enactor.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
- * \param queue_entry parent queue entry
+ * \param parent_queue parent queue entry
  * \param flags Use the enactor, instead of the executor, as the enactor of the
  * triggered attr?
  */
 void
 do_trigger(dbref executor, dbref enactor, char *object, char **argv,
-           MQUE *queue_entry, int flags)
+           MQUE *parent_queue, int flags)
 {
   dbref thing;
   char *attrib;
@@ -1293,7 +1293,18 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   int i;
   dbref triggerer = executor; /* triggerer is totally a word. Shut up. */
   bool control;
-  int qflags = (queue_entry->queue_type & QUEUE_EVENT);
+  char *input = NULL;
+  int qflags = parent_queue->queue_type & QUEUE_EVENT;
+  
+  if (flags & TRIGGER_INLINE) {
+    qflags |= QUEUE_INPLACE;
+    if (flags & TRIGGER_NOBREAK)
+      qflags |= QUEUE_NO_BREAKS;
+    if (flags & TRIGGER_CLEARREGS)
+      qflags |= QUEUE_CLEAR_QREG;
+    if (flags & TRIGGER_LOCALIZE)
+      qflags |= QUEUE_PRESERVE_QREG;
+  }
 
   if (!(attrib = strchr(object, '/')) || !*(attrib + 1)) {
     notify(executor, T("I need to know what attribute to trigger."));
@@ -1329,16 +1340,22 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
     pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
   else
     pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
-  for (i = 0; i < 10; i++) {
-    if (argv[i + 1]) {
-      pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
+  if (flags & TRIGGER_MATCH) {
+    input = argv[1];
+  } else {
+    for (i = 0; i < MAX_ARG; i++) {
+      if (argv[i + 1]) {
+        pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
+      }
     }
   }
   if (!(flags & TRIGGER_CLEARREGS))
-    pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
+    pe_regs_qcopy(pe_regs, parent_queue->pe_info->regvals);
 
+  if (!(flags & TRIGGER_INLINE))
+    parent_queue = NULL;
   if (queue_attribute_base_priv(thing, upcasestr(attrib), triggerer, 0, pe_regs,
-                                qflags, executor)) {
+                                qflags, executor, parent_queue, input)) {
     if (!AreQuiet(executor, thing))
       notify_format(executor, T("%s - Triggered."), AName(thing, AN_SYS, NULL));
   } else {

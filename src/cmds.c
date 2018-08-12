@@ -1566,10 +1566,20 @@ COMMAND(cmd_include)
 COMMAND(cmd_trigger)
 {
   int flags = TRIGGER_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_MATCH))
+    flags |= TRIGGER_MATCH;
   if (SW_ISSET(sw, SWITCH_SPOOF))
     flags |= TRIGGER_SPOOF;
   if (SW_ISSET(sw, SWITCH_CLEARREGS))
     flags |= TRIGGER_CLEARREGS;
+  if (SW_ISSET(sw, SWITCH_INLINE))
+    flags |= TRIGGER_INLINE;
+  if (SW_ISSET(sw, SWITCH_NOBREAK))
+    flags |= TRIGGER_NOBREAK;
+  if (SW_ISSET(sw, SWITCH_LOCALIZE))
+    flags |= TRIGGER_LOCALIZE;
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    flags |= (TRIGGER_LOCALIZE | TRIGGER_INLINE | TRIGGER_NOBREAK);
   do_trigger(executor, enactor, arg_left, args_right, queue_entry, flags);
 }
 

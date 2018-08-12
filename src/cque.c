@@ -746,9 +746,7 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
   command = start;
   /* Trim off $-command or ^-command prefix */
   if (*command == '$' || *command == '^') {
-    do {
-      command = strchr(command + 1, ':');
-    } while (command && command[-1] == '\\');
+    command = strchr_unescaped(command, ':');
     if (!command)
       /* Oops, had '$' or '^', but no ':' */
       command = start;
@@ -804,7 +802,8 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
  */
 int
 queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
-                          int noparent, PE_REGS *pe_regs, int flags, dbref priv)
+                          int noparent, PE_REGS *pe_regs, int flags, dbref priv,
+                          MQUE *parent_queue, const char *input)
 {
   ATTR *a;
 
@@ -813,7 +812,7 @@ queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
     return 0;
   if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
-  queue_attribute_useatr(executor, a, enactor, pe_regs, flags);
+  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue, input);
   return 1;
 }
 
@@ -842,25 +841,42 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
  */
 int
 queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
-                       int flags)
+                       int flags, MQUE *parent_queue, const char *input)
 {
-  char *start, *command;
+  char *command;
   int queue_type = QUEUE_DEFAULT | flags;
+  char cmd_buff[BUFFER_LEN];
   char abuff[2048];
+  char *args[MAX_STACK_ARGS];
+  char match_space[BUFFER_LEN * 2];
+  ssize_t match_space_len = BUFFER_LEN * 2;
 
-  start = safe_atr_value(a, "atrval.queue-attr");
-  command = start;
-  /* Trim off $-command or ^-command prefix */
-  if (*command == '$' || *command == '^') {
-    do {
-      command = strchr(command + 1, ':');
-    } while (command && command[-1] == '\\');
-    if (!command) {
-      /* Oops, had '$' or '^', but no ':' */
-      command = start;
+  if (input) {
+    /* Attempt to match input against the attribute, accept either. */
+    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input,
+                           args, match_space, match_space_len,
+                           cmd_buff, pe_regs)) {
+      command = cmd_buff;
     } else {
-      /* Skip the ':' */
-      command++;
+      return 1;
+    }
+  } else {
+    strncpy(cmd_buff, atr_value(a), BUFFER_LEN);
+    command = cmd_buff;
+    /* Trim off $-command or ^-command prefix */
+    if (*command == '$' || *command == '^') {
+      while (*command && *command != ':') {
+        if (*command == '\\' && *(command+1))
+          command++;
+        command++;
+      }
+      if (!command) {
+        /* Oops, had '$' or '^', but no unescaped ':' */
+        command = cmd_buff;
+      } else {
+        /* Skip the ':' */
+        command++;
+      }
     }
   }
 
@@ -871,9 +887,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   }
 
   snprintf(abuff, sizeof abuff, "#%d/%s", executor, AL_NAME(a));
-  new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
+  new_queue_actionlist_int(executor, enactor, enactor, command, parent_queue,
                            PE_INFO_DEFAULT, queue_type, pe_regs, abuff);
-  mush_free(start, "atrval.queue-attr");
   return 1;
 }
 

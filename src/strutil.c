@@ -1871,6 +1871,25 @@ safe_chr(char c, char *buff, char **bp)
   }
 }
 
+/* Find the first unescaped (by a \) instance of c within s
+ *
+ * strchr_unescaped("$foo\:bar:there", ':') returns a pointer to ":there".
+ * strchr_unescaped("$foo\:noescape", ':') returns NULL
+ * strchr_unescaped("$foo\\:noescape", ':') returns pointer to ":noescape"
+ */
+char *
+strchr_unescaped(char *s, int c)
+{
+  int i = 0;
+  if (!s) return NULL;
+  while (s[i] && s[i] != c) {
+    if (s[i] == '\\' && s[i + 1]) i++;
+    i++;
+  }
+  if (s[i]) return &(s[i]);
+  return NULL;
+}
+
 /* keystr format:
  *
  * Either a single word, which is returned for any keyword Or one or

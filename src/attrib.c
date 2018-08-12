@@ -848,7 +848,7 @@ set_cmd_flags(ATTR *a)
   /* FALL THROUGH */
   case '$':
     for (; *p; p++) {
-      if (*p == '\\') {
+      if (*p == '\\' && *(p + 1)) {
         p++;
       } else if (*p == ':') {
         AL_FLAGS(a) |= flag;
@@ -1641,6 +1641,94 @@ can_debug(dbref player, dbref victim)
 }
 
 /** Match input against a $command or ^listen attribute.
+ * This function attempts to match a string against either an $-command
+ * or ^listens on an object. Matches may be glob or regex matches,
+ * depending on the attribute's flags. With the reasonably safe assumption
+ * that most of the matches are going to fail, the faster non-capturing
+ * glob match is done first, and the capturing version only called when
+ * we already know it'll match. Due to the way PCRE works, there's no
+ * advantage to doing something similar for regular expression matches.
+ *
+ * This is a helper function used by one_comm_match, atr_comm_match, and
+ * others.
+ */
+int
+atr_single_match_r(ATTR *ptr, int flag_mask, int end,
+                   const char *input, char *args[],
+                   char *match_space, int match_space_len,
+                   char cmd_buff[], PE_REGS *pe_regs)
+{
+  char buff[BUFFER_LEN];
+  char *atrval;
+  int i, j;
+  int match_found = 0;
+
+  if (!ptr) {
+    return 0;
+  }
+
+  if (!(AL_FLAGS(ptr) & flag_mask)) {
+    return 0;
+  }
+
+  /* atr_value returns a static buffer, but we won't be calling uncompress
+   * again.
+   */
+  atrval = atr_value(ptr);
+
+  if (!atrval || !atrval[0] || !atrval[1]) {
+    return 0;
+  }
+
+  if (atrval[0] != '^' && atrval[0] != '$') {
+    return 0;
+  }
+  /* Find and copy the pattern (regexp or wild) to buff.
+   * Convert \:s into :, but leave all other \s alone. And
+   * make sure we don't trip over foo\\:, which isn't escaping :.
+   */
+  for (i = 1, j = 0; atrval[i] && atrval[i] != end; i++) {
+    if (atrval[i] == '\\' && atrval[i + 1]) {
+      if (atrval[i + 1] == end) {
+        i++;
+      } else {
+        buff[j++] = atrval[i++];
+      }
+    }
+    buff[j++] = atrval[i];
+  }
+  buff[j] = '\0';
+
+  /* at this point, atrval[i] should be the separating ':'.
+   * If it's not, this ain't an $ or ^-pattern.
+   */
+  if (!atrval[i]) {
+    return 0;
+  }
+  i++;
+
+  if (cmd_buff) {
+    strncpy(cmd_buff, atrval + i, BUFFER_LEN);
+  }
+
+  if (AF_Regexp(ptr)) {
+    if (regexp_match_case_r(buff, input, AF_Case(ptr), args,
+                            MAX_STACK_ARGS, match_space, match_space_len,
+                            pe_regs, PE_REGS_ARG)) {
+      match_found = 1;
+    }
+  } else {
+    if (wild_match_case_r(buff, input, AF_Case(ptr), args,
+                        MAX_STACK_ARGS, match_space, match_space_len,
+                        pe_regs, PE_REGS_ARG)) {
+      match_found = 1;
+    }
+  }
+  return match_found;
+}
+
+
+/** Match input against a $command or ^listen attribute.
  * This function attempts to match a string against either the $commands
  * or ^listens on an object. Matches may be glob or regex matches,
  * depending on the attribute's flags. With the reasonably safe assumption
@@ -1679,9 +1767,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   int parent_depth;
   char *args[MAX_STACK_ARGS];
   PE_REGS *pe_regs = NULL;
-  char tbuf1[BUFFER_LEN];
-  char tbuf2[BUFFER_LEN];
-  char *s;
+  char cmd_buff[BUFFER_LEN];
   int match, match_found;
   int lock_checked = !check_locks;
   char match_space[BUFFER_LEN * 2];
@@ -1711,6 +1797,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     }
   }
   match = 0;
+  match_found = 0;
 
   pe_info = make_pe_info("pe_info-atr_comm_match");
   if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw) {
@@ -1822,50 +1909,19 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         continue;
       }
 
-      strcpy(tbuf1, atr_value(ptr));
-      s = tbuf1;
-      do {
-        s = strchr(s + 1, end);
-      } while (s && s[-1] == '\\');
-      if (!s)
-        continue;
-      *s++ = '\0';
       if (type == '^' && !AF_Ahear(ptr)) {
         if ((thing == player && !AF_Mhear(ptr)) ||
             (thing != player && AF_Mhear(ptr)))
           continue;
       }
 
-      if (AF_Regexp(ptr)) {
-        /* Turn \: into : */
-        char *from, *to;
-        for (from = tbuf1, to = tbuf2; *from; from++, to++) {
-          if (*from == '\\' && *(from + 1) == ':')
-            from++;
-          *to = *from;
-        }
-        *to = '\0';
-      } else
-        strcpy(tbuf2, tbuf1);
-
-      match_found = 0;
-      if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                                MAX_STACK_ARGS, match_space, match_space_len,
-                                pe_regs, PE_REGS_ARG)) {
-          match_found = 1;
-          match++;
-        }
-      } else {
-        if (quick_wild_new(tbuf2 + 1, str, AF_Case(ptr))) {
-          match_found = 1;
-          match++;
-          if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                              MAX_STACK_ARGS, match_space, match_space_len,
-                              pe_regs, PE_REGS_ARG);
-        }
+      if (atr_single_match_r(ptr, flag_mask, end, str, args,
+                             match_space, match_space_len,
+                             cmd_buff, pe_regs)) {
+        match_found = 1;
+        match++;
       }
+
       if (match_found) {
         /* We only want to do the lock check once, so that any side
          * effects in the lock are only performed once per utterance.
@@ -1931,12 +1987,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
             /* inplace queue */
             snprintf(tmp, sizeof tmp, "#%d/%s", thing, AL_NAME(ptr));
-            new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                     pe_flags, queue_type, pe_regs, tmp);
+            new_queue_actionlist_int(thing, player, player, cmd_buff,
+                                     from_queue, pe_flags, queue_type,
+                                     pe_regs, tmp);
           } else {
             /* Normal queue */
             parse_que_attr(
-              thing, player, s, pe_regs, ptr,
+              thing, player, cmd_buff, pe_regs, ptr,
               (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
           }
           pe_regs_free(pe_regs);
@@ -1977,9 +2034,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                MQUE *from_queue, int queue_type, PE_REGS *pe_regs_parent)
 {
   ATTR *ptr;
-  char tbuf1[BUFFER_LEN];
-  char tbuf2[BUFFER_LEN];
-  char *s;
+  char cmd_buff[BUFFER_LEN];
   PE_REGS *pe_regs;
   char match_space[BUFFER_LEN * 2];
   char *args[MAX_STACK_ARGS];
@@ -1996,36 +2051,12 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   if (!AF_Command(ptr))
     return 0;
 
-  strcpy(tbuf1, atr_value(ptr));
-  s = tbuf1;
-  do {
-    s = strchr(s + 1, ':');
-  } while (s && s[-1] == '\\');
-  if (!s)
-    return 0;
-  *s++ = '\0';
-
-  if (AF_Regexp(ptr)) {
-    /* Turn \: into : */
-    char *from, *to;
-    for (from = tbuf1, to = tbuf2; *from; from++, to++) {
-      if (*from == '\\' && *(from + 1) == ':')
-        from++;
-      *to = *from;
-    }
-    *to = '\0';
-  } else
-    strcpy(tbuf2, tbuf1);
-
   pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
   pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
-  if (AF_Regexp(ptr)
-        ? regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                              MAX_STACK_ARGS, match_space, match_space_len,
-                              pe_regs, PE_REGS_ARG)
-        : wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, MAX_STACK_ARGS,
-                            match_space, match_space_len, pe_regs,
-                            PE_REGS_ARG)) {
+
+  if (atr_single_match_r(ptr, AF_COMMAND, ':', str, args,
+                         match_space, match_space_len,
+                         cmd_buff, pe_regs)) {
     char *save_cmd_raw = NULL, *save_cmd_evaled = NULL;
     NEW_PE_INFO *pe_info;
 
@@ -2085,12 +2116,12 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
 
         /* inplace queue */
         snprintf(tmp, sizeof tmp, "#%d/%s", thing, AL_NAME(ptr));
-        new_queue_actionlist_int(thing, player, player, s, from_queue, pe_flags,
-                                 queue_type, pe_regs, tmp);
+        new_queue_actionlist_int(thing, player, player, cmd_buff, from_queue,
+                                 pe_flags, queue_type, pe_regs, tmp);
       } else {
         /* Normal queue */
         parse_que_attr(
-          thing, player, s, pe_regs, ptr,
+          thing, player, cmd_buff, pe_regs, ptr,
           (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
       }
     }

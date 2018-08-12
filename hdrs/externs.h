@@ -185,10 +185,12 @@ void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
 int queue_attribute_base_priv(dbref executor, const char *atrname,
                               dbref enactor, int noparent, PE_REGS *pe_regs,
-                              int flags, dbref priv);
+                              int flags, dbref priv, MQUE *parent_queue,
+                              const char *input);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
-                           PE_REGS *pe_regs, int flags);
+                           PE_REGS *pe_regs, int flags, MQUE *parent_queue,
+                           const char *input);
 int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
@@ -196,13 +198,13 @@ void run_user_input(dbref player, int port, char *input);
 void run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info);
 
 #define queue_attribute_base(ex, at, en, nop, pereg, flag)                     \
-  queue_attribute_base_priv(ex, at, en, nop, pereg, flag, NOTHING)
+  queue_attribute_base_priv(ex, at, en, nop, pereg, flag, NOTHING, NULL, NULL)
 /** Queue the code in an attribute, including parent objects */
 #define queue_attribute(a, b, c)                                               \
-  queue_attribute_base_priv(a, b, c, 0, NULL, 0, NOTHING)
+  queue_attribute_base_priv(a, b, c, 0, NULL, 0, NOTHING, NULL, NULL)
 /** Queue the code in an attribute, excluding parent objects */
 #define queue_attribute_noparent(a, b, c)                                      \
-  queue_attribute_base_priv(a, b, c, 1, NULL, 0, NOTHING)
+  queue_attribute_base_priv(a, b, c, 1, NULL, 0, NOTHING, NULL, NULL)
 void dequeue_semaphores(dbref thing, char const *aname, int count, int all,
                         int drain);
 void shutdown_queues(void);

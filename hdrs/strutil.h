@@ -56,6 +56,7 @@ char *strinitial(const char *s) __attribute__((__deprecated__));
 char *strinitial_r(const char *restrict s, char *restrict d, size_t len);
 char *upcasestr(char *s);
 char *skip_space(const char *s);
+char *strchr_unescaped(char *s, int c);
 char *seek_char(const char *s, char c);
 char *mush_strndup(const char *src, size_t len,
                    const char *check) __attribute_malloc__;

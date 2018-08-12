@@ -1718,13 +1718,10 @@ atr_single_match_r(ATTR *ptr, int flag_mask, int end,
       match_found = 1;
     }
   } else {
-    if (quick_wild_new(buff, input, AF_Case(ptr))) {
+    if (wild_match_case_r(buff, input, AF_Case(ptr), args,
+                        MAX_STACK_ARGS, match_space, match_space_len,
+                        pe_regs, PE_REGS_ARG)) {
       match_found = 1;
-      if (args && match_space && pe_regs) {
-        wild_match_case_r(buff, input, AF_Case(ptr), args,
-                          MAX_STACK_ARGS, match_space, match_space_len,
-                          pe_regs, PE_REGS_ARG);
-      }
     }
   }
   return match_found;

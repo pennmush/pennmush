@@ -88,13 +88,13 @@ See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open on a game, or about specific connections.
 
-  cmds()        conn()        connlog()     connrecord()  doing()
-  height()      host()        hidden()      idle()        ipaddr()
-  lports()      lwho()        lwhoid()      mwho()        mwhoid()
-  nmwho()       nwho()        player()      ports()       pueblo()
-  recv()        sent()        ssl()         terminfo()    width()
-  xmwho()       xmwhoid()     xwho()        xwhoid()      zmwho()
-  zwho()
+  addrlog()     cmds()        conn()        connlog()     connrecord()
+  doing()       height()      host()        hidden()      idle()
+  ipaddr()      lports()      lwho()        lwhoid()      mwho()
+  mwhoid()      nmwho()       nwho()        player()      ports()
+  pueblo()      recv()        sent()        ssl()         terminfo()
+  width()       xmwho()       xmwhoid()     xwho()        xwhoid()
+  zmwho()       zwho()
 & Dbref functions
   Dbref functions return a dbref or list of dbrefs related to some value on an object.
 
@@ -5927,7 +5927,7 @@ See also: @suggest
   <spec> is one or more of the following:
 
  + Time-based constraints
-  * between, <startsecs>, <endsecs> - connections that were present during the given range.
+  * between, <startsecs>, <endsecs> - connections that existed during the given time frame.
   * at, <secs> - connections that existed at the given time.
   * before, <secs> - connections that existed before the given time.
   * after, <secs> - connections that existed after the given time.
@@ -5937,6 +5937,9 @@ See CONNLOG2 for more.
 + Source-based constraits
   * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
   * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
+
++ Others
+  * count - if given, instead of returning a list of connections, returns the total number of matching connections.
 
  Only one time-based constraint can be used in a query.
 
@@ -5949,8 +5952,10 @@ See CONNLOG2 for more.
  shows all connections that were present during the last 15 minutes
  > think connlog(all, ip, 127.0.0.1)
  shows all connections ever made from localhost.
+ > think connlog(all, count, before, secs())
+ shows the total number of connections made since logging began.
 
-See also: connrecord()
+See also: addrlog(), connrecord()
 & CONNRECORD()
  CONNRECORD(<id>[, <sep>])
 
@@ -5963,6 +5968,13 @@ See also: connrecord()
   Times are in seconds since the epoch, like what secs() returns.
 
 See also: connlog()
+& ADDRLOG()
+ ADDRLOG([count,], ip|hostname, <pattern>[, <sep>)
+
+ Searches the log of unique sites that have connected to the mush and returns a list of 'IPADDRESS HOSTNAME' pairs that match the given field with the given wildcard pattern, separated by <sep>, which defaults to |. If 'count' is given, returns the total number of matches instead.
+
+ Restricted to See_all, Wizard and Royal objects.
+
 & URLENCODE()
   URLENCODE(<string>)
 

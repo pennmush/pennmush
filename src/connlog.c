@@ -464,17 +464,18 @@ FUNCTION(fun_connlog)
   char *ip = NULL, *host = NULL;
   int iplen, hostlen;
   bool first_constraint = 1;
+  bool count_only = 0;
 
   if (!options.use_connlog) {
     safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
     return;
   }
 
-  if (strcasecmp(args[0], "all") == 0) {
+  if (sqlite3_stricmp(args[0], "all") == 0) {
     player = -1;
-  } else if (strcasecmp(args[0], "logged in") == 0) {
+  } else if (sqlite3_stricmp(args[0], "logged in") == 0) {
     player = -2;
-  } else if (strcasecmp(args[0], "not logged in") == 0) {
+  } else if (sqlite3_stricmp(args[0], "not logged in") == 0) {
     player = -3;
   } else {
     player = noisy_match_result(executor, args[0], TYPE_PLAYER,
@@ -485,8 +486,21 @@ FUNCTION(fun_connlog)
     }
   }
 
+  for (idx = 1; idx < nargs; idx += 1) {
+    if (sqlite3_stricmp(args[idx], "count") == 0) {
+      count_only = 1;
+      break;
+    }
+  }
+
   query = sqlite3_str_new(connlog_db);
-  sqlite3_str_appendall(query, "SELECT dbref, id FROM connlog WHERE");
+  sqlite3_str_appendall(query, "SELECT");
+  if (count_only) {
+    sqlite3_str_appendall(query, " count(*)");
+  } else {
+    sqlite3_str_appendall(query, " dbref, id");
+  }
+  sqlite3_str_appendall(query, " FROM connlog WHERE");
   if (player >= 0) {
     sqlite3_str_appendf(query, " dbref = %d", player);
     first_constraint = 0;
@@ -498,8 +512,11 @@ FUNCTION(fun_connlog)
     first_constraint = 0;
   }
 
-  while (idx < nargs - 1) {
-    if (strcmp(args[idx], "between") == 0) {
+  for (idx = 1; idx < nargs - 1;) {
+    if (sqlite3_stricmp(args[idx], "count") == 0) {
+      idx += 1;
+      continue;
+    } else if (sqlite3_stricmp(args[idx], "between") == 0) {
       int starttime, endtime;
 
       if (time_constraint) {
@@ -526,7 +543,7 @@ FUNCTION(fun_connlog)
                           starttime);
       time_constraint = 1;
       idx += 3;
-    } else if (strcmp(args[idx], "at") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "at") == 0) {
       int when;
 
       if (time_constraint) {
@@ -548,7 +565,7 @@ FUNCTION(fun_connlog)
       sqlite3_str_appendf(query, " (conn <= %d AND disconn >= %d)", when, when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "before") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "before") == 0) {
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
@@ -569,7 +586,7 @@ FUNCTION(fun_connlog)
       sqlite3_str_appendf(query, " conn < %d", when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "after") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "after") == 0) {
       int when;
       if (time_constraint) {
         safe_str("#-1 TOO MANY CONSTRAINTS", buff, bp);
@@ -592,7 +609,7 @@ FUNCTION(fun_connlog)
                           when, when, when);
       time_constraint = 1;
       idx += 2;
-    } else if (strcasecmp(args[idx], "ip") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "ip") == 0) {
       char *escaped;
       int len;
       if (nargs <= idx + 1) {
@@ -612,7 +629,7 @@ FUNCTION(fun_connlog)
       }
       sqlite3_str_appendall(query, " ipaddr LIKE @ipaddr ESCAPE '$'");
       idx += 2;
-    } else if (strcasecmp(args[idx], "hostname") == 0) {
+    } else if (sqlite3_stricmp(args[idx], "hostname") == 0) {
       char *escaped;
       int len;
       if (nargs <= idx + 1) {
@@ -637,7 +654,6 @@ FUNCTION(fun_connlog)
       goto error_cleanup;
     }
   }
-
   if (idx == nargs - 1) {
     sep = args[idx];
   }
@@ -670,6 +686,12 @@ FUNCTION(fun_connlog)
   do {
     status = sqlite3_step(search);
     if (status == SQLITE_ROW) {
+      if (count_only) {
+        safe_integer(sqlite3_column_int64(search, 0), buff, bp);
+        status = SQLITE_DONE;
+        break;
+      }
+
       player = sqlite3_column_int(search, 0);
       id = sqlite3_column_int64(search, 1);
       if (first) {
@@ -709,6 +731,11 @@ FUNCTION(fun_connrecord)
   const char *sep = " ";
   sqlite3_stmt *rec;
   int status;
+
+  if (!options.use_connlog) {
+    safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+    return;
+  }
 
   if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
@@ -766,4 +793,113 @@ FUNCTION(fun_connrecord)
     safe_str("#-1 NO SUCH RECORD", buff, bp);
   }
   sqlite3_reset(rec);
+}
+
+FUNCTION(fun_addrlog)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_str *query;
+  char *utf8, *pat;
+  int llen;
+  bool count_only = 0, free_sep = 0, first = 1;
+  char default_sep[] = "|";
+  char *sep = default_sep;
+  int n = 0, rc;
+  char *sbp = *bp;
+
+  if (!options.use_connlog) {
+    safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+    return;
+  }
+
+  if (!See_All(executor)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+
+  if (sqlite3_stricmp(args[0], "count") == 0) {
+    count_only = 1;
+    n = 1;
+  }
+
+  if (nargs == n + 1) {
+    safe_str(T("#-1 MISSING ARGUMENTS"), buff, bp);
+    return;
+  }
+
+  query = sqlite3_str_new(connlog_db);
+  sqlite3_str_appendall(query, "SELECT");
+  if (count_only) {
+    sqlite3_str_appendall(query, " count(*)");
+  } else {
+    sqlite3_str_appendall(query, " ipaddr, hostname");
+  }
+  sqlite3_str_appendall(query, " FROM addrs WHERE");
+  if (sqlite3_stricmp(args[n], "ip") == 0) {
+    sqlite3_str_appendall(query, " ipaddr");
+  } else if (sqlite3_stricmp(args[n], "hostname") == 0) {
+    sqlite3_str_appendall(query, " hostname");
+  } else {
+    char *s;
+    safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+    s = sqlite3_str_finish(query);
+    sqlite3_free(s);
+    return;
+  }
+
+  utf8 = latin1_to_utf8(args[n + 1], arglens[n + 1], NULL, "utf8.string");
+  pat = glob_to_like(utf8, '$', &llen);
+  mush_free(utf8, "utf8.string");
+  sqlite3_str_appendall(query, " LIKE ? ESCAPE '$'");
+
+  if (nargs > n + 2) {
+    sep = latin1_to_utf8(args[n + 2], arglens[n + 2], NULL, "utf8.string");
+    free_sep = 1;
+  }
+
+  utf8 = sqlite3_str_finish(query);
+  stmt = prepare_statement_cache(connlog_db, utf8, "addrlog.query", 0);
+  sqlite3_free(utf8);
+
+  if (!stmt) {
+    safe_str(T("#-1 SQLITE ERROR"), buff, bp);
+    mush_free(pat, "string");
+    if (free_sep) {
+      mush_free(sep, "utf8.string");
+    }
+    return;
+  }
+
+  sqlite3_bind_text(stmt, 1, pat, llen, free_string);
+
+  do {
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+      const char *s1, *s2;
+
+      if (count_only) {
+        safe_integer(sqlite3_column_int64(stmt, 0), buff, bp);
+        rc = SQLITE_DONE;
+        break;
+      }
+      if (first) {
+        first = 0;
+      } else {
+        safe_str(sep, buff, bp);
+      }
+      s1 = (const char *) sqlite3_column_text(stmt, 0);
+      s2 = (const char *) sqlite3_column_text(stmt, 1);
+      safe_format(buff, bp, "%s %s", s1, s2);
+    }
+  } while (is_busy_status(rc) || rc == SQLITE_ROW);
+
+  if (rc != SQLITE_DONE) {
+    *bp = sbp;
+    safe_format(buff, bp, T("#-1 SQLITE ERROR: %s"), sqlite3_errstr(rc));
+  }
+
+  sqlite3_finalize(stmt);
+  if (free_sep) {
+    mush_free(sep, "utf8.string");
+  }
 }

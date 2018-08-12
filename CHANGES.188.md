@@ -24,3 +24,11 @@ Major Changes
 -------------
 
 * Built-in HTTP server support [GM]
+
+Softcode
+--------
+
+* `addrlog()` for searching through list of unique IP addresses that have connected to a game. [SW]
+* `connlog()` can return just a count of matching records. [SW]
+
+

@@ -1121,7 +1121,8 @@ handle_curl_msg(CURLMsg *msg)
         }
       }
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
-                                resp->pe_regs, resp->queue_type, resp->thing);
+                                resp->pe_regs, resp->queue_type, resp->thing,
+                                NULL, NULL);
     } else {
       notify_format(resp->thing, "Request failed: %s",
                     curl_easy_strerror(msg->data.result));
@@ -2999,7 +3000,7 @@ GMCP_HANDLER(gmcp_softcode_example)
   pe_regs_setenv(pe_regs, 1, package);
   pe_regs_setenv(pe_regs, 2, msg);
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
-                            NOTHING);
+                            NOTHING, NULL, NULL);
   return 1;
 }
 
@@ -5792,7 +5793,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(loc, a, player, pe_regs, 0);
+        (void) queue_attribute_useatr(loc, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -5805,7 +5806,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(zone, a, player, pe_regs, 0);
+        (void) queue_attribute_useatr(zone, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -5817,7 +5818,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv_nocopy(pe_regs, 1, "");
-          (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
+          (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
         }
@@ -5834,7 +5835,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv_nocopy(pe_regs, 1, "");
-      (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
+      (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
     }

@@ -23,12 +23,15 @@ Version 1.8.8 patchlevel 0 ??? ?? 2018
 Major Changes
 -------------
 
-* Built-in HTTP server support [GM]
+* Built-in HTTP server support, see "help http" [GM]
 
 Softcode
 --------
 
 * `addrlog()` for searching through list of unique IP addresses that have connected to a game. [SW]
 * `connlog()` can return just a count of matching records. [SW]
+* `formdecode()` for decoding HTTP paths and POST bodies.
+* `@respond` for manipulating HTTP response codes and headers.
+* 'hmac()' for creating authentication fingerprints.
 
 

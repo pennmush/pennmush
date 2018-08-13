@@ -944,6 +944,16 @@ update_quotas(struct timeval last, struct timeval current)
   }
 }
 
+int
+http_secs_till_next()
+{
+  if (http_quota < 1000 && HTTP_SECOND_LIMIT > 0) {
+    return 1;
+  }
+  /* Arbitarily high */
+  return 500;
+}
+
 extern slab *text_block_slab;
 
 /* Is source one an IP connection? */
@@ -1146,7 +1156,7 @@ shovechars(Port_t port, Port_t sslport)
   struct timeval next_slice, last_slice, current_time;
   struct timeval timeout, slice_timeout;
   int found;
-  int queue_timeout, sq_timeout;
+  int queue_timeout, sq_timeout, http_timeout;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
@@ -1317,6 +1327,9 @@ shovechars(Port_t port, Port_t sslport)
     sq_timeout = sq_secs_till_next();
     if (sq_timeout < queue_timeout)
       queue_timeout = sq_timeout;
+    http_timeout = http_secs_till_next();
+    if (http_timeout < queue_timeout)
+      queue_timeout = http_timeout;
     if (queue_timeout < 0)
       queue_timeout = 0;
 

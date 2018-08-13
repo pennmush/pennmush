@@ -68,9 +68,9 @@ These '@' commands are only usable by wizards or privileged players:
   @flag          @hide          @hook          @http          @kick
   @log           @motd          @newpassword   @pcreate       @poll
   @poor          @power         @purge         @quota         @readcache
-  @rejectmotd    @shutdown      @sitelock      @sql           @squota
-  @suggest       @uptime        @wall          @wizmotd       @wizwall
-  cd             ch             cv
+  @respond       @rejectmotd    @shutdown      @sitelock      @sql
+  @squota        @suggest       @uptime        @wall          @wizmotd
+  @wizwall       cd             ch             cv
  
 & ]
   "]" is a special prefix which can be used before any command. It instructs the MUSH that it shouldn't evaluate the arguments to the command (similar to the "/noeval" switch available on some commands). For example:

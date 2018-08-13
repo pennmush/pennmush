@@ -1735,6 +1735,12 @@ new_connection(int oldsock, int *result, conn_source source)
   if (d && extra) {
     process_input_helper(d, extra, strlen(extra));
   }
+  /* only send socket`connect events for non HTTP requests */
+  if (d->conn_flags & CONN_HTTP_REQUEST) {
+    queue_event(SYSEVENT, "SOCKET`HTTP", "%d,%s", d->descriptor, d->ip);
+  } else {
+    queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
+  }
   return d;
 }
 
@@ -2238,7 +2244,6 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   im_insert(descs_by_fd, d->descriptor, d);
   d->connlog_id = connlog_connection(ip, addr, is_ssl_desc(d));
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
-  queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
 

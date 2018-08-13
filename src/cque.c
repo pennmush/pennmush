@@ -1264,6 +1264,9 @@ que_next(void)
    * queue when they have one second to go.
    */
   min = 500;
+  
+  /* Update the current time first. */
+  time(&mudtime);
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */

@@ -1797,7 +1797,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     }
   }
   match = 0;
-  match_found = 0;
 
   pe_info = make_pe_info("pe_info-atr_comm_match");
   if (from_queue && from_queue->pe_info && *from_queue->pe_info->cmd_raw) {
@@ -1915,12 +1914,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           continue;
       }
 
-      if (atr_single_match_r(ptr, flag_mask, end, str, args,
-                             match_space, match_space_len,
-                             cmd_buff, pe_regs)) {
-        match_found = 1;
-        match++;
-      }
+      match_found = atr_single_match_r(ptr, flag_mask, end, str, args,
+                                       match_space, match_space_len,
+                                       cmd_buff, pe_regs);
+      if (match_found) match++;
 
       if (match_found) {
         /* We only want to do the lock check once, so that any side

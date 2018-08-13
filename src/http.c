@@ -642,6 +642,7 @@ COMMAND(cmd_respond)
   http_request *req;
   uint32_t code;
   DESC *d;
+  int arg_content = 1;
   
   if (!arg_left || !*arg_left) {
     notify(executor, T("Invalid arguments."));
@@ -724,6 +725,10 @@ COMMAND(cmd_respond)
     if (!(SW_ISSET(sw, SWITCH_NOTIFY))) {
       return;
     }
+    
+    /* arg_right was already used, don't send it as content */
+    arg_content = 0;
+    
   } else if (SW_ISSET(sw, SWITCH_STATUS)) {
     /* @respond/status set the response status code, default 200 Ok */
     
@@ -747,11 +752,20 @@ COMMAND(cmd_respond)
     if (!(SW_ISSET(sw, SWITCH_NOTIFY))) {
       return;
     }
+
+    /* arg_right was already used, don't send it as content */
+    arg_content = 0;
+    
   }
 
-  /* none of the sub-commands exitted early */
-  /* @respond[/send] send the given response with headers and close the request */
-  send_http_response(d, arg_right);
+  /* none of the sub-commands exitted early so send a response
+   * check arg_content to make sure we didn't already use arg_right
+   */
+  if (arg_content) {
+    send_http_response(d, arg_right);
+  } else {
+    send_http_response(d, NULL);
+  }
     
   /* close the socket unless /send is set, unless /notify overrides that */
   if ((SW_ISSET(sw, SWITCH_NOTIFY)) || !(SW_ISSET(sw, SWITCH_SEND))) {

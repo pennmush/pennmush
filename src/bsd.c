@@ -2141,6 +2141,11 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
     sq_cancel(d->conn_timer);
     d->conn_timer = NULL;
   }
+  if (d->http && d->http->timer) {
+    sq_cancel(d->http->timer);
+    d->http->timer = NULL;
+  }
+  
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
   if (pc_dnext == d)

@@ -185,12 +185,12 @@ See also: string functions, regexp
   center()         chr()            comp()           cond()
   condall()        decode64()       decompose()      decrypt()
   digest()         edit()           encode64()       encrypt()
-  escape()         flip()           foreach()        if()
-  ifelse()         lcstr()          left()           lit()
-  ljust()          lpos()           merge()          mid()
-  ord()            ordinal()        pos()            regedit()
-  regmatch()       repeat()         right()          rjust()
-  scramble()       secure()         sha0()           space()
+  escape()         flip()           foreach()        hmac()
+  if()             ifelse()         lcstr()          left()
+  lit()            ljust()          lpos()           merge()
+  mid()            ord()            ordinal()        pos()
+  regedit()        regmatch()       repeat()         right()
+  rjust()          scramble()       secure()         space()
   spellnum()       squish()         strallof()       strcat()
   strdelete()      strfirstof()     strinsert()      stripaccents()
   stripansi()      strlen()         strmatch()       strreplace()
@@ -1119,9 +1119,7 @@ See also: @dig, open(), @open, create(), pcreate()
 
   md4 md5 ripemd160 sha1 sha224 sha256 sha384 sha512 whirlpool
 
-  Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5 and the SHA family.
-
-  digest(sha, whatever) is equivalent to sha0(whatever).
+  Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5, SHA1 and the SHA2 family.
 
   Example:
    > think iter(digest(list), %i0(foo) => [digest(%i0, foo)], %b, %r)
@@ -1130,12 +1128,11 @@ See also: @dig, open(), @open, create(), pcreate()
    MD5(foo) => acbd18db4cc2f85cedef654fccc4a4d8
    MDC2(foo) => 5da2a8f36bf237c84fddf81b67bd0afc
    RIPEMD160(foo) => 42cfa211018ea492fdee45ac637b7972a0ad6873
-   SHA(foo) => 752678a483e77799a3651face01d064f9ca86779
    SHA1(foo) => 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
    SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
    ...
 
-See also: encode64(), encrypt()
+See also: encode64(), encrypt(), hmac()
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -5987,3 +5984,15 @@ See also: urldecode(), @http
   This function takes a URL-encoded string and returns it in its decoded form. Unprintable characters are converted to question marks.
 
 See also: urlencode(), @http
+& HMAC()
+  HMAC(<digest>, <key>, <text>[, <encoding>])
+
+  Computes the HMAC (message authentication code) hash for <text> using the passphrase <key> and the given hash function <digest>, which can be any supported by digest(). <encoding> can be base16 (The default) or base64.
+
+  Example:
+  > think hmac(sha256, secret, this is some text)
+  9598fd959633f2a64a7d7e985966774aa6f334bc802e5b3301772ec8ed6eed5a
+  > think hmac(sha256, secret, this is some text, base64)
+  lZj9lZYz8qZKfX6YWWZ3SqbzNLyALlszAXcuyO1u7Vo=
+
+See also: digest()

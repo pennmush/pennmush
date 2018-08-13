@@ -14,6 +14,8 @@
 
 #include "http.h"
 
+static const char *get_http_status(uint32_t code);
+
 static http_method parse_http_method(char *command);
 static int parse_http_query(http_request *req, char *line);
 static void parse_http_header(http_request *req, char *line);
@@ -26,8 +28,10 @@ static bool run_http_request(DESC *d);
 static void reset_http_timeout(DESC *d, int time);
 bool http_timeout_wrapper(void *data);
 
-static void send_http_status(DESC *d, char *status, char *content);
+static void send_http_status(DESC *d, uint32_t status, char *content);
 static void send_mudurl(DESC *d);
+static void send_http_response(DESC *d, char *content);
+static void close_http_request(DESC *d);
 
 /* from bsd.c */
 extern int queue_write(DESC *d, const char *b, int n);
@@ -43,20 +47,15 @@ const char *http_method_str[] = {
   NULL
 };
 
+/* HTTP status code, e.g. "200 Ok", "404 Not Found"
+ * Indexed by integer code, with string value
+ */
 struct HTTP_STATUS_CODE {
-  http_status code;
+  uint32_t code;
   const char *str;
 };
 
-
-struct HTTP_STATUS_CODE http_status_codes[] = {
-  {200, "200 Ok"},
-  {400, "400 Bad Request"},
-  {404, "404 Not Found"},
-  {408, "408 Request Timeout"},
-  {500, "500 Internal Server Error"},
-  {0, NULL}
-};
+extern struct HTTP_STATUS_CODE http_status_codes[];
 
 /** Parse the HTTP method from a command string
  * \param command string to parse
@@ -78,7 +77,7 @@ parse_http_method(char *command)
  * \param code the status code to transform
  */
 static const char *
-get_http_status(http_status code)
+get_http_status(uint32_t code)
 {
   struct HTTP_STATUS_CODE *c;
   
@@ -171,6 +170,7 @@ parse_http_query(http_request *req, char *line)
   
   /* initialize the request metadata */
   req->state = HTTP_REQUEST_HEADERS;
+  req->timer = NULL;
   req->length = 0;
   req->recv = 0;
   req->hp = req->headers;
@@ -178,7 +178,7 @@ parse_http_query(http_request *req, char *line)
   req->rp = req->response;
   
   /* Default HTTP response metadata */
-  req->status = HTTP_STATUS_200;
+  req->status = 200;
   strncpy(req->res_type, "Content-Type: text/plain\r\n", HTTP_STR_LEN);
   
   /* setup the route attribute, skip leading slashes */
@@ -342,7 +342,7 @@ process_http_helper(DESC *d, char *command)
           bp = buff;
           safe_format(buff, &bp, "File not found. \"%s\"", req->route);
           *bp = '\0';
-          send_http_status(d, "404 Not Found", buff);
+          send_http_status(d, 404, buff);
           return 0;
         }
       } else {
@@ -360,7 +360,7 @@ process_http_helper(DESC *d, char *command)
         bp = buff;
         safe_format(buff, &bp, "File not found. \"%s\"", req->route);
         *bp = '\0';
-        send_http_status(d, "404 Not Found", buff);
+        send_http_status(d, 404, buff);
         return 0;
       }
     }
@@ -391,14 +391,14 @@ do_http_command(DESC *d, char *command)
   /* allocate the http_request to hold headers and path info */
   req = d->http = mush_malloc(sizeof(http_request), "http_request");
   if (!req) {
-    send_http_status(d, "500 Internal Server Error", "Unable to allocate http request.");
+    send_http_status(d, 500, "Unable to allocate http request.");
     return 0;
   }
   memset(req, 0, sizeof(http_request));
   
   /* parse the query string, return 400 if request is bad */
   if (!parse_http_query(d->http, command)) {
-    send_http_status(d, "400 Bad Request", "Invalid request method.");
+    send_http_status(d, 400, "Invalid request method.");
     return 0;
   }
   
@@ -441,12 +441,18 @@ run_http_request(DESC *d)
 static void
 reset_http_timeout(DESC *d, int time)
 {
-  if (d->conn_timer) {
-    sq_cancel(d->conn_timer);
-    d->conn_timer = NULL;
+  http_request *req = d->http;
+
+  if (!req) {
+    return;
   }
   
-  d->conn_timer = sq_register_in(time, http_timeout_wrapper, (void *) d, NULL);
+  if (req->timer) {
+    sq_cancel(req->timer);
+    req->timer = NULL;
+  }
+  
+  req->timer = sq_register_in(time, http_timeout_wrapper, (void *) d, NULL);
 }
 
 /** HTTP connection timeout wrapper
@@ -456,14 +462,23 @@ bool
 http_timeout_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
-  http_request *req = d->http;
+  http_request *req;
+  
+  if (!d) {
+    return false;
+  }
+  
+  req = d->http;
+  if (!req) {
+    return false;
+  }
 
   /* we didn't finish parsing content, but call the route event anyway */
-  if (req && req->state < HTTP_REQUEST_DONE) {
+  if (req->state < HTTP_REQUEST_DONE) {
     req->state = HTTP_REQUEST_DONE;
     if (!run_http_request(d)) {
-      send_http_status(d, "404 Not Found", "File not found.");
-      boot_desc(d, "http close", GOD);
+      send_http_status(d, 404, "File not found.");
+      close_http_request(d);
       return false;
     }
     
@@ -476,12 +491,11 @@ http_timeout_wrapper(void *data)
   
   /* send a timeout message if we haven't already started a response */
   if (req->state != HTTP_REQUEST_STARTED) {
-    send_http_status(d, "408 Request Timeout", "Unable to complete request.");
+    send_http_status(d, 408, "Unable to complete request.");
   }
   
   /* we made it all the way through to here, guess we should shutdown the socket */
-  boot_desc(d, "http close", GOD);
-  
+  close_http_request(d);
   return false;
 }
 
@@ -489,42 +503,37 @@ http_timeout_wrapper(void *data)
  * \param d descriptor of the http request
  */  
 static void
-send_http_status(DESC *d, char *code, char *content)
+send_http_status(DESC *d, uint32_t status, char *content)
 {
   char buff[BUFFER_LEN];
-  char buff2[BUFFER_LEN];
   char *bp = buff;
-  char *bp2 = buff2;
-  ATTR *a;
+  const char *code;
   
   http_request *req = d->http;
   
-  a = atr_get_noparent(EVENT_HANDLER, req->route);
-  if (a) {
-    bp2 = safe_atr_value(a, "http route");
-  } else {
-    safe_str("NO ROUTE", buff2, &bp2);
-    *bp2 = '\0';
-    bp2 = buff2;
+  if (!req) {
+    return;
   }
-    
+  
+  code = get_http_status(status);
+  if (!code) {
+    return;
+  }
+  
   safe_format(buff, &bp,
-              "HTTP/1.1 %s\r\n"
+              "HTTP/1.1 %d %s\r\n"
               "Content-Type: text/html; charset:iso-8859-1\r\n"
               "Pragma: no-cache\r\n"
               "Connection: Close\r\n"
+              "X-Route: %s\r\n"
               "\r\n"
               "<!DOCTYPE html>\r\n"
               "<HTML><HEAD>"
-              "<TITLE>%s</TITLE>"
+              "<TITLE>%d %s</TITLE>"
               "</HEAD><BODY><p>%s</p>\r\n"
               "</BODY></HTML>\r\n",
-              code, code, content);
+              status, code, req->route, status, code, content);
   *bp = '\0';
-  
-  if (a) {
-    mush_free(bp2, "http route");
-  }
   
   queue_write(d, buff, bp - buff);
   queue_eol(d);
@@ -574,14 +583,64 @@ send_mudurl(DESC *d)
   queue_eol(d);
 }
 
-/* @respond command used to send HTTP responses */
-COMMAND(cmd_respond)
+static void
+send_http_response(DESC *d, char *content)
 {
   char buff[BUFFER_LEN];
   char *bp;
+  const char *status;
+  http_request *req = d->http;
+  
+  if (!req) {
+    return;
+  }
+  
+  /* build the response buffer */
+  bp = buff;
+  
+  /* only send the headers the first call */
+  if (req->state != HTTP_REQUEST_STARTED) {
+    req->state = HTTP_REQUEST_STARTED;
+    status = get_http_status(req->status);
+    safe_format(buff, &bp, "HTTP/1.1 %u %s\r\n", req->status, status);
+    safe_str(req->response, buff, &bp);
+    safe_str(req->res_type, buff, &bp);
+    //safe_format(buff, &bp, "Content-Length: %lu\r\n", strlen(arg_right));
+    safe_str("\r\n", buff, &bp);
+  }
+  
+  /* response content, if present */
+  if (content && *content) {
+    safe_str(content, buff, &bp);
+  } 
+    
+  *bp = '\0';
+  
+  /* send the response */
+  queue_write(d, buff, bp - buff);
+  queue_eol(d);
+}
+
+/** Close the HTTP request socket and clean up timers
+ * \param d decriptor of the http request
+ */
+static void
+close_http_request(DESC *d)
+{
+  if (d->http && d->http->timer) {
+    sq_cancel(d->http->timer);
+    d->http->timer = NULL;
+  }
+  
+  boot_desc(d, "http close", GOD);
+}
+
+/* @respond command used to send HTTP responses */
+COMMAND(cmd_respond)
+{
   const char *p;
   http_request *req;
-  int code;
+  uint32_t code;
   DESC *d;
   
   if (!arg_left || !*arg_left) {
@@ -660,7 +719,11 @@ COMMAND(cmd_respond)
     *(req->hp) = '\0';
 
     notify_format(executor, T("Header added, %s."), arg_right);
-    return;
+
+    /* return here, unless we need to /notify and disconnect */
+    if (!(SW_ISSET(sw, SWITCH_NOTIFY))) {
+      return;
+    }
   } else if (SW_ISSET(sw, SWITCH_STATUS)) {
     /* @respond/status set the response status code, default 200 Ok */
     
@@ -669,7 +732,7 @@ COMMAND(cmd_respond)
       return;
     }
     
-    code = parse_integer(arg_right);
+    code = parse_uint32(arg_right, NULL, 10);
     p = get_http_status(code);
     if (!p) {
       notify(executor, T("Invalid HTTP status code."));
@@ -678,43 +741,95 @@ COMMAND(cmd_respond)
     
     req->status = code;
 
-    notify_format(executor, T("Status code set to %s."), p);
-    return;
-  } else if ((arg_right && *arg_right) || (SW_ISSET(sw, SWITCH_SEND))) {
-    /* @respond[/send] send the given response with headers and close the request */
-
-    /* build the response buffer */
-    bp = buff;
+    notify_format(executor, T("Status code set to %u %s."), code, p);
     
-    /* only send the headers the first call */
-    if (req->state != HTTP_REQUEST_STARTED) {
-      req->state = HTTP_REQUEST_STARTED;
-      p = get_http_status(req->status);
-      safe_format(buff, &bp, "HTTP/1.1 %s\r\n", p);
-      safe_str(req->response, buff, &bp);
-      safe_str(req->res_type, buff, &bp);
-      //safe_format(buff, &bp, "Content-Length: %lu\r\n", strlen(arg_right));
-      safe_str("\r\n", buff, &bp);
-    }
-    
-    /* response content, if present */
-    if (arg_right && *arg_right) {
-      safe_str(arg_right, buff, &bp);
-    } 
-      
-    *bp = '\0';
-    
-    /* send the response */
-    queue_write(d, buff, bp - buff);
-    queue_eol(d);
-    
-    /* close the socket unless /send is set */
-    if (!(SW_ISSET(sw, SWITCH_SEND))) {
-      boot_desc(d, "http response", GOD);
+    /* return here, unless we need to /notify and disconnect */
+    if (!(SW_ISSET(sw, SWITCH_NOTIFY))) {
+      return;
     }
   }
+
+  /* none of the sub-commands exitted early */
+  /* @respond[/send] send the given response with headers and close the request */
+  send_http_response(d, arg_right);
+    
+  /* close the socket unless /send is set, unless /notify overrides that */
+  if ((SW_ISSET(sw, SWITCH_NOTIFY)) || !(SW_ISSET(sw, SWITCH_SEND))) {
+    close_http_request(d);
+  }
+
   return;
 }
+
+
+/* define the status codes here so that they don't clutter
+ * the head of the file.
+ */
+struct HTTP_STATUS_CODE http_status_codes[] = {
+  {100, "Continue"},
+  {101, "Switching Protocols"},
+  {102, "Processing"},
+  {103, "Early Hints"},
+  {200, "OK"},
+  {201, "Created"},
+  {202, "Accepted"},
+  {203, "Non-Authoritative Information"},
+  {204, "No Content"},
+  {205, "Reset Content"},
+  {206, "Partial Content"},
+  {207, "Multi-Status"},
+  {208, "Already Reported"},
+  {226, "IM Used"},
+  {300, "Multiple Choices"},
+  {301, "Moved Permanently"},
+  {302, "Found"},
+  {303, "See Other"},
+  {304, "Not Modified"},
+  {305, "Use Proxy"},
+  {306, "(Unused)"},
+  {307, "Temporary Redirect"},
+  {308, "Permanent Redirect"},
+  {400, "Bad Request"},
+  {401, "Unauthorized"},
+  {402, "Payment Required"},
+  {403, "Forbidden"},
+  {404, "Not Found"},
+  {405, "Method Not Allowed"},
+  {406, "Not Acceptable"},
+  {407, "Proxy Authentication Required"},
+  {408, "Request Timeout"},
+  {409, "Conflict"},
+  {410, "Gone"},
+  {411, "Length Required"},
+  {412, "Precondition Failed"},
+  {413, "Payload Too Large"},
+  {414, "URI Too Long"},
+  {415, "Unsupported Media Type"},
+  {416, "Range Not Satisfiable"},
+  {417, "Expectation Failed"},
+  {421, "Misdirected Request"},
+  {422, "Unprocessable Entity"},
+  {423, "Locked"},
+  {424, "Failed Dependency"},
+  {425, "Too Early"},
+  {426, "Upgrade Required"},
+  {428, "Precondition Required"},
+  {429, "Too Many Requests"},
+  {431, "Request Header Fields Too Large"},
+  {451, "Unavailable For Legal Reasons"},
+  {500, "Internal Server Error"},
+  {501, "Not Implemented"},
+  {502, "Bad Gateway"},
+  {503, "Service Unavailable"},
+  {504, "Gateway Timeout"},
+  {505, "HTTP Version Not Supported"},
+  {506, "Variant Also Negotiates"},
+  {507, "Insufficient Storage"},
+  {508, "Loop Detected"},
+  {510, "Not Extended"},
+  {511, "Network Authentication Required"}
+};
+
 
 
 

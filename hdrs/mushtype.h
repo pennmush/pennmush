@@ -264,15 +264,6 @@ typedef enum HTTP_METHOD {
   HTTP_NUM_METHODS
 } http_method;
 
-typedef enum HTTP_STATUS {
-  HTTP_STATUS_200 = 200,
-  HTTP_STATUS_400 = 400,
-  HTTP_STATUS_404 = 404,
-  HTTP_STATUS_408 = 408,
-  HTTP_STATUS_500 = 500,
-  HTTP_NUM_STATUS = 5
-} http_status;
-
 typedef struct HTTP_REQUEST {
   /* request data */
   http_method method;			/* GET/POST/etc */
@@ -287,9 +278,10 @@ typedef struct HTTP_REQUEST {
   uint32_t state;			/* request state */
   int32_t length;			/* Content-Length */
   int32_t recv;				/* number of content bytes read so far */
+  struct squeue *timer;			/* Timeout event */
 
   /* response data */
-  http_status status;			/* response status */
+  uint32_t status;			/* response status */
   char res_type[HTTP_STR_LEN];		/* response Content-Type */
   char response[BUFFER_LEN];		/* other response headers */
   char *rp;				/* reponse header pointer */

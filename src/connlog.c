@@ -517,6 +517,10 @@ FUNCTION(fun_connlog)
       starttime = parse_integer(args[idx + 1]);
       endtime = parse_integer(args[idx + 2]);
 
+      if (endtime < starttime || starttime > mudtime) {
+        goto error_cleanup;
+      }
+
       if (first_constraint) {
         first_constraint = 0;
       } else {
@@ -540,6 +544,10 @@ FUNCTION(fun_connlog)
         goto error_cleanup;
       }
       when = parse_integer(args[idx + 1]);
+      if (when > mudtime) {
+        goto error_cleanup;
+      }
+
       if (first_constraint) {
         first_constraint = 0;
       } else {
@@ -582,6 +590,9 @@ FUNCTION(fun_connlog)
         goto error_cleanup;
       }
       when = parse_integer(args[idx + 1]);
+      if (when >= mudtime) {
+        goto error_cleanup;
+      }
       if (first_constraint) {
         first_constraint = 0;
       } else {

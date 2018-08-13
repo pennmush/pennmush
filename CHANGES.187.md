@@ -24,6 +24,7 @@ Fixes
 -----
 
 * `connrecord()` returns an error if extended connection logging is disabled. [SW]
+* `connlog()` didn't handle future dates very well. [SW]
 
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================

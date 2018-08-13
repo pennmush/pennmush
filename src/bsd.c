@@ -406,7 +406,8 @@ static void dump_info(DESC *call_by);
 static void save_command(DESC *d, char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
-static bool is_http_request(char *command);
+static bool is_http_request(const char *command);
+static bool is_http_bodyless(const char *method);
 static int process_http_start(DESC *d, char *command);
 static void process_http_input(DESC *d, char *buf, int len);
 static void queue_http_command(DESC *d);
@@ -3551,8 +3552,9 @@ http_bounce_mud_url(DESC *d)
 
 #define HTTP_HEADER           1
 #define HTTP_BODY             2
-#define HTTP_RESPONSE         3
-#define HTTP_RESPONSE_BODY    4
+#define HTTP_DONE             3
+
+#define HTTP_CONTENT_LENGTH "CONTENT-LENGTH: "
 
 static int
 process_http_start(DESC *d, char *line)
@@ -3615,9 +3617,11 @@ process_http_start(DESC *d, char *line)
   d->http_request = req;
   req->state = HTTP_HEADER;
   req->content_length = -1;
+  req->content_read = 0;
 
-  /* req->buff for input */
-  req->bp = req->buff;
+  /* req->inheaders and req->inbody for input */
+  req->inhp = req->inheaders;
+  req->inbp = req->inbody;
 
   /* req->headers and response for output */
   req->hp = req->headers;
@@ -3687,13 +3691,80 @@ http_finished_wrapper(void *data)
 static void
 process_http_input(DESC *d, char *buf, int len)
 {
-  safe_strl(buf, len, d->http_request->buff, &(d->http_request->bp));
-
-  /* Reset the timer, but only if there is one. */
+  char *p, *eol, *val;
+  struct http_request *req;
   if (d->conn_timer) {
     sq_cancel(d->conn_timer);
-    d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+    d->conn_timer = NULL;
   }
+
+  req = d->http_request;
+
+  switch (req->state) {
+  case HTTP_HEADER:
+    /* Copy to header buffer, then check headers to see if they're finished. */
+    safe_strl(buf, len, req->inheaders, &(req->inhp));
+    *(req->inhp) = '\0';
+    p = d->http_request->inheaders;
+    while (p && *p) {
+      if (*p == '\r' || *p == '\n') {
+        /* End of headers.
+         * Shove the rest to inbody, if any.
+         * p should be "\r\n" by spec, but might not be, thanks to lazy
+         * script writers, ancient browsers, etc.
+         */
+        if (*p == '\r' && *(p+1) == '\n') *(p++) = '\0';
+        *(p++) = '\0';
+        if (req->content_length == 0 ||
+            (req->content_length < 0 && is_http_bodyless(req->method))) {
+          /* We're done, queue! */
+          queue_http_command(d);
+          return;
+        }
+        req->state = HTTP_BODY;
+        if (*p && req->content_length) {
+          /* Switch to body input. content_length of -1 (No content length received)
+           * means we depend on timer. Shove rest of body into it.
+           */
+          buf = p;
+          len = (req->inhp - p);
+          goto readbody;
+        }
+      }
+      for (eol = p; *eol && *eol != '\r' && *eol != '\n'; eol++);
+      if (!*eol) {
+        /* Incomplete headers, wait until we read more. */
+        goto waitmore;
+      }
+      if (*eol == '\r' && *(eol+1) == '\n') eol++;
+      if (*eol) eol++;
+      /* We have a header, check for Content-Length: */
+      if (!strncasecmp(p, HTTP_CONTENT_LENGTH, strlen(HTTP_CONTENT_LENGTH))) {
+        val = p + strlen(HTTP_CONTENT_LENGTH);
+        errno = 0;
+        req->content_length = strtol(val, NULL, 10);
+        if (req->content_length < 0 || errno) {
+          /* Malformed content_length, fall back to timer for handling */
+          req->content_length = -1;
+          continue;
+        }
+      }
+      p = eol;
+    }
+    break;
+  case HTTP_BODY:
+readbody:
+    safe_strl(buf, len, req->inbody, &(req->inbp));
+    if (req->content_length > 0 && (req->inbp - req->inbody) >= req->content_length) {
+      queue_http_command(d);
+      return;
+    }
+    break;
+  }
+
+  /* Reset the timer, but only if there is one. */
+waitmore:
+  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
 }
 
 static void
@@ -3706,7 +3777,7 @@ queue_http_command(DESC *d)
     sq_cancel(d->conn_timer);
     d->conn_timer = NULL;
   }
-  /* Don't run twice - from close_write _and_ timer */
+  /* Don't run twice - from close_write _and_ timer (which shouldn't happen anyway?) */
   if (d->conn_flags & CONN_HTTP_READY) return;
   d->conn_flags |= CONN_HTTP_READY;
 }
@@ -3716,12 +3787,12 @@ do_http_command(DESC *d)
 {
   NEW_PE_INFO *pe_info = NULL;
   struct http_request *req;
-  char headers[BUFFER_LEN];
+  char headernames[BUFFER_LEN];
   char *hp;
   char tmp[BUFFER_LEN];
   char vals[BUFFER_LEN];
   uint32_t content_len;
-  char *body, *p, *line;
+  char *p, *line;
   char *headername, *headerval;
   const char *rval;
   const char *reason = "Malformed Request";
@@ -3742,17 +3813,16 @@ do_http_command(DESC *d)
     goto bad_connection;
   }
 
-  /* Split headers and body. */
-
   req = d->http_request;
 
   pe_info = make_pe_info("pe_info-http");
 
-  *(req->bp) = '\0';
+  *(req->inhp) = '\0';
+  *(req->inbp) = '\0';
 
-  p = req->buff;
-  hp = headers;
-  while (*p && *p != '\r' && *p != '\n') {
+  p = req->inheaders;
+  hp = headernames;
+  while (*p) {
     line = p;
     while (*p && *p != '\r' && *p != '\n') p++;
     /* Chomp, \r, \n, or \r\n (should be \r\n). */
@@ -3781,25 +3851,18 @@ do_http_command(DESC *d)
         /* Too many headers? Ignore */
         continue;
       }
-      if (hp > headers) {
-        safe_chr(' ', headers, &hp);
+      if (hp > headernames) {
+        safe_chr(' ', headernames, &hp);
       }
-      safe_str(headername, headers, &hp);
+      safe_str(headername, headernames, &hp);
     }
   }
 
   *hp = '\0';
-  PE_Setq(pe_info, "HEADERS", headers);
-  while (*p && isspace(*p)) p++;
-
-  if (*p) {
-    body = p;
-  } else {
-    body = "";
-  }
+  PE_Setq(pe_info, "HEADERS", headernames);
 
   pe_regs_setenv(pe_info->regvals, 0, req->path);
-  pe_regs_setenv(pe_info->regvals, 1, body);
+  pe_regs_setenv(pe_info->regvals, 1, req->inbody);
 
   /* 'invisibly' connect. */
   d->player = HTTP_HANDLER;
@@ -3826,7 +3889,7 @@ do_http_command(DESC *d)
 
   queue_event(SYSEVENT, "HTTP`COMMAND", "%s,%s,%s,%s,%s,%ld,%d",
               d->ip, req->method, req->path, req->code, req->ctype,
-              strlen(body), content_len);
+              strlen(req->inbody), content_len);
 
   /* Now write out our response header, populated by @respond, then body. */
   queue_newwrite(d, req->code, strlen(req->code));
@@ -3852,9 +3915,9 @@ bad_connection:
 }
 
 static bool
-is_http_request(char *command)
+is_http_request(const char *command)
 {
-  const char *headers[] = {
+  const char *methods[] = {
     "GET ",
     "POST ",
     "PUT ",
@@ -3866,8 +3929,27 @@ is_http_request(char *command)
 
   int i;
 
-  for (i = 0; headers[i]; i++) {
-    if (!strncmp(command, headers[i], strlen(headers[i]))) {
+  for (i = 0; methods[i]; i++) {
+    if (!strncmp(command, methods[i], strlen(methods[i]))) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static bool
+is_http_bodyless(const char *method) {
+  const char *methods[] = {
+    "GET",
+    "DELETE",
+    "HEAD",
+    NULL
+  };
+
+  int i;
+
+  for (i = 0; methods[i]; i++) {
+    if (!strcmp(method, methods[i])) {
       return 1;
     }
   }

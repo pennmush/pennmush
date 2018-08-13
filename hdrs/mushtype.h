@@ -296,10 +296,13 @@ struct squeue {
 struct http_request {
   char method[HTTP_METHOD_LEN];  /**< GET/POST/PUT/DELETE/HEAD/etc */
   char path[MAX_COMMAND_LEN];    /**< Varies by browser, but 2048 is IE max */
-  char buff[BUFFER_LEN];         /**< Headers + Body */
-  char *bp;                      /**< bp for buff */
+  char inheaders[BUFFER_LEN];        /**< Incoming Headers */
+  char *inhp;                      /**< bp for hbuff */
+  char inbody[BUFFER_LEN];         /**< Incoming Body */
+  char *inbp;                      /**< bp for buff */
   uint32_t state;                /**< Current state of request. */
   int32_t content_length;        /**< Content-Length value. */
+  int32_t content_read;        /**< Content-Length value. */
 
   char code[HTTP_CODE_LEN];      /**< 200 OK, etc */
   char ctype[MAX_COMMAND_LEN];   /**< Content-Type: text/plain */

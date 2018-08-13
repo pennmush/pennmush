@@ -1343,7 +1343,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   if (flags & TRIGGER_MATCH) {
     input = argv[1];
   } else {
-    for (i = 0; i < MAX_ARG; i++) {
+    for (i = 0; i < (MAX_ARG - 1); i++) {
       if (argv[i + 1]) {
         pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
       }

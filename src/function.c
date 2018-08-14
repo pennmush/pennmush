@@ -1543,7 +1543,7 @@ cnf_add_function(const char *name, const char *opts)
     }
   }
 
-  fp = func_hash_lookup(name);
+  fp = func_hash_lookup(ucname);
   if (fp) {
     if (fp->flags & FN_BUILTIN) {
       /* Override built-in function */
@@ -1559,12 +1559,12 @@ cnf_add_function(const char *name, const char *opts)
   if (!fp) {
     /* Create new userfunction */
     fp = slab_malloc(function_slab, NULL);
-    fp->name = mush_strdup(name, "func_hash.name");
+    fp->name = mush_strdup(ucname, "func_hash.name");
     fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
     fp->minargs = 0;
     fp->maxargs = MAX_STACK_ARGS;
-    hashadd(name, fp, &htab_user_function);
-    add_private_vocab(name, "FUNCTIONS");
+    hashadd(ucname, fp, &htab_user_function);
+    add_private_vocab(ucname, "FUNCTIONS");
   }
 
   fp->where.ufun->thing = thing;

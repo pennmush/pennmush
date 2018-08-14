@@ -10,6 +10,7 @@
 
 #include "copyrite.h"
 
+#include <ctype.h>
 #include <string.h>
 
 #ifdef HAVE_SYS_TYPES_H
@@ -66,6 +67,10 @@ void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
+
+extern struct http_request *active_http_request;
+extern void do_http_respond_code(const char *code);
+extern void do_http_respond_header(const char *name, const char *value);
 
 extern DESC *lookup_desc(dbref executor, const char *name);
 /** Is there a right-hand side of the equal sign? From command.c */
@@ -1561,10 +1566,20 @@ COMMAND(cmd_include)
 COMMAND(cmd_trigger)
 {
   int flags = TRIGGER_DEFAULT;
+  if (SW_ISSET(sw, SWITCH_MATCH))
+    flags |= TRIGGER_MATCH;
   if (SW_ISSET(sw, SWITCH_SPOOF))
     flags |= TRIGGER_SPOOF;
   if (SW_ISSET(sw, SWITCH_CLEARREGS))
     flags |= TRIGGER_CLEARREGS;
+  if (SW_ISSET(sw, SWITCH_INLINE))
+    flags |= TRIGGER_INLINE;
+  if (SW_ISSET(sw, SWITCH_NOBREAK))
+    flags |= TRIGGER_NOBREAK;
+  if (SW_ISSET(sw, SWITCH_LOCALIZE))
+    flags |= TRIGGER_LOCALIZE;
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    flags |= (TRIGGER_LOCALIZE | TRIGGER_INLINE | TRIGGER_NOBREAK);
   do_trigger(executor, enactor, arg_left, args_right, queue_entry, flags);
 }
 
@@ -1961,4 +1976,122 @@ COMMAND(cmd_fetch)
 #else
   notify(executor, T("Command disabled."));
 #endif
+}
+
+COMMAND(cmd_respond)
+{
+  const char *p;
+  struct http_request *req;
+
+  req = active_http_request;
+
+  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
+    notify(executor, T("Invalid http_handler, it should be a player."));
+  }
+
+  if (!arg_left || !*arg_left) {
+    notify(executor, T("Invalid use of @respond, please check help @respond."));
+    return;
+  }
+
+  /* Ensure only isprint()-able characters. */
+  for (p = arg_left; p && *p; p++) {
+    if (!isprint(*p)) {
+      notify(executor, T("No nonprintable characters allowed in @respond"));
+      return;
+    }
+  }
+
+  for (p = arg_right; p && *p; p++) {
+    if (!isprint(*p)) {
+      notify(executor, T("No nonprintable characters allowed in @respond"));
+      return;
+    }
+  }
+
+  if (SW_ISSET(sw, SWITCH_TYPE) && SW_ISSET(sw, SWITCH_HEADER)) {
+    notify(executor, T("Invalid @respond - You can't use more than one switch!"));
+    return;
+  }
+ 
+  /* @respond/type */
+  if (SW_ISSET(sw, SWITCH_TYPE)) {
+    if (*arg_right) {
+      notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+      return;
+    }
+    if (req) {
+      snprintf(req->ctype, MAX_COMMAND_LEN,
+               "Content-Type: %s", arg_left);
+    } else {
+      notify_format(enactor, "(HTTP): Content-Type: %s", arg_left);
+    }
+    return;
+  }
+
+  /* @respond/header */
+  if (SW_ISSET(sw, SWITCH_HEADER)) {
+    /* Sanity checking on header name. */
+    if (!arg_left || !*arg_left || !arg_right || !*arg_right) {
+      notify(executor, T("Invalid format, use @respond/header HeaderName=Value."));
+      return;
+    }
+    if (!strcasecmp(arg_left, "content-length")) {
+      notify(executor, T("You cannot set Content-Length header."));
+      return;
+    }
+    /* Only printable ascii allowed in header names. */
+    for (p = arg_left; *p; p++) {
+      if (!isascii(*p)) {
+        notify(executor, T("Invalid HTTP Header name."));
+        return;
+      }
+    }
+    if (req) {
+      safe_str(arg_left, req->headers, &(req->hp));
+      safe_str(": ", req->headers, &(req->hp));
+      safe_str(arg_right, req->headers, &(req->hp));
+
+      safe_str("\r\n", req->headers, &(req->hp));
+    } else {
+      notify_format(enactor, "(HTTP): %s: %s", arg_left, arg_right);
+    }
+    return;
+  }
+
+  /* Now we're to @respond code
+   *
+   * This format must follow \d\d\d <text>
+   */
+  if (!isdigit(arg_left[0]) ||
+      !isdigit(arg_left[1]) ||
+      !isdigit(arg_left[2]) ||
+      arg_left[3] != ' ' ||
+      !isalnum(arg_left[4])) {
+    notify(executor, T("@respond must be 3 digits, space, then text ."));
+    return;
+  }
+
+  if (*arg_right) {
+    notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+    return;
+  }
+
+  for (p = arg_left; *p; p++) {
+    if (!isascii(*p)) {
+      notify(executor, T("@respond must be 3 digits, space, then text ."));
+      return;
+    }
+  }
+
+  if (strlen(arg_left) >= 40) {
+      notify(executor, T("@respond status code too long."));
+      return;
+  }
+
+  if (req) {
+    snprintf(req->code, HTTP_CODE_LEN, "HTTP/1.1 %s", arg_left);
+  } else {
+    notify_format(enactor, "(HTTP): HTTP/1.1 %s", arg_left);
+  }
 }

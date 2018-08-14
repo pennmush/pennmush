@@ -67,6 +67,7 @@ char *upcasestr(char *s);
 char *uupcasestr(char *s);
 char *udowncasestr(char *s);
 char *skip_space(const char *s);
+char *strchr_unescaped(char *s, int c);
 char *seek_char(const char *s, char c);
 char *seek_cp(const char *s, UChar32 c);
 char *mush_strndup(const char *src, size_t len,

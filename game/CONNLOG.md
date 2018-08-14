@@ -55,8 +55,9 @@ connects from:
 
     WITH addrcounts(name, ipaddr, c) AS
       (SELECT name, ipaddr, count(addrid) FROM
-          connections JOIN addrs ON connections.addrid = addrs.id
-         GROUP BY addrid)
+          connections AS conn JOIN addrs ON conn.addrid = addrs.id
+         WHERE name NOT NULL
+         GROUP BY conn.addrid)
     SELECT name, ipaddr, max(c) AS count FROM addrcounts
       GROUP BY name ORDER BY name COLLATE NOCASE;
 
@@ -66,11 +67,11 @@ To show all information about connections made in the last 24 hours:
 
 To count the number of times a particular player has connected:
 
-    SELECT count(*) FROM connections WHERE dbref='1234';
+    SELECT count(*) FROM connections WHERE dbref=1234;
     
 To show connections that never logged in:
 
-    SELECT * from connlog WHERE dbref IS NULL;
+    SELECT * from connlog WHERE dbref = -1;
 
 Caveats
 -------

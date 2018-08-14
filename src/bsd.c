@@ -109,6 +109,7 @@
 #include "connlog.h"
 #include "charclass.h"
 #include "cJSON.h"
+#include "memcheck.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -149,7 +150,9 @@ void init_rlimit(void);
 #ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
 #endif
-int que_next(void); /* from cque.c */
+uint64_t queue_msecs_till_next(void); /* from cque.c */
+void queue_update(void); /* from cque.c */
+void update_queue_load();
 
 dbref email_register_player(DESC *d, const char *name, const char *email,
                             const char *host,
@@ -186,6 +189,11 @@ bool fcache_read_one(const char *filename);
 const char *default_ttype = "unknown";
 #define REBOOT_DB_NOVALUE "__NONE__"
 
+/* Just to avoid '1000' appearing everywhere without a reason */
+#define MS_PER_SEC 1000
+
+#define QUOTA_MAX (COMMAND_BURST_SIZE * MS_PER_SEC)
+
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode
  * to it. If it gets a reply, a flag in the descriptor struct is
@@ -212,6 +220,7 @@ bool test_telnet_wrapper(void *data);
 bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, char **q, char *qend);
 static void set_ttype(DESC *d, char *value);
+bool http_finished_wrapper(void *data);
 
 typedef void (*telnet_handler)(DESC *d, char *cmd, int len);
 #define TELNET_HANDLER(x)                                                      \
@@ -288,6 +297,17 @@ dummy_msgs()
 DESC *descriptor_list = NULL; /**< The linked list of descriptors */
 intmap *descs_by_fd = NULL;   /**< Map of ports to DESC* objects */
 
+struct http_request *active_http_request = NULL; /**< Active HTTP Request */
+/* To roughly average HTTP_SECOND_LIMIT per second, we actually define
+ * an http request as MS_PER_SEC http_quota, and every millisecond "adds"
+ * HTTP_SECOND_LIMIT.
+ *
+ * So after 83 milliseconds, if HTTP_SECOND_LIMIT is 50, then we add 4150 to
+ * the quota - essentially 4 additional requests. But it caps at
+ * HTTP_SECOND_LIMIT * 1000
+ */
+static int http_quota = 0;
+
 static int sock;
 static int sslsock = 0;
 SSL *ssl_master_socket = NULL; /**< Master SSL socket for ssl port */
@@ -304,6 +324,7 @@ int restarting = 0; /**< Are we restarting the server after a reboot? */
 int maxd = 0;
 
 extern const unsigned char *tables;
+extern void pi_regs_normalize_key(char *lckey);
 
 volatile sig_atomic_t signal_shutdown_flag =
   0; /**< Have we caught a shutdown signal? */
@@ -320,18 +341,8 @@ int main(int argc, char **argv);
 #endif
 #endif
 void set_signals(void);
-static struct timeval timeval_sub(struct timeval now, struct timeval then);
-#ifdef WIN32
-/** Windows doesn't have gettimeofday(), so we implement it here */
-#define our_gettimeofday(now) win_gettimeofday((now))
-static void win_gettimeofday(struct timeval *now);
-#else
-/** A wrapper for gettimeofday() in case the system doesn't have it */
-#define our_gettimeofday(now) gettimeofday((now), (struct timezone *) NULL)
-#endif
 static long int msec_diff(struct timeval now, struct timeval then);
-static struct timeval msec_add(struct timeval t, int x);
-static void update_quotas(struct timeval last, struct timeval current);
+static void update_quotas(struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
@@ -392,6 +403,12 @@ static void dump_info(DESC *call_by);
 static void save_command(DESC *d, char *command);
 static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
+static bool is_http_request(const char *command);
+static bool is_http_bodyless(const char *method);
+static int process_http_start(DESC *d, char *command);
+static void process_http_input(DESC *d, char *buf, int len);
+static void queue_http_command(DESC *d);
+static void do_http_command(DESC *d);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
 enum comm_res {
@@ -399,7 +416,6 @@ enum comm_res {
   CRES_LOGOUT,
   CRES_QUIT,
   CRES_SITELOCK,
-  CRES_HTTP,
   CRES_BOOTED
 };
 static enum comm_res do_command(DESC *d, char *command);
@@ -780,6 +796,8 @@ main(int argc, char **argv)
 
   close_help_files();
 
+  log_mem_check();
+
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   end_all_logs();
@@ -855,59 +873,21 @@ win_gettimeofday(struct timeval *now)
 
 #endif
 
-/** Return the difference between two timeval structs as a timeval struct.
- * \param now pointer to the timeval to subtract from.
- * \param then pointer to the timeval to subtract.
- * \return pointer to a statically allocated timeval of the difference.
- */
-static struct timeval
-timeval_sub(struct timeval now, struct timeval then)
-{
-  struct timeval mytime = now;
-  mytime.tv_sec -= then.tv_sec;
-  mytime.tv_usec -= then.tv_usec;
-  if (mytime.tv_usec < 0) {
-    mytime.tv_usec += 1000000;
-    mytime.tv_sec--;
-  }
-  return mytime;
-}
-
 /** Return the difference between two timeval structs in milliseconds.
- * \param now pointer to the timeval to subtract from.
- * \param then pointer to the timeval to subtract.
+ * \param now the timeval to subtract from.
+ * \param then the timeval to subtract.
  * \return milliseconds of difference between them.
  */
 static long int
 msec_diff(struct timeval now, struct timeval then)
 {
-  long int secs = now.tv_sec - then.tv_sec;
-  if (secs == 0)
-    return (now.tv_usec - then.tv_usec) / 1000;
-  else if (secs == 1)
-    return (now.tv_usec + (1000000 - then.tv_usec)) / 100;
-  else if (secs > 1)
-    return (secs * 1000) + ((now.tv_usec + (1000000 - then.tv_usec)) / 1000);
-  else
-    return 0;
-}
+  long int msecs = 0;
 
-/** Add a given number of milliseconds to a timeval.
- * \param t pointer to a timeval struct.
- * \param x number of milliseconds to add to t.
- * \return address of static timeval struct representing the sum.
- */
-static struct timeval
-msec_add(struct timeval t, int x)
-{
-  struct timeval mytime = t;
-  mytime.tv_sec += x / 1000;
-  mytime.tv_usec += (x % 1000) * 1000;
-  if (mytime.tv_usec >= 1000000) {
-    mytime.tv_sec += mytime.tv_usec / 1000000;
-    mytime.tv_usec = mytime.tv_usec % 1000000;
-  }
-  return mytime;
+  msecs = 1000 * (now.tv_sec - then.tv_sec);
+  msecs += (now.tv_usec / 1000);
+  msecs -= (then.tv_usec / 1000);
+  if (msecs < 0) return 0;
+  return msecs;
 }
 
 /** Update each descriptor's allowed rate of issuing commands.
@@ -919,19 +899,44 @@ msec_add(struct timeval t, int x)
  * \param current pointer to timeval struct of current time.
  */
 static void
-update_quotas(struct timeval last, struct timeval current)
+update_quotas(struct timeval current)
 {
-  int nslices;
+  static struct timeval last = {0, 0};
   DESC *d;
-  nslices = (int) msec_diff(current, last) / COMMAND_TIME_MSEC;
+  uint64_t msecs;
 
-  if (nslices > 0) {
-    for (d = descriptor_list; d; d = d->next) {
-      d->quota += COMMANDS_PER_TIME * nslices;
-      if (d->quota > COMMAND_BURST_SIZE)
-        d->quota = COMMAND_BURST_SIZE;
-    }
+  if (!last.tv_sec) {
+    /* First run */
+    last = current;
+    return;
   }
+
+  msecs = msec_diff(current, last);
+  last = current;
+
+  DESC_ITER(d) {
+    d->quota += COMMANDS_PER_SECOND * msecs;
+    if (d->quota > QUOTA_MAX)
+      d->quota = QUOTA_MAX;
+  }
+
+  /* And the HTTP quota */
+  http_quota += (msecs * HTTP_SECOND_LIMIT);
+  if (http_quota > (HTTP_SECOND_LIMIT * MS_PER_SEC)) {
+    http_quota = HTTP_SECOND_LIMIT * MS_PER_SEC;
+  }
+}
+
+int
+http_msecs_till_next()
+{
+  if (http_quota < MS_PER_SEC && HTTP_SECOND_LIMIT > 0) {
+    /* Quota is exhausted. Calculate how long until we can serve an http
+     * command again. */
+    return ((MS_PER_SEC - http_quota) / HTTP_SECOND_LIMIT) + HTTP_SECOND_LIMIT;
+  }
+  /* Arbitarily high */
+  return SECS_TO_MSECS(500);
 }
 
 extern slab *text_block_slab;
@@ -1112,7 +1117,8 @@ handle_curl_msg(CURLMsg *msg)
         }
       }
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
-                                resp->pe_regs, resp->queue_type, resp->thing);
+                                resp->pe_regs, resp->queue_type, resp->thing,
+                                NULL, NULL);
     } else {
       notify_format(resp->thing, "Request failed: %s",
                     curl_easy_strerror(msg->data.result));
@@ -1125,6 +1131,100 @@ handle_curl_msg(CURLMsg *msg)
 
 #endif
 
+/* Check for any errors and status changes, and let shovechars() know if it
+ * needs to shut down.
+ * \return 1 if everything's okay, 0 to shut down.
+ */
+static int
+check_status()
+{
+  /* Check signal handler flags */
+#ifndef WIN32
+  if (dump_error) {
+    if (WIFSIGNALED(dump_status)) {
+      do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
+                WTERMSIG(dump_status));
+      queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
+                  T("GAME: ERROR! Forking database save failed!"), 1,
+                  dump_status);
+      flag_broadcast("ROYALTY WIZARD", 0,
+                     T("GAME: ERROR! Forking database save failed!"));
+    } else if (WIFEXITED(dump_status)) {
+      if (WEXITSTATUS(dump_status) == 0) {
+        time(&globals.last_dump_time);
+        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
+                    1);
+        if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
+          flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+      } else {
+        do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
+                  WEXITSTATUS(dump_status));
+        queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
+                    T("GAME: ERROR! Forking database save failed!"), 1,
+                    dump_status);
+        flag_broadcast("ROYALTY WIZARD", 0,
+                       T("GAME: ERROR! Forking database save failed!"));
+      }
+    }
+    dump_error = 0;
+    dump_status = 0;
+  }
+#ifdef INFO_SLAVE
+  if (slave_error) {
+    do_rawlog(LT_ERR, "%s",
+              exit_report("info_slave", slave_error, error_code));
+    slave_error = error_code = 0;
+  }
+#endif /* INFO_SLAVE */
+#ifdef SSL_SLAVE
+  if (ssl_slave_error) {
+    do_rawlog(LT_ERR, "%s",
+              exit_report("ssl_slave", ssl_slave_error, error_code));
+    ssl_slave_error = error_code = 0;
+    if (!ssl_slave_halted)
+      make_ssl_slave();
+  }
+#endif /* SSL_SLAVE */
+#endif /* !WIN32 */
+
+  if (signal_shutdown_flag) {
+    flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
+    do_rawlog(LT_ERR, "SHUTDOWN by external signal");
+    return 0;
+  }
+
+  if (hup_triggered) {
+    do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
+    config_file_startup(NULL, 0);
+    config_file_startup(NULL, 1);
+    file_watch_init();
+    fcache_load(NOTHING);
+    help_rebuild(NOTHING);
+    read_access_file();
+    reopen_logs();
+    hup_triggered = 0;
+  }
+
+  if (usr1_triggered) {
+    if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+      do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+      do_reboot(NOTHING, 0);
+      /* We shouldn't return from this except in case of a failed db save. */
+    }
+  }
+
+  if (usr2_triggered) {
+    if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
+      globals.paranoid_dump = 0;
+      do_rawlog(LT_CHECK, "DUMP by external signal");
+      fork_and_dump(1);
+    }
+    usr2_triggered = 0;
+  }
+
+  return 1;
+}
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1132,10 +1232,9 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef INFO_SLAVE
   time_t now;
 #endif
-  struct timeval next_slice, last_slice, current_time;
-  struct timeval timeout, slice_timeout;
+  struct timeval current_time;
   int found;
-  int queue_timeout, sq_timeout;
+  uint64_t msec_timeout, timeout_check;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
@@ -1156,7 +1255,6 @@ shovechars(Port_t port, Port_t sslport)
 #define PENN_POLLIN POLLIN
 #define PENN_POLLOUT POLLOUT
 #endif
-  int polltimeout;
 
   if (!restarting) {
 
@@ -1197,102 +1295,17 @@ shovechars(Port_t port, Port_t sslport)
 
   notify_fd = file_watch_init();
 
-  our_gettimeofday(&current_time);
-  last_slice = current_time;
-
   while (shutdown_flag == 0) {
-    our_gettimeofday(&current_time);
+    penn_gettimeofday(&current_time);
+    mudtime = current_time.tv_sec;
 
-    update_quotas(last_slice, current_time);
-    last_slice = current_time;
+    update_quotas(current_time);
 
+    /* Run any user input */
     process_commands();
 
-    /* Check signal handler flags */
-
-#ifndef WIN32
-
-    if (dump_error) {
-      if (WIFSIGNALED(dump_status)) {
-        do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
-                  WTERMSIG(dump_status));
-        queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
-                    T("GAME: ERROR! Forking database save failed!"), 1,
-                    dump_status);
-        flag_broadcast("ROYALTY WIZARD", 0,
-                       T("GAME: ERROR! Forking database save failed!"));
-      } else if (WIFEXITED(dump_status)) {
-        if (WEXITSTATUS(dump_status) == 0) {
-          time(&globals.last_dump_time);
-          queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
-                      1);
-          if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
-            flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
-        } else {
-          do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
-                    WEXITSTATUS(dump_status));
-          queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
-                      T("GAME: ERROR! Forking database save failed!"), 1,
-                      dump_status);
-          flag_broadcast("ROYALTY WIZARD", 0,
-                         T("GAME: ERROR! Forking database save failed!"));
-        }
-      }
-      dump_error = 0;
-      dump_status = 0;
-    }
-#ifdef INFO_SLAVE
-    if (slave_error) {
-      do_rawlog(LT_ERR, "%s",
-                exit_report("info_slave", slave_error, error_code));
-      slave_error = error_code = 0;
-    }
-#endif /* INFO_SLAVE */
-#ifdef SSL_SLAVE
-    if (ssl_slave_error) {
-      do_rawlog(LT_ERR, "%s",
-                exit_report("ssl_slave", ssl_slave_error, error_code));
-      ssl_slave_error = error_code = 0;
-      if (!ssl_slave_halted)
-        make_ssl_slave();
-    }
-#endif /* SSL_SLAVE */
-#endif /* !WIN32 */
-
-    if (signal_shutdown_flag) {
-      flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
-      do_rawlog(LT_ERR, "SHUTDOWN by external signal");
+    if (!check_status()) {
       shutdown_flag = 1;
-    }
-
-    if (hup_triggered) {
-      do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
-      config_file_startup(NULL, 0);
-      config_file_startup(NULL, 1);
-      file_watch_init();
-      fcache_load(NOTHING);
-      help_rebuild(NOTHING);
-      read_access_file();
-      reopen_logs();
-      hup_triggered = 0;
-    }
-
-    if (usr1_triggered) {
-      if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
-        do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-        do_reboot(
-          NOTHING,
-          0); /* We don't return from this except in case of a failed db save */
-      }
-    }
-
-    if (usr2_triggered) {
-      if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
-        globals.paranoid_dump = 0;
-        do_rawlog(LT_CHECK, "DUMP by external signal");
-        fork_and_dump(1);
-      }
-      usr2_triggered = 0;
     }
 
     if (shutdown_flag)
@@ -1301,24 +1314,18 @@ shovechars(Port_t port, Port_t sslport)
     /* run pending events */
     sq_run_all();
 
+    /* Update the queues with wait, semaphore, etc. */
+    queue_update();
+
+#define min_timeout(store, func) \
+    timeout_check = func; \
+    if (timeout_check < store) store = timeout_check
+
     /* any queued commands or events waiting? */
-    queue_timeout = que_next();
-    sq_timeout = sq_secs_till_next();
-    if (sq_timeout < queue_timeout)
-      queue_timeout = sq_timeout;
-    if (queue_timeout < 0)
-      queue_timeout = 0;
-
-    next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
-    slice_timeout = timeval_sub(next_slice, current_time);
-    /* Make sure slice_timeout cannot have a negative time. Better
-       safe than sorry. */
-    if (slice_timeout.tv_sec < 0)
-      slice_timeout.tv_sec = 0;
-    if (slice_timeout.tv_usec < 0)
-      slice_timeout.tv_usec = 0;
-
-    timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
+    msec_timeout = SECS_TO_MSECS(500);
+    min_timeout(msec_timeout, queue_msecs_till_next());
+    min_timeout(msec_timeout, sq_msecs_till_next());
+    min_timeout(msec_timeout, http_msecs_till_next());
 
     if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
       fd_size = im_count(descs_by_fd) + 16;
@@ -1371,10 +1378,22 @@ shovechars(Port_t port, Port_t sslport)
           goto recheck_d;
         }
       }
+      if (d->conn_flags & CONN_HTTP_CLOSE) {
+        shutdownsock(d, "http close", GOD);
+        d = dprev;
+        if (d) {
+          continue;
+        } else {
+          d = descriptor_list;
+          goto recheck_d;
+        }
+      }
       fds[fds_used].events = 0;
-      if (d->input.head) { /* Don't get more input while this desc has a
-                              command ready to eval. */
-        timeout = slice_timeout;
+      if (d->input.head) {
+        /* This descriptor has apparently exceeded its quota. If
+         * timeout is longer than MS_PER_SEC, we'll reduce
+         * timeout to MS_PER_SEC */
+        min_timeout(msec_timeout, MS_PER_SEC);
       } else {
         fds[fds_used].events = PENN_POLLIN;
       }
@@ -1385,11 +1404,9 @@ shovechars(Port_t port, Port_t sslport)
         fds[fds_used++].fd = d->descriptor;
     }
 
-    polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
-
 #ifdef HAVE_LIBCURL
     curl_status =
-      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+      curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
     if (curl_status != CURLM_OK) {
       do_rawlog(LT_ERR, "curl_multi_wait: %s",
@@ -1412,9 +1429,9 @@ shovechars(Port_t port, Port_t sslport)
 #else
 
 #ifdef WIN32
-    found = WSAPoll(fds, fds_used, polltimeout);
+    found = WSAPoll(fds, fds_used, msec_timeout);
 #else
-    found = poll(fds, fds_used, polltimeout);
+    found = poll(fds, fds_used, msec_timeout);
 #endif
     if (found < 0) {
 #ifdef WIN32
@@ -1436,6 +1453,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif
 
     time(&mudtime);
+    update_queue_load();
 
     if (found >= 0) {
 
@@ -1515,14 +1533,15 @@ shovechars(Port_t port, Port_t sslport)
 #endif
 
       for (d = descriptor_list; d && found > 0; d = dnext) {
-        unsigned int input_ready, output_ready, errors;
+        unsigned int input_ready, output_ready, errors, full_events;
 
         dnext = d->next;
 
         if ((SOCKET) d->descriptor != fds[fds_used].fd)
           continue;
 
-        input_ready = fds[fds_used].revents & POLLIN;
+        input_ready = fds[fds_used].revents & PENN_POLLIN;
+        full_events = fds[fds_used].revents;
 #ifdef HAVE_LIBCURL
         errors = 0;
 #else
@@ -1546,6 +1565,9 @@ shovechars(Port_t port, Port_t sslport)
               shutdownsock(d, "disconnect", d->player);
             }
           }
+        }
+        if (full_events & POLLHUP) {
+          queue_http_command(d);
         }
       }
     }
@@ -1601,7 +1623,8 @@ new_connection(int oldsock, int *result, conn_source source)
   socklen_t addr_len;
   char ipbuf[BUFFER_LEN];
   char hostbuf[BUFFER_LEN];
-  char *bp;
+  char *bp, *extra = NULL;
+  DESC *d;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1641,17 +1664,18 @@ new_connection(int oldsock, int *result, conn_source source)
       pfd.events = POLLIN;
       pfd.revents = 0;
       poll(&pfd, 1, 100);
-      if (pfd.revents & POLLIN)
+      if (pfd.revents & POLLIN) {
         good_to_read = 1;
-      else
+      } else {
         good_to_read = 0;
+      }
     }
 #endif
 
-    if (good_to_read)
-      len =
-        recv_with_creds(newsock, ipbuf, sizeof ipbuf, &remote_pid, &remote_uid);
-    else {
+    if (good_to_read) {
+      len = recv_with_creds(newsock, ipbuf, sizeof ipbuf - 1, &remote_pid,
+                            &remote_uid);
+    } else {
       len = -1;
       errno = EWOULDBLOCK;
     }
@@ -1672,8 +1696,15 @@ new_connection(int oldsock, int *result, conn_source source)
         *split++ = '\0';
         strcpy(hostbuf, split);
         split = strchr(hostbuf, '\r');
-        if (split)
-          *split = '\0';
+        if (split) {
+          *(split++) = '\0';
+          if (*split == '\n') {
+            split++;
+          }
+          if (*split) {
+            extra = split;
+          }
+        }
       } else {
         /* Again, shouldn't happen! */
         strcpy(ipbuf, "(Unknown)");
@@ -1722,8 +1753,9 @@ new_connection(int oldsock, int *result, conn_source source)
       do_rawlog(LT_CONN, "[%d/%s/%s] Refused connection (Remote port %s)",
                 newsock, hostbuf, ipbuf, hi ? hi->port : "(unknown)");
     }
-    if (is_remote_source(source))
+    if (is_remote_source(source)) {
       shutdown(newsock, 2);
+    }
     closesocket(newsock);
 #ifndef WIN32
     errno = 0;
@@ -1732,9 +1764,14 @@ new_connection(int oldsock, int *result, conn_source source)
   }
   do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, hostbuf,
             ipbuf, source_to_s(source));
-  if (is_remote_source(source))
+  if (is_remote_source(source)) {
     set_keepalive(newsock, options.keepalive_timeout);
-  return initializesock(newsock, hostbuf, ipbuf, source);
+  }
+  d = initializesock(newsock, hostbuf, ipbuf, source);
+  if (d && extra) {
+    process_input_helper(d, extra, strlen(extra));
+  }
+  return d;
 }
 
 /** Free the OUTPUTPREFIX and OUTPUTSUFFIX for a descriptor. */
@@ -2084,7 +2121,7 @@ logout_sock(DESC *d)
   init_text_queue(&d->output);
   d->raw_input = 0;
   d->raw_input_at = 0;
-  d->quota = COMMAND_BURST_SIZE;
+  d->quota = QUOTA_MAX;
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
@@ -2160,6 +2197,10 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
 
   connlog_disconnection(d->connlog_id, reason);
 
+  if (d->http_request) {
+    mush_free(d->http_request, "http_request");
+  }
+
   {
     freeqs(d);
     if (d->ttype && d->ttype != default_ttype)
@@ -2180,6 +2221,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   if (!d)
     mush_panic("Out of memory.");
   d->descriptor = s;
+  d->http_request = NULL;
   d->connected = CONN_SCREEN;
   d->conn_timer = NULL;
   d->connected_at = mudtime;
@@ -2192,7 +2234,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->player = NOTHING;
   d->raw_input = 0;
   d->raw_input_at = 0;
-  d->quota = COMMAND_BURST_SIZE;
+  d->quota = QUOTA_MAX;
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
@@ -2225,7 +2267,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     }
   }
   im_insert(descs_by_fd, d->descriptor, d);
-  d->connlog_id = connlog_connection(ip, addr);
+  d->connlog_id = connlog_connection(ip, addr, is_ssl_desc(d));
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
@@ -2544,6 +2586,10 @@ test_telnet(DESC *d)
       return;
     }
 #endif /* undef WITHOUT_WEBSOCKETS */
+    if ((d->conn_flags & (CONN_HTTP_REQUEST))) {
+      /* Don't bother testing for TELNET support. */
+      return;
+    }
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
@@ -2952,7 +2998,7 @@ GMCP_HANDLER(gmcp_softcode_example)
   pe_regs_setenv(pe_regs, 1, package);
   pe_regs_setenv(pe_regs, 2, msg);
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
-                            NOTHING);
+                            NOTHING, NULL, NULL);
   return 1;
 }
 
@@ -3027,10 +3073,16 @@ FUNCTION(fun_oob)
   }
 
   DESC_ITER_CONN (d) {
-    if (d->player != who || !(d->conn_flags & CONN_GMCP))
+    if (d->player != who)
       continue;
-    send_oob(d, args[1], json);
-    i++;
+    if (d->conn_flags & CONN_WEBSOCKETS) {
+      send_websocket_object(d, args[1], json);
+      i++;
+    }
+    if (d->conn_flags & CONN_GMCP) {
+      send_oob(d, args[1], json);
+      i++;
+    }
   }
   safe_integer(i, buff, bp);
   cJSON_Delete(json);
@@ -3220,6 +3272,15 @@ static void
 process_input_helper(DESC *d, char *tbuf1, int got)
 {
   char *p, *pend, *q, *qend;
+  int is_first;
+
+  is_first = d->conn_flags & CONN_AWAITING_FIRST_DATA;
+
+  /* Is it an HTTP connection? */
+  if (d->conn_flags & CONN_HTTP_REQUEST) {
+    process_http_input(d, tbuf1, got);
+    return;
+  }
 
 #ifndef WITHOUT_WEBSOCKETS
   if ((d->conn_flags & CONN_WEBSOCKETS)) {
@@ -3227,6 +3288,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     got = process_websocket_frame(d, tbuf1, got);
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
+
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
@@ -3237,27 +3299,35 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   d->input_chars += got;
   pend = d->raw_input + MAX_COMMAND_LEN - 1;
   for (q = tbuf1, qend = tbuf1 + got; q < qend; q++) {
-    if (*q == '\r') {
+    if (*q == '\r' || *q == '\n') {
       /* A broken client (read: WinXP telnet) might send only CR, and not CRLF
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS
-      /* WebSockets processing is interested in empty lines. */
-      if (p > d->raw_input)
-#endif /* WITHOUT_WEBSOCKETS */
+      if (is_first &&
+          is_http_request(d->raw_input)) {
+#ifndef WITHOUT_WEBSOCKETS
+        if (options.use_ws && is_websocket(d->raw_input)) {
+          /* Continue processing as a WebSockets upgrade request. */
+          d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
+        } else
+#endif /* undef WITHOUT_WEBSOCKETS */
+        {
+          if (process_http_start(d, d->raw_input)) {
+            if ((qend - q) > 0) {
+              if (*q == '\r') q++;
+              if (*q == '\n') q++;
+              process_http_input(d, q, qend - q);
+            }
+          }
+          return;
+        }
+      } else {
         save_command(d, d->raw_input);
+      }
       p = d->raw_input;
-      if (((q + 1) < qend) && (*(q + 1) == '\n'))
+      if (*q == '\r' && ((q + 1) < qend) && (*(q + 1) == '\n'))
         q++; /* For clients that work */
-    } else if (*q == '\n') {
-      *p = '\0';
-#ifdef WITHOUT_WEBSOCKETS
-      /* WebSockets processing is interested in empty lines. */
-      if (p > d->raw_input)
-#endif /* WITHOUT_WEBSOCKETS */
-        save_command(d, d->raw_input);
-      p = d->raw_input;
     } else if (*q == '\b') {
       if (p > d->raw_input)
         p--;
@@ -3386,10 +3456,10 @@ process_commands(void)
 
       pc_dnext = cdesc->next;
 
-      if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
+      if (cdesc->quota >= MS_PER_SEC && (t = cdesc->input.head) != NULL) {
         enum comm_res retval;
 
-        cdesc->quota -= 1;
+        cdesc->quota -= MS_PER_SEC;
         nprocessed += 1;
         start_cpu_timer();
         retval = do_command(cdesc, (char *) t->start);
@@ -3398,9 +3468,6 @@ process_commands(void)
         switch (retval) {
         case CRES_QUIT:
           shutdownsock(cdesc, "quit", cdesc->player);
-          break;
-        case CRES_HTTP:
-          shutdownsock(cdesc, "http disconnect", NOTHING);
           break;
         case CRES_SITELOCK:
           shutdownsock(cdesc, "sitelocked", NOTHING);
@@ -3420,10 +3487,470 @@ process_commands(void)
         case CRES_BOOTED:
           break;
         }
+      } else if ((cdesc->conn_flags & CONN_HTTP_READY) &&
+                 !(cdesc->conn_flags & CONN_HTTP_CLOSE)) {
+        if (http_quota >= MS_PER_SEC) {
+          http_quota -= MS_PER_SEC;
+          do_http_command(cdesc);
+          nprocessed++;
+        } else if (HTTP_SECOND_LIMIT < 1) {
+          /* This should only happen if we're being hammered, and somebody does
+           * @config/set http_per_second=0 to stop it. New requests get bounced
+           * via mud_url handler, but active open ones end up here. We'll just
+           * close it, rather than juggle it with mud_url.
+           */
+          cdesc->conn_flags |= CONN_HTTP_CLOSE;
+        }
       }
     }
     pc_dnext = NULL;
   } while (nprocessed > 0);
+}
+
+static void
+http_bounce_mud_url(DESC *d)
+{
+  char buf[BUFFER_LEN];
+  char *bp = buf;
+  bool has_url = strncmp(MUDURL, "http", 4) == 0;
+  safe_format(buf, &bp,
+              "HTTP/1.1 200 OK\r\n"
+              "Content-Type: text/html; charset:iso-8859-1\r\n"
+              "Pragma: no-cache\r\n"
+              "Connection: Close\r\n"
+              "\r\n"
+              "<!DOCTYPE html>\r\n"
+              "<HTML><HEAD>"
+              "<TITLE>Welcome to %s!</TITLE>",
+              MUDNAME);
+  if (has_url) {
+    safe_format(buf, &bp,
+                "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
+                MUDURL);
+  }
+  safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
+  if (has_url) {
+    safe_format(buf, &bp,
+                "<p>You've come here by accident! Please click <a "
+                "href=\"%s\">%s</a> to go to the website for %s if your "
+                "browser doesn't redirect you in a few seconds.</p>",
+                MUDURL, MUDURL, MUDNAME);
+  } else {
+    safe_format(buf, &bp,
+                "<p>You've come here by accident! Try using a MUSH client, "
+                "not a browser, to connect to %s.</p>",
+                MUDNAME);
+  }
+  safe_str("</BODY></HTML>\r\n", buf, &bp);
+  *bp = '\0';
+  queue_write(d, buf, bp - buf);
+  queue_eol(d);
+}
+
+#define HTTP_HEADER           1
+#define HTTP_BODY             2
+#define HTTP_DONE             3
+
+#define HTTP_CONTENT_LENGTH "CONTENT-LENGTH: "
+
+static int
+process_http_start(DESC *d, char *line)
+{
+  struct http_request *req;
+  char *c, *method, *path, *version;
+  const char *reason = "Malformed Request";
+  char buff[BUFFER_LEN];
+
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+
+  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER) ||
+      (HTTP_SECOND_LIMIT < 1)) {
+    reason = "No HTTPHandler";
+    goto bad_connection;
+  }
+
+  /* At this point, we're expecting an HTTP request. This first line
+   * contains:
+   *
+   * METHOD /path/request HTTP/1.1
+   */
+
+  /* Get METHOD, PATH, and VERSION */
+  method = line;
+  for (c = line; *c && !isspace(*c); c++);
+
+  if (!*c) goto bad_connection;
+
+  *(c++) = '\0';
+
+  if (strlen(method) >= HTTP_METHOD_LEN) goto bad_connection;
+
+  /* Skip ahead to the path. */
+  for (path = c; *path && isspace(*path); path++);
+  if (!*path) goto bad_connection;
+
+  for (c = path; *c && !isspace(*c); c++);
+  if (!*c) goto bad_connection;
+
+  *(c++) = '\0';
+  if (strlen(path) >= MAX_COMMAND_LEN) {
+    reason = "Path too long";
+    goto bad_connection;
+  }
+
+  version = c;
+  /* HTTP/1.0  is sent by apache bench, HTTP/1.1 by most other users. */
+  if (strncmp(version, "HTTP/1", 6)) {
+    reason = "Invalid HTTP Version";
+    goto bad_connection;
+  }
+
+  req = mush_malloc(sizeof(struct http_request), "http_request");
+  memset(req, 0, sizeof *req);
+
+  d->http_request = req;
+  req->state = HTTP_HEADER;
+  req->content_length = -1;
+  req->content_read = 0;
+
+  /* req->inheaders and req->inbody for input */
+  req->inhp = req->inheaders;
+  req->inbp = req->inbody;
+
+  /* req->headers and response for output */
+  req->hp = req->headers;
+  req->rp = req->response;
+
+  strncpy(req->method, method, HTTP_METHOD_LEN - 1);
+  strncpy(req->path, path, MAX_COMMAND_LEN - 1);
+
+  d->conn_flags |= CONN_HTTP_REQUEST;
+  d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
+  /* Default for HTTP response */
+  strncpy(req->code, "HTTP/1.1 200 OK", HTTP_CODE_LEN);
+  strncpy(req->ctype, "Content-Type: text/plain", MAX_COMMAND_LEN);
+
+  /* Check @sitelock for HTTP_Handler to see if this host is allowed to
+   * use HTTP. It is unlikely we'll have a Hostname by this point,
+   * so I'm declaring we'll just work with IPs.
+   */
+  if (!Site_Can_Connect(d->ip, HTTP_HANDLER)) {
+    if (!Deny_Silent_Site(d->ip, HTTP_HANDLER)) {
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
+                  d->descriptor, d->ip, req->method, req->path,
+                  "http: IP sitelocked !connect");
+    }
+    reason = NULL;
+    goto bad_connection;
+  }
+
+
+  /* Now that we have the path, let's check it for sitelock.
+   * Yes, I'm pretending path is a hostname! It works!
+   */
+  snprintf(buff, BUFFER_LEN, "%s`%s`%s", d->ip, req->method, req->path);
+  if (!Site_Can_Connect(buff, HTTP_HANDLER)) {
+    if (!Deny_Silent_Site(buff, HTTP_HANDLER)) {
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
+                  d->descriptor, d->ip, req->method, req->path,
+                  "http: path sitelocked !connect");
+    }
+    reason = NULL;
+    goto bad_connection;
+  }
+
+  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+
+  return 1;
+
+bad_connection:
+  http_bounce_mud_url(d);
+  if (reason) {
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
+                d->descriptor, d->ip, reason);
+  }
+  d->conn_flags |= CONN_HTTP_CLOSE;
+  return 0;
+}
+
+bool
+http_finished_wrapper(void *data)
+{
+  DESC *d = (DESC *) data;
+  d->conn_timer = NULL;
+  queue_http_command(d);
+  return false;
+}
+
+static void
+process_http_input(DESC *d, char *buf, int len)
+{
+  char *p, *eol, *val;
+  struct http_request *req;
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+
+  req = d->http_request;
+
+  switch (req->state) {
+  case HTTP_HEADER:
+    /* Copy to header buffer, then check headers to see if they're finished. */
+    safe_strl(buf, len, req->inheaders, &(req->inhp));
+    *(req->inhp) = '\0';
+    p = d->http_request->inheaders;
+    while (p && *p) {
+      if (*p == '\r' || *p == '\n') {
+        /* End of headers.
+         * Shove the rest to inbody, if any.
+         * p should be "\r\n" by spec, but might not be, thanks to lazy
+         * script writers, ancient browsers, etc.
+         */
+        if (*p == '\r' && *(p+1) == '\n') *(p++) = '\0';
+        *(p++) = '\0';
+        if (req->content_length == 0 ||
+            (req->content_length < 0 && is_http_bodyless(req->method))) {
+          /* We're done, queue! */
+          queue_http_command(d);
+          return;
+        }
+        req->state = HTTP_BODY;
+        if (*p && req->content_length) {
+          /* Switch to body input. content_length of -1 (No content length received)
+           * means we depend on timer. Shove rest of body into it.
+           */
+          buf = p;
+          len = (req->inhp - p);
+          goto readbody;
+        }
+      }
+      for (eol = p; *eol && *eol != '\r' && *eol != '\n'; eol++);
+      if (!*eol) {
+        /* Incomplete headers, wait until we read more. */
+        goto waitmore;
+      }
+      if (*eol == '\r' && *(eol+1) == '\n') eol++;
+      if (*eol) eol++;
+      /* We have a header, check for Content-Length: */
+      if (!strncasecmp(p, HTTP_CONTENT_LENGTH, strlen(HTTP_CONTENT_LENGTH))) {
+        val = p + strlen(HTTP_CONTENT_LENGTH);
+        errno = 0;
+        req->content_length = strtol(val, NULL, 10);
+        if (req->content_length < 0 || errno) {
+          /* Malformed content_length, fall back to timer for handling */
+          req->content_length = -1;
+          continue;
+        }
+      }
+      p = eol;
+    }
+    break;
+  case HTTP_BODY:
+readbody:
+    safe_strl(buf, len, req->inbody, &(req->inbp));
+    if (req->content_length > 0 && (req->inbp - req->inbody) >= req->content_length) {
+      queue_http_command(d);
+      return;
+    }
+    break;
+  }
+
+  /* Reset the timer, but only if there is one. */
+waitmore:
+  d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
+}
+
+static void
+queue_http_command(DESC *d)
+{
+  /* All we really do is clear the timer, and mark the socket
+   * ready for running at the next queue cycle.
+   */
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
+  /* Don't run twice - from close_write _and_ timer (which shouldn't happen anyway?) */
+  if (d->conn_flags & CONN_HTTP_READY) return;
+  d->conn_flags |= CONN_HTTP_READY;
+}
+
+static void
+do_http_command(DESC *d)
+{
+  NEW_PE_INFO *pe_info = NULL;
+  struct http_request *req;
+  char headernames[BUFFER_LEN];
+  char *hp;
+  char tmp[BUFFER_LEN];
+  char vals[BUFFER_LEN];
+  uint32_t content_len;
+  char *p, *line;
+  char *headername, *headerval;
+  const char *rval;
+  const char *reason = "Malformed Request";
+
+  if (d->conn_timer) sq_cancel(d->conn_timer);
+  d->conn_timer = NULL;
+
+  if (!(d->conn_flags & CONN_HTTP_REQUEST)) {
+    reason = "not a request";
+    goto bad_connection;
+  }
+  if (d->conn_flags & CONN_HTTP_CLOSE) {
+    reason = "closed";
+    goto bad_connection;
+  }
+  if (!(d->http_request)) {
+    reason = "no request struct";
+    goto bad_connection;
+  }
+
+  req = d->http_request;
+
+  pe_info = make_pe_info("pe_info-http");
+
+  *(req->inhp) = '\0';
+  *(req->inbp) = '\0';
+
+  p = req->inheaders;
+  hp = headernames;
+  while (*p) {
+    line = p;
+    while (*p && *p != '\r' && *p != '\n') p++;
+    /* Chomp, \r, \n, or \r\n (should be \r\n). */
+    if (*p == '\r') *(p++) = '\0';
+    if (*p == '\n') *(p++) = '\0';
+    headername = line;
+    headerval = strstr(line, ": ");
+    if (!headerval) {
+      reason = "Malformed header";
+      goto bad_connection;
+    }
+    *(headerval) = '\0';
+    headerval += 2; /* skip past ": " */
+    /* Normalize the header name into Q-reg acceptable name */
+    pi_regs_normalize_key(headername);
+    snprintf(tmp, BUFFER_LEN, "HDR.%s", headername);
+    rval = PE_Getq(pe_info, tmp);
+    if (rval && *rval) {
+      snprintf(vals, BUFFER_LEN, "%s\n%s", rval, headerval);
+      if (!PE_Setq(pe_info, tmp, vals)) {
+        /* Too many headers? Ignore */
+        continue;
+      }
+    } else {
+      if (!PE_Setq(pe_info, tmp, headerval)) {
+        /* Too many headers? Ignore */
+        continue;
+      }
+      if (hp > headernames) {
+        safe_chr(' ', headernames, &hp);
+      }
+      safe_str(headername, headernames, &hp);
+    }
+  }
+
+  *hp = '\0';
+  PE_Setq(pe_info, "HEADERS", headernames);
+
+  pe_regs_setenv(pe_info->regvals, 0, req->path);
+  pe_regs_setenv(pe_info->regvals, 1, req->inbody);
+
+  /* 'invisibly' connect. */
+  d->player = HTTP_HANDLER;
+  d->connected = CONN_PLAYER;
+  d->connected_at = mudtime;
+
+  /* Buffer all output that HTTP_HANDLER receives */
+  d->conn_flags |= CONN_HTTP_BUFFER;
+
+  active_http_request = req;
+  run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
+
+  d->player = NOTHING;
+  d->connected = CONN_SCREEN;
+
+  /* pe_info is freed by the parser */
+  pe_info = NULL;
+  active_http_request = NULL;
+
+  /* Clear the buffer flag so we stop hijacking output */
+  d->conn_flags &= ~CONN_HTTP_BUFFER;
+
+  content_len = req->rp - req->response;
+
+  queue_event(SYSEVENT, "HTTP`COMMAND", "%s,%s,%s,%s,%s,%ld,%d",
+              d->ip, req->method, req->path, req->code, req->ctype,
+              strlen(req->inbody), content_len);
+
+  /* Now write out our response header, populated by @respond, then body. */
+  queue_newwrite(d, req->code, strlen(req->code));
+  queue_newwrite(d, "\r\n", 2);
+  queue_newwrite(d, req->ctype, strlen(req->ctype));
+  queue_newwrite(d, "\r\n", 2);
+  queue_newwrite(d, req->headers, strlen(req->headers));
+  snprintf(tmp, BUFFER_LEN, "Content-Length: %d\r\n\r\n", content_len);
+  queue_newwrite(d, tmp, strlen(tmp));
+
+  queue_newwrite(d, req->response, content_len);
+
+  d->conn_flags |= CONN_HTTP_CLOSE;
+  return;
+bad_connection:
+  http_bounce_mud_url(d);
+  if (reason) {
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
+                d->descriptor, d->ip, reason);
+  }
+  if (pe_info) free_pe_info(pe_info);
+  d->conn_flags |= CONN_HTTP_CLOSE;
+}
+
+static bool
+is_http_request(const char *command)
+{
+  const char *methods[] = {
+    "GET ",
+    "POST ",
+    "PUT ",
+    "DELETE ",
+    "UPDATE ",
+    "HEAD ",
+    NULL
+  };
+
+  int i;
+
+  for (i = 0; methods[i]; i++) {
+    if (!strncmp(command, methods[i], strlen(methods[i]))) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static bool
+is_http_bodyless(const char *method) {
+  const char *methods[] = {
+    "GET",
+    "DELETE",
+    "HEAD",
+    NULL
+  };
+
+  int i;
+
+  for (i = 0; methods[i]; i++) {
+    if (!strcmp(method, methods[i])) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 /** Send a descriptor's output prefix */
@@ -3454,12 +3981,19 @@ do_command(DESC *d, char *command)
   if (d->conn_flags & CONN_WEBSOCKETS_REQUEST) {
     /* Parse WebSockets upgrade request. */
     if (!process_websocket_request(d, command)) {
-      return CRES_HTTP;
+      return CRES_QUIT;
     }
 
     return CRES_OK;
   }
 #endif /* undef WITHOUT_WEBSOCKETS */
+
+  if (!*command) {
+    /* Blank lines are ignored by Penn, only used by
+     * websockets and HTTP requests.
+     */
+    return CRES_OK;
+  }
 
   if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
     j = strlen(IDLE_COMMAND);
@@ -3473,54 +4007,7 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
-  if (!d->connected &&
-      (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-       !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
-#ifndef WITHOUT_WEBSOCKETS
-    if (options.use_ws && is_websocket(command)) {
-      /* Continue processing as a WebSockets upgrade request. */
-      d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
-      return CRES_OK;
-    }
-#endif /* undef WITHOUT_WEBSOCKETS */
-
-    char buf[BUFFER_LEN];
-    char *bp = buf;
-    bool has_url = strncmp(MUDURL, "http", 4) == 0;
-    safe_format(buf, &bp,
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html; charset:iso-8859-1\r\n"
-                "Pragma: no-cache\r\n"
-                "Connection: Close\r\n"
-                "\r\n"
-                "<!DOCTYPE html>\r\n"
-                "<HTML><HEAD>"
-                "<TITLE>Welcome to %s!</TITLE>",
-                MUDNAME);
-    if (has_url) {
-      safe_format(buf, &bp,
-                  "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
-                  MUDURL);
-    }
-    safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
-    if (has_url) {
-      safe_format(buf, &bp,
-                  "<p>You've come here by accident! Please click <a "
-                  "href=\"%s\">%s</a> to go to the website for %s if your "
-                  "browser doesn't redirect you in a few seconds.</p>",
-                  MUDURL, MUDURL, MUDNAME);
-    } else {
-      safe_format(buf, &bp,
-                  "<p>You've come here by accident! Try using a MUSH client, "
-                  "not a browser, to connect to %s.</p>",
-                  MUDNAME);
-    }
-    safe_str("</BODY></HTML>\r\n", buf, &bp);
-    *bp = '\0';
-    queue_write(d, buf, bp - buf);
-    queue_eol(d);
-    return CRES_HTTP;
-  } else if (SUPPORT_PUEBLO &&
+  if (SUPPORT_PUEBLO &&
              !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
     if (!(d->conn_flags & CONN_HTML)) {
@@ -5075,6 +5562,12 @@ do_who_admin(dbref player, char *name)
       }
       safe_str(addr, tbuf, &tp);
       *tp = '\0';
+    } else if (d->conn_flags & CONN_HTTP_REQUEST) {
+      snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
+               T("HTTP Request"), "#-1", onfor_time_fmt(d->connected_at, 9),
+               idle_time_fmt(d->last_time, 5), d->cmds, d->descriptor,
+               is_ssl_desc(d) ? 'S' : ' ', d->addr);
+      tbuf[78] = '\0';
     } else {
       snprintf(tbuf, sizeof tbuf, "%-16s %6s %9s %5s %4d %3d%c %s",
                T("Connecting..."), "#-1", onfor_time_fmt(d->connected_at, 9),
@@ -5382,7 +5875,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(loc, a, player, pe_regs, 0);
+        (void) queue_attribute_useatr(loc, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -5395,7 +5888,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(zone, a, player, pe_regs, 0);
+        (void) queue_attribute_useatr(zone, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -5407,7 +5900,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv_nocopy(pe_regs, 1, "");
-          (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
+          (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
         }
@@ -5424,7 +5917,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv_nocopy(pe_regs, 1, "");
-      (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
+      (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
     }
@@ -5868,6 +6361,8 @@ FUNCTION(fun_lwho)
 
   DESC_ITER (d) {
     if ((d->connected && !online) || (!d->connected && !offline))
+      continue;
+    if (d->conn_flags & CONN_HTTP_REQUEST)
       continue;
     if (!powered && (d->connected && Hidden(d)))
       continue;
@@ -6812,6 +7307,7 @@ load_reboot_db(void)
       ndescriptors++;
       d = mush_malloc(sizeof(DESC), "descriptor");
       d->descriptor = val;
+      d->http_request = NULL;
       d->connected_at = getref(f);
       d->conn_timer = NULL;
       d->hide = getref(f);
@@ -6881,7 +7377,7 @@ load_reboot_db(void)
       init_text_queue(&d->output);
       d->raw_input = NULL;
       d->raw_input_at = NULL;
-      d->quota = options.starting_quota;
+      d->quota = QUOTA_MAX;
       d->ssl = NULL;
       d->ssl_state = 0;
 
@@ -6964,6 +7460,11 @@ load_reboot_db(void)
       mush_free(closed->output_prefix, "userstring");
     if (closed->output_suffix)
       mush_free(closed->output_suffix, "userstring");
+
+    if (closed->http_request) {
+      mush_free(closed->http_request, "http_request");
+    }
+
     mush_free(closed, "descriptor");
     closed = nextclosed;
   }

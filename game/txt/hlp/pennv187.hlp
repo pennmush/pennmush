@@ -1,18 +1,13 @@
-& changes
+& 1.8.7p1
+Version 1.8.7 patchlevel 1 ??? ?? 20??
+
+Fixes:
+
+* [1mconnrecord()[0m returns an error if extended connection logging is disabled. [SW]
+* [1mconnlog()[0m didn’t handle future dates very well. [SW]
+
 & 1.8.7p0
-Version 1.8.7 patchlevel 0 ??? ?? 20??
-
-This is a list of changes in this patchlevel which are probably of
-interest to players. More information about new commands and functions
-can probably be gotten via 'help <name of whatever>'. 'help credits'
-lists the [initials] of developers and porters that are used in the list 
-of changes.
-
-Information about changes in prior releases can be found under
-help topics named for each release (e.g. 'help 1.8.7p0').
-A list of the patchlevels associated with each release can
-be read in 'help patchlevels'.
-
+Version 1.8.7 patchlevel 0 Aug 10 2018
 
 Major Changes:
 
@@ -61,7 +56,6 @@ Softcode:
 * If compiled with ICU support, adds [1mlcstr2()[0m and [1mucstr2()[0m with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.
 * [1m@chatformat[0m now receives a new arg, [1m%6[0m, which defaults to “says” but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]
 * [1metimefmt()[0m supports [1m$w[0m and [1m$y[0m formats for weeks and years. [SW, 804]
-* Ported parenmatch() from Rhost. [MT, 1024]
 
 Fixes:
 
@@ -82,6 +76,7 @@ Fixes:
 * Fix an off-by-one error in command switch initialization code. [SW]
 * [1m@mail[0m without a message list respects the current folder instead of using folder 0. [77]
 * [1mufun()[0m, [1mulocal()[0m, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]
+* Fix a long-standing bug where input sent right after a SSL connection could get lost. [SW]
 
 Documentation:
 

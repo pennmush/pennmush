@@ -148,9 +148,13 @@ extern void do_cpattr(dbref player, char *oldpair, char **newpair, int move,
 extern void do_edit(dbref player, char *it, char **argv, int flags);
 extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
                            NEW_PE_INFO *pe_info);
-#define TRIGGER_DEFAULT 0
-#define TRIGGER_SPOOF 1
-#define TRIGGER_CLEARREGS 2
+#define TRIGGER_DEFAULT    0x00
+#define TRIGGER_SPOOF      0x01
+#define TRIGGER_CLEARREGS  0x02
+#define TRIGGER_INLINE     0x04
+#define TRIGGER_NOBREAK    0x08
+#define TRIGGER_LOCALIZE   0x10
+#define TRIGGER_MATCH      0x20
 extern void do_trigger(dbref executor, dbref enactor, char *object, char **argv,
                        MQUE *queue_entry, int flags);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
@@ -247,13 +251,12 @@ extern void do_destroy(dbref player, char *name, int confirm,
 void init_timer(void);
 void signal_cpu_limit(int signo);
 
-struct squeue *sq_register(time_t w, sq_func f, void *d, const char *ev);
 struct squeue *sq_register_in(int n, sq_func f, void *d, const char *ev);
 void sq_register_loop(int n, sq_func f, void *d, const char *ev);
 void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
-int sq_secs_till_next(void);
+uint64_t sq_msecs_till_next(void);
 
 void init_sys_events(void);
 

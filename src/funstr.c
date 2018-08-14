@@ -2507,3 +2507,71 @@ FUNCTION(fun_urldecode)
   safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
 #endif
 }
+
+FUNCTION(fun_formdecode)
+{
+#ifdef HAVE_LIBCURL
+  char *decoded;
+  char *cur, *ptr;
+  char pbuff[MAX_COMMAND_LEN];
+  char *osep;
+  char *x;
+  int plen;
+  int outlen;
+  int n;
+  int count;
+  CURL *handle = curl_easy_init();
+  bool list = false;
+
+  count = 0;
+  ptr = args[0];
+  cur = ptr;
+  plen = snprintf(pbuff, MAX_COMMAND_LEN, "%s=", args[1]);
+  if (nargs > 2) {
+    osep = args[2];
+  } else {
+    osep = " ";
+  }
+  if (nargs == 1 || (!args[1] || !*args[1])) {
+    list = true;
+  }
+  while (ptr && *ptr) {
+    cur = ptr;
+    ptr = strchr(ptr, '&');
+    if (ptr) {
+      *(ptr++) = '\0';
+    }
+    decoded = curl_easy_unescape(handle, cur, strlen(cur), &outlen);
+
+    for (n = 0; n < outlen; n += 1) {
+      if (!isprint(decoded[n])) {
+        decoded[n] = '?';
+      }
+    }
+
+    if (list) {
+      x = strchr(decoded, '=');
+      if (x) {
+        *x = '\0';
+      }
+      if (count) {
+        safe_str(osep, buff, bp);
+      }
+      safe_str(decoded, buff, bp);
+      count++;
+    } else {
+      if (!strncmp(decoded, pbuff, plen)) {
+        if (count) {
+          safe_str(osep, buff, bp);
+        }
+        safe_strl(decoded + plen, outlen - plen, buff, bp);
+        count++;
+      }
+    }
+    curl_free(decoded);
+  }
+  curl_easy_cleanup(handle);
+#else
+  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+#endif
+}

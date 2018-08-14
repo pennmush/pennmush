@@ -753,9 +753,7 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
   command = start;
   /* Trim off $-command or ^-command prefix */
   if (*command == '$' || *command == '^') {
-    do {
-      command = strchr(command + 1, ':');
-    } while (command && command[-1] == '\\');
+    command = strchr_unescaped(command, ':');
     if (!command)
       /* Oops, had '$' or '^', but no ':' */
       command = start;
@@ -811,7 +809,8 @@ queue_include_attribute(dbref thing, const char *atrname, dbref executor,
  */
 int
 queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
-                          int noparent, PE_REGS *pe_regs, int flags, dbref priv)
+                          int noparent, PE_REGS *pe_regs, int flags, dbref priv,
+                          MQUE *parent_queue, const char *input)
 {
   ATTR *a;
 
@@ -820,7 +819,7 @@ queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
     return 0;
   if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
-  queue_attribute_useatr(executor, a, enactor, pe_regs, flags);
+  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue, input);
   return 1;
 }
 
@@ -849,25 +848,42 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
  */
 int
 queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
-                       int flags)
+                       int flags, MQUE *parent_queue, const char *input)
 {
-  char *start, *command;
+  char *command;
   int queue_type = QUEUE_DEFAULT | flags;
+  char cmd_buff[BUFFER_LEN];
   char abuff[2048];
+  char *args[MAX_STACK_ARGS];
+  char match_space[BUFFER_LEN * 2];
+  ssize_t match_space_len = BUFFER_LEN * 2;
 
-  start = safe_atr_value(a, "atrval.queue-attr");
-  command = start;
-  /* Trim off $-command or ^-command prefix */
-  if (*command == '$' || *command == '^') {
-    do {
-      command = strchr(command + 1, ':');
-    } while (command && command[-1] == '\\');
-    if (!command) {
-      /* Oops, had '$' or '^', but no ':' */
-      command = start;
+  if (input) {
+    /* Attempt to match input against the attribute, accept either. */
+    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input,
+                           args, match_space, match_space_len,
+                           cmd_buff, pe_regs)) {
+      command = cmd_buff;
     } else {
-      /* Skip the ':' */
-      command++;
+      return 1;
+    }
+  } else {
+    strncpy(cmd_buff, atr_value(a), BUFFER_LEN);
+    command = cmd_buff;
+    /* Trim off $-command or ^-command prefix */
+    if (*command == '$' || *command == '^') {
+      while (*command && *command != ':') {
+        if (*command == '\\' && *(command+1))
+          command++;
+        command++;
+      }
+      if (!command) {
+        /* Oops, had '$' or '^', but no unescaped ':' */
+        command = cmd_buff;
+      } else {
+        /* Skip the ':' */
+        command++;
+      }
     }
   }
 
@@ -878,9 +894,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   }
 
   snprintf(abuff, sizeof abuff, "#%d/%s", executor, AL_NAME(a));
-  new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
+  new_queue_actionlist_int(executor, enactor, enactor, command, parent_queue,
                            PE_INFO_DEFAULT, queue_type, pe_regs, abuff);
-  mush_free(start, "atrval.queue-attr");
   return 1;
 }
 
@@ -971,21 +986,54 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   im_insert(queue_map, tmp->pid, tmp);
 }
 
-/** Once-a-second check for queued commands.
- * This function is called every second to check for commands
- * on the wait queue or semaphore queue, and to move a command
- * off the low priority object queue and onto the normal priority
- * player queue.
- */
 void
-do_second(void)
+update_queue_load()
 {
-  MQUE *trail = NULL, *point, *next;
+  static time_t last_mudtime = 0;
+  time_t diff;
+
+  if (last_mudtime == 0) {
+    memset(queue_load_record, 0, sizeof(queue_load_record));
+    last_mudtime = mudtime;
+    return;
+  }
+
+  diff = mudtime - last_mudtime;
+  last_mudtime = mudtime;
+
+  if (diff <= 0) {
+    /* No changes, or we're getting pushed back in time by ntpd, dst, or
+     * similar? */
+    return;
+  }
+
+  if (diff >= QUEUE_LOAD_SECS) {
+    /* Wow, likely a major change in time from ntp or a poor dst
+     * implementation, unlikely we actually slept this long. We'll just quietly
+     * pretend nothing major happened, and only shift the load by 1 second. */
+    diff = 1;
+  }
 
   /* Advance the queue load average count */
-  memmove(queue_load_record + 1, queue_load_record,
-          sizeof(queue_load_record) - sizeof(int32_t));
-  queue_load_record[0] = 0;
+  memmove(queue_load_record + diff, queue_load_record,
+          sizeof(queue_load_record) - (diff * sizeof(int32_t)));
+  memset(queue_load_record, 0, sizeof(int32_t) * diff);
+}
+
+/** Check for queued commands. This is called whenever we expect to need
+ * new queued commands. (via que_next)
+ */
+void
+queue_update(void)
+{
+  static time_t last_mudtime = 0;
+  MQUE *trail = NULL, *point, *next;
+
+  if (mudtime == last_mudtime) {
+    /* Only run once per second at most. */
+    return;
+  }
+  last_mudtime = mudtime;
 
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since
@@ -1001,8 +1049,8 @@ do_second(void)
     qlast = qllast;
     qllast = qlfirst = NULL;
   }
-  /* check regular wait queue */
 
+  /* check regular @wait queue */
   while (qwait && qwait->wait_until <= mudtime) {
     point = qwait;
     qwait = point->next;
@@ -1023,8 +1071,7 @@ do_second(void)
     }
   }
 
-  /* check for semaphore timeouts */
-
+  /* check for semaphore Zwait timeouts */
   for (point = qsemfirst, trail = NULL; point; point = next) {
     if (point->wait_until == 0 || point->wait_until > mudtime) {
       next = (trail = point)->next;
@@ -1090,6 +1137,25 @@ run_user_input(dbref player, int port, char *input)
 
   entry = new_queue_entry(NULL);
   entry->action_list = mush_strdup(input, "mque.action_list");
+  entry->enactor = player;
+  entry->executor = player;
+  entry->caller = player;
+  entry->port = port;
+  entry->queue_type = QUEUE_SOCKET | QUEUE_NOLIST;
+  do_entry(entry, 0);
+  free_qentry(entry);
+}
+
+void
+run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info)
+{
+  MQUE *entry;
+  char include_cmd[MAX_COMMAND_LEN];
+
+  snprintf(include_cmd, MAX_COMMAND_LEN, "@include #%d/%s", player, method);
+
+  entry = new_queue_entry(pe_info);
+  entry->action_list = mush_strdup(include_cmd, "mque.action_list");
   entry->enactor = player;
   entry->executor = player;
   entry->caller = player;
@@ -1244,40 +1310,41 @@ do_entry(MQUE *entry, int include_recurses)
 }
 
 /** Determine whether it's time to run a queued command.
- * This function returns the number of seconds we expect to wait
+ * This function returns the number of milliseconds we expect to wait
  * before it's time to run a queued command.
  * If there are commands in the player queue, that's 0.
- * If there are commands in the object queue, that's 1.
+ * If there are commands in the object queue, that's 1000.
  * Otherwise, we check wait and semaphore queues to see what's next.
  * \return seconds left before a queue entry will be ready.
  */
-int
-que_next(void)
+uint64_t
+queue_msecs_till_next(void)
 {
-  int min, curr;
+  uint64_t min, curr;
   MQUE *point;
   /* If there are commands in the player queue, they should be run
    * immediately.
    */
   if (qfirst != NULL)
     return 0;
+
   /* If there are commands in the object queue, they should be run in
-   * one second.
+   * one second (asuming no @waits demanding time sooner)
    */
-  if (qlfirst != NULL)
-    return 1;
+  if (qlfirst != NULL) {
+    min = SECS_TO_MSECS(1);
+  } else {
+    min = SECS_TO_MSECS(500);
+  }
   /* Check out the wait and semaphore queues, looking for the smallest
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
    */
-  min = 500;
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */
   if (qwait) {
-    curr = (int) difftime(qwait->wait_until, mudtime);
-    if (curr <= 2)
-      return 1;
+    curr = SECS_TO_MSECS(difftime(qwait->wait_until, mudtime));
     if (curr < min)
       min = curr;
   }
@@ -1285,15 +1352,13 @@ que_next(void)
   for (point = qsemfirst; point; point = point->next) {
     if (point->wait_until == 0) /* no timeout */
       continue;
-    curr = (int) difftime(point->wait_until, mudtime);
-    if (curr <= 2)
-      return 1;
+    curr = SECS_TO_MSECS(difftime(point->wait_until, mudtime));
     if (curr < min) {
       min = curr;
     }
   }
 
-  return (min - 1);
+  return min;
 }
 
 static int

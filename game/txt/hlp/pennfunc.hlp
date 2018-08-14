@@ -88,13 +88,13 @@ See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open on a game, or about specific connections.
 
-  cmds()        conn()        connlog()     connrecord()  doing()
-  height()      host()        hidden()      idle()        ipaddr()
-  lports()      lwho()        lwhoid()      mwho()        mwhoid()
-  nmwho()       nwho()        player()      ports()       pueblo()
-  recv()        sent()        ssl()         terminfo()    width()
-  xmwho()       xmwhoid()     xwho()        xwhoid()      zmwho()
-  zwho()
+  addrlog()     cmds()        conn()        connlog()     connrecord()
+  doing()       height()      host()        hidden()      idle()
+  ipaddr()      lports()      lwho()        lwhoid()      mwho()
+  mwhoid()      nmwho()       nwho()        player()      ports()
+  pueblo()      recv()        sent()        ssl()         terminfo()
+  width()       xmwho()       xmwhoid()     xwho()        xwhoid()
+  zmwho()       zwho()
 & Dbref functions
   Dbref functions return a dbref or list of dbrefs related to some value on an object.
 
@@ -185,17 +185,18 @@ See also: string functions, regexp
   center()         chr()            comp()           cond()
   condall()        decode64()       decompose()      decrypt()
   digest()         edit()           encode64()       encrypt()
-  escape()         flip()           foreach()        if()
-  ifelse()         lcstr()          left()           lit()
-  ljust()          lpos()           merge()          mid()
-  ord()            ordinal()        pos()            regedit()
-  regmatch()       repeat()         right()          rjust()
-  scramble()       secure()         sha0()           space()
-  spellnum()       squish()         strallof()       strcat()
-  strdelete()      strfirstof()     strinsert()      stripaccents()
-  stripansi()      strlen()         strmatch()       strreplace()
-  switch()         tr()             trim()           ucstr()
-  urldecode()      urlencode()      wrap()
+  escape()         flip()           foreach()        formdecode()
+  hmac()           if()             ifelse()         lcstr()
+  left()           lit()            ljust()          lpos()
+  merge()          mid()            ord()            ordinal()
+  pos()            regedit()        regmatch()       repeat()
+  right()          rjust()          scramble()       secure()
+  space()          spellnum()       squish()         strallof()
+  strcat()         strdelete()      strfirstof()     strinsert()
+  stripaccents()   stripansi()      strlen()         strmatch()
+  strreplace()     switch()         tr()             trim()
+  ucstr()          urldecode()      urlencode()      wrap()
+
 
 See also: STRINGS
 & Time functions
@@ -1125,9 +1126,7 @@ See also: @dig, open(), @open, create(), pcreate()
 
   md4 md5 ripemd160 sha1 sha224 sha256 sha384 sha512 whirlpool
 
-  Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5 and the SHA family.
-
-  digest(sha, whatever) is equivalent to sha0(whatever).
+  Depending on the host's OpenSSL version and how it was configured, there might be more (or less) available. digest(list) returns the methods a particular server understands if the OpenSSL library version being used is recent enough (1.0.0 and higher), or '#-1 LISTING NOT SUPPORTED' on older versions. For portable code, stick with MD5, SHA1 and the SHA2 family.
 
   Example:
    > think iter(digest(list), %i0(foo) => [digest(%i0, foo)], %b, %r)
@@ -1136,12 +1135,11 @@ See also: @dig, open(), @open, create(), pcreate()
    MD5(foo) => acbd18db4cc2f85cedef654fccc4a4d8
    MDC2(foo) => 5da2a8f36bf237c84fddf81b67bd0afc
    RIPEMD160(foo) => 42cfa211018ea492fdee45ac637b7972a0ad6873
-   SHA(foo) => 752678a483e77799a3651face01d064f9ca86779
    SHA1(foo) => 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
    SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
    ...
 
-See also: encode64(), encrypt()
+See also: encode64(), encrypt(), hmac()
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -3129,41 +3127,11 @@ See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
   If changing ownership, #-1 or 0 is returned on failure, 1 on success.
 
 See also: lockowner(), @chown, @atrchown
-& PARENMATCH()
-  parenmatch([<object>/]<attrib>, [<type>], [<prettyprint>], [<flags>])
-
-  This functions returns a colorized match of braces, brackets, and parenthesis, and highlights in red any mis-matching pairs. This comparison is always left-to-right. If the attribute is BUFFER_LEN, it will be returned unmodified.
-
-  If there are a large number of braces/brackets/parenthesis, the string may get cut off due to the ansi codes taking up extra space in the string. If this happens, <type> can be specified as '1' in order to only show mismatches rather than colorizing the entire attribute.
-  Optionally, the attribute can be pretty-printed for easier reading, however this will not work with larger attributes due to hitting the maximum buffer length.
-
-  <type> can be:
-  0 - Color the string and highlight red the first missmatch found (default)
-  1 - If there is a missmatch, ONLY return that, else ansify the string.
-
-  <prettyprint> defaults to '0', but if set to '1', this function will attempt to pretty print the entirety of the attribute. Please note that this will be cut off in larger attributes due to the aforementioned buffer length limit.
-
-  <flags> controlls extra whitespace for readability:
-  s - put spaces after every , and ; character and before and after =
-  p - put spaces before ) and after (
-  b - put spaces before ] and after [
-  B - put spaces before } and after {
-
-Examples:
-  > @va me=[add(1,1)]
-  > @vb me=[add(1,2))]
-  > say parenmatch(vb)
-  You say "[add(1,2))]"       (The second ')' would be hilighted red)
-  > say parenmatch(vb,1)
-  You say "[add(1,2))]"       (Just the second ')' would be colorized)
-  > say parenmatch(vb,,,bps)
-  You say "[ add( 1, 2 ) )]"  (it stops adding spaces on an error)
 
 & PARENT()
   parent(<object>[, <new parent>])
 
   This function returns the dbref number of an object's parent. You must be able to examine the object to do this. If you specify a second argument, parent() attempts to change the parent first. You must control <object>, and be allowed to @parent to <new parent>.
-
 See also: @parent, ancestors, pfun()
 & PEMIT()
 & NSPEMIT()
@@ -5963,7 +5931,7 @@ See also: @suggest
   <spec> is one or more of the following:
 
  + Time-based constraints
-  * between, <startsecs>, <endsecs> - connections that were present during the given range.
+  * between, <startsecs>, <endsecs> - connections that existed during the given time frame.
   * at, <secs> - connections that existed at the given time.
   * before, <secs> - connections that existed before the given time.
   * after, <secs> - connections that existed after the given time.
@@ -5973,6 +5941,9 @@ See CONNLOG2 for more.
 + Source-based constraits
   * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
   * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
+
++ Others
+  * count - if given, instead of returning a list of connections, returns the total number of matching connections.
 
  Only one time-based constraint can be used in a query.
 
@@ -5985,20 +5956,29 @@ See CONNLOG2 for more.
  shows all connections that were present during the last 15 minutes
  > think connlog(all, ip, 127.0.0.1)
  shows all connections ever made from localhost.
+ > think connlog(all, count, before, secs())
+ shows the total number of connections made since logging began.
 
-See also: connrecord()
+See also: addrlog(), connrecord()
 & CONNRECORD()
  CONNRECORD(<id>[, <sep>])
 
   This Wizard-only function returns information about a connection if enhanced logging is enabled.
 
-  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON. If the optional <sep> argument is given, it is used instead of space to seperate fields.
+  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON SSL WEBSOCKET. If the optional <sep> argument is given, it is used instead of space to seperate fields.
 
  If a single connection had multiple logins and logouts, only the last one is used. If a connection was never logged in, the DBREF field is #-1 and the NAME field is -. If the connection is still active, the DISCONNECTION-TIME is -1 and DISCONNECTION-REASON is -.
 
   Times are in seconds since the epoch, like what secs() returns.
 
 See also: connlog()
+& ADDRLOG()
+ ADDRLOG([count,], ip|hostname, <pattern>[, <sep>)
+
+ Searches the log of unique sites that have connected to the mush and returns a list of 'IPADDRESS HOSTNAME' pairs that match the given field with the given wildcard pattern, separated by <sep>, which defaults to |. If 'count' is given, returns the total number of matches instead.
+
+ Restricted to See_all, Wizard and Royal objects.
+
 & URLENCODE()
   URLENCODE(<string>)
 
@@ -6011,3 +5991,15 @@ See also: urldecode(), @http
   This function takes a URL-encoded string and returns it in its decoded form. Unprintable characters are converted to question marks.
 
 See also: urlencode(), @http
+& HMAC()
+  HMAC(<digest>, <key>, <text>[, <encoding>])
+
+  Computes the HMAC (message authentication code) hash for <text> using the passphrase <key> and the given hash function <digest>, which can be any supported by digest(). <encoding> can be base16 (The default) or base64.
+
+  Example:
+  > think hmac(sha256, secret, this is some text)
+  9598fd959633f2a64a7d7e985966774aa6f334bc802e5b3301772ec8ed6eed5a
+  > think hmac(sha256, secret, this is some text, base64)
+  lZj9lZYz8qZKfX6YWWZ3SqbzNLyALlszAXcuyO1u7Vo=
+
+See also: digest()

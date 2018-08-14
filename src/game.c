@@ -2465,7 +2465,6 @@ db_open(const char *fname)
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, FOPEN_READ);
-    sqlite3_free(filename);
     if (!pf->handle.f) {
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
     } else {
@@ -2474,6 +2473,7 @@ db_open(const char *fname)
       posix_fadvise(fileno(pf->handle.f), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
     }
+    sqlite3_free(filename);
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");

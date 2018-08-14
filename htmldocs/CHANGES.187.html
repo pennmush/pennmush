@@ -21,11 +21,11 @@
 <header>
 <h1 class="title">PennMUSH 1.8.7 Changes</h1>
 <p class="author"></p>
-<p class="date">Last release: ??? ?? 20??</p>
+<p class="date">Last release: Aug 10 2018</p>
 </header>
 <nav id="TOC">
 <ul>
-<li><a href="#version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</a><ul>
+<li><a href="#version-1.8.7-patchlevel-0-aug-10-2018">Version 1.8.7 patchlevel 0 Aug 10 2018</a><ul>
 <li><a href="#major-changes">Major Changes</a></li>
 <li><a href="#minor-changes">Minor Changes</a></li>
 <li><a href="#softcode">Softcode</a></li>
@@ -48,7 +48,7 @@
 </ul>
 <p>Numbers next to the developer credit refer to Github issue numbers.</p>
 <hr />
-<h1 id="version-1.8.7-patchlevel-0-20">Version 1.8.7 patchlevel 0 ??? ?? 20??</h1>
+<h1 id="version-1.8.7-patchlevel-0-aug-10-2018">Version 1.8.7 patchlevel 0 Aug 10 2018</h1>
 <h2 id="major-changes">Major Changes</h2>
 <ul>
 <li>Support websocket connections. See <a href="https://github.com/grapenut/websockclient" class="uri">https://github.com/grapenut/websockclient</a> for a sample in-browser client. [Grapenut, 1007]</li>
@@ -97,7 +97,6 @@
 <li>If compiled with ICU support, adds <code>lcstr2()</code> and <code>ucstr2()</code> with proper support for characters like the German eszett (ß) that map to a different number of characters in different cases.</li>
 <li><code>@chatformat</code> now receives a new arg, <code>%6</code>, which defaults to “says” but may be replaced by the speechtext mogrifier. Inspired by Bodin. [MG]</li>
 <li><code>etimefmt()</code> supports <code>$w</code> and <code>$y</code> formats for weeks and years. [SW, 804]</li>
-<li>Ported parenmatch() from Rhost. [MT, 1024]</li>
 </ul>
 <h2 id="fixes">Fixes</h2>
 <ul>
@@ -118,6 +117,7 @@
 <li>Fix an off-by-one error in command switch initialization code. [SW]</li>
 <li><code>@mail</code> without a message list respects the current folder instead of using folder 0. [77]</li>
 <li><code>ufun()</code>, <code>ulocal()</code>, etc. could get confused by ansi (markup) in the attribute name. Strip markup first. [MT]</li>
+<li>Fix a long-standing bug where input sent right after a SSL connection could get lost. [SW]</li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>

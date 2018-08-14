@@ -15,9 +15,10 @@
 #include <Bcrypt.h>
 #else
 #include <openssl/bio.h>
-#include <openssl/evp.h>
 #include <openssl/sha.h>
 #endif
+#include <openssl/evp.h>
+#include <openssl/hmac.h>
 #include <string.h>
 #include <time.h>
 
@@ -254,8 +255,7 @@ crunch_code(char *code)
 
   out = output;
   in = code;
-  WALK_ANSI_STRING(in)
-  {
+  WALK_ANSI_STRING (in) {
     if ((*in >= 32) && (*in <= 126)) {
       *out++ = *in;
     }
@@ -445,4 +445,38 @@ FUNCTION(fun_digest)
     safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);
   else
     safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+}
+
+FUNCTION(fun_hmac)
+{
+  unsigned char md[EVP_MAX_MD_SIZE];
+  unsigned int md_len = EVP_MAX_MD_SIZE;
+  const EVP_MD *hash;
+  bool base16 = 1;
+
+  if (nargs == 4) {
+    if (sqlite3_stricmp(args[3], "base16") == 0) {
+      base16 = 1;
+    } else if (sqlite3_stricmp(args[3], "base64") == 0) {
+      base16 = 0;
+    } else {
+      safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+      return;
+    }
+  }
+
+  /* TODO: Windows BCrypt version */
+  hash = EVP_get_digestbyname(args[0]);
+  if (!hash) {
+    safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
+    return;
+  }
+  HMAC(hash, args[1], arglens[1], (unsigned char *) args[2], arglens[2], md,
+       &md_len);
+
+  if (base16) {
+    safe_hexstr(md, md_len, buff, bp);
+  } else {
+    encode_base64((const char *) md, md_len, buff, bp);
+  }
 }

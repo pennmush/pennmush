@@ -3883,8 +3883,14 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   *bp = '\0';
 
   if (flags & CB_PRESENCE) {
-    snprintf(title, BUFFER_LEN, "%s", message);
-    snprintf(message, BUFFER_LEN, "%s %s", playername, title);
+    /* This is a 'connect/disconnected' message. For mogrify purposes, thanks to
+     * backwards compat, there is no title, and message is "playername has connected."
+     *
+     * So this is ugly. 'title' is used a temp buffer for redoing message.
+     */
+    int ignoreme __attribute__((__unused__));
+    ignoreme = snprintf(title, BUFFER_LEN, "%s", message);
+    ignoreme = snprintf(message, BUFFER_LEN, "%s %s", playername, title);
     title[0] = '\0';
   }
 
@@ -4185,7 +4191,8 @@ parse_chat_alias(dbref player, char *command)
   ATTR *a;
   CHAN *c;
   bool chat = 0;
-  char abuff[BUFFER_LEN + 10];
+  char abuff[BUFFER_LEN];
+  int ignoreme __attribute__((__unused__));
 
   alias = bp = command;
   while (*bp && !isspace((unsigned char) *bp))
@@ -4200,8 +4207,8 @@ parse_chat_alias(dbref player, char *command)
   while (*message && isspace((unsigned char) *message))
     message++;
 
-  snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
-           strupper_r(alias, channame, sizeof channame));
+  ignoreme = snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
+             strupper_r(alias, channame, sizeof channame));
   a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */

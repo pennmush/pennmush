@@ -1980,19 +1980,14 @@ COMMAND(cmd_fetch)
 
 COMMAND(cmd_respond)
 {
-  const char *p, *t;
+  const char *p;
   struct http_request *req;
-  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
-    notify(executor, T("Invalid http_handler object."));
-    return;
-  }
-
-  if (active_http_request == NULL) {
-    notify(executor, T("Player is not in HTTP Context."));
-    return;
-  }
 
   req = active_http_request;
+
+  if (!USABLE(HTTP_HANDLER) || !IsPlayer(HTTP_HANDLER)) {
+    notify(executor, T("Invalid http_handler, it should be a player."));
+  }
 
   if (!arg_left || !*arg_left) {
     notify(executor, T("Invalid use of @respond, please check help @respond."));
@@ -2007,6 +2002,13 @@ COMMAND(cmd_respond)
     }
   }
 
+  for (p = arg_right; p && *p; p++) {
+    if (!isprint(*p)) {
+      notify(executor, T("No nonprintable characters allowed in @respond"));
+      return;
+    }
+  }
+
   if (SW_ISSET(sw, SWITCH_TYPE) && SW_ISSET(sw, SWITCH_HEADER)) {
     notify(executor, T("Invalid @respond - You can't use more than one switch!"));
     return;
@@ -2014,32 +2016,46 @@ COMMAND(cmd_respond)
  
   /* @respond/type */
   if (SW_ISSET(sw, SWITCH_TYPE)) {
-    snprintf(req->ctype, MAX_COMMAND_LEN,
-             "Content-Type: %s", arg_left);
+    if (*arg_right) {
+      notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+      return;
+    }
+    if (req) {
+      snprintf(req->ctype, MAX_COMMAND_LEN,
+               "Content-Type: %s", arg_left);
+    } else {
+      notify_format(enactor, "(HTTP): Content-Type: %s", arg_left);
+    }
     return;
   }
 
   /* @respond/header */
   if (SW_ISSET(sw, SWITCH_HEADER)) {
     /* Sanity checking on header name. */
-    p = strstr(arg_left, ": ");
-    if (!p || (p - arg_left) < 1) {
-      notify(executor, T("Invalid format, use HeaderName: Value."));
+    if (!arg_left || !*arg_left || !arg_right || !*arg_right) {
+      notify(executor, T("Invalid format, use @respond/header HeaderName=Value."));
       return;
     }
-    if (!strncasecmp(arg_left, "content-length", p - arg_left)) {
+    if (!strcasecmp(arg_left, "content-length")) {
       notify(executor, T("You cannot set Content-Length header."));
       return;
     }
     /* Only printable ascii allowed in header names. */
-    for (t = arg_left; t < p; t++) {
+    for (p = arg_left; *p; p++) {
       if (!isascii(*p)) {
         notify(executor, T("Invalid HTTP Header name."));
         return;
       }
     }
-    safe_str(arg_left, req->headers, &(req->hp));
-    safe_str("\r\n", req->headers, &(req->hp));
+    if (req) {
+      safe_str(arg_left, req->headers, &(req->hp));
+      safe_str(": ", req->headers, &(req->hp));
+      safe_str(arg_right, req->headers, &(req->hp));
+
+      safe_str("\r\n", req->headers, &(req->hp));
+    } else {
+      notify_format(enactor, "(HTTP): %s: %s", arg_left, arg_right);
+    }
     return;
   }
 
@@ -2056,6 +2072,11 @@ COMMAND(cmd_respond)
     return;
   }
 
+  if (*arg_right) {
+    notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+    return;
+  }
+
   for (p = arg_left; *p; p++) {
     if (!isascii(*p)) {
       notify(executor, T("@respond must be 3 digits, space, then text ."));
@@ -2068,5 +2089,9 @@ COMMAND(cmd_respond)
       return;
   }
 
-  snprintf(req->code, HTTP_CODE_LEN, "HTTP/1.1 %s", arg_left);
+  if (req) {
+    snprintf(req->code, HTTP_CODE_LEN, "HTTP/1.1 %s", arg_left);
+  } else {
+    notify_format(enactor, "(HTTP): HTTP/1.1 %s", arg_left);
+  }
 }

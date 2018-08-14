@@ -272,7 +272,8 @@ COMLIST commands[] = {
   {"@REMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
-  {"@RESPOND", "HEADER TYPE", cmd_respond, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@RESPOND", "HEADER TYPE", cmd_respond,
+    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT, 0, 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |

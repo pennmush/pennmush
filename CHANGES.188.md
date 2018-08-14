@@ -30,8 +30,8 @@ Softcode
 
 * `addrlog()` for searching through list of unique IP addresses that have connected to a game. [SW]
 * `connlog()` can return just a count of matching records. [SW]
-* `formdecode()` for decoding HTTP paths and POST bodies.
-* `@respond` for manipulating HTTP response codes and headers.
-* 'hmac()' for creating authentication fingerprints.
+* `formdecode()` for decoding HTTP paths and POST bodies. [GM]
+* `@respond` for manipulating HTTP response codes and headers. [GM]
+* `hmac()` for creating authentication fingerprints. [SW]
 
 

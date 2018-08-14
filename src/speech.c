@@ -355,6 +355,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   const char **start;
   char sname[BUFFER_LEN];
   char pbuff[BUFFER_LEN];
+  int ignoreme __attribute__((__unused__));
 
   if (!arg1 || !*arg1) {
     notify(player, T("Whisper to whom?"));
@@ -438,12 +439,12 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
                   (gcount > 1) ? T("%s sense: %s%s%s") : T("%s senses: %s%s%s"),
                   tbuf + 4, AName(player, AN_SAY, NULL), gap, arg2);
 
-    snprintf(pbuff, sizeof pbuff, "You sense: %s%s%s",
+    snprintf(pbuff, BUFFER_LEN, "You sense: %s%s%s",
              AName(player, AN_SAY, NULL), gap, arg2);
     p = pbuff;
   } else {
     notify_format(player, T("You whisper, \"%s\"%s."), arg2, tbuf);
-    snprintf(pbuff, sizeof pbuff, T("%s whispers%s: %s"),
+    snprintf(pbuff, BUFFER_LEN, T("%s whispers%s: %s"),
              AName(player, AN_SAY, NULL), gcount > 1 ? tbuf : "", arg2);
     p = pbuff;
   }
@@ -458,7 +459,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
     dbref first = Contents(Location(player));
     if (!GoodObject(first))
       return;
-    snprintf(pbuff, sizeof pbuff, T("%s whispers%s."), sname, tbuf);
+    ignoreme = snprintf(pbuff, BUFFER_LEN, T("%s whispers%s."), sname, tbuf);
     p = pbuff;
     DOLIST (first, first) {
       overheard = 1;
@@ -820,6 +821,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   ATTR *a;
   char alias[BUFFER_LEN], *ap;
   char msg[BUFFER_LEN];
+  int ignoreme __attribute__((__unused__));
 
   if (*arg1 && has_eq) {
     /* page to=[msg] */
@@ -922,7 +924,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
       if (!Connected(target) || (Dark(target) && (is_haven || fails_lock))) {
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
-        snprintf(msg, sizeof msg, T("%s is not connected."),
+        snprintf(msg, BUFFER_LEN, T("%s is not connected."),
                  AName(target, AN_SYS, NULL));
         page_return(executor, target, "Away", "AWAY", msg, pe_info);
         if (fails_lock) {
@@ -1035,8 +1037,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override,
   if ((ap = shortalias(executor)) && *ap) {
     mush_strncpy(alias, ap, sizeof alias);
     if (PAGE_ALIASES && strcasecmp(ap, Name(executor))) {
-      snprintf(msg, sizeof msg, "%s (%s)", AName(executor, AN_SAY, NULL),
-               alias);
+      ignoreme = snprintf(msg, BUFFER_LEN, "%s (%s)",
+                          AName(executor, AN_SAY, NULL), alias);
       current = msg;
     } else {
       current = (char *) AName(executor, AN_SAY, NULL);

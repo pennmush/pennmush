@@ -16,4 +16,12 @@ be read in 'help patchlevels'.
 
 Major Changes:
 
-* Built-in HTTP server support [GM]
+* Built-in HTTP server support, see “help http” [GM]
+
+Softcode:
+
+* [1maddrlog()[0m for searching through list of unique IP addresses that have connected to a game. [SW]
+* [1mconnlog()[0m can return just a count of matching records. [SW]
+* [1mformdecode()[0m for decoding HTTP paths and POST bodies. [GM]
+* [1m@respond[0m for manipulating HTTP response codes and headers. [GM]
+* [1mhmac()[0m for creating authentication fingerprints. [SW]

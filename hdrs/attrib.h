@@ -94,10 +94,10 @@ ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
 void atr_free_all(dbref thing);
 void atr_cpy(dbref dest, dbref source);
 char const *convert_atr(int oldatr);
-int atr_single_match(ATTR *ptr, int flag_mask, int end,
-                     const char *input, char *args[],
-                     char *match_space, int match_space_len,
-                     char cmd_buff[], PE_REGS *pe_regs);
+int atr_single_match_r(ATTR *ptr, int flag_mask, int end,
+                       const char *input, char *args[],
+                       char *match_space, int match_space_len,
+                       char cmd_buff[], PE_REGS *pe_regs);
 int atr_comm_match(dbref thing, dbref player, int type, int end,
                    char const *str, int just_match, int check_locks,
                    char *atrname, char **abp, int show_child, dbref *errobj,

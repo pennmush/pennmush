@@ -1893,6 +1893,15 @@ show_compile_options(dbref player)
 #endif
 
 #ifdef HAVE_ICU
+  {
+    UVersionInfo vers;
+    char as_str[U_MAX_VERSION_STRING_LENGTH];
+    u_getUnicodeVersion(vers);
+    u_versionToString(vers, as_str);
+    notify_format(
+      player, T(" ICU support using Unicode version %s is enabled."), as_str);
+  }
+#else
   notify(player, T(" (Very limited) Unicode support is enabled."));
 #endif
 

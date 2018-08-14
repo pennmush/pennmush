@@ -38,3 +38,9 @@ Softcode
 * `formdecode()` for decoding HTTP paths and POST bodies. [GM]
 * `@respond` for manipulating HTTP response codes and headers. [GM]
 * `hmac()` for creating authentication fingerprints. [SW]
+
+Fixes
+-----
+
+* add_function in *.cnf wasn't properly the proper upper case'd string. [#1223, MT]
+

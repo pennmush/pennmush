@@ -42,5 +42,4 @@ Softcode
 Fixes
 -----
 
-* add_function in *.cnf wasn't properly the proper upper case'd string. [#1223, MT]
-
+* add_function in .cnf files was not properly using the upper case'd string. [#1223, MT]

@@ -1019,7 +1019,14 @@ update_queue_load()
 void
 queue_update(void)
 {
+  static time_t last_mudtime = 0;
   MQUE *trail = NULL, *point, *next;
+
+  if (mudtime == last_mudtime) {
+    /* Only run once per second at most. */
+    return;
+  }
+  last_mudtime = mudtime;
 
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since

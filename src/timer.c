@@ -415,13 +415,13 @@ sq_register(uint64_t w, sq_func f, void *d, const char *ev)
 
   if (!sq_head)
     sq_head = sq;
-  else if (difftime(w, sq_head->when) <= 0) {
+  else if (sq_head->when > sq->when) {
     sq->next = sq_head;
     sq_head = sq;
   } else {
     struct squeue *c, *prev = NULL;
     for (prev = sq_head, c = sq_head->next; c; prev = c, c = c->next) {
-      if (difftime(w, c->when) <= 0) {
+      if (c->when > sq->when) {
         sq->next = c;
         prev->next = sq;
         return sq;
@@ -523,13 +523,11 @@ sq_register_loop(int n, sq_func f, void *d, const char *ev)
 bool
 sq_run_one(void)
 {
-  uint64_t now;
+  uint64_t now = now_msecs();
   struct squeue *n;
 
-  time(&now);
-
   if (sq_head) {
-    if (difftime(sq_head->when, now) <= 0) {
+    if (sq_head->when <= now) {
       bool r = sq_head->fun(sq_head->data);
       if (r && sq_head->event)
         queue_event(SYSEVENT, sq_head->event, "%s", "");
@@ -564,8 +562,8 @@ uint64_t
 sq_msecs_till_next(void)
 {
   uint64_t now = now_msecs();
-  for (struct squeue *s = sq_head; s; s = s->next) {
-    return SECS_TO_MSECS(difftime(s->when, now));
+  if (sq_head) {
+    return sq_head->when - now;
   }
   return 500;
 }

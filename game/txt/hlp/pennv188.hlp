@@ -18,6 +18,10 @@ Major Changes:
 
 * Built-in HTTP server support, see “help http” [GM]
 
+Minor Changes:
+
+* Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
+
 Softcode:
 
 * [1maddrlog()[0m for searching through list of unique IP addresses that have connected to a game. [SW]

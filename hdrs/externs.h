@@ -440,6 +440,13 @@ const char *accented_name(dbref thing);
 
 /* From utils.c */
 void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
+uint64_t now_msecs(); /* current milliseconds */
+#define SECS_TO_MSECS(x) (x * 1000UL)
+#ifdef WIN32
+void penn_gettimeofday(struct timeval *now); /* For platform agnosticism */
+#else
+#define penn_gettimeofday(now) gettimeofday((now), (struct timezone *) NULL)
+#endif
 
 /** Information about an attribute to ufun.
  * Prepared via fetch_ufun_attrib, used in call_ufun

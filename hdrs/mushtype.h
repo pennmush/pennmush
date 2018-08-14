@@ -285,7 +285,7 @@ typedef bool (*sq_func)(void *);
 struct squeue {
   sq_func fun;         /** Function to run */
   void *data;          /** Data to pass to function, or NULL */
-  time_t when;         /** When to run the function */
+  uint64_t when;       /** When to run the function, in milliseconds. */
   char *event;         /** Softcode Event name to trigger, or NULL if none */
   struct squeue *next; /** Pointer to next squeue event in linked list */
 };
@@ -335,7 +335,7 @@ struct descriptor_data {
   char *raw_input_at;       /**< Pointer to position in raw input */
   time_t connected_at;      /**< Time of connection */
   time_t last_time;         /**< Time of last activity */
-  int quota;                /**< Quota of commands allowed */
+  uint32_t quota;           /**< Quota of commands allowed, *1000 (for milliseconds) */
   int cmds;                 /**< Number of commands sent */
   int hide;                 /**< Hide status */
   uint32_t conn_flags;      /**< Flags of connection (telnet status, etc.) */

@@ -56,6 +56,45 @@
 
 dbref find_entrance(dbref door);
 
+#ifdef WIN32
+/** Get the time using Windows function call.
+ * Looks weird, but it works. :-P
+ * \param now address to store timeval data.
+ */
+void
+penn_gettimeofday(struct timeval *now)
+{
+
+  FILETIME win_time;
+
+  GetSystemTimeAsFileTime(&win_time);
+  /* dwLow is in 100-s nanoseconds, not microseconds */
+  now->tv_usec = win_time.dwLowDateTime % 10000000 / 10;
+
+  /* dwLow contains at most 429 least significant seconds, since 32 bits maxint
+   * is 4294967294 */
+  win_time.dwLowDateTime /= 10000000;
+
+  /* Make room for the seconds of dwLow in dwHigh */
+  /* 32 bits of 1 = 4294967295. 4294967295 / 429 = 10011578 */
+  win_time.dwHighDateTime %= 10011578;
+  win_time.dwHighDateTime *= 429;
+
+  /* And add them */
+  now->tv_sec = win_time.dwHighDateTime + win_time.dwLowDateTime;
+}
+
+#endif
+
+/* Returns current time in milliseconds. */
+uint64_t
+now_msecs()
+{
+  struct timeval tv;
+  penn_gettimeofday(&tv);
+  return (1000ULL * tv.tv_sec) + (tv.tv_usec / 1000UL);
+}
+
 /** Parse object/attribute strings into components.
  * This function takes a string which is of the format obj/attr or attr,
  * and returns the dbref of the object, and a pointer to the attribute.

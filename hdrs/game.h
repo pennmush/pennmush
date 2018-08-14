@@ -251,13 +251,12 @@ extern void do_destroy(dbref player, char *name, int confirm,
 void init_timer(void);
 void signal_cpu_limit(int signo);
 
-struct squeue *sq_register(time_t w, sq_func f, void *d, const char *ev);
 struct squeue *sq_register_in(int n, sq_func f, void *d, const char *ev);
 void sq_register_loop(int n, sq_func f, void *d, const char *ev);
 void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
-int sq_secs_till_next(void);
+uint64_t sq_msecs_till_next(void);
 
 void init_sys_events(void);
 

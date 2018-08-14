@@ -25,6 +25,11 @@ Major Changes
 
 * Built-in HTTP server support, see "help http" [GM]
 
+Minor Changes
+-------------
+
+* Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
+
 Softcode
 --------
 
@@ -33,5 +38,3 @@ Softcode
 * `formdecode()` for decoding HTTP paths and POST bodies. [GM]
 * `@respond` for manipulating HTTP response codes and headers. [GM]
 * `hmac()` for creating authentication fingerprints. [SW]
-
-

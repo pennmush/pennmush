@@ -150,7 +150,9 @@ void init_rlimit(void);
 #ifdef HAVE_GETRUSAGE
 void rusage_stats(void);
 #endif
-int que_next(void); /* from cque.c */
+uint64_t queue_msecs_till_next(void); /* from cque.c */
+void queue_update(void); /* from cque.c */
+void update_queue_load();
 
 dbref email_register_player(DESC *d, const char *name, const char *email,
                             const char *host,
@@ -186,6 +188,11 @@ bool fcache_read_one(const char *filename);
 
 const char *default_ttype = "unknown";
 #define REBOOT_DB_NOVALUE "__NONE__"
+
+/* Just to avoid '1000' appearing everywhere without a reason */
+#define MS_PER_SEC 1000
+
+#define QUOTA_MAX (COMMAND_BURST_SIZE * MS_PER_SEC)
 
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode
@@ -292,12 +299,12 @@ intmap *descs_by_fd = NULL;   /**< Map of ports to DESC* objects */
 
 struct http_request *active_http_request = NULL; /**< Active HTTP Request */
 /* To roughly average HTTP_SECOND_LIMIT per second, we actually define
- * an http request as COMMAND_TIME_MSEC http_quota, and every millisecond "adds"
+ * an http request as MS_PER_SEC http_quota, and every millisecond "adds"
  * HTTP_SECOND_LIMIT.
  *
  * So after 83 milliseconds, if HTTP_SECOND_LIMIT is 50, then we add 4150 to
  * the quota - essentially 4 additional requests. But it caps at
- * HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC
+ * HTTP_SECOND_LIMIT * 1000
  */
 static int http_quota = 0;
 
@@ -334,18 +341,8 @@ int main(int argc, char **argv);
 #endif
 #endif
 void set_signals(void);
-static struct timeval timeval_sub(struct timeval now, struct timeval then);
-#ifdef WIN32
-/** Windows doesn't have gettimeofday(), so we implement it here */
-#define our_gettimeofday(now) win_gettimeofday((now))
-static void win_gettimeofday(struct timeval *now);
-#else
-/** A wrapper for gettimeofday() in case the system doesn't have it */
-#define our_gettimeofday(now) gettimeofday((now), (struct timezone *) NULL)
-#endif
 static long int msec_diff(struct timeval now, struct timeval then);
-static struct timeval msec_add(struct timeval t, int x);
-static void update_quotas(struct timeval last, struct timeval current);
+static void update_quotas(struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
@@ -858,59 +855,21 @@ win_gettimeofday(struct timeval *now)
 
 #endif
 
-/** Return the difference between two timeval structs as a timeval struct.
- * \param now pointer to the timeval to subtract from.
- * \param then pointer to the timeval to subtract.
- * \return pointer to a statically allocated timeval of the difference.
- */
-static struct timeval
-timeval_sub(struct timeval now, struct timeval then)
-{
-  struct timeval mytime = now;
-  mytime.tv_sec -= then.tv_sec;
-  mytime.tv_usec -= then.tv_usec;
-  if (mytime.tv_usec < 0) {
-    mytime.tv_usec += 1000000;
-    mytime.tv_sec--;
-  }
-  return mytime;
-}
-
 /** Return the difference between two timeval structs in milliseconds.
- * \param now pointer to the timeval to subtract from.
- * \param then pointer to the timeval to subtract.
+ * \param now the timeval to subtract from.
+ * \param then the timeval to subtract.
  * \return milliseconds of difference between them.
  */
 static long int
 msec_diff(struct timeval now, struct timeval then)
 {
-  long int secs = now.tv_sec - then.tv_sec;
-  if (secs == 0)
-    return (now.tv_usec - then.tv_usec) / 1000;
-  else if (secs == 1)
-    return (now.tv_usec + (1000000 - then.tv_usec)) / 100;
-  else if (secs > 1)
-    return (secs * 1000) + ((now.tv_usec + (1000000 - then.tv_usec)) / 1000);
-  else
-    return 0;
-}
+  long int msecs = 0;
 
-/** Add a given number of milliseconds to a timeval.
- * \param t pointer to a timeval struct.
- * \param x number of milliseconds to add to t.
- * \return address of static timeval struct representing the sum.
- */
-static struct timeval
-msec_add(struct timeval t, int x)
-{
-  struct timeval mytime = t;
-  mytime.tv_sec += x / 1000;
-  mytime.tv_usec += (x % 1000) * 1000;
-  if (mytime.tv_usec >= 1000000) {
-    mytime.tv_sec += mytime.tv_usec / 1000000;
-    mytime.tv_usec = mytime.tv_usec % 1000000;
-  }
-  return mytime;
+  msecs = 1000 * (now.tv_sec - then.tv_sec);
+  msecs += (now.tv_usec / 1000);
+  msecs -= (then.tv_usec / 1000);
+  if (msecs < 0) return 0;
+  return msecs;
 }
 
 /** Update each descriptor's allowed rate of issuing commands.
@@ -922,36 +881,44 @@ msec_add(struct timeval t, int x)
  * \param current pointer to timeval struct of current time.
  */
 static void
-update_quotas(struct timeval last, struct timeval current)
+update_quotas(struct timeval current)
 {
-  int nslices;
+  static struct timeval last = {0, 0};
   DESC *d;
-  uint32_t msecs = msec_diff(current, last);
-  nslices = (int) msecs / COMMAND_TIME_MSEC;
+  uint64_t msecs;
 
-  if (nslices > 0) {
-    for (d = descriptor_list; d; d = d->next) {
-      d->quota += COMMANDS_PER_TIME * nslices;
-      if (d->quota > COMMAND_BURST_SIZE)
-        d->quota = COMMAND_BURST_SIZE;
-    }
+  if (!last.tv_sec) {
+    /* First run */
+    last = current;
+    return;
+  }
+
+  msecs = msec_diff(current, last);
+  last = current;
+
+  DESC_ITER(d) {
+    d->quota += COMMANDS_PER_SECOND * msecs;
+    if (d->quota > QUOTA_MAX)
+      d->quota = QUOTA_MAX;
   }
 
   /* And the HTTP quota */
   http_quota += (msecs * HTTP_SECOND_LIMIT);
-  if (http_quota > (HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC)) {
-    http_quota = HTTP_SECOND_LIMIT * COMMAND_TIME_MSEC;
+  if (http_quota > (HTTP_SECOND_LIMIT * MS_PER_SEC)) {
+    http_quota = HTTP_SECOND_LIMIT * MS_PER_SEC;
   }
 }
 
 int
-http_secs_till_next()
+http_msecs_till_next()
 {
-  if (http_quota < 1000 && HTTP_SECOND_LIMIT > 0) {
-    return 1;
+  if (http_quota < MS_PER_SEC && HTTP_SECOND_LIMIT > 0) {
+    /* Quota is exhausted. Calculate how long until we can serve an http
+     * command again. */
+    return ((MS_PER_SEC - http_quota) / HTTP_SECOND_LIMIT) + HTTP_SECOND_LIMIT;
   }
   /* Arbitarily high */
-  return 500;
+  return SECS_TO_MSECS(500);
 }
 
 extern slab *text_block_slab;
@@ -1146,6 +1113,100 @@ handle_curl_msg(CURLMsg *msg)
 
 #endif
 
+/* Check for any errors and status changes, and let shovechars() know if it
+ * needs to shut down.
+ * \return 1 if everything's okay, 0 to shut down.
+ */
+static int
+check_status()
+{
+  /* Check signal handler flags */
+#ifndef WIN32
+  if (dump_error) {
+    if (WIFSIGNALED(dump_status)) {
+      do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
+                WTERMSIG(dump_status));
+      queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
+                  T("GAME: ERROR! Forking database save failed!"), 1,
+                  dump_status);
+      flag_broadcast("ROYALTY WIZARD", 0,
+                     T("GAME: ERROR! Forking database save failed!"));
+    } else if (WIFEXITED(dump_status)) {
+      if (WEXITSTATUS(dump_status) == 0) {
+        time(&globals.last_dump_time);
+        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
+                    1);
+        if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
+          flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+      } else {
+        do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
+                  WEXITSTATUS(dump_status));
+        queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
+                    T("GAME: ERROR! Forking database save failed!"), 1,
+                    dump_status);
+        flag_broadcast("ROYALTY WIZARD", 0,
+                       T("GAME: ERROR! Forking database save failed!"));
+      }
+    }
+    dump_error = 0;
+    dump_status = 0;
+  }
+#ifdef INFO_SLAVE
+  if (slave_error) {
+    do_rawlog(LT_ERR, "%s",
+              exit_report("info_slave", slave_error, error_code));
+    slave_error = error_code = 0;
+  }
+#endif /* INFO_SLAVE */
+#ifdef SSL_SLAVE
+  if (ssl_slave_error) {
+    do_rawlog(LT_ERR, "%s",
+              exit_report("ssl_slave", ssl_slave_error, error_code));
+    ssl_slave_error = error_code = 0;
+    if (!ssl_slave_halted)
+      make_ssl_slave();
+  }
+#endif /* SSL_SLAVE */
+#endif /* !WIN32 */
+
+  if (signal_shutdown_flag) {
+    flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
+    do_rawlog(LT_ERR, "SHUTDOWN by external signal");
+    return 0;
+  }
+
+  if (hup_triggered) {
+    do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
+    config_file_startup(NULL, 0);
+    config_file_startup(NULL, 1);
+    file_watch_init();
+    fcache_load(NOTHING);
+    help_rebuild(NOTHING);
+    read_access_file();
+    reopen_logs();
+    hup_triggered = 0;
+  }
+
+  if (usr1_triggered) {
+    if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+      do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+      do_reboot(NOTHING, 0);
+      /* We shouldn't return from this except in case of a failed db save. */
+    }
+  }
+
+  if (usr2_triggered) {
+    if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
+      globals.paranoid_dump = 0;
+      do_rawlog(LT_CHECK, "DUMP by external signal");
+      fork_and_dump(1);
+    }
+    usr2_triggered = 0;
+  }
+
+  return 1;
+}
+
 static void
 shovechars(Port_t port, Port_t sslport)
 {
@@ -1153,10 +1214,9 @@ shovechars(Port_t port, Port_t sslport)
 #ifdef INFO_SLAVE
   time_t now;
 #endif
-  struct timeval next_slice, last_slice, current_time;
-  struct timeval timeout, slice_timeout;
+  struct timeval current_time;
   int found;
-  int queue_timeout, sq_timeout, http_timeout;
+  uint64_t msec_timeout, timeout_check;
   DESC *d, *dnext, *dprev;
   int avail_descriptors;
   int notify_fd = -1;
@@ -1177,7 +1237,6 @@ shovechars(Port_t port, Port_t sslport)
 #define PENN_POLLIN POLLIN
 #define PENN_POLLOUT POLLOUT
 #endif
-  int polltimeout;
 
   if (!restarting) {
 
@@ -1218,102 +1277,17 @@ shovechars(Port_t port, Port_t sslport)
 
   notify_fd = file_watch_init();
 
-  our_gettimeofday(&current_time);
-  last_slice = current_time;
-
   while (shutdown_flag == 0) {
-    our_gettimeofday(&current_time);
+    penn_gettimeofday(&current_time);
+    mudtime = current_time.tv_sec;
 
-    update_quotas(last_slice, current_time);
-    last_slice = current_time;
+    update_quotas(current_time);
 
+    /* Run any user input */
     process_commands();
 
-    /* Check signal handler flags */
-
-#ifndef WIN32
-
-    if (dump_error) {
-      if (WIFSIGNALED(dump_status)) {
-        do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
-                  WTERMSIG(dump_status));
-        queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
-                    T("GAME: ERROR! Forking database save failed!"), 1,
-                    dump_status);
-        flag_broadcast("ROYALTY WIZARD", 0,
-                       T("GAME: ERROR! Forking database save failed!"));
-      } else if (WIFEXITED(dump_status)) {
-        if (WEXITSTATUS(dump_status) == 0) {
-          time(&globals.last_dump_time);
-          queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d", DUMP_NOFORK_COMPLETE,
-                      1);
-          if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
-            flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
-        } else {
-          do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
-                    WEXITSTATUS(dump_status));
-          queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
-                      T("GAME: ERROR! Forking database save failed!"), 1,
-                      dump_status);
-          flag_broadcast("ROYALTY WIZARD", 0,
-                         T("GAME: ERROR! Forking database save failed!"));
-        }
-      }
-      dump_error = 0;
-      dump_status = 0;
-    }
-#ifdef INFO_SLAVE
-    if (slave_error) {
-      do_rawlog(LT_ERR, "%s",
-                exit_report("info_slave", slave_error, error_code));
-      slave_error = error_code = 0;
-    }
-#endif /* INFO_SLAVE */
-#ifdef SSL_SLAVE
-    if (ssl_slave_error) {
-      do_rawlog(LT_ERR, "%s",
-                exit_report("ssl_slave", ssl_slave_error, error_code));
-      ssl_slave_error = error_code = 0;
-      if (!ssl_slave_halted)
-        make_ssl_slave();
-    }
-#endif /* SSL_SLAVE */
-#endif /* !WIN32 */
-
-    if (signal_shutdown_flag) {
-      flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
-      do_rawlog(LT_ERR, "SHUTDOWN by external signal");
+    if (!check_status()) {
       shutdown_flag = 1;
-    }
-
-    if (hup_triggered) {
-      do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
-      config_file_startup(NULL, 0);
-      config_file_startup(NULL, 1);
-      file_watch_init();
-      fcache_load(NOTHING);
-      help_rebuild(NOTHING);
-      read_access_file();
-      reopen_logs();
-      hup_triggered = 0;
-    }
-
-    if (usr1_triggered) {
-      if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
-        do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-        do_reboot(
-          NOTHING,
-          0); /* We don't return from this except in case of a failed db save */
-      }
-    }
-
-    if (usr2_triggered) {
-      if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
-        globals.paranoid_dump = 0;
-        do_rawlog(LT_CHECK, "DUMP by external signal");
-        fork_and_dump(1);
-      }
-      usr2_triggered = 0;
     }
 
     if (shutdown_flag)
@@ -1322,27 +1296,18 @@ shovechars(Port_t port, Port_t sslport)
     /* run pending events */
     sq_run_all();
 
+    /* Update the queues with wait, semaphore, etc. */
+    queue_update();
+
+#define min_timeout(store, func) \
+    timeout_check = func; \
+    if (timeout_check < store) store = timeout_check
+
     /* any queued commands or events waiting? */
-    queue_timeout = que_next();
-    sq_timeout = sq_secs_till_next();
-    if (sq_timeout < queue_timeout)
-      queue_timeout = sq_timeout;
-    http_timeout = http_secs_till_next();
-    if (http_timeout < queue_timeout)
-      queue_timeout = http_timeout;
-    if (queue_timeout < 0)
-      queue_timeout = 0;
-
-    next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
-    slice_timeout = timeval_sub(next_slice, current_time);
-    /* Make sure slice_timeout cannot have a negative time. Better
-       safe than sorry. */
-    if (slice_timeout.tv_sec < 0)
-      slice_timeout.tv_sec = 0;
-    if (slice_timeout.tv_usec < 0)
-      slice_timeout.tv_usec = 0;
-
-    timeout = (struct timeval){.tv_sec = queue_timeout, .tv_usec = 0};
+    msec_timeout = SECS_TO_MSECS(500);
+    min_timeout(msec_timeout, queue_msecs_till_next());
+    min_timeout(msec_timeout, sq_msecs_till_next());
+    min_timeout(msec_timeout, http_msecs_till_next());
 
     if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
       fd_size = im_count(descs_by_fd) + 16;
@@ -1406,9 +1371,11 @@ shovechars(Port_t port, Port_t sslport)
         }
       }
       fds[fds_used].events = 0;
-      if (d->input.head) { /* Don't get more input while this desc has a
-                              command ready to eval. */
-        timeout = slice_timeout;
+      if (d->input.head) {
+        /* This descriptor has apparently exceeded its quota. If
+         * timeout is longer than MS_PER_SEC, we'll reduce
+         * timeout to MS_PER_SEC */
+        min_timeout(msec_timeout, MS_PER_SEC);
       } else {
         fds[fds_used].events = PENN_POLLIN;
       }
@@ -1419,11 +1386,9 @@ shovechars(Port_t port, Port_t sslport)
         fds[fds_used++].fd = d->descriptor;
     }
 
-    polltimeout = (timeout.tv_sec * 1000) + (timeout.tv_usec / 1000);
-
 #ifdef HAVE_LIBCURL
     curl_status =
-      curl_multi_wait(curl_handle, fds, fds_used, polltimeout, &found);
+      curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
     if (curl_status != CURLM_OK) {
       do_rawlog(LT_ERR, "curl_multi_wait: %s",
@@ -1446,9 +1411,9 @@ shovechars(Port_t port, Port_t sslport)
 #else
 
 #ifdef WIN32
-    found = WSAPoll(fds, fds_used, polltimeout);
+    found = WSAPoll(fds, fds_used, msec_timeout);
 #else
-    found = poll(fds, fds_used, polltimeout);
+    found = poll(fds, fds_used, msec_timeout);
 #endif
     if (found < 0) {
 #ifdef WIN32
@@ -1470,6 +1435,7 @@ shovechars(Port_t port, Port_t sslport)
 #endif
 
     time(&mudtime);
+    update_queue_load();
 
     if (found >= 0) {
 
@@ -2137,7 +2103,7 @@ logout_sock(DESC *d)
   init_text_queue(&d->output);
   d->raw_input = 0;
   d->raw_input_at = 0;
-  d->quota = COMMAND_BURST_SIZE;
+  d->quota = QUOTA_MAX;
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
@@ -2250,7 +2216,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->player = NOTHING;
   d->raw_input = 0;
   d->raw_input_at = 0;
-  d->quota = COMMAND_BURST_SIZE;
+  d->quota = QUOTA_MAX;
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
@@ -3472,10 +3438,10 @@ process_commands(void)
 
       pc_dnext = cdesc->next;
 
-      if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
+      if (cdesc->quota >= MS_PER_SEC && (t = cdesc->input.head) != NULL) {
         enum comm_res retval;
 
-        cdesc->quota -= 1;
+        cdesc->quota -= MS_PER_SEC;
         nprocessed += 1;
         start_cpu_timer();
         retval = do_command(cdesc, (char *) t->start);
@@ -3505,8 +3471,8 @@ process_commands(void)
         }
       } else if ((cdesc->conn_flags & CONN_HTTP_READY) &&
                  !(cdesc->conn_flags & CONN_HTTP_CLOSE)) {
-        if (http_quota >= COMMAND_TIME_MSEC) {
-          http_quota -= COMMAND_TIME_MSEC;
+        if (http_quota >= MS_PER_SEC) {
+          http_quota -= MS_PER_SEC;
           do_http_command(cdesc);
           nprocessed++;
         } else if (HTTP_SECOND_LIMIT < 1) {
@@ -7390,7 +7356,7 @@ load_reboot_db(void)
       init_text_queue(&d->output);
       d->raw_input = NULL;
       d->raw_input_at = NULL;
-      d->quota = options.starting_quota;
+      d->quota = QUOTA_MAX;
       d->ssl = NULL;
       d->ssl_state = 0;
 

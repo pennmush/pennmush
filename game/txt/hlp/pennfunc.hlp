@@ -755,16 +755,20 @@ See also: align(), ljust(), rjust()
 See also: @password, @newpassword
 & CHR()
 & ORD()
-  chr(<number>)
+  chr(<number>|<name>, ...)
   ord(<character>)
 
-  ord() returns the numerical value of the given character. chr() returns the character with the given numerical value.
+  ord() returns the numerical value of a character, which might be a list of multiple numbers if it's a character that takes multiple Unicode codepoints to represent (An extended grapheme cluster in Unicode terminology).
+
+  chr() returns the character represented by the codepoints in its arguments. If ICU support is enabled, symbolic character names can be used instead of numeric codepoints.
 
   Examples:
     > say ord(A)
     You say, "65"
     > say chr(65)
     You say, "A"
+    > say chr(LATIN CAPITAL LETTER A, COMBINING DIAERESIS)
+    You say, "Ä"
 & CLONE()
   clone(<object>[, <new name>[, <dbref>[, preserve]]])
 

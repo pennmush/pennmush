@@ -163,8 +163,7 @@ FUNCTION(fun_isword)
 FUNCTION(fun_capstr)
 {
   char *p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = UPCASE(*p);
     break;
   }
@@ -851,8 +850,7 @@ FUNCTION(fun_lcstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = DOWNCASE(*p);
     p++;
   }
@@ -865,8 +863,7 @@ FUNCTION(fun_ucstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = UPCASE(*p);
     p++;
   }
@@ -1498,37 +1495,112 @@ FUNCTION(fun_beep)
 
 FUNCTION(fun_ord)
 {
-  int c;
+  UChar32 c;
+  int offset = 0;
+  int len, ulen;
+  char **sbp = bp;
+  bool first = 1;
+  char *utf8;
 
-  if (!args[0] || !args[0][0] || arglens[0] != 1) {
+  utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "utf8.string");
+
+  len = gcbytes(utf8);
+
+  if (len == 0 || len != ulen) {
+    mush_free(utf8, "utf8.string");
     safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"), buff, bp);
     return;
   }
 
-  c = args[0][0];
-
-  if (uni_isprint(c)) {
-    safe_integer(c, buff, bp);
-  } else {
-    safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
+  U8_NEXT(utf8, offset, ulen, c);
+  while (c) {
+    if (uni_isprint(c)) {
+      if (first) {
+        first = 0;
+      } else {
+        safe_chr(' ', buff, bp);
+      }
+      safe_integer(c, buff, bp);
+    } else {
+      mush_free(utf8, "utf8.string");
+      bp = sbp;
+      safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
+      return;
+    }
+    U8_NEXT(utf8, offset, ulen, c);
   }
+  mush_free(utf8, "utf8.string");
 }
 
 FUNCTION(fun_chr)
 {
-  int c;
+  pennstr *ps = ps_new();
+  int n;
+  const char *gc;
+  int len;
+  char *latin1;
+#ifdef HAVE_ICU
+  char *norm;
+#endif
 
-  if (!is_strict_uinteger(args[0])) {
-    safe_str(T(e_uint), buff, bp);
+  for (n = 0; n < nargs; n += 1) {
+    UChar32 c;
+    if (is_strict_integer(args[n])) {
+      c = parse_integer(args[n]);
+    } else if (sqlite3_strnicmp(args[n], "0x", 2) == 0) {
+      char *end;
+      c = strtol(args[n], &end, 16);
+      if (*end != '\0') {
+        safe_str(T("#-1 INVALID HEX NUMBER"), buff, bp);
+        ps_free(ps);
+        return;
+      }
+    } else {
+#ifdef HAVE_ICU
+      UErrorCode err = U_ZERO_ERROR;
+      c = u_charFromName(U_UNICODE_CHAR_NAME, args[n], &err);
+      if (U_FAILURE(err)) {
+        safe_str(T("#-1 INVALID CHARACTER 1"), buff, bp);
+        ps_free(ps);
+        return;
+      }
+#else
+      safe_str(T(e_uint), buff, bp);
+      ps_free(ps);
+      return;
+#endif
+    }
+    if (c < 0 || c > 0x10FFFF || !uni_isprint(c)) {
+      safe_format(buff, bp, T("#-1 INVALID CHARACTER '%d'"), c);
+      ps_free(ps);
+      return;
+    }
+    ps_safe_uchar(ps, c);
+  }
+
+  gc = ps_str(ps);
+  len = ps_len(ps);
+
+#ifdef HAVE_ICU
+  gc = norm = normalize_utf8(NORM_NFC, gc, len, &len, "utf8.string");
+#endif
+
+  if (gcbytes(gc) != len) {
+    safe_str(T("#-1 MULTIPLE CHARACTERS"), buff, bp);
+    ps_free(ps);
+#ifdef HAVE_ICU
+    mush_free(norm, "utf8.string");
+#endif
     return;
   }
-  c = parse_integer(args[0]);
-  if (c < 0 || c > UCHAR_MAX)
-    safe_str(T("#-1 THIS ISN'T UNICODE"), buff, bp);
-  else if (uni_isprint(c))
-    safe_chr(c, buff, bp);
-  else
-    safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
+
+  latin1 = utf8_to_latin1(gc, len, NULL, 0, "latin1.string");
+  safe_str(latin1, buff, bp);
+  mush_free(latin1, "latin1.string");
+#ifdef HAVE_ICU
+  mush_free(norm, "utf8.string");
+#endif
+  ps_free(ps);
 }
 
 FUNCTION(fun_accent)

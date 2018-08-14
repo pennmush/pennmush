@@ -89,9 +89,19 @@
  */
 #define SPILLOVER_THRESHOLD 0
 /* #define SPILLOVER_THRESHOLD  (MAX_OUTPUT / 2) */
-#define COMMAND_TIME_MSEC 1000 /* time slice length in milliseconds */
-#define COMMAND_BURST_SIZE 100 /* commands allowed per user in a burst */
-#define COMMANDS_PER_TIME 1    /* commands per time slice after burst */
+
+/* Descriptor Command Quotas:
+ *
+ * Descriptors can have up to COMMAND_BURST_SIZE commands in an immediate
+ * burst, but after that goes down, it replenishes at COMMANDS_PER_SECOND per
+ * second.
+ *
+ * e.g: After pasting a file that contains 120 lines, the first 100 take 1 second,
+ * then the next 20 lines are run once each second. But 50 seconds after it's
+ * finished, the quota is back up to 50.
+ */
+#define COMMAND_BURST_SIZE    100 /* commands allowed per user in a burst */
+#define COMMANDS_PER_SECOND   1  /* commands per second, prorated by ms. */
 
 /* From conf.c */
 bool config_file_startup(const char *conf, int restrictions);

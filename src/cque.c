@@ -979,21 +979,47 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   im_insert(queue_map, tmp->pid, tmp);
 }
 
-/** Once-a-second check for queued commands.
- * This function is called every second to check for commands
- * on the wait queue or semaphore queue, and to move a command
- * off the low priority object queue and onto the normal priority
- * player queue.
- */
 void
-do_second(void)
+update_queue_load()
 {
-  MQUE *trail = NULL, *point, *next;
+  static time_t last_mudtime = 0;
+  time_t diff;
+
+  if (last_mudtime == 0) {
+    memset(queue_load_record, 0, sizeof(queue_load_record));
+    last_mudtime = mudtime;
+    return;
+  }
+
+  diff = mudtime - last_mudtime;
+  last_mudtime = mudtime;
+
+  if (diff <= 0) {
+    /* No changes, or we're getting pushed back in time by ntpd, dst, or
+     * similar? */
+    return;
+  }
+
+  if (diff >= QUEUE_LOAD_SECS) {
+    /* Wow, likely a major change in time from ntp or a poor dst
+     * implementation, unlikely we actually slept this long. We'll just quietly
+     * pretend nothing major happened, and only shift the load by 1 second. */
+    diff = 1;
+  }
 
   /* Advance the queue load average count */
-  memmove(queue_load_record + 1, queue_load_record,
-          sizeof(queue_load_record) - sizeof(int32_t));
-  queue_load_record[0] = 0;
+  memmove(queue_load_record + diff, queue_load_record,
+          sizeof(queue_load_record) - (diff * sizeof(int32_t)));
+  memset(queue_load_record, 0, sizeof(int32_t) * diff);
+}
+
+/** Check for queued commands. This is called whenever we expect to need
+ * new queued commands. (via que_next)
+ */
+void
+queue_update(void)
+{
+  MQUE *trail = NULL, *point, *next;
 
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since
@@ -1009,8 +1035,8 @@ do_second(void)
     qlast = qllast;
     qllast = qlfirst = NULL;
   }
-  /* check regular wait queue */
 
+  /* check regular @wait queue */
   while (qwait && qwait->wait_until <= mudtime) {
     point = qwait;
     qwait = point->next;
@@ -1031,8 +1057,7 @@ do_second(void)
     }
   }
 
-  /* check for semaphore timeouts */
-
+  /* check for semaphore Zwait timeouts */
   for (point = qsemfirst, trail = NULL; point; point = next) {
     if (point->wait_until == 0 || point->wait_until > mudtime) {
       next = (trail = point)->next;
@@ -1271,40 +1296,41 @@ do_entry(MQUE *entry, int include_recurses)
 }
 
 /** Determine whether it's time to run a queued command.
- * This function returns the number of seconds we expect to wait
+ * This function returns the number of milliseconds we expect to wait
  * before it's time to run a queued command.
  * If there are commands in the player queue, that's 0.
- * If there are commands in the object queue, that's 1.
+ * If there are commands in the object queue, that's 1000.
  * Otherwise, we check wait and semaphore queues to see what's next.
  * \return seconds left before a queue entry will be ready.
  */
-int
-que_next(void)
+uint64_t
+queue_msecs_till_next(void)
 {
-  int min, curr;
+  uint64_t min, curr;
   MQUE *point;
   /* If there are commands in the player queue, they should be run
    * immediately.
    */
   if (qfirst != NULL)
     return 0;
+
   /* If there are commands in the object queue, they should be run in
-   * one second.
+   * one second (asuming no @waits demanding time sooner)
    */
-  if (qlfirst != NULL)
-    return 1;
+  if (qlfirst != NULL) {
+    min = SECS_TO_MSECS(1);
+  } else {
+    min = SECS_TO_MSECS(500);
+  }
   /* Check out the wait and semaphore queues, looking for the smallest
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
    */
-  min = 500;
 
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */
   if (qwait) {
-    curr = (int) difftime(qwait->wait_until, mudtime);
-    if (curr <= 2)
-      return 1;
+    curr = SECS_TO_MSECS(difftime(qwait->wait_until, mudtime));
     if (curr < min)
       min = curr;
   }
@@ -1312,15 +1338,13 @@ que_next(void)
   for (point = qsemfirst; point; point = point->next) {
     if (point->wait_until == 0) /* no timeout */
       continue;
-    curr = (int) difftime(point->wait_until, mudtime);
-    if (curr <= 2)
-      return 1;
+    curr = SECS_TO_MSECS(difftime(point->wait_until, mudtime));
     if (curr < min) {
       min = curr;
     }
   }
 
-  return (min - 1);
+  return min;
 }
 
 static int

@@ -25,6 +25,7 @@ Major Changes
 
 * Built-in HTTP server support, see "help http" [GM]
 * A single command queue for players and objects. No more @trigger waits. [GM]
+* A restructuring of bsd.c, to make it easier to reason about Penn's queue cycle. [GM]
 
 Minor Changes
 -------------

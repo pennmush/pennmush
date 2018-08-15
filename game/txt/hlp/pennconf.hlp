@@ -145,13 +145,12 @@ Continued in help @config limits2
   max_depth=<number>: How deep indirect @lock chains can go.
   player_queue_limit=<number>: The number of commands a player can have queued at once.
   queue_loss=<number>: One in <number> times, queuing a command will cost an extra penny that doesn't get refunded.
-  queue_chunk=<number>: How many queued commands get executed in a row when there's no network activity pending.
+  queue_chunk=<number>: How many queued commands get executed in a row before checking for network activity.
 
 Continued in help @config limits3
 & @config limits3
  Limits and constants, continued.
 
-  active_queue_chunk=<number>: How many queued commands get executed in a row when there is network activity pending.
   function_recursion_limit=<number>: The depth to which softcode functions can call more functions.
   function_invocation_limit=<number>: The maximum number of softcode functions that can be called in one command.
   guest_paycheck=<number>: How many pennies guests get each day.

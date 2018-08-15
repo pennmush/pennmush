@@ -17,6 +17,8 @@ be read in 'help patchlevels'.
 Major Changes:
 
 * Built-in HTTP server support, see “help http” [GM]
+* A single command queue for players and objects. No more @trigger waits. [GM]
+* A restructuring of bsd.c, to make it easier to reason about Penn’s queue cycle. [GM]
 
 Minor Changes:
 
@@ -29,3 +31,8 @@ Softcode:
 * [1mformdecode()[0m for decoding HTTP paths and POST bodies. [GM]
 * [1m@respond[0m for manipulating HTTP response codes and headers. [GM]
 * [1mhmac()[0m for creating authentication fingerprints. [SW]
+
+Fixes:
+
+* [1madd_function[0m in .cnf files was not properly using the upper case’d string. [#1223, MT]
+* Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]

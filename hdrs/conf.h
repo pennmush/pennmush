@@ -197,8 +197,6 @@ struct options_table {
   int player_queue_limit; /**< Maximum commands a player can queue at once */
   int queue_chunk;    /**< Number of commands run from queue when no input from
                          sockets is waiting */
-  int active_q_chunk; /**< Number of commands run from queue when input from
-                         sockets is waiting */
   int func_nest_lim;  /**< Maximum function recursion depth */
   int func_invk_lim;  /**< Maximum number of function invocations */
   int call_lim;       /**< Maximum parser calls allowed in a queue cycle */

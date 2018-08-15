@@ -236,7 +236,7 @@ struct text_queue {
 
 /** An unrecoverable error happened when trying to read or write to the socket.
  * Close when safe. */
-#define CONN_SOCKET_ERROR 0x1000
+#define CONN_SHUTDOWN 0x1000
 
 /** Negotiated GMCP via Telnet */
 #define CONN_GMCP 0x2000
@@ -344,7 +344,6 @@ struct descriptor_data {
   int hide;                 /**< Hide status */
   uint32_t conn_flags;      /**< Flags of connection (telnet status, etc.) */
   struct descriptor_data *next; /**< Next descriptor in linked list */
-  struct descriptor_data *prev; /**< Previous descriptor in linked list */
   unsigned long input_chars;    /**< Characters received */
   unsigned long output_chars;   /**< Characters sent */
   int width;                    /**< Screen width */
@@ -359,7 +358,8 @@ struct descriptor_data {
   uint64_t ws_frame_len;
 #endif                /* undef WITHOUT_WEBSOCKETS */
   int64_t connlog_id; /**< ID for this connection's connlog entry */
-
+  const char *close_reason; /**< Why is this socket being closed? */
+  dbref closer;             /**< Who closed this socket? */
   struct http_request *http_request;
 };
 

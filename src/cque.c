@@ -2059,9 +2059,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
   dbref victim = NOTHING;
   int all = 0;
   int quick = 0;
-  int dpq = 0, doq = 0, dwq = 0, dsq = 0;
-  int pq = 0, oq = 0, wq = 0, sq = 0;
-  int tpq = 0, toq = 0, twq = 0, tsq = 0;
+  int dpq = 0, dwq = 0, dsq = 0;
+  int pq = 0, wq = 0, sq = 0;
+  int tpq = 0, twq = 0, tsq = 0;
   if (flag == QUEUE_SUMMARY || flag == QUEUE_QUICK)
     quick = 1;
   if (flag == QUEUE_ALL || flag == QUEUE_SUMMARY) {

@@ -385,6 +385,7 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d, const char *reason, dbref executor);
+static void cleanup_desc(DESC *d);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
 /* Notify.c */
@@ -407,7 +408,7 @@ static bool is_http_request(const char *command);
 static bool is_http_bodyless(const char *method);
 static int process_http_start(DESC *d, char *command);
 static void process_http_input(DESC *d, char *buf, int len);
-static void queue_http_command(DESC *d);
+static void http_command_ready(DESC *d);
 static void do_http_command(DESC *d);
 static void set_userstring(char **userstring, const char *command);
 static void process_commands(void);
@@ -996,8 +997,9 @@ got_new_connection(int sockfd, conn_source source)
     query_info_slave(newsock);
     if (newsock >= maxd)
       maxd = newsock + 1;
-  } else
+  } else {
     setup_desc(sockfd, source);
+  }
 }
 
 #endif
@@ -1207,37 +1209,36 @@ check_status()
   return 1;
 }
 
-static void
-shovechars(Port_t port, Port_t sslport)
+void
+shutdownsock(DESC *d, const char *reason, dbref executor)
 {
-/* this is the main game loop */
-#ifdef INFO_SLAVE
-  time_t now;
-#endif
-  struct timeval current_time;
-  int found;
-  uint64_t msec_timeout, timeout_check;
-  DESC *d, *dnext, *dprev;
-  int avail_descriptors;
-  int notify_fd = -1;
-#ifdef HAVE_LIBCURL
-  struct curl_waitfd *fds = NULL;
-  unsigned int fd_size = 0, fds_used = 0;
-  CURLMcode curl_status;
-#define PENN_POLLIN CURL_WAIT_POLLIN
-#define PENN_POLLOUT CURL_WAIT_POLLOUT
-#else
-#ifdef WIN32
-  WSAPOLLFD *fds = NULL;
-  ULONG fd_size = 0, fds_used = 0;
-#else
-  struct pollfd *fds = NULL;
-  nfds_t fd_size = 0, fds_used = 0;
-#endif
-#define PENN_POLLIN POLLIN
-#define PENN_POLLOUT POLLOUT
-#endif
+  d->conn_flags |= CONN_SHUTDOWN;
+  d->close_reason = reason;
+  d->closer = executor;
+}
 
+#define CONN_CLOSABLES (CONN_SHUTDOWN | CONN_CLOSE_READY | CONN_HTTP_CLOSE)
+
+void
+clean_descriptors(DESC **head) {
+  DESC *d = *head;
+  DESC **listp = head;
+
+  while (d) {
+    if (d->conn_flags & (CONN_CLOSABLES)) {
+      *listp = d->next;
+      cleanup_desc(d);
+      d = *listp;
+    } else {
+      listp = &(d->next);
+      d = d->next;
+    }
+  }
+}
+
+void
+open_ports(Port_t port, Port_t sslport)
+{
   if (!restarting) {
 
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
@@ -1256,6 +1257,32 @@ shovechars(Port_t port, Port_t sslport)
 #endif
     }
   }
+}
+
+static int avail_descriptors;
+static int notify_fd = -1;
+
+#ifdef HAVE_LIBCURL
+static struct curl_waitfd *fds = NULL;
+static unsigned int fd_size = 0, fds_used = 0;
+static CURLMcode curl_status;
+#define PENN_POLLIN CURL_WAIT_POLLIN
+#define PENN_POLLOUT CURL_WAIT_POLLOUT
+#else
+#ifdef WIN32
+static WSAPOLLFD *fds = NULL;
+static ULONG fd_size = 0, fds_used = 0;
+#else
+static struct pollfd *fds = NULL;
+static nfds_t fd_size = 0, fds_used = 0;
+#endif
+#define PENN_POLLIN POLLIN
+#define PENN_POLLOUT POLLOUT
+#endif
+
+void
+ext_startup()
+{
 
 #ifdef HAVE_LIBCURL
   curl_handle = curl_multi_init();
@@ -1276,29 +1303,288 @@ shovechars(Port_t port, Port_t sslport)
   do_rawlog(LT_ERR, "RESTART FINISHED.");
 
   notify_fd = file_watch_init();
+}
 
-  while (shutdown_flag == 0) {
-    penn_gettimeofday(&current_time);
-    mudtime = current_time.tv_sec;
+void
+ext_shutdown()
+{
+  if (fds)
+    mush_free(fds, "pollfds");
 
-    update_quotas(current_time);
+#ifdef HAVE_LIBCURL
+  curl_multi_cleanup(curl_handle);
+#endif
+}
 
-    /* Run any user input */
-    process_commands();
+/* What previously used to be the largest chunk of shovechars(). This routine
+ * handles all the network input, output, and checking, but never runs a
+ * command, or interacts with softcode.
+ *
+ * It will wait for up to msec_timeout milliseconds. The only times it will
+ * return in less than msec_timeout, will be because of network input, errors,
+ * or a spamming user who's at their quota.
+ * \param msec_timeout milliseconds to wait
+ * \return 1 things are okay
+ * \return 0 gotta shutdown
+ */
+int
+check_sockets(uint32_t msec_timeout)
+{
+#ifdef INFO_SLAVE
+  time_t now;
+#endif
+  int found;
+  DESC *d;
 
-    if (!check_status()) {
-      shutdown_flag = 1;
+  if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
+    fd_size = im_count(descs_by_fd) + 16;
+    fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
+  }
+  fds_used = 0;
+
+  /* Don't check for new connections if we're full up on players
+   * we can't accept, anyway! */
+  if (ndescriptors < avail_descriptors) {
+    fds[fds_used].fd = sock;
+    fds[fds_used++].events = PENN_POLLIN;
+
+    if (sslsock) {
+      fds[fds_used].fd = sslsock;
+      fds[fds_used++].events = PENN_POLLIN;
+    }
+#ifdef LOCAL_SOCKET
+    if (localsock >= 0) {
+      fds[fds_used].fd = localsock;
+      fds[fds_used++].events = PENN_POLLIN;
+    }
+#endif
+  }
+
+#ifdef INFO_SLAVE
+  /** Only check info_slave socket if we're waiting for something
+   * from it. */
+  if (info_slave_state == INFO_SLAVE_PENDING) {
+    fds[fds_used].fd = info_slave;
+    fds[fds_used++].events = PENN_POLLIN;
+  }
+#endif
+
+  /* notify_fd isn't always available, but if it is, it lets us know when
+   * any of the game/txt/ files have changed. */
+  if (notify_fd >= 0) {
+    fds[fds_used].fd = notify_fd;
+    fds[fds_used++].events = PENN_POLLIN;
+  }
+
+#ifndef WIN32
+  if (sigrecv_fd >= 0) {
+    fds[fds_used].fd = sigrecv_fd;
+    fds[fds_used++].events = PENN_POLLIN;
+  }
+#endif
+
+  /** Now add all the active descriptors */
+  DESC_ITER(d) {
+    /* If d->input.head is non-null, the descriptor is being throttled.
+     * If d->output.head is non-null, the descriptor is choked on send,
+     * we want to watch for POLLOUT event to write some more.
+     * */
+    int events = 0;
+
+    if (d->input.head) {
+      /* They're throttled, be nice and reduce timeout to when we think
+       * they'll be unthrottled. */
+      uint64_t curr = MS_PER_SEC - d->quota;
+      if (msec_timeout > curr) msec_timeout = curr;
+    } else {
+      events |= PENN_POLLIN;
     }
 
-    if (shutdown_flag)
-      break;
+    if (d->output.head) {
+      events |= PENN_POLLOUT;
+    }
 
-    /* run pending events */
-    sq_run_all();
+    if (events) {
+      fds[fds_used].events = events;
+      fds[fds_used++].fd = d->descriptor;
+    }
+  }
 
-    /* Update the queues with wait, semaphore, etc. */
-    queue_update();
+#ifdef HAVE_LIBCURL
+  curl_status =
+    curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
+  if (curl_status != CURLM_OK) {
+    do_rawlog(LT_ERR, "curl_multi_wait: %s",
+              curl_multi_strerror(curl_status));
+    return 0;
+  }
+
+  if (ncurl_queries > 0) {
+    int running = 0;
+    curl_status = curl_multi_perform(curl_handle, &running);
+    if (curl_status == CURLM_OK) {
+      CURLMsg *msg;
+      while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
+        handle_curl_msg(msg);
+        found -= 1;
+      }
+    }
+  }
+
+#else
+
+#ifdef WIN32
+  found = WSAPoll(fds, fds_used, msec_timeout);
+#else
+  found = poll(fds, fds_used, msec_timeout);
+#endif
+  if (found < 0) {
+#ifdef WIN32
+    if (found == SOCKET_ERROR && WSAGetLastError() != WSAEINTR)
+#else
+    if (errno != EINTR)
+#endif
+    {
+      penn_perror("poll");
+      return 0;
+    }
+  }
+#endif
+
+#ifdef INFO_SLAVE
+  if (info_slave_state == INFO_SLAVE_PENDING) {
+    update_pending_info_slaves();
+  }
+#endif
+
+  if (found > 0) {
+    /* We have network activity! */
+    fds_used = 0;
+
+#ifdef INFO_SLAVE
+    now = mudtime;
+
+    /* Do we have new connections from port or SSL? */
+    if (ndescriptors < avail_descriptors) {
+      if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        got_new_connection(sock, CS_IP_SOCKET);
+      }
+      if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        got_new_connection(sslsock, CS_OPENSSL_SOCKET);
+      }
+#ifdef LOCAL_SOCKET
+      if (found > 0 && localsock >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        setup_desc(localsock, CS_LOCAL_SOCKET);
+      }
+#endif /* LOCAL_SOCKET */
+    }
+
+    /* any update from info_slave? */
+    if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
+        fds[fds_used++].revents & PENN_POLLIN) {
+      found -= 1;
+      reap_info_slave();
+    } else if (info_slave_state == INFO_SLAVE_PENDING &&
+               now > info_queue_time + 30) {
+      /* rerun any pending queries that got lost */
+      update_pending_info_slaves();
+    }
+
+#else /* INFO_SLAVE */
+    /* Do we have new connections from port or SSL? */
+    if (ndescriptors < avail_descriptors) {
+      if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        setup_desc(sock, CS_IP_SOCKET);
+      }
+      if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        setup_desc(sslsock, CS_OPENSSL_SOCKET);
+      }
+#ifdef LOCAL_SOCKET
+      if (found > 0 && localsock >= 0 &&
+          fds[fds_used++].revents & PENN_POLLIN) {
+        found -= 1;
+        setup_desc(localsock, CS_LOCAL_SOCKET);
+      }
+#endif /* LOCAL_SOCKET */
+    }
+#endif /* INFO_SLAVE */
+
+    /* Any updates to the game/txt/??? files? */
+    if (found > 0 && notify_fd >= 0 &&
+        fds[fds_used++].revents & PENN_POLLIN) {
+      found -= 1;
+      file_watch_event(notify_fd);
+    }
+
+#ifndef WIN32
+    if (found > 0 && sigrecv_fd >= 0 &&
+        fds[fds_used++].revents & PENN_POLLIN) {
+      found -= 1;
+      sigrecv_ack();
+    }
+#endif
+
+    /* Check all the users for input */
+    DESC_ITER(d) {
+      unsigned int input_ready, output_ready, errors, full_events;
+      if (found <= 0) break;
+
+      if ((SOCKET) d->descriptor != fds[fds_used].fd)
+        continue;
+
+      input_ready = fds[fds_used].revents & PENN_POLLIN;
+      full_events = fds[fds_used].revents;
+#ifdef HAVE_LIBCURL
+      errors = 0;
+#else
+      errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
+#endif
+      output_ready = fds[fds_used++].revents & PENN_POLLOUT;
+      if (input_ready || errors || output_ready)
+        found -= 1;
+      if (errors) {
+        /* Socket error; kill this connection. */
+        shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);
+      } else {
+        if (input_ready) {
+          if (!process_input(d, output_ready)) {
+            shutdownsock(d, "disconnect", d->player);
+            continue;
+          }
+        }
+        if (output_ready) {
+          if (!process_output(d)) {
+            shutdownsock(d, "disconnect", d->player);
+          }
+        }
+      }
+      if (full_events & POLLHUP) {
+        http_command_ready(d);
+      }
+    }
+  }
+  return 1;
+}
+
+static void
+shovechars(Port_t port, Port_t sslport)
+{
+  uint64_t msec_timeout, timeout_check;
+  struct timeval current_time;
+
+  open_ports(port, sslport);
+
+  ext_startup();
+
+  while (!shutdown_flag) {
+    /** let's find out how long we should wait */
 #define min_timeout(store, func) \
     timeout_check = func; \
     if (timeout_check < store) store = timeout_check
@@ -1309,258 +1595,45 @@ shovechars(Port_t port, Port_t sslport)
     min_timeout(msec_timeout, sq_msecs_till_next());
     min_timeout(msec_timeout, http_msecs_till_next());
 
-    if (((int) fd_size) < ((int) im_count(descs_by_fd) + 6)) {
-      fd_size = im_count(descs_by_fd) + 16;
-      fds = mush_realloc(fds, sizeof *fds * fd_size, "pollfds");
+    /* Sweet, let's check the sockets for input. We'll wait up to msec_timeout
+     * milliseconds, but this may be less.
+     *
+     * If we have any errors in sockets, gotta shut down.
+     */
+    if (!check_sockets(msec_timeout)) {
+      shutdown_flag = 1;
+      break;
     }
-    fds_used = 0;
-
-    if (ndescriptors < avail_descriptors) {
-      fds[fds_used].fd = sock;
-      fds[fds_used++].events = PENN_POLLIN;
-
-      if (sslsock) {
-        fds[fds_used].fd = sslsock;
-        fds[fds_used++].events = PENN_POLLIN;
-      }
-#ifdef LOCAL_SOCKET
-      if (localsock >= 0) {
-        fds[fds_used].fd = localsock;
-        fds[fds_used++].events = PENN_POLLIN;
-      }
-#endif
-    }
-#ifdef INFO_SLAVE
-    if (info_slave_state == INFO_SLAVE_PENDING) {
-      fds[fds_used].fd = info_slave;
-      fds[fds_used++].events = PENN_POLLIN;
-    }
-#endif
-    if (notify_fd >= 0) {
-      fds[fds_used].fd = notify_fd;
-      fds[fds_used++].events = PENN_POLLIN;
-    }
-#ifndef WIN32
-    if (sigrecv_fd >= 0) {
-      fds[fds_used].fd = sigrecv_fd;
-      fds[fds_used++].events = PENN_POLLIN;
-    }
-#endif
-
-    for (dprev = NULL, d = descriptor_list; d; dprev = d, d = d->next) {
-
-    recheck_d:
-      if (d->conn_flags & CONN_SOCKET_ERROR) {
-        shutdownsock(d, "socket error", GOD);
-        d = dprev;
-        if (d) {
-          continue;
-        } else {
-          d = descriptor_list;
-          goto recheck_d;
-        }
-      }
-      if (d->conn_flags & CONN_HTTP_CLOSE) {
-        shutdownsock(d, "http close", GOD);
-        d = dprev;
-        if (d) {
-          continue;
-        } else {
-          d = descriptor_list;
-          goto recheck_d;
-        }
-      }
-      fds[fds_used].events = 0;
-      if (d->input.head) {
-        /* This descriptor has apparently exceeded its quota. If
-         * timeout is longer than MS_PER_SEC, we'll reduce
-         * timeout to MS_PER_SEC */
-        min_timeout(msec_timeout, MS_PER_SEC);
-      } else {
-        fds[fds_used].events = PENN_POLLIN;
-      }
-      if (d->output.head) {
-        fds[fds_used].events |= PENN_POLLOUT;
-      }
-      if (!d->input.head || d->output.head)
-        fds[fds_used++].fd = d->descriptor;
+    /* It might've been a few seconds, let's check_status */
+    if (!check_status()) {
+      shutdown_flag = 1;
+      break;
     }
 
-#ifdef HAVE_LIBCURL
-    curl_status =
-      curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
-
-    if (curl_status != CURLM_OK) {
-      do_rawlog(LT_ERR, "curl_multi_wait: %s",
-                curl_multi_strerror(curl_status));
-      return;
-    }
-
-    if (ncurl_queries > 0) {
-      int running = 0;
-      curl_status = curl_multi_perform(curl_handle, &running);
-      if (curl_status == CURLM_OK) {
-        CURLMsg *msg;
-        while ((msg = curl_multi_info_read(curl_handle, &running)) != NULL) {
-          handle_curl_msg(msg);
-          found -= 1;
-        }
-      }
-    }
-
-#else
-
-#ifdef WIN32
-    found = WSAPoll(fds, fds_used, msec_timeout);
-#else
-    found = poll(fds, fds_used, msec_timeout);
-#endif
-    if (found < 0) {
-#ifdef WIN32
-      if (found == SOCKET_ERROR && WSAGetLastError() != WSAEINTR)
-#else
-      if (errno != EINTR)
-#endif
-      {
-        penn_perror("poll");
-        return;
-      }
-    }
-#endif
-
-#ifdef INFO_SLAVE
-    if (info_slave_state == INFO_SLAVE_PENDING) {
-      update_pending_info_slaves();
-    }
-#endif
-
+    /* Let's get ready to run some commands. */
     time(&mudtime);
-    update_queue_load();
 
-    if (found >= 0) {
+    /* Process all available incoming commands on the socket. */
+    process_commands();
 
-      /* if !found then time for robot commands */
-      if (!found) {
-        do_top(options.queue_chunk);
-        continue;
-      } else {
-        do_top(options.active_q_chunk);
-      }
+    /* Check wait and semaphore to bump any commands to the queue that need it. */
+    queue_update();
 
-      fds_used = 0;
+    /* Let's run 'em. */
+    do_top(options.queue_chunk);
 
-#ifdef INFO_SLAVE
-      now = mudtime;
+    /* Run hardcode events (not in queue) */
+    sq_run_all();
 
-      if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          got_new_connection(sock, CS_IP_SOCKET);
-        }
-        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          got_new_connection(sslsock, CS_OPENSSL_SOCKET);
-        }
-#ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 &&
-            fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          setup_desc(localsock, CS_LOCAL_SOCKET);
-        }
-#endif /* LOCAL_SOCKET */
-      }
+    /* Clean up and shutdown any sockets that need it: Booted,
+     * QUIT, etc etc etc. */
+    clean_descriptors(&descriptor_list);
 
-      if (found > 0 && info_slave_state == INFO_SLAVE_PENDING &&
-          fds[fds_used++].revents & PENN_POLLIN) {
-        found -= 1;
-        reap_info_slave();
-      } else if (info_slave_state == INFO_SLAVE_PENDING &&
-                 now > info_queue_time + 30) {
-        /* rerun any pending queries that got lost */
-        update_pending_info_slaves();
-      }
-
-#else /* INFO_SLAVE */
-      if (ndescriptors < avail_descriptors) {
-        if (found > 0 && fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          setup_desc(sock, CS_IP_SOCKET);
-        }
-        if (found > 0 && sslsock && fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          setup_desc(sslsock, CS_OPENSSL_SOCKET);
-        }
-#ifdef LOCAL_SOCKET
-        if (found > 0 && localsock >= 0 &&
-            fds[fds_used++].revents & PENN_POLLIN) {
-          found -= 1;
-          setup_desc(localsock, CS_LOCAL_SOCKET);
-        }
-#endif /* LOCAL_SOCKET */
-      }
-#endif /* INFO_SLAVE */
-
-      if (found > 0 && notify_fd >= 0 &&
-          fds[fds_used++].revents & PENN_POLLIN) {
-        found -= 1;
-        file_watch_event(notify_fd);
-      }
-
-#ifndef WIN32
-      if (found > 0 && sigrecv_fd >= 0 &&
-          fds[fds_used++].revents & PENN_POLLIN) {
-        found -= 1;
-        sigrecv_ack();
-      }
-#endif
-
-      for (d = descriptor_list; d && found > 0; d = dnext) {
-        unsigned int input_ready, output_ready, errors, full_events;
-
-        dnext = d->next;
-
-        if ((SOCKET) d->descriptor != fds[fds_used].fd)
-          continue;
-
-        input_ready = fds[fds_used].revents & PENN_POLLIN;
-        full_events = fds[fds_used].revents;
-#ifdef HAVE_LIBCURL
-        errors = 0;
-#else
-        errors = fds[fds_used].revents & (POLLERR | POLLNVAL);
-#endif
-        output_ready = fds[fds_used++].revents & PENN_POLLOUT;
-        if (input_ready || errors || output_ready)
-          found -= 1;
-        if (errors) {
-          /* Socket error; kill this connection. */
-          shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);
-        } else {
-          if (input_ready) {
-            if (!process_input(d, output_ready)) {
-              shutdownsock(d, "disconnect", d->player);
-              continue;
-            }
-          }
-          if (output_ready) {
-            if (!process_output(d)) {
-              shutdownsock(d, "disconnect", d->player);
-            }
-          }
-        }
-        if (full_events & POLLHUP) {
-          queue_http_command(d);
-        }
-      }
-    }
+    /* Update socket command quotas for descriptors and http_quota */
+    penn_gettimeofday(&current_time);
+    update_quotas(current_time);
   }
-
-  if (fds)
-    mush_free(fds, "pollfds");
-
-#ifdef HAVE_LIBCURL
-  curl_multi_cleanup(curl_handle);
-#endif
+  ext_shutdown();
 }
 
 static int
@@ -2110,9 +2183,6 @@ logout_sock(DESC *d)
   welcome_user(d, 0);
 }
 
-/* Has to be file scope because of interactions with @boot */
-static DESC *pc_dnext = NULL;
-
 /** Disconnect a descriptor.
  * This sends appropriate disconnection text, flushes output, and
  * then closes the associated socket.
@@ -2121,8 +2191,10 @@ static DESC *pc_dnext = NULL;
  * \param executor dbref of the object which caused the disconnect
  */
 static void
-shutdownsock(DESC *d, const char *reason, dbref executor)
+cleanup_desc(DESC *d)
 {
+  const char *reason = d->close_reason;
+  dbref executor = d->closer;
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)", d->descriptor,
               d->addr, d->ip, Name(d->player), d->player, reason);
@@ -2161,14 +2233,6 @@ shutdownsock(DESC *d, const char *reason, dbref executor)
   }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
-  if (pc_dnext == d)
-    pc_dnext = d->next;
-  if (d->prev)
-    d->prev->next = d->next;
-  else /* d was the first one! */
-    descriptor_list = d->next;
-  if (d->next)
-    d->next->prev = d->prev;
 
   im_delete(descs_by_fd, d->descriptor);
 
@@ -2203,6 +2267,8 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   if (!d)
     mush_panic("Out of memory.");
   d->descriptor = s;
+  d->closer = NOTHING;
+  d->close_reason = "unknown";
   d->http_request = NULL;
   d->connected = CONN_SCREEN;
   d->conn_timer = NULL;
@@ -2234,10 +2300,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->ssl = NULL;
   d->ssl_state = 0;
   d->source = source;
-  if (descriptor_list)
-    descriptor_list->prev = d;
   d->next = descriptor_list;
-  d->prev = NULL;
   descriptor_list = d;
   if (source == CS_OPENSSL_SOCKET) {
     d->ssl = ssl_listen(d->descriptor, &d->ssl_state);
@@ -2373,10 +2436,10 @@ network_send_writev(DESC *d)
 
     cnt = writev(d->descriptor, lines, n);
     if (cnt < 0) {
-      if (is_blocking_err(errno))
+      if (is_blocking_err(errno)) {
         return 1;
-      else {
-        d->conn_flags |= CONN_SOCKET_ERROR;
+      } else {
+        shutdownsock(d, "socket error", NOTHING);
         return 0;
       }
     }
@@ -2430,7 +2493,7 @@ network_send(DESC *d)
       if (is_blocking_err(errno))
         return 1;
       else {
-        d->conn_flags |= CONN_SOCKET_ERROR;
+        shutdownsock(d, "socket error", NOTHING);
         return 0;
       }
     }
@@ -3395,7 +3458,7 @@ process_input(DESC *d, int output_ready __attribute__((__unused__)))
       if (is_blocking_err(errno))
         return 1;
       else {
-        d->conn_flags |= CONN_SOCKET_ERROR;
+        shutdownsock(d, "socket error", NOTHING);
         return 0;
       }
     }
@@ -3422,21 +3485,34 @@ set_userstring(char **userstring, const char *command)
   }
 }
 
+/* For all connected descriptors.
+ *
+ * 1) If there is any command ready to be run, and the descriptor's quota is
+ *    high enough, run it.
+ * 2) If it is an http connection, and http_quota is high enough, execute the
+ *    http command.
+ *
+ * And repeat until (1) and (2) fail.
+ *
+ * What does this mean? If Bob, Joe and Jane all have 2 commands, and Jane has 4,
+ * then 1 command is run for each of them (in reverse order of first connection
+ * time), until all of them have no commands OR have exceeded their quota.
+ *
+ * All HTTP connections that are ready are processed on the first run.
+ */
 static void
 process_commands(void)
 {
   int nprocessed;
 
-  pc_dnext = NULL;
-
   do {
     DESC *cdesc;
 
     nprocessed = 0;
-    for (cdesc = descriptor_list; cdesc; cdesc = pc_dnext) {
+    DESC_ITER(cdesc) {
       struct text_block *t;
-
-      pc_dnext = cdesc->next;
+      /* Should they be disconnected? If so, ignore. */
+      if (cdesc->conn_flags & CONN_SHUTDOWN) continue;
 
       if (cdesc->quota >= MS_PER_SEC && (t = cdesc->input.head) != NULL) {
         enum comm_res retval;
@@ -3485,7 +3561,6 @@ process_commands(void)
         }
       }
     }
-    pc_dnext = NULL;
   } while (nprocessed > 0);
 }
 
@@ -3663,7 +3738,7 @@ http_finished_wrapper(void *data)
 {
   DESC *d = (DESC *) data;
   d->conn_timer = NULL;
-  queue_http_command(d);
+  http_command_ready(d);
   return false;
 }
 
@@ -3697,7 +3772,7 @@ process_http_input(DESC *d, char *buf, int len)
         if (req->content_length == 0 ||
             (req->content_length < 0 && is_http_bodyless(req->method))) {
           /* We're done, queue! */
-          queue_http_command(d);
+          http_command_ready(d);
           return;
         }
         req->state = HTTP_BODY;
@@ -3735,7 +3810,7 @@ process_http_input(DESC *d, char *buf, int len)
 readbody:
     safe_strl(buf, len, req->inbody, &(req->inbp));
     if (req->content_length > 0 && (req->inbp - req->inbody) >= req->content_length) {
-      queue_http_command(d);
+      http_command_ready(d);
       return;
     }
     break;
@@ -3747,7 +3822,7 @@ waitmore:
 }
 
 static void
-queue_http_command(DESC *d)
+http_command_ready(DESC *d)
 {
   /* All we really do is clear the timer, and mark the socket
    * ready for running at the next queue cycle.
@@ -7125,6 +7200,7 @@ close_ssl_connections(void)
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->conn_flags |= CONN_CLOSE_READY;
+      d->reason = "ssl shutdown";
     }
   }
   /* Close server socket */
@@ -7176,15 +7252,7 @@ dump_reboot_db(void)
     putref(f, localsock);
 #endif
     putref(f, maxd);
-    /* First, iterate through all descriptors to get to the end
-     * we do this so the descriptor_list isn't reversed on reboot
-     */
-    for (d = descriptor_list; d && d->next; d = d->next)
-      ;
-    /* Second, we iterate backwards from the end of descriptor_list
-     * which is now in the d variable.
-     */
-    for (; d != NULL; d = d->prev) {
+    DESC_ITER(d) {
       putref(f, d->descriptor);
       putref(f, d->connected_at);
       putref(f, d->hide);
@@ -7237,7 +7305,7 @@ void
 load_reboot_db(void)
 {
   PENNFILE *volatile f;
-  DESC *volatile closed = NULL;
+  DESC *volatile tail = NULL;
 
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
@@ -7287,6 +7355,8 @@ load_reboot_db(void)
       d = mush_malloc(sizeof(DESC), "descriptor");
       d->descriptor = val;
       d->http_request = NULL;
+      d->closer = NOTHING;
+      d->close_reason = "unknown";
       d->connected_at = getref(f);
       d->conn_timer = NULL;
       d->hide = getref(f);
@@ -7359,31 +7429,23 @@ load_reboot_db(void)
       d->quota = QUOTA_MAX;
       d->ssl = NULL;
       d->ssl_state = 0;
+      d->next = NULL;
 
-      if (d->conn_flags & CONN_CLOSE_READY) {
-        /* This isn't really an open descriptor, we're just tracking
-         * it so we can announce the disconnect properly. Do so, but
-         * don't link it into the descriptor list. Instead, keep a
-         * separate list.
-         */
-        if (closed)
-          closed->prev = d;
-        d->next = closed;
-        d->prev = NULL;
-        closed = d;
+      if (descriptor_list) {
+        tail->next = d;
+        tail = d;
       } else {
-        if (descriptor_list)
-          descriptor_list->prev = d;
-        d->next = descriptor_list;
-        d->prev = NULL;
-        descriptor_list = d;
-        im_insert(descs_by_fd, d->descriptor, d);
-        if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
-          set_flag_internal(d->player, "CONNECTED");
-        else if ((!d->player || !GoodObject(d->player)) && d->connected) {
-          d->connected = CONN_SCREEN;
-          d->player = NOTHING;
-        }
+        descriptor_list = tail = d;
+      }
+      if (d->conn_flags & CONN_CLOSE_READY) {
+        d->close_reason = "ssl shutdown";
+      }
+      im_insert(descs_by_fd, d->descriptor, d);
+      if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
+        set_flag_internal(d->player, "CONNECTED");
+      else if ((!d->player || !GoodObject(d->player)) && d->connected) {
+        d->connected = CONN_SCREEN;
+        d->player = NOTHING;
       }
     } /* while loop */
 
@@ -7426,26 +7488,6 @@ load_reboot_db(void)
 
     penn_fclose(f);
     remove(REBOOTFILE);
-  }
-
-  /* Now announce disconnects of everyone who's not really here */
-  while (closed) {
-    DESC *nextclosed = closed->next;
-    announce_disconnect(closed, "disconnect", 1, NOTHING);
-    if (closed->ttype && closed->ttype != default_ttype)
-      mush_free(closed->ttype, "terminal description");
-    closed->ttype = NULL;
-    if (closed->output_prefix)
-      mush_free(closed->output_prefix, "userstring");
-    if (closed->output_suffix)
-      mush_free(closed->output_suffix, "userstring");
-
-    if (closed->http_request) {
-      mush_free(closed->http_request, "http_request");
-    }
-
-    mush_free(closed, "descriptor");
-    closed = nextclosed;
   }
 
   flag_broadcast(0, 0, T("GAME: Reboot finished."));

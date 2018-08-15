@@ -32,6 +32,7 @@
 #include "mushtype.h"
 #include "mypcre.h"
 #include "strtree.h"
+#include "strutil.h"
 
 #define BEEP_CHAR '\a'
 #define ESC_CHAR '\x1B'
@@ -224,6 +225,7 @@ void free_ansi_string(ansi_string *as);
    account. */
 int safe_ansi_string(ansi_string *as, int start, int len, char *buff,
                      char **bp);
+int ps_safe_ansi_string(ansi_string *as, int start, int len, pennstr *ps);
 
 /* Modifying ansi strings */
 ansi_string *real_parse_ansi_string(const char *src) __attribute_malloc__;

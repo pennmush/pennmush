@@ -2160,50 +2160,32 @@ free_ansi_string(ansi_string *as)
 
 /* Copy the start code for a particular markup_info */
 static int
-safe_start_code(new_markup_information *info, char *buff, char **bp)
+safe_start_code(new_markup_information *info, pennstr *ps)
 {
-  int retval = 0;
-  char *save;
-  save = *bp;
   if (info && info->start_code) {
     if (info->type == MARKUP_OLDANSI) {
-      retval += safe_chr(ESC_CHAR, buff, bp);
-      retval += safe_str(info->start_code, buff, bp);
-      retval += safe_chr('m', buff, bp);
+      ps_safe_format(ps, "%c%sm", ESC_CHAR, info->start_code);
     } else {
-      retval += safe_chr(TAG_START, buff, bp);
-      retval += safe_chr(info->type, buff, bp);
-      retval += safe_str(info->start_code, buff, bp);
-      retval += safe_chr(TAG_END, buff, bp);
+      ps_safe_format(ps, "%c%c%s%c", TAG_START, info->type, info->start_code,
+                     TAG_END);
     }
   }
-  if (retval)
-    *bp = save;
-  return retval;
+  return sqlite3_str_errcode(ps) != SQLITE_OK;
 }
 
 /* Copy the stop code for a particular markup_info */
 static int
-safe_end_code(new_markup_information *info, char *buff, char **bp)
+safe_end_code(new_markup_information *info, pennstr *ps)
 {
-  int retval = 0;
-  char *save;
-  save = *bp;
   if (info && info->end_code) {
     if (info->type == MARKUP_OLDANSI) {
-      retval += safe_chr(ESC_CHAR, buff, bp);
-      retval += safe_str(info->end_code, buff, bp);
-      retval += safe_chr('m', buff, bp);
+      ps_safe_format(ps, "%c%sm", ESC_CHAR, info->end_code);
     } else {
-      retval += safe_chr(TAG_START, buff, bp);
-      retval += safe_chr(info->type, buff, bp);
-      retval += safe_str(info->end_code, buff, bp);
-      retval += safe_chr(TAG_END, buff, bp);
+      ps_safe_format(ps, "%c%c%s%c", TAG_START, info->type, info->end_code,
+                     TAG_END);
     }
   }
-  if (retval)
-    *bp = save;
-  return retval;
+  return sqlite3_str_errcode(ps) != SQLITE_OK;
 }
 
 /** Reverse an ansi string, preserving its ansification.
@@ -2564,14 +2546,13 @@ safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp)
  * \param as the ansi string
  * \param lastidx idx to close
  * \param nextidx idx to open
- * \param buff buffer to write to
- * \param bp where to write to
+ * \param ps pennstr to write to
  * \retval 0 safely written
  * \retval 1 unable to safely write.
  */
 static int
 safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
-                   char *buff, char **bp)
+                   pennstr *ps)
 {
   new_markup_information *lastmi, *nextmi;
   new_markup_information *mil = NULL, *mir = NULL;
@@ -2603,7 +2584,7 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   }
   /* Dump the end codes for everything from lastmi down to mil. */
   for (; lastmi && lastmi != mil; lastmi = MI_FOR(as, lastmi->parentIdx)) {
-    if (safe_end_code(lastmi, buff, bp))
+    if (safe_end_code(lastmi, ps))
       return 1;
   }
   /* Now we do the start codes for everything on the right. We have to
@@ -2616,7 +2597,7 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   if (right_side) {
     while (i--) {
       if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
-        if (safe_start_code(endbuff[i], buff, bp))
+        if (safe_start_code(endbuff[i], ps))
           return 1;
       }
     }
@@ -2686,13 +2667,12 @@ sanitize_moniker(char *input, char *buff, char **bp)
  * \retval 1 failure.
  */
 int
-safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
+ps_safe_ansi_string(ansi_string *as, int start, int len, pennstr *ps)
 {
   int i;
   int end;
   int retval = 0;
   int lastidx;
-  char *buffend = buff + BUFFER_LEN - 1;
 
   if (!as)
     return 0;
@@ -2702,10 +2682,10 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
       if (!as->mi[i].standalone)
         continue;
       if (as->mi[i].start_code) {
-        safe_start_code(&as->mi[i], buff, bp);
+        safe_start_code(&as->mi[i], ps);
       }
       if (as->mi[i].end_code) {
-        safe_end_code(&as->mi[i], buff, bp);
+        safe_end_code(&as->mi[i], ps);
       }
     }
   }
@@ -2719,7 +2699,8 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
 
   /* Quick check: If no markup, no markup =). */
   if (!(as->flags & AS_HAS_MARKUP)) {
-    return safe_strl(as->text + start, len, buff, bp);
+    sqlite3_str_append(ps, as->text + start, len);
+    return 0;
   }
 
   end = start + len;
@@ -2728,26 +2709,44 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
 
   /* The string has markup. Let's dump it. */
   for (i = start; i < end;) {
-    while (lastidx == as->markup[i] && (i < end) && ((*bp) < buffend)) {
-      *((*bp)++) = as->text[i++];
-    }
-    if ((*bp) >= buffend) {
-      return 1;
+    while (lastidx == as->markup[i] && (i < end)) {
+      ps_safe_chr(ps, as->text[i++]);
     }
     if (i < end) {
       if (lastidx != as->markup[i]) {
-        if (safe_markup_change(as, lastidx, as->markup[i], i, buff, bp)) {
+        if (safe_markup_change(as, lastidx, as->markup[i], i, ps)) {
           return 1;
         }
         lastidx = as->markup[i];
       }
     } else if (lastidx != NOMARKUP) {
-      if (safe_markup_change(as, lastidx, NOMARKUP, i, buff, bp)) {
+      if (safe_markup_change(as, lastidx, NOMARKUP, i, ps)) {
         return 1;
       }
     }
   }
   return retval;
+}
+
+/** Safely append an ansi_string into a buffer as a real string,
+ * \param as pointer to ansi_string to append.
+ * \param start position in as to start copying from.
+ * \param len length in characters to copy from as.
+ * \param buff buffer to insert into.
+ * \param bp pointer to pointer to insertion point of buff.
+ * \retval 0 success.
+ * \retval 1 failure.
+ */
+int
+safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
+{
+  int ret;
+  pennstr *ps = ps_new();
+  if ((ret = ps_safe_ansi_string(as, start, len, ps)) == 0) {
+    ret = safe_pennstr(ps, buff, bp);
+  }
+  ps_free(ps);
+  return ret;
 }
 
 /* Following functions are used for

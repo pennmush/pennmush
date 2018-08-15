@@ -96,8 +96,6 @@ do_real_open(dbref player, const char *direction, const char *linkto,
 {
   dbref loc = (pseudo != NOTHING) ? pseudo : speech_loc(player);
   dbref new_exit;
-  char *flaglist, *flagname;
-  char flagbuff[BUFFER_LEN];
   char *name = NULL;
   char *alias = NULL;
 
@@ -128,6 +126,8 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   if (!can_open_from(player, loc, pe_info)) {
     notify(player, T("Permission denied."));
   } else if (can_pay_fees(player, EXIT_COST)) {
+    char *flagbuff, *flaglist;
+
     /* create the exit */
     new_exit = new_object();
 
@@ -138,15 +138,15 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     Source(new_exit) = loc;
     Type(new_exit) = TYPE_EXIT;
     Flags(new_exit) = new_flag_bitmask("FLAG");
-    strcpy(flagbuff, options.exit_flags);
+    flagbuff = mush_strdup(options.exit_flags, "string");
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-        flagname = split_token(&flaglist, ' ');
+        char *flagname = split_token(&flaglist, ' ');
         twiddle_flag_internal("FLAG", new_exit, flagname, 0);
       }
     }
-
+    mush_free(flagbuff, "string");
     mush_free(name, "name.newname");
     if (alias) {
       if (*alias != ALIAS_DELIMITER)
@@ -469,8 +469,8 @@ do_dig(dbref player, const char *name, char **argv, int tport,
        NEW_PE_INFO *pe_info)
 {
   dbref room;
-  char *flaglist, *flagname;
-  char flagbuff[BUFFER_LEN];
+  char *flaglist;
+  char *flagbuff;
 
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
@@ -495,14 +495,15 @@ do_dig(dbref player, const char *name, char **argv, int tport,
     Zone(room) = Zone(player);
     Type(room) = TYPE_ROOM;
     Flags(room) = new_flag_bitmask("FLAG");
-    strcpy(flagbuff, options.room_flags);
+    flagbuff = mush_strdup(options.room_flags, "string");
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-        flagname = split_token(&flaglist, ' ');
+        char *flagname = split_token(&flaglist, ' ');
         twiddle_flag_internal("FLAG", room, flagname, 0);
       }
     }
+    mush_free(flagbuff, "string");
 
     notify_format(player, T("%s created with room number %d."), name, room);
     if (argv[1] && *argv[1]) {
@@ -545,8 +546,8 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 {
   dbref loc;
   dbref thing;
-  char *flaglist, *flagname;
-  char flagbuff[BUFFER_LEN];
+  char *flaglist;
+  char *flagbuff;
 
   if (*name == '\0') {
     notify(player, T("Create what?"));
@@ -578,14 +579,15 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     s_Pennies(thing, cost);
     Type(thing) = TYPE_THING;
     Flags(thing) = new_flag_bitmask("FLAG");
-    strcpy(flagbuff, options.thing_flags);
+    flagbuff = mush_strdup(options.thing_flags, "string");
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-        flagname = split_token(&flaglist, ' ');
+        char *flagname = split_token(&flaglist, ' ');
         twiddle_flag_internal("FLAG", thing, flagname, 0);
       }
     }
+    mush_free(flagbuff, "string");
 
     /* home is here (if we can link to it) or player's home */
     if ((loc = Location(player)) != NOTHING &&
@@ -687,7 +689,7 @@ do_clone(dbref player, char *name, char *newname, bool preserve, char *newdbref,
          NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;
-  char dbnum[BUFFER_LEN];
+  pennstr *dbnum;
 
   thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING);
   if (thing == NOTHING)
@@ -754,23 +756,27 @@ do_clone(dbref player, char *name, char *newname, bool preserve, char *newdbref,
     /* For exits, we don't want people to be able to link it to
        a location they can't with @open. So, all this stuff.
      */
+    dbnum = ps_new();
     switch (Location(thing)) {
     case NOTHING:
-      strcpy(dbnum, "#-1");
+      ps_safe_str(dbnum, "#-1");
       break;
     case HOME:
-      strcpy(dbnum, "home");
+      ps_safe_str(dbnum, "home");
       break;
     case AMBIGUOUS:
-      strcpy(dbnum, "variable");
+      ps_safe_str(dbnum, "variable");
       break;
     default:
-      strcpy(dbnum, unparse_dbref(Location(thing)));
+      ps_safe_str(dbnum, unparse_dbref(Location(thing)));
     }
-    if (newname && *newname)
-      clone = do_real_open(player, newname, dbnum, NOTHING, pe_info);
-    else
-      clone = do_real_open(player, Name(thing), dbnum, NOTHING, pe_info);
+    if (newname && *newname) {
+      clone = do_real_open(player, newname, ps_str(dbnum), NOTHING, pe_info);
+    } else {
+      clone =
+        do_real_open(player, Name(thing), ps_str(dbnum), NOTHING, pe_info);
+    }
+    ps_free(dbnum);
     if (!GoodObject(clone)) {
       return NOTHING;
     } else {

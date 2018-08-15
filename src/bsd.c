@@ -1,7 +1,7 @@
 /**
  * \file bsd.c
  *
- * \brief Network communication through BSD sockets for PennMUSH.
+ * \brief Network communication through BSD sockets for PennMUSH.->reas
  *
  * While mysocket.c provides low-level functions for working with
  * sockets, bsd.c focuses on player descriptors, a higher-level
@@ -7200,7 +7200,7 @@ close_ssl_connections(void)
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->conn_flags |= CONN_CLOSE_READY;
-      d->reason = "ssl shutdown";
+      d->close_reason = "ssl shutdown";
     }
   }
   /* Close server socket */

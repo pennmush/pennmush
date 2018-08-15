@@ -72,7 +72,9 @@ char *seek_char(const char *s, char c);
 char *seek_cp(const char *s, UChar32 c);
 char *mush_strndup(const char *src, size_t len,
                    const char *check) __attribute_malloc__;
-char *mush_strndup_cp(const char *src, size_t len,
+char *mush_strndup_cp(const char *src, int len,
+                      const char *check) __attribute_malloc__;
+char *mush_strndup_gc(const char *src, int len,
                       const char *check) __attribute_malloc__;
 int mush_vsnprintf(char *, size_t, const char *, va_list);
 

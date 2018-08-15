@@ -141,7 +141,7 @@ isword_cb(const char *gc, char *s __attribute__((__unused__)),
           int len __attribute__((__unused__)),
           void *data __attribute__((__unused__)))
 {
-  return uni_isalpha(first_cp(gc, NULL));
+  return uni_isalpha(first_cp(gc));
 }
 
 /* ARGSUSED */
@@ -284,7 +284,6 @@ FUNCTION(fun_alphamin)
 /* ARGSUSED */
 FUNCTION(fun_strlen)
 {
-  /* TODO: Revise to use EGCs, not CPs, when support for them is added. */
   char *utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
   safe_integer(strlen_gc(utf8), buff, bp);
   mush_free(utf8, "utf8.string");
@@ -327,6 +326,9 @@ FUNCTION(fun_left)
 {
   int len;
   ansi_string *as;
+  char *utf8, *latin1;
+  int ulen, llen;
+  pennstr *ps;
 
   if (!is_integer(args[1])) {
     safe_str(T(e_int), buff, bp);
@@ -339,9 +341,17 @@ FUNCTION(fun_left)
     return;
   }
 
-  as = parse_ansi_string(args[0]);
-  safe_ansi_string(as, 0, len, buff, bp);
+  utf8 = latin1_to_utf8(args[0], arglens[0], &ulen, "utf8.string");
+  as = parse_ansi_string(utf8);
+  mush_free(utf8, "utf8.string");
+  len = strnlen_gc(as->text, len);
+  ps = ps_new();
+  ps_safe_ansi_string(as, 0, len, ps);
   free_ansi_string(as);
+  latin1 = utf8_to_latin1(ps_str(ps), ps_len(ps), &llen, 0, "latin1.string");
+  safe_strl(latin1, llen, buff, bp);
+  ps_free(ps);
+  mush_free(latin1, "latin1.string");
 }
 
 /* ARGSUSED */

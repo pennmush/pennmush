@@ -78,30 +78,36 @@ mush_strndup(const char *src, size_t len, const char *check)
  * \param str the source string in UTF-8
  * \parma len the number of Unicode codepoints to copy.
  * \param check memcheck id
- * \return newly allocated string or NULL on error like malformed UTF-8
+ * \return newly allocated string or NULL on error.
  */
 char *
-mush_strndup_cp(const char *src, size_t len, const char *check)
+mush_strndup_cp(const char *src, int len, const char *check)
 {
   char *copy;
-  int offset = 0;
-  UChar32 c;
-
-  U8_NEXT(src, offset, -1, c);
-  while (c > 0 && --len) {
-    U8_NEXT(src, offset, -1, c);
-  }
-
-  if (c < 0) {
-    return NULL;
-  }
-
-  copy = mush_malloc(offset + 1 + SSE_OFFSET, check);
+  int offset = strnlen_cp(src, len);
+  copy = mush_malloc_zero(offset + 1 + SSE_OFFSET, check);
   if (copy) {
     memcpy(copy, src, offset);
-    copy[offset] = '\0';
   }
 
+  return copy;
+}
+
+/** Copy the first len extended grapheme clusters of a UTF-8 string
+ * \param str the source string in UTF-8
+ * \parma len the number of graphemes to copy.
+ * \param check memcheck id
+ * \return newly allocated string or NULL on error.
+ */
+char *
+mush_strndup_gc(const char *src, int len, const char *check)
+{
+  char *copy;
+  int offset = strnlen_gc(src, len);
+  copy = mush_malloc_zero(offset + 1 + SSE_OFFSET, check);
+  if (copy) {
+    memcpy(copy, src, offset);
+  }
   return copy;
 }
 
@@ -2518,27 +2524,6 @@ strlen_gc(const char *s)
     n += 1;
   }
   return n;
-}
-
-/** Return the first codepoint in a UTF-8 string. Usually you'll want
- * to use U8_NEXT() directly, but sometimes it's handy to have as a
- * function instead of a macro.
- *
- * \param s the UTF-8 string
- * \param len If non-NULL, set to the number of bytes taken up by the codepoint.
- * \return the codepoint, negative on an invalid byte sequence.
- */
-UChar32
-first_cp(const char *s, int *len)
-{
-  UChar32 c;
-  int offset = 0;
-
-  U8_NEXT(s, offset, -1, c);
-  if (len) {
-    *len = offset;
-  }
-  return c;
 }
 
 /** Case-insensitive UTF-8 string comparison. If ICU is not being

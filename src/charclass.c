@@ -299,13 +299,13 @@ egc_len8(const char *utf8, int len)
     return 2;
   }
 
-  int first_cp = 0;
-  U8_NEXT(utf8, first_cp, len, c);
+  int firstcp = 0;
+  U8_NEXT(utf8, firstcp, len, c);
   if (c < 0) {
-    return first_cp;
+    return firstcp;
   }
 
-  i = first_cp;
+  i = firstcp;
   int prev_i = 0;
   gcb_cat cat = get_gcb(c);
   if (cat == U_GCB_PREPEND) {
@@ -313,7 +313,7 @@ egc_len8(const char *utf8, int len)
     prev_i = i;
     U8_NEXT(utf8, i, len, c);
     if (c <= 0) {
-      return first_cp;
+      return firstcp;
     }
     cat = get_gcb(c);
   }
@@ -331,11 +331,11 @@ egc_len8(const char *utf8, int len)
     i = prev_i;
     i += hangul_syllable_len8(utf8, i, len);
     if (prev_i == i) {
-      return first_cp;
+      return firstcp;
     }
     break;
   case U_GCB_CONTROL:
-    return first_cp;
+    return firstcp;
   default:
     (void) 0;
   }
@@ -390,11 +390,16 @@ gcbytes(const char *s)
 
 #endif
 
-/** Return the number of bytes the first codepoint in a utf-8 string takes. */
+/** Calculate the number of bytes used by the first N extended
+    grapheme clusters in a UTF-8 string. */
 int
-cpbytes(const char *s)
+strnlen_gc(const char *s, int n)
 {
-  int len = 0;
-  U8_FWD_1(s, len, -1);
-  return len;
+  int bytes = 0;
+  while (*s && n-- > 0) {
+    int len = gcbytes(s);
+    s += len;
+    bytes += len;
+  }
+  return bytes;
 }

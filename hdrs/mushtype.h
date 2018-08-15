@@ -9,6 +9,7 @@
 
 #include "copyrite.h"
 #include <openssl/ssl.h>
+#include <signal.h>
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -289,6 +290,9 @@ struct squeue {
   char *event;         /** Softcode Event name to trigger, or NULL if none */
   struct squeue *next; /** Pointer to next squeue event in linked list */
 };
+
+/**< Have we used too much CPU? */
+extern volatile sig_atomic_t cpu_time_limit_hit;
 
 #define HTTP_METHOD_LEN 16
 #define HTTP_CODE_LEN   64

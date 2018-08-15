@@ -24,6 +24,7 @@ Major Changes
 -------------
 
 * Built-in HTTP server support, see "help http" [GM]
+* A single command queue for players and objects. No more @trigger waits. [GM]
 
 Minor Changes
 -------------
@@ -42,4 +43,5 @@ Softcode
 Fixes
 -----
 
-* add_function in .cnf files was not properly using the upper case'd string. [#1223, MT]
+* `add_function` in .cnf files was not properly using the upper case'd string. [#1223, MT]
+* Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]

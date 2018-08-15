@@ -1127,7 +1127,7 @@ regedit_helper(dbref player, dbref thing,
       }
     }
   } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST) &&
-           !gargs->call_limit_hit);
+           !gargs->call_limit_hit && !cpu_time_limit_hit);
 
   if (gargs->call_limit_hit) {
     /* Bail out */

@@ -2630,7 +2630,7 @@ FUNCTION(fun_regreplace)
   pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP, "fun_regreplace");
 
   /* Ansi-less regedits */
-  for (i = 1; i < nargs - 1; i += 2) {
+  for (i = 1; i < nargs - 1 && !cpu_time_limit_hit; i += 2) {
     /* If this string has ANSI, switch to using ansi only */
     if (has_markup(postbuf))
       break;
@@ -2742,7 +2742,7 @@ FUNCTION(fun_regreplace)
       /* Make sure we advance at least 1 char */
       if (offsets[0] == match_offset)
         match_offset++;
-    } while (all && match_offset < prelen &&
+    } while (all && match_offset < prelen && !cpu_time_limit_hit &&
              (subpatterns = pcre_exec(re, extra, prebuf, prelen, match_offset,
                                       0, offsets, 99)) >= 0);
 
@@ -2767,7 +2767,7 @@ FUNCTION(fun_regreplace)
     orig = parse_ansi_string(postbuf);
 
     /* For each search/replace pair, compare them against orig */
-    for (; i < nargs - 1; i += 2) {
+    for (; i < nargs - 1 && !cpu_time_limit_hit; i += 2) {
 
       /* Get the needle */
       tbp = tbuf;
@@ -2860,7 +2860,7 @@ FUNCTION(fun_regreplace)
             break;
           }
         }
-      } while (subpatterns >= 0 && all);
+      } while (subpatterns >= 0 && !cpu_time_limit_hit && all);
       pcre_free(re);
       DEL_CHECK("pcre");
       if (study != NULL) {
@@ -3085,7 +3085,7 @@ FUNCTION(fun_regrab)
   if (!ptrs)
     mush_panic("Unable to allocate memory in fun_regrab");
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, s, sep, 1);
-  for (i = 0; i < nptrs; i++) {
+  for (i = 0; i < nptrs && !cpu_time_limit_hit; i++) {
     r = remove_markup(ptrs[i], &rlen);
     if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)

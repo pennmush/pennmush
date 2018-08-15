@@ -1357,6 +1357,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
       result = func(player, thing, NOTHING, name, ptr, args);
   } else if (AttrCount(thing)) {
     ATTR_FOR_EACH (thing, ptr) {
+      if (cpu_time_limit_hit) break;
       if (strchr(AL_NAME(ptr), '`')) {
         continue;
       }
@@ -1483,8 +1484,10 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
     int parent_depth;
     st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
-         parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
+         parent_depth-- && parent != NOTHING && !cpu_time_limit_hit;
+         parent = Parent(parent)) {
       ATTR_FOR_EACH (parent, ptr) {
+        if (cpu_time_limit_hit) break;
         if (!st_find(AL_NAME(ptr), &seen)) {
           st_insert(AL_NAME(ptr), &seen);
           if (parent != thing) {
@@ -1828,6 +1831,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     st_flush(&private_attrs);
 
     ATTR_FOR_EACH (current, ptr) {
+      if (cpu_time_limit_hit) break;
       if (current == thing) {
         if (st_find(AL_NAME(ptr), &nocmd_roots)) {
           continue;
@@ -1999,7 +2003,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
       }
     }
-  } while ((current = next) != NOTHING);
+  } while ((current = next) != NOTHING && !cpu_time_limit_hit);
 
   st_flush(&seen);
   st_flush(&nocmd_roots);

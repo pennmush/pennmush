@@ -1472,7 +1472,7 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
     free_ansi_string(orig);
     return 0;
   }
-  while (subpatterns >= 0) {
+  while (subpatterns >= 0 && !cpu_time_limit_hit) {
     safe_str(ANSI_HILITE, rbuff, &rbp);
     ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff, &rbp);
     safe_str(ANSI_END, rbuff, &rbp);

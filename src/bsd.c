@@ -345,7 +345,10 @@ static long int msec_diff(struct timeval now, struct timeval then);
 static void update_quotas(struct timeval current);
 
 int how_many_fds(void);
-static void shovechars(Port_t port, Port_t sslport);
+static void open_ports(Port_t port, Port_t sslport);
+static void gameloop();
+static void ext_startup();
+static void ext_shutdown();
 
 #ifndef WIN32
 typedef int SOCKET;
@@ -453,8 +456,7 @@ static void dump_users(DESC *call_by, char *match);
 static char *onfor_time_fmt(time_t at, int len);
 static char *idle_time_fmt(time_t last, int len);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
-                                dbref executor);
+static void announce_disconnect(DESC *saved, const char *reason, dbref executor);
 bool inactivity_check(void);
 void load_reboot_db(void);
 
@@ -719,7 +721,16 @@ main(int argc, char **argv)
 
   init_sys_events();
 
-  shovechars(TINYPORT, SSLPORT);
+  open_ports(TINYPORT, SSLPORT);
+
+  /* start up anything 'external' */
+  ext_startup();
+
+  /* Enter the main game loop */
+  gameloop();
+
+  /* Shut anything 'external' down */
+  ext_shutdown();
 
 /* someone has told us to shut down */
 #ifdef WIN32SERVICES
@@ -1115,7 +1126,7 @@ handle_curl_msg(CURLMsg *msg)
 
 #endif
 
-/* Check for any errors and status changes, and let shovechars() know if it
+/* Check for any errors and status changes, and let gameloop() know if it
  * needs to shut down.
  * \return 1 if everything's okay, 0 to shut down.
  */
@@ -1315,7 +1326,7 @@ ext_shutdown()
 #endif
 }
 
-/* What previously used to be the largest chunk of shovechars(). This routine
+/* What previously used to be the largest chunk of gameloop(). This routine
  * handles all the network input, output, and checking, but never runs a
  * command, or interacts with softcode.
  *
@@ -1573,14 +1584,10 @@ check_sockets(uint32_t msec_timeout)
 }
 
 static void
-shovechars(Port_t port, Port_t sslport)
+gameloop()
 {
   uint64_t msec_timeout, timeout_check;
   struct timeval current_time;
-
-  open_ports(port, sslport);
-
-  ext_startup();
 
   while (!shutdown_flag) {
     /** let's find out how long we should wait */
@@ -1593,7 +1600,6 @@ shovechars(Port_t port, Port_t sslport)
     min_timeout(msec_timeout, queue_msecs_till_next());
     min_timeout(msec_timeout, sq_msecs_till_next());
     min_timeout(msec_timeout, http_msecs_till_next());
-
     /* Sweet, let's check the sockets for input. We'll wait up to msec_timeout
      * milliseconds, but this may be less.
      *
@@ -1611,6 +1617,9 @@ shovechars(Port_t port, Port_t sslport)
 
     /* Let's get ready to run some commands. */
     time(&mudtime);
+
+    /* Update queue load tracker (@ps's data) */
+    update_queue_load();
 
     /* Process all available incoming commands on the socket. */
     process_commands();
@@ -1632,7 +1641,6 @@ shovechars(Port_t port, Port_t sslport)
     penn_gettimeofday(&current_time);
     update_quotas(current_time);
   }
-  ext_shutdown();
 }
 
 static int
@@ -2147,7 +2155,7 @@ logout_sock(DESC *d)
     fcache_dump(d, fcache.quit_fcache, NULL, NULL);
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    announce_disconnect(d, "logout", 0, d->player);
+    announce_disconnect(d, "logout", d->player);
     if (can_mail(d->player)) {
       do_mail_purge(d->player);
     }
@@ -2200,7 +2208,7 @@ cleanup_desc(DESC *d)
     if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL, NULL);
       /* Player was not allowed to log in from the connect screen */
-      announce_disconnect(d, reason, 0, executor);
+      announce_disconnect(d, reason, executor);
       if (can_mail(d->player)) {
         do_mail_purge(d->player);
       }
@@ -5871,8 +5879,7 @@ announce_connect(DESC *d, int isnew, int num)
 }
 
 static void
-announce_disconnect(DESC *saved, const char *reason, bool reboot,
-                    dbref executor)
+announce_disconnect(DESC *saved, const char *reason, dbref executor)
 {
   dbref loc;
   int numleft = 0;

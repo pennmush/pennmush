@@ -454,7 +454,7 @@ notify_type(DESC *d)
     type |= MSG_ANSI2;
   }
 
-  if ((d->conn_flags & CONN_STRIPACCENTS) || (d->connected && 
+  if ((d->conn_flags & CONN_STRIPACCENTS) || (d->connected &&
       IS(d->player, TYPE_PLAYER, "NOACCENTS"))) {
     type |= MSG_STRIPACCENTS;
   }
@@ -1935,11 +1935,12 @@ int
 queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 #endif /* undef WITHOUT_WEBSOCKETS */
 {
+
   int space;
 
   char *utf8 = NULL;
 
-  if (d->conn_flags & CONN_SOCKET_ERROR)
+  if (d->conn_flags & CONN_SHUTDOWN)
     return 0;
 
   if (d->conn_flags & CONN_HTTP_BUFFER) {
@@ -1993,7 +1994,9 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
           LT_TRACE,
           "send() returned %d (error %s) trying to write %d bytes to %d",
           written, strerror(errno), n, d->descriptor);
-        d->conn_flags |= CONN_SOCKET_ERROR;
+        d->conn_flags |= CONN_SHUTDOWN;
+        d->closer = GOD;
+        d->close_reason = "socket error";
         if (utf8)
           mush_free(utf8, "string");
         return 0;

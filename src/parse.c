@@ -46,7 +46,6 @@ int global_fun_recursions;
 /* extern int re_subpatterns; */
 /* extern int *re_offsets; */
 /* extern ansi_string *re_from; */
-extern volatile sig_atomic_t cpu_time_limit_hit;
 extern int cpu_limit_warning_sent;
 
 /** Structure for storing DEBUG output in a linked list */

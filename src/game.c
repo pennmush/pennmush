@@ -1198,6 +1198,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   if (queue_entry->queue_type & QUEUE_DEBUG_PRIVS)
     queue_flags |= QUEUE_DEBUG_PRIVS;
 
+  if (queue_entry->queue_type & QUEUE_SOCKET)
+    queue_flags |= QUEUE_INPLACE;
+
   /* ignore null commands that aren't from players */
   if ((!command || !*command) && !(queue_entry->queue_type & QUEUE_SOCKET))
     return;
@@ -1219,7 +1222,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
 
   strcpy(unp, command);
 
+  /* Check all our hardcoded commands, chat tokens, etc. Returns if no match. */
   cptr = command_parse(executor, command, queue_entry);
+
   if (cptr) {
     if (queue_entry->pe_info->cmd_evaled) {
       mush_free(queue_entry->pe_info->cmd_evaled, "string");

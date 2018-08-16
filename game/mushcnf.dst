@@ -347,9 +347,6 @@ player_queue_limit 100
 # the number of commands run from the queue when there is no net activity
 queue_chunk 3
 
-# the number of commands run from the queue when there is net activity
-active_queue_chunk 1
-
 # the maximum level of recursion allowed in functions
 function_recursion_limit 50
 

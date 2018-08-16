@@ -25,7 +25,7 @@ As an example, this used to be a common way to ensure something was executed onc
 
 
 
-This will now happen, up to several thousand times per second! Add in an @wait 1, and it’ll work as expected!
+This will now happen up to several thousand times per second! Add in an @wait 1, and it’ll work as expected!
 
 
 Major Changes:

@@ -1,7 +1,7 @@
 /**
  * \file bsd.c
  *
- * \brief Network communication through BSD sockets for PennMUSH.->reas
+ * \brief Network communication through BSD sockets for PennMUSH.
  *
  * While mysocket.c provides low-level functions for working with
  * sockets, bsd.c focuses on player descriptors, a higher-level
@@ -1228,11 +1228,10 @@ clean_descriptors(DESC **head) {
     if (d->conn_flags & (CONN_CLOSABLES)) {
       *listp = d->next;
       cleanup_desc(d);
-      d = *listp;
     } else {
       listp = &(d->next);
-      d = d->next;
     }
+    d = *listp;
   }
 }
 
@@ -5876,7 +5875,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
                     dbref executor)
 {
   dbref loc;
-  int num;
+  int numleft = 0;
   DESC *d;
   char tbuf1[BUFFER_LEN];
   char *message;
@@ -5890,12 +5889,10 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   if (!GoodObject(loc))
     return;
 
-  for (num = 0, d = descriptor_list; d; d = d->next)
-    if (d->connected && (d->player == player))
-      num += 1;
-
-  if (reboot)
-    num += 1;
+  DESC_ITER_CONN(d) {
+    if (d->player == player)
+      numleft += 1;
+  }
 
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
@@ -5906,7 +5903,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
    * %5 (hidden)
    */
   pe_regs = pe_regs_create(PE_REGS_ARG, "announce_disconnect");
-  pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+  pe_regs_setenv(pe_regs, 1, unparse_integer(numleft));
   pe_regs_setenv(pe_regs, 2, unparse_integer(saved->input_chars));
   pe_regs_setenv(pe_regs, 3, unparse_integer(saved->output_chars));
   pe_regs_setenv(pe_regs, 4, unparse_integer(saved->cmds));
@@ -5917,7 +5914,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
    * idle, recv/sent/commands)  */
   queue_event(executor, "PLAYER`DISCONNECT",
               "%s,%d,%d,%s,%s,%d,%d,%d,%lu/%lu/%d", unparse_objid(player),
-              num - 1, Hidden(saved), reason, saved->ip, saved->descriptor,
+              numleft, Hidden(saved), reason, saved->ip, saved->descriptor,
               (int) difftime(mudtime, saved->connected_at),
               (int) difftime(mudtime, saved->last_time), saved->input_chars,
               saved->output_chars, saved->cmds);
@@ -5931,7 +5928,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
           pe_regs_setenv_nocopy(pe_regs, 1, "");
         (void) queue_attribute_useatr(loc, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
-          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+          pe_regs_setenv(pe_regs, 1, unparse_integer(numleft));
       }
     }
   /* do the zone of the player's location's possible adisconnect */
@@ -5944,7 +5941,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
           pe_regs_setenv_nocopy(pe_regs, 1, "");
         (void) queue_attribute_useatr(zone, a, player, pe_regs, 0, NULL, NULL);
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
-          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+          pe_regs_setenv(pe_regs, 1, unparse_integer(numleft));
       }
       break;
     case TYPE_ROOM:
@@ -5956,7 +5953,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
             pe_regs_setenv_nocopy(pe_regs, 1, "");
           (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
-            pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+            pe_regs_setenv(pe_regs, 1, unparse_integer(numleft));
         }
       }
       break;
@@ -5973,7 +5970,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
         pe_regs_setenv_nocopy(pe_regs, 1, "");
       (void) queue_attribute_useatr(obj, a, player, pe_regs, 0, NULL, NULL);
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
-        pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+        pe_regs_setenv(pe_regs, 1, unparse_integer(numleft));
     }
   }
 
@@ -5981,11 +5978,11 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
 
   /* Redundant, but better for translators */
   if (Hidden(saved)) {
-    message = (num > 1) ? T("has partially HIDDEN-disconnected.")
+    message = (numleft) ? T("has partially HIDDEN-disconnected.")
                         : T("has HIDDEN-disconnected.");
   } else {
     message =
-      (num > 1) ? T("has partially disconnected.") : T("has disconnected.");
+      (numleft) ? T("has partially disconnected.") : T("has disconnected.");
   }
   snprintf(tbuf1, BUFFER_LEN, "%s %s", AName(player, AN_ANNOUNCE, NULL),
            message);
@@ -5996,7 +5993,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
     /* notify contents */
     notify_except(player, player, player, tbuf1, 0);
     /* notify channels */
-    chat_player_announce(saved, message, num == 1);
+    chat_player_announce(saved, message, !numleft);
   }
 
   /* Monitor broadcasts */
@@ -6008,11 +6005,13 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot,
   } else
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
-  if (num < 2) {
+  if (!numleft) {
     clear_flag_internal(player, "CONNECTED");
     (void) atr_add(player, "LASTLOGOUT", show_time(mudtime, 0), GOD, 0);
   }
-  local_disconnect(player, num);
+
+  /* local_disconnect expects num to include logged out sock, for backwards compat. */
+  local_disconnect(player, numleft + 1);
 }
 
 /** Set an motd message.
@@ -7319,6 +7318,7 @@ load_reboot_db(void)
     penn_fclose(f);
     return;
   } else {
+    DESC *closed = NULL;
     DESC *d = NULL;
     int val = 0;
     const char *temp;
@@ -7431,14 +7431,17 @@ load_reboot_db(void)
       d->ssl_state = 0;
       d->next = NULL;
 
-      if (descriptor_list) {
-        tail->next = d;
-        tail = d;
-      } else {
-        descriptor_list = tail = d;
-      }
       if (d->conn_flags & CONN_CLOSE_READY) {
         d->close_reason = "ssl shutdown";
+        d->next = closed;
+        closed = d;
+      } else {
+        if (descriptor_list) {
+          tail->next = d;
+          tail = d;
+        } else {
+          descriptor_list = tail = d;
+        }
       }
       im_insert(descs_by_fd, d->descriptor, d);
       if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
@@ -7485,6 +7488,8 @@ load_reboot_db(void)
       ssl_slave_state = SSL_SLAVE_RUNNING;
 
 #endif
+
+    clean_descriptors(&closed);
 
     penn_fclose(f);
     remove(REBOOTFILE);

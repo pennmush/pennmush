@@ -37,9 +37,15 @@ local_startup(void)
  * a data argument to pass to it, and a softcoded event name to run at the same
  * time. The latter two can be null pointers. The callback function returns true
  * if the softcode event should be triggered, false if it shouldn't.
+ *
+ * You can also register call backs in milliseconds, see below for example.
+ 
  */
 #if 0 /* Change to 1 if you need local_timer functionality. */
   sq_register_loop(1, local_timer, NULL, NULL);
+#endif
+#if 0 /* As above, but in milliseconds */
+sq_register_loop_msec(250, local_timer, NULL, NULL);
 #endif
 }
 

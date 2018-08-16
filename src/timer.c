@@ -474,12 +474,26 @@ sq_register_in(int n, sq_func f, void *d, const char *ev)
   return sq_register(now + SECS_TO_MSECS(n), f, d, ev);
 }
 
+/** Register a callback function to be executed in N milliseconds.
+ * \param n the number of seconds to run the callback after.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ * \return pointer to the newly added squeue
+ */
+struct squeue *
+sq_register_in_msec(uint64_t n, sq_func f, void *d, const char *ev)
+{
+  uint64_t now = now_msecs();
+  return sq_register(now + n, f, d, ev);
+}
+
 /** A timed event that runs on a loop */
 struct sq_loop {
   sq_func fun;       /**< The function to run for the event */
   void *data;        /**< The data for the event */
   const char *event; /**< The name of the event attr to trigger */
-  int secs;          /**< How often to run the event */
+  uint64_t msecs;          /**< How often to run the event in msecs */
 };
 
 static bool
@@ -489,7 +503,7 @@ sq_loop_fun(void *arg)
   bool res;
 
   res = loop->fun(loop->data);
-  sq_register_in(loop->secs, sq_loop_fun, arg, loop->event);
+  sq_register_in_msec(loop->msecs, sq_loop_fun, arg, loop->event);
 
   return res;
 }
@@ -512,9 +526,32 @@ sq_register_loop(int n, sq_func f, void *d, const char *ev)
     loop->event = strupper_a(ev, "squeue.event");
   else
     loop->event = NULL;
-  loop->secs = n;
+  // sq_loop stores msecs not seconds
+  loop->msecs = SECS_TO_MSECS(n);
 
   sq_register_in(n, sq_loop_fun, loop, ev);
+}
+
+/** Register a callback function to run every N milliseconds.
+ * \param n the number of seconds to wait between calls.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ */
+void
+sq_register_loop_msec(uint64_t n, sq_func f, void *d, const char *ev)
+{
+  struct sq_loop *loop;
+
+  loop = mush_malloc(sizeof *loop, "squeue.node");
+  loop->fun = f;
+  loop->data = d;
+  if (ev)
+    loop->event = strupper_a(ev, "squeue.event");
+  else
+    loop->event = NULL;
+  loop->msecs = n;
+  sq_register_in_msec(n, sq_loop_fun, loop, ev);
 }
 
 /** Execute a single pending system queue event.

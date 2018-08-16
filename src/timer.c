@@ -460,21 +460,8 @@ sq_cancel(struct squeue *sq)
   }
 }
 
-/** Register a callback function to be executed in N seconds.
- * \param n the number of seconds to run the callback after.
- * \param f the callback function.
- * \param d data to pass to the callback.
- * \param ev softcode event to trigger at the same time.
- * \return pointer to the newly added squeue
- */
-struct squeue *
-sq_register_in(int n, sq_func f, void *d, const char *ev)
-{
-  uint64_t now = now_msecs();
-  return sq_register(now + SECS_TO_MSECS(n), f, d, ev);
-}
 
-/** Register a callback function to be executed in N milliseconds.
+/** Register a callback function to be executed in N miliseconds.
  * \param n the number of seconds to run the callback after.
  * \param f the callback function.
  * \param d data to pass to the callback.
@@ -508,31 +495,7 @@ sq_loop_fun(void *arg)
   return res;
 }
 
-/** Register a callback function to run every N seconds.
- * \param n the number of seconds to wait between calls.
- * \param f the callback function.
- * \param d data to pass to the callback.
- * \param ev softcode event to trigger at the same time.
- */
-void
-sq_register_loop(int n, sq_func f, void *d, const char *ev)
-{
-  struct sq_loop *loop;
-
-  loop = mush_malloc(sizeof *loop, "squeue.node");
-  loop->fun = f;
-  loop->data = d;
-  if (ev)
-    loop->event = strupper_a(ev, "squeue.event");
-  else
-    loop->event = NULL;
-  // sq_loop stores msecs not seconds
-  loop->msecs = SECS_TO_MSECS(n);
-
-  sq_register_in(n, sq_loop_fun, loop, ev);
-}
-
-/** Register a callback function to run every N milliseconds.
+/** Register a callback function to run every N miliseconds.
  * \param n the number of seconds to wait between calls.
  * \param f the callback function.
  * \param d data to pass to the callback.

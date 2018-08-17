@@ -20,9 +20,7 @@ WARNING! With the removal of the object queue, please be careful when upgrading 
 As an example, this used to be a common way to ensure something was executed once per second:
 
 
-
-&everysecond object=do some ; updates ; @trigger me/everysecond
-
+> &everysecond object=do some ; updates ; @trigger me/everysecond
 
 
 This will now happen up to several thousand times per second! Add in an @wait 1, and it’ll work as expected!
@@ -40,6 +38,7 @@ Minor Changes:
 * Sockets commands now inline $-commands, so, e.g: $,* *: chat aliases don’t hit queue. [GM]
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
 * Sqlite3’s [1mREGEXP[0m operator is always available and uses pcre regular expressions (Previously it depended on libicu and used java style REs). [SW]
+* Update [1mlocal.dst[0m to include example of millisecond callback loop. [MT]
 
 Softcode:
 

@@ -24,7 +24,7 @@ WARNING! With the removal of the object queue, please be careful when upgrading 
 
 As an example, this used to be a common way to ensure something was executed once per second:
 
-> &everysecond object=do some ; updates ; @trigger me/everysecond
+  &gt; &amp;everysecond object=do some ; updates ; @trigger me/everysecond
 
 This will now happen up to several thousand times per second! Add in an @wait 1, and it'll work as expected!
 

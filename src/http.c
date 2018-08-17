@@ -607,6 +607,15 @@ send_http_response(DESC *d, char *content)
     safe_str(req->res_type, buff, &bp);
     //safe_format(buff, &bp, "Content-Length: %lu\r\n", strlen(arg_right));
     safe_str("\r\n", buff, &bp);
+    
+    if (req->wrap_html && strstr(req->res_type, "text/html")) {
+      safe_format(buff, &bp,
+                  "<!DOCTYPE html>\r\n"
+                  "<HTML><HEAD>\r\n"
+                  "<TITLE>%s</TITLE>\r\n"
+                  "</HEAD><BODY>\r\n",
+                  MUDNAME);
+    }
   }
   
   /* response content, if present */
@@ -627,9 +636,25 @@ send_http_response(DESC *d, char *content)
 static void
 close_http_request(DESC *d)
 {
-  if (d->http && d->http->timer) {
-    sq_cancel(d->http->timer);
-    d->http->timer = NULL;
+  char buff[BUFFER_LEN];
+  char *bp;
+  http_request *req = d->http;
+  
+  if (req) {
+    if (req->timer) {
+      sq_cancel(req->timer);
+      req->timer = NULL;
+    }
+    
+    /* send the closing HTML wrapper if needed */
+    if (req->wrap_html && strstr(req->res_type, "text/html")) {
+      bp = buff;
+      safe_str("</BODY></HTML>\r\n", buff, &bp);
+      *bp = '\0';
+
+      queue_write(d, buff, bp - buff);
+      queue_eol(d);
+    }
   }
   
   boot_desc(d, "http close", GOD);
@@ -643,6 +668,7 @@ COMMAND(cmd_respond)
   uint32_t code;
   DESC *d;
   int arg_content = 1;
+  int close_socket = 1;
   
   if (!arg_left || !*arg_left) {
     notify(executor, T("Invalid arguments."));
@@ -669,12 +695,30 @@ COMMAND(cmd_respond)
   if (SW_ISSET(sw, SWITCH_HTML)) {
     strncpy(req->res_type, "Content-Type: text/html\r\n", HTTP_STR_LEN);
     notify(executor, T("Content-Type set to text/html."));
+    close_socket = 0;
   } else if (SW_ISSET(sw, SWITCH_JSON)) {
     strncpy(req->res_type, "Content-Type: application/json\r\n", HTTP_STR_LEN);
     notify(executor, T("Content-Type set to application/json."));
+    close_socket = 0;
   } else if (SW_ISSET(sw, SWITCH_TEXT)) {
     strncpy(req->res_type, "Content-Type: text/plain\r\n", HTTP_STR_LEN);
     notify(executor, T("Content-Type set to text/plain."));
+    close_socket = 0;
+  }
+  
+  /* using a type switch by itself, e.g. @respond/html %0, should
+   * not close the socket, unless you provide content in arg_right.
+   * can still be blocked with /send, or forced with /notify.
+   */
+  if (arg_right && *arg_right) {
+    close_socket = 1;
+  }
+
+  /* toggle whether to wrap the output with HTML boilerplate */
+  if ((SW_ISSET(sw, SWITCH_WRAP))) {
+    req->wrap_html = true;
+  } else if ((SW_ISSET(sw, SWITCH_NOWRAP))) {
+    req->wrap_html = false;
   }
   
   if (SW_ISSET(sw, SWITCH_TYPE)) {
@@ -757,7 +801,7 @@ COMMAND(cmd_respond)
     arg_content = 0;
     
   }
-
+  
   /* none of the sub-commands exitted early so send a response
    * check arg_content to make sure we didn't already use arg_right
    */
@@ -768,7 +812,7 @@ COMMAND(cmd_respond)
   }
     
   /* close the socket unless /send is set, unless /notify overrides that */
-  if ((SW_ISSET(sw, SWITCH_NOTIFY)) || !(SW_ISSET(sw, SWITCH_SEND))) {
+  if (close_socket && ((SW_ISSET(sw, SWITCH_NOTIFY)) || !(SW_ISSET(sw, SWITCH_SEND)))) {
     close_http_request(d);
   }
 

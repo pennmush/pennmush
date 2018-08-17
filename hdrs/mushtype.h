@@ -285,6 +285,7 @@ typedef struct HTTP_REQUEST {
   char res_type[HTTP_STR_LEN];		/* response Content-Type */
   char response[BUFFER_LEN];		/* other response headers */
   char *rp;				/* reponse header pointer */
+  bool wrap_html;			/* toggle whether to wrap output in HTML */
 } http_request;
 
 /** Maximum \@doing length */

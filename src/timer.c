@@ -524,18 +524,19 @@ bool
 sq_run_one(void)
 {
   uint64_t now = now_msecs();
-  struct squeue *n;
+  struct squeue *torun;
 
   if (sq_head) {
     if (sq_head->when <= now) {
-      bool r = sq_head->fun(sq_head->data);
-      if (r && sq_head->event)
-        queue_event(SYSEVENT, sq_head->event, "%s", "");
-      n = sq_head->next;
-      if (sq_head->event)
-        mush_free(sq_head->event, "squeue.event");
-      mush_free(sq_head, "squeue.node");
-      sq_head = n;
+      torun = sq_head;
+      sq_head = torun->next;
+
+      bool r = torun->fun(torun->data);
+      if (torun->event) {
+        if (r) queue_event(SYSEVENT, torun->event, "%s", "");
+        mush_free(torun->event, "squeue.event");
+      }
+      mush_free(torun, "squeue.node");
       return true;
     }
   }

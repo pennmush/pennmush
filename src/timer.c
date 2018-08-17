@@ -525,13 +525,14 @@ sq_run_one(void)
 {
   uint64_t now = now_msecs();
   struct squeue *torun;
+  bool r;
 
   if (sq_head) {
     if (sq_head->when <= now) {
       torun = sq_head;
       sq_head = torun->next;
 
-      bool r = torun->fun(torun->data);
+      r = torun->fun(torun->data);
       if (torun->event) {
         if (r) queue_event(SYSEVENT, torun->event, "%s", "");
         mush_free(torun->event, "squeue.event");

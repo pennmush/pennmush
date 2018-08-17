@@ -441,7 +441,7 @@ const char *accented_name(dbref thing);
 /* From utils.c */
 void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
 uint64_t now_msecs(); /* current milliseconds */
-#define SECS_TO_MSECS(x) (x * 1000UL)
+#define SECS_TO_MSECS(x) ((x) * 1000UL)
 #ifdef WIN32
 void penn_gettimeofday(struct timeval *now); /* For platform agnosticism */
 #else

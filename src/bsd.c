@@ -387,7 +387,8 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
-static void shutdownsock(DESC *d, const char *reason, dbref executor);
+static void shutdownsock(DESC *d, const char *reason, dbref executor, int flags);
+static void disconnect_desc(DESC *d);
 static void cleanup_desc(DESC *d);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
@@ -457,6 +458,12 @@ static char *onfor_time_fmt(time_t at, int len);
 static char *idle_time_fmt(time_t last, int len);
 static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved, const char *reason, dbref executor);
+enum disconn_reason {
+  DISCONNECT_LOGOUT = 0,
+  DISCONNECT_QUIT = 1
+};
+
+static void disconnect_player(DESC *d, enum disconn_reason reason);
 bool inactivity_check(void);
 void load_reboot_db(void);
 
@@ -1221,14 +1228,15 @@ check_status()
 }
 
 void
-shutdownsock(DESC *d, const char *reason, dbref executor)
+shutdownsock(DESC *d, const char *reason, dbref executor, int flags)
 {
-  d->conn_flags |= CONN_SHUTDOWN;
+  d->conn_flags |= CONN_SHUTDOWN | flags;
   d->close_reason = reason;
   d->closer = executor;
 }
 
-#define CONN_CLOSABLES (CONN_SHUTDOWN | CONN_CLOSE_READY | CONN_HTTP_CLOSE)
+#define CONN_CLOSABLES (CONN_SHUTDOWN | CONN_NOWRITE |\
+                        CONN_CLOSE_READY | CONN_HTTP_CLOSE)
 
 void
 clean_descriptors(DESC **head) {
@@ -1237,6 +1245,7 @@ clean_descriptors(DESC **head) {
 
   while (d) {
     if (d->conn_flags & (CONN_CLOSABLES)) {
+      disconnect_desc(d);
       *listp = d->next;
       cleanup_desc(d);
     } else {
@@ -1561,17 +1570,18 @@ check_sockets(uint32_t msec_timeout)
         found -= 1;
       if (errors) {
         /* Socket error; kill this connection. */
-        shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD);
+        shutdownsock(d, "socket error", d->player >= 0 ? d->player : GOD,
+                     CONN_NOWRITE);
       } else {
         if (input_ready) {
           if (!process_input(d, output_ready)) {
-            shutdownsock(d, "disconnect", d->player);
+            shutdownsock(d, "disconnect", d->player, CONN_NOWRITE);
             continue;
           }
         }
         if (output_ready) {
           if (!process_output(d)) {
-            shutdownsock(d, "disconnect", d->player);
+            shutdownsock(d, "disconnect", d->player, CONN_NOWRITE);
           }
         }
       }
@@ -2144,18 +2154,19 @@ fcache_init(void)
   fcache_load(NOTHING);
 }
 
-/** Logout a descriptor from the player it's connected to,
- * without dropping the connection. Run when a player uses LOGOUT
- * \param d descriptor
- */
 static void
-logout_sock(DESC *d)
+disconnect_player(DESC *d, enum disconn_reason reason)
 {
-  if (d->connected) {
+  if (d->connected == CONN_PLAYER && IsPlayer(d->player)) {
     fcache_dump(d, fcache.quit_fcache, NULL, NULL);
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
-              d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    announce_disconnect(d, "logout", d->player);
+    if (reason == DISCONNECT_LOGOUT) {
+      do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
+                d->descriptor, d->addr, d->ip, Name(d->player), d->player);
+    } else {
+      do_rawlog(LT_CONN, "[%d/%s/%s] Disconnect by %s(#%d) (%s)", d->descriptor,
+                d->addr, d->ip, Name(d->player), d->player, d->close_reason);
+    }
+    announce_disconnect(d, d->close_reason, d->closer);
     if (can_mail(d->player)) {
       do_mail_purge(d->player);
     }
@@ -2167,6 +2178,18 @@ logout_sock(DESC *d)
                   MAX_LOGINS);
       }
     }
+  }
+}
+
+/** Logout a descriptor from the player it's connected to,
+ * without dropping the connection. Run when a player uses LOGOUT
+ * \param d descriptor
+ */
+static void
+logout_sock(DESC *d)
+{
+  if (d->connected == CONN_PLAYER) {
+    disconnect_player(d, DISCONNECT_LOGOUT);
   } else {
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
@@ -2191,36 +2214,17 @@ logout_sock(DESC *d)
 }
 
 /** Disconnect a descriptor.
- * This sends appropriate disconnection text, flushes output, and
- * then closes the associated socket.
+ * This sends appropriate disconnection text, announcements, queues events,
+ * logs, etc.
+ *
  * \param d pointer to descriptor to disconnect.
- * \param reason reason for the descriptor being disconnected, used for events
- * \param executor dbref of the object which caused the disconnect
  */
 static void
-cleanup_desc(DESC *d)
+disconnect_desc(DESC *d)
 {
   const char *reason = d->close_reason;
-  dbref executor = d->closer;
-  if (d->connected) {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) (%s)", d->descriptor,
-              d->addr, d->ip, Name(d->player), d->player, reason);
-    if (d->connected != CONN_DENIED) {
-      fcache_dump(d, fcache.quit_fcache, NULL, NULL);
-      /* Player was not allowed to log in from the connect screen */
-      announce_disconnect(d, reason, executor);
-      if (can_mail(d->player)) {
-        do_mail_purge(d->player);
-      }
-    }
-    login_number--;
-    if (MAX_LOGINS) {
-      if (!under_limit && (login_number < MAX_LOGINS)) {
-        under_limit = 1;
-        do_rawlog(LT_CONN, "Below maximum player limit of %d. Logins enabled.",
-                  MAX_LOGINS);
-      }
-    }
+  if (d->connected == CONN_PLAYER) {
+    disconnect_player(d, DISCONNECT_QUIT);
   } else {
     do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected (%s).",
               d->descriptor, d->addr, d->ip, reason);
@@ -2238,6 +2242,19 @@ cleanup_desc(DESC *d)
     sq_cancel(d->conn_timer);
     d->conn_timer = NULL;
   }
+  d->conn_flags |= CONN_NOWRITE;
+
+  connlog_disconnection(d->connlog_id, reason);
+}
+
+/** Clean up a descriptor.
+ * This flushes output and then closes the associated socket. When this
+ * is called, d should no longer be in descriptor_list
+ * \param d pointer to descriptor to disconnect.
+ */
+static void
+cleanup_desc(DESC *d)
+{
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
 
@@ -2247,8 +2264,6 @@ cleanup_desc(DESC *d)
     ssl_close_connection(d->ssl);
     d->ssl = NULL;
   }
-
-  connlog_disconnection(d->connlog_id, reason);
 
   if (d->http_request) {
     mush_free(d->http_request, "http_request");
@@ -2446,7 +2461,7 @@ network_send_writev(DESC *d)
       if (is_blocking_err(errno)) {
         return 1;
       } else {
-        shutdownsock(d, "socket error", NOTHING);
+        shutdownsock(d, "socket error", NOTHING, CONN_NOWRITE);
         return 0;
       }
     }
@@ -2500,7 +2515,7 @@ network_send(DESC *d)
       if (is_blocking_err(errno))
         return 1;
       else {
-        shutdownsock(d, "socket error", NOTHING);
+        shutdownsock(d, "socket error", NOTHING, CONN_NOWRITE);
         return 0;
       }
     }
@@ -3465,7 +3480,7 @@ process_input(DESC *d, int output_ready __attribute__((__unused__)))
       if (is_blocking_err(errno))
         return 1;
       else {
-        shutdownsock(d, "socket error", NOTHING);
+        shutdownsock(d, "socket error", NOTHING, CONN_NOWRITE);
         return 0;
       }
     }
@@ -3532,10 +3547,10 @@ process_commands(void)
 
         switch (retval) {
         case CRES_QUIT:
-          shutdownsock(cdesc, "quit", cdesc->player);
+          shutdownsock(cdesc, "quit", cdesc->player, 0);
           break;
         case CRES_SITELOCK:
-          shutdownsock(cdesc, "sitelocked", NOTHING);
+          shutdownsock(cdesc, "sitelocked", NOTHING, CONN_NOWRITE);
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
@@ -4654,7 +4669,7 @@ boot_player(dbref player, int idleonly, int silent, dbref booter)
 void
 boot_desc(DESC *d, const char *cause, dbref executor)
 {
-  shutdownsock(d, cause, executor);
+  shutdownsock(d, cause, executor, 0);
 }
 
 /** For sockset: Parse an english bool ('yes', 'no', etc). Assume no,
@@ -5897,6 +5912,9 @@ announce_disconnect(DESC *saved, const char *reason, dbref executor)
     return;
 
   DESC_ITER_CONN(d) {
+    /* Don't count this current DESC, we want number of _other_ DESCs for this player.
+     * In a QUIT, saved won't be in descriptor_list, but in a LOGOUT, it will be. */
+    if (d == saved) continue;
     if (d->player == player)
       numleft += 1;
   }
@@ -7142,7 +7160,7 @@ inactivity_check(void)
     if ((d->connected) ? (idle_for > idle) : (idle_for > unconnected_idle)) {
 
       if (!d->connected) {
-        shutdownsock(d, "idle", NOTHING);
+        shutdownsock(d, "idle", NOTHING, 0);
         booted = true;
       } else if (!Can_Idle(d->player)) {
 

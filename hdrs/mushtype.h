@@ -234,8 +234,8 @@ struct text_queue {
 #define CONN_XTERM256 0x400
 #define CONN_RESERVED 0x800
 
-/** An unrecoverable error happened when trying to read or write to the socket.
- * Close when safe. */
+/** This connection is marked for closing. Still safe to write to it.
+ * Close when ready. */
 #define CONN_SHUTDOWN 0x1000
 
 /** Negotiated GMCP via Telnet */
@@ -243,6 +243,9 @@ struct text_queue {
 
 /** Sending and receiving UTF-8 */
 #define CONN_UTF8 0x4000
+
+/* Socket error, do not write to this connection anymore. */
+#define CONN_NOWRITE 0x8000
 
 /* HTTP connection, pass input straight to process_http_input */
 #define CONN_HTTP_REQUEST 0x10000

@@ -1940,7 +1940,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
 
   char *utf8 = NULL;
 
-  if (d->conn_flags & CONN_SHUTDOWN)
+  if (d->conn_flags & CONN_NOWRITE)
     return 0;
 
   if (d->conn_flags & CONN_HTTP_BUFFER) {
@@ -1994,7 +1994,7 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
           LT_TRACE,
           "send() returned %d (error %s) trying to write %d bytes to %d",
           written, strerror(errno), n, d->descriptor);
-        d->conn_flags |= CONN_SHUTDOWN;
+        d->conn_flags |= CONN_SHUTDOWN | CONN_NOWRITE;
         d->closer = GOD;
         d->close_reason = "socket error";
         if (utf8)

@@ -14,8 +14,6 @@ This is the index to the MUSH online help files.
   For a list of functions:                        help function list 
   For a list of attributes:                       help attribute list
   To see the configuration of this MUSH:          @config
-
-  Use 'help <pattern>' to search for topic names that match the wildcard pattern <pattern>, or 'help/search <pattern>' for a list of topics whose text matches <pattern> (See HELP SEARCHING for details on the format of the pattern).
   
   On many MUSHes, list local commands with:       +help
 
@@ -27,6 +25,8 @@ This is the index to the MUSH online help files.
   help <namepattern>
   help/search <pattern>
   help/query[/brief] <sqlite3query>
+
+  These commands and switches also work with other things using our helpfile setup: news, ahelp, and any others added.
 
   help <textname> is how to see a help file.
   > help helpfile
@@ -42,7 +42,9 @@ This is the index to the MUSH online help files.
 
   help/query is a more advanced and complex way to search our helpfiles, see "help helpfile2" for more.
 
-  These switches works with help, news, ahelp, and other help like commands.
+  To add more categories and commands (like 'news'), read "game/txt/README"
+
+  See also: 'textfile()', 'textentries()' and 'textsearch()'
 & help helpfile2
 & help query
   Displays help entries that match <pattern>. If the /brief switch is given, only shows the names of matching entries. Without it, also shows a fragment of the entry with matches underlined.

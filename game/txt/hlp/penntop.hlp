@@ -44,7 +44,7 @@ This is the index to the MUSH online help files.
 
   To add more categories and commands (like 'news'), read "game/txt/README"
 
-  See also: 'textfile()', 'textentries()' and 'textsearch()'
+  See also: textfile(), textentries(), textsearch()
 & help helpfile2
 & help query
   Displays help entries that match <pattern>. If the /brief switch is given, only shows the names of matching entries. Without it, also shows a fragment of the entry with matches underlined.

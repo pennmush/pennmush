@@ -233,7 +233,7 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
-  if (SW_ISSET(sw, SWITCH_SEARCH)) {
+  if (SW_ISSET(sw, SWITCH_QUERY)) {
     char *results = NULL;
     char *delim = SW_ISSET(sw, SWITCH_BRIEF) ? ", " : NULL;
     int matches;
@@ -250,7 +250,7 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
-  if (SW_ISSET(sw, SWITCH_FIND)) {
+  if (SW_ISSET(sw, SWITCH_SEARCH)) {
     help_search_find(executor, h, arg_left);
     return;
   }
@@ -619,7 +619,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
     sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
   (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0,
-                     "BRIEF FIND SEARCH", cmd_helpcmd);
+                     "BRIEF QUERY SEARCH", cmd_helpcmd);
   hashadd(h->command, h, &help_files);
 }
 
@@ -1147,10 +1147,14 @@ FUNCTION(fun_textentries)
 /* ARGSUSED */
 FUNCTION(fun_textsearch)
 {
-  help_file *h;
-  char *entries;
-  char *sep = " ";
+  sqlite3_stmt *finder;
+  char *pattern;
+  int len;
+  int count = 0;
+  char *utf8;
+  const char *osep = " ";
 
+  help_file *h;
   h = hashfind(strupper(args[0]), &help_files);
   if (!h) {
     safe_str(T("#-1 NO SUCH FILE"), buff, bp);
@@ -1161,13 +1165,33 @@ FUNCTION(fun_textsearch)
     return;
   }
   if (nargs > 2)
-    sep = args[2];
+    osep = args[2];
 
-  entries = help_search(executor, h, args[1], sep, NULL);
-  if (entries)
-    safe_str(entries, buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+  utf8 = latin1_to_utf8(args[1], -1, NULL, "utf8.string");
+  pattern = glob_to_like(utf8, '$', &len);
+  mush_free(utf8, "utf8.string");
+
+  finder = prepare_statement(
+    help_db,
+    "SELECT name FROM topics JOIN entries ON topics.bodyid = entries.id "
+    "WHERE catid = (SELECT id FROM categories WHERE name = ?1) AND body LIKE "
+    "'%' || ?2 || '%' ESCAPE '$' AND main = 1 ORDER BY name",
+    "help.find.wildcard");
+
+  sqlite3_bind_text(finder, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(finder, 2, pattern, len, free_string);
+
+  while (sqlite3_step(finder) == SQLITE_ROW) {
+    const char *name;
+    name = (const char *) sqlite3_column_text(finder, 0);
+    if (count) {
+      safe_str(osep, buff, bp);
+    }
+    count++;
+    safe_str(name, buff, bp);
+  }
+
+  sqlite3_reset(finder);
 }
 
 static const char *

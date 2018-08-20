@@ -17,6 +17,7 @@
 #include "dbdefs.h"
 #include "mushtype.h"
 #include "mypcre.h"
+#include "strutil.h"
 
 /* these symbols must be defined by the interface */
 extern time_t mudtime;
@@ -195,7 +196,8 @@ int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
-void run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info);
+void run_http_command(dbref player, int port, char *method,
+                      NEW_PE_INFO *pe_info);
 
 #define queue_attribute_base(ex, at, en, nop, pereg, flag)                     \
   queue_attribute_base_priv(ex, at, en, nop, pereg, flag, NOTHING, NULL, NULL)
@@ -369,8 +371,8 @@ dbref first_visible(dbref player, dbref thing);
 #define GREP_WILD 2   /**< Grep pattern is a glob pattern */
 #define GREP_REGEXP 4 /**< Grep pattern is a regexp */
 #define GREP_PARENT 8 /**< Check parent objects when grepping */
-int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
-              char **bp, int flags);
+int grep_util(dbref player, dbref thing, char *attrs, char *findstr,
+              pennstr *buff, int flags);
 
 /* From rob.c */
 void s_Pennies(dbref thing, int amount);

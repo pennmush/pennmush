@@ -3063,6 +3063,31 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
   return yield;
 }
 
+/** Our version of pcre_copy_substring, with ansi-safeness.
+ * \param as the ansi_string whose .text value was matched against.
+ * \param ovector the offset vectors
+ * \param stringcount the number of subpatterns
+ * \param stringnumber the number of the desired subpattern
+ * \param nonempty if true, copy empty registers as well.
+ * \param buff Output pennstr
+ * \return size of subpattern, or -1 if unknown pattern
+ */
+int
+ps_ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
+                         int stringnumber, int nonempty, pennstr *buff)
+{
+  int yield;
+  if (stringnumber < 0 || stringnumber >= stringcount)
+    return -1;
+  stringnumber *= 2;
+  yield = ovector[stringnumber + 1] - ovector[stringnumber];
+  if (!nonempty || yield) {
+    ps_safe_ansi_string(as, ovector[stringnumber], yield, buff);
+  }
+  return yield;
+}
+
+
 /** Our version of pcre_copy_named_substring, with ansi-safeness.
  * \param code the pcre compiled code
  * \param as the ansi_string whose .text value was matched against.

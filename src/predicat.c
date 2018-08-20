@@ -4,6 +4,8 @@
  * \brief Predicates for testing various conditions in PennMUSH.
  *
  *
+ * UTF-8 Good: No. Several loops that use chars need to use codepoints/gcs.
+ * Dynamic Strings: Some uses of BUFFER_LEN strings.
  */
 
 #include "copyrite.h"
@@ -43,8 +45,8 @@
 #include "charclass.h"
 
 int forbidden_name(const char *name);
-static void grep_add_attr(char *buff, char **bp, dbref player, int count,
-                          ATTR *attr, char *atrval);
+static void grep_add_attr(pennstr *buff, dbref player, int count, ATTR *attr,
+                          const char *atrval);
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
 
@@ -92,7 +94,6 @@ int
 charge_action(dbref thing)
 {
   ATTR *b;
-  char tbuf2[BUFFER_LEN];
   int num;
 
   /* check if object has # of charges */
@@ -101,8 +102,9 @@ charge_action(dbref thing)
   if (!b) {
     return 1; /* no CHARGES */
   } else {
-    strcpy(tbuf2, atr_value(b));
-    num = atoi(tbuf2);
+    char *aval = safe_atr_value(b, "charge.action");
+    num = parse_integer(aval);
+    mush_free(aval, "charge.action");
     if (num > 0) {
       char tmp[100];
       /* charges left, decrement and execute */
@@ -775,13 +777,12 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                char **newalias)
 {
   char *bon, *eon;
-  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN] = {'\0'};
-  char *ap = abuff;
+  char *nbuff;
+  pennstr *abuff;
   int aliases = 0;
   int empty = 0;
 
-  strncpy(nbuff, name, BUFFER_LEN - 1);
-  nbuff[BUFFER_LEN - 1] = '\0';
+  nbuff = mush_strdup(name, "name.newname");
 
   /* First, check for a quoted player name */
   if (type == TYPE_PLAYER && *name == '"') {
@@ -791,19 +792,25 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     eon = bon;
     while (*eon && *eon != '"')
       eon++;
-    if (*eon)
+    if (*eon) {
       *eon = '\0';
-    if (!ok_player_name(bon, player, thing))
+    }
+    if (!ok_player_name(bon, player, thing)) {
+      mush_free(nbuff, "name.newname");
       return OPAE_INVALID;
+    }
     *newname = mush_strdup(bon, "name.newname");
+    mush_free(nbuff, "name.newname");
     return OPAE_SUCCESS;
   }
 
   if (type & (TYPE_THING | TYPE_ROOM)) {
     /* No aliases in the name */
-    if (!ok_name(nbuff, 0))
+    if (!ok_name(nbuff, 0)) {
+      mush_free(nbuff, "name.newname");
       return OPAE_INVALID;
-    *newname = mush_strdup(nbuff, "name.newname");
+    }
+    *newname = nbuff;
     return OPAE_SUCCESS;
   }
 
@@ -821,22 +828,29 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     aliases++;
   }
   if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing)
-                            : ok_name(bon, 1)))
+        : ok_name(bon, 1))) {
+    mush_free(nbuff, "name.newname");
     return OPAE_INVALID;
+  }
 
   *newname = mush_strdup(bon, "name.newname");
-
+  abuff = ps_new();
+  
   if (aliases) {
     /* We had aliases, so parse them */
     while (eon) {
-      if (empty)
+      if (empty) {
+        mush_free(nbuff, "name.newname");
+        ps_free(abuff);
         return OPAE_NULL; /* Null alias only valid as a single, final alias */
+      }
       bon = eon;
       if ((eon = strchr(bon, ALIAS_DELIMITER))) {
         *eon++ = '\0';
       }
-      while (*bon && *bon == ' ')
+      while (*bon && *bon == ' ') {
         bon++;
+      }
       if (!*bon) {
         empty =
           1; /* empty alias, should only happen if we have no proper aliases */
@@ -846,31 +860,33 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
                                 : ok_name(bon, 1))) {
         *newalias = mush_strdup(
           bon, "name.newname"); /* So we can report the invalid alias */
+        mush_free(nbuff, "name.newname");
+        ps_free(abuff);
         return OPAE_INVALID;
       }
       if (aliases > 1) {
-        safe_chr(ALIAS_DELIMITER, abuff, &ap);
+        ps_safe_chr(abuff, ALIAS_DELIMITER);
       }
-      safe_str(bon, abuff, &ap);
+      ps_safe_str(abuff, bon);
       aliases++;
     }
   }
-  *ap = '\0';
+  mush_free(nbuff, "name.newname");
 
   if (aliases) {
     if (!Wizard(player) && type == TYPE_PLAYER && aliases > MAX_ALIASES)
       return OPAE_TOOMANY;
-    if (*abuff) {
+    if (ps_len(abuff)) {
       /* We have actual aliases */
-      *newalias = mush_strdup(abuff, "name.newname");
+      *newalias = mush_strdup(ps_str(abuff), "name.newname");
     } else {
-      ap = abuff;
-      safe_chr(ALIAS_DELIMITER, abuff, &ap);
-      *ap = '\0';
+      ps_reset(abuff);
+      ps_safe_chr(abuff, ALIAS_DELIMITER);
       /* We just want to clear the existing alias */
-      *newalias = mush_strdup(abuff, "name.newname");
+      *newalias = mush_strdup(ps_str(abuff), "name.newname");
     }
   }
+  ps_free(abuff);
 
   return OPAE_SUCCESS;
 }
@@ -887,29 +903,36 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
 enum opa_error
 ok_player_alias(const char *alias, dbref player, dbref thing)
 {
-  char tbuf1[BUFFER_LEN], *s, *sp;
+  char *tbuf1, *s, *sp;
   int cnt = 0;
 
-  if (!alias || !*alias)
+  if (!alias || !*alias) {
     return OPAE_NULL;
+  }
 
-  strncpy(tbuf1, alias, BUFFER_LEN - 1);
-  tbuf1[BUFFER_LEN - 1] = '\0';
+  tbuf1 = mush_strdup(alias, "string");
   s = trim_space_sep(tbuf1, ALIAS_DELIMITER);
   while (s) {
     sp = split_token(&s, ALIAS_DELIMITER);
     while (sp && *sp && *sp == ' ')
       sp++;
-    if (!sp || !*sp)
+    if (!sp || !*sp) {
+      mush_free(tbuf1, "string");
       return OPAE_NULL; /* No null aliases */
-    if (!ok_player_name(sp, player, thing))
+    }
+    if (!ok_player_name(sp, player, thing)) {
+      mush_free(tbuf1, "string");
       return OPAE_INVALID;
+    }
     cnt++;
   }
-  if (Wizard(player))
+  mush_free(tbuf1, "string");
+  if (Wizard(player)) {
     return OPAE_SUCCESS;
-  if (cnt > MAX_ALIASES)
+  }
+  if (cnt > MAX_ALIASES) {
     return OPAE_TOOMANY;
+  }
   return OPAE_SUCCESS;
 }
 
@@ -1361,32 +1384,29 @@ do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
 struct regrep_data {
   pcre *re;          /**< Pointer to compiled regular expression */
   pcre_extra *study; /**< Pointer to studied data about re */
-  char
-    *buff;   /**< Buffer to store regrep results, or NULL to report to player */
-  char **bp; /**< Pointer to address of insertion point in buff, or NULL */
-  int count; /**< Number of matches found */
+  pennstr *ps;       /**< Output buffer */
+  int count;         /**< Number of matches found */
 };
 
 /** Helper data for non-regexp \@greps */
 struct grep_data {
   char *findstr; /**< String to find */
+  pennstr *ps;   /*<< Output buffer */
   int findlen;   /**< Length of findstr */
-  char
-    *buff;   /**< Buffer to store regrep results, or NULL to report to player */
-  char **bp; /**< Pointer to address of insertion point in buff, or NULL */
-  int count; /**< Number of matches found */
-  int flags; /**< Type of grep: wildcard, case-sensitive */
+  int count;     /**< Number of matches found */
+  int flags;     /**< Type of grep: wildcard, case-sensitive */
 };
 
 static void
-grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attrib,
-              char *atrval)
+grep_add_attr(pennstr *ps, dbref player, int count, ATTR *attrib,
+              const char *atrval)
 {
 
-  if (buff) {
-    if (count)
-      safe_chr(' ', buff, bp);
-    safe_str(AL_NAME(attrib), buff, bp);
+  if (ps) {
+    if (count) {
+      ps_safe_chr(ps, ' ');
+    }
+    ps_safe_str(ps, AL_NAME(attrib));
   } else {
     notify_format(player, "%s%s [#%d%s]:%s %s", ANSI_HILITE, AL_NAME(attrib),
                   Owner(AL_CREATOR(attrib)),
@@ -1405,21 +1425,21 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
 {
   struct grep_data *gd = args;
   char *s;
-  char buff[BUFFER_LEN];
-  char *bp = buff;
+  pennstr *ps;
   int matched = 0;
   int cs;
   ansi_string *aval = NULL;
 
   cs = ((gd->flags & GREP_NOCASE) == 0);
   s = atr_value(attrib);
+  ps = ps_new();
 
   if (gd->flags & GREP_WILD) {
     if ((matched = quick_wild_new(gd->findstr, s, cs))) {
       /* Since, in order for a wildcard match to succeed, the _entire
          attribute_ value had to match the pattern, not just a substring,
          highlighting is totally pointless */
-      strcpy(buff, s);
+      ps_safe_str(ps, s);
     }
   } else {
     aval = parse_ansi_string(s);
@@ -1428,11 +1448,12 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
       if (!(cs ? strncmp(s, gd->findstr, gd->findlen)
                : strncasecmp(s, gd->findstr, gd->findlen))) {
         ansi_string *repl;
-        char abuff[BUFFER_LEN];
+        char *abuff;
         matched = 1;
-        snprintf(abuff, sizeof abuff, "%s%.*s%s", ANSI_HILITE, gd->findlen, s,
-                 ANSI_END);
+        abuff =
+          sqlite3_mprintf("%s%.*s%s", ANSI_HILITE, gd->findlen, s, ANSI_END);
         repl = parse_ansi_string(abuff);
+        sqlite3_free(abuff);
         ansi_string_replace(aval, (s - aval->text), gd->findlen, repl);
         free_ansi_string(repl);
         s += gd->findlen;
@@ -1443,16 +1464,18 @@ grep_helper(dbref player, dbref thing __attribute__((__unused__)),
   }
 
   if (aval) {
-    safe_ansi_string(aval, 0, aval->len, buff, &bp);
-    *bp = '\0';
+    ps_safe_ansi_string(aval, 0, aval->len, ps);
     free_ansi_string(aval);
   }
 
-  if (!matched)
+  if (!matched) {
+    ps_free(ps);
     return 0;
+  }
 
-  grep_add_attr(gd->buff, gd->bp, player, gd->count, attrib, buff);
+  grep_add_attr(gd->ps, player, gd->count, attrib, ps_str(ps));
   gd->count++;
+  ps_free(ps);
   return 1;
 }
 
@@ -1467,23 +1490,22 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
   int offsets[99];
   int subpatterns, search = 0;
   ansi_string *orig, *repl;
-  char rbuff[BUFFER_LEN];
-  char *rbp = rbuff;
+  pennstr *rbuff = ps_new();
 
   s = atr_value(attrib);
   orig = parse_ansi_string(s);
   if ((subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len,
                                search, 0, offsets, 99)) < 0) {
     free_ansi_string(orig);
+    ps_free(rbuff);
     return 0;
   }
   while (subpatterns >= 0) {
-    safe_str(ANSI_HILITE, rbuff, &rbp);
-    ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff, &rbp);
-    safe_str(ANSI_END, rbuff, &rbp);
-    *rbp = '\0';
+    ps_safe_str(rbuff, ANSI_HILITE);
+    ps_ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff);
+    ps_safe_str(rbuff, ANSI_END);
     if (offsets[0] >= search) {
-      repl = parse_ansi_string(rbuff);
+      repl = parse_ansi_string(ps_str(rbuff));
 
       /* Do the replacement */
       ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0], repl);
@@ -1497,39 +1519,42 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
       }
 
       free_ansi_string(repl);
-      rbp = rbuff;
-      if (search >= orig->len)
+      ps_reset(rbuff);
+      if (search >= orig->len) {
         break;
+      }
       subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len,
                               search, 0, offsets, 99);
     }
   }
-  safe_ansi_string(orig, 0, orig->len, rbuff, &rbp);
-  *rbp = '\0';
+  ps_safe_ansi_string(orig, 0, orig->len, rbuff);
   free_ansi_string(orig);
-  grep_add_attr(rgd->buff, rgd->bp, player, rgd->count, attrib, rbuff);
+  grep_add_attr(rgd->ps, player, rgd->count, attrib, ps_str(rbuff));
+  ps_free(rbuff);
   rgd->count++;
   return 1;
 }
 
 int
-grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
-          char **bp, int flags)
+grep_util(dbref player, dbref thing, char *attrs, char *findstr, pennstr *ps,
+          int flags)
 {
-  char cleanfind[BUFFER_LEN];
+  char *cleanfind = NULL;
 
   if (!findstr || !*findstr) {
-    if (buff)
-      safe_str(T("#-1 INVALID GREP PATTERN"), buff, bp);
-    else
+    if (ps) {
+      ps_safe_str(ps, T("#-1 INVALID GREP PATTERN"));
+    } else {
       notify(player, T("What pattern do you want to grep for?"));
+    }
     return 0;
   }
 
-  if (!attrs || !*attrs)
+  if (!attrs || !*attrs) {
     attrs = "**";
+  }
 
-  strcpy(cleanfind, remove_markup(findstr, NULL));
+  cleanfind = mush_strdup(remove_markup(findstr, NULL), "grep.string");
 
   if (flags & GREP_REGEXP) {
     /* regexp grep */
@@ -1539,31 +1564,34 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     int reflags = 0;
     bool free_study = false;
 
-    if (flags & GREP_NOCASE)
+    if (flags & GREP_NOCASE) {
       reflags |= PCRE_CASELESS;
+    }
 
     if ((rgd.re = pcre_compile(cleanfind, reflags, &errptr, &erroffset,
                                tables)) == NULL) {
       /* Matching error. */
-      if (buff) {
-        safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-        safe_str(errptr, buff, bp);
+      if (ps) {
+        ps_safe_str(ps, T("#-1 REGEXP ERROR: "));
+        ps_safe_str(ps, errptr);
       } else {
         notify_format(player, T("Invalid regexp: %s"), errptr);
       }
+      mush_free(cleanfind, "grep.string");
       return 0;
     }
     ADD_CHECK("pcre");
     rgd.study = pcre_study(rgd.re, pcre_public_study_flags, &errptr);
     if (errptr != NULL) {
-      if (buff) {
-        safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-        safe_str(errptr, buff, bp);
+      if (ps) {
+        ps_safe_str(ps, T("#-1 REGEXP ERROR: "));
+        ps_safe_str(ps, errptr);
       } else {
         notify_format(player, T("Invalid regexp: %s"), errptr);
       }
       pcre_free(rgd.re);
       DEL_CHECK("pcre");
+      mush_free(cleanfind, "grep.string");
       return 0;
     }
     if (rgd.study) {
@@ -1573,8 +1601,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     } else {
       rgd.study = default_match_limit();
     }
-    rgd.buff = buff;
-    rgd.bp = bp;
+    rgd.ps = ps;
     rgd.count = 0;
 
     if (flags & GREP_PARENT) {
@@ -1594,6 +1621,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     }
     pcre_free(rgd.re);
     DEL_CHECK("pcre");
+    mush_free(cleanfind, "grep.string");
 
     return rgd.count;
   } else {
@@ -1601,8 +1629,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     struct grep_data gd;
     gd.findstr = cleanfind;
     gd.findlen = strlen(cleanfind);
-    gd.buff = buff;
-    gd.bp = bp;
+    gd.ps = ps;
     gd.count = 0;
     gd.flags = flags;
 
@@ -1612,7 +1639,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     } else {
       atr_iter_get(player, thing, attrs, AIG_NONE, grep_helper, (void *) &gd);
     }
-
+    mush_free(cleanfind, "grep.string");
     return gd.count;
   }
 }
@@ -1639,28 +1666,30 @@ do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
   }
   /* find the attribute pattern */
   pattern = strchr(obj, '/');
-  if (!pattern)
+  if (!pattern) {
     pattern = (char *) "*"; /* set it to global match */
-  else
+  } else {
     *pattern++ = '\0';
+  }
 
   /* now we've got the object. match for it. */
   if ((thing = noisy_match_result(player, obj, NOTYPE, MAT_EVERYTHING)) ==
-      NOTHING)
+      NOTHING) {
     return;
+  }
 
   if (print) {
-    if (!grep_util(player, thing, pattern, lookfor, NULL, NULL, flags))
+    if (!grep_util(player, thing, pattern, lookfor, NULL, flags)) {
       notify(player, T("No matches."));
+    }
   } else {
-    char buff[BUFFER_LEN];
-    char *bp = buff;
-
-    if (grep_util(player, thing, pattern, lookfor, buff, &bp, flags)) {
-      *bp = '\0';
+    pennstr *buff = ps_new();
+    if (grep_util(player, thing, pattern, lookfor, buff, flags)) {
       notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
-                    AName(thing, AN_LOOK, NULL), thing, buff);
-    } else
+                    AName(thing, AN_LOOK, NULL), thing, ps_str(buff));
+      ps_free(buff);
+    } else {
       notify(player, T("No matches."));
+    }
   }
 }

@@ -241,7 +241,9 @@ extern int dump_ansi_string(ansi_string *as, char *buff, char **bp);
 int ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
                              int stringnumber, int nonempty, char *buffer,
                              char **bp);
-
+int ps_ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
+                                int stringnumber, int nonempty,
+                                pennstr *buffer);
 int ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as,
                                    int *ovector, int stringcount,
                                    const char *stringname, int nonempty,

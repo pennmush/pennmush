@@ -2342,6 +2342,7 @@ FUNCTION(fun_isobjid)
 FUNCTION(fun_grep)
 {
   int flags = 0;
+  pennstr *ps;
 
   dbref it = match_thing(executor, args[0]);
   if (!GoodObject(it)) {
@@ -2358,17 +2359,21 @@ FUNCTION(fun_grep)
     return;
   }
 
-  if (strstr(called_as, "GREPI"))
+  if (strstr(called_as, "GREPI")) {
     flags |= GREP_NOCASE;
+  }
 
-  if (*called_as == 'W')
+  if (*called_as == 'W') {
     flags |= GREP_WILD;
-  else if (*called_as == 'R')
+  } else if (*called_as == 'R') {
     flags |= GREP_REGEXP;
-  else if (*called_as == 'P')
+  } else if (*called_as == 'P') {
     flags |= GREP_PARENT;
-
-  grep_util(executor, it, args[1], args[2], buff, bp, flags);
+  }
+  ps = ps_new();
+  grep_util(executor, it, args[1], args[2], ps, flags);
+  safe_pennstr(ps, buff, bp);
+  ps_free(ps);
 }
 
 /* Get database size statistics */

@@ -253,39 +253,39 @@ look_contents(dbref player, dbref loc, const char *contents_name,
 
   if (fetch_ufun_attrib("CONFORMAT", loc, &ufun,
                         UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
-    char *arg, *buff, *bp;
-    char *arg2, *bp2;
+    pennstr *arg, *arg2;
+    char *buff;
     PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "look_contents");
+    bool first = 1;
 
-    arg = (char *) mush_malloc(BUFFER_LEN, "string");
-    arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
-    buff = (char *) mush_malloc(BUFFER_LEN, "string");
-    if (!arg || !buff || !arg2)
+    arg = ps_new();
+    arg2 = ps_new();
+    buff = mush_malloc(BUFFER_LEN, "string");
+    if (!arg || !buff || !arg2) {
       mush_panic("Unable to allocate memory in look_contents");
-    bp = arg;
-    bp2 = arg2;
+    }
     DOLIST (thing, Contents(loc)) {
       if (can_see(player, thing, can_see_loc)) {
-        if (bp != arg)
-          safe_chr(' ', arg, &bp);
-        safe_dbref(thing, arg, &bp);
-        if (bp2 != arg2)
-          safe_chr('|', arg2, &bp2);
-        safe_str(unparse_object_myopic(player, thing, AN_LOOK), arg2, &bp2);
+        if (first) {
+          first = 0;
+        } else {
+          ps_safe_chr(arg, ' ');
+          ps_safe_chr(arg2, '|');
+        }
+        ps_safe_dbref(arg, thing);
+        ps_safe_str(arg2, unparse_object_myopic(player, thing, AN_LOOK));
       }
     }
-    *bp = '\0';
-    *bp2 = '\0';
-    pe_regs_setenv_nocopy(pe_regs, 0, arg);
-    pe_regs_setenv_nocopy(pe_regs, 1, arg2);
+    pe_regs_setenv_nocopy(pe_regs, 0, ps_str(arg));
+    pe_regs_setenv_nocopy(pe_regs, 1, ps_str(arg2));
 
     call_ufun(&ufun, buff, player, player, pe_info, pe_regs);
 
     pe_regs_free(pe_regs);
 
     notify_by(loc, player, buff);
-    mush_free(arg, "string");
-    mush_free(arg2, "string");
+    ps_free(arg);
+    ps_free(arg2);
     mush_free(buff, "string");
     return;
   }
@@ -868,11 +868,14 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     notify_format(player, T("Parent: %s"), parent_chain(player, thing));
     {
       struct lock_list *ll;
+      pennstr *ps = ps_new();
       for (ll = Locks(thing); ll; ll = ll->next) {
+        ps_unparse_boolexp(ps, player, L_KEY(ll), UB_ALL);
         notify_format(player, T("%s Lock [#%d%s]: %s"), L_TYPE(ll),
-                      L_CREATOR(ll), lock_flags(ll),
-                      unparse_boolexp(player, L_KEY(ll), UB_ALL));
+                      L_CREATOR(ll), lock_flags(ll), ps_str(ps));
+        ps_reset(ps);
       }
+      ps_free(ps);
     }
     notify_format(player, T("Powers: %s"), power_description(player, thing));
 
@@ -1424,30 +1427,39 @@ decompile_locks(dbref player, dbref thing, const char *name, int skipdef,
                 const char *prefix)
 {
   lock_list *ll;
+  pennstr *ps = ps_new();
   for (ll = Locks(thing); ll; ll = ll->next) {
     const lock_list *p = get_lockproto(L_TYPE(ll));
     if (p) {
-      notify_format(
-        player, "%s@lock/%s %s=%s", prefix, L_TYPE(ll), name,
-        decompose_str(unparse_boolexp(player, L_KEY(ll), UB_MEREF)));
+      ps_unparse_boolexp(ps, player, L_KEY(ll), UB_MEREF);
+      notify_format(player, "%s@lock/%s %s=%s", prefix, L_TYPE(ll), name,
+                    decompose_str(ps_str(ps)));
+      ps_reset(ps);
       if (skipdef) {
-        if (p && L_FLAGS(ll) == L_FLAGS(p))
+        if (p && L_FLAGS(ll) == L_FLAGS(p)) {
           continue;
+        }
       }
-      if (L_FLAGS(ll))
+      if (L_FLAGS(ll)) {
         notify_format(player, "%s@lset %s/%s=%s", prefix, name, L_TYPE(ll),
                       lock_flags_long(ll));
-      if ((L_FLAGS(p) & LF_PRIVATE) && !(L_FLAGS(ll) & LF_PRIVATE))
+      }
+      if ((L_FLAGS(p) & LF_PRIVATE) && !(L_FLAGS(ll) & LF_PRIVATE)) {
         notify_format(player, "%s@lset %s/%s=!no_inherit", prefix, name,
                       L_TYPE(ll));
+      }
     } else {
-      notify_format(player, "%s@lock/user:%s %s=%s", prefix, ll->type, name,
-                    decompose_str(unparse_boolexp(player, ll->key, UB_MEREF)));
-      if (L_FLAGS(ll))
+      ps_unparse_boolexp(ps, player, L_KEY(ll), UB_MEREF);
+      notify_format(player, "%s@lock/user:%s %s=%s", prefix, L_TYPE(ll), name,
+                    decompose_str(ps_str(ps)));
+      ps_reset(ps);
+      if (L_FLAGS(ll)) {
         notify_format(player, "%s@lset %s/%s=%s", prefix, name, L_TYPE(ll),
                       lock_flags_long(ll));
+      }
     }
   }
+  ps_free(ps);
 }
 
 /** Decompile.

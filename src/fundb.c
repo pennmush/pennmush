@@ -1338,8 +1338,10 @@ FUNCTION(fun_lock)
 
   if (GoodObject(it) && (real_ltype != NULL) &&
       Can_Read_Lock(executor, it, real_ltype)) {
-    safe_str(unparse_boolexp(executor, getlock(it, real_ltype), UB_DBREF), buff,
-             bp);
+    pennstr *ps = ps_new();
+    ps_unparse_boolexp(ps, executor, getlock(it, real_ltype), UB_DBREF);
+    safe_pennstr(ps, buff, bp);
+    ps_free(ps);
     return;
   }
   safe_str("#-1", buff, bp);

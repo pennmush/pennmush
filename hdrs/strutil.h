@@ -226,7 +226,7 @@ ps_safe_dbref(pennstr *ps, dbref d)
 /** Return the current UTF-8 string managed by the pennstr. Any
  * further ps_safe-XXX() functions called on this pennstr invalidate
  * the pointer. */
-static inline const char *
+static inline char *
 ps_str(pennstr *ps)
 {
   return sqlite3_str_value(ps);

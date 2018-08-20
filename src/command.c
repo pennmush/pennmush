@@ -36,7 +36,7 @@
 #include "ptab.h"
 #include "sort.h"
 #include "strtree.h"
-#include "strutil.h"
+
 #include "version.h"
 
 PTAB ptab_command;       /**< Prefix table for command names. */
@@ -274,7 +274,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@RESPOND", "HEADER TYPE", cmd_respond,
-    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT, 0, 0},
+   CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT, 0, 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
@@ -310,8 +310,9 @@ COMLIST commands[] = {
 
   {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@TRIGGER", "CLEARREGS SPOOF INLINE NOBREAK LOCALIZE INPLACE MATCH", cmd_trigger,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
+  {"@TRIGGER", "CLEARREGS SPOOF INLINE NOBREAK LOCALIZE INPLACE MATCH",
+   cmd_trigger, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0,
+   0},
   {"@ULOCK", NULL, cmd_ulock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
   {"@UNDESTROY", NULL, cmd_undestroy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -560,40 +561,41 @@ make_command(const char *name, int type, const char *flagstr,
      the same name (HALT flag and Halt power) */
   restrict_command(NOTHING, cmd, "");
   if ((flagstr && *flagstr) || (powerstr && *powerstr)) {
-    char buff[BUFFER_LEN];
-    char *bp, *one, list[BUFFER_LEN], *p;
+    char *one, list[BUFFER_LEN], *p;
     int first = 1;
-    bp = buff;
+    pennstr *ps = ps_new();
     if (cmd->cmdlock != TRUE_BOOLEXP) {
-      safe_chr('(', buff, &bp);
-      safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
-      safe_str(")&", buff, &bp);
+      ps_safe_chr(ps, '(');
+      ps_unparse_boolexp(ps, NOTHING, cmd->cmdlock, UB_DBREF);
+      ps_safe_str(ps, ")&");
       free_boolexp(cmd->cmdlock);
     }
     if (flagstr && *flagstr) {
       strcpy(list, flagstr);
       p = trim_space_sep(list, ' ');
       while ((one = split_token(&p, ' '))) {
-        if (!first)
-          safe_chr('|', buff, &bp);
+        if (!first) {
+          ps_safe_chr(ps, '|');
+        }
         first = 0;
-        safe_str("FLAG^", buff, &bp);
-        safe_str(one, buff, &bp);
+        ps_safe_str(ps, "FLAG^");
+        ps_safe_str(ps, one);
       }
     }
     if (powerstr && *powerstr) {
       strcpy(list, powerstr);
       p = trim_space_sep(list, ' ');
       while ((one = split_token(&p, ' '))) {
-        if (!first)
-          safe_chr('|', buff, &bp);
+        if (!first) {
+          ps_safe_chr(ps, '|');
+        }
         first = 0;
-        safe_str("POWER^", buff, &bp);
-        safe_str(one, buff, &bp);
+        ps_safe_str(ps, "POWER^");
+        ps_safe_str(ps, one);
       }
     }
-    *bp = '\0';
-    cmd->cmdlock = parse_boolexp(NOTHING, buff, CommandLock);
+    cmd->cmdlock = parse_boolexp(NOTHING, ps_str(ps), CommandLock);
+    ps_free(ps);
   }
   return cmd;
 }

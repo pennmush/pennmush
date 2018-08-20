@@ -8,6 +8,7 @@
 #include "copyrite.h"
 #include "chunk.h"
 #include "dbio.h"
+#include "strutil.h"
 
 typedef chunk_reference_t boolexp;
 
@@ -44,7 +45,9 @@ enum u_b_f {
   UB_MEREF  /**< Use dbrefs or "me" if the object is the player arg
                from unparse_boolexp(). For \@decompile. */
 };
-char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);
+void ps_unparse_boolexp(pennstr *ps, dbref player, boolexp b, enum u_b_f flag);
+char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
+  __attribute__((deprecated));
 boolexp cleanup_boolexp(boolexp);
 
 bool is_eval_lock(boolexp b);

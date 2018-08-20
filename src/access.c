@@ -50,10 +50,12 @@
  * Using @sitelock writes out the file.
  *
  * \endverbatim
+ *
+ * UTF-8: pcre_compile needs flag.
+ * Dynamic Strings: Reads fixed-length lines from access.cnf, otherwise good.
  */
 
 #include "copyrite.h"
-#include "access.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +75,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include "access.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "externs.h"
@@ -85,6 +88,7 @@
 #include "notify.h"
 #include "parse.h"
 #include "strutil.h"
+#include "charclass.h"
 
 /** An access flag. */
 typedef struct a_acsflag acsflag;
@@ -230,14 +234,16 @@ read_access_file(void)
     do_rawlog(LT_ERR, "Reading %s", ACCESS_FILE);
     while (fgets(buf, BUFFER_LEN, fp)) {
       /* Strip end of line if it's \r\n or \n */
-      if ((p = strchr(buf, '\r')))
+      if ((p = strchr(buf, '\r'))) {
         *p = '\0';
-      else if ((p = strchr(buf, '\n')))
+      } else if ((p = strchr(buf, '\n'))) {
         *p = '\0';
+      }
       /* Find beginning of line; ignore blank lines */
       p = buf;
-      if (*p && isspace(*p))
+      if (*p && ascii_isspace(*p)) {
         p++;
+      }
       if (*p && *p != '#') {
         can = cant = 0;
         comment = NULL;
@@ -249,19 +255,24 @@ read_access_file(void)
         } else {
           if ((comment = strchr(p, '#'))) {
             *comment++ = '\0';
-            while (*comment && isspace(*comment))
+            while (*comment && ascii_isspace(*comment)) {
               comment++;
+            }
           }
           /* Move past the host name */
-          while (*p && !isspace(*p))
+          while (*p && !ascii_isspace(*p)) {
             p++;
-          if (*p)
+          }
+          if (*p) {
             *p++ = '\0';
-          if (!parse_access_options(p, &who, &can, &cant, NOTHING))
+          }
+          if (!parse_access_options(p, &who, &can, &cant, NOTHING)) {
             /* Nothing listed, so assume we can't do anything! */
             cant = ACS_DEFAULT;
-          if (!add_access_node(buf, who, can, cant, comment, &errptr))
+          }
+          if (!add_access_node(buf, who, can, cant, comment, &errptr)) {
             do_log(LT_ERR, GOD, GOD, "Failed to add access node: %s", errptr);
+          }
         }
       }
     }

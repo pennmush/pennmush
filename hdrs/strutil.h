@@ -78,6 +78,8 @@ char *mush_strndup_gc(const char *src, int len,
                       const char *check) __attribute_malloc__;
 int mush_vsnprintf(char *, size_t, const char *, va_list);
 
+int *gc_breaks(const char *, int *) __attribute_malloc__;
+
 /* UTF-8 aware utilty functions. */
 
 /** Callback function for use with for_each_cp.

@@ -2639,3 +2639,36 @@ uni_strcoll(const char *a, const char *b)
   return strcoll(a, b);
 #endif
 }
+
+/** Return the extended grapheme cluster breaks for a string
+ *
+ * \param s the UTF-8 string
+ * \param size pointer to set to the length of the returned array.
+ *   Should NOT be NULL.
+ * \return an int array holding the byte offsets of each cluster.
+ */
+int *
+gc_breaks(const char *s, int *arrlen)
+{
+  int ngcs = 1;
+  int *gcs;
+  int offset = 0;
+  
+  if (!s) {
+    *arrlen = 0;
+    return NULL;
+  }
+  
+  gcs = mush_calloc(strlen(s) + 1, sizeof(int), "breaks");
+  gcs[0] = 0;
+
+  while (*s) {
+    int bytes = gcbytes(s);
+    offset += bytes;
+    gcs[ngcs++] = offset;
+    s += bytes;
+  }
+  
+  *arrlen = ngcs;
+  return gcs;
+}

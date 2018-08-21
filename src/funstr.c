@@ -294,13 +294,20 @@ FUNCTION(fun_mid)
 {
   ansi_string *as;
   int pos, len;
+  char *utf8;
+  int *breaks, nbreaks;
+  int offset, bytes;
+  pennstr *ps;
 
   if (!is_integer(args[1]) || !is_integer(args[2])) {
     safe_str(T(e_ints), buff, bp);
     return;
   }
 
-  as = parse_ansi_string(args[0]);
+  utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  as = parse_ansi_string(utf8);
+  mush_free(utf8, "utf8.string");
+
   pos = parse_integer(args[1]);
   len = parse_integer(args[2]);
 
@@ -312,12 +319,33 @@ FUNCTION(fun_mid)
 
   if (len < 0) {
     pos = pos + len + 1;
-    if (pos < 0)
+    if (pos < 0) {
       pos = 0;
+    }
     len = -len;
   }
 
-  safe_ansi_string(as, pos, len, buff, bp);
+  breaks = gc_breaks(as->text, &nbreaks);
+
+  if (pos >= nbreaks) {
+    free_ansi_string(as);
+    return;
+  }
+
+  if (pos + len > nbreaks) {
+    len = nbreaks - pos - 1;
+  }
+
+  offset = breaks[pos];
+  bytes = breaks[pos + len] - offset;
+
+  ps = ps_new();
+  ps_safe_ansi_string(as, offset, bytes, ps);
+  utf8 = utf8_to_latin1(ps_str(ps), ps_len(ps), &len, 0, "string");
+  safe_strl(utf8, len, buff, bp);
+  mush_free(utf8, "string");
+  ps_free(ps);
+  mush_free(breaks, "breaks");
   free_ansi_string(as);
 }
 
@@ -359,6 +387,8 @@ FUNCTION(fun_right)
 {
   int len;
   ansi_string *as;
+  int *breaks, nbreaks;
+  char *utf8;
 
   if (!is_integer(args[1])) {
     safe_str(T(e_int), buff, bp);
@@ -370,12 +400,28 @@ FUNCTION(fun_right)
     safe_str(T(e_range), buff, bp);
     return;
   }
+  if (len == 0) {
+    return;
+  }
 
-  as = parse_ansi_string(args[0]);
-  if (len > as->len)
+  utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  as = parse_ansi_string(utf8);
+  mush_free(utf8, "utf8.string");
+  breaks = gc_breaks(as->text, &nbreaks);
+  if (len >= nbreaks) {
     safe_strl(args[0], arglens[0], buff, bp);
-  else
-    safe_ansi_string(as, as->len - len, len, buff, bp);
+  } else {
+    char *latin1;
+    pennstr *ps = ps_new();
+    int offset = breaks[nbreaks - len - 1];
+    int bytes = breaks[nbreaks - 1] - offset;
+    ps_safe_ansi_string(as, offset, bytes, ps);
+    latin1 = utf8_to_latin1(ps_str(ps), ps_len(ps), &len, 0, "string");
+    safe_strl(latin1, len, buff, bp);
+    mush_free(latin1, "string");
+    ps_free(ps);
+  }
+  mush_free(breaks, "breaks");
   free_ansi_string(as);
 }
 
@@ -384,6 +430,10 @@ FUNCTION(fun_delete)
 {
   ansi_string *as;
   int pos, num;
+  char *utf8;
+  int *breaks, nbreaks;
+  int offset, bytes;
+  pennstr *ps;
 
   if (!is_integer(args[1]) || !is_integer(args[2])) {
     safe_str(T(e_ints), buff, bp);
@@ -398,22 +448,42 @@ FUNCTION(fun_delete)
     return;
   }
 
-  as = parse_ansi_string(args[0]);
+  utf8 = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  as = parse_ansi_string(utf8);
+  mush_free(utf8, "utf8.string");
 
-  if (pos > as->len || num == 0) {
+  breaks = gc_breaks(as->text, &nbreaks);
+
+  if (pos >= nbreaks || num == 0) {
     safe_strl(args[0], arglens[0], buff, bp);
     free_ansi_string(as);
+    mush_free(breaks, "breaks");
     return;
   }
 
   if (num < 0) {
     pos += num + 1;
-    if (pos < 0)
+    if (pos < 0) {
       pos = 0;
+    }
+    num = -num;
   }
 
-  ansi_string_delete(as, pos, num);
-  safe_ansi_string(as, 0, as->len, buff, bp);
+  if (pos + num > nbreaks) {
+    num = nbreaks - pos - 1;
+  }
+
+  offset = breaks[pos];
+  bytes = breaks[pos + num] - offset;
+  
+  ps = ps_new();
+  ansi_string_delete(as, offset, bytes);
+  ps_safe_ansi_string(as, 0, as->len, ps);
+  utf8 = utf8_to_latin1(ps_str(ps), ps_len(ps), &bytes, 0, "string");
+  safe_strl(utf8, bytes, buff, bp);
+  mush_free(utf8, "string");
+  ps_free(ps);
+  mush_free(breaks, "breaks");
   free_ansi_string(as);
 }
 
@@ -547,16 +617,40 @@ FUNCTION(fun_comp)
 /* ARGSUSED */
 FUNCTION(fun_pos)
 {
+  char *utf8a, *utf8b;
   char *pos;
+  int *breaks, nbreaks;
+  
+  utf8a = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
+  utf8b = latin1_to_utf8(args[1], arglens[1], NULL, "utf8.string");
 
-  pos = strstr(args[1], args[0]);
-  if (pos)
-    safe_integer(pos - args[1] + 1, buff, bp);
-  else
+  breaks = gc_breaks(utf8b, &nbreaks);
+  
+  pos = strstr(utf8b, utf8a);
+
+  if (pos) {
+    int offset = pos - utf8b;
+    int n;
+    bool found = 0;
+
+    for (n = 0; n < nbreaks -1; n += 1) {
+      if (offset == breaks[n]) {
+        safe_integer(n + 1, buff, bp);
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      safe_str("#-1", buff, bp);
+    }
+  } else {
     safe_str("#-1", buff, bp);
+  }
+  mush_free(breaks, "breaks");
+  mush_free(utf8a, "utf8.string");
+  mush_free(utf8b, "utf8.string");
 }
 
-/* TODO: Revise to use EGCs, not CPs, when support for them is added. */
 struct lpos_data {
   pennstr *buff;
   char *what;

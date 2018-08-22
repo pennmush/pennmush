@@ -35,8 +35,10 @@ SHELL=/bin/sh
 GLOBAL_INSTALL=@libexecdir@
 
 all: config.h autogen game/mush.cnf
-	@echo "Making all in pcre2"
-	(cd pcre2src && @MAKE@ install)
+	@if [ ! -d pcre2 ]; then \
+		echo "Making all in pcre2"; \
+		(cd pcre2src && make install); \
+	fi
 	@echo "Making all in src."
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
@@ -170,6 +172,7 @@ test: netmud
 
 clean:
 	(cd pcre2src; @MAKE@ clean)
+	rm -rf pcre2
 	(cd src; @MAKE@ clean)
 	(cd game; rm -f netmush info_slave)
 

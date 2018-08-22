@@ -385,7 +385,9 @@ case "${build_cpu}" in
      ;;
 esac
 AC_MSG_NOTICE([Configuring PCRE2])
-(cd pcre2src && ./configure ${PCRE_OPTIONS})
+# Some systems get confused with timestamps and want to rebuild pcre2 configure
+# and related stuff, which often breaks due to missing autotools. Sigh.
+(cd pcre2src && touch aclocal.m4 && sleep 1 && touch src/config.h.in configure Makefile.in && ./configure ${PCRE_OPTIONS})
 CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
 LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
 AC_DEFINE(HAVE_PCRE)

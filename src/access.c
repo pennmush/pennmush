@@ -112,23 +112,15 @@ static acsflag acslist[] = {{"connect", 1, ACS_CONNECT},
 static struct access *access_top;
 static void free_access_list(void);
 
-/* from pcre */
-extern const unsigned char *tables;
-
 static void
 sitelock_free(struct access *ap)
 {
   mush_free(ap->host, "sitelock.rule.pattern");
-  if (ap->comment)
+  if (ap->comment) {
     mush_free(ap->comment, "sitelock.rule.comment");
-  if (ap->re)
-    pcre_free(ap->re);
-  if (ap->study) {
-#ifdef PCRE_CONFIG_JIT
-    pcre_free_study(ap->study);
-#else
-    pcre_free(ap->study);
-#endif
+  }
+  if (ap->re) {
+    pcre2_code_free(ap->re);
   }
   mush_free(ap, "sitelock.rule");
 }
@@ -145,31 +137,40 @@ sitelock_alloc(const char *host, dbref who, uint32_t can, uint32_t cant,
   tmp = mush_malloc(sizeof(struct access), "sitelock.rule");
   if (!tmp) {
     static const char memerr[] = "unable to allocate memory";
-    if (errptr)
+    if (errptr) {
       *errptr = memerr;
+    }
     return NULL;
   }
   tmp->who = who;
   tmp->can = can;
   tmp->cant = cant;
   tmp->host = mush_strdup(host, "sitelock.rule.pattern");
-  if (comment && *comment)
+  if (comment && *comment) {
     tmp->comment = mush_strdup(comment, "sitelock.rule.comment");
-  else
+  } else {
     tmp->comment = NULL;
+  }
   tmp->next = NULL;
 
   if (can & ACS_REGEXP) {
-    int erroffset = 0;
-    tmp->re = pcre_compile(host, 0, errptr, &erroffset, tables);
+    PCRE2_SIZE erroffset = 0;
+    int errcode;
+    tmp->re =
+      pcre2_compile((const PCRE2_UCHAR *) host, PCRE2_ZERO_TERMINATED,
+                    re_compile_flags, &errcode, &erroffset, re_compile_ctx);
     if (!tmp->re) {
+      if (errptr) {
+        static char errstr[120];
+        pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+        *errptr = errstr;
+      }
       sitelock_free(tmp);
       return NULL;
     }
-    tmp->study = pcre_study(tmp->re, pcre_study_flags, errptr);
+    pcre2_jit_compile(tmp->re, PCRE2_JIT_COMPLETE);
   } else {
     tmp->re = NULL;
-    tmp->study = NULL;
   }
 
   return tmp;
@@ -362,9 +363,8 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
   for (ap = access_top; ap; ap = ap->next) {
     if (ap->can & ACS_SITELOCK)
       continue;
-    if (((ap->can & ACS_REGEXP)
-           ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
-           : quick_wild(ap->host, hname)) &&
+    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, hname, hlen)
+                                : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       if (flag & ACS_CONNECT) {
@@ -419,9 +419,8 @@ site_check_access(const char *hname, dbref who, int *rulenum)
     (*rulenum)++;
     if (ap->can & ACS_SITELOCK)
       continue;
-    if (((ap->can & ACS_REGEXP)
-           ? qcomp_regexp_match(ap->re, ap->study, hname, hlen)
-           : quick_wild(ap->host, hname)) &&
+    if (((ap->can & ACS_REGEXP) ? qcomp_regexp_match(ap->re, hname, hlen)
+                                : quick_wild(ap->host, hname)) &&
         (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       return ap;

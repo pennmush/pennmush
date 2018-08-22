@@ -60,3 +60,4 @@ dbtools/db_config.h
 dbtools/dbupgrade
 dbtools/grepdb
 dbtools/pwutil
+pcre2

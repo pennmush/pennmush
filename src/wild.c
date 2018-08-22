@@ -48,10 +48,10 @@
 
 bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
-const unsigned char *tables = NULL; /** Pointer to character tables */
-
-int pcre_study_flags = PCRE_STUDY_JIT_COMPILE;
-int pcre_public_study_flags = 0;
+pcre2_compile_context *re_compile_ctx = NULL;
+pcre2_match_context *re_match_ctx = NULL;
+uint32_t re_compile_flags = 0;
+uint32_t re_match_flags = 0;
 
 /** Do a wildcard match, without remembering the wild data.
  *
@@ -455,23 +455,24 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
                     char **matches, size_t nmatches, char *data, ssize_t len,
                     PE_REGS *pe_regs, int pe_reg_flags)
 {
-  pcre *re;
-  pcre_extra *extra;
+  pcre2_code *re;
   size_t i;
-  const char *errptr;
+  int errcode;
   ansi_string *as = NULL;
   const char *d;
   size_t delenn;
-  int erroffset;
-  int offsets[99];
+  PCRE2_SIZE erroffset;
+  pcre2_match_data *md;
   int subpatterns;
   int totallen = 0;
 
-  for (i = 0; i < nmatches; i++)
+  for (i = 0; i < nmatches; i++) {
     matches[i] = NULL;
+  }
 
-  if ((re = pcre_compile(s, (cs ? 0 : PCRE_CASELESS), &errptr, &erroffset,
-                         tables)) == NULL) {
+  if ((re = pcre2_compile((const PCRE2_UCHAR *) s, PCRE2_ZERO_TERMINATED,
+                          (cs ? 0 : PCRE2_CASELESS) | re_compile_flags,
+                          &errcode, &erroffset, re_compile_ctx)) == NULL) {
     /*
      * This is a matching error. We have an error message in
      * errptr that we can ignore, since we're doing
@@ -491,15 +492,18 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     delenn = strlen(d);
   }
 
-  extra = default_match_limit();
   /*
    * Now we try to match the pattern. The relevant fields will
    * automatically be filled in by this.
    */
-  if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99)) < 0) {
-    if (as)
+  md = pcre2_match_data_create_from_pattern(re, NULL);
+  if ((subpatterns = pcre2_match(re, (const PCRE2_UCHAR *) d, delenn, 0,
+                                 re_match_flags, md, re_match_ctx)) < 0) {
+    if (as) {
       free_ansi_string(as);
-    pcre_free(re);
+    }
+    pcre2_code_free(re);
+    pcre2_match_data_free(md);
     DEL_CHECK("pcre");
     return 0;
   }
@@ -507,19 +511,12 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   /* If we have pe_regs, populate it. */
   if (pe_regs) {
     if (as) {
-      pe_regs_set_rx_context_ansi(pe_regs, pe_reg_flags, re, offsets,
-                                  subpatterns, as);
+      pe_regs_set_rx_context_ansi(pe_regs, pe_reg_flags, re, md, subpatterns,
+                                  as);
     } else {
-      pe_regs_set_rx_context(pe_regs, pe_reg_flags, re, offsets, subpatterns,
-                             val);
+      pe_regs_set_rx_context(pe_regs, pe_reg_flags, re, md, subpatterns);
     }
   }
-
-  /* If we had too many subpatterns for the offsets vector, set the number
-   * to 1/3 of the size of the offsets vector
-   */
-  if (subpatterns == 0)
-    subpatterns = 33;
 
   /*
    * Now we fill in our args vector. Note that in regexp matching,
@@ -536,26 +533,27 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
      */
     char *buff = data + totallen;
     char *bp = buff;
-    int plen = offsets[i * 2 + 1] - offsets[i * 2];
     matches[i] = bp;
 
     if ((len - totallen) < BUFFER_LEN) {
       buff = data + len - BUFFER_LEN;
     }
     if (as) {
-      ansi_pcre_copy_substring(as, offsets, subpatterns, (int) i, 1, buff, &bp);
+      ansi_pcre_copy_substring(as, md, subpatterns, (int) i, 1, buff, &bp);
     } else {
-      pcre_copy_substring(val, offsets, subpatterns, (int) i, buff,
-                          len - totallen);
-      bp += plen;
+      PCRE2_SIZE blen = len - totallen;
+      pcre2_substring_copy_bynumber(md, (int) i, (PCRE2_UCHAR *) buff, &blen);
+      bp += blen;
     }
     *(bp++) = '\0';
     totallen = bp - data;
   }
 
-  if (as)
+  if (as) {
     free_ansi_string(as);
-  pcre_free(re);
+  }
+  pcre2_code_free(re);
+  pcre2_match_data_free(md);
   DEL_CHECK("pcre");
   return 1;
 }
@@ -575,43 +573,53 @@ bool
 quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
                    const char **report_err)
 {
-  pcre *re;
-  pcre_extra *extra;
+  pcre2_code *re;
   const char *sptr;
   size_t slen;
-  const char *errptr;
-  int erroffset;
-  int offsets[99];
+  int errcode;
+  PCRE2_SIZE erroffset;
+  pcre2_match_data *md;
   int r;
-  int flags = 0; /* There's a PCRE_NO_AUTO_CAPTURE flag to turn all raw
-                    ()'s into (?:)'s, which would be nice to use,
-                    except that people might use backreferences in
-                    their patterns. Argh. */
+  int flags =
+    re_compile_flags; /* There's a PCRE_NO_AUTO_CAPTURE flag to turn all raw
+          ()'s into (?:)'s, which would be nice to use,
+          except that people might use backreferences in
+          their patterns. Argh. */
 
-  if (!cs)
-    flags |= PCRE_CASELESS;
+  if (!cs) {
+    flags |= PCRE2_CASELESS;
+  }
 
-  if ((re = pcre_compile(s, flags, &errptr, &erroffset, tables)) == NULL) {
+  if (report_err) {
+    *report_err = NULL;
+  }
+
+  if ((re = pcre2_compile((const PCRE2_UCHAR *) s, PCRE2_ZERO_TERMINATED, flags,
+                          &errcode, &erroffset, re_compile_ctx)) == NULL) {
     /*
      * This is a matching error. We have an error message in
      * errptr that we can ignore, since we're doing
      * command-matching.
      */
     if (report_err != NULL) {
-      *report_err = errptr;
+      static char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      *report_err = errstr;
     }
     return 0;
   }
   ADD_CHECK("pcre");
   sptr = remove_markup(d, &slen);
-  extra = default_match_limit();
+
   /*
    * Now we try to match the pattern. The relevant fields will
    * automatically be filled in by this.
    */
-  r = pcre_exec(re, extra, sptr, slen - 1, 0, 0, offsets, 99);
-
-  pcre_free(re);
+  md = pcre2_match_data_create_from_pattern(re, NULL);
+  r = pcre2_match(re, (const PCRE2_UCHAR *) sptr, slen - 1, 0, re_match_flags,
+                  md, re_match_ctx);
+  pcre2_code_free(re);
+  pcre2_match_data_free(md);
   DEL_CHECK("pcre");
 
   return r >= 0;
@@ -624,22 +632,20 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj,
-                   size_t len)
+qcomp_regexp_match(const pcre2_code *re, const char *subj, size_t len)
 {
-  int offsets[99];
-  pcre_extra *extra;
+  pcre2_match_data *md;
+  int r;
 
-  if (!re || !subj)
+  if (!re || !subj) {
     return false;
+  }
 
-  if (study) {
-    extra = study;
-    set_match_limit(extra);
-  } else
-    extra = default_match_limit();
-
-  return pcre_exec(re, extra, subj, len, 0, 0, offsets, 99) >= 0;
+  md = pcre2_match_data_create_from_pattern(re, NULL);
+  r = pcre2_match(re, (const PCRE2_UCHAR *) subj, len, 0, re_match_flags, md,
+                  re_match_ctx);
+  pcre2_match_data_free(md);
+  return r >= 0;
 }
 
 /** Either an order comparison or a wildcard match with optional

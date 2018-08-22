@@ -2074,8 +2074,8 @@ int sqlite3_remember_init(sqlite3 *db, char **pzErrMsg,
                           const sqlite3_api_routines *pApi);
 
 struct sql_regexp_data {
-  pcre *re;
-  pcre_extra *study;
+  pcre2_code *re;
+  pcre2_match_data *md;
   bool free_study;
 };
 
@@ -2083,10 +2083,8 @@ static void
 sql_regexp_free(void *ptr)
 {
   struct sql_regexp_data *d = ptr;
-  if (d->free_study) {
-    pcre_free_study(d->study);
-  }
-  pcre_free(d->re);
+  pcre2_code_free(d->re);
+  pcre2_match_data_free(d->md);
   free(d);
 }
 
@@ -2094,10 +2092,9 @@ void
 sql_regexp_fun(sqlite3_context *ctx, int nargs __attribute__((__unused__)),
                sqlite3_value **args)
 {
-  int ovec[99];
-  int nmatches;
-  const char *subj;
+  const unsigned char *subj;
   int subj_len;
+  int nmatches;
   struct sql_regexp_data *d = sqlite3_get_auxdata(ctx, 0);
 
   if (sqlite3_value_type(args[0]) == SQLITE_NULL ||
@@ -2106,32 +2103,27 @@ sql_regexp_fun(sqlite3_context *ctx, int nargs __attribute__((__unused__)),
   }
 
   if (!d) {
-    const char *err;
-    int erroff;
+    int errcode;
+    PCRE2_SIZE erroff;
     d = malloc(sizeof *d);
-    d->re =
-      pcre_compile((const char *) sqlite3_value_text(args[0]),
-                   PCRE_ANCHORED | PCRE_UTF8 | PCRE_UCP, &err, &erroff, NULL);
+    d->re = pcre2_compile(
+      sqlite3_value_text(args[0]), sqlite3_value_bytes(args[0]),
+      PCRE2_ANCHORED | PCRE2_UTF | PCRE2_UCP, &errcode, &erroff, NULL);
     if (!d->re) {
-      sqlite3_result_error(ctx, err, -1);
+      PCRE2_UCHAR errstr[120];
+      pcre2_get_error_message(errcode, errstr, sizeof errstr);
+      sqlite3_result_error(ctx, (const char *) errstr, -1);
       free(d);
       return;
     }
-    d->study = pcre_study(d->re, pcre_public_study_flags, &err);
-    if (d->study) {
-      d->free_study = 1;
-      set_match_limit(d->study);
-    } else {
-      d->free_study = 0;
-      d->study = default_match_limit();
-    }
+    d->md = pcre2_match_data_create_from_pattern(d->re, NULL);
     sqlite3_set_auxdata(ctx, 0, d, sql_regexp_free);
   }
 
-  subj = (const char *) sqlite3_value_text(args[1]);
+  subj = sqlite3_value_text(args[1]);
   subj_len = sqlite3_value_bytes(args[1]);
-  nmatches = pcre_exec(d->re, d->study, subj, subj_len, 0, 0, ovec, 99);
-  sqlite3_result_int(ctx, nmatches > 0 ? 1 : 0);
+  nmatches = pcre2_match(d->re, subj, subj_len, 0, 0, d->md, re_match_ctx);
+  sqlite3_result_int(ctx, nmatches >= 0);
 }
 
 /** Open a new connection to a sqlite3 database.

@@ -161,7 +161,7 @@ mush_free_where(void *restrict ptr, const char *restrict check,
 #ifdef DEBUG
   if (strstr(check, "pcre")) {
     do_rawlog(LT_TRACE,
-              "pcre allocation at %s:%d should be freed with pcre_free",
+              "pcre allocation at %s:%d should be freed with pcre2_code_free",
               filename, line);
   }
 #endif

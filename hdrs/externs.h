@@ -195,7 +195,8 @@ int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
-void run_http_command(dbref player, int port, char *method, NEW_PE_INFO *pe_info);
+void run_http_command(dbref player, int port, char *method,
+                      NEW_PE_INFO *pe_info);
 
 #define queue_attribute_base(ex, at, en, nop, pereg, flag)                     \
   queue_attribute_base_priv(ex, at, en, nop, pereg, flag, NOTHING, NULL, NULL)
@@ -441,7 +442,7 @@ const char *accented_name(dbref thing);
 /* From utils.c */
 void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
 uint64_t now_msecs(); /* current milliseconds */
-#define SECS_TO_MSECS(x) ((x) * 1000UL)
+#define SECS_TO_MSECS(x) ((x) *1000UL)
 #ifdef WIN32
 void penn_gettimeofday(struct timeval *now); /* For platform agnosticism */
 #else
@@ -539,8 +540,7 @@ bool regexp_match_case_r(const char *restrict s, const char *restrict d,
                          PE_REGS *pe_regs, int pe_reg_flags);
 bool quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
                         const char **report_err);
-bool qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *s,
-                        size_t);
+bool qcomp_regexp_match(const pcre2_code *re, const char *s, size_t);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s, d, p) local_wild_match_case(s, d, 0, p)
 

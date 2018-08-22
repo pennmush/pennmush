@@ -151,7 +151,7 @@ void init_rlimit(void);
 void rusage_stats(void);
 #endif
 uint64_t queue_msecs_till_next(void); /* from cque.c */
-void queue_update(void); /* from cque.c */
+void queue_update(void);              /* from cque.c */
 void update_queue_load();
 
 dbref email_register_player(DESC *d, const char *name, const char *email,
@@ -387,7 +387,8 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const char *prefix, char *arg);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
-static void shutdownsock(DESC *d, const char *reason, dbref executor, int flags);
+static void shutdownsock(DESC *d, const char *reason, dbref executor,
+                         int flags);
 static void disconnect_desc(DESC *d);
 static void cleanup_desc(DESC *d);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
@@ -457,11 +458,9 @@ static void dump_users(DESC *call_by, char *match);
 static char *onfor_time_fmt(time_t at, int len);
 static char *idle_time_fmt(time_t last, int len);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved, const char *reason, dbref executor);
-enum disconn_reason {
-  DISCONNECT_LOGOUT = 0,
-  DISCONNECT_QUIT = 1
-};
+static void announce_disconnect(DESC *saved, const char *reason,
+                                dbref executor);
+enum disconn_reason { DISCONNECT_LOGOUT = 0, DISCONNECT_QUIT = 1 };
 
 static void disconnect_player(DESC *d, enum disconn_reason reason);
 bool inactivity_check(void);
@@ -562,7 +561,7 @@ main(int argc, char **argv)
             n++;
           }
         } else if (strcmp(argv[n], "--no-pcre-jit") == 0) {
-          pcre_study_flags = 0;
+          re_match_flags = PCRE2_NO_JIT;
         } else
           fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[n]);
       } else {
@@ -673,8 +672,12 @@ main(int argc, char **argv)
 #endif
 #endif
 
-  /* Build the locale-dependant tables used by PCRE */
-  tables = pcre_maketables();
+  /* Build the contexts used by PCRE2 */
+  re_compile_ctx = pcre2_compile_context_create(NULL);
+  re_match_ctx = pcre2_match_context_create(NULL);
+  pcre2_set_character_tables(re_compile_ctx, pcre2_maketables(NULL));
+  pcre2_set_match_limit(re_match_ctx, PENN_MATCH_LIMIT);
+  pcre2_set_heap_limit(re_match_ctx, 10 * 1024); // 10MB max heap memory
 
   /* save a file descriptor */
   reserve_fd();
@@ -887,7 +890,8 @@ msec_diff(struct timeval now, struct timeval then)
   msecs = 1000 * (now.tv_sec - then.tv_sec);
   msecs += (now.tv_usec / 1000);
   msecs -= (then.tv_usec / 1000);
-  if (msecs < 0) return 0;
+  if (msecs < 0)
+    return 0;
   return msecs;
 }
 
@@ -915,7 +919,7 @@ update_quotas(struct timeval current)
   msecs = msec_diff(current, last);
   last = current;
 
-  DESC_ITER(d) {
+  DESC_ITER (d) {
     d->quota += COMMANDS_PER_SECOND * msecs;
     if (d->quota > QUOTA_MAX)
       d->quota = QUOTA_MAX;
@@ -1173,8 +1177,7 @@ check_status()
   }
 #ifdef INFO_SLAVE
   if (slave_error) {
-    do_rawlog(LT_ERR, "%s",
-              exit_report("info_slave", slave_error, error_code));
+    do_rawlog(LT_ERR, "%s", exit_report("info_slave", slave_error, error_code));
     slave_error = error_code = 0;
   }
 #endif /* INFO_SLAVE */
@@ -1235,11 +1238,12 @@ shutdownsock(DESC *d, const char *reason, dbref executor, int flags)
   d->closer = executor;
 }
 
-#define CONN_CLOSABLES (CONN_SHUTDOWN | CONN_NOWRITE |\
-                        CONN_CLOSE_READY | CONN_HTTP_CLOSE)
+#define CONN_CLOSABLES                                                         \
+  (CONN_SHUTDOWN | CONN_NOWRITE | CONN_CLOSE_READY | CONN_HTTP_CLOSE)
 
 void
-clean_descriptors(DESC **head) {
+clean_descriptors(DESC **head)
+{
   DESC *d = *head;
   DESC **listp = head;
 
@@ -1403,7 +1407,7 @@ check_sockets(uint32_t msec_timeout)
 #endif
 
   /** Now add all the active descriptors */
-  DESC_ITER(d) {
+  DESC_ITER (d) {
     /* If d->input.head is non-null, the descriptor is being throttled.
      * If d->output.head is non-null, the descriptor is choked on send,
      * we want to watch for POLLOUT event to write some more.
@@ -1414,7 +1418,8 @@ check_sockets(uint32_t msec_timeout)
       /* They're throttled, be nice and reduce timeout to when we think
        * they'll be unthrottled. */
       uint64_t curr = MS_PER_SEC - d->quota;
-      if (msec_timeout > curr) msec_timeout = curr;
+      if (msec_timeout > curr)
+        msec_timeout = curr;
     } else {
       events |= PENN_POLLIN;
     }
@@ -1434,8 +1439,7 @@ check_sockets(uint32_t msec_timeout)
     curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
   if (curl_status != CURLM_OK) {
-    do_rawlog(LT_ERR, "curl_multi_wait: %s",
-              curl_multi_strerror(curl_status));
+    do_rawlog(LT_ERR, "curl_multi_wait: %s", curl_multi_strerror(curl_status));
     return 0;
   }
 
@@ -1536,24 +1540,23 @@ check_sockets(uint32_t msec_timeout)
 #endif /* INFO_SLAVE */
 
     /* Any updates to the game/txt/??? files? */
-    if (found > 0 && notify_fd >= 0 &&
-        fds[fds_used++].revents & PENN_POLLIN) {
+    if (found > 0 && notify_fd >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
       found -= 1;
       file_watch_event(notify_fd);
     }
 
 #ifndef WIN32
-    if (found > 0 && sigrecv_fd >= 0 &&
-        fds[fds_used++].revents & PENN_POLLIN) {
+    if (found > 0 && sigrecv_fd >= 0 && fds[fds_used++].revents & PENN_POLLIN) {
       found -= 1;
       sigrecv_ack();
     }
 #endif
 
     /* Check all the users for input */
-    DESC_ITER(d) {
+    DESC_ITER (d) {
       unsigned int input_ready, output_ready, errors, full_events;
-      if (found <= 0) break;
+      if (found <= 0)
+        break;
 
       if ((SOCKET) d->descriptor != fds[fds_used].fd)
         continue;
@@ -1601,9 +1604,10 @@ gameloop()
 
   while (!shutdown_flag) {
     /** let's find out how long we should wait */
-#define min_timeout(store, func) \
-    timeout_check = func; \
-    if (timeout_check < store) store = timeout_check
+#define min_timeout(store, func)                                               \
+  timeout_check = func;                                                        \
+  if (timeout_check < store)                                                   \
+  store = timeout_check
 
     /* any queued commands or events waiting? */
     msec_timeout = SECS_TO_MSECS(500);
@@ -1634,7 +1638,8 @@ gameloop()
     /* Process all available incoming commands on the socket. */
     process_commands();
 
-    /* Check wait and semaphore to bump any commands to the queue that need it. */
+    /* Check wait and semaphore to bump any commands to the queue that need it.
+     */
     queue_update();
 
     /* Let's run 'em. */
@@ -2160,7 +2165,8 @@ disconnect_player(DESC *d, enum disconn_reason reason)
   if (d->connected == CONN_PLAYER && IsPlayer(d->player)) {
     fcache_dump(d, fcache.quit_fcache, NULL, NULL);
     if (reason == DISCONNECT_LOGOUT) {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
+      do_rawlog(LT_CONN,
+                "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
                 d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     } else {
       do_rawlog(LT_CONN, "[%d/%s/%s] Disconnect by %s(#%d) (%s)", d->descriptor,
@@ -3371,8 +3377,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
        * so it's nice of us to try to handle this.
        */
       *p = '\0';
-      if (is_first &&
-          is_http_request(d->raw_input)) {
+      if (is_first && is_http_request(d->raw_input)) {
 #ifndef WITHOUT_WEBSOCKETS
         if (options.use_ws && is_websocket(d->raw_input)) {
           /* Continue processing as a WebSockets upgrade request. */
@@ -3382,8 +3387,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         {
           if (process_http_start(d, d->raw_input)) {
             if ((qend - q) > 0) {
-              if (*q == '\r') q++;
-              if (*q == '\n') q++;
+              if (*q == '\r')
+                q++;
+              if (*q == '\n')
+                q++;
               process_http_input(d, q, qend - q);
             }
           }
@@ -3516,9 +3523,10 @@ set_userstring(char **userstring, const char *command)
  *
  * And repeat until (1) and (2) fail.
  *
- * What does this mean? If Bob, Joe and Jane all have 2 commands, and Jane has 4,
- * then 1 command is run for each of them (in reverse order of first connection
- * time), until all of them have no commands OR have exceeded their quota.
+ * What does this mean? If Bob, Joe and Jane all have 2 commands, and Jane has
+ * 4, then 1 command is run for each of them (in reverse order of first
+ * connection time), until all of them have no commands OR have exceeded their
+ * quota.
  *
  * All HTTP connections that are ready are processed on the first run.
  */
@@ -3531,10 +3539,11 @@ process_commands(void)
     DESC *cdesc;
 
     nprocessed = 0;
-    DESC_ITER(cdesc) {
+    DESC_ITER (cdesc) {
       struct text_block *t;
       /* Should they be disconnected? If so, ignore. */
-      if (cdesc->conn_flags & CONN_SHUTDOWN) continue;
+      if (cdesc->conn_flags & CONN_SHUTDOWN)
+        continue;
 
       if (cdesc->quota >= MS_PER_SEC && (t = cdesc->input.head) != NULL) {
         enum comm_res retval;
@@ -3603,8 +3612,7 @@ http_bounce_mud_url(DESC *d)
               "<TITLE>Welcome to %s!</TITLE>",
               MUDNAME);
   if (has_url) {
-    safe_format(buf, &bp,
-                "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
+    safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
                 MUDURL);
   }
   safe_str("</HEAD><BODY><h1>Oops!</h1>", buf, &bp);
@@ -3626,9 +3634,9 @@ http_bounce_mud_url(DESC *d)
   queue_eol(d);
 }
 
-#define HTTP_HEADER           1
-#define HTTP_BODY             2
-#define HTTP_DONE             3
+#define HTTP_HEADER 1
+#define HTTP_BODY 2
+#define HTTP_DONE 3
 
 #define HTTP_CONTENT_LENGTH "CONTENT-LENGTH: "
 
@@ -3659,20 +3667,27 @@ process_http_start(DESC *d, char *line)
 
   /* Get METHOD, PATH, and VERSION */
   method = line;
-  for (c = line; *c && !isspace(*c); c++);
+  for (c = line; *c && !isspace(*c); c++)
+    ;
 
-  if (!*c) goto bad_connection;
+  if (!*c)
+    goto bad_connection;
 
   *(c++) = '\0';
 
-  if (strlen(method) >= HTTP_METHOD_LEN) goto bad_connection;
+  if (strlen(method) >= HTTP_METHOD_LEN)
+    goto bad_connection;
 
   /* Skip ahead to the path. */
-  for (path = c; *path && isspace(*path); path++);
-  if (!*path) goto bad_connection;
+  for (path = c; *path && isspace(*path); path++)
+    ;
+  if (!*path)
+    goto bad_connection;
 
-  for (c = path; *c && !isspace(*c); c++);
-  if (!*c) goto bad_connection;
+  for (c = path; *c && !isspace(*c); c++)
+    ;
+  if (!*c)
+    goto bad_connection;
 
   *(c++) = '\0';
   if (strlen(path) >= MAX_COMMAND_LEN) {
@@ -3718,14 +3733,13 @@ process_http_start(DESC *d, char *line)
    */
   if (!Site_Can_Connect(d->ip, HTTP_HANDLER)) {
     if (!Deny_Silent_Site(d->ip, HTTP_HANDLER)) {
-      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
-                  d->descriptor, d->ip, req->method, req->path,
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s", d->descriptor,
+                  d->ip, req->method, req->path,
                   "http: IP sitelocked !connect");
     }
     reason = NULL;
     goto bad_connection;
   }
-
 
   /* Now that we have the path, let's check it for sitelock.
    * Yes, I'm pretending path is a hostname! It works!
@@ -3733,8 +3747,8 @@ process_http_start(DESC *d, char *line)
   snprintf(buff, BUFFER_LEN, "%s`%s`%s", d->ip, req->method, req->path);
   if (!Site_Can_Connect(buff, HTTP_HANDLER)) {
     if (!Deny_Silent_Site(buff, HTTP_HANDLER)) {
-      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s",
-                  d->descriptor, d->ip, req->method, req->path,
+      queue_event(SYSEVENT, "HTTP`BLOCKED", "%d,%s,%s,%s,%s", d->descriptor,
+                  d->ip, req->method, req->path,
                   "http: path sitelocked !connect");
     }
     reason = NULL;
@@ -3748,8 +3762,8 @@ process_http_start(DESC *d, char *line)
 bad_connection:
   http_bounce_mud_url(d);
   if (reason) {
-    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
-                d->descriptor, d->ip, reason);
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s", d->descriptor, d->ip,
+                reason);
   }
   d->conn_flags |= CONN_HTTP_CLOSE;
   return 0;
@@ -3789,7 +3803,8 @@ process_http_input(DESC *d, char *buf, int len)
          * p should be "\r\n" by spec, but might not be, thanks to lazy
          * script writers, ancient browsers, etc.
          */
-        if (*p == '\r' && *(p+1) == '\n') *(p++) = '\0';
+        if (*p == '\r' && *(p + 1) == '\n')
+          *(p++) = '\0';
         *(p++) = '\0';
         if (req->content_length == 0 ||
             (req->content_length < 0 && is_http_bodyless(req->method))) {
@@ -3799,21 +3814,24 @@ process_http_input(DESC *d, char *buf, int len)
         }
         req->state = HTTP_BODY;
         if (*p && req->content_length) {
-          /* Switch to body input. content_length of -1 (No content length received)
-           * means we depend on timer. Shove rest of body into it.
+          /* Switch to body input. content_length of -1 (No content length
+           * received) means we depend on timer. Shove rest of body into it.
            */
           buf = p;
           len = (req->inhp - p);
           goto readbody;
         }
       }
-      for (eol = p; *eol && *eol != '\r' && *eol != '\n'; eol++);
+      for (eol = p; *eol && *eol != '\r' && *eol != '\n'; eol++)
+        ;
       if (!*eol) {
         /* Incomplete headers, wait until we read more. */
         goto waitmore;
       }
-      if (*eol == '\r' && *(eol+1) == '\n') eol++;
-      if (*eol) eol++;
+      if (*eol == '\r' && *(eol + 1) == '\n')
+        eol++;
+      if (*eol)
+        eol++;
       /* We have a header, check for Content-Length: */
       if (!strncasecmp(p, HTTP_CONTENT_LENGTH, strlen(HTTP_CONTENT_LENGTH))) {
         val = p + strlen(HTTP_CONTENT_LENGTH);
@@ -3829,9 +3847,10 @@ process_http_input(DESC *d, char *buf, int len)
     }
     break;
   case HTTP_BODY:
-readbody:
+  readbody:
     safe_strl(buf, len, req->inbody, &(req->inbp));
-    if (req->content_length > 0 && (req->inbp - req->inbody) >= req->content_length) {
+    if (req->content_length > 0 &&
+        (req->inbp - req->inbody) >= req->content_length) {
       http_command_ready(d);
       return;
     }
@@ -3853,8 +3872,10 @@ http_command_ready(DESC *d)
     sq_cancel(d->conn_timer);
     d->conn_timer = NULL;
   }
-  /* Don't run twice - from close_write _and_ timer (which shouldn't happen anyway?) */
-  if (d->conn_flags & CONN_HTTP_READY) return;
+  /* Don't run twice - from close_write _and_ timer (which shouldn't happen
+   * anyway?) */
+  if (d->conn_flags & CONN_HTTP_READY)
+    return;
   d->conn_flags |= CONN_HTTP_READY;
 }
 
@@ -3873,7 +3894,8 @@ do_http_command(DESC *d)
   const char *rval;
   const char *reason = "Malformed Request";
 
-  if (d->conn_timer) sq_cancel(d->conn_timer);
+  if (d->conn_timer)
+    sq_cancel(d->conn_timer);
   d->conn_timer = NULL;
 
   if (!(d->conn_flags & CONN_HTTP_REQUEST)) {
@@ -3900,10 +3922,13 @@ do_http_command(DESC *d)
   hp = headernames;
   while (*p) {
     line = p;
-    while (*p && *p != '\r' && *p != '\n') p++;
+    while (*p && *p != '\r' && *p != '\n')
+      p++;
     /* Chomp, \r, \n, or \r\n (should be \r\n). */
-    if (*p == '\r') *(p++) = '\0';
-    if (*p == '\n') *(p++) = '\0';
+    if (*p == '\r')
+      *(p++) = '\0';
+    if (*p == '\n')
+      *(p++) = '\0';
     headername = line;
     headerval = strstr(line, ": ");
     if (!headerval) {
@@ -3949,7 +3974,8 @@ do_http_command(DESC *d)
   d->conn_flags |= CONN_HTTP_BUFFER;
 
   active_http_request = req;
-  run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method, pe_info);
+  run_http_command(HTTP_HANDLER, d->descriptor, d->http_request->method,
+                   pe_info);
 
   d->player = NOTHING;
   d->connected = CONN_SCREEN;
@@ -3963,8 +3989,8 @@ do_http_command(DESC *d)
 
   content_len = req->rp - req->response;
 
-  queue_event(SYSEVENT, "HTTP`COMMAND", "%s,%s,%s,%s,%s,%ld,%d",
-              d->ip, req->method, req->path, req->code, req->ctype,
+  queue_event(SYSEVENT, "HTTP`COMMAND", "%s,%s,%s,%s,%s,%ld,%d", d->ip,
+              req->method, req->path, req->code, req->ctype,
               strlen(req->inbody), content_len);
 
   /* Now write out our response header, populated by @respond, then body. */
@@ -3983,25 +4009,19 @@ do_http_command(DESC *d)
 bad_connection:
   http_bounce_mud_url(d);
   if (reason) {
-    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s",
-                d->descriptor, d->ip, reason);
+    queue_event(SYSEVENT, "HTTP`FAIL", "%d,%s,%s", d->descriptor, d->ip,
+                reason);
   }
-  if (pe_info) free_pe_info(pe_info);
+  if (pe_info)
+    free_pe_info(pe_info);
   d->conn_flags |= CONN_HTTP_CLOSE;
 }
 
 static bool
 is_http_request(const char *command)
 {
-  const char *methods[] = {
-    "GET ",
-    "POST ",
-    "PUT ",
-    "DELETE ",
-    "UPDATE ",
-    "HEAD ",
-    NULL
-  };
+  const char *methods[] = {"GET ",    "POST ", "PUT ", "DELETE ",
+                           "UPDATE ", "HEAD ", NULL};
 
   int i;
 
@@ -4014,13 +4034,9 @@ is_http_request(const char *command)
 }
 
 static bool
-is_http_bodyless(const char *method) {
-  const char *methods[] = {
-    "GET",
-    "DELETE",
-    "HEAD",
-    NULL
-  };
+is_http_bodyless(const char *method)
+{
+  const char *methods[] = {"GET", "DELETE", "HEAD", NULL};
 
   int i;
 
@@ -4087,7 +4103,7 @@ do_command(DESC *d, char *command)
   d->last_time = mudtime;
   (d->cmds)++;
   if (SUPPORT_PUEBLO &&
-             !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
+      !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
     parse_puebloclient(d, command);
     if (!(d->conn_flags & CONN_HTML)) {
       queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
@@ -5911,10 +5927,13 @@ announce_disconnect(DESC *saved, const char *reason, dbref executor)
   if (!GoodObject(loc))
     return;
 
-  DESC_ITER_CONN(d) {
-    /* Don't count this current DESC, we want number of _other_ DESCs for this player.
-     * In a QUIT, saved won't be in descriptor_list, but in a LOGOUT, it will be. */
-    if (d == saved) continue;
+  DESC_ITER_CONN (d) {
+    /* Don't count this current DESC, we want number of _other_ DESCs for this
+     * player.
+     * In a QUIT, saved won't be in descriptor_list, but in a LOGOUT, it will
+     * be. */
+    if (d == saved)
+      continue;
     if (d->player == player)
       numleft += 1;
   }
@@ -6035,7 +6054,8 @@ announce_disconnect(DESC *saved, const char *reason, dbref executor)
     (void) atr_add(player, "LASTLOGOUT", show_time(mudtime, 0), GOD, 0);
   }
 
-  /* local_disconnect expects num to include logged out sock, for backwards compat. */
+  /* local_disconnect expects num to include logged out sock, for backwards
+   * compat. */
   local_disconnect(player, numleft + 1);
 }
 
@@ -6146,8 +6166,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
 
   /* Smash any undesirable characters */
   dp = doing;
-  WALK_ANSI_STRING(dp)
-  {
+  WALK_ANSI_STRING (dp) {
     if (!char_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';
@@ -7276,7 +7295,7 @@ dump_reboot_db(void)
     putref(f, localsock);
 #endif
     putref(f, maxd);
-    DESC_ITER(d) {
+    DESC_ITER (d) {
       putref(f, d->descriptor);
       putref(f, d->connected_at);
       putref(f, d->hide);

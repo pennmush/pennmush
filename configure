@@ -641,8 +641,6 @@ MYSQL_LDFLAGS
 MYSQL_CFLAGS
 MYSQL_VERSION
 MYSQL_CONFIG
-PCRE_CFLAGS
-PCRE_LIBS
 OPENSSL_LDFLAGS
 OPENSSL_LIBS
 OPENSSL_INCLUDES
@@ -715,6 +713,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -741,7 +740,6 @@ with_curl_prefix
 with_curl_exec_prefix
 with_zlib
 with_openssl
-with_pcre
 enable_sql
 with_mysql
 with_postgresql
@@ -815,6 +813,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1067,6 +1066,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1204,7 +1212,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1357,6 +1365,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1416,7 +1425,6 @@ Optional Packages:
                           /usr/local or /usr if not found in /usr/local]
   --without-zlib          to disable zlib usage completely
   --with-openssl=DIR      root of the OpenSSL directory
-  --with-pcre[=prefix]    compile xmlpcre part (via libpcre check)
   --with-mysql=[ARG]      use MySQL client library [default=yes], optionally
                           specify path to mysql_config
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
@@ -4097,6 +4105,7 @@ fi
 
     ax_is_release=yes
 
+# Hack to make clang error on unknown flags when testing.
 
 
 
@@ -8893,167 +8902,6 @@ done
 LIBS="${OLDLIBS}"
 LDFLAGS="${OLDLDFLAGS}"
 
-# system libpcre
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
-$as_echo_n "checking lib pcre... " >&6; }
-
-# Check whether --with-pcre was given.
-if test "${with_pcre+set}" = set; then :
-  withval=$with_pcre;
-else
-  with_pcre="yes"
-fi
-
-if test ".$with_pcre" = ".no" ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled" >&5
-$as_echo "disabled" >&6; }
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: (testing)" >&5
-$as_echo "(testing)" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcre_study in -lpcre" >&5
-$as_echo_n "checking for pcre_study in -lpcre... " >&6; }
-if ${ac_cv_lib_pcre_pcre_study+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpcre  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char pcre_study ();
-int
-main ()
-{
-return pcre_study ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_pcre_pcre_study=yes
-else
-  ac_cv_lib_pcre_pcre_study=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcre_pcre_study" >&5
-$as_echo "$ac_cv_lib_pcre_pcre_study" >&6; }
-if test "x$ac_cv_lib_pcre_pcre_study" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBPCRE 1
-_ACEOF
-
-  LIBS="-lpcre $LIBS"
-
-fi
-
-  if test "$ac_cv_lib_pcre_pcre_study" = "yes" ; then
-     PCRE_LIBS="-lpcre"
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
-$as_echo_n "checking lib pcre... " >&6; }
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PCRE_LIBS" >&5
-$as_echo "$PCRE_LIBS" >&6; }
-
-  else
-     OLDLDFLAGS="$LDFLAGS" ; LDFLAGS="$LDFLAGS -L$with_pcre/lib"
-     OLDCPPFLAGS="$CPPFLAGS" ; CPPFLAGS="$CPPFLAGS -I$with_pcre/include"
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcre_compile in -lpcre" >&5
-$as_echo_n "checking for pcre_compile in -lpcre... " >&6; }
-if ${ac_cv_lib_pcre_pcre_compile+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpcre  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char pcre_compile ();
-int
-main ()
-{
-return pcre_compile ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_pcre_pcre_compile=yes
-else
-  ac_cv_lib_pcre_pcre_compile=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcre_pcre_compile" >&5
-$as_echo "$ac_cv_lib_pcre_pcre_compile" >&6; }
-if test "x$ac_cv_lib_pcre_pcre_compile" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBPCRE 1
-_ACEOF
-
-  LIBS="-lpcre $LIBS"
-
-fi
-
-     CPPFLAGS="$OLDCPPFLAGS"
-     LDFLAGS="$OLDLDFLAGS"
-     if test "$ac_cv_lib_pcre_pcre_compile" = "yes" ; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: .setting PCRE_LIBS -L$with_pcre/lib -lpcre" >&5
-$as_echo ".setting PCRE_LIBS -L$with_pcre/lib -lpcre" >&6; }
-        PCRE_LIBS="-L$with_pcre/lib -lpcre"
-        test -d "$with_pcre/include" && PCRE_CFLAGS="-I$with_pcre/include"
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
-$as_echo_n "checking lib pcre... " >&6; }
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PCRE_LIBS" >&5
-$as_echo "$PCRE_LIBS" >&6; }
-
-     else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking lib pcre" >&5
-$as_echo_n "checking lib pcre... " >&6; }
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, (WARNING)" >&5
-$as_echo "no, (WARNING)" >&6; }
-
-     fi
-  fi
-fi
-
-
-
-for ac_header in pcre.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "pcre.h" "ac_cv_header_pcre_h" "$ac_includes_default"
-if test "x$ac_cv_header_pcre_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_PCRE_H 1
-_ACEOF
-
-fi
-
-done
-
-if test "${PCRE_LIBS+set}" = "set" -a "x${ac_cv_header_pcre_h}" = "xyes"; then
-   $as_echo "#define HAVE_PCRE 1" >>confdefs.h
-
-else
-   as_fn_error $? "The PCRE library must be installed to run PennMUSH." "$LINENO" 5
-fi
-
 ### Databases
 
 # Check whether --enable-sql was given.
@@ -11216,6 +11064,28 @@ _ACEOF
 
 
 
+### PCRE2 config
+PCRE_OPTIONS="--prefix=$(pwd)/../pcre2/ --disable-shared --enable-never-backslash-C"
+# Other CPUs have JIT support but it seems unlikely anybody will be using them.
+case "${build_cpu}" in
+     *x86_64*)
+     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     ;;
+     *i?86*)
+     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     ;;
+     *arm*)
+     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
+$as_echo "$as_me: Configuring PCRE2" >&6;}
+(cd pcre2src && ./configure ${PCRE_OPTIONS})
+CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
+LDFLAGS="${LDFLAGS} -L../pcre2/lib -lpcre2-8"
+$as_echo "#define HAVE_PCRE 1" >>confdefs.h
+
+
 ### Misc features
 # Check whether --enable-ipv6 was given.
 if test "${enable_ipv6+set}" = set; then :
@@ -12677,6 +12547,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
-
 

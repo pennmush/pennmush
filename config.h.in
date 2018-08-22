@@ -81,8 +81,6 @@
 
 #undef HAVE_SSL
 
-#undef HAVE_PCRE_H
-
 #undef HAVE_PCRE
 
 #undef HAVE_EVENT2_EVENT_H

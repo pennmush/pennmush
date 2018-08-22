@@ -1336,53 +1336,65 @@ extern const unsigned char *tables;
 static bool
 valid_hex_digits(const char *digits, int len)
 {
-  static pcre *re = NULL;
-  static pcre_extra *extra = NULL;
-  int ovec[9];
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md = NULL;
 
   if (!re) {
-    const char *errptr;
-    int erroff;
+    int errcode;
+    PCRE2_SIZE erroff;
 
-    re = pcre_compile("^[[:xdigit:]]+$", 0, &errptr, &erroff, tables);
+    re = pcre2_compile(
+      (const PCRE2_UCHAR *) "^[[:xdigit:]]+$", PCRE2_ZERO_TERMINATED,
+      re_compile_flags | PCRE2_NO_UTF_CHECK, &errcode, &erroff, re_compile_ctx);
     if (!re) {
-      do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errptr);
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      do_rawlog(LT_ERR, "valid_hex_code: Unable to compile re: %s", errstr);
       return 0;
     }
-    extra = pcre_study(re, pcre_study_flags, &errptr);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
 
-  if (!digits)
+  if (!digits) {
     return 0;
+  }
 
-  return pcre_exec(re, extra, digits, len, 0, 0, ovec, 9) > 0;
+  return pcre2_match(re, (const PCRE2_UCHAR *) digits, len, 0, re_match_flags,
+                     md, re_match_ctx) >= 0;
 }
 
 /* Return true if s is in the format <#RRGGBB>, with optional spaces. */
 static bool
 valid_angle_hex(const char *s, int len)
 {
-  static pcre *re = NULL;
-  static pcre_extra *extra = NULL;
-  int ovec[9];
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md = NULL;
 
   if (!re) {
-    const char *errptr;
-    int erroff;
+    int errcode;
+    PCRE2_SIZE erroff;
 
-    re = pcre_compile("^<\\s*#[[:xdigit:]]{6}\\s*>\\s*$", 0, &errptr, &erroff,
-                      tables);
+    re = pcre2_compile((const PCRE2_UCHAR *) "^<\\s*#[[:xdigit:]]{6}\\s*>\\s*$",
+                       PCRE2_ZERO_TERMINATED,
+                       re_compile_flags | PCRE2_NO_UTF_CHECK, &errcode, &erroff,
+                       re_compile_ctx);
     if (!re) {
-      do_rawlog(LT_ERR, "valid_angle_hex: Unable to compile re: %s", errptr);
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      do_rawlog(LT_ERR, "valid_angle_hex: Unable to compile re: %s", errstr);
       return 0;
     }
-    extra = pcre_study(re, pcre_study_flags, &errptr);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
 
-  if (!s)
+  if (!s) {
     return 0;
+  }
 
-  return pcre_exec(re, extra, s, len, 0, 0, ovec, 9) > 0;
+  return pcre2_match(re, (const PCRE2_UCHAR *) s, len, 0, re_match_flags, md,
+                     re_match_ctx) >= 0;
 }
 
 /* Return true if s of the format <R G B>, and store the color in
@@ -1391,41 +1403,50 @@ valid_angle_hex(const char *s, int len)
 static bool
 valid_angle_triple(const char *s, int len, char *rgbs)
 {
-  static pcre *re = NULL;
-  static pcre_extra *extra = NULL;
-  int ovec[15];
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md = NULL;
   int matches;
   int n;
   char *rgbsp = rgbs;
 
   if (!re) {
-    const char *errptr;
-    int erroff;
+    int errcode;
+    PCRE2_SIZE erroff;
 
-    re = pcre_compile("^<\\s*(\\d{1,3})\\s+((?1))\\s+((?1))\\s*>\\s*$", 0,
-                      &errptr, &erroff, tables);
+    re = pcre2_compile(
+      (const PCRE2_UCHAR *) "^<\\s*(\\d{1,3})\\s+((?1))\\s+((?1))\\s*>\\s*$",
+      PCRE2_ZERO_TERMINATED, re_compile_flags | PCRE2_NO_UTF_CHECK, &errcode,
+      &erroff, re_compile_ctx);
     if (!re) {
-      do_rawlog(LT_ERR, "valid_angle_triple: Unable to compile re: %s", errptr);
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      do_rawlog(LT_ERR, "valid_angle_triple: Unable to compile re: %s", errstr);
       return 0;
     }
-    extra = pcre_study(re, pcre_study_flags, &errptr);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
 
-  if (!s)
+  if (!s) {
     return 0;
+  }
 
-  matches = pcre_exec(re, extra, s, len, 0, 0, ovec, 15);
-  if (matches != 4)
+  matches = pcre2_match(re, (const PCRE2_UCHAR *) s, len, 0, re_match_flags, md,
+                        re_match_ctx);
+  if (matches != 4) {
     return 0;
+  }
 
   for (n = 1; n < 4; n += 1) {
     int color;
     char colorstr[8];
+    PCRE2_SIZE clen = sizeof colorstr;
 
-    pcre_copy_substring(s, ovec, matches, n, colorstr, 8);
+    pcre2_substring_copy_bynumber(md, n, (PCRE2_UCHAR *) colorstr, &clen);
     color = parse_integer(colorstr);
-    if (color > 255)
+    if (color > 255) {
       return 0;
+    }
     safe_hexchar(color, rgbs, &rgbsp);
   }
   rgbs[6] = '\0';
@@ -3049,13 +3070,17 @@ safe_decompose_str(char *orig, char *buff, char **bp)
  * \return size of subpattern, or -1 if unknown pattern
  */
 int
-ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
+ansi_pcre_copy_substring(ansi_string *as, pcre2_match_data *md, int stringcount,
                          int stringnumber, int nonempty, char *buff, char **bp)
 {
   int yield;
-  if (stringnumber < 0 || stringnumber >= stringcount)
+  PCRE2_SIZE *ovector;
+
+  if (stringnumber < 0 || stringnumber >= stringcount) {
     return -1;
+  }
   stringnumber *= 2;
+  ovector = pcre2_get_ovector_pointer(md);
   yield = ovector[stringnumber + 1] - ovector[stringnumber];
   if (!nonempty || yield) {
     safe_ansi_string(as, ovector[stringnumber], yield, buff, bp);
@@ -3076,14 +3101,17 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
  * \return size of subpattern, or -1 if unknown pattern
  */
 int
-ansi_pcre_copy_named_substring(const pcre *code, ansi_string *as, int *ovector,
-                               int stringcount, const char *stringname, int ne,
-                               char *buff, char **bp)
+ansi_pcre_copy_named_substring(const pcre2_code *re, ansi_string *as,
+                               pcre2_match_data *md, int stringcount,
+                               const char *stringname, int ne, char *buff,
+                               char **bp)
 {
-  int n = pcre_get_stringnumber(code, stringname);
-  if (n <= 0)
+  int n =
+    pcre2_substring_number_from_name(re, (const PCRE2_UCHAR *) stringname);
+  if (n <= 0) {
     return -1;
-  return ansi_pcre_copy_substring(as, ovector, stringcount, n, ne, buff, bp);
+  }
+  return ansi_pcre_copy_substring(as, md, stringcount, n, ne, buff, bp);
 }
 
 /** Safely add a tag into a buffer.

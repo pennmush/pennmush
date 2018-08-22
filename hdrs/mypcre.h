@@ -1,30 +1,20 @@
 /**
  * \file mypcre.h
- * \brief Wrapper for pcre.h
+ * \brief Wrapper for pcre2.h and related functions
  */
 #ifndef _MYPCRE_H
 #define _MYPCRE_H
 
 #define PENN_MATCH_LIMIT 100000
 
-#ifdef HAVE_PCRE
+#define PCRE2_STATIC
+#define PCRE2_CODE_UNIT_WIDTH 8
 
-#ifdef HAVE_PCRE_H
-#include <pcre.h>
+#include "pcre2.h"
 
-#ifndef PCRE_STUDY_JIT_COMPILE
-#define PCRE_STUDY_JIT_COMPILE 0
-#endif
+extern uint32_t re_compile_flags;
+extern uint32_t re_match_flags;
+extern pcre2_compile_context *re_compile_ctx;
+extern pcre2_match_context *re_match_ctx;
 
-void set_match_limit(pcre_extra *);
-pcre_extra *default_match_limit(void);
-
-extern int pcre_study_flags;
-extern int pcre_public_study_flags;
-
-#else
-#error "You appear to have a system PCRE library but not the pcre.h header."
-#endif
-
-#endif /* !HAVE_PCRE */
-#endif /* End of pcre.h */
+#endif /* End of mypcre.h */

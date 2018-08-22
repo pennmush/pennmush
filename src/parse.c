@@ -303,21 +303,27 @@ is_dbref(char const *str)
 bool
 is_objid(char const *str)
 {
-  static pcre *re = NULL;
-  static pcre_extra *extra = NULL;
-  const char *errptr;
-  int erroffset;
-  char *val;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md = NULL;
+  const PCRE2_UCHAR *val;
   size_t vlen;
 
-  if (!str)
+  if (!str) {
     return 0;
-  if (!re) {
-    re = pcre_compile("^#-?\\d+(?::\\d+)?$", 0, &errptr, &erroffset, NULL);
-    extra = pcre_study(re, pcre_study_flags, &errptr);
   }
-  val = remove_markup((const char *) str, &vlen);
-  return pcre_exec(re, extra, val, vlen - 1, 0, 0, NULL, 0) >= 0;
+  if (!re) {
+    int errcode;
+    PCRE2_SIZE erroffset;
+    re = pcre2_compile((const PCRE2_UCHAR *) "^#-?\\d+(?::\\d+)?$",
+                       PCRE2_ZERO_TERMINATED,
+                       re_compile_flags | PCRE2_NO_UTF_CHECK, &errcode,
+                       &erroffset, re_compile_ctx);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
+  }
+  val = (const PCRE2_UCHAR *) remove_markup((const char *) str, &vlen);
+  return pcre2_match(re, val, vlen - 1, 0, re_match_flags, md, re_match_ctx) >=
+         0;
 }
 
 /** Is string an integer?
@@ -1295,14 +1301,16 @@ extern char atr_name_table[UCHAR_MAX + 1];
 void
 pi_regs_normalize_key(char *lckey)
 {
-  if (!lckey || !*lckey) return;
+  if (!lckey || !*lckey)
+    return;
   if (lckey[0] == '-' && !lckey[1]) {
     /* 1-character key that is only - ? */
     lckey[0] = '?';
   }
 
-  for (;lckey && *lckey; lckey++) {
-    if (islower(*lckey)) *lckey = toupper(*lckey);
+  for (; lckey && *lckey; lckey++) {
+    if (islower(*lckey))
+      *lckey = toupper(*lckey);
     if (!atr_name_table[*lckey]) {
       *lckey = '?';
     }
@@ -1387,114 +1395,106 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 
 /* REGEXPS */
 void
-pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags, pcre *re_code,
-                       int *re_offsets, int re_subpatterns, const char *re_from)
+pe_regs_set_rx_context(PE_REGS *pe_regs, int pe_reg_flags, pcre2_code *re_code,
+                       pcre2_match_data *md, int re_subpatterns)
 {
-  int i;
-  unsigned char *entry, *nametable;
-  int entrysize;
-  int namecount;
-  int num;
+  uint32_t i, namecount, entrysize;
+  PCRE2_SPTR nametable;
   char buff[BUFFER_LEN];
 
-  if (!re_from)
+  if (re_subpatterns < 0) {
     return;
-  if (re_subpatterns < 0)
-    return;
+  }
 
-  if (!pe_reg_flags)
+  if (!pe_reg_flags) {
     pe_reg_flags = PE_REGS_REGEXP;
+  }
 
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
-  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+  for (i = 0; i < (uint32_t) re_subpatterns && i < 1000; i++) {
+    PCRE2_SIZE blen = BUFFER_LEN;
     buff[0] = '\0';
-    pcre_copy_substring(re_from, re_offsets, re_subpatterns, i, buff,
-                        BUFFER_LEN);
+    pcre2_substring_copy_bynumber(md, i, (PCRE2_UCHAR *) buff, &blen);
     pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
-  /* Copy all the named captures over. This code is ganked from
-   * pcre_get_stringnumber */
-  /* Check to see if we have any named substrings, first. */
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+
+  /* Copy all the named captures over. */
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMECOUNT, &namecount) != 0) {
     return;
   }
-  if (namecount <= 0)
+  if (namecount == 0) {
     return;
+  }
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMEENTRYSIZE, &entrysize) != 0) {
+    return;
+  }
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMETABLE, &nametable) != 0) {
+    return;
+  }
 
-  /* Fetch entry size and nametable */
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
-    return;
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
-    return;
   for (i = 0; i < namecount; i++) {
-    entry = nametable + (entrysize * i);
-    num = (entry[0] << 8) + entry[1];
+    PCRE2_SIZE blen = BUFFER_LEN;
+    PCRE2_SPTR entry = nametable + (entrysize * i);
+
     buff[0] = '\0';
-    pcre_copy_substring(re_from, re_offsets, re_subpatterns, num, buff,
-                        BUFFER_LEN);
-    /* we don't need to do this, as it's done in the 'numbered captures'
-     * for loop above.
-     pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
-     */
-    pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
+    if (pcre2_substring_copy_byname(md, entry + 2, (PCRE2_UCHAR *) buff,
+                                    &blen) == 0) {
+      pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
+    }
   }
 }
 
 void
-pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags, pcre *re_code,
-                            int *re_offsets, int re_subpatterns,
-                            struct _ansi_string *re_from)
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs, int pe_reg_flags,
+                            pcre2_code *re_code, pcre2_match_data *md,
+                            int re_subpatterns, struct _ansi_string *re_from)
 {
-  int i;
-  unsigned char *entry, *nametable;
-  int entrysize;
-  int namecount;
+  uint32_t i, namecount, entrysize;
+  PCRE2_SPTR nametable;
   int num;
   char buff[BUFFER_LEN], *bp;
 
-  if (!re_from)
+  if (!re_from) {
     return;
-  if (re_subpatterns < 0)
+  }
+  if (re_subpatterns < 0) {
     return;
+  }
 
-  if (!pe_reg_flags)
+  if (!pe_reg_flags) {
     pe_reg_flags = PE_REGS_REGEXP;
+  }
 
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
-  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+  for (i = 0; i < (uint32_t) re_subpatterns && i < 1000; i++) {
     bp = buff;
-    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns, i, 1, buff,
-                             &bp);
+    ansi_pcre_copy_substring(re_from, md, re_subpatterns, i, 1, buff, &bp);
     *bp = '\0';
     pe_regs_set(pe_regs, pe_reg_flags, pe_regs_intname(i), buff);
   }
-  /* Copy all the named captures over. This code is ganked from
-   * pcre_get_stringnumber */
-  /* Check to see if we have any named substrings, first. */
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+
+  /* Copy all the named captures over. */
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMECOUNT, &namecount) != 0) {
     return;
   }
-  if (namecount <= 0)
+  if (namecount == 0) {
     return;
+  }
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMEENTRYSIZE, &entrysize) != 0) {
+    return;
+  }
+  if (pcre2_pattern_info(re_code, PCRE2_INFO_NAMETABLE, &nametable) != 0) {
+    return;
+  }
 
-  /* Fetch entry size and nametable */
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
-    return;
-  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
-    return;
   for (i = 0; i < namecount; i++) {
-    entry = nametable + (entrysize * i);
+    PCRE2_SPTR entry = nametable + (entrysize * i);
     num = (entry[0] << 8) + entry[1];
     bp = buff;
-    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns, num, 1, buff,
-                             &bp);
+    ansi_pcre_copy_substring(re_from, md, re_subpatterns, num, 1, buff, &bp);
     *bp = '\0';
-    /* we don't need to do this, as it's done in the 'numbered captures'
-     * for loop above.
-     pe_regs_set(pe_regs, pe_reg_flags, unparse_integer(num), buff);
-     */
     pe_regs_set(pe_regs, pe_reg_flags, (char *) entry + 2, buff);
   }
 }

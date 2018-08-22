@@ -4,6 +4,8 @@
 *.lib
 *.exe
 *.s
+*.lo
+*.la
 *~
 *.bak
 *.log

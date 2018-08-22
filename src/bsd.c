@@ -675,9 +675,11 @@ main(int argc, char **argv)
   /* Build the contexts used by PCRE2 */
   re_compile_ctx = pcre2_compile_context_create(NULL);
   re_match_ctx = pcre2_match_context_create(NULL);
+  glob_convert_ctx = pcre2_convert_context_create(NULL);
   pcre2_set_character_tables(re_compile_ctx, pcre2_maketables(NULL));
   pcre2_set_match_limit(re_match_ctx, PENN_MATCH_LIMIT);
   pcre2_set_heap_limit(re_match_ctx, 10 * 1024); // 10MB max heap memory
+  pcre2_set_glob_escape(glob_convert_ctx, '\\');
 
   /* save a file descriptor */
   reserve_fd();

@@ -50,6 +50,7 @@ bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
 pcre2_compile_context *re_compile_ctx = NULL;
 pcre2_match_context *re_match_ctx = NULL;
+pcre2_convert_context *glob_convert_ctx = NULL;
 uint32_t re_compile_flags = 0;
 uint32_t re_match_flags = 0;
 
@@ -627,24 +628,22 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
 
 /** Regexp match of a pre-compiled regexp, with no memory.
  * \param re the regular expression
- * \param study
+ * \param md match data object for the RE.
  * \param subj the string to match against.
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre2_code *re, const char *subj, size_t len)
+qcomp_regexp_match(const pcre2_code *re, pcre2_match_data *md, const char *subj,
+                   size_t len)
 {
-  pcre2_match_data *md;
   int r;
 
-  if (!re || !subj) {
+  if (!re || !subj || !md) {
     return false;
   }
 
-  md = pcre2_match_data_create_from_pattern(re, NULL);
   r = pcre2_match(re, (const PCRE2_UCHAR *) subj, len, 0, re_match_flags, md,
                   re_match_ctx);
-  pcre2_match_data_free(md);
   return r >= 0;
 }
 

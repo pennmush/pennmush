@@ -680,6 +680,7 @@ main(int argc, char **argv)
   pcre2_set_match_limit(re_match_ctx, PENN_MATCH_LIMIT);
   pcre2_set_heap_limit(re_match_ctx, 10 * 1024); // 10MB max heap memory
   pcre2_set_glob_escape(glob_convert_ctx, '\\');
+  pcre2_set_glob_separator(glob_convert_ctx, '`');
 
   /* save a file descriptor */
   reserve_fd();

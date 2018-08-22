@@ -94,8 +94,6 @@ typedef struct TLIST {
 
 tlist *top = NULL; /**< Pointer to top of linked list of topic names */
 
-extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
-
 static char *
 help_search(dbref executor, help_file *h, char *_term, char *delim,
             int *matches)

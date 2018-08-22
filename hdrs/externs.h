@@ -541,7 +541,7 @@ bool regexp_match_case_r(const char *restrict s, const char *restrict d,
 bool quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
                         const char **report_err);
 bool qcomp_regexp_match(const pcre2_code *re, pcre2_match_data *md,
-                        const char *s, size_t);
+                        const char *s, PCRE2_SIZE);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s, d, p) local_wild_match_case(s, d, 0, p)
 

@@ -46,8 +46,6 @@
 /** Check for inequality of characters, maybe case-sensitive */
 #define NOTEQUAL(cs, a, b) ((cs) ? (a != b) : (FIXCASE(a) != FIXCASE(b)))
 
-bool help_wild(const char *restrict tstr, const char *restrict dstr);
-
 pcre2_compile_context *re_compile_ctx = NULL;
 pcre2_match_context *re_match_ctx = NULL;
 pcre2_convert_context *glob_convert_ctx = NULL;
@@ -86,7 +84,6 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 }
 
 static bool
-
 real_atr_wild(const char *restrict tstr, const char *restrict dstr,
               int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -107,13 +104,6 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
 {
   int invokes = 10000;
   return real_atr_wild(tstr, dstr, &invokes, '`');
-}
-
-bool
-help_wild(const char *restrict tstr, const char *restrict dstr)
-{
-  int invokes = 10000;
-  return real_atr_wild(tstr, dstr, &invokes, ' ');
 }
 
 static bool
@@ -634,7 +624,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs,
  */
 bool
 qcomp_regexp_match(const pcre2_code *re, pcre2_match_data *md, const char *subj,
-                   size_t len)
+                   PCRE2_SIZE len)
 {
   int r;
 

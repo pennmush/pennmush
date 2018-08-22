@@ -453,12 +453,12 @@ return 0;
 }
 
 /* ------------ Convert context ------------ */
-
+/* Modified for Penn to allow ` as a separator */
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_glob_separator(pcre2_convert_context *ccontext, uint32_t separator)
 {
 if (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&
-    separator != CHAR_DOT) return PCRE2_ERROR_BADDATA;
+    separator != CHAR_DOT && separator != CHAR_GRAVE_ACCENT) return PCRE2_ERROR_BADDATA;
 ccontext->glob_separator = separator;
 return 0;
 }

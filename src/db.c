@@ -2106,9 +2106,10 @@ sql_regexp_fun(sqlite3_context *ctx, int nargs __attribute__((__unused__)),
     int errcode;
     PCRE2_SIZE erroff;
     d = malloc(sizeof *d);
-    d->re = pcre2_compile(
-      sqlite3_value_text(args[0]), sqlite3_value_bytes(args[0]),
-      PCRE2_ANCHORED | PCRE2_UTF | PCRE2_UCP, &errcode, &erroff, NULL);
+    d->re =
+      pcre2_compile(sqlite3_value_text(args[0]), sqlite3_value_bytes(args[0]),
+                    PCRE2_ANCHORED | PCRE2_ENDANCHORED | PCRE2_UTF | PCRE2_UCP,
+                    &errcode, &erroff, NULL);
     if (!d->re) {
       PCRE2_UCHAR errstr[120];
       pcre2_get_error_message(errcode, errstr, sizeof errstr);

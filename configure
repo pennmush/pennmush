@@ -11082,7 +11082,7 @@ esac
 $as_echo "$as_me: Configuring PCRE2" >&6;}
 (cd pcre2src && ./configure ${PCRE_OPTIONS})
 CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
-LDFLAGS="${LDFLAGS} -L../pcre2/lib -lpcre2-8"
+LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
 $as_echo "#define HAVE_PCRE 1" >>confdefs.h
 
 

@@ -14,3 +14,8 @@ already present on the server:
   port. Specify a generic IPv4 address (0.0.0.0) or specific one in
   mush.cnf instead.
 
+For some reason on OpenBSD running make install in pcre2src sometimes
+tries to rebuild all its automake-generated files and it errors unless
+you have automake and autoconf installed and set AUTOCONF_VERSION to
+the version of your installed copy.
+

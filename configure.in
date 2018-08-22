@@ -387,7 +387,7 @@ esac
 AC_MSG_NOTICE([Configuring PCRE2])
 (cd pcre2src && ./configure ${PCRE_OPTIONS})
 CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
-LDFLAGS="${LDFLAGS} -L../pcre2/lib -lpcre2-8"
+LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
 AC_DEFINE(HAVE_PCRE)
 
 ### Misc features

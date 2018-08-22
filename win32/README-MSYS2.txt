@@ -5,14 +5,14 @@ Minimum OS requirements: Windows 7 or Server 2008 or better.
 Setting up environment and prereqs:
 
 1. Install MSYS2 and update it per the instructions on the web site.
-2. Open a MSYS2 MinGW 64-bit shell (From the MSYS2 64-bit folder in the start menu).
+2. Open a MSYS2 MinGW 64-bit shell (From the MSYS2 64-bit folder in the
+   start menu).
 3. Install the following packages with pacman:
-   pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-openssl mingw-w64-x86_64-pcre perl make
+   pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-openssl perl make
 3.a. Optionally also install the following packages:
-   pacman -S cmake git gperf mingw-w64-x86_64-gdb ed
+   pacman -S cmake git gperf ed mingw-w64-x86_64-gdb mingw-w64-x86_64-icu
 3.b Optionally instally a sql library if needed (Use the MinGW version,
-     not the plain MSYS2 version):
-   pacman -S mingw-w64-x86_64-sqlite3
+     not the plain MSYS2 version).
 
    
 Building Penn:   

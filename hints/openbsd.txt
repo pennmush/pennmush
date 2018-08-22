@@ -7,7 +7,6 @@ as OpenBSD's gcc is a very old version.
 Some packages need to be installed via pkg_add or from source if not
 already present on the server:
 
-  Required: pcre
   Optional: libevent, mariadb-client, postgresql-client, curl, icu4c.
 
 * OpenBSD will not forward IPv4 connections to a listening IPv6
@@ -17,5 +16,6 @@ already present on the server:
 For some reason on OpenBSD running make install in pcre2src sometimes
 tries to rebuild all its automake-generated files and it errors unless
 you have automake and autoconf installed and set AUTOCONF_VERSION to
-the version of your installed copy.
+the version of your installed copy:
 
+    ~/pennmush $ AUTOCONF_VERSION=2.69 make

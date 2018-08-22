@@ -3,10 +3,8 @@ in, but further testing or porting has not been done at this point, and likely
 won't unless some poor fool like Raevnos is really really really bored.
 
 From a base install, you need to install the following packages (Via
-pkgin): binutils, clang, perl, pcre
+pkgin): binutils, clang, perl
 
 Call configure like so:
 
 % CPPFLAGS="-I/usr/pkg/include" LDFLAGS="-L/usr/pkg/lib" ./configure --disable-nls --disable-info_slave --disable-ssl_slave
-
-

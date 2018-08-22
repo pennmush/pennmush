@@ -371,7 +371,7 @@ AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAVE_DEV_URANDOM)])
 AX_ZONEINFO()
 
 ### PCRE2 config
-PCRE_OPTIONS="--prefix=$(pwd)/../pcre2/ --disable-shared --enable-never-backslash-C"
+PCRE_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
 # Other CPUs have JIT support but it seems unlikely anybody will be using them.
 case "${build_cpu}" in
      *x86_64*)

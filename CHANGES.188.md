@@ -43,6 +43,7 @@ Minor Changes
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
 * Sqlite3's `REGEXP` operator is always available and uses pcre regular expressions (Previously it depended on libicu and used java style REs). [SW]
 * Update `local.dst` to include example of millisecond callback loop. [MT]
+* Add '--disable-socket-quota' option for our test suite [GM]
 
 Softcode
 --------

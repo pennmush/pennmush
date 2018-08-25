@@ -39,33 +39,44 @@ std::string
 join_words(const stringset &words)
 {
   std::ostringstream out;
+  bool first = true;
 
   for (const auto &w : words) {
-    out << w;
-    out << ' ';
+    if (first) {
+      first = false;
+    } else {
+      out << ' ';
+    }
+    for (char c : w) {
+      if (c == '"' || c == '\\') {
+        out << '\\';
+      }
+      out << c;
+    }
   }
-
-  auto res = out.str();
-
-  if (res.back() == ' ') {
-    res.pop_back();
-  }
-
-  return res;
+  return out.str();
 }
 
 std::string
 join_words(const stringvec &words)
 {
-  std::string res;
+  std::ostringstream out;
+  bool first = true;
 
-  for (auto i = words.begin(); i != words.end(); ++i) {
-    if (i != words.begin()) {
-      res += ' ';
+  for (const auto &w : words) {
+    if (first) {
+      first = false;
+    } else {
+      out << ' ';
     }
-    res += *i;
+    for (char c : w) {
+      if (c == '"' || c == '\\') {
+        out << '\\';
+      }
+      out << c;
+    }
   }
-  return res;
+  return out.str();
 }
 
 std::string

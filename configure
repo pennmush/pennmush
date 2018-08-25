@@ -11065,24 +11065,56 @@ _ACEOF
 
 
 ### PCRE2 config
-PCRE_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
+PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
 # Other CPUs have JIT support but it seems unlikely anybody will be using them.
 case "${build_cpu}" in
      *x86_64*)
-     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit"
      ;;
      *i?86*)
-     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit"
      ;;
      *arm*)
-     PCRE_OPTIONS="${PCRE_OPTIONS} --enable-jit"
+     PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit"
      ;;
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}
-# Some systems get confused with timestamps and want to rebuild pcre2 configure
-# and related stuff, which often breaks due to missing autotools. Sigh.
-(cd pcre2src && touch aclocal.m4 && sleep 1 && touch src/config.h.in configure Makefile.in && ./configure ${PCRE_OPTIONS})
+
+PCRE2_VERSION="pcre2-10.31"
+PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
+PCRE2_URL="https://ftp.pcre.org/pub/pcre/${PCRE2_TARBALL}"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${PCRE2_VERSION}" >&5
+$as_echo_n "checking for ${PCRE2_VERSION}... " >&6; }
+if test -d ${PCRE2_VERSION} ; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${PCRE2_TARBALL}" >&5
+$as_echo_n "checking for ${PCRE2_TARBALL}... " >&6; }
+   if test -f ${PCRE2_TARBALL} ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      tar xzf ${PCRE2_TARBALL}
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Trying to download from ${PCRE2_URL}" >&5
+$as_echo "$as_me: Trying to download from ${PCRE2_URL}" >&6;}
+      perl -MFile::Fetch -e "File::Fetch->new(uri => '${PCRE2_URL}')->fetch()" && tar xzf ${PCRE2_TARBALL}
+      if test $? -ne 0 ; then
+         as_fn_error $? "Unable to automatically fetch file. Download it manually and try again." "$LINENO" 5
+      fi
+   fi
+   perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_VERSION}/src/pcre2_context.c"
+fi
+
+(cd ${PCRE2_VERSION} && ./configure ${PCRE2_OPTIONS})
+if test -d pcre2 ; then
+   rm -rf pcre2/
+fi
 CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
 LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
 $as_echo "#define HAVE_PCRE 1" >>confdefs.h

@@ -63,3 +63,4 @@ dbtools/dbupgrade
 dbtools/grepdb
 dbtools/pwutil
 pcre2
+pcre2-10.*

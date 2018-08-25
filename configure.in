@@ -388,7 +388,7 @@ AC_MSG_NOTICE([Configuring PCRE2])
 
 PCRE2_VERSION="pcre2-10.31"
 PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://ftp.pcre.org/pub/pcre/${PCRE2_TARBALL}"
+PCRE2_URL="http://ftp.pcre.org/pub/pcre/${PCRE2_TARBALL}"
 AC_MSG_CHECKING([for ${PCRE2_VERSION}])
 if test -d ${PCRE2_VERSION} ; then
    AC_MSG_RESULT([found])
@@ -401,7 +401,7 @@ else
    else
       AC_MSG_RESULT([not found])
       AC_MSG_NOTICE([Trying to download from ${PCRE2_URL}])
-      perl -MFile::Fetch -e "File::Fetch->new(uri => '${PCRE2_URL}')->fetch()" && tar xzf ${PCRE2_TARBALL}
+      perl -MFile::Fetch -e "File::Fetch->new(uri => '${PCRE2_URL}')->fetch() or exit 1" && tar xzf ${PCRE2_TARBALL}
       if test $? -ne 0 ; then
          AC_MSG_ERROR([Unable to automatically fetch file. Download it manually and try again.])
       fi

@@ -1,6 +1,17 @@
 & 1.8.7p1
 Version 1.8.7 patchlevel 1 ??? ?? 20??
 
+Minor Changes:
+
+* [1mhelp/search[0m takes a [1m/brief[0m switch to display just the names of
+matching entries. [SW]
+* help full text search includes @ and + in tokens, so things like
+[1mhelp/search "@force"[0m work as expected. Also enabled porter
+stemming of search phrases (Searching for [1mwizard[0m matches
+[1mwizards[0m). Noticed by [MG]. [SW]
+* Add [1mhelp/find[0m which mimics the pre-1.8.7 behavior of
+[1mhelp/search[0m. Suggested by [MG]. [SW]
+
 Fixes:
 
 * [1mconnrecord()[0m returns an error if extended connection logging is disabled. [SW]

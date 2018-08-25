@@ -266,7 +266,7 @@ write_flags(std::ostream &out, const flagmap &flags)
   out << "flagcount " << canon.size() << '\n';
   for (const auto &name : canon) {
     const auto &flag = flags.find(name)->second;
-    out << " name \"" << flag.name << "\"\n";
+    db_write_labeled_string(out, " name", flag.name);
     if (flag.letter) {
       if (flag.letter == '"') {
 	out << R"(  letter "\"")" << '\n';
@@ -284,8 +284,8 @@ write_flags(std::ostream &out, const flagmap &flags)
   out << "flagaliascount " << aliases.size() << '\n';
   for (const auto &name : aliases) {
     const auto &flag = flags.find(name)->second;
-    out << " name \"" << flag.name << "\"\n";
-    out << "  alias \"" << name << "\"\n";
+    db_write_labeled_string(out, " name", flag.name);
+    db_write_labeled_string(out, "  alias", name);
   }
 }
 
@@ -306,7 +306,7 @@ write_db_attribs(std::ostream &out, const attrmap &attribs)
   out << "attrcount " << canon.size() << '\n';
   for (const auto &name : canon) {
     const auto &attr = attribs.find(name)->second;
-    out << " name \"" << attr.name << "\"\n";
+    db_write_labeled_string(out, " name", attr.name);
     out << "  flags \"" << join_words(attr.flags) << "\"\n";
     out << "  creator #" << attr.creator << '\n';
     out << "  data \"\"\n";
@@ -315,8 +315,8 @@ write_db_attribs(std::ostream &out, const attrmap &attribs)
   out << "attraliascount " << aliases.size() << '\n';
   for (const auto &name : aliases) {
     const auto &attr = attribs.find(name)->second;
-    out << " name \"" << attr.name << "\"\n";
-    out << "  alias \"" << name << "\"\n";
+    db_write_labeled_string(out, " name", attr.name);
+    db_write_labeled_string(out, "  alias", name);
   }
 }
 
@@ -326,7 +326,7 @@ write_locks(std::ostream &out, const lockmap &locks)
   out << "lockcount " << locks.size() << '\n';
   for (const auto &l : locks) {
     const auto &lk = l.second;
-    out << " type \"" << lk.type << "\"\n";
+    db_write_labeled_string(out, " type", lk.type);
     out << "  creator #" << lk.creator << '\n';
     out << "  flags \"" << join_words(lk.flags) << "\"\n";
     out << "  derefs " << lk.derefs << '\n';
@@ -340,7 +340,7 @@ write_obj_attribs(std::ostream &out, const attrmap &attribs)
   out << "attrcount " << attribs.size() << '\n';
   for (const auto &a : attribs) {
     const auto &attr = a.second;
-    out << " name \"" << attr.name << "\"\n";
+    db_write_labeled_string(out, " name", attr.name);
     out << "  owner #" << attr.creator << '\n';
     out << "  flags \"" << join_words(attr.flags) << "\"\n";
     out << "  derefs " << attr.derefs << '\n';

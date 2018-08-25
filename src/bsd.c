@@ -165,6 +165,8 @@ void report_mssp(DESC *d, char *buff, char **bp);
 static int login_number = 0;
 static int under_limit = 1;
 
+static bool disable_socket_quota = false;
+
 char cf_motd_msg[BUFFER_LEN] = {'\0'};     /**< The message of the day */
 char cf_wizmotd_msg[BUFFER_LEN] = {'\0'};  /**< The wizard motd */
 char cf_downmotd_msg[BUFFER_LEN] = {'\0'}; /**< The down message */
@@ -548,7 +550,9 @@ main(int argc, char **argv)
       if (argv[n][0] == '-') {
         if (strcmp(argv[n], "--no-session") == 0)
           detach_session = 0;
-        else if (strncmp(argv[n], "--pid-file", 10) == 0) {
+        else if (strcmp(argv[n], "--disable-socket-quota") == 0) {
+          disable_socket_quota = true;
+        } else if (strncmp(argv[n], "--pid-file", 10) == 0) {
           char *eq;
           if ((eq = strchr(argv[n], '=')))
             pidfile = eq + 1;
@@ -3548,8 +3552,11 @@ process_commands(void)
       if (cdesc->conn_flags & CONN_SHUTDOWN)
         continue;
 
-      if (cdesc->quota >= MS_PER_SEC && (t = cdesc->input.head) != NULL) {
+      if ((t = cdesc->input.head) != NULL) {
         enum comm_res retval;
+      
+        if (cdesc->quota < MS_PER_SEC && !disable_socket_quota)
+          continue;
 
         cdesc->quota -= MS_PER_SEC;
         nprocessed += 1;

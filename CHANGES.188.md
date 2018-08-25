@@ -45,6 +45,7 @@ Minor Changes
 * Update `local.dst` to include example of millisecond callback loop. [MT]
 * Updated to use PCRE2 10.31 for regular expressions. [SW}
 * Wildcard patterns are sometimes converted to regular expressions when matched against many strings. [SW]
+* Add '--disable-socket-quota' option for our test suite [GM]
 
 Softcode
 --------

@@ -49,7 +49,8 @@
 
 bool inactivity_check(void);
 static void migrate_stuff(int amount);
-static struct squeue *sq_register(uint64_t w, sq_func f, void *d, const char *ev);
+static struct squeue *sq_register(uint64_t w, sq_func f, void *d,
+                                  const char *ev);
 
 #ifndef WIN32
 void hup_handler(int);
@@ -460,7 +461,6 @@ sq_cancel(struct squeue *sq)
   }
 }
 
-
 /** Register a callback function to be executed in N miliseconds.
  * \param n the number of seconds to run the callback after.
  * \param f the callback function.
@@ -480,7 +480,7 @@ struct sq_loop {
   sq_func fun;       /**< The function to run for the event */
   void *data;        /**< The data for the event */
   const char *event; /**< The name of the event attr to trigger */
-  uint64_t msecs;          /**< How often to run the event in msecs */
+  uint64_t msecs;    /**< How often to run the event in msecs */
 };
 
 static bool
@@ -534,7 +534,8 @@ sq_run_one(void)
 
       r = torun->fun(torun->data);
       if (torun->event) {
-        if (r) queue_event(SYSEVENT, torun->event, "%s", "");
+        if (r)
+          queue_event(SYSEVENT, torun->event, "%s", "");
         mush_free(torun->event, "squeue.event");
       }
       mush_free(torun, "squeue.node");

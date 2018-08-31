@@ -1295,14 +1295,16 @@ extern char atr_name_table[UCHAR_MAX + 1];
 void
 pi_regs_normalize_key(char *lckey)
 {
-  if (!lckey || !*lckey) return;
+  if (!lckey || !*lckey)
+    return;
   if (lckey[0] == '-' && !lckey[1]) {
     /* 1-character key that is only - ? */
     lckey[0] = '?';
   }
 
-  for (;lckey && *lckey; lckey++) {
-    if (islower(*lckey)) *lckey = toupper(*lckey);
+  for (; lckey && *lckey; lckey++) {
+    if (islower(*lckey))
+      *lckey = toupper(*lckey);
     if (!atr_name_table[*lckey]) {
       *lckey = '?';
     }

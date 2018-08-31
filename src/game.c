@@ -374,7 +374,8 @@ dump_database_internal(void)
 
     snprintf(realdumpfile, sizeof realdumpfile, "%s%s", globals.dumpfile,
              options.compresssuff);
-    mush_strncpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch), sizeof tmpfl);
+    mush_strncpy(tmpfl, make_new_epoch_file(globals.dumpfile, epoch),
+                 sizeof tmpfl);
     snprintf(realtmpfl, sizeof realtmpfl, "%s%s", tmpfl, options.compresssuff);
 
     if ((f = db_open_write(tmpfl)) != NULL) {

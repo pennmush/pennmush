@@ -416,8 +416,8 @@ notify_type(DESC *d)
   int type = MSG_PLAYER;
   int colorstyle;
 
-  /* Connnection type checks */
-  #ifndef WITHOUT_WEBSOCKETS
+/* Connnection type checks */
+#ifndef WITHOUT_WEBSOCKETS
   if (IsWebSocket(d)) {
     type |= MSGTYPE_WEBSOCKETS;
   }
@@ -454,8 +454,8 @@ notify_type(DESC *d)
     type |= MSG_ANSI2;
   }
 
-  if ((d->conn_flags & CONN_STRIPACCENTS) || (d->connected &&
-      IS(d->player, TYPE_PLAYER, "NOACCENTS"))) {
+  if ((d->conn_flags & CONN_STRIPACCENTS) ||
+      (d->connected && IS(d->player, TYPE_PLAYER, "NOACCENTS"))) {
     type |= MSG_STRIPACCENTS;
   }
 
@@ -1318,7 +1318,8 @@ notify_internal(dbref target, dbref executor, dbref speaker, dbref *skips,
 
   if (IsPlayer(target)) {
     /* Make sure the player is connected, and we have something to show him */
-    if ((Connected(target) || (USABLE(HTTP_HANDLER) && target == HTTP_HANDLER)) &&
+    if ((Connected(target) ||
+         (USABLE(HTTP_HANDLER) && target == HTTP_HANDLER)) &&
         (heard || (flags & NA_PROMPT))) {
       /* Send text to the player's descriptors */
       for (d = descriptor_list; d; d = d->next) {

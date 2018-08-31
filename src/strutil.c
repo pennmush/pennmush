@@ -1881,12 +1881,15 @@ char *
 strchr_unescaped(char *s, int c)
 {
   int i = 0;
-  if (!s) return NULL;
+  if (!s)
+    return NULL;
   while (s[i] && s[i] != c) {
-    if (s[i] == '\\' && s[i + 1]) i++;
+    if (s[i] == '\\' && s[i + 1])
+      i++;
     i++;
   }
-  if (s[i]) return &(s[i]);
+  if (s[i])
+    return &(s[i]);
   return NULL;
 }
 

@@ -2010,19 +2010,20 @@ COMMAND(cmd_respond)
   }
 
   if (SW_ISSET(sw, SWITCH_TYPE) && SW_ISSET(sw, SWITCH_HEADER)) {
-    notify(executor, T("Invalid @respond - You can't use more than one switch!"));
+    notify(executor,
+           T("Invalid @respond - You can't use more than one switch!"));
     return;
   }
- 
+
   /* @respond/type */
   if (SW_ISSET(sw, SWITCH_TYPE)) {
     if (*arg_right) {
-      notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+      notify(executor,
+             T("Invalid @respond/type - cannot have arg_right, use {}s"));
       return;
     }
     if (req) {
-      snprintf(req->ctype, MAX_COMMAND_LEN,
-               "Content-Type: %s", arg_left);
+      snprintf(req->ctype, MAX_COMMAND_LEN, "Content-Type: %s", arg_left);
     } else {
       notify_format(enactor, "(HTTP): Content-Type: %s", arg_left);
     }
@@ -2033,7 +2034,8 @@ COMMAND(cmd_respond)
   if (SW_ISSET(sw, SWITCH_HEADER)) {
     /* Sanity checking on header name. */
     if (!arg_left || !*arg_left || !arg_right || !*arg_right) {
-      notify(executor, T("Invalid format, use @respond/header HeaderName=Value."));
+      notify(executor,
+             T("Invalid format, use @respond/header HeaderName=Value."));
       return;
     }
     if (!strcasecmp(arg_left, "content-length")) {
@@ -2063,17 +2065,15 @@ COMMAND(cmd_respond)
    *
    * This format must follow \d\d\d <text>
    */
-  if (!isdigit(arg_left[0]) ||
-      !isdigit(arg_left[1]) ||
-      !isdigit(arg_left[2]) ||
-      arg_left[3] != ' ' ||
-      !isalnum(arg_left[4])) {
+  if (!isdigit(arg_left[0]) || !isdigit(arg_left[1]) || !isdigit(arg_left[2]) ||
+      arg_left[3] != ' ' || !isalnum(arg_left[4])) {
     notify(executor, T("@respond must be 3 digits, space, then text ."));
     return;
   }
 
   if (*arg_right) {
-    notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+    notify(executor,
+           T("Invalid @respond/type - cannot have arg_right, use {}s"));
     return;
   }
 
@@ -2085,8 +2085,8 @@ COMMAND(cmd_respond)
   }
 
   if (strlen(arg_left) >= 40) {
-      notify(executor, T("@respond status code too long."));
-      return;
+    notify(executor, T("@respond status code too long."));
+    return;
   }
 
   if (req) {

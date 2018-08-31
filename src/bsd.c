@@ -1127,7 +1127,8 @@ handle_curl_msg(CURLMsg *msg)
                                 NULL, NULL);
     } else {
       notify_format(resp->thing, "Request failed: %s",
-                    curl_easy_strerror(msg->data.result));
+                    resp->too_big ? "Too much data received."
+                                  : curl_easy_strerror(msg->data.result));
     }
     curl_multi_remove_handle(curl_handle, handle);
     curl_easy_cleanup(handle);

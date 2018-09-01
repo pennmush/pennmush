@@ -457,8 +457,11 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
   }
   if (overheard) {
     dbref first = Contents(Location(player));
-    if (!GoodObject(first))
+    if (!GoodObject(first)) {
+      /* I don't think this should ever happen unless the db is hosed... */
+      mush_free(tbuf, "string");
       return;
+    }
     ignoreme = snprintf(pbuff, BUFFER_LEN, T("%s whispers%s."), sname, tbuf);
     p = pbuff;
     DOLIST (first, first) {

@@ -50,8 +50,8 @@ UChar32 *latin1_to_utf32(const char *restrict, int, int *,
 char *utf32_to_latin1(const UChar32 *, int, int *, bool,
                       const char *) __attribute_malloc__;
 
-char* translate_latin1_to_ascii(const char * restrict,
-                                int, int *, const char *) __attribute_malloc__;
+char *translate_latin1_to_ascii(const char *restrict, int, int *,
+                                const char *) __attribute_malloc__;
 
 #ifdef HAVE_ICU
 
@@ -65,8 +65,8 @@ char *normalize_utf8(enum normalization_type, const char *restrict, int, int *,
 char *translate_utf8_to_latin1(const char *restrict, int, int *,
                                const char *) __attribute_malloc__;
 
-char* translate_utf8_to_ascii(const char *restrict,
-                              int, int *, const char *) __attribute_malloc__;
+char *translate_utf8_to_ascii(const char *restrict, int, int *,
+                              const char *) __attribute_malloc__;
 
 /* Case conversions */
 char *latin1_to_lower(const char *restrict, int, int *,

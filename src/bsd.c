@@ -6190,8 +6190,7 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
 
   /* Smash any undesirable characters */
   dp = doing;
-  WALK_ANSI_STRING(dp)
-  {
+  WALK_ANSI_STRING (dp) {
     if (!uni_isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
         (*dp == '\t') || (*dp == BEEP_CHAR)) {
       *dp = ' ';

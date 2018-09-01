@@ -3074,7 +3074,7 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
  */
 int
 ps_ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
-                         int stringnumber, int nonempty, pennstr *buff)
+                            int stringnumber, int nonempty, pennstr *buff)
 {
   int yield;
   if (stringnumber < 0 || stringnumber >= stringcount)
@@ -3086,7 +3086,6 @@ ps_ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
   }
   return yield;
 }
-
 
 /** Our version of pcre_copy_named_substring, with ansi-safeness.
  * \param code the pcre compiled code

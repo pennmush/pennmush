@@ -532,8 +532,8 @@ parse_english(char **name, long *flags)
         ~(MAT_POSSESSION | MAT_EXIT | MAT_REMOTE_CONTENTS | MAT_CONTAINER);
     }
   }
-  if ((*flags & MAT_POSSESSION) &&
-      (!sqlite3_strnicmp(*name, "my ", 3) || !sqlite3_strnicmp(*name, "me ", 3))) {
+  if ((*flags & MAT_POSSESSION) && (!sqlite3_strnicmp(*name, "my ", 3) ||
+                                    !sqlite3_strnicmp(*name, "me ", 3))) {
     *name += 3;
     *flags &= ~(MAT_NEIGHBOR | MAT_EXIT | MAT_CONTAINER | MAT_REMOTE_CONTENTS);
   }

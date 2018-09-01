@@ -475,7 +475,7 @@ FUNCTION(fun_delete)
 
   offset = breaks[pos];
   bytes = breaks[pos + num] - offset;
-  
+
   ps = ps_new();
   ansi_string_delete(as, offset, bytes);
   ps_safe_ansi_string(as, 0, as->len, ps);
@@ -620,12 +620,12 @@ FUNCTION(fun_pos)
   char *utf8a, *utf8b;
   char *pos;
   int *breaks, nbreaks;
-  
+
   utf8a = latin1_to_utf8(args[0], arglens[0], NULL, "utf8.string");
   utf8b = latin1_to_utf8(args[1], arglens[1], NULL, "utf8.string");
 
   breaks = gc_breaks(utf8b, &nbreaks);
-  
+
   pos = strstr(utf8b, utf8a);
 
   if (pos) {
@@ -633,7 +633,7 @@ FUNCTION(fun_pos)
     int n;
     bool found = 0;
 
-    for (n = 0; n < nbreaks -1; n += 1) {
+    for (n = 0; n < nbreaks - 1; n += 1) {
       if (offset == breaks[n]) {
         safe_integer(n + 1, buff, bp);
         found = 1;

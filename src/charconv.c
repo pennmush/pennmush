@@ -1161,7 +1161,7 @@ cleanup:
 }
 
 /** Return a smart title-cased latin1 string.
- * 
+ *
  * \param s the string to upper case
  * \param len the length of the string or -1 for 0-terminated length.
  * \param outlen set to the length of the returned string.
@@ -1169,18 +1169,17 @@ cleanup:
  * \return newly allocated string.
  */
 char *
-latin1_to_title(const char * restrict s, int len, int *outlen,
-                const char *name)
+latin1_to_title(const char *restrict s, int len, int *outlen, const char *name)
 {
   UChar *utf16 = NULL, *title16 = NULL;
   char *title = NULL;
   int ulen, llen;
   UErrorCode uerr = U_ZERO_ERROR;
-  
+
   utf16 = latin1_to_utf16(s, len, &ulen, "temp.utf16");
   title16 = mush_calloc(ulen + 1, sizeof(UChar), "temp.utf16");
   llen = ulen + 1;
-  
+
   llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
   if (U_SUCCESS(uerr)) {
   } else if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
@@ -1198,7 +1197,7 @@ latin1_to_title(const char * restrict s, int len, int *outlen,
 
   title = utf16_to_latin1(title16, llen, outlen, 0, name);
 
- cleanup:
+cleanup:
   mush_free(utf16, "temp.utf16");
   mush_free(title16, "temp.utf16");
   return title;
@@ -1305,18 +1304,17 @@ cleanup:
  * \return newly allocated string.
  */
 char *
-utf8_to_title(const char * restrict s, int len, int *outlen,
-              const char *name)
+utf8_to_title(const char *restrict s, int len, int *outlen, const char *name)
 {
   UChar *utf16 = NULL, *title16 = NULL;
   char *title8 = NULL;
   int ulen, llen;
   UErrorCode uerr = U_ZERO_ERROR;
-  
+
   utf16 = utf8_to_utf16(s, len, &ulen, "temp.utf16");
   title16 = mush_calloc(ulen + 1, sizeof(UChar), "temp.utf16");
   llen = ulen + 1;
-  
+
   llen = u_strToTitle(title16, llen, utf16, ulen, NULL, NULL, &uerr);
   if (U_SUCCESS(uerr)) {
   } else if (U_FAILURE(uerr) && uerr != U_BUFFER_OVERFLOW_ERROR) {
@@ -1334,12 +1332,11 @@ utf8_to_title(const char * restrict s, int len, int *outlen,
 
   title8 = utf16_to_utf8(title16, llen, outlen, name);
 
- cleanup:
+cleanup:
   mush_free(utf16, "temp.utf16");
   mush_free(title16, "temp.utf16");
   return title8;
 }
-
 
 static const UNormalizer2 *
 get_normalizer(enum normalization_type n, UErrorCode *uerr)
@@ -1477,8 +1474,8 @@ translate_utf8_to_latin1(const char *restrict utf8, int len, int *outlen,
  * \return newly allocated string in ascii.
  */
 char *
-translate_utf8_to_ascii(const char * restrict utf8, int len, int *outlen,
-                         const char *name)
+translate_utf8_to_ascii(const char *restrict utf8, int len, int *outlen,
+                        const char *name)
 {
   UChar *utf16, *norm16;
   char *ascii = NULL;
@@ -1487,7 +1484,7 @@ translate_utf8_to_ascii(const char * restrict utf8, int len, int *outlen,
   sqlite3 *sqldb;
   sqlite3_stmt *converter;
   int status;
-  
+
   utf16 = utf8_to_utf16(utf8, len, &ulen, "temp.utf16");
   if (!utf16) {
     return NULL;
@@ -1500,7 +1497,7 @@ translate_utf8_to_ascii(const char * restrict utf8, int len, int *outlen,
   }
 
   utf16 = mush_calloc(nlen + 1, sizeof(UChar), "string");
-  
+
   for (i = 0, o = 0; i < nlen;) {
     UChar32 c;
     U16_NEXT_UNSAFE(norm16, i, c);
@@ -1512,14 +1509,12 @@ translate_utf8_to_ascii(const char * restrict utf8, int len, int *outlen,
   mush_free(norm16, "temp.utf16");
 
   sqldb = get_shared_db();
-  converter = prepare_statement(sqldb,
-                                "VALUES (spellfix1_translit(?))",
+  converter = prepare_statement(sqldb, "VALUES (spellfix1_translit(?))",
                                 "unicode_to_ascii");
   sqlite3_bind_text16(converter, 1, utf16, o, free_string);
   status = sqlite3_step(converter);
   if (status == SQLITE_ROW) {
-    ascii = mush_strdup((const char *)sqlite3_column_text(converter, 0),
-                        name);
+    ascii = mush_strdup((const char *) sqlite3_column_text(converter, 0), name);
     if (outlen) {
       *outlen = sqlite3_column_bytes(converter, 0);
     }
@@ -1577,29 +1572,27 @@ normalize_utf8(enum normalization_type type, const char *restrict utf8, int len,
  * \return newly allocated string in ascii.
  */
 char *
-translate_latin1_to_ascii(const char * restrict latin1, int len, int *outlen,
-                         const char *name)
+translate_latin1_to_ascii(const char *restrict latin1, int len, int *outlen,
+                          const char *name)
 {
   char *utf8, *ascii = NULL;
   int ulen;
   sqlite3 *sqldb;
   sqlite3_stmt *converter;
   int status;
-  
+
   utf8 = latin1_to_utf8(latin1, len, &ulen, "string");
   if (!utf8) {
     return NULL;
   }
 
   sqldb = get_shared_db();
-  converter = prepare_statement(sqldb,
-                                "VALUES (spellfix1_translit(?))",
+  converter = prepare_statement(sqldb, "VALUES (spellfix1_translit(?))",
                                 "unicode_to_ascii");
   sqlite3_bind_text(converter, 1, utf8, ulen, free_string);
   status = sqlite3_step(converter);
   if (status == SQLITE_ROW) {
-    ascii = mush_strdup((const char *)sqlite3_column_text(converter, 0),
-                        name);
+    ascii = mush_strdup((const char *) sqlite3_column_text(converter, 0), name);
     if (outlen) {
       *outlen = sqlite3_column_bytes(converter, 0);
     }

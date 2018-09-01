@@ -19,9 +19,10 @@
 #define UPCASE(x) toupper(x)   /**< Returns 'x' uppercased */
 #else
 #define DOWNCASE(x)                                                            \
-  (isupper(x) ? tolower(x) : (x))                 /**< Returns 'x' lowercased */
-#define UPCASE(x) (islower(x) ? toupper(x) : (x)) /**< Returns 'x' uppercased  \
-                                                   */
+  (isupper(x) ? tolower(x) : (x)) /**< Returns 'x' lowercased */
+#define UPCASE(x)                                                              \
+  (islower(x) ? toupper(x) : (x)) /**< Returns 'x' uppercased                  \
+                                   */
 #endif
 
 /* Functions that only case map ASCII characters and return others unchanged. */

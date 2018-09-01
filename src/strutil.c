@@ -2653,12 +2653,12 @@ gc_breaks(const char *s, int *arrlen)
   int ngcs = 1;
   int *gcs;
   int offset = 0;
-  
+
   if (!s) {
     *arrlen = 0;
     return NULL;
   }
-  
+
   gcs = mush_calloc(strlen(s) + 1, sizeof(int), "breaks");
   gcs[0] = 0;
 
@@ -2668,7 +2668,7 @@ gc_breaks(const char *s, int *arrlen)
     gcs[ngcs++] = offset;
     s += bytes;
   }
-  
+
   *arrlen = ngcs;
   return gcs;
 }

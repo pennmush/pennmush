@@ -828,14 +828,14 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
     aliases++;
   }
   if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing)
-        : ok_name(bon, 1))) {
+                            : ok_name(bon, 1))) {
     mush_free(nbuff, "name.newname");
     return OPAE_INVALID;
   }
 
   *newname = mush_strdup(bon, "name.newname");
   abuff = ps_new();
-  
+
   if (aliases) {
     /* We had aliases, so parse them */
     while (eon) {

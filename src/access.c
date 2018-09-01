@@ -122,11 +122,14 @@ extern const unsigned char *tables;
 static void
 sitelock_free(struct access *ap)
 {
+  fprintf(stderr, "In sitelock_free\n");
   mush_free(ap->host, "sitelock.rule.pattern");
-  if (ap->comment)
+  if (ap->comment) {
     mush_free(ap->comment, "sitelock.rule.comment");
-  if (ap->re)
+  }
+  if (ap->re) {
     pcre_free(ap->re);
+  }
   if (ap->study) {
 #ifdef PCRE_CONFIG_JIT
     pcre_free_study(ap->study);
@@ -729,7 +732,6 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
         }
       }
     }
-    mush_free(savedopts, "string");
     /* At this point, we haven't matched any warnings. */
     if (!found) {
       if (GoodObject(player)) {
@@ -741,5 +743,6 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
       totalfound += found;
     }
   }
+  mush_free(savedopts, "string");
   return totalfound;
 }

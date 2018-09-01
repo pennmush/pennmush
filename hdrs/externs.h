@@ -490,11 +490,20 @@ dbref next_parent(dbref thing, dbref current, int *parent_count,
 bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                        ufun_attrib *ufun, int flags);
 bool call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
-                   NEW_PE_INFO *pe_info, PE_REGS *pe_regs, void *data);
+                   NEW_PE_INFO *pe_info, PE_REGS *pe_regs, void *data)
+  __attribute__((deprecated));
+bool ps_call_ufun_int(ufun_attrib *ufun, pennstr *ret, dbref caller,
+                      dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs,
+                      void *data);
 #define call_ufun(ufun, ret, caller, enactor, pe_info, pe_regs)                \
   call_ufun_int(ufun, ret, caller, enactor, pe_info, pe_regs, NULL)
+#define ps_call_ufun(ufun, ret, caller, enactor, pe_info, pe_regs)             \
+  ps_call_ufun_int(ufun, ret, caller, enactor, pe_info, pe_regs, NULL)
 bool call_attrib(dbref thing, const char *attrname, char *ret, dbref enactor,
-                 NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
+                 NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
+  __attribute__((deprecated));
+bool ps_call_attrib(dbref thing, const char *attrname, pennstr *ret,
+                    dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
 bool member(dbref thing, dbref list);
 bool recursive_member(dbref disallow, dbref from, int count);
 dbref remove_first(dbref first, dbref what);

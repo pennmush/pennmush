@@ -391,6 +391,128 @@ call_ufun_int(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
   return pe_ret;
 }
 
+/** Given a ufun, executor, enactor, PE_Info, and arguments for %0-%9,
+ *  call the ufun with appropriate permissions on values given for
+ *  wenv_args. The value returned is stored in the buffer pointed to
+ *  by ret, if given.
+ * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
+ * \param ret If desired, a pennstr in which the results of the
+ * process_expression are stored in. \param caller The caller (%@). \param
+ * enactor The enactor. (%#) \param pe_info The pe_info passed to the FUNCTION
+ * \param user_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
+ * \param data a void pointer to extra data. Currently only used to pass the
+ *             name to use, when UFUN_NAME is given.
+ * \retval 0 success
+ * \retval 1 process_expression failed. (CPU time limit)
+ */
+bool
+ps_call_ufun_int(ufun_attrib *ufun, pennstr *ret, dbref caller, dbref enactor,
+                 NEW_PE_INFO *pe_info, PE_REGS *user_regs, void *data)
+{
+  char *rbuff = NULL;
+  char *rp, *np;
+  int pe_ret;
+  char const *ap;
+  char *old_attr = NULL;
+  int made_pe_info = 0;
+  PE_REGS *pe_regs;
+  PE_REGS *pe_regs_old;
+  int pe_reg_flags = 0;
+
+  /* Make sure we have a ufun first */
+  if (!ufun) {
+    return 1;
+  }
+  if (!pe_info) {
+    pe_info = make_pe_info("pe_info.call_ufun");
+    made_pe_info = 1;
+  } else {
+    old_attr = pe_info->attrname;
+    pe_info->attrname = NULL;
+  }
+
+  pe_regs_old = pe_info->regvals;
+
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    pe_reg_flags |= PE_REGS_LOCALQ;
+  } else {
+    pe_reg_flags |= PE_REGS_NEWATTR;
+    if (ufun->ufun_flags & UFUN_SHARE_STACK) {
+      pe_reg_flags |= PE_REGS_ARGPASS;
+    }
+  }
+
+  pe_regs = pe_regs_localize(pe_info, pe_reg_flags, "call_ufun");
+
+  if (*ufun->attrname == '\0') {
+    /* TODO: sprintf_new()? */
+    rbuff = sqlite3_mprintf("#LAMBDA/%s", ufun->contents);
+    pe_info->attrname = mush_strdup(rbuff, "string");
+    sqlite3_free(rbuff);
+  } else {
+    rbuff = sqlite3_mprintf("#%d/%s", ufun->thing, ufun->attrname);
+    pe_info->attrname = mush_strdup(rbuff, "string");
+    sqlite3_free(rbuff);
+  }
+
+  /* Anything the caller wants available goes on the bottom of the stack */
+  if (user_regs) {
+    user_regs->prev = pe_info->regvals;
+    pe_info->regvals = user_regs;
+  }
+
+  np = rp = rbuff = mush_malloc(BUFFER_LEN, "call_ufun.buff");
+
+  if (ufun->ufun_flags & UFUN_NAME) {
+    char *name = (char *) data;
+    if (!name || !*name) {
+      name = (char *) Name(enactor);
+    }
+    safe_str(name, rbuff, &rp);
+    if (!(ufun->ufun_flags & UFUN_NAME_NOSPACE)) {
+      safe_chr(' ', rbuff, &rp);
+    }
+  }
+
+  /* And now, make the call! =) */
+  ap = ufun->contents;
+  pe_ret = process_expression(rbuff, &rp, &ap, ufun->thing, caller, enactor,
+                              ufun->pe_flags, PT_DEFAULT, pe_info);
+  *rp = '\0';
+
+  if ((ufun->ufun_flags & UFUN_NAME) && np == rp) {
+    /* Attr was empty, so we take off the name again */
+    *rbuff = '\0';
+  }
+
+  if (*rbuff && ret) {
+    ps_safe_str(ret, rbuff);
+  }
+  mush_free(rbuff, "call_ufun.buff");
+
+  /* Restore call_ufun's pe_regs */
+  if (user_regs) {
+    pe_info->regvals = user_regs->prev;
+  }
+
+  /* Restore the pe_regs stack. */
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
+  pe_info->regvals = pe_regs_old;
+
+  if (!made_pe_info) {
+    /* Restore the old attrname. */
+    mush_free(pe_info->attrname, "string");
+    pe_info->attrname = old_attr;
+  } else {
+    free_pe_info(pe_info);
+  }
+
+  return pe_ret;
+}
+
 /** Given a thing, attribute, enactor and arguments for %0-%9,
  * call the ufun with appropriate permissions on values given for
  * wenv_args. The value returned is stored in the buffer pointed to
@@ -417,6 +539,34 @@ call_attrib(dbref thing, const char *attrname, char *ret, dbref enactor,
     return 0;
   }
   return !call_ufun(&ufun, ret, thing, enactor, pe_info, pe_regs);
+}
+
+/** Given a thing, attribute, enactor and arguments for %0-%9,
+ * call the ufun with appropriate permissions on values given for
+ * wenv_args. The value returned is stored in the buffer pointed to
+ * by ret, if given.
+ * \param thing The thing that has the attribute to be called
+ * \param attrname The name of the attribute to call.
+ * \param ret If desired, a pennstr in which the results
+ * of the process_expression are stored in.
+ * \param enactor The enactor.
+ * \param pe_info The pe_info passed to the FUNCTION
+ * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
+ * \retval 1 success
+ * \retval 0 No such attribute, or failed.
+ */
+bool
+ps_call_attrib(dbref thing, const char *attrname, pennstr *ret, dbref enactor,
+               NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
+{
+  ufun_attrib ufun;
+  if (!fetch_ufun_attrib(attrname, thing, &ufun,
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
+                           UFUN_IGNORE_PERMS)) {
+    return 0;
+  }
+  return !ps_call_ufun(&ufun, ret, thing, enactor, pe_info, pe_regs);
 }
 
 /** Given an exit, find the room that is its source through brute force.

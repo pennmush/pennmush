@@ -174,7 +174,10 @@ void ps_safe_format(pennstr *, const char *fmt, ...)
   __attribute__((__format__(__printf__, 2, 3)));
 void ps_safe_strl_cp(pennstr *, const char *, int);
 void ps_safe_strl_gc(pennstr *, const char *, int);
+void ps_safe_str_space(pennstr *, const char *);
 void ps_safe_str_free(pennstr *ps, char *s, const char *name);
+void ps_safe_itemizer(pennstr *ps, int cur_num, int done, const char *delim,
+                      const char *conjoin, const char *space);
 
 /** Append a single ASCII character to a pennstr */
 static inline void

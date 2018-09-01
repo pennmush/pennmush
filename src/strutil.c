@@ -2387,6 +2387,24 @@ ps_safe_strl_gc(pennstr *ps, const char *s, int n)
   sqlite3_str_append(ps, s, len);
 }
 
+/** Safely append a string into a pennstr, quoting it if it contains a space.
+ * \param ps the pennstr
+ * \param c string to store. Should not contain quote marks.
+ */
+void
+ps_safe_str_space(pennstr *ps, const char *c)
+{
+  if (!c || !*c) {
+    return;
+  }
+
+  if (strchr(c, ' ')) {
+    ps_safe_format(ps, "\"%s\"", c);
+  } else {
+    ps_safe_str(ps, c);
+  }
+}
+
 /** Append a UTF-8 string to a pennstr and then free it.
  *
  * \param ps the pennstr to append to
@@ -2405,12 +2423,51 @@ ps_safe_str_free(pennstr *ps, char *s, const char *name)
   }
 }
 
+/** Safely append a list item to a pennstr, possibly with punctuation
+ * and conjunctions.
+ * Given the current item number in a list, whether it's the last item
+ * in the list, the list's output separator, a conjunction,
+ * and a punctuation mark to use between items, store the appropriate
+ * inter-item stuff into the given buffer safely.
+ * \param ps the pennstr to append to.
+ * \param cur_num current item number of the item to append.
+ * \param done 1 if this is the final item.
+ * \param delim string to insert after most items (comma).
+ * \param conjoin string to insert before last time ("and").
+ * \param space output delimiter.
+ */
+void
+ps_safe_itemizer(pennstr *ps, int cur_num, int done, const char *delim,
+                 const char *conjoin, const char *space)
+{
+  /* We don't do anything if it's the first one */
+  if (cur_num == 1) {
+    return;
+  }
+  /* Are we done? */
+  if (done) {
+    /* if so, we need a [<delim>]<space><conj> */
+    if (cur_num >= 3) {
+      ps_safe_str(ps, delim);
+    }
+    ps_safe_str(ps, space);
+    ps_safe_str(ps, conjoin);
+  } else {
+    /* if not, we need just <delim> */
+    ps_safe_str(ps, delim);
+  }
+  /* And then we need another <space> */
+  ps_safe_str(ps, space);
+}
+
 /** Free a pennstr */
 void
 ps_free(pennstr *ps)
 {
-  char *s = sqlite3_str_finish(ps);
-  sqlite3_free(s);
+  if (ps) {
+    char *s = sqlite3_str_finish(ps);
+    sqlite3_free(s);
+  }
 }
 
 /** Free the pennstr and return its string. This string must be freed with
